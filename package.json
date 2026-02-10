@@ -1,0 +1,78 @@
+{
+  "name": "hivemind-context-governance",
+  "version": "1.2.0",
+  "description": "Context-Aware Governance Layer for OpenCode - prevents drift and manages session state across lifecycles",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "hivemind": "dist/cli.js"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shynlee04/hivemind-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shynlee04/hivemind-plugin/issues"
+  },
+  "homepage": "https://github.com/shynlee04/hivemind-plugin#readme",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/**/*.test.ts",
+    "dashboard": "node dist/dashboard/index.js",
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+  },
+  "keywords": [
+    "opencode",
+    "plugin",
+    "governance",
+    "context-management",
+    "agent-lifecycle",
+    "hivemind"
+  ],
+  "author": "HiveMind Contributors",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  },
+  "peerDependencies": {
+    "@opencode-ai/plugin": "^0.x",
+    "@opentui/react": "^0.x",
+    "@opentui/core": "^0.x",
+    "react": "^18.x"
+  },
+  "peerDependenciesMeta": {
+    "@opencode-ai/plugin": {
+      "optional": false
+    },
+    "@opentui/react": {
+      "optional": true
+    },
+    "@opentui/core": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  }
+}
