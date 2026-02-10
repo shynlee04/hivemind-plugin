@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1] - 2026-02-11
+
+### Fixed
+- **Plugin install broken** — `dist/` was gitignored so clones had no `main` entry. Fixed by including `src/` in npm package and documenting `file://` path for TypeScript-direct loading.
+- **@opencode-ai/plugin SDK compatibility** — Updated hook signatures for latest SDK: `experimental.chat.system.transform` now accepts `{ sessionID?: string; model: Model }`, removed deprecated `message` field.
+- **Sentiment detection moved** — From `experimental.chat.system.transform` (which lost `message` param) to new `chat.message` hook, where user message content is actually available.
+- **Dead peer dependencies** — Removed `@opentui/react`, `@opentui/core`, `react` from peer deps (never used).
+
+### Changed
+- **Config key** — README and init output now correctly show `"plugin"` (singular) instead of `"plugins"` (plural) per OpenCode spec.
+- **Installation docs** — Rewrote README Quick Start with `file://` path (works now) and npm path (after publish).
+- Added `example-opencode.json` for copy-paste setup.
+- Added `clean` and `prepublishOnly` scripts.
+- Version bump to 1.2.1.
+
 ## [1.2.0] - 2026-02-11
 
 ### Fixed

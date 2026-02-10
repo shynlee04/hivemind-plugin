@@ -153,7 +153,7 @@ export async function initProject(
 
     log("")
     log("Add HiveMind to your opencode.json:")
-    log('  "plugins": ["<path-to-hivemind-plugin>"]')
+    log('  "plugin": ["file://<path-to-hivemind>/src/index.ts"]')
     log("")
   }
 }

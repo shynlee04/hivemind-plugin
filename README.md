@@ -21,14 +21,32 @@ HiveMind provides **soft governance** for AI-assisted development — it tracks 
 
 ### 1. Install
 
-```bash
-# Option A: Clone into your project
-git clone https://github.com/shynlee04/hivemind-plugin.git .hivemind
-cd .hivemind && npm install
+**Option A: Git clone + file:// (recommended for now)**
 
-# Option B: Install as npm dependency
-npm install hivemind-context-governance
+```bash
+# Clone the plugin into your project
+git clone https://github.com/shynlee04/hivemind-plugin.git .hivemind
 ```
+
+Then add to your `opencode.json`:
+
+```json
+{
+  "plugin": ["file://.hivemind/src/index.ts"]
+}
+```
+
+> OpenCode loads TypeScript directly via Bun — no build step needed.
+
+**Option B: npm (after npm publish)**
+
+```json
+{
+  "plugin": ["hivemind-context-governance"]
+}
+```
+
+> OpenCode auto-installs npm plugins on launch. No `npm install` needed.
 
 ### 2. Initialize
 
@@ -46,19 +64,7 @@ This creates `.opencode/planning/` with:
 - `brain.json` — Machine-readable state
 - `config.json` — Governance settings
 
-### 3. Register Plugin
-
-Add to your `opencode.json`:
-
-```json
-{
-  "plugins": ["<path-to-hivemind-plugin>"]
-}
-```
-
-> Replace `<path-to-hivemind-plugin>` with the actual path — e.g. `.hivemind`, `./node_modules/hivemind-context-governance`, or any relative path from your project root.
-
-### 4. Use the Tools
+### 3. Use the Tools
 
 Within OpenCode, use the 4 lifecycle tools:
 

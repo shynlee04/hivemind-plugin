@@ -130,40 +130,47 @@ const hivemind: Plugin = async ({ directory }) => {
     /**
      * System prompt — injects hierarchy + governance status.
      * Budget: ≤250 tokens. ADD, not REPLACE.
-     * Also performs sentiment detection on user messages.
      */
-    "experimental.chat.system.transform": async (
-      input: { sessionID: string; message?: string },
-      output: { system: string[] }
-    ) => {
+    "experimental.chat.system.transform": async (input, output) => {
       await sessionLifecycleHook(input, output)
-      
-      // Sentiment detection on user message
+    },
+
+    /**
+     * Chat message hook — sentiment detection on user messages.
+     * Detects negative signals (frustration, confusion) and updates drift score.
+     */
+    "chat.message": async (_input, output) => {
       try {
-        if (input.message) {
-          const stateManager = createStateManager(directory)
-          let state = await stateManager.load()
-          
-          if (state) {
-            const signals = detectSentiment(
-              input.message,
-              state.metrics.turn_count,
-              "user"
+        // Extract text from user message parts
+        const messageText = output.parts
+          .filter((p: any) => p.type === "text")
+          .map((p: any) => p.text ?? p.content ?? "")
+          .join(" ")
+
+        if (!messageText) return
+
+        const stateManager = createStateManager(directory)
+        let state = await stateManager.load()
+
+        if (state) {
+          const signals = detectSentiment(
+            messageText,
+            state.metrics.turn_count,
+            "user"
+          )
+
+          if (signals.length > 0) {
+            state = addSentimentSignals(state, signals)
+            await stateManager.save(state)
+
+            await log.info(
+              `[Sentiment] Detected ${signals.length} signals: ${signals.map((s) => s.type).join(", ")}`
             )
-            
-            if (signals.length > 0) {
-              state = addSentimentSignals(state, signals)
-              await stateManager.save(state)
-              
-              await log.info(
-                `[Sentiment] Detected ${signals.length} signals: ${signals.map((s) => s.type).join(", ")}`
-              )
-              
-              // Check if refresh trigger threshold reached
-              const refreshCheck = checkRefreshTrigger(state)
-              if (refreshCheck.shouldRefresh) {
-                await log.warn(refreshCheck.message)
-              }
+
+            // Check if refresh trigger threshold reached
+            const refreshCheck = checkRefreshTrigger(state)
+            if (refreshCheck.shouldRefresh) {
+              await log.warn(refreshCheck.message)
             }
           }
         }
@@ -176,10 +183,7 @@ const hivemind: Plugin = async ({ directory }) => {
      * Compaction — preserves hierarchy context across LLM compaction.
      * Budget: ≤500 tokens.
      */
-    "experimental.session.compacting": async (
-      input: { sessionID: string },
-      output: { context: string[] }
-    ) => {
+    "experimental.session.compacting": async (input, output) => {
       await compactionHook(input, output)
     },
 
