@@ -1,0 +1,6 @@
+# This directory is deprecated
+
+HiveMind plans are now stored in `.hivemind/plans/`
+
+This `.plan/` directory structure is kept for backwards compatibility only.
+No new plans should be created here.

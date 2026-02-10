@@ -6,3 +6,6 @@ dist/
 .env.local
 coverage/
 .opencode/
+
+# Deprecated .plan/ directory structure (kept for backwards compatibility)
+# Active plans: .hivemind/plans/
