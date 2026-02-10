@@ -2,7 +2,7 @@
  * Tool Gate tests — governance enforcement by mode
  */
 
-import { createToolGateHook } from "../src/hooks/tool-gate.js"
+import { createToolGateHookInternal } from "../src/hooks/tool-gate.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
 import { createConfig } from "../src/schemas/config.js"
 import { createBrainState, generateSessionId, unlockSession } from "../src/schemas/brain-state.js"
@@ -52,7 +52,7 @@ async function test_strict_blocks_write_without_session() {
 
   // Do NOT initialize brain state — simulate no session
 
-  const hook = createToolGateHook(noopLogger, dir, config)
+  const hook = createToolGateHookInternal(noopLogger, dir, config)
   const result = await hook({ sessionID: "test-1", tool: "write" })
 
   assert(!result.allowed, "strict mode blocks write without session")
@@ -66,7 +66,7 @@ async function test_strict_allows_exempt_tools() {
   const dir = await setup()
   const config = createConfig({ governance_mode: "strict" })
 
-  const hook = createToolGateHook(noopLogger, dir, config)
+  const hook = createToolGateHookInternal(noopLogger, dir, config)
 
   const readResult = await hook({ sessionID: "test-2", tool: "read" })
   assert(readResult.allowed, "read tool is exempt")
@@ -89,7 +89,7 @@ async function test_strict_allows_write_when_unlocked() {
   const state = unlockSession(createBrainState(generateSessionId(), config))
   await sm.save(state)
 
-  const hook = createToolGateHook(noopLogger, dir, config)
+  const hook = createToolGateHookInternal(noopLogger, dir, config)
   const result = await hook({ sessionID: "test-3", tool: "write" })
 
   assert(result.allowed, "write allowed when session is OPEN")
@@ -104,7 +104,7 @@ async function test_assisted_warns_but_allows() {
   const dir = await setup()
   const config = createConfig({ governance_mode: "assisted" })
 
-  const hook = createToolGateHook(noopLogger, dir, config)
+  const hook = createToolGateHookInternal(noopLogger, dir, config)
   const result = await hook({ sessionID: "test-4", tool: "write" })
 
   assert(result.allowed, "assisted mode allows write")
@@ -120,7 +120,7 @@ async function test_permissive_allows_silently() {
   const dir = await setup()
   const config = createConfig({ governance_mode: "permissive" })
 
-  const hook = createToolGateHook(noopLogger, dir, config)
+  const hook = createToolGateHookInternal(noopLogger, dir, config)
   const result = await hook({ sessionID: "test-5", tool: "write" })
 
   assert(result.allowed, "permissive mode allows")
@@ -140,7 +140,7 @@ async function test_drift_tracking() {
   const state = unlockSession(createBrainState(generateSessionId(), config))
   await sm.save(state)
 
-  const hook = createToolGateHook(noopLogger, dir, config)
+  const hook = createToolGateHookInternal(noopLogger, dir, config)
 
   // Run 5 tool calls with a non-exempt tool to exceed threshold
   for (let i = 0; i < 5; i++) {

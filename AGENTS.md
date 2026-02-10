@@ -1,7 +1,7 @@
 # AGENTS.md — HiveMind Context Governance
 
 **Version:** 1.4.0
-**Status:** Core implementation complete. 4 tools, 3 hooks, CLI, 132 test assertions passing.
+**Status:** Core implementation complete. 4 tools, 4 hooks, CLI, 136 test assertions passing.
 
 ---
 
@@ -301,9 +301,46 @@ hivemind help
 ```
 
 **Hooks fire automatically:**
-- `tool.execute.before` — Logs governance events
+- `tool.execute.before` — Governance enforcement
+- `tool.execute.after` — Tracking & drift detection
 - `experimental.chat.system.transform` — Injects `<hivemind-governance>` block
 - `experimental.session.compacting` — Preserves hierarchy across compaction
+
+---
+
+## Hook Architecture
+
+HiveMind uses 4 hooks to provide governance:
+
+| Hook | Purpose | Behavior |
+|------|---------|----------|
+| `tool.execute.before` | Governance enforcement | Warns when tools used without declared intent. Cannot block (OpenCode v1.1+ limitation). |
+| `tool.execute.after` | Tracking & drift detection | Increments turn count, checks drift, detects violations. |
+| `experimental.chat.system.transform` | System prompt injection | Adds governance context to every LLM turn. |
+| `experimental.session.compacting` | Context preservation | Preserves hierarchy across LLM context compaction. |
+
+### tool.execute.before (Tool Gate)
+
+The tool gate hook enforces governance based on mode:
+
+| Mode | Behavior |
+|------|----------|
+| **strict** | Logs errors when write tools used without `declare_intent`. |
+| **assisted** | Warns strongly when tools used without declared intent. |
+| **permissive** | Silent tracking only. No warnings or blocks. |
+
+**Note:** In OpenCode v1.1+, `tool.execute.before` cannot block execution. The hook logs warnings/errors but tools are always allowed to execute. This is a platform limitation.
+
+### experimental.session.compacting (Context Preservation)
+
+The compaction hook preserves hierarchy context across LLM context compaction:
+
+- Reads current brain state hierarchy (trajectory/tactic/action)
+- Injects context into `output.context[]`
+- Preserves session info, metrics, and file tracking
+- Budget-capped at ~500 tokens (2000 chars)
+
+This ensures that after LLM context compaction, the agent still knows what it was working on.
 
 ---
 

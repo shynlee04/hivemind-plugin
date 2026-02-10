@@ -6,6 +6,9 @@
  *   - assisted: warns but allows
  *   - permissive: silently allows, tracks for metrics
  *
+ * NOTE: In OpenCode v1.1+, tool.execute.before cannot block execution.
+ * This hook provides governance through warnings and tracking only.
+ *
  * P3: try/catch — never break tool execution
  * P5: Config cached in closure — single disk read on first call
  */
@@ -71,15 +74,181 @@ export interface ToolGateResult {
 }
 
 /**
- * Creates the tool gate hook.
+ * Creates the tool gate hook for OpenCode integration.
  *
  * Hook factory pattern — captures config + logger + directory.
+ * Returns an OpenCode-compatible hook with correct signature.
  */
 export function createToolGateHook(
   log: Logger,
   directory: string,
   config: HiveMindConfig
 ) {
+  const stateManager = createStateManager(directory)
+
+  // Internal hook logic with original signature for direct testing
+  const internalHook = async (input: {
+    sessionID: string
+    tool: string
+  }): Promise<ToolGateResult> => {
+    try {
+      const { tool: toolName } = input
+
+      // Always allow exempt tools (governance tools + read-only)
+      if (isExemptTool(toolName)) {
+        return { allowed: true }
+      }
+
+      // Load brain state
+      let state = await stateManager.load()
+
+      // No state = no session initialized yet
+      if (!state) {
+        switch (config.governance_mode) {
+          case "strict":
+            return {
+              allowed: false,
+              error:
+                "SESSION NOT INITIALIZED. Use 'declare_intent' to start a session.",
+            }
+          case "assisted":
+            await log.warn(
+              `Tool "${toolName}" called without session. Consider using declare_intent.`
+            )
+            return {
+              allowed: true,
+              warning: "No session initialized. Consider calling declare_intent.",
+            }
+          case "permissive":
+            return { allowed: true }
+        }
+      }
+
+      // Session is locked — governance gate
+      if (state && isSessionLocked(state)) {
+        switch (config.governance_mode) {
+          case "strict":
+            if (isWriteTool(toolName)) {
+              return {
+                allowed: false,
+                error:
+                  "SESSION LOCKED. Use 'declare_intent' to unlock before writing.",
+              }
+            }
+            return { allowed: true }
+          case "assisted":
+            if (isWriteTool(toolName)) {
+              await log.warn(
+                `Write tool "${toolName}" used while session locked.`
+              )
+              return {
+                allowed: true,
+                warning:
+                  "Session locked. Declare your intent for better tracking.",
+              }
+            }
+            return { allowed: true }
+          case "permissive":
+            return { allowed: true }
+        }
+      }
+
+      // Session is open — track activity
+      if (state) {
+        state = incrementTurnCount(state)
+
+        // Track file touches for write tools (tool name used as proxy)
+        if (isWriteTool(toolName)) {
+          state = addFileTouched(state, `[via ${toolName}]`)
+        }
+
+        // Update drift score
+        state.metrics.drift_score = calculateDriftScore(state)
+
+        // Save updated state
+        await stateManager.save(state)
+
+        // Check drift warning
+        if (
+          shouldTriggerDriftWarning(
+            state,
+            config.max_turns_before_warning
+          )
+        ) {
+          await log.warn(
+            `Drift warning: ${state.metrics.turn_count} turns, score: ${state.metrics.drift_score}/100. Consider using map_context to re-focus.`
+          )
+
+          if (config.governance_mode !== "permissive") {
+            return {
+              allowed: true,
+              warning: `Drift detected (${state.metrics.drift_score}/100). Use map_context to re-focus.`,
+            }
+          }
+        }
+
+        // Check complexity and show nudge (once per session)
+        const complexityCheck = checkComplexity(state)
+        if (complexityCheck.isComplex && !state.complexity_nudge_shown) {
+          await log.warn(
+            `[Nudge] ${complexityCheck.message}`
+          )
+          
+          // Mark nudge as shown
+          state = setComplexityNudgeShown(state)
+          await stateManager.save(state)
+        }
+      }
+
+      return { allowed: true }
+    } catch (error) {
+      // P3: Never break tool execution
+      await log.error(`Tool gate error: ${error}`)
+      return { allowed: true }
+    }
+  }
+
+  // OpenCode-compatible hook with proper signature
+  // tool.execute.before receives: { tool: string, sessionID: string, callID: string }
+  // and receives output: { args: any } to modify
+  return async (
+    input: {
+      tool: string
+      sessionID: string
+      callID: string
+    },
+    _output: {
+      args: any
+    }
+  ): Promise<void> => {
+    // Call internal hook for governance logic
+    const result = await internalHook({
+      sessionID: input.sessionID,
+      tool: input.tool
+    })
+
+    // Log warnings/errors (we cannot block execution in OpenCode v1.1+)
+    if (!result.allowed) {
+      await log.error(result.error || "Tool not allowed by governance")
+    } else if (result.warning) {
+      await log.warn(result.warning)
+    }
+    // Note: We cannot block execution, only warn and track
+  }
+}
+
+/**
+ * Creates the internal tool gate hook logic for testing.
+ * This returns a hook with the original signature that can be tested directly.
+ */
+export function createToolGateHookInternal(
+  log: Logger,
+  directory: string,
+  config: HiveMindConfig
+): (input: {
+  sessionID: string
+  tool: string
+}) => Promise<ToolGateResult> {
   const stateManager = createStateManager(directory)
 
   return async (input: {
@@ -188,7 +357,7 @@ export function createToolGateHook(
           await log.warn(
             `[Nudge] ${complexityCheck.message}`
           )
-          
+
           // Mark nudge as shown
           state = setComplexityNudgeShown(state)
           await stateManager.save(state)

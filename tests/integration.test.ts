@@ -11,6 +11,8 @@ import { readFile } from "fs/promises"
 import { createDeclareIntentTool } from "../src/tools/declare-intent.js"
 import { createMapContextTool } from "../src/tools/map-context.js"
 import { createCompactSessionTool } from "../src/tools/compact-session.js"
+import { createCompactionHook } from "../src/hooks/compaction.js"
+import { createLogger } from "../src/lib/logging.js"
 import { mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
@@ -256,6 +258,67 @@ async function test_driftReset() {
   }
 }
 
+async function test_compactionHookPreservesHierarchy() {
+  process.stderr.write("\n--- integration: compaction hook preserves hierarchy ---\n")
+
+  const dir = await setup()
+
+  try {
+    await initProject(dir, { governanceMode: "assisted", language: "en" })
+
+    const declareIntentTool = createDeclareIntentTool(dir)
+    const mapContextTool = createMapContextTool(dir)
+
+    // Set up full hierarchy
+    await declareIntentTool.execute(
+      { mode: "plan_driven", focus: "Build feature" }
+    )
+    await mapContextTool.execute(
+      { level: "tactic", content: "Implement component", status: "active" }
+    )
+    await mapContextTool.execute(
+      { level: "action", content: "Write test", status: "active" }
+    )
+
+    const stateManager = createStateManager(dir)
+    const compactionHook = createCompactionHook(
+      await createLogger(dir, "test"),
+      dir
+    )
+
+    const state = await stateManager.load()
+    if (!state) {
+      throw new Error("State should exist")
+    }
+
+    const output = { context: [] as string[] }
+
+    await compactionHook(
+      { sessionID: state.session.id },
+      output
+    )
+
+    assert(
+      output.context.length > 0,
+      "compaction hook should add context"
+    )
+    assert(
+      output.context[0].includes("Trajectory: Build feature"),
+      "hierarchy should include trajectory"
+    )
+    assert(
+      output.context[0].includes("Tactic: Implement component"),
+      "hierarchy should include tactic"
+    )
+    assert(
+      output.context[0].includes("Action: Write test"),
+      "hierarchy should include action"
+    )
+  } finally {
+    await cleanup()
+  }
+}
+
 // ─── Main ────────────────────────────────────────────────────────────
 
 async function main() {
@@ -265,6 +328,7 @@ async function main() {
   await test_strictModeWorkflow()
   await test_contextTransitions()
   await test_driftReset()
+  await test_compactionHookPreservesHierarchy()
 
   process.stderr.write(`\n=== Integration: ${passed} passed, ${failed_} failed ===\n`)
   process.exit(failed_ > 0 ? 1 : 0)
