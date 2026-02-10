@@ -18,8 +18,8 @@ export interface StateManager {
 }
 
 export function createStateManager(projectRoot: string): StateManager {
-  const brainPath = join(projectRoot, ".opencode", "planning", "brain.json");
-  
+  const brainPath = join(projectRoot, ".hivemind", "brain.json");
+
   return {
     async load(): Promise<BrainState | null> {
       try {
@@ -58,8 +58,8 @@ export function createStateManager(projectRoot: string): StateManager {
 }
 
 export async function loadConfig(projectRoot: string): Promise<HiveMindConfig> {
-  const configPath = join(projectRoot, ".opencode", "planning", "config.json");
-  
+  const configPath = join(projectRoot, ".hivemind", "config.json");
+
   try {
     if (existsSync(configPath)) {
       const data = await readFile(configPath, "utf-8");
@@ -77,7 +77,7 @@ export async function saveConfig(
   projectRoot: string,
   config: HiveMindConfig
 ): Promise<void> {
-  const configPath = join(projectRoot, ".opencode", "planning", "config.json");
+  const configPath = join(projectRoot, ".hivemind", "config.json");
   await mkdir(dirname(configPath), { recursive: true });
   await writeFile(configPath, JSON.stringify(config, null, 2));
 }

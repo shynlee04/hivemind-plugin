@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-02-11
+
+### Changed
+- **BREAKING**: Migrated from `.opencode/planning/` to `.hivemind/` directory structure
+- Plugin now creates `.hivemind/sessions/` for session state
+- Added `.hivemind/10-commandments.md` (tool design reference)
+- `.hivemind/plans/` for plan storage (not `.plan/plans/`)
+
+### Added
+- 10 Commandments document for tool design principles
+- `.hivemind/` directory structure with sessions, brain, plans, logs subdirectories
+
+### Fixed
+- Path references throughout codebase, tests, documentation
+
+### Migration Guide
+Existing projects using `.opencode/planning/` need to:
+1. Run `hivemind init --migrate` (new flag)
+2. Or manually move `.opencode/planning/` → `.hivemind/`
+
 ## [1.3.0] - 2026-02-11
 
 ### Added

@@ -162,12 +162,14 @@ async function test_init_project() {
 
   await initProject(dir, { silent: true })
 
-  const planningDir = join(dir, ".opencode", "planning")
-  assert(existsSync(planningDir), "planning dir created")
-  assert(existsSync(join(planningDir, "index.md")), "index.md created")
-  assert(existsSync(join(planningDir, "active.md")), "active.md created")
-  assert(existsSync(join(planningDir, "brain.json")), "brain.json created")
-  assert(existsSync(join(planningDir, "config.json")), "config.json created")
+  const hivemindDir = join(dir, ".hivemind")
+  const sessionsDir = join(hivemindDir, "sessions")
+  assert(existsSync(hivemindDir), "hivemind dir created")
+  assert(existsSync(join(sessionsDir, "index.md")), "index.md created")
+  assert(existsSync(join(sessionsDir, "active.md")), "active.md created")
+  assert(existsSync(join(hivemindDir, "brain.json")), "brain.json created")
+  assert(existsSync(join(hivemindDir, "config.json")), "config.json created")
+  assert(existsSync(join(hivemindDir, "10-commandments.md")), "10-commandments.md copied")
 
   await cleanup()
 }

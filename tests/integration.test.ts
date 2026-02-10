@@ -128,7 +128,7 @@ async function test_fullLifecycle() {
     assert(state?.metrics.turn_count === 0, "turn count reset")
 
     // Step 9: Check index.md updated
-    const indexMd = await readFile(join(dir, ".opencode", "planning", "index.md"), "utf-8")
+    const indexMd = await readFile(join(dir, ".hivemind", "sessions", "index.md"), "utf-8")
     assert(indexMd.includes("JWT auth foundation complete"), "summary in index.md")
 
   } finally {

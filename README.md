@@ -26,7 +26,7 @@ npx hivemind-context-governance
 ```
 
 This does everything:
-1. Creates `.opencode/planning/` with session state files
+1. Creates `.hivemind/` with session state files
 2. Registers HiveMind in your `opencode.json` automatically
 3. Next time you open OpenCode, HiveMind is active
 
@@ -95,13 +95,17 @@ compact_session({
 After initialization:
 
 ```
-.opencode/planning/
-├── index.md          # Project trajectory
-├── active.md         # Current session
-├── brain.json        # Machine state
-├── config.json       # Settings
-└── archive/          # Session history
-    └── session_2026-02-10_xxx.md
+.hivemind/
+├── 10-commandments.md   # Tool design reference
+├── sessions/
+│   ├── index.md         # Project trajectory
+│   ├── active.md        # Current session
+│   └── archive/          # Session history
+│       └── session_2026-02-10_xxx.md
+├── brain.json          # Machine state
+├── config.json         # Settings
+├── plans/              # Plan storage
+└── logs/               # Plugin logs
 ```
 
 ## Sentiment Detection
@@ -186,11 +190,11 @@ npm run dev
 | Component | Assertions | Status |
 |-----------|-----------|--------|
 | Schema (BrainState, Hierarchy) | 35 | ✅ Pass |
-| Init + Planning FS | 29 | ✅ Pass |
+| Init + Planning FS | 30 | ✅ Pass |
 | Tool Gate (governance) | 12 | ✅ Pass |
 | Self-Rate Tool | 28 | ✅ Pass |
 | Integration Tests | 27 | ✅ Pass |
-| **Total** | **131** | ✅ **All Pass** |
+| **Total** | **132** | ✅ **All Pass** |
 
 ## Requirements
 

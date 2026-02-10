@@ -1,6 +1,6 @@
 /**
  * Planning File System
- * Manages .opencode/planning/ directory structure
+ * Manages .hivemind/ directory structure
  */
 
 import { readFile, writeFile, mkdir, readdir } from "fs/promises";
@@ -18,14 +18,15 @@ export interface PlanningPaths {
 }
 
 export function getPlanningPaths(projectRoot: string): PlanningPaths {
-  const planningDir = join(projectRoot, ".opencode", "planning");
+  const hivemindDir = join(projectRoot, ".hivemind");
+  const sessionsDir = join(hivemindDir, "sessions");
   return {
     projectRoot,
-    planningDir,
-    indexPath: join(planningDir, "index.md"),
-    activePath: join(planningDir, "active.md"),
-    archiveDir: join(planningDir, "archive"),
-    brainPath: join(planningDir, "brain.json"),
+    planningDir: hivemindDir,
+    indexPath: join(sessionsDir, "index.md"),
+    activePath: join(sessionsDir, "active.md"),
+    archiveDir: join(sessionsDir, "archive"),
+    brainPath: join(hivemindDir, "brain.json"),
   };
 }
 

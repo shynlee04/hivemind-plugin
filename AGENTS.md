@@ -1,7 +1,7 @@
 # AGENTS.md — HiveMind Context Governance
 
-**Version:** 1.2.0  
-**Status:** Core implementation complete. 4 tools, 3 hooks, CLI, 131 test assertions passing.
+**Version:** 1.4.0
+**Status:** Core implementation complete. 4 tools, 3 hooks, CLI, 132 test assertions passing.
 
 ---
 
@@ -60,8 +60,8 @@ declare_intent({
 **What it does:**
 1. Unlocks the session (sets governance_status to OPEN)
 2. Sets the trajectory (Level 1 of hierarchy)
-3. Creates/updates `.opencode/planning/active.md`
-4. Initializes brain state in `.opencode/planning/brain.json`
+3. Creates/updates `.hivemind/sessions/active.md`
+4. Initializes brain state in `.hivemind/brain.json`
 
 ---
 
@@ -142,7 +142,7 @@ compact_session({})
 ```
 
 **What it does:**
-1. Archives current `active.md` to `.opencode/planning/archive/`
+1. Archives current `active.md` to `.hivemind/sessions/archive/`
 2. Appends summary line to `index.md`
 3. Resets `active.md` to template
 4. Creates fresh brain state (new session, LOCKED status)
@@ -163,6 +163,39 @@ HiveMind has 3 modes configured at init time:
 - System prompt injection (`<hivemind-governance>` block)
 - `hivemind status` CLI output
 - Brain state: `session.governance_mode`
+
+---
+
+## Governance Approach
+
+HiveMind provides **soft governance** through guidance and tracking.
+
+### How It Works
+
+1. **System Prompt Injection** - Injects governance context into every LLM turn
+2. **Event Tracking** - Reacts to tool executions and session events
+3. **Drift Detection** - Warns when turn count exceeds threshold
+4. **Violation Tracking** - Logs when agent ignores guidance
+5. **Metrics** - Tracks turn count, drift score, files touched
+6. **Notifications** - Sends warnings when patterns detected
+
+### Important: No Hard Blocking
+
+**Plugins CANNOT block tool execution in OpenCode v1.1+:**
+- `tool.execute.before` returns `Promise<void>` - can only modify `output.args`, not block execution
+- No `permission.ask` hook exists for plugins to implement blocking
+- Only OpenCode's own `opencode.json` permission config can block actions
+
+**What HiveMind CANNOT do:**
+- Prevent tool execution
+- Force agent compliance
+- Block actions based on governance mode
+
+**What HiveMind CAN do:**
+- Modify tool arguments before execution (architecturally unsupported)
+- Track metrics and violations through `tool.execute.after`
+- Inject system prompts and warnings
+- Send notifications when patterns detected
 
 ---
 
@@ -196,18 +229,24 @@ HiveMind has 3 modes configured at init time:
 ## Physical Architecture
 
 ```
-.opencode/planning/
-├── index.md          # Project trajectory (goals, constraints, history)
-├── active.md         # Current session (hierarchy, notes)
-├── brain.json        # Machine state (session, metrics, hierarchy)
-├── config.json       # Governance settings (mode, language)
-└── archive/          # Completed sessions
-    └── session_2026-02-10_abc123.md
+.hivemind/
+├── 10-commandments.md   # Tool design reference
+├── sessions/
+│   ├── index.md         # Project trajectory (goals, constraints, history)
+│   ├── active.md        # Current session (hierarchy, notes)
+│   └── archive/         # Completed sessions
+│       └── session_2026-02-10_abc123.md
+├── brain.json          # Machine state (session, metrics, hierarchy)
+├── config.json         # Governance settings (mode, language)
+├── plans/              # Plan storage
+│   └── archive/
+└── logs/               # Plugin logs
 ```
 
 **Files you should read:**
 - `active.md` — See current focus and session status
 - `index.md` — See project trajectory and session history
+- `10-commandments.md` — Tool design principles
 
 **Files you should NOT edit directly:**
 - `brain.json` — Managed by tools, will be overwritten
@@ -285,7 +324,7 @@ hivemind help
 | "SESSION LOCKED" warning | strict mode, no `declare_intent` | Call `declare_intent` |
 | High drift warning | Too many turns without context update | Call `map_context` |
 | No session data | Plugin not initialized | Run `hivemind init` |
-| Can't find planning files | Wrong directory | Check `.opencode/planning/` exists |
+| Can't find planning files | Wrong directory | Check `.hivemind/` exists |
 
 ---
 
@@ -296,11 +335,11 @@ hivemind help
 | Component | Assertions | Status |
 |-----------|-----------|--------|
 | Schema (BrainState, Hierarchy) | 35 | ✅ Pass |
-| Init + Planning FS | 29 | ✅ Pass |
+| Init + Planning FS | 30 | ✅ Pass |
 | Tool Gate (governance) | 12 | ✅ Pass |
 | Self-Rate Tool | 28 | ✅ Pass |
 | Integration (E2E workflow) | 27 | ✅ Pass |
-| **Total** | **131** | ✅ **All Pass** |
+| **Total** | **132** | ✅ **All Pass** |
 
 ---
 
@@ -308,6 +347,7 @@ hivemind help
 
 - **1.0.0** — Core implementation: 3 tools, 3 hooks, CLI, 103 tests
 - **1.2.0** — 8 bug fixes, self-rate tool (4th tool), sentiment regex, standalone packaging, 131 tests
+- **1.4.0** — Migrated from `.opencode/planning/` to `.hivemind/` directory structure, added 10 Commandments, 132 tests
 
 ---
 

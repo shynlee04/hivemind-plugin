@@ -11,7 +11,11 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
-import { join } from "node:path"
+import { copyFile } from "node:fs/promises"
+import { fileURLToPath } from "node:url"
+import { dirname, join } from "node:path"
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 import type { GovernanceMode, Language, ExpertLevel, OutputStyle } from "../schemas/config.js"
 import { createConfig, isValidGovernanceMode, isValidLanguage, isValidExpertLevel, isValidOutputStyle } from "../schemas/config.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
@@ -87,15 +91,15 @@ export async function initProject(
   directory: string,
   options: InitOptions = {}
 ): Promise<void> {
-  const planningDir = join(directory, ".opencode", "planning")
-  const brainPath = join(planningDir, "brain.json")
+  const hivemindDir = join(directory, ".hivemind")
+  const brainPath = join(hivemindDir, "brain.json")
 
   // Guard: Check brain.json existence, not just directory.
   // The directory may exist from logger side-effects without full initialization.
   if (existsSync(brainPath)) {
     if (!options.silent) {
       log("⚠ HiveMind already initialized in this project.")
-      log(`  Directory: ${planningDir}`)
+      log(`  Directory: ${hivemindDir}`)
       log("  Use 'npx hivemind-context-governance status' to see current state.")
     }
     return
@@ -139,6 +143,9 @@ export async function initProject(
     return
   }
 
+  // Create .hivemind directory structure
+  // (sessions, brain, plans, logs subdirectories are created by initializePlanningDirectory)
+
   // Create config with agent behavior
   const config = createConfig({
     governance_mode: governanceMode,
@@ -173,6 +180,14 @@ export async function initProject(
   }
   await initializePlanningDirectory(directory)
 
+  // Copy 10 Commandments to .hivemind
+  const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md")
+  const commandmentsDest = join(hivemindDir, "10-commandments.md")
+  await copyFile(commandmentsSource, commandmentsDest)
+  if (!options.silent) {
+    log(`  ✓ Copied 10 Commandments to ${hivemindDir}/`)
+  }
+
   // Save config
   await saveConfig(directory, config)
 
@@ -188,12 +203,16 @@ export async function initProject(
   if (!options.silent) {
     log("")
     log("✓ Planning directory created:")
-    log(`  ${planningDir}/`)
-    log("  ├── index.md      (project trajectory)")
-    log("  ├── active.md     (current session)")
+    log(`  ${hivemindDir}/`)
+    log("  ├── 10-commandments.md   (tool design reference)")
+    log("  ├── sessions/")
+    log("  │   ├── index.md      (project trajectory)")
+    log("  │   ├── active.md     (current session)")
+    log("  │   └── archive/      (completed sessions)")
     log("  ├── brain.json    (machine state)")
     log("  ├── config.json   (governance settings)")
-    log("  └── archive/      (completed sessions)")
+    log("  ├── plans/        (plan storage)")
+    log("  └── logs/         (plugin logs)")
     log("")
     log(`Session ${sessionId} initialized.`)
     log(`Status: ${state.session.governance_status}`)
