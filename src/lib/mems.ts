@@ -1,0 +1,113 @@
+/**
+ * Mems — Persistent memory layer (Mems Brain) for cross-session recall.
+ */
+import { readFile, writeFile, mkdir } from "fs/promises";
+import { existsSync } from "fs";
+import { dirname, join } from "path";
+
+// ─── Types ───────────────────────────────────────────────────────────
+
+export type BuiltinShelf = "decisions" | "patterns" | "errors" | "solutions" | "context";
+
+export interface Mem {
+  id: string;
+  shelf: string;
+  content: string;
+  tags: string[];
+  session_id: string;
+  created_at: number;
+}
+
+export interface MemsState {
+  mems: Mem[];
+  version: string;
+}
+
+// ─── Constants ───────────────────────────────────────────────────────
+
+export const MEMS_VERSION = "1.0.0";
+export const BUILTIN_SHELVES = ["decisions", "patterns", "errors", "solutions", "context"] as const;
+
+// ─── Helpers ─────────────────────────────────────────────────────────
+
+function getMemsPath(projectRoot: string): string {
+  return join(projectRoot, ".hivemind", "mems.json");
+}
+
+export function generateMemId(): string {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).slice(2, 6).padEnd(4, "0");
+  return `mem_${timestamp}_${random}`;
+}
+
+// ─── IO Wrappers ─────────────────────────────────────────────────────
+
+export async function loadMems(projectRoot: string): Promise<MemsState> {
+  const path = getMemsPath(projectRoot);
+  try {
+    if (existsSync(path)) {
+      const data = await readFile(path, "utf-8");
+      return JSON.parse(data) as MemsState;
+    }
+  } catch { /* fall through */ }
+  return { mems: [], version: MEMS_VERSION };
+}
+
+export async function saveMems(projectRoot: string, state: MemsState): Promise<void> {
+  const path = getMemsPath(projectRoot);
+  await mkdir(dirname(path), { recursive: true });
+  await writeFile(path, JSON.stringify(state, null, 2));
+}
+
+// ─── Pure Functions ──────────────────────────────────────────────────
+
+export function addMem(state: MemsState, shelf: string, content: string, tags: string[], sessionId: string): MemsState {
+  const mem: Mem = {
+    id: generateMemId(),
+    shelf,
+    content,
+    tags,
+    session_id: sessionId,
+    created_at: Date.now(),
+  };
+  return { ...state, mems: [...state.mems, mem] };
+}
+
+export function removeMem(state: MemsState, memId: string): MemsState {
+  return { ...state, mems: state.mems.filter(m => m.id !== memId) };
+}
+
+export function searchMems(state: MemsState, query: string, shelf?: string): Mem[] {
+  const q = query.toLowerCase();
+  return state.mems
+    .filter(m => {
+      if (shelf && m.shelf !== shelf) return false;
+      const contentMatch = m.content.toLowerCase().includes(q);
+      const tagMatch = m.tags.some(t => t.toLowerCase().includes(q));
+      return contentMatch || tagMatch;
+    })
+    .sort((a, b) => b.created_at - a.created_at);
+}
+
+export function getMemsByShelf(state: MemsState, shelf: string): Mem[] {
+  return state.mems
+    .filter(m => m.shelf === shelf)
+    .sort((a, b) => b.created_at - a.created_at);
+}
+
+export function getShelfSummary(state: MemsState): Record<string, number> {
+  const summary: Record<string, number> = {};
+  for (const m of state.mems) {
+    summary[m.shelf] = (summary[m.shelf] || 0) + 1;
+  }
+  return summary;
+}
+
+export function formatMemsForPrompt(state: MemsState): string {
+  if (state.mems.length === 0) return "";
+  const summary = getShelfSummary(state);
+  const breakdown = Object.entries(summary)
+    .map(([shelf, count]) => `${shelf}(${count})`)
+    .join(", ");
+  return `🧠 Mems Brain: ${state.mems.length} memories [${breakdown}]. Use recall_mems to search.`;
+}
