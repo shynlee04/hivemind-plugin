@@ -3,7 +3,7 @@
  *
  * 32 assertions:
  *   Anchors (8): load, add, replace, remove, roundtrip, format empty, format values, format tags
- *   scan_hierarchy (6): no session, valid JSON, hierarchy levels, metrics, anchors array, not-set defaults
+ *   scan_hierarchy (6): no session, structured text session info, hierarchy levels, metrics, anchors section, not-set defaults
  *   save_anchor (6): saves to anchors.json, replaces existing key, returns confirmation, survives compaction, system prompt includes anchors, system prompt includes tag
  *   think_back (6): no session, trajectory, session health, anchors, chain breaks, plan section
  *   check_drift (6): no session, drift score emoji, trajectory alignment, chain intact, chain broken, recommendation
@@ -171,40 +171,34 @@ async function test_scanHierarchy() {
     const tool = createScanHierarchyTool(tmpDir2)
     const result = await tool.execute({})
 
-    // 2. Returns valid JSON with session info
-    let parsed: any
-    try {
-      parsed = JSON.parse(result)
-    } catch {
-      parsed = null
-    }
+    // 2. Returns structured text with session info
     assert(
-      parsed !== null && parsed.session?.id === "test-session-r3" && parsed.session?.mode === "plan_driven",
-      "returns valid JSON with session info"
+      result.includes("Session:") && result.includes("test-session-r3") && result.includes("plan_driven"),
+      "returns structured text with session info"
     )
 
     // 3. Returns hierarchy levels when set
     assert(
-      parsed.hierarchy?.trajectory === "Build auth system" &&
-      parsed.hierarchy?.tactic === "JWT validation" &&
-      parsed.hierarchy?.action === "Write middleware",
+      result.includes("Trajectory: Build auth system") &&
+      result.includes("Tactic: JWT validation") &&
+      result.includes("Action: Write middleware"),
       "returns hierarchy levels when set"
     )
 
     // 4. Returns metrics
     assert(
-      parsed.metrics?.turns === 7 &&
-      parsed.metrics?.drift_score === 65 &&
-      parsed.metrics?.files_touched === 2 &&
-      parsed.metrics?.context_updates === 3,
+      result.includes("Turns: 7") &&
+      result.includes("Drift: 65/100") &&
+      result.includes("Files: 2") &&
+      result.includes("Context updates: 3"),
       "returns metrics"
     )
 
-    // 5. Returns anchors list (array)
+    // 5. Returns anchors section
     assert(
-      Array.isArray(parsed.anchors) && parsed.anchors.length === 1 &&
-      parsed.anchors[0] === "[test-key]: test-value",
-      "returns anchors list (array)"
+      result.includes("Anchors (1)") &&
+      result.includes("[test-key]: test-value"),
+      "returns anchors section"
     )
 
     // 6. Returns "(not set)" for empty hierarchy levels
@@ -213,11 +207,10 @@ async function test_scanHierarchy() {
     await stateManager.save(brainEmpty)
 
     const emptyResult = await tool.execute({})
-    const parsedEmpty = JSON.parse(emptyResult)
     assert(
-      parsedEmpty.hierarchy?.trajectory === "(not set)" &&
-      parsedEmpty.hierarchy?.tactic === "(not set)" &&
-      parsedEmpty.hierarchy?.action === "(not set)",
+      emptyResult.includes("Trajectory: (not set)") &&
+      emptyResult.includes("Tactic: (not set)") &&
+      emptyResult.includes("Action: (not set)"),
       "returns '(not set)' for empty hierarchy levels"
     )
   } finally {

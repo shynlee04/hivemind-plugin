@@ -613,15 +613,14 @@ async function test_scanHierarchyReturnsStructuredState() {
     const scanTool = createScanHierarchyTool(dir)
     const result = await scanTool.execute({})
 
-    // Step 3: Assert structured JSON output
-    const parsed = JSON.parse(result)
+    // Step 3: Assert structured text output
     assert(
-      parsed.session?.status === "OPEN" && parsed.session?.mode === "plan_driven",
+      result.includes("Session:") && result.includes("OPEN") && result.includes("plan_driven"),
       "scan_hierarchy returns session info"
     )
     assert(
-      parsed.hierarchy?.trajectory === "Scan hierarchy test" &&
-      parsed.hierarchy?.tactic === "Build component",
+      result.includes("Trajectory: Scan hierarchy test") &&
+      result.includes("Tactic: Build component"),
       "scan_hierarchy returns hierarchy levels"
     )
 
@@ -872,11 +871,10 @@ async function test_fullCognitiveMeshWorkflow() {
 
     // Step 5: Scan hierarchy — verify structured data
     const scanResult = await scanTool.execute({})
-    const parsed = JSON.parse(scanResult)
     assert(
-      parsed.anchors.length === 2 &&
-      parsed.hierarchy.tactic === "Core implementation" &&
-      parsed.hierarchy.action === "Write pure functions",
+      scanResult.includes("Anchors (2)") &&
+      scanResult.includes("Tactic: Core implementation") &&
+      scanResult.includes("Action: Write pure functions"),
       "scan_hierarchy shows full cognitive mesh state"
     )
 
