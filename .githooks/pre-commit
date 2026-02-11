@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# HiveMind Pre-Commit Hook
+# Enforces atomic commits and session state awareness
+
+set -euo pipefail
+
+# Check if staged files include brain.json or active.md
+STAGED_FILES=$(git diff --cached --name-only)
+
+if echo "$STAGED_FILES" | grep -q ".hivemind/brain.json"; then
+  echo ""
+  echo "⚠️  brain.json modified - ensure session state is consistent"
+  echo "   Consider running: hivemind status to verify session"
+fi
+
+if echo "$STAGED_FILES" | grep -q ".hivemind/sessions/active.md"; then
+  echo ""
+  echo "⚠️  active.md modified - ensure hierarchy is up to date"
+  echo "   Verify trajectory/tactic/action are consistent before committing"
+fi
+
+# Optional: Check for .plan/ directory (deprecated)
+if echo "$STAGED_FILES" | grep -q "^\.plan/"; then
+  echo ""
+  echo "⚠️  WARNING: Files in .plan/ are deprecated"
+  echo "   Active plans should be in .hivemind/plans/"
+  echo ""
+  read -p "Continue commit? [y/N] " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Commit aborted."
+    exit 1
+  fi
+fi
+
+exit 0

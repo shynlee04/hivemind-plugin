@@ -291,6 +291,32 @@ hivemind help
 
 ---
 
+## Git Integration
+
+HiveMind provides git hooks to enforce best practices:
+
+### Setup
+
+```bash
+./scripts/setup-git-hooks.sh
+```
+
+This installs a pre-commit hook that:
+- Warns when `brain.json` is modified (verify session state)
+- Warns when `active.md` is modified (check hierarchy consistency)
+- Warns when `.plan/` files are staged (use `.hivemind/plans/` instead)
+- Requires confirmation before committing deprecated `.plan/` files
+
+### Atomic Commit Guidelines
+
+Follow these guidelines when committing:
+1. Commit tool changes with their tests together
+2. Keep commits focused: one feature or bug fix per commit
+3. Run `npm test` before committing if tests are affected
+4. Update `CHANGELOG.md` for user-facing changes
+
+---
+
 ## Integration with OpenCode
 
 **Plugin registration** (in `opencode.json`):

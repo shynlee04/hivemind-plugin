@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - 10 Commandments document for tool design principles
 - `.hivemind/` directory structure with sessions, brain, plans, logs subdirectories
+- Git hooks setup script (scripts/setup-git-hooks.sh)
+- Pre-commit hook for enforcing atomic commits and session awareness
 
 ### Fixed
 - Path references throughout codebase, tests, documentation
