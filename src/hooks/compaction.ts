@@ -1,8 +1,15 @@
 /**
  * Compaction Hook — Preserves hierarchy context across LLM compaction.
  *
- * Reads current brain state hierarchy and injects it into
+ * Reads current brain state + hierarchy tree and injects into
  * post-compaction context via output.context.push().
+ *
+ * Hierarchy Redesign Changes:
+ *   - Reads hierarchy.json tree for cursor ancestry injection
+ *   - Includes ASCII tree excerpt (budget-capped)
+ *   - If brain.next_compaction_report exists, uses output.prompt to replace
+ *     the compaction prompt with curated instructions (purification loop)
+ *   - If not, falls back to generic context injection with alert
  *
  * P3: try/catch — never break compaction
  * Budget-capped ≤500 tokens (~2000 chars)
@@ -11,6 +18,13 @@
 import type { Logger } from "../lib/logging.js"
 import { createStateManager } from "../lib/persistence.js"
 import { loadMems } from "../lib/mems.js"
+import {
+  loadTree,
+  toAsciiTree,
+  getCursorNode,
+  getAncestors,
+  treeExists,
+} from "../lib/hierarchy-tree.js"
 
 /** Budget in characters (~500 tokens at ~4 chars/token) */
 const INJECTION_BUDGET_CHARS = 2000
@@ -44,23 +58,61 @@ export function createCompactionHook(log: Logger, directory: string) {
       )
       lines.push("")
 
-      // Hierarchy — the most important context to preserve
+      // Hierarchy — prefer tree view if available
       lines.push("## Current Hierarchy")
-      if (state.hierarchy.trajectory) {
-        lines.push(`Trajectory: ${state.hierarchy.trajectory}`)
-      }
-      if (state.hierarchy.tactic) {
-        lines.push(`Tactic: ${state.hierarchy.tactic}`)
-      }
-      if (state.hierarchy.action) {
-        lines.push(`Action: ${state.hierarchy.action}`)
-      }
-      if (
-        !state.hierarchy.trajectory &&
-        !state.hierarchy.tactic &&
-        !state.hierarchy.action
-      ) {
-        lines.push("No hierarchy set. Use map_context to set focus.")
+      if (treeExists(directory)) {
+        try {
+          const tree = await loadTree(directory);
+          if (tree.root) {
+            const treeView = toAsciiTree(tree);
+            // Truncate tree for compaction budget
+            const treeLines = treeView.split('\n');
+            if (treeLines.length > 6) {
+              lines.push(...treeLines.slice(0, 6));
+              lines.push("  ... (truncated for compaction)");
+            } else {
+              lines.push(treeView);
+            }
+
+            // Show cursor ancestry (the path to current work)
+            const cursorNode = getCursorNode(tree);
+            if (cursorNode && tree.root) {
+              const ancestors = getAncestors(tree.root, cursorNode.id);
+              if (ancestors.length > 1) {
+                lines.push("");
+                lines.push("Cursor path:");
+                for (const node of ancestors) {
+                  lines.push(`  ${node.level}: ${node.content} (${node.stamp})`);
+                }
+              }
+            }
+          } else {
+            lines.push("No hierarchy declared.");
+          }
+        } catch {
+          // Fall back to flat hierarchy if tree read fails
+          if (state.hierarchy.trajectory) lines.push(`Trajectory: ${state.hierarchy.trajectory}`);
+          if (state.hierarchy.tactic) lines.push(`Tactic: ${state.hierarchy.tactic}`);
+          if (state.hierarchy.action) lines.push(`Action: ${state.hierarchy.action}`);
+        }
+      } else {
+        // Flat hierarchy fallback
+        if (state.hierarchy.trajectory) {
+          lines.push(`Trajectory: ${state.hierarchy.trajectory}`)
+        }
+        if (state.hierarchy.tactic) {
+          lines.push(`Tactic: ${state.hierarchy.tactic}`)
+        }
+        if (state.hierarchy.action) {
+          lines.push(`Action: ${state.hierarchy.action}`)
+        }
+        if (
+          !state.hierarchy.trajectory &&
+          !state.hierarchy.tactic &&
+          !state.hierarchy.action
+        ) {
+          lines.push("No hierarchy set. Use map_context to set focus.")
+        }
       }
       lines.push("")
 

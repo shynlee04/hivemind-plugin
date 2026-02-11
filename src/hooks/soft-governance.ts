@@ -1,11 +1,18 @@
 /**
- * Soft Governance Hook — Track compliance and provide guidance.
+ * Soft Governance Hook — Counter/Detection Engine.
  *
- * Handles:
- *   - Tool execution tracking (tool.execute.after)
- *   - Violation detection (ignoring governance)
- *   - Drift monitoring
- *   - Notification preparation
+ * Fires after EVERY tool call (tool.execute.after).
+ * Responsibilities:
+ *   - Increment turn count + track tool health
+ *   - Classify tool type (read/write/query/governance)
+ *   - Track consecutive failures + section repetition
+ *   - Scan tool output for stuck/confused keywords
+ *   - Detect governance violations (write in LOCKED)
+ *   - Chain break, drift, and long session detection
+ *   - Write ALL counters to brain.json.metrics
+ *
+ * This hook does NOT transform prompts — it stores signals for
+ * session-lifecycle.ts (system.transform) to compile on next turn.
  *
  * P3: try/catch — never break tool execution
  * P5: State management via stateManager
@@ -18,14 +25,22 @@ import { addViolationCount, incrementTurnCount, setLastCommitSuggestionTurn } fr
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
 import { detectLongSession } from "../lib/long-session.js"
+import {
+  classifyTool,
+  incrementToolType,
+  trackToolResult,
+  scanForKeywords,
+  addKeywordFlags,
+  createDetectionState,
+  type DetectionState,
+} from "../lib/detection.js"
 
 /**
  * Creates the soft governance hook for tool execution tracking.
  *
- * Tracks tool calls and detects governance violations:
- *   - High turn count without context updates (drift)
- *   - Repeated violations of governance mode
- *   - Ignoring session status warnings
+ * This is the COUNTER engine. It fires after every tool call and writes
+ * detection state to brain.json.metrics. The session-lifecycle hook then
+ * reads these counters and compiles signals into prompt warnings.
  */
 export function createSoftGovernanceHook(
   log: Logger,
@@ -63,8 +78,49 @@ export function createSoftGovernanceHook(
       const driftWarning = newState.metrics.turn_count >= MAX_TURNS_BEFORE_WARNING &&
                            newState.metrics.drift_score < 50
 
-      // Detect violations based on governance mode
-      // In strict mode, certain patterns indicate violations
+      // === Detection Engine: Tool Classification ===
+      const toolCategory = classifyTool(input.tool)
+
+      // Get or initialize detection state from brain.json.metrics
+      let detection: DetectionState = {
+        consecutive_failures: newState.metrics.consecutive_failures ?? 0,
+        consecutive_same_section: newState.metrics.consecutive_same_section ?? 0,
+        last_section_content: newState.metrics.last_section_content ?? "",
+        tool_type_counts: newState.metrics.tool_type_counts ?? createDetectionState().tool_type_counts,
+        keyword_flags: newState.metrics.keyword_flags ?? [],
+      }
+
+      // Increment tool type counter
+      detection = {
+        ...detection,
+        tool_type_counts: incrementToolType(detection.tool_type_counts, toolCategory),
+      }
+
+      // Track tool result (success inferred — hook fires means no exception)
+      detection = trackToolResult(detection, true)
+
+      // Scan tool output for stuck/confused keywords
+      const outputText = _output.output ?? ""
+      const newKeywords = scanForKeywords(outputText, detection.keyword_flags)
+      if (newKeywords.length > 0) {
+        detection = addKeywordFlags(detection, newKeywords)
+        await log.debug(`Detection: keyword flags detected: ${newKeywords.join(", ")}`)
+      }
+
+      // === Write detection state back into brain.json.metrics ===
+      newState = {
+        ...newState,
+        metrics: {
+          ...newState.metrics,
+          consecutive_failures: detection.consecutive_failures,
+          consecutive_same_section: detection.consecutive_same_section,
+          last_section_content: detection.last_section_content,
+          tool_type_counts: detection.tool_type_counts,
+          keyword_flags: detection.keyword_flags,
+        },
+      }
+
+      // === Governance Violations ===
       const isIgnoredTool = shouldTrackAsViolation(input.tool, state.session.governance_mode)
 
       if (isIgnoredTool && state.session.governance_status === "LOCKED") {
@@ -75,7 +131,7 @@ export function createSoftGovernanceHook(
         )
       }
 
-      // Track tool call (success inferred - hook called means no exception)
+      // Track tool call health (success rate)
       newState = trackToolHealth(newState, true)
 
       // Chain break logging
@@ -109,7 +165,7 @@ export function createSoftGovernanceHook(
       }
 
       await log.debug(
-        `Soft governance: tracked ${input.tool}, turns=${newState.metrics.turn_count}, violations=${newState.metrics.violation_count}`
+        `Soft governance: tracked ${input.tool} (${toolCategory}), turns=${newState.metrics.turn_count}, violations=${newState.metrics.violation_count}`
       )
     } catch (error) {
       // P3: Never break tool execution

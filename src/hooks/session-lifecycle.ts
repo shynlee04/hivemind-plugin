@@ -1,9 +1,16 @@
 /**
- * Session Lifecycle Hook — Initialize/load brain state on session events.
+ * Session Lifecycle Hook — Prompt Compilation Engine.
  *
- * Handles:
- *   - Session start: load existing state or create fresh
- *   - System prompt injection: current hierarchy + governance status
+ * Fires EVERY turn (experimental.chat.system.transform):
+ *   - Reads all detection counters from brain.json
+ *   - Reads timestamp gaps from hierarchy.json
+ *   - Compiles detected signals into <hivemind> prompt injection
+ *   - Budget-capped (2500 chars, lowest priority dropped)
+ *   - Handles stale session auto-archival
+ *
+ * This is the PROMPT engine. It reads detection state written by
+ * soft-governance.ts (tool.execute.after) and compiles into warnings
+ * that reshape the agent's next decision.
  *
  * P3: try/catch — never break session lifecycle
  * P5: Config cached in closure
@@ -28,6 +35,19 @@ import { isSessionStale } from "../lib/staleness.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { loadAnchors } from "../lib/anchors.js"
 import { detectLongSession } from "../lib/long-session.js"
+import {
+  compileSignals,
+  formatSignals,
+  createDetectionState,
+  type DetectionState,
+} from "../lib/detection.js"
+import {
+  loadTree,
+  toAsciiTree,
+  detectGaps,
+  getTreeStats,
+  treeExists,
+} from "../lib/hierarchy-tree.js"
 
 /**
  * Creates the session lifecycle hook (system prompt transform).
@@ -107,10 +127,33 @@ export function createSessionLifecycleHook(
       // STATUS (always shown)
       statusLines.push(`Session: ${state.session.governance_status} | Mode: ${state.session.mode} | Governance: ${state.session.governance_mode}`)
 
-      // HIERARCHY (always shown)
-      if (state.hierarchy.trajectory) hierarchyLines.push(`Trajectory: ${state.hierarchy.trajectory}`)
-      if (state.hierarchy.tactic) hierarchyLines.push(`Tactic: ${state.hierarchy.tactic}`)
-      if (state.hierarchy.action) hierarchyLines.push(`Action: ${state.hierarchy.action}`)
+      // HIERARCHY: prefer tree if available, fall back to flat
+      if (treeExists(directory)) {
+        try {
+          const tree = await loadTree(directory);
+          const stats = getTreeStats(tree);
+          if (tree.root) {
+            const treeView = toAsciiTree(tree);
+            // Truncate tree view for prompt budget
+            const treeLines = treeView.split('\n');
+            if (treeLines.length > 8) {
+              hierarchyLines.push(...treeLines.slice(0, 8));
+              hierarchyLines.push(`  ... (${stats.totalNodes} nodes total)`);
+            } else {
+              hierarchyLines.push(treeView);
+            }
+          }
+        } catch {
+          // Fall back to flat if tree read fails
+          if (state.hierarchy.trajectory) hierarchyLines.push(`Trajectory: ${state.hierarchy.trajectory}`)
+          if (state.hierarchy.tactic) hierarchyLines.push(`Tactic: ${state.hierarchy.tactic}`)
+          if (state.hierarchy.action) hierarchyLines.push(`Action: ${state.hierarchy.action}`)
+        }
+      } else {
+        if (state.hierarchy.trajectory) hierarchyLines.push(`Trajectory: ${state.hierarchy.trajectory}`)
+        if (state.hierarchy.tactic) hierarchyLines.push(`Tactic: ${state.hierarchy.tactic}`)
+        if (state.hierarchy.action) hierarchyLines.push(`Action: ${state.hierarchy.action}`)
+      }
 
       // No hierarchy = prompt to declare intent
       if (!state.hierarchy.trajectory && !state.hierarchy.tactic && !state.hierarchy.action) {
@@ -121,8 +164,45 @@ export function createSessionLifecycleHook(
         }
       }
 
-      // WARNINGS (shown if present) — merged drift + tool activation into single line
-      if (state.metrics.drift_score < 50) {
+      // WARNINGS (shown if present) — detection signal compilation
+      // Read detection state from brain.json.metrics (written by soft-governance.ts)
+      const detection: DetectionState = {
+        consecutive_failures: state.metrics.consecutive_failures ?? 0,
+        consecutive_same_section: state.metrics.consecutive_same_section ?? 0,
+        last_section_content: state.metrics.last_section_content ?? "",
+        tool_type_counts: state.metrics.tool_type_counts ?? createDetectionState().tool_type_counts,
+        keyword_flags: state.metrics.keyword_flags ?? [],
+      }
+
+      // Compute timestamp gap from hierarchy tree
+      let maxGapMs: number | undefined;
+      if (treeExists(directory)) {
+        try {
+          const tree = await loadTree(directory);
+          const gaps = detectGaps(tree);
+          const staleGaps = gaps.filter(g => g.severity === "stale");
+          if (staleGaps.length > 0) {
+            maxGapMs = Math.max(...staleGaps.map(g => g.gapMs));
+          }
+        } catch {
+          // Tree read failure is non-fatal for detection
+        }
+      }
+
+      // Compile detection signals
+      const signals = compileSignals({
+        turnCount: state.metrics.turn_count,
+        detection,
+        timestampGapMs: maxGapMs,
+        maxSignals: 3,
+      })
+      const signalBlock = formatSignals(signals)
+      if (signalBlock) {
+        warningLines.push(signalBlock)
+      }
+
+      // Legacy drift warning (kept for backward compat with tests)
+      if (state.metrics.drift_score < 50 && !signals.some(s => s.type === "turn_count")) {
         warningLines.push("⚠ High drift detected. Use map_context to re-focus.")
       }
 
