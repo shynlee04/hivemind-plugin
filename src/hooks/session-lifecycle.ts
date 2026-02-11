@@ -48,6 +48,7 @@ import {
   detectGaps,
   getTreeStats,
   treeExists,
+  countCompleted,
 } from "../lib/hierarchy-tree.js"
 
 /**
@@ -178,6 +179,7 @@ export function createSessionLifecycleHook(
       // Compute timestamp gap from hierarchy tree
       let maxGapMs: number | undefined;
       let sessionFileLines: number | undefined;
+      let completedBranchCount: number | undefined;
       if (treeExists(directory)) {
         try {
           const tree = await loadTree(directory);
@@ -186,6 +188,8 @@ export function createSessionLifecycleHook(
           if (staleGaps.length > 0) {
             maxGapMs = Math.max(...staleGaps.map(g => g.gapMs));
           }
+          // Reuse loaded tree for completed branch count
+          completedBranchCount = countCompleted(tree);
         } catch {
           // Tree read failure is non-fatal for detection
         }
@@ -210,6 +214,8 @@ export function createSessionLifecycleHook(
       const signals = compileSignals({
         turnCount: state.metrics.turn_count,
         detection,
+        completedBranches: completedBranchCount,
+        hierarchyActionEmpty: state.hierarchy.action === '',
         timestampGapMs: maxGapMs,
         sessionFileLines,
         missingTree: !treeExists(directory),

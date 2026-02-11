@@ -351,6 +351,8 @@ export function compileSignals(opts: {
   detection: DetectionState;
   /** Optional: number of completed branches in tree */
   completedBranches?: number;
+  /** Optional: is hierarchy action empty while write tools have been used? */
+  hierarchyActionEmpty?: boolean;
   /** Optional: current timestamp gap severity */
   timestampGapMs?: number;
   /** Optional: is hierarchy.json missing (migration needed)? */
@@ -418,7 +420,20 @@ export function compileSignals(opts: {
     });
   }
 
-  // 6. Completed branch pileup
+  // 6. Tool-hierarchy mismatch (write without action declared)
+  if (
+    opts.hierarchyActionEmpty &&
+    opts.detection.tool_type_counts.write > 0
+  ) {
+    signals.push({
+      type: "tool_hierarchy_mismatch",
+      severity: 3,
+      message: "Writing files but no action declared in hierarchy.",
+      suggestion: "map_context",
+    });
+  }
+
+  // 7. Completed branch pileup
   if (
     opts.completedBranches !== undefined &&
     opts.completedBranches >= thresholds.completed_branch_threshold
@@ -431,7 +446,7 @@ export function compileSignals(opts: {
     });
   }
 
-  // 7. Timestamp gap (stale)
+  // 8. Timestamp gap (stale)
   if (
     opts.timestampGapMs !== undefined &&
     opts.timestampGapMs >= thresholds.stale_gap_ms
@@ -445,7 +460,7 @@ export function compileSignals(opts: {
     });
   }
 
-  // 8. Missing tree (migration needed)
+  // 9. Missing tree (migration needed)
   if (opts.missingTree) {
     signals.push({
       type: "missing_tree",
@@ -455,7 +470,7 @@ export function compileSignals(opts: {
     });
   }
 
-  // 9. Session file too long
+  // 10. Session file too long
   if (
     opts.sessionFileLines !== undefined &&
     opts.sessionFileLines >= thresholds.session_file_lines

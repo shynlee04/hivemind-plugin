@@ -300,7 +300,40 @@ function test_signal_compilation() {
     "formatSignals returns [ALERTS] block with correct format"
   );
 
-  // 14. compileSignals with sessionFileLines >= 50 returns session_file_long signal
+  // 14. compileSignals with write tools + empty action → tool_hierarchy_mismatch signal
+  {
+    const signals = compileSignals({
+      turnCount: 0,
+      detection: { ...createDetectionState(), tool_type_counts: { read: 0, write: 3, query: 0, governance: 0 } },
+      hierarchyActionEmpty: true,
+    });
+    const mismatch = signals.find(s => s.type === 'tool_hierarchy_mismatch');
+    assert(!!mismatch, 'compileSignals with write tools + empty action → tool_hierarchy_mismatch signal');
+  }
+
+  // 15. compileSignals with write tools + action set → no mismatch signal
+  {
+    const signals = compileSignals({
+      turnCount: 0,
+      detection: { ...createDetectionState(), tool_type_counts: { read: 0, write: 3, query: 0, governance: 0 } },
+      hierarchyActionEmpty: false,
+    });
+    const mismatch = signals.find(s => s.type === 'tool_hierarchy_mismatch');
+    assert(mismatch === undefined, 'compileSignals with write tools + action set → no mismatch signal');
+  }
+
+  // 16. compileSignals with empty action but no writes → no mismatch signal
+  {
+    const signals = compileSignals({
+      turnCount: 0,
+      detection: createDetectionState(),
+      hierarchyActionEmpty: true,
+    });
+    const mismatch = signals.find(s => s.type === 'tool_hierarchy_mismatch');
+    assert(mismatch === undefined, 'compileSignals with empty action but no writes → no mismatch signal');
+  }
+
+  // 17. compileSignals with sessionFileLines >= 50 returns session_file_long signal
   const longFileSignals = compileSignals({
     turnCount: 0, detection: baseDetection, sessionFileLines: 50,
   });

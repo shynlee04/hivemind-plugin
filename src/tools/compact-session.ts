@@ -167,9 +167,15 @@ export function createCompactSessionTool(directory: string): ToolDefinition {
       // Reset active.md to template
       await resetActiveMd(directory)
 
+      // Before reset — carry compaction tracking to new state
+      const compactionCount = (state.compaction_count ?? 0) + 1;
+      const compactionTime = Date.now();
+
       // Create fresh brain state (new session, locked)
       const newSessionId = generateSessionId()
       const newState = createBrainState(newSessionId, config)
+      newState.compaction_count = compactionCount;
+      newState.last_compaction_time = compactionTime;
       await stateManager.save(lockSession(newState))
 
       // Count archives for output
