@@ -1,7 +1,7 @@
 # AGENTS.md — HiveMind Context Governance
 
-**Version:** 2.0.0
-**Status:** Full architecture complete. 11 tools, 4 hooks, CLI, 386 test assertions passing.
+**Version:** 2.1.0
+**Status:** Hierarchy redesign complete. 13 tools, 4 hooks, CLI, 489 test assertions passing.
 
 ---
 
@@ -14,7 +14,7 @@ Trajectory (Level 1) → Tactic (Level 2) → Action (Level 3)
 ```
 
 **Design principles:**
-- **4 core tools + 7 extensions** — declare_intent, map_context, compact_session, self_rate, scan_hierarchy, save_anchor, think_back, check_drift, save_mem, list_shelves, recall_mems
+- **4 core tools + 9 extensions** — declare_intent, map_context, compact_session, self_rate, scan_hierarchy, save_anchor, think_back, check_drift, save_mem, list_shelves, recall_mems, hierarchy_prune, hierarchy_migrate
 - **Configurable governance** — strict / assisted / permissive modes
 - **User-driven** — no agent hierarchy, you stay in control
 - **Simple state** — 3-level hierarchy with automatic drift detection
@@ -23,9 +23,9 @@ Trajectory (Level 1) → Tactic (Level 2) → Action (Level 3)
 
 ---
 
-## Tools (11 Total)
+## Tools (13 Total)
 
-HiveMind provides 11 tools organized in 4 groups:
+HiveMind provides 13 tools organized in 5 groups:
 
 | Group | Tools | Purpose |
 |-------|-------|---------|
@@ -33,6 +33,7 @@ HiveMind provides 11 tools organized in 4 groups:
 | **Self-Awareness** | `self_rate` | Agent self-assessment |
 | **Cognitive Mesh** | `scan_hierarchy`, `save_anchor`, `think_back`, `check_drift` | Context awareness & drift detection |
 | **Mems Brain** | `save_mem`, `list_shelves`, `recall_mems` | Persistent cross-session memory |
+| **Hierarchy Ops** | `hierarchy_prune`, `hierarchy_migrate` | Tree maintenance & migration |
 
 ### Core Tools
 
@@ -244,11 +245,15 @@ HiveMind provides **soft governance** through guidance and tracking.
 ├── 10-commandments.md   # Tool design reference
 ├── sessions/
 │   ├── index.md         # Project trajectory (goals, constraints, history)
-│   ├── active.md        # Current session (hierarchy, notes)
+│   ├── active.md        # Current session (legacy fallback)
+│   ├── manifest.json    # Session registry (new)
 │   └── archive/         # Completed sessions
 │       └── session_2026-02-10_abc123.md
-├── brain.json          # Machine state (session, metrics, hierarchy)
-└── config.json         # Governance settings (mode, language)
+├── templates/
+│   └── session.md       # Session template (new)
+├── hierarchy.json       # Tree hierarchy (new — navigable, timestamp-based)
+├── brain.json           # Machine state (session, metrics, hierarchy)
+└── config.json          # Governance settings (mode, language)
 ```
 
 **Files you should read:**
@@ -410,12 +415,14 @@ This ensures that after LLM context compaction, the agent still knows what it wa
 | Self-Rate Tool | 28 | ✅ Pass |
 | Complexity Detection | 28 | ✅ Pass |
 | Integration (E2E workflow) | 74 | ✅ Pass |
-| Auto-Hooks Pure Functions | 30 | ✅ Pass |
+| Auto-Hooks Pure Functions | 36 | ✅ Pass |
 | Session Export | 32 | ✅ Pass |
 | Session Structure | 18 | ✅ Pass |
 | Round 3 Tools (Cognitive Mesh) | 32 | ✅ Pass |
 | Round 4 Mems Brain | 40 | ✅ Pass |
-| **Total** | **386** | ✅ **All Pass** |
+| Hierarchy Tree Engine | 55 | ✅ Pass |
+| Detection Engine | 42 | ✅ Pass |
+| **Total** | **489** | ✅ **All Pass** |
 
 ---
 
@@ -427,6 +434,7 @@ This ensures that after LLM context compaction, the agent still knows what it wa
 - **1.5.0** — Full architecture: Auto-hooks governance (R1), session management & auto-export (R2), cognitive mesh tools (R3), Mems Brain (R4). 11 tools, 4 hooks, 331 tests
 - **1.6.0** — Integration reality check: 6 critical bugs fixed
 - **2.0.0** — Integration hardening: 35 issues resolved, dead code removed, production gate cleanup. 11 tools, 4 hooks
+- **2.1.0** — Hierarchy redesign: navigable tree engine, detection engine, per-session files, manifest, configurable thresholds, migration path. 13 tools, 4 hooks, 489 tests
 
 ---
 
