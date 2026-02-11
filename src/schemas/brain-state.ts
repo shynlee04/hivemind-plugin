@@ -87,6 +87,7 @@ export interface BrainState {
   session: SessionState;
   hierarchy: HierarchyState;
   metrics: MetricsState;
+  /** @deprecated Dead field — preserved for schema compatibility. Never read/written at runtime. */
   sentiment_signals: SentimentSignal[];
   complexity_nudge_shown: boolean;
   /** Turn number when last commit suggestion was shown */

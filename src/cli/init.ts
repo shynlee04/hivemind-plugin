@@ -43,16 +43,32 @@ const PLUGIN_NAME = "hivemind-context-governance"
  * Adds the plugin if not already registered.
  */
 function registerPluginInConfig(directory: string, silent: boolean): void {
-  const configPath = join(directory, "opencode.json")
+  // Check both opencode.json and opencode.jsonc
+  let configPath = join(directory, "opencode.json")
+  if (!existsSync(configPath)) {
+    const jsoncPath = join(directory, "opencode.jsonc")
+    if (existsSync(jsoncPath)) {
+      configPath = jsoncPath
+    }
+  }
 
   let config: Record<string, unknown> = {}
 
   if (existsSync(configPath)) {
     try {
-      const raw = readFileSync(configPath, "utf-8")
+      let raw = readFileSync(configPath, "utf-8")
+      // Strip single-line comments for JSONC support
+      raw = raw.replace(/^\s*\/\/.*$/gm, "")
+      // Strip trailing commas before } or ]
+      raw = raw.replace(/,\s*([}\]])/g, "$1")
       config = JSON.parse(raw)
-    } catch {
-      // Malformed JSON — overwrite
+    } catch (err) {
+      // Malformed JSON — warn and preserve, don't overwrite
+      if (!silent) {
+        log(`  ⚠ Could not parse ${configPath}: ${err instanceof Error ? err.message : err}`)
+        log(`  ⚠ Creating new opencode.json (existing file preserved)`)
+      }
+      configPath = join(directory, "opencode.json")
       config = {}
     }
   }

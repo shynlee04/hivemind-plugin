@@ -747,6 +747,7 @@ function cmdSourceAudit(args) {
     'tools/list-shelves.ts': { group: 'tool', role: 'Show mem shelf overview' },
     'tools/recall-mems.ts': { group: 'tool', role: 'Search memories by query + shelf' },
     'tools/hierarchy.ts': { group: 'tool', role: 'Prune completed branches + migrate flat→tree' },
+    'tools/export-cycle.ts': { group: 'tool', role: 'Capture subagent results into hierarchy tree + mems brain' },
     'tools/index.ts': { group: 'barrel', role: 'Tool factory exports' },
     // Hooks
     'hooks/tool-gate.ts': { group: 'hook', role: 'tool.execute.before — governance enforcement (warn, not block)' },

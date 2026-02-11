@@ -2,7 +2,7 @@
  * StateManager - Disk persistence for brain state
  */
 
-import { readFile, writeFile, mkdir } from "fs/promises";
+import { readFile, writeFile, mkdir, copyFile } from "fs/promises";
 import { existsSync } from "fs";
 import { dirname, join } from "path";
 import type { BrainState } from "../schemas/brain-state.js";
@@ -35,6 +35,18 @@ export function createStateManager(projectRoot: string): StateManager {
         parsed.session.meta_key ??= "";
         parsed.session.role ??= "";
         parsed.session.by_ai ??= true;
+        // Migration: ensure Iteration 1 fields exist (hierarchy-redesign)
+        parsed.compaction_count ??= 0;
+        parsed.last_compaction_time ??= 0;
+        parsed.next_compaction_report ??= null;
+        parsed.cycle_log ??= [];
+        parsed.pending_failure_ack ??= false;
+        // Migration: ensure detection counter fields exist
+        parsed.metrics.consecutive_failures ??= 0;
+        parsed.metrics.consecutive_same_section ??= 0;
+        parsed.metrics.last_section_content ??= "";
+        parsed.metrics.keyword_flags ??= [];
+        parsed.metrics.tool_type_counts ??= { read: 0, write: 0, query: 0, governance: 0 };
         return parsed;
       } catch {
         return null;
@@ -44,6 +56,15 @@ export function createStateManager(projectRoot: string): StateManager {
     async save(state: BrainState): Promise<void> {
       try {
         await mkdir(dirname(brainPath), { recursive: true });
+        // Backup before overwrite — prevents silent state loss from corruption
+        if (existsSync(brainPath)) {
+          const bakPath = brainPath + ".bak";
+          try {
+            await copyFile(brainPath, bakPath);
+          } catch {
+            // Non-fatal — proceed with save even if backup fails
+          }
+        }
         await writeFile(brainPath, JSON.stringify(state, null, 2));
       } catch (error) {
         throw new Error(`Failed to save brain state: ${error}`);

@@ -15,7 +15,7 @@
  * - activePath in PlanningPaths still works (resolves to active session file)
  */
 
-import { readFile, writeFile, mkdir, readdir } from "fs/promises";
+import { readFile, writeFile, mkdir, readdir, unlink } from "fs/promises";
 import { existsSync } from "fs";
 import { join } from "path";
 import { parse, stringify } from "yaml";
@@ -548,7 +548,7 @@ export async function archiveSession(
 
       // Remove source if it exists and is different from dest
       if (existsSync(srcPath)) {
-        await writeFile(srcPath, ""); // Clear source
+        await unlink(srcPath); // Delete archived session file
       }
     } catch {
       // Fallback: just write to archive with legacy naming

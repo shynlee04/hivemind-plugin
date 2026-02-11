@@ -31,6 +31,7 @@ const EXEMPT_TOOLS = new Set([
   "declare_intent", "map_context", "compact_session", "self_rate",
   "scan_hierarchy", "save_anchor", "think_back", "check_drift",
   "save_mem", "list_shelves", "recall_mems",
+  "hierarchy_prune", "hierarchy_migrate", "export_cycle",
   // OpenCode innate read-only tools
   "read", "grep", "glob",
   // OpenCode innate utility tools (can't block these meaningfully)

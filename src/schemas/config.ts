@@ -78,12 +78,17 @@ export const DEFAULT_CONFIG: HiveMindConfig = {
 };
 
 export function createConfig(overrides: Partial<HiveMindConfig> = {}): HiveMindConfig {
+  const overrideBehavior = overrides.agent_behavior;
   return {
     ...DEFAULT_CONFIG,
     ...overrides,
     agent_behavior: {
       ...DEFAULT_AGENT_BEHAVIOR,
-      ...overrides.agent_behavior,
+      ...overrideBehavior,
+      constraints: {
+        ...DEFAULT_AGENT_BEHAVIOR.constraints,
+        ...(overrideBehavior?.constraints),
+      },
     },
   };
 }

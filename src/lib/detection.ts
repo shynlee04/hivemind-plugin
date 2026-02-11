@@ -137,6 +137,7 @@ const TOOL_PATTERNS: Record<ToolCategory, RegExp[]> = {
     /^recall_mems$/i,
     /^hierarchy_prune$/i,
     /^hierarchy_migrate$/i,
+    /^export_cycle$/i,
   ],
 };
 
