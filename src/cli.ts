@@ -31,16 +31,18 @@ Commands:
   init          Same as default — initialize project
   status        Show current session and governance state
   compact       Archive current session and reset
-  dashboard     Launch dashboard server
+  dashboard     Launch live TUI dashboard
   help          Show this help message
 
 Options:
   --lang <en|vi>           Language (default: en)
   --mode <permissive|assisted|strict>  Governance mode (default: assisted)
+  --automation <manual|guided|assisted|full|retard>  Automation level (default: assisted)
   --expert <beginner|intermediate|advanced|expert>  Expert level (default: intermediate)
   --style <explanatory|outline|skeptical|architecture|minimal>  Output style (default: explanatory)
   --code-review            Require code review before accepting
   --tdd                    Enforce test-driven development
+  --refresh <seconds>      Dashboard refresh interval (default: 2)
 
 Examples:
   npx hivemind-context-governance
@@ -71,6 +73,7 @@ async function showStatus(directory: string): Promise<void> {
 │ Status:  ${state.session.governance_status.padEnd(30)}│
 │ Mode:    ${state.session.mode.padEnd(30)}│
 │ Govern:  ${config.governance_mode.padEnd(30)}│
+│ Auto:    ${config.automation_level.padEnd(30)}│
 ├─ Hierarchy ──────────────────────────────┤
 │ Trajectory: ${(state.hierarchy.trajectory || "(none)").padEnd(27)}│
 │ Tactic:     ${(state.hierarchy.tactic || "(none)").padEnd(27)}│
@@ -120,6 +123,8 @@ async function main(): Promise<void> {
         language: (flags["lang"] as "en" | "vi") ?? undefined,
         governanceMode:
           (flags["mode"] as "permissive" | "assisted" | "strict") ?? undefined,
+        automationLevel:
+          (flags["automation"] as "manual" | "guided" | "assisted" | "full" | "retard") ?? undefined,
         expertLevel: (flags["expert"] as "beginner" | "intermediate" | "advanced" | "expert") ?? undefined,
         outputStyle: (flags["style"] as "explanatory" | "outline" | "skeptical" | "architecture" | "minimal") ?? undefined,
         requireCodeReview: "code-review" in flags,
@@ -137,25 +142,14 @@ async function main(): Promise<void> {
       break
 
     case "dashboard": {
-      // Lazy-load dashboard to avoid pulling heavy deps on init/status
-      const { createDashboardServer } = await import("./dashboard/server.js")
-      const port = flags["port"] ? parseInt(flags["port"], 10) : undefined
-      const server = createDashboardServer(directory, { port })
       try {
-        await server.start()
-        // eslint-disable-next-line no-console
-        console.log(`HiveMind Dashboard running at ${server.url}`)
-        // eslint-disable-next-line no-console
-        console.log(`\nPress Ctrl+C to stop`)
-
-        // Keep running until interrupted
-        await new Promise(() => {
-          process.on("SIGINT", async () => {
-            // eslint-disable-next-line no-console
-            console.log("\nShutting down...")
-            await server.stop()
-            process.exit(0)
-          })
+        const { runDashboardTui } = await import("./dashboard/server.js")
+        const refreshSeconds = flags["refresh"]
+          ? Math.max(0.5, parseFloat(flags["refresh"]))
+          : 2
+        await runDashboardTui(directory, {
+          language: (flags["lang"] as "en" | "vi") ?? "en",
+          refreshMs: Math.round(refreshSeconds * 1000),
         })
       } catch (err) {
         // eslint-disable-next-line no-console
