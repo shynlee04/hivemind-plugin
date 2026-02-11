@@ -1,7 +1,7 @@
 # AGENTS.md — HiveMind Context Governance
 
-**Version:** 1.5.0
-**Status:** Full architecture complete. 11 tools, 4 hooks, CLI, 331 test assertions passing.
+**Version:** 2.0.0
+**Status:** Full architecture complete. 11 tools, 4 hooks, CLI, 386 test assertions passing.
 
 ---
 
@@ -23,7 +23,18 @@ Trajectory (Level 1) → Tactic (Level 2) → Action (Level 3)
 
 ---
 
-## The 3 Tools
+## Tools (11 Total)
+
+HiveMind provides 11 tools organized in 4 groups:
+
+| Group | Tools | Purpose |
+|-------|-------|---------|
+| **Core** | `declare_intent`, `map_context`, `compact_session` | Session lifecycle |
+| **Self-Awareness** | `self_rate` | Agent self-assessment |
+| **Cognitive Mesh** | `scan_hierarchy`, `save_anchor`, `think_back`, `check_drift` | Context awareness & drift detection |
+| **Mems Brain** | `save_mem`, `list_shelves`, `recall_mems` | Persistent cross-session memory |
+
+### Core Tools
 
 ### 1. `declare_intent` — Start Your Session
 
@@ -160,7 +171,7 @@ HiveMind has 3 modes configured at init time:
 | **permissive** | Session always OPEN. Silent tracking only. | Maximum autonomy |
 
 **Current mode is shown in:**
-- System prompt injection (`<hivemind-governance>` block)
+- System prompt injection (`<hivemind>` block)
 - `hivemind status` CLI output
 - Brain state: `session.governance_mode`
 
@@ -317,14 +328,14 @@ Follow these guidelines when committing:
 **Plugin registration** (in `opencode.json`):
 ```json
 {
-  "plugins": [".worktrees/hivemind-context-governance"]
+  "plugin": ["hivemind-context-governance"]
 }
 ```
 
 **Hooks fire automatically:**
 - `tool.execute.before` — Governance enforcement
 - `tool.execute.after` — Tracking & drift detection
-- `experimental.chat.system.transform` — Injects `<hivemind-governance>` block
+- `experimental.chat.system.transform` — Injects `<hivemind>` block
 - `experimental.session.compacting` — Preserves hierarchy across compaction
 
 ---
@@ -395,14 +406,16 @@ This ensures that after LLM context compaction, the agent still knows what it wa
 | Schema (BrainState, Hierarchy) | 35 | ✅ Pass |
 | Init + Planning FS | 30 | ✅ Pass |
 | Tool Gate (governance) | 12 | ✅ Pass |
+| Soft Governance (tracking) | 27 | ✅ Pass |
 | Self-Rate Tool | 28 | ✅ Pass |
+| Complexity Detection | 28 | ✅ Pass |
 | Integration (E2E workflow) | 74 | ✅ Pass |
 | Auto-Hooks Pure Functions | 30 | ✅ Pass |
 | Session Export | 32 | ✅ Pass |
 | Session Structure | 18 | ✅ Pass |
 | Round 3 Tools (Cognitive Mesh) | 32 | ✅ Pass |
 | Round 4 Mems Brain | 40 | ✅ Pass |
-| **Total** | **331** | ✅ **All Pass** |
+| **Total** | **386** | ✅ **All Pass** |
 
 ---
 
@@ -412,6 +425,8 @@ This ensures that after LLM context compaction, the agent still knows what it wa
 - **1.2.0** — 8 bug fixes, self-rate tool (4th tool), sentiment regex, standalone packaging, 131 tests
 - **1.4.0** — Migrated from `.opencode/planning/` to `.hivemind/` directory structure, added 10 Commandments, 132 tests
 - **1.5.0** — Full architecture: Auto-hooks governance (R1), session management & auto-export (R2), cognitive mesh tools (R3), Mems Brain (R4). 11 tools, 4 hooks, 331 tests
+- **1.6.0** — Integration reality check: 6 critical bugs fixed
+- **2.0.0** — Integration hardening: 35 issues resolved, dead code removed, production gate cleanup. 11 tools, 4 hooks
 
 ---
 

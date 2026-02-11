@@ -6,7 +6,7 @@ export * from "./logging.js";
 export * from "./persistence.js";
 export * from "./planning-fs.js";
 export * from "./sentiment.js";
-export * from "./context-refresh.js";
+// context-refresh.ts: deleted (dead code). Preserved in git history.
 export * from "./complexity.js";
 export * from "./staleness.js";
 export * from "./chain-analysis.js";

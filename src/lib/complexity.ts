@@ -10,12 +10,14 @@
 
 import type { BrainState } from "../schemas/brain-state.js";
 
-export interface ComplexityThreshold {
+/** @internal — only checkComplexity() is consumed externally */
+interface ComplexityThreshold {
   maxFiles: number;
   maxTurns: number;
 }
 
-export interface ComplexityCheckResult {
+/** @internal */
+interface ComplexityCheckResult {
   isComplex: boolean;
   filesCount: number;
   turnsCount: number;
@@ -24,7 +26,8 @@ export interface ComplexityCheckResult {
 }
 
 /** Default complexity threshold */
-export const DEFAULT_COMPLEXITY_THRESHOLD: ComplexityThreshold = {
+/** @internal */
+const DEFAULT_COMPLEXITY_THRESHOLD: ComplexityThreshold = {
   maxFiles: 3,
   maxTurns: 5,
 };
@@ -63,34 +66,5 @@ export function checkComplexity(
 /**
  * Check if nudge should be shown (only once per session)
  */
-export function shouldShowComplexityNudge(
-  state: BrainState,
-  nudgeShown: boolean
-): boolean {
-  if (nudgeShown) return false;
-  
-  const check = checkComplexity(state);
-  return check.isComplex;
-}
-
-/**
- * Format complexity for display
- */
-export function formatComplexity(state: BrainState): string {
-  const check = checkComplexity(state);
-  return `${check.filesCount} files, ${check.turnsCount} turns`;
-}
-
-/**
- * Get complexity percentage (0-100)
- * Based on how close to thresholds
- */
-export function getComplexityPercentage(
-  state: BrainState,
-  threshold: ComplexityThreshold = DEFAULT_COMPLEXITY_THRESHOLD
-): number {
-  const filesRatio = state.metrics.files_touched.length / threshold.maxFiles;
-  const turnsRatio = state.metrics.turn_count / threshold.maxTurns;
-  const maxRatio = Math.max(filesRatio, turnsRatio);
-  return Math.min(100, Math.round(maxRatio * 100));
-}
+// Dead functions removed: shouldShowComplexityNudge, formatComplexity, getComplexityPercentage
+// Preserved in git history — re-add when needed.

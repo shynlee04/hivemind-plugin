@@ -6,12 +6,8 @@
 export type HierarchyLevel = "trajectory" | "tactic" | "action";
 export type ContextStatus = "pending" | "active" | "complete" | "blocked";
 
-export interface ContextMap {
-  level: HierarchyLevel;
-  content: string;
-  status: ContextStatus;
-  timestamp: number;
-}
+// Dead interface removed: ContextMap
+// Preserved in git history — re-add when hierarchy mapping is needed.
 
 export interface HierarchyState {
   trajectory: string;
@@ -35,18 +31,8 @@ export function updateHierarchyLevel(
   return { ...state, [level]: content };
 }
 
-export function validateHierarchyTransition(
-  current: HierarchyLevel | "complete",
-  next: HierarchyLevel
-): boolean {
-  const levels: HierarchyLevel[] = ["trajectory", "tactic", "action"];
-  const currentIndex = levels.indexOf(current as HierarchyLevel);
-  const nextIndex = levels.indexOf(next);
-  
-  // Allow same level or moving down (more specific)
-  // Allow moving up only if current is complete
-  return nextIndex >= currentIndex || current === "complete";
-}
+// Dead function removed: validateHierarchyTransition
+// Preserved in git history — re-add when hierarchy validation is needed.
 
 export function getLevelDepth(level: HierarchyLevel): number {
   const depths: Record<HierarchyLevel, number> = {

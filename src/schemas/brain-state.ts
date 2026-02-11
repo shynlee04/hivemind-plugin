@@ -226,38 +226,8 @@ export function addSelfRating(
   };
 }
 
-export function trackToolCall(
-  state: BrainState,
-  success: boolean
-): BrainState {
-  const total = state.metrics.total_tool_calls + 1;
-  const successful = success 
-    ? state.metrics.successful_tool_calls + 1 
-    : state.metrics.successful_tool_calls;
-  const healthScore = total > 0 ? Math.round((successful / total) * 100) : 100;
-  
-  return {
-    ...state,
-    metrics: {
-      ...state.metrics,
-      total_tool_calls: total,
-      successful_tool_calls: successful,
-      auto_health_score: healthScore,
-    },
-  };
-}
-
-export function addSentimentSignals(
-  state: BrainState,
-  signals: SentimentSignal[]
-): BrainState {
-  if (signals.length === 0) return state;
-  
-  return {
-    ...state,
-    sentiment_signals: [...state.sentiment_signals, ...signals],
-  };
-}
+// Dead functions removed: trackToolCall, addSentimentSignals
+// Preserved in git history — re-add when sentiment pipeline is wired.
 
 export function setComplexityNudgeShown(state: BrainState): BrainState {
   return {
