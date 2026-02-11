@@ -17,7 +17,17 @@ import {
   createBrainState,
   generateSessionId,
 } from "../schemas/brain-state.js"
-import { initializePlanningDirectory } from "../lib/planning-fs.js"
+import {
+  archiveSession,
+  initializePlanningDirectory,
+  readActiveMd,
+  resetActiveMd,
+  updateIndexMd,
+} from "../lib/planning-fs.js"
+import { isSessionStale } from "../lib/staleness.js"
+import { detectChainBreaks } from "../lib/chain-analysis.js"
+import { shouldSuggestCommit } from "../lib/commit-advisor.js"
+import { getToolActivation } from "../lib/tool-activation.js"
 
 /**
  * Creates the session lifecycle hook (system prompt transform).
@@ -54,6 +64,38 @@ export function createSessionLifecycleHook(
         await stateManager.save(state)
       }
 
+      // Time-to-Stale: auto-archive if session idle > configured days
+      if (state && isSessionStale(state, config.stale_session_days)) {
+        try {
+          const activeMd = await readActiveMd(directory);
+          const archiveContent = [
+            `# Auto-Archived (Stale): ${state.session.id}`,
+            "",
+            `**Reason**: Session idle > ${config.stale_session_days} days`,
+            `**Mode**: ${state.session.mode}`,
+            `**Last Activity**: ${new Date(state.session.last_activity).toISOString()}`,
+            `**Archived**: ${new Date().toISOString()}`,
+            `**Turns**: ${state.metrics.turn_count}`,
+            "",
+            "## Session Content",
+            activeMd.body,
+          ].filter(Boolean).join("\n");
+
+          await archiveSession(directory, state.session.id, archiveContent);
+          await updateIndexMd(directory, `[auto-archived: stale] ${state.session.id}`);
+          await resetActiveMd(directory);
+
+          // Create fresh session
+          const newId = generateSessionId();
+          state = createBrainState(newId, config);
+          await stateManager.save(state);
+
+          await log.info(`Auto-archived stale session ${state.session.id}`);
+        } catch (archiveError) {
+          await log.error(`Failed to auto-archive stale session: ${archiveError}`);
+        }
+      }
+
       const lines: string[] = []
       lines.push("<hivemind-governance>")
 
@@ -71,6 +113,15 @@ export function createSessionLifecycleHook(
       }
       if (state.hierarchy.action) {
         lines.push(`Action: ${state.hierarchy.action}`)
+      }
+
+      // Chain Break Detection
+      const chainBreaks = detectChainBreaks(state);
+      if (chainBreaks.length > 0) {
+        lines.push("⚠ Chain breaks detected:");
+        for (const brk of chainBreaks) {
+          lines.push(`  - ${brk.message}`);
+        }
       }
 
       // No hierarchy = prompt to declare intent
@@ -95,11 +146,23 @@ export function createSessionLifecycleHook(
         `Turns: ${state.metrics.turn_count} | Drift: ${state.metrics.drift_score}/100 | Files: ${state.metrics.files_touched.length}`
       )
 
+      // Commit suggestion
+      const commitSuggestion = shouldSuggestCommit(state, config.commit_suggestion_threshold);
+      if (commitSuggestion) {
+        lines.push(`💡 ${commitSuggestion.reason}`);
+      }
+
       // Drift warning
       if (state.metrics.drift_score < 50) {
         lines.push(
           "⚠ High drift detected. Use map_context to re-focus."
         )
+      }
+
+      // Tool activation hint
+      const toolHint = getToolActivation(state);
+      if (toolHint) {
+        lines.push(`🔧 Suggested: ${toolHint.tool} — ${toolHint.reason}`);
       }
 
       lines.push("</hivemind-governance>")

@@ -14,7 +14,9 @@
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import { createStateManager } from "../lib/persistence.js"
-import { addViolationCount, incrementTurnCount } from "../schemas/brain-state.js"
+import { addViolationCount, incrementTurnCount, setLastCommitSuggestionTurn } from "../schemas/brain-state.js"
+import { detectChainBreaks } from "../lib/chain-analysis.js"
+import { shouldSuggestCommit } from "../lib/commit-advisor.js"
 
 /**
  * Creates the soft governance hook for tool execution tracking.
@@ -27,7 +29,7 @@ import { addViolationCount, incrementTurnCount } from "../schemas/brain-state.js
 export function createSoftGovernanceHook(
   log: Logger,
   directory: string,
-  _config: HiveMindConfig  // Reserved for future drift thresholds
+  config: HiveMindConfig
 ) {
   const stateManager = createStateManager(directory)
   const MAX_TURNS_BEFORE_WARNING = 5
@@ -78,6 +80,21 @@ export function createSoftGovernanceHook(
 
       // Save updated state
       await stateManager.save(newState)
+
+      // Chain break logging
+      const chainBreaks = detectChainBreaks(newState);
+      if (chainBreaks.length > 0) {
+        await log.warn(
+          `Chain breaks: ${chainBreaks.map(b => b.message).join("; ")}`
+        );
+      }
+
+      // Track commit suggestion timing
+      const commitSuggestion = shouldSuggestCommit(newState, config.commit_suggestion_threshold);
+      if (commitSuggestion) {
+        newState = setLastCommitSuggestionTurn(newState, newState.metrics.turn_count);
+        await stateManager.save(newState);
+      }
 
       // Log drift warnings if detected
       if (driftWarning) {
