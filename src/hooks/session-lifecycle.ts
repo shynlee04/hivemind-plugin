@@ -51,7 +51,7 @@ export function createSessionLifecycleHook(
   const BUDGET_CHARS = 1000
 
   return async (
-    input: { sessionID?: string },
+    input: { sessionID?: string; model?: any },
     output: { system: string[] }
   ): Promise<void> => {
     try {
