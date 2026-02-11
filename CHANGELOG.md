@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.6.0] - 2026-02-12
+
+### Added
+- **Ink-based TUI dashboard** (`hivemind dashboard`) replacing the old REST dashboard backend
+- **Live governance panels** in TUI: session, hierarchy, metrics, escalation alerts, and traceability
+- **Bilingual dashboard mode (EN/VI)** with runtime toggle (`l`) and manual refresh (`r`)
+- **Traceability in TUI**: current timestamp, active session timeline, and current git hash
+- **Semantic validation in `ecosystem-check`**: hierarchy chain integrity + stamp validation
+- **Trace metadata in `ecosystem-check --json`**: `trace.time` and `trace.git_hash`
+- **New test suites**: dashboard TUI (9 assertions), ecosystem-check CLI (8 assertions)
+
+### Changed
+- `hivemind init` CLI wiring now accepts `--automation <manual|guided|assisted|full|retard>`
+- `hivemind status` now shows automation level
+- `hivemind dashboard` now launches the TUI with `--lang` and `--refresh` options
+- `README.md` coverage and command docs updated to current state
+
+### Removed
+- Obsolete cleanup artifacts: `.npmignore`, `tasks/`, and `docs/archive/historical-plans/`
+
 ## [2.5.0] - 2026-02-12
 
 ### Added

@@ -1,9 +1,9 @@
 # HiveMind Master Plan — Living Document
 
 **Created:** 2026-02-12
-**Last Updated:** 2026-02-12 (Iteration 5 COMPLETE)
-**Status:** ACTIVE — Iteration 5 complete, Evidence Gate System deployed
-**Branch:** `master`
+**Last Updated:** 2026-02-12 (Iteration 6 COMPLETE)
+**Status:** ACTIVE — Iteration 6 complete, Ink TUI dashboard + semantic validation + cleanup
+**Branch:** `dev/iteration-6-tui-cleanup` (off master `212e15e`)
 
 **Source of truth references:**
 - Architecture: `docs/plans/2026-02-11-hierarchy-redesign.md` (651 lines)
@@ -105,7 +105,9 @@ Even with perfect tools, they need activation WITHOUT agent cooperation:
 | export_cycle tool + auto-capture hook | `src/tools/export-cycle.ts`, `src/hooks/soft-governance.ts` | ~130 | 36 |
 | Per-session stamp files + manifest | `planning-fs.ts` + `declare-intent.ts` | — | — |
 | Entry chain tests (JSONC, re-init, config, AGENTS.md) | `tests/entry-chain.test.ts` | — | 69 |
-| **TOTAL** | **43 source files** | — | **688 assertions** |
+| Ink TUI dashboard (5 panels, bilingual EN/VI, 2s poll) | `src/dashboard/server.ts` | ~564 | 9 |
+| Semantic validation in ecosystem-check | `bin/hivemind-tools.cjs` | — | 8 |
+| **TOTAL** | **43 source files** | — | **705 assertions** |
 
 ### Iteration 1 Gaps — RESOLVED in code (verified 2026-02-12)
 
@@ -451,7 +453,9 @@ hivemind-plugin/
 │   ├── session-structure.test.ts      # 18 assertions
 │   ├── soft-governance.test.ts        # 27 assertions
 │   ├── tool-gate.test.ts             # 12 assertions
-│   └── cycle-intelligence.test.ts   # 36 assertions
+│   ├── cycle-intelligence.test.ts   # 36 assertions
+│   ├── dashboard-tui.test.ts        # 9 assertions — TUI snapshot panels, bilingual strings
+│   └── ecosystem-check.test.ts      # 8 assertions — semantic validation pass/fail, trace metadata
 ├── AGENTS.md                          # Ground truth for what exists in codebase
 ├── CHANGELOG.md                       # User-facing changes
 ├── package.json                       # npm package config
@@ -471,7 +475,7 @@ hivemind-plugin/
 │       └── SKILL.md                      # Decision flowchart, auto-capture, subagent prompt engineering
 ```
 
-**43 source files. 5 skill files. 17 test files. 644 assertions. 0 orphans.**
+**43 source files. 5 skill files. 20 test files. 705 assertions. 0 orphans.**
 
 ---
 
@@ -531,7 +535,8 @@ hivemind-plugin/
 | 3 | 2026-02-12 | Production integrity — fix logic failures L1-L14 | **COMPLETE.** 10/14 fixed (L1-5, L8-12, L14). L6 blocked (npm login), L7+L13 deferred to Iteration 4. Hooks read config from disk (Rule 6). Tool-gate deduped. Dead code removed. README bilingual. CHANGELOG complete. | 621 |
 | 4 | 2026-02-12 | Agent behavioral activation (L7) — zero-cooperation bootstrap | **COMPLETE.** Behavioral bootstrap in system prompt (teaches agent HiveMind on first 2 LOCKED turns, budget expanded to 4000 chars). AGENTS.md/CLAUDE.md auto-injection during `hivemind init` (idempotent, marker-based). L7 solved, L13 partially solved. +23 assertions. | 644 |
 | 5 | 2026-02-12 | Evidence Gate System — escalating prompt pressure + argument-back | **COMPLETE.** 4 escalation tiers (INFO→WARN→CRITICAL→DEGRADED), evidence-based signals with counter-excuses, "I am retard" mode (5 automation levels), write-without-read FileGuard tracking, `compileEscalatedSignals()` replaces `compileSignals()` in prompt injection. +44 assertions. | 688 |
-| 6+ | PENDING | npm publish, stress testing, real OpenCode validation | — | — |
+| 6 | 2026-02-12 | Ink TUI dashboard + semantic validation + cleanup | **COMPLETE.** Ink-based TUI replacing HTTP dashboard (5 panels: session, hierarchy, metrics, alerts, traceability). Bilingual EN/VI with live toggle. Semantic chain validation in `ecosystem-check`. Cleanup: deleted `.npmignore`, `tasks/`, `historical-plans/`, `this-is-the-session5.md`. Version bumped to 2.6.0. +17 assertions. | 705 |
+| 7+ | PENDING | npm publish, stress testing, real OpenCode validation, 3-approach matrix integration testing | — | — |
 
 ---
 

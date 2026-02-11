@@ -2,7 +2,7 @@
 
 A lightweight context governance layer for [OpenCode](https://opencode.ai) that prevents drift, manages session state, and preserves memory across agent lifecycles.
 
-**14 tools** | **4 hooks** | **5 automation levels** | **688 test assertions**
+**14 tools** | **4 hooks** | **5 automation levels** | **Ink TUI dashboard** | **705 test assertions**
 
 ## Quick Start
 
@@ -134,7 +134,9 @@ Configuration is stored in `.hivemind/config.json` and re-read from disk on ever
 ```bash
 npx hivemind init              # Initialize HiveMind in a project
 npx hivemind init --mode strict # Initialize with strict governance
+npx hivemind init --automation retard # "I am retard — lead me"
 npx hivemind status            # Check current state
+npx hivemind dashboard --lang vi --refresh 1 # Live TUI dashboard
 npx hivemind help              # Show help
 npx hivemind --help            # Show help
 ```
@@ -142,6 +144,7 @@ npx hivemind --help            # Show help
 ### Ecosystem Verification (`bin/hivemind-tools.cjs`)
 
 ```bash
+node bin/hivemind-tools.cjs ecosystem-check # Full truth check + semantic validation + trace metadata
 node bin/hivemind-tools.cjs source-audit    # Verify all source files
 node bin/hivemind-tools.cjs list-tools      # List all 14 tools
 node bin/hivemind-tools.cjs list-hooks      # List all 4 hooks
@@ -201,7 +204,7 @@ node bin/hivemind-tools.cjs verify-package  # Check npm package completeness
 | Soft Governance (tracking) | 27 |
 | Self-Rate Tool | 28 |
 | Complexity Detection | 28 |
-| Integration (E2E workflow) | 74 |
+| Integration (E2E workflow) | 84 |
 | Auto-Hooks Pure Functions | 39 |
 | Session Export | 32 |
 | Session Structure | 18 |
@@ -209,10 +212,13 @@ node bin/hivemind-tools.cjs verify-package  # Check npm package completeness
 | Round 4 Mems Brain | 40 |
 | Hierarchy Tree Engine | 55 |
 | Detection Engine | 45 |
+| Evidence Gate System | 44 |
 | Compact Purification | 34 |
-| Entry Chain (E2E lifecycle) | 56 |
+| Entry Chain (E2E lifecycle) | 69 |
 | Cycle Intelligence | 36 |
-| **Total** | **621** |
+| Dashboard TUI | 9 |
+| Ecosystem Check CLI | 8 |
+| **Total** | **705** |
 
 ## License
 

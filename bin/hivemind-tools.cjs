@@ -35,6 +35,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -68,6 +69,21 @@ function resolveDir(args) {
 
 function hasFlag(args, flag) {
   return args.includes(flag);
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function getGitHash(dir) {
+  try {
+    const out = execSync(`git -C "${dir}" rev-parse --short HEAD`, {
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).toString('utf-8').trim();
+    return out || 'unknown';
+  } catch {
+    return 'unknown';
+  }
 }
 
 function printResult(data, args) {
@@ -619,6 +635,10 @@ function cmdEcosystemCheck(args) {
   const dir = resolveDir(args);
   const paths = getHiveMindPaths(dir);
   const chain = [];
+  const trace = {
+    time: nowIso(),
+    git_hash: getGitHash(dir),
+  };
   let healthy = true;
 
   // 1. INSTALL: Plugin file exists on disk
@@ -702,15 +722,54 @@ function cmdEcosystemCheck(args) {
   // 8. TOOLS: Count registered tools
   const indexTs = safeReadFile(path.join(dir, 'src', 'index.ts'));
   if (indexTs) {
-    const toolMatches = indexTs.match(/tool:\s*{/g);
     const toolEntries = indexTs.match(/\w+:\s*create\w+Tool/g);
     chain.push({ step: 'tools', status: 'pass', detail: `${toolEntries ? toolEntries.length : '?'} tools registered` });
   } else {
     chain.push({ step: 'tools', status: 'warn', detail: 'No src/index.ts (may be installed package)' });
   }
 
+  // 9. SEMANTIC: Hierarchy relationship + stamp integrity
+  if (exists(paths.hierarchy)) {
+    const tree = safeReadJSON(paths.hierarchy);
+    if (!tree || typeof tree !== 'object') {
+      chain.push({ step: 'semantic', status: 'fail', detail: 'hierarchy.json is unreadable' });
+      healthy = false;
+    } else {
+      const chainIssues = validateHierarchyChain(tree);
+      const stampIssues = [];
+      const stamps = collectStamps(tree.root);
+      for (const entry of stamps) {
+        if (!isValidStamp(entry.stamp)) {
+          stampIssues.push(`Invalid stamp ${entry.stamp} on ${entry.id}`);
+        }
+      }
+      const issues = [...chainIssues, ...stampIssues];
+      if (issues.length === 0) {
+        chain.push({
+          step: 'semantic',
+          status: 'pass',
+          detail: `chain+stamps valid (${stamps.length} nodes)`,
+        });
+      } else {
+        chain.push({
+          step: 'semantic',
+          status: 'fail',
+          detail: `${issues.length} issue(s): ${issues.slice(0, 2).join('; ')}`,
+          issues,
+        });
+        healthy = false;
+      }
+    }
+  } else {
+    chain.push({
+      step: 'semantic',
+      status: 'pass',
+      detail: 'No hierarchy tree yet (fresh or flat session)',
+    });
+  }
+
   if (hasFlag(args, '--json')) {
-    printResult({ chain, healthy }, args);
+    printResult({ chain, trace, healthy }, args);
     return;
   }
 
@@ -720,6 +779,9 @@ function cmdEcosystemCheck(args) {
     const icon = step.status === 'pass' ? '✓' : step.status === 'warn' ? '⚠' : '✗';
     console.log(`  ${icon} ${step.step}: ${step.detail}`);
   }
+  console.log('');
+  console.log(`Trace time: ${trace.time}`);
+  console.log(`Git hash:   ${trace.git_hash}`);
   console.log('');
   console.log(healthy ? '✅ Ecosystem healthy' : '❌ Issues found — see above');
 }
@@ -783,7 +845,7 @@ function cmdSourceAudit(args) {
     // Entry
     'index.ts': { group: 'entry', role: 'Plugin entry — register all tools + hooks' },
     // Dashboard
-    'dashboard/server.ts': { group: 'dashboard', role: 'Optional dashboard server (unused?)' },
+    'dashboard/server.ts': { group: 'dashboard', role: 'Ink TUI dashboard — live governance panels, bilingual EN/VI, 2s polling' },
   };
 
   // Walk src/ and check against map
@@ -1312,7 +1374,7 @@ Validation:
   validate stamps [dir]          Check all timestamps parse correctly
 
 Ecosystem:
-  ecosystem-check [dir]          Full chain verification
+  ecosystem-check [dir]          Full chain + semantic validation + trace metadata
   source-audit [dir]             Audit src/ for responsibilities
   filetree [dir]                 Show .hivemind/ file tree
   help                           This message

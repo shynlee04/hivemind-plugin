@@ -1,7 +1,7 @@
 # AGENTS.md — HiveMind Context Governance
 
-**Version:** 2.5.0
-**Status:** Iteration 5 complete. 14 tools, 4 hooks, CLI, 5 skills, 688 test assertions passing.
+**Version:** 2.6.0
+**Status:** Iteration 6 complete. 14 tools, 4 hooks, CLI, 5 skills, Ink TUI dashboard, 705 test assertions passing.
 
 ---
 

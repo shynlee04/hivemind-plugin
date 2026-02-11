@@ -352,9 +352,9 @@ export async function initProject(
     log(`Status: ${state.session.governance_status}`)
     log("")
 
-    if (governanceMode === "strict") {
+    if (config.governance_mode === "strict") {
       log("🔒 STRICT MODE — agents must call declare_intent before writing.")
-    } else if (governanceMode === "assisted") {
+    } else if (config.governance_mode === "assisted") {
       log("🔔 ASSISTED MODE — agents get warnings but can proceed.")
     } else {
       log("🟢 PERMISSIVE MODE — agents work freely, activity tracked.")
