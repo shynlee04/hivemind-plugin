@@ -45,6 +45,8 @@ export interface BrainState {
   metrics: MetricsState;
   sentiment_signals: SentimentSignal[];
   complexity_nudge_shown: boolean;
+  /** Turn number when last commit suggestion was shown */
+  last_commit_suggestion_turn: number;
   version: string;
 }
 
@@ -90,6 +92,7 @@ export function createBrainState(
     },
     sentiment_signals: [],
     complexity_nudge_shown: false,
+    last_commit_suggestion_turn: 0,
     version: BRAIN_STATE_VERSION,
   };
 }
@@ -255,6 +258,13 @@ export function resetComplexityNudge(state: BrainState): BrainState {
   return {
     ...state,
     complexity_nudge_shown: false,
+  };
+}
+
+export function setLastCommitSuggestionTurn(state: BrainState, turn: number): BrainState {
+  return {
+    ...state,
+    last_commit_suggestion_turn: turn,
   };
 }
 

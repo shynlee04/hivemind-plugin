@@ -41,6 +41,10 @@ export interface HiveMindConfig {
   max_turns_before_warning: number;
   max_active_md_lines: number;
   auto_compact_on_turns: number;
+  /** Days of inactivity before auto-archiving session */
+  stale_session_days: number;
+  /** Files touched threshold before suggesting a commit */
+  commit_suggestion_threshold: number;
   /** Agent behavior configuration - injected into every session */
   agent_behavior: AgentBehaviorConfig;
 }
@@ -64,6 +68,8 @@ export const DEFAULT_CONFIG: HiveMindConfig = {
   max_turns_before_warning: 5,
   max_active_md_lines: 50,
   auto_compact_on_turns: 20,
+  stale_session_days: 3,
+  commit_suggestion_threshold: 5,
   agent_behavior: DEFAULT_AGENT_BEHAVIOR,
 };
 
