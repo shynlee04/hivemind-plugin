@@ -9,3 +9,11 @@ coverage/
 .hivemind/
 .worktrees/
 
+
+# IDE/Agent configs
+.agent/
+.agents/
+.claude/
+.kilocode/
+.qoder/
+.windsurf/

@@ -37,7 +37,7 @@ import { loadAnchors } from "../lib/anchors.js"
 import { detectLongSession } from "../lib/long-session.js"
 import { getToolActivation } from "../lib/tool-activation.js"
 import {
-  compileSignals,
+  compileEscalatedSignals,
   formatSignals,
   createDetectionState,
   DEFAULT_THRESHOLDS,
@@ -265,7 +265,7 @@ export function createSessionLifecycleHook(
       if (!config.detection_thresholds?.session_file_lines) {
         mergedThresholds.session_file_lines = config.max_active_md_lines;
       }
-      const signals = compileSignals({
+      const signals = compileEscalatedSignals({
         turnCount: state.metrics.turn_count,
         detection,
         completedBranches: completedBranchCount,
@@ -273,6 +273,7 @@ export function createSessionLifecycleHook(
         timestampGapMs: maxGapMs,
         sessionFileLines,
         missingTree: !treeExists(directory),
+        writeWithoutReadCount: state.metrics.write_without_read_count ?? 0,
         thresholds: mergedThresholds,
         maxSignals: 3,
       })
@@ -289,6 +290,14 @@ export function createSessionLifecycleHook(
       // PENDING FAILURE ACK — subagent reported failure, agent hasn't acknowledged
       if (state.pending_failure_ack) {
         warningLines.push("⚠ SUBAGENT REPORTED FAILURE. Call export_cycle or map_context with status \"blocked\" before proceeding.")
+      }
+
+      // AUTOMATION LEVEL — "retard" mode = maximum pushback
+      if (config.automation_level === "retard" || config.automation_level === "full") {
+        warningLines.push("[ARGUE-BACK MODE] System WILL challenge claims without evidence. Do not proceed without validation.")
+        if (state.metrics.turn_count > 0 && state.metrics.context_updates === 0) {
+          warningLines.push(`⛔ ${state.metrics.turn_count} turns and 0 context updates. You MUST call map_context before continuing.`)
+        }
       }
 
       // Chain breaks

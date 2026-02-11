@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0] - 2026-02-12
+
+### Added
+- **Evidence Gate System** — Escalating prompt pressure with 4 tiers (INFO → WARN → CRITICAL → DEGRADED) that intensify over unresolved turns
+- **Evidence-based argument-back** — Every detection signal now includes data-backed evidence strings and counter-arguments against common agent excuses
+- **"I am retard" mode** — New `automationLevel` CLI option with 5 levels (manual/guided/assisted/full/retard); retard mode forces strict governance, skeptical output, code review, max handholding
+- **Write-without-read tracking (FileGuard)** — `soft-governance.ts` tracks blind file writes; detection engine generates `write_without_read` signal with evidence
+- **`AutomationLevel` config type** — Persisted in `config.json`, read by hooks every turn (Rule 6)
+- **`compileEscalatedSignals()`** — New entry point for evidence-based prompt injection, wraps `compileSignals()` with tiers + evidence + counter-excuses
+- **`computeEscalationTier()`** — Pure function: turns × threshold → tier classification
+- **44 new test assertions** — Evidence gate system tests: escalation, evidence quality, retard mode init, format compatibility (688 total)
+
+### Changed
+- **Session lifecycle hook** — Now uses `compileEscalatedSignals()` instead of `compileSignals()` for richer prompt injection
+- **Prompt format** — Escalated signals show `[TIER] message`, `EVIDENCE: data`, `↳ counter-argument` (backward compatible with non-escalated signals)
+- **Retard mode auto-config** — Forces strict governance, beginner expert level, skeptical output, code review required, be_skeptical=true
+- **Archived 9 historical plan documents** to `docs/archive/`
+
 ## [2.3.0] - 2026-02-12
 
 ### Added

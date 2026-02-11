@@ -1,7 +1,7 @@
 # AGENTS.md — HiveMind Context Governance
 
-**Version:** 2.4.0
-**Status:** Iteration 4 complete. 14 tools, 4 hooks, CLI, 5 skills, 644 test assertions passing.
+**Version:** 2.5.0
+**Status:** Iteration 5 complete. 14 tools, 4 hooks, CLI, 5 skills, 688 test assertions passing.
 
 ---
 
@@ -487,10 +487,11 @@ If a subagent result contains failure signals (failed, error, blocked, partially
 | Round 4 Mems Brain | 40 | ✅ Pass |
 | Hierarchy Tree Engine | 55 | ✅ Pass |
 | Detection Engine | 45 | ✅ Pass |
+| Evidence Gate System | 44 | ✅ Pass |
 | Compact Purification | 34 | ✅ Pass |
 | Entry Chain (E2E lifecycle) | 69 | ✅ Pass |
 | Cycle Intelligence (export_cycle + auto-capture) | 36 | ✅ Pass |
-| **Total** | **644** | ✅ **All Pass** |
+| **Total** | **688** | ✅ **All Pass** |
 
 ---
 
@@ -505,6 +506,7 @@ If a subagent result contains failure signals (failed, error, blocked, partially
 - **2.1.0** — Hierarchy redesign: navigable tree engine, detection engine, per-session files, manifest, configurable thresholds, migration path. 13 tools, 4 hooks, 489 tests
 - **2.2.0** — Iteration 1 complete: export_cycle tool (14th tool), auto-capture hook for Task returns, pending_failure_ack system, cycle_log in brain state, skill system (5 behavioral governance skills), tool activation (7 priorities), enhanced CLI (23 commands). 14 tools, 4 hooks, 5 skills, 607 tests
 - **2.3.0** — Iteration 2: Entry testing + foundation hardening. JSONC config handling, re-init guard, config persistence verification, master plan file tree accuracy. 14 tools, 4 hooks, 5 skills, 621 tests
+- **2.5.0** — Iteration 5: Evidence Gate System. Escalating prompt pressure (INFO→WARN→CRITICAL→DEGRADED), evidence-based argument-back with counter-excuses, "I am retard" mode (5 automation levels), write-without-read FileGuard tracking. 14 tools, 4 hooks, 5 skills, 688 test assertions
 - **2.4.0** — Iteration 4: Agent behavioral activation (L7). Behavioral bootstrap in system prompt (teaches agent HiveMind workflow on first turns), AGENTS.md/CLAUDE.md auto-injection during `hivemind init` (idempotent). 14 tools, 4 hooks, 5 skills, 644 tests
 
 ---

@@ -56,6 +56,8 @@ export interface MetricsState {
     governance: number;
   };
   keyword_flags: string[];               // detected keywords this session
+  /** Count of file writes without prior read this session */
+  write_without_read_count: number;
 }
 
 /** Captured subagent cycle result (auto-captured by tool.execute.after) */
@@ -155,6 +157,7 @@ export function createBrainState(
       last_section_content: "",
       tool_type_counts: { read: 0, write: 0, query: 0, governance: 0 },
       keyword_flags: [],
+      write_without_read_count: 0,
     },
     complexity_nudge_shown: false,
     last_commit_suggestion_turn: 0,

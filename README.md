@@ -2,7 +2,7 @@
 
 A lightweight context governance layer for [OpenCode](https://opencode.ai) that prevents drift, manages session state, and preserves memory across agent lifecycles.
 
-**14 tools** | **4 hooks** | **3 governance modes** | **621 test assertions**
+**14 tools** | **4 hooks** | **5 automation levels** | **688 test assertions**
 
 ## Quick Start
 

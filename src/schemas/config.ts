@@ -7,6 +7,7 @@ import type { DetectionThresholds } from "../lib/detection.js";
 
 export type GovernanceMode = "permissive" | "assisted" | "strict";
 export type Language = "en" | "vi";
+export type AutomationLevel = "manual" | "guided" | "assisted" | "full" | "retard";
 export type ExpertLevel = "beginner" | "intermediate" | "advanced" | "expert";
 export type OutputStyle = 
   | "explanatory"      // Detailed explanations, teaching mode
@@ -51,6 +52,8 @@ export interface HiveMindConfig {
   agent_behavior: AgentBehaviorConfig;
   /** Override detection thresholds (merged with defaults at runtime) */
   detection_thresholds?: Partial<DetectionThresholds>;
+  /** Automation level — "retard" mode = max automation, system argues back, max handholding */
+  automation_level: AutomationLevel;
 }
 
 export const DEFAULT_AGENT_BEHAVIOR: AgentBehaviorConfig = {
@@ -75,6 +78,7 @@ export const DEFAULT_CONFIG: HiveMindConfig = {
   stale_session_days: 3,
   commit_suggestion_threshold: 5,
   agent_behavior: DEFAULT_AGENT_BEHAVIOR,
+  automation_level: "assisted" as AutomationLevel,
 };
 
 export function createConfig(overrides: Partial<HiveMindConfig> = {}): HiveMindConfig {
@@ -107,6 +111,10 @@ export function isValidExpertLevel(level: string): level is ExpertLevel {
 
 export function isValidOutputStyle(style: string): style is OutputStyle {
   return ["explanatory", "outline", "skeptical", "architecture", "minimal"].includes(style);
+}
+
+export function isValidAutomationLevel(level: string): level is AutomationLevel {
+  return ["manual", "guided", "assisted", "full", "retard"].includes(level);
 }
 
 /**

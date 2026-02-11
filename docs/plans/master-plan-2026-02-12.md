@@ -1,8 +1,8 @@
 # HiveMind Master Plan — Living Document
 
 **Created:** 2026-02-12
-**Last Updated:** 2026-02-12 (Iteration 4 COMPLETE)
-**Status:** ACTIVE — Iteration 4 complete, L7 behavioral activation solved
+**Last Updated:** 2026-02-12 (Iteration 5 COMPLETE)
+**Status:** ACTIVE — Iteration 5 complete, Evidence Gate System deployed
 **Branch:** `master`
 
 **Source of truth references:**
@@ -105,7 +105,7 @@ Even with perfect tools, they need activation WITHOUT agent cooperation:
 | export_cycle tool + auto-capture hook | `src/tools/export-cycle.ts`, `src/hooks/soft-governance.ts` | ~130 | 36 |
 | Per-session stamp files + manifest | `planning-fs.ts` + `declare-intent.ts` | — | — |
 | Entry chain tests (JSONC, re-init, config, AGENTS.md) | `tests/entry-chain.test.ts` | — | 69 |
-| **TOTAL** | **43 source files** | — | **644 assertions** |
+| **TOTAL** | **43 source files** | — | **688 assertions** |
 
 ### Iteration 1 Gaps — RESOLVED in code (verified 2026-02-12)
 
@@ -438,7 +438,8 @@ hivemind-plugin/
 ├── tests/
 │   ├── auto-hooks-pure.test.ts        # 39 assertions — tests staleness, chain-analysis, commit-advisor, tool-activation
 │   ├── complexity.test.ts             # 28 assertions
-│   ├── detection.test.ts              # 42 assertions
+│   ├── detection.test.ts              # 45 assertions
+│   ├── evidence-gate.test.ts          # 44 assertions
 │   ├── hierarchy-tree.test.ts         # 55 assertions
 │   ├── init-planning.test.ts          # 30 assertions
 │   ├── integration.test.ts            # 74 assertions
@@ -529,7 +530,8 @@ hivemind-plugin/
 | 2 | 2026-02-12 | Entry testing + foundation hardening — edge cases, docs accuracy, file tree reality | **COMPLETE.** Master plan file tree fixed (16 lib files listed), +14 entry test assertions (JSONC, re-init guard, config persistence). Commit `f1e6989`. | 621 |
 | 3 | 2026-02-12 | Production integrity — fix logic failures L1-L14 | **COMPLETE.** 10/14 fixed (L1-5, L8-12, L14). L6 blocked (npm login), L7+L13 deferred to Iteration 4. Hooks read config from disk (Rule 6). Tool-gate deduped. Dead code removed. README bilingual. CHANGELOG complete. | 621 |
 | 4 | 2026-02-12 | Agent behavioral activation (L7) — zero-cooperation bootstrap | **COMPLETE.** Behavioral bootstrap in system prompt (teaches agent HiveMind on first 2 LOCKED turns, budget expanded to 4000 chars). AGENTS.md/CLAUDE.md auto-injection during `hivemind init` (idempotent, marker-based). L7 solved, L13 partially solved. +23 assertions. | 644 |
-| 5+ | PENDING | Real OpenCode validation test, npm publish (L6), stress testing | — | — |
+| 5 | 2026-02-12 | Evidence Gate System — escalating prompt pressure + argument-back | **COMPLETE.** 4 escalation tiers (INFO→WARN→CRITICAL→DEGRADED), evidence-based signals with counter-excuses, "I am retard" mode (5 automation levels), write-without-read FileGuard tracking, `compileEscalatedSignals()` replaces `compileSignals()` in prompt injection. +44 assertions. | 688 |
+| 6+ | PENDING | npm publish, stress testing, real OpenCode validation | — | — |
 
 ---
 

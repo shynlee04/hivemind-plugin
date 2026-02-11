@@ -50,6 +50,19 @@ export interface DetectionState {
   keyword_flags: string[];
 }
 
+/** Escalation tiers — signals intensify over turns */
+export type EscalationTier = "INFO" | "WARN" | "CRITICAL" | "DEGRADED";
+
+/** Enhanced signal with escalation tier, evidence, and counter-argument */
+export interface EscalatedSignal extends DetectionSignal {
+  /** Current escalation tier based on persistence */
+  tier: EscalationTier;
+  /** Data-backed evidence string (counters, metrics) */
+  evidence: string;
+  /** Counter-argument against common agent excuses */
+  counter_excuse?: string;
+}
+
 /** Thresholds for signal detection */
 export interface DetectionThresholds {
   /** Turns before warning (default: 5) */
@@ -88,6 +101,22 @@ export function createDetectionState(): DetectionState {
     tool_type_counts: { read: 0, write: 0, query: 0, governance: 0 },
     keyword_flags: [],
   };
+}
+
+/**
+ * Compute escalation tier based on how long a signal has persisted.
+ * Uses turn_count as proxy — signals that fire at threshold get INFO,
+ * and escalate as turns accumulate without resolution.
+ * 
+ * @param turnCount current turn count
+ * @param threshold the threshold at which signal first fires
+ */
+export function computeEscalationTier(turnCount: number, threshold: number): EscalationTier {
+  const overshoot = turnCount - threshold;
+  if (overshoot <= 0) return "INFO";
+  if (overshoot <= 3) return "WARN";
+  if (overshoot <= 7) return "CRITICAL";
+  return "DEGRADED";
 }
 
 // ============================================================
@@ -335,6 +364,21 @@ export function addKeywordFlags(
   };
 }
 
+/** Counter-arguments against common agent excuses. Evidence-based pushback. */
+const COUNTER_EXCUSES: Record<string, string> = {
+  turn_count: "\"I'll checkpoint later\" — Every untracked turn is context that dies on compaction. Act now.",
+  consecutive_failures: "\"One more try\" — Repeating failed approaches wastes context budget. Step back.",
+  section_repetition: "\"I'm refining\" — 4+ updates to the same section with similar content = circling, not refining.",
+  read_write_imbalance: "\"I'm still exploring\" — Exploration without writing suggests you're stuck, not learning.",
+  keyword_flags: "\"I know what I'm doing\" — Your own words signal confusion. Let the tools help.",
+  tool_hierarchy_mismatch: "\"I'll declare intent after\" — Files written without hierarchy tracking are invisible to future sessions.",
+  completed_pileup: "\"It's fine\" — Completed branches consume prompt budget. Prune to stay focused.",
+  timestamp_gap: "\"I remember\" — After this time gap, you don't. Use scan_hierarchy to rebuild context.",
+  missing_tree: "\"I don't need it\" — Without hierarchy.json, ALL drift detection is disabled.",
+  session_file_long: "\"More context is better\" — Long session files get truncated on compaction. Compact to preserve.",
+  write_without_read: "\"I know the file\" — Writing without reading risks overwriting changes made by other tools or sessions.",
+};
+
 // ============================================================
 // Section 5: Signal Compilation
 // ============================================================
@@ -490,7 +534,107 @@ export function compileSignals(opts: {
 }
 
 /**
+ * Compile escalated signals with tiers, evidence, and counter-arguments.
+ * This is the main entry point for evidence-based prompt injection.
+ * Wraps compileSignals and enriches each signal with escalation data.
+ * 
+ * @consumer session-lifecycle.ts (reads brain.json, calls this, appends to prompt)
+ */
+export function compileEscalatedSignals(opts: {
+  turnCount: number;
+  detection: DetectionState;
+  completedBranches?: number;
+  hierarchyActionEmpty?: boolean;
+  timestampGapMs?: number;
+  missingTree?: boolean;
+  sessionFileLines?: number;
+  writeWithoutReadCount?: number;
+  thresholds?: DetectionThresholds;
+  maxSignals?: number;
+}): EscalatedSignal[] {
+  const thresholds = opts.thresholds ?? DEFAULT_THRESHOLDS;
+  
+  // Get base signals
+  const baseSignals = compileSignals(opts);
+  
+  // Add write-without-read signal if applicable
+  if (opts.writeWithoutReadCount !== undefined && opts.writeWithoutReadCount > 0) {
+    baseSignals.push({
+      type: "write_without_read",
+      severity: 2,
+      message: `${opts.writeWithoutReadCount} file(s) written without being read first. Risk of overwriting.`,
+      suggestion: "read files before writing",
+    });
+    // Re-sort and re-cap
+    baseSignals.sort((a, b) => a.severity - b.severity);
+    const max = opts.maxSignals ?? 3;
+    if (baseSignals.length > max) baseSignals.length = max;
+  }
+  
+  // Enrich each signal with escalation data
+  return baseSignals.map(signal => {
+    // Determine which threshold this signal relates to
+    let relevantThreshold = thresholds.turns_warning;
+    if (signal.type === "consecutive_failures") relevantThreshold = thresholds.failure_alert;
+    else if (signal.type === "section_repetition") relevantThreshold = thresholds.repetition_alert;
+    else if (signal.type === "read_write_imbalance") relevantThreshold = thresholds.read_write_imbalance;
+    else if (signal.type === "completed_pileup") relevantThreshold = thresholds.completed_branch_threshold;
+    else if (signal.type === "timestamp_gap") relevantThreshold = 1; // Always at least WARN for gaps
+    else if (signal.type === "missing_tree") relevantThreshold = 0; // Always CRITICAL for missing tree
+    else if (signal.type === "session_file_long") relevantThreshold = thresholds.session_file_lines;
+    
+    const tier = computeEscalationTier(opts.turnCount, relevantThreshold);
+    const evidence = buildEvidence(signal, opts);
+    const counter_excuse = COUNTER_EXCUSES[signal.type];
+    
+    return { ...signal, tier, evidence, counter_excuse };
+  });
+}
+
+/**
+ * Build evidence string for a signal based on actual counter data.
+ */
+function buildEvidence(signal: DetectionSignal, opts: {
+  turnCount: number;
+  detection: DetectionState;
+  completedBranches?: number;
+  timestampGapMs?: number;
+  sessionFileLines?: number;
+  writeWithoutReadCount?: number;
+}): string {
+  const d = opts.detection;
+  switch (signal.type) {
+    case "turn_count":
+      return `${opts.turnCount} turns elapsed. ${d.tool_type_counts.write} writes, ${d.tool_type_counts.read} reads, 0 map_context calls since last update.`;
+    case "consecutive_failures":
+      return `${d.consecutive_failures} consecutive tool failures. Last success unknown. Health score degrading.`;
+    case "section_repetition":
+      return `Section updated ${d.consecutive_same_section}x with >80% similar content. No meaningful progress detected.`;
+    case "read_write_imbalance":
+      return `${d.tool_type_counts.read} reads vs ${d.tool_type_counts.write} writes this session. Pattern suggests exploration without output.`;
+    case "keyword_flags":
+      return `Detected keywords in tool output: [${d.keyword_flags.join(", ")}]. These are YOUR words indicating difficulty.`;
+    case "tool_hierarchy_mismatch":
+      return `${d.tool_type_counts.write} write operations with no action declared in hierarchy. These changes are untracked.`;
+    case "completed_pileup":
+      return `${opts.completedBranches ?? 0} completed branches consuming hierarchy space. Prompt budget impact: ~${(opts.completedBranches ?? 0) * 50} chars.`;
+    case "timestamp_gap":
+      const hours = opts.timestampGapMs ? Math.round(opts.timestampGapMs / (60 * 60 * 1000) * 10) / 10 : 0;
+      return `${hours}hr gap since last hierarchy activity. Context decay is exponential after 2hr.`;
+    case "missing_tree":
+      return `hierarchy.json not found. ALL drift detection, gap analysis, and tree rendering disabled.`;
+    case "session_file_long":
+      return `Session file at ${opts.sessionFileLines ?? 0} lines. Compaction will truncate oldest entries first.`;
+    case "write_without_read":
+      return `${opts.writeWithoutReadCount ?? 0} file(s) written without prior read. Blind writes risk data loss.`;
+    default:
+      return signal.message;
+  }
+}
+
+/**
  * Format compiled signals into a string block for prompt injection.
+ * Handles both regular DetectionSignal and EscalatedSignal.
  *
  * @consumer session-lifecycle.ts (appended to <hivemind> block)
  */
@@ -500,7 +644,19 @@ export function formatSignals(signals: DetectionSignal[]): string {
   const lines: string[] = ["[ALERTS]"];
   for (const signal of signals) {
     const suggestion = signal.suggestion ? ` → use ${signal.suggestion}` : "";
-    lines.push(`- ${signal.message}${suggestion}`);
+    
+    // Check if this is an escalated signal
+    const escalated = signal as EscalatedSignal;
+    if (escalated.tier && escalated.evidence) {
+      const tierPrefix = `[${escalated.tier}]`;
+      lines.push(`${tierPrefix} ${signal.message}${suggestion}`);
+      lines.push(`  EVIDENCE: ${escalated.evidence}`);
+      if (escalated.counter_excuse) {
+        lines.push(`  ↳ ${escalated.counter_excuse}`);
+      }
+    } else {
+      lines.push(`- ${signal.message}${suggestion}`);
+    }
   }
   return lines.join("\n");
 }

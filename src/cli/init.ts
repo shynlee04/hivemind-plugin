@@ -16,8 +16,8 @@ import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-import type { GovernanceMode, Language, ExpertLevel, OutputStyle } from "../schemas/config.js"
-import { createConfig, isValidGovernanceMode, isValidLanguage, isValidExpertLevel, isValidOutputStyle } from "../schemas/config.js"
+import type { GovernanceMode, Language, ExpertLevel, OutputStyle, AutomationLevel } from "../schemas/config.js"
+import { createConfig, isValidGovernanceMode, isValidLanguage, isValidExpertLevel, isValidOutputStyle, isValidAutomationLevel } from "../schemas/config.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
 import { createStateManager, saveConfig } from "../lib/persistence.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
@@ -130,6 +130,7 @@ export interface InitOptions {
   governanceMode?: GovernanceMode
   expertLevel?: ExpertLevel
   outputStyle?: OutputStyle
+  automationLevel?: AutomationLevel
   requireCodeReview?: boolean
   enforceTdd?: boolean
   silent?: boolean
@@ -262,33 +263,43 @@ export async function initProject(
     return
   }
 
+  // Validate and set automation level
+  const automationLevel = options.automationLevel ?? "assisted"
+  if (!isValidAutomationLevel(automationLevel)) {
+    log(`✗ Invalid automation level: ${automationLevel}`)
+    log('  Valid: manual, guided, assisted, full, retard ("I am retard — lead me")')
+    return
+  }
+
   // Create .hivemind directory structure
   // (sessions, brain, plans, logs subdirectories are created by initializePlanningDirectory)
 
   // Create config with agent behavior
   const config = createConfig({
-    governance_mode: governanceMode,
+    governance_mode: automationLevel === "retard" ? "strict" : governanceMode,
     language,
+    automation_level: automationLevel,
     agent_behavior: {
       language,
-      expert_level: expertLevel,
-      output_style: outputStyle,
+      expert_level: automationLevel === "retard" ? "beginner" : expertLevel,
+      output_style: automationLevel === "retard" ? "skeptical" : outputStyle,
       constraints: {
-        require_code_review: options.requireCodeReview ?? false,
+        require_code_review: automationLevel === "retard" ? true : (options.requireCodeReview ?? false),
         enforce_tdd: options.enforceTdd ?? false,
         max_response_tokens: 2000,
         explain_reasoning: true,
-        be_skeptical: outputStyle === "skeptical",
+        be_skeptical: automationLevel === "retard" ? true : (outputStyle === "skeptical"),
       },
     },
   })
 
   if (!options.silent) {
-    log(`  Governance: ${governanceMode}`)
+    log(`  Governance: ${config.governance_mode}`)
     log(`  Language: ${language}`)
-    log(`  Expert Level: ${expertLevel}`)
-    log(`  Output Style: ${outputStyle}`)
-    if (options.requireCodeReview) log("  ✓ Code review required")
+    log(`  Expert Level: ${config.agent_behavior.expert_level}`)
+    log(`  Output Style: ${config.agent_behavior.output_style}`)
+    log(`  Automation: ${automationLevel}${automationLevel === "retard" ? ' ("I am retard — lead me")' : ""}`)
+    if (config.agent_behavior.constraints.require_code_review) log("  ✓ Code review required")
     if (options.enforceTdd) log("  ✓ TDD enforced")
     log("")
   }
@@ -347,6 +358,16 @@ export async function initProject(
       log("🔔 ASSISTED MODE — agents get warnings but can proceed.")
     } else {
       log("🟢 PERMISSIVE MODE — agents work freely, activity tracked.")
+    }
+
+    if (automationLevel === "retard") {
+      log("")
+      log('🤯 "I AM RETARD" MODE ACTIVE:')
+      log("   → Governance forced to STRICT")
+      log("   → System will ARGUE BACK with evidence")
+      log("   → Escalating pressure on every unresolved signal")
+      log("   → Code review REQUIRED on all changes")
+      log("   → Maximum handholding enabled")
     }
 
     log("")

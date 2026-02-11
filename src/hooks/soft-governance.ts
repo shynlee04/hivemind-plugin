@@ -83,6 +83,21 @@ export function createSoftGovernanceHook(
       // === Detection Engine: Tool Classification ===
       const toolCategory = classifyTool(input.tool)
 
+      // === FileGuard: Write-without-read tracking ===
+      // If a write/edit tool fires and no reads have occurred yet, increment blind-write counter
+      if (toolCategory === "write" && input.tool !== "bash") {
+        const readCount = newState.metrics.tool_type_counts?.read ?? 0;
+        if (readCount === 0) {
+          newState = {
+            ...newState,
+            metrics: {
+              ...newState.metrics,
+              write_without_read_count: (newState.metrics.write_without_read_count ?? 0) + 1,
+            },
+          };
+        }
+      }
+
       // Get or initialize detection state from brain.json.metrics
       let detection: DetectionState = {
         consecutive_failures: newState.metrics.consecutive_failures ?? 0,
