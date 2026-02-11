@@ -46,7 +46,7 @@ export function createListShelvesTool(directory: string): ToolDefinition {
       lines.push("");
 
       // Show 3 most recent mems
-      const recent = memsState.mems
+      const recent = [...memsState.mems]
         .sort((a, b) => b.created_at - a.created_at)
         .slice(0, 3);
 

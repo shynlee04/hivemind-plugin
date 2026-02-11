@@ -47,7 +47,13 @@ export function createThinkBackTool(directory: string): ToolDefinition {
 
       if (anchorsState.anchors.length > 0) {
         lines.push("## Immutable Anchors");
-        anchorsState.anchors.forEach(a => lines.push(`  [${a.key}]: ${a.value}`));
+        const anchorsToShow = anchorsState.anchors.slice(0, 5);
+        for (const a of anchorsToShow) {
+          lines.push(`  [${a.key}]: ${a.value}`);
+        }
+        if (anchorsState.anchors.length > 5) {
+          lines.push(`  ... and ${anchorsState.anchors.length - 5} more anchors`);
+        }
         lines.push("");
       }
 
@@ -67,12 +73,23 @@ export function createThinkBackTool(directory: string): ToolDefinition {
         const planSection = planEnd > -1 
           ? activeMd.body.substring(planStart, planEnd)
           : activeMd.body.substring(planStart);
-        lines.push(planSection.trim());
+        const planContent = planSection.trim();
+        const planLines = planContent.split('\n');
+        if (planLines.length > 10) {
+          lines.push(...planLines.slice(0, 10));
+          lines.push(`  ... (${planLines.length - 10} more lines)`);
+        } else {
+          lines.push(...planLines);
+        }
         lines.push("");
       }
 
       lines.push("=== END THINK BACK ===");
-      return lines.join("\n") + "\n→ Use map_context to update your focus, or compact_session to archive and reset.";
+      let result = lines.join("\n") + "\n→ Use map_context to update your focus, or compact_session to archive and reset.";
+      if (result.length > 2000) {
+        result = result.slice(0, 1970) + '\n... (output truncated)';
+      }
+      return result;
     },
   });
 }
