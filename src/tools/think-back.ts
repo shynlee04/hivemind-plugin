@@ -1,12 +1,22 @@
 /**
  * think_back — Context refresh. Summarizes current state to help refocus.
  * Agent Thought: "I'm lost, help me refocus."
+ *
+ * Hierarchy Redesign: renders tree with cursor ancestry + timestamp gaps.
  */
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool";
 import { createStateManager } from "../lib/persistence.js";
 import { loadAnchors } from "../lib/anchors.js";
 import { readActiveMd } from "../lib/planning-fs.js";
 import { detectChainBreaks } from "../lib/chain-analysis.js";
+import {
+  loadTree,
+  toAsciiTree,
+  getAncestors,
+  getCursorNode,
+  detectGaps,
+  treeExists,
+} from "../lib/hierarchy-tree.js";
 
 export function createThinkBackTool(directory: string): ToolDefinition {
   return tool({
@@ -30,9 +40,44 @@ export function createThinkBackTool(directory: string): ToolDefinition {
       
       lines.push("## Where You Are");
       lines.push(`Mode: ${state.session.mode}`);
-      if (state.hierarchy.trajectory) lines.push(`Trajectory: ${state.hierarchy.trajectory}`);
-      if (state.hierarchy.tactic) lines.push(`Tactic: ${state.hierarchy.tactic}`);
-      if (state.hierarchy.action) lines.push(`Action: ${state.hierarchy.action}`);
+
+      // Hierarchy: prefer tree view if available
+      if (treeExists(directory)) {
+        const tree = await loadTree(directory);
+        lines.push("");
+        lines.push("Hierarchy Tree:");
+        lines.push(toAsciiTree(tree));
+
+        // Show cursor ancestry (the path to where we are)
+        const cursorNode = getCursorNode(tree);
+        if (cursorNode && tree.root) {
+          const ancestors = getAncestors(tree.root, cursorNode.id);
+          if (ancestors.length > 1) {
+            lines.push("");
+            lines.push("Cursor path:");
+            for (const node of ancestors) {
+              lines.push(`  ${node.level}: ${node.content} (${node.stamp})`);
+            }
+          }
+        }
+
+        // Show timestamp gaps (staleness)
+        const gaps = detectGaps(tree);
+        const staleGaps = gaps.filter(g => g.severity === "stale");
+        if (staleGaps.length > 0) {
+          lines.push("");
+          lines.push("⚠ Stale gaps detected:");
+          for (const gap of staleGaps.slice(0, 3)) {
+            const hours = Math.round(gap.gapMs / (60 * 60 * 1000) * 10) / 10;
+            lines.push(`  ${gap.from} → ${gap.to}: ${hours}hr (${gap.relationship})`);
+          }
+        }
+      } else {
+        // Flat hierarchy fallback
+        if (state.hierarchy.trajectory) lines.push(`Trajectory: ${state.hierarchy.trajectory}`);
+        if (state.hierarchy.tactic) lines.push(`Tactic: ${state.hierarchy.tactic}`);
+        if (state.hierarchy.action) lines.push(`Action: ${state.hierarchy.action}`);
+      }
       lines.push("");
 
       lines.push("## Session Health");

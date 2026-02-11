@@ -9,6 +9,12 @@
  *   3. Signal-to-Noise — 1-line summary output
  *   4. No-Shadowing — description matches agent intent
  *   5. Native Parallelism — single call, atomic archival
+ *
+ * Hierarchy Redesign Changes:
+ *   - Archives hierarchy.json alongside session content
+ *   - Includes tree ASCII view in archive
+ *   - Resets hierarchy tree to empty
+ *   - Updates manifest (marks session as compacted)
  */
 
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool"
@@ -28,6 +34,14 @@ import {
 } from "../lib/planning-fs.js"
 import { generateExportData, generateJsonExport, generateMarkdownExport } from "../lib/session-export.js"
 import { loadMems, saveMems, addMem } from "../lib/mems.js"
+import {
+  loadTree,
+  saveTree,
+  createTree,
+  toAsciiTree,
+  getTreeStats,
+  treeExists,
+} from "../lib/hierarchy-tree.js"
 import { mkdir, writeFile } from "fs/promises"
 import { join } from "path"
 
@@ -54,7 +68,9 @@ export function createCompactSessionTool(directory: string): ToolDefinition {
 
       // Read current active.md content for archival
       const activeMd = await readActiveMd(directory)
-      const archiveContent = [
+
+      // === Build archive content including tree ===
+      const archiveLines = [
         `# Archived Session: ${state.session.id}`,
         "",
         `**Mode**: ${state.session.mode}`,
@@ -66,15 +82,29 @@ export function createCompactSessionTool(directory: string): ToolDefinition {
         `**Context Updates**: ${state.metrics.context_updates}`,
         "",
         "## Hierarchy at Archive",
-        state.hierarchy.trajectory ? `- **Trajectory**: ${state.hierarchy.trajectory}` : "",
-        state.hierarchy.tactic ? `- **Tactic**: ${state.hierarchy.tactic}` : "",
-        state.hierarchy.action ? `- **Action**: ${state.hierarchy.action}` : "",
-        "",
-        "## Session Content",
-        activeMd.body,
       ]
-        .filter(Boolean)
-        .join("\n")
+
+      // Include tree view if available
+      if (treeExists(directory)) {
+        const tree = await loadTree(directory)
+        const stats = getTreeStats(tree)
+        archiveLines.push(`Tree (${stats.totalNodes} nodes):`)
+        archiveLines.push("```")
+        archiveLines.push(toAsciiTree(tree))
+        archiveLines.push("```")
+        archiveLines.push(`Completed: ${stats.completedNodes} | Active: ${stats.activeNodes}`)
+      } else {
+        // Flat hierarchy fallback
+        if (state.hierarchy.trajectory) archiveLines.push(`- **Trajectory**: ${state.hierarchy.trajectory}`)
+        if (state.hierarchy.tactic) archiveLines.push(`- **Tactic**: ${state.hierarchy.tactic}`)
+        if (state.hierarchy.action) archiveLines.push(`- **Action**: ${state.hierarchy.action}`)
+      }
+
+      archiveLines.push("")
+      archiveLines.push("## Session Content")
+      archiveLines.push(activeMd.body)
+
+      const archiveContent = archiveLines.filter(Boolean).join("\n")
 
       // Archive the session
       await archiveSession(directory, state.session.id, archiveContent)
@@ -127,6 +157,11 @@ export function createCompactSessionTool(directory: string): ToolDefinition {
         await saveMems(directory, memsState)
       } catch {
         // Auto-mem failure is non-fatal
+      }
+
+      // === Reset hierarchy tree ===
+      if (treeExists(directory)) {
+        await saveTree(directory, createTree())
       }
 
       // Reset active.md to template

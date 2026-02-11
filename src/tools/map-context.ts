@@ -9,6 +9,13 @@
  *   3. Signal-to-Noise — 1-line output with visual beacon
  *   4. No-Shadowing — description matches agent intent
  *   5. Native Parallelism — can update different levels independently
+ *
+ * Hierarchy Redesign Changes:
+ *   - Creates child node in hierarchy tree under correct parent
+ *   - Moves cursor to new node
+ *   - Appends log entry to per-session file (append-only)
+ *   - Updates hierarchy section from tree rendering
+ *   - Projects tree cursor back into flat brain.json (backward compat)
  */
 
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool"
@@ -22,10 +29,31 @@ import {
   readActiveMd,
   writeActiveMd,
   updateIndexMd,
+  readManifest,
+  appendToSessionLog,
+  updateSessionHierarchy,
 } from "../lib/planning-fs.js"
+import {
+  loadTree,
+  saveTree,
+  createNode,
+  addChild,
+  markComplete,
+  getCursorNode,
+  getAncestors,
+  toActiveMdBody,
+  toBrainProjection,
+} from "../lib/hierarchy-tree.js"
 
 const VALID_LEVELS: HierarchyLevel[] = ["trajectory", "tactic", "action"]
 const VALID_STATUSES: ContextStatus[] = ["pending", "active", "complete", "blocked"]
+
+/** Map hierarchy level to the parent level that should contain it */
+const PARENT_LEVEL: Record<HierarchyLevel, HierarchyLevel | null> = {
+  trajectory: null,     // root — no parent
+  tactic: "trajectory", // tactic lives under trajectory
+  action: "tactic",     // action lives under tactic
+}
 
 export function createMapContextTool(directory: string): ToolDefinition {
   return tool({
@@ -56,8 +84,64 @@ export function createMapContextTool(directory: string): ToolDefinition {
         return "ERROR: No active session. Call declare_intent first."
       }
 
-      // Update hierarchy
-      state = updateHierarchy(state, { [args.level]: args.content })
+      // === Hierarchy Tree: Add node or mark complete ===
+      let tree = await loadTree(directory)
+
+      if (tree.root) {
+        if (status === "complete") {
+          // If marking complete, find existing node by content match and mark it
+          const cursorNode = getCursorNode(tree)
+          if (cursorNode && cursorNode.content === args.content) {
+            tree = markComplete(tree, cursorNode.id)
+          } else {
+            // Create new completed node
+            const now = new Date()
+            const node = createNode(args.level, args.content, "complete", now)
+
+            // Find parent: walk cursor ancestry to find correct parent level
+            const parentLevel = PARENT_LEVEL[args.level]
+            if (parentLevel && tree.root) {
+              const parentId = findParentId(tree, parentLevel)
+              if (parentId) {
+                tree = addChild(tree, parentId, node)
+                tree = markComplete(tree, node.id, now.getTime())
+              }
+            }
+          }
+        } else {
+          // Create new active node under correct parent
+          const now = new Date()
+          const node = createNode(args.level, args.content, status, now)
+
+          if (args.level === "trajectory") {
+            // Update the root node's content directly
+            if (tree.root) {
+              tree = {
+                ...tree,
+                root: { ...tree.root, content: args.content, status },
+              }
+            }
+          } else {
+            const parentLevel = PARENT_LEVEL[args.level]
+            if (parentLevel) {
+              const parentId = findParentId(tree, parentLevel)
+              if (parentId) {
+                tree = addChild(tree, parentId, node)
+              }
+            }
+          }
+        }
+
+        // Save updated tree
+        await saveTree(directory, tree)
+
+        // Project tree into flat brain.json (backward compat)
+        const projection = toBrainProjection(tree)
+        state = updateHierarchy(state, projection)
+      } else {
+        // No tree — use flat update (legacy path)
+        state = updateHierarchy(state, { [args.level]: args.content })
+      }
 
       // Reset turn count on context update (re-engagement signal)
       state = resetTurnCount(state)
@@ -65,17 +149,29 @@ export function createMapContextTool(directory: string): ToolDefinition {
       // Save state
       await stateManager.save(state)
 
-      // Sync to planning files
+      // === Per-session file: Append log entry + update hierarchy section ===
+      const manifest = await readManifest(directory)
+      if (manifest.active_stamp) {
+        // Append log entry (chronological, append-only)
+        const timestamp = new Date().toISOString()
+        const logEntry = `- [${timestamp}] [${args.level}] ${args.content} → ${status}`
+        await appendToSessionLog(directory, manifest.active_stamp, logEntry)
+
+        // Update hierarchy section (regenerated from tree)
+        if (tree.root) {
+          const hierarchyBody = toActiveMdBody(tree)
+          await updateSessionHierarchy(directory, manifest.active_stamp, hierarchyBody)
+        }
+      }
+
+      // === Legacy active.md: Sync for backward compat ===
       if (args.level === "trajectory") {
-        // Update index.md for trajectory-level changes
         await updateIndexMd(directory, `[${status.toUpperCase()}] ${args.content}`)
       } else {
-        // Update active.md for tactic/action level changes
         const activeMd = await readActiveMd(directory)
         const levelLabel = args.level === "tactic" ? "Tactic" : "Action"
         const focusLine = `**${levelLabel}**: ${args.content} [${status.toUpperCase()}]`
 
-        // Append to current focus section
         if (activeMd.body.includes("## Current Focus")) {
           const parts = activeMd.body.split("## Current Focus")
           const afterFocus = parts[1] || ""
@@ -100,7 +196,6 @@ export function createMapContextTool(directory: string): ToolDefinition {
         activeMd.frontmatter.last_updated = Date.now()
         await writeActiveMd(directory, activeMd)
 
-        // Add plan line tracking
         const freshMd = await readActiveMd(directory)
         const planMarker = "## Plan"
         if (freshMd.body.includes(planMarker)) {
@@ -117,4 +212,34 @@ export function createMapContextTool(directory: string): ToolDefinition {
       return `[${args.level}] "${args.content}" → ${status}\n→ Continue working, or use check_drift to verify alignment.`
     },
   })
+}
+
+/**
+ * Find the ID of the most recent node at a given level.
+ * Walks cursor ancestry first, falls back to last child at that level.
+ */
+function findParentId(
+  tree: { root: import("../lib/hierarchy-tree.js").HierarchyNode | null; cursor: string | null },
+  level: HierarchyLevel
+): string | null {
+  if (!tree.root || !tree.cursor) {
+    // No cursor — use root if looking for trajectory
+    return level === "trajectory" ? tree.root?.id ?? null : null
+  }
+
+  // Walk cursor ancestry to find a node at the target level
+  const ancestors = getAncestors(tree.root, tree.cursor)
+  for (const node of ancestors) {
+    if (node.level === level) return node.id
+  }
+
+  // Fallback: if cursor is at or above the target level, use root for trajectory
+  if (level === "trajectory") return tree.root.id
+
+  // If no parent found at target level, try using the cursor itself
+  // (e.g., cursor is a tactic and we're adding an action)
+  const cursorNode = getCursorNode(tree as any)
+  if (cursorNode && cursorNode.level === level) return cursorNode.id
+
+  return tree.root.id // ultimate fallback
 }

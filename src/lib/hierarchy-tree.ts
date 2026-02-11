@@ -543,7 +543,8 @@ export function toAsciiTree(tree: HierarchyTree): string {
       ? node.content.slice(0, 57) + "..."
       : node.content;
 
-    lines.push(`${prefix}${connector}[${marker}] ${truncatedContent} (${node.stamp})${cursorMark}`);
+    const levelLabel = node.level.charAt(0).toUpperCase() + node.level.slice(1);
+    lines.push(`${prefix}${connector}[${marker}] ${levelLabel}: ${truncatedContent} (${node.stamp})${cursorMark}`);
 
     const childPrefix = isRoot ? "" : prefix + (isLast ? "    " : "|   ");
     for (let i = 0; i < node.children.length; i++) {
