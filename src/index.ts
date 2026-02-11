@@ -6,7 +6,7 @@
  * ## Architecture
  *
  * - **11 Tools**: declare_intent, map_context, compact_session, self_rate, scan_hierarchy, save_anchor, think_back, check_drift, save_mem, list_shelves, recall_mems
- * - **2 Hooks**: session-lifecycle (system prompt), soft-governance (tracking)
+ * - **4 Hooks**: system prompt injection, tool gate (before), soft governance (after), compaction preservation
  * - **Soft Governance**: Cannot block, only guide through prompts + tracking
  *
  * ## Governance Modes

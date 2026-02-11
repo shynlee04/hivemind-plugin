@@ -2,7 +2,7 @@
 
 A lightweight context governance layer for [OpenCode](https://opencode.ai) that prevents drift and manages session state across agent lifecycles.
 
-**11 tools** | **4 hooks** | **3 governance modes** | **331+ test assertions**
+**11 tools** | **4 hooks** | **3 governance modes** | **386 test assertions**
 
 ## Quick Start
 
@@ -146,9 +146,7 @@ Configuration stored in `.hivemind/config.json`.
 ├── brain.json           # Machine state
 ├── config.json          # Settings
 ├── anchors.json         # Immutable facts
-├── mems.json            # Mems Brain
-├── plans/               # Plan storage
-└── logs/                # Plugin logs
+└── mems.json            # Mems Brain
 ```
 
 ## License

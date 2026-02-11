@@ -1,7 +1,7 @@
 /**
  * Round 4 Mems Tests — Persistence, CRUD, Search, Prompt Formatting, Tool Tests
  *
- * 34 assertions:
+ * 40 assertions:
  *   Persistence + CRUD (10): load, add, unique ID, tags, remove, remove no-op, roundtrip, ID format, ID uniqueness, shelf summary
  *   Search (6): content match, tag match, shelf filter, no match, newest first, getMemsByShelf
  *   Prompt formatting (4): empty, count+breakdown, recall_mems suggestion, multiple shelves

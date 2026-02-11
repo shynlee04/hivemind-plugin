@@ -166,7 +166,7 @@ Your session behavior depends on the governance mode:
 
 | Mode | Behavior |
 |------|----------|
-| **strict** | Must call `declare_intent` before writes. Blocks without active session. |
+| **strict** | Must call `declare_intent` before writes. Warns without active session (cannot block — OpenCode v1.1+ limitation). |
 | **assisted** | Session starts OPEN. Warnings logged but not blocking. |
 | **permissive** | Session always OPEN. Silent tracking only. |
 
