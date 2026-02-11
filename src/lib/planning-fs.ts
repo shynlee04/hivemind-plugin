@@ -261,27 +261,6 @@ export interface FileGuard {
   last_read_time: number;
 }
 
-// In-memory guard state (per session, not persisted to disk — lives in brain.json)
-let _fileGuard: FileGuard | null = null;
-
-/**
- * Get the current file guard state.
- *
- * @consumer writeSessionFile (internal enforcement)
- */
-export function getFileGuard(): FileGuard | null {
-  return _fileGuard;
-}
-
-/**
- * Set the file guard state (typically loaded from brain.json on startup).
- *
- * @consumer session-lifecycle.ts (loads from brain.json)
- */
-export function setFileGuard(guard: FileGuard | null): void {
-  _fileGuard = guard;
-}
-
 /**
  * Create a FileGuard from a session file read.
  *
@@ -314,11 +293,6 @@ export async function readSessionFile(
 
   try {
     const content = await readFile(filePath, "utf-8");
-    const lineCount = content.split("\n").length;
-
-    // Update guard
-    _fileGuard = createFileGuard(stamp, lineCount);
-
     return parseActiveMd(content);
   } catch {
     return { frontmatter: {}, body: "" };
@@ -343,10 +317,6 @@ export async function writeSessionFile(
 
   const yamlContent = stringify(content.frontmatter);
   const fullContent = `---\n${yamlContent}---\n\n${content.body}`;
-
-  // Update guard after write
-  const lineCount = fullContent.split("\n").length;
-  _fileGuard = createFileGuard(stamp, lineCount);
 
   await writeFile(filePath, fullContent);
 }
@@ -389,9 +359,6 @@ export async function appendToSessionLog(
     }
 
     const newContent = lines.join("\n");
-    const lineCount = newContent.split("\n").length;
-    _fileGuard = createFileGuard(stamp, lineCount);
-
     await writeFile(filePath, newContent);
   } catch {
     // File doesn't exist — create with just the log entry
@@ -431,10 +398,6 @@ export async function updateSessionHierarchy(
       const before = lines.slice(0, hierStart + 1);
       const after = lines.slice(logStart);
       const newContent = [...before, hierarchyBody, "", ...after].join("\n");
-
-      const lineCount = newContent.split("\n").length;
-      _fileGuard = createFileGuard(stamp, lineCount);
-
       await writeFile(filePath, newContent);
     }
   } catch {
@@ -712,7 +675,4 @@ export async function resetActiveMd(projectRoot: string): Promise<void> {
 
   // Reset legacy active.md
   await writeFile(paths.activePath, generateActiveTemplate());
-
-  // Clear file guard
-  _fileGuard = null;
 }

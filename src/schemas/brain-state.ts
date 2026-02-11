@@ -6,7 +6,6 @@
 import type { HiveMindConfig, GovernanceMode } from "./config.js";
 import type { HierarchyState } from "./hierarchy.js";
 import type { SentimentSignal } from "../lib/sentiment.js";
-import type { FileGuard } from "../lib/planning-fs.js";
 
 export type SessionMode = "plan_driven" | "quick_fix" | "exploration";
 export type GovernanceStatus = "LOCKED" | "OPEN";
@@ -71,8 +70,6 @@ export interface BrainState {
   version: string;
 
   // New — hierarchy redesign fields
-  /** Read-before-write guard state for session files */
-  file_guard: FileGuard | null;
   /** Written by purification subagent for next compaction cycle */
   next_compaction_report: string | null;
   /** How many compactions this session */
@@ -136,7 +133,6 @@ export function createBrainState(
     last_commit_suggestion_turn: 0,
     version: BRAIN_STATE_VERSION,
     // Hierarchy redesign fields (initialized null/0)
-    file_guard: null,
     next_compaction_report: null,
     compaction_count: 0,
     last_compaction_time: 0,
