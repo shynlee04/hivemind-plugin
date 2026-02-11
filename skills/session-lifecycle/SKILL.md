@@ -185,11 +185,11 @@ Your session behavior depends on the governance mode:
 | "SESSION LOCKED" warning | Call `declare_intent` first |
 | High drift warning | Call `map_context` to reset |
 | No session data | Run `hivemind init` |
-| Lost context | Check `.opencode/planning/active.md` |
+| Lost context | Check `.hivemind/sessions/active.md` |
 
 ## Files to Know
 
-- `.opencode/planning/active.md` — Current session (read this)
-- `.opencode/planning/index.md` — Project trajectory (read this)
-- `.opencode/planning/brain.json` — Machine state (don't edit)
-- `.opencode/planning/archive/` — Session history
+- `.hivemind/sessions/active.md` — Current session (read this)
+- `.hivemind/sessions/index.md` — Project trajectory (read this)
+- `.hivemind/brain.json` — Machine state (don't edit)
+- `.hivemind/sessions/archive/` — Session history

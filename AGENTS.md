@@ -304,8 +304,6 @@ HiveMind provides git hooks to enforce best practices:
 This installs a pre-commit hook that:
 - Warns when `brain.json` is modified (verify session state)
 - Warns when `active.md` is modified (check hierarchy consistency)
-- Warns when `.plan/` files are staged (use `.hivemind/plans/` instead)
-- Requires confirmation before committing deprecated `.plan/` files
 
 ### Atomic Commit Guidelines
 

@@ -7,5 +7,3 @@ dist/
 coverage/
 .opencode/
 
-# Deprecated .plan/ directory structure (kept for backwards compatibility)
-# Active plans: .hivemind/plans/
