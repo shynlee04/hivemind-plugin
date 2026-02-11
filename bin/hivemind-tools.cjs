@@ -80,6 +80,63 @@ function printResult(data, args) {
   }
 }
 
+// ─── Dot-Notation & Validation Helpers ──────────────────────────────────────────
+
+function getNestedValue(obj, dotPath) {
+  return dotPath.split('.').reduce((o, key) => o && o[key] !== undefined ? o[key] : undefined, obj);
+}
+
+function isValidStamp(stamp) {
+  if (typeof stamp !== 'string' || stamp.length !== 12) return false;
+  return /^\d{12}$/.test(stamp);
+}
+
+function collectStamps(node) {
+  const stamps = [];
+  if (!node) return stamps;
+  if (node.stamp) stamps.push({ id: node.id, stamp: node.stamp, level: node.level });
+  for (const child of node.children || []) {
+    stamps.push(...collectStamps(child));
+  }
+  return stamps;
+}
+
+const LEVEL_DEPTH = { trajectory: 1, tactic: 2, action: 3 };
+
+function validateHierarchyChain(tree) {
+  const issues = [];
+  if (!tree || !tree.root) return issues;
+
+  const ids = new Set();
+  function walk(node, parentLevel) {
+    // Check unique ID
+    if (ids.has(node.id)) issues.push(`Duplicate ID: ${node.id}`);
+    ids.add(node.id);
+
+    // Check level depth
+    const depth = LEVEL_DEPTH[node.level] || 0;
+    const parentDepth = LEVEL_DEPTH[parentLevel] || 0;
+    if (parentLevel && depth <= parentDepth) {
+      issues.push(`Invalid level: ${node.level} under ${parentLevel} (${node.id})`);
+    }
+
+    for (const child of node.children || []) {
+      walk(child, node.level);
+    }
+  }
+
+  walk(tree.root, null);
+
+  // Check cursor points to existing node
+  if (tree.cursor) {
+    if (!ids.has(tree.cursor)) {
+      issues.push(`Cursor points to non-existent node: ${tree.cursor}`);
+    }
+  }
+
+  return issues;
+}
+
 // ─── Path Resolution ──────────────────────────────────────────────────────────
 
 function getHiveMindPaths(dir) {
@@ -831,27 +888,437 @@ function walkSync(dir, filter) {
   return results;
 }
 
+// ─── State Commands ──────────────────────────────────────────────────────────
+
+function cmdState(args) {
+  const subCmd = args[0];
+  const restArgs = args.slice(1);
+
+  switch (subCmd) {
+    case 'load':      cmdStateLoad(restArgs); break;
+    case 'get':       cmdStateGet(restArgs); break;
+    case 'hierarchy': cmdStateHierarchy(restArgs); break;
+    default:
+      console.log(`Unknown state command: ${subCmd || '(none)'}`);
+      console.log('Valid: load, get, hierarchy');
+  }
+}
+
+function cmdStateLoad(args) {
+  const dir = resolveDir(args);
+  const paths = getHiveMindPaths(dir);
+
+  const brain = safeReadJSON(paths.brain);
+  const config = safeReadJSON(paths.config);
+  const tree = safeReadJSON(paths.hierarchy);
+
+  const result = {
+    brain: brain || null,
+    config: config || null,
+    hierarchy: tree || null,
+  };
+
+  // state commands always output JSON
+  printResult(result, ['--json']);
+}
+
+function cmdStateGet(args) {
+  const field = args[0];
+  if (!field) {
+    console.log('ERROR: Missing field argument');
+    console.log('Usage: state get <field> [dir]');
+    console.log('Example: state get metrics.turn_count');
+    return;
+  }
+
+  const dir = resolveDir(args.slice(1));
+  const paths = getHiveMindPaths(dir);
+  const brain = safeReadJSON(paths.brain);
+
+  if (!brain) {
+    console.log('ERROR: brain.json not found');
+    return;
+  }
+
+  const value = getNestedValue(brain, field);
+
+  if (hasFlag(args, '--json')) {
+    printResult({ field, value }, args);
+  } else {
+    if (value === undefined) {
+      console.log('undefined');
+    } else if (typeof value === 'object') {
+      console.log(JSON.stringify(value, null, 2));
+    } else {
+      console.log(String(value));
+    }
+  }
+}
+
+function cmdStateHierarchy(args) {
+  // Alias for inspect tree
+  cmdInspect(['tree', ...args]);
+}
+
+// ─── Session Commands ────────────────────────────────────────────────────────
+
+function cmdSession(args) {
+  const subCmd = args[0];
+  const restArgs = args.slice(1);
+
+  switch (subCmd) {
+    case 'active':  cmdSessionActive(restArgs); break;
+    case 'history': cmdSessionHistory(restArgs); break;
+    case 'trace':   cmdSessionTrace(restArgs); break;
+    default:
+      console.log(`Unknown session command: ${subCmd || '(none)'}`);
+      console.log('Valid: active, history, trace');
+  }
+}
+
+function cmdSessionActive(args) {
+  const dir = resolveDir(args);
+  const paths = getHiveMindPaths(dir);
+  const manifest = safeReadJSON(paths.manifest);
+
+  if (!manifest) {
+    if (hasFlag(args, '--json')) {
+      printResult({ error: 'No manifest.json found', active: null }, args);
+    } else {
+      console.log('No manifest.json found (using legacy singleton active.md)');
+    }
+    return;
+  }
+
+  const activeStamp = manifest.active_stamp;
+  const activeSession = (manifest.sessions || []).find(s => s.stamp === activeStamp);
+
+  const result = {
+    active_stamp: activeStamp || null,
+    session: activeSession || null,
+  };
+
+  if (hasFlag(args, '--json')) {
+    printResult(result, args);
+    return;
+  }
+
+  if (!activeStamp) {
+    console.log('No active session');
+    return;
+  }
+
+  console.log('Active Session');
+  console.log('='.repeat(60));
+  console.log(`Stamp:   ${activeStamp}`);
+  if (activeSession) {
+    console.log(`File:    ${activeSession.file || '(none)'}`);
+    console.log(`Status:  ${activeSession.status || '?'}`);
+    console.log(`Created: ${activeSession.created_at || '?'}`);
+    if (activeSession.summary) console.log(`Summary: ${activeSession.summary}`);
+  } else {
+    console.log('(session entry not found in manifest)');
+  }
+}
+
+function cmdSessionHistory(args) {
+  const dir = resolveDir(args);
+  const paths = getHiveMindPaths(dir);
+  const manifest = safeReadJSON(paths.manifest);
+
+  if (!manifest) {
+    if (hasFlag(args, '--json')) {
+      printResult({ error: 'No manifest.json found', sessions: [] }, args);
+    } else {
+      console.log('No manifest.json found');
+    }
+    return;
+  }
+
+  const sessions = manifest.sessions || [];
+
+  if (hasFlag(args, '--json')) {
+    printResult({ active_stamp: manifest.active_stamp, sessions }, args);
+    return;
+  }
+
+  console.log('Session History');
+  console.log('='.repeat(60));
+  console.log(`Active stamp: ${manifest.active_stamp || '(none)'}`);
+  console.log(`Total sessions: ${sessions.length}`);
+  console.log('');
+
+  for (const s of sessions) {
+    const active = s.stamp === manifest.active_stamp ? ' ← active' : '';
+    console.log(`  ${s.stamp} [${s.status || '?'}]${active}`);
+    if (s.file) console.log(`    File:    ${s.file}`);
+    if (s.created_at) console.log(`    Created: ${s.created_at}`);
+    if (s.summary) console.log(`    Summary: ${s.summary}`);
+  }
+}
+
+function cmdSessionTrace(args) {
+  const stamp = args.find(a => !a.startsWith('-'));
+  if (!stamp) {
+    console.log('ERROR: Missing stamp argument');
+    console.log('Usage: session trace <stamp> [dir]');
+    return;
+  }
+
+  // Remove stamp from args to resolve dir from remaining
+  const remainingArgs = args.filter(a => a !== stamp);
+  const dir = resolveDir(remainingArgs.length > 0 ? remainingArgs : []);
+  const paths = getHiveMindPaths(dir);
+  const matches = [];
+
+  // Search each JSON file
+  const jsonFiles = [
+    ['brain.json', paths.brain],
+    ['hierarchy.json', paths.hierarchy],
+    ['config.json', paths.config],
+    ['manifest.json', paths.manifest],
+    ['anchors.json', paths.anchors],
+    ['mems.json', paths.mems],
+  ];
+
+  for (const [name, filePath] of jsonFiles) {
+    const content = safeReadFile(filePath);
+    if (content && content.includes(stamp)) {
+      matches.push({ file: name, found: true });
+    }
+  }
+
+  // Search archive files
+  if (exists(paths.archive)) {
+    try {
+      for (const f of fs.readdirSync(paths.archive)) {
+        const content = safeReadFile(path.join(paths.archive, f));
+        if (content && content.includes(stamp)) {
+          matches.push({ file: `archive/${f}`, found: true });
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Search session .md files (excluding index.md and active.md)
+  if (exists(paths.sessions)) {
+    try {
+      for (const f of fs.readdirSync(paths.sessions)) {
+        if (f.endsWith('.md') && f !== 'index.md' && f !== 'active.md') {
+          const content = safeReadFile(path.join(paths.sessions, f));
+          if (content && content.includes(stamp)) {
+            matches.push({ file: `sessions/${f}`, found: true });
+          }
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  if (hasFlag(args, '--json')) {
+    printResult({ stamp, matches, total: matches.length }, args);
+    return;
+  }
+
+  console.log(`Trace: ${stamp}`);
+  console.log('='.repeat(60));
+  if (matches.length === 0) {
+    console.log('  No matches found');
+  } else {
+    for (const m of matches) {
+      console.log(`  ✓ ${m.file}`);
+    }
+    console.log(`\n${matches.length} file(s) contain stamp ${stamp}`);
+  }
+}
+
+// ─── Config Commands ─────────────────────────────────────────────────────────
+
+function cmdConfig(args) {
+  const subCmd = args[0];
+  const restArgs = args.slice(1);
+
+  switch (subCmd) {
+    case 'get':         cmdConfigGet(restArgs); break;
+    case 'trace-paths': cmdTracePaths(restArgs); break;
+    default:
+      console.log(`Unknown config command: ${subCmd || '(none)'}`);
+      console.log('Valid: get, trace-paths');
+  }
+}
+
+function cmdConfigGet(args) {
+  const key = args[0];
+  if (!key) {
+    console.log('ERROR: Missing key argument');
+    console.log('Usage: config get <key> [dir]');
+    return;
+  }
+
+  const dir = resolveDir(args.slice(1));
+  const paths = getHiveMindPaths(dir);
+  const config = safeReadJSON(paths.config);
+
+  if (!config) {
+    console.log('ERROR: config.json not found');
+    return;
+  }
+
+  const value = getNestedValue(config, key);
+
+  if (hasFlag(args, '--json')) {
+    printResult({ key, value }, args);
+  } else {
+    if (value === undefined) {
+      console.log('undefined');
+    } else if (typeof value === 'object') {
+      console.log(JSON.stringify(value, null, 2));
+    } else {
+      console.log(String(value));
+    }
+  }
+}
+
+// ─── Validate Dispatch (compound) ───────────────────────────────────────────
+
+function cmdValidateDispatch(args) {
+  const subCmd = args[0];
+
+  if (subCmd === 'schema') {
+    cmdValidate(args.slice(1));
+  } else if (subCmd === 'chain') {
+    cmdValidateChainCmd(args.slice(1));
+  } else if (subCmd === 'stamps') {
+    cmdValidateStampsCmd(args.slice(1));
+  } else {
+    // Legacy: no subcommand or dir/flag — treat as schema validation
+    cmdValidate(args);
+  }
+}
+
+function cmdValidateChainCmd(args) {
+  const dir = resolveDir(args);
+  const paths = getHiveMindPaths(dir);
+  const tree = safeReadJSON(paths.hierarchy);
+
+  if (!tree) {
+    if (hasFlag(args, '--json')) {
+      printResult({ valid: false, issues: ['hierarchy.json not found'] }, args);
+    } else {
+      console.log('ERROR: hierarchy.json not found');
+    }
+    return;
+  }
+
+  const issues = validateHierarchyChain(tree);
+  const valid = issues.length === 0;
+
+  if (hasFlag(args, '--json')) {
+    printResult({ valid, issues }, args);
+    return;
+  }
+
+  console.log('Chain Validation');
+  console.log('='.repeat(60));
+  if (valid) {
+    console.log('✅ Hierarchy chain is valid');
+  } else {
+    console.log(`❌ ${issues.length} issue(s) found:`);
+    for (const issue of issues) {
+      console.log(`  → ${issue}`);
+    }
+  }
+}
+
+function cmdValidateStampsCmd(args) {
+  const dir = resolveDir(args);
+  const paths = getHiveMindPaths(dir);
+  const tree = safeReadJSON(paths.hierarchy);
+
+  if (!tree) {
+    if (hasFlag(args, '--json')) {
+      printResult({ valid: false, issues: ['hierarchy.json not found'], stamps: [] }, args);
+    } else {
+      console.log('ERROR: hierarchy.json not found');
+    }
+    return;
+  }
+
+  const stamps = collectStamps(tree.root);
+  const issues = [];
+
+  for (const entry of stamps) {
+    if (!isValidStamp(entry.stamp)) {
+      issues.push(`Invalid stamp "${entry.stamp}" on node ${entry.id} (${entry.level})`);
+    }
+  }
+
+  const valid = issues.length === 0;
+
+  if (hasFlag(args, '--json')) {
+    printResult({ valid, stamps, issues }, args);
+    return;
+  }
+
+  console.log('Stamp Validation');
+  console.log('='.repeat(60));
+  console.log(`Total stamps: ${stamps.length}`);
+  if (valid) {
+    console.log('✅ All stamps valid');
+    for (const entry of stamps) {
+      console.log(`  ✓ ${entry.stamp} → ${entry.id} (${entry.level})`);
+    }
+  } else {
+    console.log(`❌ ${issues.length} issue(s) found:`);
+    for (const issue of issues) {
+      console.log(`  → ${issue}`);
+    }
+  }
+}
+
 // ─── Main Dispatch ────────────────────────────────────────────────────────────
 
 const HELP = `
 HiveMind Tools — Ecosystem verification & inspection CLI
 
-Usage: node bin/hivemind-tools.js <command> [args] [--json]
+Usage: node bin/hivemind-tools.cjs <command> [args] [--json]
 
-Commands:
-  trace-paths [dir]           Show all HiveMind paths
-  verify-install [dir]        Check plugin registration + integrity
-  migrate-check [dir]         Detect old structures needing migration
-  inspect <sub> [dir]         Inspect state (brain|tree|config|sessions|detection)
-  validate [dir]              Schema check all JSON files
-  ecosystem-check [dir]       Full chain verification
-  source-audit [dir]          Audit src/ for responsibilities
-  filetree [dir]              Show .hivemind/ file tree
-  help                        This message
+Path & Install:
+  trace-paths [dir]              Show all HiveMind paths
+  verify-install [dir]           Check plugin registration + integrity
+  migrate-check [dir]            Detect old structures needing migration
+
+Inspection:
+  inspect <sub> [dir]            Inspect state (brain|tree|config|sessions|detection)
+
+State (always JSON):
+  state load [dir]               Combined brain + config + hierarchy JSON
+  state get <field> [dir]        Get brain field (dot notation, e.g. metrics.turn_count)
+  state hierarchy [dir]          Render ASCII hierarchy tree (alias for inspect tree)
+
+Session:
+  session active [dir]           Show active session stamp + manifest entry
+  session history [dir]          List all sessions with stamps and status
+  session trace <stamp> [dir]    Grep stamp across ALL .hivemind artifacts
+
+Config:
+  config get <key> [dir]         Get config value (dot notation)
+  config trace-paths [dir]       Alias for trace-paths
+
+Validation:
+  validate [dir]                 Schema check all JSON files
+  validate schema [dir]          Same as validate (explicit)
+  validate chain [dir]           Check hierarchy parent-child integrity
+  validate stamps [dir]          Check all timestamps parse correctly
+
+Ecosystem:
+  ecosystem-check [dir]          Full chain verification
+  source-audit [dir]             Audit src/ for responsibilities
+  filetree [dir]                 Show .hivemind/ file tree
+  help                           This message
 
 Options:
-  --json                      Structured JSON output
-  --raw                       Minimal output
+  --json                         Structured JSON output
+  --raw                          Minimal output
 `;
 
 const [cmd, ...args] = process.argv.slice(2);
@@ -861,7 +1328,10 @@ switch (cmd) {
   case 'verify-install':   cmdVerifyInstall(args); break;
   case 'migrate-check':    cmdMigrateCheck(args); break;
   case 'inspect':          cmdInspect(args); break;
-  case 'validate':         cmdValidate(args); break;
+  case 'state':            cmdState(args); break;
+  case 'session':          cmdSession(args); break;
+  case 'config':           cmdConfig(args); break;
+  case 'validate':         cmdValidateDispatch(args); break;
   case 'ecosystem-check':  cmdEcosystemCheck(args); break;
   case 'source-audit':     cmdSourceAudit(args); break;
   case 'filetree':         cmdFiletree(args); break;
