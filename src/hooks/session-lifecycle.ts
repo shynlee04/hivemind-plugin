@@ -26,10 +26,7 @@ import {
 } from "../lib/planning-fs.js"
 import { isSessionStale } from "../lib/staleness.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
-import { loadAnchors, formatAnchorsForPrompt } from "../lib/anchors.js"
-import { loadMems, formatMemsForPrompt } from "../lib/mems.js"
-import { shouldSuggestCommit } from "../lib/commit-advisor.js"
-import { getToolActivation } from "../lib/tool-activation.js"
+import { loadAnchors } from "../lib/anchors.js"
 import { detectLongSession } from "../lib/long-session.js"
 
 /**
@@ -40,7 +37,7 @@ import { detectLongSession } from "../lib/long-session.js"
  *   - Governance status (LOCKED/OPEN)
  *   - Session metrics (drift score, turn count)
  *
- * Budget: ≤250 tokens (~1000 chars). ADD, not REPLACE.
+ * Budget: ≤2500 chars. Sections assembled by priority, lowest dropped if over budget. ADD, not REPLACE.
  */
 export function createSessionLifecycleHook(
   log: Logger,
@@ -48,7 +45,6 @@ export function createSessionLifecycleHook(
   config: HiveMindConfig
 ) {
   const stateManager = createStateManager(directory)
-  const BUDGET_CHARS = 1000
 
   return async (
     input: { sessionID?: string; model?: any },
@@ -100,112 +96,93 @@ export function createSessionLifecycleHook(
         }
       }
 
-      const lines: string[] = []
-      lines.push("<hivemind-governance>")
+      // Build sections in priority order
+      const statusLines: string[] = []
+      const hierarchyLines: string[] = []
+      const warningLines: string[] = []
+      const anchorLines: string[] = []
+      const metricsLines: string[] = []
+      const configLines: string[] = []
 
-      // Session status
-      lines.push(
-        `Session: ${state.session.governance_status} | Mode: ${state.session.mode} | Governance: ${state.session.governance_mode}`
-      )
+      // STATUS (always shown)
+      statusLines.push(`Session: ${state.session.governance_status} | Mode: ${state.session.mode} | Governance: ${state.session.governance_mode}`)
 
-      // Hierarchy context
-      if (state.hierarchy.trajectory) {
-        lines.push(`Trajectory: ${state.hierarchy.trajectory}`)
-      }
-      if (state.hierarchy.tactic) {
-        lines.push(`Tactic: ${state.hierarchy.tactic}`)
-      }
-      if (state.hierarchy.action) {
-        lines.push(`Action: ${state.hierarchy.action}`)
-      }
-
-      // Chain Break Detection
-      const chainBreaks = detectChainBreaks(state);
-      if (chainBreaks.length > 0) {
-        lines.push("⚠ Chain breaks detected:");
-        for (const brk of chainBreaks) {
-          lines.push(`  - ${brk.message}`);
-        }
-      }
-
-      // Inject immutable anchors
-      const anchorsState = await loadAnchors(directory);
-      const anchorsPrompt = formatAnchorsForPrompt(anchorsState);
-      if (anchorsPrompt) {
-        lines.push(anchorsPrompt);
-      }
-
-      // Mems Brain count
-      const memsState = await loadMems(directory)
-      const memsPrompt = formatMemsForPrompt(memsState)
-      if (memsPrompt) {
-        lines.push(memsPrompt)
-      }
+      // HIERARCHY (always shown)
+      if (state.hierarchy.trajectory) hierarchyLines.push(`Trajectory: ${state.hierarchy.trajectory}`)
+      if (state.hierarchy.tactic) hierarchyLines.push(`Tactic: ${state.hierarchy.tactic}`)
+      if (state.hierarchy.action) hierarchyLines.push(`Action: ${state.hierarchy.action}`)
 
       // No hierarchy = prompt to declare intent
-      if (
-        !state.hierarchy.trajectory &&
-        !state.hierarchy.tactic &&
-        !state.hierarchy.action
-      ) {
+      if (!state.hierarchy.trajectory && !state.hierarchy.tactic && !state.hierarchy.action) {
         if (config.governance_mode === "strict") {
-          lines.push(
-            "No intent declared. Use declare_intent to unlock the session before writing."
-          )
+          warningLines.push("No intent declared. Use declare_intent to unlock the session before writing.")
         } else {
-          lines.push(
-            "Tip: Use declare_intent to set your work focus for better tracking."
-          )
+          warningLines.push("Tip: Use declare_intent to set your work focus for better tracking.")
         }
       }
 
-      // Metrics summary
-      lines.push(
-        `Turns: ${state.metrics.turn_count} | Drift: ${state.metrics.drift_score}/100 | Files: ${state.metrics.files_touched.length}`
-      )
+      // WARNINGS (shown if present) — merged drift + tool activation into single line
+      if (state.metrics.drift_score < 50) {
+        warningLines.push("⚠ High drift detected. Use map_context to re-focus.")
+      }
 
-      // Commit suggestion
-      const commitSuggestion = shouldSuggestCommit(state, config.commit_suggestion_threshold);
-      if (commitSuggestion) {
-        lines.push(`💡 ${commitSuggestion.reason}`);
+      // Chain breaks
+      const chainBreaks = detectChainBreaks(state)
+      if (chainBreaks.length > 0) {
+        warningLines.push("⚠ Chain breaks: " + chainBreaks.map(b => b.message).join("; "))
       }
 
       // Long session detection
-      const longSession = detectLongSession(state, config.auto_compact_on_turns);
+      const longSession = detectLongSession(state, config.auto_compact_on_turns)
       if (longSession.isLong) {
-        lines.push(`⏰ ${longSession.suggestion}`);
+        warningLines.push(`⏰ ${longSession.suggestion}`)
       }
 
-      // Drift warning
-      if (state.metrics.drift_score < 50) {
-        lines.push(
-          "⚠ High drift detected. Use map_context to re-focus."
-        )
+      // ANCHORS with age (shown if present)
+      const anchorsState = await loadAnchors(directory)
+      if (anchorsState.anchors.length > 0) {
+        anchorLines.push("<immutable-anchors>")
+        for (const anchor of anchorsState.anchors) {
+          const age = Date.now() - anchor.created_at
+          const ageStr = age < 3600000 ? `${Math.floor(age / 60000)}m ago` :
+                         age < 86400000 ? `${Math.floor(age / 3600000)}h ago` :
+                         `${Math.floor(age / 86400000)}d ago`
+          anchorLines.push(`  [${anchor.key}] (${ageStr}): ${anchor.value}`)
+        }
+        anchorLines.push("</immutable-anchors>")
       }
 
-      // Tool activation hint
-      const toolHint = getToolActivation(state);
-      if (toolHint) {
-        lines.push(`🔧 Suggested: ${toolHint.tool} — ${toolHint.reason}`);
-      }
+      // METRICS (shown if space)
+      metricsLines.push(`Turns: ${state.metrics.turn_count} | Drift: ${state.metrics.drift_score}/100 | Files: ${state.metrics.files_touched.length}`)
 
-      lines.push("</hivemind-governance>")
-
-      // Inject mandatory agent behavior configuration
+      // AGENT CONFIG (shown if space)
       const agentConfigPrompt = generateAgentBehaviorPrompt(config.agent_behavior)
-      lines.push("")
-      lines.push(agentConfigPrompt)
+      configLines.push(agentConfigPrompt)
 
-      // Budget enforcement
-      let injection = lines.join("\n")
-      if (injection.length > BUDGET_CHARS) {
-        injection =
-          injection.slice(0, BUDGET_CHARS - 30) +
-          "\n</agent-configuration>"
-        await log.warn(
-          `System injection truncated: ${lines.join("\n").length} → ${injection.length} chars`
-        )
+      // Assemble by priority — drop lowest priority sections if over budget
+      const BUDGET_CHARS = 2500
+      const sections = [
+        statusLines,    // P1: always
+        hierarchyLines, // P2: always
+        warningLines,   // P3: if present
+        anchorLines,    // P4: if present
+        metricsLines,   // P5: if space
+        configLines,    // P6: if space (agent config is lowest priority per-turn)
+      ]
+
+      const finalLines: string[] = ['<hivemind>']
+      for (const section of sections) {
+        if (section.length === 0) continue
+        const candidate = [...finalLines, ...section, '</hivemind>'].join('\n')
+        if (candidate.length <= BUDGET_CHARS) {
+          finalLines.push(...section)
+        } else {
+          await log.debug(`Section dropped due to budget: ${section[0]?.slice(0, 40)}...`)
+        }
       }
+      finalLines.push('</hivemind>')
+
+      const injection = finalLines.join('\n')
 
       output.system.push(injection)
 

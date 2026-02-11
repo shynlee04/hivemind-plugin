@@ -410,50 +410,10 @@ async function test_chainBreaksInjected() {
 
     // Step 4: Assert chain break detection
     const systemText = output.system.join("\n")
-    assert(systemText.includes("Chain breaks detected"), "output contains chain breaks warning")
+    assert(systemText.includes("Chain breaks:"), "output contains chain breaks warning")
     assert(
       systemText.includes("no parent tactic"),
       "output mentions missing parent tactic"
-    )
-
-  } finally {
-    await cleanup()
-  }
-}
-
-async function test_commitSuggestionAtThreshold() {
-  process.stderr.write("\n--- integration: commit suggestion appears at file threshold ---\n")
-
-  const dir = await setup()
-
-  try {
-    // Step 1: Init project, declare intent
-    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Commit advisor test" }
-    )
-
-    // Step 2: Modify brain state — add 5+ files to files_touched
-    const stateManager = createStateManager(dir)
-    const state = await stateManager.load()
-    state!.metrics.files_touched = [
-      "src/a.ts", "src/b.ts", "src/c.ts", "src/d.ts", "src/e.ts"
-    ]
-    await stateManager.save(state!)
-
-    // Step 3: Create session lifecycle hook and call it
-    const config = await loadConfig(dir)
-    const logger = await createLogger(dir, "test")
-    const hook = createSessionLifecycleHook(logger, dir, config)
-    const output = { system: [] as string[] }
-    await hook({ sessionID: "test-session" }, output)
-
-    // Step 4: Assert commit suggestion
-    const systemText = output.system.join("\n")
-    assert(
-      systemText.includes("files touched") && systemText.includes("consider committing"),
-      "output contains commit suggestion"
     )
 
   } finally {
@@ -1139,8 +1099,8 @@ async function test_autoMemOnCompaction() {
   }
 }
 
-async function test_systemPromptIncludesMemsCount() {
-  process.stderr.write("\n--- round4: system prompt includes mems count ---\n")
+async function test_systemPromptUsesHivemindTag() {
+  process.stderr.write("\n--- round4: system prompt uses <hivemind> tag ---\n")
 
   const dir = await setup()
 
@@ -1149,26 +1109,25 @@ async function test_systemPromptIncludesMemsCount() {
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
     const declareIntentTool = createDeclareIntentTool(dir)
     await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Mems prompt test" }
+      { mode: "plan_driven", focus: "Tag format test" }
     )
 
-    // Step 2: Save some mems
-    const saveMemTool = createSaveMemTool(dir)
-    await saveMemTool.execute({ shelf: "patterns", content: "Always validate inputs" })
-    await saveMemTool.execute({ shelf: "decisions", content: "Use Zod for schema validation" })
-
-    // Step 3: Create session lifecycle hook and call it
+    // Step 2: Create session lifecycle hook and call it
     const config = await loadConfig(dir)
     const logger = await createLogger(dir, "test")
     const hook = createSessionLifecycleHook(logger, dir, config)
     const output = { system: [] as string[] }
     await hook({ sessionID: "test-session" }, output)
 
-    // Step 4: Assert mems count in system prompt
+    // Step 3: Assert <hivemind> tag used (not <hivemind-governance>)
     const systemText = output.system.join("\n")
     assert(
-      systemText.includes("Mems Brain") && systemText.includes("2 memories") && systemText.includes("recall_mems"),
-      "session lifecycle hook shows mems brain count"
+      systemText.includes("<hivemind>") && systemText.includes("</hivemind>"),
+      "system prompt uses <hivemind> tags"
+    )
+    assert(
+      !systemText.includes("<hivemind-governance>"),
+      "system prompt does NOT use old <hivemind-governance> tags"
     )
 
   } finally {
@@ -1261,7 +1220,6 @@ async function main() {
   await test_compactionHookPreservesHierarchy()
   await test_staleSessionAutoArchived()
   await test_chainBreaksInjected()
-  await test_commitSuggestionAtThreshold()
   await test_toolActivationSuggestsIntentWhenLocked()
   await test_sessionMetadataPersistsThroughLifecycle()
   await test_activeMdContainsLivingPlan()
@@ -1278,7 +1236,7 @@ async function main() {
   await test_recallMemsSearchesAcrossSessions()
   await test_listShelvesShowsOverview()
   await test_autoMemOnCompaction()
-  await test_systemPromptIncludesMemsCount()
+  await test_systemPromptUsesHivemindTag()
   await test_fullMemsBrainWorkflow()
 
   process.stderr.write(`\n=== Integration: ${passed} passed, ${failed_} failed ===\n`)

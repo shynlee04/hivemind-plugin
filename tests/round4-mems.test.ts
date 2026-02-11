@@ -610,7 +610,7 @@ async function test_hookIntegrations() {
     cleanTmpDir(dir)
   }
 
-  // Assertions 4-5: system prompt includes mems count
+  // Assertions 4-5: system prompt uses <hivemind> tag (mems no longer injected)
   const dir2 = makeTmpDir()
   try {
     await initProject(dir2, { governanceMode: "assisted", language: "en", silent: true })
@@ -627,12 +627,12 @@ async function test_hookIntegrations() {
     const systemText = output.system.join("\n")
 
     assert(
-      systemText.includes("Mems Brain"),
-      "system prompt includes mems count after save_mem"
+      systemText.includes("<hivemind>"),
+      "system prompt includes <hivemind> tag after save_mem"
     )
     assert(
-      systemText.includes("recall_mems"),
-      'system prompt includes "recall_mems" hint'
+      systemText.includes("Session:") && systemText.includes("Turns:"),
+      'system prompt includes session status and metrics'
     )
   } finally {
     cleanTmpDir(dir2)
