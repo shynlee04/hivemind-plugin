@@ -27,6 +27,7 @@ import {
 import { isSessionStale } from "../lib/staleness.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { loadAnchors, formatAnchorsForPrompt } from "../lib/anchors.js"
+import { loadMems, formatMemsForPrompt } from "../lib/mems.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
 import { getToolActivation } from "../lib/tool-activation.js"
 import { detectLongSession } from "../lib/long-session.js"
@@ -132,6 +133,13 @@ export function createSessionLifecycleHook(
       const anchorsPrompt = formatAnchorsForPrompt(anchorsState);
       if (anchorsPrompt) {
         lines.push(anchorsPrompt);
+      }
+
+      // Mems Brain count
+      const memsState = await loadMems(directory)
+      const memsPrompt = formatMemsForPrompt(memsState)
+      if (memsPrompt) {
+        lines.push(memsPrompt)
       }
 
       // No hierarchy = prompt to declare intent

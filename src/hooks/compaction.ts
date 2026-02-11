@@ -10,6 +10,7 @@
 
 import type { Logger } from "../lib/logging.js"
 import { createStateManager } from "../lib/persistence.js"
+import { loadMems } from "../lib/mems.js"
 
 /** Budget in characters (~500 tokens at ~4 chars/token) */
 const INJECTION_BUDGET_CHARS = 2000
@@ -77,6 +78,12 @@ export function createCompactionHook(log: Logger, directory: string) {
             `  ... and ${state.metrics.files_touched.length - maxFiles} more`
           )
         }
+      }
+
+      // Mems Brain summary
+      const memsState = await loadMems(directory)
+      if (memsState.mems.length > 0) {
+        lines.push(`Mems Brain: ${memsState.mems.length} memories stored. Use recall_mems to search.`)
       }
 
       lines.push("")

@@ -27,6 +27,7 @@ import {
   getExportDir,
 } from "../lib/planning-fs.js"
 import { generateExportData, generateJsonExport, generateMarkdownExport } from "../lib/session-export.js"
+import { loadMems, saveMems, addMem } from "../lib/mems.js"
 import { mkdir, writeFile } from "fs/promises"
 import { join } from "path"
 
@@ -104,6 +105,28 @@ export function createCompactSessionTool(directory: string): ToolDefinition {
         )
       } catch {
         // Export failure is non-fatal
+      }
+
+      // Auto-save session summary as a "context" mem
+      try {
+        let memsState = await loadMems(directory)
+        const autoContent = [
+          `Session ${state.session.id}:`,
+          args.summary || `${state.metrics.turn_count} turns, ${state.metrics.files_touched.length} files`,
+          state.hierarchy.trajectory ? `Trajectory: ${state.hierarchy.trajectory}` : "",
+          state.hierarchy.tactic ? `Tactic: ${state.hierarchy.tactic}` : "",
+        ].filter(Boolean).join(" | ")
+
+        memsState = addMem(
+          memsState,
+          "context",
+          autoContent,
+          ["auto-compact", "session-summary"],
+          state.session.id
+        )
+        await saveMems(directory, memsState)
+      } catch {
+        // Auto-mem failure is non-fatal
       }
 
       // Reset active.md to template

@@ -28,6 +28,13 @@ import type { MemsState } from "../src/lib/mems.js"
 import { createSaveMemTool } from "../src/tools/save-mem.js"
 import { createListShelvesTool } from "../src/tools/list-shelves.js"
 import { createRecallMemsTool } from "../src/tools/recall-mems.js"
+import { createCompactSessionTool } from "../src/tools/compact-session.js"
+import { createDeclareIntentTool } from "../src/tools/declare-intent.js"
+import { createSessionLifecycleHook } from "../src/hooks/session-lifecycle.js"
+import { createCompactionHook } from "../src/hooks/compaction.js"
+import { createLogger } from "../src/lib/logging.js"
+import { loadConfig } from "../src/lib/persistence.js"
+import { initProject } from "../src/cli/init.js"
 import { createStateManager } from "../src/lib/persistence.js"
 import { createBrainState } from "../src/schemas/brain-state.js"
 import { createConfig } from "../src/schemas/config.js"
@@ -572,6 +579,91 @@ async function test_recallMemsTool() {
   }
 }
 
+// ─── Hook Integrations (6 assertions) ──────────────────────────────────
+
+async function test_hookIntegrations() {
+  process.stderr.write("\n--- hook integrations: mems brain ---\n")
+
+  // Assertions 1-3: compact_session auto-saves context mem
+  const dir = makeTmpDir()
+  try {
+    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
+    const declareIntentTool = createDeclareIntentTool(dir)
+    await declareIntentTool.execute({ mode: "plan_driven", focus: "Auto-mem test" })
+    const compactSessionTool = createCompactSessionTool(dir)
+    await compactSessionTool.execute({ summary: "Tested auto-mem feature" })
+    const mems = await loadMems(dir)
+
+    assert(
+      mems.mems.length >= 1,
+      "compact_session auto-saves context mem"
+    )
+    assert(
+      mems.mems[mems.mems.length - 1].shelf === "context",
+      'auto-saved mem has shelf "context"'
+    )
+    assert(
+      mems.mems[mems.mems.length - 1].tags.includes("auto-compact"),
+      'auto-saved mem has "auto-compact" tag'
+    )
+  } finally {
+    cleanTmpDir(dir)
+  }
+
+  // Assertions 4-5: system prompt includes mems count
+  const dir2 = makeTmpDir()
+  try {
+    await initProject(dir2, { governanceMode: "assisted", language: "en", silent: true })
+    const declareIntentTool2 = createDeclareIntentTool(dir2)
+    await declareIntentTool2.execute({ mode: "plan_driven", focus: "Mems prompt test" })
+    const saveMemTool = createSaveMemTool(dir2)
+    await saveMemTool.execute({ shelf: "decisions", content: "Use PostgreSQL" })
+
+    const config = await loadConfig(dir2)
+    const logger = await createLogger(dir2, "test")
+    const hook = createSessionLifecycleHook(logger, dir2, config)
+    const output = { system: [] as string[] }
+    await hook({ sessionID: "test-session" }, output)
+    const systemText = output.system.join("\n")
+
+    assert(
+      systemText.includes("Mems Brain"),
+      "system prompt includes mems count after save_mem"
+    )
+    assert(
+      systemText.includes("recall_mems"),
+      'system prompt includes "recall_mems" hint'
+    )
+  } finally {
+    cleanTmpDir(dir2)
+  }
+
+  // Assertion 6: compaction context includes mems count
+  const dir3 = makeTmpDir()
+  try {
+    await initProject(dir3, { governanceMode: "assisted", language: "en", silent: true })
+    const declareIntentTool3 = createDeclareIntentTool(dir3)
+    await declareIntentTool3.execute({ mode: "plan_driven", focus: "Compaction mems test" })
+    const saveMemTool3 = createSaveMemTool(dir3)
+    await saveMemTool3.execute({ shelf: "errors", content: "Port conflict on 3000" })
+
+    const logger = await createLogger(dir3, "test")
+    const compactionHook = createCompactionHook(logger, dir3)
+    const stateManager = createStateManager(dir3)
+    const state = await stateManager.load()
+    const output = { context: [] as string[] }
+    await compactionHook({ sessionID: state!.session.id }, output)
+    const contextText = output.context.join("\n")
+
+    assert(
+      contextText.includes("Mems Brain") && contextText.includes("recall_mems"),
+      "mems count shown after compaction context injection"
+    )
+  } finally {
+    cleanTmpDir(dir3)
+  }
+}
+
 // ─── Main ────────────────────────────────────────────────────────────
 
 async function main() {
@@ -583,6 +675,7 @@ async function main() {
   await test_saveMemTool()
   await test_listShelvesTool()
   await test_recallMemsTool()
+  await test_hookIntegrations()
 
   process.stderr.write(`\n=== Round 4: ${passed} passed, ${failed_} failed ===\n`)
   process.exit(failed_ > 0 ? 1 : 0)
