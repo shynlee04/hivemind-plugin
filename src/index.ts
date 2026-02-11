@@ -93,7 +93,7 @@ export const HiveMindPlugin: Plugin = async ({
 
     /**
      * Hook: Tool gate - governance enforcement
-     * Blocks or allows tool execution based on governance mode and session state
+     * Logs warnings based on governance mode and session state. Cannot block (OpenCode v1.1+ limitation)
      */
     "tool.execute.before": createToolGateHook(log, effectiveDir, config),
 
