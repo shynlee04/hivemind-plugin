@@ -15,7 +15,7 @@ import { createCompactionHook } from "../src/hooks/compaction.js"
 import { createSessionLifecycleHook } from "../src/hooks/session-lifecycle.js"
 import { createLogger } from "../src/lib/logging.js"
 import { loadConfig } from "../src/lib/persistence.js"
-import { mkdtemp, rm } from "fs/promises"
+import { mkdtemp, rm, readdir } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
 
@@ -481,6 +481,145 @@ async function test_toolActivationSuggestsIntentWhenLocked() {
   }
 }
 
+// ─── Round 2 Integration Tests ─────────────────────────────────────────
+
+async function test_sessionMetadataPersistsThroughLifecycle() {
+  process.stderr.write("\n--- round2: session metadata persists through lifecycle ---\n")
+
+  const dir = await setup()
+
+  try {
+    // Step 1: Init project
+    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
+
+    // Step 2: Declare intent
+    const declareIntentTool = createDeclareIntentTool(dir)
+    await declareIntentTool.execute(
+      { mode: "plan_driven", focus: "Metadata persistence test" }
+    )
+
+    // Step 3: Load brain state
+    const stateManager = createStateManager(dir)
+    const state = await stateManager.load()
+
+    // Step 4: Assert date is today's YYYY-MM-DD
+    const today = new Date().toISOString().split("T")[0]
+    assert(state!.session.date === today, "state.session.date is today's date")
+
+    // Step 5: Assert by_ai is true
+    assert(state!.session.by_ai === true, "state.session.by_ai is true")
+
+  } finally {
+    await cleanup()
+  }
+}
+
+async function test_activeMdContainsLivingPlan() {
+  process.stderr.write("\n--- round2: active.md contains living plan section ---\n")
+
+  const dir = await setup()
+
+  try {
+    // Step 1: Init project, declare intent
+    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
+    const declareIntentTool = createDeclareIntentTool(dir)
+    await declareIntentTool.execute(
+      { mode: "plan_driven", focus: "Living plan test" }
+    )
+
+    // Step 2: Read active.md
+    const activeMd = await readActiveMd(dir)
+
+    // Step 3: Assert body contains "## Plan"
+    assert(activeMd.body.includes("## Plan"), "active.md contains '## Plan' section")
+
+    // Step 4: Assert body contains the focus text as a plan item
+    assert(activeMd.body.includes("Living plan test"), "active.md contains focus text")
+
+  } finally {
+    await cleanup()
+  }
+}
+
+async function test_compactSessionGeneratesExportFiles() {
+  process.stderr.write("\n--- round2: compact_session generates export files ---\n")
+
+  const dir = await setup()
+
+  try {
+    // Step 1: Init project, declare intent
+    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
+    const declareIntentTool = createDeclareIntentTool(dir)
+    await declareIntentTool.execute(
+      { mode: "plan_driven", focus: "Export test" }
+    )
+
+    // Step 2: Call compact_session tool
+    const compactSessionTool = createCompactSessionTool(dir)
+    await compactSessionTool.execute(
+      { summary: "Export generation test" }
+    )
+
+    // Step 3: Check export directory
+    const exportDir = join(dir, ".hivemind", "sessions", "archive", "exports")
+    let exportFiles: string[] = []
+    try {
+      exportFiles = await readdir(exportDir)
+    } catch {
+      // directory might not exist
+    }
+
+    // Step 4: Assert at least 1 .json file exists
+    const jsonFiles = exportFiles.filter(f => f.endsWith(".json"))
+    assert(jsonFiles.length >= 1, "at least 1 .json export file exists")
+
+    // Step 5: Assert at least 1 .md file exists
+    const mdFiles = exportFiles.filter(f => f.endsWith(".md"))
+    assert(mdFiles.length >= 1, "at least 1 .md export file exists")
+
+  } finally {
+    await cleanup()
+  }
+}
+
+async function test_longSessionWarningInjectedAtThreshold() {
+  process.stderr.write("\n--- round2: long session warning injected at threshold ---\n")
+
+  const dir = await setup()
+
+  try {
+    // Step 1: Init project, declare intent
+    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
+    const declareIntentTool = createDeclareIntentTool(dir)
+    await declareIntentTool.execute(
+      { mode: "plan_driven", focus: "Long session test" }
+    )
+
+    // Step 2: Modify brain state — set turn_count to auto_compact_on_turns (default 20)
+    const stateManager = createStateManager(dir)
+    const state = await stateManager.load()
+    state!.metrics.turn_count = 20
+    await stateManager.save(state!)
+
+    // Step 3: Create session lifecycle hook and call it
+    const config = await loadConfig(dir)
+    const logger = await createLogger(dir, "test")
+    const hook = createSessionLifecycleHook(logger, dir, config)
+    const output = { system: [] as string[] }
+    await hook({ sessionID: "test-session" }, output)
+
+    // Step 4: Assert output contains compact_session suggestion
+    const systemText = output.system.join("\n")
+    assert(
+      systemText.includes("compact_session") || systemText.includes("Consider using compact_session"),
+      "output contains compact_session suggestion at threshold"
+    )
+
+  } finally {
+    await cleanup()
+  }
+}
+
 // ─── Main ────────────────────────────────────────────────────────────
 
 async function main() {
@@ -495,6 +634,10 @@ async function main() {
   await test_chainBreaksInjected()
   await test_commitSuggestionAtThreshold()
   await test_toolActivationSuggestsIntentWhenLocked()
+  await test_sessionMetadataPersistsThroughLifecycle()
+  await test_activeMdContainsLivingPlan()
+  await test_compactSessionGeneratesExportFiles()
+  await test_longSessionWarningInjectedAtThreshold()
 
   process.stderr.write(`\n=== Integration: ${passed} passed, ${failed_} failed ===\n`)
   process.exit(failed_ > 0 ? 1 : 0)

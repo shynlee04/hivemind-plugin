@@ -2,6 +2,7 @@ import { describe, test } from "node:test";
 import assert from "node:assert/strict";
 import { createBrainState, generateSessionId } from "../src/schemas/brain-state.js";
 import { createConfig } from "../src/schemas/config.js";
+import { detectLongSession } from "../src/lib/long-session.js";
 
 describe("=== Session Structure Tests ===", () => {
   let passed = 0;
@@ -123,6 +124,68 @@ describe("=== Session Structure Tests ===", () => {
       oldState.session.by_ai ??= true;
       assert.equal(oldState.session.by_ai, true);
       console.log("#   PASS: old state without by_ai gets true");
+      passed++;
+    });
+  });
+
+  describe("--- long session detection ---", () => {
+    test("below threshold → isLong: false", (t) => {
+      const config = createConfig();
+      const state = createBrainState(generateSessionId(), config);
+      const result = detectLongSession(state, 20);
+      assert.equal(result.isLong, false);
+      console.log("#   PASS: below threshold → isLong: false");
+      passed++;
+    });
+
+    test("at threshold → isLong: true", (t) => {
+      const config = createConfig();
+      let state = createBrainState(generateSessionId(), config);
+      // Set turn count to threshold
+      state = { ...state, metrics: { ...state.metrics, turn_count: 20 } };
+      const result = detectLongSession(state, 20);
+      assert.equal(result.isLong, true);
+      console.log("#   PASS: at threshold → isLong: true");
+      passed++;
+    });
+
+    test("above threshold → correct suggestion", (t) => {
+      const config = createConfig();
+      let state = createBrainState(generateSessionId(), config);
+      state = { ...state, metrics: { ...state.metrics, turn_count: 25 } };
+      const result = detectLongSession(state, 20);
+      assert.equal(result.isLong, true);
+      assert.ok(result.suggestion.includes("25"));
+      console.log("#   PASS: above threshold → correct suggestion");
+      passed++;
+    });
+
+    test("threshold of 0 → immediately long", (t) => {
+      const config = createConfig();
+      const state = createBrainState(generateSessionId(), config);
+      const result = detectLongSession(state, 0);
+      assert.equal(result.isLong, true);
+      console.log("#   PASS: threshold of 0 → immediately long");
+      passed++;
+    });
+
+    test("suggestion includes turn count", (t) => {
+      const config = createConfig();
+      let state = createBrainState(generateSessionId(), config);
+      state = { ...state, metrics: { ...state.metrics, turn_count: 30 } };
+      const result = detectLongSession(state, 20);
+      assert.ok(result.suggestion.includes("30"));
+      console.log("#   PASS: suggestion includes turn count");
+      passed++;
+    });
+
+    test("suggestion includes threshold", (t) => {
+      const config = createConfig();
+      let state = createBrainState(generateSessionId(), config);
+      state = { ...state, metrics: { ...state.metrics, turn_count: 30 } };
+      const result = detectLongSession(state, 20);
+      assert.ok(result.suggestion.includes("20"));
+      console.log("#   PASS: suggestion includes threshold");
       passed++;
     });
   });

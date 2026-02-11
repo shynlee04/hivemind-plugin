@@ -28,6 +28,7 @@ import { isSessionStale } from "../lib/staleness.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
 import { getToolActivation } from "../lib/tool-activation.js"
+import { detectLongSession } from "../lib/long-session.js"
 
 /**
  * Creates the session lifecycle hook (system prompt transform).
@@ -151,6 +152,12 @@ export function createSessionLifecycleHook(
       const commitSuggestion = shouldSuggestCommit(state, config.commit_suggestion_threshold);
       if (commitSuggestion) {
         lines.push(`💡 ${commitSuggestion.reason}`);
+      }
+
+      // Long session detection
+      const longSession = detectLongSession(state, config.auto_compact_on_turns);
+      if (longSession.isLong) {
+        lines.push(`⏰ ${longSession.suggestion}`);
       }
 
       // Drift warning

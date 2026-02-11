@@ -17,6 +17,7 @@ import { createStateManager } from "../lib/persistence.js"
 import { addViolationCount, incrementTurnCount, setLastCommitSuggestionTurn } from "../schemas/brain-state.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
+import { detectLongSession } from "../lib/long-session.js"
 
 /**
  * Creates the soft governance hook for tool execution tracking.
@@ -94,6 +95,12 @@ export function createSoftGovernanceHook(
       if (commitSuggestion) {
         newState = setLastCommitSuggestionTurn(newState, newState.metrics.turn_count);
         await stateManager.save(newState);
+      }
+
+      // Long session detection
+      const longSession = detectLongSession(newState, config.auto_compact_on_turns);
+      if (longSession.isLong) {
+        await log.warn(longSession.suggestion);
       }
 
       // Log drift warnings if detected
