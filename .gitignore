@@ -7,4 +7,5 @@ dist/
 coverage/
 .opencode/
 .hivemind/
+.worktrees/
 
