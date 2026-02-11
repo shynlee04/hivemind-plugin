@@ -65,6 +65,7 @@ async function test_strict_allows_exempt_tools() {
   process.stderr.write("\n--- tool-gate: strict allows exempt tools ---\n")
   const dir = await setup()
   const config = createConfig({ governance_mode: "strict" })
+  await saveConfig(dir, config)
 
   const hook = createToolGateHookInternal(noopLogger, dir, config)
 
@@ -84,6 +85,7 @@ async function test_strict_allows_write_when_unlocked() {
   process.stderr.write("\n--- tool-gate: strict allows write when session unlocked ---\n")
   const dir = await setup()
   const config = createConfig({ governance_mode: "strict" })
+  await saveConfig(dir, config)
 
   const sm = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
@@ -103,6 +105,7 @@ async function test_assisted_warns_but_allows() {
   process.stderr.write("\n--- tool-gate: assisted warns but allows ---\n")
   const dir = await setup()
   const config = createConfig({ governance_mode: "assisted" })
+  await saveConfig(dir, config)
 
   const hook = createToolGateHookInternal(noopLogger, dir, config)
   const result = await hook({ sessionID: "test-4", tool: "write" })
@@ -119,6 +122,7 @@ async function test_permissive_allows_silently() {
   process.stderr.write("\n--- tool-gate: permissive allows silently ---\n")
   const dir = await setup()
   const config = createConfig({ governance_mode: "permissive" })
+  await saveConfig(dir, config)
 
   const hook = createToolGateHookInternal(noopLogger, dir, config)
   const result = await hook({ sessionID: "test-5", tool: "write" })
@@ -135,6 +139,7 @@ async function test_drift_tracking() {
   process.stderr.write("\n--- tool-gate: drift tracking ---\n")
   const dir = await setup()
   const config = createConfig({ governance_mode: "assisted", max_turns_before_warning: 3 })
+  await saveConfig(dir, config)
 
   const sm = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))

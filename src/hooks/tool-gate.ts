@@ -10,7 +10,7 @@
  * This hook provides governance through warnings and tracking only.
  *
  * P3: try/catch — never break tool execution
- * P5: Config cached in closure — single disk read on first call
+ * P5: Config re-read from disk each invocation (Rule 6)
  */
 
 import type { Logger } from "../lib/logging.js"
@@ -22,7 +22,7 @@ import {
   calculateDriftScore,
   setComplexityNudgeShown,
 } from "../schemas/brain-state.js"
-import { createStateManager } from "../lib/persistence.js"
+import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { checkComplexity } from "../lib/complexity.js"
 
 /** Tools that are always allowed regardless of governance state */
@@ -66,7 +66,7 @@ export interface ToolGateResult {
 export function createToolGateHook(
   log: Logger,
   directory: string,
-  config: HiveMindConfig
+  _initConfig: HiveMindConfig
 ) {
   const stateManager = createStateManager(directory)
 
@@ -82,6 +82,9 @@ export function createToolGateHook(
       if (isExemptTool(toolName)) {
         return { allowed: true }
       }
+
+      // Rule 6: Re-read config from disk each invocation
+      const config = await loadConfig(directory)
 
       // Load brain state
       let state = await stateManager.load()
@@ -198,7 +201,7 @@ export function createToolGateHook(
   // OpenCode-compatible hook with proper signature
   // tool.execute.before receives: { tool: string, sessionID: string, callID: string }
   // and receives output: { args: any } to modify
-  return async (
+  const outerHook = async (
     input: {
       tool: string
       sessionID: string
@@ -222,11 +225,18 @@ export function createToolGateHook(
     }
     // Note: We cannot block execution, only warn and track
   }
+
+  // Expose internal hook for testing
+  ;(outerHook as any).internal = internalHook
+
+  return outerHook
 }
 
 /**
- * Creates the internal tool gate hook logic for testing.
- * This returns a hook with the original signature that can be tested directly.
+ * Creates the tool gate hook and returns its internal logic for direct testing.
+ * Equivalent to createToolGateHook(log, directory, config).internal
+ *
+ * @deprecated Use createToolGateHook(log, directory, config).internal instead.
  */
 export function createToolGateHookInternal(
   log: Logger,
@@ -236,129 +246,6 @@ export function createToolGateHookInternal(
   sessionID: string
   tool: string
 }) => Promise<ToolGateResult> {
-  const stateManager = createStateManager(directory)
-
-  return async (input: {
-    sessionID: string
-    tool: string
-  }): Promise<ToolGateResult> => {
-    try {
-      const { tool: toolName } = input
-
-      // Always allow exempt tools (governance tools + read-only)
-      if (isExemptTool(toolName)) {
-        return { allowed: true }
-      }
-
-      // Load brain state
-      let state = await stateManager.load()
-
-      // No state = no session initialized yet
-      if (!state) {
-        switch (config.governance_mode) {
-          case "strict":
-            return {
-              allowed: false,
-              error:
-                "SESSION NOT INITIALIZED. Use 'declare_intent' to start a session.",
-            }
-          case "assisted":
-            await log.warn(
-              `Tool "${toolName}" called without session. Consider using declare_intent.`
-            )
-            return {
-              allowed: true,
-              warning: "No session initialized. Consider calling declare_intent.",
-            }
-          case "permissive":
-            return { allowed: true }
-        }
-      }
-
-      // Session is locked — governance gate
-      if (state && isSessionLocked(state)) {
-        switch (config.governance_mode) {
-          case "strict":
-            if (isWriteTool(toolName)) {
-              return {
-                allowed: false,
-                error:
-                  "SESSION LOCKED. Use 'declare_intent' to unlock before writing.",
-              }
-            }
-            return { allowed: true }
-          case "assisted":
-            if (isWriteTool(toolName)) {
-              await log.warn(
-                `Write tool "${toolName}" used while session locked.`
-              )
-              return {
-                allowed: true,
-                warning:
-                  "Session locked. Declare your intent for better tracking.",
-              }
-            }
-            return { allowed: true }
-          case "permissive":
-            return { allowed: true }
-        }
-      }
-
-      // Session is open — track activity (turn count incremented in tool.execute.after only)
-      if (state) {
-        let needsSave = false
-
-        // Track file touches for write tools (tool name used as proxy)
-        if (isWriteTool(toolName)) {
-          state = addFileTouched(state, `[via ${toolName}]`)
-          needsSave = true
-        }
-
-        // Update drift score
-        state.metrics.drift_score = calculateDriftScore(state)
-
-        // Save updated state only if something changed
-        if (needsSave) {
-          await stateManager.save(state)
-        }
-
-        // Check drift warning
-        if (
-          shouldTriggerDriftWarning(
-            state,
-            config.max_turns_before_warning
-          )
-        ) {
-          await log.warn(
-            `Drift warning: ${state.metrics.turn_count} turns, score: ${state.metrics.drift_score}/100. Consider using map_context to re-focus.`
-          )
-
-          if (config.governance_mode !== "permissive") {
-            return {
-              allowed: true,
-              warning: `Drift detected (${state.metrics.drift_score}/100). Use map_context to re-focus.`,
-            }
-          }
-        }
-
-        // Check complexity and show nudge (once per session)
-        const complexityCheck = checkComplexity(state)
-        if (complexityCheck.isComplex && !state.complexity_nudge_shown) {
-          await log.warn(
-            `[Nudge] ${complexityCheck.message}`
-          )
-
-          // Mark nudge as shown
-          state = setComplexityNudgeShown(state)
-          await stateManager.save(state)
-        }
-      }
-
-      return { allowed: true }
-    } catch (error) {
-      // P3: Never break tool execution
-      await log.error(`Tool gate error: ${error}`)
-      return { allowed: true }
-    }
-  }
+  const hook = createToolGateHook(log, directory, config) as any
+  return hook.internal
 }

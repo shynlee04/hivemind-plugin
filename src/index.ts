@@ -5,7 +5,7 @@
  *
  * ## Architecture
  *
- * - **11 Tools**: declare_intent, map_context, compact_session, self_rate, scan_hierarchy, save_anchor, think_back, check_drift, save_mem, list_shelves, recall_mems
+ * - **14 Tools**: declare_intent, map_context, compact_session, self_rate, scan_hierarchy, save_anchor, think_back, check_drift, save_mem, list_shelves, recall_mems, hierarchy_prune, hierarchy_migrate, export_cycle
  * - **4 Hooks**: system prompt injection, tool gate (before), soft governance (after), compaction preservation
  * - **Soft Governance**: Cannot block, only guide through prompts + tracking
  *
@@ -58,7 +58,7 @@ import { loadConfig } from "./lib/persistence.js"
  * Initializes governance layer with:
  *   - Session lifecycle hook (system prompt injection)
  *   - Soft governance hook (tracking + violation detection)
- *   - 11 context management tools
+ *   - 14 context management tools
  */
 export const HiveMindPlugin: Plugin = async ({
   directory,
@@ -67,13 +67,14 @@ export const HiveMindPlugin: Plugin = async ({
   const effectiveDir = worktree || directory
   const log = await createLogger(effectiveDir, "HiveMind")
 
-  await log.info(`Initializing HiveMind in ${effectiveDir}`)
+   await log.info(`Initializing HiveMind in ${effectiveDir}`)
 
-  // Load configuration (with defaults)
-  const config = await loadConfig(effectiveDir)
+  // Load configuration for initial logging only
+  // Hooks re-read config from disk each invocation (Rule 6: config persistence)
+  const initConfig = await loadConfig(effectiveDir)
 
   await log.info(
-    `HiveMind initialized: mode=${config.governance_mode}, maxTurns=${config.max_turns_before_warning}`
+    `HiveMind initialized: mode=${initConfig.governance_mode}, maxTurns=${initConfig.max_turns_before_warning}`
   )
 
   return {
@@ -102,20 +103,20 @@ export const HiveMindPlugin: Plugin = async ({
      * Injects current session context + governance status
      */
     "experimental.chat.system.transform":
-      createSessionLifecycleHook(log, effectiveDir, config),
+      createSessionLifecycleHook(log, effectiveDir, initConfig),
 
     /**
      * Hook: Tool execution tracking
      * Tracks violations, drift detection, metrics updates
      */
     "tool.execute.after":
-      createSoftGovernanceHook(log, effectiveDir, config),
+      createSoftGovernanceHook(log, effectiveDir, initConfig),
 
     /**
      * Hook: Tool gate - governance enforcement
      * Logs warnings based on governance mode and session state. Cannot block (OpenCode v1.1+ limitation)
      */
-    "tool.execute.before": createToolGateHook(log, effectiveDir, config),
+    "tool.execute.before": createToolGateHook(log, effectiveDir, initConfig),
 
     /**
      * Hook: Session compaction - preserve hierarchy across context boundaries

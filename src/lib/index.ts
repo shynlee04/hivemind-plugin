@@ -5,8 +5,7 @@
 export * from "./logging.js";
 export * from "./persistence.js";
 export * from "./planning-fs.js";
-export * from "./sentiment.js";
-// context-refresh.ts: deleted (dead code). Preserved in git history.
+// sentiment.ts: deprecated — SentimentSignal type removed from BrainState.
 export * from "./complexity.js";
 export * from "./staleness.js";
 export * from "./chain-analysis.js";

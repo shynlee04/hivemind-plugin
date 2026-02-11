@@ -13,13 +13,13 @@
  * that reshape the agent's next decision.
  *
  * P3: try/catch — never break session lifecycle
- * P5: Config cached in closure
+ * P5: Config re-read from disk each invocation (Rule 6)
  */
 
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import { generateAgentBehaviorPrompt } from "../schemas/config.js"
-import { createStateManager } from "../lib/persistence.js"
+import { createStateManager, loadConfig } from "../lib/persistence.js"
 import {
   createBrainState,
   generateSessionId,
@@ -65,7 +65,7 @@ import {
 export function createSessionLifecycleHook(
   log: Logger,
   directory: string,
-  config: HiveMindConfig
+  _initConfig: HiveMindConfig
 ) {
   const stateManager = createStateManager(directory)
 
@@ -75,6 +75,9 @@ export function createSessionLifecycleHook(
   ): Promise<void> => {
     try {
       if (!input.sessionID) return
+
+      // Rule 6: Re-read config from disk each invocation
+      const config = await loadConfig(directory)
 
       // Load or create brain state
       let state = await stateManager.load()

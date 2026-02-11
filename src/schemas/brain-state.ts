@@ -5,7 +5,6 @@
 
 import type { HiveMindConfig, GovernanceMode } from "./config.js";
 import type { HierarchyState } from "./hierarchy.js";
-import type { SentimentSignal } from "../lib/sentiment.js";
 
 export type SessionMode = "plan_driven" | "quick_fix" | "exploration";
 export type GovernanceStatus = "LOCKED" | "OPEN";
@@ -87,8 +86,6 @@ export interface BrainState {
   session: SessionState;
   hierarchy: HierarchyState;
   metrics: MetricsState;
-  /** @deprecated Dead field — preserved for schema compatibility. Never read/written at runtime. */
-  sentiment_signals: SentimentSignal[];
   complexity_nudge_shown: boolean;
   /** Turn number when last commit suggestion was shown */
   last_commit_suggestion_turn: number;
@@ -159,7 +156,6 @@ export function createBrainState(
       tool_type_counts: { read: 0, write: 0, query: 0, governance: 0 },
       keyword_flags: [],
     },
-    sentiment_signals: [],
     complexity_nudge_shown: false,
     last_commit_suggestion_turn: 0,
     version: BRAIN_STATE_VERSION,
@@ -289,9 +285,6 @@ export function addSelfRating(
     },
   };
 }
-
-// Dead functions removed: trackToolCall, addSentimentSignals
-// Preserved in git history — re-add when sentiment pipeline is wired.
 
 export function setComplexityNudgeShown(state: BrainState): BrainState {
   return {

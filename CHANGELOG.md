@@ -5,6 +5,64 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-02-12
+
+### Added
+- **Entry chain edge case tests** — JSONC config handling, re-init guard, config persistence verification (14 new assertions)
+- **Config persistence verification** — `loadConfig` deep-merges constraints with defaults, partial updates preserve existing values
+- **Re-init guard** — `hivemind init` no longer overwrites existing config (preserves governance_mode, language)
+
+### Fixed
+- **JSONC config handling** — `opencode.jsonc` files now parsed correctly (was crashing on trailing commas/comments)
+- **Master plan file tree accuracy** — docs now match actual output of `hivemind init`
+- **Frozen config (L8)** — All 3 hooks now re-read config from disk each invocation via `loadConfig(directory)` instead of using stale closure values
+- **Tool gate duplication (L9)** — Removed 130-line duplicated `createToolGateHookInternal` body; now delegates to `createToolGateHook().internal`
+- **Dead sentiment_signals field (L10)** — Removed deprecated `SentimentSignal` type and `sentiment_signals: []` from BrainState schema
+- **README accuracy (L1)** — Updated from "11 tools, 386 assertions" to "14 tools, 621 assertions"
+- **CLI --help (L5)** — `--help` and `-h` flags now show help instead of running init
+
+### Changed
+- Hook factories accept `_initConfig` parameter (unused — config read from disk per Rule 6)
+- `bin/hivemind-tools.cjs` and `skills/` added to package.json `files` array for npm shipping
+- Removed stale `tasks/prd-production-ready.md` and orphan `session-ses_3b3a.md`
+
+### Removed
+- `SentimentSignal` interface and `sentiment_signals` field from BrainState
+- Duplicated `createToolGateHookInternal` function body (kept as thin wrapper for backward compat)
+- `src/lib/sentiment.ts` export from barrel (file retained for git history)
+
+## [2.2.0] - 2026-02-12
+
+### Added
+- **export_cycle tool** (14th tool) — Captures subagent results into hierarchy tree + mems brain
+- **Auto-capture hook** — `tool.execute.after` auto-captures all Task tool returns into `brain.cycle_log[]`
+- **Pending failure acknowledgment** — `pending_failure_ack` flag set when subagent reports failure; system prompt warns until agent acknowledges
+- **Skill system** (5 skills) — Behavioral governance through skills: `hivemind-governance` (bootstrap), `session-lifecycle`, `evidence-discipline`, `context-integrity`, `delegation-intelligence`
+- **Tool activation engine** (7 priorities) — Suggests next tool based on session state (LOCKED → declare_intent, high drift → map_context, etc.)
+- **Enhanced CLI** — `bin/hivemind-tools.cjs` expanded to 23 commands (source-audit, list-tools, list-hooks, verify-package, etc.)
+- 36 new test assertions for cycle intelligence
+- Entry chain E2E tests (56 assertions)
+
+## [2.1.0] - 2026-02-11
+
+### Added
+- **Hierarchy tree engine** — Navigable tree with timestamp-based stamps, DFS traversal, cursor tracking
+- **Detection engine** — Tool classification (read/write/query/governance), counter logic, keyword scanning, signal compilation
+- **Per-session files** — Each session archived with `.json` export + `.md` export
+- **Session manifest** — `manifest.json` registry of all sessions
+- **Configurable thresholds** — `detection_thresholds` in config for turn count, failures, section repetition
+- **Migration path** — `hierarchy_migrate` tool converts flat hierarchy to tree format
+- **hierarchy_prune tool** — Removes completed branches, moves cursor to root
+- **Compact purification** — `compact_session` generates next-compaction report for context preservation
+- 2 new tools: `hierarchy_prune`, `hierarchy_migrate` (13 total)
+- 158 new test assertions (hierarchy tree 55, detection 45, compact purification 34, entry chain 24)
+
+### Changed
+- Session lifecycle hook now compiles detection signals into `<hivemind>` prompt injection
+- Soft governance hook now runs full detection engine (tool classification, keyword scanning, failure tracking)
+- Tree-aware chain analysis — detects timestamp gaps between nodes
+- `max_active_md_lines` wired into detection thresholds
+
 ## [2.0.0] - 2026-02-11
 
 ### Breaking Changes
@@ -172,6 +230,15 @@ Existing projects using `.opencode/planning/` can manually move files:
 - Session lifecycle management
 - Planning directory structure (.opencode/planning/)
 
+[2.3.0]: https://github.com/shynlee04/hivemind-plugin/compare/v2.2.0...v2.3.0
+[2.2.0]: https://github.com/shynlee04/hivemind-plugin/compare/v2.1.0...v2.2.0
+[2.1.0]: https://github.com/shynlee04/hivemind-plugin/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/shynlee04/hivemind-plugin/compare/v1.6.0...v2.0.0
+[1.6.0]: https://github.com/shynlee04/hivemind-plugin/compare/v1.5.0...v1.6.0
+[1.5.0]: https://github.com/shynlee04/hivemind-plugin/compare/v1.4.0...v1.5.0
+[1.4.0]: https://github.com/shynlee04/hivemind-plugin/compare/v1.3.0...v1.4.0
+[1.3.0]: https://github.com/shynlee04/hivemind-plugin/compare/v1.2.1...v1.3.0
+[1.2.1]: https://github.com/shynlee04/hivemind-plugin/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/shynlee04/hivemind-plugin/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/shynlee04/hivemind-plugin/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/shynlee04/hivemind-plugin/releases/tag/v1.0.0

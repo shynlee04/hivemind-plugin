@@ -1,8 +1,8 @@
 # HiveMind Context Governance
 
-A lightweight context governance layer for [OpenCode](https://opencode.ai) that prevents drift and manages session state across agent lifecycles.
+A lightweight context governance layer for [OpenCode](https://opencode.ai) that prevents drift, manages session state, and preserves memory across agent lifecycles.
 
-**11 tools** | **4 hooks** | **3 governance modes** | **386 test assertions**
+**14 tools** | **4 hooks** | **3 governance modes** | **621 test assertions**
 
 ## Quick Start
 
@@ -12,6 +12,9 @@ npm install hivemind-context-governance
 
 # Initialize in your project
 npx hivemind init
+
+# Check status
+npx hivemind status
 ```
 
 This creates a `.hivemind/` directory and registers the plugin in `opencode.json`.
@@ -26,6 +29,8 @@ Trajectory (Level 1) → Tactic (Level 2) → Action (Level 3)
 
 Every session starts with `declare_intent`, which sets the trajectory and unlocks the session. As you work, `map_context` updates your current focus. When done, `compact_session` archives everything and resets.
 
+The plugin fires 4 hooks automatically — injecting context into every LLM turn, tracking metrics after every tool call, enforcing governance before writes, and preserving hierarchy across context compaction.
+
 ## Governance Modes
 
 | Mode | Behavior | Best For |
@@ -34,121 +39,221 @@ Every session starts with `declare_intent`, which sets the trajectory and unlock
 | **assisted** | Session starts OPEN. Guidance without blocking. | Most projects (default) |
 | **permissive** | Always OPEN. Silent tracking only. | Maximum autonomy |
 
-## Tool Lifecycle
-
-Use this guide to know which tool to call when:
-
-| When | Tool | What It Does |
-|------|------|-------------|
-| Starting work | `declare_intent` | Set your focus and mode. Unlocks the session. |
-| Changing focus | `map_context` | Update trajectory/tactic/action hierarchy. |
-| Quick status check | `scan_hierarchy` | Snapshot of session state, metrics, anchors. |
-| Feeling lost | `think_back` | Deep refocus with plan review and chain analysis. |
-| Before completing | `check_drift` | Verify alignment with declared trajectory. |
-| Rate yourself | `self_rate` | Self-assess performance (1-10) for drift detection. |
-| Save a fact | `save_anchor` | Persist immutable constraints that survive compaction. |
-| Save a lesson | `save_mem` | Store decisions, patterns, errors to Mems Brain. |
-| Browse memories | `list_shelves` | See what's in the Mems Brain by shelf. |
-| Search memories | `recall_mems` | Search past decisions and patterns by keyword. |
-| Finishing work | `compact_session` | Archive session and reset for next work. |
-
-## Tools Reference
-
-### Session Lifecycle
-
-#### `declare_intent`
-Start a work session by declaring what you're working on.
-
+```bash
+# Initialize with a specific mode
+npx hivemind init --mode strict
+npx hivemind init --mode assisted --lang vi
 ```
+
+## Tools (14)
+
+### Core (3 tools)
+
+| Tool | When | What It Does |
+|------|------|--------------|
+| `declare_intent` | Starting work | Set your focus and mode. Unlocks the session. |
+| `map_context` | Changing focus | Update trajectory/tactic/action hierarchy. |
+| `compact_session` | Finishing work | Archive session and reset for next work. |
+
+```typescript
 declare_intent({ mode: "plan_driven", focus: "Build auth system" })
-→ Session: "Build auth system". Mode: plan_driven. Status: OPEN.
-→ Use map_context to break this into tactics and actions.
-```
+// → Session: "Build auth system". Mode: plan_driven. Status: OPEN.
 
-**Args:** `mode` (plan_driven | quick_fix | exploration), `focus` (string), `reason?` (string)
-
-#### `map_context`
-Update your current focus in the 3-level hierarchy.
-
-```
 map_context({ level: "tactic", content: "Implement JWT validation" })
-→ [tactic] "Implement JWT validation" → active
-→ Continue working, or use check_drift to verify alignment.
-```
+// → [tactic] "Implement JWT validation" → active
 
-**Args:** `level` (trajectory | tactic | action), `content` (string), `status?` (pending | active | complete | blocked)
-
-#### `compact_session`
-Archive completed work and reset for next session.
-
-```
 compact_session({ summary: "Auth middleware complete" })
-→ Archived. 15 turns, 4 files. 3 total archives.
-→ Session is now LOCKED. Call declare_intent to start new work.
+// → Archived. 15 turns, 4 files. 3 total archives.
 ```
 
-**Args:** `summary?` (string)
+### Self-Awareness (1 tool)
 
-### Awareness Tools
+| Tool | When | What It Does |
+|------|------|--------------|
+| `self_rate` | Self-reflection | Rate your own performance (1-10) for drift detection. |
 
-#### `scan_hierarchy`
-Quick snapshot of session state, hierarchy, metrics, and anchors.
+### Cognitive Mesh (4 tools)
 
-#### `think_back`
-Deep refocus — shows trajectory, plan progress, chain breaks, and anchors. Use when feeling lost.
+| Tool | When | What It Does |
+|------|------|--------------|
+| `scan_hierarchy` | Quick status check | Snapshot of session state, metrics, anchors. |
+| `save_anchor` | Saving immutable facts | Persist constraints that survive compaction. |
+| `think_back` | Feeling lost | Deep refocus with plan review and chain analysis. |
+| `check_drift` | Before completing | Verify alignment with declared trajectory. |
 
-#### `check_drift`
-Verify your current work aligns with the declared trajectory. Shows drift score and chain integrity.
+### Mems Brain (3 tools)
 
-#### `self_rate`
-Rate your own performance (1-10) with optional context. Helps detect drift patterns.
+| Tool | When | What It Does |
+|------|------|--------------|
+| `save_mem` | Saving a lesson | Store decisions, patterns, errors to persistent memory. |
+| `list_shelves` | Browsing memories | See what's in the Mems Brain by shelf. |
+| `recall_mems` | Searching memories | Search past decisions and patterns by keyword. |
 
-### Persistence Tools
+### Hierarchy Ops (2 tools)
 
-#### `save_anchor`
-Save immutable facts (DB schemas, port numbers, constraints) that survive session compaction. Supports upsert — updating an existing key shows the delta.
+| Tool | When | What It Does |
+|------|------|--------------|
+| `hierarchy_prune` | Cleaning up | Remove completed branches from the tree. |
+| `hierarchy_migrate` | Upgrading | Migrate flat hierarchy to navigable tree format. |
 
-#### `save_mem`
-Save decisions, patterns, errors, and solutions to the Mems Brain. Organized by shelf (decisions, errors, patterns, context). Deduplicates identical content.
+### Cycle Intelligence (1 tool)
 
-#### `recall_mems`
-Search the Mems Brain by keyword. Returns matching memories across all sessions.
+| Tool | When | What It Does |
+|------|------|--------------|
+| `export_cycle` | After subagent returns | Capture subagent results into hierarchy + mems. |
 
-#### `list_shelves`
-Browse the Mems Brain — shows shelf counts and recent entries.
+## Hooks (4)
 
-## Hooks
+| Hook | Event | Purpose |
+|------|-------|---------|
+| `experimental.chat.system.transform` | Every LLM turn | Injects `<hivemind>` context into system prompt |
+| `tool.execute.before` | Before tool calls | Governance enforcement (warns on writes without intent) |
+| `tool.execute.after` | After tool calls | Tracks metrics, violations, drift detection |
+| `experimental.session.compacting` | Context compaction | Preserves hierarchy across LLM context boundaries |
 
-| Hook | Purpose |
-|------|---------|
-| `experimental.chat.system.transform` | Injects session context into every LLM turn |
-| `tool.execute.before` | Governance enforcement (warns on writes without intent) |
-| `tool.execute.after` | Tracks metrics, violations, drift detection |
-| `experimental.session.compacting` | Preserves hierarchy across context compaction |
+> **Note:** In OpenCode v1.1+, `tool.execute.before` cannot block execution. HiveMind provides governance through warnings and tracking only.
 
 ## Configuration
 
-```bash
-# Initialize with options
-npx hivemind init --mode strict --lang vi
+Configuration is stored in `.hivemind/config.json` and re-read from disk on every hook invocation (Rule 6: config persistence).
+
+```json
+{
+  "governance_mode": "assisted",
+  "max_turns_before_warning": 5,
+  "auto_compact_on_turns": 15,
+  "stale_session_days": 3,
+  "commit_suggestion_threshold": 3,
+  "max_active_md_lines": 50,
+  "language": "en"
+}
 ```
 
-Configuration stored in `.hivemind/config.json`.
+## CLI
+
+```bash
+npx hivemind init              # Initialize HiveMind in a project
+npx hivemind init --mode strict # Initialize with strict governance
+npx hivemind status            # Check current state
+npx hivemind help              # Show help
+npx hivemind --help            # Show help
+```
+
+### Ecosystem Verification (`bin/hivemind-tools.cjs`)
+
+```bash
+node bin/hivemind-tools.cjs source-audit    # Verify all source files
+node bin/hivemind-tools.cjs list-tools      # List all 14 tools
+node bin/hivemind-tools.cjs list-hooks      # List all 4 hooks
+node bin/hivemind-tools.cjs verify-package  # Check npm package completeness
+```
 
 ## Project Structure
 
 ```
 .hivemind/
+├── 10-commandments.md   # Tool design reference
 ├── sessions/
-│   ├── index.md         # Project trajectory
+│   ├── index.md         # Project trajectory (goals, constraints, history)
 │   ├── active.md        # Current session
+│   ├── manifest.json    # Session registry
 │   └── archive/         # Completed sessions
-├── brain.json           # Machine state
-├── config.json          # Settings
+├── templates/
+│   └── session.md       # Session template
+├── hierarchy.json       # Navigable tree hierarchy
+├── brain.json           # Machine state (session, metrics, hierarchy)
+├── config.json          # Governance settings
 ├── anchors.json         # Immutable facts
-└── mems.json            # Mems Brain
+└── mems.json            # Persistent memory brain
 ```
+
+## Typical Workflow
+
+```
+1. Start session
+   declare_intent({ mode: "plan_driven", focus: "Build auth system" })
+
+2. Work on high-level planning
+   map_context({ level: "trajectory", content: "OAuth2 + JWT architecture" })
+
+3. Switch to implementation
+   map_context({ level: "tactic", content: "Set up Passport.js" })
+
+4. Specific action
+   map_context({ level: "action", content: "Install passport-jwt package" })
+   [do the work...]
+
+5. Mark complete, next action
+   map_context({ level: "action", content: "Install passport-jwt", status: "complete" })
+   map_context({ level: "action", content: "Configure JWT strategy" })
+
+6. Finish session
+   compact_session({ summary: "Auth system foundation complete" })
+```
+
+## Test Coverage
+
+| Component | Assertions |
+|-----------|-----------|
+| Schema (BrainState, Hierarchy) | 35 |
+| Init + Planning FS | 30 |
+| Tool Gate (governance) | 12 |
+| Soft Governance (tracking) | 27 |
+| Self-Rate Tool | 28 |
+| Complexity Detection | 28 |
+| Integration (E2E workflow) | 74 |
+| Auto-Hooks Pure Functions | 39 |
+| Session Export | 32 |
+| Session Structure | 18 |
+| Round 3 Tools (Cognitive Mesh) | 32 |
+| Round 4 Mems Brain | 40 |
+| Hierarchy Tree Engine | 55 |
+| Detection Engine | 45 |
+| Compact Purification | 34 |
+| Entry Chain (E2E lifecycle) | 56 |
+| Cycle Intelligence | 36 |
+| **Total** | **621** |
 
 ## License
 
 MIT
+
+---
+
+## Tiếng Việt
+
+### HiveMind là gì?
+
+HiveMind là một lớp quản lý ngữ cảnh nhẹ cho OpenCode, giúp ngăn chặn sai lệch (drift) và quản lý trạng thái phiên làm việc xuyên suốt vòng đời của agent AI.
+
+### Bắt đầu nhanh
+
+```bash
+npm install hivemind-context-governance
+npx hivemind init --lang vi
+```
+
+### Các chế độ quản lý
+
+| Chế độ | Hành vi |
+|--------|---------|
+| **strict** | Phiên bắt đầu ở trạng thái KHÓA. Cảnh báo khi ghi mà chưa khai báo ý định. |
+| **assisted** | Phiên bắt đầu ở trạng thái MỞ. Hướng dẫn nhưng không chặn. |
+| **permissive** | Luôn MỞ. Chỉ theo dõi im lặng. |
+
+### 14 Công cụ
+
+- **Cốt lõi:** `declare_intent`, `map_context`, `compact_session`
+- **Tự đánh giá:** `self_rate`
+- **Lưới nhận thức:** `scan_hierarchy`, `save_anchor`, `think_back`, `check_drift`
+- **Bộ nhớ:** `save_mem`, `list_shelves`, `recall_mems`
+- **Phân cấp:** `hierarchy_prune`, `hierarchy_migrate`
+- **Chu trình:** `export_cycle`
+
+### Quy trình làm việc
+
+1. Khai báo ý định → `declare_intent`
+2. Cập nhật ngữ cảnh → `map_context`
+3. Làm việc → sử dụng các công cụ nhận thức khi cần
+4. Lưu bài học → `save_mem`, `save_anchor`
+5. Kết thúc → `compact_session`

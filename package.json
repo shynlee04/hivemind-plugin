@@ -17,6 +17,8 @@
   },
   "files": [
     "dist",
+    "bin",
+    "skills",
     "docs/10-commandments.md",
     "README.md",
     "LICENSE",

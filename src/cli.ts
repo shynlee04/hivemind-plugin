@@ -104,6 +104,12 @@ async function main(): Promise<void> {
     }
   }
 
+  // Handle --help / -h flag before command dispatch
+  if ("help" in flags || "h" in flags) {
+    printHelp()
+    return
+  }
+
   // Default to "init" when no command given (npx hivemind-context-governance)
   const command = (positionalArgs[0] ?? "init") as Command
   const directory = process.cwd()

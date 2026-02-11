@@ -1,9 +1,10 @@
 # HiveMind Master Plan — Living Document
 
 **Created:** 2026-02-12
-**Status:** ACTIVE — Updated each iteration
-**Branch:** `feature/hierarchy-redesign`
-**Worktree:** `/Users/apple/hivemind-plugin/.worktrees/hierarchy-redesign`
+**Last Updated:** 2026-02-12 (Iteration 3 COMPLETE)
+**Status:** ACTIVE — Iteration 3 complete, 10/14 logic failures fixed
+**Branch:** `master` (merged from `feature/hierarchy-redesign` at `e6ac742`)
+**HEAD:** `e6ac742` — pushed to GitHub
 
 **Source of truth references:**
 - Architecture: `docs/plans/2026-02-11-hierarchy-redesign.md` (651 lines)
@@ -89,7 +90,7 @@ Even with perfect tools, they need activation WITHOUT agent cooperation:
 | Component | File(s) | Lines | Tests |
 |-----------|---------|-------|-------|
 | Hierarchy tree engine | `src/lib/hierarchy-tree.ts` | ~810 | 55 |
-| Detection engine (8/9 signals) | `src/lib/detection.ts` | ~485 | 42 |
+| Detection engine (9/9 signals) | `src/lib/detection.ts` | ~485 | 45 |
 | Planning FS rewrite (templates, manifest, per-session, FileGuard tracking) | `src/lib/planning-fs.ts` | ~719 | 30 |
 | Brain state schema (extended metrics + detection counters) | `src/schemas/brain-state.ts` | ~297 | 35 |
 | Hierarchy tools (prune + migrate) | `src/tools/hierarchy.ts` | — | — |
@@ -101,30 +102,48 @@ Even with perfect tools, they need activation WITHOUT agent cooperation:
 | Tree-aware chain analysis | `src/lib/chain-analysis.ts` | — | 6 |
 | Config dead fields wired | `src/schemas/config.ts` | — | — |
 | CLI init updated | `src/cli/init.ts` | — | — |
-| Ecosystem verification utility | `bin/hivemind-tools.cjs` | ~869 | — |
+| Ecosystem verification utility | `bin/hivemind-tools.cjs` | ~1340 | — |
 | export_cycle tool + auto-capture hook | `src/tools/export-cycle.ts`, `src/hooks/soft-governance.ts` | ~130 | 36 |
 | Per-session stamp files + manifest | `planning-fs.ts` + `declare-intent.ts` | — | — |
-| **TOTAL** | **43 source files** | — | **607 assertions** |
+| Entry chain tests (JSONC, re-init, config) | `tests/entry-chain.test.ts` | — | 56 |
+| **TOTAL** | **43 source files** | — | **621 assertions** |
 
-### Verified Gaps (audited 2026-02-12)
+### Iteration 1 Gaps — RESOLVED in code (verified 2026-02-12)
 
-| # | Gap | Design Lines | Root Cause | Fix Category |
-|---|-----|-------------|------------|-------------|
-| 1 | Compaction purification loop (4-stage) | 311-393 | Violates anti-schema-dependency — requires 4-step agent cooperation | REDESIGN: scripts-inside-tool |
-| 2 | FileGuard write rejection | 543-598 | Plugins cannot block in OpenCode v1.1+ | REDESIGN: tracking + repair signal |
-| 3 | Signal #6: tool-hierarchy mismatch | line 207 | Hierarchy state never passed to detection engine | WIRE: ~20 lines |
-| 4 | Post-compaction detection | line 300 | `last_compaction_time` never written | WIRE: ~10 lines |
-| A | `completedBranches` not passed to `compileSignals()` | line 209 | Wiring omission in `session-lifecycle.ts` | WIRE: ~5 lines |
-| B | `setFileGuard()`/`getFileGuard()` dead exports | 556-578 | Never imported by any module | CLEAN: remove dead exports |
+| # | Gap | Status | Evidence |
+|---|-----|--------|----------|
+| 3 | Signal #6: tool-hierarchy mismatch | ✅ WIRED | `detection.ts:356,426` + `session-lifecycle.ts:219` |
+| 4 | Post-compaction detection | ✅ WIRED | `compact-session.ts:394-395` |
+| A | `completedBranches` not passed | ✅ WIRED | `session-lifecycle.ts:193,218` + `detection.ts:439` |
+| B | `setFileGuard()`/`getFileGuard()` dead | ✅ REMOVED | grep returns 0 results |
+| — | `compaction_count` dead | ✅ WIRED | `compact-session.ts:387,394` |
+| — | `last_compaction_time` dead | ✅ WIRED | `compact-session.ts:395` |
+| — | `next_compaction_report` dead | ✅ WIRED | `compact-session.ts:396` → `compaction.ts:52-54` |
 
-### Dead Schema Fields (declared, initialized, never read/written at runtime)
+### ⚠ LOGIC FAILURES — Tests pass but product doesn't work (audited 2026-02-12)
 
-| Field | Init Value | Decision |
-|-------|-----------|----------|
-| `next_compaction_report` | `null` | REPURPOSE: tool-generated report, not agent-generated |
-| `compaction_count` | `0` | WIRE: increment in compact-session |
-| `last_compaction_time` | `0` | WIRE: set in compact-session |
-| `file_guard` in brain.json | `null` | REPURPOSE: tracking-only, repair signal on mismatch |
+**Tests test internal functions in isolation. The following are REAL product failures that no test catches.**
+
+| # | Failure | Severity | Evidence | Matrix Violation |
+|---|---------|----------|----------|------------------|
+| L1 | **README lies** — says "11 tools, 386 assertions" | CRITICAL | ✅ FIXED — now "14 tools, 621 assertions", bilingual EN+VI | PATH INTEGRITY |
+| L2 | **CHANGELOG stops at 2.0.0** — 3 releases undocumented | CRITICAL | ✅ FIXED — 2.1.0, 2.2.0, 2.3.0 entries added with comparison links | PATH INTEGRITY |
+| L3 | **`bin/hivemind-tools.cjs` NOT in npm package** | CRITICAL | ✅ FIXED — `bin/` added to `package.json` files array | TOOL |
+| L4 | **Skills NOT in npm package** | CRITICAL | ✅ FIXED — `skills/` added to `package.json` files array | CONCEPT |
+| L5 | **CLI `--help` runs init** | HIGH | ✅ FIXED — early return on `--help`/`-h` in `src/cli.ts` | TOOL |
+| L6 | **npm is at 1.3.0** — 7 versions behind | CRITICAL | BLOCKED — requires user `npm login` | PATH INTEGRITY |
+| L7 | **Never tested in real OpenCode** | CRITICAL | DEFERRED — planned for Iteration 4 | MECHANISM |
+| L8 | **Hooks use frozen config** | HIGH | ✅ FIXED — all 3 hooks call `loadConfig(directory)` per invocation | MECHANISM |
+| L9 | **Duplicated gate logic ~120 lines** | MEDIUM | ✅ FIXED — `createToolGateHookInternal` now delegates to `.internal` | TOOL |
+| L10 | **Dead `sentiment_signals` field** | LOW | ✅ FIXED — removed from schema, migration deletes from disk | CLEAN |
+| L11 | **`src/index.ts` says "11 tools"** | LOW | ✅ FIXED — changed to 14 | PATH INTEGRITY |
+| L12 | **Stale `tasks/prd-production-ready.md`** | LOW | ✅ FIXED — deleted, `tasks/` dir removed | CLEAN |
+| L13 | **Skills not code-wired** | HIGH | NOT FIXED — deferred to Iteration 4 | MECHANISM |
+| L14 | **No bilingual docs (EN/VI)** | MEDIUM | ✅ FIXED — README has `## Tiếng Việt` section | PRESENTATION |
+
+### Dead Schema Fields (remaining)
+
+All dead schema fields have been cleaned. `sentiment_signals` removed in Iteration 3.
 
 ---
 
@@ -508,12 +527,79 @@ hivemind-plugin/
 | Pre-1 | 2026-02-11 | Hierarchy redesign — 17 implementation steps | All complete. Tree engine, detection, hooks wired. | 489 |
 | Skill-0 | 2026-02-11 | Skill system — 5 skills (bootstrap + 4 discipline) | Written. 3918 total words. Needs code wiring. | — |
 | 1 | 2026-02-11 | Sophisticated tools-in-tools + activation wiring + `export_cycle` tool + auto-capture hook | **COMPLETE.** 12/12 sub-tasks done. export_cycle tool, auto-capture hook, pending_failure_ack, map_context blocked clears ack. | 607 |
-| 2 | 2026-02-12 | Entry testing + foundation hardening — edge cases, docs accuracy, file tree reality | **IN PROGRESS.** Master plan file tree fixed (16 lib files listed), +14 entry test assertions (JSONC, re-init guard, config persistence). | 621 |
-| 3+ | PENDING | To be defined based on iteration 1 outcomes | — | — |
+| 2 | 2026-02-12 | Entry testing + foundation hardening — edge cases, docs accuracy, file tree reality | **COMPLETE.** Master plan file tree fixed (16 lib files listed), +14 entry test assertions (JSONC, re-init guard, config persistence). Commit `f1e6989`. | 621 |
+| 3 | 2026-02-12 | Production integrity — fix logic failures L1-L14 | **COMPLETE.** 10/14 fixed (L1-5, L8-12, L14). L6 blocked (npm login), L7+L13 deferred to Iteration 4. Hooks read config from disk (Rule 6). Tool-gate deduped. Dead code removed. README bilingual. CHANGELOG complete. | 621 |
+| 4+ | PENDING | Stress test readiness, real OpenCode verification (L7), skills wiring (L13), npm publish (L6) | — | — |
 
 ---
 
-## 7. Non-Negotiable Rules
+## 4.1 Iteration 3: Production Integrity — Fix Logic Failures
+
+**Goal:** Fix every LOGIC FAILURE from L1-L14. After this iteration, the product actually works end-to-end when installed from npm/GitHub, not just in isolated test functions.
+
+**Entry test after completion:** Install from GitHub → `npx hivemind init` → tools appear in OpenCode → hooks fire → config persists → `npx hivemind --help` shows help → `bin/hivemind-tools.cjs` ships → skills ship → README and CHANGELOG are accurate.
+
+#### 3.1 Fix README — L1, L14
+- Rewrite with accurate numbers: 14 tools, 621 assertions, 4 hooks
+- Document all 14 tools organized by group
+- Add Vietnamese section at bottom (`## Tiếng Việt`)
+- Professional presentation
+
+#### 3.2 Fix CHANGELOG — L2
+- Add entries for 2.1.0, 2.2.0, 2.3.0
+- Each with Added/Changed/Fixed sections reflecting real commits
+
+#### 3.3 Fix package.json — L3, L4
+- Add `bin/` to `files` array so `hivemind-tools.cjs` ships
+- Add `skills/` to `files` array so 5 behavioral governance skills ship
+
+#### 3.4 Fix CLI --help — L5
+- In `src/cli.ts`: check for `--help` or `-h` in flags BEFORE command dispatch
+- If found → `printHelp()` and return, never fall through to init
+
+#### 3.5 Fix src/index.ts comments — L11
+- Line 8: change "11 Tools" to "14 Tools" and list all 14
+- Line 61: change "11 context management tools" to "14 context management tools"
+
+#### 3.6 Fix frozen config in hooks — L8
+- In `src/index.ts:73`: pass `effectiveDir` to hook factories, NOT the config object
+- Each hook factory re-reads config from disk via `loadConfig(dir)` on each invocation
+- This is Rule 6: config persistence TRUE every turn, not cached stale
+
+#### 3.7 Deduplicate tool-gate — L9
+- Remove `createToolGateHookInternal` (line 231-364)
+- Expose `internalHook` from `createToolGateHook` for testing via a separate export or test helper
+- Verify `tool-gate.test.ts` still passes
+
+#### 3.8 Remove dead code — L10, L12
+- Remove `sentiment_signals` from `BrainState` interface and `createBrainState()`
+- Delete `tasks/prd-production-ready.md` (v1.1.0 orphan)
+- Delete `session-ses_3b3a.md` (stray session file in root)
+- Update `persistence.ts` migration if it references `sentiment_signals`
+
+#### 3.9 Update master plan — this section
+- Mark iteration 3 as COMPLETE when done
+- Update file tree if files added/removed
+- Update assertion count if tests change
+
+#### 3.10 Verification gate — MUST PASS before commit
+- `npx tsc --noEmit` → 0 errors
+- `npm test` → all pass
+- `node bin/hivemind-tools.cjs source-audit` → N/N/0
+- `npm pack --dry-run` → verify `bin/` and `skills/` appear
+- `node dist/cli.js --help` → shows help, does NOT run init
+- `node dist/cli.js help` → shows help
+- README says 14 tools, 621 assertions
+- CHANGELOG has 2.1.0, 2.2.0, 2.3.0
+
+**NOTE on L6 (npm publish) and L7 (real OpenCode test):**
+- L6 requires user to run `npm login` first — blocked on auth
+- L7 requires loading plugin in a real OpenCode session — planned for Iteration 4
+- These are NOT part of Iteration 3 scope
+
+---
+
+## 9. Non-Negotiable Rules
 
 1. **ZERO agent cooperation**: If it requires the agent to follow a protocol, it WILL fail. Scripts inside tools. Hooks fire automatically. Disk is the truth.
 2. **3-approach matrix**: Every feature must have a CONCEPT + TOOL + MECHANISM cell filled.

@@ -15,12 +15,12 @@
  * session-lifecycle.ts (system.transform) to compile on next turn.
  *
  * P3: try/catch — never break tool execution
- * P5: State management via stateManager
+ * P5: Config re-read from disk each invocation (Rule 6)
  */
 
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
-import { createStateManager } from "../lib/persistence.js"
+import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { addViolationCount, incrementTurnCount, setLastCommitSuggestionTurn, addCycleLogEntry } from "../schemas/brain-state.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
@@ -45,10 +45,9 @@ import {
 export function createSoftGovernanceHook(
   log: Logger,
   directory: string,
-  config: HiveMindConfig
+  _initConfig: HiveMindConfig
 ) {
   const stateManager = createStateManager(directory)
-  const MAX_TURNS_BEFORE_WARNING = config.max_turns_before_warning
 
   return async (
     input: {
@@ -65,6 +64,9 @@ export function createSoftGovernanceHook(
     try {
       if (!input.sessionID) return
 
+      // Rule 6: Re-read config from disk each invocation
+      const config = await loadConfig(directory)
+
       const state = await stateManager.load()
       if (!state) {
         await log.warn("Soft governance: no brain state found")
@@ -75,7 +77,7 @@ export function createSoftGovernanceHook(
       let newState = incrementTurnCount(state)
 
       // Check for drift (high turns without context update)
-      const driftWarning = newState.metrics.turn_count >= MAX_TURNS_BEFORE_WARNING &&
+      const driftWarning = newState.metrics.turn_count >= config.max_turns_before_warning &&
                            newState.metrics.drift_score < 50
 
       // === Detection Engine: Tool Classification ===

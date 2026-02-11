@@ -47,6 +47,8 @@ export function createStateManager(projectRoot: string): StateManager {
         parsed.metrics.last_section_content ??= "";
         parsed.metrics.keyword_flags ??= [];
         parsed.metrics.tool_type_counts ??= { read: 0, write: 0, query: 0, governance: 0 };
+        // Migration: remove deprecated sentiment_signals field
+        delete (parsed as any).sentiment_signals;
         return parsed;
       } catch {
         return null;
