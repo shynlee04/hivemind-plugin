@@ -81,8 +81,9 @@ export function createSessionLifecycleHook(
             activeMd.body,
           ].filter(Boolean).join("\n");
 
-          await archiveSession(directory, state.session.id, archiveContent);
-          await updateIndexMd(directory, `[auto-archived: stale] ${state.session.id}`);
+          const staleSessionId = state.session.id;
+          await archiveSession(directory, staleSessionId, archiveContent);
+          await updateIndexMd(directory, `[auto-archived: stale] ${staleSessionId}`);
           await resetActiveMd(directory);
 
           // Create fresh session
@@ -90,7 +91,7 @@ export function createSessionLifecycleHook(
           state = createBrainState(newId, config);
           await stateManager.save(state);
 
-          await log.info(`Auto-archived stale session ${state.session.id}`);
+          await log.info(`Auto-archived stale session ${staleSessionId}`);
         } catch (archiveError) {
           await log.error(`Failed to auto-archive stale session: ${archiveError}`);
         }
