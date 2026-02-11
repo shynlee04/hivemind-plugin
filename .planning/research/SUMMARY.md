@@ -1,103 +1,164 @@
 # Research Summary: HiveMind v3
 
-**Domain:** AI Agent Context Governance Plugin (OpenCode ecosystem)
+**Domain:** AI Agent Context Governance — Cognitive Mesh for Multi-Platform Agent Intelligence
 **Researched:** 2026-02-12
-**Overall confidence:** HIGH
+**Overall confidence:** HIGH (verified against 8 real plugins, SDK source, idumb-v2 architecture)
 
-## Executive Summary
+## The Single Success Statement
 
-HiveMind v3 is a fundamental architectural upgrade driven by one discovery: **the OpenCode SDK client is fully usable from within plugins**. This was verified across 5 of 8 ecosystem plugins (micode, opencode-pty, oh-my-opencode, plannotator, subtask2), with production code showing `client.session.create()`, `client.session.prompt()`, `client.tui.showToast()`, and `client.session.messages()` all working from hook and tool contexts. The only caveat is a deadlock risk when calling the client during plugin init (oh-my-opencode issue #1301).
+> **We create a hivemind's brain that boosts intelligence and provides users' true expertise of AI agents — work faster, more efficiently, handle with full bulletproof context drift.**
 
-This changes everything. The current HiveMind v2.6.0 destructures only `{ directory, worktree }` from PluginInput — using 2 of 6 available fields. The SDK provides `client` (sessions, TUI, files, events, search), `$` (BunShell for subprocess spawning), `project` (metadata), and `serverUrl` (connectivity). The idumb-v2 system concepts diagram maps directly to these SDK capabilities: Session Management uses `client.session.*`, Visual Feedback uses `client.tui.showToast()`, Fast Extraction uses `client.find.*` + `client.file.*` + `$` BunShell for Repomix, and the Shared Brain uses `client.session.messages()` for cross-session evidence tracking.
+This is NOT a feature list. It is an **ecosystem of interconnected approaches** that chain intelligently, automatically, with truly effective tools. The concepts are platform-agnostic — if brought to Claude Code, Cursor, or any future platform, they still hold. The SDK (OpenCode, Claude, etc.) is what gives us means to **materialize** the theories.
 
-The research also confirmed a non-negotiable architectural principle: **never block, never deny, never stop tools**. Zero plugins in the ecosystem use `permission.ask` for blocking. oh-my-opencode (the largest plugin at 1.5MB, 41 internal hooks) explicitly avoids it. Permission blocking creates plugin wars — multiple plugins fighting over deny/allow = chaos. HiveMind's power is in awareness (toasts, system prompt, argue-back, tracking), not enforcement.
+## The 5-System Cognitive Mesh (idumb-v2)
 
-Two frameworks are targeted for first-class support: GSD (Get Shit Done) with its `.planning/` directory, STATE.md-driven workflow, and 11 agent types; and Spec-kit with its `.spec-kit/` directory and governance markers. The research deeply analyzed GSD's entire architecture (30+ workflow files, wave-based execution, revision loops) and Spec-kit's framework detection patterns from idumb-v2. Ralph-tui's loop orchestration pattern (prd.json → story selection → completion tracking) provides the model for autonomous multi-story work management.
+The product IS these 5 interconnected systems. Not features — **systems that feed each other**:
+
+```
+                    ┌─────────────────────────┐
+                    │   Session Management    │
+                    │    & Auto-Export        │
+                    │  (Lifecycle)            │
+                    └────────┬────────────────┘
+                             │
+┌───────────────────┐   ┌────┴────┐   ┌───────────────────┐
+│  Auto-Hooks &     │───│  System │───│  The 'Mems' Brain │
+│  Governance       │   │  Core   │   │  (Shared Knowledge│
+│  (Triggers/Rules) │   │(Agents) │   │   Repository)     │
+└───────────────────┘   └────┬────┘   └───────────────────┘
+                             │
+                    ┌────────┴────────────────┐
+                    │   Unique Agent Tools    │
+                    │  (Hook-Activated        │
+                    │   Utilities)            │
+                    └─────────────────────────┘
+```
+
+### System 1: Auto-Hooks & Governance (Triggers & Rules)
+**Concept:** Automatic reactions to agent behavior — never blocking, always informing.
+- Time-to-Stale: Auto-archive after 3 days inactivity
+- Hierarchy Chain Breaking: Detect relational logic failures
+- Git Atomic Commits: Action-triggered history preservation
+- Activate Agent Tools: Ensure agents use what they must
+
+### System 2: Session Management & Auto-Export (Lifecycle)
+**Concept:** Every session IS an on-going plan. Sessions are first-class citizens.
+- Session = On-going Plan: Active/Archived lifecycle
+- Auto-Export of a Whole Session: Full session capture
+- Long Session Handling: Capture last, compact messages
+- Session Structure: ID, Date, Meta Key, Role, By AI
+
+### System 3: Unique Agent Tools (Hook-Activated Utilities)
+**Concept:** Tools that make agents smarter — cognitive prosthetics, not commands.
+- Hierarchy Reading Tools: Structured access to the tree
+- Fast Read/Extract: Bash, Headings, Grep, 'Brainy', Git Read
+- Precision Extraction: Contextual focus from large codebases
+- Thinking Frameworks: Cognitive models that guide reasoning
+
+### System 4: The 'Mems' Brain (Shared Knowledge Repository)
+**Concept:** Persistent memory that survives sessions, compactions, and platform switches.
+- Shared Brain: Mems share one → Atomic Git
+- Main Shelves: Organized storage by category
+- Meta Data & IDs: Tracking lineage and relationships
+- Just-in-Time Memory: Long-haul, multi-phase trial & error
+
+### System 5: System Core (For Agents)
+**Concept:** The orchestrator that connects all 4 outer systems. Brain state, hierarchy tree, detection engine.
 
 ## Key Findings
 
-**Stack:** SDK client IS the platform — `client.session.*` for real session management, `client.tui.showToast()` for visual feedback, `client.find.*` for fast extraction, `client.event.subscribe()` for event-driven governance, `$` BunShell for Repomix/git integration.
+**The mesh, not the parts:** No single system works alone. Auto-Hooks detect drift → trigger Session lifecycle → inform Agent Tools what to read → persist findings in Mems Brain → Core routes the chain. Remove any one system and the ecosystem degrades gracefully but loses its intelligence multiplier.
 
-**Architecture:** 4-pillar design from idumb-v2 (Auto-Hooks, Session Management, Unique Agent Tools, Mems Brain) ALL powered by the SDK client layer. 14 hooks available, currently using 5 — adding `event`, `chat.message`, `command.execute.before`, `shell.env`.
+**SDK = materialization layer:** The OpenCode SDK (`@opencode-ai/plugin` + `@opencode-ai/sdk`) provides the channels:
+- `client.session.*` materializes Session Management concepts
+- `client.tui.showToast()` materializes governance visibility
+- `client.file.*` + `client.find.*` materializes Fast Read/Extract
+- `event` hook (32 event types) materializes Auto-Hooks triggers
+- `$` BunShell materializes subprocess extraction tools
+- `experimental.chat.messages.transform` materializes context pruning
+- Direct filesystem (`.hivemind/`) materializes Mems Brain persistence
 
-**Critical pitfall:** Client deadlock during init (oh-my-opencode #1301). Store client reference, never call during plugin init function. And **NEVER use permission.ask to block tools** — this is the ecosystem's learned wisdom.
+**Platform portability:** The 5 systems are pure concepts. On Claude Code, "hooks" become "tool_use interception," "TUI toasts" become "status messages," "session API" becomes "conversation metadata." The architecture document captures this abstraction.
+
+**Plugin ecosystem patterns (from 8 analyzed plugins):**
+- micode: `client.session.create/prompt/delete` — spawns review sessions
+- subtask2: `setClient()` + loop state — orchestration control
+- oh-my-opencode: 41 internal hooks — proves complex mesh IS viable in plugin architecture
+- plannotator: `noReply: true` — silent context injection
+- dynamic-context-pruning: `messages.transform` — proves context manipulation works
+
+**Critical pitfall (verified):** `permission.ask` exists in SDK but MUST NEVER be used — blocking tools clashes with other plugins, contradicts soft governance philosophy, and defeats the purpose (inform, don't punish).
 
 ## Implications for Roadmap
 
-Based on research, suggested phase structure:
+Based on research, the phase structure should follow the **mesh dependency chain**:
 
-1. **Phase 1: Governance Foundation Fix** — Fix ST12 (bootstrap in all modes) and ST11 (permissive mode signals)
-   - Addresses: GOV-01→06 from REQUIREMENTS
-   - Avoids: Pitfall #3 (bootstrap only in strict), Pitfall #4 (signal contradiction)
-   - No SDK changes needed — pure governance logic fixes
+1. **Governance Foundation Fix** — Fix ST11/ST12 failures
+   - Addresses: Bootstrap in all modes, evidence teaching from turn 0
+   - Avoids: "Agents never learn governance" pitfall
+   - Rationale: Nothing else matters if agents aren't taught from session start
 
-2. **Phase 2: SDK Client Integration** — Destructure ALL PluginInput fields. Wire `client`, `$`, `project`, `serverUrl` into existing architecture.
-   - Addresses: Session management, TUI toasts, event subscription, BunShell availability
-   - Avoids: Pitfall #2 (init deadlock), Pitfall #5 (ignoring SDK)
-   - This is the foundation for everything else
+2. **SDK Client Integration** — Wire `client`, `$`, `serverUrl` into plugin entry
+   - Addresses: All 5 systems gain real capabilities (sessions, TUI, files, events)
+   - Avoids: Filesystem-only governance (fragile, no real-time feedback)
+   - Rationale: The SDK is the materialization layer — without it, concepts stay theoretical
 
-3. **Phase 3: Framework Detection & Fast Extraction** — Auto-detect GSD/Spec-kit, SDK-powered grep/glob/read/extract tools
-   - Addresses: FRM-01→06, EXT-01→09
-   - Avoids: Pitfall #10 (ignoring framework state), Pitfall #12 (raw FS when SDK has it)
-   - Depends on Phase 2 (needs client for `find.text`, `find.files`, `file.read`)
+3. **Event-Driven Governance** — Replace turn-counting with real events
+   - Addresses: Auto-Hooks system (triggers from `session.idle`, `file.edited`, `session.diff`)
+   - Avoids: Polling/counting anti-pattern
+   - Rationale: Events are the nervous system of the mesh
 
-4. **Phase 4: Orchestration Control** — Ralph loop pattern with loop state persistence
-   - Addresses: ORC-01→08
-   - Avoids: Pitfall #1 (never block orchestration tools)
-   - Depends on Phase 3 (needs extraction tools for story verification)
+4. **Session-as-Plan Lifecycle** — Sessions become first-class plans with SDK integration
+   - Addresses: Session Management system (`client.session.*`, auto-export, long session handling)
+   - Avoids: "Session = just a text file" limitation
+   - Rationale: Sessions are the unit of work in the idumb-v2 model
 
-5. **Phase 5: Self-Validation & Visual Governance** — IGNORED tier, dynamic argue-back, toast-based feedback
-   - Addresses: VAL-01→06
-   - Avoids: Pitfall #7 (static argue-back), Pitfall #9 (no visual feedback)
-   - Depends on Phase 2 (needs toast, message history)
+5. **Fast Extraction & Precision Tools** — Codebase-aware agent tools
+   - Addresses: Unique Agent Tools system (repomix wrap, `client.find.*`, BunShell grep/glob)
+   - Avoids: "Agent can't see the codebase" blindspot
+   - Rationale: Tools that make agents smarter, not just obedient
 
-6. **Phase 6: Stress Test Infrastructure** — Automated stress suite, 10+ compaction test, framework detection test
-   - Addresses: STR-01→05
-   - Depends on all previous phases
+6. **Orchestration & Loop Control** — Ralph-style task orchestration
+   - Addresses: System Core orchestration + Mems Brain for cross-loop memory
+   - Avoids: "One-shot agent" limitation
+   - Rationale: Multi-phase work requires persistent loop state
+
+7. **Stress Test Infrastructure** — Validate the mesh under pressure
+   - Addresses: All 5 systems under bombardment, 10+ compactions, framework detection
+   - Avoids: "Works in demo, breaks in production"
+   - Rationale: Final validation before publish
 
 **Phase ordering rationale:**
-- Phase 1 first: governance must work before adding capabilities (stress test must pass)
-- Phase 2 second: SDK client integration enables everything else (sessions, toasts, events, files)
-- Phase 3 third: extraction + framework detection build on SDK client
-- Phase 4 fourth: orchestration needs extraction tools for verification
-- Phase 5 fifth: self-validation needs toast (from Phase 2) + message history (from Phase 2)
-- Phase 6 last: stress testing validates all features
+- 1 before anything: governance is the foundation
+- 2 unlocks all SDK capabilities for phases 3-6
+- 3→4: events feed session lifecycle
+- 5 independent but benefits from 3+4 context
+- 6 benefits from all prior systems
+- 7 validates everything
 
 **Research flags for phases:**
-- Phase 2: Likely needs deeper research on `event` hook SSE subscription patterns. How does event stream lifecycle work? Does it need cleanup?
-- Phase 3: Standard patterns — `client.find.*` and `client.file.*` are well-documented
-- Phase 4: Needs research on ralph-tui loop state schema and completion tracking across compactions
-- Phase 5: Standard patterns — toast + detection engine enhancement
+- Phase 2: Needs careful SDK integration testing (deadlock risk during init, verified in oh-my-opencode)
+- Phase 3: Standard pattern from plugins, low risk
+- Phase 6: Ralph loop pattern needs deeper study (oh-my-opencode has ralph-loop hook internally)
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | SDK client verified from 5 real plugins. API surface documented. |
-| Features | HIGH | Derived from SDK capabilities + 8 plugin codebases + idumb-v2 concepts |
-| Architecture | HIGH | 4-pillar model maps cleanly to SDK. Patterns verified in production plugins. |
-| Pitfalls | HIGH | oh-my-opencode #1301 documented. Ecosystem-wide zero use of permission.ask confirmed. |
+| Cognitive Mesh (5 systems) | HIGH | Directly from user's idumb-v2 diagram — this IS the product |
+| SDK Capabilities | HIGH | Verified from SDK source, 8 real plugins, official docs |
+| Plugin Patterns | HIGH | 8 repos downloaded and analyzed via repomix |
+| Platform Portability | MEDIUM | Conceptually sound, not yet proven on Claude Code |
+| Stress Test Gaps | HIGH | Verified via 6-agent parallel investigation |
+| Orchestration (Ralph loop) | MEDIUM | Pattern identified in oh-my-opencode, needs deeper study |
 
 ## Gaps to Address
 
-- SSE event stream lifecycle management (subscribe/unsubscribe/cleanup)
-- SDK client error handling patterns (what happens when server is unreachable?)
-- Multi-project plugin behavior (does client scope to current project?)
-- `experimental.*` hooks stability — "experimental" prefix suggests API may change
-- Ralph-tui loop state schema evolution across compactions
+- How does `messages.transform` interact with HiveMind's existing compaction hook? (potential conflict)
+- Ralph loop state persistence format — study oh-my-opencode's implementation
+- Claude Code SDK mapping — which concepts map to which primitives
+- `session.prompt({ noReply: true })` — can this inject governance context without triggering AI?
+- BunShell (`$`) availability — is it always present or Bun-runtime dependent?
 
-## Reference Materials
-
-All stored in `.planning/research/plugin-refs/`:
-
-| File | Source | Size | Purpose |
-|------|--------|------|---------|
-| `opencode-sdk.xml` | sst/opencode (packages/plugin + packages/sdk) | ~53 files | SDK source code reference |
-| `dynamic-context-pruning.xml` | Tarquinen/opencode-dynamic-context-pruning | 185KB | Context management patterns |
-| `micode.xml` | vtemian/micode | 351KB | Session create/prompt/delete, constraint review |
-| `oh-my-opencode.xml` | code-yeongyu/oh-my-opencode | 1.5MB | Largest plugin, 41 hooks, ralph-loop, toasts |
-| `opencode-pty.xml` | shekohex/opencode-pty | 134KB | PTY tools, SDK client typing, showToast |
-| `opencode-worktree.xml` | kdcokenny/opencode-worktree | 58KB | Event-driven (session.idle), worktree tools |
-| `opencode-zellij-namer.xml` | 24601/opencode-zellij-namer | 26KB | Anti-pattern: NOT a real plugin |
-| `plannotator.xml` | backnotprop/plannotator | 279KB | Silent injection, message history, agent detection |
-| `subtask2.xml` | spoons-and-mirrors/subtask2 | 102KB | setClient() pattern, loop state, parallel execution |
+---
+*Last updated: 2026-02-12 after SDK verification + plugin ecosystem analysis*

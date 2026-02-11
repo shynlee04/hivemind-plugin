@@ -1,306 +1,279 @@
-# Architecture Patterns
+# Architecture: HiveMind Cognitive Mesh
 
-**Domain:** AI Agent Context Governance Plugin (OpenCode ecosystem)
+**Domain:** AI Agent Context Governance
 **Researched:** 2026-02-12
-**Confidence:** HIGH (verified from SDK source, 8 plugin codebases, idumb-v2 concepts)
 
-## Core Architecture: SDK-Powered Governance
+## Design Philosophy
 
-The idumb-v2 diagram defines 4 pillars. The SDK client (`client.session`, `client.tui`, `client.file`, `client.find`, `client.event`) is the enabler for ALL of them.
+> The architecture IS the idumb-v2 diagram. Five systems forming a cognitive mesh.
+> The SDK is a materialization layer. The concepts are platform-portable.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    HiveMind Plugin (v3)                         │
-│                                                                 │
-│  PluginInput: { client, project, directory, worktree, $, url } │
-│               ↓ store ref     ↓ store ref      ↓ store ref     │
-│                                                                 │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │ Auto-Hooks & │  │   Session    │  │   Unique     │          │
-│  │  Governance  │  │  Management  │  │ Agent Tools  │          │
-│  │  (Triggers)  │  │ (Lifecycle)  │  │  (Utilities) │          │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘          │
-│         │                 │                  │                  │
-│         ▼                 ▼                  ▼                  │
-│  ┌────────────────────────────────────────────────────┐         │
-│  │              The 'Mems' Brain                      │         │
-│  │         (Shared Knowledge Repository)              │         │
-│  │    Shelves → Metadata → Just-in-Time Memory        │         │
-│  └────────────────────────────────────────────────────┘         │
-│                                                                 │
-│  ┌────────────────────────────────────────────────────┐         │
-│  │              SDK Client Layer                       │         │
-│  │  client.session  client.tui  client.file           │         │
-│  │  client.find     client.event  client.vcs          │         │
-│  │  $ (BunShell)    client.app                        │         │
-│  └────────────────────────────────────────────────────┘         │
-└─────────────────────────────────────────────────────────────────┘
-```
+### The Mesh, Not Features
 
-## Pillar 1: Auto-Hooks & Governance (Triggers & Rules)
-
-**Maps to idumb-v2 concepts:** Time-to-Stale, Hierarchy Chain Breaking, Git Atomic Commits, Activate Agent Tools
-
-### Component: Hook Router
-
-| Hook | What It Does | SDK Feature Used |
-|------|-------------|------------------|
-| `tool.execute.before` | Track what agent is about to do. Warn if governance missing. **NEVER block.** | None (existing) |
-| `tool.execute.after` | Track what agent did. Detect patterns. Auto-capture subagent results. | `client.tui.showToast()` for visual warnings |
-| `experimental.chat.system.transform` | Inject `<hivemind>` block with hierarchy, signals, bootstrap | None (existing, enhanced) |
-| `experimental.session.compacting` | Preserve hierarchy + inject purification context | `client.session.messages()` for pre-compaction message scan |
-| `event` **NEW** | React to 32 event types: `session.idle`, `file.edited`, `session.diff`, `session.compacted` | `client.event.subscribe()` SSE stream |
-| `chat.message` **NEW** | Inject context parts into user messages, tag with governance metadata | None (modifies `output.parts`) |
-| `command.execute.before` **NEW** | Intercept `/compact`, `/clear` — preserve governance context | None (modifies `output.parts`) |
-| `shell.env` **NEW** | Inject `HIVEMIND_SESSION_ID`, `HIVEMIND_MODE` into shell environment | None (modifies `output.env`) |
-
-### Pattern: Time-to-Stale (via SDK Events)
-
-```typescript
-// CURRENT: Turn counting in brain.json (fragile, inaccurate)
-// UPGRADED: Real event-driven staleness
-
-event: async ({ event }) => {
-  if (event.type === "session.idle") {
-    // Agent stopped working — check how long since last map_context
-    const staleness = detectStaleness(brain.hierarchy);
-    if (staleness.level === "stale") {
-      await client.tui.showToast({
-        body: { message: `Session idle. Context stale (${staleness.age}).`, variant: "warning" }
-      });
-    }
-  }
-  if (event.type === "session.compacted") {
-    // Context was compressed — hierarchy MUST survive
-    await ensureHierarchyIntegrity(brain);
-  }
-  if (event.type === "file.edited") {
-    // Track what files agent is touching
-    brain.metrics.files_touched.push(event.file);
-  }
-}
-```
-
-### Pattern: Git Atomic Commits (via BunShell `$`)
-
-```typescript
-// Verify git state for traceability
-const branch = await $`git rev-parse --abbrev-ref HEAD`.text();
-const hash = await $`git rev-parse --short HEAD`.text();
-brain.session.git_context = { branch: branch.trim(), hash: hash.trim() };
-```
-
-## Pillar 2: Session Management & Auto-Export (Lifecycle)
-
-**Maps to idumb-v2 concepts:** Session = On-going Plan, Auto-Export of Whole Session, Long Session Handling, Session Structure
-
-### Component: Session Intelligence (via SDK `client.session.*`)
+Traditional plugin: "I have tools A, B, C."
+HiveMind: "I have 5 systems that feed each other. Each system makes the others smarter."
 
 ```
-Session Lifecycle:
-  session.created → Initialize governance (inject context silently)
-  session.idle → Check staleness, suggest actions
-  session.compacted → Preserve hierarchy, verify integrity
-  session.error → Log error, set blocked status
-  session.deleted → Archive session data
+Remove Auto-Hooks → drift goes undetected → sessions rot → mems become stale
+Remove Sessions → no lifecycle → no export → mems have no source
+Remove Agent Tools → agents can't read hierarchy → governance is blind
+Remove Mems Brain → nothing persists → every session starts from zero
+Remove System Core → nothing connects → 4 isolated features
 ```
 
-**Key SDK capabilities used:**
+The mesh degrades gracefully — remove one system and the others still work, but the intelligence multiplier disappears. That's by design: no single point of failure, but every system amplifies the others.
 
-| Method | Purpose in HiveMind |
-|--------|---------------------|
-| `client.session.get({ path: { id } })` | Get session metadata (title, timestamps, status) |
-| `client.session.messages({ path: { id } })` | Read full message history — evidence for claims |
-| `client.session.prompt({ path: { id }, body: { noReply: true, parts } })` | **Silent context injection** — inject governance context without triggering AI response |
-| `client.session.children({ path: { id } })` | Track subagent sessions for delegation intelligence |
-| `client.session.diff({ path: { id } })` | Get actual file diffs — evidence for what agent changed |
-| `client.session.summarize({ path: { id }, body })` | Auto-summarize session before archiving |
-| `client.session.list()` | Multi-session awareness |
+---
 
-### Pattern: Auto-Export via SDK
+## System Architecture (Platform-Agnostic Concepts)
 
-```typescript
-// On compact_session tool call:
-async function autoExport(sessionId: string) {
-  // 1. Get real messages from SDK (not from system prompt memory)
-  const messages = await client.session.messages({ path: { id: sessionId } });
-  
-  // 2. Get actual file diffs
-  const diffs = await client.session.diff({ path: { id: sessionId } });
-  
-  // 3. Auto-summarize via SDK
-  await client.session.summarize({ path: { id: sessionId }, body: {} });
-  
-  // 4. Archive to .hivemind/sessions/archive/ with real data
-  // 5. Save key findings to mems brain
-}
+### Layer 1: Concepts (Portable)
+
+These exist regardless of platform:
+
+| System | Concept | What It Does | Feeds Into |
+|--------|---------|-------------|------------|
+| **System Core** | Brain state + hierarchy tree + detection | Orchestrates all other systems | Everything |
+| **Auto-Hooks & Governance** | Time-to-stale, chain breaking, git commits, tool activation | Automatic reactions to agent behavior | Sessions, Core |
+| **Session Management** | Session = plan, auto-export, long session handling, structure | Lifecycle of work units | Mems, Core |
+| **Unique Agent Tools** | Hierarchy reading, fast read/extract, precision extraction, thinking frameworks | Make agents smarter | Core, Mems |
+| **Mems Brain** | Shared brain, main shelves, metadata & IDs, just-in-time memory | Persistent cross-session knowledge | Core, Tools |
+
+### Layer 2: Materialization (Platform-Specific)
+
+On OpenCode, each concept materializes through specific SDK channels:
+
+| Concept | OpenCode Materialization | SDK Surface |
+|---------|------------------------|-------------|
+| Brain state | `.hivemind/brain.json` + `hierarchy.json` | Filesystem |
+| Time-to-stale | `event` hook → `session.idle` / `file.watcher.updated` | Event subscription |
+| Chain breaking | Detection engine → system prompt injection | `chat.system.transform` |
+| Git atomic commits | BunShell `$` → `git commit` | `$` (BunShell) |
+| Tool activation | System prompt injection + tool metadata | `chat.system.transform` + `context.metadata()` |
+| Session = plan | `client.session.*` (create, list, messages, summarize) | SDK Client |
+| Auto-export | `client.session.messages()` → filesystem archive | SDK Client + FS |
+| Long session handling | `experimental.session.compacting` + purification | Compaction hook |
+| Session structure | `client.session.create({ body: { title } })` + manifest | SDK Client + FS |
+| Hierarchy reading | Custom tools with tree traversal | `tool()` registration |
+| Fast read/extract | `client.find.text()`, `client.file.read()`, `$\`rg\`` | SDK Client + BunShell |
+| Precision extraction | `client.find.symbols()`, repomix via `$` | SDK Client + BunShell |
+| Thinking frameworks | System prompt injection | `chat.system.transform` |
+| Shared brain (mems) | `.hivemind/mems/` + git tracking | Filesystem + `$` |
+| Just-in-time memory | Tool-triggered recall from shelves | `tool()` + FS |
+| Visual governance | `client.tui.showToast()` | SDK Client TUI |
+
+### Layer 3: On Claude Code (Future Portability Example)
+
+| Concept | Claude Code Materialization |
+|---------|---------------------------|
+| Brain state | `.hivemind/brain.json` (same) |
+| Time-to-stale | MCP server polling / tool_use interception |
+| Chain breaking | System prompt via MCP |
+| Session = plan | Conversation metadata API (when available) |
+| Visual governance | Status messages in conversation |
+| Fast read/extract | MCP tools wrapping fd/rg/repomix |
+| Mems brain | `.hivemind/mems/` (same — filesystem is universal) |
+
+---
+
+## Component Boundaries
+
+### Core Components (Platform-Agnostic)
+
+```
+src/
+├── lib/
+│   ├── hierarchy-tree.ts    → System Core: tree CRUD, stamps, queries, staleness
+│   ├── detection.ts         → Auto-Hooks: 9 detection signals, escalation tiers
+│   ├── planning-fs.ts       → Sessions: per-session files, manifest, templates
+│   ├── mems.ts              → Mems Brain: shelves, save/recall, metadata
+│   ├── chain-analysis.ts    → Auto-Hooks: orphan/break detection
+│   ├── staleness.ts         → Auto-Hooks: time-to-stale logic
+│   ├── persistence.ts       → System Core: brain.json read/write
+│   └── session-export.ts    → Sessions: full session capture
+├── schemas/
+│   ├── brain-state.ts       → System Core: brain schema
+│   ├── hierarchy.ts         → System Core: tree schema
+│   └── config.ts            → System Core: user preferences
+└── tools/
+    ├── declare-intent.ts    → Sessions: start lifecycle
+    ├── map-context.ts       → System Core: update hierarchy
+    ├── compact-session.ts   → Sessions: archive + reset
+    ├── scan-hierarchy.ts    → Agent Tools: read tree
+    ├── save-anchor.ts       → Agent Tools: mark important context
+    ├── think-back.ts        → Agent Tools: recall previous reasoning
+    ├── check-drift.ts       → Auto-Hooks: manual drift check
+    ├── self-rate.ts         → Agent Tools: self-assessment
+    ├── export-cycle.ts      → Sessions: capture subagent results
+    ├── save-mem.ts          → Mems Brain: persist knowledge
+    ├── list-shelves.ts      → Mems Brain: browse storage
+    └── recall-mems.ts       → Mems Brain: retrieve knowledge
 ```
 
-### Pattern: Long Session Handling (Compaction Survival)
+### Materialization Layer (OpenCode-Specific)
 
-```typescript
-// experimental.session.compacting hook:
-async ({ sessionID }, output) => {
-  // Read current hierarchy from brain
-  const hierarchy = readHierarchy(directory);
-  
-  // Read last N messages to understand what agent was doing
-  const messages = await client.session.messages({ path: { id: sessionID } });
-  const recentMessages = messages.slice(-5);
-  
-  // Inject rich context (not just flat strings)
-  output.context.push(formatHierarchyForCompaction(hierarchy));
-  output.context.push(formatRecentWorkSummary(recentMessages));
-  
-  // Optional: customize compaction prompt itself
-  // output.prompt = customCompactionPrompt; // replaces default
-}
+```
+src/
+├── hooks/
+│   ├── session-lifecycle.ts → Materializes: system prompt injection, bootstrap, evidence gate
+│   ├── soft-governance.ts   → Materializes: turn tracking, detection signals, auto-capture
+│   ├── tool-gate.ts         → Materializes: governance warnings (NEVER blocking)
+│   ├── compaction.ts        → Materializes: hierarchy preservation across compaction
+│   └── index.ts             → Wires hooks to OpenCode SDK
+├── index.ts                 → Plugin entry: receives { client, $, directory, serverUrl }
+└── cli.ts                   → CLI materialization (hivemind init/status/etc.)
 ```
 
-## Pillar 3: Unique Agent Tools (Hook-Activated Utilities)
+### Key Boundary Rule
 
-**Maps to idumb-v2 concepts:** Hierarchy Reading Tools, Fast Read/Extract, Precision Extraction, Thinking Frameworks
+**Core components MUST NOT import from hooks or SDK.** They operate on pure data structures (brain state, hierarchy tree, mems). The materialization layer adapts these to the specific platform.
 
-### Component: SDK-Enhanced Tools
-
-| Tool | Current | Enhanced with SDK |
-|------|---------|-------------------|
-| `declare_intent` | Sets focus in brain.json | + `client.tui.showToast()` confirmation |
-| `map_context` | Updates hierarchy | + `client.tui.showToast()` with current tree |
-| `compact_session` | Archives to files | + `client.session.summarize()` + `client.session.messages()` for real export |
-| `scan_hierarchy` | Reads brain.json | + `client.session.get()` for session metadata |
-| `check_drift` | Reads detection engine | + `client.session.diff()` for evidence-based drift assessment |
-| `self_rate` | Agent self-assessment | + `client.tui.showToast()` with rating feedback |
-| `export_cycle` | Captures subagent results | + `client.session.children()` for real child session data |
-
-### Component: Fast Extraction Tools (NEW — via BunShell + SDK)
-
-| Tool | Implementation | Notes |
-|------|----------------|-------|
-| `hivemind_grep` | `client.find.text({ query: { pattern } })` | SDK-native ripgrep, structured output |
-| `hivemind_glob` | `client.find.files({ query: { query: pattern } })` | SDK-native file search |
-| `hivemind_read` | `client.file.read({ query: { path } })` | SDK-native file read, patch-aware |
-| `hivemind_extract` | `$\`npx repomix --compress --include ${pattern}\`.text()` | Repomix via BunShell for codebase packing |
-| `hivemind_symbols` | `client.find.symbols({ query: { query } })` | LSP-powered symbol lookup |
-| `hivemind_status` | `client.file.status()` | Git file status |
-
-## Pillar 4: The 'Mems' Brain (Shared Knowledge Repository)
-
-**Maps to idumb-v2 concepts:** Shared Brain (Mems share one) → Atomic Git, Main Shelves, Meta Data & IDs, Just-in-Time Memory
-
-### Component: SDK-Enhanced Memory
-
-| Concept | Current | Enhanced with SDK |
-|---------|---------|-------------------|
-| Shared Brain | `.hivemind/mems/` files | + Cross-session: on `session.created` event, auto-inject relevant mems via `prompt({ noReply: true })` |
-| Just-in-Time Memory | `recall_mems` tool | + `client.session.messages()` to search past sessions for relevant context |
-| Meta Data & IDs | Timestamps + brain.json | + `client.vcs.get()` for git branch, `client.project.current()` for project metadata |
-
-## Framework Integration Architecture
-
-### Pattern: Framework Detection
-
-```typescript
-// Detect which governance framework is active
-async function detectFramework(directory: string): Promise<Framework> {
-  const files = await client.find.files({ query: { query: ".planning", type: "directory" } });
-  if (files.length > 0) return { type: "gsd", stateFile: ".planning/STATE.md" };
-  
-  const specKit = await client.find.files({ query: { query: ".spec-kit", type: "directory" } });
-  if (specKit.length > 0) return { type: "spec-kit", stateFile: ".spec-kit/state.json" };
-  
-  return { type: "none" };
-}
+```
+✅ hooks/session-lifecycle.ts imports from lib/detection.ts
+✅ hooks/soft-governance.ts imports from lib/hierarchy-tree.ts
+❌ lib/detection.ts imports from @opencode-ai/plugin
+❌ lib/mems.ts imports from hooks/session-lifecycle.ts
 ```
 
-### Pattern: Framework-Aware Drift Detection
+This boundary is what makes the concepts portable.
 
-```typescript
-// Compare HiveMind hierarchy with GSD state
-async function checkFrameworkAlignment(framework: Framework) {
-  if (framework.type === "gsd") {
-    const stateContent = await client.file.read({ query: { path: ".planning/STATE.md" } });
-    const currentPhase = parseGSDPhase(stateContent);
-    const hivemindFocus = brain.hierarchy.trajectory;
-    
-    if (!focusMatchesPhase(hivemindFocus, currentPhase)) {
-      await client.tui.showToast({
-        body: { 
-          message: `⚠ HiveMind focus "${hivemindFocus}" doesn't match GSD Phase ${currentPhase.number}`, 
-          variant: "warning" 
-        }
-      });
-    }
-  }
-}
+---
+
+## Data Flow: The Mesh in Action
+
+### Flow 1: Agent Starts Working (Governance Chain)
+
 ```
+Agent calls tool → tool.execute.after fires
+  → soft-governance increments turn count
+  → detection engine compiles signals (turn count, keyword flags, etc.)
+  → session-lifecycle injects signals into system prompt
+  → Agent sees: "[WARN] 8 turns without context update. Call map_context."
+  → TUI shows toast: "⚠ Drift detected" (via client.tui.showToast)
+```
+
+**Systems involved:** Auto-Hooks → System Core → Session Management (prompt injection) → Visual governance (TUI)
+
+### Flow 2: Session Gets Long (Compaction Chain)
+
+```
+Context window fills → OpenCode triggers compaction
+  → compaction hook fires
+  → reads hierarchy tree (System Core)
+  → reads current detection state (Auto-Hooks)
+  → injects context[] with hierarchy + metrics (budget-capped)
+  → optionally customizes compaction prompt
+  → Agent survives compaction with full awareness of what it was doing
+```
+
+**Systems involved:** Session Management → System Core → Auto-Hooks → Mems Brain (mems persist on disk, unaffected)
+
+### Flow 3: Subagent Returns (Export Chain)
+
+```
+Task tool returns result → tool.execute.after fires
+  → auto-capture: logs result in brain.cycle_log[]
+  → failure detection: scans for "failed", "error", "blocked"
+  → if failure: sets pending_failure_ack in brain state
+  → session-lifecycle injects: "⚠ SUBAGENT REPORTED FAILURE. Call export_cycle."
+  → Agent calls export_cycle → updates hierarchy node → saves to mems
+```
+
+**Systems involved:** Auto-Hooks → System Core → Session Management (prompt) → Mems Brain (persist)
+
+### Flow 4: Fast Read/Extract (Agent Intelligence Chain)
+
+```
+Agent needs codebase context → calls scan_hierarchy (reads tree)
+  → tree shows what's been explored vs unknown
+  → agent uses built-in grep/glob tool → finds relevant files
+  → OR uses repomix tool → packs focused codebase section
+  → saves key findings via save_mem → mems brain stores on shelf
+  → next session: recall_mems brings back the knowledge
+```
+
+**Systems involved:** Agent Tools → System Core → Mems Brain
+
+---
+
+## Patterns to Follow
+
+### Pattern 1: Inform, Don't Block
+**What:** All governance is soft — warnings, toasts, escalation, arguing back. Never `permission.ask`, never blocking.
+**Why:** Multiple plugins coexist. Blocking clashes. Users hate it. Soft governance is more effective long-term.
+**How it chains:** Detection → prompt injection → TUI toast → evidence gate escalation (INFO→WARN→CRITICAL→DEGRADED)
+
+### Pattern 2: SDK Client in Hooks, Not Init
+**What:** Use `client.*` from within hooks and tool handlers, never during plugin initialization.
+**Why:** Deadlock: plugin init waits for server → server waits for plugin init (verified in oh-my-opencode #1301).
+**How:** Store client reference: `let sdkClient; plugin = async ({ client }) => { sdkClient = client; return hooks; }`
+
+### Pattern 3: Filesystem for Persistence, SDK for Intelligence
+**What:** Brain state, mems, hierarchy → filesystem. Session awareness, search, toasts → SDK client.
+**Why:** Filesystem survives everything (crashes, restarts, platform switches). SDK provides real-time intelligence.
+**How:** Core lib reads/writes `.hivemind/`. Hooks use `client.*` for enrichment.
+
+### Pattern 4: Event-Driven, Not Polling
+**What:** Subscribe to `event` hook for `session.idle`, `file.edited`, `session.diff` instead of counting turns.
+**Why:** Turn counting is a proxy. Events are the truth. An agent can make 20 productive turns or 2 drifting ones.
+**How:** `event` hook → dispatch to appropriate system based on event type.
+
+---
 
 ## Anti-Patterns to Avoid
 
-### Anti-Pattern 1: Permission Blocking
-**What:** Using `permission.ask` hook to set `output.status = "deny"`
-**Why bad:** Multiple plugins fighting over deny/allow = chaos. Other plugins WILL clash. User loses trust.
-**Instead:** Toast warnings, system prompt escalation, evidence-based argue-back. **NEVER stop tools.**
+### Anti-Pattern 1: SDK as Foundation
+**What:** Building features that REQUIRE the SDK to function.
+**Why bad:** Concepts become non-portable. Can't bring to Claude Code or Cursor.
+**Instead:** Core logic in pure lib/. SDK in materialization layer only.
 
-### Anti-Pattern 2: Heavy Init
-**What:** Calling `client.*` during plugin init function
-**Why bad:** Deadlock — server blocks on plugin init before handling API requests (oh-my-opencode #1301)
-**Instead:** Store `client` reference during init, call from hooks/tools only
+### Anti-Pattern 2: Permission Blocking
+**What:** Using `permission.ask` to deny tool execution.
+**Why bad:** Clashes with other plugins. User frustration. Defeats soft governance.
+**Instead:** Escalating warnings via system prompt + TUI toasts.
 
-### Anti-Pattern 3: Raw LLM Calls
-**What:** Making direct API calls to LLM providers from plugin
-**Why bad:** Expensive, unpredictable latency, token costs on every turn
-**Instead:** Use `client.session.prompt()` for agent-to-agent communication
+### Anti-Pattern 3: Single-System Thinking
+**What:** Building a feature that lives in only one system.
+**Why bad:** Misses the mesh multiplier. A tool without governance awareness is just a command.
+**Instead:** Every feature touches at least 2 systems. A tool saves to mems AND updates hierarchy AND triggers detection.
 
-### Anti-Pattern 4: Filesystem Hacks for SDK Features
-**What:** Using `fs.readFileSync` when `client.file.read()` exists, or spawning `grep` when `client.find.text()` exists
-**Why bad:** Bypasses SDK's project boundaries, sandbox awareness, structured output
-**Instead:** SDK first, raw fs only for `.hivemind/` internal state
+### Anti-Pattern 4: Shallow Tool Registration
+**What:** Registering tools that just wrap CLI commands.
+**Why bad:** Agent gets no cognitive benefit. It's `bash` with extra steps.
+**Instead:** Tools that read hierarchy context, use detection signals, persist to mems. Cognitive prosthetics.
 
-### Anti-Pattern 5: Full Message History Rewriting
-**What:** Using `messages.transform` to delete or reorder entire conversation history
-**Why bad:** Unpredictable agent behavior, breaks other plugins' context, confuses user
-**Instead:** Use `messages.transform` surgically — inject context messages only
+---
 
-## Data Flow
+## Reference: SDK Channels Available (Verified)
 
-```
-User → Agent → Tool Call
-                  ↓
-            tool.execute.before (track intent)
-                  ↓
-            [Tool executes]
-                  ↓
-            tool.execute.after (track result, detect patterns)
-                  ↓
-            Detection Engine → Signals
-                  ↓
-     ┌────────────┴────────────┐
-     ↓                         ↓
-System Prompt                 Toast
-(next turn)             (immediate visual)
-     ↓                         ↓
-Agent sees <hivemind>    User sees warning
-block with signals       in TUI
-```
+| Channel | What It Provides | Used By |
+|---------|-----------------|---------|
+| `client.session.*` | Full session CRUD + prompt + messages + fork | Session Management |
+| `client.tui.showToast()` | Visual notifications | Auto-Hooks (governance alerts) |
+| `client.file.read/status` | File content + git status | Agent Tools |
+| `client.find.text/files/symbols` | ripgrep, fd, LSP symbols | Agent Tools (fast extraction) |
+| `event` hook (32 types) | Real-time system events | Auto-Hooks (triggers) |
+| `$` BunShell | Subprocess spawning | Agent Tools (repomix, git, rg) |
+| `chat.system.transform` | System prompt injection | All systems (governance delivery) |
+| `chat.messages.transform` | Full message history manipulation | Session Management (context pruning) |
+| `session.compacting` | Compaction context + prompt override | Session Management |
+| `tool.execute.before/after` | Tool lifecycle tracking | Auto-Hooks (metrics, detection) |
+| `shell.env` | Environment variable injection | System Core (governance vars) |
+| `chat.params` | LLM parameter tuning | Auto-Hooks (temperature by mode) |
+| `context.metadata()` | Real-time tool display updates | Agent Tools (progress feedback) |
+| `context.ask()` | Dynamic user permission requests | Agent Tools (destructive ops) |
 
-## Plugin Ecosystem Patterns (Learned from 8 Repos)
+**NOT used (by design):** `permission.ask` (blocking), `auth` (not needed), `chat.headers` (not needed)
 
-| Plugin | Key Pattern Learned | Apply to HiveMind |
-|--------|--------------------|--------------------|
-| oh-my-opencode | Internal hook system (41 hooks) + SDK client for toasts + serverUrl health checks | Modular internal hook architecture. Toast notifications for governance events. |
-| subtask2 | `setClient(ctx.client)` stored in module state. Comment: "Use v1 client — has internal fetch configured properly" | Store client reference safely. Trust SDK's HTTP client. |
-| opencode-pty | `PluginClient = Parameters<Plugin>[0]['client']` type pattern. `showToast()` for notifications. | Clean type derivation. Toast for session events. |
-| plannotator | `client.session.messages()` to detect agent context. `prompt({ noReply: true })` for silent injection. | Evidence tracking via message history. Silent governance context injection. |
-| dynamic-context-pruning | Prune/distill/compress tools + system prompt handler + message transform | Context management patterns. System prompt injection structure. |
-| micode | `client.session.create()` + `prompt()` + `delete()` for constraint review | Spawn review sessions programmatically for self-validation. |
-| opencode-worktree | `Event` type from SDK for session.idle. Event-driven operations. | Event-driven architecture pattern. |
-| zellij-namer | External process via child_process (NOT using BunShell) | Lesson: use `$` BunShell instead of raw child_process for better integration. |
+---
 
 ## Sources
 
-- idumb-v2 system concepts diagram (provided by user)
-- OpenCode SDK v1.1.53 documentation (official)
-- 8 plugin codebases analyzed via Repomix (stored in `.planning/research/plugin-refs/`)
-- GSD framework analysis (30+ workflows)
-- oh-my-opencode deadlock issue #1301
+- idumb-v2 diagram (user's architectural vision)
+- OpenCode SDK v1.1.53 source (`@opencode-ai/plugin`, `@opencode-ai/sdk`)
+- 8 plugin repos analyzed via repomix (see `.planning/research/plugin-refs/README.md`)
+- SDK client verification: micode, subtask2, oh-my-opencode, opencode-pty, plannotator
+- Stress test results from 6-agent parallel investigation
+
+---
+*Last updated: 2026-02-12 after SDK verification + cognitive mesh reframing*

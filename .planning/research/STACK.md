@@ -1,99 +1,92 @@
-# Technology Stack
+# Technology Stack: HiveMind Cognitive Mesh
 
-**Project:** HiveMind v3 — Context Governance Plugin for OpenCode
+**Project:** HiveMind v3
 **Researched:** 2026-02-12
-**Confidence:** HIGH (verified from SDK source, 8 real plugin codebases, official docs)
+
+## Stack Philosophy
+
+The stack serves the cognitive mesh. Every technology choice answers: "Does this help the 5 systems feed each other?" The SDK is the materialization layer — it gives us channels to manifest concepts. The concepts themselves (brain state, hierarchy, detection, mems) are pure TypeScript with zero SDK dependency.
 
 ## Recommended Stack
 
-### Core Framework
+### Core Platform (Concept Layer — Platform-Agnostic)
 
 | Technology | Version | Purpose | Why |
 |------------|---------|---------|-----|
-| OpenCode Plugin SDK | 1.1.53 | Plugin interface, hooks, tool registration | THE platform — plugins receive `client`, `$`, `project`, `serverUrl`. All capabilities flow from here. |
-| OpenCode SDK Client | 1.1.53 | Sessions, TUI, Files, Find, Events | **VERIFIED USABLE from plugins.** 5 of 8 ecosystem plugins use it. Enables real session management, toast notifications, file reads, text search — the foundations of governance. |
-| BunShell (`$`) | Built-in | Subprocess spawning (repomix, rg, git) | Provided as `input.$`. Tagged template syntax: `` $`repomix --output -`.text() ``. Streaming, JSON parsing, env injection. |
-| TypeScript | 5.x | Type-safe implementation | Already in use. Zod v4 for tool schemas. |
-| Node.js TAP | 21.x | Test framework | Already in use (705 assertions). Keep for consistency. |
+| TypeScript | 5.x | All concept logic | Type safety for brain state, hierarchy, detection schemas |
+| Node.js | 20+ | Runtime | Plugin host for OpenCode, universal availability |
+| Zod | 4.x | Schema validation | Tool schemas, brain state validation, config parsing |
 
-### SDK Client API Surface (What We Can Use)
+### Materialization Layer (OpenCode-Specific)
 
-| Client | Key Methods | HiveMind Use Case |
-|--------|-------------|-------------------|
-| `client.session` | `list`, `create`, `get`, `messages`, `prompt({ noReply: true })`, `abort`, `diff`, `summarize` | **Session = On-going Plan.** Real session lifecycle, not file-based simulation. Inject context silently via `noReply: true`. Read message history for evidence tracking. |
-| `client.tui` | `showToast`, `appendPrompt`, `executeCommand` | **Visual governance feedback.** Toast for drift warnings, argue-back, evidence reminders. Prompt append for suggested next actions. |
-| `client.file` | `read`, `status` | **Structured file access.** Read files through SDK (not raw fs). Git status for change tracking. |
-| `client.find` | `text`, `files`, `symbols` | **Fast extraction.** Ripgrep-powered text search, file discovery, LSP symbols — no need to build our own grep/glob. |
-| `client.event` | `subscribe` (SSE) | **Event-driven governance.** Subscribe to 32 event types: `session.created`, `session.idle`, `file.edited`, `session.diff`, `session.compacted` — replace turn-counting with real events. |
-| `client.app` | `log`, `agents` | **Observability.** Write structured logs, list available agents for team-awareness. |
-| `client.vcs` | `get` | **Git context.** Branch info for traceability (git hash + timestamp). |
-| `client.project` | `current` | **Project context.** Project metadata for multi-project awareness. |
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| `@opencode-ai/plugin` | 1.1.53 | Plugin interface | Hooks, tool registration, BunShell access |
+| `@opencode-ai/sdk` | 1.1.53 | SDK client | Sessions, TUI, files, find, events — the intelligence channels |
 
-### Hooks We Should Use (14 available, currently using 5)
+### SDK Client Channels (Verified Working from Plugins)
 
-| Hook | Priority | Purpose | Currently Used? |
-|------|----------|---------|-----------------|
-| `tool.execute.before` | Core | Track what agent is about to do | YES |
-| `tool.execute.after` | Core | Track what agent did, detect patterns | YES |
-| `experimental.chat.system.transform` | Core | Inject governance context into system prompt | YES |
-| `experimental.session.compacting` | Core | Preserve hierarchy across compaction | YES |
-| `event` | **NEW — HIGH** | React to 32 event types — session lifecycle, file edits, idle detection, diffs | NO |
-| `chat.message` | **NEW — HIGH** | Inject context parts into user messages, tag with metadata | NO |
-| `experimental.chat.messages.transform` | **NEW — MEDIUM** | Custom context management, inject synthetic messages | NO |
-| `command.execute.before` | **NEW — MEDIUM** | Intercept slash commands, add hivemind-aware behavior | NO |
-| `shell.env` | **NEW — LOW** | Inject `HIVEMIND_SESSION_ID`, `HIVEMIND_MODE` into shell env | NO |
-| `chat.params` | Future | Adjust LLM temperature by governance mode | NO |
-| `config` | Future | React to config changes in real-time | NO |
-| `permission.ask` | **NEVER** | Block tool execution | NO — **ANTI-PATTERN: never block, never deny, never clash with other plugins** |
+| Channel | SDK Method | Materializes Concept |
+|---------|-----------|---------------------|
+| **Sessions** | `client.session.create/list/get/messages/prompt/delete/summarize/fork` | Session = On-going Plan, Auto-Export |
+| **TUI** | `client.tui.showToast({ body: { message, variant } })` | Visual governance (never blocking) |
+| **Files** | `client.file.read({ query: { path } })`, `client.file.status()` | Fast Read, Codebase Awareness |
+| **Search** | `client.find.text({ query: { pattern } })`, `client.find.files()`, `client.find.symbols()` | Fast Extract, Precision Extraction |
+| **Events** | `event` hook — 32 event types (session.idle, file.edited, session.diff, etc.) | Auto-Hooks triggers (replacing turn-counting) |
+| **Subprocess** | `$` BunShell — `` $`repomix --compress` ``, `` $`rg pattern` `` | Git Atomic Commits, repomix wrapping |
+| **Context Inject** | `session.prompt({ body: { noReply: true, parts } })` | Silent context injection (plannotator pattern) |
+| **Shell Env** | `shell.env` hook → inject `HIVEMIND_SESSION_ID` etc. | Governance state visible to scripts |
+| **LLM Params** | `chat.params` hook → temperature, topP, topK | Mode-adaptive behavior |
+| **Message Transform** | `experimental.chat.messages.transform` | Context window management |
 
 ### Supporting Libraries
 
 | Library | Version | Purpose | When to Use |
 |---------|---------|---------|-------------|
-| Repomix | latest | Codebase packing (via `$` BunShell) | Fast extraction: `$\`npx repomix --compress --output -\`.text()` |
-| Ink | 5.x | TUI dashboard (already built) | CLI `hivemind dashboard` — keep as-is |
-| Zod | 4.x | Tool schema validation | Built into plugin SDK for tool definitions |
+| repomix | latest | Codebase packing | When agent needs whole-codebase awareness via `$` |
+| ripgrep (rg) | system | Fast text search | Backup to `client.find.text()` via `$` |
+| fd | system | Fast file find | Backup to `client.find.files()` via `$` |
+
+### Testing & Dev
+
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| Node test runner | built-in | Unit + integration tests | Zero deps, TAP output, 705+ assertions |
+| tsx | latest | TypeScript execution | Fast dev iteration |
 
 ## Alternatives Considered
 
-| Category | Recommended | Alternative | Why Not Alternative |
-|----------|-------------|-------------|---------------------|
-| File search | `client.find.text()` (SDK) | Custom rg wrapper | SDK already wraps ripgrep with structured output. Don't reinvent. |
-| File read | `client.file.read()` (SDK) | Raw `fs.readFileSync` | SDK provides patch-aware reads, respects project boundaries. Raw fs still needed for .hivemind/ internal state. |
-| User feedback | `client.tui.showToast()` | Console.log / system prompt only | Toast is VISUAL — user sees it in TUI immediately. System prompt is invisible to user. Both needed. |
-| Session tracking | `client.session.*` + `client.event` | Turn counting in brain.json | Real events > counting. `session.idle` tells you agent stopped. `session.diff` gives you what changed. `session.compacted` tells you context was compressed. |
-| Process spawning | `$` BunShell | `child_process.exec` | BunShell is provided by plugin SDK, has streaming, JSON parsing, env injection built-in. |
-| Permission blocking | **NEVER** | `permission.ask` → `deny` | **Clashes with other plugins. Breaks user trust. Soft governance only.** |
+| Category | Recommended | Alternative | Why Not |
+|----------|-------------|-------------|---------|
+| Plugin SDK | `@opencode-ai/plugin` | Raw MCP server | MCP can't access hooks, TUI, sessions |
+| State persistence | Filesystem (`.hivemind/`) | SDK storage API | No SDK storage exists; filesystem is portable |
+| Subprocess | BunShell (`$`) | `child_process` | BunShell has streaming, JSON parsing, env injection built-in |
+| Visual feedback | `client.tui.showToast()` | System prompt only | Toasts are immediate; prompt waits for next turn |
+| Permission control | **NEVER** `permission.ask` | N/A | Blocking clashes with other plugins, contradicts soft governance |
 
-## Plugin Input Destructuring (Current vs Target)
+## Installation
 
-```typescript
-// CURRENT (v2.6.0) — only uses 2 of 6 inputs
-export const HiveMindPlugin: Plugin = async ({ directory, worktree }) => { ... }
+```bash
+# Core (already in package.json)
+npm install @opencode-ai/plugin @opencode-ai/sdk
 
-// TARGET (v3) — use ALL inputs
-export const HiveMindPlugin: Plugin = async ({ 
-  client,       // SDK client — sessions, TUI, files, events
-  project,      // Project metadata
-  directory,    // Project directory
-  worktree,     // Git worktree root
-  serverUrl,    // OpenCode server URL
-  $,            // BunShell for subprocesses
-}) => { ... }
+# Dev
+npm install -D typescript tsx
 ```
 
-**CAVEAT:** Do NOT call `client.*` during plugin init (deadlock risk — oh-my-opencode issue #1301). Store reference, use from hooks/tools only.
+## Critical Rules
 
-## SDK Reference (Downloaded)
-
-Reference material stored at `.planning/research/plugin-refs/`:
-- `opencode-sdk.xml` — Official OpenCode SDK + Plugin source (compressed, 53 files)
-- 8 plugin repos for pattern reference (see ARCHITECTURE.md for analysis)
+1. **Core lib/ MUST NOT import SDK** — concepts stay platform-portable
+2. **SDK client used ONLY in hooks/ and tools/** — materialization layer
+3. **NEVER use `permission.ask`** — soft governance always
+4. **Client init in hooks, not plugin init** — avoid deadlock (oh-my-opencode #1301)
+5. **Filesystem for persistence, SDK for intelligence** — dual channel
 
 ## Sources
 
-- `@opencode-ai/plugin@1.1.53` type definitions (HIGH confidence)
-- `@opencode-ai/sdk@1.1.53` type definitions (HIGH confidence)
-- 8 real plugin codebases via Repomix (HIGH confidence)
-- OpenCode SDK documentation (HIGH confidence)
-- oh-my-opencode deadlock issue #1301 (HIGH confidence — verified in test code)
+- OpenCode SDK v1.1.53 source (packed in `plugin-refs/opencode-sdk.xml`)
+- 8 real plugin repos verified (see `plugin-refs/README.md`)
+- SDK client confirmed working: micode, subtask2, oh-my-opencode, opencode-pty, plannotator
+
+---
+*Last updated: 2026-02-12 after SDK verification + cognitive mesh reframing*
