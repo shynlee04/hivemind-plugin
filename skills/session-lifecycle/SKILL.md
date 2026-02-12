@@ -1,6 +1,11 @@
 ---
-name: session-lifecycle
-description: Use when starting, updating, or closing work sessions — covers declare_intent, map_context, compact_session with reward/consequence framing and auto-export behavior
+name: "session-lifecycle"
+description: "Teaches proper session lifecycle: declare_intent → map_context → compact_session. Covers starting, updating, and closing sessions."
+triggers:
+  - "Starting a new work session"
+  - "Switching focus within a session"
+  - "Completing work and archiving"
+version: "2.6.0"
 ---
 
 # Session Lifecycle

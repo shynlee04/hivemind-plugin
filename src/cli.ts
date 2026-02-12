@@ -20,7 +20,7 @@ import { initProject } from "./cli/init.js"
 import { createStateManager, loadConfig } from "./lib/persistence.js"
 import { listArchives } from "./lib/planning-fs.js"
 
-const COMMANDS = ["init", "status", "compact", "dashboard", "settings", "help"] as const
+const COMMANDS = ["init", "status", "compact", "dashboard", "settings", "purge", "help"] as const
 type Command = (typeof COMMANDS)[number]
 
 function printHelp(): void {
@@ -37,9 +37,11 @@ Commands:
   settings      Show current configuration
   compact       Archive current session and reset (OpenCode only)
   dashboard     Launch live TUI dashboard
+  purge         Remove .hivemind/ entirely and unregister plugin
   help          Show this help message
 
 Options:
+  --force                  Force re-initialization (removes existing .hivemind/)
   --lang <en|vi>           Language (default: en)
   --mode <permissive|assisted|strict>  Governance mode (default: assisted)
   --automation <manual|guided|assisted|full|retard>  Automation level (default: assisted)
@@ -181,11 +183,12 @@ async function main(): Promise<void> {
   // Default to "init" when no command given (npx hivemind-context-governance)
   const command = (positionalArgs[0] ?? "init") as Command
   const directory = process.cwd()
+  const forceFlag = "force" in flags
 
   switch (command) {
     case "init": {
-      // If no flags provided → launch interactive wizard
-      if (!hasInitFlags(flags)) {
+      // If no flags provided (besides --force) → launch interactive wizard
+      if (!hasInitFlags(flags) && !forceFlag) {
         try {
           const { runInteractiveInit } = await import("./cli/interactive-init.js")
           const options = await runInteractiveInit()
@@ -215,6 +218,7 @@ async function main(): Promise<void> {
           outputStyle: (flags["style"] as "explanatory" | "outline" | "skeptical" | "architecture" | "minimal") ?? undefined,
           requireCodeReview: "code-review" in flags,
           enforceTdd: "tdd" in flags,
+          force: forceFlag,
         })
       }
       break
@@ -265,6 +269,35 @@ async function main(): Promise<void> {
     case "help":
       printHelp()
       break
+
+    case "purge": {
+      const hivemindDir = join(directory, ".hivemind")
+      if (!existsSync(hivemindDir)) {
+        console.log("❌ No .hivemind/ directory found. Nothing to purge.")
+        break
+      }
+      const { rm } = await import("node:fs/promises")
+      await rm(hivemindDir, { recursive: true, force: true })
+      console.log("✅ Removed .hivemind/ directory")
+      // Try to remove from opencode.json
+      try {
+        const ocPath = join(directory, "opencode.json")
+        if (existsSync(ocPath)) {
+          const { readFile, writeFile } = await import("node:fs/promises")
+          const raw = await readFile(ocPath, "utf-8")
+          const config = JSON.parse(raw)
+          if (Array.isArray(config.plugin)) {
+            config.plugin = config.plugin.filter((p: string) => p !== "hivemind-context-governance")
+            await writeFile(ocPath, JSON.stringify(config, null, 2))
+            console.log("✅ Removed plugin from opencode.json")
+          }
+        }
+      } catch {
+        // Best effort
+      }
+      console.log("\n🧹 HiveMind purged. Run `npx hivemind-context-governance` to re-initialize.")
+      break
+    }
 
     default:
       // eslint-disable-next-line no-console

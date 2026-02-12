@@ -1,6 +1,11 @@
 ---
-name: delegation-intelligence
-description: Use when dispatching subagents, deciding parallel vs sequential execution, processing subagent returns, or managing multi-agent workflows — ensures intelligence is captured and failures are acknowledged
+name: "delegation-intelligence"
+description: "Guides subagent delegation patterns. Covers parallel vs sequential dispatch, export_cycle usage, and team coordination."
+triggers:
+  - "Before spawning subagents"
+  - "After subagent returns results"
+  - "When planning multi-agent workflows"
+version: "2.6.0"
 ---
 
 # Delegation Intelligence

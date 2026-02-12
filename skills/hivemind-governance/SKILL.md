@@ -1,6 +1,11 @@
 ---
-name: hivemind-governance
-description: Use when starting any session, any turn, any task in a HiveMind-governed project — forces governance checkpoint before action regardless of agent, model, or governance mode
+name: "hivemind-governance"
+description: "Bootstrap gate for HiveMind context governance. Loaded every turn to enforce checkpoints and activate discipline skills."
+triggers:
+  - "Every turn via system prompt injection"
+  - "When session starts without declare_intent"
+  - "When drift score drops below threshold"
+version: "2.6.0"
 ---
 
 <EXTREMELY-IMPORTANT>

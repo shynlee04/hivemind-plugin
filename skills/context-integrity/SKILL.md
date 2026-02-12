@@ -1,6 +1,11 @@
 ---
-name: context-integrity
-description: Use when drift warnings appear, after compaction, when context feels stale, when recovering from chaos, or when switching between sessions — detects and repairs context loss
+name: "context-integrity"
+description: "Detects and repairs context drift. Monitors hierarchy staleness, chain breaks, and context decay across compactions."
+triggers:
+  - "When drift score is low"
+  - "After context compaction"
+  - "When hierarchy seems stale"
+version: "2.6.0"
 ---
 
 # Context Integrity

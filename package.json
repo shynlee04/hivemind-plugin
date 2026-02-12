@@ -19,6 +19,7 @@
     "dist",
     "bin",
     "skills",
+    "commands",
     "docs/10-commandments.md",
     "README.md",
     "LICENSE",

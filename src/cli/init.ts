@@ -11,7 +11,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
-import { copyFile } from "node:fs/promises"
+import { copyFile, rm } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
@@ -134,6 +134,7 @@ export interface InitOptions {
   requireCodeReview?: boolean
   enforceTdd?: boolean
   silent?: boolean
+  force?: boolean
 }
 
 // eslint-disable-next-line no-console
@@ -213,6 +214,16 @@ export async function initProject(
 ): Promise<void> {
   const hivemindDir = join(directory, ".hivemind")
   const brainPath = join(hivemindDir, "brain.json")
+
+  // --force: Remove existing .hivemind directory for clean re-init
+  if (options.force) {
+    if (existsSync(hivemindDir)) {
+      await rm(hivemindDir, { recursive: true, force: true })
+      if (!options.silent) {
+        log("🔄 Removed existing .hivemind/ directory for fresh init")
+      }
+    }
+  }
 
   // Guard: Check brain.json existence, not just directory.
   // The directory may exist from logger side-effects without full initialization.

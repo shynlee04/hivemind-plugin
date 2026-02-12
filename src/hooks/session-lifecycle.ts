@@ -105,6 +105,20 @@ async function collectProjectSnapshot(directory: string): Promise<ProjectSnapsho
         ["vite", "Vite"],
         ["@opencode-ai/plugin", "OpenCode Plugin SDK"],
         ["ink", "Ink TUI"],
+        ["express", "Express"],
+        ["fastify", "Fastify"],
+        ["@nestjs/core", "NestJS"],
+        ["vue", "Vue"],
+        ["angular", "Angular"],
+        ["svelte", "Svelte"],
+        ["tailwindcss", "Tailwind CSS"],
+        ["prisma", "Prisma"],
+        ["drizzle-orm", "Drizzle"],
+        ["@trpc/server", "tRPC"],
+        ["zod", "Zod"],
+        ["vitest", "Vitest"],
+        ["jest", "Jest"],
+        ["playwright", "Playwright"],
       ]
 
       for (const [depName, label] of stackSignals) {
@@ -115,6 +129,26 @@ async function collectProjectSnapshot(directory: string): Promise<ProjectSnapsho
     }
   } catch {
     // Best-effort scan only
+  }
+
+  // Detect non-JS ecosystems
+  const ecosystemFiles: Array<[string, string]> = [
+    ["pyproject.toml", "Python"],
+    ["requirements.txt", "Python"],
+    ["go.mod", "Go"],
+    ["Cargo.toml", "Rust"],
+    ["Gemfile", "Ruby"],
+    ["composer.json", "PHP"],
+    ["build.gradle", "Java/Kotlin"],
+    ["pom.xml", "Java (Maven)"],
+    ["Package.swift", "Swift"],
+    ["pubspec.yaml", "Dart/Flutter"],
+    ["mix.exs", "Elixir"],
+  ]
+  for (const [file, label] of ecosystemFiles) {
+    if (existsSync(join(directory, file))) {
+      snapshot.stackHints.push(label)
+    }
   }
 
   try {
@@ -136,6 +170,15 @@ async function collectProjectSnapshot(directory: string): Promise<ProjectSnapsho
     ".planning/STATE.md",
     ".spec-kit",
     "docs",
+    ".opencode",
+    "CHANGELOG.md",
+    ".env.example",
+    "docker-compose.yml",
+    "Dockerfile",
+    ".github/workflows",
+    "turbo.json",
+    "nx.json",
+    "lerna.json",
   ]
   snapshot.artifactHints = artifactCandidates.filter((path) => existsSync(join(directory, path)))
 

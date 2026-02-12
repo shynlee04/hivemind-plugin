@@ -1,6 +1,11 @@
 ---
-name: evidence-discipline
-description: Use when making claims about completion, accepting user instructions at face value, validating work, or deciding whether something is truly done — prevents false completion and hallucinated success
+name: "evidence-discipline"
+description: "Enforces evidence-based claims. Prove with command output before concluding. Run tests before claiming success."
+triggers:
+  - "Before making completion claims"
+  - "When verification is needed"
+  - "After running tests or builds"
+version: "2.6.0"
 ---
 
 # Evidence Discipline
