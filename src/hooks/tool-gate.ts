@@ -24,6 +24,7 @@ import {
 } from "../schemas/brain-state.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { checkComplexity } from "../lib/complexity.js"
+import { detectFrameworkContext } from "../lib/framework-context.js"
 
 /** Tools that are always allowed regardless of governance state */
 const EXEMPT_TOOLS = new Set([
@@ -43,12 +44,32 @@ const WRITE_TOOLS = new Set([
   "write", "edit",
 ])
 
+const CONFLICT_SAFE_TOOLS = new Set([
+  "read", "grep", "glob",
+  "declare_intent", "map_context", "compact_session", "self_rate",
+  "scan_hierarchy", "save_anchor", "think_back", "check_drift",
+  "save_mem", "list_shelves", "recall_mems",
+  "hierarchy_prune", "hierarchy_migrate", "export_cycle",
+])
+
 function isExemptTool(toolName: string): boolean {
   return EXEMPT_TOOLS.has(toolName)
 }
 
 function isWriteTool(toolName: string): boolean {
   return WRITE_TOOLS.has(toolName)
+}
+
+function getFrameworkConflictLevel(config: HiveMindConfig): "warn-only" | "limited-mode" | "simulated-pause" {
+  if (config.governance_mode === "permissive") {
+    return "warn-only"
+  }
+
+  if (config.governance_mode === "strict" && (config.automation_level === "full" || config.automation_level === "retard")) {
+    return "simulated-pause"
+  }
+
+  return "limited-mode"
 }
 
 export interface ToolGateResult {
@@ -88,6 +109,46 @@ export function createToolGateHook(
 
       // Load brain state
       let state = await stateManager.load()
+
+      // Framework conflict gate (GOV-06/GOV-07)
+      const frameworkContext = await detectFrameworkContext(directory)
+      if (frameworkContext.mode === "both") {
+        const selection = state?.framework_selection
+        const selectedFramework = selection?.choice === "gsd" || selection?.choice === "spec-kit"
+        const hasGsdSelection = selection?.choice === "gsd" && selection.active_phase.trim().length > 0
+        const hasSpecSelection = selection?.choice === "spec-kit" && selection.active_spec_path.trim().length > 0
+        const hasSelectionMetadata = selectedFramework && (hasGsdSelection || hasSpecSelection)
+        const conflictLevel = getFrameworkConflictLevel(config)
+
+        if (!hasSelectionMetadata) {
+          const acceptedOverrideOnly = (selection?.acceptance_note?.trim().length ?? 0) > 0
+          const guidanceSuffix = acceptedOverrideOnly
+            ? " Override note recorded; framework selection metadata is still required."
+            : ""
+          const guidance = `Framework conflict: both .planning and .spec-kit detected. Consolidate first, then choose framework via locked menu metadata (active_phase or active_spec_path).${guidanceSuffix}`
+
+          if (conflictLevel === "warn-only") {
+            return {
+              allowed: true,
+              warning: guidance,
+            }
+          }
+
+          if (!CONFLICT_SAFE_TOOLS.has(toolName)) {
+            if (conflictLevel === "limited-mode") {
+              return {
+                allowed: false,
+                error: `${guidance} Limited mode active: read/search/planning only.`,
+              }
+            }
+
+            return {
+              allowed: false,
+              error: `${guidance} Simulated pause active until framework selection is provided.`,
+            }
+          }
+        }
+      }
 
       // No state = no session initialized yet
       if (!state) {

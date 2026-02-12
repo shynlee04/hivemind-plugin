@@ -109,6 +109,18 @@ export interface BrainState {
   cycle_log: CycleLogEntry[];
   /** True when a subagent reported failure and agent hasn't acknowledged it */
   pending_failure_ack: boolean;
+  /** Framework conflict selection metadata for dual-framework projects */
+  framework_selection: FrameworkSelectionState;
+}
+
+export type FrameworkChoice = "gsd" | "spec-kit" | "override" | "cancel" | null;
+
+export interface FrameworkSelectionState {
+  choice: FrameworkChoice;
+  active_phase: string;
+  active_spec_path: string;
+  acceptance_note: string;
+  updated_at: number;
 }
 
 export const BRAIN_STATE_VERSION = "1.0.0";
@@ -181,6 +193,13 @@ export function createBrainState(
     // Cycle intelligence fields
     cycle_log: [],
     pending_failure_ack: false,
+    framework_selection: {
+      choice: null,
+      active_phase: "",
+      active_spec_path: "",
+      acceptance_note: "",
+      updated_at: 0,
+    },
   };
 }
 

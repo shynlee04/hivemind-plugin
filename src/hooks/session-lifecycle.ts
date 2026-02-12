@@ -51,6 +51,10 @@ import {
   treeExists,
   countCompleted,
 } from "../lib/hierarchy-tree.js"
+import {
+  detectFrameworkContext,
+  buildFrameworkSelectionMenu,
+} from "../lib/framework-context.js"
 
 function localized(language: "en" | "vi", en: string, vi: string): string {
   return language === "vi" ? vi : en
@@ -233,9 +237,46 @@ export function createSessionLifecycleHook(
       const statusLines: string[] = []
       const hierarchyLines: string[] = []
       const warningLines: string[] = []
+      const frameworkLines: string[] = []
       const anchorLines: string[] = []
       const metricsLines: string[] = []
       const configLines: string[] = []
+
+      const frameworkContext = await detectFrameworkContext(directory)
+
+      if (frameworkContext.mode === "gsd" && frameworkContext.gsdPhaseGoal) {
+        frameworkLines.push(`GSD Phase Goal: ${frameworkContext.gsdPhaseGoal}`)
+      }
+
+      if (frameworkContext.mode === "both") {
+        const menu = buildFrameworkSelectionMenu(frameworkContext)
+        const selection = state.framework_selection
+        const hasFrameworkChoice = selection.choice === "gsd" || selection.choice === "spec-kit"
+        const hasGsdMetadata = selection.choice === "gsd" && selection.active_phase.trim().length > 0
+        const hasSpecMetadata = selection.choice === "spec-kit" && selection.active_spec_path.trim().length > 0
+        const hasValidSelection = hasFrameworkChoice && (hasGsdMetadata || hasSpecMetadata)
+
+        frameworkLines.push("[FRAMEWORK CONFLICT] Both .planning and .spec-kit detected.")
+        frameworkLines.push("Request consolidation first, then choose one framework before implementation.")
+
+        if (selection.acceptance_note.trim().length > 0 && !hasValidSelection) {
+          frameworkLines.push(
+            "Override note captured, but framework selection is still required before implementation."
+          )
+        }
+
+        if (frameworkContext.gsdPhaseGoal) {
+          frameworkLines.push(`Pinned GSD goal: ${frameworkContext.gsdPhaseGoal}`)
+        }
+
+        frameworkLines.push("Locked menu:")
+        for (const option of menu.options) {
+          const required = option.requiredMetadata.length > 0
+            ? ` (metadata: ${option.requiredMetadata.join(", ")})`
+            : ""
+          frameworkLines.push(`- ${option.label}${required}`)
+        }
+      }
 
       // STATUS (always shown)
       statusLines.push(`Session: ${state.session.governance_status} | Mode: ${state.session.mode} | Governance: ${state.session.governance_mode}`)
@@ -340,6 +381,10 @@ export function createSessionLifecycleHook(
         warningLines.push(signalBlock)
       }
 
+      if (frameworkContext.mode === "gsd" && frameworkContext.gsdPhaseGoal && config.governance_mode !== "permissive") {
+        warningLines.push("Drift target: align hierarchy and current action with pinned GSD phase goal.")
+      }
+
       // Legacy drift warning (kept for backward compat with tests)
       if (config.governance_mode !== "permissive" && state.metrics.drift_score < 50 && !signals.some(s => s.type === "turn_count")) {
         warningLines.push("⚠ High drift detected. Use map_context to re-focus.")
@@ -424,6 +469,7 @@ export function createSessionLifecycleHook(
         bootstrapLines, // P0: behavioral bootstrap (only when LOCKED, first 2 turns)
         evidenceLines,  // P0.5: evidence discipline from turn 0
         teamLines,      // P0.6: team behavior from turn 0
+        frameworkLines, // P0.8: framework context and conflict routing
         statusLines,    // P1: always
         hierarchyLines, // P2: always
         warningLines,   // P3: if present
