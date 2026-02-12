@@ -48,6 +48,7 @@ import {
   createSoftGovernanceHook,
   createToolGateHook,
   createCompactionHook,
+  createEventHandler,
 } from "./hooks/index.js"
 import { createLogger } from "./lib/logging.js"
 import { loadConfig } from "./lib/persistence.js"
@@ -92,6 +93,12 @@ export const HiveMindPlugin: Plugin = async ({
   )
 
   return {
+    /**
+     * Hook: Event-driven governance
+     * Handles session.created, session.idle, session.compacted, file.edited, session.diff
+     */
+    event: createEventHandler(log, effectiveDir),
+
     /**
      * Custom tools for session governance
      */
