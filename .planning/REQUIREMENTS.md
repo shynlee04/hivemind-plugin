@@ -1,164 +1,157 @@
-# Requirements: HiveMind v3 — Framework-Aware Context Governance
+# Requirements: HiveMind v3 — Cognitive Mesh for AI Agents
 
 **Defined:** 2026-02-12
-**Core Value:** Agents governed from turn 0 in every mode — evidence-based, framework-aware, self-validating
+**Core Value:** We create a hivemind's brain that boosts intelligence and provides users' true expertise of AI agents — work faster, more efficiently, handle with full bulletproof of context drift.
+
+**Philosophy:** NOT a feature list. 5 interconnected systems forming a cognitive mesh. SDK materializes the concepts. Concepts are platform-portable.
 
 ## v1 Requirements
 
-Requirements for HiveMind v3 initial release. Each maps to roadmap phases.
+Categories map to the 5 cognitive mesh systems from the idumb-v2 architecture.
 
-### Governance Fixes (from Stress Test FAIL/CONDITIONAL PASS)
+### SDK Foundation (Materialization Layer)
 
-- [ ] **GOV-01**: Bootstrap block fires in ALL governance modes (strict, assisted, permissive), not just strict
-- [ ] **GOV-02**: Evidence discipline teaching injected into system prompt from session start, regardless of mode or config
-- [ ] **GOV-03**: Team behavior teaching injected into system prompt (verify subagent results, export_cycle after every Task return)
-- [ ] **GOV-04**: Permissive mode suppresses detection signal warnings in system prompt to match "silent tracking" documentation
-- [ ] **GOV-05**: Default config teaches evidence principles unconditionally (not gated by `be_skeptical` flag)
-- [ ] **GOV-06**: Bootstrap condition uses `turn_count <= 2` regardless of governance_status (LOCKED/OPEN), enabling all modes
+- [ ] **SDK-RESEARCH-01**: **RESEARCH** — Verify OpenCode SDK TUI capabilities. Can plugins register custom panels or only use `showToast()`? See `.planning/research/SDK-RESEARCH-01.md`. **Decision:** If YES → add embedded dashboard to Phase 1. If NO → document as v2 requirement, proceed with standalone TUI.
+- [ ] **SDK-01**: Plugin entry wires `client`, `$` (BunShell), `serverUrl`, `project` from PluginInput (currently only `directory` + `worktree` used)
+- [ ] **SDK-02**: Event-driven governance via `event` hook subscribing to `session.created`, `session.idle`, `session.compacted`, `file.edited`, `session.diff`
+- [ ] **SDK-03**: SDK client stored safely (not during init — deadlock caveat) and available to all hooks/tools
+- [ ] **SDK-04**: `src/lib/` NEVER imports SDK — enforced by lint rule or build-time check
+- [ ] **SDK-05**: All SDK calls wrapped in try/catch with graceful fallback to filesystem-only mode (plugin works without SDK)
 
-### Framework Integration
+### Auto-Hooks & Governance (Triggers & Rules)
 
-- [ ] **FRM-01**: Framework detector identifies GSD (`.planning/`, `config.json`, `ROADMAP.md`) and injects framework-specific governance context
-- [ ] **FRM-02**: Framework detector identifies Spec-kit (`.spec-kit/`, `spec-kit.config.json`) and injects framework-specific governance context
-- [ ] **FRM-03**: When GSD detected, HiveMind reads `STATE.md` and `ROADMAP.md` to align hierarchy with current phase/plan
-- [ ] **FRM-04**: When framework orchestrator spawns subagents, HiveMind auto-injects governance context into each subagent's prompt
-- [ ] **FRM-05**: Framework-aware drift detection: if GSD phase goal exists, drift measured against phase goal, not just hierarchy
-- [ ] **FRM-06**: Framework integration is additive — zero breaking changes to non-framework HiveMind usage
+- [ ] **GOV-01**: Bootstrap fires in ALL governance modes (strict, assisted, permissive) — condition on `turn_count <= 2`, not `governance_status`
+- [ ] **GOV-02**: Evidence discipline + team behavior injected into system prompt from turn 0 unconditionally
+- [ ] **GOV-03**: Permissive mode suppresses detection signal warnings to match "silent tracking" documentation
+- [ ] **GOV-04**: `client.tui.showToast()` for visual governance warnings — drift alerts, compaction notices, evidence reminders
+- [ ] **GOV-05**: Event-driven Time-to-Stale: `session.idle` triggers staleness check instead of turn-counting approximation
+- [ ] **GOV-06**: Framework detector identifies GSD (`.planning/`) and Spec-kit (`.spec-kit/`) and injects framework-specific context
+- [ ] **GOV-07**: Framework-aware drift: when GSD phase goal exists, drift measured against phase goal + hierarchy
+- [ ] **GOV-08**: IGNORED escalation tier (10+ unacknowledged warnings) with dynamic argue-back using hierarchy + metrics data
 
-### Fast Extraction Tools
+### Session Management & Auto-Export (Lifecycle)
 
-- [ ] **EXT-01**: `hivemind extract` CLI command packs codebase into single AI-friendly file (XML format, Repomix-compatible)
-- [ ] **EXT-02**: Extract supports `--compress` flag using Tree-sitter to extract signatures/interfaces without implementation bodies
-- [ ] **EXT-03**: Extract supports `--include`/`--ignore` glob patterns for targeted extraction
-- [ ] **EXT-04**: Extract supports `--split <size>` for chunking large codebases
-- [ ] **EXT-05**: `hivemind grep <pattern>` fast content search with context lines and file filtering
-- [ ] **EXT-06**: `hivemind glob <pattern>` fast file pattern matching sorted by modification time
-- [ ] **EXT-07**: `hivemind read <file> [--offset N] [--limit N]` fast file reading with offset/limit support
-- [ ] **EXT-08**: All extraction tools output structured JSON when `--json` flag is used
-- [ ] **EXT-09**: Token count estimation for extracted content (`--token-count` flag)
+- [ ] **SES-01**: Session = On-going Plan: use `client.session.*` to track real session lifecycle (create, get, update)
+- [ ] **SES-02**: Auto-Export of whole session: `client.session.messages()` exports complete session for archival
+- [ ] **SES-03**: Long session handling: `client.session.summarize()` for smart compaction instead of raw truncation
+- [ ] **SES-04**: Session structure: each session has ID, date, meta key, role metadata linked to hierarchy nodes
+- [ ] **SES-05**: `session.compacted` event triggers post-compaction integrity checks automatically
+- [ ] **SES-06**: Context injection via `client.session.prompt({ noReply: true })` for governance context without triggering AI response
 
-### Orchestration Control (Ralph Loop Pattern)
+### Unique Agent Tools (Hook-Activated Utilities)
 
-- [ ] **ORC-01**: `hivemind loop init <prd.json>` loads user stories from prd.json and initializes loop state
-- [ ] **ORC-02**: `hivemind loop next` selects highest-priority story with `passes: false` and no blocking dependencies
-- [ ] **ORC-03**: `hivemind loop complete <story-id>` marks story as passed, records completion, selects next
-- [ ] **ORC-04**: `hivemind loop fail <story-id> <reason>` records failure, increments failed_attempts counter
-- [ ] **ORC-05**: `hivemind loop status` shows loop progress (completed/total, current story, blocked stories)
-- [ ] **ORC-06**: Loop state persists in `.hivemind/loop-state.json` surviving compactions and session restarts
-- [ ] **ORC-07**: Quality gate integration: acceptance criteria from prd.json are checked against test/build output
-- [ ] **ORC-08**: Loop detects completion (all stories pass) and signals `<promise>COMPLETE</promise>`
+- [ ] **TUL-01**: Fast Read via `client.file.read()` + `client.file.status()` for structured file access
+- [ ] **TUL-02**: Fast Search via `client.find.text()` (ripgrep), `client.find.files()` (fd), `client.find.symbols()` (LSP)
+- [ ] **TUL-03**: Codebase extraction via BunShell `$`: `$\`npx repomix --output - --compress\`` with token counting
+- [ ] **TUL-04**: Precision extraction: grep, glob, read CLI commands with `--json` structured output
+- [ ] **TUL-05**: Hierarchy reading tools enhanced with session context from `client.session.get()`
+- [ ] **TUL-06**: Thinking frameworks: cognitive models injected based on detected complexity level
+- [ ] **TUL-07**: All extraction tools support `--json` flag for structured output consumable by other systems
 
-### Self-Validation & Drift Awareness
+### The Mems Brain (Shared Knowledge Repository)
 
-- [ ] **VAL-01**: When user ignores warnings for 5+ consecutive turns, system prompt changes tone from suggestion to explicit "You are ignoring governance warnings — acknowledge or dismiss"
-- [ ] **VAL-02**: Escalation levels have visible markers that persist across compactions: `[INFO]`, `[WARN]`, `[CRITICAL]`, `[DEGRADED]`, `[IGNORED]`
-- [ ] **VAL-03**: New `[IGNORED]` tier added when agent has been warned 10+ times without acknowledgment
-- [ ] **VAL-04**: `hivemind self-check` CLI command runs all validation checks and reports health with actionable fixes
-- [ ] **VAL-05**: Detection engine tracks consecutive ignored warnings in brain.json metrics
-- [ ] **VAL-06**: Argument-back system generates context-specific pushback (not just static strings) using hierarchy + metrics data
+- [ ] **MEM-01**: Shared Brain: mems share across sessions via atomic git commits (mems → git → any session reads)
+- [ ] **MEM-02**: Orchestration state: Ralph loop pattern (prd.json → loop-state.json → story selection → completion)
+- [ ] **MEM-03**: Just-in-Time Memory: recall relevant mems using `client.find.text()` for semantic relevance matching
+- [ ] **MEM-04**: Loop state persists across compactions and session restarts in `.hivemind/loop-state.json`
+- [ ] **MEM-05**: Quality gate integration: acceptance criteria from prd.json checked against test/build output
+- [ ] **MEM-06**: Meta Data & IDs: every mem tagged with timestamp, session ID, hierarchy stamp, git hash
 
-### Stress Test Infrastructure
+### Stress Test & Integration Validation
 
-- [ ] **STR-01**: Automated stress test suite that validates all 13 stress test conditions programmatically
-- [ ] **STR-02**: Stress test for 10+ sequential compactions verifying state preservation
-- [ ] **STR-03**: Stress test for framework detection across greenfield, brownfield, various project types
-- [ ] **STR-04**: Stress test for loop orchestration (concurrent stories, dependency chains, failure recovery)
-- [ ] **STR-05**: `npm run stress-test` command runs full stress test suite
+- [ ] **STR-01**: All 13 stress test conditions from STRESS-TEST-1.MD pass programmatically
+- [ ] **STR-02**: 10+ sequential compaction test verifies hierarchy, brain, session, and loop state preservation
+- [ ] **STR-03**: Framework detection stress test: greenfield, brownfield, GSD-only, Spec-kit-only, multi-framework
+- [ ] **STR-04**: Cognitive mesh integration test: all 5 systems chaining correctly (hook → session → tool → mem → core)
+- [ ] **STR-05**: `npm run stress-test` command runs full suite
 
 ## v2 Requirements
 
-Deferred to future release. Tracked but not in current roadmap.
+Deferred. Tracked but not in current roadmap.
 
-### Advanced Extraction
+### Advanced Materialization
 
-- **EXT-10**: MCP server mode for extract tools (`hivemind --mcp`)
-- **EXT-11**: Remote repository extraction (`hivemind extract --remote user/repo`)
-- **EXT-12**: Git diff-aware extraction (only changed files since base branch)
+- **SDK-06**: `chat.params` hook to adjust temperature/topP by governance mode
+- **SDK-07**: `experimental.chat.messages.transform` for smart context pruning
+- **SDK-08**: `shell.env` hook to inject `HIVEMIND_SESSION_ID`, `HIVEMIND_MODE` into all shell commands
 
 ### Advanced Orchestration
 
-- **ORC-09**: Beads integration (`.beads/beads.jsonl` format alongside prd.json)
-- **ORC-10**: Multi-loop coordination (multiple prd.json files running in parallel)
-- **ORC-11**: Loop metrics dashboard in Ink TUI
+- **MEM-07**: Beads integration (`.beads/beads.jsonl` format alongside prd.json)
+- **MEM-08**: Multi-loop coordination (multiple prd.json files running in parallel)
 
 ### Framework Extensions
 
-- **FRM-07**: BMAD framework detection and integration
-- **FRM-08**: Open-spec framework detection and integration
-- **FRM-09**: Framework-specific skill auto-loading (GSD skills, Spec-kit skills)
+- **GOV-09**: BMAD framework detection and integration
+- **GOV-10**: Framework-specific skill auto-loading
 
 ## Out of Scope
 
 | Feature | Reason |
 |---------|--------|
-| Replace GSD orchestration | HiveMind is governance layer, not orchestrator. GSD/Spec-kit run their own workflows |
-| Full Repomix reimplementation | Wrap/integrate Repomix, don't rebuild it. Use `npx repomix` under the hood |
-| Agent spawning/management | HiveMind tracks and governs agents, doesn't spawn them. Frameworks spawn their own agents |
-| GUI/web dashboard | CLI + Ink TUI is sufficient for v3. Web dashboard is v4+ territory |
-| OpenCode plugin blocking | OpenCode v1.1+ cannot block tool execution. Don't fight the platform limitation |
-| Custom LLM model support | HiveMind is model-agnostic by design. No model-specific code |
+| Blocking/denying tool execution | NEVER — will clash with other plugins, violates core philosophy |
+| `permission.ask` hook | ZERO plugins in ecosystem use it; collision guaranteed with multi-plugin setups |
+| Running GSD/Spec-kit commands | HiveMind governs, doesn't orchestrate. Frameworks run their own workflows |
+| Full Repomix reimplementation | Wrap via BunShell `$`, don't rebuild. Repomix evolves independently |
+| Agent spawning/management | Frameworks spawn agents. HiveMind governs them via context injection |
+| Custom LLM model support | Model-agnostic by design |
 
 ## Traceability
 
-**Roadmap:** [ROADMAP.md](./ROADMAP.md)
-**State:** [STATE.md](./STATE.md)
-
-| Requirement | Phase | Phase Name | Depends On | Status |
-|-------------|-------|------------|------------|--------|
-| GOV-01 | 1 | Governance Foundation Fix | — | Pending |
-| GOV-02 | 1 | Governance Foundation Fix | — | Pending |
-| GOV-03 | 1 | Governance Foundation Fix | — | Pending |
-| GOV-04 | 1 | Governance Foundation Fix | — | Pending |
-| GOV-05 | 1 | Governance Foundation Fix | — | Pending |
-| GOV-06 | 1 | Governance Foundation Fix | — | Pending |
-| FRM-01 | 2 | Framework Detection & Integration | Phase 1 | Pending |
-| FRM-02 | 2 | Framework Detection & Integration | Phase 1 | Pending |
-| FRM-03 | 2 | Framework Detection & Integration | Phase 1 | Pending |
-| FRM-04 | 2 | Framework Detection & Integration | Phase 1 | Pending |
-| FRM-05 | 2 | Framework Detection & Integration | Phase 1 | Pending |
-| FRM-06 | 2 | Framework Detection & Integration | Phase 1 | Pending |
-| EXT-01 | 3 | Fast Extraction Tools | Phase 2 | Pending |
-| EXT-02 | 3 | Fast Extraction Tools | Phase 2 | Pending |
-| EXT-03 | 3 | Fast Extraction Tools | Phase 2 | Pending |
-| EXT-04 | 3 | Fast Extraction Tools | Phase 2 | Pending |
-| EXT-05 | 3 | Fast Extraction Tools | Phase 2 | Pending |
-| EXT-06 | 3 | Fast Extraction Tools | Phase 2 | Pending |
-| EXT-07 | 3 | Fast Extraction Tools | Phase 2 | Pending |
-| EXT-08 | 3 | Fast Extraction Tools | Phase 2 | Pending |
-| EXT-09 | 3 | Fast Extraction Tools | Phase 2 | Pending |
-| ORC-01 | 4 | Orchestration Control | Phase 3 | Pending |
-| ORC-02 | 4 | Orchestration Control | Phase 3 | Pending |
-| ORC-03 | 4 | Orchestration Control | Phase 3 | Pending |
-| ORC-04 | 4 | Orchestration Control | Phase 3 | Pending |
-| ORC-05 | 4 | Orchestration Control | Phase 3 | Pending |
-| ORC-06 | 4 | Orchestration Control | Phase 3 | Pending |
-| ORC-07 | 4 | Orchestration Control | Phase 3 | Pending |
-| ORC-08 | 4 | Orchestration Control | Phase 3 | Pending |
-| VAL-01 | 5 | Self-Validation & Drift Awareness | Phase 4 | Pending |
-| VAL-02 | 5 | Self-Validation & Drift Awareness | Phase 4 | Pending |
-| VAL-03 | 5 | Self-Validation & Drift Awareness | Phase 4 | Pending |
-| VAL-04 | 5 | Self-Validation & Drift Awareness | Phase 4 | Pending |
-| VAL-05 | 5 | Self-Validation & Drift Awareness | Phase 4 | Pending |
-| VAL-06 | 5 | Self-Validation & Drift Awareness | Phase 4 | Pending |
-| STR-01 | 6 | Stress Test Infrastructure | Phase 5 | Pending |
-| STR-02 | 6 | Stress Test Infrastructure | Phase 5 | Pending |
-| STR-03 | 6 | Stress Test Infrastructure | Phase 5 | Pending |
-| STR-04 | 6 | Stress Test Infrastructure | Phase 5 | Pending |
-| STR-05 | 6 | Stress Test Infrastructure | Phase 5 | Pending |
+| Requirement | Phase | Phase Name | Status |
+|-------------|-------|------------|--------|
+| SDK-RESEARCH-01 | 1 | SDK Foundation + System Core | Pending |
+| SDK-01 | 1 | SDK Foundation + System Core | Pending |
+| SDK-02 | 1 | SDK Foundation + System Core | Pending |
+| SDK-03 | 1 | SDK Foundation + System Core | Pending |
+| SDK-04 | 1 | SDK Foundation + System Core | Pending |
+| SDK-05 | 1 | SDK Foundation + System Core | Pending |
+| GOV-01 | 2 | Auto-Hooks & Governance Mesh | Pending |
+| GOV-02 | 2 | Auto-Hooks & Governance Mesh | Pending |
+| GOV-03 | 2 | Auto-Hooks & Governance Mesh | Pending |
+| GOV-04 | 2 | Auto-Hooks & Governance Mesh | Pending |
+| GOV-05 | 2 | Auto-Hooks & Governance Mesh | Pending |
+| GOV-06 | 2 | Auto-Hooks & Governance Mesh | Pending |
+| GOV-07 | 2 | Auto-Hooks & Governance Mesh | Pending |
+| GOV-08 | 2 | Auto-Hooks & Governance Mesh | Pending |
+| SES-01 | 3 | Session Management & Auto-Export | Pending |
+| SES-02 | 3 | Session Management & Auto-Export | Pending |
+| SES-03 | 3 | Session Management & Auto-Export | Pending |
+| SES-04 | 3 | Session Management & Auto-Export | Pending |
+| SES-05 | 3 | Session Management & Auto-Export | Pending |
+| SES-06 | 3 | Session Management & Auto-Export | Pending |
+| TUL-01 | 4 | Unique Agent Tools | Pending |
+| TUL-02 | 4 | Unique Agent Tools | Pending |
+| TUL-03 | 4 | Unique Agent Tools | Pending |
+| TUL-04 | 4 | Unique Agent Tools | Pending |
+| TUL-05 | 4 | Unique Agent Tools | Pending |
+| TUL-06 | 4 | Unique Agent Tools | Pending |
+| TUL-07 | 4 | Unique Agent Tools | Pending |
+| MEM-01 | 5 | The Mems Brain Enhanced | Pending |
+| MEM-02 | 5 | The Mems Brain Enhanced | Pending |
+| MEM-03 | 5 | The Mems Brain Enhanced | Pending |
+| MEM-04 | 5 | The Mems Brain Enhanced | Pending |
+| MEM-05 | 5 | The Mems Brain Enhanced | Pending |
+| MEM-06 | 5 | The Mems Brain Enhanced | Pending |
+| STR-01 | 6 | Stress Test & Integration | Pending |
+| STR-02 | 6 | Stress Test & Integration | Pending |
+| STR-03 | 6 | Stress Test & Integration | Pending |
+| STR-04 | 6 | Stress Test & Integration | Pending |
+| STR-05 | 6 | Stress Test & Integration | Pending |
 
 **Coverage:**
-- v1 requirements: 40 total
-- Mapped to phases: 40
+- v1 requirements: 37 total
+- Mapped to phases: 37
 - Unmapped: 0 ✓
 
-**Phase distribution:**
-- Phase 1: 6 requirements (GOV)
-- Phase 2: 6 requirements (FRM)
-- Phase 3: 9 requirements (EXT)
-- Phase 4: 8 requirements (ORC)
-- Phase 5: 6 requirements (VAL)
-- Phase 6: 5 requirements (STR)
+**Phase distribution (maps to cognitive mesh):**
+- Phase 1: 5 requirements (SDK — materialization foundation)
+- Phase 2: 8 requirements (GOV — Auto-Hooks & Governance)
+- Phase 3: 6 requirements (SES — Session Management & Auto-Export)
+- Phase 4: 7 requirements (TUL — Unique Agent Tools)
+- Phase 5: 6 requirements (MEM — The Mems Brain)
+- Phase 6: 5 requirements (STR — Stress Test & Integration)
 
 ---
 *Requirements defined: 2026-02-12*
-*Last updated: 2026-02-12 — traceability linked to ROADMAP.md*
+*Last updated: 2026-02-12 — restructured around 5-system cognitive mesh*
