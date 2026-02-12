@@ -5,6 +5,7 @@
 
 import type { HiveMindConfig, GovernanceMode } from "./config.js";
 import type { HierarchyState } from "./hierarchy.js";
+import type { GovernanceCounters } from "../lib/detection.js";
 
 export type SessionMode = "plan_driven" | "quick_fix" | "exploration";
 export type GovernanceStatus = "LOCKED" | "OPEN";
@@ -58,6 +59,8 @@ export interface MetricsState {
   keyword_flags: string[];               // detected keywords this session
   /** Count of file writes without prior read this session */
   write_without_read_count: number;
+  /** Governance escalation/reset counters for severity routing */
+  governance_counters: GovernanceCounters;
 }
 
 /** Captured subagent cycle result (auto-captured by tool.execute.after) */
@@ -158,6 +161,15 @@ export function createBrainState(
       tool_type_counts: { read: 0, write: 0, query: 0, governance: 0 },
       keyword_flags: [],
       write_without_read_count: 0,
+      governance_counters: {
+        out_of_order: 0,
+        drift: 0,
+        compaction: 0,
+        evidence_pressure: 0,
+        ignored: 0,
+        acknowledged: false,
+        prerequisites_completed: false,
+      },
     },
     complexity_nudge_shown: false,
     last_commit_suggestion_turn: 0,
@@ -366,4 +378,3 @@ export function clearPendingFailureAck(state: BrainState): BrainState {
     pending_failure_ack: false,
   };
 }
-

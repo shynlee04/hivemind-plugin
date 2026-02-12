@@ -63,6 +63,36 @@ export interface EscalatedSignal extends DetectionSignal {
   counter_excuse?: string;
 }
 
+export type GovernanceSignalKind =
+  | "out_of_order"
+  | "drift"
+  | "compaction"
+  | "evidence_pressure"
+  | "ignored";
+
+export type GovernanceSeverity = "info" | "warning" | "error";
+
+export interface SeriousnessInputs {
+  declaredIntentMismatch: boolean;
+  hierarchyMismatch: boolean;
+  roleMetadataMismatch: boolean;
+}
+
+export interface SeriousnessScore {
+  score: number;
+  tier: "low" | "medium" | "high";
+}
+
+export interface GovernanceCounters {
+  out_of_order: number;
+  drift: number;
+  compaction: number;
+  evidence_pressure: number;
+  ignored: number;
+  acknowledged: boolean;
+  prerequisites_completed: boolean;
+}
+
 /** Thresholds for signal detection */
 export interface DetectionThresholds {
   /** Turns before warning (default: 5) */
@@ -100,6 +130,98 @@ export function createDetectionState(): DetectionState {
     last_section_content: "",
     tool_type_counts: { read: 0, write: 0, query: 0, governance: 0 },
     keyword_flags: [],
+  };
+}
+
+export function createGovernanceCounters(): GovernanceCounters {
+  return {
+    out_of_order: 0,
+    drift: 0,
+    compaction: 0,
+    evidence_pressure: 0,
+    ignored: 0,
+    acknowledged: false,
+    prerequisites_completed: false,
+  };
+}
+
+export function computeViolationSeriousness(
+  inputs: SeriousnessInputs
+): SeriousnessScore {
+  let score = 0;
+  if (inputs.declaredIntentMismatch) score += 40;
+  if (inputs.hierarchyMismatch) score += 35;
+  if (inputs.roleMetadataMismatch) score += 25;
+
+  const tier = score >= 70 ? "high" : score >= 35 ? "medium" : "low";
+  return { score, tier };
+}
+
+export function computeGovernanceSeverity(opts: {
+  kind: GovernanceSignalKind;
+  repetitionCount: number;
+  acknowledged?: boolean;
+}): GovernanceSeverity {
+  const effectiveCount =
+    opts.acknowledged && opts.repetitionCount > 0
+      ? opts.repetitionCount - 1
+      : opts.repetitionCount;
+
+  if (opts.kind === "ignored") return "error";
+  if (opts.kind === "compaction") return "info";
+
+  if (opts.kind === "out_of_order") {
+    if (effectiveCount <= 0) return "info";
+    if (effectiveCount === 1) return "warning";
+    return "error";
+  }
+
+  if (effectiveCount <= 0) return "warning";
+  return "error";
+}
+
+export function registerGovernanceSignal(
+  counters: GovernanceCounters,
+  kind: GovernanceSignalKind
+): GovernanceCounters {
+  return {
+    ...counters,
+    [kind]: counters[kind] + 1,
+    acknowledged: false,
+  };
+}
+
+export function acknowledgeGovernanceSignals(
+  counters: GovernanceCounters
+): GovernanceCounters {
+  return {
+    ...counters,
+    acknowledged: true,
+  };
+}
+
+export function resetGovernanceCounters(
+  counters: GovernanceCounters,
+  opts: { full: boolean; prerequisitesCompleted: boolean }
+): GovernanceCounters {
+  if (!opts.full) {
+    return {
+      ...counters,
+      acknowledged: false,
+    };
+  }
+
+  if (!opts.prerequisitesCompleted) {
+    return {
+      ...counters,
+      prerequisites_completed: false,
+      acknowledged: false,
+    };
+  }
+
+  return {
+    ...createGovernanceCounters(),
+    prerequisites_completed: true,
   };
 }
 

@@ -9,6 +9,12 @@ import {
   scanForKeywords, addKeywordFlags,
   compileSignals, formatSignals,
   createDetectionState, DEFAULT_THRESHOLDS,
+  createGovernanceCounters,
+  computeGovernanceSeverity,
+  computeViolationSeriousness,
+  registerGovernanceSignal,
+  acknowledgeGovernanceSignals,
+  resetGovernanceCounters,
   type DetectionState, type ToolTypeCounts, type DetectionThresholds,
 } from "../src/lib/detection.js";
 
@@ -343,6 +349,80 @@ function test_signal_compilation() {
   );
 }
 
+function test_governance_primitives() {
+  process.stderr.write("\n--- governance-primitives ---\n");
+
+  const counters = createGovernanceCounters();
+  assert(counters.out_of_order === 0 && counters.acknowledged === false, "createGovernanceCounters initializes defaults");
+
+  const infoSeverity = computeGovernanceSeverity({ kind: "out_of_order", repetitionCount: 0 });
+  assert(infoSeverity === "info", "out_of_order starts at info");
+
+  const warningSeverity = computeGovernanceSeverity({ kind: "out_of_order", repetitionCount: 1 });
+  assert(warningSeverity === "warning", "out_of_order escalates to warning on repeat");
+
+  const errorSeverity = computeGovernanceSeverity({ kind: "out_of_order", repetitionCount: 2 });
+  assert(errorSeverity === "error", "out_of_order escalates to error after repeated violations");
+
+  const driftWarning = computeGovernanceSeverity({ kind: "drift", repetitionCount: 0 });
+  const driftError = computeGovernanceSeverity({ kind: "drift", repetitionCount: 1 });
+  assert(driftWarning === "warning" && driftError === "error", "drift maps warning then error");
+
+  const compactionInfo = computeGovernanceSeverity({ kind: "compaction", repetitionCount: 99 });
+  assert(compactionInfo === "info", "compaction stays informational");
+
+  const evidenceWarning = computeGovernanceSeverity({ kind: "evidence_pressure", repetitionCount: 0 });
+  const evidenceError = computeGovernanceSeverity({ kind: "evidence_pressure", repetitionCount: 1 });
+  assert(evidenceWarning === "warning" && evidenceError === "error", "evidence pressure maps warning then error");
+
+  const ignoredError = computeGovernanceSeverity({ kind: "ignored", repetitionCount: 0 });
+  assert(ignoredError === "error", "ignored tier is always error");
+
+  const highSeriousness = computeViolationSeriousness({
+    declaredIntentMismatch: true,
+    hierarchyMismatch: true,
+    roleMetadataMismatch: false,
+  });
+  assert(highSeriousness.score === 75 && highSeriousness.tier === "high", "seriousness score combines intent/hierarchy/role mismatches");
+
+  const mediumSeriousness = computeViolationSeriousness({
+    declaredIntentMismatch: false,
+    hierarchyMismatch: true,
+    roleMetadataMismatch: false,
+  });
+  assert(mediumSeriousness.score === 35 && mediumSeriousness.tier === "medium", "single hierarchy mismatch yields medium seriousness");
+
+  const lowSeriousness = computeViolationSeriousness({
+    declaredIntentMismatch: false,
+    hierarchyMismatch: false,
+    roleMetadataMismatch: false,
+  });
+  assert(lowSeriousness.score === 0 && lowSeriousness.tier === "low", "no mismatches yields low seriousness");
+
+  const incremented = registerGovernanceSignal(counters, "out_of_order");
+  assert(incremented.out_of_order === 1 && incremented.acknowledged === false, "registerGovernanceSignal increments counters and clears ack");
+
+  const acknowledged = acknowledgeGovernanceSignals(incremented);
+  const downgraded = computeGovernanceSeverity({
+    kind: "out_of_order",
+    repetitionCount: acknowledged.out_of_order,
+    acknowledged: acknowledged.acknowledged,
+  });
+  assert(downgraded === "info", "acknowledgment downgrades effective repetition severity");
+
+  const blockedReset = resetGovernanceCounters(
+    { ...acknowledged, out_of_order: 3, prerequisites_completed: false },
+    { full: true, prerequisitesCompleted: false }
+  );
+  assert(blockedReset.out_of_order === 3, "full reset is blocked until prerequisites are complete");
+
+  const fullReset = resetGovernanceCounters(
+    { ...acknowledged, out_of_order: 3, prerequisites_completed: true },
+    { full: true, prerequisitesCompleted: true }
+  );
+  assert(fullReset.out_of_order === 0 && fullReset.prerequisites_completed === true, "full reset clears counters after prerequisite completion");
+}
+
 // ─── Runner ──────────────────────────────────────────────────────────
 
 function main() {
@@ -352,6 +432,7 @@ function main() {
   test_counter_logic();
   test_keyword_scanning();
   test_signal_compilation();
+  test_governance_primitives();
 
   process.stderr.write(`\n=== Detection Engine: ${passed} passed, ${failed_} failed ===\n`);
   if (failed_ > 0) process.exit(1);
