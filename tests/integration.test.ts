@@ -24,6 +24,7 @@ import { createLogger } from "../src/lib/logging.js"
 import { createConfig } from "../src/schemas/config.js"
 import { loadAnchors, saveAnchors, addAnchor } from "../src/lib/anchors.js"
 import { loadMems } from "../src/lib/mems.js"
+import { loadTree } from "../src/lib/hierarchy-tree.js"
 import { createSaveMemTool } from "../src/tools/save-mem.js"
 import { createListShelvesTool } from "../src/tools/list-shelves.js"
 import { createRecallMemsTool } from "../src/tools/recall-mems.js"
@@ -371,6 +372,9 @@ async function test_staleSessionAutoArchived() {
     assert(newState !== null, "state exists after stale archive")
     assert(newState!.session.id !== originalSessionId, "new session ID created after stale archive")
 
+    const newTree = await loadTree(dir)
+    assert(newTree.root === null, "hierarchy tree reset after stale auto-archive")
+
     // Step 7: Assert: archive directory has at least 1 file
     const archives = await listArchives(dir)
     assert(archives.length >= 1, "archive has at least 1 file after stale archive")
@@ -379,6 +383,85 @@ async function test_staleSessionAutoArchived() {
     const indexMd = await readFile(join(dir, ".hivemind", "sessions", "index.md"), "utf-8")
     assert(indexMd.includes("[auto-archived: stale]"), "index.md contains auto-archived stale marker")
 
+  } finally {
+    await cleanup()
+  }
+}
+
+async function test_firstRunSetupGuidanceIncludesReconProtocol() {
+  process.stderr.write("\n--- integration: first-run setup guidance includes deep recon protocol ---\n")
+
+  const dir = await setup()
+
+  try {
+    await writeFile(
+      join(dir, "package.json"),
+      JSON.stringify(
+        {
+          name: "hm-first-run",
+          dependencies: {
+            typescript: "^5.0.0",
+            react: "^19.0.0",
+          },
+        },
+        null,
+        2
+      )
+    )
+    await mkdir(join(dir, ".planning"), { recursive: true })
+    await writeFile(join(dir, ".planning", "STATE.md"), "Current focus: Phase 2")
+    await writeFile(join(dir, ".planning", "ROADMAP.md"), "## Phase 2: Test\n**Goal:** Validate")
+
+    const logger = await createLogger(dir, "test")
+    const hook = createSessionLifecycleHook(logger, dir, createConfig())
+    const output = { system: [] as string[] }
+    await hook({ sessionID: "test-session" }, output)
+
+    const systemText = output.system.join("\n")
+    assert(systemText.includes("<hivemind-setup>"), "setup block injected when config is missing")
+    assert(systemText.includes("First-Run Recon Protocol"), "setup block includes recon protocol")
+    assert(systemText.includes("Detected project: hm-first-run"), "setup block includes detected project name")
+    assert(systemText.includes("Framework context:"), "setup block includes framework context")
+
+    const stateManager = createStateManager(dir)
+    const state = await stateManager.load()
+    assert(state === null, "first-run setup guidance does not auto-create brain state")
+  } finally {
+    await cleanup()
+  }
+}
+
+async function test_persistenceMigratesWriteWithoutReadCount() {
+  process.stderr.write("\n--- integration: persistence migrates write_without_read_count ---\n")
+
+  const dir = await setup()
+
+  try {
+    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
+
+    const stateManager = createStateManager(dir)
+    const current = await stateManager.load()
+    assert(current !== null, "state exists before migration test")
+
+    const legacyLike = {
+      ...current!,
+      metrics: {
+        ...current!.metrics,
+      },
+    } as any
+    delete legacyLike.metrics.write_without_read_count
+
+    await writeFile(
+      join(dir, ".hivemind", "brain.json"),
+      JSON.stringify(legacyLike, null, 2),
+      "utf-8"
+    )
+
+    const migrated = await stateManager.load()
+    assert(
+      migrated!.metrics.write_without_read_count === 0,
+      "missing write_without_read_count migrates to 0"
+    )
   } finally {
     await cleanup()
   }
@@ -487,7 +570,7 @@ async function test_sessionMetadataPersistsThroughLifecycle() {
 }
 
 async function test_activeMdContainsLivingPlan() {
-  process.stderr.write("\n--- round2: active.md contains living plan section ---\n")
+  process.stderr.write("\n--- round2: active session file keeps hierarchy/log structure ---\n")
 
   const dir = await setup()
 
@@ -502,11 +585,12 @@ async function test_activeMdContainsLivingPlan() {
     // Step 2: Read active.md
     const activeMd = await readActiveMd(dir)
 
-    // Step 3: Assert body contains "## Plan"
-    assert(activeMd.body.includes("## Plan"), "active.md contains '## Plan' section")
+    // Step 3: Assert body contains hierarchy + log sections (new per-session format)
+    assert(activeMd.body.includes("## Hierarchy"), "active session contains '## Hierarchy' section")
+    assert(activeMd.body.includes("## Log"), "active session contains '## Log' section")
 
-    // Step 4: Assert body contains the focus text as a plan item
-    assert(activeMd.body.includes("Living plan test"), "active.md contains focus text")
+    // Step 4: Assert body contains the focus text
+    assert(activeMd.body.includes("Living plan test"), "active session contains focus text")
 
   } finally {
     await cleanup()
@@ -1674,6 +1758,8 @@ async function main() {
   await test_driftReset()
   await test_compactionHookPreservesHierarchy()
   await test_staleSessionAutoArchived()
+  await test_firstRunSetupGuidanceIncludesReconProtocol()
+  await test_persistenceMigratesWriteWithoutReadCount()
   await test_chainBreaksInjected()
   await test_toolActivationSuggestsIntentWhenLocked()
   await test_sessionMetadataPersistsThroughLifecycle()

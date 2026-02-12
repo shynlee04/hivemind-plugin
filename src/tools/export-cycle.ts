@@ -17,7 +17,7 @@
  */
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool";
 import { createStateManager } from "../lib/persistence.js";
-import { clearPendingFailureAck } from "../schemas/brain-state.js";
+import { clearPendingFailureAck, updateHierarchy } from "../schemas/brain-state.js";
 import { loadMems, saveMems, addMem } from "../lib/mems.js";
 import {
   loadTree,
@@ -25,6 +25,7 @@ import {
   markComplete,
   getCursorNode,
   generateStamp,
+  toBrainProjection,
 } from "../lib/hierarchy-tree.js";
 
 const VALID_OUTCOMES = ["success", "partial", "failure"] as const;
@@ -58,6 +59,7 @@ export function createExportCycleTool(directory: string): ToolDefinition {
 
       // === Internal Script 1: Update hierarchy tree ===
       let treeAction = "no tree";
+      let hierarchyProjected = false;
       try {
         let tree = await loadTree(directory);
         if (tree.root) {
@@ -75,6 +77,9 @@ export function createExportCycleTool(directory: string): ToolDefinition {
               treeAction = `action "${cursorNode.content}" → blocked`;
             }
             await saveTree(directory, tree);
+            const projection = toBrainProjection(tree);
+            state = updateHierarchy(state, projection);
+            hierarchyProjected = true;
           } else if (cursorNode) {
             treeAction = `cursor at ${cursorNode.level} (no action to update)`;
           }
@@ -107,7 +112,7 @@ export function createExportCycleTool(directory: string): ToolDefinition {
 
       // Build confirmation
       const ackNote = hadPendingAck ? " Failure acknowledged." : "";
-      return `Cycle exported [${args.outcome}]. Tree: ${treeAction}. Mem: ${memAction}.${ackNote}\n→ ${args.outcome === "failure" ? "Consider map_context with status \"blocked\" to update hierarchy." : "Continue working."}`;
+      return `Cycle exported [${args.outcome}]. Tree: ${treeAction}. Projection: ${hierarchyProjected ? "synced" : "unchanged"}. Mem: ${memAction}.${ackNote}\n→ ${args.outcome === "failure" ? "Consider map_context with status \"blocked\" to update hierarchy." : "Continue working."}`;
     },
   });
 }

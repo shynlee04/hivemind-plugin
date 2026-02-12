@@ -103,6 +103,16 @@ async function test_fullChain() {
     const manifest2 = await readManifest(dir)
     assert(manifest2.active_stamp !== null && manifest2.sessions.length > 0, "manifest has active session entry")
 
+    const activeEntry = manifest2.sessions.find(
+      (entry) => entry.stamp === manifest2.active_stamp && entry.status === "active"
+    )
+    assert(activeEntry !== undefined, "manifest points to active per-session file")
+    if (activeEntry) {
+      const sessionFile = await readFile(join(dir, ".hivemind", "sessions", activeEntry.file), "utf-8")
+      assert(sessionFile.includes("## Hierarchy"), "per-session file preserves hierarchy section")
+      assert(sessionFile.includes("## Log"), "per-session file preserves log section")
+    }
+
     const state2 = await stateManager.load()
     assert(state2 !== null && state2.session.governance_status === "OPEN", "brain governance_status is OPEN")
     assert(state2 !== null && state2.hierarchy.trajectory.includes("Build auth system"), "brain hierarchy.trajectory contains 'Build auth system'")

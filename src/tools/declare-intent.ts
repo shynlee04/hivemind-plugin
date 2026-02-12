@@ -18,6 +18,10 @@
  */
 
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool"
+import { existsSync } from "fs"
+import { writeFile } from "fs/promises"
+import { join } from "path"
+import { stringify } from "yaml"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import {
   createBrainState,
@@ -27,11 +31,10 @@ import {
 } from "../schemas/brain-state.js"
 import type { SessionMode } from "../schemas/brain-state.js"
 import {
-  writeActiveMd,
-  readActiveMd,
   initializePlanningDirectory,
   instantiateSession,
   registerSession,
+  getPlanningPaths,
 } from "../lib/planning-fs.js"
 import {
   createNode,
@@ -64,6 +67,16 @@ export function createDeclareIntentTool(directory: string): ToolDefinition {
     },
     async execute(args, _context) {
       if (!args.focus?.trim()) return "ERROR: focus cannot be empty. Describe what you're working on."
+
+      const configPath = join(directory, ".hivemind", "config.json")
+      if (!existsSync(configPath)) {
+        return [
+          "ERROR: HiveMind is not configured for this project.",
+          "Run setup first:",
+          "  npx hivemind-context-governance",
+          "Then call declare_intent again.",
+        ].join("\n")
+      }
 
       const config = await loadConfig(directory)
       const stateManager = createStateManager(directory)
@@ -118,9 +131,6 @@ export function createDeclareIntentTool(directory: string): ToolDefinition {
       })
 
       // Write per-session file
-      const { writeFile } = await import("fs/promises")
-      const { join } = await import("path")
-      const { getPlanningPaths } = await import("../lib/planning-fs.js")
       const paths = getPlanningPaths(directory)
       await writeFile(join(paths.sessionsDir, sessionFileName), sessionContent)
 
@@ -128,8 +138,7 @@ export function createDeclareIntentTool(directory: string): ToolDefinition {
       await registerSession(directory, stamp, sessionFileName)
 
       // === Legacy active.md: Update for backward compat ===
-      const activeMd = await readActiveMd(directory)
-      activeMd.frontmatter = {
+      const legacyFrontmatter = {
         session_id: state.session.id,
         stamp,
         mode: args.mode,
@@ -141,7 +150,7 @@ export function createDeclareIntentTool(directory: string): ToolDefinition {
         role: state.session.role,
         by_ai: state.session.by_ai,
       }
-      activeMd.body = [
+      const legacyBody = [
         "# Active Session",
         "",
         "## Current Focus",
@@ -161,7 +170,8 @@ export function createDeclareIntentTool(directory: string): ToolDefinition {
         .filter(Boolean)
         .join("\n")
 
-      await writeActiveMd(directory, activeMd)
+      const legacyContent = `---\n${stringify(legacyFrontmatter)}---\n\n${legacyBody}`
+      await writeFile(paths.activePath, legacyContent)
 
       let response = `Session: "${args.focus}". Mode: ${args.mode}. Status: OPEN. Stamp: ${stamp}.`
       if (oldTrajectory && oldTrajectory !== args.focus) {

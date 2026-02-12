@@ -345,6 +345,7 @@ export async function initProject(
     log("  │   └── archive/         (completed sessions)")
     log("  ├── templates/")
     log("  │   └── session.md       (session template)")
+    log("  ├── logs/                (runtime logs)")
     log("  ├── brain.json           (machine state)")
     log("  └── config.json          (governance settings)")
     log("")

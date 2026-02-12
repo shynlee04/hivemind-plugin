@@ -41,6 +41,8 @@ export interface PlanningPaths {
   sessionsDir: string;
   /** Path to hierarchy.json */
   hierarchyPath: string;
+  /** Path to logs directory */
+  logsDir: string;
 }
 
 export function getPlanningPaths(projectRoot: string): PlanningPaths {
@@ -59,6 +61,7 @@ export function getPlanningPaths(projectRoot: string): PlanningPaths {
     templatesDir,
     sessionsDir,
     hierarchyPath: join(hivemindDir, "hierarchy.json"),
+    logsDir: join(hivemindDir, "logs"),
   };
 }
 
@@ -435,6 +438,7 @@ export async function initializePlanningDirectory(
   await mkdir(paths.planningDir, { recursive: true });
   await mkdir(paths.archiveDir, { recursive: true });
   await mkdir(paths.templatesDir, { recursive: true });
+  await mkdir(paths.logsDir, { recursive: true });
 
   // Create session template if not exists
   if (!existsSync(paths.templatePath)) {

@@ -205,6 +205,7 @@ export function createToolGateHook(
       // Session is open — track activity (turn count incremented in tool.execute.after only)
       if (state) {
         let needsSave = false
+        const projectedTurnCount = state.metrics.turn_count + 1
 
         // Track file touches for write tools (tool name used as proxy)
         if (isWriteTool(toolName)) {
@@ -212,8 +213,33 @@ export function createToolGateHook(
           needsSave = true
         }
 
-        // Update drift score
-        state.metrics.drift_score = calculateDriftScore(state)
+        // Update drift score using projected turn count (matches post-tool state)
+        const projectedForDrift = {
+          ...state,
+          metrics: {
+            ...state.metrics,
+            turn_count: projectedTurnCount,
+          },
+        }
+        const projectedDriftScore = calculateDriftScore(projectedForDrift)
+        if (state.metrics.drift_score !== projectedDriftScore) {
+          state = {
+            ...state,
+            metrics: {
+              ...state.metrics,
+              drift_score: projectedDriftScore,
+            },
+          }
+          needsSave = true
+        }
+
+        const driftCheckState = {
+          ...state,
+          metrics: {
+            ...state.metrics,
+            turn_count: projectedTurnCount,
+          },
+        }
 
         // Save updated state only if something changed
         if (needsSave) {
@@ -223,12 +249,12 @@ export function createToolGateHook(
         // Check drift warning
         if (
           shouldTriggerDriftWarning(
-            state,
+            driftCheckState,
             config.max_turns_before_warning
           )
         ) {
           await log.warn(
-            `Drift warning: ${state.metrics.turn_count} turns, score: ${state.metrics.drift_score}/100. Consider using map_context to re-focus.`
+            `Drift warning: ${driftCheckState.metrics.turn_count} turns, score: ${driftCheckState.metrics.drift_score}/100. Consider using map_context to re-focus.`
           )
 
           if (config.governance_mode !== "permissive") {

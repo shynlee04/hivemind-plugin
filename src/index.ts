@@ -27,6 +27,8 @@
  */
 
 import type { Plugin } from "@opencode-ai/plugin"
+import { existsSync } from "fs"
+import { join } from "path"
 import {
   createDeclareIntentTool,
   createMapContextTool,
@@ -77,7 +79,11 @@ export const HiveMindPlugin: Plugin = async ({
   // Hooks and tools access via getClient() at execution time
   initSdkContext({ client, $: shell, serverUrl, project })
 
-  const log = await createLogger(effectiveDir, "HiveMind")
+  const configPath = join(effectiveDir, ".hivemind", "config.json")
+  const logDir = existsSync(configPath)
+    ? join(effectiveDir, ".hivemind", "logs")
+    : effectiveDir
+  const log = await createLogger(logDir, "HiveMind")
 
    await log.info(`Initializing HiveMind in ${effectiveDir}`)
 

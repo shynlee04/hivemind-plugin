@@ -17,6 +17,7 @@
  */
 
 import { existsSync } from "node:fs"
+import { readFile, readdir } from "node:fs/promises"
 import { join } from "node:path"
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
@@ -48,7 +49,9 @@ import {
   type DetectionState,
 } from "../lib/detection.js"
 import {
+  createTree,
   loadTree,
+  saveTree,
   toAsciiTree,
   detectGaps,
   getTreeStats,
@@ -59,6 +62,90 @@ import {
   detectFrameworkContext,
   buildFrameworkSelectionMenu,
 } from "../lib/framework-context.js"
+
+interface ProjectSnapshot {
+  projectName: string
+  topLevelDirs: string[]
+  artifactHints: string[]
+  stackHints: string[]
+}
+
+async function collectProjectSnapshot(directory: string): Promise<ProjectSnapshot> {
+  const snapshot: ProjectSnapshot = {
+    projectName: "(unknown project)",
+    topLevelDirs: [],
+    artifactHints: [],
+    stackHints: [],
+  }
+
+  try {
+    const packagePath = join(directory, "package.json")
+    if (existsSync(packagePath)) {
+      const raw = await readFile(packagePath, "utf-8")
+      const pkg = JSON.parse(raw) as {
+        name?: string
+        dependencies?: Record<string, string>
+        devDependencies?: Record<string, string>
+        peerDependencies?: Record<string, string>
+      }
+      if (pkg.name?.trim()) {
+        snapshot.projectName = pkg.name.trim()
+      }
+
+      const deps = {
+        ...(pkg.dependencies ?? {}),
+        ...(pkg.devDependencies ?? {}),
+        ...(pkg.peerDependencies ?? {}),
+      }
+
+      const stackSignals: Array<[string, string]> = [
+        ["typescript", "TypeScript"],
+        ["react", "React"],
+        ["next", "Next.js"],
+        ["vite", "Vite"],
+        ["@opencode-ai/plugin", "OpenCode Plugin SDK"],
+        ["ink", "Ink TUI"],
+      ]
+
+      for (const [depName, label] of stackSignals) {
+        if (depName in deps) {
+          snapshot.stackHints.push(label)
+        }
+      }
+    }
+  } catch {
+    // Best-effort scan only
+  }
+
+  try {
+    const entries = await readdir(directory, { withFileTypes: true })
+    snapshot.topLevelDirs = entries
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .filter((name) => name !== "node_modules" && name !== ".git")
+      .slice(0, 8)
+  } catch {
+    // Best-effort scan only
+  }
+
+  const artifactCandidates = [
+    "README.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    ".planning/ROADMAP.md",
+    ".planning/STATE.md",
+    ".spec-kit",
+    "docs",
+  ]
+  snapshot.artifactHints = artifactCandidates.filter((path) => existsSync(join(directory, path)))
+
+  return snapshot
+}
+
+function formatHintList(items: string[]): string {
+  if (items.length === 0) return "none detected"
+  return items.join(", ")
+}
 
 function localized(language: "en" | "vi", en: string, vi: string): string {
   return language === "vi" ? vi : en
@@ -154,12 +241,25 @@ function generateBootstrapBlock(governanceMode: string, language: "en" | "vi"): 
  *
  * Highest priority — shown before any other governance content.
  */
-function generateSetupGuidanceBlock(): string {
+async function generateSetupGuidanceBlock(directory: string): Promise<string> {
+  const frameworkContext = await detectFrameworkContext(directory)
+  const snapshot = await collectProjectSnapshot(directory)
+  const frameworkLine =
+    frameworkContext.mode === "both"
+      ? "both .planning and .spec-kit detected (resolve conflict before implementation)"
+      : frameworkContext.mode
+
   return [
     "<hivemind-setup>",
     "## HiveMind Context Governance — Setup Required",
     "",
     "HiveMind plugin is loaded but **not yet configured** for this project.",
+    "",
+    `Detected project: ${snapshot.projectName}`,
+    `Framework context: ${frameworkLine}`,
+    `Stack hints: ${formatHintList(snapshot.stackHints)}`,
+    `Top-level dirs: ${formatHintList(snapshot.topLevelDirs)}`,
+    `Artifacts: ${formatHintList(snapshot.artifactHints)}`,
     "",
     "Tell the user to run the setup wizard in their terminal:",
     "",
@@ -174,13 +274,47 @@ function generateSetupGuidanceBlock(): string {
     "- **Expert level** and **output style**",
     "- **Constraints** (code review, TDD)",
     "",
-    "Until configured, HiveMind tools are available but drift detection and session tracking are running with defaults.",
+    "### First-Run Recon Protocol (required before coding)",
+    "1. Scan repo structure and artifacts (glob + grep) to map code, plans, and docs.",
+    "2. Read core files: package.json, README, AGENTS/CLAUDE, framework state docs.",
+    "3. Isolate poisoning context: stale plans, duplicate artifacts, framework conflicts, old branch copies.",
+    "4. Build a project backbone summary (architecture, workflow, constraints, active phase/spec).",
+    "5. Only then call declare_intent/map_context and start implementation.",
+    "",
+    "Until configured, HiveMind remains in setup mode and should focus on project reconnaissance + cleanup guidance.",
     "",
     "**Quick alternative** (non-interactive):",
     "```",
     "npx hivemind-context-governance --mode assisted",
     "```",
     "</hivemind-setup>",
+  ].join("\n")
+}
+
+function generateProjectBackboneBlock(
+  language: "en" | "vi",
+  snapshot: ProjectSnapshot,
+  frameworkMode: string
+): string {
+  const title = localized(
+    language,
+    "First-run backbone: map project before coding.",
+    "Backbone khoi dau: map du an truoc khi code."
+  )
+  const steps = localized(
+    language,
+    "Run quick scan -> read core docs -> isolate stale/conflicting artifacts -> declare intent.",
+    "Quet nhanh -> doc tai lieu cot loi -> tach bo stale/xung dot -> khai bao intent."
+  )
+
+  return [
+    "<hivemind-backbone>",
+    title,
+    `Project: ${snapshot.projectName} | Framework: ${frameworkMode}`,
+    `Stack: ${formatHintList(snapshot.stackHints)}`,
+    `Artifacts: ${formatHintList(snapshot.artifactHints)}`,
+    steps,
+    "</hivemind-backbone>",
   ].join("\n")
 }
 
@@ -236,7 +370,7 @@ export function createSessionLifecycleHook(
       // full governance — teach them how to configure.
       const configPath = join(directory, ".hivemind", "config.json")
       if (!existsSync(configPath)) {
-        const setupBlock = generateSetupGuidanceBlock()
+        const setupBlock = await generateSetupGuidanceBlock(directory)
         output.system.push(setupBlock)
         await log.info("HiveMind not configured — injected setup guidance")
         return
@@ -278,6 +412,7 @@ export function createSessionLifecycleHook(
           const newId = generateSessionId();
           state = createBrainState(newId, config);
           await stateManager.save(state);
+          await saveTree(directory, createTree())
 
           await log.info(`Auto-archived stale session ${staleSessionId}`);
         } catch (archiveError) {
@@ -291,11 +426,19 @@ export function createSessionLifecycleHook(
       const ignoredLines: string[] = []
       const warningLines: string[] = []
       const frameworkLines: string[] = []
+      const onboardingLines: string[] = []
       const anchorLines: string[] = []
       const metricsLines: string[] = []
       const configLines: string[] = []
 
       const frameworkContext = await detectFrameworkContext(directory)
+      const projectSnapshot = await collectProjectSnapshot(directory)
+
+      if (!state.hierarchy.trajectory && state.metrics.turn_count <= 1) {
+        onboardingLines.push(
+          generateProjectBackboneBlock(config.language, projectSnapshot, frameworkContext.mode)
+        )
+      }
 
       if (frameworkContext.mode === "gsd" && frameworkContext.gsdPhaseGoal) {
         frameworkLines.push(`GSD Phase Goal: ${frameworkContext.gsdPhaseGoal}`)
@@ -545,6 +688,7 @@ export function createSessionLifecycleHook(
         bootstrapLines, // P0: behavioral bootstrap (only when LOCKED, first 2 turns)
         evidenceLines,  // P0.5: evidence discipline from turn 0
         teamLines,      // P0.6: team behavior from turn 0
+        onboardingLines, // P0.7: first-run project backbone guidance
         frameworkLines, // P0.8: framework context and conflict routing
         statusLines,    // P1: always
         hierarchyLines, // P2: always

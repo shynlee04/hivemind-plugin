@@ -1,237 +1,234 @@
 # HiveMind Context Governance
 
-A lightweight context governance layer for [OpenCode](https://opencode.ai) that prevents drift, manages session state, and preserves memory across agent lifecycles.
+HiveMind is an OpenCode plugin that keeps AI sessions coherent from start to finish.
 
-**14 tools** | **4 hooks** | **5 automation levels** | **Ink TUI dashboard** | **Interactive setup wizard**
+It connects:
+- install and project initialization,
+- OpenCode runtime hooks,
+- governance tools,
+- session archives and memory,
+- and optional live dashboard,
+
+into one operating model instead of disconnected helpers.
+
+`14 tools` | `governance hooks + events` | `interactive init` | `EN/VI support` | `Ink TUI dashboard (optional)`
+
+## What HiveMind Solves
+
+Without governance, long AI sessions often drift:
+- focus changes but no explicit checkpoint,
+- work happens without a stable intent/action chain,
+- compaction loses why decisions were made,
+- subagent outputs are not fed back into the parent thread.
+
+HiveMind enforces a simple backbone:
+
+`declare_intent -> map_context -> execute -> compact_session`
+
+and preserves state under `.hivemind/` so each session can continue with traceable context.
 
 ## Quick Start
 
 ```bash
-# Install
+# 1) Install
 npm install hivemind-context-governance
 
-# Interactive setup wizard (recommended)
+# 2) Initialize (interactive wizard, recommended)
 npx hivemind-context-governance
 
-# Or initialize with flags
-npx hivemind-context-governance init --mode strict --lang vi
+# 3) Or initialize with flags
+npx hivemind-context-governance init --mode assisted --lang en
 ```
 
-The interactive wizard guides you through:
-- **Governance mode** — strict / assisted / permissive
-- **Language** — English / Tiếng Việt
-- **Automation level** — manual → guided → assisted → full → retard
-- **Expert level** — beginner → intermediate → advanced → expert
-- **Output style** — explanatory / outline / skeptical / architecture / minimal
-- **Constraints** — code review, TDD enforcement
+The wizard configures:
+- governance mode,
+- language,
+- automation level,
+- agent behavior (expert level/output style),
+- constraints (code review/TDD),
 
-This creates a `.hivemind/` directory and registers the plugin in `opencode.json`.
+then creates `.hivemind/` and registers the plugin in `opencode.json` or `opencode.jsonc`.
 
-### First-Run Detection
+## First-Run Behavior in OpenCode
 
-When the plugin loads in OpenCode without configuration, it automatically injects setup guidance into the system prompt — telling the agent to guide you through `npx hivemind-context-governance`.
+If OpenCode loads the plugin before initialization (`.hivemind/config.json` missing), HiveMind enters setup guidance mode.
 
-## How It Works
+In this mode, the system prompt injects:
+- setup instructions (`npx hivemind-context-governance`),
+- detected project/framework hints,
+- and a mandatory first-run reconnaissance protocol:
+  - scan repo structure and artifacts,
+  - read core docs/config,
+  - isolate stale/conflicting context,
+  - build project backbone before implementation.
 
-HiveMind uses a 3-level hierarchy to track what you're working on:
+Important:
+- HiveMind no longer silently bootstraps a default session through `declare_intent` when config is missing.
+- You must initialize first, then governance tools become fully operational.
 
-```
-Trajectory (Level 1) → Tactic (Level 2) → Action (Level 3)
-```
+## End-to-End Product Flow
 
-Every session starts with `declare_intent`, which sets the trajectory and unlocks the session. As you work, `map_context` updates your current focus. When done, `compact_session` archives everything and resets.
-
-The plugin fires 4 hooks automatically — injecting context into every LLM turn, tracking metrics after every tool call, enforcing governance before writes, and preserving hierarchy across context compaction.
+1. Install plugin package
+2. Run CLI init wizard
+3. Open OpenCode in project
+4. Agent starts with declared intent and hierarchy updates
+5. Hooks track drift/violations/evidence pressure
+6. `compact_session` archives and prepares next compaction context
+7. Next session resumes with preserved context instead of reset chaos
 
 ## Governance Modes
 
-| Mode | Behavior | Best For |
-|------|----------|----------|
-| **strict** | Session starts LOCKED. Warns on writes without intent. | High-compliance projects |
-| **assisted** | Session starts OPEN. Guidance without blocking. | Most projects (default) |
-| **permissive** | Always OPEN. Silent tracking only. | Maximum autonomy |
+| Mode | Behavior | Typical use |
+| --- | --- | --- |
+| `strict` | Session starts `LOCKED`; strongest pressure and warnings | Regulated/high-risk workflows |
+| `assisted` | Session starts `OPEN`; balanced guidance | Default for most teams |
+| `permissive` | Open flow with lighter pressure | Expert users, low ceremony |
 
-## Tools (14)
+## Automation Levels
 
-### Core (3 tools)
+`manual -> guided -> assisted -> full -> retard`
 
-| Tool | When | What It Does |
-|------|------|--------------|
-| `declare_intent` | Starting work | Set your focus and mode. Unlocks the session. |
-| `map_context` | Changing focus | Update trajectory/tactic/action hierarchy. |
-| `compact_session` | Finishing work | Archive session and reset for next work. |
+`retard` is intentional naming in this project and means maximum handholding/pushback:
+- strict governance,
+- skeptical output style,
+- stronger discipline around evidence and structure.
 
-```typescript
-declare_intent({ mode: "plan_driven", focus: "Build auth system" })
-// → Session: "Build auth system". Mode: plan_driven. Status: OPEN.
+## Core Tools (14)
 
-map_context({ level: "tactic", content: "Implement JWT validation" })
-// → [tactic] "Implement JWT validation" → active
+### Session lifecycle
+- `declare_intent`: unlock and set trajectory
+- `map_context`: maintain trajectory/tactic/action alignment
+- `compact_session`: archive and reset cleanly
 
-compact_session({ summary: "Auth middleware complete" })
-// → Archived. 15 turns, 4 files. 3 total archives.
-```
+### Awareness and correction
+- `scan_hierarchy`
+- `think_back`
+- `check_drift`
+- `self_rate`
 
-### Self-Awareness (1 tool)
+### Persistent intelligence
+- `save_anchor`
+- `save_mem`
+- `list_shelves`
+- `recall_mems`
 
-| Tool | When | What It Does |
-|------|------|--------------|
-| `self_rate` | Self-reflection | Rate your own performance (1-10) for drift detection. |
+### Tree maintenance
+- `hierarchy_prune`
+- `hierarchy_migrate`
 
-### Cognitive Mesh (4 tools)
+### Subagent result capture
+- `export_cycle`
 
-| Tool | When | What It Does |
-|------|------|--------------|
-| `scan_hierarchy` | Quick status check | Snapshot of session state, metrics, anchors. |
-| `save_anchor` | Saving immutable facts | Persist constraints that survive compaction. |
-| `think_back` | Feeling lost | Deep refocus with plan review and chain analysis. |
-| `check_drift` | Before completing | Verify alignment with declared trajectory. |
+## Runtime Hooks
 
-### Mems Brain (3 tools)
+- `experimental.chat.system.transform`: injects `<hivemind>` prompt context every turn
+- `tool.execute.before`: governance gate/warnings before tool execution
+- `tool.execute.after`: tracking, counters, escalation signals, cycle capture
+- `experimental.session.compacting`: compaction context preservation
+- `event`: session/event-driven toasts and governance signals
 
-| Tool | When | What It Does |
-|------|------|--------------|
-| `save_mem` | Saving a lesson | Store decisions, patterns, errors to persistent memory. |
-| `list_shelves` | Browsing memories | See what's in the Mems Brain by shelf. |
-| `recall_mems` | Searching memories | Search past decisions and patterns by keyword. |
+Note: in OpenCode v1.1+, before-hook cannot hard-block execution; HiveMind enforces through state + warnings + escalation.
 
-### Hierarchy Ops (2 tools)
-
-| Tool | When | What It Does |
-|------|------|--------------|
-| `hierarchy_prune` | Cleaning up | Remove completed branches from the tree. |
-| `hierarchy_migrate` | Upgrading | Migrate flat hierarchy to navigable tree format. |
-
-### Cycle Intelligence (1 tool)
-
-| Tool | When | What It Does |
-|------|------|--------------|
-| `export_cycle` | After subagent returns | Capture subagent results into hierarchy + mems. |
-
-## Hooks (4 + event handler)
-
-| Hook | Event | Purpose |
-|------|-------|---------|
-| `experimental.chat.system.transform` | Every LLM turn | Injects `<hivemind>` context into system prompt |
-| `tool.execute.before` | Before tool calls | Governance enforcement (warns on writes without intent) |
-| `tool.execute.after` | After tool calls | Tracks metrics, violations, drift detection |
-| `experimental.session.compacting` | Context compaction | Preserves hierarchy across LLM context boundaries |
-| `event` | SDK events | Handles session.idle, session.compacted, file.edited |
-
-> **Note:** In OpenCode v1.1+, `tool.execute.before` cannot block execution. HiveMind provides governance through warnings and tracking only.
-
-## CLI
+## CLI Commands
 
 ```bash
-npx hivemind-context-governance              # Interactive setup wizard
-npx hivemind-context-governance init         # Same as above
-npx hivemind-context-governance init --mode strict  # Non-interactive with flags
-npx hivemind-context-governance status       # Current session and governance state
-npx hivemind-context-governance settings     # View current configuration
-npx hivemind-context-governance dashboard    # Live TUI dashboard (requires ink + react)
-npx hivemind-context-governance help         # Show all commands and options
+npx hivemind-context-governance
+npx hivemind-context-governance init
+npx hivemind-context-governance status
+npx hivemind-context-governance settings
+npx hivemind-context-governance compact
+npx hivemind-context-governance dashboard
+npx hivemind-context-governance help
 ```
 
-### Live TUI Dashboard
+Common flags:
+- `--mode <permissive|assisted|strict>`
+- `--lang <en|vi>`
+- `--automation <manual|guided|assisted|full|retard>`
+- `--expert <beginner|intermediate|advanced|expert>`
+- `--style <explanatory|outline|skeptical|architecture|minimal>`
+- `--code-review`
+- `--tdd`
+
+### Dashboard (optional)
 
 ```bash
-# Install optional dependencies
 npm install ink react
-
-# Launch dashboard
 npx hivemind-context-governance dashboard --lang vi --refresh 1
 ```
 
-The Ink-based TUI dashboard shows live panels for:
-- **Session** — status, mode, governance, automation level
-- **Hierarchy** — navigable ASCII tree with node stats
-- **Metrics** — drift score, turns, files, violations, health score
-- **Escalation Alerts** — evidence-based warnings with tier (INFO/WARN/CRITICAL/DEGRADED)
-- **Traceability** — timestamps, git hash, session timeline
+## Upgrade Guide (especially from v2.5.x)
 
-Controls: `[q]` quit, `[l]` toggle language, `[r]` refresh.
-
-### Ecosystem Verification (`bin/hivemind-tools.cjs`)
+1. Update package:
 
 ```bash
-node bin/hivemind-tools.cjs ecosystem-check # Full truth check + semantic validation
-node bin/hivemind-tools.cjs source-audit    # Verify all source files
-node bin/hivemind-tools.cjs list-tools      # List all 14 tools
-node bin/hivemind-tools.cjs list-hooks      # List all 4 hooks
-node bin/hivemind-tools.cjs verify-package  # Check npm package completeness
+npm install hivemind-context-governance@latest
 ```
 
-## Configuration
+2. Re-run init to refresh config defaults and behavior profile:
 
-Configuration is stored in `.hivemind/config.json` and re-read from disk on every hook invocation.
-
-```json
-{
-  "governance_mode": "assisted",
-  "language": "en",
-  "automation_level": "assisted",
-  "max_turns_before_warning": 5,
-  "auto_compact_on_turns": 15,
-  "stale_session_days": 3,
-  "max_active_md_lines": 50,
-  "agent_behavior": {
-    "language": "en",
-    "expert_level": "intermediate",
-    "output_style": "explanatory",
-    "constraints": {
-      "require_code_review": false,
-      "enforce_tdd": false,
-      "max_response_tokens": 2000,
-      "explain_reasoning": true,
-      "be_skeptical": false
-    }
-  }
-}
+```bash
+npx hivemind-context-governance
 ```
 
-View settings anytime with `npx hivemind-context-governance settings`.
+3. Verify settings:
 
-## Project Structure
-
+```bash
+npx hivemind-context-governance settings
 ```
+
+4. Optional cleanup of legacy/stale artifacts:
+- remove old experimental docs that conflict with current flow,
+- ensure only the active project copy is being used,
+- resolve framework conflicts (`.planning` and `.spec-kit` both present) by selecting one active framework path.
+
+Migration notes:
+- Brain state migration backfills newly added metrics fields for older `brain.json` files.
+- Compaction reports are now consumed once (injected then cleared), preventing stale repeated injections.
+
+## `.hivemind/` Layout
+
+```text
 .hivemind/
-├── 10-commandments.md   # Tool design reference
-├── sessions/
-│   ├── index.md         # Project trajectory (goals, constraints, history)
-│   ├── active.md        # Current session
-│   ├── manifest.json    # Session registry
-│   └── archive/         # Completed sessions
-├── templates/
-│   └── session.md       # Session template
-├── hierarchy.json       # Navigable tree hierarchy
-├── brain.json           # Machine state (session, metrics, hierarchy)
-├── config.json          # Governance settings
-├── anchors.json         # Immutable facts
-└── mems.json            # Persistent memory brain
+  config.json
+  brain.json
+  hierarchy.json
+  anchors.json
+  mems.json
+  logs/
+  templates/
+    session.md
+  sessions/
+    manifest.json
+    active.md
+    index.md
+    archive/
+      exports/
 ```
 
-## Typical Workflow
+## Troubleshooting
 
-```
-1. Start session
-   declare_intent({ mode: "plan_driven", focus: "Build auth system" })
+- `setup guidance keeps appearing`:
+  - run `npx hivemind-context-governance` in the project root,
+  - confirm `.hivemind/config.json` exists.
 
-2. Work on high-level planning
-   map_context({ level: "trajectory", content: "OAuth2 + JWT architecture" })
+- `framework conflict warning`:
+  - if both `.planning` and `.spec-kit` exist, set explicit framework metadata before implementation.
 
-3. Switch to implementation
-   map_context({ level: "tactic", content: "Set up Passport.js" })
+- `dashboard does not start`:
+  - install optional deps `ink react`.
 
-4. Specific action
-   map_context({ level: "action", content: "Install passport-jwt package" })
-   [do the work...]
+- `session feels stale/weird after long idle`:
+  - stale session auto-archive may have rotated state,
+  - use `scan_hierarchy` and `think_back` to realign.
 
-5. Mark complete, next action
-   map_context({ level: "action", content: "Install passport-jwt", status: "complete" })
-   map_context({ level: "action", content: "Configure JWT strategy" })
+## Development Verification
 
-6. Finish session
-   compact_session({ summary: "Auth system foundation complete" })
+In this repo:
+
+```bash
+npm test
+npm run typecheck
 ```
 
 ## License
@@ -240,55 +237,75 @@ MIT
 
 ---
 
-## Tiếng Việt
+## Tieng Viet (Giai thich chi tiet hon)
 
-### HiveMind là gì?
+### HiveMind la gi, va tai sao can no?
 
-HiveMind là một lớp quản lý ngữ cảnh nhẹ cho OpenCode, giúp ngăn chặn sai lệch (drift) và quản lý trạng thái phiên làm việc xuyên suốt vòng đời của agent AI.
+Neu ban de AI code trong nhieu turn, van de lon nhat khong phai la "khong biet code", ma la "mat mach su nghiep":
+- dang lam A nhay sang B,
+- quyen tac thay doi nhung khong cap nhat context,
+- sau compaction thi quen mat ly do quyet dinh truoc do,
+- subagent tra ve ket qua nhung khong duoc tong hop vao luong chinh.
 
-### Bắt đầu nhanh
+HiveMind giai quyet bang mot xuong song rat ro:
+
+`declare_intent -> map_context -> execute -> compact_session`
+
+Y nghia thuc te:
+- Luon co muc tieu hien tai (trajectory/tactic/action),
+- Moi lan doi focus deu co dau vet,
+- Ket thuc session thi du lieu duoc luu co cau truc,
+- Session sau vao lai khong bi "reset tri nho".
+
+### Luong su dung de dung ngay
+
+1. Cai dat:
 
 ```bash
-# Cài đặt
 npm install hivemind-context-governance
-
-# Trình hướng dẫn tương tác (khuyến nghị)
-npx hivemind-context-governance
-
-# Hoặc cài đặt với flags
-npx hivemind-context-governance init --lang vi --mode assisted
 ```
 
-### Các chế độ quản lý
-
-| Chế độ | Hành vi |
-|--------|---------|
-| **strict** | Phiên bắt đầu ở trạng thái KHÓA. Cảnh báo khi ghi mà chưa khai báo ý định. |
-| **assisted** | Phiên bắt đầu ở trạng thái MỞ. Hướng dẫn nhưng không chặn. |
-| **permissive** | Luôn MỞ. Chỉ theo dõi im lặng. |
-
-### 14 Công cụ
-
-- **Cốt lõi:** `declare_intent`, `map_context`, `compact_session`
-- **Tự đánh giá:** `self_rate`
-- **Lưới nhận thức:** `scan_hierarchy`, `save_anchor`, `think_back`, `check_drift`
-- **Bộ nhớ:** `save_mem`, `list_shelves`, `recall_mems`
-- **Phân cấp:** `hierarchy_prune`, `hierarchy_migrate`
-- **Chu trình:** `export_cycle`
-
-### CLI
+2. Chay wizard:
 
 ```bash
-npx hivemind-context-governance              # Trình hướng dẫn tương tác
-npx hivemind-context-governance status       # Trạng thái hiện tại
-npx hivemind-context-governance settings     # Xem cấu hình
-npx hivemind-context-governance dashboard    # Bảng điều khiển TUI (cần ink + react)
+npx hivemind-context-governance
 ```
 
-### Quy trình làm việc
+3. Mo OpenCode tai dung project.
 
-1. Khai báo ý định → `declare_intent`
-2. Cập nhật ngữ cảnh → `map_context`
-3. Làm việc → sử dụng các công cụ nhận thức khi cần
-4. Lưu bài học → `save_mem`, `save_anchor`
-5. Kết thúc → `compact_session`
+4. Trong qua trinh lam viec:
+- khai bao y dinh: `declare_intent`
+- doi ngu canh: `map_context`
+- ket session: `compact_session`
+
+### First-run trong OpenCode (quan trong)
+
+Neu plugin duoc load ma chua init, HiveMind se khong cho session governance day du ngay lap tuc.
+Thay vao do, no chen block huong dan setup + recon protocol de agent:
+- quet cau truc repo,
+- doc tai lieu cot loi,
+- tach context bi "nhiem" (stale/xung dot/trung lap),
+- sau do moi bat dau implement.
+
+Muc tieu: tranh tinh trang "vua vao da sua code" khi chua hieu project.
+
+### Nang cap tu ban cu (vi du 2.5.x)
+
+Lam ngan gon theo thu tu:
+
+1. cap nhat package,
+2. chay lai wizard init,
+3. kiem tra settings,
+4. dep artifact cu neu dang bi roi (du an clone cu, docs conflict, framework conflict).
+
+Neu thay warning lien quan `.planning` va `.spec-kit`, do la canh bao co chu dich:
+ban can chon framework dang active va cap metadata ro rang truoc khi cho AI implement tiep.
+
+### Goi y van hanh de doan team de on dinh
+
+- Khong bo qua `declare_intent` o dau session.
+- Moi lan doi huong lon, goi `map_context` truoc khi tiep tuc.
+- Sau mot chang viec, `compact_session` de giu tri nho co cau truc.
+- Dung `export_cycle` sau khi subagent tra ket qua de khong that lac tri thuc.
+
+Neu ban coi HiveMind nhu "bo dieu phoi context" thay vi "mot bo tool phu", chat luong session se khac biet rat ro.

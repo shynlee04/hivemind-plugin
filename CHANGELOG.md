@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- `export_cycle` now synchronizes flat `brain.hierarchy` projection after tree mutations, eliminating hierarchy/tree desync after subagent exports
+- `declare_intent` no longer overwrites per-session files with legacy active template content; legacy `active.md` is updated separately for backward compatibility
+- Stale auto-archive path now resets `hierarchy.json`, preventing orphaned tree carryover into newly created sessions
+- `soft-governance` now wires `trackSectionUpdate`, activating section repetition detection that was previously dead code
+- Persistence migration now backfills `metrics.write_without_read_count` (and related governance defaults) for older installs
+- Compaction hook now consumes and clears `next_compaction_report` after injection to avoid stale repeated report injection
+- Tool gate drift warnings now use projected turn state and persist drift score updates, removing one-turn lag and unsaved in-memory drift mutation
+
+### Changed
+- First-run setup guidance now includes project/framework snapshot hints and a deep reconnaissance protocol before implementation
+- `declare_intent` now requires completed CLI initialization (`.hivemind/config.json`) instead of silently bootstrapping default state
+- Runtime log directory is now aligned with `.hivemind/logs` for initialized projects
+- `initializePlanningDirectory` now creates `.hivemind/logs` explicitly
+
+### Documentation
+- `README.md` fully rewritten: coherent install-to-runtime flow, upgrade guidance, troubleshooting, and expanded Vietnamese section focused on practical onboarding
+
 ## [2.6.0] - 2026-02-12
 
 ### Added

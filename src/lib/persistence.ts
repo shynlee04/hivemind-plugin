@@ -46,7 +46,24 @@ export function createStateManager(projectRoot: string): StateManager {
         parsed.metrics.consecutive_same_section ??= 0;
         parsed.metrics.last_section_content ??= "";
         parsed.metrics.keyword_flags ??= [];
+        parsed.metrics.write_without_read_count ??= 0;
         parsed.metrics.tool_type_counts ??= { read: 0, write: 0, query: 0, governance: 0 };
+        parsed.metrics.governance_counters ??= {
+          out_of_order: 0,
+          drift: 0,
+          compaction: 0,
+          evidence_pressure: 0,
+          ignored: 0,
+          acknowledged: false,
+          prerequisites_completed: false,
+        };
+        parsed.framework_selection ??= {
+          choice: null,
+          active_phase: "",
+          active_spec_path: "",
+          acceptance_note: "",
+          updated_at: 0,
+        };
         // Migration: remove deprecated sentiment_signals field
         delete (parsed as any).sentiment_signals;
         return parsed;

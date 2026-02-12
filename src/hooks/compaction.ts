@@ -43,7 +43,7 @@ export function createCompactionHook(log: Logger, directory: string) {
     output: { context: string[] }
   ): Promise<void> => {
     try {
-      const state = await stateManager.load()
+      let state = await stateManager.load()
       if (!state) {
         await log.debug("Compaction: no brain state to preserve")
         return
@@ -53,6 +53,9 @@ export function createCompactionHook(log: Logger, directory: string) {
       if (state.next_compaction_report) {
         output.context.push(state.next_compaction_report);
         await log.debug(`Compaction: injected purification report (${state.next_compaction_report.length} chars)`);
+        state = { ...state, next_compaction_report: null }
+        await stateManager.save(state)
+        await log.debug("Compaction: cleared consumed purification report")
         // Don't return — still add standard context too, but purification report comes first
       }
 

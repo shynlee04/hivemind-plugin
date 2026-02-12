@@ -75,6 +75,16 @@ function buildDefaultMetrics(): MetricsState {
     last_section_content: "",
     tool_type_counts: { read: 4, write: 3, query: 2, governance: 1 },
     keyword_flags: [],
+    write_without_read_count: 0,
+    governance_counters: {
+      out_of_order: 0,
+      drift: 0,
+      compaction: 0,
+      evidence_pressure: 0,
+      ignored: 0,
+      acknowledged: false,
+      prerequisites_completed: false,
+    },
   }
 }
 
@@ -347,6 +357,12 @@ async function test_compactionHook_injectsPurificationReport() {
     assert(
       output.context[1].includes("=== HiveMind Context (post-compaction) ==="),
       "second context item is standard HiveMind context"
+    )
+
+    const consumedState = await stateManager.load()
+    assert(
+      consumedState!.next_compaction_report === null,
+      "next_compaction_report is cleared after compaction injection"
     )
 
   } finally {

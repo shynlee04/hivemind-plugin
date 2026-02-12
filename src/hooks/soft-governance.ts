@@ -36,6 +36,8 @@ import {
   computeGovernanceSeverity,
   computeUnacknowledgedCycles,
   compileIgnoredTier,
+  trackSectionUpdate,
+  resetSectionTracking,
   evaluateIgnoredResetPolicy,
   formatIgnoredEvidence,
   acknowledgeGovernanceSignals,
@@ -240,6 +242,20 @@ export function createSoftGovernanceHook(
 
       // Track tool result (success inferred — hook fires means no exception)
       detection = trackToolResult(detection, true)
+
+      // Track section repetition when map_context is called
+      if (input.tool === "map_context") {
+        const focus =
+          newState.hierarchy.action ||
+          newState.hierarchy.tactic ||
+          newState.hierarchy.trajectory
+        detection = trackSectionUpdate(detection, focus)
+      }
+
+      // New intent declaration resets repetition tracking
+      if (input.tool === "declare_intent") {
+        detection = resetSectionTracking(detection)
+      }
 
       // Scan tool output for stuck/confused keywords
       const outputText = _output.output ?? ""

@@ -159,6 +159,18 @@ async function test_export_cycle_tool() {
 
     const exportCycle = createExportCycleTool(tmpDir)
 
+    // Force flat hierarchy to drift away from tree to validate projection sync
+    const stateManager = createStateManager(tmpDir)
+    let stateBefore = await stateManager.load()
+    stateBefore = {
+      ...stateBefore!,
+      hierarchy: {
+        ...stateBefore!.hierarchy,
+        action: "stale-flat-action",
+      },
+    }
+    await stateManager.save(stateBefore)
+
     // 1. Empty findings → error
     const emptyResult = await exportCycle.execute({ outcome: "success", findings: "" })
     assert(
@@ -183,6 +195,12 @@ async function test_export_cycle_tool() {
       "tree still has root after export_cycle"
     )
 
+    const stateAfterSuccess = await stateManager.load()
+    assert(
+      stateAfterSuccess!.hierarchy.action === "Write middleware tests",
+      "export_cycle syncs flat hierarchy projection from tree"
+    )
+
     // 4. Mem was saved with cycle-intel shelf
     const memsState = await loadMems(tmpDir)
     const cycleIntelMems = memsState.mems.filter(m => m.shelf === "cycle-intel")
@@ -201,7 +219,6 @@ async function test_export_cycle_tool() {
 
     // 5. Failure outcome with pending_failure_ack
     // First, set pending_failure_ack manually
-    const stateManager = createStateManager(tmpDir)
     let state = await stateManager.load()
     state = { ...state!, pending_failure_ack: true }
     await stateManager.save(state!)
