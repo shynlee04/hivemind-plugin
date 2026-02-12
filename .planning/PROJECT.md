@@ -1,94 +1,136 @@
-# HiveMind Context Governance
+# HiveMind — Cognitive Mesh for AI Agents
 
 ## What This Is
 
-A lightweight context governance layer for OpenCode that prevents drift and manages session state across AI agent workflows. HiveMind uses a 3-level hierarchy (Trajectory → Tactic → Action) with 14 tools, 4 hooks, 5 skills, and a CLI to enforce governance, track session health, and ensure agents stay on task. It is a plugin for OpenCode and serves as the "session brain" for any AI-assisted development workflow.
+A brain that makes AI agents work faster, more efficiently, with bulletproof context drift protection. HiveMind is NOT a feature list — it is an ecosystem of 5 interconnected systems that chain intelligently, automatically, with truly effective tools. The mindset is platform-portable: today it materializes on OpenCode via their plugin SDK, tomorrow it could materialize on Claude Code or any other agentic platform.
 
 ## Core Value
 
-Every agent session must be traceable, governed, and self-aware — preventing context drift, enforcing evidence-based claims, and surviving any operational chaos (compactions, mind changes, bombardment) without human intervention.
+We create a hivemind's brain that boosts intelligence and provides users' true expertise of AI agents — work faster, more efficiently, handle with full bulletproof of context drift.
+
+## The Cognitive Mesh (5 Systems)
+
+```
+                    ┌─────────────────────┐
+                    │   Auto-Hooks &      │       ┌─────────────────────┐
+                    │   Governance        │       │  Session Management │
+                    │   (Triggers & Rules)│       │  & Auto-Export      │
+                    └────────┬────────────┘       │  (Lifecycle)        │
+                             │                    └────────┬────────────┘
+                             ▼                             ▼
+                    ┌─────────────────────────────────────────┐
+                    │        System Core (For Agents)         │
+                    │   brain state, hierarchy, detection     │
+                    └────────┬──────────────────┬─────────────┘
+                             │                  │
+                             ▼                  ▼
+                    ┌─────────────────┐  ┌─────────────────────┐
+                    │  Unique Agent   │  │   The 'Mems' Brain  │
+                    │  Tools          │  │   (Shared Knowledge  │
+                    │  (Hook-Activated│  │    Repository)       │
+                    │   Utilities)    │  │                      │
+                    └─────────────────┘  └─────────────────────┘
+```
+
+**These 5 systems are the product.** The SDK is the materialization layer.
 
 ## Requirements
 
 ### Validated
 
-- ✓ 3-level hierarchy (trajectory/tactic/action) with tree engine — existing
-- ✓ 14 tools (declare_intent, map_context, compact_session, self_rate, scan_hierarchy, save_anchor, think_back, check_drift, save_mem, list_shelves, recall_mems, hierarchy_prune, hierarchy_migrate, export_cycle) — existing
-- ✓ 4 hooks (tool-gate, soft-governance, session-lifecycle, compaction) — existing
-- ✓ 5 skills (hivemind-governance, session-lifecycle, evidence-discipline, context-integrity, delegation-intelligence) — existing
-- ✓ CLI with 23+ commands (init, status, compact, dashboard, ecosystem-check, validate, inspect, session trace) — existing
-- ✓ Evidence Gate System with 4-tier escalation (INFO→WARN→CRITICAL→DEGRADED) — existing
-- ✓ 11 counter-excuses for argue-back system — existing
-- ✓ MiMiHrHrDDMMYYYY timestamp traceability stamps on all hierarchy nodes — existing
-- ✓ Mems brain for persistent cross-session memory — existing
-- ✓ FileGuard (write-without-read tracking) — existing
-- ✓ Compaction purification with budget-capped relay chain — existing
-- ✓ Git hash tracking in dashboard and CLI — existing
-- ✓ 9-step ecosystem-check validation command — existing
+- ✓ System Core: 3-level hierarchy (trajectory/tactic/action) with navigable tree engine — existing
+- ✓ System Core: Detection engine (9 signal types, 4-tier escalation) — existing
+- ✓ System Core: Brain state (brain.json, hierarchy.json, config.json) — existing
+- ✓ Auto-Hooks: 4 hooks (tool-gate, soft-governance, session-lifecycle, compaction) — existing
+- ✓ Auto-Hooks: Evidence Gate with argue-back (11 counter-excuses) — existing
+- ✓ Auto-Hooks: FileGuard (write-without-read tracking) — existing
+- ✓ Session Management: Compact session with archive + purification — existing
+- ✓ Session Management: Compaction relay chain (budget-capped context) — existing
+- ✓ Unique Agent Tools: 14 tools (declare_intent through export_cycle) — existing
+- ✓ Unique Agent Tools: CLI with 23+ commands — existing
+- ✓ Unique Agent Tools: MiMiHrHrDDMMYYYY timestamp traceability — existing
+- ✓ Mems Brain: Persistent cross-session memory (shelves, tags, recall) — existing
+- ✓ Mems Brain: Cycle intelligence (export_cycle + auto-capture) — existing
+- ✓ 5 behavioral governance skills — existing
 - ✓ Ink TUI dashboard — existing
 - ✓ 705 test assertions passing — existing
 
 ### Active
 
-- [ ] Fix ST12: Bootstrap fires in ALL governance modes, not just strict
-- [ ] Fix ST12: Evidence discipline taught in system prompt from turn 0
-- [ ] Fix ST12: Team behavior taught in system prompt from turn 0
-- [ ] Fix ST11: Permissive mode suppresses detection signals as documented
-- [ ] GSD framework awareness: detect `.planning/` and adapt governance
-- [ ] Spec-kit framework awareness: detect `.spec-kit/` and adapt governance
-- [ ] Fast extraction tools: Repomix-style codebase consumption scripts
-- [ ] Orchestration patterns: Ralph loop-style bead/node completion tracking
-- [ ] Proper comprehensive stress test suite covering green/brownfield, all modes, all complexity levels
-- [ ] npm publish readiness (package.json, README, LICENSE verified)
+- [ ] SDK Integration: Wire `client`, `$` (BunShell), `serverUrl` into plugin (currently only `directory` + `worktree` used)
+- [ ] SDK Integration: Event-driven hooks via `event` hook (32 event types) replacing/augmenting turn-counting
+- [ ] Auto-Hooks: Bootstrap fires in ALL modes (not just strict) — ST12 fix
+- [ ] Auto-Hooks: Evidence/team teaching from turn 0 unconditionally — ST12 fix
+- [ ] Auto-Hooks: Permissive mode signal suppression — ST11 fix
+- [ ] Auto-Hooks: Framework detection (GSD/Spec-kit) as governance context
+- [ ] Session Management: Use `client.session.*` for real session lifecycle (create, messages, summarize)
+- [ ] Session Management: Auto-export via `session.messages()` instead of file-based hacks
+- [ ] Session Management: `client.tui.showToast()` for visual governance feedback
+- [ ] Unique Agent Tools: `client.file.*` + `client.find.*` for Fast Read/Extract
+- [ ] Unique Agent Tools: BunShell `$` for repomix, rg, fd subprocess spawning
+- [ ] Unique Agent Tools: Precision extraction (grep, glob, read) with JSON output
+- [ ] Mems Brain: Orchestration state (Ralph loop pattern) persisted in mems
+- [ ] Mems Brain: Just-in-time memory recall using `client.find.text()` for semantic search
+- [ ] Self-Validation: IGNORED tier, dynamic argue-back, hivemind self-check CLI
+- [ ] Stress Test: Automated suite covering all 13 conditions, 10+ compactions, framework detection
 
 ### Out of Scope
 
-- Running GSD/Spec-kit commands directly — HiveMind governs, doesn't orchestrate
-- Custom AI model support — HiveMind is model-agnostic by design
-- Real-time collaboration features — single-user governance focus
-- GUI/web dashboard — CLI + Ink TUI is sufficient for v3
+- Running GSD/Spec-kit commands — HiveMind governs, doesn't orchestrate
+- Blocking/denying tool execution — NEVER block, NEVER deny, NEVER clash with other plugins
+- Custom LLM model support — model-agnostic by design
+- GUI/web dashboard — CLI + Ink TUI + showToast is sufficient for v3
+- permission.ask hook — violates core philosophy (will clash with other plugins)
 
 ## Context
 
-**Technical Environment:**
-- OpenCode v1.1+ plugin ecosystem
-- TypeScript + Node.js (ESM)
-- 4 hooks architecture: `tool.execute.before`, `tool.execute.after`, `experimental.chat.system.transform`, `experimental.session.compacting`
-- Plugin SDK: `@opencode-ai/plugin` v0.0.5
+**The Cognitive Mesh Philosophy:**
+- 5 systems are NOT independent features — they are interconnected and chain automatically
+- System Core is the hub; all other systems read from and write to it
+- Auto-Hooks trigger based on System Core state → which updates Session Management → which feeds Mems Brain → which informs Unique Agent Tools → which update System Core (the loop)
+- Removing any one system degrades ALL others — they are a mesh, not modules
+
+**SDK as Materialization Layer:**
+- Today: OpenCode plugin SDK (`@opencode-ai/plugin` v0.0.5, `@opencode-ai/sdk` v1.1.53)
+- Core `src/lib/` NEVER imports SDK — concepts are platform-portable
+- Only `src/hooks/` touches SDK (the boundary layer)
+- `client.session.*` materializes Session Management
+- `client.tui.showToast()` materializes governance feedback
+- `client.file.*` + `client.find.*` materializes Fast Read/Extract
+- `event` hook (32 types) materializes event-driven Auto-Hooks
+- `$` (BunShell) materializes subprocess tools (repomix, rg, fd)
 
 **Prior Work:**
 - 6 completed iterations (v1.0 → v2.6.0)
-- 12 archived design/implementation documents in `docs/archive/`
-- Comprehensive hierarchy redesign completed (tree engine, detection engine, planning-fs rewrite)
-- Evidence Gate System with escalating pressure and counter-excuses
-- Ink TUI dashboard with trace panel
+- 12 archived design docs in `docs/archive/`
+- Stress test baseline: 12 PASS, 1 CONDITIONAL PASS (ST11), 1 FAIL (ST12)
 
-**Known Issues:**
-- ST12 FAIL: Bootstrap block only fires in strict mode — assisted/permissive agents get no teaching
-- ST11 CONDITIONAL PASS: Permissive mode receives warnings despite "silent tracking" documentation
-- Git hash computed at render-time, not co-persisted with hierarchy nodes
-- No manifest file-on-disk cross-check in ecosystem-check
-- No brain-to-tree consistency validation in ecosystem-check
-- getGitHash() duplicated between dashboard/server.ts and bin/hivemind-tools.cjs
+**Plugin Ecosystem Research:**
+- 9 reference plugins downloaded as repomix XML in `.planning/research/plugin-refs/`
+- 5 of 8 real-world plugins actively use SDK client (micode, oh-my-opencode, opencode-pty, plannotator, subtask2)
+- Pattern: `ctx.client.session.prompt()` for context injection, `showToast()` for feedback
+- ZERO plugins use `permission.ask` — confirms our philosophy
 
 ## Constraints
 
-- **Platform**: OpenCode plugin API — hooks cannot block tool execution (v1.1+ limitation), only track and warn
-- **Plugin SDK**: `@opencode-ai/plugin` v0.0.5 — API surface is small, must work within it
-- **Backward Compatibility**: brain.json, config.json, hierarchy.json schemas must migrate cleanly from v2.x
-- **Test Coverage**: Never drop below 700 assertions — every change must maintain or increase test count
+- **Platform**: OpenCode plugin SDK — hooks are async, cannot block execution (by design, we agree with this)
+- **SDK Caveat**: Do NOT call `client.*` during plugin init (deadlock risk — oh-my-opencode issue #1301). Only use from hooks/tools.
+- **Architecture**: `src/lib/` = platform-portable concepts. `src/hooks/` = SDK boundary. Never mix them.
+- **Backward Compat**: brain.json, config.json, hierarchy.json schemas must migrate cleanly from v2.x
+- **Test Coverage**: Never drop below 700 assertions — every change must maintain or increase
 - **Zero Agent Cooperation**: System works even when agents completely ignore governance
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Soft governance over hard blocking | OpenCode v1.1+ cannot block tools; lean into escalating pressure | ✓ Good |
-| 3-level hierarchy (trajectory/tactic/action) | Simple enough for agents to maintain, rich enough for drift detection | ✓ Good |
-| MiMiHrHrDDMMYYYY stamp format | Grep-able across all artifacts, human-readable, sortable | ✓ Good |
-| Skills as behavioral governance | Teach agents HOW to use tools, not just WHAT tools exist | ⚠️ Revisit — bootstrap doesn't fire in assisted/permissive |
-| Evidence Gate with argue-back | System challenges agent claims instead of just agreeing | ✓ Good |
-| Govern frameworks, don't run them | HiveMind detects GSD/Spec-kit but doesn't execute their commands | — Pending |
+| NEVER block/deny tools | Will clash with other plugins, violates soft governance philosophy | ✓ Core principle |
+| 5-system cognitive mesh | NOT a feature list — interconnected systems that chain automatically | ✓ Architecture |
+| SDK = materialization, not foundation | Core concepts must be portable to any platform | ✓ Architecture |
+| `src/lib/` never imports SDK | Maintains platform portability of all concepts | — Pending enforcement |
+| Event-driven over turn-counting | SDK provides 32 real events; turn-counting is a hack | — Pending implementation |
+| showToast for governance feedback | Visual feedback without blocking — aligned with soft governance | — Pending implementation |
+| session.messages() for auto-export | Real session data instead of file-based reconstruction | — Pending implementation |
 
 ---
-*Last updated: 2026-02-12 after /gsd-new-project initialization*
+*Last updated: 2026-02-12 after cognitive mesh philosophy alignment*

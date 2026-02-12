@@ -1,4 +1,85 @@
-# AGENTS.md — HiveMind Context Governance
+# AGENTS.md — Developer Guide & Governance
+
+**Current Context:** You are working on the `hivemind-plugin` repository. This is an OpenCode plugin for context governance.
+
+## 1. Build & Test Commands
+
+### Build
+- **Full Build:** `npm run build`
+  - Cleans `dist/`, compiles TypeScript, makes CLI executable.
+- **Typecheck:** `npm run typecheck` (`tsc --noEmit`)
+- **Watch Mode:** `npm run dev`
+
+### Test
+- **Run All Tests:** `npm test`
+  - Uses `tsx` test runner across `tests/**/*.test.ts`.
+- **Run Single Test File:**
+  ```bash
+  npx tsx --test tests/path/to/test.ts
+  ```
+  *Example:* `npx tsx --test tests/integration.test.ts`
+
+### Testing Pattern (Integration)
+- **No external assertion library**. Tests define a local `assert` helper:
+  ```typescript
+  function assert(cond: boolean, name: string) {
+    if (cond) {
+      passed++; process.stderr.write(`  PASS: ${name}\n`);
+    } else {
+      failed_++; process.stderr.write(`  FAIL: ${name}\n`);
+    }
+  }
+  ```
+- **Environment Setup:** Use `fs/promises` and `os.tmpdir()` to create isolated test environments.
+  ```typescript
+  import { mkdtemp, rm } from "fs/promises"
+  import { tmpdir } from "os"
+  import { join } from "path"
+
+  let tmpDir: string
+  async function setup() {
+    tmpDir = await mkdtemp(join(tmpdir(), "hm-test-"))
+    return tmpDir
+  }
+  async function cleanup() {
+    await rm(tmpDir, { recursive: true, force: true })
+  }
+  ```
+- **Structure:** `main()` function running async test functions sequentially, catching errors and exiting with code 1 on failure.
+
+## 2. Code Style Guidelines
+
+### Formatting & Syntax
+- **Indentation:** 2 spaces.
+- **Semicolons:** Avoid (mostly).
+- **Quotes:** Double quotes `"string"`.
+- **Trailing Commas:** Yes, in multi-line objects/arrays.
+- **Imports:**
+  - Use `import type` for type-only imports.
+  - **Crucial:** Local imports MUST use `.js` extension (e.g., `import { foo } from "./bar.js"`) due to `NodeNext` resolution.
+  - Grouping: External packages -> Internal modules (`../src/`) -> Utils.
+
+### Naming Conventions
+- **Variables/Functions:** `camelCase` (e.g., `createLogger`, `stateManager`).
+- **Types/Classes:** `PascalCase` (e.g., `HiveMindPlugin`, `BrainState`).
+- **Constants:** `UPPER_CASE` (e.g., `COMMANDS`, `DEFAULT_CONFIG`).
+- **Files:** `kebab-case` (e.g., `session-lifecycle.ts`, `save-mem.ts`).
+
+### TypeScript
+- **Strict Mode:** Enabled (`strict: true`).
+- **Module Resolution:** `NodeNext`.
+- **Error Handling:** Use `unknown` in catch blocks (e.g., `catch (err: unknown)`).
+- **Explicit Returns:** Prefer explicit return types for exported functions.
+
+### Architecture Patterns
+- **CLI Output:** `console.log` is allowed *only* in `src/cli.ts`. Library code (`src/lib/`, `src/tools/`, `src/hooks/`) must use the logger injected via `createLogger`.
+- **Tools:** Implemented in `src/tools/`, exporting a factory function `createXTool(dir)`.
+- **Hooks:** Implemented in `src/hooks/`.
+- **State:** Managed via `src/lib/persistence.ts` (`BrainState`, `Hierarchy`).
+
+---
+
+# HiveMind Context Governance
 
 **Version:** 2.6.0
 **Status:** Iteration 6 complete. 14 tools, 4 hooks, CLI, 5 skills, Ink TUI dashboard, 705 test assertions passing.
@@ -512,3 +593,50 @@ If a subagent result contains failure signals (failed, error, blocked, partially
 ---
 
 *This file is the ground truth for what exists in the codebase. If you see a conflict between this file and the code, the code wins — but file an issue.*
+
+<!-- HIVEMIND-GOVERNANCE-START -->
+
+## HiveMind Context Governance
+
+This project uses **HiveMind** for AI session management. It prevents drift, tracks decisions, and preserves memory across sessions.
+
+### Required Workflow
+
+1. **START** every session with:
+   ```
+   declare_intent({ mode: "plan_driven" | "quick_fix" | "exploration", focus: "What you're working on" })
+   ```
+2. **UPDATE** when switching focus:
+   ```
+   map_context({ level: "trajectory" | "tactic" | "action", content: "New focus" })
+   ```
+3. **END** when done:
+   ```
+   compact_session({ summary: "What was accomplished" })
+   ```
+
+### Available Tools (14)
+
+| Group | Tools |
+|-------|-------|
+| Core | `declare_intent`, `map_context`, `compact_session` |
+| Self-Awareness | `self_rate` |
+| Cognitive Mesh | `scan_hierarchy`, `save_anchor`, `think_back`, `check_drift` |
+| Memory | `save_mem`, `list_shelves`, `recall_mems` |
+| Hierarchy | `hierarchy_prune`, `hierarchy_migrate` |
+| Delegation | `export_cycle` |
+
+### Why It Matters
+
+- **Without `declare_intent`**: Drift detection is OFF, work is untracked
+- **Without `map_context`**: Context degrades every turn, warnings pile up
+- **Without `compact_session`**: Intelligence lost on session end
+- **`save_mem` + `recall_mems`**: Persistent memory across sessions — decisions survive
+
+### State Files
+
+- `.hivemind/brain.json` — Machine state (do not edit manually)
+- `.hivemind/hierarchy.json` — Decision tree
+- `.hivemind/sessions/` — Session files and archives
+
+<!-- HIVEMIND-GOVERNANCE-END -->

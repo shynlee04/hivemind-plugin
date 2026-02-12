@@ -1,4 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "plugin": ["hivemind-context-governance"]
+  "plugin": [
+    "hivemind-context-governance"
+  ]
 }

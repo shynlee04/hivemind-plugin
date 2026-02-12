@@ -1,115 +1,157 @@
-# Phase 1 Research: OpenCode SDK TUI Capabilities
+# Research: Phase 01 - SDK Foundation + System Core
 
-**Research Task:** SDK-RESEARCH-01  
-**Phase:** 01 - SDK Foundation + System Core  
-**Date:** 2026-02-12  
-**Status:** ✅ COMPLETE
+## Overview
 
----
+This phase establishes the "Materialization Layer" — the bridge between the pure core logic (`src/lib`) and the OpenCode environment. The goal is to wire the SDK client, BunShell, and other context objects into the plugin safely, enabling all downstream features (Session Management, TUI, Events) while maintaining a strict boundary and preventing initialization deadlocks.
 
-## Findings
+## Standard Stack
 
-### TUI APIs Available
+The OpenCode SDK provides the following standard objects which must be captured and made available:
 
-The OpenCode SDK (`@opencode-ai/sdk`) exposes a `Tui` class with the following methods:
+- **`@opencode-ai/sdk`**: The primary client for interacting with the OpenCode server (sessions, messages, files).
+- **`@opencode-ai/plugin`**: The plugin framework types and utilities.
+- **`BunShell`**: The shell execution environment provided by the plugin host (aliased as `$`).
+- **`Project`**: The current project context.
+- **`serverUrl`**: The URL of the OpenCode server.
 
-| Method | Purpose | Notes |
-|--------|---------|-------|
-| `showToast()` | Display toast notification | ✅ Available - visual feedback for governance |
-| `openHelp()` | Open help dialog | Opens built-in help panel |
-| `openSessions()` | Open session dialog | Opens built-in sessions panel |
-| `openThemes()` | Open theme dialog | Opens built-in themes panel |
-| `openModels()` | Open model dialog | Opens built-in models panel |
-| `appendPrompt()` | Append text to prompt | For prompt manipulation |
-| `submitPrompt()` | Submit current prompt | Triggers AI response |
-| `clearPrompt()` | Clear prompt input | Resets prompt area |
-| `executeCommand()` | Execute TUI command | e.g., `agent_cycle` |
-| `publish()` | Publish TUI event | Event bus integration |
-| `control.next()` | Get next TUI request | Control queue interaction |
-| `control.response()` | Submit TUI response | Control queue response |
+## Architecture Patterns
 
-### Critical Finding: No Custom Panel Support
+### 1. Module-Level Singleton (The "Context Bridge")
 
-**Custom panels are NOT supported.** There is NO `registerPanel()`, `createPanel()`, or similar API in the SDK.
+Instead of prop-drilling the `client` object through every function, or relying on global state that might be uninitialized, we use a **Module-Level Singleton** pattern restricted to `src/hooks/sdk-context.ts`.
 
-Plugins CANNOT:
-- Register custom sidebar panels
-- Create custom tab views
-- Embed custom TUI components
-- Position UI elements arbitrarily
+- **Concept**: A dedicated module that holds the references to `client`, `$`, `serverUrl`, and `project`.
+- **Initialization**: A setter function (`initSdkContext`) called *once* at the plugin entry point (`src/index.ts`).
+- **Access**: Getter functions (`getClient`, `getShell`, etc.) exported for use by hooks and tools.
+- **Safety**: The getters return the stored reference (or null), decoupling the *availability* of the client from the *initialization* of the module.
 
-Plugins CAN only:
-- Show toast notifications via `showToast()`
-- Open existing built-in dialogs (sessions, themes, models, help)
-- Append/submit/clear prompt text
-- Execute predefined TUI commands
-- Publish events to the TUI event bus
+**Why this pattern?**
+- **Lifecycle Management**: The `client` is passed *into* the plugin factory, so it's not available at module import time. The singleton allows us to capture it when the plugin starts and make it available to tools/hooks that execute *later*.
+- **Deadlock Prevention**: It allows us to store the reference *without* calling any methods on it during initialization.
 
-### Technical Constraints Identified
+### 2. Graceful Fallback (`withClient`)
 
-1. **Panel lifecycle:** Managed entirely by OpenCode host — plugins cannot control
-2. **State ownership:** TUI state is host-owned — plugins interact via API calls only
-3. **Event handling:** Limited to publish/subscribe pattern — no custom keyboard handlers
-4. **Render limits:** Toast notifications only — no custom render surfaces
-5. **UX constraints:** No custom titles/icons for plugin-created content
+To support filesystem-only modes or scenarios where the SDK is unavailable (e.g., testing, or stripped-down environments), all SDK usage must be wrapped in a graceful fallback mechanism.
 
-### Reference: SDK Client Structure
+- **Pattern**: `withClient<T>(fn: (client) => Promise<T>, fallback?: T)`
+- **Behavior**:
+  - Checks if `client` is available.
+  - If yes: Executes `fn(client)` wrapped in a try/catch block (to handle transient SDK errors).
+  - If no (or error): Returns `fallback` or `undefined`.
+- **Benefit**: This allows the core logic to remain agnostic to the presence of the SDK. Features like "show toast" or "export session" simply become no-ops if the SDK is missing, rather than crashing the plugin.
+
+### 3. Separation of Concerns (`src/lib` vs `src/hooks`)
+
+- **`src/lib/`**: **PURE**. Contains core logic, state management, and algorithms.
+  - **Constraint**: MUST NOT import `@opencode-ai/sdk` or `@opencode-ai/plugin`.
+  - **Goal**: Portable, testable, and independent of the OpenCode runtime.
+- **`src/hooks/`**: **IMPURE/ADAPTER**. Contains the integration code.
+  - **Role**: Imports `@opencode-ai/*`.
+  - **Responsibility**: Wires the pure logic to the SDK (e.g., triggering a "save" in `src/lib` and then sending a "toast" via `client.tui`).
+  - **Dependencies**: Imports `sdk-context.ts` to access the client.
+
+## Don't Hand-Roll
+
+- **SDK Client Logic**: Never attempt to manually construct HTTP requests to the OpenCode server. Always use the provided `client` instance.
+- **Shell Execution**: Do not use Node's `child_process` directly if `BunShell` (`$`) is available. The injected shell often has correct environment variables and context for the plugin.
+- **Event Bus**: Do not create a custom event emitter for OpenCode events. Use `client.event.subscribe()` (in Phase 2) to tap into the official event stream.
+
+## Common Pitfalls
+
+### 1. The Initialization Deadlock (Critical)
+
+- **The Issue**: Calling `await client.session.list()` (or any async SDK method) directly inside the plugin's `init` function (the one passed to `HiveMindPlugin`).
+- **The Cause**: The OpenCode server waits for the plugin to initialize before fully starting. If the plugin waits for the server to respond (via the client) during initialization, a deadlock occurs.
+- **The Fix**: **NEVER** call `client.*` methods in the top-level `HiveMindPlugin` function. Only **store** the reference. Call methods only inside `tool.execute`, `hook.execute`, or other event handlers which run *after* initialization is complete.
+
+### 2. Race Conditions in Singleton Access
+
+- **The Issue**: A tool or hook trying to use `getClient()` before `initSdkContext()` has finished.
+- **Mitigation**: Since `initSdkContext` is synchronous (it just assigns variables) and is called at the very beginning of `HiveMindPlugin`, and tools/hooks are registered *after* that (in the return object), the risk is minimal. However, `getClient()` returns `null` if not initialized, forcing consumers to handle the "not ready" state (usually via `withClient`).
+
+## Code Examples
+
+### 1. `src/hooks/sdk-context.ts` (The Singleton)
 
 ```typescript
-class OpencodeClient {
-  tui: Tui          // TUI operations (toast, dialogs, prompt control)
-  session: Session  // Session lifecycle (create, get, messages, etc.)
-  file: File        // File operations (read, list, status)
-  find: Find        // Search operations (text, files, symbols)
-  event: Event      // Event subscription (SSE)
-  // ... other namespaces
+import type { OpencodeClient, Project } from "@opencode-ai/sdk"
+import type { PluginInput, BunShell } from "@opencode-ai/plugin"
+
+let _client: OpencodeClient | null = null
+let _shell: BunShell | null = null
+let _serverUrl: URL | null = null
+let _project: Project | null = null
+
+export function initSdkContext(input: Pick<PluginInput, 'client' | '$' | 'serverUrl' | 'project'>) {
+  _client = input.client
+  _shell = input.$
+  _serverUrl = input.serverUrl
+  _project = input.project
+  // Log usage here if needed, but DO NOT await client calls
+}
+
+export function getClient(): OpencodeClient | null {
+  return _client
+}
+
+// ... getters for others ...
+
+export async function withClient<T>(
+  fn: (client: OpencodeClient) => Promise<T>,
+  fallback?: T
+): Promise<T | undefined> {
+  if (!_client) return fallback
+  try {
+    return await fn(_client)
+  } catch (err) {
+    // Log error safely
+    return fallback
+  }
 }
 ```
 
----
+### 2. Wiring in `src/index.ts`
 
-## Recommendation
+```typescript
+export const HiveMindPlugin: Plugin = async ({
+  directory,
+  worktree,
+  client,
+  $: shell, // Alias because '$' is awkward
+  serverUrl,
+  project
+}) => {
+  // 1. Initialize Context (Sync, No Side Effects)
+  initSdkContext({ client, $: shell, serverUrl, project })
 
-### ✅ DECISION: Defer Embedded Dashboard to v2
+  // 2. Setup Logger & Config
+  const effectiveDir = worktree || directory
+  // ...
 
-**Reasoning:**
-- Custom panels not supported by current SDK
-- `showToast()` is sufficient for Phase 2 governance visual feedback
-- Building a standalone TUI dashboard (Ink-based) is out of scope for Phase 1
-- Requesting upstream feature adds dependency we can't control
-
-**Impact on Phase 1:**
-- Proceed with original 2-plan scope (01-01, 01-02)
-- No additional TUI panel work needed
-- `showToast()` will be used in Phase 2 for drift alerts and governance feedback
-
-### Updated v2 Requirements
-
-If custom panels become available in future SDK versions:
-
-```
-SDK-06: Embedded dashboard panel using client.tui.registerPanel() (when available)
-SDK-07: Real-time session metrics visualization in panel
-SDK-08: Hierarchy tree visualization via custom panel
+  return {
+    // ... tools and hooks ...
+  }
+}
 ```
 
----
+### 3. Usage in a Tool/Hook
 
-## Deliverables
+```typescript
+import { withClient } from "./sdk-context.js"
 
-1. ✅ **Research Report** (this file) — Documents TUI API surface and constraints
-2. ✅ **Recommendation** — Defer embedded dashboard to v2
-3. ✅ **Updated Planning** — Phase 1 proceeds with original scope
+// Inside a hook or tool execution
+await withClient(async (client) => {
+  await client.tui.showToast({
+    title: "Drift Detected",
+    message: "You are straying from the plan.",
+    type: "warning"
+  })
+})
+```
 
----
+## TUI Capabilities (Previous Research)
 
-## References
+- **Available**: `showToast()`, `appendPrompt()`, `submitPrompt()`, `clearPrompt()`, built-in dialog openers (`openHelp`, `openSessions`, etc.).
+- **Not Available**: Custom panels (`registerPanel`), custom tabs, embedded components.
+- **Decision**: Use `showToast()` for Phase 2 governance feedback. Defer embedded dashboard to v2.
 
-- `@opencode-ai/sdk/dist/gen/sdk.gen.d.ts` — SDK type definitions
-- `@opencode-ai/plugin/dist/index.d.ts` — Plugin input types
-- `client.tui.showToast()` — Primary UI integration point for governance
-
----
-
-*Research completed: 2026-02-12*
-*Next: Proceed with Phase 1 execution (2 plans, no panel work required)*
