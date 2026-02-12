@@ -52,6 +52,45 @@ import {
   countCompleted,
 } from "../lib/hierarchy-tree.js"
 
+function localized(language: "en" | "vi", en: string, vi: string): string {
+  return language === "vi" ? vi : en
+}
+
+function getNextStepHint(
+  language: "en" | "vi",
+  state: { trajectory: string; tactic: string; action: string }
+): string {
+  if (!state.trajectory) {
+    return localized(
+      language,
+      "Next: call `declare_intent` to set trajectory.",
+      "Buoc tiep theo: goi `declare_intent` de dat trajectory."
+    )
+  }
+
+  if (!state.tactic) {
+    return localized(
+      language,
+      "Next: call `map_context` with level `tactic`.",
+      "Buoc tiep theo: goi `map_context` voi level `tactic`."
+    )
+  }
+
+  if (!state.action) {
+    return localized(
+      language,
+      "Next: call `map_context` with level `action`.",
+      "Buoc tiep theo: goi `map_context` voi level `action`."
+    )
+  }
+
+  return localized(
+    language,
+    "Next: continue execution and checkpoint with `map_context` when focus changes.",
+    "Buoc tiep theo: tiep tuc xu ly va checkpoint bang `map_context` khi doi focus."
+  )
+}
+
 /**
  * Generates the behavioral bootstrap block injected when session is LOCKED.
  * This is the ZERO-cooperation activation path — teaches the agent what
@@ -61,24 +100,24 @@ import {
  * Only shown when: governance_status === "LOCKED" AND turn_count <= 2
  * Budget: ~1100 chars (fits within expanded 4000-char budget)
  */
-function generateBootstrapBlock(governanceMode: string): string {
+function generateBootstrapBlock(governanceMode: string, language: "en" | "vi"): string {
   const lines: string[] = []
   lines.push("<hivemind-bootstrap>")
-  lines.push("## HiveMind Context Governance — Active")
+  lines.push(localized(language, "## HiveMind Context Governance — Active", "## HiveMind Context Governance — Dang hoat dong"))
   lines.push("")
-  lines.push("This project uses HiveMind for AI session management. You have 14 tools available.")
+  lines.push(localized(language, "This project uses HiveMind for AI session management. You have 14 tools available.", "Du an nay dung HiveMind de quan tri session AI. Ban co 14 cong cu kha dung."))
   lines.push("")
-  lines.push("### Required Workflow")
+  lines.push(localized(language, "### Required Workflow", "### Quy trinh bat buoc"))
   lines.push('1. **START**: Call `declare_intent({ mode, focus })` before any work')
   lines.push('   - mode: "plan_driven" | "quick_fix" | "exploration"')
-  lines.push("   - focus: 1-sentence description of your goal")
+  lines.push(localized(language, "   - focus: 1-sentence description of your goal", "   - focus: mo ta muc tieu trong 1 cau"))
   lines.push('2. **DURING**: Call `map_context({ level, content })` when switching focus')
   lines.push('   - level: "trajectory" | "tactic" | "action"')
-  lines.push("   - Resets drift tracking, keeps session healthy")
+  lines.push(localized(language, "   - Resets drift tracking, keeps session healthy", "   - Reset theo doi drift, giu session on dinh"))
   lines.push('3. **END**: Call `compact_session({ summary })` when done')
-  lines.push("   - Archives session, preserves memory across sessions")
+  lines.push(localized(language, "   - Archives session, preserves memory across sessions", "   - Luu tru session, bao toan tri nho qua cac session"))
   lines.push("")
-  lines.push("### Key Tools")
+  lines.push(localized(language, "### Key Tools", "### Cong cu chinh"))
   lines.push("- `scan_hierarchy` — See your decision tree")
   lines.push("- `think_back` — Refresh context after compaction")
   lines.push("- `save_mem` / `recall_mems` — Persistent cross-session memory")
@@ -86,18 +125,36 @@ function generateBootstrapBlock(governanceMode: string): string {
   lines.push("- `save_anchor` — Immutable facts that survive chaos")
   lines.push("- `export_cycle` — Capture subagent results into hierarchy + memory")
   lines.push("")
-  lines.push("### Why This Matters")
-  lines.push("Without `declare_intent`, drift detection is OFF and your work is untracked.")
-  lines.push("Without `map_context`, context degrades every turn.")
-  lines.push("Without `compact_session`, intelligence is lost on session end.")
+  lines.push(localized(language, "### Why This Matters", "### Tai sao dieu nay quan trong"))
+  lines.push(localized(language, "Without `declare_intent`, drift detection is OFF and your work is untracked.", "Khong co `declare_intent`, drift detection tat va cong viec khong duoc theo doi."))
+  lines.push(localized(language, "Without `map_context`, context degrades every turn.", "Khong co `map_context`, context se giam chat luong moi turn."))
+  lines.push(localized(language, "Without `compact_session`, intelligence is lost on session end.", "Khong co `compact_session`, tri tue tich luy se mat khi ket thuc session."))
   lines.push("")
   if (governanceMode === "strict") {
-    lines.push("**The session is LOCKED. You MUST call `declare_intent` before writing any files.**")
+    lines.push(localized(language, "**The session is LOCKED. You MUST call `declare_intent` before writing any files.**", "**Session dang LOCKED. Ban BAT BUOC goi `declare_intent` truoc khi ghi file.**"))
   } else {
-    lines.push("**The session is LOCKED. Call `declare_intent` to start working with full tracking.**")
+    lines.push(localized(language, "**The session is LOCKED. Call `declare_intent` to start working with full tracking.**", "**Session dang LOCKED. Goi `declare_intent` de bat dau voi theo doi day du.**"))
   }
   lines.push("</hivemind-bootstrap>")
   return lines.join("\n")
+}
+
+function generateEvidenceDisciplineBlock(language: "en" | "vi"): string {
+  return [
+    "<hivemind-evidence>",
+    localized(language, "Evidence discipline: prove claims with command output before concluding.", "Ky luat chung cu: xac nhan ket qua bang output lenh truoc khi ket luan."),
+    localized(language, "If verification fails, report mismatch and next corrective step.", "Neu xac minh that bai, bao cao sai lech va buoc sua tiep theo."),
+    "</hivemind-evidence>",
+  ].join("\n")
+}
+
+function generateTeamBehaviorBlock(language: "en" | "vi"): string {
+  return [
+    "<hivemind-team>",
+    localized(language, "Team behavior: keep trajectory/tactic/action synchronized with work.", "Hanh vi nhom: dong bo trajectory/tactic/action voi cong viec dang lam."),
+    localized(language, "After each meaningful shift, update with `map_context` before continuing.", "Sau moi thay doi quan trong, cap nhat bang `map_context` truoc khi tiep tuc."),
+    "</hivemind-team>",
+  ].join("\n")
 }
 
 /**
@@ -182,6 +239,7 @@ export function createSessionLifecycleHook(
 
       // STATUS (always shown)
       statusLines.push(`Session: ${state.session.governance_status} | Mode: ${state.session.mode} | Governance: ${state.session.governance_mode}`)
+      statusLines.push(getNextStepHint(config.language, state.hierarchy))
 
       // HIERARCHY: prefer tree if available, fall back to flat
       if (treeExists(directory)) {
@@ -214,9 +272,9 @@ export function createSessionLifecycleHook(
       // No hierarchy = prompt to declare intent
       if (!state.hierarchy.trajectory && !state.hierarchy.tactic && !state.hierarchy.action) {
         if (config.governance_mode === "strict") {
-          warningLines.push("No intent declared. Use declare_intent to unlock the session before writing.")
+          warningLines.push(localized(config.language, "No intent declared. Use declare_intent to unlock the session before writing.", "Chua khai bao intent. Dung declare_intent de mo khoa session truoc khi ghi file."))
         } else {
-          warningLines.push("Tip: Use declare_intent to set your work focus for better tracking.")
+          warningLines.push(localized(config.language, "Tip: Use declare_intent to set your work focus for better tracking.", "Meo: dung declare_intent de dat focus cong viec va theo doi tot hon."))
         }
       }
 
@@ -278,22 +336,22 @@ export function createSessionLifecycleHook(
         maxSignals: 3,
       })
       const signalBlock = formatSignals(signals)
-      if (signalBlock) {
+      if (signalBlock && config.governance_mode !== "permissive") {
         warningLines.push(signalBlock)
       }
 
       // Legacy drift warning (kept for backward compat with tests)
-      if (state.metrics.drift_score < 50 && !signals.some(s => s.type === "turn_count")) {
+      if (config.governance_mode !== "permissive" && state.metrics.drift_score < 50 && !signals.some(s => s.type === "turn_count")) {
         warningLines.push("⚠ High drift detected. Use map_context to re-focus.")
       }
 
       // PENDING FAILURE ACK — subagent reported failure, agent hasn't acknowledged
-      if (state.pending_failure_ack) {
+      if (config.governance_mode !== "permissive" && state.pending_failure_ack) {
         warningLines.push("⚠ SUBAGENT REPORTED FAILURE. Call export_cycle or map_context with status \"blocked\" before proceeding.")
       }
 
       // AUTOMATION LEVEL — "retard" mode = maximum pushback
-      if (config.automation_level === "retard" || config.automation_level === "full") {
+      if (config.governance_mode !== "permissive" && (config.automation_level === "retard" || config.automation_level === "full")) {
         warningLines.push("[ARGUE-BACK MODE] System WILL challenge claims without evidence. Do not proceed without validation.")
         if (state.metrics.turn_count > 0 && state.metrics.context_updates === 0) {
           warningLines.push(`⛔ ${state.metrics.turn_count} turns and 0 context updates. You MUST call map_context before continuing.`)
@@ -302,14 +360,18 @@ export function createSessionLifecycleHook(
 
       // Chain breaks
       const chainBreaks = detectChainBreaks(state)
-      if (chainBreaks.length > 0) {
+      if (config.governance_mode !== "permissive" && chainBreaks.length > 0) {
         warningLines.push("⚠ Chain breaks: " + chainBreaks.map(b => b.message).join("; "))
       }
 
       // Long session detection
       const longSession = detectLongSession(state, config.auto_compact_on_turns)
       if (longSession.isLong) {
-        warningLines.push(`⏰ ${longSession.suggestion}`)
+        if (config.governance_mode === "permissive") {
+          warningLines.push(`Info: ${longSession.suggestion}`)
+        } else {
+          warningLines.push(`⏰ ${longSession.suggestion}`)
+        }
       }
 
       // TOOL ACTIVATION SUGGESTION
@@ -346,9 +408,13 @@ export function createSessionLifecycleHook(
       // BEHAVIORAL BOOTSTRAP — inject teaching block when session is LOCKED
       // This is the ZERO-cooperation activation path (L7 fix)
       const bootstrapLines: string[] = []
-      const isBootstrapActive = state.session.governance_status === "LOCKED" && state.metrics.turn_count <= 2
+      const evidenceLines: string[] = []
+      const teamLines: string[] = []
+      const isBootstrapActive = state.metrics.turn_count <= 2
       if (isBootstrapActive) {
-        bootstrapLines.push(generateBootstrapBlock(config.governance_mode))
+        bootstrapLines.push(generateBootstrapBlock(config.governance_mode, config.language))
+        evidenceLines.push(generateEvidenceDisciplineBlock(config.language))
+        teamLines.push(generateTeamBehaviorBlock(config.language))
       }
 
       // Assemble by priority — drop lowest priority sections if over budget
@@ -356,6 +422,8 @@ export function createSessionLifecycleHook(
       const BUDGET_CHARS = isBootstrapActive ? 4000 : 2500
       const sections = [
         bootstrapLines, // P0: behavioral bootstrap (only when LOCKED, first 2 turns)
+        evidenceLines,  // P0.5: evidence discipline from turn 0
+        teamLines,      // P0.6: team behavior from turn 0
         statusLines,    // P1: always
         hierarchyLines, // P2: always
         warningLines,   // P3: if present

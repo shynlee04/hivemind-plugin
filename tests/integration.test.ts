@@ -1252,7 +1252,7 @@ async function test_bootstrapBlockAppearsWhenLocked() {
 }
 
 async function test_bootstrapBlockDisappearsWhenOpen() {
-  process.stderr.write("\n--- round5: bootstrap block disappears after declare_intent ---\n")
+  process.stderr.write("\n--- round5: bootstrap block remains in early open-turn window ---\n")
 
   const dir = await setup()
 
@@ -1271,11 +1271,11 @@ async function test_bootstrapBlockDisappearsWhenOpen() {
     const output = { system: [] as string[] }
     await hook({ sessionID: "test-session" }, output)
 
-    // Step 3: Assert bootstrap block is NOT present
+    // Step 3: Assert bootstrap block is present during turn-0..2 window, even when OPEN
     const systemText = output.system.join("\n")
     assert(
-      !systemText.includes("<hivemind-bootstrap>"),
-      "bootstrap block does NOT appear when session is OPEN"
+      systemText.includes("<hivemind-bootstrap>"),
+      "bootstrap block appears when session is OPEN but still in early turn window"
     )
     // But regular <hivemind> should still be there
     assert(
@@ -1363,6 +1363,99 @@ async function test_bootstrapBlockAssistedMode() {
   }
 }
 
+async function test_bootstrapBlockAppearsInPermissiveModeTurn0() {
+  process.stderr.write("\n--- round5: bootstrap block appears in permissive mode at turn 0 ---\n")
+
+  const dir = await setup()
+
+  try {
+    await initProject(dir, { governanceMode: "permissive", language: "en", silent: true })
+
+    const config = await loadConfig(dir)
+    const logger = await createLogger(dir, "test")
+    const hook = createSessionLifecycleHook(logger, dir, config)
+    const output = { system: [] as string[] }
+    await hook({ sessionID: "test-session" }, output)
+
+    const systemText = output.system.join("\n")
+    assert(
+      systemText.includes("<hivemind-bootstrap>"),
+      "bootstrap block appears in permissive mode during turn window"
+    )
+  } finally {
+    await cleanup()
+  }
+}
+
+async function test_permissiveModeSuppressesDetectionPressureButKeepsNavigation() {
+  process.stderr.write("\n--- round5: permissive suppresses pressure and keeps navigation ---\n")
+
+  const dir = await setup()
+
+  try {
+    await initProject(dir, { governanceMode: "permissive", language: "en", silent: true })
+
+    const stateManager = createStateManager(dir)
+    const state = await stateManager.load()
+    if (state) {
+      state.metrics.turn_count = 10
+      state.metrics.consecutive_failures = 5
+      state.metrics.keyword_flags = ["stuck", "retry"]
+      state.metrics.tool_type_counts = { read: 10, write: 0, query: 0, governance: 0 }
+      state.hierarchy.trajectory = "Permissive navigation"
+      state.hierarchy.tactic = "Observe state"
+      state.hierarchy.action = "Render context"
+      await stateManager.save(state)
+    }
+
+    const config = await loadConfig(dir)
+    const logger = await createLogger(dir, "test")
+    const hook = createSessionLifecycleHook(logger, dir, config)
+    const output = { system: [] as string[] }
+    await hook({ sessionID: "test-session" }, output)
+
+    const systemText = output.system.join("\n")
+    assert(
+      systemText.includes("Session:") && systemText.includes("Next:"),
+      "permissive mode still includes navigation context"
+    )
+    assert(
+      !systemText.includes("[ALERTS]") && !systemText.includes("[WARN]") && !systemText.includes("[CRITICAL]"),
+      "permissive mode suppresses detection-pressure warnings"
+    )
+  } finally {
+    await cleanup()
+  }
+}
+
+async function test_languageRoutingKeepsToolNamesEnglish() {
+  process.stderr.write("\n--- round5: language routing keeps tool names English ---\n")
+
+  const dir = await setup()
+
+  try {
+    await initProject(dir, { governanceMode: "strict", language: "vi", silent: true })
+
+    const config = await loadConfig(dir)
+    const logger = await createLogger(dir, "test")
+    const hook = createSessionLifecycleHook(logger, dir, config)
+    const output = { system: [] as string[] }
+    await hook({ sessionID: "test-session" }, output)
+
+    const systemText = output.system.join("\n")
+    assert(
+      systemText.includes("Dang hoat dong") || systemText.includes("Quy trinh bat buoc"),
+      "localized surrounding guidance is rendered in configured language"
+    )
+    assert(
+      systemText.includes("declare_intent") && systemText.includes("map_context") && systemText.includes("compact_session"),
+      "tool names remain English in localized output"
+    )
+  } finally {
+    await cleanup()
+  }
+}
+
 // ─── Main ────────────────────────────────────────────────────────────
 
 async function main() {
@@ -1397,6 +1490,9 @@ async function main() {
   await test_bootstrapBlockDisappearsWhenOpen()
   await test_bootstrapBlockDisappearsAfterTurnCount()
   await test_bootstrapBlockAssistedMode()
+  await test_bootstrapBlockAppearsInPermissiveModeTurn0()
+  await test_permissiveModeSuppressesDetectionPressureButKeepsNavigation()
+  await test_languageRoutingKeepsToolNamesEnglish()
 
   process.stderr.write(`\n=== Integration: ${passed} passed, ${failed_} failed ===\n`)
   process.exit(failed_ > 0 ? 1 : 0)
