@@ -6,6 +6,9 @@
 import { initSdkContext, getClient, getShell, getServerUrl, getProject, resetSdkContext, isSdkAvailable, withClient } from "../src/hooks/sdk-context.js"
 import { createEventHandler } from "../src/hooks/event-handler.js"
 import { createLogger } from "../src/lib/logging.js"
+import { createStateManager, saveConfig } from "../src/lib/persistence.js"
+import { createConfig } from "../src/schemas/config.js"
+import { createBrainState, generateSessionId } from "../src/schemas/brain-state.js"
 import { mkdtemp, rm, readFile } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
@@ -177,6 +180,56 @@ async function test_eventHandler() {
   await cleanup()
 }
 
+async function test_eventHandlerIdleEscalationAndCompactionInfoToast() {
+  process.stderr.write("\n--- sdk-foundation: idle escalation + compaction info toast ---\n")
+
+  const dir = await setup()
+  const log = await createLogger(dir, "test")
+
+  const config = createConfig({ stale_session_days: 3 })
+  await saveConfig(dir, config)
+
+  const sm = createStateManager(dir)
+  const state = createBrainState(generateSessionId(), config)
+  state.metrics.drift_score = 40
+  state.session.last_activity = Date.now() - (5 * 86_400_000)
+  await sm.save(state)
+
+  const toasts: Array<{ message: string; variant: string }> = []
+  initSdkContext({
+    client: {
+      tui: {
+        showToast: async ({ body }: any) => {
+          toasts.push({ message: body.message, variant: body.variant })
+        },
+      },
+    } as any,
+    $: mockShell,
+    serverUrl: mockServerUrl,
+    project: mockProject,
+  })
+
+  const handler = createEventHandler(log, dir)
+
+  await handler({ event: { type: "session.idle", properties: { sessionID: "s1" } } as any })
+  await handler({ event: { type: "session.idle", properties: { sessionID: "s1" } } as any })
+  await handler({ event: { type: "session.compacted", properties: { sessionID: "s1" } } as any })
+
+  const warningToast = toasts.find(t => t.variant === "warning" && t.message.includes("Drift risk detected"))
+  const errorToast = toasts.find(t => t.variant === "error" && t.message.includes("Drift risk detected"))
+  const infoCompactionToast = toasts.find(t => t.variant === "info" && t.message.includes("Session compacted"))
+
+  assert(!!warningToast, "first idle drift toast is warning")
+  assert(!!errorToast, "repeated idle drift toast escalates to error")
+  assert(!!infoCompactionToast, "compaction toast remains info")
+
+  const updated = await sm.load()
+  assert(updated!.metrics.governance_counters.compaction >= 1, "compaction counter incremented")
+
+  resetSdkContext()
+  await cleanup()
+}
+
 async function test_architectureBoundary() {
   process.stderr.write("\n--- sdk-foundation: architecture boundary ---\n")
   
@@ -234,6 +287,7 @@ async function main() {
   await test_withClientFallback()
   await test_pluginEntryWiring()
   await test_eventHandler()
+  await test_eventHandlerIdleEscalationAndCompactionInfoToast()
   await test_architectureBoundary()
   await test_backwardCompatibility()
   

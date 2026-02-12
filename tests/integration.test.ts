@@ -17,6 +17,8 @@ import { createThinkBackTool } from "../src/tools/think-back.js"
 import { createCheckDriftTool } from "../src/tools/check-drift.js"
 import { createCompactionHook } from "../src/hooks/compaction.js"
 import { createSessionLifecycleHook } from "../src/hooks/session-lifecycle.js"
+import { createEventHandler } from "../src/hooks/event-handler.js"
+import { initSdkContext, resetSdkContext } from "../src/hooks/sdk-context.js"
 import { createLogger } from "../src/lib/logging.js"
 import { loadConfig } from "../src/lib/persistence.js"
 import { loadAnchors, saveAnchors, addAnchor } from "../src/lib/anchors.js"
@@ -1456,6 +1458,62 @@ async function test_languageRoutingKeepsToolNamesEnglish() {
   }
 }
 
+async function test_eventIdleEmitsStaleAndCompactionToasts() {
+  process.stderr.write("\n--- round5: session.idle drives stale toasts and compaction stays info ---\n")
+
+  const dir = await setup()
+
+  try {
+    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
+
+    const stateManager = createStateManager(dir)
+    const state = await stateManager.load()
+    if (state) {
+      state.metrics.drift_score = 40
+      state.session.last_activity = Date.now() - (5 * 86_400_000)
+      await stateManager.save(state)
+    }
+
+    const toasts: Array<{ message: string; variant: string }> = []
+    initSdkContext({
+      client: {
+        tui: {
+          showToast: async ({ body }: any) => {
+            toasts.push({ message: body.message, variant: body.variant })
+          },
+        },
+      } as any,
+      $: (() => {}) as any,
+      serverUrl: new URL("http://localhost:3000"),
+      project: { id: "test", worktree: dir, time: { created: Date.now() } } as any,
+    })
+
+    const logger = await createLogger(dir, "test")
+    const handler = createEventHandler(logger, dir)
+
+    await handler({ event: { type: "session.idle", properties: { sessionID: "session-a" } } as any })
+    await handler({ event: { type: "session.idle", properties: { sessionID: "session-a" } } as any })
+    await handler({ event: { type: "session.compacted", properties: { sessionID: "session-a" } } as any })
+
+    assert(
+      toasts.some(t => t.variant === "warning" && t.message.includes("Drift risk detected")),
+      "idle emits warning toast before escalation"
+    )
+    assert(
+      toasts.some(t => t.variant === "error" && t.message.includes("Drift risk detected")),
+      "repeated idle signal escalates drift toast to error"
+    )
+    assert(
+      toasts.some(t => t.variant === "info" && t.message.includes("Session compacted")),
+      "compaction toast is informational"
+    )
+
+  } finally {
+    resetSdkContext()
+    await cleanup()
+  }
+}
+
 // ─── Main ────────────────────────────────────────────────────────────
 
 async function main() {
@@ -1493,6 +1551,7 @@ async function main() {
   await test_bootstrapBlockAppearsInPermissiveModeTurn0()
   await test_permissiveModeSuppressesDetectionPressureButKeepsNavigation()
   await test_languageRoutingKeepsToolNamesEnglish()
+  await test_eventIdleEmitsStaleAndCompactionToasts()
 
   process.stderr.write(`\n=== Integration: ${passed} passed, ${failed_} failed ===\n`)
   process.exit(failed_ > 0 ? 1 : 0)
