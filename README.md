@@ -2,7 +2,7 @@
 
 A lightweight context governance layer for [OpenCode](https://opencode.ai) that prevents drift, manages session state, and preserves memory across agent lifecycles.
 
-**14 tools** | **4 hooks** | **5 automation levels** | **Ink TUI dashboard** | **705 test assertions**
+**14 tools** | **4 hooks** | **5 automation levels** | **Ink TUI dashboard** | **Interactive setup wizard**
 
 ## Quick Start
 
@@ -10,14 +10,26 @@ A lightweight context governance layer for [OpenCode](https://opencode.ai) that 
 # Install
 npm install hivemind-context-governance
 
-# Initialize in your project
-npx hivemind init
+# Interactive setup wizard (recommended)
+npx hivemind-context-governance
 
-# Check status
-npx hivemind status
+# Or initialize with flags
+npx hivemind-context-governance init --mode strict --lang vi
 ```
 
+The interactive wizard guides you through:
+- **Governance mode** — strict / assisted / permissive
+- **Language** — English / Tiếng Việt
+- **Automation level** — manual → guided → assisted → full → retard
+- **Expert level** — beginner → intermediate → advanced → expert
+- **Output style** — explanatory / outline / skeptical / architecture / minimal
+- **Constraints** — code review, TDD enforcement
+
 This creates a `.hivemind/` directory and registers the plugin in `opencode.json`.
+
+### First-Run Detection
+
+When the plugin loads in OpenCode without configuration, it automatically injects setup guidance into the system prompt — telling the agent to guide you through `npx hivemind-context-governance`.
 
 ## How It Works
 
@@ -38,12 +50,6 @@ The plugin fires 4 hooks automatically — injecting context into every LLM turn
 | **strict** | Session starts LOCKED. Warns on writes without intent. | High-compliance projects |
 | **assisted** | Session starts OPEN. Guidance without blocking. | Most projects (default) |
 | **permissive** | Always OPEN. Silent tracking only. | Maximum autonomy |
-
-```bash
-# Initialize with a specific mode
-npx hivemind init --mode strict
-npx hivemind init --mode assisted --lang vi
-```
 
 ## Tools (14)
 
@@ -102,7 +108,7 @@ compact_session({ summary: "Auth middleware complete" })
 |------|------|--------------|
 | `export_cycle` | After subagent returns | Capture subagent results into hierarchy + mems. |
 
-## Hooks (4)
+## Hooks (4 + event handler)
 
 | Hook | Event | Purpose |
 |------|-------|---------|
@@ -110,46 +116,80 @@ compact_session({ summary: "Auth middleware complete" })
 | `tool.execute.before` | Before tool calls | Governance enforcement (warns on writes without intent) |
 | `tool.execute.after` | After tool calls | Tracks metrics, violations, drift detection |
 | `experimental.session.compacting` | Context compaction | Preserves hierarchy across LLM context boundaries |
+| `event` | SDK events | Handles session.idle, session.compacted, file.edited |
 
 > **Note:** In OpenCode v1.1+, `tool.execute.before` cannot block execution. HiveMind provides governance through warnings and tracking only.
-
-## Configuration
-
-Configuration is stored in `.hivemind/config.json` and re-read from disk on every hook invocation (Rule 6: config persistence).
-
-```json
-{
-  "governance_mode": "assisted",
-  "max_turns_before_warning": 5,
-  "auto_compact_on_turns": 15,
-  "stale_session_days": 3,
-  "commit_suggestion_threshold": 3,
-  "max_active_md_lines": 50,
-  "language": "en"
-}
-```
 
 ## CLI
 
 ```bash
-npx hivemind init              # Initialize HiveMind in a project
-npx hivemind init --mode strict # Initialize with strict governance
-npx hivemind init --automation retard # "I am retard — lead me"
-npx hivemind status            # Check current state
-npx hivemind dashboard --lang vi --refresh 1 # Live TUI dashboard
-npx hivemind help              # Show help
-npx hivemind --help            # Show help
+npx hivemind-context-governance              # Interactive setup wizard
+npx hivemind-context-governance init         # Same as above
+npx hivemind-context-governance init --mode strict  # Non-interactive with flags
+npx hivemind-context-governance status       # Current session and governance state
+npx hivemind-context-governance settings     # View current configuration
+npx hivemind-context-governance dashboard    # Live TUI dashboard (requires ink + react)
+npx hivemind-context-governance help         # Show all commands and options
 ```
+
+### Live TUI Dashboard
+
+```bash
+# Install optional dependencies
+npm install ink react
+
+# Launch dashboard
+npx hivemind-context-governance dashboard --lang vi --refresh 1
+```
+
+The Ink-based TUI dashboard shows live panels for:
+- **Session** — status, mode, governance, automation level
+- **Hierarchy** — navigable ASCII tree with node stats
+- **Metrics** — drift score, turns, files, violations, health score
+- **Escalation Alerts** — evidence-based warnings with tier (INFO/WARN/CRITICAL/DEGRADED)
+- **Traceability** — timestamps, git hash, session timeline
+
+Controls: `[q]` quit, `[l]` toggle language, `[r]` refresh.
 
 ### Ecosystem Verification (`bin/hivemind-tools.cjs`)
 
 ```bash
-node bin/hivemind-tools.cjs ecosystem-check # Full truth check + semantic validation + trace metadata
+node bin/hivemind-tools.cjs ecosystem-check # Full truth check + semantic validation
 node bin/hivemind-tools.cjs source-audit    # Verify all source files
 node bin/hivemind-tools.cjs list-tools      # List all 14 tools
 node bin/hivemind-tools.cjs list-hooks      # List all 4 hooks
 node bin/hivemind-tools.cjs verify-package  # Check npm package completeness
 ```
+
+## Configuration
+
+Configuration is stored in `.hivemind/config.json` and re-read from disk on every hook invocation.
+
+```json
+{
+  "governance_mode": "assisted",
+  "language": "en",
+  "automation_level": "assisted",
+  "max_turns_before_warning": 5,
+  "auto_compact_on_turns": 15,
+  "stale_session_days": 3,
+  "max_active_md_lines": 50,
+  "agent_behavior": {
+    "language": "en",
+    "expert_level": "intermediate",
+    "output_style": "explanatory",
+    "constraints": {
+      "require_code_review": false,
+      "enforce_tdd": false,
+      "max_response_tokens": 2000,
+      "explain_reasoning": true,
+      "be_skeptical": false
+    }
+  }
+}
+```
+
+View settings anytime with `npx hivemind-context-governance settings`.
 
 ## Project Structure
 
@@ -194,32 +234,6 @@ node bin/hivemind-tools.cjs verify-package  # Check npm package completeness
    compact_session({ summary: "Auth system foundation complete" })
 ```
 
-## Test Coverage
-
-| Component | Assertions |
-|-----------|-----------|
-| Schema (BrainState, Hierarchy) | 35 |
-| Init + Planning FS | 30 |
-| Tool Gate (governance) | 12 |
-| Soft Governance (tracking) | 27 |
-| Self-Rate Tool | 28 |
-| Complexity Detection | 28 |
-| Integration (E2E workflow) | 84 |
-| Auto-Hooks Pure Functions | 39 |
-| Session Export | 32 |
-| Session Structure | 18 |
-| Round 3 Tools (Cognitive Mesh) | 32 |
-| Round 4 Mems Brain | 40 |
-| Hierarchy Tree Engine | 55 |
-| Detection Engine | 45 |
-| Evidence Gate System | 44 |
-| Compact Purification | 34 |
-| Entry Chain (E2E lifecycle) | 69 |
-| Cycle Intelligence | 36 |
-| Dashboard TUI | 9 |
-| Ecosystem Check CLI | 8 |
-| **Total** | **705** |
-
 ## License
 
 MIT
@@ -235,8 +249,14 @@ HiveMind là một lớp quản lý ngữ cảnh nhẹ cho OpenCode, giúp ngăn
 ### Bắt đầu nhanh
 
 ```bash
+# Cài đặt
 npm install hivemind-context-governance
-npx hivemind init --lang vi
+
+# Trình hướng dẫn tương tác (khuyến nghị)
+npx hivemind-context-governance
+
+# Hoặc cài đặt với flags
+npx hivemind-context-governance init --lang vi --mode assisted
 ```
 
 ### Các chế độ quản lý
@@ -255,6 +275,15 @@ npx hivemind init --lang vi
 - **Bộ nhớ:** `save_mem`, `list_shelves`, `recall_mems`
 - **Phân cấp:** `hierarchy_prune`, `hierarchy_migrate`
 - **Chu trình:** `export_cycle`
+
+### CLI
+
+```bash
+npx hivemind-context-governance              # Trình hướng dẫn tương tác
+npx hivemind-context-governance status       # Trạng thái hiện tại
+npx hivemind-context-governance settings     # Xem cấu hình
+npx hivemind-context-governance dashboard    # Bảng điều khiển TUI (cần ink + react)
+```
 
 ### Quy trình làm việc
 

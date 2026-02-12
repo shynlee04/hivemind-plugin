@@ -16,6 +16,8 @@
  * P5: Config re-read from disk each invocation (Rule 6)
  */
 
+import { existsSync } from "node:fs"
+import { join } from "node:path"
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import { generateAgentBehaviorPrompt } from "../schemas/config.js"
@@ -145,6 +147,43 @@ function generateBootstrapBlock(governanceMode: string, language: "en" | "vi"): 
   return lines.join("\n")
 }
 
+/**
+ * Generates the setup guidance block when HiveMind is NOT initialized.
+ * This fires when the plugin is loaded but `hivemind init` was never run
+ * (no config.json exists). Guides the user to configure HiveMind.
+ *
+ * Highest priority — shown before any other governance content.
+ */
+function generateSetupGuidanceBlock(): string {
+  return [
+    "<hivemind-setup>",
+    "## HiveMind Context Governance — Setup Required",
+    "",
+    "HiveMind plugin is loaded but **not yet configured** for this project.",
+    "",
+    "Tell the user to run the setup wizard in their terminal:",
+    "",
+    "```",
+    "npx hivemind-context-governance",
+    "```",
+    "",
+    "This launches an interactive wizard to configure:",
+    "- **Governance mode** (strict / assisted / permissive)",
+    "- **Language** (English / Tiếng Việt)",
+    "- **Automation level** (manual → guided → assisted → full → retard)",
+    "- **Expert level** and **output style**",
+    "- **Constraints** (code review, TDD)",
+    "",
+    "Until configured, HiveMind tools are available but drift detection and session tracking are running with defaults.",
+    "",
+    "**Quick alternative** (non-interactive):",
+    "```",
+    "npx hivemind-context-governance --mode assisted",
+    "```",
+    "</hivemind-setup>",
+  ].join("\n")
+}
+
 function generateEvidenceDisciplineBlock(language: "en" | "vi"): string {
   return [
     "<hivemind-evidence>",
@@ -191,6 +230,17 @@ export function createSessionLifecycleHook(
 
       // Rule 6: Re-read config from disk each invocation
       const config = await loadConfig(directory)
+
+      // FIRST-RUN DETECTION: If config.json doesn't exist, the user
+      // never ran `hivemind init`. Inject setup guidance instead of
+      // full governance — teach them how to configure.
+      const configPath = join(directory, ".hivemind", "config.json")
+      if (!existsSync(configPath)) {
+        const setupBlock = generateSetupGuidanceBlock()
+        output.system.push(setupBlock)
+        await log.info("HiveMind not configured — injected setup guidance")
+        return
+      }
 
       // Load or create brain state
       let state = await stateManager.load()

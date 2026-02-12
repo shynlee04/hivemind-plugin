@@ -59,6 +59,7 @@
     "access": "public"
   },
   "dependencies": {
+    "@clack/prompts": "^1.0.0",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
