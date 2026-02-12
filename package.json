@@ -37,7 +37,8 @@
     "build": "npm run clean && tsc && chmod +x dist/cli.js",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
-    "test": "tsx --test tests/**/*.test.ts",
+    "lint:boundary": "bash scripts/check-sdk-boundary.sh",
+    "test": "bash scripts/check-sdk-boundary.sh && tsx --test tests/**/*.test.ts",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "keywords": [
