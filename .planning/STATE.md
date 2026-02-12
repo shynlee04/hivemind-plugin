@@ -9,9 +9,9 @@ See: `.planning/PROJECT.md` (updated 2026-02-12)
 
 ## Current Position
 
-Phase 2 of 6 | Plan 1 of 4 complete | Status: Phase 2 In Progress
+Phase 2 of 6 | Plan 2 of 4 complete | Status: Phase 2 In Progress
 
-Progress: █████░░░░░░░░░░░░░░ 25% (Phase 2 in progress)
+Progress: ██████████░░░░░░░░░░ 50% (Phase 2 in progress)
 
 ## Phase Summary
 
@@ -31,6 +31,7 @@ Progress: █████░░░░░░░░░░░░░░ 25% (Phase 2
 | 01 | 01 | 3min | 2 | 3 |
 | 01 | 02 | 15min | 3 | 6 |
 | 02 | 01 | 4 min | 2 | 5 |
+| 02 | 02 | 4 min | 2 | 6 |
 
 ## Accumulated Context
 
@@ -51,10 +52,13 @@ Progress: █████░░░░░░░░░░░░░░ 25% (Phase 2
 13. **Lock severity mapping in `src/lib/detection.ts` as shared governance source of truth**
 14. **Use `turn_count <= 2` bootstrap gate across strict, assisted, and permissive modes**
 15. **Suppress detection-pressure warnings in permissive mode while keeping navigation context**
+16. **Use `governance_counters` as single escalation source for toast severity progression**
+17. **Record toast cooldown only after successful SDK dispatch to preserve first visible signal**
+18. **Route compaction feedback through shared adapter but keep variant fixed to `info`**
 
 ### Pending
 
-- Execute `02-02-PLAN.md` in Phase 2.
+- Execute `02-03-PLAN.md` in Phase 2.
 
 ### Research Outcome: SDK-RESEARCH-01
 
@@ -69,5 +73,5 @@ Progress: █████░░░░░░░░░░░░░░ 25% (Phase 2
 ## Session Continuity
 
 Last session: 2026-02-12
-Stopped at: Completed 02-01-PLAN.md
+Stopped at: Completed 02-02-PLAN.md
 Resume: /gsd-execute-phase 02-auto-hooks-governance-mesh
