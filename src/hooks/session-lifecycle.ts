@@ -547,6 +547,9 @@ export function createSessionLifecycleHook(
           await log.info(`Auto-archived stale session ${staleSessionId}`);
         } catch (archiveError) {
           await log.error(`Failed to auto-archive stale session: ${archiveError}`);
+          output.system.push(
+            `[HIVEMIND][AUTO-ARCHIVE FAILED] Stale session archival failed; session remains active. Reason: ${archiveError}`
+          )
         }
       }
 

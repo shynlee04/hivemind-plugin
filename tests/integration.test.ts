@@ -394,6 +394,59 @@ async function test_staleSessionAutoArchived() {
   }
 }
 
+async function test_staleSessionArchiveFailureIsSurfacedAndNonDestructive() {
+  process.stderr.write("\n--- integration: stale archive failure is surfaced and non-destructive ---\n")
+
+  const dir = await setup()
+
+  try {
+    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
+
+    const declareIntentTool = createDeclareIntentTool(dir)
+    await declareIntentTool.execute(
+      { mode: "plan_driven", focus: "Stale archive failure test" }
+    )
+
+    const stateManager = createStateManager(dir)
+    const state = await stateManager.load()
+    const originalSessionId = state!.session.id
+    state!.session.last_activity = Date.now() - (4 * 86_400_000)
+    await stateManager.save(state!)
+
+    // Force archiveSession failure by replacing archive directory with a file.
+    const p = getEffectivePaths(dir)
+    await rm(p.archiveDir, { recursive: true, force: true })
+    await writeFile(p.archiveDir, "archive-dir-blocked")
+
+    const logMessages: string[] = []
+    const logger = {
+      debug: async (msg: string) => { logMessages.push(`DEBUG: ${msg}`) },
+      info: async (msg: string) => { logMessages.push(`INFO: ${msg}`) },
+      warn: async (msg: string) => { logMessages.push(`WARN: ${msg}`) },
+      error: async (msg: string) => { logMessages.push(`ERROR: ${msg}`) },
+    }
+
+    const config = await loadConfig(dir)
+    const hook = createSessionLifecycleHook(logger, dir, config)
+    const output = { system: [] as string[] }
+    await hook({ sessionID: "test-session" }, output)
+
+    const after = await stateManager.load()
+    assert(after !== null, "state still exists after stale archive failure")
+    assert(after!.session.id === originalSessionId, "session is not reset when stale archive fails")
+    assert(
+      output.system.some((s) => s.includes("AUTO-ARCHIVE FAILED")),
+      "lifecycle injects visible warning when stale archive fails",
+    )
+    assert(
+      logMessages.some((line) => line.includes("ERROR: Failed to auto-archive stale session")),
+      "stale archive failure is logged as error",
+    )
+  } finally {
+    await cleanup()
+  }
+}
+
 async function test_firstRunSetupGuidanceIncludesReconProtocol() {
   process.stderr.write("\n--- integration: first-run setup guidance includes deep recon protocol ---\n")
 
@@ -1766,6 +1819,7 @@ async function main() {
   await test_driftReset()
   await test_compactionHookPreservesHierarchy()
   await test_staleSessionAutoArchived()
+  await test_staleSessionArchiveFailureIsSurfacedAndNonDestructive()
   await test_firstRunSetupGuidanceIncludesReconProtocol()
   await test_persistenceMigratesWriteWithoutReadCount()
   await test_chainBreaksInjected()
