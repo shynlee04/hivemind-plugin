@@ -2,7 +2,7 @@
  * StateManager - Disk persistence for brain state
  */
 
-import { readFile, writeFile, mkdir, rename, unlink, open, readdir, stat } from "fs/promises"
+import { readFile, writeFile, mkdir, rename, unlink, open, readdir, stat, copyFile } from "fs/promises"
 import type { FileHandle } from "fs/promises"
 import { existsSync } from "fs"
 import { dirname, join } from "path"
@@ -199,7 +199,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             const timestampedBakPath = brainPath + `.bak.${timestamp}`
             
             // Copy existing file to timestamped backup
-            await writeFile(timestampedBakPath, await readFile(brainPath, "utf-8"))
+            await copyFile(brainPath, timestampedBakPath)
             
             // Also maintain simple .bak file for backward compatibility
             await rename(brainPath, bakPath)
