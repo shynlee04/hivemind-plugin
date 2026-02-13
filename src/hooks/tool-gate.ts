@@ -125,20 +125,8 @@ export function createToolGateHook(
           const guidance = `Framework conflict: both .planning and .spec-kit detected. Consolidate first, then choose framework via locked menu metadata (active_phase or active_spec_path).${guidanceSuffix}`
 
           if (!CONFLICT_SAFE_TOOLS.has(toolName)) {
-            // In strict mode, block execution for framework conflicts
-            if (config.governance_mode === "strict") {
-              return {
-                allowed: false,
-                warning: `Framework conflict blocks tool execution in strict mode: ${guidance}`,
-                signal: {
-                  type: "framework",
-                  severity: "warning",
-                  message: guidance,
-                },
-              }
-            }
-
-            // In assisted/permissive modes, continue with advisory
+            // HC1 COMPLIANCE: Never block tool execution. Soft governance only.
+            // Even in strict mode, we provide advisory warnings but allow the tool.
             return {
               allowed: true,
               warning: buildFrameworkAdvisory(guidance, toolName),

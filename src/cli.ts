@@ -21,7 +21,7 @@ import { createStateManager, loadConfig } from "./lib/persistence.js"
 import { listArchives } from "./lib/planning-fs.js"
 import { getEffectivePaths } from "./lib/paths.js"
 
-const COMMANDS = ["init", "status", "compact", "dashboard", "settings", "purge", "help"] as const
+const COMMANDS = ["init", "status", "scan", "compact", "dashboard", "settings", "purge", "help"] as const
 type Command = (typeof COMMANDS)[number]
 
 function printHelp(): void {
@@ -35,6 +35,7 @@ Commands:
   (default)     Interactive setup wizard (or initialize with flags)
   init          Same as default — initialize project
   status        Show current session and governance state
+  scan          Scan project and update HiveMind context (Phase 8 Automation)
   settings      Show current configuration
   compact       Archive current session and reset (OpenCode only)
   dashboard     Launch live TUI dashboard
@@ -232,6 +233,17 @@ async function main(): Promise<void> {
     case "settings":
       await showSettings(directory)
       break
+
+    case "scan": {
+      try {
+        const { runScanCommand } = await import("./commands/scan.js")
+        await runScanCommand(directory)
+      } catch (err: unknown) {
+        console.error("Scan failed:", err)
+        process.exit(1)
+      }
+      break
+    }
 
     case "compact":
       // eslint-disable-next-line no-console
