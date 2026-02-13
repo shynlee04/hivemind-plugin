@@ -127,6 +127,17 @@ export function createToolGateHook(
               severity: "advisory",
               message: guidance,
             },
+          // Advisory only - no blocking (HC1 compliance)
+          if (!CONFLICT_SAFE_TOOLS.has(toolName)) {
+            return {
+              allowed: true,
+              warning: buildFrameworkAdvisory(guidance, toolName),
+              signal: {
+                type: "framework",
+                severity: "advisory",
+                message: guidance,
+              },
+            }
           }
         }
       }
