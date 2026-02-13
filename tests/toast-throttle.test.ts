@@ -43,7 +43,7 @@ function testToastThrottle() {
     // 1. Basic Emission & Cooldown
     // First call should succeed (no record)
     check(
-      shouldEmitToast("test", "key1") === true,
+      shouldEmitToast("test", "key1"),
       "First call to shouldEmitToast returns true"
     )
 
