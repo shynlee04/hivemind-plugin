@@ -280,6 +280,47 @@ async function test_backwardCompatibility() {
   assert(typeof Hooks.getClient === "function", "getClient exported from hooks barrel")
 }
 
+async function test_doubleInitAndConcurrency() {
+  process.stderr.write("\n--- sdk-foundation: double init and concurrency ---\n")
+
+  resetSdkContext()
+
+  initSdkContext({
+    client: mockClient,
+    $: mockShell,
+    serverUrl: mockServerUrl,
+    project: mockProject,
+  })
+
+  const newClient = { ...mockClient, id: "new" }
+  initSdkContext({
+    client: newClient,
+    $: mockShell,
+    serverUrl: mockServerUrl,
+    project: mockProject,
+  })
+
+  assert(getClient() === newClient, "initSdkContext updates singleton on re-initialization")
+
+  const runs = 10
+  let counter = 0
+  const results = await Promise.all(
+    Array.from({ length: runs }, () =>
+      withClient(async () => {
+        await new Promise(resolve => setTimeout(resolve, 10))
+        counter++
+        return "ok"
+      }),
+    ),
+  )
+
+  assert(results.length === runs, "all concurrent withClient calls resolve")
+  assert(results.every((r) => r === "ok"), "all concurrent withClient calls return callback result")
+  assert(counter === runs, "all concurrent withClient callbacks execute")
+
+  resetSdkContext()
+}
+
 // ─── Main ────────────────────────────────────────────────────────────
 
 async function main() {
@@ -292,6 +333,7 @@ async function main() {
   await test_eventHandlerIdleEscalationAndCompactionInfoToast()
   await test_architectureBoundary()
   await test_backwardCompatibility()
+  await test_doubleInitAndConcurrency()
   
   process.stderr.write(`\n=== SDK Foundation: ${passed} passed, ${failed_} failed ===\n`)
   process.exit(failed_ > 0 ? 1 : 0)

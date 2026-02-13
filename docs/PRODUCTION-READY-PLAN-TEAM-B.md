@@ -27,6 +27,7 @@ This section is the live implementation tracker used while hardening `master`.
 | I7 | P2 persistence backup cleanup observability | ✅ Done | Added warning logs for old-backup cleanup failures and deterministic backup ordering with regression coverage |
 | I8 | P1 lock-path reliability + stale-lock observability | ✅ Done | Added stale lock recovery warning logs and regression contract test for sync exclusive lock semantics |
 | I9 | P1 stale-session archival failure resiliency | ✅ Done | Added integration coverage and system warning injection when auto-archive fails without resetting active session |
+| I10 | External hardening branch reconciliation (`fix/production-hardening-and-npm-sync-398614669822379343`) | ✅ Done | Accepted manual publish trigger + SDK singleton edge tests; rejected regression/noise changes |
 
 ### Acceptance Gate for "Production-Ready"
 1. All P0 items implemented with tests.
@@ -38,6 +39,25 @@ This section is the live implementation tracker used while hardening `master`.
 7. Backup cleanup failures are observable (non-fatal) during save operations.
 8. Stale lock recovery is observable and lock acquisition contract is regression-protected.
 9. Stale auto-archive failures are surfaced to system prompt and handled without destructive reset.
+10. External branch deltas are merged selectively (only net-positive, non-regressive changes).
+
+### I10 Reconciliation Record (Team A Version)
+- Accepted:
+  - `.github/workflows/publish.yml`: added `workflow_dispatch` for manual release runs.
+  - `tests/sdk-foundation.test.ts`: added double-init and concurrent `withClient` coverage.
+- Rejected:
+  - Branch-introduced artifacts `test_output.txt`, `test_output_final.txt`, `test_output_v2.txt` (non-source noise).
+  - `src/lib/planning-fs.ts` path-hardening rewrite that drops `sanitizeSessionFileName` / `safeJoinWithin` guard layering.
+  - `src/schemas/config.ts` public typing that re-exposes legacy offensive alias through `LegacyAutomationLevel`.
+  - Test rewrites that reduced coverage breadth (`tests/agent-behavior-prompt.test.ts`, `tests/persistence-locking.test.ts`) versus current richer suites.
+
+### Next Stage Plan (V3 Backlog)
+| Iteration | Priority | Focus | Status | Exit Criteria |
+|---|---|---|---|---|
+| I11 | P1 | Path-hardening resilience under malformed manifest/session metadata | ⏳ Planned | Add corruption/fuzz regression suite proving safe fallback behavior (no throw-driven session resolution failure) |
+| I12 | P1 | Persistence lock contention observability + timeout diagnostics | ⏳ Planned | Add lock wait telemetry fields and regression test for timeout paths with actionable logs |
+| I13 | P2 | Publish pipeline hardening (supply chain + release guardrails) | ⏳ Planned | Add workflow provenance checks and release preflight validation script coverage |
+| I14 | P2 | Hygiene gate to block non-source artifact commits | ⏳ Planned | Add CI check rejecting `test_output*.txt`/temp artifacts and verify in test workflow |
 
 ---
 
