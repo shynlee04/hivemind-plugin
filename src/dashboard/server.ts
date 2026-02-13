@@ -13,6 +13,7 @@ import React, { useEffect, useMemo, useState } from "react"
 import { Box, Text, render, useApp, useInput } from "ink"
 import { execSync } from "node:child_process"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
+import { isCoachAutomation, normalizeAutomationLabel } from "../schemas/config.js"
 import {
   treeExists,
   loadTree,
@@ -49,7 +50,7 @@ interface DashboardStrings {
   mode: string
   governance: string
   automation: string
-  retard_profile: string
+  coach_profile: string
 }
 
 const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
@@ -67,7 +68,7 @@ const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
     mode: "Mode",
     governance: "Governance",
     automation: "Automation",
-    retard_profile: "Retard profile active: strict + skeptical + code-review",
+    coach_profile: "Coach profile active: strict + skeptical + code-review",
   },
   vi: {
     title: "Bang Dieu Khien HiveMind (Truc Tiep)",
@@ -83,7 +84,7 @@ const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
     mode: "Che Do",
     governance: "Quan Tri",
     automation: "Tu Dong Hoa",
-    retard_profile: "Che do retard: strict + skeptical + bat buoc review",
+    coach_profile: "Che do coach: strict + skeptical + bat buoc review",
   },
 }
 
@@ -97,7 +98,7 @@ interface SessionView {
   mode: string
   governanceMode: string
   automationLevel: string
-  retardProfile: boolean
+  coachProfile: boolean
 }
 
 interface HierarchyView {
@@ -263,8 +264,8 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
         status: "LOCKED",
         mode: "plan_driven",
         governanceMode: config.governance_mode,
-        automationLevel: config.automation_level,
-        retardProfile: config.automation_level === "retard",
+        automationLevel: normalizeAutomationLabel(config.automation_level),
+        coachProfile: isCoachAutomation(config.automation_level),
       },
       hierarchy: {
         lines: ["(no state)"],
@@ -333,8 +334,8 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
       status: state.session.governance_status,
       mode: state.session.mode,
       governanceMode: config.governance_mode,
-      automationLevel: config.automation_level,
-      retardProfile: config.automation_level === "retard",
+      automationLevel: normalizeAutomationLabel(config.automation_level),
+      coachProfile: isCoachAutomation(config.automation_level),
     },
     hierarchy: hierarchyBundle.hierarchy,
     metrics: {
@@ -475,7 +476,7 @@ function DashboardApp(props: {
     `${strings.mode}: ${snapshot.session.mode}`,
     `${strings.governance}: ${snapshot.session.governanceMode} (${snapshot.session.status})`,
     `${strings.automation}: ${snapshot.session.automationLevel}`,
-    snapshot.session.retardProfile ? strings.retard_profile : "",
+    snapshot.session.coachProfile ? strings.coach_profile : "",
   ].filter(Boolean)
 
   const hierarchyLines = [
@@ -513,11 +514,26 @@ function DashboardApp(props: {
       React.createElement(Text, { key: "controls", color: "gray" }, strings.controls),
       React.createElement(Box, { key: "content", flexDirection: "row", marginTop: 1 }, [
         React.createElement(Box, { key: "left", flexDirection: "column", flexGrow: 1, marginRight: 1 }, [
-          Panel({ title: strings.session, lines: sessionLines, color: "cyan" }),
-          Panel({ title: strings.hierarchy, lines: hierarchyLines.length > 0 ? hierarchyLines : [strings.no_hierarchy], color: "green" }),
+          React.createElement(Panel, {
+            key: "panel-session",
+            title: strings.session,
+            lines: sessionLines,
+            color: "cyan",
+          }),
+          React.createElement(Panel, {
+            key: "panel-hierarchy",
+            title: strings.hierarchy,
+            lines: hierarchyLines.length > 0 ? hierarchyLines : [strings.no_hierarchy],
+            color: "green",
+          }),
         ]),
         React.createElement(Box, { key: "right", flexDirection: "column", flexGrow: 1 }, [
-          Panel({ title: strings.metrics, lines: metricLines, color: "yellow" }),
+          React.createElement(Panel, {
+            key: "panel-metrics",
+            title: strings.metrics,
+            lines: metricLines,
+            color: "yellow",
+          }),
           React.createElement(
             Box,
             {
@@ -535,7 +551,12 @@ function DashboardApp(props: {
               ...alertLines.map((line, index) => React.createElement(Text, { key: `alert-${index}` }, line)),
             ]
           ),
-          Panel({ title: strings.trace, lines: traceLines, color: "magenta" }),
+          React.createElement(Panel, {
+            key: "panel-trace",
+            title: strings.trace,
+            lines: traceLines,
+            color: "magenta",
+          }),
         ]),
       ]),
     ]

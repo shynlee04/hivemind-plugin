@@ -17,7 +17,7 @@
 
 import { readFile, writeFile, mkdir, readdir, rename } from "fs/promises";
 import { existsSync } from "fs";
-import { basename, dirname, join } from "path";
+import { dirname, join } from "path";
 import { parse, stringify } from "yaml";
 import {
   buildArchiveFilename,
@@ -321,11 +321,10 @@ async function resolveSessionFilePathByStamp(
     if (existsSync(sessionPath)) return sessionPath
   }
 
-  const sanitizedStamp = basename(stamp)
-  const byStampInActiveDir = join(getEffectivePaths(projectRoot).activeDir, `${sanitizedStamp}.md`)
+  const byStampInActiveDir = join(getEffectivePaths(projectRoot).activeDir, `${stamp}.md`)
   if (existsSync(byStampInActiveDir)) return byStampInActiveDir
 
-  const byStampInSessionsDir = join(paths.sessionsDir, `${sanitizedStamp}.md`)
+  const byStampInSessionsDir = join(paths.sessionsDir, `${stamp}.md`)
   if (existsSync(byStampInSessionsDir)) return byStampInSessionsDir
 
   return byStampInActiveDir

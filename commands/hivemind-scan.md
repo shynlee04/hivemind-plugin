@@ -4,39 +4,56 @@ description: "Scan the project codebase and build a HiveMind backbone. Run this 
 
 # HiveMind Project Scan
 
-You are performing a HiveMind project reconnaissance scan. This is required before any implementation work.
+You are performing a HiveMind brownfield reconnaissance and stabilization scan.
+Run this before any major refactor or when entering an unfamiliar project.
 
-## Step 1: Project Structure
-Use glob and read tools to understand the project:
-- Read package.json (or pyproject.toml, go.mod, Cargo.toml) for project name, dependencies, scripts
-- Glob for source directories: src/, lib/, app/, pages/, components/
-- Check for configuration files: tsconfig.json, vite.config.*, next.config.*, webpack.config.*
+## Step 1: Analyze
+Call:
 
-## Step 2: Documentation Audit
-- Read README.md if it exists
-- Read AGENTS.md or CLAUDE.md if they exist
-- Check for .planning/ directory (GSD framework)
-- Check for .spec-kit/ directory (Spec-Kit framework)
-- Read CHANGELOG.md for recent changes
+```ts
+scan_hierarchy({ action: "analyze", json: true })
+```
 
-## Step 3: Context Isolation
-Identify potential context pollution:
-- Stale branches or duplicate project copies
-- Conflicting framework artifacts (.planning/ AND .spec-kit/)
-- Old or outdated documentation
-- Unused configuration files
+Extract and report:
+- Project name and stack hints
+- Framework mode (`gsd`, `spec-kit`, `both`, `none`) + BMAD detection
+- Top-level structure and notable artifacts
+- Any stale/context-poisoning signals
 
-## Step 4: Backbone Summary
-After scanning, call these HiveMind tools:
-1. `declare_intent({ mode: "exploration", focus: "Project reconnaissance scan" })`
-2. `save_anchor({ key: "project-stack", value: "<detected tech stack>" })`
-3. `save_anchor({ key: "project-structure", value: "<brief architecture summary>" })`
-4. `save_mem({ shelf: "project-intel", content: "<key findings from scan>", tags: "scan,baseline" })`
+## Step 2: Recommend
+Call:
 
-## Step 5: Report
-Summarize findings to the user:
-- Project name and tech stack
-- Key directories and their purposes
-- Active framework (if any)
-- Potential issues or stale artifacts
-- Recommended next steps
+```ts
+scan_hierarchy({ action: "recommend" })
+```
+
+Focus on:
+- Framework conflict handling (especially `.planning` + `.spec-kit`)
+- Poisoned-context cleanup order
+- Explicit lifecycle sequence (`declare_intent` -> `map_context` -> execution)
+
+## Step 3: Orchestrate Baseline (Safe, Non-Destructive)
+If HiveMind is initialized, call:
+
+```ts
+scan_hierarchy({ action: "orchestrate", json: true })
+```
+
+This persists baseline intelligence:
+- Anchors for stack/framework/risk context
+- `project-intel` memory entry for cross-session continuity
+
+## Step 4: Lock Execution Focus
+Call:
+
+```ts
+declare_intent({ mode: "exploration", focus: "Brownfield stabilization" })
+map_context({ level: "tactic", content: "Context purification and framework resolution" })
+```
+
+## Output Contract
+Report in this order:
+1. Risks and framework mode
+2. Recommendation sequence
+3. Orchestrated baseline status (anchors/memory)
+4. Next executable step

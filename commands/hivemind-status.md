@@ -8,9 +8,9 @@ Show the user a comprehensive view of their HiveMind governance state.
 
 ## Actions
 1. Call `scan_hierarchy` to get the current session state, hierarchy, metrics, and anchors
-2. Call `list_shelves` to see what's in the Mems Brain
+2. Call `recall_mems` with no query to list shelves and recent memory
 3. Read `.hivemind/config.json` to show current configuration
-4. Call `check_drift` to verify alignment with declared trajectory
+4. Call `scan_hierarchy({ include_drift: true })` to verify alignment with declared trajectory
 
 ## Report Format
 Present findings as a clean status report:

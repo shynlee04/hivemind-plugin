@@ -1,7 +1,7 @@
 /**
  * Evidence Gate System Tests
  * Tests for: escalation tiers, evidence-based signals, counter-excuses,
- * write-without-read tracking, retard mode, argument-back prompt injection
+ * write-without-read tracking, coach mode, argument-back prompt injection
  */
 
 import {
@@ -233,7 +233,7 @@ function test_format_escalated() {
   assert(plain.includes("- 5 turns"), "non-escalated signals still use - prefix");
 }
 
-// ─── Automation Level + Retard Mode Tests ────────────────────────────
+// ─── Automation Level + Coach Mode Tests ─────────────────────────────
 
 function test_automation_level() {
   process.stderr.write("\n--- automation-level ---\n");
@@ -243,54 +243,68 @@ function test_automation_level() {
   assert(isValidAutomationLevel("guided"), "guided is valid automation level");
   assert(isValidAutomationLevel("assisted"), "assisted is valid automation level");
   assert(isValidAutomationLevel("full"), "full is valid automation level");
-  assert(isValidAutomationLevel("retard"), "retard is valid automation level");
+  assert(isValidAutomationLevel("coach"), "coach is valid automation level");
+  assert(isValidAutomationLevel("retard"), "legacy retard alias is accepted");
   assert(!isValidAutomationLevel("invalid"), "invalid is NOT valid automation level");
 
   // 2. Default config has automation_level = "assisted"
   const config = createConfig();
   assert(config.automation_level === "assisted", "default automation_level is assisted");
 
-  // 3. Config can be created with retard mode
-  const retardConfig = createConfig({ automation_level: "retard" });
-  assert(retardConfig.automation_level === "retard", "config can be created with retard");
+  // 3. Config can be created with coach mode
+  const coachConfig = createConfig({ automation_level: "coach" });
+  assert(coachConfig.automation_level === "coach", "config can be created with coach");
+
+  // 4. Legacy alias remains accepted for backward compatibility
+  const legacyConfig = createConfig({ automation_level: "retard" });
+  assert(legacyConfig.automation_level === "retard", "legacy retard alias remains valid in schema");
 }
 
-// ─── Retard Mode Init Tests ──────────────────────────────────────────
+// ─── Coach Mode Init Tests ───────────────────────────────────────────
 
-async function test_retard_mode_init() {
-  process.stderr.write("\n--- retard-mode-init ---\n");
+async function test_coach_mode_init() {
+  process.stderr.write("\n--- coach-mode-init ---\n");
 
-  const tmpDir = mkdtempSync(join(tmpdir(), "hm-retard-"));
+  const tmpDir = mkdtempSync(join(tmpdir(), "hm-coach-"));
 
-  // Init with retard mode
+  // Init with coach mode
   await initProject(tmpDir, {
-    automationLevel: "retard" as AutomationLevel,
+    automationLevel: "coach" as AutomationLevel,
     silent: true,
   });
 
-  // 1. Config saved with retard automation_level
+  // 1. Config saved with coach automation_level
   const config = await loadConfig(tmpDir);
-  assert(config.automation_level === "retard", "init saves retard automation_level to config");
+  assert(config.automation_level === "coach", "init saves coach automation_level to config");
 
-  // 2. Retard mode forces strict governance
-  assert(config.governance_mode === "strict", "retard mode forces strict governance");
+  // 2. Coach mode forces strict governance
+  assert(config.governance_mode === "strict", "coach mode forces strict governance");
 
-  // 3. Retard mode forces skeptical output
-  assert(config.agent_behavior.output_style === "skeptical", "retard mode forces skeptical output");
+  // 3. Coach mode forces skeptical output
+  assert(config.agent_behavior.output_style === "skeptical", "coach mode forces skeptical output");
 
-  // 4. Retard mode forces beginner expert level
-  assert(config.agent_behavior.expert_level === "beginner", "retard mode forces beginner expert level");
+  // 4. Coach mode forces beginner expert level
+  assert(config.agent_behavior.expert_level === "beginner", "coach mode forces beginner expert level");
 
-  // 5. Retard mode forces code review
-  assert(config.agent_behavior.constraints.require_code_review === true, "retard mode forces code review");
+  // 5. Coach mode forces code review
+  assert(config.agent_behavior.constraints.require_code_review === true, "coach mode forces code review");
 
-  // 6. Retard mode forces be_skeptical
-  assert(config.agent_behavior.constraints.be_skeptical === true, "retard mode forces be_skeptical");
+  // 6. Coach mode forces be_skeptical
+  assert(config.agent_behavior.constraints.be_skeptical === true, "coach mode forces be_skeptical");
 
   // 7. Brain state starts LOCKED (due to strict)
   const stateManager = createStateManager(tmpDir);
   const state = await stateManager.load();
-  assert(state?.session.governance_status === "LOCKED", "retard mode starts session LOCKED");
+  assert(state?.session.governance_status === "LOCKED", "coach mode starts session LOCKED");
+
+  // 8. Legacy alias input still works and is normalized on init
+  const legacyDir = mkdtempSync(join(tmpdir(), "hm-legacy-retard-"));
+  await initProject(legacyDir, {
+    automationLevel: "retard" as AutomationLevel,
+    silent: true,
+  });
+  const legacyConfig = await loadConfig(legacyDir);
+  assert(legacyConfig.automation_level === "coach", "legacy retard alias is normalized to coach during init");
 }
 
 // ─── Evidence Quality Tests ──────────────────────────────────────────
@@ -450,7 +464,7 @@ async function main() {
   test_write_without_read();
   test_format_escalated();
   test_automation_level();
-  await test_retard_mode_init();
+  await test_coach_mode_init();
   test_evidence_quality();
   test_ignored_tier_contract();
   test_ignored_reset_policy();

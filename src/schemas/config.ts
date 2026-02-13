@@ -5,26 +5,17 @@
 
 import type { DetectionThresholds } from "../lib/detection.js";
 
-export const GOVERNANCE_MODES = ["permissive", "assisted", "strict"] as const;
-export type GovernanceMode = (typeof GOVERNANCE_MODES)[number];
-
-export const LANGUAGES = ["en", "vi"] as const;
-export type Language = (typeof LANGUAGES)[number];
-
-export const AUTOMATION_LEVELS = ["manual", "guided", "assisted", "full", "retard"] as const;
-export type AutomationLevel = (typeof AUTOMATION_LEVELS)[number];
-
-export const EXPERT_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
-export type ExpertLevel = (typeof EXPERT_LEVELS)[number];
-
-export const OUTPUT_STYLES = [
-  "explanatory",      // Detailed explanations, teaching mode
-  "outline",          // Bullet points, structured summaries
-  "skeptical",        // Critical review, challenge assumptions
-  "architecture",     // Focus on design patterns, structure first
-  "minimal"           // Brief, code-only responses
-] as const;
-export type OutputStyle = (typeof OUTPUT_STYLES)[number];
+export type GovernanceMode = "permissive" | "assisted" | "strict";
+export type Language = "en" | "vi";
+export type AutomationLevel = "manual" | "guided" | "assisted" | "full" | "coach" | "retard";
+export type NormalizedAutomationLevel = Exclude<AutomationLevel, "retard">;
+export type ExpertLevel = "beginner" | "intermediate" | "advanced" | "expert";
+export type OutputStyle = 
+  | "explanatory"      // Detailed explanations, teaching mode
+  | "outline"          // Bullet points, structured summaries
+  | "skeptical"        // Critical review, challenge assumptions
+  | "architecture"     // Focus on design patterns, structure first
+  | "minimal";         // Brief, code-only responses
 
 export interface AgentBehaviorConfig {
   /** Language for all responses */
@@ -62,7 +53,7 @@ export interface HiveMindConfig {
   agent_behavior: AgentBehaviorConfig;
   /** Override detection thresholds (merged with defaults at runtime) */
   detection_thresholds?: Partial<DetectionThresholds>;
-  /** Automation level — "retard" mode = max automation, system argues back, max handholding */
+  /** Automation level — "coach" mode = max automation, system argues back, max guidance */
   automation_level: AutomationLevel;
 }
 
@@ -108,23 +99,34 @@ export function createConfig(overrides: Partial<HiveMindConfig> = {}): HiveMindC
 }
 
 export function isValidGovernanceMode(mode: string): mode is GovernanceMode {
-  return (GOVERNANCE_MODES as readonly string[]).includes(mode);
+  return ["permissive", "assisted", "strict"].includes(mode);
 }
 
 export function isValidLanguage(lang: string): lang is Language {
-  return (LANGUAGES as readonly string[]).includes(lang);
+  return ["en", "vi"].includes(lang);
 }
 
 export function isValidExpertLevel(level: string): level is ExpertLevel {
-  return (EXPERT_LEVELS as readonly string[]).includes(level);
+  return ["beginner", "intermediate", "advanced", "expert"].includes(level);
 }
 
 export function isValidOutputStyle(style: string): style is OutputStyle {
-  return (OUTPUT_STYLES as readonly string[]).includes(style);
+  return ["explanatory", "outline", "skeptical", "architecture", "minimal"].includes(style);
 }
 
 export function isValidAutomationLevel(level: string): level is AutomationLevel {
-  return (AUTOMATION_LEVELS as readonly string[]).includes(level);
+  return ["manual", "guided", "assisted", "full", "coach", "retard"].includes(level);
+}
+
+/**
+ * Compatibility helper: legacy "retard" mode maps to modern "coach" behavior.
+ */
+export function isCoachAutomation(level: AutomationLevel): boolean {
+  return level === "coach" || level === "retard"
+}
+
+export function normalizeAutomationLabel(level: AutomationLevel): NormalizedAutomationLevel {
+  return level === "retard" ? "coach" : level
 }
 
 /**
