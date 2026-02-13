@@ -138,10 +138,10 @@ async function testStressConditions() {
     const pauseResult = await gatePause({ sessionID: "stress", tool: "edit" })
     check(pauseResult.allowed && (pauseResult.warning?.includes("Governance advisory") === true || pauseResult.warning?.includes("Framework conflict") === true), "Simulated-pause path includes framework advisory without hard denial")
 
-    const sessionLifecycleSource = await readFile(join(process.cwd(), "src/hooks/session-lifecycle.ts"), "utf-8")
+    const sessionLifecycleHelperSource = await readFile(join(process.cwd(), "src/hooks/session-lifecycle-helpers.ts"), "utf-8")
     check(
-      sessionLifecycleSource.includes("compileIgnoredTier(") &&
-      sessionLifecycleSource.includes("formatIgnoredEvidence("),
+      sessionLifecycleHelperSource.includes("compileIgnoredTier(") &&
+      sessionLifecycleHelperSource.includes("formatIgnoredEvidence("),
       "GOV-08 ignored block includes compact tri-evidence"
     )
 
