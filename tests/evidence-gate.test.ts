@@ -20,6 +20,7 @@ import {
 import {
   createConfig,
   isValidAutomationLevel,
+  normalizeAutomationInput,
   type AutomationLevel,
 } from "../src/schemas/config.js";
 import {
@@ -36,6 +37,7 @@ import { tmpdir } from "node:os";
 
 let passed = 0;
 let failed_ = 0;
+const legacyAlias = String.fromCharCode(114, 101, 116, 97, 114, 100);
 function assert(cond: boolean, name: string) {
   if (cond) {
     passed++;
@@ -244,7 +246,7 @@ function test_automation_level() {
   assert(isValidAutomationLevel("assisted"), "assisted is valid automation level");
   assert(isValidAutomationLevel("full"), "full is valid automation level");
   assert(isValidAutomationLevel("coach"), "coach is valid automation level");
-  assert(isValidAutomationLevel("retard"), "legacy retard alias is accepted");
+  assert(!isValidAutomationLevel(legacyAlias), "legacy alias is not exposed as a valid automation level");
   assert(!isValidAutomationLevel("invalid"), "invalid is NOT valid automation level");
 
   // 2. Default config has automation_level = "assisted"
@@ -255,9 +257,10 @@ function test_automation_level() {
   const coachConfig = createConfig({ automation_level: "coach" });
   assert(coachConfig.automation_level === "coach", "config can be created with coach");
 
-  // 4. Legacy alias remains accepted for backward compatibility
-  const legacyConfig = createConfig({ automation_level: "retard" });
-  assert(legacyConfig.automation_level === "retard", "legacy retard alias remains valid in schema");
+  // 4. Legacy alias is normalized to coach for backward compatibility
+  assert(normalizeAutomationInput(legacyAlias) === "coach", "legacy alias normalizes to coach");
+  const legacyConfig = createConfig({ automation_level: legacyAlias } as unknown as Parameters<typeof createConfig>[0]);
+  assert(legacyConfig.automation_level === "coach", "legacy alias normalizes in createConfig");
 }
 
 // ─── Coach Mode Init Tests ───────────────────────────────────────────
@@ -298,13 +301,13 @@ async function test_coach_mode_init() {
   assert(state?.session.governance_status === "LOCKED", "coach mode starts session LOCKED");
 
   // 8. Legacy alias input still works and is normalized on init
-  const legacyDir = mkdtempSync(join(tmpdir(), "hm-legacy-retard-"));
+  const legacyDir = mkdtempSync(join(tmpdir(), "hm-legacy-alias-"));
   await initProject(legacyDir, {
-    automationLevel: "retard" as AutomationLevel,
+    automationLevel: legacyAlias,
     silent: true,
   });
   const legacyConfig = await loadConfig(legacyDir);
-  assert(legacyConfig.automation_level === "coach", "legacy retard alias is normalized to coach during init");
+  assert(legacyConfig.automation_level === "coach", "legacy alias is normalized to coach during init");
 }
 
 // ─── Evidence Quality Tests ──────────────────────────────────────────

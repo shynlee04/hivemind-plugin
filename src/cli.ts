@@ -50,7 +50,7 @@ Options:
   --force                  Force re-initialization (removes existing .hivemind/)
   --lang <en|vi>           Language (default: en)
   --mode <permissive|assisted|strict>  Governance mode (default: assisted)
-  --automation <manual|guided|assisted|full|coach>  Automation level (default: assisted; legacy alias "retard" is accepted)
+  --automation <manual|guided|assisted|full|coach>  Automation level (default: assisted)
   --expert <beginner|intermediate|advanced|expert>  Expert level (default: intermediate)
   --style <explanatory|outline|skeptical|architecture|minimal>  Output style (default: explanatory)
   --code-review            Require code review before accepting
@@ -234,8 +234,7 @@ async function main(): Promise<void> {
           language: (flags["lang"] as "en" | "vi") ?? undefined,
           governanceMode:
             (flags["mode"] as "permissive" | "assisted" | "strict") ?? undefined,
-          automationLevel:
-            (flags["automation"] as "manual" | "guided" | "assisted" | "full" | "coach" | "retard") ?? undefined,
+          automationLevel: flags["automation"] ?? undefined,
           expertLevel: (flags["expert"] as "beginner" | "intermediate" | "advanced" | "expert") ?? undefined,
           outputStyle: (flags["style"] as "explanatory" | "outline" | "skeptical" | "architecture" | "minimal") ?? undefined,
           requireCodeReview: "code-review" in flags,

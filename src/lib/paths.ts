@@ -24,7 +24,7 @@
  *   └── templates/      → session.md
  */
 
-import { join } from "path"
+import { basename, join, resolve, sep } from "path"
 import { existsSync } from "fs"
 import { readFile } from "fs/promises"
 
@@ -255,6 +255,58 @@ export function getEffectivePaths(projectRoot: string): HivemindPaths {
   }
 }
 
+// ─── Security: Session Path Sanitization ────────────────────────────
+
+/** Safe characters for session stamps/filenames. */
+const SAFE_SESSION_SEGMENT = /^[a-zA-Z0-9._-]+$/
+
+/**
+ * Validate a manifest-provided session file name.
+ * Rejects any path-like values (e.g. "../x.md", "a/b.md", absolute paths).
+ */
+export function sanitizeSessionFileName(file: string): string | null {
+  if (!file || typeof file !== "string") return null
+  const trimmed = file.trim()
+  if (!trimmed) return null
+
+  const base = basename(trimmed)
+  if (base !== trimmed) return null
+  if (!SAFE_SESSION_SEGMENT.test(base)) return null
+  return base
+}
+
+/**
+ * Validate and normalize a session stamp (without extension).
+ * Rejects path-like stamps and disallowed characters.
+ */
+export function sanitizeSessionStamp(stamp: string): string | null {
+  if (!stamp || typeof stamp !== "string") return null
+  const trimmed = stamp.trim()
+  if (!trimmed) return null
+
+  const withoutExt = trimmed.endsWith(".md") ? trimmed.slice(0, -3) : trimmed
+  const base = basename(withoutExt)
+  if (base !== withoutExt) return null
+  if (!SAFE_SESSION_SEGMENT.test(base)) return null
+  return base
+}
+
+/**
+ * Safely join a validated filename under a base directory.
+ * Returns null if the resulting path escapes the base directory.
+ */
+export function safeJoinWithin(baseDir: string, fileName: string): string | null {
+  const safeFile = sanitizeSessionFileName(fileName)
+  if (!safeFile) return null
+
+  const candidate = resolve(baseDir, safeFile)
+  const base = resolve(baseDir)
+  if (candidate === base || candidate.startsWith(base + sep)) {
+    return candidate
+  }
+  return null
+}
+
 // ─── Session Filename Builders ───────────────────────────────────────
 
 /**
@@ -353,7 +405,7 @@ export async function getActiveSessionPath(
     }
 
     // Active sessions live in sessions/active/ in the new structure
-    return join(paths.activeDir, entry.file)
+    return safeJoinWithin(paths.activeDir, entry.file)
   } catch {
     return null
   }

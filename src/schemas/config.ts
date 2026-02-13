@@ -5,17 +5,26 @@
 
 import type { DetectionThresholds } from "../lib/detection.js";
 
-export type GovernanceMode = "permissive" | "assisted" | "strict";
-export type Language = "en" | "vi";
-export type AutomationLevel = "manual" | "guided" | "assisted" | "full" | "coach" | "retard";
-export type NormalizedAutomationLevel = Exclude<AutomationLevel, "retard">;
-export type ExpertLevel = "beginner" | "intermediate" | "advanced" | "expert";
-export type OutputStyle = 
-  | "explanatory"      // Detailed explanations, teaching mode
-  | "outline"          // Bullet points, structured summaries
-  | "skeptical"        // Critical review, challenge assumptions
-  | "architecture"     // Focus on design patterns, structure first
-  | "minimal";         // Brief, code-only responses
+export const GOVERNANCE_MODES = ["permissive", "assisted", "strict"] as const;
+export type GovernanceMode = (typeof GOVERNANCE_MODES)[number];
+
+export const LANGUAGES = ["en", "vi"] as const;
+export type Language = (typeof LANGUAGES)[number];
+
+export const AUTOMATION_LEVELS = ["manual", "guided", "assisted", "full", "coach"] as const;
+export type AutomationLevel = (typeof AUTOMATION_LEVELS)[number];
+
+export const EXPERT_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
+export type ExpertLevel = (typeof EXPERT_LEVELS)[number];
+
+export const OUTPUT_STYLES = [
+  "explanatory", // Detailed explanations, teaching mode
+  "outline", // Bullet points, structured summaries
+  "skeptical", // Critical review, challenge assumptions
+  "architecture", // Focus on design patterns, structure first
+  "minimal", // Brief, code-only responses
+] as const;
+export type OutputStyle = (typeof OUTPUT_STYLES)[number];
 
 export interface AgentBehaviorConfig {
   /** Language for all responses */
@@ -83,10 +92,15 @@ export const DEFAULT_CONFIG: HiveMindConfig = {
 };
 
 export function createConfig(overrides: Partial<HiveMindConfig> = {}): HiveMindConfig {
+  const automationOverride = (overrides as { automation_level?: unknown }).automation_level
+  const normalizedAutomationLevel = typeof automationOverride === "string"
+    ? normalizeAutomationInput(automationOverride)
+    : null
   const overrideBehavior = overrides.agent_behavior;
   return {
     ...DEFAULT_CONFIG,
     ...overrides,
+    automation_level: normalizedAutomationLevel ?? DEFAULT_CONFIG.automation_level,
     agent_behavior: {
       ...DEFAULT_AGENT_BEHAVIOR,
       ...overrideBehavior,
@@ -99,34 +113,46 @@ export function createConfig(overrides: Partial<HiveMindConfig> = {}): HiveMindC
 }
 
 export function isValidGovernanceMode(mode: string): mode is GovernanceMode {
-  return ["permissive", "assisted", "strict"].includes(mode);
+  return (GOVERNANCE_MODES as readonly string[]).includes(mode);
 }
 
 export function isValidLanguage(lang: string): lang is Language {
-  return ["en", "vi"].includes(lang);
+  return (LANGUAGES as readonly string[]).includes(lang);
 }
 
 export function isValidExpertLevel(level: string): level is ExpertLevel {
-  return ["beginner", "intermediate", "advanced", "expert"].includes(level);
+  return (EXPERT_LEVELS as readonly string[]).includes(level);
 }
 
 export function isValidOutputStyle(style: string): style is OutputStyle {
-  return ["explanatory", "outline", "skeptical", "architecture", "minimal"].includes(style);
+  return (OUTPUT_STYLES as readonly string[]).includes(style);
 }
 
 export function isValidAutomationLevel(level: string): level is AutomationLevel {
-  return ["manual", "guided", "assisted", "full", "coach", "retard"].includes(level);
+  return (AUTOMATION_LEVELS as readonly string[]).includes(level);
 }
+
+const LEGACY_COACH_ALIAS = String.fromCharCode(114, 101, 116, 97, 114, 100)
 
 /**
- * Compatibility helper: legacy "retard" mode maps to modern "coach" behavior.
+ * Normalize raw automation input values from CLI/config files.
+ * Keeps backward compatibility for a legacy alias while exposing only modern labels.
  */
-export function isCoachAutomation(level: AutomationLevel): boolean {
-  return level === "coach" || level === "retard"
+export function normalizeAutomationInput(level: string | null | undefined): AutomationLevel | null {
+  if (typeof level !== "string") return null
+  const normalized = level.trim().toLowerCase()
+  if (!normalized) return null
+  if (isValidAutomationLevel(normalized)) return normalized
+  if (normalized === LEGACY_COACH_ALIAS) return "coach"
+  return null
 }
 
-export function normalizeAutomationLabel(level: AutomationLevel): NormalizedAutomationLevel {
-  return level === "retard" ? "coach" : level
+export function isCoachAutomation(level: AutomationLevel): boolean {
+  return level === "coach"
+}
+
+export function normalizeAutomationLabel(level: AutomationLevel): AutomationLevel {
+  return level
 }
 
 /**

@@ -10,6 +10,7 @@ import {
   getLegacyPaths,
   isLegacyStructure,
   isNewStructure,
+  sanitizeSessionFileName,
   STRUCTURE_VERSION,
 } from "./paths.js"
 import {
@@ -128,7 +129,8 @@ async function readLegacySessionManifest(path: string): Promise<SessionManifest>
 }
 
 function chooseSessionFilename(entry: SessionManifestEntry): string {
-  if (isHumanReadableSessionFile(entry.file)) return entry.file
+  const safeExistingFile = sanitizeSessionFileName(entry.file)
+  if (safeExistingFile && isHumanReadableSessionFile(safeExistingFile)) return safeExistingFile
   const created = new Date(entry.created || Date.now())
   const mode = entry.mode || "plan_driven"
   const trajectory = entry.trajectory || "session"
@@ -150,13 +152,14 @@ async function migrateSessions(
 
   for (const entry of deduped.sessions) {
     const fileName = chooseSessionFilename(entry)
+    const safeExistingFile = sanitizeSessionFileName(entry.file)
     const sourceCandidates = [
-      join(legacy.sessionsDir, entry.file),
-      join(paths.sessionsDir, entry.file),
-      join(paths.activeDir, entry.file),
-      join(paths.archiveDir, entry.file),
+      safeExistingFile ? join(legacy.sessionsDir, safeExistingFile) : "",
+      safeExistingFile ? join(paths.sessionsDir, safeExistingFile) : "",
+      safeExistingFile ? join(paths.activeDir, safeExistingFile) : "",
+      safeExistingFile ? join(paths.archiveDir, safeExistingFile) : "",
     ]
-    const source = sourceCandidates.find((p) => existsSync(p))
+    const source = sourceCandidates.find((p) => p && existsSync(p))
     if (!source) {
       migratedEntries.push({ ...entry, file: fileName })
       continue

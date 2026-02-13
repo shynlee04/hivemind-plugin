@@ -259,7 +259,7 @@ npx hivemind-context-governance help        # Show help
 |------|--------|---------|
 | `--mode` | `permissive` · `assisted` · `strict` | `assisted` |
 | `--lang` | `en` · `vi` | `en` |
-| `--automation` | `manual` · `guided` · `assisted` · `full` · `coach` *(legacy alias `retard` accepted)* | `assisted` |
+| `--automation` | `manual` · `guided` · `assisted` · `full` · `coach` | `assisted` |
 | `--expert` | `beginner` · `intermediate` · `advanced` · `expert` | `intermediate` |
 | `--style` | `explanatory` · `outline` · `skeptical` · `architecture` · `minimal` | `explanatory` |
 | `--code-review` | *(flag)* | off |

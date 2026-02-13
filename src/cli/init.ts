@@ -18,13 +18,18 @@ import { dirname, join } from "node:path"
 const __dirname = dirname(fileURLToPath(import.meta.url))
 import type { GovernanceMode, Language, ExpertLevel, OutputStyle, AutomationLevel } from "../schemas/config.js"
 import {
+  AUTOMATION_LEVELS,
+  EXPERT_LEVELS,
+  GOVERNANCE_MODES,
+  LANGUAGES,
+  OUTPUT_STYLES,
   createConfig,
   isValidGovernanceMode,
   isValidLanguage,
   isValidExpertLevel,
   isValidOutputStyle,
-  isValidAutomationLevel,
   isCoachAutomation,
+  normalizeAutomationInput,
   normalizeAutomationLabel,
 } from "../schemas/config.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
@@ -142,7 +147,7 @@ export interface InitOptions {
   governanceMode?: GovernanceMode
   expertLevel?: ExpertLevel
   outputStyle?: OutputStyle
-  automationLevel?: AutomationLevel
+  automationLevel?: AutomationLevel | string
   requireCodeReview?: boolean
   enforceTdd?: boolean
   syncTarget?: AssetSyncTarget
@@ -276,7 +281,7 @@ export async function initProject(
   const governanceMode = options.governanceMode ?? "assisted"
   if (!isValidGovernanceMode(governanceMode)) {
     log(`✗ Invalid governance mode: ${governanceMode}`)
-    log("  Valid: permissive, assisted, strict")
+    log(`  Valid: ${GOVERNANCE_MODES.join(", ")}`)
     return
   }
 
@@ -284,7 +289,7 @@ export async function initProject(
   const language = options.language ?? "en"
   if (!isValidLanguage(language)) {
     log(`✗ Invalid language: ${language}`)
-    log("  Valid: en, vi")
+    log(`  Valid: ${LANGUAGES.join(", ")}`)
     return
   }
 
@@ -292,7 +297,7 @@ export async function initProject(
   const expertLevel = options.expertLevel ?? "intermediate"
   if (!isValidExpertLevel(expertLevel)) {
     log(`✗ Invalid expert level: ${expertLevel}`)
-    log("  Valid: beginner, intermediate, advanced, expert")
+    log(`  Valid: ${EXPERT_LEVELS.join(", ")}`)
     return
   }
 
@@ -300,18 +305,18 @@ export async function initProject(
   const outputStyle = options.outputStyle ?? "explanatory"
   if (!isValidOutputStyle(outputStyle)) {
     log(`✗ Invalid output style: ${outputStyle}`)
-    log("  Valid: explanatory, outline, skeptical, architecture, minimal")
+    log(`  Valid: ${OUTPUT_STYLES.join(", ")}`)
     return
   }
 
   // Validate and set automation level
-  const automationLevel = options.automationLevel ?? "assisted"
-  if (!isValidAutomationLevel(automationLevel)) {
-    log(`✗ Invalid automation level: ${automationLevel}`)
-    log("  Valid: manual, guided, assisted, full, coach (legacy alias 'retard' is accepted)")
+  const rawAutomationLevel = options.automationLevel ?? "assisted"
+  const automationLevel = normalizeAutomationInput(rawAutomationLevel)
+  if (!automationLevel) {
+    log(`✗ Invalid automation level: ${rawAutomationLevel}`)
+    log(`  Valid: ${AUTOMATION_LEVELS.join(", ")}`)
     return
   }
-  const normalizedAutomationLevel = normalizeAutomationLabel(automationLevel)
 
   // Create .hivemind directory structure
   // (sessions, brain, plans, logs subdirectories are created by initializePlanningDirectory)
@@ -320,7 +325,7 @@ export async function initProject(
   const config = createConfig({
     governance_mode: isCoachAutomation(automationLevel) ? "strict" : governanceMode,
     language,
-    automation_level: normalizedAutomationLevel,
+    automation_level: automationLevel,
     agent_behavior: {
       language,
       expert_level: isCoachAutomation(automationLevel) ? "beginner" : expertLevel,

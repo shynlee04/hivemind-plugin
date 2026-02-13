@@ -23,6 +23,9 @@ import {
   buildArchiveFilename,
   getAllDirectories,
   getEffectivePaths,
+  safeJoinWithin,
+  sanitizeSessionFileName,
+  sanitizeSessionStamp,
 } from "./paths.js";
 import {
   ensureCoreManifests,
@@ -228,11 +231,16 @@ export async function registerSession(
     linkedPlans?: string[]
   },
 ): Promise<SessionManifest> {
+  const safeFile = sanitizeSessionFileName(fileName)
+  if (!safeFile) {
+    throw new Error(`Invalid session filename: ${fileName}`)
+  }
+
   const manifest = await readManifest(projectRoot);
 
   const updated = registerSessionInManifest(manifest, {
     stamp,
-    file: fileName,
+    file: safeFile,
     created: meta?.created ?? Date.now(),
     mode: meta?.mode,
     trajectory: meta?.trajectory,
@@ -259,9 +267,16 @@ export async function getActiveSessionPath(projectRoot: string): Promise<string>
       (s) => s.stamp === manifest.active_stamp && s.status === "active"
     );
     if (entry) {
-      const activePath = join(effective.activeDir, entry.file)
-      if (existsSync(activePath)) return activePath
-      return join(paths.sessionsDir, entry.file)
+      const safeFile = sanitizeSessionFileName(entry.file)
+      if (!safeFile) {
+        return paths.activePath
+      }
+
+      const activePath = safeJoinWithin(effective.activeDir, safeFile)
+      if (activePath && existsSync(activePath)) return activePath
+
+      const sessionsPath = safeJoinWithin(paths.sessionsDir, safeFile)
+      if (sessionsPath) return sessionsPath
     }
   }
 
@@ -305,29 +320,37 @@ async function resolveSessionFilePathByStamp(
   stamp: string,
 ): Promise<string> {
   const paths = getPlanningPaths(projectRoot)
+  const effective = getEffectivePaths(projectRoot)
   const manifest = await readManifest(projectRoot)
-  const entry = manifest.sessions.find((s) => s.stamp === stamp)
+  const safeStamp = sanitizeSessionStamp(stamp) ?? "invalid-stamp"
+  const entry = manifest.sessions.find((s) => s.stamp === safeStamp)
 
   if (entry) {
-    if (entry.status === "active") {
-      const activePath = join(getEffectivePaths(projectRoot).activeDir, entry.file)
-      if (existsSync(activePath)) return activePath
+    const safeFile = sanitizeSessionFileName(entry.file)
+    if (!safeFile) {
+      const fallback = safeJoinWithin(effective.activeDir, `${safeStamp}.md`)
+      return fallback ?? join(effective.activeDir, "invalid-stamp.md")
     }
 
-    const archivedPath = join(paths.archiveDir, entry.file)
-    if (existsSync(archivedPath)) return archivedPath
+    if (entry.status === "active") {
+      const activePath = safeJoinWithin(effective.activeDir, safeFile)
+      if (activePath && existsSync(activePath)) return activePath
+    }
 
-    const sessionPath = join(paths.sessionsDir, entry.file)
-    if (existsSync(sessionPath)) return sessionPath
+    const archivedPath = safeJoinWithin(paths.archiveDir, safeFile)
+    if (archivedPath && existsSync(archivedPath)) return archivedPath
+
+    const sessionPath = safeJoinWithin(paths.sessionsDir, safeFile)
+    if (sessionPath && existsSync(sessionPath)) return sessionPath
   }
 
-  const byStampInActiveDir = join(getEffectivePaths(projectRoot).activeDir, `${stamp}.md`)
-  if (existsSync(byStampInActiveDir)) return byStampInActiveDir
+  const byStampInActiveDir = safeJoinWithin(effective.activeDir, `${safeStamp}.md`)
+  if (byStampInActiveDir && existsSync(byStampInActiveDir)) return byStampInActiveDir
 
-  const byStampInSessionsDir = join(paths.sessionsDir, `${stamp}.md`)
-  if (existsSync(byStampInSessionsDir)) return byStampInSessionsDir
+  const byStampInSessionsDir = safeJoinWithin(paths.sessionsDir, `${safeStamp}.md`)
+  if (byStampInSessionsDir && existsSync(byStampInSessionsDir)) return byStampInSessionsDir
 
-  return byStampInActiveDir
+  return byStampInActiveDir ?? join(effective.activeDir, "invalid-stamp.md")
 }
 
 /**
@@ -710,14 +733,15 @@ export async function archiveSession(
   );
 
   if (entry) {
+    const safeEntryFile = sanitizeSessionFileName(entry.file)
     const sourceCandidates = [
-      join(effective.activeDir, entry.file),
-      join(paths.sessionsDir, entry.file),
+      safeEntryFile ? safeJoinWithin(effective.activeDir, safeEntryFile) : null,
+      safeEntryFile ? safeJoinWithin(paths.sessionsDir, safeEntryFile) : null,
     ]
-    const srcPath = sourceCandidates.find((p) => existsSync(p))
+    const srcPath = sourceCandidates.find((p) => p && existsSync(p))
 
-    const archiveFileName = /^\d{4}-\d{2}-\d{2}-/.test(entry.file)
-      ? entry.file
+    const archiveFileName = safeEntryFile && /^\d{4}-\d{2}-\d{2}-/.test(safeEntryFile)
+      ? safeEntryFile
       : buildArchiveFilename(new Date(entry.created || Date.now()), entry.mode || "plan_driven", entry.trajectory || "session")
     const dstPath = join(paths.archiveDir, archiveFileName)
 
