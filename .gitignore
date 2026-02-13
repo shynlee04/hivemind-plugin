@@ -9,9 +9,12 @@ coverage/
 .hivemind/
 .worktrees/
 
-
-# Plugin reference repos (large XML files, download via README script)
-.planning/research/plugin-refs/*.xml
+# Development artifacts (kept on dev branches only)
+.planning/
+.githooks/
+opencode.json
+session-*.md
+this-is-what-fuck-happened.md
 
 # IDE/Agent configs
 .agent/
@@ -20,4 +23,3 @@ coverage/
 .kilocode/
 .qoder/
 .windsurf/
-this-is-what-fuck-happened.md
