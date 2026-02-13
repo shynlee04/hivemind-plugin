@@ -39,7 +39,7 @@ export async function createLogger(
     const line = `[${timestamp}] [${level.toUpperCase()}] ${message}\n`;
     try {
       if (!stream.write(line)) {
-        await new Promise<void>((resolve) => stream.once('drain', resolve));
+        await once(stream, 'drain');
       }
     } catch {
       // Fail silently - logging should never break the application
