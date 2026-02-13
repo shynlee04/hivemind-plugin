@@ -8,12 +8,12 @@
 
 import * as p from "@clack/prompts"
 import type { InitOptions } from "./init.js"
-import type {
-  GovernanceMode,
-  Language,
-  AutomationLevel,
-  ExpertLevel,
-  OutputStyle,
+import {
+  type GovernanceMode,
+  type Language,
+  type AutomationLevel,
+  type ExpertLevel,
+  type OutputStyle,
 } from "../schemas/config.js"
 
 /**

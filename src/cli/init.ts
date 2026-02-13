@@ -16,8 +16,24 @@ import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-import type { GovernanceMode, Language, ExpertLevel, OutputStyle, AutomationLevel } from "../schemas/config.js"
-import { createConfig, isValidGovernanceMode, isValidLanguage, isValidExpertLevel, isValidOutputStyle, isValidAutomationLevel } from "../schemas/config.js"
+import {
+  type GovernanceMode,
+  type Language,
+  type ExpertLevel,
+  type OutputStyle,
+  type AutomationLevel,
+  GOVERNANCE_MODES,
+  LANGUAGES,
+  EXPERT_LEVELS,
+  OUTPUT_STYLES,
+  AUTOMATION_LEVELS,
+  createConfig,
+  isValidGovernanceMode,
+  isValidLanguage,
+  isValidExpertLevel,
+  isValidOutputStyle,
+  isValidAutomationLevel,
+} from "../schemas/config.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
 import { createStateManager, saveConfig } from "../lib/persistence.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
@@ -255,7 +271,7 @@ export async function initProject(
   const governanceMode = options.governanceMode ?? "assisted"
   if (!isValidGovernanceMode(governanceMode)) {
     log(`✗ Invalid governance mode: ${governanceMode}`)
-    log("  Valid: permissive, assisted, strict")
+    log(`  Valid: ${GOVERNANCE_MODES.join(", ")}`)
     return
   }
 
@@ -263,7 +279,7 @@ export async function initProject(
   const language = options.language ?? "en"
   if (!isValidLanguage(language)) {
     log(`✗ Invalid language: ${language}`)
-    log("  Valid: en, vi")
+    log(`  Valid: ${LANGUAGES.join(", ")}`)
     return
   }
 
@@ -271,7 +287,7 @@ export async function initProject(
   const expertLevel = options.expertLevel ?? "intermediate"
   if (!isValidExpertLevel(expertLevel)) {
     log(`✗ Invalid expert level: ${expertLevel}`)
-    log("  Valid: beginner, intermediate, advanced, expert")
+    log(`  Valid: ${EXPERT_LEVELS.join(", ")}`)
     return
   }
 
@@ -279,7 +295,7 @@ export async function initProject(
   const outputStyle = options.outputStyle ?? "explanatory"
   if (!isValidOutputStyle(outputStyle)) {
     log(`✗ Invalid output style: ${outputStyle}`)
-    log("  Valid: explanatory, outline, skeptical, architecture, minimal")
+    log(`  Valid: ${OUTPUT_STYLES.join(", ")}`)
     return
   }
 
@@ -287,7 +303,7 @@ export async function initProject(
   const automationLevel = options.automationLevel ?? "assisted"
   if (!isValidAutomationLevel(automationLevel)) {
     log(`✗ Invalid automation level: ${automationLevel}`)
-    log('  Valid: manual, guided, assisted, full, retard ("I am retard — lead me")')
+    log(`  Valid: ${AUTOMATION_LEVELS.join(", ")} ("I am retard — lead me")`)
     return
   }
 
