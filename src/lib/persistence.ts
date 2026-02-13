@@ -2,8 +2,8 @@
  * StateManager - Disk persistence for brain state
  */
 
-import { readFile, readdir, writeFile, mkdir, rename, unlink } from "fs/promises"
-import { existsSync, openSync, closeSync } from "fs"
+import { readFile, readdir, writeFile, mkdir, rename, unlink, open, FileHandle } from "fs/promises"
+import { existsSync } from "fs"
 import { dirname, join } from "path"
 import type { BrainState } from "../schemas/brain-state.js"
 import type { HiveMindConfig } from "../schemas/config.js"
@@ -45,7 +45,7 @@ async function cleanupOldBackups(brainPath: string, logger?: Logger): Promise<vo
 // File lock mechanism using exclusive file handles
 class FileLock {
   private lockPath: string
-  private fd: number | null = null
+  private fd: FileHandle | null = null
   private logger?: Logger
 
   constructor(lockPath: string, logger?: Logger) {
@@ -62,7 +62,7 @@ class FileLock {
     while (Date.now() < timeout) {
       try {
         // Try to acquire exclusive lock
-        this.fd = openSync(this.lockPath, "wx")
+        this.fd = await open(this.lockPath, "wx")
         return // Lock acquired
       } catch (err: unknown) {
         if (isNodeError(err) && err.code === "EEXIST") {
@@ -95,7 +95,7 @@ class FileLock {
   async release(): Promise<void> {
     if (this.fd !== null) {
       try {
-        closeSync(this.fd)
+        await this.fd.close()
         this.fd = null
         await unlink(this.lockPath).catch(() => {
           // Ignore errors when removing lock file
