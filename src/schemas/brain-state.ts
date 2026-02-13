@@ -131,6 +131,63 @@ export function generateSessionId(): string {
   return `session-${timestamp}-${random}`;
 }
 
+export function migrateBrainState(data: any): BrainState {
+  const state = data as BrainState;
+
+  // Migration: ensure fields added in v1.5+ exist
+  state.last_commit_suggestion_turn ??= 0;
+
+  // Migration: ensure Round 2 session fields exist
+  if (state.session) {
+    state.session.date ??= new Date(state.session.start_time).toISOString().split("T")[0];
+    state.session.meta_key ??= "";
+    state.session.role ??= "";
+    state.session.by_ai ??= true;
+  }
+
+  // Migration: ensure Iteration 1 fields exist (hierarchy-redesign)
+  state.compaction_count ??= 0;
+  state.last_compaction_time ??= 0;
+  state.next_compaction_report ??= null;
+  state.cycle_log ??= [];
+  state.pending_failure_ack ??= false;
+
+  // Migration: ensure detection counter fields exist
+  if (state.metrics) {
+    state.metrics.consecutive_failures ??= 0;
+    state.metrics.consecutive_same_section ??= 0;
+    state.metrics.last_section_content ??= "";
+    state.metrics.keyword_flags ??= [];
+    state.metrics.write_without_read_count ??= 0;
+    state.metrics.tool_type_counts ??= { read: 0, write: 0, query: 0, governance: 0 };
+
+    state.metrics.governance_counters ??= {
+      out_of_order: 0,
+      drift: 0,
+      compaction: 0,
+      evidence_pressure: 0,
+      ignored: 0,
+      acknowledged: false,
+      prerequisites_completed: false,
+    };
+  }
+
+  state.framework_selection ??= {
+    choice: null,
+    active_phase: "",
+    active_spec_path: "",
+    acceptance_note: "",
+    updated_at: 0,
+  };
+
+  // Migration: remove deprecated sentiment_signals field
+  if ("sentiment_signals" in state) {
+    delete (state as any).sentiment_signals;
+  }
+
+  return state;
+}
+
 export function createBrainState(
   sessionId: string,
   config: HiveMindConfig,
