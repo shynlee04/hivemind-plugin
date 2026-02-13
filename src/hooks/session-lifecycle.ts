@@ -613,12 +613,45 @@ export function createSessionLifecycleHook(
           const stats = getTreeStats(tree);
           if (tree.root) {
             const treeView = toAsciiTree(tree);
-            // Truncate tree view for prompt budget
             const treeLines = treeView.split('\n');
+            
+            // Smart hierarchy summarization for large trees
             if (treeLines.length > 8) {
-              hierarchyLines.push(...treeLines.slice(0, 8));
-              hierarchyLines.push(`  ... (${stats.totalNodes} nodes total)`);
+              const cursorNode = getCursorNode(tree);
+              let summaryLines: string[] = [];
+              
+              if (cursorNode) {
+                // Show the path from root to cursor (current focus)
+                const ancestors = getAncestors(tree.root, cursorNode.id);
+                summaryLines.push("Current focus path:");
+                ancestors.forEach((node, index) => {
+                  const indent = "  ".repeat(index);
+                  summaryLines.push(`${indent}${node.content}`);
+                  
+                  // Show immediate children of current node if it has any
+                  if (node.id === cursorNode.id && node.children.length > 0) {
+                    node.children.forEach(child => {
+                      summaryLines.push(`${indent}  └─ ${child.content}`);
+                    });
+                  }
+                });
+              } else {
+                // No cursor - show root and top-level structure
+                summaryLines.push(treeLines[0]); // Root node
+                if (tree.root.children.length > 0) {
+                  summaryLines.push("  └─ " + tree.root.children.slice(0, 3).map(child => child.content).join(", "));
+                  if (tree.root.children.length > 3) {
+                    summaryLines.push(`  └─ ... and ${tree.root.children.length - 3} more tactics`);
+                  }
+                }
+              }
+              
+              // Add statistics
+              summaryLines.push(`\nTree statistics: ${stats.totalNodes} nodes (${stats.activeNodes} active, ${stats.completedNodes} completed, ${stats.blockedNodes} blocked)`);
+              
+              hierarchyLines.push(...summaryLines);
             } else {
+              // Small tree - show full view
               hierarchyLines.push(treeView);
             }
           }

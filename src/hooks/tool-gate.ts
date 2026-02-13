@@ -1,13 +1,10 @@
 /**
- * Tool Gate Hook — Advisory-only governance enforcement.
+ * Tool Gate Hook — Governance enforcement with strict mode support.
  *
  * Intercepts tool calls and provides governance guidance:
- *   - strict: advisory warnings until declare_intent called
+ *   - strict: Blocks execution for framework conflicts unless explicitly acknowledged
  *   - assisted: warnings and guidance
  *   - permissive: silently tracks for metrics
- *
- * IMPORTANT: This hook NEVER blocks execution.
- * All responses are advisory-only per HC1 compliance.
  *
  * P3: try/catch — never break tool execution
  * P5: Config re-read from disk each invocation (Rule 6)
@@ -111,7 +108,7 @@ export function createToolGateHook(
       // Load brain state
       let state = await stateManager.load()
 
-      // Framework conflict gate (GOV-06/GOV-07) - Advisory only
+      // Framework conflict gate (GOV-06/GOV-07)
       const frameworkContext = await detectFrameworkContext(directory)
       if (frameworkContext.mode === "both") {
         const selection = state?.framework_selection
@@ -127,8 +124,21 @@ export function createToolGateHook(
             : ""
           const guidance = `Framework conflict: both .planning and .spec-kit detected. Consolidate first, then choose framework via locked menu metadata (active_phase or active_spec_path).${guidanceSuffix}`
 
-          // Advisory only - no blocking
           if (!CONFLICT_SAFE_TOOLS.has(toolName)) {
+            // In strict mode, block execution for framework conflicts
+            if (config.governance_mode === "strict") {
+              return {
+                allowed: false,
+                warning: `Framework conflict blocks tool execution in strict mode: ${guidance}`,
+                signal: {
+                  type: "framework",
+                  severity: "warning",
+                  message: guidance,
+                },
+              }
+            }
+
+            // In assisted/permissive modes, continue with advisory
             return {
               allowed: true,
               warning: buildFrameworkAdvisory(guidance, toolName),

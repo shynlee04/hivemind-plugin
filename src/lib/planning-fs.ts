@@ -386,35 +386,110 @@ export async function appendToSessionLog(
   const filePath = await resolveSessionFilePathByStamp(projectRoot, stamp)
 
   try {
-    const content = await readFile(filePath, "utf-8");
-    const lines = content.split("\n");
+    const content = await readFile(filePath, "utf-8")
+    let lines = content.split("\n")
+
+    // Get max lines from config (default to 50 if not available)
+    let maxLines = 50
+    try {
+      const configPath = getEffectivePaths(projectRoot).config
+      if (existsSync(configPath)) {
+        const configContent = await readFile(configPath, "utf-8")
+        const config = JSON.parse(configContent)
+        if (config.max_active_md_lines) {
+          maxLines = config.max_active_md_lines
+        }
+      }
+    } catch {
+      // Fallback to default if config read fails
+    }
+
+    // Check if we need to compact the log
+    const logLineCount = countLogLines(lines)
+    if (logLineCount >= maxLines) {
+      lines = compactLogSection(lines, maxLines)
+    }
 
     // Find the ## Log section and append after it
-    let logIndex = -1;
-    let notesIndex = -1;
+    let logIndex = -1
+    let notesIndex = -1
     for (let i = 0; i < lines.length; i++) {
-      if (lines[i].trim() === "## Log") logIndex = i;
-      if (lines[i].trim() === "## Notes") notesIndex = i;
+      if (lines[i].trim() === "## Log") logIndex = i
+      if (lines[i].trim() === "## Notes") notesIndex = i
     }
 
     if (logIndex === -1) {
       // No ## Log section — append at end
-      lines.push("", logEntry);
+      lines.push("", logEntry)
     } else if (notesIndex !== -1 && notesIndex > logIndex) {
       // Insert before ## Notes
-      lines.splice(notesIndex, 0, logEntry, "");
+      lines.splice(notesIndex, 0, logEntry, "")
     } else {
       // Append at end of file
-      lines.push(logEntry);
+      lines.push(logEntry)
     }
 
-    const newContent = lines.join("\n");
-    await writeFile(filePath, newContent);
+    const newContent = lines.join("\n")
+    await writeFile(filePath, newContent)
   } catch {
     // File doesn't exist — create with just the log entry
-    const minimal = `---\nsession_id: "${stamp}"\n---\n\n## Log\n${logEntry}\n`;
-    await writeFile(filePath, minimal);
+    const minimal = `---\nsession_id: "${stamp}"\n---\n\n## Log\n${logEntry}\n`
+    await writeFile(filePath, minimal)
   }
+}
+
+/** Count number of log lines in the session file */
+function countLogLines(lines: string[]): number {
+  let logIndex = -1
+  let notesIndex = -1
+  
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === "## Log") logIndex = i
+    if (lines[i].trim() === "## Notes") notesIndex = i
+  }
+
+  if (logIndex === -1) return 0
+  
+  const logStart = logIndex + 1
+  const logEnd = notesIndex !== -1 ? notesIndex : lines.length
+  
+  let count = 0
+  for (let i = logStart; i < logEnd; i++) {
+    if (lines[i].trim()) count++
+  }
+  
+  return count
+}
+
+/** Compact the log section to keep only the most recent lines */
+function compactLogSection(lines: string[], maxLines: number): string[] {
+  let logIndex = -1
+  let notesIndex = -1
+  
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === "## Log") logIndex = i
+    if (lines[i].trim() === "## Notes") notesIndex = i
+  }
+
+  if (logIndex === -1) return lines
+  
+  const logStart = logIndex + 1
+  const logEnd = notesIndex !== -1 ? notesIndex : lines.length
+  
+  // Extract and filter log lines
+  const logLines: string[] = []
+  for (let i = logStart; i < logEnd; i++) {
+    if (lines[i].trim()) logLines.push(lines[i])
+  }
+
+  // Keep only the most recent lines
+  const keptLines = logLines.slice(-Math.floor(maxLines * 0.8)) // Keep 80% of max lines when compacting
+  
+  // Replace old log section with compacted version
+  const before = lines.slice(0, logStart)
+  const after = lines.slice(logEnd)
+  
+  return [...before, ...keptLines, ...after]
 }
 
 /**
