@@ -5,16 +5,26 @@
 
 import type { DetectionThresholds } from "../lib/detection.js";
 
-export type GovernanceMode = "permissive" | "assisted" | "strict";
-export type Language = "en" | "vi";
-export type AutomationLevel = "manual" | "guided" | "assisted" | "full" | "retard";
-export type ExpertLevel = "beginner" | "intermediate" | "advanced" | "expert";
-export type OutputStyle = 
-  | "explanatory"      // Detailed explanations, teaching mode
-  | "outline"          // Bullet points, structured summaries
-  | "skeptical"        // Critical review, challenge assumptions
-  | "architecture"     // Focus on design patterns, structure first
-  | "minimal";         // Brief, code-only responses
+export const GOVERNANCE_MODES = ["permissive", "assisted", "strict"] as const;
+export type GovernanceMode = (typeof GOVERNANCE_MODES)[number];
+
+export const LANGUAGES = ["en", "vi"] as const;
+export type Language = (typeof LANGUAGES)[number];
+
+export const AUTOMATION_LEVELS = ["manual", "guided", "assisted", "full", "retard"] as const;
+export type AutomationLevel = (typeof AUTOMATION_LEVELS)[number];
+
+export const EXPERT_LEVELS = ["beginner", "intermediate", "advanced", "expert"] as const;
+export type ExpertLevel = (typeof EXPERT_LEVELS)[number];
+
+export const OUTPUT_STYLES = [
+  "explanatory",      // Detailed explanations, teaching mode
+  "outline",          // Bullet points, structured summaries
+  "skeptical",        // Critical review, challenge assumptions
+  "architecture",     // Focus on design patterns, structure first
+  "minimal"           // Brief, code-only responses
+] as const;
+export type OutputStyle = (typeof OUTPUT_STYLES)[number];
 
 export interface AgentBehaviorConfig {
   /** Language for all responses */
@@ -98,23 +108,23 @@ export function createConfig(overrides: Partial<HiveMindConfig> = {}): HiveMindC
 }
 
 export function isValidGovernanceMode(mode: string): mode is GovernanceMode {
-  return ["permissive", "assisted", "strict"].includes(mode);
+  return (GOVERNANCE_MODES as readonly string[]).includes(mode);
 }
 
 export function isValidLanguage(lang: string): lang is Language {
-  return ["en", "vi"].includes(lang);
+  return (LANGUAGES as readonly string[]).includes(lang);
 }
 
 export function isValidExpertLevel(level: string): level is ExpertLevel {
-  return ["beginner", "intermediate", "advanced", "expert"].includes(level);
+  return (EXPERT_LEVELS as readonly string[]).includes(level);
 }
 
 export function isValidOutputStyle(style: string): style is OutputStyle {
-  return ["explanatory", "outline", "skeptical", "architecture", "minimal"].includes(style);
+  return (OUTPUT_STYLES as readonly string[]).includes(style);
 }
 
 export function isValidAutomationLevel(level: string): level is AutomationLevel {
-  return ["manual", "guided", "assisted", "full", "retard"].includes(level);
+  return (AUTOMATION_LEVELS as readonly string[]).includes(level);
 }
 
 /**
