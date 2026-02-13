@@ -9,7 +9,7 @@ import type { BrainState } from "../schemas/brain-state.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import type { Logger } from "./logging.js"
 import { getEffectivePaths } from "./paths.js"
-import { createBrainState } from "../schemas/brain-state.js"
+import { createBrainState, migrateBrainState } from "../schemas/brain-state.js"
 import { createConfig } from "../schemas/config.js"
 
 function isNodeError(err: unknown): err is NodeJS.ErrnoException {
@@ -151,45 +151,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
 
         try {
           const data = await readFile(brainPath, "utf-8")
-          const parsed = JSON.parse(data) as BrainState
-          // Migration: ensure fields added in v1.5+ exist
-          parsed.last_commit_suggestion_turn ??= 0
-          // Migration: ensure Round 2 session fields exist
-          parsed.session.date ??= new Date(parsed.session.start_time).toISOString().split("T")[0]
-          parsed.session.meta_key ??= ""
-          parsed.session.role ??= ""
-          parsed.session.by_ai ??= true
-          // Migration: ensure Iteration 1 fields exist (hierarchy-redesign)
-          parsed.compaction_count ??= 0
-          parsed.last_compaction_time ??= 0
-          parsed.next_compaction_report ??= null
-          parsed.cycle_log ??= []
-          parsed.pending_failure_ack ??= false
-          // Migration: ensure detection counter fields exist
-          parsed.metrics.consecutive_failures ??= 0
-          parsed.metrics.consecutive_same_section ??= 0
-          parsed.metrics.last_section_content ??= ""
-          parsed.metrics.keyword_flags ??= []
-          parsed.metrics.write_without_read_count ??= 0
-          parsed.metrics.tool_type_counts ??= { read: 0, write: 0, query: 0, governance: 0 }
-          parsed.metrics.governance_counters ??= {
-            out_of_order: 0,
-            drift: 0,
-            compaction: 0,
-            evidence_pressure: 0,
-            ignored: 0,
-            acknowledged: false,
-            prerequisites_completed: false,
-          }
-          parsed.framework_selection ??= {
-            choice: null,
-            active_phase: "",
-            active_spec_path: "",
-            acceptance_note: "",
-            updated_at: 0,
-          }
-          // Migration: remove deprecated sentiment_signals field
-          delete (parsed as any).sentiment_signals
+          const parsed = migrateBrainState(JSON.parse(data))
           return parsed
         } catch (parseErr: unknown) {
           // Attempt to recover from backup if main file is corrupted
@@ -197,7 +159,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             await logger?.error(`Brain state corrupted at ${brainPath}, attempting to load backup from ${bakPath}`)
             try {
               const backupData = await readFile(bakPath, "utf-8")
-              const parsedBackup = JSON.parse(backupData) as BrainState
+              const parsedBackup = migrateBrainState(JSON.parse(backupData))
               return parsedBackup
             } catch (backupErr: unknown) {
               await logger?.error(`Backup file also corrupted at ${bakPath}: ${backupErr}`)
@@ -278,7 +240,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
         // Read
         if (!existsSync(brainPath)) return null
         const data = await readFile(brainPath, "utf-8")
-        const parsed = JSON.parse(data) as BrainState
+        const parsed = migrateBrainState(JSON.parse(data))
 
         // Modify
         const updated = await fn(parsed)

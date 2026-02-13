@@ -14,6 +14,7 @@ import {
   addFileTouched,
   calculateDriftScore,
   shouldTriggerDriftWarning,
+  migrateBrainState,
 } from "../src/schemas/brain-state.js"
 import { createConfig } from "../src/schemas/config.js"
 import {
@@ -190,6 +191,47 @@ function test_session_id() {
   assert(id1 !== id2, "unique IDs generated")
 }
 
+function test_migrate_brain_state() {
+  process.stderr.write("\n--- brain-state: migrate ---\n")
+  const oldState = {
+    session: {
+      id: "old-session",
+      mode: "plan_driven",
+      start_time: 1600000000000,
+    },
+    metrics: {
+      turn_count: 5,
+    },
+    sentiment_signals: { foo: "bar" } // Deprecated field
+  }
+
+  const migrated = migrateBrainState(oldState)
+
+  // Verify fields added
+  assert(migrated.last_commit_suggestion_turn === 0, "last_commit_suggestion_turn defaulted")
+  assert(migrated.session.date === new Date(1600000000000).toISOString().split("T")[0], "session.date derived from start_time")
+  assert(migrated.session.meta_key === "", "session.meta_key defaulted")
+  assert(migrated.session.role === "", "session.role defaulted")
+  assert(migrated.session.by_ai === true, "session.by_ai defaulted")
+
+  assert(migrated.compaction_count === 0, "compaction_count defaulted")
+  assert(migrated.cycle_log.length === 0, "cycle_log defaulted")
+  assert(migrated.pending_failure_ack === false, "pending_failure_ack defaulted")
+
+  assert(migrated.metrics.consecutive_failures === 0, "metrics.consecutive_failures defaulted")
+  assert(migrated.metrics.tool_type_counts.read === 0, "metrics.tool_type_counts defaulted")
+  assert(migrated.metrics.governance_counters.drift === 0, "metrics.governance_counters defaulted")
+
+  assert(migrated.framework_selection.choice === null, "framework_selection defaulted")
+
+  // Verify deprecated field removed
+  assert(!("sentiment_signals" in migrated), "sentiment_signals removed")
+
+  // Verify existing data preserved
+  assert(migrated.session.id === "old-session", "existing session.id preserved")
+  assert(migrated.metrics.turn_count === 5, "existing metrics.turn_count preserved")
+}
+
 // ─── Runner ─────────────────────────────────────────────────────────
 
 function main() {
@@ -206,6 +248,7 @@ function main() {
   test_drift_warning()
   test_hierarchy_state()
   test_session_id()
+  test_migrate_brain_state()
 
   process.stderr.write(`\n=== Schema: ${passed} passed, ${failed_} failed ===\n`)
   if (failed_ > 0) process.exit(1)

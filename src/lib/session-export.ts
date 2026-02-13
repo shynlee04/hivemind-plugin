@@ -4,7 +4,7 @@
 import { readFile, rm, writeFile } from "fs/promises"
 import { join } from "path"
 import { existsSync } from "fs"
-import type { BrainState } from "../schemas/brain-state.js"
+import { migrateBrainState, type BrainState } from "../schemas/brain-state.js"
 
 const HIVEMIND_DIR = ".hivemind"
 
@@ -29,7 +29,7 @@ export async function loadSession(
   
   try {
     const content = await readFile(sessionPath, "utf-8")
-    return JSON.parse(content) as BrainState
+    return migrateBrainState(JSON.parse(content))
   } catch {
     return null
   }
