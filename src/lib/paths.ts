@@ -24,7 +24,7 @@
  *   └── templates/      → session.md
  */
 
-import { join } from "path"
+import { join, resolve, sep } from "path"
 import { existsSync } from "fs"
 import { readFile } from "fs/promises"
 
@@ -35,6 +35,23 @@ export const STRUCTURE_VERSION = "2.0.0"
 
 /** The root directory name — single definition. */
 export const HIVEMIND_DIR = ".hivemind"
+
+/**
+ * Safely join path segments to a root directory, preventing directory traversal.
+ * Throws an error if the resulting path is outside the root.
+ */
+export function safeJoin(root: string, ...segments: string[]): string {
+  const target = join(root, ...segments)
+  const resolvedRoot = resolve(root)
+  const resolvedTarget = resolve(target)
+
+  // Ensure resolvedTarget is either the root itself or a subdirectory
+  if (resolvedTarget !== resolvedRoot && !resolvedTarget.startsWith(resolvedRoot + sep)) {
+    throw new Error(`Path traversal detected: ${target} is outside ${root}`)
+  }
+
+  return target
+}
 
 // ─── Types ───────────────────────────────────────────────────────────
 

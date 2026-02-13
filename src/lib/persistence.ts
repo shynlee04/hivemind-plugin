@@ -17,7 +17,7 @@ function isNodeError(err: unknown): err is NodeJS.ErrnoException {
 }
 
 /** Clean up old backup files, keeping only the last 3 versions */
-async function cleanupOldBackups(brainPath: string): Promise<void> {
+async function cleanupOldBackups(brainPath: string, logger?: Logger): Promise<void> {
   const fs = await import("fs/promises")
   const dir = dirname(brainPath)
   const backupPattern = /brain\.json\.bak\.\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/
@@ -39,11 +39,11 @@ async function cleanupOldBackups(brainPath: string): Promise<void> {
       try {
         await fs.unlink(backup.path)
       } catch (err: unknown) {
-        // Ignore errors when deleting old backups
+        await logger?.warn(`Failed to delete old backup ${backup.name}: ${err}`)
       }
     }
   } catch (err: unknown) {
-    // Ignore errors when cleaning up backups
+    await logger?.warn(`Failed to cleanup old backups: ${err}`)
   }
 }
 
@@ -57,12 +57,14 @@ function getTimestampFromBackupName(filename: string): number {
 }
 
 // File lock mechanism using exclusive file handles
-class FileLock {
+export class FileLock {
   private lockPath: string
   private fd: number | null = null
+  private logger?: Logger
 
-  constructor(lockPath: string) {
+  constructor(lockPath: string, logger?: Logger) {
     this.lockPath = lockPath
+    this.logger = logger
   }
 
   async acquire(): Promise<void> {
@@ -84,6 +86,7 @@ class FileLock {
             const stat = await fs.stat(this.lockPath)
             if (Date.now() - stat.mtime.getTime() > 5000) {
               // Stale lock, remove it
+              await this.logger?.warn(`Removing stale lock at ${this.lockPath}`)
               await fs.unlink(this.lockPath)
               continue // Retry acquisition
             }
@@ -132,7 +135,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
   const bakPath = brainPath + ".bak"
   const lockPath = brainPath + ".lock"
   const tempPath = brainPath + ".tmp"
-  const lock = new FileLock(lockPath)
+  const lock = new FileLock(lockPath, logger)
 
   // Ensure directory exists before any operations
   const ensureDirectory = async () => {
@@ -244,10 +247,10 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             await rename(brainPath, bakPath)
             
             // Cleanup old backup files (keep last 3 backups)
-            await cleanupOldBackups(brainPath)
+            await cleanupOldBackups(brainPath, logger)
           } catch (backupErr: unknown) {
             // Non-fatal — continue with save even if backup fails
-            await logger?.warn(`Failed to create backup: ${backupErr}`)
+            await logger?.error(`Failed to create backup: ${backupErr}`)
           }
         }
 
@@ -286,7 +289,11 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
         // Write (atomic)
         await writeFile(tempPath, JSON.stringify(updated, null, 2))
         if (existsSync(brainPath)) {
-          try { await rename(brainPath, bakPath) } catch { /* non-fatal */ }
+          try {
+            await rename(brainPath, bakPath)
+          } catch (backupErr) {
+            await logger?.error(`Failed to backup brain state during withState: ${backupErr}`)
+          }
         }
         await rename(tempPath, brainPath)
 
