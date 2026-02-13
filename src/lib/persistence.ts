@@ -46,9 +46,11 @@ async function cleanupOldBackups(brainPath: string, logger?: Logger): Promise<vo
 class FileLock {
   private lockPath: string
   private fd: number | null = null
+  private logger?: Logger
 
-  constructor(lockPath: string) {
+  constructor(lockPath: string, logger?: Logger) {
     this.lockPath = lockPath
+    this.logger = logger
   }
 
   async acquire(): Promise<void> {
@@ -71,6 +73,7 @@ class FileLock {
             if (Date.now() - stat.mtime.getTime() > 5000) {
               // Stale lock, remove it
               await fs.unlink(this.lockPath)
+              await this.logger?.warn(`Removed stale lock file: ${this.lockPath}`)
               continue // Retry acquisition
             }
           } catch (statErr: unknown) {
@@ -118,7 +121,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
   const bakPath = brainPath + ".bak"
   const lockPath = brainPath + ".lock"
   const tempPath = brainPath + ".tmp"
-  const lock = new FileLock(lockPath)
+  const lock = new FileLock(lockPath, logger)
 
   // Ensure directory exists before any operations
   const ensureDirectory = async () => {

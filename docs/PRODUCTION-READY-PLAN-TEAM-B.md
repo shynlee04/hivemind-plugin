@@ -25,6 +25,7 @@ This section is the live implementation tracker used while hardening `master`.
 | I5 | Full production gate (`npm test`, typecheck, boundary lint) | ✅ Done | All verification commands green on current branch |
 | I6 | Terminology hardening + legacy compatibility | ✅ Done | Removed deprecated automation label from public surface while preserving legacy input normalization |
 | I7 | P2 persistence backup cleanup observability | ✅ Done | Added warning logs for old-backup cleanup failures and deterministic backup ordering with regression coverage |
+| I8 | P1 lock-path reliability + stale-lock observability | ✅ Done | Added stale lock recovery warning logs and regression contract test for sync exclusive lock semantics |
 
 ### Acceptance Gate for "Production-Ready"
 1. All P0 items implemented with tests.
@@ -34,6 +35,7 @@ This section is the live implementation tracker used while hardening `master`.
 5. Configuration validation has a single source of truth and regression tests.
 6. Deprecated/offensive automation label removed from public schema and CLI UX.
 7. Backup cleanup failures are observable (non-fatal) during save operations.
+8. Stale lock recovery is observable and lock acquisition contract is regression-protected.
 
 ---
 
