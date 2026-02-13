@@ -10,6 +10,7 @@
  */
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool";
 import { loadMems, getShelfSummary, BUILTIN_SHELVES } from "../lib/mems.js";
+import { CliFormatter } from "../lib/cli-formatter.js";
 
 export function createListShelvesTool(directory: string): ToolDefinition {
   return tool({
@@ -25,44 +26,42 @@ export function createListShelvesTool(directory: string): ToolDefinition {
       }
 
       const summary = getShelfSummary(memsState);
-      const lines: string[] = [];
-      lines.push("=== MEMS BRAIN ===");
-      lines.push("");
-      lines.push(`Total memories: ${memsState.mems.length}`);
-      lines.push("");
+      const fmt = new CliFormatter();
+      fmt.header("MEMS BRAIN");
+      fmt.line(`Total memories: ${memsState.mems.length}`).line();
 
       // Show all shelves with counts
-      lines.push("## Shelves");
+      fmt.section("Shelves");
       for (const shelf of BUILTIN_SHELVES) {
         const count = summary[shelf] || 0;
-        lines.push(`  ${shelf}: ${count}`);
+        fmt.line(`${shelf}: ${count}`, 1);
       }
       // Show custom shelves
       for (const [shelf, count] of Object.entries(summary)) {
         if (!(BUILTIN_SHELVES as readonly string[]).includes(shelf)) {
-          lines.push(`  ${shelf}: ${count} (custom)`);
+          fmt.line(`${shelf}: ${count} (custom)`, 1);
         }
       }
-      lines.push("");
+      fmt.line();
 
       // Show 3 most recent mems
       const recent = [...memsState.mems]
         .sort((a, b) => b.created_at - a.created_at)
         .slice(0, 3);
 
-      lines.push("## Recent Memories");
+      fmt.section("Recent Memories");
       for (const m of recent) {
         const date = new Date(m.created_at).toISOString().split("T")[0];
         const preview = m.content.length > 60
           ? m.content.slice(0, 57) + "..."
           : m.content;
-        lines.push(`  [${m.shelf}] ${date}: ${preview}`);
+        fmt.line(`[${m.shelf}] ${date}: ${preview}`, 1);
       }
-      lines.push("");
-      lines.push("Use recall_mems to search memories by keyword.");
-      lines.push("=== END MEMS BRAIN ===");
+      fmt.line();
+      fmt.line("Use recall_mems to search memories by keyword.");
+      fmt.footer("END MEMS BRAIN");
 
-      return lines.join("\n");
+      return fmt.toString();
     },
   });
 }
