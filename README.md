@@ -60,7 +60,7 @@ The wizard walks you through step by step:
 │  ○ guided   — Suggestions only
 │  ● assisted — Balanced automation (recommended)
 │  ○ full     — Maximum automation
-│  ○ retard   — Maximum handholding, skeptical of everything
+│  ○ coach    — Maximum handholding, skeptical of everything
 
 ◆  Configuration saved! .hivemind/ created.
 ```
@@ -142,7 +142,7 @@ HiveMind fires **5 hooks automatically** on every turn:
 | `guided` | Suggestions only, never auto-acts |
 | `assisted` | Balanced automation *(default)* |
 | `full` | Maximum automation, minimal prompting |
-| `retard` | Maximum handholding — strict governance, skeptical output, strongest discipline |
+| `coach` | Maximum handholding — strict governance, skeptical output, strongest discipline |
 
 ---
 
@@ -214,9 +214,14 @@ HiveMind ships 3 OpenCode slash commands that work immediately after install:
 
 | Command | Purpose |
 |---------|---------|
-| `/hivemind-scan` | Project reconnaissance — scans structure, detects stack, identifies stale artifacts |
+| `/hivemind-scan` | Brownfield reconnaissance — analyze, recommend, orchestrate baseline context |
 | `/hivemind-status` | Full governance status — session, hierarchy, metrics, mems, config |
 | `/hivemind-compact` | Guided session archival with pre-compact checklist |
+
+`/hivemind-scan` runs a practical sequence with `scan_hierarchy` actions:
+1. `action: "analyze"` — detect framework mode (`gsd/spec-kit/both/none`) + BMAD signals
+2. `action: "recommend"` — generate remediation runbook
+3. `action: "orchestrate"` — persist non-destructive baseline anchors + memory
 
 ---
 
@@ -239,6 +244,8 @@ Skills teach the agent *how* to use governance effectively:
 ```bash
 npx hivemind-context-governance             # Interactive setup wizard
 npx hivemind-context-governance init        # Same (or use flags)
+npx hivemind-context-governance scan        # Brownfield scan wrapper
+npx hivemind-context-governance sync-assets # Sync packaged OpenCode assets to .opencode
 npx hivemind-context-governance status      # Show session state
 npx hivemind-context-governance settings    # Show configuration
 npx hivemind-context-governance dashboard   # Launch live TUI dashboard
@@ -252,12 +259,68 @@ npx hivemind-context-governance help        # Show help
 |------|--------|---------|
 | `--mode` | `permissive` · `assisted` · `strict` | `assisted` |
 | `--lang` | `en` · `vi` | `en` |
-| `--automation` | `manual` · `guided` · `assisted` · `full` · `retard` | `assisted` |
+| `--automation` | `manual` · `guided` · `assisted` · `full` · `coach` *(legacy alias `retard` accepted)* | `assisted` |
 | `--expert` | `beginner` · `intermediate` · `advanced` · `expert` | `intermediate` |
 | `--style` | `explanatory` · `outline` · `skeptical` · `architecture` · `minimal` | `explanatory` |
 | `--code-review` | *(flag)* | off |
 | `--tdd` | *(flag)* | off |
+| `--target` | `project` · `global` · `both` *(for init/sync-assets)* | `project` |
+| `--overwrite` | *(flag, for sync-assets)* | off |
 | `--force` | *(flag)* — removes existing .hivemind/ before re-init | off |
+| `--action` | `status` · `analyze` · `recommend` · `orchestrate` *(for scan)* | `analyze` |
+| `--json` | *(flag, for scan)* | off |
+| `--include-drift` | *(flag, for scan status)* | off |
+
+### OpenCode Asset Sync
+
+HiveMind can sync packaged OpenCode assets (`commands`, `skills`, and optional ecosystem groups) into OpenCode paths.
+
+```bash
+# Default: project-local .opencode/
+npx hivemind-context-governance sync-assets
+
+# Global OpenCode config path (~/.config/opencode or platform equivalent)
+npx hivemind-context-governance sync-assets --target global
+
+# Sync both project and global targets
+npx hivemind-context-governance sync-assets --target both
+
+# Replace existing files (default behavior is no-clobber)
+npx hivemind-context-governance sync-assets --overwrite
+```
+
+`init` also performs asset sync automatically. Re-running `init` on an existing project refreshes missing assets without resetting `.hivemind` state.
+
+Packaged optional ecosystem assets now include starter files for:
+- `agents`
+- `workflows`
+- `templates`
+- `prompts`
+- `references`
+
+These are synced into `.opencode/` (or global OpenCode config path) alongside commands and skills.
+
+### Existing User Upgrade (No Re-init Required)
+
+```bash
+npm install hivemind-context-governance@latest
+npx hivemind-context-governance sync-assets --target project
+```
+
+Use `--target both` if you want project-local and global OpenCode paths updated together.
+
+### Brownfield Scan via CLI
+
+```bash
+# Analyze framework + stack + artifact risks
+npx hivemind-context-governance scan --action analyze --json
+
+# Generate remediation sequence
+npx hivemind-context-governance scan --action recommend
+
+# Persist safe baseline anchors + memory
+npx hivemind-context-governance scan --action orchestrate --json
+```
 
 ### Dashboard (Optional TUI)
 
@@ -281,6 +344,31 @@ When OpenCode loads HiveMind **before** `hivemind init` was run:
 3. **First-run recon protocol** — the agent is guided to scan the repo, read docs, isolate stale context, and build a backbone *before* coding
 
 This prevents the "agent starts coding immediately without understanding the project" failure mode.
+
+## Brownfield Runbook (\"Please scan my project and refactor it\")
+
+Recommended execution order:
+
+1. Analyze:
+```ts
+scan_hierarchy({ action: "analyze", json: true })
+```
+2. Recommend:
+```ts
+scan_hierarchy({ action: "recommend" })
+```
+3. Orchestrate baseline:
+```ts
+scan_hierarchy({ action: "orchestrate", json: true })
+```
+4. Lock execution focus:
+```ts
+declare_intent({ mode: "exploration", focus: "Brownfield stabilization" })
+map_context({ level: "tactic", content: "Context purification and framework resolution" })
+map_context({ level: "action", content: "Execute safe cleanup checkpoints" })
+```
+
+This sequence ensures framework detection, context purification, baseline persistence, and drift-safe execution before large refactors.
 
 ---
 
@@ -350,7 +438,7 @@ npx hivemind-context-governance init --force
 ```bash
 npm run build      # Full build (clean + compile + chmod)
 npm run typecheck   # TypeScript type checking
-npm test           # Run all 41 test files (705+ assertions)
+npm test           # Run all test files (700+ assertions)
 npm run dev        # Watch mode
 ```
 
@@ -441,7 +529,7 @@ Wizard sẽ hỏi bạn từng bước:
 
 2. **Ngôn ngữ**: Chọn `vi` để nhận cảnh báo bằng tiếng Việt
 
-3. **Mức tự động hóa**: Từ `manual` (tự tay) đến `retard` (giám sát tối đa)
+3. **Mức tự động hóa**: Từ `manual` (tự tay) đến `coach` (giám sát tối đa)
 
 4. **Hành vi agent**: Mức chuyên gia, phong cách output, ràng buộc
 
@@ -452,6 +540,28 @@ Plugin tự động hoạt động. Không cần thêm bước nào.
 ### Bước 4: Sử Dụng Slash Command
 
 Gõ `/hivemind-scan` trong OpenCode để quét dự án và tạo bản đồ cơ sở trước khi bắt đầu code.
+
+Hoặc dùng CLI trực tiếp:
+
+```bash
+npx hivemind-context-governance scan --action analyze --json
+npx hivemind-context-governance scan --action recommend
+npx hivemind-context-governance scan --action orchestrate --json
+```
+
+## Runbook Brownfield (Tiếng Việt)
+
+Khi người dùng nói: *\"Hãy quét dự án và refactor\"*, chạy theo thứ tự:
+
+1. `scan_hierarchy({ action: "analyze", json: true })`
+2. `scan_hierarchy({ action: "recommend" })`
+3. `scan_hierarchy({ action: "orchestrate", json: true })`
+4. `declare_intent(...)` + `map_context(...)` để khóa focus trước khi sửa code
+
+Mục tiêu:
+- Phát hiện framework (`gsd/spec-kit/both/none`) và tín hiệu BMAD
+- Cô lập artifact cũ/stale có nguy cơ nhiễm context
+- Lưu baseline anchors + memory trước khi refactor diện rộng
 
 ## 14 Công Cụ — Giải Thích Chi Tiết
 

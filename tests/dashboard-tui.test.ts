@@ -64,7 +64,7 @@ async function main() {
   const { createMapContextTool } = await import("../src/tools/map-context.js")
 
   try {
-    await initProject(dir, { silent: true, automationLevel: "retard" })
+    await initProject(dir, { silent: true, automationLevel: "coach" })
 
     const declareIntent = createDeclareIntentTool(dir)
     const mapContext = createMapContextTool(dir)
@@ -82,7 +82,7 @@ async function main() {
 
     const snapshot = await loadDashboardSnapshot(dir)
 
-    assert(snapshot.session.automationLevel === "retard", "snapshot includes automation level")
+    assert(snapshot.session.automationLevel === "coach", "snapshot includes automation level")
     assert(snapshot.hierarchy.lines.length > 0, "snapshot includes hierarchy panel lines")
     assert(snapshot.metrics.turnCount >= 12, "snapshot includes metrics panel")
     assert(snapshot.alerts.length > 0, "snapshot includes alert pressure data")

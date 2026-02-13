@@ -7,7 +7,7 @@ description: "Archive the current session, preserve context, and prepare for the
 Perform a clean session archival with context preservation.
 
 ## Pre-Compact Checklist
-1. Call `check_drift` — verify you completed what was declared
+1. Call `scan_hierarchy({ include_drift: true })` — verify you completed what was declared
 2. Review any pending items: are there uncompleted actions in the hierarchy?
 3. If there are important decisions or patterns learned, call `save_mem` to persist them
 

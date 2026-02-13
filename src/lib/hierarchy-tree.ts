@@ -420,17 +420,9 @@ export function toBrainProjection(tree: HierarchyTree): {
  * @consumer getTreeStats, janitor
  */
 export function flattenTree(root: HierarchyNode): HierarchyNode[] {
-  const result: HierarchyNode[] = [];
-  const stack: HierarchyNode[] = [root];
-
-  while (stack.length > 0) {
-    const node = stack.pop()!;
-    result.push(node);
-
-    // Push children in reverse order so they are processed in original order
-    for (let i = node.children.length - 1; i >= 0; i--) {
-      stack.push(node.children[i]);
-    }
+  const result: HierarchyNode[] = [root];
+  for (const child of root.children) {
+    result.push(...flattenTree(child));
   }
   return result;
 }
@@ -579,80 +571,6 @@ const STATUS_MARKERS: Record<ContextStatus, string> = {
   blocked: "!!",
 };
 
-export interface RenderOptions {
-  /** Output format: ascii tree, markdown list, or summary string */
-  format: "ascii" | "markdown" | "summary";
-  /** Whether this node is the current cursor */
-  isCursor?: boolean;
-}
-
-/**
- * Unified node rendering helper.
- * Generates a string representation of a node for various outputs.
- *
- * @consumer toAsciiTree, toActiveMdBody, summarizeBranch
- */
-export function renderNode(node: HierarchyNode, { format, isCursor }: RenderOptions): string {
-  // 1. Status Marker
-  let statusStr = "";
-  if (format === "markdown") {
-    statusStr = node.status === "complete" ? "[x]" : "[ ]";
-  } else if (format === "summary") {
-    statusStr = `[${node.status === "complete" ? "DONE" : node.status.toUpperCase()}]`;
-  } else {
-    // ascii
-    statusStr = `[${STATUS_MARKERS[node.status]}]`;
-  }
-
-  // 2. Level Label (optional)
-  let levelStr = "";
-  if (format === "ascii") {
-    const label = node.level.charAt(0).toUpperCase() + node.level.slice(1);
-    levelStr = `${label}: `;
-  } else if (format === "markdown") {
-    levelStr = `**${node.level}**: `;
-  }
-  // summary omits level
-
-  // 3. Content
-  let contentStr = node.content;
-  if (format === "ascii" && contentStr.length > 60) {
-    contentStr = contentStr.slice(0, 57) + "...";
-  }
-
-  // 4. Metadata (Stamp + Child Count)
-  let metaStr = "";
-  if (format === "summary") {
-    const childCount = flattenTree(node).length - 1; // exclude self
-    metaStr = ` (${childCount} sub-items, ${node.stamp})`;
-  } else if (format === "markdown") {
-    metaStr = ` _(${node.stamp})_`;
-  } else {
-    // ascii
-    metaStr = ` (${node.stamp})`;
-  }
-
-  // 5. Cursor Marker
-  let cursorStr = "";
-  if (isCursor) {
-    if (format === "markdown") {
-      cursorStr = " **<< CURRENT**";
-    } else if (format === "ascii") {
-      cursorStr = " <-- cursor";
-    }
-  }
-
-  // Assemble
-  if (format === "markdown") {
-    return `- ${statusStr} ${levelStr}${contentStr}${metaStr}${cursorStr}`;
-  } else if (format === "summary") {
-    return `${statusStr} ${contentStr}${metaStr}`;
-  } else {
-    // ascii
-    return `${statusStr} ${levelStr}${contentStr}${metaStr}${cursorStr}`;
-  }
-}
-
 /**
  * Render the tree as an ASCII tree string.
  * Marks the cursor node with an arrow.
@@ -664,22 +582,24 @@ export function toAsciiTree(tree: HierarchyTree): string {
 
   const lines: string[] = [];
 
-  function visit(node: HierarchyNode, prefix: string, isLast: boolean, isRoot: boolean): void {
+  function renderNode(node: HierarchyNode, prefix: string, isLast: boolean, isRoot: boolean): void {
     const connector = isRoot ? "" : isLast ? "\\-- " : "|-- ";
-    const nodeString = renderNode(node, {
-      format: "ascii",
-      isCursor: tree.cursor === node.id
-    });
+    const marker = STATUS_MARKERS[node.status];
+    const cursorMark = tree.cursor === node.id ? " <-- cursor" : "";
+    const truncatedContent = node.content.length > 60
+      ? node.content.slice(0, 57) + "..."
+      : node.content;
 
-    lines.push(`${prefix}${connector}${nodeString}`);
+    const levelLabel = node.level.charAt(0).toUpperCase() + node.level.slice(1);
+    lines.push(`${prefix}${connector}[${marker}] ${levelLabel}: ${truncatedContent} (${node.stamp})${cursorMark}`);
 
     const childPrefix = isRoot ? "" : prefix + (isLast ? "    " : "|   ");
     for (let i = 0; i < node.children.length; i++) {
-      visit(node.children[i], childPrefix, i === node.children.length - 1, false);
+      renderNode(node.children[i], childPrefix, i === node.children.length - 1, false);
     }
   }
 
-  visit(tree.root, "", true, true);
+  renderNode(tree.root, "", true, true);
   return lines.join("\n");
 }
 
@@ -693,21 +613,18 @@ export function toActiveMdBody(tree: HierarchyTree): string {
 
   const lines: string[] = [];
 
-  function visit(node: HierarchyNode, depth: number): void {
+  function renderNode(node: HierarchyNode, depth: number): void {
     const indent = "  ".repeat(depth);
-    const nodeString = renderNode(node, {
-      format: "markdown",
-      isCursor: tree.cursor === node.id
-    });
-
-    lines.push(`${indent}${nodeString}`);
+    const statusMark = node.status === "complete" ? "[x]" : "[ ]";
+    const cursorMark = tree.cursor === node.id ? " **<< CURRENT**" : "";
+    lines.push(`${indent}- ${statusMark} **${node.level}**: ${node.content} _(${node.stamp})_${cursorMark}`);
 
     for (const child of node.children) {
-      visit(child, depth + 1);
+      renderNode(child, depth + 1);
     }
   }
 
-  visit(tree.root, 0);
+  renderNode(tree.root, 0);
   return lines.join("\n");
 }
 
@@ -764,7 +681,9 @@ export function countCompleted(tree: HierarchyTree): number {
  * @consumer pruneCompleted
  */
 export function summarizeBranch(node: HierarchyNode): string {
-  return renderNode(node, { format: "summary" });
+  const childCount = flattenTree(node).length - 1; // exclude self
+  const status = node.status === "complete" ? "DONE" : node.status.toUpperCase();
+  return `[${status}] ${node.content} (${childCount} sub-items, ${node.stamp})`;
 }
 
 /**

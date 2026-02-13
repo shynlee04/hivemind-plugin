@@ -132,16 +132,16 @@ async function testStressConditions() {
     const limitedResult = await gateLimited({ sessionID: "stress", tool: "write" })
     check(limitedResult.allowed && (limitedResult.warning?.includes("Governance advisory") === true || limitedResult.warning?.includes("Framework conflict") === true), "Limited-mode conflict path is advisory, not hard deny")
 
-    const pauseConfig = createConfig({ governance_mode: "strict", automation_level: "retard" })
+    const pauseConfig = createConfig({ governance_mode: "strict", automation_level: "coach" })
     await saveConfig(dir, pauseConfig)
     const gatePause = createToolGateHookInternal(noopLogger, dir, pauseConfig)
     const pauseResult = await gatePause({ sessionID: "stress", tool: "edit" })
     check(pauseResult.allowed && (pauseResult.warning?.includes("Governance advisory") === true || pauseResult.warning?.includes("Framework conflict") === true), "Simulated-pause path includes framework advisory without hard denial")
 
-    const sessionLifecycleHelperSource = await readFile(join(process.cwd(), "src/hooks/session-lifecycle-helpers.ts"), "utf-8")
+    const sessionLifecycleSource = await readFile(join(process.cwd(), "src/hooks/session-lifecycle.ts"), "utf-8")
     check(
-      sessionLifecycleHelperSource.includes("compileIgnoredTier(") &&
-      sessionLifecycleHelperSource.includes("formatIgnoredEvidence("),
+      sessionLifecycleSource.includes("compileIgnoredTier(") &&
+      sessionLifecycleSource.includes("formatIgnoredEvidence("),
       "GOV-08 ignored block includes compact tri-evidence"
     )
 

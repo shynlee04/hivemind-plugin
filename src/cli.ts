@@ -17,11 +17,14 @@ import { argv } from "node:process"
 import { existsSync } from "node:fs"
 import { join } from "node:path"
 import { initProject } from "./cli/init.js"
+import { syncOpencodeAssets } from "./cli/sync-assets.js"
+import { runScanCommand } from "./cli/scan.js"
+import { normalizeAutomationLabel } from "./schemas/config.js"
 import { createStateManager, loadConfig } from "./lib/persistence.js"
 import { listArchives } from "./lib/planning-fs.js"
 import { getEffectivePaths } from "./lib/paths.js"
 
-const COMMANDS = ["init", "status", "compact", "dashboard", "settings", "purge", "help"] as const
+const COMMANDS = ["init", "scan", "sync-assets", "status", "compact", "dashboard", "settings", "purge", "help"] as const
 type Command = (typeof COMMANDS)[number]
 
 function printHelp(): void {
@@ -34,6 +37,8 @@ Usage:
 Commands:
   (default)     Interactive setup wizard (or initialize with flags)
   init          Same as default — initialize project
+  scan          Brownfield scan wrapper (analyze/recommend/orchestrate/status)
+  sync-assets   Sync packaged OpenCode assets into .opencode/ (existing users)
   status        Show current session and governance state
   settings      Show current configuration
   compact       Archive current session and reset (OpenCode only)
@@ -45,18 +50,24 @@ Options:
   --force                  Force re-initialization (removes existing .hivemind/)
   --lang <en|vi>           Language (default: en)
   --mode <permissive|assisted|strict>  Governance mode (default: assisted)
-  --automation <manual|guided|assisted|full|retard>  Automation level (default: assisted)
+  --automation <manual|guided|assisted|full|coach>  Automation level (default: assisted; legacy alias "retard" is accepted)
   --expert <beginner|intermediate|advanced|expert>  Expert level (default: intermediate)
   --style <explanatory|outline|skeptical|architecture|minimal>  Output style (default: explanatory)
   --code-review            Require code review before accepting
   --tdd                    Enforce test-driven development
+  --target <project|global|both>  Asset sync target (default: project)
+  --overwrite              Overwrite existing files during asset sync
   --refresh <seconds>      Dashboard refresh interval (default: 2)
+  --action <status|analyze|recommend|orchestrate>  Scan action (default: analyze, for scan command)
+  --json                   Return machine-readable JSON (for scan command)
+  --include-drift          Include drift report (status action)
 
 Examples:
   npx hivemind-context-governance              # Interactive wizard
   npx hivemind-context-governance --mode strict # Non-interactive with flags
   npx hivemind-context-governance status
   npx hivemind-context-governance settings
+  npx hivemind-context-governance scan --action analyze --json
   npx hivemind-context-governance dashboard
 `
   // CLI is the user interface — console output is allowed here
@@ -83,7 +94,7 @@ async function showStatus(directory: string): Promise<void> {
 │ Status:  ${state.session.governance_status.padEnd(30)}│
 │ Mode:    ${state.session.mode.padEnd(30)}│
 │ Govern:  ${config.governance_mode.padEnd(30)}│
-│ Auto:    ${config.automation_level.padEnd(30)}│
+│ Auto:    ${normalizeAutomationLabel(config.automation_level).padEnd(30)}│
 ├─ Hierarchy ──────────────────────────────┤
 │ Trajectory: ${(state.hierarchy.trajectory || "(none)").padEnd(27)}│
 │ Tactic:     ${(state.hierarchy.tactic || "(none)").padEnd(27)}│
@@ -119,7 +130,7 @@ async function showSettings(directory: string): Promise<void> {
 │                                                  │
 │ Governance Mode:    ${config.governance_mode.padEnd(28)}│
 │ Language:           ${config.language.padEnd(28)}│
-│ Automation Level:   ${config.automation_level.padEnd(28)}│
+│ Automation Level:   ${normalizeAutomationLabel(config.automation_level).padEnd(28)}│
 │                                                  │
 ├─ Agent Behavior ─────────────────────────────────┤
 │ Expert Level:       ${config.agent_behavior.expert_level.padEnd(28)}│
@@ -154,7 +165,17 @@ async function showSettings(directory: string): Promise<void> {
  * If no flags → use interactive wizard. If flags → use direct init.
  */
 function hasInitFlags(flags: Record<string, string>): boolean {
-  const initFlagNames = ["lang", "mode", "automation", "expert", "style", "code-review", "tdd"]
+  const initFlagNames = [
+    "lang",
+    "mode",
+    "automation",
+    "expert",
+    "style",
+    "code-review",
+    "tdd",
+    "target",
+    "overwrite",
+  ]
   return initFlagNames.some((name) => name in flags)
 }
 
@@ -214,14 +235,39 @@ async function main(): Promise<void> {
           governanceMode:
             (flags["mode"] as "permissive" | "assisted" | "strict") ?? undefined,
           automationLevel:
-            (flags["automation"] as "manual" | "guided" | "assisted" | "full" | "retard") ?? undefined,
+            (flags["automation"] as "manual" | "guided" | "assisted" | "full" | "coach" | "retard") ?? undefined,
           expertLevel: (flags["expert"] as "beginner" | "intermediate" | "advanced" | "expert") ?? undefined,
           outputStyle: (flags["style"] as "explanatory" | "outline" | "skeptical" | "architecture" | "minimal") ?? undefined,
           requireCodeReview: "code-review" in flags,
           enforceTdd: "tdd" in flags,
+          syncTarget: (flags["target"] as "project" | "global" | "both") ?? undefined,
+          overwriteAssets: "overwrite" in flags,
           force: forceFlag,
         })
       }
+      break
+    }
+
+    case "sync-assets": {
+      const result = await syncOpencodeAssets(directory, {
+        target: (flags["target"] as "project" | "global" | "both") ?? "project",
+        overwrite: "overwrite" in flags,
+        silent: false,
+        onLog: (line) => console.log(line),
+      })
+      console.log(
+        `\n✓ Asset sync complete. Copied: ${result.totalCopied}, Skipped: ${result.totalSkipped}, Invalid: ${result.totalInvalid}`
+      )
+      break
+    }
+
+    case "scan": {
+      const output = await runScanCommand(directory, {
+        action: (flags["action"] as "status" | "analyze" | "recommend" | "orchestrate") ?? "analyze",
+        json: "json" in flags,
+        includeDrift: "include-drift" in flags,
+      })
+      console.log(output)
       break
     }
 

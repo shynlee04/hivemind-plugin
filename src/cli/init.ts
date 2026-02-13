@@ -16,29 +16,24 @@ import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
+import type { GovernanceMode, Language, ExpertLevel, OutputStyle, AutomationLevel } from "../schemas/config.js"
 import {
-  type GovernanceMode,
-  type Language,
-  type ExpertLevel,
-  type OutputStyle,
-  type AutomationLevel,
-  GOVERNANCE_MODES,
-  LANGUAGES,
-  EXPERT_LEVELS,
-  OUTPUT_STYLES,
-  AUTOMATION_LEVELS,
   createConfig,
   isValidGovernanceMode,
   isValidLanguage,
   isValidExpertLevel,
   isValidOutputStyle,
   isValidAutomationLevel,
+  isCoachAutomation,
+  normalizeAutomationLabel,
 } from "../schemas/config.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
 import { createStateManager, saveConfig } from "../lib/persistence.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { migrateIfNeeded } from "../lib/migrate.js"
+import { syncOpencodeAssets } from "./sync-assets.js"
+import type { AssetSyncTarget } from "./sync-assets.js"
 
 // ── HiveMind Section for AGENTS.md / CLAUDE.md ──────────────────────────
 
@@ -150,6 +145,8 @@ export interface InitOptions {
   automationLevel?: AutomationLevel
   requireCodeReview?: boolean
   enforceTdd?: boolean
+  syncTarget?: AssetSyncTarget
+  overwriteAssets?: boolean
   silent?: boolean
   force?: boolean
 }
@@ -253,6 +250,14 @@ export async function initProject(
   // Guard: Check brain.json existence, not just directory.
   // The directory may exist from logger side-effects without full initialization.
   if (existsSync(brainPath)) {
+    // Existing user upgrade path: keep state, but refresh OpenCode assets
+    await syncOpencodeAssets(directory, {
+      target: options.syncTarget ?? "project",
+      overwrite: options.overwriteAssets ?? false,
+      silent: options.silent ?? false,
+      onLog: options.silent ? undefined : log,
+    })
+
     if (!options.silent) {
       log("⚠ HiveMind already initialized in this project.")
       log(`  Directory: ${hivemindDir}`)
@@ -271,7 +276,7 @@ export async function initProject(
   const governanceMode = options.governanceMode ?? "assisted"
   if (!isValidGovernanceMode(governanceMode)) {
     log(`✗ Invalid governance mode: ${governanceMode}`)
-    log(`  Valid: ${GOVERNANCE_MODES.join(", ")}`)
+    log("  Valid: permissive, assisted, strict")
     return
   }
 
@@ -279,7 +284,7 @@ export async function initProject(
   const language = options.language ?? "en"
   if (!isValidLanguage(language)) {
     log(`✗ Invalid language: ${language}`)
-    log(`  Valid: ${LANGUAGES.join(", ")}`)
+    log("  Valid: en, vi")
     return
   }
 
@@ -287,7 +292,7 @@ export async function initProject(
   const expertLevel = options.expertLevel ?? "intermediate"
   if (!isValidExpertLevel(expertLevel)) {
     log(`✗ Invalid expert level: ${expertLevel}`)
-    log(`  Valid: ${EXPERT_LEVELS.join(", ")}`)
+    log("  Valid: beginner, intermediate, advanced, expert")
     return
   }
 
@@ -295,7 +300,7 @@ export async function initProject(
   const outputStyle = options.outputStyle ?? "explanatory"
   if (!isValidOutputStyle(outputStyle)) {
     log(`✗ Invalid output style: ${outputStyle}`)
-    log(`  Valid: ${OUTPUT_STYLES.join(", ")}`)
+    log("  Valid: explanatory, outline, skeptical, architecture, minimal")
     return
   }
 
@@ -303,28 +308,29 @@ export async function initProject(
   const automationLevel = options.automationLevel ?? "assisted"
   if (!isValidAutomationLevel(automationLevel)) {
     log(`✗ Invalid automation level: ${automationLevel}`)
-    log(`  Valid: ${AUTOMATION_LEVELS.join(", ")} ("I am retard — lead me")`)
+    log("  Valid: manual, guided, assisted, full, coach (legacy alias 'retard' is accepted)")
     return
   }
+  const normalizedAutomationLevel = normalizeAutomationLabel(automationLevel)
 
   // Create .hivemind directory structure
   // (sessions, brain, plans, logs subdirectories are created by initializePlanningDirectory)
 
   // Create config with agent behavior
   const config = createConfig({
-    governance_mode: automationLevel === "retard" ? "strict" : governanceMode,
+    governance_mode: isCoachAutomation(automationLevel) ? "strict" : governanceMode,
     language,
-    automation_level: automationLevel,
+    automation_level: normalizedAutomationLevel,
     agent_behavior: {
       language,
-      expert_level: automationLevel === "retard" ? "beginner" : expertLevel,
-      output_style: automationLevel === "retard" ? "skeptical" : outputStyle,
+      expert_level: isCoachAutomation(automationLevel) ? "beginner" : expertLevel,
+      output_style: isCoachAutomation(automationLevel) ? "skeptical" : outputStyle,
       constraints: {
-        require_code_review: automationLevel === "retard" ? true : (options.requireCodeReview ?? false),
+        require_code_review: isCoachAutomation(automationLevel) ? true : (options.requireCodeReview ?? false),
         enforce_tdd: options.enforceTdd ?? false,
         max_response_tokens: 2000,
         explain_reasoning: true,
-        be_skeptical: automationLevel === "retard" ? true : (outputStyle === "skeptical"),
+        be_skeptical: isCoachAutomation(automationLevel) ? true : (outputStyle === "skeptical"),
       },
     },
   })
@@ -334,7 +340,7 @@ export async function initProject(
     log(`  Language: ${language}`)
     log(`  Expert Level: ${config.agent_behavior.expert_level}`)
     log(`  Output Style: ${config.agent_behavior.output_style}`)
-    log(`  Automation: ${automationLevel}${automationLevel === "retard" ? ' ("I am retard — lead me")' : ""}`)
+    log(`  Automation: ${normalizeAutomationLabel(automationLevel)}${isCoachAutomation(automationLevel) ? " (max guidance)" : ""}`)
     if (config.agent_behavior.constraints.require_code_review) log("  ✓ Code review required")
     if (options.enforceTdd) log("  ✓ TDD enforced")
     log("")
@@ -370,6 +376,14 @@ export async function initProject(
   // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
   injectAgentsDocs(directory, options.silent ?? false)
 
+  // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
+  await syncOpencodeAssets(directory, {
+    target: options.syncTarget ?? "project",
+    overwrite: options.overwriteAssets ?? false,
+    silent: options.silent ?? false,
+    onLog: options.silent ? undefined : log,
+  })
+
   if (!options.silent) {
     log("")
     log("✓ Planning directory created:")
@@ -402,14 +416,14 @@ export async function initProject(
       log("🟢 PERMISSIVE MODE — agents work freely, activity tracked.")
     }
 
-    if (automationLevel === "retard") {
+    if (isCoachAutomation(automationLevel)) {
       log("")
-      log('🤯 "I AM RETARD" MODE ACTIVE:')
+      log("🤯 COACH MODE ACTIVE:")
       log("   → Governance forced to STRICT")
       log("   → System will ARGUE BACK with evidence")
       log("   → Escalating pressure on every unresolved signal")
       log("   → Code review REQUIRED on all changes")
-      log("   → Maximum handholding enabled")
+      log("   → Maximum guidance enabled")
     }
 
     log("")

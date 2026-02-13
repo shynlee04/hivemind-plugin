@@ -8,13 +8,14 @@
 
 import * as p from "@clack/prompts"
 import type { InitOptions } from "./init.js"
-import {
-  type GovernanceMode,
-  type Language,
-  type AutomationLevel,
-  type ExpertLevel,
-  type OutputStyle,
+import type {
+  GovernanceMode,
+  Language,
+  AutomationLevel,
+  ExpertLevel,
+  OutputStyle,
 } from "../schemas/config.js"
+import { isCoachAutomation, normalizeAutomationLabel } from "../schemas/config.js"
 
 /**
  * Run the interactive init wizard.
@@ -87,9 +88,9 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
         hint: "Maximum governance. System argues back with evidence when claims lack proof.",
       },
       {
-        value: "retard" as AutomationLevel,
-        label: '"I am retard — lead me"',
-        hint: "Forces strict mode, skeptical review, code review required. Maximum handholding.",
+        value: "coach" as AutomationLevel,
+        label: "Coach (max guidance)",
+        hint: "Forces strict mode, skeptical review, code review required. Maximum guidance.",
       },
     ],
   })
@@ -99,13 +100,13 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
     return null
   }
 
-  // Skip expert/style for retard mode (auto-set)
+  // Skip expert/style for coach mode (auto-set)
   let expertLevel: ExpertLevel = "intermediate"
   let outputStyle: OutputStyle = "explanatory"
   let requireCodeReview = false
   let enforceTdd = false
 
-  if (automationLevel !== "retard") {
+  if (!isCoachAutomation(automationLevel)) {
     const expert = await p.select({
       message: "Your expertise level — affects response depth and assumptions?",
       options: [
@@ -201,12 +202,12 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
   // Summary
   p.note(
     [
-      `Governance:  ${automationLevel === "retard" ? "strict (forced)" : governanceMode}`,
+      `Governance:  ${isCoachAutomation(automationLevel) ? "strict (forced)" : governanceMode}`,
       `Language:    ${language === "en" ? "English" : "Tiếng Việt"}`,
-      `Automation:  ${automationLevel}${automationLevel === "retard" ? ' ("I am retard — lead me")' : ""}`,
-      `Expert:      ${automationLevel === "retard" ? "beginner (forced)" : expertLevel}`,
-      `Style:       ${automationLevel === "retard" ? "skeptical (forced)" : outputStyle}`,
-      requireCodeReview || automationLevel === "retard" ? `✓ Code review required` : "",
+      `Automation:  ${normalizeAutomationLabel(automationLevel)}${isCoachAutomation(automationLevel) ? " (max guidance)" : ""}`,
+      `Expert:      ${isCoachAutomation(automationLevel) ? "beginner (forced)" : expertLevel}`,
+      `Style:       ${isCoachAutomation(automationLevel) ? "skeptical (forced)" : outputStyle}`,
+      requireCodeReview || isCoachAutomation(automationLevel) ? `✓ Code review required` : "",
       enforceTdd ? `✓ TDD enforced` : "",
     ]
       .filter(Boolean)
@@ -226,12 +227,12 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
   p.outro("Initializing HiveMind...")
 
   return {
-    governanceMode: automationLevel === "retard" ? "strict" : governanceMode,
+    governanceMode: isCoachAutomation(automationLevel) ? "strict" : governanceMode,
     language,
     automationLevel,
-    expertLevel: automationLevel === "retard" ? "beginner" : expertLevel,
-    outputStyle: automationLevel === "retard" ? "skeptical" : outputStyle,
-    requireCodeReview: requireCodeReview || automationLevel === "retard",
+    expertLevel: isCoachAutomation(automationLevel) ? "beginner" : expertLevel,
+    outputStyle: isCoachAutomation(automationLevel) ? "skeptical" : outputStyle,
+    requireCodeReview: requireCodeReview || isCoachAutomation(automationLevel),
     enforceTdd,
   }
 }

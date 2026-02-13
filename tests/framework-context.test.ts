@@ -185,7 +185,7 @@ async function test_framework_simulated_pause_is_non_blocking() {
     await writeGsdFiles(dir, "02")
     await mkdir(join(dir, ".spec-kit"), { recursive: true })
 
-    const config = createConfig({ governance_mode: "strict", automation_level: "retard" })
+    const config = createConfig({ governance_mode: "strict", automation_level: "coach" })
     await saveConfig(dir, config)
 
     const stateManager = createStateManager(dir)

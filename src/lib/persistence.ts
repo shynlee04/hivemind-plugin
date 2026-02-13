@@ -2,15 +2,14 @@
  * StateManager - Disk persistence for brain state
  */
 
-import { readFile, writeFile, mkdir, rename, unlink, open, readdir, stat, copyFile } from "fs/promises"
-import type { FileHandle } from "fs/promises"
-import { existsSync } from "fs"
+import { readFile, writeFile, mkdir, rename, unlink } from "fs/promises"
+import { existsSync, openSync, closeSync } from "fs"
 import { dirname, join } from "path"
 import type { BrainState } from "../schemas/brain-state.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import type { Logger } from "./logging.js"
 import { getEffectivePaths } from "./paths.js"
-import { createBrainState, migrateBrainState } from "../schemas/brain-state.js"
+import { createBrainState } from "../schemas/brain-state.js"
 import { createConfig } from "../schemas/config.js"
 
 function isNodeError(err: unknown): err is NodeJS.ErrnoException {
@@ -19,11 +18,12 @@ function isNodeError(err: unknown): err is NodeJS.ErrnoException {
 
 /** Clean up old backup files, keeping only the last 3 versions */
 async function cleanupOldBackups(brainPath: string): Promise<void> {
+  const fs = await import("fs/promises")
   const dir = dirname(brainPath)
   const backupPattern = /brain\.json\.bak\.\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/
   
   try {
-    const files = await readdir(dir)
+    const files = await fs.readdir(dir)
     const backupFiles = files
       .filter(file => backupPattern.test(file))
       .map(file => ({
@@ -35,13 +35,13 @@ async function cleanupOldBackups(brainPath: string): Promise<void> {
     
     // Keep only last 3 backups
     const oldBackups = backupFiles.slice(3)
-    await Promise.all(oldBackups.map(async (backup) => {
+    for (const backup of oldBackups) {
       try {
-        await unlink(backup.path)
+        await fs.unlink(backup.path)
       } catch (err: unknown) {
         // Ignore errors when deleting old backups
       }
-    }))
+    }
   } catch (err: unknown) {
     // Ignore errors when cleaning up backups
   }
@@ -59,7 +59,7 @@ function getTimestampFromBackupName(filename: string): number {
 // File lock mechanism using exclusive file handles
 class FileLock {
   private lockPath: string
-  private handle: FileHandle | null = null
+  private fd: number | null = null
 
   constructor(lockPath: string) {
     this.lockPath = lockPath
@@ -74,16 +74,17 @@ class FileLock {
     while (Date.now() < timeout) {
       try {
         // Try to acquire exclusive lock
-        this.handle = await open(this.lockPath, "wx")
+        this.fd = openSync(this.lockPath, "wx")
         return // Lock acquired
       } catch (err: unknown) {
         if (isNodeError(err) && err.code === "EEXIST") {
           // Lock file exists, check if it's stale (older than 5 seconds)
+          const fs = await import("fs/promises")
           try {
-            const s = await stat(this.lockPath)
-            if (Date.now() - s.mtime.getTime() > 5000) {
+            const stat = await fs.stat(this.lockPath)
+            if (Date.now() - stat.mtime.getTime() > 5000) {
               // Stale lock, remove it
-              await unlink(this.lockPath)
+              await fs.unlink(this.lockPath)
               continue // Retry acquisition
             }
           } catch (statErr: unknown) {
@@ -103,10 +104,10 @@ class FileLock {
   }
 
   async release(): Promise<void> {
-    if (this.handle !== null) {
+    if (this.fd !== null) {
       try {
-        await this.handle.close()
-        this.handle = null
+        closeSync(this.fd)
+        this.fd = null
         await unlink(this.lockPath).catch(() => {
           // Ignore errors when removing lock file
         })
@@ -150,7 +151,45 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
 
         try {
           const data = await readFile(brainPath, "utf-8")
-          const parsed = migrateBrainState(JSON.parse(data))
+          const parsed = JSON.parse(data) as BrainState
+          // Migration: ensure fields added in v1.5+ exist
+          parsed.last_commit_suggestion_turn ??= 0
+          // Migration: ensure Round 2 session fields exist
+          parsed.session.date ??= new Date(parsed.session.start_time).toISOString().split("T")[0]
+          parsed.session.meta_key ??= ""
+          parsed.session.role ??= ""
+          parsed.session.by_ai ??= true
+          // Migration: ensure Iteration 1 fields exist (hierarchy-redesign)
+          parsed.compaction_count ??= 0
+          parsed.last_compaction_time ??= 0
+          parsed.next_compaction_report ??= null
+          parsed.cycle_log ??= []
+          parsed.pending_failure_ack ??= false
+          // Migration: ensure detection counter fields exist
+          parsed.metrics.consecutive_failures ??= 0
+          parsed.metrics.consecutive_same_section ??= 0
+          parsed.metrics.last_section_content ??= ""
+          parsed.metrics.keyword_flags ??= []
+          parsed.metrics.write_without_read_count ??= 0
+          parsed.metrics.tool_type_counts ??= { read: 0, write: 0, query: 0, governance: 0 }
+          parsed.metrics.governance_counters ??= {
+            out_of_order: 0,
+            drift: 0,
+            compaction: 0,
+            evidence_pressure: 0,
+            ignored: 0,
+            acknowledged: false,
+            prerequisites_completed: false,
+          }
+          parsed.framework_selection ??= {
+            choice: null,
+            active_phase: "",
+            active_spec_path: "",
+            acceptance_note: "",
+            updated_at: 0,
+          }
+          // Migration: remove deprecated sentiment_signals field
+          delete (parsed as any).sentiment_signals
           return parsed
         } catch (parseErr: unknown) {
           // Attempt to recover from backup if main file is corrupted
@@ -158,7 +197,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             await logger?.error(`Brain state corrupted at ${brainPath}, attempting to load backup from ${bakPath}`)
             try {
               const backupData = await readFile(bakPath, "utf-8")
-              const parsedBackup = migrateBrainState(JSON.parse(backupData))
+              const parsedBackup = JSON.parse(backupData) as BrainState
               return parsedBackup
             } catch (backupErr: unknown) {
               await logger?.error(`Backup file also corrupted at ${bakPath}: ${backupErr}`)
@@ -199,7 +238,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             const timestampedBakPath = brainPath + `.bak.${timestamp}`
             
             // Copy existing file to timestamped backup
-            await copyFile(brainPath, timestampedBakPath)
+            await writeFile(timestampedBakPath, await readFile(brainPath, "utf-8"))
             
             // Also maintain simple .bak file for backward compatibility
             await rename(brainPath, bakPath)
@@ -239,7 +278,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
         // Read
         if (!existsSync(brainPath)) return null
         const data = await readFile(brainPath, "utf-8")
-        const parsed = migrateBrainState(JSON.parse(data))
+        const parsed = JSON.parse(data) as BrainState
 
         // Modify
         const updated = await fn(parsed)
@@ -247,12 +286,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
         // Write (atomic)
         await writeFile(tempPath, JSON.stringify(updated, null, 2))
         if (existsSync(brainPath)) {
-          try {
-            await rename(brainPath, bakPath)
-          } catch (err: unknown) {
-            /* non-fatal */
-            await logger?.warn(`Failed to create backup: ${err}`)
-          }
+          try { await rename(brainPath, bakPath) } catch { /* non-fatal */ }
         }
         await rename(tempPath, brainPath)
 
