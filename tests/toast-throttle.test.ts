@@ -53,7 +53,7 @@ function testToastThrottle() {
     // Advance time slightly (within default cooldown of 60s)
     mockTime += 1000 // +1s
     check(
-      shouldEmitToast("test", "key1") === false,
+      !shouldEmitToast("test", "key1"),
       "Second call within cooldown returns false"
     )
 
