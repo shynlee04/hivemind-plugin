@@ -375,32 +375,34 @@ export function createCompactSessionTool(directory: string): ToolDefinition {
         await saveTree(directory, pruneResult.tree)
       }
 
-      // === Reset hierarchy tree ===
-      if (hasTree) {
-        await saveTree(directory, createTree())
+      // === Reset sequence — guarded to prevent partial state corruption ===
+      let resetError: string | null = null
+      try {
+        if (hasTree) {
+          await saveTree(directory, createTree())
+        }
+
+        await resetActiveMd(directory)
+
+        const compactionCount = (state.compaction_count ?? 0) + 1;
+        const compactionTime = Date.now();
+
+        const newSessionId = generateSessionId()
+        const newState = createBrainState(newSessionId, config)
+        newState.compaction_count = compactionCount;
+        newState.last_compaction_time = compactionTime;
+        newState.next_compaction_report = purificationReport;
+        await stateManager.save(lockSession(newState))
+      } catch (err: unknown) {
+        resetError = `Reset partially failed after archive: ${err}`
       }
-
-      // Reset active.md to template
-      await resetActiveMd(directory)
-
-      // Before reset — carry compaction tracking to new state
-      const compactionCount = (state.compaction_count ?? 0) + 1;
-      const compactionTime = Date.now();
-
-      // Create fresh brain state (new session, locked)
-      // Step 4: Write purification report to new brain state BEFORE save
-      const newSessionId = generateSessionId()
-      const newState = createBrainState(newSessionId, config)
-      newState.compaction_count = compactionCount;
-      newState.last_compaction_time = compactionTime;
-      newState.next_compaction_report = purificationReport;
-      await stateManager.save(lockSession(newState))
 
       // Count archives for output
       const archives = await listArchives(directory)
 
       const purificationSummary = `Purified: ${turningPoints.length} turning points${prunedCount > 0 ? `, ${prunedCount} completed pruned` : ''}.`
-      return `Archived. ${state.metrics.turn_count} turns, ${state.metrics.files_touched.length} files saved. ${archives.length} total archives. Session reset.\n${purificationSummary}\n→ Session is now LOCKED. Call declare_intent to start new work.`
+      const resetNote = resetError ? `\n⚠ ${resetError}` : ""
+      return `Archived. ${state.metrics.turn_count} turns, ${state.metrics.files_touched.length} files saved. ${archives.length} total archives. Session reset.\n${purificationSummary}${resetNote}\n→ Session is now LOCKED. Call declare_intent to start new work.`
     },
   })
 }
