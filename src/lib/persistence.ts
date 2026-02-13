@@ -2,7 +2,7 @@
  * StateManager - Disk persistence for brain state
  */
 
-import { readFile, writeFile, mkdir, rename, unlink } from "fs/promises"
+import { readFile, readdir, writeFile, mkdir, rename, unlink } from "fs/promises"
 import { existsSync, openSync, closeSync } from "fs"
 import { dirname, join } from "path"
 import type { BrainState } from "../schemas/brain-state.js"
@@ -17,43 +17,29 @@ function isNodeError(err: unknown): err is NodeJS.ErrnoException {
 }
 
 /** Clean up old backup files, keeping only the last 3 versions */
-async function cleanupOldBackups(brainPath: string): Promise<void> {
-  const fs = await import("fs/promises")
+async function cleanupOldBackups(brainPath: string, logger?: Logger): Promise<void> {
   const dir = dirname(brainPath)
   const backupPattern = /brain\.json\.bak\.\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/
-  
+
   try {
-    const files = await fs.readdir(dir)
+    const files = await readdir(dir)
     const backupFiles = files
       .filter(file => backupPattern.test(file))
-      .map(file => ({
-        name: file,
-        path: join(dir, file),
-        timestamp: getTimestampFromBackupName(file)
-      }))
-      .sort((a, b) => b.timestamp - a.timestamp) // Sort descending (newest first)
-    
+      .sort((a, b) => b.localeCompare(a)) // Fixed format; lexical order matches recency
+
     // Keep only last 3 backups
     const oldBackups = backupFiles.slice(3)
-    for (const backup of oldBackups) {
+    for (const backupName of oldBackups) {
+      const backupPath = join(dir, backupName)
       try {
-        await fs.unlink(backup.path)
+        await unlink(backupPath)
       } catch (err: unknown) {
-        // Ignore errors when deleting old backups
+        await logger?.warn(`Failed to delete old backup ${backupPath}: ${err}`)
       }
     }
   } catch (err: unknown) {
-    // Ignore errors when cleaning up backups
+    await logger?.warn(`Failed to cleanup old backups in ${dir}: ${err}`)
   }
-}
-
-/** Extract timestamp from backup filename (e.g., brain.json.bak.2026-02-13T12-34-56) */
-function getTimestampFromBackupName(filename: string): number {
-  const match = filename.match(/brain\.json\.bak\.(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/)
-  if (match) {
-    return new Date(match[1].replace(/[-T]/g, ":").replace(/-\d{2}$/, ":00")).getTime()
-  }
-  return 0
 }
 
 // File lock mechanism using exclusive file handles
@@ -244,7 +230,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             await rename(brainPath, bakPath)
             
             // Cleanup old backup files (keep last 3 backups)
-            await cleanupOldBackups(brainPath)
+            await cleanupOldBackups(brainPath, logger)
           } catch (backupErr: unknown) {
             // Non-fatal — continue with save even if backup fails
             await logger?.warn(`Failed to create backup: ${backupErr}`)

@@ -24,6 +24,7 @@ This section is the live implementation tracker used while hardening `master`.
 | I4 | P1 prompt-generation regression suite | ✅ Done | Added `tests/agent-behavior-prompt.test.ts` matrix + edge coverage |
 | I5 | Full production gate (`npm test`, typecheck, boundary lint) | ✅ Done | All verification commands green on current branch |
 | I6 | Terminology hardening + legacy compatibility | ✅ Done | Removed deprecated automation label from public surface while preserving legacy input normalization |
+| I7 | P2 persistence backup cleanup observability | ✅ Done | Added warning logs for old-backup cleanup failures and deterministic backup ordering with regression coverage |
 
 ### Acceptance Gate for "Production-Ready"
 1. All P0 items implemented with tests.
@@ -32,6 +33,7 @@ This section is the live implementation tracker used while hardening `master`.
 4. Persistence backup failures are observable in all critical write paths.
 5. Configuration validation has a single source of truth and regression tests.
 6. Deprecated/offensive automation label removed from public schema and CLI UX.
+7. Backup cleanup failures are observable (non-fatal) during save operations.
 
 ---
 
