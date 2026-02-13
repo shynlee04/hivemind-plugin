@@ -19,3 +19,4 @@ export * from "./hierarchy-tree.js";
 export * from "./detection.js";
 export * from "./framework-context.js";
 export * from "./migrate.js";
+export * from "./cli-formatter.js";
