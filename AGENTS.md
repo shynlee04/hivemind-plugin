@@ -2,6 +2,13 @@
 
 **Context:** `hivemind-plugin` is an OpenCode plugin for context governance (version 2.6.0).
 
+
+# Non-negotiable Rules:
+
+- If there are stacks and/or knowledge that need  up-to-date, you must either make internet or MCP servers' tools research
+
+- SKILLS must be used, approriately and very frequencly,  because by only using correct set of SKILLS you can gain epxertise of knowledge, if can't find ones in this codebase. Use find-skill and you are free and encouraged to install them and use. 
+
 ## 1. Build & Test Commands
 
 ### Build
