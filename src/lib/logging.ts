@@ -32,6 +32,7 @@ export async function createLogger(
 
   // Handle stream errors silently
   stream.on('error', () => {
+    stream.destroy();
     // Fail silently - logging should never break the application
   });
 
