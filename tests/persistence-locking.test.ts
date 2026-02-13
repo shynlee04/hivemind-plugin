@@ -68,18 +68,18 @@ async function testStaleLockRecoveryLogsWarning(): Promise<void> {
   }
 }
 
-function testSyncExclusiveLockContract(): void {
-  process.stderr.write("\n--- persistence-locking: sync exclusive lock contract ---\n")
+function testAsyncExclusiveLockContract(): void {
+  process.stderr.write("\n--- persistence-locking: async exclusive lock contract ---\n")
   const source = readFileSync(join(process.cwd(), "src", "lib", "persistence.ts"), "utf-8")
   assert(
-    source.includes('openSync(this.lockPath, "wx")'),
-    "file lock acquisition remains sync+exclusive to preserve atomic lock semantics",
+    source.includes('open(this.lockPath, "wx")'),
+    "file lock acquisition uses async exclusive open to avoid blocking event loop",
   )
 }
 
 process.stderr.write("=== persistence-locking.test.ts ===\n")
 await testStaleLockRecoveryLogsWarning()
-testSyncExclusiveLockContract()
+testAsyncExclusiveLockContract()
 
 process.stderr.write(`\n--- Results: ${passed} passed, ${failed_} failed ---\n`)
 if (failed_ > 0) process.exit(1)
