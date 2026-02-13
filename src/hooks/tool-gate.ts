@@ -42,14 +42,6 @@ const WRITE_TOOLS = new Set([
   "write", "edit",
 ])
 
-const CONFLICT_SAFE_TOOLS = new Set([
-  "read", "grep", "glob",
-  "declare_intent", "map_context", "compact_session",
-  "scan_hierarchy", "save_anchor", "think_back",
-  "save_mem", "recall_mems",
-  "hierarchy_manage", "export_cycle",
-])
-
 function isExemptTool(toolName: string): boolean {
   return EXEMPT_TOOLS.has(toolName)
 }
@@ -124,18 +116,17 @@ export function createToolGateHook(
             : ""
           const guidance = `Framework conflict: both .planning and .spec-kit detected. Consolidate first, then choose framework via locked menu metadata (active_phase or active_spec_path).${guidanceSuffix}`
 
-          if (!CONFLICT_SAFE_TOOLS.has(toolName)) {
-            // HC1 COMPLIANCE: Never block tool execution. Soft governance only.
-            // Even in strict mode, we provide advisory warnings but allow the tool.
-            return {
-              allowed: true,
-              warning: buildFrameworkAdvisory(guidance, toolName),
-              signal: {
-                type: "framework",
-                severity: "advisory",
-                message: guidance,
-              },
-            }
+          // Soft Governance: Always advise, never block.
+          // Exempt tools (read, governance) already returned early.
+          // This block only affects non-exempt tools (write/edit).
+          return {
+            allowed: true,
+            warning: buildFrameworkAdvisory(guidance, toolName),
+            signal: {
+              type: "framework",
+              severity: "advisory",
+              message: guidance,
+            },
           }
         }
       }
