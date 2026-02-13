@@ -10,8 +10,8 @@
  *   - Auto-registers plugin in opencode.json
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs"
-import { copyFile, mkdir, rm } from "node:fs/promises"
+import { existsSync, readFileSync, writeFileSync, readdirSync, statSync } from "node:fs"
+import { copyFile, mkdir, rm, cp } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
@@ -209,6 +209,47 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
   }
 }
 
+/**
+ * Extract commands and skills to .opencode directory.
+ * Fulfills the "ecosystem integration" requirement.
+ */
+async function extractOpencodeAssets(directory: string, silent: boolean): Promise<void> {
+  const opencodeDir = join(directory, ".opencode")
+  const commandsDest = join(opencodeDir, "commands")
+  const skillsDest = join(opencodeDir, "skills")
+
+  await mkdir(commandsDest, { recursive: true })
+  await mkdir(skillsDest, { recursive: true })
+
+  const pkgRoot = join(__dirname, "..", "..") // dist/cli.js -> dist -> root
+  const commandsSource = join(pkgRoot, "commands")
+  const skillsSource = join(pkgRoot, "skills")
+
+  // Copy Commands
+  if (existsSync(commandsSource)) {
+    const files = readdirSync(commandsSource).filter(f => f.endsWith(".md"))
+    for (const file of files) {
+      await copyFile(join(commandsSource, file), join(commandsDest, file))
+    }
+    if (!silent && files.length > 0) {
+      log(`  ✓ Extracted ${files.length} commands to .opencode/commands/`)
+    }
+  }
+
+  // Copy Skills
+  if (existsSync(skillsSource)) {
+    const skills = readdirSync(skillsSource).filter(f => {
+      return statSync(join(skillsSource, f)).isDirectory()
+    })
+    for (const skill of skills) {
+      await cp(join(skillsSource, skill), join(skillsDest, skill), { recursive: true })
+    }
+    if (!silent && skills.length > 0) {
+      log(`  ✓ Extracted ${skills.length} skills to .opencode/skills/`)
+    }
+  }
+}
+
 export async function initProject(
   directory: string,
   options: InitOptions = {}
@@ -353,6 +394,9 @@ export async function initProject(
 
   // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
   injectAgentsDocs(directory, options.silent ?? false)
+
+  // Extract commands and skills to .opencode/
+  await extractOpencodeAssets(directory, options.silent ?? false)
 
   if (!options.silent) {
     log("")

@@ -2,14 +2,16 @@ import { access, readFile } from "fs/promises"
 import { constants } from "fs"
 import { join } from "path"
 
-export type FrameworkMode = "gsd" | "spec-kit" | "both" | "none"
+export type FrameworkMode = "gsd" | "spec-kit" | "bmad" | "both" | "none"
 
 export interface FrameworkContext {
   mode: FrameworkMode
   hasGsd: boolean
   hasSpecKit: boolean
+  hasBmad: boolean
   gsdPath: string | null
   specKitPath: string | null
+  bmadPath: string | null
   activePhase: string | null
   activeSpecPath: string | null
   gsdPhaseGoal: string | null
@@ -36,7 +38,8 @@ async function pathExists(path: string): Promise<boolean> {
   }
 }
 
-function classifyMode(hasGsd: boolean, hasSpecKit: boolean): FrameworkMode {
+function classifyMode(hasGsd: boolean, hasSpecKit: boolean, hasBmad: boolean): FrameworkMode {
+  if (hasBmad) return "bmad" // BMAD takes precedence as modern framework
   if (hasGsd && hasSpecKit) return "both"
   if (hasGsd) return "gsd"
   if (hasSpecKit) return "spec-kit"
@@ -113,13 +116,15 @@ export async function extractCurrentGsdPhaseGoal(directory: string): Promise<str
 export async function detectFrameworkContext(directory: string): Promise<FrameworkContext> {
   const gsdPath = join(directory, ".planning")
   const specKitPath = join(directory, ".spec-kit")
+  const bmadPath = join(directory, ".bmad")
 
-  const [hasGsd, hasSpecKit] = await Promise.all([
+  const [hasGsd, hasSpecKit, hasBmad] = await Promise.all([
     pathExists(gsdPath),
     pathExists(specKitPath),
+    pathExists(bmadPath),
   ])
 
-  const mode = classifyMode(hasGsd, hasSpecKit)
+  const mode = classifyMode(hasGsd, hasSpecKit, hasBmad)
   const gsdPhaseGoal = hasGsd ? await extractCurrentGsdPhaseGoal(directory) : null
 
   let activePhase: string | null = null
@@ -135,8 +140,10 @@ export async function detectFrameworkContext(directory: string): Promise<Framewo
     mode,
     hasGsd,
     hasSpecKit,
+    hasBmad,
     gsdPath: hasGsd ? gsdPath : null,
     specKitPath: hasSpecKit ? specKitPath : null,
+    bmadPath: hasBmad ? bmadPath : null,
     activePhase,
     activeSpecPath: hasSpecKit ? specKitPath : null,
     gsdPhaseGoal,

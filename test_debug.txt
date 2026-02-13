@@ -1,0 +1,1356 @@
+
+> hivemind-context-governance@2.6.0 test
+> bash scripts/check-sdk-boundary.sh && tsx --test tests/*.test.ts
+
+✅ Architecture boundary clean: src/lib/ has zero @opencode-ai imports
+TAP version 13
+# === Auto-Hooks Pure Function Tests ===
+# --- staleness ---
+#   PASS: isSessionStale returns false for fresh state
+#   PASS: isSessionStale returns true for state older than 3 days
+#   PASS: isSessionStale returns false for state exactly at boundary
+#   PASS: isSessionStale with custom maxDays=2
+#   PASS: isSessionStale with maxDays=0 returns false
+#   PASS: getStalenessInfo returns correct idleDays
+#   PASS: getStalenessInfo returns correct isStale
+#   PASS: getStalenessInfo returns correct threshold
+# --- chain-analysis ---
+#   PASS: empty hierarchy + OPEN session → 1 break (empty_chain)
+#   PASS: empty hierarchy + LOCKED session → 0 breaks
+#   PASS: action without tactic → missing_parent break
+#   PASS: tactic without trajectory → missing_parent break
+#   PASS: action + tactic but no trajectory → 1 break (tactic missing_parent)
+#   PASS: full chain → 0 breaks
+#   PASS: trajectory only → 0 breaks
+#   PASS: tactic + trajectory but no action → 0 breaks
+# --- tree-chain-breaks ---
+#   PASS: empty gaps → 0 breaks
+#   PASS: healthy gap → 0 breaks
+#   PASS: stale gap → 1 stale_gap break
+#   PASS: break message includes hour count
+#   PASS: break message includes relationship
+#   PASS: custom 1hr threshold catches warm gap
+# --- commit-advisor ---
+#   PASS: below threshold → null
+#   PASS: at threshold → suggestion
+#   PASS: recently suggested (within 3 turns) → null
+#   PASS: not recently suggested → suggestion
+#   PASS: zero files → null
+#   PASS: threshold exactly met → suggestion
+# --- tool-activation ---
+#   PASS: LOCKED session → declare_intent (high)
+#   PASS: high drift → map_context (high)
+#   PASS: long session (15+ turns) → compact_session (medium)
+#   PASS: no hierarchy + OPEN → map_context (medium)
+#   PASS: normal state → null
+#   PASS: priority ordering: LOCKED wins over drift + long session
+#   PASS: after declaring intent (OPEN, low turns) → null
+#   PASS: with hierarchy set, moderate turns → null
+#   PASS: completedBranches >= 5 → hierarchy_manage (medium)
+#   PASS: hasMissingTree + flat hierarchy → hierarchy_manage (medium)
+#   PASS: postCompaction → think_back (medium)
+# === Auto-Hooks Pure: 39 passed, 0 failed ===
+# Subtest: tests/auto-hooks-pure.test.ts
+ok 1 - tests/auto-hooks-pure.test.ts
+  ---
+  duration_ms: 343.117298
+  type: 'test'
+  ...
+# === Compact Purification Tests ===
+# --- identifyTurningPoints: finds completed nodes ---
+#   PASS: finds 2 completed nodes
+#   PASS: finds completed tactic
+#   PASS: finds completed action
+#   PASS: completed detail has timestamp
+# --- identifyTurningPoints: finds cursor path ---
+#   PASS: cursor path has 3 nodes (trajectory > tactic > action)
+#   PASS: cursor path starts with trajectory
+#   PASS: cursor path has tactic
+#   PASS: cursor path ends with action
+#   PASS: cursor_path items come first in sorted output
+# --- identifyTurningPoints: handles empty tree ---
+#   PASS: returns empty array for null root
+# --- generateNextCompactionReport: produces structured report ---
+#   PASS: report has header
+#   PASS: report has active work section
+#   PASS: report has cursor path section
+#   PASS: report has key turning points section
+#   PASS: report has files touched section
+#   PASS: report has resume instructions
+#   PASS: report has footer
+#   PASS: report contains session ID
+#   PASS: report contains files touched
+# --- generateNextCompactionReport: budget-caps at 1800 chars ---
+#   PASS: report length 1797 is within 1800 budget
+#   PASS: budget-capped report still has footer
+# --- compact_session integration: writes next_compaction_report to brain ---
+# /app/src/cli/init.ts:358
+#   await extractOpencodeAssets(directory, options.silent ?? false)
+#   ^
+# ReferenceError: extractOpencodeAssets is not defined
+#     at initProject (/app/src/cli/init.ts:358:3)
+#     at async test_integration_writesReport (/app/tests/compact-purification.test.ts:237:5)
+#     at async main (/app/tests/compact-purification.test.ts:386:3)
+# Node.js v22.22.0
+# Subtest: tests/compact-purification.test.ts
+not ok 2 - tests/compact-purification.test.ts
+  ---
+  duration_ms: 524.688402
+  type: 'test'
+  location: '/app/tests/compact-purification.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# === Complexity Tests ===
+# --- complexity: below default threshold ---
+#   PASS: not complex with 0 files and 0 turns
+#   PASS: filesCount is 0
+#   PASS: turnsCount is 0
+#   PASS: message says normal
+# --- complexity: files exceed default threshold ---
+#   PASS: complex when 3 files touched (default threshold = 3)
+#   PASS: filesCount is 3
+#   PASS: message includes files count
+# --- complexity: turns exceed default threshold ---
+#   PASS: complex when 5 turns (default threshold = 5)
+#   PASS: turnsCount is 5
+#   PASS: message includes turn count
+# --- complexity: both files and turns exceed ---
+#   PASS: complex when both exceed
+#   PASS: message includes files
+#   PASS: message includes turns
+# --- complexity: just below default threshold ---
+#   PASS: not complex when both below threshold
+# --- complexity: custom threshold for files ---
+#   PASS: complex when 1 file with maxFiles=1
+#   PASS: custom threshold reflected
+# --- complexity: custom threshold for turns ---
+#   PASS: complex when 2 turns with maxTurns=2
+#   PASS: custom threshold reflected
+# --- complexity: zero threshold triggers immediately ---
+#   PASS: complex with zero thresholds (0 >= 0)
+# --- complexity: high threshold never triggers ---
+#   PASS: not complex with high thresholds
+# --- complexity: normal message format ---
+#   PASS: message is exactly 'Complexity normal'
+# --- complexity: complex message suggests declare_intent ---
+#   PASS: complex message suggests declare_intent
+# --- complexity: files-only complex message ---
+#   PASS: message mentions files
+#   PASS: message does not mention turns when only files exceed
+# --- complexity: turns-only complex message ---
+#   PASS: message mentions turns
+#   PASS: message does not mention files when only turns exceed
+# --- complexity: file deduplication ---
+#   PASS: deduplicated files count is 2
+#   PASS: not complex with 2 unique files (threshold 3)
+# === Complexity: 28 passed, 0 failed ===
+# Subtest: tests/complexity.test.ts
+ok 3 - tests/complexity.test.ts
+  ---
+  duration_ms: 307.313879
+  type: 'test'
+  ...
+# \# === Cycle Intelligence Tests ===
+# --- schema: CycleLogEntry + helpers ---
+#   PASS: initial cycle_log is empty array
+#   PASS: initial pending_failure_ack is false
+#   PASS: addCycleLogEntry clean output → failure_detected = false
+#   PASS: addCycleLogEntry clean output → pending_failure_ack stays false
+#   PASS: addCycleLogEntry failure output → failure_detected = true
+#   PASS: addCycleLogEntry failure output → pending_failure_ack = true
+#   PASS: addCycleLogEntry captures specific failure keywords
+#   PASS: clearPendingFailureAck sets flag to false
+# --- schema: cycle_log cap at MAX_CYCLE_LOG ---
+#   PASS: cycle_log capped at 10
+#   PASS: oldest entries dropped (FIFO)
+#   PASS: newest entry is last
+# --- export_cycle: tool tests ---
+# /app/src/cli/init.ts:358
+#   await extractOpencodeAssets(directory, options.silent ?? false)
+#   ^
+# ReferenceError: extractOpencodeAssets is not defined
+#     at initProject (/app/src/cli/init.ts:358:3)
+#     at async test_export_cycle_tool (/app/tests/cycle-intelligence.test.ts:150:5)
+#     at async main (/app/tests/cycle-intelligence.test.ts:471:3)
+# Node.js v22.22.0
+# Subtest: tests/cycle-intelligence.test.ts
+not ok 4 - tests/cycle-intelligence.test.ts
+  ---
+  duration_ms: 561.7147
+  type: 'test'
+  location: '/app/tests/cycle-intelligence.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# === Dashboard TUI Tests ===
+# --- dashboard: snapshot panels ---
+# /app/src/cli/init.ts:358
+#   await extractOpencodeAssets(directory, options.silent ?? false)
+#   ^
+# ReferenceError: extractOpencodeAssets is not defined
+#     at initProject (/app/src/cli/init.ts:358:3)
+#     at async main (/app/tests/dashboard-tui.test.ts:67:5)
+# Node.js v22.22.0
+# Subtest: tests/dashboard-tui.test.ts
+not ok 5 - tests/dashboard-tui.test.ts
+  ---
+  duration_ms: 1269.916957
+  type: 'test'
+  location: '/app/tests/dashboard-tui.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# === Detection Engine Tests ===
+# --- tool-classification ---
+#   PASS: classifyTool('read') → 'read'
+#   PASS: classifyTool('write') → 'write'
+#   PASS: classifyTool('edit') → 'write'
+#   PASS: classifyTool('bash') → 'write'
+#   PASS: classifyTool('glob') → 'read'
+#   PASS: classifyTool('grep') → 'read'
+#   PASS: classifyTool('task') → 'query'
+#   PASS: classifyTool('declare_intent') → 'governance'
+#   PASS: classifyTool('map_context') → 'governance'
+#   PASS: classifyTool('unknown_custom_tool') → 'query' (default)
+#   PASS: classifyTool('getData') → 'read' (heuristic: contains 'get')
+#   PASS: classifyTool('createFile') → 'write' (heuristic: contains 'create')
+# --- counter-logic ---
+#   PASS: createDetectionState initializes all zeros
+#   PASS: incrementToolType increments correct category
+#   PASS: incrementToolType preserves other categories
+#   PASS: trackToolResult success resets consecutive_failures
+#   PASS: trackToolResult failure increments consecutive_failures
+#   PASS: trackSectionUpdate same content increments repetition
+#   PASS: trackSectionUpdate different content resets repetition
+#   PASS: resetSectionTracking resets counter and content
+# --- keyword-scanning ---
+#   PASS: scanForKeywords finds 'stuck' in text
+#   PASS: scanForKeywords finds 'confused' in text
+#   PASS: scanForKeywords finds 'not working' in text
+#   PASS: scanForKeywords returns empty for clean text
+#   PASS: scanForKeywords skips already-existing flags
+#   PASS: addKeywordFlags adds new flags to state
+#   PASS: addKeywordFlags deduplicates
+#   PASS: addKeywordFlags returns same state if no new flags
+# --- signal-compilation ---
+#   PASS: compileSignals with 0 turns returns empty
+#   PASS: compileSignals with turns >= threshold returns turn_count signal
+#   PASS: compileSignals with consecutive_failures >= 3 returns failure signal
+#   PASS: compileSignals with section_repetition >= 4 returns circling signal
+#   PASS: compileSignals with read_write_imbalance (8 reads, 0 writes) returns signal
+#   PASS: compileSignals with keyword_flags returns keyword signal
+#   PASS: compileSignals with completedBranches >= 5 returns prune signal
+#   PASS: compileSignals with timestampGapMs >= 2h returns gap signal
+#   PASS: compileSignals with missingTree returns migration signal
+#   PASS: compileSignals sorts by severity (lower number = higher priority)
+#   PASS: compileSignals respects maxSignals cap (returns at most N)
+#   PASS: formatSignals returns empty string for 0 signals
+#   PASS: formatSignals returns [ALERTS] block with correct format
+#   PASS: compileSignals with write tools + empty action → tool_hierarchy_mismatch signal
+#   PASS: compileSignals with write tools + action set → no mismatch signal
+#   PASS: compileSignals with empty action but no writes → no mismatch signal
+#   PASS: compileSignals with sessionFileLines >= 50 returns session_file_long signal
+# --- governance-primitives ---
+#   PASS: createGovernanceCounters initializes defaults
+#   PASS: out_of_order starts at info
+#   PASS: out_of_order escalates to warning on repeat
+#   PASS: out_of_order escalates to error after repeated violations
+#   PASS: drift maps warning then error
+#   PASS: compaction stays informational
+#   PASS: evidence pressure maps warning then error
+#   PASS: ignored tier is always error
+#   PASS: seriousness score combines intent/hierarchy/role mismatches
+#   PASS: single hierarchy mismatch yields medium seriousness
+#   PASS: no mismatches yields low seriousness
+#   PASS: registerGovernanceSignal increments counters and clears ack
+#   PASS: acknowledgment downgrades effective repetition severity
+#   PASS: full reset is blocked until prerequisites are complete
+#   PASS: full reset clears counters after prerequisite completion
+# === Detection Engine: 60 passed, 0 failed ===
+# Subtest: tests/detection.test.ts
+ok 6 - tests/detection.test.ts
+  ---
+  duration_ms: 354.586149
+  type: 'test'
+  ...
+# === Ecosystem Check Tests ===
+# --- ecosystem-check: valid semantic chain ---
+# /app/src/cli/init.ts:358
+#   await extractOpencodeAssets(directory, options.silent ?? false)
+#   ^
+# ReferenceError: extractOpencodeAssets is not defined
+#     at initProject (/app/src/cli/init.ts:358:3)
+#     at async test_semantic_validation_passes_on_valid_tree (/app/tests/ecosystem-check.test.ts:53:5)
+#     at async main (/app/tests/ecosystem-check.test.ts:114:3)
+# Node.js v22.22.0
+# Subtest: tests/ecosystem-check.test.ts
+not ok 7 - tests/ecosystem-check.test.ts
+  ---
+  duration_ms: 575.048045
+  type: 'test'
+  location: '/app/tests/ecosystem-check.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# === Entry Chain Tests ===
+# --- entry-chain: init → verify all files created ---
+# /app/src/cli/init.ts:358
+#   await extractOpencodeAssets(directory, options.silent ?? false)
+#   ^
+# ReferenceError: extractOpencodeAssets is not defined
+#     at initProject (/app/src/cli/init.ts:358:3)
+#     at async test_init (/app/tests/entry-chain.test.ts:58:5)
+#     at async main (/app/tests/entry-chain.test.ts:605:3)
+# Node.js v22.22.0
+# Subtest: tests/entry-chain.test.ts
+not ok 8 - tests/entry-chain.test.ts
+  ---
+  duration_ms: 599.657631
+  type: 'test'
+  location: '/app/tests/entry-chain.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# === Evidence Gate System Tests ===
+# --- escalation-tiers ---
+#   PASS: at threshold → INFO
+#   PASS: below threshold → INFO
+#   PASS: 2 over threshold → WARN
+#   PASS: 5 over threshold → CRITICAL
+#   PASS: 10 over threshold → DEGRADED
+#   PASS: 3 over threshold → WARN
+#   PASS: 7 over threshold → CRITICAL
+#   PASS: zero/zero → INFO
+# --- escalated-signals ---
+#   PASS: compileEscalatedSignals returns signals with tier
+#   PASS: every escalated signal has non-empty evidence
+#   PASS: turn_count signal has counter_excuse
+#   PASS: evidence includes actual turn count data
+#   PASS: counter_excuse contains argument against delay
+#   PASS: all signals in multi-signal case have tier + evidence
+#   PASS: higher turn count → equal or higher escalation tier
+# --- write-without-read ---
+#   PASS: write_without_read signal generated when count > 0
+#   PASS: write_without_read evidence includes count
+#   PASS: no write_without_read signal when count is 0
+#   PASS: brain state initializes write_without_read_count to 0
+# --- format-escalated ---
+#   PASS: formatted output includes [TIER] prefix
+#   PASS: formatted output includes EVIDENCE line
+#   PASS: formatted output includes counter-excuse with arrow
+#   PASS: CRITICAL tier formats correctly
+#   PASS: non-escalated signals still use - prefix
+# --- automation-level ---
+#   PASS: manual is valid automation level
+#   PASS: guided is valid automation level
+#   PASS: assisted is valid automation level
+#   PASS: full is valid automation level
+#   PASS: retard is valid automation level
+#   PASS: invalid is NOT valid automation level
+#   PASS: default automation_level is assisted
+#   PASS: config can be created with retard
+# --- retard-mode-init ---
+# /app/src/cli/init.ts:358
+#   await extractOpencodeAssets(directory, options.silent ?? false)
+#   ^
+# ReferenceError: extractOpencodeAssets is not defined
+#     at initProject (/app/src/cli/init.ts:358:3)
+#     at async test_retard_mode_init (/app/tests/evidence-gate.test.ts:266:3)
+#     at async main (/app/tests/evidence-gate.test.ts:453:3)
+# Node.js v22.22.0
+# Subtest: tests/evidence-gate.test.ts
+not ok 9 - tests/evidence-gate.test.ts
+  ---
+  duration_ms: 393.677362
+  type: 'test'
+  location: '/app/tests/evidence-gate.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# === Framework Context Tests ===
+# --- framework-context: detect none ---
+#   PASS: mode is none with no framework markers
+#   PASS: no framework flags set
+# --- framework-context: detect gsd and phase goal ---
+#   PASS: mode is gsd when only .planning exists
+#   PASS: active phase parsed from STATE.md
+#   PASS: phase goal extracted from roadmap
+# --- framework-context: detect spec-kit only ---
+#   PASS: mode is spec-kit when only .spec-kit exists
+#   PASS: active spec path points to .spec-kit
+#   PASS: phase goal is null outside gsd mode
+# --- framework-context: detect both frameworks ---
+#   PASS: mode is both when both framework markers exist
+#   PASS: both framework flags are true
+#   PASS: active phase still available in dual mode
+# --- framework-context: locked selection menu contract ---
+#   PASS: dual framework menu is marked as conflict
+#   PASS: menu has exactly four locked options
+#   PASS: first option label is Use GSD
+#   PASS: second option label is Use Spec-kit
+#   PASS: third option label is override
+#   PASS: fourth option label is cancel
+#   PASS: Use GSD requires active_phase
+#   PASS: Use Spec-kit requires active_spec_path
+#   PASS: Override requires acceptance_note
+#   PASS: Cancel requires no metadata
+# --- framework-context: extract goal without planning files ---
+#   PASS: returns null when planning files are missing
+# --- framework-context: limited mode simulated block with rollback guidance ---
+#   PASS: limited mode remains non-blocking (advisory only)
+#   PASS: limited mode warning includes framework advisory
+#   PASS: limited mode warning includes framework selection guidance
+# --- framework-context: simulated pause remains non-blocking ---
+#   PASS: simulated pause does not hard-deny tool execution
+#   PASS: simulated pause warning includes framework advisory
+#   PASS: simulated pause warning includes framework selection guidance
+# === Framework Context: 28 passed, 0 failed ===
+# Subtest: tests/framework-context.test.ts
+ok 10 - tests/framework-context.test.ts
+  ---
+  duration_ms: 519.028581
+  type: 'test'
+  ...
+# === Governance Stress Tests ===
+#   PASS: GOV-01 bootstrap appears in permissive mode turn window
+#   PASS: GOV-02 evidence and team blocks inject from turn 0
+#   PASS: GOV-03 permissive mode suppresses detection warning block
+#   PASS: GOV-04 out-of-order starts with info toast
+#   PASS: GOV-04 severity escalates warning to error
+#   PASS: GOV-05 session.idle emits drift toast when score < 30
+#   PASS: GOV-06 framework conflict routing renders locked selection menu
+#   PASS: GOV-07 prompt pins active GSD phase goal
+#   PASS: Limited-mode conflict path is advisory, not hard deny
+#   PASS: Simulated-pause path includes framework advisory without hard denial
+#   PASS: GOV-08 ignored block includes compact tri-evidence
+#   PASS: IGNORED tone adapts to strict/beginner posture
+#   PASS: Tri-evidence formatter always renders SEQ/PLAN/HIER in one block
+# === Governance Stress: 13 passed, 0 failed ===
+# 13-condition result: 13/13 PASS
+# Subtest: tests/governance-stress.test.ts
+ok 11 - tests/governance-stress.test.ts
+  ---
+  duration_ms: 512.535872
+  type: 'test'
+  ...
+# === Hierarchy Tree Tests ===
+# --- stamps ---
+#   PASS: generateStamp produces 12-char string
+#   PASS: parseStamp round-trip minutes
+#   PASS: parseStamp round-trip hours
+#   PASS: parseStamp round-trip year
+#   PASS: stampToEpoch produces valid epoch matching source date
+#   PASS: makeNodeId uses t_, tc_, a_ prefixes
+# --- crud ---
+#   PASS: createTree returns { version:1, root:null, cursor:null }
+#   PASS: createNode sets correct level and content
+#   PASS: createNode sets status to active
+#   PASS: createNode generates stamp from date
+#   PASS: createNode initializes children as empty array
+#   PASS: setRoot sets root and moves cursor to root
+#   PASS: addChild adds child under parent and moves cursor to child
+#   PASS: addChild on empty tree is no-op
+#   PASS: moveCursor moves cursor to existing node
+#   PASS: moveCursor on non-existent ID is no-op
+#   PASS: markComplete sets status:complete and completed timestamp
+# --- queries ---
+#   PASS: findNode finds root by ID
+#   PASS: findNode finds nested child
+#   PASS: findNode returns null for missing ID
+#   PASS: getAncestors returns [root] for root
+#   PASS: getAncestors returns [trajectory, tactic, action] for deeply nested
+#   PASS: getCursorNode returns node cursor points to
+#   PASS: getCursorNode returns null on empty tree
+#   PASS: toBrainProjection returns flat hierarchy from cursor path
+#   PASS: flattenTree returns all nodes in DFS order
+# --- staleness ---
+#   PASS: classifyGap: <30min is healthy
+#   PASS: classifyGap: 30min-2hr is warm
+#   PASS: classifyGap: >2hr is stale
+#   PASS: computeSiblingGap returns correct gap and sibling relationship
+#   PASS: computeParentChildGap returns correct gap and parent-child relationship
+#   PASS: detectGaps on tree with children returns gaps
+#   PASS: detectGaps returns gaps sorted stale-first
+#   PASS: detectGaps on empty tree returns []
+# --- rendering ---
+#   PASS: toAsciiTree on empty tree returns '(empty hierarchy)'
+#   PASS: toAsciiTree includes level labels (Trajectory:, Tactic:, Action:)
+#   PASS: toAsciiTree marks cursor with '<-- cursor'
+#   PASS: toAsciiTree includes status markers ([>>] for active)
+#   PASS: toActiveMdBody renders markdown with checkboxes and level labels
+#   PASS: getTreeStats counts nodes correctly
+# --- janitor ---
+#   PASS: countCompleted returns 0 on empty tree
+#   PASS: countCompleted returns correct count
+#   PASS: summarizeBranch includes content and stamp
+#   PASS: pruneCompleted replaces completed branches with summaries
+#   PASS: pruneCompleted preserves non-completed branches
+#   PASS: pruneCompleted moves cursor to root if cursor was in pruned branch
+# --- io ---
+#   PASS: treeExists returns false before save
+#   PASS: saveTree + loadTree round-trips correctly
+#   PASS: treeExists returns true after save
+#   PASS: loadTree returns empty tree for missing file
+# --- migration ---
+#   PASS: migrateFromFlat with empty trajectory returns empty tree
+#   PASS: migrateFromFlat with trajectory only creates 1-node tree
+#   PASS: migrateFromFlat with trajectory+tactic creates 2-node tree
+#   PASS: migrateFromFlat with all 3 creates 3-node tree, cursor at action
+#   PASS: toBrainProjection of migrated tree matches original flat
+# === Hierarchy Tree: 55 passed, 0 failed ===
+# Subtest: tests/hierarchy-tree.test.ts
+ok 12 - tests/hierarchy-tree.test.ts
+  ---
+  duration_ms: 312.220946
+  type: 'test'
+  ...
+# === Init + Planning FS Tests ===
+# --- planning-fs: init directory ---
+#   PASS: planning dir created
+#   PASS: index.md created
+#   PASS: active.md created
+#   PASS: archive dir created
+# --- planning-fs: active.md roundtrip ---
+#   PASS: session_id preserved
+#   PASS: mode preserved
+#   PASS: body preserved
+# --- planning-fs: parse active.md ---
+#   PASS: frontmatter parsed
+#   PASS: body parsed
+# --- planning-fs: archive session ---
+#   PASS: 1 archive created
+#   PASS: archive contains session ID
+# --- planning-fs: update index.md ---
+#   PASS: summary stored in manifest
+#   PASS: summary in root INDEX.md
+# --- planning-fs: reset active.md ---
+#   PASS: session_id reset to empty
+#   PASS: body reset to template
+# --- init: creates project structure ---
+# /app/src/cli/init.ts:358
+#   await extractOpencodeAssets(directory, options.silent ?? false)
+#   ^
+# ReferenceError: extractOpencodeAssets is not defined
+#     at initProject (/app/src/cli/init.ts:358:3)
+#     at async test_init_project (/app/tests/init-planning.test.ts:179:3)
+#     at async main (/app/tests/init-planning.test.ts:266:3)
+# Node.js v22.22.0
+# Subtest: tests/init-planning.test.ts
+not ok 13 - tests/init-planning.test.ts
+  ---
+  duration_ms: 482.42834
+  type: 'test'
+  location: '/app/tests/init-planning.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# === Integration Tests ===
+# --- integration: full lifecycle workflow ---
+# 🐝 HiveMind Context Governance — Initialization
+# ────────────────────────────────────────────────
+#   Governance: assisted
+#   Language: en
+#   Expert Level: intermediate
+#   Output Style: explanatory
+#   Automation: assisted
+# Creating planning directory...
+#   ✓ Copied 10 Commandments to /tmp/hm-integ-ydRqof/.hivemind/docs/
+#   ✓ Plugin registered in opencode.json
+#     → OpenCode will auto-install on next launch
+# /app/src/cli/init.ts:358
+#   await extractOpencodeAssets(directory, options.silent ?? false)
+#   ^
+# ReferenceError: extractOpencodeAssets is not defined
+#     at initProject (/app/src/cli/init.ts:358:3)
+#     at async test_fullLifecycle (/app/tests/integration.test.ts:75:5)
+#     at async main (/app/tests/integration.test.ts:1763:3)
+# Node.js v22.22.0
+# Subtest: tests/integration.test.ts
+not ok 14 - tests/integration.test.ts
+  ---
+  duration_ms: 550.93259
+  type: 'test'
+  location: '/app/tests/integration.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# === manifest.test.ts ===
+# --- Core chain ---
+#   PASS: chain has 5 relation edges
+#   PASS: codemap governs plans
+#   PASS: codewiki governs plans
+#   PASS: tasks materialize sub_tasks
+# --- Session dedup ---
+#   PASS: duplicate stamp collapsed
+#   PASS: kept merged entry for stamp 111
+#   PASS: linked plans merged and deduped
+#   PASS: exactly one active session remains
+#   PASS: active stamp preserved when valid
+# --- Register session ---
+#   PASS: first register creates one session
+#   PASS: first register sets active stamp
+#   PASS: second register appends second session
+#   PASS: second register sets new active stamp
+#   PASS: old active session archived
+#   PASS: register same stamp updates, no duplicate
+#   PASS: existing stamp gets updated file
+#   PASS: existing stamp updates linked plans
+# --- Session-plan linking ---
+#   PASS: link operation reports success
+#   PASS: session links to plan
+#   PASS: plan links to session
+#   PASS: session link is deduped
+#   PASS: plan link is deduped
+# --- Memory sync ---
+#   PASS: decisions count is synced
+#   PASS: decisions last_updated uses max
+#   PASS: patterns count is synced
+# --- Generic CRUD + ensure ---
+#   PASS: root manifest created
+#   PASS: state manifest created
+#   PASS: sessions manifest created
+#   PASS: plans manifest created
+#   PASS: memory manifest created
+#   PASS: codemap manifest created
+#   PASS: codewiki manifest created
+#   PASS: root manifest structure version is 2.0.0
+#   PASS: codemap marked as SOT
+#   PASS: codewiki marked as SOT
+#   PASS: root includes materialization chain
+#   PASS: generic write/read roundtrip works
+#   PASS: written manifest is persisted to disk
+# --- Results: 38 passed, 0 failed ---
+# Subtest: tests/manifest.test.ts
+ok 15 - tests/manifest.test.ts
+  ---
+  duration_ms: 319.905677
+  type: 'test'
+  ...
+# === migration.test.ts ===
+# --- migration: legacy -> v2 ---
+#   PASS: migration reports migrated=true
+#   PASS: brain moved to state/brain.json
+#   PASS: hierarchy moved to state/hierarchy.json
+#   PASS: anchors moved to state/anchors.json
+#   PASS: mems moved to memory/mems.json
+#   PASS: 10-commandments moved to docs/
+#   PASS: root manifest exists
+#   PASS: state manifest exists
+#   PASS: memory manifest exists
+#   PASS: sessions manifest exists
+#   PASS: plans manifest exists
+#   PASS: INDEX.md generated at root
+#   PASS: duplicate session stamps deduplicated
+#   PASS: active stamp preserved
+#   PASS: active session moved to sessions/active/
+#   PASS: migrated session has YAML frontmatter
+# --- migration: skip already-new ---
+#   PASS: already-new structure is not migrated
+#   PASS: reason is already-new-structure
+# --- migration: skip non-legacy ---
+#   PASS: empty project is not migrated
+#   PASS: reason is not-legacy
+# --- Results: 20 passed, 0 failed ---
+# Subtest: tests/migration.test.ts
+ok 16 - tests/migration.test.ts
+  ---
+  duration_ms: 388.716773
+  type: 'test'
+  ...
+# === paths.test.ts ===
+# --- Constants ---
+#   PASS: STRUCTURE_VERSION is 2.0.0
+#   PASS: HIVEMIND_DIR is .hivemind
+# --- getHivemindPaths ---
+#   PASS: root path
+#   PASS: config path
+#   PASS: index path
+#   PASS: root manifest path
+#   PASS: stateDir path
+#   PASS: state manifest path
+#   PASS: brain path
+#   PASS: hierarchy path
+#   PASS: anchors path
+#   PASS: tasks path
+#   PASS: memoryDir path
+#   PASS: memory manifest path
+#   PASS: mems path
+#   PASS: sessionsDir path
+#   PASS: sessions manifest path
+#   PASS: activeDir path
+#   PASS: archiveDir path
+#   PASS: exportsDir path
+#   PASS: plansDir path
+#   PASS: plans manifest path
+#   PASS: codemapDir path
+#   PASS: codemap manifest path
+#   PASS: codewikiDir path
+#   PASS: codewiki manifest path
+#   PASS: logsDir path
+#   PASS: docsDir path
+#   PASS: templatesDir path
+#   PASS: session template path
+#   PASS: all paths are under .hivemind/
+# --- getLegacyPaths ---
+#   PASS: legacy root
+#   PASS: legacy brain at root level
+#   PASS: legacy hierarchy at root
+#   PASS: legacy anchors at root
+#   PASS: legacy mems at root
+#   PASS: legacy config same location
+# --- isLegacyStructure ---
+#   PASS: empty dir is not legacy
+#   PASS: brain.json at root = legacy
+#   PASS: brain.json at root + state/ exists = not legacy
+# --- isNewStructure ---
+#   PASS: empty dir is not new structure
+#   PASS: state/ without manifest is not new structure
+#   PASS: state/ + manifest.json = new structure
+# --- hivemindExists ---
+#   PASS: no .hivemind/ = false
+#   PASS: .hivemind/ exists = true
+# --- slugify ---
+#   PASS: typical trajectory
+#   PASS: simple two words
+#   PASS: empty string
+#   PASS: trims whitespace to slug
+#   PASS: lowercases
+#   PASS: collapses multiple hyphens
+#   PASS: strips special chars
+#   PASS: respects maxLength
+#   PASS: no trailing hyphen after truncation
+# --- buildSessionFilename ---
+#   PASS: full session filename
+#   PASS: Date object input
+#   PASS: ISO timestamp input
+#   PASS: empty trajectory fallback
+# --- buildArchiveFilename ---
+#   PASS: archive filename matches session filename
+# --- getAllDirectories ---
+#   PASS: 13 directories in structure
+#   PASS: root is first
+#   PASS: includes state/
+#   PASS: includes memory/
+#   PASS: includes sessions/
+#   PASS: includes sessions/active/
+#   PASS: includes sessions/archive/
+#   PASS: includes sessions/archive/exports/
+#   PASS: includes plans/
+#   PASS: includes codemap/
+#   PASS: includes codewiki/
+#   PASS: includes logs/
+#   PASS: includes docs/
+#   PASS: includes templates/
+# --- getActiveSessionPath ---
+#   PASS: no manifest returns null
+#   PASS: null active_stamp returns null
+#   PASS: resolves active session path via manifest
+#   PASS: missing stamp in sessions returns null
+#   PASS: corrupt manifest returns null
+# --- Purity ---
+#   PASS: different roots give different paths
+#   PASS: brain paths differ per root
+#   PASS: same root gives same paths
+#   PASS: deterministic
+# --- Results: 82 passed, 0 failed ---
+# Subtest: tests/paths.test.ts
+ok 17 - tests/paths.test.ts
+  ---
+  duration_ms: 301.440236
+  type: 'test'
+  ...
+# === Round 3 Tools Tests ===
+# --- anchors: persistence + CRUD ---
+#   PASS: loadAnchors returns empty state for new project
+#   PASS: addAnchor adds to state
+#   PASS: addAnchor replaces existing key
+#   PASS: removeAnchor removes by key
+#   PASS: saveAnchors + loadAnchors roundtrip
+#   PASS: formatAnchorsForPrompt with 0 anchors returns empty string
+#   PASS: formatAnchorsForPrompt includes key-value pairs
+#   PASS: formatAnchorsForPrompt includes immutable-anchors tags
+# --- scan_hierarchy: structured read ---
+#   PASS: returns error message when no session
+#   PASS: returns structured text with session info
+#   PASS: returns hierarchy levels when set
+#   PASS: returns metrics
+#   PASS: returns anchors section
+#   PASS: returns '(not set)' for empty hierarchy levels
+# --- save_anchor: tool tests ---
+#   PASS: save_anchor saves to anchors.json
+#   PASS: save_anchor replaces existing key
+#   PASS: save_anchor returns confirmation with count
+#   PASS: anchors survive session compaction
+#   PASS: system prompt includes anchors after save
+#   PASS: system prompt includes immutable-anchors tag
+# --- think_back: context refresh ---
+#   PASS: think_back returns error when no session
+#   PASS: think_back includes trajectory in output
+#   PASS: think_back includes session health metrics
+#   PASS: think_back includes anchors when present
+#   PASS: think_back includes chain break warnings
+#   PASS: think_back includes plan section from active.md
+# --- scan_hierarchy include_drift: drift report ---
+#   PASS: scan_hierarchy+drift returns error when no session
+#   PASS: scan_hierarchy+drift shows drift score with emoji
+#   PASS: scan_hierarchy+drift shows drift report section
+#   PASS: scan_hierarchy+drift shows chain integrity pass when intact
+#   PASS: scan_hierarchy+drift shows chain integrity fail when broken
+#   PASS: scan_hierarchy+drift shows recommendation based on drift score
+# === Round 3: 32 passed, 0 failed ===
+# Subtest: tests/round3-tools.test.ts
+ok 18 - tests/round3-tools.test.ts
+  ---
+  duration_ms: 709.224748
+  type: 'test'
+  ...
+# === Round 4 Mems Tests ===
+# --- mems: persistence + CRUD ---
+#   PASS: loadMems returns empty state for new project
+#   PASS: addMem adds to state
+#   PASS: addMem generates unique ID (starts with "mem_")
+#   PASS: addMem preserves tags
+#   PASS: removeMem removes by ID
+#   PASS: removeMem no-ops for unknown ID (same length)
+#   PASS: saveMems + loadMems roundtrip
+#   PASS: generateMemId format matches /^mem_\\d+_[a-z0-9]{4}$/
+#   PASS: generateMemId generates unique IDs (2 calls differ)
+#   PASS: getShelfSummary counts correctly
+# --- mems: search ---
+#   PASS: searchMems matches content substring (case-insensitive)
+#   PASS: searchMems matches tags
+#   PASS: searchMems filters by shelf
+#   PASS: searchMems returns empty for no match
+#   PASS: searchMems returns newest first (check order)
+#   PASS: getMemsByShelf filters correctly
+# --- mems: prompt formatting ---
+#   PASS: formatMemsForPrompt returns empty string for 0 mems
+#   PASS: formatMemsForPrompt shows count and shelf breakdown
+#   PASS: formatMemsForPrompt includes "recall_mems" suggestion
+#   PASS: formatMemsForPrompt handles multiple shelves
+# --- save_mem: tool tests ---
+#   PASS: save_mem saves to mems.json
+#   PASS: save_mem with tags stores tag array
+#   PASS: save_mem returns confirmation with shelf and count
+#   PASS: save_mem assigns unique IDs
+#   PASS: mems survive session compaction
+# --- recall_mems list mode: shelf listing ---
+#   PASS: recall_mems list mode returns empty message for no mems
+#   PASS: recall_mems list mode shows shelf counts
+#   PASS: recall_mems list mode shows recent memories
+# --- recall_mems: tool tests ---
+#   PASS: recall_mems returns empty message when no mems
+#   PASS: recall_mems finds matching content
+#   PASS: recall_mems finds matching tags
+#   PASS: recall_mems returns no-match message for unknown query
+#   PASS: recall_mems filters by shelf when provided
+#   PASS: recall_mems caps results at 5
+# --- hook integrations: mems brain ---
+# /app/src/cli/init.ts:358
+#   await extractOpencodeAssets(directory, options.silent ?? false)
+#   ^
+# ReferenceError: extractOpencodeAssets is not defined
+#     at initProject (/app/src/cli/init.ts:358:3)
+#     at async test_hookIntegrations (/app/tests/round4-mems.test.ts:590:5)
+#     at async main (/app/tests/round4-mems.test.ts:678:3)
+# Node.js v22.22.0
+# Subtest: tests/round4-mems.test.ts
+not ok 19 - tests/round4-mems.test.ts
+  ---
+  duration_ms: 616.679813
+  type: 'test'
+  location: '/app/tests/round4-mems.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# === Schema Tests ===
+# --- brain-state: creation ---
+#   PASS: session id set
+#   PASS: default mode is plan_driven
+#   PASS: inherits config mode
+#   PASS: assisted mode starts OPEN
+#   PASS: starts with 0 turns
+#   PASS: starts with 100 drift score
+#   PASS: version set
+# --- brain-state: strict starts locked ---
+#   PASS: strict mode starts LOCKED
+# --- brain-state: unlock ---
+#   PASS: starts locked
+#   PASS: unlocked after unlockSession
+# --- brain-state: lock ---
+#   PASS: starts unlocked
+#   PASS: locked after lockSession
+# --- brain-state: turn counting ---
+#   PASS: incremented to 1
+#   PASS: incremented to 3
+#   PASS: reset to 0
+# --- brain-state: hierarchy update ---
+#   PASS: trajectory set
+#   PASS: context update counted
+#   PASS: tactic set
+#   PASS: context update counted again
+# --- brain-state: file tracking ---
+#   PASS: 1 file tracked
+#   PASS: duplicate not added
+#   PASS: 2 files tracked
+# --- brain-state: drift score ---
+#   PASS: fresh state = 100
+#   PASS: drift decreases with turns
+#   PASS: context update boosts drift score
+# --- brain-state: drift warning ---
+#   PASS: no warning at start
+#   PASS: warning triggered at high turns + low drift
+# --- hierarchy: state operations ---
+#   PASS: empty trajectory
+#   PASS: trajectory updated
+#   PASS: tactic updated
+#   PASS: trajectory depth = 1
+#   PASS: tactic depth = 2
+#   PASS: action depth = 3
+# --- brain-state: session ID ---
+#   PASS: starts with session-
+#   PASS: unique IDs generated
+# === Schema: 35 passed, 0 failed ===
+# Subtest: tests/schemas.test.ts
+ok 20 - tests/schemas.test.ts
+  ---
+  duration_ms: 320.519696
+  type: 'test'
+  ...
+# === SDK Foundation Tests ===
+# --- sdk-foundation: sdk context module ---
+#   PASS: getClient returns null initially
+#   PASS: getShell returns null initially
+#   PASS: getServerUrl returns null initially
+#   PASS: getProject returns null initially
+#   PASS: isSdkAvailable returns false initially
+#   PASS: getClient returns client after init
+#   PASS: getShell returns shell after init
+#   PASS: getServerUrl returns serverUrl after init
+#   PASS: getProject returns project after init
+#   PASS: isSdkAvailable returns true after init
+#   PASS: getClient returns null after reset
+#   PASS: isSdkAvailable returns false after reset
+#   PASS: getClient returns client after partial init
+#   PASS: getShell returns null after partial init
+# --- sdk-foundation: withClient graceful fallback ---
+#   PASS: withClient returns fallback when client null
+#   PASS: withClient returns undefined when client null and no fallback
+#   PASS: withClient passes client to callback
+#   PASS: withClient returns callback result when client available
+# SDK client error: Error: oops
+#     at <anonymous> (/app/tests/sdk-foundation.test.ts:123:11)
+#     at withClient (/app/src/hooks/sdk-context.ts:91:18)
+#     at test_withClientFallback (/app/tests/sdk-foundation.test.ts:122:25)
+#     at async main (/app/tests/sdk-foundation.test.ts:289:3)
+#   PASS: withClient returns fallback when callback throws
+# SDK client error: Error: oops
+#     at <anonymous> (/app/tests/sdk-foundation.test.ts:128:11)
+#     at withClient (/app/src/hooks/sdk-context.ts:91:18)
+#     at test_withClientFallback (/app/tests/sdk-foundation.test.ts:127:25)
+#     at async main (/app/tests/sdk-foundation.test.ts:289:3)
+#   PASS: withClient returns undefined when callback throws and no fallback
+# --- sdk-foundation: plugin entry wiring ---
+#   PASS: index.ts calls initSdkContext
+#   PASS: index.ts wires event handler
+# --- sdk-foundation: event handler ---
+#   PASS: createEventHandler returns a function
+#   PASS: handles session.created
+#   PASS: handles session.idle
+#   PASS: handles session.compacted
+#   PASS: handles file.edited
+#   PASS: handles session.diff
+#   PASS: handles unknown event
+#   PASS: handles null event (catches error)
+# --- sdk-foundation: idle escalation + compaction info toast ---
+#   PASS: idle drift toast emitted when score < 30 and turns >= 10
+#   PASS: at least one drift toast emitted
+#   PASS: compaction toast handled by compaction hook (not event-handler)
+#   PASS: compaction counter incremented
+# --- sdk-foundation: architecture boundary ---
+#   PASS: check-sdk-boundary.sh is executable
+#   PASS: src/lib/ clean of @opencode-ai imports
+#   PASS: src/hooks/ contains @opencode-ai imports (boundary works)
+# --- sdk-foundation: backward compatibility ---
+#   PASS: Tools exports count: 10 (>= 10)
+#   PASS: createDeclareIntentTool exported
+#   PASS: Hooks exports count: 13 (>= 13)
+#   PASS: createSessionLifecycleHook exported
+#   PASS: createEventHandler exported
+#   PASS: initSdkContext exported from hooks barrel
+#   PASS: getClient exported from hooks barrel
+# === SDK Foundation: 44 passed, 0 failed ===
+# Subtest: tests/sdk-foundation.test.ts
+ok 21 - tests/sdk-foundation.test.ts
+  ---
+  duration_ms: 560.673982
+  type: 'test'
+  ...
+# === Self-Rate Tool Tests ===
+# --- self-rate: basic rating ---
+#   PASS: fails without any state
+# /app/src/cli/init.ts:358
+#   await extractOpencodeAssets(directory, options.silent ?? false)
+#   ^
+# ReferenceError: extractOpencodeAssets is not defined
+#     at initProject (/app/src/cli/init.ts:358:3)
+#     at async test_selfRateBasic (/app/tests/self-rate.test.ts:62:5)
+#     at async main (/app/tests/self-rate.test.ts:255:3)
+# Node.js v22.22.0
+# Subtest: tests/self-rate.test.ts
+not ok 22 - tests/self-rate.test.ts
+  ---
+  duration_ms: 468.243939
+  type: 'test'
+  location: '/app/tests/self-rate.test.ts:1:1'
+  failureType: 'testCodeFailure'
+  exitCode: 1
+  signal: ~
+  error: 'test failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+# === Session Export Tests ===
+# --- session-export: generateExportData ---
+#   PASS: id matches session id
+#   PASS: mode matches session mode
+#   PASS: date matches session date
+#   PASS: meta_key defaults to empty
+#   PASS: role defaults to empty
+#   PASS: by_ai defaults to true
+#   PASS: turns matches turn count
+#   PASS: files_touched has 2 entries
+#   PASS: trajectory preserved
+#   PASS: tactic preserved
+#   PASS: action preserved
+#   PASS: summary matches
+#   PASS: one rating in export
+#   PASS: rating score preserved
+# --- session-export: generateJsonExport ---
+#   PASS: JSON parses with correct id
+#   PASS: JSON parses with correct summary
+#   PASS: files_touched is array in JSON
+#   PASS: hierarchy in JSON
+# --- session-export: generateMarkdownExport ---
+#   PASS: markdown has title
+#   PASS: markdown has metadata section
+#   PASS: markdown has metrics section
+#   PASS: markdown has hierarchy section
+#   PASS: markdown has trajectory
+#   PASS: markdown has files section
+#   PASS: markdown lists files
+#   PASS: markdown has ratings section
+#   PASS: markdown shows rating score
+#   PASS: markdown shows rating reason
+#   PASS: markdown has summary section
+#   PASS: markdown shows summary text
+#   PASS: markdown has session content
+#   PASS: markdown includes session body
+# === Session Export: 32 passed, 0 failed ===
+# Subtest: tests/session-export.test.ts
+ok 23 - tests/session-export.test.ts
+  ---
+  duration_ms: 309.80559
+  type: 'test'
+  ...
+# \#   PASS: date is set to today's YYYY-MM-DD
+# \#   PASS: meta_key defaults to empty string
+# \#   PASS: role defaults to empty string
+# \#   PASS: by_ai defaults to true
+# \#   PASS: date format is YYYY-MM-DD
+# \#   PASS: meta_key can be updated via spread
+# \#   PASS: role can be updated via spread
+# \#   PASS: by_ai is boolean
+# \#   PASS: old state without date gets migrated
+# \#   PASS: old state without meta_key gets empty string
+# \#   PASS: old state without role gets empty string
+# \#   PASS: old state without by_ai gets true
+# \#   PASS: below threshold → isLong: false
+# \#   PASS: at threshold → isLong: true
+# \#   PASS: above threshold → correct suggestion
+# \#   PASS: threshold of 0 → immediately long
+# \#   PASS: suggestion includes turn count
+# \#   PASS: suggestion includes threshold
+# \# === Session Structure: 18 passed, 0 failed ===
+# Subtest: === Session Structure Tests ===
+    # Subtest: --- session creation ---
+        # Subtest: date is set to today's YYYY-MM-DD
+        ok 1 - date is set to today's YYYY-MM-DD
+          ---
+          duration_ms: 2.374535
+          type: 'test'
+          ...
+        # Subtest: meta_key defaults to empty string
+        ok 2 - meta_key defaults to empty string
+          ---
+          duration_ms: 0.464017
+          type: 'test'
+          ...
+        # Subtest: role defaults to empty string
+        ok 3 - role defaults to empty string
+          ---
+          duration_ms: 0.440975
+          type: 'test'
+          ...
+        # Subtest: by_ai defaults to true
+        ok 4 - by_ai defaults to true
+          ---
+          duration_ms: 0.388282
+          type: 'test'
+          ...
+        1..4
+    ok 1 - --- session creation ---
+      ---
+      duration_ms: 4.745522
+      type: 'suite'
+      ...
+    # Subtest: --- session metadata ---
+        # Subtest: date format is YYYY-MM-DD
+        ok 1 - date format is YYYY-MM-DD
+          ---
+          duration_ms: 0.51469
+          type: 'test'
+          ...
+        # Subtest: meta_key can be updated via spread
+        ok 2 - meta_key can be updated via spread
+          ---
+          duration_ms: 0.377113
+          type: 'test'
+          ...
+        # Subtest: role can be updated via spread
+        ok 3 - role can be updated via spread
+          ---
+          duration_ms: 0.305549
+          type: 'test'
+          ...
+        # Subtest: by_ai is boolean
+        ok 4 - by_ai is boolean
+          ---
+          duration_ms: 0.560451
+          type: 'test'
+          ...
+        1..4
+    ok 2 - --- session metadata ---
+      ---
+      duration_ms: 2.297068
+      type: 'suite'
+      ...
+    # Subtest: --- persistence migration ---
+        # Subtest: old state without date gets migrated
+        ok 1 - old state without date gets migrated
+          ---
+          duration_ms: 0.888252
+          type: 'test'
+          ...
+        # Subtest: old state without meta_key gets empty string
+        ok 2 - old state without meta_key gets empty string
+          ---
+          duration_ms: 0.61326
+          type: 'test'
+          ...
+        # Subtest: old state without role gets empty string
+        ok 3 - old state without role gets empty string
+          ---
+          duration_ms: 0.314147
+          type: 'test'
+          ...
+        # Subtest: old state without by_ai gets true
+        ok 4 - old state without by_ai gets true
+          ---
+          duration_ms: 0.316819
+          type: 'test'
+          ...
+        1..4
+    ok 3 - --- persistence migration ---
+      ---
+      duration_ms: 2.403792
+      type: 'suite'
+      ...
+    # Subtest: --- long session detection ---
+        # Subtest: below threshold → isLong: false
+        ok 1 - below threshold → isLong: false
+          ---
+          duration_ms: 0.451631
+          type: 'test'
+          ...
+        # Subtest: at threshold → isLong: true
+        ok 2 - at threshold → isLong: true
+          ---
+          duration_ms: 0.249061
+          type: 'test'
+          ...
+        # Subtest: above threshold → correct suggestion
+        ok 3 - above threshold → correct suggestion
+          ---
+          duration_ms: 0.314413
+          type: 'test'
+          ...
+        # Subtest: threshold of 0 → immediately long
+        ok 4 - threshold of 0 → immediately long
+          ---
+          duration_ms: 0.242375
+          type: 'test'
+          ...
+        # Subtest: suggestion includes turn count
+        ok 5 - suggestion includes turn count
+          ---
+          duration_ms: 0.191208
+          type: 'test'
+          ...
+        # Subtest: suggestion includes threshold
+        ok 6 - suggestion includes threshold
+          ---
+          duration_ms: 0.184181
+          type: 'test'
+          ...
+        1..6
+    ok 4 - --- long session detection ---
+      ---
+      duration_ms: 3.631356
+      type: 'suite'
+      ...
+    # Subtest: summary
+    ok 5 - summary
+      ---
+      duration_ms: 0.167663
+      type: 'test'
+      ...
+    1..5
+ok 24 - === Session Structure Tests ===
+  ---
+  duration_ms: 14.268271
+  type: 'suite'
+  ...
+# === Soft Governance Tests ===
+# --- soft-governance: increments turn count ---
+#   PASS: state exists after hook calls
+#   PASS: turn count incremented to 3
+# --- soft-governance: tracks tool health ---
+#   PASS: total tool calls is 2
+#   PASS: successful tool calls is 2
+#   PASS: health score is 100%
+# --- soft-governance: drift warning on high turns ---
+#   PASS: drift warning logged when turns >= 5 and drift < 50
+# --- soft-governance: no drift warning when healthy ---
+#   PASS: no drift warning when turns low and drift high
+# --- soft-governance: strict violation on LOCKED write ---
+#   PASS: violation count incremented for write in LOCKED
+#   PASS: violation warning logged
+# --- soft-governance: no violation on LOCKED read ---
+#   PASS: no violation for read in LOCKED strict
+# --- soft-governance: no violation when OPEN ---
+#   PASS: no violation for write in OPEN strict
+# --- soft-governance: assisted mode never tracks violations ---
+#   PASS: assisted mode does not track violations
+# --- soft-governance: chain break warning logged ---
+#   PASS: chain break warning logged when action has no parent tactic
+# --- soft-governance: no chain break when hierarchy intact ---
+#   PASS: no chain break warning when hierarchy is complete
+# --- soft-governance: commit suggestion turn tracked ---
+#   PASS: last_commit_suggestion_turn updated when threshold met
+# --- soft-governance: long session warning ---
+#   PASS: long session warning suggests compact_session at threshold
+# --- soft-governance: no long session warning below threshold ---
+#   PASS: no long session warning when below threshold
+# --- soft-governance: does not crash without brain state ---
+#   PASS: warns about missing brain state
+#   PASS: hook did not crash without brain state
+# --- soft-governance: skips when no sessionID ---
+#   PASS: hook skips gracefully when sessionID is empty
+# --- soft-governance: last_activity timestamp updated ---
+#   PASS: last_activity timestamp updated
+# --- soft-governance: multiple violations accumulate ---
+#   PASS: 3 violations accumulated for 3 write/edit calls in LOCKED
+# --- soft-governance: debug logging output ---
+#   PASS: debug log includes tool name
+#   PASS: debug log includes turn count
+# --- soft-governance: permissive mode still tracks ---
+#   PASS: permissive mode still increments turns
+#   PASS: permissive mode still tracks tool calls
+#   PASS: permissive mode does not track violations
+# --- soft-governance: out-of-order toast severity progression ---
+#   PASS: first out-of-order toast is info
+#   PASS: second out-of-order toast is warning
+#   PASS: repeated out-of-order toast escalates to error
+# --- soft-governance: evidence-pressure escalation ---
+#   PASS: first evidence-pressure toast is warning
+#   PASS: repeated evidence-pressure toast escalates to error
+# --- soft-governance: ignored triage toast format ---
+#   PASS: ignored toast includes triage reason/action/fix format
+#   PASS: ignored toast variant is error
+#   PASS: ignored escalation logs compact tri-evidence block
+# --- soft-governance: ignored downgrade after acknowledgement ---
+#   PASS: acknowledgement downgrades ignored counter when prerequisites incomplete
+#   PASS: acknowledgement consumed after downgrade
+# --- soft-governance: ignored full reset when prerequisites complete ---
+#   PASS: ignored counter fully resets after prerequisites complete
+#   PASS: prerequisites flag remains true after reset
+# === Soft Governance: 39 passed, 0 failed ===
+# Subtest: tests/soft-governance.test.ts
+ok 25 - tests/soft-governance.test.ts
+  ---
+  duration_ms: 853.289582
+  type: 'test'
+  ...
+# === Tool Gate Tests ===
+# --- tool-gate: strict blocks write without session ---
+#   PASS: strict mode allows write without session (HC1: advisory only)
+#   PASS: strict mode provides advisory warning
+# --- tool-gate: strict allows exempt tools ---
+#   PASS: read tool is exempt
+#   PASS: bash tool is exempt
+#   PASS: declare_intent is exempt
+# --- tool-gate: strict allows write when session unlocked ---
+#   PASS: write allowed when session is OPEN
+# --- tool-gate: assisted warns but allows ---
+#   PASS: assisted mode allows write
+#   PASS: assisted mode provides warning
+# --- tool-gate: permissive allows silently ---
+#   PASS: permissive mode allows
+#   PASS: permissive mode no warning
+# --- tool-gate: drift tracking ---
+#   PASS: state exists after tool calls
+#   PASS: file touches tracked for write tools
+# === Tool Gate: 12 passed, 0 failed ===
+# Subtest: tests/tool-gate.test.ts
+ok 26 - tests/tool-gate.test.ts
+  ---
+  duration_ms: 475.692323
+  type: 'test'
+  ...
+1..26
+# tests 44
+# suites 5
+# pass 34
+# fail 10
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 4623.330235

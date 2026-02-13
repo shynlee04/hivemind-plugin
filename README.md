@@ -75,6 +75,35 @@ npx hivemind-context-governance init --mode strict --lang vi --automation full
 
 That's it. The plugin auto-activates. The AI agent gets governance context injected into every turn.
 
+> **Note**: `hivemind init` also extracts essential prompt templates into `.opencode/commands/` and `.opencode/skills/` so you can customize them.
+
+---
+
+## Ecosystem Integration (Brownfield Projects)
+
+HiveMind is designed to drop into existing ("brownfield") projects and immediately provide value.
+
+### Use Case: "Scan and Refactor"
+
+When you join a messy project, run:
+
+1. **`npx hivemind scan`** (CLI) or `/hivemind-scan` (in chat)
+   - Detects frameworks (GSD, Spec-kit, BMAD)
+   - Maps code structure and artifacts
+   - Saves findings to `anchors` (immutable facts) and `mems` (insights)
+
+2. **Start Refactoring**
+   - The agent now knows the stack and constraints.
+   - Use `declare_intent` to start a refactoring plan.
+   - Use `export_cycle` to capture cleanup results.
+
+### Integration Points
+
+- **CLI (`hivemind`)**: User-facing control (init, scan, dashboard).
+- **Slash Commands (`.opencode/commands/`)**: Agent-facing prompts (`/hivemind-scan`, `/hivemind-status`).
+- **Skills (`.opencode/skills/`)**: Behavioral logic injected into the agent.
+- **Hooks**: Automatic governance at every turn.
+
 ---
 
 ## How It Works
