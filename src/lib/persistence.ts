@@ -247,7 +247,12 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
         // Write (atomic)
         await writeFile(tempPath, JSON.stringify(updated, null, 2))
         if (existsSync(brainPath)) {
-          try { await rename(brainPath, bakPath) } catch { /* non-fatal */ }
+          try {
+            await rename(brainPath, bakPath)
+          } catch (err: unknown) {
+            /* non-fatal */
+            await logger?.warn(`Failed to create backup: ${err}`)
+          }
         }
         await rename(tempPath, brainPath)
 
