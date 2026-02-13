@@ -35,13 +35,13 @@ async function cleanupOldBackups(brainPath: string): Promise<void> {
     
     // Keep only last 3 backups
     const oldBackups = backupFiles.slice(3)
-    for (const backup of oldBackups) {
+    await Promise.all(oldBackups.map(async (backup) => {
       try {
         await unlink(backup.path)
       } catch (err: unknown) {
         // Ignore errors when deleting old backups
       }
-    }
+    }))
   } catch (err: unknown) {
     // Ignore errors when cleaning up backups
   }
