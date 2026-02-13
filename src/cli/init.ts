@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-import type { GovernanceMode, Language, ExpertLevel, OutputStyle, AutomationLevel } from "../schemas/config.js"
+import type { GovernanceMode, Language, ExpertLevel, OutputStyle, LegacyAutomationLevel } from "../schemas/config.js"
 import {
   createConfig,
   isValidGovernanceMode,
@@ -142,7 +142,7 @@ export interface InitOptions {
   governanceMode?: GovernanceMode
   expertLevel?: ExpertLevel
   outputStyle?: OutputStyle
-  automationLevel?: AutomationLevel
+  automationLevel?: LegacyAutomationLevel
   requireCodeReview?: boolean
   enforceTdd?: boolean
   syncTarget?: AssetSyncTarget

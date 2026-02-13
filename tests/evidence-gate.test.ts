@@ -257,7 +257,7 @@ function test_automation_level() {
 
   // 4. Legacy alias remains accepted for backward compatibility
   const legacyConfig = createConfig({ automation_level: "retard" });
-  assert(legacyConfig.automation_level === "retard", "legacy retard alias remains valid in schema");
+  assert(legacyConfig.automation_level === "coach", "legacy retard alias is normalized to coach");
 }
 
 // ─── Coach Mode Init Tests ───────────────────────────────────────────

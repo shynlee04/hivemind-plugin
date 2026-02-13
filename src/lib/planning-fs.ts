@@ -23,6 +23,7 @@ import {
   buildArchiveFilename,
   getAllDirectories,
   getEffectivePaths,
+  safeJoin,
 } from "./paths.js";
 import {
   ensureCoreManifests,
@@ -259,9 +260,9 @@ export async function getActiveSessionPath(projectRoot: string): Promise<string>
       (s) => s.stamp === manifest.active_stamp && s.status === "active"
     );
     if (entry) {
-      const activePath = join(effective.activeDir, entry.file)
+      const activePath = safeJoin(effective.activeDir, entry.file)
       if (existsSync(activePath)) return activePath
-      return join(paths.sessionsDir, entry.file)
+      return safeJoin(paths.sessionsDir, entry.file)
     }
   }
 
@@ -310,21 +311,21 @@ async function resolveSessionFilePathByStamp(
 
   if (entry) {
     if (entry.status === "active") {
-      const activePath = join(getEffectivePaths(projectRoot).activeDir, entry.file)
+      const activePath = safeJoin(getEffectivePaths(projectRoot).activeDir, entry.file)
       if (existsSync(activePath)) return activePath
     }
 
-    const archivedPath = join(paths.archiveDir, entry.file)
+    const archivedPath = safeJoin(paths.archiveDir, entry.file)
     if (existsSync(archivedPath)) return archivedPath
 
-    const sessionPath = join(paths.sessionsDir, entry.file)
+    const sessionPath = safeJoin(paths.sessionsDir, entry.file)
     if (existsSync(sessionPath)) return sessionPath
   }
 
-  const byStampInActiveDir = join(getEffectivePaths(projectRoot).activeDir, `${stamp}.md`)
+  const byStampInActiveDir = safeJoin(getEffectivePaths(projectRoot).activeDir, `${stamp}.md`)
   if (existsSync(byStampInActiveDir)) return byStampInActiveDir
 
-  const byStampInSessionsDir = join(paths.sessionsDir, `${stamp}.md`)
+  const byStampInSessionsDir = safeJoin(paths.sessionsDir, `${stamp}.md`)
   if (existsSync(byStampInSessionsDir)) return byStampInSessionsDir
 
   return byStampInActiveDir
@@ -711,15 +712,15 @@ export async function archiveSession(
 
   if (entry) {
     const sourceCandidates = [
-      join(effective.activeDir, entry.file),
-      join(paths.sessionsDir, entry.file),
+      safeJoin(effective.activeDir, entry.file),
+      safeJoin(paths.sessionsDir, entry.file),
     ]
     const srcPath = sourceCandidates.find((p) => existsSync(p))
 
     const archiveFileName = /^\d{4}-\d{2}-\d{2}-/.test(entry.file)
       ? entry.file
       : buildArchiveFilename(new Date(entry.created || Date.now()), entry.mode || "plan_driven", entry.trajectory || "session")
-    const dstPath = join(paths.archiveDir, archiveFileName)
+    const dstPath = safeJoin(paths.archiveDir, archiveFileName)
 
     let archiveContent = content
     archiveContent = updateSessionFrontmatter(archiveContent, {
@@ -747,7 +748,7 @@ export async function archiveSession(
   } else {
     // Legacy archive
     const timestamp = new Date().toISOString().split("T")[0];
-    const archiveFile = join(paths.archiveDir, `session_${timestamp}_${sessionId}.md`);
+    const archiveFile = safeJoin(paths.archiveDir, `session_${timestamp}_${sessionId}.md`);
     await writeFile(
       archiveFile,
       updateSessionFrontmatter(content, {
