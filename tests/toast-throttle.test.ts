@@ -34,7 +34,7 @@ function teardown() {
   Date.now = originalNow
 }
 
-async function testToastThrottle() {
+function testToastThrottle() {
   process.stderr.write("=== Toast Throttle Tests ===\n")
 
   try {
