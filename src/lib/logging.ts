@@ -4,9 +4,9 @@
  */
 
 import { createWriteStream } from "fs";
-import { once } from "events";
 import { mkdir } from "fs/promises";
 import { dirname } from "path";
+import { once } from "events";
 
 export interface Logger {
   debug: (message: string) => Promise<void>;
@@ -32,7 +32,6 @@ export async function createLogger(
 
   // Handle stream errors silently
   stream.on('error', () => {
-    stream.destroy();
     // Fail silently - logging should never break the application
   });
 
