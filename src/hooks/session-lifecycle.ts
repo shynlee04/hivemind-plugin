@@ -61,6 +61,8 @@ import {
   getTreeStats,
   treeExists,
   countCompleted,
+  getCursorNode,
+  getAncestors,
 } from "../lib/hierarchy-tree.js"
 import {
   detectFrameworkContext,
