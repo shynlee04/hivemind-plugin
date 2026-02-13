@@ -420,9 +420,17 @@ export function toBrainProjection(tree: HierarchyTree): {
  * @consumer getTreeStats, janitor
  */
 export function flattenTree(root: HierarchyNode): HierarchyNode[] {
-  const result: HierarchyNode[] = [root];
-  for (const child of root.children) {
-    result.push(...flattenTree(child));
+  const result: HierarchyNode[] = [];
+  const stack: HierarchyNode[] = [root];
+
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    result.push(node);
+
+    // Push children in reverse order so they are processed in original order
+    for (let i = node.children.length - 1; i >= 0; i--) {
+      stack.push(node.children[i]);
+    }
   }
   return result;
 }
