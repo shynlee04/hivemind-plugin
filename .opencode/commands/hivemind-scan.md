@@ -1,5 +1,5 @@
 ---
-name: hivemind-scan
+name: "hivemind-scan"
 description: "Scan the project codebase and build a HiveMind backbone. Run this on first use or when switching projects."
 ---
 

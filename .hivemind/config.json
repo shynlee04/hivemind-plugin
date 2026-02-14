@@ -1,5 +1,5 @@
 {
-  "governance_mode": "assisted",
+  "governance_mode": "strict",
   "language": "en",
   "max_turns_before_warning": 5,
   "max_active_md_lines": 50,
@@ -8,15 +8,15 @@
   "commit_suggestion_threshold": 5,
   "agent_behavior": {
     "language": "en",
-    "expert_level": "intermediate",
-    "output_style": "explanatory",
+    "expert_level": "beginner",
+    "output_style": "skeptical",
     "constraints": {
-      "require_code_review": false,
+      "require_code_review": true,
       "enforce_tdd": false,
       "max_response_tokens": 2000,
       "explain_reasoning": true,
-      "be_skeptical": false
+      "be_skeptical": true
     }
   },
-  "automation_level": "assisted"
+  "automation_level": "coach"
 }
