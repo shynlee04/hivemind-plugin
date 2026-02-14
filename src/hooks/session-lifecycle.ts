@@ -244,7 +244,7 @@ function getNextStepHint(
  * Only shown when: governance_status === "LOCKED" AND turn_count <= 2
  * Budget: ~1100 chars (fits within expanded 4000-char budget)
  */
-function generateBootstrapBlock(governanceMode: string, language: "en" | "vi"): string {
+function generateBootstrapBlock(_governanceMode: string, language: "en" | "vi"): string {
   const lines: string[] = []
   lines.push("<hivemind-bootstrap>")
   lines.push(localized(language, "## HiveMind Context Governance", "## HiveMind Context Governance"))

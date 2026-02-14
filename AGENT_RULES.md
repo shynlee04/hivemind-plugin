@@ -114,6 +114,6 @@ Tasks are not abstract strings of text; they are strictly governed programmatic 
 **If you are an AI Agent summoned to work on this repository, your immediate response must be:**
 
 1. **Acknowledge this SOT:** State clearly that you understand the strict separation between the Engine (SDK hooks) and the Display (TUI), and the supremacy of the "Smallest Unit."
-2. **Verify State:** Acknowledge that the active branch is `dev/iteration-6-tui-cleanup`.
+2. **Verify State:** Acknowledge that the active branch is `dev-v3`.
 3. **Target Phase A:** Do NOT propose UI enhancements or command creations. Propose a targeted, surgical execution plan exclusively for **PHASE A (Untie the Knot)** to fix the `export_cycle` and `declare_intent` critical bugs.
 4. Wait for human approval before modifying files.
