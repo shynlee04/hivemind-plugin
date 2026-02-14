@@ -73,8 +73,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Re-init guard** — `hivemind init` no longer overwrites existing config (preserves governance_mode, language)
 
 ### Fixed
-- `session-lifecycle` prompt injection now prioritizes Critical sections (Status, Hierarchy, Warnings) over Optional ones when budget is tight, ensuring core governance context is never dropped
-- `isLegacyStructure` now reliably detects legacy state (brain.json at root) even if `state/` directory exists partially, enabling recovery from failed migrations
 - **JSONC config handling** — `opencode.jsonc` files now parsed correctly (was crashing on trailing commas/comments)
 - **Master plan file tree accuracy** — docs now match actual output of `hivemind init`
 - **Frozen config (L8)** — All 3 hooks now re-read config from disk each invocation via `loadConfig(directory)` instead of using stale closure values
@@ -144,8 +142,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Output budget** — think_back capped at 2000 chars, anchors at 5, plan at 10 lines
 
 ### Fixed
-- `session-lifecycle` prompt injection now prioritizes Critical sections (Status, Hierarchy, Warnings) over Optional ones when budget is tight, ensuring core governance context is never dropped
-- `isLegacyStructure` now reliably detects legacy state (brain.json at root) even if `state/` directory exists partially, enabling recovery from failed migrations
 - **System prompt malformed XML** — truncation was closing `</agent-configuration>` inside `<hivemind-governance>` producing invalid XML
 - **Hook inconsistency** — write tool lists now identical between before/after hooks (exact Set.has matching)
 - **Fuzzy tool matching** — replaced dangerous `startsWith`/`includes` with exact `Set.has()`
@@ -165,8 +161,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.6.0] - 2026-02-11
 
 ### Fixed
-- `session-lifecycle` prompt injection now prioritizes Critical sections (Status, Hierarchy, Warnings) over Optional ones when budget is tight, ensuring core governance context is never dropped
-- `isLegacyStructure` now reliably detects legacy state (brain.json at root) even if `state/` directory exists partially, enabling recovery from failed migrations
 - **SHOWSTOPPER**: Tool registration changed from array to named Record — tools were being registered as "0", "1", "2" instead of "declare_intent", "map_context", etc. Agents could not call any tool by name.
 - **CRITICAL**: `hivemind init` crash on npm install — `docs/` directory now included in `package.json#files`
 - **CRITICAL**: System transform hook now accepts `model` parameter matching SDK contract
@@ -203,8 +197,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pre-commit hook for enforcing atomic commits and session awareness
 
 ### Fixed
-- `session-lifecycle` prompt injection now prioritizes Critical sections (Status, Hierarchy, Warnings) over Optional ones when budget is tight, ensuring core governance context is never dropped
-- `isLegacyStructure` now reliably detects legacy state (brain.json at root) even if `state/` directory exists partially, enabling recovery from failed migrations
 - Path references throughout codebase, tests, documentation
 
 ### Migration Guide
@@ -231,8 +223,6 @@ Existing projects using `.opencode/planning/` can manually move files:
 - peerDependencies `@opencode-ai/plugin` changed from `^0.x` to `*` (any version)
 
 ### Fixed
-- `session-lifecycle` prompt injection now prioritizes Critical sections (Status, Hierarchy, Warnings) over Optional ones when budget is tight, ensuring core governance context is never dropped
-- `isLegacyStructure` now reliably detects legacy state (brain.json at root) even if `state/` directory exists partially, enabling recovery from failed migrations
 - Config key corrected from `"plugins"` (plural) to `"plugin"` (singular) per OpenCode spec
 - Removed dead peer deps (`@opentui/react`, `@opentui/core`, `react`)
 - Added `@opencode-ai/plugin` to devDependencies (was only in peerDependencies)
@@ -240,8 +230,6 @@ Existing projects using `.opencode/planning/` can manually move files:
 ## [1.2.1] - 2026-02-11
 
 ### Fixed
-- `session-lifecycle` prompt injection now prioritizes Critical sections (Status, Hierarchy, Warnings) over Optional ones when budget is tight, ensuring core governance context is never dropped
-- `isLegacyStructure` now reliably detects legacy state (brain.json at root) even if `state/` directory exists partially, enabling recovery from failed migrations
 - **Plugin install broken** — `dist/` was gitignored so clones had no `main` entry. Fixed by including `src/` in npm package and documenting `file://` path for TypeScript-direct loading.
 - **@opencode-ai/plugin SDK compatibility** — Updated hook signatures for latest SDK: `experimental.chat.system.transform` now accepts `{ sessionID?: string; model: Model }`, removed deprecated `message` field.
 - **Sentiment detection moved** — From `experimental.chat.system.transform` (which lost `message` param) to new `chat.message` hook, where user message content is actually available.
@@ -257,8 +245,6 @@ Existing projects using `.opencode/planning/` can manually move files:
 ## [1.2.0] - 2026-02-11
 
 ### Fixed
-- `session-lifecycle` prompt injection now prioritizes Critical sections (Status, Hierarchy, Warnings) over Optional ones when budget is tight, ensuring core governance context is never dropped
-- `isLegacyStructure` now reliably detects legacy state (brain.json at root) even if `state/` directory exists partially, enabling recovery from failed migrations
 - **initProject() guard** — Now checks `brain.json` existence instead of just directory, preventing false "already initialized" when logger creates directory as side-effect (fixed 7 test failures)
 - **self_rate score threshold** — Score 7 now correctly shows drift hint (💡) instead of positive feedback (✅) (fixed 1 test failure)
 - **Sentiment false positives** — Negative keyword detection now uses word-boundary regex with negative-lookahead for benign phrases ("no issues", "error handling", etc.)

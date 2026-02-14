@@ -523,7 +523,7 @@ export function createSessionLifecycleHook(
       const sortedByPriority = [...sections].sort((a, b) => a.priority - b.priority)
       const includedNames = new Set();
       // Base overhead: <hivemind> + newline + </hivemind>
-      let usedChars = '<hivemind>\n</hivemind>'.length
+      let usedChars = '<hivemind>\\n</hivemind>'.length
 
       // First pass: Calculate budget
       for (const section of sortedByPriority) {
@@ -532,7 +532,7 @@ export function createSessionLifecycleHook(
         // Calculate size including newlines
         // If we add this section, we add N lines + 1 newline (if not first/last)
         // Simplification: section size + 1 newline.
-        const size = section.lines.join('\n').length + 1
+        const size = section.lines.join('\\n').length + 1
 
         if (usedChars + size <= BUDGET_CHARS) {
           includedNames.add(section.name)
