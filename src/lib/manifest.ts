@@ -8,7 +8,8 @@
 import { existsSync } from "fs"
 import { mkdir, readFile, rename, writeFile } from "fs/promises"
 import { dirname } from "path"
-import { STRUCTURE_VERSION, type HivemindPaths } from "./paths.js"
+import { STRUCTURE_VERSION, getEffectivePaths, type HivemindPaths } from "./paths.js"
+import type { TaskManifest } from "../schemas/manifest.js"
 
 // ─── Core Relationship Trace (SOT -> materialization chain) ────────────────
 
@@ -132,7 +133,7 @@ export interface TaskManifestEntry {
   updated: number
 }
 
-export interface TaskManifest {
+export interface TaskGraphManifest {
   tasks: TaskManifestEntry[]
   active_task_id: string | null
   updated_at: number
@@ -205,7 +206,7 @@ export function createDefaultMemoryManifest(): MemoryManifest {
   return { shelves: {} }
 }
 
-export function createDefaultTaskManifest(now = Date.now()): TaskManifest {
+export function createDefaultTaskGraphManifest(now = Date.now()): TaskGraphManifest {
   return { tasks: [], active_task_id: null, updated_at: now }
 }
 
@@ -463,4 +464,16 @@ export async function ensureCoreManifests(paths: HivemindPaths): Promise<void> {
   if (!existsSync(paths.codewikiManifest)) {
     await writeManifest(paths.codewikiManifest, createDefaultCodewikiManifest())
   }
+}
+
+// ─── Task Manifest Helpers ──────────────────────────────────────────────────
+
+export async function loadTasks(directory: string): Promise<TaskManifest | null> {
+  const path = getEffectivePaths(directory).tasks
+  return readManifest<TaskManifest | null>(path, null)
+}
+
+export async function saveTasks(directory: string, manifest: TaskManifest): Promise<void> {
+  const path = getEffectivePaths(directory).tasks
+  await writeManifest(path, manifest)
 }
