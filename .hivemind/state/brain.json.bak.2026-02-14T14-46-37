@@ -5,7 +5,7 @@
     "governance_mode": "strict",
     "governance_status": "OPEN",
     "start_time": 1771042167990,
-    "last_activity": 1771048777044,
+    "last_activity": 1771080383286,
     "date": "2026-02-14",
     "meta_key": "",
     "role": "",
@@ -17,7 +17,7 @@
     "action": "Trace prompt injection flow: how signals become system prompts → why they're nonsensical"
   },
   "metrics": {
-    "turn_count": 93,
+    "turn_count": 94,
     "drift_score": 56,
     "files_touched": [
       "[via edit]",
@@ -28,14 +28,14 @@
     "context_updates": 3,
     "ratings": [],
     "auto_health_score": 100,
-    "total_tool_calls": 136,
-    "successful_tool_calls": 136,
+    "total_tool_calls": 137,
+    "successful_tool_calls": 137,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
     "last_section_content": "Trace prompt injection flow: how signals become system prompts → why they're nonsensical",
     "tool_type_counts": {
-      "read": 74,
+      "read": 75,
       "write": 48,
       "query": 8,
       "governance": 6
@@ -54,8 +54,8 @@
       "out_of_order": 0,
       "drift": 0,
       "compaction": 0,
-      "evidence_pressure": 126,
-      "ignored": 111,
+      "evidence_pressure": 127,
+      "ignored": 112,
       "acknowledged": false,
       "prerequisites_completed": true
     }
