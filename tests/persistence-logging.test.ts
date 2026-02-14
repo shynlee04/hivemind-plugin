@@ -57,8 +57,8 @@ async function testWithStateLogsBackupRenameFailure(): Promise<void> {
 
     assert(updated !== null, "withState still succeeds despite backup failure")
     assert(
-      logs.some((line) => line.includes("WARN: Failed to create backup")),
-      "withState emits warning log when backup rename fails",
+      logs.some((line) => line.includes("ERROR: Failed to create backup")),
+      "withState emits error log when backup rename fails",
     )
   } finally {
     await rm(dir, { recursive: true, force: true })
@@ -108,8 +108,8 @@ async function testSaveLogsBackupCleanupDeletionFailures(): Promise<void> {
     await stateManager.save(updatedState)
 
     assert(
-      logs.some((line) => line.includes("WARN: Failed to delete old backup")),
-      "save emits warning log when old backup deletion fails",
+      logs.some((line) => line.includes("ERROR: Failed to delete old backup")),
+      "save emits error log when old backup deletion fails",
     )
   } finally {
     await rm(dir, { recursive: true, force: true })

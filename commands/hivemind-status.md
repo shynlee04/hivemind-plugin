@@ -1,4 +1,5 @@
 ---
+name: "hivemind-status"
 description: "Show current HiveMind governance state, session health, and recent activity."
 ---
 
