@@ -5,7 +5,12 @@ dist/
 .env
 .env.local
 coverage/
-.opencode/
+# .opencode/ is partially ignored - commands are tracked
+.opencode/node_modules/
+.opencode/bun.lock
+# Track these subdirectories
+!.opencode/commands/
+!.opencode/skills/
 .hivemind/
 .worktrees/
 
