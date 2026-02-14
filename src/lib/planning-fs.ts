@@ -993,9 +993,9 @@ export async function regenerateManifests(projectRoot: string): Promise<void> {
               activeStamp = String(stamp)
             }
           }
-        } catch {
-          // ignore parsing errors
-        }
+} catch (e) {
+  console.warn(`[hivemind] Failed to parse frontmatter for ${join(dir, file)}. Skipping.`, e);
+}
       }
 } catch (e) {
   console.warn(`[hivemind] Failed to scan directory ${dir}. Skipping.`, e);
