@@ -25,6 +25,7 @@ import { addViolationCount, incrementTurnCount, setLastCommitSuggestionTurn, add
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
 import { detectLongSession } from "../lib/long-session.js"
+import { executeAutoCommit, extractModifiedFiles, shouldAutoCommit } from "../lib/auto-commit.js"
 import { getClient } from "./sdk-context.js"
 import { checkAndRecordToast, resetAllThrottles } from "../lib/toast-throttle.js"
 import {
@@ -410,6 +411,30 @@ export function createSoftGovernanceHook(
           );
         }
         await log.debug(`Cycle intelligence: auto-captured Task return (${taskOutput.length} chars, failure=${newState.pending_failure_ack})`);
+      }
+
+      if (config.auto_commit && shouldAutoCommit(input.tool)) {
+        const modifiedFiles = extractModifiedFiles(
+          _output.metadata,
+          newState.metrics.files_touched,
+        )
+
+        if (modifiedFiles.length > 0) {
+          try {
+            const autoCommit = await executeAutoCommit({
+              tool: input.tool,
+              directory,
+              sessionID: input.sessionID,
+              files: modifiedFiles,
+            })
+            const logPrefix = autoCommit.success ? "Auto-commit succeeded" : "Auto-commit skipped"
+            await log.debug(`${logPrefix}: ${autoCommit.message}`)
+          } catch (error: unknown) {
+            await log.debug(`Auto-commit skipped: ${error instanceof Error ? error.message : String(error)}`)
+          }
+        } else {
+          await log.debug(`Auto-commit skipped: no modified files detected for ${input.tool}`)
+        }
       }
 
       // Single save at the end

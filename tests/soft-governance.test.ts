@@ -86,6 +86,24 @@ function createCollectingLogger(): Logger & { warnings: string[]; errors: string
   }
 }
 
+function createMockShell() {
+  const commands: string[] = []
+  const shell = async (strings: TemplateStringsArray, ...values: unknown[]) => {
+    let command = strings[0] ?? ""
+    for (let index = 0; index < values.length; index++) {
+      command += String(values[index])
+      command += strings[index + 1] ?? ""
+    }
+    commands.push(command.trim())
+    return { stdout: "", stderr: "" }
+  }
+
+  return {
+    shell: shell as any,
+    commands,
+  }
+}
+
 // ─── Turn count increment ────────────────────────────────────────────
 
 async function test_increments_turn_count() {
@@ -753,6 +771,75 @@ async function test_ignored_full_reset_when_prerequisites_complete() {
   await cleanup()
 }
 
+// ─── Auto-commit integration ─────────────────────────────────────────
+
+async function test_auto_commit_runs_when_enabled_and_files_modified() {
+  process.stderr.write("\n--- soft-governance: auto-commit runs when enabled ---\n")
+  const dir = await setup()
+  const config = createConfig({ governance_mode: "assisted", auto_commit: true })
+  await saveConfig(dir, config)
+
+  const sm = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  await sm.save(state)
+
+  const { shell, commands } = createMockShell()
+  initSdkContext({
+    client: null as any,
+    $: shell,
+    serverUrl: new URL("http://localhost:3000"),
+    project: { id: "test", worktree: dir, time: { created: Date.now() } } as any,
+  })
+
+  const log = createCollectingLogger()
+  const hook = createSoftGovernanceHook(log, dir, config)
+  await hook(makeInput("write"), {
+    title: "Write",
+    output: "updated files",
+    metadata: { modifiedFiles: ["src/example.ts"] },
+  })
+
+  assert(commands.some((command) => command.startsWith("git -C") && command.includes("add -A")), "auto-commit runs git add when enabled")
+  assert(commands.some((command) => command.startsWith("git -C") && command.includes("commit -m")), "auto-commit runs git commit when enabled")
+  assert(log.debugs.some((entry) => entry.includes("Auto-commit succeeded")), "auto-commit success logged at debug level")
+
+  resetSdkContext()
+  await cleanup()
+}
+
+async function test_auto_commit_skips_when_no_modified_files() {
+  process.stderr.write("\n--- soft-governance: auto-commit skips with no modified files ---\n")
+  const dir = await setup()
+  const config = createConfig({ governance_mode: "assisted", auto_commit: true })
+  await saveConfig(dir, config)
+
+  const sm = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  await sm.save(state)
+
+  const { shell, commands } = createMockShell()
+  initSdkContext({
+    client: null as any,
+    $: shell,
+    serverUrl: new URL("http://localhost:3000"),
+    project: { id: "test", worktree: dir, time: { created: Date.now() } } as any,
+  })
+
+  const log = createCollectingLogger()
+  const hook = createSoftGovernanceHook(log, dir, config)
+  await hook(makeInput("write"), {
+    title: "Write",
+    output: "no file metadata",
+    metadata: {},
+  })
+
+  assert(commands.length === 0, "auto-commit does not run git commands without modified files")
+  assert(log.debugs.some((entry) => entry.includes("no modified files")), "auto-commit skip reason logged at debug level")
+
+  resetSdkContext()
+  await cleanup()
+}
+
 // ─── Runner ──────────────────────────────────────────────────────────
 
 async function main() {
@@ -782,6 +869,8 @@ async function main() {
   await test_ignoredToastUsesErrorTriageFormat()
   await test_ignored_downgrades_after_acknowledgement()
   await test_ignored_full_reset_when_prerequisites_complete()
+  await test_auto_commit_runs_when_enabled_and_files_modified()
+  await test_auto_commit_skips_when_no_modified_files()
 
   process.stderr.write(`\n=== Soft Governance: ${passed} passed, ${failed_} failed ===\n`)
   if (failed_ > 0) process.exit(1)
