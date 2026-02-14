@@ -954,3 +954,62 @@ export async function resetActiveMd(projectRoot: string): Promise<void> {
   // Reset legacy active.md
   await writeFile(paths.activePath, generateActiveTemplate());
 }
+
+export async function regenerateManifests(projectRoot: string): Promise<void> {
+  const paths = getPlanningPaths(projectRoot)
+
+  // 1. Ensure core manifests exist
+  await ensureCoreManifests(getEffectivePaths(projectRoot))
+
+  // 2. Scan sessions directory
+  const sessions: SessionManifestEntry[] = []
+  let activeStamp: string | null = null
+
+  const scanDir = async (dir: string, defaultStatus: "active" | "archived" | "compacted") => {
+    try {
+      if (!existsSync(dir)) return
+      const files = await readdir(dir)
+      for (const file of files) {
+        if (!file.endsWith('.md')) continue
+        const content = await readFile(join(dir, file), 'utf-8')
+        try {
+          const fm = parseSessionFrontmatter(content) as any
+
+          if (fm.stamp || fm.session_id) {
+            const stamp = fm.stamp || fm.session_id
+            const status = fm.status || defaultStatus
+            sessions.push({
+              stamp: String(stamp),
+              file: file,
+              status: status,
+              created: fm.created || Date.now(),
+              summary: fm.summary,
+              mode: fm.mode,
+              trajectory: fm.trajectory,
+              linked_plans: fm.linked_plans || []
+            })
+
+            if (status === 'active') {
+              activeStamp = String(stamp)
+            }
+          }
+        } catch {
+          // ignore parsing errors
+        }
+      }
+    } catch {
+      // ignore dir errors
+    }
+  }
+
+  await scanDir(paths.sessionsDir, 'active')
+  await scanDir(paths.archiveDir, 'archived')
+
+  const manifest: RelationalSessionManifest = {
+    sessions,
+    active_stamp: activeStamp
+  }
+
+  const deduped = deduplicateSessionManifest(manifest)
+  await writeTypedManifest(paths.manifestPath, deduped)
+}
