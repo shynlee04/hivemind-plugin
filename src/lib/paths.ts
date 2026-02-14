@@ -199,7 +199,7 @@ export function getLegacyPaths(projectRoot: string): LegacyPaths {
 export function isLegacyStructure(projectRoot: string): boolean {
   const legacy = getLegacyPaths(projectRoot)
   const newPaths = getHivemindPaths(projectRoot)
-  return existsSync(legacy.brain) && !existsSync(newPaths.stateDir)
+  return existsSync(legacy.brain) && !existsSync(newPaths.brain)
 }
 
 /**

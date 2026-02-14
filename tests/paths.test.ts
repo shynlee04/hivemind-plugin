@@ -143,9 +143,13 @@ async function testIsLegacyStructure() {
 
   assert(isLegacyStructure(tmpDir), "brain.json at root = legacy")
 
-  // Now create state/ dir — no longer legacy
+  // Now create state/ dir — still legacy because brain.json is not in state/
   await mkdir(join(hivemindDir, "state"), { recursive: true })
-  assert(!isLegacyStructure(tmpDir), "brain.json at root + state/ exists = not legacy")
+  assert(isLegacyStructure(tmpDir), "brain.json at root + state/ exists = STILL legacy (until moved)")
+
+  // Create brain.json in state/ - now it's NOT legacy (migrated)
+  await writeFile(join(hivemindDir, "state", "brain.json"), "{}")
+  assert(!isLegacyStructure(tmpDir), "brain.json in state/ = not legacy")
 }
 
 async function testIsNewStructure() {
