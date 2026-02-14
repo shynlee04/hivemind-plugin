@@ -153,6 +153,36 @@ if (input.tool === "declare_intent") {
 
 ---
 
+## Phase A Status: COMPLETE ✅
+
+All Phase A items verified as complete:
+
+| Item | Status | Evidence |
+|------|--------|----------|
+| **A1: Bug Triage** | ✅ COMPLETE | 8 verification tests passing |
+| **A2: Structure Reorg** | ✅ COMPLETE | paths.ts + planning-fs.ts implement full structure |
+| **A3: First-Turn Context** | ✅ COMPLETE | Anchors + mems + prior session + framework detection |
+
+### A2: Structure Reorg Verified ✅
+
+Target structure implemented in `src/lib/paths.ts` and `src/lib/planning-fs.ts`:
+- ✅ state/ (brain.json, hierarchy.json, tasks.json, anchors.json)
+- ✅ memory/ (mems.json)
+- ✅ sessions/ (active/, archive/, manifest.json)
+- ✅ templates/ (session.md)
+- ✅ logs/ (HiveMind.log)
+- ✅ codemap/, codewiki/, plans/, docs/ (for future use)
+
+### A3: First-Turn Context Verified ✅
+
+Code in `session-lifecycle.ts` lines 379-442:
+- ✅ Anchors summary (top 5, budget 300 chars)
+- ✅ Mems count + recent summaries (budget 200 chars)
+- ✅ Prior session trajectory (budget 200 chars)
+- ✅ Framework context detection (GSD vs spec-kit)
+
+---
+
 ## Next Steps
 
 With Phase A complete, the following items are ready for implementation:
