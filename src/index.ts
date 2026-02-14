@@ -48,6 +48,7 @@ import {
   createCompactionHook,
   createEventHandler,
 } from "./hooks/index.js"
+import { createMessagesTransformHook } from "./hooks/messages-transform.js"
 import { createLogger } from "./lib/logging.js"
 import { loadConfig } from "./lib/persistence.js"
 import { initSdkContext } from "./hooks/sdk-context.js"
@@ -126,6 +127,12 @@ export const HiveMindPlugin: Plugin = async ({
      */
     "experimental.chat.system.transform":
       createSessionLifecycleHook(log, effectiveDir, initConfig),
+
+    /**
+     * Hook: Message transformation
+     * Injects stop-decision checklist and continuity context
+     */
+    "experimental.chat.messages.transform": createMessagesTransformHook(log, effectiveDir),
 
     /**
      * Hook: Tool execution tracking
