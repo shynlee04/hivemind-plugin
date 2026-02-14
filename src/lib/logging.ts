@@ -3,7 +3,9 @@
  * File-based logging only - never use console.log
  */
 
-import { appendFile, mkdir } from "fs/promises";
+import { createWriteStream } from "fs";
+import { once } from "events";
+import { mkdir } from "fs/promises";
 import { dirname } from "path";
 
 export interface Logger {
@@ -26,11 +28,21 @@ export async function createLogger(
     // Directory may already exist
   }
   
+  const stream = createWriteStream(logFile, { flags: 'a' });
+
+  // Handle stream errors silently
+  stream.on('error', () => {
+    stream.destroy();
+    // Fail silently - logging should never break the application
+  });
+
   async function log(level: string, message: string): Promise<void> {
     const timestamp = new Date().toISOString();
     const line = `[${timestamp}] [${level.toUpperCase()}] ${message}\n`;
     try {
-      await appendFile(logFile, line);
+      if (!stream.write(line)) {
+        await once(stream, 'drain');
+      }
     } catch {
       // Fail silently - logging should never break the application
     }
