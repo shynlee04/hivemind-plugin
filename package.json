@@ -66,6 +66,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.0.0",
+    "hivemind-context-governance": "^2.6.0",
     "yaml": "^2.3.4"
   },
   "devDependencies": {
