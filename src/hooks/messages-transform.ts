@@ -59,7 +59,16 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
       const items: string[] = []
       if (!state.hierarchy.action) {
-        items.push("Declare action-level focus before stopping")
+        items.push("Action-level focus is missing (call map_context)")
+      }
+      if (state.metrics.context_updates === 0) {
+        items.push("No map_context updates yet in this session")
+      }
+      if (state.pending_failure_ack) {
+        items.push("Acknowledge pending subagent failure")
+      }
+      if (state.metrics.files_touched.length > 0) {
+        items.push("Create a git commit for touched files")
       }
 
       const checklist = buildChecklist(items, 300)
