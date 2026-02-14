@@ -1,0 +1,65 @@
+{
+  "session": {
+    "id": "session-1771038719319-20rcba",
+    "mode": "plan_driven",
+    "governance_mode": "assisted",
+    "governance_status": "OPEN",
+    "start_time": 1771038719320,
+    "last_activity": 1771038719320,
+    "date": "2026-02-14",
+    "meta_key": "",
+    "role": "",
+    "by_ai": true
+  },
+  "hierarchy": {
+    "trajectory": "",
+    "tactic": "",
+    "action": ""
+  },
+  "metrics": {
+    "turn_count": 0,
+    "drift_score": 100,
+    "files_touched": [],
+    "context_updates": 0,
+    "ratings": [],
+    "auto_health_score": 100,
+    "total_tool_calls": 0,
+    "successful_tool_calls": 0,
+    "violation_count": 0,
+    "consecutive_failures": 0,
+    "consecutive_same_section": 0,
+    "last_section_content": "",
+    "tool_type_counts": {
+      "read": 0,
+      "write": 0,
+      "query": 0,
+      "governance": 0
+    },
+    "keyword_flags": [],
+    "write_without_read_count": 0,
+    "governance_counters": {
+      "out_of_order": 0,
+      "drift": 0,
+      "compaction": 0,
+      "evidence_pressure": 0,
+      "ignored": 0,
+      "acknowledged": false,
+      "prerequisites_completed": false
+    }
+  },
+  "complexity_nudge_shown": false,
+  "last_commit_suggestion_turn": 0,
+  "version": "1.0.0",
+  "next_compaction_report": null,
+  "compaction_count": 0,
+  "last_compaction_time": 0,
+  "cycle_log": [],
+  "pending_failure_ack": false,
+  "framework_selection": {
+    "choice": null,
+    "active_phase": "",
+    "active_spec_path": "",
+    "acceptance_note": "",
+    "updated_at": 0
+  }
+}
