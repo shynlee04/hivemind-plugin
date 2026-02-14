@@ -5,7 +5,7 @@
 HiveMind is an [OpenCode](https://opencode.ai) plugin that prevents AI agents from drifting, forgetting, and losing coherence during long coding sessions. It enforces a simple backbone — *declare what you're doing, track as you go, archive when done* — and connects every piece into one unified system.
 
 ```
-14 tools · 5 hooks · 5 skills · 3 slash commands · interactive CLI · Ink TUI dashboard · EN/VI
+10 tools · 6 hooks · 5 skills · 3 slash commands · interactive CLI · Ink TUI dashboard · EN/VI
 ```
 
 [![npm version](https://img.shields.io/npm/v/hivemind-context-governance)](https://www.npmjs.com/package/hivemind-context-governance)
@@ -134,15 +134,23 @@ Trajectory (Level 1) — "Build authentication system"
 
 ### Under the Hood
 
-HiveMind fires **5 hooks automatically** on every turn:
+HiveMind fires **6 hooks automatically** on every turn:
 
 | Hook | When | What It Does |
 |------|------|-------------|
-| `system.transform` | Every LLM turn | Injects `<hivemind>` block with hierarchy, drift, warnings |
+| `experimental.chat.system.transform` | Every LLM turn | Injects `<hivemind>` block with hierarchy, drift, warnings |
+| `experimental.chat.messages.transform` | Before LLM response | Injects stop-checklist and continuity context (`<anchor-context>`, `<focus>`) |
 | `tool.execute.before` | Before any tool | Governance gate — warns on writes without intent |
 | `tool.execute.after` | After any tool | Tracks metrics, detects violations, captures cycles |
 | `session.compacting` | On context compaction | Preserves hierarchy + metrics across compaction |
-| `event` | On session events | Reacts to idle, file edits, compaction events |
+| `event` | On session events | Reacts to idle/file edits/compaction and persists `todo.updated` into task manifest |
+
+### Phase B Highlights
+
+- Added `experimental.chat.messages.transform` hook for stop-decision checklist injection and continuity context.
+- Added task manifest persistence via `todo.updated` event handling.
+- Added optional `auto_commit` flow in governance hook for file-changing tools.
+- Added session boundary manager and non-disruptive SDK session creation after compaction.
 
 ### Data Flow
 
@@ -183,7 +191,7 @@ HiveMind fires **5 hooks automatically** on every turn:
 
 ---
 
-## Tools Reference (14)
+## Tools Reference (10)
 
 ### Core Lifecycle (3 tools)
 
@@ -207,22 +215,19 @@ compact_session({ summary: "Auth middleware complete" })
 // → Archived. 15 turns, 4 files. Session reset.
 ```
 
-### Awareness & Correction (4 tools)
+### Awareness & Correction (2 tools)
 
 | Tool | Agent Thought | What It Does |
 |------|--------------|-------------|
 | `scan_hierarchy` | *"Quick status check"* | Shows session state, metrics, anchors |
 | `think_back` | *"I feel lost"* | Deep refocus with plan review + chain analysis |
-| `check_drift` | *"Am I still on track?"* | Verifies alignment with trajectory |
-| `self_rate` | *"How am I doing?"* | Rate performance 1-10 for drift detection |
 
-### Persistent Memory (3 tools)
+### Persistent Memory (2 tools)
 
 | Tool | Agent Thought | What It Does |
 |------|--------------|-------------|
 | `save_mem` | *"This is worth remembering"* | Store decisions/patterns to persistent memory |
-| `list_shelves` | *"What do I know?"* | Browse Mems Brain by shelf |
-| `recall_mems` | *"I've seen this before"* | Search past decisions by keyword |
+| `recall_mems` | *"I've seen this before"* | Search or list Mems Brain by keyword/shelf |
 
 ### Immutable Facts (1 tool)
 
@@ -230,12 +235,11 @@ compact_session({ summary: "Auth middleware complete" })
 |------|--------------|-------------|
 | `save_anchor` | *"This must not be forgotten"* | Persist constraints that survive compaction + chaos |
 
-### Hierarchy Tree (2 tools)
+### Hierarchy Tree (1 tool)
 
 | Tool | Agent Thought | What It Does |
 |------|--------------|-------------|
-| `hierarchy_prune` | *"Clean up finished work"* | Remove completed branches from tree |
-| `hierarchy_migrate` | *"Upgrade the tree"* | Migrate flat hierarchy → navigable tree |
+| `hierarchy_manage` | *"Clean up or migrate the tree"* | Unified `prune` and `migrate` operations |
 
 ### Delegation Intelligence (1 tool)
 
@@ -623,7 +627,7 @@ Mục tiêu:
 - Cô lập artifact cũ/stale có nguy cơ nhiễm context
 - Lưu baseline anchors + memory trước khi refactor diện rộng
 
-## 14 Công Cụ — Giải Thích Chi Tiết
+## 10 Công Cụ — Giải Thích Chi Tiết
 
 ### Nhóm 1: Vòng Đời Session
 
@@ -639,15 +643,13 @@ Mục tiêu:
 |---------|-------------|---------------------|
 | `scan_hierarchy` | Muốn xem nhanh trạng thái | Nắm bắt tình hình trong 1 giây |
 | `think_back` | Cảm thấy lạc | Hồi phục context sâu sau compaction |
-| `check_drift` | Trước khi kết luận xong | Kiểm tra có đúng hướng với mục tiêu ban đầu không |
-| `self_rate` | Tự đánh giá | Chấm điểm 1-10 để phát hiện vấn đề sớm |
+| `scan_hierarchy` (`include_drift`) | Trước khi kết luận xong | Kiểm tra độ lệch hướng theo trajectory/tactic/action |
 
 ### Nhóm 3: Bộ Nhớ Dài Hạn
 
 | Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
 |---------|-------------|---------------------|
 | `save_mem` | Học được bài học quan trọng | Quyết định, pattern, lỗi — tồn tại vĩnh viễn |
-| `list_shelves` | Muốn xem có gì trong bộ nhớ | Tổng quan kho tri thức |
 | `recall_mems` | Gặp vấn đề quen thuộc | Tìm giải pháp từ quá khứ |
 | `save_anchor` | Sự thật bất biến | Port number, schema, API endpoint — không bao giờ quên |
 
@@ -655,8 +657,7 @@ Mục tiêu:
 
 | Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
 |---------|-------------|---------------------|
-| `hierarchy_prune` | Cây quá nhiều nhánh đã xong | Giữ cây gọn gàng |
-| `hierarchy_migrate` | Nâng cấp từ bản cũ | Chuyển đổi hierarchy phẳng → cây |
+| `hierarchy_manage` | Cây nhiều nhánh hoặc cần nâng cấp | Gộp cả prune và migrate trong một công cụ |
 | `export_cycle` | Subagent vừa trả kết quả | Không export = mất intelligence từ subagent |
 
 ## Lần Đầu Mở OpenCode (Quan Trọng!)
@@ -731,7 +732,7 @@ npx hivemind-context-governance init --force
 │  │                                          │   │
 │  │  ┌─────────┐ ┌──────────┐ ┌──────────┐ │   │
 │  │  │  Hooks  │ │  Tools   │ │  Events  │ │   │
-│  │  │  (5)    │ │  (14)    │ │  handler │ │   │
+│  │  │  (6)    │ │  (10)    │ │  handler │ │   │
 │  │  └────┬────┘ └────┬─────┘ └────┬─────┘ │   │
 │  │       │           │            │        │   │
 │  │       ▼           ▼            ▼        │   │

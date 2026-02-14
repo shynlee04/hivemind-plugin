@@ -6,7 +6,7 @@
  * ## Architecture
  *
  * - **10 Tools** (HC3 compliant): declare_intent, map_context, compact_session, scan_hierarchy, save_anchor, think_back, save_mem, recall_mems, hierarchy_manage, export_cycle
- * - **4 Hooks**: system prompt injection, tool gate (before), soft governance (after), compaction preservation
+ * - **6 Hooks**: system transform, messages transform, tool gate (before), soft governance (after), compaction preservation, event handling
  * - **Soft Governance**: Cannot block, only guide through prompts + tracking
  *
  * ## Governance Modes
