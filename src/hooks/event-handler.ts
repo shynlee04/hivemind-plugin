@@ -26,6 +26,7 @@ import type {
 } from "@opencode-ai/sdk"
 import type { Logger } from "../lib/logging.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
+import { saveTasks } from "../lib/manifest.js"
 import { getStalenessInfo } from "../lib/staleness.js"
 import {
   computeGovernanceSeverity,
@@ -132,6 +133,21 @@ export function createEventHandler(log: Logger, directory: string) {
         case "session.diff":
           await log.debug(`[event] session.diff: ${(event as EventSessionDiff).properties.sessionID} (${(event as EventSessionDiff).properties.diff.length} files)`)
           break
+
+        case "todo.updated": {
+          const evt = event as any
+          await log.debug(`[event] todo.updated: ${evt.properties?.sessionID || "unknown"}`)
+
+          if (evt.properties?.todos) {
+            const payload = {
+              session_id: evt.properties.sessionID,
+              updated_at: Date.now(),
+              tasks: evt.properties.todos
+            }
+            await saveTasks(directory, payload)
+          }
+          break
+        }
 
         default:
           // Log unhandled events at debug level for discoverability
