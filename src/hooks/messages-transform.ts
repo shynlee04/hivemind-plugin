@@ -1,4 +1,6 @@
 import { createStateManager, loadConfig } from "../lib/persistence.js"
+import { loadAnchors } from "../lib/anchors.js"
+import { loadTree, getAncestors } from "../lib/hierarchy-tree.js"
 
 type MessagePart = {
   type?: string
@@ -41,6 +43,77 @@ function syntheticSystemMessage(text: string): MessageV2 {
   }
 }
 
+function isSyntheticMessage(message: MessageV2): boolean {
+  if (message.synthetic === true) return true
+  if (!Array.isArray(message.content)) return false
+  return message.content.some(part => part.synthetic === true)
+}
+
+function getLastNonSyntheticUserMessageIndex(messages: MessageV2[]): number {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const message = messages[i]
+    if (message.role === "user" && !isSyntheticMessage(message)) {
+      return i
+    }
+  }
+  return -1
+}
+
+function buildAnchorContext(
+  anchors: Array<{ key: string; value: string; created_at: number }>,
+  maxChars: number
+): string {
+  if (anchors.length === 0) return ""
+
+  const sorted = [...anchors].sort((a, b) => b.created_at - a.created_at).slice(0, 3)
+  const lines = ["<anchor-context>"]
+  for (const anchor of sorted) {
+    const candidate = [...lines, `- [${anchor.key}]: ${anchor.value}`, "</anchor-context>"].join("\n")
+    if (candidate.length > maxChars) break
+    lines.push(`- [${anchor.key}]: ${anchor.value}`)
+  }
+  lines.push("</anchor-context>")
+  return lines.length > 2 ? lines.join("\n") : ""
+}
+
+function prependSyntheticPart(message: MessageV2, text: string): void {
+  const syntheticPart: MessagePart = {
+    type: "text",
+    text,
+    synthetic: true,
+  }
+
+  if (Array.isArray(message.content)) {
+    message.content = [syntheticPart, ...message.content]
+    return
+  }
+
+  if (typeof message.content === "string") {
+    message.content = [
+      syntheticPart,
+      {
+        type: "text",
+        text: message.content,
+      },
+    ]
+    return
+  }
+
+  message.content = [syntheticPart]
+}
+
+async function buildFocusPath(directory: string, fallback: { trajectory: string; tactic: string; action: string }): Promise<string> {
+  const tree = await loadTree(directory)
+  if (tree.root && tree.cursor) {
+    const ancestors = getAncestors(tree.root, tree.cursor)
+    if (ancestors.length > 0) {
+      return ancestors.map(node => node.content).join(" > ")
+    }
+  }
+
+  return [fallback.trajectory, fallback.tactic, fallback.action].filter(Boolean).join(" > ")
+}
+
 export function createMessagesTransformHook(_log: { warn: (message: string) => Promise<void> }, directory: string) {
   const stateManager = createStateManager(directory)
 
@@ -56,6 +129,20 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
       const state = await stateManager.load()
       if (!state) return
+
+      const anchorsState = await loadAnchors(directory)
+      const anchorContext = buildAnchorContext(anchorsState.anchors, 200)
+      if (anchorContext) {
+        const index = getLastNonSyntheticUserMessageIndex(output.messages)
+        if (index >= 0) {
+          const focusPath = await buildFocusPath(directory, state.hierarchy)
+          const continuityLines = [anchorContext]
+          if (focusPath) {
+            continuityLines.unshift(`<focus>${focusPath}</focus>`)
+          }
+          prependSyntheticPart(output.messages[index], continuityLines.join("\n"))
+        }
+      }
 
       const items: string[] = []
       if (!state.hierarchy.action) {
