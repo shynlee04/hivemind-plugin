@@ -10,7 +10,7 @@ export interface TaskItem {
   status: "pending" | "in_progress" | "completed" | "cancelled" | string
   created_at?: number
   completed_at?: number
-  [key: string]: any
+  [key: string]: unknown
 }
 
 export interface TaskManifest {

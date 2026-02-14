@@ -135,12 +135,12 @@ export function createEventHandler(log: Logger, directory: string) {
           break
 
         case "todo.updated": {
-          const evt = event as { properties?: { sessionID?: string, todos?: unknown[] } };
+          const evt = event as any
           await log.debug(`[event] todo.updated: ${evt.properties?.sessionID || "unknown"}`)
 
-          if (evt.properties?.todos && evt.properties.sessionID) {
+          if (evt.properties?.todos) {
             const payload = {
-              session_id: evt.properties.sessionID,
+              session_id: evt.properties.sessionID || "unknown",
               updated_at: Date.now(),
               tasks: evt.properties.todos
             }
