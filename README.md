@@ -711,6 +711,16 @@ npx hivemind-context-governance init --force
 5. **Kết thúc bằng `compact_session`** — Lưu trữ có cấu trúc, session sau vào lại không bị "reset trí nhớ"
 6. **Dùng `/hivemind-scan` khi mới vào project** — Hiểu project trước khi code
 
+## Về Tác Giả
+
+HiveMind được xây dựng bởi [shynlee04](https://github.com/shynlee04) — một lập trình viên đã quá mệt mỏi với việc AI agent quên mất đang làm gì giữa chừng phiên code. Sau quá nhiều lần tự hỏi "khoan đã, tại sao mình lại quyết định kiến trúc này nhỉ?", ý tưởng về một hệ thống quản trị context đã ra đời.
+
+Khi không bận xây dựng công cụ để AI "trung thực" hơn, mình thường làm việc với full-stack applications, mày mò developer tooling, và ủng hộ phong cách phát triển có sự hỗ trợ của AI mà thực sự hiệu quả.
+
+**Cảm thấy hữu ích?** [Mời mình ly cà phê ☕](https://buymeacoffee.com/shynlee04l) — nó tiếp thêm năng lượng cho những đêm code muộn để tạo ra những công cụ như thế này.
+
+---
+
 > *Nếu bạn coi HiveMind như "bộ điều phối context" thay vì "một bộ tool phụ", chất lượng session sẽ khác biệt rõ rệt.*
 
 ---
@@ -747,6 +757,16 @@ npx hivemind-context-governance init --force
 ```
 
 **Architecture boundary**: `src/lib/` never imports `@opencode-ai/plugin` (platform-portable). Only `src/hooks/` touches the SDK.
+
+---
+
+## About
+
+HiveMind is built by [shynlee04](https://github.com/shynlee04), a developer who got tired of AI agents forgetting what they were doing halfway through coding sessions. After one too many "wait, why did we decide this architecture again?" moments, the idea for a context governance system was born.
+
+When not building tools to keep AI honest, you'll find me working on full-stack applications, tinkering with developer tooling, and advocating for AI-assisted development that actually works.
+
+**Found this useful?** [Buy me a coffee ☕](https://buymeacoffee.com/shynlee04l) — it fuels the late-night coding sessions that make tools like this possible.
 
 ---
 
