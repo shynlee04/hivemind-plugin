@@ -10,6 +10,8 @@ HiveMind is an [OpenCode](https://opencode.ai) plugin that prevents AI agents fr
 
 [![npm version](https://img.shields.io/npm/v/hivemind-context-governance)](https://www.npmjs.com/package/hivemind-context-governance)
 
+**Found this useful?** [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-support-orange?logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/shynlee04l)
+
 ---
 
 ## The Problem
@@ -512,6 +514,8 @@ MIT
 # 🇻🇳 Hướng Dẫn Tiếng Việt (Chi Tiết)
 
 > *Phần này không phải bản dịch — mà được viết riêng cho người dùng Việt Nam, với giải thích kỹ hơn về cách hoạt động và lý do tại sao.*
+
+**Cảm thấy hữu ích?** [![Mời cà phê](https://img.shields.io/badge/Mời%20cà%20phê-ủng%20hộ-orange?logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/shynlee04l)
 
 ## HiveMind Là Gì?
 
