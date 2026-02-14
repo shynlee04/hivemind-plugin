@@ -58,6 +58,8 @@ export interface HiveMindConfig {
   stale_session_days: number;
   /** Files touched threshold before suggesting a commit */
   commit_suggestion_threshold: number;
+  /** Enable auto-commit after write/edit/bash tools when changes are detected */
+  auto_commit: boolean;
   /** Agent behavior configuration - injected into every session */
   agent_behavior: AgentBehaviorConfig;
   /** Override detection thresholds (merged with defaults at runtime) */
@@ -87,6 +89,7 @@ export const DEFAULT_CONFIG: HiveMindConfig = {
   auto_compact_on_turns: 20,
   stale_session_days: 3,
   commit_suggestion_threshold: 5,
+  auto_commit: false,
   agent_behavior: DEFAULT_AGENT_BEHAVIOR,
   automation_level: "assisted" as AutomationLevel,
 };

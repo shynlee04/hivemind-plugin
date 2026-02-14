@@ -10,6 +10,7 @@ export * from "./complexity.js";
 export * from "./staleness.js";
 export * from "./chain-analysis.js";
 export * from "./commit-advisor.js";
+export * from "./auto-commit.js";
 export * from "./tool-activation.js";
 export * from "./session-export.js";
 export * from "./long-session.js"
