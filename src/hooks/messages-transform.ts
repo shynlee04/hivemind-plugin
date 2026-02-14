@@ -1,6 +1,7 @@
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { loadAnchors } from "../lib/anchors.js"
-import { loadTree, getAncestors } from "../lib/hierarchy-tree.js"
+import { countCompleted, getAncestors, loadTree } from "../lib/hierarchy-tree.js"
+import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
 
 type MessagePart = {
   type?: string
@@ -156,6 +157,29 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       }
       if (state.metrics.files_touched.length > 0) {
         items.push("Create a git commit for touched files")
+      }
+
+      const role = (state.session.role || "").toLowerCase()
+      const contextPercent = estimateContextPercent(
+        state.metrics.turn_count,
+        config.auto_compact_on_turns
+      )
+
+      let completedBranchCount = 0
+      const tree = await loadTree(directory)
+      if (tree.root) {
+        completedBranchCount = countCompleted(tree)
+      }
+
+      const boundaryRecommendation = shouldCreateNewSession({
+        turnCount: state.metrics.turn_count,
+        contextPercent,
+        hierarchyComplete: completedBranchCount > 0,
+        isMainSession: !role.includes("subagent"),
+        hasDelegations: (state.cycle_log ?? []).some(entry => entry.tool === "task"),
+      })
+      if (boundaryRecommendation.recommended) {
+        items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
       }
 
       const checklist = buildChecklist(items, 300)

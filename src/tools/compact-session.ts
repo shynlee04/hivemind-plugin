@@ -34,6 +34,9 @@ import {
 } from "../lib/planning-fs.js"
 import { generateExportData, generateJsonExport, generateMarkdownExport } from "../lib/session-export.js"
 import { loadMems, saveMems, addMem } from "../lib/mems.js"
+import { createLogger } from "../lib/logging.js"
+import { getEffectivePaths } from "../lib/paths.js"
+import { getClient } from "../hooks/sdk-context.js"
 import {
   loadTree,
   saveTree,
@@ -256,6 +259,7 @@ export function createCompactSessionTool(directory: string): ToolDefinition {
     async execute(args, _context) {
       const stateManager = createStateManager(directory)
       const config = await loadConfig(directory)
+      const log = await createLogger(getEffectivePaths(directory).logsDir, "compact-session")
 
       // Load brain state
       const state = await stateManager.load()
@@ -377,6 +381,7 @@ export function createCompactSessionTool(directory: string): ToolDefinition {
 
       // === Reset sequence — guarded to prevent partial state corruption ===
       let resetError: string | null = null
+      let newSessionId: string | null = null
       try {
         if (hasTree) {
           await saveTree(directory, createTree())
@@ -387,7 +392,7 @@ export function createCompactSessionTool(directory: string): ToolDefinition {
         const compactionCount = (state.compaction_count ?? 0) + 1;
         const compactionTime = Date.now();
 
-        const newSessionId = generateSessionId()
+        newSessionId = generateSessionId()
         const newState = createBrainState(newSessionId, config)
         newState.compaction_count = compactionCount;
         newState.last_compaction_time = compactionTime;
@@ -397,12 +402,39 @@ export function createCompactSessionTool(directory: string): ToolDefinition {
         resetError = `Reset partially failed after archive: ${err}`
       }
 
+      // Try to create a fresh SDK session (non-fatal)
+      let sdkSessionNote = ""
+      if (newSessionId) {
+        try {
+          const client = getClient() as any
+          if (client?.session?.create) {
+            const createArgs: { directory: string; title: string; parentID?: string } = {
+              directory,
+              title: `HiveMind: ${newSessionId}`,
+            }
+            if (state.session.id) {
+              createArgs.parentID = state.session.id
+            }
+
+            const created = await client.session.create(createArgs)
+            const createdSessionId = typeof created?.id === "string" && created.id.length > 0
+              ? created.id
+              : newSessionId
+            await log.info(`[compact-session] Created SDK session ${createdSessionId}`)
+            sdkSessionNote = `\n→ Started new SDK session: ${createdSessionId}`
+          }
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err)
+          await log.warn(`[compact-session] Failed to create SDK session: ${message}`)
+        }
+      }
+
       // Count archives for output
       const archives = await listArchives(directory)
 
       const purificationSummary = `Purified: ${turningPoints.length} turning points${prunedCount > 0 ? `, ${prunedCount} completed pruned` : ''}.`
       const resetNote = resetError ? `\n⚠ ${resetError}` : ""
-      return `Archived. ${state.metrics.turn_count} turns, ${state.metrics.files_touched.length} files saved. ${archives.length} total archives. Session reset.\n${purificationSummary}${resetNote}\n→ Session is now LOCKED. Call declare_intent to start new work.`
+      return `Archived. ${state.metrics.turn_count} turns, ${state.metrics.files_touched.length} files saved. ${archives.length} total archives. Session reset.\n${purificationSummary}${resetNote}${sdkSessionNote}\n→ Session is now LOCKED. Call declare_intent to start new work.`
     },
   })
 }

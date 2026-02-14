@@ -10,6 +10,7 @@ import { createMapContextTool } from "../src/tools/map-context.js"
 import { createCompactSessionTool, identifyTurningPoints, generateNextCompactionReport } from "../src/tools/compact-session.js"
 import type { TurningPoint } from "../src/tools/compact-session.js"
 import { createCompactionHook } from "../src/hooks/compaction.js"
+import { initSdkContext, resetSdkContext } from "../src/hooks/sdk-context.js"
 import { createLogger } from "../src/lib/logging.js"
 import {
   createTree,
@@ -239,12 +240,12 @@ async function test_integration_writesReport() {
     const mapContextTool = createMapContextTool(dir)
     const compactSessionTool = createCompactSessionTool(dir)
 
-    await declareIntentTool.execute({ mode: "plan_driven", focus: "Report write test" })
-    await mapContextTool.execute({ level: "tactic", content: "Build component", status: "active" })
-    await mapContextTool.execute({ level: "action", content: "Write tests", status: "active" })
+    await declareIntentTool.execute({ mode: "plan_driven", focus: "Report write test" }, {} as any)
+    await mapContextTool.execute({ level: "tactic", content: "Build component", status: "active" }, {} as any)
+    await mapContextTool.execute({ level: "action", content: "Write tests", status: "active" }, {} as any)
 
     // Compact the session
-    const result = await compactSessionTool.execute({ summary: "Test completed" })
+    const result = await compactSessionTool.execute({ summary: "Test completed" }, {} as any)
     assert(result.includes("Purified:"), "compact result includes purification summary")
 
     // Verify new brain state has next_compaction_report
@@ -281,20 +282,20 @@ async function test_integration_autoPrune() {
     const mapContextTool = createMapContextTool(dir)
     const compactSessionTool = createCompactSessionTool(dir)
 
-    await declareIntentTool.execute({ mode: "plan_driven", focus: "Prune test" })
+    await declareIntentTool.execute({ mode: "plan_driven", focus: "Prune test" }, {} as any)
 
     // Add 6 actions and mark 5 complete (need to go through map_context)
     for (let i = 0; i < 6; i++) {
-      await mapContextTool.execute({ level: "tactic", content: `Tactic ${i}`, status: "active" })
-      await mapContextTool.execute({ level: "action", content: `Action ${i}`, status: "active" })
+      await mapContextTool.execute({ level: "tactic", content: `Tactic ${i}`, status: "active" }, {} as any)
+      await mapContextTool.execute({ level: "action", content: `Action ${i}`, status: "active" }, {} as any)
       if (i < 5) {
         // Mark this action complete
-        await mapContextTool.execute({ level: "action", content: `Action ${i}`, status: "complete" })
+        await mapContextTool.execute({ level: "action", content: `Action ${i}`, status: "complete" }, {} as any)
       }
     }
 
     // Compact the session — should auto-prune
-    const result = await compactSessionTool.execute({ summary: "Pruned test" })
+    const result = await compactSessionTool.execute({ summary: "Pruned test" }, {} as any)
     assert(result.includes("Purified:"), "compact result includes purification summary")
 
     // Verify the result mentions pruning (turning points should be > 0)
@@ -329,7 +330,7 @@ async function test_compactionHook_injectsPurificationReport() {
 
     // Declare intent first so we have a valid state
     const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute({ mode: "plan_driven", focus: "Hook test" })
+    await declareIntentTool.execute({ mode: "plan_driven", focus: "Hook test" }, {} as any)
 
     // Now modify state to include a purification report
     const state = await stateManager.load()
@@ -370,6 +371,84 @@ async function test_compactionHook_injectsPurificationReport() {
   }
 }
 
+async function test_integration_createsNewSdkSessionAfterCompact() {
+  process.stderr.write("\n--- compact_session integration: creates new SDK session after compact ---\n")
+
+  const dir = await setup()
+
+  try {
+    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
+    const declareIntentTool = createDeclareIntentTool(dir)
+    const compactSessionTool = createCompactSessionTool(dir)
+
+    await declareIntentTool.execute({ mode: "plan_driven", focus: "SDK session creation test" }, {} as any)
+
+    const stateManager = createStateManager(dir)
+    const currentState = await stateManager.load()
+    const parentId = currentState?.session.id ?? ""
+
+    const createCalls: Array<{ directory: string; title: string; parentID?: string }> = []
+    initSdkContext({
+      client: {
+        session: {
+          create: async (args: { directory: string; title: string; parentID?: string }) => {
+            createCalls.push(args)
+            return { id: "sdk-session-1" }
+          },
+        },
+      } as any,
+      $: {} as any,
+      serverUrl: new URL("http://localhost:4096"),
+      project: {} as any,
+    })
+
+    const result = await compactSessionTool.execute({ summary: "Create SDK session" }, {} as any)
+
+    assert(result.includes("Started new SDK session: sdk-session-1"), "compact output includes created SDK session id")
+    assert(createCalls.length === 1, "calls client.session.create once")
+    assert(createCalls[0].directory === dir, "passes current project directory to session.create")
+    assert(createCalls[0].title.startsWith("HiveMind: "), "passes HiveMind title with new session id")
+    assert(createCalls[0].parentID === parentId, "passes previous session id as parentID")
+  } finally {
+    resetSdkContext()
+    await cleanup()
+  }
+}
+
+async function test_integration_sessionCreationFailureIsNonFatal() {
+  process.stderr.write("\n--- compact_session integration: session create failure is non-fatal ---\n")
+
+  const dir = await setup()
+
+  try {
+    await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
+    const declareIntentTool = createDeclareIntentTool(dir)
+    const compactSessionTool = createCompactSessionTool(dir)
+
+    await declareIntentTool.execute({ mode: "plan_driven", focus: "SDK session failure test" }, {} as any)
+
+    initSdkContext({
+      client: {
+        session: {
+          create: async () => {
+            throw new Error("sdk unavailable")
+          },
+        },
+      } as any,
+      $: {} as any,
+      serverUrl: new URL("http://localhost:4096"),
+      project: {} as any,
+    })
+
+    const result = await compactSessionTool.execute({ summary: "Session create fails" }, {} as any)
+    assert(result.includes("Archived."), "archive/reset still succeeds when session.create fails")
+    assert(result.includes("Session reset."), "compact reports successful reset when session.create fails")
+  } finally {
+    resetSdkContext()
+    await cleanup()
+  }
+}
+
 // ─── Runner ─────────────────────────────────────────────────────────
 
 async function main() {
@@ -386,6 +465,8 @@ async function main() {
   await test_integration_writesReport()
   await test_integration_autoPrune()
   await test_compactionHook_injectsPurificationReport()
+  await test_integration_createsNewSdkSessionAfterCompact()
+  await test_integration_sessionCreationFailureIsNonFatal()
 
   process.stderr.write(`\n=== Compact Purification: ${passed} passed, ${failed_} failed ===\n`)
   process.exit(failed_ > 0 ? 1 : 0)

@@ -38,6 +38,10 @@ import { isSessionStale } from "../lib/staleness.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { loadAnchors } from "../lib/anchors.js"
 import { detectLongSession } from "../lib/long-session.js"
+import {
+  estimateContextPercent,
+  shouldCreateNewSession,
+} from "../lib/session-boundary.js"
 import { getToolActivation } from "../lib/tool-activation.js"
 import {
   compileEscalatedSignals,
@@ -418,6 +422,24 @@ export function createSessionLifecycleHook(
         } else {
           warningLines.push(`⏰ ${longSession.suggestion}`)
         }
+      }
+
+      const role = (state.session.role || "").toLowerCase()
+      const contextPercent = estimateContextPercent(
+        state.metrics.turn_count,
+        config.auto_compact_on_turns
+      )
+      const boundaryRecommendation = shouldCreateNewSession({
+        turnCount: state.metrics.turn_count,
+        contextPercent,
+        hierarchyComplete: (completedBranchCount ?? 0) > 0,
+        isMainSession: !role.includes("subagent"),
+        hasDelegations: (state.cycle_log ?? []).some((entry) => entry.tool === "task"),
+      })
+
+      if (boundaryRecommendation.recommended) {
+        warningLines.push(`🔄 ${boundaryRecommendation.reason}`)
+        warningLines.push("→ Run /hivemind-compact to archive and start fresh")
       }
 
       // TOOL ACTIVATION SUGGESTION
