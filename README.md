@@ -27,19 +27,25 @@ Without governance, long AI sessions decay:
 
 ---
 
-## Quick Start
+ ## Quick Start
 
-### 1. Install
-
-```bash
-npm install hivemind-context-governance
-```
-
-### 2. Initialize (Interactive Wizard)
+### One Command - That's It
 
 ```bash
-npx hivemind-context-governance
+npx hivemind-context-governance init --mode assisted
 ```
+
+**What happens (guaranteed):**
+1. Downloads from npm automatically (no manual install needed)
+2. Creates `.hivemind/` directory with brain.json, config.json
+3. Registers plugin in `opencode.json` (so OpenCode auto-loads it)
+4. Syncs commands/skills into `.opencode/`
+5. Creates session template files
+6. Opens a session in `OPEN` mode (assisted) or `LOCKED` mode (strict)
+
+**Works on any machine, any project. No exceptions.**
+
+### Verify Installation (Optional)
 
 The wizard walks you through step by step:
 
@@ -71,9 +77,40 @@ The wizard walks you through step by step:
 npx hivemind-context-governance init --mode strict --lang vi --automation full
 ```
 
-### 4. Open OpenCode
+This does **exactly the same** as the interactive wizard:
+- Creates `.hivemind/` structure
+- Registers plugin in `opencode.json` 
+- Syncs OpenCode assets
+- Initializes brain state with your chosen settings
+
+### 4. Verify Installation
+
+After running `init`, verify everything is set up:
+
+```bash
+npx hivemind-context-governance status
+```
+
+Or manually check `opencode.json` contains:
+```json
+{
+  "plugin": ["hivemind-context-governance"]
+}
+```
+
+### 5. Open OpenCode
 
 That's it. The plugin auto-activates. The AI agent gets governance context injected into every turn.
+
+**Important:** If you run `init` again on an existing project, it will:
+- Keep your existing `.hivemind/` state
+- Refresh OpenCode assets
+- Ensure plugin is still registered in `opencode.json`
+
+**How it works:**
+- `init` automatically registers `hivemind-context-governance` in `opencode.json`'s `plugin` array
+- OpenCode reads this on startup and auto-loads the plugin
+- If you manually edit `opencode.json`, make sure `plugin` is an array containing `"hivemind-context-governance"`
 
 ---
 
@@ -423,13 +460,36 @@ npx hivemind-context-governance init --force
 
 ## Troubleshooting
 
+### "Plugin not loading" or "Setup guidance keeps appearing"
+
+**Cause:** The plugin was never registered in `opencode.json`.
+
+**Fix:** Run the init command **once**:
+```bash
+npx hivemind-context-governance init --mode assisted
+```
+
+This does **all** of the following:
+- Creates `.hivemind/` directory structure
+- Registers plugin in `opencode.json` (so OpenCode auto-loads it)
+- Syncs commands/skills into `.opencode/`
+- Initializes brain state
+
+**Important:** If you run `init` again on an existing project:
+- It keeps your existing `.hivemind/` state ✅
+- It refreshes OpenCode assets ✅
+- It ensures plugin is still registered ✅
+
+### Other Issues
+
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Setup guidance keeps appearing | `.hivemind/config.json` missing | Run `npx hivemind-context-governance` |
+| Setup guidance keeps appearing | `.hivemind/config.json` missing | Run `npx hivemind-context-governance init --mode assisted` |
 | Framework conflict warning | Both `.planning/` and `.spec-kit/` exist | Select one framework via locked menu |
 | Dashboard won't start | Optional deps not installed | `npm install ink react` |
 | Session feels stale after idle | Auto-archive rotated state | Use `scan_hierarchy` + `think_back` |
 | Want fresh start | Old config causing issues | `npx hivemind-context-governance purge` then re-init |
+| "Plugin already registered" message | Normal behavior on upgrade | No action needed |
 
 ---
 
