@@ -7,7 +7,7 @@ import { createStateManager, saveConfig } from "../src/lib/persistence.js"
 import { createBrainState, generateSessionId, unlockSession } from "../src/schemas/brain-state.js"
 import { createConfig } from "../src/schemas/config.js"
 import { saveAnchors } from "../src/lib/anchors.js"
-import { createNode, createTree, saveTree, setRoot, addChild } from "../src/lib/hierarchy-tree.js"
+import { createNode, createTree, saveTree, setRoot, addChild, markComplete } from "../src/lib/hierarchy-tree.js"
 
 let passed = 0
 let failed_ = 0
@@ -177,6 +177,57 @@ async function test_augments_latest_user_message_with_anchor_context() {
   await rm(dir, { recursive: true, force: true })
 }
 
+async function test_includes_session_boundary_checklist_item_when_recommended() {
+  process.stderr.write("\n--- messages-transform: boundary checklist injection ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "strict", auto_compact_on_turns: 50 })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const baseState = unlockSession(createBrainState(generateSessionId(), config))
+  const state = {
+    ...baseState,
+    metrics: {
+      ...baseState.metrics,
+      turn_count: 30,
+      files_touched: [],
+      context_updates: 1,
+    },
+    hierarchy: {
+      ...baseState.hierarchy,
+      action: "Boundary review",
+    },
+  }
+  await stateManager.save(state)
+
+  const trajectory = createNode("trajectory", "Phase B")
+  const tactic = createNode("tactic", "Track D")
+  const action = createNode("action", "Finalize Part 2")
+  let tree = setRoot(createTree(), trajectory)
+  tree = addChild(tree, trajectory.id, tactic)
+  tree = addChild(tree, tactic.id, action)
+  tree = markComplete(tree, action.id, Date.now())
+  await saveTree(dir, tree)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [{ role: "user", content: "hi" }],
+  }
+
+  await hook({}, output)
+
+  const injected = output.messages[output.messages.length - 1]
+  const part = Array.isArray(injected?.content) ? injected.content[0] : null
+  const text = typeof part?.text === "string" ? part.text : ""
+
+  assert(
+    text.includes("Session boundary reached:"),
+    "includes boundary recommendation checklist item"
+  )
+
+  await rm(dir, { recursive: true, force: true })
+}
+
 async function main() {
   process.stderr.write("=== Messages Transform Tests ===\n")
 
@@ -184,6 +235,7 @@ async function main() {
   await test_generates_dynamic_checklist_items()
   await test_skips_permissive_mode()
   await test_augments_latest_user_message_with_anchor_context()
+  await test_includes_session_boundary_checklist_item_when_recommended()
 
   process.stderr.write(`\n=== Messages Transform: ${passed} passed, ${failed_} failed ===\n`)
   if (failed_ > 0) process.exit(1)
