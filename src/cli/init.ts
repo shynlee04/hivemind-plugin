@@ -255,13 +255,16 @@ export async function initProject(
   // Guard: Check brain.json existence, not just directory.
   // The directory may exist from logger side-effects without full initialization.
   if (existsSync(brainPath)) {
-    // Existing user upgrade path: keep state, but refresh OpenCode assets
+    // Existing user upgrade path: keep state, refresh OpenCode assets, AND ensure plugin is registered
     await syncOpencodeAssets(directory, {
       target: options.syncTarget ?? "project",
       overwrite: options.overwriteAssets ?? false,
       silent: options.silent ?? false,
       onLog: options.silent ? undefined : log,
     })
+    
+    // Ensure plugin is registered in opencode.json (this was missing!)
+    registerPluginInConfig(directory, options.silent ?? false)
 
     if (!options.silent) {
       log("⚠ HiveMind already initialized in this project.")
