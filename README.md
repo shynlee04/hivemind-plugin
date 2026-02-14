@@ -145,13 +145,6 @@ HiveMind fires **6 hooks automatically** on every turn:
 | `session.compacting` | On context compaction | Preserves hierarchy + metrics across compaction |
 | `event` | On session events | Reacts to idle/file edits/compaction and persists `todo.updated` into task manifest |
 
-### Phase B Highlights
-
-- Added `experimental.chat.messages.transform` hook for stop-decision checklist injection and continuity context.
-- Added task manifest persistence via `todo.updated` event handling.
-- Added optional `auto_commit` flow in governance hook for file-changing tools.
-- Added session boundary manager and non-disruptive SDK session creation after compaction.
-
 ### Data Flow
 
 ```
