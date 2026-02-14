@@ -5,6 +5,15 @@
 - [TASKS] section added to system prompt injection
 - `regenerateManifests` function added
 - Parent existence validation in map_context
+- Simplified bootstrap text (~1100 → concise)
+
+### PR #43 Code Review Findings
+| Severity | Issue | Status |
+|----------|-------|--------|
+| Medium | Localization regression - Vietnamese translations removed in bootstrap | Not fixed |
+| Low | LOCKED warning removed from bootstrap | Not fixed |
+| Positive | findParentId now returns null instead of unsafe root fallback | Fixed |
+| Positive | Manifest auto-regen via regenerateManifests | Fixed |
 
 ## Status Summary
 

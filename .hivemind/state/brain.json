@@ -5,7 +5,7 @@
     "governance_mode": "strict",
     "governance_status": "OPEN",
     "start_time": 1771042167990,
-    "last_activity": 1771048333732,
+    "last_activity": 1771080383286,
     "date": "2026-02-14",
     "meta_key": "",
     "role": "",
@@ -17,7 +17,7 @@
     "action": "Trace prompt injection flow: how signals become system prompts → why they're nonsensical"
   },
   "metrics": {
-    "turn_count": 86,
+    "turn_count": 94,
     "drift_score": 56,
     "files_touched": [
       "[via edit]",
@@ -28,16 +28,16 @@
     "context_updates": 3,
     "ratings": [],
     "auto_health_score": 100,
-    "total_tool_calls": 129,
-    "successful_tool_calls": 129,
+    "total_tool_calls": 137,
+    "successful_tool_calls": 137,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
     "last_section_content": "Trace prompt injection flow: how signals become system prompts → why they're nonsensical",
     "tool_type_counts": {
-      "read": 73,
-      "write": 43,
-      "query": 7,
+      "read": 75,
+      "write": 48,
+      "query": 8,
       "governance": 6
     },
     "keyword_flags": [
@@ -54,8 +54,8 @@
       "out_of_order": 0,
       "drift": 0,
       "compaction": 0,
-      "evidence_pressure": 119,
-      "ignored": 104,
+      "evidence_pressure": 127,
+      "ignored": 112,
       "acknowledged": false,
       "prerequisites_completed": true
     }
@@ -87,6 +87,13 @@
       "timestamp": 1771044889768,
       "tool": "task",
       "output_excerpt": "task_id: ses_3a5819dbdffesxyR3JBh6HDmcE (for resuming to continue this task if needed)\n\n<task_result>\nBased on my analysis of the plan and code evidence, here's the status:\n\n## Summary: Phases P3-P10\n\n### Phase | Requirement ID | Status | Evidence\n\n| Phase | Requirement | Status | Evidence |\n|-------|-------------|--------|----------|\n| **P1** | Entry Gate Hook | NOT DONE | No `src/hooks/entry-gate.ts` file exists |\n| **P1** | 8 Bug Fixes | **DONE** | CHANGELOG.md [Unreleased] lists all 8 fixes ",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1771048395179,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_3a54d794cffeEz1PjBtmC25nR2 (for resuming to continue this task if needed)\n\n<task_result>\nAll tests pass and typecheck is clean. Let me provide my review:\n\n---\n\n## Code Review: PR #43 - HiveMind Plan Consolidation\n\n### Summary\nThis PR consolidates plan-related changes including: task/TODO tracking integration, bootstrap prompt refinement, manifest regeneration, and validation fixes.\n\n---\n\n### Issues Found\n\n#### 1. **Severity: Medium** - Localization Regression in Bootstrap Block\n\n**F",
       "failure_detected": false,
       "failure_keywords": []
     }

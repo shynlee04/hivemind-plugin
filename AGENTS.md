@@ -1,4 +1,9 @@
-# AGENTS.md — Developer Guide
+---
+Name:  "AGENTS.md — Developer Guide"
+Constituted by: AGENT_RULES.md at /Users/apple/hivemind-plugin/AGENTS.md - all agents must follow these rules. Read them in full, not offset reading.
+Description: This document provides guidelines for developers working on the HiveMind plugin.
+---
+
 
 **Context:** `hivemind-plugin` is an OpenCode plugin for context governance (version 2.6.0).
 
