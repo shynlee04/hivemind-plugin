@@ -997,9 +997,9 @@ export async function regenerateManifests(projectRoot: string): Promise<void> {
           // ignore parsing errors
         }
       }
-    } catch {
-      // ignore dir errors
-    }
+} catch (e) {
+  console.warn(`[hivemind] Failed to scan directory ${dir}. Skipping.`, e);
+}
   }
 
   await scanDir(paths.sessionsDir, 'active')
