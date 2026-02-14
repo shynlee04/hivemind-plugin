@@ -75,12 +75,6 @@
     "@types/node": "^20.10.0",
     "tsx": "^4.7.0"
   },
-  "devDependencies": {
-    "@opencode-ai/plugin": "^1.1.53",
-    "@types/node": "^20.10.0",
-    "tsx": "^4.7.0",
-    "typescript": "^5.3.0"
-  },
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.1.0",
     "ink": ">=5.0.0",
