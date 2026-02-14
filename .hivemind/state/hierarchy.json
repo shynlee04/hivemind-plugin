@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "root": {
+    "id": "t_311114022026",
+    "level": "trajectory",
+    "content": "Deep codebase investigation - understand OpenCode hook system, prompt injection flow, session lifecycle",
+    "status": "active",
+    "created": 1771043510605,
+    "stamp": "311114022026",
+    "children": [
+      {
+        "id": "tc_321114022026",
+        "level": "tactic",
+        "content": "Investigate OpenCode hook system: what hooks exist, when they fire, order of execution",
+        "status": "active",
+        "created": 1771043520142,
+        "stamp": "321114022026",
+        "children": [
+          {
+            "id": "a_331114022026",
+            "level": "action",
+            "content": "Trace prompt injection flow: how signals become system prompts → why they're nonsensical",
+            "status": "complete",
+            "created": 1771043632865,
+            "stamp": "331114022026",
+            "children": [],
+            "completed": 1771044916275
+          },
+          {
+            "id": "a_562314022026",
+            "level": "action",
+            "content": "Verify Phase A evidence coverage and request review on PR #45 with post-merge validation results",
+            "status": "active",
+            "created": 1771088205181,
+            "stamp": "562314022026",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "cursor": "a_562314022026"
+}

@@ -1,3 +1,4 @@
+# Build artifacts only
 node_modules/
 dist/
 *.log
@@ -5,14 +6,25 @@ dist/
 .env
 .env.local
 coverage/
-.opencode/
-.hivemind/
+
+# .opencode/ - track commands and skills, ignore runtime
+.opencode/node_modules/
+.opencode/bun.lock
+# Track these subdirectories
+!.opencode/commands/
+!.opencode/skills/
+!.opencode/agents/
+!.opencode/workflows/
+!.opencode/templates/
+!.opencode/prompts/
+!.opencode/references/
+
+# .worktrees/ - git worktree management
 .worktrees/
 
 # Development artifacts (kept on dev branches only)
 .planning/
 .githooks/
-opencode.json
 session-*.md
 this-is-what-fuck-happened.md
 test_output*.txt
@@ -25,3 +37,7 @@ test_output*.txt
 .kilocode/
 .qoder/
 .windsurf/
+
+# State tracking - DO NOT IGNORE (user wants full traceability)
+# .hivemind/ - tracked (brain state, hierarchy, anchors, mems)
+# opencode.json - tracked (user configuration, provider settings)

@@ -257,8 +257,34 @@ function test_rendering() {
     stats.totalNodes === 3 && stats.activeNodes === 3 && stats.depth === 3,
     "getTreeStats counts nodes correctly"
   );
-}
 
+  // Truncation Test
+  const longNode = createNode("trajectory", "This is a very long node content that definitely exceeds sixty characters to verify the truncation logic in the renderer", "active", new Date());
+  let truncTree = createTree();
+  truncTree = setRoot(truncTree, longNode);
+  const truncAscii = toAsciiTree(truncTree);
+  assert(truncAscii.includes("...") && !truncAscii.includes("truncation logic"),
+    "toAsciiTree truncates long content > 60 chars");
+
+  // Status Markers Test
+  let blockedTree = createTree();
+  const blockedNode = createNode("trajectory", "Blocked Task", "blocked", new Date());
+  blockedTree = setRoot(blockedTree, blockedNode);
+  assert(toAsciiTree(blockedTree).includes("[!!]"),
+    "toAsciiTree renders blocked status as [!!]");
+
+  let pendingTree = createTree();
+  const pendingNode = createNode("trajectory", "Pending Task", "pending", new Date());
+  pendingTree = setRoot(pendingTree, pendingNode);
+  assert(toAsciiTree(pendingTree).includes("[..]"),
+    "toAsciiTree renders pending status as [..]");
+
+  let completeTree = createTree();
+  const completeNode = createNode("trajectory", "Done Task", "complete", new Date());
+  completeTree = setRoot(completeTree, completeNode);
+  assert(toAsciiTree(completeTree).includes("[OK]"),
+    "toAsciiTree renders complete status as [OK]");
+}
 function test_janitor() {
   process.stderr.write("\n--- janitor ---\n");
 

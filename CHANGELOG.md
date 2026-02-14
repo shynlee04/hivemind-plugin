@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `experimental.chat.messages.transform` hook with stop-checklist injection and continuity context enrichment (`<anchor-context>`, `<focus>`)
+- Session boundary manager (`src/lib/session-boundary.ts`) with lifecycle warning integration and checklist-boundary recommendation
+- Non-disruptive SDK session rollover after compaction (`client.session.create`) with non-fatal fallback behavior
+- Task manifest persistence for `todo.updated` events into `.hivemind/state/tasks.json`
+- Optional `auto_commit` governance flow for file-changing tools (`write`, `edit`, `bash`) with new auto-commit helpers
+
 ### Fixed
 - `export_cycle` now synchronizes flat `brain.hierarchy` projection after tree mutations, eliminating hierarchy/tree desync after subagent exports
 - `declare_intent` no longer overwrites per-session files with legacy active template content; legacy `active.md` is updated separately for backward compatibility
@@ -24,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Documentation
 - `README.md` fully rewritten: coherent install-to-runtime flow, upgrade guidance, troubleshooting, and expanded Vietnamese section focused on practical onboarding
+- `README.md` refreshed for Phase B: hook count/tool catalog accuracy, merged tool names, and new governance capabilities
 
 ## [2.6.0] - 2026-02-12
 

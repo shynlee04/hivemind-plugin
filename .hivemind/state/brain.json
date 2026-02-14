@@ -1,0 +1,109 @@
+{
+  "session": {
+    "id": "session-1771042167990-4a2wen",
+    "mode": "exploration",
+    "governance_mode": "strict",
+    "governance_status": "OPEN",
+    "start_time": 1771042167990,
+    "last_activity": 1771088427532,
+    "date": "2026-02-14",
+    "meta_key": "",
+    "role": "",
+    "by_ai": true
+  },
+  "hierarchy": {
+    "trajectory": "Deep codebase investigation - understand OpenCode hook system, prompt injection flow, session lifecycle",
+    "tactic": "Investigate OpenCode hook system: what hooks exist, when they fire, order of execution",
+    "action": "Verify Phase A evidence coverage and request review on PR #45 with post-merge validation results"
+  },
+  "metrics": {
+    "turn_count": 12,
+    "drift_score": 58,
+    "files_touched": [
+      "[via edit]",
+      "[via bash]",
+      "[via task]",
+      "[via write]"
+    ],
+    "context_updates": 4,
+    "ratings": [],
+    "auto_health_score": 100,
+    "total_tool_calls": 167,
+    "successful_tool_calls": 167,
+    "violation_count": 0,
+    "consecutive_failures": 0,
+    "consecutive_same_section": 0,
+    "last_section_content": "Verify Phase A evidence coverage and request review on PR #45 with post-merge validation results",
+    "tool_type_counts": {
+      "read": 86,
+      "write": 60,
+      "query": 14,
+      "governance": 7
+    },
+    "keyword_flags": [
+      "loop",
+      "failure",
+      "blocked",
+      "error",
+      "confused",
+      "stuck",
+      "retry"
+    ],
+    "write_without_read_count": 0,
+    "governance_counters": {
+      "out_of_order": 0,
+      "drift": 0,
+      "compaction": 0,
+      "evidence_pressure": 157,
+      "ignored": 139,
+      "acknowledged": false,
+      "prerequisites_completed": true
+    }
+  },
+  "complexity_nudge_shown": true,
+  "last_commit_suggestion_turn": 0,
+  "version": "1.0.0",
+  "next_compaction_report": null,
+  "compaction_count": 0,
+  "last_compaction_time": 0,
+  "cycle_log": [
+    {
+      "timestamp": 1771044662765,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_3a583e62bffek7MmKnbsMGv6vv (for resuming to continue this task if needed)\n\n<task_result>\n# Task Extraction from PR #3 Integration Remediation Plan\n\nBased on my analysis of the document, here is the task table:\n\n| ID | Task | Status | Evidence |\n|----|------|--------|----------|\n| 1 | Lock Baseline and Repro Matrix | **Done** | Lines 218-240: Complete task with Steps 1-4 and commit commands |\n| 2 | Fix Gate-Breaking Parser Regression | **Done** | Lines 242-270: Complete task with Ste",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1771044745542,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_3a582d68fffeOoczmw3Hke4koa (for resuming to continue this task if needed)\n\n<task_result>\nNow I have all the information needed. Let me create the summary:\n\n---\n\n# Strategic Plan v3 — Root Cause Analysis & Remediation Status\n\n## 1. Root Causes (1.1 to 1.8)\n\n| ID | Root Cause | Priority | Status | Evidence |\n|----|-------------|----------|--------|----------|\n| 1.1 | The Nonsensical Toast System | CRITICAL | **PARTIALLY DONE** | CHANGELOG: `trackSectionUpdate()` now wired; drift warni",
+      "failure_detected": true,
+      "failure_keywords": [
+        "partially"
+      ]
+    },
+    {
+      "timestamp": 1771044889768,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_3a5819dbdffesxyR3JBh6HDmcE (for resuming to continue this task if needed)\n\n<task_result>\nBased on my analysis of the plan and code evidence, here's the status:\n\n## Summary: Phases P3-P10\n\n### Phase | Requirement ID | Status | Evidence\n\n| Phase | Requirement | Status | Evidence |\n|-------|-------------|--------|----------|\n| **P1** | Entry Gate Hook | NOT DONE | No `src/hooks/entry-gate.ts` file exists |\n| **P1** | 8 Bug Fixes | **DONE** | CHANGELOG.md [Unreleased] lists all 8 fixes ",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1771048395179,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_3a54d794cffeEz1PjBtmC25nR2 (for resuming to continue this task if needed)\n\n<task_result>\nAll tests pass and typecheck is clean. Let me provide my review:\n\n---\n\n## Code Review: PR #43 - HiveMind Plan Consolidation\n\n### Summary\nThis PR consolidates plan-related changes including: task/TODO tracking integration, bootstrap prompt refinement, manifest regeneration, and validation fixes.\n\n---\n\n### Issues Found\n\n#### 1. **Severity: Medium** - Localization Regression in Bootstrap Block\n\n**F",
+      "failure_detected": false,
+      "failure_keywords": []
+    }
+  ],
+  "pending_failure_ack": false,
+  "framework_selection": {
+    "choice": null,
+    "active_phase": "",
+    "active_spec_path": "",
+    "acceptance_note": "",
+    "updated_at": 0
+  }
+}

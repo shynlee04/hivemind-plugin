@@ -161,6 +161,25 @@ async function test_drift_tracking() {
   await cleanup()
 }
 
+// ─── entry gate ─────────────────────────────────────────────────────
+
+async function test_entry_gate_suggests_scan() {
+  process.stderr.write("\n--- tool-gate: entry gate suggests scan ---\n")
+  const dir = await setup()
+  // Ensure no hierarchy exists (default state of setup())
+
+  const config = createConfig({ governance_mode: "strict" })
+  await saveConfig(dir, config)
+
+  const hook = createToolGateHookInternal(noopLogger, dir, config)
+  const result = await hook({ sessionID: "test-scan", tool: "write" })
+
+  assert(result.allowed, "entry gate is advisory")
+  assert(result.warning !== undefined && result.warning.includes("hivemind-scan"), "suggests hivemind-scan when tree missing")
+
+  await cleanup()
+}
+
 // ─── Runner ─────────────────────────────────────────────────────────
 
 async function main() {
@@ -172,6 +191,7 @@ async function main() {
   await test_assisted_warns_but_allows()
   await test_permissive_allows_silently()
   await test_drift_tracking()
+  await test_entry_gate_suggests_scan()
 
   process.stderr.write(`\n=== Tool Gate: ${passed} passed, ${failed_} failed ===\n`)
   if (failed_ > 0) process.exit(1)

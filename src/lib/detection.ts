@@ -1,3 +1,4 @@
+import { calculateSimilarity } from "../utils/string.js";
 /**
  * Detection Engine
  * Programmatic signal detection for drift, stuck patterns, and governance alerts.
@@ -471,7 +472,7 @@ export function trackSectionUpdate(
   const lastNormalized = state.last_section_content.trim().toLowerCase();
 
   // Simple similarity: check if content is the same or very similar
-  const isSimilar = normalized === lastNormalized || levenshteinSimilarity(normalized, lastNormalized) > 0.8;
+  const isSimilar = normalized === lastNormalized || calculateSimilarity(normalized, lastNormalized) > 0.8;
 
   if (isSimilar && state.last_section_content !== "") {
     return {
@@ -505,26 +506,6 @@ export function resetSectionTracking(state: DetectionState): DetectionState {
  * Simple Levenshtein-based similarity ratio (0-1).
  * Used internally for section repetition detection.
  */
-function levenshteinSimilarity(a: string, b: string): number {
-  if (a.length === 0 && b.length === 0) return 1;
-  if (a.length === 0 || b.length === 0) return 0;
-
-  const maxLen = Math.max(a.length, b.length);
-
-  // Optimization: if strings are very different in length, skip computation
-  if (Math.abs(a.length - b.length) / maxLen > 0.5) return 0;
-
-  // Simplified: use character overlap ratio instead of full Levenshtein
-  // This is faster and sufficient for detecting "same content with minor edits"
-  const aChars = new Set(a.split(""));
-  const bChars = new Set(b.split(""));
-  let overlap = 0;
-  for (const c of aChars) {
-    if (bChars.has(c)) overlap++;
-  }
-  const totalUnique = new Set([...aChars, ...bChars]).size;
-  return totalUnique === 0 ? 1 : overlap / totalUnique;
-}
 
 // ============================================================
 // Section 4: Keyword Scanning
@@ -614,7 +595,7 @@ const COUNTER_EXCUSES: Record<string, string> = {
  *
  * @consumer session-lifecycle.ts (reads brain.json, calls this, appends to prompt)
  */
-export interface SignalDetectionOptions {
+export function compileSignals(opts: {
   /** Current turn count */
   turnCount: number;
   /** Detection state from brain.json.metrics */
@@ -633,169 +614,124 @@ export interface SignalDetectionOptions {
   thresholds?: DetectionThresholds;
   /** Budget cap: maximum number of signals to return */
   maxSignals?: number;
-}
+}): DetectionSignal[] {
+  const thresholds = opts.thresholds ?? DEFAULT_THRESHOLDS;
+  const maxSignals = opts.maxSignals ?? 3;
+  const signals: DetectionSignal[] = [];
 
-/** Function that detects a specific signal from the given options */
-type SignalDetector = (opts: SignalDetectionOptions, thresholds: DetectionThresholds) => DetectionSignal | null;
-
-const detectTurnCount: SignalDetector = (opts, thresholds) => {
+  // 1. Turn count warning
   if (opts.turnCount >= thresholds.turns_warning) {
-    return {
+    signals.push({
       type: "turn_count",
       severity: 3,
       message: `${opts.turnCount} turns on current section. Checkpoint your decisions?`,
-      suggestion: "map_context",
-    };
+      suggestion: "map_context to reset drift",
+    });
   }
-  return null;
-};
 
-const detectConsecutiveFailures: SignalDetector = (opts, thresholds) => {
+  // 2. Consecutive failures
   if (opts.detection.consecutive_failures >= thresholds.failure_alert) {
-    return {
+    signals.push({
       type: "consecutive_failures",
       severity: 1,
       message: `${opts.detection.consecutive_failures} consecutive tool failures. Step back and reassess?`,
-      suggestion: "think_back",
-    };
+      suggestion: "think_back to diagnose",
+    });
   }
-  return null;
-};
 
-const detectSectionRepetition: SignalDetector = (opts, thresholds) => {
+  // 3. Section repetition (circling)
   if (opts.detection.consecutive_same_section >= thresholds.repetition_alert) {
-    return {
+    signals.push({
       type: "section_repetition",
       severity: 2,
       message: `Tactic updated ${opts.detection.consecutive_same_section}x with similar content. Circling?`,
-      suggestion: "think_back",
-    };
+      suggestion: "think_back to break loop",
+    });
   }
-  return null;
-};
 
-const detectReadWriteImbalance: SignalDetector = (opts, thresholds) => {
+  // 4. Read-write imbalance
   const { read, write } = opts.detection.tool_type_counts;
   if (read >= thresholds.read_write_imbalance && write === 0) {
-    return {
+    signals.push({
       type: "read_write_imbalance",
       severity: 4,
       message: `Pattern: ${read} reads, 0 writes. Still exploring or stuck?`,
-      suggestion: "map_context",
-    };
+      suggestion: "map_context to re-align",
+    });
   }
-  return null;
-};
 
-const detectKeywordFlags: SignalDetector = (opts, _thresholds) => {
+  // 5. Keyword flags
   if (opts.detection.keyword_flags.length > 0) {
     const flags = opts.detection.keyword_flags.join(", ");
-    return {
+    signals.push({
       type: "keyword_flags",
       severity: 2,
       message: `Detected signals: ${flags}. Use think_back to refocus?`,
-      suggestion: "think_back",
-    };
+      suggestion: "think_back to refocus",
+    });
   }
-  return null;
-};
 
-const detectToolHierarchyMismatch: SignalDetector = (opts, _thresholds) => {
+  // 6. Tool-hierarchy mismatch (write without action declared)
   if (
     opts.hierarchyActionEmpty &&
     opts.detection.tool_type_counts.write > 0
   ) {
-    return {
+    signals.push({
       type: "tool_hierarchy_mismatch",
       severity: 3,
       message: "Writing files but no action declared in hierarchy.",
-      suggestion: "map_context",
-    };
+      suggestion: "map_context to declare action",
+    });
   }
-  return null;
-};
 
-const detectCompletedPileup: SignalDetector = (opts, thresholds) => {
+  // 7. Completed branch pileup
   if (
     opts.completedBranches !== undefined &&
     opts.completedBranches >= thresholds.completed_branch_threshold
   ) {
-    return {
+    signals.push({
       type: "completed_pileup",
       severity: 5,
       message: `${opts.completedBranches} completed branches. Run hierarchy_manage with action=prune to clean up.`,
-      suggestion: "hierarchy_manage",
-    };
+      suggestion: "hivemind-scan",
+    });
   }
-  return null;
-};
 
-const detectTimestampGap: SignalDetector = (opts, thresholds) => {
+  // 8. Timestamp gap (stale)
   if (
     opts.timestampGapMs !== undefined &&
     opts.timestampGapMs >= thresholds.stale_gap_ms
   ) {
     const hours = Math.round(opts.timestampGapMs / (60 * 60 * 1000) * 10) / 10;
-    return {
+    signals.push({
       type: "timestamp_gap",
       severity: 1,
       message: `${hours}hr gap since last hierarchy node. Context may be lost.`,
       suggestion: "scan_hierarchy",
-    };
+    });
   }
-  return null;
-};
 
-const detectMissingTree: SignalDetector = (opts, _thresholds) => {
+  // 9. Missing tree (migration needed)
   if (opts.missingTree) {
-    return {
+    signals.push({
       type: "missing_tree",
       severity: 0,
-      message: "No hierarchy.json found. Run hierarchy_manage with action=migrate to upgrade.",
-      suggestion: "hierarchy_manage",
-    };
+      message: "No hierarchy.json found. Run hivemind-scan to build context backbone.",
+      suggestion: "hivemind-scan",
+    });
   }
-  return null;
-};
 
-const detectSessionFileLong: SignalDetector = (opts, thresholds) => {
+  // 10. Session file too long
   if (
     opts.sessionFileLines !== undefined &&
     opts.sessionFileLines >= thresholds.session_file_lines
   ) {
-    return {
+    signals.push({
       type: "session_file_long",
       severity: 4,
       message: `Session file at ${opts.sessionFileLines} lines (threshold: ${thresholds.session_file_lines}). Consider compacting.`,
       suggestion: "compact_session",
-    };
-  }
-  return null;
-};
-
-const SIGNAL_DETECTORS: SignalDetector[] = [
-  detectTurnCount,
-  detectConsecutiveFailures,
-  detectSectionRepetition,
-  detectReadWriteImbalance,
-  detectKeywordFlags,
-  detectToolHierarchyMismatch,
-  detectCompletedPileup,
-  detectTimestampGap,
-  detectMissingTree,
-  detectSessionFileLong,
-];
-
-export function compileSignals(opts: SignalDetectionOptions): DetectionSignal[] {
-  const thresholds = opts.thresholds ?? DEFAULT_THRESHOLDS;
-  const maxSignals = opts.maxSignals ?? 3;
-  const signals: DetectionSignal[] = [];
-
-  for (const detector of SIGNAL_DETECTORS) {
-    const signal = detector(opts, thresholds);
-    if (signal) {
-      signals.push(signal);
-    }
+    });
   }
 
   // Sort by severity (lower = more important) and cap at budget
@@ -810,8 +746,17 @@ export function compileSignals(opts: SignalDetectionOptions): DetectionSignal[] 
  * 
  * @consumer session-lifecycle.ts (reads brain.json, calls this, appends to prompt)
  */
-export function compileEscalatedSignals(opts: SignalDetectionOptions & {
+export function compileEscalatedSignals(opts: {
+  turnCount: number;
+  detection: DetectionState;
+  completedBranches?: number;
+  hierarchyActionEmpty?: boolean;
+  timestampGapMs?: number;
+  missingTree?: boolean;
+  sessionFileLines?: number;
   writeWithoutReadCount?: number;
+  thresholds?: DetectionThresholds;
+  maxSignals?: number;
 }): EscalatedSignal[] {
   const thresholds = opts.thresholds ?? DEFAULT_THRESHOLDS;
   
@@ -855,7 +800,12 @@ export function compileEscalatedSignals(opts: SignalDetectionOptions & {
 /**
  * Build evidence string for a signal based on actual counter data.
  */
-function buildEvidence(signal: DetectionSignal, opts: SignalDetectionOptions & {
+function buildEvidence(signal: DetectionSignal, opts: {
+  turnCount: number;
+  detection: DetectionState;
+  completedBranches?: number;
+  timestampGapMs?: number;
+  sessionFileLines?: number;
   writeWithoutReadCount?: number;
 }): string {
   const d = opts.detection;
@@ -894,12 +844,25 @@ function buildEvidence(signal: DetectionSignal, opts: SignalDetectionOptions & {
  *
  * @consumer session-lifecycle.ts (appended to <hivemind> block)
  */
+const TOOL_PURPOSE: Record<string, string> = {
+  "map_context": "reset drift tracking",
+  "think_back": "refresh your context",
+  "scan_hierarchy": "see your decision tree",
+  "compact_session": "archive and preserve memory",
+  "declare_intent": "start with tracking",
+  "save_mem": "save decisions for later",
+  "recall_mems": "remember past decisions",
+  "export_cycle": "capture subagent results",
+  "hivemind-scan": "understand project first",
+}
+
 export function formatSignals(signals: DetectionSignal[]): string {
   if (signals.length === 0) return "";
 
   const lines: string[] = ["[ALERTS]"];
   for (const signal of signals) {
-    const suggestion = signal.suggestion ? ` → use ${signal.suggestion}` : "";
+    const purpose = signal.suggestion ? TOOL_PURPOSE[signal.suggestion] : null
+    const suggestion = signal.suggestion ? (purpose ? ` → ${purpose} (use ${signal.suggestion})` : ` → use ${signal.suggestion}`) : "";
     
     // Check if this is an escalated signal
     const escalated = signal as EscalatedSignal;

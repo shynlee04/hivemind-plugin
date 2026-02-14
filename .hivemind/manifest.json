@@ -1,0 +1,50 @@
+{
+  "version": "1.0.0",
+  "structure_format": "2.0.0",
+  "created": 1771042167979,
+  "sub_manifests": [
+    "/Users/apple/hivemind-plugin/.hivemind/state/manifest.json",
+    "/Users/apple/hivemind-plugin/.hivemind/memory/manifest.json",
+    "/Users/apple/hivemind-plugin/.hivemind/sessions/manifest.json",
+    "/Users/apple/hivemind-plugin/.hivemind/plans/manifest.json",
+    "/Users/apple/hivemind-plugin/.hivemind/codemap/manifest.json",
+    "/Users/apple/hivemind-plugin/.hivemind/codewiki/manifest.json"
+  ],
+  "governance_sot": {
+    "codemap": {
+      "manifest": "/Users/apple/hivemind-plugin/.hivemind/codemap/manifest.json",
+      "role": "source_of_truth"
+    },
+    "codewiki": {
+      "manifest": "/Users/apple/hivemind-plugin/.hivemind/codewiki/manifest.json",
+      "role": "source_of_truth"
+    }
+  },
+  "materialization_chain": [
+    {
+      "from": "codemap",
+      "to": "plans",
+      "relation": "governs"
+    },
+    {
+      "from": "codewiki",
+      "to": "plans",
+      "relation": "governs"
+    },
+    {
+      "from": "plans",
+      "to": "sessions",
+      "relation": "materializes"
+    },
+    {
+      "from": "sessions",
+      "to": "tasks",
+      "relation": "materializes"
+    },
+    {
+      "from": "tasks",
+      "to": "sub_tasks",
+      "relation": "materializes"
+    }
+  ]
+}

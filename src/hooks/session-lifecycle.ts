@@ -17,8 +17,6 @@
  */
 
 import { existsSync } from "node:fs"
-import { readFile, readdir } from "node:fs/promises"
-import { join } from "node:path"
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import { generateAgentBehaviorPrompt, isCoachAutomation } from "../schemas/config.js"
@@ -35,13 +33,15 @@ import {
   readActiveMd,
   resetActiveMd,
   updateIndexMd,
-  readManifest,
 } from "../lib/planning-fs.js"
 import { isSessionStale } from "../lib/staleness.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { loadAnchors } from "../lib/anchors.js"
-import { loadMems } from "../lib/mems.js"
 import { detectLongSession } from "../lib/long-session.js"
+import {
+  estimateContextPercent,
+  shouldCreateNewSession,
+} from "../lib/session-boundary.js"
 import { getToolActivation } from "../lib/tool-activation.js"
 import {
   compileEscalatedSignals,
@@ -69,397 +69,17 @@ import {
   buildFrameworkSelectionMenu,
 } from "../lib/framework-context.js"
 
-interface ProjectSnapshot {
-  projectName: string
-  topLevelDirs: string[]
-  artifactHints: string[]
-  stackHints: string[]
-}
-
-async function collectProjectSnapshot(directory: string): Promise<ProjectSnapshot> {
-  const snapshot: ProjectSnapshot = {
-    projectName: "(unknown project)",
-    topLevelDirs: [],
-    artifactHints: [],
-    stackHints: [],
-  }
-
-  try {
-    const packagePath = join(directory, "package.json")
-    if (existsSync(packagePath)) {
-      const raw = await readFile(packagePath, "utf-8")
-      const pkg = JSON.parse(raw) as {
-        name?: string
-        dependencies?: Record<string, string>
-        devDependencies?: Record<string, string>
-        peerDependencies?: Record<string, string>
-      }
-      if (pkg.name?.trim()) {
-        snapshot.projectName = pkg.name.trim()
-      }
-
-      const deps = {
-        ...(pkg.dependencies ?? {}),
-        ...(pkg.devDependencies ?? {}),
-        ...(pkg.peerDependencies ?? {}),
-      }
-
-      const stackSignals: Array<[string, string]> = [
-        ["typescript", "TypeScript"],
-        ["react", "React"],
-        ["next", "Next.js"],
-        ["vite", "Vite"],
-        ["@opencode-ai/plugin", "OpenCode Plugin SDK"],
-        ["ink", "Ink TUI"],
-        ["express", "Express"],
-        ["fastify", "Fastify"],
-        ["@nestjs/core", "NestJS"],
-        ["vue", "Vue"],
-        ["angular", "Angular"],
-        ["svelte", "Svelte"],
-        ["tailwindcss", "Tailwind CSS"],
-        ["prisma", "Prisma"],
-        ["drizzle-orm", "Drizzle"],
-        ["@trpc/server", "tRPC"],
-        ["zod", "Zod"],
-        ["vitest", "Vitest"],
-        ["jest", "Jest"],
-        ["playwright", "Playwright"],
-      ]
-
-      for (const [depName, label] of stackSignals) {
-        if (depName in deps) {
-          snapshot.stackHints.push(label)
-        }
-      }
-    }
-  } catch {
-    // Best-effort scan only
-  }
-
-  // Detect non-JS ecosystems
-  const ecosystemFiles: Array<[string, string]> = [
-    ["pyproject.toml", "Python"],
-    ["requirements.txt", "Python"],
-    ["go.mod", "Go"],
-    ["Cargo.toml", "Rust"],
-    ["Gemfile", "Ruby"],
-    ["composer.json", "PHP"],
-    ["build.gradle", "Java/Kotlin"],
-    ["pom.xml", "Java (Maven)"],
-    ["Package.swift", "Swift"],
-    ["pubspec.yaml", "Dart/Flutter"],
-    ["mix.exs", "Elixir"],
-  ]
-  for (const [file, label] of ecosystemFiles) {
-    if (existsSync(join(directory, file))) {
-      snapshot.stackHints.push(label)
-    }
-  }
-
-  try {
-    const entries = await readdir(directory, { withFileTypes: true })
-    snapshot.topLevelDirs = entries
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => entry.name)
-      .filter((name) => name !== "node_modules" && name !== ".git")
-      .slice(0, 8)
-  } catch {
-    // Best-effort scan only
-  }
-
-  const artifactCandidates = [
-    "README.md",
-    "AGENTS.md",
-    "CLAUDE.md",
-    ".planning/ROADMAP.md",
-    ".planning/STATE.md",
-    ".spec-kit",
-    "docs",
-    ".opencode",
-    "CHANGELOG.md",
-    ".env.example",
-    "docker-compose.yml",
-    "Dockerfile",
-    ".github/workflows",
-    "turbo.json",
-    "nx.json",
-    "lerna.json",
-  ]
-  snapshot.artifactHints = artifactCandidates.filter((path) => existsSync(join(directory, path)))
-
-  return snapshot
-}
-
-function formatHintList(items: string[]): string {
-  if (items.length === 0) return "none detected"
-  return items.join(", ")
-}
-
-function localized(language: "en" | "vi", en: string, vi: string): string {
-  return language === "vi" ? vi : en
-}
-
-function getNextStepHint(
-  language: "en" | "vi",
-  state: { trajectory: string; tactic: string; action: string }
-): string {
-  if (!state.trajectory) {
-    return localized(
-      language,
-      "Next: call `declare_intent` to set trajectory.",
-      "Buoc tiep theo: goi `declare_intent` de dat trajectory."
-    )
-  }
-
-  if (!state.tactic) {
-    return localized(
-      language,
-      "Next: call `map_context` with level `tactic`.",
-      "Buoc tiep theo: goi `map_context` voi level `tactic`."
-    )
-  }
-
-  if (!state.action) {
-    return localized(
-      language,
-      "Next: call `map_context` with level `action`.",
-      "Buoc tiep theo: goi `map_context` voi level `action`."
-    )
-  }
-
-  return localized(
-    language,
-    "Next: continue execution and checkpoint with `map_context` when focus changes.",
-    "Buoc tiep theo: tiep tuc xu ly va checkpoint bang `map_context` khi doi focus."
-  )
-}
-
-/**
- * Generates the behavioral bootstrap block injected when session is LOCKED.
- * This is the ZERO-cooperation activation path — teaches the agent what
- * HiveMind is and how to use it without requiring AGENTS.md reading,
- * skill loading, or any protocol. Pure prompt injection.
- *
- * Only shown when: governance_status === "LOCKED" AND turn_count <= 2
- * Budget: ~1100 chars (fits within expanded 4000-char budget)
- */
-function generateBootstrapBlock(governanceMode: string, language: "en" | "vi"): string {
-  const lines: string[] = []
-  lines.push("<hivemind-bootstrap>")
-  lines.push(localized(language, "## HiveMind Context Governance — Active", "## HiveMind Context Governance — Dang hoat dong"))
-  lines.push("")
-  lines.push(localized(language, "This project uses HiveMind for AI session management. You have 14 tools available.", "Du an nay dung HiveMind de quan tri session AI. Ban co 14 cong cu kha dung."))
-  lines.push("")
-  lines.push(localized(language, "### Required Workflow", "### Quy trinh bat buoc"))
-  lines.push('1. **START**: Call `declare_intent({ mode, focus })` before any work')
-  lines.push('   - mode: "plan_driven" | "quick_fix" | "exploration"')
-  lines.push(localized(language, "   - focus: 1-sentence description of your goal", "   - focus: mo ta muc tieu trong 1 cau"))
-  lines.push('2. **DURING**: Call `map_context({ level, content })` when switching focus')
-  lines.push('   - level: "trajectory" | "tactic" | "action"')
-  lines.push(localized(language, "   - Resets drift tracking, keeps session healthy", "   - Reset theo doi drift, giu session on dinh"))
-  lines.push('3. **END**: Call `compact_session({ summary })` when done')
-  lines.push(localized(language, "   - Archives session, preserves memory across sessions", "   - Luu tru session, bao toan tri nho qua cac session"))
-  lines.push("")
-  lines.push(localized(language, "### Key Tools", "### Cong cu chinh"))
-  lines.push("- `scan_hierarchy` — See your decision tree (include_drift=true for alignment check)")
-  lines.push("- `think_back` — Refresh context after compaction")
-  lines.push("- `save_mem` / `recall_mems` — Persistent cross-session memory (omit query to list shelves)")
-  lines.push("- `save_anchor` — Immutable facts that survive chaos (mode=list to view all)")
-  lines.push("- `hierarchy_manage` — Prune completed branches or migrate flat hierarchy")
-  lines.push("- `export_cycle` — Capture subagent results into hierarchy + memory")
-  lines.push("")
-  lines.push(localized(language, "### Why This Matters", "### Tai sao dieu nay quan trong"))
-  lines.push(localized(language, "Without `declare_intent`, drift detection is OFF and your work is untracked.", "Khong co `declare_intent`, drift detection tat va cong viec khong duoc theo doi."))
-  lines.push(localized(language, "Without `map_context`, context degrades every turn.", "Khong co `map_context`, context se giam chat luong moi turn."))
-  lines.push(localized(language, "Without `compact_session`, intelligence is lost on session end.", "Khong co `compact_session`, tri tue tich luy se mat khi ket thuc session."))
-  lines.push("")
-  if (governanceMode === "strict") {
-    lines.push(localized(language, "**The session is LOCKED. You MUST call `declare_intent` before writing any files.**", "**Session dang LOCKED. Ban BAT BUOC goi `declare_intent` truoc khi ghi file.**"))
-  } else {
-    lines.push(localized(language, "**The session is LOCKED. Call `declare_intent` to start working with full tracking.**", "**Session dang LOCKED. Goi `declare_intent` de bat dau voi theo doi day du.**"))
-  }
-  lines.push("</hivemind-bootstrap>")
-  return lines.join("\n")
-}
-
-/**
- * Generates the setup guidance block when HiveMind is NOT initialized.
- * This fires when the plugin is loaded but `hivemind init` was never run
- * (no config.json exists). Guides the user to configure HiveMind.
- *
- * Highest priority — shown before any other governance content.
- */
-async function generateSetupGuidanceBlock(directory: string): Promise<string> {
-  const frameworkContext = await detectFrameworkContext(directory)
-  const snapshot = await collectProjectSnapshot(directory)
-  const frameworkLine =
-    frameworkContext.mode === "both"
-      ? "both .planning and .spec-kit detected (resolve conflict before implementation)"
-      : frameworkContext.mode
-
-  return [
-    "<hivemind-setup>",
-    "## HiveMind Context Governance — Setup Required",
-    "",
-    "HiveMind plugin is loaded but **not yet configured** for this project.",
-    "",
-    `Detected project: ${snapshot.projectName}`,
-    `Framework context: ${frameworkLine}`,
-    `Stack hints: ${formatHintList(snapshot.stackHints)}`,
-    `Top-level dirs: ${formatHintList(snapshot.topLevelDirs)}`,
-    `Artifacts: ${formatHintList(snapshot.artifactHints)}`,
-    "",
-    "Tell the user to run the setup wizard in their terminal:",
-    "",
-    "```",
-    "npx hivemind-context-governance",
-    "```",
-    "",
-    "This launches an interactive wizard to configure:",
-    "- **Governance mode** (strict / assisted / permissive)",
-    "- **Language** (English / Tiếng Việt)",
-    "- **Automation level** (manual → guided → assisted → full → coach)",
-    "- **Expert level** and **output style**",
-    "- **Constraints** (code review, TDD)",
-    "",
-    "### First-Run Recon Protocol (required before coding)",
-    "1. Scan repo structure and artifacts (glob + grep) to map code, plans, and docs.",
-    "2. Read core files: package.json, README, AGENTS/CLAUDE, framework state docs.",
-    "3. Isolate poisoning context: stale plans, duplicate artifacts, framework conflicts, old branch copies.",
-    "4. Build a project backbone summary (architecture, workflow, constraints, active phase/spec).",
-    "5. Only then call declare_intent/map_context and start implementation.",
-    "",
-    "Until configured, HiveMind remains in setup mode and should focus on project reconnaissance + cleanup guidance.",
-    "",
-    "**Quick alternative** (non-interactive):",
-    "```",
-    "npx hivemind-context-governance --mode assisted",
-    "```",
-    "</hivemind-setup>",
-  ].join("\n")
-}
-
-function generateProjectBackboneBlock(
-  language: "en" | "vi",
-  snapshot: ProjectSnapshot,
-  frameworkMode: string
-): string {
-  const title = localized(
-    language,
-    "First-run backbone: map project before coding.",
-    "Backbone khoi dau: map du an truoc khi code."
-  )
-  const steps = localized(
-    language,
-    "Run quick scan -> read core docs -> isolate stale/conflicting artifacts -> declare intent.",
-    "Quet nhanh -> doc tai lieu cot loi -> tach bo stale/xung dot -> khai bao intent."
-  )
-
-  return [
-    "<hivemind-backbone>",
-    title,
-    `Project: ${snapshot.projectName} | Framework: ${frameworkMode}`,
-    `Stack: ${formatHintList(snapshot.stackHints)}`,
-    `Artifacts: ${formatHintList(snapshot.artifactHints)}`,
-    steps,
-    "</hivemind-backbone>",
-  ].join("\n")
-}
-
-function generateEvidenceDisciplineBlock(language: "en" | "vi"): string {
-  return [
-    "<hivemind-evidence>",
-    localized(language, "Evidence discipline: prove claims with command output before concluding.", "Ky luat chung cu: xac nhan ket qua bang output lenh truoc khi ket luan."),
-    localized(language, "If verification fails, report mismatch and next corrective step.", "Neu xac minh that bai, bao cao sai lech va buoc sua tiep theo."),
-    "</hivemind-evidence>",
-  ].join("\n")
-}
-
-function generateTeamBehaviorBlock(language: "en" | "vi"): string {
-  return [
-    "<hivemind-team>",
-    localized(language, "Team behavior: keep trajectory/tactic/action synchronized with work.", "Hanh vi nhom: dong bo trajectory/tactic/action voi cong viec dang lam."),
-    localized(language, "After each meaningful shift, update with `map_context` before continuing.", "Sau moi thay doi quan trong, cap nhat bang `map_context` truoc khi tiep tuc."),
-    "</hivemind-team>",
-  ].join("\n")
-}
-
-/**
- * Compiles first-turn context from persistent state.
- * Fires on turns 0-1 to ensure the agent never starts blind.
- *
- * Pulls: anchors summary, mems count, prior session trajectory,
- * and resume instructions from last compaction report.
- *
- * Defers to compaction hook if this is a post-compaction session
- * (compaction_count > 0 && turn_count <= 1) to avoid duplicate injection.
- */
-async function compileFirstTurnContext(
-  directory: string,
-  state: import("../schemas/brain-state.js").BrainState
-): Promise<string> {
-  const lines: string[] = ["<hivemind-context>"]
-
-  // Skip if post-compaction — compaction hook handles context injection
-  if ((state.last_compaction_time ?? 0) > 0 && state.metrics.turn_count <= 1) {
-    lines.push("Post-compaction session — context injected by compaction hook.")
-    lines.push("</hivemind-context>")
-    return lines.join("\n")
-  }
-
-  // 1. Anchors summary (budget: 300 chars)
-  try {
-    const anchorsState = await loadAnchors(directory)
-    if (anchorsState.anchors.length > 0) {
-      const anchorSummary = anchorsState.anchors
-        .slice(0, 5)
-        .map((a) => `[${a.key}] ${a.value}`)
-        .join("; ")
-      lines.push(`Anchors (${anchorsState.anchors.length}): ${anchorSummary.slice(0, 280)}`)
-    }
-  } catch {
-    // Non-fatal
-  }
-
-  // 2. Mems count + last 2 summaries (budget: 200 chars)
-  try {
-    const memsState = await loadMems(directory)
-    if (memsState.mems.length > 0) {
-      const recent = memsState.mems.slice(-2).map((m) => m.content.slice(0, 60)).join("; ")
-      lines.push(`Mems (${memsState.mems.length}): ${recent.slice(0, 180)}`)
-    }
-  } catch {
-    // Non-fatal
-  }
-
-  // 3. Prior session trajectory from manifest (budget: 200 chars)
-  try {
-    const manifest = await readManifest(directory)
-    const priorSession = [...manifest.sessions]
-      .reverse()
-      .find((s) => s.status === "archived" || s.status === "compacted")
-    if (priorSession) {
-      const summary = priorSession.summary
-        ? `: ${priorSession.summary.slice(0, 120)}`
-        : ""
-      const trajectory = priorSession.trajectory
-        ? ` | Trajectory: ${priorSession.trajectory.slice(0, 80)}`
-        : ""
-      lines.push(`Prior session (${priorSession.stamp})${trajectory}${summary}`)
-    }
-  } catch {
-    // Non-fatal
-  }
-
-  if (lines.length === 1) {
-    // Only the opening tag — no context to show
-    return ""
-  }
-
-  lines.push("</hivemind-context>")
-  return lines.join("\n")
-}
+import {
+  collectProjectSnapshot,
+  generateBootstrapBlock,
+  generateEvidenceDisciplineBlock,
+  generateTeamBehaviorBlock,
+  compileFirstTurnContext,
+  generateSetupGuidanceBlock,
+  getNextStepHint,
+  localized,
+  generateProjectBackboneBlock,
+} from "./session-lifecycle-helpers.js";
 
 /**
  * Creates the session lifecycle hook (system prompt transform).
@@ -804,6 +424,24 @@ export function createSessionLifecycleHook(
         }
       }
 
+      const role = (state.session.role || "").toLowerCase()
+      const contextPercent = estimateContextPercent(
+        state.metrics.turn_count,
+        config.auto_compact_on_turns
+      )
+      const boundaryRecommendation = shouldCreateNewSession({
+        turnCount: state.metrics.turn_count,
+        contextPercent,
+        hierarchyComplete: (completedBranchCount ?? 0) > 0,
+        isMainSession: !role.includes("subagent"),
+        hasDelegations: (state.cycle_log ?? []).some((entry) => entry.tool === "task"),
+      })
+
+      if (boundaryRecommendation.recommended) {
+        warningLines.push(`🔄 ${boundaryRecommendation.reason}`)
+        warningLines.push("→ Run /hivemind-compact to archive and start fresh")
+      }
+
       // TOOL ACTIVATION SUGGESTION
       const toolHint = getToolActivation(state, {
         completedBranches: completedBranchCount,
@@ -828,6 +466,11 @@ export function createSessionLifecycleHook(
         anchorLines.push("</immutable-anchors>")
       }
 
+      // TASKS
+      const taskLines: string[] = []
+      taskLines.push("[TASKS]")
+      taskLines.push("- Remember to track your work. Use `todoread` to check pending tasks and `todowrite` to update status.")
+
       // METRICS (shown if space)
       metricsLines.push(`Turns: ${state.metrics.turn_count} | Drift: ${state.metrics.drift_score}/100 | Files: ${state.metrics.files_touched.length}`)
 
@@ -841,7 +484,27 @@ export function createSessionLifecycleHook(
       const firstTurnContextLines: string[] = []
       const evidenceLines: string[] = []
       const teamLines: string[] = []
+      const readFirstLines: string[] = []
       const isBootstrapActive = state.metrics.turn_count <= 2
+
+      // NEW: Detect clean state (new project, no prior work)
+      const isCleanState = state.metrics.turn_count === 0 &&
+        (!state.hierarchy.trajectory && !state.hierarchy.tactic && !state.hierarchy.action)
+
+      if (isCleanState) {
+        // Inject "READ FIRST" guidance for new/clean state
+        readFirstLines.push("<read-first>")
+        readFirstLines.push("## STATE: NEW PROJECT / CLEAN STATE")
+        readFirstLines.push("")
+        readFirstLines.push("This is a NEW project or clean state. Before ANY work:")
+        readFirstLines.push("1. **SCAN first**: Use `scan_hierarchy({ action: \"analyze\" })` to understand project")
+        readFirstLines.push("2. **READ master plan**: Check `docs/plans/` for existing plans")
+        readFirstLines.push("3. **DECIDE focus**: Then call `declare_intent({ mode, focus })`")
+        readFirstLines.push("")
+        readFirstLines.push("Do NOT start writing code until you understand the project structure.")
+        readFirstLines.push("</read-first>")
+      }
+
       if (isBootstrapActive) {
         bootstrapLines.push(generateBootstrapBlock(config.governance_mode, config.language))
         evidenceLines.push(generateEvidenceDisciplineBlock(config.language))
@@ -858,6 +521,7 @@ export function createSessionLifecycleHook(
       // Budget expands to 4500 when bootstrap is active (first turns need teaching + context)
       const BUDGET_CHARS = isBootstrapActive ? 4500 : 2500
       const sections = [
+        readFirstLines,    // P-1: ALWAYS first for clean state - READ BEFORE WORK
         bootstrapLines, // P0: behavioral bootstrap (only when LOCKED, first 2 turns)
         firstTurnContextLines, // P0.3: first-turn context (anchors, mems, prior session)
         evidenceLines,  // P0.5: evidence discipline from turn 0
@@ -866,6 +530,7 @@ export function createSessionLifecycleHook(
         frameworkLines, // P0.8: framework context and conflict routing
         statusLines,    // P1: always
         hierarchyLines, // P2: always
+        taskLines,      // P2.2: Task reminders
         ignoredLines,   // P2.5: IGNORED tri-evidence is non-negotiable
         warningLines,   // P3: if present
         anchorLines,    // P4: if present

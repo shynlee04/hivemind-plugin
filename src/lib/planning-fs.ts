@@ -17,7 +17,7 @@
 
 import { readFile, writeFile, mkdir, readdir, rename } from "fs/promises";
 import { existsSync } from "fs";
-import { dirname, join } from "path";
+import { dirname, join, extname, basename } from "path";
 import { parse, stringify } from "yaml";
 import {
   buildArchiveFilename,
@@ -740,9 +740,18 @@ export async function archiveSession(
     ]
     const srcPath = sourceCandidates.find((p) => p && existsSync(p))
 
-    const archiveFileName = safeEntryFile && /^\d{4}-\d{2}-\d{2}-/.test(safeEntryFile)
+    const baseArchiveFileName = safeEntryFile && /^\d{4}-\d{2}-\d{2}-/.test(safeEntryFile)
       ? safeEntryFile
       : buildArchiveFilename(new Date(entry.created || Date.now()), entry.mode || "plan_driven", entry.trajectory || "session")
+
+    let archiveFileName = baseArchiveFileName
+    let counter = 1
+    while (existsSync(join(paths.archiveDir, archiveFileName))) {
+      const ext = extname(baseArchiveFileName)
+      const name = basename(baseArchiveFileName, ext)
+      archiveFileName = `${name}-${counter}${ext}`
+      counter++
+    }
     const dstPath = join(paths.archiveDir, archiveFileName)
 
     let archiveContent = content
@@ -944,4 +953,63 @@ export async function resetActiveMd(projectRoot: string): Promise<void> {
 
   // Reset legacy active.md
   await writeFile(paths.activePath, generateActiveTemplate());
+}
+
+export async function regenerateManifests(projectRoot: string): Promise<void> {
+  const paths = getPlanningPaths(projectRoot)
+
+  // 1. Ensure core manifests exist
+  await ensureCoreManifests(getEffectivePaths(projectRoot))
+
+  // 2. Scan sessions directory
+  const sessions: SessionManifestEntry[] = []
+  let activeStamp: string | null = null
+
+  const scanDir = async (dir: string, defaultStatus: "active" | "archived" | "compacted") => {
+    try {
+      if (!existsSync(dir)) return
+      const files = await readdir(dir)
+      for (const file of files) {
+        if (!file.endsWith('.md')) continue
+        const content = await readFile(join(dir, file), 'utf-8')
+        try {
+          const fm = parseSessionFrontmatter(content) as any
+
+          if (fm.stamp || fm.session_id) {
+            const stamp = fm.stamp || fm.session_id
+            const status = fm.status || defaultStatus
+            sessions.push({
+              stamp: String(stamp),
+              file: file,
+              status: status,
+              created: fm.created || Date.now(),
+              summary: fm.summary,
+              mode: fm.mode,
+              trajectory: fm.trajectory,
+              linked_plans: fm.linked_plans || []
+            })
+
+            if (status === 'active') {
+              activeStamp = String(stamp)
+            }
+          }
+} catch (e) {
+  console.warn(`[hivemind] Failed to parse frontmatter for ${join(dir, file)}. Skipping.`, e);
+}
+      }
+} catch (e) {
+  console.warn(`[hivemind] Failed to scan directory ${dir}. Skipping.`, e);
+}
+  }
+
+  await scanDir(paths.sessionsDir, 'active')
+  await scanDir(paths.archiveDir, 'archived')
+
+  const manifest: RelationalSessionManifest = {
+    sessions,
+    active_stamp: activeStamp
+  }
+
+  const deduped = deduplicateSessionManifest(manifest)
+  await writeTypedManifest(paths.manifestPath, deduped)
 }

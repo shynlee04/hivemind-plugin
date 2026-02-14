@@ -1,0 +1,21 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "hivemind-context-governance"
+  ],
+  "provider": {
+    "chutes-api": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Chutes AI",
+      "options": {
+        "baseURL": "https://llm.chutes.ai/v1"
+      },
+      "models": {
+        "e51e818e-fa63-570d-9f68-49d7d1b4d12f": {
+          "name": "GLM-5-FP8 Chute"
+        }
+      }
+    }
+  },
+  "model": "chutes-api/e51e818e-fa63-570d-9f68-49d7d1b4d12f"
+}

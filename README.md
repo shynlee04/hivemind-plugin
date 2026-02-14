@@ -5,7 +5,7 @@
 HiveMind is an [OpenCode](https://opencode.ai) plugin that prevents AI agents from drifting, forgetting, and losing coherence during long coding sessions. It enforces a simple backbone — *declare what you're doing, track as you go, archive when done* — and connects every piece into one unified system.
 
 ```
-14 tools · 5 hooks · 5 skills · 3 slash commands · interactive CLI · Ink TUI dashboard · EN/VI
+10 tools · 6 hooks · 5 skills · 3 slash commands · interactive CLI · Ink TUI dashboard · EN/VI
 ```
 
 [![npm version](https://img.shields.io/npm/v/hivemind-context-governance)](https://www.npmjs.com/package/hivemind-context-governance)
@@ -27,12 +27,12 @@ Without governance, long AI sessions decay:
 
 ---
 
-## Quick Start
+ ## Quick Start
 
-### One Command - That's All
+### One Command - That's It
 
 ```bash
-npx hivemind-context-governance init
+npx hivemind-context-governance init --mode assisted
 ```
 
 **What happens (guaranteed):**
@@ -47,6 +47,44 @@ npx hivemind-context-governance init
 
 ### Verify Installation (Optional)
 
+The wizard walks you through step by step:
+
+```
+◆  Welcome to HiveMind Context Governance!
+
+◆  Select governance mode:
+│  ○ strict    — Session starts LOCKED. Must declare intent before writes.
+│  ● assisted  — Session starts OPEN. Guidance without blocking. (recommended)
+│  ○ permissive — Always OPEN. Silent tracking only.
+
+◆  Select language:
+│  ● English
+│  ○ Tiếng Việt
+
+◆  Select automation level:
+│  ○ manual   — No automation, you control everything
+│  ○ guided   — Suggestions only
+│  ● assisted — Balanced automation (recommended)
+│  ○ full     — Maximum automation
+│  ○ coach    — Maximum handholding, skeptical of everything
+
+◆  Configuration saved! .hivemind/ created.
+```
+
+### 3. Non-Interactive Alternative
+
+```bash
+npx hivemind-context-governance init --mode strict --lang vi --automation full
+```
+
+This does **exactly the same** as the interactive wizard:
+- Creates `.hivemind/` structure
+- Registers plugin in `opencode.json` 
+- Syncs OpenCode assets
+- Initializes brain state with your chosen settings
+
+### 4. Verify Installation
+
 After running `init`, verify everything is set up:
 
 ```bash
@@ -60,7 +98,7 @@ Or manually check `opencode.json` contains:
 }
 ```
 
-### Open OpenCode
+### 5. Open OpenCode
 
 That's it. The plugin auto-activates. The AI agent gets governance context injected into every turn.
 
@@ -68,6 +106,11 @@ That's it. The plugin auto-activates. The AI agent gets governance context injec
 - Keep your existing `.hivemind/` state
 - Refresh OpenCode assets
 - Ensure plugin is still registered in `opencode.json`
+
+**How it works:**
+- `init` automatically registers `hivemind-context-governance` in `opencode.json`'s `plugin` array
+- OpenCode reads this on startup and auto-loads the plugin
+- If you manually edit `opencode.json`, make sure `plugin` is an array containing `"hivemind-context-governance"`
 
 ---
 
@@ -91,15 +134,23 @@ Trajectory (Level 1) — "Build authentication system"
 
 ### Under the Hood
 
-HiveMind fires **5 hooks automatically** on every turn:
+HiveMind fires **6 hooks automatically** on every turn:
 
 | Hook | When | What It Does |
 |------|------|-------------|
-| `system.transform` | Every LLM turn | Injects `<hivemind>` block with hierarchy, drift, warnings |
+| `experimental.chat.system.transform` | Every LLM turn | Injects `<hivemind>` block with hierarchy, drift, warnings |
+| `experimental.chat.messages.transform` | Before LLM response | Injects stop-checklist and continuity context (`<anchor-context>`, `<focus>`) |
 | `tool.execute.before` | Before any tool | Governance gate — warns on writes without intent |
 | `tool.execute.after` | After any tool | Tracks metrics, detects violations, captures cycles |
 | `session.compacting` | On context compaction | Preserves hierarchy + metrics across compaction |
-| `event` | On session events | Reacts to idle, file edits, compaction events |
+| `event` | On session events | Reacts to idle/file edits/compaction and persists `todo.updated` into task manifest |
+
+### Phase B Highlights
+
+- Added `experimental.chat.messages.transform` hook for stop-decision checklist injection and continuity context.
+- Added task manifest persistence via `todo.updated` event handling.
+- Added optional `auto_commit` flow in governance hook for file-changing tools.
+- Added session boundary manager and non-disruptive SDK session creation after compaction.
 
 ### Data Flow
 
@@ -140,7 +191,7 @@ HiveMind fires **5 hooks automatically** on every turn:
 
 ---
 
-## Tools Reference (14)
+## Tools Reference (10)
 
 ### Core Lifecycle (3 tools)
 
@@ -164,22 +215,19 @@ compact_session({ summary: "Auth middleware complete" })
 // → Archived. 15 turns, 4 files. Session reset.
 ```
 
-### Awareness & Correction (4 tools)
+### Awareness & Correction (2 tools)
 
 | Tool | Agent Thought | What It Does |
 |------|--------------|-------------|
 | `scan_hierarchy` | *"Quick status check"* | Shows session state, metrics, anchors |
 | `think_back` | *"I feel lost"* | Deep refocus with plan review + chain analysis |
-| `check_drift` | *"Am I still on track?"* | Verifies alignment with trajectory |
-| `self_rate` | *"How am I doing?"* | Rate performance 1-10 for drift detection |
 
-### Persistent Memory (3 tools)
+### Persistent Memory (2 tools)
 
 | Tool | Agent Thought | What It Does |
 |------|--------------|-------------|
 | `save_mem` | *"This is worth remembering"* | Store decisions/patterns to persistent memory |
-| `list_shelves` | *"What do I know?"* | Browse Mems Brain by shelf |
-| `recall_mems` | *"I've seen this before"* | Search past decisions by keyword |
+| `recall_mems` | *"I've seen this before"* | Search or list Mems Brain by keyword/shelf |
 
 ### Immutable Facts (1 tool)
 
@@ -187,12 +235,11 @@ compact_session({ summary: "Auth middleware complete" })
 |------|--------------|-------------|
 | `save_anchor` | *"This must not be forgotten"* | Persist constraints that survive compaction + chaos |
 
-### Hierarchy Tree (2 tools)
+### Hierarchy Tree (1 tool)
 
 | Tool | Agent Thought | What It Does |
 |------|--------------|-------------|
-| `hierarchy_prune` | *"Clean up finished work"* | Remove completed branches from tree |
-| `hierarchy_migrate` | *"Upgrade the tree"* | Migrate flat hierarchy → navigable tree |
+| `hierarchy_manage` | *"Clean up or migrate the tree"* | Unified `prune` and `migrate` operations |
 
 ### Delegation Intelligence (1 tool)
 
@@ -236,12 +283,13 @@ Skills teach the agent *how* to use governance effectively:
 ## CLI Commands
 
 ```bash
-npx hivemind-context-governance init         # Initialize project
-npx hivemind-context-governance status       # Show session state
-npx hivemind-context-governance settings     # Show configuration
-npx hivemind-context-governance scan         # Brownfield scan wrapper
-npx hivemind-context-governance sync-assets  # Sync packaged OpenCode assets
-npx hivemind-context-governance dashboard    # Launch live TUI dashboard
+npx hivemind-context-governance             # Interactive setup wizard
+npx hivemind-context-governance init        # Same (or use flags)
+npx hivemind-context-governance scan        # Brownfield scan wrapper
+npx hivemind-context-governance sync-assets # Sync packaged OpenCode assets to .opencode
+npx hivemind-context-governance status      # Show session state
+npx hivemind-context-governance settings    # Show configuration
+npx hivemind-context-governance dashboard   # Launch live TUI dashboard
 npx hivemind-context-governance purge       # Remove .hivemind/ entirely
 npx hivemind-context-governance help        # Show help
 ```
@@ -332,13 +380,13 @@ Shows real-time: session state, hierarchy tree, drift score, tool call metrics, 
 
 When OpenCode loads HiveMind **before** `hivemind init` was run:
 
-1. **Setup guidance injected** — the agent sees instructions to run the init command
+1. **Setup guidance injected** — the agent sees instructions to run the wizard
 2. **Project snapshot** — auto-detects project name, tech stack (20+ frameworks), top-level dirs, artifacts
 3. **First-run recon protocol** — the agent is guided to scan the repo, read docs, isolate stale context, and build a backbone *before* coding
 
 This prevents the "agent starts coding immediately without understanding the project" failure mode.
 
-## Brownfield Runbook ("Please scan my project and refactor it")
+## Brownfield Runbook (\"Please scan my project and refactor it\")
 
 Recommended execution order:
 
@@ -397,13 +445,13 @@ This sequence ensures framework detection, context purification, baseline persis
 npm install hivemind-context-governance@latest
 
 # 2. Re-initialize (preserves existing data)
-npx hivemind-context-governance init --mode assisted
+npx hivemind-context-governance
 
 # 3. Verify
 npx hivemind-context-governance settings
 
 # 4. Optional: clean re-init
-npx hivemind-context-governance init --force --mode assisted
+npx hivemind-context-governance init --force
 ```
 
 **Migration handled automatically:**
@@ -416,9 +464,30 @@ npx hivemind-context-governance init --force --mode assisted
 
 ## Troubleshooting
 
+### "Plugin not loading" or "Setup guidance keeps appearing"
+
+**Cause:** The plugin was never registered in `opencode.json`.
+
+**Fix:** Run the init command **once**:
+```bash
+npx hivemind-context-governance init --mode assisted
+```
+
+This does **all** of the following:
+- Creates `.hivemind/` directory structure
+- Registers plugin in `opencode.json` (so OpenCode auto-loads it)
+- Syncs commands/skills into `.opencode/`
+- Initializes brain state
+
+**Important:** If you run `init` again on an existing project:
+- It keeps your existing `.hivemind/` state ✅
+- It refreshes OpenCode assets ✅
+- It ensures plugin is still registered ✅
+
+### Other Issues
+
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Plugin not loading in OpenCode | `opencode.json` missing plugin entry | Run `npx hivemind-context-governance init --mode assisted` |
 | Setup guidance keeps appearing | `.hivemind/config.json` missing | Run `npx hivemind-context-governance init --mode assisted` |
 | Framework conflict warning | Both `.planning/` and `.spec-kit/` exist | Select one framework via locked menu |
 | Dashboard won't start | Optional deps not installed | `npm install ink react` |
@@ -442,6 +511,8 @@ npm run dev        # Watch mode
 ## License
 
 MIT
+
+---
 
 ---
 
@@ -507,18 +578,24 @@ Khi xong việc, `compact_session` sẽ:
 npm install hivemind-context-governance
 ```
 
-### Bước 2: Khởi Tạo
+### Bước 2: Chạy Wizard Cấu Hình
 
 ```bash
-npx hivemind-context-governance init --mode assisted
+npx hivemind-context-governance
 ```
 
-Query này sẽ:
-- Tự động tải từ npm
-- Tạo thư mục `.hivemind/`
-- Đăng ký plugin trong `opencode.json`
-- Đồng bộ commands/skills vào `.opencode/`
-- Khởi tạo brain state
+Wizard sẽ hỏi bạn từng bước:
+
+1. **Chế độ quản trị**: 
+   - `strict` = Nghiêm ngặt (agent phải khai báo trước khi làm bất cứ gì)
+   - `assisted` = Hỗ trợ (khuyên nhủ nhưng không chặn) ← **khuyến nghị cho người mới**
+   - `permissive` = Tự do (chỉ theo dõi, không can thiệp)
+
+2. **Ngôn ngữ**: Chọn `vi` để nhận cảnh báo bằng tiếng Việt
+
+3. **Mức tự động hóa**: Từ `manual` (tự tay) đến `coach` (giám sát tối đa)
+
+4. **Hành vi agent**: Mức chuyên gia, phong cách output, ràng buộc
 
 ### Bước 3: Mở OpenCode
 
@@ -550,7 +627,7 @@ Mục tiêu:
 - Cô lập artifact cũ/stale có nguy cơ nhiễm context
 - Lưu baseline anchors + memory trước khi refactor diện rộng
 
-## 14 Công Cụ — Giải Thích Chi Tiết
+## 10 Công Cụ — Giải Thích Chi Tiết
 
 ### Nhóm 1: Vòng Đời Session
 
@@ -566,15 +643,13 @@ Mục tiêu:
 |---------|-------------|---------------------|
 | `scan_hierarchy` | Muốn xem nhanh trạng thái | Nắm bắt tình hình trong 1 giây |
 | `think_back` | Cảm thấy lạc | Hồi phục context sâu sau compaction |
-| `check_drift` | Trước khi kết luận xong | Kiểm tra có đúng hướng với mục tiêu ban đầu không |
-| `self_rate` | Tự đánh giá | Chấm điểm 1-10 để phát hiện vấn đề sớm |
+| `scan_hierarchy` (`include_drift`) | Trước khi kết luận xong | Kiểm tra độ lệch hướng theo trajectory/tactic/action |
 
 ### Nhóm 3: Bộ Nhớ Dài Hạn
 
 | Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
 |---------|-------------|---------------------|
 | `save_mem` | Học được bài học quan trọng | Quyết định, pattern, lỗi — tồn tại vĩnh viễn |
-| `list_shelves` | Muốn xem có gì trong bộ nhớ | Tổng quan kho tri thức |
 | `recall_mems` | Gặp vấn đề quen thuộc | Tìm giải pháp từ quá khứ |
 | `save_anchor` | Sự thật bất biến | Port number, schema, API endpoint — không bao giờ quên |
 
@@ -582,8 +657,7 @@ Mục tiêu:
 
 | Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
 |---------|-------------|---------------------|
-| `hierarchy_prune` | Cây quá nhiều nhánh đã xong | Giữ cây gọn gàng |
-| `hierarchy_migrate` | Nâng cấp từ bản cũ | Chuyển đổi hierarchy phẳng → cây |
+| `hierarchy_manage` | Cây nhiều nhánh hoặc cần nâng cấp | Gộp cả prune và migrate trong một công cụ |
 | `export_cycle` | Subagent vừa trả kết quả | Không export = mất intelligence từ subagent |
 
 ## Lần Đầu Mở OpenCode (Quan Trọng!)
@@ -625,14 +699,14 @@ Dashboard hiển thị:
 # 1. Cập nhật
 npm install hivemind-context-governance@latest
 
-# 2. Chạy lại init (dữ liệu cũ được giữ nguyên)
-npx hivemind-context-governance init --mode assisted
+# 2. Chạy lại wizard (dữ liệu cũ được giữ nguyên)
+npx hivemind-context-governance
 
 # 3. Kiểm tra
 npx hivemind-context-governance settings
 
 # 4. Nếu cần reset hoàn toàn
-npx hivemind-context-governance init --force --mode assisted
+npx hivemind-context-governance init --force
 ```
 
 ## Gợi Ý Vận Hành Tốt Nhất
@@ -658,7 +732,7 @@ npx hivemind-context-governance init --force --mode assisted
 │  │                                          │   │
 │  │  ┌─────────┐ ┌──────────┐ ┌──────────┐ │   │
 │  │  │  Hooks  │ │  Tools   │ │  Events  │ │   │
-│  │  │  (5)    │ │  (14)    │ │  handler │ │   │
+│  │  │  (6)    │ │  (10)    │ │  handler │ │   │
 │  │  └────┬────┘ └────┬─────┘ └────┬─────┘ │   │
 │  │       │           │            │        │   │
 │  │       ▼           ▼            ▼        │   │

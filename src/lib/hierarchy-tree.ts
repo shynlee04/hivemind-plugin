@@ -340,13 +340,20 @@ function updateNodeInTree(
  * @consumer moveCursor, getCursorNode, getAncestors
  */
 export function findNode(
-  node: HierarchyNode,
-  nodeId: string
+  root: HierarchyNode,
+  id: string
 ): HierarchyNode | null {
-  if (node.id === nodeId) return node;
-  for (const child of node.children) {
-    const found = findNode(child, nodeId);
-    if (found) return found;
+  // Iterative DFS to avoid stack overflow
+  const stack: HierarchyNode[] = [root];
+
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    if (node.id === id) return node;
+
+    // Push children in reverse order
+    for (let i = node.children.length - 1; i >= 0; i--) {
+      stack.push(node.children[i]);
+    }
   }
   return null;
 }
@@ -420,9 +427,18 @@ export function toBrainProjection(tree: HierarchyTree): {
  * @consumer getTreeStats, janitor
  */
 export function flattenTree(root: HierarchyNode): HierarchyNode[] {
-  const result: HierarchyNode[] = [root];
-  for (const child of root.children) {
-    result.push(...flattenTree(child));
+  // Iterative DFS
+  const result: HierarchyNode[] = [];
+  const stack: HierarchyNode[] = [root];
+
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    result.push(node);
+
+    // Push children in reverse order
+    for (let i = node.children.length - 1; i >= 0; i--) {
+      stack.push(node.children[i]);
+    }
   }
   return result;
 }

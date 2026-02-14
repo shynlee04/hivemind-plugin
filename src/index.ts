@@ -6,7 +6,7 @@
  * ## Architecture
  *
  * - **10 Tools** (HC3 compliant): declare_intent, map_context, compact_session, scan_hierarchy, save_anchor, think_back, save_mem, recall_mems, hierarchy_manage, export_cycle
- * - **4 Hooks**: system prompt injection, tool gate (before), soft governance (after), compaction preservation
+ * - **6 Hooks**: system transform, messages transform, tool gate (before), soft governance (after), compaction preservation, event handling
  * - **Soft Governance**: Cannot block, only guide through prompts + tracking
  *
  * ## Governance Modes
@@ -48,9 +48,11 @@ import {
   createCompactionHook,
   createEventHandler,
 } from "./hooks/index.js"
+import { createMessagesTransformHook } from "./hooks/messages-transform.js"
 import { createLogger } from "./lib/logging.js"
 import { loadConfig } from "./lib/persistence.js"
 import { initSdkContext } from "./hooks/sdk-context.js"
+import { regenerateManifests } from "./lib/planning-fs.js"
 
 /**
  * HiveMind plugin entry point.
@@ -86,6 +88,8 @@ export const HiveMindPlugin: Plugin = async ({
   // Load configuration for initial logging only
   // Hooks re-read config from disk each invocation (Rule 6: config persistence)
   const initConfig = await loadConfig(effectiveDir)
+  // Ensure manifests are up to date
+  await regenerateManifests(effectiveDir).catch(err => log.error(`Manifest regeneration failed: ${err}`))
 
   await log.info(
     `HiveMind initialized: mode=${initConfig.governance_mode}, maxTurns=${initConfig.max_turns_before_warning}`
@@ -123,6 +127,12 @@ export const HiveMindPlugin: Plugin = async ({
      */
     "experimental.chat.system.transform":
       createSessionLifecycleHook(log, effectiveDir, initConfig),
+
+    /**
+     * Hook: Message transformation
+     * Injects stop-decision checklist and continuity context
+     */
+    "experimental.chat.messages.transform": createMessagesTransformHook(log, effectiveDir),
 
     /**
      * Hook: Tool execution tracking
