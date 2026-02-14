@@ -6,6 +6,8 @@ import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
 import { createBrainState, generateSessionId, unlockSession } from "../src/schemas/brain-state.js"
 import { createConfig } from "../src/schemas/config.js"
+import { saveAnchors } from "../src/lib/anchors.js"
+import { createNode, createTree, saveTree, setRoot, addChild } from "../src/lib/hierarchy-tree.js"
 
 let passed = 0
 let failed_ = 0
@@ -119,12 +121,69 @@ async function test_skips_permissive_mode() {
   await rm(dir, { recursive: true, force: true })
 }
 
+async function test_augments_latest_user_message_with_anchor_context() {
+  process.stderr.write("\n--- messages-transform: anchor continuity injection ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "assisted" })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  await stateManager.save(state)
+
+  await saveAnchors(dir, {
+    version: "1.0.0",
+    anchors: [
+      { key: "k1", value: "v1", created_at: 1, session_id: "s" },
+      { key: "k2", value: "v2", created_at: 2, session_id: "s" },
+      { key: "k3", value: "v3", created_at: 3, session_id: "s" },
+      { key: "k4", value: "v4", created_at: 4, session_id: "s" },
+    ],
+  })
+
+  const trajectory = createNode("trajectory", "Phase B")
+  const tactic = createNode("tactic", "Messages transform")
+  const action = createNode("action", "Inject continuity context")
+  let tree = setRoot(createTree(), trajectory)
+  tree = addChild(tree, trajectory.id, tactic)
+  tree = addChild(tree, tactic.id, action)
+  await saveTree(dir, tree)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [
+      { role: "user", content: "first" },
+      { role: "assistant", content: "ack" },
+      { role: "user", content: "latest" },
+    ],
+  }
+
+  await hook({}, output)
+
+  const latestUser = output.messages[2]
+  const parts = Array.isArray(latestUser.content) ? latestUser.content : []
+  const injected = parts[0]
+  const injectedText = typeof injected?.text === "string" ? injected.text : ""
+  const original = parts[1]
+  const originalText = typeof original?.text === "string" ? original.text : ""
+
+  assert(parts.length >= 2, "latest user message receives synthetic continuity part")
+  assert(injected?.synthetic === true, "continuity part marked synthetic")
+  assert(injectedText.includes("<focus>Phase B > Messages transform > Inject continuity context</focus>"), "continuity includes focus path")
+  assert(injectedText.includes("<anchor-context>"), "continuity includes anchor-context block")
+  assert(!injectedText.includes("k1"), "anchor context capped to top 3 anchors")
+  assert(originalText === "latest", "original user text remains intact")
+
+  await rm(dir, { recursive: true, force: true })
+}
+
 async function main() {
   process.stderr.write("=== Messages Transform Tests ===\n")
 
   await test_injects_checklist_message()
   await test_generates_dynamic_checklist_items()
   await test_skips_permissive_mode()
+  await test_augments_latest_user_message_with_anchor_context()
 
   process.stderr.write(`\n=== Messages Transform: ${passed} passed, ${failed_} failed ===\n`)
   if (failed_ > 0) process.exit(1)
