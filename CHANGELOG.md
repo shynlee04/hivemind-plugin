@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
+- `session-lifecycle` prompt injection now prioritizes Critical sections (Status, Hierarchy, Warnings) over Optional ones when budget is tight, ensuring core governance context is never dropped
+- `isLegacyStructure` now reliably detects legacy state (brain.json at root) even if `state/` directory exists partially, enabling recovery from failed migrations
 - `export_cycle` now synchronizes flat `brain.hierarchy` projection after tree mutations, eliminating hierarchy/tree desync after subagent exports
 - `declare_intent` no longer overwrites per-session files with legacy active template content; legacy `active.md` is updated separately for backward compatibility
 - Stale auto-archive path now resets `hierarchy.json`, preventing orphaned tree carryover into newly created sessions

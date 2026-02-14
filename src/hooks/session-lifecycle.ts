@@ -498,32 +498,55 @@ export function createSessionLifecycleHook(
       // Assemble by priority — drop lowest priority sections if over budget
       // Budget expands to 4500 when bootstrap is active (first turns need teaching + context)
       const BUDGET_CHARS = isBootstrapActive ? 4500 : 2500
+
+      // Define sections with priority (lower = higher priority for inclusion)
+      // The array order is the DISPLAY ORDER.
       const sections = [
-        readFirstLines,    // P-1: ALWAYS first for clean state - READ BEFORE WORK
-        bootstrapLines, // P0: behavioral bootstrap (only when LOCKED, first 2 turns)
-        firstTurnContextLines, // P0.3: first-turn context (anchors, mems, prior session)
-        evidenceLines,  // P0.5: evidence discipline from turn 0
-        teamLines,      // P0.6: team behavior from turn 0
-        onboardingLines, // P0.7: first-run project backbone guidance
-        frameworkLines, // P0.8: framework context and conflict routing
-        statusLines,    // P1: always
-        hierarchyLines, // P2: always
-        taskLines,      // P2.2: Task reminders
-        ignoredLines,   // P2.5: IGNORED tri-evidence is non-negotiable
-        warningLines,   // P3: if present
-        anchorLines,    // P4: if present
-        metricsLines,   // P5: if space
-        configLines,    // P6: if space (agent config is lowest priority per-turn)
+        { lines: readFirstLines, priority: 0, name: "readFirst" },
+        { lines: bootstrapLines, priority: 10, name: "bootstrap" },
+        { lines: firstTurnContextLines, priority: 30, name: "firstTurn" },
+        { lines: evidenceLines, priority: 50, name: "evidence" },
+        { lines: teamLines, priority: 60, name: "team" },
+        { lines: onboardingLines, priority: 70, name: "onboarding" },
+        { lines: frameworkLines, priority: 80, name: "framework" },
+        { lines: statusLines, priority: 20, name: "status" },
+        { lines: hierarchyLines, priority: 25, name: "hierarchy" },
+        { lines: taskLines, priority: 90, name: "tasks" },
+        { lines: ignoredLines, priority: 15, name: "ignored" },
+        { lines: warningLines, priority: 40, name: "warnings" },
+        { lines: anchorLines, priority: 110, name: "anchors" },
+        { lines: metricsLines, priority: 120, name: "metrics" },
+        { lines: configLines, priority: 130, name: "config" },
       ]
 
-      const finalLines: string[] = ['<hivemind>']
-      for (const section of sections) {
-        if (section.length === 0) continue
-        const candidate = [...finalLines, ...section, '</hivemind>'].join('\n')
-        if (candidate.length <= BUDGET_CHARS) {
-          finalLines.push(...section)
+      // 1. Determine which sections fit in budget based on Priority
+      const sortedByPriority = [...sections].sort((a, b) => a.priority - b.priority)
+      const includedNames = new Set();
+      // Base overhead: <hivemind> + newline + </hivemind>
+      let usedChars = '<hivemind>\\n</hivemind>'.length
+
+      // First pass: Calculate budget
+      for (const section of sortedByPriority) {
+        if (section.lines.length === 0) continue
+
+        // Calculate size including newlines
+        // If we add this section, we add N lines + 1 newline (if not first/last)
+        // Simplification: section size + 1 newline.
+        const size = section.lines.join('\\n').length + 1
+
+        if (usedChars + size <= BUDGET_CHARS) {
+          includedNames.add(section.name)
+          usedChars += size
         } else {
-          await log.debug(`Section dropped due to budget: ${section[0]?.slice(0, 40)}...`)
+          await log.debug(`Section dropped due to budget: ${section.name} (size: ${size}, priority: ${section.priority})`)
+        }
+      }
+
+      // 2. Build final output using Display Order
+      const finalLines = ['<hivemind>']
+      for (const section of sections) {
+        if (includedNames.has(section.name)) {
+          finalLines.push(...section.lines)
         }
       }
       finalLines.push('</hivemind>')
