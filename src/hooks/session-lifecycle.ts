@@ -841,7 +841,27 @@ export function createSessionLifecycleHook(
       const firstTurnContextLines: string[] = []
       const evidenceLines: string[] = []
       const teamLines: string[] = []
+      const readFirstLines: string[] = []
       const isBootstrapActive = state.metrics.turn_count <= 2
+
+      // NEW: Detect clean state (new project, no prior work)
+      const isCleanState = state.metrics.turn_count === 0 &&
+        (!state.hierarchy.trajectory && !state.hierarchy.tactic && !state.hierarchy.action)
+
+      if (isCleanState) {
+        // Inject "READ FIRST" guidance for new/clean state
+        readFirstLines.push("<read-first>")
+        readFirstLines.push("## STATE: NEW PROJECT / CLEAN STATE")
+        readFirstLines.push("")
+        readFirstLines.push("This is a NEW project or clean state. Before ANY work:")
+        readFirstLines.push("1. **SCAN first**: Use `scan_hierarchy({ action: \"analyze\" })` to understand project")
+        readFirstLines.push("2. **READ master plan**: Check `docs/plans/` for existing plans")
+        readFirstLines.push("3. **DECIDE focus**: Then call `declare_intent({ mode, focus })`")
+        readFirstLines.push("")
+        readFirstLines.push("Do NOT start writing code until you understand the project structure.")
+        readFirstLines.push("</read-first>")
+      }
+
       if (isBootstrapActive) {
         bootstrapLines.push(generateBootstrapBlock(config.governance_mode, config.language))
         evidenceLines.push(generateEvidenceDisciplineBlock(config.language))
@@ -858,6 +878,7 @@ export function createSessionLifecycleHook(
       // Budget expands to 4500 when bootstrap is active (first turns need teaching + context)
       const BUDGET_CHARS = isBootstrapActive ? 4500 : 2500
       const sections = [
+        readFirstLines,    // P-1: ALWAYS first for clean state - READ BEFORE WORK
         bootstrapLines, // P0: behavioral bootstrap (only when LOCKED, first 2 turns)
         firstTurnContextLines, // P0.3: first-turn context (anchors, mems, prior session)
         evidenceLines,  // P0.5: evidence discipline from turn 0

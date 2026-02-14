@@ -1,5 +1,5 @@
 ---
-name: hivemind-compact
+name: "hivemind-compact"
 description: "Archive the current session, preserve context, and prepare for the next session."
 ---
 

@@ -844,12 +844,25 @@ function buildEvidence(signal: DetectionSignal, opts: {
  *
  * @consumer session-lifecycle.ts (appended to <hivemind> block)
  */
+const TOOL_PURPOSE: Record<string, string> = {
+  "map_context": "reset drift tracking",
+  "think_back": "refresh your context",
+  "scan_hierarchy": "see your decision tree",
+  "compact_session": "archive and preserve memory",
+  "declare_intent": "start with tracking",
+  "save_mem": "save decisions for later",
+  "recall_mems": "remember past decisions",
+  "export_cycle": "capture subagent results",
+  "hivemind-scan": "understand project first",
+}
+
 export function formatSignals(signals: DetectionSignal[]): string {
   if (signals.length === 0) return "";
 
   const lines: string[] = ["[ALERTS]"];
   for (const signal of signals) {
-    const suggestion = signal.suggestion ? ` → use ${signal.suggestion}` : "";
+    const purpose = signal.suggestion ? TOOL_PURPOSE[signal.suggestion] : null
+    const suggestion = signal.suggestion ? (purpose ? ` → ${purpose} (use ${signal.suggestion})` : ` → use ${signal.suggestion}`) : "";
     
     // Check if this is an escalated signal
     const escalated = signal as EscalatedSignal;

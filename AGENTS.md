@@ -116,15 +116,14 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
    compact_session({ summary: "What was accomplished" })
    ```
 
-### Available Tools (14)
+### Available Tools (10)
 
 | Group | Tools |
 |-------|-------|
 | Core | `declare_intent`, `map_context`, `compact_session` |
-| Self-Awareness | `self_rate` |
-| Cognitive Mesh | `scan_hierarchy`, `save_anchor`, `think_back`, `check_drift` |
-| Memory | `save_mem`, `list_shelves`, `recall_mems` |
-| Hierarchy | `hierarchy_prune`, `hierarchy_migrate` |
+| Cognitive Mesh | `scan_hierarchy`, `save_anchor`, `think_back` |
+| Memory | `save_mem`, `recall_mems` |
+| Hierarchy | `hierarchy_manage` |
 | Delegation | `export_cycle` |
 
 ### Why It Matters
@@ -136,9 +135,11 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 
 ### State Files
 
-- `.hivemind/brain.json` — Machine state (do not edit manually)
-- `.hivemind/hierarchy.json` — Decision tree
+- `.hivemind/state/brain.json` — Machine state (do not edit manually)
+- `.hivemind/state/hierarchy.json` — Decision tree
 - `.hivemind/sessions/` — Session files and archives
 
 <!-- HIVEMIND-GOVERNANCE-END -->
+
+
 

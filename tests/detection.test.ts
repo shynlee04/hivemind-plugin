@@ -302,7 +302,7 @@ function test_signal_compilation() {
     { type: "turn_count", severity: 3, message: "5 turns on current section.", suggestion: "map_context" },
   ]);
   assert(
-    formatted.startsWith("[ALERTS]") && formatted.includes("5 turns on current section.") && formatted.includes("→ use map_context"),
+    formatted.startsWith("[ALERTS]") && formatted.includes("5 turns on current section.") && formatted.includes("reset drift tracking"),
     "formatSignals returns [ALERTS] block with correct format"
   );
 
