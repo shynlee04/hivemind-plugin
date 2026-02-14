@@ -45,8 +45,7 @@
     "typecheck": "tsc --noEmit",
     "lint:boundary": "bash scripts/check-sdk-boundary.sh",
     "test": "bash scripts/check-sdk-boundary.sh && tsx --test tests/*.test.ts",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build",
-    "postinstall": "npm run build"
+    "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "keywords": [
     "opencode",

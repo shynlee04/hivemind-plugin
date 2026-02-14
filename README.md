@@ -73,7 +73,7 @@ The wizard walks you through step by step:
 ◆  Configuration saved! .hivemind/ created.
 ```
 
-### 3. Non-Interactive Alternative
+### Non-Interactive Alternative
 
 ```bash
 npx hivemind-context-governance init --mode strict --lang vi --automation full
@@ -85,7 +85,7 @@ This does **exactly the same** as the interactive wizard:
 - Syncs OpenCode assets
 - Initializes brain state with your chosen settings
 
-### 4. Verify Installation
+### Verify Installation
 
 After running `init`, verify everything is set up:
 
@@ -100,7 +100,7 @@ Or manually check `opencode.json` contains:
 }
 ```
 
-### 5. Open OpenCode
+### Open OpenCode
 
 That's it. The plugin auto-activates. The AI agent gets governance context injected into every turn.
 
@@ -569,36 +569,78 @@ Khi xong việc, `compact_session` sẽ:
 
 ## Cài Đặt Từ Đầu Đến Cuối
 
-### Bước 1: Cài Package
+### Một Lệnh - Xong Ngay
 
 ```bash
-npm install hivemind-context-governance
+npx hivemind-context-governance init --mode assisted
 ```
 
-### Bước 2: Chạy Wizard Cấu Hình
+**Điều gì sẽ xảy ra (đảm bảo):**
+1. Tự động tải từ npm (không cần cài thủ công)
+2. Tạo thư mục `.hivemind/` với brain.json, config.json
+3. Đăng ký plugin trong `opencode.json` (để OpenCode tự động load)
+4. Đồng bộ commands/skills vào `.opencode/`
+5. Tạo các file session template
+6. Mở session ở chế độ `OPEN` (assisted) hoặc `LOCKED` (strict)
+
+**Hoạt động trên mọi máy, mọi project. Không ngoại lệ.**
+
+### Xác Nhận Cài Đặt (Tùy Chọn)
+
+Wizard sẽ hướng dẫn bạn từng bước:
+
+```
+◆  Welcome to HiveMind Context Governance!
+
+◆  Select governance mode:
+│  ○ strict    — Session starts LOCKED. Must declare intent before writes.
+│  ● assisted  — Session starts OPEN. Guidance without blocking. (recommended)
+│  ○ permissive — Always OPEN. Silent tracking only.
+
+◆  Select language:
+│  ○ English
+│  ● Tiếng Việt
+
+◆  Select automation level:
+│  ○ manual   — No automation, you control everything
+│  ○ guided   — Suggestions only
+│  ● assisted — Balanced automation (recommended)
+│  ○ full     — Maximum automation
+│  ○ coach    — Maximum handholding, skeptical of everything
+
+◆  Configuration saved! .hivemind/ created.
+```
+
+### Cài Đặt Không Tương Tác
 
 ```bash
-npx hivemind-context-governance
+npx hivemind-context-governance init --mode strict --lang vi --automation full
 ```
 
-Wizard sẽ hỏi bạn từng bước:
+Lệnh này làm **đúng như** wizard tương tác:
+- Tạo cấu trúc `.hivemind/`
+- Đăng ký plugin trong `opencode.json`
+- Đồng bộ OpenCode assets
+- Khởi tạo brain state với cài đặt đã chọn
 
-1. **Chế độ quản trị**: 
-   - `strict` = Nghiêm ngặt (agent phải khai báo trước khi làm bất cứ gì)
-   - `assisted` = Hỗ trợ (khuyên nhủ nhưng không chặn) ← **khuyến nghị cho người mới**
-   - `permissive` = Tự do (chỉ theo dõi, không can thiệp)
+### Mở OpenCode
 
-2. **Ngôn ngữ**: Chọn `vi` để nhận cảnh báo bằng tiếng Việt
+Xong. Plugin tự động hoạt động. AI agent sẽ nhận governance context được inject vào mỗi turn.
 
-3. **Mức tự động hóa**: Từ `manual` (tự tay) đến `coach` (giám sát tối đa)
+### Xác Nhận Cài Đặt (Tùy Chọn)
 
-4. **Hành vi agent**: Mức chuyên gia, phong cách output, ràng buộc
+```bash
+npx hivemind-context-governance status
+```
 
-### Bước 3: Mở OpenCode
+Hoặc kiểm tra thủ công `opencode.json` có chứa:
+```json
+{
+  "plugin": ["hivemind-context-governance"]
+}
+```
 
-Plugin tự động hoạt động. Không cần thêm bước nào.
-
-### Bước 4: Sử Dụng Slash Command
+### Sử Dụng Slash Command
 
 Gõ `/hivemind-scan` trong OpenCode để quét dự án và tạo bản đồ cơ sở trước khi bắt đầu code.
 
