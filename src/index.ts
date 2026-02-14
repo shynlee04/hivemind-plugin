@@ -51,6 +51,7 @@ import {
 import { createLogger } from "./lib/logging.js"
 import { loadConfig } from "./lib/persistence.js"
 import { initSdkContext } from "./hooks/sdk-context.js"
+import { regenerateManifests } from "./lib/planning-fs.js"
 
 /**
  * HiveMind plugin entry point.
@@ -86,6 +87,8 @@ export const HiveMindPlugin: Plugin = async ({
   // Load configuration for initial logging only
   // Hooks re-read config from disk each invocation (Rule 6: config persistence)
   const initConfig = await loadConfig(effectiveDir)
+  // Ensure manifests are up to date
+  await regenerateManifests(effectiveDir).catch(err => log.error(`Manifest regeneration failed: ${err}`))
 
   await log.info(
     `HiveMind initialized: mode=${initConfig.governance_mode}, maxTurns=${initConfig.max_turns_before_warning}`

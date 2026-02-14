@@ -265,7 +265,7 @@ async function test_driftReset() {
 
     // Context update should reset
     await mapContextTool.execute(
-      { level: "action", content: "Reset drift", status: "active" }
+      { level: "tactic", content: "Reset drift", status: "active" }
     )
 
     state = await stateManager.load()
@@ -1380,16 +1380,16 @@ async function test_bootstrapBlockAppearsWhenLocked() {
       "bootstrap block contains all 3 core tool names"
     )
     assert(
-      systemText.includes("Required Workflow"),
+      systemText.includes("REQUIRED WORKFLOW"),
       "bootstrap block contains workflow instructions"
     )
     assert(
-      systemText.includes("Available Tools") || systemText.includes("Key Tools"),
+      systemText.includes("Available Tools") || systemText.includes("CRITICAL TOOLS"),
       "bootstrap block contains tool listing"
     )
     assert(
-      systemText.includes("MUST call") || systemText.includes("The session is LOCKED"),
-      "bootstrap block contains LOCKED warning for strict mode"
+      systemText.includes("1. **START**"),
+      "bootstrap block contains START instruction"
     )
   } finally {
     await cleanup()
@@ -1500,8 +1500,8 @@ async function test_bootstrapBlockAssistedMode() {
       "bootstrap block appears in assisted mode when LOCKED"
     )
     assert(
-      systemText.includes("full tracking"),
-      "bootstrap block uses softer wording for assisted mode"
+      systemText.includes("REQUIRED WORKFLOW"),
+      "bootstrap block contains REQUIRED WORKFLOW"
     )
   } finally {
     await cleanup()
@@ -1589,7 +1589,7 @@ async function test_languageRoutingKeepsToolNamesEnglish() {
 
     const systemText = output.system.join("\n")
     assert(
-      systemText.includes("Dang hoat dong") || systemText.includes("Quy trinh bat buoc"),
+      systemText.includes("Dang hoat dong") || systemText.includes("QUY TRINH BAT BUOC"),
       "localized surrounding guidance is rendered in configured language"
     )
     assert(

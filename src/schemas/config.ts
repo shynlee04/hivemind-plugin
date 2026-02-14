@@ -223,6 +223,7 @@ export function generateAgentBehaviorPrompt(config: AgentBehaviorConfig): string
   
   // Constraints
   lines.push("[CONSTRAINTS]");
+  lines.push("- TASK MANAGEMENT: Use `todoread` to check tasks and `todowrite` to update them.");
   if (config.constraints.require_code_review) {
     lines.push("- MUST review code before accepting: check for bugs, smells, tests");
   }

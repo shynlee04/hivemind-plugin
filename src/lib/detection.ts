@@ -625,7 +625,7 @@ export function compileSignals(opts: {
       type: "turn_count",
       severity: 3,
       message: `${opts.turnCount} turns on current section. Checkpoint your decisions?`,
-      suggestion: "map_context",
+      suggestion: "map_context to reset drift",
     });
   }
 
@@ -635,7 +635,7 @@ export function compileSignals(opts: {
       type: "consecutive_failures",
       severity: 1,
       message: `${opts.detection.consecutive_failures} consecutive tool failures. Step back and reassess?`,
-      suggestion: "think_back",
+      suggestion: "think_back to diagnose",
     });
   }
 
@@ -645,7 +645,7 @@ export function compileSignals(opts: {
       type: "section_repetition",
       severity: 2,
       message: `Tactic updated ${opts.detection.consecutive_same_section}x with similar content. Circling?`,
-      suggestion: "think_back",
+      suggestion: "think_back to break loop",
     });
   }
 
@@ -656,7 +656,7 @@ export function compileSignals(opts: {
       type: "read_write_imbalance",
       severity: 4,
       message: `Pattern: ${read} reads, 0 writes. Still exploring or stuck?`,
-      suggestion: "map_context",
+      suggestion: "map_context to re-align",
     });
   }
 
@@ -667,7 +667,7 @@ export function compileSignals(opts: {
       type: "keyword_flags",
       severity: 2,
       message: `Detected signals: ${flags}. Use think_back to refocus?`,
-      suggestion: "think_back",
+      suggestion: "think_back to refocus",
     });
   }
 
@@ -680,7 +680,7 @@ export function compileSignals(opts: {
       type: "tool_hierarchy_mismatch",
       severity: 3,
       message: "Writing files but no action declared in hierarchy.",
-      suggestion: "map_context",
+      suggestion: "map_context to declare action",
     });
   }
 

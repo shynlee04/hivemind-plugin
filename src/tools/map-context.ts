@@ -106,6 +106,8 @@ export function createMapContextTool(directory: string): ToolDefinition {
               if (parentId) {
                 tree = addChild(tree, parentId, node)
                 tree = markComplete(tree, node.id, now.getTime())
+              } else {
+                return `ERROR: Cannot set ${args.level} without an active ${parentLevel}. Please set ${parentLevel} first.`
               }
             }
           }
@@ -128,6 +130,8 @@ export function createMapContextTool(directory: string): ToolDefinition {
               const parentId = findParentId(tree, parentLevel)
               if (parentId) {
                 tree = addChild(tree, parentId, node)
+              } else {
+                return `ERROR: Cannot set ${args.level} without an active ${parentLevel}. Please set ${parentLevel} first.`
               }
             }
           }
@@ -218,5 +222,5 @@ function findParentId(
   const cursorNode = getCursorNode(tree as any)
   if (cursorNode && cursorNode.level === level) return cursorNode.id
 
-  return tree.root.id // ultimate fallback
+  return null
 }

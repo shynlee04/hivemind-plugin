@@ -247,42 +247,23 @@ function getNextStepHint(
 function generateBootstrapBlock(governanceMode: string, language: "en" | "vi"): string {
   const lines: string[] = []
   lines.push("<hivemind-bootstrap>")
-  lines.push(localized(language, "## HiveMind Context Governance — Active", "## HiveMind Context Governance — Dang hoat dong"))
+  lines.push(localized(language, "## HiveMind Context Governance", "## HiveMind Context Governance"))
   lines.push("")
-  lines.push(localized(language, "This project uses HiveMind for AI session management. You have 14 tools available.", "Du an nay dung HiveMind de quan tri session AI. Ban co 14 cong cu kha dung."))
+  lines.push(localized(language, "### REQUIRED WORKFLOW", "### QUY TRINH BAT BUOC"))
+  lines.push('1. **START**: `declare_intent({ mode, focus })`')
+  lines.push('2. **DURING**: `map_context({ level, content })` when switching focus')
+  lines.push('   - Reset drift, keep context active.')
+  lines.push('3. **END**: `compact_session({ summary })`')
+  lines.push('   - Archive and save memory.')
   lines.push("")
-  lines.push(localized(language, "### Required Workflow", "### Quy trinh bat buoc"))
-  lines.push('1. **START**: Call `declare_intent({ mode, focus })` before any work')
-  lines.push('   - mode: "plan_driven" | "quick_fix" | "exploration"')
-  lines.push(localized(language, "   - focus: 1-sentence description of your goal", "   - focus: mo ta muc tieu trong 1 cau"))
-  lines.push('2. **DURING**: Call `map_context({ level, content })` when switching focus')
-  lines.push('   - level: "trajectory" | "tactic" | "action"')
-  lines.push(localized(language, "   - Resets drift tracking, keeps session healthy", "   - Reset theo doi drift, giu session on dinh"))
-  lines.push('3. **END**: Call `compact_session({ summary })` when done')
-  lines.push(localized(language, "   - Archives session, preserves memory across sessions", "   - Luu tru session, bao toan tri nho qua cac session"))
-  lines.push("")
-  lines.push(localized(language, "### Key Tools", "### Cong cu chinh"))
-  lines.push("- `scan_hierarchy` — See your decision tree (include_drift=true for alignment check)")
-  lines.push("- `think_back` — Refresh context after compaction")
-  lines.push("- `save_mem` / `recall_mems` — Persistent cross-session memory (omit query to list shelves)")
-  lines.push("- `save_anchor` — Immutable facts that survive chaos (mode=list to view all)")
-  lines.push("- `hierarchy_manage` — Prune completed branches or migrate flat hierarchy")
-  lines.push("- `export_cycle` — Capture subagent results into hierarchy + memory")
-  lines.push("")
-  lines.push(localized(language, "### Why This Matters", "### Tai sao dieu nay quan trong"))
-  lines.push(localized(language, "Without `declare_intent`, drift detection is OFF and your work is untracked.", "Khong co `declare_intent`, drift detection tat va cong viec khong duoc theo doi."))
-  lines.push(localized(language, "Without `map_context`, context degrades every turn.", "Khong co `map_context`, context se giam chat luong moi turn."))
-  lines.push(localized(language, "Without `compact_session`, intelligence is lost on session end.", "Khong co `compact_session`, tri tue tich luy se mat khi ket thuc session."))
-  lines.push("")
-  if (governanceMode === "strict") {
-    lines.push(localized(language, "**The session is LOCKED. You MUST call `declare_intent` before writing any files.**", "**Session dang LOCKED. Ban BAT BUOC goi `declare_intent` truoc khi ghi file.**"))
-  } else {
-    lines.push(localized(language, "**The session is LOCKED. Call `declare_intent` to start working with full tracking.**", "**Session dang LOCKED. Goi `declare_intent` de bat dau voi theo doi day du.**"))
-  }
+  lines.push(localized(language, "### CRITICAL TOOLS", "### CONG CU QUAN TRONG"))
+  lines.push("- `scan_hierarchy`: Check decision tree & drift.")
+  lines.push("- `think_back`: Refresh context.")
+  lines.push("- `save_mem` / `recall_mems`: Long-term memory.")
+  lines.push("- `todowrite` / `todoread`: Task tracking.")
   lines.push("</hivemind-bootstrap>")
   return lines.join("\n")
 }
-
 /**
  * Generates the setup guidance block when HiveMind is NOT initialized.
  * This fires when the plugin is loaded but `hivemind init` was never run
@@ -828,6 +809,11 @@ export function createSessionLifecycleHook(
         anchorLines.push("</immutable-anchors>")
       }
 
+      // TASKS
+      const taskLines: string[] = []
+      taskLines.push("[TASKS]")
+      taskLines.push("- Remember to track your work. Use `todoread` to check pending tasks and `todowrite` to update status.")
+
       // METRICS (shown if space)
       metricsLines.push(`Turns: ${state.metrics.turn_count} | Drift: ${state.metrics.drift_score}/100 | Files: ${state.metrics.files_touched.length}`)
 
@@ -866,6 +852,7 @@ export function createSessionLifecycleHook(
         frameworkLines, // P0.8: framework context and conflict routing
         statusLines,    // P1: always
         hierarchyLines, // P2: always
+        taskLines,      // P2.2: Task reminders
         ignoredLines,   // P2.5: IGNORED tri-evidence is non-negotiable
         warningLines,   // P3: if present
         anchorLines,    // P4: if present
