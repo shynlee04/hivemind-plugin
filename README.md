@@ -32,7 +32,7 @@ Without governance, long AI sessions decay:
 ### One Command - That's All
 
 ```bash
-npx hivemind-context-governance init --mode assisted
+npx hivemind-context-governance init
 ```
 
 **What happens (guaranteed):**
