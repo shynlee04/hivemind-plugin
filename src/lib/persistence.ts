@@ -1,9 +1,10 @@
+import type { FileHandle } from "fs/promises";
 /**
  * StateManager - Disk persistence for brain state
  */
 
-import { readFile, readdir, writeFile, mkdir, rename, unlink } from "fs/promises"
-import { existsSync, openSync, closeSync } from "fs"
+import { readFile, readdir, writeFile, mkdir, rename, unlink, copyFile, open, stat } from "fs/promises"
+import { existsSync } from "fs"
 import { dirname, join } from "path"
 import type { BrainState } from "../schemas/brain-state.js"
 import type { HiveMindConfig } from "../schemas/config.js"
@@ -17,6 +18,7 @@ function isNodeError(err: unknown): err is NodeJS.ErrnoException {
 }
 
 /** Clean up old backup files, keeping only the last 3 versions */
+/** Clean up old backup files, keeping only the last 3 versions */
 async function cleanupOldBackups(brainPath: string, logger?: Logger): Promise<void> {
   const dir = dirname(brainPath)
   const backupPattern = /brain\.json\.bak\.\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/
@@ -29,52 +31,67 @@ async function cleanupOldBackups(brainPath: string, logger?: Logger): Promise<vo
 
     // Keep only last 3 backups
     const oldBackups = backupFiles.slice(3)
-    for (const backupName of oldBackups) {
-      const backupPath = join(dir, backupName)
-      try {
-        await unlink(backupPath)
-      } catch (err: unknown) {
-        await logger?.warn(`Failed to delete old backup ${backupPath}: ${err}`)
-      }
+
+    // Process in chunks to avoid EMFILE
+    const CHUNK_SIZE = 5
+    for (let i = 0; i < oldBackups.length; i += CHUNK_SIZE) {
+      const chunk = oldBackups.slice(i, i + CHUNK_SIZE)
+      await Promise.all(chunk.map(async (backupName) => {
+        const backupPath = join(dir, backupName)
+        try {
+          await unlink(backupPath)
+        } catch (err: unknown) {
+          await logger?.error(`Failed to delete old backup ${backupPath}: ${err}`)
+        }
+      }))
     }
   } catch (err: unknown) {
-    await logger?.warn(`Failed to cleanup old backups in ${dir}: ${err}`)
+    await logger?.error(`Failed to cleanup old backups in ${dir}: ${err}`)
   }
 }
 
-// File lock mechanism using exclusive file handles
 class FileLock {
   private lockPath: string
-  private fd: number | null = null
   private logger?: Logger
+  private handle: FileHandle | null = null
 
   constructor(lockPath: string, logger?: Logger) {
     this.lockPath = lockPath
     this.logger = logger
   }
 
-  async acquire(): Promise<void> {
-    // Wait for lock to be available with exponential backoff
-    let delay = 10
-    const maxDelay = 1000
-    const timeout = Date.now() + 5000 // 5 second timeout
+  async acquire(timeout = 5000): Promise<void> {
+    let delay = 50
+    const maxDelay = 500
+    const start = Date.now()
 
-    while (Date.now() < timeout) {
+    while (Date.now() - start < timeout) {
       try {
         // Try to acquire exclusive lock
-        this.fd = openSync(this.lockPath, "wx")
+        this.handle = await open(this.lockPath, "wx")
         return // Lock acquired
       } catch (err: unknown) {
         if (isNodeError(err) && err.code === "EEXIST") {
           // Lock file exists, check if it's stale (older than 5 seconds)
-          const fs = await import("fs/promises")
           try {
-            const stat = await fs.stat(this.lockPath)
-            if (Date.now() - stat.mtime.getTime() > 5000) {
-              // Stale lock, remove it
-              await fs.unlink(this.lockPath)
-              await this.logger?.warn(`Removed stale lock file: ${this.lockPath}`)
-              continue // Retry acquisition
+            const s1 = await stat(this.lockPath)
+            if (Date.now() - s1.mtime.getTime() > 5000) {
+              // Stale candidate. Wait a bit to reduce race condition
+              await new Promise(r => setTimeout(r, Math.random() * 50 + 10))
+
+              // Check again
+              try {
+                const s2 = await stat(this.lockPath)
+                if (s2.mtime.getTime() === s1.mtime.getTime()) {
+                   // Still the same old file?
+                   await unlink(this.lockPath)
+                   await this.logger?.warn(`Removed stale lock file: ${this.lockPath}`)
+                   continue // Retry acquisition
+                }
+              } catch (e) {
+                 // File might be gone now, which is fine.
+                 continue
+              }
             }
           } catch (statErr: unknown) {
             // Ignore errors when checking stale lock
@@ -93,10 +110,10 @@ class FileLock {
   }
 
   async release(): Promise<void> {
-    if (this.fd !== null) {
+    if (this.handle !== null) {
       try {
-        closeSync(this.fd)
-        this.fd = null
+        await this.handle.close()
+        this.handle = null
         await unlink(this.lockPath).catch(() => {
           // Ignore errors when removing lock file
         })
@@ -227,7 +244,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             const timestampedBakPath = brainPath + `.bak.${timestamp}`
             
             // Copy existing file to timestamped backup
-            await writeFile(timestampedBakPath, await readFile(brainPath, "utf-8"))
+            await copyFile(brainPath, timestampedBakPath)
             
             // Also maintain simple .bak file for backward compatibility
             await rename(brainPath, bakPath)
@@ -236,7 +253,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             await cleanupOldBackups(brainPath, logger)
           } catch (backupErr: unknown) {
             // Non-fatal — continue with save even if backup fails
-            await logger?.warn(`Failed to create backup: ${backupErr}`)
+            await logger?.error(`Failed to create backup: ${backupErr}`)
           }
         }
 
@@ -279,7 +296,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             await rename(brainPath, bakPath)
           } catch (backupErr: unknown) {
             // Non-fatal — continue with write even if backup rename fails
-            await logger?.warn(`Failed to create backup: ${backupErr}`)
+            await logger?.error(`Failed to create backup: ${backupErr}`)
           }
         }
         await rename(tempPath, brainPath)
