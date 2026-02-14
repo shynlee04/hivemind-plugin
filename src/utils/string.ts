@@ -1,24 +1,37 @@
 /**
- * Simple Levenshtein-based similarity ratio (0-1).
- * Used internally for section repetition detection.
+ * Calculate the Levenshtein similarity ratio between two strings (0-1).
+ * 1 means identical, 0 means completely different.
+ * Formula: 1 - (levenshteinDistance / maxLength)
  */
-export function levenshteinSimilarity(a: string, b: string): number {
-  if (a.length === 0 && b.length === 0) return 1;
+export function calculateSimilarity(a: string, b: string): number {
+  if (a === b) return 1;
   if (a.length === 0 || b.length === 0) return 0;
 
-  const maxLen = Math.max(a.length, b.length);
+  const m = a.length;
+  const n = b.length;
+  const matrix: number[][] = [];
 
-  // Optimization: if strings are very different in length, skip computation
-  if (Math.abs(a.length - b.length) / maxLen > 0.5) return 0;
+  // Initialize matrix
+  for (let i = 0; i <= m; i++) matrix[i] = [i];
+  for (let j = 0; j <= n; j++) matrix[0][j] = j;
 
-  // Simplified: use character overlap ratio instead of full Levenshtein
-  // This is faster and sufficient for detecting "same content with minor edits"
-  const aChars = new Set(a.split(""));
-  const bChars = new Set(b.split(""));
-  let overlap = 0;
-  for (const c of aChars) {
-    if (bChars.has(c)) overlap++;
+  // Compute Levenshtein distance
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      matrix[i][j] = Math.min(
+        matrix[i - 1][j] + 1,      // deletion
+        matrix[i][j - 1] + 1,      // insertion
+        matrix[i - 1][j - 1] + cost // substitution
+      );
+    }
   }
-  const totalUnique = new Set([...aChars, ...bChars]).size;
-  return totalUnique === 0 ? 1 : overlap / totalUnique;
+
+  const distance = matrix[m][n];
+  const maxLength = Math.max(m, n);
+
+  return 1 - (distance / maxLength);
 }
+
+// Deprecated alias for backward compatibility until refactor complete
+export const levenshteinSimilarity = calculateSimilarity;

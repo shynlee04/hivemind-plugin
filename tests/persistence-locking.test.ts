@@ -29,10 +29,8 @@ function assert(cond: boolean, name: string) {
 async function testStaleLockRecoveryLogsWarning(): Promise<void> {
   process.stderr.write("\n--- persistence-locking: stale lock recovery logging ---\n")
   const dir = await mkdtemp(join(tmpdir(), "hm-persist-lock-"))
-  // Mock Logger needs to match Logger interface exactly
   const logs: string[] = []
-  // Logger is type alias for { debug, info, warn, error }
-  // Since we import type Logger, we can just define an object that matches
+
   const logger = {
     debug: async (msg: string) => { logs.push(`DEBUG: ${msg}`) },
     info: async (msg: string) => { logs.push(`INFO: ${msg}`) },
@@ -43,37 +41,20 @@ async function testStaleLockRecoveryLogsWarning(): Promise<void> {
   try {
     const stateManager = createStateManager(dir, logger)
     const config = createConfig()
-    // Need a dummy session ID
     const state = createBrainState("test-session", config)
-
-    // Create directory structure manually because save() relies on it?
-    // No, save() creates directories.
 
     // First save creates the file
     await stateManager.save(state)
 
-    // Now manually create a stale lock
-    // Path: projectRoot/.hivemind/state/brain.json.lock
-    // Wait, getEffectivePaths might differ based on project root.
-    // Let's assume standard structure: .hivemind/state/brain.json
-    // But we can check where it puts it by checking directory content or just using the path logic from persistence.ts
-    // The test used join(dir, ".hivemind", "state", "brain.json.lock")
-
+    // Manually create a stale lock
     const lockPath = join(dir, ".hivemind", "state", "brain.json.lock")
-
-    // Create lock file
     await writeFile(lockPath, "stale")
 
     // Set mtime to 6 seconds ago (stale > 5s)
     const staleTimestamp = new Date(Date.now() - 6000)
-    // utimes takes path, atime, mtime
-    // We need to set mtime.
-    // Node fs.utimes takes numbers or dates.
-    // We should use fs/promises utimes.
-    // Wait, fs/promises utimes is used in original test.
     await utimes(lockPath, staleTimestamp, staleTimestamp)
 
-    // Now try to save again. It should detect stale lock, remove it, and proceed.
+    // Next save should detect stale lock, remove it, and proceed
     const updated = {
       ...state,
       metrics: {
@@ -83,10 +64,9 @@ async function testStaleLockRecoveryLogsWarning(): Promise<void> {
     }
     await stateManager.save(updated)
 
-    // Verify lock is gone (it should be released after save)
+    // Verify lock is released and warning logged
     assert(!existsSync(lockPath), "stale lock file is removed and lock released")
 
-    // Verify log warning
     const hasLog = logs.some((line) => line.includes("WARN: Removed stale lock file"))
     assert(hasLog, "stale lock recovery emits warning log")
 

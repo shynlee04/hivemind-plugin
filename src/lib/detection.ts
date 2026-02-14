@@ -1,4 +1,4 @@
-import { levenshteinSimilarity } from "../utils/string.js";
+import { calculateSimilarity } from "../utils/string.js";
 /**
  * Detection Engine
  * Programmatic signal detection for drift, stuck patterns, and governance alerts.
@@ -472,7 +472,7 @@ export function trackSectionUpdate(
   const lastNormalized = state.last_section_content.trim().toLowerCase();
 
   // Simple similarity: check if content is the same or very similar
-  const isSimilar = normalized === lastNormalized || levenshteinSimilarity(normalized, lastNormalized) > 0.8;
+  const isSimilar = normalized === lastNormalized || calculateSimilarity(normalized, lastNormalized) > 0.8;
 
   if (isSimilar && state.last_section_content !== "") {
     return {
@@ -693,7 +693,7 @@ export function compileSignals(opts: {
       type: "completed_pileup",
       severity: 5,
       message: `${opts.completedBranches} completed branches. Run hierarchy_manage with action=prune to clean up.`,
-      suggestion: "hierarchy_manage",
+      suggestion: "hivemind-scan",
     });
   }
 
@@ -716,8 +716,8 @@ export function compileSignals(opts: {
     signals.push({
       type: "missing_tree",
       severity: 0,
-      message: "No hierarchy.json found. Run hierarchy_manage with action=migrate to upgrade.",
-      suggestion: "hierarchy_manage",
+      message: "No hierarchy.json found. Run hivemind-scan to build context backbone.",
+      suggestion: "hivemind-scan",
     });
   }
 

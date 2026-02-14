@@ -18,7 +18,6 @@ function isNodeError(err: unknown): err is NodeJS.ErrnoException {
 }
 
 /** Clean up old backup files, keeping only the last 3 versions */
-/** Clean up old backup files, keeping only the last 3 versions */
 async function cleanupOldBackups(brainPath: string, logger?: Logger): Promise<void> {
   const dir = dirname(brainPath)
   const backupPattern = /brain\.json\.bak\.\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}/

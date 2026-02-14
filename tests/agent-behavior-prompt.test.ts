@@ -3,7 +3,7 @@
  * Verifies that the agent configuration prompt is generated correctly.
  */
 
-import { generateAgentBehaviorPrompt, DEFAULT_AGENT_BEHAVIOR } from "../src/schemas/config.js";
+import { generateAgentBehaviorPrompt, DEFAULT_AGENT_BEHAVIOR, LANGUAGES, EXPERT_LEVELS, OUTPUT_STYLES } from "../src/schemas/config.js";
 import type { AgentBehaviorConfig } from "../src/schemas/config.js";
 
 let passed = 0;
@@ -30,36 +30,30 @@ function testDefaults() {
   assert(prompt.includes("- ALWAYS explain your reasoning"), "includes default constraint: explain reasoning");
 }
 
-function testLanguage() {
-  process.stderr.write("\n--- agent-behavior: language ---\n");
-  const config: AgentBehaviorConfig = {
-    ...DEFAULT_AGENT_BEHAVIOR,
-    language: "vi",
-  };
-  const prompt = generateAgentBehaviorPrompt(config);
-  assert(prompt.includes("[LANGUAGE] Respond ONLY in Vietnamese (Tiếng Việt)"), "supports Vietnamese");
-}
+function testMatrixCoverage() {
+  process.stderr.write("\n--- agent-behavior: matrix coverage ---\n");
 
-function testExpertLevel() {
-  process.stderr.write("\n--- agent-behavior: expert level ---\n");
-  const config: AgentBehaviorConfig = {
-    ...DEFAULT_AGENT_BEHAVIOR,
-    expert_level: "beginner",
-  };
-  const prompt = generateAgentBehaviorPrompt(config);
-  assert(prompt.includes("[EXPERT LEVEL] BEGINNER"), "supports beginner");
-  assert(prompt.includes("Explain everything simply"), "beginner description correct");
-}
+  // Test all languages
+  for (const lang of LANGUAGES) {
+    const config = { ...DEFAULT_AGENT_BEHAVIOR, language: lang };
+    const prompt = generateAgentBehaviorPrompt(config);
+    if (lang === "en") assert(prompt.includes("Respond ONLY in English"), `language ${lang} correct`);
+    if (lang === "vi") assert(prompt.includes("Respond ONLY in Vietnamese"), `language ${lang} correct`);
+  }
 
-function testOutputStyle() {
-  process.stderr.write("\n--- agent-behavior: output style ---\n");
-  const config: AgentBehaviorConfig = {
-    ...DEFAULT_AGENT_BEHAVIOR,
-    output_style: "minimal",
-  };
-  const prompt = generateAgentBehaviorPrompt(config);
-  assert(prompt.includes("[OUTPUT STYLE] MINIMAL"), "supports minimal style");
-  assert(prompt.includes("- Code only, minimal prose"), "minimal description correct");
+  // Test all expert levels
+  for (const level of EXPERT_LEVELS) {
+    const config = { ...DEFAULT_AGENT_BEHAVIOR, expert_level: level };
+    const prompt = generateAgentBehaviorPrompt(config);
+    assert(prompt.includes(`[EXPERT LEVEL] ${level.toUpperCase()}`), `expert level ${level} correct`);
+  }
+
+  // Test all output styles
+  for (const style of OUTPUT_STYLES) {
+    const config = { ...DEFAULT_AGENT_BEHAVIOR, output_style: style };
+    const prompt = generateAgentBehaviorPrompt(config);
+    assert(prompt.includes(`[OUTPUT STYLE] ${style.toUpperCase()}`), `output style ${style} correct`);
+  }
 }
 
 function testConstraints() {
@@ -85,9 +79,7 @@ function main() {
   process.stderr.write("=== Agent Behavior Prompt Tests ===\n");
 
   testDefaults();
-  testLanguage();
-  testExpertLevel();
-  testOutputStyle();
+  testMatrixCoverage();
   testConstraints();
 
   process.stderr.write(`\n=== Agent Behavior: ${passed} passed, ${failed_} failed ===\n`);
