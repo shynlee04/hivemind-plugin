@@ -1,4 +1,4 @@
-# Build artifacts only
+# Build artifacts
 node_modules/
 dist/
 *.log
@@ -7,30 +7,26 @@ dist/
 .env.local
 coverage/
 
-# .opencode/ - track commands and skills, ignore runtime
-.opencode/node_modules/
-.opencode/bun.lock
-# Track these subdirectories
-!.opencode/commands/
-!.opencode/skills/
-!.opencode/agents/
-!.opencode/workflows/
-!.opencode/templates/
-!.opencode/prompts/
-!.opencode/references/
+# .hivemind/ - LOCAL USER STATE, NEVER TRACK IN REPO
+# This is created by users during their work - NOT part of the plugin distribution
+.hivemind/
 
-# .worktrees/ - git worktree management
+# .opencode/ - LOCAL USER ASSETS, NEVER TRACK IN REPO
+.opencode/
+
+# Git worktrees
 .worktrees/
 
-# Development artifacts (kept on dev branches only)
+# Development artifacts - INTERNAL ONLY
 .planning/
-.githooks/
+.plan/
+tasks/
+docs/plans/
 session-*.md
-this-is-what-fuck-happened.md
-test_output*.txt
 *.tmp.txt
+test_output*.txt
 
-# IDE/Agent configs
+# IDE/Agent configs - USER LOCAL
 .agent/
 .agents/
 .claude/
@@ -38,6 +34,10 @@ test_output*.txt
 .qoder/
 .windsurf/
 
-# State tracking - DO NOT IGNORE (user wants full traceability)
-# .hivemind/ - tracked (brain state, hierarchy, anchors, mems)
-# opencode.json - tracked (user configuration, provider settings)
+# Internal documentation - NOT FOR PUBLIC
+AGENT_RULES.md
+AGENTS.md
+
+# Backup files
+*.bak
+*.bak.*
