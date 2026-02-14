@@ -523,7 +523,7 @@ export function createSessionLifecycleHook(
       const sortedByPriority = [...sections].sort((a, b) => a.priority - b.priority)
       const includedNames = new Set();
       // Base overhead: <hivemind> + newline + </hivemind>
-      let usedChars = '<hivemind>\\n</hivemind>'.length
+      let usedChars = '<hivemind>\n</hivemind>'.length
 
       // First pass: Calculate budget
       for (const section of sortedByPriority) {
