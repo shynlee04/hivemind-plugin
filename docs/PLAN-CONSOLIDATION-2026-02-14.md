@@ -1,5 +1,11 @@
 # HiveMind Plan Consolidation - 2026-02-14
 
+## Latest: PR #43 Merged
+- Task Management instructions in agent behavior prompt
+- [TASKS] section added to system prompt injection
+- `regenerateManifests` function added
+- Parent existence validation in map_context
+
 ## Status Summary
 
 ### ✅ DONE (Evidence: CHANGELOG + Code)
@@ -22,13 +28,13 @@
 | 3 | Manifest system | manifest.ts exists | Auto-regen not done |
 
 ### ❌ NOT DONE (Priority order)
-| # | Item | Why blocking |
-|---|------|-------------|
-| **1** | **TODO/Task System** | Agent mindless |
-| **2** | **Prompt transformation** | Still nonsensical |
-| **3** | **.hivemind reorganization** | Disorganized |
-| **4** | **Entry validation** | No enforcement |
-| **5** | **Signal→Action mapping** | No actionable guidance |
+| # | Item | Status | Note |
+|---|------|--------|------|
+| **1** | **TODO/Task System** | ⚠️ PARTIAL | PR#43 added TASKS section + parent validation |
+| **2** | **Prompt transformation** | ⚠️ PARTIAL | Actionable suggestions added (this session) |
+| **3** | **.hivemind reorganization** | ❌ | |
+| **4** | **Entry validation** | ❌ | |
+| **5** | **Signal→Action mapping** | ❌ | |
 
 ---
 
