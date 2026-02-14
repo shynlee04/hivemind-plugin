@@ -1,52 +1,30 @@
-/**
- * Tool Gate Hook — Governance enforcement with strict mode support.
- *
- * Intercepts tool calls and provides governance guidance:
- *   - strict: Blocks execution for framework conflicts unless explicitly acknowledged
- *   - assisted: warnings and guidance
- *   - permissive: silently tracks for metrics
- *
- * P3: try/catch — never break tool execution
- * P5: Config re-read from disk each invocation (Rule 6)
- */
-
-import type { Logger } from "../lib/logging.js"
-import type { HiveMindConfig } from "../schemas/config.js"
-import {
-  isSessionLocked,
-  shouldTriggerDriftWarning,
-  addFileTouched,
-  calculateDriftScore,
-  setComplexityNudgeShown,
-} from "../schemas/brain-state.js"
+import { type Logger } from "../lib/logging.js"
+import { type HiveMindConfig } from "../schemas/config.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
-import { checkComplexity } from "../lib/complexity.js"
 import { detectFrameworkContext } from "../lib/framework-context.js"
-import { checkAndRecordToast } from "../lib/toast-throttle.js"
+import { addFileTouched, isSessionLocked, calculateDriftScore, shouldTriggerDriftWarning, setComplexityNudgeShown } from "../schemas/brain-state.js"
+import { checkComplexity } from "../lib/complexity.js";
+import { checkAndRecordToast } from "../lib/toast-throttle.js";
+import { treeExists } from "../lib/hierarchy-tree.js"
 
-/** Tools that are always allowed regardless of governance state */
+// Tools exempt from governance checks (read-only or meta-tools)
 const EXEMPT_TOOLS = new Set([
-  // HiveMind tools (always allowed) — 10 tools, HC3 compliant
-  "declare_intent", "map_context", "compact_session",
-  "scan_hierarchy", "save_anchor", "think_back",
-  "save_mem", "recall_mems",
-  "hierarchy_manage", "export_cycle",
-  // OpenCode innate read-only tools
-  "read", "grep", "glob",
-  // OpenCode innate utility tools (can't block these meaningfully)
-  "bash", "webfetch", "task", "skill", "todowrite", "google_search",
+  "read", "glob", "grep", "ls", "cat", "find",
+  "declare_intent", "map_context", "check_drift", "list_shelves", "recall_mems",
+  "hivemind_inspect", "hivemind_scan", "hivemind_status", "hivemind_compact",
+  "scan_hierarchy", "think_back", "self_rate", "save_mem", "save_anchor"
 ])
 
-/** Write/edit tools that governance should advise on */
 const WRITE_TOOLS = new Set([
-  "write", "edit",
+  "write", "edit", "bash", "create_file", "delete_file", "move_file", "task",
+  "replace_in_file", "append_to_file", "create_directory"
 ])
 
+// Tools safe to run even during framework conflict (mostly analysis/governance)
 const CONFLICT_SAFE_TOOLS = new Set([
-  "read", "grep", "glob",
-  "declare_intent", "map_context", "compact_session",
-  "scan_hierarchy", "save_anchor", "think_back",
-  "save_mem", "recall_mems",
+  "read", "glob", "grep", "ls", "cat", "find",
+  "hivemind_scan", "hivemind_status", "hivemind_inspect",
+  "scan_hierarchy", "check_drift", "list_shelves",
   "hierarchy_manage", "export_cycle",
 ])
 
@@ -141,25 +119,23 @@ export function createToolGateHook(
 
       // No state = no session initialized yet - Advisory only
       if (!state) {
+        const hasTree = treeExists(directory)
+        const msg = hasTree
+          ? "No session initialized. Use declare_intent to start a tracked session."
+          : "Project not scanned. Run hivemind-scan first to build context backbone."
+
         switch (config.governance_mode) {
           case "strict":
+          case "assisted":
             // HC1 COMPLIANCE: Always allow, just advise
             return {
               allowed: true,
-              warning: "No session initialized. Consider using declare_intent for better tracking.",
+              warning: msg,
               signal: {
                 type: "governance",
                 severity: "advisory",
-                message: "Session not initialized. Use declare_intent to start a tracked session.",
+                message: msg,
               },
-            }
-          case "assisted":
-            await log.warn(
-              `Tool "${toolName}" called without session. Consider using declare_intent.`
-            )
-            return {
-              allowed: true,
-              warning: "No session initialized. Consider calling declare_intent.",
             }
           case "permissive":
             return { allowed: true }
