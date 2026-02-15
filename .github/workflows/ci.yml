@@ -16,6 +16,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Guard sensitive dev-v3-only paths
+      shell: bash
+      run: |
+        if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+        else
+          BASE="${{ github.event.before }}"
+          HEAD="${{ github.sha }}"
+          if [[ "${BASE}" == "0000000000000000000000000000000000000000" ]]; then
+            BASE="$(git rev-parse "${HEAD}^")"
+          fi
+        fi
+        bash scripts/guard-public-branch.sh "${BASE}" "${HEAD}"
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
