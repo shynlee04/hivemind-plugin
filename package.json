@@ -44,6 +44,7 @@
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit",
     "lint:boundary": "bash scripts/check-sdk-boundary.sh",
+    "guard:public": "bash scripts/guard-public-branch.sh origin/master HEAD",
     "test": "bash scripts/check-sdk-boundary.sh && tsx --test tests/*.test.ts",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
