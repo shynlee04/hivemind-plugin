@@ -135,7 +135,7 @@ export function createCompactionHook(log: Logger, directory: string) {
       if (anchorsState.anchors.length > 0) {
         lines.push("## Anchors")
         for (const anchor of anchorsState.anchors) {
-           lines.push(`- [${anchor.key}]: ${anchor.value}`)
+          lines.push(`- [${anchor.key}]: ${anchor.value}`)
         }
         lines.push("")
       }
