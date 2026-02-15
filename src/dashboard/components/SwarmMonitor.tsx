@@ -11,7 +11,7 @@ export function SwarmMonitor({ strings }: SwarmMonitorProps) {
   return (
     <Box flexDirection="column" borderStyle="round" borderColor={COLORS.info} paddingX={1} marginBottom={1}>
       <Text bold color={COLORS.info}>{strings.swarm_monitor}</Text>
-      <Text dimColor>TODO: Implement swarm monitoring visualization.</Text>
+      <Text color={COLORS.dim}>TODO [US-040]: Implement swarm status tracking.</Text>
     </Box>
   );
 }

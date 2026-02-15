@@ -9,9 +9,11 @@ interface ToolRegistryViewProps {
 
 export function ToolRegistryView({ strings }: ToolRegistryViewProps) {
   return (
-    <Box flexDirection="column" borderStyle="round" borderColor={COLORS.secondary} paddingX={1} flexGrow={1}>
-      <Text bold color={COLORS.secondary}>{strings.tool_registry}</Text>
-      <Text dimColor>TODO: Implement tool availability and usage stats.</Text>
+    <Box flexDirection="column" borderStyle="round" borderColor={COLORS.neonBlue} paddingX={1} flexGrow={1}>
+      <Text bold color={COLORS.neonBlue}>{strings.tool_registry}</Text>
+      <Box height={1} />
+      <Text color={COLORS.dim}>TODO [US-047]: Implement tool catalog and schema viewer.</Text>
+      <Text color={COLORS.dim}>List available tools from current context.</Text>
     </Box>
   );
 }
