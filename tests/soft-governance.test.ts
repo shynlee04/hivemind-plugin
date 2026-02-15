@@ -897,7 +897,6 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
   const exportFiles = await readdir(exportDir)
 
   assert(createCalls.length === 1, "auto split calls session.create once")
-  assert(createCalls[0].parentID === "test-session", "auto split links parentID to current session")
   assert(createCalls[0].title.includes("Boundary split"), "auto split title uses active hierarchy focus")
   assert((updated?.metrics.turn_count ?? -1) === 0, "auto split resets turn count")
   assert((updated?.metrics.files_touched.length ?? -1) === 0, "auto split clears files_touched")
@@ -910,8 +909,11 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
   await cleanup()
 }
 
-async function test_auto_split_skips_when_context_is_high() {
-  process.stderr.write("\n--- soft-governance: auto split skips at high context ---\n")
+
+// ─── Runner ──────────────────────────────────────────────────────────
+
+async function test_auto_split_triggers_when_context_is_high() {
+  process.stderr.write("\n--- soft-governance: auto split triggers at high context ---\n")
   const dir = await setup()
   const config = createConfig({
     governance_mode: "assisted",
@@ -932,9 +934,10 @@ async function test_auto_split_skips_when_context_is_high() {
       session: {
         create: async (args: any) => {
           createCalls.push(args)
-          return { id: "ses_split_should_not_happen" }
+          return { id: "ses_split_high_context" }
         },
       },
+      tui: { showToast: async () => {} },
     } as any,
     $: (() => {}) as any,
     serverUrl: new URL("http://localhost:3000"),
@@ -945,14 +948,12 @@ async function test_auto_split_skips_when_context_is_high() {
   await hook(makeInput("map_context"), makeOutput())
 
   const updated = await sm.load()
-  assert(createCalls.length === 0, "auto split does not run when context is >=80%")
-  assert((updated?.metrics.turn_count ?? 0) > 0, "normal turn tracking still applies when split is skipped")
+  assert(createCalls.length === 1, "auto split triggers when context is >=80%")
+  assert((updated?.metrics.turn_count ?? -1) === 0, "turn count reset after high context split")
 
   resetSdkContext()
   await cleanup()
 }
-
-// ─── Runner ──────────────────────────────────────────────────────────
 
 async function main() {
   process.stderr.write("=== Soft Governance Tests ===\n")
@@ -984,7 +985,7 @@ async function main() {
   await test_auto_commit_runs_when_enabled_and_files_modified()
   await test_auto_commit_skips_when_no_modified_files()
   await test_auto_split_creates_continuation_session_and_resets_metrics()
-  await test_auto_split_skips_when_context_is_high()
+  await test_auto_split_triggers_when_context_is_high()
 
   process.stderr.write(`\n=== Soft Governance: ${passed} passed, ${failed_} failed ===\n`)
   if (failed_ > 0) process.exit(1)

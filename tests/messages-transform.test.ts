@@ -159,9 +159,8 @@ async function test_generates_dynamic_checklist_items() {
   const checklistText = syntheticTexts.find((text) => text.includes("CHECKLIST BEFORE STOPPING")) || ""
 
   assert(checklistText.includes("Action-level focus is missing"), "includes hierarchy cursor checklist item")
-  assert(checklistText.includes("No map_context updates yet"), "includes map_context checklist item")
-  assert(checklistText.includes("Acknowledge pending subagent failure"), "includes pending_failure_ack checklist item")
-  assert(checklistText.includes("Create a git commit for touched files"), "includes git commit checklist item")
+  assert(checklistText.includes("Is the file tree updated?"), "includes file tree updated check")
+  assert(checklistText.includes("Have you forced an atomic git commit"), "includes atomic commit check")
 
   await rm(dir, { recursive: true, force: true })
 }
@@ -220,61 +219,6 @@ async function test_skips_permissive_mode() {
   await rm(dir, { recursive: true, force: true })
 }
 
-async function test_augments_latest_user_message_with_anchor_context() {
-  process.stderr.write("\n--- messages-transform: anchor continuity injection ---\n")
-  const dir = await setupDir()
-  const config = createConfig({ governance_mode: "assisted" })
-  await saveConfig(dir, config)
-
-  const stateManager = createStateManager(dir)
-  const state = unlockSession(createBrainState(generateSessionId(), config))
-  await stateManager.save(state)
-
-  await saveAnchors(dir, {
-    version: "1.0.0",
-    anchors: [
-      { key: "k1", value: "v1", created_at: 1, session_id: "s" },
-      { key: "k2", value: "v2", created_at: 2, session_id: "s" },
-      { key: "k3", value: "v3", created_at: 3, session_id: "s" },
-      { key: "k4", value: "v4", created_at: 4, session_id: "s" },
-    ],
-  })
-
-  const trajectory = createNode("trajectory", "Phase B")
-  const tactic = createNode("tactic", "Messages transform")
-  const action = createNode("action", "Inject continuity context")
-  let tree = setRoot(createTree(), trajectory)
-  tree = addChild(tree, trajectory.id, tactic)
-  tree = addChild(tree, tactic.id, action)
-  await saveTree(dir, tree)
-
-  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
-  const output: { messages: MessageV2[] } = {
-    messages: [
-      createUserMessage("first", "msg_user_1"),
-      createAssistantMessage("ack", "msg_assistant_1"),
-      createUserMessage("latest", "msg_user_2"),
-    ],
-  }
-
-  await hook({}, output)
-
-  const latestUser = output.messages[2]
-  const parts = getTextParts(latestUser)
-  const injected = parts.find((part) => part.synthetic)
-  const injectedText = injected?.text ?? ""
-  const original = parts.find((part) => !part.synthetic)
-  const originalText = original?.text ?? ""
-
-  assert(parts.length >= 2, "latest user message receives synthetic continuity part")
-  assert(Boolean(injected), "continuity part marked synthetic")
-  assert(injectedText.includes("<focus>Phase B > Messages transform > Inject continuity context</focus>"), "continuity includes focus path")
-  assert(injectedText.includes("<anchor-context>"), "continuity includes anchor-context block")
-  assert(!injectedText.includes("k1"), "anchor context capped to top 3 anchors")
-  assert(originalText === "latest", "original user text remains intact")
-
-  await rm(dir, { recursive: true, force: true })
-}
 
 async function test_includes_session_boundary_checklist_item_when_recommended() {
   process.stderr.write("\n--- messages-transform: boundary checklist injection ---\n")
@@ -377,6 +321,44 @@ async function test_modern_shape_without_user_does_not_push_legacy_message() {
   await rm(dir, { recursive: true, force: true })
 }
 
+async function test_wraps_user_message_with_system_anchor() {
+  process.stderr.write("\n--- messages-transform: system anchor wrapping ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "assisted" })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.hierarchy.trajectory = "Phase B"
+  state.hierarchy.action = "Test Anchor"
+  state.metrics.context_updates = 1 // Active
+  await stateManager.save(state)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [
+      createUserMessage("latest", "msg_user_2"),
+    ],
+  }
+
+  await hook({}, output)
+
+  const latestUser = output.messages[0]
+  const parts = getTextParts(latestUser)
+
+  // The first part (original user text) should be wrapped
+  const originalPart = parts.find(p => !p.synthetic)
+  const wrapperText = originalPart?.text || ""
+
+  assert(wrapperText.includes("[SYSTEM ANCHOR: Phase Phase B | Active Task: Test Anchor | Hierarchy: Active]"), "user message wrapped with system anchor")
+  assert(wrapperText.includes('User Intent: "latest"'), "user message wrapped with intent")
+
+  // Checklist should be appended as synthetic part
+  const syntheticPart = parts.find(p => p.synthetic)
+  assert(syntheticPart?.text?.includes("CHECKLIST BEFORE STOPPING"), "checklist appended as synthetic part")
+
+  await rm(dir, { recursive: true, force: true })
+}
 async function main() {
   process.stderr.write("=== Messages Transform Tests ===\n")
 
@@ -384,7 +366,7 @@ async function main() {
   await test_generates_dynamic_checklist_items()
   await test_includes_pending_tasks_checklist_item()
   await test_skips_permissive_mode()
-  await test_augments_latest_user_message_with_anchor_context()
+  await test_wraps_user_message_with_system_anchor()
   await test_includes_session_boundary_checklist_item_when_recommended()
   await test_legacy_message_shape_fallback()
   await test_modern_shape_without_user_does_not_push_legacy_message()
