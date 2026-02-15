@@ -10,11 +10,12 @@ interface AutonomicLogProps {
 }
 
 export function AutonomicLog({ alerts, strings }: AutonomicLogProps) {
-  const tierColor = (tier: string) => {
+  const tierColor = (tier: AlertView["tier"]) => {
     switch (tier) {
       case "INFO": return "green";
       case "WARN": return "yellow";
       case "CRITICAL": return "red";
+      case "DEGRADED": return "magenta";
       default: return "magenta";
     }
   };
