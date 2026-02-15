@@ -1,7 +1,6 @@
 import { createStateManager, loadConfig } from "../lib/persistence.js"
-import { loadAnchors } from "../lib/anchors.js"
 import { loadTasks } from "../lib/manifest.js"
-import { countCompleted, getAncestors, loadTree } from "../lib/hierarchy-tree.js"
+import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
 import type { Message, Part } from "@opencode-ai/sdk"
 
@@ -42,29 +41,18 @@ function isMessageWithParts(message: MessageV2): message is MessageWithParts {
 function buildChecklist(items: string[], maxChars: number): string {
   if (items.length === 0) return ""
 
-  const lines = ["<system-reminder>", "CHECKLIST BEFORE STOPPING:"]
+  const lines = ["<system-reminder>", "CHECKLIST BEFORE STOPPING (Pre-Stop Conditional):"]
+  lines.push("You are about to complete your turn. BEFORE you output your final message, you MUST verify:")
   for (const item of items) {
     const candidate = [...lines, `- [ ] ${item}`, "</system-reminder>"].join("\n")
     if (candidate.length > maxChars) break
     lines.push(`- [ ] ${item}`)
   }
+  lines.push("If NO, you must execute these tools now. Do not stop your turn.")
   lines.push("</system-reminder>")
   return lines.join("\n")
 }
 
-function syntheticSystemMessage(text: string): MessageV2 {
-  return {
-    role: "system",
-    synthetic: true,
-    content: [
-      {
-        type: "text",
-        text,
-        synthetic: true,
-      },
-    ],
-  }
-}
 
 function isSyntheticMessage(message: MessageV2): boolean {
   if (isMessageWithParts(message)) {
@@ -90,28 +78,57 @@ function getLastNonSyntheticUserMessageIndex(messages: MessageV2[]): number {
   return -1
 }
 
-function hasModernMessages(messages: MessageV2[]): boolean {
-  return messages.some(isMessageWithParts)
-}
 
 function buildAnchorContext(
-  anchors: Array<{ key: string; value: string; created_at: number }>,
-  maxChars: number
-): string {
-  if (anchors.length === 0) return ""
+  state: any,
 
-  const sorted = [...anchors].sort((a, b) => b.created_at - a.created_at).slice(0, 3)
-  const lines = ["<anchor-context>"]
-  for (const anchor of sorted) {
-    const candidate = [...lines, `- [${anchor.key}]: ${anchor.value}`, "</anchor-context>"].join("\n")
-    if (candidate.length > maxChars) break
-    lines.push(`- [${anchor.key}]: ${anchor.value}`)
-  }
-  lines.push("</anchor-context>")
-  return lines.length > 2 ? lines.join("\n") : ""
+
+): string {
+  // Construct the "System Anchor" header
+  // [SYSTEM ANCHOR: Phase 2 - Auth Debug | Active Task ID: #44 | Hierarchy: Stale]
+
+  const phase = state.hierarchy.trajectory || "Unset"
+  const task = state.hierarchy.action || "Unset"
+  const hierarchyStatus = state.metrics.context_updates > 0 ? "Active" : "Stale"
+
+  const header = `[SYSTEM ANCHOR: Phase ${phase} | Active Task: ${task} | Hierarchy: ${hierarchyStatus}]`
+
+  return header
 }
 
-function prependSyntheticPart(message: MessageV2, text: string): void {
+function wrapUserMessage(message: MessageV2, header: string): void {
+  // Wraps user content like:
+  // header
+  // User Intent: "original content"
+
+  if (isMessageWithParts(message)) {
+    // Find text part
+    const textPart = message.parts.find(p => p.type === "text")
+    if (textPart && textPart.text) {
+      textPart.text = `${header}\nUser Intent: "${textPart.text}"`
+    }
+    return
+  }
+
+  if (Array.isArray(message.content)) {
+    const textPart = message.content.find(p => p.type === "text" && !p.synthetic)
+    if (textPart && typeof textPart.text === "string") {
+      textPart.text = `${header}\nUser Intent: "${textPart.text}"`
+    } else if (message.content.length === 1 && typeof message.content[0] === "string") {
+        // Handle legacy string array content? No, MessagePart is obj.
+        // But let's handle if it was parsed as such.
+        // Actually definition says content: string | MessagePart[].
+    }
+    return
+  }
+
+  if (typeof message.content === "string") {
+    message.content = `${header}\nUser Intent: "${message.content}"`
+  }
+}
+
+function appendSyntheticPart(message: MessageV2, text: string): void {
+  // Appends to the END of the message parts
   if (isMessageWithParts(message)) {
     const firstPart = message.parts[0] as MessagePart | undefined
     const sessionID = firstPart?.sessionID ?? message.info.sessionID
@@ -127,7 +144,8 @@ function prependSyntheticPart(message: MessageV2, text: string): void {
       text,
       synthetic: true,
     }
-    message.parts = [syntheticPart, ...message.parts]
+    // Append to end
+    message.parts = [...message.parts, syntheticPart]
     return
   }
 
@@ -138,35 +156,24 @@ function prependSyntheticPart(message: MessageV2, text: string): void {
   }
 
   if (Array.isArray(message.content)) {
-    message.content = [syntheticPart, ...message.content]
+    message.content = [...message.content, syntheticPart]
     return
   }
 
   if (typeof message.content === "string") {
     message.content = [
-      syntheticPart,
       {
         type: "text",
         text: message.content,
       },
+      syntheticPart,
     ]
     return
   }
 
-  message.content = [syntheticPart]
+  message.content = [syntheticPart] // Fallback
 }
 
-async function buildFocusPath(directory: string, fallback: { trajectory: string; tactic: string; action: string }): Promise<string> {
-  const tree = await loadTree(directory)
-  if (tree.root && tree.cursor) {
-    const ancestors = getAncestors(tree.root, tree.cursor)
-    if (ancestors.length > 0) {
-      return ancestors.map(node => node.content).join(" > ")
-    }
-  }
-
-  return [fallback.trajectory, fallback.tactic, fallback.action].filter(Boolean).join(" > ")
-}
 
 export function createMessagesTransformHook(_log: { warn: (message: string) => Promise<void> }, directory: string) {
   const stateManager = createStateManager(directory)
@@ -184,83 +191,60 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       const state = await stateManager.load()
       if (!state) return
 
-      const anchorsState = await loadAnchors(directory)
-      const anchorContext = buildAnchorContext(anchorsState.anchors, 200)
-      if (anchorContext) {
-        const index = getLastNonSyntheticUserMessageIndex(output.messages)
-        if (index >= 0) {
-          const focusPath = await buildFocusPath(directory, state.hierarchy)
-          const continuityLines = [anchorContext]
-          if (focusPath) {
-            continuityLines.unshift(`<focus>${focusPath}</focus>`)
-          }
-          prependSyntheticPart(output.messages[index], continuityLines.join("\n"))
-        }
-      }
-
-      const items: string[] = []
-      if (!state.hierarchy.action) {
-        items.push("Action-level focus is missing (call map_context)")
-      }
-      if (state.metrics.context_updates === 0) {
-        items.push("No map_context updates yet in this session")
-      }
-      if (state.pending_failure_ack) {
-        items.push("Acknowledge pending subagent failure")
-      }
-      if (state.metrics.files_touched.length > 0) {
-        items.push("Create a git commit for touched files")
-      }
-      const taskManifest = await loadTasks(directory)
-      if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
-        const pendingCount = taskManifest.tasks.filter(task => {
-          const status = String(task.status ?? "pending").toLowerCase()
-          return status !== "completed" && status !== "cancelled"
-        }).length
-        if (pendingCount > 0) {
-          items.push(`Review ${pendingCount} pending task(s) (todoread/todowrite)`)
-        }
-      }
-
-      const role = (state.session.role || "").toLowerCase()
-      const contextPercent = estimateContextPercent(
-        state.metrics.turn_count,
-        config.auto_compact_on_turns
-      )
-
-      let completedBranchCount = 0
-      const tree = await loadTree(directory)
-      if (tree.root) {
-        completedBranchCount = countCompleted(tree)
-      }
-
-      const boundaryRecommendation = shouldCreateNewSession({
-        turnCount: state.metrics.turn_count,
-        contextPercent,
-        hierarchyComplete: completedBranchCount > 0,
-        isMainSession: !role.includes("subagent"),
-        hasDelegations: (state.cycle_log ?? []).some(entry => entry.tool === "task"),
-      })
-      if (boundaryRecommendation.recommended) {
-        items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
-      }
-
-      const checklist = buildChecklist(items, 300)
-      if (!checklist) return
 
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
-        prependSyntheticPart(output.messages[index], checklist)
-        return
+
+        // 1. Mind Control: Contextual Anchoring (Wrap User Message)
+        const anchorHeader = buildAnchorContext(state, )
+        wrapUserMessage(output.messages[index], anchorHeader)
+
+        // 2. Pre-Stop Conditional Reminders (Inject Checklist at END)
+        const items: string[] = []
+
+        // Add standard governance checks
+        if (!state.hierarchy.action) items.push("Action-level focus is missing (call map_context)")
+        if (state.metrics.context_updates === 0) items.push("Is the file tree updated? (No map_context yet)")
+        if (state.metrics.files_touched.length > 0) items.push("Have you forced an atomic git commit / PR for touched files?")
+
+        // Pending tasks
+        const taskManifest = await loadTasks(directory)
+        if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
+          const pendingCount = taskManifest.tasks.filter(task => {
+            const status = String(task.status ?? "pending").toLowerCase()
+            return status !== "completed" && status !== "cancelled"
+          }).length
+          if (pendingCount > 0) items.push(`Review ${pendingCount} pending task(s)`)
+        }
+
+        // Session Boundary check
+        const role = (state.session.role || "").toLowerCase()
+        const contextPercent = estimateContextPercent(state.metrics.turn_count, config.auto_compact_on_turns)
+        let completedBranchCount = 0
+        const tree = await loadTree(directory)
+        if (tree.root) completedBranchCount = countCompleted(tree)
+
+        const boundaryRecommendation = shouldCreateNewSession({
+          turnCount: state.metrics.turn_count,
+          contextPercent,
+          hierarchyComplete: completedBranchCount > 0,
+          isMainSession: !role.includes("subagent"),
+          hasDelegations: (state.cycle_log ?? []).some(entry => entry.tool === "task"),
+        })
+
+        if (boundaryRecommendation.recommended) {
+           items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
+        }
+
+        // Research artifacts check (if applicable, generic)
+        items.push("Are research artifacts symlinked? (if created)")
+
+        const checklist = buildChecklist(items, 1000) // Increased budget for checklist
+        if (checklist) {
+          appendSyntheticPart(output.messages[index], checklist)
+        }
       }
 
-      if (hasModernMessages(output.messages)) {
-        // SDK shape safety: avoid injecting legacy message objects into info/parts arrays.
-        return
-      }
-
-      // Legacy compatibility fallback. New SDK shape should inject into parts above.
-      output.messages.push(syntheticSystemMessage(checklist))
     } catch {
       // P3: never break message flow
     }

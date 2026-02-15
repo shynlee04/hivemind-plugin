@@ -159,9 +159,9 @@ async function maybeCreateNonDisruptiveSessionSplit(opts: {
     state.metrics.turn_count,
     config.auto_compact_on_turns
   )
-  if (contextPercent >= 80 || state.metrics.turn_count < 30 || hasDelegations) {
-    return state
-  }
+//   if (contextPercent >= 80 || state.metrics.turn_count < 30 || hasDelegations) {
+//     return state
+//   }
 
   let completedBranchCount = 0
   let treeFocusPath = ""
@@ -217,10 +217,21 @@ async function maybeCreateNonDisruptiveSessionSplit(opts: {
       state.hierarchy.trajectory ||
       treeFocusPath ||
       "Continuation"
+    const context = [
+      `=== HiveMind Context (Session Split) ===`,
+      `Previous Session: ${sessionID}`,
+      `Focus: ${focus}`,
+      state.hierarchy.trajectory ? `Trajectory: ${state.hierarchy.trajectory}` : "",
+      state.hierarchy.tactic ? `Tactic: ${state.hierarchy.tactic}` : "",
+      state.hierarchy.action ? `Action: ${state.hierarchy.action}` : "",
+      `Turn 0 Context: ${boundary.reason}`,
+      `=== End Context ===`
+    ].filter(Boolean).join("\n")
+
     const created = await client.session.create({
       directory,
       title: `HiveMind split: ${focus}`,
-      parentID: sessionID,
+      initialPrompts: [context],
     })
     const createdSessionId = typeof created?.id === "string" ? created.id : "unknown"
 

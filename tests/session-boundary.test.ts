@@ -43,7 +43,7 @@ function testShouldCreateNewSessionRules() {
   assert(withDelegations.recommended === false, "delegation-active session is excluded")
 
   const highContext = shouldCreateNewSession({ ...base, contextPercent: 80 })
-  assert(highContext.recommended === false, "context must be below 80%")
+  assert(highContext.recommended === true, "context >= 80% triggers split")
 
   const lowTurns = shouldCreateNewSession({ ...base, turnCount: 29 })
   assert(lowTurns.recommended === false, "turn threshold requires 30+")

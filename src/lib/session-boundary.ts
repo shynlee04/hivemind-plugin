@@ -55,8 +55,8 @@ export function shouldCreateNewSession(
 
   if (state.contextPercent >= 80) {
     return {
-      recommended: false,
-      reason: `Context usage is ${state.contextPercent}% (must be below 80% for a clean handoff boundary)`,
+      recommended: true,
+      reason: `Context usage is ${state.contextPercent}% (approaching capacity). Triggering non-disruptive session split.`,
     }
   }
 
