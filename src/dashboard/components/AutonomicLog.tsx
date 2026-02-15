@@ -25,7 +25,7 @@ export function AutonomicLog({ alerts, strings }: AutonomicLogProps) {
       <Text bold color={COLORS.error}>{strings.alerts}</Text>
       {alerts.length > 0 ? (
         alerts.map((alert, i) => (
-          <Box flexDirection="column" key={i} marginBottom={1}>
+          <Box flexDirection="column" key={`${i}-${alert.message}`} marginBottom={1}>
             <Text color={tierColor(alert.tier)}>[{alert.tier}] {alert.message}</Text>
             <Text dimColor>  evidence: {alert.evidence}</Text>
             {alert.suggestion && <Text dimColor>  suggestion: {alert.suggestion}</Text>}
