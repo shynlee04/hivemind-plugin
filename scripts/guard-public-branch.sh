@@ -43,15 +43,25 @@ if [[ ${#changed_files[@]} -eq 0 ]]; then
 fi
 
 protected_regexes=(
+  # Constitution & tracking
   '^AGENTS\.md$'
+  '^AGENT_RULES\.md$'
   '^CHANGELOG\.md$'
+  # Config with potential secrets
+  '^opencode\.json$'
+  # Dot folders (internal state)
   '^\.opencode/'
-  '^docs/plans/'
-  '^docs/reference/'
-  '^references/'
+  '^\.hivemind/'
+  # Docs (internal planning/tracking)
+  '^docs/'
+  # Installation artifacts (deployed via sync-assets, NOT repo content)
+  '^agents/'
+  '^commands/'
+  '^skills/'
   '^prompts/'
   '^templates/'
-  '^agents/'
+  '^references/'
+  '^workflows/'
 )
 
 violations=()
