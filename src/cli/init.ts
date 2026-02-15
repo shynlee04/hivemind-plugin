@@ -39,6 +39,7 @@ import { getEffectivePaths } from "../lib/paths.js"
 import { migrateIfNeeded } from "../lib/migrate.js"
 import { syncOpencodeAssets } from "./sync-assets.js"
 import type { AssetSyncTarget } from "./sync-assets.js"
+import { createTree, saveTree } from "../lib/hierarchy-tree.js"
 
 // ── HiveMind Section for AGENTS.md / CLAUDE.md ──────────────────────────
 
@@ -377,6 +378,9 @@ export async function initProject(
   const sessionId = generateSessionId()
   const state = createBrainState(sessionId, config)
   await stateManager.save(state)
+
+  // Initialize empty hierarchy tree (required for session-lifecycle hook)
+  await saveTree(directory, createTree())
 
   // Auto-register plugin in opencode.json
   registerPluginInConfig(directory, options.silent ?? false)
