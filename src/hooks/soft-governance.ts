@@ -159,9 +159,6 @@ async function maybeCreateNonDisruptiveSessionSplit(opts: {
     state.metrics.turn_count,
     config.auto_compact_on_turns
   )
-//   if (contextPercent >= 80 || state.metrics.turn_count < 30 || hasDelegations) {
-//     return state
-//   }
 
   let completedBranchCount = 0
   let treeFocusPath = ""
@@ -178,12 +175,15 @@ async function maybeCreateNonDisruptiveSessionSplit(opts: {
     return state
   }
 
+  // V3.0: Pass user_turn_count and compaction_count for proper split logic
   const boundary = shouldCreateNewSession({
     turnCount: state.metrics.turn_count,
+    userTurnCount: state.metrics.user_turn_count,
     contextPercent,
     hierarchyComplete: completedBranchCount > 0,
     isMainSession,
     hasDelegations,
+    compactionCount: state.compaction_count ?? 0,
   })
 
   if (!boundary.recommended) return state
@@ -231,6 +231,7 @@ async function maybeCreateNonDisruptiveSessionSplit(opts: {
     const created = await client.session.create({
       directory,
       title: `HiveMind split: ${focus}`,
+      parentID: sessionID,  // V3.0: Restore SDK parent-child linkage
       initialPrompts: [context],
     })
     const createdSessionId = typeof created?.id === "string" ? created.id : "unknown"

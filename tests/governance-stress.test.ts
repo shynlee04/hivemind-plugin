@@ -97,7 +97,7 @@ async function testStressConditions() {
     const staleState = await stateManager.load()
     if (staleState) {
       staleState.metrics.drift_score = 20  // Below 30 threshold
-      staleState.metrics.turn_count = 12   // Above 10 turn threshold
+      staleState.metrics.user_turn_count = 12   // V3.0: Above 10 USER TURN threshold
       staleState.session.last_activity = Date.now() - 5 * 86_400_000
       await stateManager.save(staleState)
     }

@@ -228,11 +228,13 @@ async function test_includes_session_boundary_checklist_item_when_recommended() 
 
   const stateManager = createStateManager(dir)
   const baseState = unlockSession(createBrainState(generateSessionId(), config))
+  // V3.0: Need user_turn_count >= 30 AND (compactionCount >= 2 OR hierarchyComplete)
   const state = {
     ...baseState,
     metrics: {
       ...baseState.metrics,
       turn_count: 30,
+      user_turn_count: 35, // V3.0: User response cycles
       files_touched: [],
       context_updates: 1,
     },
@@ -240,6 +242,7 @@ async function test_includes_session_boundary_checklist_item_when_recommended() 
       ...baseState.hierarchy,
       action: "Boundary review",
     },
+    compaction_count: 2, // V3.0: Trigger condition
   }
   await stateManager.save(state)
 
@@ -330,8 +333,9 @@ async function test_wraps_user_message_with_system_anchor() {
   const stateManager = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
   state.hierarchy.trajectory = "Phase B"
-  state.hierarchy.action = "Test Anchor"
+  // V3.0: Don't set action - this will trigger "Action-level focus is missing" checklist item
   state.metrics.context_updates = 1 // Active
+  state.metrics.user_turn_count = 1  // V3.0: Initialize user_turn_count
   await stateManager.save(state)
 
   const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
@@ -346,16 +350,19 @@ async function test_wraps_user_message_with_system_anchor() {
   const latestUser = output.messages[0]
   const parts = getTextParts(latestUser)
 
-  // The first part (original user text) should be wrapped
+  // V3.0: The anchor is now a PREPENDED SYNTHETIC part (no mutation of user text)
+  const syntheticParts = parts.filter(p => p.synthetic)
+  const anchorPart = syntheticParts.find(p => p.text?.includes("[SYSTEM ANCHOR:"))
+  
+  assert(anchorPart?.text?.includes("[SYSTEM ANCHOR: Phase B") === true, "anchor is prepended as synthetic part")
+
+  // V3.0: The user's original text should remain UNTOUCHED (not wrapped)
   const originalPart = parts.find(p => !p.synthetic)
-  const wrapperText = originalPart?.text || ""
+  assert(originalPart?.text === "latest", "user text remains untouched (no wrapping)")
 
-  assert(wrapperText.includes("[SYSTEM ANCHOR: Phase B | Active Task: Test Anchor | Hierarchy: Active]"), "user message wrapped with system anchor")
-  assert(wrapperText.includes('User Intent: "latest"'), "user message wrapped with intent")
-
-  // Checklist should be appended as synthetic part
-  const syntheticPart = parts.find(p => p.synthetic)
-  assert(syntheticPart?.text?.includes("CHECKLIST BEFORE STOPPING"), "checklist appended as synthetic part")
+  // Checklist should be appended as synthetic part (there are items to show - action is missing)
+  const checklistPart = syntheticParts.find(p => p.text?.includes("CHECKLIST BEFORE STOPPING"))
+  assert(checklistPart?.text?.includes("CHECKLIST BEFORE STOPPING") === true, "checklist appended as synthetic part")
 
   await rm(dir, { recursive: true, force: true })
 }

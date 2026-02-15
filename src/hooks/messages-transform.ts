@@ -1,3 +1,15 @@
+/**
+ * Messages Transform Hook — Pre-stop checklist and context anchoring.
+ * 
+ * V3.0 Design:
+ * - Uses PREPEND for anchor context (synthetic part, doesn't mutate user text)
+ * - Uses APPEND for checklist (at end, before final message)
+ * - pending_failure_ack checklist item RESTORED (safety critical)
+ * - Research artifacts check REMOVED (was noise, not actionable)
+ * 
+ * P3: try/catch — never break message flow
+ */
+
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { loadTasks } from "../lib/manifest.js"
 import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
@@ -78,49 +90,72 @@ function getLastNonSyntheticUserMessageIndex(messages: MessageV2[]): number {
   return -1
 }
 
+/**
+ * V3.0: Build anchor context as SEPARATE synthetic part.
+ * Does NOT mutate user text - uses prependSyntheticPart instead.
+ */
 function buildAnchorContext(state: BrainState): string {
-  // Construct the "System Anchor" header
-  // [SYSTEM ANCHOR: Phase 2 - Auth Debug | Active Task ID: #44 | Hierarchy: Stale]
-
   const phase = state.hierarchy.trajectory || "Unset"
   const task = state.hierarchy.action || "Unset"
   const hierarchyStatus = state.metrics.context_updates > 0 ? "Active" : "Stale"
 
-  // Removed hardcoded "Phase " prefix to avoid duplication if phase string already contains it
-  const header = `[SYSTEM ANCHOR: ${phase} | Active Task: ${task} | Hierarchy: ${hierarchyStatus}]`
-
-  return header
+  return `[SYSTEM ANCHOR: ${phase} | Active Task: ${task} | Hierarchy: ${hierarchyStatus}]`
 }
 
-function wrapUserMessage(message: MessageV2, header: string): void {
-  // Wraps user content like:
-  // header
-  // User Intent: "original content"
-
+/**
+ * V3.0: PREPEND synthetic part (anchor context at START).
+ * Does NOT mutate user's original text - adds separate part.
+ */
+function prependSyntheticPart(message: MessageV2, text: string): void {
   if (isMessageWithParts(message)) {
-    // Find text part
-    const textPart = message.parts.find(p => p.type === "text")
-    if (textPart && textPart.text) {
-      textPart.text = `${header}\nUser Intent: "${textPart.text}"`
+    const firstPart = message.parts[0] as MessagePart | undefined
+    const sessionID = firstPart?.sessionID ?? message.info.sessionID
+    const messageID = firstPart?.messageID ?? message.info.id
+
+    if (!sessionID || !messageID) return
+
+    const syntheticPart: Part = {
+      id: `hm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      sessionID,
+      messageID,
+      type: "text",
+      text,
+      synthetic: true,
     }
+    // Prepend to start
+    message.parts = [syntheticPart, ...message.parts]
     return
   }
 
+  const syntheticPart: MessagePart = {
+    type: "text",
+    text,
+    synthetic: true,
+  }
+
   if (Array.isArray(message.content)) {
-    const textPart = message.content.find(p => p.type === "text" && !p.synthetic)
-    if (textPart && typeof textPart.text === "string") {
-      textPart.text = `${header}\nUser Intent: "${textPart.text}"`
-    }
+    message.content = [syntheticPart, ...message.content]
     return
   }
 
   if (typeof message.content === "string") {
-    message.content = `${header}\nUser Intent: "${message.content}"`
+    message.content = [
+      syntheticPart,
+      {
+        type: "text",
+        text: message.content,
+      },
+    ]
+    return
   }
+
+  message.content = [syntheticPart] // Fallback
 }
 
+/**
+ * APPEND synthetic part (checklist at END).
+ */
 function appendSyntheticPart(message: MessageV2, text: string): void {
-  // Appends to the END of the message parts
   if (isMessageWithParts(message)) {
     const firstPart = message.parts[0] as MessagePart | undefined
     const sessionID = firstPart?.sessionID ?? message.info.sessionID
@@ -185,9 +220,9 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
 
-        // 1. Mind Control: Contextual Anchoring (Wrap User Message)
+        // 1. V3.0: Contextual Anchoring via PREPEND (synthetic part, no mutation)
         const anchorHeader = buildAnchorContext(state)
-        wrapUserMessage(output.messages[index], anchorHeader)
+        prependSyntheticPart(output.messages[index], anchorHeader)
 
         // 2. Pre-Stop Conditional Reminders (Inject Checklist at END)
         const items: string[] = []
@@ -196,6 +231,11 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         if (!state.hierarchy.action) items.push("Action-level focus is missing (call map_context)")
         if (state.metrics.context_updates === 0) items.push("Is the file tree updated? (No map_context yet)")
         if (state.metrics.files_touched.length > 0) items.push("Have you forced an atomic git commit / PR for touched files?")
+
+        // V3.0: RESTORED - pending_failure_ack checklist (safety critical)
+        if (state.pending_failure_ack) {
+          items.push("Acknowledge pending subagent failure (call export_cycle or map_context with blocked status)")
+        }
 
         // Pending tasks
         const taskManifest = await loadTasks(directory)
@@ -214,22 +254,24 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         const tree = await loadTree(directory)
         if (tree.root) completedBranchCount = countCompleted(tree)
 
+        // V3.0: Pass user_turn_count and compaction_count
         const boundaryRecommendation = shouldCreateNewSession({
           turnCount: state.metrics.turn_count,
+          userTurnCount: state.metrics.user_turn_count,
           contextPercent,
           hierarchyComplete: completedBranchCount > 0,
           isMainSession: !role.includes("subagent"),
           hasDelegations: (state.cycle_log ?? []).some(entry => entry.tool === "task"),
+          compactionCount: state.compaction_count ?? 0,
         })
 
         if (boundaryRecommendation.recommended) {
            items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
         }
 
-        // Research artifacts check (if applicable, generic)
-        items.push("Are research artifacts symlinked? (if created)")
+        // V3.0: REMOVED - "research artifacts symlinked" noise (not actionable without context)
 
-        const checklist = buildChecklist(items, 1000) // Increased budget for checklist
+        const checklist = buildChecklist(items, 1000)
         if (checklist) {
           appendSyntheticPart(output.messages[index], checklist)
         }
