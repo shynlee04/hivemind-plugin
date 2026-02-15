@@ -501,7 +501,9 @@ export function createSessionLifecycleHook(
             if (visibleFiles.length > 0) {
                 isBrownfield = true
             }
-        } catch {}
+        } catch (err) {
+            await log.warn(`Brownfield detection failed: ${err}`)
+        }
 
         readFirstLines.push("<read-first>")
         if (isBrownfield) {
