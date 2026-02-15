@@ -9,8 +9,9 @@ interface InteractiveFooterProps {
 
 export function InteractiveFooter({ strings }: InteractiveFooterProps) {
   return (
-    <Box flexDirection="row" borderStyle="round" borderColor={COLORS.dim} paddingX={1} marginTop={1}>
-      <Text dimColor>{strings.controls}</Text>
+    <Box flexDirection="row" borderStyle="single" borderColor={COLORS.dim} paddingX={1} marginTop={1} justifyContent="space-between">
+      <Text color={COLORS.dim}>{strings.controls}</Text>
+      <Text color={COLORS.dim}>v3.0.0-beta</Text>
     </Box>
   );
 }
