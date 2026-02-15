@@ -1,483 +1,249 @@
-# HIVEMIND CONTEXT GOVERNANCE: MASTER SOURCE OF TRUTH (SOT)
+# HiveMind v3.0 — Relational Cognitive Engine Constitution
 
-**Last Updated:** 2026-02-15 | **Version:** `v2.6.2` | **Active Branch:** `dev-v3`
-**Current Phase:** Phase B COMPLETE | **Next Phase:** Phase C (Agent Tools & Mems Brain)
-**Audit Report:** `docs/plans/PHASE-A-B-AUDIT-2026-02-15.md`
+**Updated:** 2026-02-16 | **Version:** `v3.0.0` | **Branch:** `dev-v3`
 
 ---
 
-## VERIFICATION STATE (TRUST BUT VERIFY)
+## 1. BRANCH PROTECTION POLICY (CRITICAL)
 
-| Check | Status | Evidence |
-|-------|--------|----------|
-| **Tests** | 84/84 PASS | `npm test` |
-| **Typecheck** | CLEAN | `npx tsc --noEmit` |
-| **Branch Sync** | SYNCED | `git log origin/dev-v3..HEAD` = empty |
-| **Master Parity** | IDENTICAL | `git diff origin/dev-v3 origin/master` = empty |
-| **npm pack** | READY | `npm run build` → `hivemind-context-governance-2.6.2.tgz` |
-| **SDK Boundary** | CLEAN | `npm run lint:boundary` = zero violations |
+| Branch | Purpose | Allowed Content |
+|--------|---------|-----------------|
+| **`dev-v3`** | Development, planning, tracking, internal docs | **Everything**: AGENTS.md, CHANGELOG.md, .opencode/**, docs/plans/**, prompts/**, templates/** |
+| **`master`** | Public release (clean for end-users) | **Source code only**. NO secrets, NO planning docs, NO .opencode, NO "how-I-do-this" |
 
----
-
-## 1. PROJECT IDENTITY & DOMAIN SEGREGATION
-
-HiveMind is **not** a standard application; it is a **Meta-Framework Plugin** operating within the OpenCode Ecosystem. It sits between the platform and the user's host project to intercept, organize, and govern AI agent behavior, preventing context drift and enforcing multi-session memory.
-
-### The Fundamental Architecture (LEARN THIS)
-
+### Master Branch Forbidden Paths
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                         OPENCODE PLATFORM                        │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    HIVEMIND PLUGIN                         │  │
-│  │                                                            │  │
-│  │   ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │  │
-│  │   │   ENGINE    │───▶│    TOOLS    │◀───│  DISPLAY    │   │  │
-│  │   │ (SDK Hooks) │    │ (10 Tools)  │    │  (TUI/CLI)  │   │  │
-│  │   └─────────────┘    └─────────────┘    └─────────────┘   │  │
-│  │          │                   │                   │        │  │
-│  │          ▼                   ▼                   ▼        │  │
-│  │   ┌─────────────────────────────────────────────────────┐│  │
-│  │   │              .hivemind/ (State Layer)               ││  │
-│  │   │  state/ | sessions/ | memory/ | plans/ | logs/      ││  │
-│  │   └─────────────────────────────────────────────────────┘│  │
-│  └───────────────────────────────────────────────────────────┘  │
-│                              │                                   │
-│                              ▼                                   │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    HOST PROJECT                            │  │
-│  │         (User's codebase being governed)                   │  │
-│  └───────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
+AGENTS.md, CHANGELOG.md
+.opencode/**, .hivemind/**
+docs/plans/**, docs/reference/**
+prompts/**, templates/**, agents/**
 ```
 
-### Strict Separation of Concerns
-
-| Layer | Responsibility | Key Files |
-|-------|---------------|-----------|
-| **Engine** | SDK hooks, background automation, state mutations | `src/hooks/*.ts` |
-| **Tools** | 10 governance verbs (declare_intent, map_context, etc.) | `src/tools/*.ts` |
-| **Display** | TUI dashboard, CLI init, toasts (human observability only) | `src/dashboard/`, `src/cli/` |
-| **State** | JSON persistence, hierarchy tree, mems brain | `.hivemind/state/` |
-
-**Critical Insight:** The Engine drives the intelligence silently. The Display merely observes. Never confuse the two.
-
----
-
-## 2. CORE COMMANDMENTS FOR AI AGENTS (THE MINDSET)
-
-*If you are an AI Agent reading this to debug, plan, or write code, you MUST obey these operational principles:*
-
-### Commandment 1: Control the Smallest Unit First
-
-The framework lives or dies by the "Sub-Task" (the brain cell). If you cannot guarantee a 100% hit rate in tracking, completing, and enforcing atomic commits for a single sub-task, **do not attempt to orchestrate higher-level codebase plans.**
-
-```
-TRAJECTORY (What we're building)
-    └── TACTIC (How we're approaching it)
-        └── ACTION (What specific step we're doing NOW)
-            └── ATOMIC COMMIT (Proof of progress)
-```
-
-**Enforcement:** The `map_context` tool MUST be called when focus changes. The `export_cycle` tool MUST be called after every subagent return. The system tracks these; violations surface in the `<hivemind>` prompt block.
-
-### Commandment 2: Automation Over Expectation
-
-Never trust the AI to "magically" remember rules. Automation must guarantee state via:
-- **Forced schema parsing** — All state files have TypeScript interfaces with runtime validation
-- **SDK hooks** — `tool.execute.after` tracks every tool call automatically
-- **Backup/recovery** — Corrupt `brain.json` falls back to `.bak` or creates fresh state
-- **Deep merge defaults** — Missing config fields auto-populate from `DEFAULT_CONFIG`
-
-```typescript
-// Example: This is how we guarantee state, not by hoping AI remembers
-export function createConfig(overrides: Partial<HiveMindConfig> = {}): HiveMindConfig {
-  return {
-    ...DEFAULT_CONFIG,  // All defaults present
-    ...overrides,       // User overrides applied
-    agent_behavior: { ...DEFAULT_AGENT_BEHAVIOR, ...overrides.agent_behavior }
-  }
-}
-```
-
-### Commandment 3: Zero Trust for Flat Files
-
-The AI must never blindly read raw `.md` files. Unless an artifact contains:
-- **YAML Frontmatter** header with: `id`, `stamp`, `type`, `mode`, `created`
-- **Linkage** to active `hierarchy.json` via stamp matching
-- **Staleness check** — timestamp within acceptable window
-
-...it is considered **POISONED/STALE CONTEXT** and must be ignored.
-
-**Exception:** `INDEX.md` files are auto-generated manifests — safe to read for navigation.
-
-### Commandment 4: Soft Governance Only
-
-DO NOT attempt to hard-block native tool execution. Govern by:
-- **Context injection** — `<hivemind>` block in system prompt surfaces violations
-- **Escalation ladder** — INFO → WARN → CRITICAL → DEGRADED
-- **Forced re-reads** — Detection engine identifies drift and injects warnings
-
-```
-[INFO]    Turn 3 without map_context update
-[WARN]    Turn 5: drift_score 35/100 — use map_context to realign
-[CRITICAL] Turn 10: severe drift — declare_intent or compact_session required
-[DEGRADED] Session context compromised — fresh session recommended
-```
-
-**Why soft?** OpenCode SDK v1.1+ removed blocking capability. Governance must guide, not block.
-
-### Commandment 5: Complexity Layering (Trial & Error)
-
-Favor **depth over width** when navigating gray areas:
-- If SDK integration is complex → write isolated test script first
-- If hook behavior is unclear → add debug logging, run experiment, observe output
-- If state flow is ambiguous → trace the code path, don't assume
-
-**Pattern:**
-```
-1. ISOLATE: Extract the uncertain piece into a standalone test
-2. HYPOTHESIZE: Form a clear, testable hypothesis
-3. EXPERIMENT: Run the isolated test with instrumentation
-4. OBSERVE: Capture actual behavior, compare to hypothesis
-5. WIRE: Only after proven, integrate into main codebase
+### Guardrail
+```bash
+npm run guard:public  # Run BEFORE any master push
+# Override: ALLOW_SENSITIVE_PUBLIC=1 (explicit approval only)
 ```
 
 ---
 
-## 3. THE DATA LAYER: HIERARCHY & RELATIONSHIES (v2.0.0 STRUCTURE)
+## 2. THE ARCHITECTURAL TAXONOMY (The Biological Model)
 
-**STATUS: IMPLEMENTED** — The `.hivemind/` folder is now a strictly relational hierarchy.
+**Core Philosophy**: Transform HiveMind from a passive "Flat-File Markdown Logger" into an active **Relational Cognitive Engine** powered by CQRS, Graph-RAG, and the Actor Model.
 
-### Directory Structure
+### Layer Responsibilities
+
+| Layer | Location | Role | The Rule |
+|-------|----------|------|----------|
+| **Tools** | `src/tools/` | **Conscious Limbs** (Write-Only) | LLM-facing API wrappers. Zod schemas + descriptions. **>100 lines = architecturally flawed.** |
+| **Libraries** | `src/lib/` | **Subconscious Engine** (RAM/CPU) | Pure TypeScript logic. Never returns natural language. Returns JSON, Booleans, or dense XML. |
+| **Hooks** | `src/hooks/` | **Autonomic Nervous System** (Read-Auto) | SDK event listeners. Call Libraries to compile state into purified XML → inject as `synthetic: true`. |
+| **Schemas** | `src/schemas/` | **DNA** (Zod Validation Layer) | All graph nodes MUST have UUID `id` + explicit FK fields. Orphaned nodes fail validation. |
+
+### Enforcement Paradigms
+
+| Paradigm | Meaning |
+|----------|---------|
+| **CQRS** | Tools = Write-Only Commands. Hooks + Libs = Read-Only Queries. Agent writes via tools, NEVER reads its own memory via tools. |
+| **Graph-RAG** | All `graph/` entities are UUID-keyed JSON with FKs. Cognitive Packer traverses deterministically. |
+| **Actor Model** | Sessions are isolated containers. Sub-agent "swarms" run in headless child sessions via `client.session.create()` + `noReply: true`. |
+
+---
+
+## 3. THE `.hivemind` RELATIONAL STRUCTURE
 
 ```
 .hivemind/
-├── INDEX.md                 # Root entry point (auto-generated manifest)
-├── config.json              # Governance settings (governance_mode, language, etc.)
-├── state/
-│   ├── brain.json           # Runtime state (session, metrics, hierarchy projection)
-│   ├── brain.json.bak       # Automatic backup (corruption recovery)
-│   ├── hierarchy.json       # Tree structure (trajectory → tactic → action)
-│   ├── anchors.json         # Immutable constraints (persist across sessions)
-│   └── tasks.json           # Task manifest (todo.updated event persistence)
-├── memory/
-│   ├── mems.json            # Long-term semantic memory (decisions, patterns, errors)
-│   └── manifest.json        # Memory shelf counts + last_updated
-├── sessions/
-│   ├── active/              # Current session files (YAML frontmatter + markdown body)
-│   ├── archive/             # Compacted sessions (timestamped exports)
-│   └── manifest.json        # Session registry (active_stamp, status per session)
-├── plans/
-│   └── manifest.json        # Plan registry (linked_sessions per plan)
-├── logs/
-│   └── HiveMind.log         # Runtime diagnostics
-├── docs/
-│   └── 10-commandments.md   # Governance principles
-└── templates/
-    └── session.md           # Template for new session files
+├── system/                 # CORE GOVERNANCE
+│   ├── config.json         # TTS thresholds, 80% split limits
+│   └── manifest.json       # Master Index (maps all active UUIDs)
+│
+├── graph/                  # THE RELATIONAL DATABASE
+│   ├── trajectory.json     # Read-Head (active_plan_id, phase_id, task_ids[])
+│   ├── plans.json          # Epics & Phases (FK: sot_doc_path)
+│   ├── tasks.json          # Execution Graph (FK: parent_phase_id)
+│   └── mems.json           # Multi-shelf knowledge (FK: origin_task_id)
+│
+├── state/                  # HOT SESSION STATE
+│   ├── brain.json          # Slim: session metadata + metrics only
+│   ├── anchors.json        # Immutable anchors (survive compaction)
+│   └── hierarchy.json      # Legacy tree (deprecated after migration)
+│
+└── sessions/               # SDK CONTAINERS (Actor Model)
+    ├── active/             # Main session + swarms/
+    └── archive/            # Compacted + splits/
 ```
 
-### Manifest-Driven Traversal
-
-Agents must NOT glob-read directories. They must read manifests:
-- `INDEX.md` — Root entry point, lists all sub-manifests
-- `sessions/manifest.json` — Active session stamp, all session entries
-- `memory/manifest.json` — Shelf counts, last updated timestamps
-- `state/manifest.json` — State file metadata (purpose, last_modified)
-
-### Time-to-Stale Mechanism
-
-- **Threshold:** `stale_session_days` in config (default: 3 days)
-- **Detection:** `session.idle` event checks idle time
-- **Action:** Auto-archive via `archiveSession()`, reset hierarchy tree
-- **Guard:** Stale archive failure is non-destructive — logs error, continues
-
----
-
-## 4. SYSTEM DYNAMICS: THE 4 ENTRY POINTS (IMPLEMENTATION STATUS)
-
-| Entry Point | SDK Mechanism | Status | Implementation |
-|-------------|---------------|--------|----------------|
-| **1. New Session** | `session.create` / CLI Init | ✅ DONE | `src/cli/init.ts`, `scan_hierarchy` tool |
-| **2. Mid-Turn** | `experimental.chat.messages.transform` | ✅ DONE | `src/hooks/messages-transform.ts` |
-| **3. Compaction** | `experimental.session.compacting` | ✅ DONE | `src/hooks/compaction.ts` |
-| **4. Human Intent** | Tools + Skills | ⚠️ PARTIAL | Tools done, Skills integration pending |
-
-### Entry Point 1: New Session (Brownfield/Greenfield Detection)
-
+### Graph-RAG Topology
 ```
-CLI: hivemind init
-     │
-     ├─▶ Detect .hivemind/ exists?
-     │   ├─ NO  → Greenfield: Create full structure, prompt for governance_mode
-     │   └─ YES → Brownfield: Load existing config, validate state, offer scan
-     │
-     ├─▶ Sync OpenCode assets (commands, skills, agents, templates)
-     │
-     └─▶ Initialize brain.json with session_id, governance_status=LOCKED|OPEN
-```
-
-**Brownfield Resilience (7/8 scenarios handled gracefully):**
-- Corrupt `brain.json` → Backup recovery → Fresh state creation
-- Missing `hierarchy.json` → Empty tree fallback
-- Missing `config.json` field → Deep merge with DEFAULT_CONFIG
-- Random files in `state/` → Ignored (exact-path access only)
-
-**Known Gap:** Stale `AGENT_RULES.md` causes context poisoning. No runtime detection.
-
-### Entry Point 2: Mid-Turn (Stop-Decision Checklist Injection)
-
-```
-Every LLM turn → messages-transform hook fires
-     │
-     ├─▶ Load brain.json state
-     ├─▶ Load anchors.json
-     ├─▶ Load hierarchy.json cursor
-     │
-     ├─▶ Build continuity context:
-     │   <focus>trajectory > tactic > action</focus>
-     │   <anchor-context>
-     │     - [key1]: value1
-     │     - [key2]: value2
-     │   </anchor-context>
-     │
-     └─▶ Build stop-decision checklist:
-         <system-reminder>
-         CHECKLIST BEFORE STOPPING:
-         - [ ] Action-level focus is missing (call map_context)
-         - [ ] No map_context updates yet in this session
-         - [ ] Acknowledge pending subagent failure
-         - [ ] Create a git commit for touched files
-         - [ ] Session boundary reached: [reason]
-         </system-reminder>
-```
-
-**Budget Enforcement:**
-- Anchor context: 200 chars max
-- Checklist: 300 chars max
-- Total injection: <500 chars
-
-### Entry Point 3: Compaction (Context Preservation)
-
-```
-Compaction event → compaction hook fires
-     │
-     ├─▶ Load next_compaction_report from brain.json
-     ├─▶ Inject as first context item (purification report)
-     ├─▶ Clear next_compaction_report
-     │
-     └─▶ Inject standard HiveMind context:
-         - Hierarchy tree ASCII view
-         - Active trajectory/tactic/action
-         - Turning points (cursor path, completed nodes, stale gaps)
-```
-
-### Entry Point 4: Human Intent (Tool Dispatch)
-
-```
-User prompt → Tool calls fire → soft-governance hook tracks
-     │
-     ├─▶ Tool classification:
-     │   - read: glob, grep, read, webfetch
-     │   - write: write, edit, bash
-     │   - query: task, bash (non-destructive)
-     │   - governance: declare_intent, map_context, etc.
-     │
-     ├─▶ Violation detection:
-     │   - write without read → write_without_read_count++
-     │   - tool in LOCKED session → violation_count++
-     │   - drift (turns > threshold) → drift_score update
-     │
-     └─▶ Auto-commit (if enabled):
-         - shouldAutoCommit(tool) → true for write/edit/bash
-         - extractModifiedFiles(metadata)
-         - executeAutoCommit() → git add -A && git commit
+[PLAN] ─has many─▶ [PHASE] ─has many─▶ [TASK] ─generates─▶ [MEM]
+  │                    │                    │                   │
+  │ sot_doc_path       │ parent_plan_id(FK) │ parent_phase_id(FK)│ origin_task_id(FK)
+  │ status             │ order, status      │ assigned_session   │ type: insight|false_path
+  └─ phases[]          └─                   │ file_locks[]       │ staleness_stamp
+                                          └─ status             └─ shelf, tags
 ```
 
 ---
 
-## 5. TASK & TODO GOVERNANCE (THE SMALLEST UNIT)
-
-### Task Manifest Schema
-
-```typescript
-interface TaskManifest {
-  session_id: string
-  updated_at: number
-  tasks: TaskItem[]
-}
-
-interface TaskItem {
-  id: string
-  text: string
-  status: "pending" | "in_progress" | "completed" | "cancelled"
-  created_at?: number
-  completed_at?: number
-}
-```
-
-### Event Flow
+## 4. COGNITIVE PACKER FLOW (Repomix-for-State)
 
 ```
-OpenCode todowrite tool → todo.updated event → event-handler.ts
-     │
-     └─▶ saveTasks(directory, {
-           session_id: event.properties.sessionID,
-           updated_at: Date.now(),
-           tasks: event.properties.todos
-         })
-         → .hivemind/state/tasks.json
-```
+Step 1 — WRITE-THROUGH (Tools → Graph)
+  Agent calls tool → lib/graph-io.ts → Zod validates → UUID assigned → staleness_stamp computed
 
-**Note:** `tasks.json` is NOT read at runtime. It's a write-only persistence layer for the OpenCode TODO system. The `<hivemind>` prompt reminds agents to use `todowrite`/`todoread` tools.
+Step 2 — COMPILATION (lib/cognitive-packer.ts)
+  Read trajectory → Traverse via FK → Time Machine (drop false_path/invalidated)
+  → TTS Filter (drop stale mems unless linked) → Relevance sort
+
+Step 3 — COMPRESSION (Lib → XML)
+  <hivemind_state timestamp="..." session="..." compaction="#N">
+    <trajectory intent="..." plan="..." phase="..." active_tasks="3" />
+    <active_tasks>...</active_tasks>
+    <relevant_mems count="5" stale_dropped="12" false_path_pruned="3">...</relevant_mems>
+    <anchors>...</anchors>
+    <governance drift="75" turns="12" violations="0" health="85" />
+  </hivemind_state>
+
+Step 4 — INJECTION (Hook → LLM)
+  messages.transform fires → Inject TWO synthetic parts:
+  1. Context Payload (XML)
+  2. Pre-Stop Gate Checklist
+```
 
 ---
 
-## 6. PHASED MASTER ROADMAP
+## 5. TEAM ORCHESTRATION (V3.0)
 
-### Phase Status Summary
+### Two-Team Execution Model
 
-| Phase | Status | Key Deliverables |
-|-------|--------|------------------|
-| **A: Stabilize** | ✅ COMPLETE | Bug fixes, structure reorg, first-turn context |
-| **B: Lifecycle** | ✅ COMPLETE | Messages transform, session boundary, auto-commit, task manifest |
-| **C: Tools & Mems** | 🔴 NOT STARTED | Extraction tools, semantic mems, ralph loop |
-| **D: UX & Docs** | 🟡 PARTIAL | Commands bound, README done, wizard needs work |
+| Team | Scope | Mode | Focus |
+|------|-------|------|-------|
+| **JULES** | Frontend (OpenTUI Dashboard) | Remote sequential (clone `dev-v3`) | 5 views, bilingual EN/VI, Stitch designs |
+| **LOCAL** | Backend (Graph Schemas, Tools, Hooks) | Sequential or parallel sub-agents | CQRS, Graph-RAG, Actor Model |
 
-### Phase A: Stabilize & Untie the Knot (COMPLETE)
+### Integration Boundaries
+- **Schema contracts**: TypeScript interfaces in `src/schemas/`
+- **API boundaries**: Tool interfaces in `src/tools/`
+- **Event contracts**: Hook event types in `src/hooks/`
 
-**Evidence:** All bugs fixed, 78+ tests passing, hierarchy tree engine operational.
-
-| Deliverable | Status | Evidence |
-|-------------|--------|----------|
-| Fix `export_cycle` desync | ✅ | Syncs flat hierarchy projection after tree mutations |
-| Fix `declare_intent` overwrite | ✅ | Legacy `active.md` updated separately |
-| Fix stale auto-archive | ✅ | Resets `hierarchy.json`, prevents ghost context |
-| Wire `trackSectionUpdate` | ✅ | Active in soft-governance hook |
-| Implement `paths.ts` globally | ✅ | `getEffectivePaths()` used everywhere |
-| First-turn context | ✅ | `compileFirstTurnContext()` pulls prior session |
-
-### Phase B: Session Lifecycle & Task Governance (COMPLETE)
-
-**Evidence:** 83 tests passing, all 4 tracks merged to dev-v3/master.
-
-| Track | User Stories | Status | Evidence |
-|-------|--------------|--------|----------|
-| **A: Messages Transform** | US-001, US-002, US-003, US-003-A | ✅ | `src/hooks/messages-transform.ts` |
-| **B: Task Manifest** | US-004, US-005 | ✅ | `src/hooks/event-handler.ts`, `src/lib/manifest.ts` |
-| **C: Auto-Commit** | US-006, US-007 | ✅ | `src/lib/auto-commit.ts`, `src/hooks/soft-governance.ts` |
-| **D: Session Boundary** | US-008, US-009, US-010, US-011 | ✅ | `src/lib/session-boundary.ts`, SDK session create |
-
-### Phase C: Agent Tools & Mems Brain (NOT STARTED)
-
-**Prerequisites:** Phase B complete (✅)
-
-| Deliverable | Description | Complexity |
-|-------------|-------------|------------|
-| Extraction Tools | `npx repomix --json` for structured codebase reads | Medium |
-| Semantic Mems | `recall_mems` via SDK `client.find.text()` | High (SDK unknown) |
-| Ralph Loop | Cross-compaction orchestration, survives 5+ compactions | High |
-
-**Approach:** Complexity Layering required. Start with isolated experiments:
-1. Test `repomix` CLI output format
-2. Test SDK `find.text()` API behavior
-3. Test compaction state serialization
-
-### Phase D: Packing Automation & First-Run UX (PARTIAL)
-
-| Deliverable | Status | Notes |
-|-------------|--------|-------|
-| Slash Commands | ✅ | `.opencode/commands/` synced on init |
-| Skills Integration | ⚠️ | `.opencode/skills/` synced but not governed |
-| Interactive Wizard | ❌ | Race condition in auto-bootstrap needs fix |
-| Documentation | ✅ | README rewritten (EN/VI), CHANGELOG updated |
-
----
-
-## 7. BROWNFIELD RESILIENCE MATRIX
-
-| Scenario | Code Path | Result |
-|----------|-----------|--------|
-| Corrupt `brain.json` | `persistence.ts:199-217` | Backup recovery → fresh state |
-| Missing `hierarchy.json` | `hierarchy-tree.ts:803` | Empty tree → flat fallback |
-| Missing `manifest.json` | `manifest.ts:143-153` | Default fallback |
-| Config missing field | `config.ts:97-116` | Deep merge DEFAULT_CONFIG |
-| Missing `tasks.json` | Not read at runtime | No-op |
-| Random files in `state/` | Exact-path access only | Ignored |
-| Deleted `logs/` | `logging.ts:16-27` | `mkdir({recursive})` recreates |
-| **Stale AGENT_RULES.md** | No runtime check | **POISONING RISK** |
-
----
-
-## 8. INITIALIZATION PROTOCOL FOR AI AGENTS
-
-**If you are an AI Agent summoned to work on this repository, your immediate response must be:**
-
-### Step 1: Acknowledge This SOT
-
-State clearly that you understand:
-- The strict separation between **Engine** (SDK hooks) and **Display** (TUI)
-- The supremacy of the **Smallest Unit** (action-level atomic commits)
-- The current branch is **dev-v3** (not `dev/iteration-6-tui-cleanup`)
-- Phase A and Phase B are **COMPLETE** — do not propose work on them
-
-### Step 2: Verify Current State
-
-Run these commands and report results:
+### Quality Gates (Universal)
 ```bash
-npm test           # Expect: 83 tests passing
-npx tsc --noEmit   # Expect: clean
-git branch         # Expect: * dev-v3
-git log --oneline -3  # Expect: merge commits from Phase B
+npm test              # All tests pass
+npx tsc --noEmit      # Type check clean
 ```
 
-### Step 3: Identify Actual Work
-
-Based on the roadmap:
-- If Phase C → Propose isolated experiments for SDK integrations
-- If Phase D → Target the interactive wizard race condition
-- If Bug → Trace the code path, don't assume
-
-### Step 4: Wait for Human Approval
-
-**NEVER** modify files without explicit approval. Propose a surgical plan, get sign-off, then execute.
+### Quality Gates (UI Stories)
+```bash
+bun run dashboard     # Manual visual verification
+```
 
 ---
 
-## 9. KNOWN GAPS & EXPERIMENTATION AREAS
+## 6. EXECUTION PROTOCOL
 
-### High-Priority Experiments Needed
+### Before ANY Code Change
+1. **Read PRD**: `docs/plans/prd-hivemind-v3-relational-engine-2026-02-16.md`
+2. **Understand scope**: Each story = one agent iteration
+3. **Verify dependencies**: Schema → Backend → UI
 
-| Area | Hypothesis | Experiment |
-|------|------------|------------|
-| SDK `session.create` | Does it support `parentID` for navigation? | Write test script, call API, observe response |
-| SDK `find.text` | Does semantic search work on JSON files? | Create test mems, query, measure relevance |
-| Compaction state | Can we serialize hierarchy tree through 5+ compactions? | Simulate compaction chain, check state |
+### During Execution
+```
+declare_intent({ mode, focus })  — START every session
+map_context({ level, content })  — UPDATE when focus changes
+compact_session({ summary })     — END when done
+```
 
-### Known Code Gaps
-
-| Gap | Location | Impact | Fix Complexity |
-|-----|----------|--------|----------------|
-| `withState()` lacks migration | `persistence.ts:276-313` | Old brain.json could crash | Medium |
-| Stale AGENT_RULES.md | No runtime check | Context poisoning | Low (this file fixes it) |
-| Interactive wizard race | `src/cli/init.ts` | Silent auto-bootstrap | High (TUI timing) |
-
----
-
-## 10. GLOSSARY & KEY FILES
-
-| Term | Definition | Key File |
-|------|------------|----------|
-| **Trajectory** | Highest-level goal (what we're building) | `.hivemind/state/hierarchy.json` root |
-| **Tactic** | Approach to the trajectory (how) | hierarchy.json child of root |
-| **Action** | Specific step within tactic (now) | hierarchy.json leaf |
-| **Stamp** | Timestamp-based ID (YYMMDDHHMM + random) | All hierarchy nodes |
-| **Cursor** | Current focus node in hierarchy tree | `hierarchy.json.cursor` |
-| **Anchor** | Immutable constraint (persists across sessions) | `.hivemind/state/anchors.json` |
-| **Mem** | Long-term memory (decision, pattern, error) | `.hivemind/memory/mems.json` |
-| **Brain** | Runtime state object | `.hivemind/state/brain.json` |
+### After Each Story
+1. Run quality gates
+2. Commit with conventional message
+3. Push to `dev-v3` only
 
 ---
 
-*This document is the Source of Truth for AI agents. All other markdown files in this repository are subordinate. When in doubt, trust this file over any other artifact.*
+## 7. V3.0 PRD REFERENCE
+
+**Location:** `docs/plans/prd-hivemind-v3-relational-engine-2026-02-16.md`
+
+### Phase Overview (50 User Stories, 7 Phases)
+
+| Phase | Stories | Scope | God Prompt |
+|-------|---------|-------|------------|
+| **1** | US-001 to US-009 | Graph Schemas + Dumb Tool Diet | Foundation — everything depends on this |
+| **2** | US-010 to US-016 | CQRS Read Models | Context Compiler — pure data-structuring |
+| **3** | US-017 to US-023 | Graph-RAG Memory | Wire Packer into LLM cognition loop |
+| **4** | US-024 to US-029 | Actor Model Orchestration | Session Swarms + 80% Split |
+| **5** | US-030 to US-036 | Dead Code Cleanup + Tool Unification | Wire canonical tools, delete old |
+| **6** | US-037 to US-043 | Edge Cases + Hardening | Testing & verification |
+| **7** | US-044 to US-050 | OpenTUI Dashboard | 5 views, bilingual EN/VI |
+
+### Stitch Design Screens
+**Location:** `docs/stitch-screens/screen-*.html` (11 screens)
+
+---
+
+## 8. THE FOUR GOD PROMPTS
+
+### God Prompt 1: Graph Database & Dumb Tool Diet
+> Build `src/schemas/graph-nodes.ts` (Zod) — strict relational schemas with UUID + FK. Extract ALL business logic from tools → libs. Tools must ONLY define Zod schema + call lib + return string. **≤100 lines each.**
+
+### God Prompt 2: The Cognitive Packer
+> Build `src/lib/cognitive-packer.ts` — deterministic Context Compiler. Reads trajectory → traverses graph via FK → Time Machine prunes false_path → TTS filters stale mems → compresses to XML. **NO LLM prompts, NO tool definitions.**
+
+### God Prompt 3: SDK Mid-Turn Injection & Pre-Stop Gate
+> Wire packer output into LLM cognition via `messages.transform`. Push TWO synthetic parts: (1) XML context, (2) Pre-Stop Gate checklist. Slim `session-lifecycle.ts` from 586L → **≤200L**.
+
+### God Prompt 4: Session Swarms & The 80% Split
+> Build `src/lib/session-swarm.ts` — SDK session manipulation + Actor Model. Monitor token pressure → at 80%: `packCognitiveState()` → `client.session.create()` → `noReply` inject XML as Turn 0. Headless researchers save to graph/mems.json.
+
+---
+
+## 9. VERIFICATION STATE
+
+| Check | Command | Expected |
+|-------|---------|----------|
+| Tests | `npm test` | All pass |
+| Types | `npx tsc --noEmit` | Clean |
+| Guard | `npm run guard:public` | Zero violations (master) |
+
+---
+
+## 10. KEY FILES
+
+| File | Purpose |
+|------|---------|
+| `src/schemas/graph-nodes.ts` | Zod schemas for all graph entities |
+| `src/lib/cognitive-packer.ts` | Context compiler (Phase 2) |
+| `src/lib/graph-io.ts` | CRUD for graph/*.json |
+| `src/lib/session-swarm.ts` | Actor Model swarms (Phase 4) |
+| `src/hooks/messages-transform.ts` | Mid-turn injection |
+| `scripts/guard-public-branch.sh` | Master branch protection |
+
+---
+
+## 11. STYLE CONVENTIONS
+
+- **Indent:** 2 spaces
+- **Quotes:** Double quotes
+- **Imports:** Use `.js` extension for local imports
+- **Paths:** ALWAYS use `getEffectivePaths()` from `src/lib/paths.ts`
+- **Tools:** ≤100 lines each (dumb tools)
+
+---
+
+## 12. GLOSSARY
+
+| Term | Definition |
+|------|------------|
+| **Trajectory** | The "Read-Head" — active plan/phase/task IDs |
+| **Read-Head** | Current focus in the graph (trajectory.json) |
+| **Time Machine** | Drops `false_path` and `invalidated` nodes from context |
+| **TTS** | Time-To-Stale — filters expired mems |
+| **Stamp** | Timestamp-based ID (YYMMDDHHMM + random) |
+| **Anchor** | Immutable constraint (survives compaction) |
+| **Mem** | Long-term memory (insight or false_path) |
+| **Swarm** | Headless sub-agent session with `noReply: true` |
+
+---
+
+*This is the Constitution. Refer to `docs/refactored-plan.md` for architectural details and `docs/plans/prd-hivemind-v3-relational-engine-2026-02-16.md` for user stories.*
