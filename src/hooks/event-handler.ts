@@ -23,6 +23,7 @@ import type {
   EventSessionCompacted,
   EventFileEdited,
   EventSessionDiff,
+  EventTodoUpdated,
 } from "@opencode-ai/sdk"
 import type { Logger } from "../lib/logging.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
@@ -135,16 +136,38 @@ export function createEventHandler(log: Logger, directory: string) {
           break
 
         case "todo.updated": {
-          const evt = event as any
-          await log.debug(`[event] todo.updated: ${evt.properties?.sessionID || "unknown"}`)
+          const evt = event as EventTodoUpdated | { properties?: { sessionID?: unknown; todos?: unknown[] } }
+          const rawTodos = Array.isArray(evt.properties?.todos) ? evt.properties.todos : []
+          const sessionID =
+            typeof evt.properties?.sessionID === "string" && evt.properties.sessionID.length > 0
+              ? evt.properties.sessionID
+              : "unknown"
+          await log.debug(`[event] todo.updated: ${sessionID}`)
 
-          if (evt.properties?.todos) {
-            const payload = {
-              session_id: evt.properties.sessionID || "unknown",
-              updated_at: Date.now(),
-              tasks: evt.properties.todos
-            }
-            await saveTasks(directory, payload)
+          if (rawTodos.length > 0) {
+            const now = Date.now()
+            const tasks = rawTodos.map((todo: any, index: number) => {
+              const content =
+                typeof todo?.content === "string"
+                  ? todo.content
+                  : typeof todo?.text === "string"
+                    ? todo.text
+                    : ""
+              return {
+                id: typeof todo?.id === "string" && todo.id.length > 0 ? todo.id : `todo-${index + 1}`,
+                text: content,
+                content,
+                status: typeof todo?.status === "string" ? todo.status : "pending",
+                priority: typeof todo?.priority === "string" ? todo.priority : "medium",
+                updated_at: now,
+              }
+            })
+
+            await saveTasks(directory, {
+              session_id: sessionID,
+              updated_at: now,
+              tasks,
+            })
           }
           break
         }

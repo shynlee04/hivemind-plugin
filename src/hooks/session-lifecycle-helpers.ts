@@ -3,6 +3,7 @@ import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { loadAnchors } from "../lib/anchors.js";
 import { loadMems } from "../lib/mems.js";
+import { loadTasks } from "../lib/manifest.js";
 import { readManifest } from "../lib/planning-fs.js";
 import { detectFrameworkContext } from "../lib/framework-context.js";
 import type { BrainState } from "../schemas/brain-state.js";
@@ -300,7 +301,36 @@ export async function compileFirstTurnContext(
     // Non-fatal
   }
 
-  // 3. Prior session trajectory from manifest (budget: 200 chars)
+  // 3. Pending tasks summary (budget: 220 chars)
+  try {
+    const taskManifest = await loadTasks(directory);
+    if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
+      const pending = taskManifest.tasks.filter((task) => {
+        const status = String(task.status ?? "pending").toLowerCase();
+        return status !== "completed" && status !== "cancelled";
+      });
+
+      if (pending.length > 0) {
+        const taskSummary = pending
+          .slice(0, 3)
+          .map((task) => {
+            const text =
+              typeof task.text === "string" && task.text.trim().length > 0
+                ? task.text.trim()
+                : typeof task.content === "string"
+                  ? task.content.trim()
+                  : "(untitled task)";
+            return text.slice(0, 60);
+          })
+          .join("; ");
+        lines.push(`Tasks (${pending.length} pending/${taskManifest.tasks.length} total): ${taskSummary.slice(0, 200)}`);
+      }
+    }
+  } catch {
+    // Non-fatal
+  }
+
+  // 4. Prior session trajectory from manifest (budget: 200 chars)
   try {
     const manifest = await readManifest(directory);
     const priorSession = [...manifest.sessions]

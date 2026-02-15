@@ -15,6 +15,7 @@ import {
 } from "../src/hooks/session-lifecycle-helpers.js";
 import { createBrainState } from "../src/schemas/brain-state.js";
 import { createConfig } from "../src/schemas/config.js";
+import { saveTasks } from "../src/lib/manifest.js";
 
 function createTempDir(): string {
   return mkdtempSync(join(tmpdir(), "hm-lifecycle-test-"));
@@ -157,6 +158,24 @@ describe("Session Lifecycle Helpers", () => {
           const context = await compileFirstTurnContext(dir, state);
           assert.ok(context.includes("Prior session"));
           assert.ok(context.includes("Build X"));
+      });
+
+      it("should include pending tasks summary", async () => {
+          const dir = createTempDir();
+          mkdirSync(join(dir, ".hivemind", "state"), { recursive: true });
+          await saveTasks(dir, {
+              session_id: "s1",
+              updated_at: Date.now(),
+              tasks: [
+                  { id: "1", text: "Wire task replay", status: "pending" },
+                  { id: "2", text: "Done task", status: "completed" },
+              ],
+          });
+
+          const state = createBrainState("test", createConfig());
+          const context = await compileFirstTurnContext(dir, state);
+          assert.ok(context.includes("Tasks (1 pending/2 total)"));
+          assert.ok(context.includes("Wire task replay"));
       });
   });
 });

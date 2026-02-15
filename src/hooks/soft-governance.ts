@@ -36,7 +36,7 @@ import { detectLongSession } from "../lib/long-session.js"
 import { executeAutoCommit, extractModifiedFiles, shouldAutoCommit } from "../lib/auto-commit.js"
 import { getClient } from "./sdk-context.js"
 import { checkAndRecordToast, resetAllThrottles } from "../lib/toast-throttle.js"
-import { loadTree, countCompleted } from "../lib/hierarchy-tree.js"
+import { loadTree, countCompleted, getAncestors } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
 import { generateExportData, generateJsonExport, generateMarkdownExport } from "../lib/session-export.js"
 import { getExportDir } from "../lib/planning-fs.js"
@@ -164,10 +164,15 @@ async function maybeCreateNonDisruptiveSessionSplit(opts: {
   }
 
   let completedBranchCount = 0
+  let treeFocusPath = ""
   try {
     const tree = await loadTree(directory)
     if (tree.root) {
       completedBranchCount = countCompleted(tree)
+      if (tree.cursor) {
+        const path = getAncestors(tree.root, tree.cursor).map(node => node.content).join(" > ")
+        if (path) treeFocusPath = path
+      }
     }
   } catch {
     return state
@@ -206,7 +211,12 @@ async function maybeCreateNonDisruptiveSessionSplit(opts: {
     await writeFile(join(exportDir, `${baseName}.json`), generateJsonExport(exportData))
     await writeFile(join(exportDir, `${baseName}.md`), generateMarkdownExport(exportData, body))
 
-    const focus = state.hierarchy.action || state.hierarchy.tactic || state.hierarchy.trajectory || "Continuation"
+    const focus =
+      state.hierarchy.action ||
+      state.hierarchy.tactic ||
+      state.hierarchy.trajectory ||
+      treeFocusPath ||
+      "Continuation"
     const created = await client.session.create({
       directory,
       title: `HiveMind split: ${focus}`,
