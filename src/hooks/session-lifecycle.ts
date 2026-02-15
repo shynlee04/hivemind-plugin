@@ -492,16 +492,35 @@ export function createSessionLifecycleHook(
         (!state.hierarchy.trajectory && !state.hierarchy.tactic && !state.hierarchy.action)
 
       if (isCleanState) {
-        // Inject "READ FIRST" guidance for new/clean state
+        // Detect Greenfield vs Brownfield
+        let isBrownfield = false
+        try {
+            const { readdir } = await import("fs/promises")
+            const files = await readdir(directory)
+            const visibleFiles = files.filter(f => !f.startsWith(".") && f !== "hivemind" && f !== "node_modules" && f !== "bun.lockb" && f !== "package-lock.json")
+            if (visibleFiles.length > 0) {
+                isBrownfield = true
+            }
+        } catch {}
+
         readFirstLines.push("<read-first>")
-        readFirstLines.push("## STATE: NEW PROJECT / CLEAN STATE")
+        if (isBrownfield) {
+            readFirstLines.push("## EXPERT PROTOCOL: BROWNFIELD DETECTED")
+            readFirstLines.push("")
+            readFirstLines.push("I detect existing code in this directory. Based on SOT:")
+            readFirstLines.push("1. **SCAN**: Run `scan_hierarchy({ action: \"analyze\" })` immediately to map the codebase.")
+            readFirstLines.push("2. **INTEGRATE**: Identify where HiveMind fits (e.g., `docs/plans/`).")
+            readFirstLines.push("3. **ADOPT**: Do not overwrite without reading. Use `read_file` to explore.")
+        } else {
+            readFirstLines.push("## STATE: NEW PROJECT / GREENFIELD")
+            readFirstLines.push("")
+            readFirstLines.push("This is a clean state. Before ANY work:")
+            readFirstLines.push("1. **SCAN**: Confirm environment.")
+            readFirstLines.push("2. **PLAN**: Check `docs/plans/` or create one.")
+            readFirstLines.push("3. **DECIDE**: Call `declare_intent({ mode, focus })`.")
+        }
         readFirstLines.push("")
-        readFirstLines.push("This is a NEW project or clean state. Before ANY work:")
-        readFirstLines.push("1. **SCAN first**: Use `scan_hierarchy({ action: \"analyze\" })` to understand project")
-        readFirstLines.push("2. **READ master plan**: Check `docs/plans/` for existing plans")
-        readFirstLines.push("3. **DECIDE focus**: Then call `declare_intent({ mode, focus })`")
-        readFirstLines.push("")
-        readFirstLines.push("Do NOT start writing code until you understand the project structure.")
+        readFirstLines.push("Do NOT start writing code until you understand the structure.")
         readFirstLines.push("</read-first>")
       }
 
