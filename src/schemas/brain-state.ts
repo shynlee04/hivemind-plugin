@@ -36,7 +36,10 @@ export interface SelfRating {
 }
 
 export interface MetricsState {
+  /** Tool execution count (many per user message) - used for health tracking */
   turn_count: number;
+  /** User response cycles (one per user→assistant→user) - used for split logic */
+  user_turn_count: number;
   drift_score: number;
   files_touched: string[];
   context_updates: number;
@@ -158,6 +161,7 @@ export function createBrainState(
     },
     metrics: {
       turn_count: 0,
+      user_turn_count: 0,
       drift_score: 100,
       files_touched: [],
       context_updates: 0,
@@ -243,12 +247,28 @@ export function incrementTurnCount(state: BrainState): BrainState {
   };
 }
 
+/** Increment user_turn_count (called on session.idle event - after each user→assistant→user cycle) */
+export function incrementUserTurnCount(state: BrainState): BrainState {
+  return {
+    ...state,
+    metrics: {
+      ...state.metrics,
+      user_turn_count: state.metrics.user_turn_count + 1,
+    },
+    session: {
+      ...state.session,
+      last_activity: Date.now(),
+    },
+  };
+}
+
 export function resetTurnCount(state: BrainState): BrainState {
   return {
     ...state,
     metrics: {
       ...state.metrics,
       turn_count: 0,
+      user_turn_count: 0,
       drift_score: Math.min(100, state.metrics.drift_score + 10),
     },
     session: {

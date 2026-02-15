@@ -62,11 +62,21 @@ export function createEventHandler(log: Logger, directory: string) {
           }
 
           let nextState = state
+          
+          // V3.0: Increment user_turn_count on each user→assistant→user cycle
+          nextState = {
+            ...nextState,
+            metrics: {
+              ...nextState.metrics,
+              user_turn_count: nextState.metrics.user_turn_count + 1,
+            },
+          }
+          
           const staleness = getStalenessInfo(nextState, config.stale_session_days)
 
           // FLAW-TOAST-004 FIX: Only emit drift toast when score < 30 (was < 50)
-          // and only after 10+ turns to avoid false urgency during active exploration
-          if (nextState.metrics.drift_score < 30 && nextState.metrics.turn_count >= 10) {
+          // and only after 10+ user turns to avoid false urgency during active exploration
+          if (nextState.metrics.drift_score < 30 && nextState.metrics.user_turn_count >= 10) {
             const repeatCount = nextState.metrics.governance_counters.drift
             const severity = computeGovernanceSeverity({
               kind: "drift",

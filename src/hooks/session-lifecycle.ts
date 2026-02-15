@@ -431,10 +431,12 @@ export function createSessionLifecycleHook(
       )
       const boundaryRecommendation = shouldCreateNewSession({
         turnCount: state.metrics.turn_count,
+        userTurnCount: state.metrics.user_turn_count,
         contextPercent,
         hierarchyComplete: (completedBranchCount ?? 0) > 0,
         isMainSession: !role.includes("subagent"),
         hasDelegations: (state.cycle_log ?? []).some((entry) => entry.tool === "task"),
+        compactionCount: state.compaction_count ?? 0,
       })
 
       if (boundaryRecommendation.recommended) {

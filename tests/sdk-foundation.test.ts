@@ -193,7 +193,7 @@ async function test_eventHandlerIdleEscalationAndCompactionInfoToast() {
   const sm = createStateManager(dir)
   const state = createBrainState(generateSessionId(), config)
   state.metrics.drift_score = 20  // Below 30 threshold for drift toast
-  state.metrics.turn_count = 12   // Above 10 turn threshold
+  state.metrics.user_turn_count = 12   // V3.0: Above 10 USER TURN threshold
   state.session.last_activity = Date.now() - (5 * 86_400_000)
   await sm.save(state)
   resetToastCooldowns()

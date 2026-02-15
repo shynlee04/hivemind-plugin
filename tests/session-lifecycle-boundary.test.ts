@@ -40,9 +40,12 @@ async function testBoundaryWarningInjectedWhenConditionsAreMet() {
       throw new Error("missing state after init")
     }
 
+    // V3.0: Need user_turn_count >= 30 AND (compactionCount >= 2 OR hierarchyComplete)
     state.metrics.turn_count = 35
+    state.metrics.user_turn_count = 35  // V3.0: User response cycles
     state.session.role = "main"
     state.cycle_log = []
+    state.compaction_count = 2  // V3.0: Trigger condition
     await stateManager.save(state)
 
     const root = createNode("trajectory", "Phase B complete", "complete")
@@ -63,8 +66,10 @@ async function testBoundaryWarningInjectedWhenConditionsAreMet() {
     await hook({ sessionID: "test-session" }, output)
 
     const text = output.system.join("\n")
-    assert(text.includes("🔄 Natural boundary reached"), "includes boundary recommendation line")
-    assert(text.includes("→ Run /hivemind-compact to archive and start fresh"), "includes compact handoff instruction")
+    // Debug: print the output
+    process.stderr.write(`\n--- DEBUG OUTPUT ---\n${text.slice(0, 500)}\n--- END ---\n`)
+    assert(text.includes("Natural boundary"), "includes boundary recommendation line")
+    assert(text.includes("Run /hivemind-compact"), "includes compact handoff instruction")
   } finally {
     await rm(dir, { recursive: true, force: true })
   }

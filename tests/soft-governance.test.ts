@@ -856,7 +856,9 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
   const state = unlockSession(createBrainState(generateSessionId(), config))
   state.session.role = "main"
   state.metrics.turn_count = 30
+  state.metrics.user_turn_count = 35  // V3.0: User response cycles
   state.metrics.files_touched = ["src/a.ts"]
+  state.compaction_count = 2  // V3.0: Trigger condition
   await sm.save(state)
 
   const trajectory = createNode("trajectory", "Phase B")
@@ -898,6 +900,7 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
 
   assert(createCalls.length === 1, "auto split calls session.create once")
   assert(createCalls[0].title.includes("Boundary split"), "auto split title uses active hierarchy focus")
+  assert(createCalls[0].parentID === "test-session", "V3.0: auto split passes parentID for SDK linkage")
   assert((updated?.metrics.turn_count ?? -1) === 0, "auto split resets turn count")
   assert((updated?.metrics.files_touched.length ?? -1) === 0, "auto split clears files_touched")
   assert((updated?.metrics.drift_score ?? -1) === 100, "auto split restores drift score")
@@ -913,7 +916,7 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
 // ─── Runner ──────────────────────────────────────────────────────────
 
 async function test_auto_split_triggers_when_context_is_high() {
-  process.stderr.write("\n--- soft-governance: auto split triggers at high context ---\n")
+  process.stderr.write("\n--- soft-governance: auto split DEFENSIVE at high context ---\n")
   const dir = await setup()
   const config = createConfig({
     governance_mode: "assisted",
@@ -926,6 +929,8 @@ async function test_auto_split_triggers_when_context_is_high() {
   const state = unlockSession(createBrainState(generateSessionId(), config))
   state.session.role = "main"
   state.metrics.turn_count = 80
+  state.metrics.user_turn_count = 35  // V3.0: User response cycles
+  state.compaction_count = 2  // V3.0: Trigger condition
   await sm.save(state)
 
   const createCalls: Array<Record<string, unknown>> = []
@@ -948,8 +953,9 @@ async function test_auto_split_triggers_when_context_is_high() {
   await hook(makeInput("map_context"), makeOutput())
 
   const updated = await sm.load()
-  assert(createCalls.length === 1, "auto split triggers when context is >=80%")
-  assert((updated?.metrics.turn_count ?? -1) === 0, "turn count reset after high context split")
+  // V3.0: High context (>=80%) is now DEFENSIVE guard - should NOT trigger split
+  assert(createCalls.length === 0, "V3.0: auto split does NOT trigger at high context (defensive guard)")
+  assert((updated?.metrics.turn_count ?? -1) === 81, "V3.0: turn count not reset (no split occurred)")
 
   resetSdkContext()
   await cleanup()

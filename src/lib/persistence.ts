@@ -177,6 +177,8 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
           parsed.metrics.keyword_flags ??= []
           parsed.metrics.write_without_read_count ??= 0
           parsed.metrics.tool_type_counts ??= { read: 0, write: 0, query: 0, governance: 0 }
+          // Migration: user_turn_count (v3.0) - counts user response cycles, not tool calls
+          parsed.metrics.user_turn_count ??= 0
           parsed.metrics.governance_counters ??= {
             out_of_order: 0,
             drift: 0,
