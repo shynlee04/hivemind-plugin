@@ -12,10 +12,52 @@
       },
       "models": {
         "e51e818e-fa63-570d-9f68-49d7d1b4d12f": {
-          "name": "GLM-5-FP8 Chute"
+          "name": "GLM-5-TEE"
+        },
+        "ce6a92e4-5c2f-5681-9742-c80a4447bbdf": {
+          "name": "MiniMax-M2.5-TEE"
+        },
+        "572bd930-0438-520c-a4a4-56874be296f8": {
+          "name": "GLM-4.7-FP8"
         }
       }
     }
   },
-  "model": "chutes-api/e51e818e-fa63-570d-9f68-49d7d1b4d12f"
+  "model": "chutes-api/e51e818e-fa63-570d-9f68-49d7d1b4d12f",
+  "agent": {
+    "explore": {
+      "description": "A fast, read-only agent for exploring codebases. Cannot modify files. Use this when you need to quickly find files by patterns, search code for keywords, or answer questions about the codebase.",
+      "mode": "subagent",
+      "hidden": true,
+      "model": "chutes-api/572bd930-0438-520c-a4a4-56874be296f8",
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true,
+        "bash": true,
+        "write": false,
+        "edit": false
+      }
+    },
+    "scanner": {
+      "description": "Hidden scanner subagent for deep investigation, memory retrieval, and comprehensive search operations. Use for complex scanning tasks, retracing memory, and thorough codebase analysis.",
+      "mode": "subagent",
+      "hidden": true,
+      "model": "chutes-api/ce6a92e4-5c2f-5681-9742-c80a4447bbdf",
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true,
+        "webfetch": true,
+        "websearch": true,
+        "save_mem": true,
+        "recall_mems": true,
+        "scan_hierarchy": true,
+        "think_back": true,
+        "write": true,
+        "edit": true,
+        "bash": true
+      }
+    }
+  }
 }
