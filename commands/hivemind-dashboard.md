@@ -15,7 +15,7 @@ hivemind dashboard [options]
 
 ## Options
 
-*   --lang <en|vietnamese>: Set initial language (default: en).
+*   --lang <en|vi>: Set initial language (default: en).
 *   --refresh <seconds>: Set refresh interval in seconds (default: 2).
 
 ## Features
