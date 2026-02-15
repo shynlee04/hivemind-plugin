@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HiveMind Tool Registry</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #0d0d0d;
+            --panel-bg: #111111;
+            --border-color: #333333;
+            --neon-green: #00ff41;
+            --neon-amber: #ffb000;
+            --neon-blue: #00f0ff;
+            --neon-red: #ff3333;
+            --dim-text: #666666;
+            --term-font: 'JetBrains Mono', monospace;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: #ccc;
+            font-family: var(--term-font);
+            overflow: hidden;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .tui-border {
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        .tui-title {
+            position: absolute;
+            top: -10px;
+            left: 1rem;
+            background-color: var(--bg-color);
+            padding: 0 0.5rem;
+            color: var(--neon-green);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0, 255, 65, 0.04) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100%; }
+        }
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-green); 
+        }
+        .table-row:hover {
+            background-color: rgba(0, 255, 65, 0.05);
+            cursor: pointer;
+        }
+        .selected-row {
+            background-color: rgba(0, 255, 65, 0.1);
+            border-left: 2px solid var(--neon-green);
+        }
+        .cmd-input:focus {
+            outline: none;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col p-2 text-xs md:text-sm">
+<header class="flex justify-between items-center px-4 py-2 border-b border-[#333] mb-2 text-[#666]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[var(--neon-green)] text-lg">terminal</span>
+<h1 class="text-[var(--neon-green)] font-bold tracking-wider">HIVEMIND<span class="text-white">_v3.0</span>::TOOL_REGISTRY</h1>
+</div>
+<div class="flex gap-6">
+<div>SESSION_ID: <span class="text-[var(--neon-blue)]">HM-REG-992</span></div>
+<div>STATUS: <span class="text-[var(--neon-green)]">CONFIG_MODE</span></div>
+<div>UPTIME: <span class="text-white">04:22:19</span></div>
+</div>
+</header>
+<main class="flex-1 grid grid-cols-12 gap-2 overflow-hidden relative">
+<div class="scanline"></div>
+<section class="col-span-8 tui-border p-4 flex flex-col bg-[var(--panel-bg)]">
+<div class="tui-title">Registered Tools</div>
+<div class="flex justify-between items-end mb-2 border-b border-[#333] pb-2">
+<div class="flex gap-4 text-xs">
+<div class="flex items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined text-[14px]">filter_list</span>
+                        FILTER: <span class="text-white">ALL</span>
+</div>
+<div class="flex items-center gap-1 text-gray-400">
+<span class="material-symbols-outlined text-[14px]">sort</span>
+                        SORT: <span class="text-[var(--neon-green)]">CALLS (DESC)</span>
+</div>
+</div>
+<div class="text-[10px] text-gray-500">
+                    TOTAL_TOOLS: 14 | ACTIVE: 12
+                </div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 bg-[var(--panel-bg)] z-10 text-[10px] text-gray-500 uppercase tracking-wider border-b border-[#333]">
+<tr>
+<th class="py-2 pl-2">Tool Identifier</th>
+<th class="py-2">Type</th>
+<th class="py-2">Status</th>
+<th class="py-2 text-right">Avg Exec (ms)</th>
+<th class="py-2 text-right pr-2">Total Calls</th>
+</tr>
+</thead>
+<tbody class="text-xs font-mono">
+<tr class="table-row selected-row border-b border-[#222]">
+<td class="py-3 pl-2 text-[var(--neon-green)] font-bold">hivemind_inspect</td>
+<td class="py-3 text-gray-400">System::Read</td>
+<td class="py-3"><span class="bg-[#003300] text-[var(--neon-green)] px-1 py-0.5 rounded text-[10px]">ENABLED</span></td>
+<td class="py-3 text-right text-gray-300">45ms</td>
+<td class="py-3 text-right pr-2 text-[var(--neon-blue)]">12,402</td>
+</tr>
+<tr class="table-row border-b border-[#222]">
+<td class="py-3 pl-2 text-white">hivemind_anchor</td>
+<td class="py-3 text-gray-400">System::Write</td>
+<td class="py-3"><span class="bg-[#003300] text-[var(--neon-green)] px-1 py-0.5 rounded text-[10px]">ENABLED</span></td>
+<td class="py-3 text-right text-gray-300">120ms</td>
+<td class="py-3 text-right pr-2 text-white">8,110</td>
+</tr>
+<tr class="table-row border-b border-[#222]">
+<td class="py-3 pl-2 text-white">hivemind_packer</td>
+<td class="py-3 text-gray-400">Core::Context</td>
+<td class="py-3"><span class="bg-[#003300] text-[var(--neon-green)] px-1 py-0.5 rounded text-[10px]">ENABLED</span></td>
+<td class="py-3 text-right text-gray-300">850ms</td>
+<td class="py-3 text-right pr-2 text-white">4,200</td>
+</tr>
+<tr class="table-row border-b border-[#222]">
+<td class="py-3 pl-2 text-gray-400">custom_tool_v1_beta</td>
+<td class="py-3 text-gray-500">User::Extension</td>
+<td class="py-3"><span class="bg-[#331a00] text-[var(--neon-amber)] px-1 py-0.5 rounded text-[10px]">WARN</span></td>
+<td class="py-3 text-right text-[var(--neon-amber)]">2400ms</td>
+<td class="py-3 text-right pr-2 text-white">153</td>
+</tr>
+<tr class="table-row border-b border-[#222]">
+<td class="py-3 pl-2 text-white">hivemind_cycle</td>
+<td class="py-3 text-gray-400">Core::LifeCycle</td>
+<td class="py-3"><span class="bg-[#330000] text-[var(--neon-red)] px-1 py-0.5 rounded text-[10px]">DISABLED</span></td>
+<td class="py-3 text-right text-gray-500">-</td>
+<td class="py-3 text-right pr-2 text-gray-500">0</td>
+</tr>
+<tr class="table-row border-b border-[#222]">
+<td class="py-3 pl-2 text-white">web_search_duckduckgo</td>
+<td class="py-3 text-gray-400">External::Network</td>
+<td class="py-3"><span class="bg-[#003300] text-[var(--neon-green)] px-1 py-0.5 rounded text-[10px]">ENABLED</span></td>
+<td class="py-3 text-right text-gray-300">1420ms</td>
+<td class="py-3 text-right pr-2 text-white">2,109</td>
+</tr>
+<tr class="table-row border-b border-[#222]">
+<td class="py-3 pl-2 text-white">calc_math_engine</td>
+<td class="py-3 text-gray-400">Utility::Compute</td>
+<td class="py-3"><span class="bg-[#003300] text-[var(--neon-green)] px-1 py-0.5 rounded text-[10px]">ENABLED</span></td>
+<td class="py-3 text-right text-gray-300">12ms</td>
+<td class="py-3 text-right pr-2 text-white">9,881</td>
+</tr>
+<tr class="table-row border-b border-[#222]">
+<td class="py-3 pl-2 text-white">fs_read_local</td>
+<td class="py-3 text-gray-400">System::IO</td>
+<td class="py-3"><span class="bg-[#003300] text-[var(--neon-green)] px-1 py-0.5 rounded text-[10px]">ENABLED</span></td>
+<td class="py-3 text-right text-gray-300">8ms</td>
+<td class="py-3 text-right pr-2 text-white">1,002</td>
+</tr>
+<tr class="table-row border-b border-[#222]">
+<td class="py-3 pl-2 text-white">fs_write_local</td>
+<td class="py-3 text-gray-400">System::IO</td>
+<td class="py-3"><span class="bg-[#330000] text-[var(--neon-red)] px-1 py-0.5 rounded text-[10px]">LOCKED</span></td>
+<td class="py-3 text-right text-gray-300">-</td>
+<td class="py-3 text-right pr-2 text-white">42</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-2 pt-2 border-t border-[#333] bg-[#000]">
+<div class="flex items-center gap-2 font-mono text-sm p-1">
+<span class="text-[var(--neon-green)] font-bold">hivemind &gt;</span>
+<input autofocus="" class="cmd-input bg-transparent border-none text-white w-full p-0 focus:ring-0 placeholder-gray-700 font-mono" placeholder="type 'help' for commands or execute tool..." type="text"/>
+<div class="w-2 h-4 bg-[var(--neon-green)] animate-pulse"></div>
+</div>
+</div>
+</section>
+<aside class="col-span-4 flex flex-col gap-2">
+<div class="flex-1 tui-border p-4 flex flex-col bg-[var(--panel-bg)] relative">
+<div class="tui-title">Schema Preview</div>
+<div class="absolute top-0 right-4 bg-[#222] text-[10px] px-2 py-1 border border-[#333] border-t-0 text-[var(--neon-green)]">
+                    FORMAT: JSON-SCHEMA
+                </div>
+<div class="mb-4 mt-2">
+<div class="text-[10px] text-gray-500 uppercase">Selected Tool</div>
+<div class="text-[var(--neon-green)] text-lg font-bold">hivemind_inspect</div>
+<div class="text-xs text-gray-400 mt-1">
+                        Retrieves node data from the graph database. Supports filtering by type and depth.
+                    </div>
+</div>
+<div class="flex-1 bg-[#050505] p-3 font-mono text-xs overflow-auto border border-[#333] text-gray-300">
+<pre><span class="text-[var(--neon-blue)]">{</span>
+  <span class="text-[var(--neon-amber)]">"name"</span>: "hivemind_inspect",
+  <span class="text-[var(--neon-amber)]">"description"</span>: "Inspect graph nodes",
+  <span class="text-[var(--neon-amber)]">"parameters"</span>: <span class="text-[var(--neon-blue)]">{</span>
+    <span class="text-[var(--neon-amber)]">"type"</span>: "object",
+    <span class="text-[var(--neon-amber)]">"properties"</span>: <span class="text-[var(--neon-blue)]">{</span>
+      <span class="text-[var(--neon-amber)]">"target_id"</span>: <span class="text-[var(--neon-blue)]">{</span>
+        <span class="text-[var(--neon-amber)]">"type"</span>: "string",
+        <span class="text-[var(--neon-amber)]">"description"</span>: "UUID of node"
+      <span class="text-[var(--neon-blue)]">}</span>,
+      <span class="text-[var(--neon-amber)]">"depth"</span>: <span class="text-[var(--neon-blue)]">{</span>
+        <span class="text-[var(--neon-amber)]">"type"</span>: "integer",
+        <span class="text-[var(--neon-amber)]">"default"</span>: 1
+      <span class="text-[var(--neon-blue)]">}</span>,
+      <span class="text-[var(--neon-amber)]">"filter_type"</span>: <span class="text-[var(--neon-blue)]">{</span>
+        <span class="text-[var(--neon-amber)]">"type"</span>: "string",
+        <span class="text-[var(--neon-amber)]">"enum"</span>: ["task", "mem", "plan"]
+      <span class="text-[var(--neon-blue)]">}</span>
+    <span class="text-[var(--neon-blue)]">}</span>,
+    <span class="text-[var(--neon-amber)]">"required"</span>: ["target_id"]
+  <span class="text-[var(--neon-blue)]">}</span>
+<span class="text-[var(--neon-blue)]">}</span></pre>
+</div>
+<div class="mt-4 border-t border-[#333] pt-3">
+<div class="flex justify-between items-center mb-2">
+<span class="text-xs text-gray-500">PERMISSIONS</span>
+<span class="text-[10px] text-[var(--neon-green)]">VERIFIED</span>
+</div>
+<div class="flex gap-2 flex-wrap">
+<span class="border border-[#444] text-gray-400 px-2 py-0.5 text-[10px] bg-[#1a1a1a]">read:graph</span>
+<span class="border border-[#444] text-gray-400 px-2 py-0.5 text-[10px] bg-[#1a1a1a]">read:memory</span>
+</div>
+</div>
+</div>
+<div class="h-1/3 tui-border p-4 flex flex-col bg-[var(--panel-bg)]">
+<div class="tui-title">Config Override</div>
+<div class="flex-1 flex flex-col gap-3 mt-2">
+<div class="flex items-center justify-between group">
+<label class="text-xs text-gray-300">Timeout (ms)</label>
+<div class="flex items-center gap-2">
+<input class="bg-[#050505] border border-[#333] text-right text-[var(--neon-amber)] w-16 px-1 py-0.5 text-xs focus:ring-0 focus:border-[var(--neon-green)]" type="text" value="5000"/>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<label class="text-xs text-gray-300">Retry Policy</label>
+<select class="bg-[#050505] border border-[#333] text-right text-gray-300 w-24 px-1 py-0.5 text-xs focus:ring-0 focus:border-[var(--neon-green)]">
+<option>Exponential</option>
+<option>Linear</option>
+<option>None</option>
+</select>
+</div>
+<div class="flex items-center justify-between">
+<label class="text-xs text-gray-300">Cache Result</label>
+<div class="flex gap-2">
+<button class="bg-[var(--neon-green)] text-black font-bold px-2 py-0.5 text-[10px]">ON</button>
+<button class="bg-[#222] text-gray-500 px-2 py-0.5 text-[10px]">OFF</button>
+</div>
+</div>
+<div class="mt-auto pt-2">
+<button class="w-full border border-[var(--neon-green)] text-[var(--neon-green)] hover:bg-[var(--neon-green)] hover:text-black uppercase text-xs py-1 transition-colors">
+                            Apply Changes
+                        </button>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<footer class="mt-2 flex justify-between text-[10px] text-gray-600 px-4">
+<div>HVM_ENGINE_CORE connected to localhost:3000</div>
+<div>REGISTRY: SYNCED | PLUGINS: 4 LOADED | SAFETY_LAYER: ACTIVE</div>
+</footer>
+
+</body></html>

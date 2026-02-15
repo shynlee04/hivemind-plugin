@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>HiveMind Relational Engine TUI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #0d0d0d;
+            --panel-bg: #111111;
+            --border-color: #333333;
+            --neon-green: #00ff41;
+            --neon-amber: #ffb000;
+            --neon-blue: #00f0ff;
+            --dim-text: #666666;
+            --term-font: 'JetBrains Mono', monospace;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: #ccc;
+            font-family: var(--term-font);
+            overflow: hidden;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .tui-border {
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        .tui-title {
+            position: absolute;
+            top: -10px;
+            left: 1rem;
+            background-color: var(--bg-color);
+            padding: 0 0.5rem;
+            color: var(--neon-green);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .tui-subtitle {
+             color: var(--neon-amber);
+             font-weight: bold;
+        }
+        .glitch-text:hover {
+            text-shadow: 2px 0 var(--neon-blue), -2px 0 var(--neon-amber);
+        }
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0, 255, 65, 0.04) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100%; }
+        }
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-green); 
+        }
+        .tree-line {
+            border-left: 1px dashed #444;
+            margin-left: 7px;
+            padding-left: 12px;
+        }
+        .progress-bar-fill {
+            background: repeating-linear-gradient(
+                45deg,
+                var(--neon-amber),
+                var(--neon-amber) 10px,
+                #cc8d00 10px,
+                #cc8d00 20px
+            );
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col p-2 text-xs md:text-sm">
+<header class="flex justify-between items-center px-4 py-2 border-b border-[#333] mb-2 text-[#666]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[var(--neon-green)] text-lg">terminal</span>
+<h1 class="text-[var(--neon-green)] font-bold tracking-wider">HIVEMIND<span class="text-white">_v3.0</span>::RELATIONAL_ENGINE</h1>
+</div>
+<div class="flex gap-6">
+<div>SESSION_ID: <span class="text-[var(--neon-blue)]">HM-992-ALPHA</span></div>
+<div>STATUS: <span class="text-[var(--neon-green)]">ONLINE</span></div>
+<div>UPTIME: <span class="text-white">04:22:19</span></div>
+</div>
+</header>
+<main class="flex-1 grid grid-cols-12 gap-2 overflow-hidden relative">
+<div class="scanline"></div>
+<aside class="col-span-3 tui-border p-4 flex flex-col bg-[var(--panel-bg)]">
+<div class="tui-title">Cognitive Graph</div>
+<div class="flex-1 overflow-y-auto font-mono mt-2">
+<div class="mb-2">
+<span class="text-[var(--neon-blue)]">▼</span> <span class="font-bold text-white">Trajectory [UUID: 8f2a...]</span>
+</div>
+<div class="tree-line">
+<div class="mb-2">
+<span class="text-[var(--neon-amber)]">▼</span> <span class="text-gray-300">Plan: Overhaul_Architecture</span>
+<div class="tree-line">
+<div class="mb-2">
+<span class="text-gray-500">▶</span> <span class="text-gray-500 line-through">Phase 1: Schemas</span> <span class="text-[var(--neon-green)] text-[10px]">[DONE]</span>
+</div>
+<div class="mb-2">
+<span class="text-[var(--neon-green)]">▼</span> <span class="text-white">Phase 2: Packer</span> <span class="text-[var(--neon-amber)] text-[10px]blink">[ACTIVE]</span>
+<div class="tree-line">
+<div class="mb-1 text-[var(--neon-green)] bg-[#00ff4110] p-1 -ml-1">
+                                        └─ Task: Build Core Packer
+                                    </div>
+<div class="mb-1 text-gray-400">
+                                        ├─ Task: TTS Filter
+                                    </div>
+<div class="mb-1 text-gray-400">
+                                        └─ Task: XML Compression
+                                    </div>
+</div>
+</div>
+<div class="mb-2">
+<span class="text-gray-500">▶</span> <span class="text-gray-400">Phase 3: Hooks</span>
+</div>
+</div>
+</div>
+<div class="mb-2 mt-4">
+<span class="text-gray-500">▶</span> <span class="text-gray-500">Plan: Marketing_Launch</span>
+</div>
+</div>
+</div>
+<div class="mt-2 pt-2 border-t border-[#333] text-[10px] text-gray-500">
+                NODES: 142 | DEPTH: 4 | ORPHANS: 0
+            </div>
+</aside>
+<section class="col-span-6 flex flex-col gap-2">
+<div class="h-1/2 tui-border p-4 flex flex-col bg-[var(--panel-bg)]">
+<div class="tui-title">Active Context</div>
+<div class="flex justify-between items-start mb-4">
+<div>
+<div class="text-[10px] text-gray-500">CURRENT_TASK_ID</div>
+<div class="text-[var(--neon-green)] text-lg">US-010: Build Cognitive Packer Core</div>
+</div>
+<div class="text-right">
+<div class="text-[10px] text-gray-500">PARENT_PHASE</div>
+<div class="text-[var(--neon-amber)]">Phase 2: Cognitive Packer</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 flex-1 min-h-0">
+<div class="border border-[#333] p-2 overflow-y-auto">
+<div class="text-[var(--neon-blue)] mb-2 text-xs border-b border-[#333] pb-1">:: DESCRIPTION</div>
+<p class="text-gray-300 mb-2">Implement deterministic context compiler. Must traverse graph (Plans -&gt; Tasks -&gt; Mems) and produce XML.</p>
+<div class="text-[var(--neon-blue)] mb-2 mt-4 text-xs border-b border-[#333] pb-1">:: ACCEPTANCE CRITERIA</div>
+<ul class="list-none space-y-1 text-gray-400">
+<li>[ ] Create src/lib/cognitive-packer.ts</li>
+<li>[ ] No LLM prompts in file</li>
+<li>[ ] Resolve Read-Head from trajectory</li>
+</ul>
+</div>
+<div class="border border-[#333] p-2 overflow-y-auto">
+<div class="text-[var(--neon-amber)] mb-2 text-xs border-b border-[#333] pb-1">:: RELEVANT_MEMS (Insights)</div>
+<div class="space-y-2">
+<div class="bg-[#1a1a1a] p-2 border-l-2 border-[var(--neon-green)]">
+<div class="flex justify-between text-[10px] text-gray-500 mb-1">
+<span>MEM-882</span>
+<span>R: 0.94</span>
+</div>
+<p class="text-gray-300 text-xs">"Prior attempt at packer failed due to circular dependencies in graph traversal."</p>
+</div>
+<div class="bg-[#1a1a1a] p-2 border-l-2 border-[var(--neon-blue)]">
+<div class="flex justify-between text-[10px] text-gray-500 mb-1">
+<span>MEM-901</span>
+<span>R: 0.81</span>
+</div>
+<p class="text-gray-300 text-xs">"Use XML entities for escaping special chars in code blocks."</p>
+</div>
+<div class="bg-[#1a1a1a] p-2 border-l-2 border-gray-600 opacity-50">
+<div class="flex justify-between text-[10px] text-gray-500 mb-1">
+<span>MEM-722</span>
+<span>R: 0.22</span>
+</div>
+<p class="text-gray-300 text-xs">STALE: "User prefers tabs over spaces."</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="h-1/2 tui-border p-4 flex flex-col bg-[var(--panel-bg)] relative">
+<div class="tui-title">Cognitive Packer :: Live Preview</div>
+<div class="absolute top-0 right-4 bg-[#222] text-[10px] px-2 py-1 border border-[#333] border-t-0 text-[var(--neon-green)]">
+                    BUDGET: 1542 / 2000 CHARS
+                </div>
+<div class="flex-1 bg-[#050505] p-2 font-mono text-xs overflow-auto border border-[#333] text-gray-400">
+<pre><code>&lt;hivemind_state version="3.0"&gt;
+  &lt;meta&gt;
+    &lt;session&gt;HM-992-ALPHA&lt;/session&gt;
+    &lt;timestamp&gt;2023-10-27T14:22:19Z&lt;/timestamp&gt;
+  &lt;/meta&gt;
+  &lt;trajectory id="8f2a..."&gt;
+    &lt;active_plan&gt;Overhaul_Architecture&lt;/active_plan&gt;
+    &lt;read_head&gt;
+      &lt;phase id="ph_02" status="active"&gt;Phase 2: Cognitive Packer&lt;/phase&gt;
+      &lt;task id="tk_10" status="in_progress"&gt;
+        &lt;objective&gt;Build cognitive packer core&lt;/objective&gt;
+        <span class="text-[var(--neon-amber)]">&lt;insight id="mem_882"&gt;Prior attempt failed...&lt;/insight&gt;</span>
+        <span class="text-[var(--neon-blue)]">&lt;insight id="mem_901"&gt;Use XML entities...&lt;/insight&gt;</span>
+      &lt;/task&gt;
+    &lt;/read_head&gt;
+  &lt;/trajectory&gt;
+  &lt;!-- Pruned 4 false_paths, 12 stale mems --&gt;
+&lt;/hivemind_state&gt;</code></pre>
+</div>
+</div>
+</section>
+<aside class="col-span-3 flex flex-col gap-2">
+<div class="h-1/3 tui-border p-4 flex flex-col bg-[var(--panel-bg)]">
+<div class="tui-title">System Vitals</div>
+<div class="mb-4">
+<div class="flex justify-between mb-1">
+<span class="text-xs text-[var(--neon-amber)]">TOKEN_PRESSURE</span>
+<span class="text-xs font-bold text-[var(--neon-amber)] blink">82%</span>
+</div>
+<div class="w-full bg-[#222] h-4 border border-[#444] relative">
+<div class="h-full progress-bar-fill w-[82%] absolute top-0 left-0"></div>
+<div class="absolute top-0 bottom-0 w-[2px] bg-[var(--neon-green)] left-[80%] z-10"></div>
+</div>
+<div class="text-[10px] text-gray-500 mt-1 flex justify-between">
+<span>USED: 26,192</span>
+<span>LIMIT: 32,000</span>
+</div>
+<div class="text-[10px] text-[var(--neon-amber)] mt-1">WARNING: Approaching split threshold (80%)</div>
+</div>
+<div class="border-t border-[#333] pt-4 mt-2">
+<div class="text-xs text-[var(--neon-blue)] mb-2">ACTIVE SWARMS (2)</div>
+<div class="space-y-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[var(--neon-green)] animate-pulse"></span>
+<span class="text-xs">sw_research_01</span>
+<span class="text-[10px] text-gray-500 ml-auto">RUNNING</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[var(--neon-amber)]"></span>
+<span class="text-xs">sw_audit_log</span>
+<span class="text-[10px] text-gray-500 ml-auto">WAITING</span>
+</div>
+</div>
+</div>
+</div>
+<div class="h-2/3 tui-border p-4 flex flex-col bg-[var(--panel-bg)]">
+<div class="tui-title">Tool Log</div>
+<div class="flex-1 overflow-y-auto font-mono text-xs space-y-2 pr-1" id="log-container">
+<div class="border-l-2 border-[var(--neon-green)] pl-2">
+<div class="flex justify-between text-[10px] text-gray-500">
+<span>14:21:05</span>
+<span>SUCCESS</span>
+</div>
+<div class="text-[var(--neon-green)]">hivemind_inspect</div>
+<div class="text-gray-400 text-[10px]">Target: graph/tasks.json</div>
+</div>
+<div class="border-l-2 border-[var(--neon-green)] pl-2">
+<div class="flex justify-between text-[10px] text-gray-500">
+<span>14:21:45</span>
+<span>SUCCESS</span>
+</div>
+<div class="text-[var(--neon-green)]">hivemind_anchor</div>
+<div class="text-gray-400 text-[10px]">Upserted Mem: mem_901</div>
+</div>
+<div class="border-l-2 border-red-500 pl-2">
+<div class="flex justify-between text-[10px] text-gray-500">
+<span>14:22:01</span>
+<span class="text-red-500">ERROR</span>
+</div>
+<div class="text-red-400">hivemind_cycle</div>
+<div class="text-gray-400 text-[10px]">Orphaned node detected</div>
+</div>
+<div class="border-l-2 border-[var(--neon-blue)] pl-2">
+<div class="flex justify-between text-[10px] text-gray-500">
+<span>14:22:10</span>
+<span class="blink">EXECUTING...</span>
+</div>
+<div class="text-[var(--neon-blue)]">hivemind_packer</div>
+<div class="text-gray-400 text-[10px]">Compiling XML context</div>
+</div>
+<div class="border-l-2 border-[var(--neon-green)] pl-2 opacity-50">
+<div class="flex justify-between text-[10px] text-gray-500">
+<span>14:20:12</span>
+<span>SUCCESS</span>
+</div>
+<div class="text-[var(--neon-green)]">hivemind_session</div>
+<div class="text-gray-400 text-[10px]">Status Check</div>
+</div>
+<div class="border-l-2 border-[var(--neon-green)] pl-2 opacity-40">
+<div class="flex justify-between text-[10px] text-gray-500">
+<span>14:19:55</span>
+<span>SUCCESS</span>
+</div>
+<div class="text-[var(--neon-green)]">hivemind_inspect</div>
+</div>
+</div>
+<div class="mt-2 pt-2 border-t border-[#333] flex items-center gap-2">
+<span class="text-[var(--neon-green)]">&gt;</span>
+<div class="w-3 h-4 bg-[var(--neon-green)] animate-pulse"></div>
+</div>
+</div>
+</aside>
+</main>
+<footer class="mt-2 flex justify-between text-[10px] text-gray-600 px-4">
+<div>HVM_ENGINE_CORE connected to localhost:3000</div>
+<div>CQRS: ENABLED | GRAPH-RAG: ACTIVE | ACTOR-MODEL: READY</div>
+</footer>
+
+</body></html>

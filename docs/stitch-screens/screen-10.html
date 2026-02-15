@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="vi"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lịch Sử Trạng Thái (VN)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style type="text/tailwindcss">
+        :root {
+            --bg-color: #0d0d0d;
+            --panel-bg: #111111;
+            --border-color: #333333;
+            --neon-green: #00ff41;
+            --neon-amber: #ffb000;
+            --neon-blue: #00f0ff;
+            --neon-red: #ff3333;
+            --dim-text: #666666;
+            --term-font: 'JetBrains Mono', monospace;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: #ccc;
+            font-family: var(--term-font);
+            overflow: hidden;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .tui-border {
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+        .tui-title {
+            position: absolute;
+            top: -10px;
+            left: 1rem;
+            background-color: var(--bg-color);
+            padding: 0 0.5rem;
+            color: var(--neon-green);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .tui-subtitle {
+             color: var(--neon-amber);
+             font-weight: bold;
+        }
+        .glitch-text:hover {
+            text-shadow: 2px 0 var(--neon-blue), -2px 0 var(--neon-amber);
+        }
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0, 255, 65, 0.04) 50%, rgba(0,0,0,0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 10s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: -100%; }
+        }
+        .blink {
+            animation: blinker 1s linear infinite;
+        }
+        @keyframes blinker {
+            50% { opacity: 0; }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--neon-green); 
+        }
+        .timeline-item.active {
+            background: rgba(0, 255, 65, 0.1);
+            border-left: 2px solid var(--neon-green);
+        }
+        .diff-added {
+            color: var(--neon-green);
+            background: rgba(0, 255, 65, 0.05);
+        }
+        .diff-removed {
+            color: var(--neon-red);
+            background: rgba(255, 51, 51, 0.05);
+        }
+        .diff-line-num {
+            color: #444;
+            user-select: none;
+            text-align: right;
+            padding-right: 0.5rem;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col p-2 text-xs md:text-sm">
+<header class="flex justify-between items-center px-4 py-2 border-b border-[#333] mb-2 text-[#666]">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[var(--neon-green)] text-lg">history</span>
+<h1 class="text-[var(--neon-green)] font-bold tracking-wider">HIVEMIND<span class="text-white">_v3.0</span>::LỊCH_SỬ_TRẠNG_THÁI_&amp;_DU_HÀNH_THỜI_GIAN</h1>
+</div>
+<div class="flex gap-6">
+<div>PHIÊN_BẢN_ID: <span class="text-[var(--neon-blue)]">HM-992-ALPHA</span></div>
+<div>CHẾ_ĐỘ: <span class="text-[var(--neon-amber)]">PHÁT_LẠI</span></div>
+<div>ĐẦU_MÚT: <span class="text-white">T-00:00:14</span></div>
+</div>
+</header>
+<main class="flex-1 grid grid-cols-12 gap-2 overflow-hidden relative">
+<div class="scanline"></div>
+<aside class="col-span-3 tui-border p-0 flex flex-col bg-[var(--panel-bg)]">
+<div class="tui-title">Biên Niên Sử Trạng Thái</div>
+<div class="p-2 border-b border-[#333] text-[10px] text-gray-500 flex justify-between">
+<span>BỘ LỌC: TẤT CẢ</span>
+<span>SẮP XẾP: GIẢM DẦN</span>
+</div>
+<div class="flex-1 overflow-y-auto font-mono">
+<div class="timeline-item p-3 border-b border-[#222] cursor-pointer hover:bg-[#1a1a1a]">
+<div class="flex justify-between text-[10px] text-gray-500 mb-1">
+<span>14:22:15.002</span>
+<span class="text-[var(--neon-blue)]">ID: #9921</span>
+</div>
+<div class="text-[var(--neon-green)] font-bold">hivemind_packer</div>
+<div class="text-gray-400 text-[10px] mt-1">BỐI CẢNH: NÉN_XML</div>
+</div>
+<div class="timeline-item active p-3 border-b border-[#222] cursor-pointer">
+<div class="flex justify-between text-[10px] text-gray-500 mb-1">
+<span>14:22:10.844</span>
+<span class="text-[var(--neon-blue)]">ID: #9920</span>
+</div>
+<div class="text-[var(--neon-green)] font-bold">hivemind_anchor</div>
+<div class="text-gray-400 text-[10px] mt-1">CẬP NHẬT/CHÈN: MEM-901</div>
+<div class="flex gap-1 mt-2">
+<span class="px-1 bg-[#222] text-[var(--neon-amber)] text-[9px] border border-[#333]">BIẾN ĐỔI TRẠNG THÁI</span>
+</div>
+</div>
+<div class="timeline-item p-3 border-b border-[#222] cursor-pointer hover:bg-[#1a1a1a]">
+<div class="flex justify-between text-[10px] text-gray-500 mb-1">
+<span>14:22:01.210</span>
+<span class="text-[var(--neon-red)]">ID: #9919</span>
+</div>
+<div class="text-[var(--neon-red)] font-bold">hivemind_cycle</div>
+<div class="text-gray-400 text-[10px] mt-1">LỖI: NÚT_MỒ_CÔI</div>
+</div>
+<div class="timeline-item p-3 border-b border-[#222] cursor-pointer hover:bg-[#1a1a1a]">
+<div class="flex justify-between text-[10px] text-gray-500 mb-1">
+<span>14:21:45.500</span>
+<span class="text-[var(--neon-blue)]">ID: #9918</span>
+</div>
+<div class="text-[var(--neon-green)] font-bold">hivemind_inspect</div>
+<div class="text-gray-400 text-[10px] mt-1">ĐỌC: TÁC_VU_ĐỒ_THỊ</div>
+</div>
+<div class="timeline-item p-3 border-b border-[#222] cursor-pointer hover:bg-[#1a1a1a] opacity-75">
+<div class="flex justify-between text-[10px] text-gray-500 mb-1">
+<span>14:21:30.112</span>
+<span class="text-[var(--neon-blue)]">ID: #9917</span>
+</div>
+<div class="text-[var(--neon-green)] font-bold">hivemind_session</div>
+<div class="text-gray-400 text-[10px] mt-1">NHỊP_TIM</div>
+</div>
+<div class="timeline-item p-3 border-b border-[#222] cursor-pointer hover:bg-[#1a1a1a] opacity-50">
+<div class="flex justify-between text-[10px] text-gray-500 mb-1">
+<span>14:21:10.005</span>
+<span class="text-[var(--neon-blue)]">ID: #9916</span>
+</div>
+<div class="text-[var(--neon-green)] font-bold">llm_completion</div>
+<div class="text-gray-400 text-[10px] mt-1">TOKENS: 420</div>
+</div>
+</div>
+<div class="p-2 border-t border-[#333] bg-[#0a0a0a] text-center">
+<button class="w-full border border-[#333] hover:border-[var(--neon-green)] hover:text-[var(--neon-green)] text-gray-500 py-1 uppercase text-[10px]">Tải Sự Kiện Cũ Hơn</button>
+</div>
+</aside>
+<section class="col-span-9 flex flex-col gap-2 relative">
+<div class="flex-1 tui-border bg-[var(--panel-bg)] flex flex-col overflow-hidden">
+<div class="tui-title">So Sánh Khác Biệt :: XML Quan Hệ</div>
+<div class="flex items-center justify-between px-4 py-3 border-b border-[#333] mt-2 bg-[#161616]">
+<div class="flex gap-4">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-gray-500"></span>
+<span class="text-gray-400">TRẠNG THÁI TRƯỚC (#9919)</span>
+</div>
+<span class="text-gray-600">➜</span>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-[var(--neon-green)] animate-pulse"></span>
+<span class="text-[var(--neon-green)] font-bold">TRẠNG THÁI HIỆN TẠI (#9920)</span>
+</div>
+</div>
+<div class="text-[10px] text-gray-500 font-mono">
+                        THAY ĐỔI: <span class="text-[var(--neon-green)]">+4</span> <span class="text-[var(--neon-red)]">-1</span>
+</div>
+</div>
+<div class="flex-1 grid grid-cols-2 divide-x divide-[#333] overflow-hidden">
+<div class="overflow-auto bg-[#080808] p-2 custom-scroll">
+<div class="font-mono text-xs leading-5">
+<div class="flex"><span class="diff-line-num w-8">104</span><span class="text-gray-500">&lt;task id="tk_10" status="in_progress"&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">105</span><span class="text-gray-500">  &lt;objective&gt;Build cognitive packer core&lt;/objective&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">106</span><span class="text-gray-500">  &lt;context_window&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">107</span><span class="text-gray-500">    &lt;insight id="mem_882"&gt;Prior attempt failed...&lt;/insight&gt;</span></div>
+<div class="flex bg-[#220000]"><span class="diff-line-num w-8">108</span><span class="text-[var(--neon-red)]">-   &lt;insight id="mem_placeholder" /&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">109</span><span class="text-gray-500">  &lt;/context_window&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">110</span><span class="text-gray-500">  &lt;artifacts&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">111</span><span class="text-gray-500">    &lt;file path="src/lib/packer.ts" /&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">112</span><span class="text-gray-500">  &lt;/artifacts&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">113</span><span class="text-gray-500">&lt;/task&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">114</span><span class="text-gray-500">&lt;!-- Graph Traversal Log --&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">115</span><span class="text-gray-500">&lt;log&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">116</span><span class="text-gray-500">  &lt;entry ts="14:21:45"&gt;Inspect complete&lt;/entry&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">117</span><span class="text-gray-500">&lt;/log&gt;</span></div>
+</div>
+</div>
+<div class="overflow-auto bg-[#0a0a0a] p-2 custom-scroll">
+<div class="font-mono text-xs leading-5">
+<div class="flex"><span class="diff-line-num w-8">104</span><span class="text-gray-300">&lt;task id="tk_10" status="in_progress"&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">105</span><span class="text-gray-300">  &lt;objective&gt;Build cognitive packer core&lt;/objective&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">106</span><span class="text-gray-300">  &lt;context_window&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">107</span><span class="text-gray-300">    &lt;insight id="mem_882"&gt;Prior attempt failed...&lt;/insight&gt;</span></div>
+<div class="flex bg-[#001100]"><span class="diff-line-num w-8">108</span><span class="text-[var(--neon-green)]">+   &lt;insight id="mem_901" relevance="0.81"&gt;</span></div>
+<div class="flex bg-[#001100]"><span class="diff-line-num w-8">109</span><span class="text-[var(--neon-green)]">+     Use XML entities for escaping special chars...</span></div>
+<div class="flex bg-[#001100]"><span class="diff-line-num w-8">110</span><span class="text-[var(--neon-green)]">+   &lt;/insight&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">111</span><span class="text-gray-300">  &lt;/context_window&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">112</span><span class="text-gray-300">  &lt;artifacts&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">113</span><span class="text-gray-300">    &lt;file path="src/lib/packer.ts" /&gt;</span></div>
+<div class="flex bg-[#001100]"><span class="diff-line-num w-8">114</span><span class="text-[var(--neon-green)]">+   &lt;file path="src/lib/utils/xml.ts" status="pending" /&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">115</span><span class="text-gray-300">  &lt;/artifacts&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">116</span><span class="text-gray-300">&lt;/task&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">117</span><span class="text-gray-300">&lt;!-- Graph Traversal Log --&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">118</span><span class="text-gray-300">&lt;log&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">119</span><span class="text-gray-300">  &lt;entry ts="14:21:45"&gt;Inspect complete&lt;/entry&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">120</span><span class="text-gray-300">  &lt;entry ts="14:22:10"&gt;Anchor mem_901 success&lt;/entry&gt;</span></div>
+<div class="flex"><span class="diff-line-num w-8">121</span><span class="text-gray-300">&lt;/log&gt;</span></div>
+</div>
+</div>
+</div>
+</div>
+<div class="h-16 tui-border bg-[var(--panel-bg)] flex flex-col justify-center px-4 relative">
+<div class="tui-title bottom-full top-auto mb-2 !top-[-10px]">Điều Khiển Phát Lại</div>
+<div class="flex items-center gap-4 w-full">
+<div class="flex-1 relative h-6 bg-[#111] border border-[#333] group cursor-pointer">
+<div class="absolute inset-y-0 left-0 bg-[var(--neon-green)] opacity-20 w-[65%]"></div>
+<div class="absolute inset-y-0 left-[65%] w-0.5 bg-[var(--neon-green)] shadow-[0_0_10px_var(--neon-green)]"></div>
+<div class="absolute top-1/2 -translate-y-1/2 left-[20%] w-1 h-1 bg-red-500 rounded-full"></div>
+<div class="absolute top-1/2 -translate-y-1/2 left-[45%] w-1 h-1 bg-[var(--neon-blue)] rounded-full"></div>
+<div class="absolute top-1/2 -translate-y-1/2 left-[80%] w-1 h-1 bg-gray-600 rounded-full"></div>
+<div class="hidden group-hover:flex absolute -top-8 left-[65%] -translate-x-1/2 bg-black border border-[#333] px-2 py-1 text-[10px] text-[var(--neon-green)]">
+                            14:22:10
+                        </div>
+</div>
+<div class="flex items-center gap-2 font-mono text-gray-400 select-none">
+<button class="hover:text-white active:scale-95 flex flex-col items-center">
+<span class="material-symbols-outlined text-xl">skip_previous</span>
+<span class="text-[9px]">[H] LÙI LẠI</span>
+</button>
+<button class="hover:text-[var(--neon-green)] active:scale-95 flex flex-col items-center px-2">
+<span class="material-symbols-outlined text-3xl text-[var(--neon-green)]">pause_circle</span>
+<span class="text-[9px]">[SPACE] TẠM DỪNG</span>
+</button>
+<button class="hover:text-white active:scale-95 flex flex-col items-center">
+<span class="material-symbols-outlined text-xl">skip_next</span>
+<span class="text-[9px]">[L] TIẾN TỚI</span>
+</button>
+</div>
+<div class="flex flex-col items-center border-l border-[#333] pl-4">
+<div class="text-[var(--neon-amber)] font-bold">1x</div>
+<div class="text-[9px] text-gray-500">TỐC ĐỘ</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="mt-2 flex justify-between text-[10px] text-gray-600 px-4">
+<div>LÕI_ĐỘNG_CƠ_HVM kết nối tới localhost:3000</div>
+<div>CHẾ_ĐỘ_GỠ_LỖI: ĐÃ BẬT | ẢNH_CHỤP_NHANH: 142/500 | LƯU_TRỮ: 45MB</div>
+</footer>
+</body></html>
