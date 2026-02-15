@@ -2,19 +2,40 @@ import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { loadAnchors } from "../lib/anchors.js"
 import { countCompleted, getAncestors, loadTree } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
+import type { Message, Part } from "@opencode-ai/sdk"
 
 type MessagePart = {
+  id?: string
+  sessionID?: string
+  messageID?: string
   type?: string
   text?: string
   synthetic?: boolean
   [key: string]: unknown
 }
 
-export interface MessageV2 {
+type MessageWithParts = {
+  info: Message
+  parts: Part[]
+}
+
+type LegacyMessage = {
   role?: string
   content?: string | MessagePart[]
   synthetic?: boolean
   [key: string]: unknown
+}
+
+export type MessageV2 = MessageWithParts | LegacyMessage
+
+function isMessageWithParts(message: MessageV2): message is MessageWithParts {
+  return (
+    typeof message === "object" &&
+    message !== null &&
+    "info" in message &&
+    "parts" in message &&
+    Array.isArray((message as MessageWithParts).parts)
+  )
 }
 
 function buildChecklist(items: string[], maxChars: number): string {
@@ -45,6 +66,13 @@ function syntheticSystemMessage(text: string): MessageV2 {
 }
 
 function isSyntheticMessage(message: MessageV2): boolean {
+  if (isMessageWithParts(message)) {
+    return message.parts.some(part => {
+      if (part.type !== "text") return false
+      return Boolean((part as MessagePart).synthetic)
+    })
+  }
+
   if (message.synthetic === true) return true
   if (!Array.isArray(message.content)) return false
   return message.content.some(part => part.synthetic === true)
@@ -53,7 +81,8 @@ function isSyntheticMessage(message: MessageV2): boolean {
 function getLastNonSyntheticUserMessageIndex(messages: MessageV2[]): number {
   for (let i = messages.length - 1; i >= 0; i--) {
     const message = messages[i]
-    if (message.role === "user" && !isSyntheticMessage(message)) {
+    const role = isMessageWithParts(message) ? message.info.role : message.role
+    if (role === "user" && !isSyntheticMessage(message)) {
       return i
     }
   }
@@ -78,6 +107,25 @@ function buildAnchorContext(
 }
 
 function prependSyntheticPart(message: MessageV2, text: string): void {
+  if (isMessageWithParts(message)) {
+    const firstPart = message.parts[0] as MessagePart | undefined
+    const sessionID = firstPart?.sessionID ?? message.info.sessionID
+    const messageID = firstPart?.messageID ?? message.info.id
+
+    if (!sessionID || !messageID) return
+
+    const syntheticPart: Part = {
+      id: `hm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      sessionID,
+      messageID,
+      type: "text",
+      text,
+      synthetic: true,
+    }
+    message.parts = [syntheticPart, ...message.parts]
+    return
+  }
+
   const syntheticPart: MessagePart = {
     type: "text",
     text,
@@ -185,6 +233,13 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       const checklist = buildChecklist(items, 300)
       if (!checklist) return
 
+      const index = getLastNonSyntheticUserMessageIndex(output.messages)
+      if (index >= 0) {
+        prependSyntheticPart(output.messages[index], checklist)
+        return
+      }
+
+      // Legacy compatibility fallback. New SDK shape should inject into parts above.
       output.messages.push(syntheticSystemMessage(checklist))
     } catch {
       // P3: never break message flow

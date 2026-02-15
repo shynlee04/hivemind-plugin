@@ -5,14 +5,13 @@ import { readFile, rm, writeFile } from "fs/promises"
 import { join } from "path"
 import { existsSync } from "fs"
 import type { BrainState } from "../schemas/brain-state.js"
-
-const HIVEMIND_DIR = ".hivemind"
+import { getEffectivePaths } from "./paths.js"
 
 /**
  * Check if a session file exists.
  */
 export async function sessionExists(directory: string, sessionId: string): Promise<boolean> {
-  const sessionsDir = join(directory, HIVEMIND_DIR, "sessions")
+  const sessionsDir = getEffectivePaths(directory).sessionsDir
   const sessionPath = join(sessionsDir, `session-${sessionId}.json`)
   return existsSync(sessionPath)
 }
@@ -24,7 +23,7 @@ export async function loadSession(
   directory: string,
   sessionId: string
 ): Promise<BrainState | null> {
-  const sessionsDir = join(directory, HIVEMIND_DIR, "sessions")
+  const sessionsDir = getEffectivePaths(directory).sessionsDir
   const sessionPath = join(sessionsDir, `session-${sessionId}.json`)
   
   try {
@@ -39,7 +38,7 @@ export async function loadSession(
  * Delete a session from the sessions directory.
  */
 export async function pruneSession(directory: string, sessionId: string): Promise<void> {
-  const sessionsDir = join(directory, HIVEMIND_DIR, "sessions")
+  const sessionsDir = getEffectivePaths(directory).sessionsDir
   const sessionPath = join(sessionsDir, `session-${sessionId}.json`)
   
   try {
@@ -64,7 +63,7 @@ export async function exportSession(
     throw new Error("No active session to export")
   }
   
-  const sessionsDir = join(directory, HIVEMIND_DIR, "sessions")
+  const sessionsDir = getEffectivePaths(directory).sessionsDir
   
   // Ensure sessions directory exists
   const { mkdir } = await import("fs/promises")

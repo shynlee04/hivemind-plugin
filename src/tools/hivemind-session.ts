@@ -28,6 +28,7 @@ import {
   updateIndexMd,
   resetActiveMd,
   listArchives,
+  getExportDir,
 } from "../lib/planning-fs.js"
 import {
   createNode,
@@ -42,6 +43,7 @@ import type { SessionMode } from "../schemas/brain-state.js"
 import type { BrainState } from "../schemas/brain-state.js"
 import { buildSessionFilename, getEffectivePaths } from "../lib/paths.js"
 import { instantiateSession, registerSession, generateIndexMd } from "../lib/planning-fs.js"
+import { generateExportData, generateJsonExport, generateMarkdownExport } from "../lib/session-export.js"
 import { existsSync } from "fs"
 
 type HierarchyLevel = "trajectory" | "tactic" | "action"
@@ -432,6 +434,26 @@ async function handleClose(
     summary ||
     `Session ${sessionId}: ${state.metrics.turn_count} turns, ${state.metrics.files_touched.length} files`
   await updateIndexMd(directory, summaryLine)
+
+  // Auto-export JSON + Markdown snapshot to archive/exports
+  try {
+    const exportData = generateExportData(state, summaryLine)
+    const exportDir = getExportDir(directory)
+    const { mkdir, writeFile } = await import("fs/promises")
+    const { join } = await import("path")
+
+    await mkdir(exportDir, { recursive: true })
+    const stamp = new Date().toISOString().split("T")[0]
+    const baseName = `session_${stamp}_${sessionId}`
+
+    await writeFile(join(exportDir, `${baseName}.json`), generateJsonExport(exportData))
+    await writeFile(
+      join(exportDir, `${baseName}.md`),
+      generateMarkdownExport(exportData, activeMd.body)
+    )
+  } catch {
+    // Non-fatal: close should still succeed even if export fails
+  }
 
   // Reset hierarchy tree
   const { loadTree, saveTree } = await import("../lib/hierarchy-tree.js")

@@ -330,6 +330,7 @@ export async function initProject(
     governance_mode: isCoachAutomation(automationLevel) ? "strict" : governanceMode,
     language,
     automation_level: automationLevel,
+    auto_commit: automationLevel === "full" || isCoachAutomation(automationLevel),
     agent_behavior: {
       language,
       expert_level: isCoachAutomation(automationLevel) ? "beginner" : expertLevel,

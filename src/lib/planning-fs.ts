@@ -609,7 +609,18 @@ export async function initializePlanningDirectory(
 
   // Create placeholder tasks file if missing
   if (!existsSync(effective.tasks)) {
-    await writeFile(effective.tasks, JSON.stringify({ tasks: [], active_task_id: null, updated_at: Date.now() }, null, 2))
+    await writeFile(
+      effective.tasks,
+      JSON.stringify(
+        {
+          session_id: "unknown",
+          updated_at: Date.now(),
+          tasks: [],
+        },
+        null,
+        2
+      )
+    )
   }
 
   // Create manifest if not exists
