@@ -350,7 +350,7 @@ async function test_wraps_user_message_with_system_anchor() {
   const originalPart = parts.find(p => !p.synthetic)
   const wrapperText = originalPart?.text || ""
 
-  assert(wrapperText.includes("[SYSTEM ANCHOR: Phase Phase B | Active Task: Test Anchor | Hierarchy: Active]"), "user message wrapped with system anchor")
+  assert(wrapperText.includes("[SYSTEM ANCHOR: Phase B | Active Task: Test Anchor | Hierarchy: Active]"), "user message wrapped with system anchor")
   assert(wrapperText.includes('User Intent: "latest"'), "user message wrapped with intent")
 
   // Checklist should be appended as synthetic part
