@@ -82,8 +82,8 @@ export function createCompactionHook(log: Logger, directory: string) {
             // Truncate tree for compaction budget if extremely large, but prefer strict hierarchy
             const treeLines = treeView.split('\n');
             if (treeLines.length > 20) {
-              lines.push(...treeLines.slice(0, 20));
-              lines.push("  ... (truncated for compaction)");
+               lines.push(...treeLines.slice(0, 20));
+               lines.push("  ... (truncated for compaction)");
             } else {
               lines.push(treeView);
             }
@@ -135,7 +135,7 @@ export function createCompactionHook(log: Logger, directory: string) {
       if (anchorsState.anchors.length > 0) {
         lines.push("## Anchors")
         for (const anchor of anchorsState.anchors) {
-          lines.push(`- [${anchor.key}]: ${anchor.value}`)
+           lines.push(`- [${anchor.key}]: ${anchor.value}`)
         }
         lines.push("")
       }

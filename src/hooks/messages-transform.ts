@@ -3,6 +3,7 @@ import { loadTasks } from "../lib/manifest.js"
 import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
 import type { Message, Part } from "@opencode-ai/sdk"
+import type { BrainState } from "../schemas/brain-state.js"
 
 type MessagePart = {
   id?: string
@@ -53,7 +54,6 @@ function buildChecklist(items: string[], maxChars: number): string {
   return lines.join("\n")
 }
 
-
 function isSyntheticMessage(message: MessageV2): boolean {
   if (isMessageWithParts(message)) {
     return message.parts.some(part => {
@@ -78,12 +78,7 @@ function getLastNonSyntheticUserMessageIndex(messages: MessageV2[]): number {
   return -1
 }
 
-
-function buildAnchorContext(
-  state: any,
-
-
-): string {
+function buildAnchorContext(state: BrainState): string {
   // Construct the "System Anchor" header
   // [SYSTEM ANCHOR: Phase 2 - Auth Debug | Active Task ID: #44 | Hierarchy: Stale]
 
@@ -91,7 +86,8 @@ function buildAnchorContext(
   const task = state.hierarchy.action || "Unset"
   const hierarchyStatus = state.metrics.context_updates > 0 ? "Active" : "Stale"
 
-  const header = `[SYSTEM ANCHOR: Phase ${phase} | Active Task: ${task} | Hierarchy: ${hierarchyStatus}]`
+  // Removed hardcoded "Phase " prefix to avoid duplication if phase string already contains it
+  const header = `[SYSTEM ANCHOR: ${phase} | Active Task: ${task} | Hierarchy: ${hierarchyStatus}]`
 
   return header
 }
@@ -114,10 +110,6 @@ function wrapUserMessage(message: MessageV2, header: string): void {
     const textPart = message.content.find(p => p.type === "text" && !p.synthetic)
     if (textPart && typeof textPart.text === "string") {
       textPart.text = `${header}\nUser Intent: "${textPart.text}"`
-    } else if (message.content.length === 1 && typeof message.content[0] === "string") {
-        // Handle legacy string array content? No, MessagePart is obj.
-        // But let's handle if it was parsed as such.
-        // Actually definition says content: string | MessagePart[].
     }
     return
   }
@@ -174,7 +166,6 @@ function appendSyntheticPart(message: MessageV2, text: string): void {
   message.content = [syntheticPart] // Fallback
 }
 
-
 export function createMessagesTransformHook(_log: { warn: (message: string) => Promise<void> }, directory: string) {
   const stateManager = createStateManager(directory)
 
@@ -191,12 +182,11 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       const state = await stateManager.load()
       if (!state) return
 
-
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
 
         // 1. Mind Control: Contextual Anchoring (Wrap User Message)
-        const anchorHeader = buildAnchorContext(state, )
+        const anchorHeader = buildAnchorContext(state)
         wrapUserMessage(output.messages[index], anchorHeader)
 
         // 2. Pre-Stop Conditional Reminders (Inject Checklist at END)
