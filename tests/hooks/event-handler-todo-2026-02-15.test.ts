@@ -30,8 +30,8 @@ describe("US-004: Event Handler - todo.updated", () => {
     const handler = createEventHandler(noopLogger, tempDir);
     const sessionID = "test-session-123";
     const todos = [
-      { id: "1", text: "Task 1", status: "pending" },
-      { id: "2", text: "Task 2", status: "completed" },
+      { id: "1", content: "Task 1", status: "pending", priority: "high" },
+      { id: "2", content: "Task 2", status: "completed", priority: "medium" },
     ];
 
     const event = {
@@ -53,8 +53,16 @@ describe("US-004: Event Handler - todo.updated", () => {
         const parsed = JSON.parse(content);
 
         assert.equal(parsed.session_id, sessionID);
-        assert.deepEqual(parsed.tasks, todos);
+        assert.equal(parsed.tasks.length, 2);
+        assert.equal(parsed.tasks[0].id, "1");
+        assert.equal(parsed.tasks[0].text, "Task 1");
+        assert.equal(parsed.tasks[0].content, "Task 1");
+        assert.equal(parsed.tasks[0].status, "pending");
+        assert.equal(parsed.tasks[0].priority, "high");
+        assert.equal(parsed.tasks[1].text, "Task 2");
+        assert.equal(parsed.tasks[1].status, "completed");
         assert.ok(parsed.updated_at > 0);
+        assert.ok(parsed.tasks[0].updated_at > 0);
     } catch (err) {
         assert.fail(`Failed to read tasks.json: ${err}`);
     }
@@ -86,7 +94,7 @@ describe("US-004: Event Handler - todo.updated", () => {
     }
   });
 
-  it("should handle missing sessionID gracefully (undefined session_id in payload)", async () => {
+  it("should handle missing sessionID gracefully and support legacy text payload", async () => {
       const tasksPath = getEffectivePaths(tempDir).tasks;
       await rm(tasksPath, { force: true });
 
@@ -107,7 +115,12 @@ describe("US-004: Event Handler - todo.updated", () => {
           const parsed = JSON.parse(content);
 
           // Check that tasks are saved
-          assert.deepEqual(parsed.tasks, todos);
+          assert.equal(parsed.tasks.length, 1);
+          assert.equal(parsed.tasks[0].id, "3");
+          assert.equal(parsed.tasks[0].text, "Task 3");
+          assert.equal(parsed.tasks[0].content, "Task 3");
+          assert.equal(parsed.tasks[0].status, "pending");
+          assert.equal(parsed.tasks[0].priority, "medium");
           // session_id might be undefined in the object if not provided
           assert.equal(parsed.session_id, "unknown");
       } catch (err) {

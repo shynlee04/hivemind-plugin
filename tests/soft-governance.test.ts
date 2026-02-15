@@ -15,6 +15,8 @@
 import { createSoftGovernanceHook, resetToastCooldowns } from "../src/hooks/soft-governance.js"
 import { initSdkContext, resetSdkContext } from "../src/hooks/sdk-context.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
+import { createNode, createTree, setRoot, addChild, markComplete, saveTree } from "../src/lib/hierarchy-tree.js"
+import { getExportDir } from "../src/lib/planning-fs.js"
 import { createConfig } from "../src/schemas/config.js"
 import {
   createBrainState,
@@ -27,7 +29,7 @@ import {
 } from "../src/schemas/brain-state.js"
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { noopLogger, type Logger } from "../src/lib/logging.js"
-import { mkdtemp, rm } from "fs/promises"
+import { mkdtemp, readdir, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
 
@@ -840,6 +842,116 @@ async function test_auto_commit_skips_when_no_modified_files() {
   await cleanup()
 }
 
+async function test_auto_split_creates_continuation_session_and_resets_metrics() {
+  process.stderr.write("\n--- soft-governance: auto split creates continuation session ---\n")
+  const dir = await setup()
+  const config = createConfig({
+    governance_mode: "assisted",
+    automation_level: "full",
+    auto_compact_on_turns: 50,
+  })
+  await saveConfig(dir, config)
+
+  const sm = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.session.role = "main"
+  state.metrics.turn_count = 30
+  state.metrics.files_touched = ["src/a.ts"]
+  await sm.save(state)
+
+  const trajectory = createNode("trajectory", "Phase B")
+  const tactic = createNode("tactic", "Session lifecycle")
+  const action = createNode("action", "Boundary split")
+  let tree = setRoot(createTree(), trajectory)
+  tree = addChild(tree, trajectory.id, tactic)
+  tree = addChild(tree, tactic.id, action)
+  tree = markComplete(tree, action.id, Date.now())
+  await saveTree(dir, tree)
+
+  const createCalls: Array<{ directory: string; title: string; parentID?: string }> = []
+  const toastMessages: string[] = []
+  initSdkContext({
+    client: {
+      session: {
+        create: async (args: any) => {
+          createCalls.push(args)
+          return { id: "ses_split_1" }
+        },
+      },
+      tui: {
+        showToast: async ({ body }: any) => {
+          toastMessages.push(String(body?.message ?? ""))
+        },
+      },
+    } as any,
+    $: (() => {}) as any,
+    serverUrl: new URL("http://localhost:3000"),
+    project: { id: "test", worktree: dir, time: { created: Date.now() } } as any,
+  })
+
+  const hook = createSoftGovernanceHook(noopLogger, dir, config)
+  await hook(makeInput("map_context"), makeOutput())
+
+  const updated = await sm.load()
+  const exportDir = getExportDir(dir)
+  const exportFiles = await readdir(exportDir)
+
+  assert(createCalls.length === 1, "auto split calls session.create once")
+  assert(createCalls[0].parentID === "test-session", "auto split links parentID to current session")
+  assert(createCalls[0].title.includes("Boundary split"), "auto split title uses active hierarchy focus")
+  assert((updated?.metrics.turn_count ?? -1) === 0, "auto split resets turn count")
+  assert((updated?.metrics.files_touched.length ?? -1) === 0, "auto split clears files_touched")
+  assert((updated?.metrics.drift_score ?? -1) === 100, "auto split restores drift score")
+  assert(exportFiles.some((name) => name.includes("_autosplit") && name.endsWith(".json")), "auto split writes autosplit JSON export")
+  assert(exportFiles.some((name) => name.includes("_autosplit") && name.endsWith(".md")), "auto split writes autosplit markdown export")
+  assert(toastMessages.some((msg) => msg.includes("Boundary reached.")), "auto split emits continuation toast")
+
+  resetSdkContext()
+  await cleanup()
+}
+
+async function test_auto_split_skips_when_context_is_high() {
+  process.stderr.write("\n--- soft-governance: auto split skips at high context ---\n")
+  const dir = await setup()
+  const config = createConfig({
+    governance_mode: "assisted",
+    automation_level: "full",
+    auto_compact_on_turns: 50,
+  })
+  await saveConfig(dir, config)
+
+  const sm = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.session.role = "main"
+  state.metrics.turn_count = 80
+  await sm.save(state)
+
+  const createCalls: Array<Record<string, unknown>> = []
+  initSdkContext({
+    client: {
+      session: {
+        create: async (args: any) => {
+          createCalls.push(args)
+          return { id: "ses_split_should_not_happen" }
+        },
+      },
+    } as any,
+    $: (() => {}) as any,
+    serverUrl: new URL("http://localhost:3000"),
+    project: { id: "test", worktree: dir, time: { created: Date.now() } } as any,
+  })
+
+  const hook = createSoftGovernanceHook(noopLogger, dir, config)
+  await hook(makeInput("map_context"), makeOutput())
+
+  const updated = await sm.load()
+  assert(createCalls.length === 0, "auto split does not run when context is >=80%")
+  assert((updated?.metrics.turn_count ?? 0) > 0, "normal turn tracking still applies when split is skipped")
+
+  resetSdkContext()
+  await cleanup()
+}
+
 // ─── Runner ──────────────────────────────────────────────────────────
 
 async function main() {
@@ -871,6 +983,8 @@ async function main() {
   await test_ignored_full_reset_when_prerequisites_complete()
   await test_auto_commit_runs_when_enabled_and_files_modified()
   await test_auto_commit_skips_when_no_modified_files()
+  await test_auto_split_creates_continuation_session_and_resets_metrics()
+  await test_auto_split_skips_when_context_is_high()
 
   process.stderr.write(`\n=== Soft Governance: ${passed} passed, ${failed_} failed ===\n`)
   if (failed_ > 0) process.exit(1)

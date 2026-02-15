@@ -1,5 +1,6 @@
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { loadAnchors } from "../lib/anchors.js"
+import { loadTasks } from "../lib/manifest.js"
 import { countCompleted, getAncestors, loadTree } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
 import type { Message, Part } from "@opencode-ai/sdk"
@@ -87,6 +88,10 @@ function getLastNonSyntheticUserMessageIndex(messages: MessageV2[]): number {
     }
   }
   return -1
+}
+
+function hasModernMessages(messages: MessageV2[]): boolean {
+  return messages.some(isMessageWithParts)
 }
 
 function buildAnchorContext(
@@ -206,6 +211,16 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       if (state.metrics.files_touched.length > 0) {
         items.push("Create a git commit for touched files")
       }
+      const taskManifest = await loadTasks(directory)
+      if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
+        const pendingCount = taskManifest.tasks.filter(task => {
+          const status = String(task.status ?? "pending").toLowerCase()
+          return status !== "completed" && status !== "cancelled"
+        }).length
+        if (pendingCount > 0) {
+          items.push(`Review ${pendingCount} pending task(s) (todoread/todowrite)`)
+        }
+      }
 
       const role = (state.session.role || "").toLowerCase()
       const contextPercent = estimateContextPercent(
@@ -236,6 +251,11 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
         prependSyntheticPart(output.messages[index], checklist)
+        return
+      }
+
+      if (hasModernMessages(output.messages)) {
+        // SDK shape safety: avoid injecting legacy message objects into info/parts arrays.
         return
       }
 
