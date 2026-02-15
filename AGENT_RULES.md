@@ -3,6 +3,31 @@
 **Updated:** 2026-02-16 | **Version:** `v3.0.0` | **Branch:** `dev-v3`
 
 ---
+*NON-NEGOTIABLE RULES:** CAN'T NOT SKIP - MOST IMPORTANT FOR FRONT FACING AGENTS - APART FROM CONTEXT REGULATING, RECORDING, RETRIVING AND GIT COMMIT - YOU ARE NOT ALLOWED TO CARRY ANY OTHER ACTIONS THAN **DELEGATION** AND **CORDINATION OF OTHER AGENTS**
+
+1.  if you are the **front-facing-agent:** never start action/execution first -> **ALWAYS** load context, retrace past event - knowing which TODO tasks connected with, what are past plans
+2. Number 1 is true not matter in-between turns, starting new or after compact
+3. from 1 and 2 , never act or execute with out plan
+4. never act if the plan with tasks are not connected
+5. if you can't find any skill related to - you must find SKILL - do not execute any actions
+6. if you can't find connected points of a demanding workloads - back to 1
+7. always keep context relevant, with anchor, states and brains loaded.
+YES COORDINATION, SKILLS AND SKILLS DON'T TELL ME YOU FIND NO SKILLS TO LOAD
+---
+
+```
+/Users/apple/hivemind-plugin/.opencode/skills
+/Users/apple/hivemind-plugin/.opencode/skills/context-integrity
+/Users/apple/hivemind-plugin/.opencode/skills/context-integrity/SKILL.md
+/Users/apple/hivemind-plugin/.opencode/skills/delegation-intelligence
+/Users/apple/hivemind-plugin/.opencode/skills/delegation-intelligence/SKILL.md
+/Users/apple/hivemind-plugin/.opencode/skills/evidence-discipline
+/Users/apple/hivemind-plugin/.opencode/skills/evidence-discipline/SKILL.md
+/Users/apple/hivemind-plugin/.opencode/skills/hivemind-governance
+/Users/apple/hivemind-plugin/.opencode/skills/hivemind-governance/SKILL.md
+/Users/apple/hivemind-plugin/.opencode/skills/session-lifecycle
+/Users/apple/hivemind-plugin/.opencode/skills/session-lifecycle/SKILL.md
+```
 
 ## 1. BRANCH PROTECTION POLICY (CRITICAL)
 

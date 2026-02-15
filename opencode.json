@@ -1,5 +1,15 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "stitch": {
+      "type": "remote",
+      "url": "https://stitch.googleapis.com/mcp",
+      "enabled": true,
+      "headers": {
+        "X-Goog-Api-Key": "AQ.Ab8RN6K97RdrULpkxLn6x8tPYzkK-RNcxHqX8ZSuZBcdcgHj-g"
+      }
+    }
+  },
   "plugin": [
     "hivemind-context-governance"
   ],
@@ -19,6 +29,21 @@
         },
         "572bd930-0438-520c-a4a4-56874be296f8": {
           "name": "GLM-4.7-FP8"
+        }
+      }
+    },
+    "aihubmix-code": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "AIHubMix-code",
+      "options": {
+        "baseURL": "https://aihubmix.com/v1"
+      },
+      "models": {
+        "coding-glm-5-free": {
+          "name": "CODING-GLM-5-FREE"
+        },
+        "coding-minimax-m2.5-free": {
+          "name": "CODING-MINIMAX-M2.5-FREE"
         }
       }
     }
