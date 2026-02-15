@@ -4,15 +4,27 @@
 
 These paths are `dev-v3` only and must not be merged/pushed to `master`:
 
-- `AGENTS.md`
-- `CHANGELOG.md`
-- `.opencode/**`
-- `docs/plans/**`
-- `docs/reference/**`
-- `references/**`
-- `prompts/**`
-- `templates/**`
-- `agents/**`
+- `AGENT_RULES.md` — Master SOT for AI agents (internal)
+- `AGENTS.md` — Agent configuration (internal)
+- `CHANGELOG.md` — Development history (internal)
+- `.opencode/**` — Skills, commands, agents (internal)
+- `.hivemind/**` — Session state, memory, hierarchy (user-local, never tracked)
+- `docs/plans/**` — Implementation plans, audits (internal)
+- `docs/reference/**` — Research artifacts (internal)
+- `references/**` — Code references (internal)
+- `prompts/**` — Prompt templates (internal)
+- `templates/**` — File templates (internal)
+- `agents/**` — Agent definitions (internal)
+
+## Why This Matters
+
+- **master** = Public distribution (npm, GitHub releases)
+- **dev-v3** = Internal development (plans, audits, research)
+
+Leaking internal docs to master:
+- Exposes development strategy to public
+- Confuses users with internal-only documentation
+- May contain sensitive implementation details
 
 ## Enforcement
 
