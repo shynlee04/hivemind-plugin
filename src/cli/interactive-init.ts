@@ -16,6 +16,13 @@ import type {
   OutputStyle,
 } from "../schemas/config.js"
 import { isCoachAutomation, normalizeAutomationLabel } from "../schemas/config.js"
+import type { AssetSyncTarget } from "./sync-assets.js"
+
+export const ASSET_TARGET_LABELS: Record<AssetSyncTarget, string> = {
+  project: "Project only (.opencode/ in this project)",
+  global: "Global only (~/.config/opencode/)",
+  both: "Both project and global",
+}
 
 /**
  * Run the interactive init wizard.
@@ -199,6 +206,33 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
     }
   }
 
+  // Target selection - where should OpenCode assets be installed?
+  const syncTarget = await p.select({
+    message: "Install OpenCode assets (commands, skills) where?",
+    options: [
+      {
+        value: "project" as AssetSyncTarget,
+        label: "Project only (recommended)",
+        hint: ".opencode/ in this project — portable, version-controlled",
+      },
+      {
+        value: "global" as AssetSyncTarget,
+        label: "Global only",
+        hint: "~/.config/opencode/ — available in all projects",
+      },
+      {
+        value: "both" as AssetSyncTarget,
+        label: "Both project and global",
+        hint: "Installs to both locations",
+      },
+    ],
+  })
+
+  if (p.isCancel(syncTarget)) {
+    p.cancel("Setup cancelled.")
+    return null
+  }
+
   // Summary
   p.note(
     [
@@ -207,6 +241,7 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
       `Automation:  ${normalizeAutomationLabel(automationLevel)}${isCoachAutomation(automationLevel) ? " (max guidance)" : ""}`,
       `Expert:      ${isCoachAutomation(automationLevel) ? "beginner (forced)" : expertLevel}`,
       `Style:       ${isCoachAutomation(automationLevel) ? "skeptical (forced)" : outputStyle}`,
+      `Target:      ${ASSET_TARGET_LABELS[syncTarget]}`,
       requireCodeReview || isCoachAutomation(automationLevel) ? `✓ Code review required` : "",
       enforceTdd ? `✓ TDD enforced` : "",
     ]
@@ -234,5 +269,6 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
     outputStyle: isCoachAutomation(automationLevel) ? "skeptical" : outputStyle,
     requireCodeReview: requireCodeReview || isCoachAutomation(automationLevel),
     enforceTdd,
+    syncTarget,
   }
 }
