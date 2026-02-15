@@ -60,7 +60,7 @@ for file in "${changed_files[@]}"; do
   for re in "${protected_regexes[@]}"; do
     if [[ "${file}" =~ ${re} ]]; then
       exists=0
-      for existing in "${violations[@]}"; do
+      for existing in "${violations[@]:-}"; do
         if [[ "${existing}" == "${file}" ]]; then
           exists=1
           break
