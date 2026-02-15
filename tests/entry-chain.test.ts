@@ -66,7 +66,7 @@ async function test_init() {
     assert(existsSync(join(sessions, "active.md")), "active.md exists after init")
     assert(existsSync(join(hm, "templates", "session.md")), "templates/session.md exists after init")
     assert(existsSync(join(sessions, "manifest.json")), "manifest.json exists after init")
-    assert(!treeExists(dir), "hierarchy.json does NOT exist yet (created on first declare_intent)")
+    assert(treeExists(dir), "hierarchy.json exists after init (empty tree ready for governance)")
   } finally {
     await cleanTmpDir(dir)
   }
@@ -299,7 +299,10 @@ async function test_oldInstallNoHierarchyJson() {
       await stateManager.save(state)
     }
 
-    // Ensure hierarchy.json does NOT exist
+    // Simulate old install: delete hierarchy.json to test backwards compatibility
+    const { rm } = await import("fs/promises")
+    const hierarchyPath = getEffectivePaths(dir).hierarchy
+    await rm(hierarchyPath).catch(() => {})
     assert(!treeExists(dir), "hierarchy.json does not exist (old install scenario)")
 
     // Call map_context — should work gracefully (falls back to flat)
