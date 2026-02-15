@@ -1,0 +1,551 @@
+{
+  "name": "HiveMind v3.0 Backend - Relational Cognitive Engine",
+  "branchName": "ralph/hivemind-v3-backend",
+  "description": "Backend implementation: Graph Schemas, Cognitive Packer, SDK Hooks, Graph Migration, Session Swarms, Tool Consolidation",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Create graph node Zod schemas",
+      "description": "As a developer, I want strict Zod schemas for all graph nodes with UUID FKs so that orphaned data is rejected at validation time.",
+      "acceptanceCriteria": [
+        "Create src/schemas/graph-nodes.ts with: TrajectoryNode, PlanNode, PhaseNode, TaskNode, MemNode",
+        "All IDs are UUIDs (validate with z.string().uuid())",
+        "TaskNode has parent_phase_id FK (required)",
+        "MemNode has origin_task_id FK (nullable), type: insight|false_path, staleness_stamp",
+        "Add validateParentExists() and validateOrphanFree() helpers",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "",
+      "dependsOn": []
+    },
+    {
+      "id": "US-002",
+      "title": "Create graph state aggregates",
+      "description": "As a developer, I want aggregate types for each graph/*.json file so that I/O operations have type safety.",
+      "acceptanceCriteria": [
+        "Create src/schemas/graph-state.ts",
+        "Define: TrajectoryState, PlansState, GraphTasksState, GraphMemsState",
+        "All state types include version field for migration",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-001"]
+    },
+    {
+      "id": "US-003",
+      "title": "Update paths.ts for graph directory",
+      "description": "As a developer, I want path helpers for the new graph/ directory structure.",
+      "acceptanceCriteria": [
+        "Add to HivemindPaths: graphDir, graphTrajectory, graphPlans, graphTasks, graphMems",
+        "Update getEffectivePaths() to return new paths",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-002"]
+    },
+    {
+      "id": "US-004",
+      "title": "Extract compaction engine to lib",
+      "description": "As a developer, I want compaction business logic extracted from compact-session.ts so the tool becomes a dumb wrapper.",
+      "acceptanceCriteria": [
+        "Create src/lib/compaction-engine.ts",
+        "Extract: identifyTurningPoints(), generateNextCompactionReport(), executeCompaction()",
+        "compact-session.ts reduced to <=100 lines",
+        "Tool only: define Zod schema -> call lib -> return string",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-003"]
+    },
+    {
+      "id": "US-005",
+      "title": "Extract session engine to lib",
+      "description": "As a developer, I want session management logic extracted from hivemind-session.ts so it's reusable by hooks.",
+      "acceptanceCriteria": [
+        "Create src/lib/session-engine.ts",
+        "Extract: startSession(), updateSession(), closeSession(), getSessionStatus(), resumeSession()",
+        "Functions return JSON/boolean, never conversational text",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-003"]
+    },
+    {
+      "id": "US-006",
+      "title": "Extract inspect engine to lib",
+      "description": "As a developer, I want state inspection logic extracted from hivemind-inspect.ts so it's callable by hooks.",
+      "acceptanceCriteria": [
+        "Create src/lib/inspect-engine.ts",
+        "Extract: scanState(), deepInspect(), driftReport()",
+        "Functions return JSON only",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-003"]
+    },
+    {
+      "id": "US-007",
+      "title": "Extract brownfield scan to lib",
+      "description": "As a developer, I want brownfield orchestration logic extracted from scan-hierarchy.ts so anchors and mems are saved via libraries.",
+      "acceptanceCriteria": [
+        "Create src/lib/brownfield-scan.ts",
+        "Extract: executeOrchestration() - anchor upserts + mem saving",
+        "scan-hierarchy.ts reduced to <=100 lines",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-003"]
+    },
+    {
+      "id": "US-008",
+      "title": "Extract session split to lib",
+      "description": "As a developer, I want session split logic extracted from soft-governance.ts so it's reusable by the Actor Model implementation.",
+      "acceptanceCriteria": [
+        "Create src/lib/session-split.ts",
+        "Extract: maybeCreateNonDisruptiveSessionSplit()",
+        "soft-governance.ts reduced",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-003"]
+    },
+    {
+      "id": "US-009",
+      "title": "Create shared tool response helper",
+      "description": "As a developer, I want a shared response formatter so all tools return consistent JSON output.",
+      "acceptanceCriteria": [
+        "Create src/lib/tool-response.ts",
+        "Export: toJsonOutput(), toXmlOutput(), toErrorOutput()",
+        "All extracted tools use shared helper",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-004", "US-005", "US-006", "US-007", "US-008"]
+    },
+    {
+      "id": "US-010",
+      "title": "Build cognitive packer core",
+      "description": "As a developer, I want a deterministic Context Compiler that reads the graph and produces dense XML.",
+      "acceptanceCriteria": [
+        "Create src/lib/cognitive-packer.ts",
+        "packCognitiveState(directory, sessionId): string",
+        "Reads trajectory.json -> resolves Read-Head",
+        "Traverses graph via FK resolution",
+        "NO LLM prompts, NO tool definitions inside this file",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-002", "US-003"]
+    },
+    {
+      "id": "US-011",
+      "title": "Implement Time Machine filter",
+      "description": "As a developer, I want the packer to drop false_path and invalidated nodes from context.",
+      "acceptanceCriteria": [
+        "Add pruneContaminated(mems, tasks): { clean, pruned }",
+        "Drops MemNode/TaskNode with type: false_path or status: invalidated",
+        "Unit tests for filter logic",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-010"]
+    },
+    {
+      "id": "US-012",
+      "title": "Implement TTS (Time-To-Stale) filter",
+      "description": "As a developer, I want the packer to filter expired mems unless linked to active task.",
+      "acceptanceCriteria": [
+        "Add isMemStale(mem, activeTasks, config): boolean",
+        "Add calculateRelevanceScore(mem, trajectory): number",
+        "Drops MemNode past staleness_stamp UNLESS linked to active task",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-010"]
+    },
+    {
+      "id": "US-013",
+      "title": "Implement XML compression with budget",
+      "description": "As a developer, I want the packer to output dense XML within configurable char budget.",
+      "acceptanceCriteria": [
+        "Output <hivemind_state> XML structure",
+        "Budget: 2000 chars default (configurable)",
+        "Lowest-relevance mems dropped first when over budget",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-011", "US-012"]
+    },
+    {
+      "id": "US-014",
+      "title": "Build graph I/O layer",
+      "description": "As a developer, I want CRUD operations for graph/*.json with atomic writes and Zod validation.",
+      "acceptanceCriteria": [
+        "Create src/lib/graph-io.ts",
+        "loadTrajectory() / saveTrajectory()",
+        "loadPlans() / savePlans()",
+        "loadGraphTasks() / saveGraphTasks() / addGraphTask() / invalidateTask()",
+        "loadGraphMems() / saveGraphMems() / addGraphMem() / flagFalsePath()",
+        "All validate via Zod schemas on read AND write",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-001", "US-002"]
+    },
+    {
+      "id": "US-015",
+      "title": "Wire packer to messages-transform",
+      "description": "As a developer, I want the cognitive packer output injected as synthetic context on every turn.",
+      "acceptanceCriteria": [
+        "messages-transform.ts calls packCognitiveState()",
+        "Inject XML as synthetic: true part",
+        "buildAnchorContext() reads from packed state instead of raw brain.json",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-010", "US-013"]
+    },
+    {
+      "id": "US-016",
+      "title": "Implement Pre-Stop Gate checklist",
+      "description": "As a developer, I want a forced checklist injected before the agent stops.",
+      "acceptanceCriteria": [
+        "Inject second synthetic part: Pre-Stop Gate checklist",
+        "Checklist items derived from trajectory.json active tasks",
+        "Verify: hierarchy updated, artifacts saved, commit threshold met",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-015"]
+    },
+    {
+      "id": "US-017",
+      "title": "Refactor session-lifecycle to use packer",
+      "description": "As a developer, I want session-lifecycle.ts slimmed from 586 lines to <=200 lines by using the cognitive packer.",
+      "acceptanceCriteria": [
+        "Replace 300+ lines of ad-hoc assembly with packCognitiveState() call",
+        "Keep: bootstrap block, setup guidance, governance signals",
+        "Move: brownfield detection, framework routing -> src/lib/onboarding.ts",
+        "Target: <=200 lines",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-015"]
+    },
+    {
+      "id": "US-018",
+      "title": "Build graph migration script",
+      "description": "As a developer, I want a one-time migration from flat .hivemind to graph/ structure.",
+      "acceptanceCriteria": [
+        "Create src/lib/graph-migrate.ts",
+        "migrateToGraph(directory) - auto-triggered on first hook if graph/ missing",
+        "brain.json hierarchy -> trajectory.json (extract active intent)",
+        "tasks.json flat -> graph/tasks.json with parent_phase_id FK",
+        "mems.json flat -> graph/mems.json with staleness_stamp, type, origin_task_id",
+        "Preserve old files as .bak",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 18,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-014"]
+    },
+    {
+      "id": "US-019",
+      "title": "Implement dual-read backward compat",
+      "description": "As a developer, I want graph-aware functions to fall back to state/ if graph/ missing.",
+      "acceptanceCriteria": [
+        "Graph-aware functions check graph/ first, fall back to state/",
+        "Migration is non-disruptive - existing sessions continue working",
+        "Unit tests for dual-read logic",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 19,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-018"]
+    },
+    {
+      "id": "US-020",
+      "title": "Implement 80% session splitter",
+      "description": "As a developer, I want automatic session splits when token pressure reaches 80%.",
+      "acceptanceCriteria": [
+        "Create src/lib/session-swarm.ts",
+        "Monitor session token pressure via SDK",
+        "At 80%: call packCognitiveState() for pure context export",
+        "client.session.create() -> spawn pristine session container",
+        "client.session.prompt({ noReply: true }) -> inject XML as Turn 0",
+        "Save export to sessions/archive/splits/",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 20,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-010", "US-017"]
+    },
+    {
+      "id": "US-021",
+      "title": "Implement headless researcher swarms",
+      "description": "As a developer, I want to spawn headless sub-sessions that save findings to graph/mems.json.",
+      "acceptanceCriteria": [
+        "spawnHeadlessResearcher(client, parentId, prompt) -> spawns sub-session",
+        "Uses noReply: true to force background research",
+        "Commands sub-agent to save findings to graph/mems.json with origin_task_id",
+        "Metadata tracked in sessions/active/swarms/",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 21,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-020"]
+    },
+    {
+      "id": "US-022",
+      "title": "Wire trajectory write-through in tools",
+      "description": "As a developer, I want tools to update trajectory.json when focus changes.",
+      "acceptanceCriteria": [
+        "declare_intent -> sets trajectory.active_plan_id, clears phase/task",
+        "map_context(trajectory) -> updates intent shift stamp",
+        "map_context(tactic/action) -> updates active_phase_id / active_task_ids",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 22,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-014", "US-018"]
+    },
+    {
+      "id": "US-023",
+      "title": "Wire 6 canonical hivemind tools",
+      "description": "As a developer, I want the 6 unified hivemind-*.ts tools wired in src/index.ts.",
+      "acceptanceCriteria": [
+        "hivemind_session (start/update/close/status/resume)",
+        "hivemind_inspect (scan/deep/drift)",
+        "hivemind_memory (save/recall/list)",
+        "hivemind_anchor (save/list/get)",
+        "hivemind_hierarchy (prune/migrate/status)",
+        "hivemind_cycle (export/list/prune)",
+        "All 6 registered in src/index.ts",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 23,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-004", "US-005", "US-006", "US-007", "US-008"]
+    },
+    {
+      "id": "US-024",
+      "title": "Delete 13 old tool files",
+      "description": "As a developer, I want the legacy tool files deleted after canonical tools are wired.",
+      "acceptanceCriteria": [
+        "Delete: declare-intent.ts, map-context.ts, compact-session.ts, scan-hierarchy.ts",
+        "Delete: save-anchor.ts, think-back.ts, save-mem.ts, recall-mems.ts, hierarchy.ts, export-cycle.ts",
+        "Delete: check-drift.ts, list-shelves.ts, self-rate.ts",
+        "Update src/tools/index.ts -> export 6 canonical tools",
+        "Update classifyTool() in detection.ts",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 24,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-023"]
+    },
+    {
+      "id": "US-025",
+      "title": "Update documentation",
+      "description": "As a developer, I want all documentation updated to reflect v3.0 tool changes.",
+      "acceptanceCriteria": [
+        "Update AGENTS.md with new tool names",
+        "Update README.md with v3.0 architecture",
+        "Update CLI help text",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 25,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-024"]
+    },
+    {
+      "id": "US-026",
+      "title": "Create graph schema tests",
+      "description": "As a developer, I want comprehensive tests for graph Zod schemas.",
+      "acceptanceCriteria": [
+        "Create tests/graph-nodes.test.ts",
+        "Test: valid/invalid nodes, FK constraints, orphan detection",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 26,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-001", "US-002"]
+    },
+    {
+      "id": "US-027",
+      "title": "Create cognitive packer tests",
+      "description": "As a developer, I want comprehensive tests for the cognitive packer.",
+      "acceptanceCriteria": [
+        "Create tests/cognitive-packer.test.ts",
+        "Test: XML output, TTS filtering, Time Machine, FK resolution",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 27,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-010", "US-011", "US-012", "US-013"]
+    },
+    {
+      "id": "US-028",
+      "title": "Create graph I/O tests",
+      "description": "As a developer, I want comprehensive tests for graph I/O operations.",
+      "acceptanceCriteria": [
+        "Create tests/graph-io.test.ts",
+        "Test: CRUD, atomic writes, Zod validation on I/O",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 28,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-014"]
+    },
+    {
+      "id": "US-029",
+      "title": "Create migration tests",
+      "description": "As a developer, I want comprehensive tests for the graph migration.",
+      "acceptanceCriteria": [
+        "Create tests/graph-migrate.test.ts",
+        "Test: old->new format, backup, dual-read",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 29,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-018", "US-019"]
+    },
+    {
+      "id": "US-030",
+      "title": "Create session swarm tests",
+      "description": "As a developer, I want comprehensive tests for session swarms.",
+      "acceptanceCriteria": [
+        "Create tests/session-swarm.test.ts",
+        "Test: 80% split, headless spawn, noReply injection (mock SDK client)",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 30,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-020", "US-021"]
+    },
+    {
+      "id": "US-031",
+      "title": "Full regression test",
+      "description": "As a developer, I want all 84+ tests passing with no regressions.",
+      "acceptanceCriteria": [
+        "npm test: all tests pass",
+        "npx tsc --noEmit: clean",
+        "node bin/hivemind-tools.cjs source-audit: no dead tool warnings",
+        "node bin/hivemind-tools.cjs ecosystem-check: healthy",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 31,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-026", "US-027", "US-028", "US-029", "US-030"]
+    },
+    {
+      "id": "US-038",
+      "title": "Wire dashboard to cognitive packer",
+      "description": "As a developer, I want the dashboard to consume packer output for real-time state display.",
+      "acceptanceCriteria": [
+        "Dashboard reads packCognitiveState() output",
+        "State updates on every turn (via SDK event)",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 32,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-010"]
+    },
+    {
+      "id": "US-039",
+      "title": "Implement token pressure from SDK",
+      "description": "As a developer, I want real token pressure metrics from OpenCode SDK.",
+      "acceptanceCriteria": [
+        "Use SDK session.tokenPressure or equivalent",
+        "Replace placeholder with actual metric",
+        "Wire to 80% splitter",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 33,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-020"]
+    }
+  ]
+}

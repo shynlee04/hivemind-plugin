@@ -1,0 +1,308 @@
+{
+  "name": "HiveMind v3.0 Frontend - OpenTUI Dashboard",
+  "branchName": "ralph/hivemind-v3-frontend",
+  "description": "Frontend implementation: OpenTUI Dashboard migration, 5 views, bilingual EN/VI, Stitch design integration. JULES team: clone dev-v3, work remote sequential.",
+  "userStories": [
+    {
+      "id": "US-032",
+      "title": "Migrate from Ink to OpenTUI",
+      "description": "As a developer, I want the dashboard migrated from Ink to OpenTUI for better TUI capabilities.",
+      "acceptanceCriteria": [
+        "Replace Ink dependencies with @opentui/core and @opentui/react",
+        "Update package.json: remove ink, add @opentui/core, @opentui/react",
+        "Entry point uses createCliRenderer() from @opentui/core",
+        "React entry: createRoot(renderer).render(<App />)",
+        "CRITICAL: Never process.exit() - use renderer.destroy()",
+        "Requires Bun runtime (not Node.js)",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Use skill: opentui for API reference",
+      "dependsOn": []
+    },
+    {
+      "id": "US-033",
+      "title": "Build TelemetryHeader component",
+      "description": "As a user, I want a header showing session ID, mode, governance status, drift score, and language toggle.",
+      "acceptanceCriteria": [
+        "Display: session ID (short), mode, governance status",
+        "Drift score with color coding (green/yellow/red)",
+        "Language toggle [L] EN/VI",
+        "Use <text> with nested <strong>, <em>, <span> for styling (NOT props)",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Stitch screens: 02 (EN), 07 (VI)",
+      "dependsOn": ["US-032"]
+    },
+    {
+      "id": "US-034",
+      "title": "Build TrajectoryPane component",
+      "description": "As a user, I want a pane showing the current trajectory > tactic > action hierarchy.",
+      "acceptanceCriteria": [
+        "ASCII tree display of hierarchy",
+        "Cursor marker for current focus",
+        "Status indicators: [>>] active, [OK] complete, [!!] blocked",
+        "Use <box> with border for container",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "Stitch screens: 02 (EN), 07 (VI)",
+      "dependsOn": ["US-032"]
+    },
+    {
+      "id": "US-035",
+      "title": "Build MemoryPane component",
+      "description": "As a user, I want a pane showing relevant mems with shelf, staleness, and type indicators.",
+      "acceptanceCriteria": [
+        "Display mems from cognitive packer output",
+        "Shelf badges: decisions, patterns, errors",
+        "Type indicators: insight (green), false_path (red/dim)",
+        "Staleness countdown: stale_in: 24h format",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "Stitch screens: 02 (EN), 07 (VI)",
+      "dependsOn": ["US-032"]
+    },
+    {
+      "id": "US-036",
+      "title": "Build AutonomicLog component",
+      "description": "As a user, I want a log showing autonomic hook activity (tool calls, violations, drift warnings).",
+      "acceptanceCriteria": [
+        "Scrolling log of governance events",
+        "Color-coded: INFO (white), WARN (yellow), CRITICAL (red), DEGRADED (magenta)",
+        "Use <scrollbox> for auto-scroll",
+        "Max 100 lines in buffer",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-032"]
+    },
+    {
+      "id": "US-037",
+      "title": "Build InteractiveFooter component",
+      "description": "As a user, I want a footer with keyboard shortcuts and action prompts.",
+      "acceptanceCriteria": [
+        "Display keyboard shortcuts: [M] Mem, [A] Anchor, [C] Compact, [Q] Quit",
+        "Use useKeyboard() hook from @opentui/react",
+        "React to key presses: emit events or trigger actions",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-032"]
+    },
+    {
+      "id": "US-040",
+      "title": "Build SwarmMonitor component",
+      "description": "As a user, I want to see active sub-agent swarms and their status.",
+      "acceptanceCriteria": [
+        "Display swarm sessions from sessions/active/swarms/",
+        "Status per swarm: RUNNING, COMPLETE, FAILED",
+        "Output preview (last 3 lines)",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-032"]
+    },
+    {
+      "id": "US-041",
+      "title": "Create slash command entry point",
+      "description": "As a user, I want to launch the dashboard via a slash command.",
+      "acceptanceCriteria": [
+        "Create .opencode/commands/hivemind-dashboard.md",
+        "Command launches OpenTUI dashboard",
+        "Handles graceful exit with renderer.destroy()",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-032"]
+    },
+    {
+      "id": "US-042",
+      "title": "Dashboard accessibility and responsiveness",
+      "description": "As a user, I want the dashboard to adapt to terminal resize and be keyboard-accessible.",
+      "acceptanceCriteria": [
+        "Use useOnResize() and useTerminalDimensions() hooks",
+        "All interactive elements keyboard-focusable",
+        "No text truncation at 80 columns",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-033", "US-034", "US-035", "US-036", "US-037"]
+    },
+    {
+      "id": "US-043",
+      "title": "Dashboard tests",
+      "description": "As a developer, I want comprehensive tests for the OpenTUI dashboard.",
+      "acceptanceCriteria": [
+        "Create tests/dashboard-opentui.test.ts",
+        "Test: component rendering, keyboard interaction, state updates",
+        "Use OpenTUI test renderer (see skill: opentui/references/testing/)",
+        "npm test passes",
+        "npx tsc --noEmit passes"
+      ],
+      "priority": 10,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-032", "US-033", "US-034", "US-035", "US-036", "US-037"]
+    },
+    {
+      "id": "US-044",
+      "title": "Build i18n/bilingual infrastructure",
+      "description": "As a user, I want the dashboard to support English and Vietnamese with keyboard toggle.",
+      "acceptanceCriteria": [
+        "Create src/dashboard/i18n.ts with EN and VI dictionaries",
+        "Labels match Stitch screens 02-06 (EN) and 07-11 (VI)",
+        "[L] key toggles language",
+        "Technical terms preserved (UUID, XML, JSON, FK)",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 11,
+      "passes": false,
+      "notes": "Stitch screens 07-11 are Vietnamese equivalents",
+      "dependsOn": ["US-032"]
+    },
+    {
+      "id": "US-045",
+      "title": "Build SwarmOrchestratorView component",
+      "description": "As a user, I want a view showing ASCII agent topology and communication bus.",
+      "acceptanceCriteria": [
+        "ASCII topology: 9-column grid with agent positions",
+        "Agent state cards: 3-column sidebar",
+        "Communication bus: JSON stream display",
+        "Use <code> component for JSON with language=json",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 12,
+      "passes": false,
+      "notes": "Stitch screens: 04 (EN), 09 (VI)",
+      "dependsOn": ["US-044"]
+    },
+    {
+      "id": "US-046",
+      "title": "Build TimeTravelDebuggerView component",
+      "description": "As a user, I want a view for navigating state history with diff viewer.",
+      "acceptanceCriteria": [
+        "State chronicle timeline: 3-column left pane",
+        "Diff viewer: 9-column right pane",
+        "Use native <diff> component: oldCode, newCode, mode=unified|split",
+        "Playback controls: [<-] [->] [P] [S]",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 13,
+      "passes": false,
+      "notes": "Stitch screens: 05 (EN), 10 (VI)",
+      "dependsOn": ["US-044"]
+    },
+    {
+      "id": "US-047",
+      "title": "Build ToolRegistryView component",
+      "description": "As a user, I want a view showing all available tools and their schemas.",
+      "acceptanceCriteria": [
+        "Catalog table: 8-column left pane",
+        "Schema preview: 4-column right pane",
+        "Config overrides display",
+        "Command input at bottom",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 14,
+      "passes": false,
+      "notes": "Stitch screens: 06 (EN), 11 (VI)",
+      "dependsOn": ["US-044"]
+    },
+    {
+      "id": "US-048",
+      "title": "Build MemCreationModal component",
+      "description": "As a user, I want a modal for creating mems with form fields.",
+      "acceptanceCriteria": [
+        "Overlay with backdrop blur effect",
+        "Double border container",
+        "Form fields: shelf, content, tags",
+        "Keyboard shortcuts: [Enter] Save, [Esc] Cancel",
+        "Use <input> and <textarea> components",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 15,
+      "passes": false,
+      "notes": "Stitch screens: 03 (EN), 08 (VI)",
+      "dependsOn": ["US-044"]
+    },
+    {
+      "id": "US-049",
+      "title": "Implement dashboard view navigation",
+      "description": "As a user, I want to navigate between the 5 dashboard views with keyboard.",
+      "acceptanceCriteria": [
+        "Use <tab-select> component for view switching",
+        "Views: Main, SwarmOrchestrator, TimeTravelDebugger, ToolRegistry, Settings",
+        "Keyboard: [1-5] number keys or [Tab] cycle",
+        "Current view highlighted in header",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 16,
+      "passes": false,
+      "notes": "",
+      "dependsOn": ["US-033", "US-045", "US-046", "US-047"]
+    },
+    {
+      "id": "US-050",
+      "title": "Dashboard design system (TUI tokens)",
+      "description": "As a developer, I want a consistent design system with neon color tokens matching Stitch screens.",
+      "acceptanceCriteria": [
+        "Create src/dashboard/design-tokens.ts",
+        "Colors: neon-green (#00ff41), neon-amber (#ffb000), neon-blue (#00f0ff), neon-purple (#bd00ff), neon-pink (#ff0055), neon-red (#ff3333)",
+        "Backgrounds: #0d0d0d, #111111, #13131a",
+        "Animated status dots via useTimeline() hook",
+        "npm test passes",
+        "npx tsc --noEmit passes",
+        "Verify OpenTUI renders correctly"
+      ],
+      "priority": 17,
+      "passes": false,
+      "notes": "JetBrains Mono font, scanline effects",
+      "dependsOn": ["US-032"]
+    }
+  ]
+}
