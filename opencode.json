@@ -50,6 +50,33 @@
   },
   "model": "chutes-api/e51e818e-fa63-570d-9f68-49d7d1b4d12f",
   "agent": {
+    "build": {
+      "description": "Full-stack dev agent - builds, tests, validates, self-reviews. Uses skills: zod, code-review, code-architecture-review, verification-before-completion",
+      "mode": "subagent",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "glob": true,
+        "grep": true,
+        "bash": true,
+        "task": true,
+        "skill": true,
+        "webfetch": true,
+        "websearch": true,
+        "google_search": true,
+        "codesearch": true,
+        "save_mem": true,
+        "recall_mems": true,
+        "scan_hierarchy": true,
+        "think_back": true,
+        "save_anchor": true,
+        "declare_intent": true,
+        "map_context": true,
+        "compact_session": true,
+        "export_cycle": true
+      }
+    },
     "explore": {
       "description": "A fast, read-only agent for exploring codebases. Cannot modify files. Use this when you need to quickly find files by patterns, search code for keywords, or answer questions about the codebase.",
       "mode": "subagent",
