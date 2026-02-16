@@ -44,6 +44,30 @@
 **Reason**:
 - Enforce proximity-first retrieval (`session → task vicinity → global fallback`) to support concurrent sessions safely.
 
+### Entry: Deterministic first-turn marker gating (counter-reset safe)
+
+**DateTime**: 2026-02-16T17:50:00Z
+**Issue**: In-between turns were occasionally misclassified as first-turn when counters reset (`map_context`/session transitions), causing timing confusion and TUI noise.
+
+**DeepWiki/Docs Investigation**:
+- `messages.transform` executes every turn pre-LLM, so counter-only gates are brittle.
+- Recommendation: use a persistent per-session marker instead of runtime turn counters.
+
+**Fix Applied**:
+- `src/schemas/brain-state.ts`: added `first_turn_context_injected` (boolean) to `BrainState`, default `false` in `createBrainState()`.
+- `src/lib/persistence.ts`: backward-compatible migration for older state files (missing field => `false`).
+- `src/hooks/messages-transform.ts`:
+  - first-turn injection now requires `state` and `first_turn_context_injected === false`
+  - after successful first-turn injection, persist marker as `true`
+  - preserves first-turn exclusivity (skip anchor/checklist in same pass)
+- `tests/messages-transform.test.ts`: added regression checks to ensure no reinjection after counter resets.
+
+**Verification**:
+- `npx tsc --noEmit` ✅
+- `npx tsx --test tests/messages-transform.test.ts tests/integration.test.ts` ✅
+  - Messages Transform: 20 passed, 0 failed
+  - Integration: 113 passed, 0 failed
+
 ### Entry: User proposes "forced first turn pulled context" hook
 
 **DateTime**: 2026-02-16

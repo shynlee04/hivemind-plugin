@@ -16,7 +16,7 @@ import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
 import { packCognitiveState } from "../lib/cognitive-packer.js"
 import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
-import { detectFirstTurn, loadLastSessionContext, buildTransformedPrompt } from "../lib/session_coherence.js"
+import { loadLastSessionContext, buildTransformedPrompt } from "../lib/session_coherence.js"
 import { existsSync, readdirSync } from "fs"
 import type { Message, Part } from "@opencode-ai/sdk"
 import type { BrainState } from "../schemas/brain-state.js"
@@ -219,7 +219,6 @@ function appendSyntheticPart(message: MessageV2, text: string): void {
 export function createMessagesTransformHook(_log: { warn: (message: string) => Promise<void> }, directory: string) {
   const stateManager = createStateManager(directory)
   const injectedSessionIds = new Set<string>()
-  let injectedWithoutState = false
 
   return async (
     _input: {},
@@ -234,14 +233,13 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       const state = await stateManager.load()
 
       // === FIRST TURN: Session Coherence ===
-      // MUST check BEFORE early return - new sessions have null state!
-      // detectFirstTurn returns true if state is null OR turn_count === 0
-      const sessionId = state?.session?.id
-      const canInjectForSession = sessionId
-        ? !injectedSessionIds.has(sessionId)
-        : !injectedWithoutState
+      // Persistent marker-based gate (counter-independent).
+      // Inject only when state exists and marker is false.
+      const sessionId = state?.session?.id ?? ""
+      const markerInjected = state?.first_turn_context_injected ?? false
+      const canInjectForSession = sessionId.length > 0 && !injectedSessionIds.has(sessionId)
 
-      if (canInjectForSession && detectFirstTurn(state)) {
+      if (state && !markerInjected && canInjectForSession) {
         const index = getLastNonSyntheticUserMessageIndex(output.messages)
         if (index >= 0) {
           try {
@@ -271,11 +269,13 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
             // Inject as synthetic part (prepend)
             prependSyntheticPart(output.messages[index], transformedPrompt)
 
-            if (sessionId) {
-              injectedSessionIds.add(sessionId)
-            } else {
-              injectedWithoutState = true
+            const updatedState: BrainState = {
+              ...state,
+              first_turn_context_injected: true,
             }
+            await stateManager.save(updatedState)
+
+            injectedSessionIds.add(sessionId)
 
             if (process.env.HIVEMIND_DEBUG_FIRST_TURN === "1") {
               console.log("\n🔗 [SESSION COHERENCE] First-turn context injected:")
