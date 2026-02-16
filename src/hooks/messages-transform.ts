@@ -15,6 +15,8 @@ import { loadTasks } from "../lib/manifest.js"
 import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
 import { packCognitiveState } from "../lib/cognitive-packer.js"
+import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
+import { existsSync, readdirSync } from "fs"
 import type { Message, Part } from "@opencode-ai/sdk"
 import type { BrainState } from "../schemas/brain-state.js"
 
@@ -51,6 +53,9 @@ function isMessageWithParts(message: MessageV2): message is MessageWithParts {
     Array.isArray((message as MessageWithParts).parts)
   )
 }
+
+// LOW #1: Magic number extracted for clarity
+const MAX_CHECKLIST_CHARS = 1000
 
 function buildChecklist(items: string[], maxChars: number): string {
   if (items.length === 0) return ""
@@ -242,21 +247,60 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           items.push("Acknowledge pending subagent failure (call export_cycle or map_context with blocked status)")
         }
 
-        // Pending tasks
-        const taskManifest = await loadTasks(directory)
-        if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
-          const pendingCount = taskManifest.tasks.filter(task => {
-            const status = String(task.status ?? "pending").toLowerCase()
-            return status !== "completed" && status !== "cancelled"
-          }).length
-          if (pendingCount > 0) items.push(`Review ${pendingCount} pending task(s)`)
+        // US-016: Pending tasks - dual-read pattern (trajectory.json primary, tasks.json fallback)
+        let pendingTaskCount = 0
+        let paths
+        try {
+          paths = await import("../lib/paths.js").then(m => m.getEffectivePaths(directory))
+        } catch {
+          // If paths can't be loaded, skip graph-based checks
+        }
+
+        // LOW #2: Parallelize async - start tree loading in parallel with task checks
+        const treePromise = loadTree(directory)
+        
+        // Primary: Read from graph/tasks.json filtered by trajectory.json active_task_ids
+        // MEDIUM #2: Check BOTH graph files exist before using graph data
+        if (paths && existsSync(paths.graphTrajectory) && existsSync(paths.graphTasks)) {
+          // LOW #2: Load trajectory and graphTasks in parallel
+          const [trajectoryState, graphTasks] = await Promise.all([
+            loadTrajectory(directory),
+            loadGraphTasks(directory)
+          ])
+          if (trajectoryState?.trajectory) {
+            const activeTaskIds = new Set(trajectoryState.trajectory.active_task_ids)
+            if (activeTaskIds.size > 0 && graphTasks?.tasks) {
+              // MEDIUM #1: Defensive check for task.status before comparison
+              const activeTasks = graphTasks.tasks.filter(task =>
+                activeTaskIds.has(task.id) && task.status && task.status !== "complete" && task.status !== "invalidated"
+              )
+              pendingTaskCount = activeTasks.length
+            }
+          }
+        }
+
+        // Fallback: Read from flat tasks.json if graph not available or empty
+        if (pendingTaskCount === 0) {
+          const taskManifest = await loadTasks(directory)
+          if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
+            const pendingCount = taskManifest.tasks.filter(task => {
+              const status = String(task.status ?? "pending").toLowerCase()
+              return status !== "completed" && status !== "cancelled"
+            }).length
+            pendingTaskCount = pendingCount
+          }
+        }
+
+        if (pendingTaskCount > 0) {
+          items.push(`Review ${pendingTaskCount} pending task(s)`)
         }
 
         // Session Boundary check
-        const role = (state.session.role || "").toLowerCase()
+        const role = (state.session?.role || "").toLowerCase()
         const contextPercent = estimateContextPercent(state.metrics.turn_count, config.auto_compact_on_turns)
         let completedBranchCount = 0
-        const tree = await loadTree(directory)
+        // LOW #2: Use pre-loaded tree promise
+        const tree = await treePromise
         if (tree.root) completedBranchCount = countCompleted(tree)
 
         // V3.0: Pass user_turn_count and compaction_count
@@ -274,9 +318,26 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
            items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
         }
 
-        // V3.0: REMOVED - "research artifacts symlinked" noise (not actionable without context)
+        // US-016: Artifacts check - verify session artifacts are properly linked
+        // Checks if session has been persisted to .hivemind/sessions/active/
+        const sessionDir = directory.includes(".hivemind/sessions/")
+          ? null // Already in session directory
+          : paths?.activeDir
+        if (sessionDir && state.session?.id) {
+          // Session files are named {date}-{mode}-{slug}.md, not by session ID suffix
+          // Check if ANY session file exists in active directory
+          try {
+            const sessionFiles = readdirSync(sessionDir).filter(f => f.endsWith('.md'))
+            if (sessionFiles.length === 0) {
+              items.push("Session not persisted to sessions/active/ (run declare_intent or compact_session)")
+            }
+          } catch {
+            // Directory doesn't exist or can't be read
+            items.push("Session not persisted to sessions/active/ (run declare_intent or compact_session)")
+          }
+        }
 
-        const checklist = buildChecklist(items, 1000)
+        const checklist = buildChecklist(items, MAX_CHECKLIST_CHARS)
         if (checklist) {
           appendSyntheticPart(output.messages[index], checklist)
         }
