@@ -14,6 +14,7 @@ import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { loadTasks } from "../lib/manifest.js"
 import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
+import { packCognitiveState } from "../lib/cognitive-packer.js"
 import type { Message, Part } from "@opencode-ai/sdk"
 import type { BrainState } from "../schemas/brain-state.js"
 
@@ -219,6 +220,10 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
+
+        // US-015: Cognitive Packer - inject packed XML state at START
+        const packedContext = packCognitiveState(directory)
+        prependSyntheticPart(output.messages[index], packedContext)
 
         // 1. V3.0: Contextual Anchoring via PREPEND (synthetic part, no mutation)
         const anchorHeader = buildAnchorContext(state)
