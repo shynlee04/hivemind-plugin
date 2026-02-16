@@ -73,6 +73,14 @@ function buildChecklist(items: string[], maxChars: number): string {
   return lines.join("\n")
 }
 
+function isEmptyPackedContext(xml: string): boolean {
+  return (
+    xml.includes('timestamp="1970-01-01T00:00:00.000Z"') &&
+    xml.includes("<trajectory />") &&
+    xml.includes('session=""')
+  )
+}
+
 function isSyntheticMessage(message: MessageV2): boolean {
   if (isMessageWithParts(message)) {
     return message.parts.some(part => {
@@ -269,11 +277,16 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
               injectedWithoutState = true
             }
 
-            // Log for visibility (P3: never breaks flow)
-            console.log("\n🔗 [SESSION COHERENCE] First-turn context injected:")
-            console.log("---")
-            console.log(transformedPrompt)
-            console.log("---\n")
+            if (process.env.HIVEMIND_DEBUG_FIRST_TURN === "1") {
+              console.log("\n🔗 [SESSION COHERENCE] First-turn context injected:")
+              console.log("---")
+              console.log(transformedPrompt)
+              console.log("---\n")
+            }
+
+            // First-turn session coherence is exclusive.
+            // Do not stack anchor/checklist injections in same transform pass.
+            return
           } catch {
             // P3: never break message flow - silently fail
           }
@@ -288,7 +301,9 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
         // US-015: Cognitive Packer - inject packed XML state at START
         const packedContext = packCognitiveState(directory)
-        prependSyntheticPart(output.messages[index], packedContext)
+        if (!isEmptyPackedContext(packedContext)) {
+          prependSyntheticPart(output.messages[index], packedContext)
+        }
 
         // 1. V3.0: Contextual Anchoring via PREPEND (synthetic part, no mutation)
         const anchorHeader = buildAnchorContext(state)

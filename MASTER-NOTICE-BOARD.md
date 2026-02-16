@@ -7,6 +7,25 @@
 
 ## Session: 2026-02-16
 
+### Entry: Hook timing hotfix — prevent post-compact double injection
+
+**DateTime**: 2026-02-16T16:40:00Z
+**Issue**: TUI clutter/breakage after `compact_session` due to stacked injections in `messages.transform` timing window.
+
+**Symptoms Reported**:
+- In-between turn showed synthetic blocks (`SYSTEM ANCHOR`, empty `hivemind_state`, checklist)
+- First-turn detection/timing felt incorrect after compaction
+
+**Fix Applied** (`src/hooks/messages-transform.ts`):
+- First-turn injection is now **exclusive** for that pass (`return` after successful injection)
+- Prevents stacking first-turn context + anchor/checklist in same transform call
+- Skip cognitive XML injection when packer returns empty sentinel state (`1970-01-01`, empty trajectory/session)
+- Debug visibility moved behind env gate: `HIVEMIND_DEBUG_FIRST_TURN=1`
+
+**Reason**:
+- Avoid dual-hook style collisions and reduce synthetic noise in post-compact turns.
+- Keep first-turn context deterministic while preserving normal governance injections afterward.
+
 ### Entry: User proposes "forced first turn pulled context" hook
 
 **DateTime**: 2026-02-16
