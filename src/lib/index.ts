@@ -25,3 +25,4 @@ export * from "./migrate.js";
 export * from "./inspect-engine.js";
 export * from "./compaction-engine.js";
 export * from "./cognitive-packer.js";
+export * from "./dual-read.js";
