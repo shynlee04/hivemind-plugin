@@ -4,6 +4,7 @@ import { dirname } from "path"
 import type { z } from "zod"
 
 import type { MemNode, TaskNode } from "../schemas/graph-nodes.js"
+import { withFileLock } from "./file-lock.js"
 import {
   GraphMemsStateSchema,
   GraphTasksStateSchema,
@@ -100,38 +101,46 @@ export async function saveGraphTasks(projectRoot: string, state: GraphTasksState
 }
 
 export async function addGraphTask(projectRoot: string, task: TaskNode): Promise<void> {
-  const validatedTask = GraphTasksStateSchema.shape.tasks.element.parse(task)
-  const current = await loadGraphTasks(projectRoot)
+  const filePath = getEffectivePaths(projectRoot).graphTasks
 
-  const taskById = new Map(current.tasks.map((item) => [item.id, item]))
-  taskById.set(validatedTask.id, validatedTask)
+  await withFileLock(filePath, async () => {
+    const validatedTask = GraphTasksStateSchema.shape.tasks.element.parse(task)
+    const current = await loadGraphTasks(projectRoot)
 
-  const nextState: GraphTasksState = {
-    version: current.version,
-    tasks: Array.from(taskById.values()),
-  }
+    const taskById = new Map(current.tasks.map((item) => [item.id, item]))
+    taskById.set(validatedTask.id, validatedTask)
 
-  await saveGraphTasks(projectRoot, nextState)
+    const nextState: GraphTasksState = {
+      version: current.version,
+      tasks: Array.from(taskById.values()),
+    }
+
+    await saveGraphTasks(projectRoot, nextState)
+  })
 }
 
 export async function invalidateTask(projectRoot: string, taskId: string): Promise<void> {
-  const current = await loadGraphTasks(projectRoot)
+  const filePath = getEffectivePaths(projectRoot).graphTasks
 
-  const tasks = current.tasks.map((task) => {
-    if (task.id !== taskId) {
-      return task
-    }
+  await withFileLock(filePath, async () => {
+    const current = await loadGraphTasks(projectRoot)
 
-    return {
-      ...task,
-      status: "invalidated" as const,
-      updated_at: new Date().toISOString(),
-    }
-  })
+    const tasks = current.tasks.map((task) => {
+      if (task.id !== taskId) {
+        return task
+      }
 
-  await saveGraphTasks(projectRoot, {
-    version: current.version,
-    tasks,
+      return {
+        ...task,
+        status: "invalidated" as const,
+        updated_at: new Date().toISOString(),
+      }
+    })
+
+    await saveGraphTasks(projectRoot, {
+      version: current.version,
+      tasks,
+    })
   })
 }
 
@@ -147,37 +156,45 @@ export async function saveGraphMems(projectRoot: string, state: GraphMemsState):
 }
 
 export async function addGraphMem(projectRoot: string, mem: MemNode): Promise<void> {
-  const validatedMem = GraphMemsStateSchema.shape.mems.element.parse(mem)
-  const current = await loadGraphMems(projectRoot)
+  const filePath = getEffectivePaths(projectRoot).graphMems
 
-  const memById = new Map(current.mems.map((item) => [item.id, item]))
-  memById.set(validatedMem.id, validatedMem)
+  await withFileLock(filePath, async () => {
+    const validatedMem = GraphMemsStateSchema.shape.mems.element.parse(mem)
+    const current = await loadGraphMems(projectRoot)
 
-  const nextState: GraphMemsState = {
-    version: current.version,
-    mems: Array.from(memById.values()),
-  }
+    const memById = new Map(current.mems.map((item) => [item.id, item]))
+    memById.set(validatedMem.id, validatedMem)
 
-  await saveGraphMems(projectRoot, nextState)
+    const nextState: GraphMemsState = {
+      version: current.version,
+      mems: Array.from(memById.values()),
+    }
+
+    await saveGraphMems(projectRoot, nextState)
+  })
 }
 
 export async function flagFalsePath(projectRoot: string, memId: string): Promise<void> {
-  const current = await loadGraphMems(projectRoot)
+  const filePath = getEffectivePaths(projectRoot).graphMems
 
-  const mems = current.mems.map((mem) => {
-    if (mem.id !== memId) {
-      return mem
-    }
+  await withFileLock(filePath, async () => {
+    const current = await loadGraphMems(projectRoot)
 
-    return {
-      ...mem,
-      type: "false_path" as const,
-      updated_at: new Date().toISOString(),
-    }
-  })
+    const mems = current.mems.map((mem) => {
+      if (mem.id !== memId) {
+        return mem
+      }
 
-  await saveGraphMems(projectRoot, {
-    version: current.version,
-    mems,
+      return {
+        ...mem,
+        type: "false_path" as const,
+        updated_at: new Date().toISOString(),
+      }
+    })
+
+    await saveGraphMems(projectRoot, {
+      version: current.version,
+      mems,
+    })
   })
 }
