@@ -13,6 +13,7 @@ export * from "./commit-advisor.js";
 export * from "./auto-commit.js";
 export * from "./tool-activation.js";
 export * from "./session-export.js";
+export * from "./tool-response.js";
 export * from "./long-session.js"
 export * from "./anchors.js";
 export * from "./mems.js";
@@ -21,3 +22,6 @@ export * from "./detection.js";
 export * from "./framework-context.js";
 export * from "./project-scan.js";
 export * from "./migrate.js";
+export * from "./inspect-engine.js";
+export * from "./compaction-engine.js";
+export * from "./cognitive-packer.js";

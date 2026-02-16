@@ -18,8 +18,6 @@
  * P5: Config re-read from disk each invocation (Rule 6)
  */
 
-import { mkdir, writeFile } from "fs/promises"
-import { join } from "path"
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
@@ -28,7 +26,6 @@ import {
   incrementTurnCount,
   setLastCommitSuggestionTurn,
   addCycleLogEntry,
-  type BrainState,
 } from "../schemas/brain-state.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
@@ -36,10 +33,7 @@ import { detectLongSession } from "../lib/long-session.js"
 import { executeAutoCommit, extractModifiedFiles, shouldAutoCommit } from "../lib/auto-commit.js"
 import { getClient } from "./sdk-context.js"
 import { checkAndRecordToast, resetAllThrottles } from "../lib/toast-throttle.js"
-import { loadTree, countCompleted, getAncestors } from "../lib/hierarchy-tree.js"
-import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
-import { generateExportData, generateJsonExport, generateMarkdownExport } from "../lib/session-export.js"
-import { getExportDir } from "../lib/planning-fs.js"
+import { maybeCreateNonDisruptiveSessionSplit } from "../lib/session-split.js"
 import {
   classifyTool,
   incrementToolType,
@@ -132,158 +126,6 @@ function getActiveActionLabel(state: any): string {
   if (state.hierarchy.tactic) return state.hierarchy.tactic
   if (state.hierarchy.trajectory) return state.hierarchy.trajectory
   return "(none)"
-}
-
-const AUTO_SPLIT_TRIGGER_TOOLS = new Set(["map_context", "export_cycle", "scan_hierarchy"])
-
-async function maybeCreateNonDisruptiveSessionSplit(opts: {
-  log: Logger
-  directory: string
-  config: HiveMindConfig
-  state: BrainState
-  sessionID: string
-  triggerTool: string
-}): Promise<BrainState> {
-  const { log, directory, config, state, sessionID, triggerTool } = opts
-
-  if (config.automation_level !== "full") return state
-  if (!AUTO_SPLIT_TRIGGER_TOOLS.has(triggerTool)) return state
-  if (state.pending_failure_ack) return state
-
-  const role = (state.session.role || "").toLowerCase()
-  const isMainSession = !role.includes("subagent")
-  if (!isMainSession) return state
-
-  const hasDelegations = (state.cycle_log ?? []).some(entry => entry.tool === "task")
-  const contextPercent = estimateContextPercent(
-    state.metrics.turn_count,
-    config.auto_compact_on_turns
-  )
-
-  let completedBranchCount = 0
-  let treeFocusPath = ""
-  try {
-    const tree = await loadTree(directory)
-    if (tree.root) {
-      completedBranchCount = countCompleted(tree)
-      if (tree.cursor) {
-        const path = getAncestors(tree.root, tree.cursor).map(node => node.content).join(" > ")
-        if (path) treeFocusPath = path
-      }
-    }
-  } catch {
-    return state
-  }
-
-  // V3.0: Pass user_turn_count and compaction_count for proper split logic
-  const boundary = shouldCreateNewSession({
-    turnCount: state.metrics.turn_count,
-    userTurnCount: state.metrics.user_turn_count,
-    contextPercent,
-    hierarchyComplete: completedBranchCount > 0,
-    isMainSession,
-    hasDelegations,
-    compactionCount: state.compaction_count ?? 0,
-  })
-
-  if (!boundary.recommended) return state
-
-  const client = getClient() as any
-  if (!client?.session?.create) {
-    await log.debug("Auto split skipped: SDK client.session.create unavailable")
-    return state
-  }
-
-  try {
-    const summary = `Auto split: ${boundary.reason}`
-    const exportData = generateExportData(state, summary)
-    const exportDir = getExportDir(directory)
-    await mkdir(exportDir, { recursive: true })
-    const stamp = new Date().toISOString().split("T")[0]
-    const baseName = `session_${stamp}_${state.session.id}_autosplit`
-    const body = [
-      summary,
-      state.hierarchy.trajectory ? `Trajectory: ${state.hierarchy.trajectory}` : "",
-      state.hierarchy.tactic ? `Tactic: ${state.hierarchy.tactic}` : "",
-      state.hierarchy.action ? `Action: ${state.hierarchy.action}` : "",
-    ].filter(Boolean).join("\n")
-
-    await writeFile(join(exportDir, `${baseName}.json`), generateJsonExport(exportData))
-    await writeFile(join(exportDir, `${baseName}.md`), generateMarkdownExport(exportData, body))
-
-    const focus =
-      state.hierarchy.action ||
-      state.hierarchy.tactic ||
-      state.hierarchy.trajectory ||
-      treeFocusPath ||
-      "Continuation"
-    const context = [
-      `=== HiveMind Context (Session Split) ===`,
-      `Previous Session: ${sessionID}`,
-      `Focus: ${focus}`,
-      state.hierarchy.trajectory ? `Trajectory: ${state.hierarchy.trajectory}` : "",
-      state.hierarchy.tactic ? `Tactic: ${state.hierarchy.tactic}` : "",
-      state.hierarchy.action ? `Action: ${state.hierarchy.action}` : "",
-      `Turn 0 Context: ${boundary.reason}`,
-      `=== End Context ===`
-    ].filter(Boolean).join("\n")
-
-    const created = await client.session.create({
-      directory,
-      title: `HiveMind split: ${focus}`,
-      parentID: sessionID,  // V3.0: Restore SDK parent-child linkage
-      initialPrompts: [context],
-    })
-    const createdSessionId = typeof created?.id === "string" ? created.id : "unknown"
-
-    await emitGovernanceToast(log, {
-      key: "session_split:info",
-      message: `Boundary reached. Started continuation session ${createdSessionId}.`,
-      variant: "info",
-      eventType: "session_split",
-    })
-
-    const now = Date.now()
-    const resetDetection = createDetectionState()
-    const splitState: BrainState = {
-      ...state,
-      session: {
-        ...state.session,
-        start_time: now,
-        last_activity: now,
-        date: new Date(now).toISOString().split("T")[0],
-      },
-      metrics: {
-        ...state.metrics,
-        turn_count: 0,
-        drift_score: 100,
-        files_touched: [],
-        consecutive_failures: 0,
-        consecutive_same_section: 0,
-        last_section_content: "",
-        tool_type_counts: resetDetection.tool_type_counts,
-        keyword_flags: [],
-        write_without_read_count: 0,
-        governance_counters: resetGovernanceCounters(state.metrics.governance_counters, {
-          full: true,
-          prerequisitesCompleted: Boolean(
-            state.hierarchy.trajectory &&
-            state.hierarchy.tactic &&
-            state.hierarchy.action
-          ),
-        }),
-      },
-      complexity_nudge_shown: false,
-    }
-
-    await log.info(`[autosplit] Created non-disruptive session ${createdSessionId} (${boundary.reason})`)
-    return splitState
-  } catch (error: unknown) {
-    await log.warn(
-      `Auto split skipped: ${error instanceof Error ? error.message : String(error)}`
-    )
-    return state
-  }
 }
 
 /**
@@ -601,14 +443,21 @@ export function createSoftGovernanceHook(
         }
       }
 
-      newState = await maybeCreateNonDisruptiveSessionSplit({
-        log,
+      const splitResult = await maybeCreateNonDisruptiveSessionSplit(
         directory,
-        config,
-        state: newState,
-        sessionID: input.sessionID,
-        triggerTool: input.tool,
-      })
+        newState,
+        {
+          log,
+          hiveMindConfig: config,
+          sessionID: input.sessionID,
+          triggerTool: input.tool,
+          client: getClient() as any,
+          emitToast: (opts) => emitGovernanceToast(log, opts),
+        }
+      )
+      if (splitResult) {
+        newState = splitResult.state
+      }
 
       // Single save at the end
       await stateManager.save(newState)

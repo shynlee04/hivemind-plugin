@@ -100,6 +100,13 @@ async function testGetHivemindPaths() {
   assert(paths.plansDir === join(tmpDir, ".hivemind", "plans"), "plansDir path")
   assert(paths.plansManifest === join(tmpDir, ".hivemind", "plans", "manifest.json"), "plans manifest path")
 
+  // Graph
+  assert(paths.graphDir === join(tmpDir, ".hivemind", "graph"), "graphDir path")
+  assert(paths.graphTrajectory === join(tmpDir, ".hivemind", "graph", "trajectory.json"), "graph trajectory path")
+  assert(paths.graphPlans === join(tmpDir, ".hivemind", "graph", "plans.json"), "graph plans path")
+  assert(paths.graphTasks === join(tmpDir, ".hivemind", "graph", "tasks.json"), "graph tasks path")
+  assert(paths.graphMems === join(tmpDir, ".hivemind", "graph", "mems.json"), "graph mems path")
+
   // Governance SOT (Level 0)
   assert(paths.codemapDir === join(tmpDir, ".hivemind", "codemap"), "codemapDir path")
   assert(paths.codemapManifest === join(tmpDir, ".hivemind", "codemap", "manifest.json"), "codemap manifest path")
@@ -232,7 +239,7 @@ async function testGetAllDirectories() {
   process.stderr.write("\n--- getAllDirectories ---\n")
 
   const dirs = getAllDirectories(tmpDir)
-  assert(dirs.length === 13, "13 directories in structure")
+  assert(dirs.length === 14, "14 directories in structure")
   assert(dirs[0] === join(tmpDir, ".hivemind"), "root is first")
   assert(dirs.includes(join(tmpDir, ".hivemind", "state")), "includes state/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "memory")), "includes memory/")
@@ -241,6 +248,7 @@ async function testGetAllDirectories() {
   assert(dirs.includes(join(tmpDir, ".hivemind", "sessions", "archive")), "includes sessions/archive/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "sessions", "archive", "exports")), "includes sessions/archive/exports/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "plans")), "includes plans/")
+  assert(dirs.includes(join(tmpDir, ".hivemind", "graph")), "includes graph/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "codemap")), "includes codemap/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "codewiki")), "includes codewiki/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "logs")), "includes logs/")
