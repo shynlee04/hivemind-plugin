@@ -69,7 +69,10 @@ describe("Phase A Critical Bug Fixes", () => {
         focus: "Test trajectory",
       }, mockContext as any)
 
-      assert.ok(intentResult.includes("Status: OPEN"), "Session should be unlocked")
+      // Verify: Check for status OPEN in JSON response
+      const parsedResult = JSON.parse(intentResult as string)
+      assert.equal(parsedResult.status, "success", "Should have success status")
+      assert.ok(parsedResult.message.includes("OPEN"), "Session should be OPEN")
 
       // Step 2: Map tactic
       const tacticResult = await mapContext.execute({
@@ -143,8 +146,10 @@ describe("Phase A Critical Bug Fixes", () => {
         focus: "Template test trajectory",
       }, mockContext as any)
 
-      // Verify: Check for stamp in response
-      assert.ok(result.includes("Stamp:"), "Should include timestamp stamp")
+      // Verify: Check for success status and entity_id in JSON response
+      const parsedResult = JSON.parse(result as string)
+      assert.equal(parsedResult.status, "success", "Should have success status")
+      assert.ok(parsedResult.entity_id, "Should include entity_id (session ID)")
       
       // Verify: Check that per-session file was created in activeDir
       const { getEffectivePaths } = await import("../src/lib/paths.js")
@@ -174,8 +179,10 @@ describe("Phase A Critical Bug Fixes", () => {
         focus: "Should fail without config",
       }, mockContext as any)
 
-      assert.ok(result.includes("ERROR"), "Should error without config")
-      assert.ok(result.includes("not configured"), "Should mention configuration required")
+      // Verify: Check for success status in JSON response
+      const parsed = JSON.parse(result as string)
+      assert.equal(parsed.status, "error", "Should have error status")
+      assert.ok(parsed.error.includes("not configured"), "Should mention configuration required")
     })
 
     it("should create hierarchy tree root node", async () => {

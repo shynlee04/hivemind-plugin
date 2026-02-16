@@ -6,7 +6,7 @@
  * Design: Agent-Native lifecycle verb.
  *   1. Iceberg — 2 args, system handles state machine + file writes
  *   2. Context Inference — session ID from context, governance mode from config
- *   3. Signal-to-Noise — 1-line output
+ *   3. Signal-to-Noise — JSON response with entity_id for FK chaining
  *   4. No-Shadowing — description matches agent intent
  *   5. Native Parallelism — idempotent, safe to call repeatedly
  *
@@ -44,6 +44,7 @@ import {
   generateStamp,
   toBrainProjection,
 } from "../lib/hierarchy-tree.js"
+import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
 const VALID_MODES: SessionMode[] = ["plan_driven", "quick_fix", "exploration"]
 
@@ -65,16 +66,14 @@ export function createDeclareIntentTool(directory: string): ToolDefinition {
         .describe("Why this mode? (optional context)"),
     },
     async execute(args, _context) {
-      if (!args.focus?.trim()) return "ERROR: focus cannot be empty. Describe what you're working on."
+      if (!args.focus?.trim()) return toErrorOutput("focus cannot be empty. Describe what you're working on.")
 
       const configPath = getEffectivePaths(directory).config
       if (!existsSync(configPath)) {
-        return [
-          "ERROR: HiveMind is not configured for this project.",
-          "Run setup first:",
-          "  npx hivemind-context-governance",
-          "Then call declare_intent again.",
-        ].join("\n")
+        return toErrorOutput(
+          "HiveMind is not configured for this project.",
+          "Run setup: npx hivemind-context-governance, then call declare_intent again."
+        )
       }
 
       const config = await loadConfig(directory)
@@ -145,12 +144,12 @@ export function createDeclareIntentTool(directory: string): ToolDefinition {
 
       await generateIndexMd(directory)
 
-      let response = `Session: "${args.focus}". Mode: ${args.mode}. Status: OPEN. Stamp: ${stamp}.`
+      let message = `Session intent declared: ${args.mode} mode, focus: "${args.focus}". Status: OPEN.`
       if (oldTrajectory && oldTrajectory !== args.focus) {
-        response += `\n⚠ Previous trajectory replaced: "${oldTrajectory}"`
+        message += ` Previous trajectory replaced: "${oldTrajectory}".`
       }
-      response += `\n→ Use map_context to break this into tactics and actions.`
-      return response
+      message += " Use map_context to break this into tactics and actions."
+      return toSuccessOutput(message, state.session.id)
     },
   })
 }
