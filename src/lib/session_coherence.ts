@@ -39,7 +39,9 @@ const DEFAULT_CONFIG: FirstTurnConfig = {
  */
 export function detectFirstTurn(state: BrainState | null): boolean {
   if (!state) return true
-  return state.metrics.turn_count === 0
+  // turn_count can increase from internal tool activity before first user turn.
+  // user_turn_count is the more reliable signal for "first user message".
+  return state.metrics.user_turn_count === 0 || state.metrics.turn_count === 0
 }
 
 /**

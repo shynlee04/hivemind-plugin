@@ -210,6 +210,8 @@ function appendSyntheticPart(message: MessageV2, text: string): void {
 
 export function createMessagesTransformHook(_log: { warn: (message: string) => Promise<void> }, directory: string) {
   const stateManager = createStateManager(directory)
+  const injectedSessionIds = new Set<string>()
+  let injectedWithoutState = false
 
   return async (
     _input: {},
@@ -222,11 +224,16 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       if (config.governance_mode === "permissive") return
 
       const state = await stateManager.load()
-      if (!state) return
 
       // === FIRST TURN: Session Coherence ===
-      // If this is the first turn, inject prior session context
-      if (detectFirstTurn(state)) {
+      // MUST check BEFORE early return - new sessions have null state!
+      // detectFirstTurn returns true if state is null OR turn_count === 0
+      const sessionId = state?.session?.id
+      const canInjectForSession = sessionId
+        ? !injectedSessionIds.has(sessionId)
+        : !injectedWithoutState
+
+      if (canInjectForSession && detectFirstTurn(state)) {
         const index = getLastNonSyntheticUserMessageIndex(output.messages)
         if (index >= 0) {
           try {
@@ -241,7 +248,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
               userMessageText = userMessage.content.filter(p => p.type === "text").map(p => (p as MessagePart).text || "").join(" ")
             }
 
-            // Load last session context
+            // Load last session context (from archive if available)
             const lastSessionContext = await loadLastSessionContext(directory)
 
             // Build transformed prompt
@@ -256,6 +263,12 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
             // Inject as synthetic part (prepend)
             prependSyntheticPart(output.messages[index], transformedPrompt)
 
+            if (sessionId) {
+              injectedSessionIds.add(sessionId)
+            } else {
+              injectedWithoutState = true
+            }
+
             // Log for visibility (P3: never breaks flow)
             console.log("\n🔗 [SESSION COHERENCE] First-turn context injected:")
             console.log("---")
@@ -266,6 +279,9 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           }
         }
       }
+
+      // Now safe to return early - first-turn already handled
+      if (!state) return
 
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
