@@ -11,6 +11,7 @@
  * Absorbs list_shelves: when query is omitted, returns shelf summary.
  */
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool";
+import { createStateManager } from "../lib/persistence.js";
 import { loadMems, searchMems, getShelfSummary, BUILTIN_SHELVES } from "../lib/mems.js";
 
 const MAX_RESULTS = 5;
@@ -31,12 +32,20 @@ export function createRecallMemsTool(directory: string): ToolDefinition {
         .string()
         .optional()
         .describe("Optional: filter results to a specific shelf (e.g., 'errors', 'decisions')"),
+      strict_session: tool.schema
+        .boolean()
+        .optional()
+        .describe("If true, return only memories from current session_id"),
       json: tool.schema
         .boolean()
         .optional()
         .describe("Return output as JSON (default: false)"),
     },
     async execute(args, _context) {
+      const stateManager = createStateManager(directory)
+      const state = await stateManager.load()
+      const sessionId = state?.session.id
+
       const memsState = await loadMems(directory);
 
       if (memsState.mems.length === 0) {
@@ -65,7 +74,13 @@ export function createRecallMemsTool(directory: string): ToolDefinition {
         lines.push("");
 
         const recent = [...memsState.mems]
-          .sort((a, b) => b.created_at - a.created_at)
+          .sort((a, b) => {
+            if (sessionId && a.session_id !== b.session_id) {
+              if (a.session_id === sessionId) return -1
+              if (b.session_id === sessionId) return 1
+            }
+            return b.created_at - a.created_at
+          })
           .slice(0, 3);
 
         lines.push("## Recent Memories");
@@ -92,7 +107,11 @@ export function createRecallMemsTool(directory: string): ToolDefinition {
       }
 
       // Search mode: query provided
-      const results = searchMems(memsState, args.query, args.shelf);
+      const results = searchMems(memsState, args.query, args.shelf, {
+        sessionId,
+        strictSession: args.strict_session ?? false,
+        preferSession: true,
+      });
 
       if (results.length === 0) {
         const filterNote = args.shelf ? ` in shelf "${args.shelf}"` : "";
@@ -124,7 +143,7 @@ export function createRecallMemsTool(directory: string): ToolDefinition {
         const data = {
           query: args.query,
           total: results.length,
-          results: shown.map(m => ({ id: m.id, shelf: m.shelf, content: m.content, tags: m.tags, created_at: m.created_at })),
+          results: shown.map(m => ({ id: m.id, shelf: m.shelf, content: m.content, tags: m.tags, created_at: m.created_at, session_id: m.session_id })),
         }
         return JSON.stringify(data, null, 2)
       }

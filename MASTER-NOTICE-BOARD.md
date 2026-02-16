@@ -26,6 +26,24 @@
 - Avoid dual-hook style collisions and reduce synthetic noise in post-compact turns.
 - Keep first-turn context deterministic while preserving normal governance injections afterward.
 
+### Entry: Retrieval isolation hardening (multi-session)
+
+**DateTime**: 2026-02-16T17:10:00Z
+**Issue**: Context retrieval mixed sessions in shared pools (`mems`, `anchors`, inspect outputs), causing weak relevance and cross-session contamination.
+
+**Changes**:
+- `src/lib/mems.ts`: added scoped search options (`sessionId`, `strictSession`, `preferSession`, `proximityTags`) with relevance ranking
+- `src/tools/recall-mems.ts`: session-aware retrieval + `strict_session` flag
+- `src/tools/hivemind-memory.ts`: session-aware recall/list + `strict_session`
+- `src/lib/anchors.ts`: `getAnchorsBySession()` + `getAnchorsForContext()`
+- `src/tools/think-back.ts`: scoped anchors + session/global mem counts + recent cycle exports for current session
+- `src/tools/export-cycle.ts`: stronger attachment tags (`session:*`, `cursor:*`, `task:*`) for future proximity retrieval
+- `src/lib/inspect-engine.ts`: scoped anchor/mem reporting for session context health
+- `docs/refactored-plan.md`: added P0-4 Session-Scoped Retrieval Isolation patch
+
+**Reason**:
+- Enforce proximity-first retrieval (`session → task vicinity → global fallback`) to support concurrent sessions safely.
+
 ### Entry: User proposes "forced first turn pulled context" hook
 
 **DateTime**: 2026-02-16

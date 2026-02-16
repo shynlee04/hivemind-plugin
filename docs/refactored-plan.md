@@ -536,6 +536,44 @@ async function loadGraphTasks(projectRoot: string): Promise<GraphTasksState> {
 
 ---
 
+### P0-4: Session-Scoped Retrieval Isolation (Multi-Session Safety)
+
+**Problem**: `mems.json` and `anchors.json` are shared pools. Concurrent sessions (multiple terminals/subagents) retrieve global context without session/task proximity, causing contamination.
+
+**Solution**: Retrieval precedence must be deterministic:
+1. Current `session_id`
+2. Active `task_id` vicinity (tag/FK proximity)
+3. Global fallback (explicitly requested)
+
+**Affected User Stories**: PATCH-US-022 (new), supports US-021/US-048 multi-actor safety
+
+**Implementation**:
+```typescript
+// src/lib/mems.ts
+searchMems(state, query, shelf, {
+  sessionId: currentSession,
+  strictSession: false,
+  preferSession: true,
+  proximityTags: [`task:${activeTaskId}`],
+})
+
+// src/lib/anchors.ts
+getAnchorsForContext(state, currentSessionId) // session-first with safe fallback
+```
+
+**Tool contract updates**:
+- `recall_mems`: add `strict_session?: boolean` and default `preferSession: true`
+- `hivemind_memory recall/list`: same scoping controls
+- `think_back`, `inspect`: report scoped counts (`session/global`) and scoped anchor preview
+- `export_cycle`: tag mems with `session:<id>`, `cursor:<id>`, `task:<id>` for proximity scoring
+
+**Verification**:
+1. Session A saves mem; Session B default recall should prioritize Session B and not surface Session A unless fallback needed
+2. `strict_session=true` returns zero cross-session records
+3. `think_back` shows `Session mems: X/Y` and scoped cycle exports
+
+---
+
 ### P1-1: 80% Splitter Mid-Thought Amnesia Fix
 
 **Problem**: At 80% capacity, splitter packs Graph State XML but **drops Short-Term Conversational Tail**. If user gave nuanced instruction in Turn 49, Turn 0 of new session has no idea.

@@ -1,5 +1,5 @@
 import { createStateManager } from "./persistence.js"
-import { loadAnchors } from "./anchors.js"
+import { loadAnchors, getAnchorsForContext } from "./anchors.js"
 import { loadMems, getShelfSummary } from "./mems.js"
 import { detectChainBreaks } from "./chain-analysis.js"
 import { calculateDriftScore } from "../schemas/brain-state.js"
@@ -107,6 +107,8 @@ export async function scanState(directory: string): Promise<ScanResult> {
 
   const anchorsState = await loadAnchors(directory)
   const memsState = await loadMems(directory)
+  const scopedAnchors = getAnchorsForContext(anchorsState, state.session.id)
+  const scopedMems = memsState.mems.filter((m) => m.session_id === state.session.id)
   const tree = treeExists(directory) ? await loadTree(directory) : null
   const treeStats = tree?.root ? getTreeStats(tree) : null
 
@@ -135,11 +137,11 @@ export async function scanState(directory: string): Promise<ScanResult> {
           pendingNodes: treeStats.pendingNodes,
         }
       : null,
-    anchorCount: anchorsState.anchors.length,
-    memCount: memsState.mems.length,
+    anchorCount: scopedAnchors.length,
+    memCount: scopedMems.length,
     treeAscii: tree?.root ? toAsciiTree(tree) : undefined,
-    anchorsPreview: anchorsState.anchors.slice(0, 5).map((a) => ({ key: a.key, value: a.value.slice(0, 60) })),
-    memShelfSummary: getShelfSummary(memsState),
+    anchorsPreview: scopedAnchors.slice(0, 5).map((a) => ({ key: a.key, value: a.value.slice(0, 60) })),
+    memShelfSummary: getShelfSummary({ ...memsState, mems: scopedMems }),
   }
 }
 
@@ -152,6 +154,7 @@ export async function deepInspect(directory: string, _target: string): Promise<I
   }
 
   const anchorsState = await loadAnchors(directory)
+  const scopedAnchors = getAnchorsForContext(anchorsState, state.session.id)
   const activeMd = await readActiveMd(directory)
   const chainBreaks = detectChainBreaks(state)
   const tree = treeExists(directory) ? await loadTree(directory) : null
@@ -193,7 +196,7 @@ export async function deepInspect(directory: string, _target: string): Promise<I
       gapHours: Math.round((g.gapMs / (60 * 60 * 1000)) * 10) / 10,
       relationship: g.relationship,
     })),
-    anchors: anchorsState.anchors.map((a) => ({ key: a.key, value: a.value })),
+    anchors: scopedAnchors.map((a) => ({ key: a.key, value: a.value })),
     filesTouched: state.metrics.files_touched.slice(0, 10),
     treeAscii: tree?.root ? toAsciiTree(tree) : undefined,
     planSection,
@@ -209,6 +212,7 @@ export async function driftReport(directory: string): Promise<DriftReport> {
   }
 
   const anchorsState = await loadAnchors(directory)
+  const scopedAnchors = getAnchorsForContext(anchorsState, state.session.id)
   const chainBreaks = detectChainBreaks(state)
   const driftScore = calculateDriftScore(state)
 
@@ -223,7 +227,7 @@ export async function driftReport(directory: string): Promise<DriftReport> {
     },
     chainBreaks: chainBreaks.map((b) => b.message),
     chainIntact: chainBreaks.length === 0,
-    anchors: anchorsState.anchors.map((a) => ({ key: a.key, value: a.value })),
+    anchors: scopedAnchors.map((a) => ({ key: a.key, value: a.value })),
     metrics: {
       turnCount: state.metrics.turn_count,
       filesTouched: state.metrics.files_touched.length,
