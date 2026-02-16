@@ -3,13 +3,13 @@
  *
  * Handles OpenCode session events:
  *   - session.created: Log new session
- *   - session.idle: Check drift and staleness
+ *   - session.idle: Check staleness (drift check moved to soft-governance.ts)
  *   - session.compacted: Track compaction events
  *   - file.edited: Track file changes
  *   - session.diff: Track session diffs
  *
  * FLAW-TOAST-004/005/006 FIX: Added toast throttling to prevent noise cascade.
- * - Drift toasts only emit when drift_score < 30 (was < 50)
+ * - Drift toasts centralized in soft-governance.ts (emits when drift_score < 30)
  * - Staleness toasts removed - visible in scan_hierarchy output
  * - Session compacted toast removed - duplicate of compaction.ts
  *
@@ -29,15 +29,7 @@ import type { Logger } from "../lib/logging.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { saveTasks } from "../lib/manifest.js"
 import { getStalenessInfo } from "../lib/staleness.js"
-import {
-  computeGovernanceSeverity,
-  registerGovernanceSignal,
-  type GovernanceSeverity,
-} from "../lib/detection.js"
-import { getClient } from "./sdk-context.js"
-import { checkAndRecordToast } from "../lib/toast-throttle.js"
-
-type ToastVariant = "info" | "warning" | "error"
+import { registerGovernanceSignal } from "../lib/detection.js"
 
 export function createEventHandler(log: Logger, directory: string) {
   const stateManager = createStateManager(directory)
@@ -73,33 +65,6 @@ export function createEventHandler(log: Logger, directory: string) {
           }
           
           const staleness = getStalenessInfo(nextState, config.stale_session_days)
-
-          // FLAW-TOAST-004 FIX: Only emit drift toast when score < 30 (was < 50)
-          // and only after 10+ user turns to avoid false urgency during active exploration
-          if (nextState.metrics.drift_score < 30 && nextState.metrics.user_turn_count >= 10) {
-            const repeatCount = nextState.metrics.governance_counters.drift
-            const severity = computeGovernanceSeverity({
-              kind: "drift",
-              repetitionCount: repeatCount,
-              acknowledged: nextState.metrics.governance_counters.acknowledged,
-            })
-            nextState = {
-              ...nextState,
-              metrics: {
-                ...nextState.metrics,
-                governance_counters: registerGovernanceSignal(nextState.metrics.governance_counters, "drift"),
-              },
-            }
-
-            // Throttle drift toasts
-            if (checkAndRecordToast("drift", "idle")) {
-              await showToastSafe(
-                log,
-                `Drift risk detected. Score ${nextState.metrics.drift_score}/100. Use map_context to realign.`,
-                toToastVariant(severity),
-              )
-            }
-          }
 
           // FLAW-TOAST-005 FIX: Removed staleness toast
           // Staleness is visible in scan_hierarchy output - no push notification needed
@@ -191,30 +156,5 @@ export function createEventHandler(log: Logger, directory: string) {
       // P3: Never break event handling
       await log.error(`Event handler error: ${error}`)
     }
-  }
-}
-
-function toToastVariant(severity: GovernanceSeverity): ToastVariant {
-  if (severity === "error") return "error"
-  if (severity === "warning") return "warning"
-  return "info"
-}
-
-async function showToastSafe(log: Logger, message: string, variant: ToastVariant): Promise<void> {
-  const client = getClient()
-  if (!client?.tui?.showToast) {
-    await log.debug(`[event] toast skipped (${variant}): ${message}`)
-    return
-  }
-
-  try {
-    await client.tui.showToast({
-      body: {
-        message,
-        variant,
-      },
-    })
-  } catch (error: unknown) {
-    await log.warn(`[event] toast failed (${variant}): ${error}`)
   }
 }
