@@ -167,12 +167,13 @@ async function test_drift_detection() {
   const sm = createStateManager(dir)
   let state = unlockSession(createBrainState(generateSessionId(), config))
   // Pre-set high turn count and low drift to trigger warning
+  // Threshold: turn_count >= max_turns_before_warning (default 5) AND drift_score < 30
   state = {
     ...state,
     metrics: {
       ...state.metrics,
       turn_count: 4, // Will become 5 after hook increments
-      drift_score: 40, // Below 50 threshold
+      drift_score: 20, // Below 30 threshold (not 50)
     },
   }
   await sm.save(state)
@@ -184,7 +185,7 @@ async function test_drift_detection() {
 
   assert(
     log.warnings.some(w => w.includes("Drift detected")),
-    "drift warning logged when turns >= 5 and drift < 50"
+    "drift warning logged when turns >= 5 and drift < 30"
   )
 
   await cleanup()

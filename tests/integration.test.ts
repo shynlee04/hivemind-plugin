@@ -1707,7 +1707,7 @@ async function test_frameworkConflictLimitedModeAllowsOnlyPlanningReads() {
 }
 
 async function test_eventIdleEmitsStaleAndCompactionToasts() {
-  process.stderr.write("\n--- round5: session.idle drives stale toasts and compaction stays info ---\n")
+  process.stderr.write("\n--- round5: session.idle updates metrics, drift toast in soft-governance ---\n")
 
   const dir = await setup()
 
@@ -1718,7 +1718,7 @@ async function test_eventIdleEmitsStaleAndCompactionToasts() {
     const state = await stateManager.load()
     if (state) {
       state.metrics.drift_score = 20  // Below 30 threshold for drift toast
-      state.metrics.user_turn_count = 12   // V3.0: Above 10 USER TURN threshold
+      state.metrics.user_turn_count = 10   // At threshold
       state.session.last_activity = Date.now() - (5 * 86_400_000)
       await stateManager.save(state)
     }
@@ -1742,16 +1742,22 @@ async function test_eventIdleEmitsStaleAndCompactionToasts() {
     const handler = createEventHandler(logger, dir)
 
     await handler({ event: { type: "session.idle", properties: { sessionID: "session-a" } } as any })
-    await handler({ event: { type: "session.idle", properties: { sessionID: "session-a" } } as any })
 
+    // FLAW-TOAST-005 FIX: event-handler no longer emits drift toasts
+    // Drift toasts are now emitted by soft-governance.ts during tool execution
+    // Verify that event-handler does NOT emit toasts (toast moved to soft-governance)
     assert(
-      toasts.some(t => t.message.includes("Drift risk detected")),
-      "idle emits drift toast when score < 30 and turns >= 10"
+      !toasts.some(t => t.message.includes("Drift risk detected")),
+      "event-handler does NOT emit drift toast (moved to soft-governance.ts)"
     )
+
+    // Verify user_turn_count was incremented
+    const updatedState = await stateManager.load()
     assert(
-      toasts.length >= 1,
-      "at least one toast emitted for drift detection"
+      updatedState?.metrics.user_turn_count === 11,
+      "session.idle increments user_turn_count"
     )
+
     // session.compacted toast was removed from event-handler (FLAW-TOAST-006)
     // compaction toast is now only in compaction.ts hook
     assert(true, "compaction toast handled by compaction hook (not event-handler)")

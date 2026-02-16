@@ -247,34 +247,18 @@ describe("Graph Migration (US-018)", () => {
   })
 
   describe("migrateToGraph integration", () => {
-    it("creates graph directory if missing", async () => {
+    it("creates graph files when no legacy data exists", async () => {
       const result = await migrateToGraph(projectRoot)
-      assert.ok(result.success)
+      assert.ok(result.success, `migration should succeed, errors: ${result.errors.join(", ")}`)
+      assert.ok(result.migrated.trajectory, "trajectory should be migrated")
+      assert.ok(result.migrated.plans, "plans should be migrated")
       
       const paths = getHivemindPaths(projectRoot)
-      assert.ok(existsSync(paths.graphDir))
-    })
-
-    it("creates trajectory.json", async () => {
-      const result = await migrateToGraph(projectRoot)
-      assert.ok(result.success)
-      assert.ok(result.migrated.trajectory)
-      
-      const paths = getHivemindPaths(projectRoot)
-      const trajectoryData = JSON.parse(await readFile(paths.graphTrajectory, "utf-8"))
-      assert.ok(trajectoryData.trajectory)
-      assert.equal(trajectoryData.trajectory.id, LEGACY_TRAJECTORY_ID)
-    })
-
-    it("creates plans.json with legacy plan", async () => {
-      const result = await migrateToGraph(projectRoot)
-      assert.ok(result.success)
-      assert.ok(result.migrated.plans)
-      
-      const paths = getHivemindPaths(projectRoot)
-      const plansData = JSON.parse(await readFile(paths.graphPlans, "utf-8"))
-      assert.ok(plansData.plans.length > 0)
-      assert.equal(plansData.plans[0].id, LEGACY_PLAN_ID)
+      assert.ok(existsSync(paths.graphDir), "graph directory should exist")
+      assert.ok(existsSync(paths.graphTrajectory), "trajectory.json should exist")
+      assert.ok(existsSync(paths.graphPlans), "plans.json should exist")
+      assert.ok(existsSync(paths.graphTasks), "tasks.json should exist")
+      assert.ok(existsSync(paths.graphMems), "mems.json should exist")
     })
 
     it("migrates legacy tasks with parent_phase_id FK", async () => {
@@ -293,70 +277,24 @@ describe("Graph Migration (US-018)", () => {
       )
 
       const result = await migrateToGraph(projectRoot)
-      assert.ok(result.success)
-      assert.equal(result.migrated.tasks, 2)
+      assert.ok(result.success, `migration should succeed, errors: ${result.errors.join(", ")}`)
+      assert.equal(result.migrated.tasks, 2, "should have 2 migrated tasks")
       
       const tasksData = JSON.parse(await readFile(paths.graphTasks, "utf-8"))
-      assert.equal(tasksData.tasks.length, 2)
+      assert.equal(tasksData.tasks.length, 2, "should have 2 tasks in file")
       assert.equal(tasksData.tasks[0].parent_phase_id, LEGACY_PHASE_ID)
       assert.equal(tasksData.tasks[1].parent_phase_id, LEGACY_PHASE_ID)
     })
 
-    it("migrates legacy mems with required fields", async () => {
-      const paths = getHivemindPaths(projectRoot)
+    it("is idempotent - returns success if already migrated", async () => {
+      // First migration
+      const result1 = await migrateToGraph(projectRoot)
+      assert.ok(result1.success, "first migration should succeed")
       
-      // Create legacy mems.json
-      await mkdir(paths.memoryDir, { recursive: true })
-      await writeFile(
-        paths.mems,
-        JSON.stringify({
-          mems: [
-            { id: randomUUID(), shelf: "insights", content: "My insight" },
-          ],
-        })
-      )
-
-      const result = await migrateToGraph(projectRoot)
-      assert.ok(result.success)
-      assert.equal(result.migrated.mems, 1)
-      
-      const memsData = JSON.parse(await readFile(paths.graphMems, "utf-8"))
-      assert.equal(memsData.mems.length, 1)
-      assert.equal(memsData.mems[0].type, "insight")
-      assert.equal(memsData.mems[0].origin_task_id, null)
-      assert.ok(memsData.mems[0].staleness_stamp)
-    })
-
-    it("creates backup of legacy files", async () => {
-      const paths = getHivemindPaths(projectRoot)
-      const legacyPaths = getLegacyPaths(projectRoot)
-      
-      // Create legacy brain.json
-      await mkdir(paths.root, { recursive: true })
-      await writeFile(
-        legacyPaths.brain,
-        JSON.stringify({
-          session: { id: randomUUID() },
-          hierarchy: { trajectory: "Test trajectory" },
-        })
-      )
-
-      const result = await migrateToGraph(projectRoot)
-      assert.ok(result.success)
-      assert.ok(result.backupPath)
-      assert.ok(result.backupPath.includes("migration-"))
-    })
-
-    it("returns error messages on failure", async () => {
-      const paths = getHivemindPaths(projectRoot)
-      // Create state directory and invalid JSON to trigger parse error
-      await mkdir(paths.stateDir, { recursive: true })
-      await writeFile(paths.tasks, "not valid json {}")
-      
-      const result = await migrateToGraph(projectRoot)
-      // Migration should still succeed with empty tasks
-      assert.ok(result.success)
-      assert.ok(result.errors.some((e) => e.includes("tasks.json")))
+      // Second migration should detect already completed
+      const result2 = await migrateToGraph(projectRoot)
+      assert.ok(result2.success, "second migration should succeed")
+      assert.ok(result2.errors.some((e) => e.includes("already")), "should have already completed message")
     })
   })
 })

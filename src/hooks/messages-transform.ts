@@ -136,7 +136,12 @@ function prependSyntheticPart(message: MessageV2, text: string): void {
       type: "text",
       text,
       synthetic: true,
-    }
+      providerMetadata: {
+        opencode: {
+          ui_hidden: true
+        }
+      }
+    } as Part
     // Prepend to start
     message.parts = [syntheticPart, ...message.parts]
     return
@@ -185,7 +190,12 @@ function appendSyntheticPart(message: MessageV2, text: string): void {
       type: "text",
       text,
       synthetic: true,
-    }
+      providerMetadata: {
+        opencode: {
+          ui_hidden: true
+        }
+      }
+    } as Part
     // Append to end
     message.parts = [...message.parts, syntheticPart]
     return
@@ -293,8 +303,50 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         }
       }
 
-      // Now safe to return early - first-turn already handled
+        // Now safe to return early - first-turn already handled
       if (!state) return
+
+      // === P0-6: Capture recent messages for cross-session continuity ===
+      // Store last 6 messages in brain state for session split
+      try {
+        const recentMessages: Array<{ role: "user" | "assistant"; content: string }> = []
+        for (const msg of output.messages) {
+          // Determine role from message shape
+          let role: string | undefined
+          let content = ""
+          
+          if (isMessageWithParts(msg)) {
+            role = msg.info?.role
+            content = msg.parts.filter(p => p.type === "text").map(p => p.text || "").join(" ")
+          } else {
+            // LegacyMessage
+            role = (msg as LegacyMessage).role
+            const msgContent = (msg as LegacyMessage).content
+            if (typeof msgContent === "string") {
+              content = msgContent
+            } else if (Array.isArray(msgContent)) {
+              content = msgContent.filter(p => p.type === "text").map(p => (p as MessagePart).text || "").join(" ")
+            }
+          }
+          
+          if (role && (role === "user" || role === "assistant") && content) {
+            recentMessages.push({ role: role as "user" | "assistant", content })
+          }
+        }
+        
+        // Keep only last 6 messages
+        const trimmedMessages = recentMessages.slice(-6)
+        
+        // Save to brain state for session-split to use
+        const updatedState: BrainState = {
+          ...state,
+          recent_messages: trimmedMessages,
+        }
+        await stateManager.save(updatedState)
+      } catch {
+        // P3: Never break message flow - silently fail
+      }
+      // === End P0-6 message capture ===
 
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {

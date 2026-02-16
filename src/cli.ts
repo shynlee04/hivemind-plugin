@@ -284,30 +284,60 @@ async function main(): Promise<void> {
       break
 
     case "dashboard": {
+      // Spawn dashboard as detached Bun process to avoid EBUSY file-locking
+      // OpenTUI requires Bun runtime; Node.js CLI cannot host it directly
+      const { spawn } = await import("node:child_process");
+
+      // Resolve dashboard entry point (compiled JS in dist/)
+      const dashboardPath = join(__dirname, "dashboard", "bin.js");
+
+      const refreshMs = flags["refresh"]
+        ? Math.round(Math.max(0.5, parseFloat(flags["refresh"])) * 1000)
+        : 2000;
+
+      const dashboardArgs = [
+        "run",
+        dashboardPath,
+        "--projectRoot", directory,
+        "--language", (flags["lang"] as "en" | "vi") ?? "en",
+        "--refreshMs", String(refreshMs),
+      ];
+
       try {
-        const { runDashboardTui } = await import("./dashboard/server.js")
-        const refreshSeconds = flags["refresh"]
-          ? Math.max(0.5, parseFloat(flags["refresh"]))
-          : 2
-        await runDashboardTui(directory, {
-          language: (flags["lang"] as "en" | "vi") ?? "en",
-          refreshMs: Math.round(refreshSeconds * 1000),
-        })
+        const proc = spawn("bun", dashboardArgs, {
+          detached: true,
+          stdio: "ignore",
+          cwd: process.cwd(),
+        });
+
+        proc.unref();
+        // eslint-disable-next-line no-console
+        console.log("Dashboard launched in detached Bun process.");
+        // eslint-disable-next-line no-console
+        console.log(`  Project: ${directory}`);
+        // eslint-disable-next-line no-console
+        console.log(`  Refresh: ${refreshMs}ms`);
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err)
-        if (msg.includes("Cannot find module") || msg.includes("Cannot find package")) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("bun") || msg.includes("ENOENT")) {
           // eslint-disable-next-line no-console
           console.error(
-            "Dashboard requires optional dependencies: ink and react.\n" +
-            "Install them with:\n\n" +
-            "  npm install ink react\n\n" +
-            "The core HiveMind plugin (tools, hooks) works without them."
-          )
+            "Dashboard requires Bun runtime.\n" +
+            "Install Bun with:\n\n" +
+            "  curl -fsSL https://bun.sh/install | bash\n\n" +
+            "Then run: bun --version"
+          );
+        } else if (msg.includes("Cannot find module") || msg.includes("ENOENT")) {
+          // eslint-disable-next-line no-console
+          console.error(
+            "Dashboard entry point not found. Ensure the plugin is built:\n\n" +
+            "  npm run build"
+          );
         } else {
           // eslint-disable-next-line no-console
-          console.error("Failed to start dashboard:", msg)
+          console.error("Failed to spawn dashboard:", msg);
         }
-        process.exit(1)
+        process.exit(1);
       }
       break
     }

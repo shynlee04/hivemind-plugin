@@ -116,6 +116,10 @@ export interface BrainState {
   pending_failure_ack: boolean;
   /** Framework conflict selection metadata for dual-framework projects */
   framework_selection: FrameworkSelectionState;
+
+  // Cross-session continuity (P0-6: session-split amnesia fix)
+  /** Last 6 conversational messages captured before session split */
+  recent_messages: Array<{ role: "user" | "assistant"; content: string }>;
 }
 
 export type FrameworkChoice = "gsd" | "spec-kit" | "override" | "cancel" | null;
@@ -207,6 +211,8 @@ export function createBrainState(
       acceptance_note: "",
       updated_at: 0,
     },
+    // Cross-session continuity (P0-6)
+    recent_messages: [],
   };
 }
 
