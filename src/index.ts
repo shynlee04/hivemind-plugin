@@ -131,6 +131,7 @@ export const HiveMindPlugin: Plugin = async ({
     /**
      * Hook: Message transformation
      * Injects stop-decision checklist and continuity context
+     * Also handles first-turn prompt transformation (session_coherence)
      */
     "experimental.chat.messages.transform": createMessagesTransformHook(log, effectiveDir),
 

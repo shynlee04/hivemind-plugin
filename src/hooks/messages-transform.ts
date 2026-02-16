@@ -16,6 +16,7 @@ import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
 import { packCognitiveState } from "../lib/cognitive-packer.js"
 import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
+import { detectFirstTurn, loadLastSessionContext, buildTransformedPrompt } from "../lib/session_coherence.js"
 import { existsSync, readdirSync } from "fs"
 import type { Message, Part } from "@opencode-ai/sdk"
 import type { BrainState } from "../schemas/brain-state.js"
@@ -222,6 +223,49 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
       const state = await stateManager.load()
       if (!state) return
+
+      // === FIRST TURN: Session Coherence ===
+      // If this is the first turn, inject prior session context
+      if (detectFirstTurn(state)) {
+        const index = getLastNonSyntheticUserMessageIndex(output.messages)
+        if (index >= 0) {
+          try {
+            // Extract user message text
+            const userMessage = output.messages[index]
+            let userMessageText = ""
+            if (isMessageWithParts(userMessage)) {
+              userMessageText = userMessage.parts.filter(p => p.type === "text").map(p => p.text || "").join(" ")
+            } else if (typeof userMessage.content === "string") {
+              userMessageText = userMessage.content
+            } else if (Array.isArray(userMessage.content)) {
+              userMessageText = userMessage.content.filter(p => p.type === "text").map(p => (p as MessagePart).text || "").join(" ")
+            }
+
+            // Load last session context
+            const lastSessionContext = await loadLastSessionContext(directory)
+
+            // Build transformed prompt
+            const transformedPrompt = buildTransformedPrompt(userMessageText, lastSessionContext, {
+              maxTasks: 5,
+              maxMems: 3,
+              maxTodos: 10,
+              includeAnchors: true,
+              budget: 2500,
+            })
+
+            // Inject as synthetic part (prepend)
+            prependSyntheticPart(output.messages[index], transformedPrompt)
+
+            // Log for visibility (P3: never breaks flow)
+            console.log("\n🔗 [SESSION COHERENCE] First-turn context injected:")
+            console.log("---")
+            console.log(transformedPrompt)
+            console.log("---\n")
+          } catch {
+            // P3: never break message flow - silently fail
+          }
+        }
+      }
 
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
