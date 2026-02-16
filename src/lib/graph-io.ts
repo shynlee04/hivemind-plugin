@@ -475,3 +475,137 @@ export async function flagFalsePath(projectRoot: string, memId: string): Promise
     })
   })
 }
+
+// ─── FK-Validated Load Functions ─────────────────────────────────────
+
+/**
+ * Options for FK-validated loading.
+ */
+export interface FKValidationOptions {
+  /** Enable FK validation (default: true) */
+  enabled?: boolean
+  /** Callback when orphans are quarantined */
+  onOrphanQuarantined?: (record: OrphanRecord) => void
+}
+
+/**
+ * Load tasks with FK validation against parent phase IDs.
+ * This loads plans first to extract valid phase IDs, then validates each task's parent_phase_id.
+ * Orphan tasks are quarantined to the orphans file.
+ * 
+ * @param projectRoot - Project root directory
+ * @param options - FK validation options
+ * @returns Tasks state with only valid (non-orphan) tasks
+ */
+export async function loadGraphTasksWithFKValidation(
+  projectRoot: string,
+  options: FKValidationOptions = {},
+): Promise<GraphTasksState> {
+  const { enabled = true } = options
+  const paths = getEffectivePaths(projectRoot)
+  const filePath = paths.graphTasks
+  const orphanPath = paths.graphOrphans
+  
+  if (!existsSync(filePath)) {
+    return EMPTY_TASKS_STATE
+  }
+
+  // If FK validation disabled, fall back to standard load
+  if (!enabled) {
+    return loadGraphTasks(projectRoot)
+  }
+
+  // Step 1: Load plans to extract valid phase IDs
+  // Phases are nested inside plans, so we need to traverse plans[].phases[]
+  const plans = await loadPlans(projectRoot)
+  const validPhaseIds = new Set<string>()
+  
+  for (const plan of plans.plans) {
+    // Each plan has phases nested inside (from cognitive-packer pattern)
+    const planWithPhases = plan as { phases?: Array<{ id: string }> }
+    if (planWithPhases.phases) {
+      for (const phase of planWithPhases.phases) {
+        validPhaseIds.add(phase.id)
+      }
+    }
+  }
+
+  // Step 2: Load and validate tasks with FK validation
+  const validatedState = await validateTasksWithFKValidation(filePath, validPhaseIds, orphanPath)
+  
+  if (validatedState) {
+    return validatedState
+  }
+
+  return EMPTY_TASKS_STATE
+}
+
+/**
+ * Load mems with FK validation against origin task IDs.
+ * This loads tasks first to get valid task IDs, then validates each mem's origin_task_id.
+ * Mems with null origin_task_id are always valid (no FK constraint).
+ * Orphan mems are quarantined to the orphans file.
+ * 
+ * @param projectRoot - Project root directory
+ * @param options - FK validation options
+ * @returns Mems state with only valid (non-orphan) mems
+ */
+export async function loadGraphMemsWithFKValidation(
+  projectRoot: string,
+  options: FKValidationOptions = {},
+): Promise<GraphMemsState> {
+  const { enabled = true } = options
+  const paths = getEffectivePaths(projectRoot)
+  const filePath = paths.graphMems
+  const orphanPath = paths.graphOrphans
+  
+  if (!existsSync(filePath)) {
+    return EMPTY_MEMS_STATE
+  }
+
+  // If FK validation disabled, fall back to standard load
+  if (!enabled) {
+    return loadGraphMems(projectRoot)
+  }
+
+  // Step 1: Load tasks to get valid task IDs
+  const tasks = await loadGraphTasks(projectRoot)
+  
+  // Build set of valid task IDs
+  const validTaskIds = new Set(tasks.tasks.map((task) => task.id))
+
+  // Step 2: Load and validate mems with FK validation
+  const validatedState = await validateMemsWithFKValidation(filePath, validTaskIds, orphanPath)
+  
+  if (validatedState) {
+    return validatedState
+  }
+
+  return EMPTY_MEMS_STATE
+}
+
+/**
+ * Load all graph entities with full FK validation chain:
+ * 1. Load trajectory (no FK constraints - root entity)
+ * 2. Load tasks with FK validation against trajectory phases
+ * 3. Load mems with FK validation against tasks
+ * 
+ * @param projectRoot - Project root directory
+ * @param options - FK validation options
+ * @returns Tuple of [trajectory, tasks, mems] all FK-validated
+ */
+export async function loadGraphWithFullFKValidation(
+  projectRoot: string,
+  options: FKValidationOptions = {},
+): Promise<{
+  trajectory: TrajectoryState | null
+  tasks: GraphTasksState
+  mems: GraphMemsState
+}> {
+  // Load in dependency order for FK validation
+  const trajectory = await loadTrajectory(projectRoot)
+  const tasks = await loadGraphTasksWithFKValidation(projectRoot, options)
+  const mems = await loadGraphMemsWithFKValidation(projectRoot, options)
+  
+  return { trajectory, tasks, mems }
+}
