@@ -103,6 +103,7 @@ async function test_injects_checklist_message() {
 
   const stateManager = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
   await stateManager.save(state)
 
   const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
@@ -134,6 +135,7 @@ async function test_generates_dynamic_checklist_items() {
   const baseState = unlockSession(createBrainState(generateSessionId(), config))
   const state = {
     ...baseState,
+    first_turn_context_injected: true,
     pending_failure_ack: true,
     metrics: {
       ...baseState.metrics,
@@ -173,6 +175,7 @@ async function test_includes_pending_tasks_checklist_item() {
 
   const stateManager = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
   await stateManager.save(state)
   await saveTasks(dir, {
     session_id: state.session.id,
@@ -231,6 +234,7 @@ async function test_includes_session_boundary_checklist_item_when_recommended() 
   // V3.0: Need user_turn_count >= 30 AND (compactionCount >= 2 OR hierarchyComplete)
   const state = {
     ...baseState,
+    first_turn_context_injected: true,
     metrics: {
       ...baseState.metrics,
       turn_count: 30,
@@ -282,6 +286,7 @@ async function test_legacy_message_shape_fallback() {
 
   const stateManager = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
   await stateManager.save(state)
 
   const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
@@ -310,6 +315,7 @@ async function test_modern_shape_without_user_does_not_push_legacy_message() {
 
   const stateManager = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
   await stateManager.save(state)
 
   const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
@@ -333,6 +339,7 @@ async function test_wraps_user_message_with_system_anchor() {
   const stateManager = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
   state.hierarchy.trajectory = "Phase B"
+  state.first_turn_context_injected = true
   // V3.0: Don't set action - this will trigger "Action-level focus is missing" checklist item
   state.metrics.context_updates = 1 // Active
   state.metrics.user_turn_count = 1  // V3.0: Initialize user_turn_count
@@ -366,6 +373,51 @@ async function test_wraps_user_message_with_system_anchor() {
 
   await rm(dir, { recursive: true, force: true })
 }
+
+async function test_first_turn_injection_sets_marker_and_prevents_duplicate_on_counter_reset() {
+  process.stderr.write("\n--- messages-transform: first-turn marker prevents duplicate injection ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "assisted" })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  await stateManager.save(state)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [
+      createUserMessage("first turn", "msg_user_2"),
+    ],
+  }
+
+  await hook({}, output)
+
+  const firstPassParts = getTextParts(output.messages[0])
+  const firstTurnParts = firstPassParts.filter(p => p.synthetic && p.text.includes("<first_turn_context>"))
+  assert(firstTurnParts.length === 1, "injects first-turn context exactly once on first pass")
+
+  const persistedAfterFirst = await stateManager.load()
+  assert(persistedAfterFirst?.first_turn_context_injected === true, "persists first-turn marker after injection")
+
+  // Simulate counter reset bug scenario; marker should still block first-turn reinjection.
+  if (persistedAfterFirst) {
+    persistedAfterFirst.metrics.turn_count = 0
+    persistedAfterFirst.metrics.user_turn_count = 0
+    await stateManager.save(persistedAfterFirst)
+  }
+
+  const outputSecond: { messages: MessageV2[] } = {
+    messages: [createUserMessage("second turn", "msg_user_3")],
+  }
+  await hook({}, outputSecond)
+
+  const secondPassParts = getTextParts(outputSecond.messages[0])
+  const repeatedFirstTurn = secondPassParts.filter(p => p.synthetic && p.text.includes("<first_turn_context>"))
+  assert(repeatedFirstTurn.length === 0, "does not reinject first-turn context when counters reset")
+
+  await rm(dir, { recursive: true, force: true })
+}
 async function main() {
   process.stderr.write("=== Messages Transform Tests ===\n")
 
@@ -374,6 +426,7 @@ async function main() {
   await test_includes_pending_tasks_checklist_item()
   await test_skips_permissive_mode()
   await test_wraps_user_message_with_system_anchor()
+  await test_first_turn_injection_sets_marker_and_prevents_duplicate_on_counter_reset()
   await test_includes_session_boundary_checklist_item_when_recommended()
   await test_legacy_message_shape_fallback()
   await test_modern_shape_without_user_does_not_push_legacy_message()

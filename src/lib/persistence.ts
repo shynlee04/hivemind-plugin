@@ -195,6 +195,8 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             acceptance_note: "",
             updated_at: 0,
           }
+          // Migration: persistent first-turn injection marker
+          parsed.first_turn_context_injected ??= false
           // Migration: remove deprecated sentiment_signals field
           delete (parsed as any).sentiment_signals
           return parsed

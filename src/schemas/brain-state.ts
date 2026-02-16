@@ -94,6 +94,8 @@ export interface BrainState {
   session: SessionState;
   hierarchy: HierarchyState;
   metrics: MetricsState;
+  /** Persistent per-session gate for first-turn context injection */
+  first_turn_context_injected: boolean;
   complexity_nudge_shown: boolean;
   /** Turn number when last commit suggestion was shown */
   last_commit_suggestion_turn: number;
@@ -187,6 +189,7 @@ export function createBrainState(
         prerequisites_completed: false,
       },
     },
+    first_turn_context_injected: false,
     complexity_nudge_shown: false,
     last_commit_suggestion_turn: 0,
     version: BRAIN_STATE_VERSION,
