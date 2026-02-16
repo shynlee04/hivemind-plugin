@@ -3,13 +3,14 @@
  *
  * Pure TypeScript logic for:
  * - Detecting first turn of session
- * - Loading last session context
+ * - Loading last session context (from ARCHIVED session after compact)
  * - Building transformed prompt
  *
  * This is the "subconscious engine" - no LLM-facing concerns.
  */
 
-import { existsSync, readFileSync } from "fs"
+import { existsSync, readFileSync, readdirSync } from "fs"
+import { join } from "path"
 import { getEffectivePaths } from "./paths.js"
 import type { BrainState } from "../schemas/brain-state.js"
 import type { HierarchyState } from "../schemas/hierarchy.js"
@@ -42,8 +43,88 @@ export function detectFirstTurn(state: BrainState | null): boolean {
 }
 
 /**
+ * Find the most recent archived session file.
+ * Returns path to the archived session file, or null if none found.
+ */
+function findMostRecentArchivedSession(archiveDir: string): string | null {
+  if (!existsSync(archiveDir)) return null
+
+  try {
+    const files = readdirSync(archiveDir)
+      .filter(f => f.endsWith(".md"))
+      .sort()
+      .reverse() // Most recent first
+
+    return files.length > 0 ? join(archiveDir, files[0]) : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Load context from an archived session file.
+ */
+function loadFromArchivedSession(archivePath: string): Partial<LastSessionContext> {
+  try {
+    const content = readFileSync(archivePath, "utf-8")
+
+    // Extract session ID from filename (e.g., "2026-02-16-plan_driven-something.md")
+    const filename = archivePath.split("/").pop() || "unknown"
+
+    // Try to extract session info from archived content
+    // Look for patterns like "Session ID:" or "## Session" in the markdown
+    const sessionIdMatch = content.match(/Session[:\s]+([^\n]+)/i)
+    const sessionId = sessionIdMatch ? sessionIdMatch[1].trim() : filename
+
+    // Extract trajectory/tactic/action from the archived session
+    const trajectoryMatch = content.match(/Trajectory[:\s]+([^\n]+)/i)
+    const tacticMatch = content.match(/Tactic[:\s]+([^\n]+)/i)
+    const actionMatch = content.match(/Action[:\s]+([^\n]+)/i)
+
+    const trajectory = trajectoryMatch?.[1]?.trim()
+      || tacticMatch?.[1]?.trim()
+      || actionMatch?.[1]?.trim()
+      || null
+
+    // Extract mode if present
+    const modeMatch = content.match(/Mode[:\s]+([^\n]+)/i)
+    const mode = modeMatch?.[1]?.trim() || null
+
+    // Try to find active tasks in the archived content
+    const taskRegex = /- \[([^\]]+)\] ([^\(]+)\(([^)]+)\)/g
+    const taskMatches = content.match(taskRegex)
+    const activeTasks: PriorTask[] = []
+    if (taskMatches) {
+      for (const match of taskMatches.slice(0, 5)) {
+        const statusMatch = match.match(/- \[([^\]]+)\]/)
+        const contentMatch = match.match(/- \[[^\]]+\] ([^\(]+)/)
+        const idMatch = match.match(/\(([^)]+)\)/)
+        if (statusMatch && contentMatch) {
+          activeTasks.push({
+            status: statusMatch[1],
+            content: contentMatch[1].trim(),
+            id: idMatch?.[1] || "",
+            stamp: "",
+          })
+        }
+      }
+    }
+
+    return {
+      sessionId,
+      trajectory,
+      mode,
+      activeTasks,
+    }
+  } catch {
+    return {}
+  }
+}
+
+/**
  * Load last session context from .hivemind/
- * Retrieves trajectory, tasks, mems, and anchors from previous session.
+ * IMPORTANT: After compact_session, load from ARCHIVED session, not current files.
+ * The current brain.json is the NEW session, not the previous one.
  */
 export async function loadLastSessionContext(
   projectRoot: string,
@@ -64,6 +145,60 @@ export async function loadLastSessionContext(
   }
 
   try {
+    // First, check if there's an archived session
+    // This is the KEY FIX: after compact, we load from archive, not current files
+    const archivePath = findMostRecentArchivedSession(paths.archiveDir)
+
+    if (archivePath) {
+      // Load from archived session
+      const archivedContext = loadFromArchivedSession(archivePath)
+
+      // Also try to load current state for additional context (mems, anchors)
+      let relevantMems: PriorMem[] = []
+      const memsExists = existsSync(paths.mems)
+      if (memsExists) {
+        const memsRaw = readFileSync(paths.mems, "utf-8")
+        const memsData = JSON.parse(memsRaw)
+        const mems = memsData.mems || memsData || []
+        relevantMems = mems
+          .slice(0, config.maxMems)
+          .map((m: { id: string; content: string; shelf: string; created_at?: string; createdAt?: string }) => ({
+            id: m.id,
+            content: m.content,
+            shelf: m.shelf,
+            createdAt: m.created_at || m.createdAt || new Date().toISOString(),
+          }))
+      }
+
+      let anchors: PriorAnchor[] = []
+      if (config.includeAnchors) {
+        const anchorsExists = existsSync(paths.anchors)
+        if (anchorsExists) {
+          const anchorsRaw = readFileSync(paths.anchors, "utf-8")
+          const anchorsData = JSON.parse(anchorsRaw)
+          anchors = (anchorsData.anchors || anchorsData || []).map(
+            (a: { key: string; value: string; timestamp?: string }) => ({
+              key: a.key,
+              value: a.value,
+              timestamp: a.timestamp || new Date().toISOString(),
+            })
+          )
+        }
+      }
+
+      return {
+        sessionId: archivedContext.sessionId || "archived",
+        trajectory: archivedContext.trajectory || null,
+        activeTasks: archivedContext.activeTasks || [],
+        pendingTodos: [],
+        relevantMems,
+        anchors,
+        mode: archivedContext.mode as string | null,
+        lastCompactSummary: archivedContext.trajectory ? `Resumed from archived session: ${archivedContext.sessionId}` : null,
+      }
+    }
+
+    // Fallback: Load from current files (for initial/new sessions without archives)
     // Load brain state for session info
     const brainExists = existsSync(paths.brain)
     if (!brainExists) {
@@ -72,6 +207,12 @@ export async function loadLastSessionContext(
 
     const brainRaw = readFileSync(paths.brain, "utf-8")
     const brain: BrainState = JSON.parse(brainRaw)
+
+    // Skip if this is a brand new session (turn_count === 0 AND no archive)
+    // This handles the case where there's no prior context
+    if (brain.metrics.turn_count === 0 && !archivePath) {
+      return defaultContext
+    }
 
     // Get hierarchy for trajectory
     let trajectory: string | null = null
