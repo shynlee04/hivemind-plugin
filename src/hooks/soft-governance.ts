@@ -210,8 +210,9 @@ export function createSoftGovernanceHook(
       }
 
       // Check for drift (high turns without context update)
+      // Threshold: drift_score < 30 AND user_turn_count >= 10 (consistent with event-handler.ts)
       const driftWarning = newState.metrics.turn_count >= config.max_turns_before_warning &&
-                           newState.metrics.drift_score < 50
+                           newState.metrics.drift_score < 30
 
       // === Detection Engine: Tool Classification ===
       const toolCategory = classifyTool(input.tool)
@@ -467,6 +468,39 @@ export function createSoftGovernanceHook(
         await log.warn(
           `Drift detected: ${newState.metrics.turn_count} turns without context update. Use map_context to re-focus.`
         )
+      }
+
+      // Emit drift toast (centralized from event-handler.ts)
+      // Threshold: drift_score < 30 AND user_turn_count >= 10
+      if (newState.metrics.drift_score < 30 && newState.metrics.user_turn_count >= 10) {
+        const repeatCount = newState.metrics.governance_counters?.drift ?? 0
+        const severity = computeGovernanceSeverity({
+          kind: "drift",
+          repetitionCount: repeatCount,
+          acknowledged: newState.metrics.governance_counters?.acknowledged ?? false,
+        })
+        
+        // Update drift counter
+        newState = {
+          ...newState,
+          metrics: {
+            ...newState.metrics,
+            governance_counters: {
+              ...newState.metrics.governance_counters,
+              drift: (newState.metrics.governance_counters?.drift ?? 0) + 1,
+            },
+          },
+        }
+
+        // Throttle drift toasts
+        if (checkAndRecordToast("drift", "idle")) {
+          await emitGovernanceToast(log, {
+            key: "drift",
+            message: `Drift risk detected. Score ${newState.metrics.drift_score}/100. Use map_context to realign.`,
+            variant: variantFromSeverity(severity),
+            eventType: "idle",
+          })
+        }
       }
 
       await log.debug(

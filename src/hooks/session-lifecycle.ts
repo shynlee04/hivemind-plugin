@@ -20,10 +20,8 @@ import { migrateIfNeeded } from "../lib/migrate.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
 import { isSessionStale } from "../lib/staleness.js"
-import { packCognitiveState } from "../lib/cognitive-packer.js"
 import { detectBrownfield, generateReadFirstBlock, isCleanSession, handleStaleSession } from "../lib/onboarding.js"
 import { buildGovernanceSignals } from "../lib/session-governance.js"
-import { loadAnchors } from "../lib/anchors.js"
 import {
   generateBootstrapBlock,
   generateEvidenceDisciplineBlock,
@@ -71,8 +69,7 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       const isBootstrapActive = state.metrics.turn_count <= 2
       const BUDGET_CHARS = isBootstrapActive ? 4500 : 2500
 
-      // Phase 1: Cognitive State (from packer)
-      const cognitiveXml = packCognitiveState(directory, { budget: Math.floor(BUDGET_CHARS * 0.4), sessionId: input.sessionID })
+      // Phase 1: Cognitive State is now injected via messages-transform.ts (canonical location)
 
       // Phase 2: Governance Signals
       const { warningLines, ignoredLines, frameworkLines, onboardingLines } = await buildGovernanceSignals(directory, state, config)
@@ -80,14 +77,13 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       // Phase 3: Bootstrap & First-Turn Context
       const { bootstrapLines, evidenceLines, teamLines, firstTurnContextLines, readFirstLines } = await buildBootstrapContext(directory, state, config)
 
-      // Phase 4: Anchors
-      const anchorLines = await buildAnchorBlock(directory)
+      // Phase 4: Anchors are now injected via messages-transform.ts (canonical location)
 
       // Assemble by priority
       const finalLines = assembleSections([
         readFirstLines, bootstrapLines, firstTurnContextLines, evidenceLines, teamLines,
-        onboardingLines, frameworkLines, buildStatusBlock(state, config), [cognitiveXml], buildTaskBlock(), ignoredLines,
-        warningLines, anchorLines, buildMetricsBlock(state), buildConfigBlock(config),
+        onboardingLines, frameworkLines, buildStatusBlock(state, config), buildTaskBlock(), ignoredLines,
+        warningLines, buildMetricsBlock(state), buildConfigBlock(config),
       ], BUDGET_CHARS, log)
 
       output.system.push(finalLines)
@@ -118,19 +114,6 @@ async function buildBootstrapContext(directory: string, state: { metrics: { turn
   }
 
   return { bootstrapLines, evidenceLines, teamLines, firstTurnContextLines, readFirstLines }
-}
-
-async function buildAnchorBlock(directory: string): Promise<string[]> {
-  const anchorsState = await loadAnchors(directory)
-  if (anchorsState.anchors.length === 0) return []
-  const lines = ["<immutable-anchors>"]
-  for (const anchor of anchorsState.anchors) {
-    const age = Date.now() - anchor.created_at
-    const ageStr = age < 3600000 ? `${Math.floor(age / 60000)}m ago` : age < 86400000 ? `${Math.floor(age / 3600000)}h ago` : `${Math.floor(age / 86400000)}d ago`
-    lines.push(`  [${anchor.key}] (${ageStr}): ${anchor.value}`)
-  }
-  lines.push("</immutable-anchors>")
-  return lines
 }
 
 function buildTaskBlock(): string[] {
