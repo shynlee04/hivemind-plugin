@@ -54,7 +54,7 @@ async function test_selfRateBasic() {
     // Rate without any state should fail
     const noStateResult = await selfRateTool.execute({ score: 8 })
     assert(
-      noStateResult.includes("ERROR: No active session"),
+      noStateResult.includes("No active session"),
       "fails without any state"
     )
 

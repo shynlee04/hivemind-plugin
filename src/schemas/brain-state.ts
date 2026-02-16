@@ -135,9 +135,8 @@ export interface FrameworkSelectionState {
 export const BRAIN_STATE_VERSION = "1.0.0";
 
 export function generateSessionId(): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8);
-  return `session-${timestamp}-${random}`;
+  // Return a proper UUID for graph schema compatibility
+  return crypto.randomUUID()
 }
 
 export function createBrainState(
