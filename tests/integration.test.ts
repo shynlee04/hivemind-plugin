@@ -88,8 +88,9 @@ async function test_fullLifecycle() {
     const intentResult = await declareIntentTool.execute(
       { mode: "plan_driven", focus: "Build authentication system" }
     )
+    const parsedIntent = JSON.parse(intentResult as string)
     assert(
-      intentResult.includes('Session: "Build authentication system"'),
+      parsedIntent.status === "success" && parsedIntent.message.includes("Build authentication system"),
       "declare_intent sets session focus"
     )
 
