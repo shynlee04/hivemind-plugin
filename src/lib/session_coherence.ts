@@ -400,3 +400,202 @@ Context Retrieval Reminders:
 - Check .hivemind/state/ for session metadata
 `.trim()
 }
+
+/**
+ * Context Confidence Scoring — Phase 2: Context Clarification Framework
+ *
+ * Calculates confidence score based on multiple factors:
+ * - Turn count (new sessions need more context)
+ * - Context completeness (are trajectory, tasks, mems loaded?)
+ * - User message clarity (intent from message)
+ * - Recent changes (files modified since last session)
+ * - Drift score (context drift from previous session)
+ */
+
+/**
+ * Confidence level thresholds
+ */
+export const CONFIDENCE_LEVELS = {
+  HIGH: 95,   // 95% - 100%: Proceed normally
+  MEDIUM: 80, // 80% - 95%: Gather more context + clarification
+  LOW: 80,    // < 80%: Use commands/skills for context
+}
+
+/**
+ * Calculate context confidence score (0-100)
+ *
+ * @param state - Brain state from .hivemind/state/brain.json
+ * @param projectRoot - Project root directory (required for path checks)
+ * @returns Confidence score (0-100)
+ */
+export function calculateContextConfidence(
+  state: BrainState,
+  projectRoot: string
+): number {
+  let score = 100
+
+  // 1. Turn count penalty (10%)
+  if (state.metrics.turn_count === 0) {
+    score -= 10
+  }
+
+  // 2. Context completeness check (30%)
+  const effectivePaths = getEffectivePaths(projectRoot)
+  if (!effectivePaths) {
+    // If paths can't be loaded, assume incomplete context
+    score -= 15
+  } else {
+    // Check graph files exist
+    if (!existsSync(effectivePaths.graphTrajectory)) {
+      score -= 10
+    }
+    if (!existsSync(effectivePaths.graphTasks)) {
+      score -= 10
+    }
+    if (!existsSync(effectivePaths.graphMems)) {
+      score -= 5
+    }
+  }
+
+  // 3. User message clarity check (25%)
+  // Note: BrainState doesn't have last_user_message, so we use turn_count as proxy
+  // For actual message clarity, this should be passed from the hook
+  if (state.metrics.turn_count === 0) {
+    // First turn - assume message needs more context
+    score -= 10
+  }
+
+  // 4. Recent changes check (20%)
+  // Simplified: if turn_count is low and files_touched is empty, assume no recent changes
+  if (state.metrics.turn_count <= 2 && state.metrics.files_touched.length === 0) {
+    score -= 10
+  }
+
+  // 5. Drift score penalty (15%)
+  if (state.metrics.drift_score > 50) {
+    const driftPenalty = Math.min(state.metrics.drift_score - 50, 15)
+    score -= driftPenalty
+  }
+
+  // Clamp to valid range
+  return Math.max(0, Math.min(100, score))
+}
+
+/**
+ * Determine context action based on confidence score
+ *
+ * @param confidence - Confidence score (0-100)
+ * @returns Action: "proceed", "gather", or "clarify"
+ */
+export function getContextAction(confidence: number): "proceed" | "gather" | "clarify" {
+  if (confidence >= CONFIDENCE_LEVELS.HIGH) {
+    return "proceed"
+  } else if (confidence >= CONFIDENCE_LEVELS.MEDIUM) {
+    return "gather"
+  } else {
+    return "clarify"
+  }
+}
+
+/**
+ * Get confidence breakdown - detailed analysis for debugging
+ *
+ * @param state - Brain state
+ * @param projectRoot - Project root directory (required for path checks)
+ * @returns Object with score breakdown and recommendations
+ */
+export function getConfidenceBreakdown(
+  state: BrainState,
+  projectRoot: string
+): {
+  score: number
+  breakdown: Record<string, number>
+  recommendations: string[]
+  action: "proceed" | "gather" | "clarify"
+} {
+  let score = 100
+  const breakdown: Record<string, number> = {}
+  const recommendations: string[] = []
+
+  // Turn count analysis
+  if (state.metrics.turn_count === 0) {
+    score -= 10
+    breakdown.turnCount = -10
+    recommendations.push("First turn: Load last session context")
+  } else {
+    breakdown.turnCount = 0
+  }
+
+  // Context completeness analysis
+  const effectivePaths = getEffectivePaths(projectRoot)
+  if (!effectivePaths) {
+    score -= 15
+    breakdown.contextCompleteness = -15
+    recommendations.push("Paths unavailable: Cannot verify context completeness")
+  } else {
+    let completenessPenalty = 0
+    if (!existsSync(effectivePaths.graphTrajectory)) {
+      completenessPenalty += 10
+      recommendations.push("Missing graph/trajectory.json: Load trajectory context")
+    }
+    if (!existsSync(effectivePaths.graphTasks)) {
+      completenessPenalty += 10
+      recommendations.push("Missing graph/tasks.json: Load task context")
+    }
+    if (!existsSync(effectivePaths.graphMems)) {
+      completenessPenalty += 5
+      recommendations.push("Missing graph/mems.json: Load memory context")
+    }
+    score -= completenessPenalty
+    breakdown.contextCompleteness = -completenessPenalty
+  }
+
+  // User message clarity analysis
+  // Note: BrainState doesn't have last_user_message, so we use turn_count as proxy
+  // For actual message clarity, this should be passed from the hook
+  let clarityPenalty = 0
+  if (state.metrics.turn_count === 0) {
+    clarityPenalty += 10
+    recommendations.push("First turn: Consider gathering more user context")
+  }
+  score -= clarityPenalty
+  breakdown.userMessageClarity = -clarityPenalty
+
+  // Recent changes analysis
+  if (state.metrics.turn_count <= 2 && state.metrics.files_touched.length === 0) {
+    score -= 10
+    breakdown.recentChanges = -10
+    recommendations.push("No recent file changes: Consider loading full context")
+  } else {
+    breakdown.recentChanges = 0
+  }
+
+  // Drift score analysis
+  let driftPenalty = 0
+  if (state.metrics.drift_score > 50) {
+    driftPenalty = Math.min(state.metrics.drift_score - 50, 15)
+    score -= driftPenalty
+    breakdown.driftScore = -driftPenalty
+    recommendations.push(`High drift score (${state.metrics.drift_score}): Use scan_hierarchy to verify context`)
+  } else {
+    breakdown.driftScore = 0
+  }
+
+  return {
+    score,
+    breakdown,
+    recommendations,
+    action: getContextAction(score),
+  }
+}
+
+/**
+ * Type exports for confidence scoring
+ */
+export type ConfidenceLevel = "proceed" | "gather" | "clarify"
+export type ConfidenceBreakdown = {
+  score: number
+  breakdown: Record<string, number>
+  recommendations: string[]
+  action: ConfidenceLevel
+}
