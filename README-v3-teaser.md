@@ -1,6 +1,8 @@
 # 🧠 HiveMind v3.0 — The Relational Cognitive Engine
+**HiveMind v3.0 — Động Cơ Nhận Thức Quan Hệ**
 
 > **A Complete Architectural Overhaul. Coming Soon.**
+> **Sự Thay Đổi Kiến Trúc Toàn Diện. Sắp Ra Mắt.**
 
 <div align="center">
   
@@ -9,32 +11,39 @@
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
   
   *From Flat-File Fallacy to Tier-1 Enterprise Agentic Framework*
+  *Từ Ảo Tưởng File Phẳng đến Framework Agentic Doanh Nghiệp Hạng Nhất*
 
 </div>
 
 ---
 
-## 🎊 A Message from the Heart
+## 🎊 Lời Cảm Ơn / A Message from the Heart
 
 **Chào bạn! Xin chào! Hello friend!**
 
+Nhân dịp Tết Nguyên Đán sắp đến gần tại Việt Nam 🧧, tôi muốn gửi lời cảm ơn chân thành đến cộng đồng tuyệt vời này.
+
 As Lunar New Year (Tết Nguyên Đán) approaches here in Vietnam 🧧, I find myself reflecting on this incredible journey. What started as a simple script to help me manage AI context has grown into something far more ambitious—and I couldn't have done it without this amazing community.
 
-**Thank you. Cảm ơn bạn rất nhiều.**
+**Cảm ơn bạn rất nhiều! / Thank you!**
+
+Những ngôi sao, phản hồi, và sự kiên nhẫn của bạn đã tiếp sức cho dự án này. Tôi đã dành nhiều tháng để kiến trúc lại thứ gì đó mà tôi tin rằng sẽ thay đổi cách chúng ta nghĩ về việc quản lý ngữ cảnh AI.
 
 Your stars, your feedback, your patience with the bugs—it all fuels this passion project. I've been heads-down for months architecting something that I truly believe will change how we think about AI session governance.
 
-**This is worth the wait.**
+**Điều này xứng đáng để chờ đợi. / This is worth the wait.**
 
 ---
 
-## 🔥 What Makes v3.0 Revolutionary?
+## 🔥 Điều Gì Làm v3.0 Cách Mạng? / What Makes v3.0 Revolutionary?
+
+Giải pháp "bộ nhớ" AI hiện tại? Họ đang đổ văn bản vào file markdown và hy vọng LLM tự tìm thấy những gì cần thiết. Đó không phải là bộ nhớ—đó là **nghĩa địa**.
 
 The current landscape of AI "memory" solutions? They're dumping text into markdown files and hoping the LLM magically finds what it needs. That's not memory—that's a **graveyard**.
 
-**HiveMind v3.0** introduces the **Relational Cognitive Engine**:
+**HiveMind v3.0** giới thiệu **Động Cơ Nhận Thức Quan Hệ** / introduces the **Relational Cognitive Engine**:
 
-### 🌳 The New `.hivemind` Architecture
+### 🌳 Kiến Trúc `.hivemind` Mới / The New `.hivemind` Architecture
 
 ```
 .hivemind/
@@ -57,21 +66,32 @@ The current landscape of AI "memory" solutions? They're dumping text into markdo
     └── synthesis/                # Auto-generated reports
 ```
 
-### ⚡ The "Repomix-for-State" Context Compiler
+Chúng tôi chuyển từ file markdown phẳng sang **Cơ Sở Dữ Liệu Đồ Thị Quan Hệ** với UUID và Khóa Ngoại. Không còn dữ liệu mồ côi. Không còn lãng phí token.
+
+We are moving from flat markdown files to a **Relational Graph Database** with UUIDs and Foreign Keys. No more orphaned data. No more token waste.
+
+### ⚡ "Repomix-for-State" — Trình Biên Dịch Ngữ Cảnh / Context Compiler
+
+Thay vì hy vọng LLM đọc file, chúng tôi **biên dịch ngữ cảnh một cách lập trình**:
 
 Instead of hoping the LLM reads files, we **programmatically compile context**:
 
-1. **Write-Through (Tools = Conscious Limbs)**: LLM uses tools to mutate state
-2. **Read-Auto (Hooks = Subconscious Nervous System)**: Context injects automatically via OpenCode SDK
+1. **Write-Through (Công cụ = Chi Thức)**: LLM sử dụng công cụ để thay đổi trạng thái
+   **Write-Through (Tools = Conscious Limbs)**: LLM uses tools to mutate state
+   
+2. **Read-Auto (Hooks = Hệ Thần Kinh)**: Ngữ cảnh tự động inject qua OpenCode SDK
+   **Read-Auto (Hooks = Subconscious Nervous System)**: Context injects automatically via OpenCode SDK
 
+**Kết quả**: Không lãng phí token cho tool calls đọc dữ liệu. Ngữ cảnh quan hệ tinh khiết, tất định.
 **Result**: Zero token waste on tool calls for reading. Pure, deterministic, relational context.
 
-### 🎯 Industry-Standard Paradigms
+### 🎯 Các Mô Hình Tiêu Chuẩn Ngành / Industry-Standard Paradigms
 
-- **CQRS**: Command Query Responsibility Segregation
-- **Graph-RAG**: Hierarchical relationships preserved (not cosine similarity on dead files)
-- **Actor Model**: Session swarms for headless background research
-- **Time-to-Stale (TTS)**: Automatic pruning of dead context
+- **CQRS**: Tách biệt Ghi và Đọc / Command Query Responsibility Segregation
+- **Graph-RAG**: Duy trì quan hệ phân cấp (không phải cosine similarity trên file chết)
+  Hierarchical relationships preserved (not cosine similarity on dead files)
+- **Actor Model**: Session swarms cho nghiên cứu nền / Session swarms for headless background research
+- **Time-to-Stale (TTS)**: Tự động dọn dẹp ngữ cảnh chết / Automatic pruning of dead context
 
 ---
 
@@ -80,14 +100,14 @@ Instead of hoping the LLM reads files, we **programmatically compile context**:
 <div align="center">
 
 ### Screen 1: The Cognitive Graph Architecture
-*How we finally escaped the Flat-File Fallacy*
+*How we finally escaped the Flat-File Fallacy / Cách chúng tôi thoát khỏi Ảo Tưởng File Phẳng*
 
 [View Screen 1 →](./docs/stitch-screens/screen-01.html)
 
 ---
 
 ### Screen 2: Relational Directory Tree
-*Every entity has a UUID and Foreign Keys. No more orphans.*
+*Every entity has a UUID and Foreign Keys. No more orphans. / Mỗi thực thể có UUID và Khóa Ngoại. Không còn mồ côi.*
 
 [View Screen 2 →](./docs/stitch-screens/screen-02.html)
 
@@ -158,7 +178,7 @@ Instead of hoping the LLM reads files, we **programmatically compile context**:
 
 ---
 
-## 🎯 The God Prompts (How We Build This)
+## 🎯 The God Prompts (Câu Lệnh "Thần") / How We Build This
 
 We're not asking AI to "refactor storage." We give them **systematic boundaries**:
 
@@ -191,7 +211,7 @@ Implement experimental.chat.messages.transform:
 
 ---
 
-## 📊 By The Numbers
+## 📊 By The Numbers / Con Số Nói Lên Tất Cả
 
 | Metric | v2.6.0 | v3.0.0 (Target) |
 |--------|--------|-----------------|
@@ -203,80 +223,45 @@ Implement experimental.chat.messages.transform:
 
 ---
 
-## 🚀 What's Next?
+## 🚀 What's Next? / Tiếp Theo Là Gì?
 
 **Coming in Q1 2026:**
 
 - ✅ Phase 1: Graph Schemas & Dumb Tool Diet
 - ✅ Phase 2: Cognitive Packer  
-- 🔄 Phase 3: SDK Hook Injection (In Progress)
+- 🔄 Phase 3: SDK Hook Injection (In Progress / Đang Thực Hiện)
 - ⏳ Phase 4: .hivemind Graph Migration
 - ⏳ Phase 5: Tool Consolidation
 - ⏳ Phase 6: Testing & Verification
 
 ---
 
-## 💝 A Personal Note
+## 💝 A Personal Note / Lời Tâm Sự
 
 *Tết is coming. The streets of Vietnam are filling with apricot blossoms and the smell of bánh chưng being prepared. It's a time of renewal, of leaving behind what no longer serves us, and stepping into the new year with clarity and purpose.*
 
+*Tết đang đến gần. Đường phố Việt Nam đang tràn ngập sắc hoa mai và mùi thơm của bánh chưng. Đây là thời điểm đổi mới, để lại những gì không còn phục vụ chúng ta, và bước vào năm mới với sự rõ ràng và mục đích.*
+
 **That's exactly what v3.0 represents.**
+**Đó chính xác là những gì v3.0 đại diện.**
 
 We're leaving behind the chaos of flat files. We're embracing relational structure, deterministic context, and enterprise-grade architecture. 
 
+Chúng tôi đang từ bỏ sự hỗn loạn của file phẳng. Chúng tôi đang đón nhận cấu trúc quan hệ, ngữ cảnh tất định, và kiến trúc hạng doanh nghiệp.
+
 **This isn't just an update. It's a transformation.**
-
----
-
-<div align="center">
-
-### ⭐ Star this repo to stay updated!
-
-**HiveMind v3.0 — Making AI Memory Actually Work**
-
-*Built with ❤️ in Vietnam 🇻🇳*
-
-</div>
-
----
-
-## 📖 Tiếng Việt / Vietnamese
-
-### 🎊 Lời Cảm Ơn Từ Trái Tim
-
-Nhân dịp Tết Nguyên Đán sắp đến gần, tôi muốn gửi lời cảm ơn chân thành đến cộng đồng tuyệt vời này.
-
-**Cảm ơn bạn rất nhiều!**
-
-Những ngôi sao, phản hồi, và sự kiên nhẫn của bạn đã tiếp sức cho dự án này. Tôi đã dành nhiều tháng để kiến trúc lại thứ gì đó mà tôi tin rằng sẽ thay đổi cách chúng ta nghĩ về việc quản lý ngữ cảnh AI.
-
-**Điều này xứng đáng để chờ đợi.**
-
-### 🔥 Điều Gì Làm v3.0 Cách Mạng?
-
-Giải pháp "bộ nhớ" AI hiện tại? Họ đang đổ văn bản vào file markdown và hy vọng LLM tự tìm thấy những gì cần thiết. Đó không phải là bộ nhớ—đó là **nghĩa địa**.
-
-**HiveMind v3.0** giới thiệu **Động Cơ Nhận Thức Quan Hệ**:
-
-- **CQRS**: Tách biệt Ghi và Đọc
-- **Graph-RAG**: Duy trì quan hệ phân cấp
-- **Actor Model**: Swarm session cho nghiên cứu nền
-- **Time-to-Stale (TTS)**: Tự động dọn dẹp ngữ cảnh chết
-
-### 🌳 Kiến Trúc `.hivemind` Mới
-
-Chúng tôi chuyển từ file markdown phẳng sang **Cơ Sở Dữ Liệu Đồ Thị Quan Hệ** với UUID và Khóa Ngoại. Không còn dữ liệu mồ côi. Không còn lãng phí token.
-
 **Đây không chỉ là cập nhật. Đây là sự biến đổi.**
 
 ---
 
 <div align="center">
 
-### ⭐ Hãy star repo này để nhận cập nhật!
+### ⭐ Star this repo to stay updated! / Hãy star repo này để nhận cập nhật!
 
+**HiveMind v3.0 — Making AI Memory Actually Work**
 **HiveMind v3.0 — Làm cho Bộ Nhớ AI Thực Sự Hoạt Động**
 
+*Built with ❤️ in Vietnam 🇻🇳*
 *Được xây dựng với ❤️ tại Việt Nam 🇻🇳*
 
 </div>
