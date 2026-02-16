@@ -342,6 +342,31 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
   }
   lines.push("  </mems>")
 
+  // PATCH-US-011: Anti-patterns section for amnesia prevention
+  const ANTI_PATTERNS_BUDGET = 500
+  const antiPatternsLines: string[] = []
+
+  // Compress false_path mems
+  const falsePaths = prunedMems.slice(0, 3)
+  for (const mem of falsePaths) {
+    const entry = `<avoid task="${mem.origin_task_id ?? "unknown"}">${escapeXml(mem.content.slice(0, 80))}</avoid>`
+    if (antiPatternsLines.join("\n").length + entry.length > ANTI_PATTERNS_BUDGET) break
+    antiPatternsLines.push(`  ${entry}`)
+  }
+
+  // Compress invalidated tasks
+  for (const task of prunedTasks.slice(0, 2)) {
+    const entry = `<avoid task="${task.id}">${escapeXml(task.title?.slice(0, 50) ?? "unknown")}</avoid>`
+    if (antiPatternsLines.join("\n").length + entry.length > ANTI_PATTERNS_BUDGET) break
+    antiPatternsLines.push(`  ${entry}`)
+  }
+
+  if (antiPatternsLines.length > 0) {
+    lines.push("<anti_patterns>")
+    lines.push(...antiPatternsLines)
+    lines.push("</anti_patterns>")
+  }
+
   lines.push("  <context_summary>")
   lines.push(`    <mems count="${freshMems.length}" relevant="${relatedMems.length}" />`)
   lines.push(`    <files_touched count="${fileCount}" />`)
