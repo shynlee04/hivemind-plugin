@@ -150,11 +150,15 @@ function getPlanPhaseIndex(plansRaw: unknown, validPlanIds: Set<string>): Map<st
 
 /**
  * Configuration options for packing cognitive state.
- * US-013: XML Compression with Budget
+ * US-013: XML Compression with Dynamic Budget
  */
 export interface PackOptions {
-  /** Maximum output size in characters. Default: 2000 */
+  /** Direct budget override in characters (backward compatibility) */
   budget?: number
+  /** Model context window in tokens (default: 128000) */
+  contextWindow?: number
+  /** Budget percentage of context window 0.10-0.15 (default: 0.12) */
+  budgetPercentage?: number
   /** Session ID to filter by */
   sessionId?: string
 }
@@ -179,7 +183,13 @@ function buildMemXmlLines(mem: MemNode, indent: string): string[] {
  * @returns XML string for injection as synthetic context
  */
 export function packCognitiveState(projectRoot: string, options?: PackOptions): string {
-  const budget = options?.budget ?? 2000
+  // PATCH-US-013: Dynamic XML budget calculation
+  const contextWindow = options?.contextWindow ?? 128000
+  const budgetPercentage = options?.budgetPercentage ?? 0.12
+  const calculatedBudget = Math.floor(contextWindow * budgetPercentage)
+
+  // Direct budget override takes precedence for backward compatibility
+  const budget = options?.budget ?? calculatedBudget
   const sessionId = options?.sessionId
   const paths = getEffectivePaths(projectRoot)
 
