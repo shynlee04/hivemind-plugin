@@ -229,8 +229,16 @@ CRUD layer for graph/*.json using atomic writes:
 
 ---
 
-### Phase 3: SDK Hook Injection & Pre-Stop Gate
+### Phase 3: SDK Hook Injection & Pre-Stop Gate ✅ COMPLETE
 *God Prompt 3. Wire the Cognitive Packer into the LLM's cognition loop.*
+
+**Status**: All user stories complete (US-015, US-016, US-017)
+
+| US | Title | Status | Evidence |
+|----|-------|--------|----------|
+| US-015 | Wire packer to messages-transform | ✅ | Line 230: packCognitiveState(), prependSyntheticPart() |
+| US-016 | Implement Pre-Stop Gate checklist | ✅ | Dual-read pattern, buildChecklist(), commit 0e309db |
+| US-017 | Refactor session-lifecycle | ✅ | 165 lines (was 586), packer integrated line 75 |
 
 #### 3A. Refactor `messages-transform.ts`
 
@@ -392,6 +400,289 @@ Phase 6 (Testing)                ← Runs throughout, final verification here
 
 ---
 
+## Part 5: Architectural Hardening (P0/P1 Patches)
+
+> **CRITICAL**: These patches address systemic flaws discovered in architectural audit. Implement BEFORE Phase 4 (Swarms) to prevent data corruption, runtime deadlocks, and LLM hallucination loops.
+
+### P0-1: Concurrency Safety in graph-io.ts
+
+**Problem**: Standard Node.js JSON operations are `readFile → modify → writeFile`. Multiple concurrent writers (Main Session + Headless Swarms + Dashboard UI) cause **TOCTOU race conditions**. Data loss is mathematically guaranteed.
+
+**Solution**: Add `proper-lockfile` to all `save*` and `add*` operations.
+
+**Affected User Stories**: PATCH-US-014 (blocks US-021, US-048)
+
+**Implementation**:
+```typescript
+// src/lib/graph-io.ts
+import lockfile from 'proper-lockfile'
+
+async function addGraphMem(projectRoot: string, mem: MemNode): Promise<void> {
+  const filePath = getEffectivePaths(projectRoot).graphMems
+  const release = await lockfile.lock(filePath, { retries: 5, stale: 10000 })
+  
+  try {
+    const current = await loadGraphMems(projectRoot)
+    const memById = new Map(current.mems.map(m => [m.id, m]))
+    memById.set(mem.id, mem)
+    await saveGraphMems(projectRoot, { version: current.version, mems: Array.from(memById.values()) })
+  } finally {
+    await release()
+  }
+}
+```
+
+**Verification**: Concurrency test — spawn 4 parallel `addGraphMem` calls, verify all 4 mems present.
+
+---
+
+### P0-2: Node.js/Bun Runtime IPC Boundary
+
+**Problem**: OpenTUI Dashboard requires **Bun runtime**. HiveMind core runs on **Node.js**. Both mutating same JSON files causes `EBUSY` locks and file truncation.
+
+**Solution**: Dashboard spawns as **detached child process**. UI mutations written to `.hivemind/system/cmd_queue.jsonl`. Node.js hook polls queue.
+
+**Affected User Stories**: US-032, US-038, US-041, US-048
+
+**Implementation**:
+```typescript
+// US-041: Slash command spawns dashboard
+import { spawn } from 'child_process'
+
+function launchDashboard() {
+  const proc = spawn('bun', ['run', 'src/dashboard/opentui/index.ts'], {
+    detached: true,
+    stdio: 'ignore'
+  })
+  proc.unref() // Don't wait for exit
+}
+
+// US-038: Dashboard writes to command queue (NOT direct graph-io)
+import { appendFileSync } from 'fs'
+
+function createMemFromDashboard(mem: MemNode) {
+  const cmd = { type: 'add_mem', payload: mem, timestamp: Date.now() }
+  appendFileSync(CMD_QUEUE_PATH, JSON.stringify(cmd) + '\n')
+}
+
+// Node.js hook polls queue
+async function processCommandQueue() {
+  const lines = readFileSync(CMD_QUEUE_PATH, 'utf-8').split('\n').filter(Boolean)
+  for (const line of lines) {
+    const cmd = JSON.parse(line)
+    if (cmd.type === 'add_mem') await addGraphMem(root, cmd.payload)
+  }
+  // Truncate queue after processing
+  writeFileSync(CMD_QUEUE_PATH, '')
+}
+```
+
+**Verification**: Dashboard can create mem without crashing Node.js session.
+
+---
+
+### P0-3: Read-Time Zod Fault Tolerance
+
+**Problem**: If user edits `tasks.json` and breaks JSON, or orphaned FK enters system, `loadGraphTasks()` throws Zod error. Because `packCognitiveState` runs on **every user message**, **entire agent is paralyzed**.
+
+**Solution**: Strict validation on WRITE. **Quarantine/Soft-Fail on READ**.
+
+**Affected User Stories**: PATCH-US-014, US-026
+
+**Implementation**:
+```typescript
+// src/lib/graph-io.ts
+async function loadGraphTasks(projectRoot: string): Promise<GraphTasksState> {
+  const filePath = getEffectivePaths(projectRoot).graphTasks
+  if (!existsSync(filePath)) return EMPTY_TASKS_STATE
+  
+  const raw = await readFile(filePath, 'utf-8')
+  const parsed = JSON.parse(raw) as unknown
+  
+  // Use .catch() to quarantine invalid nodes
+  const result = GraphTasksStateSchema.safeParse(parsed)
+  if (!result.success) {
+    // Extract valid tasks, quarantine invalid
+    const validTasks: TaskNode[] = []
+    const orphanTasks: unknown[] = []
+    
+    if (Array.isArray((parsed as any)?.tasks)) {
+      for (const task of (parsed as any).tasks) {
+        const taskResult = TaskNodeSchema.safeParse(task)
+        if (taskResult.success) {
+          validTasks.push(taskResult.data)
+        } else {
+          orphanTasks.push(task)
+        }
+      }
+    }
+    
+    // Write orphans to quarantine
+    if (orphanTasks.length > 0) {
+      await writeFile(
+        getEffectivePaths(projectRoot).graphOrphans,
+        JSON.stringify({ quarantined_at: new Date().toISOString(), tasks: orphanTasks }, null, 2)
+      )
+    }
+    
+    return { version: GRAPH_STATE_VERSION, tasks: validTasks }
+  }
+  
+  return result.data
+}
+```
+
+**Verification**: Corrupt tasks.json — agent still boots, orphans quarantined.
+
+---
+
+### P1-1: 80% Splitter Mid-Thought Amnesia Fix
+
+**Problem**: At 80% capacity, splitter packs Graph State XML but **drops Short-Term Conversational Tail**. If user gave nuanced instruction in Turn 49, Turn 0 of new session has no idea.
+
+**Solution**: Capture last 6 messages as `<recent_dialogue>`.
+
+**Affected User Stories**: PATCH-US-020
+
+**Implementation**:
+```typescript
+// src/lib/session-swarm.ts
+async function splitSession(client: OpenCodeClient, messages: Message[]): Promise<void> {
+  const packedXml = packCognitiveState(directory)
+  
+  // Capture last 6 messages (3 user/assistant exchanges)
+  const recentMessages = messages.slice(-6)
+  const dialogueXml = recentMessages.map(m => 
+    `<message role="${m.role}">${m.content}</message>`
+  ).join('\n')
+  
+  const turn0Content = `
+${packedXml}
+
+<recent_dialogue>
+${dialogueXml}
+</recent_dialogue>
+`
+  
+  await client.session.create()
+  await client.session.prompt({ content: turn0Content, noReply: true })
+}
+```
+
+**Verification**: Split at Turn 50 — new session remembers Turn 49 instruction.
+
+---
+
+### P1-2: Time Machine Anti-Pattern Preservation
+
+**Problem**: Completely hiding agent's failures causes **amnesia loop** — agent repeats same failing approach, burning tokens.
+
+**Solution**: Compress false_path nodes to `<anti_patterns>` instead of dropping.
+
+**Affected User Stories**: PATCH-US-011
+
+**Implementation**:
+```typescript
+// src/lib/cognitive-packer.ts
+function buildAntiPatternsBlock(falsePaths: MemNode[]): string {
+  if (falsePaths.length === 0) return ''
+  
+  const compressed = falsePaths.slice(0, 3).map(fp => 
+    `<avoid task="${fp.origin_task_id || 'unknown'}">${fp.content.slice(0, 100)}</avoid>`
+  ).join('\n')
+  
+  return `<anti_patterns>\n${compressed}\n</anti_patterns>`
+}
+```
+
+**Verification**: Agent sees why previous approach failed.
+
+---
+
+### P1-3: Tool ID Echo
+
+**Problem**: Tool returns `"Success"` without generated UUID. Agent can't attach memory to created task.
+
+**Solution**: Tools MUST echo generated UUID.
+
+**Affected User Stories**: PATCH-US-009
+
+**Implementation**:
+```typescript
+// src/lib/tool-response.ts
+export function toSuccessOutput(entityId?: string): string {
+  if (entityId) {
+    return JSON.stringify({ status: 'success', entity_id: entityId })
+  }
+  return JSON.stringify({ status: 'success' })
+}
+
+export function toErrorOutput(error: string): string {
+  return JSON.stringify({ status: 'error', error })
+}
+```
+
+**Verification**: `addGraphTask` returns UUID, agent uses it in next `save_mem` call.
+
+---
+
+### P1-4: Dynamic XML Budget
+
+**Problem**: 2000-char hardcoded budget is too small for dense relational graph (~500 tokens). Causes context starvation.
+
+**Solution**: Budget = 10-15% of model's context window.
+
+**Affected User Stories**: PATCH-US-013
+
+**Implementation**:
+```typescript
+// src/lib/cognitive-packer.ts
+interface PackOptions {
+  budget?: number  // Default: 15000 (was 2000)
+  contextWindow?: number  // e.g., 128000 for Claude
+}
+
+export function packCognitiveState(
+  projectRoot: string, 
+  options?: PackOptions
+): string {
+  const contextWindow = options?.contextWindow ?? 128000
+  const budget = options?.budget ?? Math.floor(contextWindow * 0.12)  // 12% = ~15000 chars
+  // ...
+}
+```
+
+**Verification**: Packed XML contains more mems, agent has better context.
+
+---
+
+## Patch Implementation Order
+
+```
+P0-1 (Concurrency) ────► P0-3 (Fault Tolerance)
+         │
+         └────────────────► US-021 (Swarms) ──► P1-1 (Amnesia Fix)
+                                   │
+                                   └──────────────► US-048 (Dashboard)
+                                                          │
+P0-2 (Runtime IPC) ──────────────────────────────────────┘
+
+P1-2 (Anti-Pattern) ──► P1-4 (Budget) ──► P1-3 (ID Echo) [Independent track]
+```
+
+**Risk Assessment**:
+| Patch | Risk if Skipped | Severity |
+|-------|-----------------|----------|
+| P0-1 | Data loss, corruption | CRITICAL |
+| P0-2 | Cross-process crashes | CRITICAL |
+| P0-3 | Agent paralysis on bad JSON | CRITICAL |
+| P1-1 | Context amnesia | HIGH |
+| P1-2 | Infinite retry loops | HIGH |
+| P1-3 | FK chaining impossible | HIGH |
+| P1-4 | Context starvation | MEDIUM |
+
+---
+
 ## Appendix: The God Prompts (Copy-Paste Sequential Execution)
 
 ### God Prompt 1: Graph Database & Dumb Tool Diet
@@ -400,11 +691,15 @@ Phase 6 (Testing)                ← Runs throughout, final verification here
 > **MISSION: GRAPH SCHEMAS & TOOL DIET**
 > 1. Build `src/schemas/graph-nodes.ts` (Zod) — strict relational schemas, all IDs UUIDs: TrajectoryNode, PlanNode, PhaseNode, TaskNode (parent_phase_id FK), MemNode (origin_task_id FK, type: "insight"|"false_path", staleness_stamp)
 > 2. The "Dumb Tool" Refactor — extract ALL business logic from src/tools/ into src/lib/ engine files. Tools must ONLY define Zod schema + call lib + return string. ≤100 lines each.
+>
+> **CRITICAL SAFETY**: Tools that create nodes MUST echo the generated UUID back to the agent in the success string so it can chain relational FKs. All `graph-io.ts` reads must be fault-tolerant; invalid nodes go to quarantine, they do NOT crash the read loop.
 
 ### God Prompt 2: The Cognitive Packer
 > Build `src/lib/cognitive-packer.ts` — a deterministic Context Compiler (Repomix-for-State).
 > `packCognitiveState(sessionId)`: reads trajectory.json Read-Head → traverses graph via FK → Time Machine prunes false_path/invalidated → TTS filters stale mems → compresses to `<hivemind_state>` XML.
 > This file contains NO LLM prompts and NO tool definitions. Pure subconscious data-structuring.
+>
+> **CRITICAL SAFETY**: Do not permanently delete `false_path` nodes in the Time Machine filter. Compress them into an `<anti_patterns>` XML block so the agent does not repeat its mistakes. The budget cap must be at least 15,000 characters (10-15% of context window), NOT a hardcoded 2000 characters.
 
 ### God Prompt 3: SDK Mid-Turn Injection & Pre-Stop Gate
 > Wire `cognitive-packer.ts` output into the LLM cognition loop via OpenCode SDK.
@@ -416,3 +711,5 @@ Phase 6 (Testing)                ← Runs throughout, final verification here
 > (1) 80% Splitter: monitor token pressure → packCognitiveState → client.session.create() → noReply inject XML as Turn 0.
 > (2) Headless Researcher: spawnHeadlessResearcher(client, parentId, prompt) → sub-session saves findings to graph/mems.json.
 > Migrate flat .hivemind/ → graph/ with auto-trigger + dual-read backward compat.
+>
+> **CRITICAL SAFETY**: You MUST implement a File Mutex queue in `graph-io.ts` for all writes to prevent Lost Updates when Headless Researchers concurrently write alongside the main thread. Use `proper-lockfile` with retries=5, stale=10000ms. The 80% split MUST carry over the last 6 conversational messages alongside the XML so the agent does not suffer immediate short-term amnesia.
