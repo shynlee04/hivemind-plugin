@@ -20,22 +20,7 @@ import {
   type InspectResult,
   type DriftReport,
 } from "../lib/inspect-engine.js"
-
-interface JsonOutput {
-  success: boolean
-  action: string
-  data: Record<string, unknown>
-  timestamp: string
-}
-
-function toJsonOutput(action: string, data: Record<string, unknown>): string {
-  return JSON.stringify({
-    success: true,
-    action,
-    data,
-    timestamp: new Date().toISOString(),
-  } as JsonOutput)
-}
+import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
 export function createHivemindInspectTool(directory: string): ToolDefinition {
   return tool({
@@ -59,27 +44,28 @@ export function createHivemindInspectTool(directory: string): ToolDefinition {
         case "scan": {
           const result = await scanState(directory)
           if (jsonOutput) {
-            return toJsonOutput("scan", result as unknown as Record<string, unknown>)
+            return toSuccessOutput("Scan completed", result.sessionId, result as unknown as Record<string, unknown>)
           }
           return renderScanText(result)
         }
         case "deep": {
           const result = await deepInspect(directory, "active")
           if (jsonOutput) {
-            return toJsonOutput("deep", result as unknown as Record<string, unknown>)
+            return toSuccessOutput("Deep inspect completed", result.sessionId, result as unknown as Record<string, unknown>)
           }
           return renderDeepText(result)
         }
         case "drift": {
           const result = await driftReport(directory)
           if (jsonOutput) {
-            return toJsonOutput("drift", result as unknown as Record<string, unknown>)
+            // DriftReport doesn't have sessionId, pass entity_id if available
+            return toSuccessOutput("Drift report completed", result.active ? undefined : undefined, result as unknown as Record<string, unknown>)
           }
           return renderDriftText(result)
         }
         default:
           return jsonOutput
-            ? toJsonOutput("error", { message: `Unknown action: ${args.action}` })
+            ? toErrorOutput(`Unknown action: ${args.action}`)
             : "ERROR: Unknown action. Use scan, deep, or drift."
       }
     },
