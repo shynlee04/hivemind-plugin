@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "fs"
+import { existsSync } from "fs"
 import { readdir, mkdir, writeFile } from "fs/promises"
 import { join } from "path"
 import { saveAnchors } from "./anchors.js"
@@ -27,7 +27,7 @@ import {
 } from "./planning-fs.js"
 import { buildSessionFilename, getEffectivePaths } from "./paths.js"
 import { createStateManager, loadConfig } from "./persistence.js"
-import { generateExportData, generateJsonExport, generateMarkdownExport } from "./session-export.js"
+import { generateExportData, generateJsonExport, generateMarkdownExport, loadSession } from "./session-export.js"
 import {
   createBrainState,
   generateSessionId,
@@ -445,7 +445,9 @@ export async function resumeSession(directory: string, sessionId: string): Promi
   const state = createBrainState(newSessionId, config, "plan_driven")
   state.session.mode = "plan_driven"
 
-  // P0-7 Fix 1: Restore trajectory cursor from target session
+  // CHIMERA-5 Fix: Restore cursor from exported BrainState (flat JSON files)
+  // Session exports are stored as flat JSON files in sessions/ or sessions/archive/exports/
+  // NOT in nested directories like sessions/{sessionId}/trajectory.json
   let restoredCursor: {
     trajectory?: string
     tactic?: string
@@ -453,32 +455,25 @@ export async function resumeSession(directory: string, sessionId: string): Promi
   } | null = null
 
   try {
-    const targetSessionDir = join(sessionsDir, sessionId.replace(/^session-/, "").replace(/\.json$/, ""))
-    const targetTrajectoryPath = join(targetSessionDir, "trajectory.json")
+    // Normalize sessionId: strip "session-" prefix and ".json" suffix if present
+    const normalizedId = sessionId.replace(/^session-/, "").replace(/\.json$/, "")
 
-    if (existsSync(targetTrajectoryPath)) {
-      const trajectoryData = JSON.parse(readFileSync(targetTrajectoryPath, "utf-8"))
+    // Try to load the exported BrainState using loadSession
+    const exportedState = await loadSession(directory, normalizedId)
 
-      // Restore cursor position from the tree
-      if (trajectoryData?.cursor?.path) {
-        const cursorPath = trajectoryData.cursor.path as string[]
-        if (cursorPath.length >= 1) {
-          state.hierarchy.trajectory = cursorPath[0] || ""
-        }
-        if (cursorPath.length >= 2) {
-          state.hierarchy.tactic = cursorPath[1] || ""
-        }
-        if (cursorPath.length >= 3) {
-          state.hierarchy.action = cursorPath[2] || ""
-        }
-        restoredCursor = {
-          trajectory: state.hierarchy.trajectory,
-          tactic: state.hierarchy.tactic,
-          action: state.hierarchy.action,
-        }
+    if (exportedState?.hierarchy) {
+      // Restore hierarchy from the exported BrainState
+      state.hierarchy.trajectory = exportedState.hierarchy.trajectory || ""
+      state.hierarchy.tactic = exportedState.hierarchy.tactic || ""
+      state.hierarchy.action = exportedState.hierarchy.action || ""
+
+      restoredCursor = {
+        trajectory: state.hierarchy.trajectory,
+        tactic: state.hierarchy.tactic,
+        action: state.hierarchy.action,
       }
     }
-  } catch (error) {
+  } catch {
     // Non-fatal: cursor restore is best-effort
     // Session will still start with empty hierarchy
   }

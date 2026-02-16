@@ -30,6 +30,20 @@ import {
   generateSetupGuidanceBlock,
   getNextStepHint,
 } from "./session-lifecycle-helpers.js"
+import { HIVE_MASTER_GOVERNANCE_INSTRUCTION } from "../lib/governance-instruction.js"
+
+const GOVERNANCE_MARKER = "[🛡️ HIVE-MASTER governance active]"
+
+/**
+ * Inject HiveMaster strict governance instruction (prepends, deduplicated)
+ */
+function injectGovernanceInstruction(output: { system: string[] }): void {
+  // Check if already injected (deduplication)
+  const alreadyInjected = output.system.some(s => s.includes(GOVERNANCE_MARKER))
+  if (!alreadyInjected) {
+    output.system.unshift(HIVE_MASTER_GOVERNANCE_INSTRUCTION)
+  }
+}
 
 /**
  * Creates the session lifecycle hook (system prompt transform).
@@ -39,6 +53,9 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
 
   return async (input: { sessionID?: string; model?: unknown }, output: { system: string[] }): Promise<void> => {
     try {
+      // Inject HiveMaster governance instruction FIRST (prepend, deduplicated)
+      injectGovernanceInstruction(output)
+
       if (!input.sessionID) return
       if (isLegacyStructure(directory)) await migrateIfNeeded(directory, log)
 

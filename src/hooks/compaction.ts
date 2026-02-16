@@ -29,9 +29,19 @@ import {
   getAncestors,
   treeExists,
 } from "../lib/hierarchy-tree.js"
+import { HIVE_MASTER_GOVERNANCE_INSTRUCTION, GOVERNANCE_MARKER } from "../lib/governance-instruction.js"
 
-/** Budget in characters (increased for Symbiotic Compaction) */
 const INJECTION_BUDGET_CHARS = 12000
+
+/**
+ * Inject governance instruction into compaction context (deduplicated)
+ */
+function injectGovernanceToCompaction(output: { context: string[] }): void {
+  const alreadyInjected = output.context.some(s => s.includes(GOVERNANCE_MARKER))
+  if (!alreadyInjected) {
+    output.context.push(HIVE_MASTER_GOVERNANCE_INSTRUCTION)
+  }
+}
 
 /**
  * Creates the compaction hook.
@@ -46,6 +56,9 @@ export function createCompactionHook(log: Logger, directory: string) {
     output: { context: string[] }
   ): Promise<void> => {
     try {
+      // Inject governance instruction to persist across compactions
+      injectGovernanceToCompaction(output)
+
       let state = await stateManager.load()
       if (!state) {
         await log.debug("Compaction: no brain state to preserve")
