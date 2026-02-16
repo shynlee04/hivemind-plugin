@@ -6,7 +6,8 @@
  */
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool";
 import { createStateManager } from "../lib/persistence.js";
-import { loadAnchors } from "../lib/anchors.js";
+import { loadAnchors, getAnchorsForContext } from "../lib/anchors.js";
+import { loadMems } from "../lib/mems.js";
 import { readActiveMd } from "../lib/planning-fs.js";
 import { detectChainBreaks } from "../lib/chain-analysis.js";
 import {
@@ -36,6 +37,13 @@ export function createThinkBackTool(directory: string): ToolDefinition {
         return "ERROR: No active session. Call declare_intent to start.";
       }
       const anchorsState = await loadAnchors(directory);
+      const scopedAnchors = getAnchorsForContext(anchorsState, state.session.id);
+      const memsState = await loadMems(directory);
+      const sessionMems = memsState.mems.filter((m) => m.session_id === state.session.id);
+      const recentCycleMems = sessionMems
+        .filter((m) => m.shelf === "cycle-intel")
+        .sort((a, b) => b.created_at - a.created_at)
+        .slice(0, 3);
       const activeMd = await readActiveMd(directory);
       const chainBreaks = detectChainBreaks(state);
 
@@ -89,20 +97,31 @@ export function createThinkBackTool(directory: string): ToolDefinition {
       lines.push(`Turns: ${state.metrics.turn_count} | Drift: ${state.metrics.drift_score}/100`);
       lines.push(`Files touched: ${state.metrics.files_touched.length}`);
       lines.push(`Context updates: ${state.metrics.context_updates}`);
+      lines.push(`Session mems: ${sessionMems.length}/${memsState.mems.length} (session/global)`);
       if (chainBreaks.length > 0) {
         lines.push("⚠ Chain breaks:");
         chainBreaks.forEach(b => lines.push(`  - ${b.message}`));
       }
       lines.push("");
 
-      if (anchorsState.anchors.length > 0) {
+      if (scopedAnchors.length > 0) {
         lines.push("## Immutable Anchors");
-        const anchorsToShow = anchorsState.anchors.slice(0, 5);
+        const anchorsToShow = scopedAnchors.slice(0, 5);
         for (const a of anchorsToShow) {
           lines.push(`  [${a.key}]: ${a.value}`);
         }
-        if (anchorsState.anchors.length > 5) {
-          lines.push(`  ... and ${anchorsState.anchors.length - 5} more anchors`);
+        if (scopedAnchors.length > 5) {
+          lines.push(`  ... and ${scopedAnchors.length - 5} more anchors`);
+        }
+        lines.push("");
+      }
+
+      if (recentCycleMems.length > 0) {
+        lines.push("## Recent Cycle Exports (This Session)");
+        for (const m of recentCycleMems) {
+          const date = new Date(m.created_at).toISOString();
+          const preview = m.content.length > 100 ? `${m.content.slice(0, 97)}...` : m.content;
+          lines.push(`  - ${date}: ${preview}`);
         }
         lines.push("");
       }
@@ -141,7 +160,8 @@ export function createThinkBackTool(directory: string): ToolDefinition {
           session: { id: state.session.id, mode: state.session.mode },
           hierarchy: { trajectory: state.hierarchy.trajectory, tactic: state.hierarchy.tactic, action: state.hierarchy.action },
           metrics: { turns: state.metrics.turn_count, drift_score: state.metrics.drift_score, files_touched: state.metrics.files_touched, context_updates: state.metrics.context_updates },
-          anchors: anchorsState.anchors.map(a => ({ key: a.key, value: a.value })),
+          anchors: scopedAnchors.map(a => ({ key: a.key, value: a.value })),
+          mems: { session: sessionMems.length, total: memsState.mems.length },
           chain_breaks: chainBreaks.map(b => b.message),
         }
         return JSON.stringify(data, null, 2)

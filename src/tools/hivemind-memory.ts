@@ -59,6 +59,10 @@ export function createHivemindMemoryTool(directory: string): ToolDefinition {
         .string()
         .optional()
         .describe("For recall: search keyword"),
+      strict_session: tool.schema
+        .boolean()
+        .optional()
+        .describe("For recall/list: only include current session memories"),
       json: tool.schema
         .boolean()
         .optional()
@@ -147,6 +151,7 @@ async function handleRecall(
   args: {
     query?: string
     shelf?: string
+    strict_session?: boolean
     json?: boolean
   },
   jsonOutput: boolean
@@ -157,6 +162,9 @@ async function handleRecall(
       : "ERROR: query is required. Provide a search keyword."
   }
 
+  const stateManager = createStateManager(directory)
+  const state = await stateManager.load()
+  const sessionId = state?.session.id
   const memsState = await loadMems(directory)
 
   if (memsState.mems.length === 0) {
@@ -165,7 +173,11 @@ async function handleRecall(
       : "Mems Brain is empty. Use hivemind_memory save to store memories first."
   }
 
-  const results = searchMems(memsState, args.query, args.shelf)
+  const results = searchMems(memsState, args.query, args.shelf, {
+    sessionId,
+    strictSession: args.strict_session ?? false,
+    preferSession: true,
+  })
 
   if (results.length === 0) {
     const filterNote = args.shelf ? ` in shelf "${args.shelf}"` : ""
@@ -181,14 +193,15 @@ async function handleRecall(
       query: args.query,
       shelf: args.shelf || null,
       total: results.length,
-      results: shown.map(m => ({
-        id: m.id,
-        shelf: m.shelf,
-        content: m.content,
-        tags: m.tags,
-        createdAt: new Date(m.created_at).toISOString(),
-      })),
-    })
+        results: shown.map(m => ({
+          id: m.id,
+          shelf: m.shelf,
+          content: m.content,
+          tags: m.tags,
+          sessionId: m.session_id,
+          createdAt: new Date(m.created_at).toISOString(),
+        })),
+      })
   }
 
   const lines: string[] = []
@@ -216,33 +229,48 @@ async function handleRecall(
 async function handleList(
   directory: string,
   _args: {
+    strict_session?: boolean
     json?: boolean
   },
   jsonOutput: boolean
 ): Promise<string> {
+  const stateManager = createStateManager(directory)
+  const state = await stateManager.load()
+  const sessionId = state?.session.id
   const memsState = await loadMems(directory)
+  const pool = _args.strict_session && sessionId
+    ? { ...memsState, mems: memsState.mems.filter(m => m.session_id === sessionId) }
+    : memsState
 
-  if (memsState.mems.length === 0) {
+  if (pool.mems.length === 0) {
     return jsonOutput
       ? toJsonOutput("list", { shelves: {}, total: 0, recent: [] })
       : "Mems Brain is empty. Use hivemind_memory save to store decisions, patterns, errors, or solutions."
   }
 
-  const summary = getShelfSummary(memsState)
+  const summary = getShelfSummary(pool)
 
   // Show 3 most recent mems
-  const recent = [...memsState.mems]
-    .sort((a, b) => b.created_at - a.created_at)
+  const recent = [...pool.mems]
+    .sort((a, b) => {
+      if (sessionId && a.session_id !== b.session_id) {
+        if (a.session_id === sessionId) return -1
+        if (b.session_id === sessionId) return 1
+      }
+      return b.created_at - a.created_at
+    })
     .slice(0, 3)
 
   if (jsonOutput) {
     return toJsonOutput("list", {
       total: memsState.mems.length,
+      scope: _args.strict_session ? "session" : "global",
       shelves: summary,
       recent: recent.map(m => ({
         id: m.id,
         shelf: m.shelf,
         content: m.content.slice(0, 60),
+        sessionId: m.session_id,
         createdAt: new Date(m.created_at).toISOString(),
       })),
     })
@@ -251,7 +279,7 @@ async function handleList(
   const lines: string[] = []
   lines.push("=== MEMS BRAIN ===")
   lines.push("")
-  lines.push(`Total memories: ${memsState.mems.length}`)
+  lines.push(`Total memories: ${pool.mems.length}`)
   lines.push("")
 
   lines.push("## Shelves")

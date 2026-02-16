@@ -27,6 +27,7 @@ import {
   generateStamp,
   toBrainProjection,
 } from "../lib/hierarchy-tree.js";
+import { loadTrajectory } from "../lib/graph-io.js";
 
 const VALID_OUTCOMES = ["success", "partial", "failure"] as const;
 
@@ -64,11 +65,13 @@ export function createExportCycleTool(directory: string): ToolDefinition {
       // === Internal Script 1: Update hierarchy tree ===
       let treeAction = "no tree";
       let hierarchyProjected = false;
+      let cursorTag: string | null = null;
       try {
         let tree = await loadTree(directory);
         if (tree.root) {
           const cursorNode = getCursorNode(tree);
           if (cursorNode && cursorNode.level === "action") {
+            cursorTag = `cursor:${cursorNode.id}`;
             if (args.outcome === "success") {
               tree = markComplete(tree, cursorNode.id);
               treeAction = `action "${cursorNode.content}" → complete`;
@@ -96,11 +99,18 @@ export function createExportCycleTool(directory: string): ToolDefinition {
       let memAction = "saved";
       try {
         let memsState = await loadMems(directory);
+        const trajectory = await loadTrajectory(directory);
+        const activeTaskIds = trajectory?.trajectory?.active_task_ids ?? [];
         const tags = [
           "cycle-result",
           args.outcome,
           `stamp:${stamp}`,
+          `session:${sessionId}`,
         ];
+        if (cursorTag) tags.push(cursorTag);
+        for (const taskId of activeTaskIds.slice(0, 3)) {
+          tags.push(`task:${taskId}`);
+        }
         const content = `[${args.outcome.toUpperCase()}] ${args.findings}`;
         memsState = addMem(memsState, "cycle-intel", content, tags, sessionId);
         await saveMems(directory, memsState);

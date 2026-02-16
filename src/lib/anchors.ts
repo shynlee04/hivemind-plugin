@@ -53,6 +53,16 @@ export function removeAnchor(state: AnchorsState, key: string): AnchorsState {
   return { ...state, anchors: state.anchors.filter(a => a.key !== key) };
 }
 
+export function getAnchorsBySession(state: AnchorsState, sessionId: string): Anchor[] {
+  return state.anchors.filter((a) => a.session_id === sessionId)
+}
+
+export function getAnchorsForContext(state: AnchorsState, sessionId?: string): Anchor[] {
+  if (!sessionId) return state.anchors
+  const scoped = getAnchorsBySession(state, sessionId)
+  return scoped.length > 0 ? scoped : state.anchors
+}
+
 export function formatAnchorsForPrompt(state: AnchorsState): string {
   if (state.anchors.length === 0) return "";
   const lines = ["<immutable-anchors>"];

@@ -24,6 +24,13 @@ export interface MemsState {
   version: string;
 }
 
+export interface SearchMemsOptions {
+  sessionId?: string;
+  strictSession?: boolean;
+  preferSession?: boolean;
+  proximityTags?: string[];
+}
+
 // ─── Constants ───────────────────────────────────────────────────────
 
 export const MEMS_VERSION = "1.0.0";
@@ -78,16 +85,51 @@ export function removeMem(state: MemsState, memId: string): MemsState {
   return { ...state, mems: state.mems.filter(m => m.id !== memId) };
 }
 
-export function searchMems(state: MemsState, query: string, shelf?: string): Mem[] {
+function scoreMem(
+  mem: Mem,
+  options?: SearchMemsOptions,
+): number {
+  if (!options) return 0;
+
+  let score = 0;
+  if (options.sessionId) {
+    if (mem.session_id === options.sessionId) score += 100;
+    else if (options.strictSession) score -= 1000;
+  }
+
+  if (options.proximityTags && options.proximityTags.length > 0) {
+    for (const tag of options.proximityTags) {
+      if (mem.tags.includes(tag)) score += 20;
+    }
+  }
+
+  if (options.preferSession && options.sessionId && mem.session_id === options.sessionId) {
+    score += 25;
+  }
+
+  return score;
+}
+
+export function searchMems(
+  state: MemsState,
+  query: string,
+  shelf?: string,
+  options?: SearchMemsOptions,
+): Mem[] {
   const q = query.toLowerCase();
   return state.mems
     .filter(m => {
       if (shelf && m.shelf !== shelf) return false;
+      if (options?.strictSession && options.sessionId && m.session_id !== options.sessionId) return false;
       const contentMatch = m.content.toLowerCase().includes(q);
       const tagMatch = m.tags.some(t => t.toLowerCase().includes(q));
       return contentMatch || tagMatch;
     })
-    .sort((a, b) => b.created_at - a.created_at);
+    .sort((a, b) => {
+      const scoreDelta = scoreMem(b, options) - scoreMem(a, options);
+      if (scoreDelta !== 0) return scoreDelta;
+      return b.created_at - a.created_at;
+    });
 }
 
 export function getMemsByShelf(state: MemsState, shelf: string): Mem[] {
