@@ -120,13 +120,24 @@ export async function maybeCreateNonDisruptiveSessionSplit(
       brain.hierarchy.trajectory ||
       treeFocusPath ||
       "Continuation"
+    
+    // P0-6: Build recent_dialogue XML from captured messages
+    const recentMessages = brain.recent_messages ?? []
+    const recentDialogueXml = recentMessages.length > 0
+      ? `<recent_dialogue>\n${recentMessages.map(m => `${m.role}: ${m.content.slice(0, 500)}`).join('\n\n')}\n</recent_dialogue>`
+      : ""
+    
+    // P0-6: Include session_lineage to tell LLM why it was split
+    const sessionLineageXml = `<session_lineage parent_session="${sessionID}" reason="${boundary.reason}" />`
+    
     const context = [
       "=== HiveMind Context (Session Split) ===",
-      `Previous Session: ${sessionID}`,
+      sessionLineageXml,
       `Focus: ${focus}`,
       brain.hierarchy.trajectory ? `Trajectory: ${brain.hierarchy.trajectory}` : "",
       brain.hierarchy.tactic ? `Tactic: ${brain.hierarchy.tactic}` : "",
       brain.hierarchy.action ? `Action: ${brain.hierarchy.action}` : "",
+      recentDialogueXml,
       `Turn 0 Context: ${boundary.reason}`,
       "=== End Context ===",
     ].filter(Boolean).join("\n")
@@ -177,6 +188,8 @@ export async function maybeCreateNonDisruptiveSessionSplit(
         }),
       },
       complexity_nudge_shown: false,
+      // P0-6: Reset recent_messages for new session (will be repopulated on next turn)
+      recent_messages: [],
     }
 
     await log.info(`[autosplit] Created non-disruptive session ${createdSessionId} (${boundary.reason})`)

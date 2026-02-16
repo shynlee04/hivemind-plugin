@@ -1,7 +1,7 @@
 import { existsSync } from "fs"
 import { mkdir, readFile, rename, unlink, writeFile } from "fs/promises"
 import { dirname } from "path"
-import type { z } from "zod"
+import { z } from "zod"
 
 import type { MemNode, TaskNode } from "../schemas/graph-nodes.js"
 import { withFileLock } from "./file-lock.js"
@@ -34,6 +34,27 @@ const EMPTY_MEMS_STATE: GraphMemsState = {
   mems: [],
 }
 
+/** Orphan node record schema for quarantine */
+const OrphanRecordSchema = z.object({
+  id: z.string(),
+  type: z.enum(["task", "mem"]),
+  reason: z.string(),
+  original_data: z.unknown(),
+  quarantined_at: z.string(),
+})
+
+/** Orphan node record for quarantine */
+export type OrphanRecord = z.infer<typeof OrphanRecordSchema>
+
+export interface OrphansFile {
+  version: string
+  orphans: OrphanRecord[]
+}
+
+/**
+ * Load and validate state with safeParse (non-throwing).
+ * Returns null on parse failure instead of crashing the agent.
+ */
 async function loadValidatedState<T>(
   filePath: string,
   schema: z.ZodType<T>,
@@ -42,9 +63,21 @@ async function loadValidatedState<T>(
     return null
   }
 
-  const raw = await readFile(filePath, "utf-8")
-  const parsed = JSON.parse(raw) as unknown
-  return schema.parse(parsed)
+  try {
+    const raw = await readFile(filePath, "utf-8")
+    const parsed = JSON.parse(raw) as unknown
+    const result = schema.safeParse(parsed)
+    
+    if (!result.success) {
+      console.error(`[graph-io] Validation error in ${filePath}:`, result.error.message)
+      return null
+    }
+    
+    return result.data
+  } catch (error) {
+    console.error(`[graph-io] Failed to load ${filePath}:`, error)
+    return null
+  }
 }
 
 async function saveValidatedState<T>(
@@ -67,6 +100,148 @@ async function saveValidatedState<T>(
     throw error
   }
 }
+
+// ─── Orphan Quarantine Functions ─────────────────────────────────────
+
+/**
+ * Load the orphans file, creating empty if it doesn't exist.
+ */
+async function loadOrphansFile(orphanPath: string): Promise<OrphansFile> {
+  if (!existsSync(orphanPath)) {
+    return { version: GRAPH_STATE_VERSION, orphans: [] }
+  }
+  
+  const OrphansFileSchema = z.object({
+    version: z.string(),
+    orphans: z.array(OrphanRecordSchema),
+  })
+  
+  const state = await loadValidatedState(orphanPath, OrphansFileSchema)
+  
+  return state ?? { version: GRAPH_STATE_VERSION, orphans: [] }
+}
+
+/**
+ * Save an orphan record to the quarantine file.
+ */
+async function quarantineOrphan(
+  orphanPath: string,
+  record: OrphanRecord,
+): Promise<void> {
+  const orphansFile = await loadOrphansFile(orphanPath)
+  orphansFile.orphans.push(record)
+  
+  const directory = dirname(orphanPath)
+  await mkdir(directory, { recursive: true })
+  await writeFile(orphanPath, JSON.stringify(orphansFile, null, 2))
+}
+
+/**
+ * Validate FK constraints for tasks against known phase IDs.
+ * Returns valid tasks and quarantines orphans.
+ */
+export async function validateTasksWithFKValidation(
+  filePath: string,
+  validPhaseIds: Set<string>,
+  orphanPath: string,
+): Promise<GraphTasksState | null> {
+  if (!existsSync(filePath)) {
+    return null
+  }
+
+  try {
+    const raw = await readFile(filePath, "utf-8")
+    const parsed = JSON.parse(raw) as unknown
+    const result = GraphTasksStateSchema.safeParse(parsed)
+    
+    if (!result.success) {
+      console.error(`[graph-io] Validation error in ${filePath}:`, result.error.message)
+      return null
+    }
+    
+    // FK validation: filter out orphan tasks
+    const validTasks: TaskNode[] = []
+    const now = new Date().toISOString()
+    
+    for (const task of result.data.tasks) {
+      if (!validPhaseIds.has(task.parent_phase_id)) {
+        console.warn(`[graph-io] Quarantining orphan task ${task.id}: parent_phase_id ${task.parent_phase_id} not found`)
+        await quarantineOrphan(orphanPath, {
+          id: task.id,
+          type: "task",
+          reason: `parent_phase_id ${task.parent_phase_id} not found in valid phases`,
+          original_data: task,
+          quarantined_at: now,
+        })
+      } else {
+        validTasks.push(task)
+      }
+    }
+    
+    return {
+      version: result.data.version,
+      tasks: validTasks,
+    }
+  } catch (error) {
+    console.error(`[graph-io] Failed to load ${filePath}:`, error)
+    return null
+  }
+}
+
+/**
+ * Validate FK constraints for mems against known task IDs.
+ * Returns valid mems and quarantines orphans.
+ */
+export async function validateMemsWithFKValidation(
+  filePath: string,
+  validTaskIds: Set<string>,
+  orphanPath: string,
+): Promise<GraphMemsState | null> {
+  if (!existsSync(filePath)) {
+    return null
+  }
+
+  try {
+    const raw = await readFile(filePath, "utf-8")
+    const parsed = JSON.parse(raw) as unknown
+    const result = GraphMemsStateSchema.safeParse(parsed)
+    
+    if (!result.success) {
+      console.error(`[graph-io] Validation error in ${filePath}:`, result.error.message)
+      return null
+    }
+    
+    // FK validation: filter out orphan mems (null origin_task_id is valid)
+    const validMems: MemNode[] = []
+    const now = new Date().toISOString()
+    
+    for (const mem of result.data.mems) {
+      // origin_task_id can be null (valid) - only quarantine if non-null and missing
+      if (mem.origin_task_id !== null && !validTaskIds.has(mem.origin_task_id)) {
+        console.warn(`[graph-io] Quarantining orphan mem ${mem.id}: origin_task_id ${mem.origin_task_id} not found`)
+        await quarantineOrphan(orphanPath, {
+          id: mem.id,
+          type: "mem",
+          reason: `origin_task_id ${mem.origin_task_id} not found in valid tasks`,
+          original_data: mem,
+          quarantined_at: now,
+        })
+      } else {
+        validMems.push(mem)
+      }
+    }
+    
+    return {
+      version: result.data.version,
+      mems: validMems,
+    }
+  } catch (error) {
+    console.error(`[graph-io] Failed to load ${filePath}:`, error)
+    return null
+  }
+}
+
+// ─── Load/Save Functions with FK Validation ───────────────────────────
 
 export async function loadTrajectory(projectRoot: string): Promise<TrajectoryState | null> {
   const filePath = getEffectivePaths(projectRoot).graphTrajectory

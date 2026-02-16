@@ -1,4 +1,4 @@
-import { existsSync } from "fs"
+import { existsSync, readFileSync } from "fs"
 import { readdir, mkdir, writeFile } from "fs/promises"
 import { join } from "path"
 import { saveAnchors } from "./anchors.js"
@@ -444,6 +444,45 @@ export async function resumeSession(directory: string, sessionId: string): Promi
   const newSessionId = generateSessionId()
   const state = createBrainState(newSessionId, config, "plan_driven")
   state.session.mode = "plan_driven"
+
+  // P0-7 Fix 1: Restore trajectory cursor from target session
+  let restoredCursor: {
+    trajectory?: string
+    tactic?: string
+    action?: string
+  } | null = null
+
+  try {
+    const targetSessionDir = join(sessionsDir, sessionId.replace(/^session-/, "").replace(/\.json$/, ""))
+    const targetTrajectoryPath = join(targetSessionDir, "trajectory.json")
+
+    if (existsSync(targetTrajectoryPath)) {
+      const trajectoryData = JSON.parse(readFileSync(targetTrajectoryPath, "utf-8"))
+
+      // Restore cursor position from the tree
+      if (trajectoryData?.cursor?.path) {
+        const cursorPath = trajectoryData.cursor.path as string[]
+        if (cursorPath.length >= 1) {
+          state.hierarchy.trajectory = cursorPath[0] || ""
+        }
+        if (cursorPath.length >= 2) {
+          state.hierarchy.tactic = cursorPath[1] || ""
+        }
+        if (cursorPath.length >= 3) {
+          state.hierarchy.action = cursorPath[2] || ""
+        }
+        restoredCursor = {
+          trajectory: state.hierarchy.trajectory,
+          tactic: state.hierarchy.tactic,
+          action: state.hierarchy.action,
+        }
+      }
+    }
+  } catch (error) {
+    // Non-fatal: cursor restore is best-effort
+    // Session will still start with empty hierarchy
+  }
+
   await stateManager.save(unlockSession(state))
 
   return {
@@ -454,7 +493,10 @@ export async function resumeSession(directory: string, sessionId: string): Promi
       fromSession: sessionId,
       mode: state.session.mode,
       restored: true,
-      note: "Started new session (simplified resume)",
+      restoredCursor,
+      note: restoredCursor
+        ? "Started new session with restored cursor"
+        : "Started new session (cursor restore unavailable)",
     },
   }
 }

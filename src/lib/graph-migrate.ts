@@ -30,7 +30,6 @@ import type {
   PlansState,
   TrajectoryState,
 } from "../schemas/graph-state.js"
-import { withFileLock } from "./file-lock.js"
 import {
   saveGraphMems,
   saveGraphTasks,
@@ -356,67 +355,76 @@ export async function migrateToGraph(projectRoot: string): Promise<MigrationResu
       }
     }
 
-    // Generate session ID from brain or create new
-    const sessionId = brain.session?.id ?? `session-${Date.now()}`
+    // Generate session ID from brain or create new UUID
+    const sessionId = brain.session?.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(brain.session.id)
+      ? brain.session.id
+      : randomUUID()
 
-    // Backup legacy files
+    // Ensure graph directory exists
+    await mkdir(paths.graphDir, { recursive: true })
+
+    // Check if already migrated (idempotent)
+    if (existsSync(paths.graphTrajectory)) {
+      result.errors.push("Migration already completed")
+      result.success = true
+      return result
+    }
+
+    // Backup legacy files AFTER reading, before writing new structure
     await backupLegacyFiles(projectRoot, result.backupPath)
 
-    // Use file lock for migration to prevent race conditions
-    await withFileLock(paths.graphTrajectory, async () => {
-      // 1. Migrate brain → trajectory
-      const trajectory = migrateBrainToTrajectory(brain, sessionId)
-      const trajectoryState: TrajectoryState = {
+    // 1. Migrate brain → trajectory
+    const trajectory = migrateBrainToTrajectory(brain, sessionId)
+    const trajectoryState: TrajectoryState = {
+      version: GRAPH_STATE_VERSION,
+      trajectory,
+    }
+    await saveTrajectory(projectRoot, trajectoryState)
+    result.migrated.trajectory = true
+
+    // 2. Create plans with legacy plan
+    const legacyPlan = createLegacyPlan()
+    const plansState: PlansState = {
+      version: GRAPH_STATE_VERSION,
+      plans: [legacyPlan],
+    }
+    await savePlans(projectRoot, plansState)
+    result.migrated.plans = true
+
+    // 3. Migrate tasks with FK to legacy phase
+    const tasks = migrateTasks(legacyTasks.tasks ?? [])
+    const tasksState: GraphTasksState = {
+      version: GRAPH_STATE_VERSION,
+      tasks,
+    }
+    await saveGraphTasks(projectRoot, tasksState)
+    result.migrated.tasks = tasks.length
+
+    // 4. Migrate mems with required fields
+    const mems = migrateMems(legacyMems.mems ?? [])
+    const memsState: GraphMemsState = {
+      version: GRAPH_STATE_VERSION,
+      mems,
+    }
+    await saveGraphMems(projectRoot, memsState)
+    result.migrated.mems = mems.length
+
+    // 5. Update trajectory with active task IDs
+    if (tasks.length > 0) {
+      const activeTaskIds = tasks
+        .filter((t) => t.status === "pending" || t.status === "in_progress")
+        .map((t) => t.id)
+        .slice(0, 5) // Limit to 5 active tasks
+
+      trajectory.active_task_ids = activeTaskIds
+      trajectory.updated_at = new Date().toISOString()
+
+      const updatedState: TrajectoryState = {
         version: GRAPH_STATE_VERSION,
         trajectory,
       }
-      await saveTrajectory(projectRoot, trajectoryState)
-      result.migrated.trajectory = true
-
-      // 2. Create plans with legacy plan
-      const legacyPlan = createLegacyPlan()
-      const plansState: PlansState = {
-        version: GRAPH_STATE_VERSION,
-        plans: [legacyPlan],
-      }
-      await savePlans(projectRoot, plansState)
-      result.migrated.plans = true
-
-      // 3. Migrate tasks with FK to legacy phase
-      const tasks = migrateTasks(legacyTasks.tasks ?? [])
-      const tasksState: GraphTasksState = {
-        version: GRAPH_STATE_VERSION,
-        tasks,
-      }
-      await saveGraphTasks(projectRoot, tasksState)
-      result.migrated.tasks = tasks.length
-
-      // 4. Migrate mems with required fields
-      const mems = migrateMems(legacyMems.mems ?? [])
-      const memsState: GraphMemsState = {
-        version: GRAPH_STATE_VERSION,
-        mems,
-      }
-      await saveGraphMems(projectRoot, memsState)
-      result.migrated.mems = mems.length
-
-      // 5. Update trajectory with active task IDs
-      if (tasks.length > 0) {
-        const activeTaskIds = tasks
-          .filter((t) => t.status === "pending" || t.status === "in_progress")
-          .map((t) => t.id)
-          .slice(0, 5) // Limit to 5 active tasks
-
-        trajectory.active_task_ids = activeTaskIds
-        trajectory.updated_at = new Date().toISOString()
-
-        const updatedState: TrajectoryState = {
-          version: GRAPH_STATE_VERSION,
-          trajectory,
-        }
-        await saveTrajectory(projectRoot, updatedState)
-      }
-    })
+      await saveTrajectory(projectRoot, updatedState)
+    }
 
     result.success = true
   } catch (err) {

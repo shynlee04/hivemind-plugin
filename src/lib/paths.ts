@@ -74,6 +74,7 @@ export interface HivemindPaths {
   graphPlans: string        // graph/plans.json
   graphTasks: string        // graph/tasks.json
   graphMems: string         // graph/mems.json
+  graphOrphans: string      // graph/orphans.json (quarantine for invalid nodes)
 
   // governance SOT — Level 0 {future: codewiki + codemap}
   // These directories exist in the structure from day one.
@@ -162,6 +163,7 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
     graphPlans: join(graphDir, "plans.json"),
     graphTasks: join(graphDir, "tasks.json"),
     graphMems: join(graphDir, "mems.json"),
+    graphOrphans: join(graphDir, "orphans.json"),
 
     codemapDir,
     codemapManifest: join(codemapDir, "manifest.json"),

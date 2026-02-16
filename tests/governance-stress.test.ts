@@ -104,7 +104,9 @@ async function testStressConditions() {
     resetToastCooldowns()
     const eventHandler = createEventHandler(noopLogger, dir)
     await eventHandler({ event: { type: "session.idle", properties: { sessionID: "stress" } } as any })
-    check(toasts.some((t) => t.message.includes("Drift risk detected")), "GOV-05 session.idle emits drift toast when score < 30")
+    // FLAW-TOAST-005 FIX: event-handler no longer emits drift toasts
+    // Drift toasts are now emitted by soft-governance.ts during tool execution
+    check(!toasts.some((t) => t.message.includes("Drift risk detected")), "GOV-05 event-handler does NOT emit drift toast (moved to soft-governance.ts)")
 
     const strictPromptOut = { system: [] as string[] }
     const strictPromptHook = createSessionLifecycleHook(noopLogger, dir, strict)

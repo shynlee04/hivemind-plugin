@@ -1,26 +1,19 @@
 /**
- * Tool barrel exports — HiveMind lifecycle verbs
+ * Tool barrel exports — HiveMind lifecycle verbs (6 canonical tools)
  *
- * 10 tools total (HC3 compliant):
- *   declare_intent    — unlock session, set mode/focus
- *   map_context       — update hierarchy level
- *   compact_session   — archive + reset
- *   scan_hierarchy    — session snapshot + optional drift analysis (absorbs check_drift)
- *   save_anchor       — save/list/get immutable anchors (HC4: symmetric read/write)
- *   think_back        — context refresh / refocus
- *   save_mem          — save memory to Mems Brain
- *   recall_mems       — search or list Mems Brain (absorbs list_shelves)
- *   hierarchy_manage  — prune + migrate tree (merges hierarchy_prune + hierarchy_migrate)
- *   export_cycle      — capture subagent results into hierarchy + mems
+ * | Tool              | Actions                                        | Replaces                        |
+ * | ----------------- | --------------------------------------------- | ------------------------------- |
+ * | hivemind_session  | start, update, close, status, resume         | declare_intent, map_context, compact_session |
+ * | hivemind_inspect  | scan, deep, drift                             | scan_hierarchy, think_back, check_drift     |
+ * | hivemind_memory   | save, recall, list                            | save_mem, recall_mems, list_shelves        |
+ * | hivemind_anchor   | save, list, get                               | save_anchor                              |
+ * | hivemind_hierarchy| prune, migrate, status                        | hierarchy_manage                          |
+ * | hivemind_cycle    | export, list, prune                           | export_cycle, self_rate                  |
  */
 
-export { createDeclareIntentTool } from "./declare-intent.js"
-export { createMapContextTool } from "./map-context.js"
-export { createCompactSessionTool } from "./compact-session.js"
-export { createScanHierarchyTool } from "./scan-hierarchy.js"
-export { createSaveAnchorTool } from "./save-anchor.js"
-export { createThinkBackTool } from "./think-back.js"
-export { createSaveMemTool } from "./save-mem.js"
-export { createRecallMemsTool } from "./recall-mems.js"
-export { createHierarchyManageTool } from "./hierarchy.js"
-export { createExportCycleTool } from "./export-cycle.js"
+export { createHivemindSessionTool } from "./hivemind-session.js"
+export { createHivemindInspectTool } from "./hivemind-inspect.js"
+export { createHivemindMemoryTool } from "./hivemind-memory.js"
+export { createHivemindAnchorTool } from "./hivemind-anchor.js"
+export { createHivemindHierarchyTool } from "./hivemind-hierarchy.js"
+export { createHivemindCycleTool } from "./hivemind-cycle.js"
