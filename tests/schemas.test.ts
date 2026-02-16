@@ -186,7 +186,8 @@ function test_session_id() {
   const id1 = generateSessionId()
   const id2 = generateSessionId()
 
-  assert(id1.startsWith("session-"), "starts with session-")
+  // UUIDs are 36 chars with hyphens (e.g., "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+  assert(id1.length === 36 && id1.split("-").length === 5, "valid UUID format")
   assert(id1 !== id2, "unique IDs generated")
 }
 

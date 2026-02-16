@@ -38,6 +38,7 @@ import {
   type SessionMode,
 } from "../schemas/brain-state.js"
 
+import { loadMems, saveMems, addMem } from "./mems.js"
 export type HierarchyLevel = "trajectory" | "tactic" | "action"
 
 export interface SessionOptions {
@@ -333,9 +334,27 @@ export async function closeSession(directory: string, summary?: string): Promise
 
   await resetActiveMd(directory)
 
+  // Create auto-compact mem entry
+  const memsState = await loadMems(directory)
+  const autoCompactMem = addMem(
+    memsState,
+    "context",
+    `Session compacted: ${state.hierarchy.trajectory || "no trajectory"}. Turns: ${state.metrics.turn_count}, Files: ${state.metrics.files_touched.length}.`,
+    ["auto-compact", "session-close"],
+    sessionId
+  )
+  await saveMems(directory, autoCompactMem)
+
   const config = await loadConfig(directory)
   const newSessionId = generateSessionId()
   const newState = createBrainState(newSessionId, config)
+  
+  // Carry forward compaction tracking fields
+  const compactionCount = (state.compaction_count ?? 0) + 1
+  newState.compaction_count = compactionCount
+  newState.last_compaction_time = Date.now()
+  newState.next_compaction_report = null
+  
   await stateManager.save(lockSession(newState))
 
   const archives = await listArchives(directory)

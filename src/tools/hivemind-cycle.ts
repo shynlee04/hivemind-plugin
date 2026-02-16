@@ -58,7 +58,8 @@ async function handleExport(directory: string): Promise<string> {
   const stateManager = createStateManager(directory)
   const state = await stateManager.load()
 
-  if (!state) {
+  // Check for no state OR LOCKED session (no active session to export)
+  if (!state || state.session.governance_status === "LOCKED") {
     return toErrorOutput("No active session to export")
   }
 

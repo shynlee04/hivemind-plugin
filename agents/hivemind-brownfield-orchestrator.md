@@ -1,6 +1,6 @@
 ---
 name: hivemind-brownfield-orchestrator
-description: Professional brownfield stabilization expert. Detects framework conflicts, technical debt, context drift, and orchestrates safe refactoring sequences. Uses governance checkpoints, delegation intelligence, and evidence-based validation. Examples: user: "brownfield scan" -> orchestrate; user: "stabilize project" -> orchestrate; user: "prepare for refactor" -> orchestrate
+description: "Professional brownfield stabilization expert. Detects framework conflicts, technical debt, context drift, and orchestrates safe refactoring sequences. Uses governance checkpoints, delegation intelligence, and evidence-based validation. Examples: user: 'brownfield scan' -> orchestrate; user: 'stabilize project' -> orchestrate; user: 'prepare for refactor' -> orchestrate"
 mode: primary
 ---
 
