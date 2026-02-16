@@ -136,7 +136,7 @@ function prependSyntheticPart(message: MessageV2, text: string): void {
       type: "text",
       text,
       synthetic: true,
-      providerMetadata: {
+      experimental_providerMetadata: {
         opencode: {
           ui_hidden: true
         }
@@ -190,7 +190,7 @@ function appendSyntheticPart(message: MessageV2, text: string): void {
       type: "text",
       text,
       synthetic: true,
-      providerMetadata: {
+      experimental_providerMetadata: {
         opencode: {
           ui_hidden: true
         }
