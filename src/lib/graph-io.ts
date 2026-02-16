@@ -265,9 +265,58 @@ export async function savePlans(projectRoot: string, state: PlansState): Promise
 }
 
 export async function loadGraphTasks(projectRoot: string): Promise<GraphTasksState> {
-  const filePath = getEffectivePaths(projectRoot).graphTasks
-  const state = await loadValidatedState(filePath, GraphTasksStateSchema)
-  return state ?? EMPTY_TASKS_STATE
+  const paths = getEffectivePaths(projectRoot)
+  const filePath = paths.graphTasks
+  const orphanPath = paths.graphOrphans
+  
+  if (!existsSync(filePath)) {
+    return EMPTY_TASKS_STATE
+  }
+
+  try {
+    const raw = await readFile(filePath, "utf-8")
+    const parsed = JSON.parse(raw) as unknown
+    const result = GraphTasksStateSchema.safeParse(parsed)
+    
+    if (result.success) {
+      return result.data
+    }
+    
+    // Zod parse failed - attempt graceful recovery
+    console.error("[graph-io] GraphTasksStateSchema parse failed, attempting recovery:", result.error.message)
+    
+    // Try to recover valid tasks from the raw parsed data
+    const rawTasks = (parsed as { tasks?: unknown[] })?.tasks ?? []
+    const validTasks: TaskNode[] = []
+    const now = new Date().toISOString()
+    
+    for (const rawTask of rawTasks) {
+      const taskResult = GraphTasksStateSchema.shape.tasks.element.safeParse(rawTask)
+      if (taskResult.success) {
+        validTasks.push(taskResult.data)
+      } else {
+        // Quarantine the invalid task
+        const taskId = (rawTask as { id?: string })?.id ?? "unknown"
+        console.warn(`[graph-io] Quarantining invalid task ${taskId}:`, taskResult.error.message)
+        await quarantineOrphan(orphanPath, {
+          id: taskId,
+          type: "task",
+          reason: `Zod validation failed: ${taskResult.error.message}`,
+          original_data: rawTask,
+          quarantined_at: now,
+        })
+      }
+    }
+    
+    // Return recovered tasks instead of empty state
+    return {
+      version: GRAPH_STATE_VERSION,
+      tasks: validTasks,
+    }
+  } catch (error) {
+    console.error(`[graph-io] Failed to load ${filePath}:`, error)
+    return EMPTY_TASKS_STATE
+  }
 }
 
 export async function saveGraphTasks(projectRoot: string, state: GraphTasksState): Promise<void> {
@@ -322,9 +371,58 @@ export async function invalidateTask(projectRoot: string, taskId: string): Promi
 }
 
 export async function loadGraphMems(projectRoot: string): Promise<GraphMemsState> {
-  const filePath = getEffectivePaths(projectRoot).graphMems
-  const state = await loadValidatedState(filePath, GraphMemsStateSchema)
-  return state ?? EMPTY_MEMS_STATE
+  const paths = getEffectivePaths(projectRoot)
+  const filePath = paths.graphMems
+  const orphanPath = paths.graphOrphans
+  
+  if (!existsSync(filePath)) {
+    return EMPTY_MEMS_STATE
+  }
+
+  try {
+    const raw = await readFile(filePath, "utf-8")
+    const parsed = JSON.parse(raw) as unknown
+    const result = GraphMemsStateSchema.safeParse(parsed)
+    
+    if (result.success) {
+      return result.data
+    }
+    
+    // Zod parse failed - attempt graceful recovery
+    console.error("[graph-io] GraphMemsStateSchema parse failed, attempting recovery:", result.error.message)
+    
+    // Try to recover valid mems from the raw parsed data
+    const rawMems = (parsed as { mems?: unknown[] })?.mems ?? []
+    const validMems: MemNode[] = []
+    const now = new Date().toISOString()
+    
+    for (const rawMem of rawMems) {
+      const memResult = GraphMemsStateSchema.shape.mems.element.safeParse(rawMem)
+      if (memResult.success) {
+        validMems.push(memResult.data)
+      } else {
+        // Quarantine the invalid mem
+        const memId = (rawMem as { id?: string })?.id ?? "unknown"
+        console.warn(`[graph-io] Quarantining invalid mem ${memId}:`, memResult.error.message)
+        await quarantineOrphan(orphanPath, {
+          id: memId,
+          type: "mem",
+          reason: `Zod validation failed: ${memResult.error.message}`,
+          original_data: rawMem,
+          quarantined_at: now,
+        })
+      }
+    }
+    
+    // Return recovered mems instead of empty state
+    return {
+      version: GRAPH_STATE_VERSION,
+      mems: validMems,
+    }
+  } catch (error) {
+    console.error(`[graph-io] Failed to load ${filePath}:`, error)
+    return EMPTY_MEMS_STATE
+  }
 }
 
 export async function saveGraphMems(projectRoot: string, state: GraphMemsState): Promise<void> {

@@ -47,36 +47,29 @@ export function createHivemindHierarchyTool(directory: string): ToolDefinition {
         .boolean()
         .optional()
         .describe("Preview changes without applying (prune only)"),
-      json: tool.schema
-        .boolean()
-        .optional()
-        .describe("Output as machine-parseable JSON (HC5)"),
     },
     async execute(args, _context) {
-      const jsonOutput = args.json ?? false
+      // CHIMERA-3: Always return JSON for FK chaining
       const dryRun = args.dryRun ?? false
 
       switch (args.action) {
         case "prune":
-          return handlePrune(directory, dryRun, jsonOutput)
+          return handlePrune(directory, dryRun)
         case "migrate":
-          return handleMigrate(directory, args.nodeId, args.parentId, jsonOutput)
+          return handleMigrate(directory, args.nodeId, args.parentId)
         case "status":
-          return handleStatus(directory, jsonOutput)
+          return handleStatus(directory)
         default:
-          return jsonOutput
-            ? toErrorOutput(`Unknown action: ${args.action}`)
-            : `ERROR: Unknown action. Use prune, migrate, or status.`
+          return toErrorOutput(`Unknown action: ${args.action}`)
       }
     },
   })
 }
 
-async function handlePrune(directory: string, dryRun: boolean, jsonOutput: boolean): Promise<string> {
+// CHIMERA-3: Always return JSON for FK chaining
+async function handlePrune(directory: string, dryRun: boolean): Promise<string> {
   if (!treeExists(directory)) {
-    return jsonOutput
-      ? toErrorOutput("No hierarchy tree exists")
-      : "ERROR: No hierarchy tree exists. Use hivemind_session start or update to create one."
+    return toErrorOutput("No hierarchy tree exists")
   }
 
   const tree = await loadTree(directory)
@@ -88,34 +81,16 @@ async function handlePrune(directory: string, dryRun: boolean, jsonOutput: boole
     : []
 
   if (completedBranches.length === 0) {
-    return jsonOutput
-      ? toSuccessOutput("No completed branches to prune", undefined, { pruned: 0 })
-      : "No completed branches to prune."
+    return toSuccessOutput("No completed branches to prune", undefined, { pruned: 0 })
   }
 
   if (dryRun) {
-    if (jsonOutput) {
-      return toSuccessOutput("Dry run complete", undefined, {
-        dryRun: true,
-        wouldPrune: completedBranches.length,
-        nodes: completedBranches.map(n => ({ id: n.id, content: n.content })),
-        before: beforeStats,
-      })
-    }
-
-    const lines: string[] = []
-    lines.push("=== DRY RUN: Would prune these branches ===")
-    lines.push("")
-    for (const node of completedBranches.slice(0, 10)) {
-      lines.push(`  - ${node.id}: ${node.content.slice(0, 50)}`)
-    }
-    if (completedBranches.length > 10) {
-      lines.push(`  ... and ${completedBranches.length - 10} more`)
-    }
-    lines.push("")
-    lines.push(`Total nodes to remove: ${completedBranches.length}`)
-    lines.push("=== END DRY RUN ===")
-    return lines.join("\n")
+    return toSuccessOutput("Dry run complete", undefined, {
+      dryRun: true,
+      wouldPrune: completedBranches.length,
+      nodes: completedBranches.map(n => ({ id: n.id, content: n.content })),
+      before: beforeStats,
+    })
   }
 
   // Actually prune using pruneCompleted
@@ -123,17 +98,11 @@ async function handlePrune(directory: string, dryRun: boolean, jsonOutput: boole
   await saveTree(directory, pruneResult.tree)
   const afterStats = getTreeStats(pruneResult.tree)
 
-  if (jsonOutput) {
-    return toSuccessOutput(`Pruned ${pruneResult.pruned} branches`, undefined, {
-      pruned: pruneResult.pruned,
-      before: { totalNodes: beforeStats.totalNodes, depth: beforeStats.depth },
-      after: { totalNodes: afterStats.totalNodes, depth: afterStats.depth },
-    })
-  }
-
-  return `Pruned ${pruneResult.pruned} completed branch(es).
-Tree size: ${beforeStats.totalNodes} → ${afterStats.totalNodes} nodes
-Depth: ${beforeStats.depth} → ${afterStats.depth}`
+  return toSuccessOutput(`Pruned ${pruneResult.pruned} branches`, undefined, {
+    pruned: pruneResult.pruned,
+    before: { totalNodes: beforeStats.totalNodes, depth: beforeStats.depth },
+    after: { totalNodes: afterStats.totalNodes, depth: afterStats.depth },
+  })
 }
 
 function findCompletedBranches(node: HierarchyNode): Array<{ id: string; content: string }> {
@@ -152,56 +121,43 @@ function findCompletedBranches(node: HierarchyNode): Array<{ id: string; content
   return result
 }
 
+// CHIMERA-3: Always return JSON for FK chaining
 async function handleMigrate(
   directory: string,
   nodeId?: string,
-  parentId?: string,
-  jsonOutput?: boolean
+  parentId?: string
 ): Promise<string> {
   if (!nodeId || !parentId) {
-    return jsonOutput
-      ? toErrorOutput("nodeId and parentId are required")
-      : "ERROR: Both nodeId and parentId are required for migrate."
+    return toErrorOutput("nodeId and parentId are required")
   }
 
   if (!treeExists(directory)) {
-    return jsonOutput
-      ? toErrorOutput("No hierarchy tree exists")
-      : "ERROR: No hierarchy tree exists."
+    return toErrorOutput("No hierarchy tree exists")
   }
 
   const tree = await loadTree(directory)
   const node = findNodeById(tree.root, nodeId)
 
   if (!node) {
-    return jsonOutput
-      ? toErrorOutput(`Node ${nodeId} not found in hierarchy`)
-      : `ERROR: Node ${nodeId} not found in hierarchy.`
+    return toErrorOutput(`Node ${nodeId} not found in hierarchy`)
   }
 
   const parent = findNodeById(tree.root, parentId)
 
   if (!parent) {
-    return jsonOutput
-      ? toErrorOutput(`Parent node ${parentId} not found in hierarchy`)
-      : `ERROR: Parent node ${parentId} not found in hierarchy.`
+    return toErrorOutput(`Parent node ${parentId} not found in hierarchy`)
   }
 
   // Perform migration
   migrateNode(tree, nodeId, parentId)
   await saveTree(directory, tree)
 
-  if (jsonOutput) {
-    return toSuccessOutput("Node migrated", nodeId, {
-      nodeId,
-      fromParent: node.parentId,
-      toParent: parentId,
-      success: true,
-    })
-  }
-
-  return `Migrated node ${nodeId} from ${node.parentId} to ${parentId}.
-Node: ${node.content.slice(0, 50)}`
+  return toSuccessOutput("Node migrated", nodeId, {
+    nodeId,
+    fromParent: node.parentId,
+    toParent: parentId,
+    success: true,
+  })
 }
 
 function findNodeById(
@@ -224,43 +180,25 @@ function findNodeById(
   return null
 }
 
-async function handleStatus(directory: string, jsonOutput: boolean): Promise<string> {
+// CHIMERA-3: Always return JSON for FK chaining
+async function handleStatus(directory: string): Promise<string> {
   if (!treeExists(directory)) {
-    return jsonOutput
-      ? toSuccessOutput("No hierarchy tree", undefined, { exists: false })
-      : "No hierarchy tree exists. Use hivemind_session start or update to create one."
+    return toSuccessOutput("No hierarchy tree", undefined, { exists: false })
   }
 
   const tree = await loadTree(directory)
   const stats = getTreeStats(tree)
   const cursor = getCursorNode(tree)
 
-  if (jsonOutput) {
-    return toSuccessOutput("Hierarchy status", undefined, {
-      exists: true,
-      totalNodes: stats.totalNodes,
-      depth: stats.depth,
-      activeNodes: stats.activeNodes,
-      completedNodes: stats.completedNodes,
-      pendingNodes: stats.pendingNodes,
-      cursor: cursor
-        ? { id: cursor.id, level: cursor.level, content: cursor.content, status: cursor.status }
-        : null,
-    })
-  }
-
-  const lines: string[] = []
-  lines.push("=== HIERARCHY STATUS ===")
-  lines.push("")
-  lines.push(`Total nodes: ${stats.totalNodes}`)
-  lines.push(`Depth: ${stats.depth}`)
-  lines.push(`Active: ${stats.activeNodes} | Completed: ${stats.completedNodes} | Pending: ${stats.pendingNodes}`)
-
-  if (cursor) {
-    lines.push("")
-    lines.push(`Cursor: [${cursor.level}] ${cursor.content.slice(0, 50)} (${cursor.status})`)
-  }
-
-  lines.push("=== END STATUS ===")
-  return lines.join("\n")
+  return toSuccessOutput("Hierarchy status", undefined, {
+    exists: true,
+    totalNodes: stats.totalNodes,
+    depth: stats.depth,
+    activeNodes: stats.activeNodes,
+    completedNodes: stats.completedNodes,
+    pendingNodes: stats.pendingNodes,
+    cursor: cursor
+      ? { id: cursor.id, level: cursor.level, content: cursor.content, status: cursor.status }
+      : null,
+  })
 }

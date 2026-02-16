@@ -8,78 +8,96 @@ import {
   type HierarchyLevel,
   type SessionResult,
 } from "../lib/session-engine.js"
+import { loadTrajectory, saveTrajectory } from "../lib/graph-io.js"
 import type { SessionMode } from "../schemas/brain-state.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
-function toText(result: SessionResult): string {
-  if (!result.success) {
-    return `ERROR: ${result.error || "operation failed"}`
+/**
+ * Write trajectory state after session operations to maintain graph consistency.
+ * This ensures trajectory.json stays in sync with session state.
+ */
+async function syncTrajectoryToGraph(
+  directory: string,
+  action: "start" | "update_trajectory" | "update_tactic" | "update_action" | "close" | "resume",
+  params?: {
+    intent?: string
+    planId?: string | null
+    phaseId?: string | null
+    taskIds?: string[]
+    sessionId?: string
   }
+): Promise<void> {
+  let trajectory = await loadTrajectory(directory)
+  const now = new Date().toISOString()
 
-  const data = result.data
-  switch (result.action) {
-    case "start":
-      return [
-        `Session started: ${String(data.sessionId || "unknown")}`,
-        `Mode: ${String(data.mode || "unknown")}`,
-        `Focus: ${String(data.focus || "(not set)")}`,
-        `Status: ${String(data.governanceStatus || "OPEN")}`,
-      ].join("\n")
-    case "update": {
-      const level = String(data.level || "tactic")
-      return [
-        `Context updated at [${level}] level.`,
-        `Context updates: ${String(data.contextUpdates || 0)}`,
-      ].join("\n")
+  // If no trajectory exists, create initial one
+  if (!trajectory || !trajectory.trajectory) {
+    trajectory = {
+      version: "1.0.0",
+      trajectory: {
+        id: params?.sessionId || crypto.randomUUID(),
+        session_id: params?.sessionId || crypto.randomUUID(),
+        active_plan_id: null,
+        active_phase_id: null,
+        active_task_ids: [],
+        intent: params?.intent || "",
+        created_at: now,
+        updated_at: now,
+      },
     }
+  }
+
+  switch (action) {
+    case "start":
+      // After declare_intent: sets active_plan_id, clears phase/task
+      if (trajectory.trajectory) {
+        trajectory.trajectory.intent = params?.intent || ""
+        trajectory.trajectory.active_plan_id = params?.planId || null
+        trajectory.trajectory.active_phase_id = null
+        trajectory.trajectory.active_task_ids = []
+        trajectory.trajectory.updated_at = now
+      }
+      break
+
+    case "update_trajectory":
+      // After map_context(trajectory level): updates intent shift stamp
+      if (trajectory.trajectory) {
+        trajectory.trajectory.intent = params?.intent || ""
+        trajectory.trajectory.updated_at = now
+      }
+      break
+
+    case "update_tactic":
+      // After map_context(tactic level): updates active_phase_id
+      if (trajectory.trajectory) {
+        trajectory.trajectory.active_phase_id = params?.phaseId || null
+        trajectory.trajectory.updated_at = now
+      }
+      break
+
+    case "update_action":
+      // After map_context(action level): updates active_task_ids
+      if (trajectory.trajectory) {
+        trajectory.trajectory.active_task_ids = params?.taskIds || []
+        trajectory.trajectory.updated_at = now
+      }
+      break
+
     case "close":
-      return [
-        `Session closed: ${String(data.sessionId || "unknown")}`,
-        `Duration: ~${String(data.durationMinutes || 0)} minutes`,
-        `Turns: ${String(data.turnCount || 0)}`,
-        `Files: ${String(data.filesTouched || 0)}`,
-      ].join("\n")
     case "resume":
-      return [
-        `Session resumed with new ID: ${String(data.sessionId || "unknown")}`,
-        `(Based on archive: ${String(data.fromSession || "unknown")})`,
-      ].join("\n")
-    default:
-      return JSON.stringify(result)
-  }
-}
-
-function statusToText(status: Awaited<ReturnType<typeof getSessionStatus>>): string {
-  if (!status.active) {
-    return "No active session. Use hivemind_session start to begin."
+      // Close clears active state; resume sets a new session
+      if (trajectory.trajectory) {
+        if (action === "close") {
+          trajectory.trajectory.active_phase_id = null
+          trajectory.trajectory.active_task_ids = []
+        }
+        trajectory.trajectory.session_id = params?.sessionId || trajectory.trajectory.session_id
+        trajectory.trajectory.updated_at = now
+      }
+      break
   }
 
-  const session = status.session || {}
-  const hierarchy = status.hierarchy || {}
-  const metrics = status.metrics || {}
-
-  const lines: string[] = []
-  lines.push("=== SESSION STATUS ===")
-  lines.push("")
-  lines.push(`ID: ${String(session.id || "unknown")}`)
-  lines.push(`Mode: ${String(session.mode || "unknown")}`)
-  lines.push(`Status: ${String(session.governanceStatus || "unknown")}`)
-  lines.push(`Duration: ~${String(session.durationMinutes || 0)} min`)
-  lines.push("")
-  lines.push("## Hierarchy")
-  if (hierarchy.trajectory) lines.push(`Trajectory: ${String(hierarchy.trajectory)}`)
-  if (hierarchy.tactic) lines.push(`Tactic: ${String(hierarchy.tactic)}`)
-  if (hierarchy.action) lines.push(`Action: ${String(hierarchy.action)}`)
-  lines.push("")
-  lines.push("## Metrics")
-  lines.push(`Turns: ${String(metrics.turnCount || 0)}`)
-  lines.push(`Drift: ${String(metrics.driftScore || 0)}/100`)
-  lines.push(`Files: ${String(metrics.filesTouched || 0)}`)
-  lines.push(`Context updates: ${String(metrics.contextUpdates || 0)}`)
-  if (metrics.violations) lines.push(`Violations: ${String(metrics.violations)}`)
-  lines.push("")
-  lines.push("=== END STATUS ===")
-  return lines.join("\n")
+  await saveTrajectory(directory, trajectory)
 }
 
 export function createHivemindSessionTool(directory: string): ToolDefinition {
@@ -87,7 +105,7 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
     description:
       "Manage session lifecycle. " +
       "Actions: start (declare intent), update (change focus), close (compact), status (inspect), resume (reopen). " +
-      "Use --json for machine-parseable output.",
+      "Always returns JSON for FK chaining.",
     args: {
       action: tool.schema
         .enum(["start", "update", "close", "status", "resume"])
@@ -116,25 +134,18 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
         .string()
         .optional()
         .describe("For resume: session ID to resume"),
-      json: tool.schema
-        .boolean()
-        .optional()
-        .describe("Output as machine-parseable JSON (HC5)"),
     },
     async execute(args, _context) {
-      const jsonOutput = args.json ?? false
-
+      // CHIMERA-3: Always return JSON for FK chaining - no conditionals
       if (args.action === "status") {
         const status = await getSessionStatus(directory)
         const sessionId = typeof status.session?.id === "string" ? status.session.id : undefined
-        return jsonOutput
-          ? toSuccessOutput("Session status", sessionId, {
-            active: status.active,
-            session: status.session,
-            hierarchy: status.hierarchy,
-            metrics: status.metrics,
-          })
-          : statusToText(status)
+        return toSuccessOutput("Session status", sessionId, {
+          active: status.active,
+          session: status.session,
+          hierarchy: status.hierarchy,
+          metrics: status.metrics,
+        })
       }
 
       let result: SessionResult
@@ -144,18 +155,60 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
             mode: args.mode as SessionMode | undefined,
             focus: args.focus,
           })
+          // Wire trajectory write-through: set intent, clear phase/task
+          if (result.success && result.data.sessionId) {
+            await syncTrajectoryToGraph(directory, "start", {
+              intent: args.focus,
+              sessionId: result.data.sessionId as string,
+            })
+          }
           break
-        case "update":
+        case "update": {
+          const level = args.level as HierarchyLevel | undefined
           result = await updateSession(directory, {
-            level: args.level as HierarchyLevel | undefined,
+            level,
             content: args.content,
           })
+          // Wire trajectory write-through based on hierarchy level
+          if (result.success) {
+            const targetLevel = level || "tactic"
+            if (targetLevel === "trajectory") {
+              await syncTrajectoryToGraph(directory, "update_trajectory", {
+                intent: args.content,
+              })
+            } else if (targetLevel === "tactic") {
+              // For tactic level, we need to derive or generate a phase ID
+              // In V3, this would come from the plan/phase system
+              await syncTrajectoryToGraph(directory, "update_tactic", {
+                phaseId: null, // TODO: Derive from plan system when available
+              })
+            } else {
+              // For action level, update task IDs
+              // In V3, this would come from the task system
+              await syncTrajectoryToGraph(directory, "update_action", {
+                taskIds: [], // TODO: Derive from task system when available
+              })
+            }
+          }
           break
+        }
         case "close":
           result = await closeSession(directory, args.summary)
+          // Wire trajectory write-through: clear active state
+          if (result.success && result.data.sessionId) {
+            await syncTrajectoryToGraph(directory, "close", {
+              sessionId: result.data.sessionId as string,
+            })
+          }
           break
         case "resume":
           result = await resumeSession(directory, args.sessionId || "")
+          // Wire trajectory write-through: set new session
+          if (result.success && result.data.sessionId) {
+            await syncTrajectoryToGraph(directory, "resume", {
+              sessionId: result.data.sessionId as string,
+            })
+          }
           break
         default:
           result = {
@@ -166,14 +219,13 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
           }
       }
 
-      return jsonOutput
-        ? result.success
-          ? toSuccessOutput(`Session ${result.action} completed`, result.data.sessionId as string | undefined, {
-              ...result.data,
-              error: result.error,
-            })
-          : toErrorOutput(result.error || "Operation failed")
-        : toText(result)
+      // CHIMERA-3: Always return JSON for FK chaining - no conditionals
+      return result.success
+        ? toSuccessOutput(`Session ${result.action} completed`, result.data.sessionId as string | undefined, {
+            ...result.data,
+            error: result.error,
+          })
+        : toErrorOutput(result.error || "Operation failed")
     },
   })
 }

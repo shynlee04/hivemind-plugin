@@ -33,12 +33,31 @@ export interface SwarmMeta {
   created_at: string
   completed_at?: string
   output_path: string
+  actual_session_id?: string  // SDK-created session ID
+  error?: string              // Error message if status is "error"
 }
 
 export interface SwarmFindings {
   content: string
   shelf: string
   tags: string[]
+}
+
+/**
+ * SDK executor interface for swarm spawning.
+ * Implemented by hooks/ layer to keep lib/ SDK-free.
+ */
+export interface SwarmSdkExecutor {
+  createSession(options: {
+    title: string
+    parentID: string
+  }): Promise<{ id: string } | null>
+  
+  sendPrompt(options: {
+    sessionId: string
+    noReply: boolean
+    parts: Array<{ type: "text"; text: string }>
+  }): Promise<void>
 }
 
 // ─── Constants ───────────────────────────────────────────────────────
@@ -97,17 +116,26 @@ function getSwarmMetaPath(projectRoot: string, swarmId: string): string {
  * Spawn a headless researcher sub-agent for background research.
  *
  * Creates swarm metadata and returns swarmId for tracking.
- * The actual noReply execution happens via OpenCode SDK.
+ * If SDK executor is provided, actually spawns the sub-agent.
  * Findings should be saved via completeSwarm() after execution.
+ *
+ * @param projectRoot - The project root directory
+ * @param config - Swarm configuration
+ * @param prompt - The research task prompt
+ * @param sdkExecutor - Optional SDK executor (provided by hooks/ layer)
  */
 export async function spawnHeadlessResearcher(
   projectRoot: string,
   config: SwarmConfig,
   prompt: string,
+  sdkExecutor?: SwarmSdkExecutor,
 ): Promise<{ swarmId: string; status: "spawned" | "error" }> {
+  let swarmId = ""
+  let meta: SwarmMeta | null = null
+
   try {
     // 1. Generate swarm ID
-    const swarmId = `swarm-${Date.now()}-${randomUUID().slice(0, 8)}`
+    swarmId = `swarm-${Date.now()}-${randomUUID().slice(0, 8)}`
 
     // 2. Ensure swarm directory exists
     const swarmDir = await ensureSwarmDir(projectRoot)
@@ -116,7 +144,7 @@ export async function spawnHeadlessResearcher(
     const outputPath = config.outputPath || join(swarmDir, `${swarmId}.json`)
 
     // 4. Create swarm metadata
-    const swarmMeta: SwarmMeta = {
+    meta = {
       id: swarmId,
       parent_session_id: config.parentSessionId,
       parent_task_id: config.parentTaskId || null,
@@ -126,12 +154,66 @@ export async function spawnHeadlessResearcher(
       output_path: outputPath,
     }
 
-    // 5. Save swarm metadata with atomic write
-    await atomicWriteJson(outputPath, swarmMeta)
+    // 5. If SDK executor provided, actually spawn the sub-agent
+    if (sdkExecutor) {
+      try {
+        const created = await sdkExecutor.createSession({
+          title: `Swarm: ${swarmId}`,
+          parentID: config.parentSessionId,
+        })
 
-    return { swarmId, status: "spawned" }
-  } catch (error) {
+        if (created?.id) {
+          const actualSessionId = created.id
+          meta.actual_session_id = actualSessionId
+
+          // Fire and forget - noReply for background execution
+          await sdkExecutor.sendPrompt({
+            sessionId: actualSessionId,
+            noReply: true,
+            parts: [
+              {
+                type: "text",
+                text: `[HEADLESS RESEARCH PROTOCOL]
+Task: ${prompt}
+
+Save findings using hivemind_cycle tool with shelf and tags.
+Do not ask for clarification. Execute autonomously.
+
+Begin research.`,
+              },
+            ],
+          }).catch((err: unknown) => {
+            console.error(`[swarm] ${swarmId} prompt failed:`, err)
+          })
+        }
+      } catch (err: unknown) {
+        console.error(`[swarm] ${swarmId} spawn failed:`, err)
+        meta.status = "error"
+        meta.error = String(err)
+      }
+    } else {
+      console.warn(`[swarm] ${swarmId} no SDK executor provided - metadata only`)
+    }
+
+    // 6. Save swarm metadata with atomic write
+    await atomicWriteJson(outputPath, meta)
+
+    // Status is either "spawned" or "error" at this point (never "completed")
+    return { swarmId, status: meta.status === "error" ? "error" : "spawned" }
+  } catch (error: unknown) {
     console.error("[session-swarm] Failed to spawn headless researcher:", error)
+
+    // Try to save error state if we have metadata
+    if (meta && swarmId) {
+      try {
+        meta.status = "error"
+        meta.error = String(error)
+        await atomicWriteJson(meta.output_path, meta)
+      } catch {
+        // Ignore write errors in error path
+      }
+    }
+
     return { swarmId: "", status: "error" }
   }
 }

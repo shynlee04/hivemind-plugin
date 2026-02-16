@@ -43,7 +43,33 @@ digraph delegation {
 }
 ```
 
-### Common Patterns
+## ⚠️ EXPLICIT DELEGATION MANDATORY
+
+Every task delegation MUST include ALL of these:
+
+| Element | Required | Example |
+|---------|----------|---------|
+| **Task** | ✅ | "Fix bug in auth.ts" (NOT "fix auth") |
+| **Scope** | ✅ | "Only touch auth.ts, don't modify token.ts" |
+| **Return format** | ✅ | "Return: { outcome, findings, files_changed }" |
+| **Success metric** | ✅ | "Test passes: npm test -- auth.test.ts" |
+| **Acceptance criteria** | ✅ | "All 5 auth tests pass, no new errors" |
+| **Constraints** | ✅ | "Don't refactor, only bugfix; stay within 10 lines" |
+| **Evidence** | ✅ | "Capture: what failed, why, how fixed" |
+
+**BAD:** "Fix the auth bug"
+**GOOD:**
+```
+Task: Fix JWT token refresh bug in src/auth.ts line 45
+Scope: Only auth.ts. Do NOT touch token.ts or session.ts
+Return: { outcome: "success|partial|failure", findings: "...", files_changed: [...] }
+Success: npm test -- auth.test.ts shows 0 failures
+Acceptance: All 5 JWT tests pass
+Constraints: No refactoring, max 10 lines changed
+Evidence: Capture error message, root cause, fix rationale
+```
+
+## Common Patterns
 
 **Parallel-safe (dispatch simultaneously):**
 - Writing tests for different modules
