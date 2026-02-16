@@ -100,15 +100,16 @@ export async function saveGraphTasks(projectRoot: string, state: GraphTasksState
   await saveValidatedState(filePath, GraphTasksStateSchema, state)
 }
 
-export async function addGraphTask(projectRoot: string, task: TaskNode): Promise<void> {
+export async function addGraphTask(projectRoot: string, task: TaskNode): Promise<string> {
   const filePath = getEffectivePaths(projectRoot).graphTasks
 
+  let validatedTask: TaskNode
   await withFileLock(filePath, async () => {
-    const validatedTask = GraphTasksStateSchema.shape.tasks.element.parse(task)
+    validatedTask = GraphTasksStateSchema.shape.tasks.element.parse(task)
     const current = await loadGraphTasks(projectRoot)
 
     const taskById = new Map(current.tasks.map((item) => [item.id, item]))
-    taskById.set(validatedTask.id, validatedTask)
+    taskById.set(validatedTask!.id, validatedTask!)
 
     const nextState: GraphTasksState = {
       version: current.version,
@@ -117,6 +118,7 @@ export async function addGraphTask(projectRoot: string, task: TaskNode): Promise
 
     await saveGraphTasks(projectRoot, nextState)
   })
+  return validatedTask!.id
 }
 
 export async function invalidateTask(projectRoot: string, taskId: string): Promise<void> {
@@ -155,15 +157,16 @@ export async function saveGraphMems(projectRoot: string, state: GraphMemsState):
   await saveValidatedState(filePath, GraphMemsStateSchema, state)
 }
 
-export async function addGraphMem(projectRoot: string, mem: MemNode): Promise<void> {
+export async function addGraphMem(projectRoot: string, mem: MemNode): Promise<string> {
   const filePath = getEffectivePaths(projectRoot).graphMems
 
+  let validatedMem: MemNode
   await withFileLock(filePath, async () => {
-    const validatedMem = GraphMemsStateSchema.shape.mems.element.parse(mem)
+    validatedMem = GraphMemsStateSchema.shape.mems.element.parse(mem)
     const current = await loadGraphMems(projectRoot)
 
     const memById = new Map(current.mems.map((item) => [item.id, item]))
-    memById.set(validatedMem.id, validatedMem)
+    memById.set(validatedMem!.id, validatedMem!)
 
     const nextState: GraphMemsState = {
       version: current.version,
@@ -172,6 +175,7 @@ export async function addGraphMem(projectRoot: string, mem: MemNode): Promise<vo
 
     await saveGraphMems(projectRoot, nextState)
   })
+  return validatedMem!.id
 }
 
 export async function flagFalsePath(projectRoot: string, memId: string): Promise<void> {

@@ -60,7 +60,7 @@
         "glob": true,
         "grep": true,
         "bash": true,
-        "task": false,
+        "task": true,
         "skill": true,
         "webfetch": true,
         "websearch": true,
