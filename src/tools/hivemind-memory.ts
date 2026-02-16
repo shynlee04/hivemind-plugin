@@ -14,24 +14,7 @@
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool"
 import { createStateManager } from "../lib/persistence.js"
 import { loadMems, saveMems, addMem, searchMems, getShelfSummary, BUILTIN_SHELVES } from "../lib/mems.js"
-
-const MAX_RESULTS = 5
-
-interface JsonOutput {
-  success: boolean
-  action: string
-  data: Record<string, unknown>
-  timestamp: string
-}
-
-function toJsonOutput(action: string, data: Record<string, unknown>): string {
-  return JSON.stringify({
-    success: true,
-    action,
-    data,
-    timestamp: new Date().toISOString(),
-  } as JsonOutput)
-}
+import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
 export function createHivemindMemoryTool(directory: string): ToolDefinition {
   return tool({
@@ -63,6 +46,30 @@ export function createHivemindMemoryTool(directory: string): ToolDefinition {
         .boolean()
         .optional()
         .describe("For recall/list: only include current session memories"),
+      // P0-7 Fix 2: Time-bounded search parameters
+      created_after: tool.schema
+        .string()
+        .optional()
+        .describe("For recall: only memories created after this ISO datetime"),
+      created_before: tool.schema
+        .string()
+        .optional()
+        .describe("For recall: only memories created before this ISO datetime"),
+      limit: tool.schema
+        .number()
+        .min(1)
+        .max(100)
+        .optional()
+        .describe("For recall: max results (default 20, max 100)"),
+      offset: tool.schema
+        .number()
+        .min(0)
+        .optional()
+        .describe("For recall: pagination offset (default 0)"),
+      linked_task_id: tool.schema
+        .string()
+        .optional()
+        .describe("For recall: filter by linked task UUID"),
       json: tool.schema
         .boolean()
         .optional()
@@ -80,7 +87,7 @@ export function createHivemindMemoryTool(directory: string): ToolDefinition {
           return handleList(directory, args, jsonOutput)
         default:
           return jsonOutput
-            ? toJsonOutput("error", { message: `Unknown action: ${args.action}` })
+            ? toErrorOutput(`Unknown action: ${args.action}`)
             : `ERROR: Unknown action. Use save, recall, or list.`
       }
     },
@@ -99,13 +106,13 @@ async function handleSave(
 ): Promise<string> {
   if (!args.shelf?.trim()) {
     return jsonOutput
-      ? toJsonOutput("save", { error: "shelf required" })
+      ? toErrorOutput("shelf is required")
       : `ERROR: shelf is required. Use: ${BUILTIN_SHELVES.join(", ")} (or custom).`
   }
 
   if (!args.content?.trim()) {
     return jsonOutput
-      ? toJsonOutput("save", { error: "content required" })
+      ? toErrorOutput("content cannot be empty")
       : "ERROR: content cannot be empty. Describe the decision, pattern, or lesson."
   }
 
@@ -126,15 +133,18 @@ async function handleSave(
   )
   if (isDuplicate) {
     return jsonOutput
-      ? toJsonOutput("save", { error: "duplicate", shelf: args.shelf })
+      ? toErrorOutput("Duplicate memory - identical content already exists on this shelf")
       : `Memory already exists on [${args.shelf}] shelf with identical content.${noSessionWarning}`
   }
 
   memsState = addMem(memsState, args.shelf, args.content, tagList, sessionId)
   await saveMems(directory, memsState)
 
+  // Get the ID of the newly created memory
+  const newMemId = memsState.mems[memsState.mems.length - 1]?.id
+
   if (jsonOutput) {
-    return toJsonOutput("save", {
+    return toSuccessOutput("Memory saved successfully", newMemId, {
       shelf: args.shelf,
       content: args.content.slice(0, 100),
       tags: tagList,
@@ -152,13 +162,18 @@ async function handleRecall(
     query?: string
     shelf?: string
     strict_session?: boolean
+    created_after?: string
+    created_before?: string
+    limit?: number
+    offset?: number
+    linked_task_id?: string
     json?: boolean
   },
   jsonOutput: boolean
 ): Promise<string> {
   if (!args.query?.trim()) {
     return jsonOutput
-      ? toJsonOutput("recall", { error: "query required" })
+      ? toErrorOutput("query is required")
       : "ERROR: query is required. Provide a search keyword."
   }
 
@@ -169,43 +184,70 @@ async function handleRecall(
 
   if (memsState.mems.length === 0) {
     return jsonOutput
-      ? toJsonOutput("recall", { results: [], total: 0 })
+      ? toSuccessOutput("No memories found", undefined, { results: [], total: 0 })
       : "Mems Brain is empty. Use hivemind_memory save to store memories first."
+  }
+
+  // P0-7 Fix 2: Parse time bounds
+  const createdAfter = args.created_after ? new Date(args.created_after).getTime() : undefined
+  const createdBefore = args.created_before ? new Date(args.created_before).getTime() : undefined
+  const limit = args.limit ?? 20
+  const offset = args.offset ?? 0
+
+  // Validate date parsing
+  if (args.created_after && isNaN(createdAfter!)) {
+    return jsonOutput
+      ? toErrorOutput("invalid created_after date format - must be valid ISO datetime")
+      : "ERROR: created_after must be a valid ISO datetime string."
+  }
+  if (args.created_before && isNaN(createdBefore!)) {
+    return jsonOutput
+      ? toErrorOutput("invalid created_before date format - must be valid ISO datetime")
+      : "ERROR: created_before must be a valid ISO datetime string."
   }
 
   const results = searchMems(memsState, args.query, args.shelf, {
     sessionId,
     strictSession: args.strict_session ?? false,
     preferSession: true,
+    // P0-7 Fix 2: Time-bounded search
+    createdAfter,
+    createdBefore,
+    linkedTaskId: args.linked_task_id,
+    limit,
+    offset,
   })
 
   if (results.length === 0) {
     const filterNote = args.shelf ? ` in shelf "${args.shelf}"` : ""
     return jsonOutput
-      ? toJsonOutput("recall", { results: [], total: 0, query: args.query, shelf: args.shelf })
+      ? toSuccessOutput("No memories found", undefined, { results: [], total: 0, query: args.query, shelf: args.shelf, limit, offset })
       : `No memories found for "${args.query}"${filterNote}. Try a broader search or different keywords.`
   }
 
-  const shown = results.slice(0, MAX_RESULTS)
+  // Results already paginated by searchMems
+  const shown = results
 
   if (jsonOutput) {
-    return toJsonOutput("recall", {
+    return toSuccessOutput(`Found ${results.length} memories`, undefined, {
       query: args.query,
       shelf: args.shelf || null,
       total: results.length,
-        results: shown.map(m => ({
-          id: m.id,
-          shelf: m.shelf,
-          content: m.content,
-          tags: m.tags,
-          sessionId: m.session_id,
-          createdAt: new Date(m.created_at).toISOString(),
-        })),
-      })
+      limit,
+      offset,
+      results: shown.map(m => ({
+        id: m.id,
+        shelf: m.shelf,
+        content: m.content,
+        tags: m.tags,
+        sessionId: m.session_id,
+        createdAt: new Date(m.created_at).toISOString(),
+      })),
+    })
   }
 
   const lines: string[] = []
-  lines.push(`=== RECALL: ${results.length} memories found for "${args.query}" ===`)
+  lines.push(`=== RECALL: ${results.length} memories found for "${args.query}" (limit=${limit}, offset=${offset}) ===`)
   lines.push("")
 
   for (const m of shown) {
@@ -218,8 +260,8 @@ async function handleRecall(
     lines.push("")
   }
 
-  if (results.length > MAX_RESULTS) {
-    lines.push(`... and ${results.length - MAX_RESULTS} more. Narrow your search or filter by shelf.`)
+  if (results.length === limit) {
+    lines.push(`... max ${limit} results shown. Use offset to see more.`)
   }
 
   lines.push("=== END RECALL ===")
@@ -244,7 +286,7 @@ async function handleList(
 
   if (pool.mems.length === 0) {
     return jsonOutput
-      ? toJsonOutput("list", { shelves: {}, total: 0, recent: [] })
+      ? toSuccessOutput("No memories found", undefined, { shelves: {}, total: 0, recent: [] })
       : "Mems Brain is empty. Use hivemind_memory save to store decisions, patterns, errors, or solutions."
   }
 
@@ -262,7 +304,7 @@ async function handleList(
     .slice(0, 3)
 
   if (jsonOutput) {
-    return toJsonOutput("list", {
+    return toSuccessOutput("Memories listed", undefined, {
       total: memsState.mems.length,
       scope: _args.strict_session ? "session" : "global",
       shelves: summary,

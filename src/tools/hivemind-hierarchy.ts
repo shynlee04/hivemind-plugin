@@ -23,22 +23,7 @@ import {
   getTreeStats,
   getCursorNode,
 } from "../lib/hierarchy-tree.js"
-
-interface JsonOutput {
-  success: boolean
-  action: string
-  data: Record<string, unknown>
-  timestamp: string
-}
-
-function toJsonOutput(action: string, data: Record<string, unknown>): string {
-  return JSON.stringify({
-    success: true,
-    action,
-    data,
-    timestamp: new Date().toISOString(),
-  } as JsonOutput)
-}
+import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
 export function createHivemindHierarchyTool(directory: string): ToolDefinition {
   return tool({
@@ -80,7 +65,7 @@ export function createHivemindHierarchyTool(directory: string): ToolDefinition {
           return handleStatus(directory, jsonOutput)
         default:
           return jsonOutput
-            ? toJsonOutput("error", { message: `Unknown action: ${args.action}` })
+            ? toErrorOutput(`Unknown action: ${args.action}`)
             : `ERROR: Unknown action. Use prune, migrate, or status.`
       }
     },
@@ -90,7 +75,7 @@ export function createHivemindHierarchyTool(directory: string): ToolDefinition {
 async function handlePrune(directory: string, dryRun: boolean, jsonOutput: boolean): Promise<string> {
   if (!treeExists(directory)) {
     return jsonOutput
-      ? toJsonOutput("prune", { error: "no hierarchy tree", exists: false })
+      ? toErrorOutput("No hierarchy tree exists")
       : "ERROR: No hierarchy tree exists. Use hivemind_session start or update to create one."
   }
 
@@ -104,13 +89,13 @@ async function handlePrune(directory: string, dryRun: boolean, jsonOutput: boole
 
   if (completedBranches.length === 0) {
     return jsonOutput
-      ? toJsonOutput("prune", { pruned: 0, message: "no completed branches to prune" })
+      ? toSuccessOutput("No completed branches to prune", undefined, { pruned: 0 })
       : "No completed branches to prune."
   }
 
   if (dryRun) {
     if (jsonOutput) {
-      return toJsonOutput("prune", {
+      return toSuccessOutput("Dry run complete", undefined, {
         dryRun: true,
         wouldPrune: completedBranches.length,
         nodes: completedBranches.map(n => ({ id: n.id, content: n.content })),
@@ -139,7 +124,7 @@ async function handlePrune(directory: string, dryRun: boolean, jsonOutput: boole
   const afterStats = getTreeStats(pruneResult.tree)
 
   if (jsonOutput) {
-    return toJsonOutput("prune", {
+    return toSuccessOutput(`Pruned ${pruneResult.pruned} branches`, undefined, {
       pruned: pruneResult.pruned,
       before: { totalNodes: beforeStats.totalNodes, depth: beforeStats.depth },
       after: { totalNodes: afterStats.totalNodes, depth: afterStats.depth },
@@ -175,13 +160,13 @@ async function handleMigrate(
 ): Promise<string> {
   if (!nodeId || !parentId) {
     return jsonOutput
-      ? toJsonOutput("migrate", { error: "nodeId and parentId required" })
+      ? toErrorOutput("nodeId and parentId are required")
       : "ERROR: Both nodeId and parentId are required for migrate."
   }
 
   if (!treeExists(directory)) {
     return jsonOutput
-      ? toJsonOutput("migrate", { error: "no hierarchy tree" })
+      ? toErrorOutput("No hierarchy tree exists")
       : "ERROR: No hierarchy tree exists."
   }
 
@@ -190,7 +175,7 @@ async function handleMigrate(
 
   if (!node) {
     return jsonOutput
-      ? toJsonOutput("migrate", { error: "node not found", nodeId })
+      ? toErrorOutput(`Node ${nodeId} not found in hierarchy`)
       : `ERROR: Node ${nodeId} not found in hierarchy.`
   }
 
@@ -198,7 +183,7 @@ async function handleMigrate(
 
   if (!parent) {
     return jsonOutput
-      ? toJsonOutput("migrate", { error: "parent not found", parentId })
+      ? toErrorOutput(`Parent node ${parentId} not found in hierarchy`)
       : `ERROR: Parent node ${parentId} not found in hierarchy.`
   }
 
@@ -207,7 +192,7 @@ async function handleMigrate(
   await saveTree(directory, tree)
 
   if (jsonOutput) {
-    return toJsonOutput("migrate", {
+    return toSuccessOutput("Node migrated", nodeId, {
       nodeId,
       fromParent: node.parentId,
       toParent: parentId,
@@ -242,7 +227,7 @@ function findNodeById(
 async function handleStatus(directory: string, jsonOutput: boolean): Promise<string> {
   if (!treeExists(directory)) {
     return jsonOutput
-      ? toJsonOutput("status", { exists: false })
+      ? toSuccessOutput("No hierarchy tree", undefined, { exists: false })
       : "No hierarchy tree exists. Use hivemind_session start or update to create one."
   }
 
@@ -251,7 +236,7 @@ async function handleStatus(directory: string, jsonOutput: boolean): Promise<str
   const cursor = getCursorNode(tree)
 
   if (jsonOutput) {
-    return toJsonOutput("status", {
+    return toSuccessOutput("Hierarchy status", undefined, {
       exists: true,
       totalNodes: stats.totalNodes,
       depth: stats.depth,

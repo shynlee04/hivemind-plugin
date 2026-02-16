@@ -9,22 +9,7 @@ import {
   type SessionResult,
 } from "../lib/session-engine.js"
 import type { SessionMode } from "../schemas/brain-state.js"
-
-interface JsonOutput {
-  success: boolean
-  action: string
-  data: Record<string, unknown>
-  timestamp: string
-}
-
-function toJsonOutput(action: string, success: boolean, data: Record<string, unknown>): string {
-  return JSON.stringify({
-    success,
-    action,
-    data,
-    timestamp: new Date().toISOString(),
-  } as JsonOutput)
-}
+import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
 function toText(result: SessionResult): string {
   if (!result.success) {
@@ -141,8 +126,9 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
 
       if (args.action === "status") {
         const status = await getSessionStatus(directory)
+        const sessionId = typeof status.session?.id === "string" ? status.session.id : undefined
         return jsonOutput
-          ? toJsonOutput("status", true, {
+          ? toSuccessOutput("Session status", sessionId, {
             active: status.active,
             session: status.session,
             hierarchy: status.hierarchy,
@@ -181,7 +167,12 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
       }
 
       return jsonOutput
-        ? toJsonOutput(result.action, result.success, { ...result.data, error: result.error })
+        ? result.success
+          ? toSuccessOutput(`Session ${result.action} completed`, result.data.sessionId as string | undefined, {
+              ...result.data,
+              error: result.error,
+            })
+          : toErrorOutput(result.error || "Operation failed")
         : toText(result)
     },
   })

@@ -15,22 +15,7 @@
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool"
 import { createStateManager } from "../lib/persistence.js"
 import { loadAnchors, saveAnchors, addAnchor } from "../lib/anchors.js"
-
-interface JsonOutput {
-  success: boolean
-  action: string
-  data: Record<string, unknown>
-  timestamp: string
-}
-
-function toJsonOutput(action: string, data: Record<string, unknown>): string {
-  return JSON.stringify({
-    success: true,
-    action,
-    data,
-    timestamp: new Date().toISOString(),
-  } as JsonOutput)
-}
+import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
 export function createHivemindAnchorTool(directory: string): ToolDefinition {
   return tool({
@@ -67,7 +52,7 @@ export function createHivemindAnchorTool(directory: string): ToolDefinition {
           return handleGet(directory, args, jsonOutput)
         default:
           return jsonOutput
-            ? toJsonOutput("error", { message: `Unknown action: ${args.action}` })
+            ? toErrorOutput(`Unknown action: ${args.action}`)
             : `ERROR: Unknown action. Use save, list, or get.`
       }
     },
@@ -85,13 +70,13 @@ async function handleSave(
 ): Promise<string> {
   if (!args.key?.trim()) {
     return jsonOutput
-      ? toJsonOutput("save", { error: "key required" })
+      ? toErrorOutput("key cannot be empty")
       : "ERROR: key cannot be empty. Use a descriptive name like 'DB_SCHEMA' or 'API_PORT'."
   }
 
   if (!args.value?.trim()) {
     return jsonOutput
-      ? toJsonOutput("save", { error: "value required" })
+      ? toErrorOutput("value cannot be empty")
       : "ERROR: value cannot be empty. Describe the constraint or fact."
   }
 
@@ -111,7 +96,7 @@ async function handleSave(
   const count = anchorsState.anchors.length
 
   if (jsonOutput) {
-    return toJsonOutput("save", {
+    return toSuccessOutput(existing ? "Anchor updated" : "Anchor saved", args.key, {
       key: args.key,
       value: args.value,
       previousValue: existing?.value || null,
@@ -136,12 +121,12 @@ async function handleList(
 
   if (anchorsState.anchors.length === 0) {
     return jsonOutput
-      ? toJsonOutput("list", { anchors: [], total: 0 })
+      ? toSuccessOutput("No anchors found", undefined, { anchors: [], total: 0 })
       : "No anchors saved. Use hivemind_anchor save to store critical constraints."
   }
 
   if (jsonOutput) {
-    return toJsonOutput("list", {
+    return toSuccessOutput("Anchors listed", undefined, {
       total: anchorsState.anchors.length,
       anchors: anchorsState.anchors.map(a => ({
         key: a.key,
@@ -190,7 +175,7 @@ async function handleGet(
 ): Promise<string> {
   if (!args.key?.trim()) {
     return jsonOutput
-      ? toJsonOutput("get", { error: "key required" })
+      ? toErrorOutput("key is required")
       : "ERROR: key is required. Specify the anchor key to retrieve."
   }
 
@@ -199,12 +184,12 @@ async function handleGet(
 
   if (!anchor) {
     return jsonOutput
-      ? toJsonOutput("get", { error: "not_found", key: args.key })
+      ? toErrorOutput(`Anchor [${args.key}] not found`)
       : `Anchor [${args.key}] not found. Use hivemind_anchor list to see available anchors.`
   }
 
   if (jsonOutput) {
-    return toJsonOutput("get", {
+    return toSuccessOutput("Anchor retrieved", anchor.key, {
       key: anchor.key,
       value: anchor.value,
       createdAt: new Date(anchor.created_at).toISOString(),
