@@ -68,6 +68,13 @@ export interface HivemindPaths {
   plansDir: string
   plansManifest: string
 
+  // graph/ (v3.0 relational graph structure)
+  graphDir: string
+  graphTrajectory: string   // graph/trajectory.json
+  graphPlans: string        // graph/plans.json
+  graphTasks: string        // graph/tasks.json
+  graphMems: string         // graph/mems.json
+
   // governance SOT — Level 0 {future: codewiki + codemap}
   // These directories exist in the structure from day one.
   // They are the codebase source-of-truth that GOVERNS everything below:
@@ -117,6 +124,7 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
   const activeDir = join(sessionsDir, "active")
   const archiveDir = join(sessionsDir, "archive")
   const plansDir = join(root, "plans")
+  const graphDir = join(root, "graph")
   const codemapDir = join(root, "codemap")
   const codewikiDir = join(root, "codewiki")
   const logsDir = join(root, "logs")
@@ -148,6 +156,12 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
 
     plansDir,
     plansManifest: join(plansDir, "manifest.json"),
+
+    graphDir,
+    graphTrajectory: join(graphDir, "trajectory.json"),
+    graphPlans: join(graphDir, "plans.json"),
+    graphTasks: join(graphDir, "tasks.json"),
+    graphMems: join(graphDir, "mems.json"),
 
     codemapDir,
     codemapManifest: join(codemapDir, "manifest.json"),
@@ -428,6 +442,7 @@ export function getAllDirectories(projectRoot: string): string[] {
     p.archiveDir,
     p.exportsDir,
     p.plansDir,
+    p.graphDir,
     p.codemapDir,
     p.codewikiDir,
     p.logsDir,

@@ -1,5 +1,7 @@
 **NON-NEGOTIABLE RULES:** CAN'T NOT SKIP - MOST IMPORTANT FOR FRONT FACING AGENTS - APART FROM CONTEXT REGULATING, RECORDING, RETRIVING AND GIT COMMIT - YOU ARE NOT ALLOWED TO CARRY ANY OTHER ACTIONS THAN **DELEGATION** AND **CORDINATION OF OTHER AGENTS**
 
+**ONLY FRONT AGENT AS FOR THE ONE HAVING CONVERSATION WITH HUMAN USER IS COUNTED FOR COORDINATOR JOB - IF YOU ARE "BUILD" START IMPLEMENT
+
 1.  if you are the **front-facing-agent:** never start action/execution first -> **ALWAYS** load context, retrace past event - knowing which TODO tasks connected with, what are past plans
 2. Number 1 is true not matter in-between turns, starting new or after compact
 3. from 1 and 2 , never act or execute with out plan

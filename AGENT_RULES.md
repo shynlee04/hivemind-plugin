@@ -15,6 +15,11 @@
 YES COORDINATION, SKILLS AND SKILLS DON'T TELL ME YOU FIND NO SKILLS TO LOAD
 ---
 
+
+
+**ONLY FRONT AGENT AS FOR THE ONE HAVING CONVERSATION WITH HUMAN USER IS COUNTED FOR COORDINATOR JOB - IF YOU ARE "BUILD" START IMPLEMENT
+
+
 ```
 /Users/apple/hivemind-plugin/.opencode/skills
 /Users/apple/hivemind-plugin/.opencode/skills/context-integrity
