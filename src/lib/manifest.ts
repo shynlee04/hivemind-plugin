@@ -60,7 +60,7 @@ export interface SessionManifestEntry {
   summary?: string
   mode?: string
   trajectory?: string
-  session_id?: string | string[]
+  session_id?: string | string[] | string[]
   linked_plans: string[]
 }
 
