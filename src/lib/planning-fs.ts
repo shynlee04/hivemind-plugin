@@ -229,6 +229,7 @@ export async function registerSession(
     mode?: string
     trajectory?: string
     linkedPlans?: string[]
+    sessionId?: string
   },
 ): Promise<SessionManifest> {
   const safeFile = sanitizeSessionFileName(fileName)
@@ -244,8 +245,12 @@ export async function registerSession(
     created: meta?.created ?? Date.now(),
     mode: meta?.mode,
     trajectory: meta?.trajectory,
+    session_id: meta?.sessionId,
     linked_plans: meta?.linkedPlans ?? [],
   });
+
+  console.log("[DEBUG] Registering session:", stamp, "ID:", meta?.sessionId);
+  console.log("[DEBUG] Updated manifest entry:", updated.sessions.find(s => s.stamp === stamp));
 
   await writeManifest(projectRoot, updated);
   return updated;
