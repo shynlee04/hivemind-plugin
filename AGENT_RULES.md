@@ -238,15 +238,87 @@ compact_session({ summary })     — END when done
 
 ---
 
-## 10. KEY FILES
+## 10. FILE REGISTRY
+
+### Architectural Layers
+
+| Layer | Location | Role | Constraint |
+|-------|----------|------|------------|
+| **Tools** | `src/tools/` | Write-Only (LLM-facing) | ≤100 lines each |
+| **Libraries** | `src/lib/` | Subconscious Engine (pure TS) | No LLM prompts, returns JSON/XML |
+| **Hooks** | `src/hooks/` | Read-Auto (context injection) | SDK event listeners |
+| **Schemas** | `src/schemas/` | DNA (Zod validation) | UUID + FK constraints |
+
+### Key Files by Layer
+
+#### Schemas (`src/schemas/`)
+| File | Purpose | Status |
+|------|---------|--------|
+| `graph-nodes.ts` | Zod schemas for all graph entities | Active |
+| `graph-state.ts` | State validation schemas | Active |
+| `events.ts` | **NEW** Event schemas for in-process engine | Active |
+| `config.ts` | Configuration validation | Active |
+| `brain-state.ts` | Brain state schemas | Active |
+| `manifest.ts` | Manifest schemas | Active |
+| `hierarchy.ts` | Hierarchy tree schemas | Active |
+
+#### Libraries (`src/lib/`)
+| File | Purpose | Status |
+|------|---------|--------|
+| `cognitive-packer.ts` | Context compiler (Phase 2) | Active |
+| `graph-io.ts` | CRUD for graph/*.json | Active |
+| `session-swarm.ts` | Actor Model swarms (Phase 4) | Active |
+| `event-bus.ts` | **NEW** In-process EventEmitter singleton | Active |
+| `watcher.ts` | **NEW** Native fs.watch with debouncing | Active |
+| `paths.ts` | Single source of truth for `.hivemind/` | Active |
+| `persistence.ts` | Atomic file I/O | Active |
+| `hierarchy-tree.ts` | Trajectory → Tactic → Action tree | Active |
+| `manifest.ts` | Manifest management | Active |
+| `mems.ts` | Memory CRUD operations | Active |
+| `anchors.ts` | Immutable anchor management | Active |
+| `staleness.ts` | Time-to-stale calculations | Active |
+| `detection.ts` | Governance signal detection | Active |
+| `dual-read.ts` | Dual read pattern for context | Active |
+| `session-engine.ts` | Session lifecycle engine | Active |
+| `compaction-engine.ts` | Context compaction | Active |
+| `brownfield-scan.ts` | Project scanning | Active |
+| `governance-instruction.ts` | Instruction compilation | Active |
+
+#### Hooks (`src/hooks/`)
+| File | Purpose | Status |
+|------|---------|--------|
+| `session-lifecycle.ts` | Context injection every turn | Active |
+| `messages-transform.ts` | Mid-turn injection | Active |
+| `event-handler.ts` | **NEW** Session event processing | Active |
+| `soft-governance.ts` | Non-blocking governance | Active |
+| `compaction.ts` | Compaction event handling | Active |
+| `tool-gate.ts` | Tool execution gates | Active |
+| `sdk-context.ts` | SDK context injection | Active |
+
+#### Tools (`src/tools/`)
+| File | Purpose | Status |
+|------|---------|--------|
+| `hivemind-session.ts` | Session lifecycle tools | Active |
+| `hivemind-memory.ts` | Memory management tools | Active |
+| `hivemind-anchor.ts` | Anchor management tools | Active |
+| `hivemind-hierarchy.ts` | Hierarchy management tools | Active |
+| `hivemind-inspect.ts` | State inspection tools | Active |
+| `hivemind-cycle.ts` | Export cycle tools | Active |
+
+### Recent Changes (Phase 7)
+
+| Change | File | Notes |
+|--------|------|-------|
+| **NEW** | `src/lib/event-bus.ts` | In-process EventEmitter, no external deps |
+| **NEW** | `src/lib/watcher.ts` | Native fs.watch with debouncing |
+| **NEW** | `src/schemas/events.ts` | Zod event schemas |
+| **NEW** | `src/hooks/event-handler.ts` | Session event processing |
+| **DELETED** | `src/lib/sentiment.ts` | Removed in production cleanup |
+
+### Scripts
 
 | File | Purpose |
 |------|---------|
-| `src/schemas/graph-nodes.ts` | Zod schemas for all graph entities |
-| `src/lib/cognitive-packer.ts` | Context compiler (Phase 2) |
-| `src/lib/graph-io.ts` | CRUD for graph/*.json |
-| `src/lib/session-swarm.ts` | Actor Model swarms (Phase 4) |
-| `src/hooks/messages-transform.ts` | Mid-turn injection |
 | `scripts/guard-public-branch.sh` | Master branch protection |
 
 ---
