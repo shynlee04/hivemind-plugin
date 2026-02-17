@@ -2,6 +2,7 @@ import { existsSync } from "fs"
 import { mkdir, readFile, rename, unlink, writeFile } from "fs/promises"
 import { dirname } from "path"
 import { z } from "zod"
+import { readManifest, type SessionManifest } from "./manifest.js"
 
 import type { MemNode, TaskNode } from "../schemas/graph-nodes.js"
 import { withFileLock } from "./file-lock.js"
@@ -588,6 +589,29 @@ export async function loadGraphMems(
   
   // Build set of valid task IDs
   const validTaskIds = new Set(tasks.tasks.map((task) => task.id))
+
+  // Step 1b: Load sessions to get valid session IDs (sessions are also valid origins)
+  // CHIMERA-3: Allow sessions as origin_task_id
+  try {
+    const sessionsPath = paths.sessionsManifest
+    if (existsSync(sessionsPath)) {
+      const sessions = await readManifest<SessionManifest>(sessionsPath)
+      if (sessions && sessions.sessions) {
+         sessions.sessions.forEach(s => {
+           validTaskIds.add(s.stamp)
+           if (s.session_id) {
+             if (Array.isArray(s.session_id)) {
+               s.session_id.forEach(id => validTaskIds.add(id))
+             } else {
+               validTaskIds.add(s.session_id)
+             }
+           }
+         })
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to load sessions for FK validation", e)
+  }
 
   // Step 2: Load and validate mems with FK validation
   const validatedState = await validateMemsWithFKValidation(filePath, validTaskIds, orphanPath)
