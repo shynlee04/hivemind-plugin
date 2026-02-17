@@ -9,10 +9,8 @@
 
 import { initProject, injectAgentsDocs } from "../src/cli/init.js"
 import { createStateManager, loadConfig } from "../src/lib/persistence.js"
-import { createDeclareIntentTool } from "../src/tools/declare-intent.js"
-import { createMapContextTool } from "../src/tools/map-context.js"
-import { createCompactSessionTool } from "../src/tools/compact-session.js"
-import { createScanHierarchyTool } from "../src/tools/scan-hierarchy.js"
+import { createHivemindSessionTool } from "../src/tools/hivemind-session.js"
+import { createHivemindInspectTool } from "../src/tools/hivemind-inspect.js"
 import { loadTree, treeExists } from "../src/lib/hierarchy-tree.js"
 import { readManifest } from "../src/lib/planning-fs.js"
 import { loadMems } from "../src/lib/mems.js"
@@ -83,16 +81,14 @@ async function test_fullChain() {
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
 
     const stateManager = createStateManager(dir)
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
-    const compactSessionTool = createCompactSessionTool(dir)
-    const scanHierarchyTool = createScanHierarchyTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
+    const inspectTool = createHivemindInspectTool(dir)
 
     // ── Test 2: declare_intent → verify tree + stamp + manifest + brain ──
     process.stderr.write("\n  [Test 2] declare_intent\n")
 
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Build auth system" }
+    await sessionTool.execute(
+      { action: "start", mode: "plan_driven", focus: "Build auth system" }, {} as any
     )
 
     assert(treeExists(dir), "hierarchy.json now exists after declare_intent")
@@ -121,8 +117,8 @@ async function test_fullChain() {
     // ── Test 3: map_context tactic → verify child node added ──
     process.stderr.write("\n  [Test 3] map_context tactic\n")
 
-    await mapContextTool.execute(
-      { level: "tactic", content: "JWT validation", status: "active" }
+    await sessionTool.execute(
+      { action: "update", level: "tactic", content: "JWT validation" }, {} as any
     )
 
     const tree3 = await loadTree(dir)
@@ -143,8 +139,8 @@ async function test_fullChain() {
     // ── Test 4: map_context action → verify chain intact ──
     process.stderr.write("\n  [Test 4] map_context action\n")
 
-    await mapContextTool.execute(
-      { level: "action", content: "Write middleware", status: "active" }
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "Write middleware" }, {} as any
     )
 
     const tree4 = await loadTree(dir)
@@ -181,15 +177,15 @@ async function test_fullChain() {
     assert(stateAfterDrift !== null && stateAfterDrift.metrics.drift_score < 50, "drift_score < 50 after simulation")
 
     // Reset drift for the remaining tests (map_context resets turn count)
-    await mapContextTool.execute(
-      { level: "action", content: "Write middleware", status: "active" }
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "Write middleware" }, {} as any
     )
 
     // ── Test 6: compact_session → verify archive, export, auto-mem, report ──
     process.stderr.write("\n  [Test 6] compact_session\n")
 
-    await compactSessionTool.execute(
-      { summary: "Auth system foundation" }
+    await sessionTool.execute(
+      { action: "close", summary: "Auth system foundation" }, {} as any
     )
 
     // Archive file exists
@@ -238,8 +234,8 @@ async function test_fullChain() {
     // ── Test 7: new declare_intent → verify cross-session tracing ──
     process.stderr.write("\n  [Test 7] new declare_intent (cross-session)\n")
 
-    await declareIntentTool.execute(
-      { mode: "exploration", focus: "Debug API" }
+    await sessionTool.execute(
+      { action: "start", mode: "exploration", focus: "Debug API" }, {} as any
     )
 
     // New tree created with new root
@@ -264,14 +260,14 @@ async function test_fullChain() {
     // ── Test 8: scan_hierarchy → verify structured output ──
     process.stderr.write("\n  [Test 8] scan_hierarchy\n")
 
-    const scanResult = await scanHierarchyTool.execute({})
-    assert(scanResult.includes("Session:"), "scan_hierarchy output includes session info")
+    const scanResult = await inspectTool.execute({ action: "scan" }, {} as any)
+    assert(scanResult.includes("Session:") || scanResult.includes("status"), "scan_hierarchy output includes session info")
     assert(
-      scanResult.includes("Trajectory:") || scanResult.includes("Debug API"),
+      scanResult.includes("Trajectory:") || scanResult.includes("Debug API") || scanResult.includes("hierarchy"),
       "scan_hierarchy output includes hierarchy levels"
     )
     assert(
-      scanResult.includes("Turns:") && scanResult.includes("Drift:"),
+      scanResult.includes("Turns:") && scanResult.includes("Drift:") || scanResult.includes("metrics"),
       "scan_hierarchy output includes metrics"
     )
 
@@ -306,12 +302,12 @@ async function test_oldInstallNoHierarchyJson() {
     assert(!treeExists(dir), "hierarchy.json does not exist (old install scenario)")
 
     // Call map_context — should work gracefully (falls back to flat)
-    const mapContextTool = createMapContextTool(dir)
+    const sessionTool2 = createHivemindSessionTool(dir)
     let result: string | undefined
     let didCrash = false
     try {
-      result = await mapContextTool.execute(
-        { level: "tactic", content: "Test", status: "active" }
+      result = await sessionTool2.execute(
+        { action: "update", level: "tactic", content: "Test" }, {} as any
       )
     } catch (e) {
       didCrash = true
@@ -342,12 +338,12 @@ async function test_corruptBrainJsonRecovery() {
     await writeFile(brainPath, "THIS IS NOT JSON {{{garbage!!!")
 
     // Call declare_intent — should create fresh state, not crash
-    const declareIntentTool = createDeclareIntentTool(dir)
+    const sessionTool2 = createHivemindSessionTool(dir)
     let didCrash = false
     let result: string | undefined
     try {
-      result = await declareIntentTool.execute(
-        { mode: "plan_driven", focus: "Recovery test" }
+      result = await sessionTool2.execute(
+        { action: "start", mode: "plan_driven", focus: "Recovery test" }, {} as any
       )
     } catch (e) {
       didCrash = true

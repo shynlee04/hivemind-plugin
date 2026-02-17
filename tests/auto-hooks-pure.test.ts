@@ -51,13 +51,13 @@ function makeState(overrides?: {
   });
   const state = createBrainState("test-session", config);
 
-  // Apply overrides
+  // Apply overrides - default to OPEN governance status for tests
   const result: BrainState = {
     ...state,
     session: {
       ...state.session,
       last_activity: overrides?.last_activity ?? state.session.last_activity,
-      governance_status: overrides?.governance_status ?? state.session.governance_status,
+      governance_status: overrides?.governance_status ?? "OPEN",
     },
     hierarchy: {
       trajectory: overrides?.trajectory ?? "",
@@ -303,7 +303,7 @@ function test_tool_activation() {
     "LOCKED session → declare_intent (high)"
   );
 
-  // 2. High drift → map_context (high)
+  // 2. High drift → hivemind_session (high)
   const highDrift = makeState({
     drift_score: 30,
     turn_count: 10,
@@ -311,11 +311,11 @@ function test_tool_activation() {
   });
   const hint2 = getToolActivation(highDrift);
   assert(
-    hint2 !== null && hint2.tool === "map_context" && hint2.priority === "high",
-    "high drift → map_context (high)"
+    hint2 !== null && hint2.tool === "hivemind_session" && hint2.priority === "high",
+    "high drift → hivemind_session (high)"
   );
 
-  // 3. Long session (15+ turns) → compact_session (medium)
+  // 3. Long session (15+ turns) → hivemind_cycle (medium)
   const longSession = makeState({
     turn_count: 15,
     drift_score: 80,
@@ -323,19 +323,19 @@ function test_tool_activation() {
   });
   const hint3 = getToolActivation(longSession);
   assert(
-    hint3 !== null && hint3.tool === "compact_session" && hint3.priority === "medium",
-    "long session (15+ turns) → compact_session (medium)"
+    hint3 !== null && hint3.tool === "hivemind_cycle" && hint3.priority === "medium",
+    "long session (15+ turns) → hivemind_cycle (medium)"
   );
 
-  // 4. No hierarchy + OPEN → map_context (medium)
+  // 4. No hierarchy + OPEN → hivemind_session (medium)
   const noHierarchy = makeState({
     turn_count: 2,
     drift_score: 80,
   });
   const hint4 = getToolActivation(noHierarchy);
   assert(
-    hint4 !== null && hint4.tool === "map_context" && hint4.priority === "medium",
-    "no hierarchy + OPEN → map_context (medium)"
+    hint4 !== null && hint4.tool === "hivemind_session" && hint4.priority === "medium",
+    "no hierarchy + OPEN → hivemind_session (medium)"
   );
 
   // 5. Normal state → null
@@ -381,7 +381,7 @@ function test_tool_activation() {
   const hint8 = getToolActivation(moderate);
   assert(hint8 === null, "with hierarchy set, moderate turns → null");
 
-  // 9. completedBranches >= 5 → hierarchy_manage (medium)
+  // 9. completedBranches >= 5 → hivemind_hierarchy (medium)
   const pruneable = makeState({
     trajectory: "Build auth",
     tactic: "JWT",
@@ -390,11 +390,11 @@ function test_tool_activation() {
   });
   const hint9 = getToolActivation(pruneable, { completedBranches: 5 });
   assert(
-    hint9 !== null && hint9.tool === "hierarchy_manage" && hint9.priority === "medium",
-    "completedBranches >= 5 → hierarchy_manage (medium)"
+    hint9 !== null && hint9.tool === "hivemind_hierarchy" && hint9.priority === "medium",
+    "completedBranches >= 5 → hivemind_hierarchy (medium)"
   );
 
-  // 10. hasMissingTree + flat hierarchy → hierarchy_manage (medium)
+  // 10. hasMissingTree + flat hierarchy → hivemind_hierarchy (medium)
   const migratable = makeState({
     trajectory: "Build auth",
     tactic: "JWT",
@@ -403,11 +403,11 @@ function test_tool_activation() {
   });
   const hint10 = getToolActivation(migratable, { hasMissingTree: true });
   assert(
-    hint10 !== null && hint10.tool === "hierarchy_manage" && hint10.priority === "medium",
-    "hasMissingTree + flat hierarchy → hierarchy_manage (medium)"
+    hint10 !== null && hint10.tool === "hivemind_hierarchy" && hint10.priority === "medium",
+    "hasMissingTree + flat hierarchy → hivemind_hierarchy (medium)"
   );
 
-  // 11. postCompaction → think_back (medium)
+  // 11. postCompaction → hivemind_inspect (medium)
   const postCompact = makeState({
     trajectory: "Build auth",
     turn_count: 1,
@@ -415,8 +415,8 @@ function test_tool_activation() {
   });
   const hint11 = getToolActivation(postCompact, { postCompaction: true });
   assert(
-    hint11 !== null && hint11.tool === "think_back" && hint11.priority === "medium",
-    "postCompaction → think_back (medium)"
+    hint11 !== null && hint11.tool === "hivemind_inspect" && hint11.priority === "medium",
+    "postCompaction → hivemind_inspect (medium)"
   );
 }
 

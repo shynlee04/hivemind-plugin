@@ -264,7 +264,11 @@ export async function savePlans(projectRoot: string, state: PlansState): Promise
   await saveValidatedState(filePath, PlansStateSchema, state)
 }
 
-export async function loadGraphTasks(projectRoot: string): Promise<GraphTasksState> {
+/**
+ * Internal helper: Load tasks with Zod validation only (no FK validation).
+ * Used by write operations that need to preserve all existing data.
+ */
+async function _loadRawTasks(projectRoot: string): Promise<GraphTasksState> {
   const paths = getEffectivePaths(projectRoot)
   const filePath = paths.graphTasks
   const orphanPath = paths.graphOrphans
@@ -281,7 +285,7 @@ export async function loadGraphTasks(projectRoot: string): Promise<GraphTasksSta
     if (result.success) {
       return result.data
     }
-    
+
     // Zod parse failed - attempt graceful recovery
     console.error("[graph-io] GraphTasksStateSchema parse failed, attempting recovery:", result.error.message)
     
@@ -307,7 +311,7 @@ export async function loadGraphTasks(projectRoot: string): Promise<GraphTasksSta
         })
       }
     }
-    
+
     // Return recovered tasks instead of empty state
     return {
       version: GRAPH_STATE_VERSION,
@@ -330,7 +334,7 @@ export async function addGraphTask(projectRoot: string, task: TaskNode): Promise
   let validatedTask: TaskNode
   await withFileLock(filePath, async () => {
     validatedTask = GraphTasksStateSchema.shape.tasks.element.parse(task)
-    const current = await loadGraphTasks(projectRoot)
+    const current = await _loadRawTasks(projectRoot)
 
     const taskById = new Map(current.tasks.map((item) => [item.id, item]))
     taskById.set(validatedTask!.id, validatedTask!)
@@ -349,7 +353,7 @@ export async function invalidateTask(projectRoot: string, taskId: string): Promi
   const filePath = getEffectivePaths(projectRoot).graphTasks
 
   await withFileLock(filePath, async () => {
-    const current = await loadGraphTasks(projectRoot)
+    const current = await _loadRawTasks(projectRoot)
 
     const tasks = current.tasks.map((task) => {
       if (task.id !== taskId) {
@@ -370,7 +374,11 @@ export async function invalidateTask(projectRoot: string, taskId: string): Promi
   })
 }
 
-export async function loadGraphMems(projectRoot: string): Promise<GraphMemsState> {
+/**
+ * Internal helper: Load mems with Zod validation only (no FK validation).
+ * Used by write operations that need to preserve all existing data.
+ */
+async function _loadRawMems(projectRoot: string): Promise<GraphMemsState> {
   const paths = getEffectivePaths(projectRoot)
   const filePath = paths.graphMems
   const orphanPath = paths.graphOrphans
@@ -387,7 +395,7 @@ export async function loadGraphMems(projectRoot: string): Promise<GraphMemsState
     if (result.success) {
       return result.data
     }
-    
+
     // Zod parse failed - attempt graceful recovery
     console.error("[graph-io] GraphMemsStateSchema parse failed, attempting recovery:", result.error.message)
     
@@ -413,7 +421,7 @@ export async function loadGraphMems(projectRoot: string): Promise<GraphMemsState
         })
       }
     }
-    
+
     // Return recovered mems instead of empty state
     return {
       version: GRAPH_STATE_VERSION,
@@ -443,9 +451,9 @@ export async function addGraphMem(projectRoot: string, mem: MemNode): Promise<st
   let validatedMem: MemNode
   await withFileLock(filePath, async () => {
     validatedMem = GraphMemsStateSchema.shape.mems.element.parse(mem)
-    const current = await loadGraphMems(projectRoot)
+    const current = await _loadRawMems(projectRoot)
 
-    const memById = new Map(current.mems.map((item) => [item.id, item]))
+    const memById = new Map(current.mems.map((item: MemNode) => [item.id, item]))
     memById.set(validatedMem!.id, validatedMem!)
 
     const nextState: GraphMemsState = {
@@ -462,9 +470,9 @@ export async function flagFalsePath(projectRoot: string, memId: string): Promise
   const filePath = getEffectivePaths(projectRoot).graphMems
 
   await withFileLock(filePath, async () => {
-    const current = await loadGraphMems(projectRoot)
+    const current = await _loadRawMems(projectRoot)
 
-    const mems = current.mems.map((mem) => {
+    const mems = current.mems.map((mem: MemNode) => {
       if (mem.id !== memId) {
         return mem
       }
@@ -504,7 +512,7 @@ export interface FKValidationOptions {
  * @param options - FK validation options
  * @returns Tasks state with only valid (non-orphan) tasks
  */
-export async function loadGraphTasksWithFKValidation(
+export async function loadGraphTasks(
   projectRoot: string,
   options: FKValidationOptions = {},
 ): Promise<GraphTasksState> {
@@ -517,9 +525,9 @@ export async function loadGraphTasksWithFKValidation(
     return EMPTY_TASKS_STATE
   }
 
-  // If FK validation disabled, fall back to standard load
+  // If FK validation disabled, fall back to raw load (Zod only)
   if (!enabled) {
-    return loadGraphTasks(projectRoot)
+    return _loadRawTasks(projectRoot)
   }
 
   // Step 1: Load plans to extract valid phase IDs
@@ -557,7 +565,7 @@ export async function loadGraphTasksWithFKValidation(
  * @param options - FK validation options
  * @returns Mems state with only valid (non-orphan) mems
  */
-export async function loadGraphMemsWithFKValidation(
+export async function loadGraphMems(
   projectRoot: string,
   options: FKValidationOptions = {},
 ): Promise<GraphMemsState> {
@@ -570,13 +578,13 @@ export async function loadGraphMemsWithFKValidation(
     return EMPTY_MEMS_STATE
   }
 
-  // If FK validation disabled, fall back to standard load
+  // If FK validation disabled, fall back to raw load (Zod only)
   if (!enabled) {
-    return loadGraphMems(projectRoot)
+    return _loadRawMems(projectRoot)
   }
 
-  // Step 1: Load tasks to get valid task IDs
-  const tasks = await loadGraphTasks(projectRoot)
+  // Step 1: Load tasks to get valid task IDs (use raw load to get ALL tasks)
+  const tasks = await _loadRawTasks(projectRoot)
   
   // Build set of valid task IDs
   const validTaskIds = new Set(tasks.tasks.map((task) => task.id))
@@ -610,9 +618,10 @@ export async function loadGraphWithFullFKValidation(
   mems: GraphMemsState
 }> {
   // Load in dependency order for FK validation
+  // Note: loadGraphTasks and loadGraphMems now have FK validation built-in
   const trajectory = await loadTrajectory(projectRoot)
-  const tasks = await loadGraphTasksWithFKValidation(projectRoot, options)
-  const mems = await loadGraphMemsWithFKValidation(projectRoot, options)
+  const tasks = await loadGraphTasks(projectRoot, options)
+  const mems = await loadGraphMems(projectRoot, options)
   
   return { trajectory, tasks, mems }
 }

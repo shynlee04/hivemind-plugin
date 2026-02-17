@@ -151,7 +151,7 @@ export function createBrainState(
       id: sessionId,
       mode,
       governance_mode: config.governance_mode,
-      governance_status: config.governance_mode === "strict" ? "LOCKED" : "OPEN",
+      governance_status: "LOCKED", // Always start LOCKED - call startSession() to unlock
       start_time: now,
       last_activity: now,
       date: new Date(now).toISOString().split("T")[0],

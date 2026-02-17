@@ -8,8 +8,8 @@
  *   - file.edited: Track file changes
  *   - session.diff: Track session diffs
  *
- * FLAW-TOAST-004/005/006 FIX: Added toast throttling to prevent noise cascade.
- * - Drift toasts centralized in soft-governance.ts (emits when drift_score < 30)
+ * FLAW-TOAST-004/005/006/007 FIX: Removed all governance toasts.
+ * - Drift toasts removed (FLAW-TOAST-007) - visible in scan_hierarchy output
  * - Staleness toasts removed - visible in scan_hierarchy output
  * - Session compacted toast removed - duplicate of compaction.ts
  *

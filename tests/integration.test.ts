@@ -1,20 +1,24 @@
 /**
  * Integration Tests — End-to-end workflow validation
  *
- * Tests the complete lifecycle: init → declare_intent → map_context → compact_session
+ * Tests the complete lifecycle: init → hivemind_session(start) → hivemind_session(update) → hivemind_session(close)
+ * 
+ * Updated to use consolidated tools (V3.0):
+ * - hivemind_session: replaces declare_intent, map_context, compact_session
+ * - hivemind_inspect: replaces scan_hierarchy, think_back
+ * - hivemind_memory: replaces save_mem, recall_mems
+ * - hivemind_anchor: replaces save_anchor
  */
 
 import { initProject } from "../src/cli/init.js"
 import { createStateManager, loadConfig, saveConfig } from "../src/lib/persistence.js"
 import { readActiveMd, listArchives } from "../src/lib/planning-fs.js"
 import { readFile } from "fs/promises"
-import { createDeclareIntentTool } from "../src/tools/declare-intent.js"
-import { createMapContextTool } from "../src/tools/map-context.js"
-import { createCompactSessionTool } from "../src/tools/compact-session.js"
-import { createScanHierarchyTool } from "../src/tools/scan-hierarchy.js"
-import { createSaveAnchorTool } from "../src/tools/save-anchor.js"
-import { createThinkBackTool } from "../src/tools/think-back.js"
-// check_drift absorbed into scan_hierarchy (include_drift=true)
+// Consolidated tools (V3.0)
+import { createHivemindSessionTool } from "../src/tools/hivemind-session.js"
+import { createHivemindInspectTool } from "../src/tools/hivemind-inspect.js"
+import { createHivemindMemoryTool } from "../src/tools/hivemind-memory.js"
+import { createHivemindAnchorTool } from "../src/tools/hivemind-anchor.js"
 import { createCompactionHook } from "../src/hooks/compaction.js"
 import { createSessionLifecycleHook } from "../src/hooks/session-lifecycle.js"
 import { createToolGateHookInternal } from "../src/hooks/tool-gate.js"
@@ -28,12 +32,22 @@ import { loadMems } from "../src/lib/mems.js"
 import { loadGraphMems } from "../src/lib/graph-io.js"
 import { loadTree } from "../src/lib/hierarchy-tree.js"
 import { getEffectivePaths } from "../src/lib/paths.js"
-import { createSaveMemTool } from "../src/tools/save-mem.js"
-// list_shelves absorbed into recall_mems (no query = list mode)
-import { createRecallMemsTool } from "../src/tools/recall-mems.js"
 import { mkdtemp, rm, readdir, mkdir, writeFile } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
+
+
+// Mock context for tool execution (tests don't use context features)
+const mockContext = {
+  sessionID: "test-session",
+  messageID: "test-message",
+  agent: "test-agent",
+  directory: "",
+  worktree: "",
+  abort: new AbortController().signal,
+  metadata: () => {},
+  ask: async () => {},
+} as any
 
 // ─── Harness ─────────────────────────────────────────────────────────
 
@@ -78,17 +92,14 @@ async function test_fullLifecycle() {
     const stateManager = createStateManager(dir)
     let state = await stateManager.load()
     assert(state !== null, "state exists after init")
-    assert(state?.session.governance_status === "OPEN", "assisted mode starts OPEN")
+    // V3.0: initProject creates LOCKED state; startSession unlocks it
+    assert(state?.session.governance_status === "LOCKED", "assisted mode starts LOCKED after init")
 
     // Create tool instances bound to this directory
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
-    const compactSessionTool = createCompactSessionTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
 
-    // Step 2: Declare intent
-    const intentResult = await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Build authentication system" }
-    )
+    // Step 2: Declare intent (V3.0 requires explicit action: "start")
+    const intentResult = await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Build authentication system" }, mockContext)
     const parsedIntent = JSON.parse(intentResult as string)
     // Check success status - focus is stored in state, message may vary
     assert(
@@ -100,10 +111,8 @@ async function test_fullLifecycle() {
     assert(state?.session.mode === "plan_driven", "session mode is plan_driven")
     assert(state?.hierarchy.trajectory === "Build authentication system", "trajectory set")
 
-    // Step 3: Map context at tactic level
-    const tacticResult = await mapContextTool.execute(
-      { level: "tactic", content: "Implement JWT middleware", status: "active" }
-    )
+    // Step 3: Map context at tactic level (V3.0 requires action: "update")
+    const tacticResult = await sessionTool.execute({ action: "update", level: "tactic", content: "Implement JWT middleware" }, mockContext)
     // Tools return JSON - check for success status or tactic in response
     const tacticParsed = JSON.parse(tacticResult as string)
     assert(
@@ -115,10 +124,8 @@ async function test_fullLifecycle() {
     assert(state?.hierarchy.tactic === "Implement JWT middleware", "tactic stored in state")
     assert(state?.metrics.context_updates === 1, "context update counted")
 
-    // Step 4: Map context at action level
-    const actionResult = await mapContextTool.execute(
-      { level: "action", content: "Install passport-jwt package", status: "active" }
-    )
+    // Step 4: Map context at action level (V3.0 requires action: "update")
+    const actionResult = await sessionTool.execute({ action: "update", level: "action", content: "Install passport-jwt package" }, mockContext)
     // Tools return JSON - check for success status or action in response
     const actionParsed = JSON.parse(actionResult as string)
     assert(
@@ -142,9 +149,7 @@ async function test_fullLifecycle() {
     const archivesBefore = await listArchives(dir)
     assert(archivesBefore.length === 0, "no archives before compaction")
 
-    const compactResult = await compactSessionTool.execute(
-      { summary: "JWT auth foundation complete" }
-    )
+    const compactResult = await sessionTool.execute({ action: "close", summary: "JWT auth foundation complete" }, mockContext)
     // compact_session returns JSON with status
     const compactParsed = JSON.parse(compactResult as string)
     assert(compactParsed.status === "success" || compactResult.includes("Archived"), "compact_session archives session")
@@ -183,12 +188,10 @@ async function test_strictModeWorkflow() {
     assert(state?.session.governance_status === "LOCKED", "strict mode starts LOCKED")
 
     // Create tool instance bound to this directory
-    const declareIntentTool = createDeclareIntentTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
 
-    // Try to declare intent
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Strict mode test" }
-    )
+    // Try to declare intent (V3.0 requires action: "start")
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Strict mode test" }, mockContext)
 
     state = await stateManager.load()
     // Note: In strict mode, declare_intent updates the hierarchy but session status
@@ -210,39 +213,28 @@ async function test_contextTransitions() {
     await initProject(dir, { governanceMode: "assisted", language: "en" })
 
     // Create tool instances bound to this directory
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
 
-    // Start session
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Multi-level context test" }
-    )
+    // Start session (V3.0 requires action: "start")
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Multi-level context test" }, mockContext)
 
     const stateManager = createStateManager(dir)
 
-    // Test all level transitions
-    await mapContextTool.execute(
-      { level: "trajectory", content: "Level 1 test", status: "active" }
-    )
+    // Test all level transitions (V3.0 requires action: "update")
+    await sessionTool.execute({ action: "update", level: "trajectory", content: "Level 1 test" }, mockContext)
     let state = await stateManager.load()
     assert(state?.hierarchy.trajectory === "Level 1 test", "trajectory updated")
 
-    await mapContextTool.execute(
-      { level: "tactic", content: "Level 2 test", status: "active" }
-    )
+    await sessionTool.execute({ action: "update", level: "tactic", content: "Level 2 test" }, mockContext)
     state = await stateManager.load()
     assert(state?.hierarchy.tactic === "Level 2 test", "tactic updated")
 
-    await mapContextTool.execute(
-      { level: "action", content: "Level 3 test", status: "active" }
-    )
+    await sessionTool.execute({ action: "update", level: "action", content: "Level 3 test" }, mockContext)
     state = await stateManager.load()
     assert(state?.hierarchy.action === "Level 3 test", "action updated")
 
     // Test status transitions - status is stored in brain state
-    await mapContextTool.execute(
-      { level: "action", content: "Level 3 test", status: "complete" }
-    )
+    await sessionTool.execute({ action: "update", level: "action", content: "Level 3 test" }, mockContext)
     // Status is tracked in the action status field of the hierarchy
     // The new system tracks status in the hierarchy tree, not in markdown
     state = await stateManager.load()
@@ -266,13 +258,10 @@ async function test_driftReset() {
     const stateManager = createStateManager(dir)
 
     // Create tool instances bound to this directory
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
 
-    // Start session
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Drift test" }
-    )
+    // Start session (V3.0 requires action: "start")
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Drift test" }, mockContext)
 
     // Simulate tool calls (would normally be done via hook)
     let state = await stateManager.load()
@@ -282,10 +271,8 @@ async function test_driftReset() {
       await stateManager.save(state)
     }
 
-    // Context update
-    await mapContextTool.execute(
-      { level: "tactic", content: "Reset drift", status: "active" }
-    )
+    // Context update (V3.0 requires action: "update")
+    await sessionTool.execute({ action: "update", level: "tactic", content: "Reset drift" }, mockContext)
 
     state = await stateManager.load()
     // Note: turn_count reset and drift boost happen via hooks, not map_context directly
@@ -305,19 +292,12 @@ async function test_compactionHookPreservesHierarchy() {
   try {
     await initProject(dir, { governanceMode: "assisted", language: "en" })
 
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
 
-    // Set up full hierarchy
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Build feature" }
-    )
-    await mapContextTool.execute(
-      { level: "tactic", content: "Implement component", status: "active" }
-    )
-    await mapContextTool.execute(
-      { level: "action", content: "Write test", status: "active" }
-    )
+    // Set up full hierarchy (V3.0 requires action parameter)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Build feature" }, mockContext)
+    await sessionTool.execute({ action: "update", level: "tactic", content: "Implement component" }, mockContext)
+    await sessionTool.execute({ action: "update", level: "action", content: "Write test" }, mockContext)
 
     const stateManager = createStateManager(dir)
     const compactionHook = createCompactionHook(
@@ -372,11 +352,9 @@ async function test_staleSessionAutoArchived() {
     // Step 1: Init project
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
 
-    // Step 2: Declare intent to create a session
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Stale session test" }
-    )
+    // Step 2: Declare intent to create a session (V3.0 requires action: "start")
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Stale session test" }, mockContext)
 
     // Step 3: Load state, record original session ID
     const stateManager = createStateManager(dir)
@@ -425,10 +403,8 @@ async function test_staleSessionArchiveFailureIsSurfacedAndNonDestructive() {
   try {
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
 
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Stale archive failure test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Stale archive failure test" }, mockContext)
 
     const stateManager = createStateManager(dir)
     const state = await stateManager.load()
@@ -557,10 +533,8 @@ async function test_chainBreaksInjected() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Chain break test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Chain break test" }, mockContext)
 
     // Step 2: Modify brain state — set action without tactic (orphaned action)
     const stateManager = createStateManager(dir)
@@ -630,10 +604,8 @@ async function test_sessionMetadataPersistsThroughLifecycle() {
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
 
     // Step 2: Declare intent
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Metadata persistence test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Metadata persistence test" }, mockContext)
 
     // Step 3: Load brain state
     const stateManager = createStateManager(dir)
@@ -659,10 +631,8 @@ async function test_activeMdContainsLivingPlan() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Living plan test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Living plan test" }, mockContext)
 
     // Step 2: Read active.md
     const activeMd = await readActiveMd(dir)
@@ -687,16 +657,11 @@ async function test_compactSessionGeneratesExportFiles() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Export test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Export test" }, mockContext)
 
     // Step 2: Call compact_session tool
-    const compactSessionTool = createCompactSessionTool(dir)
-    await compactSessionTool.execute(
-      { summary: "Export generation test" }
-    )
+    await sessionTool.execute({ action: "close", summary: "Export generation test" }, mockContext)
 
     // Step 3: Check export directory
     const exportDir = join(dir, ".hivemind", "sessions", "archive", "exports")
@@ -728,10 +693,8 @@ async function test_longSessionWarningInjectedAtThreshold() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Long session test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Long session test" }, mockContext)
 
     // Step 2: Modify brain state — set turn_count to auto_compact_on_turns (default 20)
     const stateManager = createStateManager(dir)
@@ -768,28 +731,29 @@ async function test_scanHierarchyReturnsStructuredState() {
   try {
     // Step 1: Init project, declare intent, set hierarchy
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
 
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Scan hierarchy test" }
-    )
-    await mapContextTool.execute(
-      { level: "tactic", content: "Build component", status: "active" }
-    )
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Scan hierarchy test" }, mockContext)
+    await sessionTool.execute({ action: "update", level: "tactic", content: "Build component" }, mockContext)
 
-    // Step 2: Call scan_hierarchy
-    const scanTool = createScanHierarchyTool(dir)
-    const result = await scanTool.execute({})
+    // Step 2: Call scan_hierarchy (V3.0 uses inspect tool with action: "scan")
+    const inspectTool = createHivemindInspectTool(dir)
+    const result = await inspectTool.execute({ action: "scan" }, mockContext)
 
-    // Step 3: Assert structured text output
+    // Step 3: Assert JSON output format (V3.0 returns JSON)
+    const parsed = JSON.parse(result as string)
     assert(
-      result.includes("Session:") && result.includes("OPEN") && result.includes("plan_driven"),
+      parsed.status === "success",
+      "scan_hierarchy returns success status"
+    )
+    // V3.0: governanceStatus is at top level of metadata (not nested under session)
+    assert(
+      parsed.metadata?.governanceStatus === "OPEN",
       "scan_hierarchy returns session info"
     )
     assert(
-      result.includes("Trajectory: Scan hierarchy test") &&
-      result.includes("Tactic: Build component"),
+      parsed.metadata?.hierarchy?.trajectory === "Scan hierarchy test" &&
+      parsed.metadata?.hierarchy?.tactic === "Build component",
       "scan_hierarchy returns hierarchy levels"
     )
 
@@ -806,22 +770,20 @@ async function test_saveAnchorPersistsAndSurvivesCompaction() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Anchor persistence test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Anchor persistence test" }, mockContext)
 
     // Step 2: Save an anchor
-    const saveAnchorTool = createSaveAnchorTool(dir)
-    const saveResult = await saveAnchorTool.execute({ key: "DB_TYPE", value: "PostgreSQL" })
+    const anchorTool = createHivemindAnchorTool(dir)
+    const saveResult = await anchorTool.execute({ action: "save", key: "DB_TYPE", value: "PostgreSQL" }, mockContext)
+    const saveParsed = JSON.parse(saveResult as string)
     assert(
-      saveResult.includes("Anchor saved") && saveResult.includes("DB_TYPE"),
+      saveParsed.status === "success" && saveParsed.metadata?.key === "DB_TYPE",
       "save_anchor returns confirmation"
     )
 
     // Step 3: Compact session (resets brain state)
-    const compactTool = createCompactSessionTool(dir)
-    await compactTool.execute({ summary: "Anchor test done" })
+    await sessionTool.execute({ action: "close", summary: "Anchor test done" }, mockContext)
 
     // Step 4: Verify anchor survived compaction
     const anchors = await loadAnchors(dir)
@@ -843,14 +805,12 @@ async function test_anchorsInjectedIntoSystemPrompt() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Anchors prompt injection test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Anchors prompt injection test" }, mockContext)
 
     // Step 2: Save an anchor
-    const saveAnchorTool = createSaveAnchorTool(dir)
-    await saveAnchorTool.execute({ key: "CONSTRAINT", value: "Never modify production DB" })
+    const anchorTool = createHivemindAnchorTool(dir)
+    await anchorTool.execute({ action: "save", key: "CONSTRAINT", value: "Never modify production DB" }, mockContext)
 
     // Step 3: Create session lifecycle hook and call it
     const config = await loadConfig(dir)
@@ -880,23 +840,18 @@ async function test_thinkBackIncludesAllContextSections() {
   try {
     // Step 1: Init project, declare intent, set full hierarchy
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
 
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Think back test" }
-    )
-    await mapContextTool.execute(
-      { level: "tactic", content: "Implement feature X", status: "active" }
-    )
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Think back test" }, mockContext)
+    await sessionTool.execute({ action: "update", level: "tactic", content: "Implement feature X" }, mockContext)
 
     // Step 2: Save an anchor
-    const saveAnchorTool = createSaveAnchorTool(dir)
-    await saveAnchorTool.execute({ key: "API_VERSION", value: "v3" })
+    const anchorTool = createHivemindAnchorTool(dir)
+    await anchorTool.execute({ action: "save", key: "API_VERSION", value: "v3" }, mockContext)
 
-    // Step 3: Call think_back
-    const thinkBackTool = createThinkBackTool(dir)
-    const result = await thinkBackTool.execute({})
+    // Step 3: Call think_back (V3.0 uses inspect tool with action: "drift")
+    const inspectTool = createHivemindInspectTool(dir)
+    const result = await inspectTool.execute({ action: "drift" }, mockContext)
 
     // Step 4: Assert JSON output has expected structure
     const parsed = JSON.parse(result as string)
@@ -929,22 +884,15 @@ async function test_checkDriftShowsHealthyWhenAligned() {
   try {
     // Step 1: Init project, declare intent, set full hierarchy (well-aligned)
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
 
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Drift check healthy test" }
-    )
-    await mapContextTool.execute(
-      { level: "tactic", content: "On-track tactic", status: "active" }
-    )
-    await mapContextTool.execute(
-      { level: "action", content: "On-track action", status: "active" }
-    )
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Drift check healthy test" }, mockContext)
+    await sessionTool.execute({ action: "update", level: "tactic", content: "On-track tactic" }, mockContext)
+    await sessionTool.execute({ action: "update", level: "action", content: "On-track action" }, mockContext)
 
     // Step 2: Call scan_hierarchy with action: "drift" and json: true
-    const scanDriftTool = createScanHierarchyTool(dir)
-    const result = await scanDriftTool.execute({ action: "drift", json: true })
+    const inspectTool = createHivemindInspectTool(dir)
+    const result = await inspectTool.execute({ action: "drift", json: true }, mockContext)
 
     // Step 3: Check the result - tools return JSON format
     // Check for success status and hierarchy info
@@ -973,10 +921,8 @@ async function test_checkDriftWarnsWhenDrifting() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Drift check warning test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Drift check warning test" }, mockContext)
 
     // Step 2: Artificially inflate turn count to degrade drift score
     const stateManager = createStateManager(dir)
@@ -991,8 +937,8 @@ async function test_checkDriftWarnsWhenDrifting() {
     }
 
     // Step 3: Call scan_hierarchy with action: "drift" and json: true
-    const scanDriftTool = createScanHierarchyTool(dir)
-    const result = await scanDriftTool.execute({ action: "drift", json: true })
+    const inspectTool = createHivemindInspectTool(dir)
+    const result = await inspectTool.execute({ action: "drift", json: true }, mockContext)
 
     // Step 4: Check the result - tools return JSON format
     const parsed = JSON.parse(result as string)
@@ -1020,32 +966,23 @@ async function test_fullCognitiveMeshWorkflow() {
     // Full workflow: declare → anchor → think → map → drift check → compact
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
 
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
-    const saveAnchorTool = createSaveAnchorTool(dir)
-    const thinkBackTool = createThinkBackTool(dir)
-    const scanTool = createScanHierarchyTool(dir)
-    const compactTool = createCompactSessionTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
+    const anchorTool = createHivemindAnchorTool(dir)
+    const inspectTool = createHivemindInspectTool(dir)
 
     // Step 1: Declare intent
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Cognitive mesh workflow" }
-    )
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Cognitive mesh workflow" }, mockContext)
 
     // Step 2: Save anchors
-    await saveAnchorTool.execute({ key: "STACK", value: "TypeScript + Bun" })
-    await saveAnchorTool.execute({ key: "CONSTRAINT", value: "No external deps" })
+    await anchorTool.execute({ action: "save", key: "STACK", value: "TypeScript + Bun" }, mockContext)
+    await anchorTool.execute({ action: "save", key: "CONSTRAINT", value: "No external deps" }, mockContext)
 
     // Step 3: Set full hierarchy
-    await mapContextTool.execute(
-      { level: "tactic", content: "Core implementation", status: "active" }
-    )
-    await mapContextTool.execute(
-      { level: "action", content: "Write pure functions", status: "active" }
-    )
+    await sessionTool.execute({ action: "update", level: "tactic", content: "Core implementation" }, mockContext)
+    await sessionTool.execute({ action: "update", level: "action", content: "Write pure functions" }, mockContext)
 
     // Step 4: Think back — verify all context accessible (JSON format)
-    const thinkResult = await thinkBackTool.execute({})
+    const thinkResult = await inspectTool.execute({ action: "deep" }, mockContext)
     const thinkParsed = JSON.parse(thinkResult as string)
     assert(
       thinkParsed.status === "success" &&
@@ -1055,7 +992,7 @@ async function test_fullCognitiveMeshWorkflow() {
     )
 
     // Step 5: Scan hierarchy — verify structured data (JSON format)
-    const scanResult = await scanTool.execute({ action: "scan", json: true })
+    const scanResult = await inspectTool.execute({ action: "scan", json: true }, mockContext)
     const scanParsed = JSON.parse(scanResult as string)
     assert(
       scanParsed.status === "success" &&
@@ -1066,7 +1003,7 @@ async function test_fullCognitiveMeshWorkflow() {
     )
 
     // Step 6: Check drift — should be healthy
-    const driftResult = await scanTool.execute({ action: "drift", json: true })
+    const driftResult = await inspectTool.execute({ action: "drift", json: true }, mockContext)
     const driftParsed = JSON.parse(driftResult as string)
     assert(
       driftParsed.status === "success",
@@ -1074,7 +1011,7 @@ async function test_fullCognitiveMeshWorkflow() {
     )
 
     // Step 7: Compact — anchors survive
-    await compactTool.execute({ summary: "Cognitive mesh workflow complete" })
+    await sessionTool.execute({ action: "close", summary: "Cognitive mesh workflow complete" }, mockContext)
     const anchorsAfter = await loadAnchors(dir)
     assert(
       anchorsAfter.anchors.length === 2 &&
@@ -1098,20 +1035,20 @@ async function test_saveMemPersistsAndSurvivesCompaction() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Mems persistence test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Mems persistence test" }, mockContext)
 
     // Step 2: Save a memory
-    const saveMemTool = createSaveMemTool(dir)
-    const saveResult = await saveMemTool.execute({
+    const memoryTool = createHivemindMemoryTool(dir)
+    const saveResult = await memoryTool.execute({
+      action: "save",
       shelf: "decisions",
       content: "Use PostgreSQL for main database",
       tags: "database,postgres,architecture"
-    })
+    }, mockContext)
+    const saveParsed = JSON.parse(saveResult as string)
     assert(
-      saveResult.includes("Memory saved") && saveResult.includes("decisions"),
+      saveParsed.status === "success" && saveParsed.metadata?.shelf === "decisions",
       "save_mem stores memory in mems.json"
     )
 
@@ -1125,8 +1062,7 @@ async function test_saveMemPersistsAndSurvivesCompaction() {
     )
 
     // Step 4: Compact session (resets brain state)
-    const compactTool = createCompactSessionTool(dir)
-    await compactTool.execute({ summary: "Mems test done" })
+    await sessionTool.execute({ action: "close", summary: "Mems test done" }, mockContext)
 
     // Step 5: Verify memory survived compaction (using graph mems)
     const memsAfterCompaction = await loadGraphMems(dir)
@@ -1150,52 +1086,49 @@ async function test_recallMemsSearchesAcrossSessions() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Recall search test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Recall search test" }, mockContext)
 
     // Step 2: Save mems to different shelves
-    const saveMemTool = createSaveMemTool(dir)
-    await saveMemTool.execute({
+    const memoryTool = createHivemindMemoryTool(dir)
+    await memoryTool.execute({
+      action: "save",
       shelf: "errors",
       content: "CORS error on /api/auth endpoint",
       tags: "cors,auth,api"
-    })
-    await saveMemTool.execute({
+    }, mockContext)
+    await memoryTool.execute({
+      action: "save",
       shelf: "solutions",
       content: "Fixed CORS by adding allowed-origins header",
       tags: "cors,fix"
-    })
-    await saveMemTool.execute({
+    }, mockContext)
+    await memoryTool.execute({
+      action: "save",
       shelf: "decisions",
       content: "Use Redis for session storage",
       tags: "redis,session"
-    })
+    }, mockContext)
 
     // Step 3: Compact session (simulates "previous session")
-    const compactTool = createCompactSessionTool(dir)
-    await compactTool.execute({ summary: "Session 1 complete" })
+    await sessionTool.execute({ action: "close", summary: "Session 1 complete" }, mockContext)
 
     // Step 4: Start new session
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "New session" }
-    )
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "New session" }, mockContext)
 
     // Step 5: Recall mems — cross-session search (JSON output)
-    const recallTool = createRecallMemsTool(dir)
-    const recallResult = await recallTool.execute({ query: "CORS" })
+    const recallResult = await memoryTool.execute({ action: "recall", query: "CORS" }, mockContext)
     const recallParsed = JSON.parse(recallResult as string)
-    const recallContent = recallParsed.metadata?.mems?.map((m: any) => m.content).join(" ") || ""
+    const recallContent = recallParsed.metadata?.results?.map((m: any) => m.content).join(" ") || ""
     assert(
       recallContent.includes("CORS error") && recallContent.includes("Fixed CORS"),
       "recall_mems finds mems from previous sessions"
     )
 
     // Step 6: Recall with shelf filter
-    const filteredResult = await recallTool.execute({ query: "CORS", shelf: "errors" })
+    const filteredResult = await memoryTool.execute({ action: "recall", query: "CORS", shelf: "errors" }, mockContext)
     const filteredParsed = JSON.parse(filteredResult as string)
-    const filteredContent = filteredParsed.metadata?.mems?.map((m: any) => m.content).join(" ") || ""
+    const filteredContent = filteredParsed.metadata?.results?.map((m: any) => m.content).join(" ") || ""
     assert(
       filteredContent.includes("CORS error") && !filteredContent.includes("Fixed CORS"),
       "recall_mems filters by shelf correctly"
@@ -1214,34 +1147,30 @@ async function test_listShelvesShowsOverview() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "List shelves test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "List shelves test" }, mockContext)
 
     // Step 2: Save mems to multiple shelves
-    const saveMemTool = createSaveMemTool(dir)
-    await saveMemTool.execute({ shelf: "decisions", content: "Decision 1" })
-    await saveMemTool.execute({ shelf: "decisions", content: "Decision 2" })
-    await saveMemTool.execute({ shelf: "errors", content: "Error 1" })
+    const memoryTool = createHivemindMemoryTool(dir)
+    await memoryTool.execute({ action: "save", shelf: "decisions", content: "Decision 1" }, mockContext)
+    await memoryTool.execute({ action: "save", shelf: "decisions", content: "Decision 2" }, mockContext)
+    await memoryTool.execute({ action: "save", shelf: "errors", content: "Error 1" }, mockContext)
 
-    // Step 3: Call recall_mems (no query = list mode)
-    const listTool = createRecallMemsTool(dir)
-    const listResult = await listTool.execute({})
+    // Step 3: Call list action (V3.0 requires action: "list")
+    const listTool = createHivemindMemoryTool(dir)
+    const listResult = await listTool.execute({ action: "list" }, mockContext)
 
     // Step 4: Assert total count (JSON output)
     const listParsed = JSON.parse(listResult as string)
     assert(
-      listParsed.metadata?.count === 3,
+      listParsed.metadata?.total === 3,
       "recall_mems list mode shows total count"
     )
 
-    // Step 5: Assert shelf breakdown (check mems array)
-    const mems = listParsed.metadata?.mems || []
-    const decisionsCount = mems.filter((m: any) => m.shelf === "decisions").length
-    const errorsCount = mems.filter((m: any) => m.shelf === "errors").length
+    // Step 5: Assert shelf breakdown (check shelves object)
+    const shelves = listParsed.metadata?.shelves || {}
     assert(
-      decisionsCount === 2 && errorsCount === 1,
+      shelves.decisions === 2 && shelves.errors === 1,
       "recall_mems list mode shows shelf breakdown"
     )
 
@@ -1258,19 +1187,13 @@ async function test_autoMemOnCompaction() {
   try {
     // Step 1: Init project, declare intent with hierarchy
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
 
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Auto-mem test" }
-    )
-    await mapContextTool.execute(
-      { level: "tactic", content: "Build auth module", status: "active" }
-    )
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Auto-mem test" }, mockContext)
+    await sessionTool.execute({ action: "update", level: "tactic", content: "Build auth module" }, mockContext)
 
     // Step 2: Compact with summary
-    const compactTool = createCompactSessionTool(dir)
-    await compactTool.execute({ summary: "Auth module foundation complete" })
+    await sessionTool.execute({ action: "close", summary: "Auth module foundation complete" }, mockContext)
 
     // Step 3: Load mems and check auto-created context mem
     const memsState = await loadMems(dir)
@@ -1302,10 +1225,8 @@ async function test_systemPromptUsesHivemindTag() {
   try {
     // Step 1: Init project, declare intent
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Tag format test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Tag format test" }, mockContext)
 
     // Step 2: Create session lifecycle hook and call it
     const config = await loadConfig(dir)
@@ -1339,67 +1260,58 @@ async function test_fullMemsBrainWorkflow() {
     // Full workflow: declare → save → recall → compact (auto-mem) → new session → recall across sessions
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
 
-    const declareIntentTool = createDeclareIntentTool(dir)
-    const mapContextTool = createMapContextTool(dir)
-    const saveMemTool = createSaveMemTool(dir)
-    const recallTool = createRecallMemsTool(dir)
-    const listTool = createRecallMemsTool(dir)
-    const compactTool = createCompactSessionTool(dir)
+    const sessionTool = createHivemindSessionTool(dir)
+    const memoryTool = createHivemindMemoryTool(dir)
+    const listTool = createHivemindMemoryTool(dir)
 
     // Step 1: Declare intent
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Full mems workflow" }
-    )
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Full mems workflow" }, mockContext)
 
     // Step 2: Save memories across shelves
-    await saveMemTool.execute({
+    await memoryTool.execute({
+      action: "save",
       shelf: "decisions",
       content: "Chose TypeScript over JavaScript for type safety",
       tags: "typescript,language"
-    })
-    await saveMemTool.execute({
+    }, mockContext)
+    await memoryTool.execute({
+      action: "save",
       shelf: "patterns",
       content: "Pure functions for business logic, IO wrappers for side effects",
       tags: "architecture,pure-functions"
-    })
+    }, mockContext)
 
     // Step 3: Recall — should find both (JSON output)
-    const recallResult = await recallTool.execute({ query: "TypeScript" })
+    const recallResult = await memoryTool.execute({ action: "recall", query: "TypeScript" }, mockContext)
     const recallParsed = JSON.parse(recallResult as string)
-    const recallContent = recallParsed.metadata?.mems?.map((m: any) => m.content).join(" ") || ""
+    const recallContent = recallParsed.metadata?.results?.map((m: any) => m.content).join(" ") || ""
     assert(
       recallContent.includes("Chose TypeScript"),
       "full workflow: save → recall finds memory"
     )
 
     // Step 4: Set hierarchy and compact (auto-mem created)
-    await mapContextTool.execute(
-      { level: "tactic", content: "Core architecture", status: "active" }
-    )
-    await compactTool.execute({ summary: "Architecture decisions finalized" })
+    await sessionTool.execute({ action: "update", level: "tactic", content: "Core architecture" }, mockContext)
+    await sessionTool.execute({ action: "close", summary: "Architecture decisions finalized" }, mockContext)
 
     // Step 5: Start new session
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Session 2 — building on decisions" }
-    )
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Session 2 — building on decisions" }, mockContext)
 
     // Step 6: Recall from new session — should find memories (search for content that exists)
-    const crossSessionRecall = await recallTool.execute({ query: "Pure functions" })
+    const crossSessionRecall = await memoryTool.execute({ action: "recall", query: "Pure functions" }, mockContext)
     const crossParsed = JSON.parse(crossSessionRecall as string)
-    const crossContent = crossParsed.metadata?.mems?.map((m: any) => m.content).join(" ") || ""
+    const crossContent = crossParsed.metadata?.results?.map((m: any) => m.content).join(" ") || ""
     assert(
       crossContent.includes("Pure functions"),
       "full workflow: recall across sessions finds manual mems"
     )
 
-    // Step 7: List shelves — check mems array (JSON output)
-    const shelvesResult = await listTool.execute({})
+    // Step 7: List shelves — check shelves object (JSON output)
+    const shelvesResult = await listTool.execute({ action: "list" }, mockContext)
     const shelvesParsed = JSON.parse(shelvesResult as string)
-    const shelfMems = shelvesParsed.metadata?.mems || []
-    const decisions = shelfMems.filter((m: any) => m.shelf === "decisions").length
-    const patterns = shelfMems.filter((m: any) => m.shelf === "patterns").length
+    const shelfCounts = shelvesParsed.metadata?.shelves || {}
     assert(
-      decisions === 1 && patterns === 1,
+      shelfCounts.decisions === 1 && shelfCounts.patterns === 1,
       "full workflow: recall_mems list mode shows all shelf categories"
     )
 
@@ -1461,10 +1373,8 @@ async function test_bootstrapBlockDisappearsWhenOpen() {
   try {
     // Step 1: Init project, declare intent (session becomes OPEN)
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Bootstrap disappear test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Bootstrap disappear test" }, mockContext)
 
     // Step 2: Create session lifecycle hook and call it
     const config = await loadConfig(dir)
@@ -1831,10 +1741,8 @@ async function test_compactionHookEmitsInfoToastOnly() {
 
   try {
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
-    const declareIntentTool = createDeclareIntentTool(dir)
-    await declareIntentTool.execute(
-      { mode: "plan_driven", focus: "Compaction toast test" }
-    )
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Compaction toast test" }, mockContext)
 
     resetToastCooldowns()
     const toasts: Array<{ message: string; variant: string }> = []
