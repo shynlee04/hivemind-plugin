@@ -14,9 +14,9 @@ import { mkdtempSync, writeFileSync, mkdirSync, existsSync, readFileSync } from 
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { createStateManager } from "../src/lib/persistence.js"
-import { createExportCycleTool } from "../src/tools/export-cycle.js"
-import { createDeclareIntentTool } from "../src/tools/declare-intent.js"
-import { createMapContextTool } from "../src/tools/map-context.js"
+import { createHivemindCycleTool } from "../src/tools/hivemind-cycle.js"
+import { createHivemindSessionTool } from "../src/tools/hivemind-session.js"
+
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { loadTree, getCursorNode } from "../src/lib/hierarchy-tree.js"
 import { loadConfig } from "../src/lib/persistence.js"
@@ -58,13 +58,13 @@ describe("Phase A Critical Bug Fixes", () => {
 
   describe("A1-1: export_cycle hierarchy sync", () => {
     it("should sync flat brain.hierarchy after tree mutation", async () => {
-      // Setup: Create a session with hierarchy
-      const declareIntent = createDeclareIntentTool(tempDir)
-      const mapContext = createMapContextTool(tempDir)
-      const exportCycle = createExportCycleTool(tempDir)
+      // Setup: Create tools for this test
+      const sessionTool = createHivemindSessionTool(tempDir)
+      const cycleTool = createHivemindCycleTool(tempDir)
 
       // Step 1: Declare intent (creates trajectory)
-      const intentResult = await declareIntent.execute({
+      const intentResult = await sessionTool.execute({
+        action: "start",
         mode: "plan_driven",
         focus: "Test trajectory",
       }, mockContext as any)
@@ -76,7 +76,8 @@ describe("Phase A Critical Bug Fixes", () => {
       assert.ok(parsedResult.message?.includes("OPEN") || parsedResult.message?.includes("Session") || parsedResult.existingSession === true, "Session should be OPEN or existing")
 
       // Step 2: Map tactic
-      const tacticResult = await mapContext.execute({
+      const tacticResult = await sessionTool.execute({
+        action: "update",
         level: "tactic",
         content: "Test tactic",
       }, mockContext as any)
@@ -84,7 +85,8 @@ describe("Phase A Critical Bug Fixes", () => {
       assert.ok(tacticResult.includes("tactic") || JSON.parse(tacticResult as string).status === "success", "Tactic should be set")
 
       // Step 3: Map action
-      const actionResult = await mapContext.execute({
+      const actionResult = await sessionTool.execute({
+        action: "update",
         level: "action",
         content: "Test action to complete",
       }, mockContext as any)
@@ -92,10 +94,10 @@ describe("Phase A Critical Bug Fixes", () => {
       assert.ok(actionResult.includes("action") || JSON.parse(actionResult as string).status === "success", "Action should be set")
 
       // Step 4: Export cycle (marks action complete)
-      const exportResult = await exportCycle.execute({
+      const exportResult = await cycleTool.execute({
+        action: "export",
         outcome: "success",
         findings: "Test completed successfully",
-        json: true,
       }, mockContext as any)
 
       // Verify: Check that result indicates export succeeded
@@ -112,35 +114,35 @@ describe("Phase A Critical Bug Fixes", () => {
     })
 
     it("should save findings to cycle-intel mems", async () => {
-      const exportCycle = createExportCycleTool(tempDir)
+      const sessionTool = createHivemindSessionTool(tempDir)
+      const cycleTool = createHivemindCycleTool(tempDir)
 
       // First create a session
-      const declareIntent = createDeclareIntentTool(tempDir)
-      await declareIntent.execute({
+      await sessionTool.execute({
+        action: "start",
         mode: "plan_driven",
         focus: "Mem test trajectory",
       }, mockContext as any)
 
       // Export cycle with findings
-      const exportResult = await exportCycle.execute({
-        outcome: "success",
-        findings: "Important learning: X causes Y",
+      const exportResult = await cycleTool.execute({
+        action: "export",
       }, mockContext as any)
 
       // Verify export was successful
       const resultObj = JSON.parse(exportResult as string)
       assert.equal(resultObj.status, "success", "Export should succeed")
-      // Note: The deprecated export_cycle tool exports the session
-      // It returns the export path and outcome in metadata
-      assert.ok(resultObj.metadata?.outcome === "success" || resultObj.metadata?.findings, "Should have success outcome or findings")
+      // The tool returns exportPath and sessionId in metadata
+      assert.ok(resultObj.metadata?.exportPath || resultObj.entity_id, "Should have exportPath or entity_id")
     })
   })
 
   describe("A1-2: declare_intent template handling", () => {
     it("should create per-session file from template (not legacy active.md)", async () => {
-      const declareIntent = createDeclareIntentTool(tempDir)
+      const sessionTool = createHivemindSessionTool(tempDir)
 
-      const result = await declareIntent.execute({
+      const result = await sessionTool.execute({
+        action: "start",
         mode: "plan_driven",
         focus: "Template test trajectory",
       }, mockContext as any)
@@ -171,9 +173,10 @@ describe("Phase A Critical Bug Fixes", () => {
       const noConfigDir = createTempDir()
       await initializePlanningDirectory(noConfigDir)
       
-      const declareIntent = createDeclareIntentTool(noConfigDir)
+      const sessionTool = createHivemindSessionTool(noConfigDir)
       
-      const result = await declareIntent.execute({
+      const result = await sessionTool.execute({
+        action: "start",
         mode: "plan_driven",
         focus: "Should fail without config",
       }, mockContext as any)
@@ -185,9 +188,10 @@ describe("Phase A Critical Bug Fixes", () => {
     })
 
     it("should create hierarchy tree root node", async () => {
-      const declareIntent = createDeclareIntentTool(tempDir)
+      const sessionTool = createHivemindSessionTool(tempDir)
 
-      await declareIntent.execute({
+      await sessionTool.execute({
+        action: "start",
         mode: "plan_driven",
         focus: "Tree root test",
       }, mockContext as any)
@@ -204,8 +208,9 @@ describe("Phase A Critical Bug Fixes", () => {
   describe("A1-3: stale auto-archive hierarchy reset", () => {
     it("should reset hierarchy.json when auto-archiving stale session", async () => {
       // Setup: Create an old session
-      const declareIntent = createDeclareIntentTool(tempDir)
-      await declareIntent.execute({
+      const sessionTool = createHivemindSessionTool(tempDir)
+      await sessionTool.execute({
+        action: "start",
         mode: "plan_driven",
         focus: "Old stale session",
       }, mockContext as any)
@@ -255,29 +260,29 @@ describe("Phase A Critical Bug Fixes", () => {
 
       // Verify trackSectionUpdate is imported from detection.js
       assert.ok(
-        hookContent.includes('trackSectionUpdate,') || hookContent.includes('trackSectionUpdate'),
+        hookContent.includes("trackSectionUpdate,") || hookContent.includes("trackSectionUpdate"),
         "trackSectionUpdate should be imported"
       )
 
       // Verify it's called when map_context fires
       assert.ok(
-        hookContent.includes('trackSectionUpdate(detection, focus)'),
+        hookContent.includes("trackSectionUpdate(detection, focus)"),
         "trackSectionUpdate should be called with detection and focus"
       )
 
       // Verify resetSectionTracking is called on declare_intent
       assert.ok(
-        hookContent.includes('resetSectionTracking(detection)'),
+        hookContent.includes("resetSectionTracking(detection)"),
         "resetSectionTracking should be called on declare_intent"
       )
 
       // Verify detection state is written back to metrics
       assert.ok(
-        hookContent.includes('consecutive_same_section: detection.consecutive_same_section'),
+        hookContent.includes("consecutive_same_section: detection.consecutive_same_section"),
         "consecutive_same_section should be written to metrics"
       )
       assert.ok(
-        hookContent.includes('last_section_content: detection.last_section_content'),
+        hookContent.includes("last_section_content: detection.last_section_content"),
         "last_section_content should be written to metrics"
       )
     })

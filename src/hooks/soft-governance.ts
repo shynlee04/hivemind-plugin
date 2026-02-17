@@ -470,38 +470,9 @@ export function createSoftGovernanceHook(
         )
       }
 
-      // Emit drift toast (centralized from event-handler.ts)
-      // Threshold: drift_score < 30 AND user_turn_count >= 10
-      if (newState.metrics.drift_score < 30 && newState.metrics.user_turn_count >= 10) {
-        const repeatCount = newState.metrics.governance_counters?.drift ?? 0
-        const severity = computeGovernanceSeverity({
-          kind: "drift",
-          repetitionCount: repeatCount,
-          acknowledged: newState.metrics.governance_counters?.acknowledged ?? false,
-        })
-        
-        // Update drift counter
-        newState = {
-          ...newState,
-          metrics: {
-            ...newState.metrics,
-            governance_counters: {
-              ...newState.metrics.governance_counters,
-              drift: (newState.metrics.governance_counters?.drift ?? 0) + 1,
-            },
-          },
-        }
-
-        // Throttle drift toasts
-        if (checkAndRecordToast("drift", "idle")) {
-          await emitGovernanceToast(log, {
-            key: "drift",
-            message: `Drift risk detected. Score ${newState.metrics.drift_score}/100. Use map_context to realign.`,
-            variant: variantFromSeverity(severity),
-            eventType: "idle",
-          })
-        }
-      }
+      // FLAW-TOAST-007 FIX: Removed drift toast emission
+      // Drift is visible in scan_hierarchy output - no push notification needed
+      // Counter updates happen in session.idle event handler (event-handler.ts)
 
       await log.debug(
         `Soft governance: tracked ${input.tool} (${toolCategory}), turns=${newState.metrics.turn_count}, violations=${newState.metrics.violation_count}`

@@ -42,55 +42,55 @@ export function getToolActivation(
     };
   }
 
-  // Priority 2: High drift → map context
+  // Priority 2: High drift → hivemind_session (update)
   if (state.metrics.drift_score < DRIFT_SCORE_THRESHOLD && state.metrics.turn_count >= DRIFT_MIN_TURNS) {
     return {
-      tool: "map_context",
+      tool: "hivemind_session",
       reason: "Drift detected. Update your focus to stay on track.",
       priority: "high",
     };
   }
 
-  // Priority 3: Long session → suggest compact
+  // Priority 3: Long session → suggest hivemind_cycle (export)
   if (state.metrics.turn_count >= LONG_SESSION_TURNS) {
     return {
-      tool: "compact_session",
+      tool: "hivemind_cycle",
       reason: "Long session detected. Consider archiving and resetting.",
       priority: "medium",
     };
   }
 
-  // Priority 4: No hierarchy set → suggest map_context
+  // Priority 4: No hierarchy set → suggest hivemind_session
   if (!state.hierarchy.trajectory && !state.hierarchy.tactic && !state.hierarchy.action) {
     return {
-      tool: "map_context",
+      tool: "hivemind_session",
       reason: "No hierarchy set. Define your trajectory for better tracking.",
       priority: "medium",
     };
   }
 
-  // Priority 5: High completed branches → suggest hierarchy_manage(prune)
+  // Priority 5: High completed branches → suggest hivemind_hierarchy (prune)
   if (context?.completedBranches && context.completedBranches >= 5) {
     return {
-      tool: "hierarchy_manage",
+      tool: "hivemind_hierarchy",
       reason: `${context.completedBranches} completed branches. Prune to keep hierarchy clean.`,
       priority: "medium",
     };
   }
 
-  // Priority 6: Missing hierarchy tree + flat hierarchy exists → suggest hierarchy_manage(migrate)
+  // Priority 6: Missing hierarchy tree + flat hierarchy exists → suggest hivemind_hierarchy (migrate)
   if (context?.hasMissingTree && (state.hierarchy.trajectory || state.hierarchy.tactic)) {
     return {
-      tool: "hierarchy_manage",
+      tool: "hivemind_hierarchy",
       reason: "No hierarchy tree found but flat hierarchy exists. Migrate for better tracking.",
       priority: "medium",
     };
   }
 
-  // Priority 7: Post-compaction (fresh session after compaction) → suggest think_back
+  // Priority 7: Post-compaction (fresh session after compaction) → suggest hivemind_inspect (drift)
   if (context?.postCompaction) {
     return {
-      tool: "think_back",
+      tool: "hivemind_inspect",
       reason: "Session was recently compacted. Think back to refresh your context.",
       priority: "medium",
     };

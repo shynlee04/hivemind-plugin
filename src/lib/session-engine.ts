@@ -12,6 +12,7 @@ import {
   toActiveMdBody,
   toBrainProjection,
   treeExists,
+  addChild,
 } from "./hierarchy-tree.js"
 import {
   archiveSession,
@@ -84,7 +85,7 @@ export async function startSession(directory: string, options: SessionOptions): 
   await initializePlanningDirectory(directory)
 
   let state = await stateManager.load()
-  if (state) {
+  if (state && state.session.governance_status === "OPEN") {
     const sessionAge = Date.now() - state.session.start_time
     const hoursOld = Math.round(sessionAge / (1000 * 60 * 60))
 
@@ -123,11 +124,20 @@ export async function startSession(directory: string, options: SessionOptions): 
   }
 
   const sessionId = generateSessionId()
+  
+  // Preserve compaction tracking from previous session (if any)
+  const previousCompactionCount = state?.compaction_count ?? 0
+  const previousLastCompactionTime = state?.last_compaction_time ?? 0
+  
   state = createBrainState(sessionId, config, mode)
   const oldTrajectory = state.hierarchy.trajectory
 
   state = unlockSession(state)
   state.session.mode = mode
+  
+  // Carry forward compaction tracking
+  state.compaction_count = previousCompactionCount
+  state.last_compaction_time = previousLastCompactionTime
 
   const now = new Date()
   const stamp = generateStamp(now)
@@ -213,6 +223,39 @@ export async function updateSession(directory: string, updates: SessionUpdates):
       data: {},
     }
   }
+
+  // Update the hierarchy tree
+  const tree = await loadTree(directory)
+  const now = new Date()
+
+  let updatedTree = tree
+  if (targetLevel === "trajectory") {
+    // Update or create trajectory root
+    const trajectoryNode = createNode("trajectory", content, "active", now)
+    updatedTree = setRoot(createTree(), trajectoryNode)
+  } else if (targetLevel === "tactic") {
+    // Add tactic under trajectory
+    if (tree.root) {
+      const tacticNode = createNode("tactic", content, "active", now)
+      updatedTree = addChild(tree, tree.root.id, tacticNode)
+    }
+  } else {
+    // Add action under tactic (or trajectory if no tactic)
+    if (tree.root) {
+      // Find the deepest node to attach to
+      let parentNode = tree.root
+      if (tree.root.children.length > 0) {
+        // Find the most recent tactic node
+        const tacticNodes = tree.root.children.filter(n => n.level === "tactic")
+        if (tacticNodes.length > 0) {
+          parentNode = tacticNodes[tacticNodes.length - 1]
+        }
+      }
+      const actionNode = createNode("action", content, "active", now)
+      updatedTree = addChild(tree, parentNode.id, actionNode)
+    }
+  }
+  await saveTree(directory, updatedTree)
 
   const hierarchyUpdate: Partial<BrainState["hierarchy"]> = {}
   if (targetLevel === "trajectory") {

@@ -9,7 +9,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { readFileSync } from "node:fs"
 import { initProject } from "../src/cli/init.js"
-import { createDeclareIntentTool } from "../src/tools/declare-intent.js"
+import { createHivemindSessionTool } from "../src/tools/hivemind-session.js"
 import { getEffectivePaths } from "../src/lib/paths.js"
 
 let passed = 0
@@ -51,8 +51,8 @@ async function test_semantic_validation_passes_on_valid_tree() {
 
   try {
     await initProject(dir, { silent: true })
-    const declareIntent = createDeclareIntentTool(dir)
-    await declareIntent.execute({ mode: "plan_driven", focus: "Semantic check baseline" })
+    const sessionTool = createHivemindSessionTool(dir)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Semantic check baseline" }, {} as any)
 
     const result = runEcosystemCheck(dir)
     const semantic = result.chain.find((step: any) => step.step === "semantic")
@@ -73,8 +73,12 @@ async function test_semantic_validation_fails_on_invalid_tree() {
 
   try {
     await initProject(dir, { silent: true })
-    const declareIntent = createDeclareIntentTool(dir)
-    await declareIntent.execute({ mode: "plan_driven", focus: "Create tree" })
+    const sessionTool = createHivemindSessionTool(dir)
+    
+    // Close the auto-created session first, then start a fresh one
+    // (initProject creates an OPEN session with empty hierarchy)
+    await sessionTool.execute({ action: "close", summary: "Clear initial session" }, {} as any)
+    await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Create tree" }, {} as any)
 
     const hierarchyPath = getEffectivePaths(dir).hierarchy
     const tree = JSON.parse(readFileSync(hierarchyPath, "utf-8"))
