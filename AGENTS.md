@@ -101,6 +101,7 @@ npx tsx --test tests/filename.test.ts       # Run specific test
 ## V3.0 PRD & Plans
 
 - **PRD:** `docs/plans/prd-hivemind-v3-relational-engine-2026-02-16.md` (50 user stories, 7 phases)
+- **Roadmap:** `docs/plans/prd-hivemind-v3-roadmap-2026-02-18.md` [NEW] - Master roadmap and phase status
 - **Master Plan:** `docs/refactored-plan.md` (6 phases, 4 God Prompts)
 - **Stitch Screens:** `docs/stitch-screens/screen-*.html` (11 design mockups)
 
