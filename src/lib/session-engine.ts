@@ -172,6 +172,7 @@ export async function startSession(directory: string, options: SessionOptions): 
     created: now.getTime(),
     mode,
     trajectory: focus,
+    sessionId: state.session.id,
   })
 
   await generateIndexMd(directory)

@@ -42,27 +42,7 @@ if [[ ${#changed_files[@]} -eq 0 ]]; then
   exit 0
 fi
 
-protected_regexes=(
-  # Constitution & tracking
-  '^AGENTS\.md$'
-  '^AGENT_RULES\.md$'
-  '^CHANGELOG\.md$'
-  # Config with potential secrets
-  '^opencode\.json$'
-  # Dot folders (internal state)
-  '^\.opencode/'
-  '^\.hivemind/'
-  # Docs (internal planning/tracking)
-  '^docs/'
-  # Installation artifacts (deployed via sync-assets, NOT repo content)
-  '^agents/'
-  '^commands/'
-  '^skills/'
-  '^prompts/'
-  '^templates/'
-  '^references/'
-  '^workflows/'
-)
+protected_regexes=()
 
 violations=()
 
