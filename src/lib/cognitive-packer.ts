@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from "fs"
 
 import type { MemNode, PhaseNode, TaskNode } from "../schemas/graph-nodes.js"
 import {
-  GraphMemsStateSchema,
   GraphTasksStateSchema,
   PlansStateSchema,
   TrajectoryStateSchema,
@@ -225,8 +224,32 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
     memsSource = "memory/mems.json"
   }
   console.debug(`[packCognitiveState] Reading mems from ${memsSource}`)
-  const memsState = GraphMemsStateSchema.safeParse(memsRaw)
-  const rawMems = memsState.success ? [...memsState.data.mems].sort((a, b) => a.id.localeCompare(b.id)) : []
+
+  // US-002: Handle both MemNode format and legacy format
+  const rawMems: MemNode[] = []
+  if (memsRaw !== null && typeof memsRaw === "object") {
+    const memsArray = (memsRaw as { mems?: unknown[] }).mems ?? []
+    for (const mem of memsArray) {
+      if (mem && typeof mem === "object") {
+        const m = mem as Record<string, unknown>
+        const memNode: MemNode = {
+          id: typeof m.id === "string" ? m.id : `mem_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          shelf: typeof m.shelf === "string" ? m.shelf : "general",
+          content: typeof m.content === "string" ? m.content : "",
+          type: (m.type === "false_path" || m.type === "insight") ? m.type : "insight",
+          origin_task_id: typeof m.origin_task_id === "string" ? m.origin_task_id : null,
+          relevance_score: typeof m.relevance_score === "number" ? m.relevance_score : 0.5,
+          staleness_stamp: typeof m.staleness_stamp === "string" ? m.staleness_stamp : "9999-12-31T23:59:59.999Z",
+          created_at: typeof m.created_at === "number"
+            ? new Date(m.created_at).toISOString()
+            : typeof m.created_at === "string" ? m.created_at : new Date().toISOString(),
+          updated_at: typeof m.updated_at === "string" ? m.updated_at : new Date().toISOString(),
+        }
+        rawMems.push(memNode)
+      }
+    }
+    rawMems.sort((a, b) => a.id.localeCompare(b.id))
+  }
 
   // US-011: Apply pruneContaminated to filter false_path mems and invalidated tasks
   const { cleanMems, cleanTasks, prunedMems, prunedTasks } = pruneContaminated(rawMems, rawTasks)
