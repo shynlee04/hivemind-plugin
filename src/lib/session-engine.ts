@@ -353,7 +353,25 @@ export async function closeSession(directory: string, summary?: string): Promise
   const compactionCount = (state.compaction_count ?? 0) + 1
   newState.compaction_count = compactionCount
   newState.last_compaction_time = Date.now()
-  newState.next_compaction_report = null
+  
+  // Generate compaction report for next session
+  const reportLines = [
+    "=== HiveMind Compaction Report ===",
+    `Session: ${sessionId}`,
+    `Duration: ${Math.round(durationMs / 60000)} minutes`,
+    `Turns: ${state.metrics.turn_count}`,
+    `Files: ${state.metrics.files_touched.length}`,
+    `Drift: ${state.metrics.drift_score}/100`,
+    "",
+    "Hierarchy:",
+    `- Trajectory: ${state.hierarchy.trajectory || "(none)"}`,
+    `- Tactic: ${state.hierarchy.tactic || "(none)"}`,
+    `- Action: ${state.hierarchy.action || "(none)"}`,
+    "",
+    `Summary: ${summaryLine}`,
+    "=== End Compaction Report ===",
+  ]
+  newState.next_compaction_report = reportLines.join("\n")
   
   await stateManager.save(lockSession(newState))
 
