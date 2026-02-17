@@ -60,6 +60,7 @@ export interface SessionManifestEntry {
   summary?: string
   mode?: string
   trajectory?: string
+  session_id?: string | string[] | string[]
   linked_plans: string[]
 }
 
@@ -247,6 +248,11 @@ function mergeSessionEntry(a: SessionManifestEntry, b: SessionManifestEntry): Se
   const mode = b.mode ?? a.mode
   const trajectory = b.trajectory ?? a.trajectory
   const file = b.file || a.file
+
+  const sessionIdA = Array.isArray(a.session_id) ? a.session_id : (a.session_id ? [a.session_id] : []);
+  const sessionIdB = Array.isArray(b.session_id) ? b.session_id : (b.session_id ? [b.session_id] : []);
+  const sessionIds = uniq([...sessionIdA, ...sessionIdB]);
+
   return {
     stamp: a.stamp,
     file,
@@ -255,6 +261,7 @@ function mergeSessionEntry(a: SessionManifestEntry, b: SessionManifestEntry): Se
     summary,
     mode,
     trajectory,
+    session_id: sessionIds.length === 1 ? sessionIds[0] : (sessionIds.length > 0 ? sessionIds : undefined),
     linked_plans: uniq([...(a.linked_plans ?? []), ...(b.linked_plans ?? [])]),
   }
 }
@@ -310,6 +317,7 @@ export interface RegisterSessionInput {
   created?: number
   mode?: string
   trajectory?: string
+  session_id?: string
   linked_plans?: string[]
 }
 
@@ -330,6 +338,7 @@ export function registerSessionInManifest(
     created: input.created ?? Date.now(),
     mode: input.mode,
     trajectory: input.trajectory,
+    session_id: input.session_id,
     linked_plans: uniq(input.linked_plans ?? []),
   }
 
