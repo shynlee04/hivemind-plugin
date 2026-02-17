@@ -15,7 +15,13 @@ import type {
   ExpertLevel,
   OutputStyle,
 } from "../schemas/config.js"
-import { isCoachAutomation, normalizeAutomationLabel } from "../schemas/config.js"
+import {
+  PROFILE_PRESETS,
+  type ProfilePresetKey,
+  type ProfilePreset,
+  isCoachAutomation,
+  normalizeAutomationLabel,
+} from "../schemas/config.js"
 import type { AssetSyncTarget } from "./sync-assets.js"
 
 export const ASSET_TARGET_LABELS: Record<AssetSyncTarget, string> = {
@@ -32,8 +38,49 @@ export const ASSET_TARGET_LABELS: Record<AssetSyncTarget, string> = {
 export async function runInteractiveInit(): Promise<InitOptions | null> {
   p.intro("🐝 HiveMind Context Governance — Setup Wizard")
 
+  // ── Profile Selection - FIRST ───────────────────────────────
+  const profileKey = await p.select({
+    message: "What kind of developer are you?",
+    options: [
+      {
+        value: "beginner" as ProfilePresetKey,
+        label: "Beginner",
+        hint: "Learning with AI. Maximum guidance, asks before acting.",
+      },
+      {
+        value: "intermediate" as ProfilePresetKey,
+        label: "Intermediate (recommended)",
+        hint: "Comfortable with AI tools. Balanced automation.",
+      },
+      {
+        value: "advanced" as ProfilePresetKey,
+        label: "Advanced",
+        hint: "Experienced. Permissive, outline responses, full control.",
+      },
+      {
+        value: "expert" as ProfilePresetKey,
+        label: "Expert",
+        hint: "Senior developer. Minimal guidance, terse responses.",
+      },
+      {
+        value: "coach" as ProfilePresetKey,
+        label: "Coach (max guidance)",
+        hint: "Strict governance, skeptical, asks everything.",
+      },
+    ],
+  })
+
+  if (p.isCancel(profileKey)) {
+    p.cancel("Setup cancelled.")
+    return null
+  }
+
+  const selectedProfile: ProfilePreset = PROFILE_PRESETS[profileKey]
+
+  // ── Governance Mode - with profile default ────────────────────
   const governanceMode = await p.select({
     message: "Governance mode — how strict should session enforcement be?",
+    initialValue: selectedProfile.governance_mode,
     options: [
       {
         value: "assisted" as GovernanceMode,
@@ -73,6 +120,7 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
 
   const automationLevel = await p.select({
     message: "Automation level — how much should HiveMind intervene?",
+    initialValue: selectedProfile.automation_level,
     options: [
       {
         value: "manual" as AutomationLevel,
@@ -108,14 +156,16 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
   }
 
   // Skip expert/style for coach mode (auto-set)
-  let expertLevel: ExpertLevel = "intermediate"
-  let outputStyle: OutputStyle = "explanatory"
-  let requireCodeReview = false
-  let enforceTdd = false
+  // Use profile defaults as initial values
+  let expertLevel: ExpertLevel = selectedProfile.expert_level
+  let outputStyle: OutputStyle = selectedProfile.output_style
+  let requireCodeReview = selectedProfile.require_code_review
+  let enforceTdd = selectedProfile.enforce_tdd
 
   if (!isCoachAutomation(automationLevel)) {
     const expert = await p.select({
       message: "Your expertise level — affects response depth and assumptions?",
+      initialValue: selectedProfile.expert_level,
       options: [
         {
           value: "beginner" as ExpertLevel,
@@ -148,6 +198,7 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
 
     const style = await p.select({
       message: "Output style — how should the agent format responses?",
+      initialValue: selectedProfile.output_style,
       options: [
         {
           value: "explanatory" as OutputStyle,
@@ -185,6 +236,10 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
 
     const extras = await p.multiselect({
       message: "Additional constraints (optional, press Enter to skip):",
+      initialValues: [
+        ...(selectedProfile.require_code_review ? ["code-review"] : []),
+        ...(selectedProfile.enforce_tdd ? ["tdd"] : []),
+      ],
       options: [
         {
           value: "code-review" as string,
@@ -236,11 +291,13 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
   // Summary
   p.note(
     [
+      `Profile:     ${selectedProfile.label}`,
       `Governance:  ${isCoachAutomation(automationLevel) ? "strict (forced)" : governanceMode}`,
       `Language:    ${language === "en" ? "English" : "Tiếng Việt"}`,
       `Automation:  ${normalizeAutomationLabel(automationLevel)}${isCoachAutomation(automationLevel) ? " (max guidance)" : ""}`,
       `Expert:      ${isCoachAutomation(automationLevel) ? "beginner (forced)" : expertLevel}`,
       `Style:       ${isCoachAutomation(automationLevel) ? "skeptical (forced)" : outputStyle}`,
+      `Permissions: ${JSON.stringify(selectedProfile.permissions)}`,
       `Target:      ${ASSET_TARGET_LABELS[syncTarget]}`,
       requireCodeReview || isCoachAutomation(automationLevel) ? `✓ Code review required` : "",
       enforceTdd ? `✓ TDD enforced` : "",
@@ -270,5 +327,6 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
     requireCodeReview: requireCodeReview || isCoachAutomation(automationLevel),
     enforceTdd,
     syncTarget,
+    profile: profileKey,
   }
 }

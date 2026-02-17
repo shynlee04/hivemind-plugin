@@ -35,8 +35,7 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { existsSync } from "fs"
 import { join } from "path"
-import {
-  createHivemindSessionTool,
+import { createHivemindSessionTool,
   createHivemindInspectTool,
   createHivemindMemoryTool,
   createHivemindAnchorTool,
@@ -55,6 +54,8 @@ import { createLogger } from "./lib/logging.js"
 import { loadConfig } from "./lib/persistence.js"
 import { initSdkContext } from "./hooks/sdk-context.js"
 import { regenerateManifests } from "./lib/planning-fs.js"
+import { fileWatcher } from "./lib/watcher.js"
+import { eventBus } from "./lib/event-bus.js"
 
 /**
  * HiveMind plugin entry point.
@@ -99,6 +100,15 @@ export const HiveMindPlugin: Plugin = async ({
   await log.info(
     `SDK context: client=${!!client}, shell=${!!shell}, serverUrl=${serverUrl?.href ?? 'none'}`
   )
+
+  // Wire file watcher events to event bus (in-process event engine)
+  fileWatcher.on("event", (event) => {
+    eventBus.emitEvent(event)
+  })
+
+  // Watch the project directory for file changes
+  fileWatcher.watchDirectory(effectiveDir)
+  await log.info(`File watcher activated for: ${effectiveDir}`)
 
   return {
     /**
