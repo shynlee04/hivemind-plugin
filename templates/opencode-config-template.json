@@ -1,0 +1,154 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["hivemind-context-governance"],
+  
+  "permission": {
+    "_comment": "Default permissions - customize based on your comfort level",
+    "edit": "allow",
+    "write": "allow",
+    "bash": {
+      "git push": "ask",
+      "rm -rf *": "ask",
+      "npm publish": "ask",
+      "*": "allow"
+    },
+    "webfetch": "allow",
+    "websearch": "allow"
+  },
+  
+  "agent": {
+    "_comment_build": "Primary implementation agent - full tool access",
+    "build": {
+      "mode": "primary",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "glob": true,
+        "grep": true,
+        "task": true,
+        "skill": true,
+        "webfetch": true,
+        "websearch": true
+      }
+    },
+    
+    "_comment_plan": "Planning agent - read-only by default",
+    "plan": {
+      "mode": "primary",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    },
+    
+    "_comment_hiveminder": "Strategist/orchestrator - can delegate to other agents",
+    "hiveminder": {
+      "mode": "all",
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true,
+        "bash": true,
+        "task": true,
+        "skill": true
+      }
+    },
+    
+    "_comment_explore": "Fast read-only codebase exploration",
+    "explore": {
+      "mode": "subagent",
+      "tools": {
+        "write": false,
+        "edit": false,
+        "bash": false
+      }
+    },
+    
+    "_comment_scanner": "Deep codebase investigation",
+    "scanner": {
+      "mode": "subagent",
+      "hidden": true,
+      "tools": {
+        "write": false,
+        "edit": false
+      }
+    },
+    
+    "_comment_code-review": "Code inspection and review",
+    "code-review": {
+      "mode": "subagent",
+      "tools": {
+        "write": false,
+        "edit": false
+      }
+    }
+  },
+  
+  "_profile_presets": {
+    "_comment": "These presets are applied by HiveMind during init. Copy the relevant section to customize.",
+    
+    "beginner": {
+      "_description": "Learning with AI - maximum guidance, asks before acting",
+      "permission": {
+        "edit": "ask",
+        "write": "ask",
+        "bash": "ask"
+      }
+    },
+    
+    "intermediate": {
+      "_description": "Comfortable with AI tools - balanced automation (recommended)",
+      "permission": {
+        "edit": "allow",
+        "write": "allow",
+        "bash": "ask"
+      }
+    },
+    
+    "advanced": {
+      "_description": "Experienced developer - permissive, full control",
+      "permission": {
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    
+    "expert": {
+      "_description": "Senior developer - minimal guidance, full autonomy",
+      "permission": {
+        "edit": "allow",
+        "write": "allow",
+        "bash": "allow"
+      }
+    },
+    
+    "coach": {
+      "_description": "Learning mode - strict governance, skeptical, asks everything",
+      "permission": {
+        "edit": "ask",
+        "write": "ask",
+        "bash": "ask"
+      }
+    }
+  },
+  
+  "_hivemind_custom_tools": {
+    "_comment": "These tools are provided by the hivemind-context-governance plugin",
+    "_tools": [
+      "declare_intent",
+      "map_context", 
+      "compact_session",
+      "scan_hierarchy",
+      "think_back",
+      "save_anchor",
+      "save_mem",
+      "recall_mems",
+      "hierarchy_manage",
+      "export_cycle"
+    ]
+  }
+}

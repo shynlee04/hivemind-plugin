@@ -26,6 +26,170 @@ export const OUTPUT_STYLES = [
 ] as const;
 export type OutputStyle = (typeof OUTPUT_STYLES)[number];
 
+// ── OpenCode Permission Types ──────────────────────────────
+
+export type PermissionMode = "allow" | "ask" | "deny";
+
+export interface ToolPermissions {
+  /** Read files */
+  read?: PermissionMode;
+  /** Write/create new files */
+  write?: PermissionMode;
+  /** Edit existing files */
+  edit?: PermissionMode;
+  /** Execute shell commands (can be object for pattern matching) */
+  bash?: PermissionMode | Record<string, PermissionMode>;
+  /** Search file contents */
+  grep?: PermissionMode;
+  /** Find files by pattern */
+  glob?: PermissionMode;
+  /** List directory contents */
+  list?: PermissionMode;
+  /** Execute Task tool (spawn subagents) */
+  task?: PermissionMode;
+  /** Load skills */
+  skill?: PermissionMode;
+  /** Fetch web content */
+  webfetch?: PermissionMode;
+  /** Search the web */
+  websearch?: PermissionMode;
+  /** Ask user questions */
+  question?: PermissionMode;
+  /** All other tools not explicitly listed */
+  "*"? : PermissionMode;
+}
+
+// ── Profile Presets ─────────────────────────────────────────
+
+export interface ProfilePreset {
+  /** Display name for the profile */
+  label: string;
+  /** Description shown in wizard */
+  description: string;
+  /** Governance mode */
+  governance_mode: GovernanceMode;
+  /** Automation level */
+  automation_level: AutomationLevel;
+  /** Expert level */
+  expert_level: ExpertLevel;
+  /** Output style */
+  output_style: OutputStyle;
+  /** Default permissions for this profile */
+  permissions: ToolPermissions;
+  /** Whether to require code review */
+  require_code_review: boolean;
+  /** Whether to enforce TDD */
+  enforce_tdd: boolean;
+}
+
+export const PROFILE_PRESETS: Record<string, ProfilePreset> = {
+  beginner: {
+    label: "Beginner",
+    description: "Learning to code with AI assistance. Maximum guidance, explanatory responses, ask before actions.",
+    governance_mode: "assisted",
+    automation_level: "assisted",
+    expert_level: "beginner",
+    output_style: "explanatory",
+    permissions: {
+      edit: "ask",
+      write: "ask",
+      bash: "ask",
+      "*": "allow",
+    },
+    require_code_review: false,
+    enforce_tdd: false,
+  },
+  intermediate: {
+    label: "Intermediate (recommended)",
+    description: "Comfortable with AI tools. Balanced automation, clear explanations, allow most actions.",
+    governance_mode: "assisted",
+    automation_level: "assisted",
+    expert_level: "intermediate",
+    output_style: "explanatory",
+    permissions: {
+      edit: "allow",
+      write: "allow",
+      bash: "ask",
+      "*": "allow",
+    },
+    require_code_review: false,
+    enforce_tdd: false,
+  },
+  advanced: {
+    label: "Advanced",
+    description: "Experienced developer. Permissive governance, outline responses, full control.",
+    governance_mode: "permissive",
+    automation_level: "guided",
+    expert_level: "advanced",
+    output_style: "outline",
+    permissions: {
+      edit: "allow",
+      write: "allow",
+      bash: "allow",
+      "*": "allow",
+    },
+    require_code_review: false,
+    enforce_tdd: false,
+  },
+  expert: {
+    label: "Expert",
+    description: "Senior developer. Minimal guidance, terse responses, full autonomy.",
+    governance_mode: "permissive",
+    automation_level: "manual",
+    expert_level: "expert",
+    output_style: "minimal",
+    permissions: {
+      edit: "allow",
+      write: "allow",
+      bash: "allow",
+      "*": "allow",
+    },
+    require_code_review: false,
+    enforce_tdd: false,
+  },
+  coach: {
+    label: "Coach (max guidance)",
+    description: "Learning mode with maximum hand-holding. Strict governance, skeptical responses, asks everything.",
+    governance_mode: "strict",
+    automation_level: "coach",
+    expert_level: "beginner",
+    output_style: "skeptical",
+    permissions: {
+      edit: "ask",
+      write: "ask",
+      bash: "ask",
+      "*": "ask",
+    },
+    require_code_review: true,
+    enforce_tdd: true,
+  },
+};
+
+export type ProfilePresetKey = keyof typeof PROFILE_PRESETS;
+
+export function isValidProfilePreset(key: string): key is ProfilePresetKey {
+  return key in PROFILE_PRESETS;
+}
+
+// ── OpenCode Integration Settings ───────────────────────────
+
+export interface OpenCodeSettings {
+  /** Default model for agents (provider/model-id format) */
+  default_model?: string;
+  /** Per-agent model overrides */
+  agent_models?: Record<string, string>;
+  /** Default permissions applied to all agents */
+  default_permissions?: ToolPermissions;
+  /** MCP servers configuration */
+  mcp_servers?: Array<{
+    name: string;
+    url?: string;
+    command?: string;
+    args?: string[];
+    enabled?: boolean;
+  }>;
+}
+
 export interface AgentBehaviorConfig {
   /** Language for all responses */
   language: Language;
@@ -66,6 +230,10 @@ export interface HiveMindConfig {
   detection_thresholds?: Partial<DetectionThresholds>;
   /** Automation level — "coach" mode = max automation, system argues back, max guidance */
   automation_level: AutomationLevel;
+  /** Selected profile preset */
+  profile?: ProfilePresetKey;
+  /** OpenCode-specific settings */
+  opencode?: OpenCodeSettings;
 }
 
 export const DEFAULT_AGENT_BEHAVIOR: AgentBehaviorConfig = {

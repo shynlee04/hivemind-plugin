@@ -16,18 +16,20 @@ import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-import type { GovernanceMode, Language, ExpertLevel, OutputStyle, AutomationLevel } from "../schemas/config.js"
+import type { GovernanceMode, Language, ExpertLevel, OutputStyle, AutomationLevel, ProfilePresetKey, OpenCodeSettings } from "../schemas/config.js"
 import {
   AUTOMATION_LEVELS,
   EXPERT_LEVELS,
   GOVERNANCE_MODES,
   LANGUAGES,
   OUTPUT_STYLES,
+  PROFILE_PRESETS,
   createConfig,
   isValidGovernanceMode,
   isValidLanguage,
   isValidExpertLevel,
   isValidOutputStyle,
+  isValidProfilePreset,
   isCoachAutomation,
   normalizeAutomationInput,
   normalizeAutomationLabel,
@@ -155,6 +157,8 @@ export interface InitOptions {
   overwriteAssets?: boolean
   silent?: boolean
   force?: boolean
+  /** Profile preset to apply (beginner, intermediate, advanced, expert, coach) */
+  profile?: ProfilePresetKey
 }
 
 // eslint-disable-next-line no-console
@@ -228,6 +232,150 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
   }
 }
 
+/**
+ * Apply a profile preset to generate config and OpenCode settings.
+ * When a profile is provided, it overrides individual options.
+ */
+function applyProfilePreset(
+  profileKey: ProfilePresetKey,
+  options: InitOptions
+): { config: ReturnType<typeof createConfig>; opencodeSettings: OpenCodeSettings } {
+  const preset = PROFILE_PRESETS[profileKey]
+
+  // Normalize automation level from options if provided
+  const normalizedAutomationLevel = options.automationLevel 
+    ? normalizeAutomationInput(options.automationLevel) 
+    : null
+
+  // Apply preset to config - preset values take precedence over individual options
+  const config = createConfig({
+    governance_mode: options.governanceMode ?? preset.governance_mode,
+    language: options.language ?? "en",
+    automation_level: normalizedAutomationLevel ?? preset.automation_level,
+    agent_behavior: {
+      language: options.language ?? "en",
+      expert_level: options.expertLevel ?? preset.expert_level,
+      output_style: options.outputStyle ?? preset.output_style,
+      constraints: {
+        require_code_review: options.requireCodeReview ?? preset.require_code_review,
+        enforce_tdd: options.enforceTdd ?? preset.enforce_tdd,
+        max_response_tokens: 2000,
+        explain_reasoning: true,
+        be_skeptical: preset.output_style === "skeptical",
+      },
+    },
+    profile: profileKey,
+  })
+
+  // Generate OpenCode settings with profile permissions
+  const opencodeSettings: OpenCodeSettings = {
+    default_permissions: preset.permissions,
+  }
+
+  return { config, opencodeSettings }
+}
+
+/**
+ * Update opencode.json with profile-specific permissions.
+ * Integrates with existing registerPluginInConfig logic.
+ */
+function updateOpencodeJsonWithProfile(
+  directory: string,
+  profileKey: ProfilePresetKey,
+  silent: boolean
+): void {
+  const preset = PROFILE_PRESETS[profileKey]
+  const configPath = join(directory, "opencode.json")
+  let config: Record<string, unknown> = {}
+
+  if (existsSync(configPath)) {
+    try {
+      let raw = readFileSync(configPath, "utf-8")
+      // Strip single-line comments for JSONC support
+      raw = raw.replace(/^\s*\/\/.*$/gm, "")
+      // Strip trailing commas before } or ]
+      raw = raw.replace(/,\s*([}\]])/g, "$1")
+      config = JSON.parse(raw)
+    } catch {
+      // ignore parse errors - will use empty config
+    }
+  }
+
+  // Add default permissions for HiveMind agents based on profile
+  config.permission = {
+    ...(config.permission as Record<string, unknown> | undefined),
+    ...preset.permissions,
+  }
+
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+
+  if (!silent) {
+    log(`  ✓ Applied ${preset.label} profile permissions to opencode.json`)
+  }
+}
+
+/**
+ * Print success message after initialization.
+ * Shared by both profile and manual configuration paths.
+ */
+async function printInitSuccess(
+  directory: string,
+  config: ReturnType<typeof createConfig>,
+  sessionId: string,
+  state: ReturnType<typeof createBrainState>,
+  silent: boolean
+): Promise<void> {
+  if (silent) return
+
+  const p = getEffectivePaths(directory)
+  const hivemindDir = p.root
+
+  log("")
+  log("✓ Planning directory created:")
+  log(`  ${hivemindDir}/`)
+  log("  ├── INDEX.md             (root state entry point)")
+  log("  ├── state/               (brain, hierarchy, anchors, tasks)")
+  log("  ├── memory/              (mems + manifest)")
+  log("  ├── sessions/")
+  log("  │   ├── active/          (current session file)")
+  log("  │   ├── manifest.json    (session registry)")
+  log("  │   └── archive/         (completed sessions)")
+  log("  ├── plans/               (plan registry)")
+  log("  ├── codemap/             (SOT manifest)")
+  log("  ├── codewiki/            (SOT manifest)")
+  log("  ├── docs/                (10-commandments.md)")
+  log("  ├── templates/")
+  log("  │   └── session.md       (session template)")
+  log("  ├── logs/                (runtime logs)")
+  log("  └── config.json          (governance settings)")
+  log("")
+  log(`Session ${sessionId} initialized.`)
+  log(`Status: ${state.session.governance_status}`)
+  log("")
+
+  if (config.governance_mode === "strict") {
+    log("🔒 STRICT MODE — agents must call declare_intent before writing.")
+  } else if (config.governance_mode === "assisted") {
+    log("🔔 ASSISTED MODE — agents get warnings but can proceed.")
+  } else {
+    log("🟢 PERMISSIVE MODE — agents work freely, activity tracked.")
+  }
+
+  if (isCoachAutomation(config.automation_level)) {
+    log("")
+    log("🤯 COACH MODE ACTIVE:")
+    log("   → Governance forced to STRICT")
+    log("   → System will ARGUE BACK with evidence")
+    log("   → Escalating pressure on every unresolved signal")
+    log("   → Code review REQUIRED on all changes")
+    log("   → Maximum guidance enabled")
+  }
+
+  log("")
+  log("✅ Done! Open OpenCode in this project — HiveMind is active.")
+  log("")
+}
+
 export async function initProject(
   directory: string,
   options: InitOptions = {}
@@ -281,6 +429,80 @@ export async function initProject(
     log("─".repeat(48))
   }
 
+  // ── Profile Preset Path ─────────────────────────────────────────────────────
+  // When a profile is provided, it drives all configuration values
+  if (options.profile && isValidProfilePreset(options.profile)) {
+    const preset = PROFILE_PRESETS[options.profile]
+    
+    if (!options.silent) {
+      log(`  Profile: ${preset.label}`)
+      log(`  ${preset.description}`)
+      log("")
+    }
+
+    const { config } = applyProfilePreset(options.profile, options)
+
+    if (!options.silent) {
+      log(`  Governance: ${config.governance_mode}`)
+      log(`  Language: ${config.language}`)
+      log(`  Expert Level: ${config.agent_behavior.expert_level}`)
+      log(`  Output Style: ${config.agent_behavior.output_style}`)
+      log(`  Automation: ${normalizeAutomationLabel(config.automation_level)}${isCoachAutomation(config.automation_level) ? " (max guidance)" : ""}`)
+      if (config.agent_behavior.constraints.require_code_review) log("  ✓ Code review required")
+      if (config.agent_behavior.constraints.enforce_tdd) log("  ✓ TDD enforced")
+      log("")
+    }
+
+    // Create planning directory structure
+    if (!options.silent) {
+      log("Creating planning directory...")
+    }
+    await initializePlanningDirectory(directory)
+
+    // Copy 10 Commandments to .hivemind
+    const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md")
+    const commandmentsDest = join(p.docsDir, "10-commandments.md")
+    await mkdir(p.docsDir, { recursive: true })
+    await copyFile(commandmentsSource, commandmentsDest)
+    if (!options.silent) {
+      log(`  ✓ Copied 10 Commandments to ${p.docsDir}/`)
+    }
+
+    // Save config
+    await saveConfig(directory, config)
+
+    // Initialize brain state
+    const stateManager = createStateManager(directory)
+    const sessionId = generateSessionId()
+    const state = createBrainState(sessionId, config)
+    await stateManager.save(state)
+
+    // Initialize empty hierarchy tree (required for session-lifecycle hook)
+    await saveTree(directory, createTree())
+
+    // Auto-register plugin in opencode.json
+    registerPluginInConfig(directory, options.silent ?? false)
+
+    // Apply profile permissions to opencode.json
+    updateOpencodeJsonWithProfile(directory, options.profile, options.silent ?? false)
+
+    // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
+    injectAgentsDocs(directory, options.silent ?? false)
+
+    // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
+    await syncOpencodeAssets(directory, {
+      target: options.syncTarget ?? "project",
+      overwrite: options.overwriteAssets ?? false,
+      silent: options.silent ?? false,
+      onLog: options.silent ? undefined : log,
+    })
+
+    await printInitSuccess(directory, config, sessionId, state, options.silent ?? false)
+    return
+  }
+
+  // ── Manual Configuration Path (existing logic) ──────────────────────────────
+  
   // Validate and set governance mode
   const governanceMode = options.governanceMode ?? "assisted"
   if (!isValidGovernanceMode(governanceMode)) {

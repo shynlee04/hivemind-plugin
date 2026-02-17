@@ -57,6 +57,12 @@ export interface HivemindPaths {
   memoryManifest: string
   mems: string              // memory/mems.json
 
+  // system/ (daemon runtime files)
+  systemDir: string
+  daemonPid: string         // system/daemon.pid
+  cmdQueue: string          // system/cmd_queue.jsonl
+  processingQueue: string   // system/processing.jsonl
+
   // sessions/
   sessionsDir: string
   sessionsManifest: string
@@ -148,6 +154,11 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
     memoryDir,
     memoryManifest: join(memoryDir, "manifest.json"),
     mems: join(memoryDir, "mems.json"),
+
+    systemDir: join(root, "system"),
+    daemonPid: join(root, "system", "daemon.pid"),
+    cmdQueue: join(root, "system", "cmd_queue.jsonl"),
+    processingQueue: join(root, "system", "processing.jsonl"),
 
     sessionsDir,
     sessionsManifest: join(sessionsDir, "manifest.json"),
