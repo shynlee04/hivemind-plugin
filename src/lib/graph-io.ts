@@ -433,6 +433,13 @@ export async function saveGraphMems(projectRoot: string, state: GraphMemsState):
 export async function addGraphMem(projectRoot: string, mem: MemNode): Promise<string> {
   const filePath = getEffectivePaths(projectRoot).graphMems
 
+  // Ensure the file exists before trying to lock it
+  const directory = dirname(filePath)
+  if (!existsSync(filePath)) {
+    await mkdir(directory, { recursive: true })
+    await writeFile(filePath, JSON.stringify({ version: GRAPH_STATE_VERSION, mems: [] }, null, 2))
+  }
+
   let validatedMem: MemNode
   await withFileLock(filePath, async () => {
     validatedMem = GraphMemsStateSchema.shape.mems.element.parse(mem)

@@ -15,10 +15,16 @@ import { loadTrajectory, saveTrajectory } from "../lib/graph-io.js"
 import {
   createNode,
   createTree,
+  generateStamp,
   saveTree,
   setRoot,
+  toActiveMdBody,
 } from "../lib/hierarchy-tree.js"
 import { createStateManager } from "../lib/persistence.js"
+import { readManifest, writeManifest, instantiateSession } from "../lib/planning-fs.js"
+import { getEffectivePaths } from "../lib/paths.js"
+import { writeFile, mkdir } from "fs/promises"
+import { dirname, join } from "path"
 
 /**
  * @deprecated Use createHivemindSessionTool with action: "start" instead.
@@ -53,6 +59,7 @@ export function createDeclareIntentTool(directory: string): ToolDefinition {
 
         // Create/update hierarchy tree even when session exists
         const now = new Date()
+        const stamp = generateStamp(now)
         const rootNode = createNode("trajectory", focus, "active", now)
         let tree = createTree()
         tree = setRoot(tree, rootNode)
@@ -66,6 +73,43 @@ export function createDeclareIntentTool(directory: string): ToolDefinition {
           state.hierarchy.tactic = ""
           state.hierarchy.action = ""
           await stateManager.save(state)
+        }
+
+        // Ensure session is registered in manifest and create session file
+        const manifest = await readManifest(directory)
+        const existingEntry = manifest.sessions.find(s => s.stamp === stamp)
+        if (!existingEntry) {
+          const sessionFileName = `${stamp}.md`
+          
+          // Create the session file
+          const hierarchyBody = toActiveMdBody(tree)
+          const sessionContent = instantiateSession({
+            sessionId,
+            stamp,
+            mode: args.mode || "plan_driven",
+            governanceStatus: "OPEN",
+            created: now.getTime(),
+            trajectory: focus,
+            hierarchyBody,
+          })
+          
+          const effective = getEffectivePaths(directory)
+          const sessionFilePath = join(effective.activeDir, sessionFileName)
+          await mkdir(dirname(sessionFilePath), { recursive: true })
+          await writeFile(sessionFilePath, sessionContent)
+          
+          // Update manifest
+          manifest.sessions.push({
+            stamp,
+            file: sessionFileName,
+            status: "active",
+            created: now.getTime(),
+            mode: args.mode,
+            trajectory: focus,
+            linked_plans: [],
+          })
+          manifest.active_stamp = stamp
+          await writeManifest(directory, manifest)
         }
 
         // Sync trajectory to graph (use proper UUID format)
