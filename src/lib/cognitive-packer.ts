@@ -217,7 +217,14 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
   const tasksState = GraphTasksStateSchema.safeParse(tasksRaw)
   const rawTasks = tasksState.success ? [...tasksState.data.tasks].sort((a, b) => a.id.localeCompare(b.id)) : []
 
-  const memsRaw = readJsonFile(paths.graphMems)
+  // DUAL-READ: Try graph/mems.json first, fallback to memory/mems.json
+  let memsRaw = readJsonFile(paths.graphMems)
+  let memsSource = "graph/mems.json"
+  if (memsRaw === null) {
+    memsRaw = readJsonFile(paths.mems)
+    memsSource = "memory/mems.json"
+  }
+  console.debug(`[packCognitiveState] Reading mems from ${memsSource}`)
   const memsState = GraphMemsStateSchema.safeParse(memsRaw)
   const rawMems = memsState.success ? [...memsState.data.mems].sort((a, b) => a.id.localeCompare(b.id)) : []
 
