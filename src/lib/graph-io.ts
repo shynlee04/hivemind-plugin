@@ -601,7 +601,7 @@ export async function loadGraphMems(
            validTaskIds.add(s.stamp)
            if (s.session_id) {
              if (Array.isArray(s.session_id)) {
-               s.session_id.filter(Boolean).forEach(id => validTaskIds.add(id))
+               s.session_id.forEach(id => validTaskIds.add(id))
              } else {
                validTaskIds.add(s.session_id)
              }
