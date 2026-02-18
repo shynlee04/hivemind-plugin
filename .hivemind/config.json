@@ -6,18 +6,17 @@
   "auto_compact_on_turns": 20,
   "stale_session_days": 3,
   "commit_suggestion_threshold": 5,
-  "auto_commit": false,
   "agent_behavior": {
     "language": "en",
-    "expert_level": "intermediate",
-    "output_style": "explanatory",
+    "expert_level": "beginner",
+    "output_style": "architecture",
     "constraints": {
-      "require_code_review": false,
+      "require_code_review": true,
       "enforce_tdd": false,
       "max_response_tokens": 2000,
       "explain_reasoning": true,
       "be_skeptical": false
     }
   },
-  "automation_level": "assisted"
+  "automation_level": "manual"
 }
