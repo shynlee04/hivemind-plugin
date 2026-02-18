@@ -13,6 +13,7 @@ import { mkdir, readFile, writeFile, rename, unlink } from "fs/promises"
 
 import { withFileLock } from "./file-lock.js"
 import { loadGraphMems, saveGraphMems } from "./graph-io.js"
+import { createLogger, noopLogger, type Logger } from "./logging.js"
 import { getEffectivePaths } from "./paths.js"
 import type { MemNode } from "../schemas/graph-nodes.js"
 
@@ -63,6 +64,18 @@ export interface SwarmSdkExecutor {
 // ─── Constants ───────────────────────────────────────────────────────
 
 const SWARM_DIR_NAME = "swarms"
+
+const swarmLoggerPromises = new Map<string, Promise<Logger>>()
+
+function getSwarmLogger(projectRoot: string): Promise<Logger> {
+  let loggerPromise = swarmLoggerPromises.get(projectRoot)
+  if (!loggerPromise) {
+    const paths = getEffectivePaths(projectRoot)
+    loggerPromise = createLogger(paths.logsDir, "session-swarm").catch(() => noopLogger)
+    swarmLoggerPromises.set(projectRoot, loggerPromise)
+  }
+  return loggerPromise
+}
 
 // ─── Helper Functions ───────────────────────────────────────────────
 
@@ -130,6 +143,7 @@ export async function spawnHeadlessResearcher(
   prompt: string,
   sdkExecutor?: SwarmSdkExecutor,
 ): Promise<{ swarmId: string; status: "spawned" | "error" }> {
+  const logger = await getSwarmLogger(projectRoot)
   let swarmId = ""
   let meta: SwarmMeta | null = null
 
@@ -166,7 +180,8 @@ export async function spawnHeadlessResearcher(
           const actualSessionId = created.id
           meta.actual_session_id = actualSessionId
 
-          // Fire and forget - noReply for background execution
+          // Dispatch immediately with noReply for background execution.
+          // We still await transport acceptance and handle local send errors.
           await sdkExecutor.sendPrompt({
             sessionId: actualSessionId,
             noReply: true,
@@ -182,17 +197,21 @@ Do not ask for clarification. Execute autonomously.
 Begin research.`,
               },
             ],
-          }).catch((err: unknown) => {
-            console.error(`[swarm] ${swarmId} prompt failed:`, err)
+          }).catch(async (err: unknown) => {
+            await logger.error(
+              `[swarm] ${swarmId} prompt failed: ${err instanceof Error ? err.message : String(err)}`,
+            )
           })
         }
       } catch (err: unknown) {
-        console.error(`[swarm] ${swarmId} spawn failed:`, err)
+        await logger.error(
+          `[swarm] ${swarmId} spawn failed: ${err instanceof Error ? err.message : String(err)}`,
+        )
         meta.status = "error"
         meta.error = String(err)
       }
     } else {
-      console.warn(`[swarm] ${swarmId} no SDK executor provided - metadata only`)
+      await logger.warn(`[swarm] ${swarmId} no SDK executor provided - metadata only`)
     }
 
     // 6. Save swarm metadata with atomic write
@@ -201,7 +220,9 @@ Begin research.`,
     // Status is either "spawned" or "error" at this point (never "completed")
     return { swarmId, status: meta.status === "error" ? "error" : "spawned" }
   } catch (error: unknown) {
-    console.error("[session-swarm] Failed to spawn headless researcher:", error)
+    await logger.error(
+      `[session-swarm] Failed to spawn headless researcher: ${error instanceof Error ? error.message : String(error)}`,
+    )
 
     // Try to save error state if we have metadata
     if (meta && swarmId) {

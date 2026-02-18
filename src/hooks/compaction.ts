@@ -22,7 +22,7 @@ import { createStateManager } from "../lib/persistence.js"
 import { loadMems } from "../lib/mems.js"
 import { loadAnchors } from "../lib/anchors.js"
 import { loadTasks } from "../lib/manifest.js"
-import { queueStateMutation } from "../lib/state-mutation-queue.js"
+import { queueStateMutation, flushMutations } from "../lib/state-mutation-queue.js"
 import {
   loadTree,
   toAsciiTree,
@@ -77,6 +77,8 @@ export function createCompactionHook(log: Logger, directory: string) {
           source: "compaction-hook"
         });
         await log.debug("Compaction: queued mutation to clear consumed purification report")
+        const appliedMutations = await flushMutations(stateManager)
+        await log.debug(`Compaction: applied ${appliedMutations} queued mutation(s) after report injection`)
         // Don't return — still add standard context too, but purification report comes first
       }
 

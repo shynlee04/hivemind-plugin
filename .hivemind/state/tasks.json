@@ -1,54 +1,22 @@
 {
-  "session_id": "ses_38dc5ca2cffe0oPRFtLHfxkxmj",
-  "updated_at": 1771444331212,
+  "session_id": "ses_38d413431ffe4bcOLFhlS4rTij",
+  "updated_at": 1771454023207,
   "tasks": [
     {
-      "id": "1",
-      "text": "Fix src/hooks/messages-transform.ts - Replace console.log with file-based logging",
-      "content": "Fix src/hooks/messages-transform.ts - Replace console.log with file-based logging",
+      "id": "todo-1",
+      "text": "Run one-pass independent validation of Phase 0 stabilization patch (3 files + 4 commands)",
+      "content": "Run one-pass independent validation of Phase 0 stabilization patch (3 files + 4 commands)",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771444331212
+      "updated_at": 1771454023207
     },
     {
-      "id": "2",
-      "text": "Fix src/lib/state-mutation-queue.ts - Replace console.warn/error with file-based logging",
-      "content": "Fix src/lib/state-mutation-queue.ts - Replace console.warn/error with file-based logging",
+      "id": "todo-2",
+      "text": "Report concise gate status and next step without redundant cycles",
+      "content": "Report concise gate status and next step without redundant cycles",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771444331212
-    },
-    {
-      "id": "3",
-      "text": "Fix src/lib/cognitive-packer.ts - Replace console.debug with file-based logging",
-      "content": "Fix src/lib/cognitive-packer.ts - Replace console.debug with file-based logging",
-      "status": "completed",
-      "priority": "medium",
-      "updated_at": 1771444331212
-    },
-    {
-      "id": "4",
-      "text": "Fix src/hooks/sdk-context.ts - Replace console.error with file-based logging",
-      "content": "Fix src/hooks/sdk-context.ts - Replace console.error with file-based logging",
-      "status": "completed",
-      "priority": "medium",
-      "updated_at": 1771444331212
-    },
-    {
-      "id": "5",
-      "text": "Fix src/hooks/swarm-executor.ts - Replace console.error with file-based logging",
-      "content": "Fix src/hooks/swarm-executor.ts - Replace console.error with file-based logging",
-      "status": "in_progress",
-      "priority": "medium",
-      "updated_at": 1771444331212
-    },
-    {
-      "id": "6",
-      "text": "Verify the fix by running tests and checking for TUI output leakage",
-      "content": "Verify the fix by running tests and checking for TUI output leakage",
-      "status": "pending",
-      "priority": "high",
-      "updated_at": 1771444331212
+      "updated_at": 1771454023207
     }
   ]
 }

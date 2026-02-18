@@ -132,6 +132,61 @@
       "staleness_stamp": "2026-02-18T19:53:23.945Z",
       "created_at": "2026-02-18T19:53:23.945Z",
       "updated_at": "2026-02-18T19:53:23.945Z"
+    },
+    {
+      "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "GEMINI_MIGRATION_008: VALIDATION RESULT = INACCURATE. Gemini conflated migrateIfNeeded (hook-triggered, conditional, HAS rollback) with migrateToGraph (CLI-only, NEVER hook-triggered). EVIDENCE: session-lifecycle.ts:60 conditional call, graph-migrate.ts CLI only, migrate.ts:325 rollback. migrateToGraph has backup but no rollback - but it's manual invocation only. Risk: LOW for graph (manual), MEDIUM for legacy (hook-triggered but has rollback).",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T19:58:17.200Z",
+      "created_at": "2026-02-18T19:58:17.200Z",
+      "updated_at": "2026-02-18T19:58:17.200Z"
+    },
+    {
+      "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "architecture-audit",
+      "type": "insight",
+      "content": "CRITICAL FK GAP ANALYSIS (2026-02-18): Entity relationship model has 6 critical gaps making time-stale filtering meaningless:\n1. Mem→Task broken: tasks use sequential IDs (\"1\",\"2\") but mems.origin_task_id expects UUIDs → ALL mems orphaned\n2. Mem→Session missing: No session_id in mems, can't filter by session\n3. Trajectory→Tasks empty: active_task_ids always [] despite tasks existing\n4. Brain→Everything disconnected: No FK to trajectory.json, hierarchy.json, tasks.json\n5. Hierarchy→Session missing: Decision tree has no owner reference\n6. Session manifest broken: sessions[] empty despite session-*.json files existing\n\nROOT CAUSE: Two parallel entity systems (state/ vs graph/) with NO connection between them.\n\nREMEDIATION: 4-phase fix required:\n1. Fix task IDs (sequential→UUID)\n2. Add missing FK fields (session_id to mems, trajectory_id to brain)\n3. Implement EntityRelationChain service\n4. Rewrite staleness logic with entity lineage",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T21:12:53.567Z",
+      "created_at": "2026-02-18T21:12:53.567Z",
+      "updated_at": "2026-02-18T21:12:53.567Z"
+    },
+    {
+      "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "ENTITY_RELATIONSHIP_GAP_010: CRITICAL FK VIOLATIONS FOUND. [1] Task IDs are sequential (\"1\",\"2\") not UUIDs - breaks ALL FK links. [2] No session→graph FK - can't trace context. [3] No mem→session FK - can't filter by session. [4] Hierarchy detached from graph - decision tree orphaned. [5] No last-N-turns tracing - chain breaking NOT IMPLEMENTED. [6] Time-stale MEANINGLESS without entity lineage. REMEDIATION: 4-phase plan - (1) Fix task ID sequential→UUID, (2) Add session_id to mems, (3) Implement EntityRelationChain service, (4) Rewrite staleness with proper lineage.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T21:15:54.344Z",
+      "created_at": "2026-02-18T21:15:54.344Z",
+      "updated_at": "2026-02-18T21:15:54.344Z"
+    },
+    {
+      "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Entity Relationship Model Remediation Plan created. 6 FK gaps identified: (1) Task IDs sequential not UUID, (2) Mem→Session FK missing, (3) Brain→Trajectory FK missing, (4) Hierarchy detached from graph, (5) No turn tracing, (6) Timestamp-based staleness. 5-phase plan: Phase 0 (baseline), Phase 1 (Task ID→UUID), Phase 2 (FK constraints), Phase 3 (EntityRelationChain service), Phase 4 (Staleness rewrite), Phase 5 (Verification). Estimated 12.5h total.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T21:25:17.321Z",
+      "created_at": "2026-02-18T21:25:17.321Z",
+      "updated_at": "2026-02-18T21:25:17.321Z"
+    },
+    {
+      "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "MASTER_PLAN_UNIFIED_011: Completed delegated architecture audit + GSD research + plan unification. Produced hook retrieval matrix, overlap risk matrix, automation boundaries, session lifecycle model, SOT boundary contract, and unified phased roadmap (0-6) in docs/plans/2026-02-19-entity-relationship-remediation.md. Core contract: graph/* relational SOT, state/* runtime hot state, lineage-first staleness, explicit main/sub-session lifecycle and governance gates.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T21:52:38.015Z",
+      "created_at": "2026-02-18T21:52:38.015Z",
+      "updated_at": "2026-02-18T21:52:38.015Z"
     }
   ]
 }
