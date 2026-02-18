@@ -23,8 +23,9 @@ import { normalizeAutomationLabel } from "./schemas/config.js"
 import { createStateManager, loadConfig } from "./lib/persistence.js"
 import { listArchives } from "./lib/planning-fs.js"
 import { getEffectivePaths } from "./lib/paths.js"
+import { migrateToGraph, isGraphMigrationNeeded } from "./lib/graph-migrate.js"
 
-const COMMANDS = ["init", "scan", "sync-assets", "status", "compact", "dashboard", "settings", "purge", "help"] as const
+const COMMANDS = ["init", "migrate", "scan", "sync-assets", "status", "compact", "dashboard", "settings", "purge", "help"] as const
 type Command = (typeof COMMANDS)[number]
 
 function printHelp(): void {
@@ -37,6 +38,7 @@ Usage:
 Commands:
   (default)     Interactive setup wizard (or initialize with flags)
   init          Same as default — initialize project
+  migrate       Migrate legacy flat files to graph structure (explicit, one-time)
   scan          Brownfield scan wrapper (analyze/recommend/orchestrate/status)
   sync-assets   Sync packaged OpenCode assets into .opencode/ (existing users)
   status        Show current session and governance state
@@ -257,6 +259,35 @@ async function main(): Promise<void> {
       console.log(
         `\n✓ Asset sync complete. Copied: ${result.totalCopied}, Skipped: ${result.totalSkipped}, Invalid: ${result.totalInvalid}`
       )
+      break
+    }
+
+    case "migrate": {
+      // US-005: Explicit migrate command (replaces implicit hook-based migration)
+      console.log("Running HiveMind graph migration...")
+      
+      // Check if migration is needed
+      if (!isGraphMigrationNeeded(directory)) {
+        console.log("✓ Graph structure already exists. No migration needed.")
+        break
+      }
+      
+      const migrateResult = await migrateToGraph(directory)
+      
+      if (migrateResult.success) {
+        console.log("✓ Migration complete:")
+        console.log(`  - Trajectory: ${migrateResult.migrated.trajectory ? 'OK' : 'SKIPPED'}`)
+        console.log(`  - Plans: ${migrateResult.migrated.plans ? 'OK' : 'SKIPPED'}`)
+        console.log(`  - Tasks: ${migrateResult.migrated.tasks} migrated`)
+        console.log(`  - Mems: ${migrateResult.migrated.mems} migrated`)
+        console.log(`  - Backup: ${migrateResult.backupPath}`)
+      } else {
+        console.error("✗ Migration failed:")
+        for (const err of migrateResult.errors) {
+          console.error(`  - ${err}`)
+        }
+        process.exit(1)
+      }
       break
     }
 
