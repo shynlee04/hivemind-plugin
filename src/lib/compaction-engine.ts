@@ -40,7 +40,7 @@ import {
   type MetricsState,
 } from "../schemas/brain-state.js"
 import { getClient } from "../hooks/sdk-context.js"
-import { DEFAULT_COMPACTION_BUDGET } from "./budget.js"
+import { LEGACY_COMPACTION_BUDGET } from "./budget.js"
 
 export interface TurningPoint {
   nodeId: string
@@ -162,7 +162,7 @@ export function generateNextCompactionReport(
   turningPoints: TurningPoint[],
   state: BrainState,
 ): CompactionReport {
-  const budget = DEFAULT_COMPACTION_BUDGET
+  const budget = LEGACY_COMPACTION_BUDGET
   const sessionId = state.session.id
   const nextCompactionCount = (state.compaction_count ?? 0) + 1
   const title = "HiveMind Purification Report"

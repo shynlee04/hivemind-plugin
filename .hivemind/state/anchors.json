@@ -1,4 +1,17 @@
 {
-  "anchors": [],
+  "anchors": [
+    {
+      "key": "architecture-evaluation-codewiki-2026-02-18",
+      "value": "Codewiki Architecture Decision: REJECT Gemini's LLM-based approach. USE tree-sitter compression (like Repomix). Leverage existing: event-bus.ts, watcher.ts, cognitive-packer.ts. ADD: tiktoken, tree-sitter, secret-detection. 3-Phase: Foundation → Incremental Pipeline → Context Integration.",
+      "created_at": 1771451979011,
+      "session_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad"
+    },
+    {
+      "key": "code-intelligence-engine-architecture-2026-02-19",
+      "value": "Architecture Decision: Native Code Intelligence Engine - REJECT LLM-based codewiki, USE tree-sitter WASM compression (~70% token reduction). 3 phases: Foundation (gitignore, token count, secrets), Incremental (watch-based updates), Integration (cognitive-packer). Duration: 9-12 days. Doc: docs/plans/2026-02-19-code-intelligence-engine-architecture.md",
+      "created_at": 1771452925203,
+      "session_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad"
+    }
+  ],
   "version": "1.0.0"
 }

@@ -244,7 +244,7 @@ export const DEFAULT_AGENT_BEHAVIOR: AgentBehaviorConfig = {
   constraints: {
     require_code_review: false,
     enforce_tdd: false,
-    max_response_tokens: 2000,
+    max_response_tokens: DEFAULT_MAX_RESPONSE_TOKENS,
     explain_reasoning: true,
     be_skeptical: false,
   },

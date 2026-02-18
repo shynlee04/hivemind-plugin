@@ -1,8 +1,9 @@
 import { existsSync } from "fs"
 import { mkdir, readFile, rename, unlink, writeFile } from "fs/promises"
-import { dirname } from "path"
+import { dirname, sep } from "path"
 import { z } from "zod"
 import { readManifest, type SessionManifest } from "./manifest.js"
+import { createLogger, noopLogger, type Logger } from "./logging.js"
 
 import type { MemNode, TaskNode } from "../schemas/graph-nodes.js"
 import { withFileLock } from "./file-lock.js"
@@ -33,6 +34,47 @@ const EMPTY_TASKS_STATE: GraphTasksState = {
 const EMPTY_MEMS_STATE: GraphMemsState = {
   version: GRAPH_STATE_VERSION,
   mems: [],
+}
+
+const graphLoggerPromises = new Map<string, Promise<Logger>>()
+
+function inferProjectRootFromFilePath(filePath: string): string {
+  const marker = `${sep}.hivemind${sep}`
+  const markerIndex = filePath.indexOf(marker)
+  if (markerIndex === -1) {
+    return process.cwd()
+  }
+  return filePath.slice(0, markerIndex)
+}
+
+function getGraphLogger(projectRoot: string): Promise<Logger> {
+  let loggerPromise = graphLoggerPromises.get(projectRoot)
+  if (!loggerPromise) {
+    const paths = getEffectivePaths(projectRoot)
+    loggerPromise = createLogger(paths.logsDir, "graph-io").catch(() => noopLogger)
+    graphLoggerPromises.set(projectRoot, loggerPromise)
+  }
+  return loggerPromise
+}
+
+function normalizeErrorDetail(detail: unknown): string {
+  if (detail instanceof Error) {
+    return detail.message
+  }
+  if (typeof detail === "string") {
+    return detail
+  }
+  try {
+    return JSON.stringify(detail)
+  } catch {
+    return String(detail)
+  }
+}
+
+async function logGraph(level: "warn" | "error", filePath: string, message: string, detail?: unknown): Promise<void> {
+  const logger = await getGraphLogger(inferProjectRootFromFilePath(filePath))
+  const fullMessage = detail === undefined ? message : `${message} ${normalizeErrorDetail(detail)}`
+  await logger[level](fullMessage)
 }
 
 /** Orphan node record schema for quarantine */
@@ -70,13 +112,13 @@ async function loadValidatedState<T>(
     const result = schema.safeParse(parsed)
     
     if (!result.success) {
-      console.error(`[graph-io] Validation error in ${filePath}:`, result.error.message)
+      await logGraph("error", filePath, `[graph-io] Validation error in ${filePath}:`, result.error.message)
       return null
     }
     
     return result.data
   } catch (error) {
-    console.error(`[graph-io] Failed to load ${filePath}:`, error)
+    await logGraph("error", filePath, `[graph-io] Failed to load ${filePath}:`, error)
     return null
   }
 }
@@ -156,7 +198,7 @@ export async function validateTasksWithFKValidation(
     const result = GraphTasksStateSchema.safeParse(parsed)
     
     if (!result.success) {
-      console.error(`[graph-io] Validation error in ${filePath}:`, result.error.message)
+      await logGraph("error", filePath, `[graph-io] Validation error in ${filePath}:`, result.error.message)
       return null
     }
     
@@ -166,7 +208,7 @@ export async function validateTasksWithFKValidation(
     
     for (const task of result.data.tasks) {
       if (!validPhaseIds.has(task.parent_phase_id)) {
-        console.warn(`[graph-io] Quarantining orphan task ${task.id}: parent_phase_id ${task.parent_phase_id} not found`)
+        await logGraph("warn", filePath, `[graph-io] Quarantining orphan task ${task.id}: parent_phase_id ${task.parent_phase_id} not found`)
         await quarantineOrphan(orphanPath, {
           id: task.id,
           type: "task",
@@ -184,7 +226,7 @@ export async function validateTasksWithFKValidation(
       tasks: validTasks,
     }
   } catch (error) {
-    console.error(`[graph-io] Failed to load ${filePath}:`, error)
+    await logGraph("error", filePath, `[graph-io] Failed to load ${filePath}:`, error)
     return null
   }
 }
@@ -208,7 +250,7 @@ export async function validateMemsWithFKValidation(
     const result = GraphMemsStateSchema.safeParse(parsed)
     
     if (!result.success) {
-      console.error(`[graph-io] Validation error in ${filePath}:`, result.error.message)
+      await logGraph("error", filePath, `[graph-io] Validation error in ${filePath}:`, result.error.message)
       return null
     }
     
@@ -219,7 +261,7 @@ export async function validateMemsWithFKValidation(
     for (const mem of result.data.mems) {
       // origin_task_id can be null (valid) - only quarantine if non-null and missing
       if (mem.origin_task_id !== null && !validTaskIds.has(mem.origin_task_id)) {
-        console.warn(`[graph-io] Quarantining orphan mem ${mem.id}: origin_task_id ${mem.origin_task_id} not found`)
+        await logGraph("warn", filePath, `[graph-io] Quarantining orphan mem ${mem.id}: origin_task_id ${mem.origin_task_id} not found`)
         await quarantineOrphan(orphanPath, {
           id: mem.id,
           type: "mem",
@@ -237,7 +279,7 @@ export async function validateMemsWithFKValidation(
       mems: validMems,
     }
   } catch (error) {
-    console.error(`[graph-io] Failed to load ${filePath}:`, error)
+    await logGraph("error", filePath, `[graph-io] Failed to load ${filePath}:`, error)
     return null
   }
 }
@@ -288,7 +330,7 @@ async function _loadRawTasks(projectRoot: string): Promise<GraphTasksState> {
     }
 
     // Zod parse failed - attempt graceful recovery
-    console.error("[graph-io] GraphTasksStateSchema parse failed, attempting recovery:", result.error.message)
+    await logGraph("error", filePath, "[graph-io] GraphTasksStateSchema parse failed, attempting recovery:", result.error.message)
     
     // Try to recover valid tasks from the raw parsed data
     const rawTasks = (parsed as { tasks?: unknown[] })?.tasks ?? []
@@ -302,7 +344,7 @@ async function _loadRawTasks(projectRoot: string): Promise<GraphTasksState> {
       } else {
         // Quarantine the invalid task
         const taskId = (rawTask as { id?: string })?.id ?? "unknown"
-        console.warn(`[graph-io] Quarantining invalid task ${taskId}:`, taskResult.error.message)
+        await logGraph("warn", filePath, `[graph-io] Quarantining invalid task ${taskId}:`, taskResult.error.message)
         await quarantineOrphan(orphanPath, {
           id: taskId,
           type: "task",
@@ -319,7 +361,7 @@ async function _loadRawTasks(projectRoot: string): Promise<GraphTasksState> {
       tasks: validTasks,
     }
   } catch (error) {
-    console.error(`[graph-io] Failed to load ${filePath}:`, error)
+    await logGraph("error", filePath, `[graph-io] Failed to load ${filePath}:`, error)
     return EMPTY_TASKS_STATE
   }
 }
@@ -398,7 +440,7 @@ async function _loadRawMems(projectRoot: string): Promise<GraphMemsState> {
     }
 
     // Zod parse failed - attempt graceful recovery
-    console.error("[graph-io] GraphMemsStateSchema parse failed, attempting recovery:", result.error.message)
+    await logGraph("error", filePath, "[graph-io] GraphMemsStateSchema parse failed, attempting recovery:", result.error.message)
     
     // Try to recover valid mems from the raw parsed data
     const rawMems = (parsed as { mems?: unknown[] })?.mems ?? []
@@ -412,7 +454,7 @@ async function _loadRawMems(projectRoot: string): Promise<GraphMemsState> {
       } else {
         // Quarantine the invalid mem
         const memId = (rawMem as { id?: string })?.id ?? "unknown"
-        console.warn(`[graph-io] Quarantining invalid mem ${memId}:`, memResult.error.message)
+        await logGraph("warn", filePath, `[graph-io] Quarantining invalid mem ${memId}:`, memResult.error.message)
         await quarantineOrphan(orphanPath, {
           id: memId,
           type: "mem",
@@ -429,7 +471,7 @@ async function _loadRawMems(projectRoot: string): Promise<GraphMemsState> {
       mems: validMems,
     }
   } catch (error) {
-    console.error(`[graph-io] Failed to load ${filePath}:`, error)
+    await logGraph("error", filePath, `[graph-io] Failed to load ${filePath}:`, error)
     return EMPTY_MEMS_STATE
   }
 }
@@ -610,7 +652,7 @@ export async function loadGraphMems(
       }
     }
   } catch (e) {
-    console.warn("Failed to load sessions for FK validation", e)
+    await logGraph("warn", filePath, "Failed to load sessions for FK validation", e)
   }
 
   // Step 2: Load and validate mems with FK validation
