@@ -238,7 +238,10 @@ export async function updateSession(directory: string, updates: SessionUpdates):
     // Add tactic under trajectory
     if (tree.root) {
       const tacticNode = createNode("tactic", content, "active", now)
-      updatedTree = addChild(tree, tree.root.id, tacticNode)
+      const result = addChild(tree, tree.root.id, tacticNode)
+      if (result.success) {
+        updatedTree = result.tree
+      }
     }
   } else {
     // Add action under tactic (or trajectory if no tactic)
@@ -253,7 +256,10 @@ export async function updateSession(directory: string, updates: SessionUpdates):
         }
       }
       const actionNode = createNode("action", content, "active", now)
-      updatedTree = addChild(tree, parentNode.id, actionNode)
+      const result = addChild(tree, parentNode.id, actionNode)
+      if (result.success) {
+        updatedTree = result.tree
+      }
     }
   }
   await saveTree(directory, updatedTree)

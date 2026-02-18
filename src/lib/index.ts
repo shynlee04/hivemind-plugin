@@ -30,3 +30,4 @@ export * from "./event-bus.js";
 export * from "./watcher.js";
 export * from "./gatekeeper.js";
 export * from "./state-mutation-queue.js";
+export * from "./auto-context.js";

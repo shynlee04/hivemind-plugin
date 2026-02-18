@@ -21,6 +21,7 @@ import type {
   PriorAnchor,
   FirstTurnConfig,
 } from "../hooks/session_coherence/types.js"
+import { DEFAULT_CONTEXT_BUDGET } from "./budget.js"
 
 /**
  * Default configuration for first-turn context retrieval
@@ -30,7 +31,7 @@ const DEFAULT_CONFIG: FirstTurnConfig = {
   maxMems: 3,
   maxTodos: 10,
   includeAnchors: true,
-  budget: 2000,
+  budget: DEFAULT_CONTEXT_BUDGET,
 }
 
 /**

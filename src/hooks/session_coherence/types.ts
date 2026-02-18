@@ -87,6 +87,8 @@ export interface FirstTurnConfig {
   budget: number
 }
 
+import { DEFAULT_CONTEXT_BUDGET } from "../../lib/budget.js"
+
 /**
  * Default configuration
  */
@@ -95,7 +97,7 @@ export const DEFAULT_FIRST_TURN_CONFIG: FirstTurnConfig = {
   maxMems: 3,
   maxTodos: 10,
   includeAnchors: true,
-  budget: 2000,
+  budget: DEFAULT_CONTEXT_BUDGET,
 }
 
 /**
