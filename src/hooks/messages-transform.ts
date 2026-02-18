@@ -21,6 +21,8 @@ import { loadLastSessionContext, buildTransformedPrompt } from "../lib/session_c
 import { existsSync, readdirSync } from "fs"
 import type { Message, Part } from "@opencode-ai/sdk"
 import type { BrainState } from "../schemas/brain-state.js"
+import { createLogger } from "../lib/logging.js"
+import { getEffectivePaths } from "../lib/paths.js"
 
 type MessagePart = {
   id?: string
@@ -230,6 +232,8 @@ function appendSyntheticPart(message: MessageV2, text: string): void {
 export function createMessagesTransformHook(_log: { warn: (message: string) => Promise<void> }, directory: string) {
   const stateManager = createStateManager(directory)
   const injectedSessionIds = new Set<string>()
+  const paths = getEffectivePaths(directory)
+  const loggerPromise = createLogger(paths.logsDir, "session-coherence")
 
   return async (
     _input: {},
@@ -292,10 +296,11 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
             injectedSessionIds.add(sessionId)
 
             if (process.env.HIVEMIND_DEBUG_FIRST_TURN === "1") {
-              console.log("\n🔗 [SESSION COHERENCE] First-turn context injected:")
-              console.log("---")
-              console.log(transformedPrompt)
-              console.log("---\n")
+              const logger = await loggerPromise
+              await logger.debug("\n🔗 [SESSION COHERENCE] First-turn context injected:")
+              await logger.debug("---")
+              await logger.debug(transformedPrompt)
+              await logger.debug("---\n")
             }
 
             // First-turn session coherence is exclusive.
