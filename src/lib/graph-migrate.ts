@@ -9,8 +9,8 @@
 
 import { randomUUID } from "crypto"
 import { existsSync } from "fs"
-import { mkdir, readFile, rename } from "fs/promises"
-import { join } from "path"
+import { mkdir, readFile, rename, writeFile } from "fs/promises"
+import { dirname, join } from "path"
 
 import type {
   MemNode,
@@ -56,6 +56,7 @@ const LEGACY_PHASE_TITLE = "Legacy Context"
 const LEGACY_PLAN_TITLE = "Migrated Context"
 
 const GRAPH_STATE_VERSION = "1.0.0"
+const TASK_ID_LINEAGE_MAP_FILE = "task-id-lineage-map.json"
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -112,6 +113,26 @@ interface LegacyMem {
 
 interface LegacyMems {
   mems?: LegacyMem[]
+}
+
+interface TaskIdLineageMapFile {
+  version: string
+  generated_at: string
+  mappings: Record<string, string>
+}
+
+export interface TaskIdNormalizationResult {
+  success: boolean
+  changed: boolean
+  mappings_created: number
+  normalized: {
+    state_tasks: number
+    graph_tasks: number
+    trajectory_refs: number
+    mem_refs: number
+  }
+  map_path: string
+  errors: string[]
 }
 
 // ─── Helper Functions ──────────────────────────────────────────────────────
@@ -183,6 +204,291 @@ function mapTaskStatus(status?: string): TaskNode["status"] {
       return "invalidated"
     default:
       return "pending"
+  }
+}
+
+function isUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+}
+
+function mapToUuidLineage(id: string, lineageMap: Map<string, string>): { id: string; created: boolean } {
+  if (isUuid(id)) {
+    return { id, created: false }
+  }
+
+  const existing = lineageMap.get(id)
+  if (existing) {
+    return { id: existing, created: false }
+  }
+
+  const next = randomUUID()
+  lineageMap.set(id, next)
+  return { id: next, created: true }
+}
+
+async function readJsonFileOrNull(path: string): Promise<unknown | null> {
+  if (!existsSync(path)) {
+    return null
+  }
+
+  const raw = await readFile(path, "utf-8")
+  return JSON.parse(raw) as unknown
+}
+
+async function writeJsonAtomic(path: string, data: unknown): Promise<void> {
+  await mkdir(dirname(path), { recursive: true })
+  const tempPath = `${path}.tmp-${process.pid}-${Date.now()}`
+  await writeFile(tempPath, JSON.stringify(data, null, 2), "utf-8")
+  await rename(tempPath, path)
+}
+
+/**
+ * Phase 1: Normalize non-UUID task IDs into UUID lineage and keep references consistent.
+ *
+ * Touches active paths only:
+ * - .hivemind/state/tasks.json task IDs
+ * - .hivemind/graph/tasks.json task IDs
+ * - .hivemind/graph/trajectory.json active_task_ids references
+ * - .hivemind/graph/mems.json origin_task_id references
+ *
+ * A deterministic lineage map artifact is persisted to graph/task-id-lineage-map.json
+ * so future runs keep the same mapping for legacy IDs.
+ */
+export async function normalizeTaskIdsToUuidLineage(projectRoot: string): Promise<TaskIdNormalizationResult> {
+  const paths = getHivemindPaths(projectRoot)
+  const mapPath = join(paths.graphDir, TASK_ID_LINEAGE_MAP_FILE)
+
+  const result: TaskIdNormalizationResult = {
+    success: false,
+    changed: false,
+    mappings_created: 0,
+    normalized: {
+      state_tasks: 0,
+      graph_tasks: 0,
+      trajectory_refs: 0,
+      mem_refs: 0,
+    },
+    map_path: mapPath,
+    errors: [],
+  }
+
+  try {
+    await mkdir(paths.graphDir, { recursive: true })
+
+    const lineageMap = new Map<string, string>()
+    let mapChanged = false
+
+    const mapRaw = await readJsonFileOrNull(mapPath)
+    if (mapRaw && typeof mapRaw === "object") {
+      const mapObj = mapRaw as Partial<TaskIdLineageMapFile>
+      if (mapObj.mappings && typeof mapObj.mappings === "object") {
+        for (const [legacyId, uuid] of Object.entries(mapObj.mappings)) {
+          if (typeof uuid === "string" && isUuid(uuid)) {
+            lineageMap.set(legacyId, uuid)
+          }
+        }
+      }
+    }
+
+    const stateTasksRaw = await readJsonFileOrNull(paths.tasks)
+    if (stateTasksRaw && typeof stateTasksRaw === "object") {
+      const stateTasks = stateTasksRaw as { tasks?: Array<Record<string, unknown>>; active_task_id?: unknown }
+      let updated = false
+      let nextStateTasks: { tasks?: Array<Record<string, unknown>>; active_task_id?: unknown } = { ...stateTasks }
+
+      if (Array.isArray(stateTasks.tasks)) {
+        const nextTasks = stateTasks.tasks.map((task) => {
+          if (!task || typeof task !== "object") {
+            return task
+          }
+
+          const id = task.id
+          if (typeof id !== "string") {
+            return task
+          }
+
+          const mapped = mapToUuidLineage(id, lineageMap)
+          if (mapped.created) {
+            mapChanged = true
+            result.mappings_created++
+          }
+          if (mapped.id !== id) {
+            updated = true
+            result.normalized.state_tasks++
+            return {
+              ...task,
+              id: mapped.id,
+            }
+          }
+          return task
+        })
+
+        nextStateTasks = {
+          ...nextStateTasks,
+          tasks: nextTasks,
+        }
+      }
+
+      if (typeof stateTasks.active_task_id === "string") {
+        const mapped = mapToUuidLineage(stateTasks.active_task_id, lineageMap)
+        if (mapped.created) {
+          mapChanged = true
+          result.mappings_created++
+        }
+        if (mapped.id !== stateTasks.active_task_id) {
+          updated = true
+          result.normalized.trajectory_refs++
+          nextStateTasks = {
+            ...nextStateTasks,
+            active_task_id: mapped.id,
+          }
+        }
+      }
+
+      if (updated) {
+        await writeJsonAtomic(paths.tasks, nextStateTasks)
+        result.changed = true
+      }
+    }
+
+    const graphTasksRaw = await readJsonFileOrNull(paths.graphTasks)
+    if (graphTasksRaw && typeof graphTasksRaw === "object") {
+      const graphTasksState = graphTasksRaw as { version?: string; tasks?: Array<Record<string, unknown>> }
+      if (Array.isArray(graphTasksState.tasks)) {
+        let updated = false
+        const nextTasks = graphTasksState.tasks.map((task) => {
+          if (!task || typeof task !== "object") {
+            return task
+          }
+
+          const id = task.id
+          if (typeof id !== "string") {
+            return task
+          }
+
+          const mapped = mapToUuidLineage(id, lineageMap)
+          if (mapped.created) {
+            mapChanged = true
+            result.mappings_created++
+          }
+          if (mapped.id !== id) {
+            updated = true
+            result.normalized.graph_tasks++
+            return {
+              ...task,
+              id: mapped.id,
+            }
+          }
+          return task
+        })
+
+        if (updated) {
+          await writeJsonAtomic(paths.graphTasks, {
+            ...graphTasksState,
+            tasks: nextTasks,
+          })
+          result.changed = true
+        }
+      }
+    }
+
+    const trajectoryRaw = await readJsonFileOrNull(paths.graphTrajectory)
+    if (trajectoryRaw && typeof trajectoryRaw === "object") {
+      const trajectoryState = trajectoryRaw as {
+        version?: string
+        trajectory?: { active_task_ids?: unknown[] } & Record<string, unknown>
+      }
+
+      if (trajectoryState.trajectory && Array.isArray(trajectoryState.trajectory.active_task_ids)) {
+        let updated = false
+        const nextActiveTaskIds = trajectoryState.trajectory.active_task_ids.map((taskId) => {
+          if (typeof taskId !== "string") {
+            return taskId
+          }
+          const mapped = mapToUuidLineage(taskId, lineageMap)
+          if (mapped.created) {
+            mapChanged = true
+            result.mappings_created++
+          }
+          if (mapped.id !== taskId) {
+            updated = true
+            result.normalized.trajectory_refs++
+          }
+          return mapped.id
+        })
+
+        if (updated) {
+          await writeJsonAtomic(paths.graphTrajectory, {
+            ...trajectoryState,
+            trajectory: {
+              ...trajectoryState.trajectory,
+              active_task_ids: nextActiveTaskIds,
+            },
+          })
+          result.changed = true
+        }
+      }
+    }
+
+    const memsRaw = await readJsonFileOrNull(paths.graphMems)
+    if (memsRaw && typeof memsRaw === "object") {
+      const memsState = memsRaw as { version?: string; mems?: Array<Record<string, unknown>> }
+      if (Array.isArray(memsState.mems)) {
+        let updated = false
+        const nextMems = memsState.mems.map((mem) => {
+          if (!mem || typeof mem !== "object") {
+            return mem
+          }
+
+          const originTaskId = mem.origin_task_id
+          if (typeof originTaskId !== "string") {
+            return mem
+          }
+
+          const mapped = mapToUuidLineage(originTaskId, lineageMap)
+          if (mapped.created) {
+            mapChanged = true
+            result.mappings_created++
+          }
+          if (mapped.id !== originTaskId) {
+            updated = true
+            result.normalized.mem_refs++
+            return {
+              ...mem,
+              origin_task_id: mapped.id,
+            }
+          }
+          return mem
+        })
+
+        if (updated) {
+          await writeJsonAtomic(paths.graphMems, {
+            ...memsState,
+            mems: nextMems,
+          })
+          result.changed = true
+        }
+      }
+    }
+
+    if (mapChanged || !existsSync(mapPath)) {
+      const orderedMappings = Object.fromEntries(
+        Array.from(lineageMap.entries()).sort(([a], [b]) => a.localeCompare(b)),
+      )
+      await writeJsonAtomic(mapPath, {
+        version: GRAPH_STATE_VERSION,
+        generated_at: new Date().toISOString(),
+        mappings: orderedMappings,
+      } satisfies TaskIdLineageMapFile)
+      result.changed = true
+    }
+
+    result.success = true
+    return result
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    result.errors.push(`Task ID normalization failed: ${msg}`)
+    return result
   }
 }
 
@@ -426,7 +732,13 @@ export async function migrateToGraph(projectRoot: string): Promise<MigrationResu
       await saveTrajectory(projectRoot, updatedState)
     }
 
-    result.success = true
+    // Phase 1 hardening: normalize any non-UUID task lineage in active graph/state paths.
+    const normalization = await normalizeTaskIdsToUuidLineage(projectRoot)
+    if (!normalization.success) {
+      result.errors.push(...normalization.errors)
+    }
+
+    result.success = result.errors.length === 0
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     result.errors.push(`Migration failed: ${msg}`)
@@ -447,4 +759,6 @@ export const _internal = {
   migrateTasks,
   migrateMems,
   mapTaskStatus,
+  isUuid,
+  mapToUuidLineage,
 }

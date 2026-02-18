@@ -15,6 +15,7 @@ import assert from "node:assert/strict"
 import {
   migrateToGraph,
   isGraphMigrationNeeded,
+  normalizeTaskIdsToUuidLineage,
   _internal,
 } from "../src/lib/graph-migrate.js"
 import { getHivemindPaths, getLegacyPaths } from "../src/lib/paths.js"
@@ -295,6 +296,168 @@ describe("Graph Migration (US-018)", () => {
       const result2 = await migrateToGraph(projectRoot)
       assert.ok(result2.success, "second migration should succeed")
       assert.ok(result2.errors.some((e) => e.includes("already")), "should have already completed message")
+    })
+  })
+
+  describe("normalizeTaskIdsToUuidLineage", () => {
+    it("normalizes non-UUID task IDs and updates all known references", async () => {
+      const paths = getHivemindPaths(projectRoot)
+      const now = new Date().toISOString()
+
+      await mkdir(paths.graphDir, { recursive: true })
+      await mkdir(paths.stateDir, { recursive: true })
+
+      await writeFile(
+        paths.graphTasks,
+        JSON.stringify({
+          version: "1.0.0",
+          tasks: [
+            {
+              id: "1",
+              parent_phase_id: LEGACY_PHASE_ID,
+              title: "Legacy task 1",
+              status: "pending",
+              file_locks: [],
+              created_at: now,
+              updated_at: now,
+            },
+            {
+              id: "2",
+              parent_phase_id: LEGACY_PHASE_ID,
+              title: "Legacy task 2",
+              status: "in_progress",
+              file_locks: [],
+              created_at: now,
+              updated_at: now,
+            },
+          ],
+        })
+      )
+
+      await writeFile(
+        paths.graphTrajectory,
+        JSON.stringify({
+          version: "1.0.0",
+          trajectory: {
+            id: LEGACY_TRAJECTORY_ID,
+            session_id: LEGACY_TRAJECTORY_ID,
+            active_plan_id: LEGACY_PLAN_ID,
+            active_phase_id: LEGACY_PHASE_ID,
+            active_task_ids: ["1", "2"],
+            intent: "Normalize IDs",
+            created_at: now,
+            updated_at: now,
+          },
+        })
+      )
+
+      await writeFile(
+        paths.graphMems,
+        JSON.stringify({
+          version: "1.0.0",
+          mems: [
+            {
+              id: randomUUID(),
+              origin_task_id: "1",
+              shelf: "general",
+              type: "insight",
+              content: "Refers to task 1",
+              relevance_score: 0.5,
+              staleness_stamp: now,
+              created_at: now,
+              updated_at: now,
+            },
+          ],
+        })
+      )
+
+      await writeFile(
+        paths.tasks,
+        JSON.stringify({
+          session_id: "legacy-session",
+          updated_at: Date.now(),
+          active_task_id: "todo-1",
+          tasks: [
+            {
+              id: "todo-1",
+              text: "Legacy todo",
+              status: "pending",
+            },
+          ],
+        })
+      )
+
+      const result = await normalizeTaskIdsToUuidLineage(projectRoot)
+      assert.equal(result.success, true)
+      assert.equal(result.changed, true)
+      assert.ok(result.mappings_created >= 3)
+
+      const mapFile = JSON.parse(await readFile(result.map_path, "utf-8")) as {
+        mappings: Record<string, string>
+      }
+      assert.ok(mapFile.mappings["1"])
+      assert.ok(mapFile.mappings["2"])
+      assert.ok(mapFile.mappings["todo-1"])
+
+      const graphTasksData = JSON.parse(await readFile(paths.graphTasks, "utf-8")) as {
+        tasks: Array<{ id: string }>
+      }
+      assert.equal(graphTasksData.tasks[0].id, mapFile.mappings["1"])
+      assert.equal(graphTasksData.tasks[1].id, mapFile.mappings["2"])
+
+      const trajectoryData = JSON.parse(await readFile(paths.graphTrajectory, "utf-8")) as {
+        trajectory: { active_task_ids: string[] }
+      }
+      assert.equal(trajectoryData.trajectory.active_task_ids[0], mapFile.mappings["1"])
+      assert.equal(trajectoryData.trajectory.active_task_ids[1], mapFile.mappings["2"])
+
+      const memsData = JSON.parse(await readFile(paths.graphMems, "utf-8")) as {
+        mems: Array<{ origin_task_id: string | null }>
+      }
+      assert.equal(memsData.mems[0].origin_task_id, mapFile.mappings["1"])
+
+      const stateTasksData = JSON.parse(await readFile(paths.tasks, "utf-8")) as {
+        active_task_id: string
+        tasks: Array<{ id: string }>
+      }
+      assert.equal(stateTasksData.tasks[0].id, mapFile.mappings["todo-1"])
+      assert.equal(stateTasksData.active_task_id, mapFile.mappings["todo-1"])
+    })
+
+    it("is idempotent and reuses lineage map", async () => {
+      const paths = getHivemindPaths(projectRoot)
+      const now = new Date().toISOString()
+
+      await mkdir(paths.graphDir, { recursive: true })
+
+      await writeFile(
+        paths.graphTasks,
+        JSON.stringify({
+          version: "1.0.0",
+          tasks: [
+            {
+              id: "legacy-1",
+              parent_phase_id: LEGACY_PHASE_ID,
+              title: "Legacy task",
+              status: "pending",
+              file_locks: [],
+              created_at: now,
+              updated_at: now,
+            },
+          ],
+        })
+      )
+
+      const first = await normalizeTaskIdsToUuidLineage(projectRoot)
+      const second = await normalizeTaskIdsToUuidLineage(projectRoot)
+
+      assert.equal(first.success, true)
+      assert.equal(second.success, true)
+      assert.equal(second.mappings_created, 0)
+      assert.equal(second.normalized.graph_tasks, 0)
+      assert.equal(second.normalized.mem_refs, 0)
+      assert.equal(second.normalized.trajectory_refs, 0)
+      assert.equal(second.normalized.state_tasks, 0)
     })
   })
 })
