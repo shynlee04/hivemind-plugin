@@ -1,15 +1,12 @@
 {
   "sessions": [
     {
-      "stamp": "101818022026",
-      "file": "2026-02-18-plan_driven-deep-architecture-audit-of-srchooks-cqrs.md",
-      "status": "active",
-      "created": 1771413041469,
-      "mode": "plan_driven",
-      "trajectory": "Deep architecture audit of src/hooks/ - CQRS violation detection",
-      "session_id": "266a3e7c-bffa-4faa-af55-b9239bbbdee1",
+      "stamp": "78ace7e0-f448-498b-bd4e-75a2d59baa69",
+      "file": "session_2026-02-18_78ace7e0-f448-498b-bd4e-75a2d59baa69.md",
+      "status": "archived",
+      "created": 1771429300919,
       "linked_plans": []
     }
   ],
-  "active_stamp": "101818022026"
+  "active_stamp": null
 }
