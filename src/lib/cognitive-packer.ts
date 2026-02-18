@@ -66,6 +66,7 @@ function buildEmptyStateXml(session: string): string {
     `<hivemind_state timestamp="${EPOCH_ISO}" session="${escapeXml(session)}">`,
     "  <trajectory />",
     "  <context_summary>",
+    "    <anchors count=\"0\" />",
     "    <mems count=\"0\" relevant=\"0\" />",
     "    <files_touched count=\"0\" />",
     "    <drift_score value=\"0\" />",
@@ -338,6 +339,30 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
   }
   lines.push("  </trajectory>")
 
+  // US-003: Read and inject anchors
+  const anchorsRaw = readJsonFile(paths.anchors)
+  const anchors: Array<{ key: string; value: string }> = []
+  if (anchorsRaw !== null && typeof anchorsRaw === "object") {
+    const anchorsData = (anchorsRaw as { anchors?: unknown[] }).anchors ?? []
+    for (const anchor of anchorsData) {
+      if (anchor && typeof anchor === "object") {
+        const a = anchor as Record<string, unknown>
+        if (typeof a.key === "string" && typeof a.value === "string") {
+          anchors.push({ key: a.key, value: a.value })
+        }
+      }
+    }
+  }
+
+  // Add anchors section to XML (limit to 10 most recent)
+  if (anchors.length > 0) {
+    lines.push("  <anchors>")
+    for (const anchor of anchors.slice(-10)) {
+      lines.push(`    <anchor key="${escapeXml(anchor.key)}" value="${escapeXml(anchor.value.slice(0, 200))}" />`)
+    }
+    lines.push("  </anchors>")
+  }
+
   // Calculate current XML size without mems
   const baseXml = lines.join("\n")
   const closingTags = ["  <context_summary>", `    <mems count="${freshMems.length}" relevant="${relatedMems.length}" />`, `    <files_touched count="${fileCount}" />`, `    <drift_score value="${driftScore}" />`, "  </context_summary>", "</hivemind_state>"].join("\n")
@@ -408,6 +433,7 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
   }
 
   lines.push("  <context_summary>")
+  lines.push(`    <anchors count="${anchors.length}" />`)
   lines.push(`    <mems count="${freshMems.length}" relevant="${relatedMems.length}" />`)
   lines.push(`    <files_touched count="${fileCount}" />`)
   lines.push(`    <drift_score value="${driftScore}" />`)
