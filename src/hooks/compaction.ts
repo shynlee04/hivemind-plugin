@@ -22,6 +22,7 @@ import { createStateManager } from "../lib/persistence.js"
 import { loadMems } from "../lib/mems.js"
 import { loadAnchors } from "../lib/anchors.js"
 import { loadTasks } from "../lib/manifest.js"
+import { queueStateMutation } from "../lib/state-mutation-queue.js"
 import {
   loadTree,
   toAsciiTree,
@@ -69,9 +70,13 @@ export function createCompactionHook(log: Logger, directory: string) {
       if (state.next_compaction_report) {
         output.context.push(state.next_compaction_report);
         await log.debug(`Compaction: injected purification report (${state.next_compaction_report.length} chars)`);
-        state = { ...state, next_compaction_report: null }
-        await stateManager.save(state)
-        await log.debug("Compaction: cleared consumed purification report")
+        // CQRS: Queue mutation instead of direct save
+        queueStateMutation({
+          type: "UPDATE_STATE",
+          payload: { next_compaction_report: null },
+          source: "compaction-hook"
+        });
+        await log.debug("Compaction: queued mutation to clear consumed purification report")
         // Don't return — still add standard context too, but purification report comes first
       }
 
