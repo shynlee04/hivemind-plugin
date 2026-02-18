@@ -28,3 +28,4 @@ export * from "./dual-read.js";
 export * from "./session-swarm.js";
 export * from "./event-bus.js";
 export * from "./watcher.js";
+export * from "./gatekeeper.js";
