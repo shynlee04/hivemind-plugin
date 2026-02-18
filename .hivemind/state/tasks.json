@@ -1,46 +1,110 @@
 {
   "session_id": "ses_38d413431ffe4bcOLFhlS4rTij",
-  "updated_at": 1771456344188,
+  "updated_at": 1771456987510,
   "tasks": [
     {
-      "id": "todo-1",
-      "text": "Extract Phase 1 identity normalization contract from remediation plan",
-      "content": "Extract Phase 1 identity normalization contract from remediation plan",
+      "id": "249006cb-645a-4b97-9d73-cb1a6e25fb74",
+      "text": "PHASE-HOUSEKEEPING-1: Read master plan docs/plans/2026-02-19-entity-relationship-remediation.md to validate current phase alignment and identify gaps",
+      "content": "PHASE-HOUSEKEEPING-1: Read master plan docs/plans/2026-02-19-entity-relationship-remediation.md to validate current phase alignment and identify gaps",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771456344188
+      "updated_at": 1771456987510
     },
     {
-      "id": "todo-2",
-      "text": "Delegate Phase 1 implementation to build agent (single build cycle, no nested build)",
-      "content": "Delegate Phase 1 implementation to build agent (single build cycle, no nested build)",
+      "id": "86d69d22-a1f6-4cad-83b6-e4e26fa5ae5d",
+      "text": "PHASE-HOUSEKEEPING-2: Read .hivemind/session export and brain state to validate context integrity",
+      "content": "PHASE-HOUSEKEEPING-2: Read .hivemind/session export and brain state to validate context integrity",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771456344188
+      "updated_at": 1771456987510
     },
     {
-      "id": "todo-3",
-      "text": "Fix code-review blocking findings for Phase 1 (hook side effects + state rewrite edge case)",
-      "content": "Fix code-review blocking findings for Phase 1 (hook side effects + state rewrite edge case)",
+      "id": "b42779e3-6d83-4c13-852d-44320ac7f57a",
+      "text": "PHASE-HOUSEKEEPING-3: Check git log for uncommitted changes and recent commits alignment",
+      "content": "PHASE-HOUSEKEEPING-3: Check git log for uncommitted changes and recent commits alignment",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771456344188
+      "updated_at": 1771456987510
     },
     {
-      "id": "todo-4",
-      "text": "Create atomic commit for Phase 1 task files",
-      "content": "Create atomic commit for Phase 1 task files",
-      "status": "completed",
+      "id": "32f5b878-522a-4862-9cd4-b072dbc6dd5b",
+      "text": "GAP-CRITICAL-1: Phase 1 execution incomplete - run normalizeTaskIdsToUuidLineage on current directory to generate lineage map and fix state/tasks.json IDs",
+      "content": "GAP-CRITICAL-1: Phase 1 execution incomplete - run normalizeTaskIdsToUuidLineage on current directory to generate lineage map and fix state/tasks.json IDs",
+      "status": "in_progress",
+      "priority": "critical",
+      "updated_at": 1771456987510
+    },
+    {
+      "id": "f326d7bb-1627-4a31-9995-914b79db7d44",
+      "text": "CLEANUP-1: Remove stale root .hivemind/brain.json (contains old session)",
+      "content": "CLEANUP-1: Remove stale root .hivemind/brain.json (contains old session)",
+      "status": "pending",
       "priority": "high",
-      "updated_at": 1771456344188
+      "updated_at": 1771456987510
     },
     {
-      "id": "todo-5",
-      "text": "Checkpoint/export cycle and report status",
-      "content": "Checkpoint/export cycle and report status",
-      "status": "completed",
+      "id": "ab874d29-788b-4f26-97b5-160e2299a398",
+      "text": "CLEANUP-2: Rotate/truncate .hivemind/logs/HiveMind.log (10MB+)",
+      "content": "CLEANUP-2: Rotate/truncate .hivemind/logs/HiveMind.log (10MB+)",
+      "status": "pending",
       "priority": "medium",
-      "updated_at": 1771456344188
+      "updated_at": 1771456987510
+    },
+    {
+      "id": "bc3fe955-c57e-4613-9503-a245f65d1416",
+      "text": "CLEANUP-3: Fix sessions manifest registration (current session not in manifest.json)",
+      "content": "CLEANUP-3: Fix sessions manifest registration (current session not in manifest.json)",
+      "status": "pending",
+      "priority": "medium",
+      "updated_at": 1771456987510
+    },
+    {
+      "id": "ac77b2f3-1037-411e-95a5-e437ec98b369",
+      "text": "SCHEMA-GAP-1: Add session_id FK to MemNodeSchema per plan requirement",
+      "content": "SCHEMA-GAP-1: Add session_id FK to MemNodeSchema per plan requirement",
+      "status": "pending",
+      "priority": "high",
+      "updated_at": 1771456987510
+    },
+    {
+      "id": "86a7aec6-9f63-4195-95c9-e9b9df416cb0",
+      "text": "PHASE2-CONTRACT-1: Extract Phase 2 FK backfill/hook isolation contract from master plan",
+      "content": "PHASE2-CONTRACT-1: Extract Phase 2 FK backfill/hook isolation contract from master plan",
+      "status": "pending",
+      "priority": "high",
+      "updated_at": 1771456987510
+    },
+    {
+      "id": "6e1a21ac-6d37-44f7-a9e2-5582f7ab8ca5",
+      "text": "PHASE2-IMPLEMENT: Delegate Phase 2 implementation to build agent with strict boundaries",
+      "content": "PHASE2-IMPLEMENT: Delegate Phase 2 implementation to build agent with strict boundaries",
+      "status": "pending",
+      "priority": "high",
+      "updated_at": 1771456987510
+    },
+    {
+      "id": "f82d580f-b996-49f8-93e7-c69138ad1b64",
+      "text": "AGENTS-UPDATE: Update AGENTS.md with file tree registry and hierarchy documentation",
+      "content": "AGENTS-UPDATE: Update AGENTS.md with file tree registry and hierarchy documentation",
+      "status": "pending",
+      "priority": "medium",
+      "updated_at": 1771456987510
+    },
+    {
+      "id": "5408449f-4be0-47e3-a5c0-910cd5d65466",
+      "text": "MEMORY-SAVE: Save key decisions to mems for session continuity",
+      "content": "MEMORY-SAVE: Save key decisions to mems for session continuity",
+      "status": "pending",
+      "priority": "medium",
+      "updated_at": 1771456987510
+    },
+    {
+      "id": "24af1d10-c8ce-4ba0-8f8a-0c8dba640c83",
+      "text": "FINAL-CHECKPOINT: Export cycle and report comprehensive status",
+      "content": "FINAL-CHECKPOINT: Export cycle and report comprehensive status",
+      "status": "pending",
+      "priority": "medium",
+      "updated_at": 1771456987510
     }
   ]
 }
