@@ -1,22 +1,46 @@
 {
   "session_id": "ses_38d413431ffe4bcOLFhlS4rTij",
-  "updated_at": 1771454023207,
+  "updated_at": 1771456344188,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Run one-pass independent validation of Phase 0 stabilization patch (3 files + 4 commands)",
-      "content": "Run one-pass independent validation of Phase 0 stabilization patch (3 files + 4 commands)",
+      "text": "Extract Phase 1 identity normalization contract from remediation plan",
+      "content": "Extract Phase 1 identity normalization contract from remediation plan",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771454023207
+      "updated_at": 1771456344188
     },
     {
       "id": "todo-2",
-      "text": "Report concise gate status and next step without redundant cycles",
-      "content": "Report concise gate status and next step without redundant cycles",
+      "text": "Delegate Phase 1 implementation to build agent (single build cycle, no nested build)",
+      "content": "Delegate Phase 1 implementation to build agent (single build cycle, no nested build)",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771454023207
+      "updated_at": 1771456344188
+    },
+    {
+      "id": "todo-3",
+      "text": "Fix code-review blocking findings for Phase 1 (hook side effects + state rewrite edge case)",
+      "content": "Fix code-review blocking findings for Phase 1 (hook side effects + state rewrite edge case)",
+      "status": "completed",
+      "priority": "high",
+      "updated_at": 1771456344188
+    },
+    {
+      "id": "todo-4",
+      "text": "Create atomic commit for Phase 1 task files",
+      "content": "Create atomic commit for Phase 1 task files",
+      "status": "completed",
+      "priority": "high",
+      "updated_at": 1771456344188
+    },
+    {
+      "id": "todo-5",
+      "text": "Checkpoint/export cycle and report status",
+      "content": "Checkpoint/export cycle and report status",
+      "status": "completed",
+      "priority": "medium",
+      "updated_at": 1771456344188
     }
   ]
 }
