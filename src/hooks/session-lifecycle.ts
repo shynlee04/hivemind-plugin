@@ -15,8 +15,7 @@ import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import { generateAgentBehaviorPrompt } from "../schemas/config.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
-import { getEffectivePaths, isLegacyStructure } from "../lib/paths.js"
-import { migrateIfNeeded } from "../lib/migrate.js"
+import { getEffectivePaths } from "../lib/paths.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
 import { isSessionStale } from "../lib/staleness.js"
@@ -57,9 +56,6 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       injectGovernanceInstruction(output)
 
       if (!input.sessionID) return
-      if (isLegacyStructure(directory)) await migrateIfNeeded(directory, log)
-
-      const config = await loadConfig(directory)
       const configPath = getEffectivePaths(directory).config
 
       if (!existsSync(configPath)) {
@@ -67,6 +63,8 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
         await log.info("HiveMind not configured — injected setup guidance")
         return
       }
+
+      const config = await loadConfig(directory)
 
       let state = await stateManager.load()
       if (!state) {
