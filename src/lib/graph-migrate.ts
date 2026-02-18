@@ -41,13 +41,13 @@ import { getHivemindPaths, getLegacyPaths } from "./paths.js"
 // ─── Constants ─────────────────────────────────────────────────────────────
 
 /** Fixed UUID for the legacy phase — all migrated tasks get this parent_phase_id */
-export const LEGACY_PHASE_ID = "00000000-0000-0000-0000-000000000001"
+export const LEGACY_PHASE_ID = "00000000-0000-4000-8000-000000000001"
 
 /** Fixed UUID for the legacy plan that contains the legacy phase */
-export const LEGACY_PLAN_ID = "00000000-0000-0000-0000-000000000002"
+export const LEGACY_PLAN_ID = "00000000-0000-4000-8000-000000000002"
 
 /** Fixed UUID for the trajectory that references the legacy plan */
-export const LEGACY_TRAJECTORY_ID = "00000000-0000-0000-0000-000000000003"
+export const LEGACY_TRAJECTORY_ID = "00000000-0000-4000-8000-000000000003"
 
 /** Title for the legacy phase */
 const LEGACY_PHASE_TITLE = "Legacy Context"

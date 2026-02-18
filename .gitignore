@@ -7,12 +7,7 @@ dist/
 .env.local
 coverage/
 
-# .hivemind/ - LOCAL USER STATE, NEVER TRACK IN REPO
-# This is created by users during their work - NOT part of the plugin distribution
-.hivemind/
 
-# .opencode/ - LOCAL USER ASSETS, NEVER TRACK IN REPO
-.opencode/
 
 # Git worktrees
 .worktrees/
@@ -21,7 +16,6 @@ coverage/
 .planning/
 .plan/
 tasks/
-docs/plans/
 session-*.md
 *.tmp.txt
 test_output*.txt

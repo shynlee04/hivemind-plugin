@@ -65,7 +65,7 @@ npm run guard:public  # Run BEFORE any master push
 
 | Layer | Location | Role | The Rule |
 |-------|----------|------|----------|
-| **Tools** | `src/tools/` | **Conscious Limbs** (Write-Only) | LLM-facing API wrappers. Zod schemas + descriptions. **>100 lines = architecturally flawed.** |
+| **Tools** | `src/tools/` | **Conscious Limbs** (Write-Only) | LLM-facing API wrappers. Zod schemas + descriptions. **~300 lines strategic limit. Business logic belongs in libs.** |
 | **Libraries** | `src/lib/` | **Subconscious Engine** (RAM/CPU) | Pure TypeScript logic. Never returns natural language. Returns JSON, Booleans, or dense XML. |
 | **Hooks** | `src/hooks/` | **Autonomic Nervous System** (Read-Auto) | SDK event listeners. Call Libraries to compile state into purified XML → inject as `synthetic: true`. |
 | **Schemas** | `src/schemas/` | **DNA** (Zod Validation Layer) | All graph nodes MUST have UUID `id` + explicit FK fields. Orphaned nodes fail validation. |
@@ -223,8 +223,8 @@ compact_session({ summary })     — END when done
 ### God Prompt 3: SDK Mid-Turn Injection & Pre-Stop Gate
 > Wire packer output into LLM cognition via `messages.transform`. Push TWO synthetic parts: (1) XML context, (2) Pre-Stop Gate checklist. Slim `session-lifecycle.ts` from 586L → **≤200L**.
 
-### God Prompt 4: Session Swarms & The 80% Split
-> Build `src/lib/session-swarm.ts` — SDK session manipulation + Actor Model. Monitor token pressure → at 80%: `packCognitiveState()` → `client.session.create()` → `noReply` inject XML as Turn 0. Headless researchers save to graph/mems.json.
+### God Prompt 4: Session Swarms & The 80% Defensive Guard
+> Build `src/lib/session-swarm.ts` — SDK session manipulation + Actor Model. **80% is a DEFENSIVE GUARD** — DON'T split when context >= 80% (crash avoidance with innate compaction). Split earlier at appropriate boundaries, not at 80%. Headless researchers save to graph/mems.json.
 
 ---
 
@@ -244,7 +244,7 @@ compact_session({ summary })     — END when done
 
 | Layer | Location | Role | Constraint |
 |-------|----------|------|------------|
-| **Tools** | `src/tools/` | Write-Only (LLM-facing) | ≤100 lines each |
+| **Tools** | `src/tools/` | Write-Only (LLM-facing) | ~300 lines strategic limit |
 | **Libraries** | `src/lib/` | Subconscious Engine (pure TS) | No LLM prompts, returns JSON/XML |
 | **Hooks** | `src/hooks/` | Read-Auto (context injection) | SDK event listeners |
 | **Schemas** | `src/schemas/` | DNA (Zod validation) | UUID + FK constraints |
@@ -329,7 +329,7 @@ compact_session({ summary })     — END when done
 - **Quotes:** Double quotes
 - **Imports:** Use `.js` extension for local imports
 - **Paths:** ALWAYS use `getEffectivePaths()` from `src/lib/paths.ts`
-- **Tools:** ≤100 lines each (dumb tools)
+- **Tools:** ~300 lines strategic limit each (dumb tools, business logic in libs)
 
 ---
 

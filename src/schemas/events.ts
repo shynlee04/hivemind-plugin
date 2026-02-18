@@ -28,7 +28,7 @@ export const ArtifactEventSchema = z.object({
   /** ISO timestamp */
   timestamp: z.string().datetime(),
   /** Event payload - varies by type */
-  payload: z.record(z.unknown()),
+  payload: z.record(z.string(), z.unknown()),
   /** Source identifier (e.g., "fs-watcher", "manual") */
   source: z.string(),
 });

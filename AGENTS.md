@@ -54,7 +54,7 @@ npm run guard:public  # Run BEFORE any master push
 
 | Layer | Location | Role |
 |-------|----------|------|
-| **Tools** | `src/tools/` | Write-Only (≤100 lines each) |
+| **Tools** | `src/tools/` | Write-Only (~300 lines strategic limit) |
 | **Libraries** | `src/lib/` | Subconscious Engine (pure TS) |
 | **Hooks** | `src/hooks/` | Read-Auto (inject context) |
 | **Schemas** | `src/schemas/` | DNA (Zod validation) |
@@ -100,10 +100,17 @@ npx tsx --test tests/filename.test.ts       # Run specific test
 
 ## V3.0 PRD & Plans
 
-- **PRD:** `docs/plans/prd-hivemind-v3-relational-engine-2026-02-16.md` (50 user stories, 7 phases)
-- **Roadmap:** `docs/plans/prd-hivemind-v3-roadmap-2026-02-18.md` [NEW] - Master roadmap and phase status
+- **PRD v2:** `docs/plans/PRD-V2-HIVEMIND-ENGINE-2026-02-18.md` [CURRENT] - Audited and corrected
+- **PRD (archived):** `docs/plans/prd-hivemind-v3-relational-engine-2026-02-16.md` (superseded)
+- **Roadmap:** `docs/plans/prd-hivemind-v3-roadmap-2026-02-18.md`
 - **Master Plan:** `docs/refactored-plan.md` (6 phases, 4 God Prompts)
 - **Stitch Screens:** `docs/stitch-screens/screen-*.html` (11 design mockups)
+
+## Key Corrections (2026-02-18)
+
+1. **LOC Limit**: ~300 lines strategic (not ≤100 hard constraint)
+2. **80% Split**: DEFENSIVE GUARD - DON'T split when context >= 80% (crash avoidance with innate compaction)
+3. **CQRS**: 10 violations identified in hooks - being addressed via state-mutation-queue
 
 ---
 

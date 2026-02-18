@@ -1,0 +1,32 @@
+{
+  "sessions": [
+    {
+      "stamp": "421618022026",
+      "file": "2026-02-18-plan_driven-hivemind-v30-architecture-remediation-cq.md",
+      "status": "archived",
+      "created": 1771407725033,
+      "mode": "plan_driven",
+      "trajectory": "HiveMind v3.0 Architecture Remediation - CQRS enforcement, Auto-Context, Linter Agent, full production compliance",
+      "linked_plans": []
+    },
+    {
+      "stamp": "451618022026",
+      "file": "2026-02-18-quick_fix-debug-graph-migratetestts-failures-15-fa.md",
+      "status": "archived",
+      "created": 1771407936482,
+      "mode": "quick_fix",
+      "trajectory": "Debug graph-migrate.test.ts failures - 15 failing tests with PhaseNode validation and UUID issues",
+      "linked_plans": []
+    },
+    {
+      "stamp": "461618022026",
+      "file": "2026-02-18-plan_driven-cqrs-violation-code-review-analyzing-10.md",
+      "status": "active",
+      "created": 1771407971649,
+      "mode": "plan_driven",
+      "trajectory": "CQRS Violation Code Review - Analyzing 10 write operations in hooks layer",
+      "linked_plans": []
+    }
+  ],
+  "active_stamp": "461618022026"
+}
