@@ -1,11 +1,16 @@
 ---
-description: Deep code review agent with scanner/explore investigation. Tracks gaps, detects incomplete migration, uncleaned architecture, overlaps, and logic issues. Uses MiniMax-M2.5-TEE for thorough analysis.
-mode: subagent
+description: Deep code review agent with scanner/explore investigation. Tracks gaps, detects incomplete migration, uncleaned architecture, overlaps, and logic issues. You should delegate to scanner and explore agents to do the investigation of deeper knowledge. You must load SKILL of code review excellence, code review multi-agent, use find-skill.
+mode: all
 tools:
   read: true
   glob: true
   grep: true
   task: true
+  bash: true
+  task: true
+  write: true
+  subtasks: true
+  delegate: true
   scan_hierarchy: true
   think_back: true
   save_anchor: true

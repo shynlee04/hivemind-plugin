@@ -1,27 +1,137 @@
 {
-  "version": "3.0.0",
+  "version": "1.0.0",
   "mems": [
     {
-      "id": "7b3dc9c7-c30d-4b70-bb13-4ca8e9e0b300",
-      "origin_task_id": "b682a148-0399-458e-b59d-9c8cae55d8b9",
+      "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
       "shelf": "cycle-intel",
       "type": "insight",
-      "content": "Created sequential-orchestration skill at skills/sequential-orchestration/SKILL.md (284 lines). Covers: sequential vs parallel decision, gatekeeping factors (hierarchy, context purity, planning), delegation protocol with explicit return formats, boundary enforcement, unbroken link principle, context-first protocol, and red flags.",
+      "content": "LIB Scan: 45 files scanned, 11 violations found, 4 critical issues. Key: planning-fs.ts (1032 lines), detection.ts (882 lines), hierarchy-tree.ts (913 lines) exceed limits. CQRS violations in planning-fs, session-engine, compaction-engine. Fs operations scattered across cognitive-packer, planning-fs, graph-io. LLM strings in governance-instruction.ts, session_coherence.ts.",
       "relevance_score": 1,
-      "staleness_stamp": "2026-02-18T10:49:55.254Z",
-      "created_at": "2026-02-18T10:49:55.254Z",
-      "updated_at": "2026-02-18T10:49:55.254Z"
+      "staleness_stamp": "2026-02-18T17:59:09.659Z",
+      "created_at": "2026-02-18T17:59:09.659Z",
+      "updated_at": "2026-02-18T17:59:09.659Z"
     },
     {
-      "id": "cb6bb108-ce75-40fe-a244-9fe855cd4ce2",
-      "origin_task_id": "266a3e7c-bffa-4faa-af55-b9239bbbdee1",
-      "shelf": "Master Plan",
+      "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
       "type": "insight",
-      "content": "## Master Plan: CQRS Compliance - COMPLETED\n\n### FILE CHANGE LOG:\n| File | Change | Commit |\n|------|--------|--------|\n| src/lib/dual-read.ts | DELETED | e5e29a7 |\n| src/lib/index.ts | Removed export | e5e29a7 |\n| src/hooks/event-handler.ts | CQRS fix (2 writes) | fdb3581 |\n| src/hooks/soft-governance.ts | CQRS fix (1 write) | 3448711 |\n| src/hooks/tool-gate.ts | CQRS fix (2 writes) | 46ee550 |\n| src/hooks/messages-transform.ts | CQRS fix (2 writes) | 5cd9b21 |\n| src/hooks/compaction.ts | CQRS fix (1 write) | 198779d |\n\n### REMAINING (1 - ACCEPTABLE):\n| File | Line | Reason | Status |\n|------|------|--------|--------|\n| session-lifecycle.ts | 75 | Bootstrap initialization | KEEP (no prior state) |\n\n### CQRS VIOLATIONS FIXED: 8/9 (89%)\n### TEST STATUS: 123/126 pass (3 pre-existing)\n\n### NEXT PHASE:\n- Fix 3 pre-existing test failures\n- Continue with architecture cleanup",
+      "content": "TOOLS Scan: 7 files, 6 tools defined, 15+ violations. CRITICAL: hivemind-memory.ts (369 lines, ALL logic embedded), hivemind-session.ts (232 lines, 83 lines embedded logic), hivemind-cycle.ts (211 lines, direct fs imports). Paradox: lib/mems.ts has functions that tool doesn't use. Only hivemind-inspect.ts is clean (55 lines).",
       "relevance_score": 1,
-      "staleness_stamp": "2026-02-18T14:45:23.495Z",
-      "created_at": "2026-02-18T14:45:23.495Z",
-      "updated_at": "2026-02-18T14:45:23.495Z"
+      "staleness_stamp": "2026-02-18T18:02:29.983Z",
+      "created_at": "2026-02-18T18:02:29.983Z",
+      "updated_at": "2026-02-18T18:02:29.983Z"
+    },
+    {
+      "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "HOOKS Scan: 13 files, 2888 total lines. CQRS VIOLATIONS: event-handler.ts:152 (direct saveTasks bypassing queue), session-lifecycle.ts:75 (direct stateManager.save). 6 files >200 lines: soft-governance.ts (533), messages-transform.ts (484), session-lifecycle-helpers.ts (387), tool-gate.ts (395), compaction.ts (224). Business logic embedded in hooks layer.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T18:05:57.825Z",
+      "created_at": "2026-02-18T18:05:57.825Z",
+      "updated_at": "2026-02-18T18:05:57.825Z"
+    },
+    {
+      "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "architecture-audit",
+      "type": "insight",
+      "content": "## src/lib/ Taxonomy Audit Results (2026-02-19)\n\n### Summary\n- 45 files total (AGENTS.md states 42 - discrepancy)\n- 67% pure deterministic TypeScript\n- 33% contains natural language generation\n\n### Critical Red Flags (15 files)\n1. `formatXxxForPrompt()` functions in 4 files (anchors.ts, mems.ts, session_coherence.ts, onboarding.ts)\n2. `governance-instruction.ts` is intentionally a prompt string\n3. Display rendering functions in brownfield-scan.ts, detection.ts, session-export.ts\n\n### Largest Files (>500 lines)\n- planning-fs.ts (1032), hierarchy-tree.ts (913), detection.ts (882), graph-io.ts (652), session_coherence.ts (605), session-engine.ts (585), cognitive-packer.ts (502)\n\n### Recommendation\n- Move `formatXxxForPrompt()` to dedicated context-builders/ or hooks/\n- Document governance-instruction.ts as intentional exception\n- Consider splitting detection.ts and session_coherence.ts",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T19:16:25.141Z",
+      "created_at": "2026-02-18T19:16:25.141Z",
+      "updated_at": "2026-02-18T19:16:25.141Z"
+    },
+    {
+      "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "LIB_INVENTORY_001: 45 files scanned (100%). 30 pure deterministic (67%), 15 NL-generating (33%). 4 files have formatXxxForPrompt() functions that violate taxonomy (should move to hooks/). 1 intentional exception: governance-instruction.ts is prompt constant by design. 11 files exceed 200 lines - candidates for splitting. AGENTS.md discrepancy: states 42 files, actual count is 45. No AI SDK imports found (compliant).",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T19:17:37.943Z",
+      "created_at": "2026-02-18T19:17:37.943Z",
+      "updated_at": "2026-02-18T19:17:37.943Z"
+    },
+    {
+      "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "architecture-audit",
+      "type": "insight",
+      "content": "tools/ Audit Results: 7 files, 1,231 lines. ONLY hivemind-inspect.ts (55 lines) is fully compliant. CRITICAL: hivemind-cycle.ts has direct fs/promises import (L17). MAJOR: hivemind-memory.ts (369 lines) has search/filter logic, hivemind-session.ts has syncTrajectoryToGraph (L19-101), hivemind-hierarchy.ts has tree traversal helpers (L108-181). Compliance rate: 14%.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T19:23:47.610Z",
+      "created_at": "2026-02-18T19:23:47.610Z",
+      "updated_at": "2026-02-18T19:23:47.610Z"
+    },
+    {
+      "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "TOOLS_INVENTORY_002: 7 files, 1,231 lines. COMPLIANCE CRISIS: Only 14% (1/7) files follow Dumb Tool pattern. hivemind-inspect.ts is GOLD STANDARD (55 lines, pure delegation). CRITICAL VIOLATION: hivemind-cycle.ts:17 imports fs/promises directly. 4/7 files exceed 150 lines (session:232, memory:369, hierarchy:205, cycle:211). 5/7 contain business logic. Remediation: Extract syncTrajectoryToGraph from session.ts, search/filter from memory.ts, tree traversal from hierarchy.ts to lib/.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T19:26:05.681Z",
+      "created_at": "2026-02-18T19:26:05.681Z",
+      "updated_at": "2026-02-18T19:26:05.681Z"
+    },
+    {
+      "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "HOOKS_INVENTORY_003: 13 files, ~2,388 lines. CQRS: 2 CRITICAL violations (session-lifecycle.ts:75 stateManager.save(), event-handler.ts:152 saveTasks()). Gemini claimed 10 violations - actual: 2 direct writes, rest use queueStateMutation (compliant pattern). DUPLICATE: session_coherence/main_session_start.ts overlaps messages-transform.ts. ARCHITECTURAL: session-lifecycle-helpers.ts (387 lines) and soft-governance.ts (533 lines) have heavy business logic that should move to lib/. 4 files inject context via output.system.push/prependSyntheticPart.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T19:36:25.267Z",
+      "created_at": "2026-02-18T19:36:25.267Z",
+      "updated_at": "2026-02-18T19:36:25.267Z"
+    },
+    {
+      "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "SCHEMAS_INVENTORY_004: 8 files, 10 Zod schemas. CRITICAL: 5/8 files use TS interfaces instead of Zod (brain-state:428, config:419, hierarchy:45, manifest:21). Only graph-nodes.ts has proper FK constraints with validateParentExists() and validateOrphanFree() helpers. brain-state.ts has NO runtime validation - SessionState.id is just string not UUID. Two validation paradigms in same /schemas directory. EVENTS: events.ts ArtifactEventSchema has no FK linkage to session/trajectory.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T19:42:52.823Z",
+      "created_at": "2026-02-18T19:42:52.823Z",
+      "updated_at": "2026-02-18T19:42:52.823Z"
+    },
+    {
+      "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "SYNTHESIS_005: INVENTORY COMPLETE. Cross-cutting violations: [1] Taxonomy not enforced - 33% lib NL-gen, 86% tools business logic, 15% hooks heavy logic [2] Documentation drift - AGENTS.md claims 42 lib files, actual 45 [3] CQRS violations - 2 direct writes in hooks [4] Validation inconsistency - 62.5% schemas use TS interfaces not Zod [5] Duplicate functionality - session_coherence overlaps messages-transform [6] fs abstraction leak - tools/cycle.ts imports fs/promises directly. GOLD STANDARDS: hivemind-inspect.ts (tool), graph-nodes.ts (schema with FK). Total scanned: 73 files across 4 directories.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T19:44:06.481Z",
+      "created_at": "2026-02-18T19:44:06.481Z",
+      "updated_at": "2026-02-18T19:44:06.481Z"
+    },
+    {
+      "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "GEMINI_RUNTIME_SCHISM_006: VALIDATION RESULT = PARTIALLY ACCURATE/MISLEADING. Gemini conflated PLANNED docs with ACTUAL state. EVIDENCE: package.json enforces Node>=20, tsconfig uses NodeNext, dashboard uses Ink NOT @opentui (removed per CHANGELOG:233). ONLY Bun reference: dashboard/bin.ts:1 shebang (dormant artifact). US-032 in beads.jsonl tracks planned OpenTUI migration as OPEN. Risk: LOW - project functions fully on Node.js.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T19:51:24.685Z",
+      "created_at": "2026-02-18T19:51:24.685Z",
+      "updated_at": "2026-02-18T19:51:24.685Z"
+    },
+    {
+      "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "GEMINI_BUDGET_007: VALIDATION RESULT = PARTIALLY ACCURATE (OUTDATED). Gemini found LEGACY 2000-char budget which was deprecated via US-055. ACTUAL: Default is 15,360 chars (12% of 128k context window). EVIDENCE: budget.ts:4 US-055 note, budget.ts:14 DEFAULT_CONTEXT_BUDGET, cognitive-packer.ts:204-209 dynamic calculation. Pruning: relevance-score based, no guaranteed minimum per-mem slot. Risk: LOW - issue already addressed.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T19:53:23.945Z",
+      "created_at": "2026-02-18T19:53:23.945Z",
+      "updated_at": "2026-02-18T19:53:23.945Z"
     }
   ]
 }

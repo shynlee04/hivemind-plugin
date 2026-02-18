@@ -1,1 +1,23 @@
-{"version":"3.0.0","governance":"strict","language":"en","automation":"full"}
+{
+  "governance_mode": "assisted",
+  "language": "en",
+  "max_turns_before_warning": 5,
+  "max_active_md_lines": 50,
+  "auto_compact_on_turns": 20,
+  "stale_session_days": 3,
+  "commit_suggestion_threshold": 5,
+  "auto_commit": false,
+  "agent_behavior": {
+    "language": "en",
+    "expert_level": "intermediate",
+    "output_style": "explanatory",
+    "constraints": {
+      "require_code_review": false,
+      "enforce_tdd": false,
+      "max_response_tokens": 2000,
+      "explain_reasoning": true,
+      "be_skeptical": false
+    }
+  },
+  "automation_level": "assisted"
+}

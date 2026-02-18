@@ -21,6 +21,30 @@
 
 import type { BrainState } from "../schemas/brain-state.js";
 import type { StateManager } from "./persistence.js";
+import { createLogger, noopLogger } from "./logging.js";
+import { getEffectivePaths } from "./paths.js";
+
+// Initialize logger - use noop logger initially, replace with real logger on first use
+let loggerPromise: Promise<{
+  debug: (message: string) => Promise<void>;
+  info: (message: string) => Promise<void>;
+  warn: (message: string) => Promise<void>;
+  error: (message: string) => Promise<void>;
+}> | null = null;
+
+function getLogger(): Promise<typeof noopLogger> {
+  if (!loggerPromise) {
+    try {
+      // Get effective paths for the current project (assuming process.cwd() is project root)
+      const paths = getEffectivePaths(process.cwd());
+      loggerPromise = createLogger(paths.logsDir, "state-mutation-queue");
+    } catch {
+      // If logger initialization fails, use noop logger
+      loggerPromise = Promise.resolve(noopLogger);
+    }
+  }
+  return loggerPromise;
+}
 
 /**
  * Types of state mutations that can be queued.
@@ -97,9 +121,12 @@ export function queueStateMutation(
     // Capture dropped mutation BEFORE shift for accurate logging
     const dropped = mutationQueue[0];
     mutationQueue.shift();
-    console.warn(
-      `[state-mutation-queue] Queue overflow, dropped mutation from: ${dropped?.source ?? "unknown"}`
-    );
+    // Log asynchronously to avoid blocking
+    getLogger().then(logger => 
+      logger.warn(`Queue overflow, dropped mutation from: ${dropped?.source ?? "unknown"}`)
+    ).catch(() => {
+      // Ignore logging errors
+    });
   }
 
   mutationQueue.push(fullMutation);
@@ -134,8 +161,9 @@ export async function flushMutations(
 
     // If no state exists, we can't apply mutations - this is an error condition
     if (!currentState) {
-      console.warn(
-        "[state-mutation-queue] Cannot flush mutations: no state exists. " +
+      const logger = await getLogger();
+      await logger.warn(
+        "Cannot flush mutations: no state exists. " +
           "Mutations will remain queued until state is initialized."
       );
       return 0;
@@ -164,7 +192,8 @@ export async function flushMutations(
 
     return appliedCount;
   } catch (error) {
-    console.error("[state-mutation-queue] Flush failed:", error);
+    const logger = await getLogger();
+    await logger.error(`Flush failed: ${error instanceof Error ? error.message : String(error)}`);
     // Leave mutations in queue for retry
     throw error;
   }

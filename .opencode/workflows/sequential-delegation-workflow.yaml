@@ -1,0 +1,218 @@
+name: Sequential Delegation Workflow
+description: |
+  Robust orchestration workflow with sequential delegation, result awaiting,
+  domain boundaries, and hierarchy gatekeeping. The safer choice for app development.
+
+# Domain Boundaries
+domains:
+  backend:
+    description: "Server-side logic, tools, hooks, schemas"
+    paths:
+      allowed:
+        - "src/lib/"
+        - "src/tools/"
+        - "src/schemas/"
+        - "src/hooks/"
+        - "src/cli/"
+        - "tests/"
+      forbidden:
+        - "src/dashboard/"
+        - "src/views/"
+        - "src/components/"
+    agents: ["build", "debug", "scanner", "code-review"]
+
+  frontend:
+    description: "Dashboard, TUI, views, components"
+    paths:
+      allowed:
+        - "src/dashboard/"
+        - "src/views/"
+        - "src/components/"
+        - "src/types/"
+      forbidden:
+        - "src/lib/"
+        - "src/tools/"
+        - "src/schemas/"
+    agents: ["build"]
+
+  shared:
+    description: "Types, utilities, tests"
+    paths:
+      allowed:
+        - "src/types/"
+        - "src/utils/"
+        - "tests/"
+      forbidden: []
+    agents: ["build", "code-review"]
+
+# Hierarchy Requirements
+hierarchy:
+  required_chain:
+    - level: trajectory
+      must_exist: true
+      source: "declare_intent"
+    - level: tactic
+      must_exist: true
+      source: "map_context"
+      parent: trajectory
+    - level: action
+      must_exist: true
+      source: "map_context"
+      parent: tactic
+
+  max_staleness: "2h"
+  staleness_action: "think_back"
+
+# Workflow Steps
+steps:
+  - name: "Gate Check"
+    description: "Verify hierarchy and context before any action"
+    tool: "scan_hierarchy"
+    args:
+      action: "status"
+    required_output:
+      - "trajectory"
+      - "session_status"
+    on_failure:
+      action: "declare_intent"
+      message: "NO ACTION WITHOUT TRAJECTORY"
+
+  - name: "Context Purity Check"
+    description: "Ensure context is not corrupted"
+    tool: "think_back"
+    args:
+      mode: "check"
+    required_output:
+      - "drift_score"
+    validation:
+      drift_score: "< 60"
+    on_failure:
+      action: "think_back"
+      args:
+        mode: "full"
+
+  - name: "Plan Retrieval"
+    description: "Never act without verified planning"
+    tool: "recall_mems"
+    args:
+      query: "plan"
+    required_output: []
+    on_empty:
+      action: "stop"
+      message: "NO ACT WITHOUT SUCCESS RETRIEVAL OF PLANNING"
+
+  - name: "Domain Boundary Verification"
+    description: "Check target files against domain boundaries"
+    tool: "grep"
+    args:
+      pattern: "${target_files}"
+    validation:
+      custom: "checkDomainBoundary"
+    on_failure:
+      action: "reroute"
+      message: "DOMAIN BOUNDARY VIOLATION"
+
+  - name: "Delegate Task"
+    description: "Sequential delegation with explicit return format"
+    tool: "task"
+    args:
+      description: "${task_description}"
+      prompt: "${task_prompt_with_return_format}"
+      subagent_type: "${assigned_agent}"
+    await_result: true
+    timeout: "5m"
+
+  - name: "Process Result"
+    description: "Handle result, retune or reroute as needed"
+    tool: "export_cycle"
+    args:
+      outcome: "${delegation_outcome}"
+      findings: "${delegation_findings}"
+    on_outcome:
+      success:
+        action: "proceed"
+        next: "Update Hierarchy"
+      partial:
+        action: "retune"
+        next: "Save Partial Progress"
+      failure:
+        action: "stop"
+        next: "Escalate Failure"
+
+  - name: "Update Hierarchy"
+    description: "Mark action complete, update cursor"
+    tool: "map_context"
+    args:
+      level: "action"
+      content: "${findings}"
+    then: "next_task"
+
+  - name: "Save Partial Progress"
+    description: "Store partial success for follow-up"
+    tool: "save_mem"
+    args:
+      shelf: "partial_progress"
+      content: "${partial_findings}"
+      tags: "needs-followup"
+
+  - name: "Escalate Failure"
+    description: "Save failure state for recovery"
+    tool: "save_anchor"
+    args:
+      key: "failure_${timestamp}"
+      value: "${failure_details}"
+    then: "ask_user"
+
+# Gatekeeping Rules
+gatekeeping:
+  - rule: "NO_ACTION_WITHOUT_TRAJECTORY"
+    check: "hierarchy.trajectory != null"
+    fix: "declare_intent"
+
+  - rule: "NO_ACTION_WITHOUT_TACTIC"
+    check: "hierarchy.tactic != null"
+    fix: "map_context({ level: 'tactic' })"
+
+  - rule: "NO_ACTION_WITH_PURE_CONTEXT"
+    check: "drift_score < 60"
+    fix: "think_back({ mode: 'full' })"
+
+  - rule: "NO_ACTION_WITHOUT_PLAN"
+    check: "recall_mems({ query: 'plan' }).length > 0"
+    fix: "create_plan_first"
+
+  - rule: "NO_CROSS_DOMAIN_WITHOUT_APPROVAL"
+    check: "domain_boundary_valid"
+    fix: "ask_user"
+
+  - rule: "NO_BROKEN_CHAIN"
+    check: "ancestors.length == 3"
+    fix: "map_context to repair"
+
+# Result Handling
+result_handling:
+  success:
+    actions:
+      - "export_cycle"
+      - "map_context update"
+      - "proceed to next"
+  
+  partial:
+    actions:
+      - "save_mem partial"
+      - "retune plan"
+      - "reroute if needed"
+  
+  failure:
+    actions:
+      - "save_anchor failure"
+      - "stop chain"
+      - "escalate to user"
+      - "do not proceed"
+
+# Timeout Configuration
+timeouts:
+  gate_check: "30s"
+  context_recovery: "2m"
+  delegation: "5m"
+  result_processing: "1m"

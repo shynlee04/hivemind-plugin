@@ -9,6 +9,30 @@
 
 import type { OpencodeClient } from "@opencode-ai/sdk"
 import type { SwarmSdkExecutor } from "../lib/session-swarm.js"
+import { createLogger, noopLogger } from "../lib/logging.js"
+import { getEffectivePaths } from "../lib/paths.js"
+
+// Lazily initialized logger
+let loggerPromise: Promise<import("../lib/logging.js").Logger> | null = null
+
+function getLogger(): Promise<import("../lib/logging.js").Logger> {
+  if (loggerPromise) {
+    return loggerPromise
+  }
+  
+  loggerPromise = (async () => {
+    try {
+      // Get project root (current working directory)
+      const projectRoot = process.cwd()
+      const paths = getEffectivePaths(projectRoot)
+      return await createLogger(paths.logsDir, "swarm-executor")
+    } catch {
+      return noopLogger
+    }
+  })()
+  
+  return loggerPromise
+}
 
 /**
  * Create an SDK-backed swarm executor.
@@ -35,7 +59,8 @@ export function createSwarmExecutor(client: OpencodeClient): SwarmSdkExecutor {
         }
         return null
       } catch (err) {
-        console.error("[swarm-executor] Failed to create session:", err)
+        const logger = await getLogger()
+        logger.error(`[swarm-executor] Failed to create session: ${err instanceof Error ? err.message : String(err)}`)
         return null
       }
     },

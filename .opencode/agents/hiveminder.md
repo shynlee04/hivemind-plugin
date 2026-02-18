@@ -9,6 +9,8 @@ permissions:
   edit: deny
   write: deny
   task: allow
+  mcp*: deny
+  (*-repomix|*-webread|*-websearch|*-google_search): deny
   subtasks: allow
   skill: allow
   delegation: allow

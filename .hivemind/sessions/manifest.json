@@ -1,12 +1,4 @@
 {
-  "sessions": [
-    {
-      "stamp": "78ace7e0-f448-498b-bd4e-75a2d59baa69",
-      "file": "session_2026-02-18_78ace7e0-f448-498b-bd4e-75a2d59baa69.md",
-      "status": "archived",
-      "created": 1771429300919,
-      "linked_plans": []
-    }
-  ],
+  "sessions": [],
   "active_stamp": null
 }
