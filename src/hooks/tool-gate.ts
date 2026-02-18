@@ -7,6 +7,7 @@ import { checkComplexity } from "../lib/complexity.js";
 import { checkAndRecordToast } from "../lib/toast-throttle.js";
 import { treeExists } from "../lib/hierarchy-tree.js"
 import { validateSessionState, type GatekeeperResult } from "../lib/gatekeeper.js"
+import { queueStateMutation, flushMutations } from "../lib/state-mutation-queue.js"
 
 // Tools exempt from governance checks (read-only or meta-tools)
 const EXEMPT_TOOLS = new Set([
@@ -83,6 +84,10 @@ export function createToolGateHook(
 
       // Rule 6: Re-read config from disk each invocation
       const config = await loadConfig(directory)
+
+      // CQRS-compliant: flush any pending mutations before loading state
+      // This ensures hooks see the latest state from previous operations
+      await flushMutations(stateManager)
 
       // Load brain state
       let state = await stateManager.load()
@@ -215,9 +220,13 @@ export function createToolGateHook(
           },
         }
 
-        // Save updated state only if something changed
+        // CQRS-compliant: Queue mutations instead of direct save
         if (needsSave) {
-          await stateManager.save(state)
+          queueStateMutation({
+            type: "UPDATE_STATE",
+            payload: state,
+            source: "tool-gate"
+          })
         }
 
         // Check drift warning - Advisory only
@@ -254,9 +263,13 @@ export function createToolGateHook(
             )
           }
 
-          // Mark nudge as shown
+          // Mark nudge as shown - CQRS-compliant: queue mutation instead of direct save
           state = setComplexityNudgeShown(state)
-          await stateManager.save(state)
+          queueStateMutation({
+            type: "UPDATE_STATE",
+            payload: { complexity_nudge_shown: state.complexity_nudge_shown },
+            source: "tool-gate"
+          })
 
           return {
             allowed: true,
