@@ -11,6 +11,7 @@
  */
 
 import { createStateManager, loadConfig } from "../lib/persistence.js"
+import { queueStateMutation } from "../lib/state-mutation-queue.js"
 import { loadTasks } from "../lib/manifest.js"
 import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
@@ -279,11 +280,14 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
             // Inject as synthetic part (prepend)
             prependSyntheticPart(output.messages[index], transformedPrompt)
 
-            const updatedState: BrainState = {
-              ...state,
-              first_turn_context_injected: true,
-            }
-            await stateManager.save(updatedState)
+            // CQRS: Queue mutation instead of direct save
+            queueStateMutation({
+              type: "UPDATE_STATE",
+              payload: {
+                first_turn_context_injected: true,
+              },
+              source: "messages-transform-hook:first-turn",
+            })
 
             injectedSessionIds.add(sessionId)
 
@@ -337,12 +341,14 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         // Keep only last 6 messages
         const trimmedMessages = recentMessages.slice(-6)
         
-        // Save to brain state for session-split to use
-        const updatedState: BrainState = {
-          ...state,
-          recent_messages: trimmedMessages,
-        }
-        await stateManager.save(updatedState)
+        // CQRS: Queue mutation instead of direct save
+        queueStateMutation({
+          type: "UPDATE_STATE",
+          payload: {
+            recent_messages: trimmedMessages,
+          },
+          source: "messages-transform-hook:recent-messages",
+        })
       } catch {
         // P3: Never break message flow - silently fail
       }
