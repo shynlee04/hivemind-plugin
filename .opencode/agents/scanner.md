@@ -1,6 +1,7 @@
 ---
 description: Hidden scanner subagent for deep investigation, memory retrieval, and comprehensive search operations. Use for complex scanning tasks, retracing memory, and thorough codebase analysis.
 mode: subagent
+model: kilo/minimax/minimax-m2.5:free
 hidden: false
 tools:
   read: true

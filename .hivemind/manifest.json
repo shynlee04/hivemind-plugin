@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "structure_format": "2.0.0",
-  "created": 1771405308567,
+  "created": 1771436678282,
   "sub_manifests": [
     "/Users/apple/hivemind-plugin/.hivemind/state/manifest.json",
     "/Users/apple/hivemind-plugin/.hivemind/memory/manifest.json",

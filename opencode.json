@@ -4,10 +4,7 @@
     "stitch": {
       "type": "remote",
       "url": "https://stitch.googleapis.com/mcp",
-      "enabled": true,
-      "headers": {
-        "X-Goog-Api-Key": "AQ.Ab8RN6K97RdrULpkxLn6x8tPYzkK-RNcxHqX8ZSuZBcdcgHj-g"
-      }
+      "enabled": true
     },
     "deepwiki": {
       "type": "remote",

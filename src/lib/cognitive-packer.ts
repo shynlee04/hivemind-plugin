@@ -8,6 +8,23 @@ import {
 } from "../schemas/graph-state.js"
 import { calculateRelevanceScore, isMemStale } from "./staleness.js"
 import { getEffectivePaths } from "./paths.js"
+import { createLogger, noopLogger, type Logger } from "./logging.js"
+
+let logger: Logger | null = null
+
+async function getLogger(logDir: string): Promise<Logger> {
+  if (logger) {
+    return logger
+  }
+  
+  try {
+    logger = await createLogger(logDir, "cognitive-packer")
+  } catch {
+    logger = noopLogger
+  }
+  
+  return logger
+}
 
 const EPOCH_ISO = "1970-01-01T00:00:00.000Z"
 
@@ -206,7 +223,7 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
   const trajectory = trajectoryState.data.trajectory
   // Session ID is optional - if provided and doesn't match, just log warning but continue
   if (sessionId && trajectory.session_id !== sessionId) {
-    console.debug(`[packCognitiveState] Session ID mismatch: provided=${sessionId}, trajectory=${trajectory.session_id}. Continuing with trajectory session.`)
+    getLogger(paths.logsDir).then(log => log.debug(`[packCognitiveState] Session ID mismatch: provided=${sessionId}, trajectory=${trajectory.session_id}. Continuing with trajectory session.`))
   }
   const resolvedSession = sessionId ?? trajectory.session_id
 
@@ -225,7 +242,7 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
     memsRaw = readJsonFile(paths.mems)
     memsSource = "memory/mems.json"
   }
-  console.debug(`[packCognitiveState] Reading mems from ${memsSource}`)
+  getLogger(paths.logsDir).then(log => log.debug(`[packCognitiveState] Reading mems from ${memsSource}`))
 
   // US-002: Handle both MemNode format and legacy format
   const rawMems: MemNode[] = []
@@ -488,7 +505,10 @@ export function pruneContaminated(
   }
 
   // Debug logging for traceability
-  console.debug(
+  // Note: pruneContaminated doesn't have direct access to projectRoot/paths, so we need to handle this
+  // For now, we'll use noopLogger since we can't get the log directory from here
+  // This could be improved by passing the logger as a parameter if needed
+  noopLogger.debug(
     `[pruneContaminated] Pruned ${prunedMems.length} false_path mems, ${prunedTasks.length} invalidated tasks`
   )
 

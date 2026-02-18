@@ -1,62 +1,54 @@
 {
-  "session_id": "ses_3936895bbffegYe1LOlaNPDmaH",
-  "updated_at": 1771411153050,
+  "session_id": "ses_38dc5ca2cffe0oPRFtLHfxkxmj",
+  "updated_at": 1771444331212,
   "tasks": [
     {
-      "id": "seq-1",
-      "text": "Create sequential-orchestration skill for safer delegation with result awaiting",
-      "content": "Create sequential-orchestration skill for safer delegation with result awaiting",
-      "status": "pending",
+      "id": "1",
+      "text": "Fix src/hooks/messages-transform.ts - Replace console.log with file-based logging",
+      "content": "Fix src/hooks/messages-transform.ts - Replace console.log with file-based logging",
+      "status": "completed",
       "priority": "high",
-      "updated_at": 1771411153050
+      "updated_at": 1771444331212
     },
     {
-      "id": "seq-2",
-      "text": "Create sequential-delegation-workflow.yaml with domain boundaries",
-      "content": "Create sequential-delegation-workflow.yaml with domain boundaries",
-      "status": "pending",
+      "id": "2",
+      "text": "Fix src/lib/state-mutation-queue.ts - Replace console.warn/error with file-based logging",
+      "content": "Fix src/lib/state-mutation-queue.ts - Replace console.warn/error with file-based logging",
+      "status": "completed",
       "priority": "high",
-      "updated_at": 1771411153050
+      "updated_at": 1771444331212
     },
     {
-      "id": "seq-3",
-      "text": "Create context-first-gatekeeping skill for never-act-without-verification",
-      "content": "Create context-first-gatekeeping skill for never-act-without-verification",
-      "status": "pending",
-      "priority": "high",
-      "updated_at": 1771411153050
-    },
-    {
-      "id": "seq-4",
-      "text": "Update delegation-intelligence skill to prefer sequential mode",
-      "content": "Update delegation-intelligence skill to prefer sequential mode",
-      "status": "pending",
+      "id": "3",
+      "text": "Fix src/lib/cognitive-packer.ts - Replace console.debug with file-based logging",
+      "content": "Fix src/lib/cognitive-packer.ts - Replace console.debug with file-based logging",
+      "status": "completed",
       "priority": "medium",
-      "updated_at": 1771411153050
+      "updated_at": 1771444331212
     },
     {
-      "id": "seq-5",
-      "text": "Add domain-boundaries reference file",
-      "content": "Add domain-boundaries reference file",
-      "status": "pending",
+      "id": "4",
+      "text": "Fix src/hooks/sdk-context.ts - Replace console.error with file-based logging",
+      "content": "Fix src/hooks/sdk-context.ts - Replace console.error with file-based logging",
+      "status": "completed",
       "priority": "medium",
-      "updated_at": 1771411153050
+      "updated_at": 1771444331212
     },
     {
-      "id": "seq-6",
-      "text": "Fix hierarchy-tree.ts addChild silent failure (return error indicator)",
-      "content": "Fix hierarchy-tree.ts addChild silent failure (return error indicator)",
-      "status": "pending",
-      "priority": "high",
-      "updated_at": 1771411153050
+      "id": "5",
+      "text": "Fix src/hooks/swarm-executor.ts - Replace console.error with file-based logging",
+      "content": "Fix src/hooks/swarm-executor.ts - Replace console.error with file-based logging",
+      "status": "in_progress",
+      "priority": "medium",
+      "updated_at": 1771444331212
     },
     {
-      "id": "seq-7",
-      "text": "Verify tests pass and type check clean",
-      "content": "Verify tests pass and type check clean",
+      "id": "6",
+      "text": "Verify the fix by running tests and checking for TUI output leakage",
+      "content": "Verify the fix by running tests and checking for TUI output leakage",
       "status": "pending",
       "priority": "high",
-      "updated_at": 1771411153050
+      "updated_at": 1771444331212
     }
   ]
 }

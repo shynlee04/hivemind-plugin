@@ -1,6 +1,7 @@
 ---
 description: A fast, read-only agent for exploring codebases. Cannot modify files. Use this when you need to quickly find files by patterns, search code for keywords, or answer questions about the codebase.
 mode: subagent
+model: chutes/Qwen/Qwen3-Coder-Next
 hidden: true
 tools:
   read: true

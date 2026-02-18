@@ -244,3 +244,49 @@ npx tsx --test tests/filename.test.ts       # Run specific test
 ---
 
 *See `AGENT_RULES.md` for: Branch protection policy, Architectural Taxonomy, Cognitive Packer flow, Team orchestration, The Four God Prompts.*
+
+<!-- HIVEMIND-GOVERNANCE-START -->
+
+## HiveMind Context Governance
+
+This project uses **HiveMind** for AI session management. It prevents drift, tracks decisions, and preserves memory across sessions.
+
+### Required Workflow
+
+1. **START** every session with:
+   ```
+   declare_intent({ mode: "plan_driven" | "quick_fix" | "exploration", focus: "What you're working on" })
+   ```
+2. **UPDATE** when switching focus:
+   ```
+   map_context({ level: "trajectory" | "tactic" | "action", content: "New focus" })
+   ```
+3. **END** when done:
+   ```
+   compact_session({ summary: "What was accomplished" })
+   ```
+
+### Available Tools (10)
+
+| Group | Tools |
+|-------|-------|
+| Core | `declare_intent`, `map_context`, `compact_session` |
+| Cognitive Mesh | `scan_hierarchy`, `save_anchor`, `think_back` |
+| Memory | `save_mem`, `recall_mems` |
+| Hierarchy | `hierarchy_manage` |
+| Delegation | `export_cycle` |
+
+### Why It Matters
+
+- **Without `declare_intent`**: Drift detection is OFF, work is untracked
+- **Without `map_context`**: Context degrades every turn, warnings pile up
+- **Without `compact_session`**: Intelligence lost on session end
+- **`save_mem` + `recall_mems`**: Persistent memory across sessions — decisions survive
+
+### State Files
+
+- `.hivemind/state/brain.json` — Machine state (do not edit manually)
+- `.hivemind/state/hierarchy.json` — Decision tree
+- `.hivemind/sessions/` — Session files and archives
+
+<!-- HIVEMIND-GOVERNANCE-END -->
