@@ -204,10 +204,11 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
   }
 
   const trajectory = trajectoryState.data.trajectory
-  const resolvedSession = sessionId ?? trajectory.session_id
+  // Session ID is optional - if provided and doesn't match, just log warning but continue
   if (sessionId && trajectory.session_id !== sessionId) {
-    return buildEmptyStateXml(sessionId)
+    console.debug(`[packCognitiveState] Session ID mismatch: provided=${sessionId}, trajectory=${trajectory.session_id}. Continuing with trajectory session.`)
   }
+  const resolvedSession = sessionId ?? trajectory.session_id
 
   const plansRaw = readJsonFile(paths.graphPlans)
   const plansState = PlansStateSchema.safeParse(plansRaw)
