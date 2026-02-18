@@ -4,6 +4,7 @@
  */
 
 import type { DetectionThresholds } from "../lib/detection.js";
+import { DEFAULT_MAX_RESPONSE_TOKENS } from "../lib/budget.js";
 
 export const GOVERNANCE_MODES = ["permissive", "assisted", "strict"] as const;
 export type GovernanceMode = (typeof GOVERNANCE_MODES)[number];

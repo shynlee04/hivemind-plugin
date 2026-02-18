@@ -5,10 +5,68 @@ triggers:
   - "Before spawning subagents"
   - "After subagent returns results"
   - "When planning multi-agent workflows"
-version: "2.6.0"
+version: "2.7.0"
 ---
 
 # Delegation Intelligence
+
+## ⚠️ PRIORITY: SEQUENTIAL IS SAFER
+
+**Default to SEQUENTIAL delegation unless ALL of these conditions are met:**
+
+1. ✅ Tasks have ZERO file overlap (different directories)
+2. ✅ Tasks have ZERO state dependency (no shared variables)
+3. ✅ Tasks have ZERO output dependency (no task needs another's result)
+4. ✅ Failure of one task does NOT block others
+
+**When in doubt → SEQUENTIAL**
+
+---
+
+## Integration with Context-First Gatekeeping
+
+Before ANY delegation, load and apply:
+
+```typescript
+skill("context-first-gatekeeping")
+```
+
+This ensures:
+- Hierarchy chain is unbroken
+- Planning is retrieved from memory
+- Domain boundaries are respected
+
+---
+
+## Result Awaiting (MANDATORY for Sequential)
+
+When using sequential delegation, you MUST:
+
+1. **AWAIT** the result before proceeding
+2. **PROCESS** the outcome (success/partial/failure)
+3. **RETUNE** the plan based on actual results
+4. **REROUTE** if domain boundaries crossed
+5. **EXPORT** intelligence via `export_cycle`
+
+```typescript
+// CORRECT - Sequential with result awaiting
+const result = await task({ ... })
+
+if (result.outcome === "success") {
+  export_cycle({ outcome: "success", findings: result.findings })
+  // Proceed to next task
+} else if (result.outcome === "partial") {
+  // RETUNE: Adjust based on partial progress
+  save_mem({ shelf: "partial", content: result.findings })
+  // Decide: continue or reroute?
+} else {
+  // STOP - Do not proceed
+  save_anchor({ key: "failure", value: JSON.stringify(result) })
+  // Escalate to user
+}
+```
+
+---
 
 **Core principle:** Every subagent cycle exports intelligence. Parallel when independent. Sequential when dependent. Never ignore a return.
 
@@ -22,26 +80,36 @@ version: "2.6.0"
 
 ## Decision: Parallel vs Sequential
 
+**⚠️ DEFAULT: SEQUENTIAL — Parallel requires explicit justification**
+
 ```dot
 digraph delegation {
     "N tasks to do" [shape=doublecircle];
-    "Tasks share files or state?" [shape=diamond];
-    "Task B needs Task A output?" [shape=diamond];
+    "All 4 parallel conditions met?" [shape=diamond];
+    "Sequential (default)" [shape=box, style=bold, penwidth=2];
     "Parallel subagents" [shape=box];
-    "Sequential (do A, verify, then B)" [shape=box];
     "Research first, then decide" [shape=box];
     "Enough info to start?" [shape=diamond];
 
     "N tasks to do" -> "Enough info to start?";
     "Enough info to start?" -> "Research first, then decide" [label="no"];
     "Research first, then decide" -> "N tasks to do" [label="findings saved"];
-    "Enough info to start?" -> "Tasks share files or state?" [label="yes"];
-    "Tasks share files or state?" -> "Sequential (do A, verify, then B)" [label="yes"];
-    "Tasks share files or state?" -> "Task B needs Task A output?" [label="no"];
-    "Task B needs Task A output?" -> "Sequential (do A, verify, then B)" [label="yes"];
-    "Task B needs Task A output?" -> "Parallel subagents" [label="no"];
+    "Enough info to start?" -> "All 4 parallel conditions met?" [label="yes"];
+    "All 4 parallel conditions met?" -> "Sequential (default)" [label="no (default)"];
+    "All 4 parallel conditions met?" -> "Parallel subagents" [label="yes (rare)"];
 }
 ```
+
+### The 4 Parallel Conditions (ALL must be true)
+
+| # | Condition | Check |
+|---|-----------|-------|
+| 1 | Zero file overlap | Tasks touch completely different directories |
+| 2 | Zero state dependency | No shared variables, config, or runtime state |
+| 3 | Zero output dependency | No task needs another's result |
+| 4 | Independent failure | Failure of one doesn't block others |
+
+**If ANY condition fails → SEQUENTIAL**
 
 ## ⚠️ EXPLICIT DELEGATION MANDATORY
 

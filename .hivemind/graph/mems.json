@@ -1,1 +1,16 @@
-{"version":"3.0.0","mems":[]}
+{
+  "version": "3.0.0",
+  "mems": [
+    {
+      "id": "7b3dc9c7-c30d-4b70-bb13-4ca8e9e0b300",
+      "origin_task_id": "b682a148-0399-458e-b59d-9c8cae55d8b9",
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "Created sequential-orchestration skill at skills/sequential-orchestration/SKILL.md (284 lines). Covers: sequential vs parallel decision, gatekeeping factors (hierarchy, context purity, planning), delegation protocol with explicit return formats, boundary enforcement, unbroken link principle, context-first protocol, and red flags.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-18T10:49:55.254Z",
+      "created_at": "2026-02-18T10:49:55.254Z",
+      "updated_at": "2026-02-18T10:49:55.254Z"
+    }
+  ]
+}

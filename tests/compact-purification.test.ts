@@ -101,8 +101,14 @@ function buildThreeLevelTree(): { tree: HierarchyTree; root: ReturnType<typeof c
 
   let tree = createTree()
   tree = setRoot(tree, root)
-  tree = addChild(tree, root.id, tactic)
-  tree = addChild(tree, tactic.id, action)
+  const tacticResult = addChild(tree, root.id, tactic)
+  if (tacticResult.success) {
+    tree = tacticResult.tree
+  }
+  const actionResult = addChild(tree, tactic.id, action)
+  if (actionResult.success) {
+    tree = actionResult.tree
+  }
   return { tree, root, tactic, action }
 }
 

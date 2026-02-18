@@ -82,6 +82,18 @@ export interface TimestampGap {
   severity: "healthy" | "warm" | "stale";
 }
 
+/** Result type for addChild operation - enables error detection */
+export interface AddChildResult {
+  /** The tree (modified on success, unchanged on failure) */
+  tree: HierarchyTree;
+  /** Whether the child was successfully added */
+  success: boolean;
+  /** Error code if operation failed */
+  error?: "PARENT_NOT_FOUND" | "EMPTY_TREE" | "INVALID_LEVEL";
+  /** Path to the parent node (for debugging) */
+  parentPath?: string[];
+}
+
 // ============================================================
 // Section 2: Stamps
 // ============================================================
@@ -199,19 +211,40 @@ export function setRoot(tree: HierarchyTree, node: HierarchyNode): HierarchyTree
  * Add a child node under a parent identified by parentId.
  * Moves cursor to the new child.
  *
- * @consumer map-context.ts
+ * @returns AddChildResult with success status and error details if failed
+ *
+ * @consumer map-context.ts, session-engine.ts, migrateFromFlat
  */
 export function addChild(
   tree: HierarchyTree,
   parentId: string,
   child: HierarchyNode
-): HierarchyTree {
-  if (!tree.root) return tree;
+): AddChildResult {
+  if (!tree.root) {
+    return {
+      tree,
+      success: false,
+      error: "EMPTY_TREE",
+      parentPath: [parentId]
+    };
+  }
 
   const newRoot = addChildToNode(tree.root, parentId, child);
-  if (newRoot === tree.root) return tree; // parent not found, no-op
+  if (newRoot === tree.root) {
+    // Parent was NOT found - return error indicator
+    return {
+      tree,
+      success: false,
+      error: "PARENT_NOT_FOUND",
+      parentPath: [parentId]
+    };
+  }
 
-  return { ...tree, root: newRoot, cursor: child.id };
+  return {
+    tree: { ...tree, root: newRoot, cursor: child.id },
+    success: true,
+    parentPath: getAncestors(newRoot, child.id).map(n => n.id)
+  };
 }
 
 /** Recursive helper to add child under target parent */
@@ -853,21 +886,27 @@ export function migrateFromFlat(flat: {
   // Create trajectory root
   const now = new Date();
   const root = createNode("trajectory", flat.trajectory, "active", now);
-  let result = setRoot(tree, root);
+  let currentTree = setRoot(tree, root);
 
   if (flat.tactic) {
     // Create tactic under trajectory — offset time by 1 minute for unique stamps
     const tacticTime = new Date(now.getTime() + 60_000);
     const tactic = createNode("tactic", flat.tactic, "active", tacticTime);
-    result = addChild(result, root.id, tactic);
+    const tacticResult = addChild(currentTree, root.id, tactic);
+    if (tacticResult.success) {
+      currentTree = tacticResult.tree;
+    }
 
     if (flat.action) {
       // Create action under tactic — offset by 2 minutes
       const actionTime = new Date(now.getTime() + 120_000);
       const action = createNode("action", flat.action, "active", actionTime);
-      result = addChild(result, tactic.id, action);
+      const actionResult = addChild(currentTree, tactic.id, action);
+      if (actionResult.success) {
+        currentTree = actionResult.tree;
+      }
     }
   }
 
-  return result;
+  return currentTree;
 }

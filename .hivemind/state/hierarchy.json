@@ -1,34 +1,23 @@
 {
   "version": 1,
   "root": {
-    "id": "t_461618022026",
+    "id": "t_101818022026",
     "level": "trajectory",
-    "content": "CQRS Violation Code Review - Analyzing 10 write operations in hooks layer",
+    "content": "Deep architecture audit of src/hooks/ - CQRS violation detection",
     "status": "active",
-    "created": 1771407971649,
-    "stamp": "461618022026",
+    "created": 1771413041469,
+    "stamp": "101818022026",
     "children": [
       {
-        "id": "tc_461618022026",
+        "id": "tc_121818022026",
         "level": "tactic",
-        "content": "Analyze and classify CQRS violations in hooks layer",
+        "content": "Read-only scan completed for all 13 hook files. Analyzing CQRS violations and business logic.",
         "status": "active",
-        "created": 1771407998647,
-        "stamp": "461618022026",
-        "children": [
-          {
-            "id": "a_471618022026",
-            "level": "action",
-            "content": "Review 10 CQRS violations in hooks and classify as CRITICAL/CAN_QUEUE/KEEP",
-            "status": "complete",
-            "created": 1771408029158,
-            "stamp": "471618022026",
-            "children": [],
-            "completed": 1771409159856
-          }
-        ]
+        "created": 1771413124846,
+        "stamp": "121818022026",
+        "children": []
       }
     ]
   },
-  "cursor": "a_471618022026"
+  "cursor": "tc_121818022026"
 }
