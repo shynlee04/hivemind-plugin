@@ -32,6 +32,7 @@ import { loadMems } from "../src/lib/mems.js"
 import { loadGraphMems } from "../src/lib/graph-io.js"
 import { loadTree } from "../src/lib/hierarchy-tree.js"
 import { getEffectivePaths } from "../src/lib/paths.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 import { mkdtemp, rm, readdir, mkdir, writeFile } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
@@ -1708,6 +1709,9 @@ async function test_eventIdleEmitsStaleAndCompactionToasts() {
     const handler = createEventHandler(logger, dir)
 
     await handler({ event: { type: "session.idle", properties: { sessionID: "session-a" } } as any })
+
+    // CQRS FIX: Flush queued mutations before checking state
+    await flushMutations(stateManager)
 
     // FLAW-TOAST-005 FIX: event-handler no longer emits drift toasts
     // Drift toasts are now emitted by soft-governance.ts during tool execution
