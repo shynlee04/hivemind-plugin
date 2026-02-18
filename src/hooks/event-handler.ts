@@ -30,6 +30,7 @@ import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { saveTasks } from "../lib/manifest.js"
 import { getStalenessInfo } from "../lib/staleness.js"
 import { registerGovernanceSignal } from "../lib/detection.js"
+import { queueStateMutation } from "../lib/state-mutation-queue.js"
 
 export function createEventHandler(log: Logger, directory: string) {
   const stateManager = createStateManager(directory)
@@ -80,7 +81,12 @@ export function createEventHandler(log: Logger, directory: string) {
             }
           }
 
-          await stateManager.save(nextState)
+          // CQRS FIX: Queue mutation instead of direct save (hook is read-only)
+          queueStateMutation({
+            type: "UPDATE_METRICS",
+            payload: { metrics: nextState.metrics },
+            source: "event-handler.session.idle",
+          })
           break
 
         case "session.compacted":
@@ -94,7 +100,12 @@ export function createEventHandler(log: Logger, directory: string) {
                 governance_counters: registerGovernanceSignal(state.metrics.governance_counters, "compaction"),
               },
             }
-            await stateManager.save(nextState)
+            // CQRS FIX: Queue mutation instead of direct save (hook is read-only)
+            queueStateMutation({
+              type: "UPDATE_METRICS",
+              payload: { metrics: nextState.metrics },
+              source: "event-handler.session.compacted",
+            })
           }
 
           // FLAW-TOAST-006 FIX: Removed session.compacted toast

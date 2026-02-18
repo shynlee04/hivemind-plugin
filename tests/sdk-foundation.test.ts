@@ -8,6 +8,7 @@ import { createEventHandler } from "../src/hooks/event-handler.js"
 import { resetToastCooldowns } from "../src/hooks/soft-governance.js"
 import { createLogger } from "../src/lib/logging.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 import { createConfig } from "../src/schemas/config.js"
 import { createBrainState, generateSessionId } from "../src/schemas/brain-state.js"
 import { mkdtemp, rm, readFile } from "fs/promises"
@@ -216,6 +217,9 @@ async function test_eventHandlerIdleEscalationAndCompactionInfoToast() {
 
   await handler({ event: { type: "session.idle", properties: { sessionID: "s1" } } as any })
   await handler({ event: { type: "session.compacted", properties: { sessionID: "s1" } } as any })
+
+  // CQRS FIX: Flush queued mutations before checking state
+  await flushMutations(sm)
 
   // FLAW-TOAST-005 FIX: event-handler no longer emits drift toasts
   // Drift toasts are now emitted by soft-governance.ts during tool execution
