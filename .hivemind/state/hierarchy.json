@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "root": {
+    "id": "t_461618022026",
+    "level": "trajectory",
+    "content": "CQRS Violation Code Review - Analyzing 10 write operations in hooks layer",
+    "status": "active",
+    "created": 1771407971649,
+    "stamp": "461618022026",
+    "children": [
+      {
+        "id": "tc_461618022026",
+        "level": "tactic",
+        "content": "Analyze and classify CQRS violations in hooks layer",
+        "status": "active",
+        "created": 1771407998647,
+        "stamp": "461618022026",
+        "children": [
+          {
+            "id": "a_471618022026",
+            "level": "action",
+            "content": "Review 10 CQRS violations in hooks and classify as CRITICAL/CAN_QUEUE/KEEP",
+            "status": "complete",
+            "created": 1771408029158,
+            "stamp": "471618022026",
+            "children": [],
+            "completed": 1771409159856
+          }
+        ]
+      }
+    ]
+  },
+  "cursor": "a_471618022026"
+}

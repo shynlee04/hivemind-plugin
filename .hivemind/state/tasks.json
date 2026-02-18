@@ -1,0 +1,70 @@
+{
+  "session_id": "ses_38ff0f4e0ffeDf0rTbmNCcoB4t",
+  "updated_at": 1771409400852,
+  "tasks": [
+    {
+      "id": "todo-1",
+      "text": "US-053: Eliminate CQRS violations (10 write ops in hooks)",
+      "content": "US-053: Eliminate CQRS violations (10 write ops in hooks)",
+      "status": "in_progress",
+      "priority": "high",
+      "updated_at": 1771409400852
+    },
+    {
+      "id": "todo-2",
+      "text": "US-051: Implement Auto-Context State for FK auto-wiring",
+      "content": "US-051: Implement Auto-Context State for FK auto-wiring",
+      "status": "pending",
+      "priority": "high",
+      "updated_at": 1771409400852
+    },
+    {
+      "id": "todo-3",
+      "text": "US-052: Implement Linter Agent for graph integrity",
+      "content": "US-052: Implement Linter Agent for graph integrity",
+      "status": "pending",
+      "priority": "high",
+      "updated_at": 1771409400852
+    },
+    {
+      "id": "todo-4",
+      "text": "US-055: Remove legacy 2000-char budget limits",
+      "content": "US-055: Remove legacy 2000-char budget limits",
+      "status": "pending",
+      "priority": "medium",
+      "updated_at": 1771409400852
+    },
+    {
+      "id": "todo-5",
+      "text": "Update AGENTS.md with corrected LOC limit (~300) and 80% defensive guard",
+      "content": "Update AGENTS.md with corrected LOC limit (~300) and 80% defensive guard",
+      "status": "completed",
+      "priority": "medium",
+      "updated_at": 1771409400852
+    },
+    {
+      "id": "todo-6",
+      "text": "Update AGENT_RULES.md with same corrections",
+      "content": "Update AGENT_RULES.md with same corrections",
+      "status": "completed",
+      "priority": "medium",
+      "updated_at": 1771409400852
+    },
+    {
+      "id": "todo-7",
+      "text": "Fix graph-migrate.test.ts failures (15 tests)",
+      "content": "Fix graph-migrate.test.ts failures (15 tests)",
+      "status": "completed",
+      "priority": "medium",
+      "updated_at": 1771409400852
+    },
+    {
+      "id": "todo-8",
+      "text": "Archive stale PRD documents to docs/plans/archive/",
+      "content": "Archive stale PRD documents to docs/plans/archive/",
+      "status": "in_progress",
+      "priority": "low",
+      "updated_at": 1771409400852
+    }
+  ]
+}
