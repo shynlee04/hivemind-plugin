@@ -51,8 +51,14 @@ HiveFiver is now deployable as a governance-aligned meta layer with:
 - broader domain coverage (dev + non-dev lanes),
 - resilient fallback behavior when user behavior is unstructured.
 
+## Remediation-Wave Addendum (2026-02-19)
+- Canonical governance blockers are resolved in this wave.
+- TODO alias normalization, stale-session boundary fixes, and action idempotency hardening are implemented (evidence anchors: `tests/hooks/event-handler-todo-2026-02-15.test.ts`, `tests/lib/state-mutation-queue.test.ts`, `tests/tool-gate.test.ts`, `tests/phase5-canonical-governance-red.test.ts`, `tests/phase5-lifecycle-red.test.ts`).
+- Post-remediation stress journey re-audit outcome: GO (audit trail recorded in this remediation wave closeout docs).
+- One non-blocking backlog item remains: wording consistency cleanup for one stress journey closeout phrase across docs.
+
 ## Main Team Integration Actions
-1. Review/decide policy for existing Phase-5 RED tests.
+1. Maintain and monitor Phase-5 RED regression tests as continuing safety coverage (post-remediation follow-up).
 2. Merge with current governance roadmap branch and resolve shared-file conflicts.
 3. Run full CI + release gate checks.
 4. Roll out with `sync-assets --overwrite` in target projects.
