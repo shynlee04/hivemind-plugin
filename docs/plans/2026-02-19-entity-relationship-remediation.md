@@ -175,15 +175,20 @@ graph LR
   - Semantic precedence for false_path, discard, and superseded signals.
   - Cross-session comparisons are informational only and must not drive stale authority.
 
-  Acceptance criteria (planned):
-  - [ ] AC1: Lineage-first gating enforced in staleness evaluation entry path.
-  - [ ] AC2: Same-level scope filter applied before stale ranking.
-  - [ ] AC3: Timestamp ordering executes only as final tie-breaker within valid scope.
-  - [ ] AC4: Semantic flags override recency when conflict exists.
-  - [ ] AC5: Cross-session stale checks are marked informational and non-authoritative.
-  - [ ] AC6: Regression tests cover lineage-valid, lineage-invalid, and mixed-session cases.
+  Acceptance criteria (completed):
+  - [x] AC1: Lineage-first gating enforced in staleness evaluation entry path.
+  - [x] AC2: Same-level scope filter applied before stale ranking.
+  - [x] AC3: Timestamp ordering executes only as final tie-breaker within valid scope.
+  - [x] AC4: Semantic flags override recency when conflict exists.
+  - [x] AC5: Cross-session stale checks are marked informational and non-authoritative.
+  - [x] AC6: Regression tests cover lineage-valid, lineage-invalid, and mixed-session cases.
 
-  Note: Implementation has not started yet.
+  Note: Implementation complete and approved; Phase 4 exit gate passed.
+
+  Phase 4 Exit Gate Evidence:
+  - Tests: `npm test` pass (0 failures).
+  - TypeScript: `npx tsc --noEmit` pass (0 errors).
+  - Code-review: approved (final sign-off).
 
 - Phase 5 - GSD Lifecycle Integration
   - Align entities with lifecycle levels (`project/milestone/phase/plan/task/verification`).

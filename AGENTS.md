@@ -319,7 +319,13 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 - ✅ Code-review: Approved (final sign-off)
 - ✅ Contract isolation: complete (retrieval ownership isolated; hook-side flush ownership removed)
 
-### Remaining Phase 3+ Items:
-- Relational staleness engine (Phase 4)
+## Phase 4 Completion Status (2026-02-19)
+
+- ✅ TypeScript: `npx tsc --noEmit` pass (0 errors)
+- ✅ Tests: `npm test` pass (0 failures)
+- ✅ Code-review: Approved (final sign-off)
+- ✅ Relational staleness engine: complete (lineage-first ordering with same-level scope and informational cross-session behavior)
+
+### Remaining Phase 5+ Items:
 - GSD lifecycle integration (Phase 5)
 - Hardening and cutover (Phase 6)
