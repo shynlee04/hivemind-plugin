@@ -187,6 +187,61 @@
       "staleness_stamp": "2026-02-18T21:52:38.015Z",
       "created_at": "2026-02-18T21:52:38.015Z",
       "updated_at": "2026-02-18T21:52:38.015Z"
+    },
+    {
+      "id": "1a916c02-d120-46c9-9d10-52049e19fd3d",
+      "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Phase 2 FK Remediation COMPLETED (2026-02-19): MemNodeSchema.session_id added (line 47), all write paths updated (cognitive-packer:256, session-swarm:311, graph-migrate:537), backfillMemSessionId() implemented (line 506). Exit gates passed: TypeScript errors=0, tests pass, code-review approved. Remaining: Phase 3 hook isolation, Phase 4 staleness engine.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-19T02:34:46.730Z",
+      "created_at": "2026-02-19T02:34:46.730Z",
+      "updated_at": "2026-02-19T02:34:46.730Z"
+    },
+    {
+      "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+      "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Phase 3 Violations Identified: 1) session-lifecycle.ts:73 - Direct save() instead of queueStateMutation (CQRS violation). 2) graph-io.ts validateMemsWithFKValidation() missing session_id FK check. 3) Retrieval overlap between session-lifecycle.ts and messages-transform.ts. 4) messages-transform.ts exceeds 300 lines (489 lines).",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-19T02:43:06.094Z",
+      "created_at": "2026-02-19T02:43:06.094Z",
+      "updated_at": "2026-02-19T02:43:06.094Z"
+    },
+    {
+      "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+      "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Phase 3.2 COMPLETE: Fixed CQRS violation in session-lifecycle.ts:74. Changed from direct `stateManager.save()` to `queueStateMutation()` pattern. Commit: a8953a7. TypeScript: 0 errors. Tests: 129 passed. Architectural compliance: hooks → state-mutation-queue → persistence.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-19T05:16:40.804Z",
+      "created_at": "2026-02-19T05:16:40.804Z",
+      "updated_at": "2026-02-19T05:16:40.804Z"
+    },
+    {
+      "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+      "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Phase 3 Scanner Results: 1) CQRS Fix (a8953a7) - CORRECT, tests pass. 2) FK Validation code present (graph-io.ts:271-276) but tests fail - test data missing session_id field. 3) Retrieval overlap concern - cognitive packer in messages-transform may need review. 4) Contract tests - not implemented.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-19T05:39:46.836Z",
+      "created_at": "2026-02-19T05:39:46.836Z",
+      "updated_at": "2026-02-19T05:39:46.836Z"
+    },
+    {
+      "id": "56daacef-6000-4567-8d2a-a7f3278cdf14",
+      "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Phase 3.5 code-review APPROVED FK remediation: graph-io.ts session_id FK validation + orphan-quarantine tests passed (9/9), tsc clean.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-19T06:13:33.511Z",
+      "created_at": "2026-02-19T06:13:33.511Z",
+      "updated_at": "2026-02-19T06:13:33.511Z"
     }
   ]
 }

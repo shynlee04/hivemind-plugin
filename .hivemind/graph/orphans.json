@@ -5338,6 +5338,1774 @@
         "updated_at": "2026-02-18T21:52:38.015Z"
       },
       "quarantined_at": "2026-02-18T23:16:04.301Z"
+    },
+    {
+      "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "LIB Scan: 45 files scanned, 11 violations found, 4 critical issues. Key: planning-fs.ts (1032 lines), detection.ts (882 lines), hierarchy-tree.ts (913 lines) exceed limits. CQRS violations in planning-fs, session-engine, compaction-engine. Fs operations scattered across cognitive-packer, planning-fs, graph-io. LLM strings in governance-instruction.ts, session_coherence.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T17:59:09.659Z",
+        "created_at": "2026-02-18T17:59:09.659Z",
+        "updated_at": "2026-02-18T17:59:09.659Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "TOOLS Scan: 7 files, 6 tools defined, 15+ violations. CRITICAL: hivemind-memory.ts (369 lines, ALL logic embedded), hivemind-session.ts (232 lines, 83 lines embedded logic), hivemind-cycle.ts (211 lines, direct fs imports). Paradox: lib/mems.ts has functions that tool doesn't use. Only hivemind-inspect.ts is clean (55 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T18:02:29.983Z",
+        "created_at": "2026-02-18T18:02:29.983Z",
+        "updated_at": "2026-02-18T18:02:29.983Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "HOOKS Scan: 13 files, 2888 total lines. CQRS VIOLATIONS: event-handler.ts:152 (direct saveTasks bypassing queue), session-lifecycle.ts:75 (direct stateManager.save). 6 files >200 lines: soft-governance.ts (533), messages-transform.ts (484), session-lifecycle-helpers.ts (387), tool-gate.ts (395), compaction.ts (224). Business logic embedded in hooks layer.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T18:05:57.825Z",
+        "created_at": "2026-02-18T18:05:57.825Z",
+        "updated_at": "2026-02-18T18:05:57.825Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "## src/lib/ Taxonomy Audit Results (2026-02-19)\n\n### Summary\n- 45 files total (AGENTS.md states 42 - discrepancy)\n- 67% pure deterministic TypeScript\n- 33% contains natural language generation\n\n### Critical Red Flags (15 files)\n1. `formatXxxForPrompt()` functions in 4 files (anchors.ts, mems.ts, session_coherence.ts, onboarding.ts)\n2. `governance-instruction.ts` is intentionally a prompt string\n3. Display rendering functions in brownfield-scan.ts, detection.ts, session-export.ts\n\n### Largest Files (>500 lines)\n- planning-fs.ts (1032), hierarchy-tree.ts (913), detection.ts (882), graph-io.ts (652), session_coherence.ts (605), session-engine.ts (585), cognitive-packer.ts (502)\n\n### Recommendation\n- Move `formatXxxForPrompt()` to dedicated context-builders/ or hooks/\n- Document governance-instruction.ts as intentional exception\n- Consider splitting detection.ts and session_coherence.ts",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:16:25.141Z",
+        "created_at": "2026-02-18T19:16:25.141Z",
+        "updated_at": "2026-02-18T19:16:25.141Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "LIB_INVENTORY_001: 45 files scanned (100%). 30 pure deterministic (67%), 15 NL-generating (33%). 4 files have formatXxxForPrompt() functions that violate taxonomy (should move to hooks/). 1 intentional exception: governance-instruction.ts is prompt constant by design. 11 files exceed 200 lines - candidates for splitting. AGENTS.md discrepancy: states 42 files, actual count is 45. No AI SDK imports found (compliant).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:17:37.943Z",
+        "created_at": "2026-02-18T19:17:37.943Z",
+        "updated_at": "2026-02-18T19:17:37.943Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "tools/ Audit Results: 7 files, 1,231 lines. ONLY hivemind-inspect.ts (55 lines) is fully compliant. CRITICAL: hivemind-cycle.ts has direct fs/promises import (L17). MAJOR: hivemind-memory.ts (369 lines) has search/filter logic, hivemind-session.ts has syncTrajectoryToGraph (L19-101), hivemind-hierarchy.ts has tree traversal helpers (L108-181). Compliance rate: 14%.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:23:47.610Z",
+        "created_at": "2026-02-18T19:23:47.610Z",
+        "updated_at": "2026-02-18T19:23:47.610Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "TOOLS_INVENTORY_002: 7 files, 1,231 lines. COMPLIANCE CRISIS: Only 14% (1/7) files follow Dumb Tool pattern. hivemind-inspect.ts is GOLD STANDARD (55 lines, pure delegation). CRITICAL VIOLATION: hivemind-cycle.ts:17 imports fs/promises directly. 4/7 files exceed 150 lines (session:232, memory:369, hierarchy:205, cycle:211). 5/7 contain business logic. Remediation: Extract syncTrajectoryToGraph from session.ts, search/filter from memory.ts, tree traversal from hierarchy.ts to lib/.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:26:05.681Z",
+        "created_at": "2026-02-18T19:26:05.681Z",
+        "updated_at": "2026-02-18T19:26:05.681Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "HOOKS_INVENTORY_003: 13 files, ~2,388 lines. CQRS: 2 CRITICAL violations (session-lifecycle.ts:75 stateManager.save(), event-handler.ts:152 saveTasks()). Gemini claimed 10 violations - actual: 2 direct writes, rest use queueStateMutation (compliant pattern). DUPLICATE: session_coherence/main_session_start.ts overlaps messages-transform.ts. ARCHITECTURAL: session-lifecycle-helpers.ts (387 lines) and soft-governance.ts (533 lines) have heavy business logic that should move to lib/. 4 files inject context via output.system.push/prependSyntheticPart.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:36:25.267Z",
+        "created_at": "2026-02-18T19:36:25.267Z",
+        "updated_at": "2026-02-18T19:36:25.267Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "SCHEMAS_INVENTORY_004: 8 files, 10 Zod schemas. CRITICAL: 5/8 files use TS interfaces instead of Zod (brain-state:428, config:419, hierarchy:45, manifest:21). Only graph-nodes.ts has proper FK constraints with validateParentExists() and validateOrphanFree() helpers. brain-state.ts has NO runtime validation - SessionState.id is just string not UUID. Two validation paradigms in same /schemas directory. EVENTS: events.ts ArtifactEventSchema has no FK linkage to session/trajectory.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:42:52.823Z",
+        "created_at": "2026-02-18T19:42:52.823Z",
+        "updated_at": "2026-02-18T19:42:52.823Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "SYNTHESIS_005: INVENTORY COMPLETE. Cross-cutting violations: [1] Taxonomy not enforced - 33% lib NL-gen, 86% tools business logic, 15% hooks heavy logic [2] Documentation drift - AGENTS.md claims 42 lib files, actual 45 [3] CQRS violations - 2 direct writes in hooks [4] Validation inconsistency - 62.5% schemas use TS interfaces not Zod [5] Duplicate functionality - session_coherence overlaps messages-transform [6] fs abstraction leak - tools/cycle.ts imports fs/promises directly. GOLD STANDARDS: hivemind-inspect.ts (tool), graph-nodes.ts (schema with FK). Total scanned: 73 files across 4 directories.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:44:06.481Z",
+        "created_at": "2026-02-18T19:44:06.481Z",
+        "updated_at": "2026-02-18T19:44:06.481Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_RUNTIME_SCHISM_006: VALIDATION RESULT = PARTIALLY ACCURATE/MISLEADING. Gemini conflated PLANNED docs with ACTUAL state. EVIDENCE: package.json enforces Node>=20, tsconfig uses NodeNext, dashboard uses Ink NOT @opentui (removed per CHANGELOG:233). ONLY Bun reference: dashboard/bin.ts:1 shebang (dormant artifact). US-032 in beads.jsonl tracks planned OpenTUI migration as OPEN. Risk: LOW - project functions fully on Node.js.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:51:24.685Z",
+        "created_at": "2026-02-18T19:51:24.685Z",
+        "updated_at": "2026-02-18T19:51:24.685Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_BUDGET_007: VALIDATION RESULT = PARTIALLY ACCURATE (OUTDATED). Gemini found LEGACY 2000-char budget which was deprecated via US-055. ACTUAL: Default is 15,360 chars (12% of 128k context window). EVIDENCE: budget.ts:4 US-055 note, budget.ts:14 DEFAULT_CONTEXT_BUDGET, cognitive-packer.ts:204-209 dynamic calculation. Pruning: relevance-score based, no guaranteed minimum per-mem slot. Risk: LOW - issue already addressed.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:53:23.945Z",
+        "created_at": "2026-02-18T19:53:23.945Z",
+        "updated_at": "2026-02-18T19:53:23.945Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_MIGRATION_008: VALIDATION RESULT = INACCURATE. Gemini conflated migrateIfNeeded (hook-triggered, conditional, HAS rollback) with migrateToGraph (CLI-only, NEVER hook-triggered). EVIDENCE: session-lifecycle.ts:60 conditional call, graph-migrate.ts CLI only, migrate.ts:325 rollback. migrateToGraph has backup but no rollback - but it's manual invocation only. Risk: LOW for graph (manual), MEDIUM for legacy (hook-triggered but has rollback).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:58:17.200Z",
+        "created_at": "2026-02-18T19:58:17.200Z",
+        "updated_at": "2026-02-18T19:58:17.200Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "CRITICAL FK GAP ANALYSIS (2026-02-18): Entity relationship model has 6 critical gaps making time-stale filtering meaningless:\n1. Mem→Task broken: tasks use sequential IDs (\"1\",\"2\") but mems.origin_task_id expects UUIDs → ALL mems orphaned\n2. Mem→Session missing: No session_id in mems, can't filter by session\n3. Trajectory→Tasks empty: active_task_ids always [] despite tasks existing\n4. Brain→Everything disconnected: No FK to trajectory.json, hierarchy.json, tasks.json\n5. Hierarchy→Session missing: Decision tree has no owner reference\n6. Session manifest broken: sessions[] empty despite session-*.json files existing\n\nROOT CAUSE: Two parallel entity systems (state/ vs graph/) with NO connection between them.\n\nREMEDIATION: 4-phase fix required:\n1. Fix task IDs (sequential→UUID)\n2. Add missing FK fields (session_id to mems, trajectory_id to brain)\n3. Implement EntityRelationChain service\n4. Rewrite staleness logic with entity lineage",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:12:53.567Z",
+        "created_at": "2026-02-18T21:12:53.567Z",
+        "updated_at": "2026-02-18T21:12:53.567Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "ENTITY_RELATIONSHIP_GAP_010: CRITICAL FK VIOLATIONS FOUND. [1] Task IDs are sequential (\"1\",\"2\") not UUIDs - breaks ALL FK links. [2] No session→graph FK - can't trace context. [3] No mem→session FK - can't filter by session. [4] Hierarchy detached from graph - decision tree orphaned. [5] No last-N-turns tracing - chain breaking NOT IMPLEMENTED. [6] Time-stale MEANINGLESS without entity lineage. REMEDIATION: 4-phase plan - (1) Fix task ID sequential→UUID, (2) Add session_id to mems, (3) Implement EntityRelationChain service, (4) Rewrite staleness with proper lineage.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:15:54.344Z",
+        "created_at": "2026-02-18T21:15:54.344Z",
+        "updated_at": "2026-02-18T21:15:54.344Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Entity Relationship Model Remediation Plan created. 6 FK gaps identified: (1) Task IDs sequential not UUID, (2) Mem→Session FK missing, (3) Brain→Trajectory FK missing, (4) Hierarchy detached from graph, (5) No turn tracing, (6) Timestamp-based staleness. 5-phase plan: Phase 0 (baseline), Phase 1 (Task ID→UUID), Phase 2 (FK constraints), Phase 3 (EntityRelationChain service), Phase 4 (Staleness rewrite), Phase 5 (Verification). Estimated 12.5h total.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:25:17.321Z",
+        "created_at": "2026-02-18T21:25:17.321Z",
+        "updated_at": "2026-02-18T21:25:17.321Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "MASTER_PLAN_UNIFIED_011: Completed delegated architecture audit + GSD research + plan unification. Produced hook retrieval matrix, overlap risk matrix, automation boundaries, session lifecycle model, SOT boundary contract, and unified phased roadmap (0-6) in docs/plans/2026-02-19-entity-relationship-remediation.md. Core contract: graph/* relational SOT, state/* runtime hot state, lineage-first staleness, explicit main/sub-session lifecycle and governance gates.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:52:38.015Z",
+        "created_at": "2026-02-18T21:52:38.015Z",
+        "updated_at": "2026-02-18T21:52:38.015Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.630Z"
+    },
+    {
+      "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "LIB Scan: 45 files scanned, 11 violations found, 4 critical issues. Key: planning-fs.ts (1032 lines), detection.ts (882 lines), hierarchy-tree.ts (913 lines) exceed limits. CQRS violations in planning-fs, session-engine, compaction-engine. Fs operations scattered across cognitive-packer, planning-fs, graph-io. LLM strings in governance-instruction.ts, session_coherence.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T17:59:09.659Z",
+        "created_at": "2026-02-18T17:59:09.659Z",
+        "updated_at": "2026-02-18T17:59:09.659Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "TOOLS Scan: 7 files, 6 tools defined, 15+ violations. CRITICAL: hivemind-memory.ts (369 lines, ALL logic embedded), hivemind-session.ts (232 lines, 83 lines embedded logic), hivemind-cycle.ts (211 lines, direct fs imports). Paradox: lib/mems.ts has functions that tool doesn't use. Only hivemind-inspect.ts is clean (55 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T18:02:29.983Z",
+        "created_at": "2026-02-18T18:02:29.983Z",
+        "updated_at": "2026-02-18T18:02:29.983Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "HOOKS Scan: 13 files, 2888 total lines. CQRS VIOLATIONS: event-handler.ts:152 (direct saveTasks bypassing queue), session-lifecycle.ts:75 (direct stateManager.save). 6 files >200 lines: soft-governance.ts (533), messages-transform.ts (484), session-lifecycle-helpers.ts (387), tool-gate.ts (395), compaction.ts (224). Business logic embedded in hooks layer.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T18:05:57.825Z",
+        "created_at": "2026-02-18T18:05:57.825Z",
+        "updated_at": "2026-02-18T18:05:57.825Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "## src/lib/ Taxonomy Audit Results (2026-02-19)\n\n### Summary\n- 45 files total (AGENTS.md states 42 - discrepancy)\n- 67% pure deterministic TypeScript\n- 33% contains natural language generation\n\n### Critical Red Flags (15 files)\n1. `formatXxxForPrompt()` functions in 4 files (anchors.ts, mems.ts, session_coherence.ts, onboarding.ts)\n2. `governance-instruction.ts` is intentionally a prompt string\n3. Display rendering functions in brownfield-scan.ts, detection.ts, session-export.ts\n\n### Largest Files (>500 lines)\n- planning-fs.ts (1032), hierarchy-tree.ts (913), detection.ts (882), graph-io.ts (652), session_coherence.ts (605), session-engine.ts (585), cognitive-packer.ts (502)\n\n### Recommendation\n- Move `formatXxxForPrompt()` to dedicated context-builders/ or hooks/\n- Document governance-instruction.ts as intentional exception\n- Consider splitting detection.ts and session_coherence.ts",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:16:25.141Z",
+        "created_at": "2026-02-18T19:16:25.141Z",
+        "updated_at": "2026-02-18T19:16:25.141Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "LIB_INVENTORY_001: 45 files scanned (100%). 30 pure deterministic (67%), 15 NL-generating (33%). 4 files have formatXxxForPrompt() functions that violate taxonomy (should move to hooks/). 1 intentional exception: governance-instruction.ts is prompt constant by design. 11 files exceed 200 lines - candidates for splitting. AGENTS.md discrepancy: states 42 files, actual count is 45. No AI SDK imports found (compliant).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:17:37.943Z",
+        "created_at": "2026-02-18T19:17:37.943Z",
+        "updated_at": "2026-02-18T19:17:37.943Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "tools/ Audit Results: 7 files, 1,231 lines. ONLY hivemind-inspect.ts (55 lines) is fully compliant. CRITICAL: hivemind-cycle.ts has direct fs/promises import (L17). MAJOR: hivemind-memory.ts (369 lines) has search/filter logic, hivemind-session.ts has syncTrajectoryToGraph (L19-101), hivemind-hierarchy.ts has tree traversal helpers (L108-181). Compliance rate: 14%.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:23:47.610Z",
+        "created_at": "2026-02-18T19:23:47.610Z",
+        "updated_at": "2026-02-18T19:23:47.610Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "TOOLS_INVENTORY_002: 7 files, 1,231 lines. COMPLIANCE CRISIS: Only 14% (1/7) files follow Dumb Tool pattern. hivemind-inspect.ts is GOLD STANDARD (55 lines, pure delegation). CRITICAL VIOLATION: hivemind-cycle.ts:17 imports fs/promises directly. 4/7 files exceed 150 lines (session:232, memory:369, hierarchy:205, cycle:211). 5/7 contain business logic. Remediation: Extract syncTrajectoryToGraph from session.ts, search/filter from memory.ts, tree traversal from hierarchy.ts to lib/.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:26:05.681Z",
+        "created_at": "2026-02-18T19:26:05.681Z",
+        "updated_at": "2026-02-18T19:26:05.681Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "HOOKS_INVENTORY_003: 13 files, ~2,388 lines. CQRS: 2 CRITICAL violations (session-lifecycle.ts:75 stateManager.save(), event-handler.ts:152 saveTasks()). Gemini claimed 10 violations - actual: 2 direct writes, rest use queueStateMutation (compliant pattern). DUPLICATE: session_coherence/main_session_start.ts overlaps messages-transform.ts. ARCHITECTURAL: session-lifecycle-helpers.ts (387 lines) and soft-governance.ts (533 lines) have heavy business logic that should move to lib/. 4 files inject context via output.system.push/prependSyntheticPart.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:36:25.267Z",
+        "created_at": "2026-02-18T19:36:25.267Z",
+        "updated_at": "2026-02-18T19:36:25.267Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "SCHEMAS_INVENTORY_004: 8 files, 10 Zod schemas. CRITICAL: 5/8 files use TS interfaces instead of Zod (brain-state:428, config:419, hierarchy:45, manifest:21). Only graph-nodes.ts has proper FK constraints with validateParentExists() and validateOrphanFree() helpers. brain-state.ts has NO runtime validation - SessionState.id is just string not UUID. Two validation paradigms in same /schemas directory. EVENTS: events.ts ArtifactEventSchema has no FK linkage to session/trajectory.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:42:52.823Z",
+        "created_at": "2026-02-18T19:42:52.823Z",
+        "updated_at": "2026-02-18T19:42:52.823Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "SYNTHESIS_005: INVENTORY COMPLETE. Cross-cutting violations: [1] Taxonomy not enforced - 33% lib NL-gen, 86% tools business logic, 15% hooks heavy logic [2] Documentation drift - AGENTS.md claims 42 lib files, actual 45 [3] CQRS violations - 2 direct writes in hooks [4] Validation inconsistency - 62.5% schemas use TS interfaces not Zod [5] Duplicate functionality - session_coherence overlaps messages-transform [6] fs abstraction leak - tools/cycle.ts imports fs/promises directly. GOLD STANDARDS: hivemind-inspect.ts (tool), graph-nodes.ts (schema with FK). Total scanned: 73 files across 4 directories.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:44:06.481Z",
+        "created_at": "2026-02-18T19:44:06.481Z",
+        "updated_at": "2026-02-18T19:44:06.481Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_RUNTIME_SCHISM_006: VALIDATION RESULT = PARTIALLY ACCURATE/MISLEADING. Gemini conflated PLANNED docs with ACTUAL state. EVIDENCE: package.json enforces Node>=20, tsconfig uses NodeNext, dashboard uses Ink NOT @opentui (removed per CHANGELOG:233). ONLY Bun reference: dashboard/bin.ts:1 shebang (dormant artifact). US-032 in beads.jsonl tracks planned OpenTUI migration as OPEN. Risk: LOW - project functions fully on Node.js.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:51:24.685Z",
+        "created_at": "2026-02-18T19:51:24.685Z",
+        "updated_at": "2026-02-18T19:51:24.685Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_BUDGET_007: VALIDATION RESULT = PARTIALLY ACCURATE (OUTDATED). Gemini found LEGACY 2000-char budget which was deprecated via US-055. ACTUAL: Default is 15,360 chars (12% of 128k context window). EVIDENCE: budget.ts:4 US-055 note, budget.ts:14 DEFAULT_CONTEXT_BUDGET, cognitive-packer.ts:204-209 dynamic calculation. Pruning: relevance-score based, no guaranteed minimum per-mem slot. Risk: LOW - issue already addressed.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:53:23.945Z",
+        "created_at": "2026-02-18T19:53:23.945Z",
+        "updated_at": "2026-02-18T19:53:23.945Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_MIGRATION_008: VALIDATION RESULT = INACCURATE. Gemini conflated migrateIfNeeded (hook-triggered, conditional, HAS rollback) with migrateToGraph (CLI-only, NEVER hook-triggered). EVIDENCE: session-lifecycle.ts:60 conditional call, graph-migrate.ts CLI only, migrate.ts:325 rollback. migrateToGraph has backup but no rollback - but it's manual invocation only. Risk: LOW for graph (manual), MEDIUM for legacy (hook-triggered but has rollback).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:58:17.200Z",
+        "created_at": "2026-02-18T19:58:17.200Z",
+        "updated_at": "2026-02-18T19:58:17.200Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "CRITICAL FK GAP ANALYSIS (2026-02-18): Entity relationship model has 6 critical gaps making time-stale filtering meaningless:\n1. Mem→Task broken: tasks use sequential IDs (\"1\",\"2\") but mems.origin_task_id expects UUIDs → ALL mems orphaned\n2. Mem→Session missing: No session_id in mems, can't filter by session\n3. Trajectory→Tasks empty: active_task_ids always [] despite tasks existing\n4. Brain→Everything disconnected: No FK to trajectory.json, hierarchy.json, tasks.json\n5. Hierarchy→Session missing: Decision tree has no owner reference\n6. Session manifest broken: sessions[] empty despite session-*.json files existing\n\nROOT CAUSE: Two parallel entity systems (state/ vs graph/) with NO connection between them.\n\nREMEDIATION: 4-phase fix required:\n1. Fix task IDs (sequential→UUID)\n2. Add missing FK fields (session_id to mems, trajectory_id to brain)\n3. Implement EntityRelationChain service\n4. Rewrite staleness logic with entity lineage",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:12:53.567Z",
+        "created_at": "2026-02-18T21:12:53.567Z",
+        "updated_at": "2026-02-18T21:12:53.567Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "ENTITY_RELATIONSHIP_GAP_010: CRITICAL FK VIOLATIONS FOUND. [1] Task IDs are sequential (\"1\",\"2\") not UUIDs - breaks ALL FK links. [2] No session→graph FK - can't trace context. [3] No mem→session FK - can't filter by session. [4] Hierarchy detached from graph - decision tree orphaned. [5] No last-N-turns tracing - chain breaking NOT IMPLEMENTED. [6] Time-stale MEANINGLESS without entity lineage. REMEDIATION: 4-phase plan - (1) Fix task ID sequential→UUID, (2) Add session_id to mems, (3) Implement EntityRelationChain service, (4) Rewrite staleness with proper lineage.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:15:54.344Z",
+        "created_at": "2026-02-18T21:15:54.344Z",
+        "updated_at": "2026-02-18T21:15:54.344Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Entity Relationship Model Remediation Plan created. 6 FK gaps identified: (1) Task IDs sequential not UUID, (2) Mem→Session FK missing, (3) Brain→Trajectory FK missing, (4) Hierarchy detached from graph, (5) No turn tracing, (6) Timestamp-based staleness. 5-phase plan: Phase 0 (baseline), Phase 1 (Task ID→UUID), Phase 2 (FK constraints), Phase 3 (EntityRelationChain service), Phase 4 (Staleness rewrite), Phase 5 (Verification). Estimated 12.5h total.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:25:17.321Z",
+        "created_at": "2026-02-18T21:25:17.321Z",
+        "updated_at": "2026-02-18T21:25:17.321Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "MASTER_PLAN_UNIFIED_011: Completed delegated architecture audit + GSD research + plan unification. Produced hook retrieval matrix, overlap risk matrix, automation boundaries, session lifecycle model, SOT boundary contract, and unified phased roadmap (0-6) in docs/plans/2026-02-19-entity-relationship-remediation.md. Core contract: graph/* relational SOT, state/* runtime hot state, lineage-first staleness, explicit main/sub-session lifecycle and governance gates.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:52:38.015Z",
+        "created_at": "2026-02-18T21:52:38.015Z",
+        "updated_at": "2026-02-18T21:52:38.015Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "1a916c02-d120-46c9-9d10-52049e19fd3d",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "1a916c02-d120-46c9-9d10-52049e19fd3d",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 2 FK Remediation COMPLETED (2026-02-19): MemNodeSchema.session_id added (line 47), all write paths updated (cognitive-packer:256, session-swarm:311, graph-migrate:537), backfillMemSessionId() implemented (line 506). Exit gates passed: TypeScript errors=0, tests pass, code-review approved. Remaining: Phase 3 hook isolation, Phase 4 staleness engine.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:34:46.730Z",
+        "created_at": "2026-02-19T02:34:46.730Z",
+        "updated_at": "2026-02-19T02:34:46.730Z"
+      },
+      "quarantined_at": "2026-02-19T02:34:46.735Z"
+    },
+    {
+      "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "LIB Scan: 45 files scanned, 11 violations found, 4 critical issues. Key: planning-fs.ts (1032 lines), detection.ts (882 lines), hierarchy-tree.ts (913 lines) exceed limits. CQRS violations in planning-fs, session-engine, compaction-engine. Fs operations scattered across cognitive-packer, planning-fs, graph-io. LLM strings in governance-instruction.ts, session_coherence.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T17:59:09.659Z",
+        "created_at": "2026-02-18T17:59:09.659Z",
+        "updated_at": "2026-02-18T17:59:09.659Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "TOOLS Scan: 7 files, 6 tools defined, 15+ violations. CRITICAL: hivemind-memory.ts (369 lines, ALL logic embedded), hivemind-session.ts (232 lines, 83 lines embedded logic), hivemind-cycle.ts (211 lines, direct fs imports). Paradox: lib/mems.ts has functions that tool doesn't use. Only hivemind-inspect.ts is clean (55 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T18:02:29.983Z",
+        "created_at": "2026-02-18T18:02:29.983Z",
+        "updated_at": "2026-02-18T18:02:29.983Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "HOOKS Scan: 13 files, 2888 total lines. CQRS VIOLATIONS: event-handler.ts:152 (direct saveTasks bypassing queue), session-lifecycle.ts:75 (direct stateManager.save). 6 files >200 lines: soft-governance.ts (533), messages-transform.ts (484), session-lifecycle-helpers.ts (387), tool-gate.ts (395), compaction.ts (224). Business logic embedded in hooks layer.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T18:05:57.825Z",
+        "created_at": "2026-02-18T18:05:57.825Z",
+        "updated_at": "2026-02-18T18:05:57.825Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "## src/lib/ Taxonomy Audit Results (2026-02-19)\n\n### Summary\n- 45 files total (AGENTS.md states 42 - discrepancy)\n- 67% pure deterministic TypeScript\n- 33% contains natural language generation\n\n### Critical Red Flags (15 files)\n1. `formatXxxForPrompt()` functions in 4 files (anchors.ts, mems.ts, session_coherence.ts, onboarding.ts)\n2. `governance-instruction.ts` is intentionally a prompt string\n3. Display rendering functions in brownfield-scan.ts, detection.ts, session-export.ts\n\n### Largest Files (>500 lines)\n- planning-fs.ts (1032), hierarchy-tree.ts (913), detection.ts (882), graph-io.ts (652), session_coherence.ts (605), session-engine.ts (585), cognitive-packer.ts (502)\n\n### Recommendation\n- Move `formatXxxForPrompt()` to dedicated context-builders/ or hooks/\n- Document governance-instruction.ts as intentional exception\n- Consider splitting detection.ts and session_coherence.ts",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:16:25.141Z",
+        "created_at": "2026-02-18T19:16:25.141Z",
+        "updated_at": "2026-02-18T19:16:25.141Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "LIB_INVENTORY_001: 45 files scanned (100%). 30 pure deterministic (67%), 15 NL-generating (33%). 4 files have formatXxxForPrompt() functions that violate taxonomy (should move to hooks/). 1 intentional exception: governance-instruction.ts is prompt constant by design. 11 files exceed 200 lines - candidates for splitting. AGENTS.md discrepancy: states 42 files, actual count is 45. No AI SDK imports found (compliant).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:17:37.943Z",
+        "created_at": "2026-02-18T19:17:37.943Z",
+        "updated_at": "2026-02-18T19:17:37.943Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "tools/ Audit Results: 7 files, 1,231 lines. ONLY hivemind-inspect.ts (55 lines) is fully compliant. CRITICAL: hivemind-cycle.ts has direct fs/promises import (L17). MAJOR: hivemind-memory.ts (369 lines) has search/filter logic, hivemind-session.ts has syncTrajectoryToGraph (L19-101), hivemind-hierarchy.ts has tree traversal helpers (L108-181). Compliance rate: 14%.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:23:47.610Z",
+        "created_at": "2026-02-18T19:23:47.610Z",
+        "updated_at": "2026-02-18T19:23:47.610Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "TOOLS_INVENTORY_002: 7 files, 1,231 lines. COMPLIANCE CRISIS: Only 14% (1/7) files follow Dumb Tool pattern. hivemind-inspect.ts is GOLD STANDARD (55 lines, pure delegation). CRITICAL VIOLATION: hivemind-cycle.ts:17 imports fs/promises directly. 4/7 files exceed 150 lines (session:232, memory:369, hierarchy:205, cycle:211). 5/7 contain business logic. Remediation: Extract syncTrajectoryToGraph from session.ts, search/filter from memory.ts, tree traversal from hierarchy.ts to lib/.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:26:05.681Z",
+        "created_at": "2026-02-18T19:26:05.681Z",
+        "updated_at": "2026-02-18T19:26:05.681Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "HOOKS_INVENTORY_003: 13 files, ~2,388 lines. CQRS: 2 CRITICAL violations (session-lifecycle.ts:75 stateManager.save(), event-handler.ts:152 saveTasks()). Gemini claimed 10 violations - actual: 2 direct writes, rest use queueStateMutation (compliant pattern). DUPLICATE: session_coherence/main_session_start.ts overlaps messages-transform.ts. ARCHITECTURAL: session-lifecycle-helpers.ts (387 lines) and soft-governance.ts (533 lines) have heavy business logic that should move to lib/. 4 files inject context via output.system.push/prependSyntheticPart.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:36:25.267Z",
+        "created_at": "2026-02-18T19:36:25.267Z",
+        "updated_at": "2026-02-18T19:36:25.267Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "SCHEMAS_INVENTORY_004: 8 files, 10 Zod schemas. CRITICAL: 5/8 files use TS interfaces instead of Zod (brain-state:428, config:419, hierarchy:45, manifest:21). Only graph-nodes.ts has proper FK constraints with validateParentExists() and validateOrphanFree() helpers. brain-state.ts has NO runtime validation - SessionState.id is just string not UUID. Two validation paradigms in same /schemas directory. EVENTS: events.ts ArtifactEventSchema has no FK linkage to session/trajectory.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:42:52.823Z",
+        "created_at": "2026-02-18T19:42:52.823Z",
+        "updated_at": "2026-02-18T19:42:52.823Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "SYNTHESIS_005: INVENTORY COMPLETE. Cross-cutting violations: [1] Taxonomy not enforced - 33% lib NL-gen, 86% tools business logic, 15% hooks heavy logic [2] Documentation drift - AGENTS.md claims 42 lib files, actual 45 [3] CQRS violations - 2 direct writes in hooks [4] Validation inconsistency - 62.5% schemas use TS interfaces not Zod [5] Duplicate functionality - session_coherence overlaps messages-transform [6] fs abstraction leak - tools/cycle.ts imports fs/promises directly. GOLD STANDARDS: hivemind-inspect.ts (tool), graph-nodes.ts (schema with FK). Total scanned: 73 files across 4 directories.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:44:06.481Z",
+        "created_at": "2026-02-18T19:44:06.481Z",
+        "updated_at": "2026-02-18T19:44:06.481Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_RUNTIME_SCHISM_006: VALIDATION RESULT = PARTIALLY ACCURATE/MISLEADING. Gemini conflated PLANNED docs with ACTUAL state. EVIDENCE: package.json enforces Node>=20, tsconfig uses NodeNext, dashboard uses Ink NOT @opentui (removed per CHANGELOG:233). ONLY Bun reference: dashboard/bin.ts:1 shebang (dormant artifact). US-032 in beads.jsonl tracks planned OpenTUI migration as OPEN. Risk: LOW - project functions fully on Node.js.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:51:24.685Z",
+        "created_at": "2026-02-18T19:51:24.685Z",
+        "updated_at": "2026-02-18T19:51:24.685Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_BUDGET_007: VALIDATION RESULT = PARTIALLY ACCURATE (OUTDATED). Gemini found LEGACY 2000-char budget which was deprecated via US-055. ACTUAL: Default is 15,360 chars (12% of 128k context window). EVIDENCE: budget.ts:4 US-055 note, budget.ts:14 DEFAULT_CONTEXT_BUDGET, cognitive-packer.ts:204-209 dynamic calculation. Pruning: relevance-score based, no guaranteed minimum per-mem slot. Risk: LOW - issue already addressed.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:53:23.945Z",
+        "created_at": "2026-02-18T19:53:23.945Z",
+        "updated_at": "2026-02-18T19:53:23.945Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_MIGRATION_008: VALIDATION RESULT = INACCURATE. Gemini conflated migrateIfNeeded (hook-triggered, conditional, HAS rollback) with migrateToGraph (CLI-only, NEVER hook-triggered). EVIDENCE: session-lifecycle.ts:60 conditional call, graph-migrate.ts CLI only, migrate.ts:325 rollback. migrateToGraph has backup but no rollback - but it's manual invocation only. Risk: LOW for graph (manual), MEDIUM for legacy (hook-triggered but has rollback).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:58:17.200Z",
+        "created_at": "2026-02-18T19:58:17.200Z",
+        "updated_at": "2026-02-18T19:58:17.200Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "CRITICAL FK GAP ANALYSIS (2026-02-18): Entity relationship model has 6 critical gaps making time-stale filtering meaningless:\n1. Mem→Task broken: tasks use sequential IDs (\"1\",\"2\") but mems.origin_task_id expects UUIDs → ALL mems orphaned\n2. Mem→Session missing: No session_id in mems, can't filter by session\n3. Trajectory→Tasks empty: active_task_ids always [] despite tasks existing\n4. Brain→Everything disconnected: No FK to trajectory.json, hierarchy.json, tasks.json\n5. Hierarchy→Session missing: Decision tree has no owner reference\n6. Session manifest broken: sessions[] empty despite session-*.json files existing\n\nROOT CAUSE: Two parallel entity systems (state/ vs graph/) with NO connection between them.\n\nREMEDIATION: 4-phase fix required:\n1. Fix task IDs (sequential→UUID)\n2. Add missing FK fields (session_id to mems, trajectory_id to brain)\n3. Implement EntityRelationChain service\n4. Rewrite staleness logic with entity lineage",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:12:53.567Z",
+        "created_at": "2026-02-18T21:12:53.567Z",
+        "updated_at": "2026-02-18T21:12:53.567Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "ENTITY_RELATIONSHIP_GAP_010: CRITICAL FK VIOLATIONS FOUND. [1] Task IDs are sequential (\"1\",\"2\") not UUIDs - breaks ALL FK links. [2] No session→graph FK - can't trace context. [3] No mem→session FK - can't filter by session. [4] Hierarchy detached from graph - decision tree orphaned. [5] No last-N-turns tracing - chain breaking NOT IMPLEMENTED. [6] Time-stale MEANINGLESS without entity lineage. REMEDIATION: 4-phase plan - (1) Fix task ID sequential→UUID, (2) Add session_id to mems, (3) Implement EntityRelationChain service, (4) Rewrite staleness with proper lineage.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:15:54.344Z",
+        "created_at": "2026-02-18T21:15:54.344Z",
+        "updated_at": "2026-02-18T21:15:54.344Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Entity Relationship Model Remediation Plan created. 6 FK gaps identified: (1) Task IDs sequential not UUID, (2) Mem→Session FK missing, (3) Brain→Trajectory FK missing, (4) Hierarchy detached from graph, (5) No turn tracing, (6) Timestamp-based staleness. 5-phase plan: Phase 0 (baseline), Phase 1 (Task ID→UUID), Phase 2 (FK constraints), Phase 3 (EntityRelationChain service), Phase 4 (Staleness rewrite), Phase 5 (Verification). Estimated 12.5h total.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:25:17.321Z",
+        "created_at": "2026-02-18T21:25:17.321Z",
+        "updated_at": "2026-02-18T21:25:17.321Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "MASTER_PLAN_UNIFIED_011: Completed delegated architecture audit + GSD research + plan unification. Produced hook retrieval matrix, overlap risk matrix, automation boundaries, session lifecycle model, SOT boundary contract, and unified phased roadmap (0-6) in docs/plans/2026-02-19-entity-relationship-remediation.md. Core contract: graph/* relational SOT, state/* runtime hot state, lineage-first staleness, explicit main/sub-session lifecycle and governance gates.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:52:38.015Z",
+        "created_at": "2026-02-18T21:52:38.015Z",
+        "updated_at": "2026-02-18T21:52:38.015Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "1a916c02-d120-46c9-9d10-52049e19fd3d",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "1a916c02-d120-46c9-9d10-52049e19fd3d",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 2 FK Remediation COMPLETED (2026-02-19): MemNodeSchema.session_id added (line 47), all write paths updated (cognitive-packer:256, session-swarm:311, graph-migrate:537), backfillMemSessionId() implemented (line 506). Exit gates passed: TypeScript errors=0, tests pass, code-review approved. Remaining: Phase 3 hook isolation, Phase 4 staleness engine.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:34:46.730Z",
+        "created_at": "2026-02-19T02:34:46.730Z",
+        "updated_at": "2026-02-19T02:34:46.730Z"
+      },
+      "quarantined_at": "2026-02-19T02:37:39.711Z"
+    },
+    {
+      "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "LIB Scan: 45 files scanned, 11 violations found, 4 critical issues. Key: planning-fs.ts (1032 lines), detection.ts (882 lines), hierarchy-tree.ts (913 lines) exceed limits. CQRS violations in planning-fs, session-engine, compaction-engine. Fs operations scattered across cognitive-packer, planning-fs, graph-io. LLM strings in governance-instruction.ts, session_coherence.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T17:59:09.659Z",
+        "created_at": "2026-02-18T17:59:09.659Z",
+        "updated_at": "2026-02-18T17:59:09.659Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "TOOLS Scan: 7 files, 6 tools defined, 15+ violations. CRITICAL: hivemind-memory.ts (369 lines, ALL logic embedded), hivemind-session.ts (232 lines, 83 lines embedded logic), hivemind-cycle.ts (211 lines, direct fs imports). Paradox: lib/mems.ts has functions that tool doesn't use. Only hivemind-inspect.ts is clean (55 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T18:02:29.983Z",
+        "created_at": "2026-02-18T18:02:29.983Z",
+        "updated_at": "2026-02-18T18:02:29.983Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "HOOKS Scan: 13 files, 2888 total lines. CQRS VIOLATIONS: event-handler.ts:152 (direct saveTasks bypassing queue), session-lifecycle.ts:75 (direct stateManager.save). 6 files >200 lines: soft-governance.ts (533), messages-transform.ts (484), session-lifecycle-helpers.ts (387), tool-gate.ts (395), compaction.ts (224). Business logic embedded in hooks layer.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T18:05:57.825Z",
+        "created_at": "2026-02-18T18:05:57.825Z",
+        "updated_at": "2026-02-18T18:05:57.825Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "## src/lib/ Taxonomy Audit Results (2026-02-19)\n\n### Summary\n- 45 files total (AGENTS.md states 42 - discrepancy)\n- 67% pure deterministic TypeScript\n- 33% contains natural language generation\n\n### Critical Red Flags (15 files)\n1. `formatXxxForPrompt()` functions in 4 files (anchors.ts, mems.ts, session_coherence.ts, onboarding.ts)\n2. `governance-instruction.ts` is intentionally a prompt string\n3. Display rendering functions in brownfield-scan.ts, detection.ts, session-export.ts\n\n### Largest Files (>500 lines)\n- planning-fs.ts (1032), hierarchy-tree.ts (913), detection.ts (882), graph-io.ts (652), session_coherence.ts (605), session-engine.ts (585), cognitive-packer.ts (502)\n\n### Recommendation\n- Move `formatXxxForPrompt()` to dedicated context-builders/ or hooks/\n- Document governance-instruction.ts as intentional exception\n- Consider splitting detection.ts and session_coherence.ts",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:16:25.141Z",
+        "created_at": "2026-02-18T19:16:25.141Z",
+        "updated_at": "2026-02-18T19:16:25.141Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "LIB_INVENTORY_001: 45 files scanned (100%). 30 pure deterministic (67%), 15 NL-generating (33%). 4 files have formatXxxForPrompt() functions that violate taxonomy (should move to hooks/). 1 intentional exception: governance-instruction.ts is prompt constant by design. 11 files exceed 200 lines - candidates for splitting. AGENTS.md discrepancy: states 42 files, actual count is 45. No AI SDK imports found (compliant).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:17:37.943Z",
+        "created_at": "2026-02-18T19:17:37.943Z",
+        "updated_at": "2026-02-18T19:17:37.943Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "tools/ Audit Results: 7 files, 1,231 lines. ONLY hivemind-inspect.ts (55 lines) is fully compliant. CRITICAL: hivemind-cycle.ts has direct fs/promises import (L17). MAJOR: hivemind-memory.ts (369 lines) has search/filter logic, hivemind-session.ts has syncTrajectoryToGraph (L19-101), hivemind-hierarchy.ts has tree traversal helpers (L108-181). Compliance rate: 14%.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:23:47.610Z",
+        "created_at": "2026-02-18T19:23:47.610Z",
+        "updated_at": "2026-02-18T19:23:47.610Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "TOOLS_INVENTORY_002: 7 files, 1,231 lines. COMPLIANCE CRISIS: Only 14% (1/7) files follow Dumb Tool pattern. hivemind-inspect.ts is GOLD STANDARD (55 lines, pure delegation). CRITICAL VIOLATION: hivemind-cycle.ts:17 imports fs/promises directly. 4/7 files exceed 150 lines (session:232, memory:369, hierarchy:205, cycle:211). 5/7 contain business logic. Remediation: Extract syncTrajectoryToGraph from session.ts, search/filter from memory.ts, tree traversal from hierarchy.ts to lib/.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:26:05.681Z",
+        "created_at": "2026-02-18T19:26:05.681Z",
+        "updated_at": "2026-02-18T19:26:05.681Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "HOOKS_INVENTORY_003: 13 files, ~2,388 lines. CQRS: 2 CRITICAL violations (session-lifecycle.ts:75 stateManager.save(), event-handler.ts:152 saveTasks()). Gemini claimed 10 violations - actual: 2 direct writes, rest use queueStateMutation (compliant pattern). DUPLICATE: session_coherence/main_session_start.ts overlaps messages-transform.ts. ARCHITECTURAL: session-lifecycle-helpers.ts (387 lines) and soft-governance.ts (533 lines) have heavy business logic that should move to lib/. 4 files inject context via output.system.push/prependSyntheticPart.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:36:25.267Z",
+        "created_at": "2026-02-18T19:36:25.267Z",
+        "updated_at": "2026-02-18T19:36:25.267Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "SCHEMAS_INVENTORY_004: 8 files, 10 Zod schemas. CRITICAL: 5/8 files use TS interfaces instead of Zod (brain-state:428, config:419, hierarchy:45, manifest:21). Only graph-nodes.ts has proper FK constraints with validateParentExists() and validateOrphanFree() helpers. brain-state.ts has NO runtime validation - SessionState.id is just string not UUID. Two validation paradigms in same /schemas directory. EVENTS: events.ts ArtifactEventSchema has no FK linkage to session/trajectory.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:42:52.823Z",
+        "created_at": "2026-02-18T19:42:52.823Z",
+        "updated_at": "2026-02-18T19:42:52.823Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "SYNTHESIS_005: INVENTORY COMPLETE. Cross-cutting violations: [1] Taxonomy not enforced - 33% lib NL-gen, 86% tools business logic, 15% hooks heavy logic [2] Documentation drift - AGENTS.md claims 42 lib files, actual 45 [3] CQRS violations - 2 direct writes in hooks [4] Validation inconsistency - 62.5% schemas use TS interfaces not Zod [5] Duplicate functionality - session_coherence overlaps messages-transform [6] fs abstraction leak - tools/cycle.ts imports fs/promises directly. GOLD STANDARDS: hivemind-inspect.ts (tool), graph-nodes.ts (schema with FK). Total scanned: 73 files across 4 directories.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:44:06.481Z",
+        "created_at": "2026-02-18T19:44:06.481Z",
+        "updated_at": "2026-02-18T19:44:06.481Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_RUNTIME_SCHISM_006: VALIDATION RESULT = PARTIALLY ACCURATE/MISLEADING. Gemini conflated PLANNED docs with ACTUAL state. EVIDENCE: package.json enforces Node>=20, tsconfig uses NodeNext, dashboard uses Ink NOT @opentui (removed per CHANGELOG:233). ONLY Bun reference: dashboard/bin.ts:1 shebang (dormant artifact). US-032 in beads.jsonl tracks planned OpenTUI migration as OPEN. Risk: LOW - project functions fully on Node.js.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:51:24.685Z",
+        "created_at": "2026-02-18T19:51:24.685Z",
+        "updated_at": "2026-02-18T19:51:24.685Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_BUDGET_007: VALIDATION RESULT = PARTIALLY ACCURATE (OUTDATED). Gemini found LEGACY 2000-char budget which was deprecated via US-055. ACTUAL: Default is 15,360 chars (12% of 128k context window). EVIDENCE: budget.ts:4 US-055 note, budget.ts:14 DEFAULT_CONTEXT_BUDGET, cognitive-packer.ts:204-209 dynamic calculation. Pruning: relevance-score based, no guaranteed minimum per-mem slot. Risk: LOW - issue already addressed.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:53:23.945Z",
+        "created_at": "2026-02-18T19:53:23.945Z",
+        "updated_at": "2026-02-18T19:53:23.945Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_MIGRATION_008: VALIDATION RESULT = INACCURATE. Gemini conflated migrateIfNeeded (hook-triggered, conditional, HAS rollback) with migrateToGraph (CLI-only, NEVER hook-triggered). EVIDENCE: session-lifecycle.ts:60 conditional call, graph-migrate.ts CLI only, migrate.ts:325 rollback. migrateToGraph has backup but no rollback - but it's manual invocation only. Risk: LOW for graph (manual), MEDIUM for legacy (hook-triggered but has rollback).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:58:17.200Z",
+        "created_at": "2026-02-18T19:58:17.200Z",
+        "updated_at": "2026-02-18T19:58:17.200Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "CRITICAL FK GAP ANALYSIS (2026-02-18): Entity relationship model has 6 critical gaps making time-stale filtering meaningless:\n1. Mem→Task broken: tasks use sequential IDs (\"1\",\"2\") but mems.origin_task_id expects UUIDs → ALL mems orphaned\n2. Mem→Session missing: No session_id in mems, can't filter by session\n3. Trajectory→Tasks empty: active_task_ids always [] despite tasks existing\n4. Brain→Everything disconnected: No FK to trajectory.json, hierarchy.json, tasks.json\n5. Hierarchy→Session missing: Decision tree has no owner reference\n6. Session manifest broken: sessions[] empty despite session-*.json files existing\n\nROOT CAUSE: Two parallel entity systems (state/ vs graph/) with NO connection between them.\n\nREMEDIATION: 4-phase fix required:\n1. Fix task IDs (sequential→UUID)\n2. Add missing FK fields (session_id to mems, trajectory_id to brain)\n3. Implement EntityRelationChain service\n4. Rewrite staleness logic with entity lineage",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:12:53.567Z",
+        "created_at": "2026-02-18T21:12:53.567Z",
+        "updated_at": "2026-02-18T21:12:53.567Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "ENTITY_RELATIONSHIP_GAP_010: CRITICAL FK VIOLATIONS FOUND. [1] Task IDs are sequential (\"1\",\"2\") not UUIDs - breaks ALL FK links. [2] No session→graph FK - can't trace context. [3] No mem→session FK - can't filter by session. [4] Hierarchy detached from graph - decision tree orphaned. [5] No last-N-turns tracing - chain breaking NOT IMPLEMENTED. [6] Time-stale MEANINGLESS without entity lineage. REMEDIATION: 4-phase plan - (1) Fix task ID sequential→UUID, (2) Add session_id to mems, (3) Implement EntityRelationChain service, (4) Rewrite staleness with proper lineage.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:15:54.344Z",
+        "created_at": "2026-02-18T21:15:54.344Z",
+        "updated_at": "2026-02-18T21:15:54.344Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Entity Relationship Model Remediation Plan created. 6 FK gaps identified: (1) Task IDs sequential not UUID, (2) Mem→Session FK missing, (3) Brain→Trajectory FK missing, (4) Hierarchy detached from graph, (5) No turn tracing, (6) Timestamp-based staleness. 5-phase plan: Phase 0 (baseline), Phase 1 (Task ID→UUID), Phase 2 (FK constraints), Phase 3 (EntityRelationChain service), Phase 4 (Staleness rewrite), Phase 5 (Verification). Estimated 12.5h total.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:25:17.321Z",
+        "created_at": "2026-02-18T21:25:17.321Z",
+        "updated_at": "2026-02-18T21:25:17.321Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "MASTER_PLAN_UNIFIED_011: Completed delegated architecture audit + GSD research + plan unification. Produced hook retrieval matrix, overlap risk matrix, automation boundaries, session lifecycle model, SOT boundary contract, and unified phased roadmap (0-6) in docs/plans/2026-02-19-entity-relationship-remediation.md. Core contract: graph/* relational SOT, state/* runtime hot state, lineage-first staleness, explicit main/sub-session lifecycle and governance gates.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:52:38.015Z",
+        "created_at": "2026-02-18T21:52:38.015Z",
+        "updated_at": "2026-02-18T21:52:38.015Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "1a916c02-d120-46c9-9d10-52049e19fd3d",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "1a916c02-d120-46c9-9d10-52049e19fd3d",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 2 FK Remediation COMPLETED (2026-02-19): MemNodeSchema.session_id added (line 47), all write paths updated (cognitive-packer:256, session-swarm:311, graph-migrate:537), backfillMemSessionId() implemented (line 506). Exit gates passed: TypeScript errors=0, tests pass, code-review approved. Remaining: Phase 3 hook isolation, Phase 4 staleness engine.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:34:46.730Z",
+        "created_at": "2026-02-19T02:34:46.730Z",
+        "updated_at": "2026-02-19T02:34:46.730Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:05.865Z"
+    },
+    {
+      "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "34a4455e-43c0-49a1-b6d7-56d18e8bb5ac",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "LIB Scan: 45 files scanned, 11 violations found, 4 critical issues. Key: planning-fs.ts (1032 lines), detection.ts (882 lines), hierarchy-tree.ts (913 lines) exceed limits. CQRS violations in planning-fs, session-engine, compaction-engine. Fs operations scattered across cognitive-packer, planning-fs, graph-io. LLM strings in governance-instruction.ts, session_coherence.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T17:59:09.659Z",
+        "created_at": "2026-02-18T17:59:09.659Z",
+        "updated_at": "2026-02-18T17:59:09.659Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "412f6ed0-3ab4-41b7-b94a-56dc3446bdc5",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "TOOLS Scan: 7 files, 6 tools defined, 15+ violations. CRITICAL: hivemind-memory.ts (369 lines, ALL logic embedded), hivemind-session.ts (232 lines, 83 lines embedded logic), hivemind-cycle.ts (211 lines, direct fs imports). Paradox: lib/mems.ts has functions that tool doesn't use. Only hivemind-inspect.ts is clean (55 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T18:02:29.983Z",
+        "created_at": "2026-02-18T18:02:29.983Z",
+        "updated_at": "2026-02-18T18:02:29.983Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "48e7987b-0668-49eb-94c8-cc2d6699bfca",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "HOOKS Scan: 13 files, 2888 total lines. CQRS VIOLATIONS: event-handler.ts:152 (direct saveTasks bypassing queue), session-lifecycle.ts:75 (direct stateManager.save). 6 files >200 lines: soft-governance.ts (533), messages-transform.ts (484), session-lifecycle-helpers.ts (387), tool-gate.ts (395), compaction.ts (224). Business logic embedded in hooks layer.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T18:05:57.825Z",
+        "created_at": "2026-02-18T18:05:57.825Z",
+        "updated_at": "2026-02-18T18:05:57.825Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "409e5a50-aa81-4a7d-b497-59408204fecf",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "## src/lib/ Taxonomy Audit Results (2026-02-19)\n\n### Summary\n- 45 files total (AGENTS.md states 42 - discrepancy)\n- 67% pure deterministic TypeScript\n- 33% contains natural language generation\n\n### Critical Red Flags (15 files)\n1. `formatXxxForPrompt()` functions in 4 files (anchors.ts, mems.ts, session_coherence.ts, onboarding.ts)\n2. `governance-instruction.ts` is intentionally a prompt string\n3. Display rendering functions in brownfield-scan.ts, detection.ts, session-export.ts\n\n### Largest Files (>500 lines)\n- planning-fs.ts (1032), hierarchy-tree.ts (913), detection.ts (882), graph-io.ts (652), session_coherence.ts (605), session-engine.ts (585), cognitive-packer.ts (502)\n\n### Recommendation\n- Move `formatXxxForPrompt()` to dedicated context-builders/ or hooks/\n- Document governance-instruction.ts as intentional exception\n- Consider splitting detection.ts and session_coherence.ts",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:16:25.141Z",
+        "created_at": "2026-02-18T19:16:25.141Z",
+        "updated_at": "2026-02-18T19:16:25.141Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "331a5112-a608-44a7-afdd-59f68f28db5f",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "LIB_INVENTORY_001: 45 files scanned (100%). 30 pure deterministic (67%), 15 NL-generating (33%). 4 files have formatXxxForPrompt() functions that violate taxonomy (should move to hooks/). 1 intentional exception: governance-instruction.ts is prompt constant by design. 11 files exceed 200 lines - candidates for splitting. AGENTS.md discrepancy: states 42 files, actual count is 45. No AI SDK imports found (compliant).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:17:37.943Z",
+        "created_at": "2026-02-18T19:17:37.943Z",
+        "updated_at": "2026-02-18T19:17:37.943Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "94b53a1c-3fc8-4ab9-85b3-bd7391360d25",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "tools/ Audit Results: 7 files, 1,231 lines. ONLY hivemind-inspect.ts (55 lines) is fully compliant. CRITICAL: hivemind-cycle.ts has direct fs/promises import (L17). MAJOR: hivemind-memory.ts (369 lines) has search/filter logic, hivemind-session.ts has syncTrajectoryToGraph (L19-101), hivemind-hierarchy.ts has tree traversal helpers (L108-181). Compliance rate: 14%.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:23:47.610Z",
+        "created_at": "2026-02-18T19:23:47.610Z",
+        "updated_at": "2026-02-18T19:23:47.610Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "cbe9ced3-9a5b-45a7-bc12-9921fc9446d3",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "TOOLS_INVENTORY_002: 7 files, 1,231 lines. COMPLIANCE CRISIS: Only 14% (1/7) files follow Dumb Tool pattern. hivemind-inspect.ts is GOLD STANDARD (55 lines, pure delegation). CRITICAL VIOLATION: hivemind-cycle.ts:17 imports fs/promises directly. 4/7 files exceed 150 lines (session:232, memory:369, hierarchy:205, cycle:211). 5/7 contain business logic. Remediation: Extract syncTrajectoryToGraph from session.ts, search/filter from memory.ts, tree traversal from hierarchy.ts to lib/.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:26:05.681Z",
+        "created_at": "2026-02-18T19:26:05.681Z",
+        "updated_at": "2026-02-18T19:26:05.681Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7e79c5ea-5d1a-4593-aef9-ed800244d3a8",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "HOOKS_INVENTORY_003: 13 files, ~2,388 lines. CQRS: 2 CRITICAL violations (session-lifecycle.ts:75 stateManager.save(), event-handler.ts:152 saveTasks()). Gemini claimed 10 violations - actual: 2 direct writes, rest use queueStateMutation (compliant pattern). DUPLICATE: session_coherence/main_session_start.ts overlaps messages-transform.ts. ARCHITECTURAL: session-lifecycle-helpers.ts (387 lines) and soft-governance.ts (533 lines) have heavy business logic that should move to lib/. 4 files inject context via output.system.push/prependSyntheticPart.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:36:25.267Z",
+        "created_at": "2026-02-18T19:36:25.267Z",
+        "updated_at": "2026-02-18T19:36:25.267Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "18931e8b-84e5-47cd-81aa-77fc9bdfdfe0",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "SCHEMAS_INVENTORY_004: 8 files, 10 Zod schemas. CRITICAL: 5/8 files use TS interfaces instead of Zod (brain-state:428, config:419, hierarchy:45, manifest:21). Only graph-nodes.ts has proper FK constraints with validateParentExists() and validateOrphanFree() helpers. brain-state.ts has NO runtime validation - SessionState.id is just string not UUID. Two validation paradigms in same /schemas directory. EVENTS: events.ts ArtifactEventSchema has no FK linkage to session/trajectory.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:42:52.823Z",
+        "created_at": "2026-02-18T19:42:52.823Z",
+        "updated_at": "2026-02-18T19:42:52.823Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "a271cec1-3c3a-4777-b9ca-251638474245",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "SYNTHESIS_005: INVENTORY COMPLETE. Cross-cutting violations: [1] Taxonomy not enforced - 33% lib NL-gen, 86% tools business logic, 15% hooks heavy logic [2] Documentation drift - AGENTS.md claims 42 lib files, actual 45 [3] CQRS violations - 2 direct writes in hooks [4] Validation inconsistency - 62.5% schemas use TS interfaces not Zod [5] Duplicate functionality - session_coherence overlaps messages-transform [6] fs abstraction leak - tools/cycle.ts imports fs/promises directly. GOLD STANDARDS: hivemind-inspect.ts (tool), graph-nodes.ts (schema with FK). Total scanned: 73 files across 4 directories.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:44:06.481Z",
+        "created_at": "2026-02-18T19:44:06.481Z",
+        "updated_at": "2026-02-18T19:44:06.481Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "ade347e6-ae26-4cdf-bb20-67d6362fe424",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_RUNTIME_SCHISM_006: VALIDATION RESULT = PARTIALLY ACCURATE/MISLEADING. Gemini conflated PLANNED docs with ACTUAL state. EVIDENCE: package.json enforces Node>=20, tsconfig uses NodeNext, dashboard uses Ink NOT @opentui (removed per CHANGELOG:233). ONLY Bun reference: dashboard/bin.ts:1 shebang (dormant artifact). US-032 in beads.jsonl tracks planned OpenTUI migration as OPEN. Risk: LOW - project functions fully on Node.js.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:51:24.685Z",
+        "created_at": "2026-02-18T19:51:24.685Z",
+        "updated_at": "2026-02-18T19:51:24.685Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "42cb4b83-239b-4b4e-809c-cb4cd408732a",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_BUDGET_007: VALIDATION RESULT = PARTIALLY ACCURATE (OUTDATED). Gemini found LEGACY 2000-char budget which was deprecated via US-055. ACTUAL: Default is 15,360 chars (12% of 128k context window). EVIDENCE: budget.ts:4 US-055 note, budget.ts:14 DEFAULT_CONTEXT_BUDGET, cognitive-packer.ts:204-209 dynamic calculation. Pruning: relevance-score based, no guaranteed minimum per-mem slot. Risk: LOW - issue already addressed.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:53:23.945Z",
+        "created_at": "2026-02-18T19:53:23.945Z",
+        "updated_at": "2026-02-18T19:53:23.945Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "5dd75d66-46ff-4ef4-a468-43b6df3e1001",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "GEMINI_MIGRATION_008: VALIDATION RESULT = INACCURATE. Gemini conflated migrateIfNeeded (hook-triggered, conditional, HAS rollback) with migrateToGraph (CLI-only, NEVER hook-triggered). EVIDENCE: session-lifecycle.ts:60 conditional call, graph-migrate.ts CLI only, migrate.ts:325 rollback. migrateToGraph has backup but no rollback - but it's manual invocation only. Risk: LOW for graph (manual), MEDIUM for legacy (hook-triggered but has rollback).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T19:58:17.200Z",
+        "created_at": "2026-02-18T19:58:17.200Z",
+        "updated_at": "2026-02-18T19:58:17.200Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7332933d-411a-471a-b19c-87e1953a1b53",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "architecture-audit",
+        "type": "insight",
+        "content": "CRITICAL FK GAP ANALYSIS (2026-02-18): Entity relationship model has 6 critical gaps making time-stale filtering meaningless:\n1. Mem→Task broken: tasks use sequential IDs (\"1\",\"2\") but mems.origin_task_id expects UUIDs → ALL mems orphaned\n2. Mem→Session missing: No session_id in mems, can't filter by session\n3. Trajectory→Tasks empty: active_task_ids always [] despite tasks existing\n4. Brain→Everything disconnected: No FK to trajectory.json, hierarchy.json, tasks.json\n5. Hierarchy→Session missing: Decision tree has no owner reference\n6. Session manifest broken: sessions[] empty despite session-*.json files existing\n\nROOT CAUSE: Two parallel entity systems (state/ vs graph/) with NO connection between them.\n\nREMEDIATION: 4-phase fix required:\n1. Fix task IDs (sequential→UUID)\n2. Add missing FK fields (session_id to mems, trajectory_id to brain)\n3. Implement EntityRelationChain service\n4. Rewrite staleness logic with entity lineage",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:12:53.567Z",
+        "created_at": "2026-02-18T21:12:53.567Z",
+        "updated_at": "2026-02-18T21:12:53.567Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "7069b3ae-fbcf-4b24-a2e6-152c394de032",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "ENTITY_RELATIONSHIP_GAP_010: CRITICAL FK VIOLATIONS FOUND. [1] Task IDs are sequential (\"1\",\"2\") not UUIDs - breaks ALL FK links. [2] No session→graph FK - can't trace context. [3] No mem→session FK - can't filter by session. [4] Hierarchy detached from graph - decision tree orphaned. [5] No last-N-turns tracing - chain breaking NOT IMPLEMENTED. [6] Time-stale MEANINGLESS without entity lineage. REMEDIATION: 4-phase plan - (1) Fix task ID sequential→UUID, (2) Add session_id to mems, (3) Implement EntityRelationChain service, (4) Rewrite staleness with proper lineage.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:15:54.344Z",
+        "created_at": "2026-02-18T21:15:54.344Z",
+        "updated_at": "2026-02-18T21:15:54.344Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "551ff2b4-d2c2-48e1-b67a-4ca86da3c7d7",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Entity Relationship Model Remediation Plan created. 6 FK gaps identified: (1) Task IDs sequential not UUID, (2) Mem→Session FK missing, (3) Brain→Trajectory FK missing, (4) Hierarchy detached from graph, (5) No turn tracing, (6) Timestamp-based staleness. 5-phase plan: Phase 0 (baseline), Phase 1 (Task ID→UUID), Phase 2 (FK constraints), Phase 3 (EntityRelationChain service), Phase 4 (Staleness rewrite), Phase 5 (Verification). Estimated 12.5h total.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:25:17.321Z",
+        "created_at": "2026-02-18T21:25:17.321Z",
+        "updated_at": "2026-02-18T21:25:17.321Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "3fb13a27-3205-4e02-b010-ec05b1a6829e",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "cycle-intel",
+        "type": "insight",
+        "content": "MASTER_PLAN_UNIFIED_011: Completed delegated architecture audit + GSD research + plan unification. Produced hook retrieval matrix, overlap risk matrix, automation boundaries, session lifecycle model, SOT boundary contract, and unified phased roadmap (0-6) in docs/plans/2026-02-19-entity-relationship-remediation.md. Core contract: graph/* relational SOT, state/* runtime hot state, lineage-first staleness, explicit main/sub-session lifecycle and governance gates.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-18T21:52:38.015Z",
+        "created_at": "2026-02-18T21:52:38.015Z",
+        "updated_at": "2026-02-18T21:52:38.015Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "1a916c02-d120-46c9-9d10-52049e19fd3d",
+      "type": "mem",
+      "reason": "origin_task_id b2f41134-810f-4c72-9baf-3cf0d8c74bad not found in valid tasks",
+      "original_data": {
+        "id": "1a916c02-d120-46c9-9d10-52049e19fd3d",
+        "origin_task_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 2 FK Remediation COMPLETED (2026-02-19): MemNodeSchema.session_id added (line 47), all write paths updated (cognitive-packer:256, session-swarm:311, graph-migrate:537), backfillMemSessionId() implemented (line 506). Exit gates passed: TypeScript errors=0, tests pass, code-review approved. Remaining: Phase 3 hook isolation, Phase 4 staleness engine.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:34:46.730Z",
+        "created_at": "2026-02-19T02:34:46.730Z",
+        "updated_at": "2026-02-19T02:34:46.730Z"
+      },
+      "quarantined_at": "2026-02-19T02:43:06.101Z"
+    },
+    {
+      "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Violations Identified: 1) session-lifecycle.ts:73 - Direct save() instead of queueStateMutation (CQRS violation). 2) graph-io.ts validateMemsWithFKValidation() missing session_id FK check. 3) Retrieval overlap between session-lifecycle.ts and messages-transform.ts. 4) messages-transform.ts exceeds 300 lines (489 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:43:06.094Z",
+        "created_at": "2026-02-19T02:43:06.094Z",
+        "updated_at": "2026-02-19T02:43:06.094Z"
+      },
+      "quarantined_at": "2026-02-19T05:16:40.437Z"
+    },
+    {
+      "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Violations Identified: 1) session-lifecycle.ts:73 - Direct save() instead of queueStateMutation (CQRS violation). 2) graph-io.ts validateMemsWithFKValidation() missing session_id FK check. 3) Retrieval overlap between session-lifecycle.ts and messages-transform.ts. 4) messages-transform.ts exceeds 300 lines (489 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:43:06.094Z",
+        "created_at": "2026-02-19T02:43:06.094Z",
+        "updated_at": "2026-02-19T02:43:06.094Z"
+      },
+      "quarantined_at": "2026-02-19T05:16:41.217Z"
+    },
+    {
+      "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3.2 COMPLETE: Fixed CQRS violation in session-lifecycle.ts:74. Changed from direct `stateManager.save()` to `queueStateMutation()` pattern. Commit: a8953a7. TypeScript: 0 errors. Tests: 129 passed. Architectural compliance: hooks → state-mutation-queue → persistence.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:16:40.804Z",
+        "created_at": "2026-02-19T05:16:40.804Z",
+        "updated_at": "2026-02-19T05:16:40.804Z"
+      },
+      "quarantined_at": "2026-02-19T05:16:41.217Z"
+    },
+    {
+      "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Violations Identified: 1) session-lifecycle.ts:73 - Direct save() instead of queueStateMutation (CQRS violation). 2) graph-io.ts validateMemsWithFKValidation() missing session_id FK check. 3) Retrieval overlap between session-lifecycle.ts and messages-transform.ts. 4) messages-transform.ts exceeds 300 lines (489 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:43:06.094Z",
+        "created_at": "2026-02-19T02:43:06.094Z",
+        "updated_at": "2026-02-19T02:43:06.094Z"
+      },
+      "quarantined_at": "2026-02-19T05:39:46.816Z"
+    },
+    {
+      "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3.2 COMPLETE: Fixed CQRS violation in session-lifecycle.ts:74. Changed from direct `stateManager.save()` to `queueStateMutation()` pattern. Commit: a8953a7. TypeScript: 0 errors. Tests: 129 passed. Architectural compliance: hooks → state-mutation-queue → persistence.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:16:40.804Z",
+        "created_at": "2026-02-19T05:16:40.804Z",
+        "updated_at": "2026-02-19T05:16:40.804Z"
+      },
+      "quarantined_at": "2026-02-19T05:39:46.816Z"
+    },
+    {
+      "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Violations Identified: 1) session-lifecycle.ts:73 - Direct save() instead of queueStateMutation (CQRS violation). 2) graph-io.ts validateMemsWithFKValidation() missing session_id FK check. 3) Retrieval overlap between session-lifecycle.ts and messages-transform.ts. 4) messages-transform.ts exceeds 300 lines (489 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:43:06.094Z",
+        "created_at": "2026-02-19T02:43:06.094Z",
+        "updated_at": "2026-02-19T02:43:06.094Z"
+      },
+      "quarantined_at": "2026-02-19T05:39:46.841Z"
+    },
+    {
+      "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3.2 COMPLETE: Fixed CQRS violation in session-lifecycle.ts:74. Changed from direct `stateManager.save()` to `queueStateMutation()` pattern. Commit: a8953a7. TypeScript: 0 errors. Tests: 129 passed. Architectural compliance: hooks → state-mutation-queue → persistence.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:16:40.804Z",
+        "created_at": "2026-02-19T05:16:40.804Z",
+        "updated_at": "2026-02-19T05:16:40.804Z"
+      },
+      "quarantined_at": "2026-02-19T05:39:46.841Z"
+    },
+    {
+      "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Scanner Results: 1) CQRS Fix (a8953a7) - CORRECT, tests pass. 2) FK Validation code present (graph-io.ts:271-276) but tests fail - test data missing session_id field. 3) Retrieval overlap concern - cognitive packer in messages-transform may need review. 4) Contract tests - not implemented.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:39:46.836Z",
+        "created_at": "2026-02-19T05:39:46.836Z",
+        "updated_at": "2026-02-19T05:39:46.836Z"
+      },
+      "quarantined_at": "2026-02-19T05:39:46.841Z"
+    },
+    {
+      "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Violations Identified: 1) session-lifecycle.ts:73 - Direct save() instead of queueStateMutation (CQRS violation). 2) graph-io.ts validateMemsWithFKValidation() missing session_id FK check. 3) Retrieval overlap between session-lifecycle.ts and messages-transform.ts. 4) messages-transform.ts exceeds 300 lines (489 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:43:06.094Z",
+        "created_at": "2026-02-19T02:43:06.094Z",
+        "updated_at": "2026-02-19T02:43:06.094Z"
+      },
+      "quarantined_at": "2026-02-19T06:13:33.471Z"
+    },
+    {
+      "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3.2 COMPLETE: Fixed CQRS violation in session-lifecycle.ts:74. Changed from direct `stateManager.save()` to `queueStateMutation()` pattern. Commit: a8953a7. TypeScript: 0 errors. Tests: 129 passed. Architectural compliance: hooks → state-mutation-queue → persistence.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:16:40.804Z",
+        "created_at": "2026-02-19T05:16:40.804Z",
+        "updated_at": "2026-02-19T05:16:40.804Z"
+      },
+      "quarantined_at": "2026-02-19T06:13:33.471Z"
+    },
+    {
+      "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Scanner Results: 1) CQRS Fix (a8953a7) - CORRECT, tests pass. 2) FK Validation code present (graph-io.ts:271-276) but tests fail - test data missing session_id field. 3) Retrieval overlap concern - cognitive packer in messages-transform may need review. 4) Contract tests - not implemented.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:39:46.836Z",
+        "created_at": "2026-02-19T05:39:46.836Z",
+        "updated_at": "2026-02-19T05:39:46.836Z"
+      },
+      "quarantined_at": "2026-02-19T06:13:33.471Z"
+    },
+    {
+      "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Violations Identified: 1) session-lifecycle.ts:73 - Direct save() instead of queueStateMutation (CQRS violation). 2) graph-io.ts validateMemsWithFKValidation() missing session_id FK check. 3) Retrieval overlap between session-lifecycle.ts and messages-transform.ts. 4) messages-transform.ts exceeds 300 lines (489 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:43:06.094Z",
+        "created_at": "2026-02-19T02:43:06.094Z",
+        "updated_at": "2026-02-19T02:43:06.094Z"
+      },
+      "quarantined_at": "2026-02-19T06:13:33.522Z"
+    },
+    {
+      "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3.2 COMPLETE: Fixed CQRS violation in session-lifecycle.ts:74. Changed from direct `stateManager.save()` to `queueStateMutation()` pattern. Commit: a8953a7. TypeScript: 0 errors. Tests: 129 passed. Architectural compliance: hooks → state-mutation-queue → persistence.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:16:40.804Z",
+        "created_at": "2026-02-19T05:16:40.804Z",
+        "updated_at": "2026-02-19T05:16:40.804Z"
+      },
+      "quarantined_at": "2026-02-19T06:13:33.522Z"
+    },
+    {
+      "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Scanner Results: 1) CQRS Fix (a8953a7) - CORRECT, tests pass. 2) FK Validation code present (graph-io.ts:271-276) but tests fail - test data missing session_id field. 3) Retrieval overlap concern - cognitive packer in messages-transform may need review. 4) Contract tests - not implemented.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:39:46.836Z",
+        "created_at": "2026-02-19T05:39:46.836Z",
+        "updated_at": "2026-02-19T05:39:46.836Z"
+      },
+      "quarantined_at": "2026-02-19T06:13:33.522Z"
+    },
+    {
+      "id": "56daacef-6000-4567-8d2a-a7f3278cdf14",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "56daacef-6000-4567-8d2a-a7f3278cdf14",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3.5 code-review APPROVED FK remediation: graph-io.ts session_id FK validation + orphan-quarantine tests passed (9/9), tsc clean.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T06:13:33.511Z",
+        "created_at": "2026-02-19T06:13:33.511Z",
+        "updated_at": "2026-02-19T06:13:33.511Z"
+      },
+      "quarantined_at": "2026-02-19T06:13:33.522Z"
     }
   ]
 }

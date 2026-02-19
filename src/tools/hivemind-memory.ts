@@ -193,7 +193,8 @@ async function handleSave(
   const now = new Date().toISOString()
   const newMem: MemNode = {
     id: crypto.randomUUID(),
-    origin_task_id: sessionId, // FK to session (can be null)
+    session_id: sessionId ?? crypto.randomUUID(), // FK to session (fallback if null)
+    origin_task_id: null, // No task linked for user-initiated save
     shelf: args.shelf,
     type: "insight", // Default type for user memories
     content: args.content,
