@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs"
-import { copyFile, mkdir, readdir, readFile } from "node:fs/promises"
+import { copyFile, mkdir, readdir, readFile, rm } from "node:fs/promises"
 import { homedir } from "node:os"
 import { basename, dirname, extname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -54,6 +54,7 @@ export interface SyncAssetsResult {
 export interface SyncAssetsOptions {
   target?: AssetSyncTarget
   overwrite?: boolean
+  clean?: boolean
   groups?: AssetGroup[]
   sourceRootDir?: string
   globalBaseDir?: string
@@ -260,6 +261,7 @@ export async function syncOpencodeAssets(
   const sourceRoot = options.sourceRootDir ?? pkgRoot
   const groups = options.groups ?? DEFAULT_GROUPS
   const overwrite = options.overwrite ?? false
+  const clean = options.clean ?? false
   const targetDefs = computeTargets(projectDir, options)
 
   const result: SyncAssetsResult = {
@@ -291,8 +293,15 @@ export async function syncOpencodeAssets(
       }
 
       if (!report.sourceExists) {
+        if (clean && existsSync(targetGroupDir)) {
+          await rm(targetGroupDir, { recursive: true, force: true })
+        }
         targetReport.groups.push(report)
         continue
+      }
+
+      if (clean && existsSync(targetGroupDir)) {
+        await rm(targetGroupDir, { recursive: true, force: true })
       }
 
       const files = await listFilesRecursive(sourceDir)

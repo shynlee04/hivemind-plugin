@@ -59,6 +59,7 @@ Options:
   --tdd                    Enforce test-driven development
   --target <project|global|both>  Asset sync target (sync-assets command, default: project)
   --overwrite              Overwrite existing files during asset sync (sync-assets command)
+  --clean                  Remove target asset folders before syncing (sync-assets command)
   --refresh <seconds>      Dashboard refresh interval (default: 2)
   --action <status|analyze|recommend|orchestrate>  Scan action (default: analyze, for scan command)
   --json                   Return machine-readable JSON (for scan command)
@@ -253,6 +254,7 @@ async function main(): Promise<void> {
       const result = await syncOpencodeAssets(directory, {
         target: (flags["target"] as "project" | "global" | "both") ?? "project",
         overwrite: "overwrite" in flags,
+        clean: "clean" in flags,
         silent: false,
         onLog: (line) => console.log(line),
       })

@@ -500,8 +500,9 @@ export async function initProject(directory, options = {}) {
         await initializePlanningDirectory(directory);
         // Existing user upgrade path: keep state, refresh OpenCode assets, AND ensure plugin is registered
         await syncOpencodeAssets(directory, {
-            target: "project",
+            target: "both",
             overwrite: true,
+            clean: true,
             silent: options.silent ?? false,
             onLog: options.silent ? undefined : log,
         });
@@ -574,8 +575,9 @@ export async function initProject(directory, options = {}) {
         injectAgentsDocs(directory, options.silent ?? false);
         // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
         await syncOpencodeAssets(directory, {
-            target: "project",
+            target: "both",
             overwrite: true,
+            clean: true,
             silent: options.silent ?? false,
             onLog: options.silent ? undefined : log,
         });
@@ -680,8 +682,9 @@ export async function initProject(directory, options = {}) {
     injectAgentsDocs(directory, options.silent ?? false);
     // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
     await syncOpencodeAssets(directory, {
-        target: "project",
+        target: "both",
         overwrite: true,
+        clean: true,
         silent: options.silent ?? false,
         onLog: options.silent ? undefined : log,
     });
