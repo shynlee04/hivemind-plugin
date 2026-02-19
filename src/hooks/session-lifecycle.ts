@@ -30,6 +30,7 @@ import {
   getNextStepHint,
 } from "./session-lifecycle-helpers.js"
 import { HIVE_MASTER_GOVERNANCE_INSTRUCTION } from "../lib/governance-instruction.js"
+import { queueStateMutation } from "../lib/state-mutation-queue.js"
 
 const GOVERNANCE_MARKER = "[🛡️ HIVE-MASTER governance active]"
 
@@ -70,7 +71,12 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       if (!state) {
         await initializePlanningDirectory(directory)
         state = createBrainState(generateSessionId(), config)
-        await stateManager.save(state)
+        // CQRS: Queue mutation instead of direct save (hooks are read-only)
+        queueStateMutation({
+          type: "UPDATE_STATE",
+          payload: state,
+          source: "session-lifecycle-hook:init",
+        })
       }
 
       if (state && isSessionStale(state, config.stale_session_days)) {
