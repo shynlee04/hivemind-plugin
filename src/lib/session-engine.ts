@@ -1,6 +1,7 @@
 import { existsSync } from "fs"
 import { readdir, mkdir, writeFile } from "fs/promises"
 import { join } from "path"
+import { randomUUID } from "crypto"
 import { saveAnchors } from "./anchors.js"
 import {
   createNode,
@@ -40,6 +41,7 @@ import {
 } from "../schemas/brain-state.js"
 
 import { loadMems, saveMems, addMem } from "./mems.js"
+import { addGraphMem, loadTrajectory } from "./graph-io.js"
 export type HierarchyLevel = "trajectory" | "tactic" | "action"
 
 export interface SessionOptions {
@@ -394,6 +396,23 @@ export async function closeSession(directory: string, summary?: string): Promise
     sessionId
   )
   await saveMems(directory, autoCompactMem)
+
+  // Persist lifecycle trace in graph mems with FK links.
+  // Prefer the current active task FK from trajectory before close cleanup.
+  const trajectory = await loadTrajectory(directory)
+  const linkedTaskId = trajectory?.trajectory?.active_task_ids?.[0] ?? null
+  await addGraphMem(directory, {
+    id: randomUUID(),
+    session_id: sessionId,
+    origin_task_id: linkedTaskId,
+    shelf: "context",
+    type: "insight",
+    content: `Lifecycle compact trace: ${summaryLine}`,
+    relevance_score: 0.8,
+    staleness_stamp: new Date().toISOString(),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  })
 
   const config = await loadConfig(directory)
   const newSessionId = generateSessionId()
