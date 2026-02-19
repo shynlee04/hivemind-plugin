@@ -42,7 +42,32 @@ if [[ ${#changed_files[@]} -eq 0 ]]; then
   exit 0
 fi
 
-protected_regexes=()
+protected_regexes=(
+  '^\.hivemind/'
+  '^\.opencode/'
+  '^\.planning/'
+  '^\.plan/'
+  '^\.crush/'
+  '^\.iflow/'
+  '^\.cursor/'
+  '^\.agent/'
+  '^\.agents/'
+  '^\.claude/'
+  '^\.kilocode/'
+  '^\.qoder/'
+  '^\.windsurf/'
+  '^\.beads/'
+  '^opencode\.jsonc?$'
+  '^docs/'
+  '^templates/'
+  '^tasks/'
+  '^AGENTS\.md$'
+  '^AGENT_RULES\.md$'
+  '^MASTER-NOTICE-BOARD\.md$'
+  '^README-v3-teaser\.md$'
+  '^HiveMind\.log$'
+  '.*\.heapsnapshot$'
+)
 
 violations=()
 

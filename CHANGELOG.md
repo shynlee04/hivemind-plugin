@@ -33,6 +33,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `README.md` fully rewritten: coherent install-to-runtime flow, upgrade guidance, troubleshooting, and expanded Vietnamese section focused on practical onboarding
 - `README.md` refreshed for Phase B: hook count/tool catalog accuracy, merged tool names, and new governance capabilities
 
+## [2.8.0] - 2026-02-19
+
+### Added
+- Vietnamese-first launch framing in `README.md` with 10 demo-ready use cases for product launch narratives
+- Public branch hardening policy in `scripts/guard-public-branch.sh` for internal/dev-only paths
+- HiveFiver auto-realignment next-step policy (menu options + permission-gated execution for mutating actions)
+
+### Changed
+- Release package boundary tightened for npm/npx distribution:
+  - hidden from public package payload: `docs`, `templates`, `prompts`, `references`
+  - retained public operational pack: `commands`, `skills`, `agents`, `workflows`
+- Version bump to `2.8.0`
+
+### Verified
+- Full typecheck, test suite, and clean rebuild validated for release readiness
+
 ## [2.6.0] - 2026-02-12
 
 ### Added

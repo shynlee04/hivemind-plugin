@@ -297,6 +297,42 @@
       "file_locks": [],
       "created_at": "2026-02-19T15:47:19.878Z",
       "updated_at": "2026-02-19T15:47:19.878Z"
+    },
+    {
+      "id": "ae1695bc-20d2-4ea1-b88d-24283c392d22",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Minimal stale-session boundary fix validated: queued stale-state mutation path with in-memory pending projection, focused + full tests green, code-review approved.",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T16:05:33.731Z",
+      "updated_at": "2026-02-19T16:05:33.731Z"
+    },
+    {
+      "id": "1e6a8e49-4306-4798-829e-e66fa568c665",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Residual stale-session hook write leak fixed via queued mutation path with in-memory pending projection; focused + full tests green and patch review approved",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T16:06:06.660Z",
+      "updated_at": "2026-02-19T16:06:06.660Z"
+    },
+    {
+      "id": "d7410806-bc85-4a1b-b765-469f2c0fa1cc",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Re-run post-remediation harsh stress journey audit (read-only) across five specified scenarios with evidence capture",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T16:11:58.106Z",
+      "updated_at": "2026-02-19T16:11:58.106Z"
+    },
+    {
+      "id": "d2ee5993-41d1-441c-9ead-1bf3383512d3",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Blocked-state acknowledged from prior subagent failure; continuing read-only post-remediation stress journey audit with evidence capture",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T16:12:36.894Z",
+      "updated_at": "2026-02-19T16:12:36.894Z"
     }
   ]
 }

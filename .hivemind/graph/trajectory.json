@@ -33,10 +33,14 @@
       "19c203dd-81f5-4ada-9f14-2da4ccc52673",
       "96fffb9f-9470-4e40-97e5-ab4976e4fe83",
       "4c8740c1-9f56-4d39-9e7b-3465a1856770",
-      "0a5cb690-013d-4007-8e0f-38125f65c40b"
+      "0a5cb690-013d-4007-8e0f-38125f65c40b",
+      "ae1695bc-20d2-4ea1-b88d-24283c392d22",
+      "1e6a8e49-4306-4798-829e-e66fa568c665",
+      "d7410806-bc85-4a1b-b765-469f2c0fa1cc",
+      "d2ee5993-41d1-441c-9ead-1bf3383512d3"
     ],
     "intent": "Production-readiness hardening of HiveFiver + remediation stack with full SRC integrity validation",
     "created_at": "2026-02-18T17:48:48.184Z",
-    "updated_at": "2026-02-19T15:47:19.889Z"
+    "updated_at": "2026-02-19T16:12:37.228Z"
   }
 }

@@ -168,10 +168,46 @@
             "created": 1771516039875,
             "stamp": "472219022026",
             "children": []
+          },
+          {
+            "id": "a_052319022026",
+            "level": "action",
+            "content": "Minimal stale-session boundary fix validated: queued stale-state mutation path with in-memory pending projection, focused + full tests green, code-review approved.",
+            "status": "active",
+            "created": 1771517133715,
+            "stamp": "052319022026",
+            "children": []
+          },
+          {
+            "id": "a_062319022026",
+            "level": "action",
+            "content": "Residual stale-session hook write leak fixed via queued mutation path with in-memory pending projection; focused + full tests green and patch review approved",
+            "status": "active",
+            "created": 1771517166655,
+            "stamp": "062319022026",
+            "children": []
+          },
+          {
+            "id": "a_112319022026",
+            "level": "action",
+            "content": "Re-run post-remediation harsh stress journey audit (read-only) across five specified scenarios with evidence capture",
+            "status": "active",
+            "created": 1771517517979,
+            "stamp": "112319022026",
+            "children": []
+          },
+          {
+            "id": "a_122319022026",
+            "level": "action",
+            "content": "Blocked-state acknowledged from prior subagent failure; continuing read-only post-remediation stress journey audit with evidence capture",
+            "status": "active",
+            "created": 1771517556375,
+            "stamp": "122319022026",
+            "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_472219022026"
+  "cursor": "a_122319022026"
 }

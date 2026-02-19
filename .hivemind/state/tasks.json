@@ -1,6 +1,6 @@
 {
   "session_id": "ses_38b27b94affexCHWZt2mbnj01j",
-  "updated_at": 1771514819099,
+  "updated_at": 1771517180333,
   "tasks": [
     {
       "id": "todo-1",
@@ -19,8 +19,8 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771514819099,
-      "updated_at": 1771514819099
+      "last_realigned_at": 1771517180333,
+      "updated_at": 1771517180333
     },
     {
       "id": "todo-2",
@@ -39,8 +39,8 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771514819099,
-      "updated_at": 1771514819099
+      "last_realigned_at": 1771517180333,
+      "updated_at": 1771517180333
     },
     {
       "id": "todo-3",
@@ -59,13 +59,33 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771514819099,
-      "updated_at": 1771514819099
+      "last_realigned_at": 1771517180333,
+      "updated_at": 1771517180333
     },
     {
       "id": "todo-4",
       "text": "Boundary fix: eliminate residual stale-session hook-side write (session-lifecycle -> onboarding.save)",
       "content": "Boundary fix: eliminate residual stale-session hook-side write (session-lifecycle -> onboarding.save)",
+      "status": "completed",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "source": "todo.updated",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "canonical_command": "hivefiver-start",
+      "related_entities": {
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+      },
+      "last_realigned_at": 1771517180333,
+      "updated_at": 1771517180333
+    },
+    {
+      "id": "todo-5",
+      "text": "Independent code-review sign-off for all boundary remediations",
+      "content": "Independent code-review sign-off for all boundary remediations",
       "status": "in_progress",
       "priority": "high",
       "domain": "hybrid",
@@ -79,28 +99,8 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771514819099,
-      "updated_at": 1771514819099
-    },
-    {
-      "id": "todo-5",
-      "text": "Independent code-review sign-off for all boundary remediations",
-      "content": "Independent code-review sign-off for all boundary remediations",
-      "status": "pending",
-      "priority": "high",
-      "domain": "hybrid",
-      "lane": "auto",
-      "source": "todo.updated",
-      "recommended_skills": [
-        "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor"
-      ],
-      "canonical_command": "hivefiver-start",
-      "related_entities": {
-        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
-      },
-      "last_realigned_at": 1771514819099,
-      "updated_at": 1771514819099
+      "last_realigned_at": 1771517180333,
+      "updated_at": 1771517180333
     },
     {
       "id": "todo-6",
@@ -119,8 +119,8 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771514819099,
-      "updated_at": 1771514819099
+      "last_realigned_at": 1771517180333,
+      "updated_at": 1771517180333
     },
     {
       "id": "todo-7",
@@ -139,8 +139,8 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771514819099,
-      "updated_at": 1771514819099
+      "last_realigned_at": 1771517180333,
+      "updated_at": 1771517180333
     }
   ]
 }
