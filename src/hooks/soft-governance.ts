@@ -21,7 +21,7 @@
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
-import { queueStateMutation, flushMutations } from "../lib/state-mutation-queue.js"
+import { queueStateMutation } from "../lib/state-mutation-queue.js"
 import {
   addViolationCount,
   incrementTurnCount,
@@ -461,15 +461,13 @@ export function createSoftGovernanceHook(
         newState = splitResult.state
       }
 
-      // CQRS-compliant: Queue mutation instead of direct save
-      // Flush immediately to maintain backwards compatibility
-      // In full CQRS, tools would flush mutations
+      // CQRS-compliant: queue mutation only.
+      // Hook remains write-intent only; mutation application is handled by tool boundaries.
       queueStateMutation({
         type: "UPDATE_STATE",
         payload: newState,
         source: "soft-governance"
       })
-      await flushMutations(stateManager)
 
       // Log drift warnings if detected
       if (driftWarning) {

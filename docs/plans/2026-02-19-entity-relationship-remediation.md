@@ -281,3 +281,29 @@ This unified program is done only when all criteria are true:
 - Relational staleness engine (Phase 4)
 - GSD lifecycle integration (Phase 5)
 - Hardening and cutover (Phase 6)
+
+---
+
+## Phase 3 Implementation Record (2026-02-19)
+
+### Violations Identified
+| # | Violation | File | Line | Severity |
+|---|-----------|------|------|----------|
+| 1 | CQRS Violation | session-lifecycle.ts | 73 | HIGH |
+| 2 | Missing FK Validation | graph-io.ts | 279 | HIGH |
+| 3 | Retrieval Overlap | session-lifecycle.ts + messages-transform.ts | - | MEDIUM |
+| 4 | Line Count Exceeded | messages-transform.ts | 489 lines | LOW |
+
+### Implementation Tasks
+| Task | Status | Evidence |
+|------|--------|----------|
+| Fix CQRS violation (queueStateMutation) | IN PROGRESS | - |
+| Add session_id FK validation | IN PROGRESS | - |
+| Enforce retrieval ownership | PENDING | - |
+| Add contract tests | PENDING | - |
+
+### Exit Gate Criteria
+- [ ] TypeScript: 0 errors
+- [ ] Tests: npm test passes
+- [ ] Code-review: Approved
+- [ ] Contract tests: Pass

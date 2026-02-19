@@ -27,6 +27,7 @@ import { createSessionLifecycleHook } from "../src/hooks/session-lifecycle.js"
 import { createSoftGovernanceHook } from "../src/hooks/soft-governance.js"
 import { createStateManager } from "../src/lib/persistence.js"
 import { loadConfig } from "../src/lib/persistence.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 import { loadMems } from "../src/lib/mems.js"
 import { loadTree } from "../src/lib/hierarchy-tree.js"
 import { initProject } from "../src/cli/init.js"
@@ -215,13 +216,20 @@ async function test_auto_capture_hook() {
 
     const log = await createLogger(tmpDir, "test")
     const config = await loadConfig(tmpDir)
-    const softGovernanceHook = createSoftGovernanceHook(log, tmpDir, config)
+    const rawSoftGovernanceHook = createSoftGovernanceHook(log, tmpDir, config)
 
     // Initialize session
     const sessionTool = createHivemindSessionTool(tmpDir)
     await sessionTool.execute({ action: "start", mode: "plan_driven", focus: "Test auto-capture" }, {} as any)
 
     const stateManager = createStateManager(tmpDir)
+    const softGovernanceHook = async (
+      input: { tool: string; sessionID: string; callID: string },
+      output: { title: string; output: string; metadata: Record<string, unknown> },
+    ) => {
+      await rawSoftGovernanceHook(input, output)
+      await flushMutations(stateManager)
+    }
 
     // 1. Non-task tool does NOT add to cycle_log
     await softGovernanceHook(

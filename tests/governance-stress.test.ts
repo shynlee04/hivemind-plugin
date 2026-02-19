@@ -12,6 +12,7 @@ import { createEventHandler } from "../src/hooks/event-handler.js"
 import { initSdkContext, resetSdkContext } from "../src/hooks/sdk-context.js"
 import { noopLogger } from "../src/lib/logging.js"
 import { compileIgnoredTier, formatIgnoredEvidence } from "../src/lib/detection.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 
 let passed = 0
 let failed_ = 0
@@ -86,10 +87,14 @@ async function testStressConditions() {
     await stateManager.save(strictState)
 
     resetToastCooldowns()
-    const softHook = createSoftGovernanceHook(noopLogger, dir, strict)
-    await softHook({ tool: "write", sessionID: "stress", callID: "1" }, { title: "", output: "", metadata: {} })
-    await softHook({ tool: "write", sessionID: "stress", callID: "2" }, { title: "", output: "", metadata: {} })
-    await softHook({ tool: "write", sessionID: "stress", callID: "3" }, { title: "", output: "", metadata: {} })
+    const rawSoftHook = createSoftGovernanceHook(noopLogger, dir, strict)
+    const softHook = async (callID: string) => {
+      await rawSoftHook({ tool: "write", sessionID: "stress", callID }, { title: "", output: "", metadata: {} })
+      await flushMutations(stateManager)
+    }
+    await softHook("1")
+    await softHook("2")
+    await softHook("3")
 
     check(toasts.some((t) => t.variant === "info"), "GOV-04 out-of-order starts with info toast")
     check(toasts.some((t) => t.variant === "warning") && toasts.some((t) => t.variant === "error"), "GOV-04 severity escalates warning to error")
