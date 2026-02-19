@@ -253,6 +253,17 @@
       "staleness_stamp": "2026-02-19T07:06:27.327Z",
       "created_at": "2026-02-19T07:06:27.327Z",
       "updated_at": "2026-02-19T07:06:27.327Z"
+    },
+    {
+      "id": "0922019e-703b-474d-ab72-783e2b18ee58",
+      "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Phase 4 completion validated: relational staleness engine implemented (commit 2442e47), AC1-AC6 passed, code-review APPROVED, docs synchronized in AGENTS.md and master plan (commit 56fc068).",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-19T07:29:17.117Z",
+      "created_at": "2026-02-19T07:29:17.117Z",
+      "updated_at": "2026-02-19T07:29:17.117Z"
     }
   ]
 }
