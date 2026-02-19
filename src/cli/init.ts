@@ -11,7 +11,7 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
-import { copyFile, mkdir, rm } from "node:fs/promises"
+import { copyFile, mkdir, rm, writeFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
@@ -179,6 +179,35 @@ const HIVEFIVER_PRIMARY_AGENT_TOOLS = {
   websearch: true,
   bash: true,
 } as const
+
+const DEFAULT_COMMANDMENTS_MARKDOWN = `# 10 Commandments
+
+1. Declare intent before implementation.
+2. Keep trajectory -> tactic -> action aligned.
+3. Verify evidence before claiming completion.
+4. Prefer deterministic workflows over ad-hoc execution.
+5. Track decisions and dependencies in persistent state.
+6. Use incremental checkpoints for long sessions.
+7. Validate with tests and type checks before release.
+8. Preserve context across compaction and handoff.
+9. Escalate when confidence drops or ambiguity rises.
+10. Close every cycle with explicit summary and next steps.
+`
+
+async function seedTenCommandments(directory: string): Promise<void> {
+  const paths = getEffectivePaths(directory)
+  const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md")
+  const commandmentsDest = join(paths.docsDir, "10-commandments.md")
+
+  await mkdir(paths.docsDir, { recursive: true })
+
+  if (existsSync(commandmentsSource)) {
+    await copyFile(commandmentsSource, commandmentsDest)
+    return
+  }
+
+  await writeFile(commandmentsDest, DEFAULT_COMMANDMENTS_MARKDOWN, "utf-8")
+}
 
 /**
  * Auto-register the HiveMind plugin in opencode.json.
@@ -614,10 +643,7 @@ export async function initProject(
     await initializePlanningDirectory(directory)
 
     // Copy 10 Commandments to .hivemind
-    const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md")
-    const commandmentsDest = join(p.docsDir, "10-commandments.md")
-    await mkdir(p.docsDir, { recursive: true })
-    await copyFile(commandmentsSource, commandmentsDest)
+    await seedTenCommandments(directory)
     if (!options.silent) {
       log(`  ✓ Copied 10 Commandments to ${p.docsDir}/`)
     }
@@ -743,10 +769,7 @@ export async function initProject(
   await initializePlanningDirectory(directory)
 
   // Copy 10 Commandments to .hivemind
-  const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md")
-  const commandmentsDest = join(p.docsDir, "10-commandments.md")
-  await mkdir(p.docsDir, { recursive: true })
-  await copyFile(commandmentsSource, commandmentsDest)
+  await seedTenCommandments(directory)
   if (!options.silent) {
     log(`  ✓ Copied 10 Commandments to ${p.docsDir}/`)
   }

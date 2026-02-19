@@ -15,6 +15,12 @@ coverage/
 # Development artifacts - INTERNAL ONLY
 .planning/
 .plan/
+.hivemind/
+.opencode/
+.cursor/
+.iflow/
+.crush/
+.beads/
 tasks/
 session-*.md
 *.tmp.txt
