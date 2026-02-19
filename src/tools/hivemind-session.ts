@@ -8,7 +8,7 @@ import {
   type HierarchyLevel,
   type SessionResult,
 } from "../lib/session-engine.js"
-import { loadTrajectory, saveTrajectory } from "../lib/graph-io.js"
+import { addGraphTask, loadGraphTasks, loadTrajectory, saveGraphTasks, saveTrajectory } from "../lib/graph-io.js"
 import type { SessionMode } from "../schemas/brain-state.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
@@ -70,7 +70,8 @@ async function syncTrajectoryToGraph(
     case "update_tactic":
       // After map_context(tactic level): updates active_phase_id
       if (trajectory.trajectory) {
-        trajectory.trajectory.active_phase_id = params?.phaseId || null
+        const existingPhaseId = trajectory.trajectory.active_phase_id
+        trajectory.trajectory.active_phase_id = params?.phaseId || existingPhaseId || crypto.randomUUID()
         trajectory.trajectory.updated_at = now
       }
       break
@@ -78,7 +79,13 @@ async function syncTrajectoryToGraph(
     case "update_action":
       // After map_context(action level): updates active_task_ids
       if (trajectory.trajectory) {
-        trajectory.trajectory.active_task_ids = params?.taskIds || []
+        const existingTaskIds = trajectory.trajectory.active_task_ids
+        const nextTaskIds = params?.taskIds && params.taskIds.length > 0
+          ? params.taskIds
+          : existingTaskIds.length > 0
+            ? existingTaskIds
+            : [crypto.randomUUID()]
+        trajectory.trajectory.active_task_ids = nextTaskIds
         trajectory.trajectory.updated_at = now
       }
       break
@@ -177,16 +184,34 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
                 intent: args.content,
               })
             } else if (targetLevel === "tactic") {
-              // For tactic level, we need to derive or generate a phase ID
-              // In V3, this would come from the plan/phase system
-              await syncTrajectoryToGraph(directory, "update_tactic", {
-                phaseId: null, // TODO: Derive from plan system when available
-              })
+              const trajectory = await loadTrajectory(directory)
+              const phaseId = trajectory?.trajectory?.active_phase_id || crypto.randomUUID()
+              await syncTrajectoryToGraph(directory, "update_tactic", { phaseId })
             } else {
-              // For action level, update task IDs
-              // In V3, this would come from the task system
+              const now = new Date().toISOString()
+              const trajectory = await loadTrajectory(directory)
+              let phaseId = trajectory?.trajectory?.active_phase_id || null
+              if (!phaseId) {
+                phaseId = crypto.randomUUID()
+                await syncTrajectoryToGraph(directory, "update_tactic", { phaseId })
+              }
+
+              const taskId = crypto.randomUUID()
+              const currentTasks = await loadGraphTasks(directory, { enabled: false })
+              await saveGraphTasks(directory, currentTasks)
+              await addGraphTask(directory, {
+                id: taskId,
+                parent_phase_id: phaseId,
+                title: args.content || "Lifecycle task",
+                status: "in_progress",
+                file_locks: [],
+                created_at: now,
+                updated_at: now,
+              })
+
+              const existingTaskIds = trajectory?.trajectory?.active_task_ids || []
               await syncTrajectoryToGraph(directory, "update_action", {
-                taskIds: [], // TODO: Derive from task system when available
+                taskIds: [...existingTaskIds, taskId],
               })
             }
           }

@@ -604,6 +604,14 @@ export async function loadGraphTasks(
     }
   }
 
+  // Step 1b: Include active lifecycle phase from trajectory as a valid FK source.
+  // This keeps session-lifecycle-generated tasks FK-valid even before plan phases are materialized.
+  const trajectory = await loadTrajectory(projectRoot)
+  const lifecyclePhaseId = trajectory?.trajectory?.active_phase_id
+  if (lifecyclePhaseId) {
+    validPhaseIds.add(lifecyclePhaseId)
+  }
+
   // Step 2: Load and validate tasks with FK validation
   const validatedState = await validateTasksWithFKValidation(filePath, validPhaseIds, orphanPath)
   
