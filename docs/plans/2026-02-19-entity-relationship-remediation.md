@@ -336,3 +336,49 @@ This unified program is done only when all criteria are true:
 - Code-review: APPROVED (final sign-off)
 - Contract isolation: hook-side flush ownership removed in `src/hooks/soft-governance.ts` and `src/hooks/compaction.ts`
 - FK validation: `mem.session_id` validation in `src/lib/graph-io.ts`
+
+---
+
+## Phase 5 Completion Record (2026-02-19)
+
+### Scope Closed
+- Explicit lifecycle lineage continuity is enforced across `project -> milestone -> phase -> plan -> task -> verification`.
+- Canonical governance compatibility blockers are remediated for canonical tool aliases and blocked-flow acknowledgement.
+- Regression coverage added for canonical governance and lineage continuity behavior.
+
+### Evidence
+- Canonical governance blockers: `tests/phase5-canonical-governance-red.test.ts` passing.
+- Lineage continuity coverage: `tests/phase5-lineage-continuity-red.test.ts` passing.
+- Completion gates: `npx tsc --noEmit` and `npm test` passing.
+
+### Exit Gate Status
+- ✅ Lifecycle trace continuity: COMPLETE
+- ✅ Canonical governance blockers: RESOLVED
+- ✅ Phase 5 closure: APPROVED
+
+---
+
+## Phase 6 Hardening and Cutover Record (2026-02-19)
+
+### Scope Closed
+- Hardening and cutover gate completed with canonical governance recovery paths verified.
+- Canonical blocked/failure recovery is acknowledged through supported tool paths (`hivemind_session` update, `hivemind_cycle` export).
+- Public-branch safety guard included in completion gate (`npm run guard:public`).
+
+### Evidence
+- Type safety gate: `npx tsc --noEmit` pass.
+- Test gate: `npm test` pass.
+- Public release guard: `npm run guard:public` pass.
+
+### Exit Gate Status
+- ✅ Defect burn-down for Phase 6 scope: COMPLETE
+- ✅ Hardening/cutover governance gate: COMPLETE
+- ✅ Production cutover readiness for this wave: GO
+
+---
+
+## Post-Completion Audits (2026-02-19)
+
+- Architecture audit: GO (contract boundaries preserved; no tool/hook ownership regression detected in completion scope).
+- Integration audit: GO (canonical governance compatibility and lineage continuity scenarios pass in test coverage).
+- Tech-debt backlog: NOTED (non-blocking follow-ups tracked separately; no blockers against Phase 5/6 closeout).

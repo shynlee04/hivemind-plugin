@@ -8,8 +8,9 @@ import {
   type HierarchyLevel,
   type SessionResult,
 } from "../lib/session-engine.js"
+import { createStateManager } from "../lib/persistence.js"
 import { addGraphTask, loadGraphTasks, loadTrajectory, saveGraphTasks, saveTrajectory } from "../lib/graph-io.js"
-import type { SessionMode } from "../schemas/brain-state.js"
+import { clearPendingFailureAck, type SessionMode } from "../schemas/brain-state.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
 /**
@@ -29,14 +30,15 @@ async function syncTrajectoryToGraph(
 ): Promise<void> {
   let trajectory = await loadTrajectory(directory)
   const now = new Date().toISOString()
+  const fallbackSessionId = params?.sessionId || crypto.randomUUID()
 
   // If no trajectory exists, create initial one
   if (!trajectory || !trajectory.trajectory) {
     trajectory = {
       version: "1.0.0",
       trajectory: {
-        id: params?.sessionId || crypto.randomUUID(),
-        session_id: params?.sessionId || crypto.randomUUID(),
+        id: fallbackSessionId,
+        session_id: fallbackSessionId,
         active_plan_id: null,
         active_phase_id: null,
         active_task_ids: [],
@@ -141,6 +143,10 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
         .string()
         .optional()
         .describe("For resume: session ID to resume"),
+      status: tool.schema
+        .enum(["in_progress", "blocked", "done"])
+        .optional()
+        .describe("Optional workflow status for update"),
     },
     async execute(args, _context) {
       // CHIMERA-3: Always return JSON for FK chaining - no conditionals
@@ -213,6 +219,14 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
               await syncTrajectoryToGraph(directory, "update_action", {
                 taskIds: [...existingTaskIds, taskId],
               })
+            }
+
+            if (args.status === "blocked") {
+              const stateManager = createStateManager(directory)
+              const currentState = await stateManager.load()
+              if (currentState?.pending_failure_ack) {
+                await stateManager.save(clearPendingFailureAck(currentState))
+              }
             }
           }
           break
