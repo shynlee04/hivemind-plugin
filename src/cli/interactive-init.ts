@@ -261,8 +261,32 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
     }
   }
 
-  // Init is intentionally project-local to avoid stale global installs.
-  const syncTarget: AssetSyncTarget = "project"
+  // Target selection - where should OpenCode assets be installed?
+  const syncTarget = await p.select({
+    message: "Install OpenCode assets (commands, skills) where?",
+    options: [
+      {
+        value: "project" as AssetSyncTarget,
+        label: "Project only (recommended)",
+        hint: ".opencode/ in this project — portable, version-controlled",
+      },
+      {
+        value: "global" as AssetSyncTarget,
+        label: "Global only",
+        hint: "~/.config/opencode/ — available in all projects",
+      },
+      {
+        value: "both" as AssetSyncTarget,
+        label: "Both project and global",
+        hint: "Installs to both locations",
+      },
+    ],
+  })
+
+  if (p.isCancel(syncTarget)) {
+    p.cancel("Setup cancelled.")
+    return null
+  }
 
   // Summary
   p.note(

@@ -10,8 +10,8 @@
  *   - Auto-registers plugin in opencode.json
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
-import { copyFile, mkdir, readdir, rm, writeFile } from "node:fs/promises"
+import { existsSync, readFileSync, writeFileSync } from "node:fs"
+import { copyFile, mkdir, rm, writeFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
@@ -35,7 +35,7 @@ import {
   normalizeAutomationLabel,
 } from "../schemas/config.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
-import { createStateManager, loadConfig, saveConfig } from "../lib/persistence.js"
+import { createStateManager, saveConfig } from "../lib/persistence.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { migrateIfNeeded } from "../lib/migrate.js"
@@ -169,7 +169,6 @@ export interface InitOptions {
 const log = (msg: string) => console.log(msg)
 
 const PLUGIN_NAME = "hivemind-context-governance"
-const PLUGIN_ENTRY = PLUGIN_NAME
 const HIVEFIVER_PRIMARY_AGENT_TOOLS = {
   read: true,
   glob: true,
@@ -195,27 +194,6 @@ const DEFAULT_COMMANDMENTS_MARKDOWN = `# 10 Commandments
 10. Close every cycle with explicit summary and next steps.
 `
 
-function resolveOpencodeConfigPath(directory: string): string {
-  const candidates = [
-    join(directory, ".opencode", "opencode.json"),
-    join(directory, ".opencode", "opencode.jsonc"),
-    join(directory, "opencode.json"),
-    join(directory, "opencode.jsonc"),
-  ]
-
-  for (const candidate of candidates) {
-    if (existsSync(candidate)) return candidate
-  }
-
-  // Default to project-local OpenCode config for fresh installs.
-  return join(directory, ".opencode", "opencode.json")
-}
-
-function writeOpencodeConfig(configPath: string, config: Record<string, unknown>): void {
-  mkdirSync(dirname(configPath), { recursive: true })
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
-}
-
 async function seedTenCommandments(directory: string): Promise<void> {
   const paths = getEffectivePaths(directory)
   const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md")
@@ -234,11 +212,17 @@ async function seedTenCommandments(directory: string): Promise<void> {
 /**
  * Auto-register the HiveMind plugin in opencode.json.
  * Creates the file if it doesn't exist.
- * Ensures plugin registration uses the canonical unpinned package name.
+ * Adds the plugin if not already registered.
  */
 function registerPluginInConfig(directory: string, silent: boolean): void {
-  // Support both modern root config and legacy .opencode/opencode.json installs.
-  let configPath = resolveOpencodeConfigPath(directory)
+  // Check both opencode.json and opencode.jsonc
+  let configPath = join(directory, "opencode.json")
+  if (!existsSync(configPath)) {
+    const jsoncPath = join(directory, "opencode.jsonc")
+    if (existsSync(jsoncPath)) {
+      configPath = jsoncPath
+    }
+  }
 
   let config: Record<string, unknown> = {}
 
@@ -256,7 +240,7 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
         log(`  ⚠ Could not parse ${configPath}: ${err instanceof Error ? err.message : err}`)
         log(`  ⚠ Creating new opencode.json (existing file preserved)`)
       }
-      configPath = join(directory, ".opencode", "opencode.json")
+      configPath = join(directory, "opencode.json")
       config = {}
     }
   }
@@ -266,80 +250,28 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
     config.plugin = []
   }
 
-  const plugins = (config.plugin as unknown[]).filter(
-    (value): value is string => typeof value === "string"
+  const plugins = config.plugin as string[]
+
+  // Check if already registered (exact match or versioned match)
+  const alreadyRegistered = plugins.some(
+    (p) => p === PLUGIN_NAME || p.startsWith(PLUGIN_NAME + "@")
   )
-  const hiveMindPluginPattern = new RegExp(`(^|[\\\\/])${PLUGIN_NAME}(?:@.+)?$`)
-  const isHiveMindPlugin = (value: string) => hiveMindPluginPattern.test(value)
 
-  const hadAnyHiveMindEntry = plugins.some(isHiveMindPlugin)
-  const firstHiveMindIndex = plugins.findIndex(isHiveMindPlugin)
-  const nextPlugins: string[] = []
-  let hiveMindInserted = false
-  for (let index = 0; index < plugins.length; index++) {
-    const value = plugins[index]
-    if (!isHiveMindPlugin(value)) {
-      nextPlugins.push(value)
-      continue
-    }
-
-    if (!hiveMindInserted) {
-      if (index === firstHiveMindIndex) {
-        // Replace malformed/path/legacy entry in-place.
-        nextPlugins.push(PLUGIN_ENTRY)
-        hiveMindInserted = true
-      }
-      continue
-    }
-  }
-  if (!hiveMindInserted) {
-    nextPlugins.push(PLUGIN_ENTRY)
-  }
-
-  const changed =
-    nextPlugins.length !== plugins.length ||
-    nextPlugins.some((value, index) => value !== plugins[index])
-
-  if (!changed) {
+  if (alreadyRegistered) {
     if (!silent) {
       log(`  ✓ Plugin already registered in opencode.json`)
     }
     return
   }
 
-  config.plugin = nextPlugins
-  writeOpencodeConfig(configPath, config)
+  plugins.push(PLUGIN_NAME)
+  config.plugin = plugins
+
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
 
   if (!silent) {
-    if (hadAnyHiveMindEntry) {
-      log(`  ✓ Plugin registration normalized to ${PLUGIN_ENTRY}`)
-    } else {
-      log(`  ✓ Plugin registered in opencode.json`)
-      log(`    → OpenCode will auto-install on next launch`)
-    }
-  }
-}
-
-async function cleanupLegacyProjectPluginArtifacts(directory: string, silent: boolean): Promise<void> {
-  const pluginsDir = join(directory, ".opencode", "plugins")
-  if (!existsSync(pluginsDir)) return
-
-  let removed = 0
-  try {
-    const entries = await readdir(pluginsDir, { withFileTypes: true })
-    for (const entry of entries) {
-      const isLegacyName = /^hivemind-context-governance(?:@.+)?$/.test(entry.name)
-      if (!isLegacyName) continue
-
-      await rm(join(pluginsDir, entry.name), { recursive: true, force: true })
-      removed++
-    }
-  } catch {
-    return
-  }
-
-  if (!silent && removed > 0) {
-    log(`  ✓ Removed ${removed} legacy plugin artifact(s) from .opencode/plugins`)
+    log(`  ✓ Plugin registered in opencode.json`)
+    log(`    → OpenCode will auto-install on next launch`)
   }
 }
 
@@ -349,7 +281,7 @@ async function cleanupLegacyProjectPluginArtifacts(directory: string, silent: bo
  * - MCP stack placeholders for guided setup
  */
 function ensureHiveFiverDefaultsInOpencode(directory: string, silent: boolean): void {
-  const configPath = resolveOpencodeConfigPath(directory)
+  const configPath = join(directory, "opencode.json")
   if (!existsSync(configPath)) return
 
   let config: Record<string, unknown> = {}
@@ -428,7 +360,7 @@ function ensureHiveFiverDefaultsInOpencode(directory: string, silent: boolean): 
   }
   config.mcp = mcpConfig
 
-  writeOpencodeConfig(configPath, config)
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
   if (!silent) {
     log("  ✓ Applied HiveFiver v2 defaults to opencode.json")
   }
@@ -487,7 +419,7 @@ function updateOpencodeJsonWithProfile(
   silent: boolean
 ): void {
   const preset = PROFILE_PRESETS[profileKey]
-  const configPath = resolveOpencodeConfigPath(directory)
+  const configPath = join(directory, "opencode.json")
   let config: Record<string, unknown> = {}
 
   if (existsSync(configPath)) {
@@ -509,7 +441,7 @@ function updateOpencodeJsonWithProfile(
     ...preset.permissions,
   }
 
-  writeOpencodeConfig(configPath, config)
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
 
   if (!silent) {
     log(`  ✓ Applied ${preset.label} profile permissions to opencode.json`)
@@ -649,59 +581,10 @@ export async function initProject(
   // Guard: Check brain.json existence, not just directory.
   // The directory may exist from logger side-effects without full initialization.
   if (existsSync(brainPath)) {
-    const hasConfigOverrides = Boolean(
-      options.profile ||
-      options.language ||
-      options.governanceMode ||
-      options.automationLevel ||
-      options.expertLevel ||
-      options.outputStyle ||
-      typeof options.requireCodeReview === "boolean" ||
-      typeof options.enforceTdd === "boolean"
-    )
-
-    let nextConfig: ReturnType<typeof createConfig> | null = null
-    if (hasConfigOverrides) {
-      if (options.profile && isValidProfilePreset(options.profile)) {
-        nextConfig = applyProfilePreset(options.profile, options).config
-      } else {
-        const currentConfig = await loadConfig(directory)
-        const resolvedAutomation = options.automationLevel
-          ? normalizeAutomationInput(options.automationLevel)
-          : null
-
-        nextConfig = createConfig({
-          ...currentConfig,
-          governance_mode: options.governanceMode ?? currentConfig.governance_mode,
-          language: options.language ?? currentConfig.language,
-          automation_level: resolvedAutomation ?? currentConfig.automation_level,
-          agent_behavior: {
-            ...currentConfig.agent_behavior,
-            language: options.language ?? currentConfig.agent_behavior.language,
-            expert_level: options.expertLevel ?? currentConfig.agent_behavior.expert_level,
-            output_style: options.outputStyle ?? currentConfig.agent_behavior.output_style,
-            constraints: {
-              ...currentConfig.agent_behavior.constraints,
-              require_code_review:
-                options.requireCodeReview ?? currentConfig.agent_behavior.constraints.require_code_review,
-              enforce_tdd:
-                options.enforceTdd ?? currentConfig.agent_behavior.constraints.enforce_tdd,
-            },
-          },
-        })
-      }
-
-      await saveConfig(directory, nextConfig)
-    }
-
-    await cleanupLegacyProjectPluginArtifacts(directory, options.silent ?? false)
-
     // Existing user upgrade path: keep state, refresh OpenCode assets, AND ensure plugin is registered
     await syncOpencodeAssets(directory, {
-      // Enforce project-local .opencode sync for all init flows.
-      target: "project",
-      // Always refresh local OpenCode assets during init/re-init.
-      overwrite: true,
+      target: options.syncTarget ?? "project",
+      overwrite: options.overwriteAssets ?? false,
       silent: options.silent ?? false,
       onLog: options.silent ? undefined : log,
     })
@@ -709,40 +592,14 @@ export async function initProject(
     // Ensure plugin is registered in opencode.json (this was missing!)
     registerPluginInConfig(directory, options.silent ?? false)
     ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
-    if (options.profile && isValidProfilePreset(options.profile)) {
-      updateOpencodeJsonWithProfile(directory, options.profile, options.silent ?? false)
-    }
 
     const existingStateManager = createStateManager(directory)
     const existingState = await existingStateManager.load()
-    if (existingState && nextConfig) {
-      const nextStatus = nextConfig.governance_mode === "strict" ? "LOCKED" : "OPEN"
-      await existingStateManager.save({
-        ...existingState,
-        session: {
-          ...existingState.session,
-          governance_mode: nextConfig.governance_mode,
-          governance_status: nextStatus,
-          last_activity: Date.now(),
-        },
-      })
-    }
     await seedHiveFiverOnboardingTasks(directory, existingState?.session.id ?? "unknown")
     logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
 
     if (!options.silent) {
-      if (nextConfig) {
-        log("✓ HiveMind re-initialized with updated configuration.")
-        log(`  Governance: ${nextConfig.governance_mode}`)
-        log(`  Language: ${nextConfig.language}`)
-        log(`  Automation: ${normalizeAutomationLabel(nextConfig.automation_level)}${isCoachAutomation(nextConfig.automation_level) ? " (max guidance)" : ""}`)
-        log(`  Expert Level: ${nextConfig.agent_behavior.expert_level}`)
-        log(`  Output Style: ${nextConfig.agent_behavior.output_style}`)
-        if (nextConfig.agent_behavior.constraints.require_code_review) log("  ✓ Code review required")
-        if (nextConfig.agent_behavior.constraints.enforce_tdd) log("  ✓ TDD enforced")
-      } else {
-        log("⚠ HiveMind already initialized in this project.")
-      }
+      log("⚠ HiveMind already initialized in this project.")
       log(`  Directory: ${hivemindDir}`)
       log("  Use 'npx hivemind-context-governance status' to see current state.")
     }
@@ -813,14 +670,10 @@ export async function initProject(
     // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
     injectAgentsDocs(directory, options.silent ?? false)
 
-    await cleanupLegacyProjectPluginArtifacts(directory, options.silent ?? false)
-
     // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
     await syncOpencodeAssets(directory, {
-      // Enforce project-local .opencode sync for all init flows.
-      target: "project",
-      // Always refresh local OpenCode assets during init/re-init.
-      overwrite: true,
+      target: options.syncTarget ?? "project",
+      overwrite: options.overwriteAssets ?? false,
       silent: options.silent ?? false,
       onLog: options.silent ? undefined : log,
     })
@@ -940,14 +793,10 @@ export async function initProject(
   // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
   injectAgentsDocs(directory, options.silent ?? false)
 
-  await cleanupLegacyProjectPluginArtifacts(directory, options.silent ?? false)
-
   // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
   await syncOpencodeAssets(directory, {
-    // Enforce project-local .opencode sync for all init flows.
-    target: "project",
-    // Always refresh local OpenCode assets during init/re-init.
-    overwrite: true,
+    target: options.syncTarget ?? "project",
+    overwrite: options.overwriteAssets ?? false,
     silent: options.silent ?? false,
     onLog: options.silent ? undefined : log,
   })
