@@ -76,10 +76,10 @@ Khi xong việc, `compact_session` sẽ:
 
 ## Cài Đặt Từ Đầu Đến Cuối
 
-### Một Lệnh - Xong Ngay
+### Một Lệnh - Xong Ngay (version 2.8.5)
 
 ```bash
-npx hivemind-context-governance init
+npx hivemind-context-governance@latest init
 ```
 
 **Điều gì sẽ xảy ra (đảm bảo):**
