@@ -254,3 +254,30 @@ This unified program is done only when all criteria are true:
 - Staleness is lineage-first and same-level constrained, with timestamps as fallback only.
 - GSD lifecycle (`project/milestone/phase/plan/task/verification`) is lineage-linked and verifiable end-to-end.
 - Each phase (0-6) has passed gates with checkpoint evidence and validated rollback path.
+
+---
+
+## Phase 2 Completion Record (2026-02-19)
+
+### Implementation Summary
+| Item | File | Line | Status |
+|------|------|------|--------|
+| MemNodeSchema.session_id FK | graph-nodes.ts | 47 | ✅ COMPLETE |
+| cognitive-packer session_id | cognitive-packer.ts | 256 | ✅ COMPLETE |
+| session-swarm session_id | session-swarm.ts | 311 | ✅ COMPLETE |
+| session-swarm UUID fix | session-swarm.ts | 311 | ✅ COMPLETE |
+| session-swarm Zod validation | session-swarm.ts | 324 | ✅ COMPLETE |
+| migrateMems session_id | graph-migrate.ts | 537 | ✅ COMPLETE |
+| backfillMemSessionId() | graph-migrate.ts | 506 | ✅ COMPLETE |
+
+### Exit Gate Evidence
+- TypeScript session_id errors: 0 ✅
+- Test suite graph-migrate: PASS ✅
+- Code-review: APPROVED ✅
+
+### Remaining Work (Phase 3+)
+- graph-io.ts: Add session_id FK validation in validateMemsWithFKValidation()
+- Hook/tool contract isolation (Phase 3)
+- Relational staleness engine (Phase 4)
+- GSD lifecycle integration (Phase 5)
+- Hardening and cutover (Phase 6)

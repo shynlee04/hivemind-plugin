@@ -11,8 +11,7 @@ import { join } from "path"
 import { existsSync, readFileSync, readdirSync } from "fs"
 import { mkdir, readFile, writeFile, rename, unlink } from "fs/promises"
 
-import { withFileLock } from "./file-lock.js"
-import { loadGraphMems, saveGraphMems } from "./graph-io.js"
+import { addGraphMem } from "./graph-io.js"
 import { createLogger, noopLogger, type Logger } from "./logging.js"
 import { getEffectivePaths } from "./paths.js"
 import type { MemNode } from "../schemas/graph-nodes.js"
@@ -276,15 +275,15 @@ export async function completeSwarm(
   swarmId: string,
   findings: SwarmFindings,
 ): Promise<void> {
-  const paths = getEffectivePaths(projectRoot)
-
-  // 1. Load existing swarm metadata for origin_task_id (before update)
+  // 1. Load existing swarm metadata for origin_task_id and session_id (before update)
   const swarmMetaPath = getSwarmMetaPath(projectRoot, swarmId)
   let parentTaskId: string | null = null
+  let sessionId: string | null = null
   if (existsSync(swarmMetaPath)) {
     const raw = await readFile(swarmMetaPath, "utf-8")
     const meta = JSON.parse(raw) as SwarmMeta
     parentTaskId = meta.parent_task_id
+    sessionId = meta.parent_session_id
 
     // Update swarm metadata to completed with atomic write
     meta.status = "completed"
@@ -292,9 +291,25 @@ export async function completeSwarm(
     await atomicWriteJson(swarmMetaPath, meta)
   }
 
-  // 2. Create mem node with origin_task_id
+  // 2. Create mem node with origin_task_id and session_id
+  // Fallback: derive session_id from trajectory if not in swarm metadata
+  const effectiveSessionId = sessionId ?? (() => {
+    const trajectoryPath = getEffectivePaths(projectRoot).graphTrajectory
+    if (existsSync(trajectoryPath)) {
+      try {
+        const trajectoryRaw = readFileSync(trajectoryPath, "utf-8")
+        const trajectory = JSON.parse(trajectoryRaw) as { trajectory?: { session_id?: string } }
+        return trajectory.trajectory?.session_id ?? randomUUID()
+      } catch {
+        return randomUUID()
+      }
+    }
+    return randomUUID()
+  })()
+
   const memNode: MemNode = {
-    id: `mem_${Date.now()}_${randomUUID().slice(0, 8)}`,
+    id: randomUUID(),
+    session_id: effectiveSessionId,
     origin_task_id: parentTaskId,
     shelf: findings.shelf,
     type: "insight",
@@ -305,13 +320,8 @@ export async function completeSwarm(
     updated_at: new Date().toISOString(),
   }
 
-  // 3. Save findings to graph/mems.json with file lock
-  const memsFilePath = paths.graphMems
-  await withFileLock(memsFilePath, async () => {
-    const current = await loadGraphMems(projectRoot)
-    current.mems.push(memNode)
-    await saveGraphMems(projectRoot, current)
-  })
+  // 3. Save findings to graph/mems.json via addGraphMem (Zod-validated)
+  await addGraphMem(projectRoot, memNode)
 }
 
 /**

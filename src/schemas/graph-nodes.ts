@@ -44,6 +44,7 @@ export const TaskNodeSchema = z.object({
 
 export const MemNodeSchema = z.object({
   id: z.string().uuid(),
+  session_id: z.string().uuid(), // FK to trajectory.session_id - REQUIRED
   origin_task_id: z.string().uuid().nullable(),
   shelf: z.string(),
   type: z.enum(["insight", "false_path"]),

@@ -253,6 +253,7 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
         const m = mem as Record<string, unknown>
         const memNode: MemNode = {
           id: typeof m.id === "string" ? m.id : `mem_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          session_id: resolvedSession,
           shelf: typeof m.shelf === "string" ? m.shelf : "general",
           content: typeof m.content === "string" ? m.content : "",
           type: (m.type === "false_path" || m.type === "insight") ? m.type : "insight",

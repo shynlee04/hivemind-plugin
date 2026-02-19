@@ -16,6 +16,7 @@ import {
   migrateToGraph,
   isGraphMigrationNeeded,
   normalizeTaskIdsToUuidLineage,
+  backfillMemSessionId,
   _internal,
 } from "../src/lib/graph-migrate.js"
 import { getHivemindPaths, getLegacyPaths } from "../src/lib/paths.js"
@@ -149,28 +150,36 @@ describe("Graph Migration (US-018)", () => {
   })
 
   describe("migrateMems", () => {
+    const sessionId = randomUUID()
+
     it("creates empty array from empty input", () => {
-      const mems = migrateMems([])
+      const mems = migrateMems([], sessionId)
       assert.equal(mems.length, 0)
     })
 
+    it("sets session_id from parameter", () => {
+      const explicitSessionId = randomUUID()
+      const mems = migrateMems([{ content: "Test memory" }], explicitSessionId)
+      assert.equal(mems[0].session_id, explicitSessionId)
+    })
+
     it("sets type to 'insight'", () => {
-      const mems = migrateMems([{ content: "Test memory" }])
+      const mems = migrateMems([{ content: "Test memory" }], sessionId)
       assert.equal(mems[0].type, "insight")
     })
 
     it("sets origin_task_id to null", () => {
-      const mems = migrateMems([{ content: "Test memory" }])
+      const mems = migrateMems([{ content: "Test memory" }], sessionId)
       assert.equal(mems[0].origin_task_id, null)
     })
 
     it("sets relevance_score to 0.5", () => {
-      const mems = migrateMems([{ content: "Test memory" }])
+      const mems = migrateMems([{ content: "Test memory" }], sessionId)
       assert.equal(mems[0].relevance_score, 0.5)
     })
 
     it("sets staleness_stamp to current time", () => {
-      const mems = migrateMems([{ content: "Test memory" }])
+      const mems = migrateMems([{ content: "Test memory" }], sessionId)
       const now = new Date().getTime()
       const stamp = new Date(mems[0].staleness_stamp).getTime()
       assert.ok(Math.abs(now - stamp) < 5000, "staleness_stamp should be recent")
@@ -178,12 +187,12 @@ describe("Graph Migration (US-018)", () => {
 
     it("preserves valid UUID", () => {
       const uuid = randomUUID()
-      const mems = migrateMems([{ id: uuid, content: "Test" }])
+      const mems = migrateMems([{ id: uuid, content: "Test" }], sessionId)
       assert.equal(mems[0].id, uuid)
     })
 
     it("generates UUID for mem without id", () => {
-      const mems = migrateMems([{ content: "Test" }])
+      const mems = migrateMems([{ content: "Test" }], sessionId)
       assert.match(mems[0].id, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
     })
   })
@@ -458,6 +467,204 @@ describe("Graph Migration (US-018)", () => {
       assert.equal(second.normalized.mem_refs, 0)
       assert.equal(second.normalized.trajectory_refs, 0)
       assert.equal(second.normalized.state_tasks, 0)
+    })
+  })
+
+  describe("backfillMemSessionId", () => {
+    it("backfills missing and invalid mem session_id from trajectory", async () => {
+      const paths = getHivemindPaths(projectRoot)
+      const now = new Date().toISOString()
+      const trajectorySessionId = randomUUID()
+      const preservedSessionId = randomUUID()
+
+      await mkdir(paths.graphDir, { recursive: true })
+
+      await writeFile(
+        paths.graphTrajectory,
+        JSON.stringify({
+          version: "1.0.0",
+          trajectory: {
+            id: LEGACY_TRAJECTORY_ID,
+            session_id: trajectorySessionId,
+            active_plan_id: LEGACY_PLAN_ID,
+            active_phase_id: LEGACY_PHASE_ID,
+            active_task_ids: [],
+            intent: "Backfill mem sessions",
+            created_at: now,
+            updated_at: now,
+          },
+        })
+      )
+
+      await writeFile(
+        paths.graphMems,
+        JSON.stringify({
+          version: "1.0.0",
+          mems: [
+            {
+              id: randomUUID(),
+              shelf: "general",
+              type: "insight",
+              content: "Missing session",
+              relevance_score: 0.5,
+              staleness_stamp: now,
+              created_at: now,
+              updated_at: now,
+            },
+            {
+              id: randomUUID(),
+              session_id: "not-a-uuid",
+              shelf: "general",
+              type: "insight",
+              content: "Invalid session",
+              relevance_score: 0.5,
+              staleness_stamp: now,
+              created_at: now,
+              updated_at: now,
+            },
+            {
+              id: randomUUID(),
+              session_id: preservedSessionId,
+              shelf: "general",
+              type: "insight",
+              content: "Valid session",
+              relevance_score: 0.5,
+              staleness_stamp: now,
+              created_at: now,
+              updated_at: now,
+            },
+          ],
+        })
+      )
+
+      const result = await backfillMemSessionId(projectRoot)
+      assert.equal(result.success, true)
+      assert.equal(result.changed, true)
+      assert.equal(result.backfilled, 2)
+      assert.equal(result.skipped, 1)
+      assert.equal(result.errors.length, 0)
+
+      const memsData = JSON.parse(await readFile(paths.graphMems, "utf-8")) as {
+        mems: Array<{ session_id?: string }>
+      }
+      assert.equal(memsData.mems[0].session_id, trajectorySessionId)
+      assert.equal(memsData.mems[1].session_id, trajectorySessionId)
+      assert.equal(memsData.mems[2].session_id, preservedSessionId)
+    })
+
+    it("is idempotent on repeated runs", async () => {
+      const paths = getHivemindPaths(projectRoot)
+      const now = new Date().toISOString()
+      const trajectorySessionId = randomUUID()
+
+      await mkdir(paths.graphDir, { recursive: true })
+
+      await writeFile(
+        paths.graphTrajectory,
+        JSON.stringify({
+          version: "1.0.0",
+          trajectory: {
+            id: LEGACY_TRAJECTORY_ID,
+            session_id: trajectorySessionId,
+            active_plan_id: LEGACY_PLAN_ID,
+            active_phase_id: LEGACY_PHASE_ID,
+            active_task_ids: [],
+            intent: "Backfill mem sessions",
+            created_at: now,
+            updated_at: now,
+          },
+        })
+      )
+
+      await writeFile(
+        paths.graphMems,
+        JSON.stringify({
+          version: "1.0.0",
+          mems: [
+            {
+              id: randomUUID(),
+              shelf: "general",
+              type: "insight",
+              content: "Missing session",
+              relevance_score: 0.5,
+              staleness_stamp: now,
+              created_at: now,
+              updated_at: now,
+            },
+          ],
+        })
+      )
+
+      const first = await backfillMemSessionId(projectRoot)
+      const second = await backfillMemSessionId(projectRoot)
+
+      assert.equal(first.success, true)
+      assert.equal(first.changed, true)
+      assert.equal(first.backfilled, 1)
+      assert.equal(second.success, true)
+      assert.equal(second.changed, false)
+      assert.equal(second.backfilled, 0)
+      assert.equal(second.skipped, 1)
+      assert.equal(second.errors.length, 0)
+    })
+
+    it("fails when trajectory session_id is missing or invalid", async () => {
+      const paths = getHivemindPaths(projectRoot)
+      const now = new Date().toISOString()
+
+      await mkdir(paths.graphDir, { recursive: true })
+
+      await writeFile(
+        paths.graphTrajectory,
+        JSON.stringify({
+          version: "1.0.0",
+          trajectory: {
+            id: LEGACY_TRAJECTORY_ID,
+            session_id: "invalid-session",
+            active_plan_id: LEGACY_PLAN_ID,
+            active_phase_id: LEGACY_PHASE_ID,
+            active_task_ids: [],
+            intent: "Invalid session",
+            created_at: now,
+            updated_at: now,
+          },
+        })
+      )
+
+      const result = await backfillMemSessionId(projectRoot)
+      assert.equal(result.success, false)
+      assert.equal(result.changed, false)
+      assert.equal(result.backfilled, 0)
+      assert.ok(result.errors.some((e) => e.includes("session_id")))
+    })
+
+    it("fails when trajectory session_id is missing", async () => {
+      const paths = getHivemindPaths(projectRoot)
+      const now = new Date().toISOString()
+
+      await mkdir(paths.graphDir, { recursive: true })
+
+      await writeFile(
+        paths.graphTrajectory,
+        JSON.stringify({
+          version: "1.0.0",
+          trajectory: {
+            id: LEGACY_TRAJECTORY_ID,
+            active_plan_id: LEGACY_PLAN_ID,
+            active_phase_id: LEGACY_PHASE_ID,
+            active_task_ids: [],
+            intent: "Missing session",
+            created_at: now,
+            updated_at: now,
+          },
+        })
+      )
+
+      const result = await backfillMemSessionId(projectRoot)
+      assert.equal(result.success, false)
+      assert.equal(result.changed, false)
+      assert.equal(result.backfilled, 0)
+      assert.ok(result.errors.some((e) => e.includes("session_id")))
     })
   })
 })

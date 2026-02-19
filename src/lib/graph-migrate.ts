@@ -135,6 +135,14 @@ export interface TaskIdNormalizationResult {
   errors: string[]
 }
 
+export interface MemSessionBackfillResult {
+  success: boolean
+  changed: boolean
+  backfilled: number
+  skipped: number
+  errors: string[]
+}
+
 // ─── Helper Functions ──────────────────────────────────────────────────────
 
 /**
@@ -493,6 +501,86 @@ export async function normalizeTaskIdsToUuidLineage(projectRoot: string): Promis
 }
 
 /**
+ * Phase 2 Step 3: Backfill mem.session_id from trajectory.session_id when missing/invalid.
+ */
+export async function backfillMemSessionId(projectRoot: string): Promise<MemSessionBackfillResult> {
+  const paths = getHivemindPaths(projectRoot)
+
+  const result: MemSessionBackfillResult = {
+    success: false,
+    changed: false,
+    backfilled: 0,
+    skipped: 0,
+    errors: [],
+  }
+
+  try {
+    const trajectoryRaw = await readJsonFileOrNull(paths.graphTrajectory)
+    if (!trajectoryRaw || typeof trajectoryRaw !== "object") {
+      result.errors.push("Trajectory is missing or unreadable")
+      return result
+    }
+
+    const trajectoryState = trajectoryRaw as {
+      trajectory?: { session_id?: unknown }
+    }
+    const trajectorySessionId = trajectoryState.trajectory?.session_id
+    if (typeof trajectorySessionId !== "string" || !isUuid(trajectorySessionId)) {
+      result.errors.push("Trajectory session_id is missing or invalid UUID")
+      return result
+    }
+
+    const memsRaw = await readJsonFileOrNull(paths.graphMems)
+    if (!memsRaw || typeof memsRaw !== "object") {
+      result.success = true
+      return result
+    }
+
+    const memsState = memsRaw as { version?: string; mems?: Array<Record<string, unknown>> }
+    if (!Array.isArray(memsState.mems)) {
+      result.success = true
+      return result
+    }
+
+    let updated = false
+    const nextMems = memsState.mems.map((mem) => {
+      if (!mem || typeof mem !== "object") {
+        result.skipped++
+        return mem
+      }
+
+      const sessionId = mem.session_id
+      if (typeof sessionId === "string" && isUuid(sessionId)) {
+        result.skipped++
+        return mem
+      }
+
+      result.backfilled++
+      updated = true
+      return {
+        ...mem,
+        session_id: trajectorySessionId,
+      }
+    })
+
+    if (updated) {
+      await writeJsonAtomic(paths.graphMems, {
+        ...memsState,
+        mems: nextMems,
+      })
+      result.changed = true
+    }
+
+    result.success = true
+    return result
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    result.errors.push(`Mem session_id backfill failed: ${msg}`)
+    return result
+  }
+}
+
+/**
  * Migrate legacy tasks to TaskNode array.
  * All tasks get parent_phase_id = LEGACY_PHASE_ID for FK validation.
  */
@@ -518,9 +606,9 @@ function migrateTasks(tasks: LegacyTask[]): TaskNode[] {
 
 /**
  * Migrate legacy mems to MemNode array.
- * Adds required fields: staleness_stamp, type, relevance_score.
+ * Adds required fields: session_id, staleness_stamp, type, relevance_score.
  */
-function migrateMems(mems: LegacyMem[]): MemNode[] {
+function migrateMems(mems: LegacyMem[], sessionId: string): MemNode[] {
   const now = new Date().toISOString()
 
   return mems.map((mem, index) => {
@@ -534,6 +622,7 @@ function migrateMems(mems: LegacyMem[]): MemNode[] {
 
     return MemNodeSchema.parse({
       id: memId,
+      session_id: sessionId,
       origin_task_id: null,
       shelf: mem.shelf ?? "general",
       type: "insight",
@@ -707,7 +796,7 @@ export async function migrateToGraph(projectRoot: string): Promise<MigrationResu
     result.migrated.tasks = tasks.length
 
     // 4. Migrate mems with required fields
-    const mems = migrateMems(legacyMems.mems ?? [])
+    const mems = migrateMems(legacyMems.mems ?? [], sessionId)
     const memsState: GraphMemsState = {
       version: GRAPH_STATE_VERSION,
       mems,
