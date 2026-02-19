@@ -17,7 +17,7 @@ tools:
   bash: true
   mcp: true
 permissions:  
-    all: allow
+  all: allow
 ---
 
 # HiveFiver Agent
