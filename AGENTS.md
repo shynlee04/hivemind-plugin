@@ -110,7 +110,7 @@ npx tsx --test tests/filename.test.ts       # Run specific test
 
 1. **LOC Limit**: ~300 lines strategic (not ≤100 hard constraint)
 2. **80% Split**: DEFENSIVE GUARD - DON'T split when context >= 80% (crash avoidance with innate compaction)
-3. **CQRS**: 10 violations identified in hooks - being addressed via state-mutation-queue
+3. **CQRS**: Phase 3 hook/tool contract isolation complete; violations remediated and retrieval ownership enforced.
 
 ---
 
@@ -239,6 +239,9 @@ npx tsx --test tests/filename.test.ts       # Run specific test
 | `src/lib/event-bus.ts` | [NEW] | In-process EventEmitter pub/sub |
 | `src/lib/watcher.ts` | [NEW] | fs.watch with debouncing |
 | `src/schemas/events.ts` | [NEW] | Event Zod schemas |
+| `src/hooks/soft-governance.ts` | [UPDATED] | Removed hook-side flush ownership for contract isolation |
+| `src/hooks/compaction.ts` | [UPDATED] | Aligned compaction flow with tool-owned mutation contract |
+| `src/lib/graph-io.ts` | [UPDATED] | Added `mem.session_id` FK validation path |
 | `src/lib/sentiment.ts` | [DELETED] | Orphan removed (no references) |
 
 ---
@@ -309,8 +312,14 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 - ✅ Tests: graph-migrate suite passes
 - ✅ Code-review: Approved
 
-### Remaining Phase 3+ Items:
-- graph-io.ts: Add session_id FK validation in validateMemsWithFKValidation()
-- Hook/tool contract isolation (Phase 3)
-- Relational staleness engine (Phase 4)
+## Phase 3 Completion Status (2026-02-19)
 
+- ✅ TypeScript: `npx tsc --noEmit` pass (0 errors)
+- ✅ Tests: `npm test` pass (0 failures)
+- ✅ Code-review: Approved (final sign-off)
+- ✅ Contract isolation: complete (retrieval ownership isolated; hook-side flush ownership removed)
+
+### Remaining Phase 3+ Items:
+- Relational staleness engine (Phase 4)
+- GSD lifecycle integration (Phase 5)
+- Hardening and cutover (Phase 6)
