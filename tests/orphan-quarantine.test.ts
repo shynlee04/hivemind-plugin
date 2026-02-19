@@ -114,6 +114,7 @@ describe("Orphan Quarantine (P0-3)", () => {
     it("quarantines mems with missing origin_task_id", async () => {
       const memsPath = join(testDir, ".hivemind", "graph", "mems.json")
       const orphanPath = getEffectivePaths(testDir).graphOrphans
+      const validSessionId = "f0eebc99-9c0b-4ef8-bb6d-6bb9bd380a16"
 
       await writeFile(
         memsPath,
@@ -122,6 +123,7 @@ describe("Orphan Quarantine (P0-3)", () => {
           mems: [
             {
               id: "c0eebc99-9c0b-4ef8-bb6d-6bb9bd380a13",
+              session_id: validSessionId,
               origin_task_id: "d0eebc99-9c0b-4ef8-bb6d-6bb9bd380a14",
               shelf: "test",
               type: "insight",
@@ -135,7 +137,7 @@ describe("Orphan Quarantine (P0-3)", () => {
         }),
       )
 
-      const validTaskIds = new Set<string>()
+      const validTaskIds = new Set<string>([validSessionId])
       const result = await validateMemsWithFKValidation(
         memsPath,
         validTaskIds,
@@ -148,6 +150,7 @@ describe("Orphan Quarantine (P0-3)", () => {
     it("keeps mems with null origin_task_id (valid)", async () => {
       const memsPath = join(testDir, ".hivemind", "graph", "mems.json")
       const orphanPath = getEffectivePaths(testDir).graphOrphans
+      const validSessionId = "11eebc99-9c0b-4ef8-bb6d-6bb9bd380a17"
 
       await writeFile(
         memsPath,
@@ -156,10 +159,46 @@ describe("Orphan Quarantine (P0-3)", () => {
           mems: [
             {
               id: "e0eebc99-9c0b-4ef8-bb6d-6bb9bd380a15",
+              session_id: validSessionId,
               origin_task_id: null,
               shelf: "test",
               type: "insight",
               content: "Standalone mem",
+              relevance_score: 0.5,
+              staleness_stamp: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+          ],
+        }),
+      )
+
+      const validTaskIds = new Set<string>([validSessionId])
+      const result = await validateMemsWithFKValidation(
+        memsPath,
+        validTaskIds,
+        orphanPath,
+      )
+
+      assert.equal(result?.mems.length, 1, "Mem with null origin_task_id should be kept")
+    })
+
+    it("quarantines mems with missing session_id FK", async () => {
+      const memsPath = join(testDir, ".hivemind", "graph", "mems.json")
+      const orphanPath = getEffectivePaths(testDir).graphOrphans
+
+      await writeFile(
+        memsPath,
+        JSON.stringify({
+          version: "1.0.0",
+          mems: [
+            {
+              id: "22eebc99-9c0b-4ef8-bb6d-6bb9bd380a18",
+              session_id: "33eebc99-9c0b-4ef8-bb6d-6bb9bd380a19",
+              origin_task_id: null,
+              shelf: "test",
+              type: "insight",
+              content: "Invalid session FK",
               relevance_score: 0.5,
               staleness_stamp: new Date().toISOString(),
               created_at: new Date().toISOString(),
@@ -176,7 +215,7 @@ describe("Orphan Quarantine (P0-3)", () => {
         orphanPath,
       )
 
-      assert.equal(result?.mems.length, 1, "Mem with null origin_task_id should be kept")
+      assert.deepEqual(result?.mems, [], "Mem with unresolved session_id should be quarantined")
     })
   })
 })

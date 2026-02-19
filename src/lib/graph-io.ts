@@ -254,18 +254,34 @@ export async function validateMemsWithFKValidation(
       return null
     }
     
-    // FK validation: filter out orphan mems (null origin_task_id is valid)
+    // FK validation: filter out orphan mems.
+    // origin_task_id is nullable, but session_id is required by schema.
     const validMems: MemNode[] = []
     const now = new Date().toISOString()
-    
+
     for (const mem of result.data.mems) {
+      let shouldQuarantine = false
+      let quarantineReason = ""
+
       // origin_task_id can be null (valid) - only quarantine if non-null and missing
       if (mem.origin_task_id !== null && !validTaskIds.has(mem.origin_task_id)) {
-        await logGraph("warn", filePath, `[graph-io] Quarantining orphan mem ${mem.id}: origin_task_id ${mem.origin_task_id} not found`)
+        shouldQuarantine = true
+        quarantineReason = `origin_task_id ${mem.origin_task_id} not found in valid tasks`
+      }
+
+      // session_id FK validation - always required and must resolve.
+      // Note: validTaskIds includes session IDs from sessions manifest (see loadGraphMems)
+      if (!shouldQuarantine && !validTaskIds.has(mem.session_id)) {
+        shouldQuarantine = true
+        quarantineReason = `session_id ${mem.session_id} not found in valid sessions`
+      }
+
+      if (shouldQuarantine) {
+        await logGraph("warn", filePath, `[graph-io] Quarantining orphan mem ${mem.id}: ${quarantineReason}`)
         await quarantineOrphan(orphanPath, {
           id: mem.id,
           type: "mem",
-          reason: `origin_task_id ${mem.origin_task_id} not found in valid tasks`,
+          reason: quarantineReason,
           original_data: mem,
           quarantined_at: now,
         })

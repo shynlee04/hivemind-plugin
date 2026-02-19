@@ -12,11 +12,12 @@
  *   - Error resilience (never crashes)
  */
 
-import { createSoftGovernanceHook, resetToastCooldowns } from "../src/hooks/soft-governance.js"
+import { createSoftGovernanceHook as createRawSoftGovernanceHook, resetToastCooldowns } from "../src/hooks/soft-governance.js"
 import { initSdkContext, resetSdkContext } from "../src/hooks/sdk-context.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
 import { createNode, createTree, setRoot, addChild, markComplete, saveTree } from "../src/lib/hierarchy-tree.js"
 import { getExportDir } from "../src/lib/planning-fs.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 import { createConfig } from "../src/schemas/config.js"
 import {
   createBrainState,
@@ -69,6 +70,15 @@ function makeInput(tool: string) {
 
 function makeOutput() {
   return { title: "", output: "", metadata: {} }
+}
+
+function createSoftGovernanceHook(log: Logger, dir: string, config: ReturnType<typeof createConfig>) {
+  const hook = createRawSoftGovernanceHook(log, dir, config)
+  const stateManager = createStateManager(dir)
+  return async (input: ReturnType<typeof makeInput>, output: ReturnType<typeof makeOutput>) => {
+    await hook(input, output)
+    await flushMutations(stateManager)
+  }
 }
 
 // ─── Collecting logger for assertions ────────────────────────────────
@@ -866,8 +876,14 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
   const tactic = createNode("tactic", "Session lifecycle")
   const action = createNode("action", "Boundary split")
   let tree = setRoot(createTree(), trajectory)
-  tree = addChild(tree, trajectory.id, tactic)
-  tree = addChild(tree, tactic.id, action)
+  const tacticResult = addChild(tree, trajectory.id, tactic)
+  if (tacticResult.success) {
+    tree = tacticResult.tree
+  }
+  const actionResult = addChild(tree, tactic.id, action)
+  if (actionResult.success) {
+    tree = actionResult.tree
+  }
   tree = markComplete(tree, action.id, Date.now())
   await saveTree(dir, tree)
 

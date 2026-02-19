@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
-import { createMessagesTransformHook, type MessageV2 } from "../src/hooks/messages-transform.js"
+import { createMessagesTransformHook as createRawMessagesTransformHook, type MessageV2 } from "../src/hooks/messages-transform.js"
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { saveTasks } from "../src/lib/manifest.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
@@ -9,6 +9,7 @@ import { createBrainState, generateSessionId, unlockSession } from "../src/schem
 import { createConfig } from "../src/schemas/config.js"
 import { saveAnchors } from "../src/lib/anchors.js"
 import { createNode, createTree, saveTree, setRoot, addChild, markComplete } from "../src/lib/hierarchy-tree.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 
 let passed = 0
 let failed_ = 0
@@ -87,6 +88,15 @@ function getTextParts(message: MessageV2): Array<{ text: string; synthetic: bool
       text: String((part as any).text || ""),
       synthetic: (part as any).synthetic === true,
     }))
+}
+
+function createMessagesTransformHook(log: { warn: (message: string) => Promise<void> }, dir: string) {
+  const hook = createRawMessagesTransformHook(log, dir)
+  const stateManager = createStateManager(dir)
+  return async (input: {}, output: { messages: MessageV2[] }) => {
+    await hook(input, output)
+    await flushMutations(stateManager)
+  }
 }
 
 async function setupDir(): Promise<string> {
@@ -254,8 +264,14 @@ async function test_includes_session_boundary_checklist_item_when_recommended() 
   const tactic = createNode("tactic", "Track D")
   const action = createNode("action", "Finalize Part 2")
   let tree = setRoot(createTree(), trajectory)
-  tree = addChild(tree, trajectory.id, tactic)
-  tree = addChild(tree, tactic.id, action)
+  const tacticResult = addChild(tree, trajectory.id, tactic)
+  if (tacticResult.success) {
+    tree = tacticResult.tree
+  }
+  const actionResult = addChild(tree, tactic.id, action)
+  if (actionResult.success) {
+    tree = actionResult.tree
+  }
   tree = markComplete(tree, action.id, Date.now())
   await saveTree(dir, tree)
 

@@ -10,6 +10,7 @@ import { identifyTurningPoints, generateNextCompactionReport, executeCompaction,
 import { createCompactionHook } from "../src/hooks/compaction.js"
 import { initSdkContext, resetSdkContext } from "../src/hooks/sdk-context.js"
 import { createLogger } from "../src/lib/logging.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 import {
   createTree,
   createNode,
@@ -206,12 +207,18 @@ function test_generateReport_budgetCap() {
   // Add many tactic nodes with long content
   for (let i = 0; i < 20; i++) {
     const tactic = createNode("tactic", `Tactic number ${i} with some really long description to fill up the budget quickly`, "active", new Date(2026, 1, 11, 14, 35 + i))
-    tree = addChild(tree, root.id, tactic)
+    const tacticResult = addChild(tree, root.id, tactic)
+    if (tacticResult.success) {
+      tree = tacticResult.tree
+    }
 
     // Add action children to each
     for (let j = 0; j < 3; j++) {
       const action = createNode("action", `Action ${j} under tactic ${i} with verbose detail`, "active", new Date(2026, 1, 11, 15, i * 3 + j))
-      tree = addChild(tree, tactic.id, action)
+      const actionResult = addChild(tree, tactic.id, action)
+      if (actionResult.success) {
+        tree = actionResult.tree
+      }
     }
   }
 
@@ -343,6 +350,7 @@ async function test_compactionHook_injectsPurificationReport() {
     const hook = createCompactionHook(logger, dir)
     const output = { context: [] as string[] }
     await hook({ sessionID: "test-session" }, output)
+    await flushMutations(stateManager)
 
     // Verify purification report is in the context (governance instruction is first)
     assert(output.context.length >= 2, "compaction hook adds at least 2 context items")
