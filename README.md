@@ -519,7 +519,7 @@ npx hivemind-context-governance help        # Show help
 | `--style` | `explanatory` · `outline` · `skeptical` · `architecture` · `minimal` | `explanatory` |
 | `--code-review` | *(flag)* | off |
 | `--tdd` | *(flag)* | off |
-| `--target` | `project` · `global` · `both` *(for init/sync-assets)* | `project` |
+| `--target` | `project` · `global` · `both` *(for sync-assets)* | `project` |
 | `--overwrite` | *(flag, for sync-assets)* | off |
 | `--force` | *(flag)* — removes existing .hivemind/ before re-init | off |
 | `--action` | `status` · `analyze` · `recommend` · `orchestrate` *(for scan)* | `analyze` |
@@ -544,7 +544,7 @@ npx hivemind-context-governance sync-assets --target both
 npx hivemind-context-governance sync-assets --overwrite
 ```
 
-`init` also performs asset sync automatically. Re-running `init` on an existing project refreshes missing assets without resetting `.hivemind` state.
+`init` also performs asset sync automatically. Re-running `init` on an existing project force-refreshes packaged assets in project `.opencode/` (overwrite enabled) without resetting `.hivemind` state.
 
 Public v2.8 package intentionally ships only the operational pack:
 - `commands`

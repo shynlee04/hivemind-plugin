@@ -10,7 +10,7 @@
  *   - Auto-registers plugin in opencode.json
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { copyFile, mkdir, rm, writeFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
@@ -194,6 +194,26 @@ const DEFAULT_COMMANDMENTS_MARKDOWN = `# 10 Commandments
 10. Close every cycle with explicit summary and next steps.
 `
 
+function resolveOpencodeConfigPath(directory: string): string {
+  const candidates = [
+    join(directory, ".opencode", "opencode.json"),
+    join(directory, ".opencode", "opencode.jsonc"),
+    join(directory, "opencode.json"),
+    join(directory, "opencode.jsonc"),
+  ]
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate
+  }
+
+  return join(directory, ".opencode", "opencode.json")
+}
+
+function writeOpencodeConfig(configPath: string, config: Record<string, unknown>): void {
+  mkdirSync(dirname(configPath), { recursive: true })
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+}
+
 async function seedTenCommandments(directory: string): Promise<void> {
   const paths = getEffectivePaths(directory)
   const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md")
@@ -215,15 +235,7 @@ async function seedTenCommandments(directory: string): Promise<void> {
  * Adds the plugin if not already registered.
  */
 function registerPluginInConfig(directory: string, silent: boolean): void {
-  // Check both opencode.json and opencode.jsonc
-  let configPath = join(directory, "opencode.json")
-  if (!existsSync(configPath)) {
-    const jsoncPath = join(directory, "opencode.jsonc")
-    if (existsSync(jsoncPath)) {
-      configPath = jsoncPath
-    }
-  }
-
+  let configPath = resolveOpencodeConfigPath(directory)
   let config: Record<string, unknown> = {}
 
   if (existsSync(configPath)) {
@@ -240,7 +252,7 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
         log(`  ⚠ Could not parse ${configPath}: ${err instanceof Error ? err.message : err}`)
         log(`  ⚠ Creating new opencode.json (existing file preserved)`)
       }
-      configPath = join(directory, "opencode.json")
+      configPath = join(directory, ".opencode", "opencode.json")
       config = {}
     }
   }
@@ -250,24 +262,44 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
     config.plugin = []
   }
 
-  const plugins = config.plugin as string[]
+  const plugins = (config.plugin as unknown[]).filter((value): value is string => typeof value === "string")
+  const hiveMindPluginPattern = new RegExp(`(^|[\\\\/])${PLUGIN_NAME}(?:@.+)?$`)
+  const isHiveMindPlugin = (value: string) => hiveMindPluginPattern.test(value)
+  const firstHiveMindIndex = plugins.findIndex(isHiveMindPlugin)
 
-  // Check if already registered (exact match or versioned match)
-  const alreadyRegistered = plugins.some(
-    (p) => p === PLUGIN_NAME || p.startsWith(PLUGIN_NAME + "@")
-  )
+  const nextPlugins: string[] = []
+  let hiveMindInserted = false
 
-  if (alreadyRegistered) {
+  for (let index = 0; index < plugins.length; index++) {
+    const value = plugins[index]
+    if (!isHiveMindPlugin(value)) {
+      nextPlugins.push(value)
+      continue
+    }
+
+    if (!hiveMindInserted && index === firstHiveMindIndex) {
+      nextPlugins.push(PLUGIN_NAME)
+      hiveMindInserted = true
+    }
+  }
+
+  if (!hiveMindInserted) {
+    nextPlugins.push(PLUGIN_NAME)
+  }
+
+  const changed =
+    nextPlugins.length !== plugins.length ||
+    nextPlugins.some((value, index) => value !== plugins[index])
+
+  if (!changed) {
     if (!silent) {
       log(`  ✓ Plugin already registered in opencode.json`)
     }
     return
   }
 
-  plugins.push(PLUGIN_NAME)
-  config.plugin = plugins
-
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+  config.plugin = nextPlugins
+  writeOpencodeConfig(configPath, config)
 
   if (!silent) {
     log(`  ✓ Plugin registered in opencode.json`)
@@ -281,17 +313,18 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
  * - MCP stack placeholders for guided setup
  */
 function ensureHiveFiverDefaultsInOpencode(directory: string, silent: boolean): void {
-  const configPath = join(directory, "opencode.json")
-  if (!existsSync(configPath)) return
+  const configPath = resolveOpencodeConfigPath(directory)
 
   let config: Record<string, unknown> = {}
-  try {
-    let raw = readFileSync(configPath, "utf-8")
-    raw = raw.replace(/^\s*\/\/.*$/gm, "")
-    raw = raw.replace(/,\s*([}\]])/g, "$1")
-    config = JSON.parse(raw)
-  } catch {
-    config = {}
+  if (existsSync(configPath)) {
+    try {
+      let raw = readFileSync(configPath, "utf-8")
+      raw = raw.replace(/^\s*\/\/.*$/gm, "")
+      raw = raw.replace(/,\s*([}\]])/g, "$1")
+      config = JSON.parse(raw)
+    } catch {
+      config = {}
+    }
   }
 
   const agentConfig =
@@ -360,7 +393,7 @@ function ensureHiveFiverDefaultsInOpencode(directory: string, silent: boolean): 
   }
   config.mcp = mcpConfig
 
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+  writeOpencodeConfig(configPath, config)
   if (!silent) {
     log("  ✓ Applied HiveFiver v2 defaults to opencode.json")
   }
@@ -419,7 +452,7 @@ function updateOpencodeJsonWithProfile(
   silent: boolean
 ): void {
   const preset = PROFILE_PRESETS[profileKey]
-  const configPath = join(directory, "opencode.json")
+  const configPath = resolveOpencodeConfigPath(directory)
   let config: Record<string, unknown> = {}
 
   if (existsSync(configPath)) {
@@ -441,7 +474,7 @@ function updateOpencodeJsonWithProfile(
     ...preset.permissions,
   }
 
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+  writeOpencodeConfig(configPath, config)
 
   if (!silent) {
     log(`  ✓ Applied ${preset.label} profile permissions to opencode.json`)
@@ -581,10 +614,12 @@ export async function initProject(
   // Guard: Check brain.json existence, not just directory.
   // The directory may exist from logger side-effects without full initialization.
   if (existsSync(brainPath)) {
+    await initializePlanningDirectory(directory)
+
     // Existing user upgrade path: keep state, refresh OpenCode assets, AND ensure plugin is registered
     await syncOpencodeAssets(directory, {
-      target: options.syncTarget ?? "project",
-      overwrite: options.overwriteAssets ?? false,
+      target: "project",
+      overwrite: true,
       silent: options.silent ?? false,
       onLog: options.silent ? undefined : log,
     })
@@ -672,8 +707,8 @@ export async function initProject(
 
     // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
     await syncOpencodeAssets(directory, {
-      target: options.syncTarget ?? "project",
-      overwrite: options.overwriteAssets ?? false,
+      target: "project",
+      overwrite: true,
       silent: options.silent ?? false,
       onLog: options.silent ? undefined : log,
     })
@@ -795,8 +830,8 @@ export async function initProject(
 
   // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
   await syncOpencodeAssets(directory, {
-    target: options.syncTarget ?? "project",
-    overwrite: options.overwriteAssets ?? false,
+    target: "project",
+    overwrite: true,
     silent: options.silent ?? false,
     onLog: options.silent ? undefined : log,
   })

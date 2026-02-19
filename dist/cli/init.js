@@ -10,7 +10,7 @@
  *   - Auto-registers plugin in opencode.json
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { copyFile, mkdir, rm } from "node:fs/promises";
+import { copyFile, mkdir, rm, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -120,6 +120,29 @@ export function injectAgentsDocs(directory, silent) {
 // eslint-disable-next-line no-console
 const log = (msg) => console.log(msg);
 const PLUGIN_NAME = "hivemind-context-governance";
+const HIVEFIVER_PRIMARY_AGENT_TOOLS = {
+    read: true,
+    glob: true,
+    grep: true,
+    task: true,
+    skill: true,
+    webfetch: true,
+    websearch: true,
+    bash: true,
+};
+const DEFAULT_COMMANDMENTS_MARKDOWN = `# 10 Commandments
+
+1. Declare intent before implementation.
+2. Keep trajectory -> tactic -> action aligned.
+3. Verify evidence before claiming completion.
+4. Prefer deterministic workflows over ad-hoc execution.
+5. Track decisions and dependencies in persistent state.
+6. Use incremental checkpoints for long sessions.
+7. Validate with tests and type checks before release.
+8. Preserve context across compaction and handoff.
+9. Escalate when confidence drops or ambiguity rises.
+10. Close every cycle with explicit summary and next steps.
+`;
 function resolveOpencodeConfigPath(directory) {
     const candidates = [
         join(directory, ".opencode", "opencode.json"),
@@ -136,6 +159,17 @@ function resolveOpencodeConfigPath(directory) {
 function writeOpencodeConfig(configPath, config) {
     mkdirSync(dirname(configPath), { recursive: true });
     writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8");
+}
+async function seedTenCommandments(directory) {
+    const paths = getEffectivePaths(directory);
+    const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md");
+    const commandmentsDest = join(paths.docsDir, "10-commandments.md");
+    await mkdir(paths.docsDir, { recursive: true });
+    if (existsSync(commandmentsSource)) {
+        await copyFile(commandmentsSource, commandmentsDest);
+        return;
+    }
+    await writeFile(commandmentsDest, DEFAULT_COMMANDMENTS_MARKDOWN, "utf-8");
 }
 /**
  * Auto-register the HiveMind plugin in opencode.json.
@@ -164,6 +198,7 @@ function registerPluginInConfig(directory, silent) {
             config = {};
         }
     }
+    // Ensure plugin array exists
     if (!Array.isArray(config.plugin)) {
         config.plugin = [];
     }
@@ -200,6 +235,89 @@ function registerPluginInConfig(directory, silent) {
     if (!silent) {
         log(`  ✓ Plugin registered in opencode.json`);
         log(`    → OpenCode will auto-install on next launch`);
+    }
+}
+/**
+ * Ensure opencode.json has HiveFiver v2 defaults:
+ * - primary hivefiver agent profile
+ * - MCP stack placeholders for guided setup
+ */
+function ensureHiveFiverDefaultsInOpencode(directory, silent) {
+    const configPath = resolveOpencodeConfigPath(directory);
+    let config = {};
+    if (existsSync(configPath)) {
+        try {
+            let raw = readFileSync(configPath, "utf-8");
+            raw = raw.replace(/^\s*\/\/.*$/gm, "");
+            raw = raw.replace(/,\s*([}\]])/g, "$1");
+            config = JSON.parse(raw);
+        }
+        catch {
+            config = {};
+        }
+    }
+    const agentConfig = typeof config.agent === "object" && config.agent !== null
+        ? config.agent
+        : {};
+    const hivefiverConfig = typeof agentConfig.hivefiver === "object" && agentConfig.hivefiver !== null
+        ? agentConfig.hivefiver
+        : {};
+    hivefiverConfig.mode = "primary";
+    const existingTools = typeof hivefiverConfig.tools === "object" && hivefiverConfig.tools !== null
+        ? hivefiverConfig.tools
+        : {};
+    hivefiverConfig.tools = {
+        ...HIVEFIVER_PRIMARY_AGENT_TOOLS,
+        ...existingTools,
+    };
+    agentConfig.hivefiver = hivefiverConfig;
+    config.agent = agentConfig;
+    const mcpConfig = typeof config.mcp === "object" && config.mcp !== null
+        ? config.mcp
+        : {};
+    if (!mcpConfig.deepwiki) {
+        mcpConfig.deepwiki = {
+            type: "remote",
+            url: "https://mcp.deepwiki.com/mcp",
+            enabled: true,
+            timeout: 15000,
+        };
+    }
+    if (!mcpConfig.context7) {
+        mcpConfig.context7 = {
+            type: "remote",
+            url: "https://mcp.context7.com/mcp",
+            enabled: false,
+            timeout: 15000,
+        };
+    }
+    if (!mcpConfig.tavily) {
+        mcpConfig.tavily = {
+            type: "remote",
+            url: "https://mcp.tavily.com/mcp",
+            enabled: false,
+            timeout: 15000,
+        };
+    }
+    if (!mcpConfig.exa) {
+        mcpConfig.exa = {
+            type: "remote",
+            url: "https://YOUR-EXA-MCP-ENDPOINT",
+            enabled: false,
+            timeout: 15000,
+        };
+    }
+    if (!mcpConfig.repomix) {
+        mcpConfig.repomix = {
+            type: "local",
+            command: ["npx", "-y", "repomix", "--mcp"],
+            enabled: false,
+        };
+    }
+    config.mcp = mcpConfig;
+    writeOpencodeConfig(configPath, config);
+    if (!silent) {
+        log("  ✓ Applied HiveFiver v2 defaults to opencode.json");
     }
 }
 /**
@@ -389,6 +507,7 @@ export async function initProject(directory, options = {}) {
         });
         // Ensure plugin is registered in opencode.json (this was missing!)
         registerPluginInConfig(directory, options.silent ?? false);
+        ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false);
         const existingStateManager = createStateManager(directory);
         const existingState = await existingStateManager.load();
         await seedHiveFiverOnboardingTasks(directory, existingState?.session.id ?? "unknown");
@@ -433,10 +552,7 @@ export async function initProject(directory, options = {}) {
         }
         await initializePlanningDirectory(directory);
         // Copy 10 Commandments to .hivemind
-        const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md");
-        const commandmentsDest = join(p.docsDir, "10-commandments.md");
-        await mkdir(p.docsDir, { recursive: true });
-        await copyFile(commandmentsSource, commandmentsDest);
+        await seedTenCommandments(directory);
         if (!options.silent) {
             log(`  ✓ Copied 10 Commandments to ${p.docsDir}/`);
         }
@@ -451,6 +567,7 @@ export async function initProject(directory, options = {}) {
         await saveTree(directory, createTree());
         // Auto-register plugin in opencode.json
         registerPluginInConfig(directory, options.silent ?? false);
+        ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false);
         // Apply profile permissions to opencode.json
         updateOpencodeJsonWithProfile(directory, options.profile, options.silent ?? false);
         // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
@@ -543,10 +660,7 @@ export async function initProject(directory, options = {}) {
     }
     await initializePlanningDirectory(directory);
     // Copy 10 Commandments to .hivemind
-    const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md");
-    const commandmentsDest = join(p.docsDir, "10-commandments.md");
-    await mkdir(p.docsDir, { recursive: true });
-    await copyFile(commandmentsSource, commandmentsDest);
+    await seedTenCommandments(directory);
     if (!options.silent) {
         log(`  ✓ Copied 10 Commandments to ${p.docsDir}/`);
     }
@@ -561,6 +675,7 @@ export async function initProject(directory, options = {}) {
     await saveTree(directory, createTree());
     // Auto-register plugin in opencode.json
     registerPluginInConfig(directory, options.silent ?? false);
+    ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false);
     // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
     injectAgentsDocs(directory, options.silent ?? false);
     // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
@@ -615,6 +730,7 @@ export async function initProject(directory, options = {}) {
         }
         log("");
         log("✅ Done! Open OpenCode in this project — HiveMind is active.");
+        log("   HiveFiver v2 quickstart: `/hivefiver init` then `/hivefiver spec`.");
         log("");
     }
 }

@@ -57,8 +57,8 @@ Options:
   --style <explanatory|outline|skeptical|architecture|minimal>  Output style (default: explanatory)
   --code-review            Require code review before accepting
   --tdd                    Enforce test-driven development
-  --target <project|global|both>  Asset sync target (default: project)
-  --overwrite              Overwrite existing files during asset sync
+  --target <project|global|both>  Asset sync target (sync-assets command, default: project)
+  --overwrite              Overwrite existing files during asset sync (sync-assets command)
   --refresh <seconds>      Dashboard refresh interval (default: 2)
   --action <status|analyze|recommend|orchestrate>  Scan action (default: analyze, for scan command)
   --json                   Return machine-readable JSON (for scan command)
