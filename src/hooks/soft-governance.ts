@@ -129,6 +129,37 @@ function getActiveActionLabel(state: any): string {
   return "(none)"
 }
 
+function getCanonicalSessionAction(output: { output: string; metadata: any }): string | null {
+  const metadataAction = output.metadata?.action
+  if (typeof metadataAction === "string" && metadataAction.trim().length > 0) {
+    return metadataAction
+  }
+
+  try {
+    const parsed = JSON.parse(output.output ?? "")
+    const action = parsed?.metadata?.action ?? parsed?.action
+    return typeof action === "string" && action.trim().length > 0 ? action : null
+  } catch {
+    return null
+  }
+}
+
+function shouldAcknowledgeGovernanceSignals(
+  toolName: string,
+  output: { output: string; metadata: any }
+): boolean {
+  if (toolName === "declare_intent" || toolName === "map_context") {
+    return true
+  }
+
+  if (toolName === "hivemind_session") {
+    const action = getCanonicalSessionAction(output)
+    return action === "update"
+  }
+
+  return false
+}
+
 /**
  * Creates the soft governance hook for tool execution tracking.
  *
@@ -180,7 +211,8 @@ export function createSoftGovernanceHook(
         prerequisites_completed: prerequisitesCompleted,
       }
 
-      if (input.tool === "map_context" || input.tool === "declare_intent") {
+      const governanceAcknowledged = shouldAcknowledgeGovernanceSignals(input.tool, _output)
+      if (governanceAcknowledged) {
         counters = acknowledgeGovernanceSignals(counters)
       }
 
@@ -208,6 +240,10 @@ export function createSoftGovernanceHook(
           acknowledged: false,
           prerequisites_completed: prerequisitesCompleted,
         }
+      }
+
+      if (governanceAcknowledged) {
+        counters = acknowledgeGovernanceSignals(counters)
       }
 
       // Check for drift (high turns without context update)

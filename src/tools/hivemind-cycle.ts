@@ -16,6 +16,7 @@ import { createStateManager } from "../lib/persistence.js"
 import { sessionExists, loadSession, pruneSession } from "../lib/session-export.js"
 import { readdir, rm } from "fs/promises"
 import { join } from "path"
+import { clearPendingFailureAck } from "../schemas/brain-state.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
 export function createHivemindCycleTool(directory: string): ToolDefinition {
@@ -58,8 +59,12 @@ async function handleExport(directory: string): Promise<string> {
   const stateManager = createStateManager(directory)
   const state = await stateManager.load()
 
-  // Check for no state OR LOCKED session (no active session to export)
-  if (!state || state.session.governance_status === "LOCKED") {
+  if (!state) {
+    return toErrorOutput("No session state found")
+  }
+
+  // LOCKED means no active session to export
+  if (state.session.governance_status === "LOCKED") {
     return toErrorOutput("No active session to export")
   }
 
@@ -71,6 +76,10 @@ async function handleExport(directory: string): Promise<string> {
   // Use session-export utility to create export
   const { exportSession } = await import("../lib/session-export.js")
   const exportPath = await exportSession(directory, sessionId)
+
+  if (state.pending_failure_ack) {
+    await stateManager.save(clearPendingFailureAck(state))
+  }
 
   return toSuccessOutput("Session exported", sessionId, {
     sessionId,

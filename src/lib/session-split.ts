@@ -11,7 +11,14 @@ import { createDetectionState, resetGovernanceCounters } from "./detection.js"
 
 type ToastVariant = "info" | "warning" | "error"
 
-const AUTO_SPLIT_TRIGGER_TOOLS = new Set(["map_context", "export_cycle", "scan_hierarchy"])
+const AUTO_SPLIT_TRIGGER_TOOLS = new Set([
+  "map_context",
+  "export_cycle",
+  "scan_hierarchy",
+  "hivemind_session",
+  "hivemind_cycle",
+  "hivemind_inspect",
+])
 
 type SessionCreateClient = {
   session?: {
@@ -54,6 +61,7 @@ export async function maybeCreateNonDisruptiveSessionSplit(
   if (hiveMindConfig.automation_level !== "full") return null
   if (!AUTO_SPLIT_TRIGGER_TOOLS.has(triggerTool)) return null
   if (brain.pending_failure_ack) return null
+  if (brain.session.governance_status === "LOCKED") return null
 
   const role = (brain.session.role || "").toLowerCase()
   const isMainSession = !role.includes("subagent")
