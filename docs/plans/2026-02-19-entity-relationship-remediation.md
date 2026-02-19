@@ -166,6 +166,25 @@ graph LR
   - Keep timestamp fallback only for same-lineage tie-breakers.
   - Exit gate: staleness fixtures pass for same-lineage and cross-lineage cases.
 
+  #### Phase 4 Planning Record (2026-02-19)
+
+  Requirements summary:
+  - Lineage-first evaluation before any timestamp comparison.
+  - Same-level scope constraints for stale/non-stale comparison sets.
+  - Timestamp tie-breaker only after lineage and semantic checks are satisfied.
+  - Semantic precedence for false_path, discard, and superseded signals.
+  - Cross-session comparisons are informational only and must not drive stale authority.
+
+  Acceptance criteria (planned):
+  - [ ] AC1: Lineage-first gating enforced in staleness evaluation entry path.
+  - [ ] AC2: Same-level scope filter applied before stale ranking.
+  - [ ] AC3: Timestamp ordering executes only as final tie-breaker within valid scope.
+  - [ ] AC4: Semantic flags override recency when conflict exists.
+  - [ ] AC5: Cross-session stale checks are marked informational and non-authoritative.
+  - [ ] AC6: Regression tests cover lineage-valid, lineage-invalid, and mixed-session cases.
+
+  Note: Implementation has not started yet.
+
 - Phase 5 - GSD Lifecycle Integration
   - Align entities with lifecycle levels (`project/milestone/phase/plan/task/verification`).
   - Ensure planning/verification records are lineage-linked and queryable.
@@ -275,9 +294,7 @@ This unified program is done only when all criteria are true:
 - Test suite graph-migrate: PASS ✅
 - Code-review: APPROVED ✅
 
-### Remaining Work (Phase 3+)
-- graph-io.ts: Add session_id FK validation in validateMemsWithFKValidation()
-- Hook/tool contract isolation (Phase 3)
+### Remaining Work (Phase 4+)
 - Relational staleness engine (Phase 4)
 - GSD lifecycle integration (Phase 5)
 - Hardening and cutover (Phase 6)
