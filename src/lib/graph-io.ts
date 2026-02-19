@@ -18,6 +18,12 @@ import {
   type TrajectoryState,
 } from "../schemas/graph-state.js"
 import { getEffectivePaths } from "./paths.js"
+import {
+  quarantineOrphan,
+  type OrphanRecord,
+} from "./orphan-quarantine.js"
+
+export type { OrphanRecord } from "./orphan-quarantine.js"
 
 const GRAPH_STATE_VERSION = "1.0.0"
 
@@ -77,23 +83,6 @@ async function logGraph(level: "warn" | "error", filePath: string, message: stri
   await logger[level](fullMessage)
 }
 
-/** Orphan node record schema for quarantine */
-const OrphanRecordSchema = z.object({
-  id: z.string(),
-  type: z.enum(["task", "mem"]),
-  reason: z.string(),
-  original_data: z.unknown(),
-  quarantined_at: z.string(),
-})
-
-/** Orphan node record for quarantine */
-export type OrphanRecord = z.infer<typeof OrphanRecordSchema>
-
-export interface OrphansFile {
-  version: string
-  orphans: OrphanRecord[]
-}
-
 /**
  * Load and validate state with safeParse (non-throwing).
  * Returns null on parse failure instead of crashing the agent.
@@ -142,41 +131,6 @@ async function saveValidatedState<T>(
     }
     throw error
   }
-}
-
-// ─── Orphan Quarantine Functions ─────────────────────────────────────
-
-/**
- * Load the orphans file, creating empty if it doesn't exist.
- */
-async function loadOrphansFile(orphanPath: string): Promise<OrphansFile> {
-  if (!existsSync(orphanPath)) {
-    return { version: GRAPH_STATE_VERSION, orphans: [] }
-  }
-  
-  const OrphansFileSchema = z.object({
-    version: z.string(),
-    orphans: z.array(OrphanRecordSchema),
-  })
-  
-  const state = await loadValidatedState(orphanPath, OrphansFileSchema)
-  
-  return state ?? { version: GRAPH_STATE_VERSION, orphans: [] }
-}
-
-/**
- * Save an orphan record to the quarantine file.
- */
-async function quarantineOrphan(
-  orphanPath: string,
-  record: OrphanRecord,
-): Promise<void> {
-  const orphansFile = await loadOrphansFile(orphanPath)
-  orphansFile.orphans.push(record)
-  
-  const directory = dirname(orphanPath)
-  await mkdir(directory, { recursive: true })
-  await writeFile(orphanPath, JSON.stringify(orphansFile, null, 2))
 }
 
 /**
