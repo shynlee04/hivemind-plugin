@@ -390,6 +390,61 @@ async function test_wraps_user_message_with_system_anchor() {
   await rm(dir, { recursive: true, force: true })
 }
 
+async function test_auto_realign_injects_menu_and_permission_gate_for_build_intent() {
+  process.stderr.write("\n--- messages-transform: auto-realign menu + permission gate ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "strict" })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
+  await stateManager.save(state)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [createUserMessage("please build this app now", "msg_user_build_1")],
+  }
+
+  await hook({}, output)
+
+  const syntheticTexts = getSyntheticTextParts(output.messages[0])
+  const realignText = syntheticTexts.find((text) => text.includes("[AUTO-REALIGN]")) || ""
+
+  assert(realignText.includes("[NEXT-STEP MENU]"), "auto-realign includes next-step menu")
+  assert(realignText.includes("/hivefiver build"), "auto-realign menu includes build command")
+  assert(realignText.includes("Permission required before execution"), "build intent is permission-gated")
+
+  await rm(dir, { recursive: true, force: true })
+}
+
+async function test_auto_realign_injects_auto_init_for_safe_actions() {
+  process.stderr.write("\n--- messages-transform: auto-realign auto-init guidance ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "strict" })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
+  await stateManager.save(state)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [createUserMessage("help me do mcp research", "msg_user_research_1")],
+  }
+
+  await hook({}, output)
+
+  const syntheticTexts = getSyntheticTextParts(output.messages[0])
+  const realignText = syntheticTexts.find((text) => text.includes("[AUTO-REALIGN]")) || ""
+
+  assert(realignText.includes("/hivefiver research"), "research intent routes to hivefiver research")
+  assert(realignText.includes("Auto-init allowed"), "safe action includes auto-init guidance")
+
+  await rm(dir, { recursive: true, force: true })
+}
+
 async function test_first_turn_injection_sets_marker_and_prevents_duplicate_on_counter_reset() {
   process.stderr.write("\n--- messages-transform: first-turn marker prevents duplicate injection ---\n")
   const dir = await setupDir()
@@ -442,6 +497,8 @@ async function main() {
   await test_includes_pending_tasks_checklist_item()
   await test_skips_permissive_mode()
   await test_wraps_user_message_with_system_anchor()
+  await test_auto_realign_injects_menu_and_permission_gate_for_build_intent()
+  await test_auto_realign_injects_auto_init_for_safe_actions()
   await test_first_turn_injection_sets_marker_and_prevents_duplicate_on_counter_reset()
   await test_includes_session_boundary_checklist_item_when_recommended()
   await test_legacy_message_shape_fallback()

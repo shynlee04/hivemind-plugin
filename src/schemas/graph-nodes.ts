@@ -24,6 +24,10 @@ export const RalphUserStorySchema = z.object({
     phase_id: z.string().optional(),
     graph_task_id: z.string().optional(),
     story_id: z.string().optional(),
+    workflow_id: z.string().optional(),
+    requirement_node_id: z.string().optional(),
+    mcp_provider_id: z.string().optional(),
+    export_id: z.string().optional(),
   }).optional(),
 });
 

@@ -1,7 +1,12 @@
 # HiveFiver MCP Setup - Tavily
 
-## Goal
-Enable Tavily for broad web retrieval and extraction workflows.
+## Purpose
+Enable Tavily for external retrieval and corroboration in research loops.
+
+## API Setup
+```bash
+export TAVILY_API_KEY="<your_api_key>"
+```
 
 ## Config Snippet
 ```json
@@ -13,18 +18,13 @@ Enable Tavily for broad web retrieval and extraction workflows.
 }
 ```
 
-## API Key Setup
-Set API key in shell (do not commit secrets):
-```bash
-export TAVILY_API_KEY="<your_api_key>"
-```
+## Validation Steps
+1. Run `/hivefiver audit` and confirm Tavily status.
+2. Run `/hivefiver research` and verify Tavily appears in `source_quality_matrix`.
+3. If key is missing, keep provider disabled and emit remediation TODO.
 
-If using `.env` or secret manager, map the same key name.
+## Notes
+- Tavily should corroborate, not replace DeepWiki/Context7/Repomix grounding.
 
-## Verification Checklist
-1. Run readiness script and confirm no missing credentials.
-2. Confirm Tavily appears in `source_quality_matrix`.
-3. If key missing, keep provider disabled and emit remediation TODO.
-
-## Reference
+## Links
 - https://docs.tavily.com/

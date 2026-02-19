@@ -1,39 +1,40 @@
 ---
 name: "hivefiver-intake"
-description: "Run controlled multi-choice intake across technical and non-technical domains to produce a normalized requirement baseline."
+description: "Run controlled multi-choice intake for HiveFiver v2 across dev and non-dev domains with adaptive tutoring profiles."
 ---
 
 # HiveFiver Intake
 
 ## Purpose
-Collect structured inputs in a cohesive, high-control format that is usable for both novice and enterprise users.
+Collect structured inputs that can route into specification, research, and execution workflows.
 
-## Intake Mode Rules
-- Prefer multiple-choice first, then limited free-text refinement.
-- Keep each question mapped to a downstream planning field.
-- Reject ambiguous inputs by emitting clarification prompts.
+## Intake Rules
+- MCQ-first, bounded free-text second.
+- Every answer maps to a planning field.
+- Unknown/ambiguous inputs must trigger clarification.
 
-## Intake Grid (Required)
-1. Outcome target: `idea validation` | `MVP` | `production scale`
-2. Persona confidence: `low` | `medium` | `high`
-3. Domain lane: `dev` | `marketing` | `finance` | `office-ops` | `hybrid`
-4. Regulatory pressure: `none` | `moderate` | `high`
-5. Complexity class: `small` | `medium` | `large` | `extreme`
-6. MCP readiness: `full` | `partial` | `unavailable`
-7. Testing posture: `explicit TDD` | `hidden assist TDD`
-8. Delivery confidence target: `usable` | `hardened` | `audit-ready`
-9. Language mode: `en` | `vi` | `bilingual`
-10. Preferred output style: `tutorial` | `concise` | `audit-grade`
-11. Task export target: `plain plan` | `gsd` | `ralph-json` | `beads`
-12. Automation level: `manual checkpoints` | `semi-automatic` | `deterministic workflow`
+## Required Intake Grid
+1. Outcome target
+2. Persona confidence
+3. Domain lane
+4. Regulatory pressure
+5. Complexity class
+6. MCP readiness
+7. Testing posture
+8. Delivery confidence target
+9. Language mode
+10. Output style
+11. Task export target
+12. Automation level
 
-## Persona Behaviors
-- `vibecoder`: provide examples and defaults aggressively; keep hard concepts translated.
-- `enterprise`: force ambiguity resolution, compliance notes, and dependency maps.
+## Persona Coaching
+- `vibecoder`: examples-first and defaults-forward.
+- `floppy_engineer`: cleanup-first and coherence scoring.
+- `enterprise_architect`: strict risk/compliance checks.
 
 ## Required Checkpoint
 ```ts
-map_context({ level: "action", content: "HiveFiver intake normalization" })
+map_context({ level: "action", content: "HiveFiver v2 intake normalization" })
 ```
 
 ## Output Contract
@@ -45,4 +46,4 @@ Produce:
 - `domain_pack_recommendation`
 - `automation_profile`
 - `language_contract`
-- `next_command`: `/hivefiver-specforge`
+- `next_command`: `/hivefiver spec`

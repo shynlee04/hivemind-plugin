@@ -1,7 +1,7 @@
 # HiveFiver MCP Setup - Repomix
 
-## Goal
-Enable local repository packing for deep codebase context and codemap-like extraction.
+## Purpose
+Enable Repomix for local repository packaging and codemap-style synthesis.
 
 ## Config Snippet
 ```json
@@ -12,11 +12,14 @@ Enable local repository packing for deep codebase context and codemap-like extra
 }
 ```
 
-## Verification Checklist
-1. Run command manually once to confirm binary resolution.
-2. Run `hivefiver-research` and confirm Repomix-backed entries.
+## Validation Steps
+1. Run `/hivefiver audit` and confirm `repomix: ready`.
+2. Run `/hivefiver research` and verify Repomix-backed entries are present.
 3. If unavailable, emit install TODO and downgrade confidence.
 
-## References
+## Notes
+- Prefer Repomix for local context before web-wide retrieval.
+
+## Links
 - https://github.com/yamadashy/repomix
 - https://repomix.com/guide/

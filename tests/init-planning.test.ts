@@ -212,6 +212,25 @@ async function test_init_project_with_options() {
   await cleanup()
 }
 
+async function test_init_applies_hivefiver_defaults_to_opencode() {
+  process.stderr.write("\n--- init: applies HiveFiver defaults to opencode.json ---\n")
+  const dir = await setup()
+
+  await initProject(dir, { silent: true })
+
+  const raw = await readFile(join(dir, "opencode.json"), "utf-8")
+  const opencode = JSON.parse(raw)
+  assert(!!opencode.agent?.hivefiver, "hivefiver agent exists in opencode config")
+  assert(opencode.agent.hivefiver.mode === "primary", "hivefiver agent is primary")
+  assert(!!opencode.mcp?.deepwiki, "deepwiki mcp exists")
+  assert(!!opencode.mcp?.context7, "context7 mcp exists")
+  assert(!!opencode.mcp?.tavily, "tavily mcp exists")
+  assert(!!opencode.mcp?.exa, "exa mcp exists")
+  assert(!!opencode.mcp?.repomix, "repomix mcp exists")
+
+  await cleanup()
+}
+
 async function test_init_idempotent() {
   process.stderr.write("\n--- init: idempotent ---\n")
   const dir = await setup()
@@ -265,6 +284,7 @@ async function main() {
   await test_reset_active_md()
   await test_init_project()
   await test_init_project_with_options()
+  await test_init_applies_hivefiver_defaults_to_opencode()
   await test_init_idempotent()
   await test_persistence_roundtrip()
 

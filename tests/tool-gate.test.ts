@@ -8,7 +8,7 @@ import { createConfig } from "../src/schemas/config.js"
 import { createBrainState, generateSessionId, unlockSession } from "../src/schemas/brain-state.js"
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { noopLogger } from "../src/lib/logging.js"
-import { flushMutations } from "../src/lib/state-mutation-queue.js"
+import { clearMutationQueue, flushMutations } from "../src/lib/state-mutation-queue.js"
 import { mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
@@ -30,6 +30,7 @@ function assert(cond: boolean, name: string) {
 let tmpDir: string
 
 async function setup(): Promise<string> {
+  clearMutationQueue()
   tmpDir = await mkdtemp(join(tmpdir(), "hm-test-"))
   await initializePlanningDirectory(tmpDir)
   return tmpDir
@@ -37,6 +38,7 @@ async function setup(): Promise<string> {
 
 async function cleanup(): Promise<void> {
   try {
+    clearMutationQueue()
     await rm(tmpDir, { recursive: true })
   } catch {
     // ignore

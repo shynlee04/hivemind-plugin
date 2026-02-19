@@ -11,7 +11,7 @@ import { createTree, saveTree } from "./hierarchy-tree.js"
 import { createBrainState, generateSessionId, type BrainState } from "../schemas/brain-state.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import type { Logger } from "./logging.js"
-import { createStateManager } from "./persistence.js"
+import { queueStateMutation } from "./state-mutation-queue.js"
 
 /**
  * Detect if the project is brownfield (has existing files) or greenfield (new project).
@@ -43,7 +43,7 @@ export function generateReadFirstBlock(isBrownfield: boolean, _language: "en" | 
     lines.push("1. **SCAN**: Run `scan_hierarchy({ action: \"analyze\" })` immediately to map the codebase.")
     lines.push("2. **INTEGRATE**: Identify where HiveMind fits (e.g., `docs/plans/`).")
     lines.push("3. **ADOPT**: Do not overwrite without reading. Use `read_file` to explore.")
-    lines.push("4. **REALIGN**: If user flow is messy/no-command, route to `hivefiver-start` then `hivefiver-doctor`.")
+    lines.push("4. **REALIGN**: If user flow is messy/no-command, route to `/hivefiver init` then `/hivefiver audit`.")
   } else {
     lines.push("## STATE: NEW PROJECT / GREENFIELD")
     lines.push("")
@@ -51,7 +51,7 @@ export function generateReadFirstBlock(isBrownfield: boolean, _language: "en" | 
     lines.push("1. **SCAN**: Confirm environment.")
     lines.push("2. **PLAN**: Check `docs/plans/` or create one.")
     lines.push("3. **DECIDE**: Call `declare_intent({ mode, focus })`.")
-    lines.push("4. **BOOTSTRAP**: Route to `hivefiver-start` when user does not provide a command.")
+    lines.push("4. **BOOTSTRAP**: Route to `/hivefiver init` when user does not provide a command.")
   }
 
   lines.push("")
@@ -79,7 +79,6 @@ export async function handleStaleSession(
   state: BrainState,
   directory: string,
   log: Logger,
-  stateManager: ReturnType<typeof createStateManager>,
   config: HiveMindConfig
 ): Promise<{ state: BrainState; errorMessage?: string }> {
   try {
@@ -100,7 +99,11 @@ export async function handleStaleSession(
     await resetActiveMd(directory)
 
     const newState = createBrainState(generateSessionId(), config)
-    await stateManager.save(newState)
+    queueStateMutation({
+      type: "UPDATE_STATE",
+      payload: newState,
+      source: "session-lifecycle-hook:stale-auto-archive",
+    })
     await saveTree(directory, createTree())
 
     await log.info(`Auto-archived stale session ${state.session.id}`)

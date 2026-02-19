@@ -1,31 +1,31 @@
 {
   "session_id": "ses_38b27b94affexCHWZt2mbnj01j",
-  "updated_at": 1771508992314,
+  "updated_at": 1771514819099,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Rebaseline audit: verify user-reported HiveFiver package changes exist in source/tests/docs",
-      "content": "Rebaseline audit: verify user-reported HiveFiver package changes exist in source/tests/docs",
+      "text": "Fix MUST-1: TODO alias normalization for mixed snake_case/camelCase ingress in hook pipeline",
+      "content": "Fix MUST-1: TODO alias normalization for mixed snake_case/camelCase ingress in hook pipeline",
       "status": "completed",
       "priority": "high",
-      "domain": "office-ops",
+      "domain": "hybrid",
       "lane": "auto",
       "source": "todo.updated",
       "recommended_skills": [
-        "hivefiver-skill-auditor",
-        "hivefiver-persona-routing"
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
       ],
-      "canonical_command": "hivefiver-doctor",
+      "canonical_command": "hivefiver-start",
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771508992314,
-      "updated_at": 1771508992314
+      "last_realigned_at": 1771514819099,
+      "updated_at": 1771514819099
     },
     {
       "id": "todo-2",
-      "text": "Reconcile prior integration NO-GO findings against current HiveFiver-updated code paths",
-      "content": "Reconcile prior integration NO-GO findings against current HiveFiver-updated code paths",
+      "text": "Fix MUST-2: remove hook write-boundary leak by routing todo.updated persistence through queued mutation/write owner",
+      "content": "Fix MUST-2: remove hook write-boundary leak by routing todo.updated persistence through queued mutation/write owner",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
@@ -39,13 +39,13 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771508992314,
-      "updated_at": 1771508992314
+      "last_realigned_at": 1771514819099,
+      "updated_at": 1771514819099
     },
     {
       "id": "todo-3",
-      "text": "Canonical governance GREEN remediation: fix 4 blockers mapped by phase5-canonical-governance-red tests",
-      "content": "Canonical governance GREEN remediation: fix 4 blockers mapped by phase5-canonical-governance-red tests",
+      "text": "Fix MUST-3: make hivemind_session action updates idempotent to prevent graph task explosion",
+      "content": "Fix MUST-3: make hivemind_session action updates idempotent to prevent graph task explosion",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
@@ -59,14 +59,14 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771508992314,
-      "updated_at": 1771508992314
+      "last_realigned_at": 1771514819099,
+      "updated_at": 1771514819099
     },
     {
       "id": "todo-4",
-      "text": "Independent code-review sign-off for canonical governance remediation",
-      "content": "Independent code-review sign-off for canonical governance remediation",
-      "status": "completed",
+      "text": "Boundary fix: eliminate residual stale-session hook-side write (session-lifecycle -> onboarding.save)",
+      "content": "Boundary fix: eliminate residual stale-session hook-side write (session-lifecycle -> onboarding.save)",
+      "status": "in_progress",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
@@ -79,34 +79,14 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771508992314,
-      "updated_at": 1771508992314
+      "last_realigned_at": 1771514819099,
+      "updated_at": 1771514819099
     },
     {
       "id": "todo-5",
-      "text": "Run final architecture/tech-debt/gap audits after rebaseline",
-      "content": "Run final architecture/tech-debt/gap audits after rebaseline",
-      "status": "completed",
-      "priority": "high",
-      "domain": "office-ops",
-      "lane": "auto",
-      "source": "todo.updated",
-      "recommended_skills": [
-        "hivefiver-skill-auditor",
-        "hivefiver-persona-routing"
-      ],
-      "canonical_command": "hivefiver-doctor",
-      "related_entities": {
-        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
-      },
-      "last_realigned_at": 1771508992314,
-      "updated_at": 1771508992314
-    },
-    {
-      "id": "todo-6",
-      "text": "Update remediation plan docs and AGENTS.md with completion evidence",
-      "content": "Update remediation plan docs and AGENTS.md with completion evidence",
-      "status": "completed",
+      "text": "Independent code-review sign-off for all boundary remediations",
+      "content": "Independent code-review sign-off for all boundary remediations",
+      "status": "pending",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
@@ -119,14 +99,14 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771508992314,
-      "updated_at": 1771508992314
+      "last_realigned_at": 1771514819099,
+      "updated_at": 1771514819099
     },
     {
-      "id": "todo-7",
-      "text": "Run final quality gates and create atomic commit(s) for completion/audit changes",
-      "content": "Run final quality gates and create atomic commit(s) for completion/audit changes",
-      "status": "completed",
+      "id": "todo-6",
+      "text": "Re-run stress journey integration audit for GO/NO-GO",
+      "content": "Re-run stress journey integration audit for GO/NO-GO",
+      "status": "pending",
       "priority": "high",
       "domain": "office-ops",
       "lane": "auto",
@@ -139,8 +119,28 @@
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771508992314,
-      "updated_at": 1771508992314
+      "last_realigned_at": 1771514819099,
+      "updated_at": 1771514819099
+    },
+    {
+      "id": "todo-7",
+      "text": "Update docs and finalize with quality gates + atomic commit",
+      "content": "Update docs and finalize with quality gates + atomic commit",
+      "status": "pending",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "source": "todo.updated",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "canonical_command": "hivefiver-start",
+      "related_entities": {
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+      },
+      "last_realigned_at": 1771514819099,
+      "updated_at": 1771514819099
     }
   ]
 }

@@ -1,38 +1,29 @@
 ---
 name: "hivefiver-gsd-bridge"
-description: "Map HiveFiver outputs to GSD lifecycle checkpoints with deterministic lineage and phase-gate evidence."
+description: "Map HiveFiver v2 outputs to GSD lifecycle checkpoints with deterministic lineage and evidence-linked phase gates."
 ---
 
 # HiveFiver GSD Bridge
 
 ## Purpose
-Provide compatibility wrapper output for GSD lifecycle usage without mirroring the full framework.
+Provide a compatibility wrapper into GSD lifecycle semantics without mirroring full framework internals.
 
-## Mapping Contract
-Map HiveFiver sections into:
-- `project`
-- `milestone`
-- `phase`
-- `plan`
-- `task`
-- `verification`
+## Mapping Rules
+Map HiveFiver artifacts into:
+- lifecycle node
+- phase goal
+- evidence status
+- lineage status
 
-## Validation Rules
-Before export:
-- every mapped task must have lineage parent(s),
-- every phase must have verification gates,
-- no orphan node in compatibility payload,
-- confidence level from research must be present.
-
-## Required Checkpoint
-```ts
-map_context({ level: "action", content: "GSD compatibility mapping and lineage validation" })
-export_cycle({ outcome: "success", findings: "GSD compatibility mapping generated" })
-```
+## Gate Rules
+- block progression when lineage breaks
+- preserve confidence inheritance from research
+- attach remediation actions for broken gates
 
 ## Output Contract
-- `gsd_lifecycle_map`
-- `phase_gate_table`
-- `lineage_validation_report`
-- `research_confidence_inheritance`
-- `next_command`: `/hivefiver-ralph-bridge`
+Return:
+- `gsd_phase_map`
+- `lineage_snapshot`
+- `phase_gate_matrix`
+- `remediation_actions`
+- `next_command`: `/hivefiver validate`

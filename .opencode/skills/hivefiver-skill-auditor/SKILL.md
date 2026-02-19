@@ -1,18 +1,18 @@
 ---
 name: hivefiver-skill-auditor
-description: Audit skills for phase coverage, staleness, and cross-domain inclusivity (dev + non-dev) with actionable remediation.
+description: Audit skill coverage, staleness, and cross-domain inclusivity for HiveFiver v2 with remediation and trust-reviewed discovery actions.
 ---
 
 # HiveFiver Skill Auditor
 
-Use this skill when building or maintaining HiveFiver bundles.
+Use this skill while building or maintaining HiveFiver packs.
 
 ## Workflow
-1. Inventory available skills from local directories.
-2. Map skills to HiveFiver phases and domain lanes.
+1. Inventory local skills and classify by lane.
+2. Map skills to HiveFiver phases and workflow surfaces.
 3. Detect overlap, staleness, and missing trigger coverage.
-4. Propose install/create actions for missing lanes.
-5. Produce remediation report with links and scripts.
+4. Recommend install/create actions for missing lanes.
+5. Produce remediation report with references and scripts.
 
 ## Required Coverage Lanes
 - Dev engineering
@@ -23,8 +23,8 @@ Use this skill when building or maintaining HiveFiver bundles.
 
 ## Discovery Strategy
 - Prioritize local validated skills.
-- Use `find-skills` for missing capabilities.
-- Optionally consult curated external catalogs (for example skills.sh) and verify trust before adoption.
+- Use `find-skills` for missing capability lanes.
+- Use trusted external catalogs (for example `skills.sh`) with trust review.
 
 ## References
 - `references/audit-checklist.md`

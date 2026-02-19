@@ -169,6 +169,16 @@ export interface InitOptions {
 const log = (msg: string) => console.log(msg)
 
 const PLUGIN_NAME = "hivemind-context-governance"
+const HIVEFIVER_PRIMARY_AGENT_TOOLS = {
+  read: true,
+  glob: true,
+  grep: true,
+  task: true,
+  skill: true,
+  webfetch: true,
+  websearch: true,
+  bash: true,
+} as const
 
 /**
  * Auto-register the HiveMind plugin in opencode.json.
@@ -233,6 +243,97 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
   if (!silent) {
     log(`  ✓ Plugin registered in opencode.json`)
     log(`    → OpenCode will auto-install on next launch`)
+  }
+}
+
+/**
+ * Ensure opencode.json has HiveFiver v2 defaults:
+ * - primary hivefiver agent profile
+ * - MCP stack placeholders for guided setup
+ */
+function ensureHiveFiverDefaultsInOpencode(directory: string, silent: boolean): void {
+  const configPath = join(directory, "opencode.json")
+  if (!existsSync(configPath)) return
+
+  let config: Record<string, unknown> = {}
+  try {
+    let raw = readFileSync(configPath, "utf-8")
+    raw = raw.replace(/^\s*\/\/.*$/gm, "")
+    raw = raw.replace(/,\s*([}\]])/g, "$1")
+    config = JSON.parse(raw)
+  } catch {
+    config = {}
+  }
+
+  const agentConfig =
+    typeof config.agent === "object" && config.agent !== null
+      ? (config.agent as Record<string, unknown>)
+      : {}
+  const hivefiverConfig =
+    typeof agentConfig.hivefiver === "object" && agentConfig.hivefiver !== null
+      ? (agentConfig.hivefiver as Record<string, unknown>)
+      : {}
+
+  hivefiverConfig.mode = "primary"
+  const existingTools =
+    typeof hivefiverConfig.tools === "object" && hivefiverConfig.tools !== null
+      ? (hivefiverConfig.tools as Record<string, unknown>)
+      : {}
+  hivefiverConfig.tools = {
+    ...HIVEFIVER_PRIMARY_AGENT_TOOLS,
+    ...existingTools,
+  }
+  agentConfig.hivefiver = hivefiverConfig
+  config.agent = agentConfig
+
+  const mcpConfig =
+    typeof config.mcp === "object" && config.mcp !== null
+      ? (config.mcp as Record<string, unknown>)
+      : {}
+  if (!mcpConfig.deepwiki) {
+    mcpConfig.deepwiki = {
+      type: "remote",
+      url: "https://mcp.deepwiki.com/mcp",
+      enabled: true,
+      timeout: 15000,
+    }
+  }
+  if (!mcpConfig.context7) {
+    mcpConfig.context7 = {
+      type: "remote",
+      url: "https://mcp.context7.com/mcp",
+      enabled: false,
+      timeout: 15000,
+    }
+  }
+  if (!mcpConfig.tavily) {
+    mcpConfig.tavily = {
+      type: "remote",
+      url: "https://mcp.tavily.com/mcp",
+      enabled: false,
+      timeout: 15000,
+    }
+  }
+  if (!mcpConfig.exa) {
+    mcpConfig.exa = {
+      type: "remote",
+      url: "https://YOUR-EXA-MCP-ENDPOINT",
+      enabled: false,
+      timeout: 15000,
+    }
+  }
+  if (!mcpConfig.repomix) {
+    mcpConfig.repomix = {
+      type: "local",
+      command: ["npx", "-y", "repomix", "--mcp"],
+      enabled: false,
+    }
+  }
+  config.mcp = mcpConfig
+
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+  if (!silent) {
+    log("  ✓ Applied HiveFiver v2 defaults to opencode.json")
   }
 }
 
@@ -461,6 +562,7 @@ export async function initProject(
     
     // Ensure plugin is registered in opencode.json (this was missing!)
     registerPluginInConfig(directory, options.silent ?? false)
+    ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
 
     const existingStateManager = createStateManager(directory)
     const existingState = await existingStateManager.load()
@@ -534,6 +636,7 @@ export async function initProject(
 
     // Auto-register plugin in opencode.json
     registerPluginInConfig(directory, options.silent ?? false)
+    ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
 
     // Apply profile permissions to opencode.json
     updateOpencodeJsonWithProfile(directory, options.profile, options.silent ?? false)
@@ -662,6 +765,7 @@ export async function initProject(
 
   // Auto-register plugin in opencode.json
   registerPluginInConfig(directory, options.silent ?? false)
+  ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
 
   // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
   injectAgentsDocs(directory, options.silent ?? false)
@@ -721,6 +825,7 @@ export async function initProject(
 
     log("")
     log("✅ Done! Open OpenCode in this project — HiveMind is active.")
+    log("   HiveFiver v2 quickstart: `/hivefiver init` then `/hivefiver spec`.")
     log("")
   }
 }

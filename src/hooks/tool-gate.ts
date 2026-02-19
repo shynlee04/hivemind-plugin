@@ -7,7 +7,7 @@ import { checkComplexity } from "../lib/complexity.js";
 import { checkAndRecordToast } from "../lib/toast-throttle.js";
 import { treeExists } from "../lib/hierarchy-tree.js"
 import { validateSessionState, type GatekeeperResult } from "../lib/gatekeeper.js"
-import { queueStateMutation, flushMutations } from "../lib/state-mutation-queue.js"
+import { queueStateMutation, applyPendingStateMutations } from "../lib/state-mutation-queue.js"
 
 // Tools exempt from governance checks (read-only or meta-tools)
 const EXEMPT_TOOLS = new Set([
@@ -85,12 +85,11 @@ export function createToolGateHook(
       // Rule 6: Re-read config from disk each invocation
       const config = await loadConfig(directory)
 
-      // CQRS-compliant: flush any pending mutations before loading state
-      // This ensures hooks see the latest state from previous operations
-      await flushMutations(stateManager)
-
       // Load brain state
       let state = await stateManager.load()
+      if (state) {
+        state = applyPendingStateMutations(state)
+      }
 
       // Framework conflict gate (GOV-06/GOV-07)
       const frameworkContext = await detectFrameworkContext(directory)

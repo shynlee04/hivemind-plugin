@@ -12,6 +12,7 @@ import { createStateManager } from "../lib/persistence.js"
 import { addGraphTask, loadGraphTasks, loadTrajectory, saveGraphTasks, saveTrajectory } from "../lib/graph-io.js"
 import { clearPendingFailureAck, type SessionMode } from "../schemas/brain-state.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
+import { flushMutations, flushTaskManifestMutations } from "../lib/state-mutation-queue.js"
 
 /**
  * Write trajectory state after session operations to maintain graph consistency.
@@ -147,6 +148,10 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
         .enum(["in_progress", "blocked", "done"])
         .optional()
         .describe("Optional workflow status for update"),
+      forceNewActionTask: tool.schema
+        .boolean()
+        .optional()
+        .describe("For update(action): force creating a new graph task instead of reusing active one"),
     },
     async execute(args, _context) {
       // CHIMERA-3: Always return JSON for FK chaining - no conditionals
@@ -160,6 +165,10 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
           metrics: status.metrics,
         })
       }
+
+      const stateManager = createStateManager(directory)
+      await flushMutations(stateManager)
+      await flushTaskManifestMutations()
 
       let result: SessionResult
       switch (args.action) {
@@ -202,27 +211,41 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
                 await syncTrajectoryToGraph(directory, "update_tactic", { phaseId })
               }
 
-              const taskId = crypto.randomUUID()
+              const existingTaskIds = trajectory?.trajectory?.active_task_ids || []
+              const forceNewActionTask = args.forceNewActionTask === true
               const currentTasks = await loadGraphTasks(directory, { enabled: false })
               await saveGraphTasks(directory, currentTasks)
-              await addGraphTask(directory, {
-                id: taskId,
-                parent_phase_id: phaseId,
-                title: args.content || "Lifecycle task",
-                status: "in_progress",
-                file_locks: [],
-                created_at: now,
-                updated_at: now,
-              })
 
-              const existingTaskIds = trajectory?.trajectory?.active_task_ids || []
+              let taskId: string | null = null
+              if (!forceNewActionTask && existingTaskIds.length > 0) {
+                for (const existingTaskId of [...existingTaskIds].reverse()) {
+                  const existingTask = currentTasks.tasks.find((task) => task.id === existingTaskId)
+                  if (existingTask && existingTask.status !== "complete" && existingTask.status !== "invalidated") {
+                    taskId = existingTask.id
+                    break
+                  }
+                }
+              }
+
+              if (!taskId) {
+                taskId = crypto.randomUUID()
+                await addGraphTask(directory, {
+                  id: taskId,
+                  parent_phase_id: phaseId,
+                  title: args.content || "Lifecycle task",
+                  status: "in_progress",
+                  file_locks: [],
+                  created_at: now,
+                  updated_at: now,
+                })
+              }
+
               await syncTrajectoryToGraph(directory, "update_action", {
-                taskIds: [...existingTaskIds, taskId],
+                taskIds: existingTaskIds.includes(taskId) ? existingTaskIds : [...existingTaskIds, taskId],
               })
             }
 
             if (args.status === "blocked") {
-              const stateManager = createStateManager(directory)
               const currentState = await stateManager.load()
               if (currentState?.pending_failure_ack) {
                 await stateManager.save(clearPendingFailureAck(currentState))

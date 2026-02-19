@@ -27,11 +27,122 @@ import type {
 } from "@opencode-ai/sdk"
 import type { Logger } from "../lib/logging.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
-import { saveTasks } from "../lib/manifest.js"
 import { getStalenessInfo } from "../lib/staleness.js"
 import { registerGovernanceSignal } from "../lib/detection.js"
-import { queueStateMutation } from "../lib/state-mutation-queue.js"
+import { queueStateMutation, queueTaskManifestMutation } from "../lib/state-mutation-queue.js"
 import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
+
+function normalizeStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined
+  }
+  const normalized = value.filter((item: unknown): item is string => typeof item === "string")
+  return normalized.length > 0 ? normalized : undefined
+}
+
+function pickStringArray(input: Record<string, unknown>, keys: string[]): string[] | undefined {
+  for (const key of keys) {
+    const picked = normalizeStringArray(input[key])
+    if (picked && picked.length > 0) {
+      return picked
+    }
+  }
+  return undefined
+}
+
+function pickString(input: Record<string, unknown>, keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = input[key]
+    if (typeof value === "string" && value.length > 0) {
+      return value
+    }
+  }
+  return undefined
+}
+
+function pickNumber(input: Record<string, unknown>, keys: string[]): number | undefined {
+  for (const key of keys) {
+    const value = input[key]
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value
+    }
+  }
+  return undefined
+}
+
+function normalizeBoolean(value: unknown): boolean | undefined {
+  if (typeof value === "boolean") return value
+  if (typeof value !== "string") return undefined
+  const normalized = value.trim().toLowerCase()
+  if (normalized === "true" || normalized === "yes") return true
+  if (normalized === "false" || normalized === "no") return false
+  return undefined
+}
+
+function pickBoolean(input: Record<string, unknown>, keys: string[]): boolean | undefined {
+  for (const key of keys) {
+    const picked = normalizeBoolean(input[key])
+    if (picked !== undefined) {
+      return picked
+    }
+  }
+  return undefined
+}
+
+type NextStepMenuOption = {
+  id?: string
+  command: string
+  action?: string
+  label?: string
+  description?: string
+  requiresPermission?: boolean
+}
+
+function normalizeNextStepMenu(value: unknown): NextStepMenuOption[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined
+  }
+
+  const normalized: NextStepMenuOption[] = []
+  for (const entry of value) {
+    if (typeof entry !== "object" || entry === null) {
+      continue
+    }
+    const record = entry as Record<string, unknown>
+    const command = pickString(record, ["command"])
+    if (!command) {
+      continue
+    }
+
+    normalized.push({
+      id: pickString(record, ["id"]),
+      command,
+      action: pickString(record, ["action"]),
+      label: pickString(record, ["label"]),
+      description: pickString(record, ["description"]),
+      requiresPermission: pickBoolean(record, ["requiresPermission", "requires_permission"]),
+    })
+  }
+
+  return normalized.length > 0 ? normalized : undefined
+}
+
+function pickNextStepMenu(input: Record<string, unknown>, keys: string[]): NextStepMenuOption[] | undefined {
+  for (const key of keys) {
+    const menu = normalizeNextStepMenu(input[key])
+    if (menu && menu.length > 0) {
+      return menu
+    }
+  }
+  return undefined
+}
+
+function normalizeNonNegativeInt(value: number | undefined, fallback: number): number {
+  if (value === undefined) return fallback
+  const rounded = Math.floor(value)
+  if (!Number.isFinite(rounded)) return fallback
+  return rounded < 0 ? fallback : rounded
+}
 
 export function createEventHandler(log: Logger, directory: string) {
   const stateManager = createStateManager(directory)
@@ -140,6 +251,13 @@ export function createEventHandler(log: Logger, directory: string) {
                   : typeof todo?.text === "string"
                     ? todo.text
                     : ""
+              const todoRecord = (typeof todo === "object" && todo !== null ? todo : {}) as Record<string, unknown>
+              const relatedRecord =
+                typeof todoRecord.related_entities === "object" && todoRecord.related_entities !== null
+                  ? (todoRecord.related_entities as Record<string, unknown>)
+                  : typeof todoRecord.relatedEntities === "object" && todoRecord.relatedEntities !== null
+                    ? (todoRecord.relatedEntities as Record<string, unknown>)
+                    : {}
               const realignment = detectAutoRealignment(content)
               return {
                 id: typeof todo?.id === "string" && todo.id.length > 0 ? todo.id : `todo-${index + 1}`,
@@ -149,35 +267,96 @@ export function createEventHandler(log: Logger, directory: string) {
                 priority: typeof todo?.priority === "string" ? todo.priority : "medium",
                 domain: typeof todo?.domain === "string" ? todo.domain : realignment.domain,
                 lane: typeof todo?.lane === "string" ? todo.lane : (realignment.shouldRealign ? "auto" : undefined),
+                persona:
+                  pickString(todoRecord, ["persona"]) ||
+                  (typeof todo?.lane === "string" ? todo.lane : realignment.persona),
                 source: typeof todo?.source === "string" ? todo.source : "todo.updated",
-                dependencies: Array.isArray(todo?.dependencies)
-                  ? todo.dependencies.filter((dep: unknown) => typeof dep === "string")
-                  : undefined,
-                acceptance_criteria: Array.isArray(todo?.acceptance_criteria)
-                  ? todo.acceptance_criteria.filter((item: unknown) => typeof item === "string")
-                  : undefined,
-                recommended_skills: Array.isArray(todo?.recommended_skills)
-                  ? todo.recommended_skills.filter((item: unknown) => typeof item === "string")
-                  : realignment.recommendedSkills,
-                canonical_command: typeof todo?.canonical_command === "string"
-                  ? todo.canonical_command
-                  : realignment.recommendedCommand,
+                hivefiver_action:
+                  pickString(todoRecord, ["hivefiver_action", "hivefiverAction"]) ||
+                  realignment.recommendedAction,
+                validation_attempts: normalizeNonNegativeInt(
+                  pickNumber(todoRecord, ["validation_attempts", "validationAttempts"]),
+                  0,
+                ),
+                max_validation_attempts: normalizeNonNegativeInt(
+                  pickNumber(todoRecord, ["max_validation_attempts", "maxValidationAttempts"]),
+                  10,
+                ),
+                evidence_confidence:
+                  pickString(todoRecord, ["evidence_confidence", "evidenceConfidence"]) || "partial",
+                menu_step: normalizeNonNegativeInt(
+                  pickNumber(todoRecord, ["menu_step", "menuStep"]),
+                  0,
+                ) || undefined,
+                menu_total: normalizeNonNegativeInt(
+                  pickNumber(todoRecord, ["menu_total", "menuTotal"]),
+                  0,
+                ) || undefined,
+                auto_initiate:
+                  pickBoolean(todoRecord, ["auto_initiate", "autoInitiate"]) ??
+                  realignment.canAutoInitiate,
+                requires_permission:
+                  pickBoolean(todoRecord, ["requires_permission", "requiresPermission"]) ??
+                  realignment.requiresPermission,
+                permission_prompt:
+                  pickString(todoRecord, ["permission_prompt", "permissionPrompt"]) ||
+                  realignment.permissionPrompt,
+                next_step_menu:
+                  pickNextStepMenu(todoRecord, ["next_step_menu", "nextStepMenu"]) ||
+                  realignment.nextStepMenu,
+                dependencies: pickStringArray(todoRecord, ["dependencies", "dependency_ids", "dependencyIds"]),
+                acceptance_criteria: pickStringArray(todoRecord, ["acceptance_criteria", "acceptanceCriteria"]),
+                recommended_skills:
+                  pickStringArray(todoRecord, ["recommended_skills", "recommendedSkills"]) ||
+                  realignment.recommendedSkills,
+                canonical_command:
+                  pickString(todoRecord, ["canonical_command", "canonicalCommand"]) ||
+                  (realignment.shouldRealign ? realignment.recommendedCommand : undefined),
                 related_entities: {
-                  session_id: sessionID,
-                  plan_id: typeof todo?.plan_id === "string" ? todo.plan_id : undefined,
-                  phase_id: typeof todo?.phase_id === "string" ? todo.phase_id : undefined,
-                  graph_task_id: typeof todo?.graph_task_id === "string" ? todo.graph_task_id : undefined,
-                  story_id: typeof todo?.story_id === "string" ? todo.story_id : undefined,
+                  session_id:
+                    pickString(relatedRecord, ["session_id", "sessionId"]) ||
+                    pickString(todoRecord, ["session_id", "sessionId"]) ||
+                    sessionID,
+                  plan_id:
+                    pickString(relatedRecord, ["plan_id", "planId"]) ||
+                    pickString(todoRecord, ["plan_id", "planId"]),
+                  phase_id:
+                    pickString(relatedRecord, ["phase_id", "phaseId"]) ||
+                    pickString(todoRecord, ["phase_id", "phaseId"]),
+                  graph_task_id:
+                    pickString(relatedRecord, ["graph_task_id", "graphTaskId"]) ||
+                    pickString(todoRecord, ["graph_task_id", "graphTaskId"]),
+                  story_id:
+                    pickString(relatedRecord, ["story_id", "storyId"]) ||
+                    pickString(todoRecord, ["story_id", "storyId"]),
+                  workflow_id:
+                    pickString(relatedRecord, ["workflow_id", "workflowId"]) ||
+                    pickString(todoRecord, ["workflow_id", "workflowId"]) ||
+                    (realignment.shouldRealign ? realignment.recommendedWorkflow : undefined),
+                  requirement_node_id:
+                    pickString(relatedRecord, ["requirement_node_id", "requirementNodeId"]) ||
+                    pickString(todoRecord, ["requirement_node_id", "requirementNodeId"]),
+                  mcp_provider_id:
+                    pickString(relatedRecord, ["mcp_provider_id", "mcpProviderId"]) ||
+                    pickString(todoRecord, ["mcp_provider_id", "mcpProviderId"]),
+                  export_id:
+                    pickString(relatedRecord, ["export_id", "exportId"]) ||
+                    pickString(todoRecord, ["export_id", "exportId"]),
                 },
                 last_realigned_at: realignment.shouldRealign ? now : undefined,
                 updated_at: now,
               }
             })
 
-            await saveTasks(directory, {
-              session_id: sessionID,
-              updated_at: now,
-              tasks,
+            queueTaskManifestMutation({
+              type: "UPSERT_TASKS_MANIFEST",
+              directory,
+              payload: {
+                session_id: sessionID,
+                updated_at: now,
+                tasks,
+              },
+              source: "event-handler.todo.updated",
             })
           }
           break

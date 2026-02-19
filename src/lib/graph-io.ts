@@ -959,6 +959,22 @@ export async function buildRalphTaskGraphSnapshot(
                   typeof (node.related_entities as Record<string, unknown>).story_id === "string"
                     ? (node.related_entities as Record<string, unknown>).story_id as string
                     : undefined,
+                workflow_id:
+                  typeof (node.related_entities as Record<string, unknown>).workflow_id === "string"
+                    ? (node.related_entities as Record<string, unknown>).workflow_id as string
+                    : undefined,
+                requirement_node_id:
+                  typeof (node.related_entities as Record<string, unknown>).requirement_node_id === "string"
+                    ? (node.related_entities as Record<string, unknown>).requirement_node_id as string
+                    : undefined,
+                mcp_provider_id:
+                  typeof (node.related_entities as Record<string, unknown>).mcp_provider_id === "string"
+                    ? (node.related_entities as Record<string, unknown>).mcp_provider_id as string
+                    : undefined,
+                export_id:
+                  typeof (node.related_entities as Record<string, unknown>).export_id === "string"
+                    ? (node.related_entities as Record<string, unknown>).export_id as string
+                    : undefined,
               }
             : undefined,
       }

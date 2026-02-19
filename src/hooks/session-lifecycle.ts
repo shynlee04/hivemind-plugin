@@ -30,7 +30,7 @@ import {
   getNextStepHint,
 } from "./session-lifecycle-helpers.js"
 import { HIVE_MASTER_GOVERNANCE_INSTRUCTION } from "../lib/governance-instruction.js"
-import { queueStateMutation } from "../lib/state-mutation-queue.js"
+import { applyPendingStateMutations, queueStateMutation } from "../lib/state-mutation-queue.js"
 
 const GOVERNANCE_MARKER = "[🛡️ HIVE-MASTER governance active]"
 
@@ -68,6 +68,9 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       const config = await loadConfig(directory)
 
       let state = await stateManager.load()
+      if (state) {
+        state = applyPendingStateMutations(state)
+      }
       if (!state) {
         await initializePlanningDirectory(directory)
         state = createBrainState(generateSessionId(), config)
@@ -80,7 +83,7 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       }
 
       if (state && isSessionStale(state, config.stale_session_days)) {
-        const result = await handleStaleSession(state, directory, log, stateManager, config)
+        const result = await handleStaleSession(state, directory, log, config)
         state = result.state
         if (result.errorMessage) {
           output.system.push(result.errorMessage)
@@ -141,8 +144,8 @@ function buildTaskBlock(): string[] {
   return [
     "[TASKS]",
     "- Track work with `todoread` and `todowrite`.",
-    "- If user skips or misuses commands, auto-realign to HiveFiver flow (`hivefiver-start` -> intake -> specforge -> research).",
-    "- Use skills to continue execution when commands are absent (persona-routing, spec-distillation, mcp-research-loop, ralph-tasking).",
+    "- If user skips or misuses commands, auto-realign to HiveFiver flow (`hivefiver init` -> `hivefiver spec` -> `hivefiver research`).",
+    "- Use skills to continue execution when commands are absent (persona-routing, spec-distillation, mcp-research-loop, ralph-tasking, domain-pack-router).",
   ]
 }
 
