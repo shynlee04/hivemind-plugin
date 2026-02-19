@@ -1,54 +1,38 @@
 {
   "session_id": "ses_38c3e4c7cffeoQPiBOZJZpC3t9",
-  "updated_at": 1771485113466,
+  "updated_at": 1771486156587,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Phase 4.1: AGENTS.md synchronization after Phase 3 completion",
-      "content": "Phase 4.1: AGENTS.md synchronization after Phase 3 completion",
+      "text": "Phase 4 completed: implementation + code-review + docs sync",
+      "content": "Phase 4 completed: implementation + code-review + docs sync",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771485113466
+      "updated_at": 1771486156587
     },
     {
       "id": "todo-2",
-      "text": "Phase 4.2: Master plan updated with Phase 4 requirements and AC1-AC6 checklist",
-      "content": "Phase 4.2: Master plan updated with Phase 4 requirements and AC1-AC6 checklist",
-      "status": "completed",
+      "text": "Phase 5.1: Scanner define GSD lifecycle integration requirements and acceptance criteria",
+      "content": "Phase 5.1: Scanner define GSD lifecycle integration requirements and acceptance criteria",
+      "status": "pending",
       "priority": "high",
-      "updated_at": 1771485113466
+      "updated_at": 1771486156587
     },
     {
       "id": "todo-3",
-      "text": "Phase 4.3: Atomic docs commit for kickoff updates (a4008cc)",
-      "content": "Phase 4.3: Atomic docs commit for kickoff updates (a4008cc)",
-      "status": "completed",
+      "text": "Phase 5.2: Build TDD RED tests for lifecycle trace continuity (project->verification)",
+      "content": "Phase 5.2: Build TDD RED tests for lifecycle trace continuity (project->verification)",
+      "status": "pending",
       "priority": "high",
-      "updated_at": 1771485113466
+      "updated_at": 1771486156587
     },
     {
       "id": "todo-4",
-      "text": "Phase 4.4: Scanner deep-scan staleness implementation gaps",
-      "content": "Phase 4.4: Scanner deep-scan staleness implementation gaps",
-      "status": "completed",
+      "text": "Phase 5.3: Build GREEN implementation + code-review sign-off",
+      "content": "Phase 5.3: Build GREEN implementation + code-review sign-off",
+      "status": "pending",
       "priority": "high",
-      "updated_at": 1771485113466
-    },
-    {
-      "id": "todo-5",
-      "text": "Phase 4.5: Build TDD RED tests for lineage-first staleness semantics",
-      "content": "Phase 4.5: Build TDD RED tests for lineage-first staleness semantics",
-      "status": "completed",
-      "priority": "high",
-      "updated_at": 1771485113466
-    },
-    {
-      "id": "todo-6",
-      "text": "Phase 4.6: Build GREEN implementation + code-review sign-off",
-      "content": "Phase 4.6: Build GREEN implementation + code-review sign-off",
-      "status": "in_progress",
-      "priority": "high",
-      "updated_at": 1771485113466
+      "updated_at": 1771486156587
     }
   ]
 }
