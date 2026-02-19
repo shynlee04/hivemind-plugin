@@ -42,6 +42,8 @@ export interface TTSConfig {
   defaultTTLHours?: number;
   /** ISO timestamp for testing. If not provided, uses current time. */
   now?: string;
+  /** Active session UUID for relational staleness decisions. */
+  activeSessionId?: string;
 }
 
 /**
@@ -63,12 +65,33 @@ export function isMemStale(
   activeTaskIds: string[],
   config?: TTSConfig
 ): boolean {
-  // Never stale if linked to an active task
-  if (mem.origin_task_id !== null && activeTaskIds.includes(mem.origin_task_id)) {
+  const flagged = mem as MemNode & { user_discarded?: boolean; superseded?: boolean };
+
+  // 1) Semantic invalidation always wins
+  if (mem.type === "false_path" || flagged.user_discarded === true || flagged.superseded === true) {
+    return true;
+  }
+
+  // 2) Active task linkage always stays fresh
+  const linkedToActiveTask = mem.origin_task_id !== null && activeTaskIds.includes(mem.origin_task_id);
+  if (linkedToActiveTask) {
     return false;
   }
 
-  // Parse staleness_stamp and compare to current/reference time
+  // 3) Cross-session mems are informational only (timestamps are non-authoritative)
+  if (config?.activeSessionId && mem.session_id !== config.activeSessionId) {
+    return false;
+  }
+
+  // 4) Same-session inactive lineage is stale
+  const inactiveLineage = mem.origin_task_id !== null && !activeTaskIds.includes(mem.origin_task_id);
+  if (inactiveLineage) {
+    if (!config?.activeSessionId || mem.session_id === config.activeSessionId) {
+      return true;
+    }
+  }
+
+  // 5) Timestamp fallback tie-breaker
   const stalenessTime = new Date(mem.staleness_stamp).getTime();
   const referenceTime = config?.now
     ? new Date(config.now).getTime()

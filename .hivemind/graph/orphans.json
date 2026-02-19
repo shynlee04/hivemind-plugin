@@ -7106,6 +7106,159 @@
         "updated_at": "2026-02-19T06:13:33.511Z"
       },
       "quarantined_at": "2026-02-19T06:13:33.522Z"
+    },
+    {
+      "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Violations Identified: 1) session-lifecycle.ts:73 - Direct save() instead of queueStateMutation (CQRS violation). 2) graph-io.ts validateMemsWithFKValidation() missing session_id FK check. 3) Retrieval overlap between session-lifecycle.ts and messages-transform.ts. 4) messages-transform.ts exceeds 300 lines (489 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:43:06.094Z",
+        "created_at": "2026-02-19T02:43:06.094Z",
+        "updated_at": "2026-02-19T02:43:06.094Z"
+      },
+      "quarantined_at": "2026-02-19T07:06:27.203Z"
+    },
+    {
+      "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3.2 COMPLETE: Fixed CQRS violation in session-lifecycle.ts:74. Changed from direct `stateManager.save()` to `queueStateMutation()` pattern. Commit: a8953a7. TypeScript: 0 errors. Tests: 129 passed. Architectural compliance: hooks → state-mutation-queue → persistence.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:16:40.804Z",
+        "created_at": "2026-02-19T05:16:40.804Z",
+        "updated_at": "2026-02-19T05:16:40.804Z"
+      },
+      "quarantined_at": "2026-02-19T07:06:27.203Z"
+    },
+    {
+      "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Scanner Results: 1) CQRS Fix (a8953a7) - CORRECT, tests pass. 2) FK Validation code present (graph-io.ts:271-276) but tests fail - test data missing session_id field. 3) Retrieval overlap concern - cognitive packer in messages-transform may need review. 4) Contract tests - not implemented.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:39:46.836Z",
+        "created_at": "2026-02-19T05:39:46.836Z",
+        "updated_at": "2026-02-19T05:39:46.836Z"
+      },
+      "quarantined_at": "2026-02-19T07:06:27.203Z"
+    },
+    {
+      "id": "56daacef-6000-4567-8d2a-a7f3278cdf14",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "56daacef-6000-4567-8d2a-a7f3278cdf14",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3.5 code-review APPROVED FK remediation: graph-io.ts session_id FK validation + orphan-quarantine tests passed (9/9), tsc clean.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T06:13:33.511Z",
+        "created_at": "2026-02-19T06:13:33.511Z",
+        "updated_at": "2026-02-19T06:13:33.511Z"
+      },
+      "quarantined_at": "2026-02-19T07:06:27.203Z"
+    },
+    {
+      "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "30e68c2d-9387-4509-a9b6-78ab868a1400",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Violations Identified: 1) session-lifecycle.ts:73 - Direct save() instead of queueStateMutation (CQRS violation). 2) graph-io.ts validateMemsWithFKValidation() missing session_id FK check. 3) Retrieval overlap between session-lifecycle.ts and messages-transform.ts. 4) messages-transform.ts exceeds 300 lines (489 lines).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T02:43:06.094Z",
+        "created_at": "2026-02-19T02:43:06.094Z",
+        "updated_at": "2026-02-19T02:43:06.094Z"
+      },
+      "quarantined_at": "2026-02-19T07:06:27.357Z"
+    },
+    {
+      "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "e0ab5531-c06d-419f-b467-b6a181c42f71",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3.2 COMPLETE: Fixed CQRS violation in session-lifecycle.ts:74. Changed from direct `stateManager.save()` to `queueStateMutation()` pattern. Commit: a8953a7. TypeScript: 0 errors. Tests: 129 passed. Architectural compliance: hooks → state-mutation-queue → persistence.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:16:40.804Z",
+        "created_at": "2026-02-19T05:16:40.804Z",
+        "updated_at": "2026-02-19T05:16:40.804Z"
+      },
+      "quarantined_at": "2026-02-19T07:06:27.357Z"
+    },
+    {
+      "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "d0aa3fee-db34-437a-b30e-61c5309d92ba",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3 Scanner Results: 1) CQRS Fix (a8953a7) - CORRECT, tests pass. 2) FK Validation code present (graph-io.ts:271-276) but tests fail - test data missing session_id field. 3) Retrieval overlap concern - cognitive packer in messages-transform may need review. 4) Contract tests - not implemented.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T05:39:46.836Z",
+        "created_at": "2026-02-19T05:39:46.836Z",
+        "updated_at": "2026-02-19T05:39:46.836Z"
+      },
+      "quarantined_at": "2026-02-19T07:06:27.357Z"
+    },
+    {
+      "id": "56daacef-6000-4567-8d2a-a7f3278cdf14",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "56daacef-6000-4567-8d2a-a7f3278cdf14",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 3.5 code-review APPROVED FK remediation: graph-io.ts session_id FK validation + orphan-quarantine tests passed (9/9), tsc clean.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T06:13:33.511Z",
+        "created_at": "2026-02-19T06:13:33.511Z",
+        "updated_at": "2026-02-19T06:13:33.511Z"
+      },
+      "quarantined_at": "2026-02-19T07:06:27.357Z"
+    },
+    {
+      "id": "ae2dd5af-3321-4a26-b194-69f3111bbdd6",
+      "type": "mem",
+      "reason": "origin_task_id bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f not found in valid tasks",
+      "original_data": {
+        "id": "ae2dd5af-3321-4a26-b194-69f3111bbdd6",
+        "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 4 kickoff complete: AGENTS.md synchronized with Phase 3 completion (CQRS resolved, remaining items now Phase 4+), and master plan updated with Phase 4 Planning Record + AC1-AC6 checklist. Commit a4008cc.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-19T07:06:27.327Z",
+        "created_at": "2026-02-19T07:06:27.327Z",
+        "updated_at": "2026-02-19T07:06:27.327Z"
+      },
+      "quarantined_at": "2026-02-19T07:06:27.357Z"
     }
   ]
 }

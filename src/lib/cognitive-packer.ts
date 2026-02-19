@@ -302,7 +302,7 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
   const staleMems: MemNode[] = []
   const freshMems: MemNode[] = []
   for (const mem of cleanMems) {
-    if (isMemStale(mem, activeTaskIds)) {
+    if (isMemStale(mem, activeTaskIds, { activeSessionId: resolvedSession })) {
       staleMems.push(mem)
     } else {
       freshMems.push(mem)
