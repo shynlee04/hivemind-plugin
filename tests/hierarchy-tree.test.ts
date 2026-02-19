@@ -11,6 +11,7 @@ import {
   toAsciiTree, toActiveMdBody, getTreeStats,
   countCompleted, summarizeBranch, pruneCompleted,
   loadTree, saveTree, treeExists, getHierarchyPath,
+  normalizeDuplicateNodeIds,
   migrateFromFlat,
   type AddChildResult,
 } from "../src/lib/hierarchy-tree.js";
@@ -120,6 +121,21 @@ function test_crud() {
   // addChild with non-existent parent
   const badParentAdd = addChild(withChildResult.tree, "nonexistent_xyz", child);
   assert(!badParentAdd.success && badParentAdd.error === "PARENT_NOT_FOUND", "addChild with missing parent returns error");
+
+  // addChild de-duplicates child IDs when same-level nodes are created in the same minute
+  const duplicateA = createNode("action", "same-minute node A", "active", TEST_DATE);
+  const duplicateB = createNode("action", "same-minute node B", "active", TEST_DATE);
+  const duplicateTree = setRoot(createTree(), createNode("trajectory", "dup root", "active", TEST_DATE));
+  const firstDuplicateResult = addChild(duplicateTree, duplicateTree.root!.id, duplicateA);
+  const secondDuplicateResult = firstDuplicateResult.success
+    ? addChild(firstDuplicateResult.tree, duplicateTree.root!.id, duplicateB)
+    : firstDuplicateResult;
+  assert(
+    secondDuplicateResult.success &&
+    secondDuplicateResult.tree.root!.children.length === 2 &&
+    secondDuplicateResult.tree.root!.children[0].id !== secondDuplicateResult.tree.root!.children[1].id,
+    "addChild appends deterministic suffix when generated child ID collides"
+  );
 
   // moveCursor to existing node
   const moved = moveCursor(withChildResult.tree, node.id);
@@ -372,6 +388,29 @@ async function test_io() {
   }
 }
 
+function test_normalize_duplicate_ids() {
+  process.stderr.write("\n--- normalize duplicate ids ---\n");
+
+  const root = createNode("trajectory", "Normalize root", "active", TEST_DATE);
+  const duplicateId = "a_301411022026";
+  root.children.push({
+    ...createNode("action", "First", "active", TEST_DATE),
+    id: duplicateId,
+  });
+  root.children.push({
+    ...createNode("action", "Second", "active", TEST_DATE),
+    id: duplicateId,
+  });
+
+  const tree = { version: 1 as const, root, cursor: duplicateId };
+  const normalized = normalizeDuplicateNodeIds(tree);
+  const ids = normalized.tree.root ? normalized.tree.root.children.map((n) => n.id) : [];
+
+  assert(normalized.changed === true, "normalizeDuplicateNodeIds reports changed=true when collisions exist");
+  assert(ids.length === 2 && ids[0] !== ids[1], "normalizeDuplicateNodeIds rewrites duplicate IDs deterministically");
+  assert(normalized.tree.cursor === ids[1], "normalizeDuplicateNodeIds remaps cursor to most recent duplicate match");
+}
+
 function test_migration() {
   process.stderr.write("\n--- migration ---\n");
 
@@ -429,6 +468,7 @@ async function main() {
   test_rendering();
   test_janitor();
   await test_io();
+  test_normalize_duplicate_ids();
   test_migration();
   process.stderr.write(`\n=== Hierarchy Tree: ${passed} passed, ${failed_} failed ===\n`);
   if (failed_ > 0) process.exit(1);

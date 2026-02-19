@@ -28,7 +28,7 @@ import type { HierarchyLevel, ContextStatus } from "../schemas/hierarchy.js";
 
 /** A single node in the hierarchy tree */
 export interface HierarchyNode {
-  /** Unique ID: {level_prefix}_{MiMiHrHrDDMMYYYY} e.g. "t_301411022026" */
+  /** Unique ID: {level_prefix}_{MiMiHrHrDDMMYYYY}[-n] e.g. "t_301411022026" */
   id: string;
   /** Hierarchy level */
   level: HierarchyLevel;
@@ -188,6 +188,79 @@ export function createNode(
   };
 }
 
+/** Result type for duplicate ID normalization */
+export interface NormalizeIdsResult {
+  tree: HierarchyTree;
+  changed: boolean;
+}
+
+/**
+ * Normalize duplicate node IDs in-place (pure return) while preserving stamp traceability.
+ *
+ * - First occurrence keeps original ID
+ * - Subsequent collisions become `${id}-1`, `${id}-2`, ...
+ * - Cursor remaps to the most recent matching node when duplicates existed
+ */
+export function normalizeDuplicateNodeIds(tree: HierarchyTree): NormalizeIdsResult {
+  if (!tree.root) return { tree, changed: false };
+
+  const usedIds = new Set<string>();
+  const suffixCounters = new Map<string, number>();
+  const cursorMatches: string[] = [];
+  const originalCursor = tree.cursor;
+  let changed = false;
+
+  function nextUniqueId(baseId: string): string {
+    if (!usedIds.has(baseId)) {
+      usedIds.add(baseId);
+      return baseId;
+    }
+
+    let suffix = suffixCounters.get(baseId) ?? 1;
+    let candidate = `${baseId}-${suffix}`;
+    while (usedIds.has(candidate)) {
+      suffix += 1;
+      candidate = `${baseId}-${suffix}`;
+    }
+
+    suffixCounters.set(baseId, suffix + 1);
+    usedIds.add(candidate);
+    changed = true;
+    return candidate;
+  }
+
+  function rewriteNode(node: HierarchyNode): HierarchyNode {
+    const rewrittenId = nextUniqueId(node.id);
+    if (originalCursor && node.id === originalCursor) {
+      cursorMatches.push(rewrittenId);
+    }
+
+    return {
+      ...node,
+      id: rewrittenId,
+      children: node.children.map(rewriteNode),
+    };
+  }
+
+  const rewrittenRoot = rewriteNode(tree.root);
+  let rewrittenCursor = tree.cursor;
+  if (originalCursor && cursorMatches.length > 0) {
+    rewrittenCursor = cursorMatches[cursorMatches.length - 1];
+    if (rewrittenCursor !== originalCursor) {
+      changed = true;
+    }
+  }
+
+  return {
+    tree: {
+      ...tree,
+      root: rewrittenRoot,
+      cursor: rewrittenCursor,
+    },
+    changed,
+  };
+}
+
 /**
  * Create an empty tree.
  *
@@ -229,7 +302,12 @@ export function addChild(
     };
   }
 
-  const newRoot = addChildToNode(tree.root, parentId, child);
+  const dedupedChild: HierarchyNode = {
+    ...child,
+    id: makeUniqueIdForTree(tree.root, child.id),
+  };
+
+  const newRoot = addChildToNode(tree.root, parentId, dedupedChild);
   if (newRoot === tree.root) {
     // Parent was NOT found - return error indicator
     return {
@@ -241,10 +319,36 @@ export function addChild(
   }
 
   return {
-    tree: { ...tree, root: newRoot, cursor: child.id },
+    tree: { ...tree, root: newRoot, cursor: dedupedChild.id },
     success: true,
-    parentPath: getAncestors(newRoot, child.id).map(n => n.id)
+    parentPath: getAncestors(newRoot, dedupedChild.id).map(n => n.id)
   };
+}
+
+function collectNodeIds(root: HierarchyNode): Set<string> {
+  const ids = new Set<string>();
+  const stack: HierarchyNode[] = [root];
+  while (stack.length > 0) {
+    const node = stack.pop()!;
+    ids.add(node.id);
+    for (let i = node.children.length - 1; i >= 0; i--) {
+      stack.push(node.children[i]);
+    }
+  }
+  return ids;
+}
+
+function makeUniqueIdForTree(root: HierarchyNode, baseId: string): string {
+  const existingIds = collectNodeIds(root);
+  if (!existingIds.has(baseId)) return baseId;
+
+  let suffix = 1;
+  let candidate = `${baseId}-${suffix}`;
+  while (existingIds.has(candidate)) {
+    suffix += 1;
+    candidate = `${baseId}-${suffix}`;
+  }
+  return candidate;
 }
 
 /** Recursive helper to add child under target parent */
