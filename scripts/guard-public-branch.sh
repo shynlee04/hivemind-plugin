@@ -47,7 +47,7 @@ protected_regexes=()
 violations=()
 
 for file in "${changed_files[@]}"; do
-  for re in "${protected_regexes[@]}"; do
+  for re in "${protected_regexes[@]+"${protected_regexes[@]}"}"; do
     if [[ "${file}" =~ ${re} ]]; then
       exists=0
       for existing in "${violations[@]:-}"; do
