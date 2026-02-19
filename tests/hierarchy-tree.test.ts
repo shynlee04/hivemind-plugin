@@ -12,6 +12,7 @@ import {
   countCompleted, summarizeBranch, pruneCompleted,
   loadTree, saveTree, treeExists, getHierarchyPath,
   migrateFromFlat,
+  type AddChildResult,
 } from "../src/lib/hierarchy-tree.js";
 import { mkdirSync, rmSync, mkdtempSync } from "fs";
 import { join } from "path";
@@ -42,8 +43,14 @@ function buildThreeLevelTree() {
 
   let tree = createTree();
   tree = setRoot(tree, root);
-  tree = addChild(tree, root.id, tactic);
-  tree = addChild(tree, tactic.id, action);
+  const tacticResult = addChild(tree, root.id, tactic);
+  if (tacticResult.success) {
+    tree = tacticResult.tree;
+  }
+  const actionResult = addChild(tree, tactic.id, action);
+  if (actionResult.success) {
+    tree = actionResult.tree;
+  }
   return { tree, root, tactic, action };
 }
 
@@ -100,26 +107,30 @@ function test_crud() {
 
   // addChild
   const child = createNode("tactic", "JWT", "active", new Date(2026, 1, 11, 14, 35));
-  const withChild = addChild(rooted, node.id, child);
+  const withChildResult = addChild(rooted, node.id, child);
   assert(
-    withChild.root!.children.length === 1 && withChild.cursor === child.id,
+    withChildResult.success && withChildResult.tree.root!.children.length === 1 && withChildResult.tree.cursor === child.id,
     "addChild adds child under parent and moves cursor to child"
   );
 
   // addChild on empty tree
   const emptyAdd = addChild(createTree(), "fake_id", child);
-  assert(emptyAdd.root === null, "addChild on empty tree is no-op");
+  assert(!emptyAdd.success && emptyAdd.error === "EMPTY_TREE", "addChild on empty tree returns error");
+
+  // addChild with non-existent parent
+  const badParentAdd = addChild(withChildResult.tree, "nonexistent_xyz", child);
+  assert(!badParentAdd.success && badParentAdd.error === "PARENT_NOT_FOUND", "addChild with missing parent returns error");
 
   // moveCursor to existing node
-  const moved = moveCursor(withChild, node.id);
+  const moved = moveCursor(withChildResult.tree, node.id);
   assert(moved.cursor === node.id, "moveCursor moves cursor to existing node");
 
   // moveCursor on non-existent ID
-  const badMove = moveCursor(withChild, "nonexistent_999");
-  assert(badMove.cursor === withChild.cursor, "moveCursor on non-existent ID is no-op");
+  const badMove = moveCursor(withChildResult.tree, "nonexistent_999");
+  assert(badMove.cursor === withChildResult.tree.cursor, "moveCursor on non-existent ID is no-op");
 
   // markComplete
-  const completed = markComplete(withChild, child.id, 1739300000000);
+  const completed = markComplete(withChildResult.tree, child.id, 1739300000000);
   const completedNode = findNode(completed.root!, child.id)!;
   assert(
     completedNode.status === "complete" && completedNode.completed === 1739300000000,

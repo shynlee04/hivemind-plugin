@@ -28,12 +28,15 @@ function testEstimateContextPercent() {
 function testShouldCreateNewSessionRules() {
   process.stderr.write("\n--- session-boundary: shouldCreateNewSession ---\n")
 
+  // V3.0: Base state with new fields
   const base = {
     turnCount: 35,
+    userTurnCount: 35,
     contextPercent: 60,
     hierarchyComplete: true,
     isMainSession: true,
     hasDelegations: false,
+    compactionCount: 2,
   }
 
   const nonMain = shouldCreateNewSession({ ...base, isMainSession: false })
@@ -42,18 +45,29 @@ function testShouldCreateNewSessionRules() {
   const withDelegations = shouldCreateNewSession({ ...base, hasDelegations: true })
   assert(withDelegations.recommended === false, "delegation-active session is excluded")
 
-  const highContext = shouldCreateNewSession({ ...base, contextPercent: 80 })
-  assert(highContext.recommended === false, "context must be below 80%")
+  // V3.0: High context is now DEFENSIVE (don't split), not a trigger
+  const highContext = shouldCreateNewSession({ ...base, contextPercent: 85 })
+  assert(highContext.recommended === false, "context >= 80% is defensive guard (no split)")
 
-  const lowTurns = shouldCreateNewSession({ ...base, turnCount: 29 })
-  assert(lowTurns.recommended === false, "turn threshold requires 30+")
+  // V3.0: Use userTurnCount for threshold
+  const lowUserTurns = shouldCreateNewSession({ ...base, userTurnCount: 29 })
+  assert(lowUserTurns.recommended === false, "user turn threshold requires 30+")
 
   const noBoundary = shouldCreateNewSession({ ...base, hierarchyComplete: false })
   assert(noBoundary.recommended === false, "requires completed phase/epic boundary")
 
+  // V3.0: Trigger with compactionCount >= 2 AND hierarchyComplete
   const recommended = shouldCreateNewSession(base)
   assert(recommended.recommended === true, "recommends new session when all rules match")
-  assert(recommended.reason.includes("Natural boundary reached"), "recommendation reason is explicit")
+  assert(recommended.reason.includes("Natural boundary"), "recommendation reason is explicit")
+
+  // V3.0: Trigger with just hierarchyComplete (legacy path)
+  const legacyTrigger = shouldCreateNewSession({ ...base, compactionCount: 0 })
+  assert(legacyTrigger.recommended === true, "legacy path: hierarchy complete with enough user turns")
+
+  // V3.0: No split with low compactionCount AND no hierarchyComplete
+  const noSplit = shouldCreateNewSession({ ...base, compactionCount: 0, hierarchyComplete: false })
+  assert(noSplit.recommended === false, "no split without compactionCount >= 2 OR hierarchy complete")
 }
 
 function main() {

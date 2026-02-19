@@ -2,10 +2,12 @@ import { type Logger } from "../lib/logging.js"
 import { type HiveMindConfig } from "../schemas/config.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { detectFrameworkContext } from "../lib/framework-context.js"
-import { addFileTouched, isSessionLocked, calculateDriftScore, shouldTriggerDriftWarning, setComplexityNudgeShown } from "../schemas/brain-state.js"
+import { addFileTouched, isSessionLocked, calculateDriftScore, shouldTriggerDriftWarning, setComplexityNudgeShown, type BrainState } from "../schemas/brain-state.js"
 import { checkComplexity } from "../lib/complexity.js";
 import { checkAndRecordToast } from "../lib/toast-throttle.js";
 import { treeExists } from "../lib/hierarchy-tree.js"
+import { validateSessionState, type GatekeeperResult } from "../lib/gatekeeper.js"
+import { queueStateMutation, applyPendingStateMutations } from "../lib/state-mutation-queue.js"
 
 // Tools exempt from governance checks (read-only or meta-tools)
 const EXEMPT_TOOLS = new Set([
@@ -85,6 +87,9 @@ export function createToolGateHook(
 
       // Load brain state
       let state = await stateManager.load()
+      if (state) {
+        state = applyPendingStateMutations(state)
+      }
 
       // Framework conflict gate (GOV-06/GOV-07)
       const frameworkContext = await detectFrameworkContext(directory)
@@ -214,9 +219,13 @@ export function createToolGateHook(
           },
         }
 
-        // Save updated state only if something changed
+        // CQRS-compliant: Queue mutations instead of direct save
         if (needsSave) {
-          await stateManager.save(state)
+          queueStateMutation({
+            type: "UPDATE_STATE",
+            payload: state,
+            source: "tool-gate"
+          })
         }
 
         // Check drift warning - Advisory only
@@ -253,9 +262,13 @@ export function createToolGateHook(
             )
           }
 
-          // Mark nudge as shown
+          // Mark nudge as shown - CQRS-compliant: queue mutation instead of direct save
           state = setComplexityNudgeShown(state)
-          await stateManager.save(state)
+          queueStateMutation({
+            type: "UPDATE_STATE",
+            payload: { complexity_nudge_shown: state.complexity_nudge_shown },
+            source: "tool-gate"
+          })
 
           return {
             allowed: true,
@@ -326,4 +339,55 @@ export function createToolGateHookInternal(
 }) => Promise<ToolGateResult> {
   const hook = createToolGateHook(log, directory, config) as any
   return hook.internal
+}
+
+/**
+ * US-016: Hard Gatekeeper - Pre-stop validation.
+ *
+ * Call this before stopping to enforce programmatic checks.
+ * Returns violations and suggestions - does NOT block execution (HC1 compliance).
+ *
+ * @param brain The current brain state to validate
+ * @param options Validation options (maxDriftScore, maxTurns)
+ * @returns GatekeeperResult with pass/fail status and violations
+ */
+export function runPreStopGate(
+  brain: BrainState,
+  options?: {
+    maxDriftScore?: number
+    maxTurns?: number
+  }
+): GatekeeperResult {
+  return validateSessionState(brain, options)
+}
+
+/**
+ * Create a pre-stop gate function with directory context.
+ * Loads brain state from disk and runs gatekeeper validation.
+ */
+export function createPreStopGate(
+  directory: string,
+  options?: {
+    maxDriftScore?: number
+    maxTurns?: number
+  }
+): () => Promise<GatekeeperResult> {
+  const stateManager = createStateManager(directory)
+
+  return async (): Promise<GatekeeperResult> => {
+    const state = await stateManager.load()
+    if (!state) {
+      return {
+        passed: false,
+        violations: [{
+          code: "NO_SESSION",
+          message: "No session state found",
+          severity: "critical",
+          suggestion: "Initialize session with declare_intent first",
+        }],
+        summary: "Gatekeeper blocked: No session state",
+      }
+    }
+    return validateSessionState(state, options)
+  }
 }

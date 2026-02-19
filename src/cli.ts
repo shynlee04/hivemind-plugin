@@ -23,8 +23,9 @@ import { normalizeAutomationLabel } from "./schemas/config.js"
 import { createStateManager, loadConfig } from "./lib/persistence.js"
 import { listArchives } from "./lib/planning-fs.js"
 import { getEffectivePaths } from "./lib/paths.js"
+import { migrateToGraph, isGraphMigrationNeeded } from "./lib/graph-migrate.js"
 
-const COMMANDS = ["init", "scan", "sync-assets", "status", "compact", "dashboard", "settings", "purge", "help"] as const
+const COMMANDS = ["init", "migrate", "scan", "sync-assets", "status", "compact", "dashboard", "settings", "purge", "help"] as const
 type Command = (typeof COMMANDS)[number]
 
 function printHelp(): void {
@@ -37,6 +38,7 @@ Usage:
 Commands:
   (default)     Interactive setup wizard (or initialize with flags)
   init          Same as default — initialize project
+  migrate       Migrate legacy flat files to graph structure (explicit, one-time)
   scan          Brownfield scan wrapper (analyze/recommend/orchestrate/status)
   sync-assets   Sync packaged OpenCode assets into .opencode/ (existing users)
   status        Show current session and governance state
@@ -260,6 +262,35 @@ async function main(): Promise<void> {
       break
     }
 
+    case "migrate": {
+      // US-005: Explicit migrate command (replaces implicit hook-based migration)
+      console.log("Running HiveMind graph migration...")
+      
+      // Check if migration is needed
+      if (!isGraphMigrationNeeded(directory)) {
+        console.log("✓ Graph structure already exists. No migration needed.")
+        break
+      }
+      
+      const migrateResult = await migrateToGraph(directory)
+      
+      if (migrateResult.success) {
+        console.log("✓ Migration complete:")
+        console.log(`  - Trajectory: ${migrateResult.migrated.trajectory ? 'OK' : 'SKIPPED'}`)
+        console.log(`  - Plans: ${migrateResult.migrated.plans ? 'OK' : 'SKIPPED'}`)
+        console.log(`  - Tasks: ${migrateResult.migrated.tasks} migrated`)
+        console.log(`  - Mems: ${migrateResult.migrated.mems} migrated`)
+        console.log(`  - Backup: ${migrateResult.backupPath}`)
+      } else {
+        console.error("✗ Migration failed:")
+        for (const err of migrateResult.errors) {
+          console.error(`  - ${err}`)
+        }
+        process.exit(1)
+      }
+      break
+    }
+
     case "scan": {
       const output = await runScanCommand(directory, {
         action: (flags["action"] as "status" | "analyze" | "recommend" | "orchestrate") ?? "analyze",
@@ -284,30 +315,60 @@ async function main(): Promise<void> {
       break
 
     case "dashboard": {
+      // Spawn dashboard as detached Bun process to avoid EBUSY file-locking
+      // OpenTUI requires Bun runtime; Node.js CLI cannot host it directly
+      const { spawn } = await import("node:child_process");
+
+      // Resolve dashboard entry point (compiled JS in dist/)
+      const dashboardPath = join(__dirname, "dashboard", "bin.js");
+
+      const refreshMs = flags["refresh"]
+        ? Math.round(Math.max(0.5, parseFloat(flags["refresh"])) * 1000)
+        : 2000;
+
+      const dashboardArgs = [
+        "run",
+        dashboardPath,
+        "--projectRoot", directory,
+        "--language", (flags["lang"] as "en" | "vi") ?? "en",
+        "--refreshMs", String(refreshMs),
+      ];
+
       try {
-        const { runDashboardTui } = await import("./dashboard/server.js")
-        const refreshSeconds = flags["refresh"]
-          ? Math.max(0.5, parseFloat(flags["refresh"]))
-          : 2
-        await runDashboardTui(directory, {
-          language: (flags["lang"] as "en" | "vi") ?? "en",
-          refreshMs: Math.round(refreshSeconds * 1000),
-        })
+        const proc = spawn("bun", dashboardArgs, {
+          detached: true,
+          stdio: "ignore",
+          cwd: process.cwd(),
+        });
+
+        proc.unref();
+        // eslint-disable-next-line no-console
+        console.log("Dashboard launched in detached Bun process.");
+        // eslint-disable-next-line no-console
+        console.log(`  Project: ${directory}`);
+        // eslint-disable-next-line no-console
+        console.log(`  Refresh: ${refreshMs}ms`);
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err)
-        if (msg.includes("Cannot find module") || msg.includes("Cannot find package")) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg.includes("bun") || msg.includes("ENOENT")) {
           // eslint-disable-next-line no-console
           console.error(
-            "Dashboard requires optional dependencies: ink and react.\n" +
-            "Install them with:\n\n" +
-            "  npm install ink react\n\n" +
-            "The core HiveMind plugin (tools, hooks) works without them."
-          )
+            "Dashboard requires Bun runtime.\n" +
+            "Install Bun with:\n\n" +
+            "  curl -fsSL https://bun.sh/install | bash\n\n" +
+            "Then run: bun --version"
+          );
+        } else if (msg.includes("Cannot find module") || msg.includes("ENOENT")) {
+          // eslint-disable-next-line no-console
+          console.error(
+            "Dashboard entry point not found. Ensure the plugin is built:\n\n" +
+            "  npm run build"
+          );
         } else {
           // eslint-disable-next-line no-console
-          console.error("Failed to start dashboard:", msg)
+          console.error("Failed to spawn dashboard:", msg);
         }
-        process.exit(1)
+        process.exit(1);
       }
       break
     }

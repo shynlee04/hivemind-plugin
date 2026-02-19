@@ -1,9 +1,29 @@
+/**
+ * Messages Transform Hook — Pre-stop checklist and context anchoring.
+ * 
+ * V3.0 Design:
+ * - Uses PREPEND for anchor context (synthetic part, doesn't mutate user text)
+ * - Uses APPEND for checklist (at end, before final message)
+ * - pending_failure_ack checklist item RESTORED (safety critical)
+ * - Research artifacts check REMOVED (was noise, not actionable)
+ * 
+ * P3: try/catch — never break message flow
+ */
+
 import { createStateManager, loadConfig } from "../lib/persistence.js"
-import { loadAnchors } from "../lib/anchors.js"
+import { queueStateMutation } from "../lib/state-mutation-queue.js"
 import { loadTasks } from "../lib/manifest.js"
-import { countCompleted, getAncestors, loadTree } from "../lib/hierarchy-tree.js"
+import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
 import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
+import { packCognitiveState } from "../lib/cognitive-packer.js"
+import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
+import { loadLastSessionContext, buildTransformedPrompt } from "../lib/session_coherence.js"
+import { existsSync, readdirSync } from "fs"
 import type { Message, Part } from "@opencode-ai/sdk"
+import type { BrainState } from "../schemas/brain-state.js"
+import { createLogger } from "../lib/logging.js"
+import { getEffectivePaths } from "../lib/paths.js"
+import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
 
 type MessagePart = {
   id?: string
@@ -39,31 +59,54 @@ function isMessageWithParts(message: MessageV2): message is MessageWithParts {
   )
 }
 
+// LOW #1: Magic number extracted for clarity
+const MAX_CHECKLIST_CHARS = 1000
+
 function buildChecklist(items: string[], maxChars: number): string {
   if (items.length === 0) return ""
 
-  const lines = ["<system-reminder>", "CHECKLIST BEFORE STOPPING:"]
+  const lines = ["<system-reminder>", "CHECKLIST BEFORE STOPPING (Pre-Stop Conditional):"]
+  lines.push("You are about to complete your turn. BEFORE you output your final message, you MUST verify:")
   for (const item of items) {
     const candidate = [...lines, `- [ ] ${item}`, "</system-reminder>"].join("\n")
     if (candidate.length > maxChars) break
     lines.push(`- [ ] ${item}`)
   }
+  lines.push("If NO, you must execute these tools now. Do not stop your turn.")
   lines.push("</system-reminder>")
   return lines.join("\n")
 }
 
-function syntheticSystemMessage(text: string): MessageV2 {
-  return {
-    role: "system",
-    synthetic: true,
-    content: [
-      {
-        type: "text",
-        text,
-        synthetic: true,
-      },
-    ],
-  }
+function buildAutoRealignReminder(decision: ReturnType<typeof detectAutoRealignment>): string {
+  const menuLines = decision.nextStepMenu.map((option, index) => {
+    const gate = option.requiresPermission ? "permission" : "auto"
+    return `${index + 1}) /${option.command} [${gate}] - ${option.label}`
+  })
+
+  const initiationLine = decision.requiresPermission
+    ? `Permission required before execution. ${decision.permissionPrompt ?? "Ask explicit Yes/No before continuing."}`
+    : `Auto-init allowed: append /${decision.recommendedCommand} as the next step and continue unless user says no.`
+
+  return [
+    "<system-reminder>",
+    `[AUTO-REALIGN] ${decision.reason}.`,
+    `If user command is missing or invalid, route via /${decision.recommendedCommand}.`,
+    `Preferred workflow: ${decision.recommendedWorkflow}. Persona lane: ${decision.persona ?? "auto"}.`,
+    `Load and use skills: ${decision.recommendedSkills.join(", ")}.`,
+    "[NEXT-STEP MENU]",
+    ...menuLines,
+    initiationLine,
+    "Continue task completion even when slash commands are absent.",
+    "</system-reminder>",
+  ].join("\n")
+}
+
+function isEmptyPackedContext(xml: string): boolean {
+  return (
+    xml.includes('timestamp="1970-01-01T00:00:00.000Z"') &&
+    xml.includes("<trajectory />") &&
+    xml.includes('session=""')
+  )
 }
 
 function isSyntheticMessage(message: MessageV2): boolean {
@@ -90,27 +133,44 @@ function getLastNonSyntheticUserMessageIndex(messages: MessageV2[]): number {
   return -1
 }
 
-function hasModernMessages(messages: MessageV2[]): boolean {
-  return messages.some(isMessageWithParts)
-}
-
-function buildAnchorContext(
-  anchors: Array<{ key: string; value: string; created_at: number }>,
-  maxChars: number
-): string {
-  if (anchors.length === 0) return ""
-
-  const sorted = [...anchors].sort((a, b) => b.created_at - a.created_at).slice(0, 3)
-  const lines = ["<anchor-context>"]
-  for (const anchor of sorted) {
-    const candidate = [...lines, `- [${anchor.key}]: ${anchor.value}`, "</anchor-context>"].join("\n")
-    if (candidate.length > maxChars) break
-    lines.push(`- [${anchor.key}]: ${anchor.value}`)
+function getMessageText(message: MessageV2): string {
+  if (isMessageWithParts(message)) {
+    return message.parts
+      .filter((part) => part.type === "text")
+      .map((part) => part.text || "")
+      .join(" ")
   }
-  lines.push("</anchor-context>")
-  return lines.length > 2 ? lines.join("\n") : ""
+
+  if (typeof message.content === "string") {
+    return message.content
+  }
+
+  if (Array.isArray(message.content)) {
+    return message.content
+      .filter((part) => part.type === "text")
+      .map((part) => (part as MessagePart).text || "")
+      .join(" ")
+  }
+
+  return ""
 }
 
+/**
+ * V3.0: Build anchor context as SEPARATE synthetic part.
+ * Does NOT mutate user text - uses prependSyntheticPart instead.
+ */
+function buildAnchorContext(state: BrainState): string {
+  const phase = state.hierarchy.trajectory || "Unset"
+  const task = state.hierarchy.action || "Unset"
+  const hierarchyStatus = state.metrics.context_updates > 0 ? "Active" : "Stale"
+
+  return `[SYSTEM ANCHOR: ${phase} | Active Task: ${task} | Hierarchy: ${hierarchyStatus}]`
+}
+
+/**
+ * V3.0: PREPEND synthetic part (anchor context at START).
+ * Does NOT mutate user's original text - adds separate part.
+ */
 function prependSyntheticPart(message: MessageV2, text: string): void {
   if (isMessageWithParts(message)) {
     const firstPart = message.parts[0] as MessagePart | undefined
@@ -126,7 +186,13 @@ function prependSyntheticPart(message: MessageV2, text: string): void {
       type: "text",
       text,
       synthetic: true,
-    }
+      experimental_providerMetadata: {
+        opencode: {
+          ui_hidden: true
+        }
+      }
+    } as Part
+    // Prepend to start
     message.parts = [syntheticPart, ...message.parts]
     return
   }
@@ -153,23 +219,68 @@ function prependSyntheticPart(message: MessageV2, text: string): void {
     return
   }
 
-  message.content = [syntheticPart]
+  message.content = [syntheticPart] // Fallback
 }
 
-async function buildFocusPath(directory: string, fallback: { trajectory: string; tactic: string; action: string }): Promise<string> {
-  const tree = await loadTree(directory)
-  if (tree.root && tree.cursor) {
-    const ancestors = getAncestors(tree.root, tree.cursor)
-    if (ancestors.length > 0) {
-      return ancestors.map(node => node.content).join(" > ")
-    }
+/**
+ * APPEND synthetic part (checklist at END).
+ */
+function appendSyntheticPart(message: MessageV2, text: string): void {
+  if (isMessageWithParts(message)) {
+    const firstPart = message.parts[0] as MessagePart | undefined
+    const sessionID = firstPart?.sessionID ?? message.info.sessionID
+    const messageID = firstPart?.messageID ?? message.info.id
+
+    if (!sessionID || !messageID) return
+
+    const syntheticPart: Part = {
+      id: `hm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+      sessionID,
+      messageID,
+      type: "text",
+      text,
+      synthetic: true,
+      experimental_providerMetadata: {
+        opencode: {
+          ui_hidden: true
+        }
+      }
+    } as Part
+    // Append to end
+    message.parts = [...message.parts, syntheticPart]
+    return
   }
 
-  return [fallback.trajectory, fallback.tactic, fallback.action].filter(Boolean).join(" > ")
+  const syntheticPart: MessagePart = {
+    type: "text",
+    text,
+    synthetic: true,
+  }
+
+  if (Array.isArray(message.content)) {
+    message.content = [...message.content, syntheticPart]
+    return
+  }
+
+  if (typeof message.content === "string") {
+    message.content = [
+      {
+        type: "text",
+        text: message.content,
+      },
+      syntheticPart,
+    ]
+    return
+  }
+
+  message.content = [syntheticPart] // Fallback
 }
 
 export function createMessagesTransformHook(_log: { warn: (message: string) => Promise<void> }, directory: string) {
   const stateManager = createStateManager(directory)
+  const injectedSessionIds = new Set<string>()
+  const paths = getEffectivePaths(directory)
+  const loggerPromise = createLogger(paths.logsDir, "session-coherence")
 
   return async (
     _input: {},
@@ -182,85 +293,248 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       if (config.governance_mode === "permissive") return
 
       const state = await stateManager.load()
-      if (!state) return
 
-      const anchorsState = await loadAnchors(directory)
-      const anchorContext = buildAnchorContext(anchorsState.anchors, 200)
-      if (anchorContext) {
+      // === FIRST TURN: Session Coherence ===
+      // Persistent marker-based gate (counter-independent).
+      // Inject only when state exists and marker is false.
+      const sessionId = state?.session?.id ?? ""
+      const markerInjected = state?.first_turn_context_injected ?? false
+      const canInjectForSession = sessionId.length > 0 && !injectedSessionIds.has(sessionId)
+
+      if (state && !markerInjected && canInjectForSession) {
         const index = getLastNonSyntheticUserMessageIndex(output.messages)
         if (index >= 0) {
-          const focusPath = await buildFocusPath(directory, state.hierarchy)
-          const continuityLines = [anchorContext]
-          if (focusPath) {
-            continuityLines.unshift(`<focus>${focusPath}</focus>`)
+          try {
+            // Extract user message text
+            const userMessage = output.messages[index]
+            const userMessageText = getMessageText(userMessage)
+
+            // Load last session context (from archive if available)
+            const lastSessionContext = await loadLastSessionContext(directory)
+
+            // Build transformed prompt
+            const transformedPrompt = buildTransformedPrompt(userMessageText, lastSessionContext, {
+              maxTasks: 5,
+              maxMems: 3,
+              maxTodos: 10,
+              includeAnchors: true,
+              budget: 2500,
+            })
+
+            // Inject as synthetic part (prepend)
+            prependSyntheticPart(output.messages[index], transformedPrompt)
+
+            // CQRS: Queue mutation instead of direct save
+            queueStateMutation({
+              type: "UPDATE_STATE",
+              payload: {
+                first_turn_context_injected: true,
+              },
+              source: "messages-transform-hook:first-turn",
+            })
+
+            injectedSessionIds.add(sessionId)
+
+            if (process.env.HIVEMIND_DEBUG_FIRST_TURN === "1") {
+              const logger = await loggerPromise
+              await logger.debug("\n🔗 [SESSION COHERENCE] First-turn context injected:")
+              await logger.debug("---")
+              await logger.debug(transformedPrompt)
+              await logger.debug("---\n")
+            }
+
+            // First-turn session coherence is exclusive.
+            // Do not stack anchor/checklist injections in same transform pass.
+            return
+          } catch {
+            // P3: never break message flow - silently fail
           }
-          prependSyntheticPart(output.messages[index], continuityLines.join("\n"))
         }
       }
 
-      const items: string[] = []
-      if (!state.hierarchy.action) {
-        items.push("Action-level focus is missing (call map_context)")
-      }
-      if (state.metrics.context_updates === 0) {
-        items.push("No map_context updates yet in this session")
-      }
-      if (state.pending_failure_ack) {
-        items.push("Acknowledge pending subagent failure")
-      }
-      if (state.metrics.files_touched.length > 0) {
-        items.push("Create a git commit for touched files")
-      }
-      const taskManifest = await loadTasks(directory)
-      if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
-        const pendingCount = taskManifest.tasks.filter(task => {
-          const status = String(task.status ?? "pending").toLowerCase()
-          return status !== "completed" && status !== "cancelled"
-        }).length
-        if (pendingCount > 0) {
-          items.push(`Review ${pendingCount} pending task(s) (todoread/todowrite)`)
+        // Now safe to return early - first-turn already handled
+      if (!state) return
+
+      // === P0-6: Capture recent messages for cross-session continuity ===
+      // Store last 6 messages in brain state for session split
+      try {
+        const recentMessages: Array<{ role: "user" | "assistant"; content: string }> = []
+        for (const msg of output.messages) {
+          // Determine role from message shape
+          let role: string | undefined
+          let content = ""
+          
+          if (isMessageWithParts(msg)) {
+            role = msg.info?.role
+            content = msg.parts.filter(p => p.type === "text").map(p => p.text || "").join(" ")
+          } else {
+            // LegacyMessage
+            role = (msg as LegacyMessage).role
+            const msgContent = (msg as LegacyMessage).content
+            if (typeof msgContent === "string") {
+              content = msgContent
+            } else if (Array.isArray(msgContent)) {
+              content = msgContent.filter(p => p.type === "text").map(p => (p as MessagePart).text || "").join(" ")
+            }
+          }
+          
+          if (role && (role === "user" || role === "assistant") && content) {
+            recentMessages.push({ role: role as "user" | "assistant", content })
+          }
         }
+        
+        // Keep only last 6 messages
+        const trimmedMessages = recentMessages.slice(-6)
+        
+        // CQRS: Queue mutation instead of direct save
+        queueStateMutation({
+          type: "UPDATE_STATE",
+          payload: {
+            recent_messages: trimmedMessages,
+          },
+          source: "messages-transform-hook:recent-messages",
+        })
+      } catch {
+        // P3: Never break message flow - silently fail
       }
-
-      const role = (state.session.role || "").toLowerCase()
-      const contextPercent = estimateContextPercent(
-        state.metrics.turn_count,
-        config.auto_compact_on_turns
-      )
-
-      let completedBranchCount = 0
-      const tree = await loadTree(directory)
-      if (tree.root) {
-        completedBranchCount = countCompleted(tree)
-      }
-
-      const boundaryRecommendation = shouldCreateNewSession({
-        turnCount: state.metrics.turn_count,
-        contextPercent,
-        hierarchyComplete: completedBranchCount > 0,
-        isMainSession: !role.includes("subagent"),
-        hasDelegations: (state.cycle_log ?? []).some(entry => entry.tool === "task"),
-      })
-      if (boundaryRecommendation.recommended) {
-        items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
-      }
-
-      const checklist = buildChecklist(items, 300)
-      if (!checklist) return
+      // === End P0-6 message capture ===
 
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
-        prependSyntheticPart(output.messages[index], checklist)
-        return
+        const latestUserText = getMessageText(output.messages[index])
+        const autoRealign = detectAutoRealignment(latestUserText)
+        if (autoRealign.shouldRealign) {
+          prependSyntheticPart(output.messages[index], buildAutoRealignReminder(autoRealign))
+        }
+
+        // US-015: Cognitive Packer - inject packed XML state at START
+        const packedContext = packCognitiveState(directory)
+        if (!isEmptyPackedContext(packedContext)) {
+          prependSyntheticPart(output.messages[index], packedContext)
+        }
+
+        // 1. V3.0: Contextual Anchoring via PREPEND (synthetic part, no mutation)
+        const anchorHeader = buildAnchorContext(state)
+        prependSyntheticPart(output.messages[index], anchorHeader)
+
+        // 2. Pre-Stop Conditional Reminders (Inject Checklist at END)
+        const items: string[] = []
+
+        if (autoRealign.shouldRealign) {
+          const initiationMode = autoRealign.requiresPermission
+            ? `permission-gated (${autoRealign.permissionPrompt ?? "ask explicit Yes/No"})`
+            : "auto-init"
+          items.push(
+            `Auto-realign workflow now (${initiationMode}): /${autoRealign.recommendedCommand} + skills (${autoRealign.recommendedSkills.join(", ")}) [${autoRealign.recommendedWorkflow}]`
+          )
+        }
+
+        // Add standard governance checks
+        if (!state.hierarchy.action) items.push("Action-level focus is missing (call map_context)")
+        if (state.metrics.context_updates === 0) items.push("Is the file tree updated? (No map_context yet)")
+        if (state.metrics.files_touched.length > 0) items.push("Have you forced an atomic git commit / PR for touched files?")
+
+        // V3.0: RESTORED - pending_failure_ack checklist (safety critical)
+        if (state.pending_failure_ack) {
+          items.push("Acknowledge pending subagent failure (call export_cycle or map_context with blocked status)")
+        }
+
+        // US-016: Pending tasks - dual-read pattern (trajectory.json primary, tasks.json fallback)
+        let pendingTaskCount = 0
+        let paths
+        try {
+          paths = await import("../lib/paths.js").then(m => m.getEffectivePaths(directory))
+        } catch {
+          // If paths can't be loaded, skip graph-based checks
+        }
+
+        // LOW #2: Parallelize async - start tree loading in parallel with task checks
+        const treePromise = loadTree(directory)
+        
+        // Primary: Read from graph/tasks.json filtered by trajectory.json active_task_ids
+        // MEDIUM #2: Check BOTH graph files exist before using graph data
+        if (paths && existsSync(paths.graphTrajectory) && existsSync(paths.graphTasks)) {
+          // LOW #2: Load trajectory and graphTasks in parallel
+          const [trajectoryState, graphTasks] = await Promise.all([
+            loadTrajectory(directory),
+            loadGraphTasks(directory)
+          ])
+          if (trajectoryState?.trajectory) {
+            const activeTaskIds = new Set(trajectoryState.trajectory.active_task_ids)
+            if (activeTaskIds.size > 0 && graphTasks?.tasks) {
+              // MEDIUM #1: Defensive check for task.status before comparison
+              const activeTasks = graphTasks.tasks.filter(task =>
+                activeTaskIds.has(task.id) && task.status && task.status !== "complete" && task.status !== "invalidated"
+              )
+              pendingTaskCount = activeTasks.length
+            }
+          }
+        }
+
+        // Fallback: Read from flat tasks.json if graph not available or empty
+        if (pendingTaskCount === 0) {
+          const taskManifest = await loadTasks(directory)
+          if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
+            const pendingCount = taskManifest.tasks.filter(task => {
+              const status = String(task.status ?? "pending").toLowerCase()
+              return status !== "completed" && status !== "cancelled"
+            }).length
+            pendingTaskCount = pendingCount
+          }
+        }
+
+        if (pendingTaskCount > 0) {
+          items.push(`Review ${pendingTaskCount} pending task(s)`)
+        }
+
+        // Session Boundary check
+        const role = (state.session?.role || "").toLowerCase()
+        const contextPercent = estimateContextPercent(state.metrics.turn_count, config.auto_compact_on_turns)
+        let completedBranchCount = 0
+        // LOW #2: Use pre-loaded tree promise
+        const tree = await treePromise
+        if (tree.root) completedBranchCount = countCompleted(tree)
+
+        // V3.0: Pass user_turn_count and compaction_count
+        const boundaryRecommendation = shouldCreateNewSession({
+          turnCount: state.metrics.turn_count,
+          userTurnCount: state.metrics.user_turn_count,
+          contextPercent,
+          hierarchyComplete: completedBranchCount > 0,
+          isMainSession: !role.includes("subagent"),
+          hasDelegations: (state.cycle_log ?? []).some(entry => entry.tool === "task"),
+          compactionCount: state.compaction_count ?? 0,
+        })
+
+        if (boundaryRecommendation.recommended) {
+           items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
+        }
+
+        // US-016: Artifacts check - verify session artifacts are properly linked
+        // Checks if session has been persisted to .hivemind/sessions/active/
+        const sessionDir = directory.includes(".hivemind/sessions/")
+          ? null // Already in session directory
+          : paths?.activeDir
+        if (sessionDir && state.session?.id) {
+          // Session files are named {date}-{mode}-{slug}.md, not by session ID suffix
+          // Check if ANY session file exists in active directory
+          try {
+            const sessionFiles = readdirSync(sessionDir).filter(f => f.endsWith('.md'))
+            if (sessionFiles.length === 0) {
+              items.push("Session not persisted to sessions/active/ (run declare_intent or compact_session)")
+            }
+          } catch {
+            // Directory doesn't exist or can't be read
+            items.push("Session not persisted to sessions/active/ (run declare_intent or compact_session)")
+          }
+        }
+
+        const checklist = buildChecklist(items, MAX_CHECKLIST_CHARS)
+        if (checklist) {
+          appendSyntheticPart(output.messages[index], checklist)
+        }
       }
 
-      if (hasModernMessages(output.messages)) {
-        // SDK shape safety: avoid injecting legacy message objects into info/parts arrays.
-        return
-      }
-
-      // Legacy compatibility fallback. New SDK shape should inject into parts above.
-      output.messages.push(syntheticSystemMessage(checklist))
     } catch {
       // P3: never break message flow
     }

@@ -1,0 +1,56 @@
+name: hivefiver-enterprise
+description: Strict enterprise flow for high-complexity requirement streams with evidence and export controls.
+version: 2
+steps:
+  - name: bootstrap
+    tool: hivefiver
+    args:
+      action: init
+      lane: enterprise_architect
+  - name: doctor-preflight
+    tool: hivefiver-audit
+    args:
+      focus: governance_mcp_and_drift
+  - name: intake
+    tool: hivefiver-intake
+    args:
+      style: controlled_mcq
+      strictness: strict
+  - name: spec
+    tool: hivefiver-specforge
+    args:
+      require_ambiguity_map: true
+      block_high_ambiguity: true
+      retry_limit: 10
+  - name: research
+    tool: hivefiver-research
+    args:
+      fallback: graceful_with_caveats
+      enforce_provider_status: true
+      require_contradiction_register: true
+      retry_limit: 10
+  - name: architect
+    tool: hivefiver-architect
+    args:
+      enforce_domain_pack: true
+  - name: gsd-bridge
+    tool: hivefiver-gsd-bridge
+    args:
+      compatibility_wrapper: true
+      require_lineage_report: true
+  - name: validate-export
+    tool: hivefiver-validate
+    args:
+      require_schema_gate: true
+      include_todo_story_map: true
+guards:
+  - rule: no_execution_without_plan
+    check: connected_task_graph
+  - rule: strict_evidence
+    check: contradictory_claims_resolved
+  - rule: mcp_readiness
+    check: provider_status_reported
+  - rule: schema_gate
+    check: prd_json_valid
+  - rule: export_cycle
+    check: cycle_exported

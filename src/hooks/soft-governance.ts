@@ -18,17 +18,15 @@
  * P5: Config re-read from disk each invocation (Rule 6)
  */
 
-import { mkdir, writeFile } from "fs/promises"
-import { join } from "path"
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
+import { queueStateMutation } from "../lib/state-mutation-queue.js"
 import {
   addViolationCount,
   incrementTurnCount,
   setLastCommitSuggestionTurn,
   addCycleLogEntry,
-  type BrainState,
 } from "../schemas/brain-state.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
@@ -36,10 +34,7 @@ import { detectLongSession } from "../lib/long-session.js"
 import { executeAutoCommit, extractModifiedFiles, shouldAutoCommit } from "../lib/auto-commit.js"
 import { getClient } from "./sdk-context.js"
 import { checkAndRecordToast, resetAllThrottles } from "../lib/toast-throttle.js"
-import { loadTree, countCompleted, getAncestors } from "../lib/hierarchy-tree.js"
-import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
-import { generateExportData, generateJsonExport, generateMarkdownExport } from "../lib/session-export.js"
-import { getExportDir } from "../lib/planning-fs.js"
+import { maybeCreateNonDisruptiveSessionSplit } from "../lib/session-split.js"
 import {
   classifyTool,
   incrementToolType,
@@ -134,144 +129,35 @@ function getActiveActionLabel(state: any): string {
   return "(none)"
 }
 
-const AUTO_SPLIT_TRIGGER_TOOLS = new Set(["map_context", "export_cycle", "scan_hierarchy"])
-
-async function maybeCreateNonDisruptiveSessionSplit(opts: {
-  log: Logger
-  directory: string
-  config: HiveMindConfig
-  state: BrainState
-  sessionID: string
-  triggerTool: string
-}): Promise<BrainState> {
-  const { log, directory, config, state, sessionID, triggerTool } = opts
-
-  if (config.automation_level !== "full") return state
-  if (!AUTO_SPLIT_TRIGGER_TOOLS.has(triggerTool)) return state
-  if (state.pending_failure_ack) return state
-
-  const role = (state.session.role || "").toLowerCase()
-  const isMainSession = !role.includes("subagent")
-  if (!isMainSession) return state
-
-  const hasDelegations = (state.cycle_log ?? []).some(entry => entry.tool === "task")
-  const contextPercent = estimateContextPercent(
-    state.metrics.turn_count,
-    config.auto_compact_on_turns
-  )
-  if (contextPercent >= 80 || state.metrics.turn_count < 30 || hasDelegations) {
-    return state
+function getCanonicalSessionAction(output: { output: string; metadata: any }): string | null {
+  const metadataAction = output.metadata?.action
+  if (typeof metadataAction === "string" && metadataAction.trim().length > 0) {
+    return metadataAction
   }
 
-  let completedBranchCount = 0
-  let treeFocusPath = ""
   try {
-    const tree = await loadTree(directory)
-    if (tree.root) {
-      completedBranchCount = countCompleted(tree)
-      if (tree.cursor) {
-        const path = getAncestors(tree.root, tree.cursor).map(node => node.content).join(" > ")
-        if (path) treeFocusPath = path
-      }
-    }
+    const parsed = JSON.parse(output.output ?? "")
+    const action = parsed?.metadata?.action ?? parsed?.action
+    return typeof action === "string" && action.trim().length > 0 ? action : null
   } catch {
-    return state
+    return null
+  }
+}
+
+function shouldAcknowledgeGovernanceSignals(
+  toolName: string,
+  output: { output: string; metadata: any }
+): boolean {
+  if (toolName === "declare_intent" || toolName === "map_context") {
+    return true
   }
 
-  const boundary = shouldCreateNewSession({
-    turnCount: state.metrics.turn_count,
-    contextPercent,
-    hierarchyComplete: completedBranchCount > 0,
-    isMainSession,
-    hasDelegations,
-  })
-
-  if (!boundary.recommended) return state
-
-  const client = getClient() as any
-  if (!client?.session?.create) {
-    await log.debug("Auto split skipped: SDK client.session.create unavailable")
-    return state
+  if (toolName === "hivemind_session") {
+    const action = getCanonicalSessionAction(output)
+    return action === "update"
   }
 
-  try {
-    const summary = `Auto split: ${boundary.reason}`
-    const exportData = generateExportData(state, summary)
-    const exportDir = getExportDir(directory)
-    await mkdir(exportDir, { recursive: true })
-    const stamp = new Date().toISOString().split("T")[0]
-    const baseName = `session_${stamp}_${state.session.id}_autosplit`
-    const body = [
-      summary,
-      state.hierarchy.trajectory ? `Trajectory: ${state.hierarchy.trajectory}` : "",
-      state.hierarchy.tactic ? `Tactic: ${state.hierarchy.tactic}` : "",
-      state.hierarchy.action ? `Action: ${state.hierarchy.action}` : "",
-    ].filter(Boolean).join("\n")
-
-    await writeFile(join(exportDir, `${baseName}.json`), generateJsonExport(exportData))
-    await writeFile(join(exportDir, `${baseName}.md`), generateMarkdownExport(exportData, body))
-
-    const focus =
-      state.hierarchy.action ||
-      state.hierarchy.tactic ||
-      state.hierarchy.trajectory ||
-      treeFocusPath ||
-      "Continuation"
-    const created = await client.session.create({
-      directory,
-      title: `HiveMind split: ${focus}`,
-      parentID: sessionID,
-    })
-    const createdSessionId = typeof created?.id === "string" ? created.id : "unknown"
-
-    await emitGovernanceToast(log, {
-      key: "session_split:info",
-      message: `Boundary reached. Started continuation session ${createdSessionId}.`,
-      variant: "info",
-      eventType: "session_split",
-    })
-
-    const now = Date.now()
-    const resetDetection = createDetectionState()
-    const splitState: BrainState = {
-      ...state,
-      session: {
-        ...state.session,
-        start_time: now,
-        last_activity: now,
-        date: new Date(now).toISOString().split("T")[0],
-      },
-      metrics: {
-        ...state.metrics,
-        turn_count: 0,
-        drift_score: 100,
-        files_touched: [],
-        consecutive_failures: 0,
-        consecutive_same_section: 0,
-        last_section_content: "",
-        tool_type_counts: resetDetection.tool_type_counts,
-        keyword_flags: [],
-        write_without_read_count: 0,
-        governance_counters: resetGovernanceCounters(state.metrics.governance_counters, {
-          full: true,
-          prerequisitesCompleted: Boolean(
-            state.hierarchy.trajectory &&
-            state.hierarchy.tactic &&
-            state.hierarchy.action
-          ),
-        }),
-      },
-      complexity_nudge_shown: false,
-    }
-
-    await log.info(`[autosplit] Created non-disruptive session ${createdSessionId} (${boundary.reason})`)
-    return splitState
-  } catch (error: unknown) {
-    await log.warn(
-      `Auto split skipped: ${error instanceof Error ? error.message : String(error)}`
-    )
-    return state
-  }
+  return false
 }
 
 /**
@@ -325,7 +211,8 @@ export function createSoftGovernanceHook(
         prerequisites_completed: prerequisitesCompleted,
       }
 
-      if (input.tool === "map_context" || input.tool === "declare_intent") {
+      const governanceAcknowledged = shouldAcknowledgeGovernanceSignals(input.tool, _output)
+      if (governanceAcknowledged) {
         counters = acknowledgeGovernanceSignals(counters)
       }
 
@@ -355,9 +242,14 @@ export function createSoftGovernanceHook(
         }
       }
 
+      if (governanceAcknowledged) {
+        counters = acknowledgeGovernanceSignals(counters)
+      }
+
       // Check for drift (high turns without context update)
+      // Threshold: drift_score < 30 AND user_turn_count >= 10 (consistent with event-handler.ts)
       const driftWarning = newState.metrics.turn_count >= config.max_turns_before_warning &&
-                           newState.metrics.drift_score < 50
+                           newState.metrics.drift_score < 30
 
       // === Detection Engine: Tool Classification ===
       const toolCategory = classifyTool(input.tool)
@@ -589,17 +481,29 @@ export function createSoftGovernanceHook(
         }
       }
 
-      newState = await maybeCreateNonDisruptiveSessionSplit({
-        log,
+      const splitResult = await maybeCreateNonDisruptiveSessionSplit(
         directory,
-        config,
-        state: newState,
-        sessionID: input.sessionID,
-        triggerTool: input.tool,
-      })
+        newState,
+        {
+          log,
+          hiveMindConfig: config,
+          sessionID: input.sessionID,
+          triggerTool: input.tool,
+          client: getClient() as any,
+          emitToast: (opts) => emitGovernanceToast(log, opts),
+        }
+      )
+      if (splitResult) {
+        newState = splitResult.state
+      }
 
-      // Single save at the end
-      await stateManager.save(newState)
+      // CQRS-compliant: queue mutation only.
+      // Hook remains write-intent only; mutation application is handled by tool boundaries.
+      queueStateMutation({
+        type: "UPDATE_STATE",
+        payload: newState,
+        source: "soft-governance"
+      })
 
       // Log drift warnings if detected
       if (driftWarning) {
@@ -607,6 +511,10 @@ export function createSoftGovernanceHook(
           `Drift detected: ${newState.metrics.turn_count} turns without context update. Use map_context to re-focus.`
         )
       }
+
+      // FLAW-TOAST-007 FIX: Removed drift toast emission
+      // Drift is visible in scan_hierarchy output - no push notification needed
+      // Counter updates happen in session.idle event handler (event-handler.ts)
 
       await log.debug(
         `Soft governance: tracked ${input.tool} (${toolCategory}), turns=${newState.metrics.turn_count}, violations=${newState.metrics.violation_count}`

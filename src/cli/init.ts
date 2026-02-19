@@ -11,23 +11,25 @@
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
-import { copyFile, mkdir, rm } from "node:fs/promises"
+import { copyFile, mkdir, rm, writeFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-import type { GovernanceMode, Language, ExpertLevel, OutputStyle, AutomationLevel } from "../schemas/config.js"
+import type { GovernanceMode, Language, ExpertLevel, OutputStyle, AutomationLevel, ProfilePresetKey, OpenCodeSettings } from "../schemas/config.js"
 import {
   AUTOMATION_LEVELS,
   EXPERT_LEVELS,
   GOVERNANCE_MODES,
   LANGUAGES,
   OUTPUT_STYLES,
+  PROFILE_PRESETS,
   createConfig,
   isValidGovernanceMode,
   isValidLanguage,
   isValidExpertLevel,
   isValidOutputStyle,
+  isValidProfilePreset,
   isCoachAutomation,
   normalizeAutomationInput,
   normalizeAutomationLabel,
@@ -40,6 +42,10 @@ import { migrateIfNeeded } from "../lib/migrate.js"
 import { syncOpencodeAssets } from "./sync-assets.js"
 import type { AssetSyncTarget } from "./sync-assets.js"
 import { createTree, saveTree } from "../lib/hierarchy-tree.js"
+import {
+  auditHiveFiverAssets,
+  seedHiveFiverOnboardingTasks,
+} from "../lib/hivefiver-integration.js"
 
 // ── HiveMind Section for AGENTS.md / CLAUDE.md ──────────────────────────
 
@@ -155,12 +161,53 @@ export interface InitOptions {
   overwriteAssets?: boolean
   silent?: boolean
   force?: boolean
+  /** Profile preset to apply (beginner, intermediate, advanced, expert, coach) */
+  profile?: ProfilePresetKey
 }
 
 // eslint-disable-next-line no-console
 const log = (msg: string) => console.log(msg)
 
 const PLUGIN_NAME = "hivemind-context-governance"
+const HIVEFIVER_PRIMARY_AGENT_TOOLS = {
+  read: true,
+  glob: true,
+  grep: true,
+  task: true,
+  skill: true,
+  webfetch: true,
+  websearch: true,
+  bash: true,
+} as const
+
+const DEFAULT_COMMANDMENTS_MARKDOWN = `# 10 Commandments
+
+1. Declare intent before implementation.
+2. Keep trajectory -> tactic -> action aligned.
+3. Verify evidence before claiming completion.
+4. Prefer deterministic workflows over ad-hoc execution.
+5. Track decisions and dependencies in persistent state.
+6. Use incremental checkpoints for long sessions.
+7. Validate with tests and type checks before release.
+8. Preserve context across compaction and handoff.
+9. Escalate when confidence drops or ambiguity rises.
+10. Close every cycle with explicit summary and next steps.
+`
+
+async function seedTenCommandments(directory: string): Promise<void> {
+  const paths = getEffectivePaths(directory)
+  const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md")
+  const commandmentsDest = join(paths.docsDir, "10-commandments.md")
+
+  await mkdir(paths.docsDir, { recursive: true })
+
+  if (existsSync(commandmentsSource)) {
+    await copyFile(commandmentsSource, commandmentsDest)
+    return
+  }
+
+  await writeFile(commandmentsDest, DEFAULT_COMMANDMENTS_MARKDOWN, "utf-8")
+}
 
 /**
  * Auto-register the HiveMind plugin in opencode.json.
@@ -228,6 +275,284 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
   }
 }
 
+/**
+ * Ensure opencode.json has HiveFiver v2 defaults:
+ * - primary hivefiver agent profile
+ * - MCP stack placeholders for guided setup
+ */
+function ensureHiveFiverDefaultsInOpencode(directory: string, silent: boolean): void {
+  const configPath = join(directory, "opencode.json")
+  if (!existsSync(configPath)) return
+
+  let config: Record<string, unknown> = {}
+  try {
+    let raw = readFileSync(configPath, "utf-8")
+    raw = raw.replace(/^\s*\/\/.*$/gm, "")
+    raw = raw.replace(/,\s*([}\]])/g, "$1")
+    config = JSON.parse(raw)
+  } catch {
+    config = {}
+  }
+
+  const agentConfig =
+    typeof config.agent === "object" && config.agent !== null
+      ? (config.agent as Record<string, unknown>)
+      : {}
+  const hivefiverConfig =
+    typeof agentConfig.hivefiver === "object" && agentConfig.hivefiver !== null
+      ? (agentConfig.hivefiver as Record<string, unknown>)
+      : {}
+
+  hivefiverConfig.mode = "primary"
+  const existingTools =
+    typeof hivefiverConfig.tools === "object" && hivefiverConfig.tools !== null
+      ? (hivefiverConfig.tools as Record<string, unknown>)
+      : {}
+  hivefiverConfig.tools = {
+    ...HIVEFIVER_PRIMARY_AGENT_TOOLS,
+    ...existingTools,
+  }
+  agentConfig.hivefiver = hivefiverConfig
+  config.agent = agentConfig
+
+  const mcpConfig =
+    typeof config.mcp === "object" && config.mcp !== null
+      ? (config.mcp as Record<string, unknown>)
+      : {}
+  if (!mcpConfig.deepwiki) {
+    mcpConfig.deepwiki = {
+      type: "remote",
+      url: "https://mcp.deepwiki.com/mcp",
+      enabled: true,
+      timeout: 15000,
+    }
+  }
+  if (!mcpConfig.context7) {
+    mcpConfig.context7 = {
+      type: "remote",
+      url: "https://mcp.context7.com/mcp",
+      enabled: false,
+      timeout: 15000,
+    }
+  }
+  if (!mcpConfig.tavily) {
+    mcpConfig.tavily = {
+      type: "remote",
+      url: "https://mcp.tavily.com/mcp",
+      enabled: false,
+      timeout: 15000,
+    }
+  }
+  if (!mcpConfig.exa) {
+    mcpConfig.exa = {
+      type: "remote",
+      url: "https://YOUR-EXA-MCP-ENDPOINT",
+      enabled: false,
+      timeout: 15000,
+    }
+  }
+  if (!mcpConfig.repomix) {
+    mcpConfig.repomix = {
+      type: "local",
+      command: ["npx", "-y", "repomix", "--mcp"],
+      enabled: false,
+    }
+  }
+  config.mcp = mcpConfig
+
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+  if (!silent) {
+    log("  ✓ Applied HiveFiver v2 defaults to opencode.json")
+  }
+}
+
+/**
+ * Apply a profile preset to generate config and OpenCode settings.
+ * When a profile is provided, it overrides individual options.
+ */
+function applyProfilePreset(
+  profileKey: ProfilePresetKey,
+  options: InitOptions
+): { config: ReturnType<typeof createConfig>; opencodeSettings: OpenCodeSettings } {
+  const preset = PROFILE_PRESETS[profileKey]
+
+  // Normalize automation level from options if provided
+  const normalizedAutomationLevel = options.automationLevel 
+    ? normalizeAutomationInput(options.automationLevel) 
+    : null
+
+  // Apply preset to config - preset values take precedence over individual options
+  const config = createConfig({
+    governance_mode: options.governanceMode ?? preset.governance_mode,
+    language: options.language ?? "en",
+    automation_level: normalizedAutomationLevel ?? preset.automation_level,
+    agent_behavior: {
+      language: options.language ?? "en",
+      expert_level: options.expertLevel ?? preset.expert_level,
+      output_style: options.outputStyle ?? preset.output_style,
+      constraints: {
+        require_code_review: options.requireCodeReview ?? preset.require_code_review,
+        enforce_tdd: options.enforceTdd ?? preset.enforce_tdd,
+        max_response_tokens: 2000,
+        explain_reasoning: true,
+        be_skeptical: preset.output_style === "skeptical",
+      },
+    },
+    profile: profileKey,
+  })
+
+  // Generate OpenCode settings with profile permissions
+  const opencodeSettings: OpenCodeSettings = {
+    default_permissions: preset.permissions,
+  }
+
+  return { config, opencodeSettings }
+}
+
+/**
+ * Update opencode.json with profile-specific permissions.
+ * Integrates with existing registerPluginInConfig logic.
+ */
+function updateOpencodeJsonWithProfile(
+  directory: string,
+  profileKey: ProfilePresetKey,
+  silent: boolean
+): void {
+  const preset = PROFILE_PRESETS[profileKey]
+  const configPath = join(directory, "opencode.json")
+  let config: Record<string, unknown> = {}
+
+  if (existsSync(configPath)) {
+    try {
+      let raw = readFileSync(configPath, "utf-8")
+      // Strip single-line comments for JSONC support
+      raw = raw.replace(/^\s*\/\/.*$/gm, "")
+      // Strip trailing commas before } or ]
+      raw = raw.replace(/,\s*([}\]])/g, "$1")
+      config = JSON.parse(raw)
+    } catch {
+      // ignore parse errors - will use empty config
+    }
+  }
+
+  // Add default permissions for HiveMind agents based on profile
+  config.permission = {
+    ...(config.permission as Record<string, unknown> | undefined),
+    ...preset.permissions,
+  }
+
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+
+  if (!silent) {
+    log(`  ✓ Applied ${preset.label} profile permissions to opencode.json`)
+  }
+}
+
+/**
+ * Print success message after initialization.
+ * Shared by both profile and manual configuration paths.
+ */
+async function printInitSuccess(
+  directory: string,
+  config: ReturnType<typeof createConfig>,
+  sessionId: string,
+  state: ReturnType<typeof createBrainState>,
+  silent: boolean
+): Promise<void> {
+  if (silent) return
+
+  const p = getEffectivePaths(directory)
+  const hivemindDir = p.root
+
+  log("")
+  log("✓ Planning directory created:")
+  log(`  ${hivemindDir}/`)
+  log("  ├── INDEX.md             (root state entry point)")
+  log("  ├── state/               (brain, hierarchy, anchors, tasks)")
+  log("  ├── memory/              (mems + manifest)")
+  log("  ├── sessions/")
+  log("  │   ├── active/          (current session file)")
+  log("  │   ├── manifest.json    (session registry)")
+  log("  │   └── archive/         (completed sessions)")
+  log("  ├── plans/               (plan registry)")
+  log("  ├── codemap/             (SOT manifest)")
+  log("  ├── codewiki/            (SOT manifest)")
+  log("  ├── docs/                (10-commandments.md)")
+  log("  ├── templates/")
+  log("  │   └── session.md       (session template)")
+  log("  ├── logs/                (runtime logs)")
+  log("  └── config.json          (governance settings)")
+  log("")
+  log(`Session ${sessionId} initialized.`)
+  log(`Status: ${state.session.governance_status}`)
+  log("")
+
+  if (config.governance_mode === "strict") {
+    log("🔒 STRICT MODE — agents must call declare_intent before writing.")
+  } else if (config.governance_mode === "assisted") {
+    log("🔔 ASSISTED MODE — agents get warnings but can proceed.")
+  } else {
+    log("🟢 PERMISSIVE MODE — agents work freely, activity tracked.")
+  }
+
+  if (isCoachAutomation(config.automation_level)) {
+    log("")
+    log("🤯 COACH MODE ACTIVE:")
+    log("   → Governance forced to STRICT")
+    log("   → System will ARGUE BACK with evidence")
+    log("   → Escalating pressure on every unresolved signal")
+    log("   → Code review REQUIRED on all changes")
+    log("   → Maximum guidance enabled")
+  }
+
+  log("")
+  log("✅ Done! Open OpenCode in this project — HiveMind is active.")
+  log("")
+}
+
+function logHiveFiverAuditResult(
+  audit: ReturnType<typeof auditHiveFiverAssets>,
+  silent: boolean
+): void {
+  if (silent) return
+
+  const missingRootCount =
+    audit.rootMissing.commands.length + audit.rootMissing.skills.length + audit.rootMissing.workflows.length
+  const missingOpencodeCount =
+    audit.opencodeMissing.commands.length + audit.opencodeMissing.skills.length + audit.opencodeMissing.workflows.length
+
+  log("HiveFiver Integration Audit:")
+  log(`  Source root: ${audit.sourceRoot}`)
+  if (!audit.hasCriticalGaps) {
+    log("  ✓ Pack integrated across root and .opencode assets")
+  } else {
+    log(`  ⚠ Missing root assets: ${missingRootCount}`)
+    log(`  ⚠ Missing .opencode assets: ${missingOpencodeCount}`)
+    if (audit.rootMissing.commands.length > 0) {
+      log(`    - root commands missing: ${audit.rootMissing.commands.length}`)
+    }
+    if (audit.rootMissing.skills.length > 0) {
+      log(`    - root skills missing: ${audit.rootMissing.skills.length}`)
+    }
+    if (audit.rootMissing.workflows.length > 0) {
+      log(`    - root workflows missing: ${audit.rootMissing.workflows.length}`)
+    }
+    if (audit.opencodeMissing.commands.length > 0) {
+      log(`    - .opencode commands missing: ${audit.opencodeMissing.commands.length}`)
+    }
+    if (audit.opencodeMissing.skills.length > 0) {
+      log(`    - .opencode skills missing: ${audit.opencodeMissing.skills.length}`)
+    }
+    if (audit.opencodeMissing.workflows.length > 0) {
+      log(`    - .opencode workflows missing: ${audit.opencodeMissing.workflows.length}`)
+    }
+  }
+  for (const recommendation of audit.recommendations) {
+    log(`  → ${recommendation}`)
+  }
+  log("")
+}
+
 export async function initProject(
   directory: string,
   options: InitOptions = {}
@@ -266,6 +591,12 @@ export async function initProject(
     
     // Ensure plugin is registered in opencode.json (this was missing!)
     registerPluginInConfig(directory, options.silent ?? false)
+    ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
+
+    const existingStateManager = createStateManager(directory)
+    const existingState = await existingStateManager.load()
+    await seedHiveFiverOnboardingTasks(directory, existingState?.session.id ?? "unknown")
+    logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
 
     if (!options.silent) {
       log("⚠ HiveMind already initialized in this project.")
@@ -281,6 +612,81 @@ export async function initProject(
     log("─".repeat(48))
   }
 
+  // ── Profile Preset Path ─────────────────────────────────────────────────────
+  // When a profile is provided, it drives all configuration values
+  if (options.profile && isValidProfilePreset(options.profile)) {
+    const preset = PROFILE_PRESETS[options.profile]
+    
+    if (!options.silent) {
+      log(`  Profile: ${preset.label}`)
+      log(`  ${preset.description}`)
+      log("")
+    }
+
+    const { config } = applyProfilePreset(options.profile, options)
+
+    if (!options.silent) {
+      log(`  Governance: ${config.governance_mode}`)
+      log(`  Language: ${config.language}`)
+      log(`  Expert Level: ${config.agent_behavior.expert_level}`)
+      log(`  Output Style: ${config.agent_behavior.output_style}`)
+      log(`  Automation: ${normalizeAutomationLabel(config.automation_level)}${isCoachAutomation(config.automation_level) ? " (max guidance)" : ""}`)
+      if (config.agent_behavior.constraints.require_code_review) log("  ✓ Code review required")
+      if (config.agent_behavior.constraints.enforce_tdd) log("  ✓ TDD enforced")
+      log("")
+    }
+
+    // Create planning directory structure
+    if (!options.silent) {
+      log("Creating planning directory...")
+    }
+    await initializePlanningDirectory(directory)
+
+    // Copy 10 Commandments to .hivemind
+    await seedTenCommandments(directory)
+    if (!options.silent) {
+      log(`  ✓ Copied 10 Commandments to ${p.docsDir}/`)
+    }
+
+    // Save config
+    await saveConfig(directory, config)
+
+    // Initialize brain state
+    const stateManager = createStateManager(directory)
+    const sessionId = generateSessionId()
+    const state = createBrainState(sessionId, config)
+    await stateManager.save(state)
+
+    // Initialize empty hierarchy tree (required for session-lifecycle hook)
+    await saveTree(directory, createTree())
+
+    // Auto-register plugin in opencode.json
+    registerPluginInConfig(directory, options.silent ?? false)
+    ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
+
+    // Apply profile permissions to opencode.json
+    updateOpencodeJsonWithProfile(directory, options.profile, options.silent ?? false)
+
+    // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
+    injectAgentsDocs(directory, options.silent ?? false)
+
+    // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
+    await syncOpencodeAssets(directory, {
+      target: options.syncTarget ?? "project",
+      overwrite: options.overwriteAssets ?? false,
+      silent: options.silent ?? false,
+      onLog: options.silent ? undefined : log,
+    })
+
+    await seedHiveFiverOnboardingTasks(directory, sessionId)
+    logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
+
+    await printInitSuccess(directory, config, sessionId, state, options.silent ?? false)
+    return
+  }
+
+  // ── Manual Configuration Path (existing logic) ──────────────────────────────
+  
   // Validate and set governance mode
   const governanceMode = options.governanceMode ?? "assisted"
   if (!isValidGovernanceMode(governanceMode)) {
@@ -363,10 +769,7 @@ export async function initProject(
   await initializePlanningDirectory(directory)
 
   // Copy 10 Commandments to .hivemind
-  const commandmentsSource = join(__dirname, "..", "..", "docs", "10-commandments.md")
-  const commandmentsDest = join(p.docsDir, "10-commandments.md")
-  await mkdir(p.docsDir, { recursive: true })
-  await copyFile(commandmentsSource, commandmentsDest)
+  await seedTenCommandments(directory)
   if (!options.silent) {
     log(`  ✓ Copied 10 Commandments to ${p.docsDir}/`)
   }
@@ -385,6 +788,7 @@ export async function initProject(
 
   // Auto-register plugin in opencode.json
   registerPluginInConfig(directory, options.silent ?? false)
+  ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
 
   // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
   injectAgentsDocs(directory, options.silent ?? false)
@@ -396,6 +800,9 @@ export async function initProject(
     silent: options.silent ?? false,
     onLog: options.silent ? undefined : log,
   })
+
+  await seedHiveFiverOnboardingTasks(directory, sessionId)
+  logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
 
   if (!options.silent) {
     log("")
@@ -441,6 +848,7 @@ export async function initProject(
 
     log("")
     log("✅ Done! Open OpenCode in this project — HiveMind is active.")
+    log("   HiveFiver v2 quickstart: `/hivefiver init` then `/hivefiver spec`.")
     log("")
   }
 }

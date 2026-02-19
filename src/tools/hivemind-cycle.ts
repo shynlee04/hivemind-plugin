@@ -16,22 +16,8 @@ import { createStateManager } from "../lib/persistence.js"
 import { sessionExists, loadSession, pruneSession } from "../lib/session-export.js"
 import { readdir, rm } from "fs/promises"
 import { join } from "path"
-
-interface JsonOutput {
-  success: boolean
-  action: string
-  data: Record<string, unknown>
-  timestamp: string
-}
-
-function toJsonOutput(action: string, data: Record<string, unknown>): string {
-  return JSON.stringify({
-    success: true,
-    action,
-    data,
-    timestamp: new Date().toISOString(),
-  } as JsonOutput)
-}
+import { clearPendingFailureAck } from "../schemas/brain-state.js"
+import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
 export function createHivemindCycleTool(directory: string): ToolDefinition {
   return tool({
@@ -51,38 +37,35 @@ export function createHivemindCycleTool(directory: string): ToolDefinition {
         .number()
         .optional()
         .describe("For prune: number of recent sessions to keep"),
-      json: tool.schema
-        .boolean()
-        .optional()
-        .describe("Output as machine-parseable JSON (HC5)"),
     },
     async execute(args, _context) {
-      const jsonOutput = args.json ?? false
-
+      // CHIMERA-3: Always return JSON for FK chaining
       switch (args.action) {
         case "export":
-          return handleExport(directory, jsonOutput)
+          return handleExport(directory)
         case "list":
-          return handleList(directory, jsonOutput)
+          return handleList(directory)
         case "prune":
-          return handlePrune(directory, args.sessionId, args.keep, jsonOutput)
+          return handlePrune(directory, args.sessionId, args.keep)
         default:
-          return jsonOutput
-            ? toJsonOutput("error", { message: `Unknown action: ${args.action}` })
-            : `ERROR: Unknown action. Use export, list, or prune.`
+          return toErrorOutput(`Unknown action: ${args.action}`)
       }
     },
   })
 }
 
-async function handleExport(directory: string, jsonOutput: boolean): Promise<string> {
+// CHIMERA-3: Always return JSON for FK chaining
+async function handleExport(directory: string): Promise<string> {
   const stateManager = createStateManager(directory)
   const state = await stateManager.load()
 
   if (!state) {
-    return jsonOutput
-      ? toJsonOutput("export", { error: "no session", active: false })
-      : "ERROR: No active session to export. Start a session first."
+    return toErrorOutput("No session state found")
+  }
+
+  // LOCKED means no active session to export
+  if (state.session.governance_status === "LOCKED") {
+    return toErrorOutput("No active session to export")
   }
 
   const sessionId = state.session.id
@@ -94,27 +77,22 @@ async function handleExport(directory: string, jsonOutput: boolean): Promise<str
   const { exportSession } = await import("../lib/session-export.js")
   const exportPath = await exportSession(directory, sessionId)
 
-  if (jsonOutput) {
-    return toJsonOutput("export", {
-      sessionId,
-      exportPath,
-      mode: state.session.mode,
-      duration: durationMs,
-      turnCount: state.metrics.turn_count,
-      filesTouched: state.metrics.files_touched.length,
-    })
+  if (state.pending_failure_ack) {
+    await stateManager.save(clearPendingFailureAck(state))
   }
 
-  return `Session exported to: ${exportPath}
-ID: ${sessionId}
-Mode: ${state.session.mode}
-Duration: ${Math.round(durationMs / 60000)}min
-Turns: ${state.metrics.turn_count}
-Files: ${state.metrics.files_touched.length}
-→ Use hivemind_cycle list to see all exports, or prune to clean up.`
+  return toSuccessOutput("Session exported", sessionId, {
+    sessionId,
+    exportPath,
+    mode: state.session.mode,
+    duration: durationMs,
+    turnCount: state.metrics.turn_count,
+    filesTouched: state.metrics.files_touched.length,
+  })
 }
 
-async function handleList(directory: string, jsonOutput: boolean): Promise<string> {
+// CHIMERA-3: Always return JSON for FK chaining
+async function handleList(directory: string): Promise<string> {
   const sessionsDir = join(directory, "sessions")
 
   try {
@@ -122,9 +100,7 @@ async function handleList(directory: string, jsonOutput: boolean): Promise<strin
     const sessionFiles = files.filter(f => f.startsWith("session-") && f.endsWith(".json"))
 
     if (sessionFiles.length === 0) {
-      return jsonOutput
-        ? toJsonOutput("list", { sessions: [], total: 0 })
-        : "No exported sessions found. Use hivemind_cycle export to archive a session."
+      return toSuccessOutput("No sessions found", undefined, { sessions: [], total: 0 })
     }
 
     // Load each session for metadata
@@ -158,57 +134,32 @@ async function handleList(directory: string, jsonOutput: boolean): Promise<strin
     // Sort by creation date, newest first
     sessions.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
-    if (jsonOutput) {
-      return toJsonOutput("list", {
-        total: sessions.length,
-        sessions: sessions.slice(0, 20),
-      })
-    }
-
-    const lines: string[] = []
-    lines.push(`=== EXPORTED SESSIONS (${sessions.length}) ===`)
-    lines.push("")
-
-    for (const s of sessions.slice(0, 10)) {
-      const date = s.created_at.split("T")[0]
-      lines.push(`${s.id} | ${s.mode} | ${s.turn_count} turns | ${s.files_touched} files | ${date}`)
-    }
-
-    if (sessions.length > 10) {
-      lines.push("")
-      lines.push(`... and ${sessions.length - 10} more. Use hivemind_cycle export to archive, or prune to clean up.`)
-    }
-
-    lines.push("=== END SESSIONS ===")
-    return lines.join("\n")
+    return toSuccessOutput("Sessions listed", undefined, {
+      total: sessions.length,
+      sessions: sessions.slice(0, 20),
+    })
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err)
-    return jsonOutput
-      ? toJsonOutput("list", { error: errorMsg })
-      : `ERROR: Could not list sessions: ${errorMsg}`
+    return toErrorOutput(`Could not list sessions: ${errorMsg}`)
   }
 }
 
+// CHIMERA-3: Always return JSON for FK chaining
 async function handlePrune(
   directory: string,
   sessionId?: string,
-  keep?: number,
-  jsonOutput?: boolean
+  keep?: number
 ): Promise<string> {
   // If specific session ID provided, delete just that one
   if (sessionId) {
     const exists = await sessionExists(directory, sessionId)
     if (!exists) {
-      return jsonOutput
-        ? toJsonOutput("prune", { error: "session not found", sessionId })
-        : `ERROR: Session ${sessionId} not found.`
+      return toErrorOutput(`Session ${sessionId} not found`)
     }
 
     await pruneSession(directory, sessionId)
 
-    return jsonOutput
-      ? toJsonOutput("prune", { deleted: sessionId })
-      : `Deleted session: ${sessionId}`
+    return toSuccessOutput("Session deleted", sessionId, { deleted: sessionId })
   }
 
   // Otherwise, prune to keep N most recent
@@ -220,9 +171,7 @@ async function handlePrune(
     const sessionFiles = files.filter(f => f.startsWith("session-") && f.endsWith(".json"))
 
     if (sessionFiles.length <= keepCount) {
-      return jsonOutput
-        ? toJsonOutput("prune", { kept: sessionFiles.length, deleted: 0 })
-        : `No pruning needed. ${sessionFiles.length} sessions, keeping all (limit: ${keepCount}).`
+      return toSuccessOutput("No pruning needed", undefined, { kept: sessionFiles.length, deleted: 0 })
     }
 
     // Load sessions to sort by date
@@ -257,20 +206,14 @@ async function handlePrune(
       }
     }
 
-    if (jsonOutput) {
-      return toJsonOutput("prune", {
-        kept: keepCount,
-        deleted: deletedCount,
-        totalBefore: sessions.length,
-        totalAfter: sessions.length - deletedCount,
-      })
-    }
-
-    return `Pruned ${deletedCount} old sessions. Kept ${keepCount} most recent.`
+    return toSuccessOutput("Sessions pruned", undefined, {
+      kept: keepCount,
+      deleted: deletedCount,
+      totalBefore: sessions.length,
+      totalAfter: sessions.length - deletedCount,
+    })
   } catch (err: unknown) {
     const errorMsg = err instanceof Error ? err.message : String(err)
-    return jsonOutput
-      ? toJsonOutput("prune", { error: errorMsg })
-      : `ERROR: Could not prune sessions: ${errorMsg}`
+    return toErrorOutput(`Could not prune sessions: ${errorMsg}`)
   }
 }

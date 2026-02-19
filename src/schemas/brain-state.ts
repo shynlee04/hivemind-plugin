@@ -36,7 +36,10 @@ export interface SelfRating {
 }
 
 export interface MetricsState {
+  /** Tool execution count (many per user message) - used for health tracking */
   turn_count: number;
+  /** User response cycles (one per user→assistant→user) - used for split logic */
+  user_turn_count: number;
   drift_score: number;
   files_touched: string[];
   context_updates: number;
@@ -91,6 +94,8 @@ export interface BrainState {
   session: SessionState;
   hierarchy: HierarchyState;
   metrics: MetricsState;
+  /** Persistent per-session gate for first-turn context injection */
+  first_turn_context_injected: boolean;
   complexity_nudge_shown: boolean;
   /** Turn number when last commit suggestion was shown */
   last_commit_suggestion_turn: number;
@@ -111,6 +116,10 @@ export interface BrainState {
   pending_failure_ack: boolean;
   /** Framework conflict selection metadata for dual-framework projects */
   framework_selection: FrameworkSelectionState;
+
+  // Cross-session continuity (P0-6: session-split amnesia fix)
+  /** Last 6 conversational messages captured before session split */
+  recent_messages: Array<{ role: "user" | "assistant"; content: string }>;
 }
 
 export type FrameworkChoice = "gsd" | "spec-kit" | "override" | "cancel" | null;
@@ -126,9 +135,8 @@ export interface FrameworkSelectionState {
 export const BRAIN_STATE_VERSION = "1.0.0";
 
 export function generateSessionId(): string {
-  const timestamp = Date.now();
-  const random = Math.random().toString(36).substring(2, 8);
-  return `session-${timestamp}-${random}`;
+  // Return a proper UUID for graph schema compatibility
+  return crypto.randomUUID()
 }
 
 export function createBrainState(
@@ -143,7 +151,7 @@ export function createBrainState(
       id: sessionId,
       mode,
       governance_mode: config.governance_mode,
-      governance_status: config.governance_mode === "strict" ? "LOCKED" : "OPEN",
+      governance_status: "LOCKED", // Always start LOCKED - call startSession() to unlock
       start_time: now,
       last_activity: now,
       date: new Date(now).toISOString().split("T")[0],
@@ -158,6 +166,7 @@ export function createBrainState(
     },
     metrics: {
       turn_count: 0,
+      user_turn_count: 0,
       drift_score: 100,
       files_touched: [],
       context_updates: 0,
@@ -183,6 +192,7 @@ export function createBrainState(
         prerequisites_completed: false,
       },
     },
+    first_turn_context_injected: false,
     complexity_nudge_shown: false,
     last_commit_suggestion_turn: 0,
     version: BRAIN_STATE_VERSION,
@@ -200,6 +210,8 @@ export function createBrainState(
       acceptance_note: "",
       updated_at: 0,
     },
+    // Cross-session continuity (P0-6)
+    recent_messages: [],
   };
 }
 
@@ -243,12 +255,28 @@ export function incrementTurnCount(state: BrainState): BrainState {
   };
 }
 
+/** Increment user_turn_count (called on session.idle event - after each user→assistant→user cycle) */
+export function incrementUserTurnCount(state: BrainState): BrainState {
+  return {
+    ...state,
+    metrics: {
+      ...state.metrics,
+      user_turn_count: state.metrics.user_turn_count + 1,
+    },
+    session: {
+      ...state.session,
+      last_activity: Date.now(),
+    },
+  };
+}
+
 export function resetTurnCount(state: BrainState): BrainState {
   return {
     ...state,
     metrics: {
       ...state.metrics,
       turn_count: 0,
+      user_turn_count: 0,
       drift_score: Math.min(100, state.metrics.drift_score + 10),
     },
     session: {

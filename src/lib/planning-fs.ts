@@ -37,8 +37,21 @@ import {
   type SessionManifestEntry,
   writeManifest as writeTypedManifest,
 } from "./manifest.js";
+import { createLogger, noopLogger, type Logger } from "./logging.js";
 import { createStateManager } from "./persistence.js";
 import { loadAnchors } from "./anchors.js";
+
+const planningFsLoggerPromises = new Map<string, Promise<Logger>>();
+
+function getPlanningFsLogger(projectRoot: string): Promise<Logger> {
+  let loggerPromise = planningFsLoggerPromises.get(projectRoot);
+  if (!loggerPromise) {
+    const paths = getEffectivePaths(projectRoot);
+    loggerPromise = createLogger(paths.logsDir, "planning-fs").catch(() => noopLogger);
+    planningFsLoggerPromises.set(projectRoot, loggerPromise);
+  }
+  return loggerPromise;
+}
 
 // ============================================================
 // Section 1: Path Resolution
@@ -229,6 +242,7 @@ export async function registerSession(
     mode?: string
     trajectory?: string
     linkedPlans?: string[]
+    sessionId?: string
   },
 ): Promise<SessionManifest> {
   const safeFile = sanitizeSessionFileName(fileName)
@@ -244,8 +258,15 @@ export async function registerSession(
     created: meta?.created ?? Date.now(),
     mode: meta?.mode,
     trajectory: meta?.trajectory,
+    session_id: meta?.sessionId,
     linked_plans: meta?.linkedPlans ?? [],
   });
+
+  const logger = await getPlanningFsLogger(projectRoot);
+  await logger.debug(`[registerSession] Registering session: ${stamp} ID: ${meta?.sessionId ?? "none"}`);
+  await logger.debug(
+    `[registerSession] Updated manifest entry: ${JSON.stringify(updated.sessions.find((s) => s.stamp === stamp) ?? null)}`,
+  );
 
   await writeManifest(projectRoot, updated);
   return updated;
@@ -968,6 +989,7 @@ export async function resetActiveMd(projectRoot: string): Promise<void> {
 
 export async function regenerateManifests(projectRoot: string): Promise<void> {
   const paths = getPlanningPaths(projectRoot)
+  const logger = await getPlanningFsLogger(projectRoot)
 
   // 1. Ensure core manifests exist
   await ensureCoreManifests(getEffectivePaths(projectRoot))
@@ -1004,13 +1026,17 @@ export async function regenerateManifests(projectRoot: string): Promise<void> {
               activeStamp = String(stamp)
             }
           }
-} catch (e) {
-  console.warn(`[hivemind] Failed to parse frontmatter for ${join(dir, file)}. Skipping.`, e);
-}
+          } catch (e) {
+            await logger.warn(
+              `[regenerateManifests] Failed to parse frontmatter for ${join(dir, file)}. Skipping. ${e instanceof Error ? e.message : String(e)}`,
+            )
+          }
       }
-} catch (e) {
-  console.warn(`[hivemind] Failed to scan directory ${dir}. Skipping.`, e);
-}
+    } catch (e) {
+      await logger.warn(
+        `[regenerateManifests] Failed to scan directory ${dir}. Skipping. ${e instanceof Error ? e.message : String(e)}`,
+      )
+    }
   }
 
   await scanDir(paths.sessionsDir, 'active')

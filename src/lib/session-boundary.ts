@@ -1,14 +1,21 @@
 /**
  * Session Boundary Manager — pure recommendation helpers.
  * Decides when a fresh session is recommended at natural boundaries.
+ * 
+ * V3.0 Design:
+ * - Defensive guards (DON'T split when): context >= 80%, has delegations, low user turns
+ * - Trigger conditions (SPLIT when): compaction >= 2 AND hierarchy complete
+ * - user_turn_count counts user response cycles (not tool calls)
  */
 
 export interface SessionBoundaryState {
   turnCount: number
+  userTurnCount: number
   contextPercent: number
   hierarchyComplete: boolean
   isMainSession: boolean
   hasDelegations: boolean
+  compactionCount: number
 }
 
 export interface SessionBoundaryRecommendation {
@@ -30,15 +37,22 @@ export function estimateContextPercent(
 
 /**
  * Returns whether a fresh session should be recommended.
- * Rules:
- * - Main session only (exclude delegated/subagent contexts)
- * - Session should still have headroom (context < 80%)
- * - Natural boundary reached (completed phase/epic)
- * - Turn count should be substantial (30+)
+ * 
+ * Defensive guards (return false if ANY apply):
+ * - Not main session (subagent context)
+ * - Has active delegations
+ * - Context >= 80% (too late for clean handoff)
+ * - User turns < 30 (not enough session substance)
+ * 
+ * Trigger conditions (return true if BOTH apply):
+ * - Compaction count >= 2 (approaching 3rd compact)
+ * - Hierarchy has completed phase/epic
  */
 export function shouldCreateNewSession(
   state: SessionBoundaryState
 ): SessionBoundaryRecommendation {
+  // === DEFENSIVE GUARDS (don't split) ===
+  
   if (!state.isMainSession) {
     return {
       recommended: false,
@@ -53,29 +67,44 @@ export function shouldCreateNewSession(
     }
   }
 
+  // V3.0: context >= 80% is DEFENSIVE (don't split when near capacity)
+  // The innate compaction handles overflow - we don't need to split pre-emptively
   if (state.contextPercent >= 80) {
     return {
       recommended: false,
-      reason: `Context usage is ${state.contextPercent}% (must be below 80% for a clean handoff boundary)`,
+      reason: `Context usage is ${state.contextPercent}% (too high for clean session handoff). Let innate compaction handle it.`,
     }
   }
 
-  if (state.turnCount < 30) {
+  // V3.0: Use user_turn_count (user response cycles) not tool calls
+  if (state.userTurnCount < 30) {
     return {
       recommended: false,
-      reason: `Turn threshold not met (${state.turnCount}/30)`,
+      reason: `User turn threshold not met (${state.userTurnCount}/30)`,
     }
   }
 
-  if (!state.hierarchyComplete) {
+  // === TRIGGER CONDITIONS ===
+  
+  // V3.0: Split when approaching 3rd compaction AND hierarchy complete
+  if (state.compactionCount >= 2 && state.hierarchyComplete) {
     return {
-      recommended: false,
-      reason: "No completed phase/epic boundary detected yet",
+      recommended: true,
+      reason: `Natural boundary: ${state.compactionCount} compactions, completed phase/epic, ${state.userTurnCount} user turns`,
+    }
+  }
+
+  // Legacy path: allow split on hierarchy complete even without compactions
+  // (for sessions that don't trigger compaction)
+  if (state.hierarchyComplete && state.userTurnCount >= 30) {
+    return {
+      recommended: true,
+      reason: `Natural boundary reached (${state.userTurnCount} user turns, completed phase/epic detected)`,
     }
   }
 
   return {
-    recommended: true,
-    reason: `Natural boundary reached (${state.turnCount} turns, ${state.contextPercent}% context, completed phase/epic detected)`,
+    recommended: false,
+    reason: "No natural boundary detected yet",
   }
 }

@@ -104,7 +104,11 @@ export function createMapContextTool(directory: string): ToolDefinition {
             if (parentLevel && tree.root) {
               const parentId = findParentId(tree, parentLevel)
               if (parentId) {
-                tree = addChild(tree, parentId, node)
+                const addResult = addChild(tree, parentId, node)
+                if (!addResult.success) {
+                  return `ERROR: Cannot set ${args.level} because parent node insertion failed (${addResult.error ?? "unknown"}).`
+                }
+                tree = addResult.tree
                 tree = markComplete(tree, node.id, now.getTime())
               } else {
                 return `ERROR: Cannot set ${args.level} without an active ${parentLevel}. Please set ${parentLevel} first.`
@@ -129,7 +133,11 @@ export function createMapContextTool(directory: string): ToolDefinition {
             if (parentLevel) {
               const parentId = findParentId(tree, parentLevel)
               if (parentId) {
-                tree = addChild(tree, parentId, node)
+                const addResult = addChild(tree, parentId, node)
+                if (!addResult.success) {
+                  return `ERROR: Cannot set ${args.level} because parent node insertion failed (${addResult.error ?? "unknown"}).`
+                }
+                tree = addResult.tree
               } else {
                 return `ERROR: Cannot set ${args.level} without an active ${parentLevel}. Please set ${parentLevel} first.`
               }

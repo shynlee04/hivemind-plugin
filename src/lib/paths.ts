@@ -57,6 +57,12 @@ export interface HivemindPaths {
   memoryManifest: string
   mems: string              // memory/mems.json
 
+  // system/ (daemon runtime files)
+  systemDir: string
+  daemonPid: string         // system/daemon.pid
+  cmdQueue: string          // system/cmd_queue.jsonl
+  processingQueue: string   // system/processing.jsonl
+
   // sessions/
   sessionsDir: string
   sessionsManifest: string
@@ -67,6 +73,14 @@ export interface HivemindPaths {
   // plans/
   plansDir: string
   plansManifest: string
+
+  // graph/ (v3.0 relational graph structure)
+  graphDir: string
+  graphTrajectory: string   // graph/trajectory.json
+  graphPlans: string        // graph/plans.json
+  graphTasks: string        // graph/tasks.json
+  graphMems: string         // graph/mems.json
+  graphOrphans: string      // graph/orphans.json (quarantine for invalid nodes)
 
   // governance SOT — Level 0 {future: codewiki + codemap}
   // These directories exist in the structure from day one.
@@ -117,6 +131,7 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
   const activeDir = join(sessionsDir, "active")
   const archiveDir = join(sessionsDir, "archive")
   const plansDir = join(root, "plans")
+  const graphDir = join(root, "graph")
   const codemapDir = join(root, "codemap")
   const codewikiDir = join(root, "codewiki")
   const logsDir = join(root, "logs")
@@ -140,6 +155,11 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
     memoryManifest: join(memoryDir, "manifest.json"),
     mems: join(memoryDir, "mems.json"),
 
+    systemDir: join(root, "system"),
+    daemonPid: join(root, "system", "daemon.pid"),
+    cmdQueue: join(root, "system", "cmd_queue.jsonl"),
+    processingQueue: join(root, "system", "processing.jsonl"),
+
     sessionsDir,
     sessionsManifest: join(sessionsDir, "manifest.json"),
     activeDir,
@@ -148,6 +168,13 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
 
     plansDir,
     plansManifest: join(plansDir, "manifest.json"),
+
+    graphDir,
+    graphTrajectory: join(graphDir, "trajectory.json"),
+    graphPlans: join(graphDir, "plans.json"),
+    graphTasks: join(graphDir, "tasks.json"),
+    graphMems: join(graphDir, "mems.json"),
+    graphOrphans: join(graphDir, "orphans.json"),
 
     codemapDir,
     codemapManifest: join(codemapDir, "manifest.json"),
@@ -428,6 +455,7 @@ export function getAllDirectories(projectRoot: string): string[] {
     p.archiveDir,
     p.exportsDir,
     p.plansDir,
+    p.graphDir,
     p.codemapDir,
     p.codewikiDir,
     p.logsDir,

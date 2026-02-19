@@ -185,7 +185,32 @@ async function validateAssetForGroup(
   const extension = extname(sourceFile).toLowerCase()
 
   if (group === "skills") {
-    return basename(sourceFile) === "SKILL.md"
+    if (basename(sourceFile) === "SKILL.md") {
+      return true
+    }
+
+    const normalized = sourceFile.replaceAll("\\", "/")
+    const extensionOk =
+      extension === ".md" ||
+      extension === ".txt" ||
+      extension === ".yaml" ||
+      extension === ".yml" ||
+      extension === ".json" ||
+      extension === ".sh" ||
+      extension === ".bash" ||
+      extension === ".js" ||
+      extension === ".mjs" ||
+      extension === ".ts" ||
+      extension === ".py"
+
+    if (!extensionOk) return false
+
+    const inAllowedSubdir =
+      normalized.includes("/references/") ||
+      normalized.includes("/templates/") ||
+      normalized.includes("/scripts/")
+
+    return inAllowedSubdir
   }
 
   if (group === "commands") {

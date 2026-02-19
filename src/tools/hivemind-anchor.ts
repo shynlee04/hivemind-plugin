@@ -15,22 +15,7 @@
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool"
 import { createStateManager } from "../lib/persistence.js"
 import { loadAnchors, saveAnchors, addAnchor } from "../lib/anchors.js"
-
-interface JsonOutput {
-  success: boolean
-  action: string
-  data: Record<string, unknown>
-  timestamp: string
-}
-
-function toJsonOutput(action: string, data: Record<string, unknown>): string {
-  return JSON.stringify({
-    success: true,
-    action,
-    data,
-    timestamp: new Date().toISOString(),
-  } as JsonOutput)
-}
+import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
 export function createHivemindAnchorTool(directory: string): ToolDefinition {
   return tool({
@@ -50,55 +35,42 @@ export function createHivemindAnchorTool(directory: string): ToolDefinition {
         .string()
         .optional()
         .describe("For save: the anchor value"),
-      json: tool.schema
-        .boolean()
-        .optional()
-        .describe("Output as machine-parseable JSON (HC5)"),
     },
     async execute(args, _context) {
-      const jsonOutput = args.json ?? false
-
+      // CHIMERA-3: Always return JSON for FK chaining
       switch (args.action) {
         case "save":
-          return handleSave(directory, args, jsonOutput)
+          return handleSave(directory, args)
         case "list":
-          return handleList(directory, jsonOutput)
+          return handleList(directory)
         case "get":
-          return handleGet(directory, args, jsonOutput)
+          return handleGet(directory, args)
         default:
-          return jsonOutput
-            ? toJsonOutput("error", { message: `Unknown action: ${args.action}` })
-            : `ERROR: Unknown action. Use save, list, or get.`
+          return toErrorOutput(`Unknown action: ${args.action}`)
       }
     },
   })
 }
 
+// CHIMERA-3: Always return JSON for FK chaining
 async function handleSave(
   directory: string,
   args: {
     key?: string
     value?: string
-    json?: boolean
-  },
-  jsonOutput: boolean
+  }
 ): Promise<string> {
   if (!args.key?.trim()) {
-    return jsonOutput
-      ? toJsonOutput("save", { error: "key required" })
-      : "ERROR: key cannot be empty. Use a descriptive name like 'DB_SCHEMA' or 'API_PORT'."
+    return toErrorOutput("key cannot be empty")
   }
 
   if (!args.value?.trim()) {
-    return jsonOutput
-      ? toJsonOutput("save", { error: "value required" })
-      : "ERROR: value cannot be empty. Describe the constraint or fact."
+    return toErrorOutput("value cannot be empty")
   }
 
   const stateManager = createStateManager(directory)
   const state = await stateManager.load()
   const sessionId = state ? state.session.id : "unknown"
-  const noSessionWarning = state ? "" : " (⚠ no active session — anchor saved but unlinked)"
 
   let anchorsState = await loadAnchors(directory)
 
@@ -110,118 +82,59 @@ async function handleSave(
 
   const count = anchorsState.anchors.length
 
-  if (jsonOutput) {
-    return toJsonOutput("save", {
-      key: args.key,
-      value: args.value,
-      previousValue: existing?.value || null,
-      totalAnchors: count,
-      updated: !!existing,
-      sessionId,
-    })
-  }
-
-  if (existing) {
-    return `Anchor updated: [${args.key}] (was: "${existing.value.slice(0, 50)}", now: "${args.value.slice(0, 50)}"). ${count} total anchors.${noSessionWarning}\n→ Use hivemind_anchor list to see all anchors.`
-  } else {
-    return `Anchor saved: [${args.key}] = "${args.value.slice(0, 50)}". ${count} total anchors.${noSessionWarning}\n→ Use hivemind_anchor list to see all anchors.`
-  }
+  return toSuccessOutput(existing ? "Anchor updated" : "Anchor saved", args.key, {
+    key: args.key,
+    value: args.value,
+    previousValue: existing?.value || null,
+    totalAnchors: count,
+    updated: !!existing,
+    sessionId,
+  })
 }
 
+// CHIMERA-3: Always return JSON for FK chaining
 async function handleList(
-  directory: string,
-  jsonOutput: boolean
+  directory: string
 ): Promise<string> {
   const anchorsState = await loadAnchors(directory)
 
   if (anchorsState.anchors.length === 0) {
-    return jsonOutput
-      ? toJsonOutput("list", { anchors: [], total: 0 })
-      : "No anchors saved. Use hivemind_anchor save to store critical constraints."
+    return toSuccessOutput("No anchors found", undefined, { anchors: [], total: 0 })
   }
 
-  if (jsonOutput) {
-    return toJsonOutput("list", {
-      total: anchorsState.anchors.length,
-      anchors: anchorsState.anchors.map(a => ({
-        key: a.key,
-        value: a.value,
-        createdAt: new Date(a.created_at).toISOString(),
-        sessionId: a.session_id,
-      })),
-    })
-  }
-
-  const lines: string[] = []
-  lines.push(`=== ANCHORS (${anchorsState.anchors.length}) ===`)
-  lines.push("")
-
-  for (const a of anchorsState.anchors) {
-    const date = new Date(a.created_at).toISOString().split("T")[0]
-    lines.push(`[${a.key}] (${date})`)
-    // Show full value, not truncated
-    const valueLines = a.value.split("\n")
-    if (valueLines.length === 1) {
-      lines.push(`  ${a.value}`)
-    } else {
-      lines.push(`  ${valueLines[0]}`)
-      for (let i = 1; i < valueLines.length && i < 5; i++) {
-        lines.push(`  ${valueLines[i]}`)
-      }
-      if (valueLines.length > 5) {
-        lines.push(`  ... (${valueLines.length - 5} more lines)`)
-      }
-    }
-    lines.push("")
-  }
-
-  lines.push("=== END ANCHORS ===")
-  lines.push("Use hivemind_anchor get to read a specific anchor by key.")
-  return lines.join("\n")
+  return toSuccessOutput("Anchors listed", undefined, {
+    total: anchorsState.anchors.length,
+    anchors: anchorsState.anchors.map(a => ({
+      key: a.key,
+      value: a.value,
+      createdAt: new Date(a.created_at).toISOString(),
+      sessionId: a.session_id,
+    })),
+  })
 }
 
+// CHIMERA-3: Always return JSON for FK chaining
 async function handleGet(
   directory: string,
   args: {
     key?: string
-    json?: boolean
-  },
-  jsonOutput: boolean
+  }
 ): Promise<string> {
   if (!args.key?.trim()) {
-    return jsonOutput
-      ? toJsonOutput("get", { error: "key required" })
-      : "ERROR: key is required. Specify the anchor key to retrieve."
+    return toErrorOutput("key is required")
   }
 
   const anchorsState = await loadAnchors(directory)
   const anchor = anchorsState.anchors.find(a => a.key === args.key)
 
   if (!anchor) {
-    return jsonOutput
-      ? toJsonOutput("get", { error: "not_found", key: args.key })
-      : `Anchor [${args.key}] not found. Use hivemind_anchor list to see available anchors.`
+    return toErrorOutput(`Anchor [${args.key}] not found`)
   }
 
-  if (jsonOutput) {
-    return toJsonOutput("get", {
-      key: anchor.key,
-      value: anchor.value,
-      createdAt: new Date(anchor.created_at).toISOString(),
-      sessionId: anchor.session_id,
-    })
-  }
-
-  const lines: string[] = []
-  const date = new Date(anchor.created_at).toISOString()
-  lines.push(`=== ANCHOR: ${anchor.key} ===`)
-  lines.push("")
-  lines.push(`Created: ${date}`)
-  lines.push(`Session: ${anchor.session_id}`)
-  lines.push("")
-  lines.push("Value:")
-  lines.push(anchor.value)
-  lines.push("")
-  lines.push("=== END ANCHOR ===")
-  return lines.join("\n")
+  return toSuccessOutput("Anchor retrieved", anchor.key, {
+    key: anchor.key,
+    value: anchor.value,
+    createdAt: new Date(anchor.created_at).toISOString(),
+    sessionId: anchor.session_id,
+  })
 }

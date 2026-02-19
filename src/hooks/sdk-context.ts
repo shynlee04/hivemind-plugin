@@ -1,5 +1,7 @@
 import type { PluginInput } from "@opencode-ai/plugin";
 import type { OpencodeClient, Project } from "@opencode-ai/sdk";
+import { createLogger, noopLogger } from "../lib/logging.js";
+import { getEffectivePaths } from "../lib/paths.js";
 
 type BunShell = PluginInput["$"];
 
@@ -12,6 +14,27 @@ let _client: OpencodeClient | null = null;
 let _shell: BunShell | null = null;
 let _serverUrl: URL | null = null;
 let _project: Project | null = null;
+let _logger = noopLogger;
+let _loggerInitialized = false;
+
+/**
+ * Lazily initializes the logger on first use.
+ */
+async function initializeLogger(): Promise<void> {
+  if (_loggerInitialized) {
+    return;
+  }
+
+  try {
+    const projectRoot = process.cwd();
+    const paths = getEffectivePaths(projectRoot);
+    _logger = await createLogger(paths.logsDir, "sdk-context");
+  } catch {
+    _logger = noopLogger;
+  } finally {
+    _loggerInitialized = true;
+  }
+}
 
 /**
  * Initialize the SDK context with references from the plugin input.
@@ -90,8 +113,15 @@ export async function withClient<T>(
   try {
     return await fn(_client);
   } catch (err: unknown) {
-    // Temporary error logging for Phase 1
-    console.error("SDK client error:", err);
+    // Initialize logger if not already done
+    await initializeLogger();
+    
+    const errorMessage = err instanceof Error 
+      ? `SDK client error: ${err.message}\n${err.stack}`
+      : `SDK client error: ${String(err)}`;
+    
+    await _logger.error(errorMessage);
+    
     return fallback ?? undefined;
   }
 }

@@ -280,7 +280,7 @@ async function test_validation_skips_invalid_agent_and_workflow_schema() {
 async function test_packaged_optional_groups_sync_by_default() {
   process.stderr.write("\n--- sync-assets: packaged optional groups sync by default ---\n")
   await withTmpDir("hm-sync-packaged-optional-", async (dir) => {
-    await syncOpencodeAssets(dir, { silent: true })
+    const result = await syncOpencodeAssets(dir, { silent: true })
 
     assert(
       existsSync(join(dir, ".opencode", "agents", "hivemind-brownfield-orchestrator.md")),
@@ -290,18 +290,33 @@ async function test_packaged_optional_groups_sync_by_default() {
       existsSync(join(dir, ".opencode", "workflows", "hivemind-brownfield-bootstrap.yaml")),
       "packaged workflow asset synced"
     )
-    assert(
-      existsSync(join(dir, ".opencode", "templates", "hivemind-brownfield-session.md")),
-      "packaged template asset synced"
-    )
-    assert(
-      existsSync(join(dir, ".opencode", "prompts", "hivemind-brownfield-remediation.md")),
-      "packaged prompt asset synced"
-    )
-    assert(
-      existsSync(join(dir, ".opencode", "references", "hivemind-brownfield-checklist.md")),
-      "packaged reference asset synced"
-    )
+
+    const projectTarget = result.targets.find((target) => target.target === "project")
+    const templatesGroup = projectTarget?.groups.find((group) => group.group === "templates")
+    const promptsGroup = projectTarget?.groups.find((group) => group.group === "prompts")
+    const referencesGroup = projectTarget?.groups.find((group) => group.group === "references")
+
+    const templateFile = join(dir, ".opencode", "templates", "hivemind-brownfield-session.md")
+    const promptFile = join(dir, ".opencode", "prompts", "hivemind-brownfield-remediation.md")
+    const referenceFile = join(dir, ".opencode", "references", "hivemind-brownfield-checklist.md")
+
+    if (templatesGroup?.sourceExists) {
+      assert(existsSync(templateFile), "packaged template asset synced")
+    } else {
+      assert(!existsSync(templateFile), "template group absent in package is skipped cleanly")
+    }
+
+    if (promptsGroup?.sourceExists) {
+      assert(existsSync(promptFile), "packaged prompt asset synced")
+    } else {
+      assert(!existsSync(promptFile), "prompt group absent in package is skipped cleanly")
+    }
+
+    if (referencesGroup?.sourceExists) {
+      assert(existsSync(referenceFile), "packaged reference asset synced")
+    } else {
+      assert(!existsSync(referenceFile), "reference group absent in package is skipped cleanly")
+    }
   })
 }
 

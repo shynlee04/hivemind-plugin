@@ -12,11 +12,12 @@
  *   - Error resilience (never crashes)
  */
 
-import { createSoftGovernanceHook, resetToastCooldowns } from "../src/hooks/soft-governance.js"
+import { createSoftGovernanceHook as createRawSoftGovernanceHook, resetToastCooldowns } from "../src/hooks/soft-governance.js"
 import { initSdkContext, resetSdkContext } from "../src/hooks/sdk-context.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
 import { createNode, createTree, setRoot, addChild, markComplete, saveTree } from "../src/lib/hierarchy-tree.js"
 import { getExportDir } from "../src/lib/planning-fs.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 import { createConfig } from "../src/schemas/config.js"
 import {
   createBrainState,
@@ -69,6 +70,15 @@ function makeInput(tool: string) {
 
 function makeOutput() {
   return { title: "", output: "", metadata: {} }
+}
+
+function createSoftGovernanceHook(log: Logger, dir: string, config: ReturnType<typeof createConfig>) {
+  const hook = createRawSoftGovernanceHook(log, dir, config)
+  const stateManager = createStateManager(dir)
+  return async (input: ReturnType<typeof makeInput>, output: ReturnType<typeof makeOutput>) => {
+    await hook(input, output)
+    await flushMutations(stateManager)
+  }
 }
 
 // ─── Collecting logger for assertions ────────────────────────────────
@@ -167,12 +177,13 @@ async function test_drift_detection() {
   const sm = createStateManager(dir)
   let state = unlockSession(createBrainState(generateSessionId(), config))
   // Pre-set high turn count and low drift to trigger warning
+  // Threshold: turn_count >= max_turns_before_warning (default 5) AND drift_score < 30
   state = {
     ...state,
     metrics: {
       ...state.metrics,
       turn_count: 4, // Will become 5 after hook increments
-      drift_score: 40, // Below 50 threshold
+      drift_score: 20, // Below 30 threshold (not 50)
     },
   }
   await sm.save(state)
@@ -184,7 +195,7 @@ async function test_drift_detection() {
 
   assert(
     log.warnings.some(w => w.includes("Drift detected")),
-    "drift warning logged when turns >= 5 and drift < 50"
+    "drift warning logged when turns >= 5 and drift < 30"
   )
 
   await cleanup()
@@ -856,15 +867,23 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
   const state = unlockSession(createBrainState(generateSessionId(), config))
   state.session.role = "main"
   state.metrics.turn_count = 30
+  state.metrics.user_turn_count = 35  // V3.0: User response cycles
   state.metrics.files_touched = ["src/a.ts"]
+  state.compaction_count = 2  // V3.0: Trigger condition
   await sm.save(state)
 
   const trajectory = createNode("trajectory", "Phase B")
   const tactic = createNode("tactic", "Session lifecycle")
   const action = createNode("action", "Boundary split")
   let tree = setRoot(createTree(), trajectory)
-  tree = addChild(tree, trajectory.id, tactic)
-  tree = addChild(tree, tactic.id, action)
+  const tacticResult = addChild(tree, trajectory.id, tactic)
+  if (tacticResult.success) {
+    tree = tacticResult.tree
+  }
+  const actionResult = addChild(tree, tactic.id, action)
+  if (actionResult.success) {
+    tree = actionResult.tree
+  }
   tree = markComplete(tree, action.id, Date.now())
   await saveTree(dir, tree)
 
@@ -897,8 +916,8 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
   const exportFiles = await readdir(exportDir)
 
   assert(createCalls.length === 1, "auto split calls session.create once")
-  assert(createCalls[0].parentID === "test-session", "auto split links parentID to current session")
   assert(createCalls[0].title.includes("Boundary split"), "auto split title uses active hierarchy focus")
+  assert(createCalls[0].parentID === "test-session", "V3.0: auto split passes parentID for SDK linkage")
   assert((updated?.metrics.turn_count ?? -1) === 0, "auto split resets turn count")
   assert((updated?.metrics.files_touched.length ?? -1) === 0, "auto split clears files_touched")
   assert((updated?.metrics.drift_score ?? -1) === 100, "auto split restores drift score")
@@ -910,8 +929,11 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
   await cleanup()
 }
 
-async function test_auto_split_skips_when_context_is_high() {
-  process.stderr.write("\n--- soft-governance: auto split skips at high context ---\n")
+
+// ─── Runner ──────────────────────────────────────────────────────────
+
+async function test_auto_split_triggers_when_context_is_high() {
+  process.stderr.write("\n--- soft-governance: auto split DEFENSIVE at high context ---\n")
   const dir = await setup()
   const config = createConfig({
     governance_mode: "assisted",
@@ -924,6 +946,8 @@ async function test_auto_split_skips_when_context_is_high() {
   const state = unlockSession(createBrainState(generateSessionId(), config))
   state.session.role = "main"
   state.metrics.turn_count = 80
+  state.metrics.user_turn_count = 35  // V3.0: User response cycles
+  state.compaction_count = 2  // V3.0: Trigger condition
   await sm.save(state)
 
   const createCalls: Array<Record<string, unknown>> = []
@@ -932,9 +956,10 @@ async function test_auto_split_skips_when_context_is_high() {
       session: {
         create: async (args: any) => {
           createCalls.push(args)
-          return { id: "ses_split_should_not_happen" }
+          return { id: "ses_split_high_context" }
         },
       },
+      tui: { showToast: async () => {} },
     } as any,
     $: (() => {}) as any,
     serverUrl: new URL("http://localhost:3000"),
@@ -945,14 +970,13 @@ async function test_auto_split_skips_when_context_is_high() {
   await hook(makeInput("map_context"), makeOutput())
 
   const updated = await sm.load()
-  assert(createCalls.length === 0, "auto split does not run when context is >=80%")
-  assert((updated?.metrics.turn_count ?? 0) > 0, "normal turn tracking still applies when split is skipped")
+  // V3.0: High context (>=80%) is now DEFENSIVE guard - should NOT trigger split
+  assert(createCalls.length === 0, "V3.0: auto split does NOT trigger at high context (defensive guard)")
+  assert((updated?.metrics.turn_count ?? -1) === 81, "V3.0: turn count not reset (no split occurred)")
 
   resetSdkContext()
   await cleanup()
 }
-
-// ─── Runner ──────────────────────────────────────────────────────────
 
 async function main() {
   process.stderr.write("=== Soft Governance Tests ===\n")
@@ -984,7 +1008,7 @@ async function main() {
   await test_auto_commit_runs_when_enabled_and_files_modified()
   await test_auto_commit_skips_when_no_modified_files()
   await test_auto_split_creates_continuation_session_and_resets_metrics()
-  await test_auto_split_skips_when_context_is_high()
+  await test_auto_split_triggers_when_context_is_high()
 
   process.stderr.write(`\n=== Soft Governance: ${passed} passed, ${failed_} failed ===\n`)
   if (failed_ > 0) process.exit(1)

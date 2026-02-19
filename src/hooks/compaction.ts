@@ -12,7 +12,7 @@
  *   - If not, falls back to generic context injection with alert
  *
  * P3: try/catch — never break compaction
- * Budget-capped ≤500 tokens (~2000 chars)
+ * Budget-capped ≤3000 tokens (~12000 chars)
  *
  * FLAW-TOAST-003 FIX: Removed info toast - compaction is transparent operation.
  */
@@ -20,6 +20,9 @@
 import type { Logger } from "../lib/logging.js"
 import { createStateManager } from "../lib/persistence.js"
 import { loadMems } from "../lib/mems.js"
+import { loadAnchors } from "../lib/anchors.js"
+import { loadTasks } from "../lib/manifest.js"
+import { queueStateMutation } from "../lib/state-mutation-queue.js"
 import {
   loadTree,
   toAsciiTree,
@@ -27,9 +30,19 @@ import {
   getAncestors,
   treeExists,
 } from "../lib/hierarchy-tree.js"
+import { HIVE_MASTER_GOVERNANCE_INSTRUCTION, GOVERNANCE_MARKER } from "../lib/governance-instruction.js"
 
-/** Budget in characters (~500 tokens at ~4 chars/token) */
-const INJECTION_BUDGET_CHARS = 2000
+const INJECTION_BUDGET_CHARS = 12000
+
+/**
+ * Inject governance instruction into compaction context (deduplicated)
+ */
+function injectGovernanceToCompaction(output: { context: string[] }): void {
+  const alreadyInjected = output.context.some(s => s.includes(GOVERNANCE_MARKER))
+  if (!alreadyInjected) {
+    output.context.push(HIVE_MASTER_GOVERNANCE_INSTRUCTION)
+  }
+}
 
 /**
  * Creates the compaction hook.
@@ -44,6 +57,9 @@ export function createCompactionHook(log: Logger, directory: string) {
     output: { context: string[] }
   ): Promise<void> => {
     try {
+      // Inject governance instruction to persist across compactions
+      injectGovernanceToCompaction(output)
+
       let state = await stateManager.load()
       if (!state) {
         await log.debug("Compaction: no brain state to preserve")
@@ -54,9 +70,13 @@ export function createCompactionHook(log: Logger, directory: string) {
       if (state.next_compaction_report) {
         output.context.push(state.next_compaction_report);
         await log.debug(`Compaction: injected purification report (${state.next_compaction_report.length} chars)`);
-        state = { ...state, next_compaction_report: null }
-        await stateManager.save(state)
-        await log.debug("Compaction: cleared consumed purification report")
+        // CQRS: Queue mutation instead of direct save
+        queueStateMutation({
+          type: "UPDATE_STATE",
+          payload: { next_compaction_report: null },
+          source: "compaction-hook"
+        });
+        await log.debug("Compaction: queued mutation to clear consumed purification report")
         // Don't return — still add standard context too, but purification report comes first
       }
 
@@ -77,11 +97,11 @@ export function createCompactionHook(log: Logger, directory: string) {
           const tree = await loadTree(directory);
           if (tree.root) {
             const treeView = toAsciiTree(tree);
-            // Truncate tree for compaction budget
+            // Truncate tree for compaction budget if extremely large, but prefer strict hierarchy
             const treeLines = treeView.split('\n');
-            if (treeLines.length > 6) {
-              lines.push(...treeLines.slice(0, 6));
-              lines.push("  ... (truncated for compaction)");
+            if (treeLines.length > 20) {
+               lines.push(...treeLines.slice(0, 20));
+               lines.push("  ... (truncated for compaction)");
             } else {
               lines.push(treeView);
             }
@@ -127,6 +147,30 @@ export function createCompactionHook(log: Logger, directory: string) {
         }
       }
       lines.push("")
+
+      // Structural Anchors
+      const anchorsState = await loadAnchors(directory)
+      if (anchorsState.anchors.length > 0) {
+        lines.push("## Anchors")
+        for (const anchor of anchorsState.anchors) {
+           lines.push(`- [${anchor.key}]: ${anchor.value}`)
+        }
+        lines.push("")
+      }
+
+      // Active Tasks (TODOs)
+      const taskManifest = await loadTasks(directory)
+      if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
+        const pending = taskManifest.tasks.filter(t => t.status !== "completed" && t.status !== "cancelled")
+        if (pending.length > 0) {
+          lines.push("## Active Tasks (Pending)")
+          for (const t of pending.slice(0, 5)) {
+            lines.push(`- ${t.title} (${t.id})`)
+          }
+          if (pending.length > 5) lines.push(`... and ${pending.length - 5} more`)
+          lines.push("")
+        }
+      }
 
       // Metrics
       lines.push(

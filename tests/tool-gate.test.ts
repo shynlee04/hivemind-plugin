@@ -8,6 +8,7 @@ import { createConfig } from "../src/schemas/config.js"
 import { createBrainState, generateSessionId, unlockSession } from "../src/schemas/brain-state.js"
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { noopLogger } from "../src/lib/logging.js"
+import { clearMutationQueue, flushMutations } from "../src/lib/state-mutation-queue.js"
 import { mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
@@ -29,6 +30,7 @@ function assert(cond: boolean, name: string) {
 let tmpDir: string
 
 async function setup(): Promise<string> {
+  clearMutationQueue()
   tmpDir = await mkdtemp(join(tmpdir(), "hm-test-"))
   await initializePlanningDirectory(tmpDir)
   return tmpDir
@@ -36,6 +38,7 @@ async function setup(): Promise<string> {
 
 async function cleanup(): Promise<void> {
   try {
+    clearMutationQueue()
     await rm(tmpDir, { recursive: true })
   } catch {
     // ignore
@@ -151,6 +154,9 @@ async function test_drift_tracking() {
   // (turn count is now only incremented in tool.execute.after / soft-governance)
   await hook({ sessionID: "test-drift", tool: "write" })
   await hook({ sessionID: "test-drift", tool: "edit" })
+
+  // CQRS-compliant: flush queued mutations (tools do this in production)
+  await flushMutations(sm)
 
   // Check state was updated with file touches (write tools trigger saves)
   // addFileTouched deduplicates by path, so each unique tool name = 1 entry

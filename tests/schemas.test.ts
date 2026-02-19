@@ -46,7 +46,7 @@ function test_brain_state_creation() {
   assert(state.session.id === "test-session", "session id set")
   assert(state.session.mode === "plan_driven", "default mode is plan_driven")
   assert(state.session.governance_mode === "assisted", "inherits config mode")
-  assert(state.session.governance_status === "OPEN", "assisted mode starts OPEN")
+  assert(state.session.governance_status === "LOCKED", "assisted mode starts LOCKED (requires startSession to unlock)")
   assert(state.metrics.turn_count === 0, "starts with 0 turns")
   assert(state.metrics.drift_score === 100, "starts with 100 drift score")
   assert(state.version === "1.0.0", "version set")
@@ -75,8 +75,10 @@ function test_brain_state_lock() {
   const config = createConfig()
   const state = createBrainState("test-lock", config)
 
-  assert(!isSessionLocked(state), "starts unlocked")
-  const locked = lockSession(state)
+  assert(isSessionLocked(state), "starts locked")
+  const unlocked = unlockSession(state)
+  assert(!isSessionLocked(unlocked), "unlocked for test")
+  const locked = lockSession(unlocked)
   assert(isSessionLocked(locked), "locked after lockSession")
 }
 
@@ -186,7 +188,8 @@ function test_session_id() {
   const id1 = generateSessionId()
   const id2 = generateSessionId()
 
-  assert(id1.startsWith("session-"), "starts with session-")
+  // UUIDs are 36 chars with hyphens (e.g., "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx")
+  assert(id1.length === 36 && id1.split("-").length === 5, "valid UUID format")
   assert(id1 !== id2, "unique IDs generated")
 }
 

@@ -5,7 +5,13 @@
  *
  * ## Architecture
  *
- * - **10 Tools** (HC3 compliant): declare_intent, map_context, compact_session, scan_hierarchy, save_anchor, think_back, save_mem, recall_mems, hierarchy_manage, export_cycle
+ * - **6 Canonical Tools** (HC5 compliant):
+ *   - hivemind_session   — session lifecycle: start, update, close, status, resume
+ *   - hivemind_inspect   — inspection: scan, deep, drift
+ *   - hivemind_memory    — memory: save, recall, list
+ *   - hivemind_anchor    — anchors: save, list, get
+ *   - hivemind_hierarchy — tree: prune, migrate, status
+ *   - hivemind_cycle     — export: export, list, prune
  * - **6 Hooks**: system transform, messages transform, tool gate (before), soft governance (after), compaction preservation, event handling
  * - **Soft Governance**: Cannot block, only guide through prompts + tracking
  *
@@ -29,17 +35,12 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { existsSync } from "fs"
 import { join } from "path"
-import {
-  createDeclareIntentTool,
-  createMapContextTool,
-  createCompactSessionTool,
-  createScanHierarchyTool,
-  createSaveAnchorTool,
-  createThinkBackTool,
-  createSaveMemTool,
-  createRecallMemsTool,
-  createHierarchyManageTool,
-  createExportCycleTool,
+import { createHivemindSessionTool,
+  createHivemindInspectTool,
+  createHivemindMemoryTool,
+  createHivemindAnchorTool,
+  createHivemindHierarchyTool,
+  createHivemindCycleTool,
 } from "./tools/index.js"
 import {
   createSessionLifecycleHook,
@@ -53,6 +54,8 @@ import { createLogger } from "./lib/logging.js"
 import { loadConfig } from "./lib/persistence.js"
 import { initSdkContext } from "./hooks/sdk-context.js"
 import { regenerateManifests } from "./lib/planning-fs.js"
+import { fileWatcher } from "./lib/watcher.js"
+import { eventBus } from "./lib/event-bus.js"
 
 /**
  * HiveMind plugin entry point.
@@ -61,7 +64,7 @@ import { regenerateManifests } from "./lib/planning-fs.js"
  *   - SDK context (client, BunShell, serverUrl, project)
  *   - Session lifecycle hook (system prompt injection)
  *   - Soft governance hook (tracking + violation detection)
- *   - 10 context management tools (HC3 compliant)
+ *   - 6 canonical context management tools (HC5 compliant)
  */
 export const HiveMindPlugin: Plugin = async ({
   directory,
@@ -98,6 +101,15 @@ export const HiveMindPlugin: Plugin = async ({
     `SDK context: client=${!!client}, shell=${!!shell}, serverUrl=${serverUrl?.href ?? 'none'}`
   )
 
+  // Wire file watcher events to event bus (in-process event engine)
+  fileWatcher.on("event", (event) => {
+    eventBus.emitEvent(event)
+  })
+
+  // Watch the project directory for file changes
+  fileWatcher.watchDirectory(effectiveDir)
+  await log.info(`File watcher activated for: ${effectiveDir}`)
+
   return {
     /**
      * Hook: Event-driven governance
@@ -106,19 +118,15 @@ export const HiveMindPlugin: Plugin = async ({
     event: createEventHandler(log, effectiveDir),
 
     /**
-     * Custom tools for session governance
+     * 6 Canonical tools for session governance (HC5 compliant)
      */
     tool: {
-      declare_intent: createDeclareIntentTool(effectiveDir),
-      map_context: createMapContextTool(effectiveDir),
-      compact_session: createCompactSessionTool(effectiveDir),
-      scan_hierarchy: createScanHierarchyTool(effectiveDir),
-      save_anchor: createSaveAnchorTool(effectiveDir),
-      think_back: createThinkBackTool(effectiveDir),
-      save_mem: createSaveMemTool(effectiveDir),
-      recall_mems: createRecallMemsTool(effectiveDir),
-      hierarchy_manage: createHierarchyManageTool(effectiveDir),
-      export_cycle: createExportCycleTool(effectiveDir),
+      hivemind_session: createHivemindSessionTool(effectiveDir),
+      hivemind_inspect: createHivemindInspectTool(effectiveDir),
+      hivemind_memory: createHivemindMemoryTool(effectiveDir),
+      hivemind_anchor: createHivemindAnchorTool(effectiveDir),
+      hivemind_hierarchy: createHivemindHierarchyTool(effectiveDir),
+      hivemind_cycle: createHivemindCycleTool(effectiveDir),
     },
 
     /**
@@ -131,6 +139,7 @@ export const HiveMindPlugin: Plugin = async ({
     /**
      * Hook: Message transformation
      * Injects stop-decision checklist and continuity context
+     * Also handles first-turn prompt transformation (session_coherence)
      */
     "experimental.chat.messages.transform": createMessagesTransformHook(log, effectiveDir),
 

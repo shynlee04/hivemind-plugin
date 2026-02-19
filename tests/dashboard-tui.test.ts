@@ -41,9 +41,10 @@ async function main() {
   let getDashboardStrings: any
   let loadDashboardSnapshot: any
   try {
-    const mod = await import("../src/dashboard/server.js")
-    getDashboardStrings = mod.getDashboardStrings
-    loadDashboardSnapshot = mod.loadDashboardSnapshot
+    const i18nMod = await import("../src/dashboard/i18n.js")
+    getDashboardStrings = i18nMod.getDashboardStrings
+    const loaderMod = await import("../src/dashboard/loader.js")
+    loadDashboardSnapshot = loaderMod.loadDashboardSnapshot
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err)
     if (msg.includes("Cannot find module") || msg.includes("Cannot find package") || msg.includes("ERR_MODULE_NOT_FOUND")) {
@@ -60,17 +61,15 @@ async function main() {
   const dir = await setup("hm-dash-")
   const { initProject } = await import("../src/cli/init.js")
   const { createStateManager } = await import("../src/lib/persistence.js")
-  const { createDeclareIntentTool } = await import("../src/tools/declare-intent.js")
-  const { createMapContextTool } = await import("../src/tools/map-context.js")
+  const { createHivemindSessionTool } = await import("../src/tools/hivemind-session.js")
 
   try {
     await initProject(dir, { silent: true, automationLevel: "coach" })
 
-    const declareIntent = createDeclareIntentTool(dir)
-    const mapContext = createMapContextTool(dir)
+    const session = createHivemindSessionTool(dir)
 
-    await declareIntent.execute({ mode: "plan_driven", focus: "Build TUI" })
-    await mapContext.execute({ level: "tactic", content: "Render metrics panel" })
+    await session.execute({ action: "start", mode: "plan_driven", focus: "Build TUI" }, {} as any)
+    await session.execute({ action: "update", level: "tactic", content: "Render metrics panel" }, {} as any)
 
     const stateManager = createStateManager(dir)
     const state = await stateManager.load()

@@ -1,4 +1,4 @@
-import { createScanHierarchyTool } from "../tools/scan-hierarchy.js"
+import { createHivemindInspectTool } from "../tools/hivemind-inspect.js"
 
 export type ScanAction = "status" | "analyze" | "recommend" | "orchestrate"
 
@@ -12,11 +12,19 @@ export async function runScanCommand(
   directory: string,
   options: ScanCommandOptions = {}
 ): Promise<string> {
-  const action = options.action ?? "analyze"
-  const tool = createScanHierarchyTool(directory)
+  // Map legacy actions to canonical hivemind_inspect actions
+  const actionMap: Record<ScanAction, "scan" | "deep" | "drift"> = {
+    status: "scan",
+    analyze: "deep",
+    recommend: "scan",
+    orchestrate: "scan",
+  }
+
+  const action = actionMap[options.action ?? "analyze"]
+  const tool = createHivemindInspectTool(directory)
 
   // CLI execution path is outside OpenCode runtime, so there is no real ToolContext.
-  // The scan tool implementation does not rely on context fields.
+  // The inspect tool implementation does not rely on context fields.
   const executeTool = tool.execute as (
     args: Record<string, unknown>,
     context: unknown
@@ -25,7 +33,6 @@ export async function runScanCommand(
   const output = await executeTool({
     action,
     json: options.json ?? false,
-    include_drift: options.includeDrift ?? false,
   }, null)
 
   return output

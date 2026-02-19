@@ -8,6 +8,7 @@ import { createEventHandler } from "../src/hooks/event-handler.js"
 import { resetToastCooldowns } from "../src/hooks/soft-governance.js"
 import { createLogger } from "../src/lib/logging.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 import { createConfig } from "../src/schemas/config.js"
 import { createBrainState, generateSessionId } from "../src/schemas/brain-state.js"
 import { mkdtemp, rm, readFile } from "fs/promises"
@@ -193,7 +194,7 @@ async function test_eventHandlerIdleEscalationAndCompactionInfoToast() {
   const sm = createStateManager(dir)
   const state = createBrainState(generateSessionId(), config)
   state.metrics.drift_score = 20  // Below 30 threshold for drift toast
-  state.metrics.turn_count = 12   // Above 10 turn threshold
+  state.metrics.user_turn_count = 12   // V3.0: Above 10 USER TURN threshold
   state.session.last_activity = Date.now() - (5 * 86_400_000)
   await sm.save(state)
   resetToastCooldowns()
@@ -215,12 +216,17 @@ async function test_eventHandlerIdleEscalationAndCompactionInfoToast() {
   const handler = createEventHandler(log, dir)
 
   await handler({ event: { type: "session.idle", properties: { sessionID: "s1" } } as any })
-  await handler({ event: { type: "session.idle", properties: { sessionID: "s1" } } as any })
   await handler({ event: { type: "session.compacted", properties: { sessionID: "s1" } } as any })
 
-  const driftToast = toasts.find(t => t.message.includes("Drift risk detected"))
-  assert(!!driftToast, "idle drift toast emitted when score < 30 and turns >= 10")
-  assert(toasts.length >= 1, "at least one drift toast emitted")
+  // CQRS FIX: Flush queued mutations before checking state
+  await flushMutations(sm)
+
+  // FLAW-TOAST-005 FIX: event-handler no longer emits drift toasts
+  // Drift toasts are now emitted by soft-governance.ts during tool execution
+  assert(
+    !toasts.some(t => t.message.includes("Drift risk detected")),
+    "event-handler does NOT emit drift toast (moved to soft-governance.ts)"
+  )
   // session.compacted toast was removed from event-handler (FLAW-TOAST-006)
   // but the counter is still incremented
   assert(true, "compaction toast handled by compaction hook (not event-handler)")
@@ -264,10 +270,15 @@ async function test_architectureBoundary() {
 async function test_backwardCompatibility() {
   process.stderr.write("\n--- sdk-foundation: backward compatibility ---\n")
   
-  // Verify Tools exports
+  // Verify Tools exports (6 canonical tools per US-024)
   const toolCount = Object.keys(Tools).length
-  assert(toolCount >= 10, `Tools exports count: ${toolCount} (>= 10)`)
-  assert(typeof Tools.createDeclareIntentTool === "function", "createDeclareIntentTool exported")
+  assert(toolCount === 6, `Tools exports count: ${toolCount} (== 6)`)
+  assert(typeof Tools.createHivemindSessionTool === "function", "createHivemindSessionTool exported")
+  assert(typeof Tools.createHivemindInspectTool === "function", "createHivemindInspectTool exported")
+  assert(typeof Tools.createHivemindMemoryTool === "function", "createHivemindMemoryTool exported")
+  assert(typeof Tools.createHivemindAnchorTool === "function", "createHivemindAnchorTool exported")
+  assert(typeof Tools.createHivemindHierarchyTool === "function", "createHivemindHierarchyTool exported")
+  assert(typeof Tools.createHivemindCycleTool === "function", "createHivemindCycleTool exported")
   
   // Verify Hooks exports
   const hookCount = Object.keys(Hooks).length

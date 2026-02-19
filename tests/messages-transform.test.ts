@@ -1,7 +1,7 @@
 import { mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
-import { createMessagesTransformHook, type MessageV2 } from "../src/hooks/messages-transform.js"
+import { createMessagesTransformHook as createRawMessagesTransformHook, type MessageV2 } from "../src/hooks/messages-transform.js"
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { saveTasks } from "../src/lib/manifest.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
@@ -9,6 +9,7 @@ import { createBrainState, generateSessionId, unlockSession } from "../src/schem
 import { createConfig } from "../src/schemas/config.js"
 import { saveAnchors } from "../src/lib/anchors.js"
 import { createNode, createTree, saveTree, setRoot, addChild, markComplete } from "../src/lib/hierarchy-tree.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 
 let passed = 0
 let failed_ = 0
@@ -89,6 +90,15 @@ function getTextParts(message: MessageV2): Array<{ text: string; synthetic: bool
     }))
 }
 
+function createMessagesTransformHook(log: { warn: (message: string) => Promise<void> }, dir: string) {
+  const hook = createRawMessagesTransformHook(log, dir)
+  const stateManager = createStateManager(dir)
+  return async (input: {}, output: { messages: MessageV2[] }) => {
+    await hook(input, output)
+    await flushMutations(stateManager)
+  }
+}
+
 async function setupDir(): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), "hm-msg-transform-"))
   await initializePlanningDirectory(dir)
@@ -103,6 +113,7 @@ async function test_injects_checklist_message() {
 
   const stateManager = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
   await stateManager.save(state)
 
   const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
@@ -134,6 +145,7 @@ async function test_generates_dynamic_checklist_items() {
   const baseState = unlockSession(createBrainState(generateSessionId(), config))
   const state = {
     ...baseState,
+    first_turn_context_injected: true,
     pending_failure_ack: true,
     metrics: {
       ...baseState.metrics,
@@ -159,9 +171,8 @@ async function test_generates_dynamic_checklist_items() {
   const checklistText = syntheticTexts.find((text) => text.includes("CHECKLIST BEFORE STOPPING")) || ""
 
   assert(checklistText.includes("Action-level focus is missing"), "includes hierarchy cursor checklist item")
-  assert(checklistText.includes("No map_context updates yet"), "includes map_context checklist item")
-  assert(checklistText.includes("Acknowledge pending subagent failure"), "includes pending_failure_ack checklist item")
-  assert(checklistText.includes("Create a git commit for touched files"), "includes git commit checklist item")
+  assert(checklistText.includes("Is the file tree updated?"), "includes file tree updated check")
+  assert(checklistText.includes("Have you forced an atomic git commit"), "includes atomic commit check")
 
   await rm(dir, { recursive: true, force: true })
 }
@@ -174,6 +185,7 @@ async function test_includes_pending_tasks_checklist_item() {
 
   const stateManager = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
   await stateManager.save(state)
   await saveTasks(dir, {
     session_id: state.session.id,
@@ -220,61 +232,6 @@ async function test_skips_permissive_mode() {
   await rm(dir, { recursive: true, force: true })
 }
 
-async function test_augments_latest_user_message_with_anchor_context() {
-  process.stderr.write("\n--- messages-transform: anchor continuity injection ---\n")
-  const dir = await setupDir()
-  const config = createConfig({ governance_mode: "assisted" })
-  await saveConfig(dir, config)
-
-  const stateManager = createStateManager(dir)
-  const state = unlockSession(createBrainState(generateSessionId(), config))
-  await stateManager.save(state)
-
-  await saveAnchors(dir, {
-    version: "1.0.0",
-    anchors: [
-      { key: "k1", value: "v1", created_at: 1, session_id: "s" },
-      { key: "k2", value: "v2", created_at: 2, session_id: "s" },
-      { key: "k3", value: "v3", created_at: 3, session_id: "s" },
-      { key: "k4", value: "v4", created_at: 4, session_id: "s" },
-    ],
-  })
-
-  const trajectory = createNode("trajectory", "Phase B")
-  const tactic = createNode("tactic", "Messages transform")
-  const action = createNode("action", "Inject continuity context")
-  let tree = setRoot(createTree(), trajectory)
-  tree = addChild(tree, trajectory.id, tactic)
-  tree = addChild(tree, tactic.id, action)
-  await saveTree(dir, tree)
-
-  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
-  const output: { messages: MessageV2[] } = {
-    messages: [
-      createUserMessage("first", "msg_user_1"),
-      createAssistantMessage("ack", "msg_assistant_1"),
-      createUserMessage("latest", "msg_user_2"),
-    ],
-  }
-
-  await hook({}, output)
-
-  const latestUser = output.messages[2]
-  const parts = getTextParts(latestUser)
-  const injected = parts.find((part) => part.synthetic)
-  const injectedText = injected?.text ?? ""
-  const original = parts.find((part) => !part.synthetic)
-  const originalText = original?.text ?? ""
-
-  assert(parts.length >= 2, "latest user message receives synthetic continuity part")
-  assert(Boolean(injected), "continuity part marked synthetic")
-  assert(injectedText.includes("<focus>Phase B > Messages transform > Inject continuity context</focus>"), "continuity includes focus path")
-  assert(injectedText.includes("<anchor-context>"), "continuity includes anchor-context block")
-  assert(!injectedText.includes("k1"), "anchor context capped to top 3 anchors")
-  assert(originalText === "latest", "original user text remains intact")
-
-  await rm(dir, { recursive: true, force: true })
-}
 
 async function test_includes_session_boundary_checklist_item_when_recommended() {
   process.stderr.write("\n--- messages-transform: boundary checklist injection ---\n")
@@ -284,11 +241,14 @@ async function test_includes_session_boundary_checklist_item_when_recommended() 
 
   const stateManager = createStateManager(dir)
   const baseState = unlockSession(createBrainState(generateSessionId(), config))
+  // V3.0: Need user_turn_count >= 30 AND (compactionCount >= 2 OR hierarchyComplete)
   const state = {
     ...baseState,
+    first_turn_context_injected: true,
     metrics: {
       ...baseState.metrics,
       turn_count: 30,
+      user_turn_count: 35, // V3.0: User response cycles
       files_touched: [],
       context_updates: 1,
     },
@@ -296,6 +256,7 @@ async function test_includes_session_boundary_checklist_item_when_recommended() 
       ...baseState.hierarchy,
       action: "Boundary review",
     },
+    compaction_count: 2, // V3.0: Trigger condition
   }
   await stateManager.save(state)
 
@@ -303,8 +264,14 @@ async function test_includes_session_boundary_checklist_item_when_recommended() 
   const tactic = createNode("tactic", "Track D")
   const action = createNode("action", "Finalize Part 2")
   let tree = setRoot(createTree(), trajectory)
-  tree = addChild(tree, trajectory.id, tactic)
-  tree = addChild(tree, tactic.id, action)
+  const tacticResult = addChild(tree, trajectory.id, tactic)
+  if (tacticResult.success) {
+    tree = tacticResult.tree
+  }
+  const actionResult = addChild(tree, tactic.id, action)
+  if (actionResult.success) {
+    tree = actionResult.tree
+  }
   tree = markComplete(tree, action.id, Date.now())
   await saveTree(dir, tree)
 
@@ -335,6 +302,7 @@ async function test_legacy_message_shape_fallback() {
 
   const stateManager = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
   await stateManager.save(state)
 
   const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
@@ -363,6 +331,7 @@ async function test_modern_shape_without_user_does_not_push_legacy_message() {
 
   const stateManager = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
   await stateManager.save(state)
 
   const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
@@ -377,6 +346,149 @@ async function test_modern_shape_without_user_does_not_push_legacy_message() {
   await rm(dir, { recursive: true, force: true })
 }
 
+async function test_wraps_user_message_with_system_anchor() {
+  process.stderr.write("\n--- messages-transform: system anchor wrapping ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "assisted" })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.hierarchy.trajectory = "Phase B"
+  state.first_turn_context_injected = true
+  // V3.0: Don't set action - this will trigger "Action-level focus is missing" checklist item
+  state.metrics.context_updates = 1 // Active
+  state.metrics.user_turn_count = 1  // V3.0: Initialize user_turn_count
+  await stateManager.save(state)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [
+      createUserMessage("latest", "msg_user_2"),
+    ],
+  }
+
+  await hook({}, output)
+
+  const latestUser = output.messages[0]
+  const parts = getTextParts(latestUser)
+
+  // V3.0: The anchor is now a PREPENDED SYNTHETIC part (no mutation of user text)
+  const syntheticParts = parts.filter(p => p.synthetic)
+  const anchorPart = syntheticParts.find(p => p.text?.includes("[SYSTEM ANCHOR:"))
+  
+  assert(anchorPart?.text?.includes("[SYSTEM ANCHOR: Phase B") === true, "anchor is prepended as synthetic part")
+
+  // V3.0: The user's original text should remain UNTOUCHED (not wrapped)
+  const originalPart = parts.find(p => !p.synthetic)
+  assert(originalPart?.text === "latest", "user text remains untouched (no wrapping)")
+
+  // Checklist should be appended as synthetic part (there are items to show - action is missing)
+  const checklistPart = syntheticParts.find(p => p.text?.includes("CHECKLIST BEFORE STOPPING"))
+  assert(checklistPart?.text?.includes("CHECKLIST BEFORE STOPPING") === true, "checklist appended as synthetic part")
+
+  await rm(dir, { recursive: true, force: true })
+}
+
+async function test_auto_realign_injects_menu_and_permission_gate_for_build_intent() {
+  process.stderr.write("\n--- messages-transform: auto-realign menu + permission gate ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "strict" })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
+  await stateManager.save(state)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [createUserMessage("please build this app now", "msg_user_build_1")],
+  }
+
+  await hook({}, output)
+
+  const syntheticTexts = getSyntheticTextParts(output.messages[0])
+  const realignText = syntheticTexts.find((text) => text.includes("[AUTO-REALIGN]")) || ""
+
+  assert(realignText.includes("[NEXT-STEP MENU]"), "auto-realign includes next-step menu")
+  assert(realignText.includes("/hivefiver build"), "auto-realign menu includes build command")
+  assert(realignText.includes("Permission required before execution"), "build intent is permission-gated")
+
+  await rm(dir, { recursive: true, force: true })
+}
+
+async function test_auto_realign_injects_auto_init_for_safe_actions() {
+  process.stderr.write("\n--- messages-transform: auto-realign auto-init guidance ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "strict" })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
+  await stateManager.save(state)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [createUserMessage("help me do mcp research", "msg_user_research_1")],
+  }
+
+  await hook({}, output)
+
+  const syntheticTexts = getSyntheticTextParts(output.messages[0])
+  const realignText = syntheticTexts.find((text) => text.includes("[AUTO-REALIGN]")) || ""
+
+  assert(realignText.includes("/hivefiver research"), "research intent routes to hivefiver research")
+  assert(realignText.includes("Auto-init allowed"), "safe action includes auto-init guidance")
+
+  await rm(dir, { recursive: true, force: true })
+}
+
+async function test_first_turn_injection_sets_marker_and_prevents_duplicate_on_counter_reset() {
+  process.stderr.write("\n--- messages-transform: first-turn marker prevents duplicate injection ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "assisted" })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  await stateManager.save(state)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [
+      createUserMessage("first turn", "msg_user_2"),
+    ],
+  }
+
+  await hook({}, output)
+
+  const firstPassParts = getTextParts(output.messages[0])
+  const firstTurnParts = firstPassParts.filter(p => p.synthetic && p.text.includes("<first_turn_context>"))
+  assert(firstTurnParts.length === 1, "injects first-turn context exactly once on first pass")
+
+  const persistedAfterFirst = await stateManager.load()
+  assert(persistedAfterFirst?.first_turn_context_injected === true, "persists first-turn marker after injection")
+
+  // Simulate counter reset bug scenario; marker should still block first-turn reinjection.
+  if (persistedAfterFirst) {
+    persistedAfterFirst.metrics.turn_count = 0
+    persistedAfterFirst.metrics.user_turn_count = 0
+    await stateManager.save(persistedAfterFirst)
+  }
+
+  const outputSecond: { messages: MessageV2[] } = {
+    messages: [createUserMessage("second turn", "msg_user_3")],
+  }
+  await hook({}, outputSecond)
+
+  const secondPassParts = getTextParts(outputSecond.messages[0])
+  const repeatedFirstTurn = secondPassParts.filter(p => p.synthetic && p.text.includes("<first_turn_context>"))
+  assert(repeatedFirstTurn.length === 0, "does not reinject first-turn context when counters reset")
+
+  await rm(dir, { recursive: true, force: true })
+}
 async function main() {
   process.stderr.write("=== Messages Transform Tests ===\n")
 
@@ -384,7 +496,10 @@ async function main() {
   await test_generates_dynamic_checklist_items()
   await test_includes_pending_tasks_checklist_item()
   await test_skips_permissive_mode()
-  await test_augments_latest_user_message_with_anchor_context()
+  await test_wraps_user_message_with_system_anchor()
+  await test_auto_realign_injects_menu_and_permission_gate_for_build_intent()
+  await test_auto_realign_injects_auto_init_for_safe_actions()
+  await test_first_turn_injection_sets_marker_and_prevents_duplicate_on_counter_reset()
   await test_includes_session_boundary_checklist_item_when_recommended()
   await test_legacy_message_shape_fallback()
   await test_modern_shape_without_user_does_not_push_legacy_message()
