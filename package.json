@@ -1,6 +1,6 @@
 {
   "name": "hivemind-context-governance",
-  "version": "2.8.1",
+  "version": "2.8.2",
   "description": "Context-Aware Governance Layer for OpenCode - prevents drift and manages session state across lifecycles",
   "type": "module",
   "main": "dist/index.js",
