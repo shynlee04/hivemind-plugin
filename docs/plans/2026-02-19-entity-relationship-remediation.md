@@ -382,3 +382,10 @@ This unified program is done only when all criteria are true:
 - Architecture audit: GO (contract boundaries preserved; no tool/hook ownership regression detected in completion scope).
 - Integration audit: GO (canonical governance compatibility and lineage continuity scenarios pass in test coverage).
 - Tech-debt backlog: NOTED (non-blocking follow-ups tracked separately; no blockers against Phase 5/6 closeout).
+
+## Remediation Wave Closeout Addendum (2026-02-19)
+
+- Canonical governance blockers are resolved and verified in focused regression coverage.
+- TODO alias normalization, stale-session boundary fixes, and action idempotency hardening are implemented in this wave (evidence anchors: `tests/hooks/event-handler-todo-2026-02-15.test.ts`, `tests/lib/state-mutation-queue.test.ts`, `tests/tool-gate.test.ts`, `tests/phase5-canonical-governance-red.test.ts`, `tests/phase5-lifecycle-red.test.ts`).
+- Post-remediation stress journey re-audit: GO (audit trail recorded in this remediation wave closeout docs).
+- Remaining backlog item: wording consistency cleanup for one stress journey closeout phrase across docs (non-blocking).

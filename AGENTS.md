@@ -338,9 +338,12 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 - ✅ Hardening/cutover gate: complete
 - ✅ Canonical governance recovery paths: verified in tool-level coverage (`hivemind_session`, `hivemind_cycle`, split-trigger compatibility)
 - ✅ Public release safety gate: `npm run guard:public` pass
+- ✅ Remediation hardening: TODO alias normalization + stale-session boundary fixes + action idempotency implemented (evidence anchors: `tests/hooks/event-handler-todo-2026-02-15.test.ts`, `tests/lib/state-mutation-queue.test.ts`, `tests/tool-gate.test.ts`, `tests/phase5-canonical-governance-red.test.ts`, `tests/phase5-lifecycle-red.test.ts`)
+- ✅ Post-remediation stress journey re-audit: GO (audit trail recorded in this remediation wave closeout docs)
 
 ## Post-Completion Audit Summary (2026-02-19)
 
 - ✅ Architecture audit: GO (contract isolation preserved in completion scope)
 - ✅ Integration audit: GO (lineage continuity + canonical governance test coverage green)
 - ℹ️ Tech-debt backlog: noted and non-blocking for Phase 5/6 closure
+- ℹ️ Backlog item: wording consistency cleanup for one stress journey closeout phrase across docs (non-blocking)
