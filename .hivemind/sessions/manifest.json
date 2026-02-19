@@ -1,4 +1,12 @@
 {
-  "sessions": [],
+  "sessions": [
+    {
+      "stamp": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "file": "session_2026-02-19_b2f41134-810f-4c72-9baf-3cf0d8c74bad.md",
+      "status": "archived",
+      "created": 1771482797788,
+      "linked_plans": []
+    }
+  ],
   "active_stamp": null
 }

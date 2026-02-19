@@ -1,0 +1,16 @@
+{
+  "mems": [
+    {
+      "id": "mem_1771468493562_60wd",
+      "shelf": "context",
+      "content": "Session compacted: CRITICAL ARCHITECTURAL INVESTIGATION: Time-stale filtering is meaningless without entity relationships. Investigating schema definitions, FK constraints, and relationship gaps across all entities.. Turns: 1547, Files: 2.",
+      "tags": [
+        "auto-compact",
+        "session-close"
+      ],
+      "session_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+      "created_at": 1771468493562
+    }
+  ],
+  "version": "1.0.0"
+}

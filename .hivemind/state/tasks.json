@@ -1,54 +1,78 @@
 {
-  "session_id": "ses_38d413431ffe4bcOLFhlS4rTij",
-  "updated_at": 1771457578284,
+  "session_id": "ses_38c3e4c7cffeoQPiBOZJZpC3t9",
+  "updated_at": 1771484115262,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "PHASE1-CHECKPOINT: Commit pending .hivemind state changes after Phase 1 re-execution",
-      "content": "PHASE1-CHECKPOINT: Commit pending .hivemind state changes after Phase 1 re-execution",
-      "status": "in_progress",
+      "text": "Phase 2: Git commit complete",
+      "content": "Phase 2: Git commit complete",
+      "status": "completed",
       "priority": "high",
-      "updated_at": 1771457578284
+      "updated_at": 1771484115262
     },
     {
       "id": "todo-2",
-      "text": "PHASE2-CONTRACT: Extract Phase 2 FK backfill contract from master plan via explore agent",
-      "content": "PHASE2-CONTRACT: Extract Phase 2 FK backfill contract from master plan via explore agent",
-      "status": "pending",
+      "text": "Phase 3.1: Requirements + acceptance criteria documented via scanner",
+      "content": "Phase 3.1: Requirements + acceptance criteria documented via scanner",
+      "status": "completed",
       "priority": "high",
-      "updated_at": 1771457578284
+      "updated_at": 1771484115262
     },
     {
       "id": "todo-3",
-      "text": "PHASE2-IMPLEMENT: Delegate to build agent (build uses scanner/explore for context, no nested build)",
-      "content": "PHASE2-IMPLEMENT: Delegate to build agent (build uses scanner/explore for context, no nested build)",
-      "status": "pending",
+      "text": "Phase 3.2: CQRS fix commit a8953a7 confirmed",
+      "content": "Phase 3.2: CQRS fix commit a8953a7 confirmed",
+      "status": "completed",
       "priority": "high",
-      "updated_at": 1771457578284
+      "updated_at": 1771484115262
     },
     {
       "id": "todo-4",
-      "text": "PHASE2-REVIEW: Code-review agent validates Phase 2 changes",
-      "content": "PHASE2-REVIEW: Code-review agent validates Phase 2 changes",
-      "status": "pending",
+      "text": "Phase 3.3: Final code-review sign-off for contract isolation",
+      "content": "Phase 3.3: Final code-review sign-off for contract isolation",
+      "status": "completed",
       "priority": "high",
-      "updated_at": 1771457578284
+      "updated_at": 1771484115262
     },
     {
       "id": "todo-5",
-      "text": "PHASE2-COMMIT: Atomic commit for Phase 2",
-      "content": "PHASE2-COMMIT: Atomic commit for Phase 2",
-      "status": "pending",
+      "text": "Phase 3.4: FK validation remediation + tests",
+      "content": "Phase 3.4: FK validation remediation + tests",
+      "status": "completed",
       "priority": "high",
-      "updated_at": 1771457578284
+      "updated_at": 1771484115262
     },
     {
       "id": "todo-6",
-      "text": "PHASE2-CHECKPOINT: Export cycle and report status",
-      "content": "PHASE2-CHECKPOINT: Export cycle and report status",
+      "text": "Phase 3.5: Master plan updated with Phase 3 completion",
+      "content": "Phase 3.5: Master plan updated with Phase 3 completion",
+      "status": "completed",
+      "priority": "high",
+      "updated_at": 1771484115262
+    },
+    {
+      "id": "todo-7",
+      "text": "Phase 4.1: Define relational staleness engine requirements + AC",
+      "content": "Phase 4.1: Define relational staleness engine requirements + AC",
       "status": "pending",
-      "priority": "medium",
-      "updated_at": 1771457578284
+      "priority": "high",
+      "updated_at": 1771484115262
+    },
+    {
+      "id": "todo-8",
+      "text": "Phase 4.2: Implement lineage-first staleness ordering with TDD",
+      "content": "Phase 4.2: Implement lineage-first staleness ordering with TDD",
+      "status": "pending",
+      "priority": "high",
+      "updated_at": 1771484115262
+    },
+    {
+      "id": "todo-9",
+      "text": "Phase 4.3: Run code-review sign-off for Phase 4 changes",
+      "content": "Phase 4.3: Run code-review sign-off for Phase 4 changes",
+      "status": "pending",
+      "priority": "high",
+      "updated_at": 1771484115262
     }
   ]
 }
