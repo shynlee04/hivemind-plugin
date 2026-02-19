@@ -9,6 +9,18 @@ tools:
   bash: true
   task: true
   skill: true
+  edit: true
+  write: true
+  skill-creator: true
+  skill: true
+  web-fetch: true
+  web-search: true
+  search: true
+  exa: true
+  repomix: true
+  deepwiki: true
+  write-skill: true
+  find-skll: true
   webfetch: true
   websearch: true
   todowrite: true
