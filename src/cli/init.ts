@@ -10,7 +10,7 @@
  *   - Auto-registers plugin in opencode.json
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { copyFile, mkdir, readdir, rm, writeFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { dirname, join } from "node:path"
@@ -197,17 +197,23 @@ const DEFAULT_COMMANDMENTS_MARKDOWN = `# 10 Commandments
 
 function resolveOpencodeConfigPath(directory: string): string {
   const candidates = [
-    join(directory, "opencode.json"),
-    join(directory, "opencode.jsonc"),
     join(directory, ".opencode", "opencode.json"),
     join(directory, ".opencode", "opencode.jsonc"),
+    join(directory, "opencode.json"),
+    join(directory, "opencode.jsonc"),
   ]
 
   for (const candidate of candidates) {
     if (existsSync(candidate)) return candidate
   }
 
-  return join(directory, "opencode.json")
+  // Default to project-local OpenCode config for fresh installs.
+  return join(directory, ".opencode", "opencode.json")
+}
+
+function writeOpencodeConfig(configPath: string, config: Record<string, unknown>): void {
+  mkdirSync(dirname(configPath), { recursive: true })
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
 }
 
 async function seedTenCommandments(directory: string): Promise<void> {
@@ -250,7 +256,7 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
         log(`  ⚠ Could not parse ${configPath}: ${err instanceof Error ? err.message : err}`)
         log(`  ⚠ Creating new opencode.json (existing file preserved)`)
       }
-      configPath = join(directory, "opencode.json")
+      configPath = join(directory, ".opencode", "opencode.json")
       config = {}
     }
   }
@@ -302,7 +308,7 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
   }
 
   config.plugin = nextPlugins
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+  writeOpencodeConfig(configPath, config)
 
   if (!silent) {
     if (hadAnyHiveMindEntry) {
@@ -422,7 +428,7 @@ function ensureHiveFiverDefaultsInOpencode(directory: string, silent: boolean): 
   }
   config.mcp = mcpConfig
 
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+  writeOpencodeConfig(configPath, config)
   if (!silent) {
     log("  ✓ Applied HiveFiver v2 defaults to opencode.json")
   }
@@ -503,7 +509,7 @@ function updateOpencodeJsonWithProfile(
     ...preset.permissions,
   }
 
-  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n", "utf-8")
+  writeOpencodeConfig(configPath, config)
 
   if (!silent) {
     log(`  ✓ Applied ${preset.label} profile permissions to opencode.json`)

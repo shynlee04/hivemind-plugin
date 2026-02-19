@@ -218,7 +218,8 @@ async function test_init_applies_hivefiver_defaults_to_opencode() {
 
   await initProject(dir, { silent: true })
 
-  const raw = await readFile(join(dir, "opencode.json"), "utf-8")
+  const configPath = join(dir, ".opencode", "opencode.json")
+  const raw = await readFile(configPath, "utf-8")
   const opencode = JSON.parse(raw)
   assert(!!opencode.agent?.hivefiver, "hivefiver agent exists in opencode config")
   assert(opencode.agent.hivefiver.mode === "primary", "hivefiver agent is primary")
@@ -227,6 +228,7 @@ async function test_init_applies_hivefiver_defaults_to_opencode() {
   assert(!!opencode.mcp?.tavily, "tavily mcp exists")
   assert(!!opencode.mcp?.exa, "exa mcp exists")
   assert(!!opencode.mcp?.repomix, "repomix mcp exists")
+  assert(!existsSync(join(dir, "opencode.json")), "fresh init does not create root opencode.json")
 
   await cleanup()
 }
@@ -254,7 +256,7 @@ async function test_reinit_refreshes_assets_and_normalizes_plugin_version() {
   const originalCommand = await readFile(commandPath, "utf-8")
   await writeFile(commandPath, "# stale old command\n", "utf-8")
 
-  const configPath = join(dir, "opencode.json")
+  const configPath = join(dir, ".opencode", "opencode.json")
   const rawBefore = await readFile(configPath, "utf-8")
   const configBefore = JSON.parse(rawBefore)
   configBefore.plugin = [
