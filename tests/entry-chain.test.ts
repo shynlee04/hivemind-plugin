@@ -392,8 +392,8 @@ async function test_jsoncConfigPreservation() {
 
     assert(jsoncExists, "opencode.jsonc still exists after init")
     assert(
-      plugins.includes("hivemind-context-governance@2.8.0"),
-      "hivemind-context-governance@2.8.0 registered in config"
+      plugins.includes("hivemind-context-governance"),
+      "hivemind-context-governance registered in config"
     )
     assert(
       plugins.includes("some-other-plugin"),

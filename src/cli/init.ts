@@ -169,8 +169,7 @@ export interface InitOptions {
 const log = (msg: string) => console.log(msg)
 
 const PLUGIN_NAME = "hivemind-context-governance"
-const PINNED_PLUGIN_VERSION = "2.8.0"
-const PLUGIN_ENTRY = `${PLUGIN_NAME}@${PINNED_PLUGIN_VERSION}`
+const PLUGIN_ENTRY = PLUGIN_NAME
 const HIVEFIVER_PRIMARY_AGENT_TOOLS = {
   read: true,
   glob: true,
@@ -214,7 +213,7 @@ async function seedTenCommandments(directory: string): Promise<void> {
 /**
  * Auto-register the HiveMind plugin in opencode.json.
  * Creates the file if it doesn't exist.
- * Pins plugin registration to the current public release.
+ * Ensures plugin registration uses the canonical unpinned package name.
  */
 function registerPluginInConfig(directory: string, silent: boolean): void {
   // Check both opencode.json and opencode.jsonc
@@ -301,7 +300,6 @@ function registerPluginInConfig(directory: string, silent: boolean): void {
       log(`  ✓ Plugin registration normalized to ${PLUGIN_ENTRY}`)
     } else {
       log(`  ✓ Plugin registered in opencode.json`)
-      log(`    → Pinned plugin: ${PLUGIN_ENTRY}`)
       log(`    → OpenCode will auto-install on next launch`)
     }
   }

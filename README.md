@@ -79,7 +79,7 @@ Khi xong việc, `compact_session` sẽ:
 ### Một Lệnh - Xong Ngay
 
 ```bash
-npx hivemind-context-governance@2.8.0 init
+npx hivemind-context-governance init
 ```
 
 **Điều gì sẽ xảy ra (đảm bảo):**
@@ -121,7 +121,7 @@ Wizard sẽ hướng dẫn bạn từng bước:
 ### Cài Đặt Không Tương Tác
 
 ```bash
-npx hivemind-context-governance@2.8.0 init --mode strict --lang vi --automation full
+npx hivemind-context-governance init --mode strict --lang vi --automation full
 ```
 
 Lệnh này làm **đúng như** wizard tương tác:
@@ -143,7 +143,7 @@ npx hivemind-context-governance status
 Hoặc kiểm tra thủ công `opencode.json` có chứa:
 ```json
 {
-  "plugin": ["hivemind-context-governance@2.8.0"]
+  "plugin": ["hivemind-context-governance"]
 }
 ```
 
@@ -253,7 +253,7 @@ Without governance, long AI sessions decay:
 ### One Command - That's It
 
 ```bash
-npx hivemind-context-governance@2.8.0 init
+npx hivemind-context-governance init
 ```
 
 **What happens (guaranteed):**
@@ -295,7 +295,7 @@ The wizard walks you through step by step:
 ### Non-Interactive Alternative
 
 ```bash
-npx hivemind-context-governance@2.8.0 init --mode strict --lang vi --automation full
+npx hivemind-context-governance init --mode strict --lang vi --automation full
 ```
 
 This does **exactly the same** as the interactive wizard:
@@ -315,7 +315,7 @@ npx hivemind-context-governance status
 Or manually check `opencode.json` contains:
 ```json
 {
-  "plugin": ["hivemind-context-governance@2.8.0"]
+  "plugin": ["hivemind-context-governance"]
 }
 ```
 
@@ -329,9 +329,9 @@ That's it. The plugin auto-activates. The AI agent gets governance context injec
 - Ensure plugin is still registered in `opencode.json`
 
 **How it works:**
-- `init` automatically registers `hivemind-context-governance@2.8.0` in `opencode.json`'s `plugin` array
+- `init` automatically registers `hivemind-context-governance` in `opencode.json`'s `plugin` array
 - OpenCode reads this on startup and auto-loads the plugin
-- If you manually edit `opencode.json`, make sure `plugin` is an array containing `"hivemind-context-governance@2.8.0"`
+- If you manually edit `opencode.json`, make sure `plugin` is an array containing `"hivemind-context-governance"`
 
 ---
 
@@ -498,7 +498,7 @@ Skills teach the agent *how* to use governance effectively:
 
 ```bash
 npx hivemind-context-governance             # Interactive setup wizard
-npx hivemind-context-governance@2.8.0 init        # Same (or use flags)
+npx hivemind-context-governance init        # Same (or use flags)
 npx hivemind-context-governance scan        # Brownfield scan wrapper
 npx hivemind-context-governance sync-assets # Sync packaged OpenCode assets to .opencode
 npx hivemind-context-governance status      # Show session state
@@ -664,7 +664,7 @@ npx hivemind-context-governance
 npx hivemind-context-governance settings
 
 # 4. Optional: clean re-init
-npx hivemind-context-governance@2.8.0 init --force
+npx hivemind-context-governance init --force
 ```
 
 **Migration handled automatically:**
@@ -683,7 +683,7 @@ npx hivemind-context-governance@2.8.0 init --force
 
 **Fix:** Run the init command **once**:
 ```bash
-npx hivemind-context-governance@2.8.0 init --mode assisted
+npx hivemind-context-governance init --mode assisted
 ```
 
 This does **all** of the following:
@@ -701,7 +701,7 @@ This does **all** of the following:
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Setup guidance keeps appearing | `.hivemind/config.json` missing | Run `npx hivemind-context-governance@2.8.0 init --mode assisted` |
+| Setup guidance keeps appearing | `.hivemind/config.json` missing | Run `npx hivemind-context-governance init --mode assisted` |
 | Framework conflict warning | Both `.planning/` and `.spec-kit/` exist | Select one framework via locked menu |
 | Dashboard won't start | Optional deps not installed | `npm install ink react` |
 | Session feels stale after idle | Auto-archive rotated state | Use `scan_hierarchy` + `think_back` |
@@ -762,7 +762,7 @@ npx hivemind-context-governance
 npx hivemind-context-governance settings
 
 # 4. Nếu cần reset hoàn toàn
-npx hivemind-context-governance@2.8.0 init --force
+npx hivemind-context-governance init --force
 ```
 
 ## Gợi Ý Vận Hành Tốt Nhất
