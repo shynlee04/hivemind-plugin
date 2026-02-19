@@ -2,7 +2,226 @@
 
 > **The operating system for AI coding sessions.**
 
-HiveMind is an [OpenCode](https://opencode.ai) plugin that prevents AI agents from drifting, forgetting, and losing coherence during long coding sessions. It enforces a simple backbone — *declare what you're doing, track as you go, archive when done* — and connects every piece into one unified system.
+## 🇻🇳 Bản phát hành v2.8 ưu tiên thị trường Việt Nam
+
+HiveMind là plugin [OpenCode](https://opencode.ai) giúp AI agent không bị trôi ngữ cảnh, không quên quyết định kiến trúc, và không mất trạng thái khi session kéo dài. Trọng tâm v2.8: onboarding rõ ràng, governance chặt, và triển khai thực chiến cho team Việt Nam trước.
+
+### 10 kịch bản demo ấn tượng để ra mắt
+1. `SaaS 0→1 cho người không biết code`: menu hỏi đáp + auto-lane để ra PRD có thể triển khai.
+2. `Giải cứu prompt hỗn loạn của team enterprise`: bóc tách yêu cầu, ambiguity map, risk register.
+3. `War-room production incident`: ép agent đi theo checklist bằng chứng trước khi kết luận fix.
+4. `TDD autopilot`: agent chuyển tự động từ `spec -> build -> validate` với gate kiểm thử.
+5. `MCP-first research sprint`: phối hợp Context7/DeepWiki/Tavily/Exa/Repomix và chấm điểm confidence.
+6. `Brownfield modernization`: quét codebase cũ, lập workflow refactor theo từng lane và checkpoint.
+7. `Cross-domain planning`: cùng một khung cho dev + marketing + finance + office-ops.
+8. `Subagent swarm governance`: giao việc song song nhưng vẫn giữ được trace, export, và hồi cứu.
+9. `Bilingual coaching mode`: đầu ra EN/VI cùng cấu trúc, hỗ trợ onboarding team đa vai trò.
+10. `No-command recovery`: người dùng nói tự nhiên, hệ thống tự realign sang lệnh phù hợp và xin quyền bước tiếp theo.
+
+# 🇻🇳 Hướng Dẫn Tiếng Việt (Chi Tiết)
+
+> *Phần này không phải bản dịch — mà được viết riêng cho người dùng Việt Nam, với giải thích kỹ hơn về cách hoạt động và lý do tại sao.*
+
+**Cảm thấy hữu ích?** [![Mời cà phê](https://img.shields.io/badge/Mời%20cà%20phê-ủng%20hộ-orange?logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/shynlee04l)
+
+## HiveMind Là Gì?
+
+Hãy tưởng tượng bạn thuê một lập trình viên AI rất giỏi, nhưng anh ta có một vấn đề: **mỗi 30 phút anh ta quên hết mọi thứ đang làm**.
+
+Đó chính xác là điều xảy ra với các AI coding agent hiện tại:
+- Đang làm feature A, tự nhiên nhảy sang feature B mà không checkpoint
+- Sau context compaction (khi hết bộ nhớ), quên hết lý do tại sao đã quyết định kiến trúc X
+- Giao việc cho subagent, nhận kết quả nhưng không tổng hợp lại
+- Session mới bắt đầu từ con số 0 — không biết gì về session trước
+
+**HiveMind giải quyết tất cả** bằng một hệ thống quản trị context đơn giản nhưng hiệu quả.
+
+## Cách Hoạt Động (Giải Thích Dễ Hiểu)
+
+Mỗi session làm việc với AI đều tuân theo một quy trình:
+
+```
+declare_intent → map_context → [làm việc] → compact_session
+   (khai báo)     (cập nhật)     (code)      (lưu trữ)
+```
+
+### Bước 1: Khai Báo Ý Định — `declare_intent`
+
+Trước khi bắt đầu bất kỳ công việc nào, agent phải nói rõ:
+- **Đang làm gì**: "Xây dựng hệ thống xác thực"
+- **Làm theo cách nào**: `plan_driven` (có kế hoạch), `quick_fix` (sửa nhanh), hoặc `exploration` (tìm hiểu)
+
+Nếu không khai báo, ở chế độ `strict` agent sẽ bị khóa — không thể ghi file cho đến khi khai báo. Điều này đảm bảo mọi công việc đều có mục tiêu rõ ràng.
+
+### Bước 2: Cập Nhật Ngữ Cảnh — `map_context`
+
+Khi agent chuyển focus (ví dụ: từ "thiết kế database" sang "viết API"), nó phải gọi `map_context` để HiveMind biết. Hệ thống theo dõi 3 cấp:
+
+| Cấp | Ý Nghĩa | Ví Dụ |
+|-----|---------|-------|
+| **Trajectory** | Mục tiêu lớn | "Xây dựng hệ thống thanh toán" |
+| **Tactic** | Chiến thuật cụ thể | "Tích hợp Stripe API" |
+| **Action** | Hành động đang làm | "Viết test cho webhook handler" |
+
+Nếu agent làm nhiều turn mà không cập nhật, HiveMind phát hiện **drift** (trôi dạt) và cảnh báo ngay.
+
+### Bước 3: Lưu Trữ — `compact_session`
+
+Khi xong việc, `compact_session` sẽ:
+1. Lưu toàn bộ session vào archive (có thể đọc lại)
+2. Ghi tóm tắt vào lịch sử dự án
+3. Reset để sẵn sàng cho session tiếp theo
+
+**Quan trọng**: Mems Brain (bộ nhớ dài hạn) vẫn tồn tại sau compact. Những gì agent đã học được (`save_mem`) sẽ không bao giờ mất.
+
+## Cài Đặt Từ Đầu Đến Cuối
+
+### Một Lệnh - Xong Ngay
+
+```bash
+npx hivemind-context-governance init 
+```
+
+**Điều gì sẽ xảy ra (đảm bảo):**
+1. Tự động tải từ npm (không cần cài thủ công)
+2. Tạo thư mục `.hivemind/` với brain.json, config.json
+3. Đăng ký plugin trong `opencode.json` (để OpenCode tự động load)
+4. Đồng bộ commands/skills vào `.opencode/`
+5. Tạo các file session template
+6. Mở session ở chế độ `OPEN` (assisted) hoặc `LOCKED` (strict)
+
+**Hoạt động trên mọi máy, mọi project. Không ngoại lệ.**
+
+### Xác Nhận Cài Đặt (Tùy Chọn)
+
+Wizard sẽ hướng dẫn bạn từng bước:
+
+```
+◆  Welcome to HiveMind Context Governance!
+
+◆  Select governance mode:
+│  ○ strict    — Session starts LOCKED. Must declare intent before writes.
+│  ● assisted  — Session starts OPEN. Guidance without blocking. (recommended)
+│  ○ permissive — Always OPEN. Silent tracking only.
+
+◆  Select language:
+│  ○ English
+│  ● Tiếng Việt
+
+◆  Select automation level:
+│  ○ manual   — No automation, you control everything
+│  ○ guided   — Suggestions only
+│  ● assisted — Balanced automation (recommended)
+│  ○ full     — Maximum automation
+│  ○ coach    — Maximum handholding, skeptical of everything
+
+◆  Configuration saved! .hivemind/ created.
+```
+
+### Cài Đặt Không Tương Tác
+
+```bash
+npx hivemind-context-governance init --mode strict --lang vi --automation full
+```
+
+Lệnh này làm **đúng như** wizard tương tác:
+- Tạo cấu trúc `.hivemind/`
+- Đăng ký plugin trong `opencode.json`
+- Đồng bộ OpenCode assets
+- Khởi tạo brain state với cài đặt đã chọn
+
+### Mở OpenCode
+
+Xong. Plugin tự động hoạt động. AI agent sẽ nhận governance context được inject vào mỗi turn.
+
+### Xác Nhận Cài Đặt (Tùy Chọn)
+
+```bash
+npx hivemind-context-governance status
+```
+
+Hoặc kiểm tra thủ công `opencode.json` có chứa:
+```json
+{
+  "plugin": ["hivemind-context-governance"]
+}
+```
+
+### Sử Dụng Slash Command
+
+Gõ `/hivemind-scan` trong OpenCode để quét dự án và tạo bản đồ cơ sở trước khi bắt đầu code.
+
+Hoặc dùng CLI trực tiếp:
+
+```bash
+npx hivemind-context-governance scan --action analyze --json
+npx hivemind-context-governance scan --action recommend
+npx hivemind-context-governance scan --action orchestrate --json
+```
+
+## Runbook Brownfield (Tiếng Việt)
+
+Khi người dùng nói: *\"Hãy quét dự án và refactor\"*, chạy theo thứ tự:
+
+1. `scan_hierarchy({ action: "analyze", json: true })`
+2. `scan_hierarchy({ action: "recommend" })`
+3. `scan_hierarchy({ action: "orchestrate", json: true })`
+4. `declare_intent(...)` + `map_context(...)` để khóa focus trước khi sửa code
+
+Mục tiêu:
+- Phát hiện framework (`gsd/spec-kit/both/none`) và tín hiệu BMAD
+- Cô lập artifact cũ/stale có nguy cơ nhiễm context
+- Lưu baseline anchors + memory trước khi refactor diện rộng
+
+## 10 Công Cụ — Giải Thích Chi Tiết
+
+### Nhóm 1: Vòng Đời Session
+
+| Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
+|---------|-------------|---------------------|
+| `declare_intent` | Bắt đầu làm việc | Không có ý định rõ ràng = không có cơ sở để đánh giá drift |
+| `map_context` | Đổi hướng/focus | Mỗi lần đổi mà không cập nhật = context bị ô nhiễm |
+| `compact_session` | Xong việc | Không compact = mất toàn bộ intelligence tích lũy |
+
+### Nhóm 2: Nhận Thức & Sửa Lỗi
+
+| Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
+|---------|-------------|---------------------|
+| `scan_hierarchy` | Muốn xem nhanh trạng thái | Nắm bắt tình hình trong 1 giây |
+| `think_back` | Cảm thấy lạc | Hồi phục context sâu sau compaction |
+| `scan_hierarchy` (`include_drift`) | Trước khi kết luận xong | Kiểm tra độ lệch hướng theo trajectory/tactic/action |
+
+### Nhóm 3: Bộ Nhớ Dài Hạn
+
+| Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
+|---------|-------------|---------------------|
+| `save_mem` | Học được bài học quan trọng | Quyết định, pattern, lỗi — tồn tại vĩnh viễn |
+| `recall_mems` | Gặp vấn đề quen thuộc | Tìm giải pháp từ quá khứ |
+| `save_anchor` | Sự thật bất biến | Port number, schema, API endpoint — không bao giờ quên |
+
+### Nhóm 4: Quản Lý Cây & Subagent
+
+| Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
+|---------|-------------|---------------------|
+| `hierarchy_manage` | Cây nhiều nhánh hoặc cần nâng cấp | Gộp cả prune và migrate trong một công cụ |
+| `export_cycle` | Subagent vừa trả kết quả | Không export = mất intelligence từ subagent |
+
+## Lần Đầu Mở OpenCode (Quan Trọng!)
+
+Khi HiveMind được load nhưng chưa cấu hình:
+
+1. **Không tự động tạo session mặc định** — tránh tình trạng config không đúng ý người dùng
+2. **Quét project tự động** — phát hiện tên project, tech stack (20+ framework), cấu trúc thư mục, tài liệu
+3. **Hướng dẫn recon protocol** — agent được yêu cầu:
+   - Quét cấu trúc repo
+   - Đọc tài liệu cốt lõi (README, AGENTS.md, package.json)
+   - Phát hiện context bị "nhiễm" (plan cũ, artifact trùng lặp, framework xung đột)
+   - Xây dựng backbone dự án trước khi code
+
+**Mục tiêu**: Tránh tình trạng "vừa vào đã sửa code" khi chưa hiểu project.
+### English Snapshot
+
+HiveMind is an [OpenCode](https://opencode.ai) plugin that prevents AI agents from drifting, forgetting, and losing coherence during long coding sessions. It enforces one backbone: *declare what you're doing, track as you go, archive when done*.
 
 ```
 10 tools · 6 hooks · 5 skills · 3 slash commands · interactive CLI · Ink TUI dashboard · EN/VI
@@ -327,14 +546,13 @@ npx hivemind-context-governance sync-assets --overwrite
 
 `init` also performs asset sync automatically. Re-running `init` on an existing project refreshes missing assets without resetting `.hivemind` state.
 
-Packaged optional ecosystem assets now include starter files for:
+Public v2.8 package intentionally ships only the operational pack:
+- `commands`
+- `skills`
 - `agents`
 - `workflows`
-- `templates`
-- `prompts`
-- `references`
 
-These are synced into `.opencode/` (or global OpenCode config path) alongside commands and skills.
+Internal playbooks (`docs`, `templates`, `tasks`, and local dot-folders) are kept out of public release flow.
 
 ### Existing User Upgrade (No Re-init Required)
 
@@ -511,207 +729,6 @@ MIT
 
 ---
 
-# 🇻🇳 Hướng Dẫn Tiếng Việt (Chi Tiết)
-
-> *Phần này không phải bản dịch — mà được viết riêng cho người dùng Việt Nam, với giải thích kỹ hơn về cách hoạt động và lý do tại sao.*
-
-**Cảm thấy hữu ích?** [![Mời cà phê](https://img.shields.io/badge/Mời%20cà%20phê-ủng%20hộ-orange?logo=buy-me-a-coffee&logoColor=white)](https://buymeacoffee.com/shynlee04l)
-
-## HiveMind Là Gì?
-
-Hãy tưởng tượng bạn thuê một lập trình viên AI rất giỏi, nhưng anh ta có một vấn đề: **mỗi 30 phút anh ta quên hết mọi thứ đang làm**.
-
-Đó chính xác là điều xảy ra với các AI coding agent hiện tại:
-- Đang làm feature A, tự nhiên nhảy sang feature B mà không checkpoint
-- Sau context compaction (khi hết bộ nhớ), quên hết lý do tại sao đã quyết định kiến trúc X
-- Giao việc cho subagent, nhận kết quả nhưng không tổng hợp lại
-- Session mới bắt đầu từ con số 0 — không biết gì về session trước
-
-**HiveMind giải quyết tất cả** bằng một hệ thống quản trị context đơn giản nhưng hiệu quả.
-
-## Cách Hoạt Động (Giải Thích Dễ Hiểu)
-
-Mỗi session làm việc với AI đều tuân theo một quy trình:
-
-```
-declare_intent → map_context → [làm việc] → compact_session
-   (khai báo)     (cập nhật)     (code)      (lưu trữ)
-```
-
-### Bước 1: Khai Báo Ý Định — `declare_intent`
-
-Trước khi bắt đầu bất kỳ công việc nào, agent phải nói rõ:
-- **Đang làm gì**: "Xây dựng hệ thống xác thực"
-- **Làm theo cách nào**: `plan_driven` (có kế hoạch), `quick_fix` (sửa nhanh), hoặc `exploration` (tìm hiểu)
-
-Nếu không khai báo, ở chế độ `strict` agent sẽ bị khóa — không thể ghi file cho đến khi khai báo. Điều này đảm bảo mọi công việc đều có mục tiêu rõ ràng.
-
-### Bước 2: Cập Nhật Ngữ Cảnh — `map_context`
-
-Khi agent chuyển focus (ví dụ: từ "thiết kế database" sang "viết API"), nó phải gọi `map_context` để HiveMind biết. Hệ thống theo dõi 3 cấp:
-
-| Cấp | Ý Nghĩa | Ví Dụ |
-|-----|---------|-------|
-| **Trajectory** | Mục tiêu lớn | "Xây dựng hệ thống thanh toán" |
-| **Tactic** | Chiến thuật cụ thể | "Tích hợp Stripe API" |
-| **Action** | Hành động đang làm | "Viết test cho webhook handler" |
-
-Nếu agent làm nhiều turn mà không cập nhật, HiveMind phát hiện **drift** (trôi dạt) và cảnh báo ngay.
-
-### Bước 3: Lưu Trữ — `compact_session`
-
-Khi xong việc, `compact_session` sẽ:
-1. Lưu toàn bộ session vào archive (có thể đọc lại)
-2. Ghi tóm tắt vào lịch sử dự án
-3. Reset để sẵn sàng cho session tiếp theo
-
-**Quan trọng**: Mems Brain (bộ nhớ dài hạn) vẫn tồn tại sau compact. Những gì agent đã học được (`save_mem`) sẽ không bao giờ mất.
-
-## Cài Đặt Từ Đầu Đến Cuối
-
-### Một Lệnh - Xong Ngay
-
-```bash
-npx hivemind-context-governance init --mode assisted
-```
-
-**Điều gì sẽ xảy ra (đảm bảo):**
-1. Tự động tải từ npm (không cần cài thủ công)
-2. Tạo thư mục `.hivemind/` với brain.json, config.json
-3. Đăng ký plugin trong `opencode.json` (để OpenCode tự động load)
-4. Đồng bộ commands/skills vào `.opencode/`
-5. Tạo các file session template
-6. Mở session ở chế độ `OPEN` (assisted) hoặc `LOCKED` (strict)
-
-**Hoạt động trên mọi máy, mọi project. Không ngoại lệ.**
-
-### Xác Nhận Cài Đặt (Tùy Chọn)
-
-Wizard sẽ hướng dẫn bạn từng bước:
-
-```
-◆  Welcome to HiveMind Context Governance!
-
-◆  Select governance mode:
-│  ○ strict    — Session starts LOCKED. Must declare intent before writes.
-│  ● assisted  — Session starts OPEN. Guidance without blocking. (recommended)
-│  ○ permissive — Always OPEN. Silent tracking only.
-
-◆  Select language:
-│  ○ English
-│  ● Tiếng Việt
-
-◆  Select automation level:
-│  ○ manual   — No automation, you control everything
-│  ○ guided   — Suggestions only
-│  ● assisted — Balanced automation (recommended)
-│  ○ full     — Maximum automation
-│  ○ coach    — Maximum handholding, skeptical of everything
-
-◆  Configuration saved! .hivemind/ created.
-```
-
-### Cài Đặt Không Tương Tác
-
-```bash
-npx hivemind-context-governance init --mode strict --lang vi --automation full
-```
-
-Lệnh này làm **đúng như** wizard tương tác:
-- Tạo cấu trúc `.hivemind/`
-- Đăng ký plugin trong `opencode.json`
-- Đồng bộ OpenCode assets
-- Khởi tạo brain state với cài đặt đã chọn
-
-### Mở OpenCode
-
-Xong. Plugin tự động hoạt động. AI agent sẽ nhận governance context được inject vào mỗi turn.
-
-### Xác Nhận Cài Đặt (Tùy Chọn)
-
-```bash
-npx hivemind-context-governance status
-```
-
-Hoặc kiểm tra thủ công `opencode.json` có chứa:
-```json
-{
-  "plugin": ["hivemind-context-governance"]
-}
-```
-
-### Sử Dụng Slash Command
-
-Gõ `/hivemind-scan` trong OpenCode để quét dự án và tạo bản đồ cơ sở trước khi bắt đầu code.
-
-Hoặc dùng CLI trực tiếp:
-
-```bash
-npx hivemind-context-governance scan --action analyze --json
-npx hivemind-context-governance scan --action recommend
-npx hivemind-context-governance scan --action orchestrate --json
-```
-
-## Runbook Brownfield (Tiếng Việt)
-
-Khi người dùng nói: *\"Hãy quét dự án và refactor\"*, chạy theo thứ tự:
-
-1. `scan_hierarchy({ action: "analyze", json: true })`
-2. `scan_hierarchy({ action: "recommend" })`
-3. `scan_hierarchy({ action: "orchestrate", json: true })`
-4. `declare_intent(...)` + `map_context(...)` để khóa focus trước khi sửa code
-
-Mục tiêu:
-- Phát hiện framework (`gsd/spec-kit/both/none`) và tín hiệu BMAD
-- Cô lập artifact cũ/stale có nguy cơ nhiễm context
-- Lưu baseline anchors + memory trước khi refactor diện rộng
-
-## 10 Công Cụ — Giải Thích Chi Tiết
-
-### Nhóm 1: Vòng Đời Session
-
-| Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
-|---------|-------------|---------------------|
-| `declare_intent` | Bắt đầu làm việc | Không có ý định rõ ràng = không có cơ sở để đánh giá drift |
-| `map_context` | Đổi hướng/focus | Mỗi lần đổi mà không cập nhật = context bị ô nhiễm |
-| `compact_session` | Xong việc | Không compact = mất toàn bộ intelligence tích lũy |
-
-### Nhóm 2: Nhận Thức & Sửa Lỗi
-
-| Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
-|---------|-------------|---------------------|
-| `scan_hierarchy` | Muốn xem nhanh trạng thái | Nắm bắt tình hình trong 1 giây |
-| `think_back` | Cảm thấy lạc | Hồi phục context sâu sau compaction |
-| `scan_hierarchy` (`include_drift`) | Trước khi kết luận xong | Kiểm tra độ lệch hướng theo trajectory/tactic/action |
-
-### Nhóm 3: Bộ Nhớ Dài Hạn
-
-| Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
-|---------|-------------|---------------------|
-| `save_mem` | Học được bài học quan trọng | Quyết định, pattern, lỗi — tồn tại vĩnh viễn |
-| `recall_mems` | Gặp vấn đề quen thuộc | Tìm giải pháp từ quá khứ |
-| `save_anchor` | Sự thật bất biến | Port number, schema, API endpoint — không bao giờ quên |
-
-### Nhóm 4: Quản Lý Cây & Subagent
-
-| Công Cụ | Khi Nào Dùng | Tại Sao Quan Trọng |
-|---------|-------------|---------------------|
-| `hierarchy_manage` | Cây nhiều nhánh hoặc cần nâng cấp | Gộp cả prune và migrate trong một công cụ |
-| `export_cycle` | Subagent vừa trả kết quả | Không export = mất intelligence từ subagent |
-
-## Lần Đầu Mở OpenCode (Quan Trọng!)
-
-Khi HiveMind được load nhưng chưa cấu hình:
-
-1. **Không tự động tạo session mặc định** — tránh tình trạng config không đúng ý người dùng
-2. **Quét project tự động** — phát hiện tên project, tech stack (20+ framework), cấu trúc thư mục, tài liệu
-3. **Hướng dẫn recon protocol** — agent được yêu cầu:
-   - Quét cấu trúc repo
-   - Đọc tài liệu cốt lõi (README, AGENTS.md, package.json)
-   - Phát hiện context bị "nhiễm" (plan cũ, artifact trùng lặp, framework xung đột)
-   - Xây dựng backbone dự án trước khi code
-
-**Mục tiêu**: Tránh tình trạng "vừa vào đã sửa code" khi chưa hiểu project.
 
 ## Dashboard (TUI Trực Tiếp)
 
