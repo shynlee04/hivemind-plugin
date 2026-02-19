@@ -1,78 +1,54 @@
 {
   "session_id": "ses_38c3e4c7cffeoQPiBOZJZpC3t9",
-  "updated_at": 1771484115262,
+  "updated_at": 1771485113466,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Phase 2: Git commit complete",
-      "content": "Phase 2: Git commit complete",
+      "text": "Phase 4.1: AGENTS.md synchronization after Phase 3 completion",
+      "content": "Phase 4.1: AGENTS.md synchronization after Phase 3 completion",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771484115262
+      "updated_at": 1771485113466
     },
     {
       "id": "todo-2",
-      "text": "Phase 3.1: Requirements + acceptance criteria documented via scanner",
-      "content": "Phase 3.1: Requirements + acceptance criteria documented via scanner",
+      "text": "Phase 4.2: Master plan updated with Phase 4 requirements and AC1-AC6 checklist",
+      "content": "Phase 4.2: Master plan updated with Phase 4 requirements and AC1-AC6 checklist",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771484115262
+      "updated_at": 1771485113466
     },
     {
       "id": "todo-3",
-      "text": "Phase 3.2: CQRS fix commit a8953a7 confirmed",
-      "content": "Phase 3.2: CQRS fix commit a8953a7 confirmed",
+      "text": "Phase 4.3: Atomic docs commit for kickoff updates (a4008cc)",
+      "content": "Phase 4.3: Atomic docs commit for kickoff updates (a4008cc)",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771484115262
+      "updated_at": 1771485113466
     },
     {
       "id": "todo-4",
-      "text": "Phase 3.3: Final code-review sign-off for contract isolation",
-      "content": "Phase 3.3: Final code-review sign-off for contract isolation",
+      "text": "Phase 4.4: Scanner deep-scan staleness implementation gaps",
+      "content": "Phase 4.4: Scanner deep-scan staleness implementation gaps",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771484115262
+      "updated_at": 1771485113466
     },
     {
       "id": "todo-5",
-      "text": "Phase 3.4: FK validation remediation + tests",
-      "content": "Phase 3.4: FK validation remediation + tests",
+      "text": "Phase 4.5: Build TDD RED tests for lineage-first staleness semantics",
+      "content": "Phase 4.5: Build TDD RED tests for lineage-first staleness semantics",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771484115262
+      "updated_at": 1771485113466
     },
     {
       "id": "todo-6",
-      "text": "Phase 3.5: Master plan updated with Phase 3 completion",
-      "content": "Phase 3.5: Master plan updated with Phase 3 completion",
-      "status": "completed",
+      "text": "Phase 4.6: Build GREEN implementation + code-review sign-off",
+      "content": "Phase 4.6: Build GREEN implementation + code-review sign-off",
+      "status": "in_progress",
       "priority": "high",
-      "updated_at": 1771484115262
-    },
-    {
-      "id": "todo-7",
-      "text": "Phase 4.1: Define relational staleness engine requirements + AC",
-      "content": "Phase 4.1: Define relational staleness engine requirements + AC",
-      "status": "pending",
-      "priority": "high",
-      "updated_at": 1771484115262
-    },
-    {
-      "id": "todo-8",
-      "text": "Phase 4.2: Implement lineage-first staleness ordering with TDD",
-      "content": "Phase 4.2: Implement lineage-first staleness ordering with TDD",
-      "status": "pending",
-      "priority": "high",
-      "updated_at": 1771484115262
-    },
-    {
-      "id": "todo-9",
-      "text": "Phase 4.3: Run code-review sign-off for Phase 4 changes",
-      "content": "Phase 4.3: Run code-review sign-off for Phase 4 changes",
-      "status": "pending",
-      "priority": "high",
-      "updated_at": 1771484115262
+      "updated_at": 1771485113466
     }
   ]
 }

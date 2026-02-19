@@ -242,6 +242,17 @@
       "staleness_stamp": "2026-02-19T06:13:33.511Z",
       "created_at": "2026-02-19T06:13:33.511Z",
       "updated_at": "2026-02-19T06:13:33.511Z"
+    },
+    {
+      "id": "ae2dd5af-3321-4a26-b194-69f3111bbdd6",
+      "origin_task_id": "bd1c4cc4-b41c-4fa0-aed3-11ff2f008a4f",
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Phase 4 kickoff complete: AGENTS.md synchronized with Phase 3 completion (CQRS resolved, remaining items now Phase 4+), and master plan updated with Phase 4 Planning Record + AC1-AC6 checklist. Commit a4008cc.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-19T07:06:27.327Z",
+      "created_at": "2026-02-19T07:06:27.327Z",
+      "updated_at": "2026-02-19T07:06:27.327Z"
     }
   ]
 }
