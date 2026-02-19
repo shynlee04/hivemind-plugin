@@ -292,3 +292,25 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 
 <!-- HIVEMIND-GOVERNANCE-END -->
 
+---
+
+## Phase 2 FK Remediation (2026-02-19)
+
+### Changes Made:
+1. **MemNodeSchema** (graph-nodes.ts:47): Added `session_id: z.string().uuid()` FK to Trajectory
+2. **cognitive-packer.ts:256**: Added session_id to MemNode creation using `resolvedSession`
+3. **session-swarm.ts:311**: Fixed ID generation to use `randomUUID()` (valid UUID)
+4. **session-swarm.ts:324**: Changed to use `addGraphMem()` for Zod validation
+5. **graph-migrate.ts:506**: Added `backfillMemSessionId()` migration function
+6. **graph-migrate.ts:537**: migrateMems() includes session_id parameter
+
+### Exit Gate Status:
+- ✅ TypeScript: 0 session_id errors
+- ✅ Tests: graph-migrate suite passes
+- ✅ Code-review: Approved
+
+### Remaining Phase 3+ Items:
+- graph-io.ts: Add session_id FK validation in validateMemsWithFKValidation()
+- Hook/tool contract isolation (Phase 3)
+- Relational staleness engine (Phase 4)
+
