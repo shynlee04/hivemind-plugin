@@ -72,8 +72,8 @@ export async function buildGovernanceSignals(
     warningLines.push(
       localized(
         config.language,
-        "Auto-realignment: if command flow is missing, route through HiveFiver start + skill stack and continue.",
-        "Canh chinh tu dong: neu thieu luong lenh, chuyen sang HiveFiver start + bo ky nang va tiep tuc.",
+        "Auto-realignment: if command flow is missing, route through /hivefiver init and continue with skill stack.",
+        "Canh chinh tu dong: neu thieu luong lenh, chuyen sang /hivefiver init va tiep tuc voi bo ky nang.",
       ),
     )
   }

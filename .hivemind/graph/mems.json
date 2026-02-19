@@ -36,6 +36,18 @@
       "staleness_stamp": "2026-02-19T12:28:36.880Z",
       "created_at": "2026-02-19T12:28:36.880Z",
       "updated_at": "2026-02-19T12:28:36.880Z"
+    },
+    {
+      "id": "f62e5523-847e-4be8-b665-6360b2ce5876",
+      "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+      "origin_task_id": null,
+      "shelf": "solutions",
+      "type": "insight",
+      "content": "Root Cause: HiveFiver journey contracts show boundary and schema normalization gaps under stress. Symptoms: todo.updated camelCase fields are dropped, action-level session updates create unbounded graph tasks, and event-handler hook writes tasks manifest directly (CQRS leak). Verification: code evidence in src/hooks/event-handler.ts, src/tools/hivemind-session.ts, src/lib/graph-io.ts plus runtime scratch simulation via npx tsx showing field-loss behavior. Files Changed: none (read-only audit).",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-19T14:25:13.524Z",
+      "created_at": "2026-02-19T14:25:13.524Z",
+      "updated_at": "2026-02-19T14:25:13.524Z"
     }
   ]
 }

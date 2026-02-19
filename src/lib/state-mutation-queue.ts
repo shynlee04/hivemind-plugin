@@ -20,9 +20,11 @@
  */
 
 import type { BrainState } from "../schemas/brain-state.js";
+import type { TaskManifest } from "../schemas/manifest.js";
 import type { StateManager } from "./persistence.js";
 import { createLogger, noopLogger } from "./logging.js";
 import { getEffectivePaths } from "./paths.js";
+import { saveTasks } from "./manifest.js";
 
 // Initialize logger - use noop logger initially, replace with real logger on first use
 let loggerPromise: Promise<{
@@ -72,6 +74,17 @@ export interface StateMutation {
   priority?: number;
 }
 
+export type TaskManifestMutationType = "UPSERT_TASKS_MANIFEST";
+
+export interface TaskManifestMutation {
+  type: TaskManifestMutationType;
+  directory: string;
+  payload: TaskManifest;
+  timestamp: string;
+  source: string;
+  priority?: number;
+}
+
 /**
  * Global mutation queue (in-process, per-session).
  *
@@ -79,6 +92,7 @@ export interface StateMutation {
  * the provided API functions.
  */
 const mutationQueue: StateMutation[] = [];
+const taskManifestQueue: TaskManifestMutation[] = [];
 
 /**
  * Maximum queue size before warning.
@@ -130,6 +144,27 @@ export function queueStateMutation(
   }
 
   mutationQueue.push(fullMutation);
+}
+
+export function queueTaskManifestMutation(
+  mutation: Omit<TaskManifestMutation, "timestamp">
+): void {
+  const fullMutation: TaskManifestMutation = {
+    ...mutation,
+    timestamp: new Date().toISOString(),
+  };
+
+  if (taskManifestQueue.length >= MAX_QUEUE_SIZE) {
+    const dropped = taskManifestQueue[0];
+    taskManifestQueue.shift();
+    getLogger().then((logger) =>
+      logger.warn(`Task queue overflow, dropped mutation from: ${dropped?.source ?? "unknown"}`)
+    ).catch(() => {
+      // Ignore logging errors
+    });
+  }
+
+  taskManifestQueue.push(fullMutation);
 }
 
 /**
@@ -199,6 +234,34 @@ export async function flushMutations(
   }
 }
 
+export async function flushTaskManifestMutations(): Promise<number> {
+  if (taskManifestQueue.length === 0) {
+    return 0;
+  }
+
+  try {
+    const sortedMutations = [...taskManifestQueue].sort((a, b) => {
+      const priorityDiff = (a.priority ?? 0) - (b.priority ?? 0);
+      if (priorityDiff !== 0) return priorityDiff;
+      return a.timestamp.localeCompare(b.timestamp);
+    });
+
+    for (const mutation of sortedMutations) {
+      await saveTasks(mutation.directory, mutation.payload);
+    }
+
+    const appliedCount = taskManifestQueue.length;
+    taskManifestQueue.length = 0;
+    return appliedCount;
+  } catch (error) {
+    const logger = await getLogger();
+    await logger.error(
+      `Task manifest flush failed: ${error instanceof Error ? error.message : String(error)}`
+    );
+    throw error;
+  }
+}
+
 /**
  * Get the count of pending mutations.
  *
@@ -208,6 +271,10 @@ export async function flushMutations(
  */
 export function getPendingMutationCount(): number {
   return mutationQueue.length;
+}
+
+export function getPendingTaskManifestMutationCount(): number {
+  return taskManifestQueue.length;
 }
 
 /**
@@ -221,6 +288,24 @@ export function getPendingMutations(): StateMutation[] {
   return [...mutationQueue];
 }
 
+export function applyPendingStateMutations(baseState: BrainState): BrainState {
+  if (mutationQueue.length === 0) {
+    return baseState;
+  }
+
+  const sortedMutations = [...mutationQueue].sort((a, b) => {
+    const priorityDiff = (a.priority ?? 0) - (b.priority ?? 0);
+    if (priorityDiff !== 0) return priorityDiff;
+    return a.timestamp.localeCompare(b.timestamp);
+  });
+
+  let projected = baseState;
+  for (const mutation of sortedMutations) {
+    projected = deepMerge(projected, mutation.payload);
+  }
+  return projected;
+}
+
 /**
  * Clear the mutation queue without applying.
  *
@@ -228,6 +313,7 @@ export function getPendingMutations(): StateMutation[] {
  */
 export function clearMutationQueue(): void {
   mutationQueue.length = 0;
+  taskManifestQueue.length = 0;
 }
 
 /**

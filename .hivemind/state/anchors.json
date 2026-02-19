@@ -1,4 +1,11 @@
 {
-  "anchors": [],
+  "anchors": [
+    {
+      "key": "debug_pre_2026-02-19T14-03-20Z",
+      "value": "{\"session\":\"95ace8c9-d002-4920-8fae-f99197c69af9\",\"drift\":70,\"trajectory\":\"Production-readiness hardening of HiveFiver + remediation stack with full SRC integrity validation\",\"action\":\"Audit SRC logic/dataflow/lifecycle/edge-cases for HiveFiver TODO+orchestrator-ralph integration\"}",
+      "created_at": 1771510909490,
+      "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9"
+    }
+  ],
   "version": "1.0.0"
 }

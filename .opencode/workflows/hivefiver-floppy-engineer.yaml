@@ -1,0 +1,41 @@
+name: hivefiver-floppy-engineer
+description: Distillation-heavy workflow for messy requirement dumps with coherence cleanup and phased validation loops.
+version: 1
+steps:
+  - name: bootstrap
+    tool: hivefiver
+    args:
+      action: init
+      lane: floppy_engineer
+  - name: intake-cleanup
+    tool: hivefiver-intake
+    args:
+      style: mixed_mcq_and_chunk_cleanup
+      strictness: strict
+  - name: spec-distill
+    tool: hivefiver-specforge
+    args:
+      require_ambiguity_map: true
+      retry_limit: 10
+  - name: research
+    tool: hivefiver-research
+    args:
+      enforce_provider_status: true
+      retry_limit: 10
+  - name: workflow
+    tool: hivefiver-workflow
+    args:
+      orchestrator_mode: deterministic
+  - name: validate
+    tool: hivefiver-validate
+    args:
+      require_schema_gate: true
+guards:
+  - rule: context_first
+    check: hierarchy_chain_complete
+  - rule: cleanup_gate
+    check: coherence_score_passed
+  - rule: evidence_gate
+    check: confidence_not_fake
+  - rule: graph_connected
+    check: connected_task_graph

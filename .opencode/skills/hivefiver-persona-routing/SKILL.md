@@ -1,21 +1,23 @@
 ---
 name: hivefiver-persona-routing
-description: Route users to vibecoder or enterprise lanes with domain-aware onboarding, strict governance defaults, and bilingual guidance.
+description: Route users into vibecoder, floppy_engineer, or enterprise_architect lanes with strict governance defaults and domain-aware onboarding.
 ---
 
 # HiveFiver Persona Routing
 
-Use this skill to classify user mode and enforce the right governance posture from the first turn.
+Use this skill at onboarding and whenever user intent shifts significantly.
 
 ## Workflow
 1. Run structured MCQ intake.
-2. Score persona and domain signals.
-3. Confirm lane (`vibecoder` or `enterprise`) and strictness (`assisted` or `strict`).
-4. Persist routing decision and next gate requirements.
+2. Score persona/domain signals.
+3. Resolve lane (`vibecoder`, `floppy_engineer`, `enterprise_architect`).
+4. Assign strictness (`assisted` or `strict`) and workflow.
+5. Persist lane decision + next gate requirements.
 
 ## Lane Defaults
-- `vibecoder`: guided explanations, examples-first, hidden TDD safety rails.
-- `enterprise`: strict clarification, evidence-first gating, ambiguity blockade.
+- `vibecoder`: examples-first, click-by-click flow, hidden TDD rails.
+- `floppy_engineer`: chunk cleanup, coherence scoring, strict ambiguity gates.
+- `enterprise_architect`: compliance-first, evidence-first, hard risk blockades.
 
 ## Domain Lanes
 - `dev`
@@ -23,6 +25,13 @@ Use this skill to classify user mode and enforce the right governance posture fr
 - `finance`
 - `office-ops`
 - `hybrid`
+
+## Required Outputs
+- `persona_lane`
+- `domain_lane`
+- `workflow_lane`
+- `governance_mode`
+- `next_action`
 
 ## References
 - `references/persona-matrix.md`

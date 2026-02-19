@@ -372,6 +372,17 @@ async function test_staleSessionAutoArchived() {
     const hook = createSessionLifecycleHook(logger, dir, config)
     const output = { system: [] as string[] }
     await hook({ sessionID: "test-session" }, output)
+    const archivesAfterFirstHook = await listArchives(dir)
+
+    const secondOutput = { system: [] as string[] }
+    await hook({ sessionID: "test-session" }, secondOutput)
+    const archivesAfterSecondHook = await listArchives(dir)
+    assert(
+      archivesAfterSecondHook.length === archivesAfterFirstHook.length,
+      "stale archive should not re-trigger before queued state mutation flush",
+    )
+
+    await flushMutations(stateManager)
 
     // Step 6: Assert: new session was created (different session ID)
     const newState = await stateManager.load()

@@ -1,9 +1,9 @@
 name: hivefiver-mcp-fallback
 description: Recovery workflow when one or more MCP providers are unavailable.
-version: 1
+version: 2
 steps:
   - name: detect-gaps
-    tool: hivefiver-doctor
+    tool: hivefiver-audit
     args:
       focus: mcp
   - name: emit-remediation
@@ -16,6 +16,7 @@ steps:
     args:
       fallback: graceful
       confidence_required: partial
+      retry_limit: 10
   - name: continue-spec
     tool: hivefiver-specforge
     args:

@@ -21,6 +21,7 @@ import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { loadTree, getCursorNode } from "../src/lib/hierarchy-tree.js"
 import { loadConfig } from "../src/lib/persistence.js"
 import { createConfig } from "../src/schemas/config.js"
+import { flushMutations } from "../src/lib/state-mutation-queue.js"
 
 // Test utilities
 function createTempDir(): string {
@@ -237,6 +238,7 @@ describe("Phase A Critical Bug Fixes", () => {
       
       const output = { system: [] as string[] }
       await hook({ sessionID: "test-session" }, output)
+      await flushMutations(stateManager)
 
       // Verify: Tree should be reset (fresh empty tree or new tree)
       const treeAfter = await loadTree(tempDir)

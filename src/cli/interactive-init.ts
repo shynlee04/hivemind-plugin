@@ -36,7 +36,7 @@ export const ASSET_TARGET_LABELS: Record<AssetSyncTarget, string> = {
  * Returns null if user cancels.
  */
 export async function runInteractiveInit(): Promise<InitOptions | null> {
-  p.intro("🐝 HiveMind Context Governance — Setup Wizard")
+  p.intro("🐝 HiveMind + HiveFiver v2 — Setup Wizard")
 
   // ── Profile Selection - FIRST ───────────────────────────────
   const profileKey = await p.select({
@@ -295,6 +295,8 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
       `Governance:  ${isCoachAutomation(automationLevel) ? "strict (forced)" : governanceMode}`,
       `Language:    ${language === "en" ? "English" : "Tiếng Việt"}`,
       `Automation:  ${normalizeAutomationLabel(automationLevel)}${isCoachAutomation(automationLevel) ? " (max guidance)" : ""}`,
+      "HiveFiver:   v2 root command enabled (`/hivefiver <action>`)",
+      "MCP posture: DeepWiki on by default, Context7/Tavily/Repomix/Exa guided setup",
       `Expert:      ${isCoachAutomation(automationLevel) ? "beginner (forced)" : expertLevel}`,
       `Style:       ${isCoachAutomation(automationLevel) ? "skeptical (forced)" : outputStyle}`,
       `Permissions: ${JSON.stringify(selectedProfile.permissions)}`,

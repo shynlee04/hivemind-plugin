@@ -8,8 +8,11 @@ import { describe, it, beforeEach, afterEach } from "node:test";
 import assert from "node:assert";
 import {
   queueStateMutation,
+  queueTaskManifestMutation,
   flushMutations,
+  flushTaskManifestMutations,
   getPendingMutationCount,
+  getPendingTaskManifestMutationCount,
   getPendingMutations,
   clearMutationQueue,
   hasPendingMutationsFrom,
@@ -19,6 +22,10 @@ import type { BrainState } from "../../src/schemas/brain-state.js";
 import { createBrainState } from "../../src/schemas/brain-state.js";
 import { createConfig } from "../../src/schemas/config.js";
 import type { StateManager } from "../../src/lib/persistence.js";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { getEffectivePaths } from "../../src/lib/paths.js";
 
 // Mock state manager for testing
 function createMockStateManager(initialState: BrainState | null): StateManager {
@@ -274,6 +281,38 @@ describe("State Mutation Queue", () => {
 
       // Mutations should remain in queue
       assert.strictEqual(getPendingMutationCount(), 1);
+    });
+  });
+
+  describe("task manifest mutation queue", () => {
+    it("queues and flushes todo manifest mutations", async () => {
+      const directory = await mkdtemp(join(tmpdir(), "hivemind-task-queue-"));
+      try {
+        queueTaskManifestMutation({
+          type: "UPSERT_TASKS_MANIFEST",
+          directory,
+          payload: {
+            session_id: "sess-queue-1",
+            updated_at: Date.now(),
+            tasks: [{ id: "t1", text: "Task 1", status: "pending" }],
+          },
+          source: "test.queue",
+        });
+
+        assert.strictEqual(getPendingTaskManifestMutationCount(), 1);
+
+        const flushed = await flushTaskManifestMutations();
+        assert.strictEqual(flushed, 1);
+        assert.strictEqual(getPendingTaskManifestMutationCount(), 0);
+
+        const content = await readFile(getEffectivePaths(directory).tasks, "utf-8");
+        const parsed = JSON.parse(content);
+        assert.strictEqual(parsed.session_id, "sess-queue-1");
+        assert.strictEqual(parsed.tasks.length, 1);
+        assert.strictEqual(parsed.tasks[0].id, "t1");
+      } finally {
+        await rm(directory, { recursive: true, force: true });
+      }
     });
   });
 

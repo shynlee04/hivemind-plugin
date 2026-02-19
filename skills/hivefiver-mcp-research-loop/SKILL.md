@@ -1,20 +1,20 @@
 ---
 name: hivefiver-mcp-research-loop
-description: Run iterative MCP-backed research with provider readiness checks, confidence scoring, contradiction control, and graceful fallback.
+description: Run iterative MCP-backed research with provider readiness checks, confidence scoring, contradiction control, and fallback governance.
 ---
 
 # HiveFiver MCP Research Loop
 
-Use this skill when HiveFiver needs evidence-backed research for planning, architecture, delivery, or domain decisions.
+Use this skill when planning or architecture decisions require evidence-backed research.
 
 ## Workflow
 1. Run provider readiness check.
-2. Build query matrix by domain lane (`dev`, `marketing`, `finance`, `office-ops`, `hybrid`).
+2. Build query matrix by domain lane.
 3. Retrieve evidence in grounded order:
-- DeepWiki + Repomix first (project grounding)
-- Context7 second (official references)
-- Tavily + Exa third (external corroboration)
-4. Build contradiction register and remove unsupported claims.
+- DeepWiki + Repomix (repository grounding)
+- Context7 (official semantics)
+- Tavily + Exa (external corroboration)
+4. Build contradiction register.
 5. Score confidence and emit setup TODOs.
 
 ## Provider Contract
@@ -23,20 +23,23 @@ Required providers:
 - DeepWiki
 - Repomix
 - Tavily
-- Exa (when provider/tool mode supports it)
+- Exa (MCP or provider-native)
 
-If a provider is unavailable, continue research but downgrade confidence.
+If any provider is unavailable, continue but downgrade confidence.
 
 ## Confidence Contract
-- `full`: strong corroboration, zero critical gaps, zero unresolved contradictions.
-- `partial`: usable evidence with some provider gaps or mild contradictions.
-- `low`: major provider gaps or unresolved contradictions.
+- `full`: corroborated, no critical gaps.
+- `partial`: usable with non-critical gaps.
+- `low`: critical gaps or unresolved contradictions.
+
+## Retry Contract
+- Validate contradictions up to 10 iterations.
+- At attempt 10, force explicit caveat block.
 
 ## DeepWiki QA Translation
-Apply these implementation ideas while preserving output structure:
-- Context shaping with transformed system/message layers.
-- Silent context injection where appropriate.
-- Explicit TODO tracking for unresolved research questions.
+- Use transformed context layers for control.
+- Keep output structure stable.
+- Treat TODO/task updates as first-class state.
 
 ## References
 - `references/provider-matrix.md`

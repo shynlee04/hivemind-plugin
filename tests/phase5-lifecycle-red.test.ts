@@ -105,4 +105,51 @@ describe("Phase 5.2 RED: lifecycle continuity and FK chain", () => {
       "expected compact_session to write at least one FK-linked lifecycle mem into graph mems",
     )
   })
+
+  it("reuses active graph task on repeated action updates unless override is requested", async () => {
+    const sessionTool = createHivemindSessionTool(dir)
+
+    await sessionTool.execute(
+      { action: "start", mode: "plan_driven", focus: "Action idempotency" },
+      {} as any,
+    )
+    await sessionTool.execute(
+      { action: "update", level: "tactic", content: "Ensure phase exists" },
+      {} as any,
+    )
+
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "First action update" },
+      {} as any,
+    )
+    const afterFirst = await loadTrajectory(dir)
+    assert.ok(afterFirst?.trajectory, "trajectory should exist after first action update")
+    const firstTaskIds = afterFirst?.trajectory?.active_task_ids ?? []
+    assert.equal(firstTaskIds.length, 1, "first action update should create a single task")
+
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "Repeat action update" },
+      {} as any,
+    )
+    const afterSecond = await loadTrajectory(dir)
+    assert.ok(afterSecond?.trajectory, "trajectory should exist after second action update")
+    const secondTaskIds = afterSecond?.trajectory?.active_task_ids ?? []
+    assert.deepEqual(secondTaskIds, firstTaskIds, "repeated action update should reuse active task")
+
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "Forced new task", forceNewActionTask: true },
+      {} as any,
+    )
+    const afterForced = await loadTrajectory(dir)
+    assert.ok(afterForced?.trajectory, "trajectory should exist after forced action update")
+    const forcedTaskIds = afterForced?.trajectory?.active_task_ids ?? []
+    assert.equal(forcedTaskIds.length, 2, "forced action update should append a new task FK")
+    assert.notEqual(forcedTaskIds[1], forcedTaskIds[0], "forced action update should create a distinct task")
+
+    const graphTasks = await loadGraphTasks(dir)
+    const graphTaskIds = new Set(graphTasks.tasks.map((task) => task.id))
+    for (const taskId of forcedTaskIds) {
+      assert.ok(graphTaskIds.has(taskId), "all active task IDs should reference existing graph tasks")
+    }
+  })
 })

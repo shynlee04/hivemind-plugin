@@ -18,10 +18,25 @@
       "73649ec4-c623-4377-95f6-62876d8f5171",
       "4a6b47bc-6f92-4317-8511-44e13c058212",
       "6d0eb10c-8033-4883-bf67-c6987a204ed7",
-      "8bc17314-b9ea-44f2-8e17-e04b06214962"
+      "8bc17314-b9ea-44f2-8e17-e04b06214962",
+      "4f465df3-e381-42cc-aa15-b1dabac9435c",
+      "bab2ff47-a64b-47d9-9d3c-13a325c33dc1",
+      "5ecf4a80-68ea-45d1-91a3-68c81879686e",
+      "b41fe8a1-9d7f-4fe6-a1ec-d9a4f4897781",
+      "0e3a4eac-b51c-4b0c-a33f-de7b43b2019f",
+      "3193e316-7f96-4680-a1fa-0121d33bed80",
+      "663acb77-784f-4e92-9a5d-5ce036731a80",
+      "a0033b2a-6766-4335-9bba-cedb16eaf22a",
+      "93001e25-be9a-4bb2-9fa3-0e8903f059c4",
+      "1bc5b934-453b-483a-9392-e52a0c4177c6",
+      "9f11b5fe-9bbf-4d1c-9bc8-6c206e4ffdf2",
+      "19c203dd-81f5-4ada-9f14-2da4ccc52673",
+      "96fffb9f-9470-4e40-97e5-ab4976e4fe83",
+      "4c8740c1-9f56-4d39-9e7b-3465a1856770",
+      "0a5cb690-013d-4007-8e0f-38125f65c40b"
     ],
     "intent": "Production-readiness hardening of HiveFiver + remediation stack with full SRC integrity validation",
     "created_at": "2026-02-18T17:48:48.184Z",
-    "updated_at": "2026-02-19T14:03:20.145Z"
+    "updated_at": "2026-02-19T15:47:19.889Z"
   }
 }

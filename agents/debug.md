@@ -1,7 +1,7 @@
 ---
 name: debug
 description: "Systematic debugging orchestrator for HiveMind with evidence-first diagnosis and structured remediation."
-mode: subagent
+mode: all
 ---
 
 # Debug Agent - HiveMind v3 Intelligent Debug Orchestrator

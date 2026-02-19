@@ -1,0 +1,51 @@
+name: hivefiver-enterprise-architect
+description: Corporate-scale architect workflow with compliance-first checkpoints, deterministic orchestration, and export assurance.
+version: 1
+steps:
+  - name: bootstrap
+    tool: hivefiver
+    args:
+      action: init
+      lane: enterprise_architect
+  - name: compliance-intake
+    tool: hivefiver-intake
+    args:
+      style: controlled_mcq
+      strictness: strict
+  - name: spec-gate
+    tool: hivefiver-specforge
+    args:
+      block_high_ambiguity: true
+      retry_limit: 10
+  - name: research-evidence
+    tool: hivefiver-research
+    args:
+      require_contradiction_register: true
+      retry_limit: 10
+  - name: architecture
+    tool: hivefiver-architect
+    args:
+      enforce_subagent_policy: true
+  - name: orchestration
+    tool: hivefiver-workflow
+    args:
+      export_cycle_required: true
+  - name: gsd-wrap
+    tool: hivefiver-gsd-bridge
+    args:
+      compatibility_wrapper: true
+  - name: ralph-export
+    tool: hivefiver-ralph-bridge
+    args:
+      validate_schema: true
+guards:
+  - rule: compliance_gate
+    check: regulatory_matrix_passed
+  - rule: evidence_gate
+    check: confidence_not_fake
+  - rule: lineage_gate
+    check: connected_task_graph
+  - rule: schema_gate
+    check: prd_json_valid
+  - rule: export_cycle
+    check: cycle_exported

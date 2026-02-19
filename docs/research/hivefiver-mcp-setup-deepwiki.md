@@ -1,6 +1,6 @@
 # HiveFiver MCP Setup - DeepWiki
 
-## Goal
+## Purpose
 Enable DeepWiki for repository-level synthesis and source-linked analysis.
 
 ## Config Snippet
@@ -13,10 +13,13 @@ Enable DeepWiki for repository-level synthesis and source-linked analysis.
 }
 ```
 
-## Verification Checklist
-1. Confirm `deepwiki: ready` in doctor output.
-2. Query a repo topic and verify source-tagged response.
-3. If unavailable, continue with fallback providers and confidence downgrade.
+## Validation Steps
+1. Confirm `deepwiki: ready` in `/hivefiver audit`.
+2. Run `/hivefiver research` and verify DeepWiki-backed findings appear.
+3. Ensure DeepWiki is used before broad web corroboration.
 
-## Reference
+## Notes
+- DeepWiki should be first-pass grounding for codebase questions.
+
+## Links
 - https://deepwiki.com/

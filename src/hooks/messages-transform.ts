@@ -77,6 +77,30 @@ function buildChecklist(items: string[], maxChars: number): string {
   return lines.join("\n")
 }
 
+function buildAutoRealignReminder(decision: ReturnType<typeof detectAutoRealignment>): string {
+  const menuLines = decision.nextStepMenu.map((option, index) => {
+    const gate = option.requiresPermission ? "permission" : "auto"
+    return `${index + 1}) /${option.command} [${gate}] - ${option.label}`
+  })
+
+  const initiationLine = decision.requiresPermission
+    ? `Permission required before execution. ${decision.permissionPrompt ?? "Ask explicit Yes/No before continuing."}`
+    : `Auto-init allowed: append /${decision.recommendedCommand} as the next step and continue unless user says no.`
+
+  return [
+    "<system-reminder>",
+    `[AUTO-REALIGN] ${decision.reason}.`,
+    `If user command is missing or invalid, route via /${decision.recommendedCommand}.`,
+    `Preferred workflow: ${decision.recommendedWorkflow}. Persona lane: ${decision.persona ?? "auto"}.`,
+    `Load and use skills: ${decision.recommendedSkills.join(", ")}.`,
+    "[NEXT-STEP MENU]",
+    ...menuLines,
+    initiationLine,
+    "Continue task completion even when slash commands are absent.",
+    "</system-reminder>",
+  ].join("\n")
+}
+
 function isEmptyPackedContext(xml: string): boolean {
   return (
     xml.includes('timestamp="1970-01-01T00:00:00.000Z"') &&
@@ -380,17 +404,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         const latestUserText = getMessageText(output.messages[index])
         const autoRealign = detectAutoRealignment(latestUserText)
         if (autoRealign.shouldRealign) {
-          prependSyntheticPart(
-            output.messages[index],
-            [
-              "<system-reminder>",
-              `[AUTO-REALIGN] ${autoRealign.reason}.`,
-              `If user command is missing or invalid, route automatically via /${autoRealign.recommendedCommand}.`,
-              `Load and use skills: ${autoRealign.recommendedSkills.join(", ")}.`,
-              "Continue task completion even without explicit slash commands.",
-              "</system-reminder>",
-            ].join("\\n"),
-          )
+          prependSyntheticPart(output.messages[index], buildAutoRealignReminder(autoRealign))
         }
 
         // US-015: Cognitive Packer - inject packed XML state at START
@@ -407,8 +421,11 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         const items: string[] = []
 
         if (autoRealign.shouldRealign) {
+          const initiationMode = autoRealign.requiresPermission
+            ? `permission-gated (${autoRealign.permissionPrompt ?? "ask explicit Yes/No"})`
+            : "auto-init"
           items.push(
-            `Auto-realign workflow now: /${autoRealign.recommendedCommand} + skills (${autoRealign.recommendedSkills.join(", ")})`
+            `Auto-realign workflow now (${initiationMode}): /${autoRealign.recommendedCommand} + skills (${autoRealign.recommendedSkills.join(", ")}) [${autoRealign.recommendedWorkflow}]`
           )
         }
 

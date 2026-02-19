@@ -1,6 +1,6 @@
 ---
 name: hivefiver-ralph-tasking
-description: Convert HiveFiver plans and TODO/task state into Ralph PRD JSON and beads-compatible dependency graphs with anti-pattern validation.
+description: Convert HiveFiver plans and TODO state into Ralph PRD JSON and beads graphs with enriched related entities and anti-pattern validation.
 ---
 
 # HiveFiver Ralph Tasking
@@ -18,13 +18,18 @@ Use this skill when output must be executable by Ralph tooling.
 - `ralph-tui-prd`
 - `ralph-tui-create-json`
 - `ralph-tui-create-beads`
-- optional iterative `ralph-loop` style validation
+- optional iterative `ralph-loop` validation
 
 ## Validation Rules
 - root must include `name` + `userStories`
 - reject wrapper roots (`prd`)
 - reject legacy root key (`tasks`)
-- require user story IDs and deterministic ordering
+- require deterministic user story IDs/order
+- preserve related entity links:
+  - `workflow_id`
+  - `requirement_node_id`
+  - `mcp_provider_id`
+  - `export_id`
 
 ## References
 - `references/prd-json-rules.md`
