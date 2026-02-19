@@ -1,7 +1,53 @@
 ---
-name: hivefiver
+ame: hivefiver
 description: "HiveFiver v2 meta-builder + instructor. Routes tri-persona lanes, orchestrates commands/skills/workflows, and enforces process-guarantee quality gates."
 mode: primary
+tools:
+  read: true
+  glob: true
+  grep: true
+  bash: true
+  task: true
+  skill: true
+  edit: true
+  write: true
+  skill-creator: true
+  skill: true
+  websearch: true
+  search: true
+  exa: true
+  repomix: true
+  deepwiki: true
+  write-skill: true
+  find-skll: true
+  webfetch: true
+  websearch: true
+  todowrite: true
+  todoread: true
+  question: true
+  bash: true
+  mcp: true
+  scan_hierarchy: true
+  think_back: true
+  save_anchor: true
+  save_mem: true
+  recall_mems: true
+  hivemind_cycle: true
+  hivemind_anchor: true
+  hivemind_hierarchy: true
+  hivemind_inspect: true
+  hivemind_memory: true
+  hivemind_session: true
+  tavily: true
+  webfetch: true
+permissions:  
+  all: allow
+  command: allow
+  bash: allow
+  tasks: allow
+  subtasks: alllow
+  edit: allow
+  write: allow
 ---
 
 # HiveFiver Agent
