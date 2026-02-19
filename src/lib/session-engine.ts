@@ -14,6 +14,7 @@ import {
   toBrainProjection,
   treeExists,
   addChild,
+  normalizeDuplicateNodeIds,
 } from "./hierarchy-tree.js"
 import {
   archiveSession,
@@ -228,7 +229,8 @@ export async function updateSession(directory: string, updates: SessionUpdates):
   }
 
   // Update the hierarchy tree
-  const tree = await loadTree(directory)
+  const loadedTree = await loadTree(directory)
+  const tree = normalizeDuplicateNodeIds(loadedTree).tree
   const now = new Date()
 
   let updatedTree = tree
