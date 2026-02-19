@@ -42,6 +42,10 @@ import { migrateIfNeeded } from "../lib/migrate.js"
 import { syncOpencodeAssets } from "./sync-assets.js"
 import type { AssetSyncTarget } from "./sync-assets.js"
 import { createTree, saveTree } from "../lib/hierarchy-tree.js"
+import {
+  auditHiveFiverAssets,
+  seedHiveFiverOnboardingTasks,
+} from "../lib/hivefiver-integration.js"
 
 // ── HiveMind Section for AGENTS.md / CLAUDE.md ──────────────────────────
 
@@ -376,6 +380,49 @@ async function printInitSuccess(
   log("")
 }
 
+function logHiveFiverAuditResult(
+  audit: ReturnType<typeof auditHiveFiverAssets>,
+  silent: boolean
+): void {
+  if (silent) return
+
+  const missingRootCount =
+    audit.rootMissing.commands.length + audit.rootMissing.skills.length + audit.rootMissing.workflows.length
+  const missingOpencodeCount =
+    audit.opencodeMissing.commands.length + audit.opencodeMissing.skills.length + audit.opencodeMissing.workflows.length
+
+  log("HiveFiver Integration Audit:")
+  log(`  Source root: ${audit.sourceRoot}`)
+  if (!audit.hasCriticalGaps) {
+    log("  ✓ Pack integrated across root and .opencode assets")
+  } else {
+    log(`  ⚠ Missing root assets: ${missingRootCount}`)
+    log(`  ⚠ Missing .opencode assets: ${missingOpencodeCount}`)
+    if (audit.rootMissing.commands.length > 0) {
+      log(`    - root commands missing: ${audit.rootMissing.commands.length}`)
+    }
+    if (audit.rootMissing.skills.length > 0) {
+      log(`    - root skills missing: ${audit.rootMissing.skills.length}`)
+    }
+    if (audit.rootMissing.workflows.length > 0) {
+      log(`    - root workflows missing: ${audit.rootMissing.workflows.length}`)
+    }
+    if (audit.opencodeMissing.commands.length > 0) {
+      log(`    - .opencode commands missing: ${audit.opencodeMissing.commands.length}`)
+    }
+    if (audit.opencodeMissing.skills.length > 0) {
+      log(`    - .opencode skills missing: ${audit.opencodeMissing.skills.length}`)
+    }
+    if (audit.opencodeMissing.workflows.length > 0) {
+      log(`    - .opencode workflows missing: ${audit.opencodeMissing.workflows.length}`)
+    }
+  }
+  for (const recommendation of audit.recommendations) {
+    log(`  → ${recommendation}`)
+  }
+  log("")
+}
+
 export async function initProject(
   directory: string,
   options: InitOptions = {}
@@ -414,6 +461,11 @@ export async function initProject(
     
     // Ensure plugin is registered in opencode.json (this was missing!)
     registerPluginInConfig(directory, options.silent ?? false)
+
+    const existingStateManager = createStateManager(directory)
+    const existingState = await existingStateManager.load()
+    await seedHiveFiverOnboardingTasks(directory, existingState?.session.id ?? "unknown")
+    logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
 
     if (!options.silent) {
       log("⚠ HiveMind already initialized in this project.")
@@ -496,6 +548,9 @@ export async function initProject(
       silent: options.silent ?? false,
       onLog: options.silent ? undefined : log,
     })
+
+    await seedHiveFiverOnboardingTasks(directory, sessionId)
+    logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
 
     await printInitSuccess(directory, config, sessionId, state, options.silent ?? false)
     return
@@ -618,6 +673,9 @@ export async function initProject(
     silent: options.silent ?? false,
     onLog: options.silent ? undefined : log,
   })
+
+  await seedHiveFiverOnboardingTasks(directory, sessionId)
+  logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
 
   if (!options.silent) {
     log("")

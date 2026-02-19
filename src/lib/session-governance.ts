@@ -69,6 +69,13 @@ export async function buildGovernanceSignals(
         ? localized(config.language, "No intent declared. Use declare_intent to unlock the session before writing.", "Chua khai bao intent. Dung declare_intent de mo khoa session truoc khi ghi file.")
         : localized(config.language, "Tip: Use declare_intent to set your work focus for better tracking.", "Meo: dung declare_intent de dat focus cong viec va theo doi tot hon.")
     )
+    warningLines.push(
+      localized(
+        config.language,
+        "Auto-realignment: if command flow is missing, route through HiveFiver start + skill stack and continue.",
+        "Canh chinh tu dong: neu thieu luong lenh, chuyen sang HiveFiver start + bo ky nang va tiep tuc.",
+      ),
+    )
   }
 
   // Detection signal compilation

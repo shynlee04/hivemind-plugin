@@ -10,6 +10,39 @@
       ],
       "session_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
       "created_at": 1771468493562
+    },
+    {
+      "id": "mem_1771501561578_cyg3",
+      "shelf": "context",
+      "content": "Session compacted: Complete remaining remediation plan and post-completion audits with HiveFiver merge rebaseline. Turns: 60, Files: 0.",
+      "tags": [
+        "auto-compact",
+        "session-close"
+      ],
+      "session_id": "281d4b68-e921-4f3e-b2c4-b4e285961dba",
+      "created_at": 1771501561578
+    },
+    {
+      "id": "mem_1771502654605_xpfx",
+      "shelf": "context",
+      "content": "Session compacted: Find or create marketing canvas skill via HiveFiver intake. Turns: 72, Files: 0.",
+      "tags": [
+        "auto-compact",
+        "session-close"
+      ],
+      "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+      "created_at": 1771502654605
+    },
+    {
+      "id": "mem_1771504116879_0qs0",
+      "shelf": "context",
+      "content": "Session compacted: Create new skill for market research using TDD methodology. Turns: 15, Files: 0.",
+      "tags": [
+        "auto-compact",
+        "session-close"
+      ],
+      "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+      "created_at": 1771504116879
     }
   ],
   "version": "1.0.0"

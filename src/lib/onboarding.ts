@@ -43,6 +43,7 @@ export function generateReadFirstBlock(isBrownfield: boolean, _language: "en" | 
     lines.push("1. **SCAN**: Run `scan_hierarchy({ action: \"analyze\" })` immediately to map the codebase.")
     lines.push("2. **INTEGRATE**: Identify where HiveMind fits (e.g., `docs/plans/`).")
     lines.push("3. **ADOPT**: Do not overwrite without reading. Use `read_file` to explore.")
+    lines.push("4. **REALIGN**: If user flow is messy/no-command, route to `hivefiver-start` then `hivefiver-doctor`.")
   } else {
     lines.push("## STATE: NEW PROJECT / GREENFIELD")
     lines.push("")
@@ -50,6 +51,7 @@ export function generateReadFirstBlock(isBrownfield: boolean, _language: "en" | 
     lines.push("1. **SCAN**: Confirm environment.")
     lines.push("2. **PLAN**: Check `docs/plans/` or create one.")
     lines.push("3. **DECIDE**: Call `declare_intent({ mode, focus })`.")
+    lines.push("4. **BOOTSTRAP**: Route to `hivefiver-start` when user does not provide a command.")
   }
 
   lines.push("")

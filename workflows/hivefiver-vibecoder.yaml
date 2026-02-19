@@ -1,0 +1,48 @@
+name: hivefiver-vibecoder
+description: Guided intake and specification flow for low-technical users with strict hidden governance and teach-first outputs.
+version: 1
+steps:
+  - name: bootstrap
+    tool: hivefiver-start
+    args:
+      lane: vibecoder
+  - name: doctor-preflight
+    tool: hivefiver-doctor
+    args:
+      focus: onboarding_readiness
+  - name: intake
+    tool: hivefiver-intake
+    args:
+      style: interactive_mcq
+      strictness: assisted
+  - name: specforge
+    tool: hivefiver-specforge
+    args:
+      output: guided_spec
+      include_examples: true
+  - name: research
+    tool: hivefiver-research
+    args:
+      fallback: graceful
+      enforce_provider_status: true
+  - name: skillforge
+    tool: hivefiver-skillforge
+    args:
+      pack: vibecoder
+      include_cross_domain: true
+  - name: ralph-bridge
+    tool: hivefiver-ralph-bridge
+    args:
+      validate_schema: true
+      include_todo_story_map: true
+guards:
+  - rule: context_first
+    check: hierarchy_chain_complete
+  - rule: evidence_gate
+    check: confidence_not_fake
+  - rule: mcp_readiness
+    check: provider_status_reported
+  - rule: graph_connected
+    check: connected_task_graph
+  - rule: export_cycle
+    check: cycle_exported

@@ -31,6 +31,7 @@ import { saveTasks } from "../lib/manifest.js"
 import { getStalenessInfo } from "../lib/staleness.js"
 import { registerGovernanceSignal } from "../lib/detection.js"
 import { queueStateMutation } from "../lib/state-mutation-queue.js"
+import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
 
 export function createEventHandler(log: Logger, directory: string) {
   const stateManager = createStateManager(directory)
@@ -139,12 +140,36 @@ export function createEventHandler(log: Logger, directory: string) {
                   : typeof todo?.text === "string"
                     ? todo.text
                     : ""
+              const realignment = detectAutoRealignment(content)
               return {
                 id: typeof todo?.id === "string" && todo.id.length > 0 ? todo.id : `todo-${index + 1}`,
                 text: content,
                 content,
                 status: typeof todo?.status === "string" ? todo.status : "pending",
                 priority: typeof todo?.priority === "string" ? todo.priority : "medium",
+                domain: typeof todo?.domain === "string" ? todo.domain : realignment.domain,
+                lane: typeof todo?.lane === "string" ? todo.lane : (realignment.shouldRealign ? "auto" : undefined),
+                source: typeof todo?.source === "string" ? todo.source : "todo.updated",
+                dependencies: Array.isArray(todo?.dependencies)
+                  ? todo.dependencies.filter((dep: unknown) => typeof dep === "string")
+                  : undefined,
+                acceptance_criteria: Array.isArray(todo?.acceptance_criteria)
+                  ? todo.acceptance_criteria.filter((item: unknown) => typeof item === "string")
+                  : undefined,
+                recommended_skills: Array.isArray(todo?.recommended_skills)
+                  ? todo.recommended_skills.filter((item: unknown) => typeof item === "string")
+                  : realignment.recommendedSkills,
+                canonical_command: typeof todo?.canonical_command === "string"
+                  ? todo.canonical_command
+                  : realignment.recommendedCommand,
+                related_entities: {
+                  session_id: sessionID,
+                  plan_id: typeof todo?.plan_id === "string" ? todo.plan_id : undefined,
+                  phase_id: typeof todo?.phase_id === "string" ? todo.phase_id : undefined,
+                  graph_task_id: typeof todo?.graph_task_id === "string" ? todo.graph_task_id : undefined,
+                  story_id: typeof todo?.story_id === "string" ? todo.story_id : undefined,
+                },
+                last_realigned_at: realignment.shouldRealign ? now : undefined,
                 updated_at: now,
               }
             })

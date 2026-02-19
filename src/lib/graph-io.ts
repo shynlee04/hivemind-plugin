@@ -2,10 +2,10 @@ import { existsSync } from "fs"
 import { mkdir, readFile, rename, unlink, writeFile } from "fs/promises"
 import { dirname, sep } from "path"
 import { z } from "zod"
-import { readManifest, type SessionManifest } from "./manifest.js"
+import { loadTasks, readManifest, type SessionManifest } from "./manifest.js"
 import { createLogger, noopLogger, type Logger } from "./logging.js"
 
-import type { MemNode, TaskNode } from "../schemas/graph-nodes.js"
+import type { MemNode, RalphPrdJson, RalphUserStory, TaskNode } from "../schemas/graph-nodes.js"
 import { withFileLock } from "./file-lock.js"
 import {
   GraphMemsStateSchema,
@@ -141,6 +141,8 @@ export async function validateTasksWithFKValidation(
   filePath: string,
   validPhaseIds: Set<string>,
   orphanPath: string,
+  validPlanIds: Set<string> = new Set<string>(),
+  planLineageById: Map<string, { project_id: string | null; milestone_id: string | null }> = new Map(),
 ): Promise<GraphTasksState | null> {
   if (!existsSync(filePath)) {
     return null
@@ -161,12 +163,60 @@ export async function validateTasksWithFKValidation(
     const now = new Date().toISOString()
     
     for (const task of result.data.tasks) {
+      let shouldQuarantine = false
+      let quarantineReason = ""
+
       if (!validPhaseIds.has(task.parent_phase_id)) {
-        await logGraph("warn", filePath, `[graph-io] Quarantining orphan task ${task.id}: parent_phase_id ${task.parent_phase_id} not found`)
+        shouldQuarantine = true
+        quarantineReason = `parent_phase_id ${task.parent_phase_id} not found in valid phases`
+      }
+
+      const taskPlanId = task.plan_id ?? null
+      const taskProjectId = task.project_id ?? null
+      const taskMilestoneId = task.milestone_id ?? null
+
+      if (!shouldQuarantine && taskPlanId !== null && !validPlanIds.has(taskPlanId)) {
+        shouldQuarantine = true
+        quarantineReason = `plan_id ${taskPlanId} not found in valid plans`
+      }
+
+      if (!shouldQuarantine && (taskProjectId !== null || taskMilestoneId !== null) && taskPlanId === null) {
+        shouldQuarantine = true
+        quarantineReason = "project_id/milestone_id requires explicit plan_id lineage"
+      }
+
+      if (!shouldQuarantine && taskPlanId !== null && (taskProjectId !== null || taskMilestoneId !== null)) {
+        const lineage = planLineageById.get(taskPlanId)
+        const planProjectId = lineage?.project_id ?? null
+        const planMilestoneId = lineage?.milestone_id ?? null
+
+        if (taskProjectId !== null && planProjectId === null) {
+          shouldQuarantine = true
+          quarantineReason = `project_id ${taskProjectId} cannot be validated: plan ${taskPlanId} has no project_id lineage`
+        }
+
+        if (!shouldQuarantine && taskProjectId !== null && taskProjectId !== planProjectId) {
+          shouldQuarantine = true
+          quarantineReason = `project_id ${taskProjectId} does not match plan ${taskPlanId} project_id ${planProjectId}`
+        }
+
+        if (!shouldQuarantine && taskMilestoneId !== null && planMilestoneId === null) {
+          shouldQuarantine = true
+          quarantineReason = `milestone_id ${taskMilestoneId} cannot be validated: plan ${taskPlanId} has no milestone_id lineage`
+        }
+
+        if (!shouldQuarantine && taskMilestoneId !== null && taskMilestoneId !== planMilestoneId) {
+          shouldQuarantine = true
+          quarantineReason = `milestone_id ${taskMilestoneId} does not match plan ${taskPlanId} milestone_id ${planMilestoneId}`
+        }
+      }
+
+      if (shouldQuarantine) {
+        await logGraph("warn", filePath, `[graph-io] Quarantining orphan task ${task.id}: ${quarantineReason}`)
         await quarantineOrphan(orphanPath, {
           id: task.id,
           type: "task",
-          reason: `parent_phase_id ${task.parent_phase_id} not found in valid phases`,
+          reason: quarantineReason,
           original_data: task,
           quarantined_at: now,
         })
@@ -193,6 +243,8 @@ export async function validateMemsWithFKValidation(
   filePath: string,
   validTaskIds: Set<string>,
   orphanPath: string,
+  validVerificationIds: Set<string> = new Set<string>(),
+  validSessionIds: Set<string> = validTaskIds,
 ): Promise<GraphMemsState | null> {
   if (!existsSync(filePath)) {
     return null
@@ -223,11 +275,15 @@ export async function validateMemsWithFKValidation(
         quarantineReason = `origin_task_id ${mem.origin_task_id} not found in valid tasks`
       }
 
-      // session_id FK validation - always required and must resolve.
-      // Note: validTaskIds includes session IDs from sessions manifest (see loadGraphMems)
-      if (!shouldQuarantine && !validTaskIds.has(mem.session_id)) {
+      // session_id FK validation - always required and must resolve against session lineage.
+      if (!shouldQuarantine && !validSessionIds.has(mem.session_id)) {
         shouldQuarantine = true
-        quarantineReason = `session_id ${mem.session_id} not found in valid sessions`
+        quarantineReason = `session_id ${mem.session_id} not found in valid session lineage`
+      }
+
+      if (!shouldQuarantine && mem.verification_id !== undefined && mem.verification_id !== null && !validVerificationIds.has(mem.verification_id)) {
+        shouldQuarantine = true
+        quarantineReason = `verification_id ${mem.verification_id} not found in valid verification lineage`
       }
 
       if (shouldQuarantine) {
@@ -547,8 +603,16 @@ export async function loadGraphTasks(
   // Phases are nested inside plans, so we need to traverse plans[].phases[]
   const plans = await loadPlans(projectRoot)
   const validPhaseIds = new Set<string>()
+  const validPlanIds = new Set<string>()
+  const planLineageById = new Map<string, { project_id: string | null; milestone_id: string | null }>()
   
   for (const plan of plans.plans) {
+    validPlanIds.add(plan.id)
+    planLineageById.set(plan.id, {
+      project_id: plan.project_id ?? null,
+      milestone_id: plan.milestone_id ?? null,
+    })
+
     // Each plan has phases nested inside (from cognitive-packer pattern)
     const planWithPhases = plan as { phases?: Array<{ id: string }> }
     if (planWithPhases.phases) {
@@ -567,7 +631,13 @@ export async function loadGraphTasks(
   }
 
   // Step 2: Load and validate tasks with FK validation
-  const validatedState = await validateTasksWithFKValidation(filePath, validPhaseIds, orphanPath)
+  const validatedState = await validateTasksWithFKValidation(
+    filePath,
+    validPhaseIds,
+    orphanPath,
+    validPlanIds,
+    planLineageById,
+  )
   
   if (validatedState) {
     return validatedState
@@ -609,24 +679,41 @@ export async function loadGraphMems(
   
   // Build set of valid task IDs
   const validTaskIds = new Set(tasks.tasks.map((task) => task.id))
+  const validSessionIds = new Set<string>()
+  const validVerificationIds = new Set<string>()
 
-  // Step 1b: Load sessions to get valid session IDs (sessions are also valid origins)
-  // CHIMERA-3: Allow sessions as origin_task_id
+  const trajectory = await loadTrajectory(projectRoot)
+  const trajectorySessionId = trajectory?.trajectory?.session_id
+  if (trajectorySessionId) {
+    validSessionIds.add(trajectorySessionId)
+  }
+
+  const plans = await loadPlans(projectRoot)
+  for (const plan of plans.plans) {
+    const planWithVerifications = plan as { verifications?: Array<{ id: string }> }
+    if (planWithVerifications.verifications) {
+      for (const verification of planWithVerifications.verifications) {
+        validVerificationIds.add(verification.id)
+      }
+    }
+  }
+
+  // Step 1b: Load sessions to get valid session IDs
   try {
     const sessionsPath = paths.sessionsManifest
     if (existsSync(sessionsPath)) {
       const sessions = await readManifest<SessionManifest>(sessionsPath)
       if (sessions && sessions.sessions) {
          sessions.sessions.forEach(s => {
-           validTaskIds.add(s.stamp)
-           if (s.session_id) {
-             if (Array.isArray(s.session_id)) {
-               s.session_id.forEach(id => validTaskIds.add(id))
-             } else {
-               validTaskIds.add(s.session_id)
-             }
-           }
-         })
+            validSessionIds.add(s.stamp)
+            if (s.session_id) {
+              if (Array.isArray(s.session_id)) {
+                s.session_id.forEach(id => validSessionIds.add(id))
+              } else {
+                validSessionIds.add(s.session_id)
+              }
+            }
+          })
       }
     }
   } catch (e) {
@@ -634,7 +721,13 @@ export async function loadGraphMems(
   }
 
   // Step 2: Load and validate mems with FK validation
-  const validatedState = await validateMemsWithFKValidation(filePath, validTaskIds, orphanPath)
+  const validatedState = await validateMemsWithFKValidation(
+    filePath,
+    validTaskIds,
+    orphanPath,
+    validVerificationIds,
+    validSessionIds,
+  )
   
   if (validatedState) {
     return validatedState
@@ -666,6 +759,256 @@ export async function loadGraphWithFullFKValidation(
   const trajectory = await loadTrajectory(projectRoot)
   const tasks = await loadGraphTasks(projectRoot, options)
   const mems = await loadGraphMems(projectRoot, options)
-  
+
   return { trajectory, tasks, mems }
+}
+
+export interface LifecycleLineageSnapshot {
+  has_trajectory: boolean
+  active_plan_id: string | null
+  active_phase_id: string | null
+  active_task_ids: string[]
+  totals: {
+    plans: number
+    tasks: number
+    mems: number
+  }
+  missing: {
+    plan_project_lineage: string[]
+    plan_milestone_lineage: string[]
+    task_plan_lineage: string[]
+    task_project_lineage: string[]
+    task_milestone_lineage: string[]
+    mem_verification_lineage: string[]
+  }
+}
+
+/**
+ * HiveFiver compatibility helper:
+ * summarizes lifecycle lineage integrity for GSD/Ralph bridge validation.
+ */
+export async function buildLifecycleLineageSnapshot(
+  projectRoot: string,
+): Promise<LifecycleLineageSnapshot> {
+  const [trajectory, plans, tasks, mems] = await Promise.all([
+    loadTrajectory(projectRoot),
+    loadPlans(projectRoot),
+    loadGraphTasks(projectRoot),
+    loadGraphMems(projectRoot),
+  ])
+
+  const planIds = new Set(plans.plans.map((plan) => plan.id))
+
+  const planProjectMissing: string[] = []
+  const planMilestoneMissing: string[] = []
+  for (const plan of plans.plans) {
+    if (!plan.project_id || plan.project_id.trim().length === 0) {
+      planProjectMissing.push(plan.id)
+    }
+    if (!plan.milestone_id || plan.milestone_id.trim().length === 0) {
+      planMilestoneMissing.push(plan.id)
+    }
+  }
+
+  const taskPlanMissing: string[] = []
+  const taskProjectMissing: string[] = []
+  const taskMilestoneMissing: string[] = []
+  for (const task of tasks.tasks) {
+    if (!task.plan_id || !planIds.has(task.plan_id)) {
+      taskPlanMissing.push(task.id)
+    }
+    if (!task.project_id || task.project_id.trim().length === 0) {
+      taskProjectMissing.push(task.id)
+    }
+    if (!task.milestone_id || task.milestone_id.trim().length === 0) {
+      taskMilestoneMissing.push(task.id)
+    }
+  }
+
+  const memVerificationMissing = mems.mems
+    .filter((mem) => mem.verification_id === undefined || mem.verification_id === null)
+    .map((mem) => mem.id)
+
+  return {
+    has_trajectory: trajectory !== null,
+    active_plan_id: trajectory?.trajectory?.active_plan_id ?? null,
+    active_phase_id: trajectory?.trajectory?.active_phase_id ?? null,
+    active_task_ids: trajectory?.trajectory?.active_task_ids ?? [],
+    totals: {
+      plans: plans.plans.length,
+      tasks: tasks.tasks.length,
+      mems: mems.mems.length,
+    },
+    missing: {
+      plan_project_lineage: planProjectMissing,
+      plan_milestone_lineage: planMilestoneMissing,
+      task_plan_lineage: taskPlanMissing,
+      task_project_lineage: taskProjectMissing,
+      task_milestone_lineage: taskMilestoneMissing,
+      mem_verification_lineage: memVerificationMissing,
+    },
+  }
+}
+
+export interface RalphTaskGraphSnapshot {
+  source: "state.tasks" | "graph.tasks" | "empty"
+  warnings: string[]
+  prd: RalphPrdJson
+}
+
+function toRalphStatus(value: string | undefined): RalphUserStory["status"] {
+  if (value === "completed" || value === "complete") return "completed"
+  if (value === "in_progress" || value === "active") return "in_progress"
+  if (value === "blocked" || value === "invalidated") return "blocked"
+  return "pending"
+}
+
+function toStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
+      .map((entry) => entry.trim())
+  }
+
+  if (typeof value === "string" && value.trim().length > 0) {
+    return value
+      .split(",")
+      .map((entry) => entry.trim())
+      .filter((entry) => entry.length > 0)
+  }
+
+  return []
+}
+
+function toAcceptanceCriteria(
+  description: string,
+  fallback: unknown,
+): string[] {
+  const fromField = toStringArray(fallback)
+  if (fromField.length > 0) {
+    return fromField
+  }
+
+  const extracted = description
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("- [ ] ") || line.startsWith("- ") || line.startsWith("* "))
+    .map((line) => line.replace(/^- \[ \]\s*/, "").replace(/^[-*]\s*/, "").trim())
+    .filter((line) => line.length > 0)
+
+  return extracted
+}
+
+/**
+ * HiveFiver / Ralph bridge helper:
+ * builds flat-root PRD JSON from persisted TODO/task state with deterministic IDs.
+ */
+export async function buildRalphTaskGraphSnapshot(
+  projectRoot: string,
+  options: {
+    name?: string
+    description?: string
+  } = {},
+): Promise<RalphTaskGraphSnapshot> {
+  const warnings: string[] = []
+  const name = options.name?.trim() || "HiveFiver Task Export"
+  const description = options.description?.trim() || "Generated from .hivemind task manifests."
+
+  const stateTasks = await loadTasks(projectRoot)
+  if (stateTasks && stateTasks.tasks.length > 0) {
+    const userStories: RalphUserStory[] = stateTasks.tasks.map((task, index) => {
+      const node = task as Record<string, unknown>
+      const titleRaw = typeof task.text === "string" && task.text.trim().length > 0
+        ? task.text.trim()
+        : `Task ${index + 1}`
+      const dependencies = toStringArray(
+        node.dependencies ?? node.depends_on ?? node.dependsOn,
+      )
+      const acceptanceCriteria = toAcceptanceCriteria(
+        titleRaw,
+        node.acceptanceCriteria ?? node.acceptance_criteria,
+      )
+
+      return {
+        id: task.id || `story-${index + 1}`,
+        title: titleRaw.split("\n")[0] || `Task ${index + 1}`,
+        description: titleRaw,
+        status: toRalphStatus(task.status),
+        dependencies,
+        acceptanceCriteria,
+        relatedEntities:
+          typeof node.related_entities === "object" && node.related_entities !== null
+            ? {
+                session_id:
+                  typeof (node.related_entities as Record<string, unknown>).session_id === "string"
+                    ? (node.related_entities as Record<string, unknown>).session_id as string
+                    : undefined,
+                plan_id:
+                  typeof (node.related_entities as Record<string, unknown>).plan_id === "string"
+                    ? (node.related_entities as Record<string, unknown>).plan_id as string
+                    : undefined,
+                phase_id:
+                  typeof (node.related_entities as Record<string, unknown>).phase_id === "string"
+                    ? (node.related_entities as Record<string, unknown>).phase_id as string
+                    : undefined,
+                graph_task_id:
+                  typeof (node.related_entities as Record<string, unknown>).graph_task_id === "string"
+                    ? (node.related_entities as Record<string, unknown>).graph_task_id as string
+                    : undefined,
+                story_id:
+                  typeof (node.related_entities as Record<string, unknown>).story_id === "string"
+                    ? (node.related_entities as Record<string, unknown>).story_id as string
+                    : undefined,
+              }
+            : undefined,
+      }
+    })
+
+    return {
+      source: "state.tasks",
+      warnings,
+      prd: {
+        name,
+        description,
+        userStories,
+      },
+    }
+  }
+
+  const graphTasks = await loadGraphTasks(projectRoot)
+  if (graphTasks.tasks.length > 0) {
+    warnings.push("state/tasks.json not found or empty; using graph/tasks.json fallback")
+    const userStories: RalphUserStory[] = graphTasks.tasks.map((task, index) => ({
+      id: task.id,
+      title: task.title,
+      description: `Phase ${task.parent_phase_id}: ${task.title}`,
+      status: toRalphStatus(task.status),
+      dependencies: index > 0 ? [graphTasks.tasks[index - 1]?.id].filter(Boolean) as string[] : [],
+      acceptanceCriteria: [],
+      relatedEntities: {
+        graph_task_id: task.id,
+      },
+    }))
+
+    return {
+      source: "graph.tasks",
+      warnings,
+      prd: {
+        name,
+        description,
+        userStories,
+      },
+    }
+  }
+
+  warnings.push("no tasks found in state/tasks.json or graph/tasks.json")
+  return {
+    source: "empty",
+    warnings,
+    prd: {
+      name,
+      description,
+      userStories: [],
+    },
+  }
 }

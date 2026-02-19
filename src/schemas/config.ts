@@ -396,6 +396,8 @@ export function generateAgentBehaviorPrompt(config: AgentBehaviorConfig): string
   // Constraints
   lines.push("[CONSTRAINTS]");
   lines.push("- TASK MANAGEMENT: Use `todoread` to check tasks and `todowrite` to update them.");
+  lines.push("- AUTO REALIGNMENT: If user skips commands, route to the correct HiveFiver workflow automatically.");
+  lines.push("- SKILL-FIRST FALLBACK: When commands are missing, load and apply relevant skills to complete tasks.");
   if (config.constraints.require_code_review) {
     lines.push("- MUST review code before accepting: check for bugs, smells, tests");
   }

@@ -1,0 +1,167 @@
+{
+  "version": "1.0.0",
+  "tasks": [
+    {
+      "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+      "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+      "title": "Create Tết marketing canvas for Sữa Ông Thọ condensed milk campaign",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T12:00:38.616Z",
+      "updated_at": "2026-02-19T12:00:38.616Z"
+    },
+    {
+      "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+      "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+      "title": "Create visual presentation slides for Sữa Ông Thọ Tết marketing canvas",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T12:02:37.237Z",
+      "updated_at": "2026-02-19T12:02:37.237Z"
+    },
+    {
+      "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+      "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+      "title": "Convert markdown presentation to PowerPoint/Google Slides importable format",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T12:05:08.932Z",
+      "updated_at": "2026-02-19T12:05:08.932Z"
+    },
+    {
+      "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+      "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+      "title": "Gather requirements for market research skill via HiveFiver intake",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T12:15:09.170Z",
+      "updated_at": "2026-02-19T12:15:09.170Z"
+    },
+    {
+      "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+      "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+      "title": "Create pressure scenarios and document baseline failures for market research skill",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T12:19:41.158Z",
+      "updated_at": "2026-02-19T12:19:41.158Z"
+    },
+    {
+      "id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Patch canonical governance aliases and wiring so phase5 canonical governance RED tests turn GREEN with minimal backward-compatible changes",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T12:54:01.798Z",
+      "updated_at": "2026-02-19T12:54:01.798Z"
+    },
+    {
+      "id": "2c2a7b61-6913-4ea1-854d-0e3c19648a19",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Review local canonical governance changes for compatibility in four specified files and provide approval verdict with severity and line references",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T12:58:53.321Z",
+      "updated_at": "2026-02-19T12:58:53.321Z"
+    },
+    {
+      "id": "74eddc55-7c9c-441e-9a3a-ffaad15337d0",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Re-run post-fix integration readiness check for canonical-governance remediation",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T13:08:35.374Z",
+      "updated_at": "2026-02-19T13:08:35.374Z"
+    },
+    {
+      "id": "f7fe3f93-30cc-499e-8bf1-89643b3700e7",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Acknowledged pending subagent failure during integration check",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T13:11:04.405Z",
+      "updated_at": "2026-02-19T13:11:04.405Z"
+    },
+    {
+      "id": "11c53e0c-0692-449a-af05-0a7c209ca983",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "blocked: acknowledged pending subagent failure during integration check; resuming with final documentation closeout + commit execution",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T13:12:29.112Z",
+      "updated_at": "2026-02-19T13:12:29.112Z"
+    },
+    {
+      "id": "4579199d-bdd4-4dba-a821-a31f5826e2f7",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "blocked: subagent integration check failure acknowledged; doctor checkpoint in progress; next step is recovery plan and explicit unblock criteria.",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T13:13:15.027Z",
+      "updated_at": "2026-02-19T13:13:15.027Z"
+    },
+    {
+      "id": "5a05a249-8d88-4986-b305-e03396b40b4f",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "doctor: blocker diagnosed as stale phantom failure; canonical recovery plan prepared with explicit unblock criteria and evidence.",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T13:17:05.324Z",
+      "updated_at": "2026-02-19T13:17:05.324Z"
+    },
+    {
+      "id": "390505a2-a741-4b79-b785-ff8239d144de",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Code review completion-wave changes for canonical governance recovery paths and test coverage gaps",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T13:19:52.383Z",
+      "updated_at": "2026-02-19T13:19:52.383Z"
+    },
+    {
+      "id": "f94b7b36-145c-46e8-b86b-5da7e6dbc03f",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Re-review follow-up fixes in completion-wave files for canonical governance recovery paths and test coverage gaps; read-only audit with severity verdict",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T13:29:47.679Z",
+      "updated_at": "2026-02-19T13:29:47.679Z"
+    },
+    {
+      "id": "73649ec4-c623-4377-95f6-62876d8f5171",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Final read-only re-review of canonical governance recovery paths and focused regression coverage across specified files",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T13:39:03.863Z",
+      "updated_at": "2026-02-19T13:39:03.863Z"
+    },
+    {
+      "id": "4a6b47bc-6f92-4317-8511-44e13c058212",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Completed final read-only re-review with evidence-backed severity assessment",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T13:48:26.608Z",
+      "updated_at": "2026-02-19T13:48:26.608Z"
+    },
+    {
+      "id": "6d0eb10c-8033-4883-bf67-c6987a204ed7",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Run deep audit of SRC logic/dataflow/lifecycle/edge-cases with focus on HiveFiver todo/orchestrator-ralph integration and return-automation guarantees",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T14:03:01.510Z",
+      "updated_at": "2026-02-19T14:03:01.510Z"
+    },
+    {
+      "id": "8bc17314-b9ea-44f2-8e17-e04b06214962",
+      "parent_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Audit SRC logic/dataflow/lifecycle/edge-cases for HiveFiver TODO+orchestrator-ralph integration, then implement must-fix remediations and update docs for production readiness",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T14:03:20.139Z",
+      "updated_at": "2026-02-19T14:03:20.139Z"
+    }
+  ]
+}

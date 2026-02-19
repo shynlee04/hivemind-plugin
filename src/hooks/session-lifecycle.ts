@@ -138,7 +138,12 @@ async function buildBootstrapContext(directory: string, state: { metrics: { turn
 }
 
 function buildTaskBlock(): string[] {
-  return ["[TASKS]", "- Remember to track your work. Use `todoread` to check pending tasks and `todowrite` to update status."]
+  return [
+    "[TASKS]",
+    "- Track work with `todoread` and `todowrite`.",
+    "- If user skips or misuses commands, auto-realign to HiveFiver flow (`hivefiver-start` -> intake -> specforge -> research).",
+    "- Use skills to continue execution when commands are absent (persona-routing, spec-distillation, mcp-research-loop, ralph-tasking).",
+  ]
 }
 
 function buildStatusBlock(state: { session: { governance_status: string; mode: string; governance_mode: string }; hierarchy: { trajectory: string; tactic: string; action: string } }, config: HiveMindConfig): string[] {

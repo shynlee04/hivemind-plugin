@@ -23,6 +23,7 @@ import type { Message, Part } from "@opencode-ai/sdk"
 import type { BrainState } from "../schemas/brain-state.js"
 import { createLogger } from "../lib/logging.js"
 import { getEffectivePaths } from "../lib/paths.js"
+import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
 
 type MessagePart = {
   id?: string
@@ -106,6 +107,28 @@ function getLastNonSyntheticUserMessageIndex(messages: MessageV2[]): number {
     }
   }
   return -1
+}
+
+function getMessageText(message: MessageV2): string {
+  if (isMessageWithParts(message)) {
+    return message.parts
+      .filter((part) => part.type === "text")
+      .map((part) => part.text || "")
+      .join(" ")
+  }
+
+  if (typeof message.content === "string") {
+    return message.content
+  }
+
+  if (Array.isArray(message.content)) {
+    return message.content
+      .filter((part) => part.type === "text")
+      .map((part) => (part as MessagePart).text || "")
+      .join(" ")
+  }
+
+  return ""
 }
 
 /**
@@ -260,14 +283,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           try {
             // Extract user message text
             const userMessage = output.messages[index]
-            let userMessageText = ""
-            if (isMessageWithParts(userMessage)) {
-              userMessageText = userMessage.parts.filter(p => p.type === "text").map(p => p.text || "").join(" ")
-            } else if (typeof userMessage.content === "string") {
-              userMessageText = userMessage.content
-            } else if (Array.isArray(userMessage.content)) {
-              userMessageText = userMessage.content.filter(p => p.type === "text").map(p => (p as MessagePart).text || "").join(" ")
-            }
+            const userMessageText = getMessageText(userMessage)
 
             // Load last session context (from archive if available)
             const lastSessionContext = await loadLastSessionContext(directory)
@@ -361,6 +377,21 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
+        const latestUserText = getMessageText(output.messages[index])
+        const autoRealign = detectAutoRealignment(latestUserText)
+        if (autoRealign.shouldRealign) {
+          prependSyntheticPart(
+            output.messages[index],
+            [
+              "<system-reminder>",
+              `[AUTO-REALIGN] ${autoRealign.reason}.`,
+              `If user command is missing or invalid, route automatically via /${autoRealign.recommendedCommand}.`,
+              `Load and use skills: ${autoRealign.recommendedSkills.join(", ")}.`,
+              "Continue task completion even without explicit slash commands.",
+              "</system-reminder>",
+            ].join("\\n"),
+          )
+        }
 
         // US-015: Cognitive Packer - inject packed XML state at START
         const packedContext = packCognitiveState(directory)
@@ -374,6 +405,12 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
         // 2. Pre-Stop Conditional Reminders (Inject Checklist at END)
         const items: string[] = []
+
+        if (autoRealign.shouldRealign) {
+          items.push(
+            `Auto-realign workflow now: /${autoRealign.recommendedCommand} + skills (${autoRealign.recommendedSkills.join(", ")})`
+          )
+        }
 
         // Add standard governance checks
         if (!state.hierarchy.action) items.push("Action-level focus is missing (call map_context)")

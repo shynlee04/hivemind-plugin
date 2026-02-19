@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sữa Ông Thọ - Chiến Dịch Tết 2026</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .slide {
+            width: 1280px;
+            height: 720px;
+            margin: 40px auto;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 60px;
+            position: relative;
+            page-break-after: always;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .slide-title {
+            background: linear-gradient(135deg, #C8102E 0%, #8B0000 100%);
+            color: white;
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .slide-title h1 {
+            font-size: 72px;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .slide-title h2 {
+            font-size: 42px;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+        
+        .slide-title .subtitle {
+            font-size: 28px;
+            opacity: 0.9;
+        }
+        
+        .slide-header {
+            border-bottom: 4px solid #C8102E;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .slide-header h2 {
+            color: #C8102E;
+            font-size: 48px;
+            font-weight: 700;
+        }
+        
+        .slide-number {
+            position: absolute;
+            bottom: 30px;
+            right: 60px;
+            font-size: 18px;
+            color: #999;
+        }
+        
+        .brand-logo {
+            position: absolute;
+            top: 40px;
+            right: 60px;
+            width: 120px;
+            height: 60px;
+            background: #0066B3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        
+        .content {
+            flex: 1;
+            font-size: 24px;
+            line-height: 1.6;
+        }
+        
+        .content h3 {
+            color: #D4AF37;
+            font-size: 32px;
+            margin: 20px 0 15px 0;
+        }
+        
+        .content p, .content li {
+            margin-bottom: 15px;
+        }
+        
+        .content ul {
+            margin-left: 40px;
+        }
+        
+        .content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .content th {
+            background: #C8102E;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 22px;
+        }
+        
+        .content td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            font-size: 20px;
+        }
+        
+        .content tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        
+        .highlight-box {
+            background: #FFFDD0;
+            border-left: 5px solid #D4AF37;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        
+        .three-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .column-box {
+            background: #f9f9f9;
+            padding: 25px;
+            border-radius: 8px;
+            border-top: 4px solid #C8102E;
+        }
+        
+        .column-box h4 {
+            color: #C8102E;
+            font-size: 26px;
+            margin-bottom: 15px;
+        }
+        
+        .metric-box {
+            background: linear-gradient(135deg, #C8102E 0%, #8B0000 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .metric-box .number {
+            font-size: 56px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .metric-box .label {
+            font-size: 20px;
+            opacity: 0.9;
+        }
+        
+        .icon {
+            font-size: 36px;
+            margin-right: 10px;
+        }
+        
+        .emoji {
+            font-size: 28px;
+        }
+        
+        .agenda-item {
+            display: flex;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 28px;
+        }
+        
+        .agenda-item .num {
+            background: #C8102E;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 20px;
+            font-weight: bold;
+        }
+        
+        .risk-high { color: #C8102E; font-weight: bold; }
+        .risk-medium { color: #FFA500; font-weight: bold; }
+        .risk-low { color: #228B22; font-weight: bold; }
+        
+        .timeline-bar {
+            background: #f0f0f0;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .timeline-item {
+            padding: 10px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+        
+        .tagline {
+            font-style: italic;
+            font-size: 32px;
+            color: #C8102E;
+            text-align: center;
+            padding: 30px;
+            background: #FFFDD0;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        @media print {
+            .slide {
+                page-break-after: always;
+                margin: 0;
+                box-shadow: none;
+            }
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            padding: 30px;
+            margin: 20px;
+            border-radius: 8px;
+            border-left: 5px solid #2196F3;
+        }
+        
+        .instructions h3 {
+            color: #1976D2;
+            margin-bottom: 15px;
+        }
+        
+        .instructions ol {
+            margin-left: 25px;
+            line-height: 2;
+        }
+    </style>
+</head>
+<body>
+
+<!-- INSTRUCTIONS SLIDE - NOT PART OF PRESENTATION -->
+<div class="slide" style="background: #e3f2fd;">
+    <div class="slide-header">
+        <h2>📋 Hướng Dẫn Sử Dụng</h2>
+    </div>
+    <div class="content">
+        <h3>Cách import vào PowerPoint / Google Slides:</h3>
+        <ol style="font-size: 22px; line-height: 2;">
+            <li><strong>Mở file này trong Chrome/Firefox/Safari</strong></li>
+            <li><strong>Copy từng slide:</strong> Click chuột phải → "Inspect" → Copy element hoặc Screenshot từng slide</li>
+            <li><strong>PowerPoint:</strong> Insert → Pictures → Screenshot hoặc Paste hình ảnh</li>
+            <li><strong>Google Slides:</strong> File → Import slides → hoặc Copy-Paste trực tiếp từng trang</li>
+        </ol>
+        <div class="highlight-box" style="margin-top: 30px;">
+            <strong>💡 Mẹo:</strong> Sử dụng chức năng "Print to PDF" của browser để xuất toàn bộ presentation thành file PDF, sau đó import vào PowerPoint.
+        </div>
+        <p style="margin-top: 30px; font-size: 20px; color: #666;">
+            File gốc: presentation-sua-ong-tho-tet-2026-02-19.md | Ngày tạo: 19/02/2026
+        </p>
+    </div>
+</div>
+
+<!-- SLIDE 1: TITLE -->
+<div class="slide slide-title">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <h1>Tết Đậm Đà<br>Yêu Thương Trọn Vẹn</h1>
+    <h2>Chiến Dịch Marketing Tết 2026</h2>
+    <div class="subtitle">
+        Sữa Ông Thọ - Vinamilk<br><br>
+        📅 15/12/2025 - 15/02/2026<br>
+        🎯 Mục tiêu: Tăng trưởng 25% doanh số Tết
+    </div>
+    <div class="slide-number">1/19</div>
+</div>
+
+<!-- SLIDE 2: AGENDA -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>📑 Mục Lục</h2>
+    </div>
+    <div class="content">
+        <div class="agenda-item">
+            <div class="num">1</div>
+            <div>Tổng Quan Chiến Dịch</div>
+        </div>
+        <div class="agenda-item">
+            <div class="num">2</div>
+            <div>Phân Tích Khách Hàng</div>
+        </div>
+        <div class="agenda-item">
+            <div class="num">3</div>
+            <div>Chiến Lược Định Vị</div>
+        </div>
+        <div class="agenda-item">
+            <div class="num">4</div>
+            <div>Kênh Triển Khai</div>
+        </div>
+        <div class="agenda-item">
+            <div class="num">5</div>
+            <div>Lịch Trình & Nội Dung</div>
+        </div>
+        <div class="agenda-item">
+            <div class="num">6</div>
+            <div>Ngân Sách & KPI</div>
+        </div>
+        <div class="agenda-item">
+            <div class="num">7</div>
+            <div>Kế Hoạch Hành Động</div>
+        </div>
+    </div>
+    <div class="slide-number">2/19</div>
+</div>
+
+<!-- SLIDE 3: TỔNG QUAN -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>🎯 Tổng Quan Chiến Dịch</h2>
+    </div>
+    <div class="content">
+        <h3>"Tết Đậm Đà - Yêu Thương Trọn Vẹn"</h3>
+        <table>
+            <tr>
+                <th style="width: 30%;">Thông tin</th>
+                <th>Chi tiết</th>
+            </tr>
+            <tr>
+                <td><strong>Thương hiệu</strong></td>
+                <td>Sữa Ông Thọ (Vinamilk)</td>
+            </tr>
+            <tr>
+                <td><strong>Sản phẩm</strong></td>
+                <td>Sữa đặc có đường các loại (380g, 500g, 1kg)</td>
+            </tr>
+            <tr>
+                <td><strong>Thờigian</strong></td>
+                <td>15/12/2025 - 15/02/2026</td>
+            </tr>
+            <tr>
+                <td><strong>Insight cốt lõi</strong></td>
+                <td>Tết là lúc gia đình sum họp, sữa Ông Thọ là cầu nối vị ngọt đậm đà trong món tráng miệng & đồ uống truyền thống</td>
+            </tr>
+        </table>
+        
+        <div class="three-column" style="margin-top: 30px;">
+            <div class="metric-box">
+                <div class="label">Mục tiêu doanh số</div>
+                <div class="number">+25%</div>
+                <div class="label">so với Tết 2025</div>
+            </div>
+            <div class="metric-box">
+                <div class="label">Vị thị thế</div>
+                <div class="number">#1</div>
+                <div class="label">Sữa đặc Việt Nam</div>
+            </div>
+            <div class="metric-box">
+                <div class="label">Reach Digital</div>
+                <div class="number">20M</div>
+                <div class="label">impressions</div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">3/19</div>
+</div>
+
+<!-- SLIDE 4: TARGET AUDIENCE -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>👥 Phân Tích Khách Hàng</h2>
+    </div>
+    <div class="content">
+        <h3>3 Nhóm Khách Hàng Chính</h3>
+        <div class="three-column">
+            <div class="column-box">
+                <h4>🧕 Nội Trợ<br>30-50 tuổi</h4>
+                <p><strong>Đặc điểm:</strong> Nữ, quan tâm gia đình, mua sắm Tết</p>
+                <p><strong>Insights:</strong> Thích thương hiệu uy tín, giá trị truyền thống</p>
+                <p><strong>Pain points:</strong> Lo chất lượng, giá cả</p>
+            </div>
+            <div class="column-box">
+                <h4>👨‍🍳 Gen Z/<br>Millennial 25-35</h4>
+                <p><strong>Đặc điểm:</strong> Độc thân/cặp đôi, thích sáng tạo</p>
+                <p><strong>Insights:</strong> Muốn món ăn độc đáo để khoe MXH</p>
+                <p><strong>Pain points:</strong> Thiếu thờigian, cần công thức đơn giản</p>
+            </div>
+            <div class="column-box">
+                <h4>🎁 Ngườimua<br>Quà Tết</h4>
+                <p><strong>Đặc điểm:</strong> Nam/nữ 25-45, mua giỏ quà biếu</p>
+                <p><strong>Insights:</strong> Cần quà sang trọng, ý nghĩa</p>
+                <p><strong>Pain points:</strong> Khó chọn quà phù hợp, ngân sách</p>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">4/19</div>
+</div>
+
+<!-- SLIDE 5: PERSONA -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>🧕 Persona Chính: Chị Lan</h2>
+    </div>
+    <div class="content">
+        <div class="two-column">
+            <div>
+                <h3>Thông tin cá nhân</h3>
+                <div class="highlight-box">
+                    <p><span class="emoji">🎂</span> <strong>Tuổi:</strong> 38</p>
+                    <p><span class="emoji">🏠</span> <strong>Nơi sống:</strong> TP.HCM / Hà Nội</p>
+                    <p><span class="emoji">💰</span> <strong>Thu nhập:</strong> Trung bình - khá</p>
+                    <p><span class="emoji">👨‍👩‍👧‍👦</span> <strong>Gia đình:</strong> Mẹ 2 con</p>
+                </div>
+                
+                <h3>Hành vi & Motivation</h3>
+                <ul>
+                    <li>✨ Chuẩn bị Tết từ tháng 12</li>
+                    <li>✨ Thích nấu ăn cho cả nhà</li>
+                    <li>✨ Mang đến Tết ấm áp, giữ gìn truyền thống</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Media Habits</h3>
+                <div class="column-box" style="margin-bottom: 20px;">
+                    <h4>📱 Nền tảng sử dụng</h4>
+                    <p><strong>Facebook:</strong> Theo dõi gia đình, bạn bè</p>
+                    <p><strong>YouTube:</strong> Xem video nấu ăn</p>
+                    <p><strong>TikTok:</strong> Giải trí, xu hướng</p>
+                    <p><strong>Zalo:</strong> Chat, nhóm gia đình</p>
+                </div>
+                
+                <h3>Quote</h3>
+                <div class="tagline" style="font-size: 24px; padding: 20px;">
+                    "Tết là dịp cả nhà sum họp, mình muốn nấu những món ngon để mọi người cùng thưởng thức."
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">5/19</div>
+</div>
+
+<!-- SLIDE 6: POSITIONING -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>🎯 Chiến Lược Định Vị</h2>
+    </div>
+    <div class="content">
+        <h3>Value Proposition Canvas</h3>
+        <table>
+            <tr>
+                <th style="width: 50%;">Khách hàng cần</th>
+                <th>Sữa Ông Thọ mang lại</th>
+            </tr>
+            <tr>
+                <td>🍰 <strong>Làm bánh Tết</strong></td>
+                <td>Sữa đặc đậm đà, béo ngậy</td>
+            </tr>
+            <tr>
+                <td>☕ <strong>Pha chế đồ uống</strong></td>
+                <td>Dễ dùng, tiện lợi</td>
+            </tr>
+            <tr>
+                <td>🎁 <strong>Tặng quà</strong></td>
+                <td>Thương hiệu uy tín 50+ năm</td>
+            </tr>
+            <tr>
+                <td>✅ <strong>An tâm chất lượng</strong></td>
+                <td>Nguyên liệu tự nhiên</td>
+            </tr>
+            <tr>
+                <td>😋 <strong>Món ăn ngon</strong></td>
+                <td>Công thức đa dạng</td>
+            </tr>
+            <tr>
+                <td>❤️ <strong>Gắn kết gia đình</strong></td>
+                <td>Giá trị truyền thống</td>
+            </tr>
+        </table>
+    </div>
+    <div class="slide-number">6/19</div>
+</div>
+
+<!-- SLIDE 7: KEY MESSAGES -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>💬 Thông Điệp Chính</h2>
+    </div>
+    <div class="content">
+        <h3>Customer Journey & Key Messages</h3>
+        <div style="text-align: center; font-size: 32px; margin: 30px 0; color: #666;">
+            Nhận thức → Quan tâm → Mong muốn → Hành động
+        </div>
+        <table>
+            <tr>
+                <th>Giai đoạn</th>
+                <th>Thông điệp</th>
+                <th>Execution</th>
+            </tr>
+            <tr>
+                <td><strong>🎯 Nhận thức</strong></td>
+                <td>"50 năm đậm đà hương vị Tết"</td>
+                <td>Video viral, KOLs nấu ăn</td>
+            </tr>
+            <tr>
+                <td><strong>🤔 Quan tâm</strong></td>
+                <td>"Món ngon Tết nhà chỉ với Ông Thọ"</td>
+                <td>Series công thức đơn giản</td>
+            </tr>
+            <tr>
+                <td><strong>✨ Mong muốn</strong></td>
+                <td>"Giỏ quà Ông Thọ - Biếu sang, nhận vui"</td>
+                <td>Bộ quà Tết đặc biệt</td>
+            </tr>
+            <tr>
+                <td><strong>🛒 Hành động</strong></td>
+                <td>"Mua ngay - Rinh lộc Tết"</td>
+                <td>CTA khuyến mãi, điểm bán</td>
+            </tr>
+        </table>
+    </div>
+    <div class="slide-number">7/19</div>
+</div>
+
+<!-- SLIDE 8: CHANNELS -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>📢 Kênh Triển Khai</h2>
+    </div>
+    <div class="content">
+        <div class="three-column">
+            <div class="column-box">
+                <h4>📱 Digital<br>60% Budget</h4>
+                <ul style="font-size: 18px;">
+                    <li><strong>Facebook:</strong><br>Reach & Engagement<br>5M reach</li>
+                    <li><strong>TikTok:</strong><br>Viral & Gen Z<br>10M views</li>
+                    <li><strong>YouTube:</strong><br>Education<br>2M views</li>
+                    <li><strong>E-commerce:</strong><br>Conversion<br>20% online sales</li>
+                </ul>
+            </div>
+            <div class="column-box">
+                <h4>📺 Traditional<br>30% Budget</h4>
+                <ul style="font-size: 18px;">
+                    <li><strong>TVC:</strong><br>Mass awareness<br>VTV, HTV giờ vàng</li>
+                    <li><strong>OOH:</strong><br>Visibility<br>Billboard chợ, siêu thị</li>
+                    <li><strong>In-store:</strong><br>Conversion<br>POSM, sampling</li>
+                </ul>
+            </div>
+            <div class="column-box">
+                <h4>🤝 PR & Activation<br>10% Budget</h4>
+                <ul style="font-size: 18px;">
+                    <li><strong>Cooking Class:</strong><br>Lớp học làm bánh Tết</li>
+                    <li><strong>Charity:</strong><br>Tặng quà trẻ em vùng cao</li>
+                    <li><strong>PR Event:</strong><br>Họp báo bộ sưu tập Tết</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">8/19</div>
+</div>
+
+<!-- SLIDE 9: CONTENT CALENDAR -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>📅 Lịch Trình & Nội Dung</h2>
+    </div>
+    <div class="content">
+        <h3>3 Giai Đoạn Chiến Dịch</h3>
+        <div class="three-column">
+            <div class="column-box">
+                <h4>📅 GĐ 1: Chuẩn bị<br>15/12 - 31/12</h4>
+                <div class="timeline-bar">
+                    <div class="timeline-item"><strong>15/12:</strong> Teaser "Sắp đến Tết rồi..."</div>
+                    <div class="timeline-item"><strong>20/12:</strong> Reveal campaign concept</div>
+                    <div class="timeline-item"><strong>25/12:</strong> Công thức: Bánh flan Tết</div>
+                    <div class="timeline-item"><strong>31/12:</strong> Minigame: Dự đoán Tết</div>
+                </div>
+            </div>
+            <div class="column-box">
+                <h4>📅 GĐ 2: Cao điểm<br>01/01 - 25/01</h4>
+                <div class="timeline-bar">
+                    <div class="timeline-item"><strong>01/01:</strong> Challenge #TetDamDa launch</div>
+                    <div class="timeline-item"><strong>10/01:</strong> Series: 7 ngày 7 món Tết</div>
+                    <div class="timeline-item"><strong>15/01:</strong> Livestream nấu ăn</div>
+                    <div class="timeline-item"><strong>20/01:</strong> Giới thiệu giỏ quà Tết</div>
+                    <div class="timeline-item"><strong>25/01:</strong> Flash sale Tết</div>
+                </div>
+            </div>
+            <div class="column-box">
+                <h4>📅 GĐ 3: Tết<br>26/01 - 15/02</h4>
+                <div class="timeline-bar">
+                    <div class="timeline-item"><strong>28/01 (Tết):</strong> Chúc Tết từ Ông Thọ</div>
+                    <div class="timeline-item"><strong>05/02:</strong> UGC: Mâm cỗ nhà mình</div>
+                    <div class="timeline-item"><strong>10/02:</strong> Tết này bạn được khen gì?</div>
+                    <div class="timeline-item"><strong>15/02:</strong> Campaign wrap-up</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">9/19</div>
+</div>
+
+<!-- SLIDE 10: CREATIVE CONCEPT -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>🎨 Creative Concept</h2>
+    </div>
+    <div class="content">
+        <h3>Big Idea: "Tết Đậm Đà - Yêu Thương Trọn Vẹn"</h3>
+        <div class="tagline" style="margin-bottom: 30px;">
+            Mỗi món ăn Tết làm từ sữa Ông Thọ không chỉ ngon mà còn chứa đựng tình yêu thương gia đình.
+        </div>
+        
+        <h3>Key Visual Elements</h3>
+        <div class="three-column">
+            <div class="highlight-box">
+                <h4 style="color: #C8102E; margin-bottom: 10px;">🎨 Màu sắc</h4>
+                <p><strong>Đỏ Tết:</strong> May mắn</p>
+                <p><strong>Vàng đồng:</strong> Sang trọng</p>
+                <p><strong>Trắng sữa:</strong> Thuần khiết</p>
+            </div>
+            <div class="highlight-box">
+                <h4 style="color: #C8102E; margin-bottom: 10px;">📸 Imagery</h4>
+                <p>Gia đình sum họp</p>
+                <p>Mâm cỗ Tết</p>
+                <p>Sản phẩm Ông Thọ</p>
+            </div>
+            <div class="highlight-box">
+                <h4 style="color: #C8102E; margin-bottom: 10px;">✨ Mood</h4>
+                <p>Ấm áp, sum vầy</p>
+                <p>Truyền thống</p>
+                <p>Tươi mới</p>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">10/19</div>
+</div>
+
+<!-- SLIDE 11: TVC CONCEPT -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>🎬 TVC Concept</h2>
+    </div>
+    <div class="content">
+        <h3>"Món Quà Của Mẹ" - 30s</h3>
+        <div class="two-column" style="margin-top: 30px;">
+            <div>
+                <div class="column-box" style="margin-bottom: 20px;">
+                    <h4>🎬 Cảnh 1</h4>
+                    <p><strong>Con gái về nhà ăn Tết</strong></p>
+                    <p>Khung cảnh đường phố Tết nhộn nhịp, đèn lồng đỏ rực</p>
+                    <p>Con gái bước vào nhà với hành lý, nụ cười hạnh phúc</p>
+                </div>
+                <div class="column-box">
+                    <h4>🎬 Cảnh 2</h4>
+                    <p><strong>Mẹ nấu chè bà ba với sữa Ông Thọ</strong></p>
+                    <p>Mẹ đang khuấy chè thơm lừng trong bếp</p>
+                    <p>Close-up lon sữa Ông Thọ đổ vào nồi</p>
+                </div>
+            </div>
+            <div>
+                <div class="column-box" style="margin-bottom: 20px;">
+                    <h4>🎬 Cảnh 3</h4>
+                    <p><strong>Cả nhà cùng thưởng thức</strong></p>
+                    <p>Gia đình quây quần bên mâm cỗ</p>
+                    <p>Tiếng cười, không khí ấm áp</p>
+                </div>
+                <div class="tagline" style="font-size: 28px; margin-top: 20px;">
+                    "Tết đậm đà vị yêu thương - Sữa Ông Thọ"
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">11/19</div>
+</div>
+
+<!-- SLIDE 12: PROMOTION -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>🎁 Khuyến Mãi & Ưu Đãi</h2>
+    </div>
+    <div class="content">
+        <h3>Promotion Calendar</h3>
+        <table>
+            <tr>
+                <th>Thờigian</th>
+                <th>Chương trình</th>
+                <th>Chi tiết</th>
+            </tr>
+            <tr>
+                <td><strong>15/12 - 31/12</strong></td>
+                <td>Early bird</td>
+                <td>Giảm 10% đơn từ 200K + quà tặng</td>
+            </tr>
+            <tr>
+                <td><strong>01/01 - 20/01</strong></td>
+                <td>Cao điểm Tết</td>
+                <td>Mua 2 tặng 1, voucher 50K</td>
+            </tr>
+            <tr>
+                <td><strong>21/01 - 05/02</strong></td>
+                <td>Tết flash sale</td>
+                <td>Giảm sâu 20%, Freeship</td>
+            </tr>
+            <tr>
+                <td><strong>06/02 - 15/02</strong></td>
+                <td>Clearance</td>
+                <td>Combo giá sốc, quà cuối Tết</td>
+            </tr>
+        </table>
+        
+        <h3 style="margin-top: 20px;">Gift With Purchase (GWP)</h3>
+        <div class="three-column">
+            <div class="metric-box" style="padding: 15px;">
+                <div class="label">Mua 150K</div>
+                <div class="number" style="font-size: 32px;">🎁</div>
+                <div class="label">Ly sứ Ông Thọ<br>(Giá trị 50K)</div>
+            </div>
+            <div class="metric-box" style="padding: 15px;">
+                <div class="label">Mua 300K</div>
+                <div class="number" style="font-size: 32px;">🎁</div>
+                <div class="label">Túi giữ nhiệt<br>(Giá trị 100K)</div>
+            </div>
+            <div class="metric-box" style="padding: 15px;">
+                <div class="label">Mua 500K+</div>
+                <div class="number" style="font-size: 32px;">🎁</div>
+                <div class="label">Giỏ quà Tết mini<br>(Giá trị 200-400K)</div>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">12/19</div>
+</div>
+
+<!-- SLIDE 13: KPIs -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>📊 KPIs & Measurement</h2>
+    </div>
+    <div class="content">
+        <div class="two-column">
+            <div>
+                <h3>Marketing KPIs</h3>
+                <table style="font-size: 18px;">
+                    <tr>
+                        <th>Chỉ số</th>
+                        <th>Mục tiêu</th>
+                    </tr>
+                    <tr>
+                        <td>Brand Awareness</td>
+                        <td>+15% aided awareness</td>
+                    </tr>
+                    <tr>
+                        <td>Reach</td>
+                        <td>20M impressions</td>
+                    </tr>
+                    <tr>
+                        <td>Engagement</td>
+                        <td>5% avg engagement rate</td>
+                    </tr>
+                    <tr>
+                        <td>UGC</td>
+                        <td>100K posts #TetDamDa</td>
+                    </tr>
+                </table>
+            </div>
+            <div>
+                <h3>Business KPIs</h3>
+                <table style="font-size: 18px;">
+                    <tr>
+                        <th>Chỉ số</th>
+                        <th>Mục tiêu</th>
+                    </tr>
+                    <tr>
+                        <td>Doanh số</td>
+                        <td>+25% YoY Tết season</td>
+                    </tr>
+                    <tr>
+                        <td>Market share</td>
+                        <td>Duy trì #1 (>45%)</td>
+                    </tr>
+                    <tr>
+                        <td>Sell-out</td>
+                        <td>90% inventory</td>
+                    </tr>
+                    <tr>
+                        <td>Online sales</td>
+                        <td>20% tổng doanh số</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">13/19</div>
+</div>
+
+<!-- SLIDE 14: BUDGET -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>💰 Ngân Sách</h2>
+    </div>
+    <div class="content">
+        <h3>Budget Allocation - Tổng: 10 tỷ VNĐ</h3>
+        <div class="three-column" style="margin: 30px 0;">
+            <div class="metric-box">
+                <div class="label">📱 Digital Marketing</div>
+                <div class="number">40%</div>
+                <div class="label">4 tỷ VNĐ</div>
+            </div>
+            <div class="metric-box">
+                <div class="label">📺 TVC & Traditional</div>
+                <div class="number">30%</div>
+                <div class="label">3 tỷ VNĐ</div>
+            </div>
+            <div class="metric-box">
+                <div class="label">🎁 Promotion & GWP</div>
+                <div class="number">20%</div>
+                <div class="label">2 tỷ VNĐ</div>
+            </div>
+        </div>
+        <div style="text-align: center;">
+            <div class="metric-box" style="display: inline-block; width: 300px;">
+                <div class="label">🤝 Activation & PR</div>
+                <div class="number">10%</div>
+                <div class="label">1 tỷ VNĐ</div>
+            </div>
+        </div>
+        
+        <h3 style="margin-top: 30px;">Chi tiết Digital (4 tỷ VNĐ)</h3>
+        <table style="font-size: 20px;">
+            <tr>
+                <td>Facebook Ads</td>
+                <td>1.5 tỷ VNĐ</td>
+                <td>TikTok Ads</td>
+                <td>1.2 tỷ VNĐ</td>
+            </tr>
+            <tr>
+                <td>YouTube</td>
+                <td>0.6 tỷ VNĐ</td>
+                <td>Shopee/Lazada</td>
+                <td>0.7 tỷ VNĐ</td>
+            </tr>
+        </table>
+    </div>
+    <div class="slide-number">14/19</div>
+</div>
+
+<!-- SLIDE 15: RISK MANAGEMENT -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>⚠️ Rủi Ro & Dự Phòng</h2>
+    </div>
+    <div class="content">
+        <h3>Risk Management</h3>
+        <table>
+            <tr>
+                <th>Rủi ro</th>
+                <th>Mức độ</th>
+                <th>Giải pháp</th>
+            </tr>
+            <tr>
+                <td>Đối thủ giảm giá sâu</td>
+                <td class="risk-high">🔴 Cao</td>
+                <td>Theo sát pricing, tập trung value-add</td>
+            </tr>
+            <tr>
+                <td>KOL scandal</td>
+                <td class="risk-medium">🟡 Trung bình</td>
+                <td>Hợp đồng đạo đức, backup KOL</td>
+            </tr>
+            <tr>
+                <td>Chậm hàng Tết</td>
+                <td class="risk-high">🔴 Cao</td>
+                <td>Stock-up từ T11, logistics backup</td>
+            </tr>
+            <tr>
+                <td>Content không viral</td>
+                <td class="risk-medium">🟡 Trung bình</td>
+                <td>A/B test, micro-influencer</td>
+            </tr>
+            <tr>
+                <td>Bão giá nguyên liệu</td>
+                <td class="risk-low">🟢 Thấp</td>
+                <td>Lock giá hợp đồng dài hạn</td>
+            </tr>
+        </table>
+    </div>
+    <div class="slide-number">15/19</div>
+</div>
+
+<!-- SLIDE 16: TEAM -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>👥 Team & Resources</h2>
+    </div>
+    <div class="content">
+        <div class="two-column">
+            <div>
+                <h3>Core Team</h3>
+                <div class="column-box" style="margin-bottom: 15px;">
+                    <p><strong>👔 Campaign Manager</strong><br>Tổng quản lý timeline, budget, KPI</p>
+                </div>
+                <div class="column-box" style="margin-bottom: 15px;">
+                    <p><strong>🎨 Creative Lead</strong><br>Concept, key visual, TVC production</p>
+                </div>
+                <div class="column-box" style="margin-bottom: 15px;">
+                    <p><strong>📱 Digital Manager</strong><br>Social media, KOLs, performance</p>
+                </div>
+                <div class="column-box" style="margin-bottom: 15px;">
+                    <p><strong>🏪 Trade Marketing</strong><br>In-store activation, promotion</p>
+                </div>
+                <div class="column-box">
+                    <p><strong>✍️ Content Team</strong><br>Video, copywriting, community</p>
+                </div>
+            </div>
+            <div>
+                <h3>Agency & Partners</h3>
+                <table style="font-size: 18px;">
+                    <tr>
+                        <th>Partner</th>
+                        <th>Scope</th>
+                    </tr>
+                    <tr>
+                        <td>Creative Agency</td>
+                        <td>Concept, TVC production</td>
+                    </tr>
+                    <tr>
+                        <td>Media Agency</td>
+                        <td>Media buying, planning</td>
+                    </tr>
+                    <tr>
+                        <td>Digital Agency</td>
+                        <td>Social, ads optimization</td>
+                    </tr>
+                    <tr>
+                        <td>KOL Agency</td>
+                        <td>Influencer management</td>
+                    </tr>
+                    <tr>
+                        <td>Event Agency</td>
+                        <td>Activation, sampling</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">16/19</div>
+</div>
+
+<!-- SLIDE 17: TIMELINE -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>📅 Master Timeline</h2>
+    </div>
+    <div class="content">
+        <h3>Timeline Tổng Thể</h3>
+        <div style="display: flex; justify-content: space-between; margin: 40px 0; text-align: center;">
+            <div style="flex: 1; padding: 30px; background: #FFFDD0; border-radius: 10px; margin: 0 10px;">
+                <h4 style="color: #C8102E; margin-bottom: 15px;">Tháng 12/2025</h4>
+                <p style="font-size: 20px; font-weight: bold;">PLANNING + PRE-WARM</p>
+                <ul style="text-align: left; font-size: 16px; margin-top: 15px;">
+                    <li>Creative final</li>
+                    <li>Production</li>
+                    <li>Stock preparation</li>
+                    <li>Pre-warm content</li>
+                    <li>Early bird promo</li>
+                </ul>
+            </div>
+            <div style="flex: 1; padding: 30px; background: #C8102E; color: white; border-radius: 10px; margin: 0 10px;">
+                <h4 style="margin-bottom: 15px;">Tháng 1/2026</h4>
+                <p style="font-size: 20px; font-weight: bold;">CAO ĐIỂM TẾT</p>
+                <ul style="text-align: left; font-size: 16px; margin-top: 15px;">
+                    <li>Campaign launch</li>
+                    <li>TVC on-air</li>
+                    <li>Digital full burst</li>
+                    <li>Livestream events</li>
+                    <li>Peak GWP promo</li>
+                </ul>
+            </div>
+            <div style="flex: 1; padding: 30px; background: #D4AF37; color: white; border-radius: 10px; margin: 0 10px;">
+                <h4 style="margin-bottom: 15px;">Tháng 2/2026</h4>
+                <p style="font-size: 20px; font-weight: bold;">TẾT + CLEARANCE</p>
+                <ul style="text-align: left; font-size: 16px; margin-top: 15px;">
+                    <li>Tết activation</li>
+                    <li>Flash sales</li>
+                    <li>Clearance</li>
+                    <li>Campaign wrap</li>
+                    <li>Final report</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">17/19</div>
+</div>
+
+<!-- SLIDE 18: ACTION ITEMS -->
+<div class="slide">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <div class="slide-header">
+        <h2>✅ Action Items</h2>
+    </div>
+    <div class="content">
+        <h3>Next Steps - Immediate Actions</h3>
+        <div class="three-column">
+            <div class="column-box">
+                <h4>✅ Tuần 1</h4>
+                <ul style="font-size: 18px;">
+                    <li>Finalize creative concept với leadership</li>
+                    <li>Confirm budget allocation</li>
+                    <li>Brief agencies (creative, media, digital)</li>
+                </ul>
+            </div>
+            <div class="column-box">
+                <h4>✅ Tuần 2-3</h4>
+                <ul style="font-size: 18px;">
+                    <li>TVC production kick-off</li>
+                    <li>KOL selection & contracting</li>
+                    <li>E-com promotion setup</li>
+                </ul>
+            </div>
+            <div class="column-box">
+                <h4>✅ Tuần 4</h4>
+                <ul style="font-size: 18px;">
+                    <li>Content shooting</li>
+                    <li>POSM design final</li>
+                    <li>Stock readiness check</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="slide-number">18/19</div>
+</div>
+
+<!-- SLIDE 19: THANK YOU -->
+<div class="slide slide-title">
+    <div class="brand-logo">SỮA ÔNG THỌ</div>
+    <h1 style="font-size: 64px;">Cảm Ơn<br>Thank You</h1>
+    <h2>Tết Đậm Đà - Yêu Thương Trọn Vẹn</h2>
+    <div class="subtitle" style="margin-top: 40px;">
+        <div style="display: flex; justify-content: center; gap: 60px; margin-bottom: 30px;">
+            <div>
+                <div style="font-size: 48px; font-weight: bold;">+25%</div>
+                <div>Doanh số</div>
+            </div>
+            <div>
+                <div style="font-size: 48px; font-weight: bold;">#1</div>
+                <div>Thị trường</div>
+            </div>
+            <div>
+                <div style="font-size: 48px; font-weight: bold;">10 tỷ</div>
+                <div>Ngân sách</div>
+            </div>
+        </div>
+        Sữa Ông Thọ - Vinamilk<br>
+        📅 15/12/2025 - 15/02/2026
+    </div>
+    <div class="slide-number">19/19</div>
+</div>
+
+</body>
+</html>
