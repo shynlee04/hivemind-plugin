@@ -1,9 +1,9 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": ["hivemind-context-governance"],
-  
+
+  "_comment_profile": "Use profile presets from HiveMind init, then override as needed",
   "permission": {
-    "_comment": "Default permissions - customize based on your comfort level",
     "edit": "allow",
     "write": "allow",
     "bash": {
@@ -15,11 +15,46 @@
     "webfetch": "allow",
     "websearch": "allow"
   },
-  
+
+  "_comment_mcp": "HiveFiver research stack. Keep enabled entries you can authenticate.",
+  "_comment_mcp_env": "Set TAVILY_API_KEY and EXA_API_KEY in your shell or secret manager before enabling those providers.",
+  "mcp": {
+    "deepwiki": {
+      "type": "remote",
+      "url": "https://mcp.deepwiki.com/mcp",
+      "enabled": true,
+      "timeout": 15000
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": false,
+      "timeout": 15000
+    },
+    "tavily": {
+      "type": "remote",
+      "url": "https://mcp.tavily.com/mcp",
+      "enabled": false,
+      "timeout": 15000
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://YOUR-EXA-MCP-ENDPOINT",
+      "enabled": false,
+      "timeout": 15000
+    },
+    "repomix": {
+      "type": "local",
+      "command": ["npx", "-y", "repomix", "--mcp"],
+      "enabled": false
+    }
+  },
+
+  "_comment_exa": "If you use provider-native Exa instead of MCP endpoint, keep mcp.exa disabled and export OPENCODE_ENABLE_EXA=1.",
+
   "agent": {
-    "_comment_build": "Primary implementation agent - full tool access",
     "build": {
-      "mode": "primary",
+      "mode": "subagent",
       "tools": {
         "read": true,
         "write": true,
@@ -33,122 +68,18 @@
         "websearch": true
       }
     },
-    
-    "_comment_plan": "Planning agent - read-only by default",
-    "plan": {
+    "hivefiver": {
       "mode": "primary",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
-      }
-    },
-    
-    "_comment_hiveminder": "Strategist/orchestrator - can delegate to other agents",
-    "hiveminder": {
-      "mode": "all",
       "tools": {
         "read": true,
         "glob": true,
         "grep": true,
-        "bash": true,
         "task": true,
-        "skill": true
-      }
-    },
-    
-    "_comment_explore": "Fast read-only codebase exploration",
-    "explore": {
-      "mode": "subagent",
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false
-      }
-    },
-    
-    "_comment_scanner": "Deep codebase investigation",
-    "scanner": {
-      "mode": "subagent",
-      "hidden": true,
-      "tools": {
-        "write": false,
-        "edit": false
-      }
-    },
-    
-    "_comment_code-review": "Code inspection and review",
-    "code-review": {
-      "mode": "subagent",
-      "tools": {
-        "write": false,
-        "edit": false
+        "skill": true,
+        "webfetch": true,
+        "websearch": true,
+        "bash": true
       }
     }
-  },
-  
-  "_profile_presets": {
-    "_comment": "These presets are applied by HiveMind during init. Copy the relevant section to customize.",
-    
-    "beginner": {
-      "_description": "Learning with AI - maximum guidance, asks before acting",
-      "permission": {
-        "edit": "ask",
-        "write": "ask",
-        "bash": "ask"
-      }
-    },
-    
-    "intermediate": {
-      "_description": "Comfortable with AI tools - balanced automation (recommended)",
-      "permission": {
-        "edit": "allow",
-        "write": "allow",
-        "bash": "ask"
-      }
-    },
-    
-    "advanced": {
-      "_description": "Experienced developer - permissive, full control",
-      "permission": {
-        "edit": "allow",
-        "write": "allow",
-        "bash": "allow"
-      }
-    },
-    
-    "expert": {
-      "_description": "Senior developer - minimal guidance, full autonomy",
-      "permission": {
-        "edit": "allow",
-        "write": "allow",
-        "bash": "allow"
-      }
-    },
-    
-    "coach": {
-      "_description": "Learning mode - strict governance, skeptical, asks everything",
-      "permission": {
-        "edit": "ask",
-        "write": "ask",
-        "bash": "ask"
-      }
-    }
-  },
-  
-  "_hivemind_custom_tools": {
-    "_comment": "These tools are provided by the hivemind-context-governance plugin",
-    "_tools": [
-      "declare_intent",
-      "map_context", 
-      "compact_session",
-      "scan_hierarchy",
-      "think_back",
-      "save_anchor",
-      "save_mem",
-      "recall_mems",
-      "hierarchy_manage",
-      "export_cycle"
-    ]
   }
 }

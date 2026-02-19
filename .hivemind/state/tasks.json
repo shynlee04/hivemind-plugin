@@ -1,38 +1,146 @@
 {
-  "session_id": "ses_38c3e4c7cffeoQPiBOZJZpC3t9",
-  "updated_at": 1771486156587,
+  "session_id": "ses_38b27b94affexCHWZt2mbnj01j",
+  "updated_at": 1771508992314,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Phase 4 completed: implementation + code-review + docs sync",
-      "content": "Phase 4 completed: implementation + code-review + docs sync",
+      "text": "Rebaseline audit: verify user-reported HiveFiver package changes exist in source/tests/docs",
+      "content": "Rebaseline audit: verify user-reported HiveFiver package changes exist in source/tests/docs",
       "status": "completed",
       "priority": "high",
-      "updated_at": 1771486156587
+      "domain": "office-ops",
+      "lane": "auto",
+      "source": "todo.updated",
+      "recommended_skills": [
+        "hivefiver-skill-auditor",
+        "hivefiver-persona-routing"
+      ],
+      "canonical_command": "hivefiver-doctor",
+      "related_entities": {
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+      },
+      "last_realigned_at": 1771508992314,
+      "updated_at": 1771508992314
     },
     {
       "id": "todo-2",
-      "text": "Phase 5.1: Scanner define GSD lifecycle integration requirements and acceptance criteria",
-      "content": "Phase 5.1: Scanner define GSD lifecycle integration requirements and acceptance criteria",
-      "status": "pending",
+      "text": "Reconcile prior integration NO-GO findings against current HiveFiver-updated code paths",
+      "content": "Reconcile prior integration NO-GO findings against current HiveFiver-updated code paths",
+      "status": "completed",
       "priority": "high",
-      "updated_at": 1771486156587
+      "domain": "hybrid",
+      "lane": "auto",
+      "source": "todo.updated",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "canonical_command": "hivefiver-start",
+      "related_entities": {
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+      },
+      "last_realigned_at": 1771508992314,
+      "updated_at": 1771508992314
     },
     {
       "id": "todo-3",
-      "text": "Phase 5.2: Build TDD RED tests for lifecycle trace continuity (project->verification)",
-      "content": "Phase 5.2: Build TDD RED tests for lifecycle trace continuity (project->verification)",
-      "status": "pending",
+      "text": "Canonical governance GREEN remediation: fix 4 blockers mapped by phase5-canonical-governance-red tests",
+      "content": "Canonical governance GREEN remediation: fix 4 blockers mapped by phase5-canonical-governance-red tests",
+      "status": "completed",
       "priority": "high",
-      "updated_at": 1771486156587
+      "domain": "hybrid",
+      "lane": "auto",
+      "source": "todo.updated",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "canonical_command": "hivefiver-start",
+      "related_entities": {
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+      },
+      "last_realigned_at": 1771508992314,
+      "updated_at": 1771508992314
     },
     {
       "id": "todo-4",
-      "text": "Phase 5.3: Build GREEN implementation + code-review sign-off",
-      "content": "Phase 5.3: Build GREEN implementation + code-review sign-off",
-      "status": "pending",
+      "text": "Independent code-review sign-off for canonical governance remediation",
+      "content": "Independent code-review sign-off for canonical governance remediation",
+      "status": "completed",
       "priority": "high",
-      "updated_at": 1771486156587
+      "domain": "hybrid",
+      "lane": "auto",
+      "source": "todo.updated",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "canonical_command": "hivefiver-start",
+      "related_entities": {
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+      },
+      "last_realigned_at": 1771508992314,
+      "updated_at": 1771508992314
+    },
+    {
+      "id": "todo-5",
+      "text": "Run final architecture/tech-debt/gap audits after rebaseline",
+      "content": "Run final architecture/tech-debt/gap audits after rebaseline",
+      "status": "completed",
+      "priority": "high",
+      "domain": "office-ops",
+      "lane": "auto",
+      "source": "todo.updated",
+      "recommended_skills": [
+        "hivefiver-skill-auditor",
+        "hivefiver-persona-routing"
+      ],
+      "canonical_command": "hivefiver-doctor",
+      "related_entities": {
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+      },
+      "last_realigned_at": 1771508992314,
+      "updated_at": 1771508992314
+    },
+    {
+      "id": "todo-6",
+      "text": "Update remediation plan docs and AGENTS.md with completion evidence",
+      "content": "Update remediation plan docs and AGENTS.md with completion evidence",
+      "status": "completed",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "source": "todo.updated",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "canonical_command": "hivefiver-start",
+      "related_entities": {
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+      },
+      "last_realigned_at": 1771508992314,
+      "updated_at": 1771508992314
+    },
+    {
+      "id": "todo-7",
+      "text": "Run final quality gates and create atomic commit(s) for completion/audit changes",
+      "content": "Run final quality gates and create atomic commit(s) for completion/audit changes",
+      "status": "completed",
+      "priority": "high",
+      "domain": "office-ops",
+      "lane": "auto",
+      "source": "todo.updated",
+      "recommended_skills": [
+        "hivefiver-skill-auditor",
+        "hivefiver-persona-routing"
+      ],
+      "canonical_command": "hivefiver-doctor",
+      "related_entities": {
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+      },
+      "last_realigned_at": 1771508992314,
+      "updated_at": 1771508992314
     }
   ]
 }

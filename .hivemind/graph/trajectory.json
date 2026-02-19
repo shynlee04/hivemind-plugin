@@ -2,12 +2,26 @@
   "version": "1.0.0",
   "trajectory": {
     "id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
-    "session_id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
+    "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
     "active_plan_id": null,
-    "active_phase_id": null,
-    "active_task_ids": [],
-    "intent": "Resume Phase 2 FK Remediation - verify git commit status and proceed to Phase 3",
+    "active_phase_id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+    "active_task_ids": [
+      "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+      "2c2a7b61-6913-4ea1-854d-0e3c19648a19",
+      "74eddc55-7c9c-441e-9a3a-ffaad15337d0",
+      "f7fe3f93-30cc-499e-8bf1-89643b3700e7",
+      "11c53e0c-0692-449a-af05-0a7c209ca983",
+      "4579199d-bdd4-4dba-a821-a31f5826e2f7",
+      "5a05a249-8d88-4986-b305-e03396b40b4f",
+      "390505a2-a741-4b79-b785-ff8239d144de",
+      "f94b7b36-145c-46e8-b86b-5da7e6dbc03f",
+      "73649ec4-c623-4377-95f6-62876d8f5171",
+      "4a6b47bc-6f92-4317-8511-44e13c058212",
+      "6d0eb10c-8033-4883-bf67-c6987a204ed7",
+      "8bc17314-b9ea-44f2-8e17-e04b06214962"
+    ],
+    "intent": "Production-readiness hardening of HiveFiver + remediation stack with full SRC integrity validation",
     "created_at": "2026-02-18T17:48:48.184Z",
-    "updated_at": "2026-02-19T07:29:16.219Z"
+    "updated_at": "2026-02-19T14:03:20.145Z"
   }
 }

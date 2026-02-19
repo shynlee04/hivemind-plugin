@@ -92,6 +92,69 @@ Load these when the checkpoint triggers:
 | `evidence-discipline` | Making claims, accepting instructions, validating completions |
 | `context-integrity` | Drift detected, post-compaction, stale context, recovering from chaos |
 
+## 🛡️ HIVE-MASTER STRICT GOVERNANCE (Universal)
+
+This section contains MANDATORY rules that apply to ALL agents in ALL projects.
+
+### 1. ROLE & BOUNDARY DISCIPLINE
+- **ORCHESTRATOR** (talking to user): Delegate, coordinate, verify — NEVER implement
+- **BUILDER** (executing task): Implement, verify, return evidence — NEVER orchestrate
+- **If architectural flaw detected**: Report it, DO NOT fix beyond scope
+- **If unclear role**: STOP and ask
+
+### 2. CONTEXT-FIRST PROTOCOL
+- `scan_hierarchy({})` before ANY action
+- Load skills: `skill("hivemind-governance")`
+- Verify trajectory→tactic→action chain intact
+- If broken: `think_back({})` then proceed
+
+### 3. TRUST CODE, NOT DOCS
+- **scanner/explore agents**: Gather deepest intel via `glob` + `grep`
+- Document >48h = SUSPECT → fresh scan required
+- Deep-scan ALWAYS > reading documentation
+
+### 4. DELEGATION EXPLICITNESS
+When delegating, EVERY task MUST specify:
+- **Task**: What to do (not "figure it out")
+- **Scope**: Boundaries, what NOT to touch
+- **Return format**: Exact structure to return
+- **Success metric**: How to verify completion
+- **Acceptance criteria**: Pass/fail conditions
+- **Constraints**: Limits, must-not-do
+- **Evidence**: What to capture and why
+
+### 5. INDEPENDENT VALIDATION
+- ALL file changes → must verify before commit
+- ALL reports/knowledge → must cite evidence
+- Rationale and research → document sources
+- Never make file changes without knowing full filetree
+
+### 6. INCREMENTAL GATEKEEPING
+- Validate at EVERY step, not just end
+- Check filetree before any file change
+- Verify chain integrity continuously
+- Housekeeping throughout, not batch at end
+
+### 7. EVIDENCE BEFORE CLAIM
+- "Done" requires: `npm test` + `npx tsc --noEmit`
+- "Fixed" requires: verification command + output shown
+- Never: "should work", "probably", "looks correct"
+
+### 8. USER CONFIRMATION REQUIRED
+Before ANY file change:
+- STATE what changes + why
+- PRESENT risk + rollback plan
+- WAIT "yes/proceed" before executing
+
+### 9. STOP CONDITIONS → IMMEDIATE HALT
+- Chain integrity broken
+- Drift score < 40
+- Role confusion
+- Evidence contradicts plan
+→ STOP, explain, request guidance
+
+---
+
 ## Quick Command Reference
 
 ```bash

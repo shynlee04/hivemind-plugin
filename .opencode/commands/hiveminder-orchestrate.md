@@ -1,19 +1,34 @@
 ---
 name: "hiveminder-orchestrate"
 description: "Invoke the hiveminder agent for strategic planning, architecture review, or cross-agent orchestration. Research-fronted, evidence-oriented approach."
+agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Orchestration Command
 
-Invoke the hiveminder agent for strategic planning, architecture review, or cross-agent orchestration.
+## Task
+
+$ARGUMENTS
 
 ## Usage
 
 ```
-/hiveminder-orchestrate plan [feature]     # Strategic planning for a feature
-/hiveminder-orchestrate review [scope]     # Architecture review of a scope
-/hiveminder-orchestrate analyze [area]     # Deep analysis of a specific area
-/hiveminder-orchestrate delegate [task]    # Cross-agent delegation coordination
+/hiveminder-orchestrate [action] [scope]
+```
+
+**Actions:**
+- `plan` - Strategic planning for $ARGUMENTS
+- `review` - Architecture review of $ARGUMENTS
+- `analyze` - Deep analysis of $ARGUMENTS
+- `debug` - Orchestrate debug workflow for $ARGUMENTS
+
+**Examples:**
+```
+/hiveminder-orchestrate plan authentication system
+/hiveminder-orchestrate review src/lib/
+/hiveminder-orchestrate analyze performance bottlenecks
+/hiveminder-orchestrate debug test failures in v3 suite
 ```
 
 ## Workflow
@@ -41,7 +56,7 @@ recall_mems({ query: "[relevant topic]" })
 ```
 
 Focus on:
-- Current hierarchy state (trajectory → tactic → action)
+- Current hierarchy state (trajectory -> tactic -> action)
 - Immutable anchors and locked decisions
 - Related memories from past sessions
 
@@ -150,7 +165,7 @@ Assign:
 - NEVER skip governance checkpoint
 - ALWAYS read files before planning changes
 - ALWAYS request code review before finalizing
-- NEVER delegate to same agent type (build → build)
+- NEVER delegate to same agent type (build -> build)
 - ALWAYS export cycle after delegation returns
 
 ## Exit Conditions

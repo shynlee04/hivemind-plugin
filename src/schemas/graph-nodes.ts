@@ -2,6 +2,38 @@ import { z } from "zod";
 
 const nodeStatusSchema = z.enum(["pending", "active", "complete", "blocked"]);
 
+export const PlanningLifecycleLevelSchema = z.enum([
+  "project",
+  "milestone",
+  "phase",
+  "plan",
+  "task",
+  "verification",
+]);
+
+export const RalphUserStorySchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().optional(),
+  status: z.enum(["pending", "in_progress", "completed", "blocked"]).default("pending"),
+  acceptanceCriteria: z.array(z.string().min(1)).default([]),
+  dependencies: z.array(z.string().min(1)).default([]),
+  relatedEntities: z.object({
+    session_id: z.string().optional(),
+    plan_id: z.string().optional(),
+    phase_id: z.string().optional(),
+    graph_task_id: z.string().optional(),
+    story_id: z.string().optional(),
+  }).optional(),
+});
+
+export const RalphPrdJsonSchema = z.object({
+  name: z.string().min(1),
+  branchName: z.string().optional(),
+  description: z.string().optional(),
+  userStories: z.array(RalphUserStorySchema),
+});
+
 export const TrajectoryNodeSchema = z.object({
   id: z.string().uuid(),
   session_id: z.string().uuid(),
@@ -20,6 +52,10 @@ export const PlanNodeSchema = z.object({
   status: nodeStatusSchema,
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
+  project_id: z.string().uuid().nullable().optional(),
+  milestone_id: z.string().uuid().nullable().optional(),
+  phases: z.array(z.object({ id: z.string().uuid() })).optional(),
+  verifications: z.array(z.object({ id: z.string().uuid() })).optional(),
 });
 
 export const PhaseNodeSchema = z.object({
@@ -40,12 +76,16 @@ export const TaskNodeSchema = z.object({
   file_locks: z.array(z.string()),
   created_at: z.string().datetime(),
   updated_at: z.string().datetime(),
+  plan_id: z.string().uuid().nullable().optional(),
+  milestone_id: z.string().uuid().nullable().optional(),
+  project_id: z.string().uuid().nullable().optional(),
 });
 
 export const MemNodeSchema = z.object({
   id: z.string().uuid(),
   session_id: z.string().uuid(), // FK to trajectory.session_id - REQUIRED
   origin_task_id: z.string().uuid().nullable(),
+  verification_id: z.string().uuid().nullable().optional(),
   shelf: z.string(),
   type: z.enum(["insight", "false_path"]),
   content: z.string(),
@@ -60,6 +100,18 @@ export type PlanNode = z.infer<typeof PlanNodeSchema>;
 export type PhaseNode = z.infer<typeof PhaseNodeSchema>;
 export type TaskNode = z.infer<typeof TaskNodeSchema>;
 export type MemNode = z.infer<typeof MemNodeSchema>;
+export type PlanningLifecycleLevel = z.infer<typeof PlanningLifecycleLevelSchema>;
+export type RalphUserStory = z.infer<typeof RalphUserStorySchema>;
+export type RalphPrdJson = z.infer<typeof RalphPrdJsonSchema>;
+
+export interface PlanningLifecycleBundle {
+  project_id?: string | null;
+  milestone_id?: string | null;
+  phase_id?: string | null;
+  plan_id?: string | null;
+  task_id?: string | null;
+  verification_id?: string | null;
+}
 
 type ParentLinkedNode = {
   id: string;
@@ -108,5 +160,70 @@ export function validateOrphanFree(
   return {
     valid: orphans.length === 0,
     orphans,
+  };
+}
+
+/**
+ * HiveFiver compatibility helper:
+ * validates that a lifecycle mapping contains all required lineage IDs.
+ */
+export function validateLifecycleLineage(
+  bundle: PlanningLifecycleBundle
+): { valid: boolean; missing: PlanningLifecycleLevel[] } {
+  const checks: Array<[PlanningLifecycleLevel, string | null | undefined]> = [
+    ["project", bundle.project_id],
+    ["milestone", bundle.milestone_id],
+    ["phase", bundle.phase_id],
+    ["plan", bundle.plan_id],
+    ["task", bundle.task_id],
+    ["verification", bundle.verification_id],
+  ];
+
+  const missing = checks
+    .filter(([, value]) => !value || value.trim().length === 0)
+    .map(([level]) => level);
+
+  return {
+    valid: missing.length === 0,
+    missing,
+  };
+}
+
+/**
+ * Ralph bridge safety helper:
+ * validates flat-root PRD JSON shape and common anti-patterns.
+ */
+export function validateRalphPrdJsonShape(input: unknown): {
+  valid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
+    return {
+      valid: false,
+      errors: ["root must be an object"],
+    };
+  }
+
+  const payload = input as Record<string, unknown>;
+  if ("prd" in payload) {
+    errors.push("anti-pattern: wrapper key 'prd' is not allowed");
+  }
+  if ("tasks" in payload) {
+    errors.push("anti-pattern: root 'tasks' is not allowed; use 'userStories'");
+  }
+
+  const parse = RalphPrdJsonSchema.safeParse(payload);
+  if (!parse.success) {
+    for (const issue of parse.error.issues) {
+      const pointer = issue.path.length > 0 ? issue.path.join(".") : "root";
+      errors.push(`${pointer}: ${issue.message}`);
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
   };
 }
