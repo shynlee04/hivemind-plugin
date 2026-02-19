@@ -50661,6 +50661,681 @@
         "updated_at": "2026-02-19T12:19:41.158Z"
       },
       "quarantined_at": "2026-02-19T16:00:05.018Z"
+    },
+    {
+      "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create Tết marketing canvas for Sữa Ông Thọ condensed milk campaign",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:00:38.616Z",
+        "updated_at": "2026-02-19T12:00:38.616Z"
+      },
+      "quarantined_at": "2026-02-19T16:00:54.018Z"
+    },
+    {
+      "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create visual presentation slides for Sữa Ông Thọ Tết marketing canvas",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:02:37.237Z",
+        "updated_at": "2026-02-19T12:02:37.237Z"
+      },
+      "quarantined_at": "2026-02-19T16:00:54.018Z"
+    },
+    {
+      "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Convert markdown presentation to PowerPoint/Google Slides importable format",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:05:08.932Z",
+        "updated_at": "2026-02-19T12:05:08.932Z"
+      },
+      "quarantined_at": "2026-02-19T16:00:54.018Z"
+    },
+    {
+      "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Gather requirements for market research skill via HiveFiver intake",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:15:09.170Z",
+        "updated_at": "2026-02-19T12:15:09.170Z"
+      },
+      "quarantined_at": "2026-02-19T16:00:54.018Z"
+    },
+    {
+      "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Create pressure scenarios and document baseline failures for market research skill",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:19:41.158Z",
+        "updated_at": "2026-02-19T12:19:41.158Z"
+      },
+      "quarantined_at": "2026-02-19T16:00:54.018Z"
+    },
+    {
+      "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create Tết marketing canvas for Sữa Ông Thọ condensed milk campaign",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:00:38.616Z",
+        "updated_at": "2026-02-19T12:00:38.616Z"
+      },
+      "quarantined_at": "2026-02-19T16:02:02.801Z"
+    },
+    {
+      "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create visual presentation slides for Sữa Ông Thọ Tết marketing canvas",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:02:37.237Z",
+        "updated_at": "2026-02-19T12:02:37.237Z"
+      },
+      "quarantined_at": "2026-02-19T16:02:02.801Z"
+    },
+    {
+      "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Convert markdown presentation to PowerPoint/Google Slides importable format",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:05:08.932Z",
+        "updated_at": "2026-02-19T12:05:08.932Z"
+      },
+      "quarantined_at": "2026-02-19T16:02:02.801Z"
+    },
+    {
+      "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Gather requirements for market research skill via HiveFiver intake",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:15:09.170Z",
+        "updated_at": "2026-02-19T12:15:09.170Z"
+      },
+      "quarantined_at": "2026-02-19T16:02:02.801Z"
+    },
+    {
+      "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Create pressure scenarios and document baseline failures for market research skill",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:19:41.158Z",
+        "updated_at": "2026-02-19T12:19:41.158Z"
+      },
+      "quarantined_at": "2026-02-19T16:02:02.801Z"
+    },
+    {
+      "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create Tết marketing canvas for Sữa Ông Thọ condensed milk campaign",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:00:38.616Z",
+        "updated_at": "2026-02-19T12:00:38.616Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:06.347Z"
+    },
+    {
+      "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create visual presentation slides for Sữa Ông Thọ Tết marketing canvas",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:02:37.237Z",
+        "updated_at": "2026-02-19T12:02:37.237Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:06.347Z"
+    },
+    {
+      "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Convert markdown presentation to PowerPoint/Google Slides importable format",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:05:08.932Z",
+        "updated_at": "2026-02-19T12:05:08.932Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:06.347Z"
+    },
+    {
+      "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Gather requirements for market research skill via HiveFiver intake",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:15:09.170Z",
+        "updated_at": "2026-02-19T12:15:09.170Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:06.347Z"
+    },
+    {
+      "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Create pressure scenarios and document baseline failures for market research skill",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:19:41.158Z",
+        "updated_at": "2026-02-19T12:19:41.158Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:06.347Z"
+    },
+    {
+      "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create Tết marketing canvas for Sữa Ông Thọ condensed milk campaign",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:00:38.616Z",
+        "updated_at": "2026-02-19T12:00:38.616Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:22.976Z"
+    },
+    {
+      "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create visual presentation slides for Sữa Ông Thọ Tết marketing canvas",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:02:37.237Z",
+        "updated_at": "2026-02-19T12:02:37.237Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:22.976Z"
+    },
+    {
+      "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Convert markdown presentation to PowerPoint/Google Slides importable format",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:05:08.932Z",
+        "updated_at": "2026-02-19T12:05:08.932Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:22.976Z"
+    },
+    {
+      "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Gather requirements for market research skill via HiveFiver intake",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:15:09.170Z",
+        "updated_at": "2026-02-19T12:15:09.170Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:22.976Z"
+    },
+    {
+      "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Create pressure scenarios and document baseline failures for market research skill",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:19:41.158Z",
+        "updated_at": "2026-02-19T12:19:41.158Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:22.976Z"
+    },
+    {
+      "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create Tết marketing canvas for Sữa Ông Thọ condensed milk campaign",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:00:38.616Z",
+        "updated_at": "2026-02-19T12:00:38.616Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:31.207Z"
+    },
+    {
+      "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create visual presentation slides for Sữa Ông Thọ Tết marketing canvas",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:02:37.237Z",
+        "updated_at": "2026-02-19T12:02:37.237Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:31.207Z"
+    },
+    {
+      "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Convert markdown presentation to PowerPoint/Google Slides importable format",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:05:08.932Z",
+        "updated_at": "2026-02-19T12:05:08.932Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:31.207Z"
+    },
+    {
+      "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Gather requirements for market research skill via HiveFiver intake",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:15:09.170Z",
+        "updated_at": "2026-02-19T12:15:09.170Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:31.207Z"
+    },
+    {
+      "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Create pressure scenarios and document baseline failures for market research skill",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:19:41.158Z",
+        "updated_at": "2026-02-19T12:19:41.158Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:31.207Z"
+    },
+    {
+      "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create Tết marketing canvas for Sữa Ông Thọ condensed milk campaign",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:00:38.616Z",
+        "updated_at": "2026-02-19T12:00:38.616Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:40.277Z"
+    },
+    {
+      "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create visual presentation slides for Sữa Ông Thọ Tết marketing canvas",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:02:37.237Z",
+        "updated_at": "2026-02-19T12:02:37.237Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:40.277Z"
+    },
+    {
+      "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Convert markdown presentation to PowerPoint/Google Slides importable format",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:05:08.932Z",
+        "updated_at": "2026-02-19T12:05:08.932Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:40.277Z"
+    },
+    {
+      "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Gather requirements for market research skill via HiveFiver intake",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:15:09.170Z",
+        "updated_at": "2026-02-19T12:15:09.170Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:40.277Z"
+    },
+    {
+      "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Create pressure scenarios and document baseline failures for market research skill",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:19:41.158Z",
+        "updated_at": "2026-02-19T12:19:41.158Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:40.277Z"
+    },
+    {
+      "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create Tết marketing canvas for Sữa Ông Thọ condensed milk campaign",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:00:38.616Z",
+        "updated_at": "2026-02-19T12:00:38.616Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:47.734Z"
+    },
+    {
+      "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create visual presentation slides for Sữa Ông Thọ Tết marketing canvas",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:02:37.237Z",
+        "updated_at": "2026-02-19T12:02:37.237Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:47.734Z"
+    },
+    {
+      "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Convert markdown presentation to PowerPoint/Google Slides importable format",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:05:08.932Z",
+        "updated_at": "2026-02-19T12:05:08.932Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:47.734Z"
+    },
+    {
+      "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Gather requirements for market research skill via HiveFiver intake",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:15:09.170Z",
+        "updated_at": "2026-02-19T12:15:09.170Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:47.734Z"
+    },
+    {
+      "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Create pressure scenarios and document baseline failures for market research skill",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:19:41.158Z",
+        "updated_at": "2026-02-19T12:19:41.158Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:47.734Z"
+    },
+    {
+      "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create Tết marketing canvas for Sữa Ông Thọ condensed milk campaign",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:00:38.616Z",
+        "updated_at": "2026-02-19T12:00:38.616Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:53.551Z"
+    },
+    {
+      "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create visual presentation slides for Sữa Ông Thọ Tết marketing canvas",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:02:37.237Z",
+        "updated_at": "2026-02-19T12:02:37.237Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:53.551Z"
+    },
+    {
+      "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Convert markdown presentation to PowerPoint/Google Slides importable format",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:05:08.932Z",
+        "updated_at": "2026-02-19T12:05:08.932Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:53.551Z"
+    },
+    {
+      "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Gather requirements for market research skill via HiveFiver intake",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:15:09.170Z",
+        "updated_at": "2026-02-19T12:15:09.170Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:53.551Z"
+    },
+    {
+      "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Create pressure scenarios and document baseline failures for market research skill",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:19:41.158Z",
+        "updated_at": "2026-02-19T12:19:41.158Z"
+      },
+      "quarantined_at": "2026-02-19T16:04:53.551Z"
+    },
+    {
+      "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create Tết marketing canvas for Sữa Ông Thọ condensed milk campaign",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:00:38.616Z",
+        "updated_at": "2026-02-19T12:00:38.616Z"
+      },
+      "quarantined_at": "2026-02-19T16:05:01.950Z"
+    },
+    {
+      "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+      "type": "task",
+      "reason": "parent_phase_id bb5f9943-eb51-4728-8e13-df80f1666579 not found in valid phases",
+      "original_data": {
+        "id": "f0cb82f5-dbbe-4a39-be54-c31a623498f1",
+        "parent_phase_id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+        "title": "Create visual presentation slides for Sữa Ông Thọ Tết marketing canvas",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:02:37.237Z",
+        "updated_at": "2026-02-19T12:02:37.237Z"
+      },
+      "quarantined_at": "2026-02-19T16:05:01.950Z"
+    },
+    {
+      "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Convert markdown presentation to PowerPoint/Google Slides importable format",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:05:08.932Z",
+        "updated_at": "2026-02-19T12:05:08.932Z"
+      },
+      "quarantined_at": "2026-02-19T16:05:01.950Z"
+    },
+    {
+      "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "7c65e5e4-5e08-435e-bffe-46b0a70ea013",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Gather requirements for market research skill via HiveFiver intake",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:15:09.170Z",
+        "updated_at": "2026-02-19T12:15:09.170Z"
+      },
+      "quarantined_at": "2026-02-19T16:05:01.950Z"
+    },
+    {
+      "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+      "type": "task",
+      "reason": "parent_phase_id 9a780436-7f6d-4df4-a524-8ed91f4e7b9c not found in valid phases",
+      "original_data": {
+        "id": "75d8903d-0a71-48d7-89a6-9c876dcb6ad0",
+        "parent_phase_id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+        "title": "Create pressure scenarios and document baseline failures for market research skill",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-19T12:19:41.158Z",
+        "updated_at": "2026-02-19T12:19:41.158Z"
+      },
+      "quarantined_at": "2026-02-19T16:05:01.950Z"
     }
   ]
 }

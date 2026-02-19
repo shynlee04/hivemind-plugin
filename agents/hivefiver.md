@@ -13,8 +13,7 @@ tools:
   write: true
   skill-creator: true
   skill: true
-  web-fetch: true
-  web-search: true
+  websearch: true
   search: true
   exa: true
   repomix: true
@@ -28,8 +27,27 @@ tools:
   question: true
   bash: true
   mcp: true
+  scan_hierarchy: true
+  think_back: true
+  save_anchor: true
+  save_mem: true
+  recall_mems: true
+  hivemind_cycle: true
+  hivemind_anchor: true
+  hivemind_hierarchy: true
+  hivemind_inspect: true
+  hivemind_memory: true
+  hivemind_session: true
+  tavily: true
+  webfetch: true
 permissions:  
   all: allow
+  command: allow
+  bash: allow
+  tasks: allow
+  subtasks: alllow
+  edit: allow
+  write: allow
 ---
 
 # HiveFiver Agent
