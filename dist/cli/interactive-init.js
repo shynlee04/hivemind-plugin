@@ -18,7 +18,7 @@ export const ASSET_TARGET_LABELS = {
  * Returns null if user cancels.
  */
 export async function runInteractiveInit() {
-    p.intro("🐝 HiveMind + HiveFiver v2 — Setup Wizard");
+    p.intro("🐝 HiveMind Context Governance — Setup Wizard");
     // ── Profile Selection - FIRST ───────────────────────────────
     const profileKey = await p.select({
         message: "What kind of developer are you?",
@@ -257,8 +257,6 @@ export async function runInteractiveInit() {
         `Governance:  ${isCoachAutomation(automationLevel) ? "strict (forced)" : governanceMode}`,
         `Language:    ${language === "en" ? "English" : "Tiếng Việt"}`,
         `Automation:  ${normalizeAutomationLabel(automationLevel)}${isCoachAutomation(automationLevel) ? " (max guidance)" : ""}`,
-        "HiveFiver:   v2 root command enabled (`/hivefiver <action>`)",
-        "MCP posture: DeepWiki on by default, Context7/Tavily/Repomix/Exa guided setup",
         `Expert:      ${isCoachAutomation(automationLevel) ? "beginner (forced)" : expertLevel}`,
         `Style:       ${isCoachAutomation(automationLevel) ? "skeptical (forced)" : outputStyle}`,
         `Permissions: ${JSON.stringify(selectedProfile.permissions)}`,
