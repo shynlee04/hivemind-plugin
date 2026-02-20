@@ -1,7 +1,7 @@
 ---
 name: build
 description: "Full-stack implementation agent for HiveMind. Builds, tests, validates, and requests review before completion."
-mode: subagent
+mode: all
 ---
 
 # Build Agent - HiveMind v3 Development Engine

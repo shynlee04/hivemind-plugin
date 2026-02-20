@@ -445,6 +445,43 @@ async function test_auto_realign_injects_auto_init_for_safe_actions() {
   await rm(dir, { recursive: true, force: true })
 }
 
+async function test_auto_realign_gate_defaults_unknown_to_research_with_required_skills() {
+  process.stderr.write("\n--- messages-transform: mandatory research gate for unknown command ---\n")
+  const dir = await setupDir()
+  const config = createConfig({ governance_mode: "strict" })
+  await saveConfig(dir, config)
+
+  const stateManager = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_context_injected = true
+  await stateManager.save(state)
+
+  const hook = createMessagesTransformHook({ warn: async () => {} }, dir)
+  const output: { messages: MessageV2[] } = {
+    messages: [createUserMessage("/totally-unknown do this", "msg_user_unknown_1")],
+  }
+
+  await hook({}, output)
+
+  const syntheticTexts = getSyntheticTextParts(output.messages[0])
+  const realignText = syntheticTexts.find((text) => text.includes("[AUTO-REALIGN]")) || ""
+  const checklistText = syntheticTexts.find((text) => text.includes("CHECKLIST BEFORE STOPPING")) || ""
+
+  assert(realignText.includes("route via /hivefiver research"), "auto-realign reminder defaults unknown command to research")
+  assert(checklistText.includes("Auto-realign workflow now (auto-init): /hivefiver research + skills"), "checklist includes research route under auto-init gate")
+  for (const skill of [
+    "hivefiver-persona-routing",
+    "hivefiver-bilingual-tutor",
+    "hivefiver-mcp-research-loop",
+    "hivefiver-skill-auditor",
+    "hivefiver-domain-pack-router",
+  ]) {
+    assert(checklistText.includes(skill), `checklist includes required skill ${skill}`)
+  }
+
+  await rm(dir, { recursive: true, force: true })
+}
+
 async function test_first_turn_injection_sets_marker_and_prevents_duplicate_on_counter_reset() {
   process.stderr.write("\n--- messages-transform: first-turn marker prevents duplicate injection ---\n")
   const dir = await setupDir()
@@ -499,6 +536,7 @@ async function main() {
   await test_wraps_user_message_with_system_anchor()
   await test_auto_realign_injects_menu_and_permission_gate_for_build_intent()
   await test_auto_realign_injects_auto_init_for_safe_actions()
+  await test_auto_realign_gate_defaults_unknown_to_research_with_required_skills()
   await test_first_turn_injection_sets_marker_and_prevents_duplicate_on_counter_reset()
   await test_includes_session_boundary_checklist_item_when_recommended()
   await test_legacy_message_shape_fallback()

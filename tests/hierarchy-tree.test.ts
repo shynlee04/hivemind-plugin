@@ -122,9 +122,22 @@ function test_crud() {
   const badParentAdd = addChild(withChildResult.tree, "nonexistent_xyz", child);
   assert(!badParentAdd.success && badParentAdd.error === "PARENT_NOT_FOUND", "addChild with missing parent returns error");
 
+  // addChild invalid level transitions
+  const invalidAction = createNode("action", "Orphan action", "active", new Date(2026, 1, 11, 14, 37));
+  const invalidTrajectoryToAction = addChild(rooted, node.id, invalidAction);
+  assert(!invalidTrajectoryToAction.success && invalidTrajectoryToAction.error === "INVALID_LEVEL", "addChild rejects trajectory -> action transition");
+
+  const tacticForInvalid = createNode("tactic", "Valid tactic", "active", new Date(2026, 1, 11, 14, 38));
+  const tacticForInvalidResult = addChild(rooted, node.id, tacticForInvalid);
+  const invalidNestedTrajectory = createNode("trajectory", "Nested trajectory", "active", new Date(2026, 1, 11, 14, 39));
+  const invalidTacticToTrajectory = tacticForInvalidResult.success
+    ? addChild(tacticForInvalidResult.tree, tacticForInvalid.id, invalidNestedTrajectory)
+    : tacticForInvalidResult;
+  assert(!invalidTacticToTrajectory.success && invalidTacticToTrajectory.error === "INVALID_LEVEL", "addChild rejects tactic -> trajectory transition");
+
   // addChild de-duplicates child IDs when same-level nodes are created in the same minute
-  const duplicateA = createNode("action", "same-minute node A", "active", TEST_DATE);
-  const duplicateB = createNode("action", "same-minute node B", "active", TEST_DATE);
+  const duplicateA = createNode("tactic", "same-minute node A", "active", TEST_DATE);
+  const duplicateB = createNode("tactic", "same-minute node B", "active", TEST_DATE);
   const duplicateTree = setRoot(createTree(), createNode("trajectory", "dup root", "active", TEST_DATE));
   const firstDuplicateResult = addChild(duplicateTree, duplicateTree.root!.id, duplicateA);
   const secondDuplicateResult = firstDuplicateResult.success
@@ -235,6 +248,19 @@ function test_staleness() {
   const { tree } = buildThreeLevelTree();
   const gaps = detectGaps(tree);
   assert(gaps.length > 0, "detectGaps on tree with children returns gaps");
+
+  // detectGaps custom thresholds
+  const customRoot = createNode("trajectory", "Custom root", "active", new Date(2026, 1, 11, 10, 0));
+  const customA = createNode("tactic", "A", "active", new Date(2026, 1, 11, 10, 1));
+  const customB = createNode("tactic", "B", "active", new Date(2026, 1, 11, 10, 46));
+  const customTree = setRoot(createTree(), customRoot);
+  const customFirst = addChild(customTree, customRoot.id, customA);
+  const customSecond = customFirst.success ? addChild(customFirst.tree, customRoot.id, customB) : customFirst;
+  const customGaps = customSecond.success
+    ? detectGaps(customSecond.tree, { healthyMs: 5 * 60 * 1000, warmMs: 30 * 60 * 1000 })
+    : [];
+  const customSiblingGap = customGaps.find((gap) => gap.relationship === "sibling");
+  assert(customSiblingGap?.severity === "stale", "detectGaps applies custom thresholds for severity classification");
 
   // Verify sort: stale-first ordering
   const severityOrder: Record<string, number> = { stale: 0, warm: 1, healthy: 2 };

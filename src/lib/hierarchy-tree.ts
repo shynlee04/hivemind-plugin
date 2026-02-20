@@ -94,6 +94,11 @@ export interface AddChildResult {
   parentPath?: string[];
 }
 
+export interface GapThresholdOverrides {
+  healthyMs?: number;
+  warmMs?: number;
+}
+
 // ============================================================
 // Section 2: Stamps
 // ============================================================
@@ -302,6 +307,25 @@ export function addChild(
     };
   }
 
+  const parent = findNode(tree.root, parentId);
+  if (!parent) {
+    return {
+      tree,
+      success: false,
+      error: "PARENT_NOT_FOUND",
+      parentPath: [parentId]
+    };
+  }
+
+  if (!isValidLevelTransition(parent.level, child.level)) {
+    return {
+      tree,
+      success: false,
+      error: "INVALID_LEVEL",
+      parentPath: [parentId]
+    };
+  }
+
   const dedupedChild: HierarchyNode = {
     ...child,
     id: makeUniqueIdForTree(tree.root, child.id),
@@ -323,6 +347,12 @@ export function addChild(
     success: true,
     parentPath: getAncestors(newRoot, dedupedChild.id).map(n => n.id)
   };
+}
+
+function isValidLevelTransition(parentLevel: HierarchyLevel, childLevel: HierarchyLevel): boolean {
+  if (parentLevel === "trajectory") return childLevel === "tactic";
+  if (parentLevel === "tactic") return childLevel === "action";
+  return false;
 }
 
 function collectNodeIds(root: HierarchyNode): Set<string> {
@@ -593,15 +623,37 @@ const GAP_THRESHOLDS = {
   // >2 hours = stale
 };
 
+function resolveGapThresholds(overrides?: GapThresholdOverrides): { healthy: number; warm: number } {
+  const defaultThresholds = {
+    healthy: GAP_THRESHOLDS.healthy,
+    warm: GAP_THRESHOLDS.warm,
+  };
+
+  if (!overrides) {
+    return defaultThresholds;
+  }
+
+  const healthy = typeof overrides.healthyMs === "number" && overrides.healthyMs >= 0
+    ? overrides.healthyMs
+    : defaultThresholds.healthy;
+  const warmBase = typeof overrides.warmMs === "number" && overrides.warmMs >= 0
+    ? overrides.warmMs
+    : defaultThresholds.warm;
+  const warm = Math.max(warmBase, healthy);
+
+  return { healthy, warm };
+}
+
 /**
  * Classify a time gap by severity.
  *
  * @consumer detectGaps, computeSiblingGap, computeParentChildGap
  */
-export function classifyGap(gapMs: number): "healthy" | "warm" | "stale" {
+export function classifyGap(gapMs: number, overrides?: GapThresholdOverrides): "healthy" | "warm" | "stale" {
+  const thresholds = resolveGapThresholds(overrides);
   const absGap = Math.abs(gapMs);
-  if (absGap <= GAP_THRESHOLDS.healthy) return "healthy";
-  if (absGap <= GAP_THRESHOLDS.warm) return "warm";
+  if (absGap <= thresholds.healthy) return "healthy";
+  if (absGap <= thresholds.warm) return "warm";
   return "stale";
 }
 
@@ -612,7 +664,8 @@ export function classifyGap(gapMs: number): "healthy" | "warm" | "stale" {
  */
 export function computeSiblingGap(
   a: HierarchyNode,
-  b: HierarchyNode
+  b: HierarchyNode,
+  overrides?: GapThresholdOverrides
 ): TimestampGap {
   const gapMs = Math.abs(b.created - a.created);
   return {
@@ -620,7 +673,7 @@ export function computeSiblingGap(
     to: b.stamp,
     gapMs,
     relationship: "sibling",
-    severity: classifyGap(gapMs),
+    severity: classifyGap(gapMs, overrides),
   };
 }
 
@@ -631,7 +684,8 @@ export function computeSiblingGap(
  */
 export function computeParentChildGap(
   parent: HierarchyNode,
-  child: HierarchyNode
+  child: HierarchyNode,
+  overrides?: GapThresholdOverrides
 ): TimestampGap {
   const gapMs = Math.abs(child.created - parent.created);
   return {
@@ -639,7 +693,7 @@ export function computeParentChildGap(
     to: child.stamp,
     gapMs,
     relationship: "parent-child",
-    severity: classifyGap(gapMs),
+    severity: classifyGap(gapMs, overrides),
   };
 }
 
@@ -649,7 +703,7 @@ export function computeParentChildGap(
  *
  * @consumer check-drift.ts, session-lifecycle.ts (prompt injection)
  */
-export function detectGaps(tree: HierarchyTree): TimestampGap[] {
+export function detectGaps(tree: HierarchyTree, overrides?: GapThresholdOverrides): TimestampGap[] {
   if (!tree.root) return [];
 
   const gaps: TimestampGap[] = [];
@@ -657,12 +711,12 @@ export function detectGaps(tree: HierarchyTree): TimestampGap[] {
   function walkNode(node: HierarchyNode): void {
     // Parent-child gaps
     for (const child of node.children) {
-      gaps.push(computeParentChildGap(node, child));
+      gaps.push(computeParentChildGap(node, child, overrides));
     }
 
     // Sibling gaps (between consecutive children)
     for (let i = 1; i < node.children.length; i++) {
-      gaps.push(computeSiblingGap(node.children[i - 1], node.children[i]));
+      gaps.push(computeSiblingGap(node.children[i - 1], node.children[i], overrides));
     }
 
     // Recurse into children

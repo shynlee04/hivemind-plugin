@@ -4,30 +4,41 @@
       "stamp": "0563969a-f764-4a0c-a067-03e1c0384062",
       "file": "session_2026-02-19_0563969a-f764-4a0c-a067-03e1c0384062.md",
       "status": "archived",
-      "created": 1771505566276,
+      "created": 1771540117201,
       "linked_plans": []
     },
     {
       "stamp": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
       "file": "session_2026-02-19_84e4e544-e0c8-4605-a242-08f2bc34fb34.md",
       "status": "archived",
-      "created": 1771505566277,
+      "created": 1771540117210,
       "linked_plans": []
     },
     {
       "stamp": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
       "file": "session_2026-02-19_b2f41134-810f-4c72-9baf-3cf0d8c74bad.md",
       "status": "archived",
-      "created": 1771505566277,
+      "created": 1771540117215,
       "linked_plans": []
     },
     {
       "stamp": "281d4b68-e921-4f3e-b2c4-b4e285961dba",
       "file": "session_2026-02-19_281d4b68-e921-4f3e-b2c4-b4e285961dba.md",
       "status": "archived",
-      "created": 1771505566278,
+      "created": 1771540117217,
+      "linked_plans": [],
+      "summary": "Completed commit 826e09ea context mapping review for hierarchy normalization changes"
+    },
+    {
+      "stamp": "121820022026",
+      "file": "2026-02-20-plan_driven-context-exploration-for-export-recycler.md",
+      "status": "active",
+      "created": 1771585937089,
+      "mode": "plan_driven",
+      "trajectory": "Context exploration for export-recycler-red.test.ts test conventions and conflict analysis",
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
       "linked_plans": []
     }
   ],
-  "active_stamp": null
+  "active_stamp": "121820022026"
 }

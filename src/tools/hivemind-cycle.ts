@@ -18,6 +18,11 @@ import { readdir, rm } from "fs/promises"
 import { join } from "path"
 import { clearPendingFailureAck } from "../schemas/brain-state.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
+import { getEffectivePaths } from "../lib/paths.js"
+
+function fileToSessionId(file: string): string {
+  return file.replace(/^session-/, "").replace(/\.json$/, "")
+}
 
 export function createHivemindCycleTool(directory: string): ToolDefinition {
   return tool({
@@ -93,7 +98,7 @@ async function handleExport(directory: string): Promise<string> {
 
 // CHIMERA-3: Always return JSON for FK chaining
 async function handleList(directory: string): Promise<string> {
-  const sessionsDir = join(directory, "sessions")
+  const sessionsDir = getEffectivePaths(directory).sessionsDir
 
   try {
     const files = await readdir(sessionsDir)
@@ -115,7 +120,7 @@ async function handleList(directory: string): Promise<string> {
 
     for (const file of sessionFiles) {
       try {
-        const session = await loadSession(directory, file.replace(".json", ""))
+        const session = await loadSession(directory, fileToSessionId(file))
         if (session) {
           sessions.push({
             id: session.session.id,
@@ -150,21 +155,35 @@ async function handlePrune(
   sessionId?: string,
   keep?: number
 ): Promise<string> {
+  const stateManager = createStateManager(directory)
+  const state = await stateManager.load()
+  const activeSessionId = state?.session.governance_status === "LOCKED" ? undefined : state?.session.id
+
   // If specific session ID provided, delete just that one
   if (sessionId) {
+    if (activeSessionId && sessionId === activeSessionId) {
+      return toSuccessOutput("Active session preserved", sessionId, {
+        deleted: 0,
+        preservedActive: true,
+      })
+    }
+
     const exists = await sessionExists(directory, sessionId)
     if (!exists) {
-      return toErrorOutput(`Session ${sessionId} not found`)
+      return toSuccessOutput("Session already absent", sessionId, {
+        deleted: 0,
+        noOp: true,
+      })
     }
 
     await pruneSession(directory, sessionId)
 
-    return toSuccessOutput("Session deleted", sessionId, { deleted: sessionId })
+    return toSuccessOutput("Session deleted", sessionId, { deleted: 1 })
   }
 
   // Otherwise, prune to keep N most recent
   const keepCount = keep ?? 5
-  const sessionsDir = join(directory, "sessions")
+  const sessionsDir = getEffectivePaths(directory).sessionsDir
 
   try {
     const files = await readdir(sessionsDir)
@@ -175,14 +194,16 @@ async function handlePrune(
     }
 
     // Load sessions to sort by date
-    const sessions: Array<{ file: string; date: number }> = []
+    const sessions: Array<{ file: string; date: number; id: string }> = []
     for (const file of sessionFiles) {
       try {
-        const session = await loadSession(directory, file.replace(".json", ""))
+        const id = fileToSessionId(file)
+        const session = await loadSession(directory, id)
         if (session) {
           sessions.push({
             file,
             date: session.session.start_time,
+            id,
           })
         }
       } catch {
@@ -194,7 +215,7 @@ async function handlePrune(
     sessions.sort((a, b) => b.date - a.date)
 
     // Keep N, delete the rest
-    const toDelete = sessions.slice(keepCount)
+    const toDelete = sessions.slice(keepCount).filter(s => s.id !== activeSessionId)
     let deletedCount = 0
 
     for (const s of toDelete) {

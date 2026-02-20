@@ -11,6 +11,34 @@
       "url": "https://mcp.deepwiki.com/mcp",
       "enabled": true,
       "timeout": 15000
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": false,
+      "timeout": 15000
+    },
+    "tavily": {
+      "type": "remote",
+      "url": "https://mcp.tavily.com/mcp",
+      "enabled": false,
+      "timeout": 15000
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://YOUR-EXA-MCP-ENDPOINT",
+      "enabled": false,
+      "timeout": 15000
+    },
+    "repomix": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "repomix",
+        "--mcp"
+      ],
+      "enabled": false
     }
   },
   "plugin": [
@@ -131,6 +159,25 @@
         "edit": true,
         "bash": true
       }
+    },
+    "hivefiver": {
+      "mode": "primary",
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true,
+        "task": true,
+        "skill": true,
+        "webfetch": true,
+        "websearch": true,
+        "bash": true
+      }
     }
+  },
+  "permission": {
+    "edit": "allow",
+    "write": "allow",
+    "bash": "ask",
+    "*": "allow"
   }
 }

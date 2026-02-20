@@ -1,0 +1,71 @@
+{
+  "name": "Cognitive Packer Foundation Fix",
+  "type": "lib",
+  "description": "Fix packer to read memories from both graph/mems.json and memory/mems.json, inject anchors, and handle legacy format",
+  "qualityGates": [
+    "npm test passes (126/126)",
+    "npx tsc --noEmit passes",
+    "Context injection shows non-empty mems"
+  ],
+  "userStories": [
+    {
+      "id": "US-PACKER-001",
+      "title": "Dual-read for mems location",
+      "description": "Packer must read from graph/mems.json first, fallback to memory/mems.json if not found",
+      "acceptanceCriteria": [
+        "Reads paths.graphMems first",
+        "Falls back to paths.mems if graphMems returns null",
+        "npm test passes"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": "Critical: mems exist in memory/mems.json but packer reads graph/mems.json",
+      "dependsOn": []
+    },
+    {
+      "id": "US-PACKER-002",
+      "title": "Legacy mem format handling",
+      "description": "Handle legacy mem format (session_id, number created_at, missing type/staleness_stamp)",
+      "acceptanceCriteria": [
+        "Converts session_id to origin_task_id (null if not present)",
+        "Converts number created_at to ISO string",
+        "Defaults type to 'insight' if missing",
+        "Defaults staleness_stamp to far future if missing",
+        "npm test passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": "Legacy mems have different schema than MemNode",
+      "dependsOn": ["US-PACKER-001"]
+    },
+    {
+      "id": "US-PACKER-003",
+      "title": "Anchors injection",
+      "description": "Inject anchors as separate XML section in packer output",
+      "acceptanceCriteria": [
+        "Reads paths.anchors file",
+        "Adds <anchors> section to XML output",
+        "Includes key anchors relevant to current session",
+        "npm test passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": "22 anchors exist but not injected",
+      "dependsOn": ["US-PACKER-002"]
+    },
+    {
+      "id": "US-PACKER-004",
+      "title": "Integration verification",
+      "description": "Verify packer returns non-empty context in real usage",
+      "acceptanceCriteria": [
+        "hivemind_inspect deep shows mems count > 0",
+        "Context injection XML contains actual mems",
+        "npm test passes"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": "End-to-end verification",
+      "dependsOn": ["US-PACKER-003"]
+    }
+  ]
+}

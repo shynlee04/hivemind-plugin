@@ -86,6 +86,14 @@ const HIVEFIVER_WORKFLOWS = [
   "hivefiver-enterprise-architect.yaml",
 ] as const
 
+const MANDATORY_RESEARCH_GATE_SKILLS = [
+  "hivefiver-persona-routing",
+  "hivefiver-bilingual-tutor",
+  "hivefiver-mcp-research-loop",
+  "hivefiver-skill-auditor",
+  "hivefiver-domain-pack-router",
+] as const
+
 const ACTION_HINTS: Array<{ action: (typeof HIVEFIVER_ACTIONS)[number]; keywords: string[] }> = [
   { action: "research", keywords: ["research", "mcp", "deepwiki", "context7", "tavily", "exa", "repomix"] },
   { action: "audit", keywords: ["audit", "doctor", "check", "health", "alignment", "config", "setup"] },
@@ -407,18 +415,30 @@ function buildDecision(
   }
 }
 
+function buildMandatoryResearchFallback(base: IntentClassification): IntentClassification {
+  return {
+    ...base,
+    command: "hivefiver research",
+    action: "research",
+    skills: [...MANDATORY_RESEARCH_GATE_SKILLS],
+    workflow: "hivefiver-floppy-engineer.yaml",
+  }
+}
+
 export function detectAutoRealignment(message: string): AutoRealignmentDecision {
   const normalized = message.trim()
   const fallback = classifyIntent(normalized)
+  const mandatoryResearchFallback = buildMandatoryResearchFallback(fallback)
+  const noCommandFallback = fallback.action === "build" ? fallback : mandatoryResearchFallback
 
   if (normalized.length === 0) {
-    return buildDecision(true, "empty_or_whitespace_message", [], fallback)
+    return buildDecision(true, "empty_or_whitespace_message", [], noCommandFallback)
   }
 
   const slashCommands = parseSlashCommands(normalized)
 
   if (slashCommands.length === 0) {
-    return buildDecision(true, "no_command_detected", [], fallback)
+    return buildDecision(true, "no_command_detected", [], noCommandFallback)
   }
 
   const known = new Set(HIVEFIVER_COMMANDS)
@@ -437,7 +457,7 @@ export function detectAutoRealignment(message: string): AutoRealignmentDecision 
   }
 
   if (unknownCommands.length > 0) {
-    return buildDecision(true, "unknown_command_detected", unknownCommands, fallback)
+    return buildDecision(true, "unknown_command_detected", unknownCommands, mandatoryResearchFallback)
   }
 
   return buildDecision(false, "known_command_detected", [], fallback)
