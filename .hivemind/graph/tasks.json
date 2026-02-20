@@ -333,6 +333,24 @@
       "file_locks": [],
       "created_at": "2026-02-19T16:12:36.894Z",
       "updated_at": "2026-02-19T16:12:36.894Z"
+    },
+    {
+      "id": "a47a47d4-0390-4f54-90fa-89fc47eb7d12",
+      "parent_phase_id": "cc3c7f25-20c5-4239-b5e0-74a37f667a43",
+      "title": "Auto-loop validate/audit/doctor cycle completed with blocker remediation committed and independently approved; next queued wave is Export Recycler RED->GREEN",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-19T23:52:57.460Z",
+      "updated_at": "2026-02-19T23:52:57.460Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+      "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-20T11:13:08.622Z",
+      "updated_at": "2026-02-20T11:13:08.622Z"
     }
   ]
 }

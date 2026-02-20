@@ -10,6 +10,7 @@ import {
   getAncestors,
   getCursorNode,
   detectGaps,
+  computeCurrentGap,
   treeExists,
   getTreeStats,
 } from "./hierarchy-tree.js"
@@ -162,6 +163,21 @@ export async function deepInspect(directory: string, _target: string): Promise<I
   const ancestors = tree?.root && tree.cursor ? getAncestors(tree.root, tree.cursor) : []
   const gaps = tree?.root ? detectGaps(tree) : []
   const staleGaps = gaps.filter((g) => g.severity === "stale")
+  const currentGap = tree?.root ? computeCurrentGap(tree) : null
+  const staleGapEntries: Array<{ from: string; to: string; gapHours: number; relationship: string }> = staleGaps.map((g) => ({
+    from: g.from,
+    to: g.to,
+    gapHours: Math.round((g.gapMs / (60 * 60 * 1000)) * 10) / 10,
+    relationship: g.relationship,
+  }))
+  if (currentGap && currentGap.severity === "stale") {
+    staleGapEntries.push({
+      from: currentGap.from,
+      to: currentGap.to,
+      gapHours: Math.round((currentGap.gapMs / (60 * 60 * 1000)) * 10) / 10,
+      relationship: "current-gap",
+    })
+  }
 
   const planSection = extractPlanSection(activeMd.body)
 
@@ -190,12 +206,7 @@ export async function deepInspect(directory: string, _target: string): Promise<I
       contextUpdates: state.metrics.context_updates,
     },
     chainBreaks: chainBreaks.map((b) => b.message),
-    staleGaps: staleGaps.map((g) => ({
-      from: g.from,
-      to: g.to,
-      gapHours: Math.round((g.gapMs / (60 * 60 * 1000)) * 10) / 10,
-      relationship: g.relationship,
-    })),
+    staleGaps: staleGapEntries,
     anchors: scopedAnchors.map((a) => ({ key: a.key, value: a.value })),
     filesTouched: state.metrics.files_touched.slice(0, 10),
     treeAscii: tree?.root ? toAsciiTree(tree) : undefined,

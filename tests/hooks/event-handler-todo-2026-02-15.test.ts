@@ -62,7 +62,7 @@ describe("US-004: Event Handler - todo.updated", () => {
         assert.equal(parsed.tasks[0].content, "Task 1");
         assert.equal(parsed.tasks[0].status, "pending");
         assert.equal(parsed.tasks[0].priority, "high");
-        assert.equal(parsed.tasks[0].hivefiver_action, "init");
+        assert.equal(parsed.tasks[0].hivefiver_action, "research");
         assert.equal(parsed.tasks[0].max_validation_attempts, 10);
         assert.equal(parsed.tasks[0].evidence_confidence, "partial");
         assert.equal(parsed.tasks[0].auto_initiate, true);

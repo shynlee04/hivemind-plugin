@@ -48,6 +48,30 @@
       "staleness_stamp": "2026-02-19T14:25:13.524Z",
       "created_at": "2026-02-19T14:25:13.524Z",
       "updated_at": "2026-02-19T14:25:13.524Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+      "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+      "shelf": "context",
+      "type": "insight",
+      "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+      "relevance_score": 0.8,
+      "staleness_stamp": "2026-02-19T23:51:31.067Z",
+      "created_at": "2026-02-19T23:51:31.067Z",
+      "updated_at": "2026-02-19T23:51:31.067Z"
+    },
+    {
+      "id": "90beacfc-3fe4-4ca2-9f1c-8652a6bd5014",
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
+      "origin_task_id": null,
+      "shelf": "hivemind-contracts",
+      "type": "insight",
+      "content": "HiveFiver Integration Contract Map - Wave 3 GREEN Patch Validation (2026-02-20):\n\nProducer: src/lib/hivefiver-integration.ts\n- Function: detectAutoRealignment(message: string) -> AutoRealignmentDecision\n- Interface: 13 fields (shouldRealign, reason, unknownCommands, recommendedCommand, recommendedAction, recommendedSkills, recommendedWorkflow, persona, domain, canAutoInitiate, requiresPermission, permissionPrompt?, nextStepMenu)\n\nConsumer 1: src/hooks/messages-transform.ts\n- Uses: shouldRealign, recommendedCommand, recommendedSkills, recommendedWorkflow, persona, requiresPermission, permissionPrompt, nextStepMenu (9/13 fields)\n- Purpose: Build AUTO-REALIGN system reminder and checklist items\n- Test coverage: 32/32 tests passing\n\nConsumer 2: src/hooks/event-handler.ts\n- Uses: recommendedAction, domain, persona, shouldRealign, canAutoInitiate, requiresPermission (6/13 fields)\n- Purpose: Enrich TODO records with fallback HiveFiver metadata\n\nCompatibility Status: COMPATIBLE\n- TypeScript: 0 errors\n- Producer tests: 9/9 passing\n- Consumer tests: 32/32 passing\n- Field access: All safe, optional fields guarded\n- Regression risk: LOW\n\nTest Gaps:\n- Missing: permissionPrompt null case direct test\n- Missing: End-to-end producer→consumer integration test",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-20T12:56:37.097Z",
+      "created_at": "2026-02-20T12:56:37.097Z",
+      "updated_at": "2026-02-20T12:56:37.097Z"
     }
   ]
 }

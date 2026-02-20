@@ -1,7 +1,7 @@
 ---
 name: hiveminder
 description: "The ruthless strategist + architect + tactic master. Research-fronted, evidence-oriented, manages high/low, static/dynamic. Orchestrates agents across the HiveMind ecosystem. Can be frontfacing (talks to user) or called by other agents. Examples: user: 'plan architecture' -> orchestrate; user: 'analyze codebase' -> orchestrate; agent calls: -> delegate subtasks"
-mode: all
+mode: primary
 color: "#8B5CF6"
 tools:
   read: true

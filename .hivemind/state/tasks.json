@@ -1,146 +1,382 @@
 {
   "session_id": "ses_38b27b94affexCHWZt2mbnj01j",
-  "updated_at": 1771517180333,
+  "updated_at": 1771595996316,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Fix MUST-1: TODO alias normalization for mixed snake_case/camelCase ingress in hook pipeline",
-      "content": "Fix MUST-1: TODO alias normalization for mixed snake_case/camelCase ingress in hook pipeline",
+      "text": "Wave 4 Slice 2 RED kickoff: filter primitives failing tests (gitignore/binary/secret)",
+      "content": "Wave 4 Slice 2 RED kickoff: filter primitives failing tests (gitignore/binary/secret)",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
+      "persona": "floppy_engineer",
       "source": "todo.updated",
+      "hivefiver_action": "validate",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": false,
+      "requires_permission": true,
+      "permission_prompt": "Approve next step: run /hivefiver validate now? (Yes/No)",
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver validate",
+          "action": "validate",
+          "label": "Run quality gates",
+          "description": "Check tests, evidence gates, and schema quality.",
+          "requiresPermission": true
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver build",
+          "action": "build",
+          "label": "Implement with TDD",
+          "description": "Move from approved plan into implementation.",
+          "requiresPermission": true
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver deploy",
+          "action": "deploy",
+          "label": "Prepare deployment",
+          "description": "Prepare runtime environment and rollout steps.",
+          "requiresPermission": true
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver audit",
+          "action": "audit",
+          "label": "Audit alignment",
+          "description": "Check config drift and governance integrity.",
+          "requiresPermission": false
+        }
+      ],
       "recommended_skills": [
         "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor"
+        "hivefiver-bilingual-tutor",
+        "hivefiver-ralph-tasking",
+        "hivefiver-gsd-compat",
+        "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver-start",
+      "canonical_command": "hivefiver validate",
       "related_entities": {
-        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771517180333,
-      "updated_at": 1771517180333
+      "last_realigned_at": 1771595996316,
+      "updated_at": 1771595996316
     },
     {
       "id": "todo-2",
-      "text": "Fix MUST-2: remove hook write-boundary leak by routing todo.updated persistence through queued mutation/write owner",
-      "content": "Fix MUST-2: remove hook write-boundary leak by routing todo.updated persistence through queued mutation/write owner",
+      "text": "Auto-realign checklist: /hivefiver init executed with required skills",
+      "content": "Auto-realign checklist: /hivefiver init executed with required skills",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
-      "lane": "auto",
+      "persona": "floppy_engineer",
       "source": "todo.updated",
+      "hivefiver_action": "audit",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver audit",
+          "action": "audit",
+          "label": "Audit alignment",
+          "description": "Check config drift and governance integrity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver tutor",
+          "action": "tutor",
+          "label": "Tutor mode",
+          "description": "Guide through next decisions with interactive coaching.",
+          "requiresPermission": false
+        }
+      ],
       "recommended_skills": [
         "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor"
+        "hivefiver-bilingual-tutor",
+        "hivefiver-skill-auditor",
+        "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver-start",
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771517180333,
-      "updated_at": 1771517180333
+      "updated_at": 1771595996316
     },
     {
       "id": "todo-3",
-      "text": "Fix MUST-3: make hivemind_session action updates idempotent to prevent graph task explosion",
-      "content": "Fix MUST-3: make hivemind_session action updates idempotent to prevent graph task explosion",
+      "text": "Pending task review executed (1 in-progress task identified and prioritized)",
+      "content": "Pending task review executed (1 in-progress task identified and prioritized)",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
+      "persona": "floppy_engineer",
       "source": "todo.updated",
+      "hivefiver_action": "init",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver init",
+          "action": "init",
+          "label": "Initialize + profile",
+          "description": "Detect context, profile lane, and lock startup flow.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver tutor",
+          "action": "tutor",
+          "label": "Tutor mode",
+          "description": "Guide through next decisions with interactive coaching.",
+          "requiresPermission": false
+        }
+      ],
       "recommended_skills": [
         "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor"
+        "hivefiver-bilingual-tutor",
+        "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver-start",
+      "canonical_command": "hivefiver init",
       "related_entities": {
-        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771517180333,
-      "updated_at": 1771517180333
+      "last_realigned_at": 1771595996316,
+      "updated_at": 1771595996316
     },
     {
       "id": "todo-4",
-      "text": "Boundary fix: eliminate residual stale-session hook-side write (session-lifecycle -> onboarding.save)",
-      "content": "Boundary fix: eliminate residual stale-session hook-side write (session-lifecycle -> onboarding.save)",
-      "status": "completed",
-      "priority": "high",
-      "domain": "hybrid",
-      "lane": "auto",
-      "source": "todo.updated",
-      "recommended_skills": [
-        "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor"
-      ],
-      "canonical_command": "hivefiver-start",
-      "related_entities": {
-        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
-      },
-      "last_realigned_at": 1771517180333,
-      "updated_at": 1771517180333
-    },
-    {
-      "id": "todo-5",
-      "text": "Independent code-review sign-off for all boundary remediations",
-      "content": "Independent code-review sign-off for all boundary remediations",
+      "text": "Run /hivefiver spec for Wave 4 Slice 2 GREEN contracts",
+      "content": "Run /hivefiver spec for Wave 4 Slice 2 GREEN contracts",
       "status": "in_progress",
       "priority": "high",
       "domain": "hybrid",
-      "lane": "auto",
+      "persona": "floppy_engineer",
       "source": "todo.updated",
+      "hivefiver_action": "spec",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver architect",
+          "action": "architect",
+          "label": "Design agent system",
+          "description": "Shape agents, subagents, and interfaces.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver workflow",
+          "action": "workflow",
+          "label": "Configure workflow",
+          "description": "Define orchestrated execution steps and guards.",
+          "requiresPermission": false
+        }
+      ],
       "recommended_skills": [
         "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor"
+        "hivefiver-bilingual-tutor",
+        "hivefiver-spec-distillation",
+        "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver-start",
       "related_entities": {
         "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
       },
-      "last_realigned_at": 1771517180333,
-      "updated_at": 1771517180333
+      "updated_at": 1771595996316
     },
     {
-      "id": "todo-6",
-      "text": "Re-run stress journey integration audit for GO/NO-GO",
-      "content": "Re-run stress journey integration audit for GO/NO-GO",
-      "status": "pending",
-      "priority": "high",
-      "domain": "office-ops",
-      "lane": "auto",
-      "source": "todo.updated",
-      "recommended_skills": [
-        "hivefiver-skill-auditor",
-        "hivefiver-persona-routing"
-      ],
-      "canonical_command": "hivefiver-doctor",
-      "related_entities": {
-        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
-      },
-      "last_realigned_at": 1771517180333,
-      "updated_at": 1771517180333
-    },
-    {
-      "id": "todo-7",
-      "text": "Update docs and finalize with quality gates + atomic commit",
-      "content": "Update docs and finalize with quality gates + atomic commit",
+      "id": "todo-5",
+      "text": "Wave 4 Slice 2 GREEN: implement gitignore-filter, binary-detector, secret-detector",
+      "content": "Wave 4 Slice 2 GREEN: implement gitignore-filter, binary-detector, secret-detector",
       "status": "pending",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
+      "persona": "floppy_engineer",
       "source": "todo.updated",
+      "hivefiver_action": "build",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": false,
+      "requires_permission": true,
+      "permission_prompt": "Approve next step: run /hivefiver build now? (Yes/No)",
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver build",
+          "action": "build",
+          "label": "Implement with TDD",
+          "description": "Move from approved plan into implementation.",
+          "requiresPermission": true
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver validate",
+          "action": "validate",
+          "label": "Run quality gates",
+          "description": "Check tests, evidence gates, and schema quality.",
+          "requiresPermission": true
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver deploy",
+          "action": "deploy",
+          "label": "Prepare deployment",
+          "description": "Prepare runtime environment and rollout steps.",
+          "requiresPermission": true
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver audit",
+          "action": "audit",
+          "label": "Audit alignment",
+          "description": "Check config drift and governance integrity.",
+          "requiresPermission": false
+        }
+      ],
       "recommended_skills": [
         "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor"
+        "hivefiver-bilingual-tutor",
+        "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver-start",
+      "canonical_command": "hivefiver build",
       "related_entities": {
-        "session_id": "ses_38b27b94affexCHWZt2mbnj01j"
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771517180333,
-      "updated_at": 1771517180333
+      "last_realigned_at": 1771595996316,
+      "updated_at": 1771595996316
+    },
+    {
+      "id": "todo-6",
+      "text": "Wave 4 Slice 2 independent review + validation gates",
+      "content": "Wave 4 Slice 2 independent review + validation gates",
+      "status": "pending",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "init",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver init",
+          "action": "init",
+          "label": "Initialize + profile",
+          "description": "Detect context, profile lane, and lock startup flow.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver tutor",
+          "action": "tutor",
+          "label": "Tutor mode",
+          "description": "Guide through next decisions with interactive coaching.",
+          "requiresPermission": false
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver init",
+      "related_entities": {
+        "session_id": "ses_38b27b94affexCHWZt2mbnj01j",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
+      },
+      "last_realigned_at": 1771595996316,
+      "updated_at": 1771595996316
     }
   ]
 }

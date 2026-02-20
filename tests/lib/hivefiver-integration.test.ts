@@ -47,6 +47,51 @@ describe("HiveFiver integration helpers", () => {
     assert.deepEqual(result.unknownCommands, ["totally-unknown"])
   })
 
+  it("defaults no-command flows to mandatory research gate", () => {
+    const result = detectAutoRealignment("please help me plan this project")
+    assert.equal(result.shouldRealign, true)
+    assert.equal(result.reason, "no_command_detected")
+    assert.equal(result.recommendedCommand, "hivefiver research")
+    assert.equal(result.recommendedAction, "research")
+    for (const skill of [
+      "hivefiver-persona-routing",
+      "hivefiver-bilingual-tutor",
+      "hivefiver-mcp-research-loop",
+      "hivefiver-skill-auditor",
+      "hivefiver-domain-pack-router",
+    ]) {
+      assert.equal(result.recommendedSkills.includes(skill), true)
+    }
+    assert.equal(result.nextStepMenu.some((option) => option.command === "hivefiver research"), true)
+  })
+
+  it("defaults empty or whitespace input to mandatory research gate", () => {
+    for (const input of ["", "   ", "\n\t"]) {
+      const result = detectAutoRealignment(input)
+      assert.equal(result.shouldRealign, true)
+      assert.equal(result.reason, "empty_or_whitespace_message")
+      assert.equal(result.recommendedCommand, "hivefiver research")
+      assert.equal(result.recommendedAction, "research")
+    }
+  })
+
+  it("defaults unknown-command flows to mandatory research gate", () => {
+    const result = detectAutoRealignment("/totally-unknown do this")
+    assert.equal(result.shouldRealign, true)
+    assert.equal(result.reason, "unknown_command_detected")
+    assert.equal(result.recommendedCommand, "hivefiver research")
+    assert.equal(result.recommendedAction, "research")
+    for (const skill of [
+      "hivefiver-persona-routing",
+      "hivefiver-bilingual-tutor",
+      "hivefiver-mcp-research-loop",
+      "hivefiver-skill-auditor",
+      "hivefiver-domain-pack-router",
+    ]) {
+      assert.equal(result.recommendedSkills.includes(skill), true)
+    }
+  })
+
   it("does not force realignment when known command is used", () => {
     const result = detectAutoRealignment("/hivefiver research verify mcp")
     assert.equal(result.shouldRealign, false)
