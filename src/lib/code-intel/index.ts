@@ -4,6 +4,8 @@ import { join, relative, sep } from "node:path"
 export { createGitignoreFilter } from "./gitignore-filter.js"
 export { isBinaryPathSafe } from "./binary-detector.js"
 export { detectSecrets } from "./secret-detector.js"
+export { countTokens } from "./token-counter.js"
+export { scanFilesToCodeMap } from "./file-scanner.js"
 
 type CodeMapEntry = { path: string }
 type CodeMap = { files: CodeMapEntry[] }
