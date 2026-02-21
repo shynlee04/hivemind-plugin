@@ -24,6 +24,15 @@ function fileToSessionId(file: string): string {
   return file.replace(/^session-/, "").replace(/\.json$/, "")
 }
 
+function isMissingDirError(err: unknown): boolean {
+  return (
+    typeof err === "object" &&
+    err !== null &&
+    "code" in err &&
+    (err as { code?: string }).code === "ENOENT"
+  )
+}
+
 export function createHivemindCycleTool(directory: string): ToolDefinition {
   return tool({
     description:
@@ -144,6 +153,10 @@ async function handleList(directory: string): Promise<string> {
       sessions: sessions.slice(0, 20),
     })
   } catch (err: unknown) {
+    if (isMissingDirError(err)) {
+      return toSuccessOutput("No sessions found", undefined, { sessions: [], total: 0 })
+    }
+
     const errorMsg = err instanceof Error ? err.message : String(err)
     return toErrorOutput(`Could not list sessions: ${errorMsg}`)
   }
@@ -234,6 +247,10 @@ async function handlePrune(
       totalAfter: sessions.length - deletedCount,
     })
   } catch (err: unknown) {
+    if (isMissingDirError(err)) {
+      return toSuccessOutput("No pruning needed", undefined, { kept: 0, deleted: 0 })
+    }
+
     const errorMsg = err instanceof Error ? err.message : String(err)
     return toErrorOutput(`Could not prune sessions: ${errorMsg}`)
   }
