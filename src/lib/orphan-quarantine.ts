@@ -54,6 +54,13 @@ export async function quarantineOrphan(
   record: OrphanRecord,
 ): Promise<void> {
   const orphansFile = await loadOrphansFile(orphanPath)
+  const alreadyQuarantined = orphansFile.orphans.some(
+    (existing) => existing.type === record.type && existing.id === record.id,
+  )
+  if (alreadyQuarantined) {
+    return
+  }
+
   orphansFile.orphans.push(record)
 
   const directory = dirname(orphanPath)

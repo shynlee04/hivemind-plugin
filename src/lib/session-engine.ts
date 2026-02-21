@@ -7,6 +7,8 @@ import {
   createNode,
   createTree,
   generateStamp,
+  type HierarchyNode,
+  type HierarchyTree,
   loadTree,
   saveTree,
   setRoot,
@@ -44,6 +46,27 @@ import {
 import { loadMems, saveMems, addMem } from "./mems.js"
 import { addGraphMem, loadTrajectory } from "./graph-io.js"
 export type HierarchyLevel = "trajectory" | "tactic" | "action"
+
+function deactivateActiveActionsUnderTactic(
+  node: HierarchyNode,
+  tacticId: string,
+): HierarchyNode {
+  if (node.id === tacticId) {
+    const nextChildren = node.children.map((child) => {
+      if (child.level === "action" && child.status === "active") {
+        return { ...child, status: "pending" as const }
+      }
+      return child
+    })
+    return { ...node, children: nextChildren }
+  }
+
+  const nextChildren = node.children.map((child) => deactivateActiveActionsUnderTactic(child, tacticId))
+  if (nextChildren.every((child, index) => child === node.children[index])) {
+    return node
+  }
+  return { ...node, children: nextChildren }
+}
 
 export interface SessionOptions {
   mode?: SessionMode
@@ -259,8 +282,14 @@ export async function updateSession(directory: string, updates: SessionUpdates):
           parentNode = tacticNodes[tacticNodes.length - 1]
         }
       }
+      const treeWithSingleActiveAction: HierarchyTree = parentNode.level === "tactic"
+        ? {
+            ...tree,
+            root: deactivateActiveActionsUnderTactic(tree.root, parentNode.id),
+          }
+        : tree
       const actionNode = createNode("action", content, "active", now)
-      const result = addChild(tree, parentNode.id, actionNode)
+      const result = addChild(treeWithSingleActiveAction, parentNode.id, actionNode)
       if (result.success) {
         updatedTree = result.tree
       }

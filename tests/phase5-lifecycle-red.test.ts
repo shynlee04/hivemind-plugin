@@ -7,6 +7,7 @@ import { join } from "node:path"
 import { initProject } from "../src/cli/init.js"
 import { createHivemindSessionTool } from "../src/tools/hivemind-session.js"
 import { loadTrajectory, loadGraphMems, loadGraphTasks } from "../src/lib/graph-io.js"
+import { loadTree } from "../src/lib/hierarchy-tree.js"
 import { createStateManager } from "../src/lib/persistence.js"
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -151,5 +152,77 @@ describe("Phase 5.2 RED: lifecycle continuity and FK chain", () => {
     for (const taskId of forcedTaskIds) {
       assert.ok(graphTaskIds.has(taskId), "all active task IDs should reference existing graph tasks")
     }
+  })
+
+  it("RED: repeated action updates preserve a single active action under the current tactic", async () => {
+    const sessionTool = createHivemindSessionTool(dir)
+
+    await sessionTool.execute(
+      { action: "start", mode: "plan_driven", focus: "Single active action invariant" },
+      {} as any,
+    )
+    await sessionTool.execute(
+      { action: "update", level: "tactic", content: "Operate within one tactic" },
+      {} as any,
+    )
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "First action" },
+      {} as any,
+    )
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "Second action" },
+      {} as any,
+    )
+
+    const tree = await loadTree(dir)
+    assert.ok(tree.root, "tree root should exist")
+
+    const tactic = tree.root?.children.filter((node) => node.level === "tactic").at(-1)
+    assert.ok(tactic, "expected at least one tactic node")
+
+    const activeActions = (tactic?.children ?? []).filter(
+      (node) => node.level === "action" && node.status === "active",
+    )
+
+    assert.equal(
+      activeActions.length,
+      1,
+      "RED expected: only one action should remain active under tactic after repeated action updates",
+    )
+  })
+
+  it("RED: update_action keeps a single active task FK (no append fanout)", async () => {
+    const sessionTool = createHivemindSessionTool(dir)
+
+    await sessionTool.execute(
+      { action: "start", mode: "plan_driven", focus: "Single active task invariant" },
+      {} as any,
+    )
+    await sessionTool.execute(
+      { action: "update", level: "tactic", content: "Ensure tactic context" },
+      {} as any,
+    )
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "First task binding" },
+      {} as any,
+    )
+
+    const afterFirst = await loadTrajectory(dir)
+    const firstTaskIds = afterFirst?.trajectory?.active_task_ids ?? []
+    assert.equal(firstTaskIds.length, 1, "precondition: first action update should create one active task FK")
+
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "Force replacement", forceNewActionTask: true },
+      {} as any,
+    )
+
+    const afterForced = await loadTrajectory(dir)
+    const forcedTaskIds = afterForced?.trajectory?.active_task_ids ?? []
+
+    assert.equal(
+      forcedTaskIds.length,
+      1,
+      "RED expected: forceNewActionTask should rotate to a single active task FK, not append fanout",
+    )
   })
 })
