@@ -1080,10 +1080,83 @@
             "created": 1771684333987,
             "stamp": "322121022026",
             "children": []
+          },
+          {
+            "id": "a_442121022026",
+            "level": "action",
+            "content": "Patch /Users/apple/hiveplugin runtime paths to canonical sessionsDir and fix session file normalization for hivemind_cycle list/prune + resume path parity",
+            "status": "active",
+            "created": 1771685088943,
+            "stamp": "442121022026",
+            "children": []
+          },
+          {
+            "id": "a_022221022026",
+            "level": "action",
+            "content": "Resume disconnected run from active session, auto-realign via /hivefiver init, then continue blocker remediation plan for canonical sessionsDir parity",
+            "status": "active",
+            "created": 1771686165006,
+            "stamp": "022221022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_032221022026",
+        "level": "tactic",
+        "content": "/hivefiver init re-aligned to active session; executing pending-task review and blocker triage for canonical sessionsDir parity.",
+        "status": "active",
+        "created": 1771686215019,
+        "stamp": "032221022026",
+        "children": [
+          {
+            "id": "a_032221022026",
+            "level": "action",
+            "content": "Run /hivefiver init checklist now: confirm chain integrity, review one pending task (sessionsDir parity blocker), and prepare next execution slice with evidence requirements.",
+            "status": "active",
+            "created": 1771686221607,
+            "stamp": "032221022026",
+            "children": []
+          },
+          {
+            "id": "a_062221022026",
+            "level": "action",
+            "content": "Review pending task: sessionsDir parity blocker status via fresh code scan and evidence capture.",
+            "status": "active",
+            "created": 1771686389303,
+            "stamp": "062221022026",
+            "children": []
+          },
+          {
+            "id": "a_082221022026",
+            "level": "action",
+            "content": "sessionsDir parity review completed with fresh evidence: runtime hivemind_cycle list still fails ENOENT on '/sessions'; source resumeSession path test passes; blocker remains for cycle tool runtime path resolution.",
+            "status": "active",
+            "created": 1771686514406,
+            "stamp": "082221022026",
+            "children": []
+          },
+          {
+            "id": "a_092221022026",
+            "level": "action",
+            "content": "Delegate Option 1 execution: reproduce cycle ENOENT, add failing test first, implement minimal sessionsDir runtime parity fix, and verify with npm test + npx tsc --noEmit",
+            "status": "active",
+            "created": 1771686551234,
+            "stamp": "092221022026",
+            "children": []
+          },
+          {
+            "id": "a_092221022026",
+            "level": "action",
+            "content": "Execute Option 1: reproduce cycle ENOENT, add failing test, implement minimal sessionsDir parity fix, verify gates",
+            "status": "active",
+            "created": 1771686592698,
+            "stamp": "092221022026",
+            "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_322121022026"
+  "cursor": "a_092221022026"
 }
