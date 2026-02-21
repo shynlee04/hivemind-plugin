@@ -11,6 +11,54 @@
       "value": "{\"problem\":\"hivemind_cycle list ENOENT on /sessions\",\"scope\":\"read-only diagnosis\"}",
       "created_at": 1771608216711,
       "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
+    },
+    {
+      "key": "pre_doctor_remediation_tasks_backup",
+      "value": "{\"tasks_count\": 40, \"sample_ids\": [\"a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3\", \"f0cb82f5-dbbe-4a39-be54-c31a623498f1\", \"c141b5e3-1424-4516-ba7f-0fff03aa40a1\"]}",
+      "created_at": 1771701400609,
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
+    },
+    {
+      "key": "pre_doctor_remediation_orphans_backup",
+      "value": "{\"orphans_count_approx\": 60, \"has_duplicates\": true, \"sample_ids\": [\"d2ee5993-41d1-441c-9ead-1bf3383512d3\", \"a47a47d4-0390-4f54-90fa-89fc47eb7d12\"]}",
+      "created_at": 1771701402264,
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
+    },
+    {
+      "key": "pre_doctor_remediation_hierarchy_backup",
+      "value": "{\"trajectory_id\": \"t_561920022026\", \"active_tactics_count\": 5, \"active_actions_count_multiple\": true}",
+      "created_at": 1771701403250,
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
+    },
+    {
+      "key": "doctor_remediation_backup_1771707221036",
+      "value": "{\"tasks_total\": 40, \"orphans_total\": 1178, \"orphans_unique\": 38, \"overlap_count\": 38, \"orphan_duplicates\": 1140, \"active_tactic_count\": 2, \"active_action_count\": 4, \"active_tactic_ids\": [\"tc_570122022026\", \"tc_480322022026\"], \"active_action_ids\": [\"a_110222022026\", \"a_480322022026\", \"a_490322022026\", \"a_520322022026\"]}",
+      "created_at": 1771707221036,
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
+    },
+    {
+      "key": "doctor_remediation_backup_1771707317745",
+      "value": "{\"overlap_count\": 38, \"orphan_duplicates\": 152, \"active_tactic_count\": 1, \"active_action_count\": 1}",
+      "created_at": 1771707317745,
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
+    },
+    {
+      "key": "doctor_remediation_backup_1771707411264",
+      "value": "{\"overlap_count\": 38, \"orphan_duplicates\": 190, \"active_tactic_count\": 1, \"active_action_count\": 1}",
+      "created_at": 1771707411264,
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
+    },
+    {
+      "key": "debug_pre_2026-02-22T00-00-00_doctor_recurrence",
+      "value": "{\"problem\":\"recurring orphan duplicates and active-action fanout after doctor remediation\",\"scope\":\"read-only diagnosis\"}",
+      "created_at": 1771707885351,
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
+    },
+    {
+      "key": "deterministic_cleanup_backup_1771710242282",
+      "value": "{\"at\":\"2026-02-21T21:44:02.281Z\",\"operation\":\"deterministic_cleanup_live_state\",\"scope\":[\".hivemind/graph/tasks.json\",\".hivemind/graph/orphans.json\",\".hivemind/state/hierarchy.json\"],\"counts_before\":{\"tasks_total\":40,\"orphans_total\":2439,\"orphans_unique\":38,\"overlap_count\":38,\"orphan_duplicates\":2401,\"active_tactic_count\":1,\"active_action_count\":13}}",
+      "created_at": 1771710242283,
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
     }
   ],
   "version": "1.0.0"

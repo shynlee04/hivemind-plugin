@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "phases": [
+    {
+      "id": "bb5f9943-eb51-4728-8e13-df80f1666579",
+      "title": "Phase 1 (auto-created for FK integrity)",
+      "status": "active",
+      "created_at": "2026-02-21T19:33:19.993Z",
+      "updated_at": "2026-02-21T19:33:19.994Z"
+    },
+    {
+      "id": "9a780436-7f6d-4df4-a524-8ed91f4e7b9c",
+      "title": "Phase 2 (auto-created for FK integrity)",
+      "status": "active",
+      "created_at": "2026-02-21T19:33:19.994Z",
+      "updated_at": "2026-02-21T19:33:19.994Z"
+    },
+    {
+      "id": "3223b810-c908-4f26-8280-c4e7dbb215c1",
+      "title": "Phase 3 (auto-created for FK integrity)",
+      "status": "active",
+      "created_at": "2026-02-21T19:33:19.994Z",
+      "updated_at": "2026-02-21T19:33:19.994Z"
+    },
+    {
+      "id": "cc3c7f25-20c5-4239-b5e0-74a37f667a43",
+      "title": "Phase 4 (auto-created for FK integrity)",
+      "status": "active",
+      "created_at": "2026-02-21T19:33:19.994Z",
+      "updated_at": "2026-02-21T19:33:19.994Z"
+    },
+    {
+      "id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+      "title": "Phase 5 (auto-created for FK integrity)",
+      "status": "active",
+      "created_at": "2026-02-21T19:33:19.994Z",
+      "updated_at": "2026-02-21T19:33:19.994Z"
+    }
+  ]
+}
