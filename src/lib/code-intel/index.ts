@@ -6,6 +6,8 @@ export { isBinaryPathSafe } from "./binary-detector.js"
 export { detectSecrets } from "./secret-detector.js"
 export { countTokens } from "./token-counter.js"
 export { scanFilesToCodeMap } from "./file-scanner.js"
+export { createTreeSitterLoader } from "./tree-sitter-loader.js"
+export { extractSignatures } from "./signature-extractor.js"
 
 type CodeMapEntry = { path: string }
 type CodeMap = { files: CodeMapEntry[] }
