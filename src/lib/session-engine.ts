@@ -502,7 +502,7 @@ export async function getSessionStatus(directory: string): Promise<SessionStatus
 }
 
 export async function resumeSession(directory: string, sessionId: string): Promise<SessionResult> {
-  const sessionsDir = join(directory, "sessions")
+  const sessionsDir = getEffectivePaths(directory).sessionsDir
 
   if (!sessionId) {
     try {

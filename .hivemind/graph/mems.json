@@ -72,6 +72,18 @@
       "staleness_stamp": "2026-02-20T12:56:37.097Z",
       "created_at": "2026-02-20T12:56:37.097Z",
       "updated_at": "2026-02-20T12:56:37.097Z"
+    },
+    {
+      "id": "09dfa939-46fa-4094-b2cb-7b607aefdc45",
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
+      "origin_task_id": null,
+      "shelf": "branch-policy",
+      "type": "insight",
+      "content": "User policy: keep .hivemind/.opencode/.plan/.planning/docs/AGENT_RULES.md/AGENTS.md visible/trackable on dev-v3 for agent memory and atomic commits; ensure master/public branch keeps required ignore/protection posture.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-20T14:23:10.236Z",
+      "created_at": "2026-02-20T14:23:10.236Z",
+      "updated_at": "2026-02-20T14:23:10.236Z"
     }
   ]
 }

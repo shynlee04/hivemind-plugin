@@ -1,4 +1,17 @@
 {
-  "anchors": [],
+  "anchors": [
+    {
+      "key": "branch_policy_dev_vs_master",
+      "value": "On dev-v3, keep .hivemind/.opencode/.plan/.planning/docs/AGENT_RULES.md/AGENTS.md visible and committable for agent memory and atomic continuity. On master/public, enforce public-safe ignore/protection posture and branch guard before release.",
+      "created_at": 1771603385510,
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
+    },
+    {
+      "key": "debug_pre_2026-02-21T00-00-00_cycle_list_enoent",
+      "value": "{\"problem\":\"hivemind_cycle list ENOENT on /sessions\",\"scope\":\"read-only diagnosis\"}",
+      "created_at": 1771608216711,
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a"
+    }
+  ],
   "version": "1.0.0"
 }
