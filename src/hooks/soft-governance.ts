@@ -493,7 +493,7 @@ export function createSoftGovernanceHook(
           hiveMindConfig: config,
           sessionID: input.sessionID,
           triggerTool: input.tool,
-          client: getClient() as any,
+          client: getClient() as unknown as Parameters<typeof maybeCreateNonDisruptiveSessionSplit>[2]["client"],
           emitToast: (opts) => emitGovernanceToast(log, opts),
         }
       )

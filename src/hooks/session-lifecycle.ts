@@ -17,6 +17,7 @@ import { generateAgentBehaviorPrompt } from "../schemas/config.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
+import type { BrainState } from "../schemas/brain-state.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
 import { isSessionStale } from "../lib/staleness.js"
 import { detectBrownfield, generateReadFirstBlock, isCleanSession, handleStaleSession } from "../lib/onboarding.js"
@@ -118,7 +119,7 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
   }
 }
 
-async function buildBootstrapContext(directory: string, state: { metrics: { turn_count: number }; hierarchy: { trajectory: string; tactic: string; action: string } }, config: HiveMindConfig) {
+async function buildBootstrapContext(directory: string, state: BrainState, config: HiveMindConfig) {
   const bootstrapLines: string[] = []
   const evidenceLines: string[] = []
   const teamLines: string[] = []
@@ -133,7 +134,7 @@ async function buildBootstrapContext(directory: string, state: { metrics: { turn
     bootstrapLines.push(generateBootstrapBlock(config.governance_mode, config.language))
     evidenceLines.push(generateEvidenceDisciplineBlock(config.language))
     teamLines.push(generateTeamBehaviorBlock(config.language))
-    const ftContext = await compileFirstTurnContext(directory, state as any)
+    const ftContext = await compileFirstTurnContext(directory, state)
     if (ftContext) firstTurnContextLines.push(ftContext)
   }
 

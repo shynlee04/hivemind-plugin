@@ -56,6 +56,24 @@ export interface ToolGateResult {
   }
 }
 
+type ToolGateInput = {
+  sessionID: string
+  tool: string
+}
+
+type ToolGateHook = ((
+  input: {
+    tool: string
+    sessionID: string
+    callID: string
+  },
+  _output: {
+    args: unknown
+  }
+) => Promise<void>) & {
+  internal: (input: ToolGateInput) => Promise<ToolGateResult>
+}
+
 /**
  * Creates the tool gate hook for OpenCode integration.
  *
@@ -70,10 +88,7 @@ export function createToolGateHook(
   const stateManager = createStateManager(directory)
 
   // Internal hook logic with original signature for direct testing
-  const internalHook = async (input: {
-    sessionID: string
-    tool: string
-  }): Promise<ToolGateResult> => {
+  const internalHook = async (input: ToolGateInput): Promise<ToolGateResult> => {
     try {
       const { tool: toolName } = input
 
@@ -291,15 +306,15 @@ export function createToolGateHook(
 
   // OpenCode-compatible hook with proper signature
   // tool.execute.before receives: { tool: string, sessionID: string, callID: string }
-  // and receives output: { args: any } to modify
-  const outerHook = async (
+  // and receives output: { args: unknown } to modify
+  const outerHook: ToolGateHook = async (
     input: {
       tool: string
       sessionID: string
       callID: string
     },
     _output: {
-      args: any
+      args: unknown
     }
   ): Promise<void> => {
     // Call internal hook for governance logic
@@ -318,7 +333,7 @@ export function createToolGateHook(
   }
 
   // Expose internal hook for testing
-  ;(outerHook as any).internal = internalHook
+  outerHook.internal = internalHook
 
   return outerHook
 }
@@ -337,7 +352,7 @@ export function createToolGateHookInternal(
   sessionID: string
   tool: string
 }) => Promise<ToolGateResult> {
-  const hook = createToolGateHook(log, directory, config) as any
+  const hook = createToolGateHook(log, directory, config)
   return hook.internal
 }
 
