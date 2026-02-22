@@ -107,8 +107,30 @@ describe("HiveFiver integration helpers", () => {
     assert.equal(result.reason, "known_command_detected")
   })
 
+  it("recognizes punctuation-adjacent known slash commands", () => {
+    const result = detectAutoRealignment("Please run(/hivefiver research), then continue.")
+    assert.equal(result.shouldRealign, false)
+    assert.equal(result.reason, "known_command_detected")
+    assert.equal(result.recommendedAction, "research")
+  })
+
+  it("prioritizes known command over unknown when both are present", () => {
+    const result = detectAutoRealignment("Try /totally-unknown first, then execute /hivefiver research now")
+    assert.equal(result.shouldRealign, false)
+    assert.equal(result.reason, "known_command_detected")
+    assert.deepEqual(result.unknownCommands, [])
+    assert.equal(result.recommendedAction, "research")
+  })
+
   it("ignores URL/path slash segments when detecting commands", () => {
     const result = detectAutoRealignment("read https://example.com/docs/hivefiver and continue")
+    assert.equal(result.shouldRealign, true)
+    assert.equal(result.reason, "no_command_detected")
+    assert.deepEqual(result.unknownCommands, [])
+  })
+
+  it("does not parse path-style slash segments as commands", () => {
+    const result = detectAutoRealignment("inspect /hivefiver/research.md and /tmp/hivefiver/spec.txt")
     assert.equal(result.shouldRealign, true)
     assert.equal(result.reason, "no_command_detected")
     assert.deepEqual(result.unknownCommands, [])

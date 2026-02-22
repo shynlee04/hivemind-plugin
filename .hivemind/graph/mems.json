@@ -84,6 +84,18 @@
       "staleness_stamp": "2026-02-20T14:23:10.236Z",
       "created_at": "2026-02-20T14:23:10.236Z",
       "updated_at": "2026-02-20T14:23:10.236Z"
+    },
+    {
+      "id": "202e396c-68a8-48cc-9af8-beb9a3e3dc45",
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
+      "origin_task_id": null,
+      "shelf": "remediation",
+      "type": "insight",
+      "content": "CONDITIONAL-GO to FULL-GO Remediation Plan:\n1. P1: orphan-quarantine parse failure logging (15 LOC)\n2. P2: manifest.ts milestone_id in related_entities (+1 LOC)\n3. P3: event-handler.ts milestone_id extraction (+3 LOC)\n4. P4: Replace todo: any with TodoInput interface (+20 LOC)\n5. P5: Add resolveLifecycleLineage() read-model (+40 LOC)\nTotal: ~80 LOC, 70 min, no breaking changes.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-22T12:24:20.829Z",
+      "created_at": "2026-02-22T12:24:20.829Z",
+      "updated_at": "2026-02-22T12:24:20.829Z"
     }
   ]
 }

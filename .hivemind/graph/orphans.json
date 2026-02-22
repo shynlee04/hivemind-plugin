@@ -570,6 +570,204 @@
         "updated_at": "2026-02-19T13:29:47.679Z"
       },
       "quarantined_at": "2026-02-21T21:43:31.874Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.820Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.820Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.820Z"
+    },
+    {
+      "id": "90beacfc-3fe4-4ca2-9f1c-8652a6bd5014",
+      "type": "mem",
+      "reason": "session_id b564faed-838e-416d-8d90-dc4384d73f3a not found in valid session lineage",
+      "original_data": {
+        "id": "90beacfc-3fe4-4ca2-9f1c-8652a6bd5014",
+        "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
+        "origin_task_id": null,
+        "shelf": "hivemind-contracts",
+        "type": "insight",
+        "content": "HiveFiver Integration Contract Map - Wave 3 GREEN Patch Validation (2026-02-20):\n\nProducer: src/lib/hivefiver-integration.ts\n- Function: detectAutoRealignment(message: string) -> AutoRealignmentDecision\n- Interface: 13 fields (shouldRealign, reason, unknownCommands, recommendedCommand, recommendedAction, recommendedSkills, recommendedWorkflow, persona, domain, canAutoInitiate, requiresPermission, permissionPrompt?, nextStepMenu)\n\nConsumer 1: src/hooks/messages-transform.ts\n- Uses: shouldRealign, recommendedCommand, recommendedSkills, recommendedWorkflow, persona, requiresPermission, permissionPrompt, nextStepMenu (9/13 fields)\n- Purpose: Build AUTO-REALIGN system reminder and checklist items\n- Test coverage: 32/32 tests passing\n\nConsumer 2: src/hooks/event-handler.ts\n- Uses: recommendedAction, domain, persona, shouldRealign, canAutoInitiate, requiresPermission (6/13 fields)\n- Purpose: Enrich TODO records with fallback HiveFiver metadata\n\nCompatibility Status: COMPATIBLE\n- TypeScript: 0 errors\n- Producer tests: 9/9 passing\n- Consumer tests: 32/32 passing\n- Field access: All safe, optional fields guarded\n- Regression risk: LOW\n\nTest Gaps:\n- Missing: permissionPrompt null case direct test\n- Missing: End-to-end producer→consumer integration test",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-20T12:56:37.097Z",
+        "created_at": "2026-02-20T12:56:37.097Z",
+        "updated_at": "2026-02-20T12:56:37.097Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.820Z"
+    },
+    {
+      "id": "09dfa939-46fa-4094-b2cb-7b607aefdc45",
+      "type": "mem",
+      "reason": "session_id b564faed-838e-416d-8d90-dc4384d73f3a not found in valid session lineage",
+      "original_data": {
+        "id": "09dfa939-46fa-4094-b2cb-7b607aefdc45",
+        "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
+        "origin_task_id": null,
+        "shelf": "branch-policy",
+        "type": "insight",
+        "content": "User policy: keep .hivemind/.opencode/.plan/.planning/docs/AGENT_RULES.md/AGENTS.md visible/trackable on dev-v3 for agent memory and atomic commits; ensure master/public branch keeps required ignore/protection posture.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-20T14:23:10.236Z",
+        "created_at": "2026-02-20T14:23:10.236Z",
+        "updated_at": "2026-02-20T14:23:10.236Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.820Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.834Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.834Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.834Z"
+    },
+    {
+      "id": "90beacfc-3fe4-4ca2-9f1c-8652a6bd5014",
+      "type": "mem",
+      "reason": "session_id b564faed-838e-416d-8d90-dc4384d73f3a not found in valid session lineage",
+      "original_data": {
+        "id": "90beacfc-3fe4-4ca2-9f1c-8652a6bd5014",
+        "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
+        "origin_task_id": null,
+        "shelf": "hivemind-contracts",
+        "type": "insight",
+        "content": "HiveFiver Integration Contract Map - Wave 3 GREEN Patch Validation (2026-02-20):\n\nProducer: src/lib/hivefiver-integration.ts\n- Function: detectAutoRealignment(message: string) -> AutoRealignmentDecision\n- Interface: 13 fields (shouldRealign, reason, unknownCommands, recommendedCommand, recommendedAction, recommendedSkills, recommendedWorkflow, persona, domain, canAutoInitiate, requiresPermission, permissionPrompt?, nextStepMenu)\n\nConsumer 1: src/hooks/messages-transform.ts\n- Uses: shouldRealign, recommendedCommand, recommendedSkills, recommendedWorkflow, persona, requiresPermission, permissionPrompt, nextStepMenu (9/13 fields)\n- Purpose: Build AUTO-REALIGN system reminder and checklist items\n- Test coverage: 32/32 tests passing\n\nConsumer 2: src/hooks/event-handler.ts\n- Uses: recommendedAction, domain, persona, shouldRealign, canAutoInitiate, requiresPermission (6/13 fields)\n- Purpose: Enrich TODO records with fallback HiveFiver metadata\n\nCompatibility Status: COMPATIBLE\n- TypeScript: 0 errors\n- Producer tests: 9/9 passing\n- Consumer tests: 32/32 passing\n- Field access: All safe, optional fields guarded\n- Regression risk: LOW\n\nTest Gaps:\n- Missing: permissionPrompt null case direct test\n- Missing: End-to-end producer→consumer integration test",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-20T12:56:37.097Z",
+        "created_at": "2026-02-20T12:56:37.097Z",
+        "updated_at": "2026-02-20T12:56:37.097Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.834Z"
+    },
+    {
+      "id": "09dfa939-46fa-4094-b2cb-7b607aefdc45",
+      "type": "mem",
+      "reason": "session_id b564faed-838e-416d-8d90-dc4384d73f3a not found in valid session lineage",
+      "original_data": {
+        "id": "09dfa939-46fa-4094-b2cb-7b607aefdc45",
+        "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
+        "origin_task_id": null,
+        "shelf": "branch-policy",
+        "type": "insight",
+        "content": "User policy: keep .hivemind/.opencode/.plan/.planning/docs/AGENT_RULES.md/AGENTS.md visible/trackable on dev-v3 for agent memory and atomic commits; ensure master/public branch keeps required ignore/protection posture.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-20T14:23:10.236Z",
+        "created_at": "2026-02-20T14:23:10.236Z",
+        "updated_at": "2026-02-20T14:23:10.236Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.834Z"
+    },
+    {
+      "id": "202e396c-68a8-48cc-9af8-beb9a3e3dc45",
+      "type": "mem",
+      "reason": "session_id b564faed-838e-416d-8d90-dc4384d73f3a not found in valid session lineage",
+      "original_data": {
+        "id": "202e396c-68a8-48cc-9af8-beb9a3e3dc45",
+        "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
+        "origin_task_id": null,
+        "shelf": "remediation",
+        "type": "insight",
+        "content": "CONDITIONAL-GO to FULL-GO Remediation Plan:\n1. P1: orphan-quarantine parse failure logging (15 LOC)\n2. P2: manifest.ts milestone_id in related_entities (+1 LOC)\n3. P3: event-handler.ts milestone_id extraction (+3 LOC)\n4. P4: Replace todo: any with TodoInput interface (+20 LOC)\n5. P5: Add resolveLifecycleLineage() read-model (+40 LOC)\nTotal: ~80 LOC, 70 min, no breaking changes.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-22T12:24:20.829Z",
+        "created_at": "2026-02-22T12:24:20.829Z",
+        "updated_at": "2026-02-22T12:24:20.829Z"
+      },
+      "quarantined_at": "2026-02-22T12:24:20.834Z"
     }
   ]
 }
