@@ -198,7 +198,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
           // Migration: persistent first-turn injection marker
           parsed.first_turn_context_injected ??= false
           // Migration: remove deprecated sentiment_signals field
-          delete (parsed as any).sentiment_signals
+          Reflect.deleteProperty(parsed, 'sentiment_signals')
           return parsed
         } catch (parseErr: unknown) {
           // Attempt to recover from backup if main file is corrupted
