@@ -1,11 +1,11 @@
 {
   "session_id": "ses_37acbc41affebNb1f8Hwt6i9q0",
-  "updated_at": 1771766119385,
+  "updated_at": 1771768935511,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Auto-realign workflow execution: run /hivefiver research with loaded HiveFiver skill stack",
-      "content": "Auto-realign workflow execution: run /hivefiver research with loaded HiveFiver skill stack",
+      "text": "HF-HARDEN-07 auto-realign: run /hivefiver research",
+      "content": "HF-HARDEN-07 auto-realign: run /hivefiver research",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
@@ -61,12 +61,12 @@
       "related_entities": {
         "session_id": "ses_37acbc41affebNb1f8Hwt6i9q0"
       },
-      "updated_at": 1771766119385
+      "updated_at": 1771768935511
     },
     {
       "id": "todo-2",
-      "text": "Review at least 2 pending tasks and map safest next actions",
-      "content": "Review at least 2 pending tasks and map safest next actions",
+      "text": "Review at least 2 pending tasks from task ledger",
+      "content": "Review at least 2 pending tasks from task ledger",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
@@ -125,13 +125,13 @@
         "session_id": "ses_37acbc41affebNb1f8Hwt6i9q0",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771766119385,
-      "updated_at": 1771766119385
+      "last_realigned_at": 1771768935511,
+      "updated_at": 1771768935511
     },
     {
       "id": "todo-3",
-      "text": "Enforce atomic git check/commit for any non-runtime touched files",
-      "content": "Enforce atomic git check/commit for any non-runtime touched files",
+      "text": "Run atomic git check and commit only if non-runtime files changed",
+      "content": "Run atomic git check and commit only if non-runtime files changed",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
@@ -190,13 +190,78 @@
         "session_id": "ses_37acbc41affebNb1f8Hwt6i9q0",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771766119385,
-      "updated_at": 1771766119385
+      "last_realigned_at": 1771768935511,
+      "updated_at": 1771768935511
     },
     {
       "id": "todo-4",
-      "text": "HF-HARDEN-07 RED: add failing tests for punctuation-adjacent command parsing and mixed-command intent precedence",
-      "content": "HF-HARDEN-07 RED: add failing tests for punctuation-adjacent command parsing and mixed-command intent precedence",
+      "text": "RED-only validity review for HF-HARDEN-07 tests in tests/lib/hivefiver-integration.test.ts",
+      "content": "RED-only validity review for HF-HARDEN-07 tests in tests/lib/hivefiver-integration.test.ts",
+      "status": "completed",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "research",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver audit",
+          "action": "audit",
+          "label": "Audit alignment",
+          "description": "Check config drift and governance integrity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver validate",
+          "action": "validate",
+          "label": "Run quality gates",
+          "description": "Check tests, evidence gates, and schema quality.",
+          "requiresPermission": true
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver research",
+      "related_entities": {
+        "session_id": "ses_37acbc41affebNb1f8Hwt6i9q0",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
+      },
+      "last_realigned_at": 1771768935511,
+      "updated_at": 1771768935511
+    },
+    {
+      "id": "todo-5",
+      "text": "Proceed to GREEN only if RED validity is confirmed",
+      "content": "Proceed to GREEN only if RED validity is confirmed",
       "status": "in_progress",
       "priority": "high",
       "domain": "hybrid",
@@ -255,78 +320,13 @@
         "session_id": "ses_37acbc41affebNb1f8Hwt6i9q0",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771766119385,
-      "updated_at": 1771766119385
-    },
-    {
-      "id": "todo-5",
-      "text": "HF-HARDEN-07 GREEN: harden parser/precedence in src/lib/hivefiver-integration.ts",
-      "content": "HF-HARDEN-07 GREEN: harden parser/precedence in src/lib/hivefiver-integration.ts",
-      "status": "pending",
-      "priority": "high",
-      "domain": "hybrid",
-      "lane": "auto",
-      "persona": "floppy_engineer",
-      "source": "todo.updated",
-      "hivefiver_action": "research",
-      "validation_attempts": 0,
-      "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
-      "auto_initiate": true,
-      "requires_permission": false,
-      "next_step_menu": [
-        {
-          "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-2",
-          "command": "hivefiver spec",
-          "action": "spec",
-          "label": "Build specification",
-          "description": "Distill requirements and close ambiguity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-4",
-          "command": "hivefiver validate",
-          "action": "validate",
-          "label": "Run quality gates",
-          "description": "Check tests, evidence gates, and schema quality.",
-          "requiresPermission": true
-        }
-      ],
-      "recommended_skills": [
-        "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
-        "hivefiver-domain-pack-router"
-      ],
-      "canonical_command": "hivefiver research",
-      "related_entities": {
-        "session_id": "ses_37acbc41affebNb1f8Hwt6i9q0",
-        "workflow_id": "hivefiver-floppy-engineer.yaml"
-      },
-      "last_realigned_at": 1771766119385,
-      "updated_at": 1771766119385
+      "last_realigned_at": 1771768935511,
+      "updated_at": 1771768935511
     },
     {
       "id": "todo-6",
-      "text": "HF-HARDEN-07 independent review + gates + atomic commit",
-      "content": "HF-HARDEN-07 independent review + gates + atomic commit",
+      "text": "HF-HARDEN-07 independent review + full gates + atomic commit",
+      "content": "HF-HARDEN-07 independent review + full gates + atomic commit",
       "status": "pending",
       "priority": "high",
       "domain": "hybrid",
@@ -385,8 +385,8 @@
         "session_id": "ses_37acbc41affebNb1f8Hwt6i9q0",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771766119385,
-      "updated_at": 1771766119385
+      "last_realigned_at": 1771768935511,
+      "updated_at": 1771768935511
     }
   ]
 }

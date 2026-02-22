@@ -331,8 +331,8 @@ function normalizeActionToken(value: string | undefined): string | null {
 }
 
 function parseSlashCommands(message: string): Array<{ command: string; action: string | null }> {
-  // Match real slash-command tokens while ignoring URL/file-path segments.
-  const matches = [...message.matchAll(/(?:^|\s)\/([a-z0-9-]+)(?!\/)(?:\s+([a-z0-9-]+))?/gi)]
+  // Match slash-command tokens at natural boundaries while ignoring URL/file-path segments.
+  const matches = [...message.matchAll(/(?:^|[^a-z0-9_:/.-])\/([a-z0-9-]+)(?=$|[\s),.;!?])(?:\s+([a-z0-9-]+))?/gi)]
   return matches
     .map((match) => ({
       command: (match[1] ?? "").toLowerCase(),
@@ -444,6 +444,7 @@ export function detectAutoRealignment(message: string): AutoRealignmentDecision 
   const known = new Set(HIVEFIVER_COMMANDS)
   const validActions = new Set(HIVEFIVER_ACTIONS)
   const unknownCommands: string[] = []
+  let hasKnownCommand = false
 
   for (const entry of slashCommands) {
     if (!known.has(entry.command as (typeof HIVEFIVER_COMMANDS)[number])) {
@@ -453,7 +454,14 @@ export function detectAutoRealignment(message: string): AutoRealignmentDecision 
 
     if (entry.command === "hivefiver" && entry.action && !validActions.has(entry.action as (typeof HIVEFIVER_ACTIONS)[number])) {
       unknownCommands.push(`${entry.command} ${entry.action}`)
+      continue
     }
+
+    hasKnownCommand = true
+  }
+
+  if (hasKnownCommand) {
+    return buildDecision(false, "known_command_detected", [], fallback)
   }
 
   if (unknownCommands.length > 0) {
