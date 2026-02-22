@@ -37,6 +37,7 @@ export interface TaskItem {
   related_entities?: {
     session_id?: string
     plan_id?: string
+    milestone_id?: string
     phase_id?: string
     graph_task_id?: string
     story_id?: string

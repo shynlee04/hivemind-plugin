@@ -236,6 +236,10 @@ npx tsx --test tests/filename.test.ts       # Run specific test
 ### Recently Changed
 | File | Status | Description |
 |------|--------|-------------|
+| `src/hooks/event-handler.ts` | [UPDATED] | Canonical TODO alias normalization and blocked-flow acknowledgement integration |
+| `src/lib/manifest.ts` | [UPDATED] | Manifest closeout alignment for lifecycle/canonical compatibility |
+| `src/schemas/manifest.ts` | [UPDATED] | Manifest schema alignment retained for remediation closeout |
+| `src/lib/orphan-quarantine.ts` | [UPDATED] | Deterministic orphan handling and stale-session/idempotency hardening |
 | `src/lib/event-bus.ts` | [NEW] | In-process EventEmitter pub/sub |
 | `src/lib/watcher.ts` | [NEW] | fs.watch with debouncing |
 | `src/schemas/events.ts` | [NEW] | Event Zod schemas |
@@ -330,7 +334,7 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 
 - ✅ Lifecycle lineage continuity: complete (`project -> milestone -> phase -> plan -> task -> verification`)
 - ✅ Canonical governance blockers: resolved (canonical alias compatibility and blocked-flow acknowledgement paths)
-- ✅ Focused regression tests: `tests/phase5-canonical-governance-red.test.ts` and `tests/phase5-lineage-continuity-red.test.ts` passing
+- ✅ Focused regression tests: `tests/phase5-canonical-governance-red.test.ts`, `tests/phase5-lineage-continuity-red.test.ts`, and `tests/phase5-lifecycle-red.test.ts` passing
 - ✅ Validation gates: `npx tsc --noEmit` pass, `npm test` pass
 
 ## Phase 6 Completion Status (2026-02-19)
@@ -340,6 +344,7 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 - ✅ Public release safety gate: `npm run guard:public` pass
 - ✅ Remediation hardening: TODO alias normalization + stale-session boundary fixes + action idempotency implemented (evidence anchors: `tests/hooks/event-handler-todo-2026-02-15.test.ts`, `tests/lib/state-mutation-queue.test.ts`, `tests/tool-gate.test.ts`, `tests/phase5-canonical-governance-red.test.ts`, `tests/phase5-lifecycle-red.test.ts`)
 - ✅ Post-remediation stress journey re-audit: GO (audit trail recorded in this remediation wave closeout docs)
+- ✅ Integration verdict: GO (architecture and integration audits accepted for release hardening scope)
 
 ## Post-Completion Audit Summary (2026-02-19)
 
@@ -347,3 +352,10 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 - ✅ Integration audit: GO (lineage continuity + canonical governance test coverage green)
 - ℹ️ Tech-debt backlog: noted and non-blocking for Phase 5/6 closure
 - ℹ️ Backlog item: wording consistency cleanup for one stress journey closeout phrase across docs (non-blocking)
+
+## Remediation Patch Areas (HiveFiver Integration + Closeout)
+
+- ✅ `src/hooks/event-handler.ts`: canonical TODO alias flow + blocked acknowledgement paths remediated and covered
+- ✅ `src/lib/manifest.ts` and `src/schemas/manifest.ts`: lifecycle/canonical manifest consistency maintained for closeout
+- ✅ `src/lib/orphan-quarantine.ts`: deterministic orphan/stale-session cleanup and idempotency paths covered
+- ✅ `src/lib/graph-io.ts`: relational FK guardrails retained for post-remediation integrity

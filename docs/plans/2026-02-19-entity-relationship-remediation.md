@@ -350,6 +350,7 @@ This unified program is done only when all criteria are true:
 - Canonical governance blockers: `tests/phase5-canonical-governance-red.test.ts` passing.
 - Lineage continuity coverage: `tests/phase5-lineage-continuity-red.test.ts` passing.
 - Completion gates: `npx tsc --noEmit` and `npm test` passing.
+- Tooling compatibility evidence: `tests/phase5-lifecycle-red.test.ts` passing for lifecycle continuity and canonical alias behavior.
 
 ### Exit Gate Status
 - ✅ Lifecycle trace continuity: COMPLETE
@@ -369,6 +370,7 @@ This unified program is done only when all criteria are true:
 - Type safety gate: `npx tsc --noEmit` pass.
 - Test gate: `npm test` pass.
 - Public release guard: `npm run guard:public` pass.
+- Integration verdict: GO after post-remediation re-audit with canonical blocked/failure recovery paths verified.
 
 ### Exit Gate Status
 - ✅ Defect burn-down for Phase 6 scope: COMPLETE
@@ -382,6 +384,14 @@ This unified program is done only when all criteria are true:
 - Architecture audit: GO (contract boundaries preserved; no tool/hook ownership regression detected in completion scope).
 - Integration audit: GO (canonical governance compatibility and lineage continuity scenarios pass in test coverage).
 - Tech-debt backlog: NOTED (non-blocking follow-ups tracked separately; no blockers against Phase 5/6 closeout).
+
+## Remediation Patch Scope Evidence (HiveFiver Integration Wave)
+
+- `src/hooks/event-handler.ts`: canonical TODO alias normalization and blocked-flow acknowledgement integration paths covered by `tests/hooks/event-handler-todo-2026-02-15.test.ts`.
+- `src/lib/manifest.ts` and `src/schemas/manifest.ts`: manifest lineage/canonical flow consistency retained for lifecycle closeout validation.
+- `src/lib/orphan-quarantine.ts`: stale-session boundary/idempotent orphan remediation path covered by `tests/orphan-quarantine.test.ts` and `tests/lib/orphan-quarantine-extraction-red.test.ts`.
+- `src/lib/graph-io.ts`: relational FK enforcement and remediation guardrails retained (including `mem.session_id` validation path) for Phase 5/6 closure integrity.
+- Final quality gates for closeout wave: `npm test`, `npx tsc --noEmit`, and `npm run guard:public` passed.
 
 ## Remediation Wave Closeout Addendum (2026-02-19)
 

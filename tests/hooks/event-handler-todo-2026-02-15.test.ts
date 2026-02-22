@@ -160,6 +160,7 @@ describe("US-004: Event Handler - todo.updated", () => {
             canonicalCommand: "hivefiver-start",
             relatedEntities: {
               planId: "plan-1",
+              milestoneId: "milestone-1",
               phaseId: "phase-1",
               graphTaskId: "graph-1",
               storyId: "story-1",
@@ -179,10 +180,47 @@ describe("US-004: Event Handler - todo.updated", () => {
     assert.deepEqual(parsed.tasks[0].recommended_skills, ["skill-a"]);
     assert.equal(parsed.tasks[0].canonical_command, "hivefiver-start");
     assert.equal(parsed.tasks[0].related_entities.plan_id, "plan-1");
+    assert.equal(
+      parsed.tasks[0].related_entities.milestone_id,
+      "milestone-1",
+      "RED expected: milestone_id should be normalized from relatedEntities.milestoneId",
+    );
     assert.equal(parsed.tasks[0].related_entities.phase_id, "phase-1");
     assert.equal(parsed.tasks[0].related_entities.graph_task_id, "graph-1");
     assert.equal(parsed.tasks[0].related_entities.story_id, "story-1");
     assert.equal(typeof parsed.tasks[0].related_entities.workflow_id, "string");
+  });
+
+  it("RED: unsafe todo shapes should be normalized without dropping the entire batch", async () => {
+    const tasksPath = getEffectivePaths(tempDir).tasks;
+    await rm(tasksPath, { force: true });
+
+    const handler = createEventHandler(noopLogger, tempDir);
+    const poisonedTodo: Record<string, unknown> = { id: "unsafe-1" };
+    Object.defineProperty(poisonedTodo, "content", {
+      get() {
+        throw new Error("poisoned content getter");
+      },
+    });
+
+    const event = {
+      type: "todo.updated",
+      properties: {
+        sessionID: "sess-unsafe-shape",
+        todos: [poisonedTodo, { id: "safe-2", content: "safe task" }],
+      },
+    };
+
+    await handler({ event: event as any });
+    await flushTaskManifestMutations();
+
+    const content = await readFile(tasksPath, "utf-8");
+    const parsed = JSON.parse(content);
+    assert.equal(parsed.tasks.length, 2);
+    assert.equal(parsed.tasks[0].id, "unsafe-1");
+    assert.equal(parsed.tasks[0].text, "");
+    assert.equal(parsed.tasks[1].id, "safe-2");
+    assert.equal(parsed.tasks[1].text, "safe task");
   });
 
   it("sanitizes invalid numeric meta fields and keeps known-command tasks non-forced", async () => {

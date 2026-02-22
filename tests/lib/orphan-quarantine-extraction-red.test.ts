@@ -96,6 +96,23 @@ describe("Phase 6.1 RED: orphan quarantine extraction safety", () => {
     assert.equal(saved.orphans[1]?.id, secondRecord.id)
   })
 
+  it("RED: parse-failure in orphan file should emit a non-silent signal", async () => {
+    const orphanPath = getEffectivePaths(dir).graphOrphans
+    const module = await loadExtractionModule()
+
+    await writeFile(orphanPath, "{ not-valid-json")
+
+    const state = await module.loadOrphansFile(orphanPath)
+    const parseFailureSignal = state.orphans.find((record) =>
+      typeof record.reason === "string" && record.reason.includes("parse_failure"),
+    )
+
+    assert.ok(
+      parseFailureSignal,
+      "RED expected: malformed orphan payload must produce parse_failure signal instead of silently resetting to empty",
+    )
+  })
+
   it("stays compatible with existing graph-io FK quarantine path", async () => {
     const paths = getEffectivePaths(dir)
     const module = await loadExtractionModule()

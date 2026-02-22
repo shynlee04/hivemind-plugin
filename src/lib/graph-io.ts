@@ -765,6 +765,14 @@ export async function loadGraphWithFullFKValidation(
 
 export interface LifecycleLineageSnapshot {
   has_trajectory: boolean
+  chain_presence: {
+    project: boolean
+    milestone: boolean
+    phase: boolean
+    plan: boolean
+    task: boolean
+    verification: boolean
+  }
   active_plan_id: string | null
   active_phase_id: string | null
   active_task_ids: string[]
@@ -829,11 +837,47 @@ export async function buildLifecycleLineageSnapshot(
     .filter((mem) => mem.verification_id === undefined || mem.verification_id === null)
     .map((mem) => mem.id)
 
+  const activePlanId = trajectory?.trajectory?.active_plan_id ?? null
+  const activePhaseId = trajectory?.trajectory?.active_phase_id ?? null
+  const activeTaskIds = trajectory?.trajectory?.active_task_ids ?? []
+
+  const hasProjectLineage =
+    plans.plans.length > 0 &&
+    tasks.tasks.length > 0 &&
+    planProjectMissing.length === 0 &&
+    taskProjectMissing.length === 0
+
+  const hasMilestoneLineage =
+    plans.plans.length > 0 &&
+    tasks.tasks.length > 0 &&
+    planMilestoneMissing.length === 0 &&
+    taskMilestoneMissing.length === 0
+
+  const hasPhaseLineage =
+    (typeof activePhaseId === "string" && activePhaseId.trim().length > 0) ||
+    tasks.tasks.some((task) => typeof task.parent_phase_id === "string" && task.parent_phase_id.trim().length > 0)
+
+  const hasPlanLineage =
+    (typeof activePlanId === "string" && activePlanId.trim().length > 0 && planIds.has(activePlanId)) ||
+    plans.plans.length > 0
+
+  const hasTaskLineage = activeTaskIds.length > 0 || tasks.tasks.length > 0
+
+  const hasVerificationLineage = memVerificationMissing.length === 0
+
   return {
     has_trajectory: trajectory !== null,
-    active_plan_id: trajectory?.trajectory?.active_plan_id ?? null,
-    active_phase_id: trajectory?.trajectory?.active_phase_id ?? null,
-    active_task_ids: trajectory?.trajectory?.active_task_ids ?? [],
+    chain_presence: {
+      project: hasProjectLineage,
+      milestone: hasMilestoneLineage,
+      phase: hasPhaseLineage,
+      plan: hasPlanLineage,
+      task: hasTaskLineage,
+      verification: hasVerificationLineage,
+    },
+    active_plan_id: activePlanId,
+    active_phase_id: activePhaseId,
+    active_task_ids: activeTaskIds,
     totals: {
       plans: plans.plans.length,
       tasks: tasks.tasks.length,

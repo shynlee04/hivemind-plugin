@@ -60,16 +60,6 @@ function pickString(input: Record<string, unknown>, keys: string[]): string | un
   return undefined
 }
 
-function pickNumber(input: Record<string, unknown>, keys: string[]): number | undefined {
-  for (const key of keys) {
-    const value = input[key]
-    if (typeof value === "number" && Number.isFinite(value)) {
-      return value
-    }
-  }
-  return undefined
-}
-
 function normalizeBoolean(value: unknown): boolean | undefined {
   if (typeof value === "boolean") return value
   if (typeof value !== "string") return undefined
@@ -142,6 +132,38 @@ function normalizeNonNegativeInt(value: number | undefined, fallback: number): n
   const rounded = Math.floor(value)
   if (!Number.isFinite(rounded)) return fallback
   return rounded < 0 ? fallback : rounded
+}
+
+function toSafeRecord(value: unknown): Record<string, unknown> {
+  return typeof value === "object" && value !== null ? (value as Record<string, unknown>) : {}
+}
+
+function safeRead(value: Record<string, unknown>, key: string): unknown {
+  try {
+    return value[key]
+  } catch {
+    return undefined
+  }
+}
+
+function pickSafeString(input: Record<string, unknown>, keys: string[]): string | undefined {
+  for (const key of keys) {
+    const value = safeRead(input, key)
+    if (typeof value === "string" && value.length > 0) {
+      return value
+    }
+  }
+  return undefined
+}
+
+function pickSafeNumber(input: Record<string, unknown>, keys: string[]): number | undefined {
+  for (const key of keys) {
+    const value = safeRead(input, key)
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return value
+    }
+  }
+  return undefined
 }
 
 export function createEventHandler(log: Logger, directory: string) {
@@ -244,52 +266,47 @@ export function createEventHandler(log: Logger, directory: string) {
 
           if (rawTodos.length > 0) {
             const now = Date.now()
-            const tasks = rawTodos.map((todo: any, index: number) => {
-              const content =
-                typeof todo?.content === "string"
-                  ? todo.content
-                  : typeof todo?.text === "string"
-                    ? todo.text
-                    : ""
-              const todoRecord = (typeof todo === "object" && todo !== null ? todo : {}) as Record<string, unknown>
+            const tasks = rawTodos.map((todo: unknown, index: number) => {
+              const todoRecord = toSafeRecord(todo)
+              const content = pickSafeString(todoRecord, ["content", "text"]) || ""
               const relatedRecord =
-                typeof todoRecord.related_entities === "object" && todoRecord.related_entities !== null
-                  ? (todoRecord.related_entities as Record<string, unknown>)
-                  : typeof todoRecord.relatedEntities === "object" && todoRecord.relatedEntities !== null
-                    ? (todoRecord.relatedEntities as Record<string, unknown>)
+                typeof safeRead(todoRecord, "related_entities") === "object" && safeRead(todoRecord, "related_entities") !== null
+                  ? (safeRead(todoRecord, "related_entities") as Record<string, unknown>)
+                  : typeof safeRead(todoRecord, "relatedEntities") === "object" && safeRead(todoRecord, "relatedEntities") !== null
+                    ? (safeRead(todoRecord, "relatedEntities") as Record<string, unknown>)
                     : {}
               const realignment = detectAutoRealignment(content)
               return {
-                id: typeof todo?.id === "string" && todo.id.length > 0 ? todo.id : `todo-${index + 1}`,
+                id: pickSafeString(todoRecord, ["id"]) || `todo-${index + 1}`,
                 text: content,
                 content,
-                status: typeof todo?.status === "string" ? todo.status : "pending",
-                priority: typeof todo?.priority === "string" ? todo.priority : "medium",
-                domain: typeof todo?.domain === "string" ? todo.domain : realignment.domain,
-                lane: typeof todo?.lane === "string" ? todo.lane : (realignment.shouldRealign ? "auto" : undefined),
+                status: pickSafeString(todoRecord, ["status"]) || "pending",
+                priority: pickSafeString(todoRecord, ["priority"]) || "medium",
+                domain: pickSafeString(todoRecord, ["domain"]) || realignment.domain,
+                lane: pickSafeString(todoRecord, ["lane"]) || (realignment.shouldRealign ? "auto" : undefined),
                 persona:
                   pickString(todoRecord, ["persona"]) ||
-                  (typeof todo?.lane === "string" ? todo.lane : realignment.persona),
-                source: typeof todo?.source === "string" ? todo.source : "todo.updated",
+                  (pickSafeString(todoRecord, ["lane"]) || realignment.persona),
+                source: pickSafeString(todoRecord, ["source"]) || "todo.updated",
                 hivefiver_action:
                   pickString(todoRecord, ["hivefiver_action", "hivefiverAction"]) ||
                   realignment.recommendedAction,
                 validation_attempts: normalizeNonNegativeInt(
-                  pickNumber(todoRecord, ["validation_attempts", "validationAttempts"]),
+                  pickSafeNumber(todoRecord, ["validation_attempts", "validationAttempts"]),
                   0,
                 ),
                 max_validation_attempts: normalizeNonNegativeInt(
-                  pickNumber(todoRecord, ["max_validation_attempts", "maxValidationAttempts"]),
+                  pickSafeNumber(todoRecord, ["max_validation_attempts", "maxValidationAttempts"]),
                   10,
                 ),
                 evidence_confidence:
                   pickString(todoRecord, ["evidence_confidence", "evidenceConfidence"]) || "partial",
                 menu_step: normalizeNonNegativeInt(
-                  pickNumber(todoRecord, ["menu_step", "menuStep"]),
+                  pickSafeNumber(todoRecord, ["menu_step", "menuStep"]),
                   0,
                 ) || undefined,
                 menu_total: normalizeNonNegativeInt(
-                  pickNumber(todoRecord, ["menu_total", "menuTotal"]),
+                  pickSafeNumber(todoRecord, ["menu_total", "menuTotal"]),
                   0,
                 ) || undefined,
                 auto_initiate:
@@ -320,6 +337,9 @@ export function createEventHandler(log: Logger, directory: string) {
                   plan_id:
                     pickString(relatedRecord, ["plan_id", "planId"]) ||
                     pickString(todoRecord, ["plan_id", "planId"]),
+                  milestone_id:
+                    pickString(relatedRecord, ["milestone_id", "milestoneId"]) ||
+                    pickString(todoRecord, ["milestone_id", "milestoneId"]),
                   phase_id:
                     pickString(relatedRecord, ["phase_id", "phaseId"]) ||
                     pickString(todoRecord, ["phase_id", "phaseId"]),

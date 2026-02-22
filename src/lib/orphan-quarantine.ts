@@ -25,6 +25,21 @@ const OrphansFileSchema = z.object({
   orphans: z.array(OrphanRecordSchema),
 })
 
+function createParseFailureSignal(reason: string, originalData: unknown): OrphansFile {
+  return {
+    version: GRAPH_STATE_VERSION,
+    orphans: [
+      {
+        id: "orphan-parse-failure",
+        type: "mem",
+        reason: `parse_failure:${reason}`,
+        original_data: originalData,
+        quarantined_at: new Date().toISOString(),
+      },
+    ],
+  }
+}
+
 /**
  * Load the orphans file, creating empty if it doesn't exist.
  */
@@ -38,11 +53,17 @@ export async function loadOrphansFile(orphanPath: string): Promise<OrphansFile> 
     const parsed = JSON.parse(raw) as unknown
     const result = OrphansFileSchema.safeParse(parsed)
     if (!result.success) {
-      return { version: GRAPH_STATE_VERSION, orphans: [] }
+      return createParseFailureSignal("schema_validation", {
+        error: result.error.message,
+        orphanPath,
+      })
     }
     return result.data
-  } catch {
-    return { version: GRAPH_STATE_VERSION, orphans: [] }
+  } catch (error) {
+    return createParseFailureSignal("json_parse", {
+      error: error instanceof Error ? error.message : String(error),
+      orphanPath,
+    })
   }
 }
 
