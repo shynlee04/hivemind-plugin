@@ -384,7 +384,7 @@ export function createEventHandler(log: Logger, directory: string) {
 
         default:
           // Log unhandled events at debug level for discoverability
-          await log.debug(`[event] ${(event as any).type} (unhandled)`)
+          await log.debug(`[event] ${event.type} (unhandled)`)
           break
       }
     } catch (error: unknown) {
