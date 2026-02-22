@@ -5,7 +5,7 @@
     "governance_mode": "strict",
     "governance_status": "OPEN",
     "start_time": 1771585937089,
-    "last_activity": 1771710202877,
+    "last_activity": 1771760993198,
     "date": "2026-02-20",
     "meta_key": "",
     "role": "",
@@ -14,20 +14,20 @@
   "hierarchy": {
     "trajectory": "Contract compatibility analysis complete: hivefiver-integration.ts → messages-transform.ts/event-handler.ts verified COMPATIBLE with full test coverage and low regression risk",
     "tactic": "/hivefiver research auto-realign then /hivefiver doctor remediation loop with strict integrity gates and atomic checkpointing",
-    "action": "Executing deterministic cleanup on .hivemind state (orphans/tasks overlap + hierarchy normalization + anchor metadata)"
+    "action": "Run read-only checkpoint now and pick safest next non-overlapping TDD slice by reviewing pending/in_progress tasks and hierarchy cursor context"
   },
   "metrics": {
-    "turn_count": 243,
+    "turn_count": 244,
     "user_turn_count": 14,
     "drift_score": 70,
     "files_touched": [
       "[via task]"
     ],
-    "context_updates": 252,
+    "context_updates": 253,
     "ratings": [],
     "auto_health_score": 100,
-    "total_tool_calls": 243,
-    "successful_tool_calls": 243,
+    "total_tool_calls": 244,
+    "successful_tool_calls": 244,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
@@ -35,7 +35,7 @@
     "tool_type_counts": {
       "read": 31,
       "write": 29,
-      "query": 183,
+      "query": 184,
       "governance": 0
     },
     "keyword_flags": [
@@ -52,8 +52,8 @@
       "out_of_order": 0,
       "drift": 0,
       "compaction": 0,
-      "evidence_pressure": 240,
-      "ignored": 231,
+      "evidence_pressure": 241,
+      "ignored": 232,
       "acknowledged": false,
       "prerequisites_completed": true
     }
@@ -150,15 +150,7 @@
   "recent_messages": [
     {
       "role": "user",
-      "content": "Task: Perform deterministic cleanup of live .hivemind state after GREEN fixes.\n\nScope:\n- Modify ONLY .hivemind state files as needed:\n  - .hivemind/graph/tasks.json\n  - .hivemind/graph/orphans.json\n  - .hivemind/state/hierarchy.json\n  - .hivemind/state/anchors.json (backup metadata)\n- Do NOT modify src/ code in this step.\n\nRequired cleanup:\n1) Deduplicate orphans by id (keep latest quarantined_at).\n2) Remove overlap between graph tasks and orphans (if ID in orphans, remove from tasks).\n3) Normalize hierarchy to one active tactic and one active action.\n\nThen verify:\n- Recompute counts: tasks_total, orphans_total, orphans_unique, overlap_count, orphan_duplicates, active_tactic_count, active_action_count.\n- Run `node bin/hivemind-tools.cjs validate chain`.\n\nReturn format:\nCLEANUP_RESULT:\n- files_changed: [..]\n- counts_before: {...}\n- counts_after: {...}\n- chain_validate: PASS/FAIL\n- verdict: GO/NO-GO\n- notes: concise\n\nConstraints:\n- No commits.\n- Evidence-backed numbers only."
-    },
-    {
-      "role": "assistant",
-      "content": "Preflight is complete and I’m ready to execute deterministic cleanup.\n\nPlanned file changes (scoped exactly as requested):\n- `.hivemind/graph/orphans.json`: dedupe by `id`, keeping the record with latest `quarantined_at`.\n- `.hivemind/graph/tasks.json`: remove any task whose `id` exists in the deduped orphan set.\n- `.hivemind/state/hierarchy.json`: normalize to exactly one active tactic and one active action (preserve current active branch, deactivate other active nodes).\n- `.hivemind/state/anchors.json`: append a backup metadata anchor with before/after counts and timestamp.\n\nEvidence from preflight (before cleanup):\n- `tasks_total=40`\n- `orphans_total=2249`\n- `orphans_unique=38`\n- `overlap_count=38`\n- `orphan_duplicates=2211`\n- `active_tactic_count=1`\n- `active_action_count=12`\n\nRisk + rollback plan:\n- Risk: aggressive pruning can remove records needed for audit replay if logic is wrong.\n- Rollback: create timestamped `.bak` snapshots of all 4 target files before mutation, and restore from those exact backups if `validate chain` fails or counts look inconsistent.\n\nReply `yes` or `proceed` and I’ll apply the cleanup, run `node bin/hivemind-tools.cjs validate chain`, and return the exact `CLEANUP_RESULT` block."
-    },
-    {
-      "role": "user",
-      "content": "proceed"
+      "content": "Command: /hivefiver research\n\nTask:\nRun read-only checkpoint now and pick the safest next non-overlapping TDD slice.\n\nMandatory:\n- Review at least 2 pending/in_progress tasks from `.hivemind/state/tasks.json` and hierarchy cursor context.\n- Provide GO/NO-GO gate for next implementation slice.\n\nReturn format:\n1) EVIDENCE (>=5 citations path:line)\n2) PENDING_TASK_REVIEW (>=2 items)\n3) NEXT_TDD_SLICE (objective, red tests, expected files)\n4) GATE_DECISION (GO/NO-GO + exact conditions)\n\nNo file edits."
     }
   ]
 }
