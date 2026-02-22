@@ -1006,7 +1006,7 @@ export async function regenerateManifests(projectRoot: string): Promise<void> {
         if (!file.endsWith('.md')) continue
         const content = await readFile(join(dir, file), 'utf-8')
         try {
-          const fm = parseSessionFrontmatter(content) as any
+          const fm = parseSessionFrontmatter(content) as Partial<SessionManifestEntry>
 
           if (fm.stamp || fm.session_id) {
             const stamp = fm.stamp || fm.session_id
