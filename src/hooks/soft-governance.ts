@@ -20,6 +20,7 @@
 
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
+import type { BrainState } from "../schemas/brain-state.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { queueStateMutation } from "../lib/state-mutation-queue.js"
 import {
@@ -122,15 +123,18 @@ function buildIgnoredTriageMessage(language: "en" | "vi", reason: string, action
   )
 }
 
-function getActiveActionLabel(state: any): string {
+function getActiveActionLabel(state: Pick<BrainState, "hierarchy">): string {
   if (state.hierarchy.action) return state.hierarchy.action
   if (state.hierarchy.tactic) return state.hierarchy.tactic
   if (state.hierarchy.trajectory) return state.hierarchy.trajectory
   return "(none)"
 }
 
-function getCanonicalSessionAction(output: { output: string; metadata: any }): string | null {
-  const metadataAction = output.metadata?.action
+function getCanonicalSessionAction(output: { output: string; metadata: unknown }): string | null {
+  const metadata = typeof output.metadata === "object" && output.metadata !== null
+    ? (output.metadata as Record<string, unknown>)
+    : {}
+  const metadataAction = metadata.action
   if (typeof metadataAction === "string" && metadataAction.trim().length > 0) {
     return metadataAction
   }
@@ -146,7 +150,7 @@ function getCanonicalSessionAction(output: { output: string; metadata: any }): s
 
 function shouldAcknowledgeGovernanceSignals(
   toolName: string,
-  output: { output: string; metadata: any }
+  output: { output: string; metadata: unknown }
 ): boolean {
   if (toolName === "declare_intent" || toolName === "map_context") {
     return true
@@ -183,7 +187,7 @@ export function createSoftGovernanceHook(
     _output: {
       title: string
       output: string
-      metadata: any
+      metadata: unknown
     }
   ): Promise<void> => {
     try {
@@ -543,7 +547,7 @@ function shouldTrackAsViolation(toolName: string, governanceMode: string): boole
 /**
  * Track tool health metrics (success rate).
  */
-function trackToolHealth(state: any, success: boolean): any {
+function trackToolHealth(state: BrainState, success: boolean): BrainState {
   const total = state.metrics.total_tool_calls + 1
   const successful = success
     ? state.metrics.successful_tool_calls + 1
