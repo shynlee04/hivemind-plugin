@@ -1,72 +1,11 @@
 {
   "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
-  "updated_at": 1771857122742,
+  "updated_at": 1771858417143,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Cycle6: Auto-realign /hivefiver research for remaining lifecycle gaps",
-      "content": "Cycle6: Auto-realign /hivefiver research for remaining lifecycle gaps",
-      "status": "completed",
-      "priority": "high",
-      "domain": "hybrid",
-      "persona": "floppy_engineer",
-      "source": "todo.updated",
-      "hivefiver_action": "research",
-      "validation_attempts": 0,
-      "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
-      "auto_initiate": true,
-      "requires_permission": false,
-      "next_step_menu": [
-        {
-          "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-2",
-          "command": "hivefiver spec",
-          "action": "spec",
-          "label": "Build specification",
-          "description": "Distill requirements and close ambiguity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-4",
-          "command": "hivefiver validate",
-          "action": "validate",
-          "label": "Run quality gates",
-          "description": "Check tests, evidence gates, and schema quality.",
-          "requiresPermission": true
-        }
-      ],
-      "recommended_skills": [
-        "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
-        "hivefiver-domain-pack-router"
-      ],
-      "related_entities": {
-        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj"
-      },
-      "updated_at": 1771857122742
-    },
-    {
-      "id": "todo-2",
-      "text": "Cycle6: Review at least 2 pending tasks and stale graph tasks",
-      "content": "Cycle6: Review at least 2 pending tasks and stale graph tasks",
+      "text": "Cycle7: RED tests for stale graph-task closure + session-token continuity",
+      "content": "Cycle7: RED tests for stale graph-task closure + session-token continuity",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
@@ -125,14 +64,205 @@
         "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771857122742,
-      "updated_at": 1771857122742
+      "last_realigned_at": 1771858417143,
+      "updated_at": 1771858417143
+    },
+    {
+      "id": "todo-2",
+      "text": "Cycle7: GREEN implementation in scoped lifecycle files",
+      "content": "Cycle7: GREEN implementation in scoped lifecycle files",
+      "status": "completed",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "research",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver audit",
+          "action": "audit",
+          "label": "Audit alignment",
+          "description": "Check config drift and governance integrity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver validate",
+          "action": "validate",
+          "label": "Run quality gates",
+          "description": "Check tests, evidence gates, and schema quality.",
+          "requiresPermission": true
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver research",
+      "related_entities": {
+        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
+      },
+      "last_realigned_at": 1771858417143,
+      "updated_at": 1771858417143
     },
     {
       "id": "todo-3",
-      "text": "Cycle6: Decide next bounded slice (spec->build->validate)",
-      "content": "Cycle6: Decide next bounded slice (spec->build->validate)",
+      "text": "Cycle7: Validate and atomic commit",
+      "content": "Cycle7: Validate and atomic commit",
       "status": "completed",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "research",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver audit",
+          "action": "audit",
+          "label": "Audit alignment",
+          "description": "Check config drift and governance integrity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver validate",
+          "action": "validate",
+          "label": "Run quality gates",
+          "description": "Check tests, evidence gates, and schema quality.",
+          "requiresPermission": true
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver research",
+      "related_entities": {
+        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
+      },
+      "last_realigned_at": 1771858417143,
+      "updated_at": 1771858417143
+    },
+    {
+      "id": "todo-4",
+      "text": "Cycle8: Auto-realign /hivefiver research for remaining gaps",
+      "content": "Cycle8: Auto-realign /hivefiver research for remaining gaps",
+      "status": "in_progress",
+      "priority": "medium",
+      "domain": "hybrid",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "research",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver audit",
+          "action": "audit",
+          "label": "Audit alignment",
+          "description": "Check config drift and governance integrity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver validate",
+          "action": "validate",
+          "label": "Run quality gates",
+          "description": "Check tests, evidence gates, and schema quality.",
+          "requiresPermission": true
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor",
+        "hivefiver-domain-pack-router"
+      ],
+      "related_entities": {
+        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj"
+      },
+      "updated_at": 1771858417143
+    },
+    {
+      "id": "todo-5",
+      "text": "Cycle8: Review 2 pending graph/state tasks and classify as close/reconcile",
+      "content": "Cycle8: Review 2 pending graph/state tasks and classify as close/reconcile",
+      "status": "pending",
       "priority": "medium",
       "domain": "hybrid",
       "lane": "auto",
@@ -190,145 +320,15 @@
         "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771857122742,
-      "updated_at": 1771857122742
-    },
-    {
-      "id": "todo-4",
-      "text": "Cycle7: RED tests for stale graph-task closure + session-token continuity",
-      "content": "Cycle7: RED tests for stale graph-task closure + session-token continuity",
-      "status": "in_progress",
-      "priority": "high",
-      "domain": "hybrid",
-      "lane": "auto",
-      "persona": "floppy_engineer",
-      "source": "todo.updated",
-      "hivefiver_action": "research",
-      "validation_attempts": 0,
-      "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
-      "auto_initiate": true,
-      "requires_permission": false,
-      "next_step_menu": [
-        {
-          "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-2",
-          "command": "hivefiver spec",
-          "action": "spec",
-          "label": "Build specification",
-          "description": "Distill requirements and close ambiguity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-4",
-          "command": "hivefiver validate",
-          "action": "validate",
-          "label": "Run quality gates",
-          "description": "Check tests, evidence gates, and schema quality.",
-          "requiresPermission": true
-        }
-      ],
-      "recommended_skills": [
-        "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
-        "hivefiver-domain-pack-router"
-      ],
-      "canonical_command": "hivefiver research",
-      "related_entities": {
-        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
-        "workflow_id": "hivefiver-floppy-engineer.yaml"
-      },
-      "last_realigned_at": 1771857122742,
-      "updated_at": 1771857122742
-    },
-    {
-      "id": "todo-5",
-      "text": "Cycle7: GREEN implementation in scoped lifecycle files",
-      "content": "Cycle7: GREEN implementation in scoped lifecycle files",
-      "status": "pending",
-      "priority": "high",
-      "domain": "hybrid",
-      "lane": "auto",
-      "persona": "floppy_engineer",
-      "source": "todo.updated",
-      "hivefiver_action": "research",
-      "validation_attempts": 0,
-      "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
-      "auto_initiate": true,
-      "requires_permission": false,
-      "next_step_menu": [
-        {
-          "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-2",
-          "command": "hivefiver spec",
-          "action": "spec",
-          "label": "Build specification",
-          "description": "Distill requirements and close ambiguity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-4",
-          "command": "hivefiver validate",
-          "action": "validate",
-          "label": "Run quality gates",
-          "description": "Check tests, evidence gates, and schema quality.",
-          "requiresPermission": true
-        }
-      ],
-      "recommended_skills": [
-        "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
-        "hivefiver-domain-pack-router"
-      ],
-      "canonical_command": "hivefiver research",
-      "related_entities": {
-        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
-        "workflow_id": "hivefiver-floppy-engineer.yaml"
-      },
-      "last_realigned_at": 1771857122742,
-      "updated_at": 1771857122742
+      "last_realigned_at": 1771858417143,
+      "updated_at": 1771858417143
     },
     {
       "id": "todo-6",
-      "text": "Cycle7: Validate and atomic commit",
-      "content": "Cycle7: Validate and atomic commit",
+      "text": "Cycle8: Execute next bounded slice based on audit result",
+      "content": "Cycle8: Execute next bounded slice based on audit result",
       "status": "pending",
-      "priority": "high",
+      "priority": "medium",
       "domain": "hybrid",
       "lane": "auto",
       "persona": "floppy_engineer",
@@ -385,8 +385,8 @@
         "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771857122742,
-      "updated_at": 1771857122742
+      "last_realigned_at": 1771858417143,
+      "updated_at": 1771858417143
     }
   ]
 }
