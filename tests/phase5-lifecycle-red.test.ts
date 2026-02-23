@@ -6,7 +6,7 @@ import { join } from "node:path"
 
 import { initProject } from "../src/cli/init.js"
 import { createHivemindSessionTool } from "../src/tools/hivemind-session.js"
-import { loadTrajectory, loadGraphMems, loadGraphTasks } from "../src/lib/graph-io.js"
+import { addGraphTask, loadTrajectory, loadGraphMems, loadGraphTasks } from "../src/lib/graph-io.js"
 import { loadTree } from "../src/lib/hierarchy-tree.js"
 import { createStateManager } from "../src/lib/persistence.js"
 
@@ -224,6 +224,54 @@ describe("Phase 5.2 RED: lifecycle continuity and FK chain", () => {
       forcedTaskIds.length,
       1,
       "RED expected: forceNewActionTask should rotate to a single active task FK, not append fanout",
+    )
+  })
+
+  it("RED: action update runtime flow reconciles stale in_progress tasks", async () => {
+    const sessionTool = createHivemindSessionTool(dir)
+
+    await sessionTool.execute(
+      { action: "start", mode: "plan_driven", focus: "Reconcile stale tasks via runtime action update" },
+      {} as any,
+    )
+    await sessionTool.execute(
+      { action: "update", level: "tactic", content: "Ensure active phase" },
+      {} as any,
+    )
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "Seed active task" },
+      {} as any,
+    )
+
+    const trajectoryBefore = await loadTrajectory(dir)
+    const phaseId = trajectoryBefore?.trajectory?.active_phase_id
+    const activeTaskIds = trajectoryBefore?.trajectory?.active_task_ids ?? []
+    assert.ok(phaseId, "precondition: active_phase_id should exist")
+    assert.equal(activeTaskIds.length, 1, "precondition: one active task should exist")
+
+    const staleTaskId = crypto.randomUUID()
+    const now = new Date().toISOString()
+    await addGraphTask(dir, {
+      id: staleTaskId,
+      parent_phase_id: phaseId as string,
+      title: "stale in-progress task",
+      status: "in_progress",
+      file_locks: [],
+      created_at: now,
+      updated_at: now,
+    })
+
+    await sessionTool.execute(
+      { action: "update", level: "action", content: "Trigger runtime action reconciliation" },
+      {} as any,
+    )
+
+    const graphAfter = await loadGraphTasks(dir, { enabled: false })
+    const staleTask = graphAfter.tasks.find((task) => task.id === staleTaskId)
+    assert.equal(
+      staleTask?.status,
+      "invalidated",
+      "RED expected: stale in_progress task should be invalidated by runtime action update reconciliation",
     )
   })
 

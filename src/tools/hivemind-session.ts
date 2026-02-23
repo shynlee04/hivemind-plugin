@@ -9,7 +9,14 @@ import {
   type SessionResult,
 } from "../lib/session-engine.js"
 import { createStateManager } from "../lib/persistence.js"
-import { addGraphTask, loadGraphTasks, loadTrajectory, saveGraphTasks, saveTrajectory } from "../lib/graph-io.js"
+import {
+  addGraphTask,
+  loadGraphTasks,
+  loadTrajectory,
+  reconcileStaleTasks,
+  saveGraphTasks,
+  saveTrajectory,
+} from "../lib/graph-io.js"
 import { loadTree } from "../lib/hierarchy-tree.js"
 import { clearPendingFailureAck, type SessionMode } from "../schemas/brain-state.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
@@ -259,6 +266,7 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
               await syncTrajectoryToGraph(directory, "update_action", {
                 taskIds: nextTaskIds,
               })
+              await reconcileStaleTasks(directory)
             }
 
             if (args.status === "blocked") {
