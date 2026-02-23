@@ -2,6 +2,7 @@ import { existsSync } from "fs"
 import { mkdir, readFile, rename, unlink, writeFile } from "fs/promises"
 import { dirname, sep } from "path"
 import { z } from "zod"
+import { createHash } from "crypto"
 import { loadTasks, readManifest, type SessionManifest } from "./manifest.js"
 import { createLogger, noopLogger, type Logger } from "./logging.js"
 
@@ -399,6 +400,13 @@ export async function saveGraphTasks(projectRoot: string, state: GraphTasksState
 
 export async function addGraphTask(projectRoot: string, task: TaskNode): Promise<string> {
   const filePath = getEffectivePaths(projectRoot).graphTasks
+
+  // Ensure the file exists before trying to lock it
+  const directory = dirname(filePath)
+  if (!existsSync(filePath)) {
+    await mkdir(directory, { recursive: true })
+    await writeFile(filePath, JSON.stringify({ version: GRAPH_STATE_VERSION, tasks: [] }, null, 2))
+  }
 
   let validatedTask: TaskNode
   await withFileLock(filePath, async () => {
@@ -1131,5 +1139,211 @@ export async function buildRalphTaskGraphSnapshot(
       description,
       userStories: [],
     },
+  }
+}
+
+// ─── Cycle4: Session-ID Parity & Stale Task Reconciliation ───────────────
+
+// UUID v5 namespace for deterministic ses_ -> UUID conversion
+// Using a fixed namespace UUID for consistency across sessions
+const SES_NAMESPACE_UUID = "6ba7b810-9dad-11d1-80b4-00c04fd430c8" // DNS namespace as base
+
+/**
+ * Normalizes session IDs to UUID format.
+ * - If already a valid UUID, returns as-is
+ * - If ses_ prefixed, converts to deterministic UUID v5
+ * - Otherwise, generates a stable UUID from the input string
+ */
+export function normalizeSessionIdToUuid(sessionId: string): string {
+  // Check if already a valid UUID
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  if (uuidRegex.test(sessionId)) {
+    return sessionId.toLowerCase()
+  }
+  
+  // Handle ses_ prefix with deterministic UUID v5
+  if (sessionId.startsWith("ses_")) {
+    const idPart = sessionId.slice(4) // Remove "ses_" prefix
+    const hash = createHash("sha1")
+    hash.update(SES_NAMESPACE_UUID + idPart)
+    const bytes = hash.digest()
+    
+    // Set version (5) and variant bits
+    bytes[6] = (bytes[6] & 0x0f) | 0x50
+    bytes[8] = (bytes[8] & 0x3f) | 0x80
+    
+    const hex = bytes.toString("hex")
+    return [
+      hex.slice(0, 8),
+      hex.slice(8, 12),
+      hex.slice(12, 16),
+      hex.slice(16, 20),
+      hex.slice(20, 32),
+    ].join("-")
+  }
+  
+  // For any other format, create deterministic UUID from the string
+  const hash = createHash("sha1")
+  hash.update(SES_NAMESPACE_UUID + sessionId)
+  const bytes = hash.digest()
+  
+  bytes[6] = (bytes[6] & 0x0f) | 0x50
+  bytes[8] = (bytes[8] & 0x3f) | 0x80
+  
+  const hex = bytes.toString("hex")
+  return [
+    hex.slice(0, 8),
+    hex.slice(8, 12),
+    hex.slice(12, 16),
+    hex.slice(16, 20),
+    hex.slice(20, 32),
+  ].join("-")
+}
+
+/**
+ * Resolves canonical session ID from trajectory or normalizes the fallback.
+ * Priority:
+ * 1. trajectory.json session_id (if valid UUID)
+ * 2. Normalized fallback session ID
+ */
+export async function resolveCanonicalSessionId(
+  projectRoot: string,
+  fallbackSessionId: string,
+): Promise<string> {
+  const trajectory = await loadTrajectory(projectRoot)
+  
+  if (trajectory?.trajectory?.session_id) {
+    // Validate it's a proper UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (uuidRegex.test(trajectory.trajectory.session_id)) {
+      return trajectory.trajectory.session_id
+    }
+  }
+  
+  // Fallback to normalization
+  return normalizeSessionIdToUuid(fallbackSessionId)
+}
+
+/**
+ * Result of stale task invalidation.
+ */
+export interface InvalidationResult {
+  /** IDs of tasks that were invalidated */
+  invalidated: string[]
+  /** Number of tasks that were invalidated */
+  count: number
+}
+
+/**
+ * Invalidates in_progress tasks that are not in the active_task_ids list.
+ * This ensures stale tasks don't pollute the task graph.
+ * 
+ * @param projectRoot - Project root directory
+ * @param activeTaskIds - Set of task IDs that should remain active
+ * @returns Result containing invalidated task IDs
+ */
+export async function invalidateOrphanedActiveTasks(
+  projectRoot: string,
+  activeTaskIds: string[],
+): Promise<InvalidationResult> {
+  const filePath = getEffectivePaths(projectRoot).graphTasks
+  
+  // Early return if file doesn't exist
+  if (!existsSync(filePath)) {
+    return {
+      invalidated: [],
+      count: 0,
+    }
+  }
+  
+  const activeSet = new Set(activeTaskIds)
+  const invalidated: string[] = []
+  const now = new Date().toISOString()
+  
+  await withFileLock(filePath, async () => {
+    const current = await _loadRawTasks(projectRoot)
+    
+    const tasks = current.tasks.map((task) => {
+      // Only invalidate in_progress tasks not in active set
+      if (task.status === "in_progress" && !activeSet.has(task.id)) {
+        invalidated.push(task.id)
+        return {
+          ...task,
+          status: "invalidated" as const,
+          updated_at: now,
+        }
+      }
+      return task
+    })
+    
+    if (invalidated.length > 0) {
+      await saveGraphTasks(projectRoot, {
+        version: current.version,
+        tasks,
+      })
+    }
+  })
+  
+  return {
+    invalidated,
+    count: invalidated.length,
+  }
+}
+
+/**
+ * Result of stale task reconciliation.
+ */
+export interface ReconciliationResult {
+  /** Number of tasks that were invalidated */
+  invalidatedCount: number
+  /** IDs of tasks that were invalidated */
+  invalidatedIds: string[]
+  /** Error if reconciliation failed (non-blocking) */
+  error?: string
+}
+
+/**
+ * Reconciles stale tasks against the trajectory's active_task_ids.
+ * This is the main entry point for cleaning up orphaned in_progress tasks.
+ * 
+ * @param projectRoot - Project root directory
+ * @returns Result of the reconciliation
+ */
+export async function reconcileStaleTasks(
+  projectRoot: string,
+): Promise<ReconciliationResult> {
+  try {
+    const trajectory = await loadTrajectory(projectRoot)
+    
+    if (!trajectory?.trajectory) {
+      // No trajectory = nothing to reconcile
+      return {
+        invalidatedCount: 0,
+        invalidatedIds: [],
+      }
+    }
+    
+    const activeTaskIds = trajectory.trajectory.active_task_ids ?? []
+    
+    // Don't reconcile if no active tasks defined (could be initialization)
+    if (activeTaskIds.length === 0) {
+      return {
+        invalidatedCount: 0,
+        invalidatedIds: [],
+      }
+    }
+    
+    const result = await invalidateOrphanedActiveTasks(projectRoot, activeTaskIds)
+    
+    return {
+      invalidatedCount: result.count,
+      invalidatedIds: result.invalidated,
+    }
+  } catch (error) {
+    return {
+      invalidatedCount: 0,
+      invalidatedIds: [],
+      error: error instanceof Error ? error.message : String(error),
+    }
   }
 }
