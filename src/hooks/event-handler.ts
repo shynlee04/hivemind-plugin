@@ -258,11 +258,16 @@ export function createEventHandler(log: Logger, directory: string) {
         case "todo.updated": {
           const evt = event as EventTodoUpdated | { properties?: { sessionID?: unknown; todos?: unknown[] } }
           const rawTodos = Array.isArray(evt.properties?.todos) ? evt.properties.todos : []
-          const sessionID =
+          const eventSessionID =
             typeof evt.properties?.sessionID === "string" && evt.properties.sessionID.length > 0
               ? evt.properties.sessionID
               : "unknown"
-          await log.debug(`[event] todo.updated: ${sessionID}`)
+          const runtimeSessionId =
+            typeof state?.session?.id === "string" && state.session.id.length > 0
+              ? state.session.id
+              : undefined
+          const manifestSessionId = runtimeSessionId || eventSessionID
+          await log.debug(`[event] todo.updated: ${eventSessionID}`)
 
           if (rawTodos.length > 0) {
             const now = Date.now()
@@ -333,7 +338,7 @@ export function createEventHandler(log: Logger, directory: string) {
                   session_id:
                     pickString(relatedRecord, ["session_id", "sessionId"]) ||
                     pickString(todoRecord, ["session_id", "sessionId"]) ||
-                    sessionID,
+                    manifestSessionId,
                   plan_id:
                     pickString(relatedRecord, ["plan_id", "planId"]) ||
                     pickString(todoRecord, ["plan_id", "planId"]),
@@ -372,7 +377,7 @@ export function createEventHandler(log: Logger, directory: string) {
               type: "UPSERT_TASKS_MANIFEST",
               directory,
               payload: {
-                session_id: sessionID,
+                session_id: manifestSessionId,
                 updated_at: now,
                 tasks,
               },

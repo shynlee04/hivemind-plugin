@@ -55,6 +55,7 @@ async function syncTrajectoryToGraph(
     case "start":
       // After declare_intent: sets active_plan_id, clears phase/task
       if (trajectory.trajectory) {
+        trajectory.trajectory.session_id = params?.sessionId || trajectory.trajectory.session_id
         trajectory.trajectory.intent = params?.intent || ""
         trajectory.trajectory.active_plan_id = params?.planId || null
         trajectory.trajectory.active_phase_id = null

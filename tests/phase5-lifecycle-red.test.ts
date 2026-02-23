@@ -41,6 +41,7 @@ describe("Phase 5.2 RED: lifecycle continuity and FK chain", () => {
     )
 
     const trajectory = await loadTrajectory(dir)
+    const trajectorySessionId = trajectory?.trajectory?.session_id
     assert.ok(trajectory?.trajectory, "trajectory graph node exists after lifecycle updates")
 
     assert.ok(
@@ -223,6 +224,37 @@ describe("Phase 5.2 RED: lifecycle continuity and FK chain", () => {
       forcedTaskIds.length,
       1,
       "RED expected: forceNewActionTask should rotate to a single active task FK, not append fanout",
+    )
+  })
+
+  it("RED: start keeps trajectory.session_id aligned with active runtime session", async () => {
+    const sessionTool = createHivemindSessionTool(dir)
+    const stateManager = createStateManager(dir)
+
+    await sessionTool.execute(
+      { action: "start", mode: "plan_driven", focus: "Session parity baseline" },
+      {} as any,
+    )
+    await sessionTool.execute(
+      { action: "close", summary: "close baseline session" },
+      {} as any,
+    )
+
+    await sessionTool.execute(
+      { action: "start", mode: "plan_driven", focus: "Session parity second start" },
+      {} as any,
+    )
+
+    const state = await stateManager.load()
+    const trajectory = await loadTrajectory(dir)
+    const trajectorySessionId = trajectory?.trajectory?.session_id
+
+    assert.ok(state?.session.id, "runtime session id should exist after second start")
+    assert.ok(trajectorySessionId, "trajectory session_id should exist after second start")
+    assert.equal(
+      trajectorySessionId,
+      state?.session.id,
+      "RED expected: trajectory.session_id must match runtime state.session.id on each start",
     )
   })
 })

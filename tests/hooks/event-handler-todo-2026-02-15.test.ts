@@ -7,6 +7,9 @@ import { createEventHandler } from "../../src/hooks/event-handler.js";
 import { getEffectivePaths } from "../../src/lib/paths.js";
 import type { Logger } from "../../src/lib/logging.js";
 import { clearMutationQueue, flushTaskManifestMutations } from "../../src/lib/state-mutation-queue.js";
+import { initProject } from "../../src/cli/init.js";
+import { createHivemindSessionTool } from "../../src/tools/hivemind-session.js";
+import { createStateManager } from "../../src/lib/persistence.js";
 
 const noopLogger: Logger = {
   info: async () => {},
@@ -287,5 +290,43 @@ describe("US-004: Event Handler - todo.updated", () => {
     assert.ok(parsed.tasks[0].permission_prompt.includes("/hivefiver build"));
     assert.equal(Array.isArray(parsed.tasks[0].next_step_menu), true);
     assert.ok(parsed.tasks[0].next_step_menu[0].requiresPermission);
+  });
+
+  it("RED: todo manifest session_id should align to active runtime session when event sessionID drifts", async () => {
+    const parityDir = await mkdtemp(join(tmpdir(), "hivemind-test-us004-parity-"));
+    try {
+      await initProject(parityDir, { governanceMode: "assisted", language: "en", silent: true });
+      const sessionTool = createHivemindSessionTool(parityDir);
+      await sessionTool.execute(
+        { action: "start", mode: "plan_driven", focus: "todo parity" },
+        {} as any,
+      );
+
+      const state = await createStateManager(parityDir).load();
+      const activeRuntimeSessionId = state?.session.id;
+      assert.ok(activeRuntimeSessionId, "precondition: active runtime session should exist");
+
+      const handler = createEventHandler(noopLogger, parityDir);
+      await handler({
+        event: {
+          type: "todo.updated",
+          properties: {
+            sessionID: "foreign-event-session",
+            todos: [{ id: "parity-1", content: "Parity check task", status: "pending" }],
+          },
+        } as any,
+      });
+      await flushTaskManifestMutations();
+
+      const content = await readFile(getEffectivePaths(parityDir).tasks, "utf-8");
+      const parsed = JSON.parse(content);
+      assert.equal(
+        parsed.session_id,
+        activeRuntimeSessionId,
+        "RED expected: tasks manifest session_id should resolve to active runtime session id",
+      );
+    } finally {
+      await rm(parityDir, { recursive: true, force: true });
+    }
   });
 });
