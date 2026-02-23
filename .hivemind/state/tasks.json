@@ -1,11 +1,11 @@
 {
-  "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
-  "updated_at": 1771858417143,
+  "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
+  "updated_at": 1771861496979,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Cycle7: RED tests for stale graph-task closure + session-token continuity",
-      "content": "Cycle7: RED tests for stale graph-task closure + session-token continuity",
+      "text": "Phase 1: Dispatch 4 parallel scanner agents for grand audit (Architecture, Schema, Orchestration, Runtime)",
+      "content": "Phase 1: Dispatch 4 parallel scanner agents for grand audit (Architecture, Schema, Orchestration, Runtime)",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
@@ -61,19 +61,19 @@
       ],
       "canonical_command": "hivefiver research",
       "related_entities": {
-        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
+        "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771858417143,
-      "updated_at": 1771858417143
+      "last_realigned_at": 1771861496979,
+      "updated_at": 1771861496979
     },
     {
       "id": "todo-2",
-      "text": "Cycle7: GREEN implementation in scoped lifecycle files",
-      "content": "Cycle7: GREEN implementation in scoped lifecycle files",
+      "text": "Phase 2: Synthesize 4 scanner reports into unified SOT audit document",
+      "content": "Phase 2: Synthesize 4 scanner reports into unified SOT audit document",
       "status": "completed",
       "priority": "high",
-      "domain": "hybrid",
+      "domain": "office-ops",
       "lane": "auto",
       "persona": "floppy_engineer",
       "source": "todo.updated",
@@ -126,16 +126,16 @@
       ],
       "canonical_command": "hivefiver research",
       "related_entities": {
-        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
+        "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771858417143,
-      "updated_at": 1771858417143
+      "last_realigned_at": 1771861496979,
+      "updated_at": 1771861496979
     },
     {
       "id": "todo-3",
-      "text": "Cycle7: Validate and atomic commit",
-      "content": "Cycle7: Validate and atomic commit",
+      "text": "Phase 3: Cross-domain integration analysis (gaps, overlaps, conflicts)",
+      "content": "Phase 3: Cross-domain integration analysis (gaps, overlaps, conflicts)",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
@@ -191,19 +191,20 @@
       ],
       "canonical_command": "hivefiver research",
       "related_entities": {
-        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
+        "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771858417143,
-      "updated_at": 1771858417143
+      "last_realigned_at": 1771861496979,
+      "updated_at": 1771861496979
     },
     {
       "id": "todo-4",
-      "text": "Cycle8: Auto-realign /hivefiver research for remaining gaps",
-      "content": "Cycle8: Auto-realign /hivefiver research for remaining gaps",
-      "status": "in_progress",
+      "text": "Phase 4: User journey simulation validation across scenarios",
+      "content": "Phase 4: User journey simulation validation across scenarios",
+      "status": "completed",
       "priority": "medium",
       "domain": "hybrid",
+      "lane": "auto",
       "persona": "floppy_engineer",
       "source": "todo.updated",
       "hivefiver_action": "research",
@@ -253,18 +254,21 @@
         "hivefiver-skill-auditor",
         "hivefiver-domain-pack-router"
       ],
+      "canonical_command": "hivefiver research",
       "related_entities": {
-        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj"
+        "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "updated_at": 1771858417143
+      "last_realigned_at": 1771861496979,
+      "updated_at": 1771861496979
     },
     {
       "id": "todo-5",
-      "text": "Cycle8: Review 2 pending graph/state tasks and classify as close/reconcile",
-      "content": "Cycle8: Review 2 pending graph/state tasks and classify as close/reconcile",
-      "status": "pending",
-      "priority": "medium",
-      "domain": "hybrid",
+      "text": "Phase 5: Produce final SOT audit report for consolidation plan",
+      "content": "Phase 5: Produce final SOT audit report for consolidation plan",
+      "status": "completed",
+      "priority": "high",
+      "domain": "office-ops",
       "lane": "auto",
       "persona": "floppy_engineer",
       "source": "todo.updated",
@@ -317,76 +321,11 @@
       ],
       "canonical_command": "hivefiver research",
       "related_entities": {
-        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
+        "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771858417143,
-      "updated_at": 1771858417143
-    },
-    {
-      "id": "todo-6",
-      "text": "Cycle8: Execute next bounded slice based on audit result",
-      "content": "Cycle8: Execute next bounded slice based on audit result",
-      "status": "pending",
-      "priority": "medium",
-      "domain": "hybrid",
-      "lane": "auto",
-      "persona": "floppy_engineer",
-      "source": "todo.updated",
-      "hivefiver_action": "research",
-      "validation_attempts": 0,
-      "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
-      "auto_initiate": true,
-      "requires_permission": false,
-      "next_step_menu": [
-        {
-          "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-2",
-          "command": "hivefiver spec",
-          "action": "spec",
-          "label": "Build specification",
-          "description": "Distill requirements and close ambiguity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-4",
-          "command": "hivefiver validate",
-          "action": "validate",
-          "label": "Run quality gates",
-          "description": "Check tests, evidence gates, and schema quality.",
-          "requiresPermission": true
-        }
-      ],
-      "recommended_skills": [
-        "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
-        "hivefiver-domain-pack-router"
-      ],
-      "canonical_command": "hivefiver research",
-      "related_entities": {
-        "session_id": "ses_3799f5556ffeWRdErnW6d8ZTMj",
-        "workflow_id": "hivefiver-floppy-engineer.yaml"
-      },
-      "last_realigned_at": 1771858417143,
-      "updated_at": 1771858417143
+      "last_realigned_at": 1771861496979,
+      "updated_at": 1771861496979
     }
   ]
 }

@@ -2,6 +2,7 @@
 name: code-review
 description: "Deep inspection and architecture-focused code review agent with investigation-first workflow."
 mode: all
+model: openai/gpt-5.3-codex
 ---
 
 # Code Review Agent - HiveMind v3 Deep Inspection

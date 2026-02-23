@@ -96,6 +96,90 @@
       "staleness_stamp": "2026-02-22T12:24:20.829Z",
       "created_at": "2026-02-22T12:24:20.829Z",
       "updated_at": "2026-02-22T12:24:20.829Z"
+    },
+    {
+      "id": "e7176184-a500-4c66-ad85-04d542eae7c5",
+      "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
+      "origin_task_id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "shelf": "context",
+      "type": "insight",
+      "content": "Lifecycle compact trace: Closing Cycle8 session to start fresh grand audit. Previous session completed Cycles 1-7 (session-ID parity, stale-task reconciliation, session-token continuity, HF-HARDEN 07-12). Cycle8 research was in progress for classifying remaining pending graph/state tasks.",
+      "relevance_score": 0.8,
+      "staleness_stamp": "2026-02-23T15:16:12.753Z",
+      "created_at": "2026-02-23T15:16:12.753Z",
+      "updated_at": "2026-02-23T15:16:12.753Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+      "origin_task_id": null,
+      "shelf": "audit-findings",
+      "type": "insight",
+      "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-23T15:38:12.886Z",
+      "created_at": "2026-02-23T15:38:12.886Z",
+      "updated_at": "2026-02-23T15:38:12.886Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+      "origin_task_id": null,
+      "shelf": "audit-findings",
+      "type": "insight",
+      "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-23T15:38:19.410Z",
+      "created_at": "2026-02-23T15:38:19.410Z",
+      "updated_at": "2026-02-23T15:38:19.410Z"
+    },
+    {
+      "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+      "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+      "origin_task_id": null,
+      "shelf": "audit-findings",
+      "type": "insight",
+      "content": "Orchestration/Integration Audit KEY FINDINGS: 1) 30 commands with significant alias overlap (init↔start, audit↔doctor, spec↔specforge). 2) Agent dual definition risk: opencode.json agent block AND .opencode/agents/*.md both define agents. 3) MCP partial coverage: only DeepWiki+Stitch enabled, Context7/Tavily/Exa disabled. 4) Skill overlap: delegation-intelligence ↔ sequential-orchestration ↔ context-first-gatekeeping cover similar ground. 5) Plugin bootstrap sequence is clean with proper SDK init order. 6) CQRS compliance confirmed at integration level. 7) Workflow overlap: hivefiver-enterprise vs hivefiver-enterprise-architect.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-23T15:38:25.678Z",
+      "created_at": "2026-02-23T15:38:25.678Z",
+      "updated_at": "2026-02-23T15:38:25.678Z"
+    },
+    {
+      "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+      "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+      "origin_task_id": null,
+      "shelf": "audit-findings",
+      "type": "insight",
+      "content": "Runtime State/Pipeline Audit KEY FINDINGS: 1) DUAL TASK SYSTEM: state/tasks.json (HiveFiver fields) vs graph/tasks.json (FK-linked) - no sync mechanism. 2) DUAL MEMORY PATH: memory/mems.json (legacy) vs graph/mems.json (FK-linked) - cognitive-packer falls back. 3) Orphan quarantine bloat: 60+ entries with duplicates in orphans.json (race condition). 4) Inconsistent locking: only brain.json+graph/tasks+graph/mems have locks; hierarchy, anchors, memory/mems have NONE. 5) FK validation on READ only, not WRITE - allows orphan creation. 6) Manifest chain incomplete: codemap/codewiki are empty placeholders. 7) Session-ID mismatch between brain.json and trajectory.json. 8) graph/phases.json is orphaned file.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-23T15:38:29.071Z",
+      "created_at": "2026-02-23T15:38:29.071Z",
+      "updated_at": "2026-02-23T15:38:29.071Z"
+    },
+    {
+      "id": "1735af50-bb2b-4150-9886-03e90ba04c84",
+      "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+      "origin_task_id": null,
+      "shelf": "audit-findings",
+      "type": "insight",
+      "content": "CROSS-DOMAIN SYNTHESIS: 17 issues found across 4 audit domains. 3 CRITICAL: (CF-01) Dual state systems — state/tasks.json vs graph/tasks.json, memory/mems.json vs graph/mems.json, hierarchy.json vs trajectory.json — NO sync mechanism between pairs. (CF-02) BrainState/HierarchyState/Config/TaskItem have NO Zod schemas — unsafe JSON.parse() as T in persistence.ts:159. (CF-03) 4 lib→hooks import violations due to SDK client access trapped in hooks/sdk-context.ts. USER JOURNEY RESULTS: Greenfield=PASS, Brownfield-resume=PARTIAL(divergence), Wrong-agent=FAIL(advisory-only), Corrupt-resume=FAIL(no validation), Novice=PASS, Expert=PARTIAL(workflow ambiguity), Parallel-stress=PARTIAL(unlocked files).",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-23T15:44:28.836Z",
+      "created_at": "2026-02-23T15:44:28.836Z",
+      "updated_at": "2026-02-23T15:44:28.836Z"
+    },
+    {
+      "id": "cfb6c81b-672d-48cd-8e33-506d6bfa6987",
+      "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+      "origin_task_id": null,
+      "shelf": "audit-findings",
+      "type": "insight",
+      "content": "CONSOLIDATION ROADMAP (from SOT audit): Phase 1 (Week 1) Foundation Safety: Create BrainStateSchema+HierarchyStateSchema+ConfigSchema+TaskItemSchema in Zod, extend proper-lockfile to all state files, add FK validation on write, fix orphan quarantine idempotency. Phase 2 (Week 2) Architecture Repair: Create src/sdk/ layer, extract hooks types to schemas, decompose graph-io.ts (1350→3 files), decompose detection.ts (882→2 files). Phase 3 (Week 3-4) State Unification: Design canonical lifecycle contract, unify task/memory/trajectory dual systems. Phase 4 (Week 5) Surface Consolidation: Reduce 30→18 commands, merge skill overlaps, resolve agent dual definition. Phase 5 (Week 6) Hardening: Concurrency tests, schema migration tests, user journey integration tests, hard tool-gate enforcement.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-23T15:44:35.639Z",
+      "created_at": "2026-02-23T15:44:35.639Z",
+      "updated_at": "2026-02-23T15:44:35.639Z"
     }
   ]
 }

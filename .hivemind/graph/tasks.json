@@ -18,6 +18,15 @@
       "file_locks": [],
       "created_at": "2026-02-21T16:01:05.047Z",
       "updated_at": "2026-02-21T16:01:05.047Z"
+    },
+    {
+      "id": "1a5912c6-13a9-49b4-beda-e36ca5699ab4",
+      "parent_phase_id": "e081c538-4e57-4e4c-8272-006c7ca01d6b",
+      "title": "Phase 1: Dispatching 4 parallel read-only scanner agents across independent audit domains (Architecture Layer, Schema/Data Model, Orchestration/Integration, Runtime State/Pipeline)",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-23T15:18:14.083Z",
+      "updated_at": "2026-02-23T15:18:14.083Z"
     }
   ]
 }

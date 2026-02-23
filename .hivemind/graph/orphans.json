@@ -768,6 +768,3402 @@
         "updated_at": "2026-02-22T12:24:20.829Z"
       },
       "quarantined_at": "2026-02-22T12:24:20.834Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:17:55.059Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:17:55.059Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:18:19.597Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:18:19.597Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:25:25.889Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:25:25.889Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:25:41.540Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:25:41.540Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:25:41.540Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:25:42.815Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:25:42.815Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:25:59.723Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:25:59.723Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:26:41.680Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:26:41.680Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:27:22.827Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:27:22.827Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:27:42.663Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:27:42.663Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:27:59.212Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:27:59.212Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:28:08.270Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:28:08.270Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:28:28.061Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:28:28.061Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:28:36.339Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:28:36.339Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:28:43.674Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:28:43.674Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:07.770Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:07.770Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:12.744Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:12.744Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:24.369Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:24.369Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:25.057Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:25.057Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:38.838Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:38.838Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:43.769Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:43.769Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:53.181Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:29:53.181Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:02.459Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:02.459Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:10.058Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:10.058Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:16.945Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:16.945Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:24.889Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:24.889Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:33.882Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:33.882Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:34.789Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:34.789Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:35.960Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:35.960Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:46.913Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:46.913Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:57.598Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:30:57.598Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:12.580Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:12.580Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:18.337Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:18.337Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:29.878Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:29.878Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:32.722Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:32.722Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:38.739Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:38.739Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:40.420Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:40.420Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:46.693Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:31:46.693Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:32:04.029Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:32:04.029Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:32:14.317Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:32:14.317Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:32:20.795Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:32:20.795Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:32:42.758Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:32:42.758Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:32:45.375Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:32:45.375Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:33:00.755Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:33:00.755Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:33:29.360Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:33:29.360Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:33:41.253Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:33:41.253Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:34:07.410Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:34:07.410Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:34:08.971Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:34:08.971Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:34:33.538Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:34:33.538Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:37:55.620Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:37:55.620Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:12.876Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:12.876Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:12.876Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:12.903Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:12.903Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:12.903Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:12.903Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:19.387Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:19.387Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:19.387Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:19.387Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:19.426Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:19.426Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:19.426Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:19.426Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:19.410Z",
+        "created_at": "2026-02-23T15:38:19.410Z",
+        "updated_at": "2026-02-23T15:38:19.410Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:19.426Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.660Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.660Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.660Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.660Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:19.410Z",
+        "created_at": "2026-02-23T15:38:19.410Z",
+        "updated_at": "2026-02-23T15:38:19.410Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.660Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.683Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.683Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.683Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.683Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:19.410Z",
+        "created_at": "2026-02-23T15:38:19.410Z",
+        "updated_at": "2026-02-23T15:38:19.410Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.683Z"
+    },
+    {
+      "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Orchestration/Integration Audit KEY FINDINGS: 1) 30 commands with significant alias overlap (init↔start, audit↔doctor, spec↔specforge). 2) Agent dual definition risk: opencode.json agent block AND .opencode/agents/*.md both define agents. 3) MCP partial coverage: only DeepWiki+Stitch enabled, Context7/Tavily/Exa disabled. 4) Skill overlap: delegation-intelligence ↔ sequential-orchestration ↔ context-first-gatekeeping cover similar ground. 5) Plugin bootstrap sequence is clean with proper SDK init order. 6) CQRS compliance confirmed at integration level. 7) Workflow overlap: hivefiver-enterprise vs hivefiver-enterprise-architect.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:25.678Z",
+        "created_at": "2026-02-23T15:38:25.678Z",
+        "updated_at": "2026-02-23T15:38:25.678Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:25.683Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.031Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.031Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.031Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.031Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:19.410Z",
+        "created_at": "2026-02-23T15:38:19.410Z",
+        "updated_at": "2026-02-23T15:38:19.410Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.031Z"
+    },
+    {
+      "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Orchestration/Integration Audit KEY FINDINGS: 1) 30 commands with significant alias overlap (init↔start, audit↔doctor, spec↔specforge). 2) Agent dual definition risk: opencode.json agent block AND .opencode/agents/*.md both define agents. 3) MCP partial coverage: only DeepWiki+Stitch enabled, Context7/Tavily/Exa disabled. 4) Skill overlap: delegation-intelligence ↔ sequential-orchestration ↔ context-first-gatekeeping cover similar ground. 5) Plugin bootstrap sequence is clean with proper SDK init order. 6) CQRS compliance confirmed at integration level. 7) Workflow overlap: hivefiver-enterprise vs hivefiver-enterprise-architect.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:25.678Z",
+        "created_at": "2026-02-23T15:38:25.678Z",
+        "updated_at": "2026-02-23T15:38:25.678Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.031Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.078Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.078Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.078Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.078Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:19.410Z",
+        "created_at": "2026-02-23T15:38:19.410Z",
+        "updated_at": "2026-02-23T15:38:19.410Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.078Z"
+    },
+    {
+      "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Orchestration/Integration Audit KEY FINDINGS: 1) 30 commands with significant alias overlap (init↔start, audit↔doctor, spec↔specforge). 2) Agent dual definition risk: opencode.json agent block AND .opencode/agents/*.md both define agents. 3) MCP partial coverage: only DeepWiki+Stitch enabled, Context7/Tavily/Exa disabled. 4) Skill overlap: delegation-intelligence ↔ sequential-orchestration ↔ context-first-gatekeeping cover similar ground. 5) Plugin bootstrap sequence is clean with proper SDK init order. 6) CQRS compliance confirmed at integration level. 7) Workflow overlap: hivefiver-enterprise vs hivefiver-enterprise-architect.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:25.678Z",
+        "created_at": "2026-02-23T15:38:25.678Z",
+        "updated_at": "2026-02-23T15:38:25.678Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.078Z"
+    },
+    {
+      "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Runtime State/Pipeline Audit KEY FINDINGS: 1) DUAL TASK SYSTEM: state/tasks.json (HiveFiver fields) vs graph/tasks.json (FK-linked) - no sync mechanism. 2) DUAL MEMORY PATH: memory/mems.json (legacy) vs graph/mems.json (FK-linked) - cognitive-packer falls back. 3) Orphan quarantine bloat: 60+ entries with duplicates in orphans.json (race condition). 4) Inconsistent locking: only brain.json+graph/tasks+graph/mems have locks; hierarchy, anchors, memory/mems have NONE. 5) FK validation on READ only, not WRITE - allows orphan creation. 6) Manifest chain incomplete: codemap/codewiki are empty placeholders. 7) Session-ID mismatch between brain.json and trajectory.json. 8) graph/phases.json is orphaned file.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:29.071Z",
+        "created_at": "2026-02-23T15:38:29.071Z",
+        "updated_at": "2026-02-23T15:38:29.071Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:29.078Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:30.074Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:30.074Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:53.183Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:38:53.183Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:03.042Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:03.042Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:10.851Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:10.851Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:10.851Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:10.851Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:19.410Z",
+        "created_at": "2026-02-23T15:38:19.410Z",
+        "updated_at": "2026-02-23T15:38:19.410Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:10.851Z"
+    },
+    {
+      "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Orchestration/Integration Audit KEY FINDINGS: 1) 30 commands with significant alias overlap (init↔start, audit↔doctor, spec↔specforge). 2) Agent dual definition risk: opencode.json agent block AND .opencode/agents/*.md both define agents. 3) MCP partial coverage: only DeepWiki+Stitch enabled, Context7/Tavily/Exa disabled. 4) Skill overlap: delegation-intelligence ↔ sequential-orchestration ↔ context-first-gatekeeping cover similar ground. 5) Plugin bootstrap sequence is clean with proper SDK init order. 6) CQRS compliance confirmed at integration level. 7) Workflow overlap: hivefiver-enterprise vs hivefiver-enterprise-architect.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:25.678Z",
+        "created_at": "2026-02-23T15:38:25.678Z",
+        "updated_at": "2026-02-23T15:38:25.678Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:10.851Z"
+    },
+    {
+      "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Runtime State/Pipeline Audit KEY FINDINGS: 1) DUAL TASK SYSTEM: state/tasks.json (HiveFiver fields) vs graph/tasks.json (FK-linked) - no sync mechanism. 2) DUAL MEMORY PATH: memory/mems.json (legacy) vs graph/mems.json (FK-linked) - cognitive-packer falls back. 3) Orphan quarantine bloat: 60+ entries with duplicates in orphans.json (race condition). 4) Inconsistent locking: only brain.json+graph/tasks+graph/mems have locks; hierarchy, anchors, memory/mems have NONE. 5) FK validation on READ only, not WRITE - allows orphan creation. 6) Manifest chain incomplete: codemap/codewiki are empty placeholders. 7) Session-ID mismatch between brain.json and trajectory.json. 8) graph/phases.json is orphaned file.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:29.071Z",
+        "created_at": "2026-02-23T15:38:29.071Z",
+        "updated_at": "2026-02-23T15:38:29.071Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:10.851Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:11.571Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:11.571Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:34.284Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:34.284Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:40.662Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:39:40.662Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:43:39.121Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:43:39.121Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:43:54.499Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:43:54.499Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:05.862Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:05.862Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.808Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.808Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.808Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.808Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:19.410Z",
+        "created_at": "2026-02-23T15:38:19.410Z",
+        "updated_at": "2026-02-23T15:38:19.410Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.808Z"
+    },
+    {
+      "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Orchestration/Integration Audit KEY FINDINGS: 1) 30 commands with significant alias overlap (init↔start, audit↔doctor, spec↔specforge). 2) Agent dual definition risk: opencode.json agent block AND .opencode/agents/*.md both define agents. 3) MCP partial coverage: only DeepWiki+Stitch enabled, Context7/Tavily/Exa disabled. 4) Skill overlap: delegation-intelligence ↔ sequential-orchestration ↔ context-first-gatekeeping cover similar ground. 5) Plugin bootstrap sequence is clean with proper SDK init order. 6) CQRS compliance confirmed at integration level. 7) Workflow overlap: hivefiver-enterprise vs hivefiver-enterprise-architect.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:25.678Z",
+        "created_at": "2026-02-23T15:38:25.678Z",
+        "updated_at": "2026-02-23T15:38:25.678Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.808Z"
+    },
+    {
+      "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Runtime State/Pipeline Audit KEY FINDINGS: 1) DUAL TASK SYSTEM: state/tasks.json (HiveFiver fields) vs graph/tasks.json (FK-linked) - no sync mechanism. 2) DUAL MEMORY PATH: memory/mems.json (legacy) vs graph/mems.json (FK-linked) - cognitive-packer falls back. 3) Orphan quarantine bloat: 60+ entries with duplicates in orphans.json (race condition). 4) Inconsistent locking: only brain.json+graph/tasks+graph/mems have locks; hierarchy, anchors, memory/mems have NONE. 5) FK validation on READ only, not WRITE - allows orphan creation. 6) Manifest chain incomplete: codemap/codewiki are empty placeholders. 7) Session-ID mismatch between brain.json and trajectory.json. 8) graph/phases.json is orphaned file.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:29.071Z",
+        "created_at": "2026-02-23T15:38:29.071Z",
+        "updated_at": "2026-02-23T15:38:29.071Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.808Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.846Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.846Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.846Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.846Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:19.410Z",
+        "created_at": "2026-02-23T15:38:19.410Z",
+        "updated_at": "2026-02-23T15:38:19.410Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.846Z"
+    },
+    {
+      "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Orchestration/Integration Audit KEY FINDINGS: 1) 30 commands with significant alias overlap (init↔start, audit↔doctor, spec↔specforge). 2) Agent dual definition risk: opencode.json agent block AND .opencode/agents/*.md both define agents. 3) MCP partial coverage: only DeepWiki+Stitch enabled, Context7/Tavily/Exa disabled. 4) Skill overlap: delegation-intelligence ↔ sequential-orchestration ↔ context-first-gatekeeping cover similar ground. 5) Plugin bootstrap sequence is clean with proper SDK init order. 6) CQRS compliance confirmed at integration level. 7) Workflow overlap: hivefiver-enterprise vs hivefiver-enterprise-architect.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:25.678Z",
+        "created_at": "2026-02-23T15:38:25.678Z",
+        "updated_at": "2026-02-23T15:38:25.678Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.846Z"
+    },
+    {
+      "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Runtime State/Pipeline Audit KEY FINDINGS: 1) DUAL TASK SYSTEM: state/tasks.json (HiveFiver fields) vs graph/tasks.json (FK-linked) - no sync mechanism. 2) DUAL MEMORY PATH: memory/mems.json (legacy) vs graph/mems.json (FK-linked) - cognitive-packer falls back. 3) Orphan quarantine bloat: 60+ entries with duplicates in orphans.json (race condition). 4) Inconsistent locking: only brain.json+graph/tasks+graph/mems have locks; hierarchy, anchors, memory/mems have NONE. 5) FK validation on READ only, not WRITE - allows orphan creation. 6) Manifest chain incomplete: codemap/codewiki are empty placeholders. 7) Session-ID mismatch between brain.json and trajectory.json. 8) graph/phases.json is orphaned file.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:29.071Z",
+        "created_at": "2026-02-23T15:38:29.071Z",
+        "updated_at": "2026-02-23T15:38:29.071Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.846Z"
+    },
+    {
+      "id": "1735af50-bb2b-4150-9886-03e90ba04c84",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "1735af50-bb2b-4150-9886-03e90ba04c84",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "CROSS-DOMAIN SYNTHESIS: 17 issues found across 4 audit domains. 3 CRITICAL: (CF-01) Dual state systems — state/tasks.json vs graph/tasks.json, memory/mems.json vs graph/mems.json, hierarchy.json vs trajectory.json — NO sync mechanism between pairs. (CF-02) BrainState/HierarchyState/Config/TaskItem have NO Zod schemas — unsafe JSON.parse() as T in persistence.ts:159. (CF-03) 4 lib→hooks import violations due to SDK client access trapped in hooks/sdk-context.ts. USER JOURNEY RESULTS: Greenfield=PASS, Brownfield-resume=PARTIAL(divergence), Wrong-agent=FAIL(advisory-only), Corrupt-resume=FAIL(no validation), Novice=PASS, Expert=PARTIAL(workflow ambiguity), Parallel-stress=PARTIAL(unlocked files).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:44:28.836Z",
+        "created_at": "2026-02-23T15:44:28.836Z",
+        "updated_at": "2026-02-23T15:44:28.836Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:28.846Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.609Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.609Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.609Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.609Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:19.410Z",
+        "created_at": "2026-02-23T15:38:19.410Z",
+        "updated_at": "2026-02-23T15:38:19.410Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.609Z"
+    },
+    {
+      "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Orchestration/Integration Audit KEY FINDINGS: 1) 30 commands with significant alias overlap (init↔start, audit↔doctor, spec↔specforge). 2) Agent dual definition risk: opencode.json agent block AND .opencode/agents/*.md both define agents. 3) MCP partial coverage: only DeepWiki+Stitch enabled, Context7/Tavily/Exa disabled. 4) Skill overlap: delegation-intelligence ↔ sequential-orchestration ↔ context-first-gatekeeping cover similar ground. 5) Plugin bootstrap sequence is clean with proper SDK init order. 6) CQRS compliance confirmed at integration level. 7) Workflow overlap: hivefiver-enterprise vs hivefiver-enterprise-architect.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:25.678Z",
+        "created_at": "2026-02-23T15:38:25.678Z",
+        "updated_at": "2026-02-23T15:38:25.678Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.609Z"
+    },
+    {
+      "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Runtime State/Pipeline Audit KEY FINDINGS: 1) DUAL TASK SYSTEM: state/tasks.json (HiveFiver fields) vs graph/tasks.json (FK-linked) - no sync mechanism. 2) DUAL MEMORY PATH: memory/mems.json (legacy) vs graph/mems.json (FK-linked) - cognitive-packer falls back. 3) Orphan quarantine bloat: 60+ entries with duplicates in orphans.json (race condition). 4) Inconsistent locking: only brain.json+graph/tasks+graph/mems have locks; hierarchy, anchors, memory/mems have NONE. 5) FK validation on READ only, not WRITE - allows orphan creation. 6) Manifest chain incomplete: codemap/codewiki are empty placeholders. 7) Session-ID mismatch between brain.json and trajectory.json. 8) graph/phases.json is orphaned file.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:29.071Z",
+        "created_at": "2026-02-23T15:38:29.071Z",
+        "updated_at": "2026-02-23T15:38:29.071Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.609Z"
+    },
+    {
+      "id": "1735af50-bb2b-4150-9886-03e90ba04c84",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "1735af50-bb2b-4150-9886-03e90ba04c84",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "CROSS-DOMAIN SYNTHESIS: 17 issues found across 4 audit domains. 3 CRITICAL: (CF-01) Dual state systems — state/tasks.json vs graph/tasks.json, memory/mems.json vs graph/mems.json, hierarchy.json vs trajectory.json — NO sync mechanism between pairs. (CF-02) BrainState/HierarchyState/Config/TaskItem have NO Zod schemas — unsafe JSON.parse() as T in persistence.ts:159. (CF-03) 4 lib→hooks import violations due to SDK client access trapped in hooks/sdk-context.ts. USER JOURNEY RESULTS: Greenfield=PASS, Brownfield-resume=PARTIAL(divergence), Wrong-agent=FAIL(advisory-only), Corrupt-resume=FAIL(no validation), Novice=PASS, Expert=PARTIAL(workflow ambiguity), Parallel-stress=PARTIAL(unlocked files).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:44:28.836Z",
+        "created_at": "2026-02-23T15:44:28.836Z",
+        "updated_at": "2026-02-23T15:44:28.836Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.609Z"
+    },
+    {
+      "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+      "type": "mem",
+      "reason": "origin_task_id a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3 not found in valid tasks",
+      "original_data": {
+        "id": "5aa506c9-bfc1-4811-9603-3b2300572a64",
+        "session_id": "84e4e544-e0c8-4605-a242-08f2bc34fb34",
+        "origin_task_id": "a7d6ce26-fa9e-4c18-96e2-97b2db3b0ae3",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed marketing canvas and 19-slide presentation for Sữa Ông Thọ Tết 2026 campaign. Files saved: marketing-canvas-sua-ong-tho-tet-2026-02-19.md and presentation-sua-ong-tho-tet-2026-02-19.md",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:04:14.606Z",
+        "created_at": "2026-02-19T12:04:14.606Z",
+        "updated_at": "2026-02-19T12:04:14.606Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.647Z"
+    },
+    {
+      "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+      "type": "mem",
+      "reason": "origin_task_id c141b5e3-1424-4516-ba7f-0fff03aa40a1 not found in valid tasks",
+      "original_data": {
+        "id": "1bfe80f3-469d-418b-9eed-0494a53f0900",
+        "session_id": "0563969a-f764-4a0c-a067-03e1c0384062",
+        "origin_task_id": "c141b5e3-1424-4516-ba7f-0fff03aa40a1",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Created market-research-framework skill (Technique type) covering Consumer Research, Market Sizing, and Trend Analysis. Bilingual (EN/VI), includes data validation tiers, TAM/SAM/SOM formulas, sample size guidelines, and evidence discipline rules.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T12:28:36.880Z",
+        "created_at": "2026-02-19T12:28:36.880Z",
+        "updated_at": "2026-02-19T12:28:36.880Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.647Z"
+    },
+    {
+      "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+      "type": "mem",
+      "reason": "origin_task_id b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e not found in valid tasks",
+      "original_data": {
+        "id": "780688e2-7f5a-4c1a-9cd9-1f1f8f83f6a4",
+        "session_id": "95ace8c9-d002-4920-8fae-f99197c69af9",
+        "origin_task_id": "b20420a6-b1fe-44a5-ba9d-9416bd5f8d7e",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Completed commit 826e09ea context mapping review for hierarchy normalization changes",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-19T23:51:31.067Z",
+        "created_at": "2026-02-19T23:51:31.067Z",
+        "updated_at": "2026-02-19T23:51:31.067Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.647Z"
+    },
+    {
+      "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "b2386863-1244-46a0-8aee-cec62e57c423",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Architecture Layer Audit KEY FINDINGS: 1) 4 import direction violations (lib→hooks: session-governance, session_coherence, compaction-engine, auto-commit all import from hooks/sdk-context). Root cause: SDK client access pattern. 2) 9 files exceed 300 LOC limit - graph-io.ts at 1350 LOC is worst (4.5x). 3) CQRS mutation queue pattern works correctly - hooks use queueStateMutation(). 4) All 6 tools are boundary-compliant. 5) Silent error swallowing in graph-io.ts and session-engine.ts. P0 fix: Create src/sdk/ layer, decompose graph-io.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:12.886Z",
+        "created_at": "2026-02-23T15:38:12.886Z",
+        "updated_at": "2026-02-23T15:38:12.886Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.647Z"
+    },
+    {
+      "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "40be0a60-e5b7-4a26-b459-bed0806a003b",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Schema/Data Model Audit KEY FINDINGS: 1) CRITICAL: BrainState, HierarchyState, HiveMindConfig, TaskItem have NO Zod schemas - TypeScript interfaces only, unsafe deserialization via JSON.parse() as T. 2) Dual hierarchy mismatch: 3-level cognitive (trajectory/tactic/action) in hierarchy.ts vs 6-level enterprise (project/milestone/phase/plan/task/verification) in graph-nodes.ts - no formal mapping between them. 3) FK validation comprehensive in graph-io.ts (22 UUID fields enforced). 4) PhaseNode validated on migrate only, not on read. 5) Dual persistence: hierarchy.json vs trajectory.json for trajectory data.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:19.410Z",
+        "created_at": "2026-02-23T15:38:19.410Z",
+        "updated_at": "2026-02-23T15:38:19.410Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.647Z"
+    },
+    {
+      "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "c6c209dc-fc85-418e-9883-a3bdfc7ada18",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Orchestration/Integration Audit KEY FINDINGS: 1) 30 commands with significant alias overlap (init↔start, audit↔doctor, spec↔specforge). 2) Agent dual definition risk: opencode.json agent block AND .opencode/agents/*.md both define agents. 3) MCP partial coverage: only DeepWiki+Stitch enabled, Context7/Tavily/Exa disabled. 4) Skill overlap: delegation-intelligence ↔ sequential-orchestration ↔ context-first-gatekeeping cover similar ground. 5) Plugin bootstrap sequence is clean with proper SDK init order. 6) CQRS compliance confirmed at integration level. 7) Workflow overlap: hivefiver-enterprise vs hivefiver-enterprise-architect.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:25.678Z",
+        "created_at": "2026-02-23T15:38:25.678Z",
+        "updated_at": "2026-02-23T15:38:25.678Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.647Z"
+    },
+    {
+      "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "ae2b1194-2fe6-4f55-a6c6-35d077160edf",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "Runtime State/Pipeline Audit KEY FINDINGS: 1) DUAL TASK SYSTEM: state/tasks.json (HiveFiver fields) vs graph/tasks.json (FK-linked) - no sync mechanism. 2) DUAL MEMORY PATH: memory/mems.json (legacy) vs graph/mems.json (FK-linked) - cognitive-packer falls back. 3) Orphan quarantine bloat: 60+ entries with duplicates in orphans.json (race condition). 4) Inconsistent locking: only brain.json+graph/tasks+graph/mems have locks; hierarchy, anchors, memory/mems have NONE. 5) FK validation on READ only, not WRITE - allows orphan creation. 6) Manifest chain incomplete: codemap/codewiki are empty placeholders. 7) Session-ID mismatch between brain.json and trajectory.json. 8) graph/phases.json is orphaned file.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:38:29.071Z",
+        "created_at": "2026-02-23T15:38:29.071Z",
+        "updated_at": "2026-02-23T15:38:29.071Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.647Z"
+    },
+    {
+      "id": "1735af50-bb2b-4150-9886-03e90ba04c84",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "1735af50-bb2b-4150-9886-03e90ba04c84",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "CROSS-DOMAIN SYNTHESIS: 17 issues found across 4 audit domains. 3 CRITICAL: (CF-01) Dual state systems — state/tasks.json vs graph/tasks.json, memory/mems.json vs graph/mems.json, hierarchy.json vs trajectory.json — NO sync mechanism between pairs. (CF-02) BrainState/HierarchyState/Config/TaskItem have NO Zod schemas — unsafe JSON.parse() as T in persistence.ts:159. (CF-03) 4 lib→hooks import violations due to SDK client access trapped in hooks/sdk-context.ts. USER JOURNEY RESULTS: Greenfield=PASS, Brownfield-resume=PARTIAL(divergence), Wrong-agent=FAIL(advisory-only), Corrupt-resume=FAIL(no validation), Novice=PASS, Expert=PARTIAL(workflow ambiguity), Parallel-stress=PARTIAL(unlocked files).",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:44:28.836Z",
+        "created_at": "2026-02-23T15:44:28.836Z",
+        "updated_at": "2026-02-23T15:44:28.836Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.647Z"
+    },
+    {
+      "id": "cfb6c81b-672d-48cd-8e33-506d6bfa6987",
+      "type": "mem",
+      "reason": "session_id 4a625473-9caa-4f4e-a2b0-de1bd7704283 not found in valid session lineage",
+      "original_data": {
+        "id": "cfb6c81b-672d-48cd-8e33-506d6bfa6987",
+        "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283",
+        "origin_task_id": null,
+        "shelf": "audit-findings",
+        "type": "insight",
+        "content": "CONSOLIDATION ROADMAP (from SOT audit): Phase 1 (Week 1) Foundation Safety: Create BrainStateSchema+HierarchyStateSchema+ConfigSchema+TaskItemSchema in Zod, extend proper-lockfile to all state files, add FK validation on write, fix orphan quarantine idempotency. Phase 2 (Week 2) Architecture Repair: Create src/sdk/ layer, extract hooks types to schemas, decompose graph-io.ts (1350→3 files), decompose detection.ts (882→2 files). Phase 3 (Week 3-4) State Unification: Design canonical lifecycle contract, unify task/memory/trajectory dual systems. Phase 4 (Week 5) Surface Consolidation: Reduce 30→18 commands, merge skill overlaps, resolve agent dual definition. Phase 5 (Week 6) Hardening: Concurrency tests, schema migration tests, user journey integration tests, hard tool-gate enforcement.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-23T15:44:35.639Z",
+        "created_at": "2026-02-23T15:44:35.639Z",
+        "updated_at": "2026-02-23T15:44:35.639Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:35.647Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:36.476Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:36.476Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:45.584Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:44:45.584Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:45:00.489Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:45:00.489Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:45:10.067Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:45:10.067Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:46:21.635Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:46:21.635Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:46:34.864Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:46:34.864Z"
+    },
+    {
+      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-20T11:13:08.622Z",
+        "updated_at": "2026-02-20T11:13:08.622Z"
+      },
+      "quarantined_at": "2026-02-23T15:46:42.334Z"
+    },
+    {
+      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+      "type": "task",
+      "reason": "parent_phase_id d1d4b41c-d562-49c7-b69c-011e1df05f13 not found in valid phases",
+      "original_data": {
+        "id": "6b60d495-e455-4766-b372-be4f612cb24b",
+        "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
+        "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-02-21T16:01:05.047Z",
+        "updated_at": "2026-02-21T16:01:05.047Z"
+      },
+      "quarantined_at": "2026-02-23T15:46:42.334Z"
     }
   ]
 }
