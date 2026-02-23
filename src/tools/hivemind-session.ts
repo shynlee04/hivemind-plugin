@@ -17,7 +17,6 @@ import {
   saveGraphTasks,
   saveTrajectory,
 } from "../lib/graph-io.js"
-import { loadTree } from "../lib/hierarchy-tree.js"
 import { clearPendingFailureAck, type SessionMode } from "../schemas/brain-state.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 import { flushMutations, flushTaskManifestMutations } from "../lib/state-mutation-queue.js"
@@ -197,13 +196,6 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
         case "update": {
           const level = args.level as HierarchyLevel | undefined
           const targetLevel = level || "tactic"
-          let priorActionCountUnderLatestTactic = 0
-          if (targetLevel === "action") {
-            const treeBeforeUpdate = await loadTree(directory)
-            const latestTactic = treeBeforeUpdate.root?.children.filter((node) => node.level === "tactic").at(-1)
-            priorActionCountUnderLatestTactic =
-              latestTactic?.children.filter((node) => node.level === "action").length ?? 0
-          }
           result = await updateSession(directory, {
             level,
             content: args.content,
@@ -256,12 +248,7 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
                 })
               }
 
-              const preserveHistoricalFanout =
-                forceNewActionTask && existingTaskIds.length > 0 && priorActionCountUnderLatestTactic > 1
-
-              const nextTaskIds = preserveHistoricalFanout && !existingTaskIds.includes(taskId)
-                ? [...existingTaskIds, taskId]
-                : [taskId]
+              const nextTaskIds = [taskId]
 
               await syncTrajectoryToGraph(directory, "update_action", {
                 taskIds: nextTaskIds,

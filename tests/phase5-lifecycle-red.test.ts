@@ -145,14 +145,12 @@ describe("Phase 5.2 RED: lifecycle continuity and FK chain", () => {
     const afterForced = await loadTrajectory(dir)
     assert.ok(afterForced?.trajectory, "trajectory should exist after forced action update")
     const forcedTaskIds = afterForced?.trajectory?.active_task_ids ?? []
-    assert.equal(forcedTaskIds.length, 2, "forced action update should append a new task FK")
-    assert.notEqual(forcedTaskIds[1], forcedTaskIds[0], "forced action update should create a distinct task")
+    assert.equal(forcedTaskIds.length, 1, "forced action update should rotate to a single active task FK")
+    assert.notEqual(forcedTaskIds[0], firstTaskIds[0], "forced action update should create a distinct task")
 
-    const graphTasks = await loadGraphTasks(dir)
-    const graphTaskIds = new Set(graphTasks.tasks.map((task) => task.id))
-    for (const taskId of forcedTaskIds) {
-      assert.ok(graphTaskIds.has(taskId), "all active task IDs should reference existing graph tasks")
-    }
+    const rawGraphTasks = await loadGraphTasks(dir, { enabled: false })
+    const oldTask = rawGraphTasks.tasks.find((task) => task.id === firstTaskIds[0])
+    assert.equal(oldTask?.status, "invalidated", "previous in_progress task should be invalidated")
   })
 
   it("RED: repeated action updates preserve a single active action under the current tactic", async () => {

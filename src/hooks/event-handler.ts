@@ -31,6 +31,7 @@ import { getStalenessInfo } from "../lib/staleness.js"
 import { registerGovernanceSignal } from "../lib/detection.js"
 import { queueStateMutation, queueTaskManifestMutation } from "../lib/state-mutation-queue.js"
 import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
+import { resolveCanonicalSessionId } from "../lib/graph-io.js"
 
 function normalizeStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) {
@@ -267,6 +268,7 @@ export function createEventHandler(log: Logger, directory: string) {
               ? state.session.id
               : undefined
           const manifestSessionId = runtimeSessionId || eventSessionID
+          const canonicalRelatedSessionId = await resolveCanonicalSessionId(directory, manifestSessionId)
           await log.debug(`[event] todo.updated: ${eventSessionID}`)
 
           if (rawTodos.length > 0) {
@@ -335,10 +337,7 @@ export function createEventHandler(log: Logger, directory: string) {
                   pickString(todoRecord, ["canonical_command", "canonicalCommand"]) ||
                   (realignment.shouldRealign ? realignment.recommendedCommand : undefined),
                 related_entities: {
-                  session_id:
-                    pickString(relatedRecord, ["session_id", "sessionId"]) ||
-                    pickString(todoRecord, ["session_id", "sessionId"]) ||
-                    manifestSessionId,
+                  session_id: canonicalRelatedSessionId,
                   plan_id:
                     pickString(relatedRecord, ["plan_id", "planId"]) ||
                     pickString(todoRecord, ["plan_id", "planId"]),
