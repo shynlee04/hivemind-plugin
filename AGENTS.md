@@ -359,3 +359,13 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 - ✅ `src/lib/manifest.ts` and `src/schemas/manifest.ts`: lifecycle/canonical manifest consistency maintained for closeout
 - ✅ `src/lib/orphan-quarantine.ts`: deterministic orphan/stale-session cleanup and idempotency paths covered
 - ✅ `src/lib/graph-io.ts`: relational FK guardrails retained for post-remediation integrity
+
+---
+
+## Agent Registry & Subagents
+
+### hiveplanner
+- **Type**: Phase-Planning Agent (Subagent)
+- **Role**: Conducts deep MCP research, generates execution Knots (1-5), and links Trajectories to Actions.
+- **Constraints**: No edit permissions on `src/`. Only persists plans to `docs/plans/` and updates tree via `hivemind_hierarchy`.
+- **Location**: `.opencode/agents/hiveplanner.md` / `agents/hiveplanner.md`

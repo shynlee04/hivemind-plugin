@@ -3,6 +3,7 @@ name: debug
 description: "Systematic debugging orchestrator for HiveMind with evidence-first diagnosis and structured remediation."
 mode: all
 model: openai/gpt-5.3-codex
+reasoningEffort: "high"
 ---
 
 # Debug Agent - HiveMind v3 Intelligent Debug Orchestrator
