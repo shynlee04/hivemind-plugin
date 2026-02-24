@@ -30,103 +30,132 @@
 **Reference:** `docs/plans/2026-02-24-v29-domain-audit.md`
 **Quality gate:** Source-of-truth report accepted as baseline for all downstream rounds.
 
-### Round 2: Schema Foundation (D1)
-**Goal:** Establish complete runtime schema contracts and validation-safe persistence entry points.
+### Restructuring Note (2026-02-24)
+- Rounds 2-5 are replaced by domain-knots that co-design schemas, hooks, and libs in vertical slices instead of layer-by-layer waves.
+- This follows the validated execution philosophy: "Find the entry, define the absolutes, address one node horizontally and vertically without gaps, solve one complete smallest knot before spreading to neighbors."
+- Knots 1-5 are domain-focused vertical slices; Rounds 6-8 remain broader lifecycle, ecosystem, and hardening passes.
+
+### Knot 1: Context Constitution
+**Goal:** Establish sticky constitutional governance and deterministic prompt transformation contracts at turn level.
+**Duration:** 2 sessions
+**Prerequisites:** Round 0 + Round 1 complete.
+**Issues addressed:** CF-D5-01, CF-D5-02, CF-D5-03, CF-D5-07, CF-D5-NEW-01, CF-D2-03, CF-D2-08, CF-D2-NEW-01, CF-D6-01
+**Why this order:** This is the anti-drift foundation; all downstream session/task/state behavior depends on stable turn-level context contracts.
+**Status:** Phase-plan drafted, pending implementation authorization (`docs/plans/2026-02-24-knot-1-context-constitution-phase-plan.md`).
+
+**Phase K1-R: Research**
+- Confirm constitutional-rule model boundaries and hook ownership split from current runtime behavior.
+- Validate exact issue mapping against audit evidence and phase-plan issue trace.
+- Define deterministic ordering contract for system transform and message transform.
+
+**Phase K1-I: Implement**
+- Implement typed constitutional instruction + checklist-driven prompt transformation contract.
+- Wire sticky system-instruction marker and first-turn transformation under one canonical ownership path.
+- Integrate hierarchy bridge and safe-parse readiness checks into constitutional checklist flow.
+
+**Phase K1-V: Validate**
+- Run regression coverage for hook ordering, first-turn de-duplication, and context checklist behavior.
+- Verify constitutional marker continuity and no dead/unregistered hook paths.
+
+**Quality gate:** Constitutional marker deterministic, first-turn duplication removed, checklist contract enforced, `npm test` + `npx tsc --noEmit` pass.
+
+### Knot 2: Session Intelligence
+**Goal:** Implement auto-new-session and compaction/session-export intelligence with SDK-safe constraints.
+**Duration:** 2 sessions
+**Prerequisites:** Knot 1 complete.
+**Issues addressed:** CF-D2-06, CF-D2-09, CF-D2-10, CF-D5-04, CF-D5-05
+**Why this order:** Session compaction/lifecycle continuity depends on Knot 1 constitutional identity and checklist continuity marker.
+
+**Phase K2-R: Research**
+- Review `experimental.session.compacting` behavior for context-doctor, navigation, mapping, and turn-anchoring contracts.
+- Confirm defensive rules: no auto-compact at >=80% context, no compact during child delegations, max 3 compacts then auto-new-session on the 4th trigger.
+- Validate constraint boundary: plugins cannot create sessions programmatically.
+
+**Phase K2-I: Implement**
+- Implement compact-trigger flow that escalates to auto-new-session under policy thresholds.
+- Reorganize compaction/session hooks into explicit lifecycle domain boundaries.
+- Add session retention/cleanup and mutation audit trail behavior tied to compact lifecycle.
+
+**Phase K2-V: Validate**
+- Run compaction journey tests for normal, blocked, and forced-new-session scenarios.
+- Verify no programmatic session creation path is introduced by plugin logic.
+
+**Quality gate:** Compaction policy deterministic, export continuity preserved, session lifecycle constraints enforced, `npm test` + `npx tsc --noEmit` pass.
+
+### Knot 3: Task Hierarchy & Planning Framework
+**Goal:** Deliver hierarchical task schema and planning SOT task-state contracts.
 **Duration:** 2-3 sessions
-**Prerequisites:** Round 0 complete; user updates framework vision in `forming-the-own-framework.md`.
-**Issues addressed:** CF-D1-01 through CF-D1-10, CF-D2-NEW-01
+**Prerequisites:** Knot 2 complete.
+**Issues addressed:** CF-D1-01, CF-D1-07, CF-D1-08, CF-D1-09, CF-D1-10, CF-D2-01, CF-D2-04, CF-D2-05, CF-D2-07
+**Why this order:** Hierarchical planning requires stable constitutional context (K1) and reliable session boundaries/compaction semantics (K2).
 
-**Phase 2A: Research + Design (read-only)**
-- Analyze current schemas under `src/schemas/` and graph/state structure.
-- Extract entity/lifecycle intent from `forming-the-own-framework.md`.
-- Design BaseNodeSchema and shared id/timestamp conventions.
-- Design schema versioning + migration contract.
-- Produce user-approval design checkpoint.
+**Phase K3-R: Research**
+- Confirm task/planning source-of-truth boundaries and current graph query needs.
+- Design task hierarchy contracts across Project, Milestone, TaskItem, and SubTask.
+- Validate migration approach from existing task representations.
 
-**Phase 2B: Implementation**
-- Implement `TaskItem`, `BrainState`, `HierarchyState`, `Config` Zod schemas.
-- Add missing v2.9 entity schemas (Project, Milestone, SubTask, memory classes, governance contracts).
-- Add `safeParse` validation for persistence read paths (state and graph entry points).
-- Extend file locking + backup safety for remaining uncovered state files.
+**Phase K3-I: Implement**
+- Implement task schema expansions and planning hierarchy contract.
+- Unify task-state representation and introduce deterministic synchronization/conflict policy.
+- Add graph query interface for hierarchical task retrieval.
 
-**Phase 2C: Validation**
-- Run compatibility tests against existing `.hivemind/` data.
-- Add schema-level tests for all newly introduced entities.
+**Phase K3-V: Validate**
+- Run migration and reconciliation tests for task hierarchy transitions.
+- Verify planning artifacts align with one task-state source of truth.
 
-**Quality gate:** No schema regressions, full parse coverage for core state entities, compatibility pass.
+**Quality gate:** Task hierarchy works end-to-end with deterministic sync/query behavior, `npm test` + `npx tsc --noEmit` pass.
 
-### Round 3: State Unification (D2)
-**Goal:** Remove dual-state divergence and define one authoritative representation per entity.
+### Knot 4: State Unification & Persistence
+**Goal:** Refactor Brain/State persistence contracts into one validated architecture with safety guardrails.
+**Duration:** 3-4 sessions
+**Prerequisites:** Knot 3 complete.
+**Issues addressed:** CF-D1-02, CF-D1-03, CF-D1-04, CF-D1-05, CF-D1-06, CF-D1-NEW-01, CF-D2-02, CF-D3-01 through CF-D3-08, CF-D3-12, CF-D3-13, CF-D3-14, CF-D3-NEW-01
+**Why this order:** State unification is cross-cutting and high-risk; it should follow stabilized governance/session/task contracts from Knots 1-3.
+
+**Phase K4-R: Research**
+- Build divergence map for brain, hierarchy, mem, and persistence safety gaps.
+- Identify import-direction and high-LOC architecture violations for staged repair.
+- Define decomposition boundaries and DI seam targets.
+
+**Phase K4-I: Implement**
+- Unify mem/brain/hierarchy persistence contracts with runtime validation safety.
+- Repair import-direction violations and decompose high-LOC modules.
+- Add file-lock/backup hardening and directory/domain restructuring.
+
+**Phase K4-V: Validate**
+- Execute migration/regression tests across legacy and unified state paths.
+- Verify architecture checks for dependency direction, decomposition integrity, and error boundary consistency.
+
+**Quality gate:** Unified validated state model with architecture violations resolved and persistence safety hardened, `npm test` + `npx tsc --noEmit` pass.
+
+### Knot 5: Code Intelligence & Ecosystem Surface
+**Goal:** Deliver code-intel maturity and tool/agent surface expansion on top of stabilized core architecture.
 **Duration:** 2-3 sessions
-**Prerequisites:** Round 2 complete.
-**Issues addressed:** CF-D2-01 through CF-D2-10
+**Prerequisites:** Knot 4 complete.
+**Issues addressed:** CF-D4-01 through CF-D4-07, CF-D5-06, CF-D3-09, CF-D3-10, CF-D3-11
+**Why this order:** Surface-area expansion is safest after governance, session lifecycle, hierarchy, and persistence are stable.
 
-**Phase 3A: Research + Design**
-- Field-by-field divergence map for tasks, mems, hierarchy.
-- Winner strategy definition (`graph/` relational model as target, compatibility bridge where required).
-- 3-level cognitive to 6-level enterprise mapping contract.
+**Phase K5-R: Research**
+- Validate code-intel maturity gaps and tool-surface contract requirements.
+- Confirm overlap boundaries between soft-governance and tool-gate ownership.
+- Define agent/tool naming and envelope/versioning strategy.
 
-**Phase 3B: Implementation**
-- Migrate task and mem consumers onto unified contracts.
-- Add deterministic sync/conflict policy (or eliminate sync via true unification).
-- Split runtime metrics from persistent decision state.
-- Introduce graph query interface and event/audit mutation trail.
+**Phase K5-I: Implement**
+- Expand tool families (context purification, memory subtype, code-intel) and response envelope standards.
+- Resolve soft-governance/tool-gate overlap with explicit responsibility contract.
+- Implement code-intel maturity phases and agent-surface contract updates.
 
-**Phase 3C: Validation**
-- Migration tests (legacy state -> unified graph-backed representation).
-- Divergence simulation tests for conflict policy.
+**Phase K5-V: Validate**
+- Run tool and code-intel integration suites with governance overlap regression checks.
+- Verify agent/tool contract consistency across documentation and runtime registration.
 
-**Quality gate:** Dual-state hazards removed or explicitly bridged with tested reconciliation behavior.
-
-### Round 4: Architecture Repair (D3)
-**Goal:** Restore dependency direction, reduce LOC concentration risk, and modularize lib structure.
-**Duration:** 2-3 sessions
-**Prerequisites:** Round 3 complete.
-**Issues addressed:** CF-D3-01 through CF-D3-14, CF-D1-NEW-01, CF-D3-NEW-01
-
-**Phase 4A: SDK Access Root-Cause Repair**
-- Isolate SDK/shell dependencies into `src/lib/sdk/`.
-- Remove lib -> hooks upward imports in `compaction-engine`, `session-governance`, `auto-commit`.
-
-**Phase 4B: Large File Decomposition**
-- Split `graph-io.ts`, `graph-migrate.ts`, `hierarchy-tree.ts`, and additional >300 LOC hotspots.
-- Preserve behavior with incremental tsc/test checks after each split.
-
-**Phase 4C: Directory Restructuring**
-- Introduce domain directories for lib modules.
-- Migrate files with import-safe staged moves.
-
-**Phase 4D: Pattern Hardening**
-- Introduce DI/factory seams for high-coupling modules.
-- Standardize lib-layer error boundary behavior.
-
-**Quality gate:** No import-direction violations, modularized high-risk files, architecture checks green.
-
-### Round 5: Tools + Hooks Expansion (D4 + D5)
-**Goal:** Expand operational surface and convert governance from advisory to enforceable.
-**Duration:** 2-3 sessions
-**Prerequisites:** Round 4 complete.
-**Issues addressed:** CF-D4-01 through CF-D4-07, CF-D5-01 through CF-D5-07, CF-D5-NEW-01
-
-**Phase 5A: Tool-Gate Enforcement (critical knot)**
-- Implement hard policy decisions in `tool-gate.ts`.
-- Resolve duplicate first-turn handling and orphan hook registration paths.
-
-**Phase 5B: Tool Surface Expansion**
-- Add context purification, memory subtype, and code-intel tool families.
-- Standardize tool response envelope contract and deprecation metadata.
-
-**Phase 5C: Hook Reorganization**
-- Introduce hook domain directories and explicit ordering/priority contract.
-- Resolve overlap between soft governance and tool gate.
-
-**Quality gate:** Enforcement behavior testable and active; hook pipeline deterministic.
+**Quality gate:** Code-intel maturity milestones achieved with consistent tool/agent contracts, `npm test` + `npx tsc --noEmit` pass.
 
 ### Round 6: Framework Lifecycle (D6)
 **Goal:** Finalize framework lifecycle model and command/state transitions.
 **Duration:** 1-2 sessions
-**Prerequisites:** Round 5 complete.
-**Issues addressed:** CF-D6-01 through CF-D6-06
+**Prerequisites:** Knot 5 complete.
+**Issues addressed:** CF-D6-02 through CF-D6-06
 
 - Complete framework vision draft into enforceable lifecycle spec.
 - Merge duplicate enterprise workflows.
@@ -135,11 +164,11 @@
 
 **Quality gate:** Lifecycle flow is explicit, versioned, and command-complete for planned operation modes.
 
-### Round 7: Ecosystem Surface (D7 + D8 Surface)
+### Round 7: Ecosystem Surface (D7 + D8)
 **Goal:** Normalize skills/commands/agent contracts for reliable day-to-day operation.
 **Duration:** 2 sessions
 **Prerequisites:** Round 6 complete.
-**Issues addressed:** CF-D7-01 through CF-D7-06, CF-D8-04 through CF-D8-13, CF-D6-NEW-01, CF-D7-NEW-01, CF-D8-NEW-01
+**Issues addressed:** CF-D7-01 through CF-D7-06, CF-D8-04 through CF-D8-06, CF-D8-08 through CF-D8-13, CF-D6-NEW-01, CF-D7-NEW-01, CF-D8-NEW-01
 
 - Repair missing skill assets and define skill dependency declarations.
 - Rationalize command aliases and add command discovery.
@@ -152,9 +181,8 @@
 **Goal:** Complete platform hardening, observability, and integration confidence for v2.9 expansion.
 **Duration:** 2 sessions
 **Prerequisites:** Round 7 complete.
-**Issues addressed:** CF-D3-09, CF-D3-10, CF-D3-11, CF-D8-14, CF-D8-15, CF-D8-16
+**Issues addressed:** CF-D8-14, CF-D8-15, CF-D8-16
 
-- Complete code-intel maturity milestones.
 - Add agent versioning, health monitoring, and permission inheritance model.
 - Execute full integration test suite and release-safety checks.
 
@@ -163,63 +191,63 @@
 ## Issue-to-Round Traceability Matrix
 | Issue ID | Round | Phase | Task Description | Dependencies |
 |----------|-------|-------|------------------|--------------|
-| CF-D1-01 | 2 | 2B | Create TaskItem runtime Zod schema | Round 0 |
-| CF-D1-02 | 2 | 2B | Create BrainState runtime Zod schema | Round 0 |
-| CF-D1-03 | 2 | 2B | Create HierarchyState runtime Zod schema | Round 0 |
-| CF-D1-04 | 2 | 2B | Create Config runtime Zod schema | Round 0 |
-| CF-D1-05 | 2 | 2B | Add missing file-lock coverage for JSON state files | CF-D1-01..04 |
-| CF-D1-06 | 2 | 2B | Implement backup strategy for uncovered JSON files | CF-D1-05 |
-| CF-D1-07 | 2 | 2A | Expand schema coverage beyond graph-nodes.ts | CF-D1-01..04 |
-| CF-D1-08 | 2 | 2A | Define schema versioning + migration contract | CF-D1-07 |
-| CF-D1-09 | 2 | 2A | Introduce BaseNode shared schema conventions | CF-D1-07 |
-| CF-D1-10 | 2 | 2B | Add missing v2.9 entity schemas | CF-D1-08, CF-D1-09 |
-| CF-D1-NEW-01 | 4 | 4B | Decompose hierarchy-tree high-LOC hotspot into modules | Round 3 |
-| CF-D2-01 | 3 | 3B | Unify task state representations | Round 2 |
-| CF-D2-02 | 3 | 3B | Unify mem state representations | Round 2 |
-| CF-D2-03 | 3 | 3A | Define 3-level to 6-level hierarchy bridge | Round 2 |
-| CF-D2-04 | 3 | 3B | Implement deterministic synchronization or remove dual-path need | CF-D2-01..03 |
-| CF-D2-05 | 3 | 3B | Add conflict resolution policy for divergence | CF-D2-04 |
-| CF-D2-06 | 3 | 3B | Separate runtime metrics from persistent decisions in brain state | CF-D2-01 |
-| CF-D2-07 | 3 | 3B | Introduce graph query interface for relational state | CF-D2-01 |
-| CF-D2-08 | 3 | 3B | Enforce validation on state directory read paths | Round 2 |
-| CF-D2-09 | 3 | 3B | Add session retention/cleanup policy | CF-D2-04 |
-| CF-D2-10 | 3 | 3B | Add event sourcing/audit trail for state mutations | Round 2 |
-| CF-D2-NEW-01 | 2 | 2B | Add safeParse validation at persistence load boundary | Round 0 |
-| CF-D3-01 | 4 | 4B | Split graph-io into read/write/query/migrate operations | Round 3 |
-| CF-D3-02 | 4 | 4A | Remove compaction-engine import violation (lib -> hooks) | Round 3 |
-| CF-D3-03 | 4 | 4A | Remove session-governance import violation (lib -> hooks) | Round 3 |
-| CF-D3-04 | 4 | 4A | Remove auto-commit import violation (lib -> hooks) | Round 3 |
-| CF-D3-05 | 4 | 4A | Extract SDK access boundary into lib sdk module | CF-D3-02..04 |
-| CF-D3-06 | 4 | 4B | Decompose cognitive-packer/session-engine/hierarchy-tree hotspots | CF-D3-01 |
-| CF-D3-07 | 4 | 4B | Decompose remaining >300 LOC strategic hotspot modules | CF-D3-06 |
-| CF-D3-08 | 4 | 4C | Introduce sub-directory organization in src/lib | CF-D3-01 |
-| CF-D3-09 | 8 | 8A | Raise code-intel phase 1 quality (token/secret detector upgrades) | Round 7 |
-| CF-D3-10 | 8 | 8A | Implement phase 2 code-intel core features | CF-D3-09 |
-| CF-D3-11 | 8 | 8A | Complete phase 3 code-intel contracts (codemap/codewiki maturity) | CF-D3-10 |
-| CF-D3-12 | 4 | 4D | Add dependency injection/factory seams in lib layer | CF-D3-08 |
-| CF-D3-13 | 4 | 4D | Standardize lib error boundary behavior | CF-D3-08 |
-| CF-D3-14 | 4 | 4C | Execute proposed lib directory taxonomy | CF-D3-08 |
-| CF-D3-NEW-01 | 4 | 4B | Split graph-migrate into focused migration modules | Round 3 |
-| CF-D4-01 | 5 | 5B | Expand tool surface beyond 6 canonical tools | Round 4 |
-| CF-D4-02 | 5 | 5B | Add context purification tool family | CF-D4-01 |
-| CF-D4-03 | 5 | 5B | Add in-session memory subtype tools | CF-D4-01 |
-| CF-D4-04 | 5 | 5B | Add code-intel tool family | Round 4 |
-| CF-D4-05 | 5 | 5B | Standardize tool response envelopes | CF-D4-01 |
-| CF-D4-06 | 5 | 5B | Add tool versioning/deprecation mechanism | CF-D4-05 |
-| CF-D4-07 | 5 | 5B | Add tool composition pattern | CF-D4-05 |
-| CF-D5-01 | 5 | 5A | Implement hard enforcement in tool-gate | Round 4 |
-| CF-D5-02 | 5 | 5A | Remove duplicate first-turn handling paths | CF-D5-01 |
-| CF-D5-03 | 5 | 5A | Resolve session_coherence orphan registration gap | CF-D5-02 |
-| CF-D5-04 | 5 | 5C | Introduce hook sub-directory structure | Round 4 |
-| CF-D5-05 | 5 | 5C | Apply target hook taxonomy lifecycle/governance/context/events/infrastructure | CF-D5-04 |
-| CF-D5-06 | 5 | 5C | Resolve soft-governance and tool-gate responsibility overlap | CF-D5-01 |
-| CF-D5-07 | 5 | 5C | Add explicit hook priority/ordering mechanism | CF-D5-04 |
-| CF-D5-NEW-01 | 5 | 5A | Remove or register dead createMainSessionStartHook path | CF-D5-03 |
-| CF-D6-01 | 6 | 6A | Complete framework vision draft into executable spec | Round 5 |
-| CF-D6-02 | 6 | 6A | Merge duplicate enterprise workflow definitions | CF-D6-01 |
-| CF-D6-03 | 6 | 6B | Add missing GSD-equivalent lifecycle commands | CF-D6-01 |
+| CF-D1-01 | Knot 3 | K3-I | Create TaskItem runtime Zod schema | Knot 2 |
+| CF-D1-02 | Knot 4 | K4-I | Create BrainState runtime Zod schema | Knot 3 |
+| CF-D1-03 | Knot 4 | K4-I | Create HierarchyState runtime Zod schema | Knot 3 |
+| CF-D1-04 | Knot 4 | K4-I | Create Config runtime Zod schema | Knot 3 |
+| CF-D1-05 | Knot 4 | K4-I | Add missing file-lock coverage for JSON state files | CF-D1-02..04 |
+| CF-D1-06 | Knot 4 | K4-I | Implement backup strategy for uncovered JSON files | CF-D1-05 |
+| CF-D1-07 | Knot 3 | K3-R | Expand schema coverage beyond graph-nodes.ts for task hierarchy | CF-D1-01 |
+| CF-D1-08 | Knot 3 | K3-R | Define schema versioning + migration contract for planning entities | CF-D1-07 |
+| CF-D1-09 | Knot 3 | K3-R | Introduce BaseNode shared schema conventions for planning graph | CF-D1-07 |
+| CF-D1-10 | Knot 3 | K3-I | Add missing v2.9 task hierarchy schemas (Project/Milestone/SubTask) | CF-D1-08, CF-D1-09 |
+| CF-D1-NEW-01 | Knot 4 | K4-I | Decompose hierarchy-tree high-LOC hotspot into modules | Knot 3 |
+| CF-D2-01 | Knot 3 | K3-I | Unify task state representations | Knot 2 |
+| CF-D2-02 | Knot 4 | K4-I | Unify mem state representations | Knot 3 |
+| CF-D2-03 | Knot 1 | K1-I | Define 3-level to 6-level hierarchy bridge in constitutional checklist | Round 1 |
+| CF-D2-04 | Knot 3 | K3-I | Implement deterministic synchronization or remove dual-path need for tasks | CF-D2-01 |
+| CF-D2-05 | Knot 3 | K3-I | Add conflict resolution policy for task divergence | CF-D2-04 |
+| CF-D2-06 | Knot 2 | K2-I | Separate runtime metrics from persistent decisions in session intelligence flow | Knot 1 |
+| CF-D2-07 | Knot 3 | K3-I | Introduce graph query interface for relational task state | CF-D2-01 |
+| CF-D2-08 | Knot 1 | K1-I | Enforce validation on state directory read paths via checklist gate | Round 1 |
+| CF-D2-09 | Knot 2 | K2-I | Add session retention/cleanup policy | Knot 1 |
+| CF-D2-10 | Knot 2 | K2-I | Add event sourcing/audit trail for session/state mutations | Knot 1 |
+| CF-D2-NEW-01 | Knot 1 | K1-I | Add safeParse validation at persistence load boundary | Round 0 |
+| CF-D3-01 | Knot 4 | K4-I | Split graph-io into read/write/query/migrate operations | Knot 3 |
+| CF-D3-02 | Knot 4 | K4-I | Remove compaction-engine import violation (lib -> hooks) | Knot 3 |
+| CF-D3-03 | Knot 4 | K4-I | Remove session-governance import violation (lib -> hooks) | Knot 3 |
+| CF-D3-04 | Knot 4 | K4-I | Remove auto-commit import violation (lib -> hooks) | Knot 3 |
+| CF-D3-05 | Knot 4 | K4-I | Extract SDK access boundary into lib sdk module | CF-D3-02..04 |
+| CF-D3-06 | Knot 4 | K4-I | Decompose cognitive-packer/session-engine/hierarchy-tree hotspots | CF-D3-01 |
+| CF-D3-07 | Knot 4 | K4-I | Decompose remaining >300 LOC strategic hotspot modules | CF-D3-06 |
+| CF-D3-08 | Knot 4 | K4-I | Introduce sub-directory organization in src/lib | CF-D3-01 |
+| CF-D3-09 | Knot 5 | K5-I | Raise code-intel phase 1 quality (token/secret detector upgrades) | Knot 4 |
+| CF-D3-10 | Knot 5 | K5-I | Implement phase 2 code-intel core features | CF-D3-09 |
+| CF-D3-11 | Knot 5 | K5-I | Complete phase 3 code-intel contracts (codemap/codewiki maturity) | CF-D3-10 |
+| CF-D3-12 | Knot 4 | K4-I | Add dependency injection/factory seams in lib layer | CF-D3-08 |
+| CF-D3-13 | Knot 4 | K4-I | Standardize lib error boundary behavior | CF-D3-08 |
+| CF-D3-14 | Knot 4 | K4-I | Execute proposed lib directory taxonomy | CF-D3-08 |
+| CF-D3-NEW-01 | Knot 4 | K4-I | Split graph-migrate into focused migration modules | Knot 3 |
+| CF-D4-01 | Knot 5 | K5-I | Expand tool surface beyond 6 canonical tools | Knot 4 |
+| CF-D4-02 | Knot 5 | K5-I | Add context purification tool family | CF-D4-01 |
+| CF-D4-03 | Knot 5 | K5-I | Add in-session memory subtype tools | CF-D4-01 |
+| CF-D4-04 | Knot 5 | K5-I | Add code-intel tool family | Knot 4 |
+| CF-D4-05 | Knot 5 | K5-I | Standardize tool response envelopes | CF-D4-01 |
+| CF-D4-06 | Knot 5 | K5-I | Add tool versioning/deprecation mechanism | CF-D4-05 |
+| CF-D4-07 | Knot 5 | K5-I | Add tool composition pattern | CF-D4-05 |
+| CF-D5-01 | Knot 1 | K1-I | Implement constitutional hard-governance contract through tool-gate path | Round 1 |
+| CF-D5-02 | Knot 1 | K1-I | Remove duplicate first-turn handling paths | CF-D5-01 |
+| CF-D5-03 | Knot 1 | K1-I | Resolve session_coherence orphan registration gap | CF-D5-02 |
+| CF-D5-04 | Knot 2 | K2-I | Introduce hook sub-directory structure for session/compaction domain | Knot 1 |
+| CF-D5-05 | Knot 2 | K2-I | Apply hook taxonomy for lifecycle/governance/context/events/infrastructure | CF-D5-04 |
+| CF-D5-06 | Knot 5 | K5-I | Resolve soft-governance and tool-gate responsibility overlap | Knot 4 |
+| CF-D5-07 | Knot 1 | K1-I | Add explicit hook priority/ordering mechanism | CF-D5-01 |
+| CF-D5-NEW-01 | Knot 1 | K1-I | Remove or register dead createMainSessionStartHook path | CF-D5-03 |
+| CF-D6-01 | Knot 1 | K1-I | Complete framework constitutional slice into executable spec baseline | Round 1 |
+| CF-D6-02 | 6 | 6A | Merge duplicate enterprise workflow definitions | Knot 5 |
+| CF-D6-03 | 6 | 6B | Add missing GSD-equivalent lifecycle commands | CF-D6-02 |
 | CF-D6-04 | 6 | 6B | Add missing command groups (Code-Intel, Settings, Milestone, Phase) | CF-D6-03 |
-| CF-D6-05 | 6 | 6C | Define lifecycle state machine and transitions | CF-D6-01 |
+| CF-D6-05 | 6 | 6C | Define lifecycle state machine and transitions | CF-D6-02 |
 | CF-D6-06 | 6 | 6C | Add framework versioning + compatibility layer | CF-D6-05 |
 | CF-D6-NEW-01 | 7 | 7B | Standardize skill versioning policy in ecosystem contracts | Round 6 |
 | CF-D7-01 | 7 | 7A | Restore missing skill assets declared by SKILL.md contracts | Round 6 |
@@ -292,59 +320,59 @@ Commit Hash: [hash]
 - `CF-D8-NEW-02`: Duplicate frontmatter key defect in `hivefiver` agent config surfaced during D8 cleanup.
 
 ## Appendix B: Full Issue Coverage Verification
-- [ ] CF-D1-01 -> Round 2
-- [ ] CF-D1-02 -> Round 2
-- [ ] CF-D1-03 -> Round 2
-- [ ] CF-D1-04 -> Round 2
-- [ ] CF-D1-05 -> Round 2
-- [ ] CF-D1-06 -> Round 2
-- [ ] CF-D1-07 -> Round 2
-- [ ] CF-D1-08 -> Round 2
-- [ ] CF-D1-09 -> Round 2
-- [ ] CF-D1-10 -> Round 2
-- [ ] CF-D1-NEW-01 -> Round 4
-- [ ] CF-D2-01 -> Round 3
-- [ ] CF-D2-02 -> Round 3
-- [ ] CF-D2-03 -> Round 3
-- [ ] CF-D2-04 -> Round 3
-- [ ] CF-D2-05 -> Round 3
-- [ ] CF-D2-06 -> Round 3
-- [ ] CF-D2-07 -> Round 3
-- [ ] CF-D2-08 -> Round 3
-- [ ] CF-D2-09 -> Round 3
-- [ ] CF-D2-10 -> Round 3
-- [ ] CF-D2-NEW-01 -> Round 2
-- [ ] CF-D3-01 -> Round 4
-- [ ] CF-D3-02 -> Round 4
-- [ ] CF-D3-03 -> Round 4
-- [ ] CF-D3-04 -> Round 4
-- [ ] CF-D3-05 -> Round 4
-- [ ] CF-D3-06 -> Round 4
-- [ ] CF-D3-07 -> Round 4
-- [ ] CF-D3-08 -> Round 4
-- [ ] CF-D3-09 -> Round 8
-- [ ] CF-D3-10 -> Round 8
-- [ ] CF-D3-11 -> Round 8
-- [ ] CF-D3-12 -> Round 4
-- [ ] CF-D3-13 -> Round 4
-- [ ] CF-D3-14 -> Round 4
-- [ ] CF-D3-NEW-01 -> Round 4
-- [ ] CF-D4-01 -> Round 5
-- [ ] CF-D4-02 -> Round 5
-- [ ] CF-D4-03 -> Round 5
-- [ ] CF-D4-04 -> Round 5
-- [ ] CF-D4-05 -> Round 5
-- [ ] CF-D4-06 -> Round 5
-- [ ] CF-D4-07 -> Round 5
-- [ ] CF-D5-01 -> Round 5
-- [ ] CF-D5-02 -> Round 5
-- [ ] CF-D5-03 -> Round 5
-- [ ] CF-D5-04 -> Round 5
-- [ ] CF-D5-05 -> Round 5
-- [ ] CF-D5-06 -> Round 5
-- [ ] CF-D5-07 -> Round 5
-- [ ] CF-D5-NEW-01 -> Round 5
-- [ ] CF-D6-01 -> Round 6
+- [ ] CF-D1-01 -> Knot 3
+- [ ] CF-D1-02 -> Knot 4
+- [ ] CF-D1-03 -> Knot 4
+- [ ] CF-D1-04 -> Knot 4
+- [ ] CF-D1-05 -> Knot 4
+- [ ] CF-D1-06 -> Knot 4
+- [ ] CF-D1-07 -> Knot 3
+- [ ] CF-D1-08 -> Knot 3
+- [ ] CF-D1-09 -> Knot 3
+- [ ] CF-D1-10 -> Knot 3
+- [ ] CF-D1-NEW-01 -> Knot 4
+- [ ] CF-D2-01 -> Knot 3
+- [ ] CF-D2-02 -> Knot 4
+- [ ] CF-D2-03 -> Knot 1
+- [ ] CF-D2-04 -> Knot 3
+- [ ] CF-D2-05 -> Knot 3
+- [ ] CF-D2-06 -> Knot 2
+- [ ] CF-D2-07 -> Knot 3
+- [ ] CF-D2-08 -> Knot 1
+- [ ] CF-D2-09 -> Knot 2
+- [ ] CF-D2-10 -> Knot 2
+- [ ] CF-D2-NEW-01 -> Knot 1
+- [ ] CF-D3-01 -> Knot 4
+- [ ] CF-D3-02 -> Knot 4
+- [ ] CF-D3-03 -> Knot 4
+- [ ] CF-D3-04 -> Knot 4
+- [ ] CF-D3-05 -> Knot 4
+- [ ] CF-D3-06 -> Knot 4
+- [ ] CF-D3-07 -> Knot 4
+- [ ] CF-D3-08 -> Knot 4
+- [ ] CF-D3-09 -> Knot 5
+- [ ] CF-D3-10 -> Knot 5
+- [ ] CF-D3-11 -> Knot 5
+- [ ] CF-D3-12 -> Knot 4
+- [ ] CF-D3-13 -> Knot 4
+- [ ] CF-D3-14 -> Knot 4
+- [ ] CF-D3-NEW-01 -> Knot 4
+- [ ] CF-D4-01 -> Knot 5
+- [ ] CF-D4-02 -> Knot 5
+- [ ] CF-D4-03 -> Knot 5
+- [ ] CF-D4-04 -> Knot 5
+- [ ] CF-D4-05 -> Knot 5
+- [ ] CF-D4-06 -> Knot 5
+- [ ] CF-D4-07 -> Knot 5
+- [ ] CF-D5-01 -> Knot 1
+- [ ] CF-D5-02 -> Knot 1
+- [ ] CF-D5-03 -> Knot 1
+- [ ] CF-D5-04 -> Knot 2
+- [ ] CF-D5-05 -> Knot 2
+- [ ] CF-D5-06 -> Knot 5
+- [ ] CF-D5-07 -> Knot 1
+- [ ] CF-D5-NEW-01 -> Knot 1
+- [ ] CF-D6-01 -> Knot 1
 - [ ] CF-D6-02 -> Round 6
 - [ ] CF-D6-03 -> Round 6
 - [ ] CF-D6-04 -> Round 6
