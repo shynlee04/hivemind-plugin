@@ -16,12 +16,13 @@
 
 ## Execution Overview
 
-### Round 0: Quick Stabilization (P0 Safety Net)
+### Round 0: Quick Stabilization (P0 Safety Net) ✅ COMPLETE
 **Goal:** Remove immediate runtime/control-plane blockers without architecture redesign.
 **Duration:** 1 session
 **Issues addressed:** CF-D8-01, CF-D8-02, CF-D8-03, CF-D8-07, CF-D8-NEW-02
 **Why first:** These are direct runtime integrity failures (agent registration + malformed frontmatter) with low implementation risk and high unblock value.
 **Quality gate:** Missing agents visible in `opencode.json`, typo resolved, duplicate keys removed, `npm test` pass, `npx tsc --noEmit` clean.
+**Completed:** 2026-02-24 | Commit: `b3e704b` | All 5 fixes verified, quality gates green (180/181 tests, tsc clean).
 
 ### Round 1: Already Complete (Audit + Validation)
 **Goal:** Preserve validated audit baseline and issue taxonomy as execution source of truth.
@@ -228,13 +229,13 @@
 | CF-D7-05 | 7 | 7A | Add skill compatibility/version checks | CF-D7-04 |
 | CF-D7-06 | 7 | 7B | Implement command discovery mechanism | CF-D7-02 |
 | CF-D7-NEW-01 | 7 | 7B | Normalize alias command conventions and migration hints | CF-D7-02 |
-| CF-D8-01 | 0 | 0A | Register hiveminder in opencode.json | None |
-| CF-D8-02 | 0 | 0A | Register debug agent in opencode.json | None |
-| CF-D8-03 | 0 | 0A | Register hivemind-brownfield-orchestrator in opencode.json | None |
+| CF-D8-01 | 0 | 0A | ✅ Register hiveminder in opencode.json | None |
+| CF-D8-02 | 0 | 0A | ✅ Register debug agent in opencode.json | None |
+| CF-D8-03 | 0 | 0A | ✅ Register hivemind-brownfield-orchestrator in opencode.json | None |
 | CF-D8-04 | 7 | 7C | Align build agent mode contract across MD and JSON | Round 6 |
 | CF-D8-05 | 7 | 7C | Align code-review agent mode contract across MD and JSON | Round 6 |
 | CF-D8-06 | 7 | 7C | Align scanner hidden/mode contract across MD and JSON | Round 6 |
-| CF-D8-07 | 0 | 0A | Fix `alllow` typo in hivefiver agent frontmatter | None |
+| CF-D8-07 | 0 | 0A | ✅ Fix `alllow` typo in hivefiver agent frontmatter | None |
 | CF-D8-08 | 7 | 7C | Add explicit tools block for debug agent | CF-D8-02 |
 | CF-D8-09 | 7 | 7C | Define canonical agent directory and de-duplicate agent sources | CF-D8-04..08 |
 | CF-D8-10 | 7 | 7C | Decide and execute agent renaming cross-reference plan | CF-D8-09 |
@@ -245,7 +246,7 @@
 | CF-D8-15 | 8 | 8B | Add agent health/performance monitoring | Round 7 |
 | CF-D8-16 | 8 | 8B | Add permission inheritance model for agent configs | Round 7 |
 | CF-D8-NEW-01 | 7 | 7C | Resolve additional surfaced agent-config parity mismatch | Round 6 |
-| CF-D8-NEW-02 | 0 | 0A | Remove duplicate frontmatter keys in hivefiver agent file | None |
+| CF-D8-NEW-02 | 0 | 0A | ✅ Remove duplicate frontmatter keys in hivefiver agent file | None |
 
 ## Risk Register
 | Risk | Likelihood | Impact | Mitigation |
@@ -357,13 +358,13 @@ Commit Hash: [hash]
 - [ ] CF-D7-05 -> Round 7
 - [ ] CF-D7-06 -> Round 7
 - [ ] CF-D7-NEW-01 -> Round 7
-- [ ] CF-D8-01 -> Round 0
-- [ ] CF-D8-02 -> Round 0
-- [ ] CF-D8-03 -> Round 0
+- [x] CF-D8-01 -> Round 0 ✅ (b3e704b)
+- [x] CF-D8-02 -> Round 0 ✅ (b3e704b)
+- [x] CF-D8-03 -> Round 0 ✅ (b3e704b)
 - [ ] CF-D8-04 -> Round 7
 - [ ] CF-D8-05 -> Round 7
 - [ ] CF-D8-06 -> Round 7
-- [ ] CF-D8-07 -> Round 0
+- [x] CF-D8-07 -> Round 0 ✅ (b3e704b)
 - [ ] CF-D8-08 -> Round 7
 - [ ] CF-D8-09 -> Round 7
 - [ ] CF-D8-10 -> Round 7
@@ -374,6 +375,6 @@ Commit Hash: [hash]
 - [ ] CF-D8-15 -> Round 8
 - [ ] CF-D8-16 -> Round 8
 - [ ] CF-D8-NEW-01 -> Round 7
-- [ ] CF-D8-NEW-02 -> Round 0
+- [x] CF-D8-NEW-02 -> Round 0 ✅ (b3e704b)
 
 **Coverage check:** 84/84 issues assigned, 0 unassigned, 0 duplicate assignments.
