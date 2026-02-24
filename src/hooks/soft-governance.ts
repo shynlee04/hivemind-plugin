@@ -32,6 +32,7 @@ import {
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
 import { detectLongSession } from "../lib/long-session.js"
+import { evaluateEntityChecklist } from "../lib/entity-checklist.js"
 import { executeAutoCommit, extractModifiedFiles, shouldAutoCommit } from "../lib/auto-commit.js"
 import { getClient } from "./sdk-context.js"
 import { checkAndRecordToast, resetAllThrottles } from "../lib/toast-throttle.js"
@@ -324,6 +325,43 @@ export function createSoftGovernanceHook(
           tool_type_counts: detection.tool_type_counts,
           keyword_flags: detection.keyword_flags,
         },
+      }
+
+      // === K1-T07: Entity Checklist Governance Signal ===
+      // Evaluate entity checklist once per OPEN tool cycle.
+      // On failure, increment out_of_order OR evidence_pressure AT MOST ONCE.
+      if (state.session.governance_status === "OPEN") {
+        try {
+          const entityResult = await evaluateEntityChecklist(
+            directory,
+            state.session?.id || "unknown",
+            `tool-${input.tool}-${Date.now()}`,
+          )
+          if (!entityResult.passed) {
+            const failedKeys = entityResult.items
+              .filter(item => item.status === "fail")
+              .map(item => item.key)
+
+            // Determine which counter to increment based on failure type
+            // Missing hierarchy/action/config -> out_of_order (structural prerequisite)
+            // Missing anchors/mems/planning -> evidence_pressure (evidence gap)
+            const structuralKeys = ["hivemind_config", "hierarchy_chain", "active_action"]
+            const hasStructuralFailure = failedKeys.some(key => structuralKeys.includes(key))
+
+            if (hasStructuralFailure) {
+              counters = registerGovernanceSignal(counters, "out_of_order")
+            } else {
+              counters = registerGovernanceSignal(counters, "evidence_pressure")
+            }
+
+            await log.debug(
+              `K1-T07: Entity checklist failed (${failedKeys.join(", ")}). ` +
+              `Signal: ${hasStructuralFailure ? "out_of_order" : "evidence_pressure"}`,
+            )
+          }
+        } catch {
+          // P3: Entity checklist failure is non-fatal
+        }
       }
 
       // === Governance Violations ===
