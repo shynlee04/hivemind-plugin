@@ -34,6 +34,14 @@ type BrainLike = {
   }
 }
 
+interface ChecklistDigest {
+  passed: boolean
+  pass_count: number
+  warn_count: number
+  fail_count: number
+  missing_keys: string[]
+}
+
 type PhaseRaw = {
   id?: unknown
   title?: unknown
@@ -87,6 +95,10 @@ function buildEmptyStateXml(session: string): string {
     "    <mems count=\"0\" relevant=\"0\" />",
     "    <files_touched count=\"0\" />",
     "    <drift_score value=\"0\" />",
+    "    <checklist_passed value=\"false\" />",
+    "    <checklist_fail_count value=\"7\" />",
+    "    <checklist_warn_count value=\"0\" />",
+    "    <checklist_missing_keys value=\"all\" />",
     "  </context_summary>",
     "</hivemind_state>",
   ].join("\n")
@@ -104,6 +116,38 @@ function getDriftScore(projectRoot: string): number {
   }
 
   return drift
+}
+
+function getChecklistDigest(projectRoot: string): ChecklistDigest {
+  const paths = getEffectivePaths(projectRoot)
+
+  const hasBrain = existsSync(paths.brain)
+  const hasHierarchy = existsSync(paths.hierarchy)
+  const hasAnchors = existsSync(paths.anchors)
+
+  const checks: Array<[string, boolean]> = [
+    ["hivemind_config", existsSync(paths.config)],
+    ["planning_sot", existsSync(paths.plansManifest)],
+    ["hierarchy_chain", hasHierarchy],
+    ["anchors_presence", hasAnchors],
+    ["mems_presence", existsSync(paths.graphMems) || existsSync(paths.mems)],
+    ["active_action", hasBrain],
+    ["state_validation_ready", hasBrain && hasHierarchy && hasAnchors],
+  ]
+
+  const missing_keys = checks
+    .filter(([, passed]) => !passed)
+    .map(([key]) => key)
+  const fail_count = missing_keys.length
+  const pass_count = checks.length - fail_count
+
+  return {
+    passed: fail_count === 0,
+    pass_count,
+    warn_count: 0,
+    fail_count,
+    missing_keys,
+  }
 }
 
 function toPhaseNode(planId: string, raw: PhaseRaw): PhaseNode | null {
@@ -314,6 +358,7 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
 
   const fileCount = new Set(activeTasks.flatMap((task) => task.file_locks)).size
   const driftScore = getDriftScore(projectRoot)
+  const checklistDigest = getChecklistDigest(projectRoot)
   const timestamp = latestTimestamp([
     trajectory.updated_at,
     activePlan?.updated_at,
@@ -384,7 +429,18 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
 
   // Calculate current XML size without mems
   const baseXml = lines.join("\n")
-  const closingTags = ["  <context_summary>", `    <mems count="${freshMems.length}" relevant="${relatedMems.length}" />`, `    <files_touched count="${fileCount}" />`, `    <drift_score value="${driftScore}" />`, "  </context_summary>", "</hivemind_state>"].join("\n")
+  const closingTags = [
+    "  <context_summary>",
+    `    <mems count="${freshMems.length}" relevant="${relatedMems.length}" />`,
+    `    <files_touched count="${fileCount}" />`,
+    `    <drift_score value="${driftScore}" />`,
+    `    <checklist_passed value="${checklistDigest.passed}" />`,
+    `    <checklist_fail_count value="${checklistDigest.fail_count}" />`,
+    `    <checklist_warn_count value="${checklistDigest.warn_count}" />`,
+    `    <checklist_missing_keys value="${escapeXml(checklistDigest.missing_keys.join(","))}" />`,
+    "  </context_summary>",
+    "</hivemind_state>",
+  ].join("\n")
   const baseSize = baseXml.length + closingTags.length + 1 // +1 for newline before closing
 
   // US-013: Budget-based compression - drop lowest relevance mems first
@@ -456,6 +512,10 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
   lines.push(`    <mems count="${freshMems.length}" relevant="${relatedMems.length}" />`)
   lines.push(`    <files_touched count="${fileCount}" />`)
   lines.push(`    <drift_score value="${driftScore}" />`)
+  lines.push(`    <checklist_passed value="${checklistDigest.passed}" />`)
+  lines.push(`    <checklist_fail_count value="${checklistDigest.fail_count}" />`)
+  lines.push(`    <checklist_warn_count value="${checklistDigest.warn_count}" />`)
+  lines.push(`    <checklist_missing_keys value="${escapeXml(checklistDigest.missing_keys.join(","))}" />`)
   lines.push("  </context_summary>")
   lines.push("</hivemind_state>")
 
