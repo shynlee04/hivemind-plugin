@@ -2,7 +2,7 @@
 name: scanner
 description: Hidden scanner subagent for deep investigation, memory retrieval, and comprehensive search operations. Use for complex scanning tasks, retracing memory, and thorough codebase analysis.
 mode: subagent
-model: chutes/zai-org/GLM-5-TEE
+model: chutes/MiniMaxAI/MiniMax-M2.5-TEE
 hidden: false
 tools:
   read: true

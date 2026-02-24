@@ -30,11 +30,6 @@
 **Reference:** `docs/plans/2026-02-24-v29-domain-audit.md`
 **Quality gate:** Source-of-truth report accepted as baseline for all downstream rounds.
 
-### Restructuring Note (2026-02-24)
-- Rounds 2-5 are replaced by domain-knots that co-design schemas, hooks, and libs in vertical slices instead of layer-by-layer waves.
-- This follows the validated execution philosophy: "Find the entry, define the absolutes, address one node horizontally and vertically without gaps, solve one complete smallest knot before spreading to neighbors."
-- Knots 1-5 are domain-focused vertical slices; Rounds 6-8 remain broader lifecycle, ecosystem, and hardening passes.
-
 ### Knot 1: Context Constitution
 **Goal:** Establish sticky constitutional governance and deterministic prompt transformation contracts at turn level.
 **Duration:** 2 sessions
@@ -59,222 +54,173 @@
 
 **Quality gate:** Constitutional marker deterministic, first-turn duplication removed, checklist contract enforced, `npm test` + `npx tsc --noEmit` pass.
 
-### Knot 2: Session Intelligence
-**Goal:** Implement auto-new-session and compaction/session-export intelligence with SDK-safe constraints.
+### Hybrid 5-Phase Restructuring (2026-02-24)
+
+> **Decision:** The sequential knot model (K2->K3->K4->K5->R6->R7->R8) is replaced by a hybrid 5-phase approach that delivers user-visible value earlier, weaves code-intel and framework spec progressively, and includes TUI MVP as an explicit deliverable.
+>
+> **Rationale:**
+> - Knot plan pushed 5 priority hooks to session 4+; hybrid delivers them by session 3
+> - Code-intel Phase 1 is ALREADY COMPLETE (8 files, 467 LOC, 7 test suites) - plan was treating it as future work
+> - Sequential K3->K4 wall (5-7 sessions) between hooks and differentiating features
+> - TUI MVP had no knot assignment; now explicit in Phase E
+> - SDK capability correction (ctx.client = full SDK) enables Auto New Session in Phase B
+>
+> **Coverage:** All 84 original issues retained. 0 dropped. Remapped to 5 phases.
+
+### Phase B: Session Intelligence
+**Goal:** Implement auto-new-session, compaction intelligence, session export/cleanup - delivering 4/5 priority hooks.
 **Duration:** 2 sessions
-**Prerequisites:** Knot 1 complete.
+**Prerequisites:** Phase A (Verify & Clean) complete.
 **Issues addressed:** CF-D2-06, CF-D2-09, CF-D2-10, CF-D5-04, CF-D5-05
-**Why this order:** Session compaction/lifecycle continuity depends on Knot 1 constitutional identity and checklist continuity marker.
+**Why this order:** These are the user's daily pain points. Auto-new-session is NOW FEASIBLE via plugin `ctx.client.session.create()` (SDK correction applied). Compaction intelligence depends on K1 constitutional identity. Delivers 4/5 priority hooks by session 3.
 
-**Phase K2-R: Research**
+**Priority Hooks Delivered:**
+| Hook | Status |
+|------|--------|
+| 1. Auto new-session | ✅ Ships here |
+| 2. Sticky system instruction | ✅ K1 DONE |
+| 3. Improved compact | ✅ Ships here |
+| 4. Improved last-message output | ✅ Ships here |
+| 5. Context-first prompt transform | ✅ K1 DONE |
+
+**Phase B-R: Research**
 - Review `experimental.session.compacting` behavior for context-doctor, navigation, mapping, and turn-anchoring contracts.
-- Confirm defensive rules: no auto-compact at >=80% context, no compact during child delegations, max 3 compacts then auto-new-session on the 4th trigger.
-- Validate constraint boundary: plugins cannot create sessions programmatically.
+- Confirm defensive rules: no auto-compact at >=80% context, no compact during child delegations, max 3 compacts then auto-new-session on 4th trigger.
+- Validate `ctx.client.session.create()` for auto-new-session flow with policy gating.
 
-**Phase K2-I: Implement**
+**Phase B-I: Implement**
 - Implement compact-trigger flow that escalates to auto-new-session under policy thresholds.
-- Reorganize compaction/session hooks into explicit lifecycle domain boundaries.
-- Add session retention/cleanup and mutation audit trail behavior tied to compact lifecycle.
+- Reorganize compaction/session hooks into explicit lifecycle domain boundaries (CF-D5-04, CF-D5-05).
+- Add session retention/cleanup and mutation audit trail (CF-D2-09, CF-D2-10).
+- Separate runtime metrics from persistent decisions (CF-D2-06).
 
-**Phase K2-V: Validate**
+**Phase B-V: Validate**
 - Run compaction journey tests for normal, blocked, and forced-new-session scenarios.
-- Verify no programmatic session creation path is introduced by plugin logic.
+- Verify plugin-driven session lifecycle path is explicit, policy-gated, and audited.
 
-**Quality gate:** Compaction policy deterministic, export continuity preserved, session lifecycle constraints enforced, `npm test` + `npx tsc --noEmit` pass.
+**Quality gate:** Compaction policy deterministic, 5/5 priority hooks verified, export continuity preserved, `npm test` + `npx tsc --noEmit` pass.
 
-### Knot 3: Task Hierarchy & Planning Framework
-**Goal:** Deliver hierarchical task schema and planning SOT task-state contracts.
+---
+
+### Phase C: Framework Spine + Code-Intel Integration
+**Goal:** Deliver hierarchical task schemas CO-DESIGNED with framework lifecycle, complete framework spec outline sections, and integrate code-intel Phase 1 (already implemented) into the framework.
 **Duration:** 2-3 sessions
-**Prerequisites:** Knot 2 complete.
-**Issues addressed:** CF-D1-01, CF-D1-07, CF-D1-08, CF-D1-09, CF-D1-10, CF-D2-01, CF-D2-04, CF-D2-05, CF-D2-07
-**Why this order:** Hierarchical planning requires stable constitutional context (K1) and reliable session boundaries/compaction semantics (K2).
+**Prerequisites:** Phase B complete.
+**Issues addressed:** CF-D1-01, CF-D1-07, CF-D1-08, CF-D1-09, CF-D1-10, CF-D2-01, CF-D2-04, CF-D2-05, CF-D2-07, CF-D3-09
+**Why this order:** Merges the best of old Knot 3 (task hierarchy) with framework spec completion and code-intel Phase 1 integration. Schemas are CO-DESIGNED with framework lifecycle rather than created in isolation.
 
-**Phase K3-R: Research**
+**Key Insight:** Code-intel Phase 1 is ALREADY COMPLETE (467 LOC, 8 files, 7 test suites). This phase integrates it into the framework rather than building it from scratch. CF-D3-09 moves here from old Knot 5.
+
+**Phase C-R: Research**
 - Confirm task/planning source-of-truth boundaries and current graph query needs.
-- Design task hierarchy contracts across Project, Milestone, TaskItem, and SubTask.
-- Validate migration approach from existing task representations.
+- Design task hierarchy contracts across Project, Milestone, TaskItem, and SubTask CO-DESIGNED with framework lifecycle model.
+- Complete 3 outline framework spec sections (`forming-the-own-framework.md`).
+- Plan code-intel Phase 1 integration points (tool surface, cognitive packer, governance hooks).
 
-**Phase K3-I: Implement**
-- Implement task schema expansions and planning hierarchy contract.
-- Unify task-state representation and introduce deterministic synchronization/conflict policy.
-- Add graph query interface for hierarchical task retrieval.
+**Phase C-I: Implement**
+- Implement task schema expansions and planning hierarchy contract (CF-D1-01, CF-D1-07-10).
+- Unify task-state representation with deterministic sync/conflict policy (CF-D2-01, CF-D2-04, CF-D2-05).
+- Add graph query interface for hierarchical task retrieval (CF-D2-07).
+- Raise code-intel Phase 1 quality - token/secret detector upgrades (CF-D3-09).
+- Define command groups + workflow chains + agent architecture in framework spec.
 
-**Phase K3-V: Validate**
+**Phase C-V: Validate**
 - Run migration and reconciliation tests for task hierarchy transitions.
 - Verify planning artifacts align with one task-state source of truth.
+- Confirm code-intel Phase 1 integration with framework contracts.
 
-**Quality gate:** Task hierarchy works end-to-end with deterministic sync/query behavior, `npm test` + `npx tsc --noEmit` pass.
+**Quality gate:** Task hierarchy works end-to-end, framework spec outline sections complete, code-intel integrated, `npm test` + `npx tsc --noEmit` pass.
 
-### Knot 4: State Unification & Persistence
-**Goal:** Refactor Brain/State persistence contracts into one validated architecture with safety guardrails.
-**Duration:** 3-4 sessions
-**Prerequisites:** Knot 3 complete.
-**Issues addressed:** CF-D1-02, CF-D1-03, CF-D1-04, CF-D1-05, CF-D1-06, CF-D1-NEW-01, CF-D2-02, CF-D3-01 through CF-D3-08, CF-D3-12, CF-D3-13, CF-D3-14, CF-D3-NEW-01
-**Why this order:** State unification is cross-cutting and high-risk; it should follow stabilized governance/session/task contracts from Knots 1-3.
+---
 
-**Phase K4-R: Research**
+### Phase D: State Unification + Architecture Repair
+**Goal:** Unify Brain/State persistence with FRAMEWORK-INFORMED contracts, repair import direction violations, decompose high-LOC modules, and advance code-intel Phase 2.
+**Duration:** 2 sessions
+**Prerequisites:** Phase C complete.
+**Issues addressed:** CF-D1-02, CF-D1-03, CF-D1-04, CF-D1-05, CF-D1-06, CF-D1-NEW-01, CF-D2-02, CF-D3-01, CF-D3-02, CF-D3-03, CF-D3-04, CF-D3-05, CF-D3-06, CF-D3-07, CF-D3-08, CF-D3-12, CF-D3-13, CF-D3-14, CF-D3-NEW-01, CF-D3-10
+**Why this order:** State unification is high-risk and cross-cutting - it follows stabilized governance/session/task contracts from Phases A-C. Code-intel Phase 2 (compression + incremental) overlaps here since it touches the same architecture layer.
+
+**Phase D-R: Research**
 - Build divergence map for brain, hierarchy, mem, and persistence safety gaps.
 - Identify import-direction and high-LOC architecture violations for staged repair.
 - Define decomposition boundaries and DI seam targets.
+- Plan code-intel Phase 2 features (tree-sitter compression, incremental updates).
 
-**Phase K4-I: Implement**
-- Unify mem/brain/hierarchy persistence contracts with runtime validation safety.
-- Repair import-direction violations and decompose high-LOC modules.
-- Add file-lock/backup hardening and directory/domain restructuring.
+**Phase D-I: Implement**
+- Create BrainState, HierarchyState, Config runtime Zod schemas (CF-D1-02, CF-D1-03, CF-D1-04).
+- Add file-lock coverage and backup strategy (CF-D1-05, CF-D1-06).
+- Split graph-io into read/write/query/migrate operations (CF-D3-01).
+- Remove import-direction violations: compaction-engine, session-governance, auto-commit (CF-D3-02, CF-D3-03, CF-D3-04).
+- Extract SDK access boundary into lib sdk module (CF-D3-05).
+- Decompose high-LOC modules (CF-D3-06, CF-D3-07, CF-D1-NEW-01).
+- Execute lib directory taxonomy and sub-directory organization (CF-D3-08, CF-D3-14).
+- Add DI/factory seams and standardize error boundaries (CF-D3-12, CF-D3-13).
+- Unify mem state representations (CF-D2-02).
+- Split graph-migrate into focused modules (CF-D3-NEW-01).
+- Implement code-intel Phase 2 core features (CF-D3-10).
 
-**Phase K4-V: Validate**
+**Phase D-V: Validate**
 - Execute migration/regression tests across legacy and unified state paths.
-- Verify architecture checks for dependency direction, decomposition integrity, and error boundary consistency.
+- Verify architecture for dependency direction, decomposition integrity, error boundary consistency.
+- Confirm code-intel Phase 2 features with compression benchmarks.
 
-**Quality gate:** Unified validated state model with architecture violations resolved and persistence safety hardened, `npm test` + `npx tsc --noEmit` pass.
+**Quality gate:** Unified validated state model, architecture violations resolved, persistence hardened, code-intel Phase 2 delivered, `npm test` + `npx tsc --noEmit` pass.
 
-### Knot 5: Code Intelligence & Ecosystem Surface
-**Goal:** Deliver code-intel maturity and tool/agent surface expansion on top of stabilized core architecture.
+---
+
+### Phase E: Surface Expansion + TUI MVP
+**Goal:** Expand tool/agent surface, finalize framework lifecycle, deliver code-intel Phase 3, agent renaming, ecosystem normalization, and OpenTUI sidecar dashboard MVP. BOTH big v2.9 goals converge here.
 **Duration:** 2-3 sessions
-**Prerequisites:** Knot 4 complete.
-**Issues addressed:** CF-D4-01 through CF-D4-07, CF-D5-06, CF-D3-09, CF-D3-10, CF-D3-11
-**Why this order:** Surface-area expansion is safest after governance, session lifecycle, hierarchy, and persistence are stable.
+**Prerequisites:** Phase D complete.
+**Issues addressed:** CF-D3-11, CF-D4-01, CF-D4-02, CF-D4-03, CF-D4-04, CF-D4-05, CF-D4-06, CF-D4-07, CF-D5-06, CF-D6-02, CF-D6-03, CF-D6-04, CF-D6-05, CF-D6-06, CF-D6-NEW-01, CF-D7-01, CF-D7-02, CF-D7-03, CF-D7-04, CF-D7-05, CF-D7-06, CF-D7-NEW-01, CF-D8-04, CF-D8-05, CF-D8-06, CF-D8-08, CF-D8-09, CF-D8-10, CF-D8-11, CF-D8-12, CF-D8-13, CF-D8-14, CF-D8-15, CF-D8-16, CF-D8-NEW-01
+**Why this order:** Surface-area expansion + TUI require stable data contracts (delivered by Phases B-D). Framework lifecycle, ecosystem normalization, and hardening finalize the release.
 
-**Phase K5-R: Research**
-- Validate code-intel maturity gaps and tool-surface contract requirements.
+**Phase E-R: Research**
+- Validate code-intel Phase 3 contract requirements (codemap/codewiki maturity).
+- Design OpenTUI sidecar architecture (data contracts, event bus, component structure).
 - Confirm overlap boundaries between soft-governance and tool-gate ownership.
-- Define agent/tool naming and envelope/versioning strategy.
+- Define agent renaming cross-reference plan and capability matrix.
 
-**Phase K5-I: Implement**
-- Expand tool families (context purification, memory subtype, code-intel) and response envelope standards.
-- Resolve soft-governance/tool-gate overlap with explicit responsibility contract.
-- Implement code-intel maturity phases and agent-surface contract updates.
+**Phase E-I: Implement**
+Sub-phase E1: Tool + Code-Intel Surface
+- Expand tool families: context purification, memory subtype, code-intel (CF-D4-01, CF-D4-02, CF-D4-03, CF-D4-04).
+- Standardize tool response envelopes + versioning/deprecation + composition (CF-D4-05, CF-D4-06, CF-D4-07).
+- Resolve soft-governance/tool-gate overlap (CF-D5-06).
+- Complete code-intel Phase 3 contracts (CF-D3-11).
 
-**Phase K5-V: Validate**
-- Run tool and code-intel integration suites with governance overlap regression checks.
-- Verify agent/tool contract consistency across documentation and runtime registration.
+Sub-phase E2: Framework Lifecycle + Ecosystem
+- Complete framework lifecycle spec into enforceable model (CF-D6-02, CF-D6-03, CF-D6-04, CF-D6-05, CF-D6-06).
+- Normalize skills/commands/agent contracts (CF-D7-01 through CF-D7-06, CF-D7-NEW-01, CF-D6-NEW-01).
+- Rationalize command aliases, add command discovery (CF-D7-02, CF-D7-06).
+- Align agent mode contracts, add agent capability matrix + handoff protocol (CF-D8-04 through CF-D8-13, CF-D8-NEW-01).
 
-**Quality gate:** Code-intel maturity milestones achieved with consistent tool/agent contracts, `npm test` + `npx tsc --noEmit` pass.
+Sub-phase E3: TUI MVP + Hardening
+- Design and implement OpenTUI sidecar dashboard MVP (hierarchy view, session monitor, governance indicators).
+- Agent renaming execution (build->hivemaker, etc.) (CF-D8-10).
+- Add agent versioning, health monitoring, permission inheritance (CF-D8-14, CF-D8-15, CF-D8-16).
+- Full integration testing and release-safety checks.
 
-### Round 6: Framework Lifecycle (D6)
-**Goal:** Finalize framework lifecycle model and command/state transitions.
-**Duration:** 1-2 sessions
-**Prerequisites:** Knot 5 complete.
-**Issues addressed:** CF-D6-02 through CF-D6-06
+**Phase E-V: Validate**
+- Run tool and code-intel integration suites.
+- Verify framework lifecycle state machine transitions.
+- TUI component tests and visual verification.
+- Full integration suite + `npm run guard:public`.
 
-- Complete framework vision draft into enforceable lifecycle spec.
-- Merge duplicate enterprise workflows.
-- Add missing lifecycle command families and state machine transition rules.
-- Introduce framework versioning/compatibility contract.
+**Quality gate:** All tool/agent contracts consistent, framework lifecycle executable, TUI MVP functional, code-intel Phase 3 complete, integration suite green, `npm test` + `npx tsc --noEmit` + `npm run guard:public` pass.
 
-**Quality gate:** Lifecycle flow is explicit, versioned, and command-complete for planned operation modes.
+---
 
-### Round 7: Ecosystem Surface (D7 + D8)
-**Goal:** Normalize skills/commands/agent contracts for reliable day-to-day operation.
-**Duration:** 2 sessions
-**Prerequisites:** Round 6 complete.
-**Issues addressed:** CF-D7-01 through CF-D7-06, CF-D8-04 through CF-D8-06, CF-D8-08 through CF-D8-13, CF-D6-NEW-01, CF-D7-NEW-01, CF-D8-NEW-01
+## Issue-to-Phase Traceability Matrix
+| Assignment | Issues | Count | Status |
+|------------|--------|-------|--------|
+| Round 0 | CF-D8-01, CF-D8-02, CF-D8-03, CF-D8-07, CF-D8-NEW-02 | 5 | ✅ COMPLETE |
+| Knot 1 | CF-D5-01, CF-D5-02, CF-D5-03, CF-D5-07, CF-D5-NEW-01, CF-D2-03, CF-D2-08, CF-D2-NEW-01, CF-D6-01 | 9 | ✅ COMPLETE |
+| Phase B | CF-D2-06, CF-D2-09, CF-D2-10, CF-D5-04, CF-D5-05 | 5 | Planned |
+| Phase C | CF-D1-01, CF-D1-07, CF-D1-08, CF-D1-09, CF-D1-10, CF-D2-01, CF-D2-04, CF-D2-05, CF-D2-07, CF-D3-09 | 10 | Planned |
+| Phase D | CF-D1-02, CF-D1-03, CF-D1-04, CF-D1-05, CF-D1-06, CF-D1-NEW-01, CF-D2-02, CF-D3-01, CF-D3-02, CF-D3-03, CF-D3-04, CF-D3-05, CF-D3-06, CF-D3-07, CF-D3-08, CF-D3-12, CF-D3-13, CF-D3-14, CF-D3-NEW-01, CF-D3-10 | 20 | Planned |
+| Phase E | CF-D3-11, CF-D4-01, CF-D4-02, CF-D4-03, CF-D4-04, CF-D4-05, CF-D4-06, CF-D4-07, CF-D5-06, CF-D6-02, CF-D6-03, CF-D6-04, CF-D6-05, CF-D6-06, CF-D6-NEW-01, CF-D7-01, CF-D7-02, CF-D7-03, CF-D7-04, CF-D7-05, CF-D7-06, CF-D7-NEW-01, CF-D8-04, CF-D8-05, CF-D8-06, CF-D8-08, CF-D8-09, CF-D8-10, CF-D8-11, CF-D8-12, CF-D8-13, CF-D8-14, CF-D8-15, CF-D8-16, CF-D8-NEW-01 | 35 | Planned |
 
-- Repair missing skill assets and define skill dependency declarations.
-- Rationalize command aliases and add command discovery.
-- Fix mode/config mismatches and introduce capability matrix + handoff protocol.
-- Implement `hiveplanner` and finalize naming/conventions decision paths.
-
-**Quality gate:** Skills and commands are discoverable, consistent, and agent contracts are explicit.
-
-### Round 8: Hardening + Integration Testing
-**Goal:** Complete platform hardening, observability, and integration confidence for v2.9 expansion.
-**Duration:** 2 sessions
-**Prerequisites:** Round 7 complete.
-**Issues addressed:** CF-D8-14, CF-D8-15, CF-D8-16
-
-- Add agent versioning, health monitoring, and permission inheritance model.
-- Execute full integration test suite and release-safety checks.
-
-**Quality gate:** Integration suite green, observability in place, branch/public guard verified.
-
-## Issue-to-Round Traceability Matrix
-| Issue ID | Round | Phase | Task Description | Dependencies |
-|----------|-------|-------|------------------|--------------|
-| CF-D1-01 | Knot 3 | K3-I | Create TaskItem runtime Zod schema | Knot 2 |
-| CF-D1-02 | Knot 4 | K4-I | Create BrainState runtime Zod schema | Knot 3 |
-| CF-D1-03 | Knot 4 | K4-I | Create HierarchyState runtime Zod schema | Knot 3 |
-| CF-D1-04 | Knot 4 | K4-I | Create Config runtime Zod schema | Knot 3 |
-| CF-D1-05 | Knot 4 | K4-I | Add missing file-lock coverage for JSON state files | CF-D1-02..04 |
-| CF-D1-06 | Knot 4 | K4-I | Implement backup strategy for uncovered JSON files | CF-D1-05 |
-| CF-D1-07 | Knot 3 | K3-R | Expand schema coverage beyond graph-nodes.ts for task hierarchy | CF-D1-01 |
-| CF-D1-08 | Knot 3 | K3-R | Define schema versioning + migration contract for planning entities | CF-D1-07 |
-| CF-D1-09 | Knot 3 | K3-R | Introduce BaseNode shared schema conventions for planning graph | CF-D1-07 |
-| CF-D1-10 | Knot 3 | K3-I | Add missing v2.9 task hierarchy schemas (Project/Milestone/SubTask) | CF-D1-08, CF-D1-09 |
-| CF-D1-NEW-01 | Knot 4 | K4-I | Decompose hierarchy-tree high-LOC hotspot into modules | Knot 3 |
-| CF-D2-01 | Knot 3 | K3-I | Unify task state representations | Knot 2 |
-| CF-D2-02 | Knot 4 | K4-I | Unify mem state representations | Knot 3 |
-| CF-D2-03 | Knot 1 | K1-I | Define 3-level to 6-level hierarchy bridge in constitutional checklist | Round 1 |
-| CF-D2-04 | Knot 3 | K3-I | Implement deterministic synchronization or remove dual-path need for tasks | CF-D2-01 |
-| CF-D2-05 | Knot 3 | K3-I | Add conflict resolution policy for task divergence | CF-D2-04 |
-| CF-D2-06 | Knot 2 | K2-I | Separate runtime metrics from persistent decisions in session intelligence flow | Knot 1 |
-| CF-D2-07 | Knot 3 | K3-I | Introduce graph query interface for relational task state | CF-D2-01 |
-| CF-D2-08 | Knot 1 | K1-I | Enforce validation on state directory read paths via checklist gate | Round 1 |
-| CF-D2-09 | Knot 2 | K2-I | Add session retention/cleanup policy | Knot 1 |
-| CF-D2-10 | Knot 2 | K2-I | Add event sourcing/audit trail for session/state mutations | Knot 1 |
-| CF-D2-NEW-01 | Knot 1 | K1-I | Add safeParse validation at persistence load boundary | Round 0 |
-| CF-D3-01 | Knot 4 | K4-I | Split graph-io into read/write/query/migrate operations | Knot 3 |
-| CF-D3-02 | Knot 4 | K4-I | Remove compaction-engine import violation (lib -> hooks) | Knot 3 |
-| CF-D3-03 | Knot 4 | K4-I | Remove session-governance import violation (lib -> hooks) | Knot 3 |
-| CF-D3-04 | Knot 4 | K4-I | Remove auto-commit import violation (lib -> hooks) | Knot 3 |
-| CF-D3-05 | Knot 4 | K4-I | Extract SDK access boundary into lib sdk module | CF-D3-02..04 |
-| CF-D3-06 | Knot 4 | K4-I | Decompose cognitive-packer/session-engine/hierarchy-tree hotspots | CF-D3-01 |
-| CF-D3-07 | Knot 4 | K4-I | Decompose remaining >300 LOC strategic hotspot modules | CF-D3-06 |
-| CF-D3-08 | Knot 4 | K4-I | Introduce sub-directory organization in src/lib | CF-D3-01 |
-| CF-D3-09 | Knot 5 | K5-I | Raise code-intel phase 1 quality (token/secret detector upgrades) | Knot 4 |
-| CF-D3-10 | Knot 5 | K5-I | Implement phase 2 code-intel core features | CF-D3-09 |
-| CF-D3-11 | Knot 5 | K5-I | Complete phase 3 code-intel contracts (codemap/codewiki maturity) | CF-D3-10 |
-| CF-D3-12 | Knot 4 | K4-I | Add dependency injection/factory seams in lib layer | CF-D3-08 |
-| CF-D3-13 | Knot 4 | K4-I | Standardize lib error boundary behavior | CF-D3-08 |
-| CF-D3-14 | Knot 4 | K4-I | Execute proposed lib directory taxonomy | CF-D3-08 |
-| CF-D3-NEW-01 | Knot 4 | K4-I | Split graph-migrate into focused migration modules | Knot 3 |
-| CF-D4-01 | Knot 5 | K5-I | Expand tool surface beyond 6 canonical tools | Knot 4 |
-| CF-D4-02 | Knot 5 | K5-I | Add context purification tool family | CF-D4-01 |
-| CF-D4-03 | Knot 5 | K5-I | Add in-session memory subtype tools | CF-D4-01 |
-| CF-D4-04 | Knot 5 | K5-I | Add code-intel tool family | Knot 4 |
-| CF-D4-05 | Knot 5 | K5-I | Standardize tool response envelopes | CF-D4-01 |
-| CF-D4-06 | Knot 5 | K5-I | Add tool versioning/deprecation mechanism | CF-D4-05 |
-| CF-D4-07 | Knot 5 | K5-I | Add tool composition pattern | CF-D4-05 |
-| CF-D5-01 | Knot 1 | K1-I | Implement constitutional hard-governance contract through tool-gate path | Round 1 |
-| CF-D5-02 | Knot 1 | K1-I | Remove duplicate first-turn handling paths | CF-D5-01 |
-| CF-D5-03 | Knot 1 | K1-I | Resolve session_coherence orphan registration gap | CF-D5-02 |
-| CF-D5-04 | Knot 2 | K2-I | Introduce hook sub-directory structure for session/compaction domain | Knot 1 |
-| CF-D5-05 | Knot 2 | K2-I | Apply hook taxonomy for lifecycle/governance/context/events/infrastructure | CF-D5-04 |
-| CF-D5-06 | Knot 5 | K5-I | Resolve soft-governance and tool-gate responsibility overlap | Knot 4 |
-| CF-D5-07 | Knot 1 | K1-I | Add explicit hook priority/ordering mechanism | CF-D5-01 |
-| CF-D5-NEW-01 | Knot 1 | K1-I | Remove or register dead createMainSessionStartHook path | CF-D5-03 |
-| CF-D6-01 | Knot 1 | K1-I | Complete framework constitutional slice into executable spec baseline | Round 1 |
-| CF-D6-02 | 6 | 6A | Merge duplicate enterprise workflow definitions | Knot 5 |
-| CF-D6-03 | 6 | 6B | Add missing GSD-equivalent lifecycle commands | CF-D6-02 |
-| CF-D6-04 | 6 | 6B | Add missing command groups (Code-Intel, Settings, Milestone, Phase) | CF-D6-03 |
-| CF-D6-05 | 6 | 6C | Define lifecycle state machine and transitions | CF-D6-02 |
-| CF-D6-06 | 6 | 6C | Add framework versioning + compatibility layer | CF-D6-05 |
-| CF-D6-NEW-01 | 7 | 7B | Standardize skill versioning policy in ecosystem contracts | Round 6 |
-| CF-D7-01 | 7 | 7A | Restore missing skill assets declared by SKILL.md contracts | Round 6 |
-| CF-D7-02 | 7 | 7B | Rationalize command alias overlap and ambiguity | Round 6 |
-| CF-D7-03 | 7 | 7B | Consolidate gatekeeping triad overlap | CF-D7-02 |
-| CF-D7-04 | 7 | 7A | Add skill dependency declaration model | CF-D7-01 |
-| CF-D7-05 | 7 | 7A | Add skill compatibility/version checks | CF-D7-04 |
-| CF-D7-06 | 7 | 7B | Implement command discovery mechanism | CF-D7-02 |
-| CF-D7-NEW-01 | 7 | 7B | Normalize alias command conventions and migration hints | CF-D7-02 |
-| CF-D8-01 | 0 | 0A | ✅ Register hiveminder in opencode.json | None |
-| CF-D8-02 | 0 | 0A | ✅ Register debug agent in opencode.json | None |
-| CF-D8-03 | 0 | 0A | ✅ Register hivemind-brownfield-orchestrator in opencode.json | None |
-| CF-D8-04 | 7 | 7C | Align build agent mode contract across MD and JSON | Round 6 |
-| CF-D8-05 | 7 | 7C | Align code-review agent mode contract across MD and JSON | Round 6 |
-| CF-D8-06 | 7 | 7C | Align scanner hidden/mode contract across MD and JSON | Round 6 |
-| CF-D8-07 | 0 | 0A | ✅ Fix `alllow` typo in hivefiver agent frontmatter | None |
-| CF-D8-08 | 7 | 7C | Add explicit tools block for debug agent | CF-D8-02 |
-| CF-D8-09 | 7 | 7C | Define canonical agent directory and de-duplicate agent sources | CF-D8-04..08 |
-| CF-D8-10 | 7 | 7C | Decide and execute agent renaming cross-reference plan | CF-D8-09 |
-| CF-D8-11 | 7 | 7C | Add agent capability matrix | CF-D8-09 |
-| CF-D8-12 | 7 | 7C | Add agent handoff protocol | CF-D8-11 |
-| CF-D8-13 | 7 | 7C | Implement hiveplanner subagent with strict permissions | CF-D8-11 |
-| CF-D8-14 | 8 | 8B | Add agent versioning + compatibility declarations | Round 7 |
-| CF-D8-15 | 8 | 8B | Add agent health/performance monitoring | Round 7 |
-| CF-D8-16 | 8 | 8B | Add permission inheritance model for agent configs | Round 7 |
-| CF-D8-NEW-01 | 7 | 7C | Resolve additional surfaced agent-config parity mismatch | Round 6 |
-| CF-D8-NEW-02 | 0 | 0A | ✅ Remove duplicate frontmatter keys in hivefiver agent file | None |
+**Coverage check:** 84/84 issues assigned, 0 unassigned, 0 duplicate assignments.
 
 ## Risk Register
 | Risk | Likelihood | Impact | Mitigation |
@@ -320,89 +266,89 @@ Commit Hash: [hash]
 - `CF-D8-NEW-02`: Duplicate frontmatter key defect in `hivefiver` agent config surfaced during D8 cleanup.
 
 ## Appendix B: Full Issue Coverage Verification
-- [ ] CF-D1-01 -> Knot 3
-- [ ] CF-D1-02 -> Knot 4
-- [ ] CF-D1-03 -> Knot 4
-- [ ] CF-D1-04 -> Knot 4
-- [ ] CF-D1-05 -> Knot 4
-- [ ] CF-D1-06 -> Knot 4
-- [ ] CF-D1-07 -> Knot 3
-- [ ] CF-D1-08 -> Knot 3
-- [ ] CF-D1-09 -> Knot 3
-- [ ] CF-D1-10 -> Knot 3
-- [ ] CF-D1-NEW-01 -> Knot 4
-- [ ] CF-D2-01 -> Knot 3
-- [ ] CF-D2-02 -> Knot 4
-- [ ] CF-D2-03 -> Knot 1
-- [ ] CF-D2-04 -> Knot 3
-- [ ] CF-D2-05 -> Knot 3
-- [ ] CF-D2-06 -> Knot 2
-- [ ] CF-D2-07 -> Knot 3
-- [ ] CF-D2-08 -> Knot 1
-- [ ] CF-D2-09 -> Knot 2
-- [ ] CF-D2-10 -> Knot 2
-- [ ] CF-D2-NEW-01 -> Knot 1
-- [ ] CF-D3-01 -> Knot 4
-- [ ] CF-D3-02 -> Knot 4
-- [ ] CF-D3-03 -> Knot 4
-- [ ] CF-D3-04 -> Knot 4
-- [ ] CF-D3-05 -> Knot 4
-- [ ] CF-D3-06 -> Knot 4
-- [ ] CF-D3-07 -> Knot 4
-- [ ] CF-D3-08 -> Knot 4
-- [ ] CF-D3-09 -> Knot 5
-- [ ] CF-D3-10 -> Knot 5
-- [ ] CF-D3-11 -> Knot 5
-- [ ] CF-D3-12 -> Knot 4
-- [ ] CF-D3-13 -> Knot 4
-- [ ] CF-D3-14 -> Knot 4
-- [ ] CF-D3-NEW-01 -> Knot 4
-- [ ] CF-D4-01 -> Knot 5
-- [ ] CF-D4-02 -> Knot 5
-- [ ] CF-D4-03 -> Knot 5
-- [ ] CF-D4-04 -> Knot 5
-- [ ] CF-D4-05 -> Knot 5
-- [ ] CF-D4-06 -> Knot 5
-- [ ] CF-D4-07 -> Knot 5
-- [ ] CF-D5-01 -> Knot 1
-- [ ] CF-D5-02 -> Knot 1
-- [ ] CF-D5-03 -> Knot 1
-- [ ] CF-D5-04 -> Knot 2
-- [ ] CF-D5-05 -> Knot 2
-- [ ] CF-D5-06 -> Knot 5
-- [ ] CF-D5-07 -> Knot 1
-- [ ] CF-D5-NEW-01 -> Knot 1
-- [ ] CF-D6-01 -> Knot 1
-- [ ] CF-D6-02 -> Round 6
-- [ ] CF-D6-03 -> Round 6
-- [ ] CF-D6-04 -> Round 6
-- [ ] CF-D6-05 -> Round 6
-- [ ] CF-D6-06 -> Round 6
-- [ ] CF-D6-NEW-01 -> Round 7
-- [ ] CF-D7-01 -> Round 7
-- [ ] CF-D7-02 -> Round 7
-- [ ] CF-D7-03 -> Round 7
-- [ ] CF-D7-04 -> Round 7
-- [ ] CF-D7-05 -> Round 7
-- [ ] CF-D7-06 -> Round 7
-- [ ] CF-D7-NEW-01 -> Round 7
+- [ ] CF-D1-01 -> Phase C
+- [ ] CF-D1-02 -> Phase D
+- [ ] CF-D1-03 -> Phase D
+- [ ] CF-D1-04 -> Phase D
+- [ ] CF-D1-05 -> Phase D
+- [ ] CF-D1-06 -> Phase D
+- [ ] CF-D1-07 -> Phase C
+- [ ] CF-D1-08 -> Phase C
+- [ ] CF-D1-09 -> Phase C
+- [ ] CF-D1-10 -> Phase C
+- [ ] CF-D1-NEW-01 -> Phase D
+- [ ] CF-D2-01 -> Phase C
+- [ ] CF-D2-02 -> Phase D
+- [x] CF-D2-03 -> Knot 1 ✅
+- [ ] CF-D2-04 -> Phase C
+- [ ] CF-D2-05 -> Phase C
+- [ ] CF-D2-06 -> Phase B
+- [ ] CF-D2-07 -> Phase C
+- [x] CF-D2-08 -> Knot 1 ✅
+- [ ] CF-D2-09 -> Phase B
+- [ ] CF-D2-10 -> Phase B
+- [x] CF-D2-NEW-01 -> Knot 1 ✅
+- [ ] CF-D3-01 -> Phase D
+- [ ] CF-D3-02 -> Phase D
+- [ ] CF-D3-03 -> Phase D
+- [ ] CF-D3-04 -> Phase D
+- [ ] CF-D3-05 -> Phase D
+- [ ] CF-D3-06 -> Phase D
+- [ ] CF-D3-07 -> Phase D
+- [ ] CF-D3-08 -> Phase D
+- [ ] CF-D3-09 -> Phase C
+- [ ] CF-D3-10 -> Phase D
+- [ ] CF-D3-11 -> Phase E
+- [ ] CF-D3-12 -> Phase D
+- [ ] CF-D3-13 -> Phase D
+- [ ] CF-D3-14 -> Phase D
+- [ ] CF-D3-NEW-01 -> Phase D
+- [ ] CF-D4-01 -> Phase E
+- [ ] CF-D4-02 -> Phase E
+- [ ] CF-D4-03 -> Phase E
+- [ ] CF-D4-04 -> Phase E
+- [ ] CF-D4-05 -> Phase E
+- [ ] CF-D4-06 -> Phase E
+- [ ] CF-D4-07 -> Phase E
+- [x] CF-D5-01 -> Knot 1 ✅
+- [x] CF-D5-02 -> Knot 1 ✅
+- [x] CF-D5-03 -> Knot 1 ✅
+- [ ] CF-D5-04 -> Phase B
+- [ ] CF-D5-05 -> Phase B
+- [ ] CF-D5-06 -> Phase E
+- [x] CF-D5-07 -> Knot 1 ✅
+- [x] CF-D5-NEW-01 -> Knot 1 ✅
+- [x] CF-D6-01 -> Knot 1 ✅
+- [ ] CF-D6-02 -> Phase E
+- [ ] CF-D6-03 -> Phase E
+- [ ] CF-D6-04 -> Phase E
+- [ ] CF-D6-05 -> Phase E
+- [ ] CF-D6-06 -> Phase E
+- [ ] CF-D6-NEW-01 -> Phase E
+- [ ] CF-D7-01 -> Phase E
+- [ ] CF-D7-02 -> Phase E
+- [ ] CF-D7-03 -> Phase E
+- [ ] CF-D7-04 -> Phase E
+- [ ] CF-D7-05 -> Phase E
+- [ ] CF-D7-06 -> Phase E
+- [ ] CF-D7-NEW-01 -> Phase E
 - [x] CF-D8-01 -> Round 0 ✅ (b3e704b)
 - [x] CF-D8-02 -> Round 0 ✅ (b3e704b)
 - [x] CF-D8-03 -> Round 0 ✅ (b3e704b)
-- [ ] CF-D8-04 -> Round 7
-- [ ] CF-D8-05 -> Round 7
-- [ ] CF-D8-06 -> Round 7
+- [ ] CF-D8-04 -> Phase E
+- [ ] CF-D8-05 -> Phase E
+- [ ] CF-D8-06 -> Phase E
 - [x] CF-D8-07 -> Round 0 ✅ (b3e704b)
-- [ ] CF-D8-08 -> Round 7
-- [ ] CF-D8-09 -> Round 7
-- [ ] CF-D8-10 -> Round 7
-- [ ] CF-D8-11 -> Round 7
-- [ ] CF-D8-12 -> Round 7
-- [ ] CF-D8-13 -> Round 7
-- [ ] CF-D8-14 -> Round 8
-- [ ] CF-D8-15 -> Round 8
-- [ ] CF-D8-16 -> Round 8
-- [ ] CF-D8-NEW-01 -> Round 7
+- [ ] CF-D8-08 -> Phase E
+- [ ] CF-D8-09 -> Phase E
+- [ ] CF-D8-10 -> Phase E
+- [ ] CF-D8-11 -> Phase E
+- [ ] CF-D8-12 -> Phase E
+- [ ] CF-D8-13 -> Phase E
+- [ ] CF-D8-14 -> Phase E
+- [ ] CF-D8-15 -> Phase E
+- [ ] CF-D8-16 -> Phase E
+- [ ] CF-D8-NEW-01 -> Phase E
 - [x] CF-D8-NEW-02 -> Round 0 ✅ (b3e704b)
 
 **Coverage check:** 84/84 issues assigned, 0 unassigned, 0 duplicate assignments.

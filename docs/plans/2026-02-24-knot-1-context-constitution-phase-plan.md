@@ -28,7 +28,9 @@ SDK grounding applied in this plan:
 - `experimental.chat.system.transform`: inject sticky constitutional rules each turn.
 - `experimental.chat.messages.transform`: enforce entity checklist and context augmentation before LLM call.
 - `experimental.session.compacting`: preserve constitutional continuity marker and summary payload (dependency note for Knot 2).
-- Constraint alignment: plugin cannot create sessions programmatically; `skill` outputs are protected from pruning; tool context includes `sessionID`, `messageID`, `agent`, `directory`, `worktree`, and abort signal.
+- Constraint alignment: plugin `ctx.client` exposes full `@opencode-ai/sdk` capability for controlled lifecycle actions (`session.create()`, `session.prompt()`, `session.messages()`, `tui.showToast()`); `skill` outputs are protected from pruning; tool context includes `sessionID`, `messageID`, `agent`, `directory`, `worktree`, and abort signal.
+
+> **CORRECTED (2026-02-24):** Earlier guidance that plugin hooks lacked session lifecycle APIs was false. HiveMind uses a hybrid 4-layer architecture where `ctx.client` provides full `@opencode-ai/sdk` access, so Auto New Session is feasible from plugin hooks when policy-gated and tool-audited.
 
 ## 2) Issue Mapping (Audit Trace)
 
@@ -313,5 +315,5 @@ Knot 1 completion requires all gates:
 5. **Risk:** Context budget overflow after adding constitutional digest.
    - **Mitigation:** Keep digest compact, place it in summary region, and preserve existing budget truncation policy.
 
-6. **Risk:** SDK constraint mismatch (session creation assumptions).
-   - **Mitigation:** Explicitly avoid programmatic session creation in hook logic; drive only guidance/transform behavior.
+6. **Risk:** SDK lifecycle usage drifts from governance boundaries.
+   - **Mitigation:** Require policy-gated plugin lifecycle triggers (`ctx.client.session.create()` etc.) with tool-owned persistence/audit updates and deterministic guard checks.

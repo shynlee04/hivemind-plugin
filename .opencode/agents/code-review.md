@@ -2,7 +2,7 @@
 name: code-review
 description: "Deep inspection and architecture-focused code review agent with investigation-first workflow."
 mode: all
-model: kilo/z-ai/glm-5:free
+model: openai/gpt-5.3-codex
 reasoningEffort: "high"
 
 ---
