@@ -24,6 +24,7 @@ import type { BrainState } from "../schemas/brain-state.js"
 import { createLogger } from "../lib/logging.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
+import { evaluateEntityChecklist } from "../lib/entity-checklist.js"
 
 type MessagePart = {
   id?: string
@@ -294,7 +295,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
       const state = await stateManager.load()
 
-      // === FIRST TURN: Session Coherence ===
+      // === PHASE 1: First-Turn Session Coherence (EXCLUSIVE — returns early) ===
       // Persistent marker-based gate (counter-independent).
       // Inject only when state exists and marker is false.
       const sessionId = state?.session?.id ?? ""
@@ -352,10 +353,10 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         }
       }
 
-        // Now safe to return early - first-turn already handled
+      // === PHASE 2: State Load + Early Exit ===
       if (!state) return
 
-      // === P0-6: Capture recent messages for cross-session continuity ===
+      // === PHASE 3: Recent Messages Capture ===
       // Store last 6 messages in brain state for session split
       try {
         const recentMessages: Array<{ role: "user" | "assistant"; content: string }> = []
@@ -399,6 +400,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       }
       // === End P0-6 message capture ===
 
+      // === PHASE 4: User Message Location + Context Injection ===
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
         const latestUserText = getMessageText(output.messages[index])
@@ -407,17 +409,17 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           prependSyntheticPart(output.messages[index], buildAutoRealignReminder(autoRealign))
         }
 
-        // US-015: Cognitive Packer - inject packed XML state at START
+        // === PHASE 5: Cognitive Packer Injection ===
         const packedContext = packCognitiveState(directory)
         if (!isEmptyPackedContext(packedContext)) {
           prependSyntheticPart(output.messages[index], packedContext)
         }
 
-        // 1. V3.0: Contextual Anchoring via PREPEND (synthetic part, no mutation)
+        // === PHASE 6: Contextual Anchoring ===
         const anchorHeader = buildAnchorContext(state)
         prependSyntheticPart(output.messages[index], anchorHeader)
 
-        // 2. Pre-Stop Conditional Reminders (Inject Checklist at END)
+        // === PHASE 7: Pre-Stop Checklist Assembly ===
         const items: string[] = []
 
         if (autoRealign.shouldRealign) {
@@ -439,21 +441,32 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           items.push("Acknowledge pending subagent failure (call export_cycle or map_context with blocked status)")
         }
 
+        // === PHASE 7b: Entity Checklist Evaluation (K1-T03) ===
+        try {
+          const entityChecklist = await evaluateEntityChecklist(
+            directory,
+            state.session?.id || "unknown",
+            `turn-${Date.now()}`
+          )
+          if (!entityChecklist.passed) {
+            const failedItems = entityChecklist.items.filter(item => item.status === "fail")
+            for (const item of failedItems) {
+              items.push(`Entity check failed: ${item.key} (${item.message})`)
+            }
+          }
+        } catch {
+          // P3: Entity checklist failure is non-fatal
+        }
+
         // US-016: Pending tasks - dual-read pattern (trajectory.json primary, tasks.json fallback)
         let pendingTaskCount = 0
-        let paths
-        try {
-          paths = await import("../lib/paths.js").then(m => m.getEffectivePaths(directory))
-        } catch {
-          // If paths can't be loaded, skip graph-based checks
-        }
 
         // LOW #2: Parallelize async - start tree loading in parallel with task checks
         const treePromise = loadTree(directory)
         
         // Primary: Read from graph/tasks.json filtered by trajectory.json active_task_ids
         // MEDIUM #2: Check BOTH graph files exist before using graph data
-        if (paths && existsSync(paths.graphTrajectory) && existsSync(paths.graphTasks)) {
+        if (existsSync(paths.graphTrajectory) && existsSync(paths.graphTasks)) {
           // LOW #2: Load trajectory and graphTasks in parallel
           const [trajectoryState, graphTasks] = await Promise.all([
             loadTrajectory(directory),

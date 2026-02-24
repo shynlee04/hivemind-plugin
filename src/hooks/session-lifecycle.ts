@@ -30,19 +30,41 @@ import {
   generateSetupGuidanceBlock,
   getNextStepHint,
 } from "./session-lifecycle-helpers.js"
-import { HIVE_MASTER_GOVERNANCE_INSTRUCTION } from "../lib/governance-instruction.js"
+import { compileDefaultGovernance, GOVERNANCE_MARKER } from "../lib/governance-instruction.js"
+import { evaluateEntityChecklist, renderChecklistSummary } from "../lib/entity-checklist.js"
+import type { EntityChecklist } from "../schemas/governance-constitution.js"
 import { applyPendingStateMutations, queueStateMutation } from "../lib/state-mutation-queue.js"
-
-const GOVERNANCE_MARKER = "[🛡️ HIVE-MASTER governance active]"
 
 /**
  * Inject HiveMaster strict governance instruction (prepends, deduplicated)
  */
-function injectGovernanceInstruction(output: { system: string[] }): void {
+async function injectGovernanceInstruction(
+  output: { system: string[] },
+  directory: string,
+  sessionId: string,
+): Promise<EntityChecklist | undefined> {
   // Check if already injected (deduplication)
   const alreadyInjected = output.system.some(s => s.includes(GOVERNANCE_MARKER))
-  if (!alreadyInjected) {
-    output.system.unshift(HIVE_MASTER_GOVERNANCE_INSTRUCTION)
+  if (alreadyInjected) {
+    return undefined
+  }
+
+  let checklist: EntityChecklist | undefined
+  try {
+    checklist = await evaluateEntityChecklist(directory, sessionId, `turn-${Date.now()}`)
+  } catch {
+    // Checklist evaluation failure is non-fatal; compile without it
+  }
+
+  const compiled = compileDefaultGovernance(checklist)
+  output.system.unshift(compiled)
+  return checklist
+}
+
+function appendChecklistFailureReminder(output: { system: string[] }, checklist: EntityChecklist | undefined): void {
+  if (checklist && !checklist.passed) {
+    const reminder = `<system-reminder>\nCHECKLIST BEFORE STOPPING (Pre-Stop Conditional):\nYou are about to complete your turn. BEFORE you output your final message, you MUST verify:\n${renderChecklistSummary(checklist)}\nIf NO, you must execute these tools now. Do not stop your turn.\n</system-reminder>`
+    output.system.push(reminder)
   }
 }
 
@@ -51,17 +73,22 @@ function injectGovernanceInstruction(output: { system: string[] }): void {
  */
 export function createSessionLifecycleHook(log: Logger, directory: string, _initConfig: HiveMindConfig) {
   const stateManager = createStateManager(directory, log)
+  const effectiveDir = directory
 
   return async (input: { sessionID?: string; model?: unknown }, output: { system: string[] }): Promise<void> => {
     try {
       // Inject HiveMaster governance instruction FIRST (prepend, deduplicated)
-      injectGovernanceInstruction(output)
+      const checklist = await injectGovernanceInstruction(output, effectiveDir, input.sessionID || "unknown")
 
-      if (!input.sessionID) return
+      if (!input.sessionID) {
+        appendChecklistFailureReminder(output, checklist)
+        return
+      }
       const configPath = getEffectivePaths(directory).config
 
       if (!existsSync(configPath)) {
         output.system.push(await generateSetupGuidanceBlock(directory))
+        appendChecklistFailureReminder(output, checklist)
         await log.info("HiveMind not configured — injected setup guidance")
         return
       }
@@ -111,6 +138,7 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
         warningLines, buildMetricsBlock(state), buildConfigBlock(config),
       ], BUDGET_CHARS, log)
 
+      appendChecklistFailureReminder(output, checklist)
       output.system.push(finalLines)
       await log.debug(`Session lifecycle: injected ${finalLines.length} chars`)
     } catch (error) {
