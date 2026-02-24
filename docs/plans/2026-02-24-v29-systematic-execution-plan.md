@@ -41,7 +41,7 @@
 **Prerequisites:** Round 0 + Round 1 complete.
 **Issues addressed:** CF-D5-01, CF-D5-02, CF-D5-03, CF-D5-07, CF-D5-NEW-01, CF-D2-03, CF-D2-08, CF-D2-NEW-01, CF-D6-01
 **Why this order:** This is the anti-drift foundation; all downstream session/task/state behavior depends on stable turn-level context contracts.
-**Status:** Phase-plan drafted, pending implementation authorization (`docs/plans/2026-02-24-knot-1-context-constitution-phase-plan.md`).
+**Status:** ✅ COMPLETE | Closeout: `docs/plans/2026-02-24-knot-1-closeout.md` | Commits: `dbb4f18`, `29848e4`, `a8be520`, `ace66a4`, `3a4d1df` | Quality gates: tsc clean, 180/181 tests | 44 new tests added | 4 issues resolved, 4 partial, 1 deferred.
 
 **Phase K1-R: Research**
 - Confirm constitutional-rule model boundaries and hook ownership split from current runtime behavior.
