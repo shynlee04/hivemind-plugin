@@ -12,7 +12,6 @@ tools:
   edit: true
   write: true
   skill-creator: true
-  skill: true
   websearch: true
   search: true
   exa: true
@@ -21,11 +20,9 @@ tools:
   write-skill: true
   find-skll: true
   webfetch: true
-  websearch: true
   todowrite: true
   todoread: true
   question: true
-  bash: true
   mcp: true
   scan_hierarchy: true
   think_back: true
@@ -39,13 +36,12 @@ tools:
   hivemind_memory: true
   hivemind_session: true
   tavily: true
-  webfetch: true
 permissions:  
   all: allow
   command: allow
   bash: allow
   tasks: allow
-  subtasks: alllow
+  subtasks: allow
   edit: allow
   write: allow
 ---

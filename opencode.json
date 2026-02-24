@@ -172,6 +172,64 @@
         "websearch": true,
         "bash": true
       }
+    },
+    "hiveminder": {
+      "description": "The ruthless strategist + architect. Research-fronted, evidence-oriented orchestrator for the HiveMind ecosystem.",
+      "mode": "primary",
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true,
+        "bash": true,
+        "task": true,
+        "skill": true,
+        "webfetch": true,
+        "websearch": true,
+        "todowrite": true,
+        "question": true,
+        "scan_hierarchy": true,
+        "think_back": true,
+        "save_anchor": true,
+        "save_mem": true,
+        "recall_mems": true,
+        "hivemind_cycle": true,
+        "hivemind_anchor": true,
+        "hivemind_hierarchy": true,
+        "hivemind_inspect": true,
+        "hivemind_memory": true,
+        "hivemind_session": true
+      }
+    },
+    "debug": {
+      "description": "Systematic debugging orchestrator for HiveMind with evidence-first diagnosis and structured remediation.",
+      "mode": "subagent",
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true,
+        "bash": true,
+        "task": true,
+        "skill": true,
+        "scan_hierarchy": true,
+        "think_back": true
+      }
+    },
+    "hivemind-brownfield-orchestrator": {
+      "description": "Brownfield stabilization expert. Detects framework conflicts, technical debt, and orchestrates safe refactoring.",
+      "mode": "subagent",
+      "hidden": true,
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true,
+        "bash": true,
+        "task": true,
+        "skill": true,
+        "scan_hierarchy": true,
+        "think_back": true,
+        "save_mem": true,
+        "recall_mems": true
+      }
     }
   },
   "permission": {
