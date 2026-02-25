@@ -1,6 +1,6 @@
 {
   "governance_mode": "strict",
-  "language": "en",
+  "language": "vi",
   "max_turns_before_warning": 500,
   "max_active_md_lines": 2000,
   "auto_compact_on_turns": 40,
@@ -8,7 +8,7 @@
   "commit_suggestion_threshold": 5,
   "auto_commit": false,
   "agent_behavior": {
-    "language": "en",
+    "language": "vi",
     "expert_level": "beginner",
     "output_style": "skeptical",
     "constraints": {

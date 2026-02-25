@@ -220,6 +220,99 @@
         "priority": "medium"
       },
       "quarantined_at": "2026-02-25T12:41:29.550Z"
+    },
+    {
+      "id": "6b863426-f5f9-48ad-9700-d6bd0fe5efca",
+      "type": "task",
+      "reason": "parent_phase_id 3ef3a24c-d833-4637-9a86-c13008516288 not found in valid phases",
+      "original_data": {
+        "id": "6b863426-f5f9-48ad-9700-d6bd0fe5efca",
+        "parent_phase_id": "3ef3a24c-d833-4637-9a86-c13008516288",
+        "title": "Run HiveFiver startup realignment and lane detection",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-02-25T12:59:56.833Z",
+        "updated_at": "2026-02-25T12:59:56.833Z",
+        "acceptance_criteria": [
+          "Persona lane selected",
+          "Project type detected (greenfield/brownfield)",
+          "Governance mode locked"
+        ],
+        "priority": "high"
+      },
+      "quarantined_at": "2026-02-25T13:03:39.824Z"
+    },
+    {
+      "id": "300c0c00-19cc-4186-86f1-a62c9e48c2ab",
+      "type": "task",
+      "reason": "parent_phase_id 3ef3a24c-d833-4637-9a86-c13008516288 not found in valid phases",
+      "original_data": {
+        "id": "300c0c00-19cc-4186-86f1-a62c9e48c2ab",
+        "parent_phase_id": "3ef3a24c-d833-4637-9a86-c13008516288",
+        "title": "Build intake baseline and generate first executable specification",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-02-25T12:59:56.833Z",
+        "updated_at": "2026-02-25T12:59:56.833Z",
+        "acceptance_criteria": [
+          "MCQ intake completed",
+          "Ambiguity map emitted",
+          "Spec candidate selected"
+        ],
+        "dependencies": [
+          "6b863426-f5f9-48ad-9700-d6bd0fe5efca"
+        ],
+        "priority": "high"
+      },
+      "quarantined_at": "2026-02-25T13:03:39.824Z"
+    },
+    {
+      "id": "e2e4deec-b2e2-4c9c-a772-5feccebbf1dd",
+      "type": "task",
+      "reason": "parent_phase_id 3ef3a24c-d833-4637-9a86-c13008516288 not found in valid phases",
+      "original_data": {
+        "id": "e2e4deec-b2e2-4c9c-a772-5feccebbf1dd",
+        "parent_phase_id": "3ef3a24c-d833-4637-9a86-c13008516288",
+        "title": "Audit and configure non-negotiable MCP providers",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-02-25T12:59:56.833Z",
+        "updated_at": "2026-02-25T12:59:56.833Z",
+        "acceptance_criteria": [
+          "Context7, DeepWiki, Repomix status captured",
+          "Tavily API guidance emitted",
+          "Confidence downgrade policy configured"
+        ],
+        "dependencies": [
+          "300c0c00-19cc-4186-86f1-a62c9e48c2ab"
+        ],
+        "priority": "high"
+      },
+      "quarantined_at": "2026-02-25T13:03:39.824Z"
+    },
+    {
+      "id": "d810889b-d15f-46e4-b58e-f5a14edb020b",
+      "type": "task",
+      "reason": "parent_phase_id 3ef3a24c-d833-4637-9a86-c13008516288 not found in valid phases",
+      "original_data": {
+        "id": "d810889b-d15f-46e4-b58e-f5a14edb020b",
+        "parent_phase_id": "3ef3a24c-d833-4637-9a86-c13008516288",
+        "title": "Prepare TODO-to-Ralph export mapping and validation",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-02-25T12:59:56.833Z",
+        "updated_at": "2026-02-25T12:59:56.833Z",
+        "acceptance_criteria": [
+          "tasks/prd.json schema validated",
+          "Dependency map generated",
+          "Related entity links preserved"
+        ],
+        "dependencies": [
+          "e2e4deec-b2e2-4c9c-a772-5feccebbf1dd"
+        ],
+        "priority": "medium"
+      },
+      "quarantined_at": "2026-02-25T13:03:39.824Z"
     }
   ]
 }
