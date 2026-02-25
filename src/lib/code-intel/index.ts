@@ -19,6 +19,23 @@ export type { ScanOptions, FullScanOptions } from "./file-scanner.js"
 export { createEmptyCodeMap, saveCodeMap, loadCodeMap, computeCodeMapStats, scanProjectToCodeMap, loadCodeMapFromDir } from "./codemap-io.js"
 export type { CodeMap, CodeMapEntry } from "./codemap-io.js"
 
-// Phase 2 stubs (tree-sitter)
-export { createTreeSitterLoader } from "./tree-sitter-loader.js"
-export { extractSignatures } from "./signature-extractor.js"
+// Phase 2 — Tree-sitter loader
+export { createTreeSitterFactory, createTreeSitterLoader, extensionToLanguage, getSupportedExtensions } from "./tree-sitter-loader.js"
+export type { TreeSitterInstance, TreeSitterNode, TreeSitterFactory } from "./tree-sitter-loader.js"
+
+// Phase 2 — Signature extraction (AST + regex fallback)
+export { extractSignatures, extractImportsRegex, extractExportsRegex } from "./signature-extractor.js"
+export type { ExtractSignaturesInput } from "./signature-extractor.js"
+export type { Signature, Parameter } from "./signature-extractor.js"
+
+// Phase 2 — Compressed codemap
+export { compressCodemap, compressSingleFile, renderCompressedCodemap, createEmptyCompressedCodemap, computeCompressionRatio } from "./compressed-codemap.js"
+export type { CompressedCodemap, CompressedFileInfo, CompressOptions } from "./compressed-codemap.js"
+
+// Phase 2 — Incremental updater
+export { IncrementalUpdater } from "./incremental-updater.js"
+export type { UpdateResult, UpdateListener } from "./incremental-updater.js"
+
+// Phase 2 — Watch integration (watcher → updater → event-bus)
+export { startWatchIntegration } from "./watch-integration.js"
+export type { WatchIntegration, WatchStatus, WatchIntegrationOptions } from "./watch-integration.js"

@@ -13,9 +13,11 @@ type CreateTreeSitterLoader = (options?: {
 
 type Signature = {
   name: string
-  kind: string
-  path: string
-  line: number
+  type: string
+  signature: string
+  lineStart: number
+  lineEnd: number
+  exported: boolean
 }
 
 type ExtractSignatures = (input: {
@@ -134,8 +136,8 @@ describe("Code-Intel Phase 2 Slice 1 RED - extractor contracts", () => {
     })
 
     assert.deepEqual(
-      signatures.map((entry) => `${entry.path}:${entry.line}:${entry.name}`),
-      ["src/sample.ts:1:zebra", "src/sample.ts:2:alpha", "src/sample.ts:3:Bee"],
+      signatures.map((entry) => `${entry.lineStart}:${entry.name}`),
+      ["1:zebra", "2:alpha", "3:Bee"],
     )
   })
 })
