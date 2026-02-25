@@ -196,6 +196,21 @@ export function createToolGateHook(
         }
       }
 
+      // Phase 5: First-turn confirmation advisory for write tools
+      if (state && isWriteTool(toolName) && state.first_turn_confirmation.required && !state.first_turn_confirmation.confirmed) {
+        if (config.governance_mode !== "permissive") {
+          return {
+            allowed: true,
+            warning: "First-turn confirmation pending. Present rationale options and output style before writing.",
+            signal: {
+              type: "governance",
+              severity: "advisory",
+              message: "Write tool used before first-turn confirmation. Agent should confirm rationale + output style first.",
+            },
+          }
+        }
+      }
+
       // Session is open — track activity (turn count incremented in tool.execute.after only)
       if (state) {
         let needsSave = false

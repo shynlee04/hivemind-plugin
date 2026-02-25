@@ -148,6 +148,7 @@ async function test_drift_tracking() {
 
   const sm = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_confirmation = { ...state.first_turn_confirmation, required: false, confirmed: true }
   await sm.save(state)
 
   const hook = createToolGateHookInternal(noopLogger, dir, config)
@@ -196,6 +197,7 @@ async function test_write_tool_warns_without_active_tasknode() {
 
   const sm = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_confirmation = { ...state.first_turn_confirmation, required: false, confirmed: true }
   await sm.save(state)
 
   const hook = createToolGateHookInternal(noopLogger, dir, config)
@@ -267,6 +269,7 @@ async function test_write_tool_warns_when_active_task_is_complete() {
 
   const sm = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
+  state.first_turn_confirmation = { ...state.first_turn_confirmation, required: false, confirmed: true }
   await sm.save(state)
 
   const phaseId = randomUUID()
