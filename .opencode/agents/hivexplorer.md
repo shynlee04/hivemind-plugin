@@ -2,7 +2,6 @@
 name: hivexplorer
 description: "Hybrid investigation agent for deep scanning and fast exploration across codebase analysis, memory retrieval, and targeted research."
 mode: subagent
-model: chutes/zai-org/GLM-5-TEE
 hidden: true
 tools:
   read: true

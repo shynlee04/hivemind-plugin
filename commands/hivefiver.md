@@ -25,14 +25,22 @@ Use this command as the canonical entry point:
 
 ## Routing Matrix
 - `init` -> `/hivefiver-start` + `/hivefiver-intake`
+  Pre-gate: Detect persona lane, check onboarding status
 - `spec` -> `/hivefiver-specforge`
+  Pre-gate: Verify domain context loaded, check prior spec artifacts
 - `architect` -> `/hivefiver-skillforge`
+  Pre-gate: Require spec completion, check tooling alignment
 - `workflow` -> `/hivefiver-skillforge` + workflow selector
+  Pre-gate: Verify available workflows, check persona lane compatibility
 - `build` -> `/hivefiver-gsd-bridge`
+  Pre-gate: Verify plan graph connectivity, enforce TDD posture, check tooling compatibility, block if unresolved high-risk ambiguity
 - `validate` -> `/hivefiver-ralph-bridge`
+  Pre-gate: Confirm build output exists, check test coverage baseline
 - `deploy` -> `/hivefiver-doctor` (environment readiness mode)
+  Pre-gate: Audit environment/secrets posture, validate release gates, emit deployment checklist and rollback prereqs
 - `research` -> `/hivefiver-research`
 - `audit` -> `/hivefiver-doctor`
+  Pre-gate: Check commands/skills/workflows drift, MCP readiness matrix, .hivemind reality vs expected state
 - `tutor` -> `/hivefiver-tutor`
 
 ## Chat-First Tab Contract

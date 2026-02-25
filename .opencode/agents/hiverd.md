@@ -2,7 +2,6 @@
 name: hiverd
 description: "Research & Development specialist — structured multi-source research, brainstorming, comparative analysis, synthesis, and documentation."
 mode: all
-model: kilo/z-ai/glm-5:free
 tools:
   read: true
   glob: true

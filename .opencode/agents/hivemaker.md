@@ -1,11 +1,7 @@
 ---
 name: hivemaker
 description: "Versatile execution agent for building and implementing code"
-mode: all
-model: chutes/zai-org/GLM-5-TEE
-reasoningEffort: "high"
-textVerbosity: "high"
-reasoningSummary: "auto"
+mode: subagent
 tools:
   read: true
   glob: true

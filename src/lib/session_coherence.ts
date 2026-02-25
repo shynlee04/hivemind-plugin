@@ -20,7 +20,7 @@ import type {
   PriorMem,
   PriorAnchor,
   FirstTurnConfig,
-} from "../hooks/session_coherence/types.js"
+} from "./session-coherence-types.js"
 import { DEFAULT_CONTEXT_BUDGET } from "./budget.js"
 
 /**

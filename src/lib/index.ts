@@ -15,11 +15,9 @@ export * from "./session-export.js";
 export * from "./tool-response.js";
 export * from "./long-session.js"
 export * from "./anchors.js";
-export * from "./mems.js";
 export * from "./hierarchy-tree.js";
 export * from "./detection.js";
 export * from "./framework-context.js";
-export * from "./project-scan.js";
 export * from "./migrate.js";
 export * from "./inspect-engine.js";
 export * from "./compaction-engine.js";
@@ -33,3 +31,6 @@ export * from "./auto-context.js";
 export * from "./context-purifier.js";
 export * from "./session-memory-classifier.js";
 export * from "./sot-governance.js";
+export * from "./sdk-access.js";
+export * from "./project-snapshot.js";
+export * from "./session-coherence-types.js";

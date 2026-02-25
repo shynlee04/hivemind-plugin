@@ -28,7 +28,7 @@ import {
   detectFrameworkContext,
   buildFrameworkSelectionMenu,
 } from "./framework-context.js"
-import { collectProjectSnapshot, localized, generateProjectBackboneBlock } from "../hooks/session-lifecycle-helpers.js"
+import { collectProjectSnapshot, localized, generateProjectBackboneBlock } from "./project-snapshot.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import { isCoachAutomation } from "../schemas/config.js"
 import type { BrainState } from "../schemas/brain-state.js"

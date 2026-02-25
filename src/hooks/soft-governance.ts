@@ -90,7 +90,11 @@ export async function emitGovernanceToast(
     return false
   }
 
-  const client = getClient()
+  const client = getClient() as {
+    tui?: {
+      showToast?: (input: { body: { message: string; variant: ToastVariant } }) => Promise<unknown>
+    }
+  } | null
   if (!client?.tui?.showToast) {
     await log.debug(`Toast skipped (no SDK client): ${opts.key}`)
     return false

@@ -2,7 +2,6 @@
 name: hiveq
 description: "Quality & Verification enforcer — testing, gate enforcement, compliance checking, regression detection. Subagent only."
 mode: subagent
-model: kilo/z-ai/glm-5:free
 tools:
   read: true
   glob: true
@@ -16,6 +15,18 @@ tools:
   hivemind_inspect: true
   hivemind_memory: true
   hivemind_hierarchy: true
+permission:
+  command: allow
+  file:
+    write:
+      deny:
+        - "src/**"
+      allow:
+        - "docs/**"
+        - ".hivemind/**"
+    read:
+      allow:
+        - "**"
 ---
 
 # HiveQ — Quality & Verification Agent

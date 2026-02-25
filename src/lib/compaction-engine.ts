@@ -40,7 +40,7 @@ import {
   type BrainState,
   type MetricsState,
 } from "../schemas/brain-state.js"
-import { getClient } from "../hooks/sdk-context.js"
+import { getClient } from "./sdk-access.js"
 import { LEGACY_COMPACTION_BUDGET } from "./budget.js"
 import { MAX_COMPACTION_COUNT } from "./session-boundary.js"
 

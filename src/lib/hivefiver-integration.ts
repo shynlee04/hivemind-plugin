@@ -57,14 +57,6 @@ const HIVEFIVER_REQUIRED_COMMAND_FILES = [
   "hivefiver-gsd-bridge.md",
   "hivefiver-ralph-bridge.md",
   "hivefiver-doctor.md",
-  "hivefiver-init.md",
-  "hivefiver-spec.md",
-  "hivefiver-architect.md",
-  "hivefiver-workflow.md",
-  "hivefiver-build.md",
-  "hivefiver-validate.md",
-  "hivefiver-deploy.md",
-  "hivefiver-audit.md",
   "hivefiver-tutor.md",
 ] as const
 

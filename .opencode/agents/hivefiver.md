@@ -1,8 +1,6 @@
 ---
 name: hivefiver
 description: "HiveFiver v2 meta-builder + instructor. Routes tri-persona lanes, orchestrates commands/skills/workflows/agents, and enforces process-guarantee quality gates."
-model: kilo/z-ai/glm-5:free
-
 mode: all
 tools:
   read: true

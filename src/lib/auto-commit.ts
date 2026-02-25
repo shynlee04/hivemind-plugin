@@ -1,4 +1,4 @@
-import { getShell } from "../hooks/sdk-context.js"
+import { getShell } from "./sdk-access.js"
 
 type BunShell = (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown>
 
