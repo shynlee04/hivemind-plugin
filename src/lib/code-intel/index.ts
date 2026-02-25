@@ -39,3 +39,15 @@ export type { UpdateResult, UpdateListener } from "./incremental-updater.js"
 // Phase 2 — Watch integration (watcher → updater → event-bus)
 export { startWatchIntegration } from "./watch-integration.js"
 export type { WatchIntegration, WatchStatus, WatchIntegrationOptions } from "./watch-integration.js"
+
+// Phase 3 — Selective source injector (file_locks → context injection)
+export { selectSourceForInjection, renderSourceSelectionXml } from "./selective-injector.js"
+export type { SourceSelection, SelectedFile } from "./selective-injector.js"
+
+// Phase 3 — Pattern-first search (signatures without full file reads)
+export { searchPatterns, findFunction, findType, findExport, findByPattern, findImporters } from "./pattern-search.js"
+export type { PatternQuery, PatternMatch } from "./pattern-search.js"
+
+// Phase 3 — Knowledge commits (atomic git commits for code-intel state)
+export { commitKnowledgeState, hasKnowledgeChanged, getLastKnowledgeCommit } from "./knowledge-commits.js"
+export type { KnowledgeCommitOptions, KnowledgeCommitResult, LastKnowledgeCommit } from "./knowledge-commits.js"

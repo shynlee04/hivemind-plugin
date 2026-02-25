@@ -9,6 +9,8 @@ import {
 import { calculateRelevanceScore, isMemStale } from "./staleness.js"
 import { getEffectivePaths } from "./paths.js"
 import { createLogger, noopLogger, type Logger } from "./logging.js"
+import type { CompressedCodemap } from "./code-intel/compressed-codemap.js"
+import { selectSourceForInjection, renderSourceSelectionXml } from "./code-intel/selective-injector.js"
 
 let logger: Logger | null = null
 
@@ -222,6 +224,16 @@ export interface PackOptions {
   budgetPercentage?: number
   /** Session ID to filter by */
   sessionId?: string
+
+  // ─── Phase 3: Code Intelligence Integration ─────────────────────────
+  /** Include source code from file locks (default: false) */
+  includeSourceCode?: boolean
+  /** Maximum tokens for source code section (default: 5000) */
+  sourceCodeBudget?: number
+  /** Prefer compressed signatures over full source (default: true) */
+  preferCompressed?: boolean
+  /** Pre-loaded compressed codemap (avoids re-reading from disk) */
+  compressedCodemap?: CompressedCodemap
 }
 
 /**
@@ -356,7 +368,8 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
   const activeTaskSet = new Set(activeTasks.map((task) => task.id))
   const relatedMems = freshMems.filter((mem) => mem.origin_task_id !== null && activeTaskSet.has(mem.origin_task_id))
 
-  const fileCount = new Set(activeTasks.flatMap((task) => task.file_locks)).size
+  const allFileLocks = [...new Set(activeTasks.flatMap((task) => task.file_locks))]
+  const fileCount = allFileLocks.length
   const driftScore = getDriftScore(projectRoot)
   const checklistDigest = getChecklistDigest(projectRoot)
   const timestamp = latestTimestamp([
@@ -481,6 +494,33 @@ export function packCognitiveState(projectRoot: string, options?: PackOptions): 
     lines.push(...buildMemXmlLines(mem, "    "))
   }
   lines.push("  </mems>")
+
+  // Phase 3: Source code injection from file locks + compressed codemap
+  if (options?.includeSourceCode !== false && allFileLocks.length > 0) {
+    const sourceCodeBudget = options?.sourceCodeBudget ?? 5000
+    let codemap = options?.compressedCodemap ?? null
+
+    // Try loading codemap from disk if not provided
+    if (!codemap) {
+      const compressedPath = paths.compressedCodemapJson
+      if (existsSync(compressedPath)) {
+        try {
+          const raw = readFileSync(compressedPath, "utf-8")
+          codemap = JSON.parse(raw) as CompressedCodemap
+        } catch {
+          // Silently skip — codemap may be corrupt or missing
+        }
+      }
+    }
+
+    if (codemap && codemap.files.length > 0) {
+      const selection = selectSourceForInjection(codemap, allFileLocks, sourceCodeBudget)
+      const sourceXml = renderSourceSelectionXml(selection, sourceCodeBudget)
+      if (sourceXml) {
+        lines.push(sourceXml)
+      }
+    }
+  }
 
   // PATCH-US-011: Anti-patterns section for amnesia prevention
   const ANTI_PATTERNS_BUDGET = 500
