@@ -28,7 +28,6 @@ import { resetToastCooldowns } from "../src/hooks/soft-governance.js"
 import { createLogger } from "../src/lib/logging.js"
 import { createConfig } from "../src/schemas/config.js"
 import { loadAnchors, saveAnchors, addAnchor } from "../src/lib/anchors.js"
-import { loadMems } from "../src/lib/mems.js"
 import { loadGraphMems } from "../src/lib/graph-io.js"
 import { loadTree } from "../src/lib/hierarchy-tree.js"
 import { getEffectivePaths } from "../src/lib/paths.js"
@@ -1208,19 +1207,18 @@ async function test_autoMemOnCompaction() {
     await sessionTool.execute({ action: "close", summary: "Auth module foundation complete" }, mockContext)
 
     // Step 3: Load mems and check auto-created context mem
-    const memsState = await loadMems(dir)
+    const memsState = await loadGraphMems(dir)
     const autoMem = memsState.mems.find(m =>
-      m.shelf === "context" && m.tags.includes("auto-compact")
+      m.shelf === "context" && m.content.includes("Lifecycle compact trace")
     )
     assert(
       autoMem !== undefined,
       "compact_session creates context mem automatically"
     )
-    // Auto-mem content includes trajectory and stats, not the summary
+    // Auto-mem content includes the summary
     assert(
       autoMem !== undefined &&
-      autoMem.content.includes("Auto-mem test") &&
-      autoMem.tags.includes("session-close"),
+      autoMem.content.includes("Auth module foundation complete"),
       "auto-mem contains session info"
     )
 

@@ -1,0 +1,27 @@
+name: hivefiver-spec-bridge
+version: "1.0"
+target_agent: hivefiver
+phase: specification
+domain: requirements-engineering
+description: "Augments hivefiver with spec distillation, ambiguity mapping, and requirement structuring"
+
+assets:
+  workflow: workflows/hivefiver-floppy-engineer.yaml
+  prompts:
+    - prompts/verification-criteria.md
+  templates:
+    - templates/verification-report-template.md
+  skills:
+    - skills/hivefiver-spec-distillation
+    - skills/compliance-checking
+
+entry_criteria:
+  - "Raw requirements or user input available"
+  - "Session declared with plan_driven mode"
+exit_criteria:
+  - "Structured spec document produced"
+  - "Ambiguity map generated"
+  - "All requirements classified"
+
+replaces_workflow: true
+priority: 90

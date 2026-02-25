@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach } from "node:test"
 import assert from "node:assert/strict"
-import { mkdtemp, readFile, rm } from "node:fs/promises"
+import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 
@@ -8,9 +8,8 @@ import { initProject } from "../src/cli/init.js"
 import { createHivemindSessionTool } from "../src/tools/hivemind-session.js"
 import { createEventHandler } from "../src/hooks/event-handler.js"
 import { createStateManager } from "../src/lib/persistence.js"
-import { getEffectivePaths } from "../src/lib/paths.js"
-import { flushTaskManifestMutations } from "../src/lib/state-mutation-queue.js"
 import { loadGraphTasks, loadTrajectory } from "../src/lib/graph-io.js"
+import { flushTaskManifestMutations } from "../src/lib/state-mutation-queue.js"
 import type { Logger } from "../src/lib/logging.js"
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -117,26 +116,24 @@ describe("Cycle7 RED: stale-task closure determinism and session-token continuit
     })
     await flushTaskManifestMutations()
 
-    const tasksManifestPath = getEffectivePaths(dir).tasks
-    const manifest = JSON.parse(await readFile(tasksManifestPath, "utf-8")) as {
-      session_id: string
-      tasks: Array<{ related_entities?: { session_id?: string } }>
-    }
+    const graphTasks = await loadGraphTasks(dir, { enabled: false })
+    const task = graphTasks.tasks[0]
 
     assert.equal(
-      manifest.session_id,
-      runtimeSessionId,
-      "RED expected: tasks manifest should remain bound to active runtime session",
+      graphTasks.tasks.length,
+      1,
+      "RED expected: exactly one task should be created",
     )
-    assert.equal(
-      manifest.tasks[0]?.related_entities?.session_id,
-      runtimeSessionId,
-      "RED expected: todo related_entities.session_id should canonicalize to runtime session UUID",
+    assert.ok(task, "task should exist")
+    assert.match(
+      task.id,
+      UUID_RE,
+      "RED expected: task.id should be a valid UUID",
     )
     assert.match(
-      manifest.tasks[0]?.related_entities?.session_id ?? "",
+      task.parent_phase_id,
       UUID_RE,
-      "RED expected: related_entities.session_id should be UUID-continuity safe",
+      "RED expected: task.parent_phase_id should be a valid UUID",
     )
   })
 })

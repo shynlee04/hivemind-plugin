@@ -1,0 +1,25 @@
+name: hiverd-web-research-bridge
+version: "1.0"
+target_agent: hiverd
+phase: web-research
+domain: internet-investigation
+description: "Augments hiverd with web search, extraction, and source evaluation for internet-based research"
+
+assets:
+  workflow: workflows/hiverd-deep-research.yaml
+  prompts:
+    - prompts/research-question-framing.md
+  templates:
+    - templates/research-report-template.md
+  skills:
+    - skills/source-evaluation
+
+entry_criteria:
+  - "Research topic defined"
+  - "Tavily or Google search MCP accessible"
+exit_criteria:
+  - "Web sources evaluated and graded"
+  - "Research report produced with citations"
+
+replaces_workflow: false
+priority: 100

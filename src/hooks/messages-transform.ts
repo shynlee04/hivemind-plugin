@@ -12,7 +12,6 @@
 
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { queueStateMutation } from "../lib/state-mutation-queue.js"
-import { loadTasks } from "../lib/manifest.js"
 import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
 import {
   estimateContextPercent,
@@ -474,29 +473,17 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           // LOW #2: Load trajectory and graphTasks in parallel
           const [trajectoryState, graphTasks] = await Promise.all([
             loadTrajectory(directory),
-            loadGraphTasks(directory)
+            loadGraphTasks(directory, { enabled: false })
           ])
           if (trajectoryState?.trajectory) {
             const activeTaskIds = new Set(trajectoryState.trajectory.active_task_ids)
             if (activeTaskIds.size > 0 && graphTasks?.tasks) {
               // MEDIUM #1: Defensive check for task.status before comparison
               const activeTasks = graphTasks.tasks.filter(task =>
-                activeTaskIds.has(task.id) && task.status && task.status !== "complete" && task.status !== "invalidated"
+                activeTaskIds.has(task.id) && task.status && task.status !== "complete" && task.status !== "invalidated" && task.status !== "cancelled"
               )
               pendingTaskCount = activeTasks.length
             }
-          }
-        }
-
-        // Fallback: Read from flat tasks.json if graph not available or empty
-        if (pendingTaskCount === 0) {
-          const taskManifest = await loadTasks(directory)
-          if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
-            const pendingCount = taskManifest.tasks.filter(task => {
-              const status = String(task.status ?? "pending").toLowerCase()
-              return status !== "completed" && status !== "cancelled"
-            }).length
-            pendingTaskCount = pendingCount
           }
         }
 

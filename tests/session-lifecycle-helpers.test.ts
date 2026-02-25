@@ -15,7 +15,8 @@ import {
 } from "../src/hooks/session-lifecycle-helpers.js";
 import { createBrainState } from "../src/schemas/brain-state.js";
 import { createConfig } from "../src/schemas/config.js";
-import { saveTasks } from "../src/lib/manifest.js";
+import { saveGraphTasks } from "../src/lib/graph-io.js";
+import { randomUUID } from "node:crypto";
 
 function createTempDir(): string {
   return mkdtempSync(join(tmpdir(), "hm-lifecycle-test-"));
@@ -125,11 +126,22 @@ describe("Session Lifecycle Helpers", () => {
 
       it("should include mems", async () => {
           const dir = createTempDir();
-          mkdirSync(join(dir, ".hivemind", "memory"), { recursive: true });
+          mkdirSync(join(dir, ".hivemind", "graph"), { recursive: true });
 
-          writeFileSync(join(dir, ".hivemind", "memory", "mems.json"), JSON.stringify({
-              mems: [{ id: "1", shelf: "context", content: "mem1", tags: [], session_id: "s1", created_at: 1 }],
-              version: "1"
+          writeFileSync(join(dir, ".hivemind", "graph", "mems.json"), JSON.stringify({
+              version: "1.0",
+              mems: [{ 
+                id: "00000000-0000-0000-0000-000000000001", 
+                session_id: "00000000-0000-0000-0000-000000000002", 
+                origin_task_id: null,
+                shelf: "context", 
+                type: "insight",
+                content: "mem1", 
+                relevance_score: 0.8,
+                staleness_stamp: new Date().toISOString(),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              }],
           }));
 
           const state = createBrainState("test", createConfig());
@@ -163,12 +175,14 @@ describe("Session Lifecycle Helpers", () => {
       it("should include pending tasks summary", async () => {
           const dir = createTempDir();
           mkdirSync(join(dir, ".hivemind", "state"), { recursive: true });
-          await saveTasks(dir, {
-              session_id: "s1",
-              updated_at: Date.now(),
+          mkdirSync(join(dir, ".hivemind", "graph"), { recursive: true });
+          const phaseId = randomUUID();
+          const now = new Date().toISOString();
+          await saveGraphTasks(dir, {
+              version: "1.0",
               tasks: [
-                  { id: "1", text: "Wire task replay", status: "pending" },
-                  { id: "2", text: "Done task", status: "completed" },
+                  { id: randomUUID(), parent_phase_id: phaseId, title: "Wire task replay", status: "pending", file_locks: [], created_at: now, updated_at: now },
+                  { id: randomUUID(), parent_phase_id: phaseId, title: "Done task", status: "complete", file_locks: [], created_at: now, updated_at: now },
               ],
           });
 

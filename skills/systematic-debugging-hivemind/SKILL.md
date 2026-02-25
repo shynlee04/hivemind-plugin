@@ -1,3 +1,8 @@
+---
+name: "systematic-debugging-hivemind"
+description: "Systematic debugging methodology adapted for HiveMind v3.0 Relational Cognitive Engine"
+---
+
 # Skill: systematic-debugging-hivemind
 
 ## Overview

@@ -19,9 +19,8 @@
 
 import type { Logger } from "../lib/logging.js"
 import { createStateManager } from "../lib/persistence.js"
-import { loadMems } from "../lib/mems.js"
+import { loadGraphMems, loadGraphTasks } from "../lib/graph-io.js"
 import { loadAnchors } from "../lib/anchors.js"
-import { loadTasks } from "../lib/manifest.js"
 import { queueStateMutation } from "../lib/state-mutation-queue.js"
 import {
   loadTree,
@@ -180,9 +179,12 @@ export function createCompactionHook(log: Logger, directory: string) {
       }
 
       // Active Tasks (TODOs)
-      const taskManifest = await loadTasks(directory)
-      if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
-        const pending = taskManifest.tasks.filter(t => t.status !== "completed" && t.status !== "cancelled")
+      const taskState = await loadGraphTasks(directory, { enabled: false })
+      if (Array.isArray(taskState.tasks) && taskState.tasks.length > 0) {
+        const pending = taskState.tasks.filter((task) => {
+          const status = String(task.status ?? "pending").toLowerCase()
+          return status !== "complete" && status !== "completed" && status !== "cancelled" && status !== "invalidated"
+        })
         if (pending.length > 0) {
           lines.push("## Active Tasks (Pending)")
           for (const t of pending.slice(0, 5)) {
@@ -210,7 +212,7 @@ export function createCompactionHook(log: Logger, directory: string) {
       }
 
       // Mems Brain summary
-      const memsState = await loadMems(directory)
+      const memsState = await loadGraphMems(directory)
       if (memsState.mems.length > 0) {
         lines.push(`Mems Brain: ${memsState.mems.length} memories stored. Use recall_mems to search.`)
       }

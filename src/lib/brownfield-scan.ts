@@ -1,7 +1,7 @@
-import { existsSync } from "node:fs"
+import { existsSync } from "node:fs"import { randomUUID } from "node:crypto"
 import { createStateManager } from "./persistence.js"
 import { loadAnchors, saveAnchors, addAnchor } from "./anchors.js"
-import { loadMems, saveMems, addMem, getShelfSummary } from "./mems.js"
+import { addGraphMem, loadGraphMems } from "./graph-io.js"
 import {
   loadTree,
   toAsciiTree,
@@ -32,6 +32,14 @@ export interface OrchestrationResult {
 
 function formatCsv(values: string[]): string {
   return values.length > 0 ? values.join(", ") : "(none)"
+}
+
+function getMemShelfSummary(mems: Array<{ shelf: string }>): Record<string, number> {
+  const summary: Record<string, number> = {}
+  for (const mem of mems) {
+    summary[mem.shelf] = (summary[mem.shelf] ?? 0) + 1
+  }
+  return summary
 }
 
 function toJson(action: ScanAction, data: Record<string, unknown>): string {
@@ -165,9 +173,9 @@ export async function handleStatus(directory: string, includeDrift: boolean, jso
     }
   }
 
-  const memsState = await loadMems(directory)
+  const memsState = await loadGraphMems(directory)
   if (memsState.mems.length > 0) {
-    const summary = getShelfSummary(memsState)
+    const summary = getMemShelfSummary(memsState.mems)
     const shelfInfo = Object.entries(summary).map(([k, v]) => `${k}(${v})`).join(", ")
     lines.push("")
     lines.push(`Memories: ${memsState.mems.length} [${shelfInfo}]`)
@@ -340,7 +348,7 @@ export async function executeOrchestration(
     await saveAnchors(directory, anchorsState)
   }
 
-  let memsState = await loadMems(directory)
+  const memsState = await loadGraphMems(directory)
   const memContent = [
     `[brownfield-scan] project=${summary.project.name}`,
     `framework=${summary.framework.mode}`,
@@ -353,15 +361,21 @@ export async function executeOrchestration(
   )
 
   let memSaved = false
-  if (!memExists) {
-    memsState = addMem(
-      memsState,
-      "project-intel",
-      memContent,
-      ["brownfield", "scan", "baseline"],
-      sessionId
-    )
-    await saveMems(directory, memsState)
+  const canPersistMem = state !== null
+  if (!memExists && canPersistMem) {
+    const nowIso = new Date().toISOString()
+    await addGraphMem(directory, {
+      id: randomUUID(),
+      session_id: state.session.id,
+      origin_task_id: null,
+      shelf: "project-intel",
+      type: "insight",
+      content: memContent,
+      relevance_score: 0.6,
+      staleness_stamp: nowIso,
+      created_at: nowIso,
+      updated_at: nowIso,
+    })
     memSaved = true
   }
 

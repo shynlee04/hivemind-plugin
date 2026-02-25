@@ -1,11 +1,7 @@
 ---
 name: hivehealer
 description: "Patches, debugs, addresses gaps, refactors, and improves code quality"
-mode: all
-model: openai/gpt-5.3-codex
-reasoningEffort: "high"
-textVerbosity: "high"
-reasoningSummary: "auto"
+mode: subagent
 tools:
   read: true
   glob: true

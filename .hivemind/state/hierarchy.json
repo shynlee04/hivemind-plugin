@@ -218,8 +218,221 @@
             "children": []
           }
         ]
+      },
+      {
+        "id": "tc_240925022026",
+        "level": "tactic",
+        "content": "Write docs/CHAIN-BRIDGE-ARCHITECTURE.md — the 9-section Chain & Bridge Architecture specification synthesizing GSD + BMAD patterns for HiveMind framework. Previous attempt failed (garbage output deleted). This is the IMMEDIATE blocker for HiveRD/HiveQ module creation.",
+        "status": "active",
+        "created": 1771986290009,
+        "stamp": "240925022026",
+        "children": [
+          {
+            "id": "a_260925022026",
+            "level": "action",
+            "content": "Delegate docs/CHAIN-BRIDGE-ARCHITECTURE.md writing to hivemaker with section-by-section synthesis spec derived from constitutional docs + GSD/BMAD extraction reports",
+            "status": "pending",
+            "created": 1771986411339,
+            "stamp": "260925022026",
+            "children": []
+          },
+          {
+            "id": "a_290925022026",
+            "level": "action",
+            "content": "Delegate docs/CHAIN-BRIDGE-ARCHITECTURE.md authoring to hivemaker, then validate line count and section completeness with evidence.",
+            "status": "active",
+            "created": 1771986597340,
+            "stamp": "290925022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_340925022026",
+        "level": "tactic",
+        "content": "Wave 2 research synthesis complete. Extracted structural patterns from BMAD Method (agents, workflows, modules, commands), BMAD Builder (builder workflows, schema validation), and GSD (phase/milestone/verification lifecycle). Ready for docs/CHAIN-BRIDGE-ARCHITECTURE.md authoring delegation.",
+        "status": "active",
+        "created": 1771986852508,
+        "stamp": "340925022026",
+        "children": [
+          {
+            "id": "a_350925022026",
+            "level": "action",
+            "content": "Delegate docs/CHAIN-BRIDGE-ARCHITECTURE.md implementation to hivemaker with strict content contract, then independently validate line count, section presence, and diagram count.",
+            "status": "pending",
+            "created": 1771986937797,
+            "stamp": "350925022026",
+            "children": []
+          },
+          {
+            "id": "a_360925022026",
+            "level": "action",
+            "content": "Implement docs/CHAIN-BRIDGE-ARCHITECTURE.md within strict one-file scope, then validate line count, section presence, and diagram count with evidence.",
+            "status": "pending",
+            "created": 1771987019746,
+            "stamp": "360925022026",
+            "children": []
+          },
+          {
+            "id": "a_380925022026",
+            "level": "action",
+            "content": "Auto-realign via /hivefiver research, then delegate file authoring and verify line count/sections/diagrams with evidence.",
+            "status": "active",
+            "created": 1771987116619,
+            "stamp": "380925022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_380925022026",
+        "level": "tactic",
+        "content": "Execute strict one-file delegation workflow to create docs/CHAIN-BRIDGE-ARCHITECTURE.md with 9 sections and evidence validation.",
+        "status": "active",
+        "created": 1771987116970,
+        "stamp": "380925022026",
+        "children": [
+          {
+            "id": "a_390925022026",
+            "level": "action",
+            "content": "Gather repository-grounded assets and patterns for docs/CHAIN-BRIDGE-ARCHITECTURE.md: Chain/Bridge/Pack terms, 4-layer architecture, hook taxonomy, command/workflow/skill/template paths",
+            "status": "active",
+            "created": 1771987152839,
+            "stamp": "390925022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_580925022026",
+        "level": "tactic",
+        "content": "Chain-Bridge spec + HiveRD module + HiveQ module complete. 55 new files, all synced, 181/181 tests pass, tsc clean. Ready for commit.",
+        "status": "active",
+        "created": 1771988337237,
+        "stamp": "580925022026",
+        "children": [
+          {
+            "id": "a_081025022026",
+            "level": "action",
+            "content": "Execute immediate priorities: (1) Re-run validation script to verify sed fixes, (2) Fix 3 skills missing name: frontmatter, (3) Plan framework spine to address user's 'shallow/fragmented' critique",
+            "status": "active",
+            "created": 1771988896807,
+            "stamp": "081025022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_321025022026",
+        "level": "tactic",
+        "content": "PLANNING ONLY — no execution. Synthesize full current state, define target state, produce gap-closing plan for lifecycle model implementation.",
+        "status": "active",
+        "created": 1771990321978,
+        "stamp": "321025022026",
+        "children": [
+          {
+            "id": "a_501025022026",
+            "level": "action",
+            "content": "Visualize and internalize the complete entity dataflow: Project → Codewiki/Codemap/Code-Intel → Sessions → Delegations → Tasks/Subtasks → Trajectories. Map SOT entities, cross-references, and automation hooks. NO execution — comprehension only.",
+            "status": "active",
+            "created": 1771991441820,
+            "stamp": "501025022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_071125022026",
+        "level": "tactic",
+        "content": "Prepare GSD-style planning SOT in .hivemind/planning/ — modular structure, evidence-grounded. Step 1: scan existing state of both .hivemind/ and .planning/ directories to understand what exists, what's reusable, what's noise.",
+        "status": "active",
+        "created": 1771992476303,
+        "stamp": "071125022026",
+        "children": [
+          {
+            "id": "a_091125022026",
+            "level": "action",
+            "content": "Synthesize scan findings: classify existing .planning/ content as reusable/stale/noise, map .hivemind/ current state, propose modular GSD-style structure for .hivemind/planning/ before creating any files.",
+            "status": "pending",
+            "created": 1771992569653,
+            "stamp": "091125022026",
+            "children": []
+          },
+          {
+            "id": "a_201125022026",
+            "level": "action",
+            "content": "Fix CHIMERA-1 split-brain mem storage by migrating mems.ts consumers to graph-io and deprecating legacy API",
+            "status": "pending",
+            "created": 1771993208898,
+            "stamp": "201125022026",
+            "children": []
+          },
+          {
+            "id": "a_201125022026-1",
+            "level": "action",
+            "content": "Fix CQRS hook contract violations by removing direct writes in src/hooks and validating with typecheck/tests/grep.",
+            "status": "pending",
+            "created": 1771993214921,
+            "stamp": "201125022026",
+            "children": []
+          },
+          {
+            "id": "a_201125022026-2",
+            "level": "action",
+            "content": "Fix split-brain task store by migrating manifest task consumers to graph-io task APIs and deprecating legacy manifest task helpers.",
+            "status": "pending",
+            "created": 1771993224378,
+            "stamp": "201125022026",
+            "children": []
+          },
+          {
+            "id": "a_261125022026",
+            "level": "action",
+            "content": "Verify CHIMERA-1 migration with typecheck, tests, and import grep evidence",
+            "status": "pending",
+            "created": 1771993604087,
+            "stamp": "261125022026",
+            "children": []
+          },
+          {
+            "id": "a_281125022026",
+            "level": "action",
+            "content": "Inspect npm test tool output file and extract final status, last 10 lines, and failing suite counts as evidence for CHIMERA-1 verification",
+            "status": "pending",
+            "created": 1771993722948,
+            "stamp": "281125022026",
+            "children": []
+          },
+          {
+            "id": "a_291125022026",
+            "level": "action",
+            "content": "Validate CQRS compliance for hooks write contract by read-only scanning src/hooks/**/*.ts for direct write calls and reporting evidence",
+            "status": "pending",
+            "created": 1771993767002,
+            "stamp": "291125022026",
+            "children": []
+          },
+          {
+            "id": "a_501225022026",
+            "level": "action",
+            "content": "Deep investigation complete for manifest.json and tasks.json split-brain. Synthesizing evidence-backed report.",
+            "status": "pending",
+            "created": 1771998605241,
+            "stamp": "501225022026",
+            "children": []
+          },
+          {
+            "id": "a_521225022026",
+            "level": "action",
+            "content": "Deep investigation complete for manifest.json and tasks.json split-brain. Synthesizing evidence-backed report.",
+            "status": "active",
+            "created": 1771998731918,
+            "stamp": "521225022026",
+            "children": []
+          }
+        ]
       }
     ]
   },
-  "cursor": "a_100925022026"
+  "cursor": "a_521225022026"
 }

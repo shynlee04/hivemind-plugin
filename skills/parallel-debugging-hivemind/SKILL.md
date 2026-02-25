@@ -1,3 +1,8 @@
+---
+name: "parallel-debugging-hivemind"
+description: "Parallel debugging methodology using headless swarm agents for HiveMind v3.0"
+---
+
 # Skill: parallel-debugging-hivemind
 
 ## Overview

@@ -477,11 +477,17 @@ export async function ensureCoreManifests(paths: HivemindPaths): Promise<void> {
 
 // ─── Task Manifest Helpers ──────────────────────────────────────────────────
 
+/**
+ * @deprecated Use `loadGraphTasks` from `src/lib/graph-io.ts` instead.
+ */
 export async function loadTasks(directory: string): Promise<TaskManifest | null> {
   const path = getEffectivePaths(directory).tasks
   return readManifest<TaskManifest | null>(path, null)
 }
 
+/**
+ * @deprecated Use `saveGraphTasks`/`addGraphTask` from `src/lib/graph-io.ts` instead.
+ */
 export async function saveTasks(directory: string, manifest: TaskManifest): Promise<void> {
   const path = getEffectivePaths(directory).tasks
   await writeManifest(path, manifest)

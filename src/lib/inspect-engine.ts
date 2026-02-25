@@ -1,6 +1,6 @@
 import { createStateManager } from "./persistence.js"
 import { loadAnchors, getAnchorsForContext } from "./anchors.js"
-import { loadMems, getShelfSummary } from "./mems.js"
+import { loadGraphMems } from "./graph-io.js"
 import { detectChainBreaks } from "./chain-analysis.js"
 import { calculateDriftScore } from "../schemas/brain-state.js"
 import { readActiveMd } from "./planning-fs.js"
@@ -26,6 +26,14 @@ type MetricsState = {
   driftScore: number
   filesTouched: number
   contextUpdates: number
+}
+
+function getMemShelfSummary(mems: Array<{ shelf: string }>): Record<string, number> {
+  const summary: Record<string, number> = {}
+  for (const mem of mems) {
+    summary[mem.shelf] = (summary[mem.shelf] ?? 0) + 1
+  }
+  return summary
 }
 
 export interface ScanResult {
@@ -107,7 +115,7 @@ export async function scanState(directory: string): Promise<ScanResult> {
   }
 
   const anchorsState = await loadAnchors(directory)
-  const memsState = await loadMems(directory)
+  const memsState = await loadGraphMems(directory)
   const scopedAnchors = getAnchorsForContext(anchorsState, state.session.id)
   const scopedMems = memsState.mems.filter((m) => m.session_id === state.session.id)
   const tree = treeExists(directory) ? await loadTree(directory) : null
@@ -142,7 +150,7 @@ export async function scanState(directory: string): Promise<ScanResult> {
     memCount: scopedMems.length,
     treeAscii: tree?.root ? toAsciiTree(tree) : undefined,
     anchorsPreview: scopedAnchors.slice(0, 5).map((a) => ({ key: a.key, value: a.value.slice(0, 60) })),
-    memShelfSummary: getShelfSummary({ ...memsState, mems: scopedMems }),
+    memShelfSummary: getMemShelfSummary(scopedMems),
   }
 }
 

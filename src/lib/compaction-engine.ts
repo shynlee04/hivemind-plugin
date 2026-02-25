@@ -1,3 +1,4 @@
+import { randomUUID } from "crypto"
 import { mkdir, writeFile } from "fs/promises"
 import { join } from "path"
 import { loadConfig, createStateManager } from "./persistence.js"
@@ -14,7 +15,7 @@ import {
   generateJsonExport,
   generateMarkdownExport,
 } from "./session-export.js"
-import { loadMems, saveMems, addMem } from "./mems.js"
+import { addGraphMem } from "./graph-io.js"
 import { createLogger } from "./logging.js"
 import { getEffectivePaths } from "./paths.js"
 import {
@@ -333,7 +334,7 @@ export async function executeCompaction(params: ExecuteCompactionParams): Promis
   }
 
   try {
-    let memsState = await loadMems(directory)
+    const nowIso = new Date().toISOString()
     const autoContent = [
       `Session ${state.session.id}:`,
       summary || `${state.metrics.turn_count} turns, ${state.metrics.files_touched.length} files`,
@@ -343,14 +344,18 @@ export async function executeCompaction(params: ExecuteCompactionParams): Promis
       .filter(Boolean)
       .join(" | ")
 
-    memsState = addMem(
-      memsState,
-      "context",
-      autoContent,
-      ["auto-compact", "session-summary"],
-      state.session.id,
-    )
-    await saveMems(directory, memsState)
+    await addGraphMem(directory, {
+      id: randomUUID(),
+      session_id: state.session.id,
+      origin_task_id: null,
+      shelf: "context",
+      type: "insight",
+      content: autoContent,
+      relevance_score: 0.8,
+      staleness_stamp: nowIso,
+      created_at: nowIso,
+      updated_at: nowIso,
+    })
   } catch {
     // Auto-mem failure is non-fatal
   }

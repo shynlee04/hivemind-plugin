@@ -1,3 +1,8 @@
+---
+name: "debug-orchestration"
+description: "High-level orchestration framework for debugging in HiveMind v3.0"
+---
+
 # Skill: debug-orchestration
 
 ## Overview

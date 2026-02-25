@@ -80,6 +80,8 @@ Agents are defined in `.opencode/agents/` (Project) or `~/.config/opencode/agent
 *   **`hivexplorer` (Investigator):** Broad scanning, investigating, and researching across domains.
 *   **`hivehealer` (Fixer):** Patches issues, performs remediation, and improves code quality.
 *   **`hiveplanner` (Strategist):** Pure planning agent for roadmap and phase definition.
+*   **`hiverd` (Researcher):** Research & Development specialist — structured multi-source research, brainstorming, comparative analysis, synthesis, and documentation.
+*   **`hiveq` (Quality):** Quality & Verification enforcer — testing, gate enforcement, compliance checking, regression detection. Subagent only.
 
 ### 3.2. Configuration Best Practices (YAML Frontmatter)
 *   **Mode:**

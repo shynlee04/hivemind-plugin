@@ -3,7 +3,9 @@ import { tmpdir } from "os"
 import { join } from "path"
 import { createMessagesTransformHook as createRawMessagesTransformHook, type MessageV2 } from "../src/hooks/messages-transform.js"
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
-import { saveTasks } from "../src/lib/manifest.js"
+import { saveGraphTasks, saveTrajectory } from "../src/lib/graph-io.js"
+import { randomUUID } from "node:crypto"
+import { mkdirSync } from "node:fs"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
 import { createBrainState, generateSessionId, unlockSession } from "../src/schemas/brain-state.js"
 import { createConfig } from "../src/schemas/config.js"
@@ -187,13 +189,33 @@ async function test_includes_pending_tasks_checklist_item() {
   const state = unlockSession(createBrainState(generateSessionId(), config))
   state.first_turn_context_injected = true
   await stateManager.save(state)
-  await saveTasks(dir, {
-    session_id: state.session.id,
-    updated_at: Date.now(),
+  // Create graph directory for tasks
+  mkdirSync(join(dir, ".hivemind", "graph"), { recursive: true })
+  const phaseId = randomUUID()
+  const taskId1 = randomUUID()
+  const taskId2 = randomUUID()
+  const now = new Date().toISOString()
+  // Save tasks first
+  await saveGraphTasks(dir, {
+    version: "1.0",
     tasks: [
-      { id: "t1", text: "Implement split validation", status: "pending" },
-      { id: "t2", text: "Already done", status: "completed" },
+      { id: taskId1, parent_phase_id: phaseId, title: "Implement split validation", status: "pending", file_locks: [], created_at: now, updated_at: now },
+      { id: taskId2, parent_phase_id: phaseId, title: "Already done", status: "complete", file_locks: [], created_at: now, updated_at: now },
     ],
+  })
+  // Create trajectory with active_task_ids pointing to the pending task
+  await saveTrajectory(dir, {
+    version: "1.0",
+    trajectory: {
+      id: randomUUID(),
+      session_id: state.session.id,
+      active_plan_id: null,
+      active_phase_id: null,
+      active_task_ids: [taskId1], // Only the pending task is active
+      intent: "Test pending tasks",
+      created_at: now,
+      updated_at: now,
+    },
   })
 
   const hook = createMessagesTransformHook({ warn: async () => {} }, dir)

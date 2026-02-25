@@ -2,7 +2,7 @@
 name: hivemaker
 description: "Versatile execution agent for building and implementing code"
 mode: all
-model: openai/gpt-5.3-codex
+model: chutes/zai-org/GLM-5-TEE
 reasoningEffort: "high"
 textVerbosity: "high"
 reasoningSummary: "auto"

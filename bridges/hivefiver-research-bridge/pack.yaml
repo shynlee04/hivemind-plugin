@@ -1,0 +1,29 @@
+name: hivefiver-research-bridge
+version: "1.0"
+target_agent: hivefiver
+phase: research
+domain: knowledge-acquisition
+description: "Augments hivefiver with MCP-backed research capabilities, source evaluation, and synthesis patterns"
+
+assets:
+  workflow: workflows/hiverd-deep-research.yaml
+  prompts:
+    - prompts/research-question-framing.md
+  templates:
+    - templates/research-report-template.md
+  references:
+    - references/research-quality-criteria.md
+  skills:
+    - skills/research-methodology
+    - skills/source-evaluation
+
+entry_criteria:
+  - "Research question or topic defined"
+  - "At least 2 MCP search tools accessible"
+exit_criteria:
+  - "Structured research report produced"
+  - "All claims cite sources"
+  - "Confidence scores assigned to findings"
+
+replaces_workflow: false
+priority: 100

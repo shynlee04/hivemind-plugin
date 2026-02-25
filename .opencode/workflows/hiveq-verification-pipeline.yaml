@@ -1,0 +1,45 @@
+name: hiveq-verification-pipeline
+description: "Goal-backward verification: extract criteria, collect evidence, analyze, produce verdict."
+version: 1
+target_agent: hiveq
+steps:
+  - name: criteria-extraction
+    description: "Pull acceptance criteria from planning artifacts for the target phase/task"
+    tool: hiveq
+    args:
+      action: extract_criteria
+    wave: 1
+
+  - name: evidence-collection
+    description: "Run commands, read files, grep for patterns to gather verification evidence"
+    tool: hiveq
+    args:
+      action: collect_evidence
+      commands:
+        - "npm test"
+        - "npx tsc --noEmit"
+    wave: 2
+
+  - name: goal-backward-analysis
+    description: "Map evidence to criteria, identify coverage gaps"
+    tool: hiveq
+    args:
+      action: analyze
+      method: goal_backward
+    wave: 3
+
+  - name: verdict-production
+    description: "Produce structured PASS/FAIL report per criterion"
+    tool: hiveq
+    args:
+      action: verdict
+      template: templates/verification-report-template.md
+    wave: 4
+
+guards:
+  - rule: criteria_exist
+    check: at_least_one_criterion_extracted
+  - rule: evidence_collected
+    check: commands_executed_successfully
+  - rule: all_criteria_covered
+    check: every_criterion_has_evidence_or_gap_flag

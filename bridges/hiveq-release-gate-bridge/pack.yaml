@@ -1,0 +1,25 @@
+name: hiveq-release-gate-bridge
+version: "1.0"
+target_agent: hiveq
+phase: release
+domain: deployment-safety
+description: "Augments hiveq with release safety checks, guard:public integration, and pre-release checklists"
+
+assets:
+  workflow: workflows/hiveq-verification-pipeline.yaml
+  templates:
+    - templates/verification-report-template.md
+  skills:
+    - skills/verification-methodology
+    - skills/compliance-checking
+
+entry_criteria:
+  - "Release candidate ready"
+  - "All phase verifications complete"
+exit_criteria:
+  - "guard:public passes"
+  - "Release verification report produced"
+  - "No P0 findings outstanding"
+
+replaces_workflow: true
+priority: 100

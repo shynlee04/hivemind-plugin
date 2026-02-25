@@ -43,7 +43,6 @@ import {
   type SessionMode,
 } from "../schemas/brain-state.js"
 
-import { loadMems, saveMems, addMem } from "./mems.js"
 import { addGraphMem, loadTrajectory } from "./graph-io.js"
 export type HierarchyLevel = "trajectory" | "tactic" | "action"
 
@@ -416,17 +415,6 @@ export async function closeSession(directory: string, summary?: string): Promise
   }
 
   await resetActiveMd(directory)
-
-  // Create auto-compact mem entry
-  const memsState = await loadMems(directory)
-  const autoCompactMem = addMem(
-    memsState,
-    "context",
-    `Session compacted: ${state.hierarchy.trajectory || "no trajectory"}. Turns: ${state.metrics.turn_count}, Files: ${state.metrics.files_touched.length}.`,
-    ["auto-compact", "session-close"],
-    sessionId
-  )
-  await saveMems(directory, autoCompactMem)
 
   // Persist lifecycle trace in graph mems with FK links.
   // Prefer the current active task FK from trajectory before close cleanup.

@@ -13,7 +13,7 @@ import { createHivemindSessionTool } from "../src/tools/hivemind-session.js"
 import { createHivemindInspectTool } from "../src/tools/hivemind-inspect.js"
 import { loadTree, treeExists } from "../src/lib/hierarchy-tree.js"
 import { readManifest } from "../src/lib/planning-fs.js"
-import { loadMems } from "../src/lib/mems.js"
+import { loadGraphMems } from "../src/lib/graph-io.js"
 import { getEffectivePaths } from "../src/lib/paths.js"
 import { mkdtemp, rm, readdir, writeFile, readFile } from "fs/promises"
 import { existsSync, writeFileSync, readFileSync } from "fs"
@@ -208,9 +208,9 @@ async function test_fullChain() {
     assert(mdExports.length >= 1, "at least 1 .md export file exists")
 
     // Mems have auto-compact entry
-    const mems6 = await loadMems(dir)
+    const mems6 = await loadGraphMems(dir)
     const autoMem = mems6.mems.find(m =>
-      m.shelf === "context" && m.tags.includes("auto-compact")
+      m.shelf === "context" && m.content.includes("Lifecycle compact trace")
     )
     assert(autoMem !== undefined, "mems have auto-compact entry")
 
@@ -250,8 +250,8 @@ async function test_fullChain() {
     assert(archivesAfter7.length >= 1, "old archives still exist")
 
     // Mems from previous session can be found
-    const mems7 = await loadMems(dir)
-    assert(mems7.mems.length > 0, "mems from previous session can be found (loadMems → mems.length > 0)")
+    const mems7 = await loadGraphMems(dir)
+    assert(mems7.mems.length > 0, "mems from previous session can be found (loadGraphMems → mems.length > 0)")
 
     // New brain.compaction_count carried forward
     const state7 = await stateManager.load()

@@ -48,6 +48,7 @@ function getMemsPath(projectRoot: string): string {
   return getEffectivePaths(projectRoot).mems;
 }
 
+/** @deprecated Use addGraphMem/queryGraphMems from graph-io.ts instead. */
 export function generateMemId(): string {
   const timestamp = Date.now();
   const random = Math.random().toString(36).slice(2, 6).padEnd(4, "0");
@@ -56,6 +57,7 @@ export function generateMemId(): string {
 
 // ─── IO Wrappers ─────────────────────────────────────────────────────
 
+/** @deprecated Use addGraphMem/queryGraphMems from graph-io.ts instead. */
 export async function loadMems(projectRoot: string): Promise<MemsState> {
   const path = getMemsPath(projectRoot);
   try {
@@ -67,6 +69,7 @@ export async function loadMems(projectRoot: string): Promise<MemsState> {
   return { mems: [], version: MEMS_VERSION };
 }
 
+/** @deprecated Use addGraphMem/queryGraphMems from graph-io.ts instead. */
 export async function saveMems(projectRoot: string, state: MemsState): Promise<void> {
   const path = getMemsPath(projectRoot);
   await mkdir(dirname(path), { recursive: true });
@@ -75,6 +78,7 @@ export async function saveMems(projectRoot: string, state: MemsState): Promise<v
 
 // ─── Pure Functions ──────────────────────────────────────────────────
 
+/** @deprecated Use addGraphMem/queryGraphMems from graph-io.ts instead. */
 export function addMem(state: MemsState, shelf: string, content: string, tags: string[], sessionId: string): MemsState {
   const mem: Mem = {
     id: generateMemId(),
@@ -87,6 +91,7 @@ export function addMem(state: MemsState, shelf: string, content: string, tags: s
   return { ...state, mems: [...state.mems, mem] };
 }
 
+/** @deprecated Use addGraphMem/queryGraphMems from graph-io.ts instead. */
 export function removeMem(state: MemsState, memId: string): MemsState {
   return { ...state, mems: state.mems.filter(m => m.id !== memId) };
 }
@@ -116,6 +121,7 @@ function scoreMem(
   return score;
 }
 
+/** @deprecated Use addGraphMem/queryGraphMems from graph-io.ts instead. */
 export function searchMems(
   state: MemsState,
   query: string,
@@ -152,12 +158,14 @@ export function searchMems(
   return results;
 }
 
+/** @deprecated Use addGraphMem/queryGraphMems from graph-io.ts instead. */
 export function getMemsByShelf(state: MemsState, shelf: string): Mem[] {
   return state.mems
     .filter(m => m.shelf === shelf)
     .sort((a, b) => b.created_at - a.created_at);
 }
 
+/** @deprecated Use addGraphMem/queryGraphMems from graph-io.ts instead. */
 export function getShelfSummary(state: MemsState): Record<string, number> {
   const summary: Record<string, number> = {};
   for (const m of state.mems) {
@@ -166,6 +174,7 @@ export function getShelfSummary(state: MemsState): Record<string, number> {
   return summary;
 }
 
+/** @deprecated Use addGraphMem/queryGraphMems from graph-io.ts instead. */
 export function formatMemsForPrompt(state: MemsState): string {
   if (state.mems.length === 0) return "";
   const summary = getShelfSummary(state);

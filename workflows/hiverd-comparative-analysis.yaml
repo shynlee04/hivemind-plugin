@@ -1,0 +1,47 @@
+name: hiverd-comparative-analysis
+description: "Structured comparison of 2-5 candidates with weighted scoring and sensitivity analysis."
+version: 1
+target_agent: hiverd
+steps:
+  - name: criteria-definition
+    description: "Establish 5-8 evaluation criteria with weights based on project priorities"
+    tool: hiverd
+    args:
+      action: define_criteria
+      min_criteria: 5
+      max_criteria: 8
+    wave: 1
+
+  - name: candidate-investigation
+    description: "Research each candidate using MCP tools and documentation"
+    tool: hiverd
+    args:
+      action: investigate
+      use_mcp: true
+    wave: 2
+
+  - name: matrix-scoring
+    description: "Rate each candidate 1-5 on each criterion with evidence justification"
+    tool: hiverd
+    args:
+      action: score
+      scale: 5
+      require_evidence: true
+    wave: 3
+
+  - name: recommendation
+    description: "Sensitivity analysis, tradeoff summary, and final recommendation"
+    tool: hiverd
+    args:
+      action: recommend
+      sensitivity_range: 20
+      template: templates/analysis-matrix-template.md
+    wave: 4
+
+guards:
+  - rule: criteria_weighted
+    check: all_criteria_have_weights
+  - rule: evidence_backed
+    check: all_scores_have_justification
+  - rule: sensitivity_tested
+    check: recommendation_survives_weight_shift

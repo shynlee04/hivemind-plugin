@@ -6,7 +6,7 @@
   "auto_compact_on_turns": 40,
   "stale_session_days": 3,
   "commit_suggestion_threshold": 5,
-  "auto_commit": true,
+  "auto_commit": false,
   "agent_behavior": {
     "language": "en",
     "expert_level": "beginner",

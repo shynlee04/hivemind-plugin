@@ -2,8 +2,7 @@ import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { loadAnchors } from "../lib/anchors.js";
-import { loadMems } from "../lib/mems.js";
-import { loadTasks } from "../lib/manifest.js";
+import { loadGraphMems, loadGraphTasks } from "../lib/graph-io.js";
 import { readManifest } from "../lib/planning-fs.js";
 import { detectFrameworkContext } from "../lib/framework-context.js";
 import type { BrainState } from "../schemas/brain-state.js";
@@ -292,7 +291,7 @@ export async function compileFirstTurnContext(
 
   // 2. Mems count + last 2 summaries (budget: 200 chars)
   try {
-    const memsState = await loadMems(directory);
+    const memsState = await loadGraphMems(directory);
     if (memsState.mems.length > 0) {
       const recent = memsState.mems.slice(-2).map((m) => m.content.slice(0, 60)).join("; ");
       lines.push(`Mems (${memsState.mems.length}): ${recent.slice(0, 180)}`);
@@ -303,11 +302,11 @@ export async function compileFirstTurnContext(
 
   // 3. Pending tasks summary (budget: 220 chars)
   try {
-    const taskManifest = await loadTasks(directory);
-    if (taskManifest && Array.isArray(taskManifest.tasks) && taskManifest.tasks.length > 0) {
-      const pending = taskManifest.tasks.filter((task) => {
+    const taskState = await loadGraphTasks(directory, { enabled: false });
+    if (Array.isArray(taskState.tasks) && taskState.tasks.length > 0) {
+      const pending = taskState.tasks.filter((task) => {
         const status = String(task.status ?? "pending").toLowerCase();
-        return status !== "completed" && status !== "cancelled";
+        return status !== "complete" && status !== "completed" && status !== "cancelled" && status !== "invalidated";
       });
 
       if (pending.length > 0) {
@@ -315,15 +314,15 @@ export async function compileFirstTurnContext(
           .slice(0, 3)
           .map((task) => {
             const text =
-              typeof task.text === "string" && task.text.trim().length > 0
-                ? task.text.trim()
-                : typeof task.content === "string"
-                  ? task.content.trim()
+              typeof task.title === "string" && task.title.trim().length > 0
+                ? task.title.trim()
+                : typeof task.description === "string"
+                  ? task.description.trim()
                   : "(untitled task)";
             return text.slice(0, 60);
           })
           .join("; ");
-        lines.push(`Tasks (${pending.length} pending/${taskManifest.tasks.length} total): ${taskSummary.slice(0, 200)}`);
+        lines.push(`Tasks (${pending.length} pending/${taskState.tasks.length} total): ${taskSummary.slice(0, 200)}`);
       }
     }
   } catch {
