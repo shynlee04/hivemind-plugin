@@ -45,10 +45,51 @@ function createMockShell(opts: { failCommit?: boolean } = {}) {
 
 function test_shouldAutoCommit() {
   process.stderr.write("\n--- auto-commit: shouldAutoCommit ---\n")
-  assert(shouldAutoCommit("write"), "write tool is auto-committable")
-  assert(shouldAutoCommit("edit"), "edit tool is auto-committable")
-  assert(shouldAutoCommit("bash"), "bash tool is auto-committable")
-  assert(!shouldAutoCommit("read"), "read tool is not auto-committable")
+  assert(
+    shouldAutoCommit({
+      tool: "write",
+      hasActiveTask: true,
+      taskStatus: "in_progress",
+      configEnabled: true,
+    }),
+    "auto-commits when active task in progress",
+  )
+  assert(
+    !shouldAutoCommit({
+      tool: "write",
+      hasActiveTask: false,
+      taskStatus: undefined,
+      configEnabled: true,
+    }),
+    "does not auto-commit without active task",
+  )
+  assert(
+    !shouldAutoCommit({
+      tool: "write",
+      hasActiveTask: true,
+      taskStatus: "in_progress",
+      configEnabled: false,
+    }),
+    "does not auto-commit when config disabled",
+  )
+  assert(
+    !shouldAutoCommit({
+      tool: "write",
+      hasActiveTask: true,
+      taskStatus: "complete",
+      configEnabled: true,
+    }),
+    "does not auto-commit for completed tasks",
+  )
+  assert(
+    shouldAutoCommit({
+      tool: "bash",
+      hasActiveTask: true,
+      taskStatus: "active",
+      configEnabled: true,
+    }),
+    "auto-commits bash with active task",
+  )
 }
 
 function test_generateCommitMessage() {

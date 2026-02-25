@@ -19,6 +19,8 @@ export interface KnowledgeCommitOptions {
   message?: string
   /** Whether to append [skip ci] to the commit (default: true) */
   skipCi?: boolean
+  /** Optional task id for governance traceability */
+  taskId?: string
 }
 
 export interface KnowledgeCommitResult {
@@ -87,6 +89,9 @@ export async function commitKnowledgeState(
     // Build commit message
     const skipCi = options.skipCi !== false
     let message = options.message ?? DEFAULT_COMMIT_MESSAGE
+    if (options.taskId) {
+      message = `${message} [task:${options.taskId}]`
+    }
     if (skipCi && !message.includes("[skip ci]")) {
       message += " [skip ci]"
     }

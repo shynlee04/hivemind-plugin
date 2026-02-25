@@ -5,7 +5,7 @@
     "governance_mode": "assisted",
     "governance_status": "OPEN",
     "start_time": 1772043320873,
-    "last_activity": 1772050438235,
+    "last_activity": 1772049882716,
     "date": "2026-02-25",
     "meta_key": "",
     "role": "",
@@ -14,26 +14,26 @@
   "hierarchy": {
     "trajectory": "Execute full 6-phase refactor: Auto/Callable/Delete, SOT naming compliance, lifecycle purge, gate hardening, first-turn determinism, monolith slicing",
     "tactic": "Sequentially delegate implementation by dependency layers: delete legacy pathing/export hoarding, enforce naming/SOT, add memory auto-purge hooks, gate by TaskNode, then split monoliths with compatibility wrappers",
-    "action": "/hivefiver research checkpoint: enterprise_architect lane readiness for Phase 4A/4B/4C re-review"
+    "action": "/hivefiver research: investigate Phase 4A/4B/4C TaskNode-bound auto-commit, tool-gate advisory, and knowledge-commit binding for correctness and architecture fit"
   },
   "metrics": {
-    "turn_count": 23,
+    "turn_count": 17,
     "user_turn_count": 1,
     "drift_score": 70,
     "files_touched": [],
-    "context_updates": 16,
+    "context_updates": 13,
     "ratings": [],
     "auto_health_score": 100,
-    "total_tool_calls": 23,
-    "successful_tool_calls": 23,
+    "total_tool_calls": 17,
+    "successful_tool_calls": 17,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
     "last_section_content": "",
     "tool_type_counts": {
-      "read": 4,
+      "read": 3,
       "write": 1,
-      "query": 17,
+      "query": 12,
       "governance": 1
     },
     "keyword_flags": [
@@ -45,8 +45,8 @@
       "out_of_order": 0,
       "drift": 0,
       "compaction": 0,
-      "evidence_pressure": 43,
-      "ignored": 17,
+      "evidence_pressure": 31,
+      "ignored": 11,
       "acknowledged": false,
       "prerequisites_completed": true
     }
@@ -63,16 +63,16 @@
   "memory_governance": {
     "classified_counts": {
       "discovery_brainstorming_discuss": 0,
-      "research_synthesis": 6,
+      "research_synthesis": 4,
       "codebase_investigation": 4,
       "planning": 0,
       "implementing": 3,
       "debug": 0,
-      "test_validation_gatekeeping": 6
+      "test_validation_gatekeeping": 4
     },
     "temporary_exports_consolidated": 0,
     "temporary_exports_purged": 0,
-    "last_classified_at": 1772050425919
+    "last_classified_at": 1772049874797
   },
   "complexity_nudge_shown": true,
   "last_commit_suggestion_turn": 0,
@@ -101,7 +101,7 @@
   "recent_messages": [
     {
       "role": "user",
-      "content": "/hivefiver research\n\nTask: Run an auto-realign research checkpoint for current enterprise_architect lane and report concise readiness findings for continuing Phase 4A/4B/4C re-review.\nScope: Read-only governance/research alignment only. Do NOT edit files.\nReturn format: 1) lane status 2) required gates status 3) risks/blockers 4) recommended next step.\nSuccess metric: produces concrete, actionable next-step guidance.\nAcceptance criteria: output addresses research alignment and does not mutate code.\nConstraints: no code changes, no git operations, no destructive actions.\nEvidence: cite specific governance or workflow signals used for recommendation."
+      "content": "/hivefiver research"
     }
   ],
   "offtrack_todo_pending": [

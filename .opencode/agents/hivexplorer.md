@@ -1,6 +1,7 @@
 ---
 name: hivexplorer
 description: "Hybrid investigation agent for deep scanning and fast exploration across codebase analysis, memory retrieval, and targeted research."
+model: chutes/MiniMaxAI/MiniMax-M2.5-TEE
 mode: subagent
 hidden: true
 tools:

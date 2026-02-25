@@ -382,6 +382,25 @@ export function createEventHandler(log: Logger, directory: string) {
               },
               source: "event-handler.todo.updated",
             })
+
+            // Phase 3A: Detect terminal tasks and queue pending_purge flag
+            const hasTerminalTasks = rawTodos.some((todo: unknown) => {
+              const rec = toSafeRecord(todo)
+              const todoStatus = pickSafeString(rec, ["status"])
+              return todoStatus === "complete" || todoStatus === "completed" || todoStatus === "cancelled" || todoStatus === "invalidated"
+            })
+            if (hasTerminalTasks && state) {
+              queueStateMutation({
+                type: "UPDATE_STATE",
+                payload: {
+                  memory_governance: {
+                    ...state.memory_governance,
+                    pending_purge: true,
+                  },
+                },
+                source: "event-handler.todo.updated:terminal-task-detected",
+              })
+            }
           }
           break
         }

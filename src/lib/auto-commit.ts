@@ -15,10 +15,19 @@ export interface AutoCommitResult {
   message: string
 }
 
-const AUTO_COMMIT_TOOLS = new Set(["write", "edit", "bash"])
+export interface AutoCommitDecisionContext {
+  tool: string
+  hasActiveTask: boolean
+  taskStatus?: string
+  configEnabled: boolean
+}
 
-export function shouldAutoCommit(tool: string): boolean {
-  return AUTO_COMMIT_TOOLS.has(tool)
+export function shouldAutoCommit(ctx: AutoCommitDecisionContext): boolean {
+  if (!ctx.configEnabled || !ctx.hasActiveTask) {
+    return false
+  }
+
+  return ctx.taskStatus === "in_progress" || ctx.taskStatus === "active"
 }
 
 function normalizeToolName(tool: string): string {

@@ -28,10 +28,12 @@ import {
   type BrainState,
 } from "../src/schemas/brain-state.js"
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
+import { saveGraphTasks, saveTrajectory } from "../src/lib/graph-io.js"
 import { noopLogger, type Logger } from "../src/lib/logging.js"
 import { mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
+import { randomUUID } from "crypto"
 
 // ─── Harness ─────────────────────────────────────────────────────────
 
@@ -795,6 +797,37 @@ async function test_auto_commit_runs_when_enabled_and_files_modified() {
   const state = unlockSession(createBrainState(generateSessionId(), config))
   await sm.save(state)
 
+  const phaseId = randomUUID()
+  const taskId = randomUUID()
+  const now = new Date().toISOString()
+  await saveGraphTasks(dir, {
+    version: "1.0",
+    tasks: [
+      {
+        id: taskId,
+        parent_phase_id: phaseId,
+        title: "Auto-commit tracked write",
+        status: "in_progress",
+        file_locks: [],
+        created_at: now,
+        updated_at: now,
+      },
+    ],
+  })
+  await saveTrajectory(dir, {
+    version: "1.0",
+    trajectory: {
+      id: randomUUID(),
+      session_id: state.session.id,
+      active_plan_id: null,
+      active_phase_id: phaseId,
+      active_task_ids: [taskId],
+      intent: "Auto-commit integration test",
+      created_at: now,
+      updated_at: now,
+    },
+  })
+
   const { shell, commands } = createMockShell()
   initSdkContext({
     client: null as any,
@@ -828,6 +861,37 @@ async function test_auto_commit_skips_when_no_modified_files() {
   const sm = createStateManager(dir)
   const state = unlockSession(createBrainState(generateSessionId(), config))
   await sm.save(state)
+
+  const phaseId = randomUUID()
+  const taskId = randomUUID()
+  const now = new Date().toISOString()
+  await saveGraphTasks(dir, {
+    version: "1.0",
+    tasks: [
+      {
+        id: taskId,
+        parent_phase_id: phaseId,
+        title: "Auto-commit no-op write",
+        status: "in_progress",
+        file_locks: [],
+        created_at: now,
+        updated_at: now,
+      },
+    ],
+  })
+  await saveTrajectory(dir, {
+    version: "1.0",
+    trajectory: {
+      id: randomUUID(),
+      session_id: state.session.id,
+      active_plan_id: null,
+      active_phase_id: phaseId,
+      active_task_ids: [taskId],
+      intent: "Auto-commit skip integration test",
+      created_at: now,
+      updated_at: now,
+    },
+  })
 
   const { shell, commands } = createMockShell()
   initSdkContext({

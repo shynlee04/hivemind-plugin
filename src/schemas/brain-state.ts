@@ -117,6 +117,8 @@ export interface MemoryGovernanceState {
   temporary_exports_consolidated: number;
   temporary_exports_purged: number;
   last_classified_at: number;
+  /** Phase 3A: Flag set by event-handler when terminal tasks detected; cleared by purge action */
+  pending_purge?: boolean;
 }
 
 export interface OffTrackIntent {

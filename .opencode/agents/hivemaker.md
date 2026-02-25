@@ -2,6 +2,7 @@
 name: hivemaker
 description: "Versatile execution agent for building and implementing code"
 mode: subagent
+model: openai/gpt-5.3-codex
 tools:
   read: true
   glob: true

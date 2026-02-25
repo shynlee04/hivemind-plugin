@@ -47,14 +47,113 @@
             "id": "a_440126022026",
             "level": "action",
             "content": "Phase 1/2 refactor implemented and verified with full TypeScript and test suite.",
-            "status": "active",
+            "status": "pending",
             "created": 1772045042941,
             "stamp": "440126022026",
+            "children": []
+          },
+          {
+            "id": "a_240226022026",
+            "level": "action",
+            "content": "/hivefiver research: investigate remaining gaps for phases 3-6 (lifecycle purge, gate hardening, first-turn determinism, monolith slicing) with evidence-backed file/line mapping.",
+            "status": "pending",
+            "created": 1772047476277,
+            "stamp": "240226022026",
+            "children": []
+          },
+          {
+            "id": "a_250226022026",
+            "level": "action",
+            "content": "Deep read-only scan for remaining gaps in phases 3-6 with code evidence and line mapping.",
+            "status": "pending",
+            "created": 1772047546341,
+            "stamp": "250226022026",
+            "children": []
+          },
+          {
+            "id": "a_340226022026",
+            "level": "action",
+            "content": "Verify Phase 1/2 completion state, then sequentially execute Phases 3-6",
+            "status": "pending",
+            "created": 1772048051677,
+            "stamp": "340226022026",
+            "children": []
+          },
+          {
+            "id": "a_370226022026",
+            "level": "action",
+            "content": "Phase 3: Context Lifecycle & Memory Governance — auto-purge transient memory on task completion, tighten TODO-Pending routing",
+            "status": "pending",
+            "created": 1772048233352,
+            "stamp": "370226022026",
+            "children": []
+          },
+          {
+            "id": "a_530226022026",
+            "level": "action",
+            "content": "Phase 4: Flow Governance & Atomicity — refactor auto-commit to TaskNode binding, harden tool-gate with TaskNode UUID validation",
+            "status": "pending",
+            "created": 1772049232949,
+            "stamp": "530226022026",
+            "children": []
+          },
+          {
+            "id": "a_580226022026",
+            "level": "action",
+            "content": "Implement Phase 4A/4B/4C TaskNode-bound auto-commit, tool-gate advisory, and knowledge commit task binding with tests and verification",
+            "status": "pending",
+            "created": 1772049491561,
+            "stamp": "580226022026",
+            "children": []
+          },
+          {
+            "id": "a_030326022026",
+            "level": "action",
+            "content": "Review Phase 4A/4B/4C TaskNode-bound auto-commit, tool-gate advisory, and knowledge-commit task binding changes for correctness and architecture fit",
+            "status": "pending",
+            "created": 1772049831983,
+            "stamp": "030326022026",
+            "children": []
+          },
+          {
+            "id": "a_040326022026",
+            "level": "action",
+            "content": "/hivefiver research: investigate Phase 4A/4B/4C TaskNode-bound auto-commit, tool-gate advisory, and knowledge-commit binding for correctness and architecture fit",
+            "status": "pending",
+            "created": 1772049882715,
+            "stamp": "040326022026",
+            "children": []
+          },
+          {
+            "id": "a_100326022026",
+            "level": "action",
+            "content": "Completed code review for Phase 4A/4B/4C scoped files with verification evidence and merge verdict",
+            "status": "pending",
+            "created": 1772050248657,
+            "stamp": "100326022026",
+            "children": []
+          },
+          {
+            "id": "a_130326022026",
+            "level": "action",
+            "content": "Re-review Phase 4A/4B/4C fixed scope: verify tool-gate status filtering fix, non-active referenced task regression coverage, and final blocking verdict",
+            "status": "pending",
+            "created": 1772050401200,
+            "stamp": "130326022026",
+            "children": []
+          },
+          {
+            "id": "a_130326022026-1",
+            "level": "action",
+            "content": "/hivefiver research checkpoint: enterprise_architect lane readiness for Phase 4A/4B/4C re-review",
+            "status": "active",
+            "created": 1772050438234,
+            "stamp": "130326022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_440126022026"
+  "cursor": "a_130326022026-1"
 }

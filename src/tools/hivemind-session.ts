@@ -21,6 +21,7 @@ import { clearPendingFailureAck, type SessionMode } from "../schemas/brain-state
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 import { flushMutations, flushTaskManifestMutations } from "../lib/state-mutation-queue.js"
 import { loadPendingChanges, loadVerificationLedger } from "../lib/sot-governance.js"
+import { purgeTransientSessionMemory } from "../lib/session-memory-purge.js"
 
 /**
  * Write trajectory state after session operations to maintain graph consistency.
@@ -299,6 +300,25 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
                 "Strict close gate blocked. Run hivemind_context validate/purge/doctor first.",
                 "Resolve queued/unapplied pending changes and complete consolidation/purge before close.",
               )
+            }
+          }
+
+          // Phase 3A: Auto-purge transient session memory before close
+          {
+            const preCloseState = await stateManager.load()
+            if (preCloseState) {
+              const purgeResult = await purgeTransientSessionMemory(directory, preCloseState.session.id)
+              if (purgeResult.purgedCount > 0) {
+                await stateManager.save({
+                  ...preCloseState,
+                  memory_governance: {
+                    ...preCloseState.memory_governance,
+                    temporary_exports_purged:
+                      preCloseState.memory_governance.temporary_exports_purged + purgeResult.purgedCount,
+                    pending_purge: false,
+                  },
+                })
+              }
             }
           }
 

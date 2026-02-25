@@ -34,6 +34,7 @@ import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
 import { detectLongSession } from "../lib/long-session.js"
 import { evaluateEntityChecklist } from "../lib/entity-checklist.js"
+import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
 import { executeAutoCommit, extractModifiedFiles, shouldAutoCommit } from "../lib/auto-commit.js"
 import { getClient } from "./sdk-context.js"
 import { checkAndRecordToast, resetAllThrottles } from "../lib/toast-throttle.js"
@@ -555,7 +556,33 @@ export function createSoftGovernanceHook(
         await log.debug(`Cycle intelligence: auto-captured Task return (${taskOutput.length} chars, failure=${newState.pending_failure_ack})`);
       }
 
-      if (config.auto_commit && shouldAutoCommit(input.tool)) {
+      let hasActiveTask = false
+      let activeTaskStatus: string | undefined
+      try {
+        const trajectoryState = await loadTrajectory(directory)
+        const activeTaskIdsFromTrajectory = trajectoryState?.trajectory?.active_task_ids ?? []
+        if (activeTaskIdsFromTrajectory.length > 0) {
+          const graphTasks = await loadGraphTasks(directory, { enabled: false })
+          const activeTaskIds = new Set(activeTaskIdsFromTrajectory)
+          const activeTask = graphTasks.tasks.find((task) => (
+            activeTaskIds.has(task.id)
+            && (task.status === "in_progress" || task.status === "active")
+          ))
+          if (activeTask) {
+            hasActiveTask = true
+            activeTaskStatus = activeTask.status
+          }
+        }
+      } catch {
+        // P3: auto-commit context loading failure is non-fatal
+      }
+
+      if (shouldAutoCommit({
+        tool: input.tool,
+        hasActiveTask,
+        taskStatus: activeTaskStatus,
+        configEnabled: config.auto_commit,
+      })) {
         const modifiedFiles = extractModifiedFiles(
           _output.metadata,
           newState.metrics.files_touched,

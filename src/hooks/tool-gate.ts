@@ -6,6 +6,7 @@ import { addFileTouched, isSessionLocked, calculateDriftScore, shouldTriggerDrif
 import { checkComplexity } from "../lib/complexity.js";
 import { checkAndRecordToast } from "../lib/toast-throttle.js";
 import { treeExists } from "../lib/hierarchy-tree.js"
+import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
 import { validateSessionState, type GatekeeperResult } from "../lib/gatekeeper.js"
 import { queueStateMutation, applyPendingStateMutations } from "../lib/state-mutation-queue.js"
 
@@ -292,6 +293,45 @@ export function createToolGateHook(
               severity: "info",
               message: complexityCheck.message,
             },
+          }
+        }
+
+        // Phase 4: TaskNode advisory for write tools
+        if (isWriteTool(toolName)) {
+          try {
+            const trajectoryState = await loadTrajectory(directory)
+            const activeTaskIds = new Set(trajectoryState?.trajectory?.active_task_ids ?? [])
+
+            if (activeTaskIds.size === 0) {
+              return {
+                allowed: true,
+                warning: "No active TaskNode found. Consider creating a task/plan before making changes.",
+                signal: {
+                  type: "governance",
+                  severity: "advisory",
+                  message: "Write tool used without active TaskNode. Changes may not be tracked in SOT.",
+                },
+              }
+            }
+
+            const graphTasks = await loadGraphTasks(directory, { enabled: false })
+            const hasTrackedTask = graphTasks.tasks.some((task) => (
+              activeTaskIds.has(task.id)
+              && (task.status === "in_progress" || task.status === "active")
+            ))
+            if (!hasTrackedTask) {
+              return {
+                allowed: true,
+                warning: "No active TaskNode found. Consider creating a task/plan before making changes.",
+                signal: {
+                  type: "governance",
+                  severity: "advisory",
+                  message: "Write tool used without active TaskNode. Changes may not be tracked in SOT.",
+                },
+              }
+            }
+          } catch {
+            // P3: TaskNode lookup failure is non-fatal
           }
         }
       }

@@ -7,11 +7,13 @@ import { createStateManager, saveConfig } from "../src/lib/persistence.js"
 import { createConfig } from "../src/schemas/config.js"
 import { createBrainState, generateSessionId, unlockSession } from "../src/schemas/brain-state.js"
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
+import { saveGraphTasks, saveTrajectory } from "../src/lib/graph-io.js"
 import { noopLogger } from "../src/lib/logging.js"
 import { clearMutationQueue, flushMutations } from "../src/lib/state-mutation-queue.js"
 import { mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
+import { randomUUID } from "crypto"
 
 // ─── Harness ─────────────────────────────────────────────────────────
 
@@ -186,6 +188,129 @@ async function test_entry_gate_suggests_scan() {
   await cleanup()
 }
 
+async function test_write_tool_warns_without_active_tasknode() {
+  process.stderr.write("\n--- tool-gate: write tool warns without active tasknode ---\n")
+  const dir = await setup()
+  const config = createConfig({ governance_mode: "assisted" })
+  await saveConfig(dir, config)
+
+  const sm = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  await sm.save(state)
+
+  const hook = createToolGateHookInternal(noopLogger, dir, config)
+  const result = await hook({ sessionID: "test-tasknode", tool: "write" })
+
+  assert(result.allowed, "write remains allowed without active tasknode (HC1)")
+  assert(result.warning?.includes("No active TaskNode found") === true, "warns when no active tasknode is bound")
+
+  await cleanup()
+}
+
+async function test_write_tool_no_tasknode_warning_with_active_task() {
+  process.stderr.write("\n--- tool-gate: write tool no tasknode warning when active ---\n")
+  const dir = await setup()
+  const config = createConfig({ governance_mode: "assisted" })
+  await saveConfig(dir, config)
+
+  const sm = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  await sm.save(state)
+
+  const phaseId = randomUUID()
+  const taskId = randomUUID()
+  const now = new Date().toISOString()
+
+  await saveGraphTasks(dir, {
+    version: "1.0",
+    tasks: [
+      {
+        id: taskId,
+        parent_phase_id: phaseId,
+        title: "Track write changes",
+        status: "in_progress",
+        file_locks: [],
+        created_at: now,
+        updated_at: now,
+      },
+    ],
+  })
+
+  await saveTrajectory(dir, {
+    version: "1.0",
+    trajectory: {
+      id: randomUUID(),
+      session_id: state.session.id,
+      active_plan_id: null,
+      active_phase_id: phaseId,
+      active_task_ids: [taskId],
+      intent: "TaskNode advisory suppression",
+      created_at: now,
+      updated_at: now,
+    },
+  })
+
+  const hook = createToolGateHookInternal(noopLogger, dir, config)
+  const result = await hook({ sessionID: "test-tasknode-active", tool: "write" })
+
+  assert(result.allowed, "write allowed with active tasknode")
+  assert(result.warning?.includes("No active TaskNode found") !== true, "does not warn when active tasknode exists")
+
+  await cleanup()
+}
+
+async function test_write_tool_warns_when_active_task_is_complete() {
+  process.stderr.write("\n--- tool-gate: warns when referenced task is complete ---\n")
+  const dir = await setup()
+  const config = createConfig({ governance_mode: "assisted" })
+  await saveConfig(dir, config)
+
+  const sm = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  await sm.save(state)
+
+  const phaseId = randomUUID()
+  const taskId = randomUUID()
+  const now = new Date().toISOString()
+
+  await saveGraphTasks(dir, {
+    version: "1.0",
+    tasks: [
+      {
+        id: taskId,
+        parent_phase_id: phaseId,
+        title: "Completed task should not suppress advisory",
+        status: "complete",
+        file_locks: [],
+        created_at: now,
+        updated_at: now,
+      },
+    ],
+  })
+
+  await saveTrajectory(dir, {
+    version: "1.0",
+    trajectory: {
+      id: randomUUID(),
+      session_id: state.session.id,
+      active_plan_id: null,
+      active_phase_id: phaseId,
+      active_task_ids: [taskId],
+      intent: "TaskNode advisory for complete task",
+      created_at: now,
+      updated_at: now,
+    },
+  })
+
+  const hook = createToolGateHookInternal(noopLogger, dir, config)
+  const result = await hook({ sessionID: "test-tasknode-complete", tool: "write" })
+
+  assert(result.allowed, "write remains allowed when task is complete")
+  assert(result.warning?.includes("No active TaskNode found") === true, "warns when referenced task is not active")
+
+  await cleanup()
+}
+
 // ─── Runner ─────────────────────────────────────────────────────────
 
 async function main() {
@@ -198,6 +323,9 @@ async function main() {
   await test_permissive_allows_silently()
   await test_drift_tracking()
   await test_entry_gate_suggests_scan()
+  await test_write_tool_warns_without_active_tasknode()
+  await test_write_tool_no_tasknode_warning_with_active_task()
+  await test_write_tool_warns_when_active_task_is_complete()
 
   process.stderr.write(`\n=== Tool Gate: ${passed} passed, ${failed_} failed ===\n`)
   if (failed_ > 0) process.exit(1)

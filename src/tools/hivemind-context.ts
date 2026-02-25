@@ -6,6 +6,7 @@ import { toErrorOutput, toSuccessOutput } from "../lib/tool-response.js"
 import { flushMutations, flushTaskManifestMutations } from "../lib/state-mutation-queue.js"
 import { consolidateTemporaryPayloads, purifyContextFragments } from "../lib/context-purifier.js"
 import { createEvent, eventBus } from "../lib/event-bus.js"
+import { purgeTransientSessionMemory } from "../lib/session-memory-purge.js"
 import {
   applyVerifiedPendingChange,
   ensureSotGovernanceFiles,
@@ -91,13 +92,22 @@ async function handlePurge(directory: string): Promise<string> {
   }))
   const purified = purifyContextFragments(fragments)
   const condensed = consolidateTemporaryPayloads(fragments)
+
+  // Phase 3A: Purge transient session memory nodes
+  const sessionMemoryPurge = await purgeTransientSessionMemory(directory, state.session.id)
+
   const nextState = recordConsolidationAndPurge(
     {
       ...state,
       recent_messages: [],
+      // Phase 3A: Clear pending_purge flag after purge completes
+      memory_governance: {
+        ...state.memory_governance,
+        pending_purge: false,
+      },
     },
     purified.consolidated.length,
-    purified.purged_temporary_count
+    purified.purged_temporary_count + sessionMemoryPurge.purgedCount
   )
   await stateManager.save(nextState)
   eventBus.emitEvent(
@@ -116,6 +126,7 @@ async function handlePurge(directory: string): Promise<string> {
       "context:purged",
       {
         purgedTemporaryCount: purified.purged_temporary_count,
+        sessionMemoryPurgedCount: sessionMemoryPurge.purgedCount,
         sessionId: nextState.session.id,
       },
       "context-purifier"
@@ -126,6 +137,8 @@ async function handlePurge(directory: string): Promise<string> {
     consolidatedCount: purified.consolidated.length,
     dedupedCount: purified.deduped_count,
     purgedTemporaryCount: purified.purged_temporary_count,
+    sessionMemoryPurged: sessionMemoryPurge.purgedCount,
+    sessionMemorySynthesis: sessionMemoryPurge.synthesized,
     condensedPreview: condensed,
   })
 }

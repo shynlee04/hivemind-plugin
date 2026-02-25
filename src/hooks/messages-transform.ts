@@ -641,6 +641,12 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
            items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
         }
 
+        // Phase 3B: Surface off-track TODO-Pending count without inlining content
+        const pendingOfftrack = (state.offtrack_todo_pending ?? []).filter(item => item.status === "pending")
+        if (pendingOfftrack.length > 0) {
+          items.push(`${pendingOfftrack.length} off-track TODO(s) sequestered (use hivemind_session_memory todo_pending to review)`)
+        }
+
         // US-016: Artifacts check - verify session artifacts are properly linked
         // Checks if session has been persisted to .hivemind/sessions/active/
         const sessionDir = directory.includes(".hivemind/sessions/")

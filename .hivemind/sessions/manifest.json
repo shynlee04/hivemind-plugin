@@ -1,15 +1,4 @@
 {
-  "sessions": [
-    {
-      "stamp": "150126022026",
-      "file": "2026-02-25-plan_driven-execute-full-6-phase-refactor-autocallab.md",
-      "status": "active",
-      "created": 1772043320873,
-      "mode": "plan_driven",
-      "trajectory": "Execute full 6-phase refactor: Auto/Callable/Delete, SOT naming compliance, lifecycle purge, gate hardening, first-turn determinism, monolith slicing",
-      "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
-      "linked_plans": []
-    }
-  ],
-  "active_stamp": "150126022026"
+  "sessions": [],
+  "active_stamp": null
 }

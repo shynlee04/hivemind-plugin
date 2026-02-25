@@ -12,6 +12,30 @@
       "staleness_stamp": "2026-02-25T18:17:06.143Z",
       "created_at": "2026-02-25T18:17:06.143Z",
       "updated_at": "2026-02-25T18:17:06.143Z"
+    },
+    {
+      "id": "16c0c2f5-58db-45dc-9df6-d4defa7ef066",
+      "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+      "origin_task_id": null,
+      "shelf": "research_cache",
+      "type": "insight",
+      "content": "Checkpoint started for /hivefiver research phases 3-6 gaps with evidence-backed file mapping.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-25T19:24:50.086Z",
+      "created_at": "2026-02-25T19:24:50.086Z",
+      "updated_at": "2026-02-25T19:24:50.086Z"
+    },
+    {
+      "id": "5099b55b-7351-4819-ad9b-9df733045a67",
+      "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+      "origin_task_id": null,
+      "shelf": "research_cache",
+      "type": "insight",
+      "content": "Initiated /hivefiver research for Phase 4A/4B/4C review; pending-task queue inspected and aligned to active trajectory action.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-25T20:04:44.477Z",
+      "created_at": "2026-02-25T20:04:44.477Z",
+      "updated_at": "2026-02-25T20:04:44.477Z"
     }
   ]
 }
