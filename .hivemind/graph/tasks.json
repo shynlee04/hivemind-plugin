@@ -2,236 +2,162 @@
   "version": "1.0.0",
   "tasks": [
     {
-      "id": "1ba98d7a-2481-45b2-b851-2cf748a14afe",
-      "parent_phase_id": "7e56d214-ae3d-4519-b41d-c5778e1c46f5",
-      "title": "Khoi tao /hivefiver research va giao nhiem vu trich xuat pattern cho 2 XML repomix, tong hop bao cao cau truc co vi du va bang chung",
-      "status": "in_progress",
-      "file_locks": [],
-      "created_at": "2026-02-25T01:20:59.124Z",
-      "updated_at": "2026-02-25T01:20:59.124Z"
-    },
-    {
-      "id": "5738f00f-56a4-572a-ba39-a7b4cc45191e",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "L0: npm install web-tree-sitter",
-      "status": "complete",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T13:17:53.209Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
-      "priority": "high"
-    },
-    {
-      "id": "a80ededd-cd3b-5474-a4ba-61327465028f",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "L1A: compressed-codemap.ts types/interfaces",
-      "status": "complete",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T13:17:53.209Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: build | command: hivefiver build | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-domain-pack-router",
-      "priority": "high"
-    },
-    {
-      "id": "79ea4f8e-0de0-596c-b036-079e68279e2d",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "L1B: incremental-updater.ts types + full class",
-      "status": "complete",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T13:17:53.209Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
-      "priority": "high"
-    },
-    {
-      "id": "3cfc499c-c992-5d92-961a-ade9777dd1bc",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "L1C: Session memory schemas (3 node types)",
-      "status": "complete",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T13:17:53.209Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
-      "priority": "high"
-    },
-    {
-      "id": "4056f2da-430d-5dd9-82b0-da37dcdf4aac",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "L2A: tree-sitter-loader.ts — WASM upgrade (370 LOC, TSC clean)",
-      "status": "complete",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T13:17:53.209Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
-      "priority": "high"
-    },
-    {
-      "id": "f1dfc775-2cba-5e22-b294-83305b7f57f1",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "L3A: signature-extractor.ts — tree-sitter AST upgrade (761 LOC, TSC clean)",
-      "status": "complete",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T13:17:53.209Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
-      "priority": "high"
-    },
-    {
-      "id": "42810fee-d0ce-5d69-a4b0-5e2df8801f08",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "L4A: compressed-codemap.ts — compressCodemap() implementation",
-      "status": "invalidated",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T13:24:55.229Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: build | command: hivefiver build | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-domain-pack-router",
-      "priority": "high"
-    },
-    {
-      "id": "7d2e13bf-c262-5e92-9e8f-c46380d40117",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "L5A: watch-integration.ts — watcher → updater → event-bus",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T13:17:53.209Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
-      "priority": "high"
-    },
-    {
-      "id": "48b317d8-6ec3-52a2-8960-ffc464fc596c",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "L6: Update index.ts barrel + tests + quality gate",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T13:17:53.209Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
-      "priority": "high"
-    },
-    {
-      "id": "46993ead-e8e5-53be-be09-5378255c7b41",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "L6: Tests + Quality Gate (TSC + npm test + benchmarks)",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T12:39:54.154Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
-      "priority": "high"
-    },
-    {
-      "id": "8a8b3bdb-db89-5de5-9ad2-7cbde4f1dae3",
-      "parent_phase_id": "5698a23f-a6db-5b60-a323-5e1e548f6b81",
-      "title": "SPEC GAP: 4 of 7 session memory types undefined — needs user input",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-25T12:40:41.166Z",
-      "updated_at": "2026-02-25T12:39:54.154Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null,
-      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
-      "priority": "medium"
-    },
-    {
-      "id": "6b863426-f5f9-48ad-9700-d6bd0fe5efca",
-      "parent_phase_id": "3ef3a24c-d833-4637-9a86-c13008516288",
+      "id": "97ff2915-32f3-4b55-a62d-85b134eeb0c4",
+      "parent_phase_id": "f3459e52-94ef-44b3-8ce5-3b63af8c52c8",
       "title": "Run HiveFiver startup realignment and lane detection",
       "status": "pending",
       "file_locks": [],
-      "created_at": "2026-02-25T12:59:56.833Z",
-      "updated_at": "2026-02-25T12:59:56.833Z",
+      "created_at": "2026-02-25T13:45:14.422Z",
+      "updated_at": "2026-02-25T13:45:14.422Z",
       "acceptance_criteria": [
         "Persona lane selected",
         "Project type detected (greenfield/brownfield)",
         "Governance mode locked"
       ],
-      "priority": "high"
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "vibecoder",
+      "source": "init.seed",
+      "hivefiver_action": "init",
+      "canonical_command": "hivefiver init",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "menu_step": 1,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "547e27e0-ab4e-4146-92ee-6777f964410a",
+        "workflow_id": "hivefiver-vibecoder.yaml",
+        "requirement_node_id": "rq-bootstrap"
+      }
     },
     {
-      "id": "300c0c00-19cc-4186-86f1-a62c9e48c2ab",
-      "parent_phase_id": "3ef3a24c-d833-4637-9a86-c13008516288",
+      "id": "c428f17b-ed87-4f4c-aec0-88e9f7e3d7dd",
+      "parent_phase_id": "f3459e52-94ef-44b3-8ce5-3b63af8c52c8",
       "title": "Build intake baseline and generate first executable specification",
       "status": "pending",
       "file_locks": [],
-      "created_at": "2026-02-25T12:59:56.833Z",
-      "updated_at": "2026-02-25T12:59:56.833Z",
+      "created_at": "2026-02-25T13:45:14.422Z",
+      "updated_at": "2026-02-25T13:45:14.422Z",
       "acceptance_criteria": [
         "MCQ intake completed",
         "Ambiguity map emitted",
         "Spec candidate selected"
       ],
       "dependencies": [
-        "6b863426-f5f9-48ad-9700-d6bd0fe5efca"
+        "97ff2915-32f3-4b55-a62d-85b134eeb0c4"
       ],
-      "priority": "high"
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "init.seed",
+      "hivefiver_action": "spec",
+      "canonical_command": "hivefiver spec",
+      "recommended_skills": [
+        "hivefiver-spec-distillation",
+        "hivefiver-bilingual-tutor"
+      ],
+      "menu_step": 2,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "547e27e0-ab4e-4146-92ee-6777f964410a",
+        "workflow_id": "hivefiver-floppy-engineer.yaml",
+        "requirement_node_id": "rq-spec"
+      }
     },
     {
-      "id": "e2e4deec-b2e2-4c9c-a772-5feccebbf1dd",
-      "parent_phase_id": "3ef3a24c-d833-4637-9a86-c13008516288",
+      "id": "85936062-6a17-4624-a6d1-b611c6321b4c",
+      "parent_phase_id": "f3459e52-94ef-44b3-8ce5-3b63af8c52c8",
       "title": "Audit and configure non-negotiable MCP providers",
       "status": "pending",
       "file_locks": [],
-      "created_at": "2026-02-25T12:59:56.833Z",
-      "updated_at": "2026-02-25T12:59:56.833Z",
+      "created_at": "2026-02-25T13:45:14.422Z",
+      "updated_at": "2026-02-25T13:45:14.422Z",
       "acceptance_criteria": [
         "Context7, DeepWiki, Repomix status captured",
         "Tavily API guidance emitted",
         "Confidence downgrade policy configured"
       ],
       "dependencies": [
-        "300c0c00-19cc-4186-86f1-a62c9e48c2ab"
+        "c428f17b-ed87-4f4c-aec0-88e9f7e3d7dd"
       ],
-      "priority": "high"
+      "priority": "high",
+      "domain": "dev",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "research",
+      "canonical_command": "hivefiver research",
+      "recommended_skills": [
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor"
+      ],
+      "menu_step": 3,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "547e27e0-ab4e-4146-92ee-6777f964410a",
+        "workflow_id": "hivefiver-mcp-fallback.yaml",
+        "mcp_provider_id": "stack-core"
+      }
     },
     {
-      "id": "d810889b-d15f-46e4-b58e-f5a14edb020b",
-      "parent_phase_id": "3ef3a24c-d833-4637-9a86-c13008516288",
+      "id": "4fbb5b7c-4176-4581-9952-2aea2b59562b",
+      "parent_phase_id": "f3459e52-94ef-44b3-8ce5-3b63af8c52c8",
       "title": "Prepare TODO-to-Ralph export mapping and validation",
       "status": "pending",
       "file_locks": [],
-      "created_at": "2026-02-25T12:59:56.833Z",
-      "updated_at": "2026-02-25T12:59:56.833Z",
+      "created_at": "2026-02-25T13:45:14.422Z",
+      "updated_at": "2026-02-25T13:45:14.422Z",
       "acceptance_criteria": [
         "tasks/prd.json schema validated",
         "Dependency map generated",
         "Related entity links preserved"
       ],
       "dependencies": [
-        "e2e4deec-b2e2-4c9c-a772-5feccebbf1dd"
+        "85936062-6a17-4624-a6d1-b611c6321b4c"
       ],
-      "priority": "medium"
+      "priority": "medium",
+      "domain": "office-ops",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "validate",
+      "canonical_command": "hivefiver validate",
+      "recommended_skills": [
+        "hivefiver-ralph-tasking",
+        "hivefiver-gsd-compat"
+      ],
+      "menu_step": 4,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "547e27e0-ab4e-4146-92ee-6777f964410a",
+        "workflow_id": "hivefiver-enterprise-architect.yaml",
+        "export_id": "ralph-prd"
+      }
+    },
+    {
+      "id": "432e9795-8068-4214-ae87-b7c9a1cb3a16",
+      "parent_phase_id": "6936d60e-59e5-40b0-bfa5-ac24d7210c11",
+      "title": "Post-clean recovery verified: TSC 0 errors, 37/37 tests pass. All 12 code-intel source files (2,654 LOC) + 10 test files (1,226 LOC) intact. Proceeding to commit Session 2 deliverables.",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-25T13:51:09.577Z",
+      "updated_at": "2026-02-25T13:51:09.577Z"
     }
   ]
 }

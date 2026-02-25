@@ -1,24 +1,25 @@
 {
   "governance_mode": "strict",
-  "language": "vi",
-  "max_turns_before_warning": 500,
-  "max_active_md_lines": 2000,
-  "auto_compact_on_turns": 40,
+  "language": "en",
+  "max_turns_before_warning": 5,
+  "max_active_md_lines": 50,
+  "auto_compact_on_turns": 20,
   "stale_session_days": 3,
   "commit_suggestion_threshold": 5,
   "auto_commit": false,
   "agent_behavior": {
-    "language": "vi",
+    "language": "en",
     "expert_level": "beginner",
     "output_style": "skeptical",
+    "output_style_v29": "problem_solving_debugging",
     "constraints": {
       "require_code_review": true,
       "enforce_tdd": true,
-      "max_response_tokens": 200000,
+      "max_response_tokens": 2000,
       "explain_reasoning": true,
       "be_skeptical": true
     }
   },
   "automation_level": "coach",
-  "profile": "beginner"
+  "profile": "coach"
 }

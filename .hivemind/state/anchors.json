@@ -1,16 +1,16 @@
 {
   "anchors": [
     {
-      "key": "lifecycle-model-core",
-      "value": "11 artifacts, 5 phases, 9 commands: /new-project → /research → /discuss → /spec → /roadmap → /plan-phase → /execute-phase → /verify-phase → /audit-milestone → /complete-milestone. 12 schemas exist, only 4 wired. Target: full pipeline from idea to deployed product.",
-      "created_at": 1771990324105,
-      "session_id": "c0b1fb7d-9f8e-4504-a0de-81bc21e18c03"
+      "key": "session2-complete",
+      "value": "Session 2 Code-Intel Phase 2 COMPLETE (2026-02-25). 12 source files (2,654 LOC), 10 test files (1,226 LOC), 37/37 tests pass, TSC 0 errors. Branch: feat/v2_9-c-guardrail. Next: commit + Session 3 (Phase 3 cognitive integration).",
+      "created_at": 1772027471981,
+      "session_id": "58a87b13-ea01-4cea-a956-73b16396d8ed"
     },
     {
-      "key": "planning-sot-location",
-      "value": ".hivemind/planning/ is the canonical location for GSD-style planning SOT artifacts. NOT .planning/. Planning lives inside hivemind state directory. Structure must be modular (not monolithic) — separate concerns for sessions, tasks, sub-tasks, lib/tools/hooks/schema domains. Each document must be grounded in evidence from prior scans, not littered without context lookup.",
-      "created_at": 1771992453865,
-      "session_id": "c0b1fb7d-9f8e-4504-a0de-81bc21e18c03"
+      "key": "code-intel-architecture",
+      "value": "Architecture doc: docs/plans/2026-02-19-code-intelligence-engine-architecture.md (1355 lines). Phase 1: scanner/filters. Phase 2: tree-sitter+compression+watch. Phase 3: cognitive integration+selective injector+tools+commands. SOT: .hivemind/graph/ structure.",
+      "created_at": 1772027475346,
+      "session_id": "58a87b13-ea01-4cea-a956-73b16396d8ed"
     }
   ],
   "version": "1.0.0"

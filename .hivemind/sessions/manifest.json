@@ -1,4 +1,15 @@
 {
-  "sessions": [],
-  "active_stamp": null
+  "sessions": [
+    {
+      "stamp": "502025022026",
+      "file": "2026-02-25-plan_driven-post-clean-build-recovery-verify-session.md",
+      "status": "active",
+      "created": 1772027405679,
+      "mode": "plan_driven",
+      "trajectory": "Post-clean-build recovery: verify Session 2 code-intel deliverables intact, re-establish anchors/mems, determine next steps (commit + Session 3 planning)",
+      "session_id": "58a87b13-ea01-4cea-a956-73b16396d8ed",
+      "linked_plans": []
+    }
+  ],
+  "active_stamp": "502025022026"
 }
