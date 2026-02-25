@@ -135,8 +135,46 @@
             "children": []
           }
         ]
+      },
+      {
+        "id": "tc_470825022026",
+        "level": "tactic",
+        "content": "Produce Chain & Bridge Architecture Specification from synthesized GSD/BMAD patterns and HiveMind framework constraints",
+        "status": "active",
+        "created": 1771984028732,
+        "stamp": "470825022026",
+        "children": [
+          {
+            "id": "a_470825022026",
+            "level": "action",
+            "content": "Draft and write docs/CHAIN-BRIDGE-ARCHITECTURE.md with required 9 sections, diagrams, and frontmatter, then validate line count and section coverage",
+            "status": "active",
+            "created": 1771984032261,
+            "stamp": "470825022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_480825022026",
+        "level": "tactic",
+        "content": "Run MCP-backed read-only research synthesis for Chain & Bridge architecture guidance before drafting document.",
+        "status": "active",
+        "created": 1771984097350,
+        "stamp": "480825022026",
+        "children": [
+          {
+            "id": "a_480825022026",
+            "level": "action",
+            "content": "Coordinate delegated evidence scan across codebase and planning docs to synthesize guidance for 9-section CHAIN-BRIDGE-ARCHITECTURE.md (read-only).",
+            "status": "active",
+            "created": 1771984101358,
+            "stamp": "480825022026",
+            "children": []
+          }
+        ]
       }
     ]
   },
-  "cursor": "a_420825022026"
+  "cursor": "a_480825022026"
 }
