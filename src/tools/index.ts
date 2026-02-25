@@ -11,6 +11,8 @@
  * | hivemind_cycle    | export, list, prune                           | export_cycle, self_rate                  |
  * | hivemind_context  | validate, purge, doctor, resume               | context governance lifecycle              |
  * | hivemind_session_memory | scratch, debug_log, research_cache, retro, todo_pending | session memory classification |
+ * | hivemind_codemap   | scan, compress, status, search, inject, commit | code intelligence engine        |
+ * | hivemind_ideate    | evaluate, validate_schema                      | Q.U.A.N.T. ideation matrix gate |
  */
 
 export { createHivemindSessionTool } from "./hivemind-session.js"
@@ -21,3 +23,5 @@ export { createHivemindHierarchyTool } from "./hivemind-hierarchy.js"
 export { createHivemindCycleTool } from "./hivemind-cycle.js"
 export { createHivemindContextTool } from "./hivemind-context.js"
 export { createHivemindSessionMemoryTool } from "./hivemind-session-memory.js"
+export { createHivemindCodemapTool } from "./hivemind-codemap.js"
+export { createHivemindIdeateTool } from "./hivemind-ideate.js"
