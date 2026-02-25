@@ -1,18 +1,18 @@
 {
-  "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
-  "updated_at": 1771861496979,
+  "session_id": "67d14c71-19aa-4b07-8b4c-8085d46130ad",
+  "updated_at": 1771982267535,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Phase 1: Dispatch 4 parallel scanner agents for grand audit (Architecture, Schema, Orchestration, Runtime)",
-      "content": "Phase 1: Dispatch 4 parallel scanner agents for grand audit (Architecture, Schema, Orchestration, Runtime)",
+      "text": "Wave 1: Agent roster refactoring",
+      "content": "Wave 1: Agent roster refactoring",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
       "persona": "floppy_engineer",
       "source": "todo.updated",
-      "hivefiver_action": "research",
+      "hivefiver_action": "architect",
       "validation_attempts": 0,
       "max_validation_attempts": 10,
       "evidence_confidence": "partial",
@@ -21,14 +21,22 @@
       "next_step_menu": [
         {
           "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "command": "hivefiver architect",
+          "action": "architect",
+          "label": "Design agent system",
+          "description": "Shape agents, subagents, and interfaces.",
           "requiresPermission": false
         },
         {
           "id": "option-2",
+          "command": "hivefiver workflow",
+          "action": "workflow",
+          "label": "Configure workflow",
+          "description": "Define orchestrated execution steps and guards.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
           "command": "hivefiver spec",
           "action": "spec",
           "label": "Build specification",
@@ -36,48 +44,38 @@
           "requiresPermission": false
         },
         {
-          "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
-        },
-        {
           "id": "option-4",
-          "command": "hivefiver validate",
-          "action": "validate",
-          "label": "Run quality gates",
-          "description": "Check tests, evidence gates, and schema quality.",
+          "command": "hivefiver build",
+          "action": "build",
+          "label": "Implement with TDD",
+          "description": "Move from approved plan into implementation.",
           "requiresPermission": true
         }
       ],
       "recommended_skills": [
         "hivefiver-persona-routing",
         "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
         "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver research",
+      "canonical_command": "hivefiver architect",
       "related_entities": {
-        "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
+        "session_id": "ses_36e07cb2effegqU3Mj5AjYnhh8",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771861496979,
-      "updated_at": 1771861496979
+      "last_realigned_at": 1771979903094,
+      "updated_at": 1771979903094
     },
     {
       "id": "todo-2",
-      "text": "Phase 2: Synthesize 4 scanner reports into unified SOT audit document",
-      "content": "Phase 2: Synthesize 4 scanner reports into unified SOT audit document",
-      "status": "completed",
+      "text": "Wave 2: Framework synthesis — ingest GSD + BMAD + BMAD-Builder → Chain & Bridge architecture spec",
+      "content": "Wave 2: Framework synthesis — ingest GSD + BMAD + BMAD-Builder → Chain & Bridge architecture spec",
+      "status": "in_progress",
       "priority": "high",
-      "domain": "office-ops",
+      "domain": "hybrid",
       "lane": "auto",
       "persona": "floppy_engineer",
       "source": "todo.updated",
-      "hivefiver_action": "research",
+      "hivefiver_action": "architect",
       "validation_attempts": 0,
       "max_validation_attempts": 10,
       "evidence_confidence": "partial",
@@ -86,14 +84,22 @@
       "next_step_menu": [
         {
           "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "command": "hivefiver architect",
+          "action": "architect",
+          "label": "Design agent system",
+          "description": "Shape agents, subagents, and interfaces.",
           "requiresPermission": false
         },
         {
           "id": "option-2",
+          "command": "hivefiver workflow",
+          "action": "workflow",
+          "label": "Configure workflow",
+          "description": "Define orchestrated execution steps and guards.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
           "command": "hivefiver spec",
           "action": "spec",
           "label": "Build specification",
@@ -101,48 +107,38 @@
           "requiresPermission": false
         },
         {
-          "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
-        },
-        {
           "id": "option-4",
-          "command": "hivefiver validate",
-          "action": "validate",
-          "label": "Run quality gates",
-          "description": "Check tests, evidence gates, and schema quality.",
+          "command": "hivefiver build",
+          "action": "build",
+          "label": "Implement with TDD",
+          "description": "Move from approved plan into implementation.",
           "requiresPermission": true
         }
       ],
       "recommended_skills": [
         "hivefiver-persona-routing",
         "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
         "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver research",
+      "canonical_command": "hivefiver architect",
       "related_entities": {
-        "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
+        "session_id": "ses_36e07cb2effegqU3Mj5AjYnhh8",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771861496979,
-      "updated_at": 1771861496979
+      "last_realigned_at": 1771979903094,
+      "updated_at": 1771979903094
     },
     {
       "id": "todo-3",
-      "text": "Phase 3: Cross-domain integration analysis (gaps, overlaps, conflicts)",
-      "content": "Phase 3: Cross-domain integration analysis (gaps, overlaps, conflicts)",
-      "status": "completed",
+      "text": "Wave 3: Build HiveRD agent + 15-20 add-ons (commands, workflows, templates, scripts, tools)",
+      "content": "Wave 3: Build HiveRD agent + 15-20 add-ons (commands, workflows, templates, scripts, tools)",
+      "status": "pending",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
       "persona": "floppy_engineer",
       "source": "todo.updated",
-      "hivefiver_action": "research",
+      "hivefiver_action": "workflow",
       "validation_attempts": 0,
       "max_validation_attempts": 10,
       "evidence_confidence": "partial",
@@ -151,27 +147,27 @@
       "next_step_menu": [
         {
           "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "command": "hivefiver workflow",
+          "action": "workflow",
+          "label": "Configure workflow",
+          "description": "Define orchestrated execution steps and guards.",
           "requiresPermission": false
         },
         {
           "id": "option-2",
-          "command": "hivefiver spec",
-          "action": "spec",
-          "label": "Build specification",
-          "description": "Distill requirements and close ambiguity.",
+          "command": "hivefiver architect",
+          "action": "architect",
+          "label": "Design agent system",
+          "description": "Shape agents, subagents, and interfaces.",
           "requiresPermission": false
         },
         {
           "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
+          "command": "hivefiver build",
+          "action": "build",
+          "label": "Implement with TDD",
+          "description": "Move from approved plan into implementation.",
+          "requiresPermission": true
         },
         {
           "id": "option-4",
@@ -185,29 +181,27 @@
       "recommended_skills": [
         "hivefiver-persona-routing",
         "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
         "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver research",
+      "canonical_command": "hivefiver workflow",
       "related_entities": {
-        "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
+        "session_id": "ses_36e07cb2effegqU3Mj5AjYnhh8",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771861496979,
-      "updated_at": 1771861496979
+      "last_realigned_at": 1771979903094,
+      "updated_at": 1771979903094
     },
     {
       "id": "todo-4",
-      "text": "Phase 4: User journey simulation validation across scenarios",
-      "content": "Phase 4: User journey simulation validation across scenarios",
-      "status": "completed",
-      "priority": "medium",
+      "text": "Wave 4: Build HiveQ agent + 15-20 add-ons (commands, workflows, templates, scripts, tools)",
+      "content": "Wave 4: Build HiveQ agent + 15-20 add-ons (commands, workflows, templates, scripts, tools)",
+      "status": "pending",
+      "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
       "persona": "floppy_engineer",
       "source": "todo.updated",
-      "hivefiver_action": "research",
+      "hivefiver_action": "workflow",
       "validation_attempts": 0,
       "max_validation_attempts": 10,
       "evidence_confidence": "partial",
@@ -216,27 +210,27 @@
       "next_step_menu": [
         {
           "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "command": "hivefiver workflow",
+          "action": "workflow",
+          "label": "Configure workflow",
+          "description": "Define orchestrated execution steps and guards.",
           "requiresPermission": false
         },
         {
           "id": "option-2",
-          "command": "hivefiver spec",
-          "action": "spec",
-          "label": "Build specification",
-          "description": "Distill requirements and close ambiguity.",
+          "command": "hivefiver architect",
+          "action": "architect",
+          "label": "Design agent system",
+          "description": "Shape agents, subagents, and interfaces.",
           "requiresPermission": false
         },
         {
           "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
+          "command": "hivefiver build",
+          "action": "build",
+          "label": "Implement with TDD",
+          "description": "Move from approved plan into implementation.",
+          "requiresPermission": true
         },
         {
           "id": "option-4",
@@ -250,29 +244,27 @@
       "recommended_skills": [
         "hivefiver-persona-routing",
         "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
         "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver research",
+      "canonical_command": "hivefiver workflow",
       "related_entities": {
-        "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
+        "session_id": "ses_36e07cb2effegqU3Mj5AjYnhh8",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771861496979,
-      "updated_at": 1771861496979
+      "last_realigned_at": 1771979903094,
+      "updated_at": 1771979903094
     },
     {
       "id": "todo-5",
-      "text": "Phase 5: Produce final SOT audit report for consolidation plan",
-      "content": "Phase 5: Produce final SOT audit report for consolidation plan",
-      "status": "completed",
+      "text": "Wave 5: Update hivefiver operational skills for Chain & Bridge support",
+      "content": "Wave 5: Update hivefiver operational skills for Chain & Bridge support",
+      "status": "pending",
       "priority": "high",
-      "domain": "office-ops",
+      "domain": "hybrid",
       "lane": "auto",
       "persona": "floppy_engineer",
       "source": "todo.updated",
-      "hivefiver_action": "research",
+      "hivefiver_action": "init",
       "validation_attempts": 0,
       "max_validation_attempts": 10,
       "evidence_confidence": "partial",
@@ -281,10 +273,10 @@
       "next_step_menu": [
         {
           "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "command": "hivefiver init",
+          "action": "init",
+          "label": "Initialize + profile",
+          "description": "Detect context, profile lane, and lock startup flow.",
           "requiresPermission": false
         },
         {
@@ -297,35 +289,236 @@
         },
         {
           "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
           "requiresPermission": false
         },
         {
           "id": "option-4",
-          "command": "hivefiver validate",
-          "action": "validate",
-          "label": "Run quality gates",
-          "description": "Check tests, evidence gates, and schema quality.",
-          "requiresPermission": true
+          "command": "hivefiver tutor",
+          "action": "tutor",
+          "label": "Tutor mode",
+          "description": "Guide through next decisions with interactive coaching.",
+          "requiresPermission": false
         }
       ],
       "recommended_skills": [
         "hivefiver-persona-routing",
         "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
         "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver research",
+      "canonical_command": "hivefiver init",
       "related_entities": {
-        "session_id": "ses_374e6f390ffeMpFULU2qZIGpL6",
+        "session_id": "ses_36e07cb2effegqU3Mj5AjYnhh8",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1771861496979,
-      "updated_at": 1771861496979
+      "last_realigned_at": 1771979903094,
+      "updated_at": 1771979903094
+    },
+    {
+      "id": "todo-6",
+      "text": "Wave 6: Sync all assets root↔.opencode + full quality gates",
+      "content": "Wave 6: Sync all assets root↔.opencode + full quality gates",
+      "status": "pending",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "validate",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": false,
+      "requires_permission": true,
+      "permission_prompt": "Approve next step: run /hivefiver validate now? (Yes/No)",
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver validate",
+          "action": "validate",
+          "label": "Run quality gates",
+          "description": "Check tests, evidence gates, and schema quality.",
+          "requiresPermission": true
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver build",
+          "action": "build",
+          "label": "Implement with TDD",
+          "description": "Move from approved plan into implementation.",
+          "requiresPermission": true
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver deploy",
+          "action": "deploy",
+          "label": "Prepare deployment",
+          "description": "Prepare runtime environment and rollout steps.",
+          "requiresPermission": true
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver audit",
+          "action": "audit",
+          "label": "Audit alignment",
+          "description": "Check config drift and governance integrity.",
+          "requiresPermission": false
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-ralph-tasking",
+        "hivefiver-gsd-compat",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver validate",
+      "related_entities": {
+        "session_id": "ses_36e07cb2effegqU3Mj5AjYnhh8",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
+      },
+      "last_realigned_at": 1771979903094,
+      "updated_at": 1771979903094
+    },
+    {
+      "id": "hivefiver-bootstrap",
+      "text": "Run HiveFiver startup realignment and lane detection",
+      "status": "pending",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "vibecoder",
+      "source": "init.seed",
+      "hivefiver_action": "init",
+      "canonical_command": "hivefiver init",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "menu_step": 1,
+      "menu_total": 4,
+      "acceptance_criteria": [
+        "Persona lane selected",
+        "Project type detected (greenfield/brownfield)",
+        "Governance mode locked"
+      ],
+      "related_entities": {
+        "session_id": "67d14c71-19aa-4b07-8b4c-8085d46130ad",
+        "workflow_id": "hivefiver-vibecoder.yaml",
+        "requirement_node_id": "rq-bootstrap"
+      },
+      "created_at": 1771982267535
+    },
+    {
+      "id": "hivefiver-spec-routing",
+      "text": "Build intake baseline and generate first executable specification",
+      "status": "pending",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "init.seed",
+      "hivefiver_action": "spec",
+      "canonical_command": "hivefiver spec",
+      "recommended_skills": [
+        "hivefiver-spec-distillation",
+        "hivefiver-bilingual-tutor"
+      ],
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "menu_step": 2,
+      "menu_total": 4,
+      "acceptance_criteria": [
+        "MCQ intake completed",
+        "Ambiguity map emitted",
+        "Spec candidate selected"
+      ],
+      "dependencies": [
+        "hivefiver-bootstrap"
+      ],
+      "related_entities": {
+        "session_id": "67d14c71-19aa-4b07-8b4c-8085d46130ad",
+        "workflow_id": "hivefiver-floppy-engineer.yaml",
+        "requirement_node_id": "rq-spec"
+      },
+      "created_at": 1771982267535
+    },
+    {
+      "id": "hivefiver-mcp-readiness",
+      "text": "Audit and configure non-negotiable MCP providers",
+      "status": "pending",
+      "priority": "high",
+      "domain": "dev",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "research",
+      "canonical_command": "hivefiver research",
+      "recommended_skills": [
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor"
+      ],
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "menu_step": 3,
+      "menu_total": 4,
+      "acceptance_criteria": [
+        "Context7, DeepWiki, Repomix status captured",
+        "Tavily API guidance emitted",
+        "Confidence downgrade policy configured"
+      ],
+      "dependencies": [
+        "hivefiver-spec-routing"
+      ],
+      "related_entities": {
+        "session_id": "67d14c71-19aa-4b07-8b4c-8085d46130ad",
+        "workflow_id": "hivefiver-mcp-fallback.yaml",
+        "mcp_provider_id": "stack-core"
+      },
+      "created_at": 1771982267535
+    },
+    {
+      "id": "hivefiver-export-alignment",
+      "text": "Prepare TODO-to-Ralph export mapping and validation",
+      "status": "pending",
+      "priority": "medium",
+      "domain": "office-ops",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "validate",
+      "canonical_command": "hivefiver validate",
+      "recommended_skills": [
+        "hivefiver-ralph-tasking",
+        "hivefiver-gsd-compat"
+      ],
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "menu_step": 4,
+      "menu_total": 4,
+      "acceptance_criteria": [
+        "tasks/prd.json schema validated",
+        "Dependency map generated",
+        "Related entity links preserved"
+      ],
+      "dependencies": [
+        "hivefiver-mcp-readiness"
+      ],
+      "related_entities": {
+        "session_id": "67d14c71-19aa-4b07-8b4c-8085d46130ad",
+        "workflow_id": "hivefiver-enterprise-architect.yaml",
+        "export_id": "ralph-prd"
+      },
+      "created_at": 1771982267535
     }
   ]
 }

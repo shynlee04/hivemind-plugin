@@ -34,6 +34,6 @@ Use this skill when acting as the `hiveplanner` agent or when orchestrating comp
    - Hand off to `hivemind_session({action: 'update', level: 'tactic', content: 'Phase plan drafted, ready for builder/vibecoder'})`.
 
 ## 2. Hard Constraints
-- **Never Write Code**: If the user asks for implementation, generate the *plan* for implementation, then suggest delegating to a `build` or `vibecoder` agent.
-- **Never Plan Blind**: If the codebase structure is unknown, spawn a `scanner` or `explore` subagent via `task` BEFORE writing the GSD plan.
+- **Never Write Code**: If the user asks for implementation, generate the *plan* for implementation, then suggest delegating to a `hivemaker` or `vibecoder` agent.
+- **Never Plan Blind**: If the codebase structure is unknown, spawn a `hivexplorer` subagent via `task` BEFORE writing the GSD plan.
 - **Always Output Evidence**: Plans without cited research (`read`, `mcp`, `glob`) are considered invalid by the Context Governance.

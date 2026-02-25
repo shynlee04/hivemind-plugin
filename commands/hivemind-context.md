@@ -43,7 +43,7 @@ grep({ pattern: "[function|class|pattern name]" })
 
 // C. Deep read (for complex tasks)
 Task({
-  subagent_type: "scanner",
+  subagent_type: "hivexplorer",
   description: "Deep investigation of [area]",
   prompt: "Read and analyze all files related to [topic]. Report patterns, relationships, and potential impact areas."
 })

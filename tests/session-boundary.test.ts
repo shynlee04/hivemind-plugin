@@ -35,6 +35,7 @@ function testShouldCreateNewSessionRules() {
     contextPercent: 60,
     hierarchyComplete: true,
     isMainSession: true,
+    compactionExhausted: false,
     hasDelegations: false,
     compactionCount: 2,
   }

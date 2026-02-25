@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "trajectory": {
-    "id": "b2f41134-810f-4c72-9baf-3cf0d8c74bad",
-    "session_id": "b564faed-838e-416d-8d90-dc4384d73f3a",
+    "id": "76e1a56d-e9c7-404d-adcc-260f0b2e08f2",
+    "session_id": "c0b1fb7d-9f8e-4504-a0de-81bc21e18c03",
     "active_plan_id": null,
-    "active_phase_id": "e081c538-4e57-4e4c-8272-006c7ca01d6b",
+    "active_phase_id": "7e56d214-ae3d-4519-b41d-c5778e1c46f5",
     "active_task_ids": [
-      "1a5912c6-13a9-49b4-beda-e36ca5699ab4"
+      "1ba98d7a-2481-45b2-b851-2cf748a14afe"
     ],
-    "intent": "Grand comprehensive audit: map all lifecycles, pipelines, hooks, tools, libs, responsibilities, integration, user journeys — produce SOT audit report for consolidation plan",
-    "created_at": "2026-02-18T17:48:48.184Z",
-    "updated_at": "2026-02-23T15:44:59.913Z"
+    "intent": "Trich xuat mau cau truc tu BMAD Method va BMAD Builder repomix XML cho Wave 2 synthesis",
+    "created_at": "2026-02-25T01:19:09.331Z",
+    "updated_at": "2026-02-25T01:42:05.707Z"
   }
 }

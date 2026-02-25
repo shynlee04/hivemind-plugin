@@ -283,7 +283,7 @@ async function test_packaged_optional_groups_sync_by_default() {
     await syncOpencodeAssets(dir, { silent: true })
 
     assert(
-      existsSync(join(dir, ".opencode", "agents", "hivemind-brownfield-orchestrator.md")),
+      existsSync(join(dir, ".opencode", "agents", "hiveminder.md")),
       "packaged agent asset synced"
     )
     assert(

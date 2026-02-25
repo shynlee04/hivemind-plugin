@@ -14,7 +14,11 @@ import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { queueStateMutation } from "../lib/state-mutation-queue.js"
 import { loadTasks } from "../lib/manifest.js"
 import { countCompleted, loadTree } from "../lib/hierarchy-tree.js"
-import { estimateContextPercent, shouldCreateNewSession } from "../lib/session-boundary.js"
+import {
+  estimateContextPercent,
+  MAX_COMPACTION_COUNT,
+  shouldCreateNewSession,
+} from "../lib/session-boundary.js"
 import { packCognitiveState } from "../lib/cognitive-packer.js"
 import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
 import { loadLastSessionContext, buildTransformedPrompt } from "../lib/session_coherence.js"
@@ -515,6 +519,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           contextPercent,
           hierarchyComplete: completedBranchCount > 0,
           isMainSession: !role.includes("subagent"),
+          compactionExhausted: (state.compaction_count ?? 0) >= MAX_COMPACTION_COUNT,
           hasDelegations: (state.cycle_log ?? []).some(entry => entry.tool === "task"),
           compactionCount: state.compaction_count ?? 0,
         })

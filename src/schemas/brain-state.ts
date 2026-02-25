@@ -9,6 +9,8 @@ import type { GovernanceCounters } from "../lib/detection.js";
 
 export type SessionMode = "plan_driven" | "quick_fix" | "exploration";
 export type GovernanceStatus = "LOCKED" | "OPEN";
+/** Classification for brain state fields across session boundaries */
+export type FieldLifecycle = "runtime" | "persistent" | "hybrid";
 
 export interface SessionState {
   id: string;
@@ -91,35 +93,94 @@ export const FAILURE_KEYWORDS = [
 export const MAX_CYCLE_LOG = 10;
 
 export interface BrainState {
+  /** @lifecycle runtime */
   session: SessionState;
+  /** @lifecycle runtime */
   hierarchy: HierarchyState;
+  /** @lifecycle runtime */
   metrics: MetricsState;
-  /** Persistent per-session gate for first-turn context injection */
+  /** @lifecycle runtime */
   first_turn_context_injected: boolean;
+  /** @lifecycle runtime */
   complexity_nudge_shown: boolean;
-  /** Turn number when last commit suggestion was shown */
+  /** @lifecycle runtime */
   last_commit_suggestion_turn: number;
+  /** @lifecycle persistent */
   version: string;
 
   // New — hierarchy redesign fields
-  /** Written by purification subagent for next compaction cycle */
+  /** @lifecycle hybrid - set during compaction and consumed by the next session */
   next_compaction_report: string | null;
-  /** How many compactions this session */
+  /** @lifecycle hybrid - cumulative compaction counter carried across session boundaries */
   compaction_count: number;
-  /** Epoch ms of last compaction — used for gap detection */
+  /** @lifecycle hybrid - latest compaction timestamp used for continuity checks */
   last_compaction_time: number;
+  /** @lifecycle runtime - compaction hard limit reached; prompt LLM to start a fresh session */
+  compaction_limit_reached: boolean;
 
   // Cycle intelligence fields
-  /** Auto-captured subagent results (capped at MAX_CYCLE_LOG entries) */
+  /** @lifecycle runtime */
   cycle_log: CycleLogEntry[];
-  /** True when a subagent reported failure and agent hasn't acknowledged it */
+  /** @lifecycle runtime */
   pending_failure_ack: boolean;
-  /** Framework conflict selection metadata for dual-framework projects */
+  /** @lifecycle hybrid - user framework preference persists until intentionally changed */
   framework_selection: FrameworkSelectionState;
 
   // Cross-session continuity (P0-6: session-split amnesia fix)
-  /** Last 6 conversational messages captured before session split */
+  /** @lifecycle runtime */
   recent_messages: Array<{ role: "user" | "assistant"; content: string }>;
+}
+
+export const BRAIN_STATE_FIELD_CLASSIFICATION: Record<keyof BrainState, FieldLifecycle> = {
+  // Session fields reset each session
+  session: "runtime",
+  hierarchy: "runtime",
+  metrics: "runtime",
+  first_turn_context_injected: "runtime",
+  complexity_nudge_shown: "runtime",
+  last_commit_suggestion_turn: "runtime",
+  cycle_log: "runtime",
+  pending_failure_ack: "runtime",
+  compaction_limit_reached: "runtime",
+  recent_messages: "runtime",
+
+  // Persistent fields survive all sessions
+  version: "persistent",
+
+  // Hybrid fields carry forward conditionally
+  compaction_count: "hybrid",
+  last_compaction_time: "hybrid",
+  next_compaction_report: "hybrid",
+  framework_selection: "hybrid",
+};
+
+export function getFieldsByLifecycle(lifecycle: FieldLifecycle): Array<keyof BrainState> {
+  return (Object.keys(BRAIN_STATE_FIELD_CLASSIFICATION) as Array<keyof BrainState>).filter(
+    (field) => BRAIN_STATE_FIELD_CLASSIFICATION[field] === lifecycle
+  );
+}
+
+export function getHybridFields(): Array<keyof BrainState> {
+  return getFieldsByLifecycle("hybrid");
+}
+
+export function carryForwardHybridFields(oldState: BrainState, newState: BrainState): BrainState {
+  const carriedHybridValues = Object.fromEntries(
+    getHybridFields().map((field) => [field, oldState[field]])
+  ) as Partial<BrainState>;
+
+  return {
+    ...newState,
+    ...carriedHybridValues,
+  };
+}
+
+export function getRuntimeFields(): Array<keyof BrainState> {
+  return getFieldsByLifecycle("runtime");
+}
+
+export function getPersistentFields(): Array<keyof BrainState> {
+  return getFieldsByLifecycle("persistent");
 }
 
 export type FrameworkChoice = "gsd" | "spec-kit" | "override" | "cancel" | null;
@@ -200,6 +261,7 @@ export function createBrainState(
     next_compaction_report: null,
     compaction_count: 0,
     last_compaction_time: 0,
+    compaction_limit_reached: false,
     // Cycle intelligence fields
     cycle_log: [],
     pending_failure_ack: false,

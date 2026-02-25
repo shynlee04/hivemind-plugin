@@ -19,7 +19,7 @@ domains:
         - "src/dashboard/"
         - "src/views/"
         - "src/components/"
-    agents: ["build", "debug", "scanner", "code-review"]
+    agents: ["hivemaker", "hivehealer", "hivexplorer"]
 
   frontend:
     description: "Dashboard, TUI, views, components"
@@ -33,7 +33,7 @@ domains:
         - "src/lib/"
         - "src/tools/"
         - "src/schemas/"
-    agents: ["build"]
+    agents: ["hivemaker"]
 
   shared:
     description: "Types, utilities, tests"
@@ -43,7 +43,7 @@ domains:
         - "src/utils/"
         - "tests/"
       forbidden: []
-    agents: ["build", "code-review"]
+    agents: ["hivemaker", "hivehealer"]
 
 # Hierarchy Requirements
 hierarchy:

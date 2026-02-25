@@ -41,6 +41,7 @@ import {
 } from "../schemas/brain-state.js"
 import { getClient } from "../hooks/sdk-context.js"
 import { LEGACY_COMPACTION_BUDGET } from "./budget.js"
+import { MAX_COMPACTION_COUNT } from "./session-boundary.js"
 
 export interface TurningPoint {
   nodeId: string
@@ -206,6 +207,11 @@ export function generateNextCompactionReport(
   const cursorNode = tree.root && tree.cursor ? findNode(tree.root, tree.cursor) : null
   resumeInstructions.push(`You were working on: ${cursorNode ? cursorNode.content : "(no active cursor)"}`)
   resumeInstructions.push("Next step: Continue from the cursor position shown above")
+  if (nextCompactionCount >= MAX_COMPACTION_COUNT) {
+    resumeInstructions.push(
+      `⚠️ COMPACTION LIMIT: Session has been compacted ${nextCompactionCount} times. Start a new session to avoid context degradation.`
+    )
+  }
 
   const lines: string[] = []
   lines.push(`=== ${title} ===`)
@@ -350,7 +356,13 @@ export async function executeCompaction(params: ExecuteCompactionParams): Promis
   }
 
   const turningPoints = identifyTurningPoints(tree, state.metrics)
+  const compactionCount = (state.compaction_count ?? 0) + 1
   const report = generateNextCompactionReport(tree, turningPoints, state)
+  if (compactionCount >= MAX_COMPACTION_COUNT) {
+    await log.warn(
+      `[compact-session] Compaction limit reached (${compactionCount}/${MAX_COMPACTION_COUNT}). New session should be started.`
+    )
+  }
 
   let prunedCount = 0
   if (hasTree && countCompleted(tree) >= 5) {
@@ -368,7 +380,6 @@ export async function executeCompaction(params: ExecuteCompactionParams): Promis
 
     await resetActiveMd(directory)
 
-    const compactionCount = (state.compaction_count ?? 0) + 1
     const compactionTime = Date.now()
 
     newSessionId = generateSessionId()

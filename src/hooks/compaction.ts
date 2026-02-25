@@ -31,6 +31,7 @@ import {
   treeExists,
 } from "../lib/hierarchy-tree.js"
 import { HIVE_MASTER_GOVERNANCE_INSTRUCTION, GOVERNANCE_MARKER } from "../lib/governance-instruction.js"
+import { MAX_COMPACTION_COUNT } from "../lib/session-boundary.js"
 
 const INJECTION_BUDGET_CHARS = 12000
 
@@ -64,6 +65,26 @@ export function createCompactionHook(log: Logger, directory: string) {
       if (!state) {
         await log.debug("Compaction: no brain state to preserve")
         return
+      }
+
+      try {
+        const compactionCount = state.compaction_count ?? 0
+        if (compactionCount >= MAX_COMPACTION_COUNT) {
+          await log.warn(
+            `Compaction limit reached (${compactionCount}/${MAX_COMPACTION_COUNT}). Escalating to auto-new-session.`
+          )
+          output.context.push(
+            `⚠️ COMPACTION LIMIT REACHED: This session has been compacted ${compactionCount} times. Context quality is severely degraded. You MUST start a new session via declare_intent with a fresh focus. Do NOT continue working in this degraded context.`
+          )
+          queueStateMutation({
+            type: "UPDATE_STATE",
+            payload: { compaction_limit_reached: true },
+            source: "compaction-hook",
+          })
+          await log.debug("Compaction: queued mutation compaction_limit_reached=true")
+        }
+      } catch (error) {
+        await log.error(`Compaction limit enforcement error: ${error}`)
       }
 
       // Check for purification report from last compact_session

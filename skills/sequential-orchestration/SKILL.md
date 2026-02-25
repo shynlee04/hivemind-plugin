@@ -97,7 +97,7 @@ const result = await task({
       "next_recommended": "..." | null
     }
   `,
-  subagent_type: "build" // or appropriate agent
+  subagent_type: "hivemaker" // or appropriate agent
 })
 
 // AWAIT the result, do not fire-and-forget

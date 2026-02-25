@@ -96,8 +96,8 @@ Coordinate specialized agents:
 
 ```ts
 // Parallel delegation for independent tasks
-task({ subagent_type: "build", description: "[task 1]", prompt: "..." })
-task({ subagent_type: "scanner", description: "[task 2]", prompt: "..." })
+task({ subagent_type: "hivemaker", description: "[task 1]", prompt: "..." })
+task({ subagent_type: "hivexplorer", description: "[task 2]", prompt: "..." })
 
 // Export cycle after delegation
 export_cycle({ outcome: "success", findings: "[summary]" })
@@ -155,17 +155,17 @@ Assign:
 
 | Task Type | Agent | Use Case |
 |-----------|-------|----------|
-| Investigation | `scanner` | Deep codebase analysis, pattern detection |
-| Implementation | `build` | Code changes, refactoring, new features |
-| Review | `code-review` | Quality validation, architecture review |
-| Exploration | `explore` | Quick file searches, context gathering |
+| Investigation | `hivexplorer` | Deep codebase analysis, pattern detection |
+| Implementation | `hivemaker` | Code changes, refactoring, new features |
+| Review | `hivehealer` | Quality validation, architecture review |
+| Exploration | `hivexplorer` | Quick file searches, context gathering |
 
 ## Constraints
 
 - NEVER skip governance checkpoint
 - ALWAYS read files before planning changes
 - ALWAYS request code review before finalizing
-- NEVER delegate to same agent type (build -> build)
+- NEVER delegate to same agent type (hivemaker -> hivemaker)
 - ALWAYS export cycle after delegation returns
 
 ## Exit Conditions

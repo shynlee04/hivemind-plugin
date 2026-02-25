@@ -88,6 +88,32 @@ export interface SessionExportData {
   drift_score: number;
   files_touched: string[];
   context_updates: number;
+  /** Tool usage pattern from this session */
+  tool_type_counts: { read: number; write: number; query: number; governance: number };
+  /** Governance escalation counters */
+  governance_counters: {
+    out_of_order: number;
+    drift: number;
+    compaction: number;
+    evidence_pressure: number;
+    ignored: number;
+    acknowledged: boolean;
+    prerequisites_completed: boolean;
+  };
+  /** Captured subagent cycle results */
+  cycle_log: Array<{
+    timestamp: number;
+    tool: string;
+    output_excerpt: string;
+    failure_detected: boolean;
+  }>;
+  /** Framework selection state */
+  framework_selection: {
+    choice: string | null;
+    active_phase: string;
+  };
+  /** Number of compactions in this session */
+  compaction_count: number;
   hierarchy: {
     trajectory: string;
     tactic: string;
@@ -114,6 +140,19 @@ export function generateExportData(
     drift_score: state.metrics.drift_score,
     files_touched: state.metrics.files_touched,
     context_updates: state.metrics.context_updates,
+    tool_type_counts: state.metrics.tool_type_counts,
+    governance_counters: state.metrics.governance_counters,
+    cycle_log: (state.cycle_log ?? []).map(entry => ({
+      timestamp: entry.timestamp,
+      tool: entry.tool,
+      output_excerpt: entry.output_excerpt,
+      failure_detected: entry.failure_detected,
+    })),
+    framework_selection: {
+      choice: state.framework_selection.choice,
+      active_phase: state.framework_selection.active_phase,
+    },
+    compaction_count: state.compaction_count ?? 0,
     hierarchy: { ...state.hierarchy },
     ratings: state.metrics.ratings.map(r => ({
       score: r.score,
@@ -152,6 +191,35 @@ export function generateMarkdownExport(
   lines.push(`- **Drift Score**: ${data.drift_score}/100`);
   lines.push(`- **Files Touched**: ${data.files_touched.length}`);
   lines.push(`- **Context Updates**: ${data.context_updates}`);
+  lines.push("");
+  lines.push("## Tool Usage");
+  lines.push(`- Read: ${data.tool_type_counts.read}`);
+  lines.push(`- Write: ${data.tool_type_counts.write}`);
+  lines.push(`- Query: ${data.tool_type_counts.query}`);
+  lines.push(`- Governance: ${data.tool_type_counts.governance}`);
+  lines.push("");
+  lines.push("## Governance");
+  lines.push(`- Out of Order: ${data.governance_counters.out_of_order}`);
+  lines.push(`- Drift: ${data.governance_counters.drift}`);
+  lines.push(`- Compaction: ${data.governance_counters.compaction}`);
+  lines.push(`- Evidence Pressure: ${data.governance_counters.evidence_pressure}`);
+  lines.push(`- Ignored: ${data.governance_counters.ignored}`);
+  lines.push(`- Acknowledged: ${data.governance_counters.acknowledged}`);
+  lines.push(`- Prerequisites Completed: ${data.governance_counters.prerequisites_completed}`);
+  lines.push("");
+  lines.push("## Compaction");
+  lines.push(`- Count: ${data.compaction_count}`);
+  lines.push("");
+  lines.push("## Cycle Log");
+  if (data.cycle_log.length > 0) {
+    data.cycle_log.forEach(entry => {
+      lines.push(
+        `- ${new Date(entry.timestamp).toISOString()} | ${entry.tool} | failure=${entry.failure_detected} | ${entry.output_excerpt}`
+      );
+    });
+  } else {
+    lines.push("- (none)");
+  }
   lines.push("");
   lines.push("## Hierarchy");
   if (data.hierarchy.trajectory) lines.push(`- **Trajectory**: ${data.hierarchy.trajectory}`);

@@ -24,7 +24,7 @@ Domain boundaries prevent cross-contamination between different areas of the cod
 - `src/views/` - Dashboard views
 - `src/components/` - UI components
 
-**Assigned Agents:** `build`, `debug`, `scanner`, `code-review`
+**Assigned Agents:** `hivemaker`, `hivehealer`, `hivexplorer`
 
 ### Frontend Domain
 
@@ -42,7 +42,7 @@ Domain boundaries prevent cross-contamination between different areas of the cod
 - `src/schemas/` - Validation schemas
 - `src/hooks/` - SDK hooks
 
-**Assigned Agents:** `build`
+**Assigned Agents:** `hivemaker`
 
 ### Shared Domain
 
@@ -55,7 +55,7 @@ Domain boundaries prevent cross-contamination between different areas of the cod
 
 **Forbidden Paths:** None
 
-**Assigned Agents:** `build`, `code-review`
+**Assigned Agents:** `hivemaker`, `hivehealer`
 
 ## Boundary Validation
 
@@ -117,7 +117,7 @@ When a task requires changes across domains:
 const backendResult = await task({
   description: "Add API endpoint",
   prompt: "Modify only files in src/tools/ and src/lib/ ...",
-  subagent_type: "build"
+  subagent_type: "hivemaker"
 })
 
 // Step 2: Verify backend changes don't leak
@@ -127,7 +127,7 @@ validateDomainBoundary(backendResult.files_changed, "backend")
 const frontendResult = await task({
   description: "Add UI for API",
   prompt: "Modify only files in src/dashboard/ and src/components/ ...",
-  subagent_type: "build"
+  subagent_type: "hivemaker"
 })
 
 // Step 4: Verify frontend changes don't leak
@@ -139,11 +139,9 @@ validateDomainBoundary(frontendResult.files_changed, "frontend")
 | Agent | Primary Domain | Can Cross? |
 |-------|---------------|------------|
 | `hiveminder` | None (orchestrator) | Yes (delegates only) |
-| `build` | Backend | With approval |
-| `debug` | Backend | No |
-| `scanner` | All (read-only) | Yes |
-| `explore` | All (read-only) | Yes |
-| `code-review` | All (read-only) | Yes |
+| `hivemaker` | Backend | With approval |
+| `hivehealer` | Backend | No |
+| `hivexplorer` | All (investigation) | Yes |
 
 ## Violation Recovery
 
@@ -165,7 +163,7 @@ if (result.violations.length > 0) {
     description: "Reassign to correct domain",
     prompt: `These files were incorrectly modified. 
              Apply changes in ${correctDomain} domain instead.`,
-    subagent_type: "build"
+    subagent_type: "hivemaker"
   })
   
   // Document

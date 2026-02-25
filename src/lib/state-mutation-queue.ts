@@ -22,6 +22,7 @@
 import type { BrainState } from "../schemas/brain-state.js";
 import type { TaskManifest } from "../schemas/manifest.js";
 import type { StateManager } from "./persistence.js";
+import { randomUUID } from "node:crypto";
 import { createLogger, noopLogger } from "./logging.js";
 import { getEffectivePaths } from "./paths.js";
 import { saveTasks } from "./manifest.js";
@@ -76,6 +77,18 @@ export interface StateMutation {
 
 export type TaskManifestMutationType = "UPSERT_TASKS_MANIFEST";
 
+export type AuditMutationType = MutationType | TaskManifestMutationType;
+
+export interface AuditEntry {
+  id: string;
+  type: AuditMutationType;
+  source: string;
+  timestamp: string;
+  appliedAt: string;
+  payloadKeys: string[];
+  queueDepthAtApplication: number;
+}
+
 export interface TaskManifestMutation {
   type: TaskManifestMutationType;
   directory: string;
@@ -93,12 +106,28 @@ export interface TaskManifestMutation {
  */
 const mutationQueue: StateMutation[] = [];
 const taskManifestQueue: TaskManifestMutation[] = [];
+const auditLog: AuditEntry[] = [];
 
 /**
  * Maximum queue size before warning.
  * If exceeded, oldest mutations are dropped (FIFO).
  */
 const MAX_QUEUE_SIZE = 100;
+const MAX_AUDIT_LOG = 50;
+
+function recordAuditEntry(entry: AuditEntry): void {
+  if (auditLog.length >= MAX_AUDIT_LOG) {
+    auditLog.shift();
+  }
+  auditLog.push(entry);
+}
+
+function getPayloadKeys(payload: unknown): string[] {
+  if (!payload || typeof payload !== "object") {
+    return [];
+  }
+  return Object.keys(payload as Record<string, unknown>);
+}
 
 /**
  * Queue a state mutation for later application.
@@ -214,12 +243,28 @@ export async function flushMutations(
 
     // Apply mutations sequentially (deep merge)
     let mergedState = currentState;
+    let queueDepthAtApplication = sortedMutations.length;
+    const pendingAuditEntries: AuditEntry[] = [];
     for (const mutation of sortedMutations) {
       mergedState = deepMerge(mergedState, mutation.payload);
+      pendingAuditEntries.push({
+        id: randomUUID(),
+        type: mutation.type,
+        source: mutation.source,
+        timestamp: mutation.timestamp,
+        appliedAt: new Date().toISOString(),
+        payloadKeys: getPayloadKeys(mutation.payload),
+        queueDepthAtApplication,
+      });
+      queueDepthAtApplication -= 1;
     }
 
     // Save merged state
     await stateManager.save(mergedState);
+
+    for (const entry of pendingAuditEntries) {
+      recordAuditEntry(entry);
+    }
 
     // Clear queue after successful save
     const appliedCount = mutationQueue.length;
@@ -246,8 +291,19 @@ export async function flushTaskManifestMutations(): Promise<number> {
       return a.timestamp.localeCompare(b.timestamp);
     });
 
+    let queueDepthAtApplication = sortedMutations.length;
     for (const mutation of sortedMutations) {
       await saveTasks(mutation.directory, mutation.payload);
+      recordAuditEntry({
+        id: randomUUID(),
+        type: mutation.type,
+        source: mutation.source,
+        timestamp: mutation.timestamp,
+        appliedAt: new Date().toISOString(),
+        payloadKeys: getPayloadKeys(mutation.payload),
+        queueDepthAtApplication,
+      });
+      queueDepthAtApplication -= 1;
     }
 
     const appliedCount = taskManifestQueue.length;
@@ -275,6 +331,37 @@ export function getPendingMutationCount(): number {
 
 export function getPendingTaskManifestMutationCount(): number {
   return taskManifestQueue.length;
+}
+
+export function getAuditLog(): AuditEntry[] {
+  return [...auditLog];
+}
+
+export function getAuditLogBySource(source: string): AuditEntry[] {
+  return auditLog.filter((entry) => entry.source === source);
+}
+
+export function clearAuditLog(): void {
+  auditLog.length = 0;
+}
+
+export function getAuditLogSummary(): {
+  totalApplied: number;
+  sources: Record<string, number>;
+  oldestEntry: string | null;
+  newestEntry: string | null;
+} {
+  const sources = auditLog.reduce<Record<string, number>>((acc, entry) => {
+    acc[entry.source] = (acc[entry.source] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return {
+    totalApplied: auditLog.length,
+    sources,
+    oldestEntry: auditLog[0]?.id ?? null,
+    newestEntry: auditLog[auditLog.length - 1]?.id ?? null,
+  };
 }
 
 /**
@@ -314,6 +401,7 @@ export function applyPendingStateMutations(baseState: BrainState): BrainState {
 export function clearMutationQueue(): void {
   mutationQueue.length = 0;
   taskManifestQueue.length = 0;
+  auditLog.length = 0;
 }
 
 /**

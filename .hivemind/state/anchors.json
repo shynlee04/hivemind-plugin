@@ -1,29 +1,4 @@
 {
-  "anchors": [
-    {
-      "key": "audit-goal",
-      "value": "Grand comprehensive audit of HiveMind framework: map all lifecycles, pipelines, hooks, tools, libs, responsibilities, integration, user journeys. Produce SOT audit report for consolidation plan. Architecture: tools=write-only, hooks=read/inject+queued, lib=pure-engine, schemas=contracts. Branch: dev-v3. Option 1 Contract-First Consolidation chosen.",
-      "created_at": 1771860387144,
-      "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283"
-    },
-    {
-      "key": "known-gaps",
-      "value": "12 known gaps: 1)Dual control plane (.hivemind vs .opencode/root) 2)Hierarchy model mismatch (3-level cognitive vs 6-level enterprise) 3)Session-ID parity(FIXED) 4)Stale graph-task reconciliation(FIXED) 5)Session-token continuity(FIXED) 6)Framework conflict advisory-only 7)Resume best-effort not strict 8)Manifest placeholders empty 9)CQRS flush ownership unclear 10)Auto-realignment centralized 11)MCP low readiness 12)Narrow concurrency window",
-      "created_at": 1771860392083,
-      "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283"
-    },
-    {
-      "key": "completed-cycles",
-      "value": "Cycles 1-7 complete with commits: 92c048e(persistence any-cast), b9b2e60(planning-fs any-cast), 4d05bd2(session-ID parity+15 tests), e281233(runtime integration), 4e288a5(stale-task closure+session-token), 38810da+5c54427(state checkpoints). All gates green: npm test + tsc --noEmit pass. 500+ tests across 30+ files.",
-      "created_at": 1771860396516,
-      "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283"
-    },
-    {
-      "key": "sot-audit-report",
-      "value": "Grand SOT Audit Report: docs/plans/2026-02-23-grand-sot-audit-report.md (841 lines). Health score 6/10. 17 issues (CF-01 to CF-17). TOP 3 CRITICAL: 1)Dual state systems (3 pairs, no sync), 2)Missing Zod for BrainState/HierarchyState/Config/TaskItem (unsafe JSON.parse as T), 3)4 lib→hooks import violations (SDK access pattern). 5-phase fix roadmap: Foundation Safety → Architecture Repair → State Unification → Surface Consolidation → Hardening. Supersedes 2026-02-19-hivefiver-final-audit-inventory.md.",
-      "created_at": 1771861462157,
-      "session_id": "4a625473-9caa-4f4e-a2b0-de1bd7704283"
-    }
-  ],
+  "anchors": [],
   "version": "1.0.0"
 }

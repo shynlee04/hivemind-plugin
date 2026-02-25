@@ -238,10 +238,9 @@ find tests -name "*.test.ts" | wc -l vs find src -name "*.ts" | wc -l
 
 | Agent | Purpose | When to Invoke |
 |-------|---------|----------------|
-| **scanner** | Deep investigation, MCP tool discovery | Need exhaustive code scan |
-| **explore** | Terrain mapping, file discovery | Need quick structural overview |
-| **code-review** | Deep inspection, quality gate | Before accepting changes |
-| **build** | Implementation, testing | After planning is complete |
+| **hivexplorer** | Deep investigation, MCP tool discovery | Need exhaustive code scan |
+| **hivehealer** | Deep inspection, quality gate | Before accepting changes |
+| **hivemaker** | Implementation, testing | After planning is complete |
 
 ## Report Template
 

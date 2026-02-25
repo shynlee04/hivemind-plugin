@@ -78,9 +78,9 @@ npm run lint:fix 2>/dev/null || npx eslint --fix src/
 /hivemind-lint && /hivemind-pre-stop
 ```
 
-**Use after build agent:**
+**Use after hivemaker agent:**
 ```bash
-# After Task(build) returns
+# After Task(hivemaker) returns
 /hivemind-lint
 # Verify before accepting completion
 ```

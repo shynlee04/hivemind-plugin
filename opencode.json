@@ -80,86 +80,13 @@
     }
   },
   "model": "chutes-api/e51e818e-fa63-570d-9f68-49d7d1b4d12f",
+  "permission": {
+    "edit": "ask",
+    "write": "ask",
+    "bash": "ask",
+    "*": "allow"
+  },
   "agent": {
-    "build": {
-      "description": "Full-stack dev agent - builds, tests, validates, self-reviews. Uses skills: zod, code-review, code-architecture-review, verification-before-completion",
-      "mode": "subagent",
-      "tools": {
-        "read": true,
-        "write": true,
-        "edit": true,
-        "glob": true,
-        "grep": true,
-        "bash": true,
-        "task": true,
-        "skill": true,
-        "webfetch": true,
-        "websearch": true,
-        "google_search": true,
-        "codesearch": true,
-        "save_mem": true,
-        "recall_mems": true,
-        "scan_hierarchy": true,
-        "think_back": true,
-        "save_anchor": true,
-        "declare_intent": true,
-        "map_context": true,
-        "compact_session": true,
-        "export_cycle": true
-      }
-    },
-    "explore": {
-      "description": "A fast, read-only agent for exploring codebases. Cannot modify files. Use this when you need to quickly find files by patterns, search code for keywords, or answer questions about the codebase.",
-      "mode": "subagent",
-      "hidden": true,
-      "tools": {
-        "read": true,
-        "glob": true,
-        "grep": true,
-        "bash": true,
-        "write": false,
-        "edit": false
-      }
-    },
-    "scanner": {
-      "description": "Hidden scanner subagent for deep investigation, memory retrieval, and comprehensive search operations. Use for complex scanning tasks, retracing memory, and thorough codebase analysis.",
-      "mode": "subagent",
-      "hidden": true,
-      "tools": {
-        "read": true,
-        "glob": true,
-        "grep": true,
-        "webfetch": true,
-        "websearch": true,
-        "save_mem": true,
-        "recall_mems": true,
-        "scan_hierarchy": true,
-        "think_back": true,
-        "write": true,
-        "edit": true,
-        "bash": true
-      }
-    },
-    "code-review": {
-      "description": "Deep code review agent with scanner/explore investigation. Tracks gaps, detects incomplete migration, uncleaned architecture, overlaps, and logic issues. Uses MiniMax-M2.5-TEE for thorough analysis.",
-      "mode": "subagent",
-      "tools": {
-        "read": true,
-        "glob": true,
-        "grep": true,
-        "task": true,
-        "scan_hierarchy": true,
-        "think_back": true,
-        "save_anchor": true,
-        "save_mem": true,
-        "recall_mems": true,
-        "webfetch": true,
-        "websearch": true,
-        "write": true,
-        "edit": true,
-        "bash": true
-      }
-    },
     "hivefiver": {
       "mode": "primary",
       "tools": {
@@ -172,70 +99,6 @@
         "websearch": true,
         "bash": true
       }
-    },
-    "hiveminder": {
-      "description": "The ruthless strategist + architect. Research-fronted, evidence-oriented orchestrator for the HiveMind ecosystem.",
-      "mode": "primary",
-      "tools": {
-        "read": true,
-        "glob": true,
-        "grep": true,
-        "bash": true,
-        "task": true,
-        "skill": true,
-        "webfetch": true,
-        "websearch": true,
-        "todowrite": true,
-        "question": true,
-        "scan_hierarchy": true,
-        "think_back": true,
-        "save_anchor": true,
-        "save_mem": true,
-        "recall_mems": true,
-        "hivemind_cycle": true,
-        "hivemind_anchor": true,
-        "hivemind_hierarchy": true,
-        "hivemind_inspect": true,
-        "hivemind_memory": true,
-        "hivemind_session": true
-      }
-    },
-    "debug": {
-      "description": "Systematic debugging orchestrator for HiveMind with evidence-first diagnosis and structured remediation.",
-      "mode": "subagent",
-      "tools": {
-        "read": true,
-        "glob": true,
-        "grep": true,
-        "bash": true,
-        "task": true,
-        "skill": true,
-        "scan_hierarchy": true,
-        "think_back": true
-      }
-    },
-    "hivemind-brownfield-orchestrator": {
-      "description": "Brownfield stabilization expert. Detects framework conflicts, technical debt, and orchestrates safe refactoring.",
-      "mode": "subagent",
-      "hidden": true,
-      "tools": {
-        "read": true,
-        "glob": true,
-        "grep": true,
-        "bash": true,
-        "task": true,
-        "skill": true,
-        "scan_hierarchy": true,
-        "think_back": true,
-        "save_mem": true,
-        "recall_mems": true
-      }
     }
-  },
-  "permission": {
-    "edit": "allow",
-    "write": "allow",
-    "bash": "ask",
-    "*": "allow"
   }
 }

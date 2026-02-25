@@ -14,6 +14,8 @@ export interface SessionBoundaryState {
   contextPercent: number
   hierarchyComplete: boolean
   isMainSession: boolean
+  /** Whether compaction limit has been reached (max-3) */
+  compactionExhausted: boolean
   hasDelegations: boolean
   compactionCount: number
 }
@@ -22,6 +24,8 @@ export interface SessionBoundaryRecommendation {
   recommended: boolean
   reason: string
 }
+
+export const MAX_COMPACTION_COUNT = 3
 
 /**
  * Estimates context usage percentage from turn count and compact threshold.
@@ -40,6 +44,7 @@ export function estimateContextPercent(
  * 
  * Defensive guards (return false if ANY apply):
  * - Not main session (subagent context)
+ * - Compaction exhausted emergency does not apply (handled earlier)
  * - Has active delegations
  * - Context >= 80% (too late for clean handoff)
  * - User turns < 30 (not enough session substance)
@@ -51,14 +56,23 @@ export function estimateContextPercent(
 export function shouldCreateNewSession(
   state: SessionBoundaryState
 ): SessionBoundaryRecommendation {
-  // === DEFENSIVE GUARDS (don't split) ===
-  
+  // === MAIN SESSION GUARD ===
   if (!state.isMainSession) {
     return {
       recommended: false,
       reason: "Boundary recommendation only applies to the main session",
     }
   }
+
+  // === EMERGENCY ESCALATION (before defensive guards) ===
+  if (state.compactionExhausted) {
+    return {
+      recommended: true,
+      reason: "Compaction limit reached (3/3). Context quality degrading. New session recommended.",
+    }
+  }
+
+  // === DEFENSIVE GUARDS (don't split) ===
 
   if (state.hasDelegations) {
     return {
@@ -85,7 +99,7 @@ export function shouldCreateNewSession(
   }
 
   // === TRIGGER CONDITIONS ===
-  
+
   // V3.0: Split when approaching 3rd compaction AND hierarchy complete
   if (state.compactionCount >= 2 && state.hierarchyComplete) {
     return {

@@ -109,7 +109,7 @@ This section contains MANDATORY rules that apply to ALL agents in ALL projects.
 - If broken: `think_back({})` then proceed
 
 ### 3. TRUST CODE, NOT DOCS
-- **scanner/explore agents**: Gather deepest intel via `glob` + `grep`
+- **hivexplorer agent**: Gather deepest intel via `glob` + `grep`
 - Document >48h = SUSPECT → fresh scan required
 - Deep-scan ALWAYS > reading documentation
 

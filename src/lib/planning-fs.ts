@@ -15,7 +15,7 @@
  * - activePath in PlanningPaths still works (resolves to active session file)
  */
 
-import { readFile, writeFile, mkdir, readdir, rename } from "fs/promises";
+import { readFile, writeFile, mkdir, readdir, rename, rm } from "fs/promises";
 import { existsSync } from "fs";
 import { dirname, join, extname, basename } from "path";
 import { parse, stringify } from "yaml";
@@ -920,6 +920,61 @@ export async function listArchives(projectRoot: string): Promise<string[]> {
   } catch {
     return [];
   }
+}
+
+/**
+ * Prune old session archives beyond retention limit.
+ * Keeps the N most recent archives, deletes the rest.
+ * Archives are sorted by filename (which contains date).
+ * @returns number of archives deleted
+ */
+export async function pruneOldArchives(
+  directory: string,
+  maxArchives: number = 20
+): Promise<number> {
+  const archives = await listArchives(directory);
+  if (maxArchives <= 0) {
+    return 0;
+  }
+
+  if (archives.length <= maxArchives) {
+    return 0;
+  }
+
+  const paths = getPlanningPaths(directory);
+  const sorted = [...archives].sort();
+  const toDelete = sorted.slice(0, sorted.length - maxArchives);
+
+  for (const archive of toDelete) {
+    await rm(join(paths.archiveDir, archive), { force: true });
+  }
+
+  return toDelete.length;
+}
+
+/**
+ * Get archive statistics for monitoring.
+ */
+export async function getArchiveStats(directory: string): Promise<{
+  totalArchives: number;
+  oldestArchive: string | null;
+  newestArchive: string | null;
+}> {
+  const archives = (await listArchives(directory)).sort();
+
+  if (archives.length === 0) {
+    return {
+      totalArchives: 0,
+      oldestArchive: null,
+      newestArchive: null,
+    };
+  }
+
+  return {
+    totalArchives: archives.length,
+    oldestArchive: archives[0] ?? null,
+    newestArchive: archives[archives.length - 1] ?? null,
+  };
 }
 
 export function generateIndexTemplate(): string {

@@ -2,31 +2,13 @@
   "version": "1.0.0",
   "tasks": [
     {
-      "id": "e220d443-a40b-4bf8-a31a-8467fd8a26c5",
-      "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
-      "title": "Complete deep-scan analysis of export-recycler-red.test.ts - identified 3 RED failures matching expected missing features",
+      "id": "1ba98d7a-2481-45b2-b851-2cf748a14afe",
+      "parent_phase_id": "7e56d214-ae3d-4519-b41d-c5778e1c46f5",
+      "title": "Khoi tao /hivefiver research va giao nhiem vu trich xuat pattern cho 2 XML repomix, tong hop bao cao cau truc co vi du va bang chung",
       "status": "in_progress",
       "file_locks": [],
-      "created_at": "2026-02-20T11:13:08.622Z",
-      "updated_at": "2026-02-20T11:13:08.622Z"
-    },
-    {
-      "id": "6b60d495-e455-4766-b372-be4f612cb24b",
-      "parent_phase_id": "d1d4b41c-d562-49c7-b69c-011e1df05f13",
-      "title": "Initialize HiveFiver cycle: confirm current blocker evidence and propose next 3 gated options (diagnose cache path, patch runtime path source, or enforce plugin refresh workflow).",
-      "status": "in_progress",
-      "file_locks": [],
-      "created_at": "2026-02-21T16:01:05.047Z",
-      "updated_at": "2026-02-21T16:01:05.047Z"
-    },
-    {
-      "id": "1a5912c6-13a9-49b4-beda-e36ca5699ab4",
-      "parent_phase_id": "e081c538-4e57-4e4c-8272-006c7ca01d6b",
-      "title": "Phase 1: Dispatching 4 parallel read-only scanner agents across independent audit domains (Architecture Layer, Schema/Data Model, Orchestration/Integration, Runtime State/Pipeline)",
-      "status": "in_progress",
-      "file_locks": [],
-      "created_at": "2026-02-23T15:18:14.083Z",
-      "updated_at": "2026-02-23T15:18:14.083Z"
+      "created_at": "2026-02-25T01:20:59.124Z",
+      "updated_at": "2026-02-25T01:20:59.124Z"
     }
   ]
 }

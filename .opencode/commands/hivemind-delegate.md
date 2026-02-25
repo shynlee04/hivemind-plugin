@@ -36,7 +36,7 @@ glob({ pattern: "**/*[topic]*" })
 ```typescript
 Task({
   description: "Brief, specific description",
-  subagent_type: "build" | "scanner" | "explore" | "code-review",
+  subagent_type: "hivemaker" | "hivexplorer" | "hivehealer",
   prompt: `
     ## Task: [Specific Goal]
     

@@ -4,7 +4,11 @@ import type { Logger } from "./logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import type { BrainState } from "../schemas/brain-state.js"
 import { loadTree, countCompleted, getAncestors } from "./hierarchy-tree.js"
-import { estimateContextPercent, shouldCreateNewSession } from "./session-boundary.js"
+import {
+  estimateContextPercent,
+  MAX_COMPACTION_COUNT,
+  shouldCreateNewSession,
+} from "./session-boundary.js"
 import { generateExportData, generateJsonExport, generateMarkdownExport } from "./session-export.js"
 import { getExportDir } from "./planning-fs.js"
 import { createDetectionState, resetGovernanceCounters } from "./detection.js"
@@ -94,6 +98,7 @@ export async function maybeCreateNonDisruptiveSessionSplit(
     contextPercent,
     hierarchyComplete: completedBranchCount > 0,
     isMainSession,
+    compactionExhausted: (brain.compaction_count ?? 0) >= MAX_COMPACTION_COUNT,
     hasDelegations,
     compactionCount: brain.compaction_count ?? 0,
   })

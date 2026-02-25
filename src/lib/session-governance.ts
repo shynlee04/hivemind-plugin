@@ -8,7 +8,11 @@
 import { readActiveMd } from "./planning-fs.js"
 import { detectChainBreaks } from "./chain-analysis.js"
 import { detectLongSession } from "./long-session.js"
-import { estimateContextPercent, shouldCreateNewSession } from "./session-boundary.js"
+import {
+  estimateContextPercent,
+  MAX_COMPACTION_COUNT,
+  shouldCreateNewSession,
+} from "./session-boundary.js"
 import { getToolActivation } from "./tool-activation.js"
 import {
   compileEscalatedSignals,
@@ -301,6 +305,7 @@ function buildSessionBoundaryWarnings(
     contextPercent,
     hierarchyComplete: (completedBranchCount ?? 0) > 0,
     isMainSession: !role.includes("subagent"),
+    compactionExhausted: (state.compaction_count ?? 0) >= MAX_COMPACTION_COUNT,
     hasDelegations: (state.cycle_log ?? []).some((entry) => entry.tool === "task"),
     compactionCount: state.compaction_count ?? 0,
   })

@@ -1,24 +1,24 @@
 {
   "governance_mode": "strict",
   "language": "en",
-  "max_turns_before_warning": 5,
-  "max_active_md_lines": 50,
-  "auto_compact_on_turns": 20,
+  "max_turns_before_warning": 500,
+  "max_active_md_lines": 2000,
+  "auto_compact_on_turns": 40,
   "stale_session_days": 3,
   "commit_suggestion_threshold": 5,
-  "auto_commit": false,
+  "auto_commit": true,
   "agent_behavior": {
     "language": "en",
-    "expert_level": "intermediate",
-    "output_style": "architecture",
+    "expert_level": "beginner",
+    "output_style": "skeptical",
     "constraints": {
       "require_code_review": true,
       "enforce_tdd": true,
-      "max_response_tokens": 2000,
+      "max_response_tokens": 200000,
       "explain_reasoning": true,
-      "be_skeptical": false
+      "be_skeptical": true
     }
   },
-  "automation_level": "full",
-  "profile": "intermediate"
+  "automation_level": "coach",
+  "profile": "beginner"
 }
