@@ -30,3 +30,6 @@ export * from "./watcher.js";
 export * from "./gatekeeper.js";
 export * from "./state-mutation-queue.js";
 export * from "./auto-context.js";
+export * from "./context-purifier.js";
+export * from "./session-memory-classifier.js";
+export * from "./sot-governance.js";

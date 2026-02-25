@@ -66,6 +66,7 @@
     "@types/proper-lockfile": "^4.1.4",
     "proper-lockfile": "^4.1.2",
     "typescript": "^5.3.0",
+    "web-tree-sitter": "^0.26.5",
     "yaml": "^2.3.4",
     "zod": "^4.3.6"
   },

@@ -73,6 +73,14 @@ class InProcessEventBus extends EventEmitter {
       "artifact:spawned",
       "plugin:activated",
       "plugin:deactivating",
+      "codemap:updated",
+      "codemap:compressed",
+      "codemap:stale",
+      "context:consolidated",
+      "context:purged",
+      "memory:classified",
+      "pending_change:queued",
+      "pending_change:verified",
     ];
     
     eventTypes.forEach((type) => this.on(type, handler));

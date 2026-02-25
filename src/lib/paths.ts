@@ -81,6 +81,28 @@ export interface HivemindPaths {
   graphTasks: string        // graph/tasks.json
   graphMems: string         // graph/mems.json
   graphOrphans: string      // graph/orphans.json (quarantine for invalid nodes)
+  graphPendingChanges: string // graph/pending-changes.json
+  graphVerificationLedger: string // graph/verification-ledger.json
+
+  // graph/codebase/ (v2.9 SOT pillars)
+  graphCodebaseDir: string
+  graphCodebaseCodewikiDir: string
+  graphCodebaseCodemapDir: string
+  graphCodebaseCodeIntelDir: string
+  graphCodebaseRepoKnowledgeDir: string
+
+  // graph/project/ (root project lineage)
+  graphProjectDir: string
+  graphProjectJson: string
+  graphProjectRequirementsDir: string
+  graphProjectRoadmapDir: string
+  graphProjectResearchDir: string
+  graphProjectResearchArchitectureDir: string
+  graphProjectResearchStacksDir: string
+  graphProjectResearchPatternsDir: string
+  graphProjectResearchPitfallsDir: string
+  graphProjectResearchContextDir: string
+  graphProjectResearchSummaryDir: string
 
   // governance SOT — Level 0 {future: codewiki + codemap}
   // These directories exist in the structure from day one.
@@ -88,6 +110,8 @@ export interface HivemindPaths {
   //   codemap → plans → sessions → tasks → sub-tasks
   codemapDir: string        // codemap/ — codebase structure, deps, ownership
   codemapManifest: string   // codemap/manifest.json
+  codemapJson: string       // codemap/codemap.json
+  compressedCodemapJson: string // codemap/compressed-codemap.json
   codewikiDir: string       // codewiki/ — synthesized knowledge, patterns, decisions
   codewikiManifest: string  // codewiki/manifest.json
 
@@ -132,6 +156,21 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
   const archiveDir = join(sessionsDir, "archive")
   const plansDir = join(root, "plans")
   const graphDir = join(root, "graph")
+  const graphCodebaseDir = join(graphDir, "codebase")
+  const graphCodebaseCodewikiDir = join(graphCodebaseDir, "codewiki")
+  const graphCodebaseCodemapDir = join(graphCodebaseDir, "codemap")
+  const graphCodebaseCodeIntelDir = join(graphCodebaseDir, "code-intel")
+  const graphCodebaseRepoKnowledgeDir = join(graphCodebaseDir, "repoknowledge")
+  const graphProjectDir = join(graphDir, "project")
+  const graphProjectRequirementsDir = join(graphProjectDir, "requirements")
+  const graphProjectRoadmapDir = join(graphProjectDir, "roadmap")
+  const graphProjectResearchDir = join(graphProjectDir, "research")
+  const graphProjectResearchArchitectureDir = join(graphProjectResearchDir, "architecture")
+  const graphProjectResearchStacksDir = join(graphProjectResearchDir, "stacks")
+  const graphProjectResearchPatternsDir = join(graphProjectResearchDir, "patterns")
+  const graphProjectResearchPitfallsDir = join(graphProjectResearchDir, "pitfalls")
+  const graphProjectResearchContextDir = join(graphProjectResearchDir, "context")
+  const graphProjectResearchSummaryDir = join(graphProjectResearchDir, "summary")
   const codemapDir = join(root, "codemap")
   const codewikiDir = join(root, "codewiki")
   const logsDir = join(root, "logs")
@@ -175,9 +214,31 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
     graphTasks: join(graphDir, "tasks.json"),
     graphMems: join(graphDir, "mems.json"),
     graphOrphans: join(graphDir, "orphans.json"),
+    graphPendingChanges: join(graphDir, "pending-changes.json"),
+    graphVerificationLedger: join(graphDir, "verification-ledger.json"),
+
+    graphCodebaseDir,
+    graphCodebaseCodewikiDir,
+    graphCodebaseCodemapDir,
+    graphCodebaseCodeIntelDir,
+    graphCodebaseRepoKnowledgeDir,
+
+    graphProjectDir,
+    graphProjectJson: join(graphProjectDir, "project.json"),
+    graphProjectRequirementsDir,
+    graphProjectRoadmapDir,
+    graphProjectResearchDir,
+    graphProjectResearchArchitectureDir,
+    graphProjectResearchStacksDir,
+    graphProjectResearchPatternsDir,
+    graphProjectResearchPitfallsDir,
+    graphProjectResearchContextDir,
+    graphProjectResearchSummaryDir,
 
     codemapDir,
     codemapManifest: join(codemapDir, "manifest.json"),
+    codemapJson: join(codemapDir, "codemap.json"),
+    compressedCodemapJson: join(codemapDir, "compressed-codemap.json"),
     codewikiDir,
     codewikiManifest: join(codewikiDir, "manifest.json"),
 
@@ -450,12 +511,28 @@ export function getAllDirectories(projectRoot: string): string[] {
     p.root,
     p.stateDir,
     p.memoryDir,
+    p.systemDir,
     p.sessionsDir,
     p.activeDir,
     p.archiveDir,
     p.exportsDir,
     p.plansDir,
     p.graphDir,
+    p.graphCodebaseDir,
+    p.graphCodebaseCodewikiDir,
+    p.graphCodebaseCodemapDir,
+    p.graphCodebaseCodeIntelDir,
+    p.graphCodebaseRepoKnowledgeDir,
+    p.graphProjectDir,
+    p.graphProjectRequirementsDir,
+    p.graphProjectRoadmapDir,
+    p.graphProjectResearchDir,
+    p.graphProjectResearchArchitectureDir,
+    p.graphProjectResearchStacksDir,
+    p.graphProjectResearchPatternsDir,
+    p.graphProjectResearchPitfallsDir,
+    p.graphProjectResearchContextDir,
+    p.graphProjectResearchSummaryDir,
     p.codemapDir,
     p.codewikiDir,
     p.logsDir,

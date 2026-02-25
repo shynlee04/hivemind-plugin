@@ -128,6 +128,20 @@ export const TaskNodeSchema = z.object({
   acceptance_criteria: z.array(z.string()).optional(),
   dependencies: z.array(z.string().uuid()).optional(),
   priority: z.enum(["critical", "high", "medium", "low"]).optional(),
+  // HiveFiver integration fields (optional)
+  domain: z.enum(["dev", "marketing", "finance", "office-ops", "hybrid"]).optional(),
+  lane: z.string().optional(),
+  persona: z.string().optional(),
+  source: z.string().optional(),
+  hivefiver_action: z.string().optional(),
+  canonical_command: z.string().optional(),
+  recommended_skills: z.array(z.string()).optional(),
+  menu_step: z.number().optional(),
+  menu_total: z.number().optional(),
+  validation_attempts: z.number().optional(),
+  max_validation_attempts: z.number().optional(),
+  evidence_confidence: z.enum(["full", "partial", "low"]).optional(),
+  related_entities: z.record(z.string(), z.string()).optional(),
 });
 
 export const SubtaskNodeTypeSchema = z.enum([
@@ -223,6 +237,135 @@ export const MemNodeSchema = z.object({
   updated_at: z.string().datetime(),
 });
 
+export const CodeEntityNodeSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("code_entity"),
+  filePath: z.string(),
+  language: z.string().optional(),
+  hash: z.string(),
+  size: z.number(),
+  lineCount: z.number(),
+  tokenCount: z.number(),
+  hasSecrets: z.boolean().default(false),
+  secretTypes: z.array(z.string()).default([]),
+  lastModified: z.string(),
+  summary: z.string().optional(),
+  signatures: z.array(z.object({
+    name: z.string(),
+    type: z.enum(["function", "class", "interface", "type", "variable", "export", "import"]),
+    line: z.number(),
+    exported: z.boolean().default(false),
+  })).default([]),
+  created: z.string().datetime(),
+  updated: z.string().datetime(),
+});
+
+export const DebugMemoryNodeSchema = z.object({
+  id: z.string().uuid(),
+  session_id: z.string().uuid(),
+  origin_task_id: z.string().uuid().nullable(),
+  type: z.literal("debug_memory"),
+  content: z.string(),
+  attempts: z.array(z.object({
+    hypothesis: z.string(),
+    action: z.string(),
+    result: z.string(),
+    timestamp: z.string().datetime(),
+  })).default([]),
+  root_cause: z.string().optional(),
+  resolution: z.string().optional(),
+  ttl_hours: z.number().default(72),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
+});
+
+export const ResearchMemoryNodeSchema = z.object({
+  id: z.string().uuid(),
+  session_id: z.string().uuid(),
+  origin_task_id: z.string().uuid().nullable(),
+  type: z.literal("research_memory"),
+  topic: z.string(),
+  sources: z.array(z.object({
+    url: z.string().optional(),
+    tool: z.string().optional(),
+    summary: z.string(),
+    confidence: z.number().min(0).max(1).default(0.5),
+    timestamp: z.string().datetime(),
+  })).default([]),
+  synthesis: z.string().optional(),
+  ttl_hours: z.number().default(72),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
+});
+
+export const CueMemoryNodeSchema = z.object({
+  id: z.string().uuid(),
+  session_id: z.string().uuid(),
+  origin_task_id: z.string().uuid().nullable(),
+  type: z.literal("cue_memory"),
+  parked_intent: z.string(),
+  context_snapshot: z.string().optional(),
+  resume_trigger: z.string().optional(),
+  status: z.enum(["parked", "resumed", "expired"]).default("parked"),
+  ttl_hours: z.number().default(168),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
+});
+
+export const PendingChangeEntityTypeSchema = z.enum([
+  "codewiki",
+  "codemap",
+  "code-intel",
+  "repoknowledge",
+  "project",
+  "requirement",
+  "roadmap",
+  "research",
+]);
+
+export const PendingChangeNodeSchema = z.object({
+  id: z.string().uuid(),
+  project_id: z.string().uuid(),
+  entity_type: PendingChangeEntityTypeSchema,
+  entity_id: z.string().min(1),
+  change_summary: z.string().min(1),
+  change_payload: z.record(z.string(), z.unknown()),
+  dependencies: z.array(z.string().uuid()).default([]),
+  status: z.enum(["queued", "verified", "rejected", "applied"]),
+  git_diff_signature: z.string().min(1),
+  watcher_event_id: z.string().min(1),
+  commit_hash: z.string().nullable(),
+  verification_notes: z.string().optional(),
+  verified_at: z.string().datetime().optional(),
+  applied_at: z.string().datetime().optional(),
+  created_at: z.string().datetime(),
+  updated_at: z.string().datetime(),
+});
+
+export const SessionMemoryCategorySchema = z.enum([
+  "discovery_brainstorming_discuss",
+  "research_synthesis",
+  "codebase_investigation",
+  "planning",
+  "implementing",
+  "debug",
+  "test_validation_gatekeeping",
+]);
+
+export const SessionMemoryNodeSchema = z.object({
+  id: z.string().uuid(),
+  session_id: z.string().uuid(),
+  category: SessionMemoryCategorySchema,
+  source: z.string().min(1),
+  content: z.string().min(1),
+  condensed: z.string().optional(),
+  temporary: z.boolean().default(true),
+  classification_confidence: z.number().min(0).max(1).default(0.5),
+  created_at: z.string().datetime(),
+  purged_at: z.string().datetime().nullable().optional(),
+  transferred_to_governance: z.boolean().default(false),
+});
+
 export type TrajectoryNode = z.infer<typeof TrajectoryNodeSchema>;
 export type UnifiedStatus = z.infer<typeof UnifiedStatusSchema>;
 export type ProjectNode = z.infer<typeof ProjectNodeSchema>;
@@ -238,6 +381,14 @@ export type DelegationNode = z.infer<typeof DelegationNodeSchema>;
 export type TrajectoryExport = z.infer<typeof TrajectoryExportSchema>;
 export type VerificationNode = z.infer<typeof VerificationNodeSchema>;
 export type MemNode = z.infer<typeof MemNodeSchema>;
+export type CodeEntityNode = z.infer<typeof CodeEntityNodeSchema>;
+export type DebugMemoryNode = z.infer<typeof DebugMemoryNodeSchema>;
+export type ResearchMemoryNode = z.infer<typeof ResearchMemoryNodeSchema>;
+export type CueMemoryNode = z.infer<typeof CueMemoryNodeSchema>;
+export type PendingChangeEntityType = z.infer<typeof PendingChangeEntityTypeSchema>;
+export type PendingChangeNode = z.infer<typeof PendingChangeNodeSchema>;
+export type SessionMemoryCategory = z.infer<typeof SessionMemoryCategorySchema>;
+export type SessionMemoryNode = z.infer<typeof SessionMemoryNodeSchema>;
 export type PlanningLifecycleLevel = z.infer<typeof PlanningLifecycleLevelSchema>;
 export type RalphUserStory = z.infer<typeof RalphUserStorySchema>;
 export type RalphPrdJson = z.infer<typeof RalphPrdJsonSchema>;

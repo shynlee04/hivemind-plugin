@@ -20,6 +20,7 @@ import {
 import { clearPendingFailureAck, type SessionMode } from "../schemas/brain-state.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 import { flushMutations, flushTaskManifestMutations } from "../lib/state-mutation-queue.js"
+import { loadPendingChanges, loadVerificationLedger } from "../lib/sot-governance.js"
 
 /**
  * Write trajectory state after session operations to maintain graph consistency.
@@ -160,6 +161,10 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
         .boolean()
         .optional()
         .describe("For update(action): force creating a new graph task instead of reusing active one"),
+      strict_gate: tool.schema
+        .boolean()
+        .optional()
+        .describe("For close: enforce V2.9 close gate (consolidation/purge + verification ledger checks)"),
     },
     async execute(args, _context) {
       // CHIMERA-3: Always return JSON for FK chaining - no conditionals
@@ -266,6 +271,37 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
           break
         }
         case "close":
+          if (args.strict_gate) {
+            const currentState = await stateManager.load()
+            const pending = await loadPendingChanges(directory)
+            const ledger = await loadVerificationLedger(directory)
+
+            const hasUnpurgedTemporaryExports = Boolean(
+              currentState &&
+                currentState.memory_governance.temporary_exports_consolidated >
+                  currentState.memory_governance.temporary_exports_purged
+            )
+            const unappliedVerifiedChanges = pending.pending_changes.filter(
+              (entry) => entry.status === "verified"
+            ).length
+            const queuedChanges = pending.pending_changes.filter(
+              (entry) => entry.status === "queued"
+            ).length
+            const hasVerificationRecord = ledger.records.length > 0
+
+            if (
+              hasUnpurgedTemporaryExports ||
+              unappliedVerifiedChanges > 0 ||
+              queuedChanges > 0 ||
+              !hasVerificationRecord
+            ) {
+              return toErrorOutput(
+                "Strict close gate blocked. Run hivemind_context validate/purge/doctor first.",
+                "Resolve queued/unapplied pending changes and complete consolidation/purge before close.",
+              )
+            }
+          }
+
           result = await closeSession(directory, args.summary)
           // Wire trajectory write-through: clear active state
           if (result.success && result.data.sessionId) {

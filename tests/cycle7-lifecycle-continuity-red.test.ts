@@ -91,6 +91,8 @@ describe("Cycle7 RED: stale-task closure determinism and session-token continuit
       { action: "start", mode: "plan_driven", focus: "Cycle7 session continuity" },
       {} as any,
     )
+    const initialGraphTasks = await loadGraphTasks(dir, { enabled: false })
+    const initialTaskCount = initialGraphTasks.tasks.length
 
     const state = await createStateManager(dir).load()
     const runtimeSessionId = state?.session.id
@@ -117,12 +119,14 @@ describe("Cycle7 RED: stale-task closure determinism and session-token continuit
     await flushTaskManifestMutations()
 
     const graphTasks = await loadGraphTasks(dir, { enabled: false })
-    const task = graphTasks.tasks[0]
+    const task = graphTasks.tasks.find(
+      (entry) => entry.title === "Preserve canonical session continuity",
+    )
 
     assert.equal(
       graphTasks.tasks.length,
-      1,
-      "RED expected: exactly one task should be created",
+      initialTaskCount + 1,
+      "RED expected: todo.updated should append exactly one canonicalized task",
     )
     assert.ok(task, "task should exist")
     assert.match(

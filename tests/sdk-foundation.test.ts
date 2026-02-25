@@ -270,15 +270,17 @@ async function test_architectureBoundary() {
 async function test_backwardCompatibility() {
   process.stderr.write("\n--- sdk-foundation: backward compatibility ---\n")
   
-  // Verify Tools exports (6 canonical tools per US-024)
+  // Verify Tools exports (canonical + v2.9 governance tools)
   const toolCount = Object.keys(Tools).length
-  assert(toolCount === 6, `Tools exports count: ${toolCount} (== 6)`)
+  assert(toolCount >= 8, `Tools exports count: ${toolCount} (>= 8)`)
   assert(typeof Tools.createHivemindSessionTool === "function", "createHivemindSessionTool exported")
   assert(typeof Tools.createHivemindInspectTool === "function", "createHivemindInspectTool exported")
   assert(typeof Tools.createHivemindMemoryTool === "function", "createHivemindMemoryTool exported")
   assert(typeof Tools.createHivemindAnchorTool === "function", "createHivemindAnchorTool exported")
   assert(typeof Tools.createHivemindHierarchyTool === "function", "createHivemindHierarchyTool exported")
   assert(typeof Tools.createHivemindCycleTool === "function", "createHivemindCycleTool exported")
+  assert(typeof Tools.createHivemindContextTool === "function", "createHivemindContextTool exported")
+  assert(typeof Tools.createHivemindSessionMemoryTool === "function", "createHivemindSessionMemoryTool exported")
   
   // Verify Hooks exports
   const hookCount = Object.keys(Hooks).length

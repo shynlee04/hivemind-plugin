@@ -1,8 +1,9 @@
 import { existsSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { loadTasks, saveTasks } from "./manifest.js"
-import type { TaskItem } from "../schemas/manifest.js"
+import { randomUUID } from "node:crypto"
+import { loadGraphTasks, addGraphTask } from "./graph-io.js"
+import type { TaskNode } from "../schemas/graph-nodes.js"
 
 export const HIVEFIVER_LEGACY_COMMANDS = [
   "hivefiver-start",
@@ -153,8 +154,8 @@ interface IntentClassification {
   command: string
   action: (typeof HIVEFIVER_ACTIONS)[number]
   skills: string[]
-  domain: TaskItem["domain"]
-  persona: TaskItem["persona"]
+  domain: "dev" | "marketing" | "finance" | "office-ops" | "hybrid"
+  persona: "vibecoder" | "floppy_engineer" | "enterprise_architect"
   workflow: string
 }
 
@@ -193,7 +194,7 @@ function resolvePackSourceRoot(projectRoot: string): string {
   return hasPackAssets ? moduleRoot : projectRoot
 }
 
-function pickDomain(lower: string): TaskItem["domain"] {
+function pickDomain(lower: string): "dev" | "marketing" | "finance" | "office-ops" | "hybrid" {
   if (
     lower.includes("campaign") ||
     lower.includes("seo") ||
@@ -232,7 +233,7 @@ function pickDomain(lower: string): TaskItem["domain"] {
   return "hybrid"
 }
 
-function pickPersona(lower: string): NonNullable<TaskItem["persona"]> {
+function pickPersona(lower: string): "vibecoder" | "floppy_engineer" | "enterprise_architect" {
   const enterpriseSignals = ["enterprise", "compliance", "soc2", "iso", "sla", "corporate", "governance", "risk"]
   if (enterpriseSignals.some((signal) => lower.includes(signal))) {
     return "enterprise_architect"
@@ -349,8 +350,8 @@ export interface AutoRealignmentDecision {
   recommendedAction: string
   recommendedSkills: string[]
   recommendedWorkflow: string
-  persona: TaskItem["persona"]
-  domain: TaskItem["domain"]
+  persona: "vibecoder" | "floppy_engineer" | "enterprise_architect"
+  domain: "dev" | "marketing" | "finance" | "office-ops" | "hybrid"
   canAutoInitiate: boolean
   requiresPermission: boolean
   permissionPrompt?: string
@@ -370,7 +371,7 @@ function buildPermissionPrompt(command: string, requiresPermission: boolean): st
   return `Approve next step: run /${command} now? (Yes/No)`
 }
 
-function buildNextStepMenu(action: HiveFiverAction, domain: TaskItem["domain"]): AutoNextStepOption[] {
+function buildNextStepMenu(action: HiveFiverAction, domain: "dev" | "marketing" | "finance" | "office-ops" | "hybrid"): AutoNextStepOption[] {
   const seeded = [...ACTION_MENU_TEMPLATES[action]]
   if (domain !== "dev" && !seeded.includes("tutor")) {
     seeded.push("tutor")
@@ -525,151 +526,186 @@ export async function seedHiveFiverOnboardingTasks(
   directory: string,
   sessionId: string,
 ): Promise<{ created: number; updated: boolean }> {
-  const now = Date.now()
-  const manifest = (await loadTasks(directory)) ?? {
-    session_id: sessionId,
-    updated_at: now,
-    tasks: [],
-  }
+  const now = new Date().toISOString()
+  const syntheticPhaseId = randomUUID()
+  
+  // Load existing graph tasks to check for duplicates
+  const existingState = await loadGraphTasks(directory)
+  const existingTitles = new Set(existingState.tasks.map(t => t.title))
 
-  const baseTasks: TaskItem[] = [
+  // Map of old string IDs to new UUIDs (for dependency resolution)
+  const idMap = new Map<string, string>()
+  
+  const baseTasks: Array<{
+    oldId: string
+    task: Omit<TaskNode, "id"> & { id?: string }
+    deps: string[]
+  }> = [
     {
-      id: "hivefiver-bootstrap",
-      text: "Run HiveFiver startup realignment and lane detection",
-      status: "pending",
-      priority: "high",
-      domain: "hybrid",
-      lane: "auto",
-      persona: "vibecoder",
-      source: "init.seed",
-      hivefiver_action: "init",
-      canonical_command: "hivefiver init",
-      recommended_skills: ["hivefiver-persona-routing", "hivefiver-bilingual-tutor"],
-      validation_attempts: 0,
-      max_validation_attempts: 10,
-      evidence_confidence: "partial",
-      menu_step: 1,
-      menu_total: 4,
-      acceptance_criteria: [
-        "Persona lane selected",
-        "Project type detected (greenfield/brownfield)",
-        "Governance mode locked",
-      ],
-      related_entities: {
-        session_id: sessionId,
-        workflow_id: "hivefiver-vibecoder.yaml",
-        requirement_node_id: "rq-bootstrap",
+      oldId: "hivefiver-bootstrap",
+      deps: [],
+      task: {
+        title: "Run HiveFiver startup realignment and lane detection",
+        parent_phase_id: syntheticPhaseId,
+        status: "pending",
+        file_locks: [],
+        created_at: now,
+        updated_at: now,
+        priority: "high",
+        domain: "hybrid",
+        lane: "auto",
+        persona: "vibecoder",
+        source: "init.seed",
+        hivefiver_action: "init",
+        canonical_command: "hivefiver init",
+        recommended_skills: ["hivefiver-persona-routing", "hivefiver-bilingual-tutor"],
+        validation_attempts: 0,
+        max_validation_attempts: 10,
+        evidence_confidence: "partial",
+        menu_step: 1,
+        menu_total: 4,
+        acceptance_criteria: [
+          "Persona lane selected",
+          "Project type detected (greenfield/brownfield)",
+          "Governance mode locked",
+        ],
+        related_entities: {
+          session_id: sessionId,
+          workflow_id: "hivefiver-vibecoder.yaml",
+          requirement_node_id: "rq-bootstrap",
+        },
       },
-      created_at: now,
     },
     {
-      id: "hivefiver-spec-routing",
-      text: "Build intake baseline and generate first executable specification",
-      status: "pending",
-      priority: "high",
-      domain: "hybrid",
-      lane: "auto",
-      persona: "floppy_engineer",
-      source: "init.seed",
-      hivefiver_action: "spec",
-      canonical_command: "hivefiver spec",
-      recommended_skills: ["hivefiver-spec-distillation", "hivefiver-bilingual-tutor"],
-      validation_attempts: 0,
-      max_validation_attempts: 10,
-      evidence_confidence: "partial",
-      menu_step: 2,
-      menu_total: 4,
-      acceptance_criteria: [
-        "MCQ intake completed",
-        "Ambiguity map emitted",
-        "Spec candidate selected",
-      ],
-      dependencies: ["hivefiver-bootstrap"],
-      related_entities: {
-        session_id: sessionId,
-        workflow_id: "hivefiver-floppy-engineer.yaml",
-        requirement_node_id: "rq-spec",
+      oldId: "hivefiver-spec-routing",
+      deps: ["hivefiver-bootstrap"],
+      task: {
+        title: "Build intake baseline and generate first executable specification",
+        parent_phase_id: syntheticPhaseId,
+        status: "pending",
+        file_locks: [],
+        created_at: now,
+        updated_at: now,
+        priority: "high",
+        domain: "hybrid",
+        lane: "auto",
+        persona: "floppy_engineer",
+        source: "init.seed",
+        hivefiver_action: "spec",
+        canonical_command: "hivefiver spec",
+        recommended_skills: ["hivefiver-spec-distillation", "hivefiver-bilingual-tutor"],
+        validation_attempts: 0,
+        max_validation_attempts: 10,
+        evidence_confidence: "partial",
+        menu_step: 2,
+        menu_total: 4,
+        acceptance_criteria: [
+          "MCQ intake completed",
+          "Ambiguity map emitted",
+          "Spec candidate selected",
+        ],
+        related_entities: {
+          session_id: sessionId,
+          workflow_id: "hivefiver-floppy-engineer.yaml",
+          requirement_node_id: "rq-spec",
+        },
       },
-      created_at: now,
     },
     {
-      id: "hivefiver-mcp-readiness",
-      text: "Audit and configure non-negotiable MCP providers",
-      status: "pending",
-      priority: "high",
-      domain: "dev",
-      lane: "auto",
-      persona: "enterprise_architect",
-      source: "init.seed",
-      hivefiver_action: "research",
-      canonical_command: "hivefiver research",
-      recommended_skills: ["hivefiver-mcp-research-loop", "hivefiver-skill-auditor"],
-      validation_attempts: 0,
-      max_validation_attempts: 10,
-      evidence_confidence: "partial",
-      menu_step: 3,
-      menu_total: 4,
-      acceptance_criteria: [
-        "Context7, DeepWiki, Repomix status captured",
-        "Tavily API guidance emitted",
-        "Confidence downgrade policy configured",
-      ],
-      dependencies: ["hivefiver-spec-routing"],
-      related_entities: {
-        session_id: sessionId,
-        workflow_id: "hivefiver-mcp-fallback.yaml",
-        mcp_provider_id: "stack-core",
+      oldId: "hivefiver-mcp-readiness",
+      deps: ["hivefiver-spec-routing"],
+      task: {
+        title: "Audit and configure non-negotiable MCP providers",
+        parent_phase_id: syntheticPhaseId,
+        status: "pending",
+        file_locks: [],
+        created_at: now,
+        updated_at: now,
+        priority: "high",
+        domain: "dev",
+        lane: "auto",
+        persona: "enterprise_architect",
+        source: "init.seed",
+        hivefiver_action: "research",
+        canonical_command: "hivefiver research",
+        recommended_skills: ["hivefiver-mcp-research-loop", "hivefiver-skill-auditor"],
+        validation_attempts: 0,
+        max_validation_attempts: 10,
+        evidence_confidence: "partial",
+        menu_step: 3,
+        menu_total: 4,
+        acceptance_criteria: [
+          "Context7, DeepWiki, Repomix status captured",
+          "Tavily API guidance emitted",
+          "Confidence downgrade policy configured",
+        ],
+        related_entities: {
+          session_id: sessionId,
+          workflow_id: "hivefiver-mcp-fallback.yaml",
+          mcp_provider_id: "stack-core",
+        },
       },
-      created_at: now,
     },
     {
-      id: "hivefiver-export-alignment",
-      text: "Prepare TODO-to-Ralph export mapping and validation",
-      status: "pending",
-      priority: "medium",
-      domain: "office-ops",
-      lane: "auto",
-      persona: "enterprise_architect",
-      source: "init.seed",
-      hivefiver_action: "validate",
-      canonical_command: "hivefiver validate",
-      recommended_skills: ["hivefiver-ralph-tasking", "hivefiver-gsd-compat"],
-      validation_attempts: 0,
-      max_validation_attempts: 10,
-      evidence_confidence: "partial",
-      menu_step: 4,
-      menu_total: 4,
-      acceptance_criteria: [
-        "tasks/prd.json schema validated",
-        "Dependency map generated",
-        "Related entity links preserved",
-      ],
-      dependencies: ["hivefiver-mcp-readiness"],
-      related_entities: {
-        session_id: sessionId,
-        workflow_id: "hivefiver-enterprise-architect.yaml",
-        export_id: "ralph-prd",
+      oldId: "hivefiver-export-alignment",
+      deps: ["hivefiver-mcp-readiness"],
+      task: {
+        title: "Prepare TODO-to-Ralph export mapping and validation",
+        parent_phase_id: syntheticPhaseId,
+        status: "pending",
+        file_locks: [],
+        created_at: now,
+        updated_at: now,
+        priority: "medium",
+        domain: "office-ops",
+        lane: "auto",
+        persona: "enterprise_architect",
+        source: "init.seed",
+        hivefiver_action: "validate",
+        canonical_command: "hivefiver validate",
+        recommended_skills: ["hivefiver-ralph-tasking", "hivefiver-gsd-compat"],
+        validation_attempts: 0,
+        max_validation_attempts: 10,
+        evidence_confidence: "partial",
+        menu_step: 4,
+        menu_total: 4,
+        acceptance_criteria: [
+          "tasks/prd.json schema validated",
+          "Dependency map generated",
+          "Related entity links preserved",
+        ],
+        related_entities: {
+          session_id: sessionId,
+          workflow_id: "hivefiver-enterprise-architect.yaml",
+          export_id: "ralph-prd",
+        },
       },
-      created_at: now,
     },
   ]
 
-  const existingById = new Map(manifest.tasks.map((task) => [task.id, task]))
+  // Generate UUIDs and build ID map
+  for (const entry of baseTasks) {
+    const uuid = randomUUID()
+    idMap.set(entry.oldId, uuid)
+    entry.task.id = uuid
+  }
+
+  // Resolve dependencies to UUIDs
+  for (const entry of baseTasks) {
+    if (entry.deps.length > 0) {
+      entry.task.dependencies = entry.deps
+        .map(dep => idMap.get(dep))
+        .filter((id): id is string => id !== undefined)
+    }
+  }
+
   let created = 0
-  for (const task of baseTasks) {
-    if (!existingById.has(task.id)) {
-      manifest.tasks.push(task)
+  for (const entry of baseTasks) {
+    if (!existingTitles.has(entry.task.title)) {
+      await addGraphTask(directory, entry.task as TaskNode)
       created += 1
     }
   }
 
-  const updated = created > 0 || manifest.session_id !== sessionId
-  manifest.session_id = sessionId
-  manifest.updated_at = now
-
-  if (updated) {
-    await saveTasks(directory, manifest)
-  }
-
-  return { created, updated }
+  return { created, updated: created > 0 }
 }

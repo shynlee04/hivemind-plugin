@@ -1,5 +1,5 @@
 /**
- * Tool barrel exports — HiveMind lifecycle verbs (6 canonical tools)
+ * Tool barrel exports — HiveMind lifecycle verbs + V2.9 governance tools
  *
  * | Tool              | Actions                                        | Replaces                        |
  * | ----------------- | --------------------------------------------- | ------------------------------- |
@@ -9,6 +9,8 @@
  * | hivemind_anchor   | save, list, get                               | save_anchor                              |
  * | hivemind_hierarchy| prune, migrate, status                        | hierarchy_manage                          |
  * | hivemind_cycle    | export, list, prune                           | export_cycle, self_rate                  |
+ * | hivemind_context  | validate, purge, doctor, resume               | context governance lifecycle              |
+ * | hivemind_session_memory | scratch, debug_log, research_cache, retro, todo_pending | session memory classification |
  */
 
 export { createHivemindSessionTool } from "./hivemind-session.js"
@@ -17,3 +19,5 @@ export { createHivemindMemoryTool } from "./hivemind-memory.js"
 export { createHivemindAnchorTool } from "./hivemind-anchor.js"
 export { createHivemindHierarchyTool } from "./hivemind-hierarchy.js"
 export { createHivemindCycleTool } from "./hivemind-cycle.js"
+export { createHivemindContextTool } from "./hivemind-context.js"
+export { createHivemindSessionMemoryTool } from "./hivemind-session-memory.js"

@@ -12,6 +12,8 @@
  *   - hivemind_anchor    — anchors: save, list, get
  *   - hivemind_hierarchy — tree: prune, migrate, status
  *   - hivemind_cycle     — export: export, list, prune
+ *   - hivemind_context   — context governance: validate, purge, doctor, resume
+ *   - hivemind_session_memory — session memory classification and TODO-Pending
  * - **6 Hooks**: system transform, messages transform, tool gate (before), soft governance (after), compaction preservation, event handling
  * - **Soft Governance**: Cannot block, only guide through prompts + tracking
  *
@@ -41,6 +43,8 @@ import { createHivemindSessionTool,
   createHivemindAnchorTool,
   createHivemindHierarchyTool,
   createHivemindCycleTool,
+  createHivemindContextTool,
+  createHivemindSessionMemoryTool,
 } from "./tools/index.js"
 import {
   createSessionLifecycleHook,
@@ -118,7 +122,7 @@ export const HiveMindPlugin: Plugin = async ({
     event: createEventHandler(log, effectiveDir),
 
     /**
-     * 6 Canonical tools for session governance (HC5 compliant)
+     * Canonical tools + V2.9 governance extensions
      */
     tool: {
       hivemind_session: createHivemindSessionTool(effectiveDir),
@@ -127,6 +131,8 @@ export const HiveMindPlugin: Plugin = async ({
       hivemind_anchor: createHivemindAnchorTool(effectiveDir),
       hivemind_hierarchy: createHivemindHierarchyTool(effectiveDir),
       hivemind_cycle: createHivemindCycleTool(effectiveDir),
+      hivemind_context: createHivemindContextTool(effectiveDir),
+      hivemind_session_memory: createHivemindSessionMemoryTool(effectiveDir),
     },
 
     /**

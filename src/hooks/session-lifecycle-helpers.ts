@@ -6,6 +6,7 @@ import { loadGraphMems, loadGraphTasks } from "../lib/graph-io.js";
 import { readManifest } from "../lib/planning-fs.js";
 import { detectFrameworkContext } from "../lib/framework-context.js";
 import type { BrainState } from "../schemas/brain-state.js";
+import type { V29OutputStyle } from "../schemas/config.js";
 
 export interface ProjectSnapshot {
   projectName: string;
@@ -260,6 +261,99 @@ export function generateTeamBehaviorBlock(language: "en" | "vi"): string {
     localized(language, "After each meaningful shift, update with `map_context` before continuing.", "Sau moi thay doi quan trong, cap nhat bang `map_context` truoc khi tiep tuc."),
     "</hivemind-team>",
   ].join("\n");
+}
+
+export function generateFirstTurnConfirmationBlock(
+  language: "en" | "vi"
+): string {
+  const rationaleTitle = localized(language, "Critical rationale options:", "Lua chon rationale quan trong:");
+  const alignmentPrompt = localized(
+    language,
+    "Confirm hierarchy alignment (phase/workflow/task) and state any adjustment before execution.",
+    "Xac nhan canh hang hierarchy (phase/workflow/task) va neu dieu chinh truoc khi thuc thi."
+  );
+
+  return [
+    "<hivemind-first-turn-contract>",
+    "FIRST-TURN OUTPUT CONTRACT (V2.9): End your first response with a confirmation request.",
+    rationaleTitle,
+    "1) Option 1: Context-first stabilization before execution.",
+    "2) Option 2: Architecture-first schema and lifecycle mapping.",
+    "3) Option 3: Execution-first with strict constraints and checkpoints.",
+    alignmentPrompt,
+    "Output style selection (choose one):",
+    "Style 1: supportive_discovery",
+    "Style 2: architecture_planning",
+    "Style 3: problem_solving_debugging",
+    "Style 4: execution_oriented",
+    "</hivemind-first-turn-contract>",
+  ].join("\n");
+}
+
+export function getV29OutputStyleDirective(style: V29OutputStyle | null | undefined): string {
+  const selected = style ?? "execution_oriented";
+  const directives: Record<V29OutputStyle, string[]> = {
+    supportive_discovery: [
+      "Output style active: supportive_discovery",
+      "Use scaffolded explanations and progressive context layering.",
+    ],
+    architecture_planning: [
+      "Output style active: architecture_planning",
+      "Lead with schema contracts, data lifecycle, and interface boundaries.",
+    ],
+    problem_solving_debugging: [
+      "Output style active: problem_solving_debugging",
+      "Use hypothesis loops, test strategy, and structured root-cause tracking.",
+    ],
+    execution_oriented: [
+      "Output style active: execution_oriented",
+      "Deliver ready-to-run steps with strict constraints and success gates.",
+    ],
+  };
+  return `<hivemind-output-style>\n${directives[selected].join("\n")}\n</hivemind-output-style>`;
+}
+
+export function detectRationaleOptionSelection(
+  text: string
+): "option_1" | "option_2" | "option_3" | null {
+  const lower = text.toLowerCase();
+  if (/\b(option|rationale)\s*1\b/.test(lower)) return "option_1";
+  if (/\b(option|rationale)\s*2\b/.test(lower)) return "option_2";
+  if (/\b(option|rationale)\s*3\b/.test(lower)) return "option_3";
+  return null;
+}
+
+export function detectV29OutputStyleSelection(text: string): V29OutputStyle | null {
+  const lower = text.toLowerCase();
+  if (
+    lower.includes("style 1") ||
+    lower.includes("supportive_discovery") ||
+    lower.includes("supportive/discovery")
+  ) {
+    return "supportive_discovery";
+  }
+  if (
+    lower.includes("style 2") ||
+    lower.includes("architecture_planning") ||
+    lower.includes("architecture/planning")
+  ) {
+    return "architecture_planning";
+  }
+  if (
+    lower.includes("style 3") ||
+    lower.includes("problem_solving_debugging") ||
+    lower.includes("problem solving/debugging")
+  ) {
+    return "problem_solving_debugging";
+  }
+  if (
+    lower.includes("style 4") ||
+    lower.includes("execution_oriented") ||
+    lower.includes("execution-oriented")
+  ) {
+    return "execution_oriented";
+  }
+  return null;
 }
 
 export async function compileFirstTurnContext(

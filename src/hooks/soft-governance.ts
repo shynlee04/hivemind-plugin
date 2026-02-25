@@ -28,6 +28,7 @@ import {
   incrementTurnCount,
   setLastCommitSuggestionTurn,
   addCycleLogEntry,
+  queueOffTrackIntent,
 } from "../schemas/brain-state.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { shouldSuggestCommit } from "../lib/commit-advisor.js"
@@ -165,6 +166,52 @@ function shouldAcknowledgeGovernanceSignals(
   return false
 }
 
+function extractToolContent(output: { output: string; metadata: unknown }): string {
+  const metadata = typeof output.metadata === "object" && output.metadata !== null
+    ? (output.metadata as Record<string, unknown>)
+    : {}
+  if (typeof metadata.content === "string" && metadata.content.trim().length > 0) {
+    return metadata.content
+  }
+
+  try {
+    const parsed = JSON.parse(output.output ?? "")
+    const metadataContent = parsed?.metadata?.content
+    if (typeof metadataContent === "string" && metadataContent.trim().length > 0) {
+      return metadataContent
+    }
+    const directContent = parsed?.content
+    if (typeof directContent === "string" && directContent.trim().length > 0) {
+      return directContent
+    }
+  } catch {
+    // ignore parse errors
+  }
+
+  return ""
+}
+
+function detectOffTrackIntent(toolName: string, output: { output: string; metadata: unknown }): string | null {
+  if (toolName !== "map_context" && toolName !== "hivemind_session") {
+    return null
+  }
+
+  const content = extractToolContent(output).trim()
+  if (!content) return null
+  const lower = content.toLowerCase()
+  const cues = [
+    "park this",
+    "off-track",
+    "off track",
+    "later",
+    "after this",
+    "different slice",
+    "out of scope",
+    "todo pending",
+  ]
+  return cues.some((cue) => lower.includes(cue)) ? content : null
+}
+
 /**
  * Creates the soft governance hook for tool execution tracking.
  *
@@ -219,6 +266,11 @@ export function createSoftGovernanceHook(
       const governanceAcknowledged = shouldAcknowledgeGovernanceSignals(input.tool, _output)
       if (governanceAcknowledged) {
         counters = acknowledgeGovernanceSignals(counters)
+      }
+
+      const offTrackIntent = detectOffTrackIntent(input.tool, _output)
+      if (offTrackIntent) {
+        newState = queueOffTrackIntent(newState, offTrackIntent, `soft-governance:${input.tool}`)
       }
 
       const hierarchyImpact =

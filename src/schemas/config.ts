@@ -27,6 +27,22 @@ export const OUTPUT_STYLES = [
 ] as const;
 export type OutputStyle = (typeof OUTPUT_STYLES)[number];
 
+export const V29_OUTPUT_STYLES = [
+  "supportive_discovery",
+  "architecture_planning",
+  "problem_solving_debugging",
+  "execution_oriented",
+] as const;
+export type V29OutputStyle = (typeof V29_OUTPUT_STYLES)[number];
+
+export const LEGACY_OUTPUT_STYLE_TO_V29_STYLE: Record<OutputStyle, V29OutputStyle> = {
+  explanatory: "supportive_discovery",
+  outline: "execution_oriented",
+  skeptical: "problem_solving_debugging",
+  architecture: "architecture_planning",
+  minimal: "execution_oriented",
+};
+
 // ── OpenCode Permission Types ──────────────────────────────
 
 export type PermissionMode = "allow" | "ask" | "deny";
@@ -198,6 +214,8 @@ export interface AgentBehaviorConfig {
   expert_level: ExpertLevel;
   /** Output style - affects response format */
   output_style: OutputStyle;
+  /** V2.9 output style model */
+  output_style_v29?: V29OutputStyle;
   /** Additional behavioral constraints */
   constraints: {
     /** Require code review before accepting */
@@ -241,6 +259,7 @@ export const DEFAULT_AGENT_BEHAVIOR: AgentBehaviorConfig = {
   language: "en",
   expert_level: "intermediate",
   output_style: "explanatory",
+  output_style_v29: "supportive_discovery",
   constraints: {
     require_code_review: false,
     enforce_tdd: false,
@@ -269,18 +288,23 @@ export function createConfig(overrides: Partial<HiveMindConfig> = {}): HiveMindC
     ? normalizeAutomationInput(automationOverride)
     : null
   const overrideBehavior = overrides.agent_behavior;
+  const mergedBehavior: AgentBehaviorConfig = {
+    ...DEFAULT_AGENT_BEHAVIOR,
+    ...overrideBehavior,
+    constraints: {
+      ...DEFAULT_AGENT_BEHAVIOR.constraints,
+      ...(overrideBehavior?.constraints),
+    },
+  };
+  mergedBehavior.output_style_v29 =
+    overrideBehavior?.output_style_v29 ??
+    mapLegacyOutputStyleToV29(mergedBehavior.output_style);
+
   return {
     ...DEFAULT_CONFIG,
     ...overrides,
     automation_level: normalizedAutomationLevel ?? DEFAULT_CONFIG.automation_level,
-    agent_behavior: {
-      ...DEFAULT_AGENT_BEHAVIOR,
-      ...overrideBehavior,
-      constraints: {
-        ...DEFAULT_AGENT_BEHAVIOR.constraints,
-        ...(overrideBehavior?.constraints),
-      },
-    },
+    agent_behavior: mergedBehavior,
   };
 }
 
@@ -298,6 +322,21 @@ export function isValidExpertLevel(level: string): level is ExpertLevel {
 
 export function isValidOutputStyle(style: string): style is OutputStyle {
   return (OUTPUT_STYLES as readonly string[]).includes(style);
+}
+
+export function isValidV29OutputStyle(style: string): style is V29OutputStyle {
+  return (V29_OUTPUT_STYLES as readonly string[]).includes(style);
+}
+
+export function mapLegacyOutputStyleToV29(style: OutputStyle): V29OutputStyle {
+  return LEGACY_OUTPUT_STYLE_TO_V29_STYLE[style] ?? "execution_oriented";
+}
+
+export function resolveV29OutputStyle(
+  style: V29OutputStyle | null | undefined,
+  legacyStyle: OutputStyle
+): V29OutputStyle {
+  return style ?? mapLegacyOutputStyleToV29(legacyStyle);
 }
 
 export function isValidAutomationLevel(level: string): level is AutomationLevel {
@@ -391,6 +430,9 @@ export function generateAgentBehaviorPrompt(config: AgentBehaviorConfig): string
   };
   lines.push(`[OUTPUT STYLE] ${config.output_style.toUpperCase()}:`);
   styleInstructions[config.output_style].forEach(instruction => lines.push(instruction));
+  if (config.output_style_v29) {
+    lines.push(`[OUTPUT STYLE V2.9] ${config.output_style_v29}`);
+  }
   lines.push("");
   
   // Constraints

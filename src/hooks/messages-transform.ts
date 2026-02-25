@@ -28,6 +28,13 @@ import { createLogger } from "../lib/logging.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
 import { evaluateEntityChecklist } from "../lib/entity-checklist.js"
+import { randomUUID } from "node:crypto"
+import { classifySessionMemoryArtifact } from "../lib/session-memory-classifier.js"
+import {
+  detectRationaleOptionSelection,
+  detectV29OutputStyleSelection,
+  generateFirstTurnConfirmationBlock,
+} from "./session-lifecycle-helpers.js"
 
 type MessagePart = {
   id?: string
@@ -157,6 +164,24 @@ function getMessageText(message: MessageV2): string {
   }
 
   return ""
+}
+
+function detectOffTrackIntent(text: string): string | null {
+  const normalized = text.trim()
+  if (!normalized) return null
+  const lower = normalized.toLowerCase()
+  const cues = [
+    "park this",
+    "off-track",
+    "off track",
+    "later",
+    "after this",
+    "different slice",
+    "out of scope",
+    "todo pending",
+  ]
+  const matched = cues.some((cue) => lower.includes(cue))
+  return matched ? normalized : null
 }
 
 /**
@@ -327,6 +352,31 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
             // Inject as synthetic part (prepend)
             prependSyntheticPart(output.messages[index], transformedPrompt)
+            if (state.first_turn_confirmation.required) {
+              prependSyntheticPart(
+                output.messages[index],
+                generateFirstTurnConfirmationBlock(config.language)
+              )
+            }
+
+            const rationaleOption = detectRationaleOptionSelection(userMessageText)
+            const selectedStyle = detectV29OutputStyleSelection(userMessageText)
+            if (state.first_turn_confirmation.required && rationaleOption && selectedStyle) {
+              queueStateMutation({
+                type: "UPDATE_STATE",
+                payload: {
+                  first_turn_confirmation: {
+                    required: false,
+                    confirmed: true,
+                    rationale_option: rationaleOption,
+                    selected_output_style: selectedStyle,
+                    confirmed_at: Date.now(),
+                  },
+                  selected_output_style_v29: selectedStyle,
+                },
+                source: "messages-transform-hook:first-turn-confirmed",
+              })
+            }
 
             // CQRS: Queue mutation instead of direct save
             queueStateMutation({
@@ -389,12 +439,36 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         
         // Keep only last 6 messages
         const trimmedMessages = recentMessages.slice(-6)
+        const latestArtifact = trimmedMessages[trimmedMessages.length - 1]
+        const memoryGovernancePatch = latestArtifact
+          ? (() => {
+              const classified = classifySessionMemoryArtifact({
+                content: latestArtifact.content,
+                source: latestArtifact.role,
+                tool: latestArtifact.role === "assistant" ? "write" : "read",
+              })
+              return {
+                ...state.memory_governance,
+                classified_counts: {
+                  ...state.memory_governance.classified_counts,
+                  [classified.category]:
+                    state.memory_governance.classified_counts[classified.category] + 1,
+                },
+                last_classified_at: Date.now(),
+              }
+            })()
+          : undefined
         
         // CQRS: Queue mutation instead of direct save
         queueStateMutation({
           type: "UPDATE_STATE",
           payload: {
             recent_messages: trimmedMessages,
+            ...(memoryGovernancePatch
+              ? {
+                  memory_governance: memoryGovernancePatch,
+                }
+              : {}),
           },
           source: "messages-transform-hook:recent-messages",
         })
@@ -407,6 +481,52 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       const index = getLastNonSyntheticUserMessageIndex(output.messages)
       if (index >= 0) {
         const latestUserText = getMessageText(output.messages[index])
+        const selectedRationale = detectRationaleOptionSelection(latestUserText)
+        const selectedStyle = detectV29OutputStyleSelection(latestUserText)
+        if (state.first_turn_confirmation.required && selectedRationale && selectedStyle) {
+          queueStateMutation({
+            type: "UPDATE_STATE",
+            payload: {
+              first_turn_confirmation: {
+                required: false,
+                confirmed: true,
+                rationale_option: selectedRationale,
+                selected_output_style: selectedStyle,
+                confirmed_at: Date.now(),
+              },
+              selected_output_style_v29: selectedStyle,
+            },
+            source: "messages-transform-hook:first-turn-confirmed",
+          })
+        }
+
+        const offTrackIntent = detectOffTrackIntent(latestUserText)
+        if (offTrackIntent) {
+          const duplicate = state.offtrack_todo_pending.some(
+            (item) =>
+              item.status === "pending" &&
+              item.content.trim().toLowerCase() === offTrackIntent.toLowerCase()
+          )
+          if (!duplicate) {
+            queueStateMutation({
+              type: "UPDATE_STATE",
+              payload: {
+                offtrack_todo_pending: [
+                  ...state.offtrack_todo_pending,
+                  {
+                    id: randomUUID(),
+                    content: offTrackIntent,
+                    created_at: Date.now(),
+                    source: "messages-transform",
+                    status: "pending",
+                  },
+                ],
+              },
+              source: "messages-transform-hook:offtrack",
+            })
+          }
+        }
+
         const autoRealign = detectAutoRealignment(latestUserText)
         if (autoRealign.shouldRealign) {
           prependSyntheticPart(output.messages[index], buildAutoRealignReminder(autoRealign))
@@ -424,6 +544,12 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
         // === PHASE 7: Pre-Stop Checklist Assembly ===
         const items: string[] = []
+
+        if (offTrackIntent) {
+          items.push(
+            "Off-track intent detected: queued to TODO-Pending and excluded from inline execution."
+          )
+        }
 
         if (autoRealign.shouldRealign) {
           const initiationMode = autoRealign.requiresPermission

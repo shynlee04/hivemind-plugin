@@ -425,14 +425,113 @@
             "id": "a_521225022026",
             "level": "action",
             "content": "Deep investigation complete for manifest.json and tasks.json split-brain. Synthesizing evidence-backed report.",
-            "status": "active",
+            "status": "pending",
             "created": 1771998731918,
             "stamp": "521225022026",
+            "children": []
+          },
+          {
+            "id": "a_071925022026",
+            "level": "action",
+            "content": "Completed read-only acceptance review for code-intel files; returning evidence-backed verdict.",
+            "status": "pending",
+            "created": 1772021239402,
+            "stamp": "071925022026",
+            "children": []
+          },
+          {
+            "id": "a_411925022026",
+            "level": "action",
+            "content": "Implement src/lib/code-intel/incremental-updater.ts exactly as specified and verify typecheck evidence for this file",
+            "status": "pending",
+            "created": 1772023282654,
+            "stamp": "411925022026",
+            "children": []
+          },
+          {
+            "id": "a_411925022026-1",
+            "level": "action",
+            "content": "Create src/lib/code-intel/compressed-codemap.ts with required interfaces and verify via TypeScript checks",
+            "status": "pending",
+            "created": 1772023290717,
+            "stamp": "411925022026",
+            "children": []
+          },
+          {
+            "id": "a_411925022026-2",
+            "level": "action",
+            "content": "Implement 3 session memory node schemas in src/schemas/graph-nodes.ts and verify with TypeScript evidence",
+            "status": "pending",
+            "created": 1772023307904,
+            "stamp": "411925022026",
+            "children": []
+          },
+          {
+            "id": "a_441925022026",
+            "level": "action",
+            "content": "Added DebugMemoryNodeSchema, ResearchMemoryNodeSchema, CueMemoryNodeSchema and corresponding type exports in src/schemas/graph-nodes.ts; TypeScript verification executed",
+            "status": "pending",
+            "created": 1772023474955,
+            "stamp": "441925022026",
+            "children": []
+          },
+          {
+            "id": "a_461925022026",
+            "level": "action",
+            "content": "Read-only review of src/lib/code-intel/incremental-updater.ts for correctness, TypeScript compatibility, and scope compliance with explicit acceptance criteria",
+            "status": "pending",
+            "created": 1772023601257,
+            "stamp": "461925022026",
+            "children": []
+          },
+          {
+            "id": "a_501925022026",
+            "level": "action",
+            "content": "Created compressed codemap types file and verified TypeScript diagnostics for compressed-codemap are clean",
+            "status": "pending",
+            "created": 1772023845256,
+            "stamp": "501925022026",
+            "children": []
+          },
+          {
+            "id": "a_511925022026",
+            "level": "action",
+            "content": "Read-only contract validation for src/lib/code-intel/compressed-codemap.ts against requested interfaces/functions/style and TypeScript evidence command output",
+            "status": "pending",
+            "created": 1772023891035,
+            "stamp": "511925022026",
+            "children": []
+          },
+          {
+            "id": "a_531925022026",
+            "level": "action",
+            "content": "Completed read-only contract validation for src/lib/code-intel/compressed-codemap.ts with delegated evidence capture",
+            "status": "pending",
+            "created": 1772024011274,
+            "stamp": "531925022026",
+            "children": []
+          },
+          {
+            "id": "a_541925022026",
+            "level": "action",
+            "content": "Re-review src/lib/code-intel/incremental-updater.ts against explicit acceptance criteria in read-only mode",
+            "status": "pending",
+            "created": 1772024065813,
+            "stamp": "541925022026",
+            "children": []
+          },
+          {
+            "id": "a_561925022026",
+            "level": "action",
+            "content": "Completed read-only re-review of src/lib/code-intel/incremental-updater.ts with evidence-backed acceptance validation",
+            "status": "active",
+            "created": 1772024198137,
+            "stamp": "561925022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_521225022026"
+  "cursor": "a_561925022026"
 }

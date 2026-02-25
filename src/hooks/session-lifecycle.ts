@@ -13,7 +13,6 @@
 import { existsSync } from "node:fs"
 import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
-import { generateAgentBehaviorPrompt } from "../schemas/config.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
@@ -27,6 +26,8 @@ import {
   generateEvidenceDisciplineBlock,
   generateTeamBehaviorBlock,
   compileFirstTurnContext,
+  generateFirstTurnConfirmationBlock,
+  getV29OutputStyleDirective,
   generateSetupGuidanceBlock,
   getNextStepHint,
 } from "./session-lifecycle-helpers.js"
@@ -34,6 +35,7 @@ import { compileDefaultGovernance, GOVERNANCE_MARKER } from "../lib/governance-i
 import { evaluateEntityChecklist, renderChecklistSummary } from "../lib/entity-checklist.js"
 import type { EntityChecklist } from "../schemas/governance-constitution.js"
 import { applyPendingStateMutations, queueStateMutation } from "../lib/state-mutation-queue.js"
+import { dedupeContextLines } from "../lib/context-purifier.js"
 
 /**
  * Inject HiveMaster strict governance instruction (prepends, deduplicated)
@@ -127,15 +129,25 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       const { warningLines, ignoredLines, frameworkLines, onboardingLines } = await buildGovernanceSignals(directory, state, config)
 
       // Phase 3: Bootstrap & First-Turn Context
-      const { bootstrapLines, evidenceLines, teamLines, firstTurnContextLines, readFirstLines } = await buildBootstrapContext(directory, state, config)
+      const { bootstrapLines, evidenceLines, teamLines, firstTurnContextLines, firstTurnContractLines, outputStyleLines, readFirstLines } = await buildBootstrapContext(directory, state, config)
 
       // Phase 4: Anchors are now injected via messages-transform.ts (canonical location)
 
       // Assemble by priority
       const finalLines = assembleSections([
-        readFirstLines, bootstrapLines, firstTurnContextLines, evidenceLines, teamLines,
-        onboardingLines, frameworkLines, buildStatusBlock(state, config), buildTaskBlock(), ignoredLines,
-        warningLines, buildMetricsBlock(state), buildConfigBlock(config),
+        readFirstLines,
+        bootstrapLines,
+        firstTurnContextLines,
+        firstTurnContractLines,
+        outputStyleLines,
+        evidenceLines,
+        teamLines,
+        onboardingLines,
+        frameworkLines,
+        buildStatusBlock(state, config),
+        buildTaskBlock(),
+        ignoredLines,
+        warningLines,
       ], BUDGET_CHARS, log)
 
       appendChecklistFailureReminder(output, checklist)
@@ -152,6 +164,8 @@ async function buildBootstrapContext(directory: string, state: BrainState, confi
   const evidenceLines: string[] = []
   const teamLines: string[] = []
   const firstTurnContextLines: string[] = []
+  const firstTurnContractLines: string[] = []
+  const outputStyleLines: string[] = []
   const readFirstLines: string[] = []
 
   const isBootstrapActive = state.metrics.turn_count <= 2
@@ -164,9 +178,26 @@ async function buildBootstrapContext(directory: string, state: BrainState, confi
     teamLines.push(generateTeamBehaviorBlock(config.language))
     const ftContext = await compileFirstTurnContext(directory, state)
     if (ftContext) firstTurnContextLines.push(ftContext)
+    if (state.first_turn_confirmation.required) {
+      firstTurnContractLines.push(generateFirstTurnConfirmationBlock(config.language))
+    }
   }
 
-  return { bootstrapLines, evidenceLines, teamLines, firstTurnContextLines, readFirstLines }
+  outputStyleLines.push(
+    getV29OutputStyleDirective(
+      state.selected_output_style_v29 ?? config.agent_behavior.output_style_v29 ?? null
+    )
+  )
+
+  return {
+    bootstrapLines,
+    evidenceLines,
+    teamLines,
+    firstTurnContextLines,
+    firstTurnContractLines,
+    outputStyleLines,
+    readFirstLines,
+  }
 }
 
 function buildTaskBlock(): string[] {
@@ -185,20 +216,14 @@ function buildStatusBlock(state: { session: { governance_status: string; mode: s
   ]
 }
 
-function buildMetricsBlock(state: { metrics: { turn_count: number; drift_score: number; files_touched: string[] } }): string[] {
-  return [`Turns: ${state.metrics.turn_count} | Drift: ${state.metrics.drift_score}/100 | Files: ${state.metrics.files_touched.length}`]
-}
-
-function buildConfigBlock(config: HiveMindConfig): string[] {
-  return [generateAgentBehaviorPrompt(config.agent_behavior)]
-}
-
 function assembleSections(sections: string[][], budget: number, log: Logger): string {
   const finalLines: string[] = ["<hivemind>"]
   for (const section of sections) {
     if (section.length === 0) continue
-    const candidate = [...finalLines, ...section, "</hivemind>"].join("\n")
-    if (candidate.length <= budget) finalLines.push(...section)
+    const deduped = dedupeContextLines(section).lines
+    if (deduped.length === 0) continue
+    const candidate = [...finalLines, ...deduped, "</hivemind>"].join("\n")
+    if (candidate.length <= budget) finalLines.push(...deduped)
     else log.debug(`Section dropped due to budget: ${section[0]?.slice(0, 40)}...`)
   }
   finalLines.push("</hivemind>")

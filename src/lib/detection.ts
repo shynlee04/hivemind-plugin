@@ -393,6 +393,8 @@ const TOOL_PATTERNS: Record<ToolCategory, RegExp[]> = {
     /^recall_mems$/i,
     /^hierarchy_manage$/i,
     /^export_cycle$/i,
+    /^hivemind_context$/i,
+    /^hivemind_session_memory$/i,
   ],
 };
 

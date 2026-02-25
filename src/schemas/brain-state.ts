@@ -3,7 +3,8 @@
  * Core state machine for session governance
  */
 
-import type { HiveMindConfig, GovernanceMode } from "./config.js";
+import { randomUUID } from "node:crypto";
+import type { HiveMindConfig, GovernanceMode, V29OutputStyle } from "./config.js";
 import type { HierarchyState } from "./hierarchy.js";
 import type { GovernanceCounters } from "../lib/detection.js";
 
@@ -92,6 +93,40 @@ export const FAILURE_KEYWORDS = [
 /** Max entries in cycle_log before oldest are dropped */
 export const MAX_CYCLE_LOG = 10;
 
+export type RationaleOption = "option_1" | "option_2" | "option_3" | null;
+
+export interface FirstTurnConfirmationState {
+  required: boolean;
+  confirmed: boolean;
+  rationale_option: RationaleOption;
+  selected_output_style: V29OutputStyle | null;
+  confirmed_at: number | null;
+}
+
+export type SessionMemoryCategory =
+  | "discovery_brainstorming_discuss"
+  | "research_synthesis"
+  | "codebase_investigation"
+  | "planning"
+  | "implementing"
+  | "debug"
+  | "test_validation_gatekeeping";
+
+export interface MemoryGovernanceState {
+  classified_counts: Record<SessionMemoryCategory, number>;
+  temporary_exports_consolidated: number;
+  temporary_exports_purged: number;
+  last_classified_at: number;
+}
+
+export interface OffTrackIntent {
+  id: string;
+  content: string;
+  created_at: number;
+  source: string;
+  status: "pending" | "resolved";
+}
+
 export interface BrainState {
   /** @lifecycle runtime */
   session: SessionState;
@@ -101,6 +136,12 @@ export interface BrainState {
   metrics: MetricsState;
   /** @lifecycle runtime */
   first_turn_context_injected: boolean;
+  /** @lifecycle runtime */
+  first_turn_confirmation: FirstTurnConfirmationState;
+  /** @lifecycle runtime */
+  selected_output_style_v29: V29OutputStyle | null;
+  /** @lifecycle runtime */
+  memory_governance: MemoryGovernanceState;
   /** @lifecycle runtime */
   complexity_nudge_shown: boolean;
   /** @lifecycle runtime */
@@ -129,6 +170,8 @@ export interface BrainState {
   // Cross-session continuity (P0-6: session-split amnesia fix)
   /** @lifecycle runtime */
   recent_messages: Array<{ role: "user" | "assistant"; content: string }>;
+  /** @lifecycle hybrid - unresolved off-track intents carried across sessions */
+  offtrack_todo_pending: OffTrackIntent[];
 }
 
 export const BRAIN_STATE_FIELD_CLASSIFICATION: Record<keyof BrainState, FieldLifecycle> = {
@@ -137,6 +180,9 @@ export const BRAIN_STATE_FIELD_CLASSIFICATION: Record<keyof BrainState, FieldLif
   hierarchy: "runtime",
   metrics: "runtime",
   first_turn_context_injected: "runtime",
+  first_turn_confirmation: "runtime",
+  selected_output_style_v29: "runtime",
+  memory_governance: "runtime",
   complexity_nudge_shown: "runtime",
   last_commit_suggestion_turn: "runtime",
   cycle_log: "runtime",
@@ -152,6 +198,7 @@ export const BRAIN_STATE_FIELD_CLASSIFICATION: Record<keyof BrainState, FieldLif
   last_compaction_time: "hybrid",
   next_compaction_report: "hybrid",
   framework_selection: "hybrid",
+  offtrack_todo_pending: "hybrid",
 };
 
 export function getFieldsByLifecycle(lifecycle: FieldLifecycle): Array<keyof BrainState> {
@@ -197,7 +244,7 @@ export const BRAIN_STATE_VERSION = "1.0.0";
 
 export function generateSessionId(): string {
   // Return a proper UUID for graph schema compatibility
-  return crypto.randomUUID()
+  return randomUUID()
 }
 
 export function createBrainState(
@@ -254,6 +301,28 @@ export function createBrainState(
       },
     },
     first_turn_context_injected: false,
+    first_turn_confirmation: {
+      required: true,
+      confirmed: false,
+      rationale_option: null,
+      selected_output_style: null,
+      confirmed_at: null,
+    },
+    selected_output_style_v29: config.agent_behavior.output_style_v29 ?? null,
+    memory_governance: {
+      classified_counts: {
+        discovery_brainstorming_discuss: 0,
+        research_synthesis: 0,
+        codebase_investigation: 0,
+        planning: 0,
+        implementing: 0,
+        debug: 0,
+        test_validation_gatekeeping: 0,
+      },
+      temporary_exports_consolidated: 0,
+      temporary_exports_purged: 0,
+      last_classified_at: 0,
+    },
     complexity_nudge_shown: false,
     last_commit_suggestion_turn: 0,
     version: BRAIN_STATE_VERSION,
@@ -274,6 +343,7 @@ export function createBrainState(
     },
     // Cross-session continuity (P0-6)
     recent_messages: [],
+    offtrack_todo_pending: [],
   };
 }
 
@@ -485,5 +555,95 @@ export function clearPendingFailureAck(state: BrainState): BrainState {
   return {
     ...state,
     pending_failure_ack: false,
+  };
+}
+
+export function confirmFirstTurnProtocol(
+  state: BrainState,
+  rationaleOption: Exclude<RationaleOption, null>,
+  selectedOutputStyle: V29OutputStyle
+): BrainState {
+  return {
+    ...state,
+    first_turn_confirmation: {
+      required: false,
+      confirmed: true,
+      rationale_option: rationaleOption,
+      selected_output_style: selectedOutputStyle,
+      confirmed_at: Date.now(),
+    },
+    selected_output_style_v29: selectedOutputStyle,
+    session: {
+      ...state.session,
+      last_activity: Date.now(),
+    },
+  };
+}
+
+export function addMemoryClassification(
+  state: BrainState,
+  category: SessionMemoryCategory
+): BrainState {
+  return {
+    ...state,
+    memory_governance: {
+      ...state.memory_governance,
+      classified_counts: {
+        ...state.memory_governance.classified_counts,
+        [category]: state.memory_governance.classified_counts[category] + 1,
+      },
+      last_classified_at: Date.now(),
+    },
+  };
+}
+
+export function recordConsolidationAndPurge(
+  state: BrainState,
+  consolidatedCount: number,
+  purgedCount: number
+): BrainState {
+  return {
+    ...state,
+    memory_governance: {
+      ...state.memory_governance,
+      temporary_exports_consolidated:
+        state.memory_governance.temporary_exports_consolidated + Math.max(0, consolidatedCount),
+      temporary_exports_purged:
+        state.memory_governance.temporary_exports_purged + Math.max(0, purgedCount),
+      last_classified_at: Date.now(),
+      classified_counts: {
+        ...state.memory_governance.classified_counts,
+      },
+    },
+  };
+}
+
+export function queueOffTrackIntent(
+  state: BrainState,
+  content: string,
+  source = "unspecified"
+): BrainState {
+  const normalized = content.trim();
+  if (!normalized) return state;
+  const duplicate = state.offtrack_todo_pending.some(
+    (item) => item.status === "pending" && item.content.trim().toLowerCase() === normalized.toLowerCase()
+  );
+  if (duplicate) return state;
+
+  const nextIntent: OffTrackIntent = {
+    id: randomUUID(),
+    content: normalized,
+    created_at: Date.now(),
+    source,
+    status: "pending",
+  };
+
+  return {
+    ...state,
+    offtrack_todo_pending: [...state.offtrack_todo_pending, nextIntent],
+    session: {
+      ...state.session,
+      last_activity: Date.now(),
+    },
   };
 }

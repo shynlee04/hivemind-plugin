@@ -32,6 +32,9 @@ describe("brain-state field classification", () => {
       "hierarchy",
       "metrics",
       "first_turn_context_injected",
+      "first_turn_confirmation",
+      "selected_output_style_v29",
+      "memory_governance",
       "complexity_nudge_shown",
       "last_commit_suggestion_turn",
       "cycle_log",
@@ -51,6 +54,7 @@ describe("brain-state field classification", () => {
       "last_compaction_time",
       "next_compaction_report",
       "framework_selection",
+      "offtrack_todo_pending",
     ]);
   });
 

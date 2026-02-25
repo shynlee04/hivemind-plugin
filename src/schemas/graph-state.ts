@@ -7,11 +7,13 @@ import {
   PlanNodeSchema,
   ProjectNodeSchema,
   SessionNodeSchema,
+  SessionMemoryNodeSchema,
   SubtaskNodeSchema,
   TaskNodeSchema,
   TrajectoryExportSchema,
   TrajectoryNodeSchema,
   VerificationNodeSchema,
+  PendingChangeNodeSchema,
 } from "./graph-nodes.js";
 
 export const TrajectoryStateSchema = z.object({
@@ -69,6 +71,16 @@ export const VerificationsStateSchema = z.object({
   verifications: z.array(VerificationNodeSchema),
 });
 
+export const PendingChangesStateSchema = z.object({
+  version: z.string(),
+  pending_changes: z.array(PendingChangeNodeSchema),
+});
+
+export const SessionMemoryStateSchema = z.object({
+  version: z.string(),
+  session_memory: z.array(SessionMemoryNodeSchema),
+});
+
 export type TrajectoryState = z.infer<typeof TrajectoryStateSchema>;
 export type PlansState = z.infer<typeof PlansStateSchema>;
 export type GraphTasksState = z.infer<typeof GraphTasksStateSchema>;
@@ -80,3 +92,5 @@ export type SessionsState = z.infer<typeof SessionsStateSchema>;
 export type DelegationsState = z.infer<typeof DelegationsStateSchema>;
 export type TrajectoryExportsState = z.infer<typeof TrajectoryExportsStateSchema>;
 export type VerificationsState = z.infer<typeof VerificationsStateSchema>;
+export type PendingChangesState = z.infer<typeof PendingChangesStateSchema>;
+export type SessionMemoryState = z.infer<typeof SessionMemoryStateSchema>;

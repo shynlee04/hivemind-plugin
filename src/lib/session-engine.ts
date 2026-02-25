@@ -37,6 +37,7 @@ import {
   createBrainState,
   generateSessionId,
   lockSession,
+  queueOffTrackIntent,
   resetComplexityNudge,
   unlockSession,
   type BrainState,
@@ -93,6 +94,22 @@ export interface SessionStatus {
 
 const VALID_MODES: SessionMode[] = ["plan_driven", "quick_fix", "exploration"]
 const VALID_LEVELS: HierarchyLevel[] = ["trajectory", "tactic", "action"]
+const OFFTRACK_CUES = [
+  "park this",
+  "off-track",
+  "off track",
+  "later",
+  "after this",
+  "different slice",
+  "out of scope",
+  "todo pending",
+]
+
+function isOffTrackUpdate(content: string, level: HierarchyLevel): boolean {
+  if (level === "trajectory") return false
+  const lower = content.trim().toLowerCase()
+  return OFFTRACK_CUES.some((cue) => lower.includes(cue))
+}
 
 export async function startSession(directory: string, options: SessionOptions): Promise<SessionResult> {
   const configPath = getEffectivePaths(directory).config
@@ -247,6 +264,21 @@ export async function updateSession(directory: string, updates: SessionUpdates):
       action: "update",
       error: "content required",
       data: {},
+    }
+  }
+
+  if (isOffTrackUpdate(content, targetLevel)) {
+    const queuedState = queueOffTrackIntent(state, content, `session-engine:update:${targetLevel}`)
+    await stateManager.save(queuedState)
+    return {
+      success: true,
+      action: "update",
+      data: {
+        level: targetLevel,
+        queuedOffTrack: true,
+        todoPendingCount: queuedState.offtrack_todo_pending.filter((item) => item.status === "pending").length,
+        message: "Off-track intent routed to TODO-Pending; hierarchy left unchanged.",
+      },
     }
   }
 
