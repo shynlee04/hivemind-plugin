@@ -132,6 +132,18 @@
       "staleness_stamp": "2026-02-25T01:44:35.296Z",
       "created_at": "2026-02-25T01:44:35.296Z",
       "updated_at": "2026-02-25T01:44:35.296Z"
+    },
+    {
+      "id": "68156001-21a8-4fe5-83b4-f30797d3d224",
+      "session_id": "c0b1fb7d-9f8e-4504-a0de-81bc21e18c03",
+      "origin_task_id": null,
+      "shelf": "research",
+      "type": "insight",
+      "content": "Wave 2 /hivefiver research executed: delegated read-only evidence scan for CHAIN-BRIDGE architecture; validated 4-layer model, clarified 17-hook taxonomy vs file-count discrepancy, and identified guardrails/sync-assets evidence paths.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-25T01:53:29.728Z",
+      "created_at": "2026-02-25T01:53:29.728Z",
+      "updated_at": "2026-02-25T01:53:29.728Z"
     }
   ]
 }

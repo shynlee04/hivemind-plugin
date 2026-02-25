@@ -167,14 +167,32 @@
             "id": "a_480825022026",
             "level": "action",
             "content": "Coordinate delegated evidence scan across codebase and planning docs to synthesize guidance for 9-section CHAIN-BRIDGE-ARCHITECTURE.md (read-only).",
-            "status": "active",
+            "status": "pending",
             "created": 1771984101358,
             "stamp": "480825022026",
+            "children": []
+          },
+          {
+            "id": "a_530825022026",
+            "level": "action",
+            "content": "Coordinate delegated evidence scan across codebase and planning docs to synthesize guidance for 9-section CHAIN-BRIDGE-ARCHITECTURE.md (read-only).",
+            "status": "pending",
+            "created": 1771984427664,
+            "stamp": "530825022026",
+            "children": []
+          },
+          {
+            "id": "a_560825022026",
+            "level": "action",
+            "content": "Implement docs/CHAIN-BRIDGE-ARCHITECTURE.md with evidence from required framework docs and sync-assets code paths",
+            "status": "active",
+            "created": 1771984598374,
+            "stamp": "560825022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_480825022026"
+  "cursor": "a_560825022026"
 }

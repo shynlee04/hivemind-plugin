@@ -15,19 +15,19 @@
     "context7": {
       "type": "remote",
       "url": "https://mcp.context7.com/mcp",
-      "enabled": false,
+      "enabled": true,
       "timeout": 15000
     },
     "tavily": {
       "type": "remote",
-      "url": "https://mcp.tavily.com/mcp",
-      "enabled": false,
+      "url": "https://mcp.tavily.com/mcp/?tavilyApiKey=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",
+      "enabled": true,
       "timeout": 15000
     },
     "exa": {
       "type": "remote",
-      "url": "https://YOUR-EXA-MCP-ENDPOINT",
-      "enabled": false,
+      "url": "https://mcp.exa.com/mcp",
+      "enabled": true,
       "timeout": 15000
     },
     "repomix": {
@@ -38,7 +38,7 @@
         "repomix",
         "--mcp"
       ],
-      "enabled": false
+      "enabled": true
     }
   },
   "plugin": [
