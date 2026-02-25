@@ -1,0 +1,149 @@
+{
+  "version": "1.0.0",
+  "orphans": [
+    {
+      "id": "86fb3e95-bf2f-4f91-865a-6bfd0e8076e6",
+      "type": "mem",
+      "reason": "session_id 1c598337-6894-4696-8a2f-0059077b8822 not found in valid session lineage",
+      "original_data": {
+        "id": "86fb3e95-bf2f-4f91-865a-6bfd0e8076e6",
+        "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+        "origin_task_id": null,
+        "shelf": "scratch",
+        "type": "insight",
+        "content": "Task checkpoint: inspecting AUTO_COMMIT_TOOLS in src/lib/auto-commit.ts.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-25T18:17:06.143Z",
+        "created_at": "2026-02-25T18:17:06.143Z",
+        "updated_at": "2026-02-25T18:17:06.143Z"
+      },
+      "quarantined_at": "2026-02-25T21:37:15.805Z"
+    },
+    {
+      "id": "16c0c2f5-58db-45dc-9df6-d4defa7ef066",
+      "type": "mem",
+      "reason": "session_id 1c598337-6894-4696-8a2f-0059077b8822 not found in valid session lineage",
+      "original_data": {
+        "id": "16c0c2f5-58db-45dc-9df6-d4defa7ef066",
+        "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+        "origin_task_id": null,
+        "shelf": "research_cache",
+        "type": "insight",
+        "content": "Checkpoint started for /hivefiver research phases 3-6 gaps with evidence-backed file mapping.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-25T19:24:50.086Z",
+        "created_at": "2026-02-25T19:24:50.086Z",
+        "updated_at": "2026-02-25T19:24:50.086Z"
+      },
+      "quarantined_at": "2026-02-25T21:37:15.805Z"
+    },
+    {
+      "id": "5099b55b-7351-4819-ad9b-9df733045a67",
+      "type": "mem",
+      "reason": "session_id 1c598337-6894-4696-8a2f-0059077b8822 not found in valid session lineage",
+      "original_data": {
+        "id": "5099b55b-7351-4819-ad9b-9df733045a67",
+        "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+        "origin_task_id": null,
+        "shelf": "research_cache",
+        "type": "insight",
+        "content": "Initiated /hivefiver research for Phase 4A/4B/4C review; pending-task queue inspected and aligned to active trajectory action.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-25T20:04:44.477Z",
+        "created_at": "2026-02-25T20:04:44.477Z",
+        "updated_at": "2026-02-25T20:04:44.477Z"
+      },
+      "quarantined_at": "2026-02-25T21:37:15.805Z"
+    },
+    {
+      "id": "f8f95bd6-5c4c-4a0a-968b-2e6c1bee416a",
+      "type": "mem",
+      "reason": "session_id 1c598337-6894-4696-8a2f-0059077b8822 not found in valid session lineage",
+      "original_data": {
+        "id": "f8f95bd6-5c4c-4a0a-968b-2e6c1bee416a",
+        "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+        "origin_task_id": null,
+        "shelf": "research_cache",
+        "type": "insight",
+        "content": "Phase 6C research completed (read-only): planning-fs.ts currently 1123 LOC with 25 importer callsites. Recommended 3-slice extraction (planning-core, session-io, session-lifecycle-fs) using planning-fs compatibility wrapper preserving existing exports/signatures; identified high-risk circular dependency and active-session resolution points; readiness verdict HOLD pending Phase 3/4 coupling cleanup.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-25T21:04:41.517Z",
+        "created_at": "2026-02-25T21:04:41.517Z",
+        "updated_at": "2026-02-25T21:04:41.517Z"
+      },
+      "quarantined_at": "2026-02-25T21:37:15.805Z"
+    },
+    {
+      "id": "04a7b0ac-cee4-4906-8f54-9b768a407bfa",
+      "type": "mem",
+      "reason": "session_id 1c598337-6894-4696-8a2f-0059077b8822 not found in valid session lineage",
+      "original_data": {
+        "id": "04a7b0ac-cee4-4906-8f54-9b768a407bfa",
+        "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+        "origin_task_id": null,
+        "shelf": "research_cache",
+        "type": "insight",
+        "content": "Phase 6C planning-fs split risk research completed (read-only): identified dual-path fallback, barrel export propagation, manifest mutation race, and dependency-chain risks; guardrails prioritize compatibility wrappers, fallback preservation tests, dependency cycle checks, and concurrent manifest write protection.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-25T21:06:04.449Z",
+        "created_at": "2026-02-25T21:06:04.449Z",
+        "updated_at": "2026-02-25T21:06:04.449Z"
+      },
+      "quarantined_at": "2026-02-25T21:37:15.805Z"
+    },
+    {
+      "id": "3c28d71f-894c-4f16-a027-57dde13c1b64",
+      "type": "mem",
+      "reason": "session_id 1c598337-6894-4696-8a2f-0059077b8822 not found in valid session lineage",
+      "original_data": {
+        "id": "3c28d71f-894c-4f16-a027-57dde13c1b64",
+        "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+        "origin_task_id": null,
+        "shelf": "research_cache",
+        "type": "insight",
+        "content": "Phase 6C execution started: delegating planning-fs.ts monolith split into fs modules with compatibility wrapper and mandatory tsc/LOC verification.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-25T21:06:52.759Z",
+        "created_at": "2026-02-25T21:06:52.759Z",
+        "updated_at": "2026-02-25T21:06:52.759Z"
+      },
+      "quarantined_at": "2026-02-25T21:37:15.805Z"
+    },
+    {
+      "id": "cb4afbea-827f-4e46-a2c2-5c90db4af443",
+      "type": "mem",
+      "reason": "session_id 1c598337-6894-4696-8a2f-0059077b8822 not found in valid session lineage",
+      "original_data": {
+        "id": "cb4afbea-827f-4e46-a2c2-5c90db4af443",
+        "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+        "origin_task_id": null,
+        "shelf": "decisions",
+        "type": "insight",
+        "content": "Phase 6 Monolith Slicing COMPLETE (2026-02-26). graph-io.ts (1349→39 LOC wrapper) split into: graph/shared.ts (231), graph/fk-validator.ts (177), graph/reader.ts (317), graph/writer.ts (307), bridges/ralph-bridge.ts (239). planning-fs.ts (1123→3 LOC wrapper) split into: fs/planning-paths.ts (129), fs/session-io.ts (514), fs/planning-ops.ts (347). All ≤550 LOC. Re-export wrappers preserve backward compat for 15+12 consumer files. Verified: tsc clean, 194/194 tests pass. guard:public working correctly (blocks sensitive files from master). FULL 6-PHASE REFACTOR COMPLETE: Phase 1 Delete Sweep, Phase 2 SOT Naming, Phase 3 Memory Lifecycle, Phase 4 Flow Governance, Phase 5 First-Turn Determinism, Phase 6 Monolith Slicing.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-02-25T21:30:17.233Z",
+        "created_at": "2026-02-25T21:30:17.233Z",
+        "updated_at": "2026-02-25T21:30:17.233Z"
+      },
+      "quarantined_at": "2026-02-25T21:37:15.805Z"
+    },
+    {
+      "id": "4e6b06e3-a117-429b-b675-ecb727767c49",
+      "type": "mem",
+      "reason": "session_id 1c598337-6894-4696-8a2f-0059077b8822 not found in valid session lineage",
+      "original_data": {
+        "id": "4e6b06e3-a117-429b-b675-ecb727767c49",
+        "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+        "origin_task_id": "e4a84f79-c3d6-4a63-ba09-b85a66903bfb",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: FULL 6-PHASE REFACTOR COMPLETE. Phase 1: Delete sweep (legacy pathing, export hoarding removed). Phase 2: SOT naming (deterministic session-<id>.md, temporal data in frontmatter). Phase 3: Memory lifecycle (auto-purge on session close, TODO-Pending routing). Phase 4: Flow governance (TaskNode-bound auto-commit, tool-gate advisory, knowledge-commit taskId). Phase 5: First-turn determinism (tool-gate confirmation advisory gate). Phase 6: Monolith slicing (graph-io.ts 1349→39 LOC split into 5 modules; planning-fs.ts 1123→3 LOC split into 3 modules; all ≤550 LOC; re-export wrappers for 27 consumers). Final gate: tsc clean, 194/194 tests pass, commit 0ff443f on feat/v2_9-c-guardrail.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-02-25T21:31:51.034Z",
+        "created_at": "2026-02-25T21:31:51.034Z",
+        "updated_at": "2026-02-25T21:31:51.034Z"
+      },
+      "quarantined_at": "2026-02-25T21:37:15.805Z"
+    }
+  ]
+}

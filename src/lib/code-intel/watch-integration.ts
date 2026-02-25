@@ -14,6 +14,8 @@ import { eventBus, createEvent } from "../event-bus.js"
 import type { ArtifactEvent } from "../../schemas/events.js"
 import { IncrementalUpdater } from "./incremental-updater.js"
 import type { CodeMap } from "./codemap-io.js"
+import type { CompressedCodemap } from "./compressed-codemap.js"
+import type { TreeSitterInstance } from "./tree-sitter-loader.js"
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -68,6 +70,8 @@ export function startWatchIntegration(
   projectRoot: string,
   codemap: CodeMap,
   options: WatchIntegrationOptions = {},
+  compressedCodemap?: CompressedCodemap | null,
+  treeSitter?: TreeSitterInstance | null,
 ): WatchIntegration {
   const {
     debounceMs = 300,
@@ -76,7 +80,7 @@ export function startWatchIntegration(
     concurrency = 5,
   } = options
 
-  const updater = new IncrementalUpdater(projectRoot)
+  const updater = new IncrementalUpdater(projectRoot, treeSitter ?? null)
   const watcher = new FileSystemWatcher({
     debounceMs,
     ignorePatterns: [
@@ -114,7 +118,7 @@ export function startWatchIntegration(
           const relativePath = relative(projectRoot, item.path)
 
           if (item.type === "file:deleted") {
-            const result = await updater.removeFile(codemap, relativePath)
+            const result = await updater.removeFile(codemap, relativePath, compressedCodemap)
 
             if (emitEvents) {
               const event = createEvent("codemap:updated", {
@@ -129,7 +133,7 @@ export function startWatchIntegration(
             }
           } else {
             // file:created or file:modified
-            const result = await updater.updateFile(codemap, relativePath)
+            const result = await updater.updateFile(codemap, relativePath, compressedCodemap)
 
             if (emitEvents) {
               const event = createEvent("codemap:updated", {
@@ -207,7 +211,7 @@ export function startWatchIntegration(
       const staleFiles = await updater.getStaleFiles(codemap)
 
       for (const filePath of staleFiles) {
-        await updater.updateFile(codemap, filePath)
+        await updater.updateFile(codemap, filePath, compressedCodemap)
         updatesProcessed++
       }
 

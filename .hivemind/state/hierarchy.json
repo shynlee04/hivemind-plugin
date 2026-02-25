@@ -1,159 +1,235 @@
 {
   "version": 1,
   "root": {
-    "id": "t_150126022026",
+    "id": "t_370426022026",
     "level": "trajectory",
-    "content": "Execute full 6-phase refactor: Auto/Callable/Delete, SOT naming compliance, lifecycle purge, gate hardening, first-turn determinism, monolith slicing",
+    "content": "Phase 7: Code-Intel Surgeon Engine - Validate PRD & Execution Plan, research FastCode patterns, synthesize into actionable plan",
     "status": "active",
-    "created": 1772043320873,
-    "stamp": "150126022026",
+    "created": 1772055420065,
+    "stamp": "370426022026",
     "children": [
       {
-        "id": "tc_150126022026",
+        "id": "tc_370426022026",
         "level": "tactic",
-        "content": "Sequentially delegate implementation by dependency layers: delete legacy pathing/export hoarding, enforce naming/SOT, add memory auto-purge hooks, gate by TaskNode, then split monoliths with compatibility wrappers",
+        "content": "Phase 7 Planning: 3-stream parallel research - (1) Codebase current state scan, (2) FastCode repo deep research, (3) PRD validation against live code",
         "status": "active",
-        "created": 1772043328161,
-        "stamp": "150126022026",
+        "created": 1772055435082,
+        "stamp": "370426022026",
         "children": [
           {
-            "id": "a_170126022026",
+            "id": "a_380426022026",
             "level": "action",
-            "content": "Inspect src/lib/auto-commit.ts and report AUTO_COMMIT_TOOLS set in one sentence.",
-            "status": "pending",
-            "created": 1772043422243,
-            "stamp": "170126022026",
-            "children": []
-          },
-          {
-            "id": "a_180126022026",
-            "level": "action",
-            "content": "Implement Phase 1 and 2 refactor in src/lib and related modules: remove legacy pathing/export-hoard behavior and enforce deterministic session filename naming; then verify with tsc and tests.",
-            "status": "pending",
-            "created": 1772043491778,
-            "stamp": "180126022026",
-            "children": []
-          },
-          {
-            "id": "a_270126022026",
-            "level": "action",
-            "content": "Run TypeScript and test verification after Phase 1/2 refactor changes.",
-            "status": "pending",
-            "created": 1772044023327,
-            "stamp": "270126022026",
-            "children": []
-          },
-          {
-            "id": "a_440126022026",
-            "level": "action",
-            "content": "Phase 1/2 refactor implemented and verified with full TypeScript and test suite.",
-            "status": "pending",
-            "created": 1772045042941,
-            "stamp": "440126022026",
-            "children": []
-          },
-          {
-            "id": "a_240226022026",
-            "level": "action",
-            "content": "/hivefiver research: investigate remaining gaps for phases 3-6 (lifecycle purge, gate hardening, first-turn determinism, monolith slicing) with evidence-backed file/line mapping.",
-            "status": "pending",
-            "created": 1772047476277,
-            "stamp": "240226022026",
-            "children": []
-          },
-          {
-            "id": "a_250226022026",
-            "level": "action",
-            "content": "Deep read-only scan for remaining gaps in phases 3-6 with code evidence and line mapping.",
-            "status": "pending",
-            "created": 1772047546341,
-            "stamp": "250226022026",
-            "children": []
-          },
-          {
-            "id": "a_340226022026",
-            "level": "action",
-            "content": "Verify Phase 1/2 completion state, then sequentially execute Phases 3-6",
-            "status": "pending",
-            "created": 1772048051677,
-            "stamp": "340226022026",
-            "children": []
-          },
-          {
-            "id": "a_370226022026",
-            "level": "action",
-            "content": "Phase 3: Context Lifecycle & Memory Governance — auto-purge transient memory on task completion, tighten TODO-Pending routing",
-            "status": "pending",
-            "created": 1772048233352,
-            "stamp": "370226022026",
-            "children": []
-          },
-          {
-            "id": "a_530226022026",
-            "level": "action",
-            "content": "Phase 4: Flow Governance & Atomicity — refactor auto-commit to TaskNode binding, harden tool-gate with TaskNode UUID validation",
-            "status": "pending",
-            "created": 1772049232949,
-            "stamp": "530226022026",
-            "children": []
-          },
-          {
-            "id": "a_580226022026",
-            "level": "action",
-            "content": "Implement Phase 4A/4B/4C TaskNode-bound auto-commit, tool-gate advisory, and knowledge commit task binding with tests and verification",
-            "status": "pending",
-            "created": 1772049491561,
-            "stamp": "580226022026",
-            "children": []
-          },
-          {
-            "id": "a_030326022026",
-            "level": "action",
-            "content": "Review Phase 4A/4B/4C TaskNode-bound auto-commit, tool-gate advisory, and knowledge-commit task binding changes for correctness and architecture fit",
-            "status": "pending",
-            "created": 1772049831983,
-            "stamp": "030326022026",
-            "children": []
-          },
-          {
-            "id": "a_040326022026",
-            "level": "action",
-            "content": "/hivefiver research: investigate Phase 4A/4B/4C TaskNode-bound auto-commit, tool-gate advisory, and knowledge-commit binding for correctness and architecture fit",
-            "status": "pending",
-            "created": 1772049882715,
-            "stamp": "040326022026",
-            "children": []
-          },
-          {
-            "id": "a_100326022026",
-            "level": "action",
-            "content": "Completed code review for Phase 4A/4B/4C scoped files with verification evidence and merge verdict",
-            "status": "pending",
-            "created": 1772050248657,
-            "stamp": "100326022026",
-            "children": []
-          },
-          {
-            "id": "a_130326022026",
-            "level": "action",
-            "content": "Re-review Phase 4A/4B/4C fixed scope: verify tool-gate status filtering fix, non-active referenced task regression coverage, and final blocking verdict",
-            "status": "pending",
-            "created": 1772050401200,
-            "stamp": "130326022026",
-            "children": []
-          },
-          {
-            "id": "a_130326022026-1",
-            "level": "action",
-            "content": "/hivefiver research checkpoint: enterprise_architect lane readiness for Phase 4A/4B/4C re-review",
+            "content": "Research HKUDS/FastCode repo: extract tree-sitter patterns, code-intel architecture, agent tools design for Phase 7 Code-Intel Surgeon Engine",
             "status": "active",
-            "created": 1772050438234,
-            "stamp": "130326022026",
+            "created": 1772055485221,
+            "stamp": "380426022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_440426022026",
+        "level": "tactic",
+        "content": "3 research streams complete. Synthesizing findings: PRD 6/8 claims TRUE, FastCode 14 patterns extracted, 15 files inventoried. Moving to synthesis and plan improvement.",
+        "status": "active",
+        "created": 1772055875541,
+        "stamp": "440426022026",
+        "children": [
+          {
+            "id": "a_450426022026",
+            "level": "action",
+            "content": "Synthesis phase: verifying current codebase health (npm test + tsc) before finalizing plan, then producing improved execution plan document",
+            "status": "pending",
+            "created": 1772055946671,
+            "stamp": "450426022026",
+            "children": []
+          },
+          {
+            "id": "a_460426022026",
+            "level": "action",
+            "content": "Baseline GREEN: 194 tests pass, 0 tsc errors. Now producing improved execution plan incorporating all 3 research streams.",
+            "status": "pending",
+            "created": 1772055990109,
+            "stamp": "460426022026",
+            "children": []
+          },
+          {
+            "id": "a_470426022026",
+            "level": "action",
+            "content": "Producing improved PRD v1.1 and Execution Plan v1.1 incorporating: PRD verification corrections, FastCode patterns, downstream impact analysis",
+            "status": "pending",
+            "created": 1772056036571,
+            "stamp": "470426022026",
+            "children": []
+          },
+          {
+            "id": "a_480426022026",
+            "level": "action",
+            "content": "Writing improved PRD v1.1 and Execution Plan v1.1 with research-validated corrections and FastCode pattern integration",
+            "status": "active",
+            "created": 1772056098503,
+            "stamp": "480426022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_570426022026",
+        "level": "tactic",
+        "content": "Phase 7 Execution: Layer 1 Foundation Fixes. Baseline GREEN (194 pass, 0 tsc). Installing packages then delegating 7A.1-7A.7 tasks.",
+        "status": "active",
+        "created": 1772056665838,
+        "stamp": "570426022026",
+        "children": [
+          {
+            "id": "a_580426022026",
+            "level": "action",
+            "content": "Installing prerequisite packages (magic-string, ignore, remark, unist-util-visit) then delegating Layer 1 tasks to hivemaker agents",
+            "status": "pending",
+            "created": 1772056682733,
+            "stamp": "580426022026",
+            "children": []
+          },
+          {
+            "id": "a_010526022026",
+            "level": "action",
+            "content": "Implementing Task 7A.1-7A.3 byte-offset propagation in tree-sitter loader, Signature schema, and signature extractor with verification",
+            "status": "pending",
+            "created": 1772056878180,
+            "stamp": "010526022026",
+            "children": []
+          },
+          {
+            "id": "a_080526022026",
+            "level": "action",
+            "content": "Reviewing Task 7A.1-7A.3 byte-offset propagation implementation (review-only, no edits)",
+            "status": "active",
+            "created": 1772057302518,
+            "stamp": "080526022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_100526022026",
+        "level": "tactic",
+        "content": "Research and plan OpenTUI dashboard UX/UI specification for OpenCode SDK integration",
+        "status": "active",
+        "created": 1772057414050,
+        "stamp": "100526022026",
+        "children": [
+          {
+            "id": "a_100526022026",
+            "level": "action",
+            "content": "Research UX/UI specifications and OpenTUI capabilities to draft the prototype plan for Hivemind's OpenCode sidecar dashboard",
+            "status": "pending",
+            "created": 1772057420803,
+            "stamp": "100526022026",
+            "children": []
+          },
+          {
+            "id": "a_120526022026",
+            "level": "action",
+            "content": "Completed review of Task 7A.1-7A.3 byte-offset propagation implementation; verdict APPROVED with evidence",
+            "status": "pending",
+            "created": 1772057542968,
+            "stamp": "120526022026",
+            "children": []
+          },
+          {
+            "id": "a_150526022026",
+            "level": "action",
+            "content": "7A.1-7A.3 + 7A.6 complete. Baseline GREEN (194/0). Now delegating 7A.4 (incremental-updater) + 7A.5 (watch-integration) sequential chain.",
+            "status": "active",
+            "created": 1772057740836,
+            "stamp": "150526022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_160526022026",
+        "level": "tactic",
+        "content": "UX/UI OpenTUI Dashboard Specification Prototype using HiveFiver MCP Research Loop",
+        "status": "active",
+        "created": 1772057776250,
+        "stamp": "160526022026",
+        "children": [
+          {
+            "id": "a_160526022026",
+            "level": "action",
+            "content": "Auto-realign: Running HiveFiver MCP Research Loop to gather UX/UI patterns, OpenTUI integrations, and OpenCode SDK capabilities for the dashboard specification.",
+            "status": "pending",
+            "created": 1772057780852,
+            "stamp": "160526022026",
+            "children": []
+          },
+          {
+            "id": "a_170526022026",
+            "level": "action",
+            "content": "Implementing Task 7A.4 + 7A.5 in incremental-updater.ts and watch-integration.ts with optional CompressedCodemap wiring",
+            "status": "pending",
+            "created": 1772057845653,
+            "stamp": "170526022026",
+            "children": []
+          },
+          {
+            "id": "a_170526022026-1",
+            "level": "action",
+            "content": "Reading OpenTUI React reconciler layout patterns and OpenCode SDK event subscription to synthesize PRD structure",
+            "status": "pending",
+            "created": 1772057853877,
+            "stamp": "170526022026",
+            "children": []
+          },
+          {
+            "id": "a_180526022026",
+            "level": "action",
+            "content": "Synthesizing Research Insights into OpenTUI Dashboard PRD & Execution Plan",
+            "status": "pending",
+            "created": 1772057929689,
+            "stamp": "180526022026",
+            "children": []
+          },
+          {
+            "id": "a_210526022026",
+            "level": "action",
+            "content": "External code review of Task 7A.4 + 7A.5 in incremental-updater.ts and watch-integration.ts; verify optional params, signatureDelta, compressed stats recalculation, and updater call propagation",
+            "status": "pending",
+            "created": 1772058081658,
+            "stamp": "210526022026",
+            "children": []
+          },
+          {
+            "id": "a_210526022026-1",
+            "level": "action",
+            "content": "UX/UI OpenTUI Dashboard PRD finalized and committed. Moving forward to implementation mapping.",
+            "status": "pending",
+            "created": 1772058118655,
+            "stamp": "210526022026",
+            "children": []
+          },
+          {
+            "id": "a_250526022026",
+            "level": "action",
+            "content": "Auto-realign: Running HiveFiver governance checkpoint and saving critical memory for OpenTUI Dashboard UX/UI specification.",
+            "status": "pending",
+            "created": 1772058337949,
+            "stamp": "250526022026",
+            "children": []
+          },
+          {
+            "id": "a_250526022026-1",
+            "level": "action",
+            "content": "Completed Task 7A.4 + 7A.5 implementation and verification (tsc/tests + external hivehealer review approved)",
+            "status": "active",
+            "created": 1772058356745,
+            "stamp": "250526022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_130326022026-1"
+  "cursor": "a_250526022026-1"
 }

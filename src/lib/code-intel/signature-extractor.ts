@@ -51,14 +51,10 @@ export async function extractSignatures(input: ExtractSignaturesInput): Promise<
   if (!language) return []
 
   if (input.astRoot) {
-    const sigs = extractFromAST(input.astRoot, input.content, language)
-    sigs.sort((a, b) => a.lineStart - b.lineStart)
-    return sigs
+    return extractFromAST(input.astRoot, input.content, language)
   }
 
-  const sigs = extractFromRegex(input.content)
-  sigs.sort((a, b) => a.lineStart - b.lineStart)
-  return sigs
+  return extractFromRegex(input.content)
 }
 
 // ─── AST-based extraction ───────────────────────────────────────────────
@@ -81,6 +77,7 @@ function extractFromAST(
     walkRustChildren(rootNode, signatures, lines)
   }
 
+  signatures.sort((a, b) => a.startIndex - b.startIndex)
   return signatures
 }
 
@@ -174,6 +171,8 @@ function buildTSFunction(node: TreeSitterNode, lines: string[], exported: boolea
     signature: `function ${name}(${paramStr})${returnType ? `: ${returnType}` : ""}`,
     lineStart: node.startPosition.row + 1,
     lineEnd: node.endPosition.row + 1,
+    startIndex: node.startIndex,
+    endIndex: node.endIndex,
     docstring,
     parameters: params.length > 0 ? params : undefined,
     returnType: returnType ?? undefined,
@@ -201,6 +200,8 @@ function buildTSClass(node: TreeSitterNode, lines: string[], exported: boolean):
     signature: sig,
     lineStart: node.startPosition.row + 1,
     lineEnd: node.endPosition.row + 1,
+    startIndex: node.startIndex,
+    endIndex: node.endIndex,
     docstring,
     exported,
   }
@@ -227,6 +228,8 @@ function buildTSInterface(node: TreeSitterNode, lines: string[], exported: boole
     signature: sig,
     lineStart: node.startPosition.row + 1,
     lineEnd: node.endPosition.row + 1,
+    startIndex: node.startIndex,
+    endIndex: node.endIndex,
     docstring,
     exported,
   }
@@ -253,6 +256,8 @@ function buildTSTypeAlias(node: TreeSitterNode, lines: string[], exported: boole
     signature: sig,
     lineStart: node.startPosition.row + 1,
     lineEnd: node.endPosition.row + 1,
+    startIndex: node.startIndex,
+    endIndex: node.endIndex,
     docstring,
     exported,
   }
@@ -268,6 +273,8 @@ function buildTSEnum(node: TreeSitterNode, lines: string[], exported: boolean): 
     signature: `enum ${nameNode.text}`,
     lineStart: node.startPosition.row + 1,
     lineEnd: node.endPosition.row + 1,
+    startIndex: node.startIndex,
+    endIndex: node.endIndex,
     docstring: extractJSDocAbove(node, lines),
     exported,
   }
@@ -297,6 +304,8 @@ function buildTSLexicalDecl(node: TreeSitterNode, lines: string[], exported: boo
         signature: `const ${name} = (${paramStr})${returnType ? `: ${returnType}` : ""} => ...`,
         lineStart: node.startPosition.row + 1,
         lineEnd: (valueNode.endPosition.row ?? node.endPosition.row) + 1,
+        startIndex: node.startIndex,
+        endIndex: valueNode.endIndex ?? node.endIndex,
         docstring,
         parameters: params.length > 0 ? params : undefined,
         returnType: returnType ?? undefined,
@@ -314,6 +323,8 @@ function buildTSLexicalDecl(node: TreeSitterNode, lines: string[], exported: boo
         signature: sig,
         lineStart: node.startPosition.row + 1,
         lineEnd: node.endPosition.row + 1,
+        startIndex: node.startIndex,
+        endIndex: node.endIndex,
         docstring: extractJSDocAbove(node, lines),
         exported,
       })
@@ -334,6 +345,8 @@ function buildTSImport(node: TreeSitterNode): Signature | null {
     signature: node.text.length < 200 ? node.text : `import ... from "${source}"`,
     lineStart: node.startPosition.row + 1,
     lineEnd: node.endPosition.row + 1,
+    startIndex: node.startIndex,
+    endIndex: node.endIndex,
     exported: false,
   }
 }
@@ -392,6 +405,8 @@ function walkPythonChildren(node: TreeSitterNode, sigs: Signature[], lines: stri
         signature: `def ${nameNode.text}(${paramsNode?.text ?? ""})${retNode ? ` -> ${retNode.text}` : ""}`,
         lineStart: child.startPosition.row + 1,
         lineEnd: child.endPosition.row + 1,
+        startIndex: child.startIndex,
+        endIndex: child.endIndex,
         docstring: extractPyDocstring(child),
         exported: !nameNode.text.startsWith("_"),
       })
@@ -409,6 +424,8 @@ function walkPythonChildren(node: TreeSitterNode, sigs: Signature[], lines: stri
         signature: sig,
         lineStart: child.startPosition.row + 1,
         lineEnd: child.endPosition.row + 1,
+        startIndex: child.startIndex,
+        endIndex: child.endIndex,
         docstring: extractPyDocstring(child),
         exported: !nameNode.text.startsWith("_"),
       })
@@ -450,6 +467,8 @@ function walkGoChildren(node: TreeSitterNode, sigs: Signature[], lines: string[]
         signature: sig,
         lineStart: child.startPosition.row + 1,
         lineEnd: child.endPosition.row + 1,
+        startIndex: child.startIndex,
+        endIndex: child.endIndex,
         docstring: extractJSDocAbove(child, lines),
         exported: nameNode.text[0] === nameNode.text[0].toUpperCase(),
       })
@@ -471,6 +490,8 @@ function walkGoChildren(node: TreeSitterNode, sigs: Signature[], lines: string[]
         signature: sig,
         lineStart: child.startPosition.row + 1,
         lineEnd: child.endPosition.row + 1,
+        startIndex: child.startIndex,
+        endIndex: child.endIndex,
         docstring: extractJSDocAbove(child, lines),
         exported: nameNode.text[0] === nameNode.text[0].toUpperCase(),
       })
@@ -490,6 +511,8 @@ function walkGoChildren(node: TreeSitterNode, sigs: Signature[], lines: string[]
         signature: `type ${nameNode.text} ${isStruct ? "struct" : isIface ? "interface" : (typeNode?.text ?? "")}`,
         lineStart: child.startPosition.row + 1,
         lineEnd: child.endPosition.row + 1,
+        startIndex: child.startIndex,
+        endIndex: child.endIndex,
         docstring: extractJSDocAbove(child, lines),
         exported: nameNode.text[0] === nameNode.text[0].toUpperCase(),
       })
@@ -521,6 +544,8 @@ function walkRustChildren(node: TreeSitterNode, sigs: Signature[], lines: string
         signature: sig,
         lineStart: child.startPosition.row + 1,
         lineEnd: child.endPosition.row + 1,
+        startIndex: child.startIndex,
+        endIndex: child.endIndex,
         docstring: extractJSDocAbove(child, lines),
         exported: isPub,
       })
@@ -534,6 +559,8 @@ function walkRustChildren(node: TreeSitterNode, sigs: Signature[], lines: string
         signature: `${isPub ? "pub " : ""}struct ${nameNode.text}`,
         lineStart: child.startPosition.row + 1,
         lineEnd: child.endPosition.row + 1,
+        startIndex: child.startIndex,
+        endIndex: child.endIndex,
         docstring: extractJSDocAbove(child, lines),
         exported: isPub,
       })
@@ -547,6 +574,8 @@ function walkRustChildren(node: TreeSitterNode, sigs: Signature[], lines: string
         signature: `${isPub ? "pub " : ""}trait ${nameNode.text}`,
         lineStart: child.startPosition.row + 1,
         lineEnd: child.endPosition.row + 1,
+        startIndex: child.startIndex,
+        endIndex: child.endIndex,
         docstring: extractJSDocAbove(child, lines),
         exported: isPub,
       })
@@ -560,6 +589,8 @@ function walkRustChildren(node: TreeSitterNode, sigs: Signature[], lines: string
         signature: `${isPub ? "pub " : ""}enum ${nameNode.text}`,
         lineStart: child.startPosition.row + 1,
         lineEnd: child.endPosition.row + 1,
+        startIndex: child.startIndex,
+        endIndex: child.endIndex,
         docstring: extractJSDocAbove(child, lines),
         exported: isPub,
       })
@@ -617,6 +648,19 @@ function extractJSDocAbove(node: TreeSitterNode, lines: string[]): string | unde
 function extractFromRegex(content: string): Signature[] {
   const signatures: Signature[] = []
   const lines = content.split(/\r?\n/)
+  const lineStartOffsets: number[] = [0]
+
+  for (let i = 0; i < content.length; i++) {
+    if (content[i] === "\n") lineStartOffsets.push(i + 1)
+  }
+
+  const getLineStartIndex = (lineStart: number): number => {
+    return lineStartOffsets[lineStart - 1] ?? content.length
+  }
+
+  const getLineEndIndex = (lineEnd: number): number => {
+    return lineEnd < lineStartOffsets.length ? lineStartOffsets[lineEnd] - 1 : content.length
+  }
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i] ?? ""
@@ -629,12 +673,15 @@ function extractFromRegex(content: string): Signature[] {
     // Function declaration
     const fnMatch = line.match(/^\s*(?:export\s+)?(?:async\s+)?function\s+([A-Za-z_$][\w$]*)\s*\(/)
     if (fnMatch && fnMatch[1]) {
+      const lineEnd = findBlockEnd(lines, i)
       signatures.push({
         type: "function",
         name: fnMatch[1],
         signature: line.trim().replace(/\{.*$/, "").trim(),
         lineStart: lineNum,
-        lineEnd: findBlockEnd(lines, i),
+        lineEnd,
+        startIndex: getLineStartIndex(lineNum),
+        endIndex: getLineEndIndex(lineEnd),
         exported: isExported,
       })
       continue
@@ -643,12 +690,15 @@ function extractFromRegex(content: string): Signature[] {
     // Class declaration
     const classMatch = line.match(/^\s*(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/)
     if (classMatch && classMatch[1]) {
+      const lineEnd = findBlockEnd(lines, i)
       signatures.push({
         type: "class",
         name: classMatch[1],
         signature: line.trim().replace(/\{.*$/, "").trim(),
         lineStart: lineNum,
-        lineEnd: findBlockEnd(lines, i),
+        lineEnd,
+        startIndex: getLineStartIndex(lineNum),
+        endIndex: getLineEndIndex(lineEnd),
         exported: isExported,
       })
       continue
@@ -657,12 +707,15 @@ function extractFromRegex(content: string): Signature[] {
     // Interface
     const ifMatch = line.match(/^\s*(?:export\s+)?interface\s+([A-Za-z_$][\w$]*)/)
     if (ifMatch && ifMatch[1]) {
+      const lineEnd = findBlockEnd(lines, i)
       signatures.push({
         type: "interface",
         name: ifMatch[1],
         signature: line.trim().replace(/\{.*$/, "").trim(),
         lineStart: lineNum,
-        lineEnd: findBlockEnd(lines, i),
+        lineEnd,
+        startIndex: getLineStartIndex(lineNum),
+        endIndex: getLineEndIndex(lineEnd),
         exported: isExported,
       })
       continue
@@ -671,12 +724,15 @@ function extractFromRegex(content: string): Signature[] {
     // Type alias
     const typeMatch = line.match(/^\s*(?:export\s+)?type\s+([A-Za-z_$][\w$]*)\s*(?:<[^>]*>)?\s*=/)
     if (typeMatch && typeMatch[1]) {
+      const lineEnd = findBlockEnd(lines, i)
       signatures.push({
         type: "type",
         name: typeMatch[1],
         signature: line.trim(),
         lineStart: lineNum,
-        lineEnd: findBlockEnd(lines, i),
+        lineEnd,
+        startIndex: getLineStartIndex(lineNum),
+        endIndex: getLineEndIndex(lineEnd),
         exported: isExported,
       })
       continue
@@ -685,18 +741,22 @@ function extractFromRegex(content: string): Signature[] {
     // Arrow function const
     const arrowMatch = line.match(/^\s*(?:export\s+)?(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::\s*[^=]*)?\s*=\s*(?:async\s+)?(?:\([^)]*\)|[A-Za-z_$][\w$]*)\s*(?::\s*[^=]*)?\s*=>/)
     if (arrowMatch && arrowMatch[1]) {
+      const lineEnd = findBlockEnd(lines, i)
       signatures.push({
         type: "function",
         name: arrowMatch[1],
         signature: `const ${arrowMatch[1]} = (...) => ...`,
         lineStart: lineNum,
-        lineEnd: findBlockEnd(lines, i),
+        lineEnd,
+        startIndex: getLineStartIndex(lineNum),
+        endIndex: getLineEndIndex(lineEnd),
         exported: isExported,
       })
       continue
     }
   }
 
+  signatures.sort((a, b) => a.startIndex - b.startIndex)
   return signatures
 }
 

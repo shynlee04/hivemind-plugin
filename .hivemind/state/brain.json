@@ -1,27 +1,29 @@
 {
   "session": {
-    "id": "1c598337-6894-4696-8a2f-0059077b8822",
+    "id": "29a8148b-96ae-4b26-b4de-a3e0510ff574",
     "mode": "plan_driven",
     "governance_mode": "assisted",
     "governance_status": "OPEN",
-    "start_time": 1772043320873,
-    "last_activity": 1772050438235,
+    "start_time": 1772055420065,
+    "last_activity": 1772058356746,
     "date": "2026-02-25",
     "meta_key": "",
     "role": "",
     "by_ai": true
   },
   "hierarchy": {
-    "trajectory": "Execute full 6-phase refactor: Auto/Callable/Delete, SOT naming compliance, lifecycle purge, gate hardening, first-turn determinism, monolith slicing",
-    "tactic": "Sequentially delegate implementation by dependency layers: delete legacy pathing/export hoarding, enforce naming/SOT, add memory auto-purge hooks, gate by TaskNode, then split monoliths with compatibility wrappers",
-    "action": "/hivefiver research checkpoint: enterprise_architect lane readiness for Phase 4A/4B/4C re-review"
+    "trajectory": "Phase 7: Code-Intel Surgeon Engine - Validate PRD & Execution Plan, research FastCode patterns, synthesize into actionable plan",
+    "tactic": "UX/UI OpenTUI Dashboard Specification Prototype using HiveFiver MCP Research Loop",
+    "action": "Completed Task 7A.4 + 7A.5 implementation and verification (tsc/tests + external hivehealer review approved)"
   },
   "metrics": {
     "turn_count": 23,
     "user_turn_count": 1,
     "drift_score": 70,
-    "files_touched": [],
-    "context_updates": 16,
+    "files_touched": [
+      "[via task]"
+    ],
+    "context_updates": 23,
     "ratings": [],
     "auto_health_score": 100,
     "total_tool_calls": 23,
@@ -31,22 +33,23 @@
     "consecutive_same_section": 0,
     "last_section_content": "",
     "tool_type_counts": {
-      "read": 4,
-      "write": 1,
-      "query": 17,
-      "governance": 1
+      "read": 1,
+      "write": 3,
+      "query": 19,
+      "governance": 0
     },
     "keyword_flags": [
       "failure",
-      "error"
+      "error",
+      "loop"
     ],
     "write_without_read_count": 0,
     "governance_counters": {
       "out_of_order": 0,
       "drift": 0,
       "compaction": 0,
-      "evidence_pressure": 43,
-      "ignored": 17,
+      "evidence_pressure": 46,
+      "ignored": 19,
       "acknowledged": false,
       "prerequisites_completed": true
     }
@@ -64,33 +67,50 @@
     "classified_counts": {
       "discovery_brainstorming_discuss": 0,
       "research_synthesis": 6,
-      "codebase_investigation": 4,
-      "planning": 0,
-      "implementing": 3,
-      "debug": 0,
+      "codebase_investigation": 1,
+      "planning": 4,
+      "implementing": 4,
+      "debug": 1,
       "test_validation_gatekeeping": 6
     },
     "temporary_exports_consolidated": 0,
     "temporary_exports_purged": 0,
-    "last_classified_at": 1772050425919
+    "last_classified_at": 1772058353849
   },
   "complexity_nudge_shown": true,
   "last_commit_suggestion_turn": 0,
   "version": "1.0.0",
   "next_compaction_report": null,
-  "compaction_count": 0,
-  "last_compaction_time": 0,
+  "compaction_count": 1,
+  "last_compaction_time": 1772055111086,
   "compaction_limit_reached": false,
   "cycle_log": [
     {
-      "timestamp": 1772047769864,
+      "timestamp": 1772055861164,
       "tool": "task",
-      "output_excerpt": "task_id: ses_369bcdc97ffesoU1b6KQD5pIiV (for resuming to continue this task if needed)\n\n<task_result>\n1) `phase_gap_matrix`\n\n| phase | status | evidence(file:line) | rationale |\n|---|---|---|---|\n| lifecycle purge | partial | `src/tools/hivemind-context.ts:79`, `src/tools/hivemind-context.ts:97`, `src/tools/hivemind-context.ts:125`, `src/tools/hivemind-session.ts:279`, `src/tools/hivemind-session-memory.ts:118`, `src/lib/entity-checklist.ts:196`, `src/lib/entity-checklist.ts:331` | Purge exists ",
+      "output_excerpt": "task_id: ses_3694340b4ffeqzMZQCAPhdMkAN (for resuming to continue this task if needed)\n\n<task_result>\nLet me deliver the complete synthesized research report.\n\n## FastCode Architecture Summary\n\n**Overall Approach:** FastCode is a Python-based code understanding system using a 3-phase pipeline: **Index** (parse → index → embed into FAISS) → **Retrieve** (hybrid semantic + keyword + graph expansion) → **Generate** (iterative LLM agent with confidence-based loop control). It's designed for code Q&A",
       "failure_detected": false,
       "failure_keywords": []
+    },
+    {
+      "timestamp": 1772057919660,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_3691f48e4ffeK15SkM4u56WUrD (for resuming to continue this task if needed)\n\n<task_result>\nI have executed the HiveFiver MCP Research Loop using the OpenTUI and OpenCode SDK skills, along with web corroboration. I've also tracked our workflow and successfully saved these insights to the `research` memory shelf for cross-session persistence.\n\nHere are the raw research insights and the structural pattern recommendations synthesized into a PRD format for the dashboard prototype.\n\n***\n\n# ",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1772058353080,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_3691c254cffe4cSldbZOjtYhWw (for resuming to continue this task if needed)\n\n<task_result>\noutcome: approved\nfindings:\n- `npx tsc --noEmit` passes (no TypeScript errors reported).\n- `npm test` passes (`194/194` tests, `0` failures), so targeted compatibility is preserved.\n- Optional parameter compatibility is intact in both files: `compressedCodemap` and `treeSitter` remain optional and are propagated through signatures/call paths (`src/lib/code-intel/incremental-updater.ts`, `src/lib",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failure",
+        "error"
+      ]
     }
   ],
-  "pending_failure_ack": false,
+  "pending_failure_ack": true,
   "framework_selection": {
     "choice": null,
     "active_phase": "",
@@ -101,23 +121,8 @@
   "recent_messages": [
     {
       "role": "user",
-      "content": "/hivefiver research\n\nTask: Run an auto-realign research checkpoint for current enterprise_architect lane and report concise readiness findings for continuing Phase 4A/4B/4C re-review.\nScope: Read-only governance/research alignment only. Do NOT edit files.\nReturn format: 1) lane status 2) required gates status 3) risks/blockers 4) recommended next step.\nSuccess metric: produces concrete, actionable next-step guidance.\nAcceptance criteria: output addresses research alignment and does not mutate code.\nConstraints: no code changes, no git operations, no destructive actions.\nEvidence: cite specific governance or workflow signals used for recommendation."
+      "content": "## Task 7A.4 + 7A.5: Fix IncrementalUpdater and Watch Integration\n\n**Role:** You are a BUILDER. Implement the changes, verify, return evidence.\n\n### Overview\nMake IncrementalUpdater accept CompressedCodemap so it can compute real `signatureDelta` values (currently hardcoded to `0`). Then update watch-integration.ts to pass CompressedCodemap through to updater calls.\n\n### Scope\n- **MODIFY these files ONLY:**\n  1. `/Users/apple/hivemind-plugin/src/lib/code-intel/incremental-updater.ts` (7A.4)\n  2. `/Users/apple/hivemind-plugin/src/lib/code-intel/watch-integration.ts` (7A.5)\n- **DO NOT touch:** tree-sitter-loader.ts, compressed-codemap.ts, signature-extractor.ts, gitignore-filter.ts, any test files, any other files\n\n### Important: Current File States\n\n**incremental-updater.ts** (195 LOC):\n- Constructor: `constructor(projectRoot: string)` — only takes projectRoot\n- `updateFile(codemap: CodeMap, filePath: string): Promise<UpdateResult>` — no CompressedCodemap param\n- `removeFile(codemap: CodeMap, filePath: string): Promise<UpdateResult>` — no CompressedCodemap param\n- `signatureDelta` is hardcoded to `0` at lines 98, 116, and 149\n- Imports: `readFile`, `stat`, `createHash`, `join`, `countTokens`, `hasSecrets`, `getSecretTypes`, `detectLanguage`, `CodeMap`, `CodeMapEntry`\n\n**watch-integration.ts** (241 LOC):\n- `startWatchIntegration(projectRoot, codemap, options)` — creates `new IncrementalUpdater(projectRoot)` at line 79\n- Calls `updater.removeFile(codemap, relativePath)` at line 117\n- Calls `updater.updateFile(codemap, relativePath)` at line 132\n- Calls `updater.updateFile(codemap, filePath)` at line 210 (in rescanAll)\n- Imports: `IncrementalUpdater` from `./incremental-updater.js`\n\n**compressed-codemap.ts exports you'll need:**\n- `compressSingleFile(filePath: string, projectRoot: string, language: string, treeSitter?: TreeSitterInstance | null): Promise<CompressedFileInfo | null>`\n- `computeCompressionRatio(original: number, compressed: number): number`\n- `type CompressedCodemap` — has fields: `files: CompressedFileInfo[]`, `totalTokens`, `originalTotalTokens`, `compressionRatio`\n- `type CompressedFileInfo` — has fields: `path`, `hash`, `extension`, `tokenCount`, `originalTokenCount`, `signatures`, `imports`, `exports`\n\n**tree-sitter-loader.ts exports:**\n- `type TreeSitterInstance` — has method `parse(content: string, language: string): TreeSitterNode | null`\n\n### Step 7A.4: Fix IncrementalUpdater (incremental-updater.ts)\n\n1. **Add imports** at the top of the file:\n```typescript\nimport { compressSingleFile, computeCompressionRatio, type CompressedCodemap } from \"./compressed-codemap.js\"\nimport type { TreeSitterInstance } from \"./tree-sitter-loader.js\"\n```\n\n2. **Update constructor** to accept optional TreeSitterInstance:\n```typescript\nexport class IncrementalUpdater {\n  private projectRoot: string\n  private listeners: UpdateListener[] = []\n  private treeSitter: TreeSitterInstance | null\n\n  constructor(projectRoot: string, treeSitter: TreeSitterInstance | null = null) {\n    this.projectRoot = projectRoot\n    this.treeSitter = treeSitter\n  }\n```\n\n3. **Update `updateFile()` signature** to accept optional CompressedCodemap:\n```typescript\nasync updateFile(\n  codemap: CodeMap,\n  filePath: string,\n  compressedCodemap?: CompressedCodemap | null,\n): Promise<UpdateResult>\n```\n\n4. **Add AST state sync logic** inside `updateFile()`. AFTER the existing codemap stat updates (after the line `codemap.totalSize = codemap.files.reduce(...)` around line 110), and BEFORE the `const result: UpdateResult = {` line (around line 112), add:\n```typescript\n    // Phase 7 AST State Sync — patch CompressedCodemap synchronously\n    let signatureDelta = 0\n    if (compressedCodemap && newEntry) {\n      const compIndex = compressedCodemap.files.findIndex(f => f.path === filePath)\n      const oldCompEntry = compIndex >= 0 ? compressedCodemap.files[compIndex] : null\n\n      const newCompEntry = await compressSingleFile(\n        filePath, this.projectRoot, newEntry.language, this.treeSitter\n      )\n\n      if (newCompEntry) {\n        signatureDelta = newCompEntry.signatures.length - (oldCompEntry?.signatures.length || 0)\n        if (compIndex >= 0) {\n          compressedCodemap.files[compIndex] = newCompEntry\n        } else {\n          compressedCodemap.files.push(newCompEntry)\n        }\n      }\n\n      // Recompute compressed stats\n      compressedCodemap.totalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.tokenCount, 0)\n      compressedCodemap.originalTotalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.originalTokenCount, 0)\n      if (compressedCodemap.originalTotalTokens > 0) {\n        compressedCodemap.compressionRatio = computeCompressionRatio(\n          compressedCodemap.originalTotalTokens, compressedCodemap.totalTokens\n        )\n      }\n    }\n```\n\n5. **Update ALL `signatureDelta: 0` occurrences** in updateFile to use the computed `signatureDelta` variable instead. There are two places:\n   - The early-return \"no actual change\" case (around line 98) — this should remain `signatureDelta: 0` since no change happened\n   - The final `result` object (around line 116) — change to `signatureDelta,` (using the computed variable)\n\n6. **Update `removeFile()` signature** similarly:\n```typescript\nasync removeFile(\n  codemap: CodeMap,\n  filePath: string,\n  compressedCodemap?: CompressedCodemap | null,\n): Promise<UpdateResult>\n```\n\nAnd add CompressedCodemap handling in removeFile:\n```typescript\n    // Phase 7 — remove from CompressedCodemap too\n    let signatureDelta = 0\n    if (compressedCodemap) {\n      const compIndex = compressedCodemap.files.findIndex(f => f.path === filePath)\n      if (compIndex >= 0) {\n        signatureDelta = -compressedCodemap.files[compIndex].signatures.length\n        compressedCodemap.files.splice(compIndex, 1)\n        compressedCodemap.totalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.tokenCount, 0)\n        compressedCodemap.originalTotalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.originalTokenCount, 0)\n        if (compressedCodemap.originalTotalTokens > 0) {\n          compressedCodemap.compressionRatio = computeCompressionRatio(\n            compressedCodemap.originalTotalTokens, compressedCodemap.totalTokens\n          )\n        }\n      }\n    }\n```\nAnd update the result's `signatureDelta: 0` to use the computed variable.\n\n**IMPORTANT:** The `compressedCodemap` parameter is OPTIONAL (`?`), so existing callers (tests, watch-integration) still work without passing it.\n\n### Step 7A.5: Update Watch Integration (watch-integration.ts)\n\n1. **Add import** for CompressedCodemap type:\n```typescript\nimport type { CompressedCodemap } from \"./compressed-codemap.js\"\nimport type { TreeSitterInstance } from \"./tree-sitter-loader.js\"\n```\n\n2. **Update `startWatchIntegration` signature** to accept optional CompressedCodemap and TreeSitterInstance:\n```typescript\nexport function startWatchIntegration(\n  projectRoot: string,\n  codemap: CodeMap,\n  options: WatchIntegrationOptions = {},\n  compressedCodemap?: CompressedCodemap | null,\n  treeSitter?: TreeSitterInstance | null,\n): WatchIntegration {\n```\n\n3. **Update IncrementalUpdater construction** (line 79):\n```typescript\nconst updater = new IncrementalUpdater(projectRoot, treeSitter ?? null)\n```\n\n4. **Update ALL updater calls** to pass compressedCodemap:\n- Line 117: `await updater.removeFile(codemap, relativePath, compressedCodemap)` \n- Line 132: `await updater.updateFile(codemap, relativePath, compressedCodemap)`\n- Line 210: `await updater.updateFile(codemap, filePath, compressedCodemap)`\n\n### Verification\nAfter ALL changes, run these commands and report EXACT output:\n1. `npx tsc --noEmit 2>&1 | tail -10` — MUST show 0 errors\n2. `npm test 2>&1 | tail -10` — MUST show 194 pass, 0 fail\n3. `npx tsx --test tests/code-intel/phase2-incremental-updater.test.ts 2>&1 | tail -15` — check updater tests\n4. `npx tsx --test tests/code-intel/phase2-watch-integration.test.ts 2>&1 | tail -15` — check watch tests\n\nIf tests fail, read the test file, understand what it expects, and fix the implementation. The key constraint is: all new parameters are OPTIONAL, so existing tests that call `updateFile(codemap, filePath)` without compressedCodemap must still work identically.\n\n### Return Format\nReturn:\n- outcome: \"success\" | \"partial\" | \"failure\"\n- findings: What changed, any issues encountered\n- files_changed: List of files modified with summary\n- verification_output: Exact output of all 4 verification commands\n- any_tsc_errors: true/false\n- any_test_failures: true/false\n"
     }
   ],
-  "offtrack_todo_pending": [
-    {
-      "id": "d5cbdd6f-a1bd-41cb-86dc-334f926aae3a",
-      "content": "Reviewed pending task: inspect src/lib/auto-commit.ts and report AUTO_COMMIT_TOOLS set; evidence captured from line 18.",
-      "created_at": 1772043443274,
-      "source": "hivemind_session_memory",
-      "status": "resolved"
-    },
-    {
-      "id": "0a9c56f6-f156-4304-8cb6-d7db31079a29",
-      "content": "please resume from this \"Goal\nImplement Phase 1 and Phase 2 refactor in /Users/apple/hivemind-plugin to:\n- remove legacy pathing/fallback behavior from runtime paths,\n- remove session export-hoarding artifacts on close/compaction/split flows,\n- enforce deterministic non-date-prefixed session/archive filenames,\n- keep core archiving functional,\n- keep API breakage minimal and compile/test green.\nInstructions\n- Edit only necessary files in src/lib, src/hooks, src/tools, src/cli, and tests if needed.\n- Do not commit.\n- Minimize behavior breakage and preserve existing APIs where reasonable.\n- Verification required: run npx tsc --noEmit and npm test; provide concise outputs.\n- Return format requested: summary bullets, files changed, key evidence path:line, verification output.\n- Session context/hierarchy was actively tracked under the 6-phase refactor trajectory; this task was Phase 1/2 implementation and verification.\nDiscoveries\n- Export-hoard writes were happening in 3 runtime lifecycle places:\n  - src/lib/session-engine.ts (close path),\n  - src/lib/compaction-engine.ts (compaction path),\n  - src/lib/session-split.ts (autosplit path).\n- Legacy path fallback logic was concentrated in src/lib/paths.ts via getEffectivePaths() legacy override branch; this was removed for runtime (now always returns v2 pathing).\n- Deterministic naming update required changing buildSessionFilename/buildArchiveFilename behavior and adjusting tests that expected date-prefixed names.\n- Removing implicit migration from runtime init (initProject) initially caused migration test failures when legacy detection changed; final state preserves legacy detection for explicit migration tooling while runtime path resolution no longer falls back.\n- Tests relying on export artifacts had to be updated to assert absence of export-hoard files.\n- One flaky/over-specific helper assertion (session-lifecycle-helpers) was stabilized after context-output behavior differences.\nAccomplished\n- Completed code refactor for Phase 1/2:\n  - Removed runtime legacy fallback pathing branch.\n  - Removed export-hoard writes from close/compaction/autosplit lifecycle paths.\n  - Switched session/archive filename generation to deterministic session-<id-or-slug>.md style.\n  - Kept archiving functional (single archived session markdown path remains).\n  - Removed implicit migration call from initProject runtime path.\n- Updated tests to reflect new behavior:\n  - deterministic filename expectations,\n  - no export-hoard artifacts,\n  - adjusted helper assertions.\n- Verification status:\n  - npx tsc --noEmit: passed.\n  - npm test: passed with # tests 188, # pass 188, # fail 0 (from saved output file).\n- Work still in progress: none for the Phase 1/2 scope requested.\n- Likely next work: proceed to subsequent refactor phases (memory auto-purge hooks, TaskNode gate hardening, monolith slicing) if requested.\nRelevant files / directories\n- Core implementation files edited:\n  - src/lib/paths.ts\n  - src/lib/session-engine.ts\n  - src/lib/compaction-engine.ts\n  - src/lib/session-split.ts\n  - src/lib/planning-fs.ts\n  - src/cli/init.ts\n- Tests edited for behavior alignment:\n  - tests/paths.test.ts\n  - tests/soft-governance.test.ts\n  - tests/entry-chain.test.ts\n  - tests/integration.test.ts\n  - tests/session-lifecycle-helpers.test.ts\n- Additional files inspected (context/reachability):\n  - src/lib/migrate.ts\n  - src/lib/graph-migrate.ts\n  - src/lib/session-export.ts\n  - src/hooks/compaction.ts\n  - src/tools/hivemind-session.ts\n  - src/tools/hivemind-cycle.ts\n  - src/cli.ts\n  - src/lib/index.ts\n- Verification artifacts:\n  - Test output capture showing final pass: /Users/apple/.local/share/opencode/tool-output/tool_c9619d166001RiwU4V94pLCCcI \" addressing these 6 phases \"AUDIT RESULTS: THE \"KILL / REBUILD\" LIST\nThese core entities violate 3 or more of your integrity criteria and are marked for Immediate Re-architecture/Rebuild.\n\n1. lib/graph-io.ts (Score: 4 Violations)\nViolates #6 (Code Hygiene): At 968 LOC, it is a massive god-object.\n\nViolates #2 (Structural Coherence): It mixes raw filesystem I/O, Zod schema validation, Foreign Key (FK) cross-validation, AND external product logic (buildRalphTaskGraphSnapshot, buildLifecycleLineageSnapshot).\n\nViolates #5 (Flow Governance): It mutates and reconciles stale tasks (reconcileStaleTasks) independently, acting as an orchestrator rather than a pure I/O layer.\n\nVerdict: IMMEDIATE REBUILD & SLICE.\n\n2. lib/paths.ts & lib/planning-fs.ts (Score: 4 Violations)\nViolates #8 (Naming Convention): buildSessionFilename explicitly injects timestamps into filenames: return `${dateStr}-${mode}-${safePart}.md` . The rule explicitly states: \"NO date/timestamps in filenames.\"\n\nViolates #6 (Code Hygiene): planning-fs.ts exceeds the limit at 602 LOC.\n\nViolates #1 (Context Purity): Retains getLegacyPaths() and isLegacyStructure(), keeping legacy v1 flat-file paths alive and poisoning the Graph SOT.\n\nViolates #3 (SOT Compliance): Dumps session files into archive/ in perpetuity instead of condensing them into the upstream trajectory and purging them.\n\nVerdict: IMMEDIATE REBUILD.\n\n3. lib/session-export.ts & tools/hivemind-session-memory.ts (Score: 3 Violations)\nViolates #3 (Session Hand-offs / Memory Lifecycle): session-export.ts dumps .json and .md files into archive/exports/, but there is no automated mechanism to purge this memory once the specific task is resolved. It acts as an append-only log.\n\nViolates #4 (Context-Aided Automation): Exports lack automated recall or self-validation mechanisms.\n\nVerdict: REBUILD & WIRE TO AUTO-PURGE.\n\n4. lib/auto-commit.ts (Score: 2 Violations - Critical)\nViolates #5 (Flow Governance & Atomicity): Currently triggers Git commits based on generic tools: const AUTO_COMMIT_TOOLS = new Set([\"write\", \"edit\", \"bash\"]). The rule states: \"Only tasks and plans are authorized to govern flow and direct integration.\"\n\nVerdict: REFACTOR. Bind atomic commits strictly to Task/Plan materialization.\n\n🛠️ THE REFACTOR PLAN: \"Auto, Callable, Delete\"\nTo achieve your production-ready standard, we will execute the following phased protocol based on the 3 Classes Rule.\n\nPHASE 1: The \"Delete\" Sweep (Purge Dead Weight)\nIf a surface is not an Auto hook, a Callable tool, or a strict SOT library, it is deleted.\n\nNuke Legacy Pathing: Delete lib/migrate.ts, lib/graph-migrate.ts, and remove all getLegacyPaths logic from lib/paths.ts. The v2.9/v3.0 graph SOT is absolute. No more straddling two paradigms.\n\nDelete Hoarding Logic: Remove the behavior in lib/session-export.ts and hooks/compaction.ts that hoards exported .md files indefinitely. Temporary hand-offs must be processed in-memory, parsed to the upstream trajectory, and immediately dropped.\n\nRemove Passive Assets: Any passive templates or workflows not actively wired into hooks/session-lifecycle.ts or auto-loaded via skills must be deleted from the shipped package.\n\nPHASE 2: SOT Compliance & Naming Enforcement (Rules 7 & 8)\nEradicate Timestamped Filenames (lib/paths.ts):\n\nAction: Change buildSessionFilename to output logical, strict naming: .hivemind/planning/sessions/session-<uuid>.md (or slug).\n\nAction: Move all temporal data (created_at, updated_at, staleness_stamp) forcibly into the YAML frontmatter.\n\nHuman-Readable SOT Materialization:\n\nEnsure that SOT artifacts under .hivemind/planning/ (PROJECT, ROADMAP) are written as Markdown files with sectional XML (for context mapping), avoiding raw unreadable JSON blobs where human intervention/readability is required.\n\nPHASE 3: Context Lifecycle & Memory Governance (Rules 1, 3, 4)\nGoal: Economical context consumption. Never ingest the same context twice.\n\nAuto-Purge Transient Memory:\n\nCreate a listener in hooks/event-handler.ts bound to task:resolved / task:complete.\n\nWhen an atomic task completes, the system automatically fetches all SessionMemoryNodes linked to that origin_task_id (classified as discovery, debug, etc.), synthesizes the findings into the Trajectory SOT, and physically unlinks/deletes the transient memory nodes.\n\nStrict TODO-Pending Routing:\n\nIn tools/hivemind-session-memory.ts, if an intention shifts (off-tracking), strictly sequester it in the TODO-Pending state. The messages-transform.ts hook must exclude this from the active context pipeline until the main active task flow is resolved.\n\nPHASE 4: Flow Governance & Atomicity (Rule 5)\nGoal: Only tasks and plans direct flow.\n\nAtomic Git Commits:\n\nRefactor lib/auto-commit.ts and lib/code-intel/knowledge-commits.ts. Remove loose auto-commits attached to generic write tools. Commits must be triggered strictly by the creation, completion, or modification of TaskNodes and PlanNodes, or verified pending changes.\n\nHierarchical Authority (Gatekeeper):\n\nLock down hooks/tool-gate.ts. An action cannot be executed unless it is directly mapped to a valid TaskNode UUID in the SOT.\n\nPHASE 5: First-Turn Determinism (Auto-Orchestration)\nEnforce the Contract (hooks/messages-transform.ts):\n\nThe generateFirstTurnConfirmationBlock exists, but the gate isn't strict enough. Hardcode the requirement that the Assistant must conclude the first turn by presenting the 3 Rationale Options and 4 Output Styles. tool-gate.ts must block execution until BrainState.first_turn_confirmation.confirmed is true.\n\nAuto-Fetch on Start:\n\nIf context is missing on session start, automatically trigger hivexplorer and find-skill (Ultrathink, Brainstorming) before yielding to the user, ensuring the prompt is transformative.\n\nPHASE 6: Slicing the Monoliths (Rule 6)\nNo file over 550 LOC.\n\nShatter lib/graph-io.ts:\n\nsrc/lib/graph/reader.ts (Pure read, Zod parse)\n\nsrc/lib/graph/writer.ts (Atomic writes, file locks)\n\nsrc/lib/graph/fk-validator.ts (Relational integrity checks)\n\nsrc/lib/bridges/ralph-bridge.ts (Move the external UX logic out of core I/O)\n\nShatter lib/planning-fs.ts:\n\nsrc/lib/fs/manifest-resolver.ts\n\nsrc/lib/fs/template-engine.ts\n\nsrc/lib/fs/session-io.ts \"",
-      "created_at": 1772048037526,
-      "source": "messages-transform",
-      "status": "pending"
-    }
-  ]
+  "offtrack_todo_pending": []
 }

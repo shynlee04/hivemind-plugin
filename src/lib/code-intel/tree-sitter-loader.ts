@@ -17,6 +17,8 @@ export interface TreeSitterInstance {
 export interface TreeSitterNode {
   type: string
   text: string
+  startIndex: number
+  endIndex: number
   startPosition: { row: number; column: number }
   endPosition: { row: number; column: number }
   children: TreeSitterNode[]
@@ -93,6 +95,8 @@ function adaptNode(node: any): TreeSitterNode {
   return {
     type: node.type,
     text: node.text,
+    startIndex: node.startIndex,
+    endIndex: node.endIndex,
     startPosition: { row: node.startPosition.row, column: node.startPosition.column },
     endPosition: { row: node.endPosition.row, column: node.endPosition.column },
     isNamed: node.isNamed,

@@ -15,6 +15,8 @@ export interface Signature {
   signature: string
   lineStart: number
   lineEnd: number
+  startIndex: number
+  endIndex: number
   docstring?: string
   parameters?: Parameter[]
   returnType?: string

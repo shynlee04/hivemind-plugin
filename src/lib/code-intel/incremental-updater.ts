@@ -5,7 +5,9 @@ import { join } from "node:path"
 import { countTokens } from "./token-counter.js"
 import { hasSecrets, getSecretTypes } from "./secret-detector.js"
 import { detectLanguage } from "./file-scanner.js"
+import { compressSingleFile, computeCompressionRatio, type CompressedCodemap } from "./compressed-codemap.js"
 import type { CodeMap, CodeMapEntry } from "./codemap-io.js"
+import type { TreeSitterInstance } from "./tree-sitter-loader.js"
 
 // ─── Types ──────────────────────────────────────────────────────────────
 
@@ -24,9 +26,11 @@ export type UpdateListener = (result: UpdateResult) => void
 export class IncrementalUpdater {
   private projectRoot: string
   private listeners: UpdateListener[] = []
+  private treeSitter: TreeSitterInstance | null
 
-  constructor(projectRoot: string) {
+  constructor(projectRoot: string, treeSitter: TreeSitterInstance | null = null) {
     this.projectRoot = projectRoot
+    this.treeSitter = treeSitter
   }
 
   /** Build a new CodeMapEntry for a single file */
@@ -67,7 +71,11 @@ export class IncrementalUpdater {
   }
 
   /** Update a single file in the codemap — returns delta */
-  async updateFile(codemap: CodeMap, filePath: string): Promise<UpdateResult> {
+  async updateFile(
+    codemap: CodeMap,
+    filePath: string,
+    compressedCodemap?: CompressedCodemap | null,
+  ): Promise<UpdateResult> {
     const existingIndex = codemap.files.findIndex((f) => f.filePath === filePath)
     const oldEntry = existingIndex >= 0 ? codemap.files[existingIndex] : null
     const newEntry = await this.buildEntry(filePath)
@@ -109,11 +117,44 @@ export class IncrementalUpdater {
     codemap.totalTokens = codemap.files.reduce((sum, f) => sum + f.tokenCount, 0)
     codemap.totalSize = codemap.files.reduce((sum, f) => sum + f.size, 0)
 
+    // Phase 7 AST State Sync — patch CompressedCodemap synchronously
+    let signatureDelta = 0
+    if (compressedCodemap && newEntry) {
+      const compIndex = compressedCodemap.files.findIndex((f) => f.path === filePath)
+      const oldCompEntry = compIndex >= 0 ? compressedCodemap.files[compIndex] : null
+
+      const newCompEntry = await compressSingleFile(
+        filePath,
+        this.projectRoot,
+        newEntry.language,
+        this.treeSitter,
+      )
+
+      if (newCompEntry) {
+        signatureDelta = newCompEntry.signatures.length - (oldCompEntry?.signatures.length || 0)
+        if (compIndex >= 0) {
+          compressedCodemap.files[compIndex] = newCompEntry
+        } else {
+          compressedCodemap.files.push(newCompEntry)
+        }
+      }
+
+      // Recompute compressed stats
+      compressedCodemap.totalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.tokenCount, 0)
+      compressedCodemap.originalTotalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.originalTokenCount, 0)
+      if (compressedCodemap.originalTotalTokens > 0) {
+        compressedCodemap.compressionRatio = computeCompressionRatio(
+          compressedCodemap.originalTotalTokens,
+          compressedCodemap.totalTokens,
+        )
+      }
+    }
+
     const result: UpdateResult = {
       filePath,
       changeType,
       tokenDelta,
-      signatureDelta: 0, // Phase 2 will populate when signatures are extracted
+      signatureDelta,
       timestamp: new Date().toISOString(),
     }
 
@@ -130,9 +171,14 @@ export class IncrementalUpdater {
   }
 
   /** Remove a file from the codemap */
-  async removeFile(codemap: CodeMap, filePath: string): Promise<UpdateResult> {
+  async removeFile(
+    codemap: CodeMap,
+    filePath: string,
+    compressedCodemap?: CompressedCodemap | null,
+  ): Promise<UpdateResult> {
     const existingIndex = codemap.files.findIndex((f) => f.filePath === filePath)
     let tokenDelta = 0
+    let signatureDelta = 0
 
     if (existingIndex >= 0) {
       tokenDelta = -codemap.files[existingIndex].tokenCount
@@ -142,11 +188,28 @@ export class IncrementalUpdater {
       codemap.totalSize = codemap.files.reduce((sum, f) => sum + f.size, 0)
     }
 
+    // Phase 7 — remove from CompressedCodemap too
+    if (compressedCodemap) {
+      const compIndex = compressedCodemap.files.findIndex((f) => f.path === filePath)
+      if (compIndex >= 0) {
+        signatureDelta = -compressedCodemap.files[compIndex].signatures.length
+        compressedCodemap.files.splice(compIndex, 1)
+        compressedCodemap.totalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.tokenCount, 0)
+        compressedCodemap.originalTotalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.originalTokenCount, 0)
+        if (compressedCodemap.originalTotalTokens > 0) {
+          compressedCodemap.compressionRatio = computeCompressionRatio(
+            compressedCodemap.originalTotalTokens,
+            compressedCodemap.totalTokens,
+          )
+        }
+      }
+    }
+
     const result: UpdateResult = {
       filePath,
       changeType: "deleted",
       tokenDelta,
-      signatureDelta: 0,
+      signatureDelta,
       timestamp: new Date().toISOString(),
     }
 
