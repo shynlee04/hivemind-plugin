@@ -976,7 +976,7 @@ Release gate = typecheck + tests + evidence review
 ### Commentary
 The section above intentionally prioritizes deterministic interfaces and explicit ownership because chain quality degrades quickly when policy and mutation concerns are mixed. Bridge definitions are therefore written as enforceable contracts rather than informal integration notes.
 
-## Glossary
+### Glossary
 - Chain: Ordered sequence of decisions and operations from intent to evidence.
 - Bridge: Contract boundary that links layers without leaking authority.
 - Hard gate: Deterministic block for critical policy violations.
@@ -984,5 +984,5 @@ The section above intentionally prioritizes deterministic interfaces and explici
 - Human gate: Explicit confirmation requirement for high-risk operations.
 - CQRS: Command/query separation where tools mutate and hooks contextualize.
 
-## Closing Note
+### Closing Note
 This architecture specification is designed for repeatable execution under governance pressure. When updates are required, keep section numbering stable, preserve evidence anchors, and refresh validation details from current code before asserting readiness.
