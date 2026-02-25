@@ -185,14 +185,32 @@
             "id": "a_560825022026",
             "level": "action",
             "content": "Implement docs/CHAIN-BRIDGE-ARCHITECTURE.md with evidence from required framework docs and sync-assets code paths",
-            "status": "active",
+            "status": "pending",
             "created": 1771984598374,
             "stamp": "560825022026",
+            "children": []
+          },
+          {
+            "id": "a_050925022026",
+            "level": "action",
+            "content": "External review of docs/CHAIN-BRIDGE-ARCHITECTURE.md for structural compliance and evidence-backed verdict",
+            "status": "pending",
+            "created": 1771985151056,
+            "stamp": "050925022026",
+            "children": []
+          },
+          {
+            "id": "a_070925022026",
+            "level": "action",
+            "content": "Auto-realign /hivefiver research turn to preserve active external review scope and produce routing output.",
+            "status": "active",
+            "created": 1771985253713,
+            "stamp": "070925022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_560825022026"
+  "cursor": "a_070925022026"
 }
