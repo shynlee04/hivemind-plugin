@@ -1,5 +1,5 @@
 import { existsSync } from "fs"
-import { readdir, mkdir, writeFile } from "fs/promises"
+import { readdir, writeFile } from "fs/promises"
 import { join } from "path"
 import { randomUUID } from "crypto"
 import { saveAnchors } from "./anchors.js"
@@ -21,7 +21,6 @@ import {
 import {
   archiveSession,
   generateIndexMd,
-  getExportDir,
   initializePlanningDirectory,
   instantiateSession,
   listArchives,
@@ -32,7 +31,7 @@ import {
 } from "./planning-fs.js"
 import { buildSessionFilename, getEffectivePaths } from "./paths.js"
 import { createStateManager, loadConfig } from "./persistence.js"
-import { generateExportData, generateJsonExport, generateMarkdownExport, loadSession } from "./session-export.js"
+import { loadSession } from "./session-export.js"
 import {
   createBrainState,
   generateSessionId,
@@ -193,7 +192,7 @@ export async function startSession(directory: string, options: SessionOptions): 
   state = resetComplexityNudge(state)
   await stateManager.save(state)
 
-  const sessionFileName = buildSessionFilename(now, mode, focus)
+  const sessionFileName = buildSessionFilename(sessionId, mode, focus)
   const hierarchyBody = toActiveMdBody(tree)
   const sessionContent = instantiateSession({
     sessionId: state.session.id,
@@ -425,19 +424,6 @@ export async function closeSession(directory: string, summary?: string): Promise
     summary ||
     `Session ${sessionId}: ${state.metrics.turn_count} turns, ${state.metrics.files_touched.length} files`
   await updateIndexMd(directory, summaryLine)
-
-  try {
-    const exportData = generateExportData(state, summaryLine)
-    const exportDir = getExportDir(directory)
-    await mkdir(exportDir, { recursive: true })
-    const stamp = new Date().toISOString().split("T")[0]
-    const baseName = `session_${stamp}_${sessionId}`
-
-    await writeFile(join(exportDir, `${baseName}.json`), generateJsonExport(exportData))
-    await writeFile(join(exportDir, `${baseName}.md`), generateMarkdownExport(exportData, activeMd.body))
-  } catch {
-    // Non-fatal export failure.
-  }
 
   if (treeExists(directory)) {
     const tree = await loadTree(directory)

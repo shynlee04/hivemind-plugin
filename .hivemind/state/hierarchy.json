@@ -1,135 +1,60 @@
 {
   "version": 1,
   "root": {
-    "id": "t_022325022026",
+    "id": "t_150126022026",
     "level": "trajectory",
-    "content": "SCOPE PIVOT: From Session 4 post-commit wiring → Full framework refactor planning. User wants consolidated roadmap covering: task hierarchy with relational metadata, trajectory auto-exports, brain/state refactor, planning hierarchy, configs/profiles, code-intel completion, specialized tools, session intelligence (auto-new-session, improved compact, context-doctor), and OpenTUI sidecar dashboard.",
+    "content": "Execute full 6-phase refactor: Auto/Callable/Delete, SOT naming compliance, lifecycle purge, gate hardening, first-turn determinism, monolith slicing",
     "status": "active",
-    "created": 1772035377877,
-    "stamp": "022325022026",
+    "created": 1772043320873,
+    "stamp": "150126022026",
     "children": [
       {
-        "id": "tc_032325022026",
+        "id": "tc_150126022026",
         "level": "tactic",
-        "content": "Session 5 Phase 1: DEEP INVESTIGATION — Parallel scan of (1) planning-draft docs, (2) src/ architecture domains, (3) OpenCode SDK capabilities via DeepWiki, (4) commands/skills/workflows/templates ecosystem. Synthesize findings into consolidated audit before any roadmap creation.",
+        "content": "Sequentially delegate implementation by dependency layers: delete legacy pathing/export hoarding, enforce naming/SOT, add memory auto-purge hooks, gate by TaskNode, then split monoliths with compatibility wrappers",
         "status": "active",
-        "created": 1772035405081,
-        "stamp": "032325022026",
+        "created": 1772043328161,
+        "stamp": "150126022026",
         "children": [
           {
-            "id": "a_032325022026",
+            "id": "a_170126022026",
             "level": "action",
-            "content": "Dispatching 4 parallel research agents to scan: (1) planning-draft docs, (2) src/ architecture, (3) OpenCode SDK via DeepWiki, (4) external ecosystem (commands/skills/workflows/templates). Will synthesize findings before any planning.",
+            "content": "Inspect src/lib/auto-commit.ts and report AUTO_COMMIT_TOOLS set in one sentence.",
+            "status": "pending",
+            "created": 1772043422243,
+            "stamp": "170126022026",
+            "children": []
+          },
+          {
+            "id": "a_180126022026",
+            "level": "action",
+            "content": "Implement Phase 1 and 2 refactor in src/lib and related modules: remove legacy pathing/export-hoard behavior and enforce deterministic session filename naming; then verify with tsc and tests.",
+            "status": "pending",
+            "created": 1772043491778,
+            "stamp": "180126022026",
+            "children": []
+          },
+          {
+            "id": "a_270126022026",
+            "level": "action",
+            "content": "Run TypeScript and test verification after Phase 1/2 refactor changes.",
+            "status": "pending",
+            "created": 1772044023327,
+            "stamp": "270126022026",
+            "children": []
+          },
+          {
+            "id": "a_440126022026",
+            "level": "action",
+            "content": "Phase 1/2 refactor implemented and verified with full TypeScript and test suite.",
             "status": "active",
-            "created": 1772035419934,
-            "stamp": "032325022026",
-            "children": []
-          }
-        ]
-      },
-      {
-        "id": "tc_132325022026",
-        "level": "tactic",
-        "content": "Investigation streams complete: (1) 50 planning docs, (2) 97 src files, (3) SDK patterns, (4) 114 ecosystem files. Synthesizing consolidated roadmap.",
-        "status": "active",
-        "created": 1772036030983,
-        "stamp": "132325022026",
-        "children": [
-          {
-            "id": "a_162325022026",
-            "level": "action",
-            "content": "Created consolidated roadmap at docs/plans/2026-02-25-hivemind-v3-consolidated-roadmap.md with 8 phases, dependency graph, timeline estimate, and quality gates.",
-            "status": "pending",
-            "created": 1772036185642,
-            "stamp": "162325022026",
-            "children": []
-          },
-          {
-            "id": "a_192325022026",
-            "level": "action",
-            "content": "SYNTHESIS: All 4 research agents returned. Planning docs (51 files), src architecture (97 files), SDK capabilities (40+ events verified), ecosystem assets (87 files). Producing consolidated strategic assessment with rewritten hybrid roadmap.",
-            "status": "active",
-            "created": 1772036348834,
-            "stamp": "192325022026",
-            "children": []
-          }
-        ]
-      },
-      {
-        "id": "tc_202325022026",
-        "level": "tactic",
-        "content": "COURSE CORRECTION: Stop producing roadmaps. Start building the framework foundation. User demands: (1) Deep framework knowledge before any changes, (2) Audit all ecosystem assets against 8-point integrity checklist, (3) Study GSD patterns for proper phase-planning structure, (4) Establish SOT documents, (5) Consolidate/purge dead and conflicting assets. Framework-first approach confirmed.",
-        "status": "active",
-        "created": 1772036421017,
-        "stamp": "202325022026",
-        "children": [
-          {
-            "id": "a_202325022026",
-            "level": "action",
-            "content": "Wave 1 DISPATCH: 4 parallel research agents — (A) GSD framework deep study for phase-planning patterns, (B) 8-point integrity audit of all ecosystem assets, (C) .hivemind/.planning/docs SOT state scan, (D) dist+src integrity violations scan. All read-only. Will synthesize into actionable purge/rebuild list.",
-            "status": "active",
-            "created": 1772036455584,
-            "stamp": "202325022026",
-            "children": []
-          }
-        ]
-      },
-      {
-        "id": "tc_472325022026",
-        "level": "tactic",
-        "content": "TRANSITION: Wave 1 research COMPLETE → Wave 2 execution planning. All 4 research agents returned (GSD study, 8-point audit, SOT scan, src integrity). 8 mems saved. Now formulating P0 execution plan for user approval before delegating.",
-        "status": "active",
-        "created": 1772038033061,
-        "stamp": "472325022026",
-        "children": [
-          {
-            "id": "a_482325022026",
-            "level": "action",
-            "content": "P0 WAVE DISPATCH: 3 parallel agents — (A) Fix tasks.json FK violation in .hivemind/state/, (B) Create .planning/phases/ GSD scaffolding, (C) Verify and delete orphan lib files in src/lib/. All touch different directories = parallel-safe.",
-            "status": "pending",
-            "created": 1772038119968,
-            "stamp": "482325022026",
-            "children": []
-          },
-          {
-            "id": "a_020026022026",
-            "level": "action",
-            "content": "P0 WAVE COMPLETE: (A) tasks.json FK fixed ✅, (B) .planning/phases/ scaffolding created ✅, (C) 3 orphans deleted (brownfield-scan.ts, mems.ts, project-scan.ts) ✅. TSC 0 errors, 187/188 tests pass (1 pre-existing). Now dispatching P1 wave: (A) SDK purity violations fix + (C) merge thin alias commands — parallel-safe (different directories).",
-            "status": "pending",
-            "created": 1772038944465,
-            "stamp": "020026022026",
-            "children": []
-          },
-          {
-            "id": "a_140026022026",
-            "level": "action",
-            "content": "Read external tool-output file and extracted TODO-pending queue item IDs with concise summaries for user.",
-            "status": "pending",
-            "created": 1772039679198,
-            "stamp": "140026022026",
-            "children": []
-          },
-          {
-            "id": "a_210026022026",
-            "level": "action",
-            "content": "REALIGNMENT COMPLETE: queued broad umbrella request to TODO-pending, attempted /hivefiver research auto-route, verified mems presence (.hivemind/graph/mems.json exists), reviewed 4 pending queue items. Continued P1-A safely: removed all lib->hooks imports and fixed SDK-boundary violation. Current gate: TSC pass, npm test still 187/188 (pre-existing 1 fail).",
-            "status": "pending",
-            "created": 1772040067964,
-            "stamp": "210026022026",
-            "children": []
-          },
-          {
-            "id": "a_320026022026",
-            "level": "action",
-            "content": "END-USER VALIDATION COMPLETE: ran clean build, npm pack, then installed package tarball in isolated temp project /tmp/hm-e2e-YJ7lE4. Executed non-interactive init + status + settings; .hivemind and .opencode scaffolds created successfully. Noted asset audit warning: 8 missing root/.opencode command assets due thin-alias consolidation.",
-            "status": "active",
-            "created": 1772040743324,
-            "stamp": "320026022026",
+            "created": 1772045042941,
+            "stamp": "440126022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_320026022026"
+  "cursor": "a_440126022026"
 }

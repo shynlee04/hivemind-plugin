@@ -1,6 +1,4 @@
 import { randomUUID } from "crypto"
-import { mkdir, writeFile } from "fs/promises"
-import { join } from "path"
 import { loadConfig, createStateManager } from "./persistence.js"
 import {
   readActiveMd,
@@ -8,13 +6,7 @@ import {
   updateIndexMd,
   resetActiveMd,
   listArchives,
-  getExportDir,
 } from "./planning-fs.js"
-import {
-  generateExportData,
-  generateJsonExport,
-  generateMarkdownExport,
-} from "./session-export.js"
 import { addGraphMem } from "./graph-io.js"
 import { createLogger } from "./logging.js"
 import { getEffectivePaths } from "./paths.js"
@@ -318,20 +310,6 @@ export async function executeCompaction(params: ExecuteCompactionParams): Promis
     summary ||
     `Session ${state.session.id}: ${state.metrics.turn_count} turns, ${state.metrics.files_touched.length} files`
   await updateIndexMd(directory, summaryLine)
-
-  try {
-    const exportData = generateExportData(state, summaryLine)
-    const exportDir = getExportDir(directory)
-    await mkdir(exportDir, { recursive: true })
-
-    const timestamp = new Date().toISOString().split("T")[0]
-    const baseName = `session_${timestamp}_${state.session.id}`
-
-    await writeFile(join(exportDir, `${baseName}.json`), generateJsonExport(exportData))
-    await writeFile(join(exportDir, `${baseName}.md`), generateMarkdownExport(exportData, activeMd.body))
-  } catch {
-    // Export failure is non-fatal
-  }
 
   try {
     const nowIso = new Date().toISOString()

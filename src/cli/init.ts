@@ -38,7 +38,6 @@ import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
 import { createStateManager, saveConfig } from "../lib/persistence.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
 import { getEffectivePaths } from "../lib/paths.js"
-import { migrateIfNeeded } from "../lib/migrate.js"
 import { syncOpencodeAssets } from "./sync-assets.js"
 import type { AssetSyncTarget } from "./sync-assets.js"
 import { createTree, saveTree } from "../lib/hierarchy-tree.js"
@@ -568,11 +567,6 @@ export async function initProject(
         log("🔄 Removed existing .hivemind/ directory for fresh init")
       }
     }
-  }
-
-  const migration = await migrateIfNeeded(directory)
-  if (migration.migrated && !options.silent) {
-    log(`🔄 Migrated legacy .hivemind structure (${migration.movedFiles.length} files moved)`)
   }
 
   p = getEffectivePaths(directory)

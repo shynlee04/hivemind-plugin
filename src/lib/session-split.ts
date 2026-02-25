@@ -1,5 +1,3 @@
-import { mkdir, writeFile } from "fs/promises"
-import { join } from "path"
 import type { Logger } from "./logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import type { BrainState } from "../schemas/brain-state.js"
@@ -9,8 +7,6 @@ import {
   MAX_COMPACTION_COUNT,
   shouldCreateNewSession,
 } from "./session-boundary.js"
-import { generateExportData, generateJsonExport, generateMarkdownExport } from "./session-export.js"
-import { getExportDir } from "./planning-fs.js"
 import { createDetectionState, resetGovernanceCounters } from "./detection.js"
 
 type ToastVariant = "info" | "warning" | "error"
@@ -111,22 +107,6 @@ export async function maybeCreateNonDisruptiveSessionSplit(
   }
 
   try {
-    const summary = `Auto split: ${boundary.reason}`
-    const exportData = generateExportData(brain, summary)
-    const exportDir = getExportDir(directory)
-    await mkdir(exportDir, { recursive: true })
-    const stamp = new Date().toISOString().split("T")[0]
-    const baseName = `session_${stamp}_${brain.session.id}_autosplit`
-    const body = [
-      summary,
-      brain.hierarchy.trajectory ? `Trajectory: ${brain.hierarchy.trajectory}` : "",
-      brain.hierarchy.tactic ? `Tactic: ${brain.hierarchy.tactic}` : "",
-      brain.hierarchy.action ? `Action: ${brain.hierarchy.action}` : "",
-    ].filter(Boolean).join("\n")
-
-    await writeFile(join(exportDir, `${baseName}.json`), generateJsonExport(exportData))
-    await writeFile(join(exportDir, `${baseName}.md`), generateMarkdownExport(exportData, body))
-
     const focus =
       brain.hierarchy.action ||
       brain.hierarchy.tactic ||

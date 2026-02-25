@@ -772,9 +772,17 @@ export async function archiveSession(
     ]
     const srcPath = sourceCandidates.find((p) => p && existsSync(p))
 
-    const baseArchiveFileName = safeEntryFile && /^\d{4}-\d{2}-\d{2}-/.test(safeEntryFile)
-      ? safeEntryFile
-      : buildArchiveFilename(new Date(entry.created || Date.now()), entry.mode || "plan_driven", entry.trajectory || "session")
+    const sessionSeed = Array.isArray(entry.session_id)
+      ? (entry.session_id[0] ?? entry.stamp)
+      : (entry.session_id ?? entry.stamp)
+
+    const baseArchiveFileName =
+      safeEntryFile ||
+      buildArchiveFilename(
+        sessionSeed || sessionId,
+        entry.mode || "plan_driven",
+        entry.trajectory || "session",
+      )
 
     let archiveFileName = baseArchiveFileName
     let counter = 1
@@ -811,8 +819,16 @@ export async function archiveSession(
     await writeManifest(projectRoot, manifest)
   } else {
     // Legacy archive
-    const timestamp = new Date().toISOString().split("T")[0];
-    const archiveFile = join(paths.archiveDir, `session_${timestamp}_${sessionId}.md`);
+    const baseArchiveFileName = buildArchiveFilename(sessionId, "plan_driven", "session")
+    let archiveFileName = baseArchiveFileName
+    let counter = 1
+    while (existsSync(join(paths.archiveDir, archiveFileName))) {
+      const ext = extname(baseArchiveFileName)
+      const name = basename(baseArchiveFileName, ext)
+      archiveFileName = `${name}-${counter}${ext}`
+      counter++
+    }
+    const archiveFile = join(paths.archiveDir, archiveFileName)
     await writeFile(
       archiveFile,
       updateSessionFrontmatter(content, {

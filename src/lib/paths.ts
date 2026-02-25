@@ -123,21 +123,22 @@ export interface HivemindPaths {
 }
 
 /**
- * Legacy (v1.x) flat structure paths — for migration detection.
+ * Legacy (v1.x) flat structure paths.
+ * Kept for explicit migration tooling compatibility.
  */
 export interface LegacyPaths {
   root: string
-  brain: string             // .hivemind/brain.json (flat)
-  hierarchy: string         // .hivemind/hierarchy.json (flat)
-  anchors: string           // .hivemind/anchors.json (flat)
-  mems: string              // .hivemind/mems.json (flat)
-  config: string            // .hivemind/config.json (stays same)
-  sessionsDir: string       // .hivemind/sessions/
-  sessionsManifest: string  // .hivemind/sessions/manifest.json
-  archiveDir: string        // .hivemind/sessions/archive/
-  logsDir: string           // .hivemind/logs/
-  templatesDir: string      // .hivemind/templates/
-  sessionTemplate: string   // .hivemind/templates/session.md
+  brain: string
+  hierarchy: string
+  anchors: string
+  mems: string
+  config: string
+  sessionsDir: string
+  sessionsManifest: string
+  archiveDir: string
+  logsDir: string
+  templatesDir: string
+  sessionTemplate: string
 }
 
 // ─── Path Resolution ─────────────────────────────────────────────────
@@ -249,9 +250,10 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
   }
 }
 
+// ─── Structure Detection ─────────────────────────────────────────────
+
 /**
- * Returns the legacy (v1.x) flat structure paths.
- * Used by migration logic to locate files in the old structure.
+ * Returns legacy flat structure paths for explicit migration commands.
  */
 export function getLegacyPaths(projectRoot: string): LegacyPaths {
   const root = join(projectRoot, HIVEMIND_DIR)
@@ -273,16 +275,9 @@ export function getLegacyPaths(projectRoot: string): LegacyPaths {
   }
 }
 
-// ─── Structure Detection ─────────────────────────────────────────────
-
 /**
  * Detects whether the project uses the legacy flat structure.
- * Legacy = brain.json exists at `.hivemind/brain.json` (root level)
- *          AND `state/` subdirectory does NOT exist.
- *
- * Returns false if:
- * - No .hivemind/ exists at all (fresh install, not legacy)
- * - brain.json is inside state/ (already migrated)
+ * Used by explicit migration commands only (runtime pathing no longer branches).
  */
 export function isLegacyStructure(projectRoot: string): boolean {
   const legacy = getLegacyPaths(projectRoot)
@@ -319,28 +314,7 @@ export function hivemindExists(projectRoot: string): boolean {
  * When migration runs (Task 4), files move → isNewStructure() flips → paths auto-update.
  */
 export function getEffectivePaths(projectRoot: string): HivemindPaths {
-  if (isNewStructure(projectRoot)) {
-    return getHivemindPaths(projectRoot)
-  }
-
-  if (!isLegacyStructure(projectRoot)) {
-    // Fresh install or no .hivemind/ yet — use new structure
-    return getHivemindPaths(projectRoot)
-  }
-
-  // Legacy structure detected — return HivemindPaths type with legacy file locations
-  const legacy = getLegacyPaths(projectRoot)
-  const newPaths = getHivemindPaths(projectRoot)
-  return {
-    ...newPaths,
-    // Override state file locations (legacy = flat at root, new = inside state/)
-    brain: legacy.brain,
-    hierarchy: legacy.hierarchy,
-    anchors: legacy.anchors,
-    // Override memory file location (legacy = flat at root, new = inside memory/)
-    mems: legacy.mems,
-    // config stays at root in both structures — no override needed
-  }
+  return getHivemindPaths(projectRoot)
 }
 
 // ─── Security: Session Path Sanitization ────────────────────────────
@@ -420,16 +394,30 @@ export function slugify(text: string, maxLength = 40): string {
  * @returns e.g. "2026-02-13-plan_driven-phase-03-hivemind-reorg.md"
  */
 export function buildSessionFilename(
-  date: string | Date,
+  seed: string | Date,
   mode: string,
   trajectorySlug: string,
 ): string {
-  const dateStr = typeof date === "string"
-    ? date.slice(0, 10)
-    : date.toISOString().slice(0, 10)
-  const slug = slugify(trajectorySlug)
-  const safePart = slug || "session"
-  return `${dateStr}-${mode}-${safePart}.md`
+  void mode
+
+  const safeTrajectory = slugify(trajectorySlug)
+  const isUuidSeed =
+    typeof seed === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(seed)
+
+  const shouldUseSeed =
+    typeof seed === "string" &&
+    !/^\d{4}-\d{2}-\d{2}/.test(seed) &&
+    !seed.includes("T")
+
+  const seededSlug = isUuidSeed
+    ? seed.toLowerCase()
+    : shouldUseSeed
+      ? slugify(seed, 64)
+      : ""
+
+  const safePart = seededSlug || safeTrajectory || "session"
+  return `session-${safePart}.md`
 }
 
 /**
@@ -437,11 +425,11 @@ export function buildSessionFilename(
  * Same format as session filename — archives are just moved session files.
  */
 export function buildArchiveFilename(
-  date: string | Date,
+  seed: string | Date,
   mode: string,
   trajectorySlug: string,
 ): string {
-  return buildSessionFilename(date, mode, trajectorySlug)
+  return buildSessionFilename(seed, mode, trajectorySlug)
 }
 
 // ─── Active Session Resolution ───────────────────────────────────────

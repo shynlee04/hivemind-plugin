@@ -196,7 +196,7 @@ async function test_fullChain() {
     } catch { /* ignore */ }
     assert(archiveFiles.length >= 1, "at least 1 .md archive file exists")
 
-    // Export files exist
+    // Export hoard artifacts are retired
     const exportDir = join(dir, ".hivemind", "sessions", "archive", "exports")
     let exportFiles: string[] = []
     try {
@@ -204,8 +204,8 @@ async function test_fullChain() {
     } catch { /* ignore */ }
     const jsonExports = exportFiles.filter(f => f.endsWith(".json"))
     const mdExports = exportFiles.filter(f => f.endsWith(".md"))
-    assert(jsonExports.length >= 1, "at least 1 .json export file exists")
-    assert(mdExports.length >= 1, "at least 1 .md export file exists")
+    assert(jsonExports.length === 0, "no .json export-hoard artifacts are written on close")
+    assert(mdExports.length === 0, "no .md export-hoard artifacts are written on close")
 
     // Mems have auto-compact entry
     const mems6 = await loadGraphMems(dir)

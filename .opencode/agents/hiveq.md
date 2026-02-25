@@ -15,18 +15,6 @@ tools:
   hivemind_inspect: true
   hivemind_memory: true
   hivemind_hierarchy: true
-permission:
-  command: allow
-  file:
-    write:
-      deny:
-        - "src/**"
-      allow:
-        - "docs/**"
-        - ".hivemind/**"
-    read:
-      allow:
-        - "**"
 ---
 
 # HiveQ — Quality & Verification Agent

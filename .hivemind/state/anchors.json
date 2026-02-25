@@ -1,29 +1,4 @@
 {
-  "anchors": [
-    {
-      "key": "session2-complete",
-      "value": "Session 2 Code-Intel Phase 2 COMPLETE (2026-02-25). 12 source files (2,654 LOC), 10 test files (1,226 LOC), 37/37 tests pass, TSC 0 errors. Branch: feat/v2_9-c-guardrail. Next: commit + Session 3 (Phase 3 cognitive integration).",
-      "created_at": 1772027471981,
-      "session_id": "58a87b13-ea01-4cea-a956-73b16396d8ed"
-    },
-    {
-      "key": "code-intel-architecture",
-      "value": "Architecture doc: docs/plans/2026-02-19-code-intelligence-engine-architecture.md (1355 lines). Phase 1: scanner/filters. Phase 2: tree-sitter+compression+watch. Phase 3: cognitive integration+selective injector+tools+commands. SOT: .hivemind/graph/ structure.",
-      "created_at": 1772027475346,
-      "session_id": "58a87b13-ea01-4cea-a956-73b16396d8ed"
-    },
-    {
-      "key": "session3-complete",
-      "value": "Session 3 Code-Intel Phase 3 COMPLETE (2026-02-25). 15 source files (4,122 LOC), 13 test files (2,036 LOC), 63/63 tests pass, TSC 0 errors. Commit: cc7d3b5. New: selective-injector.ts (230 LOC), pattern-search.ts (191 LOC), knowledge-commits.ts (185 LOC). Extended: cognitive-packer.ts (+27 lines, <source_code> XML). Branch: feat/v2_9-c-guardrail. All 3 phases COMPLETE.",
-      "created_at": 1772029099935,
-      "session_id": "58a87b13-ea01-4cea-a956-73b16396d8ed"
-    },
-    {
-      "key": "session4-complete",
-      "value": "Session 4 COMPLETE + COMMITTED (2026-02-25). Commits: 3d127f1 (9 files, 1196 LOC) + e6957c6 (plugin wiring). Track A: hivemind_codemap tool (316 LOC, 6 actions: scan/compress/status/search/inject/commit). Track B: Q.U.A.N.T. Matrix — ideation-state schema (40 LOC), ideation-engine (170 LOC, 5 dims), hivemind_ideate tool (146 LOC, 2 actions). Assets: creative-ideating-room skill + hivefiver-ideate command. Tests: 24 new (14+10), 87/87 code-intel pass, TSC 0 errors. Plugin entry point wired (src/index.ts). Branch: feat/v2_9-c-guardrail.",
-      "created_at": 1772033090431,
-      "session_id": "58a87b13-ea01-4cea-a956-73b16396d8ed"
-    }
-  ],
+  "anchors": [],
   "version": "1.0.0"
 }

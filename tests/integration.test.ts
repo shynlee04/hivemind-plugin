@@ -685,11 +685,11 @@ async function test_compactSessionGeneratesExportFiles() {
 
     // Step 4: Assert at least 1 .json file exists
     const jsonFiles = exportFiles.filter(f => f.endsWith(".json"))
-    assert(jsonFiles.length >= 1, "at least 1 .json export file exists")
+    assert(jsonFiles.length === 0, "no .json export-hoard artifacts are written")
 
     // Step 5: Assert at least 1 .md file exists
     const mdFiles = exportFiles.filter(f => f.endsWith(".md"))
-    assert(mdFiles.length >= 1, "at least 1 .md export file exists")
+    assert(mdFiles.length === 0, "no .md export-hoard artifacts are written")
 
   } finally {
     await cleanup()

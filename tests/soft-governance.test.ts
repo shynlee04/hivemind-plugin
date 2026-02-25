@@ -16,7 +16,6 @@ import { createSoftGovernanceHook as createRawSoftGovernanceHook, resetToastCool
 import { initSdkContext, resetSdkContext } from "../src/hooks/sdk-context.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
 import { createNode, createTree, setRoot, addChild, markComplete, saveTree } from "../src/lib/hierarchy-tree.js"
-import { getExportDir } from "../src/lib/planning-fs.js"
 import { flushMutations } from "../src/lib/state-mutation-queue.js"
 import { createConfig } from "../src/schemas/config.js"
 import {
@@ -30,7 +29,7 @@ import {
 } from "../src/schemas/brain-state.js"
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { noopLogger, type Logger } from "../src/lib/logging.js"
-import { mkdtemp, readdir, rm } from "fs/promises"
+import { mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
 
@@ -912,8 +911,6 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
   await hook(makeInput("map_context"), makeOutput())
 
   const updated = await sm.load()
-  const exportDir = getExportDir(dir)
-  const exportFiles = await readdir(exportDir)
 
   assert(createCalls.length === 1, "auto split calls session.create once")
   assert(createCalls[0].title.includes("Boundary split"), "auto split title uses active hierarchy focus")
@@ -921,8 +918,6 @@ async function test_auto_split_creates_continuation_session_and_resets_metrics()
   assert((updated?.metrics.turn_count ?? -1) === 0, "auto split resets turn count")
   assert((updated?.metrics.files_touched.length ?? -1) === 0, "auto split clears files_touched")
   assert((updated?.metrics.drift_score ?? -1) === 100, "auto split restores drift score")
-  assert(exportFiles.some((name) => name.includes("_autosplit") && name.endsWith(".json")), "auto split writes autosplit JSON export")
-  assert(exportFiles.some((name) => name.includes("_autosplit") && name.endsWith(".md")), "auto split writes autosplit markdown export")
   assert(toastMessages.some((msg) => msg.includes("Boundary reached.")), "auto split emits continuation toast")
 
   resetSdkContext()

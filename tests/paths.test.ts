@@ -3,10 +3,10 @@
  *
  * Verifies:
  * - getHivemindPaths returns all expected paths under .hivemind/
- * - getLegacyPaths returns old flat structure paths
- * - isLegacyStructure detects old vs new
+ * - getLegacyPaths remains available for explicit migration tooling
+ * - isLegacyStructure still detects legacy layout for explicit migrations
  * - isNewStructure detects migrated structure
- * - buildSessionFilename produces human-readable names
+ * - buildSessionFilename produces deterministic non-date-prefixed names
  * - buildArchiveFilename matches session filename format
  * - slugify handles edge cases
  * - getAllDirectories returns all required dirs
@@ -30,7 +30,6 @@ import {
   STRUCTURE_VERSION,
   HIVEMIND_DIR,
 } from "../src/lib/paths.js"
-import type { HivemindPaths, LegacyPaths } from "../src/lib/paths.js"
 
 // ─── Harness ─────────────────────────────────────────────────────────
 
@@ -167,14 +166,13 @@ async function testIsLegacyStructure() {
   // No .hivemind/ at all — not legacy
   assert(!isLegacyStructure(tmpDir), "empty dir is not legacy")
 
-  // Create legacy structure: brain.json at root, no state/ dir
+  // Legacy structure is still detectable for explicit migration tooling.
   const hivemindDir = join(tmpDir, ".hivemind")
   await mkdir(hivemindDir, { recursive: true })
   await writeFile(join(hivemindDir, "brain.json"), "{}")
-
   assert(isLegacyStructure(tmpDir), "brain.json at root = legacy")
 
-  // Now create state/ dir — no longer legacy
+  // Adding state/ marks new structure and disables legacy detection
   await mkdir(join(hivemindDir, "state"), { recursive: true })
   assert(!isLegacyStructure(tmpDir), "brain.json at root + state/ exists = not legacy")
 }
@@ -235,20 +233,23 @@ async function testBuildSessionFilename() {
   process.stderr.write("\n--- buildSessionFilename ---\n")
 
   const name = buildSessionFilename("2026-02-13", "plan_driven", "Phase 03: .hivemind reorg")
-  assert(name === "2026-02-13-plan_driven-phase-03-hivemind-reorg.md", "full session filename")
+  assert(name === "session-phase-03-hivemind-reorg.md", "date-like seed falls back to trajectory slug")
 
   // Date object
   const dateObj = new Date("2026-01-15T10:30:00Z")
   const name2 = buildSessionFilename(dateObj, "quick_fix", "Fix bug")
-  assert(name2 === "2026-01-15-quick_fix-fix-bug.md", "Date object input")
+  assert(name2 === "session-fix-bug.md", "Date object input uses trajectory slug")
 
   // ISO timestamp string
   const name3 = buildSessionFilename("2026-03-20T14:00:00Z", "exploration", "Research API")
-  assert(name3 === "2026-03-20-exploration-research-api.md", "ISO timestamp input")
+  assert(name3 === "session-research-api.md", "ISO timestamp input uses trajectory slug")
 
   // Empty trajectory falls back to "session"
   const name4 = buildSessionFilename("2026-02-13", "plan_driven", "")
-  assert(name4 === "2026-02-13-plan_driven-session.md", "empty trajectory fallback")
+  assert(name4 === "session-session.md", "empty trajectory fallback")
+
+  const uuidName = buildSessionFilename("f18b3c3a-6f3b-4ff0-a8ef-1d7cc0f6da7a", "plan_driven", "Ignored")
+  assert(uuidName === "session-f18b3c3a-6f3b-4ff0-a8ef-1d7cc0f6da7a.md", "uuid seed is used directly")
 }
 
 async function testBuildArchiveFilename() {
