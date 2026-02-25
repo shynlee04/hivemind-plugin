@@ -45,6 +45,8 @@ import { createHivemindSessionTool,
   createHivemindCycleTool,
   createHivemindContextTool,
   createHivemindSessionMemoryTool,
+  createHivemindCodemapTool,
+  createHivemindIdeateTool,
 } from "./tools/index.js"
 import {
   createSessionLifecycleHook,
@@ -133,6 +135,8 @@ export const HiveMindPlugin: Plugin = async ({
       hivemind_cycle: createHivemindCycleTool(effectiveDir),
       hivemind_context: createHivemindContextTool(effectiveDir),
       hivemind_session_memory: createHivemindSessionMemoryTool(effectiveDir),
+      hivemind_codemap: createHivemindCodemapTool(effectiveDir),
+      hivemind_ideate: createHivemindIdeateTool(effectiveDir),
     },
 
     /**
