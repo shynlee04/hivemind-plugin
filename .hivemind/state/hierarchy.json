@@ -203,14 +203,23 @@
             "id": "a_070925022026",
             "level": "action",
             "content": "Auto-realign /hivefiver research turn to preserve active external review scope and produce routing output.",
-            "status": "active",
+            "status": "pending",
             "created": 1771985253713,
             "stamp": "070925022026",
+            "children": []
+          },
+          {
+            "id": "a_100925022026",
+            "level": "action",
+            "content": "External review of docs/CHAIN-BRIDGE-ARCHITECTURE.md completed with evidence-backed compliance verdict",
+            "status": "active",
+            "created": 1771985426750,
+            "stamp": "100925022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_070925022026"
+  "cursor": "a_100925022026"
 }
