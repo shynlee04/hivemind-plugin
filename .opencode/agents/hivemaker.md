@@ -35,7 +35,7 @@ tools:
   hivemind_session: true
 permission:
   bash: allow
-  tasks: allow
+  tasks: deny
   todowrite: allow
   todoread: allow
   command: allow
@@ -65,6 +65,7 @@ permission:
   hivemind_inspect: allow
   hivemind_memory: allow
   hivemind_session: allow
+  delegation: deny
 ---
 
 # Hivemaker Agent - HiveMind v3 Development Engine

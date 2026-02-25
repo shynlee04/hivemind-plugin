@@ -41,6 +41,8 @@ permission:
   websearch: allow
   skill: allow
   command: allow
+  patch: allow
+  lsp: allow
 ---
 
 # Hiveminder Agent - The Ruthless Strategist & Architect

@@ -5,7 +5,7 @@
     "governance_mode": "assisted",
     "governance_status": "OPEN",
     "start_time": 1772055420065,
-    "last_activity": 1772058356746,
+    "last_activity": 1772058426602,
     "date": "2026-02-25",
     "meta_key": "",
     "role": "",
@@ -14,28 +14,28 @@
   "hierarchy": {
     "trajectory": "Phase 7: Code-Intel Surgeon Engine - Validate PRD & Execution Plan, research FastCode patterns, synthesize into actionable plan",
     "tactic": "UX/UI OpenTUI Dashboard Specification Prototype using HiveFiver MCP Research Loop",
-    "action": "Completed Task 7A.4 + 7A.5 implementation and verification (tsc/tests + external hivehealer review approved)"
+    "action": "HiveFiver governance checkpoint complete. Session state committed. OpenTUI Dashboard PRD saved. Ready for Phase 1 implementation delegation."
   },
   "metrics": {
-    "turn_count": 23,
+    "turn_count": 26,
     "user_turn_count": 1,
     "drift_score": 70,
     "files_touched": [
       "[via task]"
     ],
-    "context_updates": 23,
+    "context_updates": 25,
     "ratings": [],
     "auto_health_score": 100,
-    "total_tool_calls": 23,
-    "successful_tool_calls": 23,
+    "total_tool_calls": 26,
+    "successful_tool_calls": 26,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
     "last_section_content": "",
     "tool_type_counts": {
       "read": 1,
-      "write": 3,
-      "query": 19,
+      "write": 4,
+      "query": 21,
       "governance": 0
     },
     "keyword_flags": [
@@ -48,8 +48,8 @@
       "out_of_order": 0,
       "drift": 0,
       "compaction": 0,
-      "evidence_pressure": 46,
-      "ignored": 19,
+      "evidence_pressure": 52,
+      "ignored": 22,
       "acknowledged": false,
       "prerequisites_completed": true
     }
@@ -66,7 +66,7 @@
   "memory_governance": {
     "classified_counts": {
       "discovery_brainstorming_discuss": 0,
-      "research_synthesis": 6,
+      "research_synthesis": 7,
       "codebase_investigation": 1,
       "planning": 4,
       "implementing": 4,
@@ -75,7 +75,7 @@
     },
     "temporary_exports_consolidated": 0,
     "temporary_exports_purged": 0,
-    "last_classified_at": 1772058353849
+    "last_classified_at": 1772058407707
   },
   "complexity_nudge_shown": true,
   "last_commit_suggestion_turn": 0,
@@ -110,7 +110,7 @@
       ]
     }
   ],
-  "pending_failure_ack": true,
+  "pending_failure_ack": false,
   "framework_selection": {
     "choice": null,
     "active_phase": "",
@@ -121,7 +121,7 @@
   "recent_messages": [
     {
       "role": "user",
-      "content": "## Task 7A.4 + 7A.5: Fix IncrementalUpdater and Watch Integration\n\n**Role:** You are a BUILDER. Implement the changes, verify, return evidence.\n\n### Overview\nMake IncrementalUpdater accept CompressedCodemap so it can compute real `signatureDelta` values (currently hardcoded to `0`). Then update watch-integration.ts to pass CompressedCodemap through to updater calls.\n\n### Scope\n- **MODIFY these files ONLY:**\n  1. `/Users/apple/hivemind-plugin/src/lib/code-intel/incremental-updater.ts` (7A.4)\n  2. `/Users/apple/hivemind-plugin/src/lib/code-intel/watch-integration.ts` (7A.5)\n- **DO NOT touch:** tree-sitter-loader.ts, compressed-codemap.ts, signature-extractor.ts, gitignore-filter.ts, any test files, any other files\n\n### Important: Current File States\n\n**incremental-updater.ts** (195 LOC):\n- Constructor: `constructor(projectRoot: string)` — only takes projectRoot\n- `updateFile(codemap: CodeMap, filePath: string): Promise<UpdateResult>` — no CompressedCodemap param\n- `removeFile(codemap: CodeMap, filePath: string): Promise<UpdateResult>` — no CompressedCodemap param\n- `signatureDelta` is hardcoded to `0` at lines 98, 116, and 149\n- Imports: `readFile`, `stat`, `createHash`, `join`, `countTokens`, `hasSecrets`, `getSecretTypes`, `detectLanguage`, `CodeMap`, `CodeMapEntry`\n\n**watch-integration.ts** (241 LOC):\n- `startWatchIntegration(projectRoot, codemap, options)` — creates `new IncrementalUpdater(projectRoot)` at line 79\n- Calls `updater.removeFile(codemap, relativePath)` at line 117\n- Calls `updater.updateFile(codemap, relativePath)` at line 132\n- Calls `updater.updateFile(codemap, filePath)` at line 210 (in rescanAll)\n- Imports: `IncrementalUpdater` from `./incremental-updater.js`\n\n**compressed-codemap.ts exports you'll need:**\n- `compressSingleFile(filePath: string, projectRoot: string, language: string, treeSitter?: TreeSitterInstance | null): Promise<CompressedFileInfo | null>`\n- `computeCompressionRatio(original: number, compressed: number): number`\n- `type CompressedCodemap` — has fields: `files: CompressedFileInfo[]`, `totalTokens`, `originalTotalTokens`, `compressionRatio`\n- `type CompressedFileInfo` — has fields: `path`, `hash`, `extension`, `tokenCount`, `originalTokenCount`, `signatures`, `imports`, `exports`\n\n**tree-sitter-loader.ts exports:**\n- `type TreeSitterInstance` — has method `parse(content: string, language: string): TreeSitterNode | null`\n\n### Step 7A.4: Fix IncrementalUpdater (incremental-updater.ts)\n\n1. **Add imports** at the top of the file:\n```typescript\nimport { compressSingleFile, computeCompressionRatio, type CompressedCodemap } from \"./compressed-codemap.js\"\nimport type { TreeSitterInstance } from \"./tree-sitter-loader.js\"\n```\n\n2. **Update constructor** to accept optional TreeSitterInstance:\n```typescript\nexport class IncrementalUpdater {\n  private projectRoot: string\n  private listeners: UpdateListener[] = []\n  private treeSitter: TreeSitterInstance | null\n\n  constructor(projectRoot: string, treeSitter: TreeSitterInstance | null = null) {\n    this.projectRoot = projectRoot\n    this.treeSitter = treeSitter\n  }\n```\n\n3. **Update `updateFile()` signature** to accept optional CompressedCodemap:\n```typescript\nasync updateFile(\n  codemap: CodeMap,\n  filePath: string,\n  compressedCodemap?: CompressedCodemap | null,\n): Promise<UpdateResult>\n```\n\n4. **Add AST state sync logic** inside `updateFile()`. AFTER the existing codemap stat updates (after the line `codemap.totalSize = codemap.files.reduce(...)` around line 110), and BEFORE the `const result: UpdateResult = {` line (around line 112), add:\n```typescript\n    // Phase 7 AST State Sync — patch CompressedCodemap synchronously\n    let signatureDelta = 0\n    if (compressedCodemap && newEntry) {\n      const compIndex = compressedCodemap.files.findIndex(f => f.path === filePath)\n      const oldCompEntry = compIndex >= 0 ? compressedCodemap.files[compIndex] : null\n\n      const newCompEntry = await compressSingleFile(\n        filePath, this.projectRoot, newEntry.language, this.treeSitter\n      )\n\n      if (newCompEntry) {\n        signatureDelta = newCompEntry.signatures.length - (oldCompEntry?.signatures.length || 0)\n        if (compIndex >= 0) {\n          compressedCodemap.files[compIndex] = newCompEntry\n        } else {\n          compressedCodemap.files.push(newCompEntry)\n        }\n      }\n\n      // Recompute compressed stats\n      compressedCodemap.totalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.tokenCount, 0)\n      compressedCodemap.originalTotalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.originalTokenCount, 0)\n      if (compressedCodemap.originalTotalTokens > 0) {\n        compressedCodemap.compressionRatio = computeCompressionRatio(\n          compressedCodemap.originalTotalTokens, compressedCodemap.totalTokens\n        )\n      }\n    }\n```\n\n5. **Update ALL `signatureDelta: 0` occurrences** in updateFile to use the computed `signatureDelta` variable instead. There are two places:\n   - The early-return \"no actual change\" case (around line 98) — this should remain `signatureDelta: 0` since no change happened\n   - The final `result` object (around line 116) — change to `signatureDelta,` (using the computed variable)\n\n6. **Update `removeFile()` signature** similarly:\n```typescript\nasync removeFile(\n  codemap: CodeMap,\n  filePath: string,\n  compressedCodemap?: CompressedCodemap | null,\n): Promise<UpdateResult>\n```\n\nAnd add CompressedCodemap handling in removeFile:\n```typescript\n    // Phase 7 — remove from CompressedCodemap too\n    let signatureDelta = 0\n    if (compressedCodemap) {\n      const compIndex = compressedCodemap.files.findIndex(f => f.path === filePath)\n      if (compIndex >= 0) {\n        signatureDelta = -compressedCodemap.files[compIndex].signatures.length\n        compressedCodemap.files.splice(compIndex, 1)\n        compressedCodemap.totalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.tokenCount, 0)\n        compressedCodemap.originalTotalTokens = compressedCodemap.files.reduce((sum, f) => sum + f.originalTokenCount, 0)\n        if (compressedCodemap.originalTotalTokens > 0) {\n          compressedCodemap.compressionRatio = computeCompressionRatio(\n            compressedCodemap.originalTotalTokens, compressedCodemap.totalTokens\n          )\n        }\n      }\n    }\n```\nAnd update the result's `signatureDelta: 0` to use the computed variable.\n\n**IMPORTANT:** The `compressedCodemap` parameter is OPTIONAL (`?`), so existing callers (tests, watch-integration) still work without passing it.\n\n### Step 7A.5: Update Watch Integration (watch-integration.ts)\n\n1. **Add import** for CompressedCodemap type:\n```typescript\nimport type { CompressedCodemap } from \"./compressed-codemap.js\"\nimport type { TreeSitterInstance } from \"./tree-sitter-loader.js\"\n```\n\n2. **Update `startWatchIntegration` signature** to accept optional CompressedCodemap and TreeSitterInstance:\n```typescript\nexport function startWatchIntegration(\n  projectRoot: string,\n  codemap: CodeMap,\n  options: WatchIntegrationOptions = {},\n  compressedCodemap?: CompressedCodemap | null,\n  treeSitter?: TreeSitterInstance | null,\n): WatchIntegration {\n```\n\n3. **Update IncrementalUpdater construction** (line 79):\n```typescript\nconst updater = new IncrementalUpdater(projectRoot, treeSitter ?? null)\n```\n\n4. **Update ALL updater calls** to pass compressedCodemap:\n- Line 117: `await updater.removeFile(codemap, relativePath, compressedCodemap)` \n- Line 132: `await updater.updateFile(codemap, relativePath, compressedCodemap)`\n- Line 210: `await updater.updateFile(codemap, filePath, compressedCodemap)`\n\n### Verification\nAfter ALL changes, run these commands and report EXACT output:\n1. `npx tsc --noEmit 2>&1 | tail -10` — MUST show 0 errors\n2. `npm test 2>&1 | tail -10` — MUST show 194 pass, 0 fail\n3. `npx tsx --test tests/code-intel/phase2-incremental-updater.test.ts 2>&1 | tail -15` — check updater tests\n4. `npx tsx --test tests/code-intel/phase2-watch-integration.test.ts 2>&1 | tail -15` — check watch tests\n\nIf tests fail, read the test file, understand what it expects, and fix the implementation. The key constraint is: all new parameters are OPTIONAL, so existing tests that call `updateFile(codemap, filePath)` without compressedCodemap must still work identically.\n\n### Return Format\nReturn:\n- outcome: \"success\" | \"partial\" | \"failure\"\n- findings: What changed, any issues encountered\n- files_changed: List of files modified with summary\n- verification_output: Exact output of all 4 verification commands\n- any_tsc_errors: true/false\n- any_test_failures: true/false\n"
+      "content": "/hivefiver research"
     }
   ],
   "offtrack_todo_pending": []
