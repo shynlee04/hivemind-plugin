@@ -13,6 +13,10 @@
  * | hivemind_session_memory | scratch, debug_log, research_cache, retro, todo_pending | session memory classification |
  * | hivemind_codemap   | scan, compress, status, search, inject, commit | code intelligence engine        |
  * | hivemind_ideate    | evaluate, validate_schema                      | Q.U.A.N.T. ideation matrix gate |
+ * | hivemind_read_skeleton | extract code skeleton                        | ASTSurgeon.extractSkeleton      |
+ * | hivemind_precision_patch | patch symbol by name                      | ASTSurgeon.patchSymbol          |
+ * | hivemind_mesh_pull  | blast radius + skeleton aggregation           | LSPBridge + ASTSurgeon          |
+ * | hivemind_doc_weaver | patch markdown section by heading             | DocWeaver.patchSection          |
  */
 
 export { createHivemindSessionTool } from "./hivemind-session.js"
@@ -25,3 +29,7 @@ export { createHivemindContextTool } from "./hivemind-context.js"
 export { createHivemindSessionMemoryTool } from "./hivemind-session-memory.js"
 export { createHivemindCodemapTool } from "./hivemind-codemap.js"
 export { createHivemindIdeateTool } from "./hivemind-ideate.js"
+export { createHivemindReadSkeletonTool } from "./hivemind-read-skeleton.js"
+export { createHivemindPrecisionPatchTool } from "./hivemind-precision-patch.js"
+export { createHivemindMeshPullTool } from "./hivemind-mesh-pull.js"
+export { createHivemindDocWeaverTool } from "./hivemind-doc-weaver.js"

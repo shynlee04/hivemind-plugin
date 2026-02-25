@@ -1,16 +1,10 @@
 {
   "anchors": [
     {
-      "key": "phase7-prd-validation",
-      "value": "PRD-PHASE7 verified 2026-02-26: 6/8 claims TRUE. All core flaws confirmed: (1) TreeSitterNode missing startIndex/endIndex, (2) Signature interface missing startIndex/endIndex, (3) signatureDelta hardcoded to 0, (4) gitignore uses __HM_GLOBSTAR__ regex, (5) signature-extractor missing byte offsets, (6) watch-integration missing CompressedCodemap pass-through. Packages NOT installed: magic-string, ignore, remark, unist-util-visit. No surgeon directory exists yet.",
-      "created_at": 1772055927821,
-      "session_id": "29a8148b-96ae-4b26-b4de-a3e0510ff574"
-    },
-    {
-      "key": "phase7-fastcode-patterns",
-      "value": "FastCode research 2026-02-26: 14 patterns extracted. ADOPT: (1) Language caching (already in HiveMind), (2) Byte offset extraction via node.startIndex/endIndex, (3) CodeElement unified schema, (4) Multi-level indexing file→class→function→doc, (5) Read-only tool boundary, (6) Deterministic IDs, (7) Smart pruning for token budget. ADAPT: Confidence loop, code skimming, global maps. AVOID: Full re-index, dual parser, no write tools, regex-based skeleton. Key insight: FastCode has NO incremental updates - HiveMind already superior here.",
-      "created_at": 1772055930691,
-      "session_id": "29a8148b-96ae-4b26-b4de-a3e0510ff574"
+      "key": "phase7a-status-checkpoint",
+      "value": "Phase 7A verified 2026-02-26: 7A.1-7A.6 ALL DONE on disk. 194 pass, 0 tsc, 0 fail. Branch feat/v2_9-c-guardrail. REMAINING: 7A.7 (create phase7-byte-offsets.test.ts, add byte-offset asserts to phase2-compressed-codemap.test.ts, add negation test to gitignore-filter.test.ts). After 7A.7: Layer 1 gate then Layer 2 surgeon engines.",
+      "created_at": 1772059833525,
+      "session_id": "dddb10fb-acc3-4db3-ad18-8610110f9ea2"
     }
   ],
   "version": "1.0.0"

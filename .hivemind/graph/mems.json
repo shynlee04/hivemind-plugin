@@ -192,6 +192,66 @@
       "staleness_stamp": "2026-02-25T22:26:01.769Z",
       "created_at": "2026-02-25T22:26:01.769Z",
       "updated_at": "2026-02-25T22:26:01.769Z"
+    },
+    {
+      "id": "75fd78eb-6c99-45df-8a72-7c210b236b37",
+      "session_id": "dddb10fb-acc3-4db3-ad18-8610110f9ea2",
+      "origin_task_id": null,
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Phase 7A checkpoint: 7A.1-7A.6 verified complete on disk. Remaining 7A.7 tests pending; resumed task after disconnect.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-25T23:03:01.930Z",
+      "created_at": "2026-02-25T23:03:01.930Z",
+      "updated_at": "2026-02-25T23:03:01.930Z"
+    },
+    {
+      "id": "d3afaea5-fef6-4c53-879b-70c5ec0627d7",
+      "session_id": "dddb10fb-acc3-4db3-ad18-8610110f9ea2",
+      "origin_task_id": null,
+      "shelf": "research_cache",
+      "type": "insight",
+      "content": "Entered /hivefiver research phase for Phase 7 after 7B.1 scaffold completion; initiating delegated research on OpenTUI/OpenCode SDK next-action scope with evidence-gated brief output.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-25T23:04:08.146Z",
+      "created_at": "2026-02-25T23:04:08.146Z",
+      "updated_at": "2026-02-25T23:04:08.146Z"
+    },
+    {
+      "id": "b70c278a-ae46-45d7-91bc-1493dcef48dc",
+      "session_id": "dddb10fb-acc3-4db3-ad18-8610110f9ea2",
+      "origin_task_id": null,
+      "shelf": "research",
+      "type": "insight",
+      "content": "Auto-realign run: focus strictly on Phase 7 Code-Intel. Exclude OpenTUI/UXUI ownership per user constraint. Next execution target: Layer 2 surgeon engines after 7A gate verification.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-25T23:08:29.890Z",
+      "created_at": "2026-02-25T23:08:29.890Z",
+      "updated_at": "2026-02-25T23:08:29.890Z"
+    },
+    {
+      "id": "7bee892e-4d1a-457b-9fbf-7acd2ca9b9d8",
+      "session_id": "dddb10fb-acc3-4db3-ad18-8610110f9ea2",
+      "origin_task_id": null,
+      "shelf": "research",
+      "type": "insight",
+      "content": "Layer-2 research findings: remark/unified pipeline uses parse->run->stringify in process(); plugin architecture uses processor.use with merge semantics and frozen processor caveat; unist-util-visit traversal caveats include needing index returns when sibling mutations occur and known bug when replacing node still walks descendants.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-25T23:10:12.959Z",
+      "created_at": "2026-02-25T23:10:12.959Z",
+      "updated_at": "2026-02-25T23:10:12.959Z"
+    },
+    {
+      "id": "e9c2fae0-f67b-4ece-b8a6-4abc2f3357f2",
+      "session_id": "dddb10fb-acc3-4db3-ad18-8610110f9ea2",
+      "origin_task_id": null,
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Implemented Phase 7 Layer 2 surgeon engines (ASTSurgeon, DocWeaver, LSPBridge) and targeted tests with passing typecheck/tests.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-25T23:16:41.921Z",
+      "created_at": "2026-02-25T23:16:41.921Z",
+      "updated_at": "2026-02-25T23:16:41.921Z"
     }
   ]
 }

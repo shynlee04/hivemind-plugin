@@ -24,7 +24,7 @@ type CompressedFileInfo = {
   extension: string
   tokenCount: number
   originalTokenCount: number
-  signatures: Array<{ name: string; type: string; signature: string; exported: boolean }>
+  signatures: Array<{ name: string; type: string; signature: string; exported: boolean; startIndex: number; endIndex: number }>
   imports: string[]
   exports: string[]
 }
@@ -141,6 +141,14 @@ describe("Phase 2 — compressed-codemap: compressSingleFile", () => {
       // Should have found signatures via regex fallback
       assert.ok(result.signatures.length > 0, "should extract at least one signature")
 
+      // Phase 7: Verify byte offset fields exist on signatures
+      for (const sig of result.signatures) {
+        assert.ok(typeof sig.startIndex === "number", `signature ${sig.name} should have startIndex`)
+        assert.ok(typeof sig.endIndex === "number", `signature ${sig.name} should have endIndex`)
+        assert.ok(sig.startIndex >= 0, `signature ${sig.name} startIndex should be >= 0`)
+        assert.ok(sig.endIndex > sig.startIndex, `signature ${sig.name} endIndex > startIndex`)
+      }
+
       // Should have found imports
       assert.ok(result.imports.length > 0, "should extract imports")
       assert.ok(result.imports.some((imp: string) => imp.includes("node:path")), "should find node:path import")
@@ -195,6 +203,8 @@ describe("Phase 2 — compressed-codemap: renderCompressedCodemap", () => {
               type: "function",
               signature: "function main(): void",
               exported: true,
+              startIndex: 0,
+              endIndex: 21,
             },
           ],
           imports: ["node:path", "node:fs"],

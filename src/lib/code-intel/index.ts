@@ -51,3 +51,13 @@ export type { PatternQuery, PatternMatch } from "./pattern-search.js"
 // Phase 3 — Knowledge commits (atomic git commits for code-intel state)
 export { commitKnowledgeState, hasKnowledgeChanged, getLastKnowledgeCommit } from "./knowledge-commits.js"
 export type { KnowledgeCommitOptions, KnowledgeCommitResult, LastKnowledgeCommit } from "./knowledge-commits.js"
+
+// Phase 7 — Surgeon engines
+export { ASTSurgeon } from "./ast-surgeon.js"
+export type { SkeletonMap, PatchResult, ByteRange } from "./ast-surgeon.js"
+
+export { DocWeaver } from "./doc-weaver.js"
+export type { HeadingHierarchy, DocumentChunk } from "./doc-weaver.js"
+
+export { LSPBridge } from "./lsp-bridge.js"
+export type { Reference, Location } from "./lsp-bridge.js"

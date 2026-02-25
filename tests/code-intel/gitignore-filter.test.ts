@@ -38,4 +38,24 @@ describe("Wave 4 Slice 2 RED - gitignore filter primitive", () => {
       await rm(projectRoot, { recursive: true, force: true })
     }
   })
+
+  it("handles negation patterns with the ignore library", async () => {
+    const module = await import(gitignoreFilterModuleHref)
+    const createGitignoreFilter = module.createGitignoreFilter as
+      (projectRoot: string) => { isIgnored: (path: string) => boolean; getPatterns: () => string[] }
+
+    const projectRoot = await mkdtemp(join(tmpdir(), "hm-gitignore-negate-"))
+    try {
+      await writeFile(join(projectRoot, ".gitignore"), "*.log\n!important.log\nbuild/\n", "utf-8")
+
+      const filter = createGitignoreFilter(projectRoot)
+
+      assert.equal(filter.isIgnored("debug.log"), true, "*.log should be ignored")
+      assert.equal(filter.isIgnored("important.log"), false, "!important.log negation should un-ignore")
+      assert.equal(filter.isIgnored("build/output.js"), true, "build/ should be ignored")
+      assert.equal(filter.isIgnored("src/app.ts"), false, "src/ should not be ignored")
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true })
+    }
+  })
 })

@@ -1,253 +1,236 @@
 {
   "version": 1,
   "root": {
-    "id": "t_370426022026",
+    "id": "t_470526022026",
     "level": "trajectory",
-    "content": "Phase 7: Code-Intel Surgeon Engine - Validate PRD & Execution Plan, research FastCode patterns, synthesize into actionable plan",
+    "content": "Phase 7: OpenTUI Dashboard UX/UI - Implement interactive multi-tab terminal dashboard using OpenTUI React Reconciler + OpenCode SDK",
     "status": "active",
-    "created": 1772055420065,
-    "stamp": "370426022026",
+    "created": 1772059663974,
+    "stamp": "470526022026",
     "children": [
       {
-        "id": "tc_370426022026",
+        "id": "tc_470526022026",
         "level": "tactic",
-        "content": "Phase 7 Planning: 3-stream parallel research - (1) Codebase current state scan, (2) FastCode repo deep research, (3) PRD validation against live code",
+        "content": "Phase 1: Core Foundation & SDK Wiring - Scaffolding OpenTUI React project in src/dashboard-v2/",
         "status": "active",
-        "created": 1772055435082,
-        "stamp": "370426022026",
+        "created": 1772059678337,
+        "stamp": "470526022026",
         "children": [
           {
-            "id": "a_380426022026",
+            "id": "a_480526022026",
             "level": "action",
-            "content": "Research HKUDS/FastCode repo: extract tree-sitter patterns, code-intel architecture, agent tools design for Phase 7 Code-Intel Surgeon Engine",
+            "content": "Delegating Task 1.1 to hivemaker: Scaffold OpenTUI React project in src/dashboard-v2/",
             "status": "active",
-            "created": 1772055485221,
-            "stamp": "380426022026",
+            "created": 1772059684369,
+            "stamp": "480526022026",
             "children": []
           }
         ]
       },
       {
-        "id": "tc_440426022026",
+        "id": "tc_500526022026",
         "level": "tactic",
-        "content": "3 research streams complete. Synthesizing findings: PRD 6/8 claims TRUE, FastCode 14 patterns extracted, 15 files inventoried. Moving to synthesis and plan improvement.",
+        "content": "Phase 7 Code-Intel Surgeon Engine: Layer 1 implementation 7A.1-7A.6 ALL DONE on disk. 194 pass, 0 tsc. Only 7A.7 (tests) remains before Layer 1 gate.",
         "status": "active",
-        "created": 1772055875541,
-        "stamp": "440426022026",
+        "created": 1772059830402,
+        "stamp": "500526022026",
         "children": [
           {
-            "id": "a_450426022026",
+            "id": "a_500526022026",
             "level": "action",
-            "content": "Synthesis phase: verifying current codebase health (npm test + tsc) before finalizing plan, then producing improved execution plan document",
-            "status": "pending",
-            "created": 1772055946671,
-            "stamp": "450426022026",
-            "children": []
-          },
-          {
-            "id": "a_460426022026",
-            "level": "action",
-            "content": "Baseline GREEN: 194 tests pass, 0 tsc errors. Now producing improved execution plan incorporating all 3 research streams.",
-            "status": "pending",
-            "created": 1772055990109,
-            "stamp": "460426022026",
-            "children": []
-          },
-          {
-            "id": "a_470426022026",
-            "level": "action",
-            "content": "Producing improved PRD v1.1 and Execution Plan v1.1 incorporating: PRD verification corrections, FastCode patterns, downstream impact analysis",
-            "status": "pending",
-            "created": 1772056036571,
-            "stamp": "470426022026",
-            "children": []
-          },
-          {
-            "id": "a_480426022026",
-            "level": "action",
-            "content": "Writing improved PRD v1.1 and Execution Plan v1.1 with research-validated corrections and FastCode pattern integration",
+            "content": "Dispatching 7A.7: Create phase7-byte-offsets.test.ts + update phase2-compressed-codemap.test.ts + update gitignore-filter.test.ts",
             "status": "active",
-            "created": 1772056098503,
-            "stamp": "480426022026",
+            "created": 1772059844997,
+            "stamp": "500526022026",
             "children": []
           }
         ]
       },
       {
-        "id": "tc_570426022026",
+        "id": "tc_500526022026-1",
         "level": "tactic",
-        "content": "Phase 7 Execution: Layer 1 Foundation Fixes. Baseline GREEN (194 pass, 0 tsc). Installing packages then delegating 7A.1-7A.7 tasks.",
+        "content": "Phase 1 OpenTUI Dashboard UX/UI: Scaffold the Foundation via create-tui",
         "status": "active",
-        "created": 1772056665838,
-        "stamp": "570426022026",
+        "created": 1772059856813,
+        "stamp": "500526022026",
         "children": [
           {
-            "id": "a_580426022026",
+            "id": "a_510526022026",
             "level": "action",
-            "content": "Installing prerequisite packages (magic-string, ignore, remark, unist-util-visit) then delegating Layer 1 tasks to hivemaker agents",
+            "content": "Execute 7B.1: Scaffold OpenTUI React app in src/dashboard-v2 using create-tui",
             "status": "pending",
-            "created": 1772056682733,
-            "stamp": "580426022026",
+            "created": 1772059886269,
+            "stamp": "510526022026",
             "children": []
           },
           {
-            "id": "a_010526022026",
+            "id": "a_560526022026",
             "level": "action",
-            "content": "Implementing Task 7A.1-7A.3 byte-offset propagation in tree-sitter loader, Signature schema, and signature extractor with verification",
+            "content": "7B.1 execution completed - OpenTUI React scaffolded in src/dashboard-v2",
             "status": "pending",
-            "created": 1772056878180,
-            "stamp": "010526022026",
+            "created": 1772060176723,
+            "stamp": "560526022026",
             "children": []
           },
           {
-            "id": "a_080526022026",
+            "id": "a_560526022026-1",
             "level": "action",
-            "content": "Reviewing Task 7A.1-7A.3 byte-offset propagation implementation (review-only, no edits)",
+            "content": "7B.1 execution completed - OpenTUI React scaffolded in src/dashboard-v2",
+            "status": "pending",
+            "created": 1772060191417,
+            "stamp": "560526022026",
+            "children": []
+          },
+          {
+            "id": "a_030626022026",
+            "level": "action",
+            "content": "Run /hivefiver research via delegated subagents; synthesize findings into gated research brief with acceptance criteria.",
             "status": "active",
-            "created": 1772057302518,
-            "stamp": "080526022026",
+            "created": 1772060627703,
+            "stamp": "030626022026",
             "children": []
           }
         ]
       },
       {
-        "id": "tc_100526022026",
+        "id": "tc_030626022026",
         "level": "tactic",
-        "content": "Research and plan OpenTUI dashboard UX/UI specification for OpenCode SDK integration",
+        "content": "Phase 7 research cycle: investigate next actionable scope after 7B.1 scaffold completion, with OpenTUI/OpenCode SDK evidence gathering.",
         "status": "active",
-        "created": 1772057414050,
-        "stamp": "100526022026",
+        "created": 1772060627719,
+        "stamp": "030626022026",
+        "children": []
+      },
+      {
+        "id": "tc_030626022026-1",
+        "level": "tactic",
+        "content": "Phase 7 research cycle: investigate next actionable scope after 7B.1 scaffold completion, with OpenTUI/OpenCode SDK evidence gathering.",
+        "status": "active",
+        "created": 1772060631888,
+        "stamp": "030626022026",
         "children": [
           {
-            "id": "a_100526022026",
+            "id": "a_030626022026-1",
             "level": "action",
-            "content": "Research UX/UI specifications and OpenTUI capabilities to draft the prototype plan for Hivemind's OpenCode sidecar dashboard",
+            "content": "Run /hivefiver research via delegated subagents; synthesize findings into gated research brief with acceptance criteria.",
             "status": "pending",
-            "created": 1772057420803,
-            "stamp": "100526022026",
+            "created": 1772060637129,
+            "stamp": "030626022026",
             "children": []
           },
           {
-            "id": "a_120526022026",
+            "id": "a_050626022026",
             "level": "action",
-            "content": "Completed review of Task 7A.1-7A.3 byte-offset propagation implementation; verdict APPROVED with evidence",
+            "content": "Execute /hivefiver research: gather external evidence for OpenTUI + OpenCode SDK + terminal UX decisions with citations and confidence scoring.",
             "status": "pending",
-            "created": 1772057542968,
-            "stamp": "120526022026",
+            "created": 1772060701339,
+            "stamp": "050626022026",
             "children": []
           },
           {
-            "id": "a_150526022026",
+            "id": "a_090626022026",
             "level": "action",
-            "content": "7A.1-7A.3 + 7A.6 complete. Baseline GREEN (194/0). Now delegating 7A.4 (incremental-updater) + 7A.5 (watch-integration) sequential chain.",
+            "content": "Execute /hivefiver research Layer 2 only: AST surgery (magic-string), markdown weaving (remark + unist-util-visit), and LSP bridge graceful degradation with citations/confidence; explicitly exclude TUI/UXUI topics.",
             "status": "active",
-            "created": 1772057740836,
-            "stamp": "150526022026",
+            "created": 1772060943678,
+            "stamp": "090626022026",
             "children": []
           }
         ]
       },
       {
-        "id": "tc_160526022026",
+        "id": "tc_090626022026",
         "level": "tactic",
-        "content": "UX/UI OpenTUI Dashboard Specification Prototype using HiveFiver MCP Research Loop",
+        "content": "Layer-2 research: AST surgery with magic-string (source transforms, sourcemaps, safe edits)",
         "status": "active",
-        "created": 1772057776250,
-        "stamp": "160526022026",
+        "created": 1772060980976,
+        "stamp": "090626022026",
         "children": [
           {
-            "id": "a_160526022026",
+            "id": "a_090626022026-1",
             "level": "action",
-            "content": "Auto-realign: Running HiveFiver MCP Research Loop to gather UX/UI patterns, OpenTUI integrations, and OpenCode SDK capabilities for the dashboard specification.",
+            "content": "/hivefiver research: collect citation-backed findings on magic-string AST surgery patterns for transforms, sourcemaps, and safe edits",
             "status": "pending",
-            "created": 1772057780852,
-            "stamp": "160526022026",
+            "created": 1772060991583,
+            "stamp": "090626022026",
             "children": []
           },
           {
-            "id": "a_170526022026",
+            "id": "a_100626022026",
             "level": "action",
-            "content": "Implementing Task 7A.4 + 7A.5 in incremental-updater.ts and watch-integration.ts with optional CompressedCodemap wiring",
+            "content": "/hivefiver research: Layer-2 markdown weaving evidence collection using remark + unist-util-visit (pipeline, plugin architecture, caveats).",
             "status": "pending",
-            "created": 1772057845653,
-            "stamp": "170526022026",
+            "created": 1772061014962,
+            "stamp": "100626022026",
             "children": []
           },
           {
-            "id": "a_170526022026-1",
+            "id": "a_110626022026",
             "level": "action",
-            "content": "Reading OpenTUI React reconciler layout patterns and OpenCode SDK event subscription to synthesize PRD structure",
+            "content": "Phase 7 Code-Intel only. Immediate delegation to hivemaker for Layer 2 surgeon engines (7B.1-7B.3) with no sub-delegation.",
             "status": "pending",
-            "created": 1772057853877,
-            "stamp": "170526022026",
+            "created": 1772061104293,
+            "stamp": "110626022026",
             "children": []
           },
           {
-            "id": "a_180526022026",
+            "id": "a_120626022026",
             "level": "action",
-            "content": "Synthesizing Research Insights into OpenTUI Dashboard PRD & Execution Plan",
+            "content": "Implement Layer 2 surgeon engines (ast-surgeon, doc-weaver, lsp-bridge) and targeted tests only, no sub-delegation.",
             "status": "pending",
-            "created": 1772057929689,
-            "stamp": "180526022026",
+            "created": 1772061129567,
+            "stamp": "120626022026",
             "children": []
           },
           {
-            "id": "a_210526022026",
+            "id": "a_160626022026",
             "level": "action",
-            "content": "External code review of Task 7A.4 + 7A.5 in incremental-updater.ts and watch-integration.ts; verify optional params, signatureDelta, compressed stats recalculation, and updater call propagation",
-            "status": "pending",
-            "created": 1772058081658,
-            "stamp": "210526022026",
-            "children": []
-          },
-          {
-            "id": "a_210526022026-1",
-            "level": "action",
-            "content": "UX/UI OpenTUI Dashboard PRD finalized and committed. Moving forward to implementation mapping.",
-            "status": "pending",
-            "created": 1772058118655,
-            "stamp": "210526022026",
-            "children": []
-          },
-          {
-            "id": "a_250526022026",
-            "level": "action",
-            "content": "Auto-realign: Running HiveFiver governance checkpoint and saving critical memory for OpenTUI Dashboard UX/UI specification.",
-            "status": "pending",
-            "created": 1772058337949,
-            "stamp": "250526022026",
-            "children": []
-          },
-          {
-            "id": "a_250526022026-1",
-            "level": "action",
-            "content": "Completed Task 7A.4 + 7A.5 implementation and verification (tsc/tests + external hivehealer review approved)",
-            "status": "pending",
-            "created": 1772058356745,
-            "stamp": "250526022026",
-            "children": []
-          },
-          {
-            "id": "a_260526022026",
-            "level": "action",
-            "content": "Acknowledged prior subagent failure signal; entering /hivefiver research cycle with explicit checkpointing.",
-            "status": "pending",
-            "created": 1772058412795,
-            "stamp": "260526022026",
-            "children": []
-          },
-          {
-            "id": "a_270526022026",
-            "level": "action",
-            "content": "HiveFiver governance checkpoint complete. Session state committed. OpenTUI Dashboard PRD saved. Ready for Phase 1 implementation delegation.",
+            "content": "Implemented Layer 2 surgeon engines and targeted tests; verification complete.",
             "status": "active",
-            "created": 1772058426599,
-            "stamp": "270526022026",
+            "created": 1772061415944,
+            "stamp": "160626022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_190626022026",
+        "level": "tactic",
+        "content": "Phase 7 Code-Intel execution only. Layer 2 surgeon engines implemented and verified (tsc pass, full test suite pass). Next: Layer 3 tool wrappers.",
+        "status": "active",
+        "created": 1772061548884,
+        "stamp": "190626022026",
+        "children": [
+          {
+            "id": "a_190626022026",
+            "level": "action",
+            "content": "Immediate delegation to hivemaker for Phase 7 Layer 3: Code-Intel tool wrappers only (7C.1-7C.5), no sub-delegation.",
+            "status": "pending",
+            "created": 1772061575879,
+            "stamp": "190626022026",
+            "children": []
+          },
+          {
+            "id": "a_200626022026",
+            "level": "action",
+            "content": "Executing Phase 7 Layer 3 Code-Intel tool wrappers (create 4 tools + register in src/tools/index.ts only), no sub-delegation.",
+            "status": "pending",
+            "created": 1772061603331,
+            "stamp": "200626022026",
+            "children": []
+          },
+          {
+            "id": "a_230626022026",
+            "level": "action",
+            "content": "Phase 7 Layer 3 wrappers implemented and verified with tsc/test; guard:public blocked by existing sensitive-path policy state.",
+            "status": "active",
+            "created": 1772061835266,
+            "stamp": "230626022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_270526022026"
+  "cursor": "a_230626022026"
 }

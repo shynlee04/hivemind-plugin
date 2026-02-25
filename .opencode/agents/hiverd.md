@@ -7,7 +7,8 @@ tools:
   glob: true
   grep: true
   bash: true
-  task: true
+  task: false
+  delegation: false
   write: true
   skill: true
   webfetch: true
