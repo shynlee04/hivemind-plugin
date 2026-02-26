@@ -1,4 +1,4 @@
-import { createCliRenderer, TextAttributes } from "@opentui/core";
+import { createCliRenderer } from "@opentui/core";
 import { createRoot } from "@opentui/react";
 import { useEffect, useReducer } from "react";
 import { loadDashboardSnapshot } from "./snapshot.js";
@@ -178,7 +178,7 @@ function MainPanel({ state }: { state: AppState }) {
   if (state.error) {
     return (
       <box flexDirection="column" flexGrow={1}>
-        <text fg="red" attributes={TextAttributes.BOLD}>Dashboard data load failed</text>
+        <text fg="red"><strong>Dashboard data load failed</strong></text>
         <text fg="red">{state.error}</text>
       </box>
     );
@@ -190,12 +190,11 @@ function MainPanel({ state }: { state: AppState }) {
     <box flexDirection="column" flexGrow={1}>
       {trimRows(rows, 24).map((row, index) => (
         <box key={`row-${index}`}>
-          <text 
-            fg={index === 0 ? "cyan" : undefined} 
-            attributes={index === 0 ? TextAttributes.BOLD : undefined}
-          >
-            {row}
-          </text>
+          {index === 0 ? (
+            <text fg="cyan"><strong>{row}</strong></text>
+          ) : (
+            <text>{row}</text>
+          )}
         </box>
       ))}
     </box>
@@ -264,31 +263,26 @@ function App({ renderer }: { renderer: any }) {
   }, [renderer]);
 
   return (
-    <box flexDirection="column" flexGrow={1} padding={1}>
+    <box border borderStyle="rounded" borderColor="blue" paddingX={2} flexDirection="column" flexGrow={1}>
       {/* Header Panel */}
-      <box borderStyle="rounded" borderColor="blue" paddingX={2} paddingY={0}>
-        <box flexDirection="row" justifyContent="space-between" width="100%">
-          <text attributes={TextAttributes.BOLD} fg="cyan">HiveMind OpenTUI Sidecar</text>
-          <text attributes={TextAttributes.DIM} fg="yellow">v2.0.0</text>
-        </box>
+      <box flexDirection="row" width="100%" justifyContent="space-between">
+        <text fg="cyan"><strong>HiveMind OpenTUI Sidecar</strong></text>
+        <text fg="yellow">v2.0.0</text>
       </box>
 
       {/* Main Content Area */}
-      <box flexDirection="row" flexGrow={1} marginTop={1} height={20}>
+      <box flexDirection="row" flexGrow={1} height={20}>
         {/* Navigation Sidebar */}
-        <box width={24} borderStyle="single" borderColor="gray" flexDirection="column" paddingX={1}>
-          <box marginBottom={1}>
-            <text attributes={TextAttributes.BOLD} fg="magenta">MENU</text>
+        <box width={24} border borderStyle="single" borderColor="gray" flexDirection="column">
+          <box>
+            <text fg="magenta"><strong>MENU</strong></text>
           </box>
           {TABS.map((tab, index) => {
             const active = index === state.activeTab;
             return (
               <box key={tab}>
-                <text 
-                  fg={active ? "green" : "gray"} 
-                  attributes={active ? TextAttributes.BOLD : undefined}
-                >
-                  {active ? "▶ " : "  "}{index + 1}. {tab}
+                <text fg={active ? "green" : "gray"}>
+                  {active ? <strong>{"▶ " + (index + 1) + ". " + tab}</strong> : "  " + (index + 1) + ". " + tab}
                 </text>
               </box>
             );
@@ -296,28 +290,24 @@ function App({ renderer }: { renderer: any }) {
         </box>
 
         {/* Content Panel */}
-        <box flexGrow={1} borderStyle="single" borderColor="white" flexDirection="column" paddingX={2} marginLeft={1}>
-          <box marginBottom={1}>
-            <text attributes={TextAttributes.BOLD | TextAttributes.UNDERLINE} fg="cyan">
-              {TABS[state.activeTab]?.toUpperCase() ?? ""}
-            </text>
+        <box flexGrow={1} border borderStyle="single" borderColor="white" flexDirection="column" paddingX={1}>
+          <box>
+            <text fg="cyan"><strong>{TABS[state.activeTab]?.toUpperCase() ?? ""}</strong></text>
           </box>
           <MainPanel state={state} />
         </box>
       </box>
 
       {/* Footer Panel */}
-      <box marginTop={1} borderStyle="rounded" borderColor={state.connected ? "green" : "red"} paddingX={2}>
-        <box flexDirection="row" justifyContent="space-between" width="100%">
+      <box border borderStyle="rounded" borderColor={state.connected ? "green" : "red"}>
+        <box flexDirection="row" width="100%" justifyContent="space-between">
           <box flexDirection="row">
-            <text fg={state.connected ? "green" : "red"} attributes={TextAttributes.BOLD}>
-              ● {state.connected ? "CONNECTED" : "DISCONNECTED"}
+            <text fg={state.connected ? "green" : "red"}>
+              <strong>● {state.connected ? "CONNECTED" : "DISCONNECTED"}</strong>
             </text>
-            <box marginLeft={2}>
-              <text attributes={TextAttributes.DIM}>
-                {state.loading ? "(Syncing...)" : "(Idle)"}
-              </text>
-            </box>
+            <text fg="gray">
+              {state.loading ? " (Syncing...)" : " (Idle)"}
+            </text>
           </box>
           <box>
             <text fg="gray">
