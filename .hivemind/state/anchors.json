@@ -1,10 +1,10 @@
 {
   "anchors": [
     {
-      "key": "phase7a-status-checkpoint",
-      "value": "Phase 7A verified 2026-02-26: 7A.1-7A.6 ALL DONE on disk. 194 pass, 0 tsc, 0 fail. Branch feat/v2_9-c-guardrail. REMAINING: 7A.7 (create phase7-byte-offsets.test.ts, add byte-offset asserts to phase2-compressed-codemap.test.ts, add negation test to gitignore-filter.test.ts). After 7A.7: Layer 1 gate then Layer 2 surgeon engines.",
-      "created_at": 1772059833525,
-      "session_id": "dddb10fb-acc3-4db3-ad18-8610110f9ea2"
+      "key": "dashboard_v2.delegation_constraint",
+      "value": "ABSOLUTE BAN: delegated sub-sessions may NOT delegate further. No sub-of-sub delegation allowed. All delegated outputs (including review/research/context prep) must return directly to main orchestrator session.",
+      "created_at": 1772104049037,
+      "session_id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f"
     }
   ],
   "version": "1.0.0"

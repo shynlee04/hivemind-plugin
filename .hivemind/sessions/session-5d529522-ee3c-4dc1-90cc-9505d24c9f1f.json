@@ -1,0 +1,134 @@
+{
+  "session": {
+    "id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
+    "mode": "plan_driven",
+    "governance_mode": "strict",
+    "governance_status": "OPEN",
+    "start_time": 1772098816533,
+    "last_activity": 1772108699258,
+    "date": "2026-02-26",
+    "meta_key": "",
+    "role": "",
+    "by_ai": true
+  },
+  "hierarchy": {
+    "trajectory": "User demands DEEP investigation - not superficial planning. Must inventory ALL features, functionalities, logics, use-cases, user-journeys of entire HiveMind project including: mouse support, configurations, tabbed-views, diagrams, charts, viewports, reports, planning artifacts, swarm/agent/command/tool management, seeing actions in real-time.",
+    "tactic": "Deep investigation COMPLETE. 8 parallel research agents inventoried ALL project capabilities: 14 tools (37 actions), 8 hooks, 25+ engines, 14 event types, 6 V1 components, 20+ OpenTUI components, 40+ OpenCode APIs, 8 agents. Created comprehensive inventory document at docs/plans/dashboard-v2-comprehensive-inventory-2026-02-26.md with 5-phase atomic execution plan for 10x dashboard improvement.",
+    "action": "W2.1 completed via level-2 execution with deterministic modal gating and independent gate verification passing (dashboard tsc, root tsc, npm test). Ready for W2.2 language toggle lane."
+  },
+  "metrics": {
+    "turn_count": 27,
+    "user_turn_count": 3,
+    "drift_score": 70,
+    "files_touched": [],
+    "context_updates": 27,
+    "ratings": [],
+    "auto_health_score": 100,
+    "total_tool_calls": 27,
+    "successful_tool_calls": 27,
+    "violation_count": 0,
+    "consecutive_failures": 0,
+    "consecutive_same_section": 0,
+    "last_section_content": "",
+    "tool_type_counts": {
+      "read": 3,
+      "write": 6,
+      "query": 18,
+      "governance": 0
+    },
+    "keyword_flags": [
+      "failure",
+      "retry",
+      "loop",
+      "error",
+      "stuck",
+      "confused",
+      "blocked"
+    ],
+    "write_without_read_count": 0,
+    "governance_counters": {
+      "out_of_order": 0,
+      "drift": 0,
+      "compaction": 0,
+      "evidence_pressure": 27,
+      "ignored": 18,
+      "acknowledged": false,
+      "prerequisites_completed": true
+    }
+  },
+  "first_turn_context_injected": false,
+  "first_turn_confirmation": {
+    "required": true,
+    "confirmed": false,
+    "rationale_option": null,
+    "selected_output_style": null,
+    "confirmed_at": null
+  },
+  "selected_output_style_v29": "supportive_discovery",
+  "memory_governance": {
+    "classified_counts": {
+      "discovery_brainstorming_discuss": 0,
+      "research_synthesis": 10,
+      "codebase_investigation": 3,
+      "planning": 1,
+      "implementing": 0,
+      "debug": 1,
+      "test_validation_gatekeeping": 12
+    },
+    "temporary_exports_consolidated": 0,
+    "temporary_exports_purged": 0,
+    "last_classified_at": 1772108688372,
+    "pending_purge": true
+  },
+  "complexity_nudge_shown": true,
+  "last_commit_suggestion_turn": 0,
+  "version": "1.0.0",
+  "next_compaction_report": null,
+  "compaction_count": 2,
+  "last_compaction_time": 1772073153760,
+  "compaction_limit_reached": false,
+  "cycle_log": [
+    {
+      "timestamp": 1772104814366,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_366528620ffeOV8S4GtSM0AQZ2 (for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
+      "failure_detected": false,
+      "failure_keywords": []
+    }
+  ],
+  "pending_failure_ack": false,
+  "framework_selection": {
+    "choice": null,
+    "active_phase": "",
+    "active_spec_path": "",
+    "acceptance_note": "",
+    "updated_at": 0
+  },
+  "recent_messages": [
+    {
+      "role": "user",
+      "content": "THIS WHOLE FUCK OF SESSION IS FOR YOU AS COORDINATOR TO PLAN-EXECUTE-DELEGATE-MONITOR GATEKEEPING THE WHOLE PHASE 8 - THE CONSTRAINTS ARE FOR THE 2ND LEVELS FUCKING SHIT >>>> this also FUCKING means your strategic arrangements from context, research contents, being thoughtful knowing your 2nd-level is constraint and fucking prepare context, and hierarchically arranged and use resource very skillfully ; not consume everything or beating around the bush, something does not need to look into nodes simply `find-skill` look up what skill, there are libraries of them never leave HIVEMAKER WITH clueless mother fucking patching instead of having a high-level context from your prep"
+    },
+    {
+      "role": "user",
+      "content": "fucking following the whole and know how to read"
+    },
+    {
+      "role": "user",
+      "content": "no"
+    },
+    {
+      "role": "user",
+      "content": "THIS WHOLE FUCK OF SESSION IS FOR YOU AS COORDINATOR TO PLAN-EXECUTE-DELEGATE-MONITOR GATEKEEPING THE WHOLE PHASE 8 - THE CONSTRAINTS ARE FOR THE 2ND LEVELS FUCKING SHIT >>>> this also FUCKING means your strategic arrangements from context, research contents, being thoughtful knowing your 2nd-level is constraint and fucking prepare context, and hierarchically arranged and use resource very skillfully ; not consume everything or beating around the bush, something does not need to look into nodes simply `find-skill` look up what skill, there are libraries of them never leave HIVEMAKER WITH clueless mother fucking patching instead of having a high-level context from your prep so have you master phase plan loaded all of the context from high-level"
+    },
+    {
+      "role": "user",
+      "content": "not calling hivefiver"
+    },
+    {
+      "role": "user",
+      "content": "THIS WHOLE FUCK OF SESSION IS FOR YOU AS COORDINATOR TO PLAN-EXECUTE-DELEGATE-MONITOR GATEKEEPING THE WHOLE PHASE 8 - THE CONSTRAINTS ARE FOR THE 2ND LEVELS FUCKING SHIT >>>> this also FUCKING means your strategic arrangements from context, research contents, being thoughtful knowing your 2nd-level is constraint and fucking prepare context, and hierarchically arranged and use resource very skillfully ; not consume everything or beating around the bush, something does not need to look into nodes simply `find-skill` look up what skill, there are libraries of them never leave HIVEMAKER WITH clueless mother fucking patching instead of having a high-level context from your prep so have you master phase plan loaded all of the context from high-level NOT CALLING HIVEFIVER, YOU CAN INSPECT YOURSELF"
+    }
+  ],
+  "offtrack_todo_pending": []
+}

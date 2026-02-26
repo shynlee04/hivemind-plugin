@@ -1,61 +1,62 @@
 {
   "session": {
-    "id": "dddb10fb-acc3-4db3-ad18-8610110f9ea2",
+    "id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
     "mode": "plan_driven",
-    "governance_mode": "assisted",
+    "governance_mode": "strict",
     "governance_status": "OPEN",
-    "start_time": 1772058913025,
-    "last_activity": 1772061835269,
-    "date": "2026-02-25",
+    "start_time": 1772098816533,
+    "last_activity": 1772110751938,
+    "date": "2026-02-26",
     "meta_key": "",
     "role": "",
     "by_ai": true
   },
   "hierarchy": {
-    "trajectory": "Phase 7: OpenTUI Dashboard UX/UI - Implement interactive multi-tab terminal dashboard using OpenTUI React Reconciler + OpenCode SDK",
-    "tactic": "Phase 7 Code-Intel execution only. Layer 2 surgeon engines implemented and verified (tsc pass, full test suite pass). Next: Layer 3 tool wrappers.",
-    "action": "Phase 7 Layer 3 wrappers implemented and verified with tsc/test; guard:public blocked by existing sensitive-path policy state."
+    "trajectory": "User demands DEEP investigation - not superficial planning. Must inventory ALL features, functionalities, logics, use-cases, user-journeys of entire HiveMind project including: mouse support, configurations, tabbed-views, diagrams, charts, viewports, reports, planning artifacts, swarm/agent/command/tool management, seeing actions in real-time.",
+    "tactic": "Deep investigation COMPLETE. 8 parallel research agents inventoried ALL project capabilities: 14 tools (37 actions), 8 hooks, 25+ engines, 14 event types, 6 V1 components, 20+ OpenTUI components, 40+ OpenCode APIs, 8 agents. Created comprehensive inventory document at docs/plans/dashboard-v2-comprehensive-inventory-2026-02-26.md with 5-phase atomic execution plan for 10x dashboard improvement.",
+    "action": "Dispatching W2.3 help-overlay lane: implement `?` key trigger, open/close behavior, conflict handling with modal focus and navigation"
   },
   "metrics": {
-    "turn_count": 34,
-    "user_turn_count": 2,
+    "turn_count": 31,
+    "user_turn_count": 3,
     "drift_score": 70,
-    "files_touched": [
-      "[via task]"
-    ],
-    "context_updates": 34,
+    "files_touched": [],
+    "context_updates": 31,
     "ratings": [],
     "auto_health_score": 100,
-    "total_tool_calls": 34,
-    "successful_tool_calls": 34,
+    "total_tool_calls": 31,
+    "successful_tool_calls": 31,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
     "last_section_content": "",
     "tool_type_counts": {
-      "read": 1,
-      "write": 6,
-      "query": 26,
-      "governance": 1
+      "read": 3,
+      "write": 8,
+      "query": 20,
+      "governance": 0
     },
     "keyword_flags": [
       "failure",
-      "error",
       "retry",
-      "loop"
+      "loop",
+      "error",
+      "stuck",
+      "confused",
+      "blocked"
     ],
     "write_without_read_count": 0,
     "governance_counters": {
       "out_of_order": 0,
       "drift": 0,
       "compaction": 0,
-      "evidence_pressure": 66,
-      "ignored": 29,
+      "evidence_pressure": 31,
+      "ignored": 22,
       "acknowledged": false,
       "prerequisites_completed": true
     }
   },
-  "first_turn_context_injected": true,
+  "first_turn_context_injected": false,
   "first_turn_confirmation": {
     "required": true,
     "confirmed": false,
@@ -67,36 +68,30 @@
   "memory_governance": {
     "classified_counts": {
       "discovery_brainstorming_discuss": 0,
-      "research_synthesis": 6,
-      "codebase_investigation": 8,
-      "planning": 7,
+      "research_synthesis": 11,
+      "codebase_investigation": 3,
+      "planning": 1,
       "implementing": 1,
-      "debug": 2,
-      "test_validation_gatekeeping": 2
+      "debug": 1,
+      "test_validation_gatekeeping": 14
     },
     "temporary_exports_consolidated": 0,
     "temporary_exports_purged": 0,
-    "last_classified_at": 1772061830813
+    "last_classified_at": 1772110739142,
+    "pending_purge": true
   },
   "complexity_nudge_shown": true,
   "last_commit_suggestion_turn": 0,
   "version": "1.0.0",
   "next_compaction_report": null,
-  "compaction_count": 0,
-  "last_compaction_time": 0,
+  "compaction_count": 2,
+  "last_compaction_time": 1772073153760,
   "compaction_limit_reached": false,
   "cycle_log": [
     {
-      "timestamp": 1772059410240,
+      "timestamp": 1772104814366,
       "tool": "task",
-      "output_excerpt": "task_id: ses_36907f2baffe2H9jjID6yByXD3 (for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
-      "failure_detected": false,
-      "failure_keywords": []
-    },
-    {
-      "timestamp": 1772060185167,
-      "tool": "task",
-      "output_excerpt": "task_id: ses_369003797ffeIcWnQYrE5lWGDl (for resuming to continue this task if needed)\n\n<task_result>\n```json\n{\n  \"outcome\": \"success\",\n  \"findings\": \"directory created and dependencies installed. I also added `// @ts-nocheck` to the top of `src/dashboard-v2/src/index.tsx` so the root project's `npx tsc --noEmit` validation succeeds without needing to modify the root `tsconfig.json` constraint.\",\n  \"files_changed\": [\n    \"src/dashboard-v2/.gitignore\",\n    \"src/dashboard-v2/bun.lock\",\n    \"src/da",
+      "output_excerpt": "task_id: ses_366528620ffeOV8S4GtSM0AQZ2 (for resuming to continue this task if needed)\n\n<task_result>\n\n</task_result>",
       "failure_detected": false,
       "failure_keywords": []
     }
@@ -111,8 +106,20 @@
   },
   "recent_messages": [
     {
+      "role": "assistant",
+      "content": "## Goal\n\nOrchestrate **Phase 8** of the HiveMind Dashboard-v2 overhaul as a continuous loop system with strict gate discipline. The user demanded a coordinator-level orchestration pattern where:\n- Main session acts as **ORCHESTRATOR** (plan, delegate, verify, gatekeep)\n- Level-2 subagents act as **BUILDERS** (implement, verify, return evidence)\n- **ABSOLUTE BAN** on sub-of-sub delegation (any delegated session cannot further delegate)\n- All context comes from local `.hivemind/` store and existing plan artifacts — no external research\n\n---\n\n## Instructions\n\n### Critical User Directives\n1. **\"THIS WHOLE FUCK OF SESSION IS FOR YOU AS COORDINATOR TO PLAN-EXECUTE-DELEGATE-MONITOR GATEKEEPING THE WHOLE PHASE 8\"**\n2. **\"THE CONSTRAINTS ARE FOR THE 2ND LEVELS\"** — level-2 builders have constraints, not coordinator\n3. **\"NOT CALLING HIVIVER\"** — do not invoke `/hivefiver` commands\n4. **\"YOU CAN INSPECT YOURSELF\"** — read local files directly, use `find-skills` skill for skill lookups\n5. **\"NEVER LEAVE HIVEMAKER WITH CLUELESS MOTHER FUCKING PATCHING\"** — always prepare high-level context packets before delegating\n\n### Phase 8 Loop Model (from `dashboard-v2-phase8-orchestration-loop-2026-02-26.md`)\n```\nResearch + Context -> Plan -> Validation Design -> Document -> Execute Wave -> Gate Review -> Iterative Retune -> Next Wave\n```\n\n### Wave Catalog\n- **W1** Real-Time Spine (SSE, reconnect, live status) — **COMPLETE**\n- **W2** Interaction Completeness (modal, language toggle, help overlay) — **IN PROGRESS (W2.1✓, W2.2✓, W2.3 pending)**\n- **W3** Observability Surfaces\n- **W4** Resilience and Recovery\n- **W5** End-to-End Readiness\n\n### Coordinator Pattern (MUST FOLLOW)\n```\n1. LOAD high-level context from local artifacts (.hivemind, docs/plans)\n2. PREPARE context packet for level-2 delegation\n3. DELEGATE with explicit: Task, Scope, Return format, Success metric, Acceptance criteria, Constraints, Evidence requirements\n4. INDEPENDENTLY run quality gates (bunx tsc, npx tsc, npm test)\n5. MAKE gate decision (pass/partial/fail)\n6. CONTINUE to next lane\n```\n\n---\n\n## Discoveries\n\n### Dashboard-v2 TypeScript Baseline Issues (Resolved in W1.delta)\n- **TS2339** (165 errors): `box` missing on `JSX.IntrinsicElements` — OpenTUI uses custom JSX namespace\n- **TS2322** (133 errors): `fg` prop typed as DOM/SVG attr — needed `@jsxImportSource @opentui/react`\n- **TS2305** (5 errors): Missing exports from `@opentui/core` / `@opentui/react`\n- **TS2304** (6 errors): `localStorage`/`navigator` missing in TUI runtime — needed guarded access\n- **TS2614** (2 errors): React named export mismatch\n\n### OpenTUI Integration Pattern\n```typescript\n// Correct OpenTUI React imports\nimport * as OpenTUICore from \"@opentui/core\";\nimport * as OpenTUIReact from \"@opentui/react\";\nimport type {} from \"@opentui/react/jsx-runtime\";\nimport React from \"react\";\n```\n\n### Modal Determinism Pattern (W2.1)\n- Use `stateRef` to avoid stale closures in stdin handler\n- Gate global shortcuts when modal is open: `if (state.modal) return;`\n- Submit/cancel both close modal reliably via `finally` block\n\n### Language Toggle Pattern (W2.2)\n- Use `toggleLang(stateRef.current.lang)` for deterministic toggle\n- Wrap `localStorage` access in `try/catch` for non-browser runtime safety\n\n---\n\n## Accomplished\n\n### Completed\n1. ✅ **W1 Execution Packet** — `docs/plans/dashboard-v2-phase8-w1-execution-packet-2026-02-26.md`\n2. ✅ **W1.delta Retune Packet** — `docs/plans/dashboard-v2-phase8-w1-delta-retune-2026-02-26.md`\n3. ✅ **D1-D4 TypeScript Remediation** — Fixed all dashboard-v2 compile errors\n4. ✅ **W1.delta Gate Pass** — All three gates passing (dashboard tsc, root tsc, npm test)\n5. ✅ **W2 Execution Packet** — `docs/plans/dashboard-v2-phase8-w2-execution-packet-2026-02-26.md`\n6. ✅ **W2.1 Modal Determinism** — Modal blocks global keys, submit/cancel both close reliably\n7. ✅ **W2.2 Language Toggle** — `l` key toggles EN↔VI deterministically with persistence\n\n### In Progress\n- **W2.3 Help Overlay Interaction Map** — Ready to dispatch\n\n### Pending\n- W2.4 Mouse path declaration\n- W3 Observability Surfaces\n- W4 Resilience and Recovery\n- W5 End-to-End Readiness\n\n---\n\n## Relevant Files / Directories\n\n### Phase 8 Plan Artifacts\n- `docs/plans/dashboard-v2-phase8-orchestration-loop-2026-02-26.md` — Master Phase 8 loop model\n- `docs/plans/dashboard-v2-phase8-w1-execution-packet-2026-02-26.md` — W1 packet (complete)\n- `docs/plans/dashboard-v2-phase8-w1-delta-retune-2026-02-26.md` — W1.delta packet (complete)\n- `docs/plans/dashboard-v2-phase8-w2-execution-packet-2026-02-26.md` — W2 packet (active)\n- `docs/plans/dashboard-v2-comprehensive-inventory-2026-02-26.md` — Full inventory\n- `docs/plans/dashboard-v2-overhaul-plan-2026-02-26.md` — 5-phase overhaul plan\n\n### Dashboard-v2 Source Files\n- `src/dashboard-v2/src/index.tsx` — Main app, keyboard handlers, modal integration\n- `src/dashboard-v2/src/i18n.ts` — Language toggle, persistence, guarded localStorage\n- `src/dashboard-v2/src/components/InputModal.tsx` — Modal component with deterministic submit/cancel\n- `src/dashboard-v2/src/types.ts` — Type definitions\n- `src/dashboard-v2/src/api.ts` — HTTP + SSE client\n- `src/dashboard-v2/src/snapshot.ts` — Data loading\n\n### HiveMind State Files\n- `.hivemind/state/brain.json` — Session state, metrics, hierarchy projection\n- `.hivemind/state/hierarchy.json` — Decision tree with cursor position\n- `.hivemind/state/anchors.json` — Contains `dashboard_v2.delegation_constraint` anchor\n- `.hivemind/graph/trajectory.json` — Trajectory with active phase/task IDs\n\n### Anchor (IMMUTABLE)\n```json\n{\n  \"key\": \"dashboard_v2.delegation_constraint\",\n  \"value\": \"ABSOLUTE BAN: delegated sub-sessions may NOT delegate further. No sub-of-sub delegation allowed. All delegated outputs (including review/research/context prep) must return directly to main orchestrator session.\"\n}\n```\n\n---\n\n## Next Actions\n\n1. **Dispatch W2.3** (Help Overlay Interaction Map) with same coordinator pattern:\n   - Prepare context packet referencing W2 execution packet\n   - Delegate to level-2 builder with explicit constraints\n   - Define open/close behavior, precedence with modal focus\n   - Run independent gates\n   - Make gate decision\n\n2. **Continue W2.4** (Mouse path declaration) after W2.3\n\n3. **Advance to W3** after W2 complete"
+    },
+    {
       "role": "user",
-      "content": "You are the BUILDER for Phase 7 Code-Intel. Execute Layer 3 now.\n\nHARD CONSTRAINTS:\n- Focus ONLY on Phase 7 Code-Intel.\n- DO NOT touch OpenTUI/UXUI/dashboard files.\n- NO sub-delegation. Do all work yourself.\n\nTask (from execution plan, Layer 3):\nCreate thin tool wrappers and register them.\n\nFiles to CREATE:\n1) `src/tools/hivemind-read-skeleton.ts`\n2) `src/tools/hivemind-precision-patch.ts`\n3) `src/tools/hivemind-mesh-pull.ts`\n4) `src/tools/hivemind-doc-weaver.ts`\n\nFiles to MODIFY:\n5) `src/tools/index.ts` (register/ export new tools)\n6) If needed for imports/types only: `src/lib/code-intel/index.ts` (already updated in Layer 2; avoid changes unless required)\n\nScope boundaries:\n- Do NOT edit other files.\n- If existing tool architecture requires schemas/tool() contracts, follow exact existing patterns in `src/tools/`.\n- Keep each new tool wrapper concise (<150 lines if possible), with Zod input schema + call into Layer 2 libs.\n\nBehavior requirements:\n- `hivemind-read-skeleton`: validate input and call `ASTSurgeon.extractSkeleton`.\n- `hivemind-precision-patch`: validate input and call `ASTSurgeon.patchSymbol`.\n- `hivemind-mesh-pull`: validate input and combine `LSPBridge.getBlastRadius` with skeleton extraction.\n- `hivemind-doc-weaver`: validate input and call `DocWeaver.patchSection`.\n- Must degrade gracefully with clear error objects; no throws escaping tool boundaries.\n\nVerification required:\n1) `npx tsc --noEmit`\n2) `npm test` (full suite)\n3) `npm run guard:public`\n\nAcceptance criteria:\n- All 4 tool files compile and are registered in tool index.\n- Full test suite remains green.\n- Public guard passes.\n\nReturn format:\n- outcome: success|partial|failure\n- files_changed: exact list\n- implementation_summary: 1-2 lines per file\n- verification_output:\n  - tsc output\n  - npm test summary (#tests/#pass/#fail)\n  - guard:public output\n- risks_or_followups\n"
+      "content": "yes please"
+    },
+    {
+      "role": "assistant",
+      "content": "## Session Status Check\n\n**W2.2 Complete** ✅ — Language toggle with deterministic persistence passed all gates.\n\n**Next Lane:** W2.3 Help Overlay Interaction Map\n\nLet me load governance and prepare the W2.3 delegation packet:"
+    },
+    {
+      "role": "assistant",
+      "content": "Good. I have governance loaded and understand W2.3 requirements. Now loading delegation skill and preparing the W2.3 context packet:"
     }
   ],
   "offtrack_todo_pending": []

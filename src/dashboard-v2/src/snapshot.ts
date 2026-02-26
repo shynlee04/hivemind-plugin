@@ -1,6 +1,7 @@
 import { access, readFile, readdir } from "node:fs/promises";
 import { constants } from "node:fs";
 import { join } from "node:path";
+import { apiClient } from "./api.js";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -37,6 +38,13 @@ export interface DashboardSnapshot {
     turnCount: number;
     filesTouched: number;
     updatedAt: string;
+  };
+  server: {
+    connected: boolean;
+    version: string | null;
+    sessions: Array<{ id: string; title?: string; updatedAt?: string }>;
+    agents: Array<{ id: string; name: string; description?: string }>;
+    project: { name: string; path: string } | null;
   };
   pipeline: {
     total: number;
@@ -249,6 +257,29 @@ async function listCodeIntelModules(projectRoot: string): Promise<string[]> {
   }
 }
 
+export async function loadServerData() {
+  const health = await apiClient.checkHealth();
+  const sessions = await apiClient.listSessions();
+  const agents = await apiClient.listAgents();
+  const project = await apiClient.getProject();
+
+  return {
+    connected: health !== null,
+    version: health?.version || null,
+    sessions: sessions.map((s) => ({
+      id: s.id,
+      title: s.title,
+      updatedAt: s.updatedAt,
+    })),
+    agents: agents.map((a) => ({
+      id: a.id,
+      name: a.name,
+      description: a.description,
+    })),
+    project: project,
+  };
+}
+
 export async function loadDashboardSnapshot(projectRoot: string): Promise<DashboardSnapshot> {
   const paths = {
     brain: join(projectRoot, ".hivemind", "state", "brain.json"),
@@ -264,6 +295,7 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
     compressedCodemap: join(projectRoot, ".hivemind", "codemap", "compressed-codemap.json"),
   };
 
+  // Fetch local files AND server data in parallel
   const [
     brain,
     hierarchy,
@@ -277,6 +309,7 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
     compressedCodemap,
     codeIntelModules,
     hasMemoryMemsFile,
+    serverData,
   ] = await Promise.all([
     readJson(paths.brain),
     readJson(paths.hierarchy),
@@ -290,6 +323,7 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
     readJson(paths.compressedCodemap),
     listCodeIntelModules(projectRoot),
     fileExists(paths.memoryMems),
+    loadServerData(), // FIX: Actually fetch server data
   ]);
 
   const brainSession = (brain?.session ?? {}) as JsonRecord;
@@ -353,6 +387,7 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
       filesTouched: Array.isArray(brainMetrics.files_touched) ? (brainMetrics.files_touched as unknown[]).length : 0,
       updatedAt: new Date().toISOString(),
     },
+    server: serverData, // FIX: Use actual server data from loadServerData()
     pipeline,
     hierarchy: {
       lines: hierarchyLines,

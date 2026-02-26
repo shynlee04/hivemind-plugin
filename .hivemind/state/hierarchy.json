@@ -1,236 +1,258 @@
 {
   "version": 1,
   "root": {
-    "id": "t_470526022026",
+    "id": "t_101726022026",
     "level": "trajectory",
-    "content": "Phase 7: OpenTUI Dashboard UX/UI - Implement interactive multi-tab terminal dashboard using OpenTUI React Reconciler + OpenCode SDK",
+    "content": "User demands DEEP investigation - not superficial planning. Must inventory ALL features, functionalities, logics, use-cases, user-journeys of entire HiveMind project including: mouse support, configurations, tabbed-views, diagrams, charts, viewports, reports, planning artifacts, swarm/agent/command/tool management, seeing actions in real-time.",
     "status": "active",
-    "created": 1772059663974,
-    "stamp": "470526022026",
+    "created": 1772100622053,
+    "stamp": "101726022026",
     "children": [
       {
-        "id": "tc_470526022026",
+        "id": "tc_261726022026",
         "level": "tactic",
-        "content": "Phase 1: Core Foundation & SDK Wiring - Scaffolding OpenTUI React project in src/dashboard-v2/",
+        "content": "Deep investigation COMPLETE. 8 parallel research agents inventoried ALL project capabilities: 14 tools (37 actions), 8 hooks, 25+ engines, 14 event types, 6 V1 components, 20+ OpenTUI components, 40+ OpenCode APIs, 8 agents. Created comprehensive inventory document at docs/plans/dashboard-v2-comprehensive-inventory-2026-02-26.md with 5-phase atomic execution plan for 10x dashboard improvement.",
         "status": "active",
-        "created": 1772059678337,
-        "stamp": "470526022026",
+        "created": 1772101582849,
+        "stamp": "261726022026",
         "children": [
           {
-            "id": "a_480526022026",
+            "id": "a_301726022026",
             "level": "action",
-            "content": "Delegating Task 1.1 to hivemaker: Scaffold OpenTUI React project in src/dashboard-v2/",
+            "content": "Research phase COMPLETE. Now entering Planning phase: Create atomic execution plans with validation gates, documentation, guardrails, and iterative loops for Dashboard-v2 overhaul.",
+            "status": "pending",
+            "created": 1772101815499,
+            "stamp": "301726022026",
+            "children": []
+          },
+          {
+            "id": "a_051826022026",
+            "level": "action",
+            "content": "Planning phase kickoff: orchestrate deep code-grounded inventory refresh and produce atomic Dashboard-v2 execution plan with gates, guardrails, docs, and iterative loops.",
+            "status": "pending",
+            "created": 1772103916624,
+            "stamp": "051826022026",
+            "children": []
+          },
+          {
+            "id": "a_071826022026",
+            "level": "action",
+            "content": "Drafting hierarchical Phase 0-9 execution master plan with strict loop model and anti-subdelegation contract.",
+            "status": "pending",
+            "created": 1772104072951,
+            "stamp": "071826022026",
+            "children": []
+          },
+          {
+            "id": "a_201826022026",
+            "level": "action",
+            "content": "User clarified this workstream is Phase 8 and requires strict delegation governance with absolute ban on sub-of-sub delegation. Main session retains orchestration control.",
+            "status": "pending",
+            "created": 1772104854170,
+            "stamp": "201826022026",
+            "children": []
+          },
+          {
+            "id": "a_211826022026",
+            "level": "action",
+            "content": "Executing /hivefiver research for Phase 8 only: produce orchestration architecture loop model and phase9 linkage without delegation or code edits.",
+            "status": "pending",
+            "created": 1772104895922,
+            "stamp": "211826022026",
+            "children": []
+          },
+          {
+            "id": "a_231826022026",
+            "level": "action",
+            "content": "Published dedicated Phase 8 loop architecture artifact with strict anti-subdelegation contract and Phase 9 hardening linkage at docs/plans/dashboard-v2-phase8-orchestration-loop-2026-02-26.md.",
+            "status": "pending",
+            "created": 1772105019384,
+            "stamp": "231826022026",
+            "children": []
+          },
+          {
+            "id": "a_261826022026",
+            "level": "action",
+            "content": "Phase 8 W1 packet generation from existing inventory/loop artifacts under no-subdelegation and no-new-research constraints.",
+            "status": "pending",
+            "created": 1772105212704,
+            "stamp": "261826022026",
+            "children": []
+          },
+          {
+            "id": "a_291826022026",
+            "level": "action",
+            "content": "W1 packet generated and validation evidence captured; dashboard-v2 bunx tsc gate failed with existing OpenTUI/JSX typing errors, requiring W1.delta retune before closeout.",
+            "status": "pending",
+            "created": 1772105370944,
+            "stamp": "291826022026",
+            "children": []
+          },
+          {
+            "id": "a_321826022026",
+            "level": "action",
+            "content": "Authoring W1.delta retune packet focused on dashboard-v2 OpenTUI/JSX TypeScript baseline failures under no-delegation/no-research constraints.",
+            "status": "pending",
+            "created": 1772105542092,
+            "stamp": "321826022026",
+            "children": []
+          },
+          {
+            "id": "a_331826022026",
+            "level": "action",
+            "content": "Published W1.delta retune packet at docs/plans/dashboard-v2-phase8-w1-delta-retune-2026-02-26.md with baseline error-class evidence and lane-based remediation gates (D1-D4) under no-delegation/no-research constraints.",
+            "status": "pending",
+            "created": 1772105627121,
+            "stamp": "331826022026",
+            "children": []
+          },
+          {
+            "id": "a_461826022026",
+            "level": "action",
+            "content": "Executing Phase 8 W1.delta lane D1: remediate dashboard-v2 OpenTUI/React import contract TS2305/TS2614 within strict 3-file scope",
+            "status": "pending",
+            "created": 1772106387535,
+            "stamp": "461826022026",
+            "children": []
+          },
+          {
+            "id": "a_571826022026",
+            "level": "action",
+            "content": "D1 complete: eliminated TS2305/TS2614 import-contract errors in dashboard-v2; entering D2 to resolve JSX namespace/props typing errors (TS2339/TS2322) under same no-delegation/no-research constraints.",
+            "status": "pending",
+            "created": 1772107030919,
+            "stamp": "571826022026",
+            "children": []
+          },
+          {
+            "id": "a_001926022026",
+            "level": "action",
+            "content": "Operating model aligned: main session coordinates Phase 8 end-to-end; single level-2 delegation allowed, strict ban on any sub-of-sub delegation remains enforced by anchor.",
+            "status": "pending",
+            "created": 1772107214850,
+            "stamp": "001926022026",
+            "children": []
+          },
+          {
+            "id": "a_011926022026",
+            "level": "action",
+            "content": "Phase 8 W1.delta builder task: fix dashboard-v2 TypeScript baseline errors in scoped files and verify compile/test gates",
+            "status": "pending",
+            "created": 1772107260485,
+            "stamp": "011926022026",
+            "children": []
+          },
+          {
+            "id": "a_031926022026",
+            "level": "action",
+            "content": "Verifying dashboard-v2 TypeScript fixes and compile/test gates after scoped file updates",
+            "status": "pending",
+            "created": 1772107402516,
+            "stamp": "031926022026",
+            "children": []
+          },
+          {
+            "id": "a_101926022026",
+            "level": "action",
+            "content": "Coordinator enforcing Phase 8 hierarchy: prepare context packet -> level-2 execute -> independent gate verification -> gate decision.",
+            "status": "pending",
+            "created": 1772107834965,
+            "stamp": "101926022026",
+            "children": []
+          },
+          {
+            "id": "a_131926022026",
+            "level": "action",
+            "content": "Gate decision complete: W1.delta passes after level-2 execution and independent gate verification; coordinator transitioning to next Phase 8 wave planning packet.",
+            "status": "pending",
+            "created": 1772107997314,
+            "stamp": "131926022026",
+            "children": []
+          },
+          {
+            "id": "a_171926022026",
+            "level": "action",
+            "content": "W2 packet published with high-level context preload and level-2 constraint-ready delegation contract; ready to dispatch W2.1 execution lane.",
+            "status": "pending",
+            "created": 1772108234988,
+            "stamp": "171926022026",
+            "children": []
+          },
+          {
+            "id": "a_181926022026",
+            "level": "action",
+            "content": "Executing Phase 8 W2.1 modal determinism in dashboard-v2 with scoped edits and full verification.",
+            "status": "pending",
+            "created": 1772108332927,
+            "stamp": "181926022026",
+            "children": []
+          },
+          {
+            "id": "a_201926022026",
+            "level": "action",
+            "content": "W2.1 implementation applied in dashboard-v2; running TypeScript and test verification gates.",
+            "status": "pending",
+            "created": 1772108416540,
+            "stamp": "201926022026",
+            "children": []
+          },
+          {
+            "id": "a_231926022026",
+            "level": "action",
+            "content": "W2.1 modal determinism implemented and verification gates passed for dashboard-v2 and repository.",
+            "status": "pending",
+            "created": 1772108618682,
+            "stamp": "231926022026",
+            "children": []
+          },
+          {
+            "id": "a_241926022026",
+            "level": "action",
+            "content": "W2.1 completed via level-2 execution with deterministic modal gating and independent gate verification passing (dashboard tsc, root tsc, npm test). Ready for W2.2 language toggle lane.",
+            "status": "pending",
+            "created": 1772108699257,
+            "stamp": "241926022026",
+            "children": []
+          },
+          {
+            "id": "a_261926022026",
+            "level": "action",
+            "content": "Executing W2.2 language toggle completeness in dashboard-v2 with scoped local edits and full verification gates",
+            "status": "pending",
+            "created": 1772108789457,
+            "stamp": "261926022026",
+            "children": []
+          },
+          {
+            "id": "a_311926022026",
+            "level": "action",
+            "content": "W2.2 language toggle completeness implemented and verification gates passing",
+            "status": "pending",
+            "created": 1772109093408,
+            "stamp": "311926022026",
+            "children": []
+          },
+          {
+            "id": "a_331926022026",
+            "level": "action",
+            "content": "W2.2 completed via level-2 execution with deterministic language toggle and persistence, with independent post-gate verification passing (dashboard tsc, root tsc, npm test). Preparing W2.3 help-overlay lane packet.",
+            "status": "pending",
+            "created": 1772109222897,
+            "stamp": "331926022026",
+            "children": []
+          },
+          {
+            "id": "a_591926022026",
+            "level": "action",
+            "content": "Dispatching W2.3 help-overlay lane: implement `?` key trigger, open/close behavior, conflict handling with modal focus and navigation",
             "status": "active",
-            "created": 1772059684369,
-            "stamp": "480526022026",
-            "children": []
-          }
-        ]
-      },
-      {
-        "id": "tc_500526022026",
-        "level": "tactic",
-        "content": "Phase 7 Code-Intel Surgeon Engine: Layer 1 implementation 7A.1-7A.6 ALL DONE on disk. 194 pass, 0 tsc. Only 7A.7 (tests) remains before Layer 1 gate.",
-        "status": "active",
-        "created": 1772059830402,
-        "stamp": "500526022026",
-        "children": [
-          {
-            "id": "a_500526022026",
-            "level": "action",
-            "content": "Dispatching 7A.7: Create phase7-byte-offsets.test.ts + update phase2-compressed-codemap.test.ts + update gitignore-filter.test.ts",
-            "status": "active",
-            "created": 1772059844997,
-            "stamp": "500526022026",
-            "children": []
-          }
-        ]
-      },
-      {
-        "id": "tc_500526022026-1",
-        "level": "tactic",
-        "content": "Phase 1 OpenTUI Dashboard UX/UI: Scaffold the Foundation via create-tui",
-        "status": "active",
-        "created": 1772059856813,
-        "stamp": "500526022026",
-        "children": [
-          {
-            "id": "a_510526022026",
-            "level": "action",
-            "content": "Execute 7B.1: Scaffold OpenTUI React app in src/dashboard-v2 using create-tui",
-            "status": "pending",
-            "created": 1772059886269,
-            "stamp": "510526022026",
-            "children": []
-          },
-          {
-            "id": "a_560526022026",
-            "level": "action",
-            "content": "7B.1 execution completed - OpenTUI React scaffolded in src/dashboard-v2",
-            "status": "pending",
-            "created": 1772060176723,
-            "stamp": "560526022026",
-            "children": []
-          },
-          {
-            "id": "a_560526022026-1",
-            "level": "action",
-            "content": "7B.1 execution completed - OpenTUI React scaffolded in src/dashboard-v2",
-            "status": "pending",
-            "created": 1772060191417,
-            "stamp": "560526022026",
-            "children": []
-          },
-          {
-            "id": "a_030626022026",
-            "level": "action",
-            "content": "Run /hivefiver research via delegated subagents; synthesize findings into gated research brief with acceptance criteria.",
-            "status": "active",
-            "created": 1772060627703,
-            "stamp": "030626022026",
-            "children": []
-          }
-        ]
-      },
-      {
-        "id": "tc_030626022026",
-        "level": "tactic",
-        "content": "Phase 7 research cycle: investigate next actionable scope after 7B.1 scaffold completion, with OpenTUI/OpenCode SDK evidence gathering.",
-        "status": "active",
-        "created": 1772060627719,
-        "stamp": "030626022026",
-        "children": []
-      },
-      {
-        "id": "tc_030626022026-1",
-        "level": "tactic",
-        "content": "Phase 7 research cycle: investigate next actionable scope after 7B.1 scaffold completion, with OpenTUI/OpenCode SDK evidence gathering.",
-        "status": "active",
-        "created": 1772060631888,
-        "stamp": "030626022026",
-        "children": [
-          {
-            "id": "a_030626022026-1",
-            "level": "action",
-            "content": "Run /hivefiver research via delegated subagents; synthesize findings into gated research brief with acceptance criteria.",
-            "status": "pending",
-            "created": 1772060637129,
-            "stamp": "030626022026",
-            "children": []
-          },
-          {
-            "id": "a_050626022026",
-            "level": "action",
-            "content": "Execute /hivefiver research: gather external evidence for OpenTUI + OpenCode SDK + terminal UX decisions with citations and confidence scoring.",
-            "status": "pending",
-            "created": 1772060701339,
-            "stamp": "050626022026",
-            "children": []
-          },
-          {
-            "id": "a_090626022026",
-            "level": "action",
-            "content": "Execute /hivefiver research Layer 2 only: AST surgery (magic-string), markdown weaving (remark + unist-util-visit), and LSP bridge graceful degradation with citations/confidence; explicitly exclude TUI/UXUI topics.",
-            "status": "active",
-            "created": 1772060943678,
-            "stamp": "090626022026",
-            "children": []
-          }
-        ]
-      },
-      {
-        "id": "tc_090626022026",
-        "level": "tactic",
-        "content": "Layer-2 research: AST surgery with magic-string (source transforms, sourcemaps, safe edits)",
-        "status": "active",
-        "created": 1772060980976,
-        "stamp": "090626022026",
-        "children": [
-          {
-            "id": "a_090626022026-1",
-            "level": "action",
-            "content": "/hivefiver research: collect citation-backed findings on magic-string AST surgery patterns for transforms, sourcemaps, and safe edits",
-            "status": "pending",
-            "created": 1772060991583,
-            "stamp": "090626022026",
-            "children": []
-          },
-          {
-            "id": "a_100626022026",
-            "level": "action",
-            "content": "/hivefiver research: Layer-2 markdown weaving evidence collection using remark + unist-util-visit (pipeline, plugin architecture, caveats).",
-            "status": "pending",
-            "created": 1772061014962,
-            "stamp": "100626022026",
-            "children": []
-          },
-          {
-            "id": "a_110626022026",
-            "level": "action",
-            "content": "Phase 7 Code-Intel only. Immediate delegation to hivemaker for Layer 2 surgeon engines (7B.1-7B.3) with no sub-delegation.",
-            "status": "pending",
-            "created": 1772061104293,
-            "stamp": "110626022026",
-            "children": []
-          },
-          {
-            "id": "a_120626022026",
-            "level": "action",
-            "content": "Implement Layer 2 surgeon engines (ast-surgeon, doc-weaver, lsp-bridge) and targeted tests only, no sub-delegation.",
-            "status": "pending",
-            "created": 1772061129567,
-            "stamp": "120626022026",
-            "children": []
-          },
-          {
-            "id": "a_160626022026",
-            "level": "action",
-            "content": "Implemented Layer 2 surgeon engines and targeted tests; verification complete.",
-            "status": "active",
-            "created": 1772061415944,
-            "stamp": "160626022026",
-            "children": []
-          }
-        ]
-      },
-      {
-        "id": "tc_190626022026",
-        "level": "tactic",
-        "content": "Phase 7 Code-Intel execution only. Layer 2 surgeon engines implemented and verified (tsc pass, full test suite pass). Next: Layer 3 tool wrappers.",
-        "status": "active",
-        "created": 1772061548884,
-        "stamp": "190626022026",
-        "children": [
-          {
-            "id": "a_190626022026",
-            "level": "action",
-            "content": "Immediate delegation to hivemaker for Phase 7 Layer 3: Code-Intel tool wrappers only (7C.1-7C.5), no sub-delegation.",
-            "status": "pending",
-            "created": 1772061575879,
-            "stamp": "190626022026",
-            "children": []
-          },
-          {
-            "id": "a_200626022026",
-            "level": "action",
-            "content": "Executing Phase 7 Layer 3 Code-Intel tool wrappers (create 4 tools + register in src/tools/index.ts only), no sub-delegation.",
-            "status": "pending",
-            "created": 1772061603331,
-            "stamp": "200626022026",
-            "children": []
-          },
-          {
-            "id": "a_230626022026",
-            "level": "action",
-            "content": "Phase 7 Layer 3 wrappers implemented and verified with tsc/test; guard:public blocked by existing sensitive-path policy state.",
-            "status": "active",
-            "created": 1772061835266,
-            "stamp": "230626022026",
+            "created": 1772110751936,
+            "stamp": "591926022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_230626022026"
+  "cursor": "a_591926022026"
 }

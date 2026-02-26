@@ -2,29 +2,16 @@
   "version": "1.0.0",
   "session_memory": [
     {
-      "id": "04165924-811b-47a5-99b4-0aa7fae42244",
-      "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
-      "category": "research_synthesis",
-      "source": "hivefiver research auto-init",
-      "content": "Local code research task: determine AUTO_COMMIT_TOOLS set from src/lib/auto-commit.ts before reporting.",
-      "condensed": "Local code research task: determine AUTO_COMMIT_TOOLS set from src/lib/auto-commit.ts before reporting.",
-      "temporary": true,
-      "classification_confidence": 0.9,
-      "created_at": "2026-02-25T18:17:12.019Z",
-      "purged_at": null,
-      "transferred_to_governance": false
-    },
-    {
-      "id": "053f06b8-01a0-4ff8-b2f5-0310c83b73c1",
-      "session_id": "1c598337-6894-4696-8a2f-0059077b8822",
+      "id": "d995d787-67ac-472c-bf16-89b18984af1c",
+      "session_id": "3d0f191a-d9f3-4403-8d21-c98e95e2e616",
       "category": "planning",
       "source": "tool:scratch",
-      "content": "PHASE 6 SPLIT PLAN:\n\ngraph-io.ts (1349 LOC) → 4 modules + re-export wrapper:\n- src/lib/graph/shared.ts: Lines 1-135 (imports, constants, EMPTY states, logGraph, loadValidatedState, saveValidatedState) + Lines 341-511 (_loadRawTasks, _loadRawMems) — these are INTERNAL helpers used by both reader and writer\n- src/lib/graph/fk-validator.ts: Lines 141-312 (validateTasksWithFKValidation, validateMemsWithFKValidation)\n- src/lib/graph/reader.ts: Lines 316-330 (loadTrajectory, loadPlans) + Lines 571-903 (FKValidationOptions, loadGraphTasks, loadGraphMems, loadGraphWithFullFKValidation, LifecycleLineageSnapshot, buildLifecycleLineageSnapshot)\n- src/lib/graph/writer.ts: Lines 321-569 (saveTrajectory, savePlans, saveGraphTasks, addGraphTask, invalidateTask, saveGraphMems, addGraphMem, flagFalsePath) + Lines 1145-1349 (normalizeSessionIdToUuid, resolveCanonicalSessionId, InvalidationResult, invalidateOrphanedActiveTasks, ReconciliationResult, reconcileStaleTasks)\n- src/lib/bridges/ralph-bridge.ts: Lines 905-1143 (RalphTaskGraphSnapshot, buildRalphTaskGraphSnapshot + all helpers)\n- src/lib/graph-io.ts: becomes pure re-export wrapper\n\nplanning-fs.ts (1123 LOC) → 3 modules + re-export wrapper:\n- src/lib/fs/planning-paths.ts: Lines 1-131 (logger, PlanningPaths, getPlanningPaths, getSessionTemplate, instantiateSession)\n- src/lib/fs/session-io.ts: Lines 193-843 (ManifestEntry, SessionManifest, readManifest, writeManifest, registerSession, getActiveSessionPath, FileGuard, createFileGuard, resolveSessionFilePathByStamp, readSessionFile, writeSessionFile, appendToSessionLog, countLogLines, compactLogSection, updateSessionHierarchy, ActiveMdContent, readActiveMd, parseActiveMd, parseSessionFrontmatter, updateSessionFrontmatter, writeActiveMd, archiveSession)\n- src/lib/fs/planning-ops.ts: Lines 845-1123 (generateIndexMd, updateIndexMd, listArchives, pruneOldArchives, getArchiveStats, generateIndexTemplate, generateActiveTemplate, getExportDir, resetActiveMd, regenerateManifests, initializePlanningDirectory)\n- src/lib/planning-fs.ts: becomes pure re-export wrapper\n\n15 files import graph-io, 12 files import planning-fs — re-export wrappers preserve all imports.\n\nDirectories already created: src/lib/graph/, src/lib/bridges/, src/lib/fs/",
-      "condensed": "PHASE 6 SPLIT PLAN:\n\ngraph-io.ts (1349 LOC) → 4 modules + re-export wrapper:\n- src/lib/graph/shared.ts: Lines 1-135 (imports, constants, EMPTY states, logGraph, loadValidatedState, saveValidatedState) + Lines 341-511 (_loadRawTasks, _loadRa",
+      "content": "Research findings: Event bus is in-process only (Node.js EventEmitter), no WebSocket/SSE. Dashboard uses polling (setInterval). To get real-time updates to dashboard, need IPC bridge, shared state file with file watcher, or external message queue.",
+      "condensed": "Research findings: Event bus is in-process only (Node.js EventEmitter), no WebSocket/SSE. Dashboard uses polling (setInterval). To get real-time updates to dashboard, need IPC bridge, shared state file with file watcher, or external message",
       "temporary": true,
       "classification_confidence": 0.9,
-      "created_at": "2026-02-25T21:00:29.614Z",
-      "purged_at": null,
+      "created_at": "2026-02-26T01:55:59.264Z",
+      "purged_at": "2026-02-26T01:57:14.105Z",
       "transferred_to_governance": false
     }
   ]

@@ -1,0 +1,9 @@
+@@ -93,6 +93,8 @@
+       return { ...state, connected: action.value };
+     case "SNAPSHOT":
+       return { ...state, snapshot: action.value, loading: false, error: null };
++    case "SET_MODAL":
++      return { ...state, modal: action.value };
+     case "SERVER_DATA":
+       return { ...state, serverData: action.value };
+     case "LAST_ACTION":

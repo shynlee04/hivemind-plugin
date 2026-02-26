@@ -1,24 +1,24 @@
 {
-  "governance_mode": "assisted",
-  "language": "en",
+  "governance_mode": "strict",
+  "language": "vi",
   "max_turns_before_warning": 5,
-  "max_active_md_lines": 50,
-  "auto_compact_on_turns": 20,
-  "stale_session_days": 3,
-  "commit_suggestion_threshold": 5,
-  "auto_commit": false,
+  "max_active_md_lines": 300,
+  "auto_compact_on_turns": 50,
+  "stale_session_days": 7,
+  "commit_suggestion_threshold": 15,
+  "max_context_tokens": 60000,
   "agent_behavior": {
-    "language": "en",
-    "expert_level": "intermediate",
+    "expert_level": "advanced",
     "output_style": "explanatory",
-    "output_style_v29": "supportive_discovery",
     "constraints": {
-      "require_code_review": false,
       "enforce_tdd": false,
-      "max_response_tokens": 2000,
-      "explain_reasoning": true,
-      "be_skeptical": false
+      "require_code_review": true,
+      "be_skeptical": true
     }
   },
-  "automation_level": "assisted"
+  "automation": {
+    "auto_save_mems": true,
+    "auto_archive_sessions": true,
+    "auto_detect_drift": true
+  }
 }
