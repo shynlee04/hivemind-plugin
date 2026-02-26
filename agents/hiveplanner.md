@@ -33,6 +33,9 @@ tools:
   hivemind_inspect: true
   hivemind_memory: true
   hivemind_session: true
+  hivemind_read_skeleton: true
+  hivemind_mesh_pull: true
+  hivemind_doc_weaver: true
 permission:
   bash: allow
   tasks: allow
@@ -42,6 +45,9 @@ permission:
   command: allow
   edit: allow     # Must ask before editing anything outside of docs/ and .planning/
   write: allow  # Allowed to write to planning directories
+  hivemind_read_skeleton: allow
+  hivemind_mesh_pull: allow
+  hivemind_doc_weaver: allow
 ---
 
 # HivePlanner Agent

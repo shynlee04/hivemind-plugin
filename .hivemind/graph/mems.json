@@ -60,6 +60,114 @@
       "staleness_stamp": "2026-02-26T10:19:25.619Z",
       "created_at": "2026-02-26T10:19:25.619Z",
       "updated_at": "2026-02-26T10:19:25.619Z"
+    },
+    {
+      "id": "3e1d0131-c51e-4b90-91c1-f3cf17f442d1",
+      "session_id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
+      "origin_task_id": null,
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "W2.3 Help Overlay Implementation: Added helpOverlay state with TOGGLE/CLOSE actions, keyboard handler with precedence chain (modal > help overlay > normal), HelpOverlay component with i18n support (EN/VI), footer hint for ? key. Pattern: use stateRef.current for stdin handler, gate keys with if (state.modal) return; if (state.helpOverlay) { handle help keys; return; }",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-26T13:12:15.699Z",
+      "created_at": "2026-02-26T13:12:15.699Z",
+      "updated_at": "2026-02-26T13:12:15.699Z"
+    },
+    {
+      "id": "5f744343-5da6-4396-9e04-126ebe828e57",
+      "session_id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
+      "origin_task_id": null,
+      "shelf": "phase8-planning",
+      "type": "insight",
+      "content": "Phase 8 Restructuring Adjustment: W0 Component Restructuring wave added due to index.tsx at 969 LOC (3.2x over limit). Target architecture: state.ts (~100 LOC), panels/*.tsx (~60-100 each), components/*.tsx (~50-130), hooks/*.ts (~100-150), index.tsx (<200). Extraction order: types → state → panels → components → hooks → index. W0 is BLOCKING for W3.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-26T13:16:42.487Z",
+      "created_at": "2026-02-26T13:16:42.487Z",
+      "updated_at": "2026-02-26T13:16:42.487Z"
+    },
+    {
+      "id": "0e29afc2-11ae-4fcf-b2a0-8bf74cca9542",
+      "session_id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
+      "origin_task_id": null,
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "W0.1 State Extraction: Created state.ts (123 LOC) with TAB_KEYS, AppState, AppAction, createInitialState, reducer. Extracted from index.tsx, reducing 969→862 LOC (-11%). Pattern: use ESM imports with .js extension, export all types and functions. Gates: dashboard tsc, root tsc, npm test all pass.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-26T14:21:06.585Z",
+      "created_at": "2026-02-26T14:21:06.585Z",
+      "updated_at": "2026-02-26T14:21:06.585Z"
+    },
+    {
+      "id": "07ec7fb4-4f5a-44ad-9c2d-9e32469e0e6d",
+      "session_id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
+      "origin_task_id": null,
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "W0.2 recovery completed after interrupted dispatch. Existing partial artifacts were reused; created missing panels (CodeIntel, Governance, Settings), wired all 7 panel components into MainPanel, removed inline render functions from index.tsx. Independent verification passed: dashboard tsc, root tsc, npm test. index.tsx reduced to 531 LOC.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-26T15:29:48.575Z",
+      "created_at": "2026-02-26T15:29:48.575Z",
+      "updated_at": "2026-02-26T15:29:48.575Z"
+    },
+    {
+      "id": "16aaa270-a043-4623-9e32-234084b65cf2",
+      "session_id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
+      "origin_task_id": null,
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "W0.3 extraction completed. Created components/MainPanel.tsx (74 LOC) and components/HelpOverlay.tsx (60 LOC), removed inline MainPanel/HelpOverlay from index.tsx and imported COLORS from constants.ts. index.tsx now 395 LOC. Independent gates pass: dashboard tsc, root tsc, npm test.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-26T15:36:02.014Z",
+      "created_at": "2026-02-26T15:36:02.014Z",
+      "updated_at": "2026-02-26T15:36:02.014Z"
+    },
+    {
+      "id": "0e5c720c-80f2-47c2-b182-cdf67035c9e4",
+      "session_id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
+      "origin_task_id": null,
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "W0.4 completed. Created hooks/useDashboardData.ts (37 LOC) and hooks/useKeyboardHandler.ts (142 LOC), index.tsx reduced to 240 LOC. Orchestration behavior preserved (refresh polling, stdin raw mode, key routing, modal/help precedence). Independent gates pass: bunx tsc --noEmit, npx tsc --noEmit, npm test.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-26T15:43:53.305Z",
+      "created_at": "2026-02-26T15:43:53.305Z",
+      "updated_at": "2026-02-26T15:43:53.305Z"
+    },
+    {
+      "id": "ea05bd70-fd9e-468f-887e-52dd5428dbd5",
+      "session_id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
+      "origin_task_id": null,
+      "shelf": "phase8-planning",
+      "type": "insight",
+      "content": "W0 closeout completed with docs reconciliation across phase8 loop, restructuring adjustment, and overhaul roadmap. Verified metrics encoded: index.tsx 969→862→531→395→240, gates pass (dashboard tsc, root tsc, npm test 197 pass 0 fail), transition updated to W0 complete -> W2.4 -> W3 -> W4 -> W5, W3 blocked only by W2 completion.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-26T15:52:51.768Z",
+      "created_at": "2026-02-26T15:52:51.768Z",
+      "updated_at": "2026-02-26T15:52:51.768Z"
+    },
+    {
+      "id": "267e1984-02e3-4d22-b8dc-c6fb3a141253",
+      "session_id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
+      "origin_task_id": null,
+      "shelf": "cycle-intel",
+      "type": "insight",
+      "content": "W2.4 closeout completed with code-grounded mouse capability audit. No mouse event handlers/options in current runtime; keyboard-first paths remain deterministic. Artifacts updated: W2 packet, phase8 loop, and dedicated mouse declaration doc. Gate decision: partial-pass with controlled defer obligations P9.1-P9.3.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-26T16:10:12.761Z",
+      "created_at": "2026-02-26T16:10:12.761Z",
+      "updated_at": "2026-02-26T16:10:12.761Z"
+    },
+    {
+      "id": "863f674e-1563-4c19-87e8-a6fa15d9a94a",
+      "session_id": "5d529522-ee3c-4dc1-90cc-9505d24c9f1f",
+      "origin_task_id": null,
+      "shelf": "phase8-planning",
+      "type": "insight",
+      "content": "W3 kickoff completed: execution packet published at docs/plans/dashboard-v2-phase8-w3-execution-packet-2026-02-26.md; orchestration loop updated to IN-PROGRESS KICKOFF with pre-gate open and packet reference.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-26T16:26:17.327Z",
+      "created_at": "2026-02-26T16:26:17.327Z",
+      "updated_at": "2026-02-26T16:26:17.327Z"
     }
   ]
 }

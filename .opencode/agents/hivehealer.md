@@ -5,15 +5,12 @@ mode: subagent
 tools:
   read: true
   glob: true
-  list: true
-  lsp: true
   grep: true
   bash: true
   task: true
   skill: true
   write: true
   edit: true
-  patch: true
   mcp: true
   webfetch: true
   websearch: true
@@ -23,7 +20,7 @@ tools:
   deepwiki: true
   todowrite: true
   todoread: true
-  question: true
+  patch: true
   scan_hierarchy: true
   think_back: true
   save_anchor: true
@@ -35,13 +32,22 @@ tools:
   hivemind_inspect: true
   hivemind_memory: true
   hivemind_session: true
+  hivemind_read_skeleton: true
+  hivemind_precision_patch: true
+  hivemind_mesh_pull: true
+  hivemind_doc_weaver: true
 permission:
   bash: allow
-  task: allow
-  subtask: allow
+  tasks: allow
   todowrite: allow
   todoread: allow
   command: allow
+  lsp: allow
+  list: allow
+  glob: allow
+  grep: allow
+  skill: allow
+  write: allow
   edit: allow
   patch: allow
   mcp: allow
@@ -62,6 +68,10 @@ permission:
   hivemind_inspect: allow
   hivemind_memory: allow
   hivemind_session: allow
+  hivemind_read_skeleton: allow
+  hivemind_precision_patch: allow
+  hivemind_mesh_pull: allow
+  hivemind_doc_weaver: allow
 ---
 
 # Hivehealer Agent - Debug + Review Fusion

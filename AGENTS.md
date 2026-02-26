@@ -1,6 +1,13 @@
-**NON-NEGOTIABLE RULES:** CAN'T NOT SKIP - MOST IMPORTANT FOR FRONT FACING AGENTS - APART FROM CONTEXT REGULATING, RECORDING, RETRIVING AND GIT COMMIT - YOU ARE NOT ALLOWED TO CARRY ANY OTHER ACTIONS THAN **DELEGATION** AND **CORDINATION OF OTHER AGENTS**
+**NON-NEGOTIABLE RULES:** CAN'T NOT SKIP - MOST IMPORTANT FOR FRONT FACING AGENTS `Hiveminder` ONLY, apart from this agent, the others **ARE NOT** front-facing - APART FROM CONTEXT REGULATING, RECORDING, RETRIVING AND GIT COMMIT - YOU ARE NOT ALLOWED TO CARRY ANY OTHER ACTIONS THAN **DELEGATION** AND **CORDINATION OF OTHER AGENTS**
 
-**ONLY FRONT AGENT AS FOR THE ONE HAVING CONVERSATION WITH HUMAN USER IS COUNTED FOR COORDINATOR JOB - IF YOU ARE "BUILD" START IMPLEMENT
+- **NON FRONT-FACING** agents are not allowed to DELEGATE further, **ALWAYS** act within constraints and boundaries >> **NEVER BREAK RULES** - and return to `Hiveminder` with reports
+
+**RESOURCEFUL** - you can use any tools and skills to complete the task, but **PRIORITIZE** tracing back historical context, search (glob, list, regex, grep, patterns search first).
+
+
+**ITERATIONS, SPLITTING, STRUCTURING, CLASSIFICATIONS AND HIERARCHICAL APPROACHES OVER CREATING ANEW** 
+
+**ONLY FRONT AGENT** AS FOR THE ONE HAVING CONVERSATION WITH HUMAN USER IS COUNTED FOR COORDINATOR JOB - IF YOU ARE "OTHERS" START DOING YOUR ASSIGNED JOB.
 
 1.  if you are the **front-facing-agent:** never start action/execution first -> **ALWAYS** load context, retrace past event - knowing which TODO tasks connected with, what are past plans
 2. Number 1 is true not matter in-between turns, starting new or after compact
@@ -119,13 +126,21 @@ npx tsx --test tests/filename.test.ts       # Run specific test
 > Last Updated: 2026-02-18
 > Total Files: 97
 
-### src/tools/ (6 canonical tools + index)
-- hivemind-session.ts - Session lifecycle management (declare_intent, map_context, compact_session)
-- hivemind-inspect.ts - State inspection (scan_hierarchy, think_back)
-- hivemind-memory.ts - Knowledge persistence (save_mem, recall_mems)
-- hivemind-anchor.ts - Immutable anchors (save_anchor, list_anchors, get_anchor)
-- hivemind-hierarchy.ts - Tree management (prune, migrate, status)
-- hivemind-cycle.ts - Session export (export, list, prune)
+### src/tools/ (14 canonical tools + index)
+- hivemind-session.ts - Session lifecycle management
+- hivemind-inspect.ts - State inspection
+- hivemind-memory.ts - Knowledge persistence
+- hivemind-anchor.ts - Immutable anchors
+- hivemind-hierarchy.ts - Tree management
+- hivemind-cycle.ts - Session export
+- hivemind-context.ts - Context governance lifecycle
+- hivemind-session-memory.ts - Session memory classification
+- hivemind-codemap.ts - Code intelligence engine
+- hivemind-ideate.ts - Q.U.A.N.T. ideation matrix gate
+- hivemind-read-skeleton.ts [NEW] - Extract code skeleton (Cluster 3)
+- hivemind-precision-patch.ts [NEW] - Patch symbol by name (Cluster 3)
+- hivemind-mesh-pull.ts [NEW] - Blast radius + skeleton aggregation (Cluster 3)
+- hivemind-doc-weaver.ts [NEW] - Patch markdown section by heading (Cluster 3)
 - index.ts - Tool registry exports
 
 ### src/hooks/ (13 files)
@@ -273,16 +288,19 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
    compact_session({ summary: "What was accomplished" })
    ```
 
-### Available Tools (14)
+### Available Tools (24)
 
 | Group | Tools |
 |-------|-------|
-| Core | `declare_intent`, `map_context`, `compact_session` |
-| Self-Awareness | `self_rate` |
-| Cognitive Mesh | `scan_hierarchy`, `save_anchor`, `think_back`, `check_drift` |
-| Memory | `save_mem`, `list_shelves`, `recall_mems` |
-| Hierarchy | `hierarchy_prune`, `hierarchy_migrate` |
-| Delegation | `export_cycle` |
+| Core | `hivemind_session`, `hivemind_context` |
+| Inspection | `hivemind_inspect` |
+| Memory | `hivemind_memory`, `hivemind_session_memory` |
+| Immutable | `hivemind_anchor` |
+| Hierarchy | `hivemind_hierarchy` |
+| Cycle / Export | `hivemind_cycle` |
+| Ideation | `hivemind_ideate` |
+| Code-Intel Base | `hivemind_codemap` |
+| Surgeon Engine (Cluster 3) | `hivemind_read_skeleton`, `hivemind_precision_patch`, `hivemind_mesh_pull`, `hivemind_doc_weaver` |
 
 ### Why It Matters
 

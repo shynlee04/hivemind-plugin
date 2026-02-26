@@ -23,6 +23,7 @@ export interface DashboardStrings {
   // Tabs
   "tab.overview": string;
   "tab.pipeline": string;
+  "tab.swarm": string;
   "tab.hierarchy": string;
   "tab.incidents": string;
   "tab.codeintel": string;
@@ -162,6 +163,7 @@ const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
     // Tabs
     "tab.overview": "Overview",
     "tab.pipeline": "Pipeline",
+    "tab.swarm": "Swarm",
     "tab.hierarchy": "Hierarchy",
     "tab.incidents": "Incidents",
     "tab.codeintel": "Code-Intel",
@@ -249,7 +251,7 @@ const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
     "settings.keyboard_controls": "KEYBOARD_CONTROLS",
     "settings.next_tab": "Tab / j / ↓ - Next tab",
     "settings.prev_tab": "Shift+Tab / k / ↑ - Prev tab",
-    "settings.jump_tab": "1-7 - Jump to tab",
+    "settings.jump_tab": "1-8 - Jump to tab",
     "settings.refresh_snapshot": "r - Refresh snapshot",
     "settings.create_session": "c - Create session (server)",
     "settings.send_message": "m - Send message (server)",
@@ -299,6 +301,7 @@ const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
     // Tabs
     "tab.overview": "Tổng quan",
     "tab.pipeline": "Pipeline",
+    "tab.swarm": "Bầy tác vụ",
     "tab.hierarchy": "Cây phân cấp",
     "tab.incidents": "Sự cố",
     "tab.codeintel": "Code-Intel",
@@ -386,7 +389,7 @@ const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
     "settings.keyboard_controls": "ĐIỀU_KHIỂN_PHÍM",
     "settings.next_tab": "Tab / j / ↓ - Tab tiếp",
     "settings.prev_tab": "Shift+Tab / k / ↑ - Tab trước",
-    "settings.jump_tab": "1-7 - Nhảy đến tab",
+    "settings.jump_tab": "1-8 - Nhảy đến tab",
     "settings.refresh_snapshot": "r - Làm mới snapshot",
     "settings.create_session": "c - Tạo phiên (máy chủ)",
     "settings.send_message": "m - Gửi tin nhắn (máy chủ)",

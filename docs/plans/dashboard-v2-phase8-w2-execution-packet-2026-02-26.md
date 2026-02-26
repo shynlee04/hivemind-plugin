@@ -135,6 +135,12 @@ W2.3 Help overlay interaction map
 W2.4 Mouse path declaration
 - Explicitly map current mouse-supported paths or mark deferred with Phase 9 obligation
 
+Status:
+- W2.1 ✅ COMPLETE
+- W2.2 ✅ COMPLETE
+- W2.3 ✅ COMPLETE
+- W2.4 ⚠️ PARTIAL (documented mouse-unsupported lane with controlled defer)
+
 ---
 
 ## 8) Risk Register
@@ -156,3 +162,35 @@ If any W2 lane is deferred:
 - Emit verification obligation (E2E interaction script)
 
 No silent carry-forward permitted.
+
+W2.4 defer obligations emitted:
+- P9.1 Reliability owner: dashboard-v2 maintainers; verify explicit mouse-event gating and fallback-safe no-op behavior on unsupported terminals.
+- P9.2 Refactor owner: dashboard-v2 maintainers; verify interaction ownership model if mouse support is introduced (pointer event routing by panel).
+- P9.3 Verification owner: QA/release lane; verify end-to-end mouse + keyboard mixed-input regression checklist before production readiness gate.
+
+---
+
+## 10) W2.4 Mouse Audit Disposition (Closeout)
+
+Code evidence (local repo, no external sources):
+- `src/dashboard-v2/src/index.tsx:239` calls `createCliRenderer()` with no mouse options object.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:34` handles tab-next via keyboard chunks only.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:38` handles tab-prev via keyboard chunks only.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:42` maps refresh to `r`.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:47` maps session-create to `c`.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:55` maps message to `m`.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:68` maps command to `x`.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:81` maps todos to `t`.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:106` maps agents view action to `a`.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:115` maps numeric tab jump `1..7`.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:125` maps help overlay toggle to `?`.
+- `src/dashboard-v2/src/hooks/useKeyboardHandler.ts:129` maps exit to `q`/Ctrl-C.
+- `src/dashboard-v2/src/snapshot.ts:423` declares boundary: "Keyboard-first navigation only; no hidden mouse-only behavior".
+
+W2.4 gate decision:
+- `partial` (no explicit mouse-interaction contract in runtime path; keyboard fallback is explicit and documented)
+
+W2 exit adjudication:
+- `partial-closeout` for interaction completeness in current architecture.
+- Keyboard/modal/language/help lanes are complete.
+- Mouse lane is formally deferred to Phase 9 obligations with explicit owners and verification requirements.

@@ -29,6 +29,12 @@ interface TaskNode {
   updated_at?: string;
 }
 
+interface SwarmSignal {
+  kind: "lane" | "task" | "session";
+  label: string;
+  detail: string;
+}
+
 export interface DashboardSnapshot {
   overview: {
     sessionId: string;
@@ -54,6 +60,14 @@ export interface DashboardSnapshot {
     complete: number;
     activeTasks: TaskNode[];
     delegationLanes: string[];
+  };
+  swarm: {
+    activeLanes: string[];
+    activeOrchestrations: number;
+    connectedSessions: number;
+    activeAgents: number;
+    topAgents: string[];
+    signals: SwarmSignal[];
   };
   hierarchy: {
     lines: string[];
@@ -177,6 +191,30 @@ export function summarizeMemsByShelf(mems: Array<{ shelf?: string }>): Array<{ s
   return Array.from(buckets.entries())
     .map(([shelf, count]) => ({ shelf, count }))
     .sort((a, b) => b.count - a.count);
+}
+
+function buildSwarmSignals(options: {
+  lanes: string[];
+  activeTasks: TaskNode[];
+  sessions: number;
+}): SwarmSignal[] {
+  const laneSignals: SwarmSignal[] = options.lanes.slice(0, 3).map((lane) => ({
+    kind: "lane",
+    label: lane,
+    detail: "delegation lane active",
+  }));
+
+  const taskSignals: SwarmSignal[] = options.activeTasks.slice(0, 3).map((task) => ({
+    kind: "task",
+    label: task.persona ?? task.lane ?? task.status,
+    detail: task.title,
+  }));
+
+  const sessionSignal: SwarmSignal[] = options.sessions > 0
+    ? [{ kind: "session", label: String(options.sessions), detail: "live session(s) discovered" }]
+    : [];
+
+  return [...laneSignals, ...taskSignals, ...sessionSignal].slice(0, 6);
 }
 
 export function buildGovernanceChecks(options: {
@@ -377,6 +415,14 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
     pendingChanges: pendingChangeCount,
   });
 
+  const activeOrchestrations = pipeline.activeTasks.filter((task) => task.status === "in_progress" || task.status === "active").length;
+  const topAgents = serverData.agents.slice(0, 4).map((agent) => agent.name);
+  const swarmSignals = buildSwarmSignals({
+    lanes: pipeline.delegationLanes,
+    activeTasks: pipeline.activeTasks,
+    sessions: serverData.sessions.length,
+  });
+
   return {
     overview: {
       sessionId: String(brainSession.id ?? "n/a"),
@@ -389,6 +435,14 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
     },
     server: serverData, // FIX: Use actual server data from loadServerData()
     pipeline,
+    swarm: {
+      activeLanes: pipeline.delegationLanes,
+      activeOrchestrations,
+      connectedSessions: serverData.sessions.length,
+      activeAgents: serverData.agents.length,
+      topAgents,
+      signals: swarmSignals,
+    },
     hierarchy: {
       lines: hierarchyLines,
       totalNodes: hierarchyStats.total,

@@ -37,7 +37,8 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { existsSync } from "fs"
 import { join } from "path"
-import { createHivemindSessionTool,
+import {
+  createHivemindSessionTool,
   createHivemindInspectTool,
   createHivemindMemoryTool,
   createHivemindAnchorTool,
@@ -47,6 +48,10 @@ import { createHivemindSessionTool,
   createHivemindSessionMemoryTool,
   createHivemindCodemapTool,
   createHivemindIdeateTool,
+  createHivemindReadSkeletonTool,
+  createHivemindPrecisionPatchTool,
+  createHivemindMeshPullTool,
+  createHivemindDocWeaverTool,
 } from "./tools/index.js"
 import {
   createSessionLifecycleHook,
@@ -92,7 +97,7 @@ export const HiveMindPlugin: Plugin = async ({
     : effectiveDir
   const log = await createLogger(logDir, "HiveMind")
 
-   await log.info(`Initializing HiveMind in ${effectiveDir}`)
+  await log.info(`Initializing HiveMind in ${effectiveDir}`)
 
   // Load configuration for initial logging only
   // Hooks re-read config from disk each invocation (Rule 6: config persistence)
@@ -137,6 +142,10 @@ export const HiveMindPlugin: Plugin = async ({
       hivemind_session_memory: createHivemindSessionMemoryTool(effectiveDir),
       hivemind_codemap: createHivemindCodemapTool(effectiveDir),
       hivemind_ideate: createHivemindIdeateTool(effectiveDir),
+      hivemind_read_skeleton: createHivemindReadSkeletonTool(effectiveDir),
+      hivemind_precision_patch: createHivemindPrecisionPatchTool(effectiveDir),
+      hivemind_mesh_pull: createHivemindMeshPullTool(effectiveDir),
+      hivemind_doc_weaver: createHivemindDocWeaverTool(effectiveDir),
     },
 
     /**

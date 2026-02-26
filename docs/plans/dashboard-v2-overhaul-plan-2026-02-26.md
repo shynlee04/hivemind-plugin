@@ -4,13 +4,13 @@
 > **Persona Lane**: Enterprise Architect
 > **Governance Mode**: Strict
 > **Created**: 2026-02-26
-> **Status**: PLANNING
+> **Status**: W0 CLOSEOUT COMPLETE, W2.4 NEXT
 
 ---
 
 ## Executive Summary
 
-This document defines a **5-phase comprehensive overhaul** of the HiveMind Dashboard-v2 to transform it from a non-functional display into a **fully operational control panel** with:
+This document defines the comprehensive overhaul path for HiveMind Dashboard-v2, now reconciled with executed W0 restructuring evidence, to transform it into a **fully operational control panel** with:
 - Real-time data synchronization
 - Full CRUD capabilities
 - Bilingual support (EN/VI)
@@ -40,7 +40,35 @@ This document defines a **5-phase comprehensive overhaul** of the HiveMind Dashb
 
 ---
 
-## 5-Phase Execution Plan
+## Execution Plan (W0 Closeout + Remaining Phases)
+
+### W0: Component Restructuring Closeout (COMPLETED)
+**Goal**: Reduce architectural coupling in `index.tsx` and split responsibilities into state/panels/components/hooks.
+
+| Lane | Evidence | Status |
+|------|----------|--------|
+| W0.1 | `src/state.ts` extracted (123 LOC) | ✅ DONE |
+| W0.2 | `src/constants.ts` + `src/panels/*.tsx` (7 files) extracted | ✅ DONE |
+| W0.3 | `src/components/MainPanel.tsx` (74 LOC) + `src/components/HelpOverlay.tsx` (60 LOC) extracted | ✅ DONE |
+| W0.4 | `src/hooks/useDashboardData.ts` (37 LOC) + `src/hooks/useKeyboardHandler.ts` (142 LOC) extracted | ✅ DONE |
+| W0.5 | Planning reconciliation and gate closeout | ✅ DONE |
+
+**LOC progression proof (`index.tsx`)**: `969 -> 862 -> 531 -> 395 -> 240`
+
+**Gate evidence (all pass)**:
+```bash
+cd /Users/apple/hivemind-plugin/src/dashboard-v2 && bunx tsc --noEmit
+cd /Users/apple/hivemind-plugin && npx tsc --noEmit
+cd /Users/apple/hivemind-plugin && npm test
+```
+
+**Recorded outcomes**:
+- Dashboard TypeScript gate: PASS
+- Root TypeScript gate: PASS
+- Test gate: PASS (197 pass, 0 fail)
+- Strategic LOC target: PASS (`index.tsx` = 240, under `<300`)
+
+**Transition path**: `W0 complete -> W2.4 -> W3 -> W4 -> W5`
 
 ### Phase 1: Foundation & Data Flow (COMPLETED)
 **Goal**: Ensure all data flows correctly from server to UI
@@ -183,6 +211,7 @@ cd src/dashboard-v2 && bunx tsc --noEmit
 | SSE connection drops | Medium | Reconnection logic, fallback polling |
 | Server offline | Medium | Graceful degradation, clear error messages |
 | Input conflicts | Low | Modal mode disables main keyboard handlers |
+| Post-extraction interactive key-path drift | Medium | Manual TUI sanity-check of `c/m/x/t/a/l/?/q`, modal/help precedence |
 
 ---
 
@@ -195,6 +224,7 @@ cd src/dashboard-v2 && bunx tsc --noEmit
 - [ ] Send message via 'm' key with modal input
 - [ ] Execute command via 'x' key with modal input
 - [ ] Bilingual EN/VI toggle
+- [x] Dashboard architecture split complete (`index.tsx` down to 240 LOC; state/panels/components/hooks extracted)
 
 ### Should Have (P1)
 - [ ] Session selector to switch between active sessions
@@ -213,13 +243,14 @@ cd src/dashboard-v2 && bunx tsc --noEmit
 
 | Phase | Duration | Dependencies | Status |
 |-------|----------|--------------|--------|
+| W0 closeout | 3-4 hours | W2.3 | ✅ COMPLETE |
 | Phase 1 | 1 hour | None | ✅ COMPLETE |
 | Phase 2 | 1 hour | Phase 1 | ✅ COMPLETE |
-| Phase 3 | 2 hours | Phase 2 | ⏳ PENDING |
-| Phase 4 | 1 hour | Phase 2 | ⏳ PARTIAL |
+| Phase 3 | 2 hours | W2.4 completion | ⏳ PENDING |
+| Phase 4 | 1 hour | Phase 3 | ⏳ PARTIAL |
 | Phase 5 | 2 hours | Phase 3, 4 | ⏳ PENDING |
 
-**Total Estimated**: 7 hours
+**Next Transition Window**: `W2.4 -> W3 -> W4 -> W5`
 
 ---
 

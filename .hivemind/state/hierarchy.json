@@ -245,14 +245,493 @@
             "id": "a_591926022026",
             "level": "action",
             "content": "Dispatching W2.3 help-overlay lane: implement `?` key trigger, open/close behavior, conflict handling with modal focus and navigation",
-            "status": "active",
+            "status": "pending",
             "created": 1772110751936,
             "stamp": "591926022026",
+            "children": []
+          },
+          {
+            "id": "a_122026022026",
+            "level": "action",
+            "content": "W2.3 Help Overlay lane COMPLETE. All 6 acceptance criteria met, all 3 gates pass (dashboard tsc, root tsc, npm test). Level-2 builder returned structured success with proper precedence chain (modal > help overlay > normal keys).",
+            "status": "active",
+            "created": 1772111531329,
+            "stamp": "122026022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_132026022026",
+        "level": "tactic",
+        "content": "Major pivot: Dashboard-v2 component restructuring required. index.tsx at 969 LOC (3.2x over limit). Creating Phase 8 adjustment with new W0 Component Restructuring wave.",
+        "status": "active",
+        "created": 1772111618023,
+        "stamp": "132026022026",
+        "children": [
+          {
+            "id": "a_162026022026",
+            "level": "action",
+            "content": "Phase 8 restructuring adjustment published at docs/plans/dashboard-v2-phase8-restructuring-adjustment-2026-02-26.md. W0 Component Restructuring wave added as blocking prerequisite for W3. W0.1-W0.5 lanes defined. Ready to dispatch W0.1 state extraction.",
+            "status": "pending",
+            "created": 1772111797436,
+            "stamp": "162026022026",
+            "children": []
+          },
+          {
+            "id": "a_212126022026",
+            "level": "action",
+            "content": "W0.1 State Extraction COMPLETE. state.ts created (123 LOC), index.tsx reduced 969→862 LOC (-11%). All 6 acceptance criteria met, all 3 gates pass. Ready for W0.2 panel extraction.",
+            "status": "pending",
+            "created": 1772115662798,
+            "stamp": "212126022026",
+            "children": []
+          },
+          {
+            "id": "a_172226022026",
+            "level": "action",
+            "content": "Previous W0.2 delegation call was interrupted by session disconnect before subagent execution completed. Marking blocked/acknowledged and preparing clean re-dispatch.",
+            "status": "pending",
+            "created": 1772119052485,
+            "stamp": "172226022026",
+            "children": []
+          },
+          {
+            "id": "a_182226022026",
+            "level": "action",
+            "content": "Executing clean W0.2 re-dispatch after interrupted run: leverage existing partial artifacts (constants + 4 panels), create missing 3 panels, and wire all 7 into MainPanel.",
+            "status": "pending",
+            "created": 1772119118844,
+            "stamp": "182226022026",
+            "children": []
+          },
+          {
+            "id": "a_192226022026",
+            "level": "action",
+            "content": "Execute W0.2 recovery: create 3 missing dashboard-v2 panels and wire all 7 panel components in MainPanel without UX/logic changes.",
+            "status": "pending",
+            "created": 1772119179428,
+            "stamp": "192226022026",
+            "children": []
+          },
+          {
+            "id": "a_272226022026",
+            "level": "action",
+            "content": "W0.2 recovery complete: 7 dashboard-v2 panels wired into MainPanel and inline render functions removed with verification gates passing.",
+            "status": "pending",
+            "created": 1772119661015,
+            "stamp": "272226022026",
+            "children": []
+          },
+          {
+            "id": "a_292226022026",
+            "level": "action",
+            "content": "W0.2 recovery complete: 7 dashboard-v2 panels wired into MainPanel and inline render functions removed with verification gates passing.",
+            "status": "pending",
+            "created": 1772119786898,
+            "stamp": "292226022026",
+            "children": []
+          },
+          {
+            "id": "a_292226022026-1",
+            "level": "action",
+            "content": "Preparing and dispatching W0.3 to extract MainPanel and HelpOverlay from index.tsx into components with behavior parity and gate verification.",
+            "status": "pending",
+            "created": 1772119799895,
+            "stamp": "292226022026",
+            "children": []
+          },
+          {
+            "id": "a_302226022026",
+            "level": "action",
+            "content": "Executing W0.3 extraction of MainPanel and HelpOverlay into components with behavior parity and verification.",
+            "status": "pending",
+            "created": 1772119848486,
+            "stamp": "302226022026",
+            "children": []
+          },
+          {
+            "id": "a_342226022026",
+            "level": "action",
+            "content": "W0.3 extraction complete: MainPanel and HelpOverlay moved to components, index.tsx slimmed and verified.",
+            "status": "pending",
+            "created": 1772120050796,
+            "stamp": "342226022026",
+            "children": []
+          },
+          {
+            "id": "a_362226022026",
+            "level": "action",
+            "content": "W0.3 complete: MainPanel and HelpOverlay extracted to components, index.tsx reduced to 395 LOC, verification gates pass.",
+            "status": "pending",
+            "created": 1772120162324,
+            "stamp": "362226022026",
+            "children": []
+          },
+          {
+            "id": "a_362226022026-1",
+            "level": "action",
+            "content": "Executing W0.4: extract dashboard-v2 polling and keyboard orchestration from index.tsx into useDashboardData and useKeyboardHandler hooks while preserving behavior.",
+            "status": "pending",
+            "created": 1772120217925,
+            "stamp": "362226022026",
+            "children": []
+          },
+          {
+            "id": "a_412226022026",
+            "level": "action",
+            "content": "W0.4 completed: extracted dashboard-v2 polling and keyboard orchestration into useDashboardData and useKeyboardHandler hooks; index.tsx now hook-wired with behavior parity maintained.",
+            "status": "pending",
+            "created": 1772120509879,
+            "stamp": "412226022026",
+            "children": []
+          },
+          {
+            "id": "a_432226022026",
+            "level": "action",
+            "content": "W0.4 complete: polling and keyboard orchestration extracted into useDashboardData and useKeyboardHandler hooks; index.tsx now 240 LOC with behavior parity and passing gates.",
+            "status": "pending",
+            "created": 1772120633327,
+            "stamp": "432226022026",
+            "children": []
+          },
+          {
+            "id": "a_442226022026",
+            "level": "action",
+            "content": "Finalizing W0 wave by reconciling master planning artifacts (phase loop, roadmap, milestones, transitions, gates, F/NF, edge cases) with verified execution evidence through W0.4.",
+            "status": "active",
+            "created": 1772120652547,
+            "stamp": "442226022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_452226022026",
+        "level": "tactic",
+        "content": "Executing W0.5 docs-only reconciliation for dashboard-v2 planning artifacts with verified W0.1-W0.4 evidence",
+        "status": "active",
+        "created": 1772120715058,
+        "stamp": "452226022026",
+        "children": []
+      },
+      {
+        "id": "tc_452226022026-1",
+        "level": "tactic",
+        "content": "Action: Update three dashboard-v2 planning docs to mark W0.1-W0.4 complete with W0.5 closeout, gate evidence, and next transition W0 complete -> W2.4 -> W3 -> W4 -> W5",
+        "status": "active",
+        "created": 1772120722102,
+        "stamp": "452226022026",
+        "children": [
+          {
+            "id": "a_522226022026",
+            "level": "action",
+            "content": "W0.5 completed: planning artifacts reconciled with verified evidence. W0 wave closed. Transition ready: W0 complete -> W2.4 -> W3 -> W4 -> W5.",
+            "status": "pending",
+            "created": 1772121171957,
+            "stamp": "522226022026",
+            "children": []
+          },
+          {
+            "id": "a_032326022026",
+            "level": "action",
+            "content": "Dispatching W2.4 with coordinator pattern: audit actual mouse capability, declare supported/unsupported paths, close interaction matrix, and encode defer obligations where needed.",
+            "status": "pending",
+            "created": 1772121794437,
+            "stamp": "032326022026",
+            "children": []
+          },
+          {
+            "id": "a_042326022026",
+            "level": "action",
+            "content": "W2.4 mouse capability audit and interaction matrix closeout docs update",
+            "status": "pending",
+            "created": 1772121840440,
+            "stamp": "042326022026",
+            "children": []
+          },
+          {
+            "id": "a_072326022026",
+            "level": "action",
+            "content": "W2.4 mouse capability audit and interaction matrix closeout docs update",
+            "status": "pending",
+            "created": 1772122078440,
+            "stamp": "072326022026",
+            "children": []
+          },
+          {
+            "id": "a_102326022026",
+            "level": "action",
+            "content": "W2.4 completed with partial-pass closeout: mouse lane audited as unsupported in current runtime, interaction matrix documented, Phase 9 defer obligations assigned, and W2 closeout encoded in planning artifacts.",
+            "status": "pending",
+            "created": 1772122212639,
+            "stamp": "102326022026",
+            "children": []
+          },
+          {
+            "id": "a_112326022026",
+            "level": "action",
+            "content": "Proceeding as planned into W3 kickoff: gather code-grounded observability surface map, draft W3 execution packet, and establish W3 pre-gate contract.",
+            "status": "pending",
+            "created": 1772122316421,
+            "stamp": "112326022026",
+            "children": []
+          },
+          {
+            "id": "a_202326022026",
+            "level": "action",
+            "content": "W3 docs-only kickoff execution: create W3 execution packet and update orchestration loop to in-progress kickoff with pre-gate open.",
+            "status": "pending",
+            "created": 1772122823993,
+            "stamp": "202326022026",
+            "children": []
+          },
+          {
+            "id": "a_242326022026",
+            "level": "action",
+            "content": "W3 docs-only kickoff packet published and orchestration loop updated to in-progress kickoff with pre-gate open.",
+            "status": "pending",
+            "created": 1772123044859,
+            "stamp": "242326022026",
+            "children": []
+          },
+          {
+            "id": "a_262326022026",
+            "level": "action",
+            "content": "W3 kickoff packet published and loop doc updated to in-progress pre-gate open. Proceeding to W3.1 contract lane execution (docs-first).",
+            "status": "pending",
+            "created": 1772123176071,
+            "stamp": "262326022026",
+            "children": []
+          },
+          {
+            "id": "a_262326022026-1",
+            "level": "action",
+            "content": "Executing W3.1 docs-first swarm surface contract artifact creation and packet status reflection.",
+            "status": "pending",
+            "created": 1772123218720,
+            "stamp": "262326022026",
+            "children": []
+          },
+          {
+            "id": "a_292326022026",
+            "level": "action",
+            "content": "W3.1 swarm surface contract artifact published and W3 packet reflected with contract-published lane status.",
+            "status": "pending",
+            "created": 1772123388424,
+            "stamp": "292326022026",
+            "children": []
+          },
+          {
+            "id": "a_322326022026",
+            "level": "action",
+            "content": "Executing W3.2 docs-first ToolRegistry surface contract artifact and reflecting contract-published status into W3 packet/loop docs.",
+            "status": "pending",
+            "created": 1772123566009,
+            "stamp": "322326022026",
+            "children": []
+          },
+          {
+            "id": "a_332326022026",
+            "level": "action",
+            "content": "Author W3.2 ToolRegistry contract doc and update W3 packet/loop to contract-published with next action W3.3.",
+            "status": "pending",
+            "created": 1772123621346,
+            "stamp": "332326022026",
+            "children": []
+          },
+          {
+            "id": "a_362326022026",
+            "level": "action",
+            "content": "W3.2 ToolRegistry contract doc published and W3 packet/loop updated for W3.3 readiness.",
+            "status": "pending",
+            "created": 1772123819833,
+            "stamp": "362326022026",
+            "children": []
+          },
+          {
+            "id": "a_392326022026",
+            "level": "action",
+            "content": "W3.2 ToolRegistry contract published (docs-only) and W3 packet/loop updated; W3.3 TimeTravel contract lane is next.",
+            "status": "pending",
+            "created": 1772123991502,
+            "stamp": "392326022026",
+            "children": []
+          },
+          {
+            "id": "a_402326022026",
+            "level": "action",
+            "content": "Executing W3.3 docs-first TimeTravel surface contract artifact and reflecting status into W3 packet/loop docs.",
+            "status": "pending",
+            "created": 1772124002044,
+            "stamp": "402326022026",
+            "children": []
+          },
+          {
+            "id": "a_402326022026-1",
+            "level": "action",
+            "content": "Executing W3.3 docs-first TimeTravel surface contract artifact and reflecting W3.3 contract-published status into W3 packet/loop docs.",
+            "status": "pending",
+            "created": 1772124058799,
+            "stamp": "402326022026",
+            "children": []
+          },
+          {
+            "id": "a_412326022026",
+            "level": "action",
+            "content": "Drafting W3.3 TimeTravel contract document and updating W3 packet/loop statuses to contract-published with W3.4 next dispatch.",
+            "status": "pending",
+            "created": 1772124074538,
+            "stamp": "412326022026",
+            "children": []
+          },
+          {
+            "id": "a_462326022026",
+            "level": "action",
+            "content": "W3.3 TimeTravel contract published (docs-only) and W3 packet/loop reflect W3.4 as next dispatch.",
+            "status": "pending",
+            "created": 1772124382085,
+            "stamp": "462326022026",
+            "children": []
+          },
+          {
+            "id": "a_462326022026-1",
+            "level": "action",
+            "content": "Executing W3.4 docs-first cross-surface ownership and event-map contract lane.",
+            "status": "pending",
+            "created": 1772124388034,
+            "stamp": "462326022026",
+            "children": []
+          },
+          {
+            "id": "a_462326022026-2",
+            "level": "action",
+            "content": "Execute docs-only W3.4 ownership/event-map contract publication and update W3 packet + orchestration loop.",
+            "status": "pending",
+            "created": 1772124418075,
+            "stamp": "462326022026",
+            "children": []
+          },
+          {
+            "id": "a_492326022026",
+            "level": "action",
+            "content": "W3.4 docs artifact published; W3 packet + orchestration loop updated with W3.5 next dispatch.",
+            "status": "pending",
+            "created": 1772124546645,
+            "stamp": "492326022026",
+            "children": []
+          },
+          {
+            "id": "a_502326022026",
+            "level": "action",
+            "content": "W3.4 ownership/event-map contract published (docs-only); dispatching W3.5 gate adjudication lane.",
+            "status": "pending",
+            "created": 1772124604527,
+            "stamp": "502326022026",
+            "children": []
+          },
+          {
+            "id": "a_502326022026-1",
+            "level": "action",
+            "content": "Execute W3.5 docs-only gate adjudication artifact and update W3 packet + orchestration loop for implementation kickoff.",
+            "status": "pending",
+            "created": 1772124648054,
+            "stamp": "502326022026",
+            "children": []
+          },
+          {
+            "id": "a_522326022026",
+            "level": "action",
+            "content": "Executing /hivefiver research deep-scan for W3.5 gate adjudication: inventory full HiveMind feature surface, user journeys, and real-time orchestration evidence across code + planning artifacts.",
+            "status": "pending",
+            "created": 1772124770945,
+            "stamp": "522326022026",
+            "children": []
+          },
+          {
+            "id": "a_532326022026",
+            "level": "action",
+            "content": "Deep-scan orchestration surface inventory across tools/hooks/lib/tests for W3.5 adjudication",
+            "status": "pending",
+            "created": 1772124814162,
+            "stamp": "532326022026",
+            "children": []
+          },
+          {
+            "id": "a_000027022026",
+            "level": "action",
+            "content": "Protocol correction: enforce zero sub-of-sub delegation and run lean docs-only evidence for W3.5 adjudication to unblock implementation kickoff.",
+            "status": "pending",
+            "created": 1772125251041,
+            "stamp": "000027022026",
+            "children": []
+          },
+          {
+            "id": "a_010027022026",
+            "level": "action",
+            "content": "W3.5 adjudication validated with lean docs-only evidence; preparing W3 implementation kickoff packet.",
+            "status": "pending",
+            "created": 1772125295208,
+            "stamp": "010027022026",
+            "children": []
+          },
+          {
+            "id": "a_020027022026",
+            "level": "action",
+            "content": "Create W3 implementation kickoff packet and update W3 execution/orchestration docs for lane dispatch",
+            "status": "pending",
+            "created": 1772125340050,
+            "stamp": "020027022026",
+            "children": []
+          },
+          {
+            "id": "a_040027022026",
+            "level": "action",
+            "content": "W3 implementation kickoff packet created and W3 docs updated for implementation lane dispatch",
+            "status": "pending",
+            "created": 1772125481970,
+            "stamp": "040027022026",
+            "children": []
+          },
+          {
+            "id": "a_050027022026",
+            "level": "action",
+            "content": "Lean governance correction applied: W3.5 adjudication validated and W3 implementation kickoff packet published with W3-I1..W3-I5 dispatch path.",
+            "status": "pending",
+            "created": 1772125549850,
+            "stamp": "050027022026",
+            "children": []
+          },
+          {
+            "id": "a_170027022026",
+            "level": "action",
+            "content": "Starting W3 implementation loop with dependency-aware dispatch: W3-I1 Swarm implementation first, sequential gating, max parallelism capped at 3 for independent lanes only.",
+            "status": "pending",
+            "created": 1772126246617,
+            "stamp": "170027022026",
+            "children": []
+          },
+          {
+            "id": "a_180027022026",
+            "level": "action",
+            "content": "Implement W3-I1 swarm surface in dashboard-v2 with tab wiring and TypeScript verification",
+            "status": "pending",
+            "created": 1772126307453,
+            "stamp": "180027022026",
+            "children": []
+          },
+          {
+            "id": "a_210027022026",
+            "level": "action",
+            "content": "W3-I1 swarm surface implementation complete in dashboard-v2 pending report handoff",
+            "status": "active",
+            "created": 1772126518862,
+            "stamp": "210027022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_591926022026"
+  "cursor": "a_210027022026"
 }

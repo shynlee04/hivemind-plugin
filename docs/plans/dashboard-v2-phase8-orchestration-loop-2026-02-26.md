@@ -147,6 +147,28 @@ Gate:
 
 ## 5) Wave Catalog (Current)
 
+### W0 Component Restructuring (COMPLETE)
+**Added**: 2026-02-26
+**Closeout**: 2026-02-26 (W0.5 reconciliation)
+**Trigger**: `index.tsx` at 969 LOC (3.2x over 300 LOC strategic limit)
+
+Scope delivered:
+- W0.1 state extraction (`state.ts`)
+- W0.2 panel extraction + shared constants
+- W0.3 `MainPanel`/`HelpOverlay` extraction
+- W0.4 keyboard/polling hook extraction
+- W0.5 closeout reconciliation and gate encoding
+
+Closeout snapshot:
+- `index.tsx` LOC progression: `969 -> 862 -> 531 -> 395 -> 240`
+- Strategic LOC target achieved: `index.tsx` now 240 (`<300`)
+- Key files present: `state.ts`, `constants.ts`, `panels/*.tsx` (7 files), `components/MainPanel.tsx`, `components/HelpOverlay.tsx`, `hooks/useDashboardData.ts`, `hooks/useKeyboardHandler.ts`
+
+Closeout gate outcomes:
+- `cd /Users/apple/hivemind-plugin/src/dashboard-v2 && bunx tsc --noEmit` -> PASS
+- `cd /Users/apple/hivemind-plugin && npx tsc --noEmit` -> PASS
+- `cd /Users/apple/hivemind-plugin && npm test` -> PASS (197 pass, 0 fail)
+
 ### W1 Real-Time Spine
 Scope:
 - SSE integration model, reconnect strategy, live status surfaces
@@ -158,6 +180,8 @@ Exit criteria:
 - Live update contract documented
 - Reconnect and fallback behavior documented
 
+Status: ✅ COMPLETE
+
 ### W2 Interaction Completeness
 Scope:
 - Input modal paths, language toggle, help overlay interaction map
@@ -168,15 +192,60 @@ Entry criteria:
 Exit criteria:
 - Interaction matrix complete (keyboard and mouse paths)
 
+Status: ✅ CLOSEOUT (partial-pass)
+
+Closeout notes:
+- W2.1-W2.3 are complete.
+- W2.4 completed as mouse capability audit + interaction matrix declaration with code-grounded evidence.
+- Mouse lane is explicitly unsupported in current runtime contract and deferred to Phase 9 with owner + verification obligations.
+- Evidence artifact: `docs/plans/dashboard-v2-phase8-w2-4-mouse-path-declaration-2026-02-26.md`.
+
 ### W3 Observability Surfaces
 Scope:
 - Swarm monitor, tool registry, time-travel surfaces
 
 Entry criteria:
 - V1 gap mapping confirmed
+- W2 completion (W0 blocker removed)
 
 Exit criteria:
 - Panel contracts + data ownership map complete
+
+Status: 🚧 IMPLEMENTATION KICKOFF ACTIVE (W3.5 adjudication published; implementation kickoff packet published)
+
+Kickoff artifact:
+- `docs/plans/dashboard-v2-phase8-w3-execution-packet-2026-02-26.md`
+- `docs/plans/dashboard-v2-phase8-w3-implementation-kickoff-packet-2026-02-26.md`
+
+Timestamped loop update (2026-02-26T16:33:41Z):
+- W3.2 ToolRegistry contract published (docs-only): `docs/plans/dashboard-v2-phase8-w3-2-tool-registry-contract-2026-02-26.md`
+- W3 remains pre-gate/open and implementation is not started in this update.
+- Next dispatch-ready action: `W3.3` TimeTravel contract lane.
+
+Timestamped loop update (2026-02-26T16:41:14Z):
+- W3.3 TimeTravel contract published (docs-only): `docs/plans/dashboard-v2-phase8-w3-3-time-travel-contract-2026-02-26.md`
+- W3 remains pre-gate/open and implementation is not started in this update.
+- Next dispatch-ready action: `W3.4` ownership/event map lane.
+
+Timestamped loop update (2026-02-26T16:46:58Z):
+- W3.4 ownership/event-map contract published (docs-only): `docs/plans/dashboard-v2-phase8-w3-4-ownership-event-map-2026-02-26.md`
+- W3 remains pre-gate/open and implementation is not started in this update.
+- Next dispatch-ready action: `W3.5 gate adjudication`.
+
+Timestamped loop update (2026-02-26T16:55:00Z):
+- W3.5 gate adjudication published (docs-only): `docs/plans/dashboard-v2-phase8-w3-5-gate-adjudication-2026-02-26.md`
+- Adjudication decision: `CONDITIONAL-GO` for W3 implementation kickoff.
+- W3 pre-gate state moved from `open` to `adjudicated`.
+- Next dispatch-ready action: `W3 implementation kickoff` (not W4).
+
+Timestamped loop update (2026-02-26T17:02:20Z):
+- W3 implementation kickoff packet published: `docs/plans/dashboard-v2-phase8-w3-implementation-kickoff-packet-2026-02-26.md`
+- Required risk closures imported into implementation phase: `R-W3-001`, `R-W3-002`.
+- Immediate dispatch order locked: `W3-I1 -> W3-I2 -> W3-I3 -> W3-I4 -> W3-I5`.
+- Immediate next action remains W3 implementation lane dispatch (not W4).
+
+Kickoff note:
+- W3 is actively packetized; no implementation-complete claim is made at this stage.
 
 ### W4 Resilience and Recovery
 Scope:
@@ -217,6 +286,12 @@ Post-gate (after execution):
 - Exit criteria pass/fail adjudication
 - Open risks classified (impact x probability)
 - Phase 9 linkage records emitted for all deferred items
+
+W0 closeout gate (executed):
+- LOC proof captured (`index.tsx` = 240)
+- W0.1-W0.4 lane evidence recorded
+- TypeScript gates PASS (dashboard + root)
+- Test gate PASS (`npm test`: 197 pass, 0 fail)
 
 ---
 
@@ -277,7 +352,12 @@ Packet fields:
 
 ## 11) Immediate Next Action
 
-Start W1 packetization under this model:
-- Produce W1 packet with full pre/in/post gates
-- Include explicit anti-subdelegation footer on all delegated tasks
-- Run iterative loop until W1 exit criteria passes or controlled defer is logged
+Execute transition path under this model:
+- Mark W0 as closed with W0.5 evidence encoded in planning artifacts
+- Mark W2 as closed with W2.4 partial-pass + controlled defer evidence encoded in planning artifacts
+- W3 kickoff active: packet published; W3.1, W3.2, W3.3, and W3.4 contract published (docs-only), pre-gate remains open (`docs/plans/dashboard-v2-phase8-w3-execution-packet-2026-02-26.md`)
+- W3.5 adjudication published with `CONDITIONAL-GO` (`docs/plans/dashboard-v2-phase8-w3-5-gate-adjudication-2026-02-26.md`)
+- W3 implementation kickoff packet published with lane/risk/gate/handoff conditions (`docs/plans/dashboard-v2-phase8-w3-implementation-kickoff-packet-2026-02-26.md`)
+- Next dispatch: W3 implementation lane dispatch (`W3-I1 -> W3-I2 -> W3-I3 -> W3-I4 -> W3-I5`)
+- Continue to W4 -> W5 only after W3 closeout and W4 handoff condition is satisfied
+- Keep W3 unblocked (W2 closure complete)

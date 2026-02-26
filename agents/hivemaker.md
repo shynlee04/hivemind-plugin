@@ -32,6 +32,10 @@ tools:
   hivemind_inspect: true
   hivemind_memory: true
   hivemind_session: true
+  hivemind_read_skeleton: true
+  hivemind_precision_patch: true
+  hivemind_mesh_pull: true
+  hivemind_doc_weaver: true
 permission:
   bash: allow
   tasks: allow
@@ -64,6 +68,10 @@ permission:
   hivemind_inspect: allow
   hivemind_memory: allow
   hivemind_session: allow
+  hivemind_read_skeleton: allow
+  hivemind_precision_patch: allow
+  hivemind_mesh_pull: allow
+  hivemind_doc_weaver: allow
 ---
 
 # Hivemaker Agent - HiveMind v3 Development Engine

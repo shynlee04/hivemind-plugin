@@ -15,6 +15,8 @@ tools:
   recall_mems: true
   scan_hierarchy: true
   think_back: true
+  hivemind_read_skeleton: true
+  hivemind_mesh_pull: true
   write: true
   edit: true
   google_search: true
@@ -47,6 +49,8 @@ permission:
   repomix: allow
   deepwiki: allow
   skill: allow
+  hivemind_read_skeleton: allow
+  hivemind_mesh_pull: allow
 ---
 
 # Hivexplorer Agent - Deep Scan + Fast Explore
