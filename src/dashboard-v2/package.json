@@ -4,7 +4,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "bun run --watch src/index.tsx"
+    "dev": "bun run --watch src/index.tsx",
+    "start": "bun run src/index.tsx",
+    "typecheck": "bunx tsc --noEmit -p tsconfig.json"
   },
   "devDependencies": {
     "@types/bun": "latest"
