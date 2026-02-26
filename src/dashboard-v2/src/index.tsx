@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { createCliRenderer, TextAttributes } from "@opentui/core";
 import { createRoot } from "@opentui/react";
 import { useEffect, useReducer } from "react";
@@ -14,7 +13,23 @@ const TABS = [
   "Settings",
 ];
 
-function createInitialState() {
+interface AppState {
+  activeTab: number;
+  connected: boolean;
+  loading: boolean;
+  error: string | null;
+  snapshot: any | null;
+}
+
+type AppAction =
+  | { type: "TAB_NEXT" }
+  | { type: "TAB_PREV" }
+  | { type: "TAB_SET"; value: number }
+  | { type: "CONNECTED"; value: boolean }
+  | { type: "SNAPSHOT"; value: any }
+  | { type: "ERROR"; value: string };
+
+function createInitialState(): AppState {
   return {
     activeTab: 0,
     connected: false,
@@ -24,7 +39,7 @@ function createInitialState() {
   };
 }
 
-function reducer(state, action) {
+function reducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
     case "TAB_NEXT":
       return { ...state, activeTab: (state.activeTab + 1) % TABS.length };
@@ -43,11 +58,11 @@ function reducer(state, action) {
   }
 }
 
-function trimRows(rows, limit = 18) {
+function trimRows(rows: string[], limit = 18): string[] {
   return rows.slice(0, limit);
 }
 
-function renderOverview(snapshot) {
+function renderOverview(snapshot: any) {
   const rows = [
     `Session ID: ${snapshot.overview.sessionId}`,
     `Mode: ${snapshot.overview.mode}`,
@@ -60,7 +75,7 @@ function renderOverview(snapshot) {
   return rows;
 }
 
-function renderPipeline(snapshot) {
+function renderPipeline(snapshot: any) {
   const rows = [
     `Task totals: ${snapshot.pipeline.total} | active=${snapshot.pipeline.inProgress} pending=${snapshot.pipeline.pending} blocked=${snapshot.pipeline.blocked} complete=${snapshot.pipeline.complete}`,
     `Delegation lanes: ${snapshot.pipeline.delegationLanes.join(", ") || "none"}`,
@@ -81,7 +96,7 @@ function renderPipeline(snapshot) {
   return rows;
 }
 
-function renderHierarchy(snapshot) {
+function renderHierarchy(snapshot: any) {
   return [
     `Nodes=${snapshot.hierarchy.totalNodes} Active=${snapshot.hierarchy.activeNodes} Depth=${snapshot.hierarchy.depth}`,
     "",
@@ -89,15 +104,15 @@ function renderHierarchy(snapshot) {
   ];
 }
 
-function renderIncidents(snapshot) {
+function renderIncidents(snapshot: any) {
   return [
     `Incident level: ${snapshot.incidents.level.toUpperCase()}`,
     "",
-    ...snapshot.incidents.items.map((item) => `- ${item}`),
+    ...snapshot.incidents.items.map((item: string) => `- ${item}`),
   ];
 }
 
-function renderCodeIntel(snapshot) {
+function renderCodeIntel(snapshot: any) {
   const rows = [
     `Source: ${snapshot.codeIntel.source}`,
     `Updated: ${snapshot.codeIntel.updatedAt}`,
@@ -108,12 +123,12 @@ function renderCodeIntel(snapshot) {
     `Compression ratio: ${snapshot.codeIntel.compressionRatio}%`,
     "",
     "Code-intel module surface:",
-    ...snapshot.codeIntel.codeIntelModules.map((name) => `- ${name}`),
+    ...snapshot.codeIntel.codeIntelModules.map((name: string) => `- ${name}`),
   ];
   return rows;
 }
 
-function renderGovernance(snapshot) {
+function renderGovernance(snapshot: any) {
   const rows = ["Checks:"];
   for (const check of snapshot.governance.checks) {
     rows.push(`- [${check.status}] ${check.key}: ${check.detail}`);
@@ -141,20 +156,14 @@ function renderGovernance(snapshot) {
   return rows;
 }
 
-function renderSettings(snapshot) {
+function renderSettings(snapshot: any) {
   return [
     "Sidecar boundaries:",
-    ...snapshot.settings.boundaries.map((entry) => `- ${entry}`),
-    "",
-    "Keyboard:",
-    "- Tab / Shift+Tab / j / k: change tabs",
-    "- Number keys 1-7: jump tabs",
-    "- r: refresh snapshot immediately",
-    "- q or Ctrl+C: exit",
+    ...snapshot.settings.boundaries.map((entry: string) => `- ${entry}`),
   ];
 }
 
-function renderTabRows(activeTab, snapshot) {
+function renderTabRows(activeTab: number, snapshot: any | null) {
   if (!snapshot) return ["Loading dashboard snapshot..."];
   if (activeTab === 0) return renderOverview(snapshot);
   if (activeTab === 1) return renderPipeline(snapshot);
@@ -165,12 +174,12 @@ function renderTabRows(activeTab, snapshot) {
   return renderSettings(snapshot);
 }
 
-function MainPanel({ state }) {
+function MainPanel({ state }: { state: AppState }) {
   if (state.error) {
     return (
       <box flexDirection="column" flexGrow={1}>
-        <text attributes={TextAttributes.BOLD}>Dashboard data load failed</text>
-        <text>{state.error}</text>
+        <text fg="red" attributes={TextAttributes.BOLD}>Dashboard data load failed</text>
+        <text fg="red">{state.error}</text>
       </box>
     );
   }
@@ -180,13 +189,20 @@ function MainPanel({ state }) {
   return (
     <box flexDirection="column" flexGrow={1}>
       {trimRows(rows, 24).map((row, index) => (
-        <text key={`row-${index}`} attributes={index === 0 ? TextAttributes.BOLD : undefined}>{row}</text>
+        <box key={`row-${index}`}>
+          <text 
+            fg={index === 0 ? "cyan" : undefined} 
+            attributes={index === 0 ? TextAttributes.BOLD : undefined}
+          >
+            {row}
+          </text>
+        </box>
       ))}
     </box>
   );
 }
 
-function App({ renderer }) {
+function App({ renderer }: { renderer: any }) {
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState);
 
   useEffect(() => {
@@ -214,7 +230,7 @@ function App({ renderer }) {
     if (stdin.isTTY) stdin.setRawMode(true);
     stdin.resume();
 
-    const onData = (chunk) => {
+    const onData = (chunk: string) => {
       if (chunk === "\t" || chunk === "j" || chunk === "\u001b[B") {
         dispatch({ type: "TAB_NEXT" });
         return;
@@ -249,31 +265,66 @@ function App({ renderer }) {
 
   return (
     <box flexDirection="column" flexGrow={1} padding={1}>
-      <box flexDirection="row" justifyContent="space-between">
-        <text attributes={TextAttributes.BOLD}>HiveMind OpenTUI Sidecar v2</text>
-        <text attributes={TextAttributes.DIM}>Overview | Pipeline | Hierarchy | Incidents | Code-Intel | Governance | Settings</text>
+      {/* Header Panel */}
+      <box borderStyle="rounded" borderColor="blue" paddingX={2} paddingY={0}>
+        <box flexDirection="row" justifyContent="space-between" width="100%">
+          <text attributes={TextAttributes.BOLD} fg="cyan">HiveMind OpenTUI Sidecar</text>
+          <text attributes={TextAttributes.DIM} fg="yellow">v2.0.0</text>
+        </box>
       </box>
 
-      <box flexDirection="row" flexGrow={1} marginTop={1}>
-        <box width={28} flexDirection="column">
+      {/* Main Content Area */}
+      <box flexDirection="row" flexGrow={1} marginTop={1} height={20}>
+        {/* Navigation Sidebar */}
+        <box width={24} borderStyle="single" borderColor="gray" flexDirection="column" paddingX={1}>
+          <box marginBottom={1}>
+            <text attributes={TextAttributes.BOLD} fg="magenta">MENU</text>
+          </box>
           {TABS.map((tab, index) => {
             const active = index === state.activeTab;
             return (
-              <text key={tab} attributes={active ? TextAttributes.BOLD : TextAttributes.DIM}>
-                {active ? ">" : " "} {index + 1}. {tab}
-              </text>
+              <box key={tab}>
+                <text 
+                  fg={active ? "green" : "gray"} 
+                  attributes={active ? TextAttributes.BOLD : undefined}
+                >
+                  {active ? "▶ " : "  "}{index + 1}. {tab}
+                </text>
+              </box>
             );
           })}
         </box>
-        <box flexGrow={1} flexDirection="column">
+
+        {/* Content Panel */}
+        <box flexGrow={1} borderStyle="single" borderColor="white" flexDirection="column" paddingX={2} marginLeft={1}>
+          <box marginBottom={1}>
+            <text attributes={TextAttributes.BOLD | TextAttributes.UNDERLINE} fg="cyan">
+              {TABS[state.activeTab]?.toUpperCase() ?? ""}
+            </text>
+          </box>
           <MainPanel state={state} />
         </box>
       </box>
 
-      <box marginTop={1}>
-        <text>
-          status={state.connected ? "connected" : "disconnected"} loading={state.loading ? "yes" : "no"} tab={TABS[state.activeTab]}
-        </text>
+      {/* Footer Panel */}
+      <box marginTop={1} borderStyle="rounded" borderColor={state.connected ? "green" : "red"} paddingX={2}>
+        <box flexDirection="row" justifyContent="space-between" width="100%">
+          <box flexDirection="row">
+            <text fg={state.connected ? "green" : "red"} attributes={TextAttributes.BOLD}>
+              ● {state.connected ? "CONNECTED" : "DISCONNECTED"}
+            </text>
+            <box marginLeft={2}>
+              <text attributes={TextAttributes.DIM}>
+                {state.loading ? "(Syncing...)" : "(Idle)"}
+              </text>
+            </box>
+          </box>
+          <box>
+            <text fg="gray">
+              [Tab/j/k] Navigate | [1-7] Jump | [r] Refresh | [q] Quit
+            </text>
+          </box>
+        </box>
       </box>
     </box>
   );
