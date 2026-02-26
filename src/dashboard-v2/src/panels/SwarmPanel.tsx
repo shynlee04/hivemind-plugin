@@ -8,6 +8,8 @@ interface SwarmPanelProps {
 
 export function SwarmPanel(props: SwarmPanelProps): React.ReactNode {
   const swarm = props.snapshot?.swarm;
+  const surfaceCorrelation = props.snapshot?.surfaces?.correlation;
+  const surfaceFreshness = props.snapshot?.surfaces?.freshness?.swarm;
 
   if (!swarm) {
     return (
@@ -23,6 +25,7 @@ export function SwarmPanel(props: SwarmPanelProps): React.ReactNode {
   }
 
   const noSignals = swarm.signals.length === 0;
+  const staleColor = surfaceFreshness?.isStale ? COLORS.neonAmber : COLORS.neonGreen;
 
   return (
     <box flexDirection="column" flexGrow={1} padding={1}>
@@ -38,6 +41,14 @@ export function SwarmPanel(props: SwarmPanelProps): React.ReactNode {
         <text fg={COLORS.neonAmber}>SESSIONS: {swarm.connectedSessions}</text>
         <text fg="gray"> | </text>
         <text fg={swarm.activeAgents > 0 ? COLORS.neonGreen : COLORS.neonAmber}>AGENTS: {swarm.activeAgents}</text>
+      </box>
+
+      <box flexDirection="row" marginBottom={1} paddingLeft={1}>
+        <text fg={COLORS.neonBlue}>RUN_KEY: {String(surfaceCorrelation?.canonicalRunKey ?? "n/a")}</text>
+        <text fg="gray"> | </text>
+        <text fg={COLORS.dimText}>SRC: {String(surfaceCorrelation?.source ?? "fallback")}</text>
+        <text fg="gray"> | </text>
+        <text fg={staleColor}>FRESHNESS: {surfaceFreshness?.isStale ? "STALE" : "FRESH"}</text>
       </box>
 
       <box marginBottom={1}>

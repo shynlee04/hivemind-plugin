@@ -2,6 +2,7 @@ import { access, readFile, readdir } from "node:fs/promises";
 import { constants } from "node:fs";
 import { join } from "node:path";
 import { apiClient } from "./api.js";
+import { resolveFreshness, resolveRunCorrelation } from "./surfaces.js";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -33,6 +34,33 @@ interface SwarmSignal {
   kind: "lane" | "task" | "session";
   label: string;
   detail: string;
+}
+
+interface TimeTravelTimelineEntry {
+  eventId: string;
+  sessionId: string;
+  actionId: string;
+  runKey: string;
+  runKeySource: string;
+  eventType: string;
+  status: string;
+  timestamp: string;
+}
+
+interface TimeTravelSnapshotSignal {
+  state: "available" | "metadata_only" | "missing";
+  snapshotId: string | null;
+  sessionId: string | null;
+  actionId: string | null;
+  capturedAt: string | null;
+  note: string;
+}
+
+interface TimeTravelCompareSignal {
+  state: "ready" | "degraded" | "unavailable";
+  mode: "in_session" | "cross_session" | "none";
+  changeCount: number;
+  note: string;
 }
 
 export interface DashboardSnapshot {
@@ -93,6 +121,50 @@ export interface DashboardSnapshot {
     anchors: Array<{ key: string; value: string }>;
     memsByShelf: Array<{ shelf: string; count: number }>;
     recentMessages: string[];
+  };
+  toolRegistry: {
+    catalog: {
+      totalTools: number;
+      tools: string[];
+      source: string;
+    };
+    schema: {
+      totalSchemas: number;
+      schemas: string[];
+      governanceCheckCount: number;
+      pendingChanges: number;
+    };
+    activity: {
+      activeTasks: number;
+      inProgressTasks: number;
+      activeLanes: number;
+      activeAgents: number;
+      sessions: number;
+      recentMessages: number;
+    };
+  };
+  timetravel: {
+    timelineState: "loading" | "ready";
+    timeline: TimeTravelTimelineEntry[];
+    snapshot: TimeTravelSnapshotSignal;
+    compare: TimeTravelCompareSignal;
+    warnings: string[];
+    lastRefreshAt: string;
+  };
+  surfaces: {
+    correlation: {
+      canonicalRunKey: string;
+      source: string;
+      swarm: { runKey: string; source: string };
+      toolRegistry: { runKey: string; source: string };
+      timetravel: { runKey: string; source: string };
+    };
+    freshness: {
+      generatedAt: string;
+      swarm: { lastUpdatedAt: string; ageMs: number; pollCadenceMs: number; staleAfterMs: number; isStale: boolean };
+      toolRegistry: { lastUpdatedAt: string; ageMs: number; pollCadenceMs: number; staleAfterMs: number; isStale: boolean };
+      timetravel: { lastUpdatedAt: string; ageMs: number; pollCadenceMs: number; staleAfterMs: number; isStale: boolean };
+    };
   };
   settings: {
     boundaries: string[];
@@ -295,6 +367,139 @@ async function listCodeIntelModules(projectRoot: string): Promise<string[]> {
   }
 }
 
+async function listModuleFiles(projectRoot: string, pathParts: string[]): Promise<string[]> {
+  const dirPath = join(projectRoot, ...pathParts);
+  try {
+    const entries = await readdir(dirPath, { withFileTypes: true });
+    return entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith(".ts") && entry.name !== "index.ts")
+      .map((entry) => entry.name)
+      .sort();
+  } catch {
+    return [];
+  }
+}
+
+function toTimelineEntries(
+  eventRows: unknown,
+  fallbackTasks: TaskNode[],
+  sessionId: string,
+): TimeTravelTimelineEntry[] {
+  if (Array.isArray(eventRows)) {
+    const entries = eventRows
+      .map((row) => {
+        if (!row || typeof row !== "object") return null;
+        const record = row as JsonRecord;
+        const eventId = String(record.event_id ?? record.id ?? "").trim();
+        const actionId = String(record.action_id ?? "n/a").trim() || "n/a";
+        const correlation = resolveRunCorrelation([
+          { source: "tool_run_id", value: record.tool_run_id },
+          { source: "dispatch_id", value: record.dispatch_id },
+          { source: "run_id", value: record.run_id },
+          { source: "correlation_id", value: record.correlation_id },
+          { source: "action_id", value: record.action_id },
+          { source: "event_id", value: record.event_id ?? record.id },
+        ]);
+        const timestamp = String(record.timestamp ?? record.created_at ?? "n/a").trim() || "n/a";
+        const eventType = String(record.event_type ?? record.type ?? "event").trim() || "event";
+        const status = String(record.status ?? "active").trim() || "active";
+        const eventSessionId = String(record.session_id ?? sessionId).trim() || sessionId;
+        if (!eventId) return null;
+        return {
+          eventId,
+          actionId,
+          runKey: correlation.runKey,
+          runKeySource: correlation.source,
+          timestamp,
+          eventType,
+          status,
+          sessionId: eventSessionId,
+        };
+      })
+      .filter((entry): entry is TimeTravelTimelineEntry => Boolean(entry));
+
+    if (entries.length > 0) {
+      return entries.sort((a, b) => {
+        const ts = b.timestamp.localeCompare(a.timestamp);
+        return ts !== 0 ? ts : b.eventId.localeCompare(a.eventId);
+      });
+    }
+  }
+
+  return fallbackTasks.slice(0, 8).map((task, index) => ({
+    eventId: task.id || `task-${index + 1}`,
+    sessionId,
+    actionId: task.id || "n/a",
+    runKey: task.id || "n/a",
+    runKeySource: task.id ? "task.id" : "fallback",
+    eventType: task.hivefiver_action ?? task.canonical_command ?? "task.status",
+    status: task.status || "pending",
+    timestamp: task.updated_at ?? "n/a",
+  }));
+}
+
+function latestTaskTimestamp(tasks: TaskNode[]): string | null {
+  let latest: string | null = null;
+  for (const task of tasks) {
+    if (!task.updated_at) continue;
+    if (latest === null || task.updated_at.localeCompare(latest) > 0) {
+      latest = task.updated_at;
+    }
+  }
+  return latest;
+}
+
+function toSnapshotSignal(snapshotRows: unknown, sessionId: string, activeActionId: string | null): TimeTravelSnapshotSignal {
+  if (Array.isArray(snapshotRows) && snapshotRows.length > 0) {
+    const first = snapshotRows[0];
+    if (first && typeof first === "object") {
+      const record = first as JsonRecord;
+      return {
+        state: "available",
+        snapshotId: String(record.snapshot_id ?? record.id ?? "snapshot-unknown"),
+        sessionId: String(record.session_id ?? sessionId),
+        actionId: String(record.action_id ?? activeActionId ?? "n/a"),
+        capturedAt: String(record.captured_at ?? record.timestamp ?? "n/a"),
+        note: "snapshot payload reference available",
+      };
+    }
+  }
+
+  return {
+    state: "metadata_only",
+    snapshotId: null,
+    sessionId,
+    actionId: activeActionId,
+    capturedAt: null,
+    note: "snapshot unavailable; metadata-only mode active",
+  };
+}
+
+function toCompareSignal(diffRows: unknown, snapshotSignal: TimeTravelSnapshotSignal): TimeTravelCompareSignal {
+  if (Array.isArray(diffRows) && diffRows.length > 0) {
+    const first = diffRows[0];
+    if (first && typeof first === "object") {
+      const record = first as JsonRecord;
+      const sameSession = String(record.session_id ?? snapshotSignal.sessionId ?? "") === String(snapshotSignal.sessionId ?? "");
+      return {
+        state: sameSession ? "ready" : "degraded",
+        mode: sameSession ? "in_session" : "cross_session",
+        changeCount: Number(record.change_count ?? 0),
+        note: sameSession
+          ? "diff summary ready for selected session"
+          : "cross-session diff is informational only",
+      };
+    }
+  }
+
+  return {
+    state: "degraded",
+    mode: "none",
+    changeCount: 0,
+    note: "diff compute unavailable; compare remains in degraded mode",
+  };
+}
+
 export async function loadServerData() {
   const health = await apiClient.checkHealth();
   const sessions = await apiClient.listSessions();
@@ -326,6 +531,9 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
     tasks: join(projectRoot, ".hivemind", "graph", "tasks.json"),
     trajectory: join(projectRoot, ".hivemind", "graph", "trajectory.json"),
     graphMems: join(projectRoot, ".hivemind", "graph", "mems.json"),
+    timelineEntries: join(projectRoot, ".hivemind", "graph", "timeline-events.json"),
+    stateSnapshots: join(projectRoot, ".hivemind", "graph", "state-snapshots.json"),
+    stateDiffs: join(projectRoot, ".hivemind", "graph", "state-diffs.json"),
     memoryMems: join(projectRoot, ".hivemind", "memory", "mems.json"),
     pendingChanges: join(projectRoot, ".hivemind", "graph", "pending-changes.json"),
     codeIntelEntities: join(projectRoot, ".hivemind", "graph", "codebase", "code-intel", "entities.json"),
@@ -341,11 +549,16 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
     tasks,
     trajectory,
     graphMems,
+    timelineEntries,
+    stateSnapshots,
+    stateDiffs,
     pendingChanges,
     codeIntelEntities,
     codeIntelSummary,
     compressedCodemap,
     codeIntelModules,
+    toolModules,
+    schemaModules,
     hasMemoryMemsFile,
     serverData,
   ] = await Promise.all([
@@ -355,11 +568,16 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
     readJson(paths.tasks),
     readJson(paths.trajectory),
     readJson(paths.graphMems),
+    readJson(paths.timelineEntries),
+    readJson(paths.stateSnapshots),
+    readJson(paths.stateDiffs),
     readJson(paths.pendingChanges),
     readJson(paths.codeIntelEntities),
     readJson(paths.codeIntelSummary),
     readJson(paths.compressedCodemap),
     listCodeIntelModules(projectRoot),
+    listModuleFiles(projectRoot, ["src", "tools"]),
+    listModuleFiles(projectRoot, ["src", "schemas"]),
     fileExists(paths.memoryMems),
     loadServerData(), // FIX: Actually fetch server data
   ]);
@@ -423,6 +641,51 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
     sessions: serverData.sessions.length,
   });
 
+  const timelineRows = (timelineEntries?.entries ?? timelineEntries?.events ?? timelineEntries?.timeline ?? null) as unknown;
+  const snapshotRows = (stateSnapshots?.snapshots ?? stateSnapshots?.entries ?? null) as unknown;
+  const diffRows = (stateDiffs?.diffs ?? stateDiffs?.entries ?? null) as unknown;
+  const sessionId = String(brainSession.id ?? "n/a");
+  const activeActionId = String((trajectory?.trajectory as JsonRecord | undefined)?.active_action_id ?? "").trim() || null;
+
+  const timelineSignal = toTimelineEntries(timelineRows, pipeline.activeTasks, sessionId);
+  const snapshotSignal = toSnapshotSignal(snapshotRows, sessionId, activeActionId);
+  const compareSignal = toCompareSignal(diffRows, snapshotSignal);
+  const timeTravelWarnings = [
+    ...(timelineSignal.length === 0 ? ["timeline_unavailable"] : []),
+    ...(snapshotSignal.state !== "available" ? ["snapshot_missing"] : []),
+    ...(compareSignal.state !== "ready" ? ["diff_unavailable"] : []),
+  ];
+
+  const primaryTaskRecord = (pipeline.activeTasks[0] ?? null) as (TaskNode & JsonRecord) | null;
+  const swarmCorrelation = resolveRunCorrelation([
+    { source: "task.tool_run_id", value: primaryTaskRecord?.tool_run_id },
+    { source: "task.dispatch_id", value: primaryTaskRecord?.dispatch_id },
+    { source: "task.run_id", value: primaryTaskRecord?.run_id },
+    { source: "trajectory.active_action_id", value: activeActionId },
+    { source: "task.id", value: primaryTaskRecord?.id },
+  ]);
+  const toolRegistryCorrelation = resolveRunCorrelation([
+    { source: "trajectory.active_action_id", value: activeActionId },
+    { source: "task.id", value: primaryTaskRecord?.id },
+    { source: "session.id", value: sessionId },
+  ]);
+  const timeTravelCorrelation = resolveRunCorrelation([
+    { source: "timeline.tool_run_id", value: timelineSignal[0]?.runKey },
+    { source: "timeline.action_id", value: timelineSignal[0]?.actionId },
+    { source: "snapshot.action_id", value: snapshotSignal.actionId },
+    { source: "trajectory.active_action_id", value: activeActionId },
+  ]);
+  const canonicalCorrelation = resolveRunCorrelation([
+    { source: `swarm.${swarmCorrelation.source}`, value: swarmCorrelation.runKey },
+    { source: `timetravel.${timeTravelCorrelation.source}`, value: timeTravelCorrelation.runKey },
+    { source: `toolRegistry.${toolRegistryCorrelation.source}`, value: toolRegistryCorrelation.runKey },
+  ]);
+
+  const nowIso = new Date().toISOString();
+  const swarmFreshness = resolveFreshness(latestTaskTimestamp(pipeline.activeTasks) ?? timelineSignal[0]?.timestamp, nowIso);
+  const toolRegistryFreshness = resolveFreshness(nowIso, nowIso);
+  const timetravelFreshness = resolveFreshness(timeTravelWarnings.length === 0 ? timelineSignal[0]?.timestamp : nowIso, nowIso);
+
   return {
     overview: {
       sessionId: String(brainSession.id ?? "n/a"),
@@ -431,7 +694,7 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
       driftScore: Number(brainMetrics.drift_score ?? 0),
       turnCount: Number(brainMetrics.turn_count ?? 0),
       filesTouched: Array.isArray(brainMetrics.files_touched) ? (brainMetrics.files_touched as unknown[]).length : 0,
-      updatedAt: new Date().toISOString(),
+      updatedAt: nowIso,
     },
     server: serverData, // FIX: Use actual server data from loadServerData()
     pipeline,
@@ -469,6 +732,50 @@ export async function loadDashboardSnapshot(projectRoot: string): Promise<Dashbo
       recentMessages: brainRecentMessages
         .slice(-6)
         .map((entry) => `${String(entry.role ?? "unknown")}: ${String(entry.content ?? "").slice(0, 100)}`),
+    },
+    toolRegistry: {
+      catalog: {
+        totalTools: toolModules.length,
+        tools: toolModules,
+        source: "src/tools",
+      },
+      schema: {
+        totalSchemas: schemaModules.length,
+        schemas: schemaModules,
+        governanceCheckCount: governanceChecks.length,
+        pendingChanges: pendingChangeCount,
+      },
+      activity: {
+        activeTasks: pipeline.activeTasks.length,
+        inProgressTasks: pipeline.inProgress,
+        activeLanes: pipeline.delegationLanes.length,
+        activeAgents: serverData.agents.length,
+        sessions: serverData.sessions.length,
+        recentMessages: brainRecentMessages.length,
+      },
+    },
+    timetravel: {
+      timelineState: "ready",
+      timeline: timelineSignal,
+      snapshot: snapshotSignal,
+      compare: compareSignal,
+      warnings: timeTravelWarnings,
+      lastRefreshAt: nowIso,
+    },
+    surfaces: {
+      correlation: {
+        canonicalRunKey: canonicalCorrelation.runKey,
+        source: canonicalCorrelation.source,
+        swarm: swarmCorrelation,
+        toolRegistry: toolRegistryCorrelation,
+        timetravel: timeTravelCorrelation,
+      },
+      freshness: {
+        generatedAt: nowIso,
+        swarm: swarmFreshness,
+        toolRegistry: toolRegistryFreshness,
+        timetravel: timetravelFreshness,
+      },
     },
     settings: {
       boundaries: [

@@ -8,6 +8,8 @@ import { SwarmPanel } from "../panels/SwarmPanel.js";
 import { HierarchyPanel } from "../panels/HierarchyPanel.js";
 import { IncidentsPanel } from "../panels/IncidentsPanel.js";
 import { CodeIntelPanel } from "../panels/CodeIntelPanel.js";
+import { ToolRegistryPanel } from "../panels/ToolRegistryPanel.js";
+import { TimeTravelPanel } from "../panels/TimeTravelPanel.js";
 import { GovernancePanel } from "../panels/GovernancePanel.js";
 import { SettingsPanel } from "../panels/SettingsPanel.js";
 import { TAB_KEYS, type AppState } from "../state.js";
@@ -56,9 +58,15 @@ export function MainPanel({ state }: { state: AppState }) {
       content = <CodeIntelPanel snapshot={state.snapshot} />;
       break;
     case 6:
-      content = <GovernancePanel snapshot={state.snapshot} />;
+      content = <ToolRegistryPanel snapshot={state.snapshot} />;
       break;
     case 7:
+      content = <TimeTravelPanel snapshot={state.snapshot} />;
+      break;
+    case 8:
+      content = <GovernancePanel snapshot={state.snapshot} />;
+      break;
+    case 9:
       content = <SettingsPanel snapshot={state.snapshot} lang={state.lang} />;
       break;
     default:

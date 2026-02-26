@@ -3,6 +3,14 @@ import type {} from "@opentui/react/jsx-runtime";
 import { t } from "../i18n.js";
 import type { DashboardLanguage } from "../i18n.js";
 import { COLORS } from "../constants.js";
+import { TAB_KEYS } from "../state.js";
+
+function getJumpHint(): string {
+  if (TAB_KEYS.length <= 9) {
+    return `1-${TAB_KEYS.length}`;
+  }
+  return "1-9 / 0";
+}
 
 export function HelpOverlay({ lang }: { lang: DashboardLanguage }) {
   return (
@@ -28,7 +36,7 @@ export function HelpOverlay({ lang }: { lang: DashboardLanguage }) {
       <box paddingLeft={1} flexDirection="column">
         <text fg={COLORS.dimText}>Tab / j / ↓  - {t("footer.navigate", lang)}</text>
         <text fg={COLORS.dimText}>Shift+Tab / k / ↑ - {t("footer.navigate", lang)} (prev)</text>
-        <text fg={COLORS.dimText}>1-7 - {t("footer.jump", lang)}</text>
+        <text fg={COLORS.dimText}>{getJumpHint()} - {t("footer.jump", lang)}</text>
       </box>
 
       <box marginTop={1} marginBottom={1}>

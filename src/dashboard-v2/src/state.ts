@@ -18,6 +18,8 @@ export const TAB_KEYS = [
   "tab.hierarchy",
   "tab.incidents",
   "tab.codeintel",
+  "tab.tool_registry",
+  "tab.time_travel",
   "tab.governance",
   "tab.settings",
 ] as const;
@@ -92,7 +94,7 @@ export function reducer(state: AppState, action: AppAction): AppState {
     case "TAB_PREV":
       return { ...state, activeTab: (state.activeTab - 1 + TAB_KEYS.length) % TAB_KEYS.length };
     case "TAB_SET":
-      return { ...state, activeTab: action.value };
+      return { ...state, activeTab: Math.max(0, Math.min(action.value, TAB_KEYS.length - 1)) };
     case "CONNECTED":
       return { ...state, connected: action.value };
     case "SNAPSHOT":

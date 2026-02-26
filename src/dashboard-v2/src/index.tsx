@@ -30,6 +30,13 @@ function getTabs(lang: DashboardLanguage): string[] {
   return TAB_KEYS.map((key) => t(key as any, lang));
 }
 
+function getJumpHint(): string {
+  if (TAB_KEYS.length <= 9) {
+    return `1-${TAB_KEYS.length}`;
+  }
+  return "1-9/0";
+}
+
 function App({ renderer }: { renderer: any }) {
   const [state, dispatch] = React.useReducer(reducer, undefined, createInitialState);
   const stateRef = React.useRef(state);
@@ -158,7 +165,7 @@ function App({ renderer }: { renderer: any }) {
         <box flexDirection="row">
           <text fg={COLORS.dimText}>[Tab/j/k] {t("footer.navigate", state.lang)}</text>
           <text fg="gray"> | </text>
-          <text fg={COLORS.dimText}>[1-8] {t("footer.jump", state.lang)}</text>
+          <text fg={COLORS.dimText}>[{getJumpHint()}] {t("footer.jump", state.lang)}</text>
           <text fg="gray"> | </text>
           <text fg={COLORS.dimText}>[r] {t("footer.refresh", state.lang)}</text>
           <text fg="gray"> | </text>

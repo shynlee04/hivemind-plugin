@@ -724,14 +724,131 @@
             "id": "a_210027022026",
             "level": "action",
             "content": "W3-I1 swarm surface implementation complete in dashboard-v2 pending report handoff",
-            "status": "active",
+            "status": "pending",
             "created": 1772126518862,
             "stamp": "210027022026",
+            "children": []
+          },
+          {
+            "id": "a_150227022026",
+            "level": "action",
+            "content": "W3-I1 handoff accepted with dashboard-v2 gate pass; dispatching W3-I2 ToolRegistry implementation lane sequentially.",
+            "status": "pending",
+            "created": 1772133350228,
+            "stamp": "150227022026",
+            "children": []
+          },
+          {
+            "id": "a_160227022026",
+            "level": "action",
+            "content": "Implement W3-I2 ToolRegistry surface in dashboard-v2 with tab registration, deterministic fallback states, and compile verification.",
+            "status": "pending",
+            "created": 1772133396617,
+            "stamp": "160227022026",
+            "children": []
+          },
+          {
+            "id": "a_210227022026",
+            "level": "action",
+            "content": "W3-I2 ToolRegistry lane completed with dashboard-v2 gate pass; advancing to W3-I3 TimeTravel lane.",
+            "status": "pending",
+            "created": 1772133686997,
+            "stamp": "210227022026",
+            "children": []
+          },
+          {
+            "id": "a_220227022026",
+            "level": "action",
+            "content": "Implement W3-I3 TimeTravel surface in dashboard-v2 with timeline/snapshot/compare fallbacks and tab wiring.",
+            "status": "pending",
+            "created": 1772133741218,
+            "stamp": "220227022026",
+            "children": []
+          },
+          {
+            "id": "a_260227022026",
+            "level": "action",
+            "content": "W3-I3 TimeTravel surface implemented in dashboard-v2 with tab wiring and deterministic degraded fallbacks.",
+            "status": "pending",
+            "created": 1772134004177,
+            "stamp": "260227022026",
+            "children": []
+          },
+          {
+            "id": "a_290227022026",
+            "level": "action",
+            "content": "W3-I3 accepted with dashboard-v2 gate pass; dispatching W3-I4 cross-surface integration/risk-closure lane with full plan context pack.",
+            "status": "pending",
+            "created": 1772134190842,
+            "stamp": "290227022026",
+            "children": []
+          },
+          {
+            "id": "a_300227022026",
+            "level": "action",
+            "content": "Execute W3-I4 cross-surface integration in src/dashboard-v2/src: normalize run correlation key and shared stale cadence semantics across Swarm/ToolRegistry/TimeTravel without regressions.",
+            "status": "pending",
+            "created": 1772134235003,
+            "stamp": "300227022026",
+            "children": []
+          },
+          {
+            "id": "a_340227022026",
+            "level": "action",
+            "content": "W3-I4 cross-surface integration implemented in src/dashboard-v2/src with canonical run correlation mapping and unified freshness cadence semantics.",
+            "status": "pending",
+            "created": 1772134458221,
+            "stamp": "340227022026",
+            "children": []
+          },
+          {
+            "id": "a_350227022026",
+            "level": "action",
+            "content": "W3-I4 integration completed with correlation/freshness unification; executing W3-I5 verification gate.",
+            "status": "pending",
+            "created": 1772134538126,
+            "stamp": "350227022026",
+            "children": []
+          },
+          {
+            "id": "a_360227022026",
+            "level": "action",
+            "content": "Executing W3-I5 verification gate: run dashboard-v2 TS, repo TS, and full test suite for closeout adjudication.",
+            "status": "pending",
+            "created": 1772134592052,
+            "stamp": "360227022026",
+            "children": []
+          },
+          {
+            "id": "a_380227022026",
+            "level": "action",
+            "content": "W3-I5 verification gate executed: dashboard-v2 TS, repo TS, and npm test all passing for closeout adjudication.",
+            "status": "pending",
+            "created": 1772134715181,
+            "stamp": "380227022026",
+            "children": []
+          },
+          {
+            "id": "a_390227022026",
+            "level": "action",
+            "content": "W3-I5 verification gate returned GO (dashboard-v2 TS, repo TS, npm test all passing); adjudicating W3 closeout and W4 handoff readiness.",
+            "status": "pending",
+            "created": 1772134759377,
+            "stamp": "390227022026",
+            "children": []
+          },
+          {
+            "id": "a_390227022026-1",
+            "level": "action",
+            "content": "W3 closeout adjudicated GO; W4 handoff readiness confirmed with W4 pre-gate kickoff queued.",
+            "status": "active",
+            "created": 1772134783014,
+            "stamp": "390227022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_210027022026"
+  "cursor": "a_390227022026-1"
 }

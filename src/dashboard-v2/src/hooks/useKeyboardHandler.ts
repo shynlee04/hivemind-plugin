@@ -2,6 +2,7 @@ import React from "react";
 import { apiClient } from "../api.js";
 import { t, toggleLang } from "../i18n.js";
 import type { AppAction, AppState } from "../state.js";
+import { TAB_KEYS } from "../state.js";
 
 type UseKeyboardHandlerParams = {
   stateRef: React.MutableRefObject<AppState>;
@@ -112,8 +113,15 @@ export function useKeyboardHandler({ stateRef, dispatch, renderer, refresh }: Us
         }
         return;
       }
-      if (chunk >= "1" && chunk <= "8") {
-        dispatch({ type: "TAB_SET", value: Number(chunk) - 1 });
+      if (chunk >= "1" && chunk <= "9") {
+        const index = Number(chunk) - 1;
+        if (index < TAB_KEYS.length) {
+          dispatch({ type: "TAB_SET", value: index });
+        }
+        return;
+      }
+      if (chunk === "0" && TAB_KEYS.length >= 10) {
+        dispatch({ type: "TAB_SET", value: 9 });
         return;
       }
       if (chunk === "l") {

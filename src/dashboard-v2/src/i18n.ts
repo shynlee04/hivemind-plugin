@@ -27,6 +27,8 @@ export interface DashboardStrings {
   "tab.hierarchy": string;
   "tab.incidents": string;
   "tab.codeintel": string;
+  "tab.tool_registry": string;
+  "tab.time_travel": string;
   "tab.governance": string;
   "tab.settings": string;
 
@@ -167,6 +169,8 @@ const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
     "tab.hierarchy": "Hierarchy",
     "tab.incidents": "Incidents",
     "tab.codeintel": "Code-Intel",
+    "tab.tool_registry": "Tool Registry",
+    "tab.time_travel": "Time Travel",
     "tab.governance": "Governance",
     "tab.settings": "Settings",
 
@@ -251,7 +255,7 @@ const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
     "settings.keyboard_controls": "KEYBOARD_CONTROLS",
     "settings.next_tab": "Tab / j / ↓ - Next tab",
     "settings.prev_tab": "Shift+Tab / k / ↑ - Prev tab",
-    "settings.jump_tab": "1-8 - Jump to tab",
+    "settings.jump_tab": "1-9 / 0 - Jump to tab",
     "settings.refresh_snapshot": "r - Refresh snapshot",
     "settings.create_session": "c - Create session (server)",
     "settings.send_message": "m - Send message (server)",
@@ -305,6 +309,8 @@ const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
     "tab.hierarchy": "Cây phân cấp",
     "tab.incidents": "Sự cố",
     "tab.codeintel": "Code-Intel",
+    "tab.tool_registry": "Kho công cụ",
+    "tab.time_travel": "Du hành trạng thái",
     "tab.governance": "Quản trị",
     "tab.settings": "Cài đặt",
 
@@ -389,7 +395,7 @@ const STRINGS: Record<DashboardLanguage, DashboardStrings> = {
     "settings.keyboard_controls": "ĐIỀU_KHIỂN_PHÍM",
     "settings.next_tab": "Tab / j / ↓ - Tab tiếp",
     "settings.prev_tab": "Shift+Tab / k / ↑ - Tab trước",
-    "settings.jump_tab": "1-8 - Nhảy đến tab",
+    "settings.jump_tab": "1-9 / 0 - Nhảy đến tab",
     "settings.refresh_snapshot": "r - Làm mới snapshot",
     "settings.create_session": "c - Tạo phiên (máy chủ)",
     "settings.send_message": "m - Gửi tin nhắn (máy chủ)",
