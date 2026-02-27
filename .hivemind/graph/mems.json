@@ -324,6 +324,54 @@
       "staleness_stamp": "2026-02-27T19:35:40.207Z",
       "created_at": "2026-02-27T19:35:40.207Z",
       "updated_at": "2026-02-27T19:35:40.207Z"
+    },
+    {
+      "id": "18984a00-a89b-4b7b-bbbb-f9f8b9ff3f46",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "origin_task_id": null,
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "CRITICAL USER CORRECTION (2026-02-28): The real blockers are NOT D-07/D-12 grep selectors. The structural problems are: (1) auto-new-session mechanism is MISSING — this is the \"game-changing-and-measurable-factor\" per SYSTEM-DIRECTIVES.md §3A, (2) Sector-1 context-engineering engines are poorly engineered — auto-injection, hooks, context lifecycle are all weak, (3) Session + context management per SYSTEM-DIRECTIVES.md is unbuilt — connection loss or session switch = total coherence loss, (4) The master plan is a LIVING document that must be iteratively traversed, modified, adjusted — not just linearly executed, (5) PITFALLS.md is a critical operational reference that must be tracked alongside execution, (6) Sector-2 is being done first because it's easier, but Sector-1 auto mechanisms continue producing wrongly hooked injection context in parallel.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-27T20:08:51.831Z",
+      "created_at": "2026-02-27T20:08:51.831Z",
+      "updated_at": "2026-02-27T20:08:51.831Z"
+    },
+    {
+      "id": "61c72c4e-f703-4841-ba77-9ff01e94499e",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "origin_task_id": null,
+      "shelf": "architecture",
+      "type": "insight",
+      "content": "STRATEGIC RECON (2026-02-28): Sector-1 context engines at ~40% readiness. Auto-session: 2.4/10. STRONGEST foundations: event-bus (well-engineered, no consumers), graph schemas with FK, staleness detection, cognitive-packer budget logic. WORST gaps: auto-new-session orchestrator (UNBUILT), progressive disclosure L0-L3 (MISSING), SOT materialization (MISSING), event consumers (infrastructure exists, no wiring), auto-purge (MISSING). Estimated 2000-3000 lines new code, 4-6 weeks focused engineering. Wave 2C is the critical path but master plan needs adjustment — Wave 2C as written is insufficient for the depth SYSTEM-DIRECTIVES demands.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-27T20:12:55.165Z",
+      "created_at": "2026-02-27T20:12:55.165Z",
+      "updated_at": "2026-02-27T20:12:55.165Z"
+    },
+    {
+      "id": "8388c882-6852-4185-9fd9-d783175633bf",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "origin_task_id": null,
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Implemented session-intent-classifier library and barrel export on v-2.9-harness-dev; verified with tsc_exit:0 and npm test pass 215/215.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-27T20:29:11.685Z",
+      "created_at": "2026-02-27T20:29:11.685Z",
+      "updated_at": "2026-02-27T20:29:11.685Z"
+    },
+    {
+      "id": "dd1e5bd0-4c7b-4b81-8a5d-5940a1df447e",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "origin_task_id": null,
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "Wave alpha verification checkpoint executed: reviewed session-intent-classifier, planning-materializer, event-consumers, and barrel exports; captured integration risks.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-27T20:40:50.411Z",
+      "created_at": "2026-02-27T20:40:50.411Z",
+      "updated_at": "2026-02-27T20:40:50.411Z"
     }
   ]
 }

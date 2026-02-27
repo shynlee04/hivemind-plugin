@@ -719,8 +719,136 @@
             "children": []
           }
         ]
+      },
+      {
+        "id": "tc_090328022026",
+        "level": "tactic",
+        "content": "Wave 2-P0 COMPLETE. STRATEGIC PIVOT per user correction: D-07/D-12 grep fixes are tactical cleanup, NOT strategic priority. Real blockers are: (1) auto-new-session mechanism unbuilt (SYSTEM-DIRECTIVES §3A), (2) session+context lifecycle unbuilt, (3) Sector-1 context engines poorly engineered. Master plan must be iteratively adjusted to reflect actual gaps. Wave 2C (Auto-Session Foundation) is the critical path.",
+        "status": "active",
+        "created": 1772222977441,
+        "stamp": "090328022026",
+        "children": [
+          {
+            "id": "a_090328022026",
+            "level": "action",
+            "content": "Strategic assessment: Dispatching reconnaissance to map actual state of auto-session mechanism, session lifecycle hooks, and context engineering engines in Sector-1 — against what SYSTEM-DIRECTIVES demands.",
+            "status": "active",
+            "created": 1772222997176,
+            "stamp": "090328022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_160328022026",
+        "level": "tactic",
+        "content": "Wave 2C Planning: Loading SYSTEM-DIRECTIVES requirements, master plan current state, and framing detailed execution plan for auto-session orchestrator + SOT materialization + event consumer wiring + compaction bridge.",
+        "status": "active",
+        "created": 1772223410472,
+        "stamp": "160328022026",
+        "children": [
+          {
+            "id": "a_200328022026",
+            "level": "action",
+            "content": "Wave 2C: Framing detailed execution plan with 6 knots — session-intent-classifier, planning-materializer, event-consumer-wiring, compaction-bridge, event-handler-enhancement, tests",
+            "status": "pending",
+            "created": 1772223643693,
+            "stamp": "200328022026",
+            "children": []
+          },
+          {
+            "id": "a_250328022026",
+            "level": "action",
+            "content": "Implement session-intent-classifier library and export wiring with TypeScript verification",
+            "status": "pending",
+            "created": 1772223950534,
+            "stamp": "250328022026",
+            "children": []
+          },
+          {
+            "id": "a_260328022026",
+            "level": "action",
+            "content": "Implement event-consumers registry and export wiring with TypeScript verification",
+            "status": "pending",
+            "created": 1772224002462,
+            "stamp": "260328022026",
+            "children": []
+          },
+          {
+            "id": "a_260328022026-1",
+            "level": "action",
+            "content": "Implement planning-materializer library and export wiring with TypeScript verification",
+            "status": "pending",
+            "created": 1772224005347,
+            "stamp": "260328022026",
+            "children": []
+          },
+          {
+            "id": "a_290328022026",
+            "level": "action",
+            "content": "Session intent classifier implemented; running verification and evidence capture",
+            "status": "pending",
+            "created": 1772224175139,
+            "stamp": "290328022026",
+            "children": []
+          },
+          {
+            "id": "a_330328022026",
+            "level": "action",
+            "content": "Event consumer registry implemented and verified with tests + typecheck evidence",
+            "status": "pending",
+            "created": 1772224408696,
+            "stamp": "330328022026",
+            "children": []
+          },
+          {
+            "id": "a_340328022026",
+            "level": "action",
+            "content": "HALTED: User warns about intricate connections between planning materializer, code-intel engines (codewiki, codemaps, knowledgebase), and session lifecycle. Pausing execution to verify Wave α output and assess integration depth before proceeding.",
+            "status": "pending",
+            "created": 1772224462436,
+            "stamp": "340328022026",
+            "children": []
+          },
+          {
+            "id": "a_360328022026",
+            "level": "action",
+            "content": "Verify Wave alpha output quality for new lib files and integration risks",
+            "status": "pending",
+            "created": 1772224606950,
+            "stamp": "360328022026",
+            "children": []
+          },
+          {
+            "id": "a_390328022026",
+            "level": "action",
+            "content": "Auto-realign: /hivefiver research lane for Wave alpha verification",
+            "status": "pending",
+            "created": 1772224776197,
+            "stamp": "390328022026",
+            "children": []
+          },
+          {
+            "id": "a_420328022026",
+            "level": "action",
+            "content": "FULL HALT — User critical warning about integration safety. Wave α files exist as dead code. Must NOT wire into hooks until full integration risks are understood and schema mismatches resolved. Context poisoning risk is P0.",
+            "status": "pending",
+            "created": 1772224921880,
+            "stamp": "420328022026",
+            "children": []
+          },
+          {
+            "id": "a_480328022026",
+            "level": "action",
+            "content": "HALT LIFTED — Executing Wave α remediation: (1) Fix event-consumers.ts phantom schema keys, (2) Fix planning-materializer.ts path resolution, (3) Map integration surface for revised Wave 2C plan.",
+            "status": "active",
+            "created": 1772225283421,
+            "stamp": "480328022026",
+            "children": []
+          }
+        ]
       }
     ]
   },
-  "cursor": "a_490228022026"
+  "cursor": "a_480328022026"
 }

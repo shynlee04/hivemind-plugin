@@ -143,6 +143,32 @@
       "created_at": "2026-02-27T19:47:46.610Z",
       "purged_at": null,
       "transferred_to_governance": false
+    },
+    {
+      "id": "1a9d7166-0f32-48db-a259-ee2d4730ba7f",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "category": "planning",
+      "source": "strategic-recon-synthesis",
+      "content": "## STRATEGIC RECONNAISSANCE SYNTHESIS (2026-02-28)\n\n### Auto-Session Mechanism (Recon 1) — Readiness: 2.4/10\n- Session init: MANUAL only (declare_intent required). No auto-detect/classify/route.\n- Auto-classification: MISSING. session-memory-classifier.ts exists (post-hoc memory artifacts only, NOT session intent)\n- OpenCode SDK: Client available but session.created event ONLY LOGGED (line 181 event-handler.ts), NO auto-classification triggered\n- Compaction bridge: PASSIVE — preserves context but doesn't PREPARE next session. STATE.md never materialized\n- Planning materialization: Templates exist (planning-ops.ts) but NEVER POPULATED with actual content. No planning-materializer.ts\n\n### Context Lifecycle Engines (Recon 2) — Readiness: ~40%\n- Context injection: FLAT XML dump (cognitive-packer.ts, 2500 char budget). No role-specific, no progressive disclosure, no task-specific filtering\n- Memory classification: MANUAL tool invocation only. No auto-purge. No AI classification. confidence HARDCODED 0.9\n- Staleness/drift: FUNCTIONAL but no recovery mechanism. Drift detection exists, no auto-fix\n- Progressive disclosure: COMPLETELY MISSING. No L0→L1→L2→L3 layers\n- Graph/relational: WELL-ENGINEERED schemas + FK validation, but NO query API, no navigation\n- Event bus: WELL-ENGINEERED infrastructure (12 event types), but NO CONSUMERS registered. Events emitted into void.\n\n### STRONGEST FOUNDATIONS TO BUILD ON\n1. Zod schemas with FK constraints (graph-nodes.ts)\n2. Event bus architecture (event-bus.ts) — well-designed, just needs consumers\n3. Staleness detection with active-task awareness (staleness.ts)\n4. Budget-based context compression (cognitive-packer.ts)\n5. Session boundary detection logic (session-boundary.ts)\n6. SDK client singleton + event handler framework\n\n### CRITICAL PATH per SYSTEM-DIRECTIVES\n1. Auto-new-session orchestrator (SYSTEM-DIRECTIVES §3A) — UNBUILT, P0\n2. Progressive disclosure L0→L3 (SYSTEM-DIRECTIVES §4) — MISSING, P0\n3. SOT materialization engine (trajectory→PROJECT.md, anchors→STATE.md) — MISSING, P1\n4. Event consumer wiring (memory:classified → governance transfer) — INFRASTRUCTURE EXISTS, just needs consumers, P1\n5. Auto-purge daemon for temporary session memory — MISSING, P1\n6. Graph query API for context relevance — MISSING, P2",
+      "condensed": "## STRATEGIC RECONNAISSANCE SYNTHESIS (2026-02-28)\n\n### Auto-Session Mechanism (Recon 1) — Readiness: 2.4/10\n- Session init: MANUAL only (declare_intent required). No auto-detect/classify/route.\n- Auto-classification: MISSING. session-memor",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-02-27T20:12:50.435Z",
+      "purged_at": null,
+      "transferred_to_governance": false
+    },
+    {
+      "id": "5749a0f1-e844-4c54-beeb-55ad55bd59e8",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "category": "research_synthesis",
+      "source": "hivefiver-auto-realign",
+      "content": "Auto-realign research checkpoint: assessed task scope from user packet and existing src/lib/session-memory-classifier.ts + src/lib/index.ts patterns before implementation.",
+      "condensed": "Auto-realign research checkpoint: assessed task scope from user packet and existing src/lib/session-memory-classifier.ts + src/lib/index.ts patterns before implementation.",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-02-27T20:29:19.856Z",
+      "purged_at": null,
+      "transferred_to_governance": false
     }
   ]
 }

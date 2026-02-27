@@ -41,6 +41,18 @@
       "value": "FRAMEWORK AUDIT (2026-02-28): S-01→S-18: 12 PASS / 2 FAIL / 4 WARN. D-01→D-15: 5 CLEAN / 3 DETECTED / 7 SKIP. P0: S-01 (6 agents missing tasks), D-07 (delegation_source missing). P1: S-14 (0/12 GREEN-FLAG bodies), D-12 (return_schema missing), D-15 (7 skills no routing), S-11 (1 orphan prompt). WARNS: S-05 (parity drift 8 files), S-12 (2 templates weak), S-13 (3 orphan refs). KEY INSIGHT: structural wiring is solid but CONTENT QUALITY is poor — command bodies, agent tasks, delegation contracts all need remediation DURING Wave 2, not after.",
       "created_at": 1772218669673,
       "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "user-correction-2026-02-28",
+      "value": "CRITICAL: Auto-new-session is the #1 unbuilt mechanism (SYSTEM-DIRECTIVES §3A). Session+context lifecycle per SYSTEM-DIRECTIVES is unbuilt — causes total coherence loss on disruption. Master plan must be iteratively adjusted, not linearly executed. Sector-1 context engines are poorly engineered (hooks, auto-injection, context lifecycle). PITFALLS.md is operational reference. D-07/D-12 grep fixes are tactical cleanup, NOT strategic priority.",
+      "created_at": 1772222934512,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "wave-2c-halt-findings-2026-02-28",
+      "value": "HALT FINDINGS: (1) Wave α files are DEAD CODE — 3 libs exist but 0 callers. (2) event-consumers.ts queues mutation keys (memory_governance_increment, temporary_exports_*_increment) that DON'T EXIST in BrainState schema — schema mismatch. (3) planning-materializer.ts has path resolution inconsistency (getEffectivePaths vs hardcoded join). (4) Watch-integration NOT wired in plugin init. (5) CQRS queue requires tool execution to flush — consumers queuing without flush = silent data loss. (6) Planning/code-intel/session lifecycle are deeply coupled — cannot wire one without understanding ALL.",
+      "created_at": 1772224951022,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
     }
   ],
   "version": "1.0.0"
