@@ -13,6 +13,16 @@ required_templates: []
 chain_group: hivefiver
 group: hivefiver
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - persona_lane
+    - project_type
+    - domain_lane
+    - governance_mode
+    - required_gates
+    - next_command
+    - artifact_path
 ---
 
 # HiveFiver Start

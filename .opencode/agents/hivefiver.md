@@ -1,7 +1,6 @@
 ---
 name: hivefiver
-description: Meta-builder and framework doctor for Sector-2 assets. Designs and
-  refactors agentic framework components only.
+description: "Meta-builder and framework doctor for Sector-2 assets. Designs and refactors agentic framework components only."
 tasks:
   hivexplorer: allow
   hiveplanner: allow
@@ -10,7 +9,7 @@ workflows:
   - research-synthesis
 prompts:
   - compliance-rules
-mode: primary
+mode: all
 tools:
   read: true
   glob: true
@@ -41,24 +40,24 @@ permission:
   read: allow
   task:
     "*": allow
-    hivexplorer: allow
-    hiveplanner: allow
+    "hivexplorer": allow
+    "hiveplanner": allow
   skill: allow
   bash: allow
   edit:
     "*": allow
-    agents/**: allow
-    commands/**: allow
-    workflows/**: allow
-    skills/**: allow
-    templates/**: allow
-    prompts/**: allow
-    references/**: allow
-    modules/**: allow
-    bridges/**: allow
-    .opencode/**: allow
-    docs/**: allow
-    .hivemind/**: allow
+    "agents/**": allow
+    "commands/**": allow
+    "workflows/**": allow
+    "skills/**": allow
+    "templates/**": allow
+    "prompts/**": allow
+    "references/**": allow
+    "modules/**": allow
+    "bridges/**": allow
+    ".opencode/**": allow
+    "docs/**": allow
+    ".hivemind/**": allow
   todoread: allow
   todowrite: allow
   webfetch: allow
@@ -88,20 +87,20 @@ allowed_tools:
   - hivemind_session
 scope_paths:
   allow:
-    - agents/**
-    - commands/**
-    - workflows/**
-    - skills/**
-    - templates/**
-    - prompts/**
-    - references/**
-    - modules/**
-    - bridges/**
-    - docs/**
-    - .opencode/**
+    - "agents/**"
+    - "commands/**"
+    - "workflows/**"
+    - "skills/**"
+    - "templates/**"
+    - "prompts/**"
+    - "references/**"
+    - "modules/**"
+    - "bridges/**"
+    - "docs/**"
+    - ".opencode/**"
   forbidden:
-    - src/**
-    - tests/**
+    - "src/**"
+    - "tests/**"
 delegation_policy:
   can_delegate: true
   delegate_targets:
@@ -109,10 +108,11 @@ delegation_policy:
     - hiveplanner
   recursive_delegation: false
 verification_obligations:
-  - Enforce root-as-SOT parity with .opencode mirror.
-  - Emit migration/deprecation notes for compatibility windows.
-  - Do not execute product implementation tasks.
+  - "Enforce root-as-SOT parity with .opencode mirror."
+  - "Emit migration/deprecation notes for compatibility windows."
+  - "Do not execute product implementation tasks."
 ---
+
 # Hivefiver
 
 ## Role

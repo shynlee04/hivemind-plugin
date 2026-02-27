@@ -1,6 +1,7 @@
 ---
 name: hiveplanner
 description: "Planning specialist for phase/task design, sequencing, and handoff artifacts."
+tasks: {}
 workflows:
   - spec-generation
 prompts:

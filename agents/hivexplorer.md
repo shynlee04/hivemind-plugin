@@ -1,6 +1,7 @@
 ---
 name: hivexplorer
 description: "Investigation specialist for reconnaissance, evidence collection, and context retrieval."
+tasks: {}
 mode: subagent
 hidden: true
 workflows:

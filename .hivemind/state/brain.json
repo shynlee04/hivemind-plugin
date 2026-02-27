@@ -5,7 +5,7 @@
     "governance_mode": "strict",
     "governance_status": "OPEN",
     "start_time": 1772191278941,
-    "last_activity": 1772204428182,
+    "last_activity": 1772221770257,
     "date": "2026-02-27",
     "meta_key": "",
     "role": "",
@@ -13,28 +13,28 @@
   },
   "hierarchy": {
     "trajectory": "THE-FRAMEWORK-TEST-ITSELF: Master-planning refactoring via timeline documents (ZERO-EVENT → SYSTEM-DIRECTIVES → TIME-LINE-AFTER-ZERO)",
-    "tactic": "Wave 2 execution: Dispatching 2A (Wire 14 HiveFiver commands) and 2C (Auto-Session Foundation) in parallel. 2B (Wire 10 Hiveminder commands) follows after 2A.",
-    "action": "Wave 2 execution starting. Gathering existing workflow pattern + command audit for delegation context before dispatching 2A and 2C."
+    "tactic": "Wave 2-P0 execution: Fix 2 P0 blockers (S-01 agent tasks + D-07/D-12 delegation contracts) in parallel with Wave 2A reconnaissance (inventory 31 unchained commands). Strategic decision: no user authorization needed for P0 fixes — they're prerequisite gates, not feature work.",
+    "action": "Executing user packet: patch anti-pattern-detector D-07/D-12 grep selectors, sync assets parity, and run verification gates (auditor, tsc, tests)."
   },
   "metrics": {
-    "turn_count": 76,
-    "user_turn_count": 4,
+    "turn_count": 116,
+    "user_turn_count": 7,
     "drift_score": 70,
     "files_touched": [],
-    "context_updates": 55,
+    "context_updates": 78,
     "ratings": [],
     "auto_health_score": 100,
-    "total_tool_calls": 76,
-    "successful_tool_calls": 76,
+    "total_tool_calls": 116,
+    "successful_tool_calls": 116,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
     "last_section_content": "",
     "tool_type_counts": {
-      "read": 10,
-      "write": 7,
-      "query": 53,
-      "governance": 6
+      "read": 13,
+      "write": 14,
+      "query": 72,
+      "governance": 17
     },
     "keyword_flags": [
       "loop",
@@ -49,11 +49,11 @@
     "governance_counters": {
       "out_of_order": 0,
       "drift": 0,
-      "compaction": 0,
-      "evidence_pressure": 152,
-      "ignored": 72,
+      "compaction": 1,
+      "evidence_pressure": 232,
+      "ignored": 112,
       "acknowledged": false,
-      "prerequisites_completed": false
+      "prerequisites_completed": true
     }
   },
   "first_turn_context_injected": true,
@@ -68,16 +68,16 @@
   "memory_governance": {
     "classified_counts": {
       "discovery_brainstorming_discuss": 1,
-      "research_synthesis": 20,
-      "codebase_investigation": 2,
-      "planning": 8,
-      "implementing": 6,
-      "debug": 0,
-      "test_validation_gatekeeping": 26
+      "research_synthesis": 28,
+      "codebase_investigation": 5,
+      "planning": 14,
+      "implementing": 12,
+      "debug": 2,
+      "test_validation_gatekeeping": 35
     },
     "temporary_exports_consolidated": 0,
     "temporary_exports_purged": 0,
-    "last_classified_at": 1772204411483,
+    "last_classified_at": 1772221765447,
     "pending_purge": true
   },
   "complexity_nudge_shown": true,
@@ -122,6 +122,20 @@
       "output_excerpt": "task_id: ses_360730066ffeSI4k5kLAWz9rJG (for resuming to continue this task if needed)\n\n<task_result>\nMCP SERVER ADDITIONS:\n  Added: gitmcp (remote, https://gitmcp.io/mcp)\n  Added: fetcher (local, npx -y fetcher-mcp)\n  Skipped: web-reader (not present in `mcp`; intentionally not added to avoid conflict with existing web-reader tooling)\n\nVERIFICATION:\n  JSON valid: yes\n  TSC: pass\n  Tests: 215/215 pass\n\nTOTAL: 2 new MCP servers added\n\nUpdated file: `opencode.json:3` (only the `mcp` object was ext",
       "failure_detected": false,
       "failure_keywords": []
+    },
+    {
+      "timestamp": 1772220414913,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_35f72a0cfffecoAtVBzoeWQgP1 (for resuming to continue this task if needed)\n\n<task_result>\n```text\n{\n  outcome: \"success\",\n  files_changed: [\n    \"agents/hivehealer.md\",\n    \"agents/hivemaker.md\",\n    \"agents/hiveplanner.md\",\n    \"agents/hiveq.md\",\n    \"agents/hiverd.md\",\n    \"agents/hivexplorer.md\"\n  ],\n  verification: \"Requested command run:\\n=== hivefiver.md ===\\n1\\n=== hivehealer.md ===\\n1\\n=== hivemaker.md ===\\n2\\n=== hiveminder.md ===\\n1\\n=== hiveplanner.md ===\\n1\\n=== hiveq.md ",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1772220897995,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_35f6ba724ffexWgaxjAifL3tRu (for resuming to continue this task if needed)\n\n<task_result>\n```json\n{\n  \"outcome\": \"success\",\n  \"files_changed\": [\n    \"commands/hivefiver.md\",\n    \"commands/hivefiver-specforge.md\",\n    \"commands/hivefiver-start.md\",\n    \"commands/hivefiver-research.md\",\n    \"commands/hivefiver-ralph-bridge.md\",\n    \"commands/hivefiver-intake.md\",\n    \"commands/hivefiver-skillforge.md\",\n    \"commands/hivefiver-gsd-bridge.md\",\n    \"commands/hivefiver-doctor.md\",\n    \"com",
+      "failure_detected": false,
+      "failure_keywords": []
     }
   ],
   "pending_failure_ack": false,
@@ -134,28 +148,8 @@
   },
   "recent_messages": [
     {
-      "role": "assistant",
-      "content": "Resuming. Wave 1 has 2 remaining items: (1) 3 hiverd commands with empty `required_prompts`, (2) 7 R01b validator failures. Let me dispatch both in parallel."
-    },
-    {
-      "role": "assistant",
-      "content": "Continuing — dispatching both Wave 1 remainders in parallel."
-    },
-    {
-      "role": "assistant",
-      "content": "Both Wave 1 remainders returned SUCCESS. Finalizing now — verification gate, sync, and completion."
-    },
-    {
-      "role": "assistant",
-      "content": "Continuing — running Wave 1 verification gate and smart merge sync."
-    },
-    {
-      "role": "assistant",
-      "content": "Wave 1 gate passed. Let me finalize, anchor, and prepare Wave 2 authorization."
-    },
-    {
-      "role": "assistant",
-      "content": "Wave 1 closed, user authorized continuation. Proceeding to **Wave 2** execution."
+      "role": "user",
+      "content": "You are fixing false positives in the HiveMind framework auditor and resolving parity drift at /Users/apple/hivemind-plugin.\n\n## TASK 1: Fix D-07 and D-12 detection in anti-pattern-detector.sh\n\nFile: `/Users/apple/hivemind-plugin/.opencode/skills/hivemind-framework-auditor/scripts/anti-pattern-detector.sh`\n\n### Problem\nThe D-07 check (line 84) and D-12 check (line 139) both use `grep -qi \"task(\"` to find delegation commands. This is too broad — it matches documentation/guidance text that merely MENTIONS `Task()` (like examples, comments, and how-to guides), causing false positives.\n\n3 files are false positives:\n- `hivemind-context.md` — has `Task({` in an example block\n- `hivemind-delegate.md` — is literally the delegation GUIDE, full of `Task()` references in documentation\n- `hivemind-lint.md` — has `# After Task(hivemaker) returns` in a comment\n\n### Fix\nChange the grep pattern in BOTH check_d07() and check_d12() functions from:\n```bash\ngrep -qi \"task(\" \"$cmd_file\"\n```\nto:\n```bash\ngrep -qi \"subagent_type\" \"$cmd_file\"\n```\n\nThe `subagent_type` keyword ONLY appears in actual Task() delegation calls (e.g., `task({ subagent_type: 'hivemaker', ...})`), never in documentation text. This eliminates false positives.\n\n### Exact edits needed:\n1. Line 84: Change `grep -qi \"task(\"` to `grep -qi \"subagent_type\"`\n2. Line 139: Change `grep -qi \"task(\"` to `grep -qi \"subagent_type\"`\n\nRead the file first, then use Edit for each change. Make sure to use the EXACT oldString match including surrounding context to avoid ambiguity.\n\n## TASK 2: Fix the SAME script in root skills directory\nThe script also exists at the ROOT source path. Check if there's also a copy at:\n`/Users/apple/hivemind-plugin/skills/hivemind-framework-auditor/scripts/anti-pattern-detector.sh`\n\nIf it exists, apply the same 2 edits there as well.\n\n## TASK 3: Fix S-05 parity drift — re-sync assets\nRun the sync-assets to fix the 7 files that differ between root and .opencode:\n\n```bash\nnpx tsx src/cli/sync-assets.ts\n```\n\nRun from `/Users/apple/hivemind-plugin/`. If that doesn't work, try `npx tsx src/cli.ts sync-assets`.\n\nAfter sync, verify parity by checking a few files:\n```bash\ndiff <(head -5 agents/hivehealer.md) <(head -5 .opencode/agents/hivehealer.md) && echo \"PARITY OK\" || echo \"PARITY DRIFT\"\n```\n\n## TASK 4: Verify\nAfter all edits and sync:\n1. Run the anti-pattern detector to confirm D-07 and D-12 now show CLEAN or proper counts:\n```bash\nbash .opencode/skills/hivemind-framework-auditor/scripts/anti-pattern-detector.sh\n```\n2. Run `npx tsc --noEmit` — must pass\n3. Run `npm test` — must pass\n\n## Constraints\n- Only change the 2 grep patterns in the script, nothing else\n- Preserve all other script logic\n- The sync must use the smart merge (sync-assets.ts), not raw copy\n\n## Return Format\n```\n{\n  outcome: \"success\"|\"partial\"|\"failure\",\n  script_fix: \"description of changes\",\n  sync_result: \"parity status after sync\",\n  auditor_rerun: {\n    d07: \"PASS/FAIL + count\",\n    d12: \"PASS/FAIL + count\",\n    full_output_summary: \"X DETECTED / Y CLEAN / Z SKIPPED\"\n  },\n  tsc_result: \"pass/fail\",\n  test_result: \"pass/fail + count\",\n  evidence: \"key outputs\"\n}\n```"
     }
   ],
   "offtrack_todo_pending": [
@@ -164,7 +158,7 @@
       "content": "# HiveFiver Init Alias\n\nRun `/hivefiver init` behavior.\n\n## Required Behavior\n1. Start with project regulation pass.\n2. Route persona lane (`vibecoder`, `floppy_engineer`, `enterprise_architect`).\n3. Emit controlled multiple-choice onboarding.\n4. Persist onboarding artifact and lane decisions.\n5. Force handoff to `hiveminder` before any build-stage action.\n\n## Output Contract\n- `alias_resolved_to`: `/hivefiver init`\n- `next_command`: `/hivefiver-start`\n- `next_agent`: `hiveminder`\n- `handoff_required`: `true`\n- `handoff_reason`: `HiveFiver init is setup-only; runtime orchestration must continue in Hiveminder.`\n\n## Rejection Conditions\n- If handoff is not acknowledged, return blocked status and do not continue into build-stage actions.\n\n\"So this is a THE-FRAMEWORK-TEST-ITSELF program. So you are going to follow this time-line of event for planning, decision making; what actions you take after this will be a long-term decisions of master-planning on refactoring this project >>>> Read on these documents; First on each and within each following the H1 headings; ONLY WHEN ONE DONE YOU CONTINUE ON THE NEXT ( for example DOC1->H1n->H1n-1->H1n-2...DOC2->).'/Users/apple/hivemind-plugin/docs/THE-ZERO-EVENT.md' + following THE-ZERO-EVENT was the document accompanied it '/Users/apple/hivemind-plugin/SYSTEM-DIRECTIVES.md >>> Eventually the Events after ZERO was logged here '/Users/apple/hivemind-plugin/THE-TIME-LINE-AFTER-THE-ZERO.md'; The latest was my H1 heading no.11\"",
       "created_at": 1772191298404,
       "source": "messages-transform",
-      "status": "pending"
+      "status": "resolved"
     },
     {
       "id": "5ccbcbc3-79ee-48d3-aa0b-3520b5d5839d",
@@ -178,14 +172,21 @@
       "content": "You are executing Wave 1B of the HYBRID-A+B master plan for the hivemind-plugin project at /Users/apple/hivemind-plugin.\n\n## Task\nCreate the `.hivemind/project/planning/` directory structure with template files, create a Zod schema for planning artifacts, and wire planning directory creation into the init flow.\n\n## Scope\nONLY touch these files/directories:\n- `.hivemind/project/planning/` (CREATE new directory structure + template files)\n- `src/schemas/planning.ts` (CREATE new file)\n- `src/schemas/index.ts` (ADD export for planning.ts)\n- `src/lib/fs/planning-ops.ts` (UPDATE to add planning directory creation functions)\n- `tests/planning.test.ts` (CREATE new test file)\n\nDO NOT touch: scripts/, commands/, agents/, workflows/, .opencode/, or any other src/ files except the ones listed above.\n\n## Detailed Instructions\n\n### Step 1: Create planning directory structure\nCreate these directories and files under `/Users/apple/hivemind-plugin/.hivemind/project/planning/`:\n\n```\n.hivemind/project/planning/\n├── PROJECT.md              # Project vision and context\n├── REQUIREMENTS.md         # Scoped requirements with IDs\n├── ROADMAP.md              # Phase breakdown with status tracking\n├── STATE.md                # Decisions, blockers, session memory\n├── MILESTONES.md           # Completed milestone archive\n├── research/               # Domain research\n│   └── .gitkeep\n├── todos/\n│   ├── pending/\n│   │   └── .gitkeep\n│   └── done/\n│       └── .gitkeep\n├── debug/\n│   ├── active/\n│   │   └── .gitkeep\n│   └── resolved/\n│       └── .gitkeep\n├── codebase/\n│   └── .gitkeep\n└── phases/\n    └── .gitkeep\n```\n\nTemplate content for each markdown file:\n\n**PROJECT.md:**\n```markdown\n# Project Vision\n\n> Auto-generated by HiveMind. Update with project context.\n\n## Purpose\n<!-- What this project does and why it exists -->\n\n## Scope\n<!-- What's in and out of scope -->\n\n## Key Decisions\n<!-- Major architectural and product decisions -->\n```\n\n**REQUIREMENTS.md:**\n```markdown\n# Requirements\n\n> Auto-generated by HiveMind. Add requirements with unique IDs.\n\n## Active Requirements\n\n| ID | Description | Phase | Status |\n|----|-------------|-------|--------|\n<!-- REQ-001 | Description | Phase 1 | pending -->\n```\n\n**ROADMAP.md:**\n```markdown\n# Roadmap\n\n> Auto-generated by HiveMind. Track phase progress here.\n\n## Phases\n\n| Phase | Name | Status | Progress |\n|-------|------|--------|----------|\n<!-- 1 | Foundation | in_progress | 30% -->\n```\n\n**STATE.md:**\n```markdown\n# Project State\n\n> Auto-generated by HiveMind. Cross-session persistent state.\n> This file survives session compaction and preserves decisions.\n\n## Current Position\n<!-- Where the project is right now -->\n\n## Active Blockers\n<!-- Unresolved blockers -->\n\n## Recent Decisions\n<!-- Decisions made in recent sessions -->\n\n## Session History\n<!-- Compact summaries of recent sessions -->\n```\n\n**MILESTONES.md:**\n```markdown\n# Milestones\n\n> Auto-generated by HiveMind. Archive of completed milestones.\n\n## Completed\n<!-- None yet -->\n```\n\n### Step 2: Create src/schemas/planning.ts\nCreate a new file at `/Users/apple/hivemind-plugin/src/schemas/planning.ts` with Zod schemas:\n\n```typescript\nimport { z } from \"zod\"\n\n/** Planning requirement status */\nexport const RequirementStatusSchema = z.enum([\n  \"pending\",\n  \"in_progress\",\n  \"completed\",\n  \"deferred\",\n  \"cancelled\",\n])\n\n/** Single requirement entry */\nexport const RequirementSchema = z.object({\n  id: z.string().regex(/^REQ-\\d{3,}$/, \"Requirement ID must match REQ-NNN format\"),\n  description: z.string().min(1),\n  phase: z.string().optional(),\n  status: RequirementStatusSchema.default(\"pending\"),\n  acceptance_criteria: z.array(z.string()).default([]),\n})\n\n/** Phase status */\nexport const PhaseStatusSchema = z.enum([\n  \"not_started\",\n  \"in_progress\",\n  \"completed\",\n  \"blocked\",\n])\n\n/** Single phase entry */\nexport const PhaseSchema = z.object({\n  number: z.number().int().positive(),\n  name: z.string().min(1),\n  status: PhaseStatusSchema.default(\"not_started\"),\n  progress: z.number().min(0).max(100).default(0),\n})\n\n/** Planning state (maps to STATE.md) */\nexport const PlanningStateSchema = z.object({\n  current_position: z.string().default(\"\"),\n  active_blockers: z.array(z.string()).default([]),\n  recent_decisions: z.array(z.object({\n    decision: z.string(),\n    date: z.string(),\n    session_id: z.string().optional(),\n  })).default([]),\n  session_history: z.array(z.object({\n    session_id: z.string(),\n    summary: z.string(),\n    date: z.string(),\n  })).default([]),\n})\n\n/** Milestone entry */\nexport const MilestoneSchema = z.object({\n  name: z.string().min(1),\n  completed_date: z.string(),\n  phases_included: z.array(z.number()).default([]),\n  summary: z.string().default(\"\"),\n})\n\n/** Full planning manifest */\nexport const PlanningManifestSchema = z.object({\n  version: z.literal(\"1.0.0\"),\n  project_name: z.string().default(\"\"),\n  requirements: z.array(RequirementSchema).default([]),\n  phases: z.array(PhaseSchema).default([]),\n  state: PlanningStateSchema.default({}),\n  milestones: z.array(MilestoneSchema).default([]),\n})\n\nexport type RequirementStatus = z.infer<typeof RequirementStatusSchema>\nexport type Requirement = z.infer<typeof RequirementSchema>\nexport type PhaseStatus = z.infer<typeof PhaseStatusSchema>\nexport type Phase = z.infer<typeof PhaseSchema>\nexport type PlanningState = z.infer<typeof PlanningStateSchema>\nexport type Milestone = z.infer<typeof MilestoneSchema>\nexport type PlanningManifest = z.infer<typeof PlanningManifestSchema>\n```\n\n### Step 3: Update src/schemas/index.ts\nRead `/Users/apple/hivemind-plugin/src/schemas/index.ts` and add this export line at the end:\n```typescript\nexport * from \"./planning.js\";\n```\n\n### Step 4: Update src/lib/fs/planning-ops.ts\nRead the existing file at `/Users/apple/hivemind-plugin/src/lib/fs/planning-ops.ts`. Add a new exported function `initializePlanningProjectDir` that:\n1. Takes a `rootDir: string` parameter (the .hivemind root)\n2. Creates the `.hivemind/project/planning/` directory structure\n3. Writes the template markdown files if they don't already exist (never overwrite)\n4. Creates subdirectories with .gitkeep files\n5. Returns `{ created: boolean, path: string }`\n\nUse `node:fs/promises` for async file operations. Use `existsSync` for existence checks to avoid overwriting user content.\n\n### Step 5: Create tests/planning.test.ts\nCreate a test file at `/Users/apple/hivemind-plugin/tests/planning.test.ts` with tests for:\n1. `PlanningManifestSchema` validates correct data\n2. `PlanningManifestSchema` rejects invalid requirement IDs\n3. `RequirementSchema` validates all status values\n4. `PhaseSchema` validates progress range (0-100)\n5. `PlanningStateSchema` accepts default empty state\n\nUse node:test and node:assert. Follow the pattern of existing tests in the project.\n\n### Step 6: Verify\n1. Run `npx tsc --noEmit` in /Users/apple/hivemind-plugin — must pass with 0 errors\n2. Run `npx tsx --test tests/planning.test.ts` — must pass\n3. Run `npm test` — all 210+ tests must still pass (no regressions)\n4. Verify `.hivemind/project/planning/` directory exists with all template files\n\n## Return Format\n```\n{\n  outcome: \"success\" | \"partial\" | \"failure\",\n  findings: \"summary of what was done\",\n  files_changed: [\"list of files created/modified\"],\n  tsc_result: \"pass/fail + error count\",\n  test_result: \"pass count / fail count\",\n  npm_test_result: \"pass count / fail count (full suite)\",\n  evidence: \"exact output from verification commands\"\n}\n```\n\n## Constraints\n- Do NOT overwrite existing user content in .hivemind/project/planning/ if it exists\n- Do NOT modify src/cli/init.ts (that's a later knot)\n- Use `.js` extension for local imports (TypeScript project convention)\n- Use double quotes (project convention)\n- Use 2-space indentation (project convention)\n- Planning schemas must be pure Zod — no runtime dependencies\n- Tests must use node:test built-in test runner (not jest/vitest)",
       "created_at": 1772192994863,
       "source": "messages-transform",
-      "status": "pending"
+      "status": "resolved"
     },
     {
       "id": "112e6bc2-6a5f-400e-bca2-23c2433edcc1",
       "content": "no the current sync logic needs serious quick  fixes especially on yaml frontmatter >>> because with the current approach the \"NOT-IN-OUR-PRECONFIG-Fields\", if made by end users - and are available options allowed by OpenCode; in my case that were \"model\" https://opencode.ai/docs/models/ and by  modify some fields on agents/*.md/ https://opencode.ai/docs/agents/ >>> the sync overwritten mine. Particularly for ``.opencode/agents/hivehealer.md\n.opencode/agents/hivemaker.md .opencode/agents/hiveq.md ``` -> my config was \"model: openai/gpt-5.3-codex\" following \"\"reasoningEffort\": \"high\",\n\"textVerbosity\": \"high\",\n\"reasoningSummary\": \"auto\",\n\"include\": [\"reasoning.encrypted_content\"], \" + >>> AND .opencode/agents/hivexplorer.md with model: chutes/MiniMaxAI/MiniMax-M2.5-TEE ; while .opencode/agents/hiverd.md was model: opencode-go/kimi-k2.5 --- And the above was just a very few variables that from my case. there are many more as long as they involve with official OpenCode yaml frontmatter they must be respected; pull and register all https://opencode.ai/docs/permissions/ ; https://opencode.ai/docs/commands/ ; https://opencode.ai/docs/agents/ ; https://opencode.ai/docs/rules/ ; https://opencode.ai/docs/skills/ ; I may miss some others; but these are a must-fix before any thing else as they are destructive and disruptive the collapse the whole users' journey. <<<>>>> I HAVE JUST REVERT THE LAST TURN AND MANUALLY EDIT THE ABOVE. And another reminder is that of \"mode configuration\" -> only `hivexplorer` should stay as `subagent` and apart from `hivefiver` and `hiveminder` as `primary` - the rest should be `all` because literately these can all be used as front-facing agents when it comes to short or project-non-related, or domain-specific tasks selectively by users <<<<<<<>>>>>>>> HOWEVER THE OTHER AS IMPORTANT HARNESS IS THE \"EXPLORE AND RESEARCH FRAMEWORKS\" \n\n## The Explore and Research frameworks INVOLVE MCP SERVERS’ TOOLS USES = 100% SUCCESS EXECUTION [`https://opencode.ai/docs/mcp-servers/`](https://opencode.ai/docs/mcp-servers/)\n\nThere are many issues when come to this because it depends on the users’ available MCP SERVERS which we could not make sure to align correctly to our expectation >>> meaning the impact directly hit these agents `hiverd` ; `hivexplorer`  and the innate OpenCode ones if users accidentally or the llms accidentally call them and they are `explore` l `general` | `build` | >>> so the  hardness must all be started from `command` `workflows` `skills` `prompts` , `tools and custom tools` ; `auto mechanism` ”chaining” → TO GUARANTEE HIT RATES TO accredited Free-non-API-MCP-Servers while still prioritize the users’ MCP servers’ ones depend on which are more superior >>> BUT let’s hypothesize on the worst case scenario that users have none pre-installed or configured then we must at least have 5 MCP servers related to tech and stack up-to-date research and synthesis. Unfortunately the “accredited-free-non-API-MCP-Servers” are very unstable and this needs both fallback, workaround and retry mechanisms  - and another unfortunate issue is that I know only 3 of them and of which serve their limited caps (meaning more often than not  cycle runs of research → investigation of the codebase → ingest → iteratively synthesize; must get all these 3 100% hit rate to really complete and they are\n\n1. Context7 MCP server → best practice for official documentations and guides - the drawbacks are:  fail connections due to various reasons from timeout to denial of high frequent of requests; another is limited only for official released docs of the stack, and harsh for AI agents performing synthesis on advanced knowledge or requirements that need cross-dependencies knowledge\n2. The https://docs.devin.ai/work-with-devin/deepwiki-mcp tends to resolve single stack shallow synthesis of Context7 MCP though they suffer the pretty much same or even worse issues when it comes to connection timeout and failures due to to high-frequent requests; and the cross-stack synthesis is still this one’s short-comings. Other short-coming of this are:\n    1. The stack needs to have available and valid Github’s Repo and it needs public status for example https://github.com/anomalyco/opencode is for `Opencode`\n    2. AI Agents often don’t know what, how, and which sequences to ask to sequentially delve deep into the synthesis needed\n    3. AI agents often hallucinate asking multi-stack questions\n    4. AI agents treat this as a one-timer → which does not resolve the depth-needed \n    5. AI agents often hallucinate on the sequence of executions, meaning input of the GITHUB repo link first → then `ask a question` \n3. The Repomix https://repomix.com/guide/ ; https://repomix.com/guide/mcp-server ; https://repomix.com/guide/repomix-explorer-skill ;  https://repomix.com/guide/development/using-repomix-as-a-library ; https://repomix.com/guide/code-compress ; (the true in-depth and cross-dependencies synthesizer → though suffer with similar connection issues this one has multiple workarounds and fallbacks methods; it persists with these own short-comings:\n    1. unlike `deepwiki` with QA method, making synthesis becomes straight-forward → uses of this require `skills` which you can use `find-skill` to look them up → particularly combining search and agentic reading techniques of   grep, glob, list, regex, some other bash commands, hop-reading, cross-traversal-reading, off-set-reading etc\n    2. since connection is most commonly-known issues → my tend-to-solution is to download the intended-to-ingest dependencies to the project local storage and execute `a` for sequential ingest-investigate-synthesize cycles → however these downloaded packages are chunky and should not be committed \n    3. it suffers the same issues when coming to repo which has no Github public open-source link\n4. from all 1, 2, and 3 conclude to these factors that need resolve:\n    1. a couple more MCP servers to function as Tavily without API to ask straight forward questions and allowing all models execution\n    2. audit and improve ours codebase-investigation-related, tech-research-synthesis-related frameworks, chaining, mechanism, long-term-tech-context engineering (our track B’s when building the project’s codemap, codewiki, knowledge-database → these should also be seriously look into so that the successful stack and cross-dependencies knowledge synthesis - into patterns, graph, signature, feature requirements, pitfalls etc are then indexed, registered to database, hierarchically and relationally structured into retrievable context graph for AI Agents and persistent -    as for context and most importantly for any of later-run of the development progress; when these pieces of knowledge are needed they will not need to execute the whole token-consuming and time-wasting sequential processes\n    3. The very things to capture all these into a 100% rate will definitely be Improvements on iterative, granular, conditional, routed, sequential-turn-after-turns and cycles-after-cycles approach of delegation of pull → ingest → investigation → synthesis → iterate (never parallel)  + improvements of the frameworks to frame the very rigid, nuance, validated outlines of research frameworks with high attempts to retry and fallback before long-haul and time-consuming sequences.",
       "created_at": 1772201734530,
       "source": "messages-transform",
-      "status": "pending"
+      "status": "resolved"
+    },
+    {
+      "id": "b4ab8513-a5c4-4537-b059-3290ef7e44b1",
+      "content": "Completed packet: hivefiver mode set to all in root + .opencode recopy sync; verification and gates executed.",
+      "created_at": 1772221333769,
+      "source": "hivemind_session_memory",
+      "status": "resolved"
     }
   ]
 }

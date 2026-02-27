@@ -13,6 +13,17 @@ required_templates: []
 chain_group: hivefiver
 group: hivefiver
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - intake_json
+    - persona_scores
+    - constraint_matrix
+    - risk_register_v0
+    - domain_pack_recommendation
+    - automation_profile
+    - language_contract
+    - next_command
 ---
 
 # HiveFiver Intake

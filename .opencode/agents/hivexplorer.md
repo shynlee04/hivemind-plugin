@@ -2,6 +2,7 @@
 name: hivexplorer
 description: Investigation specialist for reconnaissance, evidence collection,
   and context retrieval.
+tasks: {}
 mode: subagent
 hidden: true
 workflows:
@@ -58,7 +59,7 @@ verification_obligations:
   - Return file-referenced evidence only.
   - Persist high-value findings in memory.
   - Do not mutate source files.
-model: chutes/MiniMaxAI/MiniMax-M2.5-TEE
+model: zai-coding-plan/glm-4.7
 reasoningEffort: high
 ---
 # Hivexplorer

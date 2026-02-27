@@ -264,6 +264,66 @@
       "staleness_stamp": "2026-02-27T14:59:35.359Z",
       "created_at": "2026-02-27T14:59:35.359Z",
       "updated_at": "2026-02-27T14:59:35.359Z"
+    },
+    {
+      "id": "d2c141e7-0a49-4df8-8acd-a44e65cd5b44",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "origin_task_id": null,
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "WAVE 2-P0 STRATEGY (2026-02-28): Decided to execute P0 blockers without user confirmation — they're prerequisite gates. S-01 (6 agents missing tasks) and D-07/D-12 (delegation contract gaps) must be fixed before any Wave 2 wiring. Dispatching hivemaker for fixes, hivexplorer for 2A recon in parallel. User said 'pick your own poison' — no more approval loops for mechanical fixes.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-27T19:03:14.727Z",
+      "created_at": "2026-02-27T19:03:14.727Z",
+      "updated_at": "2026-02-27T19:03:14.727Z"
+    },
+    {
+      "id": "c632e01b-93c3-4bbb-9d43-85edda902a9a",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "origin_task_id": null,
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "S-01 P0 remediation executed: added tasks:{} frontmatter to six non-delegating agent files under agents/ and verified one ^tasks: key in all eight agents.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-27T19:26:00.121Z",
+      "created_at": "2026-02-27T19:26:00.121Z",
+      "updated_at": "2026-02-27T19:26:00.121Z"
+    },
+    {
+      "id": "5f0aad28-6217-4675-854f-da3397f45b92",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "origin_task_id": null,
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "D-07/D-12 remediation executed on command frontmatter: added delegation_source to hiveminder-orchestrate and return_schema blocks to hiveminder-orchestrate, hivemind-debug-trigger, hivemind-debug-verify.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-27T19:32:13.738Z",
+      "created_at": "2026-02-27T19:32:13.738Z",
+      "updated_at": "2026-02-27T19:32:13.738Z"
+    },
+    {
+      "id": "d1f9f926-571a-4e7d-9ddf-783ed66f2a06",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "origin_task_id": null,
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "D-12 remediation in progress: extracted Output Contract fields and added return_schema to 10 HiveFiver command frontmatters.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-27T19:32:21.154Z",
+      "created_at": "2026-02-27T19:32:21.154Z",
+      "updated_at": "2026-02-27T19:32:21.154Z"
+    },
+    {
+      "id": "9ad7aab8-10cc-4a82-a0a7-d0cdf946b362",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "origin_task_id": null,
+      "shelf": "decisions",
+      "type": "insight",
+      "content": "USER CORRECTION (2026-02-28): Hiveminder CAN delegate to ALL agents including hivefiver. hivefiver mode must be changed from primary→all to enable delegation. Cross-role delegation IS allowed for some agents. .opencode sync + restart required for changes to take effect. Use hivemind-framework-auditor skill for verification gates.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-27T19:35:40.207Z",
+      "created_at": "2026-02-27T19:35:40.207Z",
+      "updated_at": "2026-02-27T19:35:40.207Z"
     }
   ]
 }

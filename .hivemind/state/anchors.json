@@ -29,6 +29,18 @@
       "value": "WAVE 1 COMPLETE (2026-02-27). Gate: 1386 PASS / 0 FAIL / 8 WARN, 215/215 tests, 0 tsc errors. Deliverables: (1A) 12/12 router commands have required_references+required_prompts, validator upgraded. (1B) Planning dir bootstrapped with schemas+tests+init wiring. (1C) Agent permissions functional, R01b downgraded to WARN for wildcard configs. BONUS: Smart merge sync built (preserves user OpenCode config), agent modes fixed, 2 MCP servers added (gitmcp+fetcher), 3 new prompt files created. Ready for Wave 2.",
       "created_at": 1772204369832,
       "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "framework-auditor-complete",
+      "value": "SKILL PACK COMPLETE (2026-02-28). 10 files, 2811 lines total. Structural audit: 18 checks (S-01→S-18), 12 PASS / 2 FAIL / 4 WARN. Anti-pattern detector: 15 checks (D-01→D-15), 5 CLEAN / 3 DETECTED / 7 SKIP. Self-audit: 0 ghost refs. All GAPs resolved (GAP-1→GAP-8). Bash arithmetic crash under set -euo pipefail fixed (replaced ((var++)) with var=$((var+1))). S-16 alias check handles space-vs-dash variants.",
+      "created_at": 1772215984152,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "audit-2026-02-28",
+      "value": "FRAMEWORK AUDIT (2026-02-28): S-01→S-18: 12 PASS / 2 FAIL / 4 WARN. D-01→D-15: 5 CLEAN / 3 DETECTED / 7 SKIP. P0: S-01 (6 agents missing tasks), D-07 (delegation_source missing). P1: S-14 (0/12 GREEN-FLAG bodies), D-12 (return_schema missing), D-15 (7 skills no routing), S-11 (1 orphan prompt). WARNS: S-05 (parity drift 8 files), S-12 (2 templates weak), S-13 (3 orphan refs). KEY INSIGHT: structural wiring is solid but CONTENT QUALITY is poor — command bodies, agent tasks, delegation contracts all need remediation DURING Wave 2, not after.",
+      "created_at": 1772218669673,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
     }
   ],
   "version": "1.0.0"

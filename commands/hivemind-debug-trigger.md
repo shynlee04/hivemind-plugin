@@ -13,6 +13,18 @@ required_templates: []
 chain_group: hiveminder
 group: debug
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - status
+    - debug_session_id
+    - errors_count
+    - severity_breakdown
+    - next_action
+    - recommended_strategy
+    - session_focus
+    - message
+    - code
 ---
 
 # HiveMind Debug Trigger Command

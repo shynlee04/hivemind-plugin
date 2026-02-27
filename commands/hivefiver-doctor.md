@@ -12,6 +12,14 @@ required_templates: []
 chain_group: hivefiver
 group: hivefiver-compat
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - asset_parity_report
+    - mcp_readiness_table
+    - task_schema_report
+    - realignment_report
+    - remediation_checklist
 ---
 
 # HiveFiver Doctor

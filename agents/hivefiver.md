@@ -9,7 +9,7 @@ workflows:
   - research-synthesis
 prompts:
   - compliance-rules
-mode: primary
+mode: all
 tools:
   read: true
   glob: true

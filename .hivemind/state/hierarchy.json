@@ -503,14 +503,224 @@
             "id": "a_002227022026",
             "level": "action",
             "content": "Wave 2 execution starting. Gathering existing workflow pattern + command audit for delegation context before dispatching 2A and 2C.",
-            "status": "active",
+            "status": "pending",
             "created": 1772204428181,
             "stamp": "002227022026",
+            "children": []
+          },
+          {
+            "id": "a_500028022026",
+            "level": "action",
+            "content": "Continuing Wave 2 pre-work: Completing hivemind-framework-auditor skill pack — 6 remaining items (GAP-8, script expansion S-11→S-18, report template expansion, SKILL.md line counts, script re-run, self-audit).",
+            "status": "active",
+            "created": 1772214630401,
+            "stamp": "500028022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_130128022026",
+        "level": "tactic",
+        "content": "Wave 2 pre-work COMPLETE: hivemind-framework-auditor skill pack finished (all 8 gaps resolved, scripts verified, self-audit clean). Ready for Wave 2A/2B/2C execution.",
+        "status": "active",
+        "created": 1772215985877,
+        "stamp": "130128022026",
+        "children": [
+          {
+            "id": "a_140128022026",
+            "level": "action",
+            "content": "Wave 2A execution: Gathering context on 14 unchained HiveFiver commands and existing Tier 2 workflow patterns before dispatching bulk wiring sub-agents.",
+            "status": "pending",
+            "created": 1772216041655,
+            "stamp": "140128022026",
+            "children": []
+          },
+          {
+            "id": "a_140128022026-1",
+            "level": "action",
+            "content": "Wave 2A reconnaissance: Inventorying 14 unchained HiveFiver commands, existing Tier 2 workflow patterns, and available templates/prompts/references.",
+            "status": "active",
+            "created": 1772216053800,
+            "stamp": "140128022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_460128022026",
+        "level": "tactic",
+        "content": "PAUSE Wave 2. User requested framework audit before continuing. Loading hivemind-framework-auditor skill to assess quality of commands, workflows, skills, references, templates. Will refine master plan based on audit findings.",
+        "status": "active",
+        "created": 1772218006873,
+        "stamp": "460128022026",
+        "children": [
+          {
+            "id": "a_480128022026",
+            "level": "action",
+            "content": "Execute hivemind-framework-auditor Mode 1 (AUDIT) + Mode 4 (IMPROVE). Run structural-audit.sh and anti-pattern-detector.sh, generate audit report, then use findings to refine master plan before resuming Wave 2.",
+            "status": "pending",
+            "created": 1772218130905,
+            "stamp": "480128022026",
+            "children": []
+          },
+          {
+            "id": "a_520128022026",
+            "level": "action",
+            "content": "Analyze structural and anti-pattern outputs; classify severities and compile Sector-2 inventory report with evidence.",
+            "status": "active",
+            "created": 1772218356399,
+            "stamp": "520128022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_030228022026",
+        "level": "tactic",
+        "content": "Wave 2-P0 execution: Fix 2 P0 blockers (S-01 agent tasks + D-07/D-12 delegation contracts) in parallel with Wave 2A reconnaissance (inventory 31 unchained commands). Strategic decision: no user authorization needed for P0 fixes — they're prerequisite gates, not feature work.",
+        "status": "active",
+        "created": 1772218991260,
+        "stamp": "030228022026",
+        "children": [
+          {
+            "id": "a_030228022026",
+            "level": "action",
+            "content": "Dispatching 3 parallel agents: (1) hivexplorer to read 2 complete agents as pattern for tasks field, (2) hivemaker to fix S-01 in 6 agents + D-07/D-12 in 4 commands, (3) hivexplorer to inventory 31 unchained commands for Wave 2A planning.",
+            "status": "pending",
+            "created": 1772219006607,
+            "stamp": "030228022026",
+            "children": []
+          },
+          {
+            "id": "a_200228022026",
+            "level": "action",
+            "content": "Resuming disrupted dispatch. Context reloaded: S-01 confirmed (6 agents: hivehealer, hivemaker, hiveplanner, hiveq, hiverd, hivexplorer — all missing tasks: field). Pattern extracted from hivefiver+hiveminder. Now dispatching reconnaissance + fix agents.",
+            "status": "pending",
+            "created": 1772220016001,
+            "stamp": "200228022026",
+            "children": []
+          },
+          {
+            "id": "a_230228022026",
+            "level": "action",
+            "content": "Execute P0 S-01 fix: add missing tasks:{} frontmatter to six non-delegating agent files and verify field presence across all agents.",
+            "status": "pending",
+            "created": 1772220190756,
+            "stamp": "230228022026",
+            "children": []
+          },
+          {
+            "id": "a_240228022026",
+            "level": "action",
+            "content": "Wave 2A reconnaissance complete: 100% chaining coverage (40/40 commands fully chained). Original premise of 31 unchained commands obsolete. Recommended: mark Wave 2A COMPLETE, proceed to Wave 2B or Wave 3.",
+            "status": "pending",
+            "created": 1772220289368,
+            "stamp": "240228022026",
+            "children": []
+          },
+          {
+            "id": "a_260228022026",
+            "level": "action",
+            "content": "Auto-realign executed for floppy_engineer lane: loaded hivefiver research skills and reviewed TODO-pending queue while completing S-01 tasks frontmatter fix.",
+            "status": "pending",
+            "created": 1772220366090,
+            "stamp": "260228022026",
+            "children": []
+          },
+          {
+            "id": "a_300228022026",
+            "level": "action",
+            "content": "Applying D-07 and D-12 fixes in commands frontmatter: add delegation_source and return_schema based on output contracts.",
+            "status": "pending",
+            "created": 1772220624414,
+            "stamp": "300228022026",
+            "children": []
+          },
+          {
+            "id": "a_300228022026-1",
+            "level": "action",
+            "content": "Executing D-12 remediation: add return_schema to 10 HiveFiver commands by extracting fields from each Output Contract section.",
+            "status": "pending",
+            "created": 1772220635788,
+            "stamp": "300228022026",
+            "children": []
+          },
+          {
+            "id": "a_320228022026",
+            "level": "action",
+            "content": "D-07/D-12 frontmatter fixes applied and verified with npm test + npx tsc --noEmit; evidence captured from changed files.",
+            "status": "pending",
+            "created": 1772220760565,
+            "stamp": "320228022026",
+            "children": []
+          },
+          {
+            "id": "a_340228022026",
+            "level": "action",
+            "content": "D-12 remediation completed: return_schema added to 10 HiveFiver command frontmatters based on each file's Output Contract fields.",
+            "status": "pending",
+            "created": 1772220877367,
+            "stamp": "340228022026",
+            "children": []
+          },
+          {
+            "id": "a_370228022026",
+            "level": "action",
+            "content": "Execute user packet: set agents/hivefiver.md mode primary→all, run sync-assets, verify propagated files, then run tsc and tests with evidence capture.",
+            "status": "pending",
+            "created": 1772221034882,
+            "stamp": "370228022026",
+            "children": []
+          },
+          {
+            "id": "a_370228022026-1",
+            "level": "action",
+            "content": "Run sync-assets and verify propagated files in .opencode.",
+            "status": "pending",
+            "created": 1772221058954,
+            "stamp": "370228022026",
+            "children": []
+          },
+          {
+            "id": "a_400228022026",
+            "level": "action",
+            "content": "Remediate sync propagation for .opencode hivefiver mode by forcing file recopy via sync.",
+            "status": "pending",
+            "created": 1772221220248,
+            "stamp": "400228022026",
+            "children": []
+          },
+          {
+            "id": "a_420228022026",
+            "level": "action",
+            "content": "Completed mode change and forced recopy sync; verified .opencode propagation and passed tsc/tests.",
+            "status": "pending",
+            "created": 1772221349446,
+            "stamp": "420228022026",
+            "children": []
+          },
+          {
+            "id": "a_430228022026",
+            "level": "action",
+            "content": "Running verification gate: hivemind-framework-auditor skill for S-01, D-07, D-12 post-fix confirmation. All fixes applied and synced to .opencode/.",
+            "status": "pending",
+            "created": 1772221399886,
+            "stamp": "430228022026",
+            "children": []
+          },
+          {
+            "id": "a_490228022026",
+            "level": "action",
+            "content": "Executing user packet: patch anti-pattern-detector D-07/D-12 grep selectors, sync assets parity, and run verification gates (auditor, tsc, tests).",
+            "status": "active",
+            "created": 1772221770247,
+            "stamp": "490228022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_002227022026"
+  "cursor": "a_490228022026"
 }

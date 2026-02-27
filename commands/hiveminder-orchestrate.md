@@ -4,6 +4,7 @@ description: Invoke the hiveminder agent for strategic planning, architecture
   review, or cross-agent orchestration. Research-fronted, evidence-oriented
   approach.
 owner_agent: hiveminder
+delegation_source: hiveminder
 kind: utility
 alias_resolved_to: hiveminder-orchestrate
 required_skills:
@@ -16,6 +17,14 @@ group: hiveminder
 entry_gate: session_declared
 agent: hiveminder
 subtask: false
+return_schema:
+  type: json
+  fields:
+    - context
+    - analysis
+    - strategic_plan
+    - quality_gates
+    - next_steps
 ---
 
 # HiveMind Orchestration Command

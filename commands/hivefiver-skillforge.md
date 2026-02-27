@@ -13,6 +13,15 @@ required_templates: []
 chain_group: hivefiver
 group: hivefiver
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - skill_inventory
+    - coverage_matrix
+    - gaps
+    - recommended_installs
+    - workflow_bindings
+    - next_command
 ---
 
 # HiveFiver SkillForge

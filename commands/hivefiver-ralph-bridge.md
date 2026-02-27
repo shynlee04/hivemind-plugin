@@ -12,6 +12,13 @@ required_templates: []
 chain_group: hivefiver
 group: hivefiver-compat
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - prd_json_path
+    - beads_dependency_map
+    - todo_story_node_map
+    - validation_report
 ---
 
 # HiveFiver Ralph Bridge

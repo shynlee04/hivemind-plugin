@@ -13,6 +13,16 @@ required_templates: []
 chain_group: hivefiver
 group: hivefiver
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - concept_id
+    - attempt
+    - max_attempts
+    - hint_mode
+    - confidence
+    - next_question
+    - deferred_queue
 ---
 # HiveFiver Tutor
 

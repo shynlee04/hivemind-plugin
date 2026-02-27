@@ -2,6 +2,7 @@
 name: hiverd
 description: Research specialist for evidence synthesis, comparative analysis,
   and documentation outputs.
+tasks: {}
 workflows:
   - hiverd-deep-research
   - hiverd-synthesis-pipeline

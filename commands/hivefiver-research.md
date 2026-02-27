@@ -13,6 +13,17 @@ required_templates: []
 chain_group: hivefiver
 group: hivefiver
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - source_quality_matrix
+    - evidence_table
+    - contradiction_register
+    - confidence
+    - validation_attempt
+    - max_attempts
+    - mcp_gap_todos
+    - next_command
 ---
 
 # HiveFiver Research

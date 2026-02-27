@@ -14,6 +14,19 @@ chain_group: hivefiver
 group: hivefiver
 entry_gate: session_declared
 argument-hint: <action> [args]
+return_schema:
+  type: json
+  fields:
+    - resolved_action
+    - resolved_command
+    - resolved_workflow
+    - persona_lane
+    - domain_lane
+    - progress_state
+    - next_step_options
+    - next_agent
+    - handoff_required
+    - handoff_reason
 ---
 
 # HiveFiver Root Command

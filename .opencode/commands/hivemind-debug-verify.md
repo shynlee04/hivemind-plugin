@@ -12,6 +12,17 @@ required_templates: []
 chain_group: hiveminder
 group: debug
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - status
+    - verification_passed
+    - tests
+    - type_check
+    - regressions
+    - session_status
+    - drift_score
+    - recommendation
 ---
 # HiveMind Debug Verify Command
 

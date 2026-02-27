@@ -52,6 +52,97 @@
       "created_at": "2026-02-27T14:53:37.876Z",
       "purged_at": null,
       "transferred_to_governance": false
+    },
+    {
+      "id": "8b5c438d-6f46-40d0-85a3-f55d63b8c6a3",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "category": "planning",
+      "source": "orchestrator-synthesis",
+      "content": "## Agent Returns Synthesis (3 parallel dispatches)\n\n**Agent 1 (S-01 FIX) — SUCCESS ✅**\n- All 6 agents now have `tasks: {}` field (hivehealer, hivemaker, hiveplanner, hiveq, hiverd, hivexplorer)\n- Verified: all 8 agents show tasks field (grep count=1 each)\n- npm test + tsc passed\n\n**Agent 2 (D-07/D-12 RECON) — COMPLETE**\n- D-07: 1 FAIL → hiveminder-orchestrate.md (missing delegation_source)\n- D-12: 13 FAIL → commands with Output Contract sections but no return_schema in frontmatter\n  - hiveminder group: hiveminder-orchestrate.md, hivemind-debug-trigger.md, hivemind-debug-verify.md\n  - hivefiver group: hivefiver.md, hivefiver-specforge.md, hivefiver-start.md, hivefiver-research.md, hivefiver-ralph-bridge.md, hivefiver-intake.md, hivefiver-skillforge.md, hivefiver-gsd-bridge.md, hivefiver-doctor.md, hivefiver-tutor.md\n- 2 N/A justified (hivemind-delegate.md, hivemind-context.md — docs only)\n\n**Agent 3 (Wave 2A RECON) — SURPRISE: ALREADY COMPLETE**\n- ALL 40 commands are FULLY CHAINED — 100% coverage\n- The \"31 unchained commands\" premise is OBSOLETE (fixed in Wave 1)\n- Wave 2A can be marked complete without action\n\n## Decision: Next Steps\n1. S-01: DONE → mark complete\n2. D-07: 1 trivial fix (add delegation_source to 1 file)\n3. D-12: 13 fixes (add return_schema to frontmatter — commands/ scope = hivefiver territory)\n4. Wave 2A: COMPLETE → update master plan\n5. Post-fix: sync to .opencode/ + run framework auditor",
+      "condensed": "## Agent Returns Synthesis (3 parallel dispatches)\n\n**Agent 1 (S-01 FIX) — SUCCESS ✅**\n- All 6 agents now have `tasks: {}` field (hivehealer, hivemaker, hiveplanner, hiveq, hiverd, hivexplorer)\n- Verified: all 8 agents show tasks field (gre",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-02-27T19:28:45.796Z",
+      "purged_at": null,
+      "transferred_to_governance": false
+    },
+    {
+      "id": "6e797f96-eee3-4399-a042-581738f320d7",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "category": "research_synthesis",
+      "source": "hivefiver research auto-init",
+      "content": "Auto-realign executed in floppy_engineer lane for current remediation turn; skills loaded and command output contracts parsed from command markdown files.",
+      "condensed": "Auto-realign executed in floppy_engineer lane for current remediation turn; skills loaded and command output contracts parsed from command markdown files.",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-02-27T19:32:13.890Z",
+      "purged_at": null,
+      "transferred_to_governance": false
+    },
+    {
+      "id": "dfa322c1-c571-4c1e-88ae-198c32d17e5f",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "category": "research_synthesis",
+      "source": "auto-realign",
+      "content": "Auto-realign workflow applied for floppy_engineer lane: governance + hivefiver research skills loaded before D-12 edits.",
+      "condensed": "Auto-realign workflow applied for floppy_engineer lane: governance + hivefiver research skills loaded before D-12 edits.",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-02-27T19:32:21.261Z",
+      "purged_at": null,
+      "transferred_to_governance": false
+    },
+    {
+      "id": "339f6af6-1ec0-4f9e-a04d-fc4fd11d5f6a",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "category": "planning",
+      "source": "user-correction",
+      "content": "## USER CORRECTIONS (2026-02-28)\n\n1. **Delegation scope**: Hiveminder CAN delegate to ALL agents including hivefiver — BUT hivefiver must first have `mode: all` (currently `mode: primary` which restricts it)\n2. **Cross-role delegation**: Some agents CAN delegate to non-same-role subagents — the constraints are not as rigid as I assumed\n3. **.opencode sync is REQUIRED** before any agent/command changes take effect — AND restart is needed after sync\n4. **hivemind-framework-auditor skill** was built specifically for auditing framework structural issues — must use it for verification gates\n5. **Anti-pattern flags**: D-07 and D-12 are showing as \"avoid\" in state — meaning they completed in previous turn, agents returned success\n\n## IMPLICATION\n- Before verification gate: must sync agents/ + commands/ → .opencode/\n- hivefiver.md needs mode changed from `primary` → `all` to enable delegation to it\n- The smart-merge sync (sync-assets) preserves user config — safe to run",
+      "condensed": "## USER CORRECTIONS (2026-02-28)\n\n1. **Delegation scope**: Hiveminder CAN delegate to ALL agents including hivefiver — BUT hivefiver must first have `mode: all` (currently `mode: primary` which restricts it)\n2. **Cross-role delegation**: So",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-02-27T19:35:37.510Z",
+      "purged_at": null,
+      "transferred_to_governance": false
+    },
+    {
+      "id": "b4c18cc4-e3b1-446b-8e0a-f2368d09d15b",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "category": "planning",
+      "source": "verification-gate",
+      "content": "## Verification Gate Results (2026-02-28)\n\n### Structural Audit (S-01 → S-09, timed out before S-10+)\n- **S-01: PASS ✅** — 8/8 agents have complete YAML frontmatter (FIX CONFIRMED)\n- S-02: PASS — 12/12 router commands valid\n- S-03: PASS — 20/20 workflows v2-compliant\n- S-04: FAIL — Dirs without registry (pre-existing, not P0)\n- S-05: WARN — 7 files differ root↔.opencode (parity drift from recent edits)\n- S-06→S-09: PASS (templates, references, skills, tsc clean)\n\n### Anti-Pattern Detector\n- D-02, D-04, D-05, D-08, D-13: CLEAN ✅\n- **D-07: STILL FAILING** — 3/4 delegations lack delegation_source (we fixed 1, 3 remain)\n- **D-12: STILL FAILING** — 2/4 delegations lack return_schema (we fixed 13, 2 remain)\n- D-15: 7 skills lack routing (pre-existing P1)\n\n### GAP: D-07 and D-12 not fully resolved\nNeed to identify which specific files the detector is flagging as still failing.",
+      "condensed": "## Verification Gate Results (2026-02-28)\n\n### Structural Audit (S-01 → S-09, timed out before S-10+)\n- **S-01: PASS ✅** — 8/8 agents have complete YAML frontmatter (FIX CONFIRMED)\n- S-02: PASS — 12/12 router commands valid\n- S-03: PASS — 2",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-02-27T19:45:22.775Z",
+      "purged_at": null,
+      "transferred_to_governance": false
+    },
+    {
+      "id": "42182a68-1063-446a-b322-2a0f2b6d5101",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "category": "planning",
+      "source": "gap-analysis",
+      "content": "## D-07/D-12 Gap Analysis: FALSE POSITIVES in detector\n\nThe anti-pattern-detector.sh uses `grep -qi \"task(\"` which catches ANY mention of Task() — including documentation/guidance text.\n\n### 3 files flagged but NOT actual delegators:\n1. **hivemind-context.md** (line 57): `Task({` in an EXAMPLE block showing context-first protocol\n2. **hivemind-delegate.md** (lines 4,46,49,165,168,175,178,179): ALL are documentation about HOW to delegate — the command IS the delegation guide\n3. **hivemind-lint.md** (line 94): `# After Task(hivemaker) returns` — a COMMENT describing post-delegation workflow\n\n### Root cause: Script detection too broad\n`grep -qi \"task(\"` matches documentation references, not just actual delegation invocations.\n\n### Fix options:\nA. Tighten grep pattern to require `subagent_type` nearby (actual delegation marker)\nB. Add exclusion annotation to these 3 files\nC. Accept as known false positives (document in audit report)\n\n### Decision: Option A is the correct engineering fix\nChange D-07 and D-12 checks to look for `subagent_type` which only appears in ACTUAL Task() delegation calls, not documentation references.",
+      "condensed": "## D-07/D-12 Gap Analysis: FALSE POSITIVES in detector\n\nThe anti-pattern-detector.sh uses `grep -qi \"task(\"` which catches ANY mention of Task() — including documentation/guidance text.\n\n### 3 files flagged but NOT actual delegators:\n1. **h",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-02-27T19:47:04.766Z",
+      "purged_at": null,
+      "transferred_to_governance": false
+    },
+    {
+      "id": "31fead33-28b0-48cb-8863-5b605fa75d59",
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+      "category": "planning",
+      "source": "resume-checkpoint",
+      "content": "RESUME POINT: Verification gate ran. S-01=PASS. D-07/D-12 show 3+2 remaining FAILs but these are FALSE POSITIVES (grep matches documentation text not actual delegation calls). Next steps: (1) Fix detector script to reduce false positives, (2) Fix S-05 parity drift (7 files differ root↔.opencode), (3) Re-run auditor to confirm clean gate, (4) Record completion anchor, (5) Present Wave 2-P0 completion report to user.",
+      "condensed": "RESUME POINT: Verification gate ran. S-01=PASS. D-07/D-12 show 3+2 remaining FAILs but these are FALSE POSITIVES (grep matches documentation text not actual delegation calls). Next steps: (1) Fix detector script to reduce false positives, (",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-02-27T19:47:46.610Z",
+      "purged_at": null,
+      "transferred_to_governance": false
     }
   ]
 }

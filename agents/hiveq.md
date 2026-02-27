@@ -1,6 +1,7 @@
 ---
 name: hiveq
 description: "Quality and verification specialist. Produces pass/fail evidence and compliance verdicts."
+tasks: {}
 workflows:
   - verification-gate
   - hiveq-verification-pipeline

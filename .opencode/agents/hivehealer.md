@@ -2,6 +2,7 @@
 name: hivehealer
 description: Remediation specialist for debugging, hardening, and quality
   recovery under strict scope constraints.
+tasks: {}
 workflows:
   - bug-remediation
 prompts:

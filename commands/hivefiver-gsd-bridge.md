@@ -12,6 +12,14 @@ required_templates: []
 chain_group: hivefiver
 group: hivefiver-compat
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - gsd_phase_map
+    - lineage_snapshot
+    - phase_gate_matrix
+    - remediation_actions
+    - next_command
 ---
 
 # HiveFiver GSD Bridge

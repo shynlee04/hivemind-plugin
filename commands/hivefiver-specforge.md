@@ -13,6 +13,17 @@ required_templates: []
 chain_group: hivefiver
 group: hivefiver
 entry_gate: session_declared
+return_schema:
+  type: json
+  fields:
+    - spec_candidate_a
+    - spec_candidate_b
+    - ambiguity_map
+    - clarification_attempt
+    - max_attempts
+    - assumption_log
+    - recommended_spec
+    - next_command
 ---
 
 # HiveFiver SpecForge
