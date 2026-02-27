@@ -1,0 +1,10 @@
+profile: balanced
+description: Canonical runtime with templates and references
+groups:
+  - commands
+  - skills
+  - agents
+  - workflows
+  - templates
+  - references
+include_legacy: false

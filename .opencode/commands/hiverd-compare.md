@@ -1,14 +1,17 @@
 ---
-name: "hiverd-compare"
-description: "Comparative analysis of technologies, patterns, or approaches with weighted scoring."
-execution_context: "workflows/hiverd-comparative-analysis.yaml"
+name: hiverd-compare
+description: Comparative analysis of technologies, patterns, or approaches with
+  weighted scoring.
+owner_agent: hiverd
+kind: router
+execution_context: workflows/hiverd-comparative-analysis.yaml
 required_skills:
-  - "comparative-analysis"
-  - "source-evaluation"
+  - comparative-analysis
+  - source-evaluation
 required_templates:
-  - "templates/analysis-matrix-template.md"
-chain_group: "hiverd"
-entry_gate: "session_declared"
+  - templates/analysis-matrix-template.md
+chain_group: hiverd
+entry_gate: session_declared
 ---
 
 # HiveRD Compare

@@ -1,0 +1,30 @@
+contract_version: 2
+name: spec-generation
+target_agent: hiveplanner
+description: "Canonical specification workflow for ambiguous or high-complexity requests."
+steps:
+  - name: intake
+    tool: hivefiver-intake
+    wave: 1
+    entry_criteria: "Intent captured"
+    exit_criteria: "Requirements normalized"
+  - name: distill
+    tool: hivefiver-specforge
+    wave: 2
+    entry_criteria: "Intake complete"
+    exit_criteria: "Spec candidate generated"
+  - name: ambiguity-gate
+    tool: hivefiver-validate
+    wave: 3
+    entry_criteria: "Spec candidate exists"
+    exit_criteria: "Ambiguity map resolved or flagged"
+  - name: handoff
+    tool: hivemind-delegate
+    wave: 4
+    entry_criteria: "Spec accepted"
+    exit_criteria: "Delegation packet emitted"
+guards:
+  - rule: no_execution_without_spec
+    check: accepted_spec_exists
+  - rule: chain_integrity
+    check: trajectory_tactic_action_connected

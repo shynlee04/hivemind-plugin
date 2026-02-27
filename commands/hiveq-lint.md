@@ -1,13 +1,16 @@
 ---
-name: "hiveq-lint"
-description: "Static analysis of framework assets — commands, workflows, skills for structural compliance."
-execution_context: "workflows/hiveq-gate-enforcement.yaml"
+name: hiveq-lint
+description: Static analysis of framework assets — commands, workflows, skills
+  for structural compliance.
+owner_agent: hiveq
+kind: router
+execution_context: workflows/hiveq-gate-enforcement.yaml
 required_skills:
-  - "compliance-checking"
+  - compliance-checking
 required_templates:
-  - "templates/gate-checklist-template.md"
-chain_group: "hiveq"
-entry_gate: "session_declared"
+  - templates/gate-checklist-template.md
+chain_group: hiveq
+entry_gate: session_declared
 ---
 
 # HiveQ Lint

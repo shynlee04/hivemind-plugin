@@ -1,6 +1,14 @@
 ---
-name: "hivemind-dashboard"
-description: "Launch the HiveMind TUI dashboard for live monitoring of session state, hierarchy, and metrics."
+name: hivemind-dashboard
+description: Launch the HiveMind TUI dashboard for live monitoring of session
+  state, hierarchy, and metrics.
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-dashboard
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Dashboard

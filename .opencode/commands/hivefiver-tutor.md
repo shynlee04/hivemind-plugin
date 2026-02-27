@@ -1,6 +1,14 @@
 ---
-name: "hivefiver-tutor"
-description: "Interactive tutoring mode with progressive disclosure, MCQ checks, adaptive hints, and 10-attempt escalation policy."
+name: hivefiver-tutor
+description: Interactive tutoring mode with progressive disclosure, MCQ checks,
+  adaptive hints, and 10-attempt escalation policy.
+owner_agent: hivefiver
+kind: utility
+alias_resolved_to: hivefiver-tutor
+required_skills: []
+required_templates: []
+chain_group: hivefiver
+entry_gate: session_declared
 ---
 
 # HiveFiver Tutor

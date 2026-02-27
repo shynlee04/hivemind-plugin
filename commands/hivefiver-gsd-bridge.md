@@ -1,6 +1,14 @@
 ---
-name: "hivefiver-gsd-bridge"
-description: "Map HiveFiver v2 outputs to GSD lifecycle checkpoints with deterministic lineage and evidence-linked phase gates."
+name: hivefiver-gsd-bridge
+description: Map HiveFiver v2 outputs to GSD lifecycle checkpoints with
+  deterministic lineage and evidence-linked phase gates.
+owner_agent: hivefiver
+kind: utility
+alias_resolved_to: hivefiver-gsd-bridge
+required_skills: []
+required_templates: []
+chain_group: hivefiver
+entry_gate: session_declared
 ---
 
 # HiveFiver GSD Bridge

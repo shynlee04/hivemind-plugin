@@ -1,11 +1,14 @@
 ---
-name: "hiverd-document"
-description: "Generate structured documentation from analysis findings."
-execution_context: "workflows/hiverd-synthesis-pipeline.yaml"
+name: hiverd-document
+description: Generate structured documentation from analysis findings.
+owner_agent: hiverd
+kind: router
+execution_context: workflows/hiverd-synthesis-pipeline.yaml
 required_skills:
-  - "synthesis-patterns"
-chain_group: "hiverd"
-entry_gate: "session_declared"
+  - synthesis-patterns
+required_templates: []
+chain_group: hiverd
+entry_gate: session_declared
 ---
 
 # HiveRD Document

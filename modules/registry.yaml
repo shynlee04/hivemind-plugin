@@ -1,0 +1,46 @@
+registry:
+  version: "1.0.0"
+  policy:
+    root_sot: true
+    opencode_mirror_only: true
+  agents:
+    hiveminder:
+      status: active
+      execution_scope: governance
+    hivefiver:
+      status: active
+      execution_scope: meta
+    hivemaker:
+      status: active
+      execution_scope: implementation
+    hivehealer:
+      status: active
+      execution_scope: implementation
+    hivexplorer:
+      status: active
+      execution_scope: research
+    hiveq:
+      status: active
+      execution_scope: verification
+    hiverd:
+      status: active
+      execution_scope: research
+    hiveplanner:
+      status: active
+      execution_scope: planning
+  skills:
+    agent-role-boundary:
+      owner_module: hivemind-core
+      status: active
+    delegation-packet-contract:
+      owner_module: hivemind-core
+      status: active
+    meta-builder-governance:
+      owner_module: hivefiver-meta
+      status: active
+    creative-ideating-room:
+      owner_module: hivefiver-meta
+      status: experimental
+    market-research-framework:
+      owner_module: hiverd-research
+      status: experimental

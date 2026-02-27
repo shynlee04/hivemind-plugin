@@ -1,0 +1,8 @@
+profile: core
+description: Canonical minimal runtime profile for deterministic routing
+groups:
+  - commands
+  - skills
+  - agents
+  - workflows
+include_legacy: false

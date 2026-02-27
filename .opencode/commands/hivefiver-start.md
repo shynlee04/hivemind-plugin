@@ -1,6 +1,14 @@
 ---
-name: "hivefiver-start"
-description: "Bootstrap HiveFiver v2 with tri-persona detection, codebase regulation, and root-command governance lock."
+name: hivefiver-start
+description: Bootstrap HiveFiver v2 with tri-persona detection, codebase
+  regulation, and root-command governance lock.
+owner_agent: hivefiver
+kind: utility
+alias_resolved_to: hivefiver-start
+required_skills: []
+required_templates: []
+chain_group: hivefiver
+entry_gate: session_declared
 ---
 
 # HiveFiver Start

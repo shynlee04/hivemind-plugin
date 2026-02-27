@@ -1,14 +1,17 @@
 ---
-name: "hiverd-research"
-description: "Run structured multi-source research on a topic with evidence gathering, source evaluation, and synthesis."
-execution_context: "workflows/hiverd-deep-research.yaml"
+name: hiverd-research
+description: Run structured multi-source research on a topic with evidence
+  gathering, source evaluation, and synthesis.
+owner_agent: hiverd
+kind: router
+execution_context: workflows/hiverd-deep-research.yaml
 required_skills:
-  - "research-methodology"
-  - "source-evaluation"
+  - research-methodology
+  - source-evaluation
 required_templates:
-  - "templates/research-report-template.md"
-chain_group: "hiverd"
-entry_gate: "session_declared"
+  - templates/research-report-template.md
+chain_group: hiverd
+entry_gate: session_declared
 ---
 
 # HiveRD Research

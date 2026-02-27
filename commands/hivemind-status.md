@@ -1,6 +1,13 @@
 ---
-name: "hivemind-status"
-description: "Show current HiveMind governance state, session health, and recent activity."
+name: hivemind-status
+description: Show current HiveMind governance state, session health, and recent activity.
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-status
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Status Check

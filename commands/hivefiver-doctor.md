@@ -1,6 +1,14 @@
 ---
-name: "hivefiver-doctor"
-description: "Audit HiveFiver v2 readiness across MCP, commands, skills, workflows, and .hivemind reality-vs-config alignment."
+name: hivefiver-doctor
+description: Audit HiveFiver v2 readiness across MCP, commands, skills,
+  workflows, and .hivemind reality-vs-config alignment.
+owner_agent: hivefiver
+kind: utility
+alias_resolved_to: hivefiver-doctor
+required_skills: []
+required_templates: []
+chain_group: hivefiver
+entry_gate: session_declared
 ---
 
 # HiveFiver Doctor

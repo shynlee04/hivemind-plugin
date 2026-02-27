@@ -39,7 +39,7 @@ import { createStateManager, saveConfig } from "../lib/persistence.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { syncOpencodeAssets } from "./sync-assets.js"
-import type { AssetSyncTarget } from "./sync-assets.js"
+import type { AssetSyncProfile, AssetSyncTarget } from "./sync-assets.js"
 import { createTree, saveTree } from "../lib/hierarchy-tree.js"
 import {
   auditHiveFiverAssets,
@@ -157,7 +157,9 @@ export interface InitOptions {
   requireCodeReview?: boolean
   enforceTdd?: boolean
   syncTarget?: AssetSyncTarget
+  syncMode?: "prompt" | "none" | AssetSyncProfile
   overwriteAssets?: boolean
+  backupAssetsOnOverwrite?: boolean
   silent?: boolean
   force?: boolean
   /** Profile preset to apply (beginner, intermediate, advanced, expert, coach) */
@@ -192,6 +194,40 @@ const DEFAULT_COMMANDMENTS_MARKDOWN = `# 10 Commandments
 9. Escalate when confidence drops or ambiguity rises.
 10. Close every cycle with explicit summary and next steps.
 `
+
+function resolveSyncMode(options: InitOptions): "none" | AssetSyncProfile {
+  const requested = options.syncMode ?? "prompt"
+  if (requested === "none") return "none"
+  if (requested === "core" || requested === "balanced" || requested === "full") {
+    return requested
+  }
+
+  // "prompt" is resolved by interactive init. Non-interactive fallback stays canonical core.
+  return "core"
+}
+
+async function syncAssetsForInit(directory: string, options: InitOptions): Promise<void> {
+  const mode = resolveSyncMode(options)
+  if (mode === "none") {
+    if (!options.silent) {
+      log("  ℹ Asset sync skipped (syncMode=none). Use `sync-assets` or `/hivefiver doctor` when ready.")
+    }
+    return
+  }
+
+  const overwrite = options.overwriteAssets ?? false
+  const backupOnOverwrite = options.backupAssetsOnOverwrite ?? (mode === "full")
+
+  await syncOpencodeAssets(directory, {
+    target: options.syncTarget ?? "project",
+    profile: mode,
+    overwrite,
+    backupOnOverwrite,
+    includeLegacy: false,
+    silent: options.silent ?? false,
+    onLog: options.silent ? undefined : log,
+  })
+}
 
 async function seedTenCommandments(directory: string): Promise<void> {
   const paths = getEffectivePaths(directory)
@@ -576,12 +612,7 @@ export async function initProject(
   // The directory may exist from logger side-effects without full initialization.
   if (existsSync(brainPath)) {
     // Existing user upgrade path: keep state, refresh OpenCode assets, AND ensure plugin is registered
-    await syncOpencodeAssets(directory, {
-      target: options.syncTarget ?? "project",
-      overwrite: options.overwriteAssets ?? false,
-      silent: options.silent ?? false,
-      onLog: options.silent ? undefined : log,
-    })
+    await syncAssetsForInit(directory, options)
     
     // Ensure plugin is registered in opencode.json (this was missing!)
     registerPluginInConfig(directory, options.silent ?? false)
@@ -665,12 +696,7 @@ export async function initProject(
     injectAgentsDocs(directory, options.silent ?? false)
 
     // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
-    await syncOpencodeAssets(directory, {
-      target: options.syncTarget ?? "project",
-      overwrite: options.overwriteAssets ?? false,
-      silent: options.silent ?? false,
-      onLog: options.silent ? undefined : log,
-    })
+    await syncAssetsForInit(directory, options)
 
     await seedHiveFiverOnboardingTasks(directory, sessionId)
     logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
@@ -788,12 +814,7 @@ export async function initProject(
   injectAgentsDocs(directory, options.silent ?? false)
 
   // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
-  await syncOpencodeAssets(directory, {
-    target: options.syncTarget ?? "project",
-    overwrite: options.overwriteAssets ?? false,
-    silent: options.silent ?? false,
-    onLog: options.silent ? undefined : log,
-  })
+  await syncAssetsForInit(directory, options)
 
   await seedHiveFiverOnboardingTasks(directory, sessionId)
   logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)

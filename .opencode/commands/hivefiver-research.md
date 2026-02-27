@@ -1,6 +1,14 @@
 ---
-name: "hivefiver-research"
-description: "Run iterative MCP research loops with non-negotiable provider checks, confidence grading, and setup remediation."
+name: hivefiver-research
+description: Run iterative MCP research loops with non-negotiable provider
+  checks, confidence grading, and setup remediation.
+owner_agent: hivefiver
+kind: utility
+alias_resolved_to: hivefiver-research
+required_skills: []
+required_templates: []
+chain_group: hivefiver
+entry_gate: session_declared
 ---
 
 # HiveFiver Research

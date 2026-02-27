@@ -1,6 +1,15 @@
 ---
-name: "hivemind-pre-stop"
-description: "MANDATORY: Run before stopping work. Validates context integrity, exports intelligence, and prevents data loss. Use this command EVERY time before ending a session."
+name: hivemind-pre-stop
+description: "MANDATORY: Run before stopping work. Validates context integrity,
+  exports intelligence, and prevents data loss. Use this command EVERY time
+  before ending a session."
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-pre-stop
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Pre-Stop Gate

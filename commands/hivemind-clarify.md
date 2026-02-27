@@ -1,6 +1,15 @@
 ---
-name: "hivemind-clarify"
-description: "Context Clarification Command - For low-confidence scenarios (<80% confidence). Loads relevant skills, gathers context, and presents structured clarification questions."
+name: hivemind-clarify
+description: Context Clarification Command - For low-confidence scenarios (<80%
+  confidence). Loads relevant skills, gathers context, and presents structured
+  clarification questions.
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-clarify
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Context Clarification Command

@@ -1,13 +1,16 @@
 ---
-name: "hiverd-brainstorm"
-description: "Run divergent ideation session with convergent evaluation and decision documentation."
-execution_context: "workflows/hiverd-brainstorm-session.yaml"
+name: hiverd-brainstorm
+description: Run divergent ideation session with convergent evaluation and
+  decision documentation.
+owner_agent: hiverd
+kind: router
+execution_context: workflows/hiverd-brainstorm-session.yaml
 required_skills:
-  - "synthesis-patterns"
+  - synthesis-patterns
 required_templates:
-  - "templates/brainstorm-session-template.md"
-chain_group: "hiverd"
-entry_gate: "session_declared"
+  - templates/brainstorm-session-template.md
+chain_group: hiverd
+entry_gate: session_declared
 ---
 
 # HiveRD Brainstorm

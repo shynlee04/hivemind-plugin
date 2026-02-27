@@ -1,0 +1,30 @@
+contract_version: 2
+name: research-synthesis
+target_agent: hiverd
+description: "Canonical research workflow with synthesis and contradiction handling."
+steps:
+  - name: question-frame
+    tool: hiverd-research
+    wave: 1
+    entry_criteria: "Topic defined"
+    exit_criteria: "Research questions framed"
+  - name: gather-evidence
+    tool: hiverd-research
+    wave: 2
+    entry_criteria: "Questions framed"
+    exit_criteria: "Sources and evidence cards collected"
+  - name: synthesize
+    tool: hiverd-synthesize
+    wave: 3
+    entry_criteria: "Evidence collected"
+    exit_criteria: "Contradictions resolved or documented"
+  - name: publish-report
+    tool: hiverd-document
+    wave: 4
+    entry_criteria: "Synthesis complete"
+    exit_criteria: "Report artifact generated"
+guards:
+  - rule: source_quality
+    check: evidence_has_citations
+  - rule: confidence_tagging
+    check: confidence_levels_present

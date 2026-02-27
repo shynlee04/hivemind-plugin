@@ -1,13 +1,15 @@
 ---
-name: "hiveq-gate-check"
-description: "Run a specific quality gate and produce structured pass/fail result."
-execution_context: "workflows/hiveq-gate-enforcement.yaml"
+name: hiveq-gate-check
+description: Run a specific quality gate and produce structured pass/fail result.
+owner_agent: hiveq
+kind: router
+execution_context: workflows/hiveq-gate-enforcement.yaml
 required_skills:
-  - "gate-enforcement"
+  - gate-enforcement
 required_templates:
-  - "templates/gate-checklist-template.md"
-chain_group: "hiveq"
-entry_gate: "session_declared"
+  - templates/gate-checklist-template.md
+chain_group: hiveq
+entry_gate: session_declared
 ---
 
 # HiveQ Gate Check

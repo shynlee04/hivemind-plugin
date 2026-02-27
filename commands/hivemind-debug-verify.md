@@ -1,6 +1,14 @@
 ---
-name: "hivemind-debug-verify"
-description: "Verify that a debug fix is complete and no regressions exist. Run this AFTER applying a fix to confirm resolution."
+name: hivemind-debug-verify
+description: Verify that a debug fix is complete and no regressions exist. Run
+  this AFTER applying a fix to confirm resolution.
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-debug-verify
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Debug Verify Command

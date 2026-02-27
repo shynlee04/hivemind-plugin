@@ -1,6 +1,14 @@
 ---
-name: "hivemind-lint"
-description: "Run comprehensive linting, type checking, and quality validation. Use proactively after code changes and before commits."
+name: hivemind-lint
+description: Run comprehensive linting, type checking, and quality validation.
+  Use proactively after code changes and before commits.
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-lint
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Lint & Quality Gate

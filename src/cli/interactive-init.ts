@@ -22,13 +22,21 @@ import {
   isCoachAutomation,
   normalizeAutomationLabel,
 } from "../schemas/config.js"
-import type { AssetSyncTarget } from "./sync-assets.js"
+import type { AssetSyncProfile, AssetSyncTarget } from "./sync-assets.js"
 
 export const ASSET_TARGET_LABELS: Record<AssetSyncTarget, string> = {
   project: "Project only (.opencode/ in this project)",
   global: "Global only (~/.config/opencode/)",
   both: "Both project and global",
 }
+
+const SYNC_MODE_LABELS: Record<SyncModeSelection, string> = {
+  none: "None (manual sync later)",
+  core: "Core canonical",
+  balanced: "Balanced canonical",
+  full: "Full canonical",
+}
+type SyncModeSelection = "none" | Exclude<AssetSyncProfile, "legacy-compat">
 
 /**
  * Run the interactive init wizard.
@@ -288,6 +296,38 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
     return null
   }
 
+  const syncMode = await p.select({
+    message: "Asset sync mode (default runtime surface)?",
+    initialValue: "core",
+    options: [
+      {
+        value: "none" as const,
+        label: "None",
+        hint: "No auto sync. Use CLI sync-assets or /hivefiver doctor later.",
+      },
+      {
+        value: "core" as AssetSyncProfile,
+        label: "Core canonical (recommended)",
+        hint: "Minimal deterministic routing assets only.",
+      },
+      {
+        value: "balanced" as AssetSyncProfile,
+        label: "Balanced canonical",
+        hint: "Core plus templates/references.",
+      },
+      {
+        value: "full" as AssetSyncProfile,
+        label: "Full canonical",
+        hint: "All canonical groups (no legacy compatibility by default).",
+      },
+    ],
+  }) as SyncModeSelection
+
+  if (p.isCancel(syncMode)) {
+    p.cancel("Setup cancelled.")
+    return null
+  }
+
   // Summary
   p.note(
     [
@@ -301,6 +341,7 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
       `Style:       ${isCoachAutomation(automationLevel) ? "skeptical (forced)" : outputStyle}`,
       `Permissions: ${JSON.stringify(selectedProfile.permissions)}`,
       `Target:      ${ASSET_TARGET_LABELS[syncTarget]}`,
+      `Sync mode:   ${SYNC_MODE_LABELS[syncMode]}`,
       requireCodeReview || isCoachAutomation(automationLevel) ? `✓ Code review required` : "",
       enforceTdd ? `✓ TDD enforced` : "",
     ]
@@ -329,6 +370,7 @@ export async function runInteractiveInit(): Promise<InitOptions | null> {
     requireCodeReview: requireCodeReview || isCoachAutomation(automationLevel),
     enforceTdd,
     syncTarget,
+    syncMode,
     profile: profileKey,
   }
 }

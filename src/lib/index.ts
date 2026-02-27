@@ -34,3 +34,4 @@ export * from "./sot-governance.js";
 export * from "./sdk-access.js";
 export * from "./project-snapshot.js";
 export * from "./session-coherence-types.js";
+export * from "./skill-registry.js";

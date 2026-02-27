@@ -37,7 +37,7 @@ Each agent can have custom settings:
 ```json
 {
   "agent": {
-    "build": {
+    "hivemaker": {
       "model": "anthropic/claude-sonnet-4-20250514",
       "tools": { "write": true, "edit": true }
     },

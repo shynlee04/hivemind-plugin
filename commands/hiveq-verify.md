@@ -1,13 +1,16 @@
 ---
-name: "hiveq-verify"
-description: "Verify phase or task completion against acceptance criteria using goal-backward analysis."
-execution_context: "workflows/hiveq-verification-pipeline.yaml"
+name: hiveq-verify
+description: Verify phase or task completion against acceptance criteria using
+  goal-backward analysis.
+owner_agent: hiveq
+kind: router
+execution_context: workflows/hiveq-verification-pipeline.yaml
 required_skills:
-  - "verification-methodology"
+  - verification-methodology
 required_templates:
-  - "templates/verification-report-template.md"
-chain_group: "hiveq"
-entry_gate: "session_declared"
+  - templates/verification-report-template.md
+chain_group: hiveq
+entry_gate: session_declared
 ---
 
 # HiveQ Verify

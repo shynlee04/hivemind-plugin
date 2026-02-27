@@ -1,6 +1,14 @@
 ---
-name: "hivemind-scan"
-description: "Scan the project codebase and build a HiveMind backbone. Run this on first use or when switching projects."
+name: hivemind-scan
+description: Scan the project codebase and build a HiveMind backbone. Run this
+  on first use or when switching projects.
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-scan
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Project Scan

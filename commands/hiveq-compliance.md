@@ -1,13 +1,16 @@
-tha---
-name: "hiveq-compliance"
-description: "Check compliance with framework conventions, naming rules, and asset organization."
-execution_context: "workflows/hiveq-audit-workflow.yaml"
+---
+name: hiveq-compliance
+description: Check compliance with framework conventions, naming rules, and
+  asset organization.
+owner_agent: hiveq
+kind: router
+execution_context: workflows/hiveq-audit-workflow.yaml
 required_skills:
-  - "compliance-checking"
+  - compliance-checking
 required_templates:
-  - "templates/audit-report-template.md"
-chain_group: "hiveq"
-entry_gate: "session_declared"
+  - templates/audit-report-template.md
+chain_group: hiveq
+entry_gate: session_declared
 ---
 
 # HiveQ Compliance

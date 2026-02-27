@@ -278,7 +278,7 @@ async function test_validation_skips_invalid_agent_and_workflow_schema() {
 }
 
 async function test_packaged_optional_groups_sync_by_default() {
-  process.stderr.write("\n--- sync-assets: packaged optional groups sync by default ---\n")
+  process.stderr.write("\n--- sync-assets: core profile excludes optional heavy groups by default ---\n")
   await withTmpDir("hm-sync-packaged-optional-", async (dir) => {
     await syncOpencodeAssets(dir, { silent: true })
 
@@ -291,16 +291,95 @@ async function test_packaged_optional_groups_sync_by_default() {
       "packaged workflow asset synced"
     )
     assert(
-      existsSync(join(dir, ".opencode", "templates", "hivemind-brownfield-session.md")),
-      "packaged template asset synced"
+      !existsSync(join(dir, ".opencode", "templates", "hivemind-brownfield-session.md")),
+      "templates are excluded in default core profile"
     )
     assert(
-      existsSync(join(dir, ".opencode", "prompts", "hivemind-brownfield-remediation.md")),
-      "packaged prompt asset synced"
+      !existsSync(join(dir, ".opencode", "prompts", "hivemind-brownfield-remediation.md")),
+      "prompts are excluded in default core profile"
+    )
+    assert(
+      !existsSync(join(dir, ".opencode", "references", "hivemind-brownfield-checklist.md")),
+      "references are excluded in default core profile"
+    )
+  })
+}
+
+async function test_profile_balanced_includes_templates_and_references() {
+  process.stderr.write("\n--- sync-assets: balanced profile includes templates/references ---\n")
+  await withTmpDir("hm-sync-balanced-", async (dir) => {
+    await syncOpencodeAssets(dir, {
+      profile: "balanced",
+      silent: true,
+    })
+
+    assert(
+      existsSync(join(dir, ".opencode", "templates", "hivemind-brownfield-session.md")),
+      "balanced profile includes templates"
     )
     assert(
       existsSync(join(dir, ".opencode", "references", "hivemind-brownfield-checklist.md")),
-      "packaged reference asset synced"
+      "balanced profile includes references"
+    )
+    assert(
+      !existsSync(join(dir, ".opencode", "prompts", "hivemind-brownfield-remediation.md")),
+      "balanced profile excludes prompts"
+    )
+  })
+}
+
+async function test_profile_core_excludes_legacy_commands() {
+  process.stderr.write("\n--- sync-assets: core profile excludes legacy commands ---\n")
+  await withTmpDir("hm-sync-core-legacy-", async (dir) => {
+    await syncOpencodeAssets(dir, {
+      profile: "core",
+      silent: true,
+    })
+
+    assert(
+      !existsSync(join(dir, ".opencode", "commands", "hivefiver-start.md")),
+      "legacy command excluded in core profile"
+    )
+    assert(
+      existsSync(join(dir, ".opencode", "commands", "hivefiver.md")),
+      "canonical root command still synced"
+    )
+  })
+}
+
+async function test_profile_legacy_compat_includes_legacy_commands() {
+  process.stderr.write("\n--- sync-assets: legacy-compat profile includes legacy commands ---\n")
+  await withTmpDir("hm-sync-legacy-compat-", async (dir) => {
+    await syncOpencodeAssets(dir, {
+      profile: "legacy-compat",
+      silent: true,
+    })
+
+    assert(
+      existsSync(join(dir, ".opencode", "commands", "hivefiver-start.md")),
+      "legacy command included in legacy-compat profile"
+    )
+  })
+}
+
+async function test_backup_on_overwrite_creates_bak() {
+  process.stderr.write("\n--- sync-assets: backupOnOverwrite creates .bak snapshot ---\n")
+  await withTmpDir("hm-sync-backup-overwrite-", async (dir) => {
+    await syncOpencodeAssets(dir, { silent: true })
+
+    const commandPath = join(dir, ".opencode", "commands", "hivemind-scan.md")
+    writeFileSync(commandPath, "# user-customized\n", "utf-8")
+
+    await syncOpencodeAssets(dir, {
+      overwrite: true,
+      backupOnOverwrite: true,
+      backupSuffix: ".bak.test",
+      silent: true,
+    })
+
+    assert(
+      existsSync(`${commandPath}.bak.test`),
+      "backup file created before overwrite"
     )
   })
 }
@@ -318,6 +397,10 @@ async function main() {
   await test_optional_groups_sync_when_present()
   await test_validation_skips_invalid_agent_and_workflow_schema()
   await test_packaged_optional_groups_sync_by_default()
+  await test_profile_balanced_includes_templates_and_references()
+  await test_profile_core_excludes_legacy_commands()
+  await test_profile_legacy_compat_includes_legacy_commands()
+  await test_backup_on_overwrite_creates_bak()
 
   process.stderr.write(`\n=== Sync Assets: ${passed} passed, ${failed_} failed ===\n`)
   if (failed_ > 0) process.exit(1)

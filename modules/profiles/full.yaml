@@ -1,0 +1,11 @@
+profile: full
+description: Full canonical runtime mirror (excluding legacy compatibility by default)
+groups:
+  - commands
+  - skills
+  - agents
+  - workflows
+  - templates
+  - prompts
+  - references
+include_legacy: false

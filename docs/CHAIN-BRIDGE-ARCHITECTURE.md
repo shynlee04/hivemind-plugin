@@ -890,14 +890,17 @@ hivemind-plugin/               # Root — all assets synced to user projects
 
 | Asset Source | Sync Target | Mechanism |
 |-------------|-------------|-----------|
-| `agents/` | `.opencode/agents/` (project) | `sync-assets.ts` — bidirectional overwrite |
-| `commands/` | `.opencode/commands/` (project) | `sync-assets.ts` — bidirectional overwrite |
-| `workflows/` | `.opencode/workflows/` (project) | `sync-assets.ts` — bidirectional overwrite |
-| `skills/` | `.opencode/skills/` (project) OR `~/.config/opencode/skills/` (global) | `sync-assets.ts` — scope-dependent |
-| `templates/` | `.opencode/templates/` (project) | `sync-assets.ts` — bidirectional overwrite |
-| `prompts/` | `.opencode/prompts/` (project) | `sync-assets.ts` — bidirectional overwrite |
-| `bridges/` | `.opencode/bridges/` (project) | `sync-assets.ts` — NEW sync path needed |
-| `modules/` | Not synced — internal organizational metadata | N/A |
+| Root `agents/commands/workflows/skills/...` | `.opencode/*` (project/global) | `sync-assets.ts` source->target copy; no-clobber by default |
+| Root canonical profiles | `.opencode/*` | Profile-scoped sync (`core|balanced|full|legacy-compat`) |
+| Legacy aliases | `.opencode/commands/` | Included only when `includeLegacy=true` or profile=`legacy-compat` |
+| Overwrite operations | `.opencode/*` | Optional backup snapshots via `backupOnOverwrite` |
+| Deployment parity | Root vs `.opencode` | Scoped parity checks by selected profile (strict optional) |
+| `modules/` and profile metadata | Root-only | Design-time metadata, not runtime mirror SOT |
+
+#### Local-First Skill Resolution
+1. Resolve skills from root `skills/` + `skills/registry.yaml` first.
+2. Use `.opencode/skills` as runtime deployment mirror only.
+3. External skill sources are opt-in and never auto-loaded.
 
 ### Governance Rules
 

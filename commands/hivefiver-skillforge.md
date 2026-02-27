@@ -1,6 +1,14 @@
 ---
-name: "hivefiver-skillforge"
-description: "Discover, audit, and compose robust skill packs for HiveFiver v2 including cross-domain non-dev lanes and deterministic automation bundles."
+name: hivefiver-skillforge
+description: Discover, audit, and compose robust skill packs for HiveFiver v2
+  including cross-domain non-dev lanes and deterministic automation bundles.
+owner_agent: hivefiver
+kind: utility
+alias_resolved_to: hivefiver-skillforge
+required_skills: []
+required_templates: []
+chain_group: hivefiver
+entry_gate: session_declared
 ---
 
 # HiveFiver SkillForge

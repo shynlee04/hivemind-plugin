@@ -1,6 +1,14 @@
 ---
-name: "hivefiver-ralph-bridge"
-description: "Convert HiveFiver v2 output into Ralph-compatible PRD JSON and beads mapping with enriched related entities and anti-pattern checks."
+name: hivefiver-ralph-bridge
+description: Convert HiveFiver v2 output into Ralph-compatible PRD JSON and
+  beads mapping with enriched related entities and anti-pattern checks.
+owner_agent: hivefiver
+kind: utility
+alias_resolved_to: hivefiver-ralph-bridge
+required_skills: []
+required_templates: []
+chain_group: hivefiver
+entry_gate: session_declared
 ---
 
 # HiveFiver Ralph Bridge

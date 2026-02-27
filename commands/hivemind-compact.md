@@ -1,6 +1,14 @@
 ---
-name: "hivemind-compact"
-description: "Archive the current session, preserve context, and prepare for the next session."
+name: hivemind-compact
+description: Archive the current session, preserve context, and prepare for the
+  next session.
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-compact
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Session Compact

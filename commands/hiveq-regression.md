@@ -1,13 +1,15 @@
 ---
-name: "hiveq-regression"
-description: "Detect regressions across recent changes by comparing against baselines."
-execution_context: "workflows/hiveq-regression-suite.yaml"
+name: hiveq-regression
+description: Detect regressions across recent changes by comparing against baselines.
+owner_agent: hiveq
+kind: router
+execution_context: workflows/hiveq-regression-suite.yaml
 required_skills:
-  - "regression-detection"
+  - regression-detection
 required_templates:
-  - "templates/verification-report-template.md"
-chain_group: "hiveq"
-entry_gate: "session_declared"
+  - templates/verification-report-template.md
+chain_group: hiveq
+entry_gate: session_declared
 ---
 
 # HiveQ Regression

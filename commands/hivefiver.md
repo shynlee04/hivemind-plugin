@@ -1,7 +1,15 @@
 ---
-name: "hivefiver"
-description: "HiveFiver v2 meta-builder root command. Route /hivefiver <action> to deterministic workflows with adaptive tutoring and governance gates."
-argument-hint: "<action> [args]"
+name: hivefiver
+description: HiveFiver v2 meta-builder root command. Route /hivefiver <action>
+  to deterministic workflows with adaptive tutoring and governance gates.
+owner_agent: hivefiver
+kind: utility
+alias_resolved_to: hivefiver
+required_skills: []
+required_templates: []
+chain_group: hivefiver
+entry_gate: session_declared
+argument-hint: <action> [args]
 ---
 
 # HiveFiver Root Command

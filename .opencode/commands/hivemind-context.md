@@ -1,6 +1,15 @@
 ---
-name: "hivemind-context"
-description: "Enforce context-before-actions discipline. Validates investigation completed before any file modifications. Use at start of work and before writes."
+name: hivemind-context
+description: Enforce context-before-actions discipline. Validates investigation
+  completed before any file modifications. Use at start of work and before
+  writes.
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-context
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Context-First Enforcer

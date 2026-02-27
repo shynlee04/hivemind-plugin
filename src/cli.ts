@@ -18,14 +18,16 @@ import { existsSync } from "node:fs"
 import { join } from "node:path"
 import { initProject } from "./cli/init.js"
 import { syncOpencodeAssets } from "./cli/sync-assets.js"
+import type { AssetSyncProfile } from "./cli/sync-assets.js"
 import { runScanCommand } from "./cli/scan.js"
 import { normalizeAutomationLabel } from "./schemas/config.js"
 import { createStateManager, loadConfig } from "./lib/persistence.js"
 import { listArchives } from "./lib/planning-fs.js"
 import { getEffectivePaths } from "./lib/paths.js"
 import { migrateToGraph, isGraphMigrationNeeded } from "./lib/graph-migrate.js"
+import { runDoctorRecovery } from "./lib/doctor-recovery.js"
 
-const COMMANDS = ["init", "migrate", "scan", "sync-assets", "status", "compact", "dashboard", "settings", "purge", "help"] as const
+const COMMANDS = ["init", "migrate", "scan", "sync-assets", "doctor", "status", "compact", "dashboard", "settings", "purge", "help"] as const
 type Command = (typeof COMMANDS)[number]
 
 function printHelp(): void {
@@ -41,6 +43,7 @@ Commands:
   migrate       Migrate legacy flat files to graph structure (explicit, one-time)
   scan          Brownfield scan wrapper (analyze/recommend/orchestrate/status)
   sync-assets   Sync packaged OpenCode assets into .opencode/ (existing users)
+  doctor        Diagnose/repair .hivemind lineage integrity
   status        Show current session and governance state
   settings      Show current configuration
   compact       Archive current session and reset (OpenCode only)
@@ -57,8 +60,18 @@ Options:
   --style <explanatory|outline|skeptical|architecture|minimal>  Output style (default: explanatory)
   --code-review            Require code review before accepting
   --tdd                    Enforce test-driven development
+  --sync-mode <prompt|none|core|balanced|full>  Init sync behavior (default: prompt)
   --target <project|global|both>  Asset sync target (default: project)
+  --profile <core|balanced|full|legacy-compat>  Asset sync profile (default: core)
   --overwrite              Overwrite existing files during asset sync
+  --backup-on-overwrite    Backup replaced files as .bak.<timestamp>
+  --include-legacy         Include legacy compatibility command surfaces
+  --prune                  Remove mirrored files not present in selected profile
+  --strict-parity          Fail when scoped profile parity mismatches remain
+  --emit-inventory         Emit per-group inventory in sync output
+  --doctor-mode <report|repair>  Doctor mode (default: report)
+  --dry-run                Compute doctor actions without writing repair changes
+  --hard-reset             Doctor repair with forensic snapshot + canonical manifest rebuild
   --refresh <seconds>      Dashboard refresh interval (default: 2)
   --action <status|analyze|recommend|orchestrate>  Scan action (default: analyze, for scan command)
   --json                   Return machine-readable JSON (for scan command)
@@ -176,6 +189,7 @@ function hasInitFlags(flags: Record<string, string>): boolean {
     "code-review",
     "tdd",
     "target",
+    "sync-mode",
     "overwrite",
   ]
   return initFlagNames.some((name) => name in flags)
@@ -242,7 +256,9 @@ async function main(): Promise<void> {
           requireCodeReview: "code-review" in flags,
           enforceTdd: "tdd" in flags,
           syncTarget: (flags["target"] as "project" | "global" | "both") ?? undefined,
+          syncMode: (flags["sync-mode"] as "prompt" | "none" | "core" | "balanced" | "full") ?? undefined,
           overwriteAssets: "overwrite" in flags,
+          backupAssetsOnOverwrite: "backup-on-overwrite" in flags,
           force: forceFlag,
         })
       }
@@ -252,13 +268,52 @@ async function main(): Promise<void> {
     case "sync-assets": {
       const result = await syncOpencodeAssets(directory, {
         target: (flags["target"] as "project" | "global" | "both") ?? "project",
+        profile: (flags["profile"] as AssetSyncProfile) ?? "core",
         overwrite: "overwrite" in flags,
+        backupOnOverwrite: "backup-on-overwrite" in flags,
+        includeLegacy: "include-legacy" in flags,
+        prune: "prune" in flags,
+        strictParity: "strict-parity" in flags,
+        emitInventory: "emit-inventory" in flags,
         silent: false,
         onLog: (line) => console.log(line),
       })
       console.log(
-        `\n✓ Asset sync complete. Copied: ${result.totalCopied}, Skipped: ${result.totalSkipped}, Invalid: ${result.totalInvalid}`
+        `\n✓ Asset sync complete. Profile: ${result.profile}. Copied: ${result.totalCopied}, Skipped: ${result.totalSkipped}, Invalid: ${result.totalInvalid}, Pruned: ${result.totalPruned}, Parity mismatches: ${result.totalParityMismatches}`
       )
+      if ("emit-inventory" in flags && result.inventory) {
+        console.log(JSON.stringify(result.inventory, null, 2))
+      }
+      break
+    }
+
+    case "doctor": {
+      const result = await runDoctorRecovery(directory, {
+        mode: (flags["doctor-mode"] as "report" | "repair") ?? "report",
+        dryRun: "dry-run" in flags,
+        hardReset: "hard-reset" in flags,
+      })
+      console.log(`Doctor mode: ${result.mode}`)
+      console.log(`Generated: ${result.generatedAt}`)
+      console.log(`Broken: ${result.broken ? "yes" : "no"}`)
+      console.log(`Selected session: ${result.selectedSessionId ?? "(none)"}`)
+      console.log(`Issues: ${result.issues.length}`)
+      for (const issue of result.issues) {
+        console.log(`  - [${issue.severity}] ${issue.code}: ${issue.message}`)
+      }
+      if (result.actions.length > 0) {
+        console.log("Actions:")
+        for (const action of result.actions) {
+          console.log(`  - ${action}`)
+        }
+      }
+      if (result.forensicsDir) {
+        console.log(`Forensics snapshot: ${result.forensicsDir}`)
+      }
+      console.log(`Report: ${result.reportPath}`)
+      if (result.lineageRepairPath) {
+        console.log(`Repair artifact: ${result.lineageRepairPath}`)
+      }
       break
     }
 

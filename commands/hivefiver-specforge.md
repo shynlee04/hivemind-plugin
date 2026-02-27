@@ -1,6 +1,14 @@
 ---
-name: "hivefiver-specforge"
-description: "Convert messy ideas into strict spec candidates with ambiguity gating, tab-structured feedback, and 10-attempt clarification loops."
+name: hivefiver-specforge
+description: Convert messy ideas into strict spec candidates with ambiguity
+  gating, tab-structured feedback, and 10-attempt clarification loops.
+owner_agent: hivefiver
+kind: utility
+alias_resolved_to: hivefiver-specforge
+required_skills: []
+required_templates: []
+chain_group: hivefiver
+entry_gate: session_declared
 ---
 
 # HiveFiver SpecForge

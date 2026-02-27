@@ -1,6 +1,14 @@
 ---
-name: "hivefiver-intake"
-description: "Run controlled multi-choice intake for HiveFiver v2 across dev and non-dev domains with adaptive tutoring profiles."
+name: hivefiver-intake
+description: Run controlled multi-choice intake for HiveFiver v2 across dev and
+  non-dev domains with adaptive tutoring profiles.
+owner_agent: hivefiver
+kind: utility
+alias_resolved_to: hivefiver-intake
+required_skills: []
+required_templates: []
+chain_group: hivefiver
+entry_gate: session_declared
 ---
 
 # HiveFiver Intake

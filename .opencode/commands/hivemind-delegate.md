@@ -1,6 +1,15 @@
 ---
-name: "hivemind-delegate"
-description: "Validate and standardize sub-agent delegation. Use BEFORE dispatching Task() to ensure proper context, verification, and export requirements."
+name: hivemind-delegate
+description: Validate and standardize sub-agent delegation. Use BEFORE
+  dispatching Task() to ensure proper context, verification, and export
+  requirements.
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-delegate
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Delegation Validator

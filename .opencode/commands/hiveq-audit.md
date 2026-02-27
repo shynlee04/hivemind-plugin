@@ -1,14 +1,16 @@
 ---
-name: "hiveq-audit"
-description: "Comprehensive audit of codebase or module against defined standards."
-execution_context: "workflows/hiveq-audit-workflow.yaml"
+name: hiveq-audit
+description: Comprehensive audit of codebase or module against defined standards.
+owner_agent: hiveq
+kind: router
+execution_context: workflows/hiveq-audit-workflow.yaml
 required_skills:
-  - "compliance-checking"
-  - "verification-methodology"
+  - compliance-checking
+  - verification-methodology
 required_templates:
-  - "templates/audit-report-template.md"
-chain_group: "hiveq"
-entry_gate: "session_declared"
+  - templates/audit-report-template.md
+chain_group: hiveq
+entry_gate: session_declared
 ---
 
 # HiveQ Audit

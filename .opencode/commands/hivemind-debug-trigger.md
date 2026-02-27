@@ -1,6 +1,15 @@
 ---
-name: "hivemind-debug-trigger"
-description: "Trigger a debug orchestration session. Use this when LSP errors, test failures, or runtime errors occur. This command creates a debug session and queues investigation."
+name: hivemind-debug-trigger
+description: Trigger a debug orchestration session. Use this when LSP errors,
+  test failures, or runtime errors occur. This command creates a debug session
+  and queues investigation.
+owner_agent: hiveminder
+kind: utility
+alias_resolved_to: hivemind-debug-trigger
+required_skills: []
+required_templates: []
+chain_group: hiveminder
+entry_gate: session_declared
 ---
 
 # HiveMind Debug Trigger Command
