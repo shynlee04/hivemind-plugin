@@ -1,15 +1,15 @@
 {
   "version": "1.0.0",
   "trajectory": {
-    "id": "37732c3e-5549-4bda-88b5-11a2ee61add6",
-    "session_id": "37732c3e-5549-4bda-88b5-11a2ee61add6",
+    "id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+    "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
     "active_plan_id": null,
-    "active_phase_id": "7525ad8b-f2dc-4489-b1db-65d504bd5c4b",
+    "active_phase_id": "96456201-3df5-4bc0-a715-38495460ac41",
     "active_task_ids": [
-      "f48369dc-9053-446b-bd8f-d95e70feba03"
+      "8a5b75f7-9222-4131-b909-d3e441992b7a"
     ],
-    "intent": "Brownfield validation of Sector-2 rescue implementation - verify init flow, package.json scripts, and structural consistency after fresh install",
-    "created_at": "2026-02-27T02:40:45.654Z",
-    "updated_at": "2026-02-27T03:09:20.302Z"
+    "intent": "THE-FRAMEWORK-TEST-ITSELF: Master-planning refactoring via timeline documents (ZERO-EVENT → SYSTEM-DIRECTIVES → TIME-LINE-AFTER-ZERO)",
+    "created_at": "2026-02-27T11:21:18.968Z",
+    "updated_at": "2026-02-27T15:00:28.185Z"
   }
 }

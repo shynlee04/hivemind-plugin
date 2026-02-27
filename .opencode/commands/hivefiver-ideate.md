@@ -14,7 +14,6 @@ chain_group: hivefiver
 group: hivefiver
 entry_gate: session_declared
 ---
-
 # /hivefiver ideate
 
 Enter the Creative Ideating Room to transform vague ideas into deterministic, gapless specifications.

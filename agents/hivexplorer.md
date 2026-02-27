@@ -28,7 +28,7 @@ permission:
   websearch: allow
   skill: allow
   edit:
-    "*": deny
+    "*": allow
     ".hivemind/**": allow
 identity:
   role: investigator

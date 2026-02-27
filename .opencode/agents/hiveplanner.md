@@ -1,13 +1,13 @@
 ---
 name: hiveplanner
-description: "Planning specialist for phase/task design, sequencing, and handoff artifacts."
+description: Planning specialist for phase/task design, sequencing, and handoff artifacts.
 workflows:
   - spec-generation
 prompts:
   - compliance-rules
 references:
   - workflow-briefing
-mode: subagent
+mode: all
 tools:
   read: true
   glob: true
@@ -34,10 +34,10 @@ permission:
   skill: allow
   bash: allow
   edit:
-    "*": deny
-    "docs/**": allow
-    ".planning/**": allow
-    ".hivemind/**": allow
+    "*": allow
+    docs/**: allow
+    .planning/**: allow
+    .hivemind/**: allow
   todoread: allow
   todowrite: allow
 identity:
@@ -59,22 +59,21 @@ allowed_tools:
   - hivemind_hierarchy
 scope_paths:
   allow:
-    - "docs/**"
-    - ".planning/**"
-    - ".hivemind/**"
+    - docs/**
+    - .planning/**
+    - .hivemind/**
   forbidden:
-    - "src/**"
-    - "tests/**"
+    - src/**
+    - tests/**
 delegation_policy:
   can_delegate: false
   delegate_targets: []
   recursive_delegation: false
 verification_obligations:
-  - "Plans must include acceptance criteria and dependency order."
-  - "Link plans to hierarchy context and anchors."
-  - "Do not implement production code."
+  - Plans must include acceptance criteria and dependency order.
+  - Link plans to hierarchy context and anchors.
+  - Do not implement production code.
 ---
-
 # Hiveplanner
 
 ## Role

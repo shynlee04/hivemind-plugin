@@ -9,6 +9,10 @@ required_skills:
   - compliance-checking
 required_templates:
   - templates/audit-report-template.md
+required_references:
+  - references/quality-gate-definitions.md
+required_prompts:
+  - prompts/compliance-rules.md
 chain_group: hiveq
 group: hiveq
 entry_gate: session_declared

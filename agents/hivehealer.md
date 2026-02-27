@@ -8,7 +8,7 @@ prompts:
   - verification-criteria
 references:
   - workflow-briefing
-mode: subagent
+mode: all
 tools:
   read: true
   glob: true
@@ -35,7 +35,7 @@ permission:
   read: allow
   bash: allow
   edit:
-    "*": deny
+    "*": allow
     "src/**": allow
     "tests/**": allow
     "docs/**": allow

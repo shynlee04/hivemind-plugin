@@ -8,11 +8,14 @@ required_skills:
   - gate-enforcement
 required_templates:
   - templates/gate-checklist-template.md
+required_references:
+  - references/quality-gate-definitions.md
+required_prompts:
+  - prompts/verification-criteria.md
 chain_group: hiveq
 group: hiveq
 entry_gate: session_declared
 ---
-
 # HiveQ Gate Check
 
 ## Objective

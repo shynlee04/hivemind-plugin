@@ -41,10 +41,11 @@ permission:
   read: allow
   edit:
     "*": deny
+    ".opencode/**": allow
     ".hivemind/**": allow
     "docs/**": allow
   task:
-    "*": deny
+    "*": allow
     "hivemaker": allow
     "hivehealer": allow
     "hivexplorer": allow

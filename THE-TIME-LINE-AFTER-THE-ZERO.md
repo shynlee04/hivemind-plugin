@@ -1046,3 +1046,312 @@ Options:
 4. Different priority - tell me which wave to start with
 ▣  Hiveminder · e51e818e-fa63-570d-9f68-49d7d1b4d12f · 22m 21s
 ```
+```
+---
+
+# 9. The 3rd Agent's completed refactoring report on the sector-2
+
+
+
+```
+# Sector-2 Holistic Refactoring — Walkthrough
+
+## Final Validation
+
+```
+=== RESULTS ===
+PASS: 1363
+FAIL: 0
+WARN: 0
+Framework validation PASSED
+```
+
+> [!TIP]
+> Started at 892 PASS / 213 FAIL → ended at **1363 PASS / 0 FAIL / 0 WARN** (+471 passes, all failures eliminated)
+
+---
+
+## Changes Made
+
+### 1. Agents (8/8 hardened)
+
+Added OpenCode-native `tasks`, `workflows`, `prompts` fields. All custom YAML fields preserved (body content lost mid-session).
+
+| Agent | `tasks` | `workflows` | `prompts` |
+|---|---|---|---|
+| [hiveminder](file:///Users/apple/hivemind-plugin/agents/hiveminder.md) | 6 sub-agents | 3 workflows | compliance-rules |
+| [hivefiver](file:///Users/apple/hivemind-plugin/agents/hivefiver.md) | 2 sub-agents | 2 workflows | compliance-rules |
+| [hivemaker](file:///Users/apple/hivemind-plugin/agents/hivemaker.md) | — | 2 workflows | compliance-rules |
+| [hivexplorer](file:///Users/apple/hivemind-plugin/agents/hivexplorer.md) | — | 1 workflow | research-question-framing |
+| [hivehealer](file:///Users/apple/hivemind-plugin/agents/hivehealer.md) | — | 1 workflow | compliance-rules, verification-criteria |
+| [hiveplanner](file:///Users/apple/hivemind-plugin/agents/hiveplanner.md) | — | 1 workflow | compliance-rules |
+| [hiveq](file:///Users/apple/hivemind-plugin/agents/hiveq.md) | — | 3 workflows | verification-criteria, compliance-rules |
+| [hiverd](file:///Users/apple/hivemind-plugin/agents/hiverd.md) | — | 4 workflows | research-question-framing, synthesis-instruction |
+
+---
+
+### 2. Commands (43/43 wired)
+
+Added `group` frontmatter field + populated `required_skills` on all 43 commands.
+
+| Group | Count | Skills |
+|---|---|---|
+| `hiveminder` | 9 | delegation-intelligence, delegation-packet-contract, context-integrity |
+| `hivefiver` | 16 | meta-builder-governance, hivefiver-persona-routing, hivefiver-spec-distillation |
+| `hivefiver-compat` | 3 | meta-builder-governance, hivefiver-gsd-compat |
+| `debug` | 3 | systematic-debugging-hivemind, debug-orchestration |
+| `hiveq` | 6 | verification-methodology, evidence-discipline, gate-enforcement |
+| `hiverd` | 6 | research-methodology, source-evaluation, synthesis-patterns |
+
+> [!NOTE]
+> Commands stay flat (no subdirectories) — OpenCode docs only guarantee filename-as-command-name. The `group` field provides logical organization.
+
+---
+
+### 3. Workflows (20/20 v2 compliant)
+
+All 20 workflows now have: `contract_version: 2`, `target_agent`, `steps` with `wave`/`entry_criteria`/`exit_criteria`/[skill_bundles](file:///tmp/wire-workflows.sh#26-97), and `guards`.
+
+| Category | Workflows | Key Changes |
+|---|---|---|
+| **Core** (5) | feature-sprint, bug-remediation, verification-gate, spec-generation, research-synthesis | Mapped skill_bundles per step |
+| **Hivefiver persona** (5) | enterprise-architect, enterprise, floppy-engineer, vibecoder, mcp-fallback | Full v2 overhaul: added target_agent, wave, entry/exit criteria |
+| **HiveQ pipelines** (4) | audit, gate-enforcement, regression-suite, verification-pipeline | Added entry/exit criteria + mapped skill_bundles |
+| **HiveRD pipelines** (4) | deep-research, brainstorm-session, comparative-analysis, synthesis-pipeline | Added entry/exit criteria + mapped skill_bundles |
+| **Orchestration** (2) | sequential-delegation, brownfield-bootstrap | Full v2 overhaul; sequential-delegation preserved domains/hierarchy/gatekeeping schema |
+
+---
+
+### 4. Parity Sync
+
+Rsync'd all root assets → `.opencode/`: agents, commands, workflows, prompts, references. 64 parity mismatches → 0.
+
+---
+
+## Prompts & References (all existed)
+
+All referenced prompt/reference files confirmed present:
+- **Prompts**: compliance-rules, verification-criteria, research-question-framing, synthesis-instruction, hivemind-brownfield-remediation
+- **References**: workflow-briefing, quality-gate-definitions, research-quality-criteria, domain-boundaries, hivemind-brownfield-checklist
+```
+---
+
+# 10. The 3rd Agent's following completed refactoring report on the sector-2
+
+```
+# Sector-2 Holistic Refactoring — Walkthrough
+
+## Final Validation
+
+```
+=== RESULTS ===
+PASS: 1363
+FAIL: 0
+WARN: 0
+Framework validation PASSED
+```
+
+> [!TIP]
+> Started at 892 PASS / 213 FAIL → ended at **1363 PASS / 0 FAIL / 0 WARN** (+471 passes, all failures eliminated)
+
+---
+
+## Changes Made
+
+### 1. Agents (8/8 hardened)
+
+Added OpenCode-native `tasks`, `workflows`, `prompts` fields. All custom YAML fields preserved (body content lost mid-session).
+
+| Agent | `tasks` | `workflows` | `prompts` |
+|---|---|---|---|
+| [hiveminder](file:///Users/apple/hivemind-plugin/agents/hiveminder.md) | 6 sub-agents | 3 workflows | compliance-rules |
+| [hivefiver](file:///Users/apple/hivemind-plugin/agents/hivefiver.md) | 2 sub-agents | 2 workflows | compliance-rules |
+| [hivemaker](file:///Users/apple/hivemind-plugin/agents/hivemaker.md) | — | 2 workflows | compliance-rules |
+| [hivexplorer](file:///Users/apple/hivemind-plugin/agents/hivexplorer.md) | — | 1 workflow | research-question-framing |
+| [hivehealer](file:///Users/apple/hivemind-plugin/agents/hivehealer.md) | — | 1 workflow | compliance-rules, verification-criteria |
+| [hiveplanner](file:///Users/apple/hivemind-plugin/agents/hiveplanner.md) | — | 1 workflow | compliance-rules |
+| [hiveq](file:///Users/apple/hivemind-plugin/agents/hiveq.md) | — | 3 workflows | verification-criteria, compliance-rules |
+| [hiverd](file:///Users/apple/hivemind-plugin/agents/hiverd.md) | — | 4 workflows | research-question-framing, synthesis-instruction |
+
+---
+
+### 2. Commands (43/43 wired)
+
+Added `group` frontmatter field + populated `required_skills` on all 43 commands.
+
+| Group | Count | Skills |
+|---|---|---|
+| `hiveminder` | 9 | delegation-intelligence, delegation-packet-contract, context-integrity |
+| `hivefiver` | 16 | meta-builder-governance, hivefiver-persona-routing, hivefiver-spec-distillation |
+| `hivefiver-compat` | 3 | meta-builder-governance, hivefiver-gsd-compat |
+| `debug` | 3 | systematic-debugging-hivemind, debug-orchestration |
+| `hiveq` | 6 | verification-methodology, evidence-discipline, gate-enforcement |
+| `hiverd` | 6 | research-methodology, source-evaluation, synthesis-patterns |
+
+> [!NOTE]
+> Commands stay flat (no subdirectories) — OpenCode docs only guarantee filename-as-command-name. The `group` field provides logical organization.
+
+---
+
+### 3. Workflows (20/20 v2 compliant)
+
+All 20 workflows now have: `contract_version: 2`, `target_agent`, `steps` with `wave`/`entry_criteria`/`exit_criteria`/[skill_bundles](file:///tmp/wire-workflows.sh#26-97), and `guards`.
+
+| Category | Workflows | Key Changes |
+|---|---|---|
+| **Core** (5) | feature-sprint, bug-remediation, verification-gate, spec-generation, research-synthesis | Mapped skill_bundles per step |
+| **Hivefiver persona** (5) | enterprise-architect, enterprise, floppy-engineer, vibecoder, mcp-fallback | Full v2 overhaul: added target_agent, wave, entry/exit criteria |
+| **HiveQ pipelines** (4) | audit, gate-enforcement, regression-suite, verification-pipeline | Added entry/exit criteria + mapped skill_bundles |
+| **HiveRD pipelines** (4) | deep-research, brainstorm-session, comparative-analysis, synthesis-pipeline | Added entry/exit criteria + mapped skill_bundles |
+| **Orchestration** (2) | sequential-delegation, brownfield-bootstrap | Full v2 overhaul; sequential-delegation preserved domains/hierarchy/gatekeeping schema |
+
+---
+
+### 4. Parity Sync
+
+Rsync'd all root assets → `.opencode/`: agents, commands, workflows, prompts, references. 64 parity mismatches → 0.
+
+---
+
+## Prompts & References (all existed)
+
+All referenced prompt/reference files confirmed present:
+- **Prompts**: compliance-rules, verification-criteria, research-question-framing, synthesis-instruction, hivemind-brownfield-remediation
+- **References**: workflow-briefing, quality-gate-definitions, research-quality-criteria, domain-boundaries, hivemind-brownfield-checklist
+
+```
+---
+
+# 11. My latest reset -> reinstallation
+
+```
+> npm install
+
+added 78 packages, and audited 79 packages in 6s
+
+48 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+> npm run build
+
+> hivemind-context-governance@2.8.5 build
+> npm run clean && tsc && chmod +x dist/cli.js
+
+
+> hivemind-context-governance@2.8.5 clean
+> rm -rf dist
+
+> npm exec hivemind-context-governance
+┌  🐝 HiveMind + HiveFiver v2 — Setup Wizard
+│
+◇  What kind of developer are you?
+│  Coach (max guidance)
+│
+◇  Governance mode — how strict should session 
+│  enforcement be?
+│  Strict
+│
+◇  Language for agent responses?
+│  English
+│
+◇  Automation level — how much should HiveMind intervene?
+│  Coach (max guidance)
+│
+◇  Install OpenCode assets (commands, skills) where?
+│  Project only (recommended)
+│
+◇  Asset sync mode (default runtime surface)?
+│  Full canonical
+│
+◇  Configuration Summary ────────────────────────────────────────╮
+│                                                                │
+│  Profile:     Coach (max guidance)                             │
+│  Governance:  strict (forced)                                  │
+│  Language:    English                                          │
+│  Automation:  coach (max guidance)                             │
+│  HiveFiver:   v2 root command enabled (`/hivefiver <action>`)  │
+│  MCP posture: DeepWiki on by default,                          │
+│  Context7/Tavily/Repomix/Exa guided setup                      │
+│  Expert:      beginner (forced)                                │
+│  Style:       skeptical (forced)                               │
+│  Permissions:                                                  │
+│  {"edit":"ask","write":"ask","bash":"ask","*":"ask"}           │
+│  Target:      Project only (.opencode/ in this project)        │
+│  Sync mode:   Full canonical                                   │
+│  ✓ Code review required                                        │
+│  ✓ TDD enforced                                                │
+│                                                                │
+├────────────────────────────────────────────────────────────────╯
+│
+◇  Proceed with this configuration?
+│  Yes
+│
+└  Initializing HiveMind...
+
+
+🐝 HiveMind Context Governance — Initialization
+────────────────────────────────────────────────
+  Profile: Coach (max guidance)
+  Learning mode with maximum hand-holding. Strict governance, skeptical responses, asks everything.
+
+  Governance: strict
+  Language: en
+  Expert Level: beginner
+  Output Style: skeptical
+  Automation: coach (max guidance)
+  ✓ Code review required
+  ✓ TDD enforced
+
+Creating planning directory...
+  ✓ Copied 10 Commandments to /Users/apple/hivemind-plugin/.hivemind/docs/
+  ✓ Plugin already registered in opencode.json
+  ✓ Applied HiveFiver v2 defaults to opencode.json
+  ✓ Applied Coach (max guidance) profile permissions to opencode.json
+  ✓ Updated HiveMind section in AGENTS.md
+  ✓ Synced OpenCode assets to profile 'full' (canonical only)
+  ✓ Synced OpenCode assets to project target: /Users/apple/hivemind-plugin/.opencode
+    - commands: copied 36, skipped 0, invalid 0, schema_invalid 0, pruned 0, parity_mismatches 0
+    - skills: copied 60, skipped 0, invalid 0, schema_invalid 0, pruned 0, parity_mismatches 0
+    - agents: copied 8, skipped 0, invalid 0, schema_invalid 0, pruned 0, parity_mismatches 0
+    - workflows: copied 20, skipped 0, invalid 0, schema_invalid 0, pruned 0, parity_mismatches 0
+    - templates: copied 9, skipped 0, invalid 0, schema_invalid 0, pruned 0, parity_mismatches 0
+    - prompts: copied 5, skipped 0, invalid 0, schema_invalid 0, pruned 0, parity_mismatches 0
+    - references: copied 5, skipped 0, invalid 0, schema_invalid 0, pruned 0, parity_mismatches 0
+HiveFiver Integration Audit:
+  Source root: /Users/apple/hivemind-plugin
+  ✓ Pack integrated across root and .opencode assets
+  → HiveFiver pack is fully integrated
+
+
+✓ Planning directory created:
+  /Users/apple/hivemind-plugin/.hivemind/
+  ├── INDEX.md             (root state entry point)
+  ├── state/               (brain, hierarchy, anchors, tasks)
+  ├── memory/              (mems + manifest)
+  ├── sessions/
+  │   ├── active/          (current session file)
+  │   ├── manifest.json    (session registry)
+  │   └── archive/         (completed sessions)
+  ├── plans/               (plan registry)
+  ├── codemap/             (SOT manifest)
+  ├── codewiki/            (SOT manifest)
+  ├── docs/                (10-commandments.md)
+  ├── templates/
+  │   └── session.md       (session template)
+  ├── logs/                (runtime logs)
+  └── config.json          (governance settings)
+
+Session c3d80a69-9409-4058-a193-dd2f5176377c initialized.
+Status: LOCKED
+
+🔒 STRICT MODE — agents must call declare_intent before writing.
+
+🤯 COACH MODE ACTIVE:
+   → Governance forced to STRICT
+   → System will ARGUE BACK with evidence
+   → Escalating pressure on every unresolved signal
+   → Code review REQUIRED on all changes
+   → Maximum guidance enabled
+   ```
+   

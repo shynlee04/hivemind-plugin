@@ -14,7 +14,6 @@ chain_group: hiveminder
 group: hiveminder
 entry_gate: session_declared
 ---
-
 # HiveMind Project Scan
 
 You are performing a HiveMind brownfield reconnaissance and stabilization scan.

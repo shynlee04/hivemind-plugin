@@ -7,7 +7,7 @@ prompts:
   - compliance-rules
 references:
   - workflow-briefing
-mode: subagent
+mode: all
 tools:
   read: true
   glob: true
@@ -34,7 +34,7 @@ permission:
   skill: allow
   bash: allow
   edit:
-    "*": deny
+    "*": allow
     "docs/**": allow
     ".planning/**": allow
     ".hivemind/**": allow

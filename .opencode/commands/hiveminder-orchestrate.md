@@ -17,7 +17,6 @@ entry_gate: session_declared
 agent: hiveminder
 subtask: false
 ---
-
 # HiveMind Orchestration Command
 
 ## Task

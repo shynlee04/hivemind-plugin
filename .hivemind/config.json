@@ -14,12 +14,12 @@
     "output_style_v29": "problem_solving_debugging",
     "constraints": {
       "require_code_review": true,
-      "enforce_tdd": false,
+      "enforce_tdd": true,
       "max_response_tokens": 2000,
       "explain_reasoning": true,
-      "be_skeptical": false
+      "be_skeptical": true
     }
   },
   "automation_level": "coach",
-  "profile": "beginner"
+  "profile": "coach"
 }

@@ -13,7 +13,6 @@ chain_group: hiveminder
 group: debug
 entry_gate: session_declared
 ---
-
 # HiveMind Dashboard
 
 Launch the interactive Terminal User Interface (TUI) dashboard.

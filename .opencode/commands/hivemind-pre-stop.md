@@ -15,7 +15,6 @@ chain_group: hiveminder
 group: hiveminder
 entry_gate: session_declared
 ---
-
 # HiveMind Pre-Stop Gate
 
 **⛔ CRITICAL: This command MUST be run before stopping work.**

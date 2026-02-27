@@ -11,7 +11,7 @@ prompts:
   - synthesis-instruction
 references:
   - research-quality-criteria
-mode: subagent
+mode: all
 tools:
   read: true
   glob: true
@@ -36,7 +36,7 @@ permission:
   webfetch: allow
   websearch: allow
   edit:
-    "*": deny
+    "*": allow
     "docs/**": allow
     ".hivemind/**": allow
 identity:

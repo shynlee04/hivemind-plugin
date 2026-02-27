@@ -1,6 +1,7 @@
 ---
 name: hivexplorer
-description: "Investigation specialist for reconnaissance, evidence collection, and context retrieval."
+description: Investigation specialist for reconnaissance, evidence collection,
+  and context retrieval.
 mode: subagent
 hidden: true
 workflows:
@@ -28,8 +29,8 @@ permission:
   websearch: allow
   skill: allow
   edit:
-    "*": deny
-    ".hivemind/**": allow
+    "*": allow
+    .hivemind/**: allow
 identity:
   role: investigator
 allowed_tools:
@@ -54,11 +55,12 @@ delegation_policy:
   delegate_targets: []
   recursive_delegation: false
 verification_obligations:
-  - "Return file-referenced evidence only."
-  - "Persist high-value findings in memory."
-  - "Do not mutate source files."
+  - Return file-referenced evidence only.
+  - Persist high-value findings in memory.
+  - Do not mutate source files.
+model: chutes/MiniMaxAI/MiniMax-M2.5-TEE
+reasoningEffort: high
 ---
-
 # Hivexplorer
 
 ## Role

@@ -1,9 +1,9 @@
-import { copyFile, mkdir, readdir, readFile, rm, stat } from "node:fs/promises"
+import { copyFile, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises"
 import { existsSync } from "node:fs"
 import { homedir } from "node:os"
 import { basename, dirname, extname, join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
-import { parse as parseYaml } from "yaml"
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -184,6 +184,53 @@ function parseFrontmatter(content: string): Record<string, unknown> | null {
   } catch {
     return null
   }
+}
+
+const FRAMEWORK_OWNED_AGENT_FIELDS = new Set([
+  "name",
+  "description",
+  "permission",
+])
+
+const COMMAND_FRAMEWORK_OWNED_FIELDS = new Set([
+  "description",
+  "execution_context",
+  "required_skills",
+  "required_templates",
+  "required_references",
+  "required_prompts",
+  "chain_group",
+  "group",
+  "entry_gate",
+  "kind",
+  "owner_agent",
+])
+
+function mergeMarkdownWithFrontmatter(sourceContent: string, targetContent: string, group: AssetGroup): string | null {
+  const sourceMatch = sourceContent.match(/^---\s*\n([\s\S]*?)\n---(?:\s*\n|$)/)
+  const targetMatch = targetContent.match(/^---\s*\n([\s\S]*?)\n---(?:\s*\n|$)/)
+  if (!sourceMatch || !targetMatch) {
+    return null
+  }
+
+  const sourceFrontmatter = parseFrontmatter(sourceContent)
+  const targetFrontmatter = parseFrontmatter(targetContent)
+  if (!sourceFrontmatter || !targetFrontmatter) {
+    return null
+  }
+
+  const frameworkOwnedFields = group === "commands" ? COMMAND_FRAMEWORK_OWNED_FIELDS : FRAMEWORK_OWNED_AGENT_FIELDS
+  const mergedFrontmatter: Record<string, unknown> = { ...sourceFrontmatter }
+
+  for (const [key, value] of Object.entries(targetFrontmatter)) {
+    if (!frameworkOwnedFields.has(key)) {
+      mergedFrontmatter[key] = value
+    }
+  }
+
+  const sourceBody = sourceContent.slice(sourceMatch[0].length)
+  const serializedFrontmatter = stringifyYaml(mergedFrontmatter).trimEnd()
+  return `---\n${serializedFrontmatter}\n---\n${sourceBody}`
 }
 
 function isNonEmptyString(value: unknown): boolean {
@@ -565,7 +612,27 @@ export async function syncOpencodeAssets(projectDir: string, options: SyncAssets
           await backupBeforeOverwrite(destFile, backupSuffix)
         }
 
-        await copyFile(sourceFile, destFile)
+        const needsSmartMerge =
+          (group === "agents" || group === "commands") &&
+          sourceFile.endsWith(".md") &&
+          existsSync(destFile)
+
+        if (needsSmartMerge) {
+          const [sourceContent, targetContent] = await Promise.all([
+            readFile(sourceFile, "utf-8"),
+            readFile(destFile, "utf-8"),
+          ])
+
+          const mergedContent = mergeMarkdownWithFrontmatter(sourceContent, targetContent, group)
+          if (mergedContent !== null) {
+            await writeFile(destFile, mergedContent, "utf-8")
+          } else {
+            await copyFile(sourceFile, destFile)
+          }
+        } else {
+          await copyFile(sourceFile, destFile)
+        }
+
         report.copied++
       }
 

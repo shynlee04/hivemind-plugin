@@ -1,42 +1,516 @@
 {
   "version": 1,
   "root": {
-    "id": "t_400927022026",
+    "id": "t_211827022026",
     "level": "trajectory",
-    "content": "Brownfield validation of Sector-2 rescue implementation - verify init flow, package.json scripts, and structural consistency after fresh install",
+    "content": "THE-FRAMEWORK-TEST-ITSELF: Master-planning refactoring via timeline documents (ZERO-EVENT → SYSTEM-DIRECTIVES → TIME-LINE-AFTER-ZERO)",
     "status": "active",
-    "created": 1772160045615,
-    "stamp": "400927022026",
+    "created": 1772191278941,
+    "stamp": "211827022026",
     "children": [
       {
-        "id": "a_440927022026",
-        "level": "action",
-        "content": "Brownfield validation analysis - comparing root vs .opencode parity, identifying missing commands and structural gaps",
+        "id": "tc_211827022026",
+        "level": "tactic",
+        "content": "Phase 1: Sequential document ingestion (ZERO-EVENT → SYSTEM-DIRECTIVES → TIMELINE-AFTER-ZERO) to build master-plan foundation",
         "status": "active",
-        "created": 1772160249669,
-        "stamp": "440927022026",
+        "created": 1772191290535,
+        "stamp": "211827022026",
+        "children": [
+          {
+            "id": "a_221827022026",
+            "level": "action",
+            "content": "Reading complete. Synthesizing timeline H1-H11 into master-plan foundation. Identifying current state and next actions.",
+            "status": "pending",
+            "created": 1772191338676,
+            "stamp": "221827022026",
+            "children": []
+          },
+          {
+            "id": "a_241827022026",
+            "level": "action",
+            "content": "Run repository health verification checks (tests, typecheck, guard, scripts, git status, file counts) and report deterministic PASS/FAIL evidence.",
+            "status": "pending",
+            "created": 1772191461418,
+            "stamp": "241827022026",
+            "children": []
+          },
+          {
+            "id": "a_261827022026",
+            "level": "action",
+            "content": "Compile deterministic PASS/FAIL health report with exact command outputs for tests, typecheck, guard, package scripts/version, git status, and file counts.",
+            "status": "pending",
+            "created": 1772191615296,
+            "stamp": "261827022026",
+            "children": []
+          },
+          {
+            "id": "a_271827022026",
+            "level": "action",
+            "content": "All 4 investigations complete. Presenting synthesized master-plan with rationale options per SYSTEM-DIRECTIVES interaction protocol.",
+            "status": "pending",
+            "created": 1772191675761,
+            "stamp": "271827022026",
+            "children": []
+          },
+          {
+            "id": "a_301827022026",
+            "level": "action",
+            "content": "User confirmed: Hybrid A+B direction (interleave command chaining with SOT planning), Architecture/Planning output style, gaps validated. Now producing detailed master-plan document.",
+            "status": "pending",
+            "created": 1772191802939,
+            "stamp": "301827022026",
+            "children": []
+          },
+          {
+            "id": "a_351827022026",
+            "level": "action",
+            "content": "Producing detailed master-plan document: HYBRID-A+B with 6 waves, interleaving command chaining (Track A) with SOT planning (Track B)",
+            "status": "pending",
+            "created": 1772192152430,
+            "stamp": "351827022026",
+            "children": []
+          },
+          {
+            "id": "a_361827022026",
+            "level": "action",
+            "content": "Writing HYBRID-A+B master-plan document to docs/plans/",
+            "status": "pending",
+            "created": 1772192175659,
+            "stamp": "361827022026",
+            "children": []
+          },
+          {
+            "id": "a_391827022026",
+            "level": "action",
+            "content": "Master-plan document written to docs/plans/2026-02-27-hybrid-ab-master-plan.md (419 lines). Presenting completion summary and requesting Wave 1 authorization.",
+            "status": "active",
+            "created": 1772192362983,
+            "stamp": "391827022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_411827022026",
+        "level": "tactic",
+        "content": "Wave 1 execution: Dispatching Wave 1A (command schema upgrade) and Wave 1B (planning directory bootstrap) in parallel. All 4 parallel conditions verified.",
+        "status": "active",
+        "created": 1772192465967,
+        "stamp": "411827022026",
+        "children": [
+          {
+            "id": "a_411827022026",
+            "level": "action",
+            "content": "Dispatching Wave 1A (command schema upgrade) and Wave 1B (planning directory bootstrap) to hivemaker agents in parallel",
+            "status": "pending",
+            "created": 1772192484332,
+            "stamp": "411827022026",
+            "children": []
+          },
+          {
+            "id": "a_431827022026",
+            "level": "action",
+            "content": "Wave 1A implementation: add required_references/required_prompts validation and update 12 wired command frontmatters",
+            "status": "pending",
+            "created": 1772192631533,
+            "stamp": "431827022026",
+            "children": []
+          },
+          {
+            "id": "a_441827022026",
+            "level": "action",
+            "content": "Wave 1B implementation: planning directory bootstrap, planning schema, fs ops wiring, and tests",
+            "status": "pending",
+            "created": 1772192658702,
+            "stamp": "441827022026",
+            "children": []
+          },
+          {
+            "id": "a_461827022026",
+            "level": "action",
+            "content": "Wave 1A verification: run framework validator and required evidence capture",
+            "status": "pending",
+            "created": 1772192792644,
+            "stamp": "461827022026",
+            "children": []
+          },
+          {
+            "id": "a_491827022026",
+            "level": "action",
+            "content": "Wave 1B verification complete: planning bootstrap structure, schemas, fs wiring, and tests validated",
+            "status": "pending",
+            "created": 1772192946900,
+            "stamp": "491827022026",
+            "children": []
+          },
+          {
+            "id": "a_501827022026",
+            "level": "action",
+            "content": "Wave 1A + 1B both returned SUCCESS. Processing results and running verification gate.",
+            "status": "pending",
+            "created": 1772193038684,
+            "stamp": "501827022026",
+            "children": []
+          },
+          {
+            "id": "a_501827022026-1",
+            "level": "action",
+            "content": "Running independent verification gate for Wave 1A + 1B completion",
+            "status": "pending",
+            "created": 1772193055604,
+            "stamp": "501827022026",
+            "children": []
+          },
+          {
+            "id": "a_511827022026",
+            "level": "action",
+            "content": "Executing Wave 1 verification commands and compliance evidence capture for requested gates",
+            "status": "pending",
+            "created": 1772193117513,
+            "stamp": "511827022026",
+            "children": []
+          },
+          {
+            "id": "a_561827022026",
+            "level": "action",
+            "content": "Wave 1 completion: Scanning all 8 agent permission frontmatters, fixing deny→allow, syncing parity, re-validating framework",
+            "status": "active",
+            "created": 1772193385472,
+            "stamp": "561827022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_091927022026",
+        "level": "tactic",
+        "content": "Wave 1 COMPLETE. Transitioning to Wave 2 authorization. Reading master plan for Wave 2 specifications.",
+        "status": "active",
+        "created": 1772194169983,
+        "stamp": "091927022026",
+        "children": [
+          {
+            "id": "a_091927022026",
+            "level": "action",
+            "content": "Presenting Wave 2 authorization request to user. Three sub-waves: 2A (Wire 14 HiveFiver commands), 2B (Wire 10 Hiveminder commands), 2C (Auto-Session Foundation)",
+            "status": "active",
+            "created": 1772194188356,
+            "stamp": "091927022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_131927022026",
+        "level": "tactic",
+        "content": "CORRECTION: Master plan has ZERO execution. Previous 'Wave 1 complete' was false — those were pre-requisite permission patches, not plan deliverables. Verifying actual codebase state now.",
+        "status": "active",
+        "created": 1772194396780,
+        "stamp": "131927022026",
+        "children": [
+          {
+            "id": "a_131927022026",
+            "level": "action",
+            "content": "Dispatching parallel verification: check actual state of Wave 1A deliverables (validate-framework.sh changes, command schema fields) and Wave 1B deliverables (planning directory, schemas, tests)",
+            "status": "pending",
+            "created": 1772194406408,
+            "stamp": "131927022026",
+            "children": []
+          },
+          {
+            "id": "a_181927022026",
+            "level": "action",
+            "content": "Verification complete. Wave 1B=FULLY EXECUTED. Wave 1A=PARTIALLY EXECUTED (validator done, commands have fields, but master plan filenames were wrong). Presenting evidence to user for reconciliation.",
+            "status": "pending",
+            "created": 1772194694740,
+            "stamp": "181927022026",
+            "children": []
+          },
+          {
+            "id": "a_191927022026",
+            "level": "action",
+            "content": "Run framework validator, npm test, and tsc to capture deterministic PASS/FAIL evidence",
+            "status": "pending",
+            "created": 1772194754396,
+            "stamp": "191927022026",
+            "children": []
+          },
+          {
+            "id": "a_211927022026",
+            "level": "action",
+            "content": "Captured framework validator, npm test, and tsc results with deterministic PASS/FAIL evidence",
+            "status": "pending",
+            "created": 1772194868509,
+            "stamp": "211927022026",
+            "children": []
+          },
+          {
+            "id": "a_251927022026",
+            "level": "action",
+            "content": "PRE-STOP: Sync confirmed changes to .opencode/ (preserve model config), mem all progress, prepare for user restart",
+            "status": "pending",
+            "created": 1772195119241,
+            "stamp": "251927022026",
+            "children": []
+          },
+          {
+            "id": "a_261927022026",
+            "level": "action",
+            "content": "Execute root→.opencode asset sync for agents/commands/workflows/skills/templates/prompts/references with preservation checks",
+            "status": "pending",
+            "created": 1772195218544,
+            "stamp": "261927022026",
+            "children": []
+          },
+          {
+            "id": "a_291927022026",
+            "level": "action",
+            "content": "Asset sync and preservation verification complete for root→.opencode mirrors",
+            "status": "active",
+            "created": 1772195353732,
+            "stamp": "291927022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_301927022026",
+        "level": "tactic",
+        "content": "PRE-STOP COMPLETE: Assets synced to .opencode/, all progress memmed. User will restart OpenCode. On return: finish Wave 1 remainders (3 prompts + R01b resolution), then Wave 2.",
+        "status": "active",
+        "created": 1772195441120,
+        "stamp": "301927022026",
         "children": []
       },
       {
-        "id": "tc_560927022026",
+        "id": "tc_162127022026",
         "level": "tactic",
-        "content": "Agent definition audit - verifying all 8 agents conform to THE-ZERO-EVENT.md specifications for YAML frontmatter, mode, tools, tasks, permissions, and identity fields",
+        "content": "P0 BLOCKER: rsync sync destroyed user OpenCode config (model, mode, reasoning fields). Must build smart merge sync before any further asset operations. Also: MCP research harness needs architectural hardening. Wave 1 PAUSED until sync-safe mechanism built.",
         "status": "active",
-        "created": 1772160992125,
-        "stamp": "560927022026",
+        "created": 1772201770369,
+        "stamp": "162127022026",
         "children": [
           {
-            "id": "a_091027022026",
+            "id": "a_162127022026",
             "level": "action",
-            "content": "Command organization audit - analyzing frontmatter compliance and grouping recommendations against THE-ZERO-EVENT.md specifications",
+            "content": "Researching OpenCode official frontmatter specs: agents, commands, permissions, skills, rules, MCP servers. Building field classification for smart merge sync.",
+            "status": "pending",
+            "created": 1772201791766,
+            "stamp": "162127022026",
+            "children": []
+          },
+          {
+            "id": "a_182127022026",
+            "level": "action",
+            "content": "Research phase complete. Analyzing 5+ free MCP server candidates and workarounds for existing 3 servers.",
+            "status": "pending",
+            "created": 1772201924627,
+            "stamp": "182127022026",
+            "children": []
+          },
+          {
+            "id": "a_252127022026",
+            "level": "action",
+            "content": "Executing P0: Build smart merge sync that preserves user-owned OpenCode frontmatter fields (model, mode, variant, temperature, reasoningEffort, etc.) while syncing framework-owned fields (description, permission, body). Step 1: Inspect current sync-assets script.",
+            "status": "pending",
+            "created": 1772202310817,
+            "stamp": "252127022026",
+            "children": []
+          },
+          {
+            "id": "a_272127022026",
+            "level": "action",
+            "content": "Implementing sync-assets.ts smart YAML frontmatter merge to preserve user-owned fields while syncing framework-owned fields and markdown body; then verify with tsc and test suite.",
+            "status": "pending",
+            "created": 1772202474290,
+            "stamp": "272127022026",
+            "children": []
+          },
+          {
+            "id": "a_322127022026",
+            "level": "action",
+            "content": "Smart frontmatter merge implemented in sync-assets.ts; running verification gates (npx tsc --noEmit, npm test) and collecting diff evidence.",
+            "status": "pending",
+            "created": 1772202750667,
+            "stamp": "322127022026",
+            "children": []
+          },
+          {
+            "id": "a_332127022026",
+            "level": "action",
+            "content": "Smart merge implemented in sync-assets.ts. Now verifying: (1) read actual implementation to confirm correctness, (2) test smart merge preserves user model/mode fields on real agents, (3) run full sync with smart merge.",
+            "status": "pending",
+            "created": 1772202829934,
+            "stamp": "332127022026",
+            "children": []
+          },
+          {
+            "id": "a_352127022026",
+            "level": "action",
+            "content": "Verification run: capture pre-sync agent frontmatter/body, execute sync-assets --overwrite, validate preservation vs framework sync for 5 target agents.",
+            "status": "pending",
+            "created": 1772202954622,
+            "stamp": "352127022026",
+            "children": []
+          },
+          {
+            "id": "a_382127022026",
+            "level": "action",
+            "content": "Smart merge verification executed on 5 real agents; preservation and sync outcomes captured with command evidence.",
+            "status": "pending",
+            "created": 1772203084225,
+            "stamp": "382127022026",
+            "children": []
+          },
+          {
+            "id": "a_412127022026",
+            "level": "action",
+            "content": "Continuing execution: (1) Fix hiverd mode=subagent→all in .opencode/agents/, verify all 8 agent modes match user spec. (2) Begin MCP harness: add GitMCP + free search servers to opencode.json.",
+            "status": "pending",
+            "created": 1772203277582,
+            "stamp": "412127022026",
+            "children": []
+          },
+          {
+            "id": "a_422127022026",
+            "level": "action",
+            "content": "Audit and fix mode frontmatter across 16 agent files in agents/ and .opencode/agents/, then verify all match canonical spec.",
+            "status": "pending",
+            "created": 1772203371955,
+            "stamp": "422127022026",
+            "children": []
+          },
+          {
+            "id": "a_432127022026",
+            "level": "action",
+            "content": "Auto-realign executed: hivefiver research lane loaded (floppy_engineer) with required skills; proceeding with scoped opencode.json MCP update task.",
+            "status": "pending",
+            "created": 1772203399687,
+            "stamp": "432127022026",
+            "children": []
+          },
+          {
+            "id": "a_452127022026",
+            "level": "action",
+            "content": "Verification completed for all 16 agent mode fields; preparing evidence report with before/fix/after matrix.",
+            "status": "pending",
+            "created": 1772203525395,
+            "stamp": "452127022026",
+            "children": []
+          },
+          {
+            "id": "a_462127022026",
+            "level": "action",
+            "content": "Completed opencode.json MCP updates (gitmcp + fetcher), validated JSON parsing, and ran verification gates (tsc + npm test).",
             "status": "active",
-            "created": 1772161760236,
-            "stamp": "091027022026",
+            "created": 1772203582439,
+            "stamp": "462127022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_472127022026",
+        "level": "tactic",
+        "content": "P0 RESOLVED: Smart merge sync built and verified, agent modes fixed (3/16), 2 MCP servers added (gitmcp + fetcher). Resuming Wave 1 completion: 3 hiverd prompts + R01b resolution + validator gate.",
+        "status": "active",
+        "created": 1772203627446,
+        "stamp": "472127022026",
+        "children": [
+          {
+            "id": "a_472127022026",
+            "level": "action",
+            "content": "Wave 1 completion sprint: fixing 3 hiverd empty required_prompts + resolving R01b validator failures in parallel",
+            "status": "pending",
+            "created": 1772203664424,
+            "stamp": "472127022026",
+            "children": []
+          },
+          {
+            "id": "a_482127022026",
+            "level": "action",
+            "content": "Audit hiverd command frontmatter and prompts inventory; patch required_prompts for analyze/brainstorm/compare and verify with tsc+tests",
+            "status": "pending",
+            "created": 1772203735471,
+            "stamp": "482127022026",
+            "children": []
+          },
+          {
+            "id": "a_482127022026-1",
+            "level": "action",
+            "content": "Investigate and resolve R01b validator failures in scripts/validate-framework.sh without modifying agent .md files",
+            "status": "pending",
+            "created": 1772203737130,
+            "stamp": "482127022026",
+            "children": []
+          },
+          {
+            "id": "a_502127022026",
+            "level": "action",
+            "content": "Run verification gates for prompt remediation: npx tsc --noEmit and npm test",
+            "status": "pending",
+            "created": 1772203844304,
+            "stamp": "502127022026",
+            "children": []
+          },
+          {
+            "id": "a_542127022026",
+            "level": "action",
+            "content": "Completed hiverd required_prompts remediation for analyze/brainstorm/compare and verified via tsc+tests",
+            "status": "pending",
+            "created": 1772204058199,
+            "stamp": "542127022026",
+            "children": []
+          },
+          {
+            "id": "a_562127022026",
+            "level": "action",
+            "content": "Running sync-assets smart merge to .opencode and verifying preservation + prompt/command parity",
+            "status": "pending",
+            "created": 1772204166555,
+            "stamp": "562127022026",
+            "children": []
+          },
+          {
+            "id": "a_572127022026",
+            "level": "action",
+            "content": "Wave 1 final verification gate: validator + tsc + npm test + git status + smart-merge/prompt checks",
+            "status": "active",
+            "created": 1772204267415,
+            "stamp": "572127022026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_592127022026",
+        "level": "tactic",
+        "content": "Wave 1 COMPLETE. Gate: 1386P/0F/8W, 215/215 tests, 0 tsc. All deliverables verified. Transitioning to Wave 2 execution.",
+        "status": "active",
+        "created": 1772204376928,
+        "stamp": "592127022026",
+        "children": []
+      },
+      {
+        "id": "tc_002227022026",
+        "level": "tactic",
+        "content": "Wave 2 execution: Dispatching 2A (Wire 14 HiveFiver commands) and 2C (Auto-Session Foundation) in parallel. 2B (Wire 10 Hiveminder commands) follows after 2A.",
+        "status": "active",
+        "created": 1772204408901,
+        "stamp": "002227022026",
+        "children": [
+          {
+            "id": "a_002227022026",
+            "level": "action",
+            "content": "Wave 2 execution starting. Gathering existing workflow pattern + command audit for delegation context before dispatching 2A and 2C.",
+            "status": "active",
+            "created": 1772204428181,
+            "stamp": "002227022026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_091027022026"
+  "cursor": "a_002227022026"
 }

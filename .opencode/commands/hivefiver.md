@@ -15,7 +15,6 @@ group: hivefiver
 entry_gate: session_declared
 argument-hint: <action> [args]
 ---
-
 # HiveFiver Root Command
 
 HiveFiver is setup/meta-builder only. It must not remain the active build-stage executor.

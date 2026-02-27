@@ -10,11 +10,14 @@ required_skills:
   - source-evaluation
 required_templates:
   - templates/research-report-template.md
+required_references:
+  - references/research-quality-criteria.md
+required_prompts:
+  - prompts/research-question-framing.md
 chain_group: hiverd
 group: hiverd
 entry_gate: session_declared
 ---
-
 # HiveRD Research
 
 ## Objective

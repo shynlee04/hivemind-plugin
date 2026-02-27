@@ -15,7 +15,6 @@ chain_group: hiveminder
 group: hiveminder
 entry_gate: session_declared
 ---
-
 # HiveMind Context Clarification Command
 
 **Use this command when the agent is unsure about your intent or lacks sufficient context.**

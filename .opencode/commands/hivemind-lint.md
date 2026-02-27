@@ -14,7 +14,6 @@ chain_group: hiveminder
 group: hiveminder
 entry_gate: session_declared
 ---
-
 # HiveMind Lint & Quality Gate
 
 **Validates code quality, type safety, and project health.**

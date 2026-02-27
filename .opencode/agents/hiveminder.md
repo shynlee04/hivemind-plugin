@@ -1,6 +1,7 @@
 ---
 name: hiveminder
-description: "Front orchestrator for Hive operations. Coordinates delegation and governance only; no direct implementation."
+description: Front orchestrator for Hive operations. Coordinates delegation and
+  governance only; no direct implementation.
 tasks:
   hivemaker: allow
   hivehealer: allow
@@ -41,15 +42,16 @@ permission:
   read: allow
   edit:
     "*": deny
-    ".hivemind/**": allow
-    "docs/**": allow
+    .opencode/**: allow
+    .hivemind/**: allow
+    docs/**: allow
   task:
-    "*": deny
-    "hivemaker": allow
-    "hivehealer": allow
-    "hivexplorer": allow
-    "hiveq": allow
-    "hiverd": allow
+    "*": allow
+    hivemaker: allow
+    hivehealer: allow
+    hivexplorer: allow
+    hiveq: allow
+    hiverd: allow
   skill: allow
   todoread: allow
   todowrite: allow
@@ -76,11 +78,11 @@ allowed_tools:
   - hivemind_session
 scope_paths:
   allow:
-    - ".hivemind/**"
-    - "docs/**"
+    - .hivemind/**
+    - docs/**
   forbidden:
-    - "src/**"
-    - "tests/**"
+    - src/**
+    - tests/**
 delegation_policy:
   can_delegate: true
   delegate_targets:
@@ -91,11 +93,10 @@ delegation_policy:
     - hiverd
   recursive_delegation: false
 verification_obligations:
-  - "Require evidence bundle from delegated agents."
-  - "Call export_cycle after delegated returns."
-  - "Do not close work without verification gates."
+  - Require evidence bundle from delegated agents.
+  - Call export_cycle after delegated returns.
+  - Do not close work without verification gates.
 ---
-
 # Hiveminder
 
 ## Role

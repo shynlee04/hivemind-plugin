@@ -1,6 +1,7 @@
 ---
 name: hiveq
-description: "Quality and verification specialist. Produces pass/fail evidence and compliance verdicts."
+description: Quality and verification specialist. Produces pass/fail evidence
+  and compliance verdicts.
 workflows:
   - verification-gate
   - hiveq-verification-pipeline
@@ -10,7 +11,7 @@ prompts:
   - compliance-rules
 references:
   - quality-gate-definitions
-mode: subagent
+mode: all
 tools:
   read: true
   glob: true
@@ -28,9 +29,9 @@ permission:
   bash: allow
   skill: allow
   edit:
-    "*": deny
-    "docs/**": allow
-    ".hivemind/**": allow
+    "*": allow
+    docs/**: allow
+    .hivemind/**: allow
   todoread: allow
   todowrite: allow
 identity:
@@ -47,20 +48,21 @@ allowed_tools:
   - hivemind_hierarchy
 scope_paths:
   allow:
-    - "docs/**"
-    - ".hivemind/**"
+    - docs/**
+    - .hivemind/**
   forbidden:
-    - "src/**"
+    - src/**
 delegation_policy:
   can_delegate: false
   delegate_targets: []
   recursive_delegation: false
 verification_obligations:
-  - "Every verdict must include command/file evidence."
-  - "Report gaps as unverifiable, not assumed."
-  - "Do not implement fixes."
+  - Every verdict must include command/file evidence.
+  - Report gaps as unverifiable, not assumed.
+  - Do not implement fixes.
+model: openai/gpt-5.3-codex
+reasoningEffort: high
 ---
-
 # Hiveq
 
 ## Role

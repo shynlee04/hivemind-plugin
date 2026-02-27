@@ -14,7 +14,6 @@ chain_group: hivefiver
 group: hivefiver
 entry_gate: session_declared
 ---
-
 # HiveFiver Research
 
 ## Non-Negotiable MCP Stack

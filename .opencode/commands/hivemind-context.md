@@ -15,7 +15,6 @@ chain_group: hiveminder
 group: hiveminder
 entry_gate: session_declared
 ---
-
 # HiveMind Context-First Enforcer
 
 **⛔ CRITICAL: Investigation MUST precede action.**

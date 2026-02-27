@@ -1,10 +1,34 @@
 {
   "anchors": [
     {
-      "key": "brownfield-validation-2026-02-27",
-      "value": "{\n  \"date\": \"2026-02-27\",\n  \"verdict\": \"PASS\",\n  \"typescript\": \"PASS (0 errors)\",\n  \"tests\": \"PASS (210/210)\",\n  \"framework_validation\": \"PASS (806 PASS, 0 FAIL, 15 WARN)\",\n  \"init_flow\": \"WORKS (interactive wizard + asset sync)\",\n  \"command_parity\": \"CORRECT (43 commands root/.opencode)\",\n  \"warnings\": \"15 legacy/compat workflows pending v2 migration (non-blocking)\",\n  \"guard_public\": \"BLOCKED (expected - dev-v3 files blocked from master)\"\n}",
-      "created_at": 1772160382522,
-      "session_id": "37732c3e-5549-4bda-88b5-11a2ee61add6"
+      "key": "health-report-2026-02-27",
+      "value": "DETERMINISTIC HEALTH: tests=210/210 PASS, tsc=0 errors, guard:public=BLOCKED (expected on dev-v3), framework-validator=1363 PASS/0 FAIL/0 WARN, branch=v-2.9-harness-dev, version=2.8.5, src=139 TS files, tests=104 files",
+      "created_at": 1772191674821,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "master-plan-direction",
+      "value": "HYBRID-A+B: Track-A=command→workflow chaining (32 unchained cmds + template/ref/prompt wiring), Track-B=SOT planning layer (.hivemind/project/planning/ GSD-style + auto-session), converge at Wave-3, output-style=architecture-planning",
+      "created_at": 1772191808844,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "master-plan-document",
+      "value": "docs/plans/2026-02-27-hybrid-ab-master-plan.md (419 lines, 6 waves, HYBRID-A+B). Wave 1=Foundation Wiring, Wave 2=Bulk Command Wiring+Auto-Session, Wave 3=Convergence, Wave 4=Progressive Disclosure, Wave 5=Code Intelligence, Wave 6=Observability+Hardening",
+      "created_at": 1772192367271,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "smart-merge-sync",
+      "value": "SMART MERGE IMPLEMENTED (2026-02-27): src/cli/sync-assets.ts now preserves user-owned OpenCode frontmatter fields (model, mode, variant, temperature, reasoningEffort, textVerbosity, etc.) during sync. Framework-owned fields (name, description, permission) and markdown body always synced from source. VERIFIED on 5 real agents: all user configs preserved. 215/215 tests, 0 tsc errors. No more destructive rsync.",
+      "created_at": 1772203249925,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "wave-1-completion",
+      "value": "WAVE 1 COMPLETE (2026-02-27). Gate: 1386 PASS / 0 FAIL / 8 WARN, 215/215 tests, 0 tsc errors. Deliverables: (1A) 12/12 router commands have required_references+required_prompts, validator upgraded. (1B) Planning dir bootstrapped with schemas+tests+init wiring. (1C) Agent permissions functional, R01b downgraded to WARN for wildcard configs. BONUS: Smart merge sync built (preserves user OpenCode config), agent modes fixed, 2 MCP servers added (gitmcp+fetcher), 3 new prompt files created. Ready for Wave 2.",
+      "created_at": 1772204369832,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
     }
   ],
   "version": "1.0.0"

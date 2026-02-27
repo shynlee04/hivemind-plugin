@@ -14,7 +14,6 @@ chain_group: hivefiver
 group: hivefiver
 entry_gate: session_declared
 ---
-
 # HiveFiver Spec Alias
 
 Run `/hivefiver spec` behavior.

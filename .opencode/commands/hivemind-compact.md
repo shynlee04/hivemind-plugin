@@ -14,7 +14,6 @@ chain_group: hiveminder
 group: hiveminder
 entry_gate: session_declared
 ---
-
 # HiveMind Session Compact
 
 Perform a clean session archival with context preservation.

@@ -14,7 +14,6 @@ chain_group: hiveminder
 group: debug
 entry_gate: session_declared
 ---
-
 # HiveMind Debug Trigger Command
 
 This command is the **actuator** that initiates debug orchestration. It does NOT think - it only creates the session and returns deterministic JSON.

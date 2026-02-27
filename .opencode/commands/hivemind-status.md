@@ -13,7 +13,6 @@ chain_group: hiveminder
 group: hiveminder
 entry_gate: session_declared
 ---
-
 # HiveMind Status Check
 
 Show the user a comprehensive view of their HiveMind governance state.

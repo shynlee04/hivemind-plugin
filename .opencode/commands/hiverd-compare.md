@@ -10,11 +10,14 @@ required_skills:
   - source-evaluation
 required_templates:
   - templates/analysis-matrix-template.md
+required_references:
+  - references/research-quality-criteria.md
+required_prompts:
+  - prompts/comparison-criteria.md
 chain_group: hiverd
 group: hiverd
 entry_gate: session_declared
 ---
-
 # HiveRD Compare
 
 ## Objective

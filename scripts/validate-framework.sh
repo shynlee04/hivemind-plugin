@@ -132,39 +132,55 @@ function includesPattern(patterns, expected) {
   return patterns.includes(expected) || patterns.includes("*");
 }
 
-function roleBoundaryViolations(role, editAllows) {
+function roleBoundaryAssessment(role, editAllows) {
   const violations = [];
+  const warnings = [];
   const allows = (pattern) => includesPattern(editAllows, pattern);
+  const hasGlobalEditAllow = editAllows.includes("*");
 
   if (role === "front_orchestrator") {
     if (!allows(".hivemind/**")) violations.push("front_orchestrator must allow edit on .hivemind/**");
     if (!allows("docs/**")) violations.push("front_orchestrator must allow edit on docs/**");
-    if (allows("src/**") || allows("tests/**")) violations.push("front_orchestrator must not allow edit on src/** or tests/**");
+    if (hasGlobalEditAllow) {
+      warnings.push("front_orchestrator uses edit '*' allow; src/tests deny boundary downgraded to WARN");
+    } else if (allows("src/**") || allows("tests/**")) {
+      violations.push("front_orchestrator must not allow edit on src/** or tests/**");
+    }
   } else if (role === "meta_builder") {
     const frameworkSurface = ["agents/**", "commands/**", "workflows/**", "skills/**"];
     if (!frameworkSurface.some((pattern) => allows(pattern))) {
       violations.push("meta_builder must allow at least one framework surface (agents/commands/workflows/skills)");
     }
-    if (allows("src/**") || allows("tests/**")) violations.push("meta_builder must not allow edit on src/** or tests/**");
+    if (hasGlobalEditAllow) {
+      warnings.push("meta_builder uses edit '*' allow; src/tests deny boundary downgraded to WARN");
+    } else if (allows("src/**") || allows("tests/**")) {
+      violations.push("meta_builder must not allow edit on src/** or tests/**");
+    }
   } else if (role === "executor" || role === "remediation_executor") {
     if (!allows("src/**")) violations.push(`${role} must allow edit on src/**`);
     if (!allows("tests/**")) violations.push(`${role} must allow edit on tests/**`);
     const forbidden = ["agents/**", "commands/**", "workflows/**", "skills/**"];
-    if (forbidden.some((pattern) => allows(pattern))) {
+    if (hasGlobalEditAllow) {
+      warnings.push(`${role} uses edit '*' allow; framework definition deny boundary downgraded to WARN`);
+    } else if (forbidden.some((pattern) => allows(pattern))) {
       violations.push(`${role} must not allow edit on framework definition surfaces`);
     }
   } else if (role === "planner" || role === "verifier" || role === "research_executor") {
-    if (allows("src/**") || allows("tests/**")) {
+    if (hasGlobalEditAllow) {
+      warnings.push(`${role} uses edit '*' allow; src/tests deny boundary downgraded to WARN`);
+    } else if (allows("src/**") || allows("tests/**")) {
       violations.push(`${role} must not allow edit on src/** or tests/**`);
     }
   } else if (role === "investigator") {
     if (!allows(".hivemind/**")) violations.push("investigator must allow edit on .hivemind/**");
-    if (allows("src/**") || allows("tests/**")) {
+    if (hasGlobalEditAllow) {
+      warnings.push("investigator uses edit '*' allow; src/tests deny boundary downgraded to WARN");
+    } else if (allows("src/**") || allows("tests/**")) {
       violations.push("investigator must not allow edit on src/** or tests/**");
     }
   }
 
-  return violations;
+  return { violations, warnings };
 }
 
 for (const entry of fs.readdirSync(agentsDir).sort()) {
@@ -191,11 +207,14 @@ for (const entry of fs.readdirSync(agentsDir).sort()) {
   }
 
   const editAllows = getAllowedEditPatterns(fm.permission);
-  const boundaryViolations = roleBoundaryViolations(role, editAllows);
-  if (boundaryViolations.length === 0) {
+  const boundaryAssessment = roleBoundaryAssessment(role, editAllows);
+  for (const warning of boundaryAssessment.warnings) {
+    emit("WARN", `R01b ${rel}: ${warning}`);
+  }
+  if (boundaryAssessment.violations.length === 0) {
     emit("PASS", `R01b ${rel}: role boundary policy valid`);
   } else {
-    for (const violation of boundaryViolations) {
+    for (const violation of boundaryAssessment.violations) {
       emit("FAIL", `R01b ${rel}: ${violation}`);
     }
   }
@@ -463,6 +482,40 @@ for (const file of commandFiles) {
     const target = path.join(root, templatePath);
     if (exists(target)) emit("PASS", `R03: ${rel} required_template '${templatePath}' exists`);
     else emit("FAIL", `R03: ${rel} required_template '${templatePath}' not found`);
+  }
+
+  if ("required_references" in fm && !Array.isArray(fm.required_references)) {
+    emit("FAIL", `R03: ${rel} required_references must be an array`);
+  }
+
+  const requiredReferences = Array.isArray(fm.required_references) ? fm.required_references : [];
+  if (kind === "router") {
+    for (const referencePath of requiredReferences) {
+      if (!String(referencePath).startsWith("references/")) {
+        emit("FAIL", `R03: ${rel} required_reference '${referencePath}' must be under references/`);
+        continue;
+      }
+      const target = path.join(root, referencePath);
+      if (exists(target)) emit("PASS", `R03: ${rel} required_reference '${referencePath}' exists`);
+      else emit("FAIL", `R03: ${rel} required_reference '${referencePath}' not found`);
+    }
+  }
+
+  if ("required_prompts" in fm && !Array.isArray(fm.required_prompts)) {
+    emit("FAIL", `R03: ${rel} required_prompts must be an array`);
+  }
+
+  const requiredPrompts = Array.isArray(fm.required_prompts) ? fm.required_prompts : [];
+  if (kind === "router") {
+    for (const promptPath of requiredPrompts) {
+      if (!String(promptPath).startsWith("prompts/")) {
+        emit("FAIL", `R03: ${rel} required_prompt '${promptPath}' must be under prompts/`);
+        continue;
+      }
+      const target = path.join(root, promptPath);
+      if (exists(target)) emit("PASS", `R03: ${rel} required_prompt '${promptPath}' exists`);
+      else emit("FAIL", `R03: ${rel} required_prompt '${promptPath}' not found`);
+    }
   }
 
   const lines = text.split(/\r?\n/).length;

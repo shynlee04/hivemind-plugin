@@ -9,11 +9,14 @@ required_skills:
   - research-methodology
 required_templates:
   - templates/analysis-matrix-template.md
+required_references:
+  - references/research-quality-criteria.md
+required_prompts:
+  - prompts/analysis-methodology.md
 chain_group: hiverd
 group: hiverd
 entry_gate: session_declared
 ---
-
 # HiveRD Analyze
 
 ## Objective

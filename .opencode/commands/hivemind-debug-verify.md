@@ -13,7 +13,6 @@ chain_group: hiveminder
 group: debug
 entry_gate: session_declared
 ---
-
 # HiveMind Debug Verify Command
 
 This command is the **verification actuator** for debugging. It runs verification checks and returns deterministic JSON.

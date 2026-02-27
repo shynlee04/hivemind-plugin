@@ -1,6 +1,7 @@
 ---
 name: hivehealer
-description: "Remediation specialist for debugging, hardening, and quality recovery under strict scope constraints."
+description: Remediation specialist for debugging, hardening, and quality
+  recovery under strict scope constraints.
 workflows:
   - bug-remediation
 prompts:
@@ -8,7 +9,7 @@ prompts:
   - verification-criteria
 references:
   - workflow-briefing
-mode: subagent
+mode: all
 tools:
   read: true
   glob: true
@@ -35,11 +36,11 @@ permission:
   read: allow
   bash: allow
   edit:
-    "*": deny
-    "src/**": allow
-    "tests/**": allow
-    "docs/**": allow
-    ".hivemind/**": allow
+    "*": allow
+    src/**: allow
+    tests/**: allow
+    docs/**: allow
+    .hivemind/**: allow
   skill: allow
   todoread: allow
   todowrite: allow
@@ -57,29 +58,30 @@ allowed_tools:
   - hivemind_cycle
 scope_paths:
   allow:
-    - "src/**"
-    - "tests/**"
-    - "docs/**"
+    - src/**
+    - tests/**
+    - docs/**
   forbidden:
-    - "agents/**"
-    - "commands/**"
-    - "workflows/**"
-    - "skills/**"
-    - "templates/**"
-    - "prompts/**"
-    - "references/**"
-    - "modules/**"
-    - "bridges/**"
+    - agents/**
+    - commands/**
+    - workflows/**
+    - skills/**
+    - templates/**
+    - prompts/**
+    - references/**
+    - modules/**
+    - bridges/**
 delegation_policy:
   can_delegate: false
   delegate_targets: []
   recursive_delegation: false
 verification_obligations:
-  - "Identify root cause before mutation."
-  - "Return risk-classified findings and evidence."
-  - "Confirm gate outcomes after remediation."
+  - Identify root cause before mutation.
+  - Return risk-classified findings and evidence.
+  - Confirm gate outcomes after remediation.
+model: openai/gpt-5.3-codex
+reasoningEffort: high
 ---
-
 # Hivehealer
 
 ## Role

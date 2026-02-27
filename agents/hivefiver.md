@@ -39,13 +39,13 @@ tools:
 permission:
   read: allow
   task:
-    "*": deny
+    "*": allow
     "hivexplorer": allow
     "hiveplanner": allow
   skill: allow
   bash: allow
   edit:
-    "*": deny
+    "*": allow
     "agents/**": allow
     "commands/**": allow
     "workflows/**": allow

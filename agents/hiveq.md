@@ -10,7 +10,7 @@ prompts:
   - compliance-rules
 references:
   - quality-gate-definitions
-mode: subagent
+mode: all
 tools:
   read: true
   glob: true
@@ -28,7 +28,7 @@ permission:
   bash: allow
   skill: allow
   edit:
-    "*": deny
+    "*": allow
     "docs/**": allow
     ".hivemind/**": allow
   todoread: allow

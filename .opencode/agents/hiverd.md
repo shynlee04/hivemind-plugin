@@ -1,6 +1,7 @@
 ---
 name: hiverd
-description: "Research specialist for evidence synthesis, comparative analysis, and documentation outputs."
+description: Research specialist for evidence synthesis, comparative analysis,
+  and documentation outputs.
 workflows:
   - hiverd-deep-research
   - hiverd-synthesis-pipeline
@@ -11,7 +12,7 @@ prompts:
   - synthesis-instruction
 references:
   - research-quality-criteria
-mode: subagent
+mode: all
 tools:
   read: true
   glob: true
@@ -36,9 +37,9 @@ permission:
   webfetch: allow
   websearch: allow
   edit:
-    "*": deny
-    "docs/**": allow
-    ".hivemind/**": allow
+    "*": allow
+    docs/**: allow
+    .hivemind/**: allow
 identity:
   role: research_executor
 allowed_tools:
@@ -57,21 +58,22 @@ allowed_tools:
   - hivemind_cycle
 scope_paths:
   allow:
-    - "docs/**"
-    - ".hivemind/**"
+    - docs/**
+    - .hivemind/**
   forbidden:
-    - "src/**"
-    - "tests/**"
+    - src/**
+    - tests/**
 delegation_policy:
   can_delegate: false
   delegate_targets: []
   recursive_delegation: false
 verification_obligations:
-  - "Cite sources for all substantive claims."
-  - "Include confidence labels and contradiction notes."
-  - "Do not perform implementation edits."
+  - Cite sources for all substantive claims.
+  - Include confidence labels and contradiction notes.
+  - Do not perform implementation edits.
+model: opencode-go/kimi-k2.5
+reasoningEffort: high
 ---
-
 # Hiverd
 
 ## Role

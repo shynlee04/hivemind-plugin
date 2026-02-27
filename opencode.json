@@ -39,6 +39,22 @@
         "--mcp"
       ],
       "enabled": true
+    },
+    "gitmcp": {
+      "type": "remote",
+      "url": "https://gitmcp.io/mcp",
+      "enabled": true,
+      "timeout": 15000
+    },
+    "fetcher": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "fetcher-mcp"
+      ],
+      "enabled": true,
+      "timeout": 30000
     }
   },
   "plugin": [
@@ -84,7 +100,7 @@
     "edit": "ask",
     "write": "ask",
     "bash": "ask",
-    "*": "allow"
+    "*": "ask"
   },
   "agent": {
     "hivefiver": {

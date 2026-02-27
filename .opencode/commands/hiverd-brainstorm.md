@@ -9,11 +9,14 @@ required_skills:
   - synthesis-patterns
 required_templates:
   - templates/brainstorm-session-template.md
+required_references:
+  - references/research-quality-criteria.md
+required_prompts:
+  - prompts/brainstorm-framing.md
 chain_group: hiverd
 group: hiverd
 entry_gate: session_declared
 ---
-
 # HiveRD Brainstorm
 
 ## Objective

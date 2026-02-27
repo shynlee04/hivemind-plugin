@@ -15,7 +15,6 @@ chain_group: hiveminder
 group: hiveminder
 entry_gate: session_declared
 ---
-
 # HiveMind Delegation Validator
 
 **Enforces delegation quality standards BEFORE dispatching sub-agents.**
