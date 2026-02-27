@@ -5,9 +5,13 @@ description: Discover, audit, and compose robust skill packs for HiveFiver v2
 owner_agent: hivefiver
 kind: utility
 alias_resolved_to: hivefiver-skillforge
-required_skills: []
+required_skills:
+  - meta-builder-governance
+  - hivefiver-persona-routing
+  - hivefiver-spec-distillation
 required_templates: []
 chain_group: hivefiver
+group: hivefiver
 entry_gate: session_declared
 ---
 

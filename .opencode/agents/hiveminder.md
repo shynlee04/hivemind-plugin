@@ -1,6 +1,19 @@
 ---
 name: hiveminder
 description: "Front orchestrator for Hive operations. Coordinates delegation and governance only; no direct implementation."
+tasks:
+  hivemaker: allow
+  hivehealer: allow
+  hivexplorer: allow
+  hiveq: allow
+  hiverd: allow
+  hiveplanner: allow
+workflows:
+  - sequential-delegation-workflow
+  - feature-sprint
+  - bug-remediation
+prompts:
+  - compliance-rules
 mode: primary
 tools:
   read: true

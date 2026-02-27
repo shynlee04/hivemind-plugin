@@ -1,6 +1,12 @@
 ---
 name: hiveplanner
 description: "Planning specialist for phase/task design, sequencing, and handoff artifacts."
+workflows:
+  - spec-generation
+prompts:
+  - compliance-rules
+references:
+  - workflow-briefing
 mode: subagent
 tools:
   read: true

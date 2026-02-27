@@ -6,21 +6,31 @@ steps:
   - name: reproduce
     tool: hivehealer
     wave: 1
+    skill_bundles:
+      - systematic-debugging-hivemind
     entry_criteria: "Bug report available"
     exit_criteria: "Failure reproduced with evidence"
   - name: root-cause
     tool: hivexplorer
     wave: 2
+    skill_bundles:
+      - research-methodology
     entry_criteria: "Failure reproduced"
     exit_criteria: "Root cause hypothesis validated"
   - name: patch
     tool: hivehealer
     wave: 3
+    skill_bundles:
+      - systematic-debugging-hivemind
+      - implementation-discipline
     entry_criteria: "Root cause confirmed"
     exit_criteria: "Minimal remediation applied"
   - name: regression-gate
     tool: hiveq-regression
     wave: 4
+    skill_bundles:
+      - regression-detection
+      - gate-enforcement
     entry_criteria: "Patch applied"
     exit_criteria: "Regression checks reported"
 guards:

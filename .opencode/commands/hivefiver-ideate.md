@@ -5,9 +5,13 @@ description: Enter the Creative Ideating Room to brainstorm and lock down specs
 owner_agent: hivefiver
 kind: alias
 alias_resolved_to: hivefiver ideate
-required_skills: []
+required_skills:
+  - meta-builder-governance
+  - hivefiver-persona-routing
+  - hivefiver-spec-distillation
 required_templates: []
 chain_group: hivefiver
+group: hivefiver
 entry_gate: session_declared
 ---
 

@@ -6,21 +6,32 @@ steps:
   - name: criteria-load
     tool: hiveq-verify
     wave: 1
+    skill_bundles:
+      - verification-methodology
+      - evidence-discipline
     entry_criteria: "Target deliverable identified"
     exit_criteria: "Acceptance criteria loaded"
   - name: gate-run
     tool: hiveq-gate-check
     wave: 2
+    skill_bundles:
+      - gate-enforcement
     entry_criteria: "Criteria loaded"
     exit_criteria: "Gate command results captured"
   - name: compliance-check
     tool: hiveq-compliance
     wave: 3
+    skill_bundles:
+      - verification-methodology
+      - gate-enforcement
     entry_criteria: "Gate run complete"
     exit_criteria: "Compliance verdict generated"
   - name: verdict-export
     tool: hiveq-verify
     wave: 4
+    skill_bundles:
+      - verification-methodology
+      - evidence-discipline
     entry_criteria: "Compliance check complete"
     exit_criteria: "Final PASS/FAIL report emitted"
 guards:

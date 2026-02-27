@@ -8,6 +8,7 @@ required_skills:
   - synthesis-patterns
 required_templates: []
 chain_group: hiverd
+group: hiverd
 entry_gate: session_declared
 ---
 

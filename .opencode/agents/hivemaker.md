@@ -1,6 +1,13 @@
 ---
 name: hivemaker
 description: "Execution specialist for implementation tasks. Applies constrained changes within assigned scope and returns evidence."
+workflows:
+  - feature-sprint
+  - bug-remediation
+prompts:
+  - compliance-rules
+references:
+  - workflow-briefing
 mode: subagent
 tools:
   read: true

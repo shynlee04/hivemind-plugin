@@ -1,3 +1,4 @@
+contract_version: 2
 name: hiverd-brainstorm-session
 description: "Divergent ideation with convergent evaluation and decision documentation."
 version: 1
@@ -6,36 +7,52 @@ steps:
   - name: problem-definition
     description: "Clarify problem statement, constraints, and success criteria with user"
     tool: hiverd
+    wave: 1
+    skill_bundles:
+      - research-methodology
     args:
       action: define
       require_user_confirmation: true
-    wave: 1
+    entry_criteria: "Brainstorm topic provided"
+    exit_criteria: "Problem statement, constraints, and success criteria confirmed"
 
   - name: divergent-ideation
     description: "Generate 8-15 ideas without filtering, including unconventional options"
     tool: hiverd
+    wave: 2
+    skill_bundles:
+      - research-methodology
     args:
       action: ideate
       min_ideas: 8
       max_ideas: 15
-    wave: 2
+    entry_criteria: "Problem defined"
+    exit_criteria: "8-15 unfiltered ideas generated"
 
   - name: convergent-evaluation
     description: "Score ideas against success criteria using weighted evaluation matrix"
     tool: hiverd
+    wave: 3
+    skill_bundles:
+      - source-evaluation
     args:
       action: evaluate
       scoring_method: weighted_matrix
-    wave: 3
+    entry_criteria: "Ideas generated"
+    exit_criteria: "Ideas scored against criteria with weighted matrix"
 
   - name: decision-documentation
     description: "Present top 3 candidates with tradeoffs and recommend one"
     tool: hiverd
+    wave: 4
+    skill_bundles:
+      - synthesis-patterns
     args:
       action: decide
       top_candidates: 3
       template: templates/brainstorm-session-template.md
-    wave: 4
+    entry_criteria: "Ideas evaluated"
+    exit_criteria: "Top 3 candidates documented with recommendation"
 
 guards:
   - rule: problem_defined

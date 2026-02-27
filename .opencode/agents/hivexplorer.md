@@ -3,6 +3,12 @@ name: hivexplorer
 description: "Investigation specialist for reconnaissance, evidence collection, and context retrieval."
 mode: subagent
 hidden: true
+workflows:
+  - research-synthesis
+prompts:
+  - research-question-framing
+references:
+  - research-quality-criteria
 tools:
   read: true
   glob: true

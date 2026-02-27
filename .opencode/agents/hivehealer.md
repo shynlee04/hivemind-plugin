@@ -1,6 +1,13 @@
 ---
 name: hivehealer
 description: "Remediation specialist for debugging, hardening, and quality recovery under strict scope constraints."
+workflows:
+  - bug-remediation
+prompts:
+  - compliance-rules
+  - verification-criteria
+references:
+  - workflow-briefing
 mode: subagent
 tools:
   read: true

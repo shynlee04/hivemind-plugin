@@ -1,6 +1,16 @@
 ---
 name: hiverd
 description: "Research specialist for evidence synthesis, comparative analysis, and documentation outputs."
+workflows:
+  - hiverd-deep-research
+  - hiverd-synthesis-pipeline
+  - hiverd-comparative-analysis
+  - research-synthesis
+prompts:
+  - research-question-framing
+  - synthesis-instruction
+references:
+  - research-quality-criteria
 mode: subagent
 tools:
   read: true

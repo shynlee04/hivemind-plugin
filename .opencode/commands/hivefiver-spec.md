@@ -5,9 +5,13 @@ description: Alias command for /hivefiver spec that runs strict specification
 owner_agent: hivefiver
 kind: alias
 alias_resolved_to: hivefiver spec
-required_skills: []
+required_skills:
+  - meta-builder-governance
+  - hivefiver-persona-routing
+  - hivefiver-spec-distillation
 required_templates: []
 chain_group: hivefiver
+group: hivefiver
 entry_gate: session_declared
 ---
 

@@ -5,9 +5,12 @@ description: Audit HiveFiver v2 readiness across MCP, commands, skills,
 owner_agent: hivefiver
 kind: utility
 alias_resolved_to: hivefiver-doctor
-required_skills: []
+required_skills:
+  - meta-builder-governance
+  - hivefiver-gsd-compat
 required_templates: []
 chain_group: hivefiver
+group: hivefiver-compat
 entry_gate: session_declared
 ---
 

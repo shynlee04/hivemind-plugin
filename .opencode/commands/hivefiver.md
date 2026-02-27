@@ -5,9 +5,13 @@ description: HiveFiver v2 meta-builder root command. Route /hivefiver <action>
 owner_agent: hivefiver
 kind: utility
 alias_resolved_to: hivefiver
-required_skills: []
+required_skills:
+  - meta-builder-governance
+  - hivefiver-persona-routing
+  - hivefiver-spec-distillation
 required_templates: []
 chain_group: hivefiver
+group: hivefiver
 entry_gate: session_declared
 argument-hint: <action> [args]
 ---

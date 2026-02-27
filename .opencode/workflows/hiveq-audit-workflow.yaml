@@ -1,3 +1,4 @@
+contract_version: 2
 name: hiveq-audit-workflow
 description: "Comprehensive audit: scope definition, standard loading, finding collection, severity classification, reporting."
 version: 1
@@ -6,13 +7,21 @@ steps:
   - name: scope-definition
     description: "Identify what is being audited and define boundaries"
     tool: hiveq
+    wave: 1
+    skill_bundles:
+      - verification-methodology
     args:
       action: define_scope
-    wave: 1
+    entry_criteria: "Audit target identified"
+    exit_criteria: "Audit scope and boundaries defined"
 
   - name: standard-loading
     description: "Load relevant quality criteria for the audit scope"
     tool: hiveq
+    wave: 2
+    skill_bundles:
+      - verification-methodology
+      - gate-enforcement
     args:
       action: load_standards
       standards:
@@ -20,33 +29,47 @@ steps:
         - cqrs_compliance
         - naming_conventions
         - orphan_detection
-    wave: 2
+    entry_criteria: "Scope defined"
+    exit_criteria: "Quality standards loaded and applicable"
 
   - name: finding-collection
     description: "Scan files, run checks, compare against standards"
     tool: hiveq
+    wave: 3
+    skill_bundles:
+      - evidence-discipline
     args:
       action: collect_findings
-    wave: 3
+    entry_criteria: "Standards loaded"
+    exit_criteria: "Findings collected from scans and checks"
 
   - name: severity-classification
     description: "Classify findings as P0 (blocks release), P1 (before milestone), P2 (tech debt)"
     tool: hiveq
+    wave: 4
+    skill_bundles:
+      - verification-methodology
+      - evidence-discipline
     args:
       action: classify
       severity_levels:
         - P0
         - P1
         - P2
-    wave: 4
+    entry_criteria: "Findings collected"
+    exit_criteria: "All findings classified by severity"
 
   - name: report-generation
     description: "Produce structured audit report"
     tool: hiveq
+    wave: 5
+    skill_bundles:
+      - evidence-discipline
     args:
       action: report
       template: templates/audit-report-template.md
-    wave: 5
+    entry_criteria: "Findings classified"
+    exit_criteria: "Structured audit report generated"
 
 guards:
   - rule: scope_defined

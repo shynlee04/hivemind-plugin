@@ -1,3 +1,4 @@
+contract_version: 2
 name: hiverd-synthesis-pipeline
 description: "Combine multiple research outputs into unified report with contradiction resolution."
 version: 1
@@ -6,32 +7,49 @@ steps:
   - name: input-indexing
     description: "Catalog all input documents with scope, confidence levels, and key claims"
     tool: hiverd
+    wave: 1
+    skill_bundles:
+      - research-methodology
     args:
       action: index_inputs
-    wave: 1
+    entry_criteria: "Input documents provided"
+    exit_criteria: "All inputs cataloged with scope and confidence"
 
   - name: pattern-extraction
     description: "Identify recurring themes, agreements, and contradictions across inputs"
     tool: hiverd
+    wave: 2
+    skill_bundles:
+      - synthesis-patterns
     args:
       action: extract_patterns
-    wave: 2
+    entry_criteria: "Inputs indexed"
+    exit_criteria: "Themes, agreements, and contradictions identified"
 
   - name: cross-reference
     description: "Resolve contradictions and fill coverage gaps with additional evidence"
     tool: hiverd
+    wave: 3
+    skill_bundles:
+      - synthesis-patterns
+      - source-evaluation
     args:
       action: cross_reference
       resolve_contradictions: true
-    wave: 3
+    entry_criteria: "Patterns extracted"
+    exit_criteria: "Contradictions resolved and gaps filled"
 
   - name: unified-output
     description: "Write coherent synthesis integrating all inputs"
     tool: hiverd
+    wave: 4
+    skill_bundles:
+      - synthesis-patterns
     args:
       action: unify
       template: templates/research-report-template.md
-    wave: 4
+    entry_criteria: "Cross-referencing complete"
+    exit_criteria: "Unified synthesis report generated"
 
 guards:
   - rule: all_inputs_indexed

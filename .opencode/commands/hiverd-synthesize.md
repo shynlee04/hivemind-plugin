@@ -9,6 +9,7 @@ required_skills:
 required_templates:
   - templates/research-report-template.md
 chain_group: hiverd
+group: hiverd
 entry_gate: session_declared
 ---
 

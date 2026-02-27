@@ -1,3 +1,4 @@
+contract_version: 2
 name: hiveq-verification-pipeline
 description: "Goal-backward verification: extract criteria, collect evidence, analyze, produce verdict."
 version: 1
@@ -6,35 +7,53 @@ steps:
   - name: criteria-extraction
     description: "Pull acceptance criteria from planning artifacts for the target phase/task"
     tool: hiveq
+    wave: 1
+    skill_bundles:
+      - verification-methodology
     args:
       action: extract_criteria
-    wave: 1
+    entry_criteria: "Target phase/task identified"
+    exit_criteria: "Acceptance criteria extracted from planning artifacts"
 
   - name: evidence-collection
     description: "Run commands, read files, grep for patterns to gather verification evidence"
     tool: hiveq
+    wave: 2
+    skill_bundles:
+      - evidence-discipline
     args:
       action: collect_evidence
       commands:
         - "npm test"
         - "npx tsc --noEmit"
-    wave: 2
+    entry_criteria: "Criteria extracted"
+    exit_criteria: "Evidence collected from commands and scans"
 
   - name: goal-backward-analysis
     description: "Map evidence to criteria, identify coverage gaps"
     tool: hiveq
+    wave: 3
+    skill_bundles:
+      - verification-methodology
+      - evidence-discipline
     args:
       action: analyze
       method: goal_backward
-    wave: 3
+    entry_criteria: "Evidence collected"
+    exit_criteria: "Coverage gaps identified via goal-backward analysis"
 
   - name: verdict-production
     description: "Produce structured PASS/FAIL report per criterion"
     tool: hiveq
+    wave: 4
+    skill_bundles:
+      - evidence-discipline
+      - gate-enforcement
     args:
       action: verdict
       template: templates/verification-report-template.md
-    wave: 4
+    entry_criteria: "Analysis complete"
+    exit_criteria: "Structured PASS/FAIL verdict per criterion emitted"
 
 guards:
   - rule: criteria_exist

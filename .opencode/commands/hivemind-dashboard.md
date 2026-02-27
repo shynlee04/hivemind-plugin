@@ -5,9 +5,12 @@ description: Launch the HiveMind TUI dashboard for live monitoring of session
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-dashboard
-required_skills: []
+required_skills:
+  - systematic-debugging-hivemind
+  - debug-orchestration
 required_templates: []
 chain_group: hiveminder
+group: debug
 entry_gate: session_declared
 ---
 

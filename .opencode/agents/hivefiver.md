@@ -1,6 +1,14 @@
 ---
 name: hivefiver
 description: "Meta-builder and framework doctor for Sector-2 assets. Designs and refactors agentic framework components only."
+tasks:
+  hivexplorer: allow
+  hiveplanner: allow
+workflows:
+  - spec-generation
+  - research-synthesis
+prompts:
+  - compliance-rules
 mode: primary
 tools:
   read: true

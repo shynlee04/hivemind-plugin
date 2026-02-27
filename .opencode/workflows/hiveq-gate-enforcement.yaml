@@ -1,3 +1,4 @@
+contract_version: 2
 name: hiveq-gate-enforcement
 description: "Execute quality gates: identify gate, run command, parse result, emit verdict."
 version: 1
@@ -6,32 +7,49 @@ steps:
   - name: gate-identification
     description: "Resolve which gate(s) to run from arguments"
     tool: hiveq
+    wave: 1
+    skill_bundles:
+      - gate-enforcement
     args:
       action: identify_gates
-    wave: 1
+    entry_criteria: "Gate request received"
+    exit_criteria: "Target gates identified"
 
   - name: command-execution
     description: "Execute gate command(s) and capture output"
     tool: hiveq
+    wave: 2
+    skill_bundles:
+      - gate-enforcement
     args:
       action: execute
       capture_output: true
-    wave: 2
+    entry_criteria: "Gates identified"
+    exit_criteria: "Gate commands executed with output captured"
 
   - name: result-parsing
     description: "Parse command output for pass/fail determination"
     tool: hiveq
+    wave: 3
+    skill_bundles:
+      - verification-methodology
+      - evidence-discipline
     args:
       action: parse
-    wave: 3
+    entry_criteria: "Command output captured"
+    exit_criteria: "Pass/fail determined from results"
 
   - name: verdict-emission
     description: "Produce structured gate result with raw output"
     tool: hiveq
+    wave: 4
+    skill_bundles:
+      - evidence-discipline
     args:
       action: emit_verdict
       template: templates/gate-checklist-template.md
-    wave: 4
+    entry_criteria: "Results parsed"
+    exit_criteria: "Structured gate verdict emitted"
 
 guards:
   - rule: gate_valid
