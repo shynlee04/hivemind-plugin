@@ -1,0 +1,52 @@
+name: hiverd-deep-research
+description: "Structured multi-source research with question framing, evidence gathering, source evaluation, and synthesis."
+version: 1
+target_agent: hiverd
+steps:
+  - name: question-framing
+    description: "Transform topic into 3-5 specific, answerable sub-questions with scope boundaries"
+    tool: hiverd
+    args:
+      action: frame
+    wave: 1
+
+  - name: source-discovery
+    description: "Find 8-12 relevant sources across web, repos, and documentation using MCP tools"
+    tool: hiverd
+    args:
+      action: discover
+      min_sources: 8
+      max_sources: 12
+    wave: 2
+
+  - name: evidence-gathering
+    description: "Extract evidence cards from each source with citations and confidence levels"
+    tool: hiverd
+    args:
+      action: gather
+      require_citations: true
+    wave: 3
+
+  - name: synthesis
+    description: "Resolve contradictions, identify patterns, fill gaps across all evidence"
+    tool: hiverd
+    args:
+      action: synthesize
+      resolve_contradictions: true
+    wave: 4
+
+  - name: report-generation
+    description: "Produce structured research report using template"
+    tool: hiverd
+    args:
+      action: report
+      template: templates/research-report-template.md
+    wave: 5
+
+guards:
+  - rule: mcp_available
+    check: at_least_two_mcp_tools_accessible
+  - rule: evidence_required
+    check: all_claims_have_citations
+  - rule: confidence_scored
+    check: all_findings_have_confidence_level

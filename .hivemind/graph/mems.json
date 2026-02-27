@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "mems": [
+    {
+      "id": "e133fe1e-71c1-4f5e-8fc6-489f405ac987",
+      "session_id": "37732c3e-5549-4bda-88b5-11a2ee61add6",
+      "origin_task_id": null,
+      "shelf": "gap-audit",
+      "type": "insight",
+      "content": "## THE-ZERO-EVENT Gap Audit - 2026-02-27\n\n### Agent Audit (Score: 7/10 per agent)\n- 8/8 agents missing `tasks` field for delegation permissions\n- 0/8 agents paired with workflows/prompts/references/templates\n- All have proper frontmatter, mode, tools, permissions, identity\n\n### Command Audit (Score: 6/10)\n- FLAT structure (43 commands in one directory) - violates spec\n- Need ~10 groups (settings/, code-intel/, context/, etc.)\n- 100% frontmatter compliance on core fields\n- 33% have required_templates\n\n### Chaining Audit (Score: 6/10)\n- 72% commands (31/43) have empty required_skills arrays\n- Workflows don't explicitly load skill bundles at step level\n- Duplicate registry files (skills/ and .opencode/skills/)\n- References directory not chained to commands",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-02-27T03:14:05.552Z",
+      "created_at": "2026-02-27T03:14:05.552Z",
+      "updated_at": "2026-02-27T03:14:05.552Z"
+    }
+  ]
+}

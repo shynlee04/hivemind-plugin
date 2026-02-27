@@ -5,9 +5,12 @@ description: Map HiveFiver v2 outputs to GSD lifecycle checkpoints with
 owner_agent: hivefiver
 kind: utility
 alias_resolved_to: hivefiver-gsd-bridge
-required_skills: []
+required_skills:
+  - meta-builder-governance
+  - hivefiver-gsd-compat
 required_templates: []
 chain_group: hivefiver
+group: hivefiver-compat
 entry_gate: session_declared
 ---
 

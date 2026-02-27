@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "root": {
+    "id": "t_400927022026",
+    "level": "trajectory",
+    "content": "Brownfield validation of Sector-2 rescue implementation - verify init flow, package.json scripts, and structural consistency after fresh install",
+    "status": "active",
+    "created": 1772160045615,
+    "stamp": "400927022026",
+    "children": [
+      {
+        "id": "a_440927022026",
+        "level": "action",
+        "content": "Brownfield validation analysis - comparing root vs .opencode parity, identifying missing commands and structural gaps",
+        "status": "active",
+        "created": 1772160249669,
+        "stamp": "440927022026",
+        "children": []
+      },
+      {
+        "id": "tc_560927022026",
+        "level": "tactic",
+        "content": "Agent definition audit - verifying all 8 agents conform to THE-ZERO-EVENT.md specifications for YAML frontmatter, mode, tools, tasks, permissions, and identity fields",
+        "status": "active",
+        "created": 1772160992125,
+        "stamp": "560927022026",
+        "children": [
+          {
+            "id": "a_091027022026",
+            "level": "action",
+            "content": "Command organization audit - analyzing frontmatter compliance and grouping recommendations against THE-ZERO-EVENT.md specifications",
+            "status": "active",
+            "created": 1772161760236,
+            "stamp": "091027022026",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "cursor": "a_091027022026"
+}

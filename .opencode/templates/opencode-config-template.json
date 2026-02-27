@@ -1,0 +1,85 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": ["hivemind-context-governance"],
+
+  "_comment_profile": "Use profile presets from HiveMind init, then override as needed",
+  "permission": {
+    "edit": "allow",
+    "write": "allow",
+    "bash": {
+      "git push": "ask",
+      "rm -rf *": "ask",
+      "npm publish": "ask",
+      "*": "allow"
+    },
+    "webfetch": "allow",
+    "websearch": "allow"
+  },
+
+  "_comment_mcp": "HiveFiver research stack. Keep enabled entries you can authenticate.",
+  "_comment_mcp_env": "Set TAVILY_API_KEY and EXA_API_KEY in your shell or secret manager before enabling those providers.",
+  "mcp": {
+    "deepwiki": {
+      "type": "remote",
+      "url": "https://mcp.deepwiki.com/mcp",
+      "enabled": true,
+      "timeout": 15000
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": false,
+      "timeout": 15000
+    },
+    "tavily": {
+      "type": "remote",
+      "url": "https://mcp.tavily.com/mcp",
+      "enabled": false,
+      "timeout": 15000
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://YOUR-EXA-MCP-ENDPOINT",
+      "enabled": false,
+      "timeout": 15000
+    },
+    "repomix": {
+      "type": "local",
+      "command": ["npx", "-y", "repomix", "--mcp"],
+      "enabled": false
+    }
+  },
+
+  "_comment_exa": "If you use provider-native Exa instead of MCP endpoint, keep mcp.exa disabled and export OPENCODE_ENABLE_EXA=1.",
+
+  "agent": {
+    "build": {
+      "mode": "subagent",
+      "tools": {
+        "read": true,
+        "write": true,
+        "edit": true,
+        "bash": true,
+        "glob": true,
+        "grep": true,
+        "task": true,
+        "skill": true,
+        "webfetch": true,
+        "websearch": true
+      }
+    },
+    "hivefiver": {
+      "mode": "primary",
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true,
+        "task": true,
+        "skill": true,
+        "webfetch": true,
+        "websearch": true,
+        "bash": true
+      }
+    }
+  }
+}

@@ -9,7 +9,7 @@ import {
   detectAutoRealignment,
   seedHiveFiverOnboardingTasks,
 } from "../../src/lib/hivefiver-integration.js"
-import { loadTasks } from "../../src/lib/manifest.js"
+import { loadGraphTasks } from "../../src/lib/graph-io.js"
 
 describe("HiveFiver integration helpers", () => {
   let dir: string
@@ -36,6 +36,8 @@ describe("HiveFiver integration helpers", () => {
     assert.ok(result.recommendedSkills.length > 0)
     assert.equal(result.canAutoInitiate, true)
     assert.equal(result.requiresPermission, false)
+    assert.equal(result.handoff_required, false)
+    assert.equal(result.next_agent, null)
     assert.ok(result.nextStepMenu.length > 0)
     assert.equal(result.nextStepMenu[0]?.command, result.recommendedCommand)
   })
@@ -99,6 +101,8 @@ describe("HiveFiver integration helpers", () => {
     assert.equal(result.recommendedAction, "research")
     assert.equal(result.canAutoInitiate, true)
     assert.equal(result.requiresPermission, false)
+    assert.equal(result.handoff_required, false)
+    assert.equal(result.next_agent, null)
   })
 
   it("treats /hivefiver without action as known (defaults handled by command layer)", () => {
@@ -152,6 +156,22 @@ describe("HiveFiver integration helpers", () => {
     assert.equal(typeof result.permissionPrompt, "string")
     assert.ok(result.permissionPrompt?.includes("/hivefiver build"))
     assert.equal(result.nextStepMenu[0]?.requiresPermission, true)
+    assert.equal(result.handoff_required, true)
+    assert.equal(result.next_agent, "hiveminder")
+    assert.equal(
+      result.handoff_reason,
+      "Build-stage action requested; HiveFiver must hand off orchestration to hiveminder.",
+    )
+  })
+
+  it("forces handoff metadata for init action", () => {
+    const result = detectAutoRealignment("/hivefiver init")
+    assert.equal(result.handoff_required, true)
+    assert.equal(result.next_agent, "hiveminder")
+    assert.equal(
+      result.handoff_reason,
+      "HiveFiver init is setup-only; handoff to hiveminder is mandatory.",
+    )
   })
 
   it("audits missing assets across root and .opencode", () => {
@@ -168,12 +188,11 @@ describe("HiveFiver integration helpers", () => {
     assert.equal(result.updated, true)
     assert.ok(result.created >= 4)
 
-    const manifest = await loadTasks(dir)
-    assert.ok(manifest)
-    assert.equal(manifest?.session_id, sessionId)
-    assert.ok((manifest?.tasks.length ?? 0) >= 3)
+    const graphState = await loadGraphTasks(dir, { enabled: false })
+    assert.ok(Array.isArray(graphState.tasks))
+    assert.ok(graphState.tasks.length >= 3)
 
-    const first = manifest?.tasks.find((task) => task.id === "hivefiver-bootstrap")
+    const first = graphState.tasks.find((task) => task.title === "Run HiveFiver startup realignment and lane detection")
     assert.ok(first)
     assert.equal(first?.source, "init.seed")
     assert.equal(first?.related_entities?.session_id, sessionId)
@@ -256,6 +275,68 @@ describe("HiveFiver integration helpers", () => {
     }
 
     const audit = auditHiveFiverAssets(dir, { sourceRoot: dir })
+    assert.equal(audit.hasCriticalGaps, false)
+  })
+
+  it("treats full profile as canonical-only for command requirements", async () => {
+    const files = [
+      "commands/hivefiver.md",
+      "commands/hivefiver-init.md",
+      "commands/hivefiver-spec.md",
+      "commands/hivefiver-architect.md",
+      "commands/hivefiver-workflow.md",
+      "commands/hivefiver-build.md",
+      "commands/hivefiver-validate.md",
+      "commands/hivefiver-deploy.md",
+      "commands/hivefiver-research.md",
+      "commands/hivefiver-audit.md",
+      "commands/hivefiver-tutor.md",
+      "skills/hivefiver-persona-routing/SKILL.md",
+      "skills/hivefiver-spec-distillation/SKILL.md",
+      "skills/hivefiver-mcp-research-loop/SKILL.md",
+      "skills/hivefiver-gsd-compat/SKILL.md",
+      "skills/hivefiver-ralph-tasking/SKILL.md",
+      "skills/hivefiver-bilingual-tutor/SKILL.md",
+      "skills/hivefiver-skill-auditor/SKILL.md",
+      "skills/hivefiver-domain-pack-router/SKILL.md",
+      "workflows/hivefiver-vibecoder.yaml",
+      "workflows/hivefiver-enterprise.yaml",
+      "workflows/hivefiver-mcp-fallback.yaml",
+      "workflows/hivefiver-floppy-engineer.yaml",
+      "workflows/hivefiver-enterprise-architect.yaml",
+      ".opencode/commands/hivefiver.md",
+      ".opencode/commands/hivefiver-init.md",
+      ".opencode/commands/hivefiver-spec.md",
+      ".opencode/commands/hivefiver-architect.md",
+      ".opencode/commands/hivefiver-workflow.md",
+      ".opencode/commands/hivefiver-build.md",
+      ".opencode/commands/hivefiver-validate.md",
+      ".opencode/commands/hivefiver-deploy.md",
+      ".opencode/commands/hivefiver-research.md",
+      ".opencode/commands/hivefiver-audit.md",
+      ".opencode/commands/hivefiver-tutor.md",
+      ".opencode/skills/hivefiver-persona-routing/SKILL.md",
+      ".opencode/skills/hivefiver-spec-distillation/SKILL.md",
+      ".opencode/skills/hivefiver-mcp-research-loop/SKILL.md",
+      ".opencode/skills/hivefiver-gsd-compat/SKILL.md",
+      ".opencode/skills/hivefiver-ralph-tasking/SKILL.md",
+      ".opencode/skills/hivefiver-bilingual-tutor/SKILL.md",
+      ".opencode/skills/hivefiver-skill-auditor/SKILL.md",
+      ".opencode/skills/hivefiver-domain-pack-router/SKILL.md",
+      ".opencode/workflows/hivefiver-vibecoder.yaml",
+      ".opencode/workflows/hivefiver-enterprise.yaml",
+      ".opencode/workflows/hivefiver-mcp-fallback.yaml",
+      ".opencode/workflows/hivefiver-floppy-engineer.yaml",
+      ".opencode/workflows/hivefiver-enterprise-architect.yaml",
+    ]
+
+    for (const file of files) {
+      const filePath = join(dir, file)
+      await mkdir(dirname(filePath), { recursive: true })
+      await writeFile(filePath, "stub")
+    }
+
+    const audit = auditHiveFiverAssets(dir, { sourceRoot: dir, profile: "full" })
     assert.equal(audit.hasCriticalGaps, false)
   })
 })

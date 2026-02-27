@@ -1,6 +1,14 @@
 ---
 name: hivefiver
 description: "Meta-builder and framework doctor for Sector-2 assets. Designs and refactors agentic framework components only."
+tasks:
+  hivexplorer: allow
+  hiveplanner: allow
+workflows:
+  - spec-generation
+  - research-synthesis
+prompts:
+  - compliance-rules
 mode: primary
 tools:
   read: true
@@ -29,33 +37,31 @@ tools:
   hivemind_memory: true
   hivemind_session: true
 permission:
-  command: allow
-  task: allow
+  read: allow
+  task:
+    "*": deny
+    "hivexplorer": allow
+    "hiveplanner": allow
   skill: allow
   bash: allow
-  edit: allow
-  write: allow
-  file:
-    write:
-      deny:
-        - "src/**"
-        - "tests/**"
-      allow:
-        - "agents/**"
-        - "commands/**"
-        - "workflows/**"
-        - "skills/**"
-        - "templates/**"
-        - "prompts/**"
-        - "references/**"
-        - "modules/**"
-        - "bridges/**"
-        - ".opencode/**"
-        - "docs/**"
-        - ".hivemind/**"
-    read:
-      allow:
-        - "**"
+  edit:
+    "*": deny
+    "agents/**": allow
+    "commands/**": allow
+    "workflows/**": allow
+    "skills/**": allow
+    "templates/**": allow
+    "prompts/**": allow
+    "references/**": allow
+    "modules/**": allow
+    "bridges/**": allow
+    ".opencode/**": allow
+    "docs/**": allow
+    ".hivemind/**": allow
+  todoread: allow
+  todowrite: allow
+  webfetch: allow
+  websearch: allow
 identity:
   role: meta_builder
 allowed_tools:

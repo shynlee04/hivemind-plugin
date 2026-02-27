@@ -3,6 +3,12 @@ name: hivexplorer
 description: "Investigation specialist for reconnaissance, evidence collection, and context retrieval."
 mode: subagent
 hidden: true
+workflows:
+  - research-synthesis
+prompts:
+  - research-question-framing
+references:
+  - research-quality-criteria
 tools:
   read: true
   glob: true
@@ -17,18 +23,13 @@ tools:
   hivemind_read_skeleton: true
   hivemind_mesh_pull: true
 permission:
+  read: allow
   webfetch: allow
   websearch: allow
   skill: allow
-  file:
-    write:
-      deny:
-        - "**"
-      allow:
-        - ".hivemind/**"
-    read:
-      allow:
-        - "**"
+  edit:
+    "*": deny
+    ".hivemind/**": allow
 identity:
   role: investigator
 allowed_tools:

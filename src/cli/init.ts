@@ -206,6 +206,11 @@ function resolveSyncMode(options: InitOptions): "none" | AssetSyncProfile {
   return "core"
 }
 
+function resolveAuditProfile(options: InitOptions): AssetSyncProfile {
+  const mode = resolveSyncMode(options)
+  return mode === "none" ? "core" : mode
+}
+
 async function syncAssetsForInit(directory: string, options: InitOptions): Promise<void> {
   const mode = resolveSyncMode(options)
   if (mode === "none") {
@@ -224,6 +229,8 @@ async function syncAssetsForInit(directory: string, options: InitOptions): Promi
     overwrite,
     backupOnOverwrite,
     includeLegacy: false,
+    validateAgentPermissionSchema: true,
+    failOnInvalidCriticalAssets: true,
     silent: options.silent ?? false,
     onLog: options.silent ? undefined : log,
   })
@@ -621,7 +628,10 @@ export async function initProject(
     const existingStateManager = createStateManager(directory)
     const existingState = await existingStateManager.load()
     await seedHiveFiverOnboardingTasks(directory, existingState?.session.id ?? "unknown")
-    logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
+    logHiveFiverAuditResult(
+      auditHiveFiverAssets(directory, { profile: resolveAuditProfile(options) }),
+      options.silent ?? false,
+    )
 
     if (!options.silent) {
       log("⚠ HiveMind already initialized in this project.")
@@ -699,7 +709,10 @@ export async function initProject(
     await syncAssetsForInit(directory, options)
 
     await seedHiveFiverOnboardingTasks(directory, sessionId)
-    logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
+    logHiveFiverAuditResult(
+      auditHiveFiverAssets(directory, { profile: resolveAuditProfile(options) }),
+      options.silent ?? false,
+    )
 
     await printInitSuccess(directory, config, sessionId, state, options.silent ?? false)
     return
@@ -817,7 +830,10 @@ export async function initProject(
   await syncAssetsForInit(directory, options)
 
   await seedHiveFiverOnboardingTasks(directory, sessionId)
-  logHiveFiverAuditResult(auditHiveFiverAssets(directory), options.silent ?? false)
+  logHiveFiverAuditResult(
+    auditHiveFiverAssets(directory, { profile: resolveAuditProfile(options) }),
+    options.silent ?? false,
+  )
 
   if (!options.silent) {
     log("")

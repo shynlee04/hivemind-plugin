@@ -47,7 +47,21 @@ export const HIVEFIVER_COMMANDS = [
   ...HIVEFIVER_ALIAS_COMMANDS,
 ] as const
 
-const HIVEFIVER_REQUIRED_COMMAND_FILES = [
+const HIVEFIVER_CANONICAL_COMMAND_FILES = [
+  "hivefiver.md",
+  "hivefiver-init.md",
+  "hivefiver-spec.md",
+  "hivefiver-architect.md",
+  "hivefiver-workflow.md",
+  "hivefiver-build.md",
+  "hivefiver-validate.md",
+  "hivefiver-deploy.md",
+  "hivefiver-research.md",
+  "hivefiver-audit.md",
+  "hivefiver-tutor.md",
+] as const
+
+const HIVEFIVER_LEGACY_COMMAND_FILES = [
   "hivefiver.md",
   "hivefiver-start.md",
   "hivefiver-intake.md",
@@ -59,6 +73,8 @@ const HIVEFIVER_REQUIRED_COMMAND_FILES = [
   "hivefiver-doctor.md",
   "hivefiver-tutor.md",
 ] as const
+
+type HiveFiverSyncProfile = "core" | "balanced" | "full" | "legacy-compat"
 
 const HIVEFIVER_SKILLS = [
   "hivefiver-persona-routing",
@@ -161,6 +177,7 @@ export interface AutoNextStepOption {
 }
 
 export interface HiveFiverAssetAudit {
+  profile: HiveFiverSyncProfile
   sourceRoot: string
   rootMissing: {
     commands: string[]
@@ -184,6 +201,13 @@ function resolvePackSourceRoot(projectRoot: string): string {
   const moduleRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..")
   const hasPackAssets = existsSync(join(moduleRoot, "commands", "hivefiver-start.md"))
   return hasPackAssets ? moduleRoot : projectRoot
+}
+
+function requiredHiveFiverCommandFiles(profile: HiveFiverSyncProfile): string[] {
+  if (profile === "legacy-compat") {
+    return [...new Set([...HIVEFIVER_CANONICAL_COMMAND_FILES, ...HIVEFIVER_LEGACY_COMMAND_FILES])]
+  }
+  return [...HIVEFIVER_CANONICAL_COMMAND_FILES]
 }
 
 function pickDomain(lower: string): "dev" | "marketing" | "finance" | "office-ops" | "hybrid" {
@@ -348,6 +372,9 @@ export interface AutoRealignmentDecision {
   requiresPermission: boolean
   permissionPrompt?: string
   nextStepMenu: AutoNextStepOption[]
+  next_agent: "hiveminder" | null
+  handoff_required: boolean
+  handoff_reason?: string
 }
 
 function commandForAction(action: HiveFiverAction): string {
@@ -391,6 +418,12 @@ function buildDecision(
   fallback: IntentClassification,
 ): AutoRealignmentDecision {
   const requiresPermission = requiresPermissionForAction(fallback.action)
+  const handoffRequired = fallback.action === "init" || requiresPermission
+  const handoffReason = handoffRequired
+    ? (fallback.action === "init"
+      ? "HiveFiver init is setup-only; handoff to hiveminder is mandatory."
+      : "Build-stage action requested; HiveFiver must hand off orchestration to hiveminder.")
+    : undefined
   return {
     shouldRealign,
     reason,
@@ -405,6 +438,9 @@ function buildDecision(
     requiresPermission,
     permissionPrompt: buildPermissionPrompt(fallback.command, requiresPermission),
     nextStepMenu: buildNextStepMenu(fallback.action, fallback.domain),
+    next_agent: handoffRequired ? "hiveminder" : null,
+    handoff_required: handoffRequired,
+    handoff_reason: handoffReason,
   }
 }
 
@@ -466,14 +502,16 @@ export function detectAutoRealignment(message: string): AutoRealignmentDecision 
 
 export function auditHiveFiverAssets(
   projectRoot: string,
-  options: { sourceRoot?: string } = {},
+  options: { sourceRoot?: string; profile?: HiveFiverSyncProfile } = {},
 ): HiveFiverAssetAudit {
+  const profile = options.profile ?? "core"
   const sourceRoot = options.sourceRoot ?? resolvePackSourceRoot(projectRoot)
-  const rootCommandPaths = HIVEFIVER_REQUIRED_COMMAND_FILES.map((name) => `commands/${name}`)
+  const requiredCommandFiles = requiredHiveFiverCommandFiles(profile)
+  const rootCommandPaths = requiredCommandFiles.map((name) => `commands/${name}`)
   const rootSkillPaths = HIVEFIVER_SKILLS.map((name) => `skills/${name}/SKILL.md`)
   const rootWorkflowPaths = HIVEFIVER_WORKFLOWS.map((name) => `workflows/${name}`)
 
-  const opencodeCommandPaths = HIVEFIVER_REQUIRED_COMMAND_FILES.map((name) => `.opencode/commands/${name}`)
+  const opencodeCommandPaths = requiredCommandFiles.map((name) => `.opencode/commands/${name}`)
   const opencodeSkillPaths = HIVEFIVER_SKILLS.map((name) => `.opencode/skills/${name}/SKILL.md`)
   const opencodeWorkflowPaths = HIVEFIVER_WORKFLOWS.map((name) => `.opencode/workflows/${name}`)
 
@@ -506,6 +544,7 @@ export function auditHiveFiverAssets(
   }
 
   return {
+    profile,
     sourceRoot,
     rootMissing,
     opencodeMissing,

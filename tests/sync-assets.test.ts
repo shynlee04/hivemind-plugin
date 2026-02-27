@@ -203,6 +203,10 @@ async function test_optional_groups_sync_when_present() {
         "---",
         "name: scanner",
         "description: scan specialist",
+        "permission:",
+        "  read: allow",
+        "  edit:",
+        "    \"*\": deny",
         "---",
         "",
         "# scanner",
@@ -238,8 +242,48 @@ async function test_optional_groups_sync_when_present() {
 }
 
 async function test_validation_skips_invalid_agent_and_workflow_schema() {
-  process.stderr.write("\n--- sync-assets: validation skips invalid agent/workflow schema ---\n")
+  process.stderr.write("\n--- sync-assets: fail-closed on invalid critical agent assets ---\n")
   await withTmpDir("hm-sync-invalid-schema-", async (dir) => {
+    const sourceRoot = join(dir, "mock-source")
+    await mkdir(join(sourceRoot, "agents"), { recursive: true })
+    await mkdir(join(sourceRoot, "workflows"), { recursive: true })
+
+    await writeFile(
+      join(sourceRoot, "agents", "invalid-agent.md"),
+      "# missing frontmatter\n",
+      "utf-8"
+    )
+    await writeFile(
+      join(sourceRoot, "workflows", "invalid-workflow.yaml"),
+      [
+        "name: invalid-workflow",
+        "steps:",
+        "  - name: missing_tool",
+      ].join("\n"),
+      "utf-8"
+    )
+
+    let failed = false
+    try {
+      await syncOpencodeAssets(dir, {
+        sourceRootDir: sourceRoot,
+        groups: ["agents", "workflows"],
+        silent: true,
+      })
+    } catch {
+      failed = true
+    }
+
+    assert(
+      failed,
+      "invalid critical agent asset fails sync by default"
+    )
+  })
+}
+
+async function test_validation_can_continue_when_fail_closed_disabled() {
+  process.stderr.write("\n--- sync-assets: optional continue with failOnInvalidCriticalAssets=false ---\n")
+  await withTmpDir("hm-sync-invalid-continue-", async (dir) => {
     const sourceRoot = join(dir, "mock-source")
     await mkdir(join(sourceRoot, "agents"), { recursive: true })
     await mkdir(join(sourceRoot, "workflows"), { recursive: true })
@@ -262,18 +306,59 @@ async function test_validation_skips_invalid_agent_and_workflow_schema() {
     const result = await syncOpencodeAssets(dir, {
       sourceRootDir: sourceRoot,
       groups: ["agents", "workflows"],
+      failOnInvalidCriticalAssets: false,
       silent: true,
     })
 
-    assert(
-      !existsSync(join(dir, ".opencode", "agents", "invalid-agent.md")),
-      "invalid agent skipped"
+    assert(!existsSync(join(dir, ".opencode", "agents", "invalid-agent.md")), "invalid agent skipped")
+    assert(!existsSync(join(dir, ".opencode", "workflows", "invalid-workflow.yaml")), "invalid workflow skipped")
+    assert(result.totalInvalid === 2, "invalid assets counted")
+  })
+}
+
+async function test_agent_permission_schema_invalid_is_reported() {
+  process.stderr.write("\n--- sync-assets: schema_invalid report for malformed agent permission ---\n")
+  await withTmpDir("hm-sync-agent-schema-invalid-", async (dir) => {
+    const sourceRoot = join(dir, "mock-source")
+    await mkdir(join(sourceRoot, "agents"), { recursive: true })
+
+    await writeFile(
+      join(sourceRoot, "agents", "broken-permission.md"),
+      [
+        "---",
+        "name: broken-permission",
+        "description: malformed permission schema",
+        "permission:",
+        "  command: allow",
+        "---",
+        "",
+        "# broken",
+      ].join("\n"),
+      "utf-8"
     )
-    assert(
-      !existsSync(join(dir, ".opencode", "workflows", "invalid-workflow.yaml")),
-      "invalid workflow skipped"
-    )
-    assert(result.totalInvalid === 2, "invalid schema counted")
+
+    let failed = false
+    try {
+      await syncOpencodeAssets(dir, {
+        sourceRootDir: sourceRoot,
+        groups: ["agents"],
+        silent: true,
+      })
+    } catch {
+      failed = true
+    }
+
+    assert(failed, "schema-invalid agent fails sync")
+
+    const result = await syncOpencodeAssets(dir, {
+      sourceRootDir: sourceRoot,
+      groups: ["agents"],
+      failOnInvalidCriticalAssets: false,
+      silent: true,
+    })
+
+    assert(result.totalInvalid === 1, "schema-invalid asset counted as invalid")
+    assert(result.totalSchemaInvalid === 1, "schema-invalid asset tracked separately")
   })
 }
 
@@ -396,6 +481,8 @@ async function main() {
   await test_validation_skips_invalid_assets()
   await test_optional_groups_sync_when_present()
   await test_validation_skips_invalid_agent_and_workflow_schema()
+  await test_validation_can_continue_when_fail_closed_disabled()
+  await test_agent_permission_schema_invalid_is_reported()
   await test_packaged_optional_groups_sync_by_default()
   await test_profile_balanced_includes_templates_and_references()
   await test_profile_core_excludes_legacy_commands()

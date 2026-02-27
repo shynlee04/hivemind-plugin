@@ -5,9 +5,13 @@ description: Alias command for /hivefiver audit that runs system-wide health
 owner_agent: hivefiver
 kind: alias
 alias_resolved_to: hivefiver audit
-required_skills: []
+required_skills:
+  - meta-builder-governance
+  - hivefiver-persona-routing
+  - hivefiver-spec-distillation
 required_templates: []
 chain_group: hivefiver
+group: hivefiver
 entry_gate: session_declared
 ---
 

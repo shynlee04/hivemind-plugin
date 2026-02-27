@@ -288,19 +288,15 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
    compact_session({ summary: "What was accomplished" })
    ```
 
-### Available Tools (24)
+### Available Tools (10)
 
 | Group | Tools |
 |-------|-------|
-| Core | `hivemind_session`, `hivemind_context` |
-| Inspection | `hivemind_inspect` |
-| Memory | `hivemind_memory`, `hivemind_session_memory` |
-| Immutable | `hivemind_anchor` |
-| Hierarchy | `hivemind_hierarchy` |
-| Cycle / Export | `hivemind_cycle` |
-| Ideation | `hivemind_ideate` |
-| Code-Intel Base | `hivemind_codemap` |
-| Surgeon Engine (Cluster 3) | `hivemind_read_skeleton`, `hivemind_precision_patch`, `hivemind_mesh_pull`, `hivemind_doc_weaver` |
+| Core | `declare_intent`, `map_context`, `compact_session` |
+| Cognitive Mesh | `scan_hierarchy`, `save_anchor`, `think_back` |
+| Memory | `save_mem`, `recall_mems` |
+| Hierarchy | `hierarchy_manage` |
+| Delegation | `export_cycle` |
 
 ### Why It Matters
 
@@ -311,11 +307,12 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 
 ### State Files
 
-- `.hivemind/brain.json` — Machine state (do not edit manually)
-- `.hivemind/hierarchy.json` — Decision tree
+- `.hivemind/state/brain.json` — Machine state (do not edit manually)
+- `.hivemind/state/hierarchy.json` — Decision tree
 - `.hivemind/sessions/` — Session files and archives
 
 <!-- HIVEMIND-GOVERNANCE-END -->
+
 
 
 

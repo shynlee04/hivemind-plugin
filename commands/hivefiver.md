@@ -5,14 +5,20 @@ description: HiveFiver v2 meta-builder root command. Route /hivefiver <action>
 owner_agent: hivefiver
 kind: utility
 alias_resolved_to: hivefiver
-required_skills: []
+required_skills:
+  - meta-builder-governance
+  - hivefiver-persona-routing
+  - hivefiver-spec-distillation
 required_templates: []
 chain_group: hivefiver
+group: hivefiver
 entry_gate: session_declared
 argument-hint: <action> [args]
 ---
 
 # HiveFiver Root Command
+
+HiveFiver is setup/meta-builder only. It must not remain the active build-stage executor.
 
 Use this command as the canonical entry point:
 - `/hivefiver init`
@@ -30,6 +36,9 @@ Use this command as the canonical entry point:
 1. Parse `$1` as action. If missing, default to `init`.
 2. If action is unknown, route to `/hivefiver init` and emit remediation choices.
 3. Keep legacy compatibility by recognizing old commands and aliases.
+4. Enforce handoff policy:
+   - `init` must emit `next_agent: hiveminder` and `handoff_required: true`.
+   - `build|validate|deploy` must route with `handoff_required: true` and must not execute while HiveFiver remains active.
 
 ## Routing Matrix
 - `init` -> `/hivefiver-start` + `/hivefiver-intake`
@@ -68,6 +77,7 @@ Each tab must include:
 - No execution without context gate + evidence gate.
 - No confidence above `partial` when MCP stack has unresolved gaps.
 - Process guarantee only after all gates pass.
+- Reject/stop if handoff-required flows are acknowledged as skipped.
 
 ## Output Contract
 Return:
@@ -78,3 +88,6 @@ Return:
 - `domain_lane`
 - `progress_state`
 - `next_step_options`
+- `next_agent`
+- `handoff_required`
+- `handoff_reason`

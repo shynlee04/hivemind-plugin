@@ -1,6 +1,13 @@
 ---
 name: hivemaker
 description: "Execution specialist for implementation tasks. Applies constrained changes within assigned scope and returns evidence."
+workflows:
+  - feature-sprint
+  - bug-remediation
+prompts:
+  - compliance-rules
+references:
+  - workflow-briefing
 mode: subagent
 tools:
   read: true
@@ -25,31 +32,17 @@ tools:
   hivemind_memory: true
   hivemind_session: true
 permission:
+  read: allow
   bash: allow
-  edit: allow
-  write: allow
-  patch: allow
+  edit:
+    "*": deny
+    "src/**": allow
+    "tests/**": allow
+    "docs/**": allow
+    ".hivemind/**": allow
   skill: allow
-  file:
-    write:
-      deny:
-        - "agents/**"
-        - "commands/**"
-        - "workflows/**"
-        - "skills/**"
-        - "templates/**"
-        - "prompts/**"
-        - "references/**"
-        - "modules/**"
-        - "bridges/**"
-      allow:
-        - "src/**"
-        - "tests/**"
-        - "docs/**"
-        - ".hivemind/**"
-    read:
-      allow:
-        - "**"
+  todoread: allow
+  todowrite: allow
 identity:
   role: executor
 allowed_tools:

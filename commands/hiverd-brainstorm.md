@@ -10,6 +10,7 @@ required_skills:
 required_templates:
   - templates/brainstorm-session-template.md
 chain_group: hiverd
+group: hiverd
 entry_gate: session_declared
 ---
 

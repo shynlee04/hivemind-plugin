@@ -6,9 +6,13 @@ description: Validate and standardize sub-agent delegation. Use BEFORE
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-delegate
-required_skills: []
+required_skills:
+  - delegation-intelligence
+  - delegation-packet-contract
+  - context-integrity
 required_templates: []
 chain_group: hiveminder
+group: hiveminder
 entry_gate: session_declared
 ---
 

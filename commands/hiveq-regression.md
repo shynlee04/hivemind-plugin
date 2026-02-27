@@ -9,6 +9,7 @@ required_skills:
 required_templates:
   - templates/verification-report-template.md
 chain_group: hiveq
+group: hiveq
 entry_gate: session_declared
 ---
 

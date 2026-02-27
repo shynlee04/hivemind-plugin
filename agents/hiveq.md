@@ -1,6 +1,15 @@
 ---
 name: hiveq
 description: "Quality and verification specialist. Produces pass/fail evidence and compliance verdicts."
+workflows:
+  - verification-gate
+  - hiveq-verification-pipeline
+  - hiveq-gate-enforcement
+prompts:
+  - verification-criteria
+  - compliance-rules
+references:
+  - quality-gate-definitions
 mode: subagent
 tools:
   read: true
@@ -15,17 +24,15 @@ tools:
   hivemind_memory: true
   hivemind_hierarchy: true
 permission:
-  command: allow
-  file:
-    write:
-      deny:
-        - "src/**"
-      allow:
-        - "docs/**"
-        - ".hivemind/**"
-    read:
-      allow:
-        - "**"
+  read: allow
+  bash: allow
+  skill: allow
+  edit:
+    "*": deny
+    "docs/**": allow
+    ".hivemind/**": allow
+  todoread: allow
+  todowrite: allow
 identity:
   role: verifier
 allowed_tools:

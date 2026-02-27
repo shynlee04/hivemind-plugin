@@ -1,6 +1,16 @@
 ---
 name: hiverd
 description: "Research specialist for evidence synthesis, comparative analysis, and documentation outputs."
+workflows:
+  - hiverd-deep-research
+  - hiverd-synthesis-pipeline
+  - hiverd-comparative-analysis
+  - research-synthesis
+prompts:
+  - research-question-framing
+  - synthesis-instruction
+references:
+  - research-quality-criteria
 mode: subagent
 tools:
   read: true
@@ -20,20 +30,15 @@ tools:
   hivemind_anchor: true
   hivemind_cycle: true
 permission:
-  command: allow
+  read: allow
+  bash: allow
+  skill: allow
   webfetch: allow
   websearch: allow
-  file:
-    write:
-      deny:
-        - "src/**"
-        - "tests/**"
-      allow:
-        - "docs/**"
-        - ".hivemind/**"
-    read:
-      allow:
-        - "**"
+  edit:
+    "*": deny
+    "docs/**": allow
+    ".hivemind/**": allow
 identity:
   role: research_executor
 allowed_tools:

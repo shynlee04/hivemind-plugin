@@ -1,0 +1,57 @@
+name: hiveq-audit-workflow
+description: "Comprehensive audit: scope definition, standard loading, finding collection, severity classification, reporting."
+version: 1
+target_agent: hiveq
+steps:
+  - name: scope-definition
+    description: "Identify what is being audited and define boundaries"
+    tool: hiveq
+    args:
+      action: define_scope
+    wave: 1
+
+  - name: standard-loading
+    description: "Load relevant quality criteria for the audit scope"
+    tool: hiveq
+    args:
+      action: load_standards
+      standards:
+        - loc_limits
+        - cqrs_compliance
+        - naming_conventions
+        - orphan_detection
+    wave: 2
+
+  - name: finding-collection
+    description: "Scan files, run checks, compare against standards"
+    tool: hiveq
+    args:
+      action: collect_findings
+    wave: 3
+
+  - name: severity-classification
+    description: "Classify findings as P0 (blocks release), P1 (before milestone), P2 (tech debt)"
+    tool: hiveq
+    args:
+      action: classify
+      severity_levels:
+        - P0
+        - P1
+        - P2
+    wave: 4
+
+  - name: report-generation
+    description: "Produce structured audit report"
+    tool: hiveq
+    args:
+      action: report
+      template: templates/audit-report-template.md
+    wave: 5
+
+guards:
+  - rule: scope_defined
+    check: audit_scope_not_empty
+  - rule: standards_loaded
+    check: at_least_one_standard_applied
+  - rule: findings_classified
+    check: all_findings_have_severity

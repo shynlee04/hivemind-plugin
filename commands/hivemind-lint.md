@@ -5,9 +5,13 @@ description: Run comprehensive linting, type checking, and quality validation.
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-lint
-required_skills: []
+required_skills:
+  - delegation-intelligence
+  - delegation-packet-contract
+  - context-integrity
 required_templates: []
 chain_group: hiveminder
+group: hiveminder
 entry_gate: session_declared
 ---
 

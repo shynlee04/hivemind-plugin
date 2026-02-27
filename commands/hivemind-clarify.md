@@ -6,9 +6,13 @@ description: Context Clarification Command - For low-confidence scenarios (<80%
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-clarify
-required_skills: []
+required_skills:
+  - delegation-intelligence
+  - delegation-packet-contract
+  - context-integrity
 required_templates: []
 chain_group: hiveminder
+group: hiveminder
 entry_gate: session_declared
 ---
 

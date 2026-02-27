@@ -1,0 +1,98 @@
+{
+  "session": {
+    "id": "37732c3e-5549-4bda-88b5-11a2ee61add6",
+    "mode": "plan_driven",
+    "governance_mode": "strict",
+    "governance_status": "OPEN",
+    "start_time": 1772160045615,
+    "last_activity": 1772161760237,
+    "date": "2026-02-27",
+    "meta_key": "",
+    "role": "",
+    "by_ai": true
+  },
+  "hierarchy": {
+    "trajectory": "Brownfield validation of Sector-2 rescue implementation - verify init flow, package.json scripts, and structural consistency after fresh install",
+    "tactic": "Agent definition audit - verifying all 8 agents conform to THE-ZERO-EVENT.md specifications for YAML frontmatter, mode, tools, tasks, permissions, and identity fields",
+    "action": "Command organization audit - analyzing frontmatter compliance and grouping recommendations against THE-ZERO-EVENT.md specifications"
+  },
+  "metrics": {
+    "turn_count": 4,
+    "user_turn_count": 2,
+    "drift_score": 79,
+    "files_touched": [
+      "[via task]"
+    ],
+    "context_updates": 3,
+    "ratings": [],
+    "auto_health_score": 100,
+    "total_tool_calls": 4,
+    "successful_tool_calls": 4,
+    "violation_count": 0,
+    "consecutive_failures": 0,
+    "consecutive_same_section": 0,
+    "last_section_content": "",
+    "tool_type_counts": {
+      "read": 2,
+      "write": 1,
+      "query": 1,
+      "governance": 0
+    },
+    "keyword_flags": [
+      "failure",
+      "error"
+    ],
+    "write_without_read_count": 0,
+    "governance_counters": {
+      "out_of_order": 0,
+      "drift": 0,
+      "compaction": 0,
+      "evidence_pressure": 4,
+      "ignored": 0,
+      "acknowledged": false,
+      "prerequisites_completed": false
+    }
+  },
+  "first_turn_context_injected": false,
+  "complexity_nudge_shown": false,
+  "last_commit_suggestion_turn": 0,
+  "version": "1.0.0",
+  "next_compaction_report": null,
+  "compaction_count": 0,
+  "last_compaction_time": 0,
+  "cycle_log": [],
+  "pending_failure_ack": false,
+  "framework_selection": {
+    "choice": null,
+    "active_phase": "",
+    "active_spec_path": "",
+    "acceptance_note": "",
+    "updated_at": 0
+  },
+  "recent_messages": [
+    {
+      "role": "user",
+      "content": "You are auditing the integration/chaining quality between commands, workflows, skills, templates, and references.\n\n**Task**: Check if entities are properly chained together per THE-ZERO-EVENT.md specifications.\n\n**What to check**:\n1. Do commands reference workflows in their frontmatter?\n2. Do commands reference required_skills?\n3. Do commands reference required_templates or required_references?\n4. Do workflows reference skills to load at each step?\n5. Is there a `registry.yaml` linking skills to bundles?\n6. Are there execution_context paths that point to actual files?\n\n**Files to examine**:\n- `/Users/apple/hivemind-plugin/commands/*.md` (sample 5-10)\n- `/Users/apple/hivemind-plugin/workflows/*.yaml` (sample 5-10)\n- `/Users/apple/hivemind-plugin/skills/registry.yaml`\n- `/Users/apple/hivemind-plugin/.opencode/skills/registry.yaml`\n\n**Return format**:\n```json\n{\n  \"chaining_quality\": {\n    \"commands_with_workflows\": X,\n    \"commands_with_skills\": X,\n    \"commands_with_templates\": X,\n    \"workflows_with_skill_bundles\": X,\n    \"skills_in_registry\": X\n  },\n  \"broken_references\": [\n    {\n      \"source\": \"command/file.md\",\n      \"reference_type\": \"workflow|skill|template\",\n      \"target\": \"referenced/path\",\n      \"exists\": true/false\n    }\n  ],\n  \"registry_status\": {\n    \"exists\": true/false,\n    \"has_bundles\": true/false,\n    \"has_disclosure_levels\": true/false\n  },\n  \"issues\": [\"list of specific chaining issues\"],\n  \"score\": 0-10\n}\n```\n\nDo NOT modify any files. Only audit and report."
+    },
+    {
+      "role": "assistant",
+      "content": "I'll audit the integration/chaining quality between commands, workflows, skills, templates, and references. This is a read-only investigation.\n\nLet me first gather the necessary files to examine:"
+    },
+    {
+      "role": "assistant",
+      "content": "Found 44 commands, 20 workflows, and 3 registry files. Now let me sample and examine the content:"
+    },
+    {
+      "role": "assistant",
+      "content": "Now let me examine the workflows and registry files:"
+    },
+    {
+      "role": "assistant",
+      "content": "Now let me verify if the referenced templates and skills actually exist:"
+    },
+    {
+      "role": "assistant",
+      "content": "Let me also check a few more commands to complete the analysis:"
+    }
+  ]
+}

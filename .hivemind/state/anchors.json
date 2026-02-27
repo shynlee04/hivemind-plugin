@@ -1,0 +1,11 @@
+{
+  "anchors": [
+    {
+      "key": "brownfield-validation-2026-02-27",
+      "value": "{\n  \"date\": \"2026-02-27\",\n  \"verdict\": \"PASS\",\n  \"typescript\": \"PASS (0 errors)\",\n  \"tests\": \"PASS (210/210)\",\n  \"framework_validation\": \"PASS (806 PASS, 0 FAIL, 15 WARN)\",\n  \"init_flow\": \"WORKS (interactive wizard + asset sync)\",\n  \"command_parity\": \"CORRECT (43 commands root/.opencode)\",\n  \"warnings\": \"15 legacy/compat workflows pending v2 migration (non-blocking)\",\n  \"guard_public\": \"BLOCKED (expected - dev-v3 files blocked from master)\"\n}",
+      "created_at": 1772160382522,
+      "session_id": "37732c3e-5549-4bda-88b5-11a2ee61add6"
+    }
+  ],
+  "version": "1.0.0"
+}

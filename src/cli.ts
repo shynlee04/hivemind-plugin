@@ -69,6 +69,8 @@ Options:
   --prune                  Remove mirrored files not present in selected profile
   --strict-parity          Fail when scoped profile parity mismatches remain
   --emit-inventory         Emit per-group inventory in sync output
+  --skip-agent-permission-schema  Skip strict agent permission schema validation
+  --allow-invalid-critical-assets Continue sync even when critical assets are invalid
   --doctor-mode <report|repair>  Doctor mode (default: report)
   --dry-run                Compute doctor actions without writing repair changes
   --hard-reset             Doctor repair with forensic snapshot + canonical manifest rebuild
@@ -275,11 +277,13 @@ async function main(): Promise<void> {
         prune: "prune" in flags,
         strictParity: "strict-parity" in flags,
         emitInventory: "emit-inventory" in flags,
+        validateAgentPermissionSchema: !("skip-agent-permission-schema" in flags),
+        failOnInvalidCriticalAssets: !("allow-invalid-critical-assets" in flags),
         silent: false,
         onLog: (line) => console.log(line),
       })
       console.log(
-        `\n✓ Asset sync complete. Profile: ${result.profile}. Copied: ${result.totalCopied}, Skipped: ${result.totalSkipped}, Invalid: ${result.totalInvalid}, Pruned: ${result.totalPruned}, Parity mismatches: ${result.totalParityMismatches}`
+        `\n✓ Asset sync complete. Profile: ${result.profile}. Copied: ${result.totalCopied}, Skipped: ${result.totalSkipped}, Invalid: ${result.totalInvalid}, Schema invalid: ${result.totalSchemaInvalid}, Pruned: ${result.totalPruned}, Parity mismatches: ${result.totalParityMismatches}`
       )
       if ("emit-inventory" in flags && result.inventory) {
         console.log(JSON.stringify(result.inventory, null, 2))

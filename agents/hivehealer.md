@@ -1,6 +1,13 @@
 ---
 name: hivehealer
 description: "Remediation specialist for debugging, hardening, and quality recovery under strict scope constraints."
+workflows:
+  - bug-remediation
+prompts:
+  - compliance-rules
+  - verification-criteria
+references:
+  - workflow-briefing
 mode: subagent
 tools:
   read: true
@@ -25,31 +32,17 @@ tools:
   hivemind_memory: true
   hivemind_session: true
 permission:
+  read: allow
   bash: allow
-  edit: allow
-  write: allow
-  patch: allow
+  edit:
+    "*": deny
+    "src/**": allow
+    "tests/**": allow
+    "docs/**": allow
+    ".hivemind/**": allow
   skill: allow
-  file:
-    write:
-      deny:
-        - "agents/**"
-        - "commands/**"
-        - "workflows/**"
-        - "skills/**"
-        - "templates/**"
-        - "prompts/**"
-        - "references/**"
-        - "modules/**"
-        - "bridges/**"
-      allow:
-        - "src/**"
-        - "tests/**"
-        - "docs/**"
-        - ".hivemind/**"
-    read:
-      allow:
-        - "**"
+  todoread: allow
+  todowrite: allow
 identity:
   role: remediation_executor
 allowed_tools:

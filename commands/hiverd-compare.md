@@ -11,6 +11,7 @@ required_skills:
 required_templates:
   - templates/analysis-matrix-template.md
 chain_group: hiverd
+group: hiverd
 entry_gate: session_declared
 ---
 

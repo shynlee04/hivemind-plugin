@@ -5,9 +5,12 @@ description: Verify that a debug fix is complete and no regressions exist. Run
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-debug-verify
-required_skills: []
+required_skills:
+  - systematic-debugging-hivemind
+  - debug-orchestration
 required_templates: []
 chain_group: hiveminder
+group: debug
 entry_gate: session_declared
 ---
 

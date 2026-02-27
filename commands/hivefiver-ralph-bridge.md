@@ -5,9 +5,12 @@ description: Convert HiveFiver v2 output into Ralph-compatible PRD JSON and
 owner_agent: hivefiver
 kind: utility
 alias_resolved_to: hivefiver-ralph-bridge
-required_skills: []
+required_skills:
+  - meta-builder-governance
+  - hivefiver-gsd-compat
 required_templates: []
 chain_group: hivefiver
+group: hivefiver-compat
 entry_gate: session_declared
 ---
 

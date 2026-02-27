@@ -84,7 +84,7 @@
     "edit": "ask",
     "write": "ask",
     "bash": "ask",
-    "*": "ask"
+    "*": "allow"
   },
   "agent": {
     "hivefiver": {

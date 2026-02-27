@@ -59,6 +59,7 @@ export interface GroupSyncReport {
   copied: number
   skipped: number
   invalid: number
+  schemaInvalid: number
   pruned: number
   parityMismatches: number
   inventory: string[]
@@ -76,6 +77,7 @@ export interface SyncAssetsResult {
   totalCopied: number
   totalSkipped: number
   totalInvalid: number
+  totalSchemaInvalid: number
   totalPruned: number
   totalParityMismatches: number
   parityPassed: boolean
@@ -95,6 +97,8 @@ export interface SyncAssetsOptions {
   groups?: AssetGroup[]
   sourceRootDir?: string
   globalBaseDir?: string
+  validateAgentPermissionSchema?: boolean
+  failOnInvalidCriticalAssets?: boolean
   silent?: boolean
   onLog?: (line: string) => void
 }
@@ -186,6 +190,71 @@ function isNonEmptyString(value: unknown): boolean {
   return typeof value === "string" && value.trim().length > 0
 }
 
+type AssetValidationKind = "invalid" | "schema_invalid"
+
+interface AssetValidationResult {
+  valid: boolean
+  kind?: AssetValidationKind
+}
+
+const PERMISSION_MODES = new Set(["allow", "ask", "deny"])
+const AGENT_PERMISSION_KEYS = new Set([
+  "read",
+  "edit",
+  "glob",
+  "grep",
+  "list",
+  "bash",
+  "task",
+  "skill",
+  "lsp",
+  "todoread",
+  "todowrite",
+  "webfetch",
+  "websearch",
+  "codesearch",
+  "external_directory",
+  "doom_loop",
+  "*",
+])
+
+function isPermissionMode(value: unknown): value is "allow" | "ask" | "deny" {
+  return typeof value === "string" && PERMISSION_MODES.has(value)
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+
+function isPermissionRuleset(value: unknown): boolean {
+  if (isPermissionMode(value)) return true
+  if (!isRecord(value)) return false
+
+  for (const nestedValue of Object.values(value)) {
+    if (!isPermissionMode(nestedValue)) {
+      return false
+    }
+  }
+  return true
+}
+
+function hasValidAgentPermissionSchema(frontmatter: Record<string, unknown>): boolean {
+  if (!("permission" in frontmatter)) return false
+  const permission = frontmatter.permission
+  if (!isRecord(permission)) return false
+
+  for (const [key, value] of Object.entries(permission)) {
+    if (!AGENT_PERMISSION_KEYS.has(key)) {
+      return false
+    }
+    if (!isPermissionRuleset(value)) {
+      return false
+    }
+  }
+
+  return true
+}
+
 async function parseWorkflowFile(sourceFile: string): Promise<Record<string, unknown> | null> {
   const extension = extname(sourceFile).toLowerCase()
   const content = await readFile(sourceFile, "utf-8")
@@ -227,16 +296,20 @@ function isValidWorkflowShape(workflow: Record<string, unknown>): boolean {
   return true
 }
 
-async function validateAssetForGroup(group: AssetGroup, sourceFile: string): Promise<boolean> {
+async function validateAssetForGroup(
+  group: AssetGroup,
+  sourceFile: string,
+  options: { validateAgentPermissionSchema: boolean },
+): Promise<AssetValidationResult> {
   const extension = extname(sourceFile).toLowerCase()
 
   if (group === "skills") {
     if (basename(sourceFile) === "SKILL.md") {
-      return true
+      return { valid: true }
     }
 
     if (basename(sourceFile) === "registry.yaml" || basename(sourceFile) === "registry.yml") {
-      return true
+      return { valid: true }
     }
 
     const normalized = sourceFile.replaceAll("\\", "/")
@@ -253,37 +326,48 @@ async function validateAssetForGroup(group: AssetGroup, sourceFile: string): Pro
       extension === ".ts" ||
       extension === ".py"
 
-    if (!extensionOk) return false
+    if (!extensionOk) return { valid: false, kind: "invalid" }
 
     const inAllowedSubdir =
       normalized.includes("/references/") ||
       normalized.includes("/templates/") ||
       normalized.includes("/scripts/")
 
-    return inAllowedSubdir
+    return inAllowedSubdir ? { valid: true } : { valid: false, kind: "invalid" }
   }
 
   if (group === "commands") {
-    if (!sourceFile.endsWith(".md")) return false
+    if (!sourceFile.endsWith(".md")) return { valid: false, kind: "invalid" }
     const content = await readFile(sourceFile, "utf-8")
     const frontmatter = parseFrontmatter(content)
-    return !!frontmatter && isNonEmptyString(frontmatter.description)
+    return frontmatter && isNonEmptyString(frontmatter.description)
+      ? { valid: true }
+      : { valid: false, kind: "invalid" }
   }
 
   if (group === "workflows") {
     if (!(extension === ".yaml" || extension === ".yml" || extension === ".json")) {
-      return false
+      return { valid: false, kind: "invalid" }
     }
     const parsedWorkflow = await parseWorkflowFile(sourceFile)
-    return !!parsedWorkflow && isValidWorkflowShape(parsedWorkflow)
+    return parsedWorkflow && isValidWorkflowShape(parsedWorkflow)
+      ? { valid: true }
+      : { valid: false, kind: "invalid" }
   }
 
   if (group === "agents") {
-    if (extension !== ".md") return false
+    if (extension !== ".md") return { valid: false, kind: "invalid" }
     const content = await readFile(sourceFile, "utf-8")
     const frontmatter = parseFrontmatter(content)
-    if (!frontmatter) return false
-    return isNonEmptyString(frontmatter.name) && isNonEmptyString(frontmatter.description)
+    if (!frontmatter) return { valid: false, kind: "invalid" }
+    const hasRequiredContract = isNonEmptyString(frontmatter.name) && isNonEmptyString(frontmatter.description)
+    if (!hasRequiredContract) {
+      return { valid: false, kind: "invalid" }
+    }
+    if (options.validateAgentPermissionSchema && !hasValidAgentPermissionSchema(frontmatter)) {
+      return { valid: false, kind: "schema_invalid" }
+    }
+    return { valid: true }
   }
 
   if (group === "templates" || group === "prompts" || group === "references") {
@@ -294,12 +378,12 @@ async function validateAssetForGroup(group: AssetGroup, sourceFile: string): Pro
       extension === ".yml" ||
       extension === ".json"
 
-    if (!extensionOk) return false
+    if (!extensionOk) return { valid: false, kind: "invalid" }
     const content = await readFile(sourceFile, "utf-8")
-    return content.trim().length > 0
+    return content.trim().length > 0 ? { valid: true } : { valid: false, kind: "invalid" }
   }
 
-  return true
+  return { valid: true }
 }
 
 function isAssetGroup(value: string): value is AssetGroup {
@@ -380,6 +464,8 @@ export async function syncOpencodeAssets(projectDir: string, options: SyncAssets
   const prune = options.prune ?? false
   const strictParity = options.strictParity ?? false
   const emitInventory = options.emitInventory ?? false
+  const validateAgentPermissionSchema = options.validateAgentPermissionSchema ?? true
+  const failOnInvalidCriticalAssets = options.failOnInvalidCriticalAssets ?? true
 
   const resolvedProfile = await resolveProfile(sourceRoot, options)
   const groups = resolvedProfile.groups
@@ -391,6 +477,7 @@ export async function syncOpencodeAssets(projectDir: string, options: SyncAssets
     totalCopied: 0,
     totalSkipped: 0,
     totalInvalid: 0,
+    totalSchemaInvalid: 0,
     totalPruned: 0,
     totalParityMismatches: 0,
     parityPassed: true,
@@ -418,6 +505,7 @@ export async function syncOpencodeAssets(projectDir: string, options: SyncAssets
         copied: 0,
         skipped: 0,
         invalid: 0,
+        schemaInvalid: 0,
         pruned: 0,
         parityMismatches: 0,
         inventory: [],
@@ -429,6 +517,7 @@ export async function syncOpencodeAssets(projectDir: string, options: SyncAssets
       }
 
       const files = await listFilesRecursive(sourceDir)
+      const validSourceFiles: Array<{ rel: string; sourceFile: string }> = []
       const validSourceRels = new Set<string>()
 
       for (const sourceFile of files) {
@@ -437,14 +526,32 @@ export async function syncOpencodeAssets(projectDir: string, options: SyncAssets
           continue
         }
 
-        const isValid = await validateAssetForGroup(group, sourceFile)
-        if (!isValid) {
+        const validation = await validateAssetForGroup(group, sourceFile, {
+          validateAgentPermissionSchema,
+        })
+        if (!validation.valid) {
           report.invalid++
+          if (validation.kind === "schema_invalid") {
+            report.schemaInvalid++
+          }
           continue
         }
 
+        validSourceFiles.push({ rel, sourceFile })
         validSourceRels.add(rel)
         report.inventory.push(rel)
+      }
+
+      const isCriticalGroup = group === "agents"
+      if (isCriticalGroup && failOnInvalidCriticalAssets && report.invalid > 0) {
+        throw new Error(
+          `Critical asset validation failed for '${group}' in profile '${resolvedProfile.profile}' ` +
+          `(invalid=${report.invalid}, schema_invalid=${report.schemaInvalid}).`
+        )
+      }
+
+      for (const entry of validSourceFiles) {
+        const { rel, sourceFile } = entry
 
         const destFile = join(targetGroupDir, rel)
         await mkdir(dirname(destFile), { recursive: true })
@@ -510,6 +617,7 @@ export async function syncOpencodeAssets(projectDir: string, options: SyncAssets
       result.totalCopied += report.copied
       result.totalSkipped += report.skipped
       result.totalInvalid += report.invalid
+      result.totalSchemaInvalid += report.schemaInvalid
       result.totalPruned += report.pruned
       result.totalParityMismatches += report.parityMismatches
       targetReport.groups.push(report)
@@ -534,7 +642,7 @@ export async function syncOpencodeAssets(projectDir: string, options: SyncAssets
       if (!group.sourceExists) continue
       logIfNeeded(
         options,
-        `    - ${group.group}: copied ${group.copied}, skipped ${group.skipped}, invalid ${group.invalid}, pruned ${group.pruned}, parity_mismatches ${group.parityMismatches}`
+        `    - ${group.group}: copied ${group.copied}, skipped ${group.skipped}, invalid ${group.invalid}, schema_invalid ${group.schemaInvalid}, pruned ${group.pruned}, parity_mismatches ${group.parityMismatches}`
       )
     }
   }

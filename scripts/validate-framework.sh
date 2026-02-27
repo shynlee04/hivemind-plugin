@@ -37,6 +37,172 @@ for f in agents/*.md; do
   fi
 done
 
+# R01b: OpenCode permission schema + role boundary policy
+echo "-- R01b: Agent Permission Schema --"
+while IFS='|' read -r level message; do
+  case "$level" in
+    PASS) ok ;;
+    WARN) warn "$message" ;;
+    FAIL) fail "$message" ;;
+  esac
+done < <(node - <<'NODE'
+const fs = require("node:fs");
+const path = require("node:path");
+const yaml = require("yaml");
+
+const root = process.cwd();
+const agentsDir = path.join(root, "agents");
+
+const PERMISSION_MODES = new Set(["allow", "ask", "deny"]);
+const ALLOWED_PERMISSION_KEYS = new Set([
+  "read",
+  "edit",
+  "glob",
+  "grep",
+  "list",
+  "bash",
+  "task",
+  "skill",
+  "lsp",
+  "todoread",
+  "todowrite",
+  "webfetch",
+  "websearch",
+  "codesearch",
+  "external_directory",
+  "doom_loop",
+  "*",
+]);
+const FORBIDDEN_PERMISSION_KEYS = new Set(["command", "file", "write", "patch"]);
+
+const emit = (level, message) => console.log(`${level}|${message}`);
+const isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+const isMode = (value) => typeof value === "string" && PERMISSION_MODES.has(value);
+
+function extractFrontmatter(filePath) {
+  const text = fs.readFileSync(filePath, "utf-8");
+  const match = text.match(/^---\s*\n([\s\S]*?)\n---(?:\s*\n|$)/);
+  if (!match) return { error: "missing frontmatter" };
+  try {
+    return { value: yaml.parse(match[1]) };
+  } catch (error) {
+    return { error: `frontmatter parse error (${error.message})` };
+  }
+}
+
+function validatePermissionSchema(permission) {
+  if (!isRecord(permission)) {
+    return "permission must be an object";
+  }
+
+  for (const [key, value] of Object.entries(permission)) {
+    if (FORBIDDEN_PERMISSION_KEYS.has(key)) {
+      return `forbidden permission key '${key}'`;
+    }
+    if (!ALLOWED_PERMISSION_KEYS.has(key)) {
+      return `unknown permission key '${key}'`;
+    }
+    if (isMode(value)) continue;
+    if (!isRecord(value)) {
+      return `permission '${key}' must be mode or pattern ruleset`;
+    }
+    for (const [pattern, mode] of Object.entries(value)) {
+      if (!isMode(mode)) {
+        return `permission '${key}' pattern '${pattern}' has invalid mode '${String(mode)}'`;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getAllowedEditPatterns(permission) {
+  const edit = permission?.edit;
+  if (!edit) return [];
+  if (typeof edit === "string") {
+    return edit === "allow" ? ["*"] : [];
+  }
+  if (!isRecord(edit)) return [];
+  return Object.entries(edit)
+    .filter(([, mode]) => mode === "allow")
+    .map(([pattern]) => pattern);
+}
+
+function includesPattern(patterns, expected) {
+  return patterns.includes(expected) || patterns.includes("*");
+}
+
+function roleBoundaryViolations(role, editAllows) {
+  const violations = [];
+  const allows = (pattern) => includesPattern(editAllows, pattern);
+
+  if (role === "front_orchestrator") {
+    if (!allows(".hivemind/**")) violations.push("front_orchestrator must allow edit on .hivemind/**");
+    if (!allows("docs/**")) violations.push("front_orchestrator must allow edit on docs/**");
+    if (allows("src/**") || allows("tests/**")) violations.push("front_orchestrator must not allow edit on src/** or tests/**");
+  } else if (role === "meta_builder") {
+    const frameworkSurface = ["agents/**", "commands/**", "workflows/**", "skills/**"];
+    if (!frameworkSurface.some((pattern) => allows(pattern))) {
+      violations.push("meta_builder must allow at least one framework surface (agents/commands/workflows/skills)");
+    }
+    if (allows("src/**") || allows("tests/**")) violations.push("meta_builder must not allow edit on src/** or tests/**");
+  } else if (role === "executor" || role === "remediation_executor") {
+    if (!allows("src/**")) violations.push(`${role} must allow edit on src/**`);
+    if (!allows("tests/**")) violations.push(`${role} must allow edit on tests/**`);
+    const forbidden = ["agents/**", "commands/**", "workflows/**", "skills/**"];
+    if (forbidden.some((pattern) => allows(pattern))) {
+      violations.push(`${role} must not allow edit on framework definition surfaces`);
+    }
+  } else if (role === "planner" || role === "verifier" || role === "research_executor") {
+    if (allows("src/**") || allows("tests/**")) {
+      violations.push(`${role} must not allow edit on src/** or tests/**`);
+    }
+  } else if (role === "investigator") {
+    if (!allows(".hivemind/**")) violations.push("investigator must allow edit on .hivemind/**");
+    if (allows("src/**") || allows("tests/**")) {
+      violations.push("investigator must not allow edit on src/** or tests/**");
+    }
+  }
+
+  return violations;
+}
+
+for (const entry of fs.readdirSync(agentsDir).sort()) {
+  if (!entry.endsWith(".md")) continue;
+  const rel = `agents/${entry}`;
+  const parsed = extractFrontmatter(path.join(agentsDir, entry));
+  if (parsed.error) {
+    emit("FAIL", `R01b ${rel}: ${parsed.error}`);
+    continue;
+  }
+
+  const fm = parsed.value;
+  const permissionError = validatePermissionSchema(fm.permission);
+  if (permissionError) {
+    emit("FAIL", `R01b ${rel}: ${permissionError}`);
+    continue;
+  }
+  emit("PASS", `R01b ${rel}: permission schema valid`);
+
+  const role = fm?.identity?.role;
+  if (typeof role !== "string" || role.length === 0) {
+    emit("FAIL", `R01b ${rel}: missing identity.role`);
+    continue;
+  }
+
+  const editAllows = getAllowedEditPatterns(fm.permission);
+  const boundaryViolations = roleBoundaryViolations(role, editAllows);
+  if (boundaryViolations.length === 0) {
+    emit("PASS", `R01b ${rel}: role boundary policy valid`);
+  } else {
+    for (const violation of boundaryViolations) {
+      emit("FAIL", `R01b ${rel}: ${violation}`);
+    }
+  }
+}
+NODE
+)
+
 # R02: Skill structure
 echo "-- R02: Skill Structure --"
 for d in skills/*/; do

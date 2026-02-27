@@ -6,9 +6,12 @@ description: Trigger a debug orchestration session. Use this when LSP errors,
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-debug-trigger
-required_skills: []
+required_skills:
+  - systematic-debugging-hivemind
+  - debug-orchestration
 required_templates: []
 chain_group: hiveminder
+group: debug
 entry_gate: session_declared
 ---
 

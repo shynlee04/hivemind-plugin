@@ -1,0 +1,50 @@
+{
+  "version": "1.0.0",
+  "tasks": [
+    {
+      "id": "5a73320a-43cc-43b7-9006-49fd216e517b",
+      "parent_phase_id": "85b9d5bc-420b-40a5-9372-ad12594bccc0",
+      "title": "Run HiveFiver startup realignment and lane detection",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T01:48:27.077Z",
+      "updated_at": "2026-02-27T01:48:27.077Z"
+    },
+    {
+      "id": "b275ead5-8110-405d-b013-d4c2b743d828",
+      "parent_phase_id": "85b9d5bc-420b-40a5-9372-ad12594bccc0",
+      "title": "Build intake baseline and generate first executable specification",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T01:48:27.077Z",
+      "updated_at": "2026-02-27T01:48:27.077Z"
+    },
+    {
+      "id": "b156f9aa-2e1e-4bab-ae5a-025b9a00ccb1",
+      "parent_phase_id": "85b9d5bc-420b-40a5-9372-ad12594bccc0",
+      "title": "Audit and configure non-negotiable MCP providers",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T01:48:27.077Z",
+      "updated_at": "2026-02-27T01:48:27.077Z"
+    },
+    {
+      "id": "7707c93e-7bf5-4cf5-bf74-a2088015a702",
+      "parent_phase_id": "85b9d5bc-420b-40a5-9372-ad12594bccc0",
+      "title": "Prepare TODO-to-Ralph export mapping and validation",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T01:48:27.077Z",
+      "updated_at": "2026-02-27T01:48:27.077Z"
+    },
+    {
+      "id": "f48369dc-9053-446b-bd8f-d95e70feba03",
+      "parent_phase_id": "7525ad8b-f2dc-4489-b1db-65d504bd5c4b",
+      "title": "Brownfield validation analysis - comparing root vs .opencode parity, identifying missing commands and structural gaps",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-27T02:44:09.673Z",
+      "updated_at": "2026-02-27T02:44:09.673Z"
+    }
+  ]
+}

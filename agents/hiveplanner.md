@@ -1,6 +1,12 @@
 ---
 name: hiveplanner
 description: "Planning specialist for phase/task design, sequencing, and handoff artifacts."
+workflows:
+  - spec-generation
+prompts:
+  - compliance-rules
+references:
+  - workflow-briefing
 mode: subagent
 tools:
   read: true
@@ -24,22 +30,16 @@ tools:
   hivemind_memory: true
   hivemind_session: true
 permission:
-  command: allow
+  read: allow
   skill: allow
-  edit: allow
-  write: allow
-  file:
-    write:
-      deny:
-        - "src/**"
-        - "tests/**"
-      allow:
-        - "docs/**"
-        - ".planning/**"
-        - ".hivemind/**"
-    read:
-      allow:
-        - "**"
+  bash: allow
+  edit:
+    "*": deny
+    "docs/**": allow
+    ".planning/**": allow
+    ".hivemind/**": allow
+  todoread: allow
+  todowrite: allow
 identity:
   role: planner
 allowed_tools:

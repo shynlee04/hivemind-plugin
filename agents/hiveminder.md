@@ -1,6 +1,19 @@
 ---
 name: hiveminder
 description: "Front orchestrator for Hive operations. Coordinates delegation and governance only; no direct implementation."
+tasks:
+  hivemaker: allow
+  hivehealer: allow
+  hivexplorer: allow
+  hiveq: allow
+  hiverd: allow
+  hiveplanner: allow
+workflows:
+  - sequential-delegation-workflow
+  - feature-sprint
+  - bug-remediation
+prompts:
+  - compliance-rules
 mode: primary
 tools:
   read: true
@@ -25,29 +38,23 @@ tools:
   hivemind_memory: true
   hivemind_session: true
 permission:
-  command: allow
-  task: allow
+  read: allow
+  edit:
+    "*": deny
+    ".hivemind/**": allow
+    "docs/**": allow
+  task:
+    "*": deny
+    "hivemaker": allow
+    "hivehealer": allow
+    "hivexplorer": allow
+    "hiveq": allow
+    "hiverd": allow
   skill: allow
-  file:
-    write:
-      deny:
-        - "src/**"
-        - "tests/**"
-        - "agents/**"
-        - "commands/**"
-        - "workflows/**"
-        - "skills/**"
-        - "templates/**"
-        - "prompts/**"
-        - "references/**"
-        - "modules/**"
-        - "bridges/**"
-      allow:
-        - ".hivemind/**"
-        - "docs/**"
-    read:
-      allow:
-        - "**"
+  todoread: allow
+  todowrite: allow
+  webfetch: allow
+  websearch: allow
 identity:
   role: front_orchestrator
 allowed_tools:
