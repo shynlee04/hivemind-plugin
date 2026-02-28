@@ -436,8 +436,6 @@ function applyProfilePreset(
         require_code_review: options.requireCodeReview ?? preset.require_code_review,
         enforce_tdd: options.enforceTdd ?? preset.enforce_tdd,
         max_response_tokens: 2000,
-        explain_reasoning: true,
-        be_skeptical: preset.output_style === "skeptical",
       },
     },
     profile: profileKey,
@@ -778,8 +776,6 @@ export async function initProject(
         require_code_review: isCoachAutomation(automationLevel) ? true : (options.requireCodeReview ?? false),
         enforce_tdd: options.enforceTdd ?? false,
         max_response_tokens: 2000,
-        explain_reasoning: true,
-        be_skeptical: isCoachAutomation(automationLevel) ? true : (outputStyle === "skeptical"),
       },
     },
   })

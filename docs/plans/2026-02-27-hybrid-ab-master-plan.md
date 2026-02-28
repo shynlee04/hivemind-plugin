@@ -1,419 +1,644 @@
-# HYBRID-A+B Master Plan: Command Chaining + SOT Planning Layer
+# HYBRID-A+B Master Plan: Stabilize Context First, Then Extend Capability
 
 > **Date**: 2026-02-27
-> **Direction**: Hybrid A+B (User-confirmed)
+> **Last Updated**: 2026-02-28
+> **Direction**: Hybrid A+B (User-confirmed, pivoted)
 > **Output Style**: Architecture/Planning
-> **Version**: 2.8.5 → 2.9.0 target
+> **Version**: v2.1
 > **Branch**: v-2.9-harness-dev
-> **Baseline**: 210/210 tests, 0 tsc errors, 1363 PASS / 0 FAIL / 0 WARN framework validation
+> **Baseline**: 215+ tests passing, `npx tsc --noEmit` clean, framework validator 1386+ PASS / 0 FAIL
 
 ---
 
-## Executive Summary
+## 1. Header Block
 
-This plan interleaves two parallel tracks across 6 waves:
+### Plan Identity
 
-- **Track A** (Command→Workflow Chaining): Wire 32 unchained commands with `execution_context`, `required_templates`, and `required_references/prompts`. Create missing workflow YAMLs and templates. This directly addresses THE-ZERO-EVENT's #1 priority.
-- **Track B** (SOT Planning Layer): Build `.hivemind/project/planning/` GSD-style hierarchy, implement auto-session mechanism, and connect context lifecycle memory classification. This addresses SYSTEM-DIRECTIVES §1-§4.
+- Plan file: `docs/plans/2026-02-27-hybrid-ab-master-plan.md`
+- Scope: Strategic execution map for post-Wave refactor alignment
+- Planning model: Hybrid A+B with stabilize-first governance
+- Priority model: 3-RANK problem hierarchy (RANK 1 → RANK 3)
+- Execution model: Iterative traversal (not linear wave march)
 
-Tracks converge at **Wave 3** where commands route INTO the planning layer, completing the full chain: `command → workflow → skill → agent → planning artifact`.
+### Baseline Evidence Snapshot
+
+- Test baseline: 215/215 passing in the last deterministic health run (Evidence: anchor `wave-1-completion`, anchor `health-report-2026-02-27`)
+- TypeScript baseline: 0 errors in the latest validated gate (Evidence: anchor `wave-1-completion`)
+- Framework validator baseline: 1386 PASS / 0 FAIL / 8 WARN after Wave 1 completion (Evidence: anchor `wave-1-completion`)
+- Current trajectory and tactic are active with drift score 70 (Evidence: `hivemind_inspect scan`, 2026-02-28)
+
+### Why This Revision Exists
+
+- The previous v2.0 plan encoded a linear execution model that no longer reflects project reality.
+- Wave 1 completed, and previously planned Wave 2A/2B command chaining work is already achieved.
+- Investigation surfaced context injection/transformation poisoning as systemic blocker #1.
+- This revision locks priority to problem severity, not historical sequence.
 
 ---
 
-## Current State (Evidence-Based)
+## 2. Executive Summary
+
+The project remains on **HYBRID-A+B** direction, but the execution posture has shifted from **linear delivery** to **stabilize-first remediation**.
+
+Track A (command/workflow wiring) and Track B (planning/memory lifecycle) are still the correct architecture, but observed behavior shows that context delivery into the model is currently noisy, duplicated, and partially contradictory. That noise now dominates failure modes across command routing, planning persistence, and memory coherence.
+
+Therefore, this plan prioritizes a **3-RANK problem hierarchy**:
+
+1. RANK 1: Context Injection & Transformation Poisoning
+2. RANK 2: Tools Routing + Mechanism Design Chain Reactions
+3. RANK 3: In-Session Memory Not Auto-Parsed to Knowledge-Base
+
+### Strategic Pivot Statement
+
+- Old strategy: complete waves in numerical order.
+- New strategy: complete remediation in rank order and only then continue capability expansion.
+- Consequence: Wave identifiers are preserved for traceability, but sequencing is dependency-driven.
+
+### Pivot Evidence
+
+- Two independent context channels are active with no cross-channel dedup (Evidence: `src/hooks/session-lifecycle.ts:137-155`, `src/hooks/messages-transform.ts:530-544`)
+- Checklist reminders are emitted in both channels (Evidence: `src/hooks/session-lifecycle.ts:66-70`, `src/hooks/messages-transform.ts:79-89`)
+- Auto-realign menu injection can fire each commandless turn without strict gating (Evidence: `src/hooks/messages-transform.ts:530-533`, `src/hooks/messages-transform.ts:101-112`)
+- Context compiler emits multi-section XML payload and checklist digest into synthetic context (Evidence: `src/lib/cognitive-packer.ts:391-560`)
+
+---
+
+## 3. 3-RANK Problem Hierarchy
+
+This section replaces the previous "5 Validated Gaps" model.
+
+### RANK 1: Context Injection & Transformation Poisoning (CRITICAL, #1 pain)
+
+#### Definition
+
+RANK 1 covers all context injections/transformations that overlap, conflict, or fail deterministic alignment with planning SOT in `SYSTEM-DIRECTIVES.md`.
+
+#### Where It Occurs
+
+- Session start (manual and post-compact automation)
+- Main and sub sessions
+- Mid-session, before and after turns
+- Tool event listeners with legacy mutation paths
+- Downstream session replay where polluted context recurs
+
+#### Evidence Summary
+
+- Two independent channels inject content into model context with no cross-channel dedup.
+  - System channel: lifecycle compiler (Evidence: `src/hooks/session-lifecycle.ts:129-155`)
+  - User-message channel: transform pipeline (Evidence: `src/hooks/messages-transform.ts:530-544`)
+- P0 duplication: checklist contracts emitted by both channels.
+  - System-side reminder (Evidence: `src/hooks/session-lifecycle.ts:66-70`)
+  - Message-side reminder (Evidence: `src/hooks/messages-transform.ts:79-89`)
+- P0 pollution indicators are still present in runtime output contracts.
+  - Task block every turn (Evidence: `src/hooks/session-lifecycle.ts:203-210`, included in assembled lines at `src/hooks/session-lifecycle.ts:147-149`)
+  - Ignored cycle counter surfaced as non-actionable noise (Evidence: generated status lines from governance signals path `src/hooks/session-lifecycle.ts:129-151` and observed runtime output)
+  - Tool hints and forced menus injected in commandless conditions (Evidence: `src/hooks/messages-transform.ts:91-113`, `src/hooks/messages-transform.ts:530-533`)
+- Injection footprint remains large.
+  - 25 injection points in `session-lifecycle.ts` (Evidence: 3-agent trace artifact, research cache 2026-02-28)
+  - 7 injection points in `messages-transform.ts` (Evidence: 3-agent trace artifact, research cache 2026-02-28)
+  - 7 compiled sections in `cognitive-packer.ts` payload shape (Evidence: `src/lib/cognitive-packer.ts:391-560`, trace classification 2026-02-28)
+- Token footprint is above target.
+  - Steady state: 1700-6300 tokens/turn
+  - First turn: 4000-8000 tokens/turn
+  - Evidence source: 3-agent trace synthesis, session `research_cache` (2026-02-28)
+
+#### Why It Is Rank 1
+
+- This issue contaminates all later decisions and amplifies drift regardless of downstream correctness.
+- It is upstream of planning materialization, routing fidelity, and memory retrieval quality.
+- Stabilizing this layer is prerequisite for meaningful progress on RANK 2 and RANK 3.
+
+---
+
+### RANK 2: Tools Routing + Mechanism Design Chain Reactions (HIGH)
+
+#### Definition
+
+RANK 2 covers how framework commands/workflows/agents/scripts interact with libs/hooks/schemas to create uncontrolled write/read loops into `.hivemind/`.
+
+#### Observed Pattern
+
+- Tool and workflow actions trigger agent output.
+- Agent output can be exported into `.hivemind/` with weak structural guards.
+- Exported data can become stale/orphaned/zombie JSON.
+- Later retrieval can re-inject low-quality artifacts into context.
+
+#### Evidence Summary
+
+- Event consumer bridge files were implemented but unwired, proving mechanism intent exists but integration safety is incomplete (Evidence: anchor `wave-alpha-complete-2026-02-28`)
+- Halt findings explicitly identified dead code and phantom mutation paths in event consumers (Evidence: anchor `wave-2c-halt-findings-2026-02-28`)
+- Naming overlap between framework tools and MCP tools still increases operational confusion during command routing (Evidence: operational audit notes in anchor `audit-2026-02-28`)
+- Context compiler checklist includes mems presence checks and can fail on missing mem graphs, demonstrating fragile runtime assumptions (Evidence: `src/lib/cognitive-packer.ts:123-153`)
+
+#### Why It Is Rank 2
+
+- These chain reactions directly feed RANK 1 pollution when exported artifacts are malformed/noisy.
+- Deterministic export contracts are currently insufficiently enforced at every emission site.
+- Tool naming and route ambiguity produce governance/operator mistakes under pressure.
+
+---
+
+### RANK 3: In-Session Memory Not Auto-Parsed to Knowledge-Base (MEDIUM)
+
+#### Definition
+
+RANK 3 covers missing lifecycle automation that should transform session artifacts into durable, retrievable knowledge while work remains unresolved.
+
+#### Evidence Summary
+
+- SYSTEM-DIRECTIVES §3A auto-new-session mechanism remains unbuilt and is explicitly marked as the #1 missing mechanism by user correction (Evidence: anchor `user-correction-2026-02-28`)
+- Planning directory and schemas exist, but auto-materialization is not wired end-to-end into lifecycle closure (Evidence: completed Wave 1B plus current state score table in this plan)
+- Multiple sessions repeated similar delegation cycles without durable memory consolidation (Evidence: session timeline and pending-node density from `hivemind_inspect scan`)
+- Checklist reminders still flag missing memory/entity artifacts depending on session state, indicating lifecycle completion is not deterministic (Evidence: `src/hooks/messages-transform.ts:573-585`, `src/lib/cognitive-packer.ts:135`)
+
+#### Why It Is Rank 3
+
+- This is a high-leverage stability feature but depends on clean RANK 1 channels and controlled RANK 2 exports.
+- Implementing it before RANK 1 cleanup risks persisting contaminated artifacts at scale.
+
+---
+
+## 4. Completed Work
+
+This section replaces old wave descriptions that are already closed.
+
+### ✅ Completed Deliverables
+
+- ✅ **Wave 1A**: 12/12 router commands now include `required_references` and `required_prompts`; validator upgraded accordingly.
+  - Evidence: anchor `wave-1-completion`.
+- ✅ **Wave 1B**: `.hivemind/project/planning/` bootstrapped with schemas, tests, and init wiring.
+  - Evidence: anchor `wave-1-completion`.
+- ✅ **Smart Merge Sync**: `src/cli/sync-assets.ts` preserves user-owned OpenCode frontmatter during sync.
+  - Evidence: anchor `smart-merge-sync`.
+- ✅ **Framework Auditor Skill Pack**: 10 files, 2811 lines; includes structural and anti-pattern detectors.
+  - Evidence: anchor `framework-auditor-complete`.
+- ✅ **Wave 2-P0 Audit Blockers**: S-01, D-07, D-12 remediated; `hivefiver` mode set primary→all where required.
+  - Evidence: anchor `audit-2026-02-28` and subsequent remediation notes.
+- ✅ **Wave α libraries complete (code quality)**:
+  - `src/lib/session-intent-classifier.ts`
+  - `src/lib/planning-materializer.ts`
+  - `src/lib/event-consumers.ts`
+  - Evidence: anchor `wave-alpha-complete-2026-02-28`.
+- ✅ **Config recon complete**: 25 config fields traced; dead paths removed (`generateAgentBehaviorPrompt`, `explain_reasoning`, `be_skeptical`).
+  - Evidence: anchor `wave-alpha-complete-2026-02-28` and config remediation logs.
+- ✅ **Context injection 3-agent trace complete**: full pipeline from lifecycle → packer → transform classified.
+  - Evidence: active tactic and action logs from `hivemind_inspect scan`, trace artifacts dated 2026-02-28.
+- ✅ **Gate evidence at closeout**: 1386 PASS / 0 FAIL / 8 WARN, 215/215 tests, 0 TypeScript errors.
+  - Evidence: anchor `wave-1-completion`.
+
+### ❌ OBSOLETE / CANCELLED WORK ITEMS
+
+- ❌ OBSOLETE: Wave 2A "bulk command chaining" as initially defined (already reached 100% chaining).
+- ❌ OBSOLETE: Wave 2B "hiveminder command wiring" as an isolated dedicated wave (already achieved by prior remediation).
+- ❌ OBSOLETE: Any plan segment assuming command→asset chaining remained at 27% (superseded by current state).
+
+### Closed vs Open Clarifier
+
+- Closed means implemented and verified within historical scope.
+- Open means either unwired, partially integrated, or strategically deferred due to RANK ordering.
+- Wave α is closed for implementation correctness but open for integration wiring.
+
+---
+
+## 5. Current State Assessment
 
 | Domain | Score | Evidence |
 |--------|-------|----------|
-| Source Code | 10/10 | 210/210 tests, 0 tsc errors, 139 TS files |
-| Framework Validator | 10/10 | 1363 PASS / 0 FAIL / 0 WARN |
-| Agents | 9/10 | 8/8 hardened, mode/tools/permissions proper |
-| Skills Registry | 9/10 | 33 skills, 7 bundles, L0-L3, registry.yaml SOT |
-| Workflows | 9/10 | 20/20 v2 compliant with skill_bundles |
-| Profiles | 10/10 | 4/4 manifests (core/balanced/full/legacy-compat) |
-| Init Flow | 9/10 | Brownfield-validated, wizard functional |
-| Command→Asset Chaining | 3/10 | 27% workflow-chained, 0% reference/prompt-chained |
-| SOT Planning Layer | 0/10 | `.hivemind/project/planning/` MISSING |
-| Code Intelligence | 1/10 | codemap+codewiki manifests EMPTY |
-| Progressive Disclosure | 0/10 | Wave D not started — no runtime loader |
-| Observability | 0/10 | Wave E not started — no chain traces |
+| Source Code | 10/10 | 215+ tests passing, 0 tsc errors (anchor `wave-1-completion`) |
+| Framework Validator | 10/10 | 1386+ PASS / 0 FAIL (anchor `wave-1-completion`) |
+| Command→Asset Chaining | 10/10 | 100% workflow-chained (was 27%) (anchor `wave-1-completion`, Wave 2A recon notes) |
+| Agents | 9/10 | 8/8 hardened; P0 structural blockers fixed (anchor `audit-2026-02-28`) |
+| Skills Registry | 9/10 | 33 skills active and cataloged (project inventory) |
+| Workflows | 9/10 | 20/20 v2 compliant base workflows (project inventory) |
+| Context Injection Health | 3/10 | 2 independent channels, no cross-channel dedup, P0 noise patterns (see Section 3 evidence) |
+| SOT Planning Layer | 2/10 | Directory + schemas exist, but no deterministic auto-materialization loop |
+| Auto-Session Mechanism | 0/10 | SYSTEM-DIRECTIVES §3A unbuilt (anchor `user-correction-2026-02-28`) |
+| Memory Lifecycle | 1/10 | Tools exist but no auto-parse to durable knowledge-base |
+| Progressive Disclosure | 0/10 | Runtime loader not implemented |
+| Code Intelligence | 1/10 | `codemap`/`codewiki` manifests remain functionally empty |
+
+### Assessment Notes
+
+- Core code quality is strong; orchestration quality is mixed.
+- Stability risk is concentrated in context delivery and memory lifecycle, not in compile/test health.
+- Next-value work must optimize signal quality before adding feature volume.
 
 ---
 
-## 5 Validated Gaps
+## 6. Execution Waves (Sector-2 First Lock)
 
-### GAP-1: Command Chaining Is Broken (CRITICAL)
-- 32/44 commands (73%) have no `execution_context` workflow routing
-- 0/44 commands reference `prompts/` or `references/` directories
-- HiveFiver module (18 commands) has ZERO workflow chaining
-- Wired pattern: `kind: router` + `execution_context: workflows/*.yaml` + `required_templates: [...]`
+Waves are now ordered by the 3-RANK hierarchy and stability dependencies.
 
-### GAP-2: SOT Planning Layer Doesn't Exist (CRITICAL)
-- `.hivemind/project/planning/` directory does not exist
-- GSD-style hierarchy (PROJECT.md, REQUIREMENTS.md, ROADMAP.md, STATE.md, phases/) unbuilt
-- "Auto-parsed-into mechanism" described in SYSTEM-DIRECTIVES as "game-changing-and-measurable-factor" is unbuilt
+### Locked Phase Order
 
-### GAP-3: Progressive Disclosure Loader (HIGH)
-- Plan v2 Wave D: bundle-scoped, disclosure-level-controlled loading — none exists in runtime
-- Skills load all-or-nothing via skill tool
-- No per-knot token budgets
+`S2-01 -> S2-02 -> S2-03 -> S2-MIL -> S1-01 -> S1-02 -> S1-03`
 
-### GAP-4: Code Intelligence Is Hollow (MEDIUM)
-- Codemap: `nodes: []`
-- Codewiki: `articles: []`
-- Three SOT pillars (Codewiki, Codemap, Code-Intel) structurally present but functionally empty
+### Phase Gate Status
 
-### GAP-5: Auto-Session + Context Lifecycle (MEDIUM)
-- No mechanism to auto-classify session events
-- No auto-routing of new sessions
-- No auto-purge of temporary context
-- No project-scoped persistent STATE.md equivalent
+| Phase ID | Mapped Wave | Status | Hard Block |
+|----------|-------------|--------|------------|
+| S2-01 | Wave β | active_entry | none |
+| S2-02 | Wave γ | blocked_by_S2-01 | S2-01 closeout |
+| S2-03 | Wave δ | blocked_by_S2-01_S2-02 | S2-01 + S2-02 closeout |
+| S2-MIL | (milestone) | blocked_by_S2-01_S2-02_S2-03 | all S2 transition guards + reality validation |
+| S1-01 | Wave ε | BLOCKED_by_S2-MIL | S2-MIL hard unlock |
+| S1-02 | Wave ζ | BLOCKED_by_S2-MIL | S2-MIL hard unlock |
+| S1-03 | Post-ζ Sector-1 implementation tranche | BLOCKED_by_S2-MIL | S2-MIL hard unlock |
+
+- `S2-MIL` is a hard unlock milestone. Sector-1 implementation cannot start or close before `S2-MIL = PASS`.
+
+### Wave β: Context Injection Remediation (RANK 1, highest priority)
+
+#### Objective
+
+Eliminate duplication and pollution across context channels, then wire Wave α only after injection paths are safe.
+
+#### Work Packages
+
+| Knot | Task | Primary Surfaces | Notes |
+|------|------|------------------|-------|
+| β.1 | Remove P0 duplications (checklist duplication, deprecated SL-06 behavior, duplicate confirmation contract) | `src/hooks/session-lifecycle.ts`, `src/hooks/messages-transform.ts` | Must preserve essential governance semantics |
+| β.2 | Remove P0 pollution (SL-11 task block every turn, SL-14 ignored counter spam, SL-19 tool hint noise) | `src/hooks/session-lifecycle.ts`, helper generators | Remove only noisy, non-actionable signals |
+| β.3 | Conditionalize MT-03 auto-realign | `src/hooks/messages-transform.ts` | Fire only when commandless + intent confidence threshold fails |
+| β.4 | Wire Wave α libs into safe insertion points | `src/lib/event-consumers.ts`, `src/hooks/event-handler.ts`, `src/lib/session-engine.ts`, index exports | Respect existing ownership boundaries |
+| β.5 | Add cross-channel dedup between lifecycle and transform channels | `src/hooks/session-lifecycle.ts`, `src/hooks/messages-transform.ts`, shared utility | Marker-based dedup preferred over order coupling |
+| β.6 | Verify with isolated tests + typecheck | `tests/*`, `npm test`, `npx tsc --noEmit` | Include regression tests for each removed signal |
+
+#### Acceptance Criteria
+
+- Steady-state injection volume < 1200 tokens/turn.
+- Zero P0 duplications across channels.
+- Zero P0 pollution signals in default path.
+- Wave α integration paths active with deterministic ownership and no phantom mutations.
+
+#### Verification Gate
+
+- Required: `npx tsc --noEmit`
+- Required: `npm test`
+- Required: targeted tests for lifecycle + transform + event consumer paths
+- Required: side-by-side prompt transcript diff proving reduced token payload and zero duplicated contracts
 
 ---
 
-## Architecture: Schema Contracts
+### Wave γ: Tools & Mechanism Hygiene (RANK 2)
 
-### Command Wired Pattern (Target)
+#### Objective
 
-```yaml
-# REQUIRED for all commands post-refactoring
-name: <command-name>
-description: <description>
-owner_agent: <agent>
-kind: router                              # NOT alias/utility
-execution_context: workflows/<name>.yaml  # REQUIRED: workflow routing
-required_skills:
-  - <skill-1>
-  - <skill-2>
-required_templates:
-  - templates/<template>.md
-required_references:                      # NEW FIELD
-  - references/<reference>.md
-required_prompts:                         # NEW FIELD  
-  - prompts/<prompt>.md
-chain_group: <group>
-group: <group>
-entry_gate: session_declared
+Stop chain reactions that produce malformed or zombie `.hivemind/` artifacts and re-poison context.
+
+#### Work Packages
+
+| Knot | Task | Primary Surfaces | Notes |
+|------|------|------------------|-------|
+| γ.1 | Audit event listeners for unintended context injection triggers | `src/hooks/*`, `src/lib/*` listener paths | Trace every enqueue/dequeue path |
+| γ.2 | Audit `.hivemind/` JSON for zombie/orphan patterns | `.hivemind/state`, `.hivemind/graph`, `.hivemind/memory` | Build repeatable validator script/report |
+| γ.3 | Resolve framework-tool vs MCP-tool naming conflicts | command metadata, docs references, routing helpers | Keep backward compatibility aliases when needed |
+| γ.4 | Add deterministic export contracts before any write to `.hivemind/` | tool write paths + schemas | Block writes that fail schema validation |
+| γ.5 | Verify with full suite | `npm test`, `npx tsc --noEmit`, validator scripts | Include migration-safe checks |
+
+#### Acceptance Criteria
+
+- Zero unintended writes into `.hivemind/` during normal command flow.
+- All export writes validated against schema before persistence.
+- Tool naming ambiguity reduced to documented alias set.
+
+#### Verification Gate
+
+- Required: `npx tsc --noEmit`
+- Required: `npm test`
+- Required: deterministic write-audit report attached to wave closeout
+
+---
+
+### Wave δ: Auto-Session + Memory Lifecycle (RANK 3 + SYSTEM-DIRECTIVES §3A/§4)
+
+#### Objective
+
+Implement lifecycle automation so unresolved context remains retrievable and session continuity survives disruption.
+
+#### Work Packages
+
+| Knot | Task | Primary Surfaces | Notes |
+|------|------|------------------|-------|
+| δ.1 | Implement auto-new-session mechanism (SYSTEM-DIRECTIVES §3A) | session boundary + lifecycle tools | Start classifier-first, then full orchestration |
+| δ.2 | Implement memory auto-classification (`temporary -> consolidated -> purged`) | session memory services + persistence | Preserve audit trail for purge operations |
+| δ.3 | Implement session-related memory sorting (`discovery/research/planning/implementing/debug/test`) | memory classifiers + schemas | Add deterministic category mapping |
+| δ.4 | Wire planning-materializer into `compact_session` for auto `STATE.md` persistence | `src/lib/planning-materializer.ts`, session tool | Must not duplicate write ownership |
+| δ.5 | Implement TODO-Pending routing for off-track intentions (§4C) | transform/lifecycle + session memory | Keep off-track intents out of inline execution |
+| δ.6 | Verify with isolated tests + typecheck | tests + TS gate | Cover re-entry and interruption cases |
+
+#### Acceptance Criteria
+
+- New sessions auto-classified with deterministic lane assignment.
+- Memory artifacts auto-parsed into durable categories.
+- `STATE.md` persists and updates across compaction/session boundaries.
+- TODO-Pending behavior is visible, queryable, and non-disruptive.
+
+#### Verification Gate
+
+- Required: `npx tsc --noEmit`
+- Required: `npm test`
+- Required: lifecycle replay scenario proving continuity after disruption
+
+---
+
+### Wave ε / S1-01: Progressive Disclosure (unchanged scope, postponed, BLOCKED by S2-MIL)
+
+#### Objective
+
+Add disclosure-controlled loading and token budgeting after context pipeline is stable.
+
+#### Work Packages
+
+| Knot | Task | Primary Surfaces | Notes |
+|------|------|------------------|-------|
+| ε.1 | Build `skill-loader.ts` local-first resolver (bundle + disclosure + token budget) | `src/lib/skill-loader.ts` | Must support L0 default path |
+| ε.2 | Implement L0 bootstrap-minimal loading | hook integration points | Governance core only on initial turn |
+| ε.3 | Implement L1-L3 escalation | loader + routing context | Escalate by trigger, not by default |
+| ε.4 | Enforce token budgets | loader budget controls + tests | Hard fail/soft degrade policy explicit |
+
+#### Acceptance Criteria
+
+- Skill loading obeys L0-L3 disclosure levels.
+- Token budgets enforced and visible in diagnostics.
+- No regression in baseline governance prompts.
+
+#### Verification Gate
+
+- Required: `npx tsc --noEmit`
+- Required: `npm test`
+- Required: disclosure-level simulation tests
+
+---
+
+### Wave ζ / S1-02: Code Intelligence + Observability (merged from old Waves 5+6, BLOCKED by S2-MIL)
+
+#### Objective
+
+Operationalize codemap/codewiki plus traceability for route chains and poisoning signatures.
+
+#### Work Packages
+
+| Knot | Task | Primary Surfaces | Notes |
+|------|------|------------------|-------|
+| ζ.1 | Populate codemap auto-scan | code intel tools + manifests | Ensure deterministic generation |
+| ζ.2 | Populate codewiki auto-generation | code intel tools + manifests | Structured article inventory required |
+| ζ.3 | Add command→workflow→skill chain trace logging | tracing lib/tool hooks | Include session and task IDs |
+| ζ.4 | Add context-poisoning failure signatures | observability diagnostics | Capture duplicate/pollution patterns |
+
+#### Acceptance Criteria
+
+- Codemap and codewiki manifests are populated and refreshable.
+- Chain traces are queryable and linked to session/task IDs.
+- Poisoning signatures are detected and surfaced in diagnostics.
+
+#### Verification Gate
+
+- Required: `npx tsc --noEmit`
+- Required: `npm test`
+- Required: observability report proving trace coverage and signature detection
+
+---
+
+### S1-03: Sector-1 Implementation Expansion (BLOCKED by S2-MIL)
+
+#### Objective
+
+Execute remaining Sector-1 implementation phases only after Sector-2 reaches Robust/Safe milestone status.
+
+#### Entry Gate
+
+- Required: `S2-MIL = PASS`
+- Required: transition guards satisfied at all S2 boundaries
+- Required: reality-validation artifact set attached to S2 closeout
+
+---
+
+## 7. Dependency Graph
+
+```text
+[COMPLETED] Wave 1 -> Wave α -> Phase 0
+                           |
+                           v
+                        S2-01 (Wave β) -> S2-02 (Wave γ) -> S2-03 (Wave δ) -> S2-MIL [HARD UNLOCK]
+                                                                                  |
+                                                                                  +-- if PASS --> S1-01 (Wave ε) -> S1-02 (Wave ζ) -> S1-03
+                                                                                  |
+                                                                                  +-- if FAIL --> all Sector-1 phases remain BLOCKED
 ```
 
-### Workflow v2 Contract (Two Tiers)
+### Dependency Rules
 
-**Tier 1 — Orchestration** (hiveminder workflows):
-- Full schema: domains, hierarchy, gatekeeping, result_handling, timeouts
-- 7-10 steps with required_output, validation, on_failure, await_result
+- S2-01 is a hard gate before any downstream phase progression.
+- S2-02 may begin after S2-01 core dedup/pollution cleanup lands, but cannot close before S2-01 acceptance is complete.
+- S2-03 depends on S2-01 and S2-02 artifacts being deterministic.
+- S2-MIL requires closure evidence for all S2 phases and transition guard compliance.
+- S1-01, S1-02, S1-03 are hard blocked until `S2-MIL = PASS`.
 
-**Tier 2 — Persona/Utility** (hivefiver, hiveq, hiverd workflows):
-- Minimal schema: steps with name/tool/wave/skill_bundles/args/entry_criteria/exit_criteria + guards
-- 4-6 steps
+### Transition Guards (Boundary Enforcement)
 
-### Planning Layer Schema (GSD-Mapped)
+At every phase boundary, block progression unless all guard checks pass:
 
-```
-.hivemind/project/planning/
-├── PROJECT.md              # ← trajectory.intent (always loaded)
-├── REQUIREMENTS.md         # ← hierarchy nodes with IDs + phase traceability
-├── ROADMAP.md              # ← hierarchy tree with status tracking
-├── STATE.md                # ← anchors + mems (project-scoped persistent state) [NEW]
-├── config.json             # ← .hivemind/config.json projection
-├── MILESTONES.md           # ← completed trajectory archive
-├── research/               # ← mems(shelf=research) materialized
-│   ├── architecture/
-│   ├── patterns/
-│   ├── pitfalls/
-│   ├── stacks/
-│   └── summary/
-├── todos/
-│   ├── pending/            # ← hivemind_session_memory(todo_pending)
-│   └── done/               # ← completed TODO items
-├── debug/
-│   ├── active/             # ← active debug sessions
-│   └── resolved/           # ← archived debug sessions
-├── codebase/               # ← brownfield scan output
-│   ├── STACK.md
-│   ├── ARCHITECTURE.md
-│   ├── CONVENTIONS.md
-│   └── CONCERNS.md
-└── phases/
-    └── XX-phase-name/
-        ├── XX-YY-PLAN.md       # ← task execution plan
-        ├── XX-YY-SUMMARY.md    # ← execution outcomes
-        ├── CONTEXT.md          # ← implementation preferences
-        ├── RESEARCH.md         # ← phase-specific research
-        └── VERIFICATION.md    # ← post-execution verification
-```
+- `D-02`: no bypass of required plan/gate sequence.
+- `D-07`: no unvalidated structural/governance transition.
+- `D-10`: no carry-forward of stale or unresolved artifacts.
+- `D-13`: no broken dependency chain across parent/child levels.
+- `D-14`: no session-rot progression; drift must be realigned before promotion.
+
+Reality-validation requirement (mandatory at phase closure):
+
+- Static checks (`npm test`, `npx tsc --noEmit`) are necessary but not sufficient.
+- Closure requires agent/workflow run evidence artifacts (execution logs, run traces, boundary decisions, and linked anchors/mems).
 
 ---
 
-## Execution Waves
+## 8. Related Artifacts
 
-### Wave 1: Foundation Wiring (Track A + Track B in parallel)
+| Artifact | Location | Purpose |
+|----------|----------|---------|
+| SYSTEM-DIRECTIVES | `SYSTEM-DIRECTIVES.md` | Source of truth for required framework behavior |
+| PITFALLS | `docs/PITFALLS.md` | Anti-pattern catalog (28 pitfalls) |
+| THE-ZERO-EVENT | `docs/THE-ZERO-EVENT.md` | Entity domains, hierarchy model, governance rules |
+| Context Injection Trace | Session memory `research_cache` (2026-02-28) | Full lifecycle→packer→transform trace |
+| 3-RANK Problem Framework | Session memory `scratch` (2026-02-28) | User-defined severity hierarchy |
+| Wave 2C Deep Plan | `docs/plans/2026-02-28-wave-2c-deep-execution-plan.md` | Partial plan, now partially invalidated |
+| Config Blast Radius | Anchor `wave-alpha-complete-2026-02-28` | Classification of config fields and removals |
 
-#### Wave 1A: Command Schema Upgrade (Track A)
-**Scope**: Add `required_references`, `required_prompts` fields to command contract schema. Update `validate-framework.sh` to validate these new fields.
+### Artifact Usage Rules
 
-| Knot | Task | Files | Agent |
-|------|------|-------|-------|
-| 1A.1 | Add `required_references` and `required_prompts` to command contract validation in `validate-framework.sh` | `scripts/validate-framework.sh` | hivemaker |
-| 1A.2 | Update 12 already-wired commands (hiverd-*, hiveq-*) to add `required_references` and `required_prompts` where applicable | `commands/hiverd-*.md`, `commands/hiveq-*.md` | hivemaker |
-| 1A.3 | Verify: `bash scripts/validate-framework.sh` passes with new fields | — | hiveq |
-
-**Acceptance Criteria**:
-- `validate-framework.sh` checks `required_references` and `required_prompts` on `kind: router` commands
-- 12 wired commands updated with reference/prompt wiring
-- Framework validation: 0 FAIL
-
-#### Wave 1B: Planning Directory Bootstrap (Track B)
-**Scope**: Create `.hivemind/project/planning/` directory structure and initial files. Wire into init flow.
-
-| Knot | Task | Files | Agent |
-|------|------|-------|-------|
-| 1B.1 | Create planning directory structure with empty template files | `.hivemind/project/planning/**` | hivemaker |
-| 1B.2 | Add planning directory creation to `src/cli/init.ts` init flow | `src/cli/init.ts` | hivemaker |
-| 1B.3 | Create `src/schemas/planning.ts` with Zod schemas for PROJECT, REQUIREMENTS, ROADMAP, STATE | `src/schemas/planning.ts` | hivemaker |
-| 1B.4 | Create `src/lib/planning-fs.ts` functions for reading/writing planning artifacts | `src/lib/planning-fs.ts` (update existing) | hivemaker |
-| 1B.5 | Add tests for planning schema + planning-fs | `tests/planning.test.ts` | hivemaker |
-| 1B.6 | Verify: `npm test` + `npx tsc --noEmit` pass | — | hiveq |
-
-**Acceptance Criteria**:
-- `npm exec hivemind-context-governance` creates `.hivemind/project/planning/` with template files
-- Zod schemas validate planning artifact structure
-- Planning-fs can read/write PROJECT.md, STATE.md, ROADMAP.md
-- All tests pass
+- Treat `SYSTEM-DIRECTIVES.md` as behavioral source of truth for lifecycle and memory obligations.
+- Treat session trace artifacts as execution evidence for ranking and acceptance definitions.
+- Treat old wave plans as historical references only when they conflict with current rank ordering.
 
 ---
 
-### Wave 2: Bulk Command Wiring (Track A) + Auto-Session Foundation (Track B)
+## 9. Decision Locks
 
-#### Wave 2A: Wire HiveFiver Commands (Track A)
-**Scope**: Create workflow YAMLs for unchained hivefiver commands. Update command frontmatter to `kind: router` with `execution_context`.
-
-| Knot | Task | Files | Agent |
-|------|------|-------|-------|
-| 2A.1 | Create `workflows/hivefiver-init.yaml` (Tier 2 persona workflow) | `workflows/hivefiver-init.yaml` | hivemaker |
-| 2A.2 | Create `workflows/hivefiver-build.yaml` (Tier 2, TDD-gated) | `workflows/hivefiver-build.yaml` | hivemaker |
-| 2A.3 | Create `workflows/hivefiver-spec.yaml` (Tier 2, spec-distillation) | `workflows/hivefiver-spec.yaml` | hivemaker |
-| 2A.4 | Create `workflows/hivefiver-deploy.yaml` (Tier 2, deploy-gated) | `workflows/hivefiver-deploy.yaml` | hivemaker |
-| 2A.5 | Create `workflows/hivefiver-ideate.yaml` (Tier 2, Q.U.A.N.T. matrix) | `workflows/hivefiver-ideate.yaml` | hivemaker |
-| 2A.6 | Create `workflows/hivefiver-audit-workflow.yaml` (Tier 2, audit pipeline) | `workflows/hivefiver-audit-workflow.yaml` | hivemaker |
-| 2A.7 | Create `workflows/hivefiver-research-workflow.yaml` (Tier 2, MCP research) | `workflows/hivefiver-research-workflow.yaml` | hivemaker |
-| 2A.8 | Create `workflows/hivefiver-validate-workflow.yaml` (Tier 2, validation) | `workflows/hivefiver-validate-workflow.yaml` | hivemaker |
-| 2A.9 | Create remaining hivefiver workflow YAMLs (tutor, workflow) | `workflows/hivefiver-tutor.yaml`, `workflows/hivefiver-workflow-workflow.yaml` | hivemaker |
-| 2A.10 | Update all hivefiver command frontmatter: `kind: router`, `execution_context`, `required_templates`, `required_references`, `required_prompts` | `commands/hivefiver-*.md` (14 files) | hivemaker |
-| 2A.11 | Create missing templates for hivefiver commands | `templates/hivefiver-*.md` | hivemaker |
-| 2A.12 | Verify: `validate-framework.sh` passes, parity sync clean | — | hiveq |
-
-**Acceptance Criteria**:
-- All 14 hivefiver commands have `kind: router` + `execution_context`
-- All new workflows have `contract_version: 2` + `skill_bundles` per step
-- Framework validation: 0 FAIL
-- Parity sync: `.opencode/` matches root
-
-#### Wave 2B: Wire Hiveminder Commands (Track A)
-**Scope**: Create workflow YAMLs for unchained hiveminder commands.
-
-| Knot | Task | Files | Agent |
-|------|------|-------|-------|
-| 2B.1 | Create `workflows/hiveminder-orchestrate.yaml` (Tier 1, full orchestration) | `workflows/hiveminder-orchestrate.yaml` | hivemaker |
-| 2B.2 | Create `workflows/hiveminder-delegate.yaml` (Tier 1, delegation) | `workflows/hiveminder-delegate.yaml` | hivemaker |
-| 2B.3 | Create `workflows/hiveminder-context.yaml` (Tier 2, context management) | `workflows/hiveminder-context.yaml` | hivemaker |
-| 2B.4 | Create `workflows/hiveminder-scan.yaml` (Tier 2, inspection) | `workflows/hiveminder-scan.yaml` | hivemaker |
-| 2B.5 | Create `workflows/hiveminder-status.yaml` (Tier 2, status reporting) | `workflows/hiveminder-status.yaml` | hivemaker |
-| 2B.6 | Create remaining hiveminder workflow YAMLs (compact, lint, clarify, pre-stop, dashboard) | `workflows/hiveminder-*.yaml` | hivemaker |
-| 2B.7 | Update all hiveminder command frontmatter | `commands/hiveminder-*.md`, `commands/hivemind-*.md` (10 files) | hivemaker |
-| 2B.8 | Create missing templates for hiveminder commands | `templates/hiveminder-*.md` | hivemaker |
-| 2B.9 | Verify: `validate-framework.sh` + parity | — | hiveq |
-
-**Acceptance Criteria**:
-- All 10 hiveminder commands have `kind: router` + `execution_context`
-- Tier 1 orchestration workflows include domains, hierarchy, gatekeeping
-- Framework validation: 0 FAIL
-
-#### Wave 2C: Auto-Session Foundation (Track B)
-**Scope**: Implement session auto-classification and planning artifact materialization.
-
-| Knot | Task | Files | Agent |
-|------|------|-------|-------|
-| 2C.1 | Create `src/lib/planning-materializer.ts` — converts session trajectory/mems/anchors to planning artifacts (PROJECT.md, STATE.md, ROADMAP.md) | `src/lib/planning-materializer.ts` | hivemaker |
-| 2C.2 | Create `src/lib/session-classifier.ts` — classifies session intent into planning categories (discovery, research, planning, implementing, debug, testing) | `src/lib/session-classifier.ts` | hivemaker |
-| 2C.3 | Wire planning materialization into `compact_session` tool — on session close, materialize trajectory→planning artifacts | `src/tools/hivemind-session.ts` | hivemaker |
-| 2C.4 | Add STATE.md persistence — project-scoped cross-session state that survives compaction | `src/lib/planning-fs.ts` | hivemaker |
-| 2C.5 | Add tests for materializer + classifier + STATE.md | `tests/planning-materializer.test.ts`, `tests/session-classifier.test.ts` | hivemaker |
-| 2C.6 | Verify: `npm test` + `npx tsc --noEmit` pass | — | hiveq |
-
-**Acceptance Criteria**:
-- `compact_session` materializes trajectory→PROJECT.md and anchors→STATE.md
-- Session classifier categorizes intent into 6 categories
-- STATE.md persists across sessions (survives compaction)
-- All tests pass
+1. Root assets remain source of truth; `.opencode/` is mirror/deploy surface.
+2. All core commands remain router-based with explicit execution context.
+3. Planning artifacts remain under `.hivemind/project/planning/`.
+4. Tiered workflow contract remains: orchestration-heavy for hiveminder, minimal for persona utility flows.
+5. Progressive disclosure defaults to L0 and only escalates on explicit trigger.
+6. `STATE.md` is persistent project-level state and survives compaction boundaries.
+7. Every wave requires independent verification (`npm test` + `npx tsc --noEmit` + wave-specific checks).
+8. Sync parity and schema integrity checks remain mandatory at wave boundaries.
+9. **NEW**: `S2-MIL` is the hard unlock gate for all Sector-1 implementation phases.
+10. **NEW**: 3-RANK hierarchy is the official priority order; do not skip ranks.
+11. **NEW**: Wave α libs stay unwired until Wave β cleans the injection path they plug into.
+12. **NEW**: Phase closure requires reality-validation artifacts from agent/workflow runs; static lint/type/test gates alone do not close a phase.
+13. **NEW**: This master plan is a living traversal artifact; execute iteratively, not linearly.
 
 ---
 
-### Wave 3: Convergence (Track A + Track B merge)
-
-**Scope**: Commands now route INTO the planning layer. Workflows read/write planning artifacts. This is the convergence point.
-
-| Knot | Task | Files | Agent |
-|------|------|-------|-------|
-| 3.1 | Wire debug commands (debug-trigger, debug-verify, dashboard) with execution_context + planning | `commands/hivemind-debug-*.md`, `workflows/debug-*.yaml` | hivemaker |
-| 3.2 | Wire compat commands (doctor, gsd-bridge, ralph-bridge) with execution_context | `commands/hivefiver-*.md`, `workflows/compat-*.yaml` | hivemaker |
-| 3.3 | Add planning artifact read/write to workflow step actions — workflows can now `read STATE.md`, `update ROADMAP.md`, `create phases/XX-YY-PLAN.md` | `src/lib/planning-fs.ts` | hivemaker |
-| 3.4 | Wire `hiveminder-orchestrate` workflow to create phase plans in `.hivemind/project/planning/phases/` | `workflows/hiveminder-orchestrate.yaml` | hivemaker |
-| 3.5 | Add planning awareness to `session-lifecycle.ts` hook — inject planning context on session start | `src/hooks/session-lifecycle.ts` | hivemaker |
-| 3.6 | Parity sync: rsync all root assets → `.opencode/` | root → `.opencode/` | hivemaker |
-| 3.7 | Full verification: `npm test` + `npx tsc --noEmit` + `validate-framework.sh` | — | hiveq |
-
-**Acceptance Criteria**:
-- 44/44 commands have `kind: router` + `execution_context` (100% chaining)
-- All workflows v2 compliant
-- Planning artifacts readable/writable from workflow steps
-- Session lifecycle injects planning context
-- Framework validation: 0 FAIL
-- All tests pass
-
----
-
-### Wave 4: Progressive Disclosure (Gap 3)
-
-**Scope**: Implement local-first skill selection with bundle-scoped, disclosure-level-controlled loading.
-
-| Knot | Task | Files | Agent |
-|------|------|-------|-------|
-| 4.1 | Create `src/lib/skill-loader.ts` — local-first skill resolver with bundle + disclosure level + token budget | `src/lib/skill-loader.ts` | hivemaker |
-| 4.2 | Create `src/schemas/execution-knot.ts` — micro-laser execution unit with token budget, gate commands, required evidence | `src/schemas/execution-knot.ts` | hivemaker |
-| 4.3 | Wire skill loader into workflow step execution — steps declare `skill_bundles` + `disclosure_level` | `src/hooks/session-lifecycle.ts` | hivemaker |
-| 4.4 | Implement L0 bootstrap-minimal loading — only governance-core L0 skills on first turn | `src/hooks/session-lifecycle.ts` | hivemaker |
-| 4.5 | Implement L1-L3 escalation path — load deeper skills only when triggered | `src/lib/skill-loader.ts` | hivemaker |
-| 4.6 | Add token budget enforcement — downgrade/escalation on budget breach | `src/lib/skill-loader.ts` | hivemaker |
-| 4.7 | Add tests for skill loader + execution knot | `tests/skill-loader.test.ts`, `tests/execution-knot.test.ts` | hivemaker |
-| 4.8 | Verify: `npm test` + `npx tsc --noEmit` + `validate-framework.sh` | — | hiveq |
-
-**Acceptance Criteria**:
-- Skill loading is bundle-scoped and disclosure-level-controlled
-- First-turn bootstrap loads only L0 governance-core
-- Token budget enforced per execution knot
-- Escalation path works for L1→L3
-- All tests pass
-
----
-
-### Wave 5: Code Intelligence (Gap 4)
-
-**Scope**: Populate codemap and codewiki. Connect to planning layer.
-
-| Knot | Task | Files | Agent |
-|------|------|-------|-------|
-| 5.1 | Implement codemap auto-scan — populate `codemap/manifest.json` with file/module/dependency nodes | `src/tools/hivemind-codemap.ts` | hivemaker |
-| 5.2 | Implement codewiki auto-generation — populate `codewiki/manifest.json` with documentation articles | `src/tools/hivemind-codemap.ts` | hivemaker |
-| 5.3 | Wire codemap scan into brownfield workflow — `map-codebase` produces `codebase/STACK.md` etc | `workflows/hivemind-brownfield-bootstrap.yaml` | hivemaker |
-| 5.4 | Wire code intelligence into planning — codebase mapping populates `.hivemind/project/planning/codebase/` | `src/lib/planning-materializer.ts` | hivemaker |
-| 5.5 | Add tests for codemap population + codewiki generation | `tests/codemap-population.test.ts` | hivemaker |
-| 5.6 | Verify | — | hiveq |
-
-**Acceptance Criteria**:
-- `codemap/manifest.json` populated with file nodes
-- `codewiki/manifest.json` populated with articles
-- Brownfield workflow produces codebase analysis
-- All tests pass
-
----
-
-### Wave 6: Observability + Hardening (Gap 5 + Final)
-
-**Scope**: Add chain traces, context lifecycle automation, and final hardening.
-
-| Knot | Task | Files | Agent |
-|------|------|-------|-------|
-| 6.1 | Add command→workflow→skill chain trace logging | `src/lib/chain-trace.ts` (new) | hivemaker |
-| 6.2 | Add context lifecycle memory auto-classification (temporary→consolidated→purged) | `src/lib/memory-lifecycle.ts` (new) | hivemaker |
-| 6.3 | Add auto-session routing — new sessions auto-classified into planning categories | `src/lib/session-classifier.ts` | hivemaker |
-| 6.4 | Add failure signatures for context poisoning patterns | `src/lib/chain-trace.ts` | hivemaker |
-| 6.5 | Gate deployment on zero ambiguous route collisions | `scripts/validate-framework.sh` | hivemaker |
-| 6.6 | Update agent definitions with `references` field for hiveminder + hivefiver | `agents/hiveminder.md`, `agents/hivefiver.md` | hivemaker |
-| 6.7 | Full regression: `npm test` + `npx tsc --noEmit` + `validate-framework.sh` + parity sync | — | hiveq |
-| 6.8 | Merge candidate skill review (3 skills: gsd-compat, parallel-debugging, sequential-orchestration) | `skills/registry.yaml` | hiverd |
-
-**Acceptance Criteria**:
-- Chain trace logs command→workflow→skill→agent path
-- Memory lifecycle auto-classifies and auto-purges
-- Zero ambiguous route collisions
-- All merge candidate skills resolved
-- Full regression green
-
----
-
-## Dependency Graph
-
-```
-Wave 1A ─────┐
-             ├──→ Wave 2A ──→ Wave 2B ──┐
-Wave 1B ─────┤                           ├──→ Wave 3 ──→ Wave 4 ──→ Wave 5 ──→ Wave 6
-             └──→ Wave 2C ──────────────┘
-```
-
-- **Wave 1A + 1B**: Independent, parallel
-- **Wave 2A + 2B**: Sequential (A before B, since hivefiver has more commands)
-- **Wave 2C**: Parallel with 2A/2B (different file surfaces)
-- **Wave 3**: Depends on 2A + 2B + 2C (convergence)
-- **Wave 4-6**: Sequential (each builds on previous)
-
----
-
-## Risk Assessment
+## 10. Risk Assessment
 
 | Risk | Probability | Impact | Mitigation |
 |------|-------------|--------|------------|
-| Workflow YAML count explosion (~30 new files) | HIGH | MEDIUM | Use Tier 2 minimal schema; template-generate |
-| Breaking existing wired commands during schema upgrade | LOW | HIGH | Test each group independently; regression gate |
-| Planning materializer complexity | MEDIUM | HIGH | Start with PROJECT.md + STATE.md only; phase REQUIREMENTS/ROADMAP |
-| Token budget enforcement breaking existing flows | MEDIUM | MEDIUM | Default budget = unlimited; opt-in enforcement |
-| Parity sync drift during multi-wave changes | HIGH | LOW | Parity sync step in every wave |
+| Workflow file volume and maintenance overhead | HIGH | MEDIUM | Keep tier boundaries strict; template shared patterns |
+| Regression while removing noisy context signals | HIGH | HIGH | Isolated regression test per removed signal path |
+| Breaking governance semantics during dedup | MEDIUM | HIGH | Marker-based dedup + transcript diff verification |
+| Planning materializer coupling with session closure | MEDIUM | HIGH | Phase rollout: classifier first, full write loop second |
+| Parity sync drift during iterative waves | HIGH | LOW | Run sync verification at each wave close |
+| Context injection cleanup may remove signals agents currently depend on | HIGH | HIGH | Guard removals behind tests and fallback flags |
+| Auto-session mechanism complexity | MEDIUM | HIGH | Start with low-risk classifier and strict acceptance gates |
+| Cross-channel dedup requiring ordering changes | LOW | HIGH | Use channel markers, avoid hook order dependence |
+| Zombie JSON remediation accidentally purging useful state | MEDIUM | MEDIUM | Add quarantine mode before hard deletion |
+| Observability noise from over-instrumentation | MEDIUM | MEDIUM | Define compact trace schema with severity filters |
+
+### Risk Escalation Triggers
+
+- Any regression in baseline tests or TypeScript gate.
+- Any increase in steady-state token budget after β changes.
+- Any false-positive schema blocks in export paths that halt valid workflows.
+
+### Risk Response Policy
+
+- On high-impact regression: rollback wave knot, preserve evidence, re-enter with narrower change-set.
+- On medium-impact degradation: keep partial deployment only if deterministic behavior and safety gates remain green.
 
 ---
 
-## Success Metrics (End State)
+## 11. Assumptions
 
-| Metric | Current | Target |
-|--------|---------|--------|
-| Command→Workflow chaining | 27% (12/44) | 100% (44/44) |
-| Command→Reference/Prompt wiring | 0% | 100% |
-| Workflow v2 compliance | 100% (20/20) | 100% (50+/50+) |
-| `.hivemind/project/planning/` | MISSING | COMPLETE with auto-materialization |
-| Progressive disclosure | NONE | L0-L3 with token budgets |
-| Code intelligence population | EMPTY | File nodes + articles |
-| Chain trace observability | NONE | Full command→agent trace |
-| Auto-session classification | NONE | 6-category auto-routing |
-| Framework validation | 1363 PASS | 1800+ PASS / 0 FAIL |
-| Tests | 210 | 260+ |
+1. Sector-1 runtime code is stable at compile/test level, but context injection path has known pollution requiring remediation.
+2. Existing workflow v2 contracts remain valid and can support remediation-first sequencing.
+3. Wave α libs are bug-free and ready to wire once context channels are cleaned.
+4. Auto-session implementation can be phased without breaking active lifecycle operations.
+5. Planning materialization remains additive and should respect tool ownership boundaries.
+6. Dashboard-v2 and unrelated tracks remain out of scope for this master plan.
+7. 31 pre-existing `sync-assets` test failures are deferred and unrelated to this wave sequence.
+8. Historical anchors and session traces are sufficient to reconstruct the strategic pivot without re-opening closed waves.
+9. The plan will be iteratively updated as each wave acceptance criterion is met.
 
 ---
 
-## Decision Locks
+## 12. Execution Protocol
 
-1. Root assets stay SOT; `.opencode` is deploy mirror only.
-2. All commands MUST have `kind: router` + `execution_context` (no more standalone alias/utility commands for core functions).
-3. Planning layer lives at `.hivemind/project/planning/` — never at root or `.opencode`.
-4. Workflow Tier 1 (orchestration) only for hiveminder; Tier 2 (minimal) for all others.
-5. Progressive disclosure defaults to L0 bootstrap; L1+ requires explicit trigger.
-6. STATE.md is project-scoped persistent state — survives compaction and session boundaries.
-7. Each wave has independent verification gate (`npm test` + `npx tsc --noEmit` + `validate-framework.sh`).
-8. Parity sync runs at end of every wave.
+The original protocol is retained and extended for rank-first execution.
+
+### Core Protocol (retained)
+
+1. Each wave starts with `declare_intent` and `map_context(tactic)`.
+2. Each knot uses explicit scope, constraints, acceptance criteria, and evidence requirements.
+3. Each wave ends with verification gate (`npm test`, `npx tsc --noEmit`, plus wave-specific validators).
+4. User authorization is required between major wave boundaries.
+5. Framework validation must remain zero-fail at all gate boundaries.
+
+### Rank-First Additions
+
+6. Do not start RANK 2 work until RANK 1 acceptance criteria are met.
+7. Do not start RANK 3 automation until RANK 2 export hygiene is deterministic.
+8. Track and publish token-footprint deltas before and after Wave β knots.
+9. Keep an explicit rollback plan per knot to avoid broad reverts.
+10. Treat all unresolved off-track intents as TODO-Pending, not inline execution.
+
+### Wave Closeout Template (required)
+
+At the end of each wave, publish:
+
+- Scope completed vs deferred
+- Gate results (`npm test`, `npx tsc --noEmit`, validator outputs)
+- Reality-validation artifacts (agent/workflow run logs, traces, and linked anchors/mems)
+- Token/trace delta (for β and γ)
+- Files changed and ownership validation
+- Risk outcomes and follow-up actions
 
 ---
 
-## Assumptions
+## Appendix A: Evidence Register
 
-1. Sector-1 runtime code (`src/`) is stable (210/210 tests, 0 tsc errors) — no architectural changes needed.
-2. Existing 20 workflows remain valid; new workflows follow same v2 contract.
-3. skill-loader is a new module, not a modification of existing skill resolution.
-4. Planning materializer is additive — no modifications to existing session/compact flow except the materialization hook.
-5. Dashboard-v2 work remains separate from this plan.
-6. Each wave is an independent deployment unit — can be released incrementally.
+| ID | Evidence | Source |
+|----|----------|--------|
+| EV-01 | Dual-channel system injection path exists | `src/hooks/session-lifecycle.ts:129-155` |
+| EV-02 | Checklist reminder emitted from lifecycle channel | `src/hooks/session-lifecycle.ts:66-70` |
+| EV-03 | Task block injected each turn by lifecycle compiler | `src/hooks/session-lifecycle.ts:203-210`, assembled at `src/hooks/session-lifecycle.ts:147-149` |
+| EV-04 | Auto-realign reminder construction exists in transform channel | `src/hooks/messages-transform.ts:91-113` |
+| EV-05 | Auto-realign reminder injection trigger exists | `src/hooks/messages-transform.ts:530-533` |
+| EV-06 | Cognitive packer injected by transform channel | `src/hooks/messages-transform.ts:535-539` |
+| EV-07 | Anchor context injection exists in transform channel | `src/hooks/messages-transform.ts:541-544` |
+| EV-08 | Checklist builder exists in transform channel | `src/hooks/messages-transform.ts:79-89` |
+| EV-09 | Entity checklist failures are appended to pre-stop checklist | `src/hooks/messages-transform.ts:573-585` |
+| EV-10 | Context compiler includes checklist digest and missing keys | `src/lib/cognitive-packer.ts:123-153` |
+| EV-11 | Compiled XML includes trajectory, anchors, mems, anti-patterns, context summary | `src/lib/cognitive-packer.ts:391-560` |
+| EV-12 | `mems_presence` is a required checklist key | `src/lib/cognitive-packer.ts:135` |
+| EV-13 | Wave 1 deterministic gate metrics | anchor `wave-1-completion` |
+| EV-14 | Smart merge preservation implemented | anchor `smart-merge-sync` |
+| EV-15 | Framework auditor package completion | anchor `framework-auditor-complete` |
+| EV-16 | Strategic correction: auto-new-session is top unbuilt mechanism | anchor `user-correction-2026-02-28` |
+| EV-17 | Wave α complete but unwired finding | anchor `wave-alpha-complete-2026-02-28` |
+| EV-18 | Halt findings: dead code and phantom mutation queue markers | anchor `wave-2c-halt-findings-2026-02-28` |
+| EV-19 | Active hierarchy/tactic/action and drift score | `hivemind_inspect scan` (2026-02-28) |
+| EV-20 | Validator/test/ts baseline from health anchors | anchor `health-report-2026-02-27` |
 
 ---
 
-## Execution Protocol
+## Appendix B: Obsolescence Ledger
 
-1. Each wave starts with `declare_intent` + `map_context(tactic)`.
-2. Each knot is a delegation to hivemaker with explicit scope, constraints, and acceptance criteria.
-3. Each wave ends with hiveq verification + parity sync + `compact_session`.
-4. User authorization required between waves.
-5. Framework validation must be GREEN (0 FAIL) at every wave boundary.
+| Item | Status | Replacement |
+|------|--------|-------------|
+| Old Wave 2A command-chain backlog | ❌ OBSOLETE | Closed under Completed Work + rank-first β entry |
+| Old Wave 2B hiveminder wiring backlog | ❌ OBSOLETE | Closed under Completed Work + rank-first β entry |
+| "27% chaining" baseline narrative | ❌ OBSOLETE | Updated 10/10 chaining state |
+| Linear 1→6 wave assumption | ❌ OBSOLETE | Dependency graph with β/γ/δ/ε/ζ ordering |
+
+---
+
+## Appendix C: Acceptance Checklist by Wave
+
+### Wave β Checklist
+
+- [ ] P0 duplication removed from both channels
+- [ ] P0 pollution removed from default path
+- [ ] Auto-realign conditionalized
+- [ ] Wave α integration points wired safely
+- [ ] Cross-channel dedup active
+- [ ] Steady-state injection < 1200 tokens/turn
+- [ ] `npx tsc --noEmit` pass
+- [ ] `npm test` pass
+
+### Wave γ Checklist
+
+- [ ] Event listeners audited for unintended triggers
+- [ ] Zombie/orphan JSON patterns cataloged and remediated
+- [ ] Tool naming conflicts resolved/documented
+- [ ] Export contracts validated before write
+- [ ] `npx tsc --noEmit` pass
+- [ ] `npm test` pass
+
+### Wave δ Checklist
+
+- [ ] Auto-new-session mechanism implemented
+- [ ] Memory auto-classification implemented
+- [ ] Category sorting implemented
+- [ ] `STATE.md` auto-persistence on compaction
+- [ ] TODO-Pending lifecycle implemented
+- [ ] `npx tsc --noEmit` pass
+- [ ] `npm test` pass
+
+### Wave ε/ζ Checklist (condensed)
+
+- [ ] Progressive disclosure loader delivered (L0-L3 + token budget)
+- [ ] Codemap/codewiki population delivered
+- [ ] Chain trace + poisoning signatures delivered
+- [ ] `npx tsc --noEmit` pass
+- [ ] `npm test` pass

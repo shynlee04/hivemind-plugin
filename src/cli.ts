@@ -158,8 +158,6 @@ async function showSettings(directory: string): Promise<void> {
 │ Code Review:        ${(config.agent_behavior.constraints.require_code_review ? "Yes" : "No").padEnd(28)}│
 │ TDD Enforced:       ${(config.agent_behavior.constraints.enforce_tdd ? "Yes" : "No").padEnd(28)}│
 │ Max Tokens:         ${String(config.agent_behavior.constraints.max_response_tokens).padEnd(28)}│
-│ Explain Reasoning:  ${(config.agent_behavior.constraints.explain_reasoning ? "Yes" : "No").padEnd(28)}│
-│ Be Skeptical:       ${(config.agent_behavior.constraints.be_skeptical ? "Yes" : "No").padEnd(28)}│
 │                                                  │
 ├─ Thresholds ─────────────────────────────────────┤
 │ Drift Warning:      ${(config.max_turns_before_warning + " turns").padEnd(28)}│

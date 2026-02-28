@@ -1,0 +1,54 @@
+{
+  "chain": [
+    {
+      "step": "install",
+      "status": "pass",
+      "detail": "source (v2.8.5)"
+    },
+    {
+      "step": "init",
+      "status": "fail",
+      "detail": "4/5 files"
+    },
+    {
+      "step": "config",
+      "status": "fail",
+      "detail": "Invalid or missing config"
+    },
+    {
+      "step": "brain",
+      "status": "pass",
+      "detail": "OPEN/plan_driven"
+    },
+    {
+      "step": "hierarchy",
+      "status": "pass",
+      "detail": "tree (root: set)"
+    },
+    {
+      "step": "plugin-reg",
+      "status": "pass",
+      "detail": "Registered"
+    },
+    {
+      "step": "hooks",
+      "status": "pass",
+      "detail": "4/4"
+    },
+    {
+      "step": "tools",
+      "status": "pass",
+      "detail": "14 tools registered"
+    },
+    {
+      "step": "semantic",
+      "status": "pass",
+      "detail": "chain+stamps valid (126 nodes)"
+    }
+  ],
+  "trace": {
+    "time": "2026-02-28T03:45:33.084Z",
+    "git_hash": "d845536"
+  },
+  "healthy": false
+}

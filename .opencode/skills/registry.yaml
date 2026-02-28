@@ -283,6 +283,23 @@ skills:
     depends_on:
       - hivemind-governance
 
+  - name: hivemind-framework-auditor
+    domain: framework-governance
+    bundle: verification-core
+    knowledge_delta_score: 0.88
+    status: active
+    owner: hivemind-core
+    disclosure_level: L2
+    triggers:
+      - "framework audit"
+      - "structural check"
+      - "anti-pattern scan"
+      - "development pattern validation"
+    supersedes: []
+    depends_on:
+      - hivemind-governance
+      - evidence-discipline
+
   - name: hivemind-governance
     domain: governance
     bundle: governance-core

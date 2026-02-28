@@ -2,9 +2,6 @@
 
 import { eventBus, type Unsubscribe } from "./event-bus.js";
 import type { ArtifactEvent } from "../schemas/events.js";
-import { queueStateMutation } from "./state-mutation-queue.js";
-
-type MutationPayload = Parameters<typeof queueStateMutation>[0]["payload"];
 
 export interface ConsumerRegistry {
   unsubscribers: Unsubscribe[];
@@ -13,58 +10,47 @@ export interface ConsumerRegistry {
 
 let activeRegistry: ConsumerRegistry | null = null;
 
-function toNonNegativeInt(value: unknown): number {
-  const n = Number(value);
-  return Number.isFinite(n) && n > 0 ? Math.trunc(n) : 0;
-}
-
-function queueInformationalMutation(payload: Record<string, unknown>, source: string): void {
-  queueStateMutation({ type: "UPDATE_STATE", payload: payload as MutationPayload, source });
-}
-
+/**
+ * Register event consumers as informational bridges.
+ *
+ * These consumers listen for events on the in-process event bus
+ * but do NOT queue state mutations directly. State changes for
+ * these events are handled by their respective owners:
+ *   - memory:classified → event-handler.ts handles classification
+ *   - context:consolidated → context-purifier handles consolidation
+ *   - context:purged → context-purifier handles purge accounting
+ *   - pending_change:verified → tool-level verification owns state
+ *
+ * Future: These bridges can emit telemetry, trigger planning
+ * materialization, or drive progressive disclosure — but ONLY
+ * after the integration surface is fully mapped and authorized.
+ */
 export function registerEventConsumers(_directory: string): ConsumerRegistry {
   if (activeRegistry?.registered) return activeRegistry;
   const unsubscribers: Unsubscribe[] = [];
 
-  unsubscribers.push(eventBus.subscribe("memory:classified", (event: ArtifactEvent) => {
-    try {
-      queueInformationalMutation(
-        { memory_governance_increment: { category: String(event.payload.category ?? "unknown") } },
-        "event-consumers.memory:classified"
-      );
-    } catch {}
+  unsubscribers.push(eventBus.subscribe("memory:classified", (_event: ArtifactEvent) => {
+    // Informational bridge: memory classification event received.
+    // State mutation ownership: event-handler.ts
+    // TODO: Wire telemetry or planning materialization when integration surface is mapped.
   }));
 
-  unsubscribers.push(eventBus.subscribe("context:consolidated", (event: ArtifactEvent) => {
-    try {
-      queueInformationalMutation(
-        {
-          memory_governance: {
-            temporary_exports_consolidated_increment: toNonNegativeInt(event.payload.consolidatedCount),
-          },
-        },
-        "event-consumers.context:consolidated"
-      );
-    } catch {}
+  unsubscribers.push(eventBus.subscribe("context:consolidated", (_event: ArtifactEvent) => {
+    // Informational bridge: context consolidation event received.
+    // State mutation ownership: context-purifier
+    // TODO: Wire telemetry or planning materialization when integration surface is mapped.
   }));
 
-  unsubscribers.push(eventBus.subscribe("context:purged", (event: ArtifactEvent) => {
-    try {
-      queueInformationalMutation(
-        {
-          memory_governance: {
-            temporary_exports_purged_increment: toNonNegativeInt(event.payload.purgedTemporaryCount),
-          },
-        },
-        "event-consumers.context:purged"
-      );
-    } catch {}
+  unsubscribers.push(eventBus.subscribe("context:purged", (_event: ArtifactEvent) => {
+    // Informational bridge: context purge event received.
+    // State mutation ownership: context-purifier
+    // TODO: Wire telemetry or planning materialization when integration surface is mapped.
   }));
 
   unsubscribers.push(eventBus.subscribe("pending_change:verified", (_event: ArtifactEvent) => {
-    try {
-      // Informational bridge only.
-    } catch {}
+    // Informational bridge: pending change verification event received.
+    // State mutation ownership: tool-level verification
+    // TODO: Wire telemetry or planning materialization when integration surface is mapped.
   }));
 
   activeRegistry = { unsubscribers, registered: true };

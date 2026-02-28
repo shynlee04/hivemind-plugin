@@ -5,7 +5,7 @@
     "governance_mode": "strict",
     "governance_status": "OPEN",
     "start_time": 1772191278941,
-    "last_activity": 1772193038685,
+    "last_activity": 1772228690501,
     "date": "2026-02-27",
     "meta_key": "",
     "role": "",
@@ -13,47 +13,50 @@
   },
   "hierarchy": {
     "trajectory": "THE-FRAMEWORK-TEST-ITSELF: Master-planning refactoring via timeline documents (ZERO-EVENT → SYSTEM-DIRECTIVES → TIME-LINE-AFTER-ZERO)",
-    "tactic": "Wave 1 execution: Dispatching Wave 1A (command schema upgrade) and Wave 1B (planning directory bootstrap) in parallel. All 4 parallel conditions verified.",
-    "action": "Wave 1A + 1B both returned SUCCESS. Processing results and running verification gate."
+    "tactic": "Wave 2C Planning: Loading SYSTEM-DIRECTIVES requirements, master plan current state, and framing detailed execution plan for auto-session orchestrator + SOT materialization + event consumer wiring + compaction bridge.",
+    "action": "Integration surface mapping: Dispatching deep reconnaissance on plugin lifecycle chain (init → turn → compact → close) to understand exactly where Wave α libs can safely wire in without context poisoning risk."
   },
   "metrics": {
-    "turn_count": 21,
-    "user_turn_count": 1,
+    "turn_count": 150,
+    "user_turn_count": 9,
     "drift_score": 70,
     "files_touched": [],
-    "context_updates": 16,
+    "context_updates": 99,
     "ratings": [],
     "auto_health_score": 100,
-    "total_tool_calls": 21,
-    "successful_tool_calls": 21,
+    "total_tool_calls": 150,
+    "successful_tool_calls": 150,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
     "last_section_content": "",
     "tool_type_counts": {
-      "read": 5,
-      "write": 1,
-      "query": 13,
-      "governance": 2
+      "read": 18,
+      "write": 19,
+      "query": 90,
+      "governance": 23
     },
     "keyword_flags": [
       "loop",
       "failure",
       "error",
-      "retry"
+      "retry",
+      "stuck",
+      "confused",
+      "blocked"
     ],
     "write_without_read_count": 0,
     "governance_counters": {
       "out_of_order": 0,
       "drift": 0,
-      "compaction": 0,
-      "evidence_pressure": 42,
-      "ignored": 17,
+      "compaction": 2,
+      "evidence_pressure": 300,
+      "ignored": 146,
       "acknowledged": false,
       "prerequisites_completed": true
     }
   },
-  "first_turn_context_injected": false,
+  "first_turn_context_injected": true,
   "first_turn_confirmation": {
     "required": true,
     "confirmed": false,
@@ -64,17 +67,18 @@
   "selected_output_style_v29": "problem_solving_debugging",
   "memory_governance": {
     "classified_counts": {
-      "discovery_brainstorming_discuss": 0,
-      "research_synthesis": 2,
-      "codebase_investigation": 1,
-      "planning": 4,
-      "implementing": 2,
-      "debug": 0,
-      "test_validation_gatekeeping": 7
+      "discovery_brainstorming_discuss": 1,
+      "research_synthesis": 29,
+      "codebase_investigation": 9,
+      "planning": 23,
+      "implementing": 17,
+      "debug": 2,
+      "test_validation_gatekeeping": 48
     },
     "temporary_exports_consolidated": 0,
     "temporary_exports_purged": 0,
-    "last_classified_at": 1772193026651
+    "last_classified_at": 1772228676261,
+    "pending_purge": true
   },
   "complexity_nudge_shown": true,
   "last_commit_suggestion_turn": 0,
@@ -84,13 +88,6 @@
   "last_compaction_time": 0,
   "compaction_limit_reached": false,
   "cycle_log": [
-    {
-      "timestamp": 1772191484727,
-      "tool": "task",
-      "output_excerpt": "task_id: ses_361294f84ffekqVsgyKzCXc3GS (for resuming to continue this task if needed)\n\n<task_result>\n## Agent Definition Quality Analysis\n\nI've read all 8 agent files. Here's the structured analysis:\n\n### Summary Table\n\n| Agent | Mode | `tasks` Field | Has Delegation Targets? | Tools Config | Permissions Config | Body Content | Hidden |\n|-------|------|---------------|------------------------|--------------|-------------------|--------------|--------|\n| **hiveminder** | `primary` | ✅ Yes (6 tar",
-      "failure_detected": false,
-      "failure_keywords": []
-    },
     {
       "timestamp": 1772192136683,
       "tool": "task",
@@ -104,6 +101,64 @@
       "output_excerpt": "task_id: ses_3611672dcffem98jyY20i4rS6z (for resuming to continue this task if needed)\n\n<task_result>\n```json\n{\n  \"outcome\": \"success\",\n  \"findings\": \"Completed Wave 1B within the requested scope: created `.hivemind/project/planning/` bootstrap templates and subfolders, added `src/schemas/planning.ts`, exported it from `src/schemas/index.ts`, added `initializePlanningProjectDir(rootDir)` in `src/lib/fs/planning-ops.ts`, wired it into `initializePlanningDirectory(...)` so init/session flows creat",
       "failure_detected": false,
       "failure_keywords": []
+    },
+    {
+      "timestamp": 1772203564083,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_360733139ffeNdJicWJgV7Bsh6 (for resuming to continue this task if needed)\n\n<task_result>\nAGENT MODE FIX REPORT:\n\nBEFORE:\n  agents/hiveminder.md: mode=primary → expected=primary → MATCH\n  agents/hivefiver.md: mode=primary → expected=primary → MATCH\n  agents/hivexplorer.md: mode=subagent → expected=subagent → MATCH\n  agents/hivemaker.md: mode=all → expected=all → MATCH\n  agents/hivehealer.md: mode=all → expected=all → MATCH\n  agents/hiveplanner.md: mode=all → expected=all → MATCH\n  ag",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1772203608256,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_360730066ffeSI4k5kLAWz9rJG (for resuming to continue this task if needed)\n\n<task_result>\nMCP SERVER ADDITIONS:\n  Added: gitmcp (remote, https://gitmcp.io/mcp)\n  Added: fetcher (local, npx -y fetcher-mcp)\n  Skipped: web-reader (not present in `mcp`; intentionally not added to avoid conflict with existing web-reader tooling)\n\nVERIFICATION:\n  JSON valid: yes\n  TSC: pass\n  Tests: 215/215 pass\n\nTOTAL: 2 new MCP servers added\n\nUpdated file: `opencode.json:3` (only the `mcp` object was ext",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1772220414913,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_35f72a0cfffecoAtVBzoeWQgP1 (for resuming to continue this task if needed)\n\n<task_result>\n```text\n{\n  outcome: \"success\",\n  files_changed: [\n    \"agents/hivehealer.md\",\n    \"agents/hivemaker.md\",\n    \"agents/hiveplanner.md\",\n    \"agents/hiveq.md\",\n    \"agents/hiverd.md\",\n    \"agents/hivexplorer.md\"\n  ],\n  verification: \"Requested command run:\\n=== hivefiver.md ===\\n1\\n=== hivehealer.md ===\\n1\\n=== hivemaker.md ===\\n2\\n=== hiveminder.md ===\\n1\\n=== hiveplanner.md ===\\n1\\n=== hiveq.md ",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1772220897995,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_35f6ba724ffexWgaxjAifL3tRu (for resuming to continue this task if needed)\n\n<task_result>\n```json\n{\n  \"outcome\": \"success\",\n  \"files_changed\": [\n    \"commands/hivefiver.md\",\n    \"commands/hivefiver-specforge.md\",\n    \"commands/hivefiver-start.md\",\n    \"commands/hivefiver-research.md\",\n    \"commands/hivefiver-ralph-bridge.md\",\n    \"commands/hivefiver-intake.md\",\n    \"commands/hivefiver-skillforge.md\",\n    \"commands/hivefiver-gsd-bridge.md\",\n    \"commands/hivefiver-doctor.md\",\n    \"com",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1772223143738,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_35f46413dffeSjuQe2qw4UuvqL (for resuming to continue this task if needed)\n\n<task_result>\n# CONTEXT LIFECYCLE ENGINES — COMPREHENSIVE INVESTIGATION REPORT\n\n## Executive Summary\n\n**Overall Verdict:** Foundation exists but CRITICAL GAPS vs. SYSTEM-DIRECTIVES. The system has the building blocks (schemas, event bus, watchers, staleness detection) but the integration layer that ties these together into an autonomous, auto-classifying, auto-purging context engine is **MISSING**. The framew",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1772224404980,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_35f3891ecffeP1G7g4yxZgY1qA (for resuming to continue this task if needed)\n\n<task_result>\nImplemented `src/lib/planning-materializer.ts` and added `export * from \"./planning-materializer.js\";` to `src/lib/index.ts`.\n\n```ts\nimport { existsSync } from \"node:fs\"\nimport { readFile, writeFile } from \"node:fs/promises\"\nimport { join } from \"path\"\nimport { initializePlanningProjectDir } from \"./fs/planning-ops.js\"\nimport { getEffectivePaths } from \"./paths.js\"\n\nexport interface Materializat",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1772224429324,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_35f381c7fffetoYN7Eo26MXIR5 (for resuming to continue this task if needed)\n\n<task_result>\nImplemented `src/lib/event-consumers.ts` and added the barrel export in `src/lib/index.ts`.\n\n```typescript\n/** Event consumer registry for in-process event bus wiring. */\n\nimport { eventBus, type Unsubscribe } from \"./event-bus.js\";\nimport type { ArtifactEvent } from \"../schemas/events.js\";\nimport { queueStateMutation } from \"./state-mutation-queue.js\";\n\ntype MutationPayload = Parameters<typeof ",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1772224889639,
+      "tool": "task",
+      "output_excerpt": "task_id: ses_35f2eeb24ffeggNC28W0XnKyra (for resuming to continue this task if needed)\n\n<task_result>\nOverall verdict: **FAIL** (implementation quality mostly good, but integration gaps exist).\n\n- Evidence gate: `npm test` passed with `# pass 215 / # fail 0` (from `/Users/apple/.local/share/opencode/tool-output/tool_ca0d36410001KRwpYDNDL07D34:3509`), and `npx tsc --noEmit` passed (no diagnostics, zero exit failure).\n- Barrel export grep check (`planning-materializer|session-intent-classifier|eve",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failure"
+      ]
     }
   ],
   "pending_failure_ack": false,
@@ -117,27 +172,27 @@
   "recent_messages": [
     {
       "role": "assistant",
-      "content": "Continuing Wave 1 execution. Context intact (drift: 70, hierarchy chain verified). Dispatching both tracks in parallel now."
+      "content": "Let me investigate the test failure — need to read both the test and the agent file it's validating."
     },
     {
       "role": "assistant",
-      "content": "Continuing. Let me reload context and dispatch Wave 1A + 1B."
+      "content": "Let me find the actual `role:` field in the hiveminder agent file."
     },
     {
       "role": "assistant",
-      "content": "Continuing Wave 1 execution. Let me first gather the exact file contents needed for precise delegation packets."
+      "content": "Clear — the test expects `role: front_orchestrator` (line 15) but the agent file has `role: supreme_orchestrator` (line 76). The agent was intentionally renamed to \"Supreme Orchestrator\" as part of the framework evolution — the test is stale. Let me fix it."
+    },
+    {
+      "role": "user",
+      "content": "it is very wasting time if you do not isolate the test suits that only valid to the phase or the regions you are addressing, and this dumb-approach is a wast of tools calling and tokens of back and forth fixing on md files"
+    },
+    {
+      "role": "user",
+      "content": "you must know how to arrange your tasks traverse and modified progressively also knwoing how to deffer"
     },
     {
       "role": "assistant",
-      "content": "Continuing Wave 1 execution. Let me reload context and gather the remaining file details needed for precise delegation packets."
-    },
-    {
-      "role": "assistant",
-      "content": "Resuming Wave 1 execution. Context verified (drift: 70, hierarchy intact). Dispatching both tracks now with explicit delegation packets."
-    },
-    {
-      "role": "assistant",
-      "content": "Continuing Wave 1 execution. Context verified (drift: 70, hierarchy intact, 3 anchors confirmed). Dispatching both tracks now."
+      "content": "You're right — I was wasteful. Running the full 215-test suite when I only changed 2 lib files and 1 test is dumb. Isolated verification (`npx tsx --test tests/agent-boundary-policy.test.ts` → 2/2 PASS) already proved the fix. The 31 broader failures are pre-existing `sync-assets` validation issues — completely unrelated, should be **deferred**, not chased.\n\nLet me correct course and focus on what actually matters."
     }
   ],
   "offtrack_todo_pending": [
@@ -146,7 +201,7 @@
       "content": "# HiveFiver Init Alias\n\nRun `/hivefiver init` behavior.\n\n## Required Behavior\n1. Start with project regulation pass.\n2. Route persona lane (`vibecoder`, `floppy_engineer`, `enterprise_architect`).\n3. Emit controlled multiple-choice onboarding.\n4. Persist onboarding artifact and lane decisions.\n5. Force handoff to `hiveminder` before any build-stage action.\n\n## Output Contract\n- `alias_resolved_to`: `/hivefiver init`\n- `next_command`: `/hivefiver-start`\n- `next_agent`: `hiveminder`\n- `handoff_required`: `true`\n- `handoff_reason`: `HiveFiver init is setup-only; runtime orchestration must continue in Hiveminder.`\n\n## Rejection Conditions\n- If handoff is not acknowledged, return blocked status and do not continue into build-stage actions.\n\n\"So this is a THE-FRAMEWORK-TEST-ITSELF program. So you are going to follow this time-line of event for planning, decision making; what actions you take after this will be a long-term decisions of master-planning on refactoring this project >>>> Read on these documents; First on each and within each following the H1 headings; ONLY WHEN ONE DONE YOU CONTINUE ON THE NEXT ( for example DOC1->H1n->H1n-1->H1n-2...DOC2->).'/Users/apple/hivemind-plugin/docs/THE-ZERO-EVENT.md' + following THE-ZERO-EVENT was the document accompanied it '/Users/apple/hivemind-plugin/SYSTEM-DIRECTIVES.md >>> Eventually the Events after ZERO was logged here '/Users/apple/hivemind-plugin/THE-TIME-LINE-AFTER-THE-ZERO.md'; The latest was my H1 heading no.11\"",
       "created_at": 1772191298404,
       "source": "messages-transform",
-      "status": "pending"
+      "status": "resolved"
     },
     {
       "id": "5ccbcbc3-79ee-48d3-aa0b-3520b5d5839d",
@@ -160,7 +215,28 @@
       "content": "You are executing Wave 1B of the HYBRID-A+B master plan for the hivemind-plugin project at /Users/apple/hivemind-plugin.\n\n## Task\nCreate the `.hivemind/project/planning/` directory structure with template files, create a Zod schema for planning artifacts, and wire planning directory creation into the init flow.\n\n## Scope\nONLY touch these files/directories:\n- `.hivemind/project/planning/` (CREATE new directory structure + template files)\n- `src/schemas/planning.ts` (CREATE new file)\n- `src/schemas/index.ts` (ADD export for planning.ts)\n- `src/lib/fs/planning-ops.ts` (UPDATE to add planning directory creation functions)\n- `tests/planning.test.ts` (CREATE new test file)\n\nDO NOT touch: scripts/, commands/, agents/, workflows/, .opencode/, or any other src/ files except the ones listed above.\n\n## Detailed Instructions\n\n### Step 1: Create planning directory structure\nCreate these directories and files under `/Users/apple/hivemind-plugin/.hivemind/project/planning/`:\n\n```\n.hivemind/project/planning/\n├── PROJECT.md              # Project vision and context\n├── REQUIREMENTS.md         # Scoped requirements with IDs\n├── ROADMAP.md              # Phase breakdown with status tracking\n├── STATE.md                # Decisions, blockers, session memory\n├── MILESTONES.md           # Completed milestone archive\n├── research/               # Domain research\n│   └── .gitkeep\n├── todos/\n│   ├── pending/\n│   │   └── .gitkeep\n│   └── done/\n│       └── .gitkeep\n├── debug/\n│   ├── active/\n│   │   └── .gitkeep\n│   └── resolved/\n│       └── .gitkeep\n├── codebase/\n│   └── .gitkeep\n└── phases/\n    └── .gitkeep\n```\n\nTemplate content for each markdown file:\n\n**PROJECT.md:**\n```markdown\n# Project Vision\n\n> Auto-generated by HiveMind. Update with project context.\n\n## Purpose\n<!-- What this project does and why it exists -->\n\n## Scope\n<!-- What's in and out of scope -->\n\n## Key Decisions\n<!-- Major architectural and product decisions -->\n```\n\n**REQUIREMENTS.md:**\n```markdown\n# Requirements\n\n> Auto-generated by HiveMind. Add requirements with unique IDs.\n\n## Active Requirements\n\n| ID | Description | Phase | Status |\n|----|-------------|-------|--------|\n<!-- REQ-001 | Description | Phase 1 | pending -->\n```\n\n**ROADMAP.md:**\n```markdown\n# Roadmap\n\n> Auto-generated by HiveMind. Track phase progress here.\n\n## Phases\n\n| Phase | Name | Status | Progress |\n|-------|------|--------|----------|\n<!-- 1 | Foundation | in_progress | 30% -->\n```\n\n**STATE.md:**\n```markdown\n# Project State\n\n> Auto-generated by HiveMind. Cross-session persistent state.\n> This file survives session compaction and preserves decisions.\n\n## Current Position\n<!-- Where the project is right now -->\n\n## Active Blockers\n<!-- Unresolved blockers -->\n\n## Recent Decisions\n<!-- Decisions made in recent sessions -->\n\n## Session History\n<!-- Compact summaries of recent sessions -->\n```\n\n**MILESTONES.md:**\n```markdown\n# Milestones\n\n> Auto-generated by HiveMind. Archive of completed milestones.\n\n## Completed\n<!-- None yet -->\n```\n\n### Step 2: Create src/schemas/planning.ts\nCreate a new file at `/Users/apple/hivemind-plugin/src/schemas/planning.ts` with Zod schemas:\n\n```typescript\nimport { z } from \"zod\"\n\n/** Planning requirement status */\nexport const RequirementStatusSchema = z.enum([\n  \"pending\",\n  \"in_progress\",\n  \"completed\",\n  \"deferred\",\n  \"cancelled\",\n])\n\n/** Single requirement entry */\nexport const RequirementSchema = z.object({\n  id: z.string().regex(/^REQ-\\d{3,}$/, \"Requirement ID must match REQ-NNN format\"),\n  description: z.string().min(1),\n  phase: z.string().optional(),\n  status: RequirementStatusSchema.default(\"pending\"),\n  acceptance_criteria: z.array(z.string()).default([]),\n})\n\n/** Phase status */\nexport const PhaseStatusSchema = z.enum([\n  \"not_started\",\n  \"in_progress\",\n  \"completed\",\n  \"blocked\",\n])\n\n/** Single phase entry */\nexport const PhaseSchema = z.object({\n  number: z.number().int().positive(),\n  name: z.string().min(1),\n  status: PhaseStatusSchema.default(\"not_started\"),\n  progress: z.number().min(0).max(100).default(0),\n})\n\n/** Planning state (maps to STATE.md) */\nexport const PlanningStateSchema = z.object({\n  current_position: z.string().default(\"\"),\n  active_blockers: z.array(z.string()).default([]),\n  recent_decisions: z.array(z.object({\n    decision: z.string(),\n    date: z.string(),\n    session_id: z.string().optional(),\n  })).default([]),\n  session_history: z.array(z.object({\n    session_id: z.string(),\n    summary: z.string(),\n    date: z.string(),\n  })).default([]),\n})\n\n/** Milestone entry */\nexport const MilestoneSchema = z.object({\n  name: z.string().min(1),\n  completed_date: z.string(),\n  phases_included: z.array(z.number()).default([]),\n  summary: z.string().default(\"\"),\n})\n\n/** Full planning manifest */\nexport const PlanningManifestSchema = z.object({\n  version: z.literal(\"1.0.0\"),\n  project_name: z.string().default(\"\"),\n  requirements: z.array(RequirementSchema).default([]),\n  phases: z.array(PhaseSchema).default([]),\n  state: PlanningStateSchema.default({}),\n  milestones: z.array(MilestoneSchema).default([]),\n})\n\nexport type RequirementStatus = z.infer<typeof RequirementStatusSchema>\nexport type Requirement = z.infer<typeof RequirementSchema>\nexport type PhaseStatus = z.infer<typeof PhaseStatusSchema>\nexport type Phase = z.infer<typeof PhaseSchema>\nexport type PlanningState = z.infer<typeof PlanningStateSchema>\nexport type Milestone = z.infer<typeof MilestoneSchema>\nexport type PlanningManifest = z.infer<typeof PlanningManifestSchema>\n```\n\n### Step 3: Update src/schemas/index.ts\nRead `/Users/apple/hivemind-plugin/src/schemas/index.ts` and add this export line at the end:\n```typescript\nexport * from \"./planning.js\";\n```\n\n### Step 4: Update src/lib/fs/planning-ops.ts\nRead the existing file at `/Users/apple/hivemind-plugin/src/lib/fs/planning-ops.ts`. Add a new exported function `initializePlanningProjectDir` that:\n1. Takes a `rootDir: string` parameter (the .hivemind root)\n2. Creates the `.hivemind/project/planning/` directory structure\n3. Writes the template markdown files if they don't already exist (never overwrite)\n4. Creates subdirectories with .gitkeep files\n5. Returns `{ created: boolean, path: string }`\n\nUse `node:fs/promises` for async file operations. Use `existsSync` for existence checks to avoid overwriting user content.\n\n### Step 5: Create tests/planning.test.ts\nCreate a test file at `/Users/apple/hivemind-plugin/tests/planning.test.ts` with tests for:\n1. `PlanningManifestSchema` validates correct data\n2. `PlanningManifestSchema` rejects invalid requirement IDs\n3. `RequirementSchema` validates all status values\n4. `PhaseSchema` validates progress range (0-100)\n5. `PlanningStateSchema` accepts default empty state\n\nUse node:test and node:assert. Follow the pattern of existing tests in the project.\n\n### Step 6: Verify\n1. Run `npx tsc --noEmit` in /Users/apple/hivemind-plugin — must pass with 0 errors\n2. Run `npx tsx --test tests/planning.test.ts` — must pass\n3. Run `npm test` — all 210+ tests must still pass (no regressions)\n4. Verify `.hivemind/project/planning/` directory exists with all template files\n\n## Return Format\n```\n{\n  outcome: \"success\" | \"partial\" | \"failure\",\n  findings: \"summary of what was done\",\n  files_changed: [\"list of files created/modified\"],\n  tsc_result: \"pass/fail + error count\",\n  test_result: \"pass count / fail count\",\n  npm_test_result: \"pass count / fail count (full suite)\",\n  evidence: \"exact output from verification commands\"\n}\n```\n\n## Constraints\n- Do NOT overwrite existing user content in .hivemind/project/planning/ if it exists\n- Do NOT modify src/cli/init.ts (that's a later knot)\n- Use `.js` extension for local imports (TypeScript project convention)\n- Use double quotes (project convention)\n- Use 2-space indentation (project convention)\n- Planning schemas must be pure Zod — no runtime dependencies\n- Tests must use node:test built-in test runner (not jest/vitest)",
       "created_at": 1772192994863,
       "source": "messages-transform",
-      "status": "pending"
+      "status": "resolved"
+    },
+    {
+      "id": "112e6bc2-6a5f-400e-bca2-23c2433edcc1",
+      "content": "no the current sync logic needs serious quick  fixes especially on yaml frontmatter >>> because with the current approach the \"NOT-IN-OUR-PRECONFIG-Fields\", if made by end users - and are available options allowed by OpenCode; in my case that were \"model\" https://opencode.ai/docs/models/ and by  modify some fields on agents/*.md/ https://opencode.ai/docs/agents/ >>> the sync overwritten mine. Particularly for ``.opencode/agents/hivehealer.md\n.opencode/agents/hivemaker.md .opencode/agents/hiveq.md ``` -> my config was \"model: openai/gpt-5.3-codex\" following \"\"reasoningEffort\": \"high\",\n\"textVerbosity\": \"high\",\n\"reasoningSummary\": \"auto\",\n\"include\": [\"reasoning.encrypted_content\"], \" + >>> AND .opencode/agents/hivexplorer.md with model: chutes/MiniMaxAI/MiniMax-M2.5-TEE ; while .opencode/agents/hiverd.md was model: opencode-go/kimi-k2.5 --- And the above was just a very few variables that from my case. there are many more as long as they involve with official OpenCode yaml frontmatter they must be respected; pull and register all https://opencode.ai/docs/permissions/ ; https://opencode.ai/docs/commands/ ; https://opencode.ai/docs/agents/ ; https://opencode.ai/docs/rules/ ; https://opencode.ai/docs/skills/ ; I may miss some others; but these are a must-fix before any thing else as they are destructive and disruptive the collapse the whole users' journey. <<<>>>> I HAVE JUST REVERT THE LAST TURN AND MANUALLY EDIT THE ABOVE. And another reminder is that of \"mode configuration\" -> only `hivexplorer` should stay as `subagent` and apart from `hivefiver` and `hiveminder` as `primary` - the rest should be `all` because literately these can all be used as front-facing agents when it comes to short or project-non-related, or domain-specific tasks selectively by users <<<<<<<>>>>>>>> HOWEVER THE OTHER AS IMPORTANT HARNESS IS THE \"EXPLORE AND RESEARCH FRAMEWORKS\" \n\n## The Explore and Research frameworks INVOLVE MCP SERVERS’ TOOLS USES = 100% SUCCESS EXECUTION [`https://opencode.ai/docs/mcp-servers/`](https://opencode.ai/docs/mcp-servers/)\n\nThere are many issues when come to this because it depends on the users’ available MCP SERVERS which we could not make sure to align correctly to our expectation >>> meaning the impact directly hit these agents `hiverd` ; `hivexplorer`  and the innate OpenCode ones if users accidentally or the llms accidentally call them and they are `explore` l `general` | `build` | >>> so the  hardness must all be started from `command` `workflows` `skills` `prompts` , `tools and custom tools` ; `auto mechanism` ”chaining” → TO GUARANTEE HIT RATES TO accredited Free-non-API-MCP-Servers while still prioritize the users’ MCP servers’ ones depend on which are more superior >>> BUT let’s hypothesize on the worst case scenario that users have none pre-installed or configured then we must at least have 5 MCP servers related to tech and stack up-to-date research and synthesis. Unfortunately the “accredited-free-non-API-MCP-Servers” are very unstable and this needs both fallback, workaround and retry mechanisms  - and another unfortunate issue is that I know only 3 of them and of which serve their limited caps (meaning more often than not  cycle runs of research → investigation of the codebase → ingest → iteratively synthesize; must get all these 3 100% hit rate to really complete and they are\n\n1. Context7 MCP server → best practice for official documentations and guides - the drawbacks are:  fail connections due to various reasons from timeout to denial of high frequent of requests; another is limited only for official released docs of the stack, and harsh for AI agents performing synthesis on advanced knowledge or requirements that need cross-dependencies knowledge\n2. The https://docs.devin.ai/work-with-devin/deepwiki-mcp tends to resolve single stack shallow synthesis of Context7 MCP though they suffer the pretty much same or even worse issues when it comes to connection timeout and failures due to to high-frequent requests; and the cross-stack synthesis is still this one’s short-comings. Other short-coming of this are:\n    1. The stack needs to have available and valid Github’s Repo and it needs public status for example https://github.com/anomalyco/opencode is for `Opencode`\n    2. AI Agents often don’t know what, how, and which sequences to ask to sequentially delve deep into the synthesis needed\n    3. AI agents often hallucinate asking multi-stack questions\n    4. AI agents treat this as a one-timer → which does not resolve the depth-needed \n    5. AI agents often hallucinate on the sequence of executions, meaning input of the GITHUB repo link first → then `ask a question` \n3. The Repomix https://repomix.com/guide/ ; https://repomix.com/guide/mcp-server ; https://repomix.com/guide/repomix-explorer-skill ;  https://repomix.com/guide/development/using-repomix-as-a-library ; https://repomix.com/guide/code-compress ; (the true in-depth and cross-dependencies synthesizer → though suffer with similar connection issues this one has multiple workarounds and fallbacks methods; it persists with these own short-comings:\n    1. unlike `deepwiki` with QA method, making synthesis becomes straight-forward → uses of this require `skills` which you can use `find-skill` to look them up → particularly combining search and agentic reading techniques of   grep, glob, list, regex, some other bash commands, hop-reading, cross-traversal-reading, off-set-reading etc\n    2. since connection is most commonly-known issues → my tend-to-solution is to download the intended-to-ingest dependencies to the project local storage and execute `a` for sequential ingest-investigate-synthesize cycles → however these downloaded packages are chunky and should not be committed \n    3. it suffers the same issues when coming to repo which has no Github public open-source link\n4. from all 1, 2, and 3 conclude to these factors that need resolve:\n    1. a couple more MCP servers to function as Tavily without API to ask straight forward questions and allowing all models execution\n    2. audit and improve ours codebase-investigation-related, tech-research-synthesis-related frameworks, chaining, mechanism, long-term-tech-context engineering (our track B’s when building the project’s codemap, codewiki, knowledge-database → these should also be seriously look into so that the successful stack and cross-dependencies knowledge synthesis - into patterns, graph, signature, feature requirements, pitfalls etc are then indexed, registered to database, hierarchically and relationally structured into retrievable context graph for AI Agents and persistent -    as for context and most importantly for any of later-run of the development progress; when these pieces of knowledge are needed they will not need to execute the whole token-consuming and time-wasting sequential processes\n    3. The very things to capture all these into a 100% rate will definitely be Improvements on iterative, granular, conditional, routed, sequential-turn-after-turns and cycles-after-cycles approach of delegation of pull → ingest → investigation → synthesis → iterate (never parallel)  + improvements of the frameworks to frame the very rigid, nuance, validated outlines of research frameworks with high attempts to retry and fallback before long-haul and time-consuming sequences.",
+      "created_at": 1772201734530,
+      "source": "messages-transform",
+      "status": "resolved"
+    },
+    {
+      "id": "b4ab8513-a5c4-4537-b059-3290ef7e44b1",
+      "content": "Completed packet: hivefiver mode set to all in root + .opencode recopy sync; verification and gates executed.",
+      "created_at": 1772221333769,
+      "source": "hivemind_session_memory",
+      "status": "resolved"
+    },
+    {
+      "id": "94419440-10c9-4bea-815b-b2d5994bc85d",
+      "content": "## Task: Create `src/lib/event-consumers.ts`\n\n**Scope**: Create a NEW file implementing an event consumer registry that wires actual handlers to the existing event bus. Currently the event bus (`src/lib/event-bus.ts`) emits events into void — 0 consumers registered.\n\n**Project**: `/Users/apple/hivemind-plugin`\n**Branch**: `v-2.9-harness-dev`\n\n### Existing Infrastructure\n\nThe event bus is at `src/lib/event-bus.ts`:\n```typescript\n// Singleton instance\nexport const eventBus = InProcessEventBus.getInstance();\n\n// Event types available (from src/schemas/events.ts):\n// \"memory:classified\", \"context:consolidated\", \"context:purged\", \n// \"pending_change:queued\", \"pending_change:verified\",\n// \"file:created\", \"file:modified\", \"file:deleted\",\n// \"artifact:spawned\", \"plugin:activated\", \"plugin:deactivating\",\n// \"codemap:updated\", \"codemap:compressed\", \"codemap:stale\"\n\n// Subscribe method returns Unsubscribe function:\neventBus.subscribe(\"memory:classified\", (event) => { ... }): Unsubscribe\n```\n\nState mutation queue (CQRS pattern — hooks/consumers MUST use this, never direct save):\n```typescript\nimport { queueStateMutation } from \"./state-mutation-queue.js\"\n\nqueueStateMutation({\n  type: \"UPDATE_STATE\",\n  payload: { /* partial state */ },\n  source: \"event-consumers.memory:classified\",\n})\n```\n\n### File: `src/lib/event-consumers.ts` (~100 lines)\n\n```typescript\n/**\n * Event Consumer Registry — wires handlers to the in-process event bus.\n * \n * The event bus (event-bus.ts) has been emitting events into void.\n * This module registers actual consumers for key event types.\n * \n * All consumers follow CQRS: they queue state mutations instead of\n * directly writing state (hooks/consumers are read-auto layer).\n */\n\nimport { eventBus, type Unsubscribe } from \"./event-bus.js\"\nimport type { ArtifactEvent } from \"../schemas/events.js\"\nimport { queueStateMutation } from \"./state-mutation-queue.js\"\n\nexport interface ConsumerRegistry {\n  unsubscribers: Unsubscribe[]\n  registered: boolean\n}\n\n/**\n * Register all event consumers.\n * Called once on plugin activation.\n * Idempotent — calling twice returns the existing registry.\n */\nexport function registerEventConsumers(directory: string): ConsumerRegistry\n\n/**\n * Unregister all event consumers.\n * Called on plugin deactivation for clean shutdown.\n */\nexport function unregisterEventConsumers(registry: ConsumerRegistry): void\n```\n\n### Consumers to Wire\n\n#### 1. `memory:classified` consumer\nWhen a memory classification event fires:\n- Queue a state mutation to increment `memory_governance.classified_counts[category]`\n- Queue update to `memory_governance.last_classified_at`\n\n```typescript\n// payload shape: { category: string, confidence: number, sessionId?: string }\nqueueStateMutation({\n  type: \"UPDATE_STATE\", \n  payload: {\n    memory_governance_increment: {\n      category: event.payload.category,\n    },\n  },\n  source: \"event-consumers.memory:classified\",\n})\n```\n\nWait — looking at the existing mutation queue code, `UPDATE_STATE` takes a partial state payload. So the consumer should note the classification for later processing. Keep it simple:\n\n```typescript\n// Just log-level tracking for now — the actual brain state mutation \n// happens in event-handler.ts via the existing addMemoryClassification path\n```\n\nActually, let's keep consumers lightweight and informational for now. The heavy lifting (state mutation) already happens in event-handler.ts. The consumers here serve as the BRIDGE — they could log, track metrics, or trigger secondary effects.\n\n#### 2. `context:consolidated` consumer\nTrack consolidation events:\n```typescript\nqueueStateMutation({\n  type: \"UPDATE_STATE\",\n  payload: {\n    memory_governance: {\n      temporary_exports_consolidated_increment: Number(event.payload.consolidatedCount) || 0,\n    },\n  },\n  source: \"event-consumers.context:consolidated\",\n})\n```\n\n#### 3. `context:purged` consumer  \nTrack purge events:\n```typescript\nqueueStateMutation({\n  type: \"UPDATE_STATE\",\n  payload: {\n    memory_governance: {\n      temporary_exports_purged_increment: Number(event.payload.purgedTemporaryCount) || 0,\n    },\n  },\n  source: \"event-consumers.context:purged\",\n})\n```\n\n#### 4. `pending_change:verified` consumer\nInformational — just logs:\n```typescript\n// No state mutation needed — informational tracking only\n```\n\n### Implementation Pattern\n\n```typescript\nlet activeRegistry: ConsumerRegistry | null = null\n\nexport function registerEventConsumers(_directory: string): ConsumerRegistry {\n  // Idempotent — if already registered, return existing\n  if (activeRegistry?.registered) {\n    return activeRegistry\n  }\n\n  const unsubscribers: Unsubscribe[] = []\n\n  // 1. memory:classified\n  unsubscribers.push(\n    eventBus.subscribe(\"memory:classified\", (event: ArtifactEvent) => {\n      try {\n        // Track classification — state mutation handled by caller (event-handler.ts)\n        // This consumer exists for secondary effects (future: auto-purge triggers)\n      } catch {\n        // P3: Never break event handling\n      }\n    })\n  )\n\n  // 2. context:consolidated  \n  // 3. context:purged\n  // 4. pending_change:verified\n\n  activeRegistry = { unsubscribers, registered: true }\n  return activeRegistry\n}\n\nexport function unregisterEventConsumers(registry: ConsumerRegistry): void {\n  for (const unsub of registry.unsubscribers) {\n    try {\n      unsub()\n    } catch {\n      // P3: Never break cleanup\n    }\n  }\n  registry.registered = false\n  registry.unsubscribers = []\n  if (activeRegistry === registry) {\n    activeRegistry = null\n  }\n}\n```\n\n### Constraints\n- MUST follow CQRS: consumers queue mutations via `queueStateMutation`, never direct-save\n- MUST be idempotent — calling `registerEventConsumers` twice doesn't double-subscribe\n- MUST wrap every consumer in try/catch (P3: never break event handling)\n- MUST NOT exceed 120 lines total\n- MUST NOT import from `src/hooks/` (lib layer)\n- Use double quotes for strings\n- Use 2-space indentation\n\n### Also Do\nAfter creating the file, add the export to `src/lib/index.ts` by appending:\n```typescript\nexport * from \"./event-consumers.js\";\n```\n\n### Verification\nRun `npx tsc --noEmit` to verify the file compiles without errors. Report the result.\n\n### Return Format\nReturn the FULL content of `src/lib/event-consumers.ts` that you wrote, and whether `npx tsc --noEmit` passed.",
+      "created_at": 1772223996449,
+      "source": "messages-transform",
+      "status": "resolved"
     }
   ]
 }

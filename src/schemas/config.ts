@@ -224,10 +224,6 @@ export interface AgentBehaviorConfig {
     enforce_tdd: boolean;
     /** Maximum response length in tokens (approximate) */
     max_response_tokens: number;
-    /** Always explain 'why' not just 'what' */
-    explain_reasoning: boolean;
-    /** Challenge user assumptions */
-    be_skeptical: boolean;
   };
 }
 
@@ -264,8 +260,6 @@ export const DEFAULT_AGENT_BEHAVIOR: AgentBehaviorConfig = {
     require_code_review: false,
     enforce_tdd: false,
     max_response_tokens: DEFAULT_MAX_RESPONSE_TOKENS,
-    explain_reasoning: true,
-    be_skeptical: false,
   },
 };
 
@@ -364,99 +358,4 @@ export function isCoachAutomation(level: AutomationLevel): boolean {
 
 export function normalizeAutomationLabel(level: AutomationLevel): AutomationLevel {
   return level
-}
-
-/**
- * Generates the mandatory agent configuration prompt that is injected
- * at every session opening and persists throughout the conversation.
- */
-export function generateAgentBehaviorPrompt(config: AgentBehaviorConfig): string {
-  const lines: string[] = [];
-  
-  lines.push("<agent-configuration>");
-  lines.push("MANDATORY: You MUST obey these constraints for this entire session:");
-  lines.push("");
-  
-  // Language enforcement
-  const langNames: Record<Language, string> = {
-    en: "English",
-    vi: "Vietnamese (Tiếng Việt)",
-  };
-  lines.push(`[LANGUAGE] Respond ONLY in ${langNames[config.language]}. No exceptions.`);
-  lines.push("");
-  
-  // Expert level
-  const expertDescriptions: Record<ExpertLevel, string> = {
-    beginner: "Explain everything simply. Define terms. No assumptions of prior knowledge.",
-    intermediate: "Standard technical depth. Some domain knowledge assumed.",
-    advanced: "Concise, sophisticated. Assume strong domain expertise.",
-    expert: "Terse, reference advanced concepts. Minimal hand-holding.",
-  };
-  lines.push(`[EXPERT LEVEL] ${config.expert_level.toUpperCase()}: ${expertDescriptions[config.expert_level]}`);
-  lines.push("");
-  
-  // Output style
-  const styleInstructions: Record<OutputStyle, string[]> = {
-    explanatory: [
-      "- Explain WHY, not just WHAT",
-      "- Provide context and rationale",
-      "- Use analogies where helpful",
-      "- Answer follow-up questions proactively",
-    ],
-    outline: [
-      "- Use bullet points and structured lists",
-      "- Headings for organization",
-      "- Summary at the top",
-      "- Details collapsed or abbreviated",
-    ],
-    skeptical: [
-      "- Challenge assumptions in the request",
-      "- Point out risks and edge cases",
-      "- Ask clarifying questions",
-      "- Suggest alternatives",
-      "- Verify requirements are complete",
-    ],
-    architecture: [
-      "- Start with high-level design",
-      "- Discuss patterns and trade-offs",
-      "- Component diagrams before code",
-      "- Implementation follows design",
-    ],
-    minimal: [
-      "- Code only, minimal prose",
-      "- No explanations unless asked",
-      "- Direct answers",
-    ],
-  };
-  lines.push(`[OUTPUT STYLE] ${config.output_style.toUpperCase()}:`);
-  styleInstructions[config.output_style].forEach(instruction => lines.push(instruction));
-  if (config.output_style_v29) {
-    lines.push(`[OUTPUT STYLE V2.9] ${config.output_style_v29}`);
-  }
-  lines.push("");
-  
-  // Constraints
-  lines.push("[CONSTRAINTS]");
-  lines.push("- TASK MANAGEMENT: Use `todoread` to check tasks and `todowrite` to update them.");
-  lines.push("- AUTO REALIGNMENT: If user skips commands, route to `/hivefiver <action>` automatically.");
-  lines.push("- SKILL-FIRST FALLBACK: When commands are missing, load and apply relevant skills to complete tasks.");
-  if (config.constraints.require_code_review) {
-    lines.push("- MUST review code before accepting: check for bugs, smells, tests");
-  }
-  if (config.constraints.enforce_tdd) {
-    lines.push("- TDD REQUIRED: Write failing test first, then implementation");
-  }
-  if (config.constraints.explain_reasoning) {
-    lines.push("- ALWAYS explain your reasoning");
-  }
-  if (config.constraints.be_skeptical) {
-    lines.push("- BE SKEPTICAL: Question requirements, point out gaps");
-  }
-  lines.push(`- Maximum response: ~${config.constraints.max_response_tokens} tokens`);
-  lines.push("");
-  
-  lines.push("VIOLATION: If you cannot obey these constraints, state why explicitly.");
-  lines.push("</agent-configuration>");
-  
-  return lines.join("\n");
 }

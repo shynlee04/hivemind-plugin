@@ -57,9 +57,6 @@
       "timeout": 30000
     }
   },
-  "plugin": [
-    "hivemind-context-governance"
-  ],
   "provider": {
     "chutes-api": {
       "npm": "@ai-sdk/openai-compatible",
@@ -116,5 +113,8 @@
         "bash": true
       }
     }
-  }
+  },
+  "plugin": [
+    "hivemind-context-governance"
+  ]
 }

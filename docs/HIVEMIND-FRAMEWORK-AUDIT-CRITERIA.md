@@ -1,418 +1,592 @@
-# HIVEMIND Framework Audit Criteria & Development Guides
+# HIVEMIND Framework Audit & Realignment Guide
 
-> **Version**: 1.0.0
-> **Baseline**: Sector-2 hardened (1363 PASS / 0 FAIL / 0 WARN), Sector-1 master plan at Wave 0
-> **Scope**: Criteria for auditing, validating, and improving the HIVEMIND framework itself
-
----
-
-## Part 1: Audit Criteria — What "Working" Means
-
-### 1.1 Structural Integrity (Static)
-
-Every entity must pass these checks **before** any runtime evaluation:
-
-| Criterion | Pass Condition | Gate Command | Severity |
-|-----------|---------------|--------------|----------|
-| **S-01** Agent YAML | All 8 agents have `mode`, `tools`, `permissions`, `tasks`, `workflows`, `prompts` in frontmatter | `grep -c "^tasks:" agents/*.md` | P0 |
-| **S-02** Command Wiring | Every `kind: router` command has `execution_context` pointing to an existing workflow | `validate-framework.sh` R03 | P0 |
-| **S-03** Workflow V2 | Every workflow has `contract_version: 2`, `target_agent`, `steps` with `wave`/`entry_criteria`/`exit_criteria`/`skill_bundles`, `guards` | `validate-framework.sh` R03 | P0 |
-| **S-04** Skill Registry | Every skill in `skills/*/SKILL.md` exists in `skills/registry.yaml` with `bundle`, `disclosure_level`, `status` | `validate-framework.sh` R02 | P0 |
-| **S-05** Parity Sync | Root assets byte-match `.opencode/` assets after sync | `diff -rq agents/ .opencode/agents/` | P1 |
-| **S-06** Template Coverage | Every workflow step that produces output has a matching `templates/*.md` | manual audit | P1 |
-| **S-07** Reference Coverage | Every prompt that cites domain knowledge has a matching `references/*.md` | manual audit | P2 |
-| **S-08** No Orphan Skills | No skill exists outside registry; no registry entry lacks a `SKILL.md` | `validate-framework.sh` R02 | P1 |
-| **S-09** TypeScript Clean | `npx tsc --noEmit` exits 0 | CI gate | P0 |
-| **S-10** Full Test Pass | `npm test` exits 0, all tests pass | CI gate | P0 |
-
-### 1.2 Behavioral Integrity (Runtime)
-
-These criteria require **actual session execution** to verify:
-
-| Criterion | Pass Condition | How to Verify | Severity |
-|-----------|---------------|---------------|----------|
-| **B-01** Session Init | `declare_intent` / `map_context(trajectory)` fires before any write operation | Run `/hiveminder status` after fresh session | P0 |
-| **B-02** Delegation Packet | Every `Task()` delegation produces a well-formed packet with `intent_id`, `target_agent`, `scope`, `constraints`, `success_metrics` | Intercept delegation output in session log | P0 |
-| **B-03** Skill Loading | Only step-declared `skill_bundles` are loaded per workflow step, not all skills | Check session token count after workflow step | P1 |
-| **B-04** Context Rot Detection | `think_back` or `scan_hierarchy` detects drift_score > 60 and triggers recovery | Intentionally inject contradictory context, observe recovery | P1 |
-| **B-05** Memory Classification | Session outputs are auto-classified into schema: discovery/research/planning/implementing/debug/testing | Check `.hivemind/memory/` after diverse task execution | P2 |
-| **B-06** Guard Enforcement | Workflow guards halt execution on check failure (not silently skip) | Deliberately violate a guard condition | P0 |
-| **B-07** Chain Trace | Command→Workflow→Skill→Agent execution path is traceable from output | Review session logs for chain continuity | P2 |
-| **B-08** Return Format | Delegated sub-agents return structured results matching delegation packet expectations | Review completed task outputs | P1 |
-
-### 1.3 Non-Destructive Co-existence (Sector-1 ↔ Sector-2)
-
-| Criterion | Pass Condition | Severity |
-|-----------|---------------|----------|
-| **C-01** Sector-2 Independence | Removing all `src/` (Sector-1) still allows Sector-2 framework to function as static config | P0 |
-| **C-02** No Overwrite | Sector-1 init never overwrites user-modified `.opencode/agents/*.md` without backup | P0 |
-| **C-03** Schema Compatibility | Sector-1 Zod schemas validate all Sector-2 YAML without errors | P1 |
-| **C-04** Config Respect | User's `opencode.json` and global config are never overwritten by framework installation | P0 |
-| **C-05** AGENTS.md Preservation | Existing `AGENTS.md` and `CLAUDE.md` (if user has them) are appended, not replaced | P0 |
+> **Document ID**: HIVEMIND-AUDIT-2026-02-28  
+> **Version**: 3.0  
+> **Status**: Active Guidance  
+> **Purpose**: Audit criteria and realignment protocols for `hiveminder`-led agent team working on SECTOR-1 framework harnessing  
+> **Sources Consolidated**: 
+> - [`docs/plans/2026-02-27-hybrid-ab-master-plan.md`](docs/plans/2026-02-27-hybrid-ab-master-plan.md)
+> - [`THE-TIME-LINE-AFTER-THE-ZERO.md`](THE-TIME-LINE-AFTER-THE-ZERO.md)
+> - [`SYSTEM-DIRECTIVES.md`](SYSTEM-DIRECTIVES.md)
 
 ---
 
-## Part 2: OpenCode Session Mechanics — How Agents "See" the World
+## Executive Summary
 
-### 2.1 Session Lifecycle (What Loads When)
+This document serves as the **single source of truth** for auditing and realigning the HIVEMIND framework development work carried out by the agent team led by `hiveminder`. It consolidates strategic direction from the HYBRID-A+B Master Plan, sector stabilization requirements from THE-TIME-LINE-AFTER-THE-ZERO, and operational protocols from SYSTEM-DIRECTIVES.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    SESSION START                            │
-│                                                             │
-│  1. opencode.json loaded                                    │
-│     → agent defined? → load agent .md frontmatter           │
-│     → YAML fields (mode, tools, permissions) → ACTIVE       │
-│     → MD body → loaded BUT volatile (lost mid-session)      │
-│                                                             │
-│  2. AGENTS.md → loaded into system prompt (if exists)       │
-│     → This is the ONLY persistent "body" text all agents    │
-│       see every turn throughout the session                 │
-│                                                             │
-│  3. Skills → NOT loaded yet                                 │
-│     → Only metadata (name + description) is in context      │
-│     → Body loads ONLY when skill triggers                   │
-│     → References/scripts load ONLY when skill reads them    │
-│                                                             │
-│  4. Commands → DISCOVERED by filename in commands/          │
-│     → Frontmatter parsed when user invokes command          │
-│     → Body (prompt) injected into that turn's context       │
-│                                                             │
-│  5. Workflows → NOT loaded                                  │
-│     → Only accessed when command's execution_context fires  │
-│                                                             │
-│  6. Prompts/References → NOT loaded                         │
-│     → Only pulled in when skill/command/workflow asks       │
-└─────────────────────────────────────────────────────────────┘
+### Core Philosophy
+
+```markdown
+HIVE = collaborative rigid hierarchical and relational domain-specific workflows + 
+       pipelines of AGENTS on "Full Automation"; "self-governance" iterative 
+       ruthless loops of multi-dimensional-aspects of critics til perfection
+
+HIVEMIND = the above achieved through multi-agents working from the same MIND by:
+  - Sorting out → systemization as frame/skeleton with expectations for "chaos"
+  - "Conditional routing" + "traversing hierarchically" + "resolving both horizontally 
+    and vertically" must all be foreseeable
+  - Acknowledging agent shortcomings (no deductive thinking, prone to context pollution,
+    enjoy "happy-path", hallucinate, unable to traverse in line-of-thought)
+  - Breaking down into bite-sized complexity layering on strong foundation
+  - Providing tools, libs, programmatic mechanisms, prepared workflows and prompting
 ```
 
-### 2.2 What Survives vs. What Dies
+---
 
-| Entity | Survives Session? | Survives Compact? | Where It Lives |
-|--------|-------------------|-------------------|----------------|
-| Agent YAML frontmatter | ✅ Always | ✅ Always | `.opencode/agents/*.md` header |
-| Agent MD body | ⚠️ Volatile | ❌ Lost | `.opencode/agents/*.md` body |
-| AGENTS.md | ✅ Always | ✅ Always | Project root |
-| Skills metadata | ✅ Always | ✅ Always | `skills/*/SKILL.md` header |
-| Skills body | ⚠️ On trigger | ❌ Lost | `skills/*/SKILL.md` body |
-| Command frontmatter | ✅ On invoke | ✅ Always | `commands/*.md` header |
-| Conversation history | ✅ In session | ❌ Lost | OpenCode runtime |
-| `.hivemind/` state | ✅ Always | ✅ Always | Filesystem |
-| `STATE.md` (planned) | ✅ Always | ✅ Always | `.hivemind/project/planning/` |
+## Part 1: Audit Framework
 
-### 2.3 The Delegation Problem
+### 1.1 Purpose of SECTOR-1 (Current Development)
 
-When `hiveminder` delegates to (say) `hivemaker`:
+SECTOR-1 exists to **non-disruptively and integrally harness framework-related concepts** such that:
 
+| Success Metric | Validation Criteria |
+|----------------|---------------------|
+| **Independence Test** | Even when SECTOR-1 is removed, SECTOR-2 works decently when manually initiated |
+| **Non-Conflict Guarantee** | No overlapping, conflict, or destructive blocking of SECTOR-2 |
+| **Foundation Quality** | SECTOR-1 decisions benefit later SECTOR-2 refactoring |
+| **Context Hygiene** | No introduction of context rot, poisoning, or noise |
+
+### 1.2 The 3-RANK Problem Hierarchy (From HYBRID-A+B Master Plan)
+
+Use this hierarchy to prioritize audit findings:
+
+#### RANK 1: Context Injection & Transformation Poisoning (CRITICAL)
+
+**Definition**: All context injections/transformations that overlap, conflict, or fail deterministic alignment with planning SOT.
+
+**Audit Checklist**:
+- [ ] Two independent channels (lifecycle + transform) have cross-channel deduplication
+- [ ] No P0 duplication: checklist contracts emitted by only ONE channel
+- [ ] No P0 pollution: task blocks, ignored counters, tool hints removed from default path
+- [ ] Injection footprint is optimized (< 1200 tokens/turn steady-state)
+- [ ] Auto-realign menu only fires when commandless + intent confidence fails
+
+**Evidence Locations**:
+- [`src/hooks/session-lifecycle.ts:129-155`](src/hooks/session-lifecycle.ts:129) — System channel
+- [`src/hooks/messages-transform.ts:530-544`](src/hooks/messages-transform.ts:530) — User-message channel
+- [`src/lib/cognitive-packer.ts:391-560`](src/lib/cognitive-packer.ts:391) — Payload shape
+
+#### RANK 2: Tools Routing + Mechanism Design Chain Reactions (HIGH)
+
+**Definition**: How framework commands/workflows/agents/scripts interact with libs/hooks/schemas to create uncontrolled write/read loops into `.hivemind/`.
+
+**Audit Checklist**:
+- [ ] Zero unintended writes into `.hivemind/` during normal command flow
+- [ ] All export writes validated against schema before persistence
+- [ ] Tool naming ambiguity reduced to documented alias set
+- [ ] No zombie/orphaned/stale JSON patterns in `.hivemind/state`
+- [ ] Event consumer bridges properly wired (not just implemented)
+
+#### RANK 3: In-Session Memory Not Auto-Parsed to Knowledge-Base (MEDIUM)
+
+**Definition**: Missing lifecycle automation that transforms session artifacts into durable, retrievable knowledge.
+
+**Audit Checklist**:
+- [ ] Auto-new-session mechanism implemented (SYSTEM-DIRECTIVES §3A)
+- [ ] Memory auto-classification (`temporary -> consolidated -> purged`)
+- [ ] Session-related memory sorted by category (`discovery/research/planning/implementing/debug/test`)
+- [ ] `STATE.md` auto-persistence on compaction
+- [ ] TODO-Pending routing for off-track intentions
+
+---
+
+## Part 2: GREEN-FLAG Demonstrations
+
+### 2.1 Meta-Framework Concept: Command Example
+
+**Reference**: GSD's `gsd:debug` command structure
+
+**GREEN-FLAG Checklist for Commands**:
+
+```markdown
+✅ YAML Frontmatter (Required Fields):
+   - name: Namespaced (e.g., "hivefiver:debug", "hivemind:scan")
+   - description: When to use, what it does
+   - argument-hint: Expected input format
+   - allowed-tools: Explicit capability list
+   - triggers: When this command activates
+
+✅ Structured Body Sections:
+   - <objective>: Clear goal + orchestrator vs subagent role separation
+   - <context>: Prerequisites, environment checks
+   - <process>: Numbered steps with tool invocations
+   - <success_criteria>: Checklist for completion
+   - <failure_policy>: What to do when things go wrong
+
+✅ Deterministic Integration:
+   - Scripts for repeatable operations (scripts/)
+   - References for domain knowledge (references/)
+   - Templates for output consistency (templates/)
 ```
-hiveminder context
-├── Full conversation history up to this point
-├── Its own agent YAML (mode/tools/permissions)
-├── AGENTS.md content
-└── Whatever skills triggered during conversation
 
-       │ Task() delegation
-       ▼
+### 2.2 Meta-Framework Concept: Workflow Chaining
 
-hivemaker context (FRESH — 200K tokens clean)
-├── ONLY the Task() prompt text
-├── Its own agent YAML (mode/tools/permissions)
-├── AGENTS.md content
-└── NOTHING ELSE — no parent history, no skills, no state
+**Reference**: GSD's execution workflow patterns
+
+**GREEN-FLAG Checklist for Workflows**:
+
+```markdown
+✅ Workflow Hierarchy:
+   - Phase-level (orchestration) → Plan-level (coordination) → Task-level (execution)
+   - Each level has explicit INPUT/OUTPUT contracts
+   - Dependencies declared upfront, not discovered mid-flight
+
+✅ Deterministic Steps:
+   - Each step has: objective, process, success criteria
+   - Gate checks between steps (cannot skip)
+   - Rollback pointers at each checkpoint
+
+✅ Agent Coordination:
+   - Explicit parallel vs sequential decision criteria
+   - Subagent spawn with full context (not "figure it out")
+   - Result awaiting and validation before proceeding
 ```
 
-**Critical implication**: Everything the sub-agent needs must be IN the delegation packet or DISCOVERABLE via file reads. The sub-agent does NOT inherit the parent's:
-- Conversation history
-- Loaded skills
-- Memory of previous turns
-- Understanding of the project's current state
+### 2.3 Meta-Framework Concept: Skill Architecture
 
-### 2.4 What Agents CANNOT Do
+**Reference**: Claude Skills best practices adapted for HIVEMIND
 
-| Limitation | Impact | Mitigation |
-|------------|--------|------------|
-| No deductive traversal | Agents don't naturally explore dependency chains | Provide explicit scope_paths in delegation |
-| Context rot mid-session | After ~15-20 turns, early context degrades | Use `think_back` / `scan_hierarchy` checks |
-| Happy-path bias | Agents skip edge cases unless told | Include explicit failure_policy in packets |
-| No cross-session memory | Each session starts blank | STATE.md + `.hivemind/memory/` persistence |
-| Token ceiling | 200K context fills fast with skill-loading | Progressive disclosure L0→L3, token budgets |
-| No awareness of delegation depth | Sub-agents don't know they're sub-agents | Include `delegation_depth` and `parent_agent` in packet |
+**GREEN-FLAG Checklist for Skills**:
+
+```markdown
+✅ Knowledge Delta Principle:
+   - Skill provides what the model DOESN'T already know
+   - Expert-only: decision trees, trade-offs, anti-patterns
+   - Domain-specific thinking frameworks
+
+✅ Anatomy:
+   skill-name/
+   ├── SKILL.md (required)
+   │   ├── YAML frontmatter (name, description, triggers, version)
+   │   └── Markdown instructions (< 500 lines)
+   ├── scripts/          - Deterministic code (not rewritten each time)
+   ├── references/       - Loaded on-demand only
+   └── templates/        - Output assets (not loaded into context)
+
+✅ Progressive Disclosure:
+   - L0: Bootstrap-minimal (always loaded)
+   - L1: Command-required (triggered)
+   - L2: Workflow-step-specific (scoped)
+   - L3: Escalation-only (emergency)
+
+✅ Local-First Resolution:
+   - Resolve from root skills/ first
+   - Then .opencode/skills (deployment mirror)
+   - External sources: opt-in only, never auto-loaded
+```
+
+### 2.4 Meta-Framework Concept: Reference Patterns
+
+**Reference**: GSD's git-integration references
+
+**GREEN-FLAG Checklist for References**:
+
+```markdown
+✅ Static Knowledge Source:
+   - Never an active routing mechanism
+   - Loaded only when explicitly referenced
+   - Grep patterns for large files (>10k words)
+
+✅ Organization by Domain:
+   references/
+   ├── git-integration.md      # Git workflows, commit patterns
+   ├── api-contracts.md        # API specifications
+   ├── domain-knowledge.md     # Business logic, schemas
+   └── pitfall-catalog.md      # Anti-patterns with evidence
+
+✅ Linking from SKILL.md:
+   - "For detailed API specs, see [API.md](references/API.md)"
+   - "For common pitfalls, see [PITFALLS.md](references/PITFALLS.md)"
+```
 
 ---
 
-## Part 3: Anti-Pattern Catalog — Agent "Dumbness" Observable Behaviors
+## Part 3: RED-FLAG Observable Behaviors
 
-### 3.1 Token-Wasting Anti-Patterns
+### 3.1 Context Pollution Indicators
 
-| Anti-Pattern | Description | Detection | Fix |
-|--------------|-------------|-----------|-----|
-| **D-01** Lint-on-docs | Running `eslint`/`tsc` on markdown/yaml updates that have zero code changes | Session log shows lint commands after doc edits | Add `file_type_gate` to workflow steps: skip lint for non-code changes |
-| **D-02** Skill avalanche | Loading 5+ skill bodies in one turn, filling 50K+ tokens with governance text | Token usage spike in single turn | Progressive disclosure: L0 only at session start, L1+ on demand |
-| **D-03** Redundant research | Investigating the same codebase area or tech stack pattern multiple times across turns | Grep session logs for duplicate `grep`/`read` patterns | Require `recall_mems` check before any new investigation |
-| **D-04** Planning artifact dump | Creating 10+ markdown/yaml/json files without hierarchical or relational ordering | `find .hivemind/ -name "*.md" -newer session-start` returns unrelated files | Enforce `trajectory` → `tactic` → `action` hierarchy before file creation |
-| **D-05** Unrouted execution | Agent starts coding without checking what command/workflow they're supposed to follow | No `execution_context` or `workflow` reference in turn | Every write-operation turn must trace to a workflow step |
+| RED-FLAG | Why It Hurts | Detection Method |
+|----------|--------------|------------------|
+| Running lint on document-only changes | Wastes tokens, no value add | Check if `npm test` runs when only .md files changed |
+| Trashing .md, .xml, .yaml, .json files without hierarchical order | Creates orphan artifacts, breaks lineage | Validate `.hivemind/` has valid hierarchy.json |
+| Repeated delegation for same codebase investigation | Context re-ingestion, no memory consolidation | Check session memory for duplicate research entries |
+| Hallucinating disconnected choices | No grounding in session context | Validate choices reference prior turns in conversation |
 
-### 3.2 Context-Poisoning Anti-Patterns
+### 3.2 Agent Awareness Failures
 
-| Anti-Pattern | Description | Detection | Fix |
-|--------------|-------------|-----------|-----|
-| **D-06** Hallucinated options | Presenting choices that are disconnected from conversation or project state | User reports "none of these match what we're doing" | Require options to cite specific files/artifacts/prior-turns |
-| **D-07** Upstream amnesia | Sub-agent doesn't know delegation source was another agent (not human) | Sub-agent asks user for info that parent already provided | Include `delegation_source: agent` and `parent_context_summary` in packet |
-| **D-08** Ghost connections | Creating cross-references to files/artifacts that don't exist | `find` for referenced paths returns empty | Pre-validate all references with `[ -f path ]` bash checks |
-| **D-09** Context echo | Re-reading the same file multiple times in one session | Session log shows 3+ reads of same file | Cache file contents in session-scoped memory |
-| **D-10** Scope creep in delegation | Delegated task expands beyond its declared `scope` and modifies unexpected files | `git diff --name-only` shows files outside `in_scope_paths` | Workflow guards check modified files against scope before commit |
+| RED-FLAG | Expected Behavior | Audit Query |
+|----------|-------------------|-------------|
+| Agent unaware of downstream delegation levels | Must know delegation source (human vs upstream agent) | Check if agent distinguishes `hiveminder` delegation vs user request |
+| No turn-awareness | Must know "this is turn N of trajectory T" | Validate `declare_intent` called at session start |
+| Context consumption without deterministic routing | Must use progressive disclosure, not batch-load | Check skill loading follows L0-L3 escalation |
+| Post-compaction amnesia | Must use `think_back` + `recall_mems` | Verify anchors and mems survive compaction |
 
-### 3.3 Governance-Failure Anti-Patterns
+### 3.3 Framework Violations
 
-| Anti-Pattern | Description | Detection | Fix |
-|--------------|-------------|-----------|-----|
-| **D-11** Unaware of depth | Sub-agent doesn't distinguish user messages from parent delegation instructions | Sub-agent starts new trajectory instead of continuing parent's | Set `is_delegated: true` + `delegation_depth: N` in Task packet |
-| **D-12** No return format | Sub-agent completes work but returns unstructured prose instead of structured result | Parent can't parse result → re-investigates | Define explicit `return_schema` in delegation packet |
-| **D-13** Broken chain | Workflow steps execute without checking entry_criteria from previous step | Step 3 produces nonsense because Step 2 failed silently | Guard enforcement must HALT, not skip on guard failure |
-| **D-14** Session rot ignored | Agent continues working after 20+ turns without context health check | Later turns contradict earlier decisions | Auto-trigger `scan_hierarchy` every N turns (configurable) |
-| **D-15** Skill without routing | Agent loads a skill but doesn't follow its instructions — just has it in context | Skill body consumed tokens but agent used default behavior | Skill loader must inject skill as `<system>` instruction, not passive context |
+| RED-FLAG | Correct Pattern | Severity |
+|----------|-----------------|----------|
+| Skill contains orchestration logic | Skills = knowledge delta ONLY | CRITICAL |
+| Command contains deep domain tutorials | Commands = routing ONLY | HIGH |
+| Workflow contains role policy | Workflows = deterministic procedure ONLY | HIGH |
+| Agent has edit permissions on `src/` | Agents delegate, don't implement | CRITICAL |
+| Hook performs mutations | Hooks = read-auto, Tools = write-only | CRITICAL |
+| Tool exceeds ~300 lines | Strategic limit for maintainability | MEDIUM |
+
+### 3.4 OpenCode Compliance Violations
+
+| RED-FLAG | OpenCode Standard | HIVEMIND Alignment |
+|----------|-------------------|-------------------|
+| Missing YAML frontmatter in skills | Required: name, description | Enforce in validate-framework.sh |
+| Skills > 500 lines without references | Progressive disclosure violation | Split into references/ |
+| Commands without allowed-tools | Security/scope violation | Audit all commands in commands/ |
+| Duplicate skill names | Namespace collision | Use hierarchical naming |
 
 ---
 
-## Part 4: Development Guide — How to Build HIVEMIND Entities That Work
+## Part 4: OpenCode Alignment Standards
 
-### 4.1 Command Design Pattern (GREEN-FLAG Example)
+### 4.1 Configuration Schema (opencode.json)
 
-Based on GSD's `gsd:debug` and HIVEMIND's Diamond Architecture:
+```json
+{
+  "skills": {
+    "local": [
+      "skills/hivemind-governance",
+      "skills/context-integrity",
+      "skills/delegation-intelligence"
+    ],
+    "external": [],
+    "disclosure": {
+      "default_level": "L0",
+      "escalation_trigger": "explicit_only"
+    }
+  },
+  "commands": {
+    "namespace": "hivemind",
+    "routing": "strict",
+    "validation": "pre-execution"
+  },
+  "agents": {
+    "hiveminder": {
+      "role": "orchestrator",
+      "can_delegate": true,
+      "can_edit": false
+    },
+    "hivefiver": {
+      "role": "meta-builder",
+      "can_delegate": true,
+      "can_edit": false
+    }
+  }
+}
+```
 
-```yaml
+### 4.2 Skill Bundle Registry
+
+| Bundle | Skills | Disclosure Level | Load Trigger |
+|--------|--------|------------------|--------------|
+| `governance-core` | hivemind-governance, session-lifecycle, context-integrity | L0 | Every turn |
+| `routing-core` | delegation-intelligence, delegation-packet-contract | L1 | Pre-delegation |
+| `planning-core` | hiveplanner-orchestration, planning-materializer | L2 | Plan-phase workflow |
+| `research-core` | research-methodology, source-evaluation | L2 | Research workflow |
+| `verification-core` | gate-enforcement, regression-detection | L2 | Verification phase |
+| `repair-core` | systematic-debugging-hivemind, debug-orchestration | L3 | Debug escalation |
+| `meta-core` | skill-creator, skill-judge | L3 | Skill development |
+
+### 4.3 Namespace Conventions
+
+```markdown
+Commands:    hivemind:<action>      hivefiver:<action>      hiveq:<action>
+             (core governance)      (meta-building)         (quality gates)
+
+Skills:      hivemind-<domain>      hivefiver-<domain>      meta-<domain>
+             (governance skills)    (builder skills)        (framework skills)
+
+Agents:      hiveminder             hivefiver               hiveplanner
+             (orchestrator)         (meta-builder)          (phase-planner)
+             
+Workflows:   <domain>-<verb>        (e.g., plan-phase, execute-plan, verify-work)
+```
+
 ---
-name: hivemind:example-command
-description: One-line: what this command does and when to use it
-argument-hint: [what the user provides]
-owner_agent: hiveminder               # Who owns this command
-kind: router                          # ALWAYS router for core commands
-execution_context: workflows/example-workflow.yaml
-required_skills:
-  - relevant-skill-bundle
-required_templates:
-  - templates/example-output.md       # Output format
-required_references:
-  - references/domain-knowledge.md    # Domain context
-required_prompts:
-  - prompts/example-instruction.md    # Formatted instructions
-chain_group: hiveminder
-group: hiveminder
-entry_gate: session_declared
+
+## Part 5: Realignment Protocols
+
+### 5.1 When to Trigger Realignment
+
+Trigger realignment when ANY of these conditions are met:
+
+1. **Drift Score < 50** — Context degradation detected
+2. **3+ Turns without `map_context`** — Stale trajectory
+3. **Post-compaction without `think_back`** — Risk of amnesia
+4. **Subagent return without `export_cycle`** — Intelligence loss
+5. **RED-FLAG behavior observed** — Framework violation
+
+### 5.2 Realignment Prompt Template
+
+```markdown
+# HIVEMIND REALIGNMENT PROTOCOL
+
+## Current State Assessment
+**Session ID**: [UUID]
+**Drift Score**: [0-100]
+**Turn Count**: [N]
+**Last Action**: [declare_intent | map_context | compact_session | other]
+
+## Required Actions
+
+### Step 1: Context Recovery (MANDATORY)
+```typescript
+// Load context-first gatekeeping
+skill("hivemind-governance")
+
+// Assess current position
+scan_hierarchy({})
+
+// If post-compaction or drift detected
+think_back({})
+recall_mems({ query: "decisions" })
+```
+
+### Step 2: Validate Trajectory
+- [ ] Current action aligns with active trajectory
+- [ ] No orphaned tasks in hierarchy
+- [ ] Parent-child chain intact
+
+### Step 3: Re-establish Intent (if needed)
+```typescript
+declare_intent({
+  mode: "plan_driven" | "quick_fix" | "exploration",
+  focus: "Current work description",
+  reason: "Realignment triggered: [drift|compaction|violation]"
+})
+```
+
+### Step 4: Document Realignment
+```typescript
+save_anchor({
+  type: "realignment",
+  content: "Realignment at turn [N]: [reason]. Resuming [work].",
+  tags: ["drift-recovery", "context-maintenance"]
+})
+```
+
+## Success Criteria
+- [ ] Drift score > 70
+- [ ] Hierarchy shows current position
+- [ ] Session memory accessible
+- [ ] Ready to proceed with clear intent
+```
+
+### 5.3 Post-Violation Recovery
+
+When RED-FLAG behavior is detected:
+
+```markdown
+# POST-VIOLATION RECOVERY PROTOCOL
+
+## Immediate Halt
+STOP all work. Do not proceed with current task.
+
+## Violation Classification
+| Severity | Action |
+|----------|--------|
+| CRITICAL | Halt all work, escalate to hiveminder immediately |
+| HIGH | Pause current wave, assess blast radius |
+| MEDIUM | Log violation, continue with monitoring |
+
+## Recovery Steps
+1. **Document the violation** with evidence
+2. **Assess blast radius** — what else might be affected?
+3. **Revert if necessary** — rollback to last known good state
+4. **Root cause analysis** — why did the violation occur?
+5. **Prevention measure** — how to avoid in future?
+
+## Evidence Collection
+```typescript
+save_mem({
+  shelf: "violations",
+  content: "[VIOLATION-TYPE] at [LOCATION]: [DESCRIPTION]. Evidence: [FILES].",
+  tags: ["violation", "recovery", "prevention"]
+})
+```
+```
+
 ---
 
-<objective>
-WHAT this command achieves in 2-3 lines.
-WHY it uses subagent isolation (context burn reason).
-</objective>
+## Part 6: Audit Execution Checklist
 
-<context>
-User's input: $ARGUMENTS
+### 6.1 Pre-Audit Setup
 
 ```bash
-# Deterministic context check FIRST
-HIERARCHY_STATUS=$(scan_hierarchy --action status --json)
-ACTIVE_PLAN=$(recall_mems --query "active plan" --limit 1)
-```
-</context>
+# 1. Verify environment
+cd /Users/apple/hivemind-plugin
+npx tsc --noEmit
+npm test
 
-<process>
-## 0. Initialize Context (DETERMINISTIC)
+# 2. Check framework validator
+./scripts/validate-framework.sh
+
+# 3. Verify .hivemind integrity
+node bin/hivemind-tools.cjs validate chain
+node bin/hivemind-tools.cjs state hierarchy
+```
+
+### 6.2 Per-Wave Audit Checklist
+
+#### Wave β: Context Injection Remediation
+
+- [ ] P0 duplication removed from both lifecycle and transform channels
+- [ ] P0 pollution (task blocks, counters, hints) removed from default path
+- [ ] Auto-realign conditionalized (fires only when appropriate)
+- [ ] Wave α integration points wired safely
+- [ ] Cross-channel dedup active
+- [ ] Steady-state injection < 1200 tokens/turn
+- [ ] `npx tsc --noEmit` pass
+- [ ] `npm test` pass
+
+#### Wave γ: Tools & Mechanism Hygiene
+
+- [ ] Event listeners audited for unintended triggers
+- [ ] Zombie/orphan JSON patterns cataloged
+- [ ] Tool naming conflicts resolved
+- [ ] Export contracts validated before write
+- [ ] `npx tsc --noEmit` pass
+- [ ] `npm test` pass
+
+#### Wave δ: Auto-Session + Memory Lifecycle
+
+- [ ] Auto-new-session mechanism implemented
+- [ ] Memory auto-classification working
+- [ ] Category sorting implemented
+- [ ] `STATE.md` auto-persistence on compaction
+- [ ] TODO-Pending lifecycle implemented
+- [ ] `npx tsc --noEmit` pass
+- [ ] `npm test` pass
+
+### 6.3 Post-Audit Reporting
+
+```markdown
+## Audit Report Template
+
+**Audit ID**: AUDIT-[DATE]-[SEQUENCE]
+**Auditor**: [Agent Name]
+**Scope**: [Waves/Areas Audited]
+**Duration**: [Start] - [End]
+
+### Findings Summary
+| Severity | Count | Categories |
+|----------|-------|------------|
+| CRITICAL | [N] | [List] |
+| HIGH | [N] | [List] |
+| MEDIUM | [N] | [List] |
+| LOW | [N] | [List] |
+
+### GREEN-FLAG Validations
+- [X] Commands follow frontmatter + structure pattern
+- [X] Workflows have deterministic steps
+- [X] Skills respect knowledge delta + progressive disclosure
+- [X] References are static knowledge sources only
+
+### RED-FLAGS Found
+1. **[FLAG]**: [Description]
+   - **Location**: [File/Line]
+   - **Evidence**: [Quote/Artifact]
+   - **Remediation**: [Action Required]
+
+### Recommendations
+1. [Priority 1 recommendation]
+2. [Priority 2 recommendation]
+
+### Sign-off
+- [ ] Technical review complete
+- [ ] Framework validator pass
+- [ ] Documentation updated
+```
+
+---
+
+## Part 7: Quick Reference
+
+### 7.1 Essential Tools
 
 ```bash
-# Always: check hierarchy before any action
-if [ -z "$HIERARCHY_STATUS" ]; then
-  declare_intent --trajectory "Command: example-command"
-fi
+# Know where you are
+node bin/hivemind-tools.cjs state hierarchy
+
+# Know what happened
+node bin/hivemind-tools.cjs session trace <stamp>
+
+# Know if things are consistent
+node bin/hivemind-tools.cjs validate chain
+
+# Full ecosystem check
+node bin/hivemind-tools.cjs ecosystem-check
 ```
 
-## 1. Gate Check
-Verify prerequisites are met. If not, STOP with actionable message.
+### 7.2 Session Lifecycle Tools
 
-## 2. Prepare Delegation (if sub-agent needed)
-Read required context files. Construct delegation packet with:
-- scope (exact file paths)
-- constraints (what NOT to do)
-- success_metrics (measurable outcomes)
-- return format (structured result schema)
+```typescript
+// Start
+skill("hivemind-governance")
+declare_intent({ mode, focus })
 
-## 3. Execute or Delegate
-Either execute inline or delegate via Task().
+// During work
+map_context({ level, content })
+save_anchor({ type, content, tags })
+save_mem({ shelf, content, tags })
 
-## 4. Handle Result
-Process structured return. Update hierarchy. Report to user.
-</process>
+// Delegation
+skill("delegation-intelligence")
+// Spawn subagent with explicit task/scope/return format
+export_cycle({ outcome, findings })
 
-<success_criteria>
-- [ ] Hierarchy verified before action
-- [ ] Context loaded from STATE.md / recall_mems before work
-- [ ] Delegation packet has explicit scope + constraints + return format
-- [ ] Result updates trajectory / planning artifacts
-</success_criteria>
+// Recovery
+skill("context-integrity")
+scan_hierarchy({})
+think_back({})
+recall_mems({ query })
+
+// End
+compact_session({ summary })
 ```
 
-### 4.2 Workflow Design Pattern
+### 7.3 Decision Matrix
 
-Two tiers, matching the master plan's architecture:
-
-**Tier 1 — Orchestration** (hiveminder only): 7-10 steps with domains, hierarchy, gatekeeping, result_handling, timeouts. See `sequential-delegation-workflow.yaml` as reference.
-
-**Tier 2 — Persona/Utility** (all other agents): 4-6 steps, minimal schema:
-
-```yaml
-contract_version: 2
-name: example-workflow
-target_agent: hivemaker              # Agent that executes this
-description: "One-line: what this workflow does"
-version: 1
-steps:
-  - name: step-name
-    description: "What this step does — specific enough to verify"
-    tool: tool-name
-    wave: 1                          # Execution order (same wave = parallel)
-    skill_bundles:
-      - relevant-bundle              # ONLY what this step needs
-    args:
-      action: do_thing
-    entry_criteria: "Precondition that MUST be true"
-    exit_criteria: "Postcondition that MUST be verifiable"
-
-guards:
-  - rule: guard_name
-    check: condition_to_verify       # Deterministic check
-```
-
-### 4.3 Skill Design Pattern (Progressive Disclosure)
-
-```
-skill-name/
-├── SKILL.md                         # REQUIRED: <500 lines
-│   ├── frontmatter: name + description (ALWAYS in context, ~100 words)
-│   └── body: Core workflow + when to load references
-├── scripts/                         # Deterministic bash/python
-│   └── check-something.sh           # Executed without reading into context
-├── references/                      # Domain knowledge
-│   ├── patterns.md                  # Loaded ONLY when skill says "read this"
-│   └── edge-cases.md                # Loaded ONLY for escalation
-└── assets/                          # Templates for output
-    └── output-template.md           # Used in output, not read into context
-```
-
-**Key principles**:
-1. **Description = trigger**: This is ALL agents see until skill activates. Be specific about WHEN to use it
-2. **Body = minimal instructions**: Core workflow only. If >500 lines, split into references
-3. **References = on-demand**: Include grep patterns in SKILL.md so agent knows HOW to find what it needs
-4. **Scripts = deterministic**: Never rely on agent to "write the same bash every time" — bundle it
-
-### 4.4 Delegation Packet Contract
-
-Every `Task()` call MUST include:
-
-```yaml
-delegation_packet:
-  intent_id: "UUID linking to trajectory"
-  source_command: "command that initiated this"
-  delegation_source: "agent"           # vs "human" — sub-agent MUST know
-  delegation_depth: 1                  # How many levels deep
-  parent_agent: "hiveminder"           # Who delegated
-  target_agent: "hivemaker"
-  target_workflow: "workflows/example.yaml"
-  skills_to_load:
-    - specific-skill-bundle            # NOT "all skills"
-  scope:
-    in_scope_paths:
-      - "src/lib/specific-module.ts"
-    out_of_scope_paths:
-      - "src/**"                       # Everything else is OFF LIMITS
-  constraints:
-    - "Do NOT modify any file outside in_scope_paths"
-    - "Do NOT run npm install"
-    - "Do NOT create new files without explicit path"
-  success_metrics:
-    - "File X exists with function Y exported"
-    - "npx tsc --noEmit passes"
-    - "npm test passes"
-  acceptance_criteria: "One-sentence: what MUST be true when done"
-  required_evidence:
-    - "git diff showing changes"
-    - "test output showing pass"
-  failure_policy: "STOP and return error — do NOT attempt workaround"
-  return_schema:
-    format: "structured"
-    fields:
-      - status: "success | partial | failure"
-      - files_modified: "string[]"
-      - evidence: "string"
-      - issues: "string[]"
-```
+| Scenario | Action | Skill to Load |
+|----------|--------|---------------|
+| Starting new session | `declare_intent` + `scan_hierarchy` | hivemind-governance |
+| Drift warning | `think_back` + `recall_mems` | context-integrity |
+| About to delegate | Validate 4 parallel conditions | delegation-intelligence |
+| Subagent returned | Parse result, `export_cycle` | delegation-intelligence |
+| Post-compaction | `think_back` + verify mems | context-integrity |
+| Off-track intention | Save to TODO-Pending, continue main | session-lifecycle |
+| Unclear requirements | Ask clarifying questions | evidence-discipline |
 
 ---
 
-## Part 5: Deviation Classification (Adapted from GSD)
+## Appendix A: Related Documents
 
-When agents encounter unplanned situations during execution:
+| Document | Purpose | Location |
+|----------|---------|----------|
+| HYBRID-A+B Master Plan | Strategic execution map | [`docs/plans/2026-02-27-hybrid-ab-master-plan.md`](docs/plans/2026-02-27-hybrid-ab-master-plan.md) |
+| SYSTEM-DIRECTIVES | Framework behavior SOT | [`SYSTEM-DIRECTIVES.md`](SYSTEM-DIRECTIVES.md) |
+| AGENTS.md | Agent role definitions | [`AGENTS.md`](AGENTS.md) |
+| HIVEMIND-FRAMEWORK.md | Framework overview | [`HIVEMIND-FRAMEWORK.md`](HIVEMIND-FRAMEWORK.md) |
+| PITFALLS | Anti-pattern catalog | [`docs/PITFALLS.md`](docs/PITFALLS.md) |
 
-| Rule | Trigger | Action | Permission |
-|------|---------|--------|------------|
-| **R1: Bug** | Broken behavior, type errors, crashes, security holes | Fix → test → verify → track `[R1-Bug]` | Auto |
-| **R2: Missing Critical** | Missing error handling, validation, auth, rate limiting | Add → test → verify → track `[R2-Critical]` | Auto |
-| **R3: Blocking** | Missing deps, wrong types, broken imports, missing config | Fix blocker → verify → track `[R3-Blocking]` | Auto |
-| **R4: Architectural** | New schema, switching libs, breaking API, new service | **STOP → present decision → get approval** | Ask user |
+## Appendix B: Evidence Registry
 
-**Priority**: R4 (STOP) > R1-R3 (auto) > unsure → R4
-
----
-
-## Part 6: Session Governance Checklist
-
-### New Session Start
-- [ ] `declare_intent` fired with trajectory description
-- [ ] `map_context(trajectory)` set
-- [ ] `STATE.md` read (if exists) for cross-session continuity
-- [ ] Active plan/task identified from `.hivemind/` state
-- [ ] Agent confirms alignment with user before executing
-
-### Mid-Session Health
-- [ ] Every 10 turns: `scan_hierarchy` drift check
-- [ ] Every delegation: full packet with scope + constraints + return format
-- [ ] Every file creation: traces to active plan/task
-- [ ] Every skill load: traces to workflow step's `skill_bundles`
-
-### Session End / Compact
-- [ ] Temporary exports consolidated into trajectory
-- [ ] Session memory classified (discovery/research/planning/implementing/debug/testing)
-- [ ] STATE.md updated with decisions, blockers, session position
-- [ ] Off-track intentions saved to TODO-Pending
-- [ ] Planning artifacts (ROADMAP, REQUIREMENTS) updated if applicable
-
-### Delegation Health
-- [ ] Packet includes `delegation_source: agent` + `delegation_depth`
-- [ ] Packet includes `in_scope_paths` + `out_of_scope_paths`
-- [ ] Packet includes measurable `success_metrics`
-- [ ] Packet includes explicit `return_schema`
-- [ ] Sub-agent result matches `return_schema` format
-- [ ] Parent validates result against `acceptance_criteria` before proceeding
+| ID | Evidence | Source |
+|----|----------|--------|
+| EV-01 | Dual-channel system injection path | [`src/hooks/session-lifecycle.ts:129-155`](src/hooks/session-lifecycle.ts:129) |
+| EV-02 | Checklist reminder emitted from lifecycle | [`src/hooks/session-lifecycle.ts:66-70`](src/hooks/session-lifecycle.ts:66) |
+| EV-03 | Task block injected each turn | [`src/hooks/session-lifecycle.ts:203-210`](src/hooks/session-lifecycle.ts:203) |
+| EV-04 | Auto-realign reminder in transform | [`src/hooks/messages-transform.ts:91-113`](src/hooks/messages-transform.ts:91) |
+| EV-05 | Cognitive packer payload shape | [`src/lib/cognitive-packer.ts:391-560`](src/lib/cognitive-packer.ts:391) |
 
 ---
 
-## Part 7: Alignment Check — Master Plan vs. Current State
-
-| Master Plan Gap | Status | What Sector-2 Provides | What Sector-1 Must Build |
-|-----------------|--------|------------------------|--------------------------|
-| GAP-1: Command Chaining (3/10) | 🟡 Partially addressed | 43 commands have `group` + `required_skills` | `execution_context` + `kind: router` wiring (Wave 2A-2B) |
-| GAP-2: SOT Planning Layer (0/10) | 🔴 Not started | N/A | `.hivemind/project/planning/` hierarchy (Wave 1B) |
-| GAP-3: Progressive Disclosure (0/10) | 🔴 Not started | skill_bundles declared per workflow step | `skill-loader.ts` runtime (Wave 4) |
-| GAP-4: Code Intelligence (1/10) | 🔴 Not started | codemap/codewiki manifests exist (empty) | Population + planning integration (Wave 5) |
-| GAP-5: Auto-Session (0/10) | 🔴 Not started | N/A | session-classifier + materializer (Wave 2C) |
-
-### Sector-2 Readiness for Sector-1 Integration
-
-Sector-2 has laid the **structural foundation** that Sector-1 can wire into:
-
-1. **All 20 workflows are v2-compliant** → Sector-1's `execution_context` routing has valid targets
-2. **All 43 commands have `required_skills`** → Sector-1's skill-loader knows what to load per step
-3. **All 8 agents have `tasks`/`workflows`/`prompts`** → Sector-1's delegation knows agent capabilities
-4. **Guards exist on all workflows** → Sector-1's gate enforcement has checks to verify
-5. **Skill bundles are mapped** → Sector-1's progressive disclosure has bundle boundaries
-
-**The contract is clear**: Sector-1 builds the RUNTIME (code, loaders, routers). Sector-2 provides the CONFIGURATION (YAML, templates, references). Neither touches the other's domain.
+*Document maintained by HIVEMIND Documentation Specialist. Last updated: 2026-02-28*
+*For questions or updates, delegate to `hiveminder` with reference to this document.*

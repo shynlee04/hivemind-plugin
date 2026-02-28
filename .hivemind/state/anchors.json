@@ -53,6 +53,30 @@
       "value": "HALT FINDINGS: (1) Wave α files are DEAD CODE — 3 libs exist but 0 callers. (2) event-consumers.ts queues mutation keys (memory_governance_increment, temporary_exports_*_increment) that DON'T EXIST in BrainState schema — schema mismatch. (3) planning-materializer.ts has path resolution inconsistency (getEffectivePaths vs hardcoded join). (4) Watch-integration NOT wired in plugin init. (5) CQRS queue requires tool execution to flush — consumers queuing without flush = silent data loss. (6) Planning/code-intel/session lifecycle are deeply coupled — cannot wire one without understanding ALL.",
       "created_at": 1772224951022,
       "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "wave-alpha-complete-2026-02-28",
+      "value": "WAVE α COMPLETE: 3 lib files bug-free but unwired. event-consumers.ts=informational bridges (no phantom mutations). planning-materializer.ts=paths fixed. session-intent-classifier.ts=clean, no issues. Integration surface fully mapped with 3 safe insertion points and 6 danger zones identified. NEXT: Wire the 3 libs into their safe insertion points (Wave β), then test. 31 pre-existing test failures from sync-assets validation are DEFERRED (unrelated to Wave α). tsc=0 errors.",
+      "created_at": 1772228989789,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "master-plan-v2.1-complete",
+      "value": "MASTER PLAN v2.1 COMPLETE (2026-02-28). docs/plans/2026-02-27-hybrid-ab-master-plan.md rewritten to 595 lines. Structure: 3-RANK problem hierarchy replaces 5 Validated Gaps. Waves renamed β/γ/δ/ε/ζ. Completed work section covers Wave 1, α, config recon, injection trace. Wave 2A/2B marked OBSOLETE. Evidence register (20 entries), Obsolescence ledger, Acceptance checklists per wave. Next: Wave β (context injection remediation).",
+      "created_at": 1772236066763,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "brownfield-mapping-complete-2026-02-28",
+      "value": "GSD BROWNFIELD MAPPING COMPLETE: 7 documents (2,944 lines total) written to .hivemind/project/planning/codebase/. Files: STACK.md (240L), ARCHITECTURE.md (459L), CONVENTIONS.md (710L), CONCERNS.md (424L), INTEGRATIONS.md (235L), STRUCTURE.md (310L), TESTING.md (566L). Key findings: 22 concerns (3 P0, 6 P1, 8 P2, 5 P3), 11 dead files (1,407L), 114 silent catch blocks, 52% lib files untested, dual-channel injection duplication confirmed with exact line numbers.",
+      "created_at": 1772243404775,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
+    },
+    {
+      "key": "user-constraint-2026-02-28-hivemind-only",
+      "value": "User directive: Do NOT use gsd-* agents. Use HiveMind framework facilities only for all subsequent steps. dist/ and node_modules intentionally removed to reduce noise during planning/governance work.",
+      "created_at": 1772243778284,
+      "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7"
     }
   ],
   "version": "1.0.0"

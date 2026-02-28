@@ -12,7 +12,7 @@ describe("agent boundary policy", () => {
     const content = readAgent("agents/hiveminder.md");
 
     assert.match(content, /name:\s*hiveminder/);
-    assert.match(content, /role:\s*front_orchestrator/);
+    assert.match(content, /role:\s*supreme_orchestrator/);
     assert.match(content, /recursive_delegation:\s*false/);
     assert.match(content, /-\s*"src\/\*\*"/);
     assert.match(content, /-\s*"tests\/\*\*"/);

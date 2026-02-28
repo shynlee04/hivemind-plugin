@@ -1,0 +1,401 @@
+{
+  "version": "1.0.0",
+  "tasks": [
+    {
+      "id": "9bf72f71-4273-4ea1-adc1-818b65b1fd21",
+      "parent_phase_id": "76b0c71e-9588-478e-93f1-888e55173083",
+      "title": "Run HiveFiver startup realignment and lane detection",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T10:56:57.217Z",
+      "updated_at": "2026-02-27T10:56:57.217Z",
+      "acceptance_criteria": [
+        "Persona lane selected",
+        "Project type detected (greenfield/brownfield)",
+        "Governance mode locked"
+      ],
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "vibecoder",
+      "source": "init.seed",
+      "hivefiver_action": "init",
+      "canonical_command": "hivefiver init",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "menu_step": 1,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "c3d80a69-9409-4058-a193-dd2f5176377c",
+        "workflow_id": "hivefiver-vibecoder.yaml",
+        "requirement_node_id": "rq-bootstrap"
+      }
+    },
+    {
+      "id": "6dea6c35-f79a-49d7-a02f-faa5c54752f9",
+      "parent_phase_id": "76b0c71e-9588-478e-93f1-888e55173083",
+      "title": "Build intake baseline and generate first executable specification",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T10:56:57.217Z",
+      "updated_at": "2026-02-27T10:56:57.217Z",
+      "acceptance_criteria": [
+        "MCQ intake completed",
+        "Ambiguity map emitted",
+        "Spec candidate selected"
+      ],
+      "dependencies": [
+        "9bf72f71-4273-4ea1-adc1-818b65b1fd21"
+      ],
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "init.seed",
+      "hivefiver_action": "spec",
+      "canonical_command": "hivefiver spec",
+      "recommended_skills": [
+        "hivefiver-spec-distillation",
+        "hivefiver-bilingual-tutor"
+      ],
+      "menu_step": 2,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "c3d80a69-9409-4058-a193-dd2f5176377c",
+        "workflow_id": "hivefiver-floppy-engineer.yaml",
+        "requirement_node_id": "rq-spec"
+      }
+    },
+    {
+      "id": "0a7d6b9b-27f8-4e71-9634-955a57af715b",
+      "parent_phase_id": "76b0c71e-9588-478e-93f1-888e55173083",
+      "title": "Audit and configure non-negotiable MCP providers",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T10:56:57.217Z",
+      "updated_at": "2026-02-27T10:56:57.217Z",
+      "acceptance_criteria": [
+        "Context7, DeepWiki, Repomix status captured",
+        "Tavily API guidance emitted",
+        "Confidence downgrade policy configured"
+      ],
+      "dependencies": [
+        "6dea6c35-f79a-49d7-a02f-faa5c54752f9"
+      ],
+      "priority": "high",
+      "domain": "dev",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "research",
+      "canonical_command": "hivefiver research",
+      "recommended_skills": [
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor"
+      ],
+      "menu_step": 3,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "c3d80a69-9409-4058-a193-dd2f5176377c",
+        "workflow_id": "hivefiver-mcp-fallback.yaml",
+        "mcp_provider_id": "stack-core"
+      }
+    },
+    {
+      "id": "9b150089-648d-4e0a-af69-9eef39017164",
+      "parent_phase_id": "76b0c71e-9588-478e-93f1-888e55173083",
+      "title": "Prepare TODO-to-Ralph export mapping and validation",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T10:56:57.217Z",
+      "updated_at": "2026-02-27T10:56:57.217Z",
+      "acceptance_criteria": [
+        "tasks/prd.json schema validated",
+        "Dependency map generated",
+        "Related entity links preserved"
+      ],
+      "dependencies": [
+        "0a7d6b9b-27f8-4e71-9634-955a57af715b"
+      ],
+      "priority": "medium",
+      "domain": "office-ops",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "validate",
+      "canonical_command": "hivefiver validate",
+      "recommended_skills": [
+        "hivefiver-ralph-tasking",
+        "hivefiver-gsd-compat"
+      ],
+      "menu_step": 4,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "c3d80a69-9409-4058-a193-dd2f5176377c",
+        "workflow_id": "hivefiver-enterprise-architect.yaml",
+        "export_id": "ralph-prd"
+      }
+    },
+    {
+      "id": "8a5b75f7-9222-4131-b909-d3e441992b7a",
+      "parent_phase_id": "96456201-3df5-4bc0-a715-38495460ac41",
+      "title": "Reading complete. Synthesizing timeline H1-H11 into master-plan foundation. Identifying current state and next actions.",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:22:18.681Z",
+      "updated_at": "2026-02-27T11:22:18.681Z"
+    },
+    {
+      "id": "bf7bfc17-3ff1-5320-86c1-e701c39a08ed",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Master plan v2.1 rewrite — DONE",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-27T23:50:53.868Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "37243534-186b-5d13-bb61-9e4492939e4a",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Read all 4 target files for β.1+β.2 delegation",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-27T23:50:53.868Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "7e62ff32-ca9d-521f-ac80-c7ae7b21c0ee",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Delegate β.1+β.2 to hivemaker: remove P0 duplications + pollution",
+      "status": "invalidated",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-28T00:31:35.570Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "c9ce900f-f870-5bbc-9b44-c40a8d52561d",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Verify β.1+β.2 changes with isolated tests + tsc",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-27T23:50:53.868Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "e467438a-9b29-5949-9869-9a27e942fffb",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "β.3: Conditionalize MT-03 auto-realign in messages-transform.ts",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-27T23:50:53.868Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "0660b7bf-a09f-505f-81c0-a08ad23a3ab0",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "β.4: Wire Wave α libs into safe insertion points",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-27T23:50:53.868Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "medium"
+    },
+    {
+      "id": "dda43512-3370-5810-bd97-5c1b97ce2e4c",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "β.5: Add cross-channel dedup mechanism",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-27T23:50:53.868Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "medium"
+    },
+    {
+      "id": "8503d1ef-6ae2-5569-9608-1ccecd8e7a09",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Delegate master plan rewrite to hivemaker with full context packet",
+      "status": "invalidated",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-27T23:41:46.252Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "eb00a487-d413-5932-9b63-f38f9002ecc4",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Verify updated master plan against SYSTEM-DIRECTIVES requirements",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-27T23:39:34.290Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "65640278-a066-5b5b-8321-f0f630732d49",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Save master plan update anchor",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-27T23:39:34.290Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "medium"
+    },
+    {
+      "id": "7c092c6f-1cb5-51fa-be51-79da85a409c2",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Wave β Task 2: Wire classifySessionIntent() in src/hooks/event-handler.ts",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T11:43:51.530Z",
+      "updated_at": "2026-02-27T22:28:59.059Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "medium"
+    },
+    {
+      "id": "cc89c792-668d-5641-adf3-de31402cf868",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Wave β Task 3: Wire materializeFromSessionState() in src/lib/session-engine.ts",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T17:50:30.377Z",
+      "updated_at": "2026-02-27T22:28:59.059Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "medium"
+    },
+    {
+      "id": "d03bae41-3a61-55ff-9874-0d184505277c",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Update master plan to reflect stabilize-first pivot + config remediation",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T17:50:30.377Z",
+      "updated_at": "2026-02-27T22:28:59.059Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "low"
+    },
+    {
+      "id": "f898003e-208b-579e-814f-b383c705e606",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "FIX GAP-6: Add S-16 to S-18 for chaining, alias, hand-off checks",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T17:50:30.388Z",
+      "updated_at": "2026-02-27T17:46:18.141Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "medium"
+    },
+    {
+      "id": "73bdb9fa-7de6-5104-863d-9ade3f0d6d11",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "FIX GAP-5: Add planning artifact hierarchy detection to structural-audit.sh",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T17:50:30.388Z",
+      "updated_at": "2026-02-27T17:46:18.141Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "medium"
+    },
+    {
+      "id": "133bf1db-c240-5b5c-abf2-689dcd102cb1",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "FIX GAP-8: Add context-engineering section to session-mechanics.md",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T17:50:30.388Z",
+      "updated_at": "2026-02-27T17:46:18.141Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "medium"
+    },
+    {
+      "id": "4e2c8cce-11ec-584c-b4c4-a511b77a73e2",
+      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
+      "title": "Re-run both scripts to verify no regressions",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-02-27T17:50:30.388Z",
+      "updated_at": "2026-02-27T17:46:18.141Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    }
+  ]
+}

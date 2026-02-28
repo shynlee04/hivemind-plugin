@@ -1,5 +1,387 @@
 {
-  "session_id": "unknown",
-  "updated_at": 1772189816977,
-  "tasks": []
+  "session_id": "ses_35e087d82ffeGHo0cLDUf7AsZ1",
+  "updated_at": 1772244357273,
+  "tasks": [
+    {
+      "id": "todo-1",
+      "text": "Dispatch 4 parallel gsd-codebase-mapper agents for Sector-1 (src/)",
+      "content": "Dispatch 4 parallel gsd-codebase-mapper agents for Sector-1 (src/)",
+      "status": "completed",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "architect",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver architect",
+          "action": "architect",
+          "label": "Design agent system",
+          "description": "Shape agents, subagents, and interfaces.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver workflow",
+          "action": "workflow",
+          "label": "Configure workflow",
+          "description": "Define orchestrated execution steps and guards.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver build",
+          "action": "build",
+          "label": "Implement with TDD",
+          "description": "Move from approved plan into implementation.",
+          "requiresPermission": true
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver architect",
+      "related_entities": {
+        "session_id": "ses_35e087d82ffeGHo0cLDUf7AsZ1",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
+      },
+      "last_realigned_at": 1772244357273,
+      "updated_at": 1772244357273
+    },
+    {
+      "id": "todo-2",
+      "text": "Populate SOT governance files (PROJECT.md, ROADMAP.md, STATE.md, REQUIREMENTS.md, MILESTONES.md)",
+      "content": "Populate SOT governance files (PROJECT.md, ROADMAP.md, STATE.md, REQUIREMENTS.md, MILESTONES.md)",
+      "status": "completed",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "todo.updated",
+      "hivefiver_action": "spec",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver architect",
+          "action": "architect",
+          "label": "Design agent system",
+          "description": "Shape agents, subagents, and interfaces.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver workflow",
+          "action": "workflow",
+          "label": "Configure workflow",
+          "description": "Define orchestrated execution steps and guards.",
+          "requiresPermission": false
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-spec-distillation",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver spec",
+      "related_entities": {
+        "session_id": "ses_35e087d82ffeGHo0cLDUf7AsZ1",
+        "workflow_id": "hivefiver-enterprise-architect.yaml"
+      },
+      "last_realigned_at": 1772244357273,
+      "updated_at": 1772244357273
+    },
+    {
+      "id": "todo-3",
+      "text": "Move research file from docs/plans/ to SOT path with proper naming",
+      "content": "Move research file from docs/plans/ to SOT path with proper naming",
+      "status": "in_progress",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "research",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver audit",
+          "action": "audit",
+          "label": "Audit alignment",
+          "description": "Check config drift and governance integrity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver validate",
+          "action": "validate",
+          "label": "Run quality gates",
+          "description": "Check tests, evidence gates, and schema quality.",
+          "requiresPermission": true
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver research",
+      "related_entities": {
+        "session_id": "ses_35e087d82ffeGHo0cLDUf7AsZ1",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
+      },
+      "last_realigned_at": 1772244357273,
+      "updated_at": 1772244357273
+    },
+    {
+      "id": "todo-4",
+      "text": "Create phase plan for Wave β under phases/",
+      "content": "Create phase plan for Wave β under phases/",
+      "status": "pending",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "init",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver init",
+          "action": "init",
+          "label": "Initialize + profile",
+          "description": "Detect context, profile lane, and lock startup flow.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver tutor",
+          "action": "tutor",
+          "label": "Tutor mode",
+          "description": "Guide through next decisions with interactive coaching.",
+          "requiresPermission": false
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver init",
+      "related_entities": {
+        "session_id": "ses_35e087d82ffeGHo0cLDUf7AsZ1",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
+      },
+      "last_realigned_at": 1772244357273,
+      "updated_at": 1772244357273
+    },
+    {
+      "id": "todo-5",
+      "text": "Add meta-concern (manual vs programmatic mapping) to CONCERNS.md",
+      "content": "Add meta-concern (manual vs programmatic mapping) to CONCERNS.md",
+      "status": "pending",
+      "priority": "medium",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "init",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver init",
+          "action": "init",
+          "label": "Initialize + profile",
+          "description": "Detect context, profile lane, and lock startup flow.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver tutor",
+          "action": "tutor",
+          "label": "Tutor mode",
+          "description": "Guide through next decisions with interactive coaching.",
+          "requiresPermission": false
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver init",
+      "related_entities": {
+        "session_id": "ses_35e087d82ffeGHo0cLDUf7AsZ1",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
+      },
+      "last_realigned_at": 1772244357273,
+      "updated_at": 1772244357273
+    },
+    {
+      "id": "todo-6",
+      "text": "Present completed SOT to user for confirmation before Wave β",
+      "content": "Present completed SOT to user for confirmation before Wave β",
+      "status": "pending",
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "todo.updated",
+      "hivefiver_action": "init",
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "auto_initiate": true,
+      "requires_permission": false,
+      "next_step_menu": [
+        {
+          "id": "option-1",
+          "command": "hivefiver init",
+          "action": "init",
+          "label": "Initialize + profile",
+          "description": "Detect context, profile lane, and lock startup flow.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-2",
+          "command": "hivefiver spec",
+          "action": "spec",
+          "label": "Build specification",
+          "description": "Distill requirements and close ambiguity.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver research",
+          "action": "research",
+          "label": "Run MCP research",
+          "description": "Gather evidence from MCP providers and synthesize findings.",
+          "requiresPermission": false
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver tutor",
+          "action": "tutor",
+          "label": "Tutor mode",
+          "description": "Guide through next decisions with interactive coaching.",
+          "requiresPermission": false
+        }
+      ],
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor",
+        "hivefiver-domain-pack-router"
+      ],
+      "canonical_command": "hivefiver init",
+      "related_entities": {
+        "session_id": "ses_35e087d82ffeGHo0cLDUf7AsZ1",
+        "workflow_id": "hivefiver-floppy-engineer.yaml"
+      },
+      "last_realigned_at": 1772244357273,
+      "updated_at": 1772244357273
+    }
+  ]
 }
