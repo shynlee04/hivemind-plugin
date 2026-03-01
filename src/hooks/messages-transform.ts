@@ -19,7 +19,7 @@ import {
   shouldCreateNewSession,
 } from "../lib/session-boundary.js"
 import { packCognitiveState } from "../lib/cognitive-packer.js"
-import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
+import { loadGraphTasks } from "../lib/graph-io.js"
 import { loadLastSessionContext, buildTransformedPrompt } from "../lib/session_coherence.js"
 import { existsSync, readdirSync } from "fs"
 import type { Message, Part } from "@opencode-ai/sdk"
@@ -35,6 +35,8 @@ import {
   detectV29OutputStyleSelection,
   generateFirstTurnConfirmationBlock,
 } from "./session-lifecycle-helpers.js"
+import { detectChainBreaks } from "../lib/chain-analysis.js"
+import { detectLongSession } from "../lib/long-session.js"
 
 type MessagePart = {
   id?: string
@@ -587,29 +589,49 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           // P3: Entity checklist failure is non-fatal
         }
 
-        // US-016: Pending tasks - dual-read pattern (trajectory.json primary, tasks.json fallback)
+        // === PHASE 7c: Governance signals (D7 — migrated from session-lifecycle) ===
+        // These were previously in session-governance.ts → system prompt (dual-channel).
+        // Now consolidated here as the single canonical channel.
+        try {
+          // Chain breaks detection
+          const chainBreaks = detectChainBreaks(state)
+          if (chainBreaks.length > 0) {
+            items.push("Chain breaks: " + chainBreaks.map(b => b.message).join("; "))
+          }
+
+          // Drift detection
+          if (state.metrics.drift_score < 50) {
+            items.push("High drift detected — use map_context to re-focus")
+          }
+
+          // Long session detection
+          const longSession = detectLongSession(state, config.auto_compact_on_turns)
+          if (longSession.isLong) {
+            items.push(longSession.suggestion)
+          }
+        } catch {
+          // P3: Governance signal failure is non-fatal
+        }
+
+        // US-016: Pending tasks — single-source read from graph/tasks.json
+        // D7: Removed dual-read pattern (trajectory.json + tasks.json).
+        // Now reads tasks directly — simpler, no redundant trajectory load.
         let pendingTaskCount = 0
 
         // LOW #2: Parallelize async - start tree loading in parallel with task checks
         const treePromise = loadTree(directory)
-        
-        // Primary: Read from graph/tasks.json filtered by trajectory.json active_task_ids
-        // MEDIUM #2: Check BOTH graph files exist before using graph data
-        if (existsSync(paths.graphTrajectory) && existsSync(paths.graphTasks)) {
-          // LOW #2: Load trajectory and graphTasks in parallel
-          const [trajectoryState, graphTasks] = await Promise.all([
-            loadTrajectory(directory),
-            loadGraphTasks(directory, { enabled: false })
-          ])
-          if (trajectoryState?.trajectory) {
-            const activeTaskIds = new Set(trajectoryState.trajectory.active_task_ids)
-            if (activeTaskIds.size > 0 && graphTasks?.tasks) {
-              // MEDIUM #1: Defensive check for task.status before comparison
-              const activeTasks = graphTasks.tasks.filter(task =>
-                activeTaskIds.has(task.id) && task.status && task.status !== "complete" && task.status !== "invalidated" && task.status !== "cancelled"
+
+        if (existsSync(paths.graphTasks)) {
+          try {
+            const graphTasks = await loadGraphTasks(directory, { enabled: false })
+            if (graphTasks?.tasks) {
+              const activeTasks = graphTasks.tasks.filter((task: { id: string; status?: string }) =>
+                task.status && task.status !== "complete" && task.status !== "invalidated" && task.status !== "cancelled"
               )
               pendingTaskCount = activeTasks.length
             }
+          } catch {
+            // P3: Task loading failure is non-fatal
           }
         }
 

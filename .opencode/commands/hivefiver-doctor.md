@@ -122,6 +122,8 @@ Return:
 - verification_evidence: post-fix check outputs
 - residual_risks: issues that couldn't be auto-fixed
 - next_action: "healthy" or specific follow-up command
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>

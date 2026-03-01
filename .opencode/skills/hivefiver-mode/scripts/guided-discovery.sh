@@ -56,20 +56,25 @@ if printf '%s' "$INPUT" | grep -qiE "$vi_chars"; then
 fi
 
 # Vietnamese common words/phrases
-for vw in "tôi" "muốn" "cần" "tạo" "sửa" "giúp" "làm" "thế nào" "là gì" \
-           "được không" "bị" "lỗi" "kiểm tra" "xem" "cho" "một" "này" "những" \
-           "không" "có" "và" "hoặc" "nhưng" "nếu" "thì" "với" "từ" "đến" \
-           "hãy" "xin" "vui lòng" "cám ơn" "dạ" "vâng" "ừ" "ok" \
-           "agent" "skill" "command" "workflow"; do
+# Includes both accented and non-accented forms because many users type without diacritics.
+for vw in "tôi" "toi" "muốn" "muon" "cần" "can" "tạo" "tao" "sửa" "sua" \
+           "giúp" "giup" "làm" "lam" "thế nào" "the nao" "là gì" "la gi" \
+           "được không" "duoc khong" "bị" "bi" "lỗi" "loi" "kiểm tra" "kiem tra" \
+           "xem" "cho" "một" "mot" "này" "nay" "những" "nhung" \
+           "không" "khong" "có" "co" "và" "va" "hoặc" "hoac" "nhưng" "nhung" \
+           "nếu" "neu" "thì" "thi" "với" "voi" "từ" "tu" "đến" "den" \
+           "hãy" "hay" "xin" "vui lòng" "vui long" "cám ơn" "cam on" "dạ" "da" \
+           "vâng" "vang" "ừ" "uh" "ok" "agent" "skill" "command" "workflow"; do
   if [[ "$NORM" == *"$vw"* ]]; then
     lang_vi_score=$((lang_vi_score + 2))
   fi
 done
 
 # Vietnamese full phrases
-for vp in "tôi muốn" "tạo một" "giúp tôi" "làm thế nào" "là gì" \
-          "bị lỗi" "không hoạt động" "kiểm tra giúp" "xin hãy" \
-          "cần giúp" "tôi cần" "cho tôi"; do
+for vp in "tôi muốn" "toi muon" "tạo một" "tao mot" "giúp tôi" "giup toi" \
+          "làm thế nào" "lam the nao" "là gì" "la gi" "bị lỗi" "bi loi" \
+          "không hoạt động" "khong hoat dong" "kiểm tra giúp" "kiem tra giup" \
+          "xin hãy" "xin hay" "cần giúp" "can giup" "tôi cần" "toi can" "cho tôi" "cho toi"; do
   if [[ "$NORM" == *"$vp"* ]]; then
     lang_vi_score=$((lang_vi_score + 5))
   fi

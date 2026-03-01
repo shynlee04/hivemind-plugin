@@ -104,6 +104,8 @@ Return:
 - pipeline_sequence: ordered list of stages
 - next_command: the command to run next (e.g., /hivefiver-discovery)
 - pipeline_state_updated: confirmation that STATE.md was modified
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>

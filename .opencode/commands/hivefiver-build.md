@@ -99,6 +99,9 @@ Return:
 - evidence: file diffs and verification outputs
 - gate_3_passed: boolean
 - next_action: pipeline complete or follow-up needed
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
+- runtime_gate_export: evidence output from runtime-gate.sh export
 </output_contract>
 
 <guided_interaction>

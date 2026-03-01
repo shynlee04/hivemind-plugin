@@ -21,6 +21,9 @@ User profile (auto-executed):
 Runtime enforcement pre-turn (auto-executed — MANDATORY quality/state baseline):
 !`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
 
+Unified MUST pack (auto-executed — intent/profile/journey obligations):
+!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-must-pack.sh start "$ARGUMENTS" .`
+
 ⛔ IF the gate check above shows "allowed": false — STOP. Report the reason to the user. DO NOT proceed.
 </enforcement>
 
@@ -101,6 +104,8 @@ Return:
 - pipeline_sequence: ordered list of stages
 - next_command: the command to run next (e.g., /hivefiver-discovery)
 - pipeline_state_updated: confirmation that STATE.md was modified
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>

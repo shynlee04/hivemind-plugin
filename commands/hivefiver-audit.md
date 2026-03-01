@@ -24,6 +24,9 @@ QA scoping (auto-executed — audit-specific diagnostic questions):
 Runtime enforcement pre-turn (auto-executed — MANDATORY quality/state baseline):
 !`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
 
+Unified MUST pack (auto-executed — intent/profile/journey obligations):
+!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-must-pack.sh audit "$ARGUMENTS" .`
+
 Note: audit always passes gate check — it bypasses the pipeline.
 </enforcement>
 
@@ -107,6 +110,8 @@ Return:
 - cross_reference_report: pass/fail per reference
 - anti_pattern_report: G-01 through G-10 scan results
 - recommended_action: /hivefiver-doctor (if critical findings) or "healthy"
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>

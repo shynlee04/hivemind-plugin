@@ -64,7 +64,7 @@ verification_obligations:
   - Return file-referenced evidence only.
   - Persist high-value findings in memory.
   - Do not mutate source files.
-model: opencode-go/minimax-m2.5
+model: chutes/MiniMaxAI/MiniMax-M2.5-TEE
 reasoningEffort: high
 ---
 

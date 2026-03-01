@@ -22,6 +22,9 @@ Auto-continue command (auto-executed — ready to spawn a fresh session if neede
 
 Runtime enforcement pre-turn (auto-executed — MANDATORY quality/state baseline):
 !`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
+
+Unified MUST pack (auto-executed — intent/profile/journey obligations):
+!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-must-pack.sh router "$ARGUMENTS" .`
 </enforcement>
 
 <objective>
@@ -131,4 +134,6 @@ Return:
 - classification_method: "keyword" | "intent_classifier" | "pipeline_resume"
 - confidence: high | medium | low | none
 - pipeline_state: current pipeline status from enforcement block
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>

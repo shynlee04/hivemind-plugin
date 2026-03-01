@@ -37,7 +37,7 @@ permission:
     "wc *": allow
     "jq *": allow
   edit:
-    "*": ask
+    "*": allow
     ".opencode/**": allow
     ".hivemind/**": allow
     "AGENTS.md": allow

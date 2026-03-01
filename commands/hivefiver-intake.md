@@ -24,6 +24,9 @@ Deterministic journey QA pack (auto-executed):
 Runtime enforcement pre-turn (auto-executed — MANDATORY quality/state baseline):
 !`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
 
+Unified MUST pack (auto-executed — intent/profile/journey obligations):
+!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-must-pack.sh intake "$ARGUMENTS" .`
+
 ⛔ IF the gate check above shows "allowed": false — STOP. Report the reason to the user. DO NOT proceed.
 </enforcement>
 
@@ -81,6 +84,8 @@ Return:
 - ambiguity_count: number of unresolved ambiguities (must be 0 to proceed)
 - promotion_allowed: boolean
 - next_command: /hivefiver-spec
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>

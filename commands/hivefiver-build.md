@@ -21,6 +21,9 @@ Quality check (auto-executed):
 Runtime enforcement pre-turn (auto-executed — MANDATORY quality/state baseline):
 !`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
 
+Unified MUST pack (auto-executed — intent/profile/journey obligations):
+!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-must-pack.sh build "$ARGUMENTS" .`
+
 ⛔ IF the gate check above shows "allowed": false — STOP. Report the reason to the user. DO NOT proceed.
 </enforcement>
 
@@ -47,8 +50,15 @@ Step 3: For each asset in build order:
      - Skills: SKILL.md with description ("Use when..."), references/ for domain knowledge
      - Workflows: entry/exit criteria, dependency ordering, verification loop
   c. **Validate contract** — check against asset-contracts.md schema
-  d. **Write file** — create or update the asset
-  e. **Verify** — re-read the file to confirm write succeeded
+  d. **Schema guard snapshot (MANDATORY before any frontmatter edit)**:
+     ```bash
+     bash .opencode/skills/hivefiver-coordination/scripts/schema-guard.sh snapshot <file_path> .
+     ```
+  e. **Write file** — create or update the asset
+  f. **Verify write + schema guard** — re-read file and verify frontmatter preservation:
+     ```bash
+     bash .opencode/skills/hivefiver-coordination/scripts/schema-guard.sh verify <file_path> .
+     ```
 
 Step 4: After all assets written, run cross-reference check:
 - Every `required_skills` reference points to an existing skill
@@ -89,6 +99,9 @@ Return:
 - evidence: file diffs and verification outputs
 - gate_3_passed: boolean
 - next_action: pipeline complete or follow-up needed
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
+- runtime_gate_export: evidence output from runtime-gate.sh export
 </output_contract>
 
 <guided_interaction>

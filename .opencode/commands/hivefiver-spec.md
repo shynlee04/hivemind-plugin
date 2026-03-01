@@ -77,6 +77,8 @@ Return:
 - acceptance_criteria: list of measurable conditions
 - gate_1_passed: boolean
 - next_command: /hivefiver-architect (if gate passed)
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>

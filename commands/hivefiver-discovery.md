@@ -26,6 +26,9 @@ Intent classification (auto-executed — determines question focus):
 Runtime enforcement pre-turn (auto-executed — MANDATORY quality/state baseline):
 !`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
 
+Unified MUST pack (auto-executed — intent/profile/journey obligations):
+!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-must-pack.sh discovery "$ARGUMENTS" .`
+
 ⛔ IF the gate check above shows "allowed": false — STOP. Report the reason to the user. DO NOT proceed.
 </enforcement>
 
@@ -228,4 +231,6 @@ Return:
 - brainstorm_output: selected approach (if build_new/extend intent)
 - promotion_allowed: boolean
 - next_command: /hivefiver-intake or /hivefiver-discovery --continue
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>

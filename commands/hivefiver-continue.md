@@ -13,6 +13,9 @@ Session continuation command (auto-executed — outputs the opencode run command
 
 Runtime enforcement pre-turn (auto-executed — MANDATORY quality/state baseline):
 !`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
+
+Unified MUST pack (auto-executed — intent/profile/journey obligations):
+!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-must-pack.sh continue "$ARGUMENTS" .`
 </enforcement>
 
 <objective>
@@ -83,4 +86,6 @@ Return:
 - continuation_command: the opencode run command (or confirmation it was executed)
 - handoff_file: path to the written handoff record
 - new_session_will_do: summary of what the new session picks up
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>

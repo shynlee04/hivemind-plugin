@@ -18,6 +18,9 @@ Pipeline orchestrator (auto-executed — what comes after spec):
 Runtime enforcement pre-turn (auto-executed — MANDATORY quality/state baseline):
 !`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
 
+Unified MUST pack (auto-executed — intent/profile/journey obligations):
+!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-must-pack.sh spec "$ARGUMENTS" .`
+
 ⛔ IF the gate check above shows "allowed": false — STOP. Report the reason to the user. DO NOT proceed.
 </enforcement>
 
@@ -74,6 +77,8 @@ Return:
 - acceptance_criteria: list of measurable conditions
 - gate_1_passed: boolean
 - next_command: /hivefiver-architect (if gate passed)
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>

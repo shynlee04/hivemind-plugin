@@ -84,6 +84,8 @@ Return:
 - ambiguity_count: number of unresolved ambiguities (must be 0 to proceed)
 - promotion_allowed: boolean
 - next_command: /hivefiver-spec
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>

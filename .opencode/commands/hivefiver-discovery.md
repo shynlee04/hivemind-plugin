@@ -231,4 +231,6 @@ Return:
 - brainstorm_output: selected approach (if build_new/extend intent)
 - promotion_allowed: boolean
 - next_command: /hivefiver-intake or /hivefiver-discovery --continue
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>

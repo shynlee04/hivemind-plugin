@@ -88,6 +88,8 @@ Return:
 - delegation_policy: permission constraints per asset
 - gate_2_passed: boolean
 - next_command: /hivefiver-build (if gate passed)
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>

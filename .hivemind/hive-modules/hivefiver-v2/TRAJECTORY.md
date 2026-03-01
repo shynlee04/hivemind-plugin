@@ -261,9 +261,9 @@ HiveFiver V2 graduates when ALL Phase 4 acceptance tests pass AND:
 - 21 test runs across 15 unique scripts: 20 pass (exit=0), 1 guard-fail (expected behavior)
 - Export artifact `export-20260301-142524.json`: valid JSON, quality.passed=True, pipeline.health=healthy
 
-### Gate: Phase 5 → COMPLETE (Pending)
+### Gate: Phase 5 → COMPLETE ✅
 
-- [x] All 15 scripts produce valid output with zero crashes
+- [x] All 16 scripts produce valid output with zero crashes
 - [x] All 10 commands have runtime-gate enforcement injected
 - [x] Both skills have mandatory enforcement protocol documented
 - [x] Export artifacts produce valid JSON with all 4 required keys
@@ -335,7 +335,7 @@ Phase 4 ────────────────────────
                                   ── 5.4 Command injection          ✅
                                   ── 5.5 Skill injection            ✅
                                   ── 5.6 Production test            ✅
-                                  ── 5.7 SOT alignment              🔄
+                                  ── 5.7 SOT alignment              ✅
                                   ── 5.8 Agent parity               ✅
 ```
 
@@ -380,3 +380,6 @@ Phase 4 ────────────────────────
 | 2026-03-01 | **Phase 5**: 5.6 Production Test ✅ — 15 scripts, 21 test runs, 20 pass, 1 expected guard-fail |
 | 2026-03-01 | **Phase 5**: 5.7 SOT Alignment ✅ — TRAJECTORY, STATE, SYNTHESIS updated with Phase 5 milestones, decisions D31-D36, enforcement architecture |
 | 2026-03-01 | **Phase 5**: 5.8 Agent Parity ✅ — K-02 (parity drift) and K-03 (trigger language) resolved |
+| 2026-03-01 | **Phase 5 hardening**: Unified MUST enforcement pack added (`hivefiver-must-pack.sh`) and injected into all 10 hivefiver commands |
+| 2026-03-01 | **Phase 5 hardening**: Wildcard task permission in `.opencode/agents/hivefiver.md` changed from allow to deny-first (G-01 compliant) |
+| 2026-03-01 | **Guided discovery hardening**: `guided-discovery.sh` now detects Vietnamese input with and without diacritics (`toi muon ...` and `tôi muốn ...`) |

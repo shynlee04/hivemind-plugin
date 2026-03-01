@@ -92,8 +92,8 @@
 | pipeline_active | false |
 | current_stage | none |
 | completed_stages | start,discovery,intake,spec,architect,build,audit |
-| pipeline_target | Phase 5 Runtime Enforcement — all milestones complete pending SOT alignment |
-| last_gate_result | Phase 5 gate: 5.1-5.6 ✅, 5.7 🔄, 5.8 ✅ |
+| pipeline_target | Phase 5 Runtime Enforcement — COMPLETE (SOT aligned) |
+| last_gate_result | Phase 5 gate: 5.1-5.8 ✅ |
 | pipeline_error |  |
 | last_checkpoint | . |
 | error_recovery |  |
@@ -112,7 +112,7 @@
 | Agent | hivefiver.md | 1 | 428L | ✅ 12 XML blocks, `<startup_health>` section |
 | Skills | hivefiver-mode, hivefiver-coordination, hivefiver-orchestrator, hivefiver-guided-discovery | 4 | — | ✅ Self-contained refs |
 | Commands | hivefiver (router) + 7 stage commands + discovery + continue | 10 | — | ✅ All with `` !`cmd` `` enforcement + `<guided_interaction>` |
-| Scripts | 12 coordination + 3 mode | 15 | ~3,970L | ✅ All executable, JSON output, zero crashes |
+| Scripts | 13 coordination + 3 mode | 16 | ~4,054L | ✅ All executable, JSON output, zero crashes |
 | Workflows | 7 stage workflows | 7 | 1,082L | ✅ All with entry/exit criteria |
 | References | 3 (mode) + 5 (coordination) + 1 (guided-discovery) + 1 (QA playbook) | 10 | — | ✅ Self-contained |
 
@@ -132,6 +132,7 @@
 | validate-delegation.sh | hivefiver-coordination/scripts/ | 243L | Delegation packet + return payload validation |
 | session-continue.sh | hivefiver-coordination/scripts/ | 270L | Cross-session handoff, auto-spawn |
 | journey-intake-qa.sh | hivefiver-coordination/scripts/ | 268L | Deterministic QA question pack generator |
+| hivefiver-must-pack.sh | hivefiver-coordination/scripts/ | 84L | Unified MUST enforcement payload (intent + profile + journey + obligations) |
 | research-guard.sh | hivefiver-coordination/scripts/ | ~80L | MCP research validation |
 | runtime-gate.sh | hivefiver-coordination/scripts/ | 453L | Unified runtime enforcer — MANDATORY at every lifecycle point. 7 actions: pre-turn, post-turn, checkpoint, export, chain-check, journey, toolmap |
 
@@ -280,7 +281,10 @@
 | 2026-03-01 | **Phase 5**: 5.3 runtime-gate.sh ✅ — 453L unified enforcer, 7 actions, tool-chain registry |
 | 2026-03-01 | **Phase 5**: 5.4 Commands Injection ✅ — 10/10 pre-turn, 8/8 post-turn, 1 export |
 | 2026-03-01 | **Phase 5**: 5.5 Skills Injection ✅ — MANDATORY protocol in coordination + mode skills |
-| 2026-03-01 | **Phase 5**: 5.6 Production Test ✅ — 15 scripts, 21 runs, 20 pass |
-| 2026-03-01 | **Phase 5**: 5.7 SOT Alignment 🔄 — TRAJECTORY, STATE, SYNTHESIS updated |
+| 2026-03-01 | **Phase 5**: 5.6 Production Test ✅ — 16 scripts, 21 runs, 20 pass |
+| 2026-03-01 | **Phase 5**: 5.7 SOT Alignment ✅ — TRAJECTORY, STATE, SYNTHESIS updated |
 | 2026-03-01 | **Phase 5**: 5.8 Agent Parity ✅ — K-02/K-03 resolved, diff -rq clean |
 | 2026-03-01 | STATE.md updated: Phase 5 milestones, D31-D36 decisions, K-02/K-03 resolved, script inventory 14→15, pipeline state cleaned |
+| 2026-03-01 | **Phase 5 hardening**: `hivefiver-must-pack.sh` added and injected into all 10 hivefiver commands |
+| 2026-03-01 | **Phase 5 hardening**: HiveFiver agent wildcard task permission switched to deny-first (`task."*": deny`) |
+| 2026-03-01 | **Guided discovery hardening**: `guided-discovery.sh` supports Vietnamese detection with and without diacritics |

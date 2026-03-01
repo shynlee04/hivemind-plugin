@@ -24,6 +24,9 @@ Dead reference scan (auto-executed):
 Runtime enforcement pre-turn (auto-executed — MANDATORY quality/state baseline):
 !`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
 
+Unified MUST pack (auto-executed — intent/profile/journey obligations):
+!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-must-pack.sh doctor "$ARGUMENTS" .`
+
 Note: doctor always passes gate check — it bypasses the pipeline.
 </enforcement>
 
@@ -60,8 +63,16 @@ Step 3: Propose fix plan:
 
 Step 4: Apply fixes (after user approval):
 - **Read before write** — always read the target file first
+- **Schema guard snapshot (MANDATORY before frontmatter edits)**:
+  ```bash
+  bash .opencode/skills/hivefiver-coordination/scripts/schema-guard.sh snapshot <file_path> .
+  ```
 - Apply the minimal change needed (no gratuitous rewrites)
 - Verify each fix by re-reading the modified file
+- **Schema guard verify (MANDATORY after frontmatter edits)**:
+  ```bash
+  bash .opencode/skills/hivefiver-coordination/scripts/schema-guard.sh verify <file_path> .
+  ```
 
 Step 5: Post-fix verification:
 - Re-run the dead reference scan: `grep -rl` for known deleted asset names
@@ -111,6 +122,8 @@ Return:
 - verification_evidence: post-fix check outputs
 - residual_risks: issues that couldn't be auto-fixed
 - next_action: "healthy" or specific follow-up command
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>

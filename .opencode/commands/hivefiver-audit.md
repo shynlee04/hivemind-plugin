@@ -110,6 +110,8 @@ Return:
 - cross_reference_report: pass/fail per reference
 - anti_pattern_report: G-01 through G-10 scan results
 - recommended_action: /hivefiver-doctor (if critical findings) or "healthy"
+- must_pack: unified MUST obligations payload from hivefiver-must-pack.sh
+- runtime_gate_post_turn: evidence output from runtime-gate.sh post-turn
 </output_contract>
 
 <guided_interaction>
