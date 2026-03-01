@@ -1,7 +1,11 @@
 ---
 name: hivehealer
-description: "Remediation specialist for debugging, hardening, and quality recovery under strict scope constraints."
-tasks: {}
+description: Remediation specialist for debugging, hardening, and quality
+  recovery under strict scope constraints. Use when fixing broken code,
+  recovering from failures, or hardening system stability.
+tasks:
+  hivexplorer: allow
+  hiveq: allow
 workflows:
   - bug-remediation
 prompts:
@@ -37,10 +41,10 @@ permission:
   bash: allow
   edit:
     "*": allow
-    "src/**": allow
-    "tests/**": allow
-    "docs/**": allow
-    ".hivemind/**": allow
+    src/**: allow
+    tests/**: allow
+    docs/**: allow
+    .hivemind/**: allow
   skill: allow
   todoread: allow
   todowrite: allow
@@ -58,27 +62,32 @@ allowed_tools:
   - hivemind_cycle
 scope_paths:
   allow:
-    - "src/**"
-    - "tests/**"
-    - "docs/**"
+    - src/**
+    - tests/**
+    - docs/**
   forbidden:
-    - "agents/**"
-    - "commands/**"
-    - "workflows/**"
-    - "skills/**"
-    - "templates/**"
-    - "prompts/**"
-    - "references/**"
-    - "modules/**"
-    - "bridges/**"
+    - agents/**
+    - commands/**
+    - workflows/**
+    - skills/**
+    - templates/**
+    - prompts/**
+    - references/**
+    - modules/**
+    - bridges/**
 delegation_policy:
-  can_delegate: false
-  delegate_targets: []
+  can_delegate: true
+  delegate_targets:
+    - hivexplorer
+    - hiveq
+  max_delegation_depth: 1
   recursive_delegation: false
 verification_obligations:
-  - "Identify root cause before mutation."
-  - "Return risk-classified findings and evidence."
-  - "Confirm gate outcomes after remediation."
+  - Identify root cause before mutation.
+  - Return risk-classified findings and evidence.
+  - Confirm gate outcomes after remediation.
+model: openai/gpt-5.3-codex
+reasoningEffort: high
 ---
 
 # Hivehealer
@@ -232,15 +241,28 @@ When recovering from quality degradation:
 
 ## Delegation Policy
 
-### Can Delegate:
-**NONE** — Hivehealer operates as a terminal agent; no further delegation permitted.
+**Level 3 delegation enabled.** Hivehealer can dispatch investigation and validation subtasks to terminal agents while maintaining remediation ownership.
+
+### Can Delegate To:
+
+| Target Agent | Purpose | Packet Must Include |
+|-------------|---------|---------------------|
+| **hivexplorer** | Bug investigation, root cause analysis, blast radius checks | Error traces, symptom description, file scope |
+| **hiveq** | Post-fix verification, regression checks, quality gate validation | Verification criteria, pass/fail conditions, evidence requirements |
+
+### Delegation Constraints:
+
+- **Max depth**: 1 level only (hivehealer → subagent, never deeper)
+- **No recursive delegation**: Subagents cannot re-delegate
+- **Remediation scope only**: Delegated tasks must support debugging/fixing
+- **Return required**: Every delegation must have `return_schema` defined
 
 ### Is Delegated By:
 - **hiveminder** — Primary delegator for remediation tasks
 - **hiveq** — For quality-related fixes
 
 ### Recursive Delegation:
-**FORBIDDEN** — Hivehealer cannot delegate to other agents.
+**FORBIDDEN** — Hivehealer's delegates cannot delegate further.
 
 ---
 
@@ -279,8 +301,4 @@ Every remediation must include:
 | `skills/debug-orchestration/SKILL.md` | Debug workflow | All debugging operations |
 | `skills/evidence-discipline/SKILL.md` | Evidence standards | Verification phase |
 | `SYSTEM-DIRECTIVES.md` | Governance patterns | Planning sessions |
-
 ---
-
-*Agent maintained by HiveMind Context Governance framework.*  
-*Last updated: 2026-02-28*"

@@ -157,117 +157,47 @@ skills:
     depends_on:
       - evidence-discipline
 
-  - name: hivefiver-bilingual-tutor
-    domain: communication-routing
-    bundle: routing-core
-    knowledge_delta_score: 0.55
-    status: active
-    owner: hivefiver-meta
-    disclosure_level: L3
-    triggers:
-      - "bilingual explain"
-      - "guided tutoring"
-    supersedes: []
-    depends_on:
-      - hivefiver-persona-routing
-
-  - name: hivefiver-domain-pack-router
-    domain: command-routing
-    bundle: routing-core
-    knowledge_delta_score: 0.82
+  - name: hivefiver-mode
+    domain: stage-routing
+    bundle: meta-core
+    knowledge_delta_score: 0.90
     status: active
     owner: hivefiver-meta
     disclosure_level: L1
     triggers:
-      - "route by domain"
-      - "command bundle selection"
+      - "hivefiver session start"
+      - "stage routing"
     supersedes: []
-    depends_on:
-      - hivefiver-persona-routing
+    depends_on: []
 
-  - name: hivefiver-gsd-compat
-    domain: compatibility
+  - name: hivefiver-coordination
+    domain: quality-gates
     bundle: meta-core
-    knowledge_delta_score: 0.46
-    status: merge_candidate
-    owner: hivefiver-meta
-    disclosure_level: L3
-    triggers:
-      - "legacy gsd bridge"
-      - "compatibility migration"
-    supersedes: []
-    depends_on:
-      - meta-builder-governance
-
-  - name: hivefiver-mcp-research-loop
-    domain: research-ops
-    bundle: research-core
-    knowledge_delta_score: 0.8
-    status: active
-    owner: hivefiver-meta
-    disclosure_level: L2
-    triggers:
-      - "mcp evidence loop"
-      - "multi-source retrieval"
-    supersedes: []
-    depends_on:
-      - research-methodology
-
-  - name: hivefiver-persona-routing
-    domain: command-routing
-    bundle: routing-core
-    knowledge_delta_score: 0.84
+    knowledge_delta_score: 0.88
     status: active
     owner: hivefiver-meta
     disclosure_level: L1
     triggers:
-      - "hivefiver command"
-      - "persona route"
+      - "quality gate check"
+      - "pipeline enforcement"
     supersedes: []
     depends_on:
-      - meta-builder-governance
+      - hivefiver-mode
 
-  - name: hivefiver-ralph-tasking
-    domain: task-orchestration
+  - name: hivefiver-orchestrator
+    domain: stage-navigation
     bundle: meta-core
-    knowledge_delta_score: 0.67
-    status: experimental
-    owner: hivefiver-meta
-    disclosure_level: L3
-    triggers:
-      - "ralph bridge"
-      - "task conversion"
-    supersedes: []
-    depends_on:
-      - hivefiver-spec-distillation
-
-  - name: hivefiver-skill-auditor
-    domain: skill-governance
-    bundle: meta-core
-    knowledge_delta_score: 0.86
+    knowledge_delta_score: 0.60
     status: active
     owner: hivefiver-meta
-    disclosure_level: L2
+    disclosure_level: L1
     triggers:
-      - "skill audit"
-      - "skill overlap review"
+      - "hivefiver navigation"
+      - "stage transition"
     supersedes: []
     depends_on:
-      - meta-builder-governance
-
-  - name: hivefiver-spec-distillation
-    domain: spec-engineering
-    bundle: meta-core
-    knowledge_delta_score: 0.82
-    status: active
-    owner: hivefiver-meta
-    disclosure_level: L2
-    triggers:
-      - "spec generation"
-      - "requirements distillation"
-    supersedes: []
-    depends_on:
-      - hivemind-architect-strategist
+      - hivefiver-mode
+      - hivefiver-coordination
 
   - name: hivemind-architect-strategist
     domain: architecture-planning
@@ -340,20 +270,6 @@ skills:
     supersedes: []
     depends_on:
       - research-methodology
-
-  - name: meta-builder-governance
-    domain: framework-governance
-    bundle: meta-core
-    knowledge_delta_score: 0.92
-    status: active
-    owner: hivefiver-meta
-    disclosure_level: L1
-    triggers:
-      - "framework refactor"
-      - "deprecation policy"
-    supersedes: []
-    depends_on:
-      - hivemind-governance
 
   - name: parallel-debugging-hivemind
     domain: remediation

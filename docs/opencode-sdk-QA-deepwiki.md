@@ -1,3 +1,44 @@
+---
+description: "OpenCode SDK Q&A Reference - Prompt Injection, Message Transformation, and Context Workarounds"
+agent: hiveminder
+source_repo: anomalyco/opencode
+tags: ["opencode", "sdk", "qa", "prompt-injection", "message-transform", "workarounds"]
+classification:
+  domain: "opencode-sdk"
+  category: "qa-reference"
+  subcategory: "implementation-workarounds"
+  depth: "technical-reference"
+  cognitive_model: "problem-solution"
+fast_track:
+  - "prompt-injection"
+  - "message-transformation"
+  - "noreply-prompts"
+  - "compaction-hooks"
+  - "system-prompt-transform"
+synthesis_categories:
+  - "sdk-workarounds"
+  - "prompt-engineering"
+  - "context-injection"
+  - "plugin-patterns"
+related_docs:
+  - name: "OPENCODE-CONCEPTS-ADVANCED.md"
+    relationship: "architectural-concepts"
+  - name: "opencode-full-sdk-mechanism.md"
+    relationship: "complementary-implementation"
+  - name: "OPENCODE-DETERMINISTIC-CONTEX-AGENT-DELEGATION.md"
+    relationship: "context-engineering-patterns"
+  - name: "OPENCODE-PRIMARY-COORDINATOR-AGENT.md"
+    relationship: "coordination-patterns"
+related_skills:
+  - "context-integrity"
+  - "session-lifecycle"
+  - "delegation-intelligence"
+  - "hivemind-governance"
+created: "2026-02-28"
+updated: "2026-02-28"
+version: "1.0"
+---
+
 # DeepWiki Q&A with Code Context for Repository: anomalyco/opencode
 ## Q1
 by using the SDK can we manipulate insert the conditional and contextual prompts (this is programmatic and event hooks) -> to the before last output assistant message (to play as reminder and the expectation based on workflow and development phases - for example including filetree updated, symlinks to research artifacts, committing gits or PR for. And that may change the decision of the stop WHILE the output style using prompt transformation to LLMs (the format and style of what it outputs before the next) can still maintain? If not are there any workaround. And what LLM reads and focus on as a whole context after the last output message and start of new turn of users' message? Are there method to transform the user's prompt in mid-turn making it more connected showing turn and anchor with context transformation of the next in-turn users' prompts?

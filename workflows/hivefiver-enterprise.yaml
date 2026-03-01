@@ -1,8 +1,15 @@
 contract_version: 2
 name: hivefiver-enterprise
 target_agent: hivefiver
-description: Strict enterprise flow for high-complexity requirement streams with evidence and export controls.
+description: Enterprise workflow for high-complexity requirement streams. Covers the full spec-research-architect-build-validate pipeline with evidence gates and export controls.
 version: 2
+selector:
+  lane: enterprise_architect
+  precedence: 1
+  trigger_conditions:
+    - "persona_lane == enterprise_architect"
+    - "NOT (S4 == 2 AND S2 == 2)"
+  description: "Default enterprise workflow. Selected when persona is enterprise_architect without hard regulatory/compliance requirements. Use hivefiver-enterprise-architect instead when both S4 (risk tolerance) and S2 (project scale) are maximal."
 steps:
   - name: bootstrap
     tool: hivefiver
@@ -13,8 +20,8 @@ steps:
     args:
       action: init
       lane: enterprise_architect
-    entry_criteria: "Lane selected"
-    exit_criteria: "Hivefiver initialized in enterprise lane"
+    entry_criteria: "Lane resolved to enterprise_architect by persona-routing skill"
+    exit_criteria: "Hivefiver initialized, persona and domain lanes persisted"
   - name: doctor-preflight
     tool: hivefiver-audit
     wave: 2
@@ -22,8 +29,8 @@ steps:
       - meta-builder-governance
     args:
       focus: governance_mcp_and_drift
-    entry_criteria: "Bootstrap complete"
-    exit_criteria: "Governance, MCP, and drift status audited"
+    entry_criteria: "Bootstrap complete with persisted lane"
+    exit_criteria: "Governance posture audited; MCP readiness confirmed or degraded with caveats"
   - name: intake
     tool: hivefiver-intake
     wave: 3
@@ -33,8 +40,8 @@ steps:
     args:
       style: controlled_mcq
       strictness: strict
-    entry_criteria: "Preflight passed"
-    exit_criteria: "Requirements normalized via strict MCQ"
+    entry_criteria: "Preflight passed or degraded with explicit caveats"
+    exit_criteria: "Requirements captured and normalized via strict MCQ"
   - name: spec
     tool: hivefiver-specforge
     wave: 4
@@ -44,8 +51,8 @@ steps:
       require_ambiguity_map: true
       block_high_ambiguity: true
       retry_limit: 10
-    entry_criteria: "Intake complete"
-    exit_criteria: "Spec with ambiguity map generated"
+    entry_criteria: "Intake complete with normalized requirements"
+    exit_criteria: "Spec generated with ambiguity map; no high-ambiguity items unresolved"
   - name: research
     tool: hivefiver-research
     wave: 5
@@ -57,8 +64,8 @@ steps:
       enforce_provider_status: true
       require_contradiction_register: true
       retry_limit: 10
-    entry_criteria: "Spec accepted"
-    exit_criteria: "Research completed with provider status and contradictions"
+    entry_criteria: "Spec accepted by user"
+    exit_criteria: "Research completed; provider status reported; contradictions registered"
   - name: architect
     tool: hivefiver-architect
     wave: 6
@@ -67,8 +74,8 @@ steps:
       - hivefiver-persona-routing
     args:
       enforce_domain_pack: true
-    entry_criteria: "Research evidence available"
-    exit_criteria: "Architecture designed with domain pack enforced"
+    entry_criteria: "Research evidence available with contradiction register"
+    exit_criteria: "Architecture designed with domain pack applied"
   - name: gsd-bridge
     tool: hivefiver-gsd-bridge
     wave: 7
@@ -78,8 +85,8 @@ steps:
     args:
       compatibility_wrapper: true
       require_lineage_report: true
-    entry_criteria: "Architecture finalized"
-    exit_criteria: "GSD-compatible output with lineage report"
+    entry_criteria: "Architecture finalized and accepted"
+    exit_criteria: "GSD-compatible output emitted with lineage report"
   - name: validate-export
     tool: hivefiver-validate
     wave: 8
@@ -90,15 +97,20 @@ steps:
       require_schema_gate: true
       include_todo_story_map: true
     entry_criteria: "GSD bridge complete"
-    exit_criteria: "Schema gate passed, todo story map included"
+    exit_criteria: "Schema gate passed; todo story map included; export ready"
 guards:
   - rule: no_execution_without_plan
     check: connected_task_graph
+    severity: blocking
   - rule: strict_evidence
     check: contradictory_claims_resolved
+    severity: blocking
   - rule: mcp_readiness
     check: provider_status_reported
+    severity: degrading
   - rule: schema_gate
     check: prd_json_valid
+    severity: blocking
   - rule: export_cycle
     check: cycle_exported
+    severity: blocking

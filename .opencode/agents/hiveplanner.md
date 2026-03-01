@@ -1,7 +1,11 @@
 ---
 name: hiveplanner
-description: Planning specialist for phase/task design, sequencing, and handoff artifacts.
-tasks: {}
+description: Planning specialist for phase/task design, sequencing, and handoff
+  artifacts. Use when planning multi-phase work, designing task sequences,
+  or creating execution knots with dependency ordering.
+tasks:
+  hivexplorer: allow
+  hiverd: allow
 workflows:
   - spec-generation
 prompts:
@@ -67,8 +71,11 @@ scope_paths:
     - src/**
     - tests/**
 delegation_policy:
-  can_delegate: false
-  delegate_targets: []
+  can_delegate: true
+  delegate_targets:
+    - hivexplorer
+    - hiverd
+  max_delegation_depth: 1
   recursive_delegation: false
 verification_obligations:
   - Plans must include acceptance criteria and dependency order.
@@ -223,15 +230,28 @@ When conducting research:
 
 ## Delegation Policy
 
-### Can Delegate:
-**NONE** — Hiveplanner operates as a terminal agent for planning; no further delegation permitted.
+**Level 3 delegation enabled.** Hiveplanner can dispatch investigation and research subtasks to terminal agents while maintaining planning ownership.
+
+### Can Delegate To:
+
+| Target Agent | Purpose | Packet Must Include |
+|-------------|---------|---------------------|
+| **hivexplorer** | Codebase investigation, structure mapping, evidence collection | Investigation scope, search queries, expected output format |
+| **hiverd** | Technology research, ecosystem analysis, pattern discovery | Research questions, source preferences, confidence threshold |
+
+### Delegation Constraints:
+
+- **Max depth**: 1 level only (hiveplanner → subagent, never deeper)
+- **No recursive delegation**: Subagents cannot re-delegate
+- **Planning scope only**: Delegated tasks must support planning, not implementation
+- **Return required**: Every delegation must have `return_schema` defined
 
 ### Is Delegated By:
 - **hiveminder** — Primary delegator for phase planning
 - **hivefiver** — For framework planning
 
 ### Recursive Delegation:
-**FORBIDDEN** — Hiveplanner cannot delegate to other agents.
+**FORBIDDEN** — Hiveplanner's delegates cannot delegate further.
 
 ---
 

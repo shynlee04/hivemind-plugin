@@ -1,7 +1,11 @@
 ---
 name: hiveplanner
-description: "Planning specialist for phase/task design, sequencing, and handoff artifacts."
-tasks: {}
+description: Planning specialist for phase/task design, sequencing, and handoff
+  artifacts. Use when planning multi-phase work, designing task sequences,
+  or creating execution knots with dependency ordering.
+tasks:
+  hivexplorer: allow
+  hiverd: allow
 workflows:
   - spec-generation
 prompts:
@@ -36,9 +40,9 @@ permission:
   bash: allow
   edit:
     "*": allow
-    "docs/**": allow
-    ".planning/**": allow
-    ".hivemind/**": allow
+    docs/**: allow
+    .planning/**: allow
+    .hivemind/**: allow
   todoread: allow
   todowrite: allow
 identity:
@@ -60,20 +64,23 @@ allowed_tools:
   - hivemind_hierarchy
 scope_paths:
   allow:
-    - "docs/**"
-    - ".planning/**"
-    - ".hivemind/**"
+    - docs/**
+    - .planning/**
+    - .hivemind/**
   forbidden:
-    - "src/**"
-    - "tests/**"
+    - src/**
+    - tests/**
 delegation_policy:
-  can_delegate: false
-  delegate_targets: []
+  can_delegate: true
+  delegate_targets:
+    - hivexplorer
+    - hiverd
+  max_delegation_depth: 1
   recursive_delegation: false
 verification_obligations:
-  - "Plans must include acceptance criteria and dependency order."
-  - "Link plans to hierarchy context and anchors."
-  - "Do not implement production code."
+  - Plans must include acceptance criteria and dependency order.
+  - Link plans to hierarchy context and anchors.
+  - Do not implement production code.
 ---
 
 # Hiveplanner
@@ -223,15 +230,28 @@ When conducting research:
 
 ## Delegation Policy
 
-### Can Delegate:
-**NONE** — Hiveplanner operates as a terminal agent for planning; no further delegation permitted.
+**Level 3 delegation enabled.** Hiveplanner can dispatch investigation and research subtasks to terminal agents while maintaining planning ownership.
+
+### Can Delegate To:
+
+| Target Agent | Purpose | Packet Must Include |
+|-------------|---------|---------------------|
+| **hivexplorer** | Codebase investigation, structure mapping, evidence collection | Investigation scope, search queries, expected output format |
+| **hiverd** | Technology research, ecosystem analysis, pattern discovery | Research questions, source preferences, confidence threshold |
+
+### Delegation Constraints:
+
+- **Max depth**: 1 level only (hiveplanner → subagent, never deeper)
+- **No recursive delegation**: Subagents cannot re-delegate
+- **Planning scope only**: Delegated tasks must support planning, not implementation
+- **Return required**: Every delegation must have `return_schema` defined
 
 ### Is Delegated By:
 - **hiveminder** — Primary delegator for phase planning
 - **hivefiver** — For framework planning
 
 ### Recursive Delegation:
-**FORBIDDEN** — Hiveplanner cannot delegate to other agents.
+**FORBIDDEN** — Hiveplanner's delegates cannot delegate further.
 
 ---
 
@@ -272,6 +292,3 @@ Every plan must include:
 | `.hivemind/state/hierarchy.json` | Current hierarchy state | Hierarchy linking |
 
 ---
-
-*Agent maintained by HiveMind Context Governance framework.*  
-*Last updated: 2026-02-28*"

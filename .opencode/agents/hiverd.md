@@ -1,7 +1,9 @@
 ---
 name: hiverd
 description: Research specialist for evidence synthesis, comparative analysis,
-  and documentation outputs.
+  documentation outputs, and framework pattern research. Use when researching external
+  technologies, gathering evidence from documentation, evaluating technology stacks,
+  ecosystem mapping, OpenCode architecture research, and meta-builder pattern validation.
 tasks: {}
 workflows:
   - hiverd-deep-research
@@ -22,6 +24,8 @@ tools:
   skill: true
   webfetch: true
   websearch: true
+  todoread: true
+  todowrite: true
   tavily: true
   context7: true
   deepwiki: true
@@ -32,11 +36,15 @@ tools:
   hivemind_anchor: true
   hivemind_cycle: true
 permission:
-  read: allow
+  read:
+    "*": allow
+    ".opencode/**": allow
   bash: allow
   skill: allow
   webfetch: allow
   websearch: allow
+  todoread: allow
+  todowrite: allow
   edit:
     "*": allow
     docs/**: allow
@@ -61,6 +69,7 @@ scope_paths:
   allow:
     - docs/**
     - .hivemind/**
+    - .opencode/**
   forbidden:
     - src/**
     - tests/**
@@ -88,6 +97,23 @@ reasoningEffort: high
 | **Quality Standard** | Publication-Ready |
 | **Scope** | External knowledge acquisition, ecosystem analysis |
 | **Forbidden** | Code implementation (`src/`, `tests/`), framework assets |
+| **Delegation** | Terminal agent — cannot delegate, receives tasks from Level 1-2 agents |
+
+---
+
+## Delegation Policy
+
+### Can Delegate:
+**NONE** — Hiverd operates as a terminal research agent; no further delegation permitted.
+
+### Is Delegated By:
+- **hiveminder** — Primary delegator for research tasks (Level 2)
+- **hivefiver** — For framework pattern research (Level 2)
+- **hiveplanner** — For planning research synthesis (Level 3)
+- **hivemaker** — For technology evaluation during implementation (Level 3)
+
+### Recursive Delegation:
+**FORBIDDEN** — Hiverd cannot delegate to other agents.
 
 ---
 
@@ -529,6 +555,8 @@ webfetch(url="...")
 | 3+ authoritative sources, official docs | HIGH |
 | 1 authoritative OR 3+ community | MEDIUM |
 | 1 community, inferred, or conflicting | LOW |
+
+---
 
 ---
 

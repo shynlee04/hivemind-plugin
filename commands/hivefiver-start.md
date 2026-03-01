@@ -1,76 +1,116 @@
 ---
 name: hivefiver-start
-description: Bootstrap HiveFiver v2 with tri-persona detection, codebase
-  regulation, and root-command governance lock.
-owner_agent: hivefiver
-kind: utility
-alias_resolved_to: hivefiver-start
-required_skills:
-  - meta-builder-governance
-  - hivefiver-persona-routing
-  - hivefiver-spec-distillation
-required_templates: []
-chain_group: hivefiver
-group: hivefiver
-entry_gate: session_declared
-return_schema:
-  type: json
-  fields:
-    - persona_lane
-    - project_type
-    - domain_lane
-    - governance_mode
-    - required_gates
-    - next_command
-    - artifact_path
+description: "Classify user intent and bootstrap HiveFiver context. Entry point for new interactions."
+agent: hivefiver
+subtask: true
 ---
 
-# HiveFiver Start
+<enforcement>
+Gate check (auto-executed):
+!`bash .opencode/skills/hivefiver-coordination/scripts/gate-check.sh start .`
 
-Run this before any HiveFiver workflow.
+Pipeline state (auto-executed):
+!`bash .opencode/skills/hivefiver-coordination/scripts/state-update.sh read .`
 
-## Core Promise
-- Guide all user levels (`vibecoder`, `floppy_engineer`, `enterprise_architect`).
-- Keep onboarding controlled via multiple-choice interactions.
-- Maintain process guarantees through explicit gates.
+Intent classifier (auto-executed):
+!`bash .opencode/skills/hivefiver-mode/scripts/classify-intent.sh "$ARGUMENTS"`
 
-## Step 0: Mandatory Governance Load
-```ts
-scan_hierarchy({ action: "analyze", json: true })
-recall_mems({ query: "hivefiver onboarding decisions" })
-save_anchor({ mode: "list" })
-```
+User profile (auto-executed):
+!`bash .opencode/skills/hivefiver-mode/scripts/guided-discovery.sh "$ARGUMENTS"`
 
-## Step 1: Codebase Regulation Pass
-1. Detect `greenfield` vs `brownfield`.
-2. Detect strictness (`assisted` vs `strict`).
-3. Lock startup rules:
-- no implementation before intake/spec
-- no `full` confidence with missing MCP providers
-- no execution without connected plan/task graph
+Runtime enforcement pre-turn (auto-executed — MANDATORY quality/state baseline):
+!`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
 
-## Step 2: Tri-Persona Routing (MCQ-first)
-- `vibecoder`
-- `floppy_engineer`
-- `enterprise_architect`
+⛔ IF the gate check above shows "allowed": false — STOP. Report the reason to the user. DO NOT proceed.
+</enforcement>
 
-## Step 3: Root Command Mapping
-- onboarding root: `/hivefiver init`
-- next phase: `/hivefiver spec`
-- required continuity: `/hivefiver research` -> `/hivefiver validate`
+<objective>
+Classify the user's intent and bootstrap the correct HiveFiver stage.
+</objective>
 
-## Step 4: Lifecycle Lock
-```ts
-declare_intent({ mode: "plan_driven", focus: "HiveFiver v2 governed onboarding" })
-map_context({ level: "tactic", content: "Persona, domain, and governance lock" })
-```
+<context>
+User input: $ARGUMENTS
 
-## Output Contract
+Current state:
+@.hivemind/hive-modules/hivefiver-v2/STATE.md
+</context>
+
+<process>
+Step 1: Read STATE.md to determine if this is a fresh start or a resume.
+Step 2: If resuming — pick up from the Pipeline State section and continue.
+Step 3: If fresh — read the intent classifier output from enforcement block.
+  Use the classifier result to determine intent and confidence:
+
+  | Intent | Pipeline | Next Stage |
+  |--------|----------|------------|
+  | build_new | full_build | discovery |
+  | extend | full_build | discovery |
+  | fix_broken | doctor_fix | doctor |
+  | audit_health | audit_only | audit |
+  | improve | audit_then_build | audit |
+  | learn | guided_onboard | discovery |
+  | custom/unknown | adaptive | discovery |
+
+Step 4: Show the full pipeline sequence for the classified intent:
+  ```bash
+  bash .opencode/skills/hivefiver-coordination/scripts/pipeline-orchestrator.sh sequence [intent] .
+  ```
+  Announce: "Your request matches [intent]. Here's the full pipeline: [stages]. Total [N] stages, [M] need your approval."
+
+Step 5: Confidence-based confirmation:
+  - HIGH confidence → Announce classification and auto-proceed
+  - MEDIUM confidence → Announce classification, ask user to confirm
+  - LOW/NONE confidence → Present all options, ask user to choose
+
+Step 6: Handle special intents:
+
+  ### learn (Guided Onboarding)
+  Explain HiveFiver's capabilities with the user's detected language + maturity level:
+  - L0: "HiveFiver builds the tools that AI agents use. Think of it like a factory that makes robots."
+  - L1: "HiveFiver manages framework assets: agents, commands, skills, and workflows."
+  - L2/L3: "HiveFiver is a meta-builder. Run /hivefiver audit to see your framework health."
+  Route to discovery for interactive exploration.
+
+  ### custom/unknown (Adaptive)
+  "I couldn't classify your request with high confidence. Let me guide you through some questions."
+  Route to discovery for clarification.
+
+Step 7: Update STATE.md Pipeline State:
+  ```bash
+  bash .opencode/skills/hivefiver-coordination/scripts/state-update.sh set-active true .
+  bash .opencode/skills/hivefiver-coordination/scripts/state-update.sh set-stage [next_stage] .
+  bash .opencode/skills/hivefiver-coordination/scripts/state-update.sh set-target "[user's goal]" .
+  bash .opencode/skills/hivefiver-coordination/scripts/state-update.sh add-completed start .
+  bash .opencode/skills/hivefiver-coordination/scripts/state-update.sh set-checkpoint .
+  ```
+
+Step 8: Recommend the next command based on the pipeline sequence.
+
+Step 9: Run runtime enforcement post-turn (MANDATORY):
+  ```bash
+  bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh post-turn .
+  ```
+  Include the output as evidence in your completion claim.
+</process>
+
+<output_contract>
 Return:
-1. `persona_lane`: `vibecoder` | `floppy_engineer` | `enterprise_architect`
-2. `project_type`: `greenfield` | `brownfield`
-3. `domain_lane`: `dev` | `marketing` | `finance` | `office-ops` | `hybrid`
-4. `governance_mode`: `assisted` | `strict`
-5. `required_gates`
-6. `next_command`: `/hivefiver init`
-7. `artifact_path`: `docs/plans/<date>-hivefiver-v2-onboarding-start.md`
+- classified_intent: one of [build_new, fix_broken, audit_health, extend, improve, learn, custom]
+- confidence: high | medium | low | none
+- pipeline_id: full_build | doctor_fix | audit_only | audit_then_build | guided_onboard | adaptive
+- pipeline_sequence: ordered list of stages
+- next_command: the command to run next (e.g., /hivefiver-discovery)
+- pipeline_state_updated: confirmation that STATE.md was modified
+</output_contract>
+
+<guided_interaction>
+At every step of the start stage, the agent MUST announce:
+
+1. **What I'm doing**: "I'm classifying your request to determine the best workflow..."
+2. **What I detected**: "Your input matches the [intent] pattern because [reasoning]..."
+3. **What comes next**: "This means we'll follow the [stage] pipeline: [brief description of stages ahead]"
+4. **What I need from you**: "Please confirm this classification is correct, or tell me more about what you need."
+5. **Pipeline context**: "This will set pipeline_target to '[target]' and begin tracking progress in STATE.md."
+
+The agent leads — the user confirms. Never wait silently for user direction.
+</guided_interaction>

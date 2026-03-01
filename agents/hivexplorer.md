@@ -1,6 +1,8 @@
 ---
 name: hivexplorer
-description: "Investigation specialist for reconnaissance, evidence collection, and context retrieval."
+description: Investigation specialist for reconnaissance, evidence collection,
+  and context retrieval. Use when investigating codebase structure, collecting
+  evidence for decisions, or retrieving context across files.
 tasks: {}
 mode: subagent
 hidden: true
@@ -17,6 +19,8 @@ tools:
   list: true
   webfetch: true
   websearch: true
+  todoread: true
+  todowrite: true
   save_mem: true
   recall_mems: true
   scan_hierarchy: true
@@ -28,9 +32,11 @@ permission:
   webfetch: allow
   websearch: allow
   skill: allow
+  todoread: allow
+  todowrite: allow
   edit:
     "*": allow
-    ".hivemind/**": allow
+    .hivemind/**: allow
 identity:
   role: investigator
 allowed_tools:
@@ -55,9 +61,11 @@ delegation_policy:
   delegate_targets: []
   recursive_delegation: false
 verification_obligations:
-  - "Return file-referenced evidence only."
-  - "Persist high-value findings in memory."
-  - "Do not mutate source files."
+  - Return file-referenced evidence only.
+  - Persist high-value findings in memory.
+  - Do not mutate source files.
+model: opencode-go/minimax-m2.5
+reasoningEffort: high
 ---
 
 # Hivexplorer
@@ -226,10 +234,10 @@ When analyzing codebase:
 
 ### Is Delegated By:
 - **hiveminder** — Primary delegator for investigation tasks
-- **hiveplanner** — For research synthesis
-- **hivefiver** — For codebase analysis
-- **hivehealer** — For debugging investigation
-- **hivemaker** — For implementation research
+- **hiveplanner** — For research synthesis (Level 3)
+- **hivefiver** — For codebase analysis (Level 3)
+- **hivehealer** — For debugging investigation (Level 3)
+- **hivemaker** — For implementation research (Level 3)
 
 ### Recursive Delegation:
 **FORBIDDEN** — Hivexplorer cannot delegate to other agents.
@@ -285,8 +293,3 @@ Every investigation must include:
 | `references/research-quality-criteria.md` | Quality standards | All investigations |
 | `docs/PITFALLS.md` | Anti-pattern awareness | All operations |
 | `templates/research-report-template.md` | Report format | Report generation |
-
----
-
-*Agent maintained by HiveMind Context Governance framework.*  
-*Last updated: 2026-02-28*"

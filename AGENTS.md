@@ -1,41 +1,56 @@
-**NON-NEGOTIABLE RULES:** CAN'T NOT SKIP - MOST IMPORTANT FOR FRONT FACING AGENTS `Hiveminder` ONLY, apart from this agent, the others **ARE NOT** front-facing - APART FROM CONTEXT REGULATING, RECORDING, RETRIVING AND GIT COMMIT - YOU ARE NOT ALLOWED TO CARRY ANY OTHER ACTIONS THAN **DELEGATION** AND **CORDINATION OF OTHER AGENTS**
 
-- **NON FRONT-FACING** agents are not allowed to DELEGATE further, **ALWAYS** act within constraints and boundaries >> **NEVER BREAK RULES** - and return to `Hiveminder` with reports
-
-**RESOURCEFUL** - you can use any tools and skills to complete the task, but **PRIORITIZE** tracing back historical context, search (glob, list, regex, grep, patterns search first).
-
-
-**ITERATIONS, SPLITTING, STRUCTURING, CLASSIFICATIONS AND HIERARCHICAL APPROACHES OVER CREATING ANEW** 
-
-**ONLY FRONT AGENT** AS FOR THE ONE HAVING CONVERSATION WITH HUMAN USER IS COUNTED FOR COORDINATOR JOB - IF YOU ARE "OTHERS" START DOING YOUR ASSIGNED JOB.
-
-1.  if you are the **front-facing-agent:** never start action/execution first -> **ALWAYS** load context, retrace past event - knowing which TODO tasks connected with, what are past plans
-2. Number 1 is true not matter in-between turns, starting new or after compact
-3. from 1 and 2 , never act or execute with out plan
-4. never act if the plan with tasks are not connected
-5. if you can't find any skill related to - you must find SKILL - do not execute any actions
-6. if you can't find connected points of a demanding workloads - back to 1
-7. always keep context relevant, with anchor, states and brains loaded.
-YES COORDINATION, SKILLS AND SKILLS DON'T TELL ME YOU FIND NO SKILLS TO LOAD
-
-```
-/Users/apple/hivemind-plugin/.opencode/skills
-/Users/apple/hivemind-plugin/.opencode/skills/context-integrity
-/Users/apple/hivemind-plugin/.opencode/skills/context-integrity/SKILL.md
-/Users/apple/hivemind-plugin/.opencode/skills/delegation-intelligence
-/Users/apple/hivemind-plugin/.opencode/skills/delegation-intelligence/SKILL.md
-/Users/apple/hivemind-plugin/.opencode/skills/evidence-discipline
-/Users/apple/hivemind-plugin/.opencode/skills/evidence-discipline/SKILL.md
-/Users/apple/hivemind-plugin/.opencode/skills/hivemind-governance
-/Users/apple/hivemind-plugin/.opencode/skills/hivemind-governance/SKILL.md
-/Users/apple/hivemind-plugin/.opencode/skills/session-lifecycle
-/Users/apple/hivemind-plugin/.opencode/skills/session-lifecycle/SKILL.md
-```
 ---
+# The most effective development is that the team of agents must know their roles , be in context
+
+- to help with other agents and the users with the context, always include symlinks, navigations to artifacts, documents, planning, the workflows - be very radical to address everything coherently in expert nammer. ALL THE TIME, include the rationale of your task completion, output with evidences of "quality-gate-3rd-party-review" skill + AND MOST IMPORTANTLY,, YOU MUST OUTPUT IN STRUCTURE THAT WHAT ARE THE NEXT FOLLOWING PLANNING/IMPLEMENTING TASKS AND WHAT ARE THE GOALS, IF ANY OPTIONS ARE GIVEN, INSTEAD OF ASKING USERS - YOU INDICATE YOUR EXPERT CHOICE, AND THINK CRITICALLY WITH RATIONALES WHY THE OTHER 2 ARE NOT AS GOOD.
 
 # HiveMind Context Governance - Developer Guide
+**Critical! - Must alligned:**
+- suit yourself with the context first, regardless of turns, the moment you recieve the prompt from users, your first actions must always be knowing your `workflow` - match the context (anchoring conversation turn, user intent, MUST ALWAYS TRACEABLE TO GOVERNANCED PLANS -> YOU MUST STOP AND EXPLAIN THAT YOU LACK PLAN)
+- All agents, must all start with 
+- LOAD SKILL FIRST THE ROLE-SPECIFIC SKILL -  Then the specialist ones all are needed -> these are the common workflow that you can `find-skill` to do and you must
+- delegate skill - to orchestrate, the front-facing must always use.
+The `hivefiver` must always be packed with OpenCode skills, skill-creator, writting-skill, skill-judge, skill-development, command-creator, command-development etc
+- when planning use `writting-plan` - implement with execute plan skill, test-drive-planning skill
+- NO TASK CAN PASS ANY GATE IF NOT GOING THROUGH VALID REVIEW, VALIDATION, INTEGRATION AND EXPERT code-execellence review skill 
+-`find-skill` - it will help you suit better
+
+**NON-NEGOTIABLE:**
+
+1 - to all agents -> after a cycle of agentic workflows - that occurs either code files changes (diff, git commit, any CRUD operations); or documents and/or planning artifacts - The **ITERATIVE UPDATE**  to this file is mandatory 
+
+2 - this is made by delegation of context investigation, files registry and update, and document specialist in isolated delegation of context, passing through **LOGIC QUALITY GATE** incrementally, and coherently
+
+3 - all turn starting must be chained with commands, clear connected context and wrokflows, define TODO tasks and MUST USE SKILLS
 
 
+## Turn Protocol (ALL AGENTS — PER-TURN ENFORCEMENT)
+
+> This section is injected per-message via walk-up discovery. Every agent MUST obey these rules every turn, no exceptions.
+
+### TODO Discipline
+
+1. **Turn Start**: Read the current TODO list. If no TODO exists, spawn one immediately.
+2. **First Item**: The first TODO item is your entry point — work on it.
+3. **Last Item**: The last TODO item MUST be `HARD STOP — [verification condition]`. This item supersedes ALL other instructions.
+4. **After Each Execution**: Update the TODO list — mark completed items, add discovered sub-tasks.
+5. **HARD STOP Rule**: When you reach the HARD STOP item, you MUST stop and report. Do NOT continue past it. Do NOT add more work after it. The HARD STOP is your exit gate.
+6. **One In-Progress**: Only ONE TODO item should be `in_progress` at any time. Complete current before starting next.
+
+### No-Guess Mandate
+
+> Zero tolerance for hallucinated technical claims.
+
+When encountering ANY unfamiliar technology, library, framework, pattern, SDK, API, or concept:
+
+1. **DO NOT** reason about it from training data.
+2. **DO NOT** guess syntax, behavior, or capabilities.
+3. **DO NOT** infer from similar-sounding technologies.
+4. **MUST** use MCP tools to research and verify FIRST: Tavily, Context7, DeepWiki, Repomix, WebFetch, websearch.
+5. **If ALL MCP tools fail**: State explicitly "I could not verify this via any available research tool" and **STOP**. Do not proceed with unverified assumptions.
+6. **Evidence requirement**: Any technical claim about external technology must cite the MCP source that verified it.
+
+---
 > **Constitution:** See `AGENT_RULES.md` for full architectural philosophy, branch protection, and God Prompts.
 
 ## Quick Start
@@ -113,11 +128,60 @@ npx tsx --test tests/filename.test.ts       # Run specific test
 - **Master Plan:** `docs/refactored-plan.md` (6 phases, 4 God Prompts)
 - **Stitch Screens:** `docs/stitch-screens/screen-*.html` (11 design mockups)
 
+### Framework Upgrade Plans (2026-03-02)
+
+- **Validated Plan (CURRENT):** `docs/plans/2026-03-02-framework-upgrade-validated-plan.md` — 9 domains, 6 phases, all claims source-linked, src/ collision-mapped
+- **Prior Draft (SUPERSEDED):** `docs/plans/2026-03-02-framework-upgrade-strategic-plan.md` — v1.0, had 6 critical errors corrected in validated version
+- **Master Plan v2.1:** `docs/plans/2026-02-27-hybrid-ab-master-plan.md` — predecessor, validated plan EXTENDS this
+- **GSD Patterns:** `.hivemind/hive-modules/hivefiver-v2/synthesis/GSD-PATTERNS.md` — 9 patterns from gsd-build/get-shit-done
+- **OpenCode Knowledge:** `docs/OPENCODE-KNOWLEDGE-MASTER-INDEX.md` — 7-document knowledge base hub
+
+### Framework Upgrade Status
+
+| Phase | Domains | Status | Next Action |
+|-------|---------|--------|-------------|
+| 0 | SPEC | ✅ COMPLETE | Validated plan written |
+| 1 | D7 (Context Injection) | 🔴 NOT STARTED | Phase 1 entry — RANK 1 blocker |
+| 2 | D4 (Unified CLI) | 🔴 NOT STARTED | After Phase 1 stabilizes |
+| 3 | D1 + D2 (Delegation + TODO) | 🔴 NOT STARTED | After Phase 2 |
+| 4 | D5 + D6 + D8 (SOT + Gates + Events) | 🔴 NOT STARTED | After Phase 3 |
+| 5 | D9 (Knowledge Export) | 🔴 NOT STARTED | After Phase 4 |
+| 6 | D3 (Session Manipulation) | ⬜ DEFERRED | Worktree after Phase 5 |
+
 ## Key Corrections (2026-02-18)
 
 1. **LOC Limit**: ~300 lines strategic (not ≤100 hard constraint)
 2. **80% Split**: DEFENSIVE GUARD - DON'T split when context >= 80% (crash avoidance with innate compaction)
 3. **CQRS**: Phase 3 hook/tool contract isolation complete; violations remediated and retrieval ownership enforced.
+
+### Critical src/ Collision Map (2026-03-02)
+
+> All agents MUST read this before touching any framework upgrade domain.
+
+| Domain | Risk | Key src/ Files Affected | Constraint |
+|--------|------|------------------------|------------|
+| D7 (Context Injection) | 🔴 CRITICAL | `hooks/session-lifecycle.ts`, `hooks/messages-transform.ts`, `hooks/session-lifecycle-helpers.ts`, `hooks/soft-governance.ts`, `hooks/compaction.ts`, `lib/detection.ts`, `lib/hierarchy-tree.ts`, `lib/chain-analysis.ts`, `schemas/brain-state.ts` (12+ files) | ALL state mutations via `lib/state-mutation-queue.ts` |
+| D2 (TODO) | 🟡 HIGH | `hooks/event-handler.ts:259-401` (already has graph linkage!), `schemas/brain-state.ts:176`, `tools/hivemind-session-memory.ts` | EXTEND existing — DO NOT rebuild from scratch |
+| D8 (Events) | 🟡 HIGH | `lib/event-bus.ts` (EXISTS), `lib/event-consumers.ts` (EXISTS), `hooks/soft-governance.ts` (IS PostToolUse hook) | EXTEND existing — event bus already wired |
+| D1 (Delegation) | 🟢 MEDIUM | `schemas/delegation-packet.ts` (EXISTS), `lib/governance-instruction.ts`, `lib/session-boundary.ts` | Extend with depth tracking |
+| D4 (CLI) | 🟢 LOW | No src/ collision. Bash script in `.opencode/skills/` | Use `jq` for JSON, NOT TypeScript imports |
+
+### OpenCode CLI Capabilities (Source: [opencode.ai/docs/cli](https://opencode.ai/docs/cli/))
+
+> All agents: these operations are ALREADY available. Do NOT re-implement.
+
+| Operation | Command | Flags |
+|-----------|---------|-------|
+| Run with agent | `opencode run --agent hivefiver "prompt"` | `--agent`, `--title`, `--model` |
+| Continue session | `opencode run --continue` or `--session <id>` | `--continue`, `--session` |
+| Fork session | `opencode run --fork --session <id>` | `--fork` |
+| Execute command | `opencode run --command /my-command "args"` | `--command` |
+| JSON output | `opencode run --format json "prompt"` | `--format json` |
+| Attach to server | `opencode run --attach http://localhost:4096` | `--attach` |
+| List sessions | `opencode session list --format json` | `--format json` |
+| Export session | `opencode export <sessionID>` | — |
+
+**SDK-only (NO CLI flag):** `noReply:true`, SSE events, `tool.execute.before`, `experimental.session.compacting`, `experimental.chat.messages.transform`
 
 ---
 
@@ -314,11 +378,6 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 <!-- HIVEMIND-GOVERNANCE-END -->
 
 
-
-
-
-
-
 ---
 
 ## Phase 2 FK Remediation (2026-02-19)
@@ -381,6 +440,7 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 - ✅ `src/lib/graph-io.ts`: relational FK guardrails retained for post-remediation integrity
 
 ---
+
 
 ## Agent Registry & Subagents
 

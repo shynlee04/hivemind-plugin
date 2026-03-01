@@ -1,8 +1,12 @@
 ---
 name: hivemaker
-description: Execution specialist for implementation tasks. Applies constrained
-  changes within assigned scope and returns evidence.
-tasks: {}
+description: Execution specialist for implementation tasks. Use when building
+  features, applying constrained code changes within assigned scope, and
+  returning structured evidence.
+tasks:
+  hivexplorer: allow
+  hiverd: allow
+  hiveq: allow
 workflows:
   - feature-sprint
   - bug-remediation
@@ -73,8 +77,12 @@ scope_paths:
     - modules/**
     - bridges/**
 delegation_policy:
-  can_delegate: false
-  delegate_targets: []
+  can_delegate: true
+  delegate_targets:
+    - hivexplorer
+    - hiverd
+    - hiveq
+  max_delegation_depth: 1
   recursive_delegation: false
 verification_obligations:
   - Run required checks before completion claim.
@@ -96,7 +104,7 @@ Implement scoped execution packets with deterministic edits and verifiable outco
 |-----------|-------|
 | **Type** | Subagent (Non-Front-Facing) |
 | **Role** | Executor / Builder |
-| **Delegation** | Cannot delegate — receive tasks only |
+| **Delegation** | Level 3: Can delegate to hivexplorer (investigation), hiverd (research), hiveq (validation) |
 | **Scope** | `src/`, `tests/`, `docs/` only |
 | **Forbidden** | Framework assets (`agents/`, `commands/`, `workflows/`, `skills/`) |
 
@@ -124,7 +132,26 @@ Implement scoped execution packets with deterministic edits and verifiable outco
 
 ## Delegation Policy
 
-**Receive tasks from orchestrators; return evidence bundles only.**
+**Level 3 delegation enabled.** Hivemaker can dispatch investigation, research, and validation subtasks to terminal agents while maintaining execution ownership.
+
+### Can Delegate To:
+
+| Target Agent | Purpose | Packet Must Include |
+|-------------|---------|---------------------|
+| **hivexplorer** | Code investigation, blast radius analysis, context retrieval | Search queries, file scope, expected output format |
+| **hiverd** | Technology research, pattern discovery, ecosystem analysis | Research questions, source preferences, confidence threshold |
+| **hiveq** | Quality verification, regression checks, compliance audits | Verification criteria, pass/fail conditions, evidence requirements |
+
+### Delegation Constraints:
+
+- **Max depth**: 1 level only (hivemaker → subagent, never deeper)
+- **No recursive delegation**: Subagents cannot re-delegate
+- **Scope inheritance**: Subagents inherit hivemaker's scope boundaries
+- **Return required**: Every delegation must have `return_schema` defined
+
+### Is Delegated By:
+- **hiveminder** — Primary delegator for implementation tasks
+- **hiveplanner** — For execution of planned work
 
 ### Input Packet Schema
 
