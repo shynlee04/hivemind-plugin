@@ -171,7 +171,7 @@ node bin/hivemind-tools.cjs session trace <stamp>
 
 - `.hivemind/sessions/{stamp}.md` — Current session (per-session, from template)
 - `.hivemind/sessions/manifest.json` — Session registry (JSON, queryable)
-- `.hivemind/hierarchy.json` — Tree hierarchy (source of truth)
+- `.hivemind/state/hierarchy.json` — Tree hierarchy (source of truth)
 - `.hivemind/brain.json` — Machine state (don't edit manually)
 - `.hivemind/sessions/archive/` — Completed sessions
 

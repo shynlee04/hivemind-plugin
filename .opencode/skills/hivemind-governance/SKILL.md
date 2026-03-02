@@ -146,6 +146,12 @@ Before ANY file change:
 - PRESENT risk + rollback plan
 - WAIT "yes/proceed" before executing
 
+**Sub-session exception:** Delegated sub-sessions (agents dispatched via Task
+tool with explicit delegation packets) execute within their packet scope
+WITHOUT user confirmation. The parent session's dispatch approval serves as
+the authorization gate. Sub-sessions MUST still STATE intent and capture
+evidence, but do NOT wait for interactive confirmation.
+
 ### 9. STOP CONDITIONS → IMMEDIATE HALT
 - Chain integrity broken
 - Drift score < 40
