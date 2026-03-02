@@ -189,3 +189,78 @@ export interface CompactionRecovery {
   recommended_next: string
   recovered_at: number
 }
+
+/** SOT artifact entry (from .hivemind/state/sot-index.json) */
+export interface SotArtifact {
+  id: string
+  path: string
+  title: string
+  tags: string[]
+  domain: string
+  type: string
+  children: string[]
+  registered: number
+  lastModified: number
+  size: number
+  stale: boolean
+}
+
+/** SOT index (from .hivemind/state/sot-index.json) */
+export interface SotIndex {
+  artifacts: SotArtifact[]
+}
+
+/** Memory entry (from .hivemind/graph/mems.json) */
+export interface MemEntry {
+  id: string
+  session_id: string
+  origin_task_id: string | null
+  shelf: string
+  type: string
+  content: string
+  relevance_score: number
+  staleness_stamp: string
+  created_at: string
+  updated_at: string
+}
+
+/** Mems graph (from .hivemind/graph/mems.json) */
+export interface MemsGraph {
+  version: string
+  mems: MemEntry[]
+}
+
+/** Brain session state (from .hivemind/state/brain.json) */
+export interface BrainState {
+  session: {
+    id: string
+    mode: string
+    governance_mode: string
+    governance_status: string
+    start_time: number
+    last_activity: number
+  }
+  hierarchy: {
+    trajectory: string
+    tactic: string
+    action: string
+  }
+  metrics: {
+    turn_count: number
+    drift_score: number
+    auto_health_score: number
+    total_tool_calls: number
+    successful_tool_calls: number
+    violation_count: number
+    consecutive_failures: number
+  }
+}
+
+/** Extended compaction context with hiveops state for richer recovery */
+export interface CompactionHiveOpsContext {
+  sotSummary: { totalArtifacts: number; freshCount: number; staleCount: number; topDomains: string[] }
+  recentDecisions: { shelf: string; content: string; created_at: string }[]
+  brainMetrics: { turnCount: number; driftScore: number; healthScore: number }
+  delegationChain: DelegationChainEntry[]
+  activeGates: GateState[]
+}
