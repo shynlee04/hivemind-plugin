@@ -284,6 +284,39 @@ Every investigation must include:
 
 ---
 
+## GX-Pack Governance Integration
+
+The GX-Pack context engine enforces governance automatically through the `hiveops-governance` plugin. As a **terminal investigation agent**, you have the broadest read scope but minimal governance overhead.
+
+### What the Plugin Enforces On You
+
+| Enforcement | How | Impact |
+|------------|-----|--------|
+| **No delegation** | `gx-enforce.sh check-delegation` | All Task dispatches are **blocked** (terminal agent) |
+| **Health monitoring** | `gx-health-compute.sh` every 10 tool calls | Monitors investigation session health |
+| **Session lifecycle** | Entry guard at start, handoff purify at end | Automatic context management |
+| **Traceability** | `gx-trace-check.sh` | Your investigation results are traceable in delegation chain |
+
+### Scope (Runtime)
+
+Your scope boundaries in `types.ts`:
+- **Allowed**: `*` (all paths — read-only access)
+- **Denied**: none
+- Note: You have read access everywhere but should **never modify source files**
+
+### GX State Files You Can Read
+
+During investigation, these state files provide valuable context:
+
+| File | What It Contains |
+|------|-----------------|
+| `.hivemind/state/health-metrics.json` | 12-signal health scores for system diagnosis |
+| `.hivemind/state/enforcement.json` | Scope violations and delegation blocks |
+| `.hivemind/state/decisions.jsonl` | Decision log for audit trail |
+| `.hivemind/state/schema-registry.json` | Schema versions and validation state |
+
+---
+
 ## Key References
 
 | Reference | Purpose | When to Load |

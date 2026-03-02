@@ -1,0 +1,85 @@
+{
+  "artifacts": [
+    {
+      "path": ".hivemind/plans/META01-PLAN.md",
+      "title": "Hivefiver runtime materialization trial",
+      "type": "root",
+      "lines": 34,
+      "headings": 4,
+      "registered_at": "2026-03-02T18:38:52.487Z",
+      "last_verified": "2026-03-02T18:38:52.488Z",
+      "stale": false
+    },
+    {
+      "path": ".hivemind/plans/VALIDATION-META01.md",
+      "title": "Validation META01",
+      "type": "document",
+      "lines": 33,
+      "headings": 6,
+      "registered_at": "2026-03-02T18:38:52.628Z",
+      "last_verified": "2026-03-02T18:38:52.629Z",
+      "stale": false
+    },
+    {
+      "path": ".hivemind/plans/META01-SUB01-PLAN.md",
+      "title": "Parity drift isolation",
+      "type": "sub",
+      "lines": 34,
+      "headings": 4,
+      "registered_at": "2026-03-02T18:38:59.752Z",
+      "last_verified": "2026-03-02T18:38:59.753Z",
+      "stale": false
+    },
+    {
+      "path": ".hivemind/plans/VALIDATION-META01-SUB01.md",
+      "title": "Validation META01-SUB01",
+      "type": "document",
+      "lines": 33,
+      "headings": 6,
+      "registered_at": "2026-03-02T18:38:59.889Z",
+      "last_verified": "2026-03-02T18:38:59.890Z",
+      "stale": false
+    },
+    {
+      "path": ".hivemind/plans/META01-SUB01-ATOMIC01.md",
+      "title": "Diff annotation and test mapping",
+      "type": "atomic",
+      "lines": 35,
+      "headings": 6,
+      "registered_at": "2026-03-02T18:39:05.170Z",
+      "last_verified": "2026-03-02T18:39:05.171Z",
+      "stale": false
+    },
+    {
+      "path": ".hivemind/plans/VALIDATION-META01-SUB01-ATOMIC01.md",
+      "title": "Validation META01-SUB01-ATOMIC01",
+      "type": "document",
+      "lines": 33,
+      "headings": 6,
+      "registered_at": "2026-03-02T18:39:05.306Z",
+      "last_verified": "2026-03-02T18:39:05.307Z",
+      "stale": false
+    }
+  ],
+  "chains": [
+    {
+      "from": ".hivemind/plans/META01-PLAN.md",
+      "to": ".hivemind/plans/VALIDATION-META01.md",
+      "type": "depends_on",
+      "created_at": "2026-03-02T18:38:52.767Z"
+    },
+    {
+      "from": ".hivemind/plans/META01-SUB01-PLAN.md",
+      "to": ".hivemind/plans/VALIDATION-META01-SUB01.md",
+      "type": "depends_on",
+      "created_at": "2026-03-02T18:39:00.025Z"
+    },
+    {
+      "from": ".hivemind/plans/META01-SUB01-ATOMIC01.md",
+      "to": ".hivemind/plans/VALIDATION-META01-SUB01-ATOMIC01.md",
+      "type": "depends_on",
+      "created_at": "2026-03-02T18:39:05.448Z"
+    }
+  ],
+  "triggers": []
+}

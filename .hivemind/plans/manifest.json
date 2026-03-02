@@ -38,59 +38,7 @@
       "generated_by": "plan-materialize.sh",
       "created": "2026-03-02T18:39:04Z",
       "last_sync": "2026-03-02T18:39:04Z"
-    },
-    {
-      "id": "META02",
-      "title": "Hivefiver content architecture redesign",
-      "type": "root",
-      "scope": "meta",
-      "parent": null,
-      "status": "active",
-      "file": ".hivemind/plans/META02-PLAN.md",
-      "validation": ".hivemind/plans/VALIDATION-META02.md",
-      "generated_by": "session-manual",
-      "created": "2026-03-03T05:26:48Z",
-      "last_sync": "2026-03-03T05:26:48Z"
-    },
-    {
-      "id": "META02-SUB01",
-      "title": "Stale plugin path cleanup",
-      "type": "sub",
-      "scope": "meta",
-      "parent": "META02",
-      "status": "completed",
-      "file": ".hivemind/plans/META02-SUB01-PLAN.md",
-      "validation": ".hivemind/plans/VALIDATION-META02-SUB01.md",
-      "generated_by": "session-manual",
-      "created": "2026-03-03T05:26:48Z",
-      "last_sync": "2026-03-03T05:26:48Z"
-    },
-    {
-      "id": "META02-SUB02",
-      "title": "hivefiver-prime skill completion",
-      "type": "sub",
-      "scope": "meta",
-      "parent": "META02",
-      "status": "completed",
-      "file": ".hivemind/plans/META02-SUB02-PLAN.md",
-      "validation": ".hivemind/plans/VALIDATION-META02-SUB02.md",
-      "generated_by": "session-manual",
-      "created": "2026-03-03T05:26:48Z",
-      "last_sync": "2026-03-03T05:26:48Z"
-    },
-    {
-      "id": "META02-SUB03",
-      "title": "Content placement architecture",
-      "type": "sub",
-      "scope": "meta",
-      "parent": "META02",
-      "status": "active",
-      "file": ".hivemind/plans/META02-SUB03-PLAN.md",
-      "validation": ".hivemind/plans/VALIDATION-META02-SUB03.md",
-      "generated_by": "session-manual",
-      "created": "2026-03-03T05:26:48Z",
-      "last_sync": "2026-03-03T05:26:48Z"
     }
   ],
-  "last_updated": "2026-03-03T05:26:48Z"
+  "last_updated": "2026-03-02T18:39:04Z"
 }

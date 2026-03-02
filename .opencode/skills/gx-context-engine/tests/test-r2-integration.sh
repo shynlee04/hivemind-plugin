@@ -188,7 +188,7 @@ assert_true "D7 handoff includes workflow positions" "jq -e '.workflow_positions
 
 echo "--- Scenario E: TypeScript Compilation ---"
 
-TS_FILE="/Users/apple/hivemind-plugin/.opencode/plugin/hiveops-governance/hooks/compaction.ts"
+TS_FILE="/Users/apple/hivemind-plugin/.opencode/plugins/hiveops-governance/hooks/compaction.ts"
 assert_true "E1 compaction.ts exists" "[ -f \"$TS_FILE\" ]"
 
 if command -v npx >/dev/null 2>&1; then

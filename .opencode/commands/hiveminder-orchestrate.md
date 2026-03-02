@@ -28,6 +28,17 @@ return_schema:
 ---
 # HiveMind Orchestration Command
 
+<enforcement>
+Runtime pre-turn gate:
+!`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
+
+Scoped parity check (hiveminder domain only):
+!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-tools.sh parity check 'hiveminder|hivemind'`
+
+Pipeline state snapshot:
+!`bash .opencode/skills/hivefiver-coordination/scripts/state-update.sh read .`
+</enforcement>
+
 ## Task
 
 $ARGUMENTS
@@ -59,6 +70,9 @@ Load governance skill and verify session state:
 
 ```ts
 skill("hivemind-governance")
+skill("session-lifecycle")
+skill("delegation-intelligence")
+skill("evidence-discipline")
 scan_hierarchy({ action: "analyze", json: true })
 ```
 
@@ -188,6 +202,21 @@ Assign:
 - ALWAYS request code review before finalizing
 - NEVER delegate to same agent type (hivemaker -> hivemaker)
 - ALWAYS export cycle after delegation returns
+
+## Unknown Action Fallback
+
+If action is missing or not one of `plan`, `review`, `analyze`, `debug`:
+1. Default to `analyze`
+2. Return a warning in output under `analysis` describing the fallback
+3. Continue execution with scoped parity and governance evidence
+
+## Post-Turn Enforcement
+
+Run before final output:
+
+```bash
+bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh post-turn .
+```
 
 ## Exit Conditions
 

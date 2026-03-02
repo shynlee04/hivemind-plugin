@@ -417,7 +417,7 @@ STATUS=$(echo "$HEALTH" | jq -r '.composite.status')
 **CRs:** CR-13 (plugin integration)
 
 **Files:**
-- Modify: `.opencode/plugin/hiveops-governance/hooks/context-injection.ts`
+- Modify: `.opencode/plugins/hiveops-governance/hooks/context-injection.ts`
 
 **Change:** Replace `computeDrift()` (lines 140-149) with a file read from `health-metrics.json`:
 
@@ -434,7 +434,7 @@ const drift = health?.composite.score ?? 100
 - [ ] `computeDrift()` function removed
 - [ ] Health metrics loaded from file (single source of truth)
 - [ ] Context injection shows per-signal breakdown (not just one number)
-- [ ] TypeScript compiles: `npx tsc --noEmit .opencode/plugin/hiveops-governance/hooks/context-injection.ts`
+- [ ] TypeScript compiles: `npx tsc --noEmit .opencode/plugins/hiveops-governance/hooks/context-injection.ts`
 
 ---
 
@@ -464,7 +464,7 @@ echo "--- Mid-Guard (new) ---"
 bash .opencode/skills/gx-context-engine/scripts/gx-mid-guard.sh . | jq '{status: .status, score: .composite_score}'
 
 echo "--- TypeScript ---"
-npx tsc --noEmit .opencode/plugin/hiveops-governance/hooks/context-injection.ts 2>&1
+npx tsc --noEmit .opencode/plugins/hiveops-governance/hooks/context-injection.ts 2>&1
 echo "Exit: $?"
 
 echo "=== R1 Verification Complete ==="

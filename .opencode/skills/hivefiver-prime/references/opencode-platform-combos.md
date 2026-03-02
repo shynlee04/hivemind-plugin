@@ -1,10 +1,3 @@
----
-title: "OpenCode Platform Combos"
-description: "How tools, commands, skills, plugins, and agents chain at runtime — combination patterns and lifecycle"
-tags: ["opencode", "runtime", "tools", "commands", "skills", "plugins", "lifecycle"]
-last_synced: "2026-03-02"
----
-
 # OpenCode Platform Combos — How Assets Chain at Runtime
 
 > **STATUS**: FILLED — verified via Context7 `/anomalyco/opencode` (benchmark 90.6)

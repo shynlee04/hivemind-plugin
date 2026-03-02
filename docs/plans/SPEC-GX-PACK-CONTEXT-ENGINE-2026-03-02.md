@@ -110,7 +110,7 @@ Build a deterministic, stateful context engineering engine that:
 ### Plugin Enhancement
 
 ```
-.opencode/plugin/hiveops-governance/hooks/
+.opencode/plugins/hiveops-governance/hooks/
 └── context-injection.ts   # NEW: messages.transform hook
 ```
 
@@ -222,7 +222,7 @@ Step 5: PERSIST + ATTACH
 ### messages.transform Hook (P0 — Most Critical)
 
 ```typescript
-// .opencode/plugin/hiveops-governance/hooks/context-injection.ts
+// .opencode/plugins/hiveops-governance/hooks/context-injection.ts
 // This is the ONLY programmatic way to inject governance context into every LLM turn
 
 "experimental.chat.messages.transform": async (messages) => {

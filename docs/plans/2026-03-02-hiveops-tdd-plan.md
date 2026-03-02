@@ -154,7 +154,7 @@ Tests for: handoff, checkpoint, list, read
 
 **Files:**
 - Create: `.opencode/tests/hiveops-governance.test.ts`
-- Modify: `.opencode/plugin/hiveops-governance/**/*.ts` (fix any bugs found)
+- Modify: `.opencode/plugins/hiveops-governance/**/*.ts` (fix any bugs found)
 
 **Step 1: Write failing tests**
 

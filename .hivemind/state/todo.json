@@ -1,0 +1,449 @@
+{
+  "items": [
+    {
+      "id": "task-mm85fjpf-p2ln",
+      "content": "Classify intent, present pipeline options, get user confirmation",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772393674371,
+      "updated": 1772393858332,
+      "depends_on": [],
+      "blocks": [
+        "task-mm85fn6f-j26n",
+        "task-mm85fo3n-mrtb"
+      ],
+      "domain": "hivefiver-start",
+      "evidence": "User confirmed: Full Build pipeline, GSD-style with robust delegation + automated context engine + runtime regulation"
+    },
+    {
+      "id": "task-mm85fn6f-j26n",
+      "content": "Decompose user request into 5 domains with scope boundaries",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772393678871,
+      "updated": 1772393889414,
+      "depends_on": [
+        "task-mm85fjpf-p2ln"
+      ],
+      "blocks": [],
+      "domain": "hivefiver-start",
+      "evidence": "Full scope decomposed into 5 domains with boundaries mapped against existing infrastructure"
+    },
+    {
+      "id": "task-mm85fo3n-mrtb",
+      "content": "Present expert recommendation with 3 pipeline options",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772393680067,
+      "updated": 1772393935332,
+      "depends_on": [
+        "task-mm85fjpf-p2ln"
+      ],
+      "blocks": [],
+      "domain": "hivefiver-start",
+      "evidence": "Expert recommendation presented with 3 options, A recommended with rationale against B and C"
+    },
+    {
+      "id": "task-mm85fowt-d7a6",
+      "content": "Update STATE.md pipeline state and recommend next command",
+      "status": "completed",
+      "priority": "medium",
+      "created": 1772393681117,
+      "updated": 1772393950346,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hivefiver-start",
+      "evidence": "STATE.md pipeline state updated: active=true, stage=discovery, target set, start completed. Post-turn gate: health=healthy, checkpoint written. POST-01 quality warning is pre-existing (not blocking start stage)."
+    },
+    {
+      "id": "task-mm85fpse-aq6i",
+      "content": "HARD STOP — User must confirm intent classification and pipeline choice before proceeding",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772393682255,
+      "updated": 1772394114549,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hivefiver-start",
+      "evidence": "User confirmed: proceed to discovery, module name = hive-operations, fully separate module"
+    },
+    {
+      "id": "task-mm85p5ye-nx3g",
+      "content": "Discovery Phase: Audit existing hivemind-* commands and hiveminder-orchestrate for gap analysis",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772394123110,
+      "updated": 1772394790497,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations",
+      "evidence": "Completed via hivexplorer task ses_3550cdef9ffeII7U34jltF4RGc; produced severity-ranked gap analysis with evidence paths."
+    },
+    {
+      "id": "task-mm85p6sp-1292",
+      "content": "Discovery Phase: Research GSD lifecycle patterns via MCP for coordinator workflows",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772394124201,
+      "updated": 1772394795991,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations",
+      "evidence": "Completed via hiveplanner task ses_3550cde8cffeF0lAzrUR7Yo8iV; delivered plugin-only architecture blueprint with rollout phases and gate model."
+    },
+    {
+      "id": "task-mm85p7nu-fy9o",
+      "content": "Discovery Phase: Map 8 SOT reference docs into requirements matrix",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772394125322,
+      "updated": 1772394868331,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations",
+      "evidence": "Mapped 8 SOT docs and extracted requirements anchors; synthesized into docs/plans/hivemind-recovery-pack-options-2026-03-02.md"
+    },
+    {
+      "id": "task-mm85p8wd-0gti",
+      "content": "Discovery Phase: Analyze existing hiveops plugin + tools for reuse potential",
+      "status": "completed",
+      "priority": "medium",
+      "created": 1772394126925,
+      "updated": 1772394873824,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations",
+      "evidence": "Reuse potential identified from runtime-gate.sh, validate-delegation.sh, session-continue.sh, hivefiver-tools.sh in hivexplorer audit result."
+    },
+    {
+      "id": "task-mm85p95k-jf5b",
+      "content": "Synthesize discovery findings into DISCOVERY.md",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772394127256,
+      "updated": 1772394899453,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations",
+      "evidence": "Created .hivemind/hive-modules/hivefiver-v2/DISCOVERY.md with audited scope, severity findings, reusable assets, anti-patterns, and recommendation."
+    },
+    {
+      "id": "task-mm85pa11-dzp9",
+      "content": "HARD STOP — Discovery findings must be reviewed before promoting to intake",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772394128389,
+      "updated": 1772395348780,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations",
+      "evidence": "User approved discovery outputs and requested expansion of module scope toward context engineering/schema/runtime delegation proof."
+    },
+    {
+      "id": "task-mm86fqhx-42it",
+      "content": "Define GX-Pack v1.1 scope focused on context-engineering, schema governance, and runtime steering proofs",
+      "status": "cancelled",
+      "priority": "high",
+      "created": 1772395362789,
+      "updated": 1772403309527,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations"
+    },
+    {
+      "id": "task-mm86fqia-ie0h",
+      "content": "Author execution plan doc with command/workflow/skill/script chain and acceptance gates",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772395362802,
+      "updated": 1772395362802,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations"
+    },
+    {
+      "id": "task-mm86fqio-uaga",
+      "content": "Implement GX-Pack skills and references for steering, schema, and delegation constraints",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772395362816,
+      "updated": 1772395362816,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations"
+    },
+    {
+      "id": "task-mm86fqiz-scyp",
+      "content": "Implement deterministic gx-* scripts for entry, mid, todo-sync, semantic-validate, handoff-purify, and sot-register",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772395362827,
+      "updated": 1772395362827,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations"
+    },
+    {
+      "id": "task-mm86fqj8-qjxr",
+      "content": "Add minimal command surface that chains holistic workflows from few entry commands",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772395362836,
+      "updated": 1772395362836,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations"
+    },
+    {
+      "id": "task-mm86fqjk-jmm1",
+      "content": "Add linked workflows proving runtime steering with delegation and gate evidence",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772395362848,
+      "updated": 1772395362848,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations"
+    },
+    {
+      "id": "task-mm86fqjs-8nfc",
+      "content": "Run quality/runtime validation and record evidence plus residual risk",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772395362856,
+      "updated": 1772395362856,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations"
+    },
+    {
+      "id": "task-mm86fqk1-1tvb",
+      "content": "Update STATE.md decisions/changelog and export handoff artifact",
+      "status": "pending",
+      "priority": "medium",
+      "created": 1772395362865,
+      "updated": 1772395362865,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations"
+    },
+    {
+      "id": "task-mm86fqkc-nmf4",
+      "content": "HARD STOP — User review required before promoting to full doctor/build wave",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772395362876,
+      "updated": 1772395362876,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hive-operations"
+    },
+    {
+      "id": "task-mm8axgnv-lbpd",
+      "content": "HARD STOP — Verify hitea module architecture aligns with HiveFiver framework patterns",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772402908315,
+      "updated": 1772402908315,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hitea-module"
+    },
+    {
+      "id": "task-mm8axh6u-bq06",
+      "content": "Research existing testing patterns via MCP tools (Tavily, Context7, DeepWiki) for Property Testing, Mutation Testing, Chaos Engineering, VLM-driven E2E",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772402908998,
+      "updated": 1772403197486,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hitea-module"
+    },
+    {
+      "id": "task-mm8axhoz-n7w8",
+      "content": "Design hitea agent topology: main agent + supporting specialists (builder, adversary, validator)",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772402909651,
+      "updated": 1772403986580,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hitea-module"
+    },
+    {
+      "id": "task-mm8axi9i-eqck",
+      "content": "Create SKILL pack structure: SKILL.md, references/, scripts/ for each testing paradigm",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772402910390,
+      "updated": 1772403986952,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hitea-module"
+    },
+    {
+      "id": "task-mm8axjyg-hvex",
+      "content": "Build CLI commands: /hitea-init, /hitea-fuzz, /hitea-mutate, /hitea-adversary, /hitea-verify",
+      "status": "completed",
+      "priority": "medium",
+      "created": 1772402912584,
+      "updated": 1772403987292,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hitea-module"
+    },
+    {
+      "id": "task-mm8axke5-gd2h",
+      "content": "Create workflow definitions with entry/exit criteria and verification loops",
+      "status": "completed",
+      "priority": "medium",
+      "created": 1772402913149,
+      "updated": 1772404099347,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hitea-module"
+    },
+    {
+      "id": "task-mm8axkx3-jhfv",
+      "content": "Synthesize patterns from existing skills (skill-development, skill-creator, skill-judge)",
+      "status": "pending",
+      "priority": "medium",
+      "created": 1772402913831,
+      "updated": 1772402913831,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "hitea-module"
+    },
+    {
+      "id": "task-mm8elyxp-rj1k",
+      "content": "R3-01: Schema Registry — 27/27 GREEN, L2 review round 3 pending APPROVE",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772409090589,
+      "updated": 1772409090589,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "gx-pack-r3"
+    },
+    {
+      "id": "task-mm8em56q-52un",
+      "content": "R3-02: Enforcement Engine — TDD GREEN phase, fix 6 failing tests",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772409098690,
+      "updated": 1772409191923,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "gx-pack-r3",
+      "evidence": "21/21 GREEN - enforcement engine all tests pass"
+    },
+    {
+      "id": "task-mm8em69b-w3s1",
+      "content": "R3-02: L1 verify-before-completion (fresh evidence)",
+      "status": "in_progress",
+      "priority": "high",
+      "created": 1772409100079,
+      "updated": 1772409192635,
+      "depends_on": [
+        "R3-02: Enforcement Engine — TDD GREEN phase"
+      ],
+      "blocks": [],
+      "domain": "gx-pack-r3"
+    },
+    {
+      "id": "task-mm8em79s-i68h",
+      "content": "R3-02: L2 requesting-code-review (dispatch hiveq)",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772409101392,
+      "updated": 1772409101392,
+      "depends_on": [
+        "R3-02: L1 verify-before-completion"
+      ],
+      "blocks": [],
+      "domain": "gx-pack-r3"
+    },
+    {
+      "id": "task-mm8em895-2rih",
+      "content": "R3-02: L3 code-review-excellence iterate until APPROVE",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772409102665,
+      "updated": 1772409102665,
+      "depends_on": [
+        "R3-02: L2 requesting-code-review"
+      ],
+      "blocks": [],
+      "domain": "gx-pack-r3"
+    },
+    {
+      "id": "task-mm8em9by-2fl9",
+      "content": "R3-03: Traceability Checker — TDD RED→GREEN→L1→L2→L3",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772409104062,
+      "updated": 1772409104062,
+      "depends_on": [
+        "R3-02: L3 code-review-excellence"
+      ],
+      "blocks": [],
+      "domain": "gx-pack-r3"
+    },
+    {
+      "id": "task-mm8emaa3-9qfp",
+      "content": "R3-04: Dynamic Scope Resolver — TDD RED→GREEN→L1→L2→L3",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772409105291,
+      "updated": 1772409105291,
+      "depends_on": [
+        "R3-03: Traceability Checker"
+      ],
+      "blocks": [],
+      "domain": "gx-pack-r3"
+    },
+    {
+      "id": "task-mm8embi8-uwkr",
+      "content": "R3-05: Integration Test — all R3 CRs end-to-end + R1/R2 regression",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772409106880,
+      "updated": 1772409106880,
+      "depends_on": [
+        "R3-04: Dynamic Scope Resolver"
+      ],
+      "blocks": [],
+      "domain": "gx-pack-r3"
+    },
+    {
+      "id": "task-mm8emcod-kvw8",
+      "content": "R3 PHASE GATE — present all evidence, user approval required",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772409108397,
+      "updated": 1772409108397,
+      "depends_on": [
+        "R3-05: Integration Test"
+      ],
+      "blocks": [],
+      "domain": "gx-pack-r3"
+    },
+    {
+      "id": "task-mm8eme2y-zesi",
+      "content": "HARD STOP — All R3 GREEN+APPROVED. Then R4→R5→R6 same pipeline to 100%",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772409110218,
+      "updated": 1772409110218,
+      "depends_on": [
+        "R3 PHASE GATE"
+      ],
+      "blocks": [],
+      "domain": "gx-pack-r3"
+    }
+  ],
+  "version": 67,
+  "lastSync": 1772409192635,
+  "activeItem": "task-mm8em69b-w3s1"
+}

@@ -388,8 +388,8 @@ Create `tests/test-r2-05-first-turn-refresh.sh`:
 **CRs:** CR-07
 
 **Files:**
-- Modify: `.opencode/plugin/hiveops-governance/hooks/compaction.ts`
-- Modify: `.opencode/plugin/hiveops-governance/types.ts` (add CompactionRecovery type)
+- Modify: `.opencode/plugins/hiveops-governance/hooks/compaction.ts`
+- Modify: `.opencode/plugins/hiveops-governance/types.ts` (add CompactionRecovery type)
 - Create: `.opencode/skills/gx-context-engine/tests/test-r2-06-compaction-hook.sh`
 
 **Step 1: Add CompactionRecovery type**
@@ -427,7 +427,7 @@ Key enhancement: the existing hook only injects rules ("DO NOT edit files outsid
 **Step 3: TypeScript verification**
 
 ```bash
-npx tsc --noEmit .opencode/plugin/hiveops-governance/hooks/compaction.ts
+npx tsc --noEmit .opencode/plugins/hiveops-governance/hooks/compaction.ts
 # Expected: Exit 0
 ```
 

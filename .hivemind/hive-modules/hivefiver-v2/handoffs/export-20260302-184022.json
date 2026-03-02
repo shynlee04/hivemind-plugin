@@ -1,0 +1,43 @@
+{
+  "timestamp": "2026-03-02T18:40:16Z",
+  "quality": {
+  "stage": "build",
+  "passed": false,
+  "checks_run": 9,
+  "failures": [
+    "G-01: Wildcard task allow without deny-first in: hivefiver.md",
+    "G-02: Unrestricted bash permission in: hivefiver.md"
+  ],
+  "warnings": [
+    "S-FM-01: Skill hitea-adversarial-arena SKILL.md missing frontmatter delimiters",
+    "S-FM-01: Skill hitea-property-testing SKILL.md missing frontmatter delimiters",
+    "S-FM-01: Skill hitea-visual-regression SKILL.md missing frontmatter delimiters",
+    "S-FM-01: Skill hitea-chaos-engineering SKILL.md missing frontmatter delimiters",
+    "S-FM-01: Skill gx-context-engine SKILL.md missing frontmatter delimiters",
+    "S-FM-01: Skill hitea-mutation-testing SKILL.md missing frontmatter delimiters",
+    "G-07: High skill count (35). Risk of context budget overrun",
+    "G-09: Parity drift: .opencode/agents/hitea.md differs from agents/hitea.md",
+    "G-09: Parity drift: .opencode/agents/hivefiver.md differs from agents/hivefiver.md",
+    "G-09: Parity drift: .opencode/agents/hivehealer.md differs from agents/hivehealer.md",
+    "G-09: Parity drift: .opencode/agents/hivemaker.md differs from agents/hivemaker.md",
+    "G-09: Parity drift: .opencode/agents/hiveplanner.md differs from agents/hiveplanner.md",
+    "G-09: Parity drift: .opencode/agents/hiveq.md differs from agents/hiveq.md",
+    "G-09: Parity drift: .opencode/agents/hiverd.md differs from agents/hiverd.md",
+    "G-09: Parity drift: .opencode/agents/hivexplorer.md differs from agents/hivexplorer.md"
+  ]
+},
+  "pipeline": {"action":"status","health":"healthy","active":true,"current_stage":"discovery","completed_count":7,"completed_stages":"start,discovery,intake,spec,architect,build,audit","target":"Hiveminder Operations Module — GSD-style coordinator with auto-context engine","error":"","checkpoint":"."},
+  "inventory": {
+  "inventory": {
+    "agents": 9,
+    "commands": 11,
+    "skills": 5,
+    "workflows": 10,
+    "scripts": 17,
+    "references": 10
+  },
+  "health": "healthy",
+  "issues": 0,
+  "quality_check_passed": false
+}
+}

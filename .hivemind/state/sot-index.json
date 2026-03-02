@@ -1,0 +1,98 @@
+{
+  "artifacts": [
+    {
+      "id": "sot-meta01-plan",
+      "path": ".hivemind/plans/META01-PLAN.md",
+      "title": "Hivefiver runtime materialization trial",
+      "tags": [
+        "meta",
+        "runtime",
+        "generated"
+      ],
+      "domain": "planning",
+      "type": "plan",
+      "children": [],
+      "registered": 1772476867980,
+      "lastModified": 1772476732204,
+      "size": 935,
+      "stale": false
+    },
+    {
+      "id": "sot-meta01-sub01-plan",
+      "path": ".hivemind/plans/META01-SUB01-PLAN.md",
+      "title": "Parity drift isolation",
+      "tags": [
+        "meta",
+        "sub",
+        "runtime"
+      ],
+      "domain": "planning",
+      "type": "plan",
+      "children": [],
+      "registered": 1772476867983,
+      "lastModified": 1772476739476,
+      "size": 899,
+      "stale": false
+    },
+    {
+      "id": "sot-meta01-sub01-atomic01",
+      "path": ".hivemind/plans/META01-SUB01-ATOMIC01.md",
+      "title": "Diff annotation and test mapping",
+      "tags": [
+        "meta",
+        "atomic",
+        "runtime"
+      ],
+      "domain": "planning",
+      "type": "plan",
+      "children": [],
+      "registered": 1772476867991,
+      "lastModified": 1772476744902,
+      "size": 868,
+      "stale": false
+    },
+    {
+      "id": "sot-validation-meta01",
+      "path": ".hivemind/plans/VALIDATION-META01.md",
+      "title": "Validation META01",
+      "tags": [
+        "validation",
+        "meta"
+      ],
+      "domain": "planning",
+      "type": "plan",
+      "children": [],
+      "registered": 1772476867993,
+      "lastModified": 1772476732207,
+      "size": 767,
+      "stale": false
+    }
+  ],
+  "version": 6,
+  "lastScan": 1772476876333,
+  "tagIndex": {
+    "meta": [
+      "sot-meta01-plan",
+      "sot-meta01-sub01-plan",
+      "sot-meta01-sub01-atomic01",
+      "sot-validation-meta01"
+    ],
+    "runtime": [
+      "sot-meta01-plan",
+      "sot-meta01-sub01-plan",
+      "sot-meta01-sub01-atomic01"
+    ],
+    "generated": [
+      "sot-meta01-plan"
+    ],
+    "sub": [
+      "sot-meta01-sub01-plan"
+    ],
+    "atomic": [
+      "sot-meta01-sub01-atomic01"
+    ],
+    "validation": [
+      "sot-validation-meta01"
+    ]
+  }
+}

@@ -298,7 +298,7 @@ The GX-Pack context engine enforces governance automatically through the `hiveop
 
 When designing execution plans, account for these GX-Pack enforcement rules:
 
-1. **Agent scope boundaries** — Plans must assign tasks to agents whose `allowPaths` include the target files. Reference `SCOPE_BOUNDARIES` in `.opencode/plugin/hiveops-governance/types.ts`.
+1. **Agent scope boundaries** — Plans must assign tasks to agents whose `allowPaths` include the target files. Reference `SCOPE_BOUNDARIES` in `.opencode/plugins/hiveops-governance/types.ts`.
 2. **Delegation topology** — Plans must respect `DELEGATION_TOPOLOGY` max depth and target lists. hiveminder can delegate 3 deep; most agents max 1-2.
 3. **Automatic health checks** — Long-running plans will trigger `gx-mid-guard.sh` every 10 tool calls. Plan for context recovery if sessions degrade.
 4. **Handoff purification** — Session boundaries automatically purify context. Multi-session plans benefit from this but must account for state loss.

@@ -55,7 +55,7 @@ assert_contains() {
 
 echo "=== TDD Test: R2-06 Compaction Hook Enhancement ==="
 
-PLUGIN_DIR="$(cd "$SCRIPT_DIR/../../plugin/hiveops-governance" && pwd)"
+PLUGIN_DIR="$(cd "$SCRIPT_DIR/../../plugins/hiveops-governance" && pwd)"
 COMPACTION_FILE="$PLUGIN_DIR/hooks/compaction.ts"
 TYPES_FILE="$PLUGIN_DIR/types.ts"
 

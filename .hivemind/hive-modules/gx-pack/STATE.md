@@ -148,8 +148,8 @@ npx tsc --noEmit index.ts → Exit: 0 (clean with bundler moduleResolution)
 | **Trajectory** | `.hivemind/hive-modules/gx-pack/TRAJECTORY.md` |
 | This state file | `.hivemind/hive-modules/gx-pack/STATE.md` |
 | Skill SKILL.md | `.opencode/skills/gx-context-engine/SKILL.md` |
-| Plugin hook | `.opencode/plugin/hiveops-governance/hooks/context-injection.ts` |
-| Plugin index | `.opencode/plugin/hiveops-governance/index.ts` |
+| Plugin hook | `.opencode/plugins/hiveops-governance/hooks/context-injection.ts` |
+| Plugin index | `.opencode/plugins/hiveops-governance/index.ts` |
 | Runtime profile | `.hivemind/state/runtime-profile.json` |
 | Options matrix | `docs/plans/hivemind-recovery-pack-options-2026-03-02.md` |
 | Parent module | `.hivemind/hive-modules/hivefiver-v2/STATE.md` |

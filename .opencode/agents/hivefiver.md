@@ -3,63 +3,64 @@ name: hivefiver
 description: "Use when building, auditing, or fixing OpenCode framework assets — agents, commands, skills, workflows. Triggers on: 'build me an agent', 'create a skill', 'fix my framework', 'audit commands', 'what can hivefiver do'."
 mode: primary
 temperature: 0.1
-step: 50 
 prompt: {file:./prompts/temporary-ordained.md}
 permission:
-  read: allow
-  glob: allow
-  grep: allow
+  read: deny
+  glob: deny
+  grep: deny
   skill: allow
   todoread: allow
   todowrite: allow
   webfetch: allow
   websearch: allow
   task:
-    "*": allow
+    "*": deny
     "hivehealer": allow
     "hivefiver": allow
     "hivexplorer": allow
     "hiveplanner": allow
     "hiverd": allow
     "hiveplanner": allow
+    "hivemaker": allow
+    "hiveq": allow
   bash:
-    "*": allow
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "git branch*": allow
-    "npm test*": allow
-    "npm run*": allow
-    "npx tsc*": allow
-    "npx opencode*": allow
-    "node scripts/*": allow
-    "node bin/*": allow
-    "ls *": allow
-    "cat *": allow
-    "diff *": allow
-    "find *": allow
-    "wc *": allow
-    "jq *": allow
+    "*": deny
+    "git status*": deny
+    "git diff*": deny
+    "git log*": deny
+    "git branch*": deny
+    "npm test*": deny
+    "npm run*": deny
+    "npx tsc*": deny
+    "npx opencode*": deny
+    "node scripts/*": deny
+    "node bin/*": deny
+    "ls *": deny
+    "cat *": deny
+    "diff *": deny
+    "find *": deny
+    "wc *": deny
+    "jq *": deny
   edit:
-    "*": allow # users edit
-    ".opencode/**": allow
-    ".hivemind/**": allow
-    "AGENTS.md": allow
-    "CLAUDE.md": allow
-    "agents/**": allow
-    "commands/**": allow
-    "workflows/**": allow
-    "skills/**": allow
-    "templates/**": allow
-    "references/**": allow
-    "prompts/**": allow
-    "scripts/**": allow
-    "hooks/**": allow
-    "tools/**": allow
-    "modules/**": allow
-    "bridges/**": allow
-    "docs/**": allow
-  external_directory: allow # allow to access external directory. It is human-user's decisions
+    "*": deny # users edit
+    ".opencode/**": ask
+    ".hivemind/**": ask
+    "AGENTS.md": ask
+    "CLAUDE.md": ask
+    "agents/**": ask
+    "commands/**": ask
+    "workflows/**": ask
+    "skills/**": ask
+    "templates/**": ask
+    "references/**": ask
+    "prompts/**": ask
+    "scripts/**": ask
+    "hooks/**": ask
+    "tools/**": ask 
+    "modules/**": ask
+    "bridges/**": ask
+    "docs/**": ask
+  external_directory: ask # allow to access external directory. It is human-user's decisions
 identity:
   role: meta_builder
 scope:
@@ -82,6 +83,8 @@ delegation_policy:
     - hivexplorer
     - hiveplanner
     - hiverd
+    - hivehealer
+    - hitea
     - hivemaker # the human-user's decisions to use when need dev's executions
     - hiverd # the human-user's decisions to use when need external research and mcp research
     - hiveq # the human-user's decisions to use when need Quality and verification specialist. Use when auditing code quality, running verification gates, or producing pass/fail evidence and compliance verdicts.
@@ -514,11 +517,11 @@ As meta-builder, these plugin files are in YOUR scope to audit and modify:
 
 | File | Purpose |
 |------|---------|
-| `.opencode/plugin/hiveops-governance/index.ts` | Plugin entry, wiring map |
-| `.opencode/plugin/hiveops-governance/hooks/events.ts` | Session/TODO/file event hooks |
-| `.opencode/plugin/hiveops-governance/hooks/delegation.ts` | Delegation/scope enforcement hooks |
-| `.opencode/plugin/hiveops-governance/hooks/compaction.ts` | Compaction recovery hooks |
-| `.opencode/plugin/hiveops-governance/hooks/context-injection.ts` | Context injection hook |
-| `.opencode/plugin/hiveops-governance/utils.ts` | Cross-platform script runner |
-| `.opencode/plugin/hiveops-governance/types.ts` | Topology, boundaries, types |
+| `.opencode/plugins/hiveops-governance/index.ts` | Plugin entry, wiring map |
+| `.opencode/plugins/hiveops-governance/hooks/events.ts` | Session/TODO/file event hooks |
+| `.opencode/plugins/hiveops-governance/hooks/delegation.ts` | Delegation/scope enforcement hooks |
+| `.opencode/plugins/hiveops-governance/hooks/compaction.ts` | Compaction recovery hooks |
+| `.opencode/plugins/hiveops-governance/hooks/context-injection.ts` | Context injection hook |
+| `.opencode/plugins/hiveops-governance/utils.ts` | Cross-platform script runner |
+| `.opencode/plugins/hiveops-governance/types.ts` | Topology, boundaries, types |
 </gx_governance>

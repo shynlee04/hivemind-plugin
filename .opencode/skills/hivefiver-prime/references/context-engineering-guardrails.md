@@ -1,10 +1,3 @@
----
-title: "Context Engineering Guardrails"
-description: "LLM runtime awareness — context budget, rot detection, escalation protocol, evidence-before-claims, SOT validation"
-tags: ["context", "guardrails", "rot-detection", "escalation", "evidence", "compaction", "anthropic"]
-last_synced: "2026-03-02"
----
-
 # Context Engineering Guardrails — Practical LLM Runtime Awareness
 
 > **STATUS**: FILLED — synthesized from Anthropic engineering blog, Claude Code best practices, and industry research

@@ -1,0 +1,52 @@
+{
+  "id": "gx-profile-2a0935eb57ce",
+  "created": "2026-03-01T20:38:56Z",
+  "created_epoch": 1772397536,
+  "ttl": 3600000,
+  "intent": "build_new",
+  "policy_version": "gx-pack-v1",
+  "role_envelope": {
+    "primary": {
+      "agent": "hiveminder",
+      "level": 2
+    },
+    "secondary": {
+      "agent": "hivemaker",
+      "level": 3
+    },
+    "monitor": {
+      "agent": "hiveq",
+      "level": 3
+    }
+  },
+  "capabilities": {
+    "tools": [
+      "read",
+      "glob",
+      "grep",
+      "task",
+      "skill",
+      "hiveops_todo",
+      "hiveops_gate",
+      "hiveops_sot",
+      "hiveops_export"
+    ],
+    "paths": [
+      ".opencode/**",
+      ".hivemind/**",
+      "docs/**"
+    ],
+    "depth_limit": 3,
+    "delegate_to": [
+      "hivemaker",
+      "hiveq",
+      "hivexplorer"
+    ]
+  },
+  "constraints": [
+    "L3 agents cannot execute critical-path edits without delegation packet",
+    "Monitor must verify before stage promotion",
+    "All delegation packets must include profile_id",
+    "New assets must have contract compliance before write"
+  ]
+}

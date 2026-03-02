@@ -85,7 +85,8 @@ Before acting on ANY user request, classify:
 
 ## 4. Progressive Disclosure Map
 
-<!-- Verified via Context7 + DeepWiki (2026-03-02). Maps classified intent → skills → load order. -->
+<!-- TODO: Fill after OpenCode platform research (next session) -->
+<!-- This section maps: classified intent → which skills to load → in what order -->
 
 ### Skill Loading Tiers
 
@@ -99,11 +100,11 @@ Before acting on ANY user request, classify:
 
 ### Domain → Skill Map
 
-<!-- Living document: mappings reflect current skill topology. Update when skills change. -->
+<!-- TODO: Validate these mappings against actual SKILL.md content (investigation needed) -->
 
 | Domain | Skill | Load When |
 |--------|-------|-----------|
-| OpenCode platform knowledge | `hivefiver-prime` refs + `hivefiver-mode` refs | Building framework assets that use OpenCode features |
+| OpenCode platform knowledge | <!-- TODO: Create or identify --> | Building framework assets that use OpenCode features |
 | Context governance | `hivemind-governance`, `context-integrity` | Session management, drift detection |
 | Delegation patterns | `delegation-intelligence`, `delegation-packet-contract` | Before dispatching sub-agents |
 | Evidence discipline | `evidence-discipline` | Before claiming completion |
@@ -149,7 +150,7 @@ If ANY check fails → treat as hypothesis, not truth.
 
 ## 6. Declaration Protocol
 
-<!-- Format validated through practical usage. Structured for both LLM self-orientation and human readability. -->
+<!-- TODO: Refine format after research on practical LLM response patterns -->
 
 At session start (after loading this skill), emit a structured declaration:
 
@@ -171,7 +172,12 @@ This declaration is for BOTH the LLM's self-orientation AND human readability.
 
 ## 7. OpenCode Platform Awareness
 
-<!-- Verified via Context7 `/anomalyco/opencode` (benchmark 90.6) + DeepWiki. See references/opencode-platform-combos.md for full details. -->
+<!-- TODO: Fill after Context7 research (next session) -->
+<!-- This section will contain verified knowledge about: -->
+<!-- - How tools + commands + skills + plugins chain at runtime -->
+<!-- - The triad: custom tools + commands + innate tools + agents + skills -->
+<!-- - Plugin hooks and injection points -->
+<!-- - Tool combo patterns for framework building -->
 
 ### Known Facts (verified this session via Context7 + DeepWiki):
 
@@ -203,7 +209,7 @@ Any other YAML fields (e.g., `identity`, `scope`, `delegation_policy`) — harml
 
 ## 8. Skill Chaining Guide
 
-<!-- Validated against hivefiver-mode and hivefiver-coordination SKILL.md content (2026-03-02). -->
+<!-- TODO: Validate after investigation of hivefiver-mode and hivefiver-coordination content -->
 
 ### Load Chain for Common Scenarios
 
@@ -219,7 +225,7 @@ Any other YAML fields (e.g., `identity`, `scope`, `delegation_policy`) — harml
 
 ## References
 
-> References filled and verified (2026-03-02). Sources: Context7, Anthropic Engineering, DeepWiki.
+> These are stubs. Content will be filled after dedicated research sessions.
 
 - `references/opencode-platform-combos.md` — How tools, commands, skills, and plugins chain
 - `references/context-engineering-guardrails.md` — LLM runtime awareness, model behavior patterns

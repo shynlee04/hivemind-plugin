@@ -1,7 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
-    "opencode-antigravity-auth@beta"
+    "opencode-antigravity-auth@beta",
+    "file://.opencode/plugin/hiveops-governance/index.ts"
   ],
   "mcp": {
     "notion": {
@@ -70,6 +71,21 @@
       ],
       "enabled": true,
       "timeout": 30000
+    },
+    "z-reader": {
+      "enabled": false
+    },
+    "web-reader": {
+      "enabled": false
+    },
+    "web-prime-search": {
+      "enabled": false
+    },
+    "web-search-prime": {
+      "enabled": false
+    },
+    "zread": {
+      "enabled": false
     }
   },
   "provider": {
@@ -345,20 +361,47 @@
     "edit": "ask",
     "write": "ask",
     "bash": "ask",
+    "lsp": "allow",
+    "todowrite": "allow",
+    "todoread": "allow",
     "*": "ask"
   },
+  "instructions": [
+    "Prefer the 'patch' tool over 'edit' for code changes. Use 'edit' only for single-line modifications. The 'patch' tool is more reliable for complex code modifications.",
+    "LSP Tool Best Practices: The LSP tool is available (requires OPENCODE_EXPERIMENTAL_LSP_TOOL=true). Supported operations: goToDefinition, findReferences, hover, documentSymbol, workspaceSymbol, goToImplementation, prepareCallHierarchy, incomingCalls, outgoingCalls.",
+    "When to use LSP vs other tools: Use LSP goToDefinition/findReferences when you need precise code intelligence (e.g., 'where is this function defined?' or 'what calls this method?'). Use grep for text-based searches across the codebase. Use glob to find files by pattern. Use read to examine file contents.",
+    "LSP + Other Tools Combination: (1) Start with LSP goToDefinition to find where a symbol is defined, then use read to examine the implementation. (2) Use LSP findReferences to see all usages, then use grep to filter by context. (3) Use LSP hover to get type info before making edits with patch. (4) Use workspaceSymbol to find symbols by name when you don't know the file location.",
+    "LSP Workflow: For refactoring tasks, use LSP to understand code structure first (incomingCalls/outgoingCalls for call hierarchy, goToImplementation for interfaces), then use patch for the actual changes. This reduces errors from blind edits.",
+    "Tool Priority: (1) LSP for code intelligence and navigation, (2) grep/glob for discovery and text search, (3) read for detailed examination, (4) patch for multi-line changes, (5) edit only for single-line fixes.",
+    "Always validate LSP results with read before making edits. LSP provides locations but you must verify the actual code content before patching."
+  ],
   "agent": {
     "hivefiver": {
       "mode": "primary",
-      "tools": {
-        "read": true,
-        "glob": true,
-        "grep": true,
-        "task": true,
-        "skill": true,
-        "webfetch": true,
-        "websearch": true,
-        "bash": true
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "task": "allow",
+        "skill": "allow",
+        "webfetch": "allow",
+        "websearch": "allow",
+        "bash": "allow",
+        "todowrite": "allow",
+        "todoread": "allow",
+        "edit": "ask",
+        "write": "ask"
+      }
+    },
+    "*": {
+      "mode": "subagent",
+      "permission": {
+        "todowrite": "allow",
+        "todoread": "allow",
+        "edit": "ask",
+        "write": "ask",
+        "read": "allow",
+        "bash": "ask"
       }
     }
   }

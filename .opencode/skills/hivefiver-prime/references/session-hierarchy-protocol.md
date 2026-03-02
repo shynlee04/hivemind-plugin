@@ -1,10 +1,3 @@
----
-title: "Session Hierarchy Protocol"
-description: "Behavioral contracts for main, sub, and recovery sessions — detection signals, MUST/MUST-NOT rules, self-delegation"
-tags: ["session", "hierarchy", "delegation", "recovery", "compaction", "sub-agent"]
-last_synced: "2026-03-02"
----
-
 # Session Hierarchy Protocol — Behavioral Contracts for HiveFiver
 
 > **STATUS**: FILLED — verified via Context7, Anthropic docs, and codebase investigation

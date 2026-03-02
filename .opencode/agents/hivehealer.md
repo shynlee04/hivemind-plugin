@@ -292,6 +292,42 @@ Every remediation must include:
 
 ---
 
+## GX-Pack Governance Integration
+
+The GX-Pack context engine enforces governance automatically through the `hiveops-governance` plugin. As a **remediation agent**, governance is enforced ON you — you focus on debugging, not governance administration.
+
+### What the Plugin Enforces On You
+
+| Enforcement | How | Impact |
+|------------|-----|--------|
+| **Scope boundaries** | `gx-enforce.sh check-path` fires before every file write | Writes to `.opencode/` paths are **blocked** |
+| **Delegation limits** | `gx-enforce.sh check-delegation` fires before Task dispatch | Only hivexplorer, hiveq allowed; max depth 1 |
+| **Health monitoring** | `gx-health-compute.sh` fires every 10 tool calls | Monitors session health during long debug sessions |
+| **Session lifecycle** | Entry guard at start, handoff purify at end | Automatic context initialization and cleanup |
+| **Auto-purge** | `gx-auto-purge.sh` checks context cleanliness | Dirty context (>90) triggers snapshot and purge |
+
+### Manual GX Scripts Available
+
+| Script | When to Use |
+|--------|-------------|
+| `gx-decision-log.sh` | Log root cause findings and fix decisions |
+| `gx-scope-resolve.sh` | Verify a file is in your remediation scope |
+
+### Scope Enforcement (Runtime)
+
+Your scope boundaries in `types.ts`:
+- **Allowed**: `src/`, `tests/`, `.hivemind/`
+- **Denied**: `.opencode/`
+- Violations → logged to `.hivemind/state/enforcement.json`, write **blocked**
+
+### Delegation Enforcement (Runtime)
+
+- **Can delegate to**: hivexplorer, hiveq
+- **Max depth**: 2, **recursive**: false
+- Violations → delegation **blocked** and logged
+
+---
+
 ## Key References
 
 | Reference | Purpose | When to Load |

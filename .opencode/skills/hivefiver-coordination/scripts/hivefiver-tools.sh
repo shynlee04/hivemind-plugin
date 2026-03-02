@@ -9,7 +9,7 @@
 #   state set <field> <value>     — Update a Pipeline State field
 #   verify asset-contracts        — Validate all assets against contract schemas
 #   inventory scan                — Count and health-check all framework assets
-#   parity check                  — Compare .opencode/ with root mirrors
+#   parity check [scope_regex]    — Compare .opencode/ with root mirrors (optionally scoped)
 #   guard snapshot <file>         — Schema-guard: pre-edit snapshot
 #   guard verify <file>           — Schema-guard: post-edit verification
 #   guard commit <file>           — Schema-guard: atomic git commit
@@ -131,17 +131,32 @@ do_inventory() {
 
 # --- Parity subcommand ---
 do_parity() {
+  local scope_regex="${ARG3:-}"
+
+  matches_scope() {
+    local name="$1"
+    if [[ -z "$scope_regex" ]]; then
+      return 0
+    fi
+    [[ "$name" =~ $scope_regex ]]
+  }
+
   printf '{\n'
+  printf '  "scope_regex": "%s",\n' "$scope_regex"
   printf '  "parity_checks": [\n'
 
   local first=true
   local drifts=0
+  local missing=0
 
   # Check agents
   for oc_file in "$WORKDIR"/.opencode/agents/*.md; do
     [[ -f "$oc_file" ]] || continue
     local basename
     basename="$(basename "$oc_file")"
+    if ! matches_scope "$basename"; then
+      continue
+    fi
     local root_file="$WORKDIR/agents/$basename"
 
     if [[ -f "$root_file" ]]; then
@@ -153,14 +168,18 @@ do_parity() {
     else
       if [[ "$first" == "true" ]]; then first=false; else printf ',\n'; fi
       printf '    {"file": "%s", "status": "missing_root_mirror", "location": "agents/"}' "$basename"
+      (( missing++ ))
     fi
   done
 
   # Check commands
-  for oc_file in "$WORKDIR"/.opencode/commands/hivefiver*.md; do
+  for oc_file in "$WORKDIR"/.opencode/commands/*.md; do
     [[ -f "$oc_file" ]] || continue
     local basename
     basename="$(basename "$oc_file")"
+    if ! matches_scope "$basename"; then
+      continue
+    fi
     local root_file="$WORKDIR/commands/$basename"
 
     if [[ -f "$root_file" ]]; then
@@ -169,11 +188,17 @@ do_parity() {
         printf '    {"file": "%s", "status": "drift", "location": "commands/"}' "$basename"
         (( drifts++ ))
       fi
+    else
+      if [[ "$first" == "true" ]]; then first=false; else printf ',\n'; fi
+      printf '    {"file": "%s", "status": "missing_root_mirror", "location": "commands/"}' "$basename"
+      (( missing++ ))
     fi
   done
 
   printf '\n  ],\n'
-  printf '  "total_drifts": %d\n' "$drifts"
+  printf '  "total_drifts": %d,\n' "$drifts"
+  printf '  "total_missing": %d,\n' "$missing"
+  printf '  "total_issues": %d\n' "$(( drifts + missing ))"
   printf '}\n'
 }
 
@@ -208,7 +233,7 @@ Subcommands:
   verify asset-contracts        Validate all assets against contract schemas
   verify gate [stage]           Run gate-check for a stage
   inventory scan                Count and health-check all framework assets
-  parity check                  Compare .opencode/ with root mirrors for drift
+  parity check [scope_regex]    Compare .opencode/ with root mirrors for drift/missing
   guard snapshot <file>         Pre-edit frontmatter snapshot (schema protection)
   guard verify <file>           Post-edit frontmatter verification
   guard commit <file>           Atomic git commit of single file
@@ -220,6 +245,8 @@ Examples:
   hivefiver-tools.sh state set stage build
   hivefiver-tools.sh verify asset-contracts
   hivefiver-tools.sh inventory scan
+  hivefiver-tools.sh parity check
+  hivefiver-tools.sh parity check 'hiveminder|hivemind'
   hivefiver-tools.sh guard snapshot .opencode/agents/hivefiver.md
 HELP
 }
