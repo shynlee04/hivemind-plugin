@@ -1,0 +1,81 @@
+contract_version: 2
+name: hivefiver-vibecoder
+target_agent: hivefiver
+description: Guided flow for low-technical users with interactive tutoring, hidden TDD scaffolding, and strict process gates.
+version: 2
+steps:
+  - name: bootstrap
+    tool: hivefiver
+    wave: 1
+    skill_bundles:
+      - meta-builder-governance
+      - hivefiver-persona-routing
+    args:
+      action: init
+      lane: vibecoder
+    entry_criteria: "Lane selected"
+    exit_criteria: "Hivefiver initialized in vibecoder lane"
+  - name: intake
+    tool: hivefiver-intake
+    wave: 2
+    skill_bundles:
+      - meta-builder-governance
+      - hivefiver-persona-routing
+    args:
+      style: interactive_mcq
+      strictness: assisted
+    entry_criteria: "Bootstrap complete"
+    exit_criteria: "Requirements captured via interactive guided intake"
+  - name: spec
+    tool: hivefiver-specforge
+    wave: 3
+    skill_bundles:
+      - hivefiver-spec-distillation
+    args:
+      include_examples: true
+      retry_limit: 10
+    entry_criteria: "Intake complete"
+    exit_criteria: "Spec with examples generated"
+  - name: research
+    tool: hivefiver-research
+    wave: 4
+    skill_bundles:
+      - research-methodology
+      - source-evaluation
+    args:
+      fallback: graceful
+      enforce_provider_status: true
+      retry_limit: 10
+    entry_criteria: "Spec accepted"
+    exit_criteria: "Research completed with graceful fallback"
+  - name: tutor
+    tool: hivefiver-tutor
+    wave: 5
+    skill_bundles:
+      - meta-builder-governance
+    args:
+      language_mode: bilingual
+      retry_limit: 10
+    entry_criteria: "Research complete"
+    exit_criteria: "User tutored on implementation approach"
+  - name: export
+    tool: hivefiver-ralph-bridge
+    wave: 6
+    skill_bundles:
+      - meta-builder-governance
+    args:
+      validate_schema: true
+      include_todo_story_map: true
+    entry_criteria: "Tutoring complete"
+    exit_criteria: "Schema-validated export with todo story map"
+guards:
+  - rule: context_first
+    check: hierarchy_chain_complete
+  - rule: evidence_gate
+    check: confidence_not_fake
+  - rule: mcp_readiness
+    check: provider_status_reported
+  - rule: graph_connected
+    check: connected_task_graph
+  - rule: export_cycle
+    check: cycle_exported

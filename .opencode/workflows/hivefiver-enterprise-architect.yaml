@@ -1,0 +1,122 @@
+contract_version: 2
+name: hivefiver-enterprise-architect
+target_agent: hivefiver
+description: Compliance-first enterprise architect workflow for regulated, corporate-scale projects. Adds regulatory matrix, compliance intake, orchestration planning, and dual-bridge export (GSD + Ralph) beyond the standard enterprise workflow.
+version: 2
+selector:
+  lane: enterprise_architect
+  precedence: 2
+  trigger_conditions:
+    - "persona_lane == enterprise_architect"
+    - "S4 == 2 AND S2 == 2"
+  description: "Elevated enterprise workflow. Selected when BOTH risk tolerance (S4) and project scale (S2) are maximal, indicating regulatory/compliance requirements. Takes precedence over hivefiver-enterprise when trigger conditions match."
+steps:
+  - name: bootstrap
+    tool: hivefiver
+    wave: 1
+    skill_bundles:
+      - meta-builder-governance
+      - hivefiver-persona-routing
+    args:
+      action: init
+      lane: enterprise_architect
+    entry_criteria: "Lane resolved to enterprise_architect with S4=2 AND S2=2"
+    exit_criteria: "Hivefiver initialized in compliance-first enterprise_architect mode"
+  - name: compliance-intake
+    tool: hivefiver-intake
+    wave: 2
+    skill_bundles:
+      - meta-builder-governance
+      - hivefiver-persona-routing
+    args:
+      style: controlled_mcq
+      strictness: strict
+      compliance_extensions: true
+    entry_criteria: "Bootstrap complete"
+    exit_criteria: "Requirements captured via controlled MCQ with compliance extensions validated"
+  - name: spec-gate
+    tool: hivefiver-specforge
+    wave: 3
+    skill_bundles:
+      - hivefiver-spec-distillation
+    args:
+      block_high_ambiguity: true
+      require_ambiguity_map: true
+      require_regulatory_section: true
+      retry_limit: 10
+    entry_criteria: "Compliance intake complete"
+    exit_criteria: "Spec generated with ambiguity map and regulatory section; no high-ambiguity items"
+  - name: research-evidence
+    tool: hivefiver-research
+    wave: 4
+    skill_bundles:
+      - research-methodology
+      - source-evaluation
+    args:
+      require_contradiction_register: true
+      require_regulatory_sources: true
+      retry_limit: 10
+    entry_criteria: "Spec accepted by user"
+    exit_criteria: "Evidence gathered with contradiction register and regulatory source coverage"
+  - name: architecture
+    tool: hivefiver-architect
+    wave: 5
+    skill_bundles:
+      - meta-builder-governance
+      - hivefiver-persona-routing
+    args:
+      enforce_subagent_policy: true
+      require_compliance_layer: true
+    entry_criteria: "Research evidence available with regulatory sources"
+    exit_criteria: "Architecture designed with subagent policy and compliance layer enforced"
+  - name: orchestration
+    tool: hivefiver-workflow
+    wave: 6
+    skill_bundles:
+      - meta-builder-governance
+    args:
+      export_cycle_required: true
+      require_rollback_plan: true
+    entry_criteria: "Architecture finalized and accepted"
+    exit_criteria: "Workflow orchestration produced with export cycle and rollback plan"
+  - name: gsd-wrap
+    tool: hivefiver-gsd-bridge
+    wave: 7
+    skill_bundles:
+      - meta-builder-governance
+      - hivefiver-gsd-compat
+    args:
+      compatibility_wrapper: true
+      require_lineage_report: true
+    entry_criteria: "Orchestration complete"
+    exit_criteria: "GSD-compatible output with lineage report"
+  - name: ralph-export
+    tool: hivefiver-ralph-bridge
+    wave: 8
+    skill_bundles:
+      - meta-builder-governance
+      - gate-enforcement
+    args:
+      validate_schema: true
+      require_compliance_attestation: true
+    entry_criteria: "GSD wrap complete"
+    exit_criteria: "Schema-validated export with compliance attestation emitted"
+guards:
+  - rule: compliance_gate
+    check: regulatory_matrix_passed
+    severity: blocking
+  - rule: evidence_gate
+    check: confidence_not_fake
+    severity: blocking
+  - rule: lineage_gate
+    check: connected_task_graph
+    severity: blocking
+  - rule: schema_gate
+    check: prd_json_valid
+    severity: blocking
+  - rule: export_cycle
+    check: cycle_exported
+    severity: blocking
+  - rule: rollback_gate
+    check: rollback_plan_present
+    severity: blocking

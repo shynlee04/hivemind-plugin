@@ -17,6 +17,7 @@
  * | hivemind_precision_patch | patch symbol by name                      | ASTSurgeon.patchSymbol          |
  * | hivemind_mesh_pull  | blast radius + skeleton aggregation           | LSPBridge + ASTSurgeon          |
  * | hivemind_doc_weaver | patch markdown section by heading             | DocWeaver.patchSection          |
+ * | hivemind_declare    | declare role, mode, context, confidence       | Agent declaration runtime       |
  */
 
 export { createHivemindSessionTool } from "./hivemind-session.js"
@@ -33,3 +34,4 @@ export { createHivemindReadSkeletonTool } from "./hivemind-read-skeleton.js"
 export { createHivemindPrecisionPatchTool } from "./hivemind-precision-patch.js"
 export { createHivemindMeshPullTool } from "./hivemind-mesh-pull.js"
 export { createHivemindDocWeaverTool } from "./hivemind-doc-weaver.js"
+export { createHivemindDeclareTool } from "./hivemind-declare.js"

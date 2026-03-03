@@ -51,6 +51,7 @@ tools:
   hivemind_session: true
   hivemind_context: true
   hivemind_ideate: true
+  hivemind_declare: true
 permission:
   read: allow
   edit:
@@ -101,6 +102,7 @@ allowed_tools:
   - hivemind_session
   - hivemind_context
   - hivemind_ideate
+  - hivemind_declare
 scope_paths:
   allow:
     - ".hivemind/**"

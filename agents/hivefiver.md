@@ -11,6 +11,7 @@ permission:
   skill: allow
   todoread: allow
   todowrite: allow
+  hivemind_declare: allow
   webfetch: allow
   websearch: allow
   task:

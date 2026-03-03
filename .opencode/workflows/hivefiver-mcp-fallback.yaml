@@ -1,0 +1,54 @@
+contract_version: 2
+name: hivefiver-mcp-fallback
+target_agent: hivefiver
+description: Recovery workflow when one or more MCP providers are unavailable.
+version: 2
+steps:
+  - name: detect-gaps
+    tool: hivefiver-audit
+    wave: 1
+    skill_bundles:
+      - meta-builder-governance
+    args:
+      focus: mcp
+    entry_criteria: "MCP availability concern raised"
+    exit_criteria: "MCP gaps detected and cataloged"
+  - name: emit-remediation
+    tool: hivefiver-doctor
+    wave: 2
+    skill_bundles:
+      - meta-builder-governance
+      - systematic-debugging-hivemind
+    args:
+      emit_setup_todos: true
+      include_env_examples: true
+    entry_criteria: "Gaps cataloged"
+    exit_criteria: "Remediation plan with TODOs and env examples emitted"
+  - name: partial-research
+    tool: hivefiver-research
+    wave: 3
+    skill_bundles:
+      - research-methodology
+    args:
+      fallback: graceful
+      confidence_required: partial
+      retry_limit: 10
+    entry_criteria: "Remediation plan available"
+    exit_criteria: "Partial research completed with graceful fallback"
+  - name: continue-spec
+    tool: hivefiver-specforge
+    wave: 4
+    skill_bundles:
+      - hivefiver-spec-distillation
+    args:
+      include_caveats: true
+      attach_confidence_to_assumptions: true
+    entry_criteria: "Partial research results available"
+    exit_criteria: "Spec generated with explicit caveats and confidence labels"
+guards:
+  - rule: no_fake_confidence
+    check: confidence_label_present
+  - rule: setup_todos_required
+    check: remediation_plan_exists
+  - rule: explicit_caveats
+    check: caveat_block_present

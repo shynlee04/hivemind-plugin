@@ -356,15 +356,15 @@
       }
     }
   },
-  "model": "chutes-api/e51e818e-fa63-570d-9f68-49d7d1b4d12f",
+  "model": "chutes/MiniMaxAI/MiniMax-M2.5-TEE",
   "permission": {
-    "edit": "ask",
-    "write": "ask",
-    "bash": "ask",
+    "edit": "allow",
+    "write": "allow",
+    "bash": "allow",
     "lsp": "allow",
     "todowrite": "allow",
     "todoread": "allow",
-    "*": "ask"
+    "*": "allow"
   },
   "instructions": [
     "Prefer the 'patch' tool over 'edit' for code changes. Use 'edit' only for single-line modifications. The 'patch' tool is more reliable for complex code modifications.",
@@ -379,18 +379,21 @@
     "hivefiver": {
       "mode": "primary",
       "permission": {
-        "read": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "task": "allow",
+        "read": "deny",
+        "mcp*": "deny",
+        "glob": "deny",
+        "grep": "deny",
+        "task": "deny",
         "skill": "allow",
-        "webfetch": "allow",
-        "websearch": "allow",
-        "bash": "allow",
+        "hivemind_declare": "allow",
+        "webfetch": "deny",
+        "websearch": "deny",
+        "bash": "deny",
         "todowrite": "allow",
         "todoread": "allow",
-        "edit": "ask",
-        "write": "ask"
+        "edit": "deny",
+        "write": "deny",
+        "repomix*": "deny"
       }
     },
     "*": {
@@ -398,10 +401,10 @@
       "permission": {
         "todowrite": "allow",
         "todoread": "allow",
-        "edit": "ask",
-        "write": "ask",
+        "edit": "allow",
+        "write": "allow",
         "read": "allow",
-        "bash": "ask"
+        "bash": "allow"
       }
     }
   }

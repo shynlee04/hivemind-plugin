@@ -29,6 +29,10 @@ import {
   buildFrameworkSelectionMenu,
 } from "./framework-context.js"
 import { collectProjectSnapshot, localized, generateProjectBackboneBlock } from "./project-snapshot.js"
+import {
+  generateEscalationBlock,
+  formatEscalationForInjection,
+} from "./context-escalation.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import { isCoachAutomation } from "../schemas/config.js"
 import type { BrainState } from "../schemas/brain-state.js"
@@ -128,6 +132,18 @@ export async function buildGovernanceSignals(
   })
   if (toolHint) {
     warningLines.push(`💡 Suggested: ${toolHint.tool} — ${toolHint.reason}`)
+  }
+
+  // Context quality escalation (turn-based)
+  const agentRole = isMainAgent(state) ? "MAIN" : "SUB"
+  const escalation = generateEscalationBlock(
+    state.metrics.turn_count,
+    agentRole,
+    state.hierarchy
+  )
+  const escalationBlock = formatEscalationForInjection(escalation)
+  if (escalationBlock) {
+    warningLines.push(escalationBlock)
   }
 
   return { warningLines, ignoredLines, frameworkLines, onboardingLines }
@@ -314,4 +330,15 @@ function buildSessionBoundaryWarnings(
     warningLines.push(`🔄 ${boundaryRecommendation.reason}`)
     warningLines.push("→ Run /hivemind-compact to archive and start fresh")
   }
+}
+
+/**
+ * Determine if session is a MAIN agent (orchestrator) or SUB agent (executor)
+ */
+function isMainAgent(state: BrainState): boolean {
+  const role = (state.session.role || "").toLowerCase()
+  // MAIN agents: hiveminder, hivefiver, hiveplanner
+  // SUB agents: hivemaker, hivehealer, hiveq, hivexplorer, hiverd
+  const mainAgents = ["hiveminder", "hivefiver", "hiveplanner"]
+  return mainAgents.some(agent => role.includes(agent)) || !role.includes("subagent")
 }
