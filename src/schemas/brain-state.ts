@@ -39,6 +39,8 @@ export interface MetricsState {
   drift_score: number;
   files_touched: string[];
   context_updates: number;
+  /** Last user turn index where hierarchy context was updated */
+  last_context_update_turn?: number;
   auto_health_score: number; // 0-100, calculated from success rate
   total_tool_calls: number;
   successful_tool_calls: number;
@@ -55,8 +57,12 @@ export interface MetricsState {
     governance: number;
   };
   keyword_flags: string[];               // detected keywords this session
+  /** User turn index where keyword flags were last reset */
+  keyword_flags_reset_turn?: number;
   /** Count of file writes without prior read this session */
   write_without_read_count: number;
+  /** File paths that have been read at least once this session */
+  files_read_this_session?: string[];
   /** Governance escalation/reset counters for severity routing */
   governance_counters: GovernanceCounters;
 }
@@ -287,6 +293,7 @@ export function createBrainState(
       drift_score: 100,
       files_touched: [],
       context_updates: 0,
+      last_context_update_turn: 0,
       auto_health_score: 100,
       total_tool_calls: 0,
       successful_tool_calls: 0,
@@ -297,7 +304,9 @@ export function createBrainState(
       last_section_content: "",
       tool_type_counts: { read: 0, write: 0, query: 0, governance: 0 },
       keyword_flags: [],
+      keyword_flags_reset_turn: 0,
       write_without_read_count: 0,
+      files_read_this_session: [],
       governance_counters: {
         drift: 0,
         compaction: 0,
@@ -436,6 +445,7 @@ export function updateHierarchy(
     metrics: {
       ...state.metrics,
       context_updates: state.metrics.context_updates + 1,
+      last_context_update_turn: state.metrics.user_turn_count,
     },
     session: {
       ...state.session,
@@ -458,8 +468,11 @@ export function addFileTouched(state: BrainState, filePath: string): BrainState 
 }
 
 export function calculateDriftScore(state: BrainState): number {
-  const turnsPenalty = Math.min(50, state.metrics.user_turn_count * 5);
-  const updatesBonus = Math.min(20, state.metrics.context_updates * 2);
+  const userTurns = state.metrics.user_turn_count;
+  const lastUpdateTurn = state.metrics.last_context_update_turn ?? 0;
+  const turnsSinceUpdate = Math.max(0, userTurns - lastUpdateTurn);
+  const turnsPenalty = Math.min(50, turnsSinceUpdate * 5);
+  const updatesBonus = state.metrics.context_updates > 0 ? 20 : 0;
   return Math.max(0, Math.min(100, 100 - turnsPenalty + updatesBonus));
 }
 

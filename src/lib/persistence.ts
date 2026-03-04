@@ -174,10 +174,13 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
           parsed.metrics.consecutive_same_section ??= 0
           parsed.metrics.last_section_content ??= ""
           parsed.metrics.keyword_flags ??= []
+          parsed.metrics.keyword_flags_reset_turn ??= 0
           parsed.metrics.write_without_read_count ??= 0
+          parsed.metrics.files_read_this_session ??= []
           parsed.metrics.tool_type_counts ??= { read: 0, write: 0, query: 0, governance: 0 }
           // Migration: user_turn_count (v3.0) - counts user response cycles, not tool calls
           parsed.metrics.user_turn_count ??= 0
+          parsed.metrics.last_context_update_turn ??= 0
           parsed.metrics.governance_counters ??= {
             drift: 0,
             compaction: 0,

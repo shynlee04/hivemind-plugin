@@ -1,1 +1,29 @@
-{"version":"1.0.0","mems":[]}
+{
+  "version": "1.0.0",
+  "mems": [
+    {
+      "id": "9baf243d-a741-48d2-8c49-90dde8ceb8de",
+      "session_id": "eca6ef14-5f16-4e14-a972-a84e505125eb",
+      "origin_task_id": null,
+      "shelf": "execution",
+      "type": "insight",
+      "content": "Phase 9 test alignment updated failing test expectations to current user_turn_count and governance counter semantics; npm test and npx tsc --noEmit passed.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-03-04T15:34:06.617Z",
+      "created_at": "2026-03-04T15:34:06.617Z",
+      "updated_at": "2026-03-04T15:34:06.617Z"
+    },
+    {
+      "id": "9fb2abfd-c56c-415d-858d-921d530300be",
+      "session_id": "eca6ef14-5f16-4e14-a972-a84e505125eb",
+      "origin_task_id": null,
+      "shelf": "patterns",
+      "type": "insight",
+      "content": "Metrics Refactor 2026-03-04: Completed 9-phase surgical refactor of brain.json metrics system. Fixed turn_count semantics (now uses user_turn_count), restored evidence_pressure counters (4-counter schema), improved drift formula (anti-gaming), added per-turn keyword reset, per-file read/write tracking, hierarchy string validation. All changes verified with TypeScript compilation and 230 passing tests. Zero regressions.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-03-04T15:53:34.257Z",
+      "created_at": "2026-03-04T15:53:34.257Z",
+      "updated_at": "2026-03-04T15:53:34.257Z"
+    }
+  ]
+}

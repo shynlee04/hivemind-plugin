@@ -195,10 +195,7 @@ export function computeViolationSeriousness(
 export function computeGovernanceSeverity(opts: {
   kind: GovernanceSignalKind;
   repetitionCount: number;
-  acknowledged?: boolean;
 }): GovernanceSeverity {
-  void opts.acknowledged;
-
   const canonicalKind = canonicalizeGovernanceSignalKind(opts.kind);
 
   if (canonicalKind === "compaction") return "info";

@@ -42,6 +42,7 @@ import {
   type BrainState,
   type SessionMode,
 } from "../schemas/brain-state.js"
+import { validateHierarchyString } from "../schemas/hierarchy.js"
 
 import { addGraphMem, loadTrajectory } from "./graph-io.js"
 export type HierarchyLevel = "trajectory" | "tactic" | "action"
@@ -144,7 +145,7 @@ export async function startSession(directory: string, options: SessionOptions): 
   }
 
   const mode = options.mode
-  const focus = options.focus
+  const focus = validateHierarchyString(options.focus ?? "")
 
   if (!mode || !VALID_MODES.includes(mode)) {
     return {
@@ -256,7 +257,7 @@ export async function updateSession(directory: string, updates: SessionUpdates):
     }
   }
 
-  const content = updates.content
+  const content = validateHierarchyString(updates.content ?? "")
   if (!content?.trim()) {
     return {
       success: false,
@@ -352,6 +353,7 @@ export async function updateSession(directory: string, updates: SessionUpdates):
     metrics: {
       ...state.metrics,
       context_updates: state.metrics.context_updates + 1,
+      last_context_update_turn: state.metrics.user_turn_count,
     },
   }
 

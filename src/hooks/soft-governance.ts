@@ -196,6 +196,73 @@ function extractToolContent(output: { output: string; metadata: unknown }): stri
   return ""
 }
 
+function normalizeTrackedPath(path: string): string {
+  return path.trim().replace(/\\/g, "/")
+}
+
+function isLikelyTrackedPath(value: string): boolean {
+  if (!value || value.length > 1024) return false
+  if (value.includes("\n")) return false
+  if (/^[a-z]+:\/\//i.test(value)) return false
+  return value.includes("/") || value.includes("\\") || value.includes(".")
+}
+
+function collectFilePaths(value: unknown, depth = 0): string[] {
+  if (depth > 4 || value == null) return []
+  if (typeof value === "string") {
+    return isLikelyTrackedPath(value) ? [normalizeTrackedPath(value)] : []
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectFilePaths(item, depth + 1))
+  }
+  if (typeof value !== "object") return []
+
+  const obj = value as Record<string, unknown>
+  const singlePathKeys = new Set(["filePath", "path", "targetFile", "file", "source", "destination"])
+  const listPathKeys = new Set(["files", "paths", "filePaths", "modifiedFiles", "selectedFiles"])
+  const paths: string[] = []
+
+  for (const [key, child] of Object.entries(obj)) {
+    if (singlePathKeys.has(key) && typeof child === "string") {
+      paths.push(...collectFilePaths(child, depth + 1))
+      continue
+    }
+    if (listPathKeys.has(key) && Array.isArray(child)) {
+      paths.push(...collectFilePaths(child, depth + 1))
+      continue
+    }
+    paths.push(...collectFilePaths(child, depth + 1))
+  }
+
+  return paths
+}
+
+function extractPathTags(outputText: string): string[] {
+  const matches = outputText.matchAll(/<path>([^<]+)<\/path>/g)
+  const found: string[] = []
+  for (const match of matches) {
+    const value = match[1]?.trim()
+    if (value && isLikelyTrackedPath(value)) {
+      found.push(normalizeTrackedPath(value))
+    }
+  }
+  return found
+}
+
+function extractTrackedPaths(
+  input: { args?: unknown; input?: unknown; params?: unknown },
+  output: { output: string; metadata: unknown },
+): string[] {
+  const candidates = [
+    ...collectFilePaths(input.args),
+    ...collectFilePaths(input.input),
+    ...collectFilePaths(input.params),
+    ...collectFilePaths(output.metadata),
+    ...extractPathTags(output.output ?? ""),
+  ]
+  return [...new Set(candidates)]
+}
+
 function detectOffTrackIntent(toolName: string, output: { output: string; metadata: unknown }): string | null {
   if (toolName !== "map_context" && toolName !== "hivemind_session") {
     return null
@@ -236,6 +303,9 @@ export function createSoftGovernanceHook(
       tool: string
       sessionID: string
       callID: string
+      args?: unknown
+      input?: unknown
+      params?: unknown
     },
     _output: {
       title: string
@@ -309,12 +379,32 @@ export function createSoftGovernanceHook(
 
       // === Detection Engine: Tool Classification ===
       const toolCategory = classifyTool(input.tool)
+      const trackedPaths = extractTrackedPaths(input, _output)
+      const filesReadThisSession = new Set(
+        (newState.metrics.files_read_this_session ?? []).map(normalizeTrackedPath)
+      )
+
+      if (toolCategory === "read" && trackedPaths.length > 0) {
+        for (const trackedPath of trackedPaths) {
+          filesReadThisSession.add(trackedPath)
+        }
+        newState = {
+          ...newState,
+          metrics: {
+            ...newState.metrics,
+            files_read_this_session: [...filesReadThisSession],
+          },
+        }
+      }
 
       // === FileGuard: Write-without-read tracking ===
-      // If a write/edit tool fires and no reads have occurred yet, increment blind-write counter
+      // Track blind writes per file path, not just per session read count.
       if (toolCategory === "write" && input.tool !== "bash") {
-        const readCount = newState.metrics.tool_type_counts?.read ?? 0;
-        if (readCount === 0) {
+        const hasUnreadWriteTarget = trackedPaths.length > 0
+          ? trackedPaths.some((trackedPath) => !filesReadThisSession.has(trackedPath))
+          : (newState.metrics.tool_type_counts?.read ?? 0) === 0
+
+        if (hasUnreadWriteTarget) {
           newState = {
             ...newState,
             metrics: {
@@ -332,6 +422,16 @@ export function createSoftGovernanceHook(
         last_section_content: newState.metrics.last_section_content ?? "",
         tool_type_counts: newState.metrics.tool_type_counts ?? createDetectionState().tool_type_counts,
         keyword_flags: newState.metrics.keyword_flags ?? [],
+      }
+
+      const currentUserTurn = newState.metrics.user_turn_count ?? 0
+      let keywordFlagsResetTurn = newState.metrics.keyword_flags_reset_turn ?? currentUserTurn
+      if (keywordFlagsResetTurn !== currentUserTurn) {
+        detection = {
+          ...detection,
+          keyword_flags: [],
+        }
+        keywordFlagsResetTurn = currentUserTurn
       }
 
       // Increment tool type counter
@@ -375,6 +475,7 @@ export function createSoftGovernanceHook(
           last_section_content: detection.last_section_content,
           tool_type_counts: detection.tool_type_counts,
           keyword_flags: detection.keyword_flags,
+          keyword_flags_reset_turn: keywordFlagsResetTurn,
         },
       }
 
@@ -426,7 +527,6 @@ export function createSoftGovernanceHook(
         const severity = computeGovernanceSeverity({
           kind: "out_of_order",
           repetitionCount,
-          acknowledged: false,
         })
 
         // Only emit toast on severity escalation (not every occurrence)
@@ -456,7 +556,6 @@ export function createSoftGovernanceHook(
         const severity = computeGovernanceSeverity({
           kind: "evidence_pressure",
           repetitionCount,
-          acknowledged: false,
         })
 
         // Only emit toast on severity escalation
