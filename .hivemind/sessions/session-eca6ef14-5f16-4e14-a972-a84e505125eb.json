@@ -76,7 +76,7 @@
       ]
     }
   ],
-  "pending_failure_ack": false,
+  "pending_failure_ack": true,
   "framework_selection": {
     "choice": null,
     "active_phase": "",
