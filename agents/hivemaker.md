@@ -624,6 +624,42 @@ function validateScope(packet: DelegationPacket): boolean {
 
 ---
 
+## GX-Pack Governance Integration
+
+The GX-Pack context engine enforces governance automatically through the `hiveops-governance` plugin. As an **executor agent**, most governance is enforced ON you — you do not need to invoke GX scripts directly.
+
+### What the Plugin Enforces On You
+
+| Enforcement | How | Impact |
+|------------|-----|--------|
+| **Scope boundaries** | `gx-enforce.sh check-path` fires before every file write | Writes to forbidden paths (`.opencode/agents/`, `.opencode/commands/`, `.opencode/skills/`) are **blocked** |
+| **Delegation limits** | `gx-enforce.sh check-delegation` fires before Task dispatch | Only hivexplorer, hiverd, hiveq allowed; max depth 1 |
+| **Health monitoring** | `gx-health-compute.sh` fires every 10 tool calls | Drift detection, context health scoring |
+| **Session lifecycle** | `gx-entry-guard.sh` at session start, `gx-handoff-purify.sh` at end | Automatic context initialization and cleanup |
+| **Traceability** | `gx-trace-check.sh` tracks delegation chains | All delegations are auditable |
+
+### Manual GX Scripts Available
+
+| Script | When to Use |
+|--------|-------------|
+| `gx-decision-log.sh` | Log implementation decisions for audit trail |
+| `gx-scope-resolve.sh` | Check if a file path is in your allowed scope before editing |
+
+### Scope Enforcement (Runtime)
+
+Your scope boundaries in `types.ts`:
+- **Allowed**: `src/`, `tests/`, `docs/`, `.hivemind/`
+- **Denied**: `.opencode/agents/`, `.opencode/commands/`, `.opencode/skills/`
+- Violations → logged to `.hivemind/state/enforcement.json`, write **blocked**
+
+### Delegation Enforcement (Runtime)
+
+- **Can delegate to**: hivexplorer, hiverd, hiveq
+- **Max depth**: 2, **recursive**: false
+- Violations → delegation **blocked** and logged
+
+---
+
 ## Quick Reference
 
 ### Commands

@@ -263,10 +263,6 @@ export function createSoftGovernanceHook(
         newState.hierarchy.tactic &&
         newState.hierarchy.action
       )
-      counters = {
-        ...counters,
-        prerequisites_completed: prerequisitesCompleted,
-      }
 
       const governanceAcknowledged = shouldAcknowledgeGovernanceSignals(input.tool, _output)
       if (governanceAcknowledged) {
@@ -287,7 +283,7 @@ export function createSoftGovernanceHook(
       const resetDecision = evaluateIgnoredResetPolicy({
         counters,
         prerequisitesCompleted,
-        missedStepCount: counters.out_of_order + counters.evidence_pressure,
+        missedStepCount: 0,
         hierarchyImpact,
       })
       if (resetDecision.fullReset) {
@@ -296,12 +292,10 @@ export function createSoftGovernanceHook(
           prerequisitesCompleted,
         })
       } else if (resetDecision.downgrade) {
-        counters = {
-          ...counters,
-          ignored: Math.max(0, counters.ignored - resetDecision.decrementBy),
-          acknowledged: false,
-          prerequisites_completed: prerequisitesCompleted,
-        }
+        counters = resetGovernanceCounters(counters, {
+          full: false,
+          prerequisitesCompleted,
+        })
       }
 
       if (governanceAcknowledged) {
@@ -427,12 +421,12 @@ export function createSoftGovernanceHook(
       if (isIgnoredTool && state.session.governance_status === "LOCKED") {
         // Agent is trying to use tools when session is LOCKED
         newState = addViolationCount(newState)
-        const repetitionCount = counters.out_of_order
+        const repetitionCount = counters.drift
         counters = registerGovernanceSignal(counters, "out_of_order")
         const severity = computeGovernanceSeverity({
           kind: "out_of_order",
           repetitionCount,
-          acknowledged: counters.acknowledged,
+          acknowledged: false,
         })
 
         // Only emit toast on severity escalation (not every occurrence)
@@ -457,12 +451,12 @@ export function createSoftGovernanceHook(
         detection.keyword_flags.length > 0 ||
         detection.consecutive_failures > 0
       if (hasEvidencePressure && config.governance_mode !== "permissive") {
-        const repetitionCount = counters.evidence_pressure
+        const repetitionCount = counters.drift
         counters = registerGovernanceSignal(counters, "evidence_pressure")
         const severity = computeGovernanceSeverity({
           kind: "evidence_pressure",
           repetitionCount,
-          acknowledged: counters.acknowledged,
+          acknowledged: false,
         })
 
         // Only emit toast on severity escalation

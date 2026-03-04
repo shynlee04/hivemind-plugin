@@ -1,3 +1,8 @@
+---
+name: hitea-mutation-testing
+description: "Use when evaluating test quality through mutation testing with StrykerJS."
+---
+
 # Skill: hitea-mutation-testing
 
 # Mutation Testing with StrykerJS

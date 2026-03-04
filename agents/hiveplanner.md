@@ -281,6 +281,44 @@ Every plan must include:
 
 ---
 
+## GX-Pack Governance Integration
+
+The GX-Pack context engine enforces governance automatically through the `hiveops-governance` plugin. As a **planner agent**, you should factor GX-Pack governance into your plans.
+
+### What the Plugin Enforces On You
+
+| Enforcement | How | Impact |
+|------------|-----|--------|
+| **Scope boundaries** | `gx-enforce.sh check-path` before file writes | Writes to `src/`, `tests/`, `.opencode/` are **blocked** |
+| **Delegation limits** | `gx-enforce.sh check-delegation` before Task dispatch | Only hivexplorer, hiverd allowed; max depth 1 |
+| **Health monitoring** | `gx-health-compute.sh` every 10 tool calls | Health metrics available for planning decisions |
+| **Session lifecycle** | Entry guard at start, handoff purify at end | Automatic context management |
+
+### Planning for GX-Pack Constraints
+
+When designing execution plans, account for these GX-Pack enforcement rules:
+
+1. **Agent scope boundaries** — Plans must assign tasks to agents whose `allowPaths` include the target files. Reference `SCOPE_BOUNDARIES` in `.opencode/plugins/hiveops-governance/types.ts`.
+2. **Delegation topology** — Plans must respect `DELEGATION_TOPOLOGY` max depth and target lists. hiveminder can delegate 3 deep; most agents max 1-2.
+3. **Automatic health checks** — Long-running plans will trigger `gx-mid-guard.sh` every 10 tool calls. Plan for context recovery if sessions degrade.
+4. **Handoff purification** — Session boundaries automatically purify context. Multi-session plans benefit from this but must account for state loss.
+
+### Manual GX Scripts Available
+
+| Script | When to Use |
+|--------|-------------|
+| `gx-decision-log.sh` | Log planning decisions for traceability |
+| `gx-workflow-state.sh` | Track workflow stage transitions in plans |
+
+### Scope Enforcement (Runtime)
+
+Your scope boundaries in `types.ts`:
+- **Allowed**: `docs/`, `.hivemind/`, `.planning/`
+- **Denied**: `src/`, `tests/`, `.opencode/`
+- Violations → logged and **blocked**
+
+---
+
 ## Key References
 
 | Reference | Purpose | When to Load |

@@ -25,7 +25,12 @@ export interface PlanningPaths {
   archiveDir: string;
   brainPath: string;
   templatePath: string;
+  /** Backward-compatible alias to sessions manifest path. */
   manifestPath: string;
+  /** Path to sessions manifest (.hivemind/sessions/manifest.json). */
+  sessionsManifestPath: string;
+  /** Path to plans manifest (.hivemind/plans/manifest.json). */
+  plansManifestPath: string;
   templatesDir: string;
   sessionsDir: string;
   hierarchyPath: string;
@@ -34,6 +39,7 @@ export interface PlanningPaths {
 
 export function getPlanningPaths(projectRoot: string): PlanningPaths {
   const p = getEffectivePaths(projectRoot);
+  const sessionsManifestPath = p.sessionsManifest;
   return {
     projectRoot,
     planningDir: p.root,
@@ -42,7 +48,9 @@ export function getPlanningPaths(projectRoot: string): PlanningPaths {
     archiveDir: p.archiveDir,
     brainPath: p.brain,
     templatePath: p.sessionTemplate,
-    manifestPath: p.sessionsManifest,
+    manifestPath: sessionsManifestPath,
+    sessionsManifestPath,
+    plansManifestPath: p.plansManifest,
     templatesDir: p.templatesDir,
     sessionsDir: p.sessionsDir,
     hierarchyPath: p.hierarchy,

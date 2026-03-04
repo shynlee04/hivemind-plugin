@@ -279,8 +279,7 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
 
             const hasUnpurgedTemporaryExports = Boolean(
               currentState &&
-                currentState.memory_governance.temporary_exports_consolidated >
-                  currentState.memory_governance.temporary_exports_purged
+                currentState.memory_governance.pending_purge
             )
             const unappliedVerifiedChanges = pending.pending_changes.filter(
               (entry) => entry.status === "verified"
@@ -313,8 +312,7 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
                   ...preCloseState,
                   memory_governance: {
                     ...preCloseState.memory_governance,
-                    temporary_exports_purged:
-                      preCloseState.memory_governance.temporary_exports_purged + purgeResult.purgedCount,
+                    last_classified_at: Date.now(),
                     pending_purge: false,
                   },
                 })

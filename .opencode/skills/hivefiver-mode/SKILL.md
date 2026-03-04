@@ -1,6 +1,6 @@
 ---
 name: hivefiver-mode
-description: "Use at the start of every hivefiver turn to determine current stage, load correct command and workflow, and route references. Triggers on: session start, turn start, stage transition, 'what should I do next', context recovery."
+description: "Second direct hivefiver entry skill. Use after hivefiver-prime to determine current stage, load the correct helper skill, and route references with bounded context."
 ---
 
 # Hivefiver Mode Routing
@@ -9,11 +9,15 @@ Determine current stage and route to correct command + workflow + references.
 
 ## Stage Detection
 
-Execute `scripts/route-stage.sh` with current working directory:
+Determine stage using one of two paths:
+
+1) If bash is allowed, run `scripts/route-stage.sh` directly.
 
 ```bash
 ./scripts/route-stage.sh /Users/apple/hivemind-plugin
 ```
+
+2) If bash is denied (common for hivefiver), delegate to `hivexplorer` and request the script output JSON with evidence.
 
 The script reads:
 - `.hivemind/state/hierarchy.json` — Trajectory → Tactic → Action tree
@@ -76,7 +80,9 @@ delegation_packet:
 
 ## Session-Based Delegation
 
-For clean-context delegation, compose an `opencode run` command from route-stage.sh output:
+For clean-context delegation, compose an `opencode run` command from route-stage output.
+Use this direct shell path only when bash is explicitly allowed in the session.
+In default blind mode, request `hivexplorer` evidence for stage routing and delegate without local shell execution.
 
 ```bash
 # Get stage routing
@@ -85,10 +91,11 @@ STAGE=$(echo "$ROUTE" | jq -r '.stage')
 COMMAND=$(echo "$ROUTE" | jq -r '.command')
 
 # Compose parsed prompt as workflow instruction
-PROMPT="Load hivefiver-mode and hivefiver-coordination skills first.
+PROMPT="Load hivefiver-prime first, then hivefiver-mode.
 Current stage: $STAGE
 Execute: $COMMAND
 Constraints: stay in .opencode/** and .hivemind/** only.
+Then load only the stage helper skill (hivefiver-coordination when gate checks are required).
 Quality gate: run quality-check.sh $STAGE before claiming completion."
 
 # Delegate with clean session
@@ -129,23 +136,13 @@ If SOT unreadable → output:
 
 ## Execution Protocol
 
-1. Load this skill at turn start
-2. **Run runtime-gate.sh pre-turn** (MANDATORY — non-negotiable):
-   ```bash
-   bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .
-   ```
-3. Execute route-stage.sh
-4. Parse JSON output
-5. Load indicated command + workflow + references
-6. Execute or self-delegate based on stage requirements
-7. **Run runtime-gate.sh post-turn** (MANDATORY — before claiming stage complete):
-   ```bash
-   bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh post-turn .
-   ```
-8. For pipeline-closing stages, **run runtime-gate.sh export**:
-   ```bash
-   bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh export .
-   ```
+1. Load this skill after `hivefiver-prime`
+2. Obtain stage route JSON (direct bash OR delegated `hivexplorer` evidence)
+3. Parse route output and determine stage
+4. Load only the helper skill required for that stage (usually one)
+5. Execute or self-delegate based on stage requirements
+6. Before claiming completion, verify stage outputs through `hivexplorer`
+7. For pipeline-closing stages, ensure handoff/export artifact is created
 
 ### Runtime Enforcement Rationale
 

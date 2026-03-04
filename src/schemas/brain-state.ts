@@ -15,6 +15,7 @@ export type FieldLifecycle = "runtime" | "persistent" | "hybrid";
 
 export interface SessionState {
   id: string;
+  trajectory_id?: string;
   mode: SessionMode;
   governance_mode: GovernanceMode;
   governance_status: GovernanceStatus;
@@ -30,14 +31,6 @@ export interface SessionState {
   by_ai: boolean;
 }
 
-export interface SelfRating {
-  score: number; // 1-10
-  reason?: string;
-  turn_context?: string;
-  timestamp: number;
-  turn_number: number;
-}
-
 export interface MetricsState {
   /** Tool execution count (many per user message) - used for health tracking */
   turn_count: number;
@@ -46,7 +39,6 @@ export interface MetricsState {
   drift_score: number;
   files_touched: string[];
   context_updates: number;
-  ratings: SelfRating[];
   auto_health_score: number; // 0-100, calculated from success rate
   total_tool_calls: number;
   successful_tool_calls: number;
@@ -75,8 +67,6 @@ export interface CycleLogEntry {
   timestamp: number;
   /** Tool name that was captured (usually 'task') */
   tool: string;
-  /** First 500 chars of tool output */
-  output_excerpt: string;
   /** Whether failure signals were detected in output */
   failure_detected: boolean;
   /** Which failure keywords were found */
@@ -113,9 +103,6 @@ export type SessionMemoryCategory =
   | "test_validation_gatekeeping";
 
 export interface MemoryGovernanceState {
-  classified_counts: Record<SessionMemoryCategory, number>;
-  temporary_exports_consolidated: number;
-  temporary_exports_purged: number;
   last_classified_at: number;
   /** Phase 3A: Flag set by event-handler when terminal tasks detected; cleared by purge action */
   pending_purge?: boolean;
@@ -144,10 +131,6 @@ export interface BrainState {
   selected_output_style_v29: V29OutputStyle | null;
   /** @lifecycle runtime */
   memory_governance: MemoryGovernanceState;
-  /** @lifecycle runtime */
-  complexity_nudge_shown: boolean;
-  /** @lifecycle runtime */
-  last_commit_suggestion_turn: number;
   /** @lifecycle persistent */
   version: string;
 
@@ -185,8 +168,6 @@ export const BRAIN_STATE_FIELD_CLASSIFICATION: Record<keyof BrainState, FieldLif
   first_turn_confirmation: "runtime",
   selected_output_style_v29: "runtime",
   memory_governance: "runtime",
-  complexity_nudge_shown: "runtime",
-  last_commit_suggestion_turn: "runtime",
   cycle_log: "runtime",
   pending_failure_ack: "runtime",
   compaction_limit_reached: "runtime",
@@ -280,7 +261,6 @@ export function createBrainState(
       drift_score: 100,
       files_touched: [],
       context_updates: 0,
-      ratings: [],
       auto_health_score: 100,
       total_tool_calls: 0,
       successful_tool_calls: 0,
@@ -293,13 +273,8 @@ export function createBrainState(
       keyword_flags: [],
       write_without_read_count: 0,
       governance_counters: {
-        out_of_order: 0,
         drift: 0,
         compaction: 0,
-        evidence_pressure: 0,
-        ignored: 0,
-        acknowledged: false,
-        prerequisites_completed: false,
       },
     },
     first_turn_context_injected: false,
@@ -312,21 +287,8 @@ export function createBrainState(
     },
     selected_output_style_v29: config.agent_behavior.output_style_v29 ?? null,
     memory_governance: {
-      classified_counts: {
-        discovery_brainstorming_discuss: 0,
-        research_synthesis: 0,
-        codebase_investigation: 0,
-        planning: 0,
-        implementing: 0,
-        debug: 0,
-        test_validation_gatekeeping: 0,
-      },
-      temporary_exports_consolidated: 0,
-      temporary_exports_purged: 0,
       last_classified_at: 0,
     },
-    complexity_nudge_shown: false,
-    last_commit_suggestion_turn: 0,
     version: BRAIN_STATE_VERSION,
     // Hierarchy redesign fields (initialized null/0)
     next_compaction_report: null,
@@ -464,43 +426,17 @@ export function shouldTriggerDriftWarning(
   return state.metrics.turn_count >= maxTurns && state.metrics.drift_score < 50;
 }
 
-export function addSelfRating(
-  state: BrainState,
-  rating: Omit<SelfRating, "timestamp" | "turn_number">
-): BrainState {
-  const newRating: SelfRating = {
-    ...rating,
-    timestamp: Date.now(),
-    turn_number: state.metrics.turn_count,
-  };
-  return {
-    ...state,
-    metrics: {
-      ...state.metrics,
-      ratings: [...state.metrics.ratings, newRating],
-    },
-  };
-}
-
 export function setComplexityNudgeShown(state: BrainState): BrainState {
-  return {
-    ...state,
-    complexity_nudge_shown: true,
-  };
+  return state;
 }
 
 export function resetComplexityNudge(state: BrainState): BrainState {
-  return {
-    ...state,
-    complexity_nudge_shown: false,
-  };
+  return state;
 }
 
 export function setLastCommitSuggestionTurn(state: BrainState, turn: number): BrainState {
-  return {
-    ...state,
-    last_commit_suggestion_turn: turn,
-  };
+  void turn;
+  return state;
 }
 
 export function addViolationCount(state: BrainState): BrainState {
@@ -523,15 +459,13 @@ export function addCycleLogEntry(
   tool: string,
   output: string
 ): BrainState {
-  const excerpt = output.slice(0, 500);
-  const lowerExcerpt = excerpt.toLowerCase();
-  const foundKeywords = FAILURE_KEYWORDS.filter(kw => lowerExcerpt.includes(kw));
+  const lowerOutput = output.toLowerCase();
+  const foundKeywords = FAILURE_KEYWORDS.filter(kw => lowerOutput.includes(kw));
   const failureDetected = foundKeywords.length > 0;
 
   const entry: CycleLogEntry = {
     timestamp: Date.now(),
     tool,
-    output_excerpt: excerpt,
     failure_detected: failureDetected,
     failure_keywords: foundKeywords,
   };
@@ -586,14 +520,11 @@ export function addMemoryClassification(
   state: BrainState,
   category: SessionMemoryCategory
 ): BrainState {
+  void category;
   return {
     ...state,
     memory_governance: {
       ...state.memory_governance,
-      classified_counts: {
-        ...state.memory_governance.classified_counts,
-        [category]: state.memory_governance.classified_counts[category] + 1,
-      },
       last_classified_at: Date.now(),
     },
   };
@@ -604,18 +535,13 @@ export function recordConsolidationAndPurge(
   consolidatedCount: number,
   purgedCount: number
 ): BrainState {
+  void consolidatedCount;
+  void purgedCount;
   return {
     ...state,
     memory_governance: {
       ...state.memory_governance,
-      temporary_exports_consolidated:
-        state.memory_governance.temporary_exports_consolidated + Math.max(0, consolidatedCount),
-      temporary_exports_purged:
-        state.memory_governance.temporary_exports_purged + Math.max(0, purgedCount),
       last_classified_at: Date.now(),
-      classified_counts: {
-        ...state.memory_governance.classified_counts,
-      },
     },
   };
 }

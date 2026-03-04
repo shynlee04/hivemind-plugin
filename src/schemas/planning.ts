@@ -81,6 +81,27 @@ export const PlanningManifestSchema = z.object({
   milestones: z.array(MilestoneSchema).default([]),
 })
 
+/** Input child status item for plan completion eligibility checks. */
+export const PlanCompletionChildSchema = z.object({
+  id: z.string().min(1),
+  status: z.string().min(1),
+})
+
+/** Input payload for plan completion eligibility checks. */
+export const PlanCompletionCheckInputSchema = z.object({
+  parent_id: z.string().min(1).optional(),
+  children: z.array(PlanCompletionChildSchema).default([]),
+  terminal_statuses: z.array(z.string().min(1)).optional(),
+})
+
+/** Deterministic result payload for completion eligibility checks. */
+export const PlanCompletionCheckResultSchema = z.object({
+  can_transition_to_completed: z.boolean(),
+  blocking_child_ids: z.array(z.string()),
+  blocking_statuses: z.array(z.string()),
+  rule_version: z.string().min(1),
+})
+
 export type RequirementStatus = z.infer<typeof RequirementStatusSchema>
 export type Requirement = z.infer<typeof RequirementSchema>
 export type PhaseStatus = z.infer<typeof PhaseStatusSchema>
@@ -88,3 +109,6 @@ export type Phase = z.infer<typeof PhaseSchema>
 export type PlanningState = z.infer<typeof PlanningStateSchema>
 export type Milestone = z.infer<typeof MilestoneSchema>
 export type PlanningManifest = z.infer<typeof PlanningManifestSchema>
+export type PlanCompletionChild = z.infer<typeof PlanCompletionChildSchema>
+export type PlanCompletionCheckInput = z.infer<typeof PlanCompletionCheckInputSchema>
+export type PlanCompletionCheckResult = z.infer<typeof PlanCompletionCheckResultSchema>

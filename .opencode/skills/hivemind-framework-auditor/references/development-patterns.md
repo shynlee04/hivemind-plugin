@@ -10,7 +10,7 @@
 1. [Command Design Pattern](#1-command-design-pattern)
 2. [Workflow Design Pattern](#2-workflow-design-pattern)
 3. [Skill Design Pattern](#3-skill-design-pattern)
-4. [Delegation Packet Contract](#4-delegation-packet-contract)
+4. [Delegation Packet Contract](#4-delegation-packet-contract) (see delegation-intelligence skill)
 5. [Deviation Classification](#5-deviation-classification-r1-r4)
 
 ---

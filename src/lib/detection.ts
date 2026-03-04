@@ -65,9 +65,9 @@ export interface EscalatedSignal extends DetectionSignal {
 }
 
 export type GovernanceSignalKind =
-  | "out_of_order"
   | "drift"
   | "compaction"
+  | "out_of_order"
   | "evidence_pressure"
   | "ignored";
 
@@ -85,13 +85,8 @@ export interface SeriousnessScore {
 }
 
 export interface GovernanceCounters {
-  out_of_order: number;
   drift: number;
   compaction: number;
-  evidence_pressure: number;
-  ignored: number;
-  acknowledged: boolean;
-  prerequisites_completed: boolean;
 }
 
 export type HierarchyImpact = "low" | "medium" | "high";
@@ -160,13 +155,8 @@ export function createDetectionState(): DetectionState {
 
 export function createGovernanceCounters(): GovernanceCounters {
   return {
-    out_of_order: 0,
     drift: 0,
     compaction: 0,
-    evidence_pressure: 0,
-    ignored: 0,
-    acknowledged: false,
-    prerequisites_completed: false,
   };
 }
 
@@ -187,26 +177,19 @@ export function computeGovernanceSeverity(opts: {
   repetitionCount: number;
   acknowledged?: boolean;
 }): GovernanceSeverity {
-  const effectiveCount =
-    opts.acknowledged && opts.repetitionCount > 0
-      ? opts.repetitionCount - 1
-      : opts.repetitionCount;
+  void opts.acknowledged;
 
-  if (opts.kind === "ignored") return "error";
   if (opts.kind === "compaction") return "info";
-
-  if (opts.kind === "out_of_order") {
-    if (effectiveCount <= 0) return "info";
-    if (effectiveCount === 1) return "warning";
-    return "error";
+  if (opts.kind === "drift") {
+    return opts.repetitionCount <= 0 ? "warning" : "error";
   }
 
-  if (effectiveCount <= 0) return "warning";
-  return "error";
+  // Legacy kinds are accepted for compatibility but no longer escalate.
+  return "info";
 }
 
 export function computeUnacknowledgedCycles(counters: GovernanceCounters): number {
-  return counters.out_of_order + counters.drift + counters.evidence_pressure;
+  return counters.drift;
 }
 
 function getIgnoredTone(opts: {
@@ -235,20 +218,28 @@ export function compileIgnoredTier(opts: {
   expertLevel: "beginner" | "intermediate" | "advanced" | "expert";
   evidence: IgnoredEvidenceInput;
 }): IgnoredTierResult | null {
+  void opts.expertLevel;
+  void opts.evidence;
+
   const unacknowledgedCycles = computeUnacknowledgedCycles(opts.counters);
   if (unacknowledgedCycles < 10) return null;
-  if (opts.counters.acknowledged) return null;
   if (opts.governanceMode === "permissive") return null;
 
   return {
     tier: "IGNORED",
-    severity: "error",
+    severity: "warning",
     unacknowledgedCycles,
     tone: getIgnoredTone({
       governanceMode: opts.governanceMode,
-      expertLevel: opts.expertLevel,
+      expertLevel: "intermediate",
     }),
-    evidence: opts.evidence,
+    evidence: {
+      declaredOrder: "n/a",
+      actualOrder: "n/a",
+      missingPrerequisites: [],
+      expectedHierarchy: "n/a",
+      actualHierarchy: "n/a",
+    },
   };
 }
 
@@ -266,71 +257,39 @@ export function evaluateIgnoredResetPolicy(opts: {
   missedStepCount: number;
   hierarchyImpact: HierarchyImpact;
 }): IgnoredResetDecision {
-  if (!opts.counters.acknowledged) {
-    return { downgrade: false, fullReset: false, decrementBy: 0 };
-  }
-
-  if (
-    opts.prerequisitesCompleted &&
-    opts.missedStepCount <= 1 &&
-    opts.hierarchyImpact === "low"
-  ) {
-    return { downgrade: false, fullReset: true, decrementBy: opts.counters.ignored };
-  }
-
-  const decrementBy =
-    opts.hierarchyImpact === "low"
-      ? 3
-      : opts.hierarchyImpact === "medium"
-        ? 2
-        : 1;
-
-  return { downgrade: true, fullReset: false, decrementBy };
+  void opts.counters;
+  void opts.prerequisitesCompleted;
+  void opts.missedStepCount;
+  void opts.hierarchyImpact;
+  return { downgrade: false, fullReset: false, decrementBy: 0 };
 }
 
 export function registerGovernanceSignal(
   counters: GovernanceCounters,
   kind: GovernanceSignalKind
 ): GovernanceCounters {
+  if (kind !== "drift" && kind !== "compaction") {
+    return counters;
+  }
+
   return {
     ...counters,
     [kind]: counters[kind] + 1,
-    acknowledged: false,
   };
 }
 
 export function acknowledgeGovernanceSignals(
   counters: GovernanceCounters
 ): GovernanceCounters {
-  return {
-    ...counters,
-    acknowledged: true,
-  };
+  return counters;
 }
 
 export function resetGovernanceCounters(
   counters: GovernanceCounters,
   opts: { full: boolean; prerequisitesCompleted: boolean }
 ): GovernanceCounters {
-  if (!opts.full) {
-    return {
-      ...counters,
-      acknowledged: false,
-    };
-  }
-
-  if (!opts.prerequisitesCompleted) {
-    return {
-      ...counters,
-      prerequisites_completed: false,
-      acknowledged: false,
-    };
-  }
-
-  return {
-    ...createGovernanceCounters(),
-    prerequisites_completed: true,
-  };
+  void opts.prerequisitesCompleted;
+  return opts.full ? createGovernanceCounters() : counters;
 }
 
 /**

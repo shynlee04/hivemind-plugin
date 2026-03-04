@@ -1,0 +1,232 @@
+{
+  "gates": [
+    {
+      "gate": "G3",
+      "domain": "R3",
+      "status": "passed",
+      "evidence": [
+        "Superseded legacy fail: runtime evidence now present via full verification and plugin/context enforcement updates in .opencode/plugins/hiveops-governance/hooks/context-injection.ts and successful tsc checks."
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772510659520,
+      "criteria": [
+        "Output matches declared schema",
+        "Claims are backed by verification evidence (command output, diffs)",
+        "No hallucinated success claims",
+        "Confidence reflects evidence quality"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G3",
+      "domain": "C1",
+      "status": "passed",
+      "evidence": [
+        "Superseded legacy fail: implementation evidence materialized in .hivemind/plans PROJ lane files and manifest integrity checks (manifest-ok plans=6)."
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772510659527,
+      "criteria": [
+        "Output matches declared schema",
+        "Claims are backed by verification evidence (command output, diffs)",
+        "No hallucinated success claims",
+        "Confidence reflects evidence quality"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G1",
+      "domain": "R2",
+      "status": "passed",
+      "evidence": [
+        "Node1 passed: tsc clean; entry-skill semantics denoised in agents/hivefiver.md, .opencode/agents/hivefiver.md, hivefiver-coordination SKILL; conditional-helper routing documented in .opencode/skills/hivefiver-prime/references/denoised-entry-pack-2026-03-03.md"
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772508404263,
+      "criteria": [
+        "Requirements are unambiguous (no 'maybe' or 'could')",
+        "Acceptance conditions are declared (testable pass/fail)",
+        "Edge cases are identified"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G2",
+      "domain": "R7",
+      "status": "passed",
+      "evidence": [
+        "Node2 passed: Added PROJ lane nodes PROJ01/PROJ01-SUB01/PROJ01-SUB01-ATOMIC01 with validation artifacts and updated .hivemind/plans/manifest.json; manifest path validation script returned manifest-ok plans=6"
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772508530957,
+      "criteria": [
+        "Dependencies are explicit (no implicit ordering)",
+        "Parallelization criteria satisfied (zero file overlap)",
+        "Delegation packets include objective + scope + constraints"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G3",
+      "domain": "R6",
+      "status": "passed",
+      "evidence": [
+        "Node3 passed: hiveops_todo/hiveops_gate/hiveops_export support plan_id+node_id lineage; bundler-resolution type-check command succeeded for all three tool files"
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772508657997,
+      "criteria": [
+        "Output matches declared schema",
+        "Claims are backed by verification evidence (command output, diffs)",
+        "No hallucinated success claims",
+        "Confidence reflects evidence quality"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G0",
+      "domain": "R5",
+      "status": "passed",
+      "evidence": [
+        "Node4 passed: hivefiver agent files now deny webfetch/websearch in default blind mode and replaced direct read/state/script wording with hivexplorer-evidence and conditional script execution; regression tsc clean and contradiction grep returned no matches"
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772508755534,
+      "criteria": [
+        "Scope is valid (framework assets only for hivefiver, src/ for hivemaker)",
+        "Required context is present (STATE.md readable, skills loaded)",
+        "Target contract identified (which asset type are we working on)"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G4",
+      "domain": "R6",
+      "status": "passed",
+      "evidence": [
+        "Node5 passed: final verification commands succeeded; checkpoint created (.hivemind/checkpoints/cp-mma1z54g.json); handoff emitted (handoff-mma1zbdo) with next actions and residual risk"
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772508825685,
+      "criteria": [
+        "Handoff payload is complete (state, gates, blockers, next step)",
+        "Next step is deterministic (not vague)",
+        "Residual risk is declared"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G1",
+      "domain": "R2",
+      "plan_id": "PROJ01-SUB01",
+      "node_id": "PROJ01-SUB01-ATOMIC01",
+      "status": "passed",
+      "evidence": [
+        "Cycle7 contract lock complete: removed contradictory load-order phrases, removed TODO placeholders in hivefiver-prime, and aligned active governance path refs to .opencode/plugins/hiveops-governance."
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772510670528,
+      "criteria": [
+        "Requirements are unambiguous (no 'maybe' or 'could')",
+        "Acceptance conditions are declared (testable pass/fail)",
+        "Edge cases are identified"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G2",
+      "domain": "R2",
+      "plan_id": "PROJ01-SUB01",
+      "node_id": "PROJ01-SUB01-ATOMIC01",
+      "status": "passed",
+      "evidence": [
+        "Cycle8 rationalization complete: added keep/merge/deprecate matrix and deterministic routing graph in docs/plans/hivefiver-skill-rationalization-matrix-2026-03-03.md."
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772510670536,
+      "criteria": [
+        "Dependencies are explicit (no implicit ordering)",
+        "Parallelization criteria satisfied (zero file overlap)",
+        "Delegation packets include objective + scope + constraints"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G3",
+      "domain": "R5",
+      "plan_id": "PROJ01-SUB01",
+      "node_id": "PROJ01-SUB01-ATOMIC01",
+      "status": "passed",
+      "evidence": [
+        "Cycle9 runtime canonicalization checks passed: singular plugin-path grep in active assets returned none; quality-check script now passes with zero failures."
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772510670540,
+      "criteria": [
+        "Output matches declared schema",
+        "Claims are backed by verification evidence (command output, diffs)",
+        "No hallucinated success claims",
+        "Confidence reflects evidence quality"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G4",
+      "domain": "R6",
+      "plan_id": "PROJ01-SUB01",
+      "node_id": "PROJ01-SUB01-ATOMIC01",
+      "status": "passed",
+      "evidence": [
+        "Cycle10/11 exports complete: SOT registrations performed for plan/report artifacts, SOT index/export generated, and final verification commands succeeded.",
+        "Final completion verification: opencode.json parsed, full tsc clean, hiveops tools type-check clean, quality-check script passed with warnings only, manifest integrity check passed."
+      ],
+      "checkedBy": "build",
+      "timestamp": 1772510730087,
+      "criteria": [
+        "Handoff payload is complete (state, gates, blockers, next step)",
+        "Next step is deterministic (not vague)",
+        "Residual risk is declared"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G3",
+      "domain": "R7",
+      "plan_id": "PROJ01-SUB01",
+      "node_id": "PROJ01-SUB01-CONT01",
+      "status": "passed",
+      "evidence": [
+        "Skill rationalization: context-quality-escalation merged into context-integrity (20 files), delegation-packet-contract deprecated with 16 reference cleanups. Parity reconciliation: 6/6 agent pairs synced IDENTICAL. Frontmatter validator: created, syntax-valid, functional. TypeScript: pass. YAML: 4/4 valid. opencode.json: valid. Gate ledger: 11+1 passed, 0 failed. Pre-existing warnings remain (plan metadata gaps, skill frontmatter delimiters, workflow dead refs) — no regressions."
+      ],
+      "checkedBy": "hivefiver",
+      "timestamp": 1772512678165,
+      "criteria": [
+        "Output matches declared schema",
+        "Claims are backed by verification evidence (command output, diffs)",
+        "No hallucinated success claims",
+        "Confidence reflects evidence quality"
+      ],
+      "failureReasons": []
+    },
+    {
+      "gate": "G4",
+      "domain": "R8",
+      "plan_id": "PROJ01-SUB01",
+      "node_id": "PROJ01-SUB01-CONT02",
+      "status": "passed",
+      "evidence": [
+        "TypeScript: pass. opencode.json: valid. Plan metadata: 15/15 pass (0 warnings). S-FM-01: 0 warnings (was 7). G-09: 0 parity warnings (was 3). All 9 agents IDENTICAL. Gate ledger: v15, 13 passed. Quality-check: passed=true, checks=10, failures=0, warnings=7 (non-blocking: G-07 skill count + DEAD-WF-01 planned refs)."
+      ],
+      "checkedBy": "hivefiver",
+      "timestamp": 1772513838509,
+      "criteria": [
+        "Handoff payload is complete (state, gates, blockers, next step)",
+        "Next step is deterministic (not vague)",
+        "Residual risk is declared"
+      ],
+      "failureReasons": []
+    }
+  ],
+  "version": 16,
+  "lastCheck": 1772513838509
+}

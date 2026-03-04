@@ -1,0 +1,319 @@
+domain	type	id	path	tags	title
+planning	plan	sot-meta01-plan	.hivemind/plans/META01-PLAN.md	meta,runtime,generated	Hivefiver runtime materialization trial
+planning	plan	sot-meta01-sub01-plan	.hivemind/plans/META01-SUB01-PLAN.md	meta,sub,runtime	Parity drift isolation
+planning	plan	sot-meta01-sub01-atomic01	.hivemind/plans/META01-SUB01-ATOMIC01.md	meta,atomic,runtime	Diff annotation and test mapping
+planning	plan	sot-validation-meta01	.hivemind/plans/VALIDATION-META01.md	validation,meta	Validation META01
+R6	other	sot-session-ses-34f7-investigation-and-research-of-another-team	session-ses_34f7-investigation-and-research-of-another-team.md		hivefiver agent architecture
+R6	other	sot-session-ses-3502-this-session	session-ses_3502-this-session.md		Hivefiver-prime skill skeleton created (fork #1)
+general	other	sot-skills-lock	skills-lock.json		skills-lock.json
+general	other	sot-master-notice-board	MASTER-NOTICE-BOARD.md		MASTER-NOTICE-BOARD
+general	other	sot-prd-backend	tasks/prd-backend.json		prd-backend.json
+general	other	sot-prd-phase-b	tasks/prd-phase-b.json		prd-phase-b.json
+general	other	sot-prd-frontend	tasks/prd-frontend.json		prd-frontend.json
+general	other	sot-system-directives	SYSTEM-DIRECTIVES.md		SYSTEM DIRECTIVE: CONTEXT GOVERNANCE & AGENTIC WORKFLOW ORCHESTRATION
+general	other	sot-marketing-canvas-sua-ong-tho-tet-2026-02-19	marketing-canvas-sua-ong-tho-tet-2026-02-19.md		Marketing Canvas: Sữa Ông Thọ - Chiến Dịch Tết
+general	other	sot-changelog	CHANGELOG.md		Changelog
+R4	other	sot-quality-gate-definitions	references/quality-gate-definitions.md		Quality Gate Definitions
+R4	other	sot-research-quality-criteria	references/research-quality-criteria.md		Research Quality Criteria
+general	other	sot-domain-boundaries	references/domain-boundaries.md		Domain Boundaries Reference
+R2	other	sot-workflow-briefing	references/workflow-briefing.md		**Workflow Diagrams**
+general	other	sot-hivemind-brownfield-checklist	references/hivemind-brownfield-checklist.md		Brownfield Integrity Checklist
+R6	other	sot-session-ses-350e	session-ses_350e.md		Hivefiver-prime skill skeleton created
+general	other	sot-agent-rules	AGENT_RULES.md		HiveMind v3.0 — Relational Cognitive Engine Constitution
+general	other	sot-presentation-sua-ong-tho-tet-2026-02-19	presentation-sua-ong-tho-tet-2026-02-19.md		Slide Deck: Sữa Ông Thọ - Chiến Dịch Tết 2026
+R2	other	sot-bug-remediation	workflows/bug-remediation.yaml		bug-remediation.yaml
+R2	other	sot-hiverd-comparative-analysis	workflows/hiverd-comparative-analysis.yaml		hiverd-comparative-analysis.yaml
+R2	other	sot-hiveq-gate-enforcement	workflows/hiveq-gate-enforcement.yaml		hiveq-gate-enforcement.yaml
+R2	other	sot-hivefiver-enterprise-architect	workflows/hivefiver-enterprise-architect.yaml		hivefiver-enterprise-architect.yaml
+R2	other	sot-hiveq-audit-workflow	workflows/hiveq-audit-workflow.yaml		hiveq-audit-workflow.yaml
+R2	synthesis	sot-research-synthesis	workflows/research-synthesis.yaml		research-synthesis.yaml
+R2	other	sot-hiveq-verification-pipeline	workflows/hiveq-verification-pipeline.yaml		hiveq-verification-pipeline.yaml
+R2	other	sot-hiverd-deep-research	workflows/hiverd-deep-research.yaml		hiverd-deep-research.yaml
+R2	other	sot-feature-sprint	workflows/feature-sprint.yaml		feature-sprint.yaml
+R2	other	sot-hivefiver-mcp-fallback	workflows/hivefiver-mcp-fallback.yaml		hivefiver-mcp-fallback.yaml
+R2	other	sot-hivemind-brownfield-bootstrap	workflows/hivemind-brownfield-bootstrap.yaml		hivemind-brownfield-bootstrap.yaml
+R2	other	sot-hiveq-regression-suite	workflows/hiveq-regression-suite.yaml		hiveq-regression-suite.yaml
+R2	spec	sot-spec-generation	workflows/spec-generation.yaml		spec-generation.yaml
+R2	other	sot-hivefiver-vibecoder	workflows/hivefiver-vibecoder.yaml		hivefiver-vibecoder.yaml
+R2	other	sot-verification-gate	workflows/verification-gate.yaml		verification-gate.yaml
+R2	other	sot-hiverd-brainstorm-session	workflows/hiverd-brainstorm-session.yaml		hiverd-brainstorm-session.yaml
+R2	synthesis	sot-hiverd-synthesis-pipeline	workflows/hiverd-synthesis-pipeline.yaml		hiverd-synthesis-pipeline.yaml
+R2	other	sot-hivefiver-floppy-engineer	workflows/hivefiver-floppy-engineer.yaml		hivefiver-floppy-engineer.yaml
+R1	other	sot-sequential-delegation-workflow	workflows/sequential-delegation-workflow.yaml		Domain Boundaries
+R2	other	sot-hivefiver-enterprise	workflows/hivefiver-enterprise.yaml		hivefiver-enterprise.yaml
+R1	other	sot-hiverd	agents/hiverd.md		Hiverd — Elite Research Specialist
+R1	other	sot-hivehealer	agents/hivehealer.md		Hivehealer
+R1	other	sot-hivemaker	agents/hivemaker.md		Hivemaker — Execution Specialist Agent
+R1	other	sot-hivexplorer	agents/hivexplorer.md		Hivexplorer
+R1	other	sot-hiveplanner	agents/hiveplanner.md		Hiveplanner
+R1	other	sot-hiveq	agents/hiveq.md		Hiveq
+R1	other	sot-hivefiver	agents/hivefiver.md		hivefiver.md
+R1	other	sot-hitea	agents/hitea.md		HITEA — AI-Driven Testing Infrastructure Builder
+R1	other	sot-hiveminder	agents/hiveminder.md		hiveminder.md
+general	other	sot-hivemind-framework	HIVEMIND-FRAMEWORK.md		.HIVEMIND FRAMEWORK SYSTEM PROMPT
+general	other	sot-custom-tools-opencode	docs/research/custom-tools-opencode.md		custom-tools-opencode.md
+general	other	sot-opencode-worth-learning-in-sdk	docs/research/opencode-worth-learning-in-sdk.md		opencode-worth-learning-in-sdk.md
+general	other	sot-hivefiver-mcp-quickstart-wizard	docs/research/hivefiver-mcp-quickstart-wizard.md		HiveFiver MCP Quickstart Wizard
+R1	other	sot-opencode-agents	docs/research/opencode-agents.md		opencode-agents.md
+general	other	sot-innate-opencode-tools	docs/research/innate-opencode-tools.md		innate-opencode-tools.md
+general	other	sot-oepncode-the-sdk	docs/research/oepncode-the-sdk.md		oepncode-the-sdk.md
+R3	other	sot-hivefiver-mcp-setup-context7	docs/research/hivefiver-mcp-setup-context7.md		HiveFiver MCP Setup - Context7
+general	other	sot-hivefiver-mcp-setup-deepwiki	docs/research/hivefiver-mcp-setup-deepwiki.md		HiveFiver MCP Setup - DeepWiki
+general	other	sot-use-commands-to-chain-activate-automation	docs/research/use-commands-to-chain-activate-automation.md		use-commands-to-chain-activate-automation.md
+general	other	sot-hivefiver-mcp-setup-exa	docs/research/hivefiver-mcp-setup-exa.md		HiveFiver MCP Setup - Exa
+general	other	sot-hivefiver-skill-discovery-cross-domain	docs/research/hivefiver-skill-discovery-cross-domain.md		HiveFiver Cross-Domain Skill Discovery
+R1	other	sot-opencode-agent-skills	docs/research/opencode-agent-skills.md		opencode-agent-skills.md
+general	other	sot-hivefiver-mcp-setup-repomix	docs/research/hivefiver-mcp-setup-repomix.md		HiveFiver MCP Setup - Repomix
+R1	other	sot-opencode-agent-systemic-failures-2026-02-16	docs/research/opencode-agent-systemic-failures-2026-02-16.md		Deep Research: OpenCode Agent Systemic Failures & Solutions
+general	other	sot-opencode-plugins	docs/research/opencode-plugins.md		opencode-plugins.md
+R3	other	sot-hivefiver-deepwiki-qa-transform	docs/research/hivefiver-deepwiki-qa-transform.md		HiveFiver DeepWiki QA Transform Guide
+general	other	sot-opencode-permissions	docs/research/opencode-permissions.md		opencode-permissions.md
+general	other	sot-hivefiver-mcp-setup-tavily	docs/research/hivefiver-mcp-setup-tavily.md		HiveFiver MCP Setup - Tavily
+general	other	sot-doctor-recovery-runbook	docs/doctor-recovery-runbook.md		Doctor Recovery Runbook
+general	other	sot-opencode-full-sdk-mechanism	docs/opencode-full-sdk-mechanism.md		DeepWiki Q&A with Code Context for Repository: anomalyco/opencode
+general	other	sot-10-commandments	docs/10-commandments.md		The 10 Commandments for Writing AI Agent Tools
+general	synthesis	sot-opencode-knowledge-synthesis-map	docs/OPENCODE-KNOWLEDGE-SYNTHESIS-MAP.md		OPENCODE-KNOWLEDGE-SYNTHESIS-MAP.md
+general	other	sot-pitfalls	docs/PITFALLS.md		HiveMind Context Governance — PITFALLS
+general	other	sot-kilo-cli-usage	docs/kilo-cli-usage.md		Kilo CLI Setup and Usage
+general	other	sot-opencode-sdk-debug-integration-2026-02-17	docs/OPENCODE-SDK-DEBUG-INTEGRATION-2026-02-17.md		OpenCode SDK Debug Integration - Deep Dive Guide
+general	other	sot-opencode-primary-coordinator-agent	docs/OPENCODE-PRIMARY-COORDINATOR-AGENT.md		OPENCODE-PRIMARY-COORDINATOR-AGENT.md
+general	other	sot-omad-01-opencode-automation-directive-2026-02-17	docs/OMAD-01-OPENCODE-AUTOMATION-DIRECTIVE-2026-02-17.md		OpenCode Automation & HiveMind Paradigm — Master Directive (OMAD-01)
+general	other	sot-chain-bridge-architecture	docs/CHAIN-BRIDGE-ARCHITECTURE.md		Chain & Bridge Architecture Specification
+general	other	sot-opencode-meta-builder-module	docs/OPENCODE-META-BUILDER-MODULE.md		OpenCode: Meta-Builder Agent Orchestration — A Deep Architectural Analysis
+general	plan	sot-2026-02-19-hivefiver-phase-8-hardening	docs/plans/2026-02-19-hivefiver-phase-8-hardening.md		HiveFiver Phase 8 - Robustness and Fine-Tuning
+general	plan	sot-2026-02-25-phase0-hard-governance-foundation	docs/plans/2026-02-25-phase0-hard-governance-foundation.md		Phase 0: Hard Governance Foundation
+general	plan	sot-architecture-audit-2026-02-18	docs/plans/ARCHITECTURE-AUDIT-2026-02-18.md		Architecture Audit Report - HiveMind v3.0
+general	plan	sot-prd-opentui-dashboard-2026-02-26	docs/plans/PRD-OpenTUI-Dashboard-2026-02-26.md		PRD: OpenTUI Dashboard & OpenCode SDK Integration
+general	plan	sot-2026-02-19-hivefiver-v2-mcp-playbooks	docs/plans/2026-02-19-hivefiver-v2-mcp-playbooks.md		HiveFiver v2 MCP Playbooks - Implementation Artifact
+general	plan	sot-2026-02-20-code-intelligence-engine-execution-plan	docs/plans/2026-02-20-code-intelligence-engine-execution-plan.md		Code Intelligence Engine Execution Plan
+general	plan	sot-dashboard-v2-phase8-w2-4-mouse-path-declaration-2026-02-26	docs/plans/dashboard-v2-phase8-w2-4-mouse-path-declaration-2026-02-26.md		Dashboard-v2 Phase 8 W2.4 Mouse Path Declaration
+general	plan	sot-hivefiver-qa-discovery-expansion-plan-2026-03-01	docs/plans/hivefiver-qa-discovery-expansion-plan-2026-03-01.md		HiveFiver QA Discovery Expansion Plan
+general	plan	sot-dashboard-v2-phase8-restructuring-adjustment-2026-02-26	docs/plans/dashboard-v2-phase8-restructuring-adjustment-2026-02-26.md		Dashboard-v2 Phase 8 Restructuring Adjustment
+R1	plan	sot-2026-03-02-gx-pack-r1-prd	docs/plans/2026-03-02-gx-pack-R1-prd.json		2026-03-02-gx-pack-R1-prd.json
+general	plan	sot-dashboard-v2-phase8-w0-1-execution-packet-2026-02-26	docs/plans/dashboard-v2-phase8-w0-1-execution-packet-2026-02-26.md		Dashboard-v2 Phase 8 W0.1 Execution Packet
+general	plan	sot-prd-v2-hivemind-engine-2026-02-18	docs/plans/PRD-V2-HIVEMIND-ENGINE-2026-02-18.md		PRD v2: HiveMind v3.0 — Relational Cognitive Engine
+general	plan	sot-2026-02-20-hivefiver-autonomy-systemization-roadmap	docs/plans/2026-02-20-hivefiver-autonomy-systemization-roadmap.md		HiveFiver Autonomy Systemization Roadmap
+general	plan	sot-dashboard-v2-comprehensive-inventory-2026-02-26	docs/plans/dashboard-v2-comprehensive-inventory-2026-02-26.md		Dashboard-v2 Comprehensive Inventory & Phase Plan
+general	plan	sot-execution-blueprint-2026-02-16	docs/plans/archive/execution-blueprint-2026-02-16.md		HiveMind v3.0 — Two-Team Execution Blueprint
+general	plan	sot-file-level-execution-blueprint-2026-02-16	docs/plans/archive/file-level-execution-blueprint-2026-02-16.md		File-Level Execution Blueprint - HiveMind v3 - 2026-02-16
+general	plan	sot-master-execution-plan-local-jules-2026-02-16	docs/plans/archive/master-execution-plan-local-jules-2026-02-16.md		Master Execution Plan - LOCAL + JULES - 2026-02-16
+general	plan	sot-2026-02-14-comprehensive-master-plan-v2	docs/plans/archive/2026-02-14-COMPREHENSIVE-MASTER-PLAN-v2.md		COMPREHENSIVE MASTER PLAN: HiveMind v3 Remediation
+general	plan	sot-prd-consolidated-2026-02-18	docs/plans/archive/PRD-CONSOLIDATED-2026-02-18.md		PRD: HiveMind v3.0 — Relational Cognitive Engine (Consolidated)
+general	plan	sot-phase-a-b-audit-2026-02-15	docs/plans/archive/PHASE-A-B-AUDIT-2026-02-15.md		Phase A/B Comprehensive Audit Report
+general	plan	sot-2026-02-14-strategic-plan-v3-remediation	docs/plans/archive/2026-02-14-strategic-plan-v3-remediation.md		Strategic Plan: HiveMind v3 — Root Cause Analysis & System-Wide Remediation
+general	plan	sot-2026-02-14-master-plan-consolidated	docs/plans/archive/2026-02-14-MASTER-PLAN-CONSOLIDATED.md		HiveMind Master Plan — Consolidated v3.0
+R1	plan	sot-2026-02-15-phase-b-implementation-plan	docs/plans/archive/2026-02-15-phase-b-implementation-plan.md		Phase B: Session Lifecycle & Task Governance Implementation Plan
+general	plan	sot-phase-b-status-2026-02-15	docs/plans/archive/PHASE-B-STATUS-2026-02-15.md		Phase B Implementation Status Report
+general	plan	sot-prd-hivemind-v3-roadmap-2026-02-18	docs/plans/archive/prd-hivemind-v3-roadmap-2026-02-18.md		PRD: HiveMind v3.0 — Relational Cognitive Engine
+general	plan	sot-2026-02-13-pr3-integration-remediation-plan	docs/plans/archive/2026-02-13-pr3-integration-remediation-plan.md		PR #3 Integration Remediation Plan
+general	plan	sot-prd-hivemind-v3-relational-engine-2026-02-16	docs/plans/archive/prd-hivemind-v3-relational-engine-2026-02-16.md		PRD: HiveMind v3.0 — Relational Cognitive Engine
+general	plan	sot-dashboard-v2-phase8-w3-3-time-travel-contract-2026-02-26	docs/plans/dashboard-v2-phase8-w3-3-time-travel-contract-2026-02-26.md		Dashboard-v2 Phase 8 W3.3 TimeTravel Surface Contract
+general	plan	sot-2026-03-03-meta03-cycle1-hook-enhancement	docs/plans/2026-03-03-meta03-cycle1-hook-enhancement.md		META03 Cycle 1 — Governance Plugin Hook Enhancement Plan
+general	plan	sot-execution-phase7-code-intel-surgeon-2026-02-26	docs/plans/EXECUTION-PHASE7-CODE-INTEL-SURGEON-2026-02-26.md		Phase 7 Execution Plan v1.1: Code-Intel Surgeon Engine
+general	plan	sot-2026-02-19-hivefiver-v2-meta-builder-master	docs/plans/2026-02-19-hivefiver-v2-meta-builder-master.md		HiveFiver v2 Meta Builder - Master Plan
+R1	plan	sot-spec-gx-pack-context-engine-2026-03-02	docs/plans/SPEC-GX-PACK-CONTEXT-ENGINE-2026-03-02.md		SPEC: GX-Pack — Context Engineering Module
+general	plan	sot-2026-02-19-hivefiver-v2-skills	docs/plans/2026-02-19-hivefiver-v2-skills.md		HiveFiver v2 Skills - Implementation Artifact
+R3	plan	sot-2026-02-24-knot-1-context-constitution-phase-plan	docs/plans/2026-02-24-knot-1-context-constitution-phase-plan.md		Knot 1 Phase Plan: Context Constitution
+general	plan	sot-2026-02-19-hivefiver-v2-src-integration	docs/plans/2026-02-19-hivefiver-v2-src-integration.md		HiveFiver v2 Source Integration - Implementation Artifact
+general	plan	sot-2026-02-19-hivefiver-executive-summary	docs/plans/2026-02-19-hivefiver-executive-summary.md		HiveFiver Executive Summary (Main Team Handoff)
+general	plan	sot-2026-02-28-wave-2c-deep-execution-plan	docs/plans/2026-02-28-wave-2c-deep-execution-plan.md		Deep Wave 2C: Auto-Session Foundation — Execution Plan
+general	plan	sot-2026-02-19-hivefiver-phase-7-verification	docs/plans/2026-02-19-hivefiver-phase-7-verification.md		HiveFiver Phase 7 - Verification Report (Updated)
+R4	plan	sot-dashboard-v2-phase8-w3-5-gate-adjudication-2026-02-26	docs/plans/dashboard-v2-phase8-w3-5-gate-adjudication-2026-02-26.md		Dashboard-v2 Phase 8 W3.5 Gate Adjudication
+general	plan	sot-opentui-corporate-ux-spec-2026-02-26	docs/plans/opentui-corporate-ux-spec-2026-02-26.md		OpenTUI Corporate UX Specification (Phase 7)
+general	plan	sot-2026-02-19-hivefiver-v2-production-audit	docs/plans/2026-02-19-hivefiver-v2-production-audit.md		HiveFiver v2 Production Audit - Final Iteration
+general	plan	sot-2026-02-19-code-intelligence-engine-architecture	docs/plans/2026-02-19-code-intelligence-engine-architecture.md		Architecture Planning: Native Code Intelligence Engine
+general	plan	sot-2026-02-20-hivefiver-architect-floppy-blueprint	docs/plans/2026-02-20-hivefiver-architect-floppy-blueprint.md		HiveFiver Architect Blueprint (floppy_engineer)
+general	plan	sot-2026-02-19-hivefiver-phase-2-commands	docs/plans/2026-02-19-hivefiver-phase-2-commands.md		HiveFiver Phase 2 - Command Suite (Hardened)
+R2	plan	sot-2026-03-02-gx-pack-r2-fix-state-persistence-plan	docs/plans/2026-03-02-gx-pack-R2-fix-state-persistence-plan.md		R2: Fix State Persistence — Implementation Plan
+R1	plan	sot-2026-03-02-gx-pack-r1-fix-measurement-plan	docs/plans/2026-03-02-gx-pack-R1-fix-measurement-plan.md		R1: Fix Measurement — Implementation Plan
+general	plan	sot-2026-02-27-hybrid-ab-master-plan	docs/plans/2026-02-27-hybrid-ab-master-plan.md		HYBRID-A+B Master Plan: Stabilize Context First, Then Extend Capability
+general	plan	sot-dashboard-v2-phase8-orchestration-loop-2026-02-26	docs/plans/dashboard-v2-phase8-orchestration-loop-2026-02-26.md		Dashboard-v2 Phase 8 Orchestration Loop (System-Wide)
+general	plan	sot-dashboard-v2-phase8-w1-execution-packet-2026-02-26	docs/plans/dashboard-v2-phase8-w1-execution-packet-2026-02-26.md		Dashboard-v2 Phase 8 W1 Execution Packet
+general	plan	sot-hivefiver-v2-phase-plan-2026-03-01	docs/plans/hivefiver-v2-phase-plan-2026-03-01.md		HiveFiver V2 Meta-Builder Module — Phase-Implementation Planning Artifact (Revised)
+general	plan	sot-2026-02-19-hivefiver-phase-5-mcp	docs/plans/2026-02-19-hivefiver-phase-5-mcp.md		HiveFiver Phase 5 - MCP Integration and Setup (Hardened)
+general	plan	sot-2026-02-19-hivefiver-master-spec	docs/plans/2026-02-19-hivefiver-master-spec.md		HiveFiver v1 Master Spec
+general	plan	sot-2026-03-03-meta03-cycle0-governance-canonicalization	docs/plans/2026-03-03-meta03-cycle0-governance-canonicalization.md		META03 Cycle 0 — Governance Canonicalization Execution Plan
+general	plan	sot-prd-phase7-code-intel-surgeon-engine-2026-02-26	docs/plans/PRD-PHASE7-CODE-INTEL-SURGEON-ENGINE-2026-02-26.md		Phase 7: Code-Intel Surgeon Engine PRD
+general	plan	sot-dashboard-v2-phase8-w3-implementation-kickoff-packet-2026-02-26	docs/plans/dashboard-v2-phase8-w3-implementation-kickoff-packet-2026-02-26.md		Dashboard-v2 Phase 8 W3 Implementation Kickoff Packet
+general	plan	sot-2026-02-19-hivefiver-phase-1-architecture	docs/plans/2026-02-19-hivefiver-phase-1-architecture.md		HiveFiver Phase 1 - Architecture Contract
+general	plan	sot-2026-03-02-gx-pack-certified-requirements	docs/plans/2026-03-02-gx-pack-certified-requirements.md		GX-Pack Remediation — Certified Requirements Registry
+general	plan	sot-2026-02-19-hivefiver-phase-0-normalization	docs/plans/2026-02-19-hivefiver-phase-0-normalization.md		HiveFiver Phase 0 - Source Normalization
+general	plan	sot-2026-02-19-hivefiver-v2-inventory	docs/plans/2026-02-19-hivefiver-v2-inventory.md		HiveFiver v2 Inventory
+general	plan	sot-2026-03-02-hiveops-tdd-plan	docs/plans/2026-03-02-hiveops-tdd-plan.md		HiveOps Framework Tools — TDD Implementation Plan
+general	plan	sot-2026-02-19-hivefiver-v2-commands	docs/plans/2026-02-19-hivefiver-v2-commands.md		HiveFiver v2 Commands - Implementation Artifact
+R3	plan	sot-2026-03-02-d7-context-injection-remediation-plan	docs/plans/2026-03-02-d7-context-injection-remediation-plan.md		D7 Context Injection Remediation — Implementation Plan
+general	plan	sot-2026-03-01-hivefiver-deterministic-chain	docs/plans/2026-03-01-hivefiver-deterministic-chain.md		HiveFiver Deterministic Chain Completion — Implementation Plan
+general	plan	sot-dashboard-v2-phase8-w3-2-tool-registry-contract-2026-02-26	docs/plans/dashboard-v2-phase8-w3-2-tool-registry-contract-2026-02-26.md		Dashboard-v2 Phase 8 W3.2 ToolRegistry Surface Contract
+general	plan	sot-dashboard-v2-overhaul-plan-2026-02-26	docs/plans/dashboard-v2-overhaul-plan-2026-02-26.md		Dashboard-v2 Complete Overhaul Plan
+general	plan	sot-dashboard-v2-phase8-w3-1-swarm-contract-2026-02-26	docs/plans/dashboard-v2-phase8-w3-1-swarm-contract-2026-02-26.md		Dashboard-v2 Phase 8 W3.1 Swarm Surface Contract
+general	plan	sot-2026-02-19-hivefiver-final-audit-inventory	docs/plans/2026-02-19-hivefiver-final-audit-inventory.md		HiveFiver Final Audit and Inventory
+general	plan	sot-2026-02-19-entity-relationship-remediation	docs/plans/2026-02-19-entity-relationship-remediation.md		Unified Master Architecture Plan: Entity Relationships, Automation, and GSD Lifecycle
+general	plan	sot-dashboard-v2-phase8-w2-execution-packet-2026-02-26	docs/plans/dashboard-v2-phase8-w2-execution-packet-2026-02-26.md		Dashboard-v2 Phase 8 W2 Execution Packet
+R7	plan	sot-2026-02-23-grand-sot-audit-report	docs/plans/2026-02-23-grand-sot-audit-report.md		HiveMind Framework — Grand SOT Audit Report
+general	plan	sot-dashboard-v2-phase8-w1-delta-retune-2026-02-26	docs/plans/dashboard-v2-phase8-w1-delta-retune-2026-02-26.md		Dashboard-v2 Phase 8 W1.delta Retune Packet
+general	plan	sot-2026-02-24-v29-systematic-execution-plan	docs/plans/2026-02-24-v29-systematic-execution-plan.md		HiveMind v2.9 Systematic Execution Plan
+general	plan	sot-2026-02-24-hiveplanner-architecture	docs/plans/2026-02-24-hiveplanner-architecture.md		HivePlanner Architecture Design
+R2	plan	sot-2026-02-19-hivefiver-v2-workflows	docs/plans/2026-02-19-hivefiver-v2-workflows.md		HiveFiver v2 Workflows - Implementation Artifact
+general	plan	sot-2026-02-24-knot-1-closeout	docs/plans/2026-02-24-knot-1-closeout.md		Knot 1: Context Constitution - Closeout Report
+general	plan	sot-2026-02-24-v29-domain-audit	docs/plans/2026-02-24-v29-domain-audit.md		HiveMind v2.9 Domain Audit Report
+general	plan	sot-2026-02-28-hivefiver-meta-builder-requirement	docs/plans/2026-02-28-hivefiver-meta-builder-requirement.md		HiveFiver Meta-Builder Self-Audit & Revamp Requirements
+general	plan	sot-hivemind-recovery-pack-options-2026-03-02	docs/plans/hivemind-recovery-pack-options-2026-03-02.md		Hivemind Recovery Pack (Plugin-Only) - Options and Recommended Path
+general	plan	sot-2026-03-02-framework-upgrade-validated-plan	docs/plans/2026-03-02-framework-upgrade-validated-plan.md		Framework Upgrade — Validated Strategic Plan
+general	plan	sot-dashboard-v2-phase8-w3-4-ownership-event-map-2026-02-26	docs/plans/dashboard-v2-phase8-w3-4-ownership-event-map-2026-02-26.md		Dashboard-v2 Phase 8 W3.4 Ownership and Event-Map Contract
+general	plan	sot-2026-02-19-hivefiver-v2-verification	docs/plans/2026-02-19-hivefiver-v2-verification.md		HiveFiver v2 Verification Report
+general	plan	sot-2026-02-25-hivemind-v3-consolidated-roadmap	docs/plans/2026-02-25-hivemind-v3-consolidated-roadmap.md		HiveMind v3.0 Consolidated Roadmap
+R3	plan	sot-2026-03-02-gx-pack-r3-fix-schemas-plan	docs/plans/2026-03-02-gx-pack-R3-fix-schemas-plan.md		R3: Fix Schemas — Implementation Plan
+general	plan	sot-2026-02-19-hivefiver-phase-6-gsd-ralph	docs/plans/2026-02-19-hivefiver-phase-6-gsd-ralph.md		HiveFiver Phase 6 - GSD and Ralph Compatibility
+general	plan	sot-dashboard-v2-phase8-w3-execution-packet-2026-02-26	docs/plans/dashboard-v2-phase8-w3-execution-packet-2026-02-26.md		Dashboard-v2 Phase 8 W3 Execution Packet
+general	plan	sot-2026-02-19-hivefiver-phase-4-orchestration	docs/plans/2026-02-19-hivefiver-phase-4-orchestration.md		HiveFiver Phase 4 - Agent and Workflow Orchestration
+general	plan	sot-2026-02-19-hivefiver-rollout-checklist	docs/plans/2026-02-19-hivefiver-rollout-checklist.md		HiveFiver Rollout Checklist
+R3	plan	sot-hivemind-gx-context-schema-runtime-plan-2026-03-02	docs/plans/hivemind-gx-context-schema-runtime-plan-2026-03-02.md		Hivemind GX Context-Schema Runtime Plan (Plugin-Only)
+general	plan	sot-2026-02-19-hivefiver-phase-3-skills	docs/plans/2026-02-19-hivefiver-phase-3-skills.md		HiveFiver Phase 3 - Skill Pack
+general	plan	sot-2026-03-02-framework-upgrade-strategic-plan	docs/plans/2026-03-02-framework-upgrade-strategic-plan.md		Framework Upgrade Strategic Plan
+general	plan	sot-dashboard-v2-phase8-w0-2-execution-packet-2026-02-26	docs/plans/dashboard-v2-phase8-w0-2-execution-packet-2026-02-26.md		Dashboard-v2 Phase 8 W0.2 Execution Packet
+general	plan	sot-2026-02-17-phase-6-7-master-plan	docs/plans/2026-02-17-phase-6-7-master-plan.md		Phase 6-7 Master Plan: Test Suite Completion & IPC Bridge
+general	spec	sot-spec-meta-builder-module-2026-03-01	docs/SPEC-META-BUILDER-MODULE-2026-03-01.md		HiveFiver Meta-Builder Module Specification
+general	other	sot-opencode-concepts-advanced	docs/OPENCODE-CONCEPTS-ADVANCED.md		OPENCODE-CONCEPTS-ADVANCED.md
+general	other	sot-injection-fix-plan-2026-02-16	docs/injection-fix-plan-2026-02-16.md		Injection Conflict Fix Plan
+general	other	sot-sector2-migration-notes	docs/sector2-migration-notes.md		Sector-2 Migration Notes
+general	other	sot-hivemind-framework-audit-criteria	docs/HIVEMIND-FRAMEWORK-AUDIT-CRITERIA.md		HIVEMIND Framework Audit & Realignment Guide
+general	other	sot-sector2-skill-governance	docs/sector2-skill-governance.md		Sector-2 Skill Governance
+general	other	sot-opencode-architecture-narrative	docs/OPENCODE-ARCHITECTURE-NARRATIVE.md		OPENCODE-ARCHITECTURE-NARRATIVE.md
+general	other	sot-the-zero-event	docs/THE-ZERO-EVENT.md		THE ZERO EVENT — Strategic Planning Reference
+general	other	sot-2026-02-25-audit-integration-document	docs/audit/2026-02-25-audit-integration-document.md		Audit Integration Document: v2.9 Plan Alignment
+general	other	sot-2026-02-25-source-architecture-audit	docs/audit/2026-02-25-source-architecture-audit.md		Deep Source Architecture Audit Report
+general	other	sot-opencode-deterministic-contex-agent-delegation	docs/OPENCODE-DETERMINISTIC-CONTEX-AGENT-DELEGATION.md		OPENCODE-DETERMINISTIC-CONTEX-AGENT-DELEGATION.md
+general	other	sot-opencode-sdk-qa-deepwiki	docs/opencode-sdk-QA-deepwiki.md		DeepWiki Q&A with Code Context for Repository: anomalyco/opencode
+general	other	sot-log-n-1	docs/log/log-n-1.md		Sector-2 Holistic Refactoring — Walkthrough
+general	other	sot-log-n	docs/log/log-n.md		Sector-2 Holistic Refactoring — Walkthrough
+general	other	sot-refactored-plan	docs/refactored-plan.md		HiveMind v3.0 — Relational Cognitive Engine Master Plan
+general	other	sot-public-branch-policy	docs/public-branch-policy.md		Public Branch Policy
+general	other	sot-sector2-diamond-architecture	docs/sector2-diamond-architecture.md		Sector-2 Diamond Architecture
+general	other	sot-raw-version-refactor-for-v-29	docs/planning-draft/raw-version-refactor-for-v-29.md		refactor for .hivemind ver.2.9
+general	other	sot-forming-the-own-framework	docs/planning-draft/forming-the-own-framework.md		forming-the-own-framework.md
+general	other	sot-debug-ecosystem-guide-2026-02-17	docs/DEBUG-ECOSYSTEM-GUIDE-2026-02-17.md		OpenCode Debug Ecosystem - Comprehensive Implementation Guide
+general	other	sot-opencode-knowledge-master-index	docs/OPENCODE-KNOWLEDGE-MASTER-INDEX.md		OpenCode Knowledge Master Index
+general	spec	sot-spec-framework-refactor-v3-2026-03-01	docs/SPEC-FRAMEWORK-REFACTOR-V3-2026-03-01.md		SPEC: HiveMind Framework V3 Refactor
+R3	other	sot-context-rot-analysis-2026-03-02	docs/context-rot-analysis-2026-03-02.md		Context Rot Analysis: AGENTS-temp-disabled.md
+general	other	sot-opencode-sdk-mechanisms-2026-02-14	docs/reference/opencode-sdk-mechanisms-2026-02-14.md		OpenCode SDK - Key Mechanisms for Agent Control
+general	other	sot-source-tree-analysis	docs/sample-models/codebase-scan/source-tree-analysis.md		Source Tree Analysis
+general	other	sot-deployment-guide	docs/sample-models/codebase-scan/deployment-guide.md		Deployment Guide
+general	other	sot-architecture	docs/sample-models/codebase-scan/architecture.md		Via-gent Architecture
+general	other	sot-comprehensive-analysis-project-alpha	docs/sample-models/codebase-scan/comprehensive-analysis-project-alpha.md		Comprehensive Analysis (project-alpha)
+general	other	sot-project-scan-report	docs/sample-models/codebase-scan/project-scan-report.json		project-scan-report.json
+general	other	sot-data-models	docs/sample-models/codebase-scan/data-models.md		Data Models
+general	other	sot-development-guide	docs/sample-models/codebase-scan/development-guide.md		Development Guide
+general	other	sot-api-contracts-project-alpha	docs/sample-models/codebase-scan/api-contracts-project-alpha.md		API Contracts (project-alpha)
+general	other	sot-index	docs/sample-models/codebase-scan/index.md		Via-gent Documentation Index
+general	other	sot-component-inventory	docs/sample-models/codebase-scan/component-inventory.md		Component Inventory
+general	other	sot-state-management-patterns-project-alpha	docs/sample-models/codebase-scan/state-management-patterns-project-alpha.md		State Management Patterns (project-alpha)
+general	other	sot-data-models-project-alpha	docs/sample-models/codebase-scan/data-models-project-alpha.md		Data Models (project-alpha)
+general	other	sot-project-overview	docs/sample-models/codebase-scan/project-overview.md		Via-gent Project Overview
+general	other	sot-ui-component-inventory-project-alpha	docs/sample-models/codebase-scan/ui-component-inventory-project-alpha.md		UI Component Inventory (project-alpha)
+general	other	sot-api-contracts	docs/sample-models/codebase-scan/api-contracts.md		API Contracts
+general	other	sot-agents-temp-disabled	AGENTS-temp-disabled.md		The most effective development is that the team of agents must know their roles , be in context
+R4	other	sot-pack	bridges/hiveq-release-gate-bridge/pack.yaml		pack.yaml
+general	other	sot-readme	README.md		HiveMind Context Governance
+general	other	sot-readme-v3-teaser	README-v3-teaser.md		🧠 HiveMind v3.0 — The Relational Cognitive Engine
+R1	other	sot-session-ses-34ff	session-ses_34ff.md		Continuation request
+R6	other	sot-session-ses-356f	session-ses_356f.md		Hivemind framework refactoring
+general	other	sot-package-lock	package-lock.json		package-lock.json
+general	other	sot-package	package.json		package.json
+R6	other	sot-session-ses-34fc	session-ses_34fc.md		Content Placement Architecture
+general	other	sot-opencode	opencode.json		opencode.json
+general	other	sot-hivemind-brownfield-remediation	prompts/hivemind-brownfield-remediation.md		Brownfield Remediation Prompt
+general	other	sot-compliance-rules	prompts/compliance-rules.md		Compliance Rules
+general	other	sot-comparison-criteria	prompts/comparison-criteria.md		Comparison Criteria
+general	other	sot-verification-criteria	prompts/verification-criteria.md		Verification Criteria
+general	other	sot-research-question-framing	prompts/research-question-framing.md		Research Question Framing
+general	other	sot-brainstorm-framing	prompts/brainstorm-framing.md		Brainstorm Framing
+general	other	sot-analysis-methodology	prompts/analysis-methodology.md		Analysis Methodology
+R8	synthesis	sot-synthesis-instruction	prompts/synthesis-instruction.md		Synthesis Instruction
+general	other	sot-verification-report-template	templates/verification-report-template.md		{{phase}} — Verification Report
+general	other	sot-analysis-matrix-template	templates/analysis-matrix-template.md		{{comparison_title}} — Comparative Analysis
+general	other	sot-research-report-template	templates/research-report-template.md		{{topic}} — Research Report
+R6	other	sot-brainstorm-session-template	templates/brainstorm-session-template.md		{{problem_statement}} — Brainstorm Session
+general	other	sot-opencode-config-template	templates/opencode-config-template.json		opencode-config-template.json
+R4	other	sot-gate-checklist-template	templates/gate-checklist-template.md		{{gate_type}} — Gate Checklist
+general	other	sot-audit-report-template	templates/audit-report-template.md		{{scope}} — Audit Report
+R6	other	sot-hivemind-brownfield-session	templates/hivemind-brownfield-session.md		Brownfield Session Template
+general	other	sot-opencode-profiles	templates/opencode-profiles.md		OpenCode Profile Configuration Guide
+general	other	sot-tsconfig	tsconfig.json		tsconfig.json
+general	other	sot-hivefiver-intake	commands/hivefiver-intake.md		hivefiver-intake.md
+general	other	sot-hiveq-audit	commands/hiveq-audit.md		HiveQ Audit
+general	other	sot-hivefiver-architect	commands/hivefiver-architect.md		hivefiver-architect.md
+general	other	sot-hivemind-debug-verify	commands/hivemind-debug-verify.md		HiveMind Debug Verify Command
+general	other	sot-hiverd-research	commands/hiverd-research.md		HiveRD Research
+general	other	sot-hivemind-scan	commands/hivemind-scan.md		HiveMind Project Scan
+R3	other	sot-hivemind-context	commands/hivemind-context.md		HiveMind Context-First Enforcer
+general	other	sot-hivefiver-continue	commands/hivefiver-continue.md		hivefiver-continue.md
+general	other	sot-hivemind-status	commands/hivemind-status.md		HiveMind Status Check
+general	other	sot-hivemind-debug-trigger	commands/hivemind-debug-trigger.md		HiveMind Debug Trigger Command
+general	other	sot-hiverd-synthesize	commands/hiverd-synthesize.md		HiveRD Synthesize
+general	spec	sot-hivefiver-spec	commands/hivefiver-spec.md		hivefiver-spec.md
+general	other	sot-hivemind-lint	commands/hivemind-lint.md		HiveMind Lint & Quality Gate
+general	other	sot-hivefiver-plan-spawn	commands/hivefiver-plan-spawn.md		hivefiver-plan-spawn.md
+general	other	sot-hivefiver-build	commands/hivefiver-build.md		hivefiver-build.md
+general	other	sot-hivemind-dashboard	commands/hivemind-dashboard.md		HiveMind Dashboard
+general	other	sot-hiverd-document	commands/hiverd-document.md		HiveRD Document
+general	other	sot-hivefiver-discovery	commands/hivefiver-discovery.md		hivefiver-discovery.md
+general	other	sot-hiveminder-orchestrate	commands/hiveminder-orchestrate.md		HiveMind Orchestration Command
+general	other	sot-hivefiver-audit	commands/hivefiver-audit.md		hivefiver-audit.md
+general	other	sot-hivemind-compact	commands/hivemind-compact.md		HiveMind Session Compact
+general	other	sot-hiverd-brainstorm	commands/hiverd-brainstorm.md		HiveRD Brainstorm
+general	other	sot-hiveq-regression	commands/hiveq-regression.md		HiveQ Regression
+general	other	sot-hiverd-analyze	commands/hiverd-analyze.md		HiveRD Analyze
+general	other	sot-hiveq-compliance	commands/hiveq-compliance.md		HiveQ Compliance
+general	other	sot-hiverd-compare	commands/hiverd-compare.md		HiveRD Compare
+general	other	sot-hivemind-pre-stop	commands/hivemind-pre-stop.md		HiveMind Pre-Stop Gate
+general	other	sot-hivefiver-doctor	commands/hivefiver-doctor.md		hivefiver-doctor.md
+general	other	sot-hiveq-lint	commands/hiveq-lint.md		HiveQ Lint
+R4	other	sot-hiveq-gate-check	commands/hiveq-gate-check.md		HiveQ Gate Check
+general	other	sot-hivefiver-start	commands/hivefiver-start.md		hivefiver-start.md
+R4	other	sot-hivemind-delegate	commands/hivemind-delegate.md		HiveMind Delegation Validator
+general	other	sot-hivemind-clarify	commands/hivemind-clarify.md		HiveMind Context Clarification Command
+general	other	sot-hiveq-verify	commands/hiveq-verify.md		HiveQ Verify
+general	other	sot-skill	skills/debug-orchestration/SKILL.md		Skill: debug-orchestration
+general	reference	sot-provider-matrix	skills/hivefiver-mcp-research-loop/references/provider-matrix.md		MCP Provider Matrix
+general	other	sot-evidence-table	skills/hivefiver-mcp-research-loop/templates/evidence-table.md		Evidence Table
+general	reference	sot-prd-json-rules	skills/hivefiver-ralph-tasking/references/prd-json-rules.md		PRD JSON Rules
+general	other	sot-prd-json-flat	skills/hivefiver-ralph-tasking/templates/prd-json-flat.md		prd-json-flat.md
+general	reference	sot-ambiguity-taxonomy	skills/hivefiver-spec-distillation/references/ambiguity-taxonomy.md		Ambiguity Taxonomy
+general	spec	sot-spec-candidate	skills/hivefiver-spec-distillation/templates/spec-candidate.md		Spec Candidate
+general	other	sot-registry	skills/registry.yaml		registry.yaml
+general	reference	sot-terminology-en-vi	skills/hivefiver-bilingual-tutor/references/terminology-en-vi.md		Terminology EN/VI
+general	other	sot-bilingual-output	skills/hivefiver-bilingual-tutor/templates/bilingual-output.md		Output Template
+general	reference	sot-skill-source-links	skills/hivefiver-skill-auditor/references/skill-source-links.md		Skill Source Links
+general	reference	sot-audit-checklist	skills/hivefiver-skill-auditor/references/audit-checklist.md		Skill Audit Checklist
+general	other	sot-skill-audit-report	skills/hivefiver-skill-auditor/templates/skill-audit-report.md		Skill Audit Report
+general	reference	sot-domain-pack-matrix	skills/hivefiver-domain-pack-router/references/domain-pack-matrix.md		Domain Pack Matrix
+general	other	sot-domain-pack-output	skills/hivefiver-domain-pack-router/templates/domain-pack-output.md		Domain Pack Output
+general	reference	sot-gsd-lifecycle-map	skills/hivefiver-gsd-compat/references/gsd-lifecycle-map.md		GSD Lifecycle Map (Compatibility Layer)
+general	other	sot-gsd-bridge-output	skills/hivefiver-gsd-compat/templates/gsd-bridge-output.md		GSD Bridge Output
+general	reference	sot-persona-matrix	skills/hivefiver-persona-routing/references/persona-matrix.md		Persona Matrix
+general	other	sot-intake-questionnaire	skills/hivefiver-persona-routing/templates/intake-questionnaire.md		Intake Questionnaire (Controlled MCQ)
+general	other	sot-agents	AGENTS.md		AGENTS.md
+general	other	sot-the-time-line-after-the-zero	THE-TIME-LINE-AFTER-THE-ZERO.md		1. The Previous Agent’s first plan
+general	other	sot-module	modules/hiverd-research/module.yaml		module.yaml
+general	other	sot-legacy-compat	modules/profiles/legacy-compat.yaml		legacy-compat.yaml
+general	other	sot-balanced	modules/profiles/balanced.yaml		balanced.yaml
+general	other	sot-full	modules/profiles/full.yaml		full.yaml
+general	other	sot-core	modules/profiles/core.yaml		core.yaml
+R6	other	sot-session-test-firstpromt-transfer	session-test-firstpromt-transfer.md		Dev quality improvement investigation
+R3	other	sot-cp-mm9w9w1d	.hivemind/checkpoints/cp-mm9w9w1d.json	context-recovery,baseline,quarantine	cp-mm9w9w1d.json
+general	other	sot-cp-mm9wtds4	.hivemind/checkpoints/cp-mm9wtds4.json	guardrail,no-src,no-sdk,plugin-only	cp-mm9wtds4.json
+general	plan	sot-validation-meta01-sub01-atomic01	.hivemind/plans/VALIDATION-META01-SUB01-ATOMIC01.md		Validation META01-SUB01-ATOMIC01
+general	plan	sot-validation-meta01-sub01	.hivemind/plans/VALIDATION-META01-SUB01.md		Validation META01-SUB01
+R5	plan	sot-governance-contract-matrix-2026-03-03	.hivemind/plans/governance-contract-matrix-2026-03-03.md	governance,contract,matrix	Governance Contract Matrix — META03 Cycle 0
+general	plan	sot-manifest	.hivemind/plans/manifest.json		manifest.json
+general	plan	sot-meta03-plan	.hivemind/plans/META03-PLAN.md		META03: Governance Canonicalization Plan
+general	other	sot-cp-mm9x1crv	.hivemind/checkpoints/cp-mm9x1crv.json	plans-root,plural,plugin-only,sot-integrity	cp-mm9x1crv.json
+general	other	sot-cp-mm9x6z17	.hivemind/checkpoints/cp-mm9x6z17.json	c1,schema-contract,session-routing,integrity	cp-mm9x6z17.json
+general	other	sot-cp-mm9x7hfe	.hivemind/checkpoints/cp-mm9x7hfe.json	c1,validation,stop-gate,authorization	cp-mm9x7hfe.json
+R7	plan	sot-proj01-plan	.hivemind/plans/PROJ01-PLAN.md	plan,project,root,r3	Project execution baseline
+R7	plan	sot-proj01-sub01-plan	.hivemind/plans/PROJ01-SUB01-PLAN.md	plan,project,sub,r3	Project sub-plan: deterministic rollout
+R7	plan	sot-plan-protocol-2026-03-03	.hivemind/plans/PLAN-PROTOCOL-2026-03-03.md	plan,protocol,meta	Plan Protocol (2026-03-03)
+R7	plan	sot-proj01-sub01-atomic01	.hivemind/plans/PROJ01-SUB01-ATOMIC01.md	plan,project,atomic,r4	Atomic node: gate-backed execution step
+R6	plan	sot-hivefiver-denoise-governance-plan-2026-03-03	docs/plans/hivefiver-denoise-governance-plan-2026-03-03.md	plan,governance,rollout	Hivefiver Denoise Governance Plan (2026-03-03)
+R6	plan	sot-hivefiver-denoise-rollout-report-2026-03-03	docs/plans/hivefiver-denoise-rollout-report-2026-03-03.md	report,verification,rollout	Hivefiver Denoise Rollout Report (2026-03-03)
+R2	plan	sot-hivefiver-skill-rationalization-matrix-2026-03-03	docs/plans/hivefiver-skill-rationalization-matrix-2026-03-03.md	skills,rationalization,matrix	Hivefiver Skill Rationalization Matrix (2026-03-03)

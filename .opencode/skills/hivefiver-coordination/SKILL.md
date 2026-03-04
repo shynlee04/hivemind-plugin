@@ -1,11 +1,13 @@
 ---
 name: hivefiver-coordination
-description: "Use when hivefiver needs quality gates, routing constraints, delegation steering, or completion verification. Triggers on: before any asset write, after stage completion, during audit/doctor, when self-delegating, before claiming completion."
+description: "Helper skill (not direct entry). Load via hivefiver-mode when hivefiver needs quality gates, routing constraints, delegation steering, or completion verification."
 ---
 
 # Hivefiver Coordination Quality Pack
 
 Enforce quality gates, routing constraints, and delegation steering.
+
+Load this after stage routing. Do not use as a default turn-start entry skill.
 
 ## Quality Gate Definitions
 

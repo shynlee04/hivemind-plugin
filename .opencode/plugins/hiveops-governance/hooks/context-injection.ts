@@ -291,6 +291,44 @@ export function buildContextInjectionHook(state: {
       )
     }
 
+    // === HIVEFIVER-SPECIFIC BLINDNESS ENFORCEMENT ===
+    // hivefiver has read:deny, glob:deny, grep:deny — intentionally blind.
+    // This block injects mandatory delegation awareness EVERY turn.
+    if (state.current.agent === "hivefiver") {
+      const delegatedToExplorer = state.current.delegationChain.some(
+        (entry) => entry.to === "hivexplorer"
+      )
+      const turnCount = state.current.turnCount
+
+      // Determine entry type
+      let entryType: "first_entry" | "mid_session" | "post_compact" = "mid_session"
+      if (turnCount <= 1) entryType = "first_entry"
+      if (recovery) entryType = "post_compact"
+
+      // Severity escalation based on turns without hivexplorer delegation
+      let severity = "SEV-1 MONITOR"
+      if (turnCount >= 12 && !delegatedToExplorer) severity = "SEV-3 CRITICAL"
+      else if (turnCount >= 8 && !delegatedToExplorer) severity = "SEV-2 ELEVATED"
+      else if (turnCount >= 4 && !delegatedToExplorer) severity = "SEV-1 WARNING"
+
+      contextLines.push("")
+      contextLines.push("### HIVEFIVER BLINDNESS ENFORCEMENT [ALWAYS-ON]")
+      contextLines.push(`**Entry:** ${entryType} | **Severity:** ${severity}`)
+      contextLines.push(
+        `**Delegated to hivexplorer:** ${delegatedToExplorer ? "YES" : "NO — REQUIRED BEFORE ANY ACTION"}`
+      )
+      contextLines.push("")
+      contextLines.push("YOU ARE BLIND. You have read:deny, glob:deny, grep:deny, bash:deny.")
+      contextLines.push("GOLDEN RULE: Before creating, modifying, or claiming anything about existing files,")
+      contextLines.push("you MUST delegate to hivexplorer for verification. No exceptions.")
+
+      if (!delegatedToExplorer && turnCount >= 4) {
+        contextLines.push("")
+        contextLines.push(`**${severity}: ${turnCount} turns without hivexplorer verification.**`)
+        contextLines.push("HIGH RISK of hallucination. Delegate to hivexplorer NOW or STOP.")
+      }
+    }
+
     const contextBlock = contextLines.join("\n")
 
     // Prepend as system message to the messages array

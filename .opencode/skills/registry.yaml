@@ -73,6 +73,20 @@ skills:
     depends_on:
       - hivemind-governance
 
+  - name: context-quality-escalation
+    domain: context-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.71
+    status: deprecated
+    owner: hivemind-core
+    disclosure_level: L1
+    triggers:
+      - "turn-based escalation warning"
+      - "context quality escalation"
+    supersedes: []
+    depends_on:
+      - context-integrity
+
   - name: creative-ideating-room
     domain: ideation
     bundle: planning-core
@@ -119,7 +133,7 @@ skills:
     domain: orchestration-contracts
     bundle: governance-core
     knowledge_delta_score: 0.9
-    status: active
+    status: deprecated
     owner: hivemind-core
     disclosure_level: L1
     triggers:

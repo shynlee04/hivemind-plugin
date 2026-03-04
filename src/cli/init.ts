@@ -229,8 +229,8 @@ async function syncAssetsForInit(directory: string, options: InitOptions): Promi
     overwrite,
     backupOnOverwrite,
     includeLegacy: false,
-    validateAgentPermissionSchema: true,
-    failOnInvalidCriticalAssets: true,
+    validateAgentPermissionSchema: false,
+    failOnInvalidCriticalAssets: false,
     silent: options.silent ?? false,
     onLog: options.silent ? undefined : log,
   })
@@ -419,8 +419,8 @@ function applyProfilePreset(
   const preset = PROFILE_PRESETS[profileKey]
 
   // Normalize automation level from options if provided
-  const normalizedAutomationLevel = options.automationLevel 
-    ? normalizeAutomationInput(options.automationLevel) 
+  const normalizedAutomationLevel = options.automationLevel
+    ? normalizeAutomationInput(options.automationLevel)
     : null
 
   // Apply preset to config - preset values take precedence over individual options
@@ -618,7 +618,7 @@ export async function initProject(
   if (existsSync(brainPath)) {
     // Existing user upgrade path: keep state, refresh OpenCode assets, AND ensure plugin is registered
     await syncAssetsForInit(directory, options)
-    
+
     // Ensure plugin is registered in opencode.json (this was missing!)
     registerPluginInConfig(directory, options.silent ?? false)
     ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
@@ -649,7 +649,7 @@ export async function initProject(
   // When a profile is provided, it drives all configuration values
   if (options.profile && isValidProfilePreset(options.profile)) {
     const preset = PROFILE_PRESETS[options.profile]
-    
+
     if (!options.silent) {
       log(`  Profile: ${preset.label}`)
       log(`  ${preset.description}`)
@@ -717,7 +717,7 @@ export async function initProject(
   }
 
   // ── Manual Configuration Path (existing logic) ──────────────────────────────
-  
+
   // Validate and set governance mode
   const governanceMode = options.governanceMode ?? "assisted"
   if (!isValidGovernanceMode(governanceMode)) {

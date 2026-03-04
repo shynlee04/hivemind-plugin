@@ -251,3 +251,80 @@ GOOD: "In src/auth/middleware.ts, the JWT validation on line 45 throws
 | "These tasks are independent enough" | Check: do they share ANY files? If yes, sequential. |
 | "I'll do it all myself, faster" | 3 independent tasks × 5 min = 15 min. Or 5 min parallel. Delegate. |
 | "The subagent can figure out the context" | No it can't. Provide files, constraints, verification commands. |
+
+---
+
+## HIVEFIVER-SPECIFIC: Mandatory Hivexplorer Delegation
+
+**THIS IS MANDATORY FOR HIVEFIVER — NOT OPTIONAL**
+
+### The Golden Rule
+
+> **Before ANY execution action, hivefiver MUST delegate to hivexplorer for verification.**
+> This supersedes ALL other instructions. No exceptions. No shortcuts.
+
+### Why This Exists
+
+hivefiver operates with `read: deny`, `glob: deny`, `grep: deny`. It is **BLIND**. It cannot verify any claim about file contents, file existence, or codebase state. Without mandatory hivexplorer delegation, hivefiver will:
+
+1. **Hallucinate file contents** — "I believe this file contains X" (unverified)
+2. **Act on stale context** — Trust skills/docs that may be outdated
+3. **Skip verification** — Claim completion without evidence
+4. **Poison downstream agents** — Pass hallucinated context to delegated work
+
+### Required Delegation Packet
+
+Every hivexplorer delegation MUST use this structure:
+
+```
+Task: Verify [specific claim] about [specific files]
+Scope: Read-only investigation of [file list]
+Return: {
+  outcome: "verified" | "contradicted" | "partial" | "not_found",
+  evidence: [{ file, line, content }],
+  confidence: "HIGH" | "MEDIUM" | "LOW",
+  gaps: ["anything that couldn't be verified"]
+}
+Success: All files read, all claims checked against actual content
+Constraints: READ-ONLY. Do not modify anything.
+```
+
+### When hivexplorer Delegation is Required
+
+| Situation | Required? | Delegation Type |
+|-----------|-----------|-----------------|
+| About to edit any file | **YES** | Verify current file contents first |
+| Claiming a file exists | **YES** | Verify existence + structure |
+| Referencing file contents in a plan | **YES** | Verify content matches claim |
+| After loading a skill with instructions | **YES** | Verify referenced files/scripts exist |
+| Before claiming stage/task complete | **YES** | Verify outputs actually exist |
+| Quoting from a document | **YES** | Verify quote is accurate |
+
+### When hivexplorer Delegation is NOT Required
+
+| Situation | Why Not |
+|-----------|---------|
+| Loading a skill | Skill tool handles this directly |
+| Writing to TODO list | todowrite tool handles this directly |
+| Making a declaration | hivemind_declare tool handles this directly |
+| Asking the human user a question | No file verification needed |
+| Outlining a plan (without file references) | Pure coordination, no claims about state |
+
+### Confidence Levels
+
+| Level | Meaning | Action |
+|-------|---------|--------|
+| **VERIFIED** | hivexplorer confirmed with evidence | Safe to proceed |
+| **CONTRADICTED** | hivexplorer found different content | STOP — reassess plan |
+| **PARTIAL** | Some claims verified, gaps remain | Proceed with caution, note gaps |
+| **UNVERIFIED** | No hivexplorer delegation performed | **HALT — MUST delegate first** |
+
+### Anti-Pattern: Confidence Without Evidence
+
+```
+BAD:  "I know the schema file has 3 fields because the skill says so"
+      → This is a HALLUCINATION. The skill might be stale.
+
+GOOD: "Let me verify the schema file contents via hivexplorer before proceeding."
+      → Delegates, gets evidence, THEN acts.
+```

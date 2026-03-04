@@ -122,6 +122,11 @@ export interface HivemindPaths {
   sessionTemplate: string   // templates/session.md
 }
 
+export interface SessionPaths {
+  sessionDir: string
+  profile: string
+}
+
 /**
  * Legacy (v1.x) flat structure paths.
  * Kept for explicit migration tooling compatibility.
@@ -247,6 +252,23 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
     docsDir,
     templatesDir,
     sessionTemplate: join(templatesDir, "session.md"),
+  }
+}
+
+/**
+ * Returns deterministic paths for a single active session directory.
+ */
+export function getSessionPaths(projectRoot: string, sessionId: string): SessionPaths {
+  const safeSessionId = sanitizeSessionStamp(sessionId) ?? sanitizeSessionFileName(sessionId)
+  if (!safeSessionId) {
+    throw new Error(`Invalid session id: ${sessionId}`)
+  }
+
+  const paths = getHivemindPaths(projectRoot)
+  const sessionDir = join(paths.activeDir, safeSessionId)
+  return {
+    sessionDir,
+    profile: join(sessionDir, "profile.json"),
   }
 }
 

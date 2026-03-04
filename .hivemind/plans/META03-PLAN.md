@@ -1,5 +1,11 @@
 # META03: Governance Canonicalization Plan
 
+**Status**: active  
+**Owner**: hiveplanner  
+**Plan ID**: META03  
+**Date**: 2026-03-03
+Plan ID: META03
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Resolve 3 cross-team-validated governance conflicts + 1 load-order fix, then enhance governance plugin hooks for richer context injection (Cycle 1+).

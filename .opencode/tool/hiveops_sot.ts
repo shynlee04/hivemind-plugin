@@ -26,6 +26,8 @@ interface SotArtifact {
   title: string
   tags: string[]
   domain: string
+  plan_id?: string
+  node_id?: string
   type: "plan" | "spec" | "reference" | "synthesis" | "agent" | "command" | "skill" | "workflow" | "other"
   parent?: string
   children: string[]
@@ -120,6 +122,8 @@ export default tool({
     tags: tool.schema.string().optional().describe("Comma-separated tags"),
     domain: tool.schema.string().optional().describe("Domain filter: R1-R8"),
     parent: tool.schema.string().optional().describe("Parent artifact ID for hierarchical linking"),
+    plan_id: tool.schema.string().optional().describe("Plan lineage ID (e.g. META01, PROJ01-SUB01)"),
+    node_id: tool.schema.string().optional().describe("Optional node ID under plan lineage"),
   },
   async execute(args, context) {
     const dir = context.directory || "."
@@ -142,6 +146,8 @@ export default tool({
           title: extractTitle(content) || basename(args.path),
           tags: args.tags ? args.tags.split(",").map((t) => t.trim()) : [],
           domain: args.domain || inferDomain(args.path, content),
+          plan_id: args.plan_id,
+          node_id: args.node_id,
           type: inferType(args.path),
           parent: args.parent,
           children: [],
@@ -167,7 +173,7 @@ export default tool({
         }
 
         saveSotIndex(dir, state)
-        return `Registered: ${id} — "${artifact.title}" [${artifact.type}] (${artifact.domain}) tags:[${artifact.tags.join(",")}]`
+        return `Registered: ${id} — "${artifact.title}" [${artifact.type}] (${artifact.domain})${artifact.plan_id ? ` plan:${artifact.plan_id}` : ""}${artifact.node_id ? ` node:${artifact.node_id}` : ""} tags:[${artifact.tags.join(",")}]`
       }
 
       case "search": {
@@ -212,6 +218,8 @@ export default tool({
                   title: extractTitle(content) || entry.name,
                   tags: [],
                   domain: inferDomain(relPath, content),
+                  plan_id: undefined,
+                  node_id: undefined,
                   type: inferType(relPath),
                   children: [],
                   registered: Date.now(),
@@ -293,10 +301,10 @@ export default tool({
       case "export": {
         // Export as grep-friendly plain text
         const lines = state.artifacts.map((a) => {
-          return `${a.domain}\t${a.type}\t${a.id}\t${a.path}\t${a.tags.join(",")}\t${a.title}`
+          return `${a.domain}\t${a.type}\t${a.plan_id || ""}\t${a.node_id || ""}\t${a.id}\t${a.path}\t${a.tags.join(",")}\t${a.title}`
         })
         const exportPath = join(dir, STATE_DIR, "sot-export.tsv")
-        writeFileSync(exportPath, ["domain\ttype\tid\tpath\ttags\ttitle", ...lines].join("\n"))
+        writeFileSync(exportPath, ["domain\ttype\tplan_id\tnode_id\tid\tpath\ttags\ttitle", ...lines].join("\n"))
         return `Exported ${state.artifacts.length} artifacts to ${STATE_DIR}/sot-export.tsv (grep/awk friendly)`
       }
 

@@ -1,7 +1,9 @@
 ---
 id: "VALIDATION-META01-SUB01-ATOMIC01"
 plan_id: "META01-SUB01-ATOMIC01"
-status: "pending"
+owner: "hiveq"
+status: completed
+date: "2026-03-02"
 created: "2026-03-02T18:39:04Z"
 last_sync: "2026-03-02T18:39:04Z"
 ---

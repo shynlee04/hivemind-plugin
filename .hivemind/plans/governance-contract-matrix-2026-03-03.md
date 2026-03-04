@@ -1,5 +1,9 @@
 # Governance Contract Matrix — META03 Cycle 0
 
+**Status**: completed  
+**Owner**: hiveplanner  
+**Plan ID**: META03-CYCLE0  
+
 **Date:** 2026-03-03
 **Parent:** META02 (c197352)
 **Author:** Orchestrator session (META03 Cycle 0)
@@ -14,7 +18,7 @@
 | Aspect | Detail |
 |--------|--------|
 | **Source A** | `agents/hiveminder.md:130-131` |
-| **Source B** | `.opencode/plugin/hiveops-governance/types.ts:66-67` |
+| **Source B** | `.opencode/plugins/hiveops-governance/types.ts:66-67` |
 | **Before** | Agent profile: depth=1, recursive=false. Plugin: depth=3, recursive=true. |
 | **After** | Both: depth=1, recursive=false |
 | **Resolution** | Aligned plugin types to agent profile (source of truth) |
@@ -68,7 +72,7 @@
 | Policy Domain | Canonical Source | Governed By |
 |---------------|-----------------|-------------|
 | Delegation topology (agents) | `agents/{agent}.md` (profile section) | Agent profile |
-| Delegation topology (runtime) | `.opencode/plugin/hiveops-governance/types.ts` | Must mirror agent profiles |
+| Delegation topology (runtime) | `.opencode/plugins/hiveops-governance/types.ts` | Must mirror agent profiles |
 | User confirmation policy | `.opencode/skills/hivemind-governance/SKILL.md` section 8 | Governance skill |
 | Sub-session behavior | `agents/hiveminder.md:178-179` | Agent profile |
 | Hierarchy file path | `.hivemind/state/hierarchy.json` | `src/lib/paths.ts:190` (runtime code) |

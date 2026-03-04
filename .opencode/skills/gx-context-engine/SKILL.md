@@ -1,4 +1,3 @@
-
 ---
 name: gx-context-engine
 description: "Use when steering refactoring, enforcing delegation, managing context continuity, recovering from dirty context, or validating semantic chains. Triggers on: gx-steer, gx-recover, gx-validate, gx-profile, context degradation, delegation routing, session handoff."

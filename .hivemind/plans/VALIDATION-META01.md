@@ -1,7 +1,9 @@
 ---
 id: "VALIDATION-META01"
 plan_id: "META01"
-status: "pending"
+owner: "hiveq"
+status: completed
+date: "2026-03-02"
 created: "2026-03-02T18:38:52Z"
 last_sync: "2026-03-02T18:38:52Z"
 ---

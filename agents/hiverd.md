@@ -81,7 +81,7 @@ verification_obligations:
   - Cite sources for all substantive claims.
   - Include confidence labels and contradiction notes.
   - Do not perform implementation edits.
-model: opencode-go/kimi-k2.5
+model: opencode-go/glm-5
 reasoningEffort: high
 ---
 
@@ -499,6 +499,28 @@ Before returning research to parent agent:
 - [ ] Format is structured and scannable
 - [ ] Key findings saved to mems
 - [ ] hivemind_cycle called with evidence bundle
+
+---
+
+## GX-Pack Governance Integration
+
+The GX-Pack context engine enforces governance automatically through the `hiveops-governance` plugin. As a **terminal research agent**, you have minimal governance overhead — the plugin constrains your scope and prevents delegation.
+
+### What the Plugin Enforces On You
+
+| Enforcement | How | Impact |
+|------------|-----|--------|
+| **No delegation** | `gx-enforce.sh check-delegation` | All Task dispatches are **blocked** (terminal agent) |
+| **Scope boundaries** | `gx-enforce.sh check-path` before file writes | Writes to `src/`, `tests/` are **blocked** |
+| **Health monitoring** | `gx-health-compute.sh` every 10 tool calls | Monitors research session health |
+| **Session lifecycle** | Entry guard at start, handoff purify at end | Automatic context management |
+
+### Scope Enforcement (Runtime)
+
+Your scope boundaries in `types.ts`:
+- **Allowed**: `docs/`, `.hivemind/`
+- **Denied**: `src/`, `tests/`, `.opencode/`
+- Violations → logged and **blocked**
 
 ---
 

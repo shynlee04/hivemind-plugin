@@ -57,6 +57,10 @@ export interface SessionManifestEntry {
   file: string
   status: SessionStatus
   created: number
+  updated_at_epoch?: number
+  created_at_iso?: string
+  updated_at_iso?: string
+  contract_version?: string
   summary?: string
   mode?: string
   trajectory?: string
@@ -74,6 +78,10 @@ export interface PlanManifestEntry {
   type: string
   status: string
   created: number
+  updated_at_epoch?: number
+  created_at_iso?: string
+  updated_at_iso?: string
+  contract_version?: string
   slug: string
   linked_sessions: string[]
 }
@@ -139,6 +147,8 @@ export interface TaskGraphManifest {
   active_task_id: string | null
   updated_at: number
 }
+
+const MANIFEST_CONTRACT_VERSION = "1.1.0"
 
 // ─── Generic CRUD ───────────────────────────────────────────────────────────
 
@@ -252,17 +262,51 @@ function mergeSessionEntry(a: SessionManifestEntry, b: SessionManifestEntry): Se
   const sessionIdA = Array.isArray(a.session_id) ? a.session_id : (a.session_id ? [a.session_id] : []);
   const sessionIdB = Array.isArray(b.session_id) ? b.session_id : (b.session_id ? [b.session_id] : []);
   const sessionIds = uniq([...sessionIdA, ...sessionIdB]);
+  const createdAtIso = a.created_at_iso ?? b.created_at_iso
+  const updatedAtEpoch = Math.max(a.updated_at_epoch ?? 0, b.updated_at_epoch ?? 0) || undefined
+  const updatedAtIso = b.updated_at_iso ?? a.updated_at_iso
+  const contractVersion = b.contract_version ?? a.contract_version
 
   return {
     stamp: a.stamp,
     file,
     status,
     created: Math.min(a.created, b.created),
+    updated_at_epoch: updatedAtEpoch,
+    created_at_iso: createdAtIso,
+    updated_at_iso: updatedAtIso,
+    contract_version: contractVersion,
     summary,
     mode,
     trajectory,
     session_id: sessionIds.length === 1 ? sessionIds[0] : (sessionIds.length > 0 ? sessionIds : undefined),
     linked_plans: uniq([...(a.linked_plans ?? []), ...(b.linked_plans ?? [])]),
+  }
+}
+
+function stampSessionTemporalFields(
+  entry: SessionManifestEntry,
+  now = Date.now(),
+): SessionManifestEntry {
+  return {
+    ...entry,
+    created_at_iso: entry.created_at_iso ?? new Date(entry.created).toISOString(),
+    updated_at_epoch: now,
+    updated_at_iso: new Date(now).toISOString(),
+    contract_version: MANIFEST_CONTRACT_VERSION,
+  }
+}
+
+function stampPlanTemporalFields(
+  entry: PlanManifestEntry,
+  now = Date.now(),
+): PlanManifestEntry {
+  return {
+    ...entry,
+    created_at_iso: entry.created_at_iso ?? new Date(entry.created).toISOString(),
+    updated_at_epoch: now,
+    updated_at_iso: new Date(now).toISOString(),
+    contract_version: MANIFEST_CONTRACT_VERSION,
   }
 }
 
@@ -325,26 +369,33 @@ export function registerSessionInManifest(
   manifest: SessionManifest,
   input: RegisterSessionInput,
 ): SessionManifest {
+  const now = Date.now()
   const normalized = deduplicateSessionManifest(manifest)
   const sessions = normalized.sessions.map((entry) =>
     entry.status === "active" ? { ...entry, status: "archived" } : entry,
   )
 
   const existingIndex = sessions.findIndex((s) => s.stamp === input.stamp)
-  const nextEntry: SessionManifestEntry = {
+  const nextEntry = stampSessionTemporalFields({
     stamp: input.stamp,
     file: input.file,
     status: "active",
-    created: input.created ?? Date.now(),
+    created: input.created ?? now,
     mode: input.mode,
     trajectory: input.trajectory,
     session_id: input.session_id,
     linked_plans: uniq(input.linked_plans ?? []),
-  }
+  }, now)
 
   if (existingIndex >= 0) {
-    sessions[existingIndex] = mergeSessionEntry(sessions[existingIndex], nextEntry)
-    sessions[existingIndex].status = "active"
+    const merged = mergeSessionEntry(sessions[existingIndex], nextEntry)
+    sessions[existingIndex] = stampSessionTemporalFields(
+      {
+        ...merged,
+        status: "active",
+      },
+      now,
+    )
   } else {
     sessions.push(nextEntry)
   }
@@ -367,6 +418,7 @@ export function linkSessionToPlan(
   sessionStamp: string,
   planId: string,
 ): LinkSessionToPlanResult {
+  const now = Date.now()
   const sessionDeduped = deduplicateSessionManifest(sessionsManifest)
   const sessionIndex = sessionDeduped.sessions.findIndex((s) => s.stamp === sessionStamp)
   const planIndex = plansManifest.plans.findIndex((p) => p.id === planId)
@@ -381,17 +433,17 @@ export function linkSessionToPlan(
 
   const nextSessions = [...sessionDeduped.sessions]
   const targetSession = nextSessions[sessionIndex]
-  nextSessions[sessionIndex] = {
+  nextSessions[sessionIndex] = stampSessionTemporalFields({
     ...targetSession,
     linked_plans: uniq([...(targetSession.linked_plans ?? []), planId]),
-  }
+  }, now)
 
   const nextPlans = [...plansManifest.plans]
   const targetPlan = nextPlans[planIndex]
-  nextPlans[planIndex] = {
+  nextPlans[planIndex] = stampPlanTemporalFields({
     ...targetPlan,
     linked_sessions: uniq([...(targetPlan.linked_sessions ?? []), sessionStamp]),
-  }
+  }, now)
 
   return {
     sessionsManifest: {

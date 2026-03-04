@@ -139,7 +139,6 @@ steps:
     wave: 5
     skill_bundles:
       - delegation-intelligence
-      - delegation-packet-contract
     args:
       description: "${task_description}"
       prompt: "${task_prompt_with_return_format}"

@@ -1,3 +1,8 @@
+---
+name: hitea-visual-regression
+description: "Use when implementing VLM-driven visual regression testing that understands UI intent."
+---
+
 # Skill: hitea-visual-regression
 
 # VLM-Driven Visual Regression Testing

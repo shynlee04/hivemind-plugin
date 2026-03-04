@@ -92,20 +92,15 @@ export interface SessionExportData {
   tool_type_counts: { read: number; write: number; query: number; governance: number };
   /** Governance escalation counters */
   governance_counters: {
-    out_of_order: number;
     drift: number;
     compaction: number;
-    evidence_pressure: number;
-    ignored: number;
-    acknowledged: boolean;
-    prerequisites_completed: boolean;
   };
   /** Captured subagent cycle results */
   cycle_log: Array<{
     timestamp: number;
     tool: string;
-    output_excerpt: string;
     failure_detected: boolean;
+    failure_keywords: string[];
   }>;
   /** Framework selection state */
   framework_selection: {
@@ -119,7 +114,6 @@ export interface SessionExportData {
     tactic: string;
     action: string;
   };
-  ratings: Array<{ score: number; reason?: string; turn_number: number }>;
   summary: string;
 }
 
@@ -141,12 +135,15 @@ export function generateExportData(
     files_touched: state.metrics.files_touched,
     context_updates: state.metrics.context_updates,
     tool_type_counts: state.metrics.tool_type_counts,
-    governance_counters: state.metrics.governance_counters,
+    governance_counters: {
+      drift: state.metrics.governance_counters.drift,
+      compaction: state.metrics.governance_counters.compaction,
+    },
     cycle_log: (state.cycle_log ?? []).map(entry => ({
       timestamp: entry.timestamp,
       tool: entry.tool,
-      output_excerpt: entry.output_excerpt,
       failure_detected: entry.failure_detected,
+      failure_keywords: [...entry.failure_keywords],
     })),
     framework_selection: {
       choice: state.framework_selection.choice,
@@ -154,11 +151,6 @@ export function generateExportData(
     },
     compaction_count: state.compaction_count ?? 0,
     hierarchy: { ...state.hierarchy },
-    ratings: state.metrics.ratings.map(r => ({
-      score: r.score,
-      reason: r.reason,
-      turn_number: r.turn_number,
-    })),
     summary,
   };
 }
@@ -199,13 +191,8 @@ export function generateMarkdownExport(
   lines.push(`- Governance: ${data.tool_type_counts.governance}`);
   lines.push("");
   lines.push("## Governance");
-  lines.push(`- Out of Order: ${data.governance_counters.out_of_order}`);
   lines.push(`- Drift: ${data.governance_counters.drift}`);
   lines.push(`- Compaction: ${data.governance_counters.compaction}`);
-  lines.push(`- Evidence Pressure: ${data.governance_counters.evidence_pressure}`);
-  lines.push(`- Ignored: ${data.governance_counters.ignored}`);
-  lines.push(`- Acknowledged: ${data.governance_counters.acknowledged}`);
-  lines.push(`- Prerequisites Completed: ${data.governance_counters.prerequisites_completed}`);
   lines.push("");
   lines.push("## Compaction");
   lines.push(`- Count: ${data.compaction_count}`);
@@ -213,8 +200,11 @@ export function generateMarkdownExport(
   lines.push("## Cycle Log");
   if (data.cycle_log.length > 0) {
     data.cycle_log.forEach(entry => {
+      const keywordSummary = entry.failure_keywords.length > 0
+        ? ` keywords=${entry.failure_keywords.join(",")}`
+        : "";
       lines.push(
-        `- ${new Date(entry.timestamp).toISOString()} | ${entry.tool} | failure=${entry.failure_detected} | ${entry.output_excerpt}`
+        `- ${new Date(entry.timestamp).toISOString()} | ${entry.tool} | failure=${entry.failure_detected}${keywordSummary}`
       );
     });
   } else {
@@ -229,13 +219,6 @@ export function generateMarkdownExport(
   if (data.files_touched.length > 0) {
     lines.push("## Files Touched");
     data.files_touched.forEach(f => lines.push(`- ${f}`));
-    lines.push("");
-  }
-  if (data.ratings.length > 0) {
-    lines.push("## Self-Ratings");
-    data.ratings.forEach(r =>
-      lines.push(`- Turn ${r.turn_number}: ${r.score}/10${r.reason ? ` — ${r.reason}` : ""}`)
-    );
     lines.push("");
   }
   lines.push("## Summary");

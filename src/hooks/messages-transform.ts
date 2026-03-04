@@ -29,7 +29,6 @@ import { getEffectivePaths } from "../lib/paths.js"
 import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
 import { evaluateEntityChecklist } from "../lib/entity-checklist.js"
 import { randomUUID } from "node:crypto"
-import { classifySessionMemoryArtifact } from "../lib/session-memory-classifier.js"
 import {
   detectRationaleOptionSelection,
   detectV29OutputStyleSelection,
@@ -444,18 +443,8 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         const latestArtifact = trimmedMessages[trimmedMessages.length - 1]
         const memoryGovernancePatch = latestArtifact
           ? (() => {
-              const classified = classifySessionMemoryArtifact({
-                content: latestArtifact.content,
-                source: latestArtifact.role,
-                tool: latestArtifact.role === "assistant" ? "write" : "read",
-              })
               return {
                 ...state.memory_governance,
-                classified_counts: {
-                  ...state.memory_governance.classified_counts,
-                  [classified.category]:
-                    state.memory_governance.classified_counts[classified.category] + 1,
-                },
                 last_classified_at: Date.now(),
               }
             })()

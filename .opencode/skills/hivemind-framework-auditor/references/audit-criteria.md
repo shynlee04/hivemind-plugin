@@ -94,7 +94,7 @@ These require actual session execution to verify. Cannot be checked statically.
 ### B-02: Delegation Packet Quality
 
 **Pass**: Every `Task()` delegation produces a well-formed packet with `intent_id`, `target_agent`, `scope`, `constraints`, `success_metrics`
-**Verify**: Intercept delegation output in session log; check against delegation-packet-contract skill
+**Verify**: Intercept delegation output in session log; check against delegation-intelligence skill (Explicit Delegation Mandatory section)
 **Severity**: P0 — malformed packets cause sub-agent scope creep and garbage returns
 
 ### B-03: Skill Loading Precision

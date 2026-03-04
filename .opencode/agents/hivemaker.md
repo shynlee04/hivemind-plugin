@@ -3,10 +3,6 @@ name: hivemaker
 description: Execution specialist for implementation tasks. Use when building
   features, applying constrained code changes within assigned scope, and
   returning structured evidence.
-tasks:
-  hivexplorer: allow
-  hiverd: allow
-  hiveq: allow
 workflows:
   - feature-sprint
   - bug-remediation
@@ -14,7 +10,7 @@ prompts:
   - compliance-rules
 references:
   - workflow-briefing
-mode: all
+mode: subagent
 tools:
   read: true
   glob: true
@@ -47,6 +43,11 @@ permission:
     docs/**: allow
     .hivemind/**: allow
   skill: allow
+  task:
+    "*": deny
+    hivexplorer: allow
+    hiverd: allow
+    hiveq: allow
   todoread: allow
   todowrite: allow
 identity:

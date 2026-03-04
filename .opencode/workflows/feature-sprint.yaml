@@ -8,7 +8,6 @@ steps:
     wave: 1
     skill_bundles:
       - delegation-intelligence
-      - delegation-packet-contract
     entry_criteria: "Delegation packet validated"
     exit_criteria: "Scope and constraints acknowledged"
   - name: test-first

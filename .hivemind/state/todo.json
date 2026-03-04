@@ -341,10 +341,10 @@
     {
       "id": "task-mm8em69b-w3s1",
       "content": "R3-02: L1 verify-before-completion (fresh evidence)",
-      "status": "in_progress",
+      "status": "blocked",
       "priority": "high",
       "created": 1772409100079,
-      "updated": 1772409192635,
+      "updated": 1772498892934,
       "depends_on": [
         "R3-02: Enforcement Engine — TDD GREEN phase"
       ],
@@ -441,9 +441,169 @@
       ],
       "blocks": [],
       "domain": "gx-pack-r3"
+    },
+    {
+      "id": "task-mm9vel1h-69mr",
+      "content": "Cycle 2.1 Design auto-checkpoint export triggers at session boundaries (start/compact/pre-stop)",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772497765637,
+      "updated": 1772497765637,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "R3"
+    },
+    {
+      "id": "task-mm9vel26-wldv",
+      "content": "Cycle 2.2 Implement export hook integration in lifecycle/context transform pipeline",
+      "status": "blocked",
+      "priority": "high",
+      "created": 1772497765662,
+      "updated": 1772497834104,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "R3"
+    },
+    {
+      "id": "task-mm9vel2n-4skb",
+      "content": "Cycle 2.3 Add tests covering boundary-triggered export and payload shape",
+      "status": "blocked",
+      "priority": "medium",
+      "created": 1772497765679,
+      "updated": 1772497838625,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "R3"
+    },
+    {
+      "id": "task-mm9vel37-32e5",
+      "content": "Cycle 2.4 Verify with tsc/tests and register evidence",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772497765699,
+      "updated": 1772497765699,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "R4"
+    },
+    {
+      "id": "task-mm9w8z30-1dvf",
+      "content": "Context recovery: audit poisoning vectors across stale artifacts, blocked tasks, and gate failures",
+      "status": "cancelled",
+      "priority": "high",
+      "created": 1772499183516,
+      "updated": 1772500822204,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "recovery"
+    },
+    {
+      "id": "task-mm9w8z4w-ugj5",
+      "content": "Context recovery: produce trusted context baseline (fresh artifacts only) and quarantine stale PRD task files",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772499183584,
+      "updated": 1772499231654,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "recovery",
+      "evidence": "Checkpoint `cp-mm9w9w1d` recorded trusted baseline and stale-artifact quarantine decisions."
+    },
+    {
+      "id": "task-mm9w8z7s-1ax0",
+      "content": "Context recovery: re-run R3 L1 verification only after fresh compile/test evidence is attached",
+      "status": "cancelled",
+      "priority": "high",
+      "created": 1772499183688,
+      "updated": 1772500123434,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "recovery"
+    },
+    {
+      "id": "task-mm9wt4cd-ot2q",
+      "content": "Enforce hard guardrails: NO `src/**` edits and NO SDK path; plugin-only stabilization lane",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772500123453,
+      "updated": 1772500148217,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "stability",
+      "evidence": "Checkpoint `cp-mm9wtds4` created and SOT-registered; constraints codified for all subsequent delegation."
+    },
+    {
+      "id": "task-mm9wt4cq-2fwu",
+      "content": "Author high-level phased recovery plan for `.opencode/**` + `.hivemind/plan/**` SOT hierarchy (plugin-only)",
+      "status": "cancelled",
+      "priority": "high",
+      "created": 1772500123466,
+      "updated": 1772500474586,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "stability"
+    },
+    {
+      "id": "task-mm9x0bui-h500",
+      "content": "Author high-level multi-cycle stabilization plan for `.opencode/**` + `.hivemind/plans/**` with authorization gates and SOT schema integrity",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772500459770,
+      "updated": 1772500817267,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "stability",
+      "evidence": "Delivered C1 outputs via checkpoints `cp-mm9x6z17` (contract) and `cp-mm9x7hfe` (validation/stop-gate); C2 explicitly blocked pending user authorization + conformance evidence."
+    },
+    {
+      "id": "task-mm9x4w6p-6zps",
+      "content": "Cycle C1: audit current `.hivemind/plans/**` schema/provenance and identify minimum canonical contract fields",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772500672753,
+      "updated": 1772500748427,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "stability",
+      "evidence": "Metadata audit executed via SOT scan/search on `.hivemind/plans/**`: manifest + META01/META03 + VALIDATION artifacts detected and indexed; canonical path confirmed plural `plans`."
+    },
+    {
+      "id": "task-mm9x4you-lbi9",
+      "content": "Cycle C1: author canonical schema contract + deterministic active-node/session routing rules in dated plan artifact",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772500675998,
+      "updated": 1772500778266,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "stability",
+      "evidence": "C1 contract checkpoint created: `cp-mm9x6z17` and SOT-registered as `sot-cp-mm9x6z17`."
+    },
+    {
+      "id": "task-mm9x51pk-3qxx",
+      "content": "Cycle C1: produce validation checklist and stop-gate for user approval before C2",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772500679912,
+      "updated": 1772500804486,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "stability",
+      "evidence": "C1 validation checkpoint created: `cp-mm9x7hfe`; C2 gate explicitly blocked pending evidence + user approval."
+    },
+    {
+      "id": "task-mm9xa6jx-zhmc",
+      "content": "Reconcile orchestration checkpoints vs actual file mutations; treat C1 as planning-only until implementation evidence exists",
+      "status": "pending",
+      "priority": "high",
+      "created": 1772500919469,
+      "updated": 1772500919469,
+      "depends_on": [],
+      "blocks": [],
+      "domain": "stability"
     }
   ],
-  "version": 67,
-  "lastSync": 1772409192635,
-  "activeItem": "task-mm8em69b-w3s1"
+  "version": 107,
+  "lastSync": 1772500919469,
+  "activeItem": null
 }

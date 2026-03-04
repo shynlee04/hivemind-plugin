@@ -158,7 +158,6 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
           const data = await readFile(brainPath, "utf-8")
           const parsed = JSON.parse(data) as BrainState
           // Migration: ensure fields added in v1.5+ exist
-          parsed.last_commit_suggestion_turn ??= 0
           // Migration: ensure Round 2 session fields exist
           parsed.session.date ??= new Date(parsed.session.start_time).toISOString().split("T")[0]
           parsed.session.meta_key ??= ""
@@ -180,13 +179,8 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
           // Migration: user_turn_count (v3.0) - counts user response cycles, not tool calls
           parsed.metrics.user_turn_count ??= 0
           parsed.metrics.governance_counters ??= {
-            out_of_order: 0,
             drift: 0,
             compaction: 0,
-            evidence_pressure: 0,
-            ignored: 0,
-            acknowledged: false,
-            prerequisites_completed: false,
           }
           parsed.framework_selection ??= {
             choice: null,

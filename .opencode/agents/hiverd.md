@@ -4,7 +4,6 @@ description: Research specialist for evidence synthesis, comparative analysis,
   documentation outputs, and framework pattern research. Use when researching external
   technologies, gathering evidence from documentation, evaluating technology stacks,
   ecosystem mapping, OpenCode architecture research, and meta-builder pattern validation.
-tasks: {}
 workflows:
   - hiverd-deep-research
   - hiverd-synthesis-pipeline
@@ -43,6 +42,8 @@ permission:
   skill: allow
   webfetch: allow
   websearch: allow
+  task:
+    "*": deny
   todoread: allow
   todowrite: allow
   edit:

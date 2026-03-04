@@ -1,67 +1,101 @@
 # AGENTS.md
 
-This file provides guidance to agents when working with code in this repository.
+This file provides guidance to ALL agents working in this repository.
 
-**Last Updated**: 2026-03-02  
-**Version**: 3.0-clean  
-**Maintained By**: `update-agents` skill (auto-triggered on relevant commits)
+**Last Updated**: 2026-03-04
+**Version**: 3.1-guardrails
+**Maintained By**: hivefiver meta-builder
+**Symlinked To**: `.hivemind/AGENTS.md`, `.opencode/AGENTS.md`, `src/AGENTS.md`
 
 ---
 
-## Quick Reference
+## ⚠️ CONTAMINATION WARNING
 
-### Build/Test Commands
+This project has forensically proven context poisoning across 7+ agent sessions. Before doing ANY work, read:
+
+→ **[CONTAMINATION-GUARDRAILS.md](./CONTAMINATION-GUARDRAILS.md)** — Toxic artifact registry, anti-patterns, safe protocols
+
+### Non-Negotiable Runtime Conditions
+1. **MUST** load agent-specific skills before acting
+2. **MUST NOT** consume any `.md`, `.json`, `.yaml` artifacts unless passed via explicit delegation handoff with valid investigation from the prior agent's turn
+3. **MUST NOT** read `.hivemind/state/brain.json` for routing or decisions
+4. **MUST NOT** glob `**/*.md` — use targeted file reads only
+5. **MUST** run `npx tsc --noEmit` after any code changes
+6. If you violate any of the above: **STOP** immediately and capture the workflow state
+
+---
+
+## Current Objective: Meta-Builder Healer Refactor
+
+Refactor the **`hivefiver`** module into a reliable "healer" for the project lineage team — a meta-builder orchestrator that can diagnose, refactor, debug, validate, and evolve the framework **without poisoning runtime context**.
+
+### What hivefiver Is
+- Meta-builder: engineers the tools that engineers use
+- Framework doctor: diagnoses and repairs broken framework chains
+- Quality gatekeeper: no asset ships without contract compliance
+
+### What hivefiver Is NOT
+- Product implementor (never touches `src/**` or `tests/**` directly — delegates to hivemaker/hivehealer)
+- General assistant (redirects non-framework requests)
+
+### Scope Boundaries
+
+| Module | Status | Constraint |
+|--------|--------|-----------|
+| `hivefiver` | **IN SCOPE** — active refactoring | Work inside `.opencode/` primarily; `src/` via delegation only |
+| `hiveminder` | **OUT OF SCOPE** for implementation; **IN SCOPE** for compatibility | Agent profiles and subagents are shared — refactors must keep future compatibility |
+
+### Core Problem Being Solved
+Two independent auto-injection systems fire on EVERY LLM turn, injecting contradictory context from overlapping state files. This causes role-drift, hallucination, and context poisoning. See CONTAMINATION-GUARDRAILS.md §4.
+
+---
+
+## Build/Test Commands
+
 ```bash
-npm test                                    # Run all tests
+npm test                                    # Run all tests (203 pass, 11 fail as of 2026-03-04)
 npx tsx --test tests/filename.test.ts       # Run specific test
-npx tsc --noEmit                           # Type check
+npx tsc --noEmit                           # Type check (currently PASSING)
+npm run guard:public                       # Run BEFORE any master push
 ```
 
-### Branch Policy (Critical)
+---
+
+## Branch Policy
+
 | Branch | Purpose |
 |--------|---------|
 | `dev-v3` | Development, planning, internal docs |
 | `master` | Public release only (NO secrets, NO .opencode, NO planning docs) |
 
-```bash
-npm run guard:public  # Run BEFORE any master push
-```
-
-### Critical File Paths
-| File | Purpose |
-|------|---------|
-| `src/hooks/session-lifecycle.ts` | Context injection every turn |
-| `src/lib/hierarchy-tree.ts` | Trajectory → Tactic → Action tree |
-| `src/lib/paths.ts` | Single source of truth for `.hivemind/` paths |
-| `src/lib/state-mutation-queue.ts` | ALL state mutations must go through here |
-
 ---
 
 ## Agent Registry
 
-| Name | Type | Role | Constraints | Location |
-|------|------|------|-------------|----------|
-| **hiveminder** | Primary | Supreme orchestrator, strategic architect | No direct code edits; orchestrates via delegation | [`agents/hiveminder.md`](agents/hiveminder.md) |
-| **hivefiver** | Meta-Builder | Framework asset builder (agents, commands, skills) | NO `src/**` or `tests/**` - framework only | [`agents/hivefiver.md`](agents/hivefiver.md) |
-| **hivemaker** | Executor | Implementation specialist | `src/**`, `tests/**`, `docs/**` only; NO framework assets | [`agents/hivemaker.md`](agents/hivemaker.md) |
-| **hivehealer** | Remediation | Debugging, hardening, quality recovery | `src/**`, `tests/**`, `docs/**` only; NO framework assets | [`agents/hivehealer.md`](agents/hivehealer.md) |
-| **hiveplanner** | Planner | Phase planning, execution knots, research synthesis | NO `src/**` edits; plans to `docs/plans/` only | [`agents/hiveplanner.md`](agents/hiveplanner.md) |
-| **hiveq** | Verifier | Quality gates, compliance, PASS/FAIL verdicts | Read-only on code; verification reports only | [`agents/hiveq.md`](agents/hiveq.md) |
-| **hivexplorer** | Investigator | Codebase research, evidence collection | Read-only; NO file modifications | [`agents/hivexplorer.md`](agents/hivexplorer.md) |
-| **hiverd** | Research | External research, ecosystem analysis | External knowledge only; NO internal code edits | [`agents/hiverd.md`](agents/hiverd.md) |
-| **hitea** | Testing | AI-driven testing infrastructure | `tests/**` only; property-based, mutation, chaos testing | [`agents/hitea.md`](agents/hitea.md) |
+| Name | Type | Role | Scope Constraints | Location |
+|------|------|------|-------------------|----------|
+| **hiveminder** | Primary | Supreme orchestrator | No direct code edits; orchestrates via delegation. OUT OF SCOPE for now | `agents/hiveminder.md` |
+| **hivefiver** | Meta-Builder | Framework asset builder | `.opencode/**`, `.hivemind/**`, `docs/**` — NO `src/**` or `tests/**` | `agents/hivefiver.md` |
+| **hivemaker** | Executor | Implementation specialist | `src/**`, `tests/**`, `docs/**` only; NO framework assets | `agents/hivemaker.md` |
+| **hivehealer** | Remediation | Debugging, hardening | `src/**`, `tests/**`, `docs/**` only; NO framework assets | `agents/hivehealer.md` |
+| **hiveplanner** | Planner | Phase planning, research synthesis | NO `src/**` edits; plans to `docs/plans/` only | `agents/hiveplanner.md` |
+| **hiveq** | Verifier | Quality gates, PASS/FAIL verdicts | Read-only on code; verification reports only | `agents/hiveq.md` |
+| **hivexplorer** | Investigator | Codebase research, evidence collection | Read-only; NO file modifications | `agents/hivexplorer.md` |
+| **hiverd** | Research | External research, ecosystem analysis | External knowledge only; NO internal code edits | `agents/hiverd.md` |
+| **hitea** | Testing | AI-driven testing infrastructure | `tests/**` only | `agents/hitea.md` |
 
 ### Delegation Hierarchy
 ```
 User
-└── hiveminder (Primary/Front-facing)
-    ├── hivefiver (Framework construction)
-    ├── hiveplanner (Planning & research synthesis)
-    ├── hivemaker (Implementation)
-    ├── hivehealer (Remediation)
-    ├── hiveq (Verification)
-    ├── hivexplorer (Investigation - terminal)
-    └── hiverd (External research - terminal)
+└── hiveminder (Primary — currently inactive)
+    └── hivefiver (Meta-Builder — ACTIVE)
+        ├── hivemaker (Implementation)
+        ├── hiveplanner (Planning)
+        ├── hivexplorer (Investigation — terminal, read-only)
+        ├── hiverd (External research — terminal)
+        ├── hivehealer (Remediation)
+        ├── hiveq (Quality gates)
+        └── hitea (Testing)
 ```
 
 ---
@@ -71,23 +105,56 @@ User
 ### Layer Architecture
 | Layer | Location | Role | Constraint |
 |-------|----------|------|------------|
-| **Tools** | `src/tools/` | Write-Only (~300 lines strategic limit) | CQRS: tools own mutations |
+| **Tools** | `src/tools/` | Write-Only | CQRS: tools own mutations |
 | **Libraries** | `src/lib/` | Subconscious Engine (pure TS) | No side effects |
 | **Hooks** | `src/hooks/` | Read-Auto (inject context) | No mutations; read-only |
 | **Schemas** | `src/schemas/` | DNA (Zod validation) | Source of truth for types |
 
-### Critical Patterns (Non-Obvious)
+### Critical Patterns
 
-1. **State Mutation Queue**: ALL state changes MUST go through [`src/lib/state-mutation-queue.ts`](src/lib/state-mutation-queue.ts) - direct file writes to `.hivemind/` are forbidden.
+1. **State Mutation Queue**: ALL state changes MUST go through `src/lib/state-mutation-queue.ts`. Direct file writes to `.hivemind/` are forbidden.
 
-2. **Path Resolution**: ALWAYS use `getEffectivePaths()` from [`src/lib/paths.ts`](src/lib/paths.ts) - never hardcode `.hivemind/` paths.
+2. **Path Resolution**: ALWAYS use `getEffectivePaths()` from `src/lib/paths.ts`. Never hardcode `.hivemind/` paths. New: `getSessionPaths()` for per-session state.
 
-3. **CQRS Enforcement**: 
-   - Hooks are READ-ONLY (context injection)
-   - Tools own WRITE operations
-   - Violations break session integrity
+3. **CQRS Enforcement**: Hooks are READ-ONLY (context injection). Tools own WRITE operations. Violations break session integrity.
 
-4. **Lineage Continuity**: All work must trace: `project -> milestone -> phase -> plan -> task -> verification`
+4. **Session Isolation**: New sessions get their own directory under `.hivemind/sessions/active/<session-id>/` with a clean-slate `profile.json` (agent: "unresolved" until `hivemind_declare` fires).
+
+### Dual-Injection Systems (DANGER ZONE)
+
+| System | File | Fires | What It Does |
+|--------|------|-------|-------------|
+| System 1 | `.opencode/plugins/hiveops-governance/hooks/context-injection.ts` | Every turn | Reads 6 state files, prepends to messages |
+| System 2a | `src/hooks/session-lifecycle.ts` | Every turn | Reads 5 state files, appends to system |
+| System 2b | `src/hooks/messages-transform.ts` | Every turn | Prepends anchors + appends checklist |
+
+**These are the primary sources of context poisoning.** Do NOT edit them without completing Node 1 Fixes 3C-D and Fix 1 first.
+
+---
+
+## Development Status (Node 1: Injection Layer Refactoring)
+
+### Completed
+| Step | What | Evidence |
+|------|------|---------|
+| Fix 3A | `src/lib/paths.ts` — SessionPaths + getSessionPaths() | `npx tsc --noEmit` PASS |
+| Fix 3B | `src/hooks/event-handler.ts` — session.created bootstrap | profile.json with agent:"unresolved" |
+| Fix 1.5A | `src/schemas/brain-state.ts` — schema detox | Orphans pruned, cycle_log lobotomized |
+| Fix 1.5B | `src/lib/detection.ts` — GovernanceCounters reduced | Only {drift, compaction} remain |
+
+### Blocked
+| Step | What | Blocker |
+|------|------|---------|
+| Test alignment | 11 tests fail from schema contract changes | Needs user authorization to update test expectations |
+
+### Not Started (Requires Authorization)
+| Step | What | Prerequisite |
+|------|------|-------------|
+| Fix 1.5C | Lineage ID validation in hierarchy schema | Test alignment |
+| Fix 1.5D | soft-governance.ts dead counter cleanup | Test alignment |
+| Fix 3C-D | Clean-slate session state init + hook migration | Fix 1.5C/D |
+| Fix 1 | Dual-injection decoupling (agent guards) | Fix 3C-D |
+| Fix 2 | Relational staleness rewrite | Fix 1 |
 
 ---
 
@@ -101,39 +168,43 @@ User
 5. **HARD STOP Rule**: Stop and report; do NOT continue past it
 
 ### No-Guess Mandate
-When encountering unfamiliar technology:
-1. **DO NOT** reason from training data
-2. **DO NOT** guess syntax or behavior
-3. **MUST** use MCP tools first: Tavily, Context7, DeepWiki, Repomix
-4. **If ALL MCP tools fail**: State explicitly and STOP
-5. **Evidence requirement**: All technical claims must cite MCP source
+1. **DO NOT** reason from training data about unfamiliar technology
+2. **MUST** use MCP tools first: Tavily, Context7, DeepWiki, Repomix
+3. **If ALL MCP tools fail**: State explicitly and STOP
+4. All technical claims must cite MCP source
 
-### Post-Commit Update Protocol
-**TRIGGER**: Any commit changing:
-- `agents/*.md` files
-- `src/` implementation files
-- Planning documents in `docs/plans/`
+### Safe Delegation Contract
+See CONTAMINATION-GUARDRAILS.md §3 for the complete delegation safety protocol.
 
-**ACTION**: Run `update-agents` skill to:
-1. Validate agent documentation against implementation
-2. Update "Last Updated" timestamps
-3. Check for broken references
-4. Sync agent registry with actual agent files
+---
+
+## Restricted Regions (DO NOT ENTER Without Authorization)
+
+See CONTAMINATION-GUARDRAILS.md §6 for the complete list with rationales.
+
+Key restrictions:
+- `.opencode/plugins/hiveops-governance/hooks/` — System 1 injection, needs Fix 1 first
+- `src/hooks/session-lifecycle.ts` — System 2a injection, needs Fix 1 first
+- `src/hooks/messages-transform.ts` — System 2b injection, needs Fix 1 first
+- `.hivemind/state/` — Global singleton state, needs Fix 3C-D first
+- `.hivemind/plans/` — Unvalidated planning artifacts from multiple agents
 
 ---
 
 ## Planning Documents
 
-| Document | Purpose | Status |
-|----------|---------|--------|
-| [`docs/refactored-plan.md`](docs/refactored-plan.md) | Master plan (6 phases) | Active |
-| [`docs/plans/PRD-V2-HIVEMIND-ENGINE-2026-02-18.md`](docs/plans/PRD-V2-HIVEMIND-ENGINE-2026-02-18.md) | Current PRD | Active |
-| [`AGENT_RULES.md`](AGENT_RULES.md) | Full architectural philosophy | Reference |
+| Document | Purpose | Status | Trust Level |
+|----------|---------|--------|-------------|
+| `docs/plans/NODE-1-INJECTION-LAYER-REFACTOR-2026-03-04.md` | Node 1 blueprint v2.1 | Active | HIGH (approved with amendments) |
+| `docs/plans/SPEC-COMPACT-SUPERIORITY-ARCHITECTURE-2026-03-03.md` | Architecture spec | Reference | MEDIUM (needs validation) |
+| `docs/plans/ENTITY-RELATIONAL-MAP-2026-03-03.md` | Entity relationships | Reference | MEDIUM (needs validation) |
+| `docs/plans/EXPLORE1-ARCH-STRUCTURE-2026-03-03.md` | Architecture exploration | Reference | MEDIUM (needs validation) |
+| `CONTAMINATION-GUARDRAILS.md` | Forensic contamination defense | Active | HIGH (evidence-based) |
 
 ---
 
 ## Related Files
 
-- [`.kilocode/rules-code/AGENTS.md`](.kilocode/rules-code/AGENTS.md) - Mode-specific coding rules
-- [`AGENTS-temp-disabled.md`](AGENTS-temp-disabled.md) - Old polluted version (DO NOT USE)
-- [`AGENT_RULES.md`](AGENT_RULES.md) - Constitutional architecture document
+- `CLAUDE.md` — Project entry point for Claude/OpenCode sessions
+- `CONTAMINATION-GUARDRAILS.md` — Forensic contamination defense guide
+- `AGENT_RULES.md` — Constitutional architecture document (reference only)

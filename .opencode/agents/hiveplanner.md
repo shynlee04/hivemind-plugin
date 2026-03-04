@@ -3,9 +3,6 @@ name: hiveplanner
 description: Planning specialist for phase/task design, sequencing, and handoff
   artifacts. Use when planning multi-phase work, designing task sequences,
   or creating execution knots with dependency ordering.
-tasks:
-  hivexplorer: allow
-  hiverd: allow
 workflows:
   - spec-generation
 prompts:
@@ -43,6 +40,10 @@ permission:
     docs/**: allow
     .planning/**: allow
     .hivemind/**: allow
+  task:
+    "*": deny
+    hivexplorer: allow
+    hiverd: allow
   todoread: allow
   todowrite: allow
 identity:

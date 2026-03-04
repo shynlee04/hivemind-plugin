@@ -1,3 +1,8 @@
+---
+name: hitea-property-testing
+description: "Use when implementing property-based testing for JavaScript/TypeScript applications with fast-check."
+---
+
 # Skill: hitea-property-testing
 
 # Property-Based Testing with fast-check

@@ -1,3 +1,8 @@
+---
+name: hitea-chaos-engineering
+description: "Use when testing system resilience through controlled failure injection and chaos engineering."
+---
+
 # Skill: hitea-chaos-engineering
 
 # Chaos Engineering: Testing System Resilience

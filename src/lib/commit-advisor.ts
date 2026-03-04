@@ -26,8 +26,7 @@ export function shouldSuggestCommit(
 
   if (fileCount < threshold) return null;
 
-  const turnsSinceLastSuggestion = state.metrics.turn_count - state.last_commit_suggestion_turn;
-  if (state.last_commit_suggestion_turn > 0 && turnsSinceLastSuggestion < MIN_TURNS_BETWEEN_SUGGESTIONS) return null;
+  if (state.metrics.turn_count < MIN_TURNS_BETWEEN_SUGGESTIONS) return null;
 
   return {
     reason: `${fileCount} files touched — consider committing your work.`,

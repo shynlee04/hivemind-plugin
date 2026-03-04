@@ -3,7 +3,6 @@ name: hivexplorer
 description: Investigation specialist for reconnaissance, evidence collection,
   and context retrieval. Use when investigating codebase structure, collecting
   evidence for decisions, or retrieving context across files.
-tasks: {}
 mode: subagent
 hidden: true
 workflows:
@@ -32,6 +31,8 @@ permission:
   webfetch: allow
   websearch: allow
   skill: allow
+  task:
+    "*": deny
   todoread: allow
   todowrite: allow
   edit:
@@ -64,7 +65,7 @@ verification_obligations:
   - Return file-referenced evidence only.
   - Persist high-value findings in memory.
   - Do not mutate source files.
-model: chutes/MiniMaxAI/MiniMax-M2.5-TEE
+model: opencode-go/glm-5
 reasoningEffort: high
 ---
 

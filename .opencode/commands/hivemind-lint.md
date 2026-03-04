@@ -7,7 +7,6 @@ kind: utility
 alias_resolved_to: hivemind-lint
 required_skills:
   - delegation-intelligence
-  - delegation-packet-contract
   - context-integrity
 required_templates: []
 chain_group: hiveminder

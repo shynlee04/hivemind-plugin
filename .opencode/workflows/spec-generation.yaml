@@ -31,7 +31,6 @@ steps:
     wave: 4
     skill_bundles:
       - delegation-intelligence
-      - delegation-packet-contract
     entry_criteria: "Spec accepted"
     exit_criteria: "Delegation packet emitted"
 guards:

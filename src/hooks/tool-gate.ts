@@ -285,7 +285,7 @@ export function createToolGateHook(
 
         // Check complexity and show nudge (once per session)
         const complexityCheck = checkComplexity(state)
-        if (complexityCheck.isComplex && !state.complexity_nudge_shown) {
+        if (complexityCheck.isComplex) {
           // Throttle complexity toasts to avoid noise
           if (checkAndRecordToast("complexity", "nudge")) {
             await log.warn(
@@ -293,13 +293,7 @@ export function createToolGateHook(
             )
           }
 
-          // Mark nudge as shown - CQRS-compliant: queue mutation instead of direct save
           state = setComplexityNudgeShown(state)
-          queueStateMutation({
-            type: "UPDATE_STATE",
-            payload: { complexity_nudge_shown: state.complexity_nudge_shown },
-            source: "tool-gate"
-          })
 
           return {
             allowed: true,

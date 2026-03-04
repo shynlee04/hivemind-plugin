@@ -25,6 +25,7 @@ import type {
   EventSessionDiff,
   EventTodoUpdated,
 } from "@opencode-ai/sdk"
+import { mkdir, writeFile } from "fs/promises"
 import type { Logger } from "../lib/logging.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { getStalenessInfo } from "../lib/staleness.js"
@@ -32,6 +33,7 @@ import { registerGovernanceSignal } from "../lib/detection.js"
 import { queueStateMutation, queueTaskManifestMutation } from "../lib/state-mutation-queue.js"
 import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
 import { resolveCanonicalSessionId } from "../lib/graph-io.js"
+import { getSessionPaths } from "../lib/paths.js"
 
 function normalizeStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) {
@@ -178,7 +180,26 @@ export function createEventHandler(log: Logger, directory: string) {
 
       switch (event.type) {
         case "session.created":
-          await log.info(`[event] session.created: ${(event as EventSessionCreated).properties.info.id}`)
+          {
+            const sessionCreated = event as EventSessionCreated
+            const sessionId = sessionCreated.properties.info.id
+
+            await log.info(`[event] session.created: ${sessionId}`)
+
+            const sessionPaths = getSessionPaths(directory, sessionId)
+            await mkdir(sessionPaths.sessionDir, { recursive: true })
+            const now = Date.now()
+            await writeFile(
+              sessionPaths.profile,
+              `${JSON.stringify({
+                session_id: sessionId,
+                agent: "unresolved",
+                created_at: now,
+                updated_at: now,
+              }, null, 2)}\n`,
+              "utf-8",
+            )
+          }
           break
 
         case "session.idle":

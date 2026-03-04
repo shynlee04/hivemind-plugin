@@ -1,7 +1,10 @@
 ---
 id: "META01-SUB01"
+plan_id: "META01-SUB01"
+owner: "hivefiver"
 parent: "META01"
-status: "active"
+status: active
+date: "2026-03-02"
 priority: "normal"
 scope: "meta"
 type: "sub"

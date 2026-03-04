@@ -36,6 +36,8 @@ interface TodoItem {
   blocks: string[]
   /** Parent domain (R1-R8) */
   domain?: string
+  /** Plan lineage: METAxx/PROJxx identifier */
+  plan_id?: string
   /** Evidence for completion */
   evidence?: string
 }
@@ -89,6 +91,7 @@ export default tool({
     id: tool.schema.string().optional().describe("Task ID (required for complete/start/block/cancel)"),
     priority: tool.schema.enum(["high", "medium", "low"]).optional().describe("Priority level"),
     domain: tool.schema.string().optional().describe("Domain tag (R1-R8)"),
+    plan_id: tool.schema.string().optional().describe("Plan lineage ID (e.g. META01, PROJ01-SUB01)"),
     depends_on: tool.schema.string().optional().describe("Comma-separated dependency task IDs"),
     evidence: tool.schema.string().optional().describe("Evidence for completion"),
     hierarchy_node: tool.schema.string().optional().describe("Linked hierarchy.json node ID"),
@@ -125,6 +128,7 @@ export default tool({
           depends_on: args.depends_on ? args.depends_on.split(",").map((s) => s.trim()) : [],
           blocks: [],
           domain: args.domain,
+          plan_id: args.plan_id,
           hierarchy_node_id: args.hierarchy_node,
         }
 
@@ -136,7 +140,7 @@ export default tool({
 
         state.items.push(item)
         saveTodoState(dir, state)
-        let msg = `Added: ${item.id} — "${item.content}" [${item.priority}]${item.domain ? ` (${item.domain})` : ""}`
+        let msg = `Added: ${item.id} — "${item.content}" [${item.priority}]${item.domain ? ` (${item.domain})` : ""}${item.plan_id ? ` [plan:${item.plan_id}]` : ""}`
 
         // GX-Pack R2: HARD STOP enforcement — warn if no HARD STOP exists
         const hasHardStop = state.items.some((i) => i.content.startsWith("HARD STOP"))
@@ -229,7 +233,8 @@ export default tool({
             const status = { pending: " ", in_progress: "▶", completed: "✓", blocked: "✗", cancelled: "~" }[i.status]
             const deps = i.depends_on.length > 0 ? ` [deps: ${i.depends_on.join(",")}]` : ""
             const domain = i.domain ? ` (${i.domain})` : ""
-            return `[${status}] ${i.id} [${i.priority}]${domain} — ${i.content}${deps}`
+            const plan = i.plan_id ? ` [plan:${i.plan_id}]` : ""
+            return `[${status}] ${i.id} [${i.priority}]${domain}${plan} — ${i.content}${deps}`
           })
 
         const pending = state.items.filter((i) => i.status === "pending").length

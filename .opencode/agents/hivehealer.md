@@ -3,9 +3,6 @@ name: hivehealer
 description: Remediation specialist for debugging, hardening, and quality
   recovery under strict scope constraints. Use when fixing broken code,
   recovering from failures, or hardening system stability.
-tasks:
-  hivexplorer: allow
-  hiveq: allow
 workflows:
   - bug-remediation
 prompts:
@@ -46,6 +43,10 @@ permission:
     docs/**: allow
     .hivemind/**: allow
   skill: allow
+  task:
+    "*": deny
+    hivexplorer: allow
+    hiveq: allow
   todoread: allow
   todowrite: allow
 identity:

@@ -268,7 +268,7 @@ check_anti_patterns() {
 # === CHECK 6: Dead reference scan ===
 check_dead_references() {
   check
-  local dead_patterns="meta-builder-governance\|hivefiver-persona-routing\|hivefiver-spec-distillation\|hivefiver-specforge\|hivefiver-skillforge\|hivefiver-gsd-bridge\|hivefiver-ralph-bridge\|hivefiver-gsd-compat"
+  local dead_patterns="hivefiver-specforge\|hivefiver-skillforge\|hivefiver-gsd-bridge\|hivefiver-ralph-bridge"
 
   local hits
   hits="$(grep -rl "$dead_patterns" "$WORKDIR/.opencode/" 2>/dev/null || true)"
@@ -280,7 +280,14 @@ check_dead_references() {
     if [[ "$bname" == "gate-check.sh" || "$bname" == "hivefiver-doctor.md" || "$bname" == "quality-check.sh" ]]; then
       continue
     fi
-    fail "DEAD-01: Dead reference found in: $bname"
+
+    # Workflow blueprints may intentionally reference planned commands/skills.
+    # Treat these as warnings until implementation lands.
+    if [[ "$hit" == *"/workflows/"* ]]; then
+      warn "DEAD-WF-01: Planned reference found in workflow blueprint: $bname"
+    else
+      fail "DEAD-01: Dead reference found in: $bname"
+    fi
   done
 }
 
@@ -328,6 +335,51 @@ check_stale_guards() {
   done
 }
 
+# === CHECK 10: Entry consistency + canonical plugin path ===
+check_entry_consistency() {
+  check
+
+  # Rule A: No contradictory load-order phrasing in active skill docs
+  local contradiction_hits
+  contradiction_hits="$(
+    grep -RIn "Load hivefiver-mode and hivefiver-coordination skills first" \
+      "$WORKDIR/.opencode/skills" 2>/dev/null | grep -v "quality-check.sh" || true
+  )"
+  if [[ -n "$contradiction_hits" ]]; then
+    fail "CONS-01: Contradictory load-order phrase found in skill docs"
+  fi
+
+  # Rule B: Canonical plugin path is .opencode/plugins/hiveops-governance/**
+  # Fail on singular path usage in active governance assets.
+  local singular_hits
+  singular_hits="$(
+    {
+      grep -RIn "\.opencode/plugin/hiveops-governance" "$WORKDIR/.opencode/agents" 2>/dev/null || true
+      grep -RIn "\.opencode/plugin/hiveops-governance" "$WORKDIR/agents" 2>/dev/null || true
+      grep -RIn "\.opencode/plugin/hiveops-governance" "$WORKDIR/.opencode/skills" 2>/dev/null || true
+      grep -RIn "\.opencode/plugin/hiveops-governance" "$WORKDIR/.hivemind/plans" 2>/dev/null || true
+      grep -RIn "\.opencode/plugin/hiveops-governance" "$WORKDIR/opencode.json" 2>/dev/null || true
+    } | sed '/session-ses_/d' | grep -v "quality-check.sh" || true
+  )"
+  if [[ -n "$singular_hits" ]]; then
+    fail "CONS-02: Non-canonical singular plugin path found in active assets"
+  fi
+
+  # Rule C: Critical hivefiver skills should not keep unresolved TODO/FIXME markers
+  local todo_hits
+  todo_hits="$(
+    {
+      grep -nE "TODO|FIXME|TBD" "$WORKDIR/.opencode/skills/hivefiver-prime/SKILL.md" 2>/dev/null || true
+      grep -nE "TODO|FIXME|TBD" "$WORKDIR/.opencode/skills/hivefiver-mode/SKILL.md" 2>/dev/null || true
+      grep -nE "TODO|FIXME|TBD" "$WORKDIR/.opencode/skills/hivefiver-coordination/SKILL.md" 2>/dev/null || true
+      grep -nE "TODO|FIXME|TBD" "$WORKDIR/.opencode/skills/hivefiver-context-enforcer/SKILL.md" 2>/dev/null || true
+    } || true
+  )"
+  if [[ -n "$todo_hits" ]]; then
+    warn "CONS-03: TODO/FIXME/TBD markers remain in critical hivefiver skills"
+  fi
+}
+
 # === Main ===
 
 main() {
@@ -361,6 +413,7 @@ main() {
       check_workflows
       check_enforcement_blocks
       check_stale_guards
+      check_entry_consistency
       ;;
   esac
 

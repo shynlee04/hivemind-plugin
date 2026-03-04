@@ -1,3 +1,8 @@
+---
+name: hitea-adversarial-arena
+description: "Use when building adversarial verification testing with actor-critic arena patterns for invariant testing."
+---
+
 # Skill: hitea-adversarial-arena
 
 # Actor-Critic Arena: Adversarial Invariant Verification

@@ -126,15 +126,10 @@ async function handleMemoryAction(
   }
   await saveSessionMemoryState(directory, updated)
 
-  const classifiedCounts = {
-    ...state.memory_governance.classified_counts,
-    [category]: state.memory_governance.classified_counts[category] + 1,
-  }
   await stateManager.save({
     ...state,
     memory_governance: {
       ...state.memory_governance,
-      classified_counts: classifiedCounts,
       last_classified_at: Date.now(),
     },
   })

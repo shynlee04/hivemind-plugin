@@ -180,7 +180,6 @@ export async function maybeCreateNonDisruptiveSessionSplit(
           ),
         }),
       },
-      complexity_nudge_shown: false,
       // P0-6: Reset recent_messages for new session (will be repopulated on next turn)
       recent_messages: [],
     }

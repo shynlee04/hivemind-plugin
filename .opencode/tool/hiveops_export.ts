@@ -23,6 +23,8 @@ interface HandoffPayload {
   timestamp: number
   fromAgent: string
   toAgent: string
+  planId?: string
+  nodeId?: string
   summary: string
   completedGates: string[]
   blockers: string[]
@@ -36,6 +38,8 @@ interface Checkpoint {
   label: string
   timestamp: number
   agent: string
+  planId?: string
+  nodeId?: string
   todoSnapshot: string
   gateSnapshot: string
   stateHash: string
@@ -73,6 +77,8 @@ export default tool({
     blockers: tool.schema.string().optional().describe("Comma-separated blockers"),
     decisions: tool.schema.string().optional().describe("Comma-separated key decisions made"),
     artifacts: tool.schema.string().optional().describe("Comma-separated artifact paths created/modified"),
+    plan_id: tool.schema.string().optional().describe("Plan lineage ID (e.g. META01, PROJ01-SUB01)"),
+    node_id: tool.schema.string().optional().describe("Optional node ID under plan lineage"),
     risk: tool.schema.string().optional().describe("Residual risk statement"),
     label: tool.schema.string().optional().describe("Checkpoint label"),
     id: tool.schema.string().optional().describe("Handoff ID to read"),
@@ -85,6 +91,23 @@ export default tool({
       case "handoff": {
         if (!args.summary) return "ERROR: summary is required for handoff"
         if (!args.next_agent) return "ERROR: next_agent is required for handoff"
+
+        const nextActions = args.next_actions
+          ? args.next_actions.split(",").map((s) => s.trim()).filter(Boolean)
+          : []
+        if (nextActions.length === 0) {
+          return "ERROR: next_actions is required for handoff (comma-separated deterministic actions)"
+        }
+
+        const blockers = args.blockers
+          ? args.blockers.split(",").map((s) => s.trim()).filter(Boolean)
+          : []
+        const decisions = args.decisions
+          ? args.decisions.split(",").map((s) => s.trim()).filter(Boolean)
+          : []
+        const artifacts = args.artifacts
+          ? args.artifacts.split(",").map((s) => s.trim()).filter(Boolean)
+          : []
 
         const handoffDir = join(dir, HANDOFF_DIR)
         ensureDir(handoffDir)
@@ -101,12 +124,14 @@ export default tool({
           timestamp: Date.now(),
           fromAgent: agent,
           toAgent: args.next_agent,
+          planId: args.plan_id,
+          nodeId: args.node_id,
           summary: args.summary,
           completedGates: passedGates,
-          blockers: args.blockers ? args.blockers.split(",").map((s) => s.trim()) : [],
-          nextActions: args.next_actions ? args.next_actions.split(",").map((s) => s.trim()) : [],
-          artifacts: args.artifacts ? args.artifacts.split(",").map((s) => s.trim()) : [],
-          decisions: args.decisions ? args.decisions.split(",").map((s) => s.trim()) : [],
+          blockers,
+          nextActions,
+          artifacts,
+          decisions,
           residualRisk: args.risk || "None declared",
         }
 
@@ -119,6 +144,8 @@ export default tool({
           "",
           `**From:** ${payload.fromAgent}`,
           `**To:** ${payload.toAgent}`,
+          `**Plan:** ${payload.planId || "none"}`,
+          `**Node:** ${payload.nodeId || "none"}`,
           `**Date:** ${new Date(payload.timestamp).toISOString()}`,
           "",
           `## Summary`,
@@ -148,6 +175,7 @@ export default tool({
         return [
           `Handoff created: ${id}`,
           `From: ${payload.fromAgent} → To: ${payload.toAgent}`,
+          `Plan: ${payload.planId || "none"}${payload.nodeId ? ` | Node: ${payload.nodeId}` : ""}`,
           `Gates: ${payload.completedGates.length} passed`,
           `Next: ${payload.nextActions.join("; ") || "none specified"}`,
           `Files: ${HANDOFF_DIR}/${id}.json + ${id}.md`,
@@ -168,6 +196,8 @@ export default tool({
           label: args.label,
           timestamp: Date.now(),
           agent,
+          planId: args.plan_id,
+          nodeId: args.node_id,
           todoSnapshot: JSON.stringify(todoState?.items?.map((i: any) => `${i.status}: ${i.content}`) || []),
           gateSnapshot: JSON.stringify(gateState?.gates?.map((g: any) => `${g.gate}:${g.status}`) || []),
           stateHash: `${Date.now().toString(36)}`,
@@ -176,7 +206,7 @@ export default tool({
         const cpFile = `cp-${Date.now().toString(36)}.json`
         writeFileSync(join(cpDir, cpFile), JSON.stringify(cp, null, 2))
 
-        return `Checkpoint saved: "${args.label}" → ${CHECKPOINT_DIR}/${cpFile}`
+        return `Checkpoint saved: "${args.label}"${args.plan_id ? ` [plan:${args.plan_id}]` : ""}${args.node_id ? ` [node:${args.node_id}]` : ""} → ${CHECKPOINT_DIR}/${cpFile}`
       }
 
       case "list": {
@@ -194,7 +224,9 @@ export default tool({
         const lines = files.map((f: string) => {
           const data = loadJson(join(handoffDir, f))
           if (!data) return `  ${f}: [unreadable]`
-          return `  ${data.id}: ${data.fromAgent} → ${data.toAgent} (${new Date(data.timestamp).toISOString().slice(0, 10)})`
+          const plan = data.planId ? ` plan:${data.planId}` : ""
+          const node = data.nodeId ? ` node:${data.nodeId}` : ""
+          return `  ${data.id}: ${data.fromAgent} → ${data.toAgent}${plan}${node} (${new Date(data.timestamp).toISOString().slice(0, 10)})`
         })
 
         return [`Recent handoffs (${files.length}):`, ...lines].join("\n")
