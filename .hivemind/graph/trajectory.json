@@ -5,9 +5,11 @@
     "session_id": "5efba8eb-532b-4f4f-8a4b-f62e52262af5",
     "active_plan_id": null,
     "active_phase_id": "f0fd70b3-51da-48f5-988c-16bed0523829",
-    "active_task_ids": [],
+    "active_task_ids": [
+      "e08b44a6-02f7-483b-85a3-4a9508b7d029"
+    ],
     "intent": "Execute Pack Plan Phase 3: Session-State Isolation Completion (Fix 3C-D)",
     "created_at": "2026-03-04T14:36:33.129Z",
-    "updated_at": "2026-03-04T18:23:46.319Z"
+    "updated_at": "2026-03-04T18:42:33.697Z"
   }
 }

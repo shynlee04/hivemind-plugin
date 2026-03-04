@@ -5,7 +5,7 @@
     "governance_mode": "strict",
     "governance_status": "OPEN",
     "start_time": 1772648366146,
-    "last_activity": 1772648626317,
+    "last_activity": 1772649753700,
     "date": "2026-03-04",
     "meta_key": "",
     "role": "",
@@ -14,17 +14,17 @@
   "hierarchy": {
     "trajectory": "Execute Pack Plan Phase 3: Session-State Isolation Completion (Fix 3C-D)",
     "tactic": "Phase 3 COMPLETE. Now executing Phase 4: Dual-Injection Decoupling (Fix 1) - entering restricted region",
-    "action": ""
+    "action": "Phase 4: Designing hybrid integration approach - taking best of each system for unified flow"
   },
   "metrics": {
-    "turn_count": 1,
-    "user_turn_count": 0,
-    "drift_score": 90,
+    "turn_count": 2,
+    "user_turn_count": 1,
+    "drift_score": 89,
     "files_touched": [],
-    "context_updates": 1,
+    "context_updates": 2,
     "auto_health_score": 100,
-    "total_tool_calls": 1,
-    "successful_tool_calls": 1,
+    "total_tool_calls": 2,
+    "successful_tool_calls": 2,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
@@ -32,7 +32,7 @@
     "tool_type_counts": {
       "read": 0,
       "write": 1,
-      "query": 0,
+      "query": 1,
       "governance": 0
     },
     "keyword_flags": [],
@@ -52,7 +52,7 @@
   },
   "selected_output_style_v29": "problem_solving_debugging",
   "memory_governance": {
-    "last_classified_at": 1772648615560,
+    "last_classified_at": 1772649728406,
     "pending_purge": true
   },
   "version": "1.0.0",
@@ -72,27 +72,27 @@
   "recent_messages": [
     {
       "role": "assistant",
-      "content": "---\n\n## 📋 **Session Summary for Handoff**\n\n### Session Metadata\n- **Session ID**: `eca6ef14-5f16-4e14-a972-a84e505125eb`\n- **Mode**: `plan_driven` (autonomous surgical refactor)\n- **Duration**: ~3 hours\n- **Turn Count**: 34\n- **Drift Score**: 70 (acceptable)\n\n### Work Completed\n1. ✅ **Fixed 2 governance bugs** (GOV-04 severity escalation, IGNORED tone)\n2. ✅ **Fixed cascading test expectation** (soft-governance.test.ts)\n3. ✅ **Updated Pack Plan Section E** (Option A adoption)\n4. ✅ **Marked Pack Plan Phase 1-2 complete** (with verification evidence)\n5. ✅ **Scanned entire ecosystem** (100+ files, schema integrity verified)\n6. ✅ **Committed all changes** (2 commits: 5ff7bf9, 19734b9)\n\n### Quality Gates Passed\n- ✅ TypeScript: PASS\n- ✅ Tests: 230/230 PASS\n- ✅ Schema Integrity: VERIFIED\n- ✅ Zero Regressions: CONFIRMED\n\n### Next Session Should\n1. Proceed to **Pack Plan Phase 3** (Session-State Isolation)\n2. Continue autonomous execution with TDD gatekeeping\n3. Maintain schema integrity verification\n\n### Memory Keys\n- `ee1bbb8a-8226-4ce5-983d-355da1af0736` — Schema integrity verification\n- `4f233dc4-5c79-4277-b892-040f8a919d35` — Integration conflict resolution\n\n---\n\n## 🎯 **Mission Status: COMPLETE**\n\n**Surgical refactor + ecosystem scan mission accomplished.**\n\nAll objectives met. Zero regressions. Ready for Phase 3."
+      "content": "---\n\n## ✅ **Phase 3 COMPLETE - Continuing to Phase 4**"
+    },
+    {
+      "role": "assistant",
+      "content": "---\n\n## 🚨 **Phase 4: Entering Restricted Region**\n\n**CRITICAL**: This phase addresses the root cause of context poisoning identified in CONTAMINATION-GUARDRAILS.md.\n\n### Investigation: Dual-Injection Conflict"
+    },
+    {
+      "role": "assistant",
+      "content": "---\n\n## 🔍 **Phase 4: Dual-Injection Investigation**\n\n**Critical Finding from CONTAMINATION-GUARDRAILS.md**:\n\n```\nTwo independent auto-injection systems fire on EVERY LLM turn:\n\nSystem 1 (Plugin):\n  → .opencode/plugins/hiveops-governance/hooks/context-injection.ts\n  → Prepends to output.messages[]\n  → Agent-aware (hivefiver block only)\n\nSystem 2a (Engine):\n  → src/hooks/session-lifecycle.ts\n  → Appends to output.system[]\n  → NOT agent-aware\n\nSystem 2b (Engine):\n  → src/hooks/messages-transform.ts\n  → Injects synthetic parts to output.messages[].parts[]\n  → NOT agent-aware\n\nROOT CAUSE: Both read overlapping state files and inject contradictory context.\n```\n\n### Investigation: Current State"
+    },
+    {
+      "role": "assistant",
+      "content": "---\n\n## 🚨 **Phase 4: Investigation Complete - CRITICAL DECISION REQUIRED**\n\n### Dual-Injection Analysis:\n\n**System 1 (Plugin - context-injection.ts)**:\n- Location: `.opencode/plugins/hiveops-governance/hooks/context-injection.ts` (351 lines)\n- Reads: `todo.json`, `hierarchy.json`, `recovery.json`, `runtime-profile.json`\n- Injects: Prepends to `output.messages[]`\n- Agent-aware: YES (hivefiver block only)\n\n**System 2a (Engine - session-lifecycle.ts)**:\n- Location: `src/hooks/session-lifecycle.ts` (231 lines)\n- Reads: `brain.json` (via state manager), `hierarchy` (via state)\n- Injects: Appends to `output.system[]`\n- Agent-aware: NO\n\n**System 2b (Engine - messages-transform.ts)**:\n- Location: `src/hooks/messages-transform.ts` (690 lines)\n- Reads: `brain.json` (via state), `hierarchy` (via state), `todo` (via state)\n- Injects: Prepends `SYSTEM_ANCHOR` to `output.messages[].parts[]`\n- Agent-aware: NO\n\n### Overlap Analysis:\n\n| State File | System 1 | System 2a | System 2b |\n|------------|----------|-----------|-----------|\n| hierarchy.json | ✅ READS | ✅ via state | ✅ via state |\n| brain.json | ❌ | ✅ READS | ✅ via state |\n| todo.json | ✅ READS | ❌ | ✅ via state |\n\n**CONFLICT**: All three systems inject context based on overlapping state, potentially creating contradictory directives on every LLM turn.\n\n---\n\n## 🎯 **Proposed Solutions**\n\n### Option A: Make System 2 Authoritative (RECOMMENDED)\n\n**Rationale**:\n- System 2 is core engine (not plugin-dependent)\n- System 2a + 2b are already coordinated (both in src/hooks/)\n- System 1 is plugin-specific (opencode-only)\n\n**Implementation**:\n1. Disable System 1's overlapping injections (keep only plugin-specific features)\n2. Make System 2a the single source of truth for governance context\n3. System 2b focuses on checklist/SYSTEM_ANCHOR only (no state duplication)\n\n**Risk**: LOW - Engine hooks are already tested, plugin isolation is cleaner\n\n---\n\n### Option B: Merge All Three into Single Injection\n\n**Rationale**:\n- Single source of truth eliminates conflicts\n- Easier to debug and maintain\n\n**Implementation**:\n1. Create unified `governance-context.ts` module\n2. All three hooks delegate to it\n3. Single injection point with deterministic ordering\n\n**Risk**: MEDIUM - Requires refactoring all three hooks, larger surface area\n\n---\n\n### Option C: Keep Dual System, Add Coordination Layer\n\n**Rationale**:\n- Minimal code changes\n- Preserves existing architecture\n\n**Implementation**:\n1. Add coordination flag in state\n2. Systems check flag before injecting\n3. First system to inject sets flag, others skip\n\n**Risk**: HIGH - Adds complexity, doesn't solve root cause\n\n---\n\n## 📊 **Recommendation**\n\n**Option A** is recommended because:\n1. Aligns with \"engine-first\" architecture\n2. Minimal code changes (disable overlapping System 1 features)\n3. Plugin remains for OpenCode-specific features only\n4. Clear separation of concerns\n\n---\n\n## 🛑 **HARD STOP - User Decision Required**\n\nPhase 4 requires choosing an architectural approach for dual-injection decoupling.\n\n**Please select**:\n- **A**: Make System 2 authoritative (recommended)\n- **B**: Merge all three into single injection\n- **C**: Add coordination layer\n- **D**: Different approach (please specify)\n\n**OR** provide explicit guidance on how to proceed.\n\n**I will NOT execute Phase 4 changes without your decision, as this is a RESTRICTED REGION with system-wide impact.**"
     },
     {
       "role": "user",
-      "content": "ok continue"
+      "content": "none because it is not one best location, but its more take what better of which place make them integrated and flow"
     },
     {
-      "role": "assistant",
-      "content": "---\n\n## ✅ **Continuing: Pre-Stop Conditional Checks**\n\nAddressing all checklist items before proceeding:"
-    },
-    {
-      "role": "assistant",
-      "content": "---\n\n## 🚀 **Session Compacted - Continuing to Phase 3**\n\nPrevious session compacted successfully. Declaring new intent for Pack Plan Phase 3:"
-    },
-    {
-      "role": "assistant",
-      "content": "---\n\n## 📋 **Pack Plan Phase 3: Session-State Isolation Completion**\n\n### Current Status Check:"
-    },
-    {
-      "role": "assistant",
-      "content": "---\n\n## ✅ **Phase 3 Status: ALREADY COMPLETE**\n\n**Investigation reveals**: Fix 3C-D was completed during previous development.\n\n### Evidence:\n\n**Fix 3A** ✅ COMPLETE:\n```typescript\n// src/lib/paths.ts:269-281\nexport function getSessionPaths(projectRoot: string, sessionId: string): SessionPaths {\n  const safeSessionId = sanitizeSessionStamp(sessionId) ?? sanitizeSessionFileName(sessionId)\n  const paths = getHivemindPaths(projectRoot)\n  const sessionDir = join(paths.activeDir, safeSessionId)\n  return {\n    sessionDir,\n    profile: join(sessionDir, \"profile.json\"),\n  }\n}\n```\n\n**Fix 3B** ✅ COMPLETE:\n```typescript\n// src/hooks/event-handler.ts:182-196\ncase \"session.created\":\n  const sessionPaths = getSessionPaths(directory, sessionId)\n  await mkdir(sessionPaths.sessionDir, { recursive: true })\n  await writeFile(\n    sessionPaths.profile,\n    JSON.stringify({\n      session_id: sessionId,\n      agent: \"unresolved\",  // ← Clean-slate state\n      created_at: now,\n      updated_at: now,\n    }),\n  )\n```\n\n**Fix 3C-D** ✅ COMPLETE:\n- Sessions created in isolated directories: `.hivemind/sessions/active/<session-id>/`\n- Clean-slate profile.json with `agent: \"unresolved\"`\n- No dependency on global singleton state\n\n---\n\n### Verification:"
+      "role": "user",
+      "content": "none because it is not one best location, but its more take what better of which place make them integrated and flow"
     }
   ],
   "offtrack_todo_pending": [],

@@ -15,9 +15,19 @@
         "status": "active",
         "created": 1772648626317,
         "stamp": "230105032026",
-        "children": []
+        "children": [
+          {
+            "id": "a_420105032026",
+            "level": "action",
+            "content": "Phase 4: Designing hybrid integration approach - taking best of each system for unified flow",
+            "status": "active",
+            "created": 1772649753691,
+            "stamp": "420105032026",
+            "children": []
+          }
+        ]
       }
     ]
   },
-  "cursor": "tc_230105032026"
+  "cursor": "a_420105032026"
 }
