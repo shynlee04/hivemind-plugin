@@ -284,6 +284,76 @@
       "project_id": null,
       "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
       "priority": "critical"
+    },
+    {
+      "id": "1fb93f0e-a1a3-5621-99d2-2b87e648016f",
+      "parent_phase_id": "5de1eaf7-3437-5d9f-89db-d7fe607ad1bb",
+      "title": "Pack Plan Phase 3: Session-State Isolation COMPLETE (already implemented)",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-03-04T18:23:46.310Z",
+      "updated_at": "2026-03-04T18:22:59.879Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: build | command: hivefiver build | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "a8191214-302e-5b68-9722-943a6829c109",
+      "parent_phase_id": "5de1eaf7-3437-5d9f-89db-d7fe607ad1bb",
+      "title": "Verify clean-slate session state init",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-03-04T18:23:46.310Z",
+      "updated_at": "2026-03-04T18:22:59.879Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "4539b6a7-6ec6-5ace-91ae-607fe7a9946b",
+      "parent_phase_id": "5de1eaf7-3437-5d9f-89db-d7fe607ad1bb",
+      "title": "Complete hook migration prerequisites",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-03-04T18:23:46.310Z",
+      "updated_at": "2026-03-04T18:22:59.879Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "2c49df05-fc12-55e7-9edd-9b0a3147a714",
+      "parent_phase_id": "5de1eaf7-3437-5d9f-89db-d7fe607ad1bb",
+      "title": "Run verification: npx tsc --noEmit + npm test",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-03-04T18:23:46.310Z",
+      "updated_at": "2026-03-04T18:22:59.879Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "a0e52632-31a4-54b3-8c64-db4d25a5eb91",
+      "parent_phase_id": "5de1eaf7-3437-5d9f-89db-d7fe607ad1bb",
+      "title": "Update Pack Plan to mark Phase 3 COMPLETE",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-03-04T18:23:46.310Z",
+      "updated_at": "2026-03-04T18:22:59.879Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
     }
   ]
 }

@@ -7,7 +7,17 @@
     "status": "active",
     "created": 1772648366146,
     "stamp": "190105032026",
-    "children": []
+    "children": [
+      {
+        "id": "tc_230105032026",
+        "level": "tactic",
+        "content": "Phase 3 COMPLETE. Now executing Phase 4: Dual-Injection Decoupling (Fix 1) - entering restricted region",
+        "status": "active",
+        "created": 1772648626317,
+        "stamp": "230105032026",
+        "children": []
+      }
+    ]
   },
-  "cursor": "t_190105032026"
+  "cursor": "tc_230105032026"
 }
