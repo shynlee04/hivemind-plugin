@@ -73,17 +73,32 @@ export interface SessionManifest {
   active_stamp: string | null
 }
 
+export type PlanType = "root" | "sub" | "atomic"
+export type PlanStatus = "pending" | "active" | "complete" | "blocked"
+export type PlanValidationState = "pending" | "validated" | "failed" | "skipped"
+export type PlanDomain = "frontend" | "backend" | "api" | "data" | "persistence" | "hooks" | "sdk" | "meta" | "infra"
+export type PlanPurpose = "discovery" | "research" | "planning" | "implementation" | "testing" | "verification" | "debugging"
+
 export interface PlanManifestEntry {
   id: string
-  type: string
-  status: string
+  type: PlanType
+  prefix: string                // META01, PROJ01-SUB01, etc.
+  status: PlanStatus
   created: number
   updated_at_epoch?: number
   created_at_iso?: string
   updated_at_iso?: string
   contract_version?: string
   slug: string
+  path: string                  // relative path within plans/
+  parent_id: string | null      // FK to parent plan
+  root_id: string | null        // FK to root plan
   linked_sessions: string[]
+  linked_graph_plan_id: string | null  // FK to graph/plans.json
+  domain: PlanDomain
+  purpose: PlanPurpose
+  validation_state: PlanValidationState
+  dependencies: string[]        // other plan IDs
 }
 
 export interface PlanManifest {

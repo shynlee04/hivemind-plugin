@@ -102,6 +102,91 @@ export const PlanCompletionCheckResultSchema = z.object({
   rule_version: z.string().min(1),
 })
 
+// ─── Planning Framework Schemas ───────────────────────────────────────────────
+
+/** Plan type discriminator */
+export const PlanTypeSchema = z.enum(["plan", "sub_plan", "atomic_plan"])
+
+/** Plan status values */
+export const PlanFileStatusSchema = z.enum(["pending", "active", "complete", "blocked"])
+
+/** Plan owner */
+export const PlanOwnerSchema = z.enum(["main", "subagent", "delegated"])
+
+/** Plan domain tags */
+export const PlanDomainSchema = z.enum([
+  "frontend", "backend", "api", "data", "persistence",
+  "hooks", "sdk", "meta", "infra",
+])
+
+/** Plan purpose tags */
+export const PlanPurposeSchema = z.enum([
+  "discovery", "research", "planning", "implementation",
+  "testing", "verification", "debugging",
+])
+
+/** Plan tier classification */
+export const PlanTierSchema = z.enum([
+  "governance_sot", "realtime_codebase", "knowledge_base", "planning_artifact",
+])
+
+/** Validation state */
+export const PlanValidationStateSchema = z.enum(["pending", "validated", "failed", "skipped"])
+
+/** Plan file YAML frontmatter schema */
+export const PlanFileFrontmatterSchema = z.object({
+  id: z.string().uuid(),
+  type: PlanTypeSchema,
+  prefix: z.string().min(1),
+  title: z.string().min(1),
+  status: PlanFileStatusSchema,
+  parent_id: z.string().uuid().nullable(),
+  root_id: z.string().uuid().nullable(),
+  trajectory_id: z.string().uuid().optional(),
+  session_ids: z.array(z.string()).default([]),
+  dependencies: z.array(z.string()).default([]),
+  created: z.string().datetime(),
+  updated: z.string().datetime(),
+  owner: PlanOwnerSchema.default("main"),
+  domain: PlanDomainSchema.default("meta"),
+  purpose: PlanPurposeSchema.default("planning"),
+  tier: PlanTierSchema.default("planning_artifact"),
+  validation_state: PlanValidationStateSchema.default("pending"),
+  tags: z.array(z.string()).default([]),
+})
+
+/** Evidence item for validation artifacts */
+export const ValidationEvidenceSchema = z.object({
+  type: z.enum(["commit", "test", "checkpoint", "manual"]),
+  ref: z.string().min(1),
+  description: z.string().optional(),
+  result: z.string().optional(),
+})
+
+/** Validation artifact YAML frontmatter schema */
+export const ValidationArtifactSchema = z.object({
+  id: z.string().uuid(),
+  type: z.literal("validation"),
+  plan_id: z.string().uuid(),
+  status: z.enum(["pending", "pass", "fail", "partial"]),
+  validator: z.enum(["main", "subagent"]).default("main"),
+  created: z.string().datetime(),
+  updated: z.string().datetime(),
+  evidence: z.array(ValidationEvidenceSchema).default([]),
+})
+
+/** Machine-checkable plan completion criteria */
+export const PlanCompletionCriteriaSchema = z.object({
+  all_nodes_complete: z.boolean(),
+  all_links_resolve: z.boolean(),
+  all_validations_pass: z.boolean(),
+  yaml_headers_valid: z.boolean(),
+  navigation_intact: z.boolean(),
+  graph_sync: z.boolean(),
+})
+
+// ─── Type Exports ─────────────────────────────────────────────────────────────
+
 export type RequirementStatus = z.infer<typeof RequirementStatusSchema>
 export type Requirement = z.infer<typeof RequirementSchema>
 export type PhaseStatus = z.infer<typeof PhaseStatusSchema>
@@ -112,3 +197,7 @@ export type PlanningManifest = z.infer<typeof PlanningManifestSchema>
 export type PlanCompletionChild = z.infer<typeof PlanCompletionChildSchema>
 export type PlanCompletionCheckInput = z.infer<typeof PlanCompletionCheckInputSchema>
 export type PlanCompletionCheckResult = z.infer<typeof PlanCompletionCheckResultSchema>
+export type PlanFileFrontmatter = z.infer<typeof PlanFileFrontmatterSchema>
+export type ValidationEvidence = z.infer<typeof ValidationEvidenceSchema>
+export type ValidationArtifact = z.infer<typeof ValidationArtifactSchema>
+export type PlanCompletionCriteria = z.infer<typeof PlanCompletionCriteriaSchema>

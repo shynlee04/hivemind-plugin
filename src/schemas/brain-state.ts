@@ -157,6 +157,8 @@ export interface BrainState {
   recent_messages: Array<{ role: "user" | "assistant"; content: string }>;
   /** @lifecycle hybrid - unresolved off-track intents carried across sessions */
   offtrack_todo_pending: OffTrackIntent[];
+  /** @lifecycle hybrid - plan-aware trajectory context */
+  trajectory_context: TrajectoryContext;
 }
 
 export const BRAIN_STATE_FIELD_CLASSIFICATION: Record<keyof BrainState, FieldLifecycle> = {
@@ -182,6 +184,7 @@ export const BRAIN_STATE_FIELD_CLASSIFICATION: Record<keyof BrainState, FieldLif
   next_compaction_report: "hybrid",
   framework_selection: "hybrid",
   offtrack_todo_pending: "hybrid",
+  trajectory_context: "hybrid",
 };
 
 export function getFieldsByLifecycle(lifecycle: FieldLifecycle): Array<keyof BrainState> {
@@ -223,6 +226,29 @@ export interface FrameworkSelectionState {
   updated_at: number;
 }
 
+/** Trajectory context for plan-aware sessions */
+export interface TrajectoryContext {
+  /** Session classification */
+  session_type: "main" | "delegated" | "post_compaction" | "long_haul";
+  /** Memory classification for current turn */
+  memory_class: "discovery" | "research" | "codebase_investigation" | "planning" | "implementing" | "debug_testing";
+  /** Active plan context */
+  active_plan_prefix: string | null;
+  active_plan_id: string | null;
+  /** Disclosure level */
+  disclosure_depth: "summary" | "detail" | "full";
+  /** Revalidation loop counter (for long-haul sessions) */
+  revalidation_count: number;
+  /** Transformed prompt metadata (from session start) */
+  context_preparation: {
+    sot_searched: boolean;
+    skills_activated: string[];
+    investigation_complete: boolean;
+    mapped_nodes: string[];
+    success_metrics: string[];
+  };
+}
+
 export const BRAIN_STATE_VERSION = "1.0.0";
 
 export function generateSessionId(): string {
@@ -236,7 +262,7 @@ export function createBrainState(
   mode: SessionMode = "plan_driven"
 ): BrainState {
   const now = Date.now();
-  
+
   return {
     session: {
       id: sessionId,
@@ -308,6 +334,22 @@ export function createBrainState(
     // Cross-session continuity (P0-6)
     recent_messages: [],
     offtrack_todo_pending: [],
+    // Planning framework trajectory context
+    trajectory_context: {
+      session_type: "main",
+      memory_class: "planning",
+      active_plan_prefix: null,
+      active_plan_id: null,
+      disclosure_depth: "summary",
+      revalidation_count: 0,
+      context_preparation: {
+        sot_searched: false,
+        skills_activated: [],
+        investigation_complete: false,
+        mapped_nodes: [],
+        success_metrics: [],
+      },
+    },
   };
 }
 

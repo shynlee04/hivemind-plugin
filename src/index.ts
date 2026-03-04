@@ -52,6 +52,7 @@ import {
   createHivemindPrecisionPatchTool,
   createHivemindMeshPullTool,
   createHivemindDocWeaverTool,
+  createHivemindPlanTool,
 } from "./tools/index.js"
 import {
   createSessionLifecycleHook,
@@ -146,6 +147,7 @@ export const HiveMindPlugin: Plugin = async ({
       hivemind_precision_patch: createHivemindPrecisionPatchTool(effectiveDir),
       hivemind_mesh_pull: createHivemindMeshPullTool(effectiveDir),
       hivemind_doc_weaver: createHivemindDocWeaverTool(effectiveDir),
+      hivemind_plan: createHivemindPlanTool(effectiveDir),
     },
 
     /**

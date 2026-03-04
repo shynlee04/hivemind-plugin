@@ -38,6 +38,7 @@ import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
 import { createStateManager, saveConfig } from "../lib/persistence.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
 import { getEffectivePaths } from "../lib/paths.js"
+import { seedPlanTemplates } from "../lib/plan-fs.js"
 import { syncOpencodeAssets } from "./sync-assets.js"
 import type { AssetSyncProfile, AssetSyncTarget } from "./sync-assets.js"
 import { createTree, saveTree } from "../lib/hierarchy-tree.js"
@@ -675,6 +676,12 @@ export async function initProject(
     }
     await initializePlanningDirectory(directory)
 
+    // Seed plan templates
+    await seedPlanTemplates(directory)
+    if (!options.silent) {
+      log(`  ✓ Seeded plan templates to plans/templates/`)
+    }
+
     // Copy 10 Commandments to .hivemind
     await seedTenCommandments(directory)
     if (!options.silent) {
@@ -796,6 +803,12 @@ export async function initProject(
     log("Creating planning directory...")
   }
   await initializePlanningDirectory(directory)
+
+  // Seed plan templates
+  await seedPlanTemplates(directory)
+  if (!options.silent) {
+    log(`  ✓ Seeded plan templates to plans/templates/`)
+  }
 
   // Copy 10 Commandments to .hivemind
   await seedTenCommandments(directory)

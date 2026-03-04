@@ -18,6 +18,7 @@
  * | hivemind_mesh_pull  | blast radius + skeleton aggregation           | LSPBridge + ASTSurgeon          |
  * | hivemind_doc_weaver | patch markdown section by heading             | DocWeaver.patchSection          |
  * | hivemind_declare    | declare role, mode, context, confidence       | Agent declaration runtime       |
+ * | hivemind_plan       | create, status, update, validate, link         | Plan hierarchy management       |
  */
 
 export { createHivemindSessionTool } from "./hivemind-session.js"
@@ -35,3 +36,4 @@ export { createHivemindPrecisionPatchTool } from "./hivemind-precision-patch.js"
 export { createHivemindMeshPullTool } from "./hivemind-mesh-pull.js"
 export { createHivemindDocWeaverTool } from "./hivemind-doc-weaver.js"
 export { createHivemindDeclareTool } from "./hivemind-declare.js"
+export { createHivemindPlanTool } from "./hivemind-plan.js"

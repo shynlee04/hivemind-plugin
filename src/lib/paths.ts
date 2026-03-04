@@ -115,6 +115,10 @@ export interface HivemindPaths {
   codewikiDir: string       // codewiki/ — synthesized knowledge, patterns, decisions
   codewikiManifest: string  // codewiki/manifest.json
 
+  // planning framework
+  planTemplatesDir: string  // plans/templates/
+  workflowsDir: string      // workflows/
+
   // other
   logsDir: string
   docsDir: string
@@ -161,6 +165,8 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
   const activeDir = join(sessionsDir, "active")
   const archiveDir = join(sessionsDir, "archive")
   const plansDir = join(root, "plans")
+  const planTemplatesDir = join(plansDir, "templates")
+  const workflowsDir = join(root, "workflows")
   const graphDir = join(root, "graph")
   const graphCodebaseDir = join(graphDir, "codebase")
   const graphCodebaseCodewikiDir = join(graphCodebaseDir, "codewiki")
@@ -213,6 +219,8 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
 
     plansDir,
     plansManifest: join(plansDir, "manifest.json"),
+    planTemplatesDir,
+    workflowsDir,
 
     graphDir,
     graphTrajectory: join(graphDir, "trajectory.json"),
@@ -545,6 +553,8 @@ export function getAllDirectories(projectRoot: string): string[] {
     p.graphProjectResearchSummaryDir,
     p.codemapDir,
     p.codewikiDir,
+    p.planTemplatesDir,
+    p.workflowsDir,
     p.logsDir,
     p.docsDir,
     p.templatesDir,

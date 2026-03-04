@@ -90,6 +90,16 @@ export const PlanNodeSchema = z.object({
   milestone_id: z.string().uuid().nullable().optional(),
   phases: z.array(z.object({ id: z.string().uuid() })).optional(),
   verifications: z.array(z.object({ id: z.string().uuid() })).optional(),
+  // Planning framework hierarchy
+  type: z.enum(["root", "sub", "atomic"]).optional(),
+  prefix: z.string().optional(),
+  parent_plan_id: z.string().uuid().nullable().optional(),
+  root_plan_id: z.string().uuid().nullable().optional(),
+  domain: z.string().optional(),
+  purpose: z.string().optional(),
+  validation_state: z.enum(["pending", "validated", "failed", "skipped"]).optional(),
+  dependencies: z.array(z.string().uuid()).optional(),
+  acceptance_criteria: z.array(z.string()).optional(),
 });
 
 export const PhaseNodeSchema = z.object({
