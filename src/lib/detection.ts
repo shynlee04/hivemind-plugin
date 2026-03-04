@@ -71,7 +71,11 @@ export type GovernanceSignalKind =
   | "evidence_pressure"
   | "ignored";
 
-export type CanonicalGovernanceSignalKind = "drift" | "compaction";
+export type CanonicalGovernanceSignalKind =
+  | "drift"
+  | "compaction"
+  | "out_of_order"
+  | "evidence_pressure";
 
 export type GovernanceSeverity = "info" | "warning" | "error";
 
@@ -96,15 +100,14 @@ export interface GovernanceCounters {
 /**
  * Canonicalize governance signal kinds to actively tracked counters.
  *
- * Supported counters: drift, compaction.
- * Legacy kinds (out_of_order, evidence_pressure, ignored) are folded into drift
- * for backward-compatible call sites.
+ * Supported counters: drift, compaction, out_of_order, evidence_pressure.
+ * Legacy kind: ignored (folded into out_of_order for backward-compatible call sites).
  */
 export function canonicalizeGovernanceSignalKind(
   kind: GovernanceSignalKind
 ): CanonicalGovernanceSignalKind {
-  if (kind === "compaction") return "compaction";
-  return "drift";
+  if (kind === "ignored") return "out_of_order";
+  return kind;
 }
 
 export type HierarchyImpact = "low" | "medium" | "high";
@@ -199,15 +202,11 @@ export function computeGovernanceSeverity(opts: {
   const canonicalKind = canonicalizeGovernanceSignalKind(opts.kind);
 
   if (canonicalKind === "compaction") return "info";
-  if (canonicalKind === "drift") {
-    return opts.repetitionCount <= 0 ? "warning" : "error";
-  }
-
-  return "warning";
+  return opts.repetitionCount <= 0 ? "warning" : "error";
 }
 
 export function computeUnacknowledgedCycles(counters: GovernanceCounters): number {
-  return counters.drift;
+  return counters.out_of_order + counters.drift + counters.evidence_pressure;
 }
 
 function getIgnoredTone(opts: {
@@ -236,9 +235,6 @@ export function compileIgnoredTier(opts: {
   expertLevel: "beginner" | "intermediate" | "advanced" | "expert";
   evidence: IgnoredEvidenceInput;
 }): IgnoredTierResult | null {
-  void opts.expertLevel;
-  void opts.evidence;
-
   const unacknowledgedCycles = computeUnacknowledgedCycles(opts.counters);
   if (unacknowledgedCycles < 10) return null;
   if (opts.governanceMode === "permissive") return null;
@@ -249,15 +245,9 @@ export function compileIgnoredTier(opts: {
     unacknowledgedCycles,
     tone: getIgnoredTone({
       governanceMode: opts.governanceMode,
-      expertLevel: "intermediate",
+      expertLevel: opts.expertLevel,
     }),
-    evidence: {
-      declaredOrder: "n/a",
-      actualOrder: "n/a",
-      missingPrerequisites: [],
-      expectedHierarchy: "n/a",
-      actualHierarchy: "n/a",
-    },
+    evidence: opts.evidence,
   };
 }
 

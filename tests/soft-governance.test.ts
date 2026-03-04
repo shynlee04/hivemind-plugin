@@ -632,7 +632,7 @@ async function test_outOfOrderToastSeverityProgression() {
 
   assert(!toasts.some(t => t.variant === "info"), "out-of-order toast does not start at info")
   assert(toasts.some(t => t.variant === "warning"), "out-of-order toast starts at warning")
-  assert(toasts.some(t => t.variant === "error"), "repeated out-of-order toast escalates to error")
+  assert(!toasts.some(t => t.variant === "error"), "repeated out-of-order toast stays warning with 4-field counter severity")
 
   resetSdkContext()
   await cleanup()
@@ -669,12 +669,12 @@ async function test_evidencePressureEscalatesWarningToError() {
   await hook(makeInput("read"), output)
 
   assert(
-    !toasts.some(t => t.variant === "warning" && t.message.includes("Evidence pressure")),
-    "evidence-pressure toast skips warning when prior drift increments exist"
+    toasts.some(t => t.variant === "warning" && t.message.includes("Evidence pressure")),
+    "evidence-pressure toast starts at warning with dedicated evidence_pressure counter"
   )
   assert(
-    toasts.some(t => t.variant === "error" && t.message.includes("Evidence pressure")),
-    "evidence-pressure toast escalates to error"
+    !toasts.some(t => t.variant === "error" && t.message.includes("Evidence pressure")),
+    "evidence-pressure toast does not escalate to error without repeated evidence_pressure count"
   )
 
   resetSdkContext()
@@ -689,7 +689,7 @@ async function test_ignoredToastUsesErrorTriageFormat() {
 
   const sm = createStateManager(dir)
   const state = createBrainState(generateSessionId(), config)
-  state.metrics.governance_counters.out_of_order = 9
+  state.metrics.governance_counters.out_of_order = 10
   state.hierarchy.action = "Review governance routing"
   await sm.save(state)
   resetToastCooldowns()
@@ -713,10 +713,10 @@ async function test_ignoredToastUsesErrorTriageFormat() {
   await hook(makeInput("write"), makeOutput())
 
   const triageToast = toasts.find(t => t.message.includes("Reason:"))
-  assert(!triageToast, "ignored triage toast is not emitted before drift threshold")
+  assert(!!triageToast, "ignored triage toast emits at unacknowledged threshold")
   assert(
-    !log.warnings.some((entry) => entry.includes("[SEQ]") && entry.includes("[PLAN]") && entry.includes("[HIER]")),
-    "ignored tri-evidence block is not logged before threshold"
+    log.warnings.some((entry) => entry.includes("[SEQ]") && entry.includes("[PLAN]") && entry.includes("[HIER]")),
+    "ignored tri-evidence block is logged when threshold is met"
   )
 
   resetSdkContext()
@@ -743,7 +743,12 @@ async function test_ignored_downgrades_after_acknowledgement() {
   await hook(makeInput("read"), makeOutput())
 
   const updated = await sm.load()
-  assert(updated!.metrics.governance_counters.drift === 2, "ignored downgrade policy currently leaves drift counter unchanged")
+  assert(
+    updated!.metrics.governance_counters.drift === 2 &&
+      updated!.metrics.governance_counters.out_of_order === 2 &&
+      updated!.metrics.governance_counters.evidence_pressure === 2,
+    "legacy acknowledgment/reset pathways are removed and counters remain unchanged"
+  )
 
   await cleanup()
 }
@@ -771,7 +776,12 @@ async function test_ignored_full_reset_when_prerequisites_complete() {
   await hook(makeInput("read"), makeOutput())
 
   const updated = await sm.load()
-  assert(updated!.metrics.governance_counters.drift === 0, "ignored full reset path is currently inactive")
+  assert(
+    updated!.metrics.governance_counters.drift === 0 &&
+      updated!.metrics.governance_counters.out_of_order === 1 &&
+      updated!.metrics.governance_counters.evidence_pressure === 0,
+    "ignored full reset path is removed and counters are not reset by prerequisites"
+  )
 
   await cleanup()
 }

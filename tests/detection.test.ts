@@ -354,13 +354,19 @@ function test_governance_primitives() {
   process.stderr.write("\n--- governance-primitives ---\n");
 
   const counters = createGovernanceCounters();
-  assert(counters.drift === 0 && counters.compaction === 0, "createGovernanceCounters initializes supported counters");
+  assert(
+    counters.drift === 0 &&
+      counters.compaction === 0 &&
+      counters.out_of_order === 0 &&
+      counters.evidence_pressure === 0,
+    "createGovernanceCounters initializes supported counters"
+  );
 
   assert(canonicalizeGovernanceSignalKind("drift") === "drift", "canonicalize keeps drift");
   assert(canonicalizeGovernanceSignalKind("compaction") === "compaction", "canonicalize keeps compaction");
-  assert(canonicalizeGovernanceSignalKind("out_of_order") === "drift", "canonicalize maps out_of_order -> drift");
-  assert(canonicalizeGovernanceSignalKind("evidence_pressure") === "drift", "canonicalize maps evidence_pressure -> drift");
-  assert(canonicalizeGovernanceSignalKind("ignored") === "drift", "canonicalize maps ignored -> drift");
+  assert(canonicalizeGovernanceSignalKind("out_of_order") === "out_of_order", "canonicalize keeps out_of_order");
+  assert(canonicalizeGovernanceSignalKind("evidence_pressure") === "evidence_pressure", "canonicalize keeps evidence_pressure");
+  assert(canonicalizeGovernanceSignalKind("ignored") === "out_of_order", "canonicalize maps ignored -> out_of_order");
 
   const infoSeverity = computeGovernanceSeverity({ kind: "out_of_order", repetitionCount: 0 });
   assert(infoSeverity === "warning", "out_of_order starts at warning via drift canonicalization");
@@ -409,20 +415,20 @@ function test_governance_primitives() {
 
   const incremented = registerGovernanceSignal(counters, "out_of_order");
   assert(
-    incremented.drift === 1 && incremented.out_of_order === 0,
-    "registerGovernanceSignal maps out_of_order to drift counter"
+    incremented.out_of_order === 1 && incremented.drift === 0,
+    "registerGovernanceSignal increments out_of_order counter"
   );
 
   const evidenceIncrement = registerGovernanceSignal(incremented, "evidence_pressure");
   assert(
-    evidenceIncrement.drift === 2 && evidenceIncrement.evidence_pressure === 0,
-    "registerGovernanceSignal maps evidence_pressure to drift counter"
+    evidenceIncrement.out_of_order === 1 && evidenceIncrement.evidence_pressure === 1,
+    "registerGovernanceSignal increments evidence_pressure counter"
   );
 
   const ignoredIncrement = registerGovernanceSignal(evidenceIncrement, "ignored");
   assert(
-    ignoredIncrement.drift === 3,
-    "registerGovernanceSignal maps ignored to drift counter (no no-op)"
+    ignoredIncrement.out_of_order === 2 && ignoredIncrement.evidence_pressure === 1,
+    "registerGovernanceSignal maps ignored into supported counters (no no-op)"
   );
 
   const compactionIncrement = registerGovernanceSignal(ignoredIncrement, "compaction");
@@ -433,8 +439,8 @@ function test_governance_primitives() {
 
   const acknowledged = acknowledgeGovernanceSignals(compactionIncrement);
   const downgraded = computeGovernanceSeverity({
-    kind: "drift",
-    repetitionCount: acknowledged.drift,
+    kind: "out_of_order",
+    repetitionCount: acknowledged.out_of_order,
   });
   assert(downgraded === "error", "acknowledgment is currently a no-op");
 
@@ -442,7 +448,13 @@ function test_governance_primitives() {
   assert(blockedReset.drift === acknowledged.drift, "partial reset keeps counters unchanged");
 
   const fullReset = resetGovernanceCounters(acknowledged, { full: true, prerequisitesCompleted: false });
-  assert(fullReset.drift === 0 && fullReset.compaction === 0, "full reset clears counters");
+  assert(
+    fullReset.drift === 0 &&
+      fullReset.compaction === 0 &&
+      fullReset.out_of_order === 0 &&
+      fullReset.evidence_pressure === 0,
+    "full reset clears counters"
+  );
 }
 
 // ─── Runner ──────────────────────────────────────────────────────────

@@ -51,11 +51,8 @@ import {
   compileIgnoredTier,
   trackSectionUpdate,
   resetSectionTracking,
-  evaluateIgnoredResetPolicy,
   formatIgnoredEvidence,
-  acknowledgeGovernanceSignals,
   registerGovernanceSignal,
-  resetGovernanceCounters,
   type GovernanceCounters,
   type DetectionState,
 } from "../lib/detection.js"
@@ -135,40 +132,6 @@ function getActiveActionLabel(state: Pick<BrainState, "hierarchy">): string {
   if (state.hierarchy.tactic) return state.hierarchy.tactic
   if (state.hierarchy.trajectory) return state.hierarchy.trajectory
   return "(none)"
-}
-
-function getCanonicalSessionAction(output: { output: string; metadata: unknown }): string | null {
-  const metadata = typeof output.metadata === "object" && output.metadata !== null
-    ? (output.metadata as Record<string, unknown>)
-    : {}
-  const metadataAction = metadata.action
-  if (typeof metadataAction === "string" && metadataAction.trim().length > 0) {
-    return metadataAction
-  }
-
-  try {
-    const parsed = JSON.parse(output.output ?? "")
-    const action = parsed?.metadata?.action ?? parsed?.action
-    return typeof action === "string" && action.trim().length > 0 ? action : null
-  } catch {
-    return null
-  }
-}
-
-function shouldAcknowledgeGovernanceSignals(
-  toolName: string,
-  output: { output: string; metadata: unknown }
-): boolean {
-  if (toolName === "declare_intent" || toolName === "map_context") {
-    return true
-  }
-
-  if (toolName === "hivemind_session") {
-    const action = getCanonicalSessionAction(output)
-    return action === "update"
-  }
-
-  return false
 }
 
 function extractToolContent(output: { output: string; metadata: unknown }): string {
@@ -328,48 +291,10 @@ export function createSoftGovernanceHook(
       // Increment turn count for every tool call
       let newState = incrementTurnCount(state)
       let counters: GovernanceCounters = newState.metrics.governance_counters
-      const prerequisitesCompleted = Boolean(
-        newState.hierarchy.trajectory &&
-        newState.hierarchy.tactic &&
-        newState.hierarchy.action
-      )
-
-      const governanceAcknowledged = shouldAcknowledgeGovernanceSignals(input.tool, _output)
-      if (governanceAcknowledged) {
-        counters = acknowledgeGovernanceSignals(counters)
-      }
 
       const offTrackIntent = detectOffTrackIntent(input.tool, _output)
       if (offTrackIntent) {
         newState = queueOffTrackIntent(newState, offTrackIntent, `soft-governance:${input.tool}`)
-      }
-
-      const hierarchyImpact =
-        !newState.hierarchy.trajectory || !newState.hierarchy.tactic
-          ? "high"
-          : !newState.hierarchy.action
-            ? "medium"
-            : "low"
-      const resetDecision = evaluateIgnoredResetPolicy({
-        counters,
-        prerequisitesCompleted,
-        missedStepCount: 0,
-        hierarchyImpact,
-      })
-      if (resetDecision.fullReset) {
-        counters = resetGovernanceCounters(counters, {
-          full: true,
-          prerequisitesCompleted,
-        })
-      } else if (resetDecision.downgrade) {
-        counters = resetGovernanceCounters(counters, {
-          full: false,
-          prerequisitesCompleted,
-        })
-      }
-
-      if (governanceAcknowledged) {
-        counters = acknowledgeGovernanceSignals(counters)
       }
 
       // Check for drift (high turns without context update)
@@ -596,7 +521,6 @@ export function createSoftGovernanceHook(
           `IGNORED tier: ${computeUnacknowledgedCycles(counters)} unacknowledged governance cycles (${ignoredTier.tone})`,
           actionLabel,
         )
-        counters = registerGovernanceSignal(counters, "ignored")
         await emitGovernanceToast(log, {
           key: "ignored:triage:error",
           message: triage,

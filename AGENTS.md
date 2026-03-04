@@ -140,7 +140,7 @@ User
 | Fix 3A | `src/lib/paths.ts` — SessionPaths + getSessionPaths() | `npx tsc --noEmit` PASS |
 | Fix 3B | `src/hooks/event-handler.ts` — session.created bootstrap | profile.json with agent:"unresolved" |
 | Fix 1.5A | `src/schemas/brain-state.ts` — schema detox | Orphans pruned, cycle_log lobotomized |
-| Fix 1.5B | `src/lib/detection.ts` — GovernanceCounters reduced | Only {drift, compaction} remain |
+| Fix 1.5B | `src/lib/detection.ts` — GovernanceCounters normalized | 4-field contract active: {drift, compaction, out_of_order, evidence_pressure} |
 
 ### Blocked
 | Step | What | Blocker |
