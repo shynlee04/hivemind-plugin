@@ -35,14 +35,14 @@ Refactor the **`hivefiver`** module into a reliable "healer" for the project lin
 - Quality gatekeeper: no asset ships without contract compliance
 
 ### What hivefiver Is NOT
-- Product implementor (never touches `src/**` or `tests/**` directly — delegates to hivemaker/hivehealer)
+- Product-only implementor (Pivoting to surgical refactor operation, allowing and shifting orientation to restructure and refactor the whole project)
 - General assistant (redirects non-framework requests)
 
 ### Scope Boundaries
 
 | Module | Status | Constraint |
 |--------|--------|-----------|
-| `hivefiver` | **IN SCOPE** — active refactoring | Work inside `.opencode/` primarily; `src/` via delegation only |
+| `hivefiver` | **IN SCOPE** — pivoting to surgical refactor operation | Allowing and shifting orientation to restructure and refactor the whole project (`.opencode/**`, `.hivemind/**`, `docs/**`, `src/**`, `tests/**`) |
 | `hiveminder` | **OUT OF SCOPE** for implementation; **IN SCOPE** for compatibility | Agent profiles and subagents are shared — refactors must keep future compatibility |
 
 ### Core Problem Being Solved
@@ -75,7 +75,7 @@ npm run guard:public                       # Run BEFORE any master push
 | Name | Type | Role | Scope Constraints | Location |
 |------|------|------|-------------------|----------|
 | **hiveminder** | Primary | Supreme orchestrator | No direct code edits; orchestrates via delegation. OUT OF SCOPE for now | `agents/hiveminder.md` |
-| **hivefiver** | Meta-Builder | Framework asset builder | `.opencode/**`, `.hivemind/**`, `docs/**` — NO `src/**` or `tests/**` | `agents/hivefiver.md` |
+| **hivefiver** | Meta-Builder | Framework asset builder | Pivoting to surgical refactor operation, allowing and shifting orientation to restructure and refactor the whole project | `agents/hivefiver.md` |
 | **hivemaker** | Executor | Implementation specialist | `src/**`, `tests/**`, `docs/**` only; NO framework assets | `agents/hivemaker.md` |
 | **hivehealer** | Remediation | Debugging, hardening | `src/**`, `tests/**`, `docs/**` only; NO framework assets | `agents/hivehealer.md` |
 | **hiveplanner** | Planner | Phase planning, research synthesis | NO `src/**` edits; plans to `docs/plans/` only | `agents/hiveplanner.md` |
