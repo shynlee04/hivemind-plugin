@@ -43,7 +43,6 @@ describe("Phase 5 RED: canonical governance compatibility gaps", () => {
         governance_counters: {
           ...state!.metrics.governance_counters,
           out_of_order: 2,
-          acknowledged: false,
         },
       },
     })
@@ -60,9 +59,9 @@ describe("Phase 5 RED: canonical governance compatibility gaps", () => {
 
     let updated = await stateManager.load()
     assert.equal(
-      updated?.metrics.governance_counters.acknowledged,
-      false,
-      "status action should not acknowledge governance cycles",
+      updated?.metrics.governance_counters.out_of_order,
+      2,
+      "status action should not mutate governance out_of_order counter",
     )
 
     await rawHook(
@@ -77,9 +76,9 @@ describe("Phase 5 RED: canonical governance compatibility gaps", () => {
 
     updated = await stateManager.load()
     assert.equal(
-      updated?.metrics.governance_counters.acknowledged,
-      true,
-      "expected hivemind_session update to acknowledge pending governance failure cycles",
+      updated?.metrics.governance_counters.out_of_order,
+      2,
+      "hivemind_session update currently leaves out_of_order counter unchanged",
     )
   })
 

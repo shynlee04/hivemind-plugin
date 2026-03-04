@@ -12,7 +12,6 @@ import {
 } from "../src/lib/session-export.js";
 import {
   createBrainState,
-  addSelfRating,
   addFileTouched,
   updateHierarchy,
 } from "../src/schemas/brain-state.js";
@@ -42,7 +41,6 @@ function makeState() {
   });
   state = addFileTouched(state, "src/auth.ts");
   state = addFileTouched(state, "src/middleware.ts");
-  state = addSelfRating(state, { score: 8, reason: "Good progress" });
   state.metrics.turn_count = 12;
   return state;
 }
@@ -67,8 +65,6 @@ async function test_generateExportData() {
   assert(data.hierarchy.tactic === "JWT validation", "tactic preserved");
   assert(data.hierarchy.action === "Write middleware", "action preserved");
   assert(data.summary === "Completed auth system", "summary matches");
-  assert(data.ratings.length === 1, "one rating in export");
-  assert(data.ratings[0].score === 8, "rating score preserved");
 }
 
 async function test_generateJsonExport() {
@@ -99,9 +95,6 @@ async function test_generateMarkdownExport() {
   assert(md.includes("**Trajectory**: Build auth system"), "markdown has trajectory");
   assert(md.includes("## Files Touched"), "markdown has files section");
   assert(md.includes("src/auth.ts"), "markdown lists files");
-  assert(md.includes("## Self-Ratings"), "markdown has ratings section");
-  assert(md.includes("8/10"), "markdown shows rating score");
-  assert(md.includes("Good progress"), "markdown shows rating reason");
   assert(md.includes("## Summary"), "markdown has summary section");
   assert(md.includes("Markdown export test"), "markdown shows summary text");
   assert(md.includes("## Session Content"), "markdown has session content");

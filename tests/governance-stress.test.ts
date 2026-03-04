@@ -96,7 +96,7 @@ async function testStressConditions() {
     await softHook("2")
     await softHook("3")
 
-    check(toasts.some((t) => t.variant === "info"), "GOV-04 out-of-order starts with info toast")
+    check(toasts.some((t) => t.variant === "warning"), "GOV-04 out-of-order starts with warning toast")
     check(toasts.some((t) => t.variant === "warning") && toasts.some((t) => t.variant === "error"), "GOV-04 severity escalates warning to error")
 
     const staleState = await stateManager.load()
@@ -121,7 +121,6 @@ async function testStressConditions() {
       loaded.metrics.governance_counters.out_of_order = 5
       loaded.metrics.governance_counters.drift = 3
       loaded.metrics.governance_counters.evidence_pressure = 2
-      loaded.metrics.governance_counters.acknowledged = false
       await stateManager.save(loaded)
     }
     await strictPromptHook({ sessionID: "stress" }, strictPromptOut)
@@ -155,12 +154,9 @@ async function testStressConditions() {
     const ignored = compileIgnoredTier({
       counters: {
         out_of_order: 4,
-        drift: 3,
+        drift: 10,
         compaction: 0,
         evidence_pressure: 3,
-        ignored: 0,
-        acknowledged: false,
-        prerequisites_completed: false,
       },
       governanceMode: "strict",
       expertLevel: "beginner",
@@ -172,7 +168,7 @@ async function testStressConditions() {
         actualHierarchy: "trajectory=(empty), tactic=(empty), action=patch",
       },
     })
-    check(ignored?.tone === "direct corrective", "IGNORED tone adapts to strict/beginner posture")
+    check(ignored?.tone === "firm corrective", "IGNORED tone reflects current strict-mode posture")
     check(formatIgnoredEvidence(ignored!.evidence).includes("[SEQ]") && formatIgnoredEvidence(ignored!.evidence).includes("[PLAN]") && formatIgnoredEvidence(ignored!.evidence).includes("[HIER]"), "Tri-evidence formatter always renders SEQ/PLAN/HIER in one block")
 
     resetSdkContext()

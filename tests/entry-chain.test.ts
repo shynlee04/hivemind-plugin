@@ -446,7 +446,7 @@ async function test_configPersistence() {
     const config = await loadConfig(dir)
     assert(config.governance_mode === "strict", "loadConfig returns governance_mode=strict from disk")
     assert(config.max_turns_before_warning === 5, "loadConfig returns default max_turns_before_warning=5")
-    assert(config.agent_behavior.constraints.be_skeptical === false, "deep-merged constraints: be_skeptical defaults to false")
+    assert((config.agent_behavior.constraints as Record<string, unknown>).be_skeptical === undefined, "deep-merged constraints: be_skeptical is removed from schema")
     assert(config.agent_behavior.constraints.enforce_tdd === false, "deep-merged constraints: enforce_tdd defaults to false")
 
     // Modify config on disk — partial override

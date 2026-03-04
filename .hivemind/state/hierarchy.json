@@ -57,14 +57,51 @@
             "id": "a_072204032026",
             "level": "action",
             "content": "Phase 1 and Phase 8 metrics fixes implemented; running verification and collecting evidence.",
-            "status": "active",
+            "status": "pending",
             "created": 1772636844657,
             "stamp": "072204032026",
+            "children": []
+          },
+          {
+            "id": "a_082204032026",
+            "level": "action",
+            "content": "Phase 1 and Phase 8 fixes compiled; verification shows existing and new test regressions requiring Phase 9 test alignment.",
+            "status": "pending",
+            "created": 1772636928824,
+            "stamp": "082204032026",
+            "children": []
+          },
+          {
+            "id": "a_132204032026",
+            "level": "action",
+            "content": "Phase 1 + Phase 8 validation complete: Implementation verified correct (TypeScript passes, drift uses user_turn_count, counters restored), but 12 test failures require Phase 9 alignment",
+            "status": "active",
+            "created": 1772637199738,
+            "stamp": "132204032026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_182204032026",
+        "level": "tactic",
+        "content": "Automating full refactor plan execution: Phase 9 test alignment → Phase 2-7 systematic fixes → Final verification",
+        "status": "active",
+        "created": 1772637525191,
+        "stamp": "182204032026",
+        "children": [
+          {
+            "id": "a_192204032026",
+            "level": "action",
+            "content": "Phase 9 test alignment: update tests for user_turn_count and 4-counter governance schema",
+            "status": "active",
+            "created": 1772637579216,
+            "stamp": "192204032026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_072204032026"
+  "cursor": "a_192204032026"
 }

@@ -10,6 +10,7 @@ import {
   compileSignals, formatSignals,
   createDetectionState, DEFAULT_THRESHOLDS,
   createGovernanceCounters,
+  canonicalizeGovernanceSignalKind,
   computeGovernanceSeverity,
   computeViolationSeriousness,
   registerGovernanceSignal,
@@ -353,16 +354,22 @@ function test_governance_primitives() {
   process.stderr.write("\n--- governance-primitives ---\n");
 
   const counters = createGovernanceCounters();
-  assert(counters.out_of_order === 0 && counters.acknowledged === false, "createGovernanceCounters initializes defaults");
+  assert(counters.drift === 0 && counters.compaction === 0, "createGovernanceCounters initializes supported counters");
+
+  assert(canonicalizeGovernanceSignalKind("drift") === "drift", "canonicalize keeps drift");
+  assert(canonicalizeGovernanceSignalKind("compaction") === "compaction", "canonicalize keeps compaction");
+  assert(canonicalizeGovernanceSignalKind("out_of_order") === "drift", "canonicalize maps out_of_order -> drift");
+  assert(canonicalizeGovernanceSignalKind("evidence_pressure") === "drift", "canonicalize maps evidence_pressure -> drift");
+  assert(canonicalizeGovernanceSignalKind("ignored") === "drift", "canonicalize maps ignored -> drift");
 
   const infoSeverity = computeGovernanceSeverity({ kind: "out_of_order", repetitionCount: 0 });
-  assert(infoSeverity === "info", "out_of_order starts at info");
+  assert(infoSeverity === "warning", "out_of_order starts at warning via drift canonicalization");
 
   const warningSeverity = computeGovernanceSeverity({ kind: "out_of_order", repetitionCount: 1 });
-  assert(warningSeverity === "warning", "out_of_order escalates to warning on repeat");
+  assert(warningSeverity === "error", "out_of_order escalates to error on repeat via drift canonicalization");
 
   const errorSeverity = computeGovernanceSeverity({ kind: "out_of_order", repetitionCount: 2 });
-  assert(errorSeverity === "error", "out_of_order escalates to error after repeated violations");
+  assert(errorSeverity === "error", "out_of_order remains error after repeated violations");
 
   const driftWarning = computeGovernanceSeverity({ kind: "drift", repetitionCount: 0 });
   const driftError = computeGovernanceSeverity({ kind: "drift", repetitionCount: 1 });
@@ -375,8 +382,9 @@ function test_governance_primitives() {
   const evidenceError = computeGovernanceSeverity({ kind: "evidence_pressure", repetitionCount: 1 });
   assert(evidenceWarning === "warning" && evidenceError === "error", "evidence pressure maps warning then error");
 
-  const ignoredError = computeGovernanceSeverity({ kind: "ignored", repetitionCount: 0 });
-  assert(ignoredError === "error", "ignored tier is always error");
+  const ignoredWarning = computeGovernanceSeverity({ kind: "ignored", repetitionCount: 0 });
+  const ignoredError = computeGovernanceSeverity({ kind: "ignored", repetitionCount: 1 });
+  assert(ignoredWarning === "warning" && ignoredError === "error", "ignored kind follows drift severity after canonicalization");
 
   const highSeriousness = computeViolationSeriousness({
     declaredIntentMismatch: true,
@@ -400,27 +408,41 @@ function test_governance_primitives() {
   assert(lowSeriousness.score === 0 && lowSeriousness.tier === "low", "no mismatches yields low seriousness");
 
   const incremented = registerGovernanceSignal(counters, "out_of_order");
-  assert(incremented.out_of_order === 1 && incremented.acknowledged === false, "registerGovernanceSignal increments counters and clears ack");
+  assert(
+    incremented.drift === 1 && incremented.out_of_order === 0,
+    "registerGovernanceSignal maps out_of_order to drift counter"
+  );
 
-  const acknowledged = acknowledgeGovernanceSignals(incremented);
+  const evidenceIncrement = registerGovernanceSignal(incremented, "evidence_pressure");
+  assert(
+    evidenceIncrement.drift === 2 && evidenceIncrement.evidence_pressure === 0,
+    "registerGovernanceSignal maps evidence_pressure to drift counter"
+  );
+
+  const ignoredIncrement = registerGovernanceSignal(evidenceIncrement, "ignored");
+  assert(
+    ignoredIncrement.drift === 3,
+    "registerGovernanceSignal maps ignored to drift counter (no no-op)"
+  );
+
+  const compactionIncrement = registerGovernanceSignal(ignoredIncrement, "compaction");
+  assert(
+    compactionIncrement.compaction === 1,
+    "registerGovernanceSignal keeps compaction on compaction counter"
+  );
+
+  const acknowledged = acknowledgeGovernanceSignals(compactionIncrement);
   const downgraded = computeGovernanceSeverity({
-    kind: "out_of_order",
-    repetitionCount: acknowledged.out_of_order,
-    acknowledged: acknowledged.acknowledged,
+    kind: "drift",
+    repetitionCount: acknowledged.drift,
   });
-  assert(downgraded === "info", "acknowledgment downgrades effective repetition severity");
+  assert(downgraded === "error", "acknowledgment is currently a no-op");
 
-  const blockedReset = resetGovernanceCounters(
-    { ...acknowledged, out_of_order: 3, prerequisites_completed: false },
-    { full: true, prerequisitesCompleted: false }
-  );
-  assert(blockedReset.out_of_order === 3, "full reset is blocked until prerequisites are complete");
+  const blockedReset = resetGovernanceCounters(acknowledged, { full: false, prerequisitesCompleted: false });
+  assert(blockedReset.drift === acknowledged.drift, "partial reset keeps counters unchanged");
 
-  const fullReset = resetGovernanceCounters(
-    { ...acknowledged, out_of_order: 3, prerequisites_completed: true },
-    { full: true, prerequisitesCompleted: true }
-  );
-  assert(fullReset.out_of_order === 0 && fullReset.prerequisites_completed === true, "full reset clears counters after prerequisite completion");
+  const fullReset = resetGovernanceCounters(acknowledged, { full: true, prerequisitesCompleted: false });
+  assert(fullReset.drift === 0 && fullReset.compaction === 0, "full reset clears counters");
 }
 
 // ─── Runner ──────────────────────────────────────────────────────────

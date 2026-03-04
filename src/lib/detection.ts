@@ -71,6 +71,8 @@ export type GovernanceSignalKind =
   | "evidence_pressure"
   | "ignored";
 
+export type CanonicalGovernanceSignalKind = "drift" | "compaction";
+
 export type GovernanceSeverity = "info" | "warning" | "error";
 
 export interface SeriousnessInputs {
@@ -89,6 +91,20 @@ export interface GovernanceCounters {
   compaction: number;
   out_of_order: number;
   evidence_pressure: number;
+}
+
+/**
+ * Canonicalize governance signal kinds to actively tracked counters.
+ *
+ * Supported counters: drift, compaction.
+ * Legacy kinds (out_of_order, evidence_pressure, ignored) are folded into drift
+ * for backward-compatible call sites.
+ */
+export function canonicalizeGovernanceSignalKind(
+  kind: GovernanceSignalKind
+): CanonicalGovernanceSignalKind {
+  if (kind === "compaction") return "compaction";
+  return "drift";
 }
 
 export type HierarchyImpact = "low" | "medium" | "high";
@@ -183,13 +199,14 @@ export function computeGovernanceSeverity(opts: {
 }): GovernanceSeverity {
   void opts.acknowledged;
 
-  if (opts.kind === "compaction") return "info";
-  if (opts.kind === "drift") {
+  const canonicalKind = canonicalizeGovernanceSignalKind(opts.kind);
+
+  if (canonicalKind === "compaction") return "info";
+  if (canonicalKind === "drift") {
     return opts.repetitionCount <= 0 ? "warning" : "error";
   }
 
-  // Legacy kinds are accepted for compatibility but no longer escalate.
-  return "info";
+  return "warning";
 }
 
 export function computeUnacknowledgedCycles(counters: GovernanceCounters): number {
@@ -272,13 +289,11 @@ export function registerGovernanceSignal(
   counters: GovernanceCounters,
   kind: GovernanceSignalKind
 ): GovernanceCounters {
-  if (kind === "ignored") {
-    return counters;
-  }
+  const canonicalKind = canonicalizeGovernanceSignalKind(kind);
 
   return {
     ...counters,
-    [kind]: counters[kind] + 1,
+    [canonicalKind]: counters[canonicalKind] + 1,
   };
 }
 

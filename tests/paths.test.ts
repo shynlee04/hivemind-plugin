@@ -264,7 +264,7 @@ async function testGetAllDirectories() {
   process.stderr.write("\n--- getAllDirectories ---\n")
 
   const dirs = getAllDirectories(tmpDir)
-  assert(dirs.length === 30, "30 directories in structure")
+  assert(dirs.length === 32, "32 directories in structure")
   assert(dirs[0] === join(tmpDir, ".hivemind"), "root is first")
   assert(dirs.includes(join(tmpDir, ".hivemind", "state")), "includes state/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "memory")), "includes memory/")

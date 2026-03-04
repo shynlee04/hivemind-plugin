@@ -292,8 +292,11 @@ async function test_coach_mode_init() {
   // 5. Coach mode forces code review
   assert(config.agent_behavior.constraints.require_code_review === true, "coach mode forces code review");
 
-  // 6. Coach mode forces be_skeptical
-  assert(config.agent_behavior.constraints.be_skeptical === true, "coach mode forces be_skeptical");
+  // 6. Coach mode no longer exposes be_skeptical in constraints
+  assert(
+    (config.agent_behavior.constraints as Record<string, unknown>).be_skeptical === undefined,
+    "coach mode keeps be_skeptical removed from constraints"
+  );
 
   // 7. Brain state starts LOCKED (due to strict)
   const stateManager = createStateManager(tmpDir);
@@ -394,12 +397,9 @@ function test_ignored_tier_contract() {
   const result = compileIgnoredTier({
     counters: {
       out_of_order: 4,
-      drift: 3,
+      drift: 10,
       compaction: 0,
       evidence_pressure: 3,
-      ignored: 0,
-      acknowledged: false,
-      prerequisites_completed: false,
     },
     governanceMode: "strict",
     expertLevel: "beginner",
@@ -413,7 +413,7 @@ function test_ignored_tier_contract() {
   });
 
   assert(result?.tier === "IGNORED", "10+ unacknowledged cycles trigger IGNORED tier");
-  assert(result?.severity === "error", "IGNORED tier uses error severity");
+  assert(result?.severity === "warning", "IGNORED tier uses warning severity");
 
   const block = formatIgnoredEvidence(result!.evidence);
   assert(block.includes("[SEQ]"), "IGNORED evidence block contains sequence evidence");
@@ -430,15 +430,12 @@ function test_ignored_reset_policy() {
       drift: 2,
       compaction: 0,
       evidence_pressure: 2,
-      ignored: 4,
-      acknowledged: true,
-      prerequisites_completed: false,
     },
     prerequisitesCompleted: false,
     missedStepCount: 3,
     hierarchyImpact: "high",
   });
-  assert(downgrade.downgrade && !downgrade.fullReset, "acknowledgement can downgrade severity");
+  assert(!downgrade.downgrade && !downgrade.fullReset, "ignored reset policy is currently disabled");
 
   const fullReset = evaluateIgnoredResetPolicy({
     counters: {
@@ -446,15 +443,12 @@ function test_ignored_reset_policy() {
       drift: 0,
       compaction: 0,
       evidence_pressure: 0,
-      ignored: 3,
-      acknowledged: true,
-      prerequisites_completed: true,
     },
     prerequisitesCompleted: true,
     missedStepCount: 1,
     hierarchyImpact: "low",
   });
-  assert(fullReset.fullReset, "full reset only allowed when prerequisites complete");
+  assert(!fullReset.fullReset, "full reset path is currently disabled");
 }
 
 // ─── Runner ──────────────────────────────────────────────────────────

@@ -9,6 +9,7 @@ import {
   unlockSession,
   lockSession,
   incrementTurnCount,
+  incrementUserTurnCount,
   resetTurnCount,
   updateHierarchy,
   addFileTouched,
@@ -135,9 +136,9 @@ function test_drift_score() {
   // Fresh state = 100
   assert(calculateDriftScore(state) === 100, "fresh state = 100")
 
-  // After many turns with no context updates
+  // After many user turns with no context updates
   for (let i = 0; i < 10; i++) {
-    state = incrementTurnCount(state)
+    state = incrementUserTurnCount(state)
   }
   const driftAfterTurns = calculateDriftScore(state)
   assert(driftAfterTurns < 100, "drift decreases with turns")
@@ -155,9 +156,9 @@ function test_drift_warning() {
 
   assert(!shouldTriggerDriftWarning(state, 5), "no warning at start")
 
-  // Push past threshold with high turn count + low drift
+  // Push past threshold with high user turn count + low drift
   for (let i = 0; i < 15; i++) {
-    state = incrementTurnCount(state)
+    state = incrementUserTurnCount(state)
   }
   state.metrics.drift_score = 30
   assert(shouldTriggerDriftWarning(state, 5), "warning triggered at high turns + low drift")

@@ -44,7 +44,6 @@ function makeState(overrides?: {
   files_touched?: string[];
   turn_count?: number;
   drift_score?: number;
-  last_commit_suggestion_turn?: number;
 }): BrainState {
   const config = createConfig({
     governance_mode: overrides?.governance_mode ?? "assisted",
@@ -70,7 +69,6 @@ function makeState(overrides?: {
       turn_count: overrides?.turn_count ?? 0,
       drift_score: overrides?.drift_score ?? 100,
     },
-    last_commit_suggestion_turn: overrides?.last_commit_suggestion_turn ?? 0,
   };
 
   return result;
@@ -251,22 +249,21 @@ function test_commit_advisor() {
   const suggestion1 = shouldSuggestCommit(atThreshold, 5);
   assert(suggestion1 !== null && suggestion1.files === 5, "at threshold → suggestion");
 
-  // 3. Recently suggested (within 3 turns) → null
+  // 3. Recently suggested (within 3 turns) → still suggests (legacy cooldown removed)
   const recentlySuggested = makeState({
     files_touched: ["a.ts", "b.ts", "c.ts", "d.ts", "e.ts"],
     turn_count: 10,
-    last_commit_suggestion_turn: 9,
   });
+  const suggestionRecent = shouldSuggestCommit(recentlySuggested, 5);
   assert(
-    shouldSuggestCommit(recentlySuggested, 5) === null,
-    "recently suggested (within 3 turns) → null"
+    suggestionRecent !== null && suggestionRecent.files === 5,
+    "recently suggested (within 3 turns) → suggestion"
   );
 
   // 4. Not recently suggested → suggestion
   const notRecent = makeState({
     files_touched: ["a.ts", "b.ts", "c.ts", "d.ts", "e.ts"],
     turn_count: 10,
-    last_commit_suggestion_turn: 5,
   });
   const suggestion2 = shouldSuggestCommit(notRecent, 5);
   assert(suggestion2 !== null && suggestion2.files === 5, "not recently suggested → suggestion");

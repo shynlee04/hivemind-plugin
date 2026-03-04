@@ -1,17 +1,1 @@
-{
-  "version": "1.0.0",
-  "mems": [
-    {
-      "id": "1e544473-4911-40b8-bfc5-dd89813963ca",
-      "session_id": "eca6ef14-5f16-4e14-a972-a84e505125eb",
-      "origin_task_id": null,
-      "shelf": "solutions",
-      "type": "insight",
-      "content": "METRICS-REFACTOR-PLAN-VALIDATED: refactor-planning.md updated with accurate current state. Key findings: (1) turn_count counts tool calls not turns - root cause, (2) GovernanceCounters already reduced to {drift,compaction}, (3) evidence_pressure signal registration is BROKEN in soft-governance.ts:405, (4) zombie fields still in defaults at brain-state.ts:307-317. Priority: P0=Phase1+Phase8, P1=Phase2+Phase3.",
-      "relevance_score": 1,
-      "staleness_stamp": "2026-03-04T14:47:35.173Z",
-      "created_at": "2026-03-04T14:47:35.173Z",
-      "updated_at": "2026-03-04T14:47:35.173Z"
-    }
-  ]
-}
+{"version":"1.0.0","mems":[]}
