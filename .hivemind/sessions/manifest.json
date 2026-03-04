@@ -1,4 +1,19 @@
 {
-  "sessions": [],
-  "active_stamp": null
+  "sessions": [
+    {
+      "stamp": "190105032026",
+      "file": "session-5efba8eb-532b-4f4f-8a4b-f62e52262af5.md",
+      "status": "active",
+      "created": 1772648366146,
+      "mode": "plan_driven",
+      "trajectory": "Execute Pack Plan Phase 3: Session-State Isolation Completion (Fix 3C-D)",
+      "session_id": "5efba8eb-532b-4f4f-8a4b-f62e52262af5",
+      "linked_plans": [],
+      "created_at_iso": "2026-03-04T18:19:26.146Z",
+      "updated_at_epoch": 1772648366151,
+      "updated_at_iso": "2026-03-04T18:19:26.151Z",
+      "contract_version": "1.1.0"
+    }
+  ],
+  "active_stamp": "190105032026"
 }

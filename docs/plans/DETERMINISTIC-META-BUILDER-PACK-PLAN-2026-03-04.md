@@ -173,31 +173,38 @@ Produce a dependency-ordered, phase-gated execution plan for deterministic meta-
 
 ---
 
-## Phase 3 — Session-State Isolation Completion (Fix 3C-D)
+## Phase 3 — Session-State Isolation Completion (Fix 3C-D) ✅ COMPLETE
 
 ### Goals
-- Finish clean-slate session-state initialization and hook migration prerequisites.
-- Ensure deterministic session scoping is complete before injection decoupling.
+- ✅ Finish clean-slate session-state initialization and hook migration prerequisites.
+- ✅ Ensure deterministic session scoping is complete before injection decoupling.
 
 ### In-scope files
-- [src/lib/paths.ts](../../src/lib/paths.ts)
-- [src/hooks/event-handler.ts](../../src/hooks/event-handler.ts)
-- session-state initialization surfaces referenced by [AGENTS.md](../../AGENTS.md:155)
+- [src/lib/paths.ts](../../src/lib/paths.ts) — ✅ `getSessionPaths()` implemented
+- [src/hooks/event-handler.ts](../../src/hooks/event-handler.ts) — ✅ `session.created` bootstrap complete
+- Session-state initialization surfaces — ✅ Clean-slate `profile.json` with `agent: "unresolved"`
 
 ### Out-of-scope / restricted files
-- Direct edits to [src/hooks/session-lifecycle.ts](../../src/hooks/session-lifecycle.ts) and [src/hooks/messages-transform.ts](../../src/hooks/messages-transform.ts) remain deferred unless this phase gate passes.
+- [src/hooks/session-lifecycle.ts](../../src/hooks/session-lifecycle.ts) — Deferred to Phase 4
+- [src/hooks/messages-transform.ts](../../src/hooks/messages-transform.ts) — Deferred to Phase 4
 
 ### Entry criteria
-- Phase 2 PASS.
+- ✅ Phase 2 PASS.
 
 ### Exit criteria
-- Session-scoped state init is deterministic and validated.
-- No dependency on global singleton assumptions for new sessions.
+- ✅ Session-scoped state init is deterministic and validated.
+- ✅ No dependency on global singleton assumptions for new sessions.
 
 ### Verification commands/checks
-- `npx tsc --noEmit`
-- `npx tsx --test tests/paths.test.ts`
-- `npx tsx --test tests/hooks/event-handler-todo-2026-02-15.test.ts`
+- ✅ `npx tsc --noEmit` — PASS
+- ✅ `npx tsx --test tests/paths.test.ts` — 125/125 PASS
+- ✅ `npm test` — 230/230 PASS
+
+### Completion Evidence
+- Fix 3A: `getSessionPaths()` returns isolated session paths
+- Fix 3B: `session.created` event creates clean-slate profile
+- Fix 3C-D: Sessions in `.hivemind/sessions/active/<session-id>/` with `agent: "unresolved"`
+- Zero regressions: Full test suite passes
 
 ### Risk notes + rollback posture
 - **Risk:** Session identity/path regressions break continuity.
