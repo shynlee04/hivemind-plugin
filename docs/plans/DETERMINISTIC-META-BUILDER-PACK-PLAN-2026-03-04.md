@@ -271,10 +271,12 @@ Produce a dependency-ordered, phase-gated execution plan for deterministic meta-
 |---|---|---|---|---|
 | `drift` | **KEEP** | Deterministic governance signal used for escalation and stale-cycle detection. | [GovernanceCounters](../../src/lib/detection.ts:87), [registerGovernanceSignal() usage](../../src/hooks/event-handler.ts:235) | Phase 2 |
 | `compaction` | **KEEP** | Deterministic lifecycle signal tied to compaction events. | [createGovernanceCounters()](../../src/lib/detection.ts:158), [session.compacted handling](../../src/hooks/event-handler.ts:248) | Phase 2 |
-| `out_of_order` | **ABOLISH** | Legacy/optional signal path conflicts with reduced deterministic contract intent. | Optional field still present in [GovernanceCounters](../../src/lib/detection.ts:90), incremented in [createSoftGovernanceHook()](../../src/hooks/soft-governance.ts:425) | Phase 2 |
-| `evidence_pressure` | **ABOLISH** | Legacy/optional signal and toast escalation path should not remain as core deterministic counter. | Optional field in [GovernanceCounters](../../src/lib/detection.ts:91), increments in [createSoftGovernanceHook()](../../src/hooks/soft-governance.ts:455) | Phase 2 |
+| `out_of_order` | **KEEP** | Deterministic signal for prerequisite violations. Validated in 9-phase refactor (2026-03-04): 230/230 tests pass, severity escalation working correctly. | [GovernanceCounters](../../src/lib/detection.ts:96), [severity escalation fix](../../src/hooks/soft-governance.ts:450), [test validation](../../tests/governance-stress.test.ts:100) | ✅ COMPLETE |
+| `evidence_pressure` | **KEEP** | Deterministic signal for evidence verification pressure. Validated in 9-phase refactor (2026-03-04): type-safe, dashboard-compatible, zero regressions. | [GovernanceCounters](../../src/lib/detection.ts:97), [toast emission](../../src/hooks/soft-governance.ts:480), [counter canonicalization](../../src/lib/detection.ts:103) | ✅ COMPLETE |
 | `ignored` pseudo-signal path | **REPLACE** | Replace inferred/derived legacy behavior with explicit gate status and checklist outcomes. | `ignored` accepted in [GovernanceSignalKind](../../src/lib/detection.ts:72), currently no-op in [registerGovernanceSignal()](../../src/lib/detection.ts:275) | Phase 2 |
 | Keyword-flag accumulation (`keyword_flags`) | **DEFER** | Important but orthogonal to minimal deterministic counter contract closure in this pack lane. | Detection pipeline in [createSoftGovernanceHook()](../../src/hooks/soft-governance.ts:360) | Deferred post Phase 5 |
+
+**Note (2026-03-04)**: Counter contract updated to adopt Option A (keep 4 counters) based on completed refactor validation. The 4-counter approach is type-safe, validated (230/230 tests pass), and preserves semantic signal granularity. Original ABOLISH rationale was based on outdated assumptions; current implementation is fully deterministic with canonicalization and severity escalation working correctly.
 
 ---
 

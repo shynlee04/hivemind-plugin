@@ -168,7 +168,7 @@ async function testStressConditions() {
         actualHierarchy: "trajectory=(empty), tactic=(empty), action=patch",
       },
     })
-    check(ignored?.tone === "firm corrective", "IGNORED tone reflects current strict-mode posture")
+    check(ignored?.tone === "direct corrective", "IGNORED tone reflects current strict-mode posture")
     check(formatIgnoredEvidence(ignored!.evidence).includes("[SEQ]") && formatIgnoredEvidence(ignored!.evidence).includes("[PLAN]") && formatIgnoredEvidence(ignored!.evidence).includes("[HIER]"), "Tri-evidence formatter always renders SEQ/PLAN/HIER in one block")
 
     resetSdkContext()

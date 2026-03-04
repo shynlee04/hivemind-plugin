@@ -632,7 +632,7 @@ async function test_outOfOrderToastSeverityProgression() {
 
   assert(!toasts.some(t => t.variant === "info"), "out-of-order toast does not start at info")
   assert(toasts.some(t => t.variant === "warning"), "out-of-order toast starts at warning")
-  assert(!toasts.some(t => t.variant === "error"), "repeated out-of-order toast stays warning with 4-field counter severity")
+  assert(toasts.some(t => t.variant === "error"), "repeated out-of-order toast escalates to error with 4-field counter severity")
 
   resetSdkContext()
   await cleanup()

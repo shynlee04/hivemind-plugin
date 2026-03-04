@@ -447,7 +447,7 @@ export function createSoftGovernanceHook(
       if (isIgnoredTool && state.session.governance_status === "LOCKED") {
         // Agent is trying to use tools when session is LOCKED
         newState = addViolationCount(newState)
-        const repetitionCount = counters.drift
+        const repetitionCount = counters.out_of_order
         counters = registerGovernanceSignal(counters, "out_of_order")
         const severity = computeGovernanceSeverity({
           kind: "out_of_order",

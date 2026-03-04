@@ -24,6 +24,18 @@
       "staleness_stamp": "2026-03-04T15:53:34.257Z",
       "created_at": "2026-03-04T15:53:34.257Z",
       "updated_at": "2026-03-04T15:53:34.257Z"
+    },
+    {
+      "id": "4f233dc4-5c79-4277-b892-040f8a919d35",
+      "session_id": "eca6ef14-5f16-4e14-a972-a84e505125eb",
+      "origin_task_id": null,
+      "shelf": "integration",
+      "type": "insight",
+      "content": "CRITICAL INTEGRATION CONFLICT: Refactor vs Deterministic Pack Plan\n\n**Refactor (Completed 2026-03-04):**\n- Phase 8 RESTORED 4-counters: {drift, compaction, out_of_order, evidence_pressure}\n- Rationale: Type system expected 4 counters, dashboard had fallback logic, no code changes needed\n- Evidence: src/lib/detection.ts:87-91, all 230 tests pass\n\n**Pack Plan Section E (DETERMINISTIC-META-BUILDER-PACK-PLAN-2026-03-04.md):**\n- Wants to ABOLISH: out_of_order, evidence_pressure\n- Rationale: \"legacy/optional signal conflicts with reduced deterministic contract\"\n- Scheduled: Phase 2 (Counter Contract Remediation)\n\n**Conflict Resolution Required:**\nUser must decide canonical approach before Pack Plan Phase 2 can proceed.\n\n**Options:**\nA) Accept Refactor's 4-counter approach (proven working, type-safe)\nB) Revert to Pack Plan's 2-counter approach (requires schema changes, test updates)\nC) Hybrid: Keep 4 counters but mark 2 as deprecated (migration path)\n\n**Recommendation:** Option A - Refactor is complete, tested, and zero-regression. Pack Plan should be updated to reflect this.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-03-04T17:22:50.238Z",
+      "created_at": "2026-03-04T17:22:50.238Z",
+      "updated_at": "2026-03-04T17:22:50.238Z"
     }
   ]
 }
