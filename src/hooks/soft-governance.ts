@@ -22,7 +22,7 @@ import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import type { BrainState } from "../schemas/brain-state.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
-import { queueStateMutation } from "../lib/state-mutation-queue.js"
+import { queueStateMutation, flushMutations } from "../lib/state-mutation-queue.js"
 import {
   addViolationCount,
   incrementTurnCount,
@@ -81,7 +81,7 @@ export async function emitGovernanceToast(
   },
 ): Promise<boolean> {
   const eventType = opts.eventType ?? "governance"
-  
+
   // Use centralized throttle - 60s cooldown, max 5 per session per event type
   if (!checkAndRecordToast(eventType, opts.key)) {
     await log.debug(`Toast throttled: ${opts.key}`)
@@ -300,7 +300,7 @@ export function createSoftGovernanceHook(
       // Check for drift (high turns without context update)
       // Threshold: drift_score < 30 AND user_turn_count >= 10 (consistent with event-handler.ts)
       const driftWarning = newState.metrics.turn_count >= config.max_turns_before_warning &&
-                           newState.metrics.drift_score < 30
+        newState.metrics.drift_score < 30
 
       // === Detection Engine: Tool Classification ===
       const toolCategory = classifyTool(input.tool)
@@ -639,13 +639,21 @@ export function createSoftGovernanceHook(
         newState = splitResult.state
       }
 
-      // CQRS-compliant: queue mutation only.
-      // Hook remains write-intent only; mutation application is handled by tool boundaries.
+      // CQRS-compliant: queue mutation then flush immediately on tool boundary.
+      // This ensures mutations are applied atomically at every tool call,
+      // not deferred until a HiveMind tool happens to run.
       queueStateMutation({
         type: "UPDATE_STATE",
         payload: newState,
         source: "soft-governance"
-      })
+      }, input.sessionID)
+
+      try {
+        await flushMutations(stateManager, input.sessionID)
+      } catch (flushError) {
+        // Non-fatal: mutations stay in queue for next flush opportunity
+        await log.warn(`Mutation flush failed in soft-governance: ${flushError instanceof Error ? flushError.message : String(flushError)}`)
+      }
 
       // Log drift warnings if detected
       if (driftWarning) {

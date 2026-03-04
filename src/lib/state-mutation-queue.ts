@@ -100,14 +100,46 @@ export interface TaskManifestMutation {
 }
 
 /**
- * Global mutation queue (in-process, per-session).
+ * Session-partitioned mutation queues.
  *
- * This is module-scoped (not exported) to ensure all access goes through
- * the provided API functions.
+ * Each session gets its own queue to prevent cross-session mutation
+ * interleaving (see: audit R1 — concurrent sessions sharing a single
+ * queue caused mutations to be lost or applied to the wrong state).
+ *
+ * The "__global__" key is used as a backward-compatible default for
+ * callers that don't pass a sessionID.
  */
-const mutationQueue: StateMutation[] = [];
-const taskManifestQueue: TaskManifestMutation[] = [];
-const auditLog: AuditEntry[] = [];
+const DEFAULT_SESSION_KEY = "__global__";
+const mutationQueues = new Map<string, StateMutation[]>();
+const taskManifestQueues = new Map<string, TaskManifestMutation[]>();
+const auditLogs = new Map<string, AuditEntry[]>();
+
+function getMutationQueue(sessionID: string = DEFAULT_SESSION_KEY): StateMutation[] {
+  let queue = mutationQueues.get(sessionID);
+  if (!queue) {
+    queue = [];
+    mutationQueues.set(sessionID, queue);
+  }
+  return queue;
+}
+
+function getTaskManifestQueue(sessionID: string = DEFAULT_SESSION_KEY): TaskManifestMutation[] {
+  let queue = taskManifestQueues.get(sessionID);
+  if (!queue) {
+    queue = [];
+    taskManifestQueues.set(sessionID, queue);
+  }
+  return queue;
+}
+
+function getAuditLogForSession(sessionID: string = DEFAULT_SESSION_KEY): AuditEntry[] {
+  let log = auditLogs.get(sessionID);
+  if (!log) {
+    log = [];
+    auditLogs.set(sessionID, log);
+  }
+  return log;
+}
 
 /**
  * Maximum queue size before warning.
@@ -116,11 +148,27 @@ const auditLog: AuditEntry[] = [];
 const MAX_QUEUE_SIZE = 100;
 const MAX_AUDIT_LOG = 50;
 
-function recordAuditEntry(entry: AuditEntry): void {
-  if (auditLog.length >= MAX_AUDIT_LOG) {
-    auditLog.shift();
+/**
+ * Array fields that should be concatenated (not replaced) during deepMerge.
+ * This prevents silent data loss when multiple hooks update the same array field.
+ * (See: audit R8 — deepMerge replaced arrays instead of appending)
+ */
+const ARRAY_CONCAT_FIELDS = new Set([
+  "files_touched",
+  "keyword_flags",
+  "cycle_log",
+  "ratings",
+  "linked_sessions",
+  "dependencies",
+  "tags",
+]);
+
+function recordAuditEntry(entry: AuditEntry, sessionID: string = DEFAULT_SESSION_KEY): void {
+  const log = getAuditLogForSession(sessionID);
+  if (log.length >= MAX_AUDIT_LOG) {
+    log.shift();
   }
-  auditLog.push(entry);
+  log.push(entry);
 }
 
 function getPayloadKeys(payload: unknown): string[] {
@@ -337,48 +385,52 @@ function mergeLegacyManifestIntoGraphTasks(
  * ```
  */
 export function queueStateMutation(
-  mutation: Omit<StateMutation, "timestamp">
+  mutation: Omit<StateMutation, "timestamp">,
+  sessionID?: string
 ): void {
+  const queue = getMutationQueue(sessionID);
   const fullMutation: StateMutation = {
     ...mutation,
     timestamp: new Date().toISOString(),
   };
 
   // Prevent unbounded queue growth
-  if (mutationQueue.length >= MAX_QUEUE_SIZE) {
+  if (queue.length >= MAX_QUEUE_SIZE) {
     // Capture dropped mutation BEFORE shift for accurate logging
-    const dropped = mutationQueue[0];
-    mutationQueue.shift();
+    const dropped = queue[0];
+    queue.shift();
     // Log asynchronously to avoid blocking
-    getLogger().then(logger => 
-      logger.warn(`Queue overflow, dropped mutation from: ${dropped?.source ?? "unknown"}`)
+    getLogger().then(logger =>
+      logger.warn(`Queue overflow (session: ${sessionID ?? DEFAULT_SESSION_KEY}), dropped mutation from: ${dropped?.source ?? "unknown"}`)
     ).catch(() => {
       // Ignore logging errors
     });
   }
 
-  mutationQueue.push(fullMutation);
+  queue.push(fullMutation);
 }
 
 export function queueTaskManifestMutation(
-  mutation: Omit<TaskManifestMutation, "timestamp">
+  mutation: Omit<TaskManifestMutation, "timestamp">,
+  sessionID?: string
 ): void {
+  const queue = getTaskManifestQueue(sessionID);
   const fullMutation: TaskManifestMutation = {
     ...mutation,
     timestamp: new Date().toISOString(),
   };
 
-  if (taskManifestQueue.length >= MAX_QUEUE_SIZE) {
-    const dropped = taskManifestQueue[0];
-    taskManifestQueue.shift();
+  if (queue.length >= MAX_QUEUE_SIZE) {
+    const dropped = queue[0];
+    queue.shift();
     getLogger().then((logger) =>
-      logger.warn(`Task queue overflow, dropped mutation from: ${dropped?.source ?? "unknown"}`)
+      logger.warn(`Task queue overflow (session: ${sessionID ?? DEFAULT_SESSION_KEY}), dropped mutation from: ${dropped?.source ?? "unknown"}`)
     ).catch(() => {
       // Ignore logging errors
     });
   }
 
-  taskManifestQueue.push(fullMutation);
+  queue.push(fullMutation);
 }
 
 /**
@@ -398,9 +450,11 @@ export function queueTaskManifestMutation(
  * ```
  */
 export async function flushMutations(
-  stateManager: StateManager
+  stateManager: StateManager,
+  sessionID?: string
 ): Promise<number> {
-  if (mutationQueue.length === 0) {
+  const queue = getMutationQueue(sessionID);
+  if (queue.length === 0) {
     return 0;
   }
 
@@ -413,14 +467,14 @@ export async function flushMutations(
       const logger = await getLogger();
       await logger.warn(
         "Cannot flush mutations: no state exists. " +
-          "Mutations will remain queued until state is initialized."
+        "Mutations will remain queued until state is initialized."
       );
       return 0;
     }
 
     // Sort by priority (lower first), then by timestamp (older first)
     // This ensures higher priority mutations are applied LAST (they win in merge)
-    const sortedMutations = [...mutationQueue].sort((a, b) => {
+    const sortedMutations = [...queue].sort((a, b) => {
       const priorityDiff = (a.priority ?? 0) - (b.priority ?? 0);
       if (priorityDiff !== 0) return priorityDiff;
       return a.timestamp.localeCompare(b.timestamp);
@@ -448,29 +502,30 @@ export async function flushMutations(
     await stateManager.save(mergedState);
 
     for (const entry of pendingAuditEntries) {
-      recordAuditEntry(entry);
+      recordAuditEntry(entry, sessionID);
     }
 
     // Clear queue after successful save
-    const appliedCount = mutationQueue.length;
-    mutationQueue.length = 0;
+    const appliedCount = queue.length;
+    queue.length = 0;
 
     return appliedCount;
   } catch (error) {
     const logger = await getLogger();
-    await logger.error(`Flush failed: ${error instanceof Error ? error.message : String(error)}`);
+    await logger.error(`Flush failed (session: ${sessionID ?? DEFAULT_SESSION_KEY}): ${error instanceof Error ? error.message : String(error)}`);
     // Leave mutations in queue for retry
     throw error;
   }
 }
 
-export async function flushTaskManifestMutations(): Promise<number> {
-  if (taskManifestQueue.length === 0) {
+export async function flushTaskManifestMutations(sessionID?: string): Promise<number> {
+  const queue = getTaskManifestQueue(sessionID);
+  if (queue.length === 0) {
     return 0;
   }
 
   try {
-    const sortedMutations = [...taskManifestQueue].sort((a, b) => {
+    const sortedMutations = [...queue].sort((a, b) => {
       const priorityDiff = (a.priority ?? 0) - (b.priority ?? 0);
       if (priorityDiff !== 0) return priorityDiff;
       return a.timestamp.localeCompare(b.timestamp);
@@ -492,17 +547,17 @@ export async function flushTaskManifestMutations(): Promise<number> {
         appliedAt: new Date().toISOString(),
         payloadKeys: getPayloadKeys(mutation.payload),
         queueDepthAtApplication,
-      });
+      }, sessionID);
       queueDepthAtApplication -= 1;
     }
 
-    const appliedCount = taskManifestQueue.length;
-    taskManifestQueue.length = 0;
+    const appliedCount = queue.length;
+    queue.length = 0;
     return appliedCount;
   } catch (error) {
     const logger = await getLogger();
     await logger.error(
-      `Task manifest flush failed: ${error instanceof Error ? error.message : String(error)}`
+      `Task manifest flush failed (session: ${sessionID ?? DEFAULT_SESSION_KEY}): ${error instanceof Error ? error.message : String(error)}`
     );
     throw error;
   }
@@ -515,42 +570,48 @@ export async function flushTaskManifestMutations(): Promise<number> {
  *
  * @returns Number of mutations waiting to be applied
  */
-export function getPendingMutationCount(): number {
-  return mutationQueue.length;
+export function getPendingMutationCount(sessionID?: string): number {
+  return getMutationQueue(sessionID).length;
 }
 
-export function getPendingTaskManifestMutationCount(): number {
-  return taskManifestQueue.length;
+export function getPendingTaskManifestMutationCount(sessionID?: string): number {
+  return getTaskManifestQueue(sessionID).length;
 }
 
-export function getAuditLog(): AuditEntry[] {
-  return [...auditLog];
+export function getAuditLog(sessionID?: string): AuditEntry[] {
+  return [...getAuditLogForSession(sessionID)];
 }
 
-export function getAuditLogBySource(source: string): AuditEntry[] {
-  return auditLog.filter((entry) => entry.source === source);
+export function getAuditLogBySource(source: string, sessionID?: string): AuditEntry[] {
+  return getAuditLogForSession(sessionID).filter((entry) => entry.source === source);
 }
 
-export function clearAuditLog(): void {
-  auditLog.length = 0;
+export function clearAuditLog(sessionID?: string): void {
+  if (sessionID) {
+    const log = auditLogs.get(sessionID);
+    if (log) log.length = 0;
+  } else {
+    auditLogs.clear();
+  }
 }
 
-export function getAuditLogSummary(): {
+export function getAuditLogSummary(sessionID?: string): {
   totalApplied: number;
   sources: Record<string, number>;
   oldestEntry: string | null;
   newestEntry: string | null;
 } {
-  const sources = auditLog.reduce<Record<string, number>>((acc, entry) => {
+  const log = getAuditLogForSession(sessionID);
+  const sources = log.reduce<Record<string, number>>((acc, entry) => {
     acc[entry.source] = (acc[entry.source] ?? 0) + 1;
     return acc;
   }, {});
 
   return {
-    totalApplied: auditLog.length,
+    totalApplied: log.length,
     sources,
-    oldestEntry: auditLog[0]?.id ?? null,
-    newestEntry: auditLog[auditLog.length - 1]?.id ?? null,
+    oldestEntry: log[0]?.id ?? null,
+    newestEntry: log[log.length - 1]?.id ?? null,
   };
 }
 
@@ -561,16 +622,17 @@ export function getAuditLogSummary(): {
  *
  * @returns Array of pending mutation snapshots
  */
-export function getPendingMutations(): StateMutation[] {
-  return [...mutationQueue];
+export function getPendingMutations(sessionID?: string): StateMutation[] {
+  return [...getMutationQueue(sessionID)];
 }
 
-export function applyPendingStateMutations(baseState: BrainState): BrainState {
-  if (mutationQueue.length === 0) {
+export function applyPendingStateMutations(baseState: BrainState, sessionID?: string): BrainState {
+  const queue = getMutationQueue(sessionID);
+  if (queue.length === 0) {
     return baseState;
   }
 
-  const sortedMutations = [...mutationQueue].sort((a, b) => {
+  const sortedMutations = [...queue].sort((a, b) => {
     const priorityDiff = (a.priority ?? 0) - (b.priority ?? 0);
     if (priorityDiff !== 0) return priorityDiff;
     return a.timestamp.localeCompare(b.timestamp);
@@ -588,10 +650,19 @@ export function applyPendingStateMutations(baseState: BrainState): BrainState {
  *
  * Use with caution - primarily for tests and error recovery.
  */
-export function clearMutationQueue(): void {
-  mutationQueue.length = 0;
-  taskManifestQueue.length = 0;
-  auditLog.length = 0;
+export function clearMutationQueue(sessionID?: string): void {
+  if (sessionID) {
+    const mq = mutationQueues.get(sessionID);
+    if (mq) mq.length = 0;
+    const tq = taskManifestQueues.get(sessionID);
+    if (tq) tq.length = 0;
+    const al = auditLogs.get(sessionID);
+    if (al) al.length = 0;
+  } else {
+    mutationQueues.clear();
+    taskManifestQueues.clear();
+    auditLogs.clear();
+  }
 }
 
 /**
@@ -640,8 +711,24 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
         targetValue,
         sourceValue
       );
+    } else if (
+      Array.isArray(sourceValue) &&
+      Array.isArray(targetValue) &&
+      ARRAY_CONCAT_FIELDS.has(key as string)
+    ) {
+      // Concatenate + deduplicate known array fields instead of replacing
+      const merged = [...targetValue, ...sourceValue];
+      // Deduplicate primitives (strings, numbers)
+      const seen = new Set();
+      const deduped = merged.filter((item) => {
+        if (typeof item === "object" && item !== null) return true; // keep all objects
+        if (seen.has(item)) return false;
+        seen.add(item);
+        return true;
+      });
+      (result as Record<string, unknown>)[key as string] = deduped;
     } else {
-      // Replace primitives and arrays
+      // Replace primitives and non-registered arrays
       (result as Record<string, unknown>)[key as string] = sourceValue;
     }
   }
@@ -655,8 +742,8 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
  * @param source - Source identifier to check
  * @returns True if mutations exist from this source
  */
-export function hasPendingMutationsFrom(source: string): boolean {
-  return mutationQueue.some((m) => m.source === source);
+export function hasPendingMutationsFrom(source: string, sessionID?: string): boolean {
+  return getMutationQueue(sessionID).some((m) => m.source === source);
 }
 
 /**
@@ -665,6 +752,6 @@ export function hasPendingMutationsFrom(source: string): boolean {
  * @param source - Source identifier to filter by
  * @returns Array of mutations from the specified source
  */
-export function getMutationsBySource(source: string): StateMutation[] {
-  return mutationQueue.filter((m) => m.source === source);
+export function getMutationsBySource(source: string, sessionID?: string): StateMutation[] {
+  return getMutationQueue(sessionID).filter((m) => m.source === source);
 }

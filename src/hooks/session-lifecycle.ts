@@ -104,11 +104,23 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       if (!state) {
         await initializePlanningDirectory(directory)
         state = createBrainState(generateSessionId(), config)
+        state.session.opencode_session_id = input.sessionID
         // CQRS: Queue mutation instead of direct save (hooks are read-only)
         queueStateMutation({
           type: "UPDATE_STATE",
           payload: state,
           source: "session-lifecycle-hook:init",
+        })
+      } else if (!state.session.opencode_session_id && input.sessionID) {
+        // Knot 2: Correlate OpenCode sessionID with HiveMind session (first invocation)
+        state = {
+          ...state,
+          session: { ...state.session, opencode_session_id: input.sessionID },
+        }
+        queueStateMutation({
+          type: "UPDATE_STATE",
+          payload: state,
+          source: "session-lifecycle-hook:correlate-session-id",
         })
       }
 

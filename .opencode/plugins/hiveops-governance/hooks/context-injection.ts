@@ -94,6 +94,29 @@ function loadJson<T>(worktree: string, relativePath: string): T | null {
   }
 }
 
+/** Extract text content from any message shape (v1 legacy or v2 parts) */
+function extractMessageText(msg: any): string {
+  if (!msg) return ""
+  // V2 format: { info, parts }
+  if (msg.parts && Array.isArray(msg.parts)) {
+    return msg.parts
+      .filter((p: any) => p.type === "text")
+      .map((p: any) => p.text || "")
+      .join(" ")
+  }
+  // V1 format: { role, content }
+  if (typeof msg.content === "string") return msg.content
+  if (msg.info && typeof msg.info.content === "string") return msg.info.content
+  // System prompt arrays
+  if (Array.isArray(msg.content)) {
+    return msg.content
+      .filter((p: any) => p.type === "text")
+      .map((p: any) => p.text || "")
+      .join(" ")
+  }
+  return ""
+}
+
 /** Format active TODO items (max 10 for context budget) */
 function formatActiveTodo(todoState: TodoState | null): string {
   if (!todoState || !todoState.items || todoState.items.length === 0) {
@@ -180,6 +203,36 @@ export function buildContextInjectionHook(state: {
     // Defensive: ensure messages array exists
     if (!output.messages || !Array.isArray(output.messages)) return
 
+    // ── Deduplication: skip if System 2 (src/hooks) already injected ──
+    // System 2 injects via:
+    //   - session-lifecycle.ts: <hivemind> block into output.system (not messages)
+    //   - messages-transform.ts: [SYSTEM ANCHOR ...] into output.messages
+    //   - governance-instruction.ts: GOVERNANCE_MARKER into output.system
+    // If any of these are present, the plugin's injection would create
+    // duplicate/conflicting governance signals. (See: Team A audit — dual-injection race)
+    const GX_PACK_MARKER = "## GX-Pack Governance Context"
+
+    // Check output.system for System 2 system-layer injection
+    const systemStrings: string[] = Array.isArray(output.system) ? output.system : []
+    const hasSystemLayerInjection = systemStrings.some(
+      (s: string) => s.includes("<hivemind>") || s.includes("HIVE-MASTER governance active")
+    )
+
+    // Check output.messages for message-layer markers ([SYSTEM ANCHOR] or own GX-Pack marker)
+    const MESSAGE_MARKERS = ["[SYSTEM ANCHOR"]
+    const hasMessageLayerInjection = output.messages.some((msg: any) => {
+      const text = extractMessageText(msg)
+      return MESSAGE_MARKERS.some(marker => text.includes(marker))
+    })
+
+    const hasGxPackInjection = output.messages.some((msg: any) => {
+      const text = extractMessageText(msg)
+      return text.includes(GX_PACK_MARKER)
+    })
+
+    // If System 2 already injected (via either layer), or if we already injected, skip
+    if (hasSystemLayerInjection || hasMessageLayerInjection || hasGxPackInjection) return
+
     // Load schematic state files
     const todoState = loadJson<TodoState>(state.worktree, ".hivemind/state/todo.json")
     const profile = loadJson<RuntimeProfile>(state.worktree, ".hivemind/state/runtime-profile.json")
@@ -192,15 +245,15 @@ export function buildContextInjectionHook(state: {
 
     const degradedSignals = health
       ? Object.entries(health.signals)
-          .filter(([, signal]) => signal.score < 40)
-          .map(([name, signal]) => `${name}:${signal.score}`)
+        .filter(([, signal]) => signal.score < 40)
+        .map(([name, signal]) => `${name}:${signal.score}`)
       : []
 
     const hardBlockWarnings = health
       ? health.thresholds.hard_block.signals.filter((name) => {
-          const signal = health.signals[name]
-          return signal && signal.score < health.thresholds.hard_block.below
-        })
+        const signal = health.signals[name]
+        return signal && signal.score < health.thresholds.hard_block.below
+      })
       : []
 
     let healthSummary = `Health: ${healthScore}/100 (${healthStatus})`

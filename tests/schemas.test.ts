@@ -50,7 +50,7 @@ function test_brain_state_creation() {
   assert(state.session.governance_status === "LOCKED", "assisted mode starts LOCKED (requires startSession to unlock)")
   assert(state.metrics.turn_count === 0, "starts with 0 turns")
   assert(state.metrics.drift_score === 100, "starts with 100 drift score")
-  assert(state.version === "1.0.0", "version set")
+  assert(state.version === "2.0.0", "version set")
 }
 
 function test_brain_state_strict_starts_locked() {

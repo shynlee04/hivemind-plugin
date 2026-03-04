@@ -16,7 +16,8 @@
  * - soft-governance.ts → loadTree (timestamp gap detection)
  */
 
-import { readFile, writeFile, mkdir } from "fs/promises";
+import { readFile, writeFile, mkdir, open, stat, unlink, rename } from "fs/promises";
+import type { FileHandle } from "fs/promises";
 import { existsSync } from "fs";
 import { dirname } from "path";
 import { getEffectivePaths } from "./paths.js";
@@ -425,21 +426,21 @@ export function migrateNode(
   newParentId: string
 ): HierarchyTree {
   if (!tree.root) return tree;
-  
+
   // Find the node to migrate
   const node = findNode(tree.root, nodeId);
   if (!node) return tree;
-  
+
   // Find the new parent
   const newParent = findNode(tree.root, newParentId);
   if (!newParent) return tree;
-  
+
   // Remove node from its current location
   const withoutNode = removeNodeFromTree(tree.root, nodeId);
-  
+
   // Add node to new parent
   const withMigration = addChildToNode(withoutNode, newParentId, node);
-  
+
   return { ...tree, root: withMigration };
 }
 
@@ -985,16 +986,78 @@ export function treeExists(projectRoot: string): boolean {
   return existsSync(getHierarchyPath(projectRoot));
 }
 
+// ---- File Lock for hierarchy.json ----
+// Mirrors the FileLock pattern from persistence.ts to prevent
+// concurrent read/write corruption (audit R2).
+
+function isNodeError(err: unknown): err is NodeJS.ErrnoException {
+  return err instanceof Error && "code" in err;
+}
+
+async function acquireHierarchyLock(lockPath: string, timeout = 5000): Promise<FileHandle> {
+  let delay = 50;
+  const maxDelay = 500;
+  const start = Date.now();
+
+  while (Date.now() - start < timeout) {
+    try {
+      const handle = await open(lockPath, "wx");
+      return handle;
+    } catch (err: unknown) {
+      if (isNodeError(err) && err.code === "EEXIST") {
+        // Check for stale lock (older than 5 seconds)
+        try {
+          const s1 = await stat(lockPath);
+          if (Date.now() - s1.mtime.getTime() > 5000) {
+            await new Promise(r => setTimeout(r, Math.random() * 50 + 10));
+            try {
+              const s2 = await stat(lockPath);
+              if (s2.mtime.getTime() === s1.mtime.getTime()) {
+                await unlink(lockPath);
+                continue;
+              }
+            } catch {
+              continue;
+            }
+          }
+        } catch {
+          // Ignore stat errors
+        }
+        await new Promise(resolve => setTimeout(resolve, delay));
+        delay = Math.min(delay * 2, maxDelay);
+      } else {
+        throw err;
+      }
+    }
+  }
+  throw new Error(`Failed to acquire hierarchy lock within ${timeout}ms`);
+}
+
+async function releaseHierarchyLock(handle: FileHandle | null, lockPath: string): Promise<void> {
+  if (handle !== null) {
+    try {
+      await handle.close();
+      await unlink(lockPath).catch(() => { });
+    } catch {
+      // Ignore errors when releasing lock
+    }
+  }
+}
+
 /**
  * Load the hierarchy tree from disk.
  * Returns an empty tree if file doesn't exist or is corrupt.
+ * Uses file locking to prevent concurrent read/write corruption.
  *
  * @consumer all tree consumers
  */
 export async function loadTree(projectRoot: string): Promise<HierarchyTree> {
   const path = getHierarchyPath(projectRoot);
+  const lockPath = path + ".lock";
+  let handle: FileHandle | null = null;
 
   try {
+    handle = await acquireHierarchyLock(lockPath);
     const raw = await readFile(path, "utf-8");
     const data = JSON.parse(raw);
 
@@ -1003,13 +1066,20 @@ export async function loadTree(projectRoot: string): Promise<HierarchyTree> {
       return data as HierarchyTree;
     }
     return createTree();
-  } catch {
+  } catch (err: unknown) {
+    if (isNodeError(err) && err.code === "ENOENT") {
+      return createTree();
+    }
     return createTree();
+  } finally {
+    await releaseHierarchyLock(handle, lockPath);
   }
 }
 
 /**
  * Save the hierarchy tree to disk.
+ * Uses file locking and atomic write (temp file + rename) to prevent
+ * concurrent writes from corrupting the tree.
  *
  * @consumer declare-intent.ts, map-context.ts, compact-session.ts, hierarchy tools
  */
@@ -1018,8 +1088,30 @@ export async function saveTree(
   tree: HierarchyTree
 ): Promise<void> {
   const path = getHierarchyPath(projectRoot);
-  await mkdir(dirname(path), { recursive: true });
-  await writeFile(path, JSON.stringify(tree, null, 2), "utf-8");
+  const lockPath = path + ".lock";
+  const tempPath = path + ".tmp";
+  let handle: FileHandle | null = null;
+
+  try {
+    await mkdir(dirname(path), { recursive: true });
+    handle = await acquireHierarchyLock(lockPath);
+
+    // Atomic write: write to temp, then rename
+    await writeFile(tempPath, JSON.stringify(tree, null, 2), "utf-8");
+    await rename(tempPath, path);
+  } catch (error) {
+    // Clean up temp file on failure
+    try {
+      if (existsSync(tempPath)) {
+        await unlink(tempPath);
+      }
+    } catch {
+      // Ignore cleanup errors
+    }
+    throw error;
+  } finally {
+    await releaseHierarchyLock(handle, lockPath);
+  }
 }
 
 // ============================================================

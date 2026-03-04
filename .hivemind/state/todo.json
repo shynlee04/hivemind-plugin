@@ -99,9 +99,85 @@
       "depends_on": [],
       "blocks": [],
       "domain": "metrics-refactor"
+    },
+    {
+      "id": "task-mmcginkx-71vd",
+      "content": "Track 1: Data Pipeline & Lifecycle Mapping - Investigate all data flows from ingress to egress, session phases, state mutations, memory evolution",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772654159841,
+      "updated": 1772655564929,
+      "depends_on": [],
+      "blocks": [],
+      "evidence": "Track 1 complete: 7 ingress points, 7 lifecycle phases, 7 mutation pathways, 7 persistence layers, 6 egress points. 95% confidence."
+    },
+    {
+      "id": "task-mmcgiofy-hj1p",
+      "content": "Track 2: Hooks & Injection Systems Inventory - Enumerate all mechanisms that can alter flow/context (System 1: hiveops-governance, System 2: src/hooks/, plugins, middleware)",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772654160958,
+      "updated": 1772655565824,
+      "depends_on": [],
+      "blocks": [],
+      "evidence": "Track 2 complete: 11 hooks inventoried, 6 conflicts identified. Critical: dual-injection race conditions. 95% confidence."
+    },
+    {
+      "id": "task-mmcgioy9-f8wc",
+      "content": "Track 3: Schema & Contract Stability Analysis - Identify schema conflicts, transformations, validation boundaries, version drift across layers",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772654161617,
+      "updated": 1772655570874,
+      "depends_on": [],
+      "blocks": [],
+      "evidence": "Track 3 complete: 14 schemas, 5 drift points, 5 contract conflicts. Critical: governance_counters incomplete migration. 92% confidence."
+    },
+    {
+      "id": "task-mmcgipj2-ecs5",
+      "content": "Track 4: Context Pollution Diagnosis - Map dual-injection conflicts, context assembly pathways, pruning/compaction logic correctness",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772654162366,
+      "updated": 1772655571620,
+      "depends_on": [],
+      "blocks": [],
+      "evidence": "Track 4 complete: 6 pollution pathways, 5 dual-injection conflicts mapped. Primary contamination source: dual_state_read_conflict. 95% confidence."
+    },
+    {
+      "id": "task-mmcgiq3z-ovfs",
+      "content": "Track 5: Domain Boundaries & Packaging Audit - Analyze SDK vs server vs primitives boundaries, .opencode/plugins vs src/ duplication, orchestrator lineages",
+      "status": "completed",
+      "priority": "high",
+      "created": 1772654163119,
+      "updated": 1772655572475,
+      "depends_on": [],
+      "blocks": [],
+      "evidence": "Track 5 complete: 7 domains, 4 duplications, 5 confusion points. Critical: dual context injection systems. 95% confidence."
+    },
+    {
+      "id": "task-mmcgiqou-d21j",
+      "content": "SYNTHESIS: Consolidate 5 tracks into deliverables - System Map, Risk Register, Refactor Blueprint",
+      "status": "completed",
+      "priority": "medium",
+      "created": 1772654163870,
+      "updated": 1772656084046,
+      "depends_on": [],
+      "blocks": [],
+      "evidence": "Deliverables A/B/C synthesized into DEEP-SCAN-AUDIT-2026-03-05.md. 95% confidence. Primary contamination source: dual-injection systems."
+    },
+    {
+      "id": "task-mmcgir9b-wn5s",
+      "content": "HARD STOP - Present findings to user for authorization before creating fix plans",
+      "status": "in_progress",
+      "priority": "high",
+      "created": 1772654164607,
+      "updated": 1772656084470,
+      "depends_on": [],
+      "blocks": []
     }
   ],
-  "version": 10,
-  "lastSync": 1772635577458,
-  "activeItem": null
+  "version": 26,
+  "lastSync": 1772656084470,
+  "activeItem": "task-mmcgir9b-wn5s"
 }

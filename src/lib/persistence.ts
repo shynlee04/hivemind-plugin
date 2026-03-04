@@ -10,7 +10,7 @@ import type { BrainState } from "../schemas/brain-state.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import type { Logger } from "./logging.js"
 import { getEffectivePaths } from "./paths.js"
-import { createBrainState } from "../schemas/brain-state.js"
+import { createBrainState, BrainStateSchema, BRAIN_STATE_MIGRATIONS } from "../schemas/brain-state.js"
 import { createConfig } from "../schemas/config.js"
 
 function isNodeError(err: unknown): err is NodeJS.ErrnoException {
@@ -82,14 +82,14 @@ class FileLock {
               try {
                 const s2 = await stat(this.lockPath)
                 if (s2.mtime.getTime() === s1.mtime.getTime()) {
-                   // Still the same old file?
-                   await unlink(this.lockPath)
-                   await this.logger?.warn(`Removed stale lock file: ${this.lockPath}`)
-                   continue // Retry acquisition
+                  // Still the same old file?
+                  await unlink(this.lockPath)
+                  await this.logger?.warn(`Removed stale lock file: ${this.lockPath}`)
+                  continue // Retry acquisition
                 }
               } catch (e) {
-                 // File might be gone now, which is fine.
-                 continue
+                // File might be gone now, which is fine.
+                continue
               }
             }
           } catch (statErr: unknown) {
@@ -156,51 +156,72 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
 
         try {
           const data = await readFile(brainPath, "utf-8")
-          const parsed = JSON.parse(data) as BrainState
-          // Migration: ensure fields added in v1.5+ exist
-          // Migration: ensure Round 2 session fields exist
-          parsed.session.date ??= new Date(parsed.session.start_time).toISOString().split("T")[0]
-          parsed.session.meta_key ??= ""
-          parsed.session.role ??= ""
-          parsed.session.by_ai ??= true
-          // Migration: ensure Iteration 1 fields exist (hierarchy-redesign)
-          parsed.compaction_count ??= 0
-          parsed.last_compaction_time ??= 0
-          parsed.next_compaction_report ??= null
-          parsed.cycle_log ??= []
-          parsed.pending_failure_ack ??= false
-          // Migration: ensure detection counter fields exist
-          parsed.metrics.consecutive_failures ??= 0
-          parsed.metrics.consecutive_same_section ??= 0
-          parsed.metrics.last_section_content ??= ""
-          parsed.metrics.keyword_flags ??= []
-          parsed.metrics.keyword_flags_reset_turn ??= 0
-          parsed.metrics.write_without_read_count ??= 0
-          parsed.metrics.files_read_this_session ??= []
-          parsed.metrics.tool_type_counts ??= { read: 0, write: 0, query: 0, governance: 0 }
-          // Migration: user_turn_count (v3.0) - counts user response cycles, not tool calls
-          parsed.metrics.user_turn_count ??= 0
-          parsed.metrics.last_context_update_turn ??= 0
-          parsed.metrics.governance_counters ??= {
-            drift: 0,
-            compaction: 0,
-            out_of_order: 0,
-            evidence_pressure: 0,
+          const raw = JSON.parse(data) as Record<string, unknown>
+
+          // ── Migration pipeline ──
+          // Step 1: Run registered migrations by version
+          const rawVersion = (raw as { version?: string }).version ?? "1.0.0"
+          for (const [fromVersion, migrate] of BRAIN_STATE_MIGRATIONS) {
+            if (rawVersion === fromVersion) {
+              migrate(raw)
+            }
           }
-          parsed.metrics.governance_counters.out_of_order ??= 0
-          parsed.metrics.governance_counters.evidence_pressure ??= 0
-          parsed.framework_selection ??= {
+
+          // Step 2: Legacy field defaults (for files written before these fields existed)
+          const session = raw.session as Record<string, unknown> | undefined
+          if (session) {
+            session.date ??= new Date((session.start_time as number) ?? Date.now()).toISOString().split("T")[0]
+            session.meta_key ??= ""
+            session.role ??= ""
+            session.by_ai ??= true
+            session.opencode_session_id ??= null
+          }
+          const metrics = raw.metrics as Record<string, unknown> | undefined
+          if (metrics) {
+            metrics.consecutive_failures ??= 0
+            metrics.consecutive_same_section ??= 0
+            metrics.last_section_content ??= ""
+            metrics.keyword_flags ??= []
+            metrics.keyword_flags_reset_turn ??= 0
+            metrics.write_without_read_count ??= 0
+            metrics.files_read_this_session ??= []
+            metrics.tool_type_counts ??= { read: 0, write: 0, query: 0, governance: 0 }
+            metrics.user_turn_count ??= 0
+            metrics.last_context_update_turn ??= 0
+            metrics.governance_counters ??= { drift: 0, compaction: 0, out_of_order: 0, evidence_pressure: 0 }
+            const gc = metrics.governance_counters as Record<string, unknown>
+            gc.out_of_order ??= 0
+            gc.evidence_pressure ??= 0
+          }
+          raw.compaction_count ??= 0
+          raw.last_compaction_time ??= 0
+          raw.next_compaction_report ??= null
+          raw.cycle_log ??= []
+          raw.pending_failure_ack ??= false
+          raw.first_turn_context_injected ??= false
+          raw.framework_selection ??= {
             choice: null,
             active_phase: "",
             active_spec_path: "",
             acceptance_note: "",
             updated_at: 0,
           }
-          // Migration: persistent first-turn injection marker
-          parsed.first_turn_context_injected ??= false
-          // Migration: remove deprecated sentiment_signals field
-          Reflect.deleteProperty(parsed, 'sentiment_signals')
-          return parsed
+          // Remove deprecated fields
+          Reflect.deleteProperty(raw, 'sentiment_signals')
+
+          // Step 3: Validate with Zod schema
+          const parseResult = BrainStateSchema.safeParse(raw)
+          if (parseResult.success) {
+            return parseResult.data as unknown as BrainState
+          }
+
+          // Validation failed — log details but still attempt best-effort return
+          await logger?.warn(
+            `BrainState validation failed (${parseResult.error.issues.length} issues), ` +
+            `using raw data with best-effort defaults. First issue: ${parseResult.error.issues[0]?.message ?? 'unknown'}`
+          )
+          // Return the raw object as-is — it passed JSON parse and has been migrated
+          return raw as unknown as BrainState
         } catch (parseErr: unknown) {
           // Attempt to recover from backup if main file is corrupted
           if (existsSync(bakPath)) {
@@ -231,7 +252,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
         await lock.release()
       }
     },
-    
+
     async save(state: BrainState): Promise<void> {
       try {
         await ensureDirectory()
@@ -239,20 +260,20 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
 
         // Atomic write pattern: write to temp file first, then rename
         await writeFile(tempPath, JSON.stringify(state, null, 2))
-        
+
         // Create backup of existing file if it exists
         if (existsSync(brainPath)) {
           try {
             // Create timestamped backup for better reliability
             const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -5)
             const timestampedBakPath = brainPath + `.bak.${timestamp}`
-            
+
             // Copy existing file to timestamped backup
             await copyFile(brainPath, timestampedBakPath)
-            
+
             // Also maintain simple .bak file for backward compatibility
             await rename(brainPath, bakPath)
-            
+
             // Cleanup old backup files (keep last 3 backups)
             await cleanupOldBackups(brainPath, logger)
           } catch (backupErr: unknown) {
@@ -277,7 +298,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
         await lock.release()
       }
     },
-    
+
     async withState(
       fn: (state: BrainState) => BrainState | Promise<BrainState>
     ): Promise<BrainState | null> {
@@ -325,7 +346,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
       await this.save(state)
       return state
     },
-    
+
     exists(): boolean {
       return existsSync(brainPath)
     },
@@ -347,7 +368,7 @@ export async function loadConfig(projectRoot: string): Promise<HiveMindConfig> {
       process.stderr.write(`[hivemind] Config load error at ${configPath}: ${err}\n`)
     }
   }
-  
+
   return createConfig()
 }
 
@@ -359,7 +380,7 @@ export async function saveConfig(
   await mkdir(dirname(configPath), { recursive: true })
   const tempPath = configPath + ".tmp"
   const bakPath = configPath + ".bak"
-  
+
   try {
     // Atomic write pattern for config file as well
     await writeFile(tempPath, JSON.stringify(config, null, 2))
@@ -370,7 +391,7 @@ export async function saveConfig(
   } catch (error) {
     // Clean up temp file if save fails
     if (existsSync(tempPath)) {
-      await unlink(tempPath).catch(() => {})
+      await unlink(tempPath).catch(() => { })
     }
     throw new Error(`Failed to save config: ${error}`)
   }

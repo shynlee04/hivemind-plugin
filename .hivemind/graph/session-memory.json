@@ -26,6 +26,19 @@
       "created_at": "2026-03-04T18:00:06.040Z",
       "purged_at": "2026-03-04T18:18:48.439Z",
       "transferred_to_governance": false
+    },
+    {
+      "id": "d5cd7149-5821-4a4d-a4af-d8f11e82c2be",
+      "session_id": "5efba8eb-532b-4f4f-8a4b-f62e52262af5",
+      "category": "planning",
+      "source": "system-anchor-resume",
+      "content": "DEEP-SCAN AUDIT REQUEST - Starting analysis. User selected \"Proceed now\" option. Current state: 9 pending tasks, 0 mems, drift=89. Scope: Data pipelines, lifecycles, hooks/injections, schema conflicts, context pollution, boundaries.",
+      "condensed": "DEEP-SCAN AUDIT REQUEST - Starting analysis. User selected \"Proceed now\" option. Current state: 9 pending tasks, 0 mems, drift=89. Scope: Data pipelines, lifecycles, hooks/injections, schema conflicts, context pollution, boundaries.",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-03-04T19:49:43.788Z",
+      "purged_at": null,
+      "transferred_to_governance": false
     }
   ]
 }

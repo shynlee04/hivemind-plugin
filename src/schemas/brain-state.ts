@@ -4,6 +4,7 @@
  */
 
 import { randomUUID } from "node:crypto";
+import { z } from "zod";
 import type { HiveMindConfig, GovernanceMode, V29OutputStyle } from "./config.js";
 import type { HierarchyState } from "./hierarchy.js";
 import type { GovernanceCounters } from "../lib/detection.js";
@@ -29,6 +30,8 @@ export interface SessionState {
   role: string;
   /** Whether session was initiated by AI (true) or human (false) */
   by_ai: boolean;
+  /** OpenCode's session ID for cross-system correlation (Knot 2) */
+  opencode_session_id: string | null;
 }
 
 export interface MetricsState {
@@ -255,7 +258,160 @@ export interface TrajectoryContext {
   };
 }
 
-export const BRAIN_STATE_VERSION = "1.0.0";
+export const BRAIN_STATE_VERSION = "2.0.0";
+
+// ── Zod Runtime Validation Schema ──
+// Mirrors the BrainState interface for runtime validation on load.
+// Used by StateManager.load() to detect corrupt or outdated brain.json files.
+
+const SessionStateSchema = z.object({
+  id: z.string(),
+  trajectory_id: z.string().optional(),
+  opencode_session_id: z.string().nullable().default(null),
+  mode: z.enum(["plan_driven", "quick_fix", "exploration"]),
+  governance_mode: z.enum(["strict", "assisted", "permissive"]),
+  governance_status: z.enum(["LOCKED", "OPEN"]),
+  start_time: z.number(),
+  last_activity: z.number(),
+  date: z.string(),
+  meta_key: z.string(),
+  role: z.string(),
+  by_ai: z.boolean(),
+});
+
+const MetricsStateSchema = z.object({
+  turn_count: z.number(),
+  user_turn_count: z.number(),
+  drift_score: z.number(),
+  files_touched: z.array(z.string()),
+  context_updates: z.number(),
+  last_context_update_turn: z.number().optional(),
+  auto_health_score: z.number(),
+  total_tool_calls: z.number(),
+  successful_tool_calls: z.number(),
+  violation_count: z.number(),
+  consecutive_failures: z.number(),
+  consecutive_same_section: z.number(),
+  last_section_content: z.string(),
+  tool_type_counts: z.object({
+    read: z.number(),
+    write: z.number(),
+    query: z.number(),
+    governance: z.number(),
+  }),
+  keyword_flags: z.array(z.string()),
+  keyword_flags_reset_turn: z.number().optional(),
+  write_without_read_count: z.number(),
+  files_read_this_session: z.array(z.string()).optional(),
+  governance_counters: z.object({
+    drift: z.number(),
+    compaction: z.number(),
+    out_of_order: z.number(),
+    evidence_pressure: z.number(),
+  }),
+});
+
+const CycleLogEntrySchema = z.object({
+  timestamp: z.number(),
+  tool: z.string(),
+  failure_detected: z.boolean(),
+  failure_keywords: z.array(z.string()),
+});
+
+const FirstTurnConfirmationSchema = z.object({
+  required: z.boolean(),
+  confirmed: z.boolean(),
+  rationale_option: z.enum(["option_1", "option_2", "option_3"]).nullable(),
+  selected_output_style: z.string().nullable(),
+  confirmed_at: z.number().nullable(),
+});
+
+const FrameworkSelectionSchema = z.object({
+  choice: z.enum(["gsd", "spec-kit", "override", "cancel"]).nullable(),
+  active_phase: z.string(),
+  active_spec_path: z.string(),
+  acceptance_note: z.string(),
+  updated_at: z.number(),
+});
+
+const OffTrackIntentSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  created_at: z.number(),
+  source: z.string(),
+  status: z.enum(["pending", "resolved"]),
+});
+
+const TrajectoryContextSchema = z.object({
+  session_type: z.enum(["main", "delegated", "post_compaction", "long_haul"]),
+  memory_class: z.enum(["discovery", "research", "codebase_investigation", "planning", "implementing", "debug_testing"]),
+  active_plan_prefix: z.string().nullable(),
+  active_plan_id: z.string().nullable(),
+  disclosure_depth: z.enum(["summary", "detail", "full"]),
+  revalidation_count: z.number(),
+  context_preparation: z.object({
+    sot_searched: z.boolean(),
+    skills_activated: z.array(z.string()),
+    investigation_complete: z.boolean(),
+    mapped_nodes: z.array(z.string()),
+    success_metrics: z.array(z.string()),
+  }),
+});
+
+const HierarchyStateSchema = z.object({
+  trajectory: z.string(),
+  tactic: z.string(),
+  action: z.string(),
+});
+
+const MemoryGovernanceSchema = z.object({
+  last_classified_at: z.number(),
+  pending_purge: z.boolean().optional(),
+});
+
+export const BrainStateSchema = z.object({
+  session: SessionStateSchema,
+  hierarchy: HierarchyStateSchema,
+  metrics: MetricsStateSchema,
+  first_turn_context_injected: z.boolean(),
+  first_turn_confirmation: FirstTurnConfirmationSchema,
+  selected_output_style_v29: z.string().nullable(),
+  memory_governance: MemoryGovernanceSchema,
+  version: z.string(),
+  next_compaction_report: z.string().nullable(),
+  compaction_count: z.number(),
+  last_compaction_time: z.number(),
+  compaction_limit_reached: z.boolean(),
+  cycle_log: z.array(CycleLogEntrySchema),
+  pending_failure_ack: z.boolean(),
+  framework_selection: FrameworkSelectionSchema,
+  recent_messages: z.array(z.object({
+    role: z.enum(["user", "assistant"]),
+    content: z.string(),
+  })),
+  offtrack_todo_pending: z.array(OffTrackIntentSchema),
+  trajectory_context: TrajectoryContextSchema,
+});
+
+export type BrainStateFromSchema = z.infer<typeof BrainStateSchema>;
+
+/**
+ * Migrate v1 BrainState (pre-session-scoping) to v2.
+ * Adds opencode_session_id field and bumps version.
+ */
+export function migrateBrainStateV1toV2(raw: Record<string, unknown>): Record<string, unknown> {
+  const session = raw.session as Record<string, unknown> | undefined;
+  if (session && !('opencode_session_id' in session)) {
+    session.opencode_session_id = null;
+  }
+  raw.version = "2.0.0";
+  return raw;
+}
+
+/** Migration registry: version string → migration function */
+export const BRAIN_STATE_MIGRATIONS: Map<string, (raw: Record<string, unknown>) => Record<string, unknown>> = new Map([
+  ["1.0.0", migrateBrainStateV1toV2],
+]);
 
 export function generateSessionId(): string {
   // Return a proper UUID for graph schema compatibility
@@ -281,6 +437,7 @@ export function createBrainState(
       meta_key: "",
       role: "",
       by_ai: true,
+      opencode_session_id: null,
     },
     hierarchy: {
       trajectory: "",

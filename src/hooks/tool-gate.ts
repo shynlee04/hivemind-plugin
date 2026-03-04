@@ -11,12 +11,26 @@ import { validateSessionState, type GatekeeperResult } from "../lib/gatekeeper.j
 import { queueStateMutation, applyPendingStateMutations } from "../lib/state-mutation-queue.js"
 
 // Tools exempt from governance checks (read-only or meta-tools)
+// HC5 CANONICAL NAMES ONLY — legacy names removed in Phase 2 Knot 3
 const EXEMPT_TOOLS = new Set([
+  // OpenCode built-in read-only tools
   "read", "glob", "grep", "ls", "cat", "find",
-  "declare_intent", "map_context", "check_drift", "list_shelves", "recall_mems",
-  "hivemind_inspect", "hivemind_scan", "hivemind_status", "hivemind_compact",
-  "scan_hierarchy", "think_back", "self_rate", "save_mem", "save_anchor"
+  // HiveMind canonical tools (registered in src/tools/index.ts)
+  "hivemind_inspect", "hivemind_hierarchy", "hivemind_cycle",
+  "hivemind_context", "hivemind_memory", "hivemind_anchor",
+  "hivemind_codemap", "hivemind_read_skeleton", "hivemind_mesh_pull",
+  "hivemind_plan", "hivemind_declare",
 ])
+
+/** Canonical tool names for reference (all registered in src/tools/index.ts) */
+export const CANONICAL_TOOL_NAMES = [
+  "hivemind_session", "hivemind_inspect", "hivemind_memory",
+  "hivemind_anchor", "hivemind_hierarchy", "hivemind_cycle",
+  "hivemind_context", "hivemind_session_memory", "hivemind_codemap",
+  "hivemind_ideate", "hivemind_read_skeleton", "hivemind_precision_patch",
+  "hivemind_mesh_pull", "hivemind_doc_weaver", "hivemind_declare",
+  "hivemind_plan",
+] as const
 
 const WRITE_TOOLS = new Set([
   "write", "edit", "bash", "create_file", "delete_file", "move_file", "task",
@@ -26,9 +40,8 @@ const WRITE_TOOLS = new Set([
 // Tools safe to run even during framework conflict (mostly analysis/governance)
 const CONFLICT_SAFE_TOOLS = new Set([
   "read", "glob", "grep", "ls", "cat", "find",
-  "hivemind_scan", "hivemind_status", "hivemind_inspect",
-  "scan_hierarchy", "check_drift", "list_shelves",
-  "hierarchy_manage", "export_cycle",
+  "hivemind_inspect", "hivemind_hierarchy", "hivemind_codemap",
+  "hivemind_cycle", "hivemind_read_skeleton",
 ])
 
 function isExemptTool(toolName: string): boolean {
