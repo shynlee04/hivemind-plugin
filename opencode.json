@@ -2,7 +2,8 @@
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
     "opencode-antigravity-auth@beta",
-    "file://.opencode/plugins/hiveops-governance/index.ts"
+    "file://.opencode/plugins/hiveops-governance/index.ts",
+    "hivemind-context-governance"
   ],
   "mcp": {
     "notion": {
@@ -358,13 +359,13 @@
   },
   "model": "chutes/zai-org/GLM-5-TEE",
   "permission": {
-    "edit": "allow",
-    "write": "allow",
-    "bash": "allow",
+    "edit": "ask",
+    "write": "ask",
+    "bash": "ask",
     "lsp": "allow",
     "todowrite": "allow",
     "todoread": "allow",
-    "*": "allow"
+    "*": "ask"
   },
   "instructions": [
     "Prefer the 'patch' tool over 'edit' for code changes. Use 'edit' only for single-line modifications. The 'patch' tool is more reliable for complex code modifications.",
@@ -376,12 +377,12 @@
     "Always validate LSP results with read before making edits. LSP provides locations but you must verify the actual code content before patching."
   ],
   "agent": {
-    "hivefiver": {
+    "hivefiver, ": {
       "mode": "primary",
       "permission": {
         "read": "allow",
-        "mcp*": "deny",
-        "my-mcp*": "deny",
+        "mcp*": "allow",
+        "my-mcp*": "allow",
         "glob": "allow",
         "grep": "allow",
         "github*": "allow",
@@ -407,6 +408,8 @@
         "repomix*": "deny",
         "task": {
           "*": "deny",
+          "explore": "allow",
+          "general": "allow",
           "hivexplorer": "allow",
           "hiveplanner": "allow",
           "hiverd": "allow",
@@ -426,6 +429,19 @@
         "write": "allow",
         "read": "allow",
         "bash": "allow"
+      }
+    },
+    "hivefiver": {
+      "mode": "primary",
+      "tools": {
+        "read": true,
+        "glob": true,
+        "grep": true,
+        "task": true,
+        "skill": true,
+        "webfetch": true,
+        "websearch": true,
+        "bash": true
       }
     }
   }

@@ -131,17 +131,20 @@ src/tools/hivemind-session.ts        (+6, -6)
 - `npx tsc --noEmit` → **PASS**
 - `npm test` → **203 pass, 11 fail** (schema contract mismatches in test expectations)
 
-## 6. REGIONS NOT TO ADVANCE INTO (Without Explicit Authorization)
+## 6. REGIONS — PIVOTED TO SURGICAL REFACTOR OPERATION
 
-| Region | Why | Risk |
-|--------|-----|------|
-| `.opencode/plugins/hiveops-governance/hooks/` | System 1 injection — requires Fix 1 (agent guards) first | Editing without session isolation = new poisoning vectors |
-| `src/hooks/session-lifecycle.ts` | System 2a injection — requires Fix 1 | Same as above |
-| `src/hooks/messages-transform.ts` | System 2b injection — requires Fix 1 | Same as above |
-| `.opencode/skills/gx-context-engine/scripts/` | 18+ bash enforcement scripts — requires Fix 2 (relational staleness) | Touching without relational model = more voodoo metrics |
-| `.hivemind/plans/` | Contains unvalidated planning artifacts from multiple agents | Consuming these without verification = phantom plan hallucination |
-| `.hivemind/state/` | Global singleton state — requires Fix 3C-D (session scoping) | Reading = trusting toxic data |
-| `dist/`, `cli/` | Build artifacts with hidden entrypoints | May inject context or trigger workflows |
+> **SCOPE CHANGE (2026-03-04)**: hivefiver has pivoted from `.opencode/`-only to whole-project surgical refactor. The regions below are now **IN SCOPE** for refactoring, but require **strict gate discipline** before modification.
+
+| Region | Why Previously Restricted | Current Status | Gate Required |
+|--------|---------------------------|----------------|---------------|
+| `.opencode/plugins/hiveops-governance/hooks/` | System 1 injection | **IN SCOPE** | Fix 1 (agent guards) recommended first |
+| `src/hooks/session-lifecycle.ts` | System 2a injection | **IN SCOPE** | Fix 1 recommended first |
+| `src/hooks/messages-transform.ts` | System 2b injection | **IN SCOPE** | Fix 1 recommended first |
+| `.opencode/skills/gx-context-engine/scripts/` | 18+ bash enforcement scripts | **IN SCOPE** | Fix 2 (relational staleness) recommended first |
+| `.hivemind/plans/` | Unvalidated planning artifacts | **READ-ONLY** | Verify existence before consuming |
+| `.hivemind/state/` | Global singleton state | **IN SCOPE** | Fix 3C-D (session scoping) for structural changes |
+| `dist/`, `cli/` | Build artifacts | **FORBIDDEN** | Never modify directly |
+| `src/lib/`, `src/schemas/`, `src/tools/` | Core logic | **IN SCOPE** | TypeScript verification required |
 
 ## 7. SAFE ENTRY PROTOCOL (For Any Agent Starting a Session)
 

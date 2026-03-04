@@ -87,6 +87,8 @@ export interface SeriousnessScore {
 export interface GovernanceCounters {
   drift: number;
   compaction: number;
+  out_of_order: number;
+  evidence_pressure: number;
 }
 
 export type HierarchyImpact = "low" | "medium" | "high";
@@ -157,6 +159,8 @@ export function createGovernanceCounters(): GovernanceCounters {
   return {
     drift: 0,
     compaction: 0,
+    out_of_order: 0,
+    evidence_pressure: 0,
   };
 }
 
@@ -268,7 +272,7 @@ export function registerGovernanceSignal(
   counters: GovernanceCounters,
   kind: GovernanceSignalKind
 ): GovernanceCounters {
-  if (kind !== "drift" && kind !== "compaction") {
+  if (kind === "ignored") {
     return counters;
   }
 

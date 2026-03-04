@@ -181,7 +181,11 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
           parsed.metrics.governance_counters ??= {
             drift: 0,
             compaction: 0,
+            out_of_order: 0,
+            evidence_pressure: 0,
           }
+          parsed.metrics.governance_counters.out_of_order ??= 0
+          parsed.metrics.governance_counters.evidence_pressure ??= 0
           parsed.framework_selection ??= {
             choice: null,
             active_phase: "",

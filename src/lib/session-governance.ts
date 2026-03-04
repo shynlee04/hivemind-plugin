@@ -301,8 +301,8 @@ function buildDriftWarnings(
 
   if (config.governance_mode !== "permissive" && (isCoachAutomation(config.automation_level) || config.automation_level === "full")) {
     warningLines.push("[ARGUE-BACK MODE] System WILL challenge claims without evidence. Do not proceed without validation.")
-    if (state.metrics.turn_count > 0 && state.metrics.context_updates === 0) {
-      warningLines.push(`⛔ ${state.metrics.turn_count} turns and 0 context updates. You MUST call map_context before continuing.`)
+    if (state.metrics.user_turn_count > 0 && state.metrics.context_updates === 0) {
+      warningLines.push(`⛔ ${state.metrics.user_turn_count} user turns and 0 context updates. You MUST call map_context before continuing.`)
     }
   }
 }
@@ -314,7 +314,7 @@ function buildSessionBoundaryWarnings(
   warningLines: string[]
 ) {
   const role = (state.session.role || "").toLowerCase()
-  const contextPercent = estimateContextPercent(state.metrics.turn_count, config.auto_compact_on_turns)
+  const contextPercent = estimateContextPercent(state.metrics.user_turn_count, config.auto_compact_on_turns)
   const boundaryRecommendation = shouldCreateNewSession({
     turnCount: state.metrics.turn_count,
     userTurnCount: state.metrics.user_turn_count,

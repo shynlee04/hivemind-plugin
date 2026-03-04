@@ -23,6 +23,7 @@ type HierarchyState = {
 
 type MetricsState = {
   turnCount: number
+  userTurnCount: number
   driftScore: number
   filesTouched: number
   contextUpdates: number
@@ -99,6 +100,7 @@ export interface DriftReport {
   anchors?: Array<{ key: string; value: string }>
   metrics?: {
     turnCount: number
+    userTurnCount: number
     filesTouched: number
     contextUpdates: number
     violationCount: number
@@ -133,6 +135,7 @@ export async function scanState(directory: string): Promise<ScanResult> {
     },
     metrics: {
       turnCount: state.metrics.turn_count,
+      userTurnCount: state.metrics.user_turn_count,
       driftScore: state.metrics.drift_score,
       filesTouched: state.metrics.files_touched.length,
       contextUpdates: state.metrics.context_updates,
@@ -209,6 +212,7 @@ export async function deepInspect(directory: string, _target: string): Promise<I
     cursorPath: ancestors.map((n) => ({ level: n.level, content: n.content, stamp: n.stamp })),
     metrics: {
       turnCount: state.metrics.turn_count,
+      userTurnCount: state.metrics.user_turn_count,
       driftScore: state.metrics.drift_score,
       filesTouched: state.metrics.files_touched.length,
       contextUpdates: state.metrics.context_updates,
@@ -249,6 +253,7 @@ export async function driftReport(directory: string): Promise<DriftReport> {
     anchors: scopedAnchors.map((a) => ({ key: a.key, value: a.value })),
     metrics: {
       turnCount: state.metrics.turn_count,
+      userTurnCount: state.metrics.user_turn_count,
       filesTouched: state.metrics.files_touched.length,
       contextUpdates: state.metrics.context_updates,
       violationCount: state.metrics.violation_count,

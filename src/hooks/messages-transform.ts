@@ -630,7 +630,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
         // Session Boundary check
         const role = (state.session?.role || "").toLowerCase()
-        const contextPercent = estimateContextPercent(state.metrics.turn_count, config.auto_compact_on_turns)
+        const contextPercent = estimateContextPercent(state.metrics.user_turn_count, config.auto_compact_on_turns)
         let completedBranchCount = 0
         // LOW #2: Use pre-loaded tree promise
         const tree = await treePromise

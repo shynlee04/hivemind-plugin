@@ -301,6 +301,8 @@ export function createBrainState(
       governance_counters: {
         drift: 0,
         compaction: 0,
+        out_of_order: 0,
+        evidence_pressure: 0,
       },
     },
     first_turn_context_injected: false,
@@ -456,7 +458,7 @@ export function addFileTouched(state: BrainState, filePath: string): BrainState 
 }
 
 export function calculateDriftScore(state: BrainState): number {
-  const turnsPenalty = Math.min(50, state.metrics.turn_count * 5);
+  const turnsPenalty = Math.min(50, state.metrics.user_turn_count * 5);
   const updatesBonus = Math.min(20, state.metrics.context_updates * 2);
   return Math.max(0, Math.min(100, 100 - turnsPenalty + updatesBonus));
 }
@@ -465,7 +467,7 @@ export function shouldTriggerDriftWarning(
   state: BrainState,
   maxTurns: number
 ): boolean {
-  return state.metrics.turn_count >= maxTurns && state.metrics.drift_score < 50;
+  return state.metrics.user_turn_count >= maxTurns && state.metrics.drift_score < 50;
 }
 
 export function setComplexityNudgeShown(state: BrainState): BrainState {

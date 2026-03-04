@@ -2,262 +2,13 @@
   "version": "1.0.0",
   "tasks": [
     {
-      "id": "9bf72f71-4273-4ea1-adc1-818b65b1fd21",
-      "parent_phase_id": "76b0c71e-9588-478e-93f1-888e55173083",
+      "id": "dfb26062-0360-4809-8d41-34034219e9d4",
+      "parent_phase_id": "decf9020-d7d4-4222-be55-1e71beb543d0",
       "title": "Run HiveFiver startup realignment and lane detection",
       "status": "pending",
       "file_locks": [],
-      "created_at": "2026-02-27T10:56:57.217Z",
-      "updated_at": "2026-02-27T10:56:57.217Z"
-    },
-    {
-      "id": "6dea6c35-f79a-49d7-a02f-faa5c54752f9",
-      "parent_phase_id": "76b0c71e-9588-478e-93f1-888e55173083",
-      "title": "Build intake baseline and generate first executable specification",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T10:56:57.217Z",
-      "updated_at": "2026-02-27T10:56:57.217Z"
-    },
-    {
-      "id": "0a7d6b9b-27f8-4e71-9634-955a57af715b",
-      "parent_phase_id": "76b0c71e-9588-478e-93f1-888e55173083",
-      "title": "Audit and configure non-negotiable MCP providers",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T10:56:57.217Z",
-      "updated_at": "2026-02-27T10:56:57.217Z"
-    },
-    {
-      "id": "9b150089-648d-4e0a-af69-9eef39017164",
-      "parent_phase_id": "76b0c71e-9588-478e-93f1-888e55173083",
-      "title": "Prepare TODO-to-Ralph export mapping and validation",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T10:56:57.217Z",
-      "updated_at": "2026-02-27T10:56:57.217Z"
-    },
-    {
-      "id": "8a5b75f7-9222-4131-b909-d3e441992b7a",
-      "parent_phase_id": "96456201-3df5-4bc0-a715-38495460ac41",
-      "title": "Reading complete. Synthesizing timeline H1-H11 into master-plan foundation. Identifying current state and next actions.",
-      "status": "in_progress",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:22:18.681Z",
-      "updated_at": "2026-02-27T11:22:18.681Z"
-    },
-    {
-      "id": "bf7bfc17-3ff1-5320-86c1-e701c39a08ed",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Dispatch 4 parallel gsd-codebase-mapper agents for Sector-1 (src/)",
-      "status": "invalidated",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-28T01:42:42.414Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "37243534-186b-5d13-bb61-9e4492939e4a",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Agent 1: STACK.md — languages, frameworks, dependencies, build tools",
-      "status": "invalidated",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-28T01:42:42.414Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "7e62ff32-ca9d-521f-ac80-c7ae7b21c0ee",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Agent 2: ARCHITECTURE.md — module boundaries, dependency flows, layers",
-      "status": "invalidated",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-28T01:42:42.414Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "c9ce900f-f870-5bbc-9b44-c40a8d52561d",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Agent 3: CONVENTIONS.md — coding patterns, naming, style",
-      "status": "invalidated",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-28T01:42:42.414Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "e467438a-9b29-5949-9869-9a27e942fffb",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Agent 4: CONCERNS.md — tech debt, structural issues, risks, dead code",
-      "status": "invalidated",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-28T01:42:42.414Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "0660b7bf-a09f-505f-81c0-a08ad23a3ab0",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Review all 4 mapping outputs and present findings to user",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-28T01:34:28.799Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "dda43512-3370-5810-bd97-5c1b97ce2e4c",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "STOP — await user confirmation before any next steps",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-28T01:34:28.799Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "8503d1ef-6ae2-5569-9608-1ccecd8e7a09",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Delegate master plan rewrite to hivemaker with full context packet",
-      "status": "invalidated",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-27T23:41:46.252Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "eb00a487-d413-5932-9b63-f38f9002ecc4",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Verify updated master plan against SYSTEM-DIRECTIVES requirements",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-27T23:39:34.290Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "65640278-a066-5b5b-8321-f0f630732d49",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Save master plan update anchor",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-27T23:39:34.290Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "7c092c6f-1cb5-51fa-be51-79da85a409c2",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Wave β Task 2: Wire classifySessionIntent() in src/hooks/event-handler.ts",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T11:43:51.530Z",
-      "updated_at": "2026-02-27T22:28:59.059Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "cc89c792-668d-5641-adf3-de31402cf868",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Wave β Task 3: Wire materializeFromSessionState() in src/lib/session-engine.ts",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T17:50:30.377Z",
-      "updated_at": "2026-02-27T22:28:59.059Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "d03bae41-3a61-55ff-9874-0d184505277c",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Update master plan to reflect stabilize-first pivot + config remediation",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T17:50:30.377Z",
-      "updated_at": "2026-02-27T22:28:59.059Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "f898003e-208b-579e-814f-b383c705e606",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "FIX GAP-6: Add S-16 to S-18 for chaining, alias, hand-off checks",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T17:50:30.388Z",
-      "updated_at": "2026-02-27T17:46:18.141Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "73bdb9fa-7de6-5104-863d-9ade3f0d6d11",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "FIX GAP-5: Add planning artifact hierarchy detection to structural-audit.sh",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T17:50:30.388Z",
-      "updated_at": "2026-02-27T17:46:18.141Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "133bf1db-c240-5b5c-abf2-689dcd102cb1",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "FIX GAP-8: Add context-engineering section to session-mechanics.md",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T17:50:30.388Z",
-      "updated_at": "2026-02-27T17:46:18.141Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "4e2c8cce-11ec-584c-b4c4-a511b77a73e2",
-      "parent_phase_id": "53ca48e5-c8a4-5e9a-b916-8c36ee6d0133",
-      "title": "Re-run both scripts to verify no regressions",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-27T17:50:30.388Z",
-      "updated_at": "2026-02-27T17:46:18.141Z",
-      "plan_id": null,
-      "milestone_id": null,
-      "project_id": null
-    },
-    {
-      "id": "93b1be88-6929-4051-9847-7ecafc24ce0c",
-      "parent_phase_id": "0b382615-1285-4494-b665-aad0180c4501",
-      "title": "Run HiveFiver startup realignment and lane detection",
-      "status": "pending",
-      "file_locks": [],
-      "created_at": "2026-02-28T03:34:57.375Z",
-      "updated_at": "2026-02-28T03:34:57.375Z",
+      "created_at": "2026-03-04T14:27:13.348Z",
+      "updated_at": "2026-03-04T14:27:13.348Z",
       "acceptance_criteria": [
         "Persona lane selected",
         "Project type detected (greenfield/brownfield)",
@@ -280,26 +31,26 @@
       "max_validation_attempts": 10,
       "evidence_confidence": "partial",
       "related_entities": {
-        "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+        "session_id": "634a7fb7-9aca-4e4f-8150-23cd6cc07388",
         "workflow_id": "hivefiver-vibecoder.yaml",
         "requirement_node_id": "rq-bootstrap"
       }
     },
     {
-      "id": "1fb821c7-92e3-4330-850f-3db145a63584",
-      "parent_phase_id": "0b382615-1285-4494-b665-aad0180c4501",
+      "id": "e5756cf9-1c07-4c09-88ba-b4e2f30008d5",
+      "parent_phase_id": "decf9020-d7d4-4222-be55-1e71beb543d0",
       "title": "Build intake baseline and generate first executable specification",
       "status": "pending",
       "file_locks": [],
-      "created_at": "2026-02-28T03:34:57.375Z",
-      "updated_at": "2026-02-28T03:34:57.375Z",
+      "created_at": "2026-03-04T14:27:13.348Z",
+      "updated_at": "2026-03-04T14:27:13.348Z",
       "acceptance_criteria": [
         "MCQ intake completed",
         "Ambiguity map emitted",
         "Spec candidate selected"
       ],
       "dependencies": [
-        "93b1be88-6929-4051-9847-7ecafc24ce0c"
+        "dfb26062-0360-4809-8d41-34034219e9d4"
       ],
       "priority": "high",
       "domain": "hybrid",
@@ -318,26 +69,26 @@
       "max_validation_attempts": 10,
       "evidence_confidence": "partial",
       "related_entities": {
-        "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+        "session_id": "634a7fb7-9aca-4e4f-8150-23cd6cc07388",
         "workflow_id": "hivefiver-floppy-engineer.yaml",
         "requirement_node_id": "rq-spec"
       }
     },
     {
-      "id": "c908311a-405a-47c4-a61c-e53197771b69",
-      "parent_phase_id": "0b382615-1285-4494-b665-aad0180c4501",
+      "id": "ed3b8d12-1739-4be2-961f-13c6c126541b",
+      "parent_phase_id": "decf9020-d7d4-4222-be55-1e71beb543d0",
       "title": "Audit and configure non-negotiable MCP providers",
       "status": "pending",
       "file_locks": [],
-      "created_at": "2026-02-28T03:34:57.375Z",
-      "updated_at": "2026-02-28T03:34:57.375Z",
+      "created_at": "2026-03-04T14:27:13.348Z",
+      "updated_at": "2026-03-04T14:27:13.348Z",
       "acceptance_criteria": [
         "Context7, DeepWiki, Repomix status captured",
         "Tavily API guidance emitted",
         "Confidence downgrade policy configured"
       ],
       "dependencies": [
-        "1fb821c7-92e3-4330-850f-3db145a63584"
+        "e5756cf9-1c07-4c09-88ba-b4e2f30008d5"
       ],
       "priority": "high",
       "domain": "dev",
@@ -356,26 +107,26 @@
       "max_validation_attempts": 10,
       "evidence_confidence": "partial",
       "related_entities": {
-        "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+        "session_id": "634a7fb7-9aca-4e4f-8150-23cd6cc07388",
         "workflow_id": "hivefiver-mcp-fallback.yaml",
         "mcp_provider_id": "stack-core"
       }
     },
     {
-      "id": "00f7fe9c-2ade-44d2-92f7-66fc1a15f8a1",
-      "parent_phase_id": "0b382615-1285-4494-b665-aad0180c4501",
+      "id": "0977647b-b6b5-4d6b-a450-773d11bcf58e",
+      "parent_phase_id": "decf9020-d7d4-4222-be55-1e71beb543d0",
       "title": "Prepare TODO-to-Ralph export mapping and validation",
       "status": "pending",
       "file_locks": [],
-      "created_at": "2026-02-28T03:34:57.375Z",
-      "updated_at": "2026-02-28T03:34:57.375Z",
+      "created_at": "2026-03-04T14:27:13.348Z",
+      "updated_at": "2026-03-04T14:27:13.348Z",
       "acceptance_criteria": [
         "tasks/prd.json schema validated",
         "Dependency map generated",
         "Related entity links preserved"
       ],
       "dependencies": [
-        "c908311a-405a-47c4-a61c-e53197771b69"
+        "ed3b8d12-1739-4be2-961f-13c6c126541b"
       ],
       "priority": "medium",
       "domain": "office-ops",
@@ -394,10 +145,117 @@
       "max_validation_attempts": 10,
       "evidence_confidence": "partial",
       "related_entities": {
-        "session_id": "ce043acd-4c3d-44c7-a22d-05a4339345b7",
+        "session_id": "634a7fb7-9aca-4e4f-8150-23cd6cc07388",
         "workflow_id": "hivefiver-enterprise-architect.yaml",
         "export_id": "ralph-prd"
       }
+    },
+    {
+      "id": "b76683bb-6be3-4d98-83f0-9f0022bdf36c",
+      "parent_phase_id": "086009b7-47cf-4d70-8d03-0fa96c3315fe",
+      "title": "Validating metrics refactor plan against source code; checking Phase 1-9 accuracy and implementation feasibility",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-03-04T14:40:32.208Z",
+      "updated_at": "2026-03-04T14:40:32.208Z"
+    },
+    {
+      "id": "fc9f47d1-9d79-5827-b24c-4ea093802d7f",
+      "parent_phase_id": "40285537-43d4-5f59-b5c6-3b70ddf41eac",
+      "title": "Call map_context to declare action-level focus",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-03-04T15:01:00.595Z",
+      "updated_at": "2026-03-04T14:59:24.631Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "9ab1c910-b877-5c9f-b47e-69ef8c9b70cf",
+      "parent_phase_id": "40285537-43d4-5f59-b5c6-3b70ddf41eac",
+      "title": "Address mems.json absence (create if needed)",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-03-04T15:01:00.595Z",
+      "updated_at": "2026-03-04T14:59:24.631Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "medium"
+    },
+    {
+      "id": "dd25362e-7a57-5c58-9950-5d105af8e631",
+      "parent_phase_id": "40285537-43d4-5f59-b5c6-3b70ddf41eac",
+      "title": "Validate Phase 1 (turn_count semantics) fix scope",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-03-04T15:01:00.595Z",
+      "updated_at": "2026-03-04T14:59:24.631Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "87671752-2fb7-5d1a-af73-d997b5789603",
+      "parent_phase_id": "40285537-43d4-5f59-b5c6-3b70ddf41eac",
+      "title": "Validate Phase 8 (evidence_pressure signal) fix scope",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-03-04T15:01:00.595Z",
+      "updated_at": "2026-03-04T14:59:24.631Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "b5912946-6f0c-5fbe-9859-34d5702416ea",
+      "parent_phase_id": "40285537-43d4-5f59-b5c6-3b70ddf41eac",
+      "title": "Analyze zero-regression routing for Phase 8",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-03-04T15:01:00.595Z",
+      "updated_at": "2026-03-04T14:59:24.631Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "bbeff8c6-1c66-585c-b851-e8902913429b",
+      "parent_phase_id": "40285537-43d4-5f59-b5c6-3b70ddf41eac",
+      "title": "Delegate Phase 1 + Phase 8 (Option A) fixes to hivemaker",
+      "status": "invalidated",
+      "file_locks": [],
+      "created_at": "2026-03-04T15:01:00.595Z",
+      "updated_at": "2026-03-04T15:01:00.631Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high"
+    },
+    {
+      "id": "02ea83a6-2864-5459-aca6-c0a2f79b8eb8",
+      "parent_phase_id": "40285537-43d4-5f59-b5c6-3b70ddf41eac",
+      "title": "HARD STOP — Verify test results after fixes",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-04T15:01:00.616Z",
+      "updated_at": "2026-03-04T14:59:24.631Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "critical"
     }
   ]
 }

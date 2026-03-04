@@ -75,10 +75,10 @@ npm run guard:public                       # Run BEFORE any master push
 | Name | Type | Role | Scope Constraints | Location |
 |------|------|------|-------------------|----------|
 | **hiveminder** | Primary | Supreme orchestrator | No direct code edits; orchestrates via delegation. OUT OF SCOPE for now | `agents/hiveminder.md` |
-| **hivefiver** | Meta-Builder | Framework asset builder | Pivoting to surgical refactor operation, allowing and shifting orientation to restructure and refactor the whole project | `agents/hivefiver.md` |
+| **hivefiver** | Meta-Builder | Framework asset builder + surgical refactor | **PIVOTED**: Surgical refactor operation across whole project (`.opencode/**`, `.hivemind/**`, `src/**`, `tests/**`, `docs/**`) | `agents/hivefiver.md` |
 | **hivemaker** | Executor | Implementation specialist | `src/**`, `tests/**`, `docs/**` only; NO framework assets | `agents/hivemaker.md` |
 | **hivehealer** | Remediation | Debugging, hardening | `src/**`, `tests/**`, `docs/**` only; NO framework assets | `agents/hivehealer.md` |
-| **hiveplanner** | Planner | Phase planning, research synthesis | NO `src/**` edits; plans to `docs/plans/` only | `agents/hiveplanner.md` |
+| **hiveplanner** | Planner | Phase planning, research synthesis | `docs/plans/` only; research + synthesis focus | `agents/hiveplanner.md` |
 | **hiveq** | Verifier | Quality gates, PASS/FAIL verdicts | Read-only on code; verification reports only | `agents/hiveq.md` |
 | **hivexplorer** | Investigator | Codebase research, evidence collection | Read-only; NO file modifications | `agents/hivexplorer.md` |
 | **hiverd** | Research | External research, ecosystem analysis | External knowledge only; NO internal code edits | `agents/hiverd.md` |
@@ -208,3 +208,49 @@ Key restrictions:
 - `CLAUDE.md` — Project entry point for Claude/OpenCode sessions
 - `CONTAMINATION-GUARDRAILS.md` — Forensic contamination defense guide
 - `AGENT_RULES.md` — Constitutional architecture document (reference only)
+
+<!-- HIVEMIND-GOVERNANCE-START -->
+
+## HiveMind Context Governance
+
+This project uses **HiveMind** for AI session management. It prevents drift, tracks decisions, and preserves memory across sessions.
+
+### Required Workflow
+
+1. **START** every session with:
+   ```
+   declare_intent({ mode: "plan_driven" | "quick_fix" | "exploration", focus: "What you're working on" })
+   ```
+2. **UPDATE** when switching focus:
+   ```
+   map_context({ level: "trajectory" | "tactic" | "action", content: "New focus" })
+   ```
+3. **END** when done:
+   ```
+   compact_session({ summary: "What was accomplished" })
+   ```
+
+### Available Tools (10)
+
+| Group | Tools |
+|-------|-------|
+| Core | `declare_intent`, `map_context`, `compact_session` |
+| Cognitive Mesh | `scan_hierarchy`, `save_anchor`, `think_back` |
+| Memory | `save_mem`, `recall_mems` |
+| Hierarchy | `hierarchy_manage` |
+| Delegation | `export_cycle` |
+
+### Why It Matters
+
+- **Without `declare_intent`**: Drift detection is OFF, work is untracked
+- **Without `map_context`**: Context degrades every turn, warnings pile up
+- **Without `compact_session`**: Intelligence lost on session end
+- **`save_mem` + `recall_mems`**: Persistent memory across sessions — decisions survive
+
+### State Files
+
+- `.hivemind/state/brain.json` — Machine state (do not edit manually)
+- `.hivemind/state/hierarchy.json` — Decision tree
+- `.hivemind/sessions/` — Session files and archives
+
+<!-- HIVEMIND-GOVERNANCE-END -->
