@@ -167,6 +167,31 @@ async function test_tracks_tool_health() {
   await cleanup()
 }
 
+async function test_tracks_file_touches_for_write_tools() {
+  process.stderr.write("\n--- soft-governance: tracks file touches for write tools ---\n")
+  const dir = await setup()
+  const config = createConfig({ governance_mode: "assisted" })
+  await saveConfig(dir, config)
+
+  const sm = createStateManager(dir)
+  const state = unlockSession(createBrainState(generateSessionId(), config))
+  await sm.save(state)
+
+  const hook = createSoftGovernanceHook(noopLogger, dir, config)
+  const input = {
+    ...makeInput("write"),
+    args: { filePath: "src/demo.ts" },
+  }
+
+  await hook(input, makeOutput())
+
+  const updated = await sm.load()
+  assert(updated !== null, "state exists after write tool hook call")
+  assert(updated!.metrics.files_touched.includes("src/demo.ts"), "soft-governance persists tracked file paths")
+
+  await cleanup()
+}
+
 // ─── Drift detection ─────────────────────────────────────────────────
 
 async function test_drift_detection() {
@@ -1043,6 +1068,7 @@ async function main() {
 
   await test_increments_turn_count()
   await test_tracks_tool_health()
+  await test_tracks_file_touches_for_write_tools()
   await test_drift_detection()
   await test_no_drift_warning_when_healthy()
   await test_strict_violation_on_locked_write()

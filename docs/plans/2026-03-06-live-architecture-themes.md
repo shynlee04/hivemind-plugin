@@ -80,9 +80,12 @@ Different subsystems read different state families for related concepts. That is
   - `deep`
   - `drift`
   - `introspect`
-- It does not yet support typed graph/tree traversal for:
+- `traverse` now exists in tree-first form for:
   - ancestors
   - descendants
+  - siblings
+- It does not yet support richer related traversal for:
+  - ancestors
   - related mems
   - related anchors
   - file locks
@@ -93,9 +96,9 @@ Today, agents still depend too heavily on injected text and human-inferred struc
 
 ### Open Design Questions
 
-- Should traversal be added as a new `action` on `hivemind_inspect` or as mode parameters on existing actions?
-- Should traversal operate primarily on `hierarchy.json`, `graph/*.json`, or both?
-- How much relationship material should traversal return by default versus behind flags like `include_mems` and `include_anchors`?
+- How should traversal expand beyond v1 tree traversal without widening tool complexity too early?
+- Should any next-step traversal operate on `graph/*.json`, or should graph-related querying stay separate?
+- How much relationship material should traversal return by default versus behind explicit flags like `include_mems` and `include_anchors`?
 
 ## Theme D: Delegation and Session Continuity
 
@@ -104,7 +107,7 @@ Today, agents still depend too heavily on injected text and human-inferred struc
 - `parentID` exists in split and continuation flows.
 - `src/lib/session-split.ts` already uses lineage and recent dialogue concepts.
 - `soft-governance.ts` captures task outputs into `cycle_log`.
-- `CycleLogEntry` does not currently retain `task_id`.
+- `CycleLogEntry` now retains optional `task_id`.
 
 ### Why This Still Matters
 
@@ -119,10 +122,7 @@ Right now the repo has continuity ingredients, but not one normalized delegation
 
 ### Open Design Questions
 
-- Where should `task_id` be stored for safe resume:
-  - `cycle_log`
-  - exported cycle artifacts
-  - both
+- Is `task_id` plus current export metadata enough, or do we need a normalized delegation envelope next?
 - What structured output should delegated work return so resume and audit are deterministic?
 - Which continuity fields belong in prompt context and which belong only on disk?
 
@@ -189,12 +189,12 @@ Focused child sessions should likely receive less context than main sessions. Th
 
 ## Priority Order For The Next Engineering Wave
 
-1. Injection surface ownership
-2. Delegation continuity envelope
-3. Traversal contract
-4. Clarification and research workflow
-5. State authority rationalization
-6. Role-specific injection minimization
+1. Prompt-surface coverage lock
+2. Injection surface ownership
+3. `tool-gate` write demotion
+4. Role-specific injection minimization
+5. Clarification and research workflow
+6. State authority rationalization
 
 ## Themes To Explicitly Leave Out Of The Next Wave
 
@@ -202,4 +202,3 @@ Focused child sessions should likely receive less context than main sessions. Th
 - Re-solving compaction budget already shipped
 - Re-solving mutation flush already shipped in `soft-governance.ts`
 - Re-litigating missing files/tests already present in the repo
-

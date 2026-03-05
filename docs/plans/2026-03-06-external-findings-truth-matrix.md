@@ -45,11 +45,11 @@ Those claims are retained here only as examples of stale external drift.
 | `session-lifecycle.ts` still independently owns part of per-turn prompt composition | External answer 1 | `confirmed-current` | `src/hooks/session-lifecycle.ts:204`, `src/hooks/session-lifecycle.ts:311` | Carry forward |
 | prompt-surface overlap still exists across plugin, system, and message channels | External answer 1 | `confirmed-current` | `.opencode/plugins/hiveops-governance/hooks/context-injection.ts`, `src/hooks/session-lifecycle.ts`, `src/hooks/messages-transform.ts` | Carry forward |
 | the overlap is still the same as the old "three equal systems" model | External answer 1 | `confirmed-stale` | current code shows shared ledger and partial dedupe in `src/lib/injection-orchestrator.ts` and hook call sites | Reframe, do not repeat old framing |
-| `hivemind_inspect` lacks a `traverse` action | External answers 1 and 2 | `confirmed-current` | `src/tools/hivemind-inspect.ts:27-53` | Carry forward |
+| `hivemind_inspect` lacks a `traverse` action | External answers 1 and 2 | `confirmed-stale` | `src/tools/hivemind-inspect.ts` | Keep only as historical context |
 | `tool-gate.ts` still queues mutations | External reconciliation plan | `confirmed-current` | `src/hooks/tool-gate.ts:284` | Carry forward |
 | `soft-governance.ts` is already the main flush boundary | External reconciliation plan | `confirmed-current` | `src/hooks/soft-governance.ts:716-723` | Carry forward |
-| `CycleLogEntry` does not retain `task_id` | External answer 1 | `confirmed-current` | `src/schemas/brain-state.ts:83-95`, `src/schemas/brain-state.ts:741-765` | Carry forward |
-| delegation continuity should capture `task_id` for resumed work | External answer 1 | `needs-design-decision` | schema gap confirmed, exact storage/output contract not yet chosen | Carry forward as design decision |
+| `CycleLogEntry` does not retain `task_id` | External answer 1 | `confirmed-stale` | `src/schemas/brain-state.ts`, `src/hooks/soft-governance.ts`, `src/tools/hivemind-cycle.ts` | Mark resolved locally |
+| delegation continuity should capture `task_id` for resumed work | External answer 1 | `confirmed-current` | `src/schemas/brain-state.ts`, `src/hooks/soft-governance.ts`, `src/tools/hivemind-cycle.ts`, `tests/cycle-task-id.test.ts` | Mark completed locally |
 | child sessions likely receive too much prompt context | External answer 1 | `needs-research` | plugin and hooks exist; exact OpenCode child-session metadata access still needs external/runtime confirmation | Send to DeepWiki |
 | `task_id` resumption is important to long-haul continuity | External answer 1 | `needs-research` | repo has no normalized continuity envelope yet; OpenCode behavior should be re-confirmed | Send to DeepWiki and Devin |
 | multi-state tension between `brain.json`, `graph/*.json`, and `hierarchy.json` is still real | External answers 1 and 2 | `confirmed-current` | `src/hooks/messages-transform.ts`, `src/hooks/session-lifecycle.ts`, `src/lib/cognitive-packer.ts`, `src/lib/hierarchy-tree.ts`, `src/schemas/brain-state.ts` | Carry forward |
@@ -64,9 +64,9 @@ These claims survive reconciliation and should directly inform the next planning
 - Prompt-surface ownership is not fully consolidated.
 - `messages-transform.ts` still injects both cognitive context and a separate anchor header.
 - `session-lifecycle.ts` still injects a separate status layer.
-- `hivemind_inspect` still lacks traversal-grade querying.
+- `hivemind_inspect` now has tree-based traversal, but not graph/related traversal.
 - `tool-gate.ts` still queues mutations while `soft-governance.ts` is already the flush boundary.
-- Delegation continuity is still under-modeled because `cycle_log` lacks `task_id`.
+- Delegation continuity is still under-modeled beyond `task_id`, because no normalized delegation envelope exists yet.
 - The repo still operates across three state families with overlapping conceptual truth.
 - Child-session injection minimization remains unresolved.
 - Clarification -> exploration -> research assembly remains fragmented.
@@ -83,4 +83,3 @@ These claims survive reconciliation and should directly inform the next planning
 - What OpenCode exposes cheaply inside plugin hooks for child-session identification and `parentID` awareness
 - How `task_id` resumption interacts with synthetic parts, compaction, and replayed user messages
 - Whether `tool.definition` is a safe place to enforce structured-output hints for internal tools without confusing the model
-

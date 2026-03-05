@@ -1,5 +1,32 @@
 # Next Iteration Architecture Consolidation Implementation Plan
 
+> Status update 2026-03-06: `task_id` continuity, `hivemind_inspect.traverse` v1, the prompt-surface coverage lock, the first restricted prompt-surface de-duplication slice, and `tool-gate` write demotion are already implemented. Treat the continuity/traverse bootstrapping work, the initial ownership-baseline test tasks, and the tool-gate demotion bootstrap below as historical. The canonical next-phase order now starts with child-session injection minimization.
+
+## Completed Since Previous Draft
+
+- `CycleLogEntry.task_id?: string` landed in `src/schemas/brain-state.ts`.
+- `soft-governance.ts` now persists delegated `task_id` continuity metadata.
+- `hivemind_cycle` export metadata now includes compact `cycleLog` continuity data.
+- `hivemind_inspect.traverse` v1 landed as a tree-only traversal surface.
+- Prompt-surface coverage lock landed via:
+  - `tests/injection-surface-ownership.test.ts`
+  - `tests/child-session-injection-policy.test.ts`
+  - strengthened `tests/budget-hook-cap.test.ts`
+- Restricted prompt-surface de-duplication landed in a narrow form:
+  - `messages-transform.ts` now keeps the anchor header as fallback-only when no packed cognitive state is injected.
+  - `session-lifecycle.ts` now keeps next-step guidance but no longer emits the duplicate `Session: ... | Mode: ... | Governance: ...` status line.
+  - `injection-orchestrator.ts` now recognizes `<hivemind_state` as the canonical core-message marker.
+- `tool-gate` demotion landed:
+  - `tool-gate.ts` is advisory-only and no longer queues persisted mutations.
+  - `soft-governance.ts` now owns persisted file-touch tracking after tool execution.
+  - `tests/tool-gate-readonly.test.ts` locks the readonly contract.
+
+## Active Next Batch
+
+1. Child-session injection minimization
+2. State-authority rationalization design pass
+3. QA / research workflow design pass
+
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
 **Goal:** Consolidate the next live HiveMind architecture issues without re-opening already-fixed budget and flush work.
@@ -150,7 +177,7 @@ npx tsx --test tests/delegation-continuity-envelope.test.ts
 ```
 
 Expected:
-- fails because current `CycleLogEntry` lacks `task_id`
+- historical red step; this now passes because `CycleLogEntry.task_id` continuity is implemented, so use it as a regression guard instead
 
 **Step 3: Add minimal schema support**
 
@@ -475,4 +502,3 @@ Record:
 - Reworking mutation flush in `soft-governance.ts`
 - Full replacement of `brain.json`, `graph/*.json`, or `hierarchy.json`
 - Building a brand new research subsystem
-

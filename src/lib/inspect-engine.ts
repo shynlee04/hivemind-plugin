@@ -7,6 +7,7 @@ import { readActiveMd } from "./planning-fs.js"
 import {
   loadTree,
   toAsciiTree,
+  findNode,
   getAncestors,
   getCursorNode,
   detectGaps,
@@ -121,6 +122,87 @@ export interface IntrospectResult {
   populated: Record<string, unknown>
   stale_count: number
   contaminated_count: number
+}
+
+export interface TraverseNodeSummary {
+  id: string
+  level: string
+  content: string
+  status?: string
+  children_count: number
+}
+
+export interface TraverseResult {
+  active: boolean
+  error?: string
+  sessionId?: string
+  focus_node_id: string | null
+  direction: "up" | "down" | "siblings"
+  path: string[]
+  nodes: TraverseNodeSummary[]
+}
+
+function summarizeTraverseNode(node: {
+  id: string
+  level: string
+  content: string
+  status?: string
+  children: Array<unknown>
+}): TraverseNodeSummary {
+  return {
+    id: node.id,
+    level: node.level,
+    content: node.content,
+    status: node.status,
+    children_count: node.children.length,
+  }
+}
+
+function collectDescendants(
+  node: {
+    id: string
+    level: string
+    content: string
+    status?: string
+    children: Array<{
+      id: string
+      level: string
+      content: string
+      status?: string
+      children: Array<unknown>
+    }>
+  },
+  maxDepth: number,
+  currentDepth = 0,
+): TraverseNodeSummary[] {
+  const nodes: TraverseNodeSummary[] = [summarizeTraverseNode(node)]
+  if (currentDepth >= maxDepth) {
+    return nodes
+  }
+
+  for (const child of node.children) {
+    nodes.push(
+      ...collectDescendants(
+        child as {
+          id: string
+          level: string
+          content: string
+          status?: string
+          children: Array<{
+            id: string
+            level: string
+            content: string
+            status?: string
+            children: Array<unknown>
+          }>
+        },
+        maxDepth,
+        currentDepth + 1,
+      ),
+    )
+  }
+
+  return nodes
 }
 
 export async function scanState(directory: string): Promise<ScanResult> {
@@ -327,6 +409,125 @@ export async function introspectState(directory: string): Promise<IntrospectResu
     },
     stale_count: staleMems.length,
     contaminated_count: contaminatedMems.length + contaminatedTasks.length,
+  }
+}
+
+/**
+ * Traverse the hierarchy tree in a narrowly-scoped, tree-only manner.
+ *
+ * v1 intentionally supports only hierarchy.json traversal. It does not join
+ * graph tasks, mems, anchors, or file locks yet.
+ *
+ * @param directory - Project root containing HiveMind state.
+ * @param options - Traversal selection and bounds.
+ * @returns Structured traversal result that remains machine-readable.
+ */
+export async function traverseState(
+  directory: string,
+  options?: {
+    nodeId?: string
+    direction?: "up" | "down" | "siblings"
+    depth?: number
+  },
+): Promise<TraverseResult> {
+  const direction = options?.direction ?? "down"
+  const requestedDepth = Number.isFinite(options?.depth) ? Math.floor(options?.depth as number) : 1
+  const maxDepth = Math.min(Math.max(requestedDepth, 0), 3)
+
+  const stateManager = createStateManager(directory)
+  const state = await stateManager.load()
+
+  if (!state) {
+    return {
+      active: false,
+      error: "no session",
+      focus_node_id: null,
+      direction,
+      path: [],
+      nodes: [],
+    }
+  }
+
+  const tree = await loadTree(directory)
+  if (!tree.root) {
+    return {
+      active: true,
+      sessionId: state.session.id,
+      focus_node_id: null,
+      direction,
+      path: [],
+      nodes: [],
+    }
+  }
+
+  let focusNode = options?.nodeId ? findNode(tree.root, options.nodeId) : null
+  if (options?.nodeId && !focusNode) {
+    return {
+      active: true,
+      sessionId: state.session.id,
+      error: "node_not_found",
+      focus_node_id: null,
+      direction,
+      path: [],
+      nodes: [],
+    }
+  }
+
+  if (!focusNode) {
+    focusNode = tree.cursor ? getCursorNode(tree) : null
+  }
+
+  if (!focusNode && direction === "down") {
+    focusNode = tree.root
+  }
+
+  if (!focusNode) {
+    return {
+      active: true,
+      sessionId: state.session.id,
+      focus_node_id: null,
+      direction,
+      path: [],
+      nodes: [],
+    }
+  }
+
+  const ancestors = getAncestors(tree.root, focusNode.id)
+  const path = ancestors.map((node) => node.id)
+
+  if (direction === "up") {
+    return {
+      active: true,
+      sessionId: state.session.id,
+      focus_node_id: focusNode.id,
+      direction,
+      path,
+      nodes: ancestors.slice().reverse().map(summarizeTraverseNode),
+    }
+  }
+
+  if (direction === "siblings") {
+    const parent = ancestors.length >= 2 ? ancestors[ancestors.length - 2] : null
+    const siblings = parent
+      ? parent.children.filter((child) => child.id !== focusNode?.id).map(summarizeTraverseNode)
+      : []
+    return {
+      active: true,
+      sessionId: state.session.id,
+      focus_node_id: focusNode.id,
+      direction,
+      path,
+      nodes: siblings,
+    }
+  }
+
+  return {
+    active: true,
+    sessionId: state.session.id,
+    focus_node_id: focusNode.id,
+    direction,
+    path,
+    nodes: collectDescendants(focusNode, maxDepth),
   }
 }
 

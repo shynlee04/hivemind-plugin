@@ -2,14 +2,14 @@ import { type Logger } from "../lib/logging.js"
 import { type HiveMindConfig } from "../schemas/config.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { detectFrameworkContext } from "../lib/framework-context.js"
-import { addFileTouched, isSessionLocked, setComplexityNudgeShown, type BrainState } from "../schemas/brain-state.js"
+import { isSessionLocked, type BrainState } from "../schemas/brain-state.js"
 import { checkComplexity } from "../lib/complexity.js";
 import { checkAndRecordToast } from "../lib/toast-throttle.js";
 import { normalizeToolAlias } from "../lib/tool-names.js";
 import { treeExists } from "../lib/hierarchy-tree.js"
 import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
 import { validateSessionState, type GatekeeperResult } from "../lib/gatekeeper.js"
-import { queueStateMutation, applyPendingStateMutations } from "../lib/state-mutation-queue.js"
+import { applyPendingStateMutations } from "../lib/state-mutation-queue.js"
 import { shouldSuppressHumanFacingGovernance } from "../lib/session-role.js"
 
 // Tools exempt from governance checks (read-only or meta-tools)
@@ -119,6 +119,11 @@ type ToolGateHook = ((
  *
  * Hook factory pattern — captures config + logger + directory.
  * Returns an OpenCode-compatible hook with correct signature.
+ *
+ * @param log Logger used for advisory warnings and diagnostics.
+ * @param directory Project directory used for config and state resolution.
+ * @param _initConfig Initial config snapshot; runtime config is reloaded on each invocation.
+ * @returns An OpenCode-compatible advisory-only tool gate hook with `.internal` exposed for tests.
  */
 export function createToolGateHook(
   log: Logger,
@@ -274,20 +279,8 @@ export function createToolGateHook(
         }
       }
 
-      // Session is open — track activity (turn count incremented in tool.execute.after only)
+      // Session is open — advisory only (persisted writes live in soft-governance).
       if (state) {
-        // Track file touches for write tools (tool name used as proxy)
-        if (isWriteTool(toolName)) {
-          state = addFileTouched(state, `[via ${toolName}]`)
-
-          // CQRS-compliant: Queue mutation for file touch
-          queueStateMutation({
-            type: "UPDATE_STATE",
-            payload: state,
-            source: "tool-gate"
-          })
-        }
-
         // NOTE: Drift calculation removed (Wave 1 Fix 1.1).
         // tool-gate was using projected turn_count which diverges from
         // calculateDriftScore()'s canonical user_turn_count.
@@ -302,8 +295,6 @@ export function createToolGateHook(
               `[Advisory] ${complexityCheck.message}`
             )
           }
-
-          state = setComplexityNudgeShown(state)
 
           return {
             allowed: true,

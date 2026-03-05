@@ -25,6 +25,7 @@ import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { TOOL_DENIAL_REASONS } from "../lib/governance-instruction.js"
 import { queueStateMutation, flushMutations } from "../lib/state-mutation-queue.js"
 import {
+  addFileTouched,
   addViolationCount,
   incrementTurnCount,
   setLastCommitSuggestionTurn,
@@ -325,6 +326,11 @@ function detectOffTrackIntent(toolName: string, output: { output: string; metada
  * This is the COUNTER engine. It fires after every tool call and writes
  * detection state to brain.json.metrics. The session-lifecycle hook then
  * reads these counters and compiles signals into prompt warnings.
+ *
+ * @param log Logger used for diagnostics, warnings, and toast fallbacks.
+ * @param directory Project directory used for config and state resolution.
+ * @param _initConfig Initial config snapshot; runtime config is reloaded on every invocation.
+ * @returns A tool.execute.after hook that acts as the persisted write boundary for governance state.
  */
 export function createSoftGovernanceHook(
   log: Logger,
@@ -430,6 +436,16 @@ export function createSoftGovernanceHook(
             ...newState.metrics,
             files_read_this_session: [...filesReadThisSession],
           },
+        }
+      }
+
+      if (toolCategory === "write") {
+        const pathsToTrack = trackedPaths.length > 0
+          ? trackedPaths
+          : [`[via ${input.tool}]`]
+
+        for (const trackedPath of pathsToTrack) {
+          newState = addFileTouched(newState, trackedPath)
         }
       }
 

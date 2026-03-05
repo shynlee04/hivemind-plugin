@@ -9,7 +9,7 @@ import { createBrainState, generateSessionId, unlockSession } from "../src/schem
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { saveGraphTasks, saveTrajectory } from "../src/lib/graph-io.js"
 import { noopLogger } from "../src/lib/logging.js"
-import { clearMutationQueue, flushMutations } from "../src/lib/state-mutation-queue.js"
+import { clearMutationQueue, flushMutations, getPendingMutationCount } from "../src/lib/state-mutation-queue.js"
 import { mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
@@ -138,10 +138,10 @@ async function test_permissive_allows_silently() {
   await cleanup()
 }
 
-// ─── file tracking / drift ──────────────────────────────────────────
+// ─── advisory-only persistence boundary ─────────────────────────────
 
-async function test_drift_tracking() {
-  process.stderr.write("\n--- tool-gate: drift tracking ---\n")
+async function test_tool_gate_does_not_queue_state_mutations_for_write_tools() {
+  process.stderr.write("\n--- tool-gate: advisory-only write path ---\n")
   const dir = await setup()
   const config = createConfig({ governance_mode: "assisted", max_turns_before_warning: 3 })
   await saveConfig(dir, config)
@@ -153,19 +153,16 @@ async function test_drift_tracking() {
 
   const hook = createToolGateHookInternal(noopLogger, dir, config)
 
-  // Run tool calls with write tools to trigger file tracking
-  // (turn count is now only incremented in tool.execute.after / soft-governance)
   await hook({ sessionID: "test-drift", tool: "write" })
   await hook({ sessionID: "test-drift", tool: "edit" })
 
-  // CQRS-compliant: flush queued mutations (tools do this in production)
+  assert(getPendingMutationCount() === 0, "tool-gate leaves mutation queue untouched")
+
   await flushMutations(sm)
 
-  // Check state was updated with file touches (write tools trigger saves)
-  // addFileTouched deduplicates by path, so each unique tool name = 1 entry
   const updated = await sm.load()
   assert(updated !== null, "state exists after tool calls")
-  assert(updated!.metrics.files_touched.length >= 2, "file touches tracked for write tools")
+  assert(updated!.metrics.files_touched.length === 0, "tool-gate does not persist file touches")
 
   await cleanup()
 }
@@ -324,7 +321,7 @@ async function main() {
   await test_strict_allows_write_when_unlocked()
   await test_assisted_warns_but_allows()
   await test_permissive_allows_silently()
-  await test_drift_tracking()
+  await test_tool_gate_does_not_queue_state_mutations_for_write_tools()
   await test_entry_gate_suggests_scan()
   await test_write_tool_warns_without_active_tasknode()
   await test_write_tool_no_tasknode_warning_with_active_task()

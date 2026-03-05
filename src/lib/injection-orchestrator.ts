@@ -39,7 +39,7 @@ const CHANNEL_PRIORITY: InjectionChannel[] = [
 ]
 
 const CORE_SYSTEM_MARKERS = ["<hivemind>", "HIVE-MASTER governance active"]
-const CORE_MESSAGE_MARKERS = ["[SYSTEM ANCHOR:", "<system-reminder>", "<hivemind-clarify>"]
+const CORE_MESSAGE_MARKERS = ["<hivemind_state", "[SYSTEM ANCHOR:", "<system-reminder>", "<hivemind-clarify>"]
 const PLUGIN_MESSAGE_MARKERS = ["## GX-Pack Governance Context"]
 
 function getStore(): InternalStore {

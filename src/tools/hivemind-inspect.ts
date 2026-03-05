@@ -2,7 +2,8 @@
  * hivemind_inspect — Unified inspection tool for session state and drift analysis.
  *
  * Merged from: scan_hierarchy, think_back, check_drift
- * Actions: scan (quick snapshot), deep (full context refresh), drift (alignment check)
+ * Actions: scan (quick snapshot), deep (full context refresh), drift (alignment check),
+ * introspect (schema population/staleness), traverse (tree navigation)
  *
  * Design:
  *   1. Iceberg — minimal args, system handles state reads
@@ -17,6 +18,7 @@ import {
   deepInspect,
   driftReport,
   introspectState,
+  traverseState,
 } from "../lib/inspect-engine.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
@@ -24,12 +26,24 @@ export function createHivemindInspectTool(directory: string): ToolDefinition {
   return tool({
     description:
       "Inspect your session state and alignment. " +
-      "Actions: scan (quick snapshot), deep (full context refresh), drift (alignment check), introspect (schema population/staleness). " +
+      "Actions: scan (quick snapshot), deep (full context refresh), drift (alignment check), introspect (schema population/staleness), traverse (hierarchy navigation). " +
       "Always returns JSON for FK chaining.",
     args: {
       action: tool.schema
-        .enum(["scan", "deep", "drift", "introspect"])
-        .describe("What to do: scan | deep | drift | introspect"),
+        .enum(["scan", "deep", "drift", "introspect", "traverse"])
+        .describe("What to do: scan | deep | drift | introspect | traverse"),
+      node_id: tool.schema
+        .string()
+        .optional()
+        .describe("For traverse: optional hierarchy node ID to focus on"),
+      direction: tool.schema
+        .enum(["up", "down", "siblings"])
+        .optional()
+        .describe("For traverse: traversal direction (default: down)"),
+      depth: tool.schema
+        .number()
+        .optional()
+        .describe("For traverse: descendant depth limit, clamped to 0-3"),
     },
     async execute(args, _context) {
       // CHIMERA-3: Always return JSON for FK chaining
@@ -50,6 +64,14 @@ export function createHivemindInspectTool(directory: string): ToolDefinition {
         case "introspect": {
           const result = await introspectState(directory)
           return toSuccessOutput("Schema introspection completed", result.sessionId, result as unknown as Record<string, unknown>)
+        }
+        case "traverse": {
+          const result = await traverseState(directory, {
+            nodeId: args.node_id,
+            direction: args.direction,
+            depth: args.depth,
+          })
+          return toSuccessOutput("Hierarchy traversal completed", result.sessionId, result as unknown as Record<string, unknown>)
         }
         default:
           return toErrorOutput(`Unknown action: ${args.action}`)

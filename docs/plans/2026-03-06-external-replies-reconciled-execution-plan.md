@@ -12,6 +12,28 @@ Its job is to do three things:
 
 This is a planning artifact only. It does not reopen already-fixed budget or mutation-flush work.
 
+## Progress Update
+
+Completed since the first reconciliation draft:
+
+- `task_id` continuity is now implemented in:
+  - `src/schemas/brain-state.ts`
+  - `src/hooks/soft-governance.ts`
+  - `src/tools/hivemind-cycle.ts`
+- `hivemind_inspect.traverse` v1 is now implemented as a tree-only traversal surface.
+- Prompt-surface coverage lock is now implemented via:
+  - `tests/injection-surface-ownership.test.ts`
+  - `tests/child-session-injection-policy.test.ts`
+  - strengthened `tests/budget-hook-cap.test.ts`
+- Restricted prompt-surface de-duplication is now partially implemented:
+  - duplicate `Session: ... | Mode: ... | Governance: ...` status output removed from `system[]`
+  - duplicate anchor header reduced to fallback-only when packed cognitive state is present
+  - canonical core-message detection now recognizes `<hivemind_state`
+- `tool-gate` write demotion is now implemented:
+  - `tool-gate.ts` is advisory-only
+  - `soft-governance.ts` owns persisted file-touch tracking
+- The next active implementation slice is now child-session injection minimization, not continuity, traversal bootstrapping, baseline coverage creation, or tool-gate demotion.
+
 ---
 
 ## Executive Verdict
@@ -20,11 +42,9 @@ This is a planning artifact only. It does not reopen already-fixed budget or mut
 - `Devin` is materially stale on several repo facts and cannot be used as a current-state authority.
 - We should keep `Devin` only for a few architectural themes that still match the current repo after local verification.
 - The next refactor wave should stay narrow:
-  - prompt-surface ownership
-  - `tool-gate` write demotion
-  - `task_id` continuity
-  - `hivemind_inspect.traverse`
   - child-session injection minimization
+  - state-authority rationalization design
+  - QA / research workflow design
 
 ---
 
@@ -43,8 +63,8 @@ These facts are current and override stale external claims:
 - `src/hooks/messages-transform.ts` still prepends both `packCognitiveState()` output and a separate anchor header.
 - `src/hooks/session-lifecycle.ts` still injects a separate status layer via `buildStatusBlock()`.
 - `src/hooks/tool-gate.ts` still queues mutations.
-- `src/tools/hivemind-inspect.ts` supports `scan`, `deep`, `drift`, and `introspect`, but not `traverse`.
-- `src/schemas/brain-state.ts` still defines `CycleLogEntry` without `task_id`.
+- `src/tools/hivemind-inspect.ts` now supports `scan`, `deep`, `drift`, `introspect`, and tree-based `traverse`.
+- `src/schemas/brain-state.ts` now defines `CycleLogEntry.task_id?: string`.
 
 ---
 
@@ -165,7 +185,7 @@ Potential additive fields:
 
 Decision:
 
-- Phase in `traverse` as a tree-first action, not a generalized graph traversal system.
+- Keep `traverse` as a tree-first action in v1 and defer graph-wide relationship stitching.
 
 First version:
 
@@ -224,7 +244,22 @@ Target:
 
 ## Execution-Grade Phase Plan
 
-### Phase 0: Coverage Lock Before Refactor
+### Phase 0: Documentation Re-Baseline
+
+Purpose:
+
+- keep planning artifacts synchronized with the actual repo state
+
+Files:
+
+- `docs/plans/2026-03-06-external-replies-reconciled-execution-plan.md`
+- `docs/plans/2026-03-06-external-findings-truth-matrix.md`
+- `docs/plans/2026-03-06-live-architecture-themes.md`
+- `docs/plans/2026-03-06-deepwiki-unresolved-query-packet.md`
+- `docs/plans/2026-03-06-devin-repo-mapping-query-packet.md`
+- `docs/plans/2026-03-06-next-iteration-implementation-plan.md`
+
+### Phase 1: Coverage Lock Before Prompt-Surface Refactor
 
 Purpose:
 
@@ -245,45 +280,7 @@ Additions:
 - verify `buildStatusBlock()` output is currently present in `system[]`
 - add a child-session policy placeholder test marked around expected future reduction behavior
 
-### Phase 1: Add `task_id` Continuity
-
-Purpose:
-
-- preserve delegation resume identity in existing state
-
-Files:
-
-- `src/schemas/brain-state.ts`
-- `src/hooks/soft-governance.ts`
-- `src/tools/hivemind-cycle.ts`
-- `tests/cycle-intelligence.test.ts`
-- new `tests/cycle-task-id.test.ts`
-
-Change:
-
-- extend `CycleLogEntry` with optional `task_id`
-- capture `task_id` when the `task` tool returns it
-- surface it in cycle exports
-
-### Phase 2: Add `hivemind_inspect.traverse` v1
-
-Purpose:
-
-- provide typed navigation without widening the subsystem too early
-
-Files:
-
-- `src/tools/hivemind-inspect.ts`
-- `src/lib/inspect-engine.ts`
-- `src/lib/hierarchy-tree.ts`
-- new `tests/hivemind-inspect-traverse.test.ts`
-
-Change:
-
-- add `traverse` action
-- implement tree-only traversal using existing hierarchy helpers
-
-### Phase 3: Prompt-Surface De-duplication
+### Phase 2: Prompt-Surface De-duplication
 
 Purpose:
 
@@ -305,7 +302,7 @@ Order:
 3. gate or remove `buildStatusBlock()`
 4. keep governance instruction and warning surfaces in `system[]`
 
-### Phase 4: `tool-gate` Write Demotion
+### Phase 3: `tool-gate` Write Demotion
 
 Purpose:
 
@@ -325,7 +322,7 @@ Order:
 2. keep `tool-gate.ts` warning behavior unchanged
 3. remove `queueStateMutation()` calls from `tool-gate.ts`
 
-### Phase 5: Child-Session Injection Policy
+### Phase 4: Child-Session Injection Policy
 
 Purpose:
 

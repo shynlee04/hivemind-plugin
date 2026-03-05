@@ -71,12 +71,21 @@ describe("budget hook cap integration", () => {
 
       const turnKey = createTurnInjectionKey("budget-session", 1)
       assert.equal(getTurnInjectionLedger(turnKey)?.cap_chars, MIN_SHARED_INJECTION_CAP)
+      assert.doesNotMatch(
+        lifecycleOutput.system.join("\n"),
+        /Session: .* \| Mode: .* \| Governance: assisted/,
+      )
 
       const messagesHook = createMessagesTransformHook({ warn: async () => {} }, dir)
       const messageOutput = { messages: [createUserMessage("hello again", "budget-session")] }
       await messagesHook({}, messageOutput)
 
-      assert.equal(getTurnInjectionLedger(turnKey)?.cap_chars, MIN_SHARED_INJECTION_CAP)
+      const ledger = getTurnInjectionLedger(turnKey)
+      assert.equal(ledger?.cap_chars, MIN_SHARED_INJECTION_CAP)
+      assert(ledger !== undefined)
+      assert(ledger.used_chars > 0)
+      assert(ledger.used_chars <= ledger.cap_chars)
+      assert.equal(messageOutput.messages.length, 1)
     } finally {
       clearTurnInjectionLedger()
       await rm(dir, { recursive: true, force: true })

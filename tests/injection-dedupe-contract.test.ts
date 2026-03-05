@@ -50,7 +50,7 @@ describe("injection dedupe contract", () => {
       messages: [
         {
           role: "user",
-          content: "[SYSTEM ANCHOR: Trajectory | Active Task: A | Hierarchy: Active]",
+          content: "<hivemind_state timestamp=\"2026-03-06T00:00:00.000Z\" session=\"ses_test\"></hivemind_state>",
         },
         {
           role: "system",

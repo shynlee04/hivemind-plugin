@@ -214,8 +214,9 @@ function isLowSignalContinuation(text: string): boolean {
 }
 
 /**
- * V3.0: Build anchor context as SEPARATE synthetic part.
- * Does NOT mutate user text - uses prependSyntheticPart instead.
+ * V3.0: Build fallback anchor context as a separate synthetic part.
+ * Used only when canonical structured context is unavailable, so we
+ * avoid duplicating anchor state when the cognitive packer already injects it.
  */
 function buildAnchorContext(state: BrainState): string {
   const phase = state.hierarchy.trajectory || "Unset"
@@ -611,6 +612,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
         // === PHASE 5: Cognitive Packer Injection ===
         if (!pluginMessagePresent) {
+          let packedContextInjected = false
           const checklistReserve = 900
           const remainingBeforeCognitive = getRemainingBudget(turnKey)
           const availableForCognitive = Math.max(0, remainingBeforeCognitive - checklistReserve)
@@ -622,14 +624,18 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
               const packedContextBounded = reserveCoreMessageText(packedContext)
               if (packedContextBounded) {
                 prependSyntheticPart(output.messages[index], packedContextBounded)
+                packedContextInjected = true
               }
             }
           }
 
-          // === PHASE 6: Contextual Anchoring ===
-          const anchorHeader = reserveCoreMessageText(buildAnchorContext(state))
-          if (anchorHeader) {
-            prependSyntheticPart(output.messages[index], anchorHeader)
+          // === PHASE 6: Contextual Anchoring Fallback ===
+          // Keep the lightweight anchor only when structured context could not be injected.
+          if (!packedContextInjected) {
+            const anchorHeader = reserveCoreMessageText(buildAnchorContext(state))
+            if (anchorHeader) {
+              prependSyntheticPart(output.messages[index], anchorHeader)
+            }
           }
         }
 

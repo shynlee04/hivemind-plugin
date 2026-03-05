@@ -303,7 +303,6 @@ function buildTaskBlock(): string[] {
 
 function buildStatusBlock(state: { session: { governance_status: string; mode: string; governance_mode: string }; hierarchy: { trajectory: string; tactic: string; action: string } }, config: HiveMindConfig): string[] {
   return [
-    `Session: ${state.session.governance_status} | Mode: ${state.session.mode} | Governance: ${state.session.governance_mode}`,
     getNextStepHint(config.language, state.hierarchy),
   ]
 }

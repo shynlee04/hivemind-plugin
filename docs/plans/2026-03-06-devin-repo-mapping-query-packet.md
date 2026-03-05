@@ -1,5 +1,7 @@
 # Devin Repo-Mapping Query Packet
 
+> Status update 2026-03-06: This file is now a mixed prompt-plus-reply evidence artifact, not a clean outbound packet. Local repo truth has moved forward since the original prompt: `CycleLogEntry.task_id` continuity is implemented and `hivemind_inspect.traverse` v1 now exists. If a fresh outbound Devin packet is needed later, create a new file instead of reusing this one.
+
 ## Purpose
 
 This packet is for repo-mapping and phased refactor planning only. It assumes the current repository state has already been reconciled locally.
@@ -30,8 +32,8 @@ These are still current and need repo-specific refactor sequencing:
   - separate anchor header
 - `session-lifecycle.ts` still adds a separate status layer
 - `tool-gate.ts` still queues mutations
-- `hivemind_inspect` still lacks `traverse`
-- `CycleLogEntry` still lacks `task_id`
+- `hivemind_inspect` now has tree-based `traverse` v1; graph-related traversal is still open
+- `CycleLogEntry.task_id` continuity is now implemented; normalized delegation-envelope work is still open
 - state authority is still split across:
   - `brain.json`
   - `graph/*.json`
@@ -233,31 +235,35 @@ graph TD
 | `src/hooks/session-lifecycle.ts` | **Refactor-now** | Still renders `buildStatusBlock()` (lines 152-157) and `buildMetricsBlock()` (lines 159-161) — both overlap with what `packCognitiveState` already provides in `<hivemind_state>` XML |
 | `src/hooks/messages-transform.ts` | **Keep (canonical location)** | Already owns cognitive-packer injection (line 411), anchor prepend (line 418), and checklist append (line 534). This is the correct surface for messages[] |
 | `src/lib/cognitive-packer.ts` | **Keep** | Well-structured context compiler with budget, staleness, and anti-pattern support. Should be the single source of injected cognitive state |
-| `src/lib/injection-orchestrator.ts` | **Discard (does not exist)** | Reference is stale. The orchestration is split between `session-lifecycle.ts` and `messages-transform.ts` |
-| `src/lib/session-role.ts` | **Discard (does not exist)** | `session.role` is a string field on `SessionState`, not a module |
+| `src/lib/injection-orchestrator.ts` | **Keep** | Historical external claim was stale. This file exists and is the shared injection-ledger/orchestration surface. |
+| `src/lib/session-role.ts` | **Keep** | Historical external claim was stale. This file exists and owns session-kind/role resolution helpers. |
 | `src/hooks/soft-governance.ts` | **Keep** | Canonical flush boundary (line 500-506). Counter engine is well-separated from prompt assembly |
 | `src/hooks/tool-gate.ts` | **Refactor-later** | Still queues mutations (lines 223-229, 267-269) for drift score and file-touch tracking. These overlap with soft-governance |
 | `src/lib/session-split.ts` | **Keep** | Clean split logic, already invoked from soft-governance |
 | `src/lib/session_coherence.ts` | **Keep** | First-turn cross-session context is well-isolated |
-| `src/lib/compaction-engine.ts` | **Keep** | Uses `LEGACY_COMPACTION_BUDGET` (line 165). Consider migrating to `DEFAULT_COMPACTION_BUDGET` |
-| `src/tools/hivemind-inspect.ts` | **Refactor-now** | Needs `traverse` action |
-| `src/lib/inspect-engine.ts` | **Refactor-now** | Needs `traverse` function |
+| `src/lib/compaction-engine.ts` | **Keep** | Historical external claim was stale. Current repo already uses `DEFAULT_COMPACTION_BUDGET`. |
+| `src/tools/hivemind-inspect.ts` | **Keep / Refactor-later** | `traverse` v1 now exists; future work is expansion beyond tree-only traversal. |
+| `src/lib/inspect-engine.ts` | **Keep / Refactor-later** | Tree-only traversal is now implemented; future work is richer related traversal. |
 | `src/lib/hierarchy-tree.ts` | **Keep** | Clean tree engine, already has `getAncestors`, `flattenTree`, `findNode` needed for traversal |
-| `src/schemas/brain-state.ts` | **Refactor-now** | `CycleLogEntry` lacks `task_id` (lines 70-81) |
+| `src/schemas/brain-state.ts` | **Keep / Refactor-later** | `CycleLogEntry.task_id` continuity is now implemented; remaining work is any future normalized delegation envelope. |
 | `src/schemas/graph-nodes.ts` | **Keep** | Zod schemas are solid | [0-cite-5](#0-cite-5) [0-cite-6](#0-cite-6) [0-cite-7](#0-cite-7) [0-cite-8](#0-cite-8) 
 
 ---
 
 ### 3. Refactor Phases with Exact Files
 
-#### Phase 0: Correct Stale References (Prerequisite)
+#### Phase 0: Historical stale-reference section
+
+This subsection is preserved as part of the returned external reply. Do not execute it literally against the current repo.
 
 Remove all references to non-existent files from any documentation, planning artifacts, or code comments:
 - `src/lib/injection-orchestrator.ts`
 - `src/lib/session-role.ts`
 - `.opencode/plugins/hiveops-governance/hooks/context-injection.ts`
 
-#### Phase 1: Q4 — Add `task_id` to `CycleLogEntry`
+#### Phase 1: Q4 — Historical continuity section
+
+This subsection is now completed locally and should be read as resolved history, not active work.
 
 **Files:**
 - `src/schemas/brain-state.ts` — Add `task_id?: string` to `CycleLogEntry` interface
@@ -267,7 +273,9 @@ Remove all references to non-existent files from any documentation, planning art
 **Tests to add first:**
 - `tests/cycle-intelligence.test.ts` — Add assertions for `task_id` presence in cycle log entries [0-cite-8](#0-cite-8) [0-cite-9](#0-cite-9) 
 
-#### Phase 2: Q5 — Add `traverse` to `hivemind_inspect`
+#### Phase 2: Q5 — Historical traverse bootstrap section
+
+This subsection is now completed locally in tree-first form and should be read as resolved history, not active work.
 
 **Files:**
 - `src/lib/inspect-engine.ts` — Add `traverseTree(directory, nodeId?, direction?)` function

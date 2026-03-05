@@ -1,5 +1,7 @@
 # DeepWiki Unresolved Query Packet
 
+> Status update 2026-03-06: This file is now a mixed prompt-plus-reply evidence artifact, not a clean outbound packet. Local repo truth has moved forward since the original prompt: `CycleLogEntry.task_id` continuity is implemented and `hivemind_inspect.traverse` v1 now exists. If a fresh outbound DeepWiki packet is needed later, create a new file instead of reusing this one.
+
 ## Purpose
 
 This packet is for OpenCode-native questions only. It assumes the current repository has already been reconciled locally and that stale local-structure questions should not be revisited.
