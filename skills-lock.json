@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "adaptation-synthesis": {
+      "source": "jwynia/agent-skills",
+      "sourceType": "github",
+      "computedHash": "df4926e4c95de857ade6a3b6457c79b1f347299847a0b748fac01ea5de50dffe"
+    },
     "skill-creator": {
       "source": "vercel-labs/agent-browser",
       "sourceType": "github",
@@ -10,6 +15,11 @@
       "source": "softaworks/agent-toolkit",
       "sourceType": "github",
       "computedHash": "ff132ba281d460d3cf7814601e304f24e795a606a8e20e78f1bd103258bc735c"
+    },
+    "spec-driven-development": {
+      "source": "addyosmani/agent-skills",
+      "sourceType": "github",
+      "computedHash": "21c10481233b4a08ce3aba2b70a7e0d6582828ead4f5b9006642ea43d2401fbc"
     },
     "subagent-driven-development": {
       "source": "obra/superpowers",
