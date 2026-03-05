@@ -2,7 +2,8 @@
  * Tool Activation Advisor — pure function.
  * Suggests which HiveMind tools are most relevant for the current state.
  */
-import type { BrainState } from "../schemas/brain-state.js";
+import type { BrainState } from "../schemas/brain-state.js"
+import { TOOL_NAMES } from "./tool-names.js";
 
 /** Drift score below this triggers a map_context hint */
 const DRIFT_SCORE_THRESHOLD = 50;
@@ -33,11 +34,11 @@ export function getToolActivation(
   state: BrainState,
   context?: ToolActivationContext
 ): ToolHint | null {
-  // Priority 1: Session locked → must declare intent
+  // Priority 1: Session locked → must start session
   if (state.session.governance_status === "LOCKED") {
     return {
-      tool: "declare_intent",
-      reason: "Session is LOCKED. Declare your intent to start working.",
+      tool: TOOL_NAMES.SESSION,
+      reason: "Session is LOCKED. Start a session to begin working.",
       priority: "high",
     };
   }

@@ -29,20 +29,14 @@ import {
   getAncestors,
   treeExists,
 } from "../lib/hierarchy-tree.js"
-import { HIVE_MASTER_GOVERNANCE_INSTRUCTION, GOVERNANCE_MARKER } from "../lib/governance-instruction.js"
+// Governance injection handled by session-lifecycle.ts — DO NOT duplicate here
+// import { HIVE_MASTER_GOVERNANCE_INSTRUCTION, GOVERNANCE_MARKER } from "../lib/governance-instruction.js"
 import { MAX_COMPACTION_COUNT } from "../lib/session-boundary.js"
 
 const INJECTION_BUDGET_CHARS = 12000
 
-/**
- * Inject governance instruction into compaction context (deduplicated)
- */
-function injectGovernanceToCompaction(output: { context: string[] }): void {
-  const alreadyInjected = output.context.some(s => s.includes(GOVERNANCE_MARKER))
-  if (!alreadyInjected) {
-    output.context.push(HIVE_MASTER_GOVERNANCE_INSTRUCTION)
-  }
-}
+// NOTE: Governance injection was previously duplicated here.
+// Single injection point is session-lifecycle.ts (Wave 1 Fix 1.2).
 
 /**
  * Creates the compaction hook.
@@ -57,8 +51,8 @@ export function createCompactionHook(log: Logger, directory: string) {
     output: { context: string[] }
   ): Promise<void> => {
     try {
-      // Inject governance instruction to persist across compactions
-      injectGovernanceToCompaction(output)
+      // Governance injection handled by session-lifecycle.ts
+      // Do NOT inject here — single injection point prevents duplication
 
       let state = await stateManager.load()
       if (!state) {
@@ -120,8 +114,8 @@ export function createCompactionHook(log: Logger, directory: string) {
             // Truncate tree for compaction budget if extremely large, but prefer strict hierarchy
             const treeLines = treeView.split('\n');
             if (treeLines.length > 20) {
-               lines.push(...treeLines.slice(0, 20));
-               lines.push("  ... (truncated for compaction)");
+              lines.push(...treeLines.slice(0, 20));
+              lines.push("  ... (truncated for compaction)");
             } else {
               lines.push(treeView);
             }
@@ -173,7 +167,7 @@ export function createCompactionHook(log: Logger, directory: string) {
       if (anchorsState.anchors.length > 0) {
         lines.push("## Anchors")
         for (const anchor of anchorsState.anchors) {
-           lines.push(`- [${anchor.key}]: ${anchor.value}`)
+          lines.push(`- [${anchor.key}]: ${anchor.value}`)
         }
         lines.push("")
       }

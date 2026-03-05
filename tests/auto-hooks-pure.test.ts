@@ -292,12 +292,12 @@ function test_commit_advisor() {
 function test_tool_activation() {
   process.stderr.write("\n--- tool-activation ---\n");
 
-  // 1. LOCKED session → declare_intent (high)
+  // 1. LOCKED session → hivemind_session (high)
   const locked = makeState({ governance_status: "LOCKED", governance_mode: "strict" });
   const hint1 = getToolActivation(locked);
   assert(
-    hint1 !== null && hint1.tool === "declare_intent" && hint1.priority === "high",
-    "LOCKED session → declare_intent (high)"
+    hint1 !== null && hint1.tool === "hivemind_session" && hint1.priority === "high",
+    "LOCKED session → hivemind_session (high)"
   );
 
   // 2. High drift → hivemind_session (high)
@@ -354,7 +354,7 @@ function test_tool_activation() {
   });
   const hint6 = getToolActivation(lockedHighDrift);
   assert(
-    hint6 !== null && hint6.tool === "declare_intent",
+    hint6 !== null && hint6.tool === "hivemind_session",
     "priority ordering: LOCKED wins over drift + long session"
   );
 

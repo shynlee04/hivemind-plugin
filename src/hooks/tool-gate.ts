@@ -2,7 +2,7 @@ import { type Logger } from "../lib/logging.js"
 import { type HiveMindConfig } from "../schemas/config.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { detectFrameworkContext } from "../lib/framework-context.js"
-import { addFileTouched, isSessionLocked, calculateDriftScore, shouldTriggerDriftWarning, setComplexityNudgeShown, type BrainState } from "../schemas/brain-state.js"
+import { addFileTouched, isSessionLocked, setComplexityNudgeShown, type BrainState } from "../schemas/brain-state.js"
 import { checkComplexity } from "../lib/complexity.js";
 import { checkAndRecordToast } from "../lib/toast-throttle.js";
 import { treeExists } from "../lib/hierarchy-tree.js"
@@ -226,45 +226,11 @@ export function createToolGateHook(
 
       // Session is open — track activity (turn count incremented in tool.execute.after only)
       if (state) {
-        let needsSave = false
-        const projectedTurnCount = state.metrics.turn_count + 1
-
         // Track file touches for write tools (tool name used as proxy)
         if (isWriteTool(toolName)) {
           state = addFileTouched(state, `[via ${toolName}]`)
-          needsSave = true
-        }
 
-        // Update drift score using projected turn count (matches post-tool state)
-        const projectedForDrift = {
-          ...state,
-          metrics: {
-            ...state.metrics,
-            turn_count: projectedTurnCount,
-          },
-        }
-        const projectedDriftScore = calculateDriftScore(projectedForDrift)
-        if (state.metrics.drift_score !== projectedDriftScore) {
-          state = {
-            ...state,
-            metrics: {
-              ...state.metrics,
-              drift_score: projectedDriftScore,
-            },
-          }
-          needsSave = true
-        }
-
-        const driftCheckState = {
-          ...state,
-          metrics: {
-            ...state.metrics,
-            turn_count: projectedTurnCount,
-          },
-        }
-
-        // CQRS-compliant: Queue mutations instead of direct save
-        if (needsSave) {
+          // CQRS-compliant: Queue mutation for file touch
           queueStateMutation({
             type: "UPDATE_STATE",
             payload: state,
@@ -272,29 +238,10 @@ export function createToolGateHook(
           })
         }
 
-        // Check drift warning - Advisory only
-        if (
-          shouldTriggerDriftWarning(
-            driftCheckState,
-            config.max_turns_before_warning
-          )
-        ) {
-          await log.warn(
-            `Drift warning: ${driftCheckState.metrics.turn_count} turns, score: ${driftCheckState.metrics.drift_score}/100. Consider using map_context to re-focus.`
-          )
-
-          if (config.governance_mode !== "permissive") {
-            return {
-              allowed: true,
-              warning: `Drift detected (${state.metrics.drift_score}/100). Use map_context to re-focus.`,
-              signal: {
-                type: "drift",
-                severity: "warning",
-                message: `High drift score. Consider map_context to realign with intent.`,
-              },
-            }
-          }
-        }
+        // NOTE: Drift calculation removed (Wave 1 Fix 1.1).
+        // tool-gate was using projected turn_count which diverges from
+        // calculateDriftScore()'s canonical user_turn_count.
+        // Drift warnings are handled by soft-governance.ts as the single owner.
 
         // Check complexity and show nudge (once per session)
         const complexityCheck = checkComplexity(state)
