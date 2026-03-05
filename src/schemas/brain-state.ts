@@ -85,6 +85,8 @@ export interface CycleLogEntry {
   timestamp: number;
   /** Tool name that was captured (usually 'task') */
   tool: string;
+  /** Delegated task/session identifier when the runtime surfaces one */
+  task_id?: string;
   /** Whether failure signals were detected in output */
   failure_detected: boolean;
   /** Which failure keywords were found */
@@ -350,6 +352,7 @@ const MetricsStateSchema = z.object({
 const CycleLogEntrySchema = z.object({
   timestamp: z.number(),
   tool: z.string(),
+  task_id: z.string().optional(),
   failure_detected: z.boolean(),
   failure_keywords: z.array(z.string()),
 });
@@ -737,11 +740,20 @@ export function addViolationCount(state: BrainState): BrainState {
  * Auto-capture a subagent tool output into cycle_log.
  * Detects failure keywords and sets pending_failure_ack if found.
  * Caps cycle_log at MAX_CYCLE_LOG entries (drops oldest).
+ *
+ * @param state - Current BrainState snapshot.
+ * @param tool - Tool name associated with the captured output.
+ * @param output - Tool output text used for failure-keyword detection.
+ * @param options - Optional continuity metadata surfaced by the runtime.
+ * @returns Updated BrainState with the new cycle-log entry appended.
  */
 export function addCycleLogEntry(
   state: BrainState,
   tool: string,
-  output: string
+  output: string,
+  options?: {
+    taskId?: string | null;
+  }
 ): BrainState {
   const lowerOutput = output.toLowerCase();
   const foundKeywords = FAILURE_KEYWORDS.filter(kw => lowerOutput.includes(kw));
@@ -753,6 +765,9 @@ export function addCycleLogEntry(
     failure_detected: failureDetected,
     failure_keywords: foundKeywords,
   };
+  if (typeof options?.taskId === "string" && options.taskId.trim().length > 0) {
+    entry.task_id = options.taskId.trim();
+  }
 
   const newLog = [...(state.cycle_log ?? []), entry];
   // Cap at MAX_CYCLE_LOG

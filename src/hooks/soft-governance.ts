@@ -70,6 +70,65 @@ function dedupeStrings(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))]
 }
 
+/**
+ * Extract a delegated task identifier from task tool metadata or output text.
+ *
+ * @param output - Raw task tool output captured by the hook.
+ * @param metadata - Tool metadata emitted by the runtime, if any.
+ * @returns A normalized delegated task identifier when present.
+ */
+function extractDelegatedTaskId(output: string, metadata: Record<string, unknown> | undefined): string | undefined {
+  const directCandidates = [
+    metadata?.task_id,
+    metadata?.taskId,
+  ]
+
+  for (const candidate of directCandidates) {
+    if (typeof candidate === "string" && candidate.trim().length > 0) {
+      return candidate.trim()
+    }
+  }
+
+  const nestedMetadata = metadata?.metadata
+  if (typeof nestedMetadata === "object" && nestedMetadata !== null) {
+    const nestedRecord = nestedMetadata as Record<string, unknown>
+    const nestedCandidates = [nestedRecord.task_id, nestedRecord.taskId]
+    for (const candidate of nestedCandidates) {
+      if (typeof candidate === "string" && candidate.trim().length > 0) {
+        return candidate.trim()
+      }
+    }
+  }
+
+  try {
+    const parsed = JSON.parse(output) as Record<string, unknown>
+    const parsedCandidates = [
+      parsed.task_id,
+      parsed.taskId,
+      typeof parsed.metadata === "object" && parsed.metadata !== null
+        ? (parsed.metadata as Record<string, unknown>).task_id
+        : undefined,
+      typeof parsed.metadata === "object" && parsed.metadata !== null
+        ? (parsed.metadata as Record<string, unknown>).taskId
+        : undefined,
+    ]
+    for (const candidate of parsedCandidates) {
+      if (typeof candidate === "string" && candidate.trim().length > 0) {
+        return candidate.trim()
+      }
+    }
+  } catch {
+    // Output is often plain text; fall back to regex extraction.
+  }
+
+  const match = output.match(/\btask_id\b\s*[:=]\s*([A-Za-z0-9_-]+)/i)
+  if (match?.[1]) {
+    return match[1]
+  }
+
+  return undefined
+}
+
 type ToastVariant = "info" | "warning" | "error"
 
 function localize(language: "en" | "vi", en: string, vi: string): string {
@@ -620,13 +679,21 @@ export function createSoftGovernanceHook(
       // === Cycle Intelligence: Auto-capture Task tool returns ===
       if (input.tool === "task" || canonicalTool === "task") {
         const taskOutput = _output.output ?? "";
-        newState = addCycleLogEntry(newState, input.tool, taskOutput);
+        const outputMetadata = typeof _output.metadata === "object" && _output.metadata !== null
+          ? _output.metadata as Record<string, unknown>
+          : undefined
+        const delegatedTaskId = extractDelegatedTaskId(taskOutput, outputMetadata)
+        newState = addCycleLogEntry(newState, input.tool, taskOutput, {
+          taskId: delegatedTaskId,
+        });
         if (newState.pending_failure_ack) {
           await log.warn(
             `Cycle intelligence: subagent reported failure signals. pending_failure_ack set. Agent must call export_cycle or map_context(blocked) to acknowledge.`
           );
         }
-        await log.debug(`Cycle intelligence: auto-captured Task return (${taskOutput.length} chars, failure=${newState.pending_failure_ack})`);
+        await log.debug(
+          `Cycle intelligence: auto-captured Task return (${taskOutput.length} chars, failure=${newState.pending_failure_ack}, task_id=${delegatedTaskId ?? "none"})`,
+        );
       }
 
       // Soft-ramp deterministic trigger tracking.

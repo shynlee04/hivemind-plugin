@@ -68,7 +68,12 @@ export function createHivemindCycleTool(directory: string): ToolDefinition {
   })
 }
 
-// CHIMERA-3: Always return JSON for FK chaining
+/**
+ * Export the active session and return machine-readable continuity metadata.
+ *
+ * @param directory - Project root used to resolve HiveMind state paths.
+ * @returns JSON string describing the export result.
+ */
 async function handleExport(directory: string): Promise<string> {
   const stateManager = createStateManager(directory)
   const state = await stateManager.load()
@@ -102,6 +107,12 @@ async function handleExport(directory: string): Promise<string> {
     duration: durationMs,
     turnCount: state.metrics.turn_count,
     filesTouched: state.metrics.files_touched.length,
+    cycleLog: (state.cycle_log ?? []).map((entry) => ({
+      timestamp: entry.timestamp,
+      tool: entry.tool,
+      task_id: entry.task_id ?? null,
+      failure_detected: entry.failure_detected,
+    })),
   })
 }
 
