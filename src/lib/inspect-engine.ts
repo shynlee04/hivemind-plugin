@@ -1,6 +1,6 @@
 import { createStateManager } from "./persistence.js"
 import { loadAnchors, getAnchorsForContext } from "./anchors.js"
-import { loadGraphMems } from "./graph-io.js"
+import { loadGraphMems, loadGraphTasks } from "./graph-io.js"
 import { detectChainBreaks } from "./chain-analysis.js"
 import { calculateDriftScore } from "../schemas/brain-state.js"
 import { readActiveMd } from "./planning-fs.js"
@@ -111,6 +111,16 @@ export interface DriftReport {
     violationCount: number
   }
   recommendation?: "on_track" | "some_drift" | "significant_drift"
+}
+
+export interface IntrospectResult {
+  active: boolean
+  error?: string
+  sessionId?: string
+  schema_fields: string[]
+  populated: Record<string, unknown>
+  stale_count: number
+  contaminated_count: number
 }
 
 export async function scanState(directory: string): Promise<ScanResult> {
@@ -273,6 +283,50 @@ export async function driftReport(directory: string): Promise<DriftReport> {
         : driftScore >= 40
           ? "some_drift"
           : "significant_drift",
+  }
+}
+
+export async function introspectState(directory: string): Promise<IntrospectResult> {
+  const stateManager = createStateManager(directory)
+  const state = await stateManager.load()
+
+  if (!state) {
+    return {
+      active: false,
+      error: "no session",
+      schema_fields: ["trajectory", "plans", "phases", "tasks", "mems", "anchors"],
+      populated: {},
+      stale_count: 0,
+      contaminated_count: 0,
+    }
+  }
+
+  const now = Date.now()
+  const anchorsState = await loadAnchors(directory)
+  const memsState = await loadGraphMems(directory)
+  const tasksState = await loadGraphTasks(directory, { enabled: false })
+
+  const staleMems = memsState.mems.filter((mem) => {
+    const stamp = Date.parse(mem.staleness_stamp)
+    return Number.isFinite(stamp) && stamp < now
+  })
+  const contaminatedMems = memsState.mems.filter((mem) => mem.type === "false_path")
+  const contaminatedTasks = tasksState.tasks.filter((task) => task.status === "invalidated")
+
+  return {
+    active: true,
+    sessionId: state.session.id,
+    schema_fields: ["trajectory", "plans", "phases", "tasks", "mems", "anchors"],
+    populated: {
+      trajectory: Boolean(state.hierarchy.trajectory),
+      plans: (state.trajectory_context.active_plan_id ? 1 : 0),
+      phases: (state.hierarchy.tactic ? 1 : 0),
+      tasks: tasksState.tasks.length,
+      mems: memsState.mems.length,
+      anchors: anchorsState.anchors.length,
+    },
+    stale_count: staleMems.length,
+    contaminated_count: contaminatedMems.length + contaminatedTasks.length,
   }
 }
 

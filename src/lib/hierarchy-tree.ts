@@ -739,6 +739,43 @@ export function getAncestors(
 }
 
 /**
+ * Validate that a node has all required ancestors for its level.
+ * - tactic requires trajectory
+ * - action requires tactic + trajectory
+ */
+export function validateAncestorChain(
+  tree: HierarchyTree,
+  nodeId: string
+): { valid: boolean; missingAncestors: string[] } {
+  if (!tree.root) {
+    return { valid: false, missingAncestors: ["trajectory"] };
+  }
+
+  const node = findNode(tree.root, nodeId);
+  if (!node) {
+    return { valid: false, missingAncestors: ["node_not_found"] };
+  }
+
+  const ancestors = getAncestors(tree.root, nodeId);
+  const ancestorLevels = new Set(ancestors.map((ancestor) => ancestor.level));
+
+  const requiredByLevel: Record<HierarchyLevel, HierarchyLevel[]> = {
+    trajectory: [],
+    tactic: ["trajectory"],
+    action: ["trajectory", "tactic"],
+  };
+
+  const missingAncestors = requiredByLevel[node.level]
+    .filter((required) => !ancestorLevels.has(required))
+    .map((required) => String(required));
+
+  return {
+    valid: missingAncestors.length === 0,
+    missingAncestors,
+  };
+}
+
+/**
  * Get the node the cursor currently points to.
  *
  * @consumer session-lifecycle.ts, scan-hierarchy.ts

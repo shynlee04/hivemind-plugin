@@ -16,6 +16,7 @@ import {
   scanState,
   deepInspect,
   driftReport,
+  introspectState,
 } from "../lib/inspect-engine.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 
@@ -23,12 +24,12 @@ export function createHivemindInspectTool(directory: string): ToolDefinition {
   return tool({
     description:
       "Inspect your session state and alignment. " +
-      "Actions: scan (quick snapshot), deep (full context refresh), drift (alignment check). " +
+      "Actions: scan (quick snapshot), deep (full context refresh), drift (alignment check), introspect (schema population/staleness). " +
       "Always returns JSON for FK chaining.",
     args: {
       action: tool.schema
-        .enum(["scan", "deep", "drift"])
-        .describe("What to do: scan | deep | drift"),
+        .enum(["scan", "deep", "drift", "introspect"])
+        .describe("What to do: scan | deep | drift | introspect"),
     },
     async execute(args, _context) {
       // CHIMERA-3: Always return JSON for FK chaining
@@ -45,6 +46,10 @@ export function createHivemindInspectTool(directory: string): ToolDefinition {
           const result = await driftReport(directory)
           // DriftReport doesn't have sessionId, pass entity_id if available
           return toSuccessOutput("Drift report completed", result.active ? undefined : undefined, result as unknown as Record<string, unknown>)
+        }
+        case "introspect": {
+          const result = await introspectState(directory)
+          return toSuccessOutput("Schema introspection completed", result.sessionId, result as unknown as Record<string, unknown>)
         }
         default:
           return toErrorOutput(`Unknown action: ${args.action}`)

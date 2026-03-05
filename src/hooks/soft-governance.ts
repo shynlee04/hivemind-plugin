@@ -40,6 +40,8 @@ import { executeAutoCommit, extractModifiedFiles, shouldAutoCommit } from "../li
 import { getClient } from "./sdk-context.js"
 import { checkAndRecordToast, resetAllThrottles } from "../lib/toast-throttle.js"
 import { maybeCreateNonDisruptiveSessionSplit } from "../lib/session-split.js"
+import { normalizeToolAlias } from "../lib/tool-names.js"
+import { applyResolvedSessionRoleContext, shouldSuppressHumanFacingGovernance } from "../lib/session-role.js"
 import {
   classifyTool,
   incrementToolType,
@@ -57,6 +59,16 @@ import {
   type GovernanceCounters,
   type DetectionState,
 } from "../lib/detection.js"
+
+const MANDATORY_EXEMPT_TOOLS = new Set([
+  "read", "glob", "grep", "ls", "cat", "find",
+  "hivemind_inspect", "hivemind_hierarchy", "hivemind_memory", "hivemind_anchor",
+  "hivemind_context", "hivemind_declare",
+])
+
+function dedupeStrings(values: string[]): string[] {
+  return [...new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))]
+}
 
 type ToastVariant = "info" | "warning" | "error"
 
@@ -285,6 +297,7 @@ export function createSoftGovernanceHook(
 
       const state = await stateManager.load()
       if (!state) {
+        await log.warn("soft-governance: no brain state available")
         // Denial — mutate output so agent READS the denial, not just log
         _output.title = `⛔ DENIED — ${TOOL_DENIAL_REASONS.NO_STATE}`
         _output.output = [
@@ -297,8 +310,39 @@ export function createSoftGovernanceHook(
       }
 
       // Increment turn count for every tool call
-      let newState = incrementTurnCount(state)
+      let newState = applyResolvedSessionRoleContext(incrementTurnCount(state))
+      const suppressHumanFacing = shouldSuppressHumanFacingGovernance(newState)
       let counters: GovernanceCounters = newState.metrics.governance_counters
+      const canonicalTool = normalizeToolAlias(input.tool)
+      let pendingMandatory = dedupeStrings(newState.pending_mandatory_tools ?? [])
+      if (pendingMandatory.includes(canonicalTool)) {
+        pendingMandatory = pendingMandatory.filter((tool) => tool !== canonicalTool)
+      }
+
+      if (
+        pendingMandatory.length > 0 &&
+        !MANDATORY_EXEMPT_TOOLS.has(canonicalTool) &&
+        !pendingMandatory.includes(canonicalTool)
+      ) {
+        const repetitionCount = counters.out_of_order
+        counters = registerGovernanceSignal(counters, "out_of_order")
+        const severity = computeGovernanceSeverity({
+          kind: "out_of_order",
+          repetitionCount,
+        })
+        if (!suppressHumanFacing) {
+          await emitGovernanceToast(log, {
+            key: `mandatory_pending:${severity}`,
+            message: localize(
+              config.language,
+              `Mandatory governance step pending: ${pendingMandatory.join(", ")}.`,
+              `Buoc governance bat buoc dang cho: ${pendingMandatory.join(", ")}.`,
+            ),
+            variant: variantFromSeverity(severity),
+            eventType: "governance",
+          })
+        }
+      }
 
       const offTrackIntent = detectOffTrackIntent(input.tool, _output)
       if (offTrackIntent) {
@@ -307,11 +351,11 @@ export function createSoftGovernanceHook(
 
       // Check for drift (high turns without context update)
       // Threshold: drift_score < 30 AND user_turn_count >= 10 (consistent with event-handler.ts)
-      const driftWarning = newState.metrics.turn_count >= config.max_turns_before_warning &&
+      const driftWarning = !suppressHumanFacing && newState.metrics.turn_count >= config.max_turns_before_warning &&
         newState.metrics.drift_score < 30
 
       // === Detection Engine: Tool Classification ===
-      const toolCategory = classifyTool(input.tool)
+      const toolCategory = classifyTool(canonicalTool)
       const trackedPaths = extractTrackedPaths(input, _output)
       const filesReadThisSession = new Set(
         (newState.metrics.files_read_this_session ?? []).map(normalizeTrackedPath)
@@ -377,7 +421,7 @@ export function createSoftGovernanceHook(
       detection = trackToolResult(detection, true)
 
       // Track section repetition when map_context is called
-      if (input.tool === "map_context") {
+      if (input.tool === "map_context" || canonicalTool === "hivemind_session") {
         const focus =
           newState.hierarchy.action ||
           newState.hierarchy.tactic ||
@@ -386,7 +430,7 @@ export function createSoftGovernanceHook(
       }
 
       // New intent declaration resets repetition tracking
-      if (input.tool === "declare_intent") {
+      if (input.tool === "declare_intent" || canonicalTool === "hivemind_declare") {
         detection = resetSectionTracking(detection)
       }
 
@@ -450,7 +494,7 @@ export function createSoftGovernanceHook(
       }
 
       // === Governance Violations ===
-      const isIgnoredTool = shouldTrackAsViolation(input.tool, state.session.governance_mode)
+      const isIgnoredTool = shouldTrackAsViolation(canonicalTool, state.session.governance_mode)
 
       if (isIgnoredTool && state.session.governance_status === "LOCKED") {
         // Agent is trying to use tools when session is LOCKED
@@ -468,12 +512,14 @@ export function createSoftGovernanceHook(
           `Tool ${input.tool} used before prerequisites. Call declare_intent first, then continue.`,
           `Da dung tool ${input.tool} truoc prerequisite. Goi declare_intent truoc roi tiep tuc.`,
         )
-        await emitGovernanceToast(log, {
-          key: `out_of_order:${severity}`,
-          message: outOfOrderMessage,
-          variant: variantFromSeverity(severity),
-          eventType: "governance",
-        })
+        if (!suppressHumanFacing) {
+          await emitGovernanceToast(log, {
+            key: `out_of_order:${severity}`,
+            message: outOfOrderMessage,
+            variant: variantFromSeverity(severity),
+            eventType: "governance",
+          })
+        }
 
         await log.warn(
           `Governance violation: tool '${input.tool}' used in LOCKED session. Violation count: ${newState.metrics.violation_count}`
@@ -497,12 +543,14 @@ export function createSoftGovernanceHook(
           `Evidence pressure active. Use think_back and verify before next claim.`,
           `Evidence pressure dang bat. Dung think_back va xac minh truoc khi ket luan tiep.`,
         )
-        await emitGovernanceToast(log, {
-          key: `evidence_pressure:${severity}`,
-          message: evidenceMessage,
-          variant: variantFromSeverity(severity),
-          eventType: "evidence",
-        })
+        if (!suppressHumanFacing) {
+          await emitGovernanceToast(log, {
+            key: `evidence_pressure:${severity}`,
+            message: evidenceMessage,
+            variant: variantFromSeverity(severity),
+            eventType: "evidence",
+          })
+        }
       }
 
       const ignoredTier = compileIgnoredTier({
@@ -522,7 +570,7 @@ export function createSoftGovernanceHook(
         },
       })
 
-      if (ignoredTier) {
+      if (!suppressHumanFacing && ignoredTier) {
         const actionLabel = getActiveActionLabel(newState)
         const triage = buildIgnoredTriageMessage(
           config.language,
@@ -565,12 +613,12 @@ export function createSoftGovernanceHook(
 
       // Long session detection
       const longSession = detectLongSession(newState, config.auto_compact_on_turns);
-      if (longSession.isLong) {
+      if (!suppressHumanFacing && longSession.isLong) {
         await log.warn(longSession.suggestion);
       }
 
       // === Cycle Intelligence: Auto-capture Task tool returns ===
-      if (input.tool === "task") {
+      if (input.tool === "task" || canonicalTool === "task") {
         const taskOutput = _output.output ?? "";
         newState = addCycleLogEntry(newState, input.tool, taskOutput);
         if (newState.pending_failure_ack) {
@@ -579,6 +627,21 @@ export function createSoftGovernanceHook(
           );
         }
         await log.debug(`Cycle intelligence: auto-captured Task return (${taskOutput.length} chars, failure=${newState.pending_failure_ack})`);
+      }
+
+      // Soft-ramp deterministic trigger tracking.
+      // - after task delegation: require cycle export capture
+      // - after write batch: require explicit context checkpoint
+      if ((input.tool === "task" || canonicalTool === "task") && !pendingMandatory.includes("hivemind_cycle")) {
+        pendingMandatory.push("hivemind_cycle")
+      }
+      if (toolCategory === "write" && canonicalTool !== "task" && !pendingMandatory.includes("hivemind_session")) {
+        pendingMandatory.push("hivemind_session")
+      }
+      pendingMandatory = dedupeStrings(pendingMandatory)
+      newState = {
+        ...newState,
+        pending_mandatory_tools: pendingMandatory,
       }
 
       let hasActiveTask = false

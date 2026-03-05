@@ -19,7 +19,7 @@ import {
 } from "../lib/graph-io.js"
 import { clearPendingFailureAck, type SessionMode } from "../schemas/brain-state.js"
 import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
-import { flushMutations, flushTaskManifestMutations } from "../lib/state-mutation-queue.js"
+import { flushMutations, flushTaskManifestMutations, queueStateMutation } from "../lib/state-mutation-queue.js"
 import { loadPendingChanges, loadVerificationLedger } from "../lib/sot-governance.js"
 import { purgeTransientSessionMemory } from "../lib/session-memory-purge.js"
 import {
@@ -199,6 +199,15 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
       const stateManager = createStateManager(directory)
       await flushMutations(stateManager)
       await flushTaskManifestMutations()
+      const runtimeState = await stateManager.load()
+      const runtimeSessionId = runtimeState?.session.id
+      if (args.action === "update" || args.action === "close" || args.action === "branch") {
+        queueStateMutation({
+          type: "CHECKPOINT",
+          payload: {},
+          source: `hivemind-session:${args.action}`,
+        }, runtimeSessionId)
+      }
 
       let result: SessionResult
       switch (args.action) {

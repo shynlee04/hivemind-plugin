@@ -14,9 +14,13 @@
  * @see docs/plans/SPEC-GX-PACK-CONTEXT-ENGINE-2026-03-02.md — Mechanism: Context Engineering Engine
  */
 
-import { readFileSync, existsSync } from "node:fs"
-import { join } from "node:path"
 import type { EnforcementState } from "../types"
+import {
+  createTurnInjectionKey,
+  createTurnInjectionLedger,
+  reserveInjectionBudget,
+} from "../../../../src/lib/injection-orchestrator.js"
+import { readUnifiedStateSnapshot } from "../../../../src/lib/state-snapshot.js"
 
 interface TodoItem {
   id: string
@@ -80,17 +84,6 @@ interface HealthMetrics {
       signals: string[]
       below: number
     }
-  }
-}
-
-/** Load a JSON file safely */
-function loadJson<T>(worktree: string, relativePath: string): T | null {
-  const fullPath = join(worktree, relativePath)
-  if (!existsSync(fullPath)) return null
-  try {
-    return JSON.parse(readFileSync(fullPath, "utf-8")) as T
-  } catch {
-    return null
   }
 }
 
@@ -162,6 +155,24 @@ function formatActiveTodo(todoState: TodoState | null): string {
 function formatHierarchyCursor(hierarchy: HierarchyNode | null): string {
   if (!hierarchy) return "No hierarchy loaded."
 
+  const flatHierarchy = hierarchy as unknown as {
+    trajectory?: string
+    tactic?: string
+    action?: string
+  }
+  if (
+    typeof flatHierarchy.trajectory === "string" ||
+    typeof flatHierarchy.tactic === "string" ||
+    typeof flatHierarchy.action === "string"
+  ) {
+    const lines = [
+      `→ trajectory: ${flatHierarchy.trajectory || "(unset)"}`,
+      `  → tactic: ${flatHierarchy.tactic || "(unset)"}`,
+      `    → action: ${flatHierarchy.action || "(unset)"}`,
+    ]
+    return lines.join("\n")
+  }
+
   // Walk to deepest active node
   function findDeepestActive(node: HierarchyNode, path: string[]): string[] {
     const currentPath = [...path, `${node.type}: ${node.content}`]
@@ -178,15 +189,35 @@ function formatHierarchyCursor(hierarchy: HierarchyNode | null): string {
   return breadcrumb.map((b, i) => `${"  ".repeat(i)}→ ${b}`).join("\n")
 }
 
-/** Load health metrics from state file */
-function loadHealthMetrics(worktree: string): HealthMetrics | null {
-  try {
-    const metricsPath = join(worktree, ".hivemind", "state", "health-metrics.json")
-    const content = readFileSync(metricsPath, "utf-8")
-    return JSON.parse(content) as HealthMetrics
-  } catch {
-    return null
+function buildCapabilityAdvisory(params: {
+  agent: string
+  turnCount: number
+  delegatedToExplorer: boolean
+  profile: RuntimeProfile | null
+}): string[] {
+  const { agent, turnCount, delegatedToExplorer, profile } = params
+  const advisory: string[] = []
+
+  advisory.push("### HIVEFIVER CAPABILITY ADVISORY")
+  advisory.push(`- Agent: ${agent}`)
+  advisory.push(`- Turn: ${turnCount}`)
+  advisory.push(
+    `- Delegation evidence (hivexplorer): ${delegatedToExplorer ? "present" : "not observed this session"}`
+  )
+
+  if (profile) {
+    advisory.push(`- Profile: ${profile.id} (${profile.intent})`)
+    advisory.push(`- Allowed paths: ${profile.capabilities.paths.join(", ") || "(unspecified)"}`)
+    advisory.push(`- Depth limit: ${profile.capabilities.depth_limit}`)
+    advisory.push(`- Delegate options: ${profile.capabilities.delegate_to.join(", ") || "(none declared)"}`)
+  } else {
+    advisory.push("- Runtime profile unavailable: continue with evidence-first execution.")
   }
+
+  advisory.push("- Guidance: use deterministic methods (script/bash/git) when needed, then verify high-risk assumptions with targeted delegation.")
+  advisory.push("- Guidance: prefer advisory escalation over hard blocking unless explicit strict policy is configured.")
+
+  return advisory
 }
 
 /**
@@ -233,13 +264,19 @@ export function buildContextInjectionHook(state: {
     // If System 2 already injected (via either layer), or if we already injected, skip
     if (hasSystemLayerInjection || hasMessageLayerInjection || hasGxPackInjection) return
 
-    // Load schematic state files
-    const todoState = loadJson<TodoState>(state.worktree, ".hivemind/state/todo.json")
-    const profile = loadJson<RuntimeProfile>(state.worktree, ".hivemind/state/runtime-profile.json")
-    const hierarchy = loadJson<HierarchyNode>(state.worktree, ".hivemind/state/hierarchy.json")
-    const recovery = loadJson<ContextRecovery>(state.worktree, ".hivemind/state/context-recovery.json")
+    // Unified snapshot read (brain + extension state). Safe no-op if unavailable.
+    const snapshot = await readUnifiedStateSnapshot(state.worktree)
+    const todoState = snapshot.todoState as TodoState | null
+    const profile = snapshot.runtimeProfile as RuntimeProfile | null
+    const hierarchy = snapshot.hierarchyState as HierarchyNode | null
+    const recovery = snapshot.contextRecovery as ContextRecovery | null
+    const health = snapshot.healthMetrics as HealthMetrics | null
+    const resolvedSessionId = snapshot.sessionId || state.current.sessionId || "unknown-session"
+    const resolvedTurnCount = snapshot.turnCount || state.current.turnCount || 0
 
-    const health = loadHealthMetrics(state.worktree)
+    if (!snapshot.brain && !profile && !todoState && !hierarchy && !recovery && !health) {
+      return
+    }
     const healthScore = health?.composite.score ?? 100
     const healthStatus = health?.composite.status ?? "unknown"
 
@@ -274,11 +311,11 @@ export function buildContextInjectionHook(state: {
     if (profile) {
       contextLines.push(
         `**Agent:** ${state.current.agent} | **Profile:** ${profile.id} | **Intent:** ${profile.intent}`,
-        `**Turn:** ${state.current.turnCount} | **${healthSummary}** | **Depth:** ${state.current.delegationChain.length}/${profile.capabilities.depth_limit}`,
+        `**Turn:** ${resolvedTurnCount} | **${healthSummary}** | **Depth:** ${state.current.delegationChain.length}/${profile.capabilities.depth_limit}`,
       )
     } else {
       contextLines.push(
-        `**Agent:** ${state.current.agent} | **Turn:** ${state.current.turnCount} | **${healthSummary}**`,
+        `**Agent:** ${state.current.agent} | **Turn:** ${resolvedTurnCount} | **${healthSummary}**`,
         `*No runtime profile — run gx-entry-guard.sh to build one.*`,
       )
     }
@@ -370,45 +407,39 @@ export function buildContextInjectionHook(state: {
       )
     }
 
-    // === HIVEFIVER-SPECIFIC BLINDNESS ENFORCEMENT ===
-    // hivefiver has read:deny, glob:deny, grep:deny — intentionally blind.
-    // This block injects mandatory delegation awareness EVERY turn.
+    // === HIVEFIVER CAPABILITY-AWARE ADVISORY ===
     if (state.current.agent === "hivefiver") {
       const delegatedToExplorer = state.current.delegationChain.some(
         (entry) => entry.to === "hivexplorer"
       )
-      const turnCount = state.current.turnCount
-
-      // Determine entry type
-      let entryType: "first_entry" | "mid_session" | "post_compact" = "mid_session"
-      if (turnCount <= 1) entryType = "first_entry"
-      if (recovery) entryType = "post_compact"
-
-      // Severity escalation based on turns without hivexplorer delegation
-      let severity = "SEV-1 MONITOR"
-      if (turnCount >= 12 && !delegatedToExplorer) severity = "SEV-3 CRITICAL"
-      else if (turnCount >= 8 && !delegatedToExplorer) severity = "SEV-2 ELEVATED"
-      else if (turnCount >= 4 && !delegatedToExplorer) severity = "SEV-1 WARNING"
-
+      const advisory = buildCapabilityAdvisory({
+        agent: state.current.agent,
+        turnCount: resolvedTurnCount,
+        delegatedToExplorer,
+        profile,
+      })
       contextLines.push("")
-      contextLines.push("### HIVEFIVER BLINDNESS ENFORCEMENT [ALWAYS-ON]")
-      contextLines.push(`**Entry:** ${entryType} | **Severity:** ${severity}`)
-      contextLines.push(
-        `**Delegated to hivexplorer:** ${delegatedToExplorer ? "YES" : "NO — REQUIRED BEFORE ANY ACTION"}`
-      )
-      contextLines.push("")
-      contextLines.push("YOU ARE BLIND. You have read:deny, glob:deny, grep:deny, bash:deny.")
-      contextLines.push("GOLDEN RULE: Before creating, modifying, or claiming anything about existing files,")
-      contextLines.push("you MUST delegate to hivexplorer for verification. No exceptions.")
-
-      if (!delegatedToExplorer && turnCount >= 4) {
-        contextLines.push("")
-        contextLines.push(`**${severity}: ${turnCount} turns without hivexplorer verification.**`)
-        contextLines.push("HIGH RISK of hallucination. Delegate to hivexplorer NOW or STOP.")
-      }
+      contextLines.push(...advisory)
     }
 
-    const contextBlock = contextLines.join("\n")
+    let contextBlock = contextLines.join("\n")
+    const turnKey = createTurnInjectionKey(resolvedSessionId, resolvedTurnCount)
+    createTurnInjectionLedger({
+      sessionId: resolvedSessionId,
+      turnCount: resolvedTurnCount,
+      contextWindowChars: 16000,
+    })
+    const grantedBudget = reserveInjectionBudget({
+      turnKey,
+      channel: "plugin-message",
+      requestedChars: contextBlock.length,
+    })
+    if (grantedBudget <= 0) {
+      return
+    }
+    if (contextBlock.length > grantedBudget) {
+      contextBlock = `${contextBlock.slice(0, Math.max(0, grantedBudget - 32))}\n...[truncated by shared budget]`
+    }
 
     // Prepend as system message to the messages array
     // OpenCode messages format: { info: Message, parts: Part[] }

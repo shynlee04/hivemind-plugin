@@ -19,7 +19,7 @@
  * @module lib/state-mutation-queue
  */
 
-import type { BrainState } from "../schemas/brain-state.js";
+import type { BrainState, CheckpointSnapshot } from "../schemas/brain-state.js";
 import type { TaskManifest } from "../schemas/manifest.js";
 import type { TaskNode } from "../schemas/graph-nodes.js";
 import type { StateManager } from "./persistence.js";
@@ -58,7 +58,8 @@ export type MutationType =
   | "UPDATE_HIERARCHY"
   | "UPDATE_METRICS"
   | "UPDATE_SESSION"
-  | "UPDATE_FRAMEWORK_SELECTION";
+  | "UPDATE_FRAMEWORK_SELECTION"
+  | "CHECKPOINT";
 
 /**
  * Represents a single pending state mutation.
@@ -163,6 +164,45 @@ const ARRAY_CONCAT_FIELDS = new Set([
   "tags",
 ]);
 
+const MAX_CHECKPOINT_SNAPSHOTS = 16;
+
+function isPrimitiveLike(value: unknown): boolean {
+  return (
+    value === null
+    || value === undefined
+    || typeof value === "string"
+    || typeof value === "number"
+    || typeof value === "boolean"
+  );
+}
+
+function areArrayItemsEqual(a: unknown, b: unknown): boolean {
+  if (isPrimitiveLike(a) || isPrimitiveLike(b)) {
+    return a === b;
+  }
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * If source already contains target as a prefix, source is likely a full snapshot
+ * (not an incremental append). In that case, replacing avoids duplicate entries.
+ */
+function shouldReplaceArray(targetValue: unknown[], sourceValue: unknown[]): boolean {
+  if (sourceValue.length === 0) return true; // explicit clear
+  if (targetValue.length === 0) return false;
+  if (sourceValue.length < targetValue.length) return false;
+  for (let i = 0; i < targetValue.length; i += 1) {
+    if (!areArrayItemsEqual(targetValue[i], sourceValue[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function recordAuditEntry(entry: AuditEntry, sessionID: string = DEFAULT_SESSION_KEY): void {
   const log = getAuditLogForSession(sessionID);
   if (log.length >= MAX_AUDIT_LOG) {
@@ -176,6 +216,45 @@ function getPayloadKeys(payload: unknown): string[] {
     return [];
   }
   return Object.keys(payload as Record<string, unknown>);
+}
+
+function buildCheckpointSnapshot(state: BrainState, trigger: string, timestampIso: string): CheckpointSnapshot {
+  const parsedTimestamp = Date.parse(timestampIso);
+  return {
+    id: randomUUID(),
+    timestamp: Number.isFinite(parsedTimestamp) ? parsedTimestamp : Date.now(),
+    trigger,
+    session_id: state.session.id,
+    turn_count: state.metrics.turn_count,
+    hierarchy: {
+      trajectory: state.hierarchy.trajectory,
+      tactic: state.hierarchy.tactic,
+      action: state.hierarchy.action,
+    },
+    metrics: {
+      drift_score: state.metrics.drift_score,
+      context_updates: state.metrics.context_updates,
+      files_touched: [...state.metrics.files_touched],
+      violation_count: state.metrics.violation_count,
+    },
+    governance_counters: {
+      ...state.metrics.governance_counters,
+    },
+    pending_mandatory_tools: [...(state.pending_mandatory_tools ?? [])],
+    pending_failure_ack: state.pending_failure_ack,
+  };
+}
+
+function appendCheckpointSnapshot(state: BrainState, snapshot: CheckpointSnapshot): BrainState {
+  const existing = state.checkpoints ?? [];
+  const next = [...existing, snapshot];
+  const bounded = next.length > MAX_CHECKPOINT_SNAPSHOTS
+    ? next.slice(next.length - MAX_CHECKPOINT_SNAPSHOTS)
+    : next;
+  return {
+    ...state,
+    checkpoints: bounded,
+  };
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -485,7 +564,14 @@ export async function flushMutations(
     let queueDepthAtApplication = sortedMutations.length;
     const pendingAuditEntries: AuditEntry[] = [];
     for (const mutation of sortedMutations) {
-      mergedState = deepMerge(mergedState, mutation.payload);
+      if (mutation.type === "CHECKPOINT") {
+        const snapshot = buildCheckpointSnapshot(mergedState, mutation.source, mutation.timestamp);
+        mergedState = appendCheckpointSnapshot(mergedState, snapshot);
+      }
+
+      if (Object.keys(mutation.payload).length > 0) {
+        mergedState = deepMerge(mergedState, mutation.payload);
+      }
       pendingAuditEntries.push({
         id: randomUUID(),
         type: mutation.type,
@@ -640,9 +726,43 @@ export function applyPendingStateMutations(baseState: BrainState, sessionID?: st
 
   let projected = baseState;
   for (const mutation of sortedMutations) {
-    projected = deepMerge(projected, mutation.payload);
+    if (mutation.type === "CHECKPOINT") {
+      const snapshot = buildCheckpointSnapshot(projected, mutation.source, mutation.timestamp);
+      projected = appendCheckpointSnapshot(projected, snapshot);
+    }
+    if (Object.keys(mutation.payload).length > 0) {
+      projected = deepMerge(projected, mutation.payload);
+    }
   }
   return projected;
+}
+
+export function restoreStateFromCheckpoint(state: BrainState, checkpointId: string): BrainState | null {
+  const checkpoints = state.checkpoints ?? [];
+  const checkpoint = checkpoints.find((entry) => entry.id === checkpointId);
+  if (!checkpoint) {
+    return null;
+  }
+
+  return {
+    ...state,
+    hierarchy: {
+      ...checkpoint.hierarchy,
+    },
+    metrics: {
+      ...state.metrics,
+      turn_count: checkpoint.turn_count,
+      drift_score: checkpoint.metrics.drift_score,
+      context_updates: checkpoint.metrics.context_updates,
+      files_touched: [...checkpoint.metrics.files_touched],
+      violation_count: checkpoint.metrics.violation_count,
+      governance_counters: {
+        ...checkpoint.governance_counters,
+      },
+    },
+    pending_mandatory_tools: [...checkpoint.pending_mandatory_tools],
+    pending_failure_ack: checkpoint.pending_failure_ack,
+  };
 }
 
 /**
@@ -716,6 +836,10 @@ function deepMerge<T>(target: T, source: Partial<T>): T {
       Array.isArray(targetValue) &&
       ARRAY_CONCAT_FIELDS.has(key as string)
     ) {
+      if (shouldReplaceArray(targetValue, sourceValue)) {
+        (result as Record<string, unknown>)[key as string] = sourceValue;
+        continue;
+      }
       // Concatenate + deduplicate known array fields instead of replacing
       const merged = [...targetValue, ...sourceValue];
       // Deduplicate primitives (strings, numbers)

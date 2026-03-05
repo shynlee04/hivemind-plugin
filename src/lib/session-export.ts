@@ -164,6 +164,23 @@ export function generateMarkdownExport(
   sessionBody: string
 ): string {
   const lines: string[] = [];
+  const tags = [
+    data.hierarchy.trajectory ? "trajectory" : null,
+    data.hierarchy.tactic ? "tactic" : null,
+    data.hierarchy.action ? "action" : null,
+    "session-export",
+  ].filter((item): item is string => Boolean(item))
+  lines.push("---");
+  lines.push(`session_id: "${data.id}"`);
+  lines.push(`trajectory: "${(data.hierarchy.trajectory || "").replace(/"/g, "'")}"`);
+  lines.push(`tags: [${tags.map((tag) => `"${tag}"`).join(", ")}]`);
+  lines.push("cross_refs:");
+  lines.push('  - path: ".hivemind/sessions/archive/*.md"');
+  lines.push('    relationship: "predecessor"');
+  lines.push('  - path: ".hivemind/graph/mems.json"');
+  lines.push('    shelf: "architecture"');
+  lines.push("---");
+  lines.push("");
   lines.push(`# Session Export: ${data.id}`);
   lines.push("");
   lines.push("## Metadata");

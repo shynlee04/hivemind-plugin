@@ -20,7 +20,8 @@ import {
 } from "../lib/session-boundary.js"
 import { packCognitiveState } from "../lib/cognitive-packer.js"
 import { loadGraphTasks } from "../lib/graph-io.js"
-import { loadLastSessionContext, buildTransformedPrompt } from "../lib/session_coherence.js"
+import { loadLastSessionContext, buildTransformedPrompt, getConfidenceBreakdown } from "../lib/session_coherence.js"
+import { buildClarificationPacket, renderClarificationPacket, shouldTriggerClarification } from "../lib/intent-clarification.js"
 import { existsSync, readdirSync } from "fs"
 import type { Message, Part } from "@opencode-ai/sdk"
 import type { BrainState } from "../schemas/brain-state.js"
@@ -36,6 +37,13 @@ import {
 } from "./session-lifecycle-helpers.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
 import { detectLongSession } from "../lib/long-session.js"
+import {
+  createTurnInjectionKey,
+  createTurnInjectionLedger,
+  getRemainingBudget,
+  reserveInjectionBudget,
+} from "../lib/injection-orchestrator.js"
+import { shouldSuppressHumanFacingGovernance } from "../lib/session-role.js"
 
 type MessagePart = {
   id?: string
@@ -90,10 +98,13 @@ function buildChecklist(items: string[], maxChars: number): string {
 }
 
 function buildAutoRealignReminder(decision: ReturnType<typeof detectAutoRealignment>): string {
-  const menuLines = decision.nextStepMenu.map((option, index) => {
+  const menuLines = decision.nextStepMenu.slice(0, 3).map((option, index) => {
     const gate = option.requiresPermission ? "permission" : "auto"
     return `${index + 1}) /${option.command} [${gate}] - ${option.label}`
   })
+  if (decision.nextStepMenu.length > 3) {
+    menuLines.push(`... +${decision.nextStepMenu.length - 3} more options`)
+  }
 
   const initiationLine = decision.requiresPermission
     ? `Permission required before execution. ${decision.permissionPrompt ?? "Ask explicit Yes/No before continuing."}`
@@ -103,12 +114,9 @@ function buildAutoRealignReminder(decision: ReturnType<typeof detectAutoRealignm
     "<system-reminder>",
     `[AUTO-REALIGN] ${decision.reason}.`,
     `If user command is missing or invalid, route via /${decision.recommendedCommand}.`,
-    `Preferred workflow: ${decision.recommendedWorkflow}. Persona lane: ${decision.persona ?? "auto"}.`,
-    `Load and use skills: ${decision.recommendedSkills.join(", ")}.`,
     "[NEXT-STEP MENU]",
     ...menuLines,
     initiationLine,
-    "Continue task completion even when slash commands are absent.",
     "</system-reminder>",
   ].join("\n")
 }
@@ -183,6 +191,21 @@ function detectOffTrackIntent(text: string): string | null {
   ]
   const matched = cues.some((cue) => lower.includes(cue))
   return matched ? normalized : null
+}
+
+function isLowSignalContinuation(text: string): boolean {
+  const normalized = text.trim().toLowerCase()
+  if (!normalized) return true
+  return [
+    "hi",
+    "hello",
+    "continue",
+    "ok",
+    "okay",
+    "thanks",
+    "next",
+    "go on",
+  ].includes(normalized)
 }
 
 /**
@@ -324,6 +347,31 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
       const state = await stateManager.load()
 
+      const maxResponseTokens = config.agent_behavior?.constraints?.max_response_tokens ?? 4096
+      const approxContextWindowChars = Math.max(8000, Math.floor(maxResponseTokens * 4))
+      const resolvedSessionId = state?.session?.id || "unknown-session"
+      const turnCount = state?.metrics?.turn_count ?? 0
+      const turnKey = createTurnInjectionKey(resolvedSessionId, turnCount)
+      createTurnInjectionLedger({
+        sessionId: resolvedSessionId,
+        turnCount,
+        contextWindowChars: approxContextWindowChars,
+      })
+      const suppressHumanFacing = state ? shouldSuppressHumanFacingGovernance(state) : false
+
+      const reserveCoreMessageText = (text: string): string | null => {
+        if (!text.trim()) return null
+        const granted = reserveInjectionBudget({
+          turnKey,
+          channel: "core-message",
+          requestedChars: text.length,
+        })
+        if (granted <= 0) return null
+        if (granted >= text.length) return text
+        if (granted <= 32) return null
+        return `${text.slice(0, Math.max(0, granted - 32))}\n...[truncated by shared budget]`
+      }
+
       // === PHASE 1: First-Turn Session Coherence (EXCLUSIVE — returns early) ===
       // Persistent marker-based gate (counter-independent).
       // Inject only when state exists and marker is false.
@@ -341,6 +389,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
             // Load last session context (from archive if available)
             const lastSessionContext = await loadLastSessionContext(directory)
+            const firstTurnRemaining = getRemainingBudget(turnKey)
 
             // Build transformed prompt
             const transformedPrompt = buildTransformedPrompt(userMessageText, lastSessionContext, {
@@ -348,16 +397,32 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
               maxMems: 3,
               maxTodos: 10,
               includeAnchors: true,
-              budget: 2500,
+              budget: Math.max(400, Math.min(1800, Math.floor(firstTurnRemaining * 0.7))),
             })
 
-            // Inject as synthetic part (prepend)
-            prependSyntheticPart(output.messages[index], transformedPrompt)
-            if (state.first_turn_confirmation.required) {
-              prependSyntheticPart(
-                output.messages[index],
+            const transformedPromptBounded = reserveCoreMessageText(transformedPrompt)
+            if (transformedPromptBounded) {
+              prependSyntheticPart(output.messages[index], transformedPromptBounded)
+            }
+            const confidence = getConfidenceBreakdown(state, directory)
+            if (!suppressHumanFacing && shouldTriggerClarification(confidence.score)) {
+              const clarification = buildClarificationPacket({
+                confidence: confidence.score,
+                userMessage: userMessageText,
+                recommendations: confidence.recommendations,
+              })
+              const clarificationBounded = reserveCoreMessageText(renderClarificationPacket(clarification))
+              if (clarificationBounded) {
+                prependSyntheticPart(output.messages[index], clarificationBounded)
+              }
+            }
+            if (!suppressHumanFacing && state.first_turn_confirmation.required) {
+              const firstTurnConfirmation = reserveCoreMessageText(
                 generateFirstTurnConfirmationBlock(config.language)
               )
+              if (firstTurnConfirmation) {
+                prependSyntheticPart(output.messages[index], firstTurnConfirmation)
+              }
             }
 
             const rationaleOption = detectRationaleOptionSelection(userMessageText)
@@ -519,46 +584,58 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         }
 
         const autoRealign = detectAutoRealignment(latestUserText)
-        if (autoRealign.shouldRealign) {
-          prependSyntheticPart(output.messages[index], buildAutoRealignReminder(autoRealign))
+        const shouldInjectAutoRealign = !suppressHumanFacing && autoRealign.shouldRealign && !isLowSignalContinuation(latestUserText)
+        if (shouldInjectAutoRealign) {
+          const autoRealignReminder = reserveCoreMessageText(buildAutoRealignReminder(autoRealign))
+          if (autoRealignReminder) {
+            prependSyntheticPart(output.messages[index], autoRealignReminder)
+          }
         }
 
         // === PHASE 5: Cognitive Packer Injection ===
-        const packedContext = packCognitiveState(directory)
-        if (!isEmptyPackedContext(packedContext)) {
-          prependSyntheticPart(output.messages[index], packedContext)
+        const checklistReserve = 900
+        const remainingBeforeCognitive = getRemainingBudget(turnKey)
+        const availableForCognitive = Math.max(0, remainingBeforeCognitive - checklistReserve)
+        if (availableForCognitive > 160) {
+          const packedContext = packCognitiveState(directory, {
+            budget: Math.max(240, Math.min(1200, Math.floor(availableForCognitive * 0.85))),
+          })
+          if (!isEmptyPackedContext(packedContext)) {
+            const packedContextBounded = reserveCoreMessageText(packedContext)
+            if (packedContextBounded) {
+              prependSyntheticPart(output.messages[index], packedContextBounded)
+            }
+          }
         }
 
         // === PHASE 6: Contextual Anchoring ===
-        const anchorHeader = buildAnchorContext(state)
-        prependSyntheticPart(output.messages[index], anchorHeader)
-
-        // === PHASE 7: Pre-Stop Checklist Assembly ===
-        const items: string[] = []
-
-        if (offTrackIntent) {
-          items.push(
-            "Off-track intent detected: queued to TODO-Pending and excluded from inline execution."
-          )
+        const anchorHeader = reserveCoreMessageText(buildAnchorContext(state))
+        if (anchorHeader) {
+          prependSyntheticPart(output.messages[index], anchorHeader)
         }
 
-        if (autoRealign.shouldRealign) {
-          const initiationMode = autoRealign.requiresPermission
-            ? `permission-gated (${autoRealign.permissionPrompt ?? "ask explicit Yes/No"})`
-            : "auto-init"
+        // === PHASE 7: Pre-Stop Checklist Assembly ===
+        const requiredItems: string[] = []
+        const items: string[] = []
+        const lowPriorityItems: string[] = []
+        const entityChecklistItems: string[] = []
+
+        if (!suppressHumanFacing && offTrackIntent) {
           items.push(
-            `Auto-realign workflow now (${initiationMode}): /${autoRealign.recommendedCommand} + skills (${autoRealign.recommendedSkills.join(", ")}) [${autoRealign.recommendedWorkflow}]`
+            "Off-track intent detected: queued to TODO-Pending and excluded from inline execution."
           )
         }
 
         // Add standard governance checks
         if (!state.hierarchy.action) items.push("Action-level focus is missing (call map_context)")
         if (state.metrics.context_updates === 0) items.push("Is the file tree updated? (No map_context yet)")
-        if (state.metrics.files_touched.length > 0) items.push("Have you forced an atomic git commit / PR for touched files?")
+        if (!suppressHumanFacing && state.metrics.files_touched.length > 0) {
+          items.push("Have you forced an atomic git commit / PR for touched files?")
+        }
 
         // V3.0: RESTORED - pending_failure_ack checklist (safety critical)
         if (state.pending_failure_ack) {
-          items.push("Acknowledge pending subagent failure (call export_cycle or map_context with blocked status)")
+          requiredItems.push("Acknowledge pending subagent failure (call export_cycle or map_context with blocked status)")
         }
 
         // === PHASE 7b: Entity Checklist Evaluation (K1-T03) ===
@@ -571,7 +648,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           if (!entityChecklist.passed) {
             const failedItems = entityChecklist.items.filter(item => item.status === "fail")
             for (const item of failedItems) {
-              items.push(`Entity check failed: ${item.key} (${item.message})`)
+              entityChecklistItems.push(`Entity check failed: ${item.key} (${item.message})`)
             }
           }
         } catch {
@@ -585,18 +662,18 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           // Chain breaks detection
           const chainBreaks = detectChainBreaks(state)
           if (chainBreaks.length > 0) {
-            items.push("Chain breaks: " + chainBreaks.map(b => b.message).join("; "))
+            lowPriorityItems.push(`Chain breaks detected (${chainBreaks.length})`)
           }
 
           // Drift detection
-          if (state.metrics.drift_score < 50) {
-            items.push("High drift detected — use map_context to re-focus")
+          if (!suppressHumanFacing && state.metrics.drift_score < 50) {
+            lowPriorityItems.push("High drift detected — use map_context to re-focus")
           }
 
           // Long session detection
           const longSession = detectLongSession(state, config.auto_compact_on_turns)
-          if (longSession.isLong) {
-            items.push(longSession.suggestion)
+          if (!suppressHumanFacing && longSession.isLong) {
+            lowPriorityItems.push(longSession.suggestion)
           }
         } catch {
           // P3: Governance signal failure is non-fatal
@@ -624,12 +701,24 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           }
         }
 
-        if (pendingTaskCount > 0) {
-          items.push(`Review ${pendingTaskCount} pending task(s)`)
+        if (!suppressHumanFacing && pendingTaskCount > 0) {
+          requiredItems.push(`Review ${pendingTaskCount} pending task(s)`)
+        }
+
+        if (shouldInjectAutoRealign) {
+          const initiationMode = autoRealign.requiresPermission
+            ? "permission-gated"
+            : "auto-init"
+          requiredItems.push(
+            `Auto-realign workflow now (${initiationMode}): /${autoRealign.recommendedCommand} + skills (${autoRealign.recommendedSkills.join(", ")})`
+          )
+        }
+
+        if (entityChecklistItems.length > 0) {
+          lowPriorityItems.push(...entityChecklistItems.slice(0, 2))
         }
 
         // Session Boundary check
-        const role = (state.session?.role || "").toLowerCase()
         const contextPercent = estimateContextPercent(state.metrics.user_turn_count, config.auto_compact_on_turns)
         let completedBranchCount = 0
         // LOW #2: Use pre-loaded tree promise
@@ -642,20 +731,20 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           userTurnCount: state.metrics.user_turn_count,
           contextPercent,
           hierarchyComplete: completedBranchCount > 0,
-          isMainSession: !role.includes("subagent"),
+          isMainSession: !shouldSuppressHumanFacingGovernance(state),
           compactionExhausted: (state.compaction_count ?? 0) >= MAX_COMPACTION_COUNT,
           hasDelegations: (state.cycle_log ?? []).some(entry => entry.tool === "task"),
           compactionCount: state.compaction_count ?? 0,
         })
 
-        if (boundaryRecommendation.recommended) {
+        if (!suppressHumanFacing && boundaryRecommendation.recommended) {
            items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
         }
 
         // Phase 3B: Surface off-track TODO-Pending count without inlining content
         const pendingOfftrack = (state.offtrack_todo_pending ?? []).filter(item => item.status === "pending")
-        if (pendingOfftrack.length > 0) {
-          items.push(`${pendingOfftrack.length} off-track TODO(s) sequestered (use hivemind_session_memory todo_pending to review)`)
+        if (!suppressHumanFacing && pendingOfftrack.length > 0) {
+          lowPriorityItems.push(`${pendingOfftrack.length} off-track TODO(s) sequestered (use hivemind_session_memory todo_pending to review)`)
         }
 
         // US-016: Artifacts check - verify session artifacts are properly linked
@@ -663,23 +752,34 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         const sessionDir = directory.includes(".hivemind/sessions/")
           ? null // Already in session directory
           : paths?.activeDir
-        if (sessionDir && state.session?.id) {
+        if (!suppressHumanFacing && sessionDir && state.session?.id) {
           // Session files are named {date}-{mode}-{slug}.md, not by session ID suffix
           // Check if ANY session file exists in active directory
           try {
             const sessionFiles = readdirSync(sessionDir).filter(f => f.endsWith('.md'))
             if (sessionFiles.length === 0) {
-              items.push("Session not persisted to sessions/active/ (run declare_intent or compact_session)")
+              lowPriorityItems.push("Session not persisted to sessions/active/ (run declare_intent or compact_session)")
             }
           } catch {
             // Directory doesn't exist or can't be read
-            items.push("Session not persisted to sessions/active/ (run declare_intent or compact_session)")
+            lowPriorityItems.push("Session not persisted to sessions/active/ (run declare_intent or compact_session)")
           }
         }
 
-        const checklist = buildChecklist(items, MAX_CHECKLIST_CHARS)
+        if (lowPriorityItems.length > 0) {
+          items.push(...lowPriorityItems)
+        }
+
+        const orderedChecklistItems = [...requiredItems, ...items]
+
+        // Preserve checklist compatibility: keep enough room for mandatory auto-realign skill stacks.
+        const checklistBudget = Math.min(MAX_CHECKLIST_CHARS, Math.max(240, getRemainingBudget(turnKey)))
+        const checklist = buildChecklist(orderedChecklistItems, checklistBudget)
         if (checklist) {
-          appendSyntheticPart(output.messages[index], checklist)
+          const checklistBounded = reserveCoreMessageText(checklist)
+          if (checklistBounded) {
+            appendSyntheticPart(output.messages[index], checklistBounded)
+          }
         }
       }
 

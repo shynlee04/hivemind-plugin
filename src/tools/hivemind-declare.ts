@@ -106,15 +106,31 @@ export function createHivemindDeclareTool(directory: string): ToolDefinition {
 
       const output = renderDeclaration(declaration, state)
       const shouldHalt = shouldHaltExecution(declaration)
+      const updatedState: BrainState = {
+        ...state,
+        session: {
+          ...state.session,
+          role: args.agent_name.trim().toLowerCase(),
+          kind: args.agent_role === "MAIN" ? "main" : "sub",
+          lineage_scope: args.project_context || "project",
+          role_source: "declare",
+          last_activity: Date.now(),
+        },
+      }
+      await stateManager.save(updatedState)
 
       return toSuccessOutput(
         shouldHalt 
           ? "DECLARATION RECORDED — HALT REQUIRED" 
           : "DECLARATION RECORDED",
-        state.session.id,
+        updatedState.session.id,
         {
           declaration,
           output,
+          persistedRole: updatedState.session.role,
+          persistedKind: updatedState.session.kind,
+          persistedLineageScope: updatedState.session.lineage_scope,
+          roleSource: updatedState.session.role_source,
           shouldHalt,
           haltReason: shouldHalt ? getHaltReason(declaration) : null,
         }

@@ -36,6 +36,7 @@ import {
 import type { HiveMindConfig } from "../schemas/config.js"
 import { isCoachAutomation } from "../schemas/config.js"
 import type { BrainState } from "../schemas/brain-state.js"
+import { isMainSession, shouldSuppressHumanFacingGovernance } from "./session-role.js"
 
 export interface GovernanceSignals {
   warningLines: string[]
@@ -59,6 +60,7 @@ export async function buildGovernanceSignals(
 
   const frameworkContext = await detectFrameworkContext(directory)
   const projectSnapshot = await collectProjectSnapshot(directory)
+  const suppressHumanFacing = shouldSuppressHumanFacingGovernance(state)
 
   // Onboarding backbone for first run
   if (!state.hierarchy.trajectory && state.metrics.turn_count <= 1) {
@@ -71,7 +73,7 @@ export async function buildGovernanceSignals(
   buildFrameworkLines(frameworkContext, state, frameworkLines)
 
   // No hierarchy warning
-  if (!state.hierarchy.trajectory && !state.hierarchy.tactic && !state.hierarchy.action) {
+  if (!suppressHumanFacing && !state.hierarchy.trajectory && !state.hierarchy.tactic && !state.hierarchy.action) {
     warningLines.push(
       config.governance_mode === "strict"
         ? localized(config.language, "No intent declared. Use declare_intent to unlock the session before writing.", "Chua khai bao intent. Dung declare_intent de mo khoa session truoc khi ghi file.")
@@ -103,7 +105,7 @@ export async function buildGovernanceSignals(
   }
 
   // Drift and failure warnings
-  buildDriftWarnings(frameworkContext, state, config, warningLines)
+  buildDriftWarnings(frameworkContext, state, config, warningLines, suppressHumanFacing)
 
   // Chain breaks
   if (config.governance_mode !== "permissive") {
@@ -122,7 +124,9 @@ export async function buildGovernanceSignals(
   }
 
   // Session boundary
-  buildSessionBoundaryWarnings(state, config, completedBranchCount, warningLines)
+  if (!suppressHumanFacing) {
+    buildSessionBoundaryWarnings(state, config, completedBranchCount, warningLines)
+  }
 
   // Tool activation hint
   const toolHint = getToolActivation(state, {
@@ -130,20 +134,22 @@ export async function buildGovernanceSignals(
     hasMissingTree: !treeExists(directory),
     postCompaction: (state.last_compaction_time ?? 0) > 0 && state.metrics.turn_count <= 1,
   })
-  if (toolHint) {
+  if (!suppressHumanFacing && toolHint) {
     warningLines.push(`💡 Suggested: ${toolHint.tool} — ${toolHint.reason}`)
   }
 
   // Context quality escalation (turn-based)
-  const agentRole = isMainAgent(state) ? "MAIN" : "SUB"
-  const escalation = generateEscalationBlock(
-    state.metrics.turn_count,
-    agentRole,
-    state.hierarchy
-  )
-  const escalationBlock = formatEscalationForInjection(escalation)
-  if (escalationBlock) {
-    warningLines.push(escalationBlock)
+  if (!suppressHumanFacing) {
+    const agentRole = isMainAgent(state) ? "MAIN" : "SUB"
+    const escalation = generateEscalationBlock(
+      state.metrics.turn_count,
+      agentRole,
+      state.hierarchy
+    )
+    const escalationBlock = formatEscalationForInjection(escalation)
+    if (escalationBlock) {
+      warningLines.push(escalationBlock)
+    }
   }
 
   return { warningLines, ignoredLines, frameworkLines, onboardingLines }
@@ -285,21 +291,22 @@ function buildDriftWarnings(
   frameworkContext: Awaited<ReturnType<typeof detectFrameworkContext>>,
   state: BrainState,
   config: HiveMindConfig,
-  warningLines: string[]
+  warningLines: string[],
+  suppressHumanFacing: boolean,
 ) {
-  if (frameworkContext.mode === "gsd" && frameworkContext.gsdPhaseGoal && config.governance_mode !== "permissive") {
+  if (!suppressHumanFacing && frameworkContext.mode === "gsd" && frameworkContext.gsdPhaseGoal && config.governance_mode !== "permissive") {
     warningLines.push("Drift target: align hierarchy and current action with pinned GSD phase goal.")
   }
 
-  if (config.governance_mode !== "permissive" && state.metrics.drift_score < 50) {
+  if (!suppressHumanFacing && config.governance_mode !== "permissive" && state.metrics.drift_score < 50) {
     warningLines.push("⚠ High drift detected. Use map_context to re-focus.")
   }
 
   if (config.governance_mode !== "permissive" && state.pending_failure_ack) {
-    warningLines.push("⚠ SUBAGENT REPORTED FAILURE. Call export_cycle or map_context with status \"blocked\" before proceeding.")
+    warningLines.push("⚠ SUBAGENT REPORTED FAILURE. Run export_cycle (hivemind_cycle) before proceeding.")
   }
 
-  if (config.governance_mode !== "permissive" && (isCoachAutomation(config.automation_level) || config.automation_level === "full")) {
+  if (!suppressHumanFacing && config.governance_mode !== "permissive" && (isCoachAutomation(config.automation_level) || config.automation_level === "full")) {
     warningLines.push("[ARGUE-BACK MODE] System WILL challenge claims without evidence. Do not proceed without validation.")
     if (state.metrics.user_turn_count > 0 && state.metrics.context_updates === 0) {
       warningLines.push(`⛔ ${state.metrics.user_turn_count} user turns and 0 context updates. You MUST call map_context before continuing.`)
@@ -313,14 +320,13 @@ function buildSessionBoundaryWarnings(
   completedBranchCount: number | undefined,
   warningLines: string[]
 ) {
-  const role = (state.session.role || "").toLowerCase()
   const contextPercent = estimateContextPercent(state.metrics.user_turn_count, config.auto_compact_on_turns)
   const boundaryRecommendation = shouldCreateNewSession({
     turnCount: state.metrics.turn_count,
     userTurnCount: state.metrics.user_turn_count,
     contextPercent,
     hierarchyComplete: (completedBranchCount ?? 0) > 0,
-    isMainSession: !role.includes("subagent"),
+    isMainSession: isMainSession(state),
     compactionExhausted: (state.compaction_count ?? 0) >= MAX_COMPACTION_COUNT,
     hasDelegations: (state.cycle_log ?? []).some((entry) => entry.tool === "task"),
     compactionCount: state.compaction_count ?? 0,
@@ -336,9 +342,5 @@ function buildSessionBoundaryWarnings(
  * Determine if session is a MAIN agent (orchestrator) or SUB agent (executor)
  */
 function isMainAgent(state: BrainState): boolean {
-  const role = (state.session.role || "").toLowerCase()
-  // MAIN agents: hiveminder, hivefiver, hiveplanner
-  // SUB agents: hivemaker, hivehealer, hiveq, hivexplorer, hiverd
-  const mainAgents = ["hiveminder", "hivefiver", "hiveplanner"]
-  return mainAgents.some(agent => role.includes(agent)) || !role.includes("subagent")
+  return isMainSession(state)
 }

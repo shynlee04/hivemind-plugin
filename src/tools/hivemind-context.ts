@@ -1,4 +1,7 @@
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool"
+import { existsSync } from "fs"
+import { readdir, readFile } from "fs/promises"
+import { join } from "path"
 
 import { createStateManager } from "../lib/persistence.js"
 import { getEffectivePaths } from "../lib/paths.js"
@@ -165,6 +168,8 @@ async function handleDoctor(directory: string, pendingChangeId?: string): Promis
     applyAttempt = await applyVerifiedPendingChange(directory, pendingChangeId)
   }
 
+  const contamination = await collectContaminationDiagnostics(directory)
+
   return toSuccessOutput("Context doctor diagnostics", state?.session.id, {
     files: {
       pendingChangesFile: paths.graphPendingChanges,
@@ -175,6 +180,7 @@ async function handleDoctor(directory: string, pendingChangeId?: string): Promis
     unverifiedPendingChanges: pending.pending_changes.filter((entry) => entry.status === "queued").length,
     verificationLedgerRecords: ledger.records.length,
     applyAttempt,
+    contamination,
   })
 }
 
@@ -199,4 +205,84 @@ async function handleResume(directory: string): Promise<string> {
     offtrackTodoPendingPreview: pendingItems,
     memoryGovernance: state.memory_governance,
   })
+}
+
+async function countFiles(rootDir: string): Promise<number> {
+  if (!existsSync(rootDir)) return 0
+  let count = 0
+  const stack: string[] = [rootDir]
+  while (stack.length > 0) {
+    const current = stack.pop()
+    if (!current) continue
+    let entries: Array<{ name: string; isDirectory: () => boolean }> = []
+    try {
+      entries = await readdir(current, { withFileTypes: true })
+    } catch {
+      continue
+    }
+
+    for (const entry of entries) {
+      const fullPath = join(current, entry.name)
+      if (entry.isDirectory()) {
+        stack.push(fullPath)
+      } else {
+        count += 1
+      }
+    }
+  }
+  return count
+}
+
+async function collectLockFiles(rootDir: string): Promise<string[]> {
+  const lockFiles: string[] = []
+  if (!existsSync(rootDir)) return lockFiles
+  const stack: string[] = [rootDir]
+  while (stack.length > 0) {
+    const current = stack.pop()
+    if (!current) continue
+
+    let entries: Array<{ name: string; isDirectory: () => boolean }> = []
+    try {
+      entries = await readdir(current, { withFileTypes: true })
+    } catch {
+      continue
+    }
+
+    for (const entry of entries) {
+      const fullPath = join(current, entry.name)
+      if (entry.isDirectory()) {
+        stack.push(fullPath)
+      } else if (entry.name.endsWith(".lock")) {
+        lockFiles.push(fullPath)
+      }
+    }
+  }
+  return lockFiles
+}
+
+async function readOrphanCount(orphanPath: string): Promise<number> {
+  if (!existsSync(orphanPath)) return 0
+  try {
+    const raw = await readFile(orphanPath, "utf-8")
+    const parsed = JSON.parse(raw) as { orphans?: unknown[] }
+    return Array.isArray(parsed.orphans) ? parsed.orphans.length : 0
+  } catch {
+    return 0
+  }
+}
+
+async function collectContaminationDiagnostics(directory: string): Promise<Record<string, unknown>> {
+  const paths = getEffectivePaths(directory)
+  const lockFiles = await collectLockFiles(paths.root)
+  const distFileCount = await countFiles(join(directory, "dist"))
+  const orphanCount = await readOrphanCount(paths.graphOrphans)
+
+  return {
+    dist_files: distFileCount,
+    lock_files: lockFiles.length,
+    lock_file_paths: lockFiles.slice(0, 20),
+    orphan_nodes: orphanCount,
+    pending_changes_file_exists: existsSync(paths.graphPendingChanges),
+    verification_ledger_exists: existsSync(paths.graphVerificationLedger),
+  }
 }

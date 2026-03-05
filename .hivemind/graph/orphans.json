@@ -398,6 +398,42 @@
         "updated_at": "2026-03-05T04:10:43.346Z"
       },
       "quarantined_at": "2026-03-05T04:10:43.354Z"
+    },
+    {
+      "id": "09415637-f063-4c4e-b3ab-c3cd6700c70c",
+      "type": "mem",
+      "reason": "session_id b74b5357-4f97-4669-923f-8cf34e79e8bf not found in valid session lineage",
+      "original_data": {
+        "id": "09415637-f063-4c4e-b3ab-c3cd6700c70c",
+        "session_id": "b74b5357-4f97-4669-923f-8cf34e79e8bf",
+        "origin_task_id": "a1af3a7e-b90f-4f38-a1f9-088c7083d89f",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Preserved user request for comprehensive multi-sector inventory. Handoff created (handoff-mmdlpkof). Task: Schema-first relational graph analysis of states/hooks/autonomy/mechanisms with multi-agent delegation and third-party skill integration. Context reset required due to emergency degradation (64 turns, quality level 4).",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-03-05T15:11:10.327Z",
+        "created_at": "2026-03-05T15:11:10.327Z",
+        "updated_at": "2026-03-05T15:11:10.327Z"
+      },
+      "quarantined_at": "2026-03-05T16:05:50.803Z"
+    },
+    {
+      "id": "8b311ec5-547b-4405-a4ba-a0b1cdc2b45c",
+      "type": "mem",
+      "reason": "session_id 3515a747-00f0-48f2-9105-240513c142a2 not found in valid session lineage",
+      "original_data": {
+        "id": "8b311ec5-547b-4405-a4ba-a0b1cdc2b45c",
+        "session_id": "3515a747-00f0-48f2-9105-240513c142a2",
+        "origin_task_id": null,
+        "shelf": "validation",
+        "type": "insight",
+        "content": "Domain 4 Tool Governance Validation (2026-03-05):\n\nVERIFIED - All 5 validation checks pass:\n\n1. ToolGovernancePolicy (tool-gate.ts:48-52)\n   - tier: \"universal\" | \"workflow\" | \"deterministic\" ✓\n   - allowedRoles: string[] ✓\n   - mandatoryAt?: string[] ✓\n\n2. pending_mandatory_tools tracking\n   - brain-state.ts:162 - Field defined in BrainState\n   - brain-state.ts:390 - Zod schema validation\n   - soft-governance.ts:315-318 - Removes when tool used\n   - soft-governance.ts:627-632 - Adds after task/write\n   - soft-governance.ts:636 - Updates state correctly\n\n3. Governance signals (soft-governance.ts:320-341)\n   - Emits toast when pending tools ignored ✓\n   - Increments out_of_order counter ✓\n   - Severity computed from repetition ✓\n   - Localized messages (en/vi) ✓\n\n4. Advisory enforcement (tool-gate.ts)\n   - Line 89: allowed: boolean - Always true ✓\n   - Lines 157-166: Role mismatch = advisory ✓\n   - Lines 186-195: Framework conflict = advisory ✓\n   - Lines 209-218: No session = advisory ✓\n   - Lines 229-238: Locked session = advisory ✓\n\n5. Gatekeeper validation (gatekeeper.ts:67-75)\n   - Checks pending_mandatory_tools length ✓\n   - MANDATORY_TOOLS_PENDING violation ✓\n   - Severity: \"warning\" ✓\n   - Actionable suggestion ✓\n\nConfidence: HIGH\nEvidence: Direct file inspection with line citations",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-03-05T16:11:37.494Z",
+        "created_at": "2026-03-05T16:11:37.494Z",
+        "updated_at": "2026-03-05T16:11:37.494Z"
+      },
+      "quarantined_at": "2026-03-05T16:11:37.500Z"
     }
   ]
 }

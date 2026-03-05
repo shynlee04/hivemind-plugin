@@ -17,6 +17,13 @@ import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
 import type { BrainState } from "../schemas/brain-state.js"
+import {
+  clearTurnInjectionLedger,
+  createTurnInjectionKey,
+  createTurnInjectionLedger,
+  getTurnInjectionLedger,
+  reserveInjectionBudget,
+} from "../lib/injection-orchestrator.js"
 
 import { isSessionStale } from "../lib/staleness.js"
 import { detectBrownfield, generateReadFirstBlock, isCleanSession, handleStaleSession } from "../lib/onboarding.js"
@@ -24,6 +31,7 @@ import { buildGovernanceSignals } from "../lib/session-governance.js"
 import {
   generateBootstrapBlock,
   generateEvidenceDisciplineBlock,
+  generateSetupGuidanceBlock,
   generateTeamBehaviorBlock,
   compileFirstTurnContext,
   generateFirstTurnConfirmationBlock,
@@ -35,6 +43,7 @@ import { evaluateEntityChecklist, renderChecklistSummary } from "../lib/entity-c
 import type { EntityChecklist } from "../schemas/governance-constitution.js"
 import { applyPendingStateMutations, queueStateMutation } from "../lib/state-mutation-queue.js"
 import { dedupeContextLines } from "../lib/context-purifier.js"
+import { shouldSuppressHumanFacingGovernance } from "../lib/session-role.js"
 
 /**
  * Inject HiveMaster strict governance instruction (prepends, deduplicated)
@@ -88,8 +97,9 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       const configPath = getEffectivePaths(directory).config
 
       if (!existsSync(configPath)) {
-        // HARD STOP — nothing else matters, state cannot be loaded
+        // First-run setup guidance: do not initialize state until configured.
         output.system.length = 0
+        output.system.push(await generateSetupGuidanceBlock(directory))
         output.system.push(STATE_BOOTSTRAP_STOP_DIRECTIVE)
         return
       }
@@ -108,7 +118,7 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
           type: "UPDATE_STATE",
           payload: state,
           source: "session-lifecycle-hook:init",
-        })
+        }, input.sessionID)
       } else if (!state.session.opencode_session_id && input.sessionID) {
         // Knot 2: Correlate OpenCode sessionID with HiveMind session (first invocation)
         state = {
@@ -119,7 +129,7 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
           type: "UPDATE_STATE",
           payload: state,
           source: "session-lifecycle-hook:correlate-session-id",
-        })
+        }, input.sessionID)
       }
 
       if (state && isSessionStale(state, config.stale_session_days)) {
@@ -130,35 +140,75 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
         }
       }
 
-      const isBootstrapActive = state.metrics.turn_count <= 2
-      const BUDGET_CHARS = isBootstrapActive ? 4500 : 2500
+      const maxResponseTokens = config.agent_behavior?.constraints?.max_response_tokens ?? 4096
+      const approxContextWindowChars = Math.max(8000, Math.floor(maxResponseTokens * 4))
+      const resolvedSessionId = state.session.id || input.sessionID || "unknown-session"
+      const suppressHumanFacing = shouldSuppressHumanFacingGovernance(state)
+      const turnKey = createTurnInjectionKey(resolvedSessionId, state.metrics.turn_count)
+      let ledger = createTurnInjectionLedger({
+        sessionId: resolvedSessionId,
+        turnCount: state.metrics.turn_count,
+        contextWindowChars: approxContextWindowChars,
+      })
+      const existingUsage = getTurnInjectionLedger(turnKey)?.usage_by_channel
+      if (
+        existingUsage &&
+        existingUsage["core-system"] > 0 &&
+        existingUsage["core-message"] === 0 &&
+        existingUsage["plugin-message"] === 0
+      ) {
+        clearTurnInjectionLedger(turnKey)
+        ledger = createTurnInjectionLedger({
+          sessionId: resolvedSessionId,
+          turnCount: state.metrics.turn_count,
+          contextWindowChars: approxContextWindowChars,
+        })
+      }
+      const provisionalBudget = Math.max(500, ledger.cap_chars)
 
       // Phase 1: Cognitive State is now injected via messages-transform.ts (canonical location)
 
       // Phase 2: Governance Signals
       const { warningLines, ignoredLines, frameworkLines, onboardingLines } = await buildGovernanceSignals(directory, state, config)
+      const { critical: criticalWarningLines, advisory: advisoryWarningLines } = splitWarningPriority(warningLines)
 
       // Phase 3: Bootstrap & First-Turn Context
-      const { bootstrapLines, evidenceLines, teamLines, firstTurnContextLines, firstTurnContractLines, outputStyleLines, readFirstLines } = await buildBootstrapContext(directory, state, config)
+      const { bootstrapLines, evidenceLines, teamLines, firstTurnContextLines, firstTurnContractLines, outputStyleLines, readFirstLines } = await buildBootstrapContext(directory, state, config, suppressHumanFacing)
 
       // Phase 4: Anchors are now injected via messages-transform.ts (canonical location)
 
       // Assemble by priority
-      const finalLines = assembleSections([
-        readFirstLines,
+      const assembled = assembleSections([
         bootstrapLines,
-        firstTurnContextLines,
-        firstTurnContractLines,
-        outputStyleLines,
+        frameworkLines,
+        criticalWarningLines,
         evidenceLines,
         teamLines,
-        onboardingLines,
-        frameworkLines,
         buildStatusBlock(state, config),
-        buildTaskBlock(),
+        firstTurnContractLines,
+        outputStyleLines,
+        advisoryWarningLines,
+        readFirstLines,
+        firstTurnContextLines,
+        onboardingLines,
+        suppressHumanFacing ? [] : buildTaskBlock(),
         ignoredLines,
-        warningLines,
-      ], BUDGET_CHARS, log)
+      ], provisionalBudget, log)
+      const grantedBudget = reserveInjectionBudget({
+        turnKey,
+        channel: "core-system",
+        requestedChars: assembled.length,
+      })
+
+      if (grantedBudget <= 0) {
+        appendChecklistFailureReminder(output, checklist)
+        await log.debug("Session lifecycle: skipped injection (shared budget exhausted)")
+        return
+      }
+
+      const finalLines = assembled.length <= grantedBudget
+        ? assembled
+        : `${assembled.slice(0, Math.max(0, grantedBudget - 32))}\n...[truncated by shared budget]`
 
       appendChecklistFailureReminder(output, checklist)
       output.system.push(finalLines)
@@ -169,7 +219,12 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
   }
 }
 
-async function buildBootstrapContext(directory: string, state: BrainState, config: HiveMindConfig) {
+async function buildBootstrapContext(
+  directory: string,
+  state: BrainState,
+  config: HiveMindConfig,
+  suppressHumanFacing: boolean,
+) {
   const bootstrapLines: string[] = []
   const evidenceLines: string[] = []
   const teamLines: string[] = []
@@ -181,8 +236,10 @@ async function buildBootstrapContext(directory: string, state: BrainState, confi
   const isBootstrapActive = state.metrics.turn_count <= 2
   const cleanSession = isCleanSession(state.metrics.turn_count, state.hierarchy)
 
-  if (cleanSession) readFirstLines.push(generateReadFirstBlock(await detectBrownfield(directory), config.language))
-  if (isBootstrapActive) {
+  if (!suppressHumanFacing && cleanSession) {
+    readFirstLines.push(generateReadFirstBlock(await detectBrownfield(directory), config.language))
+  }
+  if (!suppressHumanFacing && isBootstrapActive) {
     bootstrapLines.push(generateBootstrapBlock(config.governance_mode, config.language))
     evidenceLines.push(generateEvidenceDisciplineBlock(config.language))
     teamLines.push(generateTeamBehaviorBlock(config.language))
@@ -193,11 +250,13 @@ async function buildBootstrapContext(directory: string, state: BrainState, confi
     }
   }
 
-  outputStyleLines.push(
-    getV29OutputStyleDirective(
-      state.selected_output_style_v29 ?? config.agent_behavior.output_style_v29 ?? null
+  if (!suppressHumanFacing) {
+    outputStyleLines.push(
+      getV29OutputStyleDirective(
+        state.selected_output_style_v29 ?? config.agent_behavior.output_style_v29 ?? null
+      )
     )
-  )
+  }
 
   return {
     bootstrapLines,
@@ -238,4 +297,27 @@ function assembleSections(sections: string[][], budget: number, log: Logger): st
   }
   finalLines.push("</hivemind>")
   return finalLines.join("\n")
+}
+
+function splitWarningPriority(lines: string[]): { critical: string[]; advisory: string[] } {
+  const criticalPatterns = [
+    "Chain breaks",
+    "Natural boundary",
+    "Run /hivemind-compact",
+    "SUBAGENT REPORTED FAILURE",
+    "[CRITICAL]",
+  ]
+
+  const critical: string[] = []
+  const advisory: string[] = []
+
+  for (const line of lines) {
+    if (criticalPatterns.some((pattern) => line.includes(pattern))) {
+      critical.push(line)
+      continue
+    }
+    advisory.push(line)
+  }
+
+  return { critical, advisory }
 }

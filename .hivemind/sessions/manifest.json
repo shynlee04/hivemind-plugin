@@ -1,4 +1,34 @@
 {
-  "sessions": [],
-  "active_stamp": null
+  "sessions": [
+    {
+      "stamp": "052305032026",
+      "file": "session-f3345a37-b63a-4370-828e-8389d63d9495.md",
+      "status": "archived",
+      "created": 1772726750652,
+      "mode": "plan_driven",
+      "trajectory": "Validate 7-phase architecture implementation for conflicts, schema integrity, and agent boundary compliance",
+      "session_id": "f3345a37-b63a-4370-828e-8389d63d9495",
+      "linked_plans": [],
+      "created_at_iso": "2026-03-05T16:05:50.652Z",
+      "updated_at_epoch": 1772726750668,
+      "updated_at_iso": "2026-03-05T16:05:50.668Z",
+      "contract_version": "1.1.0",
+      "summary": "Domain 2 validation complete - all checks passed. Handoff created for continuation."
+    },
+    {
+      "stamp": "162305032026",
+      "file": "session-686a5b74-8634-464d-965a-833eccf7666a.md",
+      "status": "active",
+      "created": 1772727395648,
+      "mode": "exploration",
+      "trajectory": "Cross-domain conflict detection analysis for 7-phase architecture validation",
+      "session_id": "686a5b74-8634-464d-965a-833eccf7666a",
+      "linked_plans": [],
+      "created_at_iso": "2026-03-05T16:16:35.648Z",
+      "updated_at_epoch": 1772727395656,
+      "updated_at_iso": "2026-03-05T16:16:35.656Z",
+      "contract_version": "1.1.0"
+    }
+  ],
+  "active_stamp": "162305032026"
 }

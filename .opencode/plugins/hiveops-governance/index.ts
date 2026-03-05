@@ -38,8 +38,8 @@
  * │                                     │ gx-semantic-validate.sh (stub)          │
  * │                                     │ gx-context-retrieve.sh                  │
  * ├─────────────────────────────────────┼──────────────────────────────────────────┤
- * │ experimental.chat.messages.transform│ Reads 5 JSON state files directly       │
- * │                                     │ (no scripts — fast in-memory reads)     │
+ * │ experimental.chat.messages.transform│ Reads unified state snapshot adapter     │
+ * │                                     │ (StateManager + validated readers)       │
  * └─────────────────────────────────────┴──────────────────────────────────────────┘
  *
  * Scripts NOT auto-wired (agent-invoked via skill instructions):
@@ -114,7 +114,7 @@ export const HiveMindGovernance: Plugin = async ({ project, client, $, directory
     },
 
     // ── Context Injection (every LLM turn) ──
-    // Reads: todo.json, runtime-profile.json, hierarchy.json, context-recovery.json, health-metrics.json
+    // Reads unified snapshot via src/lib/state-snapshot.ts
     "experimental.chat.messages.transform": async (input: any, output: any) => {
       const intentClassifierHook = buildIntentClassifierHook(enforcementState)
       const hook = buildContextInjectionHook(enforcementState)

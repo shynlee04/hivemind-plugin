@@ -8,6 +8,7 @@ import {
   shouldCreateNewSession,
 } from "./session-boundary.js"
 import { createDetectionState, resetGovernanceCounters } from "./detection.js"
+import { isMainSession } from "./session-role.js"
 
 type ToastVariant = "info" | "warning" | "error"
 
@@ -63,9 +64,8 @@ export async function maybeCreateNonDisruptiveSessionSplit(
   if (brain.pending_failure_ack) return null
   if (brain.session.governance_status === "LOCKED") return null
 
-  const role = (brain.session.role || "").toLowerCase()
-  const isMainSession = !role.includes("subagent")
-  if (!isMainSession) return null
+  const mainSession = isMainSession(brain)
+  if (!mainSession) return null
 
   const hasDelegations = (brain.cycle_log ?? []).some((entry) => entry.tool === "task")
   const contextPercent = estimateContextPercent(
@@ -93,7 +93,7 @@ export async function maybeCreateNonDisruptiveSessionSplit(
     userTurnCount: brain.metrics.user_turn_count,
     contextPercent,
     hierarchyComplete: completedBranchCount > 0,
-    isMainSession,
+    isMainSession: mainSession,
     compactionExhausted: (brain.compaction_count ?? 0) >= MAX_COMPACTION_COUNT,
     hasDelegations,
     compactionCount: brain.compaction_count ?? 0,

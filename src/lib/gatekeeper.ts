@@ -10,6 +10,7 @@
  */
 
 import type { BrainState } from "../schemas/brain-state.js"
+import { shouldSuppressHumanFacingGovernance } from "./session-role.js"
 
 export interface GatekeeperViolation {
   code: string
@@ -43,6 +44,7 @@ export function validateSessionState(
 ): GatekeeperResult {
   const { maxDriftScore = 40, maxTurns = 400 } = options
   const violations: GatekeeperViolation[] = []
+  const suppressHumanFacing = shouldSuppressHumanFacingGovernance(brain)
 
   // Check 1: Has action-level focus?
   if (!brain.hierarchy.action || brain.hierarchy.action.trim() === "") {
@@ -64,8 +66,18 @@ export function validateSessionState(
     })
   }
 
+  // Check 2b: Mandatory governance tools still pending?
+  if ((brain.pending_mandatory_tools ?? []).length > 0) {
+    violations.push({
+      code: "MANDATORY_TOOLS_PENDING",
+      message: `Mandatory governance tools pending: ${brain.pending_mandatory_tools.join(", ")}`,
+      severity: "warning",
+      suggestion: "Run pending mandatory governance tools before proceeding",
+    })
+  }
+
   // Check 3: Files touched without commit?
-  if (brain.metrics.files_touched.length > 0) {
+  if (!suppressHumanFacing && brain.metrics.files_touched.length > 0) {
     violations.push({
       code: "FILES_UNCOMMITTED",
       message: `Files touched but not committed: ${brain.metrics.files_touched.join(", ")}`,
@@ -75,7 +87,7 @@ export function validateSessionState(
   }
 
   // Check 4: Drift threshold exceeded?
-  if (brain.metrics.drift_score < maxDriftScore) {
+  if (!suppressHumanFacing && brain.metrics.drift_score < maxDriftScore) {
     violations.push({
       code: "DRIFT_THRESHOLD",
       message: `Drift score (${brain.metrics.drift_score}) below threshold (${maxDriftScore})`,
@@ -85,7 +97,7 @@ export function validateSessionState(
   }
 
   // Check 5: Session too long?
-  if (brain.metrics.turn_count > maxTurns) {
+  if (!suppressHumanFacing && brain.metrics.turn_count > maxTurns) {
     violations.push({
       code: "SESSION_TOO_LONG",
       message: `Session has ${brain.metrics.turn_count} turns (max: ${maxTurns})`,

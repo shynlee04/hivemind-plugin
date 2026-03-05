@@ -173,6 +173,9 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             session.date ??= new Date((session.start_time as number) ?? Date.now()).toISOString().split("T")[0]
             session.meta_key ??= ""
             session.role ??= ""
+            session.kind ??= "unresolved"
+            session.lineage_scope ??= "unknown"
+            session.role_source ??= "unset"
             session.by_ai ??= true
             session.opencode_session_id ??= null
           }
@@ -206,6 +209,7 @@ export function createStateManager(projectRoot: string, logger?: Logger): StateM
             acceptance_note: "",
             updated_at: 0,
           }
+          raw.checkpoints ??= []
           // Remove deprecated fields
           Reflect.deleteProperty(raw, 'sentiment_signals')
 

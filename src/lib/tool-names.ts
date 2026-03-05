@@ -33,6 +33,43 @@ export const TOOL_NAMES = {
 } as const;
 
 /**
+ * Legacy aliases mapped to canonical unified tools.
+ * Note: some legacy verbs map to the same unified tool with different actions.
+ * This map normalizes tool identity (not action payload).
+ */
+export const TOOL_ALIAS_MAP: Record<string, string> = {
+    // Session lifecycle legacy names
+    declare_intent: "hivemind_session",
+    map_context: "hivemind_session",
+    compact_session: "hivemind_session",
+    // Inspection legacy names
+    scan_hierarchy: "hivemind_inspect",
+    deep_inspect: "hivemind_inspect",
+    think_back: "hivemind_inspect",
+    check_drift: "hivemind_inspect",
+    // Cycle legacy names
+    export_cycle: "hivemind_cycle",
+    self_rate: "hivemind_cycle",
+    // Memory/anchor legacy names
+    save_mem: "hivemind_memory",
+    recall_mems: "hivemind_memory",
+    list_shelves: "hivemind_memory",
+    save_anchor: "hivemind_anchor",
+    // Hierarchy legacy
+    hierarchy_manage: "hivemind_hierarchy",
+};
+
+export function normalizeToolAlias(toolName: string): string {
+    const normalized = toolName.trim().toLowerCase();
+    return TOOL_ALIAS_MAP[normalized] ?? normalized;
+}
+
+export function isLegacyToolAlias(toolName: string): boolean {
+    const normalized = toolName.trim().toLowerCase();
+    return Object.prototype.hasOwnProperty.call(TOOL_ALIAS_MAP, normalized);
+}
+
+/**
  * Legacy tool name aliases.
  * These names may appear in:
  *   - detection.ts regex patterns (for backward compat with older agents)

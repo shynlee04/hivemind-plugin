@@ -11,6 +11,9 @@ import type { GovernanceCounters } from "../lib/detection.js";
 
 export type SessionMode = "plan_driven" | "quick_fix" | "exploration";
 export type GovernanceStatus = "LOCKED" | "OPEN";
+export type SessionKind = "main" | "sub" | "unresolved";
+export type LineageScope = "project" | "meta-framework" | "unknown";
+export type RoleSource = "declare" | "profile" | "inferred" | "unset";
 /** Classification for brain state fields across session boundaries */
 export type FieldLifecycle = "runtime" | "persistent" | "hybrid";
 
@@ -28,6 +31,12 @@ export interface SessionState {
   meta_key: string;
   /** Agent role/identity for this session */
   role: string;
+  /** Session execution kind (main user-facing vs delegated sub-session) */
+  kind: SessionKind;
+  /** Declared lineage scope for this session */
+  lineage_scope: LineageScope;
+  /** Provenance of current role assignment */
+  role_source: RoleSource;
   /** Whether session was initiated by AI (true) or human (false) */
   by_ai: boolean;
   /** OpenCode's session ID for cross-system correlation (Knot 2) */
@@ -125,6 +134,24 @@ export interface OffTrackIntent {
   status: "pending" | "resolved";
 }
 
+export interface CheckpointSnapshot {
+  id: string;
+  timestamp: number;
+  trigger: string;
+  session_id: string;
+  turn_count: number;
+  hierarchy: HierarchyState;
+  metrics: {
+    drift_score: number;
+    context_updates: number;
+    files_touched: string[];
+    violation_count: number;
+  };
+  governance_counters: GovernanceCounters;
+  pending_mandatory_tools: string[];
+  pending_failure_ack: boolean;
+}
+
 export interface BrainState {
   /** @lifecycle runtime */
   session: SessionState;
@@ -158,6 +185,8 @@ export interface BrainState {
   cycle_log: CycleLogEntry[];
   /** @lifecycle runtime */
   pending_failure_ack: boolean;
+  /** @lifecycle runtime - deterministic trigger queue for mandatory governance tools */
+  pending_mandatory_tools: string[];
   /** @lifecycle hybrid - user framework preference persists until intentionally changed */
   framework_selection: FrameworkSelectionState;
 
@@ -168,6 +197,8 @@ export interface BrainState {
   offtrack_todo_pending: OffTrackIntent[];
   /** @lifecycle hybrid - plan-aware trajectory context */
   trajectory_context: TrajectoryContext;
+  /** @lifecycle hybrid - bounded checkpoint snapshots for deterministic restore */
+  checkpoints: CheckpointSnapshot[];
 }
 
 export const BRAIN_STATE_FIELD_CLASSIFICATION: Record<keyof BrainState, FieldLifecycle> = {
@@ -181,6 +212,7 @@ export const BRAIN_STATE_FIELD_CLASSIFICATION: Record<keyof BrainState, FieldLif
   memory_governance: "runtime",
   cycle_log: "runtime",
   pending_failure_ack: "runtime",
+  pending_mandatory_tools: "runtime",
   compaction_limit_reached: "runtime",
   recent_messages: "runtime",
 
@@ -194,6 +226,7 @@ export const BRAIN_STATE_FIELD_CLASSIFICATION: Record<keyof BrainState, FieldLif
   framework_selection: "hybrid",
   offtrack_todo_pending: "hybrid",
   trajectory_context: "hybrid",
+  checkpoints: "hybrid",
 };
 
 export function getFieldsByLifecycle(lifecycle: FieldLifecycle): Array<keyof BrainState> {
@@ -276,6 +309,9 @@ const SessionStateSchema = z.object({
   date: z.string(),
   meta_key: z.string(),
   role: z.string(),
+  kind: z.enum(["main", "sub", "unresolved"]).default("unresolved"),
+  lineage_scope: z.enum(["project", "meta-framework", "unknown"]).default("unknown"),
+  role_source: z.enum(["declare", "profile", "inferred", "unset"]).default("unset"),
   by_ai: z.boolean(),
 });
 
@@ -342,6 +378,33 @@ const OffTrackIntentSchema = z.object({
   status: z.enum(["pending", "resolved"]),
 });
 
+const CheckpointSnapshotSchema = z.object({
+  id: z.string(),
+  timestamp: z.number(),
+  trigger: z.string(),
+  session_id: z.string(),
+  turn_count: z.number(),
+  hierarchy: z.object({
+    trajectory: z.string(),
+    tactic: z.string(),
+    action: z.string(),
+  }),
+  metrics: z.object({
+    drift_score: z.number(),
+    context_updates: z.number(),
+    files_touched: z.array(z.string()),
+    violation_count: z.number(),
+  }),
+  governance_counters: z.object({
+    drift: z.number(),
+    compaction: z.number(),
+    out_of_order: z.number(),
+    evidence_pressure: z.number(),
+  }),
+  pending_mandatory_tools: z.array(z.string()),
+  pending_failure_ack: z.boolean(),
+});
+
 const TrajectoryContextSchema = z.object({
   session_type: z.enum(["main", "delegated", "post_compaction", "long_haul"]),
   memory_class: z.enum(["discovery", "research", "codebase_investigation", "planning", "implementing", "debug_testing"]),
@@ -384,6 +447,7 @@ export const BrainStateSchema = z.object({
   compaction_limit_reached: z.boolean().default(false),
   cycle_log: z.array(CycleLogEntrySchema).default([]),
   pending_failure_ack: z.boolean().default(false),
+  pending_mandatory_tools: z.array(z.string()).default([]),
   framework_selection: FrameworkSelectionSchema,
   recent_messages: z.array(z.object({
     role: z.enum(["user", "assistant"]),
@@ -391,6 +455,7 @@ export const BrainStateSchema = z.object({
   })).default([]),
   offtrack_todo_pending: z.array(OffTrackIntentSchema).default([]),
   trajectory_context: TrajectoryContextSchema,
+  checkpoints: z.array(CheckpointSnapshotSchema).default([]),
 });
 
 export type BrainStateFromSchema = z.infer<typeof BrainStateSchema>;
@@ -436,6 +501,9 @@ export function createBrainState(
       date: new Date(now).toISOString().split("T")[0],
       meta_key: "",
       role: "",
+      kind: "unresolved",
+      lineage_scope: "unknown",
+      role_source: "unset",
       by_ai: true,
       opencode_session_id: null,
     },
@@ -492,6 +560,7 @@ export function createBrainState(
     // Cycle intelligence fields
     cycle_log: [],
     pending_failure_ack: false,
+    pending_mandatory_tools: [],
     framework_selection: {
       choice: null,
       active_phase: "",
@@ -518,6 +587,7 @@ export function createBrainState(
         success_metrics: [],
       },
     },
+    checkpoints: [],
   };
 }
 

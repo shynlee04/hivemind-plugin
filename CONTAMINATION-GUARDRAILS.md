@@ -90,7 +90,7 @@ Two independent auto-injection systems fire on EVERY LLM turn, unaware of each o
 
 **Impact**: Both systems read overlapping state files (hierarchy.json, brain.json, todo.json) and inject potentially contradictory context directives into every turn. This is the architectural root cause of context rot.
 
-**Current Status**: Node 1 Step 1-2 partially executed (session isolation foundation + schema detox). TypeScript compiles. 11 tests still failing due to schema contract changes. Full test alignment deferred pending user authorization.
+**Current Status**: Node 1 Step 1-2 partially executed (session isolation foundation + schema detox). TypeScript compiles. Regression baseline was revalidated and stabilized on March 5, 2026; continue enforcing full-suite gates before restricted-zone changes.
 
 ## 5. CURRENT DEVELOPMENT STATUS
 
@@ -108,7 +108,7 @@ Two independent auto-injection systems fire on EVERY LLM turn, unaware of each o
 | Fix 3C-D (Session State Init) | ⏳ Not started | clean-slate session initialization |
 | Fix 1 (Dual-Injection Decouple) | ⏳ Not started | agent guards in hook files |
 | Fix 2 (Relational Staleness) | ⏳ Not started | rewrite freshness script |
-| Test alignment | ⏳ Blocked | 11 tests fail from schema detox |
+| Test alignment | ✅ Revalidated | Baseline failures reconciled during guardrail-first stabilization |
 
 ### Files Modified (Node 1 Steps 1-2)
 ```

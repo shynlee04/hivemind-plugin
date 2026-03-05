@@ -101,6 +101,7 @@ scope:
     - "prompts/**"
   forbidden:
     - "src/**"
+    - "tests/**"
 delegation_policy:
   can_delegate: true
   delegate_targets:

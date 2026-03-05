@@ -5,10 +5,12 @@ import { detectFrameworkContext } from "../lib/framework-context.js"
 import { addFileTouched, isSessionLocked, setComplexityNudgeShown, type BrainState } from "../schemas/brain-state.js"
 import { checkComplexity } from "../lib/complexity.js";
 import { checkAndRecordToast } from "../lib/toast-throttle.js";
+import { normalizeToolAlias } from "../lib/tool-names.js";
 import { treeExists } from "../lib/hierarchy-tree.js"
 import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
 import { validateSessionState, type GatekeeperResult } from "../lib/gatekeeper.js"
 import { queueStateMutation, applyPendingStateMutations } from "../lib/state-mutation-queue.js"
+import { shouldSuppressHumanFacingGovernance } from "../lib/session-role.js"
 
 // Tools exempt from governance checks (read-only or meta-tools)
 // HC5 CANONICAL NAMES ONLY — legacy names removed in Phase 2 Knot 3
@@ -44,12 +46,36 @@ const CONFLICT_SAFE_TOOLS = new Set([
   "hivemind_cycle", "hivemind_read_skeleton",
 ])
 
+interface ToolGovernancePolicy {
+  tier: "universal" | "workflow" | "deterministic"
+  allowedRoles: string[]
+  mandatoryAt?: string[]
+}
+
+const TOOL_POLICIES: Record<string, ToolGovernancePolicy> = {
+  read: { tier: "universal", allowedRoles: [] },
+  glob: { tier: "universal", allowedRoles: [] },
+  grep: { tier: "universal", allowedRoles: [] },
+  ls: { tier: "universal", allowedRoles: [] },
+  cat: { tier: "universal", allowedRoles: [] },
+  find: { tier: "universal", allowedRoles: [] },
+  hivemind_inspect: { tier: "deterministic", allowedRoles: [], mandatoryAt: ["before_action"] },
+  hivemind_cycle: { tier: "deterministic", allowedRoles: [], mandatoryAt: ["after_subagent"] },
+  hivemind_session: { tier: "workflow", allowedRoles: [] },
+  write: { tier: "workflow", allowedRoles: ["build", "debug", "hivemaker", "hivehealer"] },
+  edit: { tier: "workflow", allowedRoles: ["build", "debug", "hivemaker", "hivehealer"] },
+  bash: { tier: "workflow", allowedRoles: ["build", "debug", "hivemaker", "hivehealer"] },
+  task: { tier: "workflow", allowedRoles: ["hiveminder", "hivefiver"] },
+}
+
 function isExemptTool(toolName: string): boolean {
-  return EXEMPT_TOOLS.has(toolName)
+  const normalized = normalizeToolAlias(toolName)
+  return EXEMPT_TOOLS.has(toolName) || EXEMPT_TOOLS.has(normalized)
 }
 
 function isWriteTool(toolName: string): boolean {
-  return WRITE_TOOLS.has(toolName)
+  const normalized = normalizeToolAlias(toolName)
+  return WRITE_TOOLS.has(toolName) || WRITE_TOOLS.has(normalized)
 }
 
 /**
@@ -105,6 +131,7 @@ export function createToolGateHook(
   const internalHook = async (input: ToolGateInput): Promise<ToolGateResult> => {
     try {
       const { tool: toolName } = input
+      const normalizedToolName = normalizeToolAlias(toolName)
 
       // Always allow exempt tools (governance tools + read-only)
       if (isExemptTool(toolName)) {
@@ -118,6 +145,29 @@ export function createToolGateHook(
       let state = await stateManager.load()
       if (state) {
         state = applyPendingStateMutations(state)
+      }
+      const suppressHumanFacing = Boolean(state && shouldSuppressHumanFacingGovernance(state))
+      if (suppressHumanFacing) {
+        return { allowed: true }
+      }
+
+      const policy = TOOL_POLICIES[toolName] ?? TOOL_POLICIES[normalizedToolName]
+      const normalizedRole = (state?.session.role || "").trim().toLowerCase()
+      if (
+        policy &&
+        policy.allowedRoles.length > 0 &&
+        normalizedRole.length > 0 &&
+        !policy.allowedRoles.some((role) => normalizedRole.includes(role.toLowerCase()))
+      ) {
+        return {
+          allowed: true,
+          warning: `Governance advisory: role '${state?.session.role}' is outside policy for '${toolName}'. Prefer delegation or role-aligned execution.`,
+          signal: {
+            type: "governance",
+            severity: "advisory",
+            message: `Tool policy mismatch: ${toolName} requires one of [${policy.allowedRoles.join(", ")}].`,
+          },
+        }
       }
 
       // Framework conflict gate (GOV-06/GOV-07)

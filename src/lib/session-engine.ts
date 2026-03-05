@@ -16,6 +16,7 @@ import {
   toBrainProjection,
   treeExists,
   addChild,
+  validateAncestorChain,
   normalizeDuplicateNodeIds,
 } from "./hierarchy-tree.js"
 import {
@@ -288,10 +289,12 @@ export async function updateSession(directory: string, updates: SessionUpdates):
   const now = new Date()
 
   let updatedTree = tree
+  let validationNodeId: string | null = null
   if (targetLevel === "trajectory") {
     // Update or create trajectory root
     const trajectoryNode = createNode("trajectory", content, "active", now)
     updatedTree = setRoot(createTree(), trajectoryNode)
+    validationNodeId = trajectoryNode.id
   } else if (targetLevel === "tactic") {
     // Add tactic under trajectory
     if (tree.root) {
@@ -299,20 +302,27 @@ export async function updateSession(directory: string, updates: SessionUpdates):
       const result = addChild(tree, tree.root.id, tacticNode)
       if (result.success) {
         updatedTree = result.tree
+        validationNodeId = tacticNode.id
       }
     }
   } else {
-    // Add action under tactic (or trajectory if no tactic)
+    // Add action under tactic only (strict ancestor-chain enforcement)
     if (tree.root) {
-      // Find the deepest node to attach to
-      let parentNode = tree.root
-      if (tree.root.children.length > 0) {
-        // Find the most recent tactic node
-        const tacticNodes = tree.root.children.filter(n => n.level === "tactic")
-        if (tacticNodes.length > 0) {
-          parentNode = tacticNodes[tacticNodes.length - 1]
+      const tacticNodes = tree.root.children.filter(n => n.level === "tactic")
+      if (tacticNodes.length === 0) {
+        return {
+          success: false,
+          action: "update",
+          error: "missing ancestor",
+          data: {
+            level: targetLevel,
+            missingAncestors: ["tactic"],
+            suggestion: "Set tactic first before action (hivemind_session update level='tactic').",
+          },
         }
       }
+      // Find the most recent tactic node
+      let parentNode = tacticNodes[tacticNodes.length - 1]
       const treeWithSingleActiveAction: HierarchyTree = parentNode.level === "tactic"
         ? {
             ...tree,
@@ -323,6 +333,23 @@ export async function updateSession(directory: string, updates: SessionUpdates):
       const result = addChild(treeWithSingleActiveAction, parentNode.id, actionNode)
       if (result.success) {
         updatedTree = result.tree
+        validationNodeId = actionNode.id
+      }
+    }
+  }
+
+  if (validationNodeId) {
+    const chain = validateAncestorChain(updatedTree, validationNodeId)
+    if (!chain.valid) {
+      return {
+        success: false,
+        action: "update",
+        error: "invalid ancestor chain",
+        data: {
+          level: targetLevel,
+          missingAncestors: chain.missingAncestors,
+          suggestion: "Restore trajectory -> tactic -> action chain before continuing.",
+        },
       }
     }
   }

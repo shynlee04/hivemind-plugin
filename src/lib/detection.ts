@@ -1,4 +1,5 @@
 import { calculateSimilarity } from "../utils/string.js";
+import { normalizeToolAlias } from "./tool-names.js";
 /**
  * Detection Engine
  * Programmatic signal detection for drift, stuck patterns, and governance alerts.
@@ -348,6 +349,13 @@ const TOOL_PATTERNS: Record<ToolCategory, RegExp[]> = {
     /^todowrite$/i,
   ],
   governance: [
+    /^hivemind_session$/i,
+    /^hivemind_inspect$/i,
+    /^hivemind_cycle$/i,
+    /^hivemind_memory$/i,
+    /^hivemind_anchor$/i,
+    /^hivemind_hierarchy$/i,
+    /^hivemind_declare$/i,
     /^declare_intent$/i,
     /^map_context$/i,
     /^compact_session$/i,
@@ -369,14 +377,15 @@ const TOOL_PATTERNS: Record<ToolCategory, RegExp[]> = {
  * @consumer soft-governance.ts (tool.execute.after)
  */
 export function classifyTool(toolName: string): ToolCategory {
+  const normalizedTool = normalizeToolAlias(toolName);
   for (const [category, patterns] of Object.entries(TOOL_PATTERNS) as [ToolCategory, RegExp[]][]) {
     for (const pattern of patterns) {
-      if (pattern.test(toolName)) return category;
+      if (pattern.test(toolName) || pattern.test(normalizedTool)) return category;
     }
   }
 
   // Heuristics for unknown tools
-  const lower = toolName.toLowerCase();
+  const lower = normalizedTool.toLowerCase();
   if (lower.includes("read") || lower.includes("get") || lower.includes("list") || lower.includes("search") || lower.includes("fetch")) {
     return "read";
   }
