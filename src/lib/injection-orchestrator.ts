@@ -1,4 +1,15 @@
+import {
+  DEFAULT_CONTEXT_BUDGET,
+  MIN_SHARED_INJECTION_CAP,
+} from "./budget.js"
+
 export type InjectionChannel = "core-system" | "core-message" | "plugin-message"
+
+export interface InjectionPresence {
+  core_system: boolean
+  core_message: boolean
+  plugin_message: boolean
+}
 
 export interface TurnInjectionLedger {
   turn_key: string
@@ -27,6 +38,10 @@ const CHANNEL_PRIORITY: InjectionChannel[] = [
   "plugin-message",
 ]
 
+const CORE_SYSTEM_MARKERS = ["<hivemind>", "HIVE-MASTER governance active"]
+const CORE_MESSAGE_MARKERS = ["[SYSTEM ANCHOR:", "<system-reminder>", "<hivemind-clarify>"]
+const PLUGIN_MESSAGE_MARKERS = ["## GX-Pack Governance Context"]
+
 function getStore(): InternalStore {
   const globalObj = globalThis as Record<string, unknown>
   const existing = globalObj[GLOBAL_LEDGER_KEY] as InternalStore | undefined
@@ -54,6 +69,83 @@ function normalizeContextWindowChars(value: number): number {
   const normalized = normalizeChars(value)
   if (normalized <= 0) return 16000
   return normalized
+}
+
+function normalizeCapCharsOverride(value: number): number | null {
+  if (!Number.isFinite(value)) return null
+  const normalized = Math.floor(value)
+  if (normalized <= 0) return null
+  return clamp(normalized, MIN_SHARED_INJECTION_CAP, DEFAULT_CONTEXT_BUDGET)
+}
+
+function extractMessageText(message: unknown): string {
+  if (!message || typeof message !== "object") return ""
+  const msg = message as Record<string, unknown>
+
+  if (Array.isArray(msg.parts)) {
+    return msg.parts
+      .map((part) => {
+        if (!part || typeof part !== "object") return ""
+        const typedPart = part as Record<string, unknown>
+        return typedPart.type === "text" && typeof typedPart.text === "string"
+          ? typedPart.text
+          : ""
+      })
+      .join(" ")
+  }
+
+  if (typeof msg.content === "string") return msg.content
+
+  if (msg.info && typeof msg.info === "object") {
+    const info = msg.info as Record<string, unknown>
+    if (typeof info.content === "string") return info.content
+  }
+
+  if (Array.isArray(msg.content)) {
+    return msg.content
+      .map((part) => {
+        if (!part || typeof part !== "object") return ""
+        const typedPart = part as Record<string, unknown>
+        return typedPart.type === "text" && typeof typedPart.text === "string"
+          ? typedPart.text
+          : ""
+      })
+      .join(" ")
+  }
+
+  return ""
+}
+
+/**
+ * Detect existing injection channels in current prompt surfaces.
+ *
+ * @param input Prompt surfaces from hooks (`output.system` + `output.messages`).
+ * @returns Presence flags for each injection channel.
+ */
+export function detectInjectionPresence(input: {
+  system?: string[] | null
+  messages?: unknown[] | null
+}): InjectionPresence {
+  const systemStrings = Array.isArray(input.system) ? input.system : []
+  const messages = Array.isArray(input.messages) ? input.messages : []
+
+  const core_system = systemStrings.some((line) =>
+    CORE_SYSTEM_MARKERS.some((marker) => line.includes(marker))
+  )
+
+  const messageTexts = messages.map((message) => extractMessageText(message))
+  const core_message = messageTexts.some((text) =>
+    CORE_MESSAGE_MARKERS.some((marker) => text.includes(marker))
+  )
+  const plugin_message = messageTexts.some((text) =>
+    PLUGIN_MESSAGE_MARKERS.some((marker) => text.includes(marker))
+  )
+
+  return {
+    core_system,
+    core_message,
+    plugin_message,
+  }
 }
 
 function buildBaselineByChannel(turnCount: number, capChars: number): Record<InjectionChannel, number> {
@@ -103,10 +195,21 @@ export function createTurnInjectionKey(sessionId: string, turnCount: number): st
   return `${safeSessionId}:turn:${Math.max(0, Math.floor(turnCount))}`
 }
 
+/**
+ * Create or refresh the shared per-turn injection ledger for a session turn.
+ *
+ * @param params Ledger creation parameters.
+ * @param params.sessionId Session identifier used to partition the ledger.
+ * @param params.turnCount Turn number within the session.
+ * @param params.contextWindowChars Estimated model context window in characters.
+ * @param params.capCharsOverride Optional explicit per-turn cap to use instead of the legacy formula.
+ * @returns The created or refreshed ledger entry for the session turn.
+ */
 export function createTurnInjectionLedger(params: {
   sessionId: string
   turnCount: number
   contextWindowChars: number
+  capCharsOverride?: number
 }): TurnInjectionLedger {
   const store = getStore()
   pruneOldLedgers(store)
@@ -115,12 +218,13 @@ export function createTurnInjectionLedger(params: {
   const turnCount = Math.max(0, Math.floor(params.turnCount))
   const turnKey = createTurnInjectionKey(params.sessionId, turnCount)
   const now = Date.now()
+  const capCharsOverride = normalizeCapCharsOverride(params.capCharsOverride ?? Number.NaN)
 
   const existing = store.ledgers.get(turnKey)
   if (existing) {
-    // Keep the strictest cap and latest context estimate per turn.
+    // Keep the latest context estimate while allowing callers to pin an explicit cap.
     const nextContextWindow = Math.max(existing.context_window_chars, contextWindowChars)
-    const nextCap = Math.floor(nextContextWindow * 0.15)
+    const nextCap = capCharsOverride ?? Math.floor(nextContextWindow * 0.15)
     const nextBaseline = buildBaselineByChannel(turnCount, nextCap)
 
     existing.context_window_chars = nextContextWindow
@@ -130,7 +234,7 @@ export function createTurnInjectionLedger(params: {
     return existing
   }
 
-  const capChars = Math.floor(contextWindowChars * 0.15)
+  const capChars = capCharsOverride ?? Math.floor(contextWindowChars * 0.15)
   const baselineByChannel = buildBaselineByChannel(turnCount, capChars)
 
   const created: TurnInjectionLedger = {

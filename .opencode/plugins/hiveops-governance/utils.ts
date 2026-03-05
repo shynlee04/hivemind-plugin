@@ -6,8 +6,8 @@
  */
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs"
-import { execSync } from "node:child_process"
-import { join } from "node:path"
+import { execFileSync } from "node:child_process"
+import { isAbsolute, join } from "node:path"
 import type { EnforcementState, ScopeViolation, DelegationChainEntry } from "./types"
 import { DELEGATION_TOPOLOGY, SCOPE_BOUNDARIES } from "./types"
 
@@ -143,21 +143,81 @@ export function getCurrentDepth(state: EnforcementState): number {
 
 // ── Cross-platform script runner ──────────────────────────────────────────────
 // Works on macOS (bash), Linux (bash), Windows (Git Bash / WSL).
-// Uses `bash` which ships with Git-for-Windows and WSL.
-// Every call is fire-and-forget with a hard timeout so hooks never block > N ms.
+// Single source of truth for non-interactive policy enforcement.
 
 const SCRIPTS_DIR = ".opencode/skills/gx-context-engine/scripts"
 
+const NON_INTERACTIVE_ENV_DEFAULTS: Readonly<Record<string, string>> = {
+  CI: "true",
+  DEBIAN_FRONTEND: "noninteractive",
+  GIT_TERMINAL_PROMPT: "0",
+  GIT_EDITOR: "true",
+  GIT_PAGER: "cat",
+  GCM_INTERACTIVE: "never",
+  PAGER: "cat",
+  HOMEBREW_NO_AUTO_UPDATE: "1",
+  npm_config_yes: "true",
+  PIP_NO_INPUT: "1",
+  YARN_ENABLE_IMMUTABLE_INSTALLS: "false",
+  GX_NON_INTERACTIVE: "1",
+  LANG: "C",
+  LC_ALL: "C",
+}
+
 /** Resolve bash binary — Git Bash on Windows, /usr/bin/env bash elsewhere */
-function resolveBash(): string {
+function resolveBashBinary(): string {
   if (process.platform === "win32") {
     // Git for Windows ships bash at C:\Program Files\Git\bin\bash.exe
     const gitBash = "C:\\Program Files\\Git\\bin\\bash.exe"
-    if (existsSync(gitBash)) return `"${gitBash}"`
+    if (existsSync(gitBash)) return gitBash
     // Fallback: hope it's on PATH (WSL, MSYS2, Cygwin)
     return "bash"
   }
   return "bash"
+}
+
+/**
+ * Execute a bash script with enforced non-interactive shell policy.
+ *
+ * This is the authoritative execution primitive for all governance scripts.
+ * All higher-level runners MUST delegate to this helper so environment policy,
+ * timeout behavior, and deterministic shell constraints stay centralized.
+ *
+ * @param worktree - Project root used as process cwd.
+ * @param relativeScriptPath - Relative (or absolute) script path to execute.
+ * @param args - Positional script arguments.
+ * @param timeoutMs - Hard timeout in milliseconds.
+ * @returns Trimmed stdout content, or null if execution fails or script is missing.
+ */
+export function runNonInteractiveScript(
+  worktree: string,
+  relativeScriptPath: string,
+  args: string[] = [],
+  timeoutMs = 8000,
+): string | null {
+  const scriptPath = isAbsolute(relativeScriptPath)
+    ? relativeScriptPath
+    : join(worktree, relativeScriptPath)
+
+  if (!existsSync(scriptPath)) return null
+
+  const normalizedScriptPath = scriptPath.replace(/\\/g, "/")
+  const normalizedArgs = args.map((arg) => arg.replace(/\\/g, "/"))
+
+  try {
+    const stdout = execFileSync(resolveBashBinary(), [normalizedScriptPath, ...normalizedArgs], {
+      cwd: worktree,
+      timeout: timeoutMs,
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+      env: { ...process.env, ...NON_INTERACTIVE_ENV_DEFAULTS },
+      maxBuffer: 10 * 1024 * 1024,
+    })
+
+    return typeof stdout === "string" ? stdout.trim() : null
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -168,6 +228,7 @@ function resolveBash(): string {
  * @param script    - script name relative to scripts/ (e.g. "gx-health-compute.sh")
  * @param args      - additional CLI args passed after worktree
  * @param timeoutMs - hard kill timeout (default 8000ms)
+ * @returns Parsed JSON object from script output, or null when unavailable/invalid.
  */
 export function runGxScript(
   worktree: string,
@@ -175,28 +236,19 @@ export function runGxScript(
   args: string[] = [],
   timeoutMs = 8000
 ): Record<string, any> | null {
-  const scriptPath = join(worktree, SCRIPTS_DIR, script)
-  if (!existsSync(scriptPath)) return null
+  const stdout = runNonInteractiveScript(
+    worktree,
+    join(SCRIPTS_DIR, script),
+    [worktree, ...args],
+    timeoutMs,
+  )
+  if (!stdout) return null
 
-  const bash = resolveBash()
-  // Normalize paths to forward slashes for bash on all platforms
-  const normalizedScript = scriptPath.replace(/\\/g, "/")
-  const normalizedWorktree = worktree.replace(/\\/g, "/")
-  const argsStr = args.map((a) => `"${a.replace(/\\/g, "/")}"`).join(" ")
-  const cmd = `${bash} "${normalizedScript}" "${normalizedWorktree}" ${argsStr}`.trim()
+  // Parse last JSON object in output (scripts may emit logs before JSON)
+  const jsonMatch = stdout.match(/\{[\s\S]*\}\s*$/)
+  if (!jsonMatch) return null
 
   try {
-    const stdout = execSync(cmd, {
-      timeout: timeoutMs,
-      stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env, GX_NON_INTERACTIVE: "1" },
-      cwd: worktree,
-    })
-    const text = stdout.toString("utf-8").trim()
-    if (!text) return null
-    // Parse last JSON object in output (scripts may emit logs before JSON)
-    const jsonMatch = text.match(/\{[\s\S]*\}\s*$/)
-    if (!jsonMatch) return null
     return JSON.parse(jsonMatch[0])
   } catch {
     return null
@@ -212,22 +264,8 @@ export function runGxScriptAsync(
   script: string,
   args: string[] = []
 ): void {
-  const scriptPath = join(worktree, SCRIPTS_DIR, script)
-  if (!existsSync(scriptPath)) return
-
-  const bash = resolveBash()
-  const normalizedScript = scriptPath.replace(/\\/g, "/")
-  const normalizedWorktree = worktree.replace(/\\/g, "/")
-  const argsStr = args.map((a) => `"${a.replace(/\\/g, "/")}"`).join(" ")
-  const cmd = `${bash} "${normalizedScript}" "${normalizedWorktree}" ${argsStr}`.trim()
-
   try {
-    execSync(cmd, {
-      timeout: 10000,
-      stdio: ["pipe", "pipe", "pipe"],
-      env: { ...process.env, GX_NON_INTERACTIVE: "1" },
-      cwd: worktree,
-    })
+    runNonInteractiveScript(worktree, join(SCRIPTS_DIR, script), [worktree, ...args], 10000)
   } catch {
     // Fire and forget — never crash the hook
   }

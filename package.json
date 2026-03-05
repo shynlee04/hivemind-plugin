@@ -42,9 +42,9 @@
     "typecheck:core": "tsc --noEmit",
     "typecheck:dashboard-v2": "bash -lc 'if [ ! -d src/dashboard-v2/node_modules ]; then npm --prefix src/dashboard-v2 install --no-audit --no-fund; fi; npm --prefix src/dashboard-v2 run typecheck'",
     "typecheck:all": "npm run typecheck:core && npm run typecheck:dashboard-v2",
-    "lint:boundary": "bash scripts/check-sdk-boundary.sh",
+    "lint:boundary": "bash scripts/check-sdk-boundary.sh && bash scripts/check-agent-registry-parity.sh && bash scripts/check-state-write-boundary.sh && bash scripts/check-docs-ownership-boundary.sh",
     "guard:public": "bash scripts/guard-public-branch.sh origin/master HEAD",
-    "test": "bash scripts/check-sdk-boundary.sh && tsx --test tests/*.test.ts",
+    "test": "npm run lint:boundary && tsx --test tests/*.test.ts",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"
   },
   "keywords": [

@@ -69,7 +69,7 @@ export interface IntentClassification {
   classified_at: number
   source: "classify-intent.sh"
   input_excerpt: string
-  persisted_to_brain: boolean
+  persisted_to_profile: boolean
 }
 
 /** Scope violation record */

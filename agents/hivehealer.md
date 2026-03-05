@@ -45,7 +45,7 @@ permission:
     "*": allow
     src/**: allow
     tests/**: allow
-    docs/**: allow
+    docs/implementation/**: allow
     .hivemind/**: allow
   skill: allow
   todoread: allow
@@ -66,7 +66,7 @@ scope_paths:
   allow:
     - src/**
     - tests/**
-    - docs/**
+    - docs/implementation/**
   forbidden:
     - agents/**
     - commands/**

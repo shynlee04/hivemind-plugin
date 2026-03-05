@@ -7,40 +7,18 @@
  * downstream context injection.
  */
 
-import { execFileSync } from "node:child_process"
-import { existsSync } from "node:fs"
 import { join } from "node:path"
 import type { EnforcementState, EntryDetection } from "../types"
+import { runNonInteractiveScript } from "../utils"
 
 const DETECT_ENTRY_SCRIPT = "scripts/detect-entry.sh"
 const AUTO_INIT_SCRIPT = "scripts/auto-init.sh"
 
-function resolveBash(): string {
-  if (process.platform === "win32") {
-    const gitBash = "C:\\Program Files\\Git\\bin\\bash.exe"
-    if (existsSync(gitBash)) return gitBash
-    return "bash"
-  }
-  return "bash"
-}
-
 function runScript(worktree: string, relativeScriptPath: string, args: string[] = []): string | null {
-  const scriptPath = join(worktree, relativeScriptPath)
-  if (!existsSync(scriptPath)) return null
-
-  try {
-    const stdout = execFileSync(resolveBash(), [scriptPath, ...args], {
-      cwd: worktree,
-      timeout: 8000,
-      encoding: "utf-8",
-      env: { ...process.env, GX_NON_INTERACTIVE: "1" },
-      stdio: ["pipe", "pipe", "pipe"],
-    })
-    return typeof stdout === "string" ? stdout.trim() : null
-  } catch (error) {
-    console.warn(`[hiveops][entry-guard] Script failed: ${relativeScriptPath}`, error)
-    return null
-  }
+  const stdout = runNonInteractiveScript(worktree, relativeScriptPath, args, 8000)
+  if (stdout !== null) return stdout
+  console.warn(`[hiveops][entry-guard] Script failed: ${relativeScriptPath}`)
+  return null
 }
 
 function parseDetectionResult(raw: string | null): EntryDetection | null {

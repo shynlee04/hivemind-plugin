@@ -16,6 +16,12 @@ CRITICAL: Before modifying any function, you MUST:
 3. Preserve all @example blocks
 4. Maintain the code files with this JSDoc section to pass on logs, report issues and addressing isolation when needed and logics, contracts, functions, and other important details of the code. 
 
+## Non-Interactive Shell Awareness (Canonical)
+
+- Shell is non-interactive (no TTY/PTY). Never run commands that wait for prompts or UI input.
+- Always use non-interactive flags and explicit messages (`-y`, `--yes`, `--non-interactive`, `--no-edit`, `-f`).
+- If a tool can still block, provide deterministic input (`yes |`, heredoc) or fail fast with a timeout.
+
 1. **Executive Snapshot (8–12 bullets)**
 
 - HIVEMIND is a meta-framework project built on Opencode and currently running in “integrate while self-fixing” mode ([`AGENTS.md`](AGENTS.md:20), [`CLAUDE.md`](CLAUDE.md:1)).

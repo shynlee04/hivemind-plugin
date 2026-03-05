@@ -22,6 +22,7 @@ import type { HierarchyTree } from "../src/lib/hierarchy-tree.js"
 import type { MetricsState, BrainState } from "../src/schemas/brain-state.js"
 import { createBrainState } from "../src/schemas/brain-state.js"
 import { DEFAULT_CONFIG } from "../src/schemas/config.js"
+import { DEFAULT_COMPACTION_BUDGET } from "../src/lib/budget.js"
 import { mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { join } from "path"
@@ -197,7 +198,7 @@ function test_generateReport_structured() {
 }
 
 function test_generateReport_budgetCap() {
-  process.stderr.write("\n--- generateNextCompactionReport: budget-caps at 1800 chars ---\n")
+  process.stderr.write("\n--- generateNextCompactionReport: budget-caps at the shared compaction default ---\n")
 
   // Create a tree with many nodes to generate a large report
   let tree = createTree()
@@ -236,7 +237,9 @@ function test_generateReport_budgetCap() {
   }
 
   const report = generateNextCompactionReport(tree, turningPoints, state)
-  assert(report.text.length <= 1800, `report length ${report.text.length} is within 1800 budget`)
+  assert(report.budget === DEFAULT_COMPACTION_BUDGET, `report budget ${report.budget} matches default compaction budget`)
+  assert(report.text.length <= DEFAULT_COMPACTION_BUDGET, `report length ${report.text.length} is within ${DEFAULT_COMPACTION_BUDGET} budget`)
+  assert(report.text.length > 1800, "report is no longer squeezed to the legacy 1800-char budget")
   assert(report.text.includes("=== End Purification Report ==="), "budget-capped report still has footer")
 }
 

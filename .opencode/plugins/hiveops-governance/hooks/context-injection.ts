@@ -15,9 +15,12 @@
  */
 
 import type { EnforcementState } from "../types"
+import { existsSync } from "node:fs"
+import { join } from "node:path"
 import {
   createTurnInjectionKey,
   createTurnInjectionLedger,
+  detectInjectionPresence,
   reserveInjectionBudget,
 } from "../../../../src/lib/injection-orchestrator.js"
 import { readUnifiedStateSnapshot } from "../../../../src/lib/state-snapshot.js"
@@ -85,6 +88,21 @@ interface HealthMetrics {
       below: number
     }
   }
+}
+
+let coreRuntimePresenceCache: { worktree: string; present: boolean } | null = null
+
+function coreRuntimeHooksPresent(worktree: string): boolean {
+  if (process.env.GX_FORCE_PLUGIN_CONTEXT_INJECTION === "1") {
+    return false
+  }
+  if (coreRuntimePresenceCache && coreRuntimePresenceCache.worktree === worktree) {
+    return coreRuntimePresenceCache.present
+  }
+  const present = existsSync(join(worktree, "src/hooks/session-lifecycle.ts"))
+    && existsSync(join(worktree, "src/hooks/messages-transform.ts"))
+  coreRuntimePresenceCache = { worktree, present }
+  return present
 }
 
 /** Extract text content from any message shape (v1 legacy or v2 parts) */
@@ -234,35 +252,14 @@ export function buildContextInjectionHook(state: {
     // Defensive: ensure messages array exists
     if (!output.messages || !Array.isArray(output.messages)) return
 
-    // ── Deduplication: skip if System 2 (src/hooks) already injected ──
-    // System 2 injects via:
-    //   - session-lifecycle.ts: <hivemind> block into output.system (not messages)
-    //   - messages-transform.ts: [SYSTEM ANCHOR ...] into output.messages
-    //   - governance-instruction.ts: GOVERNANCE_MARKER into output.system
-    // If any of these are present, the plugin's injection would create
-    // duplicate/conflicting governance signals. (See: Team A audit — dual-injection race)
-    const GX_PACK_MARKER = "## GX-Pack Governance Context"
+    // Core runtime hooks are canonical injectors; plugin path is fallback-only.
+    if (coreRuntimeHooksPresent(state.worktree)) return
 
-    // Check output.system for System 2 system-layer injection
-    const systemStrings: string[] = Array.isArray(output.system) ? output.system : []
-    const hasSystemLayerInjection = systemStrings.some(
-      (s: string) => s.includes("<hivemind>") || s.includes("HIVE-MASTER governance active")
-    )
-
-    // Check output.messages for message-layer markers ([SYSTEM ANCHOR] or own GX-Pack marker)
-    const MESSAGE_MARKERS = ["[SYSTEM ANCHOR"]
-    const hasMessageLayerInjection = output.messages.some((msg: any) => {
-      const text = extractMessageText(msg)
-      return MESSAGE_MARKERS.some(marker => text.includes(marker))
+    const presence = detectInjectionPresence({
+      system: Array.isArray(output.system) ? output.system : [],
+      messages: output.messages,
     })
-
-    const hasGxPackInjection = output.messages.some((msg: any) => {
-      const text = extractMessageText(msg)
-      return text.includes(GX_PACK_MARKER)
-    })
-
-    // If System 2 already injected (via either layer), or if we already injected, skip
-    if (hasSystemLayerInjection || hasMessageLayerInjection || hasGxPackInjection) return
+    if (presence.core_system || presence.core_message || presence.plugin_message) return
 
     // Unified snapshot read (brain + extension state). Safe no-op if unavailable.
     const snapshot = await readUnifiedStateSnapshot(state.worktree)
@@ -342,7 +339,7 @@ export function buildContextInjectionHook(state: {
       const classification = state.current.intentClassification
       contextLines.push("### Intent Classification")
       contextLines.push(
-        `- lineage=${classification.lineage} source=${classification.source} persisted_to_brain=${classification.persisted_to_brain}`,
+        `- lineage=${classification.lineage} source=${classification.source} persisted_to_profile=${classification.persisted_to_profile}`,
       )
       contextLines.push(`- input_excerpt=${classification.input_excerpt}`)
       contextLines.push("")

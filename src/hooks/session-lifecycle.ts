@@ -3,7 +3,7 @@
  *
  * Fires EVERY turn (experimental.chat.system.transform):
  *   - Compiles detected signals into <hivemind> prompt injection
- *   - Budget-capped (2500 chars, lowest priority dropped)
+ *   - Budget-capped via the shared per-turn injection ledger
  *   - Handles stale session auto-archival
  *
  * P3: try/catch — never break session lifecycle
@@ -21,9 +21,14 @@ import {
   clearTurnInjectionLedger,
   createTurnInjectionKey,
   createTurnInjectionLedger,
+  detectInjectionPresence,
   getTurnInjectionLedger,
   reserveInjectionBudget,
 } from "../lib/injection-orchestrator.js"
+import {
+  computeSharedInjectionCapChars,
+  estimateContextWindowChars,
+} from "../lib/budget.js"
 
 import { isSessionStale } from "../lib/staleness.js"
 import { detectBrownfield, generateReadFirstBlock, isCleanSession, handleStaleSession } from "../lib/onboarding.js"
@@ -49,12 +54,19 @@ import { shouldSuppressHumanFacingGovernance } from "../lib/session-role.js"
  * Inject HiveMaster strict governance instruction (prepends, deduplicated)
  */
 async function injectGovernanceInstruction(
-  output: { system: string[] },
+  output: { system: string[]; messages?: unknown[] },
   directory: string,
   sessionId: string,
 ): Promise<EntityChecklist | undefined> {
-  // Check if already injected (deduplication)
-  const alreadyInjected = output.system.some(s => s.includes(GOVERNANCE_MARKER))
+  // Shared channel-detection contract (system/message/plugin) for dedupe.
+  const presence = detectInjectionPresence({
+    system: output.system,
+    messages: output.messages,
+  })
+  const alreadyInjected = presence.core_system
+    || presence.core_message
+    || presence.plugin_message
+    || output.system.some(s => s.includes(GOVERNANCE_MARKER))
   if (alreadyInjected) {
     return undefined
   }
@@ -79,13 +91,21 @@ function appendChecklistFailureReminder(output: { system: string[] }, checklist:
 }
 
 /**
- * Creates the session lifecycle hook (system prompt transform).
+ * Create the session lifecycle hook (system prompt transform).
+ *
+ * @param log Logger used for lifecycle diagnostics.
+ * @param directory Project directory for state/config resolution.
+ * @param _initConfig Initial hook config snapshot; runtime config is reloaded on each turn.
+ * @returns A hook that injects shared-budgeted HiveMind system context.
  */
 export function createSessionLifecycleHook(log: Logger, directory: string, _initConfig: HiveMindConfig) {
   const stateManager = createStateManager(directory, log)
   const effectiveDir = directory
 
-  return async (input: { sessionID?: string; model?: unknown }, output: { system: string[] }): Promise<void> => {
+  return async (
+    input: { sessionID?: string; model?: unknown },
+    output: { system: string[]; messages?: unknown[] },
+  ): Promise<void> => {
     try {
       // Inject HiveMaster governance instruction FIRST (prepend, deduplicated)
       const checklist = await injectGovernanceInstruction(output, effectiveDir, input.sessionID || "unknown")
@@ -140,8 +160,9 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
         }
       }
 
-      const maxResponseTokens = config.agent_behavior?.constraints?.max_response_tokens ?? 4096
-      const approxContextWindowChars = Math.max(8000, Math.floor(maxResponseTokens * 4))
+      const maxResponseTokens = config.agent_behavior?.constraints?.max_response_tokens
+      const approxContextWindowChars = estimateContextWindowChars(maxResponseTokens)
+      const sharedInjectionCapChars = computeSharedInjectionCapChars(maxResponseTokens)
       const resolvedSessionId = state.session.id || input.sessionID || "unknown-session"
       const suppressHumanFacing = shouldSuppressHumanFacingGovernance(state)
       const turnKey = createTurnInjectionKey(resolvedSessionId, state.metrics.turn_count)
@@ -149,6 +170,7 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
         sessionId: resolvedSessionId,
         turnCount: state.metrics.turn_count,
         contextWindowChars: approxContextWindowChars,
+        capCharsOverride: sharedInjectionCapChars,
       })
       const existingUsage = getTurnInjectionLedger(turnKey)?.usage_by_channel
       if (
@@ -162,9 +184,10 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
           sessionId: resolvedSessionId,
           turnCount: state.metrics.turn_count,
           contextWindowChars: approxContextWindowChars,
+          capCharsOverride: sharedInjectionCapChars,
         })
       }
-      const provisionalBudget = Math.max(500, ledger.cap_chars)
+      const provisionalBudget = ledger.cap_chars
 
       // Phase 1: Cognitive State is now injected via messages-transform.ts (canonical location)
 

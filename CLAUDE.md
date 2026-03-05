@@ -11,6 +11,12 @@ CRITICAL: Before modifying any function, you MUST:
 2. Update the @param and @returns tags  
 3. Preserve all @example blocks
 
+## Non-Interactive Shell Awareness (Canonical)
+
+- Shell is non-interactive (no TTY/PTY). Never run commands that wait for prompts or UI input.
+- Always use non-interactive flags and explicit messages (`-y`, `--yes`, `--non-interactive`, `--no-edit`, `-f`).
+- If a tool can still block, provide deterministic input (`yes |`, heredoc) or fail fast with a timeout.
+
 ## MANDATORY FIRST READS
 
 Before ANY action, read these documents in order:
@@ -303,4 +309,3 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 - `.hivemind/sessions/` — Session files and archives
 
 <!-- HIVEMIND-GOVERNANCE-END -->
-

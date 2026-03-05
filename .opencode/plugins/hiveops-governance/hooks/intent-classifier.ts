@@ -2,28 +2,19 @@
  * HiveMind Governance Plugin — Intent Classification Hook
  *
  * Fires on first user message seen by experimental.chat.messages.transform.
- * Runs scripts/classify-intent.sh, persists lineage to brain.json,
+ * Runs scripts/classify-intent.sh, persists lineage to session profile,
  * and updates enforcement state routing.
  */
 
-import { execFileSync } from "node:child_process"
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
-import { dirname, join } from "node:path"
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
+import { join } from "node:path"
 import type { EnforcementState } from "../types"
+import { runNonInteractiveScript } from "../utils"
 
 type Lineage = "hivefiver" | "hiveminder" | "unresolved"
 
 const CLASSIFY_INTENT_SCRIPT = "scripts/classify-intent.sh"
-const BRAIN_FILE = ".hivemind/state/brain.json"
-
-function resolveBash(): string {
-  if (process.platform === "win32") {
-    const gitBash = "C:\\Program Files\\Git\\bin\\bash.exe"
-    if (existsSync(gitBash)) return gitBash
-    return "bash"
-  }
-  return "bash"
-}
+const ACTIVE_SESSIONS_DIR = ".hivemind/sessions/active"
 
 function extractMessageText(msg: any): string {
   if (!msg) return ""
@@ -67,33 +58,44 @@ function normalizeLineage(value: string): Lineage {
 }
 
 function classifyIntent(worktree: string, message: string): Lineage {
-  const scriptPath = join(worktree, CLASSIFY_INTENT_SCRIPT)
-  if (!existsSync(scriptPath)) return "unresolved"
+  const stdout = runNonInteractiveScript(worktree, CLASSIFY_INTENT_SCRIPT, [message], 8000)
+  if (stdout === null) {
+    console.warn("[hiveops][intent-classifier] classify-intent.sh failed")
+    return "unresolved"
+  }
+
+  return normalizeLineage(stdout.trim())
+}
+
+function resolveProfilePath(worktree: string, sessionId: string): string | null {
+  const activeDir = join(worktree, ACTIVE_SESSIONS_DIR)
+  if (!existsSync(activeDir)) return null
+
+  const directCandidate = join(activeDir, sessionId, "profile.json")
+  if (sessionId.trim().length > 0 && existsSync(directCandidate)) {
+    return directCandidate
+  }
 
   try {
-    const stdout = execFileSync(resolveBash(), [scriptPath, message], {
-      cwd: worktree,
-      timeout: 8000,
-      encoding: "utf-8",
-      env: { ...process.env, GX_NON_INTERACTIVE: "1" },
-      stdio: ["pipe", "pipe", "pipe"],
-    })
-    return normalizeLineage((stdout || "").trim())
-  } catch (error) {
-    console.warn("[hiveops][intent-classifier] classify-intent.sh failed", error)
-    return "unresolved"
+    const profileCandidates = readdirSync(activeDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => join(activeDir, entry.name, "profile.json"))
+      .filter((path) => existsSync(path))
+      .map((path) => ({ path, mtime: statSync(path).mtimeMs }))
+      .sort((a, b) => b.mtime - a.mtime)
+    return profileCandidates[0]?.path ?? null
+  } catch {
+    return null
   }
 }
 
-function persistLineageToBrain(worktree: string, lineage: Lineage): boolean {
-  const brainPath = join(worktree, BRAIN_FILE)
-
+function persistLineageToProfile(worktree: string, lineage: Lineage, sessionId: string): boolean {
+  const profilePath = resolveProfilePath(worktree, sessionId)
+  if (!profilePath) return false
   try {
-    mkdirSync(dirname(brainPath), { recursive: true })
-
     let current: Record<string, unknown> = {}
-    if (existsSync(brainPath)) {
-      const raw = readFileSync(brainPath, "utf-8")
+    if (existsSync(profilePath)) {
+      const raw = readFileSync(profilePath, "utf-8")
       if (raw.trim().length > 0) {
         const parsed = JSON.parse(raw)
         if (parsed && typeof parsed === "object") {
@@ -105,13 +107,14 @@ function persistLineageToBrain(worktree: string, lineage: Lineage): boolean {
     const next = {
       ...current,
       lineage,
+      agent: lineage !== "unresolved" ? lineage : current.agent ?? "unresolved",
       updated_at: Date.now(),
     }
 
-    writeFileSync(brainPath, `${JSON.stringify(next, null, 2)}\n`, "utf-8")
+    writeFileSync(profilePath, `${JSON.stringify(next, null, 2)}\n`, "utf-8")
     return true
   } catch (error) {
-    console.warn("[hiveops][intent-classifier] Failed to persist lineage to brain.json", error)
+    console.warn("[hiveops][intent-classifier] Failed to persist lineage to session profile", error)
     return false
   }
 }
@@ -129,7 +132,7 @@ export function buildIntentClassifierHook(state: {
     if (!firstUserMessage) return
 
     const lineage = classifyIntent(state.worktree, firstUserMessage)
-    const persisted = persistLineageToBrain(state.worktree, lineage)
+    const persisted = persistLineageToProfile(state.worktree, lineage, state.current.sessionId)
 
     state.current = {
       ...state.current,
@@ -141,7 +144,7 @@ export function buildIntentClassifierHook(state: {
         classified_at: Date.now(),
         source: "classify-intent.sh",
         input_excerpt: firstUserMessage.slice(0, 200),
-        persisted_to_brain: persisted,
+        persisted_to_profile: persisted,
       },
       lastCheckpoint: Date.now(),
     }

@@ -35,4 +35,37 @@ describe("hierarchy ancestor chain validation", () => {
     assert.equal(result.valid, false)
     assert.deepEqual(result.missingAncestors, ["trajectory"])
   })
+
+  it("reports missing node when node id is unknown", () => {
+    const trajectory = createNode("trajectory", "Root")
+    const tree = setRoot(createTree(), trajectory)
+    const result = validateAncestorChain(tree, "missing-node-id")
+
+    assert.equal(result.valid, false)
+    assert.deepEqual(result.missingAncestors, ["node_not_found"])
+  })
+
+  it("reports both missing tactic and trajectory when action is root", () => {
+    const actionRoot = createNode("action", "Action-root")
+    const tree = setRoot(createTree(), actionRoot)
+    const result = validateAncestorChain(tree, actionRoot.id)
+
+    assert.equal(result.valid, false)
+    assert.deepEqual(result.missingAncestors, ["trajectory", "tactic"])
+  })
+
+  it("reports missing tactic when action hangs directly under trajectory", () => {
+    const trajectory = createNode("trajectory", "Root")
+    const action = createNode("action", "Orphan action")
+    trajectory.children = [action]
+    const tree = {
+      ...createTree(),
+      root: trajectory,
+      cursor: action.id,
+    }
+
+    const result = validateAncestorChain(tree, action.id)
+    assert.equal(result.valid, false)
+    assert.deepEqual(result.missingAncestors, ["tactic"])
+  })
 })

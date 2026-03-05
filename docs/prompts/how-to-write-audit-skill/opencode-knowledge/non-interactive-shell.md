@@ -1,5 +1,11 @@
 # Shell Non-Interactive Strategy (Global)
 
+## Non-Interactive Shell Awareness (Canonical)
+
+- Shell is non-interactive (no TTY/PTY). Never run commands that wait for prompts or UI input.
+- Always use non-interactive flags and explicit messages (`-y`, `--yes`, `--non-interactive`, `--no-edit`, `-f`).
+- If a tool can still block, provide deterministic input (`yes |`, heredoc) or fail fast with a timeout.
+
 **Context:** OpenCode's shell environment is strictly **non-interactive**. It lacks a TTY/PTY, meaning any command that waits for user input, confirmation, or launches a UI (editor/pager) will hang indefinitely and timeout.
 
 **Goal:** Achieve parity with Claude Code's shell capabilities through internalized knowledge of non-interactive flags and environment variables.

@@ -33,7 +33,7 @@ import {
   type MetricsState,
 } from "../schemas/brain-state.js"
 import { getClient } from "./sdk-access.js"
-import { LEGACY_COMPACTION_BUDGET } from "./budget.js"
+import { DEFAULT_COMPACTION_BUDGET } from "./budget.js"
 import { MAX_COMPACTION_COUNT } from "./session-boundary.js"
 
 export interface TurningPoint {
@@ -151,12 +151,20 @@ export function identifyTurningPoints(tree: HierarchyTree, _metrics: MetricsStat
   return turningPoints
 }
 
+/**
+ * Generate the next compaction handoff report from the current tree and state.
+ *
+ * @param tree Current hierarchy tree snapshot.
+ * @param turningPoints Derived turning points to summarize in the handoff.
+ * @param state Active brain state for files, session, and compaction counters.
+ * @returns A bounded compaction report ready for persistence and re-injection.
+ */
 export function generateNextCompactionReport(
   tree: HierarchyTree,
   turningPoints: TurningPoint[],
   state: BrainState,
 ): CompactionReport {
-  const budget = LEGACY_COMPACTION_BUDGET
+  const budget = DEFAULT_COMPACTION_BUDGET
   const sessionId = state.session.id
   const nextCompactionCount = (state.compaction_count ?? 0) + 1
   const title = "HiveMind Purification Report"

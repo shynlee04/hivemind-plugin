@@ -3,6 +3,10 @@ name: hivemaker
 description: Execution specialist for implementation tasks. Use when building
   features, applying constrained code changes within assigned scope, and
   returning structured evidence.
+tasks:
+  hivexplorer: allow
+  hiverd: allow
+  hiveq: allow
 workflows:
   - feature-sprint
   - bug-remediation
@@ -10,7 +14,9 @@ prompts:
   - compliance-rules
 references:
   - workflow-briefing
-mode: subagent
+skills:
+  - entry-protocol
+mode: all
 tools:
   read: true
   glob: true
@@ -40,14 +46,9 @@ permission:
     "*": allow
     src/**: allow
     tests/**: allow
-    docs/**: allow
+    docs/implementation/**: allow
     .hivemind/**: allow
   skill: allow
-  task:
-    "*": deny
-    hivexplorer: allow
-    hiverd: allow
-    hiveq: allow
   todoread: allow
   todowrite: allow
 identity:
@@ -66,7 +67,7 @@ scope_paths:
   allow:
     - src/**
     - tests/**
-    - docs/**
+    - docs/implementation/**
   forbidden:
     - agents/**
     - commands/**
@@ -94,6 +95,34 @@ reasoningEffort: high
 ---
 
 # Hivemaker — Execution Specialist Agent
+
+## ENTRY PROTOCOL (MANDATORY)
+
+This agent MUST follow this sequence on first activation:
+
+### Step 1: State Detection
+Execute: `./scripts/detect-entry.sh`
+Expected output: JSON with `entry_condition` field
+
+### Step 2: Bootstrap if Required
+If `entry_condition === "bootstrap_required"`:
+- Execute: `./scripts/auto-init.sh`
+- Creates: `brain.json`, `hierarchy.json`, `profile.json`
+
+### Step 3: Intent Classification
+If `entry_condition === "classify_required"`:
+- Classify user intent -> determine lineage
+
+### Step 4: Hierarchical Context Link
+FIRST OUTPUT must confirm:
+`[ENTRY] Connected to trajectory: <id> | Lineage: <lineage> | Mode: <mode>`
+
+### Step 5: Load Required Skills
+Load skills specified in agent definition before proceeding.
+
+## First-Output Rule
+The FIRST assistant message MUST output the hierarchical context link.
+DO NOT proceed with any work until context is confirmed connected.
 
 ## Role
 

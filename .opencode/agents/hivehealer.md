@@ -3,6 +3,9 @@ name: hivehealer
 description: Remediation specialist for debugging, hardening, and quality
   recovery under strict scope constraints. Use when fixing broken code,
   recovering from failures, or hardening system stability.
+tasks:
+  hivexplorer: allow
+  hiveq: allow
 workflows:
   - bug-remediation
 prompts:
@@ -10,6 +13,8 @@ prompts:
   - verification-criteria
 references:
   - workflow-briefing
+skills:
+  - entry-protocol
 mode: all
 tools:
   read: true
@@ -40,13 +45,9 @@ permission:
     "*": allow
     src/**: allow
     tests/**: allow
-    docs/**: allow
+    docs/implementation/**: allow
     .hivemind/**: allow
   skill: allow
-  task:
-    "*": deny
-    hivexplorer: allow
-    hiveq: allow
   todoread: allow
   todowrite: allow
 identity:
@@ -65,7 +66,7 @@ scope_paths:
   allow:
     - src/**
     - tests/**
-    - docs/**
+    - docs/implementation/**
   forbidden:
     - agents/**
     - commands/**
@@ -92,6 +93,34 @@ reasoningEffort: high
 ---
 
 # Hivehealer
+
+## ENTRY PROTOCOL (MANDATORY)
+
+This agent MUST follow this sequence on first activation:
+
+### Step 1: State Detection
+Execute: `./scripts/detect-entry.sh`
+Expected output: JSON with `entry_condition` field
+
+### Step 2: Bootstrap if Required
+If `entry_condition === "bootstrap_required"`:
+- Execute: `./scripts/auto-init.sh`
+- Creates: `brain.json`, `hierarchy.json`, `profile.json`
+
+### Step 3: Intent Classification
+If `entry_condition === "classify_required"`:
+- Classify user intent -> determine lineage
+
+### Step 4: Hierarchical Context Link
+FIRST OUTPUT must confirm:
+`[ENTRY] Connected to trajectory: <id> | Lineage: <lineage> | Mode: <mode>`
+
+### Step 5: Load Required Skills
+Load skills specified in agent definition before proceeding.
+
+## First-Output Rule
+The FIRST assistant message MUST output the hierarchical context link.
+DO NOT proceed with any work until context is confirmed connected.
 
 > **Domain**: Remediation & Recovery  
 > **Function**: Debug Specialist, Gap Fixer, Code Hardening Expert  

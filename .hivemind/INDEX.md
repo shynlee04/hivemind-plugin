@@ -1,16 +1,16 @@
 ---
 type: index
 structure_version: "2.0.0"
-generated: 2026-03-05T16:16:35.658Z
+generated: 2026-03-05T17:49:25.814Z
 ---
 # .hivemind — Context Governance State
 
 ## Current State
-- Mode: exploration | Governance: OPEN
-- Trajectory: Cross-domain conflict detection analysis for 7-phase architecture validation
+- Mode: quick_fix | Governance: OPEN
+- Trajectory: QA verification for 7-phase test integrity and contract compliance
 - Tactic: 
 - Turns: 0 | Drift: 100/100
-- Active: 162305032026
+- Active: 490006032026
 
 ## Quick Navigation
 - sessions/active/

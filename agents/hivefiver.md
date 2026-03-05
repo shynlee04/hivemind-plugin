@@ -13,12 +13,14 @@ permission:
   grep: deny
   skill: allow
   hivemind_*: deny
-  scan_hierarchy: deny
-  think_back: deny
   save_anchor: deny
   save_mem: deny
-  recall_mems: deny
   export_cycle: deny
+  hivemind_inspect: allow
+  hivemind_cycle: allow
+  scan_hierarchy: allow
+  think_back: allow
+  recall_mems: allow
   map_context: deny
   declare_intent: deny
   compact_session: deny
@@ -34,14 +36,13 @@ permission:
     "hivexplorer": allow
     "hiveplanner": allow
     "hiverd": allow
-    "hiveplanner": allow
     "hivemaker": allow
     "hiveq": allow
   bash:
     "*": deny
     ".opencode/**": allow
     ".hivemind/**": allow
-    "docs/**": allow
+    "docs/framework/**": allow
     "agents/**": allow
     "commands/**": allow
     "workflows/**": allow
@@ -83,7 +84,7 @@ permission:
     "tools/**": allow 
     "modules/**": allow
     "bridges/**": allow
-    "docs/**": allow
+    "docs/framework/**": allow
   external_directory: ask # allow to access external directory. It is human-user's decisions
 identity:
   role: meta_builder
@@ -91,7 +92,7 @@ scope:
   allowed:
     - ".opencode/**"
     - ".hivemind/**"
-    - "docs/**"
+    - "docs/framework/**"
     - "agents/**"
     - "commands/**"
     - "workflows/**"
@@ -111,7 +112,6 @@ delegation_policy:
     - hivehealer
     - hitea
     - hivemaker # the human-user's decisions to use when need dev's executions
-    - hiverd # the human-user's decisions to use when need external research and mcp research
     - hiveq # the human-user's decisions to use when need Quality and verification specialist. Use when auditing code quality, running verification gates, or producing pass/fail evidence and compliance verdicts.
   recursive_delegation: false
 ---

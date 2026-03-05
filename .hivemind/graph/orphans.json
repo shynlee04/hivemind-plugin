@@ -434,6 +434,78 @@
         "updated_at": "2026-03-05T16:11:37.494Z"
       },
       "quarantined_at": "2026-03-05T16:11:37.500Z"
+    },
+    {
+      "id": "618051c9-2091-4579-929b-6e39df9504b8",
+      "type": "mem",
+      "reason": "session_id 16db4371-d9de-40df-9829-9a960edf137c not found in valid session lineage",
+      "original_data": {
+        "id": "618051c9-2091-4579-929b-6e39df9504b8",
+        "session_id": "16db4371-d9de-40df-9829-9a960edf137c",
+        "origin_task_id": null,
+        "shelf": "research",
+        "type": "insight",
+        "content": "QA verification run completed: npm test reports 230 pass, 0 fail; npx tsc --noEmit passes; new tests validate ancestor chain and introspect action while Domain2/3/4 coverage comes from existing suites.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-03-05T17:50:13.456Z",
+        "created_at": "2026-03-05T17:50:13.456Z",
+        "updated_at": "2026-03-05T17:50:13.456Z"
+      },
+      "quarantined_at": "2026-03-05T17:50:13.466Z"
+    },
+    {
+      "id": "de74d6cd-e071-4e75-8d1d-3adf3c8e8026",
+      "type": "mem",
+      "reason": "session_id f3345a37-b63a-4370-828e-8389d63d9495 not found in valid session lineage",
+      "original_data": {
+        "id": "de74d6cd-e071-4e75-8d1d-3adf3c8e8026",
+        "session_id": "f3345a37-b63a-4370-828e-8389d63d9495",
+        "origin_task_id": "7062bde0-7541-4443-9394-dcb769290d27",
+        "shelf": "context",
+        "type": "insight",
+        "content": "Lifecycle compact trace: Domain 2 validation complete - all checks passed. Handoff created for continuation.",
+        "relevance_score": 0.8,
+        "staleness_stamp": "2026-03-05T16:12:25.667Z",
+        "created_at": "2026-03-05T16:12:25.667Z",
+        "updated_at": "2026-03-05T16:12:25.667Z"
+      },
+      "quarantined_at": "2026-03-05T17:56:43.972Z"
+    },
+    {
+      "id": "70f3f682-9629-4ae9-ba3b-ee6c383e32ac",
+      "type": "mem",
+      "reason": "session_id 16db4371-d9de-40df-9829-9a960edf137c not found in valid session lineage",
+      "original_data": {
+        "id": "70f3f682-9629-4ae9-ba3b-ee6c383e32ac",
+        "session_id": "16db4371-d9de-40df-9829-9a960edf137c",
+        "origin_task_id": null,
+        "shelf": "research",
+        "type": "insight",
+        "content": "External research completed: Multi-agent validation methodologies - LangGraph StateGraph for workflow validation, Semgrep for custom architecture rules, TypeScript ESLint for module boundaries, Microsoft Multi-Agent Reference Architecture for boundary patterns",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-03-05T18:01:48.350Z",
+        "created_at": "2026-03-05T18:01:48.350Z",
+        "updated_at": "2026-03-05T18:01:48.350Z"
+      },
+      "quarantined_at": "2026-03-05T18:01:48.355Z"
+    },
+    {
+      "id": "776fd33c-1c2f-4683-aa4a-accaa6fc4b31",
+      "type": "mem",
+      "reason": "session_id 16db4371-d9de-40df-9829-9a960edf137c not found in valid session lineage",
+      "original_data": {
+        "id": "776fd33c-1c2f-4683-aa4a-accaa6fc4b31",
+        "session_id": "16db4371-d9de-40df-9829-9a960edf137c",
+        "origin_task_id": null,
+        "shelf": "verification",
+        "type": "insight",
+        "content": "QA verification run completed for test contract compliance task: npm test pass 248/0, tsc pass, boundary lint pass",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-03-05T19:15:41.390Z",
+        "created_at": "2026-03-05T19:15:41.390Z",
+        "updated_at": "2026-03-05T19:15:41.390Z"
+      },
+      "quarantined_at": "2026-03-05T19:15:41.396Z"
     }
   ]
 }

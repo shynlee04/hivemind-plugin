@@ -40,10 +40,15 @@ import { detectLongSession } from "../lib/long-session.js"
 import {
   createTurnInjectionKey,
   createTurnInjectionLedger,
+  detectInjectionPresence,
   getRemainingBudget,
   reserveInjectionBudget,
 } from "../lib/injection-orchestrator.js"
 import { shouldSuppressHumanFacingGovernance } from "../lib/session-role.js"
+import {
+  computeSharedInjectionCapChars,
+  estimateContextWindowChars,
+} from "../lib/budget.js"
 
 type MessagePart = {
   id?: string
@@ -329,6 +334,14 @@ function appendSyntheticPart(message: MessageV2, text: string): void {
   message.content = [syntheticPart] // Fallback
 }
 
+/**
+ * Create the messages transform hook used for first-turn coherence,
+ * cognitive context anchoring, and checklist injection.
+ *
+ * @param _log Hook logger used for warning surfaces.
+ * @param directory Project directory for state/config resolution.
+ * @returns A hook that injects shared-budgeted message context.
+ */
 export function createMessagesTransformHook(_log: { warn: (message: string) => Promise<void> }, directory: string) {
   const stateManager = createStateManager(directory)
   const injectedSessionIds = new Set<string>()
@@ -347,8 +360,9 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
 
       const state = await stateManager.load()
 
-      const maxResponseTokens = config.agent_behavior?.constraints?.max_response_tokens ?? 4096
-      const approxContextWindowChars = Math.max(8000, Math.floor(maxResponseTokens * 4))
+      const maxResponseTokens = config.agent_behavior?.constraints?.max_response_tokens
+      const approxContextWindowChars = estimateContextWindowChars(maxResponseTokens)
+      const sharedInjectionCapChars = computeSharedInjectionCapChars(maxResponseTokens)
       const resolvedSessionId = state?.session?.id || "unknown-session"
       const turnCount = state?.metrics?.turn_count ?? 0
       const turnKey = createTurnInjectionKey(resolvedSessionId, turnCount)
@@ -356,8 +370,11 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         sessionId: resolvedSessionId,
         turnCount,
         contextWindowChars: approxContextWindowChars,
+        capCharsOverride: sharedInjectionCapChars,
       })
       const suppressHumanFacing = state ? shouldSuppressHumanFacingGovernance(state) : false
+      const injectionPresence = detectInjectionPresence({ messages: output.messages })
+      const pluginMessagePresent = injectionPresence.plugin_message
 
       const reserveCoreMessageText = (text: string): string | null => {
         if (!text.trim()) return null
@@ -593,25 +610,27 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         }
 
         // === PHASE 5: Cognitive Packer Injection ===
-        const checklistReserve = 900
-        const remainingBeforeCognitive = getRemainingBudget(turnKey)
-        const availableForCognitive = Math.max(0, remainingBeforeCognitive - checklistReserve)
-        if (availableForCognitive > 160) {
-          const packedContext = packCognitiveState(directory, {
-            budget: Math.max(240, Math.min(1200, Math.floor(availableForCognitive * 0.85))),
-          })
-          if (!isEmptyPackedContext(packedContext)) {
-            const packedContextBounded = reserveCoreMessageText(packedContext)
-            if (packedContextBounded) {
-              prependSyntheticPart(output.messages[index], packedContextBounded)
+        if (!pluginMessagePresent) {
+          const checklistReserve = 900
+          const remainingBeforeCognitive = getRemainingBudget(turnKey)
+          const availableForCognitive = Math.max(0, remainingBeforeCognitive - checklistReserve)
+          if (availableForCognitive > 160) {
+            const packedContext = packCognitiveState(directory, {
+              budget: Math.max(240, Math.min(1200, Math.floor(availableForCognitive * 0.85))),
+            })
+            if (!isEmptyPackedContext(packedContext)) {
+              const packedContextBounded = reserveCoreMessageText(packedContext)
+              if (packedContextBounded) {
+                prependSyntheticPart(output.messages[index], packedContextBounded)
+              }
             }
           }
-        }
 
-        // === PHASE 6: Contextual Anchoring ===
-        const anchorHeader = reserveCoreMessageText(buildAnchorContext(state))
-        if (anchorHeader) {
-          prependSyntheticPart(output.messages[index], anchorHeader)
+          // === PHASE 6: Contextual Anchoring ===
+          const anchorHeader = reserveCoreMessageText(buildAnchorContext(state))
+          if (anchorHeader) {
+            prependSyntheticPart(output.messages[index], anchorHeader)
+          }
         }
 
         // === PHASE 7: Pre-Stop Checklist Assembly ===

@@ -30,6 +30,12 @@ Unified MUST pack (auto-executed — intent/profile/journey obligations):
 Note: audit always passes gate check — it bypasses the pipeline.
 </enforcement>
 
+## Non-Interactive Shell Awareness (Canonical)
+
+- Shell is non-interactive (no TTY/PTY). Never run commands that wait for prompts or UI input.
+- Always use non-interactive flags and explicit messages (`-y`, `--yes`, `--non-interactive`, `--no-edit`, `-f`).
+- If a tool can still block, provide deterministic input (`yes |`, heredoc) or fail fast with a timeout.
+
 <objective>
 Scan all framework assets under `.opencode/` for contract violations, dead references, anti-pattern violations, and drift — producing a severity-ranked findings report.
 </objective>
