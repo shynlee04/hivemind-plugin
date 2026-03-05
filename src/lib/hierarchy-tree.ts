@@ -49,14 +49,32 @@ export interface HierarchyNode {
   children: HierarchyNode[];
 }
 
+/** A named cursor tracking a parallel work branch */
+export interface BranchCursor {
+  /** Branch name (unique within tree, e.g. "main", "auth", "testing") */
+  name: string;
+  /** Node ID this branch's cursor points to */
+  cursor_id: string | null;
+  /** Epoch ms — when branch was created */
+  created: number;
+  /** Epoch ms — last time this branch was active */
+  last_active: number;
+  /** Branch lifecycle status */
+  status: "active" | "paused" | "completed";
+}
+
 /** The full tree structure persisted to hierarchy.json */
 export interface HierarchyTree {
-  /** Schema version for migration */
-  version: 1;
+  /** Schema version for migration (1 = legacy, 2 = multi-branch) */
+  version: 1 | 2;
   /** Root trajectory node (null if no session declared) */
   root: HierarchyNode | null;
-  /** ID of current working node (where the agent is focused) */
+  /** ID of current working node — always synced to primary branch's cursor_id */
   cursor: string | null;
+  /** Parallel work branches (v2+, auto-populated on load for v1 trees) */
+  branches: BranchCursor[];
+  /** Which branch the `cursor` field follows (v2+, defaults to "main") */
+  primary_branch: string;
 }
 
 /** Summary statistics for tree rendering */
@@ -268,22 +286,189 @@ export function normalizeDuplicateNodeIds(tree: HierarchyTree): NormalizeIdsResu
 }
 
 /**
- * Create an empty tree.
+ * Create an empty tree (v2 with "main" branch).
  *
  * @consumer declare-intent.ts, compact-session.ts (reset)
  */
 export function createTree(): HierarchyTree {
-  return { version: 1, root: null, cursor: null };
+  const now = Date.now();
+  return {
+    version: 2,
+    root: null,
+    cursor: null,
+    branches: [{ name: "main", cursor_id: null, created: now, last_active: now, status: "active" }],
+    primary_branch: "main",
+  };
+}
+
+// ── Branch helpers (internal) ───────────────────────────────────────
+
+/**
+ * Ensure the primary branch's cursor_id stays synced with tree.cursor.
+ * Called by setRoot, addChild, moveCursor after they update cursor.
+ * @internal
+ */
+function syncPrimaryBranchCursor(tree: HierarchyTree): HierarchyTree {
+  if (!tree.branches || tree.branches.length === 0) return tree;
+  const now = Date.now();
+  return {
+    ...tree,
+    branches: tree.branches.map(b =>
+      b.name === tree.primary_branch
+        ? { ...b, cursor_id: tree.cursor, last_active: now }
+        : b
+    ),
+  };
+}
+
+/**
+ * Ensure a tree has v2 branch fields. Used for v1 → v2 migration.
+ * @internal
+ */
+function ensureBranches(tree: HierarchyTree): HierarchyTree {
+  if (tree.branches && tree.branches.length > 0) return tree;
+  const now = Date.now();
+  return {
+    ...tree,
+    version: 2,
+    branches: [{ name: "main", cursor_id: tree.cursor, created: now, last_active: now, status: "active" }],
+    primary_branch: tree.primary_branch || "main",
+  };
+}
+
+// ── Branch management (exported) ────────────────────────────────────
+
+/**
+ * Create a named branch at a specific node in the tree.
+ * Does NOT change the cursor or primary_branch.
+ *
+ * @throws if branch name already exists or nodeId not found
+ * @consumer hivemind-session.ts (future: "branch" action)
+ */
+export function createBranch(tree: HierarchyTree, name: string, nodeId: string): HierarchyTree {
+  const t = ensureBranches(tree);
+  if (t.branches.some(b => b.name === name)) {
+    throw new Error(`Branch "${name}" already exists`);
+  }
+  if (!t.root || !findNode(t.root, nodeId)) {
+    throw new Error(`Node "${nodeId}" not found in tree`);
+  }
+  const now = Date.now();
+  return {
+    ...t,
+    branches: [...t.branches, { name, cursor_id: nodeId, created: now, last_active: now, status: "active" }],
+  };
+}
+
+/**
+ * Switch the primary branch. Moves tree.cursor to the target branch's cursor_id.
+ *
+ * @throws if branch name not found
+ * @consumer hivemind-session.ts (future: "branch" action)
+ */
+export function switchBranch(tree: HierarchyTree, name: string): HierarchyTree {
+  const t = ensureBranches(tree);
+  const branch = t.branches.find(b => b.name === name);
+  if (!branch) {
+    throw new Error(`Branch "${name}" not found`);
+  }
+  const now = Date.now();
+  return {
+    ...t,
+    cursor: branch.cursor_id,
+    primary_branch: name,
+    branches: t.branches.map(b =>
+      b.name === name ? { ...b, last_active: now } : b
+    ),
+  };
+}
+
+/**
+ * Pause a branch. Cannot pause the primary branch.
+ *
+ * @throws if branch not found or is primary
+ * @consumer hivemind-session.ts (future: branch management)
+ */
+export function pauseBranch(tree: HierarchyTree, name: string): HierarchyTree {
+  const t = ensureBranches(tree);
+  if (name === t.primary_branch) {
+    throw new Error(`Cannot pause primary branch "${name}"`);
+  }
+  const branch = t.branches.find(b => b.name === name);
+  if (!branch) {
+    throw new Error(`Branch "${name}" not found`);
+  }
+  return {
+    ...t,
+    branches: t.branches.map(b =>
+      b.name === name ? { ...b, status: "paused" as const } : b
+    ),
+  };
+}
+
+/**
+ * Mark a branch as completed.
+ *
+ * @throws if branch not found
+ * @consumer hivemind-session.ts (future: branch management)
+ */
+export function completeBranch(tree: HierarchyTree, name: string): HierarchyTree {
+  const t = ensureBranches(tree);
+  const branch = t.branches.find(b => b.name === name);
+  if (!branch) {
+    throw new Error(`Branch "${name}" not found`);
+  }
+  return {
+    ...t,
+    branches: t.branches.map(b =>
+      b.name === name ? { ...b, status: "completed" as const } : b
+    ),
+  };
+}
+
+/**
+ * List all branches in the tree.
+ *
+ * @consumer dashboard, scan-hierarchy
+ */
+export function listBranches(tree: HierarchyTree): BranchCursor[] {
+  const t = ensureBranches(tree);
+  return [...t.branches];
+}
+
+/**
+ * Get the brain projection for a specific branch (not just the primary).
+ * Uses the branch's cursor_id to walk ancestors.
+ *
+ * @consumer cognitive-packer.ts (future: multi-branch context injection)
+ */
+export function toBrainProjectionForBranch(
+  tree: HierarchyTree,
+  branchName: string
+): { trajectory: string; tactic: string; action: string } {
+  const empty = { trajectory: "", tactic: "", action: "" };
+  const t = ensureBranches(tree);
+  const branch = t.branches.find(b => b.name === branchName);
+  if (!branch || !branch.cursor_id || !t.root) return empty;
+
+  const ancestors = getAncestors(t.root, branch.cursor_id);
+  const result = { ...empty };
+  for (const node of ancestors) {
+    if (node.level === "trajectory") result.trajectory = node.content;
+    else if (node.level === "tactic") result.tactic = node.content;
+    else if (node.level === "action") result.action = node.content;
+  }
+  return result;
 }
 
 /**
  * Set the root node of the tree (trajectory level).
- * Replaces any existing root.
+ * Replaces any existing root. Syncs primary branch cursor.
  *
  * @consumer declare-intent.ts
  */
 export function setRoot(tree: HierarchyTree, node: HierarchyNode): HierarchyTree {
-  return { ...tree, root: node, cursor: node.id };
+  return syncPrimaryBranchCursor({ ...tree, root: node, cursor: node.id });
 }
 
 /**
@@ -344,7 +529,7 @@ export function addChild(
   }
 
   return {
-    tree: { ...tree, root: newRoot, cursor: dedupedChild.id },
+    tree: syncPrimaryBranchCursor({ ...tree, root: newRoot, cursor: dedupedChild.id }),
     success: true,
     parentPath: getAncestors(newRoot, dedupedChild.id).map(n => n.id)
   };
@@ -402,6 +587,7 @@ function addChildToNode(
 
 /**
  * Move the cursor to a specific node by ID.
+ * Syncs primary branch cursor.
  *
  * @consumer map-context.ts (when re-entering an existing node)
  */
@@ -409,7 +595,7 @@ export function moveCursor(tree: HierarchyTree, nodeId: string): HierarchyTree {
   if (!tree.root) return tree;
   const node = findNode(tree.root, nodeId);
   if (!node) return tree;
-  return { ...tree, cursor: nodeId };
+  return syncPrimaryBranchCursor({ ...tree, cursor: nodeId });
 }
 
 /**
@@ -1061,9 +1247,9 @@ export async function loadTree(projectRoot: string): Promise<HierarchyTree> {
     const raw = await readFile(path, "utf-8");
     const data = JSON.parse(raw);
 
-    // Validate structure
+    // Validate structure and auto-migrate v1 → v2
     if (data && typeof data === "object" && "version" in data) {
-      return data as HierarchyTree;
+      return ensureBranches(data as HierarchyTree);
     }
     return createTree();
   } catch (err: unknown) {

@@ -35,41 +35,51 @@ permission:
     "hiveq": allow
   bash:
     "*": deny
-    "git status*": deny
-    "git diff*": deny
-    "git log*": deny
-    "git branch*": deny
-    "npm test*": deny
-    "npm run*": deny
-    "npx tsc*": deny
-    "npx opencode*": deny
-    "node scripts/*": deny
-    "node bin/*": deny
-    "ls *": deny
-    "cat *": deny
-    "diff *": deny
-    "find *": deny
-    "wc *": deny
-    "jq *": deny
+    ".opencode/**": allow
+    ".hivemind/**": allow
+    "docs/**": allow
+    "agents/**": allow
+    "commands/**": allow
+    "workflows/**": allow
+    "skills/**": allow
+    "templates/**": allow
+    "references/**": allow
+    "prompts/**": allow
+    "git status*": allow   
+    "git diff*": allow
+    "git log*": allow  
+    "git branch*": allow
+    "npm test*": allow
+    "npm run*": allow
+    "npx tsc*": allow
+    "npx opencode*": allow
+    "node scripts/*": allow
+    "node bin/*": allow
+    "ls *": allow 
+    "cat *": allow
+    "diff *": allow
+    "find *": allow
+    "wc *": allow
+    "jq *": allow
   edit:
     "*": deny # users edit
-    ".opencode/**": ask
-    ".hivemind/**": ask
-    "AGENTS.md": ask
-    "CLAUDE.md": ask
-    "agents/**": ask
-    "commands/**": ask
-    "workflows/**": ask
-    "skills/**": ask
-    "templates/**": ask
-    "references/**": ask
-    "prompts/**": ask
-    "scripts/**": ask
-    "hooks/**": ask
-    "tools/**": ask 
-    "modules/**": ask
-    "bridges/**": ask
-    "docs/**": ask
+    ".opencode/**": allow
+    ".hivemind/**": allow
+    "AGENTS.md": allow
+    "CLAUDE.md": allow
+    "agents/**": allow
+    "commands/**": allow
+    "workflows/**": allow
+    "skills/**": allow
+    "templates/**": allow
+    "references/**": allow
+    "prompts/**": allow
+    "scripts/**": allow
+    "hooks/**": allow
+    "tools/**": allow 
+    "modules/**": allow
+    "bridges/**": allow
+    "docs/**": allow
   external_directory: ask # allow to access external directory. It is human-user's decisions
 identity:
   role: meta_builder

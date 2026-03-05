@@ -12,5 +12,4 @@ export * from "./events.js";
 export * from "./governance-constitution.js";
 export * from "./delegation-packet.js";
 export * from "./skill-registry.js";
-export * from "./execution-knot.js";
 export * from "./planning.js";

@@ -285,6 +285,32 @@ export function buildContextInjectionHook(state: {
 
     contextLines.push("")
 
+    // Entry detection + first-turn classification context
+    if (state.current.entryDetection) {
+      const detection = state.current.entryDetection
+      contextLines.push("### Entry Detection")
+      contextLines.push(
+        `- entry_condition=${detection.entry_condition} lineage=${detection.lineage} state_exists=${detection.state_exists}`,
+      )
+      contextLines.push(
+        `- hierarchy_status=${detection.hierarchy_status} trajectory_status=${detection.trajectory_status}`,
+      )
+      if (detection.bootstrap_executed) {
+        contextLines.push("- auto_init=executed")
+      }
+      contextLines.push("")
+    }
+
+    if (state.current.intentClassification) {
+      const classification = state.current.intentClassification
+      contextLines.push("### Intent Classification")
+      contextLines.push(
+        `- lineage=${classification.lineage} source=${classification.source} persisted_to_brain=${classification.persisted_to_brain}`,
+      )
+      contextLines.push(`- input_excerpt=${classification.input_excerpt}`)
+      contextLines.push("")
+    }
+
     // Active TODO
     contextLines.push("### Active TODO")
     contextLines.push(formatActiveTodo(todoState))

@@ -107,6 +107,8 @@ export function createEnforcementState(sessionId: string, agent: string): Enforc
     scopeViolations: [],
     turnCount: 0,
     lastCheckpoint: Date.now(),
+    classificationPending: false,
+    classificationDone: false,
   }
 }
 

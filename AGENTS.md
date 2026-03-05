@@ -254,3 +254,4 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 - `.hivemind/sessions/` — Session files and archives
 
 <!-- HIVEMIND-GOVERNANCE-END -->
+

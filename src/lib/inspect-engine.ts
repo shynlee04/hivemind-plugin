@@ -13,6 +13,7 @@ import {
   computeCurrentGap,
   treeExists,
   getTreeStats,
+  listBranches,
 } from "./hierarchy-tree.js"
 
 type HierarchyState = {
@@ -57,6 +58,8 @@ export interface ScanResult {
   treeAscii?: string
   anchorsPreview?: Array<{ key: string; value: string }>
   memShelfSummary?: Record<string, number>
+  branches?: Array<{ name: string; status: string; cursor_id: string | null }>
+  primary_branch?: string
 }
 
 export interface InspectResult {
@@ -87,6 +90,8 @@ export interface InspectResult {
     lines: string[]
     truncatedCount: number
   }
+  branches?: Array<{ name: string; status: string; cursor_id: string | null }>
+  primary_branch?: string
 }
 
 export interface DriftReport {
@@ -142,16 +147,18 @@ export async function scanState(directory: string): Promise<ScanResult> {
     },
     treeStats: treeStats
       ? {
-          totalNodes: treeStats.totalNodes,
-          depth: treeStats.depth,
-          activeNodes: treeStats.activeNodes,
-          completedNodes: treeStats.completedNodes,
-          pendingNodes: treeStats.pendingNodes,
-        }
+        totalNodes: treeStats.totalNodes,
+        depth: treeStats.depth,
+        activeNodes: treeStats.activeNodes,
+        completedNodes: treeStats.completedNodes,
+        pendingNodes: treeStats.pendingNodes,
+      }
       : null,
     anchorCount: scopedAnchors.length,
     memCount: scopedMems.length,
     treeAscii: tree?.root ? toAsciiTree(tree) : undefined,
+    branches: tree ? listBranches(tree).map(b => ({ name: b.name, status: b.status, cursor_id: b.cursor_id })) : undefined,
+    primary_branch: tree?.primary_branch,
     anchorsPreview: scopedAnchors.slice(0, 5).map((a) => ({ key: a.key, value: a.value.slice(0, 60) })),
     memShelfSummary: getMemShelfSummary(scopedMems),
   }
@@ -203,11 +210,11 @@ export async function deepInspect(directory: string, _target: string): Promise<I
     },
     cursor: cursorNode
       ? {
-          id: cursorNode.id,
-          level: cursorNode.level,
-          content: cursorNode.content,
-          status: cursorNode.status,
-        }
+        id: cursorNode.id,
+        level: cursorNode.level,
+        content: cursorNode.content,
+        status: cursorNode.status,
+      }
       : null,
     cursorPath: ancestors.map((n) => ({ level: n.level, content: n.content, stamp: n.stamp })),
     metrics: {
@@ -222,6 +229,8 @@ export async function deepInspect(directory: string, _target: string): Promise<I
     anchors: scopedAnchors.map((a) => ({ key: a.key, value: a.value })),
     filesTouched: state.metrics.files_touched.slice(0, 10),
     treeAscii: tree?.root ? toAsciiTree(tree) : undefined,
+    branches: tree ? listBranches(tree).map(b => ({ name: b.name, status: b.status, cursor_id: b.cursor_id })) : undefined,
+    primary_branch: tree?.primary_branch,
     planSection,
   }
 }

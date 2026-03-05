@@ -46,6 +46,30 @@ export interface EnforcementState {
   scopeViolations: ScopeViolation[]
   turnCount: number
   lastCheckpoint: number
+  entryDetection?: EntryDetection
+  intentClassification?: IntentClassification
+  classificationPending?: boolean
+  classificationDone?: boolean
+}
+
+/** Entry detection result from scripts/detect-entry.sh */
+export interface EntryDetection {
+  state_exists: boolean
+  lineage: "hivefiver" | "hiveminder" | "unresolved"
+  hierarchy_status: string
+  trajectory_status: string
+  entry_condition: "bootstrap_required" | "classify_required" | "ready"
+  detected_at: number
+  bootstrap_executed?: boolean
+}
+
+/** First-turn classification result from scripts/classify-intent.sh */
+export interface IntentClassification {
+  lineage: "hivefiver" | "hiveminder" | "unresolved"
+  classified_at: number
+  source: "classify-intent.sh"
+  input_excerpt: string
+  persisted_to_brain: boolean
 }
 
 /** Scope violation record */

@@ -1,0 +1,11 @@
+{
+  "anchors": [
+    {
+      "key": "entry-protocol-centralization",
+      "value": "Created universal entry-protocol skill and wired it first in all agent frontmatter",
+      "created_at": 1772683843177,
+      "session_id": "b74b5357-4f97-4669-923f-8cf34e79e8bf"
+    }
+  ],
+  "version": "1.0.0"
+}

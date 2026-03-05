@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "root": {
+    "id": "t_061105032026",
+    "level": "trajectory",
+    "content": "Eliminate duplicated agent entry routing and enforce a single universal protocol",
+    "status": "active",
+    "created": 1772683602429,
+    "stamp": "061105032026",
+    "children": [
+      {
+        "id": "tc_061105032026",
+        "level": "tactic",
+        "content": "Centralize entry protocol in one shared skill and remove duplicates from prime skills",
+        "status": "active",
+        "created": 1772683608248,
+        "stamp": "061105032026",
+        "children": [
+          {
+            "id": "a_061105032026",
+            "level": "action",
+            "content": "Create entry-protocol skill file, update agent skills order, strip duplicate prime entry sections",
+            "status": "pending",
+            "created": 1772683609014,
+            "stamp": "061105032026",
+            "children": []
+          },
+          {
+            "id": "a_101105032026",
+            "level": "action",
+            "content": "Verify entry-protocol centralization changes and capture evidence",
+            "status": "active",
+            "created": 1772683819721,
+            "stamp": "101105032026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_111105032026",
+        "level": "tactic",
+        "content": "Entry protocol centralized into one universal skill and wired as first skill in all agent frontmatter",
+        "status": "active",
+        "created": 1772683889228,
+        "stamp": "111105032026",
+        "children": [
+          {
+            "id": "a_111105032026",
+            "level": "action",
+            "content": "Completed centralization edits and captured verification evidence",
+            "status": "active",
+            "created": 1772683896910,
+            "stamp": "111105032026",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "cursor": "a_111105032026"
+}

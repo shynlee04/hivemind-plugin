@@ -89,8 +89,9 @@ function test_crud() {
   // createTree
   const tree = createTree();
   assert(
-    tree.version === 1 && tree.root === null && tree.cursor === null,
-    "createTree returns { version:1, root:null, cursor:null }"
+    tree.version === 2 && tree.root === null && tree.cursor === null &&
+    tree.branches.length === 1 && tree.primary_branch === "main",
+    "createTree returns v2 { version:2, root:null, cursor:null, branches:[main], primary_branch:'main' }"
   );
 
   // createNode
@@ -428,7 +429,8 @@ function test_normalize_duplicate_ids() {
     id: duplicateId,
   });
 
-  const tree = { version: 1 as const, root, cursor: duplicateId };
+  const now = Date.now();
+  const tree = { version: 1 as const, root, cursor: duplicateId, branches: [{ name: "main", cursor_id: duplicateId, created: now, last_active: now, status: "active" as const }], primary_branch: "main" };
   const normalized = normalizeDuplicateNodeIds(tree);
   const ids = normalized.tree.root ? normalized.tree.root.children.map((n) => n.id) : [];
 

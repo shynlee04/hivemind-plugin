@@ -1,0 +1,403 @@
+{
+  "version": "1.0.0",
+  "orphans": [
+    {
+      "id": "fdd78f5c-8682-5307-8379-1110aa604ce8",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "fdd78f5c-8682-5307-8379-1110aa604ce8",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "PHASE 1: AUDIT - Map full horizontal matrix of both lineages (skills, tools, plugins, commands)",
+        "status": "complete",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:22:20.122Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "critical"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "81256592-4010-5458-a1d9-2c8f5b7568e7",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "81256592-4010-5458-a1d9-2c8f5b7568e7",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "PHASE 2: DESIGN - Create universal entry orchestrator specification",
+        "status": "complete",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:22:20.122Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "33135f0d-b96e-51ea-8b13-bb940bc7fc6e",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "33135f0d-b96e-51ea-8b13-bb940bc7fc6e",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "PHASE 3: APPROVAL - Get user confirmation on skill design",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:22:20.122Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "critical"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "1accc870-19dd-551a-80f6-4dd38de4844d",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "1accc870-19dd-551a-80f6-4dd38de4844d",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "PHASE 4: TDD RED - Run pressure scenarios without skill (baseline)",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:22:20.122Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "dd9625f3-a43e-5879-83aa-08fb95c838ce",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "dd9625f3-a43e-5879-83aa-08fb95c838ce",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "PHASE 5: TDD GREEN - Write minimal skill addressing failures",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:22:20.122Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "0863da74-6e6b-59e4-a8b3-babe571b277f",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "0863da74-6e6b-59e4-a8b3-babe571b277f",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "PHASE 6: TDD REFACTOR - Close loopholes, bulletproof",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:22:20.122Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "4e7293ad-de7a-5259-9937-a2aee305261c",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "4e7293ad-de7a-5259-9937-a2aee305261c",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "PHASE 7: VALIDATE - Evaluate with skill-judge 8-dimension criteria",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:22:20.122Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "73a3abf5-53a3-581b-9be7-f156a0f6d1cf",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "73a3abf5-53a3-581b-9be7-f156a0f6d1cf",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "HARD STOP - Awaiting user approval before proceeding",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:22:20.122Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "critical"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "96adfddf-0023-5563-ade9-e6868082af1d",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "96adfddf-0023-5563-ade9-e6868082af1d",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "PHASE 2: SYNTHESIS - Design progressive research-synthesis workflow spec",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:11:52.129Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "d3de2ecc-e456-5aca-94c1-1d6a36d75bba",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "d3de2ecc-e456-5aca-94c1-1d6a36d75bba",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "PHASE 3: VALIDATION - Get user approval on skill specs before implementation",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:11:52.129Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "critical"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "3fbfb280-228f-51ab-81b4-3c48e34c4505",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "3fbfb280-228f-51ab-81b4-3c48e34c4505",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "HARD STOP - Awaiting user approval before any skill implementation",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:11:52.129Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: build | command: hivefiver build | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-domain-pack-router",
+        "priority": "critical"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "184b14b4-495e-504a-b0ce-e1f2e4eb3256",
+      "type": "task",
+      "reason": "parent_phase_id bc725e5c-ca04-5e5c-bdff-2162d6065f27 not found in valid phases",
+      "original_data": {
+        "id": "184b14b4-495e-504a-b0ce-e1f2e4eb3256",
+        "parent_phase_id": "bc725e5c-ca04-5e5c-bdff-2162d6065f27",
+        "title": "HARD STOP - Awaiting user approval before any skill implementation",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T01:43:05.815Z",
+        "updated_at": "2026-03-05T01:05:37.709Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: build | command: hivefiver build | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-domain-pack-router",
+        "priority": "critical"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "a3e28de9-786e-57fc-8922-0df1ba445e5e",
+      "type": "task",
+      "reason": "parent_phase_id fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378 not found in valid phases",
+      "original_data": {
+        "id": "a3e28de9-786e-57fc-8922-0df1ba445e5e",
+        "parent_phase_id": "fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378",
+        "title": "PHASE 1: Bootstrap State Infrastructure - Create missing state files and directories",
+        "status": "in_progress",
+        "file_locks": [],
+        "created_at": "2026-03-05T03:51:22.157Z",
+        "updated_at": "2026-03-05T03:48:37.641Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "bc29c1eb-2303-55fc-a1d5-0d091603afd1",
+      "type": "task",
+      "reason": "parent_phase_id fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378 not found in valid phases",
+      "original_data": {
+        "id": "bc29c1eb-2303-55fc-a1d5-0d091603afd1",
+        "parent_phase_id": "fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378",
+        "title": "PHASE 2: Create Entry Enforcement Hook Plugin - Hook scripts into session lifecycle",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T03:51:22.157Z",
+        "updated_at": "2026-03-05T03:48:37.641Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "89be9579-a6aa-5c80-a1e9-c9c80611a84d",
+      "type": "task",
+      "reason": "parent_phase_id fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378 not found in valid phases",
+      "original_data": {
+        "id": "89be9579-a6aa-5c80-a1e9-c9c80611a84d",
+        "parent_phase_id": "fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378",
+        "title": "PHASE 3: Fix All Agent Entry Protocols - Ensure all agents have proper first-load requirements",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T03:51:22.157Z",
+        "updated_at": "2026-03-05T03:48:37.641Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "fe89dcf3-bfc4-5f20-997f-7cde64247ffc",
+      "type": "task",
+      "reason": "parent_phase_id fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378 not found in valid phases",
+      "original_data": {
+        "id": "fe89dcf3-bfc4-5f20-997f-7cde64247ffc",
+        "parent_phase_id": "fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378",
+        "title": "PHASE 4: Sync Skills with Journey Spec - Align all skills with dual-lineage requirements",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T03:51:22.157Z",
+        "updated_at": "2026-03-05T03:48:37.641Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "44401657-53b7-581e-9424-ec1e0623e503",
+      "type": "task",
+      "reason": "parent_phase_id fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378 not found in valid phases",
+      "original_data": {
+        "id": "44401657-53b7-581e-9424-ec1e0623e503",
+        "parent_phase_id": "fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378",
+        "title": "PHASE 5: Validate Commands/Tools Integration - Ensure deterministic handoff contracts",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T03:51:22.157Z",
+        "updated_at": "2026-03-05T03:48:37.641Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "medium"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "2f84ab93-ce0e-5797-aae4-7f920eb7281c",
+      "type": "task",
+      "reason": "parent_phase_id fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378 not found in valid phases",
+      "original_data": {
+        "id": "2f84ab93-ce0e-5797-aae4-7f920eb7281c",
+        "parent_phase_id": "fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378",
+        "title": "PHASE 6: Create Test Suite - Deterministic validation of entry layer",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T03:51:22.157Z",
+        "updated_at": "2026-03-05T03:48:37.641Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "medium"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "ee911dd9-0ce5-506d-899a-857c2ea111c4",
+      "type": "task",
+      "reason": "parent_phase_id fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378 not found in valid phases",
+      "original_data": {
+        "id": "ee911dd9-0ce5-506d-899a-857c2ea111c4",
+        "parent_phase_id": "fdf57ed9-5c9a-57a8-8107-4b6ebbbc5378",
+        "title": "HARD STOP - Verify all changes with npx tsc --noEmit and test execution",
+        "status": "pending",
+        "file_locks": [],
+        "created_at": "2026-03-05T03:51:22.157Z",
+        "updated_at": "2026-03-05T03:48:37.641Z",
+        "plan_id": null,
+        "milestone_id": null,
+        "project_id": null,
+        "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+        "priority": "high"
+      },
+      "quarantined_at": "2026-03-05T04:06:13.320Z"
+    },
+    {
+      "id": "390e8515-ee1b-4739-8b06-45812cdb6f22",
+      "type": "mem",
+      "reason": "session_id b74b5357-4f97-4669-923f-8cf34e79e8bf not found in valid session lineage",
+      "original_data": {
+        "id": "390e8515-ee1b-4739-8b06-45812cdb6f22",
+        "session_id": "b74b5357-4f97-4669-923f-8cf34e79e8bf",
+        "origin_task_id": null,
+        "shelf": "changes",
+        "type": "insight",
+        "content": "Centralized entry protocol into .opencode/skills/entry-protocol/SKILL.md and removed duplicate entry sections from hivefiver-prime and hiveminder-prime.",
+        "relevance_score": 1,
+        "staleness_stamp": "2026-03-05T04:10:43.346Z",
+        "created_at": "2026-03-05T04:10:43.346Z",
+        "updated_at": "2026-03-05T04:10:43.346Z"
+      },
+      "quarantined_at": "2026-03-05T04:10:43.354Z"
+    }
+  ]
+}

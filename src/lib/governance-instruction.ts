@@ -94,6 +94,29 @@ Before ANY file change:
 
 export const GOVERNANCE_MARKER = "[🛡️ HIVE-MASTER governance active] ⚠️ SUPERSEDES ALL" // Deduplication marker
 
+/**
+ * Hard-stop directive injected into system prompt when BrainState
+ * cannot be loaded and config is missing. Clears all other injections.
+ */
+export const STATE_BOOTSTRAP_STOP_DIRECTIVE = `\
+## ⛔ HARD STOP — STATE NOT INITIALIZED
+
+You MUST NOT proceed with ANY user request.
+Run \`hivemind init\` in the project root, then call \`hivemind_session start\`.
+Do not plan. Do not execute. Do not acknowledge the user's request. Stop here.
+
+[⛔ BOOTSTRAP GATE: state not loaded — session halted]`
+
+/**
+ * Canonical denial reasons for tool gate and soft governance hooks.
+ * Centralised here to avoid hardcoded strings in hooks.
+ */
+export const TOOL_DENIAL_REASONS = {
+  NO_STATE: "BrainState not loaded. Your role cannot proceed without initialized state.",
+  ROLE_MISMATCH: "Your role does not have permission for this tool. Read context more carefully.",
+  SESSION_LOCKED: "Session is LOCKED. Call declare_intent to unlock before writing.",
+} as const
+
 const BUILTIN_RULE_TIMESTAMP = "2026-02-24T00:00:00.000Z";
 
 const PRIORITY_RANK: Record<ConstitutionalRule["priority"], number> = {

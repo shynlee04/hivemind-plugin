@@ -22,6 +22,7 @@ import type { Logger } from "../lib/logging.js"
 import type { HiveMindConfig } from "../schemas/config.js"
 import type { BrainState } from "../schemas/brain-state.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
+import { TOOL_DENIAL_REASONS } from "../lib/governance-instruction.js"
 import { queueStateMutation, flushMutations } from "../lib/state-mutation-queue.js"
 import {
   addViolationCount,
@@ -284,7 +285,14 @@ export function createSoftGovernanceHook(
 
       const state = await stateManager.load()
       if (!state) {
-        await log.warn("Soft governance: no brain state found")
+        // Denial — mutate output so agent READS the denial, not just log
+        _output.title = `⛔ DENIED — ${TOOL_DENIAL_REASONS.NO_STATE}`
+        _output.output = [
+          _output.output,
+          `\n---\n⛔ GOVERNANCE DENIAL: ${TOOL_DENIAL_REASONS.NO_STATE}`,
+          `Action required: Run \`hivemind init\` then \`hivemind_session start\`.`,
+          `Focus on reading context more carefully before proceeding.`,
+        ].join("\n")
         return
       }
 

@@ -17,7 +17,7 @@ import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
 import type { BrainState } from "../schemas/brain-state.js"
-import { initializePlanningDirectory } from "../lib/planning-fs.js"
+
 import { isSessionStale } from "../lib/staleness.js"
 import { detectBrownfield, generateReadFirstBlock, isCleanSession, handleStaleSession } from "../lib/onboarding.js"
 import { buildGovernanceSignals } from "../lib/session-governance.js"
@@ -28,10 +28,9 @@ import {
   compileFirstTurnContext,
   generateFirstTurnConfirmationBlock,
   getV29OutputStyleDirective,
-  generateSetupGuidanceBlock,
   getNextStepHint,
 } from "./session-lifecycle-helpers.js"
-import { compileDefaultGovernance, GOVERNANCE_MARKER } from "../lib/governance-instruction.js"
+import { compileDefaultGovernance, GOVERNANCE_MARKER, STATE_BOOTSTRAP_STOP_DIRECTIVE } from "../lib/governance-instruction.js"
 import { evaluateEntityChecklist, renderChecklistSummary } from "../lib/entity-checklist.js"
 import type { EntityChecklist } from "../schemas/governance-constitution.js"
 import { applyPendingStateMutations, queueStateMutation } from "../lib/state-mutation-queue.js"
@@ -89,9 +88,9 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       const configPath = getEffectivePaths(directory).config
 
       if (!existsSync(configPath)) {
-        output.system.push(await generateSetupGuidanceBlock(directory))
-        appendChecklistFailureReminder(output, checklist)
-        await log.info("HiveMind not configured — injected setup guidance")
+        // HARD STOP — nothing else matters, state cannot be loaded
+        output.system.length = 0
+        output.system.push(STATE_BOOTSTRAP_STOP_DIRECTIVE)
         return
       }
 
@@ -102,7 +101,6 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
         state = applyPendingStateMutations(state)
       }
       if (!state) {
-        await initializePlanningDirectory(directory)
         state = createBrainState(generateSessionId(), config)
         state.session.opencode_session_id = input.sessionID
         // CQRS: Queue mutation instead of direct save (hooks are read-only)

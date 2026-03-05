@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "mems": [
+    {
+      "id": "390e8515-ee1b-4739-8b06-45812cdb6f22",
+      "session_id": "b74b5357-4f97-4669-923f-8cf34e79e8bf",
+      "origin_task_id": null,
+      "shelf": "changes",
+      "type": "insight",
+      "content": "Centralized entry protocol into .opencode/skills/entry-protocol/SKILL.md and removed duplicate entry sections from hivefiver-prime and hiveminder-prime.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-03-05T04:10:43.346Z",
+      "created_at": "2026-03-05T04:10:43.346Z",
+      "updated_at": "2026-03-05T04:10:43.346Z"
+    }
+  ]
+}

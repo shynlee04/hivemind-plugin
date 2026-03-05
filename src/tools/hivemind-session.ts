@@ -22,6 +22,10 @@ import { toSuccessOutput, toErrorOutput } from "../lib/tool-response.js"
 import { flushMutations, flushTaskManifestMutations } from "../lib/state-mutation-queue.js"
 import { loadPendingChanges, loadVerificationLedger } from "../lib/sot-governance.js"
 import { purgeTransientSessionMemory } from "../lib/session-memory-purge.js"
+import {
+  loadTree, saveTree, createBranch, switchBranch,
+  pauseBranch, completeBranch, listBranches,
+} from "../lib/hierarchy-tree.js"
 
 /**
  * Write trajectory state after session operations to maintain graph consistency.
@@ -124,12 +128,12 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
   return tool({
     description:
       "Manage session lifecycle. " +
-      "Actions: start (declare intent), update (change focus), close (compact), status (inspect), resume (reopen). " +
+      "Actions: start (declare intent), update (change focus), close (compact), status (inspect), resume (reopen), branch (manage parallel workstreams). " +
       "Always returns JSON for FK chaining.",
     args: {
       action: tool.schema
-        .enum(["start", "update", "close", "status", "resume"])
-        .describe("What to do: start | update | close | status | resume"),
+        .enum(["start", "update", "close", "status", "resume", "branch"])
+        .describe("What to do: start | update | close | status | resume | branch"),
       mode: tool.schema
         .enum(["plan_driven", "quick_fix", "exploration"])
         .optional()
@@ -166,6 +170,18 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
         .boolean()
         .optional()
         .describe("For close: enforce V2.9 close gate (consolidation/purge + verification ledger checks)"),
+      branch_action: tool.schema
+        .enum(["create", "switch", "pause", "complete", "list"])
+        .optional()
+        .describe("For branch: sub-action to perform"),
+      branch_name: tool.schema
+        .string()
+        .optional()
+        .describe("For branch: name of the branch (create/switch/pause/complete)"),
+      branch_node_id: tool.schema
+        .string()
+        .optional()
+        .describe("For branch create: node ID to fork from"),
     },
     async execute(args, _context) {
       // CHIMERA-3: Always return JSON for FK chaining - no conditionals
@@ -279,7 +295,7 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
 
             const hasUnpurgedTemporaryExports = Boolean(
               currentState &&
-                currentState.memory_governance.pending_purge
+              currentState.memory_governance.pending_purge
             )
             const unappliedVerifiedChanges = pending.pending_changes.filter(
               (entry) => entry.status === "verified"
@@ -337,6 +353,64 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
             })
           }
           break
+        case "branch": {
+          const ba = args.branch_action as string | undefined
+          if (!ba) {
+            return toErrorOutput("branch_action is required (create | switch | pause | complete | list)")
+          }
+          try {
+            let tree = await loadTree(directory)
+            switch (ba) {
+              case "create":
+                if (!args.branch_name || !args.branch_node_id) {
+                  return toErrorOutput("branch_name and branch_node_id required for create")
+                }
+                tree = createBranch(tree, args.branch_name, args.branch_node_id)
+                await saveTree(directory, tree)
+                return toSuccessOutput(`Branch '${args.branch_name}' created`, undefined, {
+                  branches: tree.branches,
+                })
+              case "switch":
+                if (!args.branch_name) {
+                  return toErrorOutput("branch_name required for switch")
+                }
+                tree = switchBranch(tree, args.branch_name)
+                await saveTree(directory, tree)
+                return toSuccessOutput(`Switched to branch '${args.branch_name}'`, undefined, {
+                  cursor: tree.cursor,
+                  primary_branch: tree.primary_branch,
+                  branches: tree.branches,
+                })
+              case "pause":
+                if (!args.branch_name) {
+                  return toErrorOutput("branch_name required for pause")
+                }
+                tree = pauseBranch(tree, args.branch_name)
+                await saveTree(directory, tree)
+                return toSuccessOutput(`Branch '${args.branch_name}' paused`, undefined, {
+                  branches: tree.branches,
+                })
+              case "complete":
+                if (!args.branch_name) {
+                  return toErrorOutput("branch_name required for complete")
+                }
+                tree = completeBranch(tree, args.branch_name)
+                await saveTree(directory, tree)
+                return toSuccessOutput(`Branch '${args.branch_name}' completed`, undefined, {
+                  branches: tree.branches,
+                })
+              case "list":
+                return toSuccessOutput("Branch list", undefined, {
+                  primary_branch: tree.primary_branch,
+                  branches: listBranches(tree),
+                })
+              default:
+                return toErrorOutput(`Unknown branch_action: ${ba}`)
+            }
+          } catch (err: unknown) {
+            return toErrorOutput(err instanceof Error ? err.message : String(err))
+          }
+        }
         default:
           result = {
             success: false,
@@ -349,9 +423,9 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
       // CHIMERA-3: Always return JSON for FK chaining - no conditionals
       return result.success
         ? toSuccessOutput(`Session ${result.action} completed`, result.data.sessionId as string | undefined, {
-            ...result.data,
-            error: result.error,
-          })
+          ...result.data,
+          error: result.error,
+        })
         : toErrorOutput(result.error || "Operation failed")
     },
   })

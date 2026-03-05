@@ -377,60 +377,6 @@
     "Always validate LSP results with read before making edits. LSP provides locations but you must verify the actual code content before patching."
   ],
   "agent": {
-    "hivefiver, ": {
-      "mode": "primary",
-      "permission": {
-        "read": "allow",
-        "mcp*": "allow",
-        "my-mcp*": "allow",
-        "glob": "allow",
-        "grep": "allow",
-        "github*": "allow",
-        "skill": "allow",
-        "hivemind_*": "deny",
-        "scan_hierarchy": "allow",
-        "think_back": "allow",
-        "save_anchor": "allow",
-        "save_mem": "allow",
-        "recall_mems": "allow",
-        "export_cycle": "allow",
-        "map_context": "allow",
-        "declare_intent": "allow",
-        "compact_session": "allow",
-        "hivemind_declare": "allow",
-        "webfetch": "allow",
-        "websearch": "allow",
-        "bash": "allow",
-        "todowrite": "allow",
-        "todoread": "allow",
-        "edit": "deny",
-        "write": "deny",
-        "repomix*": "deny",
-        "task": {
-          "*": "deny",
-          "explore": "allow",
-          "general": "allow",
-          "hivexplorer": "allow",
-          "hiveplanner": "allow",
-          "hiverd": "allow",
-          "hivehealer": "allow",
-          "hivemaker": "allow",
-          "hiveq": "allow",
-          "hivefiver": "allow"
-        }
-      }
-    },
-    "*": {
-      "mode": "subagent",
-      "permission": {
-        "todowrite": "allow",
-        "todoread": "allow",
-        "edit": "allow",
-        "write": "allow",
-        "read": "allow",
-        "bash": "allow"
-      }
-    },
     "hivefiver": {
       "mode": "primary",
       "tools": {
@@ -442,6 +388,17 @@
         "webfetch": true,
         "websearch": true,
         "bash": true
+      }
+    },
+    "*": {
+      "mode": "subagent",
+      "permission": {
+        "todowrite": "allow",
+        "todoread": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "read": "allow",
+        "bash": "allow"
       }
     }
   }

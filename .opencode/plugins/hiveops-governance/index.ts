@@ -57,6 +57,8 @@ import { buildToolExecuteBeforeHook, buildToolExecuteAfterHook } from "./hooks/d
 import { buildEventHook } from "./hooks/events"
 import { buildCompactionHook } from "./hooks/compaction"
 import { buildContextInjectionHook } from "./hooks/context-injection"
+import { buildEntryGuardHook } from "./hooks/entry-guard"
+import { buildIntentClassifierHook } from "./hooks/intent-classifier"
 
 export const HiveMindGovernance: Plugin = async ({ project, client, $, directory, worktree }) => {
   // ── Initialize enforcement state ──
@@ -97,7 +99,9 @@ export const HiveMindGovernance: Plugin = async ({ project, client, $, directory
     // Wires: gx-entry-guard.sh, gx-first-turn-refresh.sh, gx-handoff-purify.sh,
     //        gx-sot-register.sh, gx-todo-sync.sh, gx-schema-sync.sh
     event: async ({ event }: { event: any }) => {
+      const entryGuardHook = buildEntryGuardHook(enforcementState)
       const hook = buildEventHook(enforcementState)
+      await entryGuardHook({ event })
       await hook({ event })
     },
 
@@ -112,7 +116,9 @@ export const HiveMindGovernance: Plugin = async ({ project, client, $, directory
     // ── Context Injection (every LLM turn) ──
     // Reads: todo.json, runtime-profile.json, hierarchy.json, context-recovery.json, health-metrics.json
     "experimental.chat.messages.transform": async (input: any, output: any) => {
+      const intentClassifierHook = buildIntentClassifierHook(enforcementState)
       const hook = buildContextInjectionHook(enforcementState)
+      await intentClassifierHook(input, output)
       await hook(input, output)
     },
   }
