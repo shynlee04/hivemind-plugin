@@ -26,8 +26,8 @@ CRITICAL: Before modifying any function, you MUST:
 
 - HIVEMIND is a meta-framework project built on Opencode and currently running in “integrate while self-fixing” mode ([`AGENTS.md`](AGENTS.md:20), [`CLAUDE.md`](CLAUDE.md:1)).
 - The workflow model is dual-lineage: one shared entry sequence, then strict routing into two separate spaces ([`docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md`](docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md:39)).
-- Extension/customization surface belongs to [`.opencode/`](.opencode/), [`commands/`](commands/), [`skills/`](skills/), [`workflows/`](workflows/).
-- Core implementation/runtime belongs to repository root + [`src/`](src/) (tools/libs/hooks/schemas) ([`AGENTS.md`](AGENTS.md:105)).
+- Root framework asset source belongs to [`commands/`](commands/), [`skills/`](skills/), [`workflows/`](workflows/), [`agents/`](agents/), [`templates/`](templates/), [`prompts/`](prompts/), and [`references/`](references/); [`.opencode/`](.opencode/) is the delivery mirror and adapter surface.
+- Core implementation/runtime belongs to repository root + [`src/`](src/) (tools/libs/hooks/schemas) and remains the canonical runtime/governance owner ([`AGENTS.md`](AGENTS.md:105)).
 - Main unresolved system risk is still prompt-surface ownership drift across extension and core hooks, but the first de-duplication slice is now landed.
 - March 6 hardening milestones are already in place: `task_id` continuity, `hivemind_inspect.traverse` v1, ownership coverage tests, tool-gate demotion, and child-session minimization.
 - `.hivemind/project/planning/` is now the canonical readable planning root; legacy `.planning/` remains compatibility-only while consumers are normalized.
@@ -55,25 +55,26 @@ CRITICAL: Before modifying any function, you MUST:
 4. **Architecture and Domain Boundaries**
 
 - **[`.opencode`](.opencode/) extension layer**
-  - Purpose: end-user extension/customization and framework-level orchestration assets.
-  - Includes plugin/hook side behavior (notably [`.opencode/plugins/hiveops-governance/hooks/context-injection.ts`](.opencode/plugins/hiveops-governance/hooks/context-injection.ts:1)).
-  - Includes operational surfaces in [`commands/`](commands/), [`skills/`](skills/), [`agents/`](agents/), [`workflows/`](workflows/).
+  - Purpose: delivery mirror, OpenCode adapter surface, and fallback-only wrapper layer.
+  - Includes plugin/hook side adapter behavior (notably [`.opencode/plugins/hiveops-governance/hooks/context-injection.ts`](.opencode/plugins/hiveops-governance/hooks/context-injection.ts:1)).
+  - Includes mirrored operational surfaces projected from the root framework asset folders.
 
 - **HIVEMIND core layer (root + [`src`](src/))**
-  - Purpose: project runtime logic and contract enforcement.
+  - Purpose: canonical project runtime logic, contract enforcement, and governance ownership.
   - Core layers: [`src/tools/`](src/tools/), [`src/lib/`](src/lib/), [`src/hooks/`](src/hooks/), [`src/schemas/`](src/schemas/) ([`AGENTS.md`](AGENTS.md:105)).
   - Key contamination-relevant files: [`src/hooks/session-lifecycle.ts`](src/hooks/session-lifecycle.ts:1), [`src/hooks/messages-transform.ts`](src/hooks/messages-transform.ts:1).
 
 - **Integration/self-fix layer (where both interact)**
   - Shared entry sequence before lineage routing is the only intended common lane ([`docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md`](docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md:39)).
   - After routing, artifacts and planning are separate; interaction should be controlled via delegation contracts ([`docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md`](docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md:429)).
+  - Active refactor target: keep `src/**` as canonical authority and narrow `.opencode/**` to mirror/adapter/fallback behavior.
 
 5. **Tech Stack Matrix**
 
 | Component | Layer | Purpose | Current Use | Stability |
 |---|---|---|---|---|
 | [`package.json`](package.json:1) | Runtime/Core | Node/TypeScript CLI framework base | Active | Medium |
-| [`.opencode/plugins/hiveops-governance/hooks/context-injection.ts`](.opencode/plugins/hiveops-governance/hooks/context-injection.ts:1) | Extension | Plugin-side context injection | Active every turn | At Risk |
+| [`.opencode/plugins/hiveops-governance/hooks/context-injection.ts`](.opencode/plugins/hiveops-governance/hooks/context-injection.ts:1) | Extension | Plugin-side adapter/fallback injection surface | Active every turn | At Risk |
 | [`src/hooks/session-lifecycle.ts`](src/hooks/session-lifecycle.ts:1) | Core | Session lifecycle context composition | Active every turn | At Risk |
 | [`src/hooks/messages-transform.ts`](src/hooks/messages-transform.ts:1) | Core | Message transform + anchor/checklist injection | Active every turn | At Risk |
 | [`src/lib/paths.ts`](src/lib/paths.ts:1) | Core | Session/effective path resolution | Active (Fix 3A done) | Improving |
@@ -93,12 +94,13 @@ CRITICAL: Before modifying any function, you MUST:
   - Boundary and governance docs are explicit and actionable ([`AGENTS.md`](AGENTS.md:181), [`docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md`](docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md:7)).
 
 - **Partially working**
-  - Session isolation direction is in place, and child-session prompt load is now reduced, but direct GX-Pack fallback runtime coverage still needs a stable harness.
+- Session isolation direction is in place, child-session prompt load is reduced, and direct GX-Pack fallback runtime coverage now exists for the real plugin hook boundary.
   - Prompt-surface ownership is safer than before, but the full canonical ownership migration is not finished.
   - The canonical planning root now exists under `.hivemind/project/planning/`, but consumer normalization and hierarchy governance are still in progress.
 
 - **Broken/unclear**
   - Dual-injector conflict is reduced, not eliminated.
+  - `.opencode/plugins/**` still behaves partly like a second runtime control plane even though the source-canonical target is now `src/**`.
   - State authority is still split across `brain.json`, `graph/*.json`, and `hierarchy.json`; this is intentional for now but must remain disciplined.
   - Readable planning-root hierarchy is still maturing from shell-level scaffolding into governed long-haul SOT.
   - Maintain formal regression gates with `npx tsc --noEmit` plus targeted suites before restricted-zone edits.
@@ -108,6 +110,7 @@ CRITICAL: Before modifying any function, you MUST:
 | ID | Description | Scope (Isolated/Cross-domain) | Severity | Evidence | Suspected Cause |
 |---|---|---|---|---|---|
 | HM-01 | Dual per-turn injection conflict | Cross-domain | Critical | [`AGENTS.md`](AGENTS.md:123) | Overlapping extension + core injectors |
+| HM-09 | Source-vs-mirror ownership drift between root framework assets and `.opencode/**` | Cross-domain | High | `src/cli/sync-assets.ts`, `src/lib/hivefiver-integration.ts` | Dual-authority language around authored and mirrored assets |
 | HM-02 | Ownership regressions can reintroduce stale prompt duplication | Isolated (quality) | High | `tests/injection-surface-ownership.test.ts` | Prompt-surface cleanup without coverage |
 | HM-03 | Restricted hook/state regions carry high regression risk | Cross-domain | High | [`AGENTS.md`](AGENTS.md:181) | Premature edits before prerequisite completion |
 | HM-04 | Lineage-mixing hallucination risk | Cross-domain | High | [`docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md`](docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md:241) | Similar workflow pattern mistaken as shared artifact space |
@@ -125,11 +128,13 @@ CRITICAL: Before modifying any function, you MUST:
 
 - **What fails only when combined**
   - Extension injector + core injectors together amplify contradictory context and drift.
+  - Mirror assets and root authored assets create authority ambiguity if later cycles reason from both as peers.
   - Mixed lineage planning (framework assets + implementation tasks in one stream) produces routing confusion and bad delegation.
 
 - **Dependency collision points**
   - Shared state surfaces under [`.hivemind/state/`](.hivemind/state/).
   - Per-turn execution overlap between [`.opencode/plugins/hiveops-governance/hooks/context-injection.ts`](.opencode/plugins/hiveops-governance/hooks/context-injection.ts:1), [`src/hooks/session-lifecycle.ts`](src/hooks/session-lifecycle.ts:1), and [`src/hooks/messages-transform.ts`](src/hooks/messages-transform.ts:1).
+  - Authored root assets vs mirrored `.opencode` assets when audits or planning artifacts treat both as first-class authorities.
   - Sequence violations against Node-1 prerequisite order ([`AGENTS.md`](AGENTS.md:150)).
 
 9. **Dual-Lineage Risk Control**
@@ -167,7 +172,9 @@ CRITICAL: Before modifying any function, you MUST:
 2. Use the state-authority pass in `docs/plans/2026-03-06-state-authority-rationalization-pass.md` as the active source for injection/navigation/session-metadata authority.
 3. Execute the strategic resync audit on reset/init/bootstrap, `.hivemind` composition, and planning-root normalization before reopening deeper runtime refactors.
 4. Use the fresh manual Devin packets in `docs/plans/` only after the local framing is stable, then treat returned answers as external synthesis input rather than authority.
-5. Reopen QA / research workflow design and direct GX-Pack fallback runtime coverage only after the architecture resynthesis cycle is approved.
+5. Keep the ecosystem control master as the top-level decision surface; runtime context cleanup remains active only as Workstream B and must not become the project-wide master path again.
+6. Use the ecosystem execution constitution before later refactor implementation so subagents, TDD, and verification all share the same packet and stop rules.
+7. Treat the direct fallback harness as complete for the current hook boundary, then use consolidation and truth compilation before deciding whether any further context extraction is justified.
 
 **Assumptions and Unknowns**
 - Assumption A1: status entries in [`AGENTS.md`](AGENTS.md:137) reflect current repository reality.
@@ -336,8 +343,8 @@ User
 | Step | What | Prerequisite |
 |------|------|-------------|
 | Next 1 | QA / research workflow design pass | Preserve March 6 authority split |
-| Next 2 | Direct GX-Pack fallback runtime coverage | Stable `.opencode` hook test surface |
-| Next 3 | Further prompt ownership cleanup | Ownership + child-session tests stay green |
+| Next 2 | Workstream B consolidation and truth compilation | Keep the current runtime tranche stable and subordinate before any further extraction |
+| Next 3 | Workstream B consolidation review gate | Ownership + child-session tests stay green and `01-34-PLAN.md` explicitly allows continuation |
 | Later | Fix 1.5C / 1.5D follow-up cleanup | Active baseline remains green |
 | Later | Relational staleness rewrite | Follow-on authority decisions stay stable |
 

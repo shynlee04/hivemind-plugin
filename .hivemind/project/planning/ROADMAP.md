@@ -8,8 +8,9 @@
 | 2 | Planning-root normalization | in_progress | 40% |
 | 3 | Manual Devin packet wave | in_progress | 60% |
 | 4 | Resynced long-haul master-plan replacement | pending | 0% |
-| 5 | Planning-root population and workflow contract hardening | in_progress | 88% |
-| 6 | Runtime return: QA/research workflow and deferred harness work | pending | 0% |
+| 5 | Planning-root population and workflow contract hardening | completed | 100% |
+| 6 | Ecosystem control and subordinate runtime workstreams | in_progress | 85% |
+| 7 | Runtime return: QA/research workflow and deferred follow-up work | pending | 10% |
 
 ## Phase Notes
 
@@ -51,9 +52,28 @@
 - Open a dedicated promotion gate to approve the next lane-family activation from a stable shared base.
 - Use Diagnose as the first lane-local cycle after promotion so contradiction-first evidence leads later mutation-capable planning.
 - Use the Diagnose outputs to decide whether alignment work should trigger a bounded lane-order exception.
+- Use the bounded lane-order exception to produce a whole-codebase overlap map and a Phase 1 refactor proposal that treats `src/**` as canonical owner and `.opencode/**` as delivery/adapter territory.
+- Approve only the first ownership-normalization cycle before any hot-hook consolidation planning proceeds.
+- Execute the first ownership-normalization cycle as planning-only work, then open a dedicated gate for Cycle 2 asset projection hardening.
+- Keep Cycle 2 bounded to asset projection hardening and explicit source-to-mirror policy before later runtime adapter separation.
+- Open runtime adapter separation only after the projection contract is explicit enough to keep delivery and runtime concerns from recombining.
+- Use Cycle 3 only for adapter/runtime boundary planning, not for revisiting source authority or mirror policy.
+- Open Cycle 4 only when the hot-hook consolidation can be isolated by context, governance, and lifecycle clusters rather than treated as one large merge.
+- Start Cycle 4 with the context cluster only and keep governance and lifecycle slices deferred until the first bounded TDD-backed tranche is proven or intentionally stopped.
+- After the first two context slices, decide only between one more context-only extraction, consolidation, or fallback-harness planning.
+- Direct fallback harness coverage has now landed; the next decision is the post-harness consolidation review gate.
 
-### Phase 6: Runtime return
+### Phase 6: Ecosystem control and subordinate runtime workstreams
+
+- activate one umbrella master for source, execution/control, result, and lineage planes
+- keep runtime context cleanup active only as Workstream B
+- prevent runtime-local gates from acting as the project-wide master path
+- keep governance and lifecycle workstreams closed until the umbrella control plane promotes them
+- install an execution constitution so subagents and TDD can operate from one bounded control model
+- make harness-first the next Workstream B implementation direction before any further context extraction
+- use the post-harness consolidation gate to decide whether Workstream B continues or stops as a stable runtime tranche
+
+### Phase 7: Runtime return
 
 - Resume the deferred QA/research workflow contract implementation.
-- Add direct GX-Pack fallback runtime coverage once the import surface is stable.
 - Continue deeper prompt-surface cleanup only behind the current ownership and child-session tests.

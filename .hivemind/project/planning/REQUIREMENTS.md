@@ -25,4 +25,24 @@
 | HM-PLAN-019 | Activate the cross-cutting routing and continuity planning cycle as the first lane-family cycle. | 5 | completed |
 | HM-PLAN-020 | Complete the shared cross-cutting constitutions and open a promotion gate before activating the next lane-family planning cycle. | 5 | completed |
 | HM-PLAN-021 | Activate the Diagnose lane as the first lane-local planning cycle and keep it evidence-first under the promoted constitutions. | 5 | completed |
-| HM-PLAN-022 | Complete Diagnose outputs and open an explicit next-lane gate that decides whether alignment work justifies a bounded lane-order exception. | 5 | in_progress |
+| HM-PLAN-022 | Complete Diagnose outputs and open an explicit next-lane gate that decides whether alignment work justifies a bounded lane-order exception. | 5 | completed |
+| HM-PLAN-023 | Complete a whole-codebase overlap scan that maps `src/**` ownership, `.opencode/**` duplication, state/planning boundaries, and lineage/document drift. | 5 | completed |
+| HM-PLAN-024 | Produce an approval-gated Phase 1 refactor proposal that makes `src/**` the canonical runtime owner and reduces `.opencode/**` to delivery, adapter, and fallback-only roles. | 5 | completed |
+| HM-PLAN-025 | Execute Cycle 1 ownership normalization as a planning-only tranche that aligns authored-source, mirror, runtime-owner, and adapter-target language across active artifacts. | 5 | completed |
+| HM-PLAN-026 | Open Cycle 2 asset projection hardening planning from the normalized source-canonical ownership model. | 5 | completed |
+| HM-PLAN-027 | Execute Cycle 2 as a bounded planning tranche that hardens the projection contract around `sync-assets`, `init`, and HiveFiver asset audits without expanding into plugin runtime separation. | 5 | completed |
+| HM-PLAN-028 | Open Cycle 3 runtime adapter separation planning from the normalized ownership and projection contract base. | 6 | completed |
+| HM-PLAN-029 | Complete Cycle 3 with detailed runtime overlap clusters for context assembly, governance enforcement, lifecycle events, and state-snapshot consumption. | 6 | completed |
+| HM-PLAN-030 | Open Cycle 4 hot-hook consolidation planning as the first implementation-facing tranche, keeping context, governance, and lifecycle slices isolated. | 6 | completed |
+| HM-PLAN-031 | Materialize Cycle 4 as a bounded TDD-ready context-cluster plan before allowing governance or lifecycle consolidation work. | 6 | in_progress |
+| HM-PLAN-032 | Land the first bounded Cycle 4 code slice by moving shared plugin fallback turn resolution into `src/lib/**` and verifying that ownership, child-session minimization, and budget contracts stay green. | 6 | completed |
+| HM-PLAN-033 | Land the second bounded Cycle 4 code slice by moving plugin fallback context assembly into a canonical `src/lib/**` helper and verifying that the plugin hook remains a thinner wrapper. | 6 | completed |
+| HM-PLAN-034 | Install an ecosystem-control master layer that governs source, execution/control, result, and lineage planes as one whole system. | 6 | completed |
+| HM-PLAN-035 | Reclassify the src-canonical runtime refactor as a subordinate workstream so runtime-local gates stop acting as the project-wide master path. | 6 | completed |
+| HM-PLAN-036 | Install an ecosystem execution constitution so later implementation proceeds through bounded subagent packets and TDD instead of implicit local continuation. | 6 | completed |
+| HM-PLAN-037 | Approve harness-first Workstream B precedence while keeping governance and lifecycle implementation closed. | 6 | completed |
+| HM-PLAN-038 | Open the next umbrella execution activation and the next Workstream B implementation gate under the ecosystem control plane. | 6 | completed |
+| HM-PLAN-039 | Prepare the first harness-first Workstream B execution packet under the ecosystem execution constitution. | 6 | completed |
+| HM-PLAN-040 | Review the completed direct fallback harness wave and decide whether Workstream B continues, consolidates, or yields back to ecosystem precedence. | 6 | completed |
+| HM-PLAN-041 | Compile current ecosystem truth after the green harness wave so Workstream B can be reviewed as a stable packet instead of an open-ended implementation thread. | 6 | completed |
+| HM-PLAN-042 | Open a consolidation review gate that decides whether Workstream B stops as a stable runtime tranche or reopens one final bounded extraction. | 6 | pending |

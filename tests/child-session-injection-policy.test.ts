@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { randomUUID } from "node:crypto"
-import { mkdtemp, rm } from "node:fs/promises"
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, it } from "node:test"
@@ -10,6 +10,9 @@ import { createSessionLifecycleHook } from "../src/hooks/session-lifecycle.js"
 import { saveAnchors } from "../src/lib/anchors.js"
 import { clearTurnInjectionLedger } from "../src/lib/injection-orchestrator.js"
 import { saveTrajectory } from "../src/lib/graph-io.js"
+import { getEffectivePaths } from "../src/lib/paths.js"
+import { resolveRuntimeSessionLineage } from "../src/lib/runtime-session-lineage.js"
+import { _resetSdkRefs, _setSdkRefs } from "../src/lib/sdk-access.js"
 import { initializePlanningDirectory } from "../src/lib/planning-fs.js"
 import { createStateManager, saveConfig } from "../src/lib/persistence.js"
 import { clearRuntimeSessionLineageCache } from "../src/lib/runtime-session-lineage.js"
@@ -124,8 +127,8 @@ async function runCoreScenario(runtimeSessionId: string, parentID: string | null
 
   const { dir, stateManager } = await setupRuntimeDir(runtimeSessionId)
 
-  initSdkContext({
-    client: {
+  _setSdkRefs(
+    {
       session: {
         get: async ({ sessionID }: { sessionID: string }) => ({
           id: sessionID,
@@ -133,10 +136,9 @@ async function runCoreScenario(runtimeSessionId: string, parentID: string | null
         }),
       },
     } as any,
-    $: {} as any,
-    serverUrl: new URL("http://localhost:4096"),
-    project: {} as any,
-  })
+    {} as any,
+    new URL("http://localhost:4096"),
+  )
 
   try {
     const config = createConfig({ governance_mode: "assisted" })
@@ -172,6 +174,185 @@ async function runCoreScenario(runtimeSessionId: string, parentID: string | null
   }
 }
 
+async function seedPluginFallbackContext(dir: string): Promise<void> {
+  const paths = getEffectivePaths(dir)
+
+  await writeFile(
+    join(paths.stateDir, "runtime-profile.json"),
+    JSON.stringify({
+      id: "profile-hivefiver",
+      intent: "repair",
+      constraints: ["keep scope tight", "verify before mutation"],
+      capabilities: {
+        paths: ["src/**", ".opencode/**"],
+        depth_limit: 4,
+        delegate_to: ["hivexplorer", "hiveq"],
+      },
+    }),
+    "utf-8",
+  )
+
+  await writeFile(
+    join(paths.stateDir, "context-recovery.json"),
+    JSON.stringify({
+      trajectory_summary: "Trajectory Alpha",
+      active_todos: ["stabilize plugin fallback"],
+      key_decisions: ["src owns context semantics"],
+      recommended_next: "Continue bounded extraction",
+    }),
+    "utf-8",
+  )
+
+  await writeFile(
+    join(paths.stateDir, "health-metrics.json"),
+    JSON.stringify({
+      composite: {
+        score: 93,
+        status: "healthy",
+      },
+      signals: {
+        drift: { score: 88, velocity: 1 },
+        evidence: { score: 91, velocity: 0 },
+      },
+      thresholds: {
+        hard_block: {
+          signals: ["drift"],
+          below: 25,
+        },
+      },
+    }),
+    "utf-8",
+  )
+}
+
+async function runPluginFallbackScenario(runtimeSessionId: string, parentID: string | null): Promise<{
+  injectedText: string | null
+}> {
+  clearTurnInjectionLedger()
+  clearRuntimeSessionLineageCache()
+
+  const { dir } = await setupRuntimeDir(runtimeSessionId)
+  await seedPluginFallbackContext(dir)
+
+  initSdkContext({
+    client: {
+      session: {
+        get: async ({ sessionID }: { sessionID: string }) => ({
+          id: sessionID,
+          parentID: sessionID === runtimeSessionId ? parentID : null,
+        }),
+      },
+    } as any,
+    $: {} as any,
+    serverUrl: new URL("http://localhost:4096"),
+    project: {} as any,
+  })
+
+  try {
+    const lineage = await resolveRuntimeSessionLineage(runtimeSessionId)
+    assert.equal(lineage.parentID, parentID)
+    assert.equal(lineage.isChildSession, parentID !== null)
+
+    const pluginModule = await import("../.opencode/plugins/hiveops-governance/hooks/context-injection.ts")
+    const hookBuilder = pluginModule.buildContextInjectionHook as
+      | ((state: { current: any; worktree: string }) => (input: any, output: any) => Promise<void>)
+      | undefined
+    assert.equal(typeof hookBuilder, "function")
+
+    const hook = hookBuilder(
+      {
+        current: {
+          sessionId: runtimeSessionId,
+          agent: "hivefiver",
+          delegationChain: [
+            {
+              from: "hivefiver",
+              to: "hivexplorer",
+              depth: 1,
+              timestamp: Date.now(),
+              objective: "inspect",
+            },
+          ],
+          gatesPassed: [],
+          scopeViolations: [],
+          turnCount: 4,
+          lastCheckpoint: Date.now(),
+        },
+        worktree: dir,
+      },
+      {
+        resolveSessionLineage: async (sessionID?: string | null) => ({
+          sessionID: sessionID ?? runtimeSessionId,
+          parentID,
+          isChildSession: parentID !== null,
+          source: "sdk",
+        }),
+      },
+    )
+
+    const output = {
+      system: [] as string[],
+      messages: [createUserMessage("continue", runtimeSessionId)],
+    }
+
+    await hook({}, output)
+
+    const first = output.messages[0] as any
+    const injectedText = first?.parts?.[0]?.text ?? first?.info?.content ?? null
+
+    return { injectedText }
+  } finally {
+    _resetSdkRefs()
+    clearRuntimeSessionLineageCache()
+    clearTurnInjectionLedger()
+    await rm(dir, { recursive: true, force: true })
+  }
+}
+
+async function runPluginCorePresenceScenario(runtimeSessionId: string): Promise<number> {
+  clearTurnInjectionLedger()
+  clearRuntimeSessionLineageCache()
+
+  const { dir } = await setupRuntimeDir(runtimeSessionId)
+  await seedPluginFallbackContext(dir)
+  await mkdir(join(dir, "src/hooks"), { recursive: true })
+  await writeFile(join(dir, "src/hooks/session-lifecycle.ts"), "// presence marker\n", "utf-8")
+  await writeFile(join(dir, "src/hooks/messages-transform.ts"), "// presence marker\n", "utf-8")
+
+  try {
+    const pluginModule = await import("../.opencode/plugins/hiveops-governance/hooks/context-injection.ts")
+    const hookBuilder = pluginModule.buildContextInjectionHook as
+      | ((state: { current: any; worktree: string }) => (input: any, output: any) => Promise<void>)
+      | undefined
+    assert.equal(typeof hookBuilder, "function")
+
+    const hook = hookBuilder({
+      current: {
+        sessionId: runtimeSessionId,
+        agent: "hivefiver",
+        delegationChain: [],
+        gatesPassed: [],
+        scopeViolations: [],
+        turnCount: 2,
+        lastCheckpoint: Date.now(),
+      },
+      worktree: dir,
+    })
+
+    const output = {
+      system: [] as string[],
+      messages: [createUserMessage("continue", runtimeSessionId)],
+    }
+
+    await hook({}, output)
+    return output.messages.length
+  } finally {
+    clearRuntimeSessionLineageCache()
+    clearTurnInjectionLedger()
+    await rm(dir, { recursive: true, force: true })
+  }
+}
+
 describe("child-session injection policy", () => {
   it("reduces core hook prompt surfaces for parent-linked child sessions", async () => {
     const main = await runCoreScenario("oc-main-session", null)
@@ -191,7 +372,19 @@ describe("child-session injection policy", () => {
     assert(childTotal < mainTotal)
   })
 
-  it.todo(
-    "adds direct GX-Pack fallback runtime coverage once .opencode hook modules expose a stable test import surface",
-  )
+  it("injects minimized GX-Pack fallback context for parent-linked child sessions", async () => {
+    const child = await runPluginFallbackScenario("oc-plugin-child-session", "oc-plugin-parent")
+
+    assert.equal(typeof child.injectedText, "string")
+    assert.match(child.injectedText ?? "", /## GX-Pack Governance Context \(Auto-Injected\)/)
+    assert.match(child.injectedText ?? "", /### Child Session Focus/)
+    assert.doesNotMatch(child.injectedText ?? "", /### Active TODO/)
+    assert.doesNotMatch(child.injectedText ?? "", /### Context Recovery \(auto-recovered\)/)
+  })
+
+  it("skips plugin fallback injection when core runtime hooks are present in the worktree", async () => {
+    const messageCount = await runPluginCorePresenceScenario("oc-plugin-main-session")
+
+    assert.equal(messageCount, 1)
+  })
 })

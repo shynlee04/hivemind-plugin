@@ -12,6 +12,7 @@ import {
   createTurnInjectionLedger,
   detectInjectionPresence,
   getTurnInjectionLedger,
+  resolvePluginFallbackTurn,
   reserveInjectionBudget,
 } from "../src/lib/injection-orchestrator.js"
 
@@ -190,5 +191,41 @@ describe("injection dedupe contract", () => {
     assert.equal(refreshed.cap_chars, MIN_SHARED_INJECTION_CAP)
     assert.equal(refreshed.context_window_chars, 12000)
     clearTurnInjectionLedger()
+  })
+
+  it("resolves plugin fallback turn identity from canonical snapshot state and skips when another channel already injected", () => {
+    const skipped = resolvePluginFallbackTurn({
+      presence: {
+        core_system: false,
+        core_message: true,
+        plugin_message: false,
+      },
+      snapshotSessionId: "brain-session",
+      currentSessionId: "plugin-session",
+      snapshotTurnCount: 7,
+      currentTurnCount: 2,
+    })
+
+    assert.equal(skipped.shouldInject, false)
+    assert.equal(skipped.resolvedSessionId, "brain-session")
+    assert.equal(skipped.resolvedTurnCount, 7)
+    assert.equal(skipped.turnKey, createTurnInjectionKey("brain-session", 7))
+
+    const active = resolvePluginFallbackTurn({
+      presence: {
+        core_system: false,
+        core_message: false,
+        plugin_message: false,
+      },
+      snapshotSessionId: null,
+      currentSessionId: "plugin-session",
+      snapshotTurnCount: 0,
+      currentTurnCount: 4,
+    })
+
+    assert.equal(active.shouldInject, true)
+    assert.equal(active.resolvedSessionId, "plugin-session")
+    assert.equal(active.resolvedTurnCount, 4)
+    assert.equal(active.turnKey, createTurnInjectionKey("plugin-session", 4))
   })
 })

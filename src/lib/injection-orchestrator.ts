@@ -11,6 +11,13 @@ export interface InjectionPresence {
   plugin_message: boolean
 }
 
+export interface PluginFallbackTurnResolution {
+  shouldInject: boolean
+  resolvedSessionId: string
+  resolvedTurnCount: number
+  turnKey: string
+}
+
 export interface TurnInjectionLedger {
   turn_key: string
   session_id: string
@@ -145,6 +152,46 @@ export function detectInjectionPresence(input: {
     core_system,
     core_message,
     plugin_message,
+  }
+}
+
+/**
+ * Resolve whether plugin fallback injection should continue and normalize its turn identity.
+ *
+ * @param params Resolution inputs derived from current prompt presence and fallback state.
+ * @param params.presence Existing injection presence across core/plugin channels.
+ * @param params.snapshotSessionId Canonical session id from the unified snapshot when available.
+ * @param params.currentSessionId Plugin enforcement session id fallback.
+ * @param params.snapshotTurnCount Canonical turn count from the unified snapshot when available.
+ * @param params.currentTurnCount Plugin enforcement turn count fallback.
+ * @returns Normalized fallback-injection decision and turn identity for shared-ledger usage.
+ */
+export function resolvePluginFallbackTurn(params: {
+  presence: InjectionPresence
+  snapshotSessionId?: string | null
+  currentSessionId?: string | null
+  snapshotTurnCount?: number | null
+  currentTurnCount?: number | null
+}): PluginFallbackTurnResolution {
+  const shouldInject = !(
+    params.presence.core_system ||
+    params.presence.core_message ||
+    params.presence.plugin_message
+  )
+  const resolvedSessionId =
+    params.snapshotSessionId?.trim() ||
+    params.currentSessionId?.trim() ||
+    "unknown-session"
+  const resolvedTurnCount = Math.max(
+    0,
+    Math.floor(params.snapshotTurnCount || params.currentTurnCount || 0),
+  )
+
+  return {
+    shouldInject,
+    resolvedSessionId,
+    resolvedTurnCount,
+    turnKey: createTurnInjectionKey(resolvedSessionId, resolvedTurnCount),
   }
 }
 
