@@ -8,9 +8,8 @@ The March 6 runtime hardening tranche is complete. The active work is now a stra
 2. How readable planning and governance SOT should be organized under `.hivemind/project/planning`.
 3. How local repo truth and manual external synthesis should combine without contaminating the next long-haul plan.
 
-Within that resync, the `hivefiver` operating model has now been turned into a lane-family phase-planning packet set.
-The current open decision is no longer whether the packet exists.
-It is which lane-family planning cycle should activate first, after reviewing the cross-cutting routing and continuity plan.
+Within that resync, the `hivefiver` operating model has now been turned into a canonical lane-family phase-planning packet set inside the planning-root phase folder.
+The current open decision is which lane-family planning cycle should activate first, after reviewing the canonical phase packet and its cross-cutting continuity rules.
 
 ## Active Blockers
 
@@ -20,7 +19,7 @@ It is which lane-family planning cycle should activate first, after reviewing th
 - Existing external research packet files are mixed prompt-plus-reply evidence and must not be reused as fresh outbound packets.
 - Long-haul checkpoint and handoff artifacts still carry sidecar-era framing and need to be treated as transitional continuity rather than clean active planning authority.
 - `hivefiver` agent-profile delegation and runtime governance topology do not yet present one cleanly aligned story.
-- The lane-family packet set is now present, but no lane has been explicitly activated yet.
+- The lane-family packet set is now present in both supporting docs and canonical phase files, but no lane has been explicitly activated yet.
 
 ## Recent Decisions
 
@@ -36,6 +35,7 @@ It is which lane-family planning cycle should activate first, after reviewing th
 - Reconcile returned `hivefiver` synthesis into a five-lane planning model, while keeping runtime persona routing and runtime delegation enforcement distinct from that planning taxonomy.
 - Classify planning-root, Milestone 01, and long-haul continuity artifacts by active versus transitional role before opening phase planning.
 - Generate the lane-family phase-planning packet set before selecting any lane-local planning cycle.
+- Keep the phase-folder packet canonical and treat `docs/plans` lane-family files as supporting mirrors only.
 
 ## Session History
 
@@ -45,3 +45,4 @@ It is which lane-family planning cycle should activate first, after reviewing th
 - [2026-03-06] Extended the strategic packet to model `hivefiver` as an adaptive second-lineage module rather than only as a broad healer label.
 - [2026-03-06] Reconciled the returned `hivefiver` synthesis and connected it back to the broader planning root so the next step can be approval-gated phase planning.
 - [2026-03-06] Generated the `hivefiver` lane-family phase-planning packet set and opened a lane-activation review gate.
+- [2026-03-06] Materialized the canonical lane-family packet inside `.hivemind/project/planning/phases/01-hivefiver-module/` and moved the review gate to `01-13-PLAN.md`.

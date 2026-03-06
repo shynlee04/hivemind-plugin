@@ -87,18 +87,29 @@ These are local planning documents for the active second-lineage module model. T
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-04-PLAN.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-05-PLAN.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-06-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-07-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-08-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-09-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-10-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-11-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-12-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-13-PLAN.md`
+
+The canonical packet now lives in the planning-root phase folder.
+The `docs/plans` lane-family packet files remain supporting mirrors and synthesis references, not the primary continuation surface.
 
 ## Hivefiver Carry Order
 
 For the `hivefiver` module specifically, the recommended order is:
 
-1. read `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
-2. read `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
-3. read `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
-4. read `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
-5. read `docs/plans/hivefiver-lane-family-phase-planning-master-2026-03-06.md`
-6. read `docs/plans/hivefiver-cross-cutting-routing-continuity-plan-2026-03-06.md`
-7. then choose one lane-family phase plan to activate
+1. read `.hivemind/project/planning/phases/01-hivefiver-module/01-06-PLAN.md`
+2. read `.hivemind/project/planning/phases/01-hivefiver-module/01-12-PLAN.md`
+3. read `.hivemind/project/planning/phases/01-hivefiver-module/01-07-PLAN.md`
+4. read `.hivemind/project/planning/phases/01-hivefiver-module/01-08-PLAN.md`
+5. read `.hivemind/project/planning/phases/01-hivefiver-module/01-09-PLAN.md`
+6. read `.hivemind/project/planning/phases/01-hivefiver-module/01-10-PLAN.md`
+7. read `.hivemind/project/planning/phases/01-hivefiver-module/01-11-PLAN.md`
+8. use `01-13-PLAN.md` as the active lane-activation review gate
 
 ## Older Documents: Classification
 

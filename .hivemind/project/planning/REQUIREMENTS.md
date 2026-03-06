@@ -21,3 +21,4 @@
 | HM-PLAN-015 | Update the Milestone 01 prompt family so it recognizes planning-root configuration and the `hivefiver` phase subtree as active synthesis inputs. | 5 | completed |
 | HM-PLAN-016 | Generate the `hivefiver` lane-family phase-planning packet set and keep it approval-gated. | 5 | completed |
 | HM-PLAN-017 | Review the lane-family packet set and explicitly choose the first lane-family planning cycle to activate. | 5 | in_progress |
+| HM-PLAN-018 | Materialize the canonical lane-family packet inside the planning-root phase folder and keep supporting mirrors non-canonical. | 5 | completed |

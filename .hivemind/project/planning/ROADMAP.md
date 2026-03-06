@@ -45,6 +45,7 @@
 - Separate guided, practitioner, and advanced operator paths so the same module can adapt to different technology-awareness levels without flattening workflows.
 - Classify continuity artifacts so active planning-root SOT is not confused with transitional long-haul handoff material.
 - Generate the lane-family phase-planning packet set and open a review gate for selecting the first active lane-family planning cycle.
+- Keep the phase-folder packet canonical and use `docs/plans` copies only as supporting mirrors.
 
 ### Phase 6: Runtime return
 
