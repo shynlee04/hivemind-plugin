@@ -14,6 +14,7 @@
 - 2026-03-06: the `hivefiver` lane-family phase-planning packet set was generated.
 - 2026-03-06: the canonical lane-family packet was materialized inside the planning-root phase folder.
 - 2026-03-06: the cross-cutting routing and continuity lane was activated as the first lane-family planning cycle.
+- 2026-03-06: the cross-cutting routing, continuity, validation, and mismatch constitutions were completed and a promotion gate was opened for the next lane selection.
 
 ## Next Milestone Candidates
 
@@ -21,8 +22,8 @@
   - canonical planning-root normalization
   - bootstrap/composition map
   - resynced long-haul master plan
-  - completion of the cross-cutting routing and continuity planning cycle
-  - selection of the next lane-family planning cycle after the shared constitution is finished
+  - promotion of the completed cross-cutting constitutions into shared lane policy
+  - selection of the next lane-family planning cycle after the promotion gate is approved
 - Runtime return:
   - QA/research workflow contract
   - direct GX-Pack fallback runtime coverage

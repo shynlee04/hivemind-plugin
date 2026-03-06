@@ -22,4 +22,5 @@
 | HM-PLAN-016 | Generate the `hivefiver` lane-family phase-planning packet set and keep it approval-gated. | 5 | completed |
 | HM-PLAN-017 | Review the lane-family packet set and explicitly choose the first lane-family planning cycle to activate. | 5 | completed |
 | HM-PLAN-018 | Materialize the canonical lane-family packet inside the planning-root phase folder and keep supporting mirrors non-canonical. | 5 | completed |
-| HM-PLAN-019 | Activate the cross-cutting routing and continuity planning cycle as the first lane-family cycle. | 5 | in_progress |
+| HM-PLAN-019 | Activate the cross-cutting routing and continuity planning cycle as the first lane-family cycle. | 5 | completed |
+| HM-PLAN-020 | Complete the shared cross-cutting constitutions and open a promotion gate before activating the next lane-family planning cycle. | 5 | in_progress |

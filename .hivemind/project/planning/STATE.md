@@ -9,8 +9,8 @@ The March 6 runtime hardening tranche is complete. The active work is now a stra
 3. How local repo truth and manual external synthesis should combine without contaminating the next long-haul plan.
 
 Within that resync, the `hivefiver` operating model has now been turned into a canonical lane-family phase-planning packet set inside the planning-root phase folder.
-The current active planning cycle is the cross-cutting routing and continuity lane in `01-12-PLAN.md`.
-The next open decision will be which lane-family planning cycle should activate after that shared constitution is finished.
+The cross-cutting routing and continuity lane in `01-12-PLAN.md` is now complete at the planning-output level.
+The current open gate is `01-14-PLAN.md`, which will decide whether to promote those outputs as shared policy and which lane-family planning cycle should activate next.
 
 ## Active Blockers
 
@@ -20,7 +20,7 @@ The next open decision will be which lane-family planning cycle should activate 
 - Existing external research packet files are mixed prompt-plus-reply evidence and must not be reused as fresh outbound packets.
 - Long-haul checkpoint and handoff artifacts still carry sidecar-era framing and need to be treated as transitional continuity rather than clean active planning authority.
 - `hivefiver` agent-profile delegation and runtime governance topology do not yet present one cleanly aligned story.
-- The cross-cutting lane is now active, but its shared routing and continuity constitution is not yet finished.
+- The shared cross-cutting constitutions now exist, but they are not yet promoted as active policy for later lane planning.
 
 ## Recent Decisions
 
@@ -38,6 +38,7 @@ The next open decision will be which lane-family planning cycle should activate 
 - Generate the lane-family phase-planning packet set before selecting any lane-local planning cycle.
 - Keep the phase-folder packet canonical and treat `docs/plans` lane-family files as supporting mirrors only.
 - Activate the cross-cutting routing and continuity cycle before any lane-local planning deepens.
+- Complete the cross-cutting constitutions before selecting the next lane-family cycle.
 
 ## Session History
 
@@ -49,3 +50,4 @@ The next open decision will be which lane-family planning cycle should activate 
 - [2026-03-06] Generated the `hivefiver` lane-family phase-planning packet set and opened a lane-activation review gate.
 - [2026-03-06] Materialized the canonical lane-family packet inside `.hivemind/project/planning/phases/01-hivefiver-module/` and moved the review gate to `01-13-PLAN.md`.
 - [2026-03-06] Activated `01-12-PLAN.md` as the first lane-family planning cycle.
+- [2026-03-06] Completed the shared cross-cutting constitutions and opened `01-14-PLAN.md` as the promotion gate for the next lane selection.

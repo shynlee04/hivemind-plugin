@@ -1,7 +1,7 @@
 # Hivefiver Cross-Cutting Routing And Continuity Plan
 
 Date: 2026-03-06
-Status: active-cross-cutting-plan
+Status: completed-cross-cutting-plan
 Type: cross-cutting-phase-plan
 
 ## Purpose
@@ -50,6 +50,15 @@ The current repo still has cross-cutting mismatches that affect every lane:
 - unresolved mismatch register
 - lane-activation readiness criteria
 
+## Completed Outputs
+
+- `docs/plans/hivefiver-routing-precedence-model-2026-03-06.md`
+- `docs/plans/hivefiver-continuity-precedence-model-2026-03-06.md`
+- `docs/plans/hivefiver-runtime-vs-planning-matrix-2026-03-06.md`
+- `docs/plans/hivefiver-shared-validation-constitution-2026-03-06.md`
+- `docs/plans/hivefiver-cross-cutting-mismatch-register-2026-03-06.md`
+- `docs/plans/hivefiver-lane-activation-readiness-2026-03-06.md`
+
 ## Validation Expectations
 
 - do not create new state stores
@@ -59,8 +68,8 @@ The current repo still has cross-cutting mismatches that affect every lane:
 
 ## Approval Gate
 
-User approval has been provided to activate this cross-cutting planning cycle.
-Further user approval is required before any lane-local planning treats its outputs as active policy.
+User approval was provided to activate this cross-cutting planning cycle.
+Further user approval is required before any later lane-local planning treats its outputs as promoted shared policy and activates the next lane-family cycle.
 
 ## Non-Goals
 
