@@ -12,6 +12,7 @@ Within that resync, the `hivefiver` operating model has now been turned into a c
 The cross-cutting routing and continuity lane in `01-12-PLAN.md` is complete and its outputs were promoted through `01-14-PLAN.md`.
 The Diagnose lane in `01-07-PLAN.md` is now complete at the planning-output level.
 The current open gate is `01-15-PLAN.md`, which will decide which lane-family planning cycle should follow Diagnose.
+The broader whole-system architecture has also been deep-scanned so the project can now be described in source layer, execution layer, and result layer terms instead of treating `.hivemind` as the origin.
 
 ## Active Blockers
 
@@ -22,6 +23,7 @@ The current open gate is `01-15-PLAN.md`, which will decide which lane-family pl
 - Long-haul checkpoint and handoff artifacts still carry sidecar-era framing and need to be treated as transitional continuity rather than clean active planning authority.
 - `hivefiver` agent-profile delegation and runtime governance topology do not yet present one cleanly aligned story.
 - The Diagnose lane has produced its outputs, but the next lane selection now needs an explicit decision on whether to keep nominal order or take an alignment-focused exception.
+- The repo still has too many descriptive surfaces that can be mistaken for authority if the refactor does not anchor on code, schemas, and execution flow first.
 
 ## Recent Decisions
 
@@ -42,6 +44,7 @@ The current open gate is `01-15-PLAN.md`, which will decide which lane-family pl
 - Complete the cross-cutting constitutions before selecting the next lane-family cycle.
 - Promote the completed cross-cutting constitutions before activating the first lane-local planning cycle.
 - Complete Diagnose outputs before choosing whether alignment work should override nominal lane order.
+- Keep the whole-project refactor anchored on source surfaces and automatic execution flow, not on `.hivemind` artifacts alone.
 
 ## Session History
 
@@ -56,3 +59,4 @@ The current open gate is `01-15-PLAN.md`, which will decide which lane-family pl
 - [2026-03-06] Completed the shared cross-cutting constitutions and opened `01-14-PLAN.md` as the promotion gate for the next lane selection.
 - [2026-03-07] Promoted the shared cross-cutting constitutions and activated `01-07-PLAN.md` as the first lane-local planning cycle.
 - [2026-03-07] Completed the Diagnose lane outputs and opened `01-15-PLAN.md` as the next lane-selection gate.
+- [2026-03-07] Completed a whole-system deep-scan audit that frames the project as source layer → execution layer → result layer.
