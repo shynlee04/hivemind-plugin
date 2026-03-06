@@ -15,6 +15,8 @@
 - 2026-03-06: the canonical lane-family packet was materialized inside the planning-root phase folder.
 - 2026-03-06: the cross-cutting routing and continuity lane was activated as the first lane-family planning cycle.
 - 2026-03-06: the cross-cutting routing, continuity, validation, and mismatch constitutions were completed and a promotion gate was opened for the next lane selection.
+- 2026-03-07: the cross-cutting constitutions were promoted as shared lane policy and the Diagnose lane was activated as the first lane-local planning cycle.
+- 2026-03-07: the Diagnose lane produced its verified situation summary, contradiction register, ranked remediation routes, and stop-or-promote decision.
 
 ## Next Milestone Candidates
 
@@ -22,8 +24,8 @@
   - canonical planning-root normalization
   - bootstrap/composition map
   - resynced long-haul master plan
-  - promotion of the completed cross-cutting constitutions into shared lane policy
-  - selection of the next lane-family planning cycle after the promotion gate is approved
+  - explicit approval of the next lane after Diagnose
+  - bounded alignment planning if lane-order exception is approved
 - Runtime return:
   - QA/research workflow contract
   - direct GX-Pack fallback runtime coverage

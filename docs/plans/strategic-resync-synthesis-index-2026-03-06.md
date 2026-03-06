@@ -67,10 +67,14 @@ Use these as the current strategic resync packet:
 20. `docs/plans/hivefiver-cross-cutting-mismatch-register-2026-03-06.md`
 21. `docs/plans/hivefiver-lane-activation-readiness-2026-03-06.md`
 22. `docs/plans/hivefiver-phase-plan-diagnose-2026-03-06.md`
-23. `docs/plans/hivefiver-phase-plan-repair-refactor-2026-03-06.md`
-24. `docs/plans/hivefiver-phase-plan-tailored-build-2026-03-06.md`
-25. `docs/plans/hivefiver-phase-plan-guidance-2026-03-06.md`
-26. `docs/plans/hivefiver-phase-plan-composition-2026-03-06.md`
+23. `docs/plans/hivefiver-diagnose-verified-situation-summary-2026-03-07.md`
+24. `docs/plans/hivefiver-diagnose-contradiction-register-2026-03-07.md`
+25. `docs/plans/hivefiver-diagnose-ranked-remediation-routes-2026-03-07.md`
+26. `docs/plans/hivefiver-diagnose-stop-or-promote-decision-2026-03-07.md`
+27. `docs/plans/hivefiver-phase-plan-repair-refactor-2026-03-06.md`
+28. `docs/plans/hivefiver-phase-plan-tailored-build-2026-03-06.md`
+29. `docs/plans/hivefiver-phase-plan-guidance-2026-03-06.md`
+30. `docs/plans/hivefiver-phase-plan-composition-2026-03-06.md`
 
 ## Local Lineage Planning Anchors
 
@@ -89,6 +93,10 @@ These are local planning documents for the active second-lineage module model. T
 - `docs/plans/hivefiver-cross-cutting-mismatch-register-2026-03-06.md`
 - `docs/plans/hivefiver-lane-activation-readiness-2026-03-06.md`
 - `docs/plans/hivefiver-phase-plan-diagnose-2026-03-06.md`
+- `docs/plans/hivefiver-diagnose-verified-situation-summary-2026-03-07.md`
+- `docs/plans/hivefiver-diagnose-contradiction-register-2026-03-07.md`
+- `docs/plans/hivefiver-diagnose-ranked-remediation-routes-2026-03-07.md`
+- `docs/plans/hivefiver-diagnose-stop-or-promote-decision-2026-03-07.md`
 - `docs/plans/hivefiver-phase-plan-repair-refactor-2026-03-06.md`
 - `docs/plans/hivefiver-phase-plan-tailored-build-2026-03-06.md`
 - `docs/plans/hivefiver-phase-plan-guidance-2026-03-06.md`
@@ -107,11 +115,14 @@ These are local planning documents for the active second-lineage module model. T
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-12-PLAN.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-13-PLAN.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-14-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-15-PLAN.md`
 
 The canonical packet now lives in the planning-root phase folder.
 The `docs/plans` lane-family packet files remain supporting mirrors and synthesis references, not the primary continuation surface.
-`01-12-PLAN.md` is now complete at the planning-output level.
-`01-14-PLAN.md` is the current promotion gate before the next lane-family activation.
+`01-12-PLAN.md` is complete at the planning-output level.
+`01-14-PLAN.md` is completed promotion history.
+`01-07-PLAN.md` is completed Diagnose history.
+`01-15-PLAN.md` is the current next-lane selection gate.
 
 ## Hivefiver Carry Order
 
@@ -119,15 +130,18 @@ For the `hivefiver` module specifically, the recommended order is:
 
 1. read `.hivemind/project/planning/phases/01-hivefiver-module/01-06-PLAN.md`
 2. read `.hivemind/project/planning/phases/01-hivefiver-module/01-12-PLAN.md`
-3. read `.hivemind/project/planning/phases/01-hivefiver-module/01-07-PLAN.md`
-4. read `.hivemind/project/planning/phases/01-hivefiver-module/01-08-PLAN.md`
-5. read `.hivemind/project/planning/phases/01-hivefiver-module/01-09-PLAN.md`
-6. read `.hivemind/project/planning/phases/01-hivefiver-module/01-10-PLAN.md`
-7. read `.hivemind/project/planning/phases/01-hivefiver-module/01-11-PLAN.md`
-8. read `.hivemind/project/planning/phases/01-hivefiver-module/01-14-PLAN.md`
-9. treat `01-12-PLAN.md` as completed cross-cutting output history
-10. treat `01-13-PLAN.md` as completed activation review history
-11. treat `01-14-PLAN.md` as the current promotion gate
+3. read `.hivemind/project/planning/phases/01-hivefiver-module/01-14-PLAN.md`
+4. read `.hivemind/project/planning/phases/01-hivefiver-module/01-07-PLAN.md`
+5. read `.hivemind/project/planning/phases/01-hivefiver-module/01-15-PLAN.md`
+6. read `.hivemind/project/planning/phases/01-hivefiver-module/01-08-PLAN.md`
+7. read `.hivemind/project/planning/phases/01-hivefiver-module/01-09-PLAN.md`
+8. read `.hivemind/project/planning/phases/01-hivefiver-module/01-10-PLAN.md`
+9. read `.hivemind/project/planning/phases/01-hivefiver-module/01-11-PLAN.md`
+10. treat `01-12-PLAN.md` as completed cross-cutting output history
+11. treat `01-13-PLAN.md` as completed activation review history
+12. treat `01-14-PLAN.md` as completed promotion history
+13. treat `01-07-PLAN.md` as completed Diagnose history
+14. treat `01-15-PLAN.md` as the current next-lane selection gate
 
 ## Older Documents: Classification
 
@@ -187,4 +201,4 @@ For the current `hivefiver` lane-design round specifically, success now means:
 - the packet has been bridged back into the broader planning root
 - the lane-family phase-planning packet set exists
 - the first lane-family cycle has completed its shared constitutions
-- the next move is approving promotion and selecting the next lane
+- the constitutions are promoted, Diagnose is complete, and the next move is selecting the next lane from an explicit gate

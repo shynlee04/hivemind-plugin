@@ -9,8 +9,9 @@ The March 6 runtime hardening tranche is complete. The active work is now a stra
 3. How local repo truth and manual external synthesis should combine without contaminating the next long-haul plan.
 
 Within that resync, the `hivefiver` operating model has now been turned into a canonical lane-family phase-planning packet set inside the planning-root phase folder.
-The cross-cutting routing and continuity lane in `01-12-PLAN.md` is now complete at the planning-output level.
-The current open gate is `01-14-PLAN.md`, which will decide whether to promote those outputs as shared policy and which lane-family planning cycle should activate next.
+The cross-cutting routing and continuity lane in `01-12-PLAN.md` is complete and its outputs were promoted through `01-14-PLAN.md`.
+The Diagnose lane in `01-07-PLAN.md` is now complete at the planning-output level.
+The current open gate is `01-15-PLAN.md`, which will decide which lane-family planning cycle should follow Diagnose.
 
 ## Active Blockers
 
@@ -20,7 +21,7 @@ The current open gate is `01-14-PLAN.md`, which will decide whether to promote t
 - Existing external research packet files are mixed prompt-plus-reply evidence and must not be reused as fresh outbound packets.
 - Long-haul checkpoint and handoff artifacts still carry sidecar-era framing and need to be treated as transitional continuity rather than clean active planning authority.
 - `hivefiver` agent-profile delegation and runtime governance topology do not yet present one cleanly aligned story.
-- The shared cross-cutting constitutions now exist, but they are not yet promoted as active policy for later lane planning.
+- The Diagnose lane has produced its outputs, but the next lane selection now needs an explicit decision on whether to keep nominal order or take an alignment-focused exception.
 
 ## Recent Decisions
 
@@ -39,6 +40,8 @@ The current open gate is `01-14-PLAN.md`, which will decide whether to promote t
 - Keep the phase-folder packet canonical and treat `docs/plans` lane-family files as supporting mirrors only.
 - Activate the cross-cutting routing and continuity cycle before any lane-local planning deepens.
 - Complete the cross-cutting constitutions before selecting the next lane-family cycle.
+- Promote the completed cross-cutting constitutions before activating the first lane-local planning cycle.
+- Complete Diagnose outputs before choosing whether alignment work should override nominal lane order.
 
 ## Session History
 
@@ -51,3 +54,5 @@ The current open gate is `01-14-PLAN.md`, which will decide whether to promote t
 - [2026-03-06] Materialized the canonical lane-family packet inside `.hivemind/project/planning/phases/01-hivefiver-module/` and moved the review gate to `01-13-PLAN.md`.
 - [2026-03-06] Activated `01-12-PLAN.md` as the first lane-family planning cycle.
 - [2026-03-06] Completed the shared cross-cutting constitutions and opened `01-14-PLAN.md` as the promotion gate for the next lane selection.
+- [2026-03-07] Promoted the shared cross-cutting constitutions and activated `01-07-PLAN.md` as the first lane-local planning cycle.
+- [2026-03-07] Completed the Diagnose lane outputs and opened `01-15-PLAN.md` as the next lane-selection gate.

@@ -8,7 +8,7 @@
 | 2 | Planning-root normalization | in_progress | 40% |
 | 3 | Manual Devin packet wave | in_progress | 60% |
 | 4 | Resynced long-haul master-plan replacement | pending | 0% |
-| 5 | Planning-root population and workflow contract hardening | in_progress | 79% |
+| 5 | Planning-root population and workflow contract hardening | in_progress | 88% |
 | 6 | Runtime return: QA/research workflow and deferred harness work | pending | 0% |
 
 ## Phase Notes
@@ -49,6 +49,8 @@
 - Activate the cross-cutting routing and continuity cycle first, before any lane-local planning deepens.
 - Complete the shared cross-cutting constitutions before promoting later lane-local planning.
 - Open a dedicated promotion gate to approve the next lane-family activation from a stable shared base.
+- Use Diagnose as the first lane-local cycle after promotion so contradiction-first evidence leads later mutation-capable planning.
+- Use the Diagnose outputs to decide whether alignment work should trigger a bounded lane-order exception.
 
 ### Phase 6: Runtime return
 
