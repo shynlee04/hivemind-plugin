@@ -66,9 +66,8 @@ choose the correct work lane instead of collapsing everything into one generic �
 4. Work Lanes
 Lanes:
 - Doctor and diagnosis
-- Repair and recovery
+- Repair and refactor
 - Tailored build and package creation
-- Refactor and extension
 - Guidance and operator enablement
 - Package composition and chained-stack design
 
@@ -123,18 +122,19 @@ Output shape:
 - failure grouping
 - bounded remediation routes
 
-### Family 2: Repair and Recovery
+### Family 2: Repair and Refactor
 
 Use when:
 
 - framework assets were broken or misconfigured
 - user “messed up” `.opencode/**`
 - continuity or workflow artifacts are poisoning later work
+- existing meta packages need to be stabilized, hardened, extended, or realigned
 
 Output shape:
 
 - recovery plan
-- staged repair route
+- staged repair or extension route
 - regression and rollback gates
 
 ### Family 3: Tailored Build and Package Creation
@@ -151,20 +151,7 @@ Output shape:
 - spec-driven plan
 - TDD-oriented execution path
 
-### Family 4: Refactor and Extension
-
-Use when:
-
-- existing meta packages need to be expanded, hardened, or realigned
-- one package has grown into a multi-package concern
-
-Output shape:
-
-- refactor scope map
-- dependency-aware tranche plan
-- compatibility and migration notes
-
-### Family 5: Guidance and Operator Enablement
+### Family 4: Guidance and Operator Enablement
 
 Use when:
 
@@ -178,7 +165,7 @@ Output shape:
 - recommended route
 - safe next-step sequence
 
-### Family 6: Package Composition and Chained-Stack Design
+### Family 5: Package Composition and Chained-Stack Design
 
 Use when:
 
@@ -208,6 +195,21 @@ In those cases, `hivefiver` should prefer:
 - stronger verification and rollback language
 - explicit handoff and stop conditions
 
+## Reconciled Direction
+
+External synthesis was validated against the repo before this document was updated.
+
+The accepted planning direction is:
+
+- keep five lanes, not six
+- merge repair and refactor into one lane
+- treat `stabilize` versus `extend` as orientation inside that lane
+- keep topology-aware routing as a real planning dimension
+- keep diagnosis-first behavior as the default when framework stability is unclear
+
+This does not mean every returned external claim became local truth.
+The reconciliation layer in `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md` defines which claims were verified, partially accepted, or contradicted.
+
 ## Cycle Plan
 
 ### Cycle 1: Module Routing Finalization
@@ -231,12 +233,20 @@ Goal:
 - carry one dedicated `hivefiver` module packet to Devin
 - use the returned synthesis to confirm or correct the local lane and routing model
 
-### Cycle 4: Execution-Track Mapping
+### Cycle 4: Reconciliation And Track Reset
 
 Goal:
 
-- define which work family leads to which planning/execution pattern
-- keep doctor, repair, create, refactor, guidance, and composition tracks distinct
+- validate the returned synthesis against repo truth
+- reset the local model from six tracks to the accepted five-lane model
+- separate verified current truth from planning-only recommendations
+
+### Cycle 5: Phase-Planning Packetization
+
+Goal:
+
+- convert the reconciled five-lane model into approval-gated phase plans
+- define the phase order without turning this document into an implementation spec
 
 ### Cycle 5: Later Implementation Planning
 

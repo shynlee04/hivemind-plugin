@@ -13,23 +13,23 @@ It exists so returned external synthesis can be reconciled into a stable executi
 
 ## Track Set
 
-The current `hivefiver` execution map has six tracks:
+The reconciled `hivefiver` execution map has five tracks:
 
 1. Doctor and diagnosis
-2. Repair and recovery
+2. Repair and refactor
 3. Tailored build and package creation
-4. Refactor and extension
-5. Guidance and operator enablement
-6. Package composition and chained-stack design
+4. Guidance and operator enablement
+5. Package composition and chained-stack design
+
+This is a reconciled planning update, not a claim that all lane-specific behaviors are already implemented in code.
 
 ## Track Matrix
 
 | Track | Primary Trigger | First Action | Typical Outputs | Approval Gate Before Mutation |
 |---|---|---|---|---|
 | Doctor and diagnosis | something is wrong but root cause is unclear | truth audit | audit note, grouped hypotheses, ranked routes | user agrees on the likely route |
-| Repair and recovery | framework assets are broken or polluted | bound the damage and rollback surface | recovery plan, rollback gate, validation checklist | user approves staged repair path |
+| Repair and refactor | framework assets are broken, polluted, or need controlled extension | bound the damage, compatibility, and rollback surface | recovery plan, tranche route, rollback gate, validation checklist | user approves stabilize-versus-extend route |
 | Tailored build and package creation | user wants a new domain- or team-specific meta package | clarify intent and package topology | capability brief, package scope, spec-driven plan | user approves package scope and success criteria |
-| Refactor and extension | existing meta package needs to evolve | scope dependency and compatibility risk | tranche map, compatibility notes, verification path | user approves the tranche order |
 | Guidance and operator enablement | user needs understanding before mutation | explain mechanism and route choices | operator guide, next-step route, non-goals | stop if guidance alone solves the need |
 | Package composition and chained-stack design | multiple framework surfaces must work together | map ownership and integration order | composition map, ownership boundaries, integration order | user approves composition boundaries and order |
 
@@ -59,6 +59,11 @@ The current `hivefiver` execution map has six tracks:
 - Chained:
   - require composition-first planning and stronger continuity artifacts
 
+Current repo truth:
+
+- dependency-aware continuity already exists in schemas and graph relationships
+- explicit topology fields and topology-specific intake routing remain planning work, not landed implementation
+
 ## Hard Routing Rules
 
 - If root cause is unclear, doctor track outranks all others.
@@ -67,13 +72,20 @@ The current `hivefiver` execution map has six tracks:
 - If work spans multiple packages or surfaces, composition track should frame the order before any local implementation track begins.
 - If a request crosses lineage or runtime boundaries, split the work before implementation.
 
+Current repo truth:
+
+- these rules are the reconciled planning target
+- some supporting signals already exist in governance and workflow surfaces
+- the full hard-block routing matrix is not yet fully programmatic
+
 ## Recommended Next Planning Artifacts
 
-If the Devin answer validates the current direction, the next planning layer should likely be:
+Because the external synthesis has now been validated and reconciled, the next planning layer should likely be:
 
-- one approval-gated plan per major track family
+- one approval-gated phase plan per major lane family
 - one verification contract per mutation-capable track
 - one continuity template for doctor/repair outputs
+- one routing-and-topology plan that stays planning-only until separately approved
 
 ## Non-Goals
 

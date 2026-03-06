@@ -56,6 +56,7 @@ Use these as the current strategic resync packet:
 9. `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
 10. `docs/plans/hivefiver-devin-packet-module-operations-2026-03-06.md`
 11. `docs/plans/hivefiver-execution-track-map-2026-03-06.md`
+12. `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
 
 ## Local Lineage Planning Anchors
 
@@ -63,6 +64,7 @@ These are local planning documents for the active second-lineage module model. T
 
 - `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
 - `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
+- `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-01-PLAN.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-02-PLAN.md`
 
@@ -72,8 +74,9 @@ For the `hivefiver` module specifically, the recommended order is:
 
 1. read `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
 2. read `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
-3. carry `docs/plans/hivefiver-devin-packet-module-operations-2026-03-06.md`
-4. reconcile the answer into `docs/plans/hivefiver-execution-track-map-2026-03-06.md`
+3. read `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
+4. treat `docs/plans/hivefiver-devin-packet-module-operations-2026-03-06.md` as the consumed outbound packet
+5. use `docs/plans/hivefiver-execution-track-map-2026-03-06.md` as the reconciled local receiving surface
 
 ## Older Documents: Classification
 
@@ -106,6 +109,7 @@ When the replies come back, evaluate them using these rules:
 - recommendations that demote `brain.json` from hot metadata authority are rejected
 - recommendations that collapse lineages before making overlap explicit are rejected
 - recommendations that turn prompt wrappers into architecture are rejected
+- recommendations that contradict current `hivefiver` delegation permissions must be marked as future options, not current truth
 
 ## Success Condition
 
@@ -115,3 +119,9 @@ This packet set is ready for the next manual synthesis round when:
 - the March 6 baseline remains explicit and protected
 - the older mixed evidence packets are no longer treated as clean outbound packets
 - returned external answers can be validated and synthesized back into the next long-haul architecture direction
+
+For the current `hivefiver` lane-design round specifically, success now means:
+
+- the returned external synthesis has been reconciled into a verified local artifact
+- the local model has been reset to the accepted five-lane structure
+- the next move is phase planning, not another freeform synthesis pass
