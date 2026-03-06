@@ -224,14 +224,21 @@ Goal:
 - place the `hivefiver` hierarchy into canonical planning-root structures
 - ensure phase, research, debug, and verification artifacts can carry the module cleanly
 
-### Cycle 3: Execution-Track Mapping
+### Cycle 3: Manual External Pressure Test
+
+Goal:
+
+- carry one dedicated `hivefiver` module packet to Devin
+- use the returned synthesis to confirm or correct the local lane and routing model
+
+### Cycle 4: Execution-Track Mapping
 
 Goal:
 
 - define which work family leads to which planning/execution pattern
 - keep doctor, repair, create, refactor, guidance, and composition tracks distinct
 
-### Cycle 4: Later Implementation Planning
+### Cycle 5: Later Implementation Planning
 
 Goal:
 

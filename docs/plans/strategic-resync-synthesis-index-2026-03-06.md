@@ -54,6 +54,8 @@ Use these as the current strategic resync packet:
 7. `docs/plans/2026-03-06-external-replies-reconciled-execution-plan.md`
 8. `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
 9. `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
+10. `docs/plans/hivefiver-devin-packet-module-operations-2026-03-06.md`
+11. `docs/plans/hivefiver-execution-track-map-2026-03-06.md`
 
 ## Local Lineage Planning Anchors
 
@@ -62,6 +64,16 @@ These are local planning documents for the active second-lineage module model. T
 - `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
 - `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-01-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-02-PLAN.md`
+
+## Hivefiver Carry Order
+
+For the `hivefiver` module specifically, the recommended order is:
+
+1. read `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
+2. read `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
+3. carry `docs/plans/hivefiver-devin-packet-module-operations-2026-03-06.md`
+4. reconcile the answer into `docs/plans/hivefiver-execution-track-map-2026-03-06.md`
 
 ## Older Documents: Classification
 
