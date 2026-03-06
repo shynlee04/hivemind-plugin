@@ -16,6 +16,8 @@
   - bootstrap/composition map
   - fresh manual Devin packet set
   - resynced long-haul master plan
+  - `hivefiver` reconciliation and planning-root bridge
+  - approval-gated lane-family phase-planning packet set
 - Runtime return:
   - QA/research workflow contract
   - direct GX-Pack fallback runtime coverage

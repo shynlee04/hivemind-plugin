@@ -23,10 +23,13 @@ These points are materially supported by the current repository:
 
 - `hivefiver` already has real framework-facing surfaces for doctor, audit, tutor, bridge, persona routing, and workflow adaptation.
 - the tri-persona model is real and already represented by separate workflow YAMLs.
+- the current runtime persona router is not the same thing as the planning-lane taxonomy.
+- the current runtime persona selection is still heuristic and lighter-weight than the richer scoring model described in the persona skill.
 - workflow-level gates already exist and differ by persona and risk level.
 - current schemas already support dependency-aware and related-entity-aware continuity.
 - current governance already exposes relevant health signals such as `drift_score`, `pending_failure_ack`, and acceptance-note handling.
 - current state authority remains split intentionally across `brain.json`, `hierarchy.json`, and `graph/*.json`.
+- the effective runtime delegation topology enforced by the governance plugin is stricter than some `hivefiver` agent-profile documentation.
 
 ## Accepted Planning Adjustments
 
@@ -72,12 +75,13 @@ These belong in later planning and implementation cycles if approved.
 
 These parts of the returned synthesis must not be carried forward as current truth:
 
-1. `hivefiver` is not currently forbidden from delegating to `hivemaker` or `hivehealer`.
+1. The delegation picture is split between documentation and runtime enforcement.
 
 Current repo truth:
 
-- `agents/hivefiver.md` currently allows delegation to both
-- the stricter bridge-only model is still only a possible future design choice
+- `agents/hivefiver.md` currently lists `hivemaker` and `hivehealer` as allowed targets
+- the governance plugin delegation topology currently restricts `hivefiver` to a narrower runtime set
+- phase planning must treat this as a real mismatch to resolve later, not as settled clean behavior
 
 2. Some cited brownfield scan surfaces are not present under the exact file names claimed by the returned synthesis.
 
@@ -92,6 +96,14 @@ Current repo truth:
 
 - `hivemind_cycle` is allowed
 - `export_cycle` remains conceptually important in some docs, but the actual agent permission surface differs
+
+4. Broad whole-project `hivefiver` scope language is not the same as current enforced runtime boundaries.
+
+Current repo truth:
+
+- some high-level docs describe a broader pivoted scope
+- actual agent-profile and governance boundaries still forbid `src/**` and `tests/**` for `hivefiver`
+- phase planning should treat broader whole-project scope as aspiration or future policy work, not as current implemented authority
 
 ## Reconciled Planning Model
 
@@ -116,7 +128,13 @@ Use this as the stable local planning model going into phase planning:
 ### Boundary Rule
 
 `hivefiver` remains the framework-facing lineage.
-It may still coordinate with shared subagents under the current repo contract, but phase planning must keep lineage boundaries explicit and avoid flattening `hivefiver` into a generic product executor.
+Phase planning must keep lineage boundaries explicit and avoid flattening `hivefiver` into a generic product executor.
+It must also distinguish:
+
+- documented/profile delegation allowance
+- effective runtime delegation enforcement
+- broad strategic scope language
+- actual enforced write and delegation boundaries
 
 ### State Rule
 
@@ -133,6 +151,7 @@ The packet set is now ready to phase into approval-gated planning for:
 - topology-aware routing plans
 - diagnosis-first gate design
 - lineage-boundary hardening where current repo contracts are still looser than the desired long-haul shape
+- planning-root integration that classifies current continuity artifacts as active, transitional, or historical
 
 ## What Is Not Ready
 

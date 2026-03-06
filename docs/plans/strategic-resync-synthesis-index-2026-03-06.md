@@ -57,6 +57,7 @@ Use these as the current strategic resync packet:
 10. `docs/plans/hivefiver-devin-packet-module-operations-2026-03-06.md`
 11. `docs/plans/hivefiver-execution-track-map-2026-03-06.md`
 12. `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
+13. `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
 
 ## Local Lineage Planning Anchors
 
@@ -65,8 +66,11 @@ These are local planning documents for the active second-lineage module model. T
 - `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
 - `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
 - `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
+- `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-01-PLAN.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-02-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-03-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-04-PLAN.md`
 
 ## Hivefiver Carry Order
 
@@ -75,8 +79,9 @@ For the `hivefiver` module specifically, the recommended order is:
 1. read `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
 2. read `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
 3. read `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
-4. treat `docs/plans/hivefiver-devin-packet-module-operations-2026-03-06.md` as the consumed outbound packet
-5. use `docs/plans/hivefiver-execution-track-map-2026-03-06.md` as the reconciled local receiving surface
+4. read `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
+5. treat `docs/plans/hivefiver-devin-packet-module-operations-2026-03-06.md` as the consumed outbound packet
+6. use `docs/plans/hivefiver-execution-track-map-2026-03-06.md` as the reconciled local receiving surface
 
 ## Older Documents: Classification
 
@@ -88,6 +93,15 @@ These older March 6 documents remain useful as historical evidence or caution, b
 | `docs/plans/2026-03-06-devin-repo-mapping-query-packet.md` | mixed prompt-plus-reply evidence | historical only |
 | `docs/plans/2026-03-06-external-findings-truth-matrix.md` | reconciliation evidence | local cross-check only |
 | `docs/plans/2026-03-06-live-architecture-themes.md` | architecture tension inventory | local reference only |
+
+## Transitional Continuity: Classification
+
+These remain useful, but should not override the active planning-root packet:
+
+| Document | Classification | How To Use |
+|---|---|---|
+| `.hivemind/handoffs/long-haul-resync-handoff-2026-03-06.md` | transitional continuity artifact | historical resync context only |
+| `.hivemind/checkpoints/long-haul-resync-checkpoint-2026-03-06.md` | transitional continuity artifact | historical baseline and risks only |
 
 ## Manual Carry Order
 
@@ -124,4 +138,5 @@ For the current `hivefiver` lane-design round specifically, success now means:
 
 - the returned external synthesis has been reconciled into a verified local artifact
 - the local model has been reset to the accepted five-lane structure
+- the packet has been bridged back into the broader planning root
 - the next move is phase planning, not another freeform synthesis pass

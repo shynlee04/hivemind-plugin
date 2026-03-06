@@ -6,9 +6,9 @@
 |-------|------|--------|----------|
 | 1 | Bootstrap and composition audit | in_progress | 70% |
 | 2 | Planning-root normalization | in_progress | 40% |
-| 3 | Manual Devin packet wave | pending | 0% |
+| 3 | Manual Devin packet wave | in_progress | 60% |
 | 4 | Resynced long-haul master-plan replacement | pending | 0% |
-| 5 | Planning-root population and workflow contract hardening | pending | 0% |
+| 5 | Planning-root population and workflow contract hardening | in_progress | 25% |
 | 6 | Runtime return: QA/research workflow and deferred harness work | pending | 0% |
 
 ## Phase Notes
@@ -30,6 +30,7 @@
 - Author fresh dated question packets locally.
 - Carry only validated local facts into Devin.
 - Treat returned answers as synthesis input, not truth, until validated locally.
+- Reconcile returned `hivefiver` synthesis into the planning root before opening phase planning.
 
 ### Phase 4: Resynced long-haul master-plan replacement
 
@@ -42,6 +43,7 @@
 - Define the project-level workflow contract for phase planning, execution, verification, and milestone closeout.
 - Add the second-lineage `hivefiver` module hierarchy so doctor, repair, tailored-build, extension, guidance, and composition work have a canonical routing surface.
 - Separate guided, practitioner, and advanced operator paths so the same module can adapt to different technology-awareness levels without flattening workflows.
+- Classify continuity artifacts so active planning-root SOT is not confused with transitional long-haul handoff material.
 
 ### Phase 6: Runtime return
 

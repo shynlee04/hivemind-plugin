@@ -9,6 +9,8 @@ The March 6 runtime hardening tranche is complete. The active work is now a stra
 3. How local repo truth and manual external synthesis should combine without contaminating the next long-haul plan.
 
 Within that resync, the current open planning gap is the second-lineage `hivefiver` operating model: the repo needs a clean hierarchy for diagnosis, repair, tailored meta-package creation, extension, guidance, and multi-package composition across different user-skill levels and project stages.
+That gap now includes one broader integration task:
+the `hivefiver` packet must be bridged back into the project planning root so the system remains coherent at the milestone, roadmap, continuity, and module levels.
 
 ## Active Blockers
 
@@ -17,6 +19,8 @@ Within that resync, the current open planning gap is the second-lineage `hivefiv
 - The readable planning root exists but still has thin population and weak operational contracts.
 - Existing external research packet files are mixed prompt-plus-reply evidence and must not be reused as fresh outbound packets.
 - `hivefiver` is framed as the active healer/meta-builder lineage, but its real-world workflow taxonomy and adaptive routing model were not yet explicitly materialized in the planning root.
+- Long-haul checkpoint and handoff artifacts still carry sidecar-era framing and need to be treated as transitional continuity rather than clean active planning authority.
+- `hivefiver` agent-profile delegation and runtime governance topology do not yet present one cleanly aligned story.
 
 ## Recent Decisions
 
@@ -29,6 +33,8 @@ Within that resync, the current open planning gap is the second-lineage `hivefiv
 - Use JSON for deterministic runtime state and markdown for readable planning/governance SOT.
 - Use fresh dated manual Devin packets rather than live DeepWiki loops or mixed stale packet reuse.
 - Add a dedicated `hivefiver` module architecture doc, routing matrix, and planning-root phase anchor before reopening module-specific implementation work.
+- Reconcile returned `hivefiver` synthesis into a five-lane planning model, while keeping runtime persona routing and runtime delegation enforcement distinct from that planning taxonomy.
+- Classify planning-root, Milestone 01, and long-haul continuity artifacts by active versus transitional role before opening phase planning.
 
 ## Session History
 
@@ -36,3 +42,4 @@ Within that resync, the current open planning gap is the second-lineage `hivefiv
 - [2026-03-06] Packed a long-haul resync checkpoint and handoff to separate completed runtime work from external synthesis inputs.
 - [2026-03-06] Pivoted from immediate runtime continuation to a deeper architectural resync on `.hivemind` composition, planning-root hierarchy, and workflow orchestration.
 - [2026-03-06] Extended the strategic packet to model `hivefiver` as an adaptive second-lineage module rather than only as a broad healer label.
+- [2026-03-06] Reconciled the returned `hivefiver` synthesis and connected it back to the broader planning root so the next step can be approval-gated phase planning.
