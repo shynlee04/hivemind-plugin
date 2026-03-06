@@ -58,6 +58,13 @@ Use these as the current strategic resync packet:
 11. `docs/plans/hivefiver-execution-track-map-2026-03-06.md`
 12. `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
 13. `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
+14. `docs/plans/hivefiver-lane-family-phase-planning-master-2026-03-06.md`
+15. `docs/plans/hivefiver-cross-cutting-routing-continuity-plan-2026-03-06.md`
+16. `docs/plans/hivefiver-phase-plan-diagnose-2026-03-06.md`
+17. `docs/plans/hivefiver-phase-plan-repair-refactor-2026-03-06.md`
+18. `docs/plans/hivefiver-phase-plan-tailored-build-2026-03-06.md`
+19. `docs/plans/hivefiver-phase-plan-guidance-2026-03-06.md`
+20. `docs/plans/hivefiver-phase-plan-composition-2026-03-06.md`
 
 ## Local Lineage Planning Anchors
 
@@ -67,10 +74,19 @@ These are local planning documents for the active second-lineage module model. T
 - `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
 - `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
 - `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
+- `docs/plans/hivefiver-lane-family-phase-planning-master-2026-03-06.md`
+- `docs/plans/hivefiver-cross-cutting-routing-continuity-plan-2026-03-06.md`
+- `docs/plans/hivefiver-phase-plan-diagnose-2026-03-06.md`
+- `docs/plans/hivefiver-phase-plan-repair-refactor-2026-03-06.md`
+- `docs/plans/hivefiver-phase-plan-tailored-build-2026-03-06.md`
+- `docs/plans/hivefiver-phase-plan-guidance-2026-03-06.md`
+- `docs/plans/hivefiver-phase-plan-composition-2026-03-06.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-01-PLAN.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-02-PLAN.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-03-PLAN.md`
 - `.hivemind/project/planning/phases/01-hivefiver-module/01-04-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-05-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-06-PLAN.md`
 
 ## Hivefiver Carry Order
 
@@ -80,8 +96,9 @@ For the `hivefiver` module specifically, the recommended order is:
 2. read `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
 3. read `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
 4. read `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
-5. treat `docs/plans/hivefiver-devin-packet-module-operations-2026-03-06.md` as the consumed outbound packet
-6. use `docs/plans/hivefiver-execution-track-map-2026-03-06.md` as the reconciled local receiving surface
+5. read `docs/plans/hivefiver-lane-family-phase-planning-master-2026-03-06.md`
+6. read `docs/plans/hivefiver-cross-cutting-routing-continuity-plan-2026-03-06.md`
+7. then choose one lane-family phase plan to activate
 
 ## Older Documents: Classification
 
@@ -139,4 +156,5 @@ For the current `hivefiver` lane-design round specifically, success now means:
 - the returned external synthesis has been reconciled into a verified local artifact
 - the local model has been reset to the accepted five-lane structure
 - the packet has been bridged back into the broader planning root
-- the next move is phase planning, not another freeform synthesis pass
+- the lane-family phase-planning packet set exists
+- the next move is selecting the first lane-family planning cycle, not another freeform synthesis pass

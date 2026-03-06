@@ -19,3 +19,5 @@
 | HM-PLAN-013 | Bridge the `hivefiver` packet back into the broader planning root, Milestone 01 artifacts, and long-haul continuity set before lane-specific phase planning. | 5 | completed |
 | HM-PLAN-014 | Make the planning root and `hivefiver` phase subtree part of the canonical continuation path, ahead of transitional handoff artifacts. | 5 | completed |
 | HM-PLAN-015 | Update the Milestone 01 prompt family so it recognizes planning-root configuration and the `hivefiver` phase subtree as active synthesis inputs. | 5 | completed |
+| HM-PLAN-016 | Generate the `hivefiver` lane-family phase-planning packet set and keep it approval-gated. | 5 | completed |
+| HM-PLAN-017 | Review the lane-family packet set and explicitly choose the first lane-family planning cycle to activate. | 5 | in_progress |

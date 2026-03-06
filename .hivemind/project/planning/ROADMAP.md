@@ -8,7 +8,7 @@
 | 2 | Planning-root normalization | in_progress | 40% |
 | 3 | Manual Devin packet wave | in_progress | 60% |
 | 4 | Resynced long-haul master-plan replacement | pending | 0% |
-| 5 | Planning-root population and workflow contract hardening | in_progress | 25% |
+| 5 | Planning-root population and workflow contract hardening | in_progress | 55% |
 | 6 | Runtime return: QA/research workflow and deferred harness work | pending | 0% |
 
 ## Phase Notes
@@ -44,6 +44,7 @@
 - Add the second-lineage `hivefiver` module hierarchy so doctor, repair, tailored-build, extension, guidance, and composition work have a canonical routing surface.
 - Separate guided, practitioner, and advanced operator paths so the same module can adapt to different technology-awareness levels without flattening workflows.
 - Classify continuity artifacts so active planning-root SOT is not confused with transitional long-haul handoff material.
+- Generate the lane-family phase-planning packet set and open a review gate for selecting the first active lane-family planning cycle.
 
 ### Phase 6: Runtime return
 
