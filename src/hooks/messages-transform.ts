@@ -49,6 +49,10 @@ import {
   computeSharedInjectionCapChars,
   estimateContextWindowChars,
 } from "../lib/budget.js"
+import {
+  getSessionIdFromMessages,
+  resolveRuntimeSessionLineage,
+} from "../lib/runtime-session-lineage.js"
 
 type MessagePart = {
   id?: string
@@ -130,7 +134,8 @@ function isEmptyPackedContext(xml: string): boolean {
   return (
     xml.includes('timestamp="1970-01-01T00:00:00.000Z"') &&
     xml.includes("<trajectory />") &&
-    xml.includes('session=""')
+    xml.includes('<anchors count="0" />') &&
+    xml.includes('<mems count="0" relevant="0" />')
   )
 }
 
@@ -341,7 +346,7 @@ function appendSyntheticPart(message: MessageV2, text: string): void {
  *
  * @param _log Hook logger used for warning surfaces.
  * @param directory Project directory for state/config resolution.
- * @returns A hook that injects shared-budgeted message context.
+ * @returns A hook that injects shared-budgeted message context while minimizing child-session surfaces.
  */
 export function createMessagesTransformHook(_log: { warn: (message: string) => Promise<void> }, directory: string) {
   const stateManager = createStateManager(directory)
@@ -360,6 +365,11 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       if (config.governance_mode === "permissive") return
 
       const state = await stateManager.load()
+      const opencodeSessionId = getSessionIdFromMessages(output.messages)
+        ?? state?.session?.opencode_session_id
+        ?? null
+      const runtimeSessionLineage = await resolveRuntimeSessionLineage(opencodeSessionId)
+      const minimizeForChildSession = runtimeSessionLineage.isChildSession
 
       const maxResponseTokens = config.agent_behavior?.constraints?.max_response_tokens
       const approxContextWindowChars = estimateContextWindowChars(maxResponseTokens)
@@ -373,7 +383,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         contextWindowChars: approxContextWindowChars,
         capCharsOverride: sharedInjectionCapChars,
       })
-      const suppressHumanFacing = state ? shouldSuppressHumanFacingGovernance(state) : false
+      const suppressHumanFacing = (state ? shouldSuppressHumanFacingGovernance(state) : false) || minimizeForChildSession
       const injectionPresence = detectInjectionPresence({ messages: output.messages })
       const pluginMessagePresent = injectionPresence.plugin_message
 
@@ -397,7 +407,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
       const markerInjected = state?.first_turn_context_injected ?? false
       const canInjectForSession = sessionId.length > 0 && !injectedSessionIds.has(sessionId)
 
-      if (state && !markerInjected && canInjectForSession) {
+      if (state && !markerInjected && canInjectForSession && !minimizeForChildSession) {
         const index = getLastNonSyntheticUserMessageIndex(output.messages)
         if (index >= 0) {
           try {
@@ -617,8 +627,12 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           const remainingBeforeCognitive = getRemainingBudget(turnKey)
           const availableForCognitive = Math.max(0, remainingBeforeCognitive - checklistReserve)
           if (availableForCognitive > 160) {
+            const cognitiveBudget = minimizeForChildSession
+              ? Math.max(180, Math.min(420, Math.floor(availableForCognitive * 0.35)))
+              : Math.max(240, Math.min(1200, Math.floor(availableForCognitive * 0.85)))
             const packedContext = packCognitiveState(directory, {
-              budget: Math.max(240, Math.min(1200, Math.floor(availableForCognitive * 0.85))),
+              budget: cognitiveBudget,
+              sessionId: state.session.id,
             })
             if (!isEmptyPackedContext(packedContext)) {
               const packedContextBounded = reserveCoreMessageText(packedContext)
@@ -795,15 +809,17 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           items.push(...lowPriorityItems)
         }
 
-        const orderedChecklistItems = [...requiredItems, ...items]
+        if (!minimizeForChildSession) {
+          const orderedChecklistItems = [...requiredItems, ...items]
 
-        // Preserve checklist compatibility: keep enough room for mandatory auto-realign skill stacks.
-        const checklistBudget = Math.min(MAX_CHECKLIST_CHARS, Math.max(240, getRemainingBudget(turnKey)))
-        const checklist = buildChecklist(orderedChecklistItems, checklistBudget)
-        if (checklist) {
-          const checklistBounded = reserveCoreMessageText(checklist)
-          if (checklistBounded) {
-            appendSyntheticPart(output.messages[index], checklistBounded)
+          // Preserve checklist compatibility: keep enough room for mandatory auto-realign skill stacks.
+          const checklistBudget = Math.min(MAX_CHECKLIST_CHARS, Math.max(240, getRemainingBudget(turnKey)))
+          const checklist = buildChecklist(orderedChecklistItems, checklistBudget)
+          if (checklist) {
+            const checklistBounded = reserveCoreMessageText(checklist)
+            if (checklistBounded) {
+              appendSyntheticPart(output.messages[index], checklistBounded)
+            }
           }
         }
       }

@@ -23,6 +23,10 @@ import {
   detectInjectionPresence,
   reserveInjectionBudget,
 } from "../../../../src/lib/injection-orchestrator.js"
+import {
+  getSessionIdFromMessages,
+  resolveRuntimeSessionLineage,
+} from "../../../../src/lib/runtime-session-lineage.js"
 import { readUnifiedStateSnapshot } from "../../../../src/lib/state-snapshot.js"
 
 interface TodoItem {
@@ -238,11 +242,46 @@ function buildCapabilityAdvisory(params: {
   return advisory
 }
 
+function buildChildSessionContextLines(params: {
+  agent: string
+  turnCount: number
+  healthSummary: string
+  profile: RuntimeProfile | null
+}): string[] {
+  const { agent, turnCount, healthSummary, profile } = params
+  const lines: string[] = [
+    "## GX-Pack Governance Context (Auto-Injected)",
+    "",
+    `**Agent:** ${agent} | **Turn:** ${turnCount} | **${healthSummary}**`,
+    profile
+      ? `**Profile:** ${profile.id} | **Intent:** ${profile.intent}`
+      : "*Runtime profile unavailable — staying in evidence-first delegated mode.*",
+    "",
+    "### Child Session Focus",
+    "- Parent-linked delegated session detected.",
+    "- Minimized governance context active: stay focused on the delegated objective.",
+    "- Prefer targeted execution and verification over broad repo reconnaissance.",
+  ]
+
+  if (profile && profile.constraints.length > 0) {
+    lines.push("")
+    lines.push("### Constraints")
+    for (const constraint of profile.constraints.slice(0, 3)) {
+      lines.push(`- ${constraint}`)
+    }
+  }
+
+  return lines
+}
+
 /**
  * Build the messages.transform hook.
  *
  * This function is called by the plugin's hook registration.
  * It returns a function that mutates output.messages in-place.
+ *
+ * @param state - Plugin enforcement state and worktree context.
+ * @returns A fallback-only messages.transform hook with child-session minimization.
  */
 export function buildContextInjectionHook(state: {
   current: EnforcementState
@@ -268,6 +307,12 @@ export function buildContextInjectionHook(state: {
     const hierarchy = snapshot.hierarchyState as HierarchyNode | null
     const recovery = snapshot.contextRecovery as ContextRecovery | null
     const health = snapshot.healthMetrics as HealthMetrics | null
+    const runtimeSessionId = getSessionIdFromMessages(output.messages)
+      || snapshot.brain?.session.opencode_session_id
+      || snapshot.sessionId
+      || state.current.sessionId
+      || "unknown-session"
+    const runtimeSessionLineage = await resolveRuntimeSessionLineage(runtimeSessionId)
     const resolvedSessionId = snapshot.sessionId || state.current.sessionId || "unknown-session"
     const resolvedTurnCount = snapshot.turnCount || state.current.turnCount || 0
 
@@ -299,125 +344,96 @@ export function buildContextInjectionHook(state: {
     }
 
     // Build context block
-    const contextLines: string[] = [
-      "## GX-Pack Governance Context (Auto-Injected)",
-      "",
-    ]
-
-    // Agent + Profile summary
-    if (profile) {
-      contextLines.push(
-        `**Agent:** ${state.current.agent} | **Profile:** ${profile.id} | **Intent:** ${profile.intent}`,
-        `**Turn:** ${resolvedTurnCount} | **${healthSummary}** | **Depth:** ${state.current.delegationChain.length}/${profile.capabilities.depth_limit}`,
-      )
-    } else {
-      contextLines.push(
-        `**Agent:** ${state.current.agent} | **Turn:** ${resolvedTurnCount} | **${healthSummary}**`,
-        `*No runtime profile — run gx-entry-guard.sh to build one.*`,
-      )
-    }
-
-    contextLines.push("")
-
-    // Entry detection + first-turn classification context
-    if (state.current.entryDetection) {
-      const detection = state.current.entryDetection
-      contextLines.push("### Entry Detection")
-      contextLines.push(
-        `- entry_condition=${detection.entry_condition} lineage=${detection.lineage} state_exists=${detection.state_exists}`,
-      )
-      contextLines.push(
-        `- hierarchy_status=${detection.hierarchy_status} trajectory_status=${detection.trajectory_status}`,
-      )
-      if (detection.bootstrap_executed) {
-        contextLines.push("- auto_init=executed")
-      }
-      contextLines.push("")
-    }
-
-    if (state.current.intentClassification) {
-      const classification = state.current.intentClassification
-      contextLines.push("### Intent Classification")
-      contextLines.push(
-        `- lineage=${classification.lineage} source=${classification.source} persisted_to_profile=${classification.persisted_to_profile}`,
-      )
-      contextLines.push(`- input_excerpt=${classification.input_excerpt}`)
-      contextLines.push("")
-    }
-
-    // Active TODO
-    contextLines.push("### Active TODO")
-    contextLines.push(formatActiveTodo(todoState))
-    contextLines.push("")
-
-    // Hierarchy cursor
-    contextLines.push("### Hierarchy Cursor")
-    contextLines.push(formatHierarchyCursor(hierarchy))
-    contextLines.push("")
-
-    // Per-signal health breakdown
-    if (health && Object.keys(health.signals).length > 0) {
-      contextLines.push("### Health Signals")
-      for (const [name, signal] of Object.entries(health.signals)) {
-        contextLines.push(`- ${name}: score=${signal.score}, velocity=${signal.velocity}`)
-      }
-      contextLines.push("")
-    }
-
-    // Constraints
-    if (profile && profile.constraints.length > 0) {
-      contextLines.push("### Constraints")
-      for (const c of profile.constraints) {
-        contextLines.push(`- ${c}`)
-      }
-      contextLines.push("")
-    }
-
-    // Scope violations
-    if (state.current.scopeViolations.length > 0) {
-      contextLines.push(
-        `### Scope Violations: ${state.current.scopeViolations.length} recorded`,
-      )
-    } else {
-      contextLines.push("### Scope: Clean")
-    }
-
-    // Recovery context (if recovering from dirty context)
-    if (recovery) {
-      contextLines.push("")
-      contextLines.push("### Context Recovery (auto-recovered)")
-      contextLines.push(`**Trajectory:** ${recovery.trajectory_summary}`)
-      if (recovery.active_todos.length > 0) {
-        contextLines.push(`**Pending:** ${recovery.active_todos.join(", ")}`)
-      }
-      if (recovery.key_decisions.length > 0) {
-        contextLines.push(`**Decisions:** ${recovery.key_decisions.join("; ")}`)
-      }
-      contextLines.push(`**Next:** ${recovery.recommended_next}`)
-    }
-
-    // Hard block warning
-    if (hardBlockWarnings.length > 0) {
-      contextLines.push("")
-      contextLines.push(
-        `### WARNING: hard_block triggered for ${hardBlockWarnings.join(", ")} (below ${health?.thresholds.hard_block.below ?? "n/a"}).`,
-      )
-    }
-
-    // === HIVEFIVER CAPABILITY-AWARE ADVISORY ===
-    if (state.current.agent === "hivefiver") {
-      const delegatedToExplorer = state.current.delegationChain.some(
-        (entry) => entry.to === "hivexplorer"
-      )
-      const advisory = buildCapabilityAdvisory({
-        agent: state.current.agent,
-        turnCount: resolvedTurnCount,
-        delegatedToExplorer,
-        profile,
-      })
-      contextLines.push("")
-      contextLines.push(...advisory)
-    }
+    const contextLines: string[] = runtimeSessionLineage.isChildSession
+      ? buildChildSessionContextLines({
+          agent: state.current.agent,
+          turnCount: resolvedTurnCount,
+          healthSummary,
+          profile,
+        })
+      : [
+          "## GX-Pack Governance Context (Auto-Injected)",
+          "",
+          ...(profile
+            ? [
+                `**Agent:** ${state.current.agent} | **Profile:** ${profile.id} | **Intent:** ${profile.intent}`,
+                `**Turn:** ${resolvedTurnCount} | **${healthSummary}** | **Depth:** ${state.current.delegationChain.length}/${profile.capabilities.depth_limit}`,
+              ]
+            : [
+                `**Agent:** ${state.current.agent} | **Turn:** ${resolvedTurnCount} | **${healthSummary}**`,
+                "*No runtime profile — run gx-entry-guard.sh to build one.*",
+              ]),
+          "",
+          ...(state.current.entryDetection
+            ? [
+                "### Entry Detection",
+                `- entry_condition=${state.current.entryDetection.entry_condition} lineage=${state.current.entryDetection.lineage} state_exists=${state.current.entryDetection.state_exists}`,
+                `- hierarchy_status=${state.current.entryDetection.hierarchy_status} trajectory_status=${state.current.entryDetection.trajectory_status}`,
+                ...(state.current.entryDetection.bootstrap_executed ? ["- auto_init=executed"] : []),
+                "",
+              ]
+            : []),
+          ...(state.current.intentClassification
+            ? [
+                "### Intent Classification",
+                `- lineage=${state.current.intentClassification.lineage} source=${state.current.intentClassification.source} persisted_to_profile=${state.current.intentClassification.persisted_to_profile}`,
+                `- input_excerpt=${state.current.intentClassification.input_excerpt}`,
+                "",
+              ]
+            : []),
+          "### Active TODO",
+          formatActiveTodo(todoState),
+          "",
+          "### Hierarchy Cursor",
+          formatHierarchyCursor(hierarchy),
+          "",
+          ...(health && Object.keys(health.signals).length > 0
+            ? [
+                "### Health Signals",
+                ...Object.entries(health.signals).map(
+                  ([name, signal]) => `- ${name}: score=${signal.score}, velocity=${signal.velocity}`,
+                ),
+                "",
+              ]
+            : []),
+          ...(profile && profile.constraints.length > 0
+            ? [
+                "### Constraints",
+                ...profile.constraints.map((constraint) => `- ${constraint}`),
+                "",
+              ]
+            : []),
+          ...(state.current.scopeViolations.length > 0
+            ? [`### Scope Violations: ${state.current.scopeViolations.length} recorded`]
+            : ["### Scope: Clean"]),
+          ...(recovery
+            ? [
+                "",
+                "### Context Recovery (auto-recovered)",
+                `**Trajectory:** ${recovery.trajectory_summary}`,
+                ...(recovery.active_todos.length > 0 ? [`**Pending:** ${recovery.active_todos.join(", ")}`] : []),
+                ...(recovery.key_decisions.length > 0 ? [`**Decisions:** ${recovery.key_decisions.join("; ")}`] : []),
+                `**Next:** ${recovery.recommended_next}`,
+              ]
+            : []),
+          ...(hardBlockWarnings.length > 0
+            ? [
+                "",
+                `### WARNING: hard_block triggered for ${hardBlockWarnings.join(", ")} (below ${health?.thresholds.hard_block.below ?? "n/a"}).`,
+              ]
+            : []),
+          ...(state.current.agent === "hivefiver"
+            ? [
+                "",
+                ...buildCapabilityAdvisory({
+                  agent: state.current.agent,
+                  turnCount: resolvedTurnCount,
+                  delegatedToExplorer: state.current.delegationChain.some((entry) => entry.to === "hivexplorer"),
+                  profile,
+                }),
+              ]
+            : []),
+        ]
 
     let contextBlock = contextLines.join("\n")
     const turnKey = createTurnInjectionKey(resolvedSessionId, resolvedTurnCount)

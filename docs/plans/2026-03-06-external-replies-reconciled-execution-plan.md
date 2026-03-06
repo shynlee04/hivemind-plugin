@@ -1,379 +1,80 @@
 # External Replies Reconciled Execution Plan
 
+Date: 2026-03-06
+Status: Refreshed after implemented phases
+
 ## Purpose
 
-This document reconciles the returned `DeepWiki` and `Devin` replies against the current repository state as of March 6, 2026.
+This document keeps the external `DeepWiki` and `Devin` replies reconciled against current repo truth after implementation moved forward.
 
-Its job is to do three things:
+It exists to prevent stale external claims from re-entering the active plan.
 
-1. Preserve the external findings that still match current code and current OpenCode behavior.
-2. Reject stale or contradicted claims so they do not contaminate the next refactor wave.
-3. Convert the surviving signal into an execution-grade phased plan for the next engineering pass.
+## Current Verdict
 
-This is a planning artifact only. It does not reopen already-fixed budget or mutation-flush work.
+- `DeepWiki` remains the preferred source for OpenCode-native behavior.
+- `Devin` remains useful only for high-level repo themes after local verification.
+- Current repo code and tests remain the sole authority for current-state facts.
 
-## Progress Update
+## What Is Now Implemented
 
-Completed since the first reconciliation draft:
+- `task_id` continuity in `cycle_log`
+- `hivemind_inspect.traverse` v1
+- prompt-surface ownership coverage
+- first restricted prompt-surface de-duplication slice
+- `tool-gate` write demotion
+- child-session runtime prompt minimization
+- state-authority decision pass
 
-- `task_id` continuity is now implemented in:
-  - `src/schemas/brain-state.ts`
-  - `src/hooks/soft-governance.ts`
-  - `src/tools/hivemind-cycle.ts`
-- `hivemind_inspect.traverse` v1 is now implemented as a tree-only traversal surface.
-- Prompt-surface coverage lock is now implemented via:
-  - `tests/injection-surface-ownership.test.ts`
-  - `tests/child-session-injection-policy.test.ts`
-  - strengthened `tests/budget-hook-cap.test.ts`
-- Restricted prompt-surface de-duplication is now partially implemented:
-  - duplicate `Session: ... | Mode: ... | Governance: ...` status output removed from `system[]`
-  - duplicate anchor header reduced to fallback-only when packed cognitive state is present
-  - canonical core-message detection now recognizes `<hivemind_state`
-- `tool-gate` write demotion is now implemented:
-  - `tool-gate.ts` is advisory-only
-  - `soft-governance.ts` owns persisted file-touch tracking
-- The next active implementation slice is now child-session injection minimization, not continuity, traversal bootstrapping, baseline coverage creation, or tool-gate demotion.
+## Live Architecture Themes That Still Matter
 
----
+1. prompt-surface ownership should keep moving toward one canonical structured context path
+2. state authority must stay split cleanly across:
+   - `brain.json`
+   - `graph/*.json`
+   - `hierarchy.json`
+3. QA / research workflow design still needs a repo-specific contract
+4. GX-Pack fallback runtime coverage still needs a stable direct test harness
 
-## Executive Verdict
+## Fresh Decisions Locked In
 
-- `DeepWiki` is the high-value source for OpenCode-native behavior in this round.
-- `Devin` is materially stale on several repo facts and cannot be used as a current-state authority.
-- We should keep `Devin` only for a few architectural themes that still match the current repo after local verification.
-- The next refactor wave should stay narrow:
-  - child-session injection minimization
-  - state-authority rationalization design
-  - QA / research workflow design
+### Injection authority
 
----
+- `cognitive-packer.ts` is the leading canonical injection compiler
 
-## Repo-Verified Corrections
+### Navigation authority
 
-These facts are current and override stale external claims:
+- `hierarchy-tree.ts` + `hierarchy.json` remain the canonical traversal surface for v1
 
-- `src/lib/injection-orchestrator.ts` exists and is active.
-- `src/lib/session-role.ts` exists and is active.
-- `.opencode/plugins/hiveops-governance/hooks/context-injection.ts` exists and uses the shared injection ledger.
-- `tests/budget-hook-cap.test.ts` exists.
-- `tests/budget-session-continuity.test.ts` exists.
-- `tests/injection-dedupe-contract.test.ts` exists.
-- `src/lib/compaction-engine.ts` uses `DEFAULT_COMPACTION_BUDGET`.
-- `src/hooks/soft-governance.ts` already flushes mutations on tool boundaries.
-- `src/hooks/messages-transform.ts` still prepends both `packCognitiveState()` output and a separate anchor header.
-- `src/hooks/session-lifecycle.ts` still injects a separate status layer via `buildStatusBlock()`.
-- `src/hooks/tool-gate.ts` still queues mutations.
-- `src/tools/hivemind-inspect.ts` now supports `scan`, `deep`, `drift`, `introspect`, and tree-based `traverse`.
-- `src/schemas/brain-state.ts` now defines `CycleLogEntry.task_id?: string`.
+### Session metadata authority
 
----
+- `brain-state.ts` + `brain.json` remain the canonical hot session metadata store
 
-## External Reply Triage
+### Child-session behavior
 
-### DeepWiki
+- runtime ancestry via OpenCode `parentID` is now the active minimization signal
+- no new persisted lineage registry was introduced
 
-#### Keep
+## What We Explicitly Will Not Reopen
 
-- Child sessions created with `parentID` are new sessions, not prompt-history clones.
-- Hooks re-run per child session and per resumed `task_id` session.
-- `messages.transform` lacks a first-class `sessionID` input and must derive it from message info.
-- `tool.definition` description mutation is safer than parameter mutation for hinting.
-- Compaction plus re-injection can duplicate context if the repo injects the same concepts in multiple surfaces.
-- There is no native first-class `resumed` flag on sessions.
+- file-existence disputes already disproven locally
+- missing-test claims already disproven locally
+- compaction budget migration
+- mutation flush gap in `soft-governance.ts`
+- greenfield continuity-envelope or state-store proposals
 
-#### Keep With Empirical Validation
+## Next Execution Order
 
-- Whether `system.transform` always receives `sessionID` in the exact paths we use.
-- Whether child-session first-turn `messages.transform` always has enough message info to recover `sessionID`.
-- The exact duplication behavior for compaction plus resume plus child session restart in our plugin stack.
+1. QA / research workflow design pass
+2. direct GX-Pack fallback runtime coverage when import/test surface stabilizes
+3. additional prompt cleanup only behind existing ownership and child-session tests
 
-#### Discard
+## Required Evidence Gate
 
-- Nothing major. The DeepWiki reply is directionally sound; the remaining uncertainty is runtime nuance, not obvious staleness.
+Before any future completion claim on this wave, re-run:
 
-### Devin
-
-#### Discard As Stale
-
-- Missing-file claims for:
-  - `src/lib/injection-orchestrator.ts`
-  - `src/lib/session-role.ts`
-  - `.opencode/plugins/hiveops-governance/hooks/context-injection.ts`
-- Missing-test claims for:
-  - `tests/budget-hook-cap.test.ts`
-  - `tests/budget-session-continuity.test.ts`
-  - `tests/injection-dedupe-contract.test.ts`
-- Claim that `src/lib/compaction-engine.ts` still uses `LEGACY_COMPACTION_BUDGET`
-- Any recommendation that assumes the old repo shape where the shared injection ledger and session-role module do not exist
-
-#### Keep As High-Level Themes Only
-
-- Prompt-surface ownership should be consolidated.
-- `tool-gate` should likely stop being a state writer over time.
-- `task_id` continuity belongs in an existing state surface, not a new state system.
-- `hivemind_inspect.traverse` should start narrow.
-- Cognitive-packer-led prompt ownership is the right direction.
-
----
-
-## Reconciled Design Decisions
-
-### 1. Prompt-Surface Ownership
-
-Target ownership for the next refactor wave:
-
-- `system[]`
-  - governance instruction
-  - stable warnings and mode signals
-  - short next-step or behavior constraints
-  - no duplicated hierarchy/status rendering if the same information already appears in structured cognitive context
-- `messages[] prepend`
-  - canonical structured context
-  - `packCognitiveState()` output
-  - first-turn coherence when required
-  - role-aware minimal handoff content when session is a child
-- `messages[] append`
-  - checklist
-  - auto-realign
-  - short terminal guidance only
-- compaction-only surfaces
-  - compaction and continuation payloads that should not be repeated on ordinary turns
-
-Immediate implication:
-
-- `buildAnchorContext()` is the first clear duplicate candidate.
-- `buildStatusBlock()` is the second clear duplicate candidate.
-- We should remove or gate those only after adding coverage that proves the same information remains available through the structured packer path.
-
-### 2. `tool-gate` Mutation Strategy
-
-Decision:
-
-- Do not rip out `tool-gate` writes immediately.
-- Demote `tool-gate` from writer to advisory in a staged migration.
-
-Reason:
-
-- It still participates in pre-execution drift and complexity signaling.
-- A direct removal risks changing timing behavior before replacement coverage exists.
-
-Migration target:
-
-- `soft-governance.ts` remains the single persisted write boundary.
-- `tool-gate.ts` becomes pre-execution advisory only.
-- Any state derived in `tool-gate.ts` that still matters should be recomputed or persisted in `soft-governance.ts`.
-
-### 3. `task_id` Continuity Storage
-
-Decision:
-
-- Store `task_id` in `CycleLogEntry` as an optional field.
-- Keep session lineage in the session-split payload and related continuity artifacts.
-- Do not introduce a new continuity state store yet.
-
-Reason:
-
-- `cycle_log` is already hot state that hooks and exports can see.
-- This is additive, low-risk, and keeps continuity attached to the existing session record.
-
-Potential additive fields:
-
-- `task_id?: string`
-- `parent_session_id?: string`
-
-### 4. `hivemind_inspect.traverse`
-
-Decision:
-
-- Keep `traverse` as a tree-first action in v1 and defer graph-wide relationship stitching.
-
-First version:
-
-- operate on `hierarchy-tree.ts`
-- reuse current ancestor and node lookup helpers
-- avoid graph-wide relationship stitching in v1
-
-Suggested v1 shape:
-
-```ts
-type InspectAction =
-  | "scan"
-  | "deep"
-  | "drift"
-  | "introspect"
-  | "traverse"
+```bash
+npx tsc --noEmit
+npx tsx --test tests/child-session-injection-policy.test.ts
+npx tsx --test tests/injection-surface-ownership.test.ts
+npx tsx --test tests/budget-hook-cap.test.ts
 ```
-
-```ts
-{
-  action: "traverse"
-  node_id?: string
-  direction?: "up" | "down" | "siblings"
-  depth?: number
-}
-```
-
-### 5. Child-Session Injection Minimization
-
-Decision:
-
-- This stays in the next implementation wave.
-- We should move toward reduced injection for child sessions rather than equal injection across main and child sessions.
-
-Reason:
-
-- DeepWiki confirms hooks re-run independently for child sessions.
-- That means a focused child task can currently receive the same heavy context surfaces as the main session unless we reduce them deliberately.
-
-Target:
-
-- main session: full governed surface set
-- child session: governance plus minimal task-aligned structured context
-
----
-
-## What We Should Not Carry Forward
-
-- Any plan that starts by “correcting” missing files or tests already present in this repo.
-- Any plan that reopens the compaction budget migration.
-- Any plan that assumes `soft-governance.ts` does not already flush mutations.
-- Any greenfield continuity envelope or new state store before we exhaust `cycle_log`, split lineage payloads, and export artifacts.
-- Any broad graph-traversal system before a minimal tree-based `traverse` proves useful.
-
----
-
-## Execution-Grade Phase Plan
-
-### Phase 0: Documentation Re-Baseline
-
-Purpose:
-
-- keep planning artifacts synchronized with the actual repo state
-
-Files:
-
-- `docs/plans/2026-03-06-external-replies-reconciled-execution-plan.md`
-- `docs/plans/2026-03-06-external-findings-truth-matrix.md`
-- `docs/plans/2026-03-06-live-architecture-themes.md`
-- `docs/plans/2026-03-06-deepwiki-unresolved-query-packet.md`
-- `docs/plans/2026-03-06-devin-repo-mapping-query-packet.md`
-- `docs/plans/2026-03-06-next-iteration-implementation-plan.md`
-
-### Phase 1: Coverage Lock Before Prompt-Surface Refactor
-
-Purpose:
-
-- lock the current surviving behavior before changing ownership
-
-Files:
-
-- `tests/injection-dedupe-contract.test.ts`
-- `tests/budget-hook-cap.test.ts`
-- `tests/budget-session-continuity.test.ts`
-- `tests/messages-transform.test.ts`
-- `tests/soft-governance.test.ts`
-- `tests/tool-gate.test.ts`
-
-Additions:
-
-- verify current anchor header presence explicitly so its later removal is intentional
-- verify `buildStatusBlock()` output is currently present in `system[]`
-- add a child-session policy placeholder test marked around expected future reduction behavior
-
-### Phase 2: Prompt-Surface De-duplication
-
-Purpose:
-
-- remove duplicate context without destabilizing budgets or compaction continuity
-
-Files:
-
-- `src/hooks/messages-transform.ts`
-- `src/hooks/session-lifecycle.ts`
-- `src/lib/cognitive-packer.ts`
-- `tests/messages-transform.test.ts`
-- `tests/injection-dedupe-contract.test.ts`
-- new `tests/injection-surface-ownership.test.ts`
-
-Order:
-
-1. prove packer coverage for anchor and status data
-2. gate or remove `buildAnchorContext()`
-3. gate or remove `buildStatusBlock()`
-4. keep governance instruction and warning surfaces in `system[]`
-
-### Phase 3: `tool-gate` Write Demotion
-
-Purpose:
-
-- make `soft-governance.ts` the sole persisted authority without losing pre-execution warnings
-
-Files:
-
-- `src/hooks/tool-gate.ts`
-- `src/hooks/soft-governance.ts`
-- `tests/tool-gate.test.ts`
-- `tests/soft-governance.test.ts`
-- new `tests/tool-gate-readonly.test.ts`
-
-Order:
-
-1. move any required persisted data updates into `soft-governance.ts`
-2. keep `tool-gate.ts` warning behavior unchanged
-3. remove `queueStateMutation()` calls from `tool-gate.ts`
-
-### Phase 4: Child-Session Injection Policy
-
-Purpose:
-
-- reduce prompt weight and duplication for delegated child sessions
-
-Files:
-
-- `.opencode/plugins/hiveops-governance/hooks/context-injection.ts`
-- `src/hooks/session-lifecycle.ts`
-- `src/hooks/messages-transform.ts`
-- `src/lib/session-role.ts`
-- `tests/budget-session-continuity.test.ts`
-- new `tests/child-session-injection-policy.test.ts`
-
-Change:
-
-- distinguish main versus child sessions
-- reduce injected surfaces for child sessions
-- keep continuity and governance intact
-
----
-
-## Runtime Validation Questions Still Open
-
-These should shape the next external or empirical pass, but they should not block Phases 1 and 2:
-
-1. Is `system.transform` `sessionID` always present in the exact execution paths we use?
-2. What is the safest low-cost session-kind detection pattern inside `messages.transform` for child sessions?
-3. In our plugin stack, which compaction-plus-resume paths still duplicate meaningfully after re-injection?
-4. Do we need any child-session-specific test harness around resumed `task_id` sessions before Phase 5?
-
----
-
-## Final Recommendation
-
-Use the returned `DeepWiki` reply as the OpenCode-native guide.
-
-Use the returned `Devin` reply only after stripping it down to:
-
-- prompt-surface ownership
-- `tool-gate` demotion
-- `task_id` continuity
-- tree-first `traverse`
-- cognitive-packer-led consolidation
-
-Do not treat `Devin` as a current-state source for file existence, tests, or compaction-budget state.
-
-The next engineering pass should begin with:
-
-1. `task_id` continuity
-2. `hivemind_inspect.traverse` v1
-3. prompt-surface de-duplication
-
-That sequence gives us continuity wins, better inspectability, and safer injection cleanup without reopening already-fixed foundation work.

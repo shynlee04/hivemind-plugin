@@ -1,504 +1,107 @@
 # Next Iteration Architecture Consolidation Implementation Plan
 
-> Status update 2026-03-06: `task_id` continuity, `hivemind_inspect.traverse` v1, the prompt-surface coverage lock, the first restricted prompt-surface de-duplication slice, and `tool-gate` write demotion are already implemented. Treat the continuity/traverse bootstrapping work, the initial ownership-baseline test tasks, and the tool-gate demotion bootstrap below as historical. The canonical next-phase order now starts with child-session injection minimization.
+Status: Refreshed after child-session minimization and state-authority pass
+Date: 2026-03-06
 
-## Completed Since Previous Draft
+## Completed Since the Prior Draft
 
-- `CycleLogEntry.task_id?: string` landed in `src/schemas/brain-state.ts`.
-- `soft-governance.ts` now persists delegated `task_id` continuity metadata.
-- `hivemind_cycle` export metadata now includes compact `cycleLog` continuity data.
-- `hivemind_inspect.traverse` v1 landed as a tree-only traversal surface.
-- Prompt-surface coverage lock landed via:
+- `task_id` continuity landed in:
+  - `src/schemas/brain-state.ts`
+  - `src/hooks/soft-governance.ts`
+  - `src/tools/hivemind-cycle.ts`
+- `hivemind_inspect.traverse` v1 landed as a tree-only inspect surface.
+- Prompt-surface ownership coverage now exists in:
   - `tests/injection-surface-ownership.test.ts`
   - `tests/child-session-injection-policy.test.ts`
-  - strengthened `tests/budget-hook-cap.test.ts`
-- Restricted prompt-surface de-duplication landed in a narrow form:
-  - `messages-transform.ts` now keeps the anchor header as fallback-only when no packed cognitive state is injected.
-  - `session-lifecycle.ts` now keeps next-step guidance but no longer emits the duplicate `Session: ... | Mode: ... | Governance: ...` status line.
-  - `injection-orchestrator.ts` now recognizes `<hivemind_state` as the canonical core-message marker.
-- `tool-gate` demotion landed:
-  - `tool-gate.ts` is advisory-only and no longer queues persisted mutations.
-  - `soft-governance.ts` now owns persisted file-touch tracking after tool execution.
-  - `tests/tool-gate-readonly.test.ts` locks the readonly contract.
+  - `tests/budget-hook-cap.test.ts`
+- The first prompt de-duplication slice landed:
+  - duplicate status line removed from `system[]`
+  - anchor header reduced to fallback-only when packed context is present
+  - `<hivemind_state` is the canonical core-message marker
+- `tool-gate` is now advisory-only.
+- `soft-governance` is the persisted write boundary for post-tool file-touch state.
+- Child-session runtime minimization is now active in:
+  - `src/hooks/session-lifecycle.ts`
+  - `src/hooks/messages-transform.ts`
+  - `.opencode/plugins/hiveops-governance/hooks/context-injection.ts`
+- State-authority decisions are now recorded in:
+  - `docs/plans/2026-03-06-state-authority-rationalization-pass.md`
+
+## Current Verified Baseline
+
+- `brain.json` remains the canonical hot session metadata store.
+- `graph/*.json` remains the canonical structured task/trajectory/mem source for injected context.
+- `hierarchy.json` remains the canonical navigation tree and powers `traverse` v1.
+- Runtime child linkage is handled via OpenCode session ancestry lookup, not a new persisted registry.
+- The plugin fallback injector remains fallback-only and should not become the canonical core prompt surface.
 
 ## Active Next Batch
 
-1. Child-session injection minimization
-2. State-authority rationalization design pass
-3. QA / research workflow design pass
+1. QA / research workflow design pass
+2. Direct GX-Pack fallback runtime coverage when `.opencode` hook modules expose a stable test import surface
+3. Follow-on prompt-surface cleanup only where ownership coverage stays green
 
-> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+## Constraints
 
-**Goal:** Consolidate the next live HiveMind architecture issues without re-opening already-fixed budget and flush work.
+- Do not reopen fixed budget hardening or mutation flush work.
+- Do not create a fourth state authority.
+- Do not broaden `traverse` into graph-wide relationship walking until tree-first usage proves insufficient.
+- Keep child-session minimization runtime-driven unless a later schema decision is explicitly approved.
 
-**Architecture:** This wave is a narrow refactor program, not a rewrite. It starts by turning prompt-surface duplication and delegation continuity gaps into explicit contracts and tests, then incrementally migrates ownership toward one prompt-construction model and one continuity model.
+## Execution Priorities
 
-**Tech Stack:** TypeScript, OpenCode plugin hooks, Zod schemas, existing HiveMind tools/hooks/tests.
+### Priority 1: Preserve the new authority split
 
----
+- Injection compiler:
+  - `src/lib/cognitive-packer.ts`
+- Navigation surface:
+  - `src/lib/hierarchy-tree.ts`
+- Session metadata surface:
+  - `src/schemas/brain-state.ts`
 
-## Preconditions
+Any new work should fit one of those authorities rather than creating a parallel representation.
 
-- Treat the current repository as the only source of truth.
-- Use these documents together:
-  - `docs/plans/2026-03-06-external-findings-truth-matrix.md`
-  - `docs/plans/2026-03-06-live-architecture-themes.md`
-  - `docs/plans/2026-03-06-deepwiki-unresolved-query-packet.md`
-  - `docs/plans/2026-03-06-devin-repo-mapping-query-packet.md`
-- Do not reopen already-fixed budget hardening or compaction-budget work as unresolved.
-- Do not implement broad architecture replacement.
+### Priority 2: Keep prompt-surface ownership moving in one direction
 
-## Phase 0: Freeze the Reconciled Baseline
+Target ownership remains:
 
-### Task 0.1: Lock the current truth matrix into planning assumptions
+- `system[]`
+  - governance instruction
+  - stable warnings
+  - short next-step guidance
+- `messages[] prepend`
+  - canonical structured context
+  - first-turn coherence when appropriate
+  - minimized child-session context
+- `messages[] append`
+  - checklist
+  - short terminal guidance
 
-**Files:**
-- Read: `docs/plans/2026-03-06-external-findings-truth-matrix.md`
-- Read: `docs/plans/2026-03-06-live-architecture-themes.md`
+### Priority 3: Treat child-session behavior as a first-class regression boundary
 
-**Step 1: Re-read the matrix before touching code**
+Minimum regression expectations:
 
-Confirm the implementation session is using only:
-- `confirmed-current`
-- `needs-research`
-- `needs-design-decision`
+- main sessions still receive full bootstrap/coherence behavior
+- child sessions skip the broad first-turn/bootstrap path
+- child sessions receive smaller structured context payloads
+- main and child sessions remain isolated
 
-Ignore:
-- `confirmed-stale`
+## Verification Gate for Future Batches
 
-**Step 2: Build a working checklist from the live themes**
+Before claiming completion on future batches, run:
 
-Checklist:
-- injection ownership
-- state authority
-- traversal contract
-- delegation continuity
-- research/clarification workflow
-- child-session minimization
-
-**Step 3: Verify baseline**
-
-Run:
 ```bash
 npx tsc --noEmit
-npm test
+npx tsx --test tests/child-session-injection-policy.test.ts
+npx tsx --test tests/injection-surface-ownership.test.ts
+npx tsx --test tests/budget-hook-cap.test.ts
 ```
 
-Expected:
-- both pass before runtime changes begin
+Add batch-specific suites as required by the touched files.
 
----
+## Deferred Work
 
-## Phase 1: Convert Prompt Ownership Into Testable Contracts
-
-### Task 1.1: Add a prompt-surface ownership contract test
-
-**Files:**
-- Create: `tests/prompt-surface-ownership.test.ts`
-- Read: `src/hooks/session-lifecycle.ts`
-- Read: `src/hooks/messages-transform.ts`
-- Read: `.opencode/plugins/hiveops-governance/hooks/context-injection.ts`
-- Read: `src/lib/cognitive-packer.ts`
-
-**Step 1: Write failing tests for current ownership assumptions**
-
-Cover:
-- status lines appear in `system[]`
-- cognitive packer output appears in message prepend
-- anchor header appears separately from cognitive packer output
-- plugin fallback behavior is not treated as the main canonical surface
-
-**Step 2: Run targeted test and verify red**
-
-Run:
-```bash
-npx tsx --test tests/prompt-surface-ownership.test.ts
-```
-
-Expected:
-- initial failures capture duplicate-surface behavior clearly
-
-**Step 3: Define desired ownership in the test file**
-
-Desired target assertions:
-- `system[]` owns governance and stable next-step state only
-- `messages[] prepend` owns canonical structured context
-- `messages[] append` owns checklist and short end-of-turn guidance
-
-### Task 1.2: Add child-session injection minimization tests
-
-**Files:**
-- Create: `tests/child-session-injection-minimization.test.ts`
-- Read: `src/lib/session-role.ts`
-- Read: `src/lib/session-split.ts`
-- Read: `src/hooks/session-lifecycle.ts`
-- Read: `src/hooks/messages-transform.ts`
-
-**Step 1: Write tests for child-session behavior**
-
-Cover:
-- child session can be detected from lineage or role context
-- child session should not receive the same full prompt payload as a main session
-- compaction continuation does not lose the minimum required context
-
-**Step 2: Run the test and verify red**
-
-Run:
-```bash
-npx tsx --test tests/child-session-injection-minimization.test.ts
-```
-
-Expected:
-- failures show where current injection is still too broad
-
----
-
-## Phase 2: Normalize Delegation Continuity
-
-### Task 2.1: Extend cycle-log continuity to retain resume identifiers
-
-**Files:**
-- Modify: `src/schemas/brain-state.ts`
-- Modify: `src/hooks/soft-governance.ts`
-- Test: `tests/delegation-continuity-envelope.test.ts`
-
-**Step 1: Write the failing continuity test**
-
-Test should assert:
-- task tool output containing `task_id` results in persisted structured continuity metadata
-- stored continuity data survives subsequent tool calls
-- existing cycle-log behavior remains compatible
-
-**Step 2: Run test and verify red**
-
-Run:
-```bash
-npx tsx --test tests/delegation-continuity-envelope.test.ts
-```
-
-Expected:
-- historical red step; this now passes because `CycleLogEntry.task_id` continuity is implemented, so use it as a regression guard instead
-
-**Step 3: Add minimal schema support**
-
-Add to `CycleLogEntry`:
-- `task_id?: string`
-- optional normalized continuity envelope fields only if the test needs them
-
-Do not add speculative fields yet.
-
-**Step 4: Capture `task_id` in `soft-governance.ts`**
-
-Implement minimal parsing from task output to cycle-log entry.
-
-**Step 5: Re-run targeted test**
-
-Run:
-```bash
-npx tsx --test tests/delegation-continuity-envelope.test.ts
-```
-
-Expected:
-- pass
-
-### Task 2.2: Define a normalized delegation result envelope
-
-**Files:**
-- Create: `src/schemas/delegation-envelope.ts`
-- Modify: `src/tools/hivemind-cycle.ts`
-- Test: `tests/delegation-envelope-schema.test.ts`
-
-**Step 1: Write failing schema tests**
-
-Cover:
-- accepted statuses
-- required workflow fields
-- hierarchy refs shape
-- empty arrays default safely
-
-**Step 2: Implement the schema**
-
-Create only the schema and type in this phase.
-
-**Step 3: Use it in cycle exports where practical**
-
-Do not force all tools to emit the envelope yet. Limit this phase to:
-- schema definition
-- export/capture readiness
-
----
-
-## Phase 3: Add `hivemind_inspect.traverse`
-
-### Task 3.1: Create the traversal contract tests
-
-**Files:**
-- Create: `tests/inspect-traverse.test.ts`
-- Read: `src/tools/hivemind-inspect.ts`
-- Read: `src/lib/inspect-engine.ts`
-- Read: `src/lib/hierarchy-tree.ts`
-- Read: `src/schemas/graph-nodes.ts`
-
-**Step 1: Write failing tests**
-
-Cover:
-- `direction: "up"` returns ancestor chain
-- `direction: "down"` returns children
-- `direction: "related"` can include mems/anchors when requested
-- invalid node ids fail predictably
-- depth limits are respected
-
-**Step 2: Run test and verify red**
-
-Run:
-```bash
-npx tsx --test tests/inspect-traverse.test.ts
-```
-
-Expected:
-- fails because `traverse` action is not implemented
-
-### Task 3.2: Implement the minimal first version
-
-**Files:**
-- Modify: `src/tools/hivemind-inspect.ts`
-- Modify: `src/lib/inspect-engine.ts`
-
-**Step 1: Add the new tool action**
-
-Add:
-- `traverse` to the action enum
-- params:
-  - `node_id`
-  - `direction`
-  - `depth`
-  - `include_mems`
-  - `include_anchors`
-
-**Step 2: Implement only the narrow first version**
-
-Support:
-- tree-based ancestor and child traversal first
-- related mems/anchors only when explicitly requested
-
-Do not generalize beyond current tests.
-
-**Step 3: Re-run targeted tests**
-
-Run:
-```bash
-npx tsx --test tests/inspect-traverse.test.ts
-```
-
-Expected:
-- pass
-
----
-
-## Phase 4: De-duplicate Injection Surfaces
-
-### Task 4.1: Remove redundant anchor header ownership
-
-**Files:**
-- Modify: `src/hooks/messages-transform.ts`
-- Test: `tests/messages-transform.test.ts`
-- Test: `tests/prompt-surface-ownership.test.ts`
-
-**Step 1: Write or update tests**
-
-Desired behavior:
-- structured cognitive packer output remains
-- separate anchor header is removed if its data is already covered by canonical structured context
-
-**Step 2: Run targeted tests and verify red**
-
-Run:
-```bash
-npx tsx --test tests/messages-transform.test.ts
-npx tsx --test tests/prompt-surface-ownership.test.ts
-```
-
-**Step 3: Remove `buildAnchorContext()` usage if tests justify it**
-
-Prefer removing the call site before deleting helper code.
-
-**Step 4: Re-run targeted tests**
-
-Expected:
-- pass with no regression in cognitive context coverage
-
-### Task 4.2: Reduce duplicated status ownership in `session-lifecycle.ts`
-
-**Files:**
-- Modify: `src/hooks/session-lifecycle.ts`
-- Test: `tests/session-lifecycle-boundary.test.ts`
-- Test: `tests/prompt-surface-ownership.test.ts`
-
-**Step 1: Write or update tests**
-
-Desired behavior:
-- `system[]` retains governance mode, warnings, and stable next-step guidance
-- duplicated hierarchy/status phrasing is reduced where cognitive packer already provides the richer form
-
-**Step 2: Run targeted tests and verify red**
-
-Run:
-```bash
-npx tsx --test tests/session-lifecycle-boundary.test.ts
-npx tsx --test tests/prompt-surface-ownership.test.ts
-```
-
-**Step 3: Narrow `buildStatusBlock()` if tests support it**
-
-Keep:
-- stable session mode line if still needed
-- next-step hint if still the best compact summary
-
-Remove only what the tests prove is redundant.
-
----
-
-## Phase 5: Role-Aware Injection Policy
-
-### Task 5.1: Introduce a turn injection ownership helper
-
-**Files:**
-- Create: `src/lib/turn-injection.ts`
-- Modify: `src/hooks/session-lifecycle.ts`
-- Modify: `src/hooks/messages-transform.ts`
-- Test: `tests/prompt-surface-ownership.test.ts`
-- Test: `tests/child-session-injection-minimization.test.ts`
-
-**Step 1: Write a failing integration test for the new helper contract**
-
-Target shape:
-```ts
-interface TurnInjectionBundle {
-  system: string[]
-  messagePrepend: string[]
-  messageAppend: string[]
-  compactionOnly?: string[]
-}
-```
-
-**Step 2: Implement the helper with current behavior first**
-
-Do not change semantics yet. Only centralize ownership.
-
-**Step 3: Refactor both hooks to call the helper**
-
-Keep the hooks thin and compatibility-safe.
-
-**Step 4: Add child-session minimization branch**
-
-Use the least risky role/lineage signal available from current repo context.
-
----
-
-## Phase 6: Clarification and Research Workflow Scaffolding
-
-### Task 6.1: Add clarification packet schema and tests
-
-**Files:**
-- Create: `src/schemas/clarification-packet.ts`
-- Test: `tests/clarification-packet-schema.test.ts`
-
-**Step 1: Write failing schema tests**
-
-Cover:
-- goal
-- uncertainty_reason
-- best option fields
-- options array
-- follow-up field
-
-**Step 2: Implement minimal schema**
-
-Do not wire it into hooks yet.
-
-### Task 6.2: Define research artifact frontmatter contract
-
-**Files:**
-- Create: `docs/plans/2026-03-06-research-artifact-contract.md`
-- Optionally create: `src/schemas/research-artifact-frontmatter.ts`
-
-**Step 1: Document the frontmatter contract**
-
-Fields:
-- `id`
-- `title`
-- `status`
-- `workflow_stage`
-- `tags`
-- `terms`
-- `hierarchy_ref`
-- `session_ref`
-- `parent`
-- `related`
-- `source_type`
-
-**Step 2: If schema is added, keep it validation-only**
-
-Do not introduce a storage subsystem in this phase.
-
----
-
-## Phase 7: Verification and Closeout
-
-### Task 7.1: Run targeted suites
-
-Run:
-```bash
-npx tsx --test tests/prompt-surface-ownership.test.ts
-npx tsx --test tests/child-session-injection-minimization.test.ts
-npx tsx --test tests/delegation-continuity-envelope.test.ts
-npx tsx --test tests/delegation-envelope-schema.test.ts
-npx tsx --test tests/inspect-traverse.test.ts
-npx tsx --test tests/messages-transform.test.ts
-npx tsx --test tests/session-lifecycle-boundary.test.ts
-```
-
-Expected:
-- all targeted tests pass
-
-### Task 7.2: Run full verification
-
-Run:
-```bash
-npx tsc --noEmit
-npm run lint:boundary
-npm test
-```
-
-Expected:
-- all pass
-
-### Task 7.3: Update planning artifacts
-
-**Files:**
-- Update: `docs/plans/2026-03-06-external-findings-truth-matrix.md`
-- Update: `docs/plans/2026-03-06-live-architecture-themes.md`
-
-Record:
-- which live themes were closed
-- which were deferred
-- any remaining external questions
-
----
-
-## Rollback Notes
-
-- If prompt de-duplication causes regressions, restore ownership one surface at a time:
-  - anchor header first
-  - status block second
-  - helper extraction last
-- If delegation continuity schema causes output compatibility issues, keep schema optional and preserve legacy output fields.
-- If `traverse` grows too wide too early, cut back to tree traversal only and defer related mem/anchor lookup.
-
-## Out Of Scope For This Wave
-
-- Reworking budget hardening already shipped
-- Reworking compaction budget already shipped
-- Reworking mutation flush in `soft-governance.ts`
-- Full replacement of `brain.json`, `graph/*.json`, or `hierarchy.json`
-- Building a brand new research subsystem
+- direct GX-Pack fallback runtime coverage
+- broader state-authority migration beyond the current decision pass
+- QA / research workflow contract implementation
+- any persisted parent-session lineage field beyond current runtime and split payload handling

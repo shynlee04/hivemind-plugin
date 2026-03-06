@@ -2,8 +2,8 @@
 
 This file provides guidance to ALL agents working in this repository.
 
-**Last Updated**: 2026-03-04
-**Version**: 3.1-guardrails
+**Last Updated**: 2026-03-06
+**Version**: 3.2-progress-hardening
 **Maintained By**: hivefiver meta-builder
 **Symlinked To**: `.hivemind/AGENTS.md`, `.opencode/AGENTS.md`, `src/AGENTS.md`
 
@@ -28,12 +28,12 @@ CRITICAL: Before modifying any function, you MUST:
 - The workflow model is dual-lineage: one shared entry sequence, then strict routing into two separate spaces ([`docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md`](docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md:39)).
 - Extension/customization surface belongs to [`.opencode/`](.opencode/), [`commands/`](commands/), [`skills/`](skills/), [`workflows/`](workflows/).
 - Core implementation/runtime belongs to repository root + [`src/`](src/) (tools/libs/hooks/schemas) ([`AGENTS.md`](AGENTS.md:105)).
-- Main unresolved system risk is dual per-turn context injection conflict across extension and core hooks ([`AGENTS.md`](AGENTS.md:123)).
-- Node-1 has partial completed fixes: path/session bootstrap + schema/governance normalization ([`AGENTS.md`](AGENTS.md:137)).
-- Regression baseline was previously blocked by stale test expectations; baseline was re-audited and stabilized on March 5, 2026.
-- Restricted regions are explicit and currently safety-gated ([`AGENTS.md`](AGENTS.md:181)).
+- Main unresolved system risk is still prompt-surface ownership drift across extension and core hooks, but the first de-duplication slice is now landed.
+- March 6 hardening milestones are already in place: `task_id` continuity, `hivemind_inspect.traverse` v1, ownership coverage tests, tool-gate demotion, and child-session minimization.
+- Regression baseline was previously blocked by stale expectations; targeted verification gates are now active and must stay green before each new restricted edit.
+- Restricted regions remain explicit high-risk zones, but phased plan-backed edits are now allowed when ownership coverage and verification are present ([`AGENTS.md`](AGENTS.md:181)).
 - Most confusion/hallucination risk comes from lineage mixing and from treating similar workflow patterns as shared artifacts.
-- Current priority is safe completion of refactor sequence, not expansion of new features.
+- Current priority is progressive long-haul stabilization, not feature expansion.
 
 2. **Project Goal → Intended Achievements → Means**
 
@@ -83,25 +83,28 @@ CRITICAL: Before modifying any function, you MUST:
 6. **Current State Assessment**
 
 - **Working**
-  - Refactor foundations completed: Fix 3A, 3B, 1.5A, 1.5B ([`AGENTS.md`](AGENTS.md:137)).
+  - Refactor foundations completed: Fix 3A, 3B, 1.5A, 1.5B.
+  - `task_id` continuity now persists through cycle capture/export.
+  - `hivemind_inspect.traverse` v1 is active for hierarchy-first navigation.
+  - Child-session minimization is active in the core runtime hooks.
   - Type-check status documented as passing ([`AGENTS.md`](AGENTS.md:55)).
   - Boundary and governance docs are explicit and actionable ([`AGENTS.md`](AGENTS.md:181), [`docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md`](docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md:7)).
 
 - **Partially working**
-  - Session isolation direction is in place but full migration/decoupling chain is unfinished ([`AGENTS.md`](AGENTS.md:150)).
-  - Schema/governance updates landed, but full regression confidence is pending test alignment.
+  - Session isolation direction is in place, and child-session prompt load is now reduced, but direct GX-Pack fallback runtime coverage still needs a stable harness.
+  - Prompt-surface ownership is safer than before, but the full canonical ownership migration is not finished.
 
 - **Broken/unclear**
-  - Dual-injector conflict remains active (primary contamination risk).
-  - Maintain formal regression gate with `npm test` and targeted suites before restricted-zone edits.
-  - Several restricted zones are not safely editable yet due to prerequisite order.
+  - Dual-injector conflict is reduced, not eliminated.
+  - State authority is still split across `brain.json`, `graph/*.json`, and `hierarchy.json`; this is intentional for now but must remain disciplined.
+  - Maintain formal regression gates with `npx tsc --noEmit` plus targeted suites before restricted-zone edits.
 
 7. **Issues and Concerns Register**
 
 | ID | Description | Scope (Isolated/Cross-domain) | Severity | Evidence | Suspected Cause |
 |---|---|---|---|---|---|
 | HM-01 | Dual per-turn injection conflict | Cross-domain | Critical | [`AGENTS.md`](AGENTS.md:123) | Overlapping extension + core injectors |
-| HM-02 | Failing tests block progression | Isolated (quality) | High | [`AGENTS.md`](AGENTS.md:145) | Contract drift vs old test expectations |
+| HM-02 | Ownership regressions can reintroduce stale prompt duplication | Isolated (quality) | High | `tests/injection-surface-ownership.test.ts` | Prompt-surface cleanup without coverage |
 | HM-03 | Restricted hook/state regions carry high regression risk | Cross-domain | High | [`AGENTS.md`](AGENTS.md:181) | Premature edits before prerequisite completion |
 | HM-04 | Lineage-mixing hallucination risk | Cross-domain | High | [`docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md`](docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md:241) | Similar workflow pattern mistaken as shared artifact space |
 | HM-05 | Incomplete clean-slate session migration | Cross-domain | High | [`AGENTS.md`](AGENTS.md:150) | Dependency chain not fully executed |
@@ -156,11 +159,11 @@ CRITICAL: Before modifying any function, you MUST:
 
 11. **Immediate Next-Step Workflow Priorities**
 
-1. Obtain authorization and align the 11 failing test expectations ([`AGENTS.md`](AGENTS.md:145)).
-2. Execute remaining Node-1 steps in strict order: Fix 1.5C → 1.5D → 3C-D → Fix 1 → Fix 2 ([`AGENTS.md`](AGENTS.md:150)).
-3. Keep restricted zones frozen until prerequisite gates are passed ([`AGENTS.md`](AGENTS.md:181)).
-4. Enforce lineage-safe handoff packets for all future delegations ([`docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md`](docs/journeys/DUAL-LINEAGE-USER-JOURNEY-STORIES-2026-03-04.md:429)).
-5. Re-validate contamination risk at each milestone using the same evidence anchors.
+1. Preserve the new verification baseline: `npx tsc --noEmit` + targeted ownership/child-session suites before each restricted change.
+2. Use the state-authority pass in `docs/plans/2026-03-06-state-authority-rationalization-pass.md` as the active source for injection/navigation/session-metadata authority.
+3. Execute the QA / research workflow design pass without creating a fourth state authority.
+4. Add direct GX-Pack fallback runtime coverage once `.opencode` hook modules expose a stable test import surface.
+5. Re-validate contamination risk and lineage boundaries at each milestone using the current March 6 plan artifacts.
 
 **Assumptions and Unknowns**
 - Assumption A1: status entries in [`AGENTS.md`](AGENTS.md:137) reflect current repository reality.
@@ -210,7 +213,7 @@ Two independent auto-injection systems fire on EVERY LLM turn, injecting contrad
 ## Build/Test Commands
 
 ```bash
-npm test                                    # Run all tests (203 pass, 11 fail as of 2026-03-04)
+npm test                                    # Run all tests (use before major milestone claims)
 npx tsx --test tests/filename.test.ts       # Run specific test
 npx tsc --noEmit                           # Type check (currently PASSING)
 npm run guard:public                       # Run BEFORE any master push
@@ -277,15 +280,15 @@ User
 
 4. **Session Isolation**: New sessions get their own directory under `.hivemind/sessions/active/<session-id>/` with a clean-slate `profile.json` (agent: "unresolved" until `hivemind_declare` fires).
 
-### Dual-Injection Systems (DANGER ZONE)
+### Dual-Injection Systems (HIGH-RISK ZONE)
 
 | System | File | Fires | What It Does |
 |--------|------|-------|-------------|
-| System 1 | `.opencode/plugins/hiveops-governance/hooks/context-injection.ts` | Every turn | Reads 6 state files, prepends to messages |
-| System 2a | `src/hooks/session-lifecycle.ts` | Every turn | Reads 5 state files, appends to system |
-| System 2b | `src/hooks/messages-transform.ts` | Every turn | Prepends anchors + appends checklist |
+| System 1 | `.opencode/plugins/hiveops-governance/hooks/context-injection.ts` | Fallback path | Prepends GX-Pack governance context when core runtime hooks are unavailable |
+| System 2a | `src/hooks/session-lifecycle.ts` | Every turn | Appends governance/system context with child-session suppression |
+| System 2b | `src/hooks/messages-transform.ts` | Every turn | Prepends structured context and appends checklist with child-session minimization |
 
-**These are the primary sources of context poisoning.** Do NOT edit them without completing Node 1 Fixes 3C-D and Fix 1 first.
+**These remain the primary contamination surfaces.** Only edit them under the active phased plan, with ownership tests and fresh verification evidence.
 
 ---
 
@@ -298,20 +301,25 @@ User
 | Fix 3B | `src/hooks/event-handler.ts` — session.created bootstrap | profile.json with agent:"unresolved" |
 | Fix 1.5A | `src/schemas/brain-state.ts` — schema detox | Orphans pruned, cycle_log lobotomized |
 | Fix 1.5B | `src/lib/detection.ts` — GovernanceCounters normalized | 4-field contract active: {drift, compaction, out_of_order, evidence_pressure} |
+| March 6A | `task_id` continuity in `cycle_log` | `tests/cycle-task-id.test.ts` PASS |
+| March 6B | `hivemind_inspect.traverse` v1 | `tests/hivemind-inspect-traverse.test.ts` PASS |
+| March 6C | Prompt-surface coverage lock + first de-dup slice | ownership + budget contract tests PASS |
+| March 6D | `tool-gate` advisory-only demotion | `tests/tool-gate-readonly.test.ts` PASS |
+| March 6E | Child-session runtime minimization | `tests/child-session-injection-policy.test.ts` PASS |
 
 ### Baseline History
 | Step | What | Blocker |
 |------|------|---------|
 | Test alignment (historical) | Prior failing baseline was reconciled during guardrail-first stabilization | Continue enforcing full suite before Node-1 restricted-zone work |
 
-### Not Started (Requires Authorization)
+### Active / Remaining
 | Step | What | Prerequisite |
 |------|------|-------------|
-| Fix 1.5C | Lineage ID validation in hierarchy schema | Test alignment |
-| Fix 1.5D | soft-governance.ts dead counter cleanup | Test alignment |
-| Fix 3C-D | Clean-slate session state init + hook migration | Fix 1.5C/D |
-| Fix 1 | Dual-injection decoupling (agent guards) | Fix 3C-D |
-| Fix 2 | Relational staleness rewrite | Fix 1 |
+| Next 1 | QA / research workflow design pass | Preserve March 6 authority split |
+| Next 2 | Direct GX-Pack fallback runtime coverage | Stable `.opencode` hook test surface |
+| Next 3 | Further prompt ownership cleanup | Ownership + child-session tests stay green |
+| Later | Fix 1.5C / 1.5D follow-up cleanup | Active baseline remains green |
+| Later | Relational staleness rewrite | Follow-on authority decisions stay stable |
 
 ---
 
@@ -335,14 +343,14 @@ See CONTAMINATION-GUARDRAILS.md §3 for the complete delegation safety protocol.
 
 ---
 
-## Restricted Regions (DO NOT ENTER Without Authorization)
+## Restricted Regions (ENTER ONLY WITH PLAN + VERIFICATION)
 
 See CONTAMINATION-GUARDRAILS.md §6 for the complete list with rationales.
 
 Key restrictions:
-- `.opencode/plugins/hiveops-governance/hooks/` — System 1 injection, needs Fix 1 first
-- `src/hooks/session-lifecycle.ts` — System 2a injection, needs Fix 1 first
-- `src/hooks/messages-transform.ts` — System 2b injection, needs Fix 1 first
+- `.opencode/plugins/hiveops-governance/hooks/` — System 1 injection, high-risk fallback surface
+- `src/hooks/session-lifecycle.ts` — System 2a injection, high-risk ownership surface
+- `src/hooks/messages-transform.ts` — System 2b injection, high-risk ownership surface
 - `.hivemind/state/` — Global singleton state, needs Fix 3C-D first
 - `.hivemind/plans/` — Unvalidated planning artifacts from multiple agents
 

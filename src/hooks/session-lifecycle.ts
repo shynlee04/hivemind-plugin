@@ -29,6 +29,7 @@ import {
   computeSharedInjectionCapChars,
   estimateContextWindowChars,
 } from "../lib/budget.js"
+import { resolveRuntimeSessionLineage } from "../lib/runtime-session-lineage.js"
 
 import { isSessionStale } from "../lib/staleness.js"
 import { detectBrownfield, generateReadFirstBlock, isCleanSession, handleStaleSession } from "../lib/onboarding.js"
@@ -96,7 +97,7 @@ function appendChecklistFailureReminder(output: { system: string[] }, checklist:
  * @param log Logger used for lifecycle diagnostics.
  * @param directory Project directory for state/config resolution.
  * @param _initConfig Initial hook config snapshot; runtime config is reloaded on each turn.
- * @returns A hook that injects shared-budgeted HiveMind system context.
+ * @returns A hook that injects shared-budgeted HiveMind system context with child-session suppression.
  */
 export function createSessionLifecycleHook(log: Logger, directory: string, _initConfig: HiveMindConfig) {
   const stateManager = createStateManager(directory, log)
@@ -164,7 +165,11 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       const approxContextWindowChars = estimateContextWindowChars(maxResponseTokens)
       const sharedInjectionCapChars = computeSharedInjectionCapChars(maxResponseTokens)
       const resolvedSessionId = state.session.id || input.sessionID || "unknown-session"
-      const suppressHumanFacing = shouldSuppressHumanFacingGovernance(state)
+      const runtimeSessionLineage = await resolveRuntimeSessionLineage(
+        input.sessionID ?? state.session.opencode_session_id,
+      )
+      const suppressHumanFacing =
+        shouldSuppressHumanFacingGovernance(state) || runtimeSessionLineage.isChildSession
       const turnKey = createTurnInjectionKey(resolvedSessionId, state.metrics.turn_count)
       let ledger = createTurnInjectionLedger({
         sessionId: resolvedSessionId,

@@ -1538,8 +1538,8 @@ async function test_permissiveModeSuppressesDetectionPressureButKeepsNavigation(
 
     const systemText = output.system.join("\n")
     assert(
-      systemText.includes("Session:") && systemText.includes("Next:"),
-      "permissive mode still includes navigation context"
+      systemText.includes("Next:"),
+      "permissive mode still includes next-step navigation guidance"
     )
     assert(
       !systemText.includes("[ALERTS]") && !systemText.includes("[WARN]") && !systemText.includes("[CRITICAL]"),
