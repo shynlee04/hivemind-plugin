@@ -205,6 +205,12 @@ Refactor the **`hivefiver`** module into a reliable "healer" for the project lin
 | `hivefiver` | **IN SCOPE** — pivoting to surgical refactor operation | Allowing and shifting orientation to restructure and refactor the whole project (`.opencode/**`, `.hivemind/**`, `docs/**`, `src/**`, `tests/**`) |
 | `hiveminder` | **OUT OF SCOPE** for implementation; **IN SCOPE** for compatibility | Agent profiles and subagents are shared — refactors must keep future compatibility |
 
+### Codex Sidecar Surfaces
+
+- `.codex/**` is the Codex-side instruction and config layer
+- `docs/framework/**` is the framework-owned authority space for Codex sidecar contracts
+- OpenCode remains the runtime source of truth; Codex mirrors workflow discipline and continuity, not plugin/runtime internals
+
 ### Core Problem Being Solved
 Two independent auto-injection systems fire on EVERY LLM turn, injecting contradictory context from overlapping state files. This causes role-drift, hallucination, and context poisoning. See CONTAMINATION-GUARDRAILS.md §4.
 
