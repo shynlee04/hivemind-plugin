@@ -1,115 +1,41 @@
 {
   "version": 2,
   "root": {
-    "id": "t_490006032026",
+    "id": "t_590406032026",
     "level": "trajectory",
-    "content": "QA verification for 7-phase implementation test integrity and contract compliance",
+    "content": "Review and gate keeping for planning package from external team: 5 docs + 2 external replies + implementation batches",
     "status": "active",
-    "created": 1772732979833,
-    "stamp": "490006032026",
+    "created": 1772747950689,
+    "stamp": "590406032026",
     "children": [
       {
-        "id": "tc_490006032026",
+        "id": "tc_070506032026",
         "level": "tactic",
-        "content": "Execute verification gate commands and evaluate domain test coverage",
+        "content": "Run verification gate for implementation batch test coverage and contract alignment",
         "status": "active",
-        "created": 1772732986158,
-        "stamp": "490006032026",
+        "created": 1772748478476,
+        "stamp": "070506032026",
         "children": [
           {
-            "id": "a_490006032026",
+            "id": "a_080506032026",
             "level": "action",
-            "content": "Finalize evidence-backed QA report for test integrity, anti-patterns, and type safety",
-            "status": "pending",
-            "created": 1772732995592,
-            "stamp": "490006032026",
-            "children": []
-          },
-          {
-            "id": "a_510006032026",
-            "level": "action",
-            "content": "Finalize evidence-backed QA report for test integrity, anti-patterns, and type safety",
+            "content": "Execute npm test and tsc, then audit specified tests for coverage quality and contract drift",
             "status": "active",
-            "created": 1772733062167,
-            "stamp": "510006032026",
+            "created": 1772748483757,
+            "stamp": "080506032026",
             "children": []
           }
         ]
-      },
-      {
-        "id": "tc_570006032026",
-        "level": "tactic",
-        "content": "External research on multi-agent validation methodologies: agent boundaries, static analysis, CQRS/workflow validation",
-        "status": "active",
-        "created": 1772733454375,
-        "stamp": "570006032026",
-        "children": [
-          {
-            "id": "a_580006032026",
-            "level": "action",
-            "content": "Execute MCP research queries: Tavily/Context7/DeepWiki for agent boundaries, static analysis, CQRS validation",
-            "status": "pending",
-            "created": 1772733487204,
-            "stamp": "580006032026",
-            "children": []
-          },
-          {
-            "id": "a_010106032026",
-            "level": "action",
-            "content": "Synthesize MCP research findings into comprehensive YAML report",
-            "status": "pending",
-            "created": 1772733709033,
-            "stamp": "010106032026",
-            "children": []
-          },
-          {
-            "id": "a_120206032026",
-            "level": "action",
-            "content": "Validate test contract compliance for 5 new tests via npm test, tsc, lint:boundary and contract drift analysis",
-            "status": "active",
-            "created": 1772737929002,
-            "stamp": "120206032026",
-            "children": []
-          }
-        ]
-      },
-      {
-        "id": "tc_120206032026",
-        "level": "tactic",
-        "content": "Starting investigation of 21-file implementation for quality gates HOOK-CLASH-001, TOOL-ACCESS-001/002, AGENT-OVERLAP-001, SCOPE-BOUNDARY-001/002",
-        "status": "active",
-        "created": 1772737932775,
-        "stamp": "120206032026",
-        "children": [
-          {
-            "id": "a_160206032026",
-            "level": "action",
-            "content": "Verification complete: npm test 248 pass 0 fail; tsc and lint:boundary pass",
-            "status": "active",
-            "created": 1772738172189,
-            "stamp": "160206032026",
-            "children": []
-          }
-        ]
-      },
-      {
-        "id": "tc_160206032026",
-        "level": "tactic",
-        "content": "Completed investigation of 21-file implementation. Compiling quality gate report.",
-        "status": "active",
-        "created": 1772738180246,
-        "stamp": "160206032026",
-        "children": []
       }
     ]
   },
-  "cursor": "tc_160206032026",
+  "cursor": "a_080506032026",
   "branches": [
     {
       "name": "main",
-      "cursor_id": "tc_160206032026",
-      "created": 1772733454375,
-      "last_active": 1772738180246,
+      "cursor_id": "a_080506032026",
+      "created": 1772747950689,
+      "last_active": 1772748483758,
       "status": "active"
     }
   ],

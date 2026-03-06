@@ -699,10 +699,19 @@
       "id": "bddbc5fa-005c-4349-8427-dd0964a1a32a",
       "parent_phase_id": "495ec5b5-1607-4631-aa81-db13cc55617b",
       "title": "Finalize evidence-backed QA report for test integrity, anti-patterns, and type safety",
-      "status": "in_progress",
+      "status": "invalidated",
       "file_locks": [],
       "created_at": "2026-03-05T17:49:32.691Z",
-      "updated_at": "2026-03-05T17:49:32.691Z"
+      "updated_at": "2026-03-05T22:08:03.773Z"
+    },
+    {
+      "id": "a30441f3-9ae5-4537-ba88-3513ab8ed80e",
+      "parent_phase_id": "b06c8723-c6e0-45ad-a294-b59ef10b72f8",
+      "title": "Execute npm test and tsc, then audit specified tests for coverage quality and contract drift",
+      "status": "in_progress",
+      "file_locks": [],
+      "created_at": "2026-03-05T22:08:03.765Z",
+      "updated_at": "2026-03-05T22:08:03.765Z"
     }
   ]
 }

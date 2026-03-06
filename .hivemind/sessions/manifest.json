@@ -1,4 +1,19 @@
 {
-  "sessions": [],
-  "active_stamp": null
+  "sessions": [
+    {
+      "stamp": "590406032026",
+      "file": "session-c3db168d-b169-4099-9b96-e36c361e0ac5.md",
+      "status": "active",
+      "created": 1772747950689,
+      "mode": "quick_fix",
+      "trajectory": "Review and gate keeping for planning package from external team: 5 docs + 2 external replies + implementation batches",
+      "session_id": "c3db168d-b169-4099-9b96-e36c361e0ac5",
+      "linked_plans": [],
+      "created_at_iso": "2026-03-05T21:59:10.689Z",
+      "updated_at_epoch": 1772747950699,
+      "updated_at_iso": "2026-03-05T21:59:10.699Z",
+      "contract_version": "1.1.0"
+    }
+  ],
+  "active_stamp": "590406032026"
 }
