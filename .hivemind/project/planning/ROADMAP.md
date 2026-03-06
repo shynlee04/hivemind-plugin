@@ -8,7 +8,7 @@
 | 2 | Planning-root normalization | in_progress | 40% |
 | 3 | Manual Devin packet wave | in_progress | 60% |
 | 4 | Resynced long-haul master-plan replacement | pending | 0% |
-| 5 | Planning-root population and workflow contract hardening | in_progress | 55% |
+| 5 | Planning-root population and workflow contract hardening | in_progress | 72% |
 | 6 | Runtime return: QA/research workflow and deferred harness work | pending | 0% |
 
 ## Phase Notes
@@ -46,6 +46,7 @@
 - Classify continuity artifacts so active planning-root SOT is not confused with transitional long-haul handoff material.
 - Generate the lane-family phase-planning packet set and open a review gate for selecting the first active lane-family planning cycle.
 - Keep the phase-folder packet canonical and use `docs/plans` copies only as supporting mirrors.
+- Activate the cross-cutting routing and continuity cycle first, before any lane-local planning deepens.
 
 ### Phase 6: Runtime return
 

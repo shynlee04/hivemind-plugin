@@ -97,6 +97,7 @@ These are local planning documents for the active second-lineage module model. T
 
 The canonical packet now lives in the planning-root phase folder.
 The `docs/plans` lane-family packet files remain supporting mirrors and synthesis references, not the primary continuation surface.
+The currently active lane-family cycle is `01-12-PLAN.md`.
 
 ## Hivefiver Carry Order
 
@@ -109,7 +110,8 @@ For the `hivefiver` module specifically, the recommended order is:
 5. read `.hivemind/project/planning/phases/01-hivefiver-module/01-09-PLAN.md`
 6. read `.hivemind/project/planning/phases/01-hivefiver-module/01-10-PLAN.md`
 7. read `.hivemind/project/planning/phases/01-hivefiver-module/01-11-PLAN.md`
-8. use `01-13-PLAN.md` as the active lane-activation review gate
+8. treat `01-12-PLAN.md` as the active lane-family cycle
+9. treat `01-13-PLAN.md` as completed activation review history
 
 ## Older Documents: Classification
 
@@ -168,4 +170,5 @@ For the current `hivefiver` lane-design round specifically, success now means:
 - the local model has been reset to the accepted five-lane structure
 - the packet has been bridged back into the broader planning root
 - the lane-family phase-planning packet set exists
-- the next move is selecting the first lane-family planning cycle, not another freeform synthesis pass
+- the first lane-family cycle is active
+- the next move is completing the cross-cutting cycle before activating the next lane

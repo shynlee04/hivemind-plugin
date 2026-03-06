@@ -6,7 +6,7 @@ Type: cross-cutting-phase-plan
 
 ## Purpose
 
-This plan governs the concerns that must remain shared across all `hivefiver` lane families.
+This plan governs the active cross-cutting planning cycle for the concerns that must remain shared across all `hivefiver` lane families.
 
 It exists to stop every lane from inventing its own routing, continuity, and precedence model.
 
@@ -20,6 +20,17 @@ It exists to stop every lane from inventing its own routing, continuity, and pre
 - continuation precedence
 - transitional continuity classification
 - lane-family validation constitution
+
+## Multi-Round Structure
+
+This cycle should be handled in four planning rounds:
+
+1. Authority and continuation precedence
+2. Runtime-truth versus planning-target separation
+3. Shared routing constitution
+4. Shared validation constitution
+
+Each round remains high level and must not slip into implementation detail.
 
 ## Why This Is First
 
@@ -37,6 +48,7 @@ The current repo still has cross-cutting mismatches that affect every lane:
 - runtime-truth versus planning-target matrix
 - lane-family validation constitution
 - unresolved mismatch register
+- lane-activation readiness criteria
 
 ## Validation Expectations
 
@@ -47,10 +59,12 @@ The current repo still has cross-cutting mismatches that affect every lane:
 
 ## Approval Gate
 
-User approval is required before any lane-local planning treats these cross-cutting rules as active policy.
+User approval has been provided to activate this cross-cutting planning cycle.
+Further user approval is required before any lane-local planning treats its outputs as active policy.
 
 ## Non-Goals
 
 - no implementation details
 - no permission edits
 - no command or workflow mutations
+- no lane-local duplication of shared rules
