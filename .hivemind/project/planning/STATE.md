@@ -8,12 +8,15 @@ The March 6 runtime hardening tranche is complete. The active work is now a stra
 2. How readable planning and governance SOT should be organized under `.hivemind/project/planning`.
 3. How local repo truth and manual external synthesis should combine without contaminating the next long-haul plan.
 
+Within that resync, the current open planning gap is the second-lineage `hivefiver` operating model: the repo needs a clean hierarchy for diagnosis, repair, tailored meta-package creation, extension, guidance, and multi-package composition across different user-skill levels and project stages.
+
 ## Active Blockers
 
 - Direct GX-Pack fallback runtime coverage is still blocked by an unstable direct import/test surface.
 - Some framework-aware consumers still assume legacy `.planning/` inputs.
 - The readable planning root exists but still has thin population and weak operational contracts.
 - Existing external research packet files are mixed prompt-plus-reply evidence and must not be reused as fresh outbound packets.
+- `hivefiver` is framed as the active healer/meta-builder lineage, but its real-world workflow taxonomy and adaptive routing model were not yet explicitly materialized in the planning root.
 
 ## Recent Decisions
 
@@ -25,9 +28,11 @@ The March 6 runtime hardening tranche is complete. The active work is now a stra
 - Treat `.hivemind/project/planning` as the canonical readable planning root.
 - Use JSON for deterministic runtime state and markdown for readable planning/governance SOT.
 - Use fresh dated manual Devin packets rather than live DeepWiki loops or mixed stale packet reuse.
+- Add a dedicated `hivefiver` module architecture doc, routing matrix, and planning-root phase anchor before reopening module-specific implementation work.
 
 ## Session History
 
 - [2026-03-06] Rebased the implementation baseline after child-session minimization and state-authority rationalization.
 - [2026-03-06] Packed a long-haul resync checkpoint and handoff to separate completed runtime work from external synthesis inputs.
 - [2026-03-06] Pivoted from immediate runtime continuation to a deeper architectural resync on `.hivemind` composition, planning-root hierarchy, and workflow orchestration.
+- [2026-03-06] Extended the strategic packet to model `hivefiver` as an adaptive second-lineage module rather than only as a broad healer label.

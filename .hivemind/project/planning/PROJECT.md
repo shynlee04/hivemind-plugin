@@ -10,6 +10,7 @@ HIVEMIND is an OpenCode-native context governance and orchestration framework. T
   - `.hivemind` runtime composition and lifecycle design
   - planning-root normalization under `.hivemind/project/planning`
   - lineage-safe workflow orchestration for `hivefiver` and `hiveminder`
+  - `hivefiver` module architecture for diagnosis, repair, tailored meta-package creation, extension, and operator guidance
   - validated handoff and external-synthesis loops
 - Out of scope:
   - sidecar-specific architecture as the primary design center
@@ -37,3 +38,4 @@ HIVEMIND is an OpenCode-native context governance and orchestration framework. T
 - `.hivemind/project/planning` is the canonical readable planning root.
 - Legacy `.planning/` references are compatibility-only and must not become the active source-of-truth again.
 - The active strategic pivot is to understand how reset/init and later automatic mechanisms form `.hivemind` over time before reopening deeper runtime refactors.
+- `hivefiver` must be modeled as an adaptive second-lineage module whose workflow changes by project stage, user technology awareness, package topology, and risk surface.

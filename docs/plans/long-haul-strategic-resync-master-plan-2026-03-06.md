@@ -210,6 +210,7 @@ Expected planning themes:
 
 - planning-root normalization
 - `.hivemind` composition and hierarchy normalization
+- `hivefiver` module hierarchy and use-case routing across project stages, expertise bands, and package topologies
 - lineage-safe continuity envelope design
 - workflow and validation document flow
 - direct GX-Pack fallback runtime coverage only after a stable harness exists
@@ -225,6 +226,8 @@ These remain the primary local planning anchors for this strategy:
 - `docs/plans/2026-03-06-state-authority-rationalization-pass.md`
 - `docs/plans/2026-03-06-next-iteration-implementation-plan.md`
 - `docs/plans/2026-03-06-external-replies-reconciled-execution-plan.md`
+- `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
+- `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
 - `.hivemind/project/planning/research/milestone-01-audit-prompt-standard-2026-03-06.md`
 - `.hivemind/project/planning/debug/active/milestone-01-enhanced-systematic-synthesis-prompt-2026-03-06.md`
 - `.hivemind/project/planning/debug/active/milestone-01-current-state-audit-launch-2026-03-06.md`
@@ -243,6 +246,7 @@ This strategy succeeds when the repository has:
 
 - one coherent bigger-frame resync narrative
 - three clean manual external synthesis packets
+- one explicit second-lineage `hivefiver` module hierarchy with real-world routing across diagnosis, repair, tailored build, extension, and guidance work
 - a clear separation between repo truth and external guidance
 - a user-approved path from audit to synthesis to later implementation planning
 

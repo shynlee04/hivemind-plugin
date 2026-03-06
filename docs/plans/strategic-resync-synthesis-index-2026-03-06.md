@@ -52,6 +52,16 @@ Use these as the current strategic resync packet:
 5. `docs/plans/2026-03-06-state-authority-rationalization-pass.md`
 6. `docs/plans/2026-03-06-next-iteration-implementation-plan.md`
 7. `docs/plans/2026-03-06-external-replies-reconciled-execution-plan.md`
+8. `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
+9. `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
+
+## Local Lineage Planning Anchors
+
+These are local planning documents for the active second-lineage module model. They are not manual outbound packets, but they now belong to the strategic resync set:
+
+- `docs/plans/hivefiver-module-architecture-master-plan-2026-03-06.md`
+- `docs/plans/hivefiver-use-case-routing-matrix-2026-03-06.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-01-PLAN.md`
 
 ## Older Documents: Classification
 

@@ -197,12 +197,15 @@ The active wave inside that objective is now a strategic resync:
 
 - audit how reset/init and later automation form `.hivemind`
 - normalize `.hivemind/project/planning/` as the readable planning root
+- define the second-lineage `hivefiver` operating model and routing hierarchy
 - prepare manual external synthesis packets
 - only then reopen the next implementation tranche
 
 ### What hivefiver Is
 - Meta-builder: engineers the tools that engineers use
 - Framework doctor: diagnoses and repairs broken framework chains
+- Tailored meta-package builder: designs and evolves agents, commands, tools, plugins, workflows, and guidance surfaces around user intent
+- Adaptive operator guide: changes workflow depth and pace based on project stage, domain pressure, package topology, and user technology awareness
 - Quality gatekeeper: no asset ships without contract compliance
 
 ### What hivefiver Is NOT

@@ -40,6 +40,8 @@
 
 - Populate codebase, phases, research, todos, and debug contracts as live SOT.
 - Define the project-level workflow contract for phase planning, execution, verification, and milestone closeout.
+- Add the second-lineage `hivefiver` module hierarchy so doctor, repair, tailored-build, extension, guidance, and composition work have a canonical routing surface.
+- Separate guided, practitioner, and advanced operator paths so the same module can adapt to different technology-awareness levels without flattening workflows.
 
 ### Phase 6: Runtime return
 

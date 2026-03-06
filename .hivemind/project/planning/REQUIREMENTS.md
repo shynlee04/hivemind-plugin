@@ -12,3 +12,6 @@
 | HM-PLAN-006 | Produce fresh manual Devin packets for runtime semantics, planning-root/workflow hierarchy, and continuity/delegation design. | 2 | pending |
 | HM-PLAN-007 | Replace the current long-haul master plan with a resynchronized version that absorbs validated external synthesis without reintroducing stale assumptions. | 3 | pending |
 | HM-PLAN-008 | Resume implementation only after the strategic resync artifacts and manual Devin loop are complete. | 4 | pending |
+| HM-PLAN-009 | Define the second-lineage `hivefiver` operating model for diagnosis, repair, tailored build, extension, guidance, and meta-package composition. | 2 | in_progress |
+| HM-PLAN-010 | Route `hivefiver` workflows by project stage, user technology awareness, package topology, and cross-domain risk level. | 2 | in_progress |
+| HM-PLAN-011 | Materialize the initial `hivefiver` lineage phase anchor under `.hivemind/project/planning/phases/` so the planning root carries module-specific workflow structure. | 2 | completed |
