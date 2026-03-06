@@ -71,6 +71,7 @@ systematic_synthesis_packet:
     - some concepts are designed in code but not fully wired as canonical runtime behavior
     - inspection is currently stronger for tree/state traversal than for full joined lineage/handoff/delegation mapping
     - operator/user config already exists and should shape approach behavior, but is not yet cleanly projected as orientation authority
+    - the planning root is active, but future sessions must distinguish active planning-root control from transitional continuity artifacts
     - ongoing work means no single artifact fully represents the true state
   desired_end_state_to_evaluate:
     - stable root defaults
@@ -85,6 +86,7 @@ systematic_synthesis_packet:
     - /Users/apple/hivemind-plugin/.hivemind/manifest.json
     - /Users/apple/hivemind-plugin/.hivemind/state/hierarchy.json
     - /Users/apple/hivemind-plugin/.hivemind/sessions/manifest.json
+    - /Users/apple/hivemind-plugin/.hivemind/project/planning/config.json
     - /Users/apple/hivemind-plugin/src/cli/init.ts
     - /Users/apple/hivemind-plugin/src/cli/interactive-init.ts
     - /Users/apple/hivemind-plugin/src/cli/scan.ts
@@ -101,6 +103,8 @@ systematic_synthesis_packet:
     - /Users/apple/hivemind-plugin/.hivemind/graph/project/project.json
     - /Users/apple/hivemind-plugin/.hivemind/handoffs/
     - /Users/apple/hivemind-plugin/.hivemind/project/planning/
+    - /Users/apple/hivemind-plugin/.hivemind/project/planning/phases/01-hivefiver-module/
+    - /Users/apple/hivemind-plugin/docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md
   exclusions:
     - /Users/apple/hivemind-plugin/.hivemind/state/brain.json
     - /Users/apple/hivemind-plugin/.hivemind/INDEX.md
@@ -119,6 +123,7 @@ systematic_synthesis_packet:
     - concept_correspondence_map
     - contradiction_graph
     - progression_options
+    - continuation_precedence_map
   operator_config_dimensions:
     - profile
     - language
@@ -145,6 +150,7 @@ Build a verified picture of:
 - session identity and lineage surfaces
 - prompt injection and runtime orientation surfaces
 - planning-root and handoff surfaces
+- planning-root phase subtree and continuation precedence
 - operator-config surfaces
 
 ### Phase 2: Build A Context Consumption Map
@@ -167,6 +173,7 @@ Your consumption map must answer:
 - what should only be loaded after specific questions arise
 - what should never be treated as source-of-truth
 - where contaminated or stale sources still have anomaly value
+- whether planning-root control now outranks transitional checkpoint and handoff materials
 
 ### Phase 3: Build A Mechanism Map
 

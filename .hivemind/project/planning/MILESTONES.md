@@ -8,15 +8,16 @@
 - 2026-03-06: `tool-gate` was demoted to advisory-only and `soft-governance` retained write ownership.
 - 2026-03-06: child-session prompt-surface minimization landed in core hooks and plugin fallback behavior.
 - 2026-03-06: the state-authority rationalization pass locked the current authority split.
+- 2026-03-06: the `hivefiver` external synthesis was reconciled into repo-truth planning artifacts.
+- 2026-03-06: the `hivefiver` packet was bridged back into the planning root and prepared for lane-family phase planning.
+- 2026-03-06: continuation artifacts and Milestone 01 prompts were updated so the planning root and `hivefiver` phase subtree are part of the canonical resume path.
 
 ## Next Milestone Candidates
 
 - Strategic resync completion:
   - canonical planning-root normalization
   - bootstrap/composition map
-  - fresh manual Devin packet set
   - resynced long-haul master plan
-  - `hivefiver` reconciliation and planning-root bridge
   - approval-gated lane-family phase-planning packet set
 - Runtime return:
   - QA/research workflow contract

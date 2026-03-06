@@ -1,25 +1,29 @@
 # Long-Haul Resync Checkpoint - 2026-03-06
 
 Lineage: hivefiver
-Authority Mode: sidecar_mirror
+Authority Mode: planning_root_resync
 Session Level: main
 Current Trajectory: long-haul-meta-framework-stabilization
 Current Tactic: resync-and-handoff
-Current Action: pack verified state, stable sidecar completion, and Devin-input synthesis into a new-session packet
+Current Action: pack verified state, planning-root control, and reconciled external synthesis into a new-session packet
 Active Branch: current workspace
 Primary Artifacts:
 - AGENTS.md
-- .codex/AGENTS.md
-- .codex/config.toml
-- docs/framework/**
+- .hivemind/project/planning/config.json
+- .hivemind/project/planning/PROJECT.md
+- .hivemind/project/planning/ROADMAP.md
+- .hivemind/project/planning/STATE.md
+- .hivemind/project/planning/REQUIREMENTS.md
+- .hivemind/project/planning/MILESTONES.md
+- docs/plans/hivefiver-devin-reconciliation-2026-03-06.md
+- docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md
+- .hivemind/project/planning/phases/01-hivefiver-module/01-05-PLAN.md
 - docs/plans/2026-03-06-state-authority-rationalization-pass.md
-- docs/plans/2026-03-06-next-iteration-implementation-plan.md
-- docs/plans/2026-03-06-external-replies-reconciled-execution-plan.md
 - .hivemind/project/planning/debug/active/milestone-01-enhanced-systematic-synthesis-prompt-2026-03-06.md
 Forbidden Surfaces:
 - .hivemind/state/brain.json as routing authority
 - session exports as source-of-truth
-- naive 1:1 porting of OpenCode internals into Codex
+- stale sidecar-first restart assumptions
 
 ## Completed Units
 
@@ -31,21 +35,21 @@ Forbidden Surfaces:
   - child-session coverage added
   - integration assertion refreshed
   - long-haul planning docs refreshed
-- Codex Sidecar Mirror Plan is stable and completed in-repo:
-  - `.codex/config.toml`
-  - `.codex/AGENTS.md`
-  - `.env.example`
-  - `docs/framework/` sidecar contracts
-  - live quickstart and configuration docs under `docs/plans/`
+- Planning-root control plane and hivefiver bridge are now active:
+  - `.hivemind/project/planning/config.json`
+  - `.hivemind/project/planning/{PROJECT,ROADMAP,STATE,REQUIREMENTS,MILESTONES}.md`
+  - `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
+  - `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
+  - `.hivemind/project/planning/phases/01-hivefiver-module/01-05-PLAN.md`
 - New Milestone 01 prompt exists:
   - `.hivemind/project/planning/debug/active/milestone-01-enhanced-systematic-synthesis-prompt-2026-03-06.md`
 - Devin returned a broad verified/inferred synthesis package that should be treated as external synthesis input, not accepted truth
 
 ## Open Units
 
-- reconcile Devin's synthesis with the current repository reality and March 6 authority docs
-- decide whether the recommended path is still inspect-and-projection-first stabilization, or whether the active state-authority pass already supersedes that framing
-- design the next long-haul master plan revision using repo audit plus bounded external validation
+- convert the bridged hivefiver packet into lane-family phase-planning artifacts
+- decide the phase order and cross-cutting validation contracts for the five lane families
+- resolve the mismatch between documented hivefiver scope/delegation and current runtime enforcement in later planning
 - add direct GX-Pack fallback runtime coverage once the `.opencode` hook import surface is stable enough for a clean harness
 
 ## Evidence Refs
@@ -56,36 +60,38 @@ Forbidden Surfaces:
   - `npx tsx --test tests/integration.test.ts`
   - `npm test` -> `267` pass, `0` fail, `1` todo
   - `npx tsc --noEmit`
-- current sidecar validation from this session:
-  - `jq empty opencode.json`
-  - TOML parse for `.codex/config.toml`
-  - `git diff --check`
-  - `npx tsc --noEmit`
-  - `codex --version` -> `codex-cli 0.111.0`
-  - `codex features list`
-  - `codex mcp list`
-  - `codex mcp get tavily`
+- planning-root and packet reconciliation evidence from later sessions:
+  - `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
+  - `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
+  - lane-family phase anchors under `.hivemind/project/planning/phases/01-hivefiver-module/`
 
 ## Risks
 
 - Devin's synthesis contains claims that conflict with current local guardrails and March 6 state-authority positioning, especially around treating `brain.json` as the primary state authority
-- the Milestone 01 prompt names several `.hivemind/**` files as primary authorities that should be treated carefully under current contamination rules
-- existing `.hivemind/handoffs/` format is older and looser than the new sidecar contract, so future sessions should prefer this checkpoint plus the new handoff packet over older handoff files
+- the Milestone 01 prompt family must stay aligned with the active planning-root control plane
+- documented hivefiver scope/delegation still diverges from current runtime enforcement
+- existing `.hivemind/handoffs/` format is older and looser than the planning-root-first continuation model, so future sessions should prefer the planning root before consuming transitional handoff material
 
 ## Next Recommended Action
 
 Start the new session with a bounded resync audit:
 1. read the latest human message that requested this handoff
-2. read `.codex/AGENTS.md`
-3. read `docs/framework/codex-opencode-reality-map-2026-03-06.md`
-4. read `docs/framework/codex-sidecar-workflow-spec-2026-03-06.md`
-5. read `docs/framework/codex-continuity-contract-2026-03-06.md`
-6. read this checkpoint
-7. read the handoff packet
-8. only then read the March 6 planning docs and the Milestone 01 prompt artifact
+2. read `AGENTS.md`
+3. read `.hivemind/project/planning/config.json`
+4. read `.hivemind/project/planning/PROJECT.md`
+5. read `.hivemind/project/planning/ROADMAP.md`
+6. read `.hivemind/project/planning/STATE.md`
+7. read `.hivemind/project/planning/REQUIREMENTS.md`
+8. read `.hivemind/project/planning/MILESTONES.md`
+9. read `docs/plans/long-haul-strategic-resync-master-plan-2026-03-06.md`
+10. read `docs/plans/hivefiver-devin-reconciliation-2026-03-06.md`
+11. read `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
+12. read `.hivemind/project/planning/phases/01-hivefiver-module/01-05-PLAN.md`
+13. only then read this checkpoint, the handoff packet, and the Milestone 01 prompt artifacts as synthesis framing or transitional continuity
 
-The first objective in the new session is not code changes. It is a resync synthesis pass that separates:
+The first objective in the new session is not code changes. It is a planning-root-first phase-planning pass that separates:
 - verified current repo truth
-- stable completed sidecar work
-- user-provided long-haul progress
-- Devin-derived synthesis inputs that still require repo validation
+- active planning-root control
+- reconciled hivefiver planning target
+- Milestone 01 synthesis framing
+- transitional continuity artifacts that still require careful use

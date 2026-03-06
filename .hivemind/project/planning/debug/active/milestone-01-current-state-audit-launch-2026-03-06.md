@@ -37,7 +37,7 @@ audit_launch_packet:
   current_truth:
     - runtime orientation is fragmented across hooks, hierarchy state, manifests, graph files, and planning shells
     - `.hivemind/state/hierarchy.json` is one of the strongest live orientation surfaces
-    - `.hivemind/project/planning/*.md` mostly exists as root planning shell, not fully populated source-of-truth
+    - `.hivemind/project/planning/` is now the active readable planning control plane, but some deeper hierarchy areas still require careful validation
     - session identity and lineage surfaces are not cleanly unified yet
     - current inspect flows are stronger at state/tree traversal than joined lineage/handoff/delegation orientation
     - operator/user-config surfaces already exist in CLI/config code and must be modeled as part of the true situation
@@ -46,6 +46,7 @@ audit_launch_packet:
     - /Users/apple/hivemind-plugin/.hivemind/manifest.json
     - /Users/apple/hivemind-plugin/.hivemind/state/hierarchy.json
     - /Users/apple/hivemind-plugin/.hivemind/sessions/manifest.json
+    - /Users/apple/hivemind-plugin/.hivemind/project/planning/config.json
     - /Users/apple/hivemind-plugin/src/cli/init.ts
     - /Users/apple/hivemind-plugin/src/cli/interactive-init.ts
     - /Users/apple/hivemind-plugin/src/cli/scan.ts
@@ -66,6 +67,8 @@ audit_launch_packet:
     - /Users/apple/hivemind-plugin/.hivemind/project/planning/ROADMAP.md
     - /Users/apple/hivemind-plugin/.hivemind/project/planning/REQUIREMENTS.md
     - /Users/apple/hivemind-plugin/.hivemind/project/planning/MILESTONES.md
+    - /Users/apple/hivemind-plugin/.hivemind/project/planning/phases/01-hivefiver-module/
+    - /Users/apple/hivemind-plugin/docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md
   excluded_sources:
     - /Users/apple/hivemind-plugin/.hivemind/state/brain.json
     - /Users/apple/hivemind-plugin/.hivemind/INDEX.md
@@ -101,6 +104,7 @@ audit_launch_packet:
   anomalies_to_confirm:
     - session manifest vs active profile identity mismatch
     - empty or weak planning-root projections vs richer runtime state
+    - planning-root root files and phase subtree may now be more authoritative than older continuity artifacts
     - declaration/orientation features implemented in code but not fully wired as canonical startup path
     - inspection stronger on tree/state than on joined lineage/handoff/delegation orientation
   expected_outputs:
@@ -138,6 +142,7 @@ mindmap
       .hivemind/manifest.json
       .hivemind/state/hierarchy.json
       .hivemind/sessions/manifest.json
+      .hivemind/project/planning/config.json
       src/cli/*
       src/tools/hivemind-session.ts
       src/tools/hivemind-inspect.ts
@@ -161,6 +166,7 @@ mindmap
       Contradictions register
       Routing map
       Prompt package for next milestone
+      Planning-root continuation order
 ```
 
 ```mermaid
@@ -175,7 +181,8 @@ flowchart TD
   E2 --> F
   F --> G[Audit prompt injection and runtime orientation]
   G --> H[Audit planning root and handoff surfaces]
-  H --> I[Audit operator config and user-approach surfaces]
+  H --> H1[Check planning-root config and phase subtree]
+  H1 --> I[Audit operator config and user-approach surfaces]
   I --> J[Prepare OpenCode SDK intake brief]
   J --> K[Synthesize diagrams and graph-oriented summary]
   K --> L{Need implementation?}
@@ -209,3 +216,4 @@ End by delivering:
 5. a prompt-surface ownership map
 6. an OpenCode SDK synthesis intake note
 7. a proposal for Milestone 02
+8. a planning-root continuation order

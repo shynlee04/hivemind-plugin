@@ -23,7 +23,7 @@ This artifact exists because the current `.hivemind` state contains multiple mir
 
 - The runtime orientation model is fragmented across hooks, manifests, hierarchy state, graph files, and planning shells.
 - The most populated live orientation surface is `.hivemind/state/hierarchy.json`.
-- The planning root under `.hivemind/project/planning/` exists, but core files are still mostly template shells.
+- The planning root under `.hivemind/project/planning/` is now an active readable control plane, but some deeper hierarchy areas are still thin and should not be overstated.
 - `.hivemind/sessions/manifest.json` and `sessions/active/*/profile.json` do not currently provide a clean one-to-one identity map.
 - Several designed runtime concepts exist in code, but are not fully wired as canonical startup authority.
 - Inspection tooling is stronger for tree/state traversal than for joined lineage/handoff/delegation orientation.
@@ -38,6 +38,7 @@ This artifact exists because the current `.hivemind` state contains multiple mir
 - `.hivemind/manifest.json`
 - `.hivemind/state/hierarchy.json`
 - `.hivemind/sessions/manifest.json`
+- `.hivemind/project/planning/config.json`
 - `src/cli/init.ts`
 - `src/cli/interactive-init.ts`
 - `src/cli/scan.ts`
@@ -61,6 +62,12 @@ This artifact exists because the current `.hivemind` state contains multiple mir
 - `.hivemind/project/planning/ROADMAP.md`
 - `.hivemind/project/planning/REQUIREMENTS.md`
 - `.hivemind/project/planning/MILESTONES.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-01-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-02-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-03-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-04-PLAN.md`
+- `.hivemind/project/planning/phases/01-hivefiver-module/01-05-PLAN.md`
+- `docs/plans/hivefiver-phase-planning-bridge-2026-03-06.md`
 
 ### Explicit Exclusions From Authority
 
@@ -136,6 +143,7 @@ The prompt must request these waves explicitly:
 2. Session identity and lineage audit
 3. Prompt injection and runtime orientation audit
 4. Planning-root and handoff artifact audit
+   - include planning-root config and the active `hivefiver` phase subtree
 5. Operator-config and user-approach audit
 6. OpenCode SDK synthesis preparation
 7. Iterative contradiction resolution and summary synthesis
@@ -170,6 +178,7 @@ The prompt must instruct the next session to:
 
 - Do not implement code in Milestone 01.
 - Do not treat template planning files as populated truth unless new evidence appears.
+- Do not stop at the five planning-root markdown files if the phase subtree is active and explicitly linked.
 - Do not flatten lineage, runtime, planning, and operator-profile concerns into one narrative blob.
 - Always label statements as `verified`, `inferred`, or `proposed`.
 - Prefer current code paths and current manifests over older descriptive docs.
@@ -184,6 +193,7 @@ The prompt must instruct the next session to:
 5. Prompt-surface ownership map
 6. OpenCode SDK synthesis intake brief
 7. Proposed next investigation or implementation milestone
+8. Planning-root continuation order, including whether the `hivefiver` phase subtree is part of the active resume path
 
 ## Completion Condition
 
