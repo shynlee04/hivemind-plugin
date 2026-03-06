@@ -1,0 +1,59 @@
+{
+  "lineage": "hivefiver",
+  "authority_mode": "sidecar_mirror",
+  "session_level": "main",
+  "trajectory": "long-haul-meta-framework-stabilization",
+  "tactic": "new-session-resync",
+  "action": "prepare a clean next-session resync and planning handoff",
+  "active_branch": "current workspace",
+  "reason_for_handoff": "pack the current verified state, the stable Codex sidecar completion, and the new Devin-input synthesis into a safe new-session transfer",
+  "authoritative_files": [
+    "/Users/apple/hivemind-plugin/.codex/AGENTS.md",
+    "/Users/apple/hivemind-plugin/.codex/config.toml",
+    "/Users/apple/hivemind-plugin/docs/framework/codex-opencode-reality-map-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/docs/framework/codex-sidecar-workflow-spec-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/docs/framework/codex-continuity-contract-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/docs/framework/codex-mcp-env-contract-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/docs/framework/codex-session-handoff-protocol-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/docs/framework/codex-sidecar-operations-guide-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/docs/framework/codex-prompt-pack-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/.hivemind/checkpoints/long-haul-resync-checkpoint-2026-03-06.md"
+  ],
+  "restart_order": [
+    "latest human message that requested this handoff package",
+    "/Users/apple/hivemind-plugin/.codex/AGENTS.md",
+    "/Users/apple/hivemind-plugin/docs/framework/codex-opencode-reality-map-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/docs/framework/codex-sidecar-workflow-spec-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/docs/framework/codex-continuity-contract-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/.hivemind/checkpoints/long-haul-resync-checkpoint-2026-03-06.md",
+    "/Users/apple/hivemind-plugin/docs/plans/2026-03-06-state-authority-rationalization-pass.md",
+    "/Users/apple/hivemind-plugin/docs/plans/2026-03-06-next-iteration-implementation-plan.md",
+    "/Users/apple/hivemind-plugin/docs/plans/2026-03-06-external-replies-reconciled-execution-plan.md",
+    "/Users/apple/hivemind-plugin/.hivemind/project/planning/debug/active/milestone-01-enhanced-systematic-synthesis-prompt-2026-03-06.md"
+  ],
+  "next_action": "perform a no-mutation resync synthesis pass that audits current repo truth, evaluates the Devin synthesis against the March 6 authority docs, and produces a revised long-haul master plan",
+  "unresolved_questions": [
+    "which parts of Devin's state-authority reconstruction remain valid after the March 6 state-authority rationalization pass",
+    "whether the recommended inspect-and-projection-first progression should replace, merge with, or be subordinated to the active March 6 plan documents",
+    "whether the Milestone 01 prompt should be updated to stop naming risky .hivemind files as primary authorities",
+    "how to frame the next long-haul master plan so it absorbs verified external synthesis without reintroducing contamination patterns"
+  ],
+  "branch_status": [
+    "long-haul child-session minimization batch reported complete by user with commit 944305f",
+    "Codex sidecar mirror work is stable and complete in-repo",
+    "no new implementation code was added in this handoff pass"
+  ],
+  "evidence_refs": [
+    "/Users/apple/hivemind-plugin/docs/plans/2026-03-06-state-authority-rationalization-pass.md",
+    "/Users/apple/hivemind-plugin/docs/plans/2026-03-06-next-iteration-implementation-plan.md",
+    "/Users/apple/hivemind-plugin/docs/plans/2026-03-06-external-replies-reconciled-execution-plan.md",
+    "/Users/apple/hivemind-plugin/.hivemind/project/planning/debug/active/milestone-01-enhanced-systematic-synthesis-prompt-2026-03-06.md"
+  ],
+  "forbidden_inferences": [
+    "do not assume Devin's verified labels outrank the current repository",
+    "do not assume brain.json is safe routing authority because Devin called it primary",
+    "do not treat old .hivemind/handoffs/handoff-*.md files as more authoritative than the new checkpoint and this handoff",
+    "do not resume by broad markdown globs or session-export mining",
+    "do not mix hivefiver and hiveminder scopes before making the overlap explicit"
+  ]
+}
