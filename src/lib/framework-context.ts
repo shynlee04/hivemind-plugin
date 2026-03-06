@@ -1,6 +1,7 @@
 import { access, readFile } from "fs/promises"
 import { constants } from "fs"
 import { join } from "path"
+import { getEffectivePaths } from "./paths.js"
 
 export type FrameworkMode = "gsd" | "spec-kit" | "both" | "none"
 
@@ -33,6 +34,47 @@ async function pathExists(path: string): Promise<boolean> {
     return true
   } catch {
     return false
+  }
+}
+
+async function resolveGsdPlanningRoot(directory: string): Promise<string | null> {
+  const paths = getEffectivePaths(directory)
+  const canonicalPlanningRoot = paths.projectPlanningDir
+  if (await pathExists(canonicalPlanningRoot)) {
+    return canonicalPlanningRoot
+  }
+
+  const legacyPlanningRoot = join(directory, ".planning")
+  if (await pathExists(legacyPlanningRoot)) {
+    return legacyPlanningRoot
+  }
+
+  return null
+}
+
+async function readPlanningSignals(planningDir: string | null): Promise<{
+  activePhase: string | null
+  phaseGoal: string | null
+}> {
+  if (!planningDir) {
+    return { activePhase: null, phaseGoal: null }
+  }
+
+  const statePath = join(planningDir, "STATE.md")
+  const roadmapPath = join(planningDir, "ROADMAP.md")
+  if (!(await pathExists(statePath)) || !(await pathExists(roadmapPath))) {
+    return { activePhase: null, phaseGoal: null }
+  }
+
+  const [stateContent, roadmapContent] = await Promise.all([
+    readFile(statePath, "utf-8"),
+    readFile(roadmapPath, "utf-8"),
+  ])
+
+  const activePhase = parseActivePhase(stateContent)
+  return {
+    activePhase,
+    phaseGoal: extractPhaseGoalFromRoadmap(roadmapContent, activePhase),
   }
 }
 
@@ -90,52 +132,38 @@ function extractPhaseGoalFromRoadmap(
 }
 
 export async function extractCurrentGsdPhaseGoal(directory: string): Promise<string | null> {
-  const planningDir = join(directory, ".planning")
-  if (!(await pathExists(planningDir))) {
-    return null
+  const paths = getEffectivePaths(directory)
+  const canonicalSignals = await readPlanningSignals(paths.projectPlanningDir)
+  if (canonicalSignals.phaseGoal) {
+    return canonicalSignals.phaseGoal
   }
 
-  const statePath = join(planningDir, "STATE.md")
-  const roadmapPath = join(planningDir, "ROADMAP.md")
-  if (!(await pathExists(statePath)) || !(await pathExists(roadmapPath))) {
-    return null
-  }
-
-  const [stateContent, roadmapContent] = await Promise.all([
-    readFile(statePath, "utf-8"),
-    readFile(roadmapPath, "utf-8"),
-  ])
-
-  const activePhase = parseActivePhase(stateContent)
-  return extractPhaseGoalFromRoadmap(roadmapContent, activePhase)
+  const legacyPlanningRoot = join(directory, ".planning")
+  const legacySignals = await readPlanningSignals(legacyPlanningRoot)
+  return legacySignals.phaseGoal
 }
 
 export async function detectFrameworkContext(directory: string): Promise<FrameworkContext> {
-  const gsdPath = join(directory, ".planning")
+  const gsdPath = await resolveGsdPlanningRoot(directory)
   const specKitPath = join(directory, ".spec-kit")
 
   const [hasGsd, hasSpecKit] = await Promise.all([
-    pathExists(gsdPath),
+    Promise.resolve(gsdPath !== null),
     pathExists(specKitPath),
   ])
 
   const mode = classifyMode(hasGsd, hasSpecKit)
-  const gsdPhaseGoal = hasGsd ? await extractCurrentGsdPhaseGoal(directory) : null
-
-  let activePhase: string | null = null
-  if (hasGsd) {
-    const statePath = join(gsdPath, "STATE.md")
-    if (await pathExists(statePath)) {
-      const stateContent = await readFile(statePath, "utf-8")
-      activePhase = parseActivePhase(stateContent)
-    }
-  }
+  const paths = getEffectivePaths(directory)
+  const canonicalSignals = await readPlanningSignals(paths.projectPlanningDir)
+  const legacySignals = await readPlanningSignals(join(directory, ".planning"))
+  const activePhase = canonicalSignals.activePhase ?? legacySignals.activePhase
+  const gsdPhaseGoal = canonicalSignals.phaseGoal ?? legacySignals.phaseGoal
 
   return {
     mode,
     hasGsd,
     hasSpecKit,
-    gsdPath: hasGsd ? gsdPath : null,
+    gsdPath,
     specKitPath: hasSpecKit ? specKitPath : null,
     activePhase,
     activeSpecPath: hasSpecKit ? specKitPath : null,

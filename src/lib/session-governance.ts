@@ -172,7 +172,7 @@ function buildFrameworkLines(
     const hasSpecMetadata = selection.choice === "spec-kit" && selection.active_spec_path.trim().length > 0
     const hasValidSelection = hasFrameworkChoice && (hasGsdMetadata || hasSpecMetadata)
 
-    frameworkLines.push("[FRAMEWORK CONFLICT] Both .planning and .spec-kit detected.")
+    frameworkLines.push("[FRAMEWORK CONFLICT] Both the canonical planning root and .spec-kit are active.")
     frameworkLines.push("Request consolidation first, then choose one framework before implementation.")
 
     if (selection.acceptance_note.trim().length > 0 && !hasValidSelection) {

@@ -56,11 +56,14 @@ async function test_init_planning_directory() {
   process.stderr.write("\n--- planning-fs: init directory ---\n")
   const dir = await setup()
   const paths = await initializePlanningDirectory(dir)
+  const effective = getEffectivePaths(dir)
 
   assert(existsSync(paths.planningDir), "planning dir created")
   assert(existsSync(paths.indexPath), "index.md created")
   assert(existsSync(paths.activePath), "active.md created")
   assert(existsSync(paths.archiveDir), "archive dir created")
+  assert(existsSync(effective.projectPlanningDir), "canonical project planning dir created")
+  assert(existsSync(effective.projectPlanningConfig), "project planning config created")
 
   await cleanup()
 }
@@ -185,6 +188,7 @@ async function test_init_project() {
   assert(existsSync(join(sessionsDir, "active.md")), "active.md created")
   assert(existsSync(getEffectivePaths(dir).brain), "brain.json created")
   assert(existsSync(join(hivemindDir, "config.json")), "config.json created")
+  assert(existsSync(getEffectivePaths(dir).projectPlanningConfig), "planning config created")
   assert(existsSync(join(hivemindDir, "docs", "10-commandments.md")), "10-commandments.md copied to docs/")
 
   await cleanup()

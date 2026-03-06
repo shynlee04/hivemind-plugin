@@ -189,7 +189,7 @@ export function createToolGateHook(
           const guidanceSuffix = acceptedOverrideOnly
             ? " Override note recorded; framework selection metadata is still recommended."
             : ""
-          const guidance = `Framework conflict: both .planning and .spec-kit detected. Consolidate first, then choose framework via locked menu metadata (active_phase or active_spec_path).${guidanceSuffix}`
+          const guidance = `Framework conflict: both the canonical planning root and .spec-kit are active. Consolidate first, then choose framework via locked menu metadata (active_phase or active_spec_path).${guidanceSuffix}`
 
           // Advisory only - no blocking (HC1 compliance)
           if (!CONFLICT_SAFE_TOOLS.has(toolName)) {

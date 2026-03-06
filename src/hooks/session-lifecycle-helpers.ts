@@ -111,6 +111,9 @@ export async function collectProjectSnapshot(directory: string): Promise<Project
     "README.md",
     "AGENTS.md",
     "CLAUDE.md",
+    ".hivemind/project/planning/PROJECT.md",
+    ".hivemind/project/planning/ROADMAP.md",
+    ".hivemind/project/planning/STATE.md",
     ".planning/ROADMAP.md",
     ".planning/STATE.md",
     ".spec-kit",
@@ -200,7 +203,7 @@ export async function generateSetupGuidanceBlock(directory: string): Promise<str
   const snapshot = await collectProjectSnapshot(directory);
   const frameworkLine =
     frameworkContext.mode === "both"
-      ? "both .planning and .spec-kit detected (resolve conflict before implementation)"
+      ? "both the canonical planning root and .spec-kit detected (resolve conflict before implementation)"
       : frameworkContext.mode;
 
   return [

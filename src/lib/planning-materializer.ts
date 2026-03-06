@@ -38,9 +38,7 @@ export interface SessionStateParams {
 
 function getPlanningDir(directory: string): string {
   const paths = getEffectivePaths(directory)
-  const expectedRoot = join(directory, ".hivemind")
-  const root = paths.root === expectedRoot ? expectedRoot : paths.root
-  return join(root, "project", "planning")
+  return paths.projectPlanningDir
 }
 
 async function loadPlanningFile(directory: string, fileName: string): Promise<{
@@ -50,12 +48,12 @@ async function loadPlanningFile(directory: string, fileName: string): Promise<{
 }> {
   const planningDir = getPlanningDir(directory)
   if (!existsSync(planningDir)) {
-    await initializePlanningProjectDir(join(directory, ".hivemind"))
+    await initializePlanningProjectDir(getEffectivePaths(directory).root)
   }
   const filePath = join(planningDir, fileName)
   const existedBefore = existsSync(filePath)
   if (!existedBefore) {
-    await initializePlanningProjectDir(join(directory, ".hivemind"))
+    await initializePlanningProjectDir(getEffectivePaths(directory).root)
   }
   const content = existsSync(filePath) ? await readFile(filePath, "utf-8") : ""
   return { filePath, content, existedBefore }

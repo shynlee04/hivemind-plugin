@@ -3,7 +3,7 @@
 This file provides guidance to ALL agents working in this repository.
 
 **Last Updated**: 2026-03-06
-**Version**: 3.2-progress-hardening
+**Version**: 3.3-strategic-resync
 **Maintained By**: hivefiver meta-builder
 **Symlinked To**: `.hivemind/AGENTS.md`, `.opencode/AGENTS.md`, `src/AGENTS.md`
 
@@ -30,10 +30,11 @@ CRITICAL: Before modifying any function, you MUST:
 - Core implementation/runtime belongs to repository root + [`src/`](src/) (tools/libs/hooks/schemas) ([`AGENTS.md`](AGENTS.md:105)).
 - Main unresolved system risk is still prompt-surface ownership drift across extension and core hooks, but the first de-duplication slice is now landed.
 - March 6 hardening milestones are already in place: `task_id` continuity, `hivemind_inspect.traverse` v1, ownership coverage tests, tool-gate demotion, and child-session minimization.
+- `.hivemind/project/planning/` is now the canonical readable planning root; legacy `.planning/` remains compatibility-only while consumers are normalized.
 - Regression baseline was previously blocked by stale expectations; targeted verification gates are now active and must stay green before each new restricted edit.
 - Restricted regions remain explicit high-risk zones, but phased plan-backed edits are now allowed when ownership coverage and verification are present ([`AGENTS.md`](AGENTS.md:181)).
 - Most confusion/hallucination risk comes from lineage mixing and from treating similar workflow patterns as shared artifacts.
-- Current priority is progressive long-haul stabilization, not feature expansion.
+- Current priority is bootstrap-and-composition-first strategic resync on `.hivemind` formation, readable planning SOT, and continuity design; sidecar concerns are not the active long-haul focus.
 
 2. **Project Goal → Intended Achievements → Means**
 
@@ -48,6 +49,7 @@ CRITICAL: Before modifying any function, you MUST:
 - The project entered contamination-defense mode after repeated context poisoning and role drift across sessions ([`AGENTS.md`](AGENTS.md:12), [`CONTAMINATION-GUARDRAILS.md`](CONTAMINATION-GUARDRAILS.md:82)).
 - Governance was tightened: targeted context reads, strict mutation/routing discipline, and restricted zones.
 - Refactor progressed on foundations: session pathing/bootstrap and schema/governance counter normalization ([`AGENTS.md`](AGENTS.md:137)).
+- The March 6 baseline is now being carried into a strategic resync centered on reset/init formation, `.hivemind` composition, and planning-root normalization instead of immediate deeper hook refactors.
 - Remaining steps are dependency-gated and currently constrained by test-alignment authorization ([`AGENTS.md`](AGENTS.md:145), [`AGENTS.md`](AGENTS.md:150)).
 
 4. **Architecture and Domain Boundaries**
@@ -93,10 +95,12 @@ CRITICAL: Before modifying any function, you MUST:
 - **Partially working**
   - Session isolation direction is in place, and child-session prompt load is now reduced, but direct GX-Pack fallback runtime coverage still needs a stable harness.
   - Prompt-surface ownership is safer than before, but the full canonical ownership migration is not finished.
+  - The canonical planning root now exists under `.hivemind/project/planning/`, but consumer normalization and hierarchy governance are still in progress.
 
 - **Broken/unclear**
   - Dual-injector conflict is reduced, not eliminated.
   - State authority is still split across `brain.json`, `graph/*.json`, and `hierarchy.json`; this is intentional for now but must remain disciplined.
+  - Readable planning-root hierarchy is still maturing from shell-level scaffolding into governed long-haul SOT.
   - Maintain formal regression gates with `npx tsc --noEmit` plus targeted suites before restricted-zone edits.
 
 7. **Issues and Concerns Register**
@@ -161,9 +165,9 @@ CRITICAL: Before modifying any function, you MUST:
 
 1. Preserve the new verification baseline: `npx tsc --noEmit` + targeted ownership/child-session suites before each restricted change.
 2. Use the state-authority pass in `docs/plans/2026-03-06-state-authority-rationalization-pass.md` as the active source for injection/navigation/session-metadata authority.
-3. Execute the QA / research workflow design pass without creating a fourth state authority.
-4. Add direct GX-Pack fallback runtime coverage once `.opencode` hook modules expose a stable test import surface.
-5. Re-validate contamination risk and lineage boundaries at each milestone using the current March 6 plan artifacts.
+3. Execute the strategic resync audit on reset/init/bootstrap, `.hivemind` composition, and planning-root normalization before reopening deeper runtime refactors.
+4. Use the fresh manual Devin packets in `docs/plans/` only after the local framing is stable, then treat returned answers as external synthesis input rather than authority.
+5. Reopen QA / research workflow design and direct GX-Pack fallback runtime coverage only after the architecture resynthesis cycle is approved.
 
 **Assumptions and Unknowns**
 - Assumption A1: status entries in [`AGENTS.md`](AGENTS.md:137) reflect current repository reality.
@@ -189,6 +193,13 @@ This project has forensically proven context poisoning across 7+ agent sessions.
 
 Refactor the **`hivefiver`** module into a reliable "healer" for the project lineage team — a meta-builder orchestrator that can diagnose, refactor, debug, validate, and evolve the framework **without poisoning runtime context**.
 
+The active wave inside that objective is now a strategic resync:
+
+- audit how reset/init and later automation form `.hivemind`
+- normalize `.hivemind/project/planning/` as the readable planning root
+- prepare manual external synthesis packets
+- only then reopen the next implementation tranche
+
 ### What hivefiver Is
 - Meta-builder: engineers the tools that engineers use
 - Framework doctor: diagnoses and repairs broken framework chains
@@ -207,9 +218,9 @@ Refactor the **`hivefiver`** module into a reliable "healer" for the project lin
 
 ### Codex Sidecar Surfaces
 
-- `.codex/**` is the Codex-side instruction and config layer
-- `docs/framework/**` is the framework-owned authority space for Codex sidecar contracts
-- OpenCode remains the runtime source of truth; Codex mirrors workflow discipline and continuity, not plugin/runtime internals
+- `.codex/**` and `docs/framework/**` remain optional mirror surfaces only.
+- They are not the active priority in the current long-haul wave.
+- OpenCode runtime and `.hivemind` composition remain the active source of truth for this strategic resync.
 
 ### Core Problem Being Solved
 Two independent auto-injection systems fire on EVERY LLM turn, injecting contradictory context from overlapping state files. This causes role-drift, hallucination, and context poisoning. See CONTAMINATION-GUARDRAILS.md §4.

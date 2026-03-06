@@ -2,12 +2,12 @@
  * HiveMind Init — One-command project initialization.
  *
  * Creates:
- *   - .hivemind/ directory structure
- *   - index.md with template
- *   - active.md with LOCKED status
- *   - brain.json with initial state
+ *   - .hivemind/ hierarchical runtime structure
+ *   - canonical readable planning root under .hivemind/project/planning/
+ *   - root INDEX.md and session scaffolds
+ *   - brain.json and hierarchy.json with initial runtime state
  *   - config.json with governance preferences
- *   - Auto-registers plugin in opencode.json
+ *   - plugin registration and OpenCode defaults
  */
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
@@ -516,6 +516,12 @@ async function printInitSuccess(
   log("  │   ├── manifest.json    (session registry)")
   log("  │   └── archive/         (completed sessions)")
   log("  ├── plans/               (plan registry)")
+  log("  ├── project/")
+  log("  │   └── planning/        (canonical readable planning root)")
+  log("  │       ├── PROJECT.md   (vision + architecture stance)")
+  log("  │       ├── ROADMAP.md   (long-haul phases)")
+  log("  │       ├── STATE.md     (cross-session planning SOT)")
+  log("  │       └── config.json  (planning workflow policy)")
   log("  ├── codemap/             (SOT manifest)")
   log("  ├── codewiki/            (SOT manifest)")
   log("  ├── docs/                (10-commandments.md)")
@@ -856,6 +862,12 @@ export async function initProject(
     log("  │   ├── manifest.json    (session registry)")
     log("  │   └── archive/         (completed sessions)")
     log("  ├── plans/               (plan registry)")
+    log("  ├── project/")
+    log("  │   └── planning/        (canonical readable planning root)")
+    log("  │       ├── PROJECT.md   (vision + architecture stance)")
+    log("  │       ├── ROADMAP.md   (long-haul phases)")
+    log("  │       ├── STATE.md     (cross-session planning SOT)")
+    log("  │       └── config.json  (planning workflow policy)")
     log("  ├── codemap/             (SOT manifest)")
     log("  ├── codewiki/            (SOT manifest)")
     log("  ├── docs/                (10-commandments.md)")

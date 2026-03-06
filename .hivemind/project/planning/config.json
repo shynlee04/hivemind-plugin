@@ -1,0 +1,32 @@
+{
+  "version": "2026-03-06",
+  "planning_root": ".hivemind/project/planning",
+  "runtime_root": ".hivemind",
+  "storage_model": {
+    "runtime_state": "json",
+    "readable_sot": "markdown"
+  },
+  "lineage_policy": {
+    "primary_lineages": [
+      "hivefiver",
+      "hiveminder"
+    ],
+    "analysis_rule": "analyze_separately_first",
+    "synthesis_rule": "merge_only_after_overlap_is_explicit"
+  },
+  "workflow_policy": {
+    "planning_model": "gsd_adapted",
+    "phase_contract": "research_plan_verify_execute_validate",
+    "manual_external_synthesis": true
+  },
+  "compatibility": {
+    "legacy_roots": [
+      ".planning"
+    ],
+    "legacy_mode": "compatibility_only"
+  },
+  "research_policy": {
+    "packet_mode": "manual_devin_handoff",
+    "local_repo_truth_precedence": true
+  }
+}

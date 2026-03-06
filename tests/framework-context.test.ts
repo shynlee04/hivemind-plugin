@@ -34,6 +34,11 @@ async function setup(): Promise<string> {
   return tmpDir
 }
 
+async function setupRaw(): Promise<string> {
+  tmpDir = await mkdtemp(join(tmpdir(), "hm-framework-raw-"))
+  return tmpDir
+}
+
 async function cleanup(): Promise<void> {
   await rm(tmpDir, { recursive: true, force: true })
 }
@@ -53,13 +58,14 @@ async function writeGsdFiles(dir: string, phase = "02") {
   )
 }
 
-async function test_detect_none() {
-  process.stderr.write("\n--- framework-context: detect none ---\n")
+async function test_detect_canonical_planning_root() {
+  process.stderr.write("\n--- framework-context: detect canonical planning root ---\n")
   const dir = await setup()
   try {
     const context = await detectFrameworkContext(dir)
-    assert(context.mode === "none", "mode is none with no framework markers")
-    assert(!context.hasGsd && !context.hasSpecKit, "no framework flags set")
+    assert(context.mode === "gsd", "mode is gsd when canonical planning root exists")
+    assert(context.hasGsd && !context.hasSpecKit, "canonical planning root sets gsd without spec-kit")
+    assert(context.gsdPath?.endsWith(".hivemind/project/planning") === true, "canonical gsd path points to .hivemind/project/planning")
   } finally {
     await cleanup()
   }
@@ -74,9 +80,10 @@ async function test_detect_gsd_and_goal() {
     const context = await detectFrameworkContext(dir)
     assert(context.mode === "gsd", "mode is gsd when only .planning exists")
     assert(context.activePhase === "02", "active phase parsed from STATE.md")
+    assert(context.gsdPath?.endsWith(".hivemind/project/planning") === true, "canonical path remains the reported gsd root")
     assert(
       context.gsdPhaseGoal === "Pin this goal for GSD mode",
-      "phase goal extracted from roadmap"
+      "phase goal extracted from legacy roadmap when canonical root has no phase data yet"
     )
   } finally {
     await cleanup()
@@ -85,7 +92,7 @@ async function test_detect_gsd_and_goal() {
 
 async function test_detect_spec_kit_only() {
   process.stderr.write("\n--- framework-context: detect spec-kit only ---\n")
-  const dir = await setup()
+  const dir = await setupRaw()
   try {
     await mkdir(join(dir, ".spec-kit"), { recursive: true })
     const context = await detectFrameworkContext(dir)
@@ -120,7 +127,7 @@ async function test_selection_menu_contract() {
     mode: "both",
     hasGsd: true,
     hasSpecKit: true,
-    gsdPath: ".planning",
+    gsdPath: ".hivemind/project/planning",
     specKitPath: ".spec-kit",
     activePhase: "02",
     activeSpecPath: ".spec-kit/specs/auth.md",
@@ -206,7 +213,7 @@ async function test_framework_simulated_pause_is_non_blocking() {
 async function main() {
   process.stderr.write("=== Framework Context Tests ===\n")
 
-  await test_detect_none()
+  await test_detect_canonical_planning_root()
   await test_detect_gsd_and_goal()
   await test_detect_spec_kit_only()
   await test_detect_both()
