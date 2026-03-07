@@ -1,4 +1,12 @@
 /**
+ * @deprecated DISABLED 2026-03-08 — This plugin is disabled in opencode.json.
+ * Reason: References nonexistent GX-Pack scripts, deep cross-layer imports,
+ * and duplicates governance already handled by canonical src/hooks/*.
+ * Canonical replacement: src/hooks/ (session-lifecycle, soft-governance,
+ * tool-gate, compaction, event-handler, messages-transform).
+ * See AGENTS.md §Dual-Injection Systems for context.
+ *
+ * --- Original description ---
  * HiveMind Governance Plugin — Compaction Hook (FULLY WIRED)
  *
  * Implements BLOCK → retrieve → purify → validate → inject → unblock flow.
@@ -93,19 +101,19 @@ function loadRecoveryFile(worktree: string): CompactionRecovery | null {
         : [],
       workflow_positions: Array.isArray(parsed.workflow_positions)
         ? parsed.workflow_positions.map((w: any) => ({
-            workflow_id: w.workflow_id ?? "unknown",
-            current_step: w.current_step ?? 0,
-            step_name: w.step_name ?? "unknown",
-          }))
+          workflow_id: w.workflow_id ?? "unknown",
+          current_step: w.current_step ?? 0,
+          step_name: w.step_name ?? "unknown",
+        }))
         : [],
       health_summary: parsed.health_summary
         ? {
-            score: parsed.health_summary.score ?? 0,
-            status: parsed.health_summary.status ?? "unknown",
-            degraded_signals: Array.isArray(parsed.health_summary.degraded_signals)
-              ? parsed.health_summary.degraded_signals
-              : [],
-          }
+          score: parsed.health_summary.score ?? 0,
+          status: parsed.health_summary.status ?? "unknown",
+          degraded_signals: Array.isArray(parsed.health_summary.degraded_signals)
+            ? parsed.health_summary.degraded_signals
+            : [],
+        }
         : { score: 0, status: "unknown", degraded_signals: [] },
       recommended_next: parsed.recommended_next ?? "No recommendation",
       recovered_at: Date.now(),

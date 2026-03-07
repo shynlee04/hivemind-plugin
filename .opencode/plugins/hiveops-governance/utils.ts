@@ -1,4 +1,12 @@
 /**
+ * @deprecated DISABLED 2026-03-08 — This plugin is disabled in opencode.json.
+ * Reason: References nonexistent GX-Pack scripts, deep cross-layer imports,
+ * and duplicates governance already handled by canonical src/hooks/*.
+ * Canonical replacement: src/hooks/ (session-lifecycle, soft-governance,
+ * tool-gate, compaction, event-handler, messages-transform).
+ * See AGENTS.md §Dual-Injection Systems for context.
+ *
+ * --- Original description ---
  * HiveMind Governance Plugin — Utility Functions
  *
  * Shared helpers for path matching, state I/O, and

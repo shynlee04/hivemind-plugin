@@ -1,4 +1,12 @@
 /**
+ * @deprecated DISABLED 2026-03-08 — This plugin is disabled in opencode.json.
+ * Reason: References nonexistent GX-Pack scripts, deep cross-layer imports,
+ * and duplicates governance already handled by canonical src/hooks/*.
+ * Canonical replacement: src/hooks/ (session-lifecycle, soft-governance,
+ * tool-gate, compaction, event-handler, messages-transform).
+ * See AGENTS.md §Dual-Injection Systems for context.
+ *
+ * --- Original description ---
  * HiveMind Governance Plugin — Delegation Enforcement Hook (FULLY WIRED)
  *
  * Deterministic script triggers on tool calls:
@@ -51,8 +59,8 @@ export function buildToolExecuteBeforeHook(state: {
       if (!validation.valid) {
         throw new Error(
           `[GOVERNANCE] Delegation blocked: ${validation.reason}\n` +
-            `Current chain depth: ${depth}\n` +
-            `Agent: ${agent} → Target: ${targetAgent}`
+          `Current chain depth: ${depth}\n` +
+          `Agent: ${agent} → Target: ${targetAgent}`
         )
       }
 
@@ -65,7 +73,7 @@ export function buildToolExecuteBeforeHook(state: {
       if (enforceResult && enforceResult.allowed === false) {
         throw new Error(
           `[GOVERNANCE] gx-enforce blocked delegation: ${enforceResult.reason || "policy violation"}\n` +
-            `Agent: ${agent} → Target: ${targetAgent}`
+          `Agent: ${agent} → Target: ${targetAgent}`
         )
       }
 
@@ -126,8 +134,8 @@ export function buildToolExecuteBeforeHook(state: {
 
           throw new Error(
             `[GOVERNANCE] Scope violation blocked: ${scopeCheck.rule}\n` +
-              `Tool: ${toolName}, Path: ${filePath}\n` +
-              `Agent ${agent} is not authorized to write to this path.`
+            `Tool: ${toolName}, Path: ${filePath}\n` +
+            `Agent ${agent} is not authorized to write to this path.`
           )
         }
 
@@ -140,7 +148,7 @@ export function buildToolExecuteBeforeHook(state: {
         if (enforceResult && enforceResult.allowed === false) {
           throw new Error(
             `[GOVERNANCE] gx-enforce blocked path: ${enforceResult.reason || "scope violation"}\n` +
-              `Tool: ${toolName}, Path: ${filePath}`
+            `Tool: ${toolName}, Path: ${filePath}`
           )
         }
       }
@@ -159,8 +167,8 @@ export function buildToolExecuteBeforeHook(state: {
           if (pattern.test(cmd)) {
             throw new Error(
               `[GOVERNANCE] Dangerous command blocked: ${cmd.slice(0, 80)}\n` +
-                `Pattern matched: ${pattern.toString()}\n` +
-                `Agent ${agent} attempted a destructive operation.`
+              `Pattern matched: ${pattern.toString()}\n` +
+              `Agent ${agent} attempted a destructive operation.`
             )
           }
         }

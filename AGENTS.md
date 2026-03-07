@@ -74,7 +74,7 @@ CRITICAL: Before modifying any function, you MUST:
 | Component | Layer | Purpose | Current Use | Stability |
 |---|---|---|---|---|
 | [`package.json`](package.json:1) | Runtime/Core | Node/TypeScript CLI framework base | Active | Medium |
-| [`.opencode/plugins/hiveops-governance/hooks/context-injection.ts`](.opencode/plugins/hiveops-governance/hooks/context-injection.ts:1) | Extension | Plugin-side adapter/fallback injection surface | Active every turn | At Risk |
+| [`.opencode/plugins/hiveops-governance/hooks/context-injection.ts`](.opencode/plugins/hiveops-governance/hooks/context-injection.ts:1) | Extension | Plugin-side adapter/fallback injection surface | **DISABLED 2026-03-08** — removed from `opencode.json`; all files marked `@deprecated` | Archived |
 | [`src/hooks/session-lifecycle.ts`](src/hooks/session-lifecycle.ts:1) | Core | Session lifecycle context composition | Active every turn | At Risk |
 | [`src/hooks/messages-transform.ts`](src/hooks/messages-transform.ts:1) | Core | Message transform + anchor/checklist injection | Active every turn | At Risk |
 | [`src/lib/paths.ts`](src/lib/paths.ts:1) | Core | Session/effective path resolution | Active (Fix 3A done) | Improving |
@@ -109,7 +109,7 @@ CRITICAL: Before modifying any function, you MUST:
 
 | ID | Description | Scope (Isolated/Cross-domain) | Severity | Evidence | Suspected Cause |
 |---|---|---|---|---|---|
-| HM-01 | Dual per-turn injection conflict | Cross-domain | Critical | [`AGENTS.md`](AGENTS.md:123) | Overlapping extension + core injectors |
+| HM-01 | Dual per-turn injection conflict | Cross-domain | ~~Critical~~ **Resolved** | [`AGENTS.md`](AGENTS.md:123) | Overlapping extension + core injectors — **RESOLVED 2026-03-08**: `hiveops-governance` plugin disabled in `opencode.json`, all files `@deprecated`. `src/hooks/` is now sole governance owner. |
 | HM-09 | Source-vs-mirror ownership drift between root framework assets and `.opencode/**` | Cross-domain | High | `src/cli/sync-assets.ts`, `src/lib/hivefiver-integration.ts` | Dual-authority language around authored and mirrored assets |
 | HM-02 | Ownership regressions can reintroduce stale prompt duplication | Isolated (quality) | High | `tests/injection-surface-ownership.test.ts` | Prompt-surface cleanup without coverage |
 | HM-03 | Restricted hook/state regions carry high regression risk | Cross-domain | High | [`AGENTS.md`](AGENTS.md:181) | Premature edits before prerequisite completion |
@@ -338,8 +338,8 @@ User
 
 | System | File | Fires | What It Does |
 |--------|------|-------|-------------|
-| System 1 | `.opencode/plugins/hiveops-governance/hooks/context-injection.ts` | Fallback path | Prepends GX-Pack governance context when core runtime hooks are unavailable |
-| System 2a | `src/hooks/session-lifecycle.ts` | Every turn | Appends governance/system context with child-session suppression |
+| ~~System 1~~ | `.opencode/plugins/hiveops-governance/hooks/context-injection.ts` | **DISABLED** | ~~Prepends GX-Pack governance context~~ — Plugin removed from `opencode.json` 2026-03-08. All files `@deprecated`. |
+| System 2a | `src/hooks/session-lifecycle.ts` | Every turn | Appends governance/system context with child-session suppression (now sole system prompt owner) |
 | System 2b | `src/hooks/messages-transform.ts` | Every turn | Prepends structured context and appends checklist with child-session minimization |
 
 **These remain the primary contamination surfaces.** Only edit them under the active phased plan, with ownership tests and fresh verification evidence.
@@ -402,7 +402,7 @@ See CONTAMINATION-GUARDRAILS.md §3 for the complete delegation safety protocol.
 See CONTAMINATION-GUARDRAILS.md §6 for the complete list with rationales.
 
 Key restrictions:
-- `.opencode/plugins/hiveops-governance/hooks/` — System 1 injection, high-risk fallback surface
+- `.opencode/plugins/hiveops-governance/hooks/` — ~~System 1 injection~~ **DISABLED 2026-03-08**: Plugin removed from `opencode.json`, all files `@deprecated`. No longer a restricted region.
 - `src/hooks/session-lifecycle.ts` — System 2a injection, high-risk ownership surface
 - `src/hooks/messages-transform.ts` — System 2b injection, high-risk ownership surface
 - `.hivemind/state/` — Global singleton state, needs Fix 3C-D first
