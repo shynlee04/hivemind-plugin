@@ -6,14 +6,25 @@ description: Validate and standardize sub-agent delegation. Use BEFORE
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-delegate
-required_skills:
-  - delegation-intelligence
-  - delegation-packet-contract
-  - context-integrity
+skill_loading:
+  mode: progressive
+  triggers:
+    intent_ambiguous: [discovery-interview, research-question-framing]
+    complexity_high: [complexity-assessment]
+    context_stale: [context-integrity]
+    delegation_needed: [delegation-intelligence, task-coordination-strategies]
+  fallback: [using-superpowers]
 required_templates: []
 chain_group: hiveminder
 group: hiveminder
-entry_gate: session_declared
+entry_handling:
+  mode: guide
+  if_no_session:
+    action: prompt_declare_intent
+    auto_suggest: true
+  if_session_stale:
+    action: offer_resume
+    auto_suggest: true
 ---
 
 # HiveMind Delegation Validator
@@ -138,47 +149,60 @@ export_cycle({
 // - Check git diff
 ```
 
-## Delegation Anti-Patterns
+## Delegation Quality Standards
 
-**❌ NEVER:**
+**Follow these patterns for reliable delegation:**
 
-1. **Vague prompts**
-   ```typescript
-   // BAD
-   prompt: "Fix the auth system"
-   
-   // GOOD
-   prompt: "In src/auth/middleware.ts line 45, JWT validation throws on expired tokens. Fix to call refreshToken() first."
-   ```
+### 1. Precise Task Descriptions
 
-2. **No verification**
-   ```typescript
-   // BAD
-   // Agent says "done" → accept
-   
-   // GOOD
-   // Agent says "done" → run npx tsc --noEmit → verify
-   ```
+```typescript
+// USE THIS PATTERN (GOOD)
+Task({
+  description: "Fix JWT validation in middleware.ts:45",
+  prompt: `In src/auth/middleware.ts line 45, JWT validation throws on expired tokens. 
+  Fix to call refreshToken() first.`
+})
 
-3. **Skip export_cycle**
-   ```typescript
-   // BAD
-   Task({...}) // Return accepted, move on
-   
-   // GOOD
-   Task({...}) // Return received
-   export_cycle({...}) // Intelligence exported
-   ```
+// NOT THIS - too vague
+prompt: "Fix the auth system"
+```
 
-4. **Deep nesting**
-   ```typescript
-   // BAD (Depth 3)
-   You → Task(A) → Task(B) → Task(C)
-   
-   // GOOD (Depth 1-2 max)
-   You → Task(A)
-   You → Task(B) [parallel]
-   ```
+### 2. Verification After Completion
+
+```typescript
+// USE THIS PATTERN (GOOD)
+// Agent says "done" → run verification → then accept
+Task({...})
+// After agent returns:
+run npx tsc --noEmit
+run npm test
+git diff --name-only
+
+// NOT THIS - accept without verification
+Task({...}) // Agent says "done" → accept
+```
+
+### 3. Always Export Intelligence
+
+```typescript
+// USE THIS PATTERN (GOOD)
+Task({...}) // Return received
+export_cycle({ outcome: "success", findings: "What was done" })
+
+// NOT THIS - lose intelligence
+Task({...}) // Return accepted, move on without export
+```
+
+### 4. Shallow Delegation Depth
+
+```typescript
+// USE THIS PATTERN (GOOD) - Depth 1-2 max
+You → Task(A)
+You → Task(B) [parallel]
+
+// NOT THIS - context thinning at depth 3+
+You → Task(A) → Task(B) → Task(C)
+```
 
 ## Command Usage
 

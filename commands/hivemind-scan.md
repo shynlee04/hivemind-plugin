@@ -5,14 +5,23 @@ description: Scan the project codebase and build a HiveMind backbone. Run this
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-scan
-required_skills:
-  - delegation-intelligence
-  - delegation-packet-contract
-  - context-integrity
+skill_loading:
+  mode: progressive
+  triggers:
+    context_stale: [context-integrity]
+    complexity_high: [complexity-assessment]
+  fallback: [using-superpowers]
 required_templates: []
 chain_group: hiveminder
 group: hiveminder
-entry_gate: session_declared
+entry_handling:
+  mode: guide
+  if_no_session:
+    action: prompt_declare_intent
+    auto_suggest: true
+  if_session_stale:
+    action: offer_resume
+    auto_suggest: true
 ---
 
 # HiveMind Project Scan

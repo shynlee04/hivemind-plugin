@@ -1,11 +1,6 @@
 ---
 name: "evidence-discipline"
-description: "Enforces evidence-based claims. Prove with command output before concluding. Run tests before claiming success."
-triggers:
-  - "Before making completion claims"
-  - "When verification is needed"
-  - "After running tests or builds"
-version: "2.6.0"
+description: "Use when making completion claims, accepting conflicting instructions, or validating subagent results. Enforces proof-before-claim: run verification, inspect output, update hierarchy."
 ---
 
 # Evidence Discipline
@@ -20,87 +15,58 @@ version: "2.6.0"
 - Deciding if a test, build, or deployment succeeded
 - User says "it works" but no evidence shown
 
-## The Evidence Chain
+## Platform Adaptation
 
-Every claim needs a verification path. HiveMind gives you concrete tools:
+> Evidence collection tools differ by platform. The DISCIPLINE is universal:
+> - **OpenCode**: `bash` tool for command execution, `recall_mems` for decisions
+> - **Claude Code/Antigravity**: `run_command` for verification, file system for state
+> - **Cursor/Windsurf**: Integrated terminal for command execution
+>
+> What matters: you RAN a verification, INSPECTED output, and RECORDED the result.
+
+## The Evidence Chain
 
 ### Before Claiming Completion
 
-```bash
-# 1. Does the code compile?
-npx tsc --noEmit
-
-# 2. Do tests pass?
-npm test
-
-# 3. Is the hierarchy consistent?
-node bin/hivemind-tools.cjs validate chain
-
-# 4. Are all source files accounted for?
-node bin/hivemind-tools.cjs source-audit
-
-# 5. Does the full ecosystem check pass?
-node bin/hivemind-tools.cjs ecosystem-check
-```
+Run verification commands appropriate to your context:
+1. Does the code compile? (type checker)
+2. Do tests pass? (test runner)
+3. Is the work hierarchy consistent? (state validation)
+4. Are all source files accounted for? (source audit)
 
 ### Before Accepting Conflicting Instructions
 
-```bash
-# What does the trajectory say we're doing?
-node bin/hivemind-tools.cjs state hierarchy
-
-# What decisions did we already make?
-recall_mems({ shelf: "decisions" })
-
-# What does the plan say?
-# Read the active plan file from hierarchy cursor
-
-# What does git history show?
-git log --oneline -10
-git log --grep="<stamp>" --oneline
-```
+Check against existing state:
+1. What does the current trajectory say you're doing?
+2. What decisions were already made?
+3. What does the active plan say?
+4. What does version control history show?
 
 ### After Subagent Returns
 
 ```
 Subagent says "Done"
     │
-    ├── Does the result text contain failure signals?
+    ├── Contains failure signals?
     │   (failed, error, couldn't, unable, blocked, partially, skipped)
-    │   YES → export_cycle({ outcome: "failure" | "partial", findings: "..." })
-    │   NO  → continue
+    │   YES → Record as FAILURE or PARTIAL
+    │   NO  → Continue
     │
-    ├── Does the result describe what was ACTUALLY done?
-    │   VAGUE → ask for specifics before proceeding
-    │   SPECIFIC → verify independently
+    ├── Describes what was ACTUALLY done?
+    │   VAGUE → Ask for specifics
+    │   SPECIFIC → Verify independently
     │
-    ├── Can you verify independently?
-    │   RUN: npm test / tsc / grep for expected changes
-    │   PASS → export_cycle({ outcome: "success", findings: "..." })
-    │   FAIL → export_cycle({ outcome: "failure", findings: "..." })
-    │
-    └── Update hierarchy
-        map_context({ level: "action", status: "complete" | "blocked" })
+    └── Can you verify independently?
+        RUN verification → Record accurate outcome
 ```
 
-## Reward — What Evidence Gets You
+## The Minimum Evidence Bar
 
-| Action | Intelligence Gained |
-|--------|-------------------|
-| `export_cycle` after every subagent | Full decision trail in hierarchy tree + mems |
-| `save_mem({ shelf: "decisions" })` | Any future agent can recall WHY you chose X over Y |
-| `git log --grep="<stamp>"` | Commits linked to hierarchy nodes by timestamp |
-| `grep -r "<stamp>" .hivemind/` | Full evidence chain: tree + mems + anchors + archives |
-| `node bin/hivemind-tools.cjs session trace <stamp>` | One command, complete picture |
-
-## Consequence — What Skipping Costs
-
-| Skip | Cost |
-|------|------|
-| Claim "done" without `npm test` | Broken code deployed, trust lost |
-| Accept instruction without checking trajectory | Architecture contradicted, rework needed |
-| Ignore subagent failure signals | False completion, bug surfaces later at 10x cost |
-| No `save_mem` for key decision | Next session re-debates the same choice |
+**Nothing is "done" without ALL of these:**
+1. Verification command ran (test/build/lint — at least one)
+2. Output inspected (not just exit code — read the output)
+3. Work hierarchy updated with accurate status
+4. If subagent was involved: cycle intelligence exported with accurate outcome
 
 ## Red Flags — You're About to Skip Evidence
 
@@ -109,14 +75,33 @@ Subagent says "Done"
 | "The subagent said it works" | Subagents hallucinate success. Verify independently. |
 | "The user confirmed it" | Users can be wrong. Run the verification commands. |
 | "I tested it mentally" | Mental models miss edge cases. Run actual commands. |
-| "It's obvious this is correct" | Obvious things break. One `npm test` takes 3 seconds. |
+| "It's obvious this is correct" | Obvious things break. One test run takes 3 seconds. |
 | "I'll verify at the end" | Compaction may erase the context. Verify NOW. |
-| "The error is unrelated" | Prove it's unrelated. `git diff` + test output = evidence. |
+| "The error is unrelated" | Prove it's unrelated. Diff + test output = evidence. |
 
-## The Minimum Evidence Bar
+## TDD Verification Gate (Code Changes)
 
-**Nothing is "done" without ALL of these:**
-1. Verification command ran (test/build/lint — at least one)
-2. Output inspected (not just "0 exit code" — read the output)
-3. Hierarchy updated (`map_context status: "complete"`)
-4. If subagent was involved: `export_cycle` called with accurate outcome
+When the work involves code changes, this additional gate applies:
+
+| Phase | Checkpoint | NEVER Skip |
+|-------|-----------|------------|
+| **RED** | Write test that fails for the expected reason | Writing code before test exists |
+| **GREEN** | Write minimal code to make test pass | Over-engineering to get green |
+| **REFACTOR** | Clean up AND re-run tests | Refactoring without re-running |
+
+**Completion for code changes requires:**
+1. Test output showing pass count (not "tests pass" — the actual output)
+2. Build output showing 0 errors (not "it builds" — the actual output)
+3. Full suite run (not just changed tests — catch regressions)
+
+## PLAN.md Protocol Anchor
+
+This skill activates at **Steps 7-8 (Execute, Gatekeeping)** — enforces proof-before-claim during execution and provides the minimum evidence bar at gatekeeping. Also activates at **Step 9 (Atomic Commit)** — commit only if evidence chain is complete.
+
+## Bundled Resources
+
+| Resource | Trigger | Content |
+|----------|---------|---------|
+| [evidence-catalogue.md](references/evidence-catalogue.md) | Need to identify evidence types or platform-specific tools | Evidence types, collection strategies, chain validation |
+| [evidence-report.md](templates/evidence-report.md) | Producing evidence output | Fill-in report: claim → evidence → verdict |
+

@@ -1,8 +1,10 @@
-# HiveMind Plugin — Comprehensive Audit Report (SOT for Refactor)
+# HiveMind Plugin — Comprehensive Audit Report (Reference Document)
 
 **Date**: 2026-03-07  
+**Last Verified**: 2026-03-08  
+**Status**: Reference — subordinate to [PLAN.md](file:///Users/apple/hivemind-plugin/PLAN.md) per §1 Charter  
 **Scope**: `src/`, `.opencode/`, `.hivemind/`, `scripts/`  
-**Purpose**: Identify overlaps, conflicts, anti-patterns, and structural debt to serve as Source of Truth for the upcoming refactor.
+**Purpose**: Identify overlaps, conflicts, anti-patterns, and structural debt to serve as reference for the refactor program.
 
 ---
 
@@ -22,6 +24,8 @@
 12. [Anti-Patterns & Framework Philosophy Violations](#12-anti-patterns--framework-philosophy-violations)
 13. [Edge Case Lifecycle Map](#13-edge-case-lifecycle-map)
 14. [Action Priority Matrix](#14-action-priority-matrix)
+15. [Symlink Integrity Audit](#15-symlink-integrity-audit)
+16. [Context-Rot Attack Surface](#16-context-rot-attack-surface)
 
 ---
 
@@ -586,6 +590,100 @@ User starts new session on same project →
 | **R12** | **Workflow runtime interpreter** — convert YAML declarations into executable workflow steps | L | Fixes AP-2 |
 | **R13** | **Remove hivefiver-reserved.md** or document its purpose | XS | Code hygiene |
 
+### 🔴 P0a — Must Fix (Structural Rot Blockers)
+
+| # | Action | Effort | Impact |
+|---|--------|--------|--------|
+| **R14** | **Fix or remove 40 broken symlinks** — all platform adapter dirs (`.agent/`, `.claude/`, `.cursor/`, `.crush/`, `.factory/`, `.iflow/`, `.kilocode/`, `.qoder/`, `.qwen/`, `.roo/`, `.trae/`, `.windsurf/`) point to `.agents/skills/` which does not exist | S | Eliminates SI-1 through SI-7, restores skill routing on all platforms |
+| **R15** | **Add symlink integrity gate to CI** — automated `find -type l` + target existence check | XS | Prevents symlink regression |
+| **R16** | **Add `last-verified` timestamps to all reference documents** | XS | Enables staleness detection per PLAN.md §12 |
+| **R17** | **Resolve 22 phantom registry entries** — root `skills/registry.yaml` tracks skills without root dirs | M | Eliminates CR-5, fixes registry-to-directory integrity |
+
 ---
 
-> *This audit report is the Source of Truth for the HiveMind refactor. All changes should reference specific finding IDs (C#, AP-#, D#, G#, V-#, R#) from this document.*
+> *This audit report is a reference document subordinate to [PLAN.md](file:///Users/apple/hivemind-plugin/PLAN.md). All changes should reference specific finding IDs (C#, AP-#, D#, G#, V-#, R#, SI-#, CR-#) from this document.*
+
+---
+
+## 15. Symlink Integrity Audit
+
+> [!CAUTION]
+> **40 of 41 symlinks in the project are BROKEN.** Every platform adapter directory has dead skill references. Only `docs/CONTAMINATION-GUARDRAILS.md` resolves correctly.
+
+### 15.1 Root Cause
+
+All broken symlinks target `../../.agents/skills/<name>` — but the `.agents/skills/` directory **does not exist**. It was either never created or was deleted at some point. The `.agents/` directory root-level was expected to be a Codex-compatible adapter surface (see [skill-consolidation-analysis §1](file:///Users/apple/.gemini/antigravity/brain/60533d34-1d33-4eeb-9b04-0a1bd4f3d5af/skill-consolidation-analysis.md)).
+
+### 15.2 Broken Symlink Table
+
+| # | Target | Broken Link Count | Affected Platforms |
+|---|--------|:-:|---|
+| SI-1 | `../../.agents/skills/adaptation-synthesis` | 10 | .agent, .claude, .crush, .factory, .iflow, .kilocode, .qoder, .qwen, .roo, .trae, .windsurf |
+| SI-2 | `../../.agents/skills/spec-driven-development` | 10 | .agent, .claude, .crush, .factory, .iflow, .kilocode, .qoder, .qwen, .roo, .trae, .windsurf |
+| SI-3 | `../../.agents/skills/subagent-driven-development` | 8 | .claude, .crush, .iflow, .kilocode, .qoder, .qwen, .windsurf |
+| SI-4 | `../../.agents/skills/technical-writer` | 5 | .cursor, .iflow, .qoder, .qwen, .windsurf |
+| SI-5 | `../../.agents/skills/requirements-clarity` | 3 | .claude, .qoder, .windsurf |
+| SI-6 | `../../.agents/skills/skill-creator` | 1 | .qwen |
+| SI-7 | `../AGENTS.md` | 1 | docs/plans/ |
+| | **Total broken** | **40** | |
+| ✅ | `../CONTAMINATION-GUARDRAILS.md` | OK | docs/ |
+
+### 15.3 Impact Assessment
+
+| Impact | Detail |
+|--------|--------|
+| **Silent skill routing failure** | 11 platform adapters advertise skills that cannot be loaded — agents on these platforms silently lose capabilities |
+| **Phantom capability claims** | Platform skill listings show entries that resolve to nothing — agents believe they have tools they don't |
+| **Registry inconsistency** | Compounds the 22-phantom-entry problem (§15.4) — the skill ecosystem has two independent integrity failures |
+| **docs/plans/AGENTS.md** | Broken link means documentation cross-references fail |
+
+### 15.4 Cross-Reference: Phantom Registry Problem
+
+The root `skills/registry.yaml` tracks 31 skills but only 9 have directories in `skills/`. The other 22 are "phantom" entries whose directories exist **only** in `.opencode/skills/` — the overwritable mirror. Combined with the 40 broken symlinks, the skill ecosystem has:
+
+- **22 phantom registry entries** — tracked but not present at root
+- **40 broken symlinks** — present but pointing to nothing
+- **Net effect**: large portions of the skill ecosystem are structurally unreachable
+
+---
+
+## 16. Context-Rot Attack Surface
+
+Context rot is the silent degradation of decision-quality signals across sessions, compaction events, and time. The following findings are reframed through a rot lens.
+
+### 16.1 Rot Vector Inventory
+
+| # | Rot Vector | Source Finding | Rot Type | Severity |
+|---|-----------|---------------|----------|----------|
+| CR-1 | **Dual compaction injection without shared budget** | C5 | Compaction rot — contradictory context survives pruning | 🔴 CRITICAL |
+| CR-2 | **277KB brain.json loaded every turn** | AP-6 | Accumulation rot — historical noise drowns live signals | 🔴 CRITICAL |
+| CR-3 | **26KB orphans.json growing unbounded** | AP-8, V-3 | Evidence decay — dead entities persist as phantom context | 🟡 HIGH |
+| CR-4 | **Session state bleed across boundaries** | §13.5 | Session rot — stale state from prior session drives new decisions | 🟡 HIGH |
+| CR-5 | **22 phantom registry entries** | §15.4 | Reference rot — registry claims authority over non-existent targets | 🟡 HIGH |
+| CR-6 | **40 broken symlinks** | §15.2 | Structural rot — dead references propagate across 11 platforms | 🟡 HIGH |
+| CR-7 | **Triple intent classification** | AP-9 | Signal rot — competing classifiers produce inconsistent lineage | 🟠 MEDIUM |
+| CR-8 | **Workflow YAML without runtime interpreter** | AP-2 | Authority rot — declared processes have no enforcement | 🟠 MEDIUM |
+| CR-9 | **Handoffs are write-only** | D1 | Delegation rot — exported intelligence is never re-imported | 🟠 MEDIUM |
+
+### 16.2 Rot Propagation Chains
+
+```
+CR-2 (brain.json bloat) → loads stale turn data → inflates compaction budget → CR-1 (dual injection overflow)
+CR-3 (orphan accumulation) → pollutes graph queries → degrades detection accuracy → false governance signals
+CR-4 (session bleed) → old trajectory drives new session → misrouted intent → wrong lineage → wrong skills
+CR-5 (phantom registry) + CR-6 (broken symlinks) → skill loading fails silently → agent operates without guardrails
+CR-9 (write-only handoffs) → delegation results lost → next session re-discovers from scratch → duplicated work
+```
+
+### 16.3 Defense Priorities (per PLAN.md §12)
+
+| Priority | Defense | Addresses |
+|----------|---------|----------|
+| P0 | Fix or delete 40 broken symlinks | CR-6 |
+| P0 | Resolve phantom registry entries | CR-5 |
+| P1 | Implement brain.json compaction / archival (cap ~20KB) | CR-2 |
+| P1 | Add shared compaction budget between plugins | CR-1 |
+| P1 | Session boundary cleanup (archive old BrainState on new session) | CR-4 |
+| P2 | Orphan auto-resolution (not just quarantine) | CR-3 |
+| P2 | Handoff pickup mechanism | CR-9 |
+| P2 | Single intent classification path | CR-7 |

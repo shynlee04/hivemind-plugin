@@ -2,6 +2,20 @@ version: "1.0.0"
 source_of_truth: true
 local_first_resolution: true
 external_opt_in: true
+# Non-Interactive Shell Awareness (Canonical)
+# - Shell is non-interactive (no TTY/PTY). Never run commands that wait for prompts or UI input.
+# - Always use non-interactive flags and explicit messages (`-y`, `--yes`, `--non-interactive`, `--no-edit`, `-f`).
+# - If a tool can still block, provide deterministic input (`yes |`, heredoc) or fail fast with a timeout.
+#
+# Registry Rule: Every entry MUST have a corresponding skills/{name}/SKILL.md directory.
+# Phantom entries (in registry but no root dir) are forbidden.
+# Mirror-only skills (.opencode/skills/) are NOT listed here — they resolve via fallback.
+#
+# Phase G: 7 hivefiver-* skills consolidated. Their content lives in:
+#   persona-routing, domain-pack-router, bilingual-tutor → entry-resolution/references/
+#   mcp-research-loop → research-methodology/references/
+#   skill-auditor → meta-builder-governance/references/
+#   spec-distillation, ralph-tasking → renamed lineage-agnostic root skills
 skills:
   - name: agent-role-boundary
     domain: agent-governance
@@ -17,396 +31,176 @@ skills:
     depends_on:
       - hivemind-governance
 
-  - name: comparative-analysis
-    domain: research-synthesis
-    bundle: research-core
-    knowledge_delta_score: 0.72
-    status: active
-    owner: hiverd-research
-    disclosure_level: L2
-    triggers:
-      - "compare options"
-      - "tradeoff matrix"
-    supersedes: []
-    depends_on:
-      - research-methodology
-
-  - name: compliance-checking
-    domain: quality-compliance
-    bundle: verification-core
-    knowledge_delta_score: 0.74
-    status: active
-    owner: hiveq-quality
-    disclosure_level: L2
-    triggers:
-      - "compliance audit"
-      - "policy gate"
-    supersedes: []
-    depends_on:
-      - verification-methodology
-
-  - name: context-first-gatekeeping
-    domain: context-governance
-    bundle: governance-core
-    knowledge_delta_score: 0.86
+  - name: meta-builder-governance
+    domain: framework-governance
+    bundle: meta-core
+    knowledge_delta_score: 0.92
     status: active
     owner: hivemind-core
-    disclosure_level: L0
+    disclosure_level: L1
     triggers:
-      - "session start"
-      - "context drift"
-    supersedes: []
+      - "framework refactor"
+      - "deprecation policy"
+      - "skill audit"
+      - "skill overlap review"
+    supersedes:
+      - hivefiver-skill-auditor
     depends_on:
-      - session-lifecycle
+      - hivemind-governance
+
+  # --- Promoted governance-core ---
 
   - name: context-integrity
     domain: context-governance
     bundle: governance-core
-    knowledge_delta_score: 0.9
+    knowledge_delta_score: 0.90
     status: active
-    owner: hivemind-core
-    disclosure_level: L0
-    triggers:
-      - "drift warning"
-      - "post-compaction restore"
-    supersedes: []
-    depends_on:
-      - hivemind-governance
-
-  - name: context-quality-escalation
-    domain: context-governance
-    bundle: governance-core
-    knowledge_delta_score: 0.71
-    status: deprecated
     owner: hivemind-core
     disclosure_level: L1
     triggers:
-      - "turn-based escalation warning"
-      - "context quality escalation"
+      - "context drift repair"
+      - "post-compaction recovery"
     supersedes: []
-    depends_on:
-      - context-integrity
+    depends_on: []
 
-  - name: creative-ideating-room
-    domain: ideation
-    bundle: planning-core
-    knowledge_delta_score: 0.58
-    status: experimental
-    owner: hivefiver-meta
-    disclosure_level: L3
-    triggers:
-      - "brainstorm"
-      - "divergent ideation"
-    supersedes: []
-    depends_on:
-      - hivemind-architect-strategist
-
-  - name: debug-orchestration
-    domain: remediation
-    bundle: repair-core
-    knowledge_delta_score: 0.79
-    status: active
-    owner: hivemind-core
-    disclosure_level: L2
-    triggers:
-      - "incident response"
-      - "multi-stage bug triage"
-    supersedes: []
-    depends_on:
-      - evidence-discipline
-
-  - name: delegation-intelligence
-    domain: orchestration
+  - name: delegation-framework
+    domain: delegation-governance
     bundle: governance-core
     knowledge_delta_score: 0.89
     status: active
     owner: hivemind-core
     disclosure_level: L1
     triggers:
-      - "delegate task"
+      - "delegation decision"
       - "subagent dispatch"
-    supersedes: []
-    depends_on:
-      - hivemind-governance
-
-  - name: delegation-packet-contract
-    domain: orchestration-contracts
-    bundle: governance-core
-    knowledge_delta_score: 0.9
-    status: deprecated
-    owner: hivemind-core
-    disclosure_level: L1
-    triggers:
-      - "build delegation packet"
-      - "enforce success metrics"
-    supersedes: []
-    depends_on:
+    supersedes:
       - delegation-intelligence
+      - delegation-packet-contract
+    depends_on:
+      - evidence-discipline
+
+  # --- Promoted verification-core ---
 
   - name: evidence-discipline
     domain: verification
     bundle: verification-core
     knowledge_delta_score: 0.91
     status: active
-    owner: hiveq-quality
+    owner: hivemind-core
     disclosure_level: L1
     triggers:
       - "completion claim"
-      - "verification gate"
-    supersedes: []
-    depends_on:
-      - hivemind-governance
-
-  - name: gate-enforcement
-    domain: quality-gates
-    bundle: verification-core
-    knowledge_delta_score: 0.78
-    status: active
-    owner: hiveq-quality
-    disclosure_level: L2
-    triggers:
-      - "pass/fail gate"
-      - "release readiness"
-    supersedes: []
-    depends_on:
-      - evidence-discipline
-
-  - name: hivefiver-mode
-    domain: stage-routing
-    bundle: meta-core
-    knowledge_delta_score: 0.90
-    status: active
-    owner: hivefiver-meta
-    disclosure_level: L1
-    triggers:
-      - "hivefiver session start"
-      - "stage routing"
+      - "result validation"
     supersedes: []
     depends_on: []
 
-  - name: hivefiver-coordination
-    domain: quality-gates
-    bundle: meta-core
-    knowledge_delta_score: 0.88
-    status: active
-    owner: hivefiver-meta
-    disclosure_level: L1
-    triggers:
-      - "quality gate check"
-      - "pipeline enforcement"
-    supersedes: []
-    depends_on:
-      - hivefiver-mode
-
-  - name: hivefiver-orchestrator
-    domain: stage-navigation
-    bundle: meta-core
-    knowledge_delta_score: 0.60
-    status: active
-    owner: hivefiver-meta
-    disclosure_level: L1
-    triggers:
-      - "hivefiver navigation"
-      - "stage transition"
-    supersedes: []
-    depends_on:
-      - hivefiver-mode
-      - hivefiver-coordination
-
-  - name: hivemind-architect-strategist
-    domain: architecture-planning
-    bundle: planning-core
+  - name: verification-methodology
+    domain: verification
+    bundle: verification-core
     knowledge_delta_score: 0.83
     status: active
     owner: hivemind-core
-    disclosure_level: L1
-    triggers:
-      - "architecture strategy"
-      - "high-level decomposition"
-    supersedes: []
-    depends_on:
-      - hivemind-governance
-
-  - name: hivemind-framework-auditor
-    domain: framework-governance
-    bundle: verification-core
-    knowledge_delta_score: 0.88
-    status: active
-    owner: hivemind-core
     disclosure_level: L2
     triggers:
-      - "framework audit"
-      - "structural check"
-      - "anti-pattern scan"
-      - "development pattern validation"
+      - "deliverable verification"
+      - "acceptance criteria check"
     supersedes: []
     depends_on:
-      - hivemind-governance
       - evidence-discipline
 
-  - name: hivemind-governance
-    domain: governance
-    bundle: governance-core
-    knowledge_delta_score: 0.95
-    status: active
-    owner: hivemind-core
-    disclosure_level: L0
-    triggers:
-      - "every turn"
-      - "session governance"
-    supersedes: []
-    depends_on: []
-
-  - name: hiveplanner-orchestration
-    domain: phase-planning
-    bundle: planning-core
-    knowledge_delta_score: 0.85
-    status: active
-    owner: hivemind-core
-    disclosure_level: L1
-    triggers:
-      - "phase plan"
-      - "execution knot design"
-    supersedes: []
-    depends_on:
-      - hivemind-architect-strategist
-
-  - name: market-research-framework
-    domain: market-research
-    bundle: research-core
-    knowledge_delta_score: 0.63
-    status: experimental
-    owner: hiverd-research
-    disclosure_level: L3
-    triggers:
-      - "market analysis"
-      - "competitive research"
-    supersedes: []
-    depends_on:
-      - research-methodology
-
-  - name: parallel-debugging-hivemind
-    domain: remediation
-    bundle: repair-core
-    knowledge_delta_score: 0.62
-    status: merge_candidate
-    owner: hivemind-core
-    disclosure_level: L3
-    triggers:
-      - "parallel bug isolation"
-      - "independent bug lanes"
-    supersedes: []
-    depends_on:
-      - debug-orchestration
-
-  - name: regression-detection
-    domain: quality-regression
-    bundle: verification-core
-    knowledge_delta_score: 0.76
-    status: active
-    owner: hiveq-quality
-    disclosure_level: L2
-    triggers:
-      - "regression check"
-      - "change risk review"
-    supersedes: []
-    depends_on:
-      - verification-methodology
+  # --- Promoted research-core ---
 
   - name: research-methodology
-    domain: research
+    domain: research-ops
     bundle: research-core
-    knowledge_delta_score: 0.84
+    knowledge_delta_score: 0.80
     status: active
-    owner: hiverd-research
-    disclosure_level: L1
-    triggers:
-      - "research kickoff"
-      - "evidence protocol"
-    supersedes: []
-    depends_on:
-      - source-evaluation
-
-  - name: sequential-orchestration
-    domain: orchestration
-    bundle: planning-core
-    knowledge_delta_score: 0.6
-    status: merge_candidate
     owner: hivemind-core
     disclosure_level: L2
     triggers:
-      - "sequential dependencies"
-      - "ordered execution"
-    supersedes: []
-    depends_on:
-      - delegation-intelligence
+      - "structured research"
+      - "multi-source investigation"
+      - "mcp evidence loop"
+    supersedes:
+      - hivefiver-mcp-research-loop
+    depends_on: []
 
-  - name: session-lifecycle
-    domain: session-governance
+  # --- Architectural skills ---
+
+  - name: platform-adapter
+    domain: platform-governance
     bundle: governance-core
     knowledge_delta_score: 0.93
     status: active
     owner: hivemind-core
     disclosure_level: L0
     triggers:
-      - "session start"
-      - "session close"
+      - "platform detection"
+      - "cross-platform skill loading"
     supersedes: []
-    depends_on:
-      - hivemind-governance
+    depends_on: []
 
-  - name: source-evaluation
-    domain: research-quality
-    bundle: research-core
-    knowledge_delta_score: 0.77
-    status: active
-    owner: hiverd-research
-    disclosure_level: L2
-    triggers:
-      - "source confidence"
-      - "citation ranking"
-    supersedes: []
-    depends_on:
-      - research-methodology
-
-  - name: synthesis-patterns
-    domain: synthesis
-    bundle: research-core
-    knowledge_delta_score: 0.79
-    status: active
-    owner: hiverd-research
-    disclosure_level: L2
-    triggers:
-      - "cross-source synthesis"
-      - "contradiction resolution"
-    supersedes: []
-    depends_on:
-      - comparative-analysis
-
-  - name: systematic-debugging-hivemind
-    domain: remediation
-    bundle: repair-core
-    knowledge_delta_score: 0.85
+  - name: wrong-start-resolver
+    domain: session-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.88
     status: active
     owner: hivemind-core
-    disclosure_level: L1
+    disclosure_level: L0
     triggers:
-      - "debug workflow"
-      - "root cause analysis"
+      - "wrong agent detected"
+      - "lineage mismatch"
     supersedes: []
     depends_on:
-      - debug-orchestration
+      - entry-resolution
 
-  - name: verification-methodology
-    domain: verification
-    bundle: verification-core
-    knowledge_delta_score: 0.87
+  - name: entry-resolution
+    domain: session-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.95
     status: active
-    owner: hiveq-quality
-    disclosure_level: L1
+    owner: hivemind-core
+    disclosure_level: L0
     triggers:
-      - "quality gate"
-      - "acceptance criteria check"
-    supersedes: []
+      - "session start"
+      - "intent classification"
+      - "persona route"
+      - "route by domain"
+    supersedes:
+      - entry-protocol
+      - hivefiver-persona-routing
+      - hivefiver-domain-pack-router
+      - hivefiver-bilingual-tutor
     depends_on:
-      - evidence-discipline
+      - platform-adapter
+
+  # --- Lineage-agnostic domain skills (renamed from hivefiver-*) ---
+
+  - name: spec-distillation
+    domain: spec-engineering
+    bundle: meta-core
+    knowledge_delta_score: 0.82
+    status: active
+    owner: hivemind-core
+    disclosure_level: L2
+    triggers:
+      - "spec generation"
+      - "requirements distillation"
+    supersedes:
+      - hivefiver-spec-distillation
+    depends_on: []
+
+  - name: ralph-tasking
+    domain: task-orchestration
+    bundle: meta-core
+    knowledge_delta_score: 0.67
+    status: active
+    owner: hivemind-core
+    disclosure_level: L3
+    triggers:
+      - "ralph bridge"
+      - "task conversion"
+    supersedes:
+      - hivefiver-ralph-tasking
+    depends_on:
+      - spec-distillation

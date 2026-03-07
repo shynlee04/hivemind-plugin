@@ -1,43 +1,11 @@
 {
-  "version": 2,
-  "root": {
-    "id": "t_590406032026",
-    "level": "trajectory",
-    "content": "Review and gate keeping for planning package from external team: 5 docs + 2 external replies + implementation batches",
-    "status": "active",
-    "created": 1772747950689,
-    "stamp": "590406032026",
-    "children": [
-      {
-        "id": "tc_070506032026",
-        "level": "tactic",
-        "content": "Run verification gate for implementation batch test coverage and contract alignment",
-        "status": "active",
-        "created": 1772748478476,
-        "stamp": "070506032026",
-        "children": [
-          {
-            "id": "a_080506032026",
-            "level": "action",
-            "content": "Execute npm test and tsc, then audit specified tests for coverage quality and contract drift",
-            "status": "active",
-            "created": 1772748483757,
-            "stamp": "080506032026",
-            "children": []
-          }
-        ]
-      }
-    ]
+  "trajectory": {
+    "id": "987cdca8-337c-48d3-8b13-35dc7930379d",
+    "status": "awaiting_intent",
+    "content": "Awaiting user intent",
+    "createdAt": "2026-03-07T17:30:52.487Z"
   },
-  "cursor": "a_080506032026",
-  "branches": [
-    {
-      "name": "main",
-      "cursor_id": "a_080506032026",
-      "created": 1772747950689,
-      "last_active": 1772748483758,
-      "status": "active"
-    }
-  ],
-  "primary_branch": "main"
+  "tactics": [],
+  "actions": [],
+  "version": "2.8.5"
 }

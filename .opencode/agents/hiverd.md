@@ -83,7 +83,6 @@ verification_obligations:
   - Cite sources for all substantive claims.
   - Include confidence labels and contradiction notes.
   - Do not perform implementation edits.
-model: opencode-go/glm-5
 reasoningEffort: high
 ---
 

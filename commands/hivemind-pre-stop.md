@@ -1,28 +1,37 @@
 ---
 name: hivemind-pre-stop
-description: "MANDATORY: Run before stopping work. Validates context integrity,
-  exports intelligence, and prevents data loss. Use this command EVERY time
+description: "Run before stopping work to validate context integrity,
+  export intelligence, and prevent data loss. Use this command
   before ending a session."
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-pre-stop
-required_skills:
-  - delegation-intelligence
-  - delegation-packet-contract
-  - context-integrity
+skill_loading:
+  mode: progressive
+  triggers:
+    context_stale: [context-integrity]
+    complexity_high: [complexity-assessment]
+  fallback: [using-superpowers]
 required_templates: []
 chain_group: hiveminder
 group: hiveminder
-entry_gate: session_declared
+entry_handling:
+  mode: guide
+  if_no_session:
+    action: prompt_declare_intent
+    auto_suggest: true
+  if_session_stale:
+    action: offer_resume
+    auto_suggest: true
 ---
 
 # HiveMind Pre-Stop Gate
 
-**⛔ CRITICAL: This command MUST be run before stopping work.**
+**Run this command before stopping work to validate context integrity.**
 
 Validates all work is properly tracked, exported, and committed.
 
-## Phase 1: Context Validation (MANDATORY)
+## Phase 1: Context Validation
 
 ### 1.1 Check Trajectory Completion
 ```typescript
@@ -51,7 +60,7 @@ node bin/hivemind-tools.cjs validate chain
 - If `pending_failure_ack: true` → Acknowledge and document failures BEFORE stopping
 - Use: `export_cycle({ outcome: "failure", findings: "..." })`
 
-## Phase 2: Intelligence Export (MANDATORY)
+## Phase 2: Intelligence Export
 
 ### 2.1 Export Cycle Results
 ```typescript
@@ -91,7 +100,7 @@ save_anchor({
 })
 ```
 
-## Phase 3: Verification (MANDATORY)
+## Phase 3: Verification
 
 ### 3.1 Type Check
 ```bash
