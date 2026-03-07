@@ -18,6 +18,7 @@ chain_group: hiverd
 group: hiverd
 entry_gate: session_declared
 ---
+
 # HiveRD Research
 
 ## Objective

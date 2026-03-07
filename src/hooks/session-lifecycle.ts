@@ -50,6 +50,7 @@ import type { EntityChecklist } from "../schemas/governance-constitution.js"
 import { applyPendingStateMutations, queueStateMutation } from "../lib/state-mutation-queue.js"
 import { dedupeContextLines } from "../lib/context-purifier.js"
 import { shouldSuppressHumanFacingGovernance } from "../lib/session-role.js"
+import { resolveSkillsForIntent, type SkillLoadContext } from "../lib/skill-loader.js"
 
 /**
  * Inject HiveMaster strict governance instruction (prepends, deduplicated)
@@ -201,7 +202,7 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       const { critical: criticalWarningLines, advisory: advisoryWarningLines } = splitWarningPriority(warningLines)
 
       // Phase 3: Bootstrap & First-Turn Context
-      const { bootstrapLines, evidenceLines, teamLines, firstTurnContextLines, firstTurnContractLines, outputStyleLines, readFirstLines } = await buildBootstrapContext(directory, state, config, suppressHumanFacing)
+      const { bootstrapLines, evidenceLines, teamLines, firstTurnContextLines, firstTurnContractLines, outputStyleLines, readFirstLines, skillLines } = await buildBootstrapContext(directory, state, config, suppressHumanFacing)
 
       // Phase 4: Anchors are now injected via messages-transform.ts (canonical location)
 
@@ -217,6 +218,7 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
         outputStyleLines,
         advisoryWarningLines,
         readFirstLines,
+        skillLines,
         firstTurnContextLines,
         onboardingLines,
         suppressHumanFacing ? [] : buildTaskBlock(),
@@ -260,6 +262,7 @@ async function buildBootstrapContext(
   const firstTurnContractLines: string[] = []
   const outputStyleLines: string[] = []
   const readFirstLines: string[] = []
+  const skillLines: string[] = []
 
   const isBootstrapActive = state.metrics.turn_count <= 2
   const cleanSession = isCleanSession(state.metrics.turn_count, state.hierarchy)
@@ -286,6 +289,26 @@ async function buildBootstrapContext(
     )
   }
 
+  // Intelligent skill loading — resolve skills for this session's intent
+  if (!suppressHumanFacing && isBootstrapActive) {
+    const intentHint = mapGovernanceModeToIntent(config.governance_mode)
+    const skillCtx: SkillLoadContext = {
+      intent: intentHint,
+      isFirstSession: cleanSession,
+      isPostCompaction: state.metrics.turn_count === 0 && !cleanSession,
+      platform: "opencode",
+      delegationNeeded: false,
+      nonEnglishInput: config.language !== "en",
+    }
+    const resolved = resolveSkillsForIntent(skillCtx)
+    skillLines.push(
+      "[SKILLS]",
+      `Required: ${resolved.required.join(", ")}`,
+      `Conditional: ${resolved.conditional.length > 0 ? resolved.conditional.join(", ") : "(none)"}`,
+      `Deferred: ${resolved.deferred.length > 0 ? resolved.deferred.join(", ") : "(none)"}`,
+    )
+  }
+
   return {
     bootstrapLines,
     evidenceLines,
@@ -294,6 +317,7 @@ async function buildBootstrapContext(
     firstTurnContractLines,
     outputStyleLines,
     readFirstLines,
+    skillLines,
   }
 }
 
@@ -347,4 +371,23 @@ function splitWarningPriority(lines: string[]): { critical: string[]; advisory: 
   }
 
   return { critical, advisory }
+}
+
+/**
+ * Map governance mode to a classified intent hint.
+ * Used as a lightweight proxy until full intent classification is wired.
+ */
+function mapGovernanceModeToIntent(
+  governanceMode: string,
+): "framework-meta" | "product-impl" | "research" | "ambiguous" {
+  switch (governanceMode) {
+    case "strict":
+      return "framework-meta"
+    case "assisted":
+      return "product-impl"
+    case "permissive":
+      return "product-impl"
+    default:
+      return "ambiguous"
+  }
 }

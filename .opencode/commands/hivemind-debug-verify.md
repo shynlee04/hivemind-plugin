@@ -24,6 +24,7 @@ return_schema:
     - drift_score
     - recommendation
 ---
+
 # HiveMind Debug Verify Command
 
 This command is the **verification actuator** for debugging. It runs verification checks and returns deterministic JSON.

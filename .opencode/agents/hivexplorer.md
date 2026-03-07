@@ -66,6 +66,7 @@ verification_obligations:
   - Return file-referenced evidence only.
   - Persist high-value findings in memory.
   - Do not mutate source files.
+model: chutes/zai-org/GLM-5-TEE
 reasoningEffort: high
 ---
 

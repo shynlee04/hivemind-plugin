@@ -6,14 +6,26 @@ description: Context Clarification Command - For low-confidence scenarios (<80%
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-clarify
-required_skills:
-  - delegation-intelligence
-  - context-integrity
+skill_loading:
+  mode: progressive
+  triggers:
+    intent_ambiguous: [discovery-interview, research-question-framing]
+    complexity_high: [complexity-assessment]
+    context_stale: [context-integrity]
+  fallback: [using-superpowers]
 required_templates: []
 chain_group: hiveminder
 group: hiveminder
-entry_gate: session_declared
+entry_handling:
+  mode: guide
+  if_no_session:
+    action: prompt_declare_intent
+    auto_suggest: true
+  if_session_stale:
+    action: offer_resume
+    auto_suggest: true
 ---
+
 # HiveMind Context Clarification Command
 
 **Use this command when the agent is unsure about your intent or lacks sufficient context.**
@@ -26,9 +38,9 @@ Run `/hivemind-clarify` when:
 
 | Scenario | Confidence | Command |
 |----------|------------|---------|
-| Agent is unsure about your intent | < 80% | ✅ Use `/hivemind-clarify` |
-| Agent needs more context | 80-95% | Consider `/hivemind-clarify` |
-| Agent is confident | 95%+ | Proceed normally |
+| Agent is unsure about your intent | < 80% | Use `/hivemind-clarify` |
+| Agent needs more context | 80-95% | Use `/hivemind-clarify` |
+| Agent is confident | 95%+ | Continue with task |
 
 ---
 

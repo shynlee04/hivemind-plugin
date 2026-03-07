@@ -6,12 +6,14 @@ kind: utility
 alias_resolved_to: hivemind-status
 required_skills:
   - delegation-intelligence
+  - delegation-packet-contract
   - context-integrity
 required_templates: []
 chain_group: hiveminder
 group: hiveminder
 entry_gate: session_declared
 ---
+
 # HiveMind Status Check
 
 Show the user a comprehensive view of their HiveMind governance state.

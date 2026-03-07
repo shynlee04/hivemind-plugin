@@ -358,13 +358,13 @@
   },
   "model": "chutes/zai-org/GLM-5-TEE",
   "permission": {
-    "edit": "ask",
-    "write": "ask",
-    "bash": "ask",
+    "edit": "allow",
+    "write": "allow",
+    "bash": "allow",
     "lsp": "allow",
     "todowrite": "allow",
     "todoread": "allow",
-    "*": "ask"
+    "*": "allow"
   },
   "instructions": [
     "Prefer the 'patch' tool over 'edit' for code changes. Use 'edit' only for single-line modifications. The 'patch' tool is more reliable for complex code modifications.",

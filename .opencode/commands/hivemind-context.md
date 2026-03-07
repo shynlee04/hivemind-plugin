@@ -6,23 +6,35 @@ description: Enforce context-before-actions discipline. Validates investigation
 owner_agent: hiveminder
 kind: utility
 alias_resolved_to: hivemind-context
-required_skills:
-  - delegation-intelligence
-  - context-integrity
+skill_loading:
+  mode: progressive
+  triggers:
+    context_stale: [context-integrity]
+    complexity_high: [complexity-assessment]
+    delegation_needed: [delegation-intelligence]
+  fallback: [using-superpowers]
 required_templates: []
 chain_group: hiveminder
 group: hiveminder
-entry_gate: session_declared
+entry_handling:
+  mode: guide
+  if_no_session:
+    action: prompt_declare_intent
+    auto_suggest: true
+  if_session_stale:
+    action: offer_resume
+    auto_suggest: true
 ---
+
 # HiveMind Context-First Enforcer
 
-**⛔ CRITICAL: Investigation MUST precede action.**
+**Investigation should precede action for best results.**
 
 ## Context-First Protocol
 
-### Phase 1: Investigation (MANDATORY)
+### Phase 1: Investigation (Recommended)
 
-**Before ANY write/edit operations:**
+**Before write/edit operations, consider:**
 
 ```typescript
 // 1. Brownfield scan
@@ -41,7 +53,7 @@ recall_mems({ query: "[what you're about to work on]" })
 save_anchor({ mode: "list" })
 ```
 
-### Phase 2: Codebase Exploration (MANDATORY)
+### Phase 2: Codebase Exploration
 
 **Find all relevant files:**
 

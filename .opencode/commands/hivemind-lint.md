@@ -7,12 +7,14 @@ kind: utility
 alias_resolved_to: hivemind-lint
 required_skills:
   - delegation-intelligence
+  - delegation-packet-contract
   - context-integrity
 required_templates: []
 chain_group: hiveminder
 group: hiveminder
 entry_gate: session_declared
 ---
+
 # HiveMind Lint & Quality Gate
 
 **Validates code quality, type safety, and project health.**

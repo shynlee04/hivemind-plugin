@@ -27,6 +27,12 @@ Unified MUST pack (auto-executed — intent/profile/journey obligations):
 !`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-must-pack.sh router "$ARGUMENTS" .`
 </enforcement>
 
+## Non-Interactive Shell Awareness (Canonical)
+
+- Shell is non-interactive (no TTY/PTY). Never run commands that wait for prompts or UI input.
+- Always use non-interactive flags and explicit messages (`-y`, `--yes`, `--non-interactive`, `--no-edit`, `-f`).
+- If a tool can still block, provide deterministic input (`yes |`, heredoc) or fail fast with a timeout.
+
 <objective>
 Route the user's action to the correct HiveFiver stage. Supports TWO modes:
 1. **Explicit action** — user provides a stage keyword (start, intake, spec, etc.)
