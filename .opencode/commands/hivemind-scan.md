@@ -1,27 +1,6 @@
 ---
-name: hivemind-scan
-description: Scan the project codebase and build a HiveMind backbone. Run this
-  on first use or when switching projects.
-owner_agent: hiveminder
-kind: utility
-alias_resolved_to: hivemind-scan
-skill_loading:
-  mode: progressive
-  triggers:
-    context_stale: [context-integrity]
-    complexity_high: [complexity-assessment]
-  fallback: [using-superpowers]
-required_templates: []
-chain_group: hiveminder
-group: hiveminder
-entry_handling:
-  mode: guide
-  if_no_session:
-    action: prompt_declare_intent
-    auto_suggest: true
-  if_session_stale:
-    action: offer_resume
-    auto_suggest: true
+description: "Scan the project codebase and build a HiveMind backbone. Run on first use or when switching projects."
+agent: hiveminder
 ---
 
 # HiveMind Project Scan

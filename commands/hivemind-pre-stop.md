@@ -1,28 +1,6 @@
 ---
-name: hivemind-pre-stop
-description: "Run before stopping work to validate context integrity,
-  export intelligence, and prevent data loss. Use this command
-  before ending a session."
-owner_agent: hiveminder
-kind: utility
-alias_resolved_to: hivemind-pre-stop
-skill_loading:
-  mode: progressive
-  triggers:
-    context_stale: [context-integrity]
-    complexity_high: [complexity-assessment]
-  fallback: [using-superpowers]
-required_templates: []
-chain_group: hiveminder
-group: hiveminder
-entry_handling:
-  mode: guide
-  if_no_session:
-    action: prompt_declare_intent
-    auto_suggest: true
-  if_session_stale:
-    action: offer_resume
-    auto_suggest: true
+description: "Run before stopping work to validate context integrity, export session state, and create handoff artifacts."
+agent: hiveminder
 ---
 
 # HiveMind Pre-Stop Gate

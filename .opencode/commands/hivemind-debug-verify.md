@@ -1,28 +1,6 @@
 ---
-name: hivemind-debug-verify
-description: Verify that a debug fix is complete and no regressions exist. Run
-  this AFTER applying a fix to confirm resolution.
-owner_agent: hiveminder
-kind: utility
-alias_resolved_to: hivemind-debug-verify
-required_skills:
-  - systematic-debugging-hivemind
-  - debug-orchestration
-required_templates: []
-chain_group: hiveminder
-group: debug
-entry_gate: session_declared
-return_schema:
-  type: json
-  fields:
-    - status
-    - verification_passed
-    - tests
-    - type_check
-    - regressions
-    - session_status
-    - drift_score
-    - recommendation
+description: "Verify that a debug fix is complete and no regressions exist. Run after hivehealer completes a fix."
+agent: hiveminder
 ---
 
 # HiveMind Debug Verify Command

@@ -1,17 +1,6 @@
 ---
-name: hivemind-status
 description: Show current HiveMind governance state, session health, and recent activity.
-owner_agent: hiveminder
-kind: utility
-alias_resolved_to: hivemind-status
-required_skills:
-  - delegation-intelligence
-  - delegation-packet-contract
-  - context-integrity
-required_templates: []
-chain_group: hiveminder
-group: hiveminder
-entry_gate: session_declared
+agent: hiveminder
 ---
 
 # HiveMind Status Check

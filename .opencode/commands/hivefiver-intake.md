@@ -1,6 +1,5 @@
 ---
-name: hivefiver-intake
-description: "Gather structured requirements for a framework asset build request."
+description: Gather structured requirements for a framework asset build request.
 agent: hivefiver
 subtask: true
 ---

@@ -1,21 +1,6 @@
 ---
-name: hiverd-analyze
 description: Deep analysis of a codebase, architecture, or domain with structured findings.
-owner_agent: hiverd
-kind: router
-execution_context: workflows/hiverd-comparative-analysis.yaml
-required_skills:
-  - comparative-analysis
-  - research-methodology
-required_templates:
-  - templates/analysis-matrix-template.md
-required_references:
-  - references/research-quality-criteria.md
-required_prompts:
-  - prompts/analysis-methodology.md
-chain_group: hiverd
-group: hiverd
-entry_gate: session_declared
+agent: hiverd
 ---
 
 # HiveRD Analyze

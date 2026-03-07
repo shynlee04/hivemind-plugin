@@ -1,21 +1,6 @@
 ---
-name: hiveq-compliance
-description: Check compliance with framework conventions, naming rules, and
-  asset organization.
-owner_agent: hiveq
-kind: router
-execution_context: workflows/hiveq-audit-workflow.yaml
-required_skills:
-  - compliance-checking
-required_templates:
-  - templates/audit-report-template.md
-required_references:
-  - references/quality-gate-definitions.md
-required_prompts:
-  - prompts/compliance-rules.md
-chain_group: hiveq
-group: hiveq
-entry_gate: session_declared
+description: "Check compliance with framework conventions, naming rules, and asset organization."
+agent: hiveq
 ---
 
 # HiveQ Compliance

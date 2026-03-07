@@ -1,6 +1,5 @@
 ---
-name: hivefiver-doctor
-description: "Diagnose and repair broken framework chains, dead references, and contract violations."
+description: Diagnose and repair broken framework chains, dead references, and contract violations.
 agent: hivefiver
 subtask: true
 ---

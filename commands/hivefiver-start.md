@@ -1,6 +1,5 @@
 ---
-name: hivefiver-start
-description: "Classify user intent and bootstrap HiveFiver context. Entry point for new interactions."
+description: Classify user intent and bootstrap HiveFiver context. Entry point for new interactions.
 agent: hivefiver
 subtask: true
 ---

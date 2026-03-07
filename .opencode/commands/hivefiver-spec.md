@@ -1,6 +1,5 @@
 ---
-name: hivefiver-spec
-description: "Distill intake results into an unambiguous specification with acceptance criteria."
+description: Distill intake results into an unambiguous specification with acceptance criteria.
 agent: hivefiver
 subtask: true
 ---

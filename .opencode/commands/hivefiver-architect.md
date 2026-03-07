@@ -1,6 +1,5 @@
 ---
-name: hivefiver-architect
-description: "Design asset topology, delegation policy, and dependency graph for framework assets."
+description: Design asset topology, delegation policy, and dependency graph for framework assets.
 agent: hivefiver
 subtask: true
 ---

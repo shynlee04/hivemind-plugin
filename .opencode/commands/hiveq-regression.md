@@ -1,20 +1,6 @@
 ---
-name: hiveq-regression
 description: Detect regressions across recent changes by comparing against baselines.
-owner_agent: hiveq
-kind: router
-execution_context: workflows/hiveq-regression-suite.yaml
-required_skills:
-  - regression-detection
-required_templates:
-  - templates/verification-report-template.md
-required_references:
-  - references/quality-gate-definitions.md
-required_prompts:
-  - prompts/verification-criteria.md
-chain_group: hiveq
-group: hiveq
-entry_gate: session_declared
+agent: hiveq
 ---
 
 # HiveQ Regression

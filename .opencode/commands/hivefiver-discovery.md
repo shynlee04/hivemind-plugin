@@ -1,10 +1,7 @@
 ---
-name: hivefiver-discovery
-description: "Guided requirement discovery with adaptive QA. Detects user language (EN/VI), maturity level, and input complexity. Integrates brainstorming + QA questioning to clarify pains, requirements, and acceptance evidence before intake."
+description: Guided requirement discovery with adaptive QA. Detects user language (EN/VI), maturity level, and input complexity. Integrates brainstorming + QA questioning to clarify pains, requirements, and acceptance evidence before intake.
 agent: hivefiver
 subtask: true
-required_skills:
-  - hivefiver-guided-discovery
 ---
 
 <enforcement>

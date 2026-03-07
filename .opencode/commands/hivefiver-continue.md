@@ -1,6 +1,5 @@
 ---
-name: hivefiver-continue
-description: "Spawn a deterministic new HiveFiver session that auto-continues from current pipeline state. The ONLY way to create fresh context without losing work."
+description: Spawn a deterministic new HiveFiver session that auto-continues from current pipeline state. The ONLY way to create fresh context without losing work.
 agent: hivefiver
 ---
 

@@ -1,20 +1,6 @@
 ---
-name: hiveq-gate-check
 description: Run a specific quality gate and produce structured pass/fail result.
-owner_agent: hiveq
-kind: router
-execution_context: workflows/hiveq-gate-enforcement.yaml
-required_skills:
-  - gate-enforcement
-required_templates:
-  - templates/gate-checklist-template.md
-required_references:
-  - references/quality-gate-definitions.md
-required_prompts:
-  - prompts/verification-criteria.md
-chain_group: hiveq
-group: hiveq
-entry_gate: session_declared
+agent: hiveq
 ---
 
 # HiveQ Gate Check

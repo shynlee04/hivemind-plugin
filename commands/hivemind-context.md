@@ -1,29 +1,6 @@
 ---
-name: hivemind-context
-description: Enforce context-before-actions discipline. Validates investigation
-  completed before any file modifications. Use at start of work and before
-  writes.
-owner_agent: hiveminder
-kind: utility
-alias_resolved_to: hivemind-context
-skill_loading:
-  mode: progressive
-  triggers:
-    context_stale: [context-integrity]
-    complexity_high: [complexity-assessment]
-    delegation_needed: [delegation-intelligence]
-  fallback: [using-superpowers]
-required_templates: []
-chain_group: hiveminder
-group: hiveminder
-entry_handling:
-  mode: guide
-  if_no_session:
-    action: prompt_declare_intent
-    auto_suggest: true
-  if_session_stale:
-    action: offer_resume
-    auto_suggest: true
+description: "Enforce context-before-actions discipline. Validates investigation scope and evidence before proceeding."
+agent: hiveminder
 ---
 
 # HiveMind Context-First Enforcer

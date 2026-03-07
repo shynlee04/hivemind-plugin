@@ -1,20 +1,6 @@
 ---
-name: hiverd-synthesize
 description: Synthesize multiple research outputs into a unified, coherent report.
-owner_agent: hiverd
-kind: router
-execution_context: workflows/hiverd-synthesis-pipeline.yaml
-required_skills:
-  - synthesis-patterns
-required_templates:
-  - templates/research-report-template.md
-required_references:
-  - references/research-quality-criteria.md
-required_prompts:
-  - prompts/synthesis-instruction.md
-chain_group: hiverd
-group: hiverd
-entry_gate: session_declared
+agent: hiverd
 ---
 
 # HiveRD Synthesize

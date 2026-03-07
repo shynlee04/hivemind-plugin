@@ -1,11 +1,7 @@
 ---
-name: hivefiver-plan-spawn
-description: "Deterministically materialize runtime plan nodes into .hivemind/plans from planning templates."
+description: Deterministically materialize runtime plan nodes into .hivemind/plans from planning templates.
 agent: hivefiver
 subtask: true
-required_skills:
-  - hivefiver-mode
-  - hivefiver-coordination
 ---
 
 <enforcement>

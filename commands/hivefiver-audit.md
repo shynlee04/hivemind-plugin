@@ -1,6 +1,5 @@
 ---
-name: hivefiver-audit
-description: "Run system-wide health check across all framework assets and produce a prioritized findings report."
+description: Run system-wide health check across all framework assets and produce a prioritized findings report.
 agent: hivefiver
 subtask: true
 ---

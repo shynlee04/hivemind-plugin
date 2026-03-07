@@ -1,6 +1,5 @@
 ---
-name: hivefiver-build
-description: "Create or modify framework assets following the architecture plan with contract compliance."
+description: Create or modify framework assets following the architecture plan with contract compliance.
 agent: hivefiver
 subtask: true
 ---

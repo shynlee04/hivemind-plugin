@@ -1,18 +1,6 @@
 ---
-name: hivemind-compact
-description: Archive the current session, preserve context, and prepare for the
-  next session.
-owner_agent: hiveminder
-kind: utility
-alias_resolved_to: hivemind-compact
-required_skills:
-  - delegation-intelligence
-  - delegation-packet-contract
-  - context-integrity
-required_templates: []
-chain_group: hiveminder
-group: hiveminder
-entry_gate: session_declared
+description: "Archive the current session, preserve context, and prepare for the next session handoff."
+agent: hiveminder
 ---
 
 # HiveMind Session Compact

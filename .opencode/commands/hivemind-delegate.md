@@ -1,30 +1,6 @@
 ---
-name: hivemind-delegate
-description: Validate and standardize sub-agent delegation. Use BEFORE
-  dispatching Task() to ensure proper context, verification, and export
-  requirements.
-owner_agent: hiveminder
-kind: utility
-alias_resolved_to: hivemind-delegate
-skill_loading:
-  mode: progressive
-  triggers:
-    intent_ambiguous: [discovery-interview, research-question-framing]
-    complexity_high: [complexity-assessment]
-    context_stale: [context-integrity]
-    delegation_needed: [delegation-intelligence, task-coordination-strategies]
-  fallback: [using-superpowers]
-required_templates: []
-chain_group: hiveminder
-group: hiveminder
-entry_handling:
-  mode: guide
-  if_no_session:
-    action: prompt_declare_intent
-    auto_suggest: true
-  if_session_stale:
-    action: offer_resume
-    auto_suggest: true
+description: "Validate and standardize sub-agent delegation. Use before dispatching tasks to ensure proper context packets."
+agent: hiveminder
 ---
 
 # HiveMind Delegation Validator

@@ -1,21 +1,6 @@
 ---
-name: hiveq-audit
 description: Comprehensive audit of codebase or module against defined standards.
-owner_agent: hiveq
-kind: router
-execution_context: workflows/hiveq-audit-workflow.yaml
-required_skills:
-  - compliance-checking
-  - verification-methodology
-required_templates:
-  - templates/audit-report-template.md
-required_references:
-  - references/quality-gate-definitions.md
-required_prompts:
-  - prompts/compliance-rules.md
-chain_group: hiveq
-group: hiveq
-entry_gate: session_declared
+agent: hiveq
 ---
 
 # HiveQ Audit
