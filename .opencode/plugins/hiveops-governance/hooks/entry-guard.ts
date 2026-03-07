@@ -7,12 +7,14 @@
  * downstream context injection.
  */
 
+import { existsSync } from "node:fs"
 import { join } from "node:path"
 import type { EnforcementState, EntryDetection } from "../types"
 import { runNonInteractiveScript } from "../utils"
 
 const DETECT_ENTRY_SCRIPT = "scripts/detect-entry.sh"
 const AUTO_INIT_SCRIPT = "scripts/auto-init.sh"
+let coreRuntimeEntryOwnerCache: { worktree: string; present: boolean } | null = null
 
 function runScript(worktree: string, relativeScriptPath: string, args: string[] = []): string | null {
   const stdout = runNonInteractiveScript(worktree, relativeScriptPath, args, 8000)
@@ -61,6 +63,34 @@ function parseDetectionResult(raw: string | null): EntryDetection | null {
   }
 }
 
+/**
+ * Detect whether canonical src session-created ownership is present.
+ *
+ * Plugin session-start hooks must become fallback-only once the src event
+ * handler exists for the current worktree.
+ *
+ * @param worktree Project root being evaluated.
+ * @returns `true` when the canonical src event owner is present.
+ */
+export function coreRuntimeEntryOwnerPresent(worktree: string): boolean {
+  if (process.env.GX_FORCE_PLUGIN_ENTRY_BOOTSTRAP === "1") {
+    return false
+  }
+  if (coreRuntimeEntryOwnerCache && coreRuntimeEntryOwnerCache.worktree === worktree) {
+    return coreRuntimeEntryOwnerCache.present
+  }
+
+  const present = existsSync(join(worktree, "src/hooks/event-handler.ts"))
+  coreRuntimeEntryOwnerCache = { worktree, present }
+  return present
+}
+
+/**
+ * Build the plugin session-start entry guard hook.
+ *
+ * @param state Plugin enforcement state and worktree context.
+ * @returns Event hook that runs plugin bootstrap only when src ownership is absent.
+ */
 export function buildEntryGuardHook(state: {
   current: EnforcementState
   save: (s: EnforcementState) => void
@@ -68,6 +98,9 @@ export function buildEntryGuardHook(state: {
 }) {
   return async ({ event }: { event: any }) => {
     if (!event || (event.type !== "session.created" && event.type !== "session.started")) {
+      return
+    }
+    if (coreRuntimeEntryOwnerPresent(state.worktree)) {
       return
     }
 

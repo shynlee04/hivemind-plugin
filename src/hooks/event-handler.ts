@@ -25,7 +25,7 @@ import type {
   EventSessionDiff,
   EventTodoUpdated,
 } from "@opencode-ai/sdk"
-import { mkdir, writeFile } from "fs/promises"
+import { access, mkdir, writeFile } from "fs/promises"
 import type { Logger } from "../lib/logging.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { getStalenessInfo } from "../lib/staleness.js"
@@ -34,6 +34,8 @@ import { queueStateMutation, queueTaskManifestMutation } from "../lib/state-muta
 import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
 import { resolveCanonicalSessionId } from "../lib/graph-io.js"
 import { getSessionPaths } from "../lib/paths.js"
+import { createTree, saveTree, treeExists } from "../lib/hierarchy-tree.js"
+import { generateSessionId } from "../schemas/brain-state.js"
 
 function normalizeStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) {
@@ -169,6 +171,80 @@ function pickSafeNumber(input: Record<string, unknown>, keys: string[]): number 
   return undefined
 }
 
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await access(path)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Ensure the canonical src runtime owns the minimal session-created bootstrap state.
+ *
+ * This is intentionally narrow for Phase 1 P1-B.1:
+ * brain.json and hierarchy.json are created only when missing, the active
+ * runtime profile is created only when absent, and any existing canonical brain
+ * session id is preserved.
+ *
+ * @param directory Project root containing the .hivemind runtime state.
+ * @param sessionId OpenCode runtime session id from the event payload.
+ * @param stateManager Canonical src state manager for brain.json ownership.
+ * @param config Loaded HiveMind config used when a new brain state is required.
+ * @returns Promise that resolves once the minimal src-owned bootstrap exists.
+ */
+async function ensureSessionCreatedBootstrap(
+  directory: string,
+  sessionId: string,
+  stateManager: ReturnType<typeof createStateManager>,
+  config: Awaited<ReturnType<typeof loadConfig>>,
+): Promise<void> {
+  const now = Date.now()
+  let state = await stateManager.load()
+
+  if (!state) {
+    state = await stateManager.initialize(generateSessionId(), config)
+  }
+
+  if (state.session.opencode_session_id !== sessionId || state.session.last_activity !== now) {
+    await stateManager.save({
+      ...state,
+      session: {
+        ...state.session,
+        opencode_session_id: sessionId,
+        last_activity: now,
+      },
+    })
+  }
+
+  if (!treeExists(directory)) {
+    await saveTree(directory, createTree())
+  }
+
+  const sessionPaths = getSessionPaths(directory, sessionId)
+  await mkdir(sessionPaths.sessionDir, { recursive: true })
+  if (!(await pathExists(sessionPaths.profile))) {
+    await writeFile(
+      sessionPaths.profile,
+      `${JSON.stringify({
+        session_id: sessionId,
+        agent: "unresolved",
+        created_at: now,
+        updated_at: now,
+      }, null, 2)}\n`,
+      "utf-8",
+    )
+  }
+}
+
+/**
+ * Create the OpenCode event hook for canonical src runtime ownership.
+ *
+ * @param log Logger used for event observability.
+ * @param directory Project root used to resolve .hivemind paths and state.
+ * @returns Event hook that handles session lifecycle side effects safely.
+ */
 export function createEventHandler(log: Logger, directory: string) {
   const stateManager = createStateManager(directory)
 
@@ -185,20 +261,7 @@ export function createEventHandler(log: Logger, directory: string) {
             const sessionId = sessionCreated.properties.info.id
 
             await log.info(`[event] session.created: ${sessionId}`)
-
-            const sessionPaths = getSessionPaths(directory, sessionId)
-            await mkdir(sessionPaths.sessionDir, { recursive: true })
-            const now = Date.now()
-            await writeFile(
-              sessionPaths.profile,
-              `${JSON.stringify({
-                session_id: sessionId,
-                agent: "unresolved",
-                created_at: now,
-                updated_at: now,
-              }, null, 2)}\n`,
-              "utf-8",
-            )
+            await ensureSessionCreatedBootstrap(directory, sessionId, stateManager, config)
           }
           break
 

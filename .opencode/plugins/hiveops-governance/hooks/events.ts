@@ -13,7 +13,14 @@
 
 import type { EnforcementState } from "../types"
 import { runGxScript, runGxScriptAsync } from "../utils"
+import { coreRuntimeEntryOwnerPresent } from "./entry-guard"
 
+/**
+ * Build the plugin event hook.
+ *
+ * @param state Plugin enforcement state and worktree context.
+ * @returns Event hook that keeps session-start GX scripts fallback-only.
+ */
 export function buildEventHook(state: {
   current: EnforcementState
   save: (s: EnforcementState) => void
@@ -31,6 +38,10 @@ export function buildEventHook(state: {
       // Chain 2: gx-first-turn-refresh.sh → validates all state files
       case "session.created":
       case "session.started": {
+        if (coreRuntimeEntryOwnerPresent(state.worktree)) {
+          return
+        }
+
         // Reset enforcement state
         state.current = {
           ...state.current,
