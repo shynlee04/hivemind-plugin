@@ -2,7 +2,7 @@
 
 This file provides guidance to ALL agents working in this repository.
 
-**Last Updated**: 2026-03-06
+**Last Updated**: 2026-03-07
 **Version**: 3.3-strategic-resync
 **Maintained By**: hivefiver meta-builder
 **Symlinked To**: `.hivemind/AGENTS.md`, `.opencode/AGENTS.md`, `src/AGENTS.md`
@@ -242,8 +242,35 @@ Two independent auto-injection systems fire on EVERY LLM turn, injecting contrad
 ```bash
 npm test                                    # Run all tests (use before major milestone claims)
 npx tsx --test tests/filename.test.ts       # Run specific test
-npx tsc --noEmit                           # Type check (currently PASSING)
-npm run guard:public                       # Run BEFORE any master push
+npm run typecheck                           # Core type check wrapper
+npm run typecheck:all                       # Core + dashboard type checks
+npm run lint:boundary                       # SDK/boundary/public-surface checks
+npm run guard:public                        # Run BEFORE any master push
+```
+
+## Operational CLI Commands
+
+```bash
+npx hivemind-context-governance scan --action analyze --json
+npx hivemind-context-governance scan --action recommend
+npx hivemind-context-governance scan --action orchestrate --json
+npx hivemind-context-governance sync-assets --target project
+npx hivemind-context-governance dashboard --refresh 1   # optional (requires ink + react peers)
+```
+
+## Workflow Pack (Current)
+
+```bash
+workflows/hivemind-brownfield-bootstrap.yaml
+workflows/feature-sprint.yaml
+workflows/bug-remediation.yaml
+workflows/spec-generation.yaml
+workflows/research-synthesis.yaml
+workflows/sequential-delegation-workflow.yaml
+workflows/composed-workflow.yaml
+workflows/hiveq-verification-pipeline.yaml
+workflows/hiveq-regression-suite.yaml
+workflows/hivefiver-mcp-fallback.yaml
 ```
 
 ---
