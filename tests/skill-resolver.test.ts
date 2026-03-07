@@ -21,17 +21,19 @@ describe("skill resolver", () => {
     const registry = loadSkillRegistry(process.cwd())
 
     const result = resolveSkills(registry, {
-      requestedSkills: ["hivemind-governance", "creative-ideating-room"],
-      allowedBundles: ["governance-core", "planning-core"],
+      requestedSkills: ["meta-builder-governance", "hivefiver-ralph-tasking"],
+      allowedBundles: ["meta-core"],
       maxDisclosureLevel: "L1",
       tokenBudget: 700,
       estimatedTokensPerSkill: 600,
       includeExperimental: false,
     })
 
+    // meta-builder-governance: meta-core bundle, L1 disclosure, active → selected
     assert.equal(result.selected.length, 1)
-    assert.equal(result.selected[0]?.name, "hivemind-governance")
-    assert.ok(result.skipped.some((item) => item.name === "creative-ideating-room"))
+    assert.equal(result.selected[0]?.name, "meta-builder-governance")
+    // hivefiver-ralph-tasking: meta-core bundle, L3 disclosure, experimental → skipped
+    assert.ok(result.skipped.some((item) => item.name === "hivefiver-ralph-tasking"))
   })
 
   it("prefers root skill path before mirror", () => {
