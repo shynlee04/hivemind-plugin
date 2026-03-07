@@ -3,13 +3,15 @@
  *
  * Fires on first user message seen by experimental.chat.messages.transform.
  * Runs scripts/classify-intent.sh, persists lineage to session profile,
- * and updates enforcement state routing.
+ * and updates enforcement state routing when the plugin prompt path is
+ * acting as the active fallback owner.
  */
 
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import type { EnforcementState } from "../types"
 import { runNonInteractiveScript } from "../utils"
+import { coreRuntimeHooksPresent } from "./context-injection"
 
 type Lineage = "hivefiver" | "hiveminder" | "unresolved"
 
@@ -125,6 +127,7 @@ export function buildIntentClassifierHook(state: {
   worktree: string
 }) {
   return async (_input: any, output: any) => {
+    if (coreRuntimeHooksPresent(state.worktree)) return
     if (state.current.classificationDone) return
     if (!output?.messages || !Array.isArray(output.messages)) return
 

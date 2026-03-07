@@ -39,7 +39,16 @@ import { readUnifiedStateSnapshot } from "../../../../src/lib/state-snapshot.js"
 
 let coreRuntimePresenceCache: { worktree: string; present: boolean } | null = null
 
-function coreRuntimeHooksPresent(worktree: string): boolean {
+/**
+ * Detect whether the canonical src prompt hooks exist for this worktree.
+ *
+ * Plugin prompt paths must treat their presence as the authoritative
+ * ownership boundary and remain silent unless operating as fallback.
+ *
+ * @param worktree Project root being evaluated.
+ * @returns `true` when both canonical src prompt hooks are present.
+ */
+export function coreRuntimeHooksPresent(worktree: string): boolean {
   if (process.env.GX_FORCE_PLUGIN_CONTEXT_INJECTION === "1") {
     return false
   }
