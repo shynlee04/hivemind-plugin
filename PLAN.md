@@ -23,7 +23,7 @@ The target end-state is:
 2. `.opencode/` no longer contains required runtime dependencies.
 3. Redundant control planes, duplicated logic, and overlapping authorities are removed.
 4. Every refactor phase follows one fixed protocol:
-   `expand -> investigate -> research on knowledge detail -> decision -> execute -> gatekeeping`
+   `expand -> investigate -> research on knowledge detail -> decision -> sub-plan -> authorize -> execute -> gatekeeping -> atomic commit`
 
 No future session may treat any other document as equal to this plan.
 
@@ -85,7 +85,67 @@ If any condition fails, the pattern is rejected and scheduled for removal instea
 
 ---
 
-## 4. Mandatory Refactor Protocol
+## 4. Long-Haul Cycle Model
+
+This refactor is a long-haul program, not a one-shot execution.
+
+Every phase must be broken into human-authorized cycles.
+
+Each cycle may do only one of the following:
+
+1. tighten or correct `PLAN.md`,
+2. produce one subordinate dated planning packet,
+3. run one bounded investigation wave,
+4. execute one approved narrow slice,
+5. run one verification and closeout wave.
+
+Cycle rules:
+
+- no cycle may assume authorization for the next cycle
+- the operator must explicitly authorize each next cycle after reviewing the prior output
+- if a cycle discovers new ambiguity, drift, or contamination risk, it must stop at `sub-plan` or `gatekeeping`, not continue into execution
+- no subordinate packet may compete with `PLAN.md`; packets are navigation aids, not authority sources
+- each cycle must end with one explicit status: `authorized for next cycle requested`, `blocked`, `closed`, or `branch backward required`
+
+Phase rules:
+
+- each phase may contain multiple cycles
+- each phase must begin with a sub-planning cycle before any implementation cycle
+- no phase may advance forward while the current cycle is unresolved
+- if a phase needs re-interpretation, update `PLAN.md` first before changing downstream packets
+
+## 5. Skill And Agent Routing Ladder
+
+Skills and agents must be loaded progressively, not all at once.
+
+Mandatory skill order:
+
+1. `using-superpowers`
+   - required at the start of each cycle to determine what other skills are mandatory
+2. `brainstorming`
+   - required before changing plan structure, architecture, workflow shape, execution strategy, or behavior expectations
+3. `spec-driven-development`
+   - required when a phase or sub-phase does not yet have a validated working specification or packet
+4. `writing-plans`
+   - required only after the spec layer is approved and the next step is to convert it into executable tasks
+5. `test-driven-development`
+   - required only inside an explicitly authorized implementation cycle before production code changes
+
+Subagent routing rules:
+
+- read-only explorers may be used during `expand`, `investigate`, and `research on knowledge detail`
+- parallel subagents may be used only when scopes are demonstrably independent
+- implementation subagents may be used only after `sub-plan` is frozen and the operator has authorized execution
+- no two execution agents may own overlapping file sets in the same cycle
+- subagents must consume filtered evidence from the active cycle, not broad document dumps
+
+Research validation rules:
+
+- unstable claims about packages, agent patterns, SDKs, models, plugins, hooks, or tooling must be validated with current MCP or web-backed sources
+- local repository documents may inform hypotheses, but they do not replace code evidence or current external validation for unstable topics
+- if validation fails or conflicts remain unresolved, the cycle must stop and request the next authorization with the uncertainty recorded
+
+## 6. Mandatory Refactor Protocol
 
 Every phase and sub-phase must follow this exact order:
 
@@ -113,13 +173,26 @@ Every phase and sub-phase must follow this exact order:
 - Mark competing claims as `accepted`, `adjusted`, `rejected`, or `unverified`.
 - Freeze the decision before execution starts.
 
-### Step 5: Execute
+### Step 5: Sub-Plan
+
+- Translate the approved narrow slice into one bounded cycle packet or direct `PLAN.md` directive.
+- Declare owned files, invariants, verification commands, stop conditions, and the exact skill/agent routing for the cycle.
+- Keep the sub-plan small enough to close in one cycle.
+
+### Step 6: Authorize
+
+- Request explicit operator authorization before execution or before opening a new downstream packet.
+- Do not treat prior authorization as reusable across cycles.
+- If authorization is missing, stop here and report the ready-to-run cycle.
+
+### Step 7: Execute
 
 - Only implement the approved narrow slice.
 - Do not expand scope mid-phase.
 - Do not start the next phase while the current one is unresolved.
+- Follow the skill and agent routing declared in `sub-plan`.
 
-### Step 6: Gatekeeping
+### Step 8: Gatekeeping
 
 - Run the phase verification commands and evidence checks.
 - Record residual risks.
@@ -128,11 +201,18 @@ Every phase and sub-phase must follow this exact order:
   - `phase blocked`
   - `branch backward to preceding slice`
 
+### Step 9: Atomic Commit
+
+- If the cycle is closed and the retained changes belong to one coherent concern, commit them atomically.
+- One cycle must not mix planning hardening, runtime refactors, and unrelated cleanup in the same commit.
+- If the cycle is blocked, branched backward, or partially verified, do not commit; stop and request the next authorization.
+
 No session may skip from investigation straight to execution.
+No session may skip from sub-plan to execution without authorization.
 
 ---
 
-## 5. Refactor Program Phases
+## 7. Refactor Program Phases
 
 ### Phase 0: SOT Normalization
 
@@ -231,7 +311,7 @@ No session may skip from investigation straight to execution.
 
 ---
 
-## 6. Branching Rule
+## 8. Branching Rule
 
 A later phase may branch backward only when:
 
@@ -250,7 +330,7 @@ No lateral expansion without a recorded branch decision.
 
 ---
 
-## 7. Verification Gates
+## 9. Verification Gates
 
 Every execution phase must declare and run its gate set before completion claims.
 
@@ -268,10 +348,11 @@ Minimum gate categories:
    - verifies existing boundary tests still hold or are intentionally replaced
 
 If a gate cannot be run yet, the phase cannot be closed as complete.
+If a gate result is pending, the next cycle may be prepared but not presumed authorized.
 
 ---
 
-## 8. Artifact Rules
+## 10. Artifact Rules
 
 Any future artifact produced under this plan must:
 
@@ -283,19 +364,23 @@ Examples:
 
 - `docs/audits/architecture/control-plane-ledger-2026-03-07.md`
 - `docs/plans/refactor/phase-1-governance-unification-2026-03-07.md`
+- `docs/plans/refactor/phase-1-cycle-1-governance-sub-plan-2026-03-07.md`
 - `docs/evidence/runtime/src-dist-drift-2026-03-07.md`
 
 No new document may silently compete with `PLAN.md`.
 
 ---
 
-## 9. Immediate Next Moves
+## 11. Immediate Next Moves
 
 The next execution session must do only this:
 
 1. use this `PLAN.md` as the sole SOT,
-2. create the Phase 1 working packet for governance/control-plane unification,
-3. validate which `.opencode` governance behaviors are donors vs deletions,
-4. refuse to treat the external audit as binding text.
+2. open a Phase 1 sub-planning cycle for governance/control-plane unification,
+3. load skills progressively in this order as applicable: `using-superpowers -> brainstorming -> spec-driven-development`,
+4. create one dated Phase 1 working packet subordinate to this file,
+5. validate which `.opencode` governance behaviors are donors vs deletions,
+6. refuse to treat the external audit as binding text,
+7. stop and request explicit authorization before any implementation cycle begins.
 
 If a future session cannot map its work directly to one section of this file, it must stop and re-anchor before proceeding.
