@@ -2,7 +2,7 @@
 
 This file provides guidance to ALL agents working in this repository.
 
-**Last Updated**: 2026-03-07
+**Last Updated**: 2026-03-09
 **Version**: 3.3-strategic-resync
 **Maintained By**: hivefiver meta-builder
 **Symlinked To**: `.hivemind/AGENTS.md`, `.opencode/AGENTS.md`, `src/AGENTS.md`
@@ -251,11 +251,58 @@ npm run guard:public                        # Run BEFORE any master push
 ## Operational CLI Commands
 
 ```bash
+npx hivemind-context-governance             # Interactive setup wizard
+npx hivemind-context-governance init --mode assisted
+npx hivemind-context-governance status
+npx hivemind-context-governance settings
 npx hivemind-context-governance scan --action analyze --json
 npx hivemind-context-governance scan --action recommend
 npx hivemind-context-governance scan --action orchestrate --json
 npx hivemind-context-governance sync-assets --target project
 npx hivemind-context-governance dashboard --refresh 1   # optional (requires ink + react peers)
+npx hivemind-context-governance purge                  # DANGER: removes .hivemind/ entirely
+npx hivemind-context-governance help
+npx hivemind status                                    # CLI alias via package bin
+```
+
+## Command Pack (Current)
+
+```bash
+commands/hivefiver-architect.md
+commands/hivefiver-audit.md
+commands/hivefiver-build.md
+commands/hivefiver-continue.md
+commands/hivefiver-discovery.md
+commands/hivefiver-doctor.md
+commands/hivefiver-intake.md
+commands/hivefiver-plan-spawn.md
+commands/hivefiver-spec.md
+commands/hivefiver-start.md
+commands/hivefiver.md
+commands/hivemind-clarify.md
+commands/hivemind-compact.md
+commands/hivemind-context.md
+commands/hivemind-dashboard.md
+commands/hivemind-debug-trigger.md
+commands/hivemind-debug-verify.md
+commands/hivemind-delegate.md
+commands/hivemind-lint.md
+commands/hivemind-pre-stop.md
+commands/hivemind-scan.md
+commands/hivemind-status.md
+commands/hiveminder-orchestrate.md
+commands/hiveq-audit.md
+commands/hiveq-compliance.md
+commands/hiveq-gate-check.md
+commands/hiveq-lint.md
+commands/hiveq-regression.md
+commands/hiveq-verify.md
+commands/hiverd-analyze.md
+commands/hiverd-brainstorm.md
+commands/hiverd-compare.md
+commands/hiverd-document.md
+commands/hiverd-research.md
+commands/hiverd-synthesize.md
 ```
 
 ## Workflow Pack (Current)
@@ -268,10 +315,23 @@ workflows/spec-generation.yaml
 workflows/research-synthesis.yaml
 workflows/sequential-delegation-workflow.yaml
 workflows/composed-workflow.yaml
+workflows/verification-gate.yaml
+workflows/hiveq-audit-workflow.yaml
+workflows/hiveq-gate-enforcement.yaml
 workflows/hiveq-verification-pipeline.yaml
 workflows/hiveq-regression-suite.yaml
 workflows/hivefiver-mcp-fallback.yaml
+workflows/hivefiver-enterprise-architect.yaml
+workflows/hivefiver-enterprise.yaml
+workflows/hivefiver-floppy-engineer.yaml
+workflows/hivefiver-vibecoder.yaml
+workflows/hiverd-brainstorm-session.yaml
+workflows/hiverd-comparative-analysis.yaml
+workflows/hiverd-deep-research.yaml
+workflows/hiverd-synthesis-pipeline.yaml
 ```
+
+TODO (2026-03-09): No additional `workflows/*.yaml` files discovered beyond this list.
 
 ---
 
