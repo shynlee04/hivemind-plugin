@@ -1,150 +1,115 @@
+/**
+ * P1-B: Lineage classifier boundary tests.
+ *
+ * Replaces the deprecated .opencode/plugins/hiveops-governance intent-classifier
+ * boundary tests. Now tests classifyLineageScope() which is the unified
+ * lineage classification function in src/lib/session-intent-classifier.ts.
+ */
 import assert from "node:assert/strict"
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
-import { randomUUID } from "node:crypto"
 import { describe, it } from "node:test"
 
-import type { MessageV2 } from "../src/hooks/messages-transform.js"
+import { classifyLineageScope } from "../src/lib/session-intent-classifier.js"
 
-function createUserMessage(text: string, sessionID: string): MessageV2 {
-  const messageID = `msg_${randomUUID()}`
-  return {
-    info: {
-      id: messageID,
-      sessionID,
-      role: "user",
-      time: { created: Date.now() },
-      agent: "test",
-      model: { providerID: "test", modelID: "test" },
-    } as any,
-    parts: [
-      {
-        id: `part_${randomUUID()}`,
-        sessionID,
-        messageID,
-        type: "text",
-        text,
-      },
-    ],
-  }
-}
+describe("lineage classifier boundary (P1-B)", () => {
+  describe("deterministic agent-name resolution", () => {
+    it("classifies hivefiver as meta-framework", () => {
+      assert.equal(classifyLineageScope("hivefiver"), "meta-framework")
+    })
 
-async function setupIntentClassifierDir(sessionId: string): Promise<{
-  dir: string
-  profilePath: string
-}> {
-  const dir = await mkdtemp(join(tmpdir(), "hm-intent-boundary-"))
-  const profileDir = join(dir, ".hivemind", "sessions", "active", sessionId)
-  await mkdir(profileDir, { recursive: true })
-  const profilePath = join(profileDir, "profile.json")
-  await writeFile(
-    profilePath,
-    JSON.stringify({
-      session_id: sessionId,
-      agent: "unresolved",
-      updated_at: 0,
-    }, null, 2),
-    "utf-8",
-  )
-  return { dir, profilePath }
-}
+    it("classifies hivehealer as meta-framework", () => {
+      assert.equal(classifyLineageScope("hivehealer"), "meta-framework")
+    })
 
-describe("plugin intent-classifier boundary", () => {
-  it("does not classify or persist profile changes when core runtime hooks are present", async () => {
-    const sessionId = "intent-core-present"
-    const { dir, profilePath } = await setupIntentClassifierDir(sessionId)
-    await mkdir(join(dir, "src", "hooks"), { recursive: true })
-    await writeFile(join(dir, "src", "hooks", "session-lifecycle.ts"), "// presence marker\n", "utf-8")
-    await writeFile(join(dir, "src", "hooks", "messages-transform.ts"), "// presence marker\n", "utf-8")
+    it("classifies hitea as meta-framework", () => {
+      assert.equal(classifyLineageScope("hitea"), "meta-framework")
+    })
 
-    const savedStates: unknown[] = []
-    const state = {
-      current: {
-        sessionId,
-        agent: "unresolved",
-        delegationChain: [],
-        gatesPassed: [],
-        scopeViolations: [],
-        turnCount: 0,
-        lastCheckpoint: 0,
-        classificationPending: false,
-        classificationDone: false,
-      },
-      save: (next: unknown) => {
-        savedStates.push(next)
-      },
-      worktree: dir,
-    }
+    it("classifies hiveminder as project", () => {
+      assert.equal(classifyLineageScope("hiveminder"), "project")
+    })
 
-    try {
-      const pluginModule = await import("../.opencode/plugins/hiveops-governance/hooks/intent-classifier.ts")
-      const hookBuilder = pluginModule.buildIntentClassifierHook as
-        | ((state: any) => (input: any, output: any) => Promise<void>)
-        | undefined
-      assert.equal(typeof hookBuilder, "function")
-      const hook = hookBuilder(state as any)
-      await hook({}, { messages: [createUserMessage("please refactor this", sessionId)] })
+    it("classifies hivemaker as project", () => {
+      assert.equal(classifyLineageScope("hivemaker"), "project")
+    })
 
-      const profileAfter = JSON.parse(await readFile(profilePath, "utf-8"))
-      assert.equal(state.current.classificationDone, false)
-      assert.equal(savedStates.length, 0)
-      assert.deepEqual(profileAfter, {
-        session_id: sessionId,
-        agent: "unresolved",
-        updated_at: 0,
-      })
-    } finally {
-      await rm(dir, { recursive: true, force: true })
-    }
+    it("classifies hiveplanner as project", () => {
+      assert.equal(classifyLineageScope("hiveplanner"), "project")
+    })
+
+    it("classifies hiveq as project", () => {
+      assert.equal(classifyLineageScope("hiveq"), "project")
+    })
+
+    it("classifies hiverd as project", () => {
+      assert.equal(classifyLineageScope("hiverd"), "project")
+    })
+
+    it("classifies hivexplorer as project", () => {
+      assert.equal(classifyLineageScope("hivexplorer"), "project")
+    })
+
+    it("handles case-insensitive agent names", () => {
+      assert.equal(classifyLineageScope("HiveFiver"), "meta-framework")
+      assert.equal(classifyLineageScope("HIVEMINDER"), "project")
+    })
+
+    it("handles whitespace in agent names", () => {
+      assert.equal(classifyLineageScope("  hivefiver  "), "meta-framework")
+      assert.equal(classifyLineageScope(" hiveminder "), "project")
+    })
   })
 
-  it("classifies and persists lineage when core runtime hooks are absent", async () => {
-    const sessionId = "intent-core-absent"
-    const { dir, profilePath } = await setupIntentClassifierDir(sessionId)
-    await mkdir(join(dir, "scripts"), { recursive: true })
-    await writeFile(
-      join(dir, "scripts", "classify-intent.sh"),
-      "#!/usr/bin/env bash\necho hivefiver\n",
-      "utf-8",
-    )
+  describe("keyword-based fallback from session text", () => {
+    it("classifies meta-framework from keyword signals", () => {
+      const result = classifyLineageScope(
+        "unresolved",
+        "framework governance registry parity check"
+      )
+      assert.equal(result, "meta-framework")
+    })
 
-    const state = {
-      current: {
-        sessionId,
-        agent: "unresolved",
-        delegationChain: [],
-        gatesPassed: [],
-        scopeViolations: [],
-        turnCount: 0,
-        lastCheckpoint: 0,
-        classificationPending: false,
-        classificationDone: false,
-      },
-      save: (next: any) => {
-        state.current = next
-      },
-      worktree: dir,
-    }
+    it("classifies project from keyword signals", () => {
+      const result = classifyLineageScope(
+        "unresolved",
+        "implement feature for the customer deploy release"
+      )
+      assert.equal(result, "project")
+    })
 
-    try {
-      const pluginModule = await import("../.opencode/plugins/hiveops-governance/hooks/intent-classifier.ts")
-      const hookBuilder = pluginModule.buildIntentClassifierHook as
-        | ((state: any) => (input: any, output: any) => Promise<void>)
-        | undefined
-      assert.equal(typeof hookBuilder, "function")
-      const hook = hookBuilder(state as any)
-      await hook({}, { messages: [createUserMessage("please refactor this", sessionId)] })
+    it("returns unknown when keywords are ambiguous", () => {
+      const result = classifyLineageScope(
+        "unresolved",
+        "build framework" // 1 project + 1 meta — below 2-margin threshold
+      )
+      assert.equal(result, "unknown")
+    })
 
-      const profileAfter = JSON.parse(await readFile(profilePath, "utf-8"))
-      assert.equal(state.current.classificationDone, true)
-      assert.equal(state.current.intentClassification?.lineage, "hivefiver")
-      assert.equal(profileAfter.lineage, "hivefiver")
-      assert.equal(profileAfter.agent, "hivefiver")
-      assert.equal(typeof profileAfter.updated_at, "number")
-      assert(profileAfter.updated_at > 0)
-    } finally {
-      await rm(dir, { recursive: true, force: true })
-    }
+    it("returns unknown when no keywords match", () => {
+      const result = classifyLineageScope(
+        "unresolved",
+        "hello world foo bar baz"
+      )
+      assert.equal(result, "unknown")
+    })
+  })
+
+  describe("fallback behavior", () => {
+    it("returns unknown for unresolved agent without session text", () => {
+      assert.equal(classifyLineageScope("unresolved"), "unknown")
+    })
+
+    it("returns unknown for empty agent name", () => {
+      assert.equal(classifyLineageScope(""), "unknown")
+    })
+
+    it("returns unknown for unknown agent names", () => {
+      assert.equal(classifyLineageScope("some-random-agent"), "unknown")
+    })
+
+    it("agent name takes priority over session text keywords", () => {
+      // Even if session text says "project build deploy", agent name wins
+      const result = classifyLineageScope("hivefiver", "project build deploy ship")
+      assert.equal(result, "meta-framework")
+    })
   })
 })

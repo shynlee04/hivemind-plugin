@@ -55,9 +55,16 @@ interface BootstrapAccumulator {
 /**
  * Create the hivemind_bootstrap tool.
  *
- * @description Ensures required HiveMind state directories and bootstrap files
- * exist so entry-guard hooks can run safely. Operation is idempotent by default
- * and supports force recreation when requested.
+ * @description Manual recovery tool for HiveMind state files. The primary
+ * initialization path is `npx -y hivemind-context-governance --mode assisted`
+ * (auto-run by agent on first session, non-interactive). The event-handler's
+ * `ensureSessionCreatedBootstrap()` handles automatic state creation on
+ * session.created events. This tool serves as a fallback when state is
+ * corrupted or deleted mid-session.
+ *
+ * Ensures required HiveMind state directories and bootstrap files exist so
+ * entry-guard hooks can run safely. Operation is idempotent by default and
+ * supports force recreation when requested.
  *
  * @param directory - Project root directory from OpenCode runtime.
  * @returns Tool definition for HiveMind state bootstrap.
@@ -264,7 +271,7 @@ async function writeJsonAtomic(path: string, data: unknown): Promise<void> {
     await writeFile(tempPath, payload, "utf8")
     await rename(tempPath, path)
   } catch (error) {
-    await unlink(tempPath).catch(() => {})
+    await unlink(tempPath).catch(() => { })
     throw error
   }
 }

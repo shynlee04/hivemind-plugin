@@ -8,6 +8,8 @@
  *   discovery, research, planning, implementing, debug, testing
  */
 
+import type { LineageScope } from "../schemas/brain-state.js"
+
 export type SessionIntentCategory =
   | "discovery"
   | "research"
@@ -86,6 +88,89 @@ function scoreCategory(text: string, category: SessionIntentCategory): { score: 
     }
   }
   return { score, reasons }
+}
+
+// ─── P1-B: Lineage Classification ──────────────────────────────────────────────
+// Ports the concept from the disabled .opencode/ classify-intent.sh script.
+// Classifies the lineage scope of a session based on agent identity and
+// session text signals; returns "project" (hiveminder) or "meta-framework" (hivefiver).
+
+/** Agent names that belong to the meta-framework (hivefiver) lineage */
+const META_FRAMEWORK_AGENTS = [
+  "hivefiver",
+  "hivehealer",
+  "hitea",
+] as const
+
+/** Agent names that belong to the project (hiveminder) lineage */
+const PROJECT_AGENTS = [
+  "hiveminder",
+  "hivemaker",
+  "hiveplanner",
+  "hiveq",
+  "hiverd",
+  "hivexplorer",
+] as const
+
+/** Keywords that signal meta-framework scope when agent is unknown */
+const META_FRAMEWORK_KEYWORDS = [
+  "meta-builder", "framework", "skill", "governance", "registry",
+  "parity", "platform", "adapter", "mirror", "agent-spec",
+  "hivefiver", "hivehealer", "hitea",
+] as const
+
+/** Keywords that signal project scope when agent is unknown */
+const PROJECT_KEYWORDS = [
+  "project", "feature", "product", "user", "customer",
+  "implement", "build", "deploy", "ship", "release",
+  "hiveminder", "hivemaker", "hiveplanner",
+] as const
+
+/**
+ * Classify session lineage scope from agent name and/or session text.
+ *
+ * Resolution order:
+ *   1. Known agent name → deterministic mapping
+ *   2. Session text keyword scoring → probabilistic but bounded
+ *   3. Fallback → "unknown"
+ *
+ * @param agentName The declared agent name (may be "unresolved" or empty).
+ * @param sessionText Optional session text (trajectory, focus, etc.) for keyword fallback.
+ * @returns Resolved lineage scope.
+ */
+export function classifyLineageScope(
+  agentName: string,
+  sessionText?: string,
+): LineageScope {
+  const normalizedAgent = agentName.trim().toLowerCase()
+
+  // 1. Deterministic agent-name resolution
+  if ((META_FRAMEWORK_AGENTS as readonly string[]).includes(normalizedAgent)) {
+    return "meta-framework"
+  }
+  if ((PROJECT_AGENTS as readonly string[]).includes(normalizedAgent)) {
+    return "project"
+  }
+
+  // 2. Keyword-based fallback from session text
+  if (sessionText) {
+    const lowerText = sessionText.toLowerCase()
+    let metaScore = 0
+    let projectScore = 0
+
+    for (const kw of META_FRAMEWORK_KEYWORDS) {
+      if (lowerText.includes(kw)) metaScore++
+    }
+    for (const kw of PROJECT_KEYWORDS) {
+      if (lowerText.includes(kw)) projectScore++
+    }
+
+    // Require a 2+ margin to avoid ambiguous classification
+    if (metaScore > projectScore && metaScore >= 2) return "meta-framework"
+    if (projectScore > metaScore && projectScore >= 2) return "project"
+  }
+
+  return "unknown"
 }
 
 export function classifySessionIntent(input: SessionIntentInput): SessionIntentClassification {

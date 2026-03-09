@@ -260,25 +260,48 @@ This phase is a hierarchical umbrella, not one flat execution wave.
 Broken symlinks and adapter drift block any lane that claims command, skill, or platform-routing integrity.
 They do not block unrelated runtime-hook decisions in `P1-A` through `P1-D`.
 
+#### Phase 1 Audit Cross-Reference
+
+The **Phase 1 Deep Audit Report** (`phase1-audit-report.md`) is the binding investigation artifact for all P1 lanes.
+It maps 22 critical findings across 4 sectors × 4 domains with prescribed migration targets.
+**All P1 execution must consult the audit before modifying any file.**
+
+Key audit findings driving P1 lanes:
+
+| Finding | Lane | Action |
+|---------|------|--------|
+| Dual intent classification (ID-1) | `P1-B` | Unified classifier in `src/lib/` replacing both `session-intent-classifier.ts` and disabled `classify-intent.sh` |
+| `lineage: "unresolved"` never updated (SL-1) | `P1-B` | Classify lineage on `session.created` in `event-handler.ts` |
+| No lineage-separated state paths (SL-2) | `P1-D` | Lineage-namespaced `.hivemind/state/{lineage}/` paths |
+| No delegation router (DL-1) | `P1-C` | Build delegation router using lineage + intent |
+| Dual gate systems (GV-1) | `P1-C` | Consolidate `hiveops_gate.ts` → `gatekeeper.ts` |
+| Dual SOT systems (GV-2) | `P1-C` | Migrate `hiveops_sot.ts` → `sot-governance.ts` |
+| Dual TODO systems (GV-3) | `P1-C` | Consolidate `hiveops_todo.ts` into `src/` |
+| 4 `.opencode/tool/` files write directly to `.hivemind/state/` (GV-1–4) | `P1-D` | Migrate tools then delete `.opencode/tool/` |
+| Dead GX-Pack PLUGIN_MESSAGE_MARKERS (GV-6) | `P1-A` | Remove dead `plugin-message` channel |
+| Bootstrap HARD STOP fixed (GV-5) | `P1-A` | ✅ Completed — auto-run directive |
+
 #### Phase 1 Status Ledger
 
-**Before**:
+**Completed**:
 
-- plan hardening in this root `PLAN.md`
-- initial governance scoping in `docs/plans/refactor/phase-1-cycle-1-governance-sub-plan-2026-03-07.md`
-- prompt-path classifier fallback demotion landed in commit `697b07a` as `P1-A` completed subset 1
+- `P1-A` subset 1: prompt-path classifier fallback demotion (commit `697b07a`)
+- `P1-A` subset 2: bootstrap lifecycle fix — `STATE_BOOTSTRAP_STOP_DIRECTIVE` auto-run directive, `soft-governance.ts` denial message, `session-lifecycle-helpers.ts` auto-init, `hivemind-bootstrap.ts` JSDoc (2026-03-09)
+- `P1-A` subset 3: Dead GX-Pack `PLUGIN_MESSAGE_MARKERS` cleared in `injection-orchestrator.ts`, plugin-message budget zeroed (60/40 bootstrap, 50/50 mid-session ratio fix) (2026-03-09)
+- `P1-A` deprecated: Deleted `.opencode/plugins/hiveops-governance/` (9 files), updated 4 test files (2026-03-09)
+- `P1-B`: Lineage classifier `classifyLineageScope()` added to `session-intent-classifier.ts`, wired into `event-handler.ts::ensureSessionCreatedBootstrap()` — deterministic agent-name resolution (9 agents) + keyword fallback (2026-03-09)
+- Phase 1 deep audit (22 findings, 4 sectors × 4 domains)
 
 **Active**:
 
-- umbrella restructure and authority-graph freeze in `docs/plans/refactor/phase-1-governance-control-plane-audit.md`
+- `.opencode/tool/` → `src/` migration planning (P1-C, P1-D)
 
 **Next**:
 
-- `P1-B`
-- `P1-C`
-- `P1-D`
-- `P1-E`
-- `P1-F`
+- `P1-C`: Delegation router, `.opencode/tool/` migration (gate, SOT, TODO, export)
+- `P1-D`: Lineage-separated state paths in `.hivemind/`
+- `P1-E`: Command/agent contract normalization
+- `P1-F`: Symlink integrity gate
 
 ### Phase 2: State, Session, And Identity Unification
 
@@ -434,15 +457,24 @@ No new document may silently compete with `PLAN.md`.
 
 ## 11. Immediate Next Moves
 
-The next execution session must do only this:
+**Current cycle**: `P1-A` subset 3 + `P1-B` entry and intent authority
 
-1. use this `PLAN.md` as the sole SOT,
-2. treat commit `697b07a` as `P1-A` completed subset 1, not as Phase 1 completion,
-3. freeze the hierarchical umbrella and packet-status map in the active Phase 1 audit,
-4. open the next decision packet for `P1-B` entry and intent authority,
-5. keep `P1-E` deferred until `P1-B` and `P1-C` are frozen,
-6. run the `P1-F` integrity gate before closing any command or skill-routing lane,
-7. stop and request explicit authorization before any new implementation slice begins.
+The current execution slice covers:
+
+1. `P1-A` subset 3: Remove dead `PLUGIN_MESSAGE_MARKERS` reference to GX-Pack in `src/lib/injection-orchestrator.ts`.
+2. `P1-B` decision: Unify intent classification + lineage routing.
+   - Port lineage detection from disabled `classify-intent.sh` concept into `src/lib/session-intent-classifier.ts`.
+   - Wire lineage classification into `event-handler.ts::ensureSessionCreatedBootstrap()`.
+   - Update `brain-state.ts` to support lineage values beyond `"unresolved"`.
+3. Delete `.opencode/plugins/hiveops-governance/` (all 9 files) — confirmed disabled, no runtime callers, all logic has `src/hooks/` equivalents.
+4. Run verification: `npx tsc --noEmit`, `npx tsx --test tests/`, grep for orphaned imports.
+
+**Deferred** (requires this cycle to close first):
+
+- `P1-C`: `.opencode/tool/` → `src/` migration (depends on P1-B lineage routing being frozen)
+- `P1-D`: Lineage-separated `.hivemind/` state paths (depends on P1-B + P1-C)
+- `P1-E`: Command/agent contract normalization (deferred until P1-B and P1-C frozen)
+- `P1-F`: Symlink integrity gate (runs alongside P1-E)
 
 If a future session cannot map its work directly to one section of this file, it must stop and re-anchor before proceeding.
 

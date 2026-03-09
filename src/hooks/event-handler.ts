@@ -36,6 +36,7 @@ import { resolveCanonicalSessionId } from "../lib/graph-io.js"
 import { getSessionPaths } from "../lib/paths.js"
 import { createTree, saveTree, treeExists } from "../lib/hierarchy-tree.js"
 import { generateSessionId } from "../schemas/brain-state.js"
+import { classifyLineageScope } from "../lib/session-intent-classifier.js"
 
 function normalizeStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) {
@@ -208,12 +209,23 @@ async function ensureSessionCreatedBootstrap(
   }
 
   if (state.session.opencode_session_id !== sessionId || state.session.last_activity !== now) {
+    // P1-B: Classify lineage scope on bootstrap when it's still "unknown"
+    let resolvedLineage = state.session.lineage_scope
+    if (resolvedLineage === "unknown") {
+      const agentName = state.session.role || "unresolved"
+      const signalText = [state.hierarchy.trajectory, state.hierarchy.tactic, state.hierarchy.action]
+        .filter(Boolean)
+        .join(" ")
+      resolvedLineage = classifyLineageScope(agentName, signalText)
+    }
+
     await stateManager.save({
       ...state,
       session: {
         ...state.session,
         opencode_session_id: sessionId,
         last_activity: now,
+        lineage_scope: resolvedLineage,
       },
     })
   }
@@ -274,7 +286,7 @@ export function createEventHandler(log: Logger, directory: string) {
           }
 
           let nextState = state
-          
+
           // V3.0: Increment user_turn_count on each user→assistant→user cycle
           nextState = {
             ...nextState,
@@ -283,7 +295,7 @@ export function createEventHandler(log: Logger, directory: string) {
               user_turn_count: nextState.metrics.user_turn_count + 1,
             },
           }
-          
+
           const staleness = getStalenessInfo(nextState, config.stale_session_days)
 
           // FLAW-TOAST-005 FIX: Removed staleness toast

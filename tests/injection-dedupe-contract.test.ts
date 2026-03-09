@@ -62,7 +62,8 @@ describe("injection dedupe contract", () => {
 
     assert.equal(presence.core_system, true)
     assert.equal(presence.core_message, true)
-    assert.equal(presence.plugin_message, true)
+    // P1-A-3: GX-Pack markers cleared — plugin_message never matches
+    assert.equal(presence.plugin_message, false)
   })
 
   it("enforces deterministic budget priority under low remaining capacity", () => {
@@ -90,9 +91,11 @@ describe("injection dedupe contract", () => {
       requestedChars: 900,
     })
 
-    assert.equal(pluginGrant, 150)
-    assert.equal(coreMessageGrant, 525)
-    assert.equal(coreSystemGrant, 825)
+    // P1-A-3: plugin-message budget is now 0 (GX-Pack removed)
+    assert.equal(pluginGrant, 0)
+    // Bootstrap ratios: core-system 60%, core-message 40%
+    assert.equal(coreMessageGrant, 600)
+    assert.equal(coreSystemGrant, 900)
     assert.equal(
       reserveInjectionBudget({ turnKey, channel: "core-system", requestedChars: 20 }),
       0,
@@ -126,9 +129,11 @@ describe("injection dedupe contract", () => {
       requestedChars: 900,
     })
 
-    assert.equal(pluginGrant, 150)
-    assert.equal(coreMessageGrant, 675)
-    assert.equal(coreSystemGrant, 675)
+    // P1-A-3: plugin-message budget is now 0
+    assert.equal(pluginGrant, 0)
+    // Mid-session ratios: core-system 50%, core-message 50%
+    assert.equal(coreMessageGrant, 750)
+    assert.equal(coreSystemGrant, 750)
     clearTurnInjectionLedger()
   })
 
@@ -161,11 +166,12 @@ describe("injection dedupe contract", () => {
     const ledgerBefore = getTurnInjectionLedger(preCompactionKey)
     const ledgerAfter = getTurnInjectionLedger(postCompactionKey)
 
-    assert.equal(pluginGrant, 150)
+    // P1-A-3: plugin-message budget is now 0
+    assert.equal(pluginGrant, 0)
     assert.equal(ledgerBefore?.turn_count, 12)
     assert.equal(ledgerAfter?.turn_count, 0)
     assert.equal(ledgerBefore?.used_chars, 400)
-    assert.equal(ledgerAfter?.used_chars, 150)
+    assert.equal(ledgerAfter?.used_chars, 0)
     clearTurnInjectionLedger()
   })
 

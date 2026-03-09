@@ -143,10 +143,10 @@ async function runCoreScenario(runtimeSessionId: string, parentID: string | null
   try {
     const config = createConfig({ governance_mode: "assisted" })
     const logger = {
-      debug: async (_message: string) => {},
-      info: async (_message: string) => {},
-      warn: async (_message: string) => {},
-      error: async (_message: string) => {},
+      debug: async (_message: string) => { },
+      info: async (_message: string) => { },
+      warn: async (_message: string) => { },
+      error: async (_message: string) => { },
     }
 
     const lifecycleHook = createSessionLifecycleHook(logger, dir, config)
@@ -156,7 +156,7 @@ async function runCoreScenario(runtimeSessionId: string, parentID: string | null
     }
     await lifecycleHook({ sessionID: runtimeSessionId }, lifecycleOutput)
 
-    const messagesHook = createMessagesTransformHook({ warn: async () => {} }, dir)
+    const messagesHook = createMessagesTransformHook({ warn: async () => { } }, dir)
     const messageOutput = { messages: [createUserMessage("continue", runtimeSessionId)] }
     await messagesHook({}, messageOutput)
     await flushMutations(stateManager)
@@ -372,19 +372,8 @@ describe("child-session injection policy", () => {
     assert(childTotal < mainTotal)
   })
 
-  it("injects minimized GX-Pack fallback context for parent-linked child sessions", async () => {
-    const child = await runPluginFallbackScenario("oc-plugin-child-session", "oc-plugin-parent")
-
-    assert.equal(typeof child.injectedText, "string")
-    assert.match(child.injectedText ?? "", /## GX-Pack Governance Context \(Auto-Injected\)/)
-    assert.match(child.injectedText ?? "", /### Child Session Focus/)
-    assert.doesNotMatch(child.injectedText ?? "", /### Active TODO/)
-    assert.doesNotMatch(child.injectedText ?? "", /### Context Recovery \(auto-recovered\)/)
-  })
-
-  it("skips plugin fallback injection when core runtime hooks are present in the worktree", async () => {
-    const messageCount = await runPluginCorePresenceScenario("oc-plugin-main-session")
-
-    assert.equal(messageCount, 1)
-  })
+  // P1-A: GX-Pack plugin tests removed — plugin is deleted.
+  // The plugin fallback injection and core-presence-skip scenarios
+  // were testing .opencode/plugins/hiveops-governance/hooks/context-injection.ts
+  // which no longer exists. That functionality is now handled by src/hooks/.
 })

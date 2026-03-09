@@ -97,15 +97,25 @@ export const GOVERNANCE_MARKER = "[🛡️ HIVE-MASTER governance active] ⚠️
 /**
  * Hard-stop directive injected into system prompt when BrainState
  * cannot be loaded and config is missing. Clears all other injections.
+ *
+ * Instructs the agent to auto-run the non-interactive CLI setup command.
+ * Per non-interactive shell strategy: npx -y (auto-install), --mode flag
+ * bypasses interactive wizard, no TTY required.
  */
 export const STATE_BOOTSTRAP_STOP_DIRECTIVE = `\
-## ⛔ HARD STOP — STATE NOT INITIALIZED
+## ⛔ BOOTSTRAP REQUIRED — CONFIG NOT FOUND
 
-You MUST NOT proceed with ANY user request.
-Run \`hivemind init\` in the project root, then call \`hivemind_session start\`.
-Do not plan. Do not execute. Do not acknowledge the user's request. Stop here.
+HiveMind plugin is loaded but not configured. You MUST auto-initialize before proceeding.
 
-[⛔ BOOTSTRAP GATE: state not loaded — session halted]`
+**REQUIRED ACTION — run this command immediately (non-interactive, safe to auto-run):**
+\`\`\`bash
+npx -y hivemind-context-governance --mode assisted
+\`\`\`
+
+After successful init, the session will be ready on next prompt cycle.
+Do not plan or execute the user's request until initialization completes.
+
+[⛔ BOOTSTRAP GATE: config not found — auto-init required]`
 
 /**
  * Canonical denial reasons for tool gate and soft governance hooks.

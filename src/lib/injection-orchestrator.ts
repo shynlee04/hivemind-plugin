@@ -47,7 +47,9 @@ const CHANNEL_PRIORITY: InjectionChannel[] = [
 
 const CORE_SYSTEM_MARKERS = ["<hivemind>", "HIVE-MASTER governance active"]
 const CORE_MESSAGE_MARKERS = ["<hivemind_state", "[SYSTEM ANCHOR:", "<system-reminder>", "<hivemind-clarify>"]
-const PLUGIN_MESSAGE_MARKERS = ["## GX-Pack Governance Context"]
+// P1-A-3: GX-Pack plugin is disabled/removed — no plugin-message markers exist.
+// The channel type is retained for backward compatibility but will never match.
+const PLUGIN_MESSAGE_MARKERS: string[] = []
 
 function getStore(): InternalStore {
   const globalObj = globalThis as Record<string, unknown>
@@ -199,15 +201,15 @@ function buildBaselineByChannel(turnCount: number, capChars: number): Record<Inj
   const bootstrapTurn = turnCount <= 2
   const ratioByChannel: Record<InjectionChannel, number> = bootstrapTurn
     ? {
-        "core-system": 0.55,
-        "core-message": 0.35,
-        "plugin-message": 0.1,
-      }
+      "core-system": 0.60,
+      "core-message": 0.40,
+      "plugin-message": 0,
+    }
     : {
-        "core-system": 0.45,
-        "core-message": 0.45,
-        "plugin-message": 0.1,
-      }
+      "core-system": 0.50,
+      "core-message": 0.50,
+      "plugin-message": 0,
+    }
 
   const system = Math.floor(capChars * ratioByChannel["core-system"])
   const message = Math.floor(capChars * ratioByChannel["core-message"])

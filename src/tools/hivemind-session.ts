@@ -200,7 +200,7 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
       await flushMutations(stateManager)
       await flushTaskManifestMutations()
       const runtimeState = await stateManager.load()
-      const runtimeSessionId = runtimeState?.session.id
+      const runtimeSessionId = runtimeState?.session?.id
       if (args.action === "update" || args.action === "close" || args.action === "branch") {
         queueStateMutation({
           type: "CHECKPOINT",
