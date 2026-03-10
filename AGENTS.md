@@ -2,7 +2,7 @@
 
 This file provides guidance to ALL agents working in this repository.
 
-**Last Updated**: 2026-03-09
+**Last Updated**: 2026-03-10
 **Version**: 3.3-strategic-resync
 **Maintained By**: hivefiver meta-builder
 **Symlinked To**: `.hivemind/AGENTS.md`, `.opencode/AGENTS.md`, `src/AGENTS.md`
@@ -253,12 +253,15 @@ npm run guard:public                        # Run BEFORE any master push
 ```bash
 npx hivemind-context-governance             # Interactive setup wizard
 npx hivemind-context-governance init --mode assisted
+npx hivemind-context-governance migrate     # One-time legacy flat-file -> graph migration
+npx hivemind-context-governance doctor      # Diagnose/repair .hivemind lineage integrity
 npx hivemind-context-governance status
 npx hivemind-context-governance settings
 npx hivemind-context-governance scan --action analyze --json
 npx hivemind-context-governance scan --action recommend
 npx hivemind-context-governance scan --action orchestrate --json
 npx hivemind-context-governance sync-assets --target project
+npx hivemind-context-governance compact     # Archive current session and reset (OpenCode only)
 npx hivemind-context-governance dashboard --refresh 1   # optional (requires ink + react peers)
 npx hivemind-context-governance purge                  # DANGER: removes .hivemind/ entirely
 npx hivemind-context-governance help
@@ -331,7 +334,7 @@ workflows/hiverd-deep-research.yaml
 workflows/hiverd-synthesis-pipeline.yaml
 ```
 
-TODO (2026-03-09): No additional `workflows/*.yaml` files discovered beyond this list.
+TODO (2026-03-10): No additional `commands/*.md` or `workflows/*.yaml` files discovered beyond this list.
 
 ---
 

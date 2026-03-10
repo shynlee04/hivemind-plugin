@@ -33,10 +33,10 @@ No future session may treat any other document as equal to this plan.
 
 The following findings are accepted as validated enough to drive the refactor:
 
-1. `src/` and `.opencode/` currently behave like overlapping governance/control planes.
-   `src/index.ts` registers the main runtime hooks, while `.opencode/plugins/hiveops-governance/*` still owns entry, delegation, fallback context, event routing, and compaction-side behavior.
-2. The `.opencode` fallback is only partial.
-   The fallback guard suppresses message-context injection in some conditions, but it does not suppress the rest of the plugin-side control flow.
+1. `src/` and `.opencode/` have functioned as overlapping governance/control planes, and residual overlap remains.
+   `src/index.ts` registers the main runtime hooks. The former `.opencode/plugins/hiveops-governance/*` control plane has now been removed, but `.opencode/tool/*` still contains residual governance/state-writing and artifact-writing surfaces that must be classified, isolated, and either absorbed or reduced to thin wrappers.
+2. The former `.opencode` fallback layer was only partial, and residual `.opencode` authority must now be treated as targeted remaining debt rather than active plugin ownership.
+   The plugin-side fallback/injection layer no longer defines the current runtime, but the remaining `.opencode/tool/*` surfaces still preserve a secondary authority path until the next Phase 1 cycles freeze ownership.
 3. `dist/` is the effective shipped runtime.
    Published installs execute `dist/**`, not `src/**`, so `src` vs `dist` drift is a real architectural risk.
 4. `.hivemind/` has split authority across runtime state, graph state, session records, planning artifacts, and compatibility stores.
@@ -262,9 +262,17 @@ They do not block unrelated runtime-hook decisions in `P1-A` through `P1-D`.
 
 #### Phase 1 Audit Cross-Reference
 
-The **Phase 1 Deep Audit Report** (`phase1-audit-report.md`) is the binding investigation artifact for all P1 lanes.
-It maps 22 critical findings across 4 sectors × 4 domains with prescribed migration targets.
-**All P1 execution must consult the audit before modifying any file.**
+The designated Phase 1 dated audit artifact is `docs/audits/phase1-audit-report-2026-03-08.md`.
+That artifact now exists and has been re-verified against current repository truth.
+It is a dated Phase 1 reference packet, not a peer authority to `PLAN.md`.
+
+The binding investigation basis for P1 lanes is:
+
+1. this Phase 1 findings ledger inside `PLAN.md`,
+2. the dated audit artifact in `docs/audits/phase1-audit-report-2026-03-08.md`,
+3. live repo evidence from `src/`, `.opencode/tool/`, and `.hivemind/`.
+
+If the dated audit artifact and `PLAN.md` diverge, `PLAN.md` wins and the audit artifact must be corrected before the containing cycle closes.
 
 Key audit findings driving P1 lanes:
 
@@ -275,9 +283,9 @@ Key audit findings driving P1 lanes:
 | No lineage-separated state paths (SL-2) | `P1-D` | Lineage-namespaced `.hivemind/state/{lineage}/` paths |
 | No delegation router (DL-1) | `P1-C` | Build delegation router using lineage + intent |
 | Dual gate systems (GV-1) | `P1-C` | Consolidate `hiveops_gate.ts` → `gatekeeper.ts` |
-| Dual SOT systems (GV-2) | `P1-C` | Migrate `hiveops_sot.ts` → `sot-governance.ts` |
-| Dual TODO systems (GV-3) | `P1-C` | Consolidate `hiveops_todo.ts` into `src/` |
-| 4 `.opencode/tool/` files write directly to `.hivemind/state/` (GV-1–4) | `P1-D` | Migrate tools then delete `.opencode/tool/` |
+| Dual SOT systems (GV-2) | `P1-C` | Absorb `hiveops_sot.ts` under the `src` SOT governance umbrella; direct `.opencode` ownership of `sot-index.json` must end |
+| Dual TODO systems (GV-3) | `P1-C` | Replace `hiveops_todo.ts` with `src` task/planning authority; do not preserve `todo.json` as long-term runtime SOT |
+| 3 `.opencode/tool/` files write directly to `.hivemind/state/`; `hiveops_export.ts` reads state and writes handoff/checkpoint artifacts (GV-1–4 adjusted) | `P1-C`, `P1-D` | Isolate direct state writers first, then classify `hiveops_export.ts` separately as artifact-path debt |
 | Dead GX-Pack PLUGIN_MESSAGE_MARKERS (GV-6) | `P1-A` | Remove dead `plugin-message` channel |
 | Bootstrap HARD STOP fixed (GV-5) | `P1-A` | ✅ Completed — auto-run directive |
 
@@ -289,17 +297,23 @@ Key audit findings driving P1 lanes:
 - `P1-A` subset 2: bootstrap lifecycle fix — `STATE_BOOTSTRAP_STOP_DIRECTIVE` auto-run directive, `soft-governance.ts` denial message, `session-lifecycle-helpers.ts` auto-init, `hivemind-bootstrap.ts` JSDoc (2026-03-09)
 - `P1-A` subset 3: Dead GX-Pack `PLUGIN_MESSAGE_MARKERS` cleared in `injection-orchestrator.ts`, plugin-message budget zeroed (60/40 bootstrap, 50/50 mid-session ratio fix) (2026-03-09)
 - `P1-A` deprecated: Deleted `.opencode/plugins/hiveops-governance/` (9 files), updated 4 test files (2026-03-09)
-- `P1-B`: Lineage classifier `classifyLineageScope()` added to `session-intent-classifier.ts`, wired into `event-handler.ts::ensureSessionCreatedBootstrap()` — deterministic agent-name resolution (9 agents) + keyword fallback (2026-03-09)
-- Phase 1 deep audit (22 findings, 4 sectors × 4 domains)
+- `P1-B` subset 1: Lineage classifier `classifyLineageScope()` added to `session-intent-classifier.ts`, wired into `event-handler.ts::ensureSessionCreatedBootstrap()` for canonical `state.session.lineage_scope` assignment — deterministic agent-name resolution (9 agents) + keyword fallback (2026-03-09)
+- Phase 1 investigation wave completed; findings are partially absorbed into `PLAN.md` and materialized in `docs/audits/phase1-audit-report-2026-03-08.md` as a re-verified dated reference artifact
+- `P1-C.1`: `.opencode/tool/*` isolation packet completed — `hiveops_gate.ts`, `hiveops_sot.ts`, and `hiveops_todo.ts` are frozen as direct `.hivemind/state` writer debt, while `hiveops_export.ts` is frozen as artifact-path debt; closest `src` ownership targets and wrapper-only conditions are recorded in `docs/plans/refactor/phase-1-p1-c-1-opencode-tool-isolation-packet-2026-03-10.md`
 
 **Active**:
 
-- `.opencode/tool/` → `src/` migration planning (P1-C, P1-D)
+- `P1-B` closeout: bootstrap/profile authority alignment remains unresolved — canonical brain-state lineage is classified on `session.created`, but session profile seeding still starts with `agent: "unresolved"` and must be frozen to one owner before `P1-B` can be treated as closed
+- `P1-C.2a`: gate/SOT/export extraction and wrapper demotion remain active — the clearest `.opencode/tool/*` classes are now frozen, but business logic and persistence authority have not yet moved into `src`
+- `P1-C.2b` / `P1-D.1`: TODO authority replacement remains active but is explicitly split from gate/SOT/export migration because task-state ownership is still entangled with the broader state-authority freeze
+- `P1-D`: state-authority planning remains active; `.hivemind` state shape, bootstrap/profile ownership, and lineage-separated pathing are still unresolved
 
 **Next**:
 
-- `P1-C`: Delegation router, `.opencode/tool/` migration (gate, SOT, TODO, export)
-- `P1-D`: Lineage-separated state paths in `.hivemind/`
+- `P1-C.2a`: aggressive refactor/migration cycle for gate/SOT/export logic into `src`-owned authority paths with `.opencode` reduced to thin wrappers or deleted surfaces where donor conditions fail
+- `P1-C.2b`: aggressive TODO authority replacement cycle to delete `hiveops_todo.ts` after rerouting task ownership into `src` planning / graph / session-memory surfaces and rejecting `todo.json` as long-term runtime SOT
+- `P1-D`: aggressive state-shape reconciliation between live `.hivemind` stores and current `BrainState` ownership
+- `P1-D`: aggressive lineage-separated state-path migration in `.hivemind/`
 - `P1-E`: Command/agent contract normalization
 - `P1-F`: Symlink integrity gate
 
@@ -457,24 +471,37 @@ No new document may silently compete with `PLAN.md`.
 
 ## 11. Immediate Next Moves
 
-**Current cycle**: `P1-A` subset 3 + `P1-B` entry and intent authority
+**Current cycle**: `P1-C.1` isolation freeze completed; prepare split aggressive migration slices
 
 The current execution slice covers:
 
-1. `P1-A` subset 3: Remove dead `PLUGIN_MESSAGE_MARKERS` reference to GX-Pack in `src/lib/injection-orchestrator.ts`.
-2. `P1-B` decision: Unify intent classification + lineage routing.
-   - Port lineage detection from disabled `classify-intent.sh` concept into `src/lib/session-intent-classifier.ts`.
-   - Wire lineage classification into `event-handler.ts::ensureSessionCreatedBootstrap()`.
-   - Update `brain-state.ts` to support lineage values beyond `"unresolved"`.
-3. Delete `.opencode/plugins/hiveops-governance/` (all 9 files) — confirmed disabled, no runtime callers, all logic has `src/hooks/` equivalents.
-4. Run verification: `npx tsc --noEmit`, `npx tsx --test tests/`, grep for orphaned imports.
+1. Keep the Phase 1 plan/audit chain aligned with live repo evidence so the next migration slice starts from current truth instead of stale plugin-era assumptions.
+2. Keep `P1-B` frozen as implemented-but-not-closed:
+   - canonical `state.session.lineage_scope` classification is now wired into `event-handler.ts::ensureSessionCreatedBootstrap()`;
+   - bootstrap/profile authority is still unresolved because session profiles still seed with `agent: "unresolved"`.
+3. Freeze `P1-C.1` classifications for residual `.opencode/tool/*` authority:
+   - `hiveops_gate.ts`, `hiveops_sot.ts`, and `hiveops_todo.ts` are direct state-writer debt;
+   - `hiveops_export.ts` is artifact-path debt coupled to state reads;
+   - OpenCode-facing wrapper survival is allowed only as a temporary transport exception.
+4. Prepare the next aggressive execution slices with narrower ownership boundaries:
+   - `P1-C.2a` for gate/SOT/export extraction and wrapper demotion;
+   - `P1-C.2b` for TODO authority replacement aligned with `P1-D.1`;
+   - keep deletion bias as the default, not the exception.
 
-**Deferred** (requires this cycle to close first):
+**Planned follow-on cycles** (each requires separate authorization):
 
-- `P1-C`: `.opencode/tool/` → `src/` migration (depends on P1-B lineage routing being frozen)
-- `P1-D`: Lineage-separated `.hivemind/` state paths (depends on P1-B + P1-C)
-- `P1-E`: Command/agent contract normalization (deferred until P1-B and P1-C frozen)
-- `P1-F`: Symlink integrity gate (runs alongside P1-E)
+- `P1-C.2a` aggressive gate/SOT/export refactor cycle:
+  extract or rebuild accepted gate/SOT/export logic into `src`-owned authority paths, reduce `.opencode` surfaces to wrappers only where required by platform runtime, and delete donor surfaces that fail the donor conditions.
+- `P1-C.2b` aggressive TODO replacement cycle:
+  replace `hiveops_todo.ts` with `src` task/planning authority, reject `todo.json` as long-term runtime SOT, and delete the donor task silo after rerouting the surviving concepts.
+- `P1-D.1` aggressive state reconciliation cycle:
+  reconcile live `.hivemind` state shape, compatibility stores, and current `BrainState` expectations; freeze one write-authority model before path migration.
+- `P1-D.2` aggressive lineage migration cycle:
+  implement lineage-separated state/session paths, resolve profile vs canonical state ownership, and remove the remaining `lineage` / `lineage_scope` ambiguity from active runtime stores.
+- `P1-E.1` command/agent normalization cycle:
+  proceed only after `P1-C` and `P1-D` freeze runtime authority boundaries.
+- `P1-F.1` symlink/platform integrity cycle:
+  run alongside `P1-E` once command/skill routing claims become part of the closeout criteria.
 
 If a future session cannot map its work directly to one section of this file, it must stop and re-anchor before proceeding.
 

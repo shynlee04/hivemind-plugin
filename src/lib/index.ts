@@ -35,6 +35,6 @@ export * from "./sdk-access.js";
 export * from "./project-snapshot.js";
 export * from "./session-coherence-types.js";
 export * from "./skill-registry.js";
-export * from "./event-consumers.js";
+
 export * from "./session-intent-classifier.js";
 export * from "./planning-materializer.js";

@@ -321,50 +321,7 @@
           }
         }
       }
-    },
-    "chutes-api": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "Chutes AI",
-      "options": {
-        "baseURL": "https://llm.chutes.ai/v1"
-      },
-      "models": {
-        "e51e818e-fa63-570d-9f68-49d7d1b4d12f": {
-          "name": "GLM-5-TEE"
-        },
-        "ce6a92e4-5c2f-5681-9742-c80a4447bbdf": {
-          "name": "MiniMax-M2.5-TEE"
-        },
-        "572bd930-0438-520c-a4a4-56874be296f8": {
-          "name": "GLM-4.7-FP8"
-        }
-      }
-    },
-    "aihubmix-code": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "AIHubMix-code",
-      "options": {
-        "baseURL": "https://aihubmix.com/v1"
-      },
-      "models": {
-        "coding-glm-5-free": {
-          "name": "CODING-GLM-5-FREE"
-        },
-        "coding-minimax-m2.5-free": {
-          "name": "CODING-MINIMAX-M2.5-FREE"
-        }
-      }
     }
-  },
-  "model": "chutes/zai-org/GLM-5-TEE",
-  "permission": {
-    "edit": "allow",
-    "write": "allow",
-    "bash": "allow",
-    "lsp": "allow",
-    "todowrite": "allow",
-    "todoread": "allow",
-    "*": "allow"
   },
   "instructions": [
     "Prefer the 'patch' tool over 'edit' for code changes. Use 'edit' only for single-line modifications. The 'patch' tool is more reliable for complex code modifications.",
@@ -379,14 +336,14 @@
     "hivefiver": {
       "mode": "primary",
       "tools": {
-        "read": true,
-        "glob": true,
-        "grep": true,
-        "task": true,
-        "skill": true,
-        "webfetch": true,
-        "websearch": true,
-        "bash": true
+        "read": false,
+        "glob": false,
+        "grep": false,
+        "task": false,
+        "skill": false,
+        "webfetch": false,
+        "websearch": false,
+        "bash": false
       }
     },
     "*": {

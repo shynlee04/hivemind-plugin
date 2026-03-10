@@ -40,7 +40,6 @@ import { detectLongSession } from "../lib/long-session.js"
 import {
   createTurnInjectionKey,
   createTurnInjectionLedger,
-  detectInjectionPresence,
   getRemainingBudget,
   reserveInjectionBudget,
 } from "../lib/injection-orchestrator.js"
@@ -384,8 +383,6 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         capCharsOverride: sharedInjectionCapChars,
       })
       const suppressHumanFacing = (state ? shouldSuppressHumanFacingGovernance(state) : false) || minimizeForChildSession
-      const injectionPresence = detectInjectionPresence({ messages: output.messages })
-      const pluginMessagePresent = injectionPresence.plugin_message
 
       const reserveCoreMessageText = (text: string): string | null => {
         if (!text.trim()) return null
@@ -511,7 +508,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
           // Determine role from message shape
           let role: string | undefined
           let content = ""
-          
+
           if (isMessageWithParts(msg)) {
             role = msg.info?.role
             content = msg.parts.filter(p => p.type === "text").map(p => p.text || "").join(" ")
@@ -525,24 +522,24 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
               content = msgContent.filter(p => p.type === "text").map(p => (p as MessagePart).text || "").join(" ")
             }
           }
-          
+
           if (role && (role === "user" || role === "assistant") && content) {
             recentMessages.push({ role: role as "user" | "assistant", content })
           }
         }
-        
+
         // Keep only last 6 messages
         const trimmedMessages = recentMessages.slice(-6)
         const latestArtifact = trimmedMessages[trimmedMessages.length - 1]
         const memoryGovernancePatch = latestArtifact
           ? (() => {
-              return {
-                ...state.memory_governance,
-                last_classified_at: Date.now(),
-              }
-            })()
+            return {
+              ...state.memory_governance,
+              last_classified_at: Date.now(),
+            }
+          })()
           : undefined
-        
+
         // CQRS: Queue mutation instead of direct save
         queueStateMutation({
           type: "UPDATE_STATE",
@@ -550,8 +547,8 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
             recent_messages: trimmedMessages,
             ...(memoryGovernancePatch
               ? {
-                  memory_governance: memoryGovernancePatch,
-                }
+                memory_governance: memoryGovernancePatch,
+              }
               : {}),
           },
           source: "messages-transform-hook:recent-messages",
@@ -621,35 +618,33 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         }
 
         // === PHASE 5: Cognitive Packer Injection ===
-        if (!pluginMessagePresent) {
-          let packedContextInjected = false
-          const checklistReserve = 900
-          const remainingBeforeCognitive = getRemainingBudget(turnKey)
-          const availableForCognitive = Math.max(0, remainingBeforeCognitive - checklistReserve)
-          if (availableForCognitive > 160) {
-            const cognitiveBudget = minimizeForChildSession
-              ? Math.max(180, Math.min(420, Math.floor(availableForCognitive * 0.35)))
-              : Math.max(240, Math.min(1200, Math.floor(availableForCognitive * 0.85)))
-            const packedContext = packCognitiveState(directory, {
-              budget: cognitiveBudget,
-              sessionId: state.session.id,
-            })
-            if (!isEmptyPackedContext(packedContext)) {
-              const packedContextBounded = reserveCoreMessageText(packedContext)
-              if (packedContextBounded) {
-                prependSyntheticPart(output.messages[index], packedContextBounded)
-                packedContextInjected = true
-              }
+        let packedContextInjected = false
+        const checklistReserve = 900
+        const remainingBeforeCognitive = getRemainingBudget(turnKey)
+        const availableForCognitive = Math.max(0, remainingBeforeCognitive - checklistReserve)
+        if (availableForCognitive > 160) {
+          const cognitiveBudget = minimizeForChildSession
+            ? Math.max(180, Math.min(420, Math.floor(availableForCognitive * 0.35)))
+            : Math.max(240, Math.min(1200, Math.floor(availableForCognitive * 0.85)))
+          const packedContext = packCognitiveState(directory, {
+            budget: cognitiveBudget,
+            sessionId: state.session.id,
+          })
+          if (!isEmptyPackedContext(packedContext)) {
+            const packedContextBounded = reserveCoreMessageText(packedContext)
+            if (packedContextBounded) {
+              prependSyntheticPart(output.messages[index], packedContextBounded)
+              packedContextInjected = true
             }
           }
+        }
 
-          // === PHASE 6: Contextual Anchoring Fallback ===
-          // Keep the lightweight anchor only when structured context could not be injected.
-          if (!packedContextInjected) {
-            const anchorHeader = reserveCoreMessageText(buildAnchorContext(state))
-            if (anchorHeader) {
-              prependSyntheticPart(output.messages[index], anchorHeader)
-            }
+        // === PHASE 6: Contextual Anchoring Fallback ===
+        // Keep the lightweight anchor only when structured context could not be injected.
+        if (!packedContextInjected) {
+          const anchorHeader = reserveCoreMessageText(buildAnchorContext(state))
+          if (anchorHeader) {
+            prependSyntheticPart(output.messages[index], anchorHeader)
           }
         }
 
@@ -777,7 +772,7 @@ export function createMessagesTransformHook(_log: { warn: (message: string) => P
         })
 
         if (!suppressHumanFacing && boundaryRecommendation.recommended) {
-           items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
+          items.push(`Session boundary reached: ${boundaryRecommendation.reason}`)
         }
 
         // Phase 3B: Surface off-track TODO-Pending count without inlining content

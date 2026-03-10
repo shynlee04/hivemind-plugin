@@ -67,7 +67,6 @@ async function injectGovernanceInstruction(
   })
   const alreadyInjected = presence.core_system
     || presence.core_message
-    || presence.plugin_message
     || output.system.some(s => s.includes(GOVERNANCE_MARKER))
   if (alreadyInjected) {
     return undefined
@@ -182,8 +181,7 @@ export function createSessionLifecycleHook(log: Logger, directory: string, _init
       if (
         existingUsage &&
         existingUsage["core-system"] > 0 &&
-        existingUsage["core-message"] === 0 &&
-        existingUsage["plugin-message"] === 0
+        existingUsage["core-message"] === 0
       ) {
         clearTurnInjectionLedger(turnKey)
         ledger = createTurnInjectionLedger({

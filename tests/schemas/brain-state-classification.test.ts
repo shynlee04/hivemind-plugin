@@ -35,10 +35,9 @@ describe("brain-state field classification", () => {
       "first_turn_confirmation",
       "selected_output_style_v29",
       "memory_governance",
-      "complexity_nudge_shown",
-      "last_commit_suggestion_turn",
       "cycle_log",
       "pending_failure_ack",
+      "pending_mandatory_tools",
       "compaction_limit_reached",
       "recent_messages",
     ]);
@@ -55,6 +54,8 @@ describe("brain-state field classification", () => {
       "next_compaction_report",
       "framework_selection",
       "offtrack_todo_pending",
+      "trajectory_context",
+      "checkpoints",
     ]);
   });
 
@@ -112,7 +113,6 @@ describe("brain-state field classification", () => {
     oldState.cycle_log = [{
       timestamp: 1700000000200,
       tool: "task",
-      output_excerpt: "old",
       failure_detected: true,
       failure_keywords: ["failed"],
     }];
@@ -121,7 +121,6 @@ describe("brain-state field classification", () => {
     newState.cycle_log = [{
       timestamp: 1700000000300,
       tool: "task",
-      output_excerpt: "new",
       failure_detected: false,
       failure_keywords: [],
     }];

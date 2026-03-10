@@ -1,0 +1,13 @@
+{
+  "sessionId": "968e81ed-cd55-4725-8bf5-1a9475ff7abe",
+  "lineage": "unresolved",
+  "mode": "exploration",
+  "turnCount": 0,
+  "driftScore": 100,
+  "compactionCount": 0,
+  "outOfOrderCount": 0,
+  "evidencePressure": 0,
+  "lastActivity": "2026-03-09T17:38:28.606Z",
+  "createdAt": "2026-03-09T17:38:28.606Z",
+  "version": "2.8.5"
+}

@@ -3,12 +3,11 @@ import {
   MIN_SHARED_INJECTION_CAP,
 } from "./budget.js"
 
-export type InjectionChannel = "core-system" | "core-message" | "plugin-message"
+export type InjectionChannel = "core-system" | "core-message"
 
 export interface InjectionPresence {
   core_system: boolean
   core_message: boolean
-  plugin_message: boolean
 }
 
 export interface PluginFallbackTurnResolution {
@@ -42,14 +41,10 @@ const LEDGER_TTL_MS = 15 * 60 * 1000
 const CHANNEL_PRIORITY: InjectionChannel[] = [
   "core-system",
   "core-message",
-  "plugin-message",
 ]
 
 const CORE_SYSTEM_MARKERS = ["<hivemind>", "HIVE-MASTER governance active"]
 const CORE_MESSAGE_MARKERS = ["<hivemind_state", "[SYSTEM ANCHOR:", "<system-reminder>", "<hivemind-clarify>"]
-// P1-A-3: GX-Pack plugin is disabled/removed — no plugin-message markers exist.
-// The channel type is retained for backward compatibility but will never match.
-const PLUGIN_MESSAGE_MARKERS: string[] = []
 
 function getStore(): InternalStore {
   const globalObj = globalThis as Record<string, unknown>
@@ -146,14 +141,10 @@ export function detectInjectionPresence(input: {
   const core_message = messageTexts.some((text) =>
     CORE_MESSAGE_MARKERS.some((marker) => text.includes(marker))
   )
-  const plugin_message = messageTexts.some((text) =>
-    PLUGIN_MESSAGE_MARKERS.some((marker) => text.includes(marker))
-  )
 
   return {
     core_system,
     core_message,
-    plugin_message,
   }
 }
 
@@ -177,8 +168,7 @@ export function resolvePluginFallbackTurn(params: {
 }): PluginFallbackTurnResolution {
   const shouldInject = !(
     params.presence.core_system ||
-    params.presence.core_message ||
-    params.presence.plugin_message
+    params.presence.core_message
   )
   const resolvedSessionId =
     params.snapshotSessionId?.trim() ||
@@ -203,22 +193,18 @@ function buildBaselineByChannel(turnCount: number, capChars: number): Record<Inj
     ? {
       "core-system": 0.60,
       "core-message": 0.40,
-      "plugin-message": 0,
     }
     : {
       "core-system": 0.50,
       "core-message": 0.50,
-      "plugin-message": 0,
     }
 
   const system = Math.floor(capChars * ratioByChannel["core-system"])
-  const message = Math.floor(capChars * ratioByChannel["core-message"])
-  const plugin = Math.max(0, capChars - system - message)
+  const message = capChars - system
 
   return {
     "core-system": system,
     "core-message": message,
-    "plugin-message": plugin,
   }
 }
 
@@ -296,7 +282,6 @@ export function createTurnInjectionLedger(params: {
     usage_by_channel: {
       "core-system": 0,
       "core-message": 0,
-      "plugin-message": 0,
     },
     baseline_by_channel: baselineByChannel,
     created_at: now,
