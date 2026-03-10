@@ -8,6 +8,7 @@ import { createHiveOpsGateTool } from "../src/tools/hiveops-gate.js"
 import { createHiveOpsSotTool } from "../src/tools/hiveops-sot.js"
 import { createHiveOpsExportTool } from "../src/tools/hiveops-export.js"
 import { createHiveOpsTodoTool } from "../src/tools/hiveops-todo.js"
+import { readUnifiedStateSnapshot } from "../src/lib/state-snapshot.js"
 
 const mockContext = {
   sessionID: "test-session",
@@ -76,6 +77,22 @@ describe("hiveops tool isolation", () => {
 
   it("export tool writes handoff and checkpoint artifacts from src ownership", async () => {
     const toolDef = createHiveOpsExportTool(tmpDir)
+    const todoTool = createHiveOpsTodoTool(tmpDir)
+
+    await todoTool.execute(
+      { action: "add", content: "Checkpoint should use canonical tasks", priority: "high" },
+      mockContext,
+    )
+
+    await writeFile(
+      join(tmpDir, ".hivemind", "state", "todo.json"),
+      JSON.stringify({
+        items: [{ status: "pending", content: "STALE TODO PROJECTION" }],
+        version: 1,
+        lastSync: Date.now(),
+        activeItem: null,
+      }, null, 2),
+    )
 
     const handoffResult = await toolDef.execute(
       {
@@ -104,6 +121,12 @@ describe("hiveops tool isolation", () => {
 
     const checkpointFiles = await readdir(join(tmpDir, ".hivemind", "checkpoints"))
     assert.equal(checkpointFiles.some((file) => file.endsWith(".json")), true)
+
+    const checkpointPath = join(tmpDir, ".hivemind", "checkpoints", checkpointFiles[0])
+    const checkpointRaw = await readFile(checkpointPath, "utf8")
+    const checkpointParsed = JSON.parse(checkpointRaw) as { todoSnapshot: string }
+    assert.match(checkpointParsed.todoSnapshot, /Checkpoint should use canonical tasks/)
+    assert.doesNotMatch(checkpointParsed.todoSnapshot, /STALE TODO PROJECTION/)
   })
 
   it("todo tool persists canonical task authority and materializes todo.json as compatibility output", async () => {
@@ -152,5 +175,29 @@ describe("hiveops tool isolation", () => {
     assert.equal(graphParsed.tasks.length, 1)
     assert.equal(graphParsed.tasks[0].title, "Fix auth bug")
     assert.equal(graphParsed.tasks[0].status, "complete")
+  })
+
+  it("state snapshot reads canonical task authority instead of todo.json compatibility output", async () => {
+    const toolDef = createHiveOpsTodoTool(tmpDir)
+
+    await toolDef.execute(
+      { action: "add", content: "Canonical task view survives stale projections", priority: "medium" },
+      mockContext,
+    )
+
+    await writeFile(
+      join(tmpDir, ".hivemind", "state", "todo.json"),
+      JSON.stringify({
+        items: [{ status: "pending", content: "STALE TODO PROJECTION" }],
+        version: 1,
+        lastSync: Date.now(),
+        activeItem: null,
+      }, null, 2),
+    )
+
+    const snapshot = await readUnifiedStateSnapshot(tmpDir)
+    const taskState = snapshot.taskState as { tasks: Array<{ text: string }> }
+    assert.equal(taskState.tasks.length, 1)
+    assert.equal(taskState.tasks[0].text, "Canonical task view survives stale projections")
   })
 })

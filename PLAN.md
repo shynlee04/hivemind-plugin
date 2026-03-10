@@ -40,7 +40,7 @@ The following findings are accepted as validated enough to drive the refactor:
 3. `dist/` is the effective shipped runtime.
    Published installs execute `dist/**`, not `src/**`, so `src` vs `dist` drift is a real architectural risk.
 4. `.hivemind/` has split authority across runtime state, graph state, session records, planning artifacts, and compatibility stores.
-   Some of these are active, some are stale, and some are legacy/compatibility only.
+   Some of these are active, some are stale, and some are legacy/compatibility only. The TODO/task stream must now be regulated explicitly: `graph/tasks.json` is the global navigation/SOT surface, `state/tasks.json` is the materialized operational write model, `brain.offtrack_todo_pending` is the poisoning-survival quarantine lane, and `state/todo.json` is compatibility output only.
 5. Session identity is fragmented.
    Current behavior mixes runtime UUIDs, manifest stamps, session profile directories, and legacy JSON export identifiers.
 6. Mirror/parity checks are not reliable until owner/mirror roles are declared first.
@@ -284,10 +284,22 @@ Key audit findings driving P1 lanes:
 | No delegation router (DL-1) | `P1-C` | Build delegation router using lineage + intent |
 | Dual gate systems (GV-1) | `P1-C` | Consolidate `hiveops_gate.ts` → `gatekeeper.ts` |
 | Dual SOT systems (GV-2) | `P1-C` | Absorb `hiveops_sot.ts` under the `src` SOT governance umbrella; direct `.opencode` ownership of `sot-index.json` must end |
-| Dual TODO systems (GV-3) | `P1-C` | Replace `hiveops_todo.ts` with `src` task/planning authority; do not preserve `todo.json` as long-term runtime SOT |
+| Dual TODO systems (GV-3) | `P1-C`, `P1-D` | Freeze graph-sovereign TODO authority: `graph/tasks.json` is the global TODO SOT, `state/tasks.json` is the operational write model, `brain.offtrack_todo_pending` is the quarantine lane, and `todo.json` survives only as compatibility/export output |
 | 3 `.opencode/tool/` files write directly to `.hivemind/state/`; `hiveops_export.ts` reads state and writes handoff/checkpoint artifacts (GV-1–4 adjusted) | `P1-C`, `P1-D` | Isolate direct state writers first, then classify `hiveops_export.ts` separately as artifact-path debt |
 | Dead GX-Pack PLUGIN_MESSAGE_MARKERS (GV-6) | `P1-A` | Remove dead `plugin-message` channel |
 | Bootstrap HARD STOP fixed (GV-5) | `P1-A` | ✅ Completed — auto-run directive |
+
+#### Phase 1 TODO Authority Contract
+
+Phase 1 freezes the TODO/task sovereignty target as:
+
+1. `.hivemind/graph/tasks.json` = durable global TODO/navigation SOT
+2. `.hivemind/state/tasks.json` = canonical operational write model owned by `src/tools`
+3. `brain.offtrack_todo_pending` = contamination-resistant quarantine lane for deferred intent
+4. `.hivemind/state/todo.json` = compatibility/export-only projection
+5. OpenCode native todo = UI bridge only; never governance authority
+
+No future P1 cycle may treat `todo.json` or native OpenCode todo surfaces as primary runtime authority.
 
 #### Phase 1 Status Ledger
 
@@ -300,18 +312,20 @@ Key audit findings driving P1 lanes:
 - `P1-B` subset 1: Lineage classifier `classifyLineageScope()` added to `session-intent-classifier.ts`, wired into `event-handler.ts::ensureSessionCreatedBootstrap()` for canonical `state.session.lineage_scope` assignment — deterministic agent-name resolution (9 agents) + keyword fallback (2026-03-09)
 - Phase 1 investigation wave completed; findings are partially absorbed into `PLAN.md` and materialized in `docs/audits/phase1-audit-report-2026-03-08.md` as a re-verified dated reference artifact
 - `P1-C.1`: `.opencode/tool/*` isolation packet completed — `hiveops_gate.ts`, `hiveops_sot.ts`, and `hiveops_todo.ts` are frozen as direct `.hivemind/state` writer debt, while `hiveops_export.ts` is frozen as artifact-path debt; closest `src` ownership targets and wrapper-only conditions are recorded in `docs/plans/refactor/phase-1-p1-c-1-opencode-tool-isolation-packet-2026-03-10.md`
+- `P1-C.2a`: gate/SOT/export extraction landed — canonical `src/tools/` owners now exist for gate, SOT, and export behavior, and the legacy `.opencode/tool/` surfaces are reduced to compatibility wrappers only
+- `P1-C.2b` subset 1: TODO sovereignty lock landed — canonical task authority now routes through `src/tools/hiveops-todo.ts`, `state/tasks.json`, and `graph/tasks.json`; `state-snapshot.ts` and `hiveops-export.ts` now read canonical task authority instead of treating `todo.json` as runtime truth
 
 **Active**:
 
 - `P1-B` closeout: bootstrap/profile authority alignment remains unresolved — canonical brain-state lineage is classified on `session.created`, but session profile seeding still starts with `agent: "unresolved"` and must be frozen to one owner before `P1-B` can be treated as closed
-- `P1-C.2a`: gate/SOT/export extraction and wrapper demotion remain active — the clearest `.opencode/tool/*` classes are now frozen, but business logic and persistence authority have not yet moved into `src`
-- `P1-C.2b` / `P1-D.1`: TODO authority replacement remains active but is explicitly split from gate/SOT/export migration because task-state ownership is still entangled with the broader state-authority freeze
+- `P1-C.2b` / `P1-D.1`: TODO authority enrichment remains active — task sovereignty is now frozen, but lineage ownership, topology classification, parent/child-session survivability, and `.hivemind` ingress regulation are not yet encoded into the canonical task contract
 - `P1-D`: state-authority planning remains active; `.hivemind` state shape, bootstrap/profile ownership, and lineage-separated pathing are still unresolved
 
 **Next**:
 
-- `P1-C.2a`: aggressive refactor/migration cycle for gate/SOT/export logic into `src`-owned authority paths with `.opencode` reduced to thin wrappers or deleted surfaces where donor conditions fail
-- `P1-C.2b`: aggressive TODO authority replacement cycle to delete `hiveops_todo.ts` after rerouting task ownership into `src` planning / graph / session-memory surfaces and rejecting `todo.json` as long-term runtime SOT
+- `P1-C.2b`: lineage identity enrichment for canonical tasks — add durable ownership fields for lineage, agent, origin session, parent session, and session kind without restoring `todo.json` authority
+- `P1-C.2b`: workflow topology classification for canonical tasks — encode `parallel`, `dependent`, `independent`, `inter-dependent`, and `unclassified` into the surviving task contract
+- `P1-D.1`: aggressive `.hivemind` ingress regulation cycle — classify each state/artifact surface as `authority`, `projection`, `quarantine`, `evidence`, `archive`, or `compatibility`, and forbid projections from driving runtime decisions
 - `P1-D`: aggressive state-shape reconciliation between live `.hivemind` stores and current `BrainState` ownership
 - `P1-D`: aggressive lineage-separated state-path migration in `.hivemind/`
 - `P1-E`: Command/agent contract normalization
@@ -471,7 +485,7 @@ No new document may silently compete with `PLAN.md`.
 
 ## 11. Immediate Next Moves
 
-**Current cycle**: `P1-C.1` isolation freeze completed; prepare split aggressive migration slices
+**Current cycle**: `P1-C.2b` subset 1 completed; task sovereignty is now locked to canonical task authority and the next slices can attack lineage/topology/state regulation aggressively
 
 The current execution slice covers:
 
@@ -483,19 +497,30 @@ The current execution slice covers:
    - `hiveops_gate.ts`, `hiveops_sot.ts`, and `hiveops_todo.ts` are direct state-writer debt;
    - `hiveops_export.ts` is artifact-path debt coupled to state reads;
    - OpenCode-facing wrapper survival is allowed only as a temporary transport exception.
-4. Prepare the next aggressive execution slices with narrower ownership boundaries:
-   - `P1-C.2a` for gate/SOT/export extraction and wrapper demotion;
-   - `P1-C.2b` for TODO authority replacement aligned with `P1-D.1`;
+4. Freeze the graph-sovereign TODO contract in code:
+   - `.hivemind/graph/tasks.json` is the durable TODO/navigation SOT;
+   - `.hivemind/state/tasks.json` is the canonical write model owned by `src/tools`;
+   - `brain.offtrack_todo_pending` is the poisoning-survival quarantine lane;
+   - `.hivemind/state/todo.json` is compatibility/export output only.
+5. Carry the first aggressive TODO read cutover:
+   - `state-snapshot.ts` no longer reads `todo.json` as runtime truth;
+   - `hiveops-export.ts` now snapshots canonical task authority instead of the compatibility projection.
+6. Prepare the next aggressive execution slices with narrower ownership boundaries:
+   - `P1-C.2b` lineage identity enrichment;
+   - `P1-C.2b` workflow topology classification;
+   - `P1-D.1` `.hivemind` ingress regulation and state-authority freeze;
    - keep deletion bias as the default, not the exception.
 
 **Planned follow-on cycles** (each requires separate authorization):
 
-- `P1-C.2a` aggressive gate/SOT/export refactor cycle:
-  extract or rebuild accepted gate/SOT/export logic into `src`-owned authority paths, reduce `.opencode` surfaces to wrappers only where required by platform runtime, and delete donor surfaces that fail the donor conditions.
-- `P1-C.2b` aggressive TODO replacement cycle:
-  replace `hiveops_todo.ts` with `src` task/planning authority, reject `todo.json` as long-term runtime SOT, and delete the donor task silo after rerouting the surviving concepts.
-- `P1-D.1` aggressive state reconciliation cycle:
-  reconcile live `.hivemind` state shape, compatibility stores, and current `BrainState` expectations; freeze one write-authority model before path migration.
+- `P1-C.2b.a` lineage identity enrichment cycle:
+  add explicit task/session ownership fields for `lineage_owner`, `owner_agent`, `origin_session_id`, `parent_session_id`, and `session_kind`, while keeping `project | meta-framework` compatibility only as a temporary bridge.
+- `P1-C.2b.b` workflow topology classification cycle:
+  encode `parallel`, `dependent`, `independent`, `inter-dependent`, and `unclassified` into the canonical task contract so hooks, tools, and sub-sessions stop inferring topology ad hoc.
+- `P1-C.2b.c` main/sub-session survival cycle:
+  make child-session tasks explicit delegates of parent-linked canonical tasks instead of separate shadow TODO universes; main sessions keep global navigation authority while child sessions attach scoped outputs and evidence.
+- `P1-D.1` aggressive `.hivemind` ingress regulation cycle:
+  classify live state/artifact surfaces as `authority`, `projection`, `quarantine`, `evidence`, `archive`, or `compatibility`; forbid projection/compatibility files from driving runtime decisions; freeze the task-state ingress rules before the broader state-shape migration.
 - `P1-D.2` aggressive lineage migration cycle:
   implement lineage-separated state/session paths, resolve profile vs canonical state ownership, and remove the remaining `lineage` / `lineage_scope` ambiguity from active runtime stores.
 - `P1-E.1` command/agent normalization cycle:

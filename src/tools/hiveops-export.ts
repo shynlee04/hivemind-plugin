@@ -15,6 +15,7 @@ import { join } from "node:path"
 
 import { readManifest } from "../lib/manifest.js"
 import { getHiveOpsPaths } from "../lib/hiveops-paths.js"
+import { readCanonicalTaskAuthority, renderCanonicalTaskSnapshot } from "../lib/task-authority.js"
 
 interface HandoffPayload {
   id: string
@@ -187,8 +188,8 @@ export function createHiveOpsExportTool(fallbackDirectory: string): ToolDefiniti
 
           await ensureDir(paths.checkpointDir)
 
-          const todoState = await loadJson<{ items?: Array<{ status: string; content: string }> }>(paths.todoFile)
           const gateState = await loadJson<{ gates?: Array<{ gate: string; status: string }> }>(paths.gatesFile)
+          const taskAuthority = await readCanonicalTaskAuthority(projectRoot, context.sessionID || "unknown")
 
           const checkpoint: Checkpoint = {
             label: args.label,
@@ -196,7 +197,7 @@ export function createHiveOpsExportTool(fallbackDirectory: string): ToolDefiniti
             agent,
             planId: args.plan_id,
             nodeId: args.node_id,
-            todoSnapshot: JSON.stringify(todoState?.items?.map((item) => `${item.status}: ${item.content}`) || []),
+            todoSnapshot: JSON.stringify(renderCanonicalTaskSnapshot(taskAuthority.manifest)),
             gateSnapshot: JSON.stringify(gateState?.gates?.map((gate) => `${gate.gate}:${gate.status}`) || []),
             stateHash: Date.now().toString(36),
           }
