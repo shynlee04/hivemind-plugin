@@ -4,6 +4,15 @@
  * Centralized schema definitions for .hivemind manifests.
  */
 
+export type TaskLineageOwner = "hiveminder" | "hivefiver" | "unknown"
+export type TaskSessionKind = "main" | "sub" | "unresolved"
+export type TaskWorkflowTopology =
+  | "parallel"
+  | "dependent"
+  | "independent"
+  | "inter-dependent"
+  | "unclassified"
+
 export interface TaskItem {
   id: string
   text: string
@@ -34,6 +43,12 @@ export interface TaskItem {
   acceptance_criteria?: string[]
   recommended_skills?: string[]
   canonical_command?: string
+  lineage_owner?: TaskLineageOwner
+  owner_agent?: string
+  origin_session_id?: string
+  parent_session_id?: string
+  session_kind?: TaskSessionKind
+  workflow_topology?: TaskWorkflowTopology
   related_entities?: {
     session_id?: string
     plan_id?: string

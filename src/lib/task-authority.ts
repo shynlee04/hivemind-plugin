@@ -77,6 +77,12 @@ function manifestFromGraphTasks(graphTasks: GraphTasksState, sessionId: string):
       canonical_command: task.canonical_command,
       acceptance_criteria: task.acceptance_criteria,
       dependencies: task.dependencies,
+      lineage_owner: task.lineage_owner,
+      owner_agent: task.owner_agent,
+      origin_session_id: task.origin_session_id,
+      parent_session_id: task.parent_session_id ?? undefined,
+      session_kind: task.session_kind,
+      workflow_topology: task.workflow_topology,
       related_entities: task.related_entities,
     })),
   }

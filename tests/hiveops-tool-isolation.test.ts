@@ -9,6 +9,8 @@ import { createHiveOpsSotTool } from "../src/tools/hiveops-sot.js"
 import { createHiveOpsExportTool } from "../src/tools/hiveops-export.js"
 import { createHiveOpsTodoTool } from "../src/tools/hiveops-todo.js"
 import { readUnifiedStateSnapshot } from "../src/lib/state-snapshot.js"
+import { createStateManager } from "../src/lib/persistence.js"
+import { createConfig } from "../src/schemas/config.js"
 
 const mockContext = {
   sessionID: "test-session",
@@ -199,5 +201,123 @@ describe("hiveops tool isolation", () => {
     const taskState = snapshot.taskState as { tasks: Array<{ text: string }> }
     assert.equal(taskState.tasks.length, 1)
     assert.equal(taskState.tasks[0].text, "Canonical task view survives stale projections")
+  })
+
+  it("todo tool stamps canonical lineage ownership onto manual tasks", async () => {
+    const stateManager = createStateManager(tmpDir)
+    const state = await stateManager.initialize("11111111-1111-1111-1111-111111111111", createConfig())
+    await stateManager.save({
+      ...state,
+      session: {
+        ...state.session,
+        role: "hivefiver",
+        kind: "main",
+        lineage_scope: "meta-framework",
+        opencode_session_id: "tool-session-1",
+      },
+    })
+
+    const toolDef = createHiveOpsTodoTool(tmpDir)
+    await toolDef.execute(
+      { action: "add", content: "Ownership-bearing manual task", priority: "high" },
+      { ...mockContext, sessionID: "tool-session-1", agent: "hivefiver" },
+    )
+
+    const tasksRaw = await readFile(join(tmpDir, ".hivemind", "state", "tasks.json"), "utf8")
+    const tasksParsed = JSON.parse(tasksRaw) as {
+      tasks: Array<{
+        lineage_owner?: string
+        owner_agent?: string
+        origin_session_id?: string
+        session_kind?: string
+      }>
+    }
+
+    assert.equal(tasksParsed.tasks[0].lineage_owner, "hivefiver")
+    assert.equal(tasksParsed.tasks[0].owner_agent, "hivefiver")
+    assert.equal(tasksParsed.tasks[0].origin_session_id, "11111111-1111-1111-1111-111111111111")
+    assert.equal(tasksParsed.tasks[0].session_kind, "main")
+
+    const graphRaw = await readFile(join(tmpDir, ".hivemind", "graph", "tasks.json"), "utf8")
+    const graphParsed = JSON.parse(graphRaw) as {
+      tasks: Array<{
+        lineage_owner?: string
+        owner_agent?: string
+        origin_session_id?: string
+        session_kind?: string
+      }>
+    }
+
+    assert.equal(graphParsed.tasks[0].lineage_owner, "hivefiver")
+    assert.equal(graphParsed.tasks[0].owner_agent, "hivefiver")
+    assert.equal(graphParsed.tasks[0].origin_session_id, "11111111-1111-1111-1111-111111111111")
+    assert.equal(graphParsed.tasks[0].session_kind, "main")
+  })
+
+  it("todo tool defaults workflow topology to unclassified and syncs it to graph", async () => {
+    const toolDef = createHiveOpsTodoTool(tmpDir)
+
+    await toolDef.execute(
+      { action: "add", content: "Topology default task", priority: "medium" },
+      mockContext,
+    )
+
+    const tasksRaw = await readFile(join(tmpDir, ".hivemind", "state", "tasks.json"), "utf8")
+    const tasksParsed = JSON.parse(tasksRaw) as {
+      tasks: Array<{ text: string; workflow_topology?: string }>
+    }
+    assert.equal(tasksParsed.tasks[0].text, "Topology default task")
+    assert.equal(tasksParsed.tasks[0].workflow_topology, "unclassified")
+
+    const graphRaw = await readFile(join(tmpDir, ".hivemind", "graph", "tasks.json"), "utf8")
+    const graphParsed = JSON.parse(graphRaw) as {
+      tasks: Array<{ title: string; workflow_topology?: string }>
+    }
+    assert.equal(graphParsed.tasks[0].title, "Topology default task")
+    assert.equal(graphParsed.tasks[0].workflow_topology, "unclassified")
+  })
+
+  it("todo tool auto-upgrades workflow topology to dependent and shows it in deps output", async () => {
+    const toolDef = createHiveOpsTodoTool(tmpDir)
+
+    await toolDef.execute(
+      { action: "add", content: "Root topology task", priority: "medium" },
+      mockContext,
+    )
+
+    const rootTasksRaw = await readFile(join(tmpDir, ".hivemind", "state", "tasks.json"), "utf8")
+    const rootTasksParsed = JSON.parse(rootTasksRaw) as {
+      tasks: Array<{ id: string }>
+    }
+    const rootTaskId = rootTasksParsed.tasks[0].id
+
+    await toolDef.execute(
+      {
+        action: "add",
+        content: "Dependent topology task",
+        priority: "high",
+        depends_on: rootTaskId,
+      },
+      mockContext,
+    )
+
+    const tasksRaw = await readFile(join(tmpDir, ".hivemind", "state", "tasks.json"), "utf8")
+    const tasksParsed = JSON.parse(tasksRaw) as {
+      tasks: Array<{ id: string; text: string; workflow_topology?: string }>
+    }
+    const dependentTask = tasksParsed.tasks.find((task) => task.text === "Dependent topology task")
+    assert.ok(dependentTask, "expected dependent task to be present in state/tasks.json")
+    assert.equal(dependentTask?.workflow_topology, "dependent")
+
+    const graphRaw = await readFile(join(tmpDir, ".hivemind", "graph", "tasks.json"), "utf8")
+    const graphParsed = JSON.parse(graphRaw) as {
+      tasks: Array<{ title: string; workflow_topology?: string }>
+    }
+    const dependentGraphTask = graphParsed.tasks.find((task) => task.title === "Dependent topology task")
+    assert.ok(dependentGraphTask, "expected dependent task to be present in graph/tasks.json")
+    assert.equal(dependentGraphTask?.workflow_topology, "dependent")
+
+    const depsOutput = await toolDef.execute({ action: "deps", id: dependentTask!.id }, mockContext)
+    assert.match(String(depsOutput), /Topology: dependent/)
   })
 })

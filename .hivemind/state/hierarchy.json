@@ -1,11 +1,15 @@
 {
-  "trajectory": {
-    "id": "7cc82e48-84e2-4cf2-9296-51b246a716a5",
-    "status": "awaiting_intent",
-    "content": "Awaiting user intent",
-    "createdAt": "2026-03-09T17:38:28.606Z"
-  },
-  "tactics": [],
-  "actions": [],
-  "version": "2.8.5"
+  "version": 2,
+  "root": null,
+  "cursor": null,
+  "branches": [
+    {
+      "name": "main",
+      "cursor_id": null,
+      "created": 1773241317901,
+      "last_active": 1773241317901,
+      "status": "active"
+    }
+  ],
+  "primary_branch": "main"
 }

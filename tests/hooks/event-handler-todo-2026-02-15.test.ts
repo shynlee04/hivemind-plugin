@@ -194,6 +194,93 @@ describe("US-004: Event Handler - todo.updated", () => {
     assert.equal(typeof parsed.tasks[0].related_entities.workflow_id, "string");
   });
 
+  it("stamps canonical task ownership from active runtime state during todo.updated ingestion", async () => {
+    const ownershipDir = await mkdtemp(join(tmpdir(), "hivemind-test-us004-ownership-"));
+    try {
+      await initProject(ownershipDir, { governanceMode: "assisted", language: "en", silent: true });
+      const stateManager = createStateManager(ownershipDir);
+      const state = await stateManager.load();
+      assert.ok(state, "precondition: brain state should exist after init");
+
+      await stateManager.save({
+        ...state!,
+        session: {
+          ...state!.session,
+          id: "22222222-2222-2222-2222-222222222222",
+          role: "hivefiver",
+          kind: "main",
+          lineage_scope: "meta-framework",
+          opencode_session_id: "ownership-opencode-session",
+        },
+      });
+
+      const handler = createEventHandler(noopLogger, ownershipDir);
+      await handler({
+        event: {
+          type: "todo.updated",
+          properties: {
+            sessionID: "ownership-opencode-session",
+            todos: [{ id: "owned-1", content: "Ownership check task", status: "pending" }],
+          },
+        } as any,
+      });
+      await flushTaskManifestMutations();
+
+      const tasksRaw = await readFile(getEffectivePaths(ownershipDir).tasks, "utf-8");
+      const tasksParsed = JSON.parse(tasksRaw);
+
+      assert.equal(tasksParsed.tasks[0].lineage_owner, "hivefiver");
+      assert.equal(tasksParsed.tasks[0].owner_agent, "hivefiver");
+      assert.equal(tasksParsed.tasks[0].origin_session_id, "22222222-2222-2222-2222-222222222222");
+      assert.equal(tasksParsed.tasks[0].session_kind, "main");
+
+      const graphRaw = await readFile(getEffectivePaths(ownershipDir).graphTasks, "utf-8");
+      const graphParsed = JSON.parse(graphRaw);
+      const ownedGraphTask = graphParsed.tasks.find((task: { title?: string }) => task.title === "Ownership check task");
+      assert.ok(ownedGraphTask, "expected ownership task to be present in graph/tasks.json");
+      assert.equal(ownedGraphTask.lineage_owner, "hivefiver");
+      assert.equal(ownedGraphTask.owner_agent, "hivefiver");
+      assert.equal(ownedGraphTask.origin_session_id, "22222222-2222-2222-2222-222222222222");
+      assert.equal(ownedGraphTask.session_kind, "main");
+    } finally {
+      await rm(ownershipDir, { recursive: true, force: true });
+    }
+  });
+
+  it("preserves inbound workflow topology and defaults missing topology to unclassified", async () => {
+    const tasksPath = getEffectivePaths(tempDir).tasks;
+    await rm(tasksPath, { force: true });
+
+    const handler = createEventHandler(noopLogger, tempDir);
+    await handler({
+      event: {
+        type: "todo.updated",
+        properties: {
+          sessionID: "sess-topology-1",
+          todos: [
+            { id: "topology-explicit", content: "Parallel task", workflowTopology: "parallel" },
+            { id: "topology-default", content: "Default topology task" },
+          ],
+        },
+      } as any,
+    });
+    await flushTaskManifestMutations();
+
+    const tasksRaw = await readFile(tasksPath, "utf-8");
+    const tasksParsed = JSON.parse(tasksRaw);
+    const explicitTask = tasksParsed.tasks.find((task: { id: string }) => task.id === "topology-explicit");
+    const defaultTask = tasksParsed.tasks.find((task: { id: string }) => task.id === "topology-default");
+    assert.equal(explicitTask.workflow_topology, "parallel");
+    assert.equal(defaultTask.workflow_topology, "unclassified");
+
+    const graphRaw = await readFile(getEffectivePaths(tempDir).graphTasks, "utf-8");
+    const graphParsed = JSON.parse(graphRaw);
+    const explicitGraphTask = graphParsed.tasks.find((task: { title: string }) => task.title === "Parallel task");
+    const defaultGraphTask = graphParsed.tasks.find((task: { title: string }) => task.title === "Default topology task");
+    assert.equal(explicitGraphTask.workflow_topology, "parallel");
+    assert.equal(defaultGraphTask.workflow_topology, "unclassified");
+  });
+
   it("RED: unsafe todo shapes should be normalized without dropping the entire batch", async () => {
     const tasksPath = getEffectivePaths(tempDir).tasks;
     await rm(tasksPath, { force: true });
@@ -290,6 +377,39 @@ describe("US-004: Event Handler - todo.updated", () => {
     assert.ok(parsed.tasks[0].permission_prompt.includes("/hivefiver build"));
     assert.equal(Array.isArray(parsed.tasks[0].next_step_menu), true);
     assert.ok(parsed.tasks[0].next_step_menu[0].requiresPermission);
+  });
+
+  it("keeps inbound dependency-only tasks unclassified unless topology is explicit", async () => {
+    const tasksPath = getEffectivePaths(tempDir).tasks;
+    await rm(tasksPath, { force: true });
+
+    const handler = createEventHandler(noopLogger, tempDir);
+    const event = {
+      type: "todo.updated",
+      properties: {
+        sessionID: "sess-topology-1",
+        todos: [
+          {
+            id: "topology-1",
+            content: "Parallelized review task",
+            workflowTopology: "parallel",
+          },
+          {
+            id: "topology-2",
+            content: "Dependency-only task",
+            dependencyIds: ["topology-1"],
+          },
+        ],
+      },
+    };
+
+    await handler({ event: event as any });
+    await flushTaskManifestMutations();
+
+    const content = await readFile(tasksPath, "utf-8");
+    const parsed = JSON.parse(content);
+    assert.equal(parsed.tasks[0].workflow_topology, "parallel");
+    assert.equal(parsed.tasks[1].workflow_topology, "unclassified");
   });
 
   it("RED: todo manifest session_id should align to active runtime session when event sessionID drifts", async () => {

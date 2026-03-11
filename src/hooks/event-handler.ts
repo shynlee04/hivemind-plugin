@@ -33,10 +33,13 @@ import { registerGovernanceSignal } from "../lib/detection.js"
 import { queueStateMutation, queueTaskManifestMutation } from "../lib/state-mutation-queue.js"
 import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
 import { resolveCanonicalSessionId } from "../lib/graph-io.js"
+import { resolveRuntimeSessionLineage } from "../lib/runtime-session-lineage.js"
 import { getSessionPaths } from "../lib/paths.js"
 import { createTree, saveTree, treeExists } from "../lib/hierarchy-tree.js"
 import { generateSessionId } from "../schemas/brain-state.js"
 import { classifyLineageScope } from "../lib/session-intent-classifier.js"
+import { normalizeTaskLineageOwner, normalizeTaskSessionKind, resolveTaskOwnershipContext } from "../lib/task-ownership.js"
+import { normalizeTaskWorkflowTopology } from "../lib/task-topology.js"
 
 function normalizeStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) {
@@ -255,7 +258,7 @@ async function ensureSessionCreatedBootstrap(
  *
  * @param log Logger used for event observability.
  * @param directory Project root used to resolve .hivemind paths and state.
- * @returns Event hook that handles session lifecycle side effects safely.
+ * @returns Event hook that handles session lifecycle side effects safely, including canonical TODO/task ingestion.
  */
 export function createEventHandler(log: Logger, directory: string) {
   const stateManager = createStateManager(directory)
@@ -365,6 +368,26 @@ export function createEventHandler(log: Logger, directory: string) {
               : undefined
           const manifestSessionId = runtimeSessionId || eventSessionID
           const canonicalRelatedSessionId = await resolveCanonicalSessionId(directory, manifestSessionId)
+          const runtimeLineage = await resolveRuntimeSessionLineage(
+            typeof evt.properties?.sessionID === "string" && evt.properties.sessionID.length > 0
+              ? evt.properties.sessionID
+              : state?.session?.opencode_session_id,
+          )
+          const canonicalParentSessionId = runtimeLineage.parentID
+            ? await resolveCanonicalSessionId(directory, runtimeLineage.parentID)
+            : undefined
+          const ownership = resolveTaskOwnershipContext({
+            ownerAgent: state?.session?.role,
+            lineageScope: state?.session?.lineage_scope,
+            originSessionId: canonicalRelatedSessionId,
+            parentSessionId: canonicalParentSessionId,
+            sessionKind:
+              state?.session?.kind && state.session.kind !== "unresolved"
+                ? state.session.kind
+                : runtimeLineage.isChildSession
+                  ? "sub"
+                  : undefined,
+          })
           await log.debug(`[event] todo.updated: ${eventSessionID}`)
 
           if (rawTodos.length > 0) {
@@ -425,6 +448,10 @@ export function createEventHandler(log: Logger, directory: string) {
                   pickNextStepMenu(todoRecord, ["next_step_menu", "nextStepMenu"]) ||
                   realignment.nextStepMenu,
                 dependencies: pickStringArray(todoRecord, ["dependencies", "dependency_ids", "dependencyIds"]),
+                workflow_topology:
+                  normalizeTaskWorkflowTopology(
+                    pickString(todoRecord, ["workflow_topology", "workflowTopology"]),
+                  ) || "unclassified",
                 acceptance_criteria: pickStringArray(todoRecord, ["acceptance_criteria", "acceptanceCriteria"]),
                 recommended_skills:
                   pickStringArray(todoRecord, ["recommended_skills", "recommendedSkills"]) ||
@@ -432,6 +459,20 @@ export function createEventHandler(log: Logger, directory: string) {
                 canonical_command:
                   pickString(todoRecord, ["canonical_command", "canonicalCommand"]) ||
                   (realignment.shouldRealign ? realignment.recommendedCommand : undefined),
+                lineage_owner:
+                  normalizeTaskLineageOwner(pickString(todoRecord, ["lineage_owner", "lineageOwner"])) ||
+                  ownership.lineage_owner,
+                owner_agent:
+                  pickString(todoRecord, ["owner_agent", "ownerAgent"]) || ownership.owner_agent,
+                origin_session_id:
+                  pickString(todoRecord, ["origin_session_id", "originSessionId"]) ||
+                  ownership.origin_session_id,
+                parent_session_id:
+                  pickString(todoRecord, ["parent_session_id", "parentSessionId"]) ||
+                  ownership.parent_session_id,
+                session_kind:
+                  normalizeTaskSessionKind(pickString(todoRecord, ["session_kind", "sessionKind"])) ||
+                  ownership.session_kind,
                 related_entities: {
                   session_id: canonicalRelatedSessionId,
                   plan_id:

@@ -151,6 +151,14 @@ export const TaskNodeSchema = z.object({
   validation_attempts: z.number().optional(),
   max_validation_attempts: z.number().optional(),
   evidence_confidence: z.enum(["full", "partial", "low"]).optional(),
+  lineage_owner: z.enum(["hiveminder", "hivefiver", "unknown"]).optional(),
+  owner_agent: z.string().optional(),
+  origin_session_id: z.string().optional(),
+  parent_session_id: z.string().nullable().optional(),
+  session_kind: z.enum(["main", "sub", "unresolved"]).optional(),
+  workflow_topology: z
+    .enum(["parallel", "dependent", "independent", "inter-dependent", "unclassified"])
+    .optional(),
   related_entities: z.record(z.string(), z.string()).optional(),
 });
 

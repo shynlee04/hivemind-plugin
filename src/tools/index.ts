@@ -16,7 +16,7 @@
  * | hivemind_read_skeleton | extract code skeleton                        | ASTSurgeon.extractSkeleton      |
  * | hivemind_precision_patch | patch symbol by name                      | ASTSurgeon.patchSymbol          |
  * | hivemind_mesh_pull  | blast radius + skeleton aggregation           | LSPBridge + ASTSurgeon          |
- * | hivemind_doc_weaver | patch markdown section by heading             | DocWeaver.patchSection          |
+ * | hivemind_doc        | skim, read, write, append, insert, delete, search, list, metadata, toc, create | DocWeaver + doc-intel |
  * | hivemind_declare    | declare role, mode, context, confidence       | Agent declaration runtime       |
  * | hivemind_plan       | create, status, update, validate, link         | Plan hierarchy management       |
  */
@@ -34,7 +34,7 @@ export { createHivemindIdeateTool } from "./hivemind-ideate.js"
 export { createHivemindReadSkeletonTool } from "./hivemind-read-skeleton.js"
 export { createHivemindPrecisionPatchTool } from "./hivemind-precision-patch.js"
 export { createHivemindMeshPullTool } from "./hivemind-mesh-pull.js"
-export { createHivemindDocWeaverTool } from "./hivemind-doc-weaver.js"
+export { createHivemindDocTool } from "./hivemind-doc.js"
 export { createHivemindDeclareTool } from "./hivemind-declare.js"
 export { createHivemindPlanTool } from "./hivemind-plan.js"
 export { createHivemindBootstrapTool } from "./hivemind-bootstrap.js"

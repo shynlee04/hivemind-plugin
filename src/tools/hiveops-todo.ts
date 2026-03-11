@@ -17,8 +17,12 @@ import { createStateManager } from "../lib/persistence.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { getHiveOpsPaths } from "../lib/hiveops-paths.js"
 import { readManifest, writeManifest } from "../lib/manifest.js"
+import { resolveCanonicalSessionId } from "../lib/graph-io.js"
+import { resolveRuntimeSessionLineage } from "../lib/runtime-session-lineage.js"
+import { resolveTaskOwnershipContext, type TaskOwnershipContext } from "../lib/task-ownership.js"
+import { normalizeTaskWorkflowTopology, resolveTaskWorkflowTopology } from "../lib/task-topology.js"
 import { flushMutations, flushTaskManifestMutations, queueTaskManifestMutation } from "../lib/state-mutation-queue.js"
-import type { TaskManifest, TaskItem } from "../schemas/manifest.js"
+import type { TaskManifest, TaskItem, TaskWorkflowTopology } from "../schemas/manifest.js"
 
 type HiveOpsTodoAction = "add" | "complete" | "start" | "block" | "cancel" | "list" | "deps" | "export"
 
@@ -32,6 +36,7 @@ interface LegacyTodoItem {
   hierarchy_node_id?: string
   depends_on: string[]
   blocks: string[]
+  workflow_topology?: TaskWorkflowTopology
   domain?: string
   plan_id?: string
   evidence?: string
@@ -94,6 +99,10 @@ function materializeLegacyTodoState(manifest: TaskManifest): LegacyTodoState {
         : undefined,
     depends_on: Array.isArray(task.dependencies) ? [...task.dependencies] : [],
     blocks: [],
+    workflow_topology: resolveTaskWorkflowTopology({
+      workflowTopology: task.workflow_topology,
+      dependencies: task.dependencies,
+    }),
     domain: typeof task.domain === "string" ? task.domain : undefined,
     plan_id:
       typeof task.related_entities?.plan_id === "string"
@@ -201,34 +210,69 @@ function generateTaskId(): string {
 }
 
 /**
- * Resolve the active session ID if one exists, otherwise fall back to the tool
- * call context or a deterministic placeholder.
+ * Render workflow topology in a compact user-facing label.
+ *
+ * @param workflowTopology - Canonical workflow topology.
+ * @returns Short label for list/dependency displays.
+ */
+function formatWorkflowTopology(workflowTopology?: TaskWorkflowTopology): string {
+  return `[${workflowTopology ?? "unclassified"}]`
+}
+
+/**
+ * Resolve the canonical session identifier and ownership context for manual
+ * task creation without allowing compatibility surfaces to become task
+ * authority.
  *
  * @param directory - Project root used to read runtime state.
  * @param contextSessionId - Session identifier supplied by the tool context.
- * @returns Session identifier used for canonical task authority.
+ * @param contextAgent - Agent name supplied by the tool context.
+ * @returns Session identifier plus canonical task ownership metadata.
  */
-async function resolveSessionId(directory: string, contextSessionId?: string): Promise<string> {
+async function resolveTaskSessionContext(
+  directory: string,
+  contextSessionId?: string,
+  contextAgent?: string,
+): Promise<{ sessionId: string; ownership: TaskOwnershipContext }> {
   const stateManager = createStateManager(directory)
   await flushMutations(stateManager)
   const state = await stateManager.load()
+  const sessionId =
+    state?.session?.id ||
+    (contextSessionId && contextSessionId.trim().length > 0 ? contextSessionId : undefined) ||
+    DEFAULT_SESSION_ID
 
-  if (state?.session?.id) {
-    return state.session.id
+  const runtimeSessionId =
+    (contextSessionId && contextSessionId.trim().length > 0 ? contextSessionId.trim() : undefined) ||
+    state?.session?.opencode_session_id ||
+    undefined
+  const runtimeLineage = await resolveRuntimeSessionLineage(runtimeSessionId)
+  const parentSessionId = runtimeLineage.parentID
+    ? await resolveCanonicalSessionId(directory, runtimeLineage.parentID)
+    : undefined
+
+  return {
+    sessionId,
+    ownership: resolveTaskOwnershipContext({
+      ownerAgent: state?.session?.role || contextAgent,
+      lineageScope: state?.session?.lineage_scope,
+      originSessionId: state?.session?.id || sessionId,
+      parentSessionId,
+      sessionKind:
+        state?.session?.kind && state.session.kind !== "unresolved"
+          ? state.session.kind
+          : runtimeLineage.isChildSession
+            ? "sub"
+            : undefined,
+    }),
   }
-
-  if (contextSessionId && contextSessionId.trim().length > 0) {
-    return contextSessionId
-  }
-
-  return DEFAULT_SESSION_ID
 }
 
 /**
  * Render a human-readable TODO list from the canonical task manifest.
  *
  * @param manifest - Canonical task manifest.
- * @returns Legacy-compatible list output.
+ * @returns Topology-enriched task list output.
  */
 function renderTodoList(manifest: TaskManifest): string {
   if (manifest.tasks.length === 0) return "No TODO items."
@@ -241,7 +285,13 @@ function renderTodoList(manifest: TaskManifest): string {
       const deps = item.depends_on.length > 0 ? ` [deps: ${item.depends_on.join(",")}]` : ""
       const domain = item.domain ? ` (${item.domain})` : ""
       const plan = item.plan_id ? ` [plan:${item.plan_id}]` : ""
-      return `[${status}] ${item.id} [${item.priority}]${domain}${plan} — ${item.content}${deps}`
+      const topology = formatWorkflowTopology(
+        resolveTaskWorkflowTopology({
+          workflowTopology: manifest.tasks.find((task) => task.id === item.id)?.workflow_topology,
+          dependencies: manifest.tasks.find((task) => task.id === item.id)?.dependencies,
+        }),
+      )
+      return `[${status}] ${item.id} [${item.priority}] ${topology}${domain}${plan} — ${item.content}${deps}`
     })
 
   const pending = items.items.filter((item) => item.status === "pending").length
@@ -275,12 +325,16 @@ export function createHiveOpsTodoTool(fallbackDirectory: string): ToolDefinition
       domain: tool.schema.string().optional().describe("Domain tag (R1-R8)"),
       plan_id: tool.schema.string().optional().describe("Plan lineage ID (e.g. META01, PROJ01-SUB01)"),
       depends_on: tool.schema.string().optional().describe("Comma-separated dependency task IDs"),
+      topology: tool.schema
+        .enum(["parallel", "dependent", "independent", "inter-dependent", "unclassified"])
+        .optional()
+        .describe("Workflow topology classification for the task"),
       evidence: tool.schema.string().optional().describe("Evidence for completion"),
       hierarchy_node: tool.schema.string().optional().describe("Linked hierarchy node ID"),
     },
     async execute(args, context) {
       const directory = context.directory || fallbackDirectory || "."
-      const sessionId = await resolveSessionId(directory, context.sessionID)
+      const { sessionId, ownership } = await resolveTaskSessionContext(directory, context.sessionID, context.agent)
       const manifest = await loadTaskAuthority(directory, sessionId)
 
       switch (args.action as HiveOpsTodoAction) {
@@ -300,6 +354,14 @@ export function createHiveOpsTodoTool(fallbackDirectory: string): ToolDefinition
             )
           }
 
+          const dependencies = args.depends_on
+            ? args.depends_on.split(",").map((value) => value.trim()).filter(Boolean)
+            : []
+          const workflowTopology = resolveTaskWorkflowTopology({
+            workflowTopology: normalizeTaskWorkflowTopology(args.topology),
+            dependencies,
+          })
+
           const item: TaskItem = {
             id: generateTaskId(),
             text: args.content,
@@ -307,8 +369,14 @@ export function createHiveOpsTodoTool(fallbackDirectory: string): ToolDefinition
             priority: args.priority || "medium",
             domain: args.domain,
             source: "manual",
-            dependencies: args.depends_on ? args.depends_on.split(",").map((value) => value.trim()).filter(Boolean) : [],
+            dependencies,
             created_at: Date.now(),
+            lineage_owner: ownership.lineage_owner,
+            owner_agent: ownership.owner_agent,
+            origin_session_id: ownership.origin_session_id,
+            parent_session_id: ownership.parent_session_id,
+            session_kind: ownership.session_kind,
+            workflow_topology: workflowTopology,
             related_entities: {
               session_id: sessionId,
               plan_id: args.plan_id,
@@ -319,7 +387,9 @@ export function createHiveOpsTodoTool(fallbackDirectory: string): ToolDefinition
           manifest.tasks.push(item)
           await saveTaskAuthority(directory, manifest)
 
-          let message = `Added: ${item.id} — "${item.text}" [${item.priority}]${item.domain ? ` (${item.domain})` : ""}${args.plan_id ? ` [plan:${args.plan_id}]` : ""}`
+          let message =
+            `Added: ${item.id} — "${item.text}" [${item.priority}] ${formatWorkflowTopology(item.workflow_topology)}` +
+            `${item.domain ? ` (${item.domain})` : ""}${args.plan_id ? ` [plan:${args.plan_id}]` : ""}`
           const hasHardStop = manifest.tasks.some((task) => task.text.startsWith("HARD STOP"))
           if (!hasHardStop && activeItems.length >= 3) {
             message += "\n⚠️ WARNING: No HARD STOP item exists. Add one as the last TODO item."
@@ -410,7 +480,7 @@ export function createHiveOpsTodoTool(fallbackDirectory: string): ToolDefinition
               const downstream = manifest.tasks
                 .filter((task) => (task.dependencies ?? []).includes(root.id))
                 .map((task) => task.text)
-              return `${root.id}: "${root.text}" → [${downstream.join(", ")}]`
+              return `${root.id} ${formatWorkflowTopology(root.workflow_topology)}: "${root.text}" → [${downstream.join(", ")}]`
             })
             return `Dependency roots:\n${lines.join("\n")}`
           }
@@ -425,6 +495,7 @@ export function createHiveOpsTodoTool(fallbackDirectory: string): ToolDefinition
 
           return [
             `Task: ${item.id} — "${item.text}"`,
+            `Topology: ${item.workflow_topology ?? "unclassified"}`,
             `Upstream: [${upstream.join(", ") || "none"}]`,
             `Downstream: [${downstream.join(", ") || "none"}]`,
           ].join("\n")

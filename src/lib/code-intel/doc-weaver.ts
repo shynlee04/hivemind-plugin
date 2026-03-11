@@ -18,7 +18,13 @@ export interface DocumentChunk {
   tokenEstimate: number
 }
 
-function estimateTokens(content: string): number {
+/**
+ * Estimate the number of LLM tokens for a given string (rough ~4 chars/token).
+ *
+ * @param content - Raw text content.
+ * @returns Estimated token count (minimum 1).
+ */
+export function estimateTokens(content: string): number {
   return Math.max(1, Math.ceil(content.length / 4))
 }
 
@@ -36,7 +42,86 @@ function normalizeSectionBody(newContent: string): string {
   return `\n${trimmed}\n\n`
 }
 
+// ─── Frontmatter Helpers ──────────────────────────────────────────────────────
+
+const FRONTMATTER_REGEX = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/
+
+/**
+ * Parse YAML frontmatter into a key/value record.
+ * Only handles simple single-line `key: value` pairs (no nested YAML).
+ *
+ * @param raw - The raw frontmatter body between the `---` fences.
+ * @returns Parsed key/value record.
+ */
+function parseFrontmatter(raw: string): Record<string, string> {
+  const result: Record<string, string> = {}
+  for (const line of raw.split(/\r?\n/)) {
+    const match = line.match(/^([^:]+):\s*(.*)$/)
+    if (match) {
+      result[match[1].trim()] = match[2].trim()
+    }
+  }
+  return result
+}
+
+/**
+ * Serialize a key/value record into YAML frontmatter format.
+ *
+ * @param metadata - Key/value record to serialize.
+ * @returns Frontmatter string including the `---` fences.
+ */
+function serializeFrontmatter(metadata: Record<string, string>): string {
+  const lines = Object.entries(metadata).map(([key, value]) => `${key}: ${value}`)
+  return `---\n${lines.join("\n")}\n---\n`
+}
+
+// ─── Section Boundary Resolution ──────────────────────────────────────────────
+
+interface SectionBoundary {
+  headingStart: number
+  bodyStart: number
+  sectionEnd: number
+  depth: number
+}
+
+/**
+ * Find the offset boundaries of a section identified by heading text.
+ *
+ * @param content - Full document content.
+ * @param heading - Exact heading text to find.
+ * @returns Section boundaries or null if the heading is not found.
+ */
+function findSectionBoundary(content: string, heading: string): SectionBoundary | null {
+  const tree = remark().parse(content) as Root
+  const headings = tree.children
+    .filter((node): node is Heading => node.type === "heading")
+    .map((node) => ({ node, text: headingText(node) }))
+
+  const idx = headings.findIndex((entry) => entry.text === heading)
+  if (idx === -1) return null
+
+  const current = headings[idx]
+  const headingStart = current.node.position?.start.offset ?? 0
+  const bodyStart = current.node.position?.end.offset ?? headingStart
+  let sectionEnd = content.length
+
+  for (let i = idx + 1; i < headings.length; i++) {
+    if (headings[i].node.depth <= current.node.depth) {
+      sectionEnd = headings[i].node.position?.start.offset ?? sectionEnd
+      break
+    }
+  }
+
+  return { headingStart, bodyStart, sectionEnd, depth: current.node.depth }
+}
+
 export class DocWeaver {
+  /**
+   * Parse document content into a heading hierarchy tree.
+   *
+   * @param content - Raw markdown content.
+   * @returns Nested heading hierarchy with line numbers.
+   */
   readOutline(content: string): HeadingHierarchy[] {
     const tree = remark().parse(content) as Root
     const result: HeadingHierarchy[] = []
@@ -66,33 +151,132 @@ export class DocWeaver {
     return result
   }
 
+  /**
+   * Replace the body of a section identified by heading text.
+   *
+   * @param content - Full document content.
+   * @param heading - Exact heading text to target.
+   * @param newContent - Replacement section body.
+   * @returns Modified document content, or the original if heading not found.
+   */
   patchSection(content: string, heading: string, newContent: string): string {
-    const tree = remark().parse(content) as Root
-    const headings = tree.children
-      .filter((node): node is Heading => node.type === "heading")
-      .map((node) => ({ node, text: headingText(node) }))
+    const boundary = findSectionBoundary(content, heading)
+    if (!boundary) return content
 
-    const currentIndex = headings.findIndex((entry) => entry.text === heading)
-    if (currentIndex === -1) return content
-
-    const current = headings[currentIndex]
-    const currentStart = current.node.position?.start.offset ?? 0
-    const sectionBodyStart = current.node.position?.end.offset ?? currentStart
-    let sectionEnd = content.length
-
-    for (let i = currentIndex + 1; i < headings.length; i++) {
-      const candidate = headings[i]
-      if (candidate.node.depth <= current.node.depth) {
-        sectionEnd = candidate.node.position?.start.offset ?? sectionEnd
-        break
-      }
-    }
-
-    const headingLine = content.slice(currentStart, sectionBodyStart)
+    const headingLine = content.slice(boundary.headingStart, boundary.bodyStart)
     const patchedBody = normalizeSectionBody(newContent)
-    return `${content.slice(0, currentStart)}${headingLine}${patchedBody}${content.slice(sectionEnd)}`
+    return `${content.slice(0, boundary.headingStart)}${headingLine}${patchedBody}${content.slice(boundary.sectionEnd)}`
   }
 
+  /**
+   * Read the body content of a section identified by heading text.
+   *
+   * @param content - Full document content.
+   * @param heading - Exact heading text to target.
+   * @returns Section body text (without the heading line), or null if not found.
+   */
+  readSectionContent(content: string, heading: string): string | null {
+    const boundary = findSectionBoundary(content, heading)
+    if (!boundary) return null
+    return content.slice(boundary.bodyStart, boundary.sectionEnd).trim()
+  }
+
+  /**
+   * Append content to the end of a section body without replacing existing content.
+   *
+   * @param content - Full document content.
+   * @param heading - Exact heading text to target.
+   * @param appendContent - Content to append to the section body.
+   * @returns Modified document content, or the original if heading not found.
+   */
+  appendToSection(content: string, heading: string, appendContent: string): string {
+    const boundary = findSectionBoundary(content, heading)
+    if (!boundary) return content
+
+    const existingBody = content.slice(boundary.bodyStart, boundary.sectionEnd)
+    const trimmedExisting = existingBody.trimEnd()
+    const trimmedAppend = appendContent.trim()
+    if (!trimmedAppend) return content
+
+    const headingLine = content.slice(boundary.headingStart, boundary.bodyStart)
+    const mergedBody = trimmedExisting.length > 0
+      ? `\n${trimmedExisting}\n\n${trimmedAppend}\n\n`
+      : `\n${trimmedAppend}\n\n`
+
+    return `${content.slice(0, boundary.headingStart)}${headingLine}${mergedBody}${content.slice(boundary.sectionEnd)}`
+  }
+
+  /**
+   * Insert a new section after the section identified by a heading.
+   *
+   * @param content - Full document content.
+   * @param afterHeading - Heading text of the section after which to insert.
+   * @param newHeading - Heading text for the new section.
+   * @param level - Heading level (1–6) for the new section.
+   * @param body - Body content for the new section.
+   * @returns Modified document content, or the original if afterHeading not found.
+   */
+  insertAfterSection(content: string, afterHeading: string, newHeading: string, level: number, body: string): string {
+    const boundary = findSectionBoundary(content, afterHeading)
+    if (!boundary) return content
+
+    const depth = Math.max(1, Math.min(6, level))
+    const prefix = "#".repeat(depth)
+    const newSection = `${prefix} ${newHeading}${normalizeSectionBody(body)}`
+
+    return `${content.slice(0, boundary.sectionEnd)}${newSection}${content.slice(boundary.sectionEnd)}`
+  }
+
+  /**
+   * Delete an entire section (heading + body) from the document.
+   *
+   * @param content - Full document content.
+   * @param heading - Exact heading text to delete.
+   * @returns Modified document content, or the original if heading not found.
+   */
+  deleteSection(content: string, heading: string): string {
+    const boundary = findSectionBoundary(content, heading)
+    if (!boundary) return content
+    return `${content.slice(0, boundary.headingStart)}${content.slice(boundary.sectionEnd)}`
+  }
+
+  /**
+   * Extract YAML frontmatter from a document as a key/value record.
+   *
+   * @param content - Full document content (may or may not have frontmatter).
+   * @returns Parsed frontmatter record, or null if no frontmatter is present.
+   */
+  readFrontmatter(content: string): Record<string, string> | null {
+    const match = content.match(FRONTMATTER_REGEX)
+    if (!match) return null
+    return parseFrontmatter(match[1])
+  }
+
+  /**
+   * Write or update YAML frontmatter on a document.
+   * Merges new values into existing frontmatter, or creates a new block.
+   *
+   * @param content - Full document content.
+   * @param metadata - Key/value pairs to set in the frontmatter.
+   * @returns Modified document content with updated frontmatter.
+   */
+  writeFrontmatter(content: string, metadata: Record<string, string>): string {
+    const existing = this.readFrontmatter(content)
+    const merged = { ...existing, ...metadata }
+
+    if (content.match(FRONTMATTER_REGEX)) {
+      return content.replace(FRONTMATTER_REGEX, serializeFrontmatter(merged))
+    }
+    return `${serializeFrontmatter(merged)}\n${content}`
+  }
+
+  /**
+   * Split a document into token-budget-aware chunks by heading.
+   *
+   * @param content - Full document content.
+   * @param maxChunkTokens - Maximum tokens per chunk.
+   * @returns Array of document chunks with heading, content, and token estimates.
+   */
   chunkByHeadings(content: string, maxChunkTokens: number): DocumentChunk[] {
     const budget = Math.max(1, maxChunkTokens)
     const tree = remark().parse(content) as Root

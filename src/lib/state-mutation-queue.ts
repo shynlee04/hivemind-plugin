@@ -25,8 +25,10 @@ import type { TaskNode } from "../schemas/graph-nodes.js";
 import type { StateManager } from "./persistence.js";
 import { createHash, randomUUID } from "node:crypto";
 import { createLogger, noopLogger } from "./logging.js";
+import { writeManifest } from "./manifest.js";
 import { getEffectivePaths } from "./paths.js";
 import { loadGraphTasks, saveGraphTasks } from "./graph-io.js";
+import { normalizeTaskWorkflowTopology, resolveTaskWorkflowTopology } from "./task-topology.js";
 
 // Initialize logger - use noop logger initially, replace with real logger on first use
 let loggerPromise: Promise<{
@@ -330,6 +332,26 @@ function mapLegacyPriority(priority: unknown): TaskNode["priority"] {
   return undefined;
 }
 
+function mapTaskLineageOwner(value: unknown): TaskNode["lineage_owner"] {
+  const normalized = String(value ?? "").toLowerCase();
+  if (normalized === "hiveminder" || normalized === "hivefiver" || normalized === "unknown") {
+    return normalized;
+  }
+  return undefined;
+}
+
+function mapTaskSessionKind(value: unknown): TaskNode["session_kind"] {
+  const normalized = String(value ?? "").toLowerCase();
+  if (normalized === "main" || normalized === "sub" || normalized === "unresolved") {
+    return normalized;
+  }
+  return undefined;
+}
+
+function mapTaskWorkflowTopology(value: unknown): TaskNode["workflow_topology"] {
+  return normalizeTaskWorkflowTopology(typeof value === "string" ? value : undefined);
+}
+
 function mapManifestTaskToGraphTask(
   manifest: TaskManifest,
   task: TaskManifest["tasks"][number],
@@ -405,6 +427,28 @@ function mapManifestTaskToGraphTask(
     acceptance_criteria: acceptanceCriteria,
     dependencies: dependencies.length > 0 ? dependencies : undefined,
     priority: mapLegacyPriority(task.priority),
+    lineage_owner: mapTaskLineageOwner(task.lineage_owner) ?? existing?.lineage_owner,
+    owner_agent:
+      typeof task.owner_agent === "string" && task.owner_agent.trim().length > 0
+        ? task.owner_agent.trim()
+        : existing?.owner_agent,
+    origin_session_id:
+      typeof task.origin_session_id === "string" && task.origin_session_id.trim().length > 0
+        ? task.origin_session_id.trim()
+        : existing?.origin_session_id,
+    parent_session_id:
+      typeof task.parent_session_id === "string" && task.parent_session_id.trim().length > 0
+        ? task.parent_session_id.trim()
+        : existing?.parent_session_id ?? null,
+    session_kind: mapTaskSessionKind(task.session_kind) ?? existing?.session_kind,
+    workflow_topology:
+      mapTaskWorkflowTopology(
+        resolveTaskWorkflowTopology({
+          workflowTopology: typeof task.workflow_topology === "string" ? task.workflow_topology : undefined,
+          dependencies: task.dependencies,
+        }),
+      ) ??
+      existing?.workflow_topology,
   };
 }
 
@@ -619,6 +663,9 @@ export async function flushTaskManifestMutations(sessionID?: string): Promise<nu
 
     let queueDepthAtApplication = sortedMutations.length;
     for (const mutation of sortedMutations) {
+      const paths = getEffectivePaths(mutation.directory);
+      await writeManifest(paths.tasks, mutation.payload);
+
       const current = await loadGraphTasks(mutation.directory, { enabled: false });
       const nextTasks = mergeLegacyManifestIntoGraphTasks(mutation.payload, current.tasks);
       await saveGraphTasks(mutation.directory, {
