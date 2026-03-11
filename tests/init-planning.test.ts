@@ -5,6 +5,7 @@
 import { initProject } from "../src/cli/init.js"
 import { createStateManager, loadConfig, saveConfig } from "../src/lib/persistence.js"
 import {
+  ensurePlanningRuntimeReady,
   initializePlanningDirectory,
   readActiveMd,
   writeActiveMd,
@@ -20,6 +21,7 @@ import { readFile, mkdtemp, rm } from "fs/promises"
 import { tmpdir } from "os"
 import { getEffectivePaths } from "../src/lib/paths.js"
 import { join } from "path"
+import { spawn } from "child_process"
 
 // ─── Harness ─────────────────────────────────────────────────────────
 
@@ -59,11 +61,71 @@ async function test_init_planning_directory() {
   const effective = getEffectivePaths(dir)
 
   assert(existsSync(paths.planningDir), "planning dir created")
-  assert(existsSync(paths.indexPath), "index.md created")
+  assert(!existsSync(paths.indexPath), "index.md not eagerly created")
   assert(existsSync(paths.activePath), "active.md created")
   assert(existsSync(paths.archiveDir), "archive dir created")
   assert(existsSync(effective.projectPlanningDir), "canonical project planning dir created")
   assert(existsSync(effective.projectPlanningConfig), "project planning config created")
+
+  await cleanup()
+}
+
+async function test_runtime_ready_skips_readability_projections() {
+  process.stderr.write("\n--- planning-fs: runtime-ready skips readability projections ---\n")
+  const dir = await setup()
+  const paths = await ensurePlanningRuntimeReady(dir)
+  const effective = getEffectivePaths(dir)
+
+  assert(existsSync(paths.planningDir), "planning dir created by runtime-ready")
+  assert(existsSync(effective.projectPlanningDir), "canonical project planning dir created by runtime-ready")
+  assert(existsSync(effective.tasks), "tasks.json created by runtime-ready")
+  assert(existsSync(paths.sessionsManifestPath), "sessions manifest created by runtime-ready")
+  assert(existsSync(paths.plansManifestPath), "plans manifest created by runtime-ready")
+  assert(existsSync(paths.templatePath), "session template created by runtime-ready")
+  assert(!existsSync(paths.indexPath), "INDEX.md not created by runtime-ready")
+  assert(!existsSync(paths.activePath), "active.md not created by runtime-ready")
+  assert(!existsSync(join(paths.sessionsDir, "index.md")), "sessions/index.md not created by runtime-ready")
+
+  await cleanup()
+}
+
+async function runScript(scriptPath: string, cwd: string): Promise<{ code: number | null; stdout: string; stderr: string }> {
+  return new Promise((resolve) => {
+    const child = spawn("bash", [scriptPath], { cwd })
+    let stdout = ""
+    let stderr = ""
+
+    child.stdout.on("data", (chunk) => {
+      stdout += String(chunk)
+    })
+    child.stderr.on("data", (chunk) => {
+      stderr += String(chunk)
+    })
+    child.on("close", (code) => {
+      resolve({ code, stdout, stderr })
+    })
+  })
+}
+
+async function test_legacy_startup_scripts_fail_closed() {
+  process.stderr.write("\n--- startup isolation: legacy scripts fail closed ---\n")
+  const dir = await setup()
+  const repoRoot = process.cwd()
+  const scripts = [
+    "scripts/auto-init.sh",
+    "scripts/detect-entry.sh",
+    "scripts/classify-intent.sh",
+  ]
+
+  for (const relativePath of scripts) {
+    const result = await runScript(join(repoRoot, relativePath), dir)
+    assert(result.code === 2, `${relativePath} exits with deprecation code`)
+    assert(result.stderr.includes("DEPRECATED"), `${relativePath} reports deprecation`)
+  }
+
+  assert(!existsSync(join(dir, ".hivemind", "state", "brain.json")), "legacy scripts do not create brain.json")
+  assert(!existsSync(join(dir, ".hivemind", "state", "hierarchy.json")), "legacy scripts do not create hierarchy.json")
+  assert(!existsSync(join(dir, ".hivemind", "sessions")), "legacy scripts do not create session scaffolds")
 
   await cleanup()
 }
@@ -184,7 +246,8 @@ async function test_init_project() {
   const hivemindDir = join(dir, ".hivemind")
   const sessionsDir = join(hivemindDir, "sessions")
   assert(existsSync(hivemindDir), "hivemind dir created")
-  assert(existsSync(join(sessionsDir, "index.md")), "index.md created")
+  assert(!existsSync(join(hivemindDir, "INDEX.md")), "root INDEX.md not eagerly created")
+  assert(!existsSync(join(sessionsDir, "index.md")), "sessions index.md not eagerly created")
   assert(existsSync(join(sessionsDir, "active.md")), "active.md created")
   assert(existsSync(getEffectivePaths(dir).brain), "brain.json created")
   assert(existsSync(join(hivemindDir, "config.json")), "config.json created")
@@ -281,11 +344,13 @@ async function main() {
   process.stderr.write("=== Init + Planning FS Tests ===\n")
 
   await test_init_planning_directory()
+  await test_runtime_ready_skips_readability_projections()
   await test_active_md_roundtrip()
   await test_parse_active_md()
   await test_archive_session()
   await test_update_index_md()
   await test_reset_active_md()
+  await test_legacy_startup_scripts_fail_closed()
   await test_init_project()
   await test_init_project_with_options()
   await test_init_applies_hivefiver_defaults_to_opencode()

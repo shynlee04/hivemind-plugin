@@ -89,6 +89,9 @@ CRITICAL: Before modifying any function, you MUST:
 | [`src/schemas/brain-state.ts`](src/schemas/brain-state.ts:1) | Core | Brain-state schema contract | Detox applied | Medium |
 | [`src/lib/detection.ts`](src/lib/detection.ts:1) | Core | Governance counters/health detection | Normalized contract active | Medium |
 | [`tests/`](tests/) | Quality | Regression verification | Active, baseline revalidated on 2026-03-05 | Monitoring |
+| [`src/tools/hivemind-doc.ts`](src/tools/hivemind-doc.ts:1) | Core | Document intelligence tool (V2) — 20 actions for reading, writing, searching, code inspection, batch ops | Active (V2 shipped 2026-03-12) | Stable |
+| [`src/lib/doc-intel.ts`](src/lib/doc-intel.ts:1) | Core | Document intelligence library — swarm-safe writes (locks, atomic, hashing), code inspection, cross-doc analysis | Active (V2 shipped 2026-03-12) | Stable |
+| [`src/lib/code-intel/doc-weaver.ts`](src/lib/code-intel/doc-weaver.ts:1) | Core | AST-based markdown manipulation — section read/write/batch via remark | Active | Stable |
 
 6. **Current State Assessment**
 
@@ -528,6 +531,7 @@ This project uses **HiveMind** for AI session management. It prevents drift, tra
 | Memory | `save_mem`, `recall_mems` |
 | Hierarchy | `hierarchy_manage` |
 | Delegation | `export_cycle` |
+| Document Intelligence | `hivemind_doc` (20 actions: skim, read, read_lines, metadata, list, search, inspect, index, xref, context, write, upsert, append, insert, delete, batch, batch_files, set_metadata, create, toc) |
 
 ### Why It Matters
 

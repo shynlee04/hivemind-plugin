@@ -370,4 +370,48 @@ export class DocWeaver {
 
     return chunks
   }
+
+  /**
+   * Apply multiple section operations in a single pass.
+   * Operations are applied sequentially on the same content string,
+   * avoiding repeated remark parse cycles.
+   *
+   * @param content - Full document content.
+   * @param ops - Array of operations to apply.
+   * @returns Modified document content after all ops.
+   */
+  batchPatchSections(content: string, ops: BatchSectionOp[]): string {
+    let result = content
+    for (const op of ops) {
+      switch (op.op) {
+        case "write":
+          result = this.patchSection(result, op.heading, op.body ?? "")
+          break
+        case "append":
+          result = this.appendToSection(result, op.heading, op.body ?? "")
+          break
+        case "delete":
+          result = this.deleteSection(result, op.heading)
+          break
+        case "upsert":
+          result = this.upsertSection(result, op.heading, op.body ?? "", op.level ?? 2)
+          break
+      }
+    }
+    return result
+  }
+}
+
+/**
+ * A single section operation for batch processing.
+ */
+export interface BatchSectionOp {
+  /** Target heading text */
+  heading: string
+  /** Operation type */
+  op: "write" | "append" | "delete" | "upsert"
+  /** Body content (ignored for delete) */
+  body?: string
+  /** Heading level for upsert when creating (default 2) */
+  level?: number
 }

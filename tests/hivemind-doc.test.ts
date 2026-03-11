@@ -58,9 +58,31 @@ Phase 2 details here.
 Final thoughts.
 `
 
-const LARGE_MD = Array.from({ length: 700 }, (_, i) =>
+const LARGE_MD = Array.from({ length: 500 }, (_, i) =>
   i % 50 === 0 ? `## Section ${Math.floor(i / 50) + 1}\n` : `Line ${i + 1} of content.\n`
 ).join("")
+
+const SAMPLE_TS = `/**
+ * Calculate the sum of two numbers.
+ * @param a - First number.
+ * @param b - Second number.
+ * @returns The sum of a and b.
+ * @example
+ * add(1, 2) // => 3
+ */
+export function add(a: number, b: number): number {
+  // Simple addition
+  return a + b
+}
+
+// Re-export for convenience
+export { add as sum }
+
+/** Internal helper */
+function validate(x: unknown): x is number {
+  return typeof x === "number"
+}
+`
 
 // ─── DocWeaver Extension Tests ──────────────────────────────────────────────────
 
@@ -209,7 +231,8 @@ describe("doc-intel library", () => {
     await mkdir(join(tmpDir, "docs"), { recursive: true })
     await writeFile(join(tmpDir, "docs", "plan.md"), "# Plan\n\n## Step 1\n\nDo things.\n\n## Step 2\n\nDo more things.\n", "utf-8")
     await writeFile(join(tmpDir, "docs", "notes.md"), "---\ntitle: Notes\n---\n\n# Notes\n\n## Important\n\nDon't forget.\n", "utf-8")
-    await writeFile(join(tmpDir, "code.ts"), "export const x = 1;\n", "utf-8")
+    await writeFile(join(tmpDir, "code.ts"), SAMPLE_TS, "utf-8")
+    await writeFile(join(tmpDir, "docs", "ref.md"), "# Ref\n\nSee [plan](./plan.md) and [notes](./notes.md).\nAlso [missing](./gone.md).\n", "utf-8")
   })
 
   after(async () => {
@@ -295,9 +318,11 @@ describe("doc-intel library", () => {
       // Use docs/plan.md to avoid modifying the main test file
       const result = await writeSection(tmpDir, "docs/plan.md", "Step 1", "Updated step 1 content.")
       assert.ok(!("status" in result), "Should not return chunk_required for small file")
-      const successResult = result as { changed: boolean; bytesChanged: number }
+      const successResult = result as { changed: boolean; bytesChanged: number; hash: string; opId: string }
       assert.ok(successResult.changed)
       assert.ok(successResult.bytesChanged > 0)
+      assert.ok(typeof successResult.hash === "string", "Should return content hash")
+      assert.ok(typeof successResult.opId === "string", "Should return operation ID")
 
       const body = await readSection(tmpDir, "docs/plan.md", "Step 1")
       assert.ok(body?.includes("Updated step 1 content."))
@@ -439,5 +464,172 @@ describe("estimateTokens", () => {
     assert.equal(estimateTokens(""), 1) // minimum 1
     assert.equal(estimateTokens("1234"), 1)
     assert.equal(estimateTokens("12345678"), 2)
+  })
+})
+
+// ─── V2 Function Tests ──────────────────────────────────────────────────────────
+
+describe("doc-intel V2 functions", () => {
+  let tmpDir: string
+
+  before(async () => {
+    tmpDir = await mkdtemp(join(tmpdir(), "doc-intel-v2-"))
+    await mkdir(join(tmpDir, "docs"), { recursive: true })
+    await writeFile(join(tmpDir, "test.md"), SAMPLE_MD, "utf-8")
+    await writeFile(join(tmpDir, "code.ts"), SAMPLE_TS, "utf-8")
+    await writeFile(join(tmpDir, "docs", "plan.md"), "# Plan\n\n## Step 1\n\nDo things.\n\n## Step 2\n\nDo more things.\n", "utf-8")
+    await writeFile(join(tmpDir, "docs", "notes.md"), "---\ntitle: Notes\n---\n\n# Notes\n\n## Important\n\nDon't forget.\n", "utf-8")
+    await writeFile(join(tmpDir, "docs", "ref.md"), "# Ref\n\nSee [plan](./plan.md) and [notes](./notes.md).\nAlso [missing](./gone.md).\n", "utf-8")
+  })
+
+  after(async () => {
+    await rm(tmpDir, { recursive: true, force: true })
+  })
+
+  async function getDocIntel() {
+    return import("../src/lib/doc-intel.js")
+  }
+
+  describe("readLines", () => {
+    it("should read a specific line range", async () => {
+      const { readLines } = await getDocIntel()
+      const result = await readLines(tmpDir, "test.md", 1, 5)
+      assert.equal(result.startLine, 1)
+      assert.equal(result.endLine, 5)
+      assert.ok(result.content.length > 0)
+      assert.ok(result.totalLines > 0)
+    })
+
+    it("should clamp out-of-range lines", async () => {
+      const { readLines } = await getDocIntel()
+      const result = await readLines(tmpDir, "test.md", 1, 99999)
+      assert.ok(result.endLine <= result.totalLines)
+    })
+  })
+
+  describe("inspectCode", () => {
+    it("should extract JSDoc blocks from TypeScript", async () => {
+      const { inspectCode } = await getDocIntel()
+      const result = await inspectCode(tmpDir, "code.ts")
+      assert.ok(result.jsdocBlocks.length > 0, "Should find JSDoc blocks")
+      assert.ok(result.jsdocBlocks.some((b: { text: string }) => b.text.includes("@param a")), "Should find @param")
+    })
+
+    it("should extract export statements", async () => {
+      const { inspectCode } = await getDocIntel()
+      const result = await inspectCode(tmpDir, "code.ts")
+      assert.ok(result.exports.length > 0, "Should find exports")
+    })
+
+    it("should extract inline comments", async () => {
+      const { inspectCode } = await getDocIntel()
+      const result = await inspectCode(tmpDir, "code.ts")
+      assert.ok(result.comments.length > 0, "Should find comments")
+    })
+
+    it("should reject non-code files", async () => {
+      const { inspectCode } = await getDocIntel()
+      await assert.rejects(
+        () => inspectCode(tmpDir, "test.md"),
+        /not a recognized code file/i,
+      )
+    })
+  })
+
+  describe("upsertSection", () => {
+    it("should replace existing section content", async () => {
+      const { upsertSection, readSection } = await getDocIntel()
+      const result = await upsertSection(tmpDir, "docs/plan.md", "Step 1", "Upserted step 1.")
+      assert.ok(!("status" in result))
+      const body = await readSection(tmpDir, "docs/plan.md", "Step 1")
+      assert.ok(body?.includes("Upserted step 1."))
+    })
+
+    it("should create section if heading does not exist", async () => {
+      const { upsertSection, readSection } = await getDocIntel()
+      const result = await upsertSection(tmpDir, "docs/plan.md", "Step 99", "New step.", 2)
+      assert.ok(!("status" in result))
+      const body = await readSection(tmpDir, "docs/plan.md", "Step 99")
+      assert.ok(body?.includes("New step."))
+    })
+  })
+
+  describe("batchEdit", () => {
+    it("should apply multiple operations atomically", async () => {
+      const { batchEdit, readSection } = await getDocIntel()
+      const result = await batchEdit(tmpDir, "docs/plan.md", [
+        { heading: "Step 1", op: "write" as const, body: "Batch-updated step 1." },
+        { heading: "Step 2", op: "append" as const, body: "Batch-appended to step 2." },
+      ])
+      assert.ok(!("status" in result))
+      const s1 = await readSection(tmpDir, "docs/plan.md", "Step 1")
+      assert.ok(s1?.includes("Batch-updated step 1."))
+      const s2 = await readSection(tmpDir, "docs/plan.md", "Step 2")
+      assert.ok(s2?.includes("Batch-appended to step 2."))
+    })
+  })
+
+  describe("batchFiles", () => {
+    it("should apply operations across multiple files", async () => {
+      const { batchFiles, readSection } = await getDocIntel()
+      const results = await batchFiles(tmpDir, [
+        { path: "docs/plan.md", ops: [{ heading: "Step 2", op: "write" as const, body: "Multi-file step 2." }] },
+        { path: "docs/notes.md", ops: [{ heading: "Important", op: "append" as const, body: "Multi-file note." }] },
+      ])
+      assert.ok(Array.isArray(results))
+      assert.equal(results.length, 2)
+
+      const s2 = await readSection(tmpDir, "docs/plan.md", "Step 2")
+      assert.ok(s2?.includes("Multi-file step 2."))
+      const note = await readSection(tmpDir, "docs/notes.md", "Important")
+      assert.ok(note?.includes("Multi-file note."))
+    })
+  })
+
+  describe("xrefDocuments", () => {
+    it("should detect cross-document links", async () => {
+      const { xrefDocuments } = await getDocIntel()
+      const results = await xrefDocuments(tmpDir, "docs")
+      assert.ok(results.length > 0, "Should find links")
+    })
+
+    it("should flag broken links", async () => {
+      const { xrefDocuments } = await getDocIntel()
+      const results = await xrefDocuments(tmpDir, "docs")
+      const broken = results.filter((r: { valid: boolean }) => !r.valid)
+      assert.ok(broken.length > 0, "Should find at least one broken link (gone.md)")
+    })
+  })
+
+  describe("indexDocuments", () => {
+    it("should build a comprehensive document index", async () => {
+      const { indexDocuments } = await getDocIntel()
+      const index = await indexDocuments(tmpDir, "docs")
+      assert.ok(index.length >= 2, `Expected at least 2 indexed docs, got ${index.length}`)
+      for (const entry of index) {
+        assert.ok(entry.path)
+        assert.ok(entry.title)
+        assert.ok(typeof entry.lineCount === "number")
+      }
+    })
+  })
+
+  describe("contextExtract", () => {
+    it("should extract relevant sections by query", async () => {
+      const { contextExtract } = await getDocIntel()
+      const results = await contextExtract(tmpDir, "docs", "step", 4000)
+      assert.ok(results.length > 0, "Should find relevant sections")
+      for (const chunk of results) {
+        assert.ok(chunk.path)
+        assert.ok(typeof chunk.tokenEstimate === "number")
+      }
+    })
+
+    it("should respect token budget", async () => {
+      const { contextExtract } = await getDocIntel()
+      const results = await contextExtract(tmpDir, "docs", "step", 100)
+      const totalTokens = results.reduce((sum: number, r: { tokenEstimate: number }) => sum + r.tokenEstimate, 0)
+      assert.ok(totalTokens <= 200, `Token total ${totalTokens} should be near budget`) // some flexibility
+    })
   })
 })

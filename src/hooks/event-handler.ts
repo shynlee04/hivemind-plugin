@@ -25,7 +25,6 @@ import type {
   EventSessionDiff,
   EventTodoUpdated,
 } from "@opencode-ai/sdk"
-import { access, mkdir, writeFile } from "fs/promises"
 import type { Logger } from "../lib/logging.js"
 import { createStateManager, loadConfig } from "../lib/persistence.js"
 import { getStalenessInfo } from "../lib/staleness.js"
@@ -34,12 +33,10 @@ import { queueStateMutation, queueTaskManifestMutation } from "../lib/state-muta
 import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
 import { resolveCanonicalSessionId } from "../lib/graph-io.js"
 import { resolveRuntimeSessionLineage } from "../lib/runtime-session-lineage.js"
-import { getSessionPaths } from "../lib/paths.js"
-import { createTree, saveTree, treeExists } from "../lib/hierarchy-tree.js"
-import { generateSessionId } from "../schemas/brain-state.js"
 import { classifyLineageScope } from "../lib/session-intent-classifier.js"
 import { normalizeTaskLineageOwner, normalizeTaskSessionKind, resolveTaskOwnershipContext } from "../lib/task-ownership.js"
 import { normalizeTaskWorkflowTopology } from "../lib/task-topology.js"
+import { ensureSessionRuntimeBootstrap } from "../lib/session-runtime.js"
 
 function normalizeStringArray(value: unknown): string[] | undefined {
   if (!Array.isArray(value)) {
@@ -175,15 +172,6 @@ function pickSafeNumber(input: Record<string, unknown>, keys: string[]): number 
   return undefined
 }
 
-async function pathExists(path: string): Promise<boolean> {
-  try {
-    await access(path)
-    return true
-  } catch {
-    return false
-  }
-}
-
 /**
  * Ensure the canonical src runtime owns the minimal session-created bootstrap state.
  *
@@ -204,53 +192,22 @@ async function ensureSessionCreatedBootstrap(
   stateManager: ReturnType<typeof createStateManager>,
   config: Awaited<ReturnType<typeof loadConfig>>,
 ): Promise<void> {
-  const now = Date.now()
-  let state = await stateManager.load()
-
-  if (!state) {
-    state = await stateManager.initialize(generateSessionId(), config)
+  const state = await stateManager.load()
+  let resolvedLineage = state?.session.lineage_scope ?? "unknown"
+  if (resolvedLineage === "unknown") {
+    const agentName = state?.session.role || "unresolved"
+    const signalText = [state?.hierarchy.trajectory, state?.hierarchy.tactic, state?.hierarchy.action]
+      .filter(Boolean)
+      .join(" ")
+    resolvedLineage = classifyLineageScope(agentName, signalText)
   }
 
-  if (state.session.opencode_session_id !== sessionId || state.session.last_activity !== now) {
-    // P1-B: Classify lineage scope on bootstrap when it's still "unknown"
-    let resolvedLineage = state.session.lineage_scope
-    if (resolvedLineage === "unknown") {
-      const agentName = state.session.role || "unresolved"
-      const signalText = [state.hierarchy.trajectory, state.hierarchy.tactic, state.hierarchy.action]
-        .filter(Boolean)
-        .join(" ")
-      resolvedLineage = classifyLineageScope(agentName, signalText)
-    }
-
-    await stateManager.save({
-      ...state,
-      session: {
-        ...state.session,
-        opencode_session_id: sessionId,
-        last_activity: now,
-        lineage_scope: resolvedLineage,
-      },
-    })
-  }
-
-  if (!treeExists(directory)) {
-    await saveTree(directory, createTree())
-  }
-
-  const sessionPaths = getSessionPaths(directory, sessionId)
-  await mkdir(sessionPaths.sessionDir, { recursive: true })
-  if (!(await pathExists(sessionPaths.profile))) {
-    await writeFile(
-      sessionPaths.profile,
-      `${JSON.stringify({
-        session_id: sessionId,
-        agent: "unresolved",
-        created_at: now,
-        updated_at: now,
-      }, null, 2)}\n`,
-      "utf-8",
-    )
-  }
+  await ensureSessionRuntimeBootstrap(directory, stateManager, config, {
+    runtimeSessionId: sessionId,
+    role: state?.session.role || "unresolved",
+    lineageScope: resolvedLineage,
+    sessionKind: state?.session.kind ?? "unresolved",
+  })
 }
 
 /**

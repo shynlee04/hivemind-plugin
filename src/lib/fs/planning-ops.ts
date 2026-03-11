@@ -183,7 +183,15 @@ export async function initializePlanningProjectDir(
   return { created, path: planningDir };
 }
 
-export async function initializePlanningDirectory(
+/**
+ * Ensure the canonical runtime/planning prerequisites exist without
+ * re-materializing readability projections.
+ *
+ * This is the lighter-weight startup path for runtime/session flows that need
+ * manifests, templates, task state, and canonical planning roots, but should
+ * not behave like full project initialization.
+ */
+export async function ensurePlanningRuntimeReady(
   projectRoot: string,
 ): Promise<PlanningPaths> {
   const paths = getPlanningPaths(projectRoot);
@@ -194,10 +202,8 @@ export async function initializePlanningDirectory(
   }
 
   await initializePlanningProjectDir(join(projectRoot, ".hivemind"));
-
   await mkdir(paths.sessionsDir, { recursive: true });
   await mkdir(paths.archiveDir, { recursive: true });
-
   await ensureCoreManifests(effective);
 
   if (!existsSync(paths.templatePath)) {
@@ -219,19 +225,21 @@ export async function initializePlanningDirectory(
     );
   }
 
+  return paths;
+}
+
+export async function initializePlanningDirectory(
+  projectRoot: string,
+): Promise<PlanningPaths> {
+  const paths = await ensurePlanningRuntimeReady(projectRoot);
+
   if (!existsSync(paths.manifestPath)) {
     await writeManifest(projectRoot, { sessions: [], active_stamp: null });
   }
 
-  if (!existsSync(paths.indexPath)) {
-    await generateIndexMd(projectRoot);
-  }
-
-  const legacySessionsIndex = join(paths.sessionsDir, "index.md");
-  if (!existsSync(legacySessionsIndex)) {
-    await writeFile(legacySessionsIndex, generateIndexTemplate());
-  }
-
+  // Readability projections are no longer eager startup outputs.
+  // Root INDEX.md and sessions/index.md should be materialized on demand by
+  // explicit projection/update flows instead of shaping bootstrap formation.
   if (!existsSync(paths.activePath)) {
     await writeFile(paths.activePath, generateActiveTemplate());
   }

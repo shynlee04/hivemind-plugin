@@ -26,8 +26,9 @@ import { listArchives } from "./lib/planning-fs.js"
 import { getEffectivePaths } from "./lib/paths.js"
 import { migrateToGraph, isGraphMigrationNeeded } from "./lib/graph-migrate.js"
 import { runDoctorRecovery } from "./lib/doctor-recovery.js"
+import { runHiveFiverIntakeBridge } from "./cli/hivefiver-intake.js"
 
-const COMMANDS = ["init", "migrate", "scan", "sync-assets", "doctor", "status", "compact", "dashboard", "settings", "purge", "help"] as const
+const COMMANDS = ["init", "migrate", "scan", "sync-assets", "doctor", "status", "compact", "dashboard", "settings", "purge", "help", "hivefiver-intake"] as const
 type Command = (typeof COMMANDS)[number]
 
 function printHelp(): void {
@@ -44,6 +45,7 @@ Commands:
   scan          Brownfield scan wrapper (analyze/recommend/orchestrate/status)
   sync-assets   Sync packaged OpenCode assets into .opencode/ (existing users)
   doctor        Diagnose/repair .hivemind lineage integrity
+  hivefiver-intake Compatibility bridge for legacy /hivefiver startup scripts
   status        Show current session and governance state
   settings      Show current configuration
   compact       Archive current session and reset (OpenCode only)
@@ -76,6 +78,7 @@ Options:
   --hard-reset             Doctor repair with forensic snapshot + canonical manifest rebuild
   --refresh <seconds>      Dashboard refresh interval (default: 2)
   --action <status|analyze|recommend|orchestrate>  Scan action (default: analyze, for scan command)
+  --text <value>           Input text for hivefiver-intake bridge actions
   --json                   Return machine-readable JSON (for scan command)
   --include-drift          Include drift report (status action)
 
@@ -355,6 +358,17 @@ async function main(): Promise<void> {
         includeDrift: "include-drift" in flags,
       })
       console.log(output)
+      break
+    }
+
+    case "hivefiver-intake": {
+      const action = flags["action"] as "classify-intent" | "guided-discovery" | "route-stage" | undefined
+      if (!action) {
+        throw new Error("hivefiver-intake requires --action <classify-intent|guided-discovery|route-stage>")
+      }
+      const text = flags["text"] ?? positionalArgs.slice(1).join(" ")
+      const output = runHiveFiverIntakeBridge({ action, text })
+      console.log(JSON.stringify(output, null, 2))
       break
     }
 

@@ -92,6 +92,7 @@ async function testGetHivemindPaths() {
   assert(paths.sessionsDir === join(tmpDir, ".hivemind", "sessions"), "sessionsDir path")
   assert(paths.sessionsManifest === join(tmpDir, ".hivemind", "sessions", "manifest.json"), "sessions manifest path")
   assert(paths.activeDir === join(tmpDir, ".hivemind", "sessions", "active"), "activeDir path")
+  assert(paths.sessionRuntimeDir === join(tmpDir, ".hivemind", "sessions", "runtime"), "sessionRuntimeDir path")
   assert(paths.archiveDir === join(tmpDir, ".hivemind", "sessions", "archive"), "archiveDir path")
   assert(paths.exportsDir === join(tmpDir, ".hivemind", "sessions", "archive", "exports"), "exportsDir path")
 
@@ -264,7 +265,7 @@ async function testGetAllDirectories() {
   process.stderr.write("\n--- getAllDirectories ---\n")
 
   const dirs = getAllDirectories(tmpDir)
-  assert(dirs.length === 43, "43 directories in structure")
+  assert(dirs.length === 44, "44 directories in structure")
   assert(dirs[0] === join(tmpDir, ".hivemind"), "root is first")
   assert(dirs.includes(join(tmpDir, ".hivemind", "project")), "includes project/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "project", "planning")), "includes project/planning/")
@@ -278,6 +279,7 @@ async function testGetAllDirectories() {
   assert(dirs.includes(join(tmpDir, ".hivemind", "system")), "includes system/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "sessions")), "includes sessions/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "sessions", "active")), "includes sessions/active/")
+  assert(dirs.includes(join(tmpDir, ".hivemind", "sessions", "runtime")), "includes sessions/runtime/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "sessions", "archive")), "includes sessions/archive/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "sessions", "archive", "exports")), "includes sessions/archive/exports/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "plans")), "includes plans/")

@@ -382,6 +382,11 @@ Human operators should not have to start from `brain.json` just to understand th
 - `P1-C.2b.b`: workflow topology classification landed — canonical tasks now carry `workflow_topology`; manual TODO creation defaults to `unclassified` or auto-upgrades to `dependent` when dependencies exist, `todo.updated` preserves inbound topology or defaults safely, and manifest→graph sync keeps topology visible in the global task graph
 - `P1-D.1a` subset 1: document-intelligence authority slice landed — `hivemind_doc` is now the canonical document tool, `hivemind_doc_weaver` is normalized and isolated as a compatibility wrapper, and `planning-materializer.ts` now uses `doc-intel` section upserts instead of its own ad-hoc markdown section mutator logic (2026-03-11)
 - `P1-D.1b`: ingress regulation slice landed — `src/lib/hivemind-ingress-policy.ts` now classifies `.hivemind` surfaces into `authority`, `projection`, `quarantine`, `evidence`, `archive`, and `compatibility`; canonical task readers assert authority-classified sources, `state-snapshot.ts` emits warnings for compatibility reads, and `hiveops-export.ts` now reads/writes through explicit ingress classes (2026-03-11)
+- `P1-D.1c` subset 1: stale boundary-script isolation landed — `scripts/check-state-write-boundary.sh` no longer scans the deleted plugin tree, `scripts/check-docs-ownership-boundary.sh` no longer depends on missing `agents/hivefiver-reserved.md`, and `npm run lint:boundary` is green again against the current repo contract (2026-03-12)
+- `P1-D.1c` subset 2: archive-candidate verification tranche landed — the new deep-scan archive packet was reconciled against live code/tests/runtime references, and none of the proposed `src/lib` removals are currently safe; the verified classifications are frozen in `docs/audits/phase-1-p1-d-1c-archive-candidate-verification-2026-03-12.md` (2026-03-12)
+- `P1-D.1c` subset 3: startup-formation isolation tranche landed — `ensurePlanningRuntimeReady()` and `initializePlanningDirectory()` no longer eagerly materialize readability projections, `src/cli/init.ts` now treats root `INDEX.md` and session index surfaces as on-demand projections, and `scripts/auto-init.sh`, `scripts/detect-entry.sh`, and `scripts/classify-intent.sh` now fail closed as deprecated donors instead of mutating startup state; targeted init/entry/bootstrap suites are green (2026-03-12)
+- `P1-D.1c` subset 4: active-session/runtime split + HiveFiver intake bridge landed — compatibility session profiles now live under `sessions/runtime/<session-id>/profile.json` via a shared schema/helper instead of mixing with `sessions/active/*.md`, and the missing `/hivefiver` classifier path is now bridged through `src/lib/hivefiver-intake.ts` + `src/cli.ts hivefiver-intake` with thin wrappers restored under `.opencode/skills/hivefiver-mode/scripts/` (2026-03-12)
+- `P1-D.1c` subset 5: runtime-core collapse tranche landed — `src/lib/session-runtime.ts` is now the canonical owner for recovery/bootstrap session scaffolding, `event-handler.ts` and `hivemind-bootstrap.ts` no longer carry divergent bootstrap contracts, `hivemind_plan` now flushes queued hook mutations before stamping active-plan context, and `hivemind_context` purge now persists through the canonical `StateManager.withState()` path instead of ad-hoc save choreography (2026-03-12)
 
 **Active**:
 
@@ -389,13 +394,20 @@ Human operators should not have to start from `brain.json` just to understand th
 - `P1-B` closeout: bootstrap/profile authority alignment remains unresolved — canonical brain-state lineage is classified on `session.created`, but session profile seeding still starts with `agent: "unresolved"` and must be frozen to one owner before `P1-B` can be treated as closed
 - `P1-D.1b`: `.hivemind` ingress regulation is now frozen as the foundation rulebook — compatibility/projection surfaces are classified and canonical readers have started enforcing the boundary, but broader readers and producers still need to be cut over or downgraded
 - `P1-D.1c`: dead-surface isolation/archive wave is now the immediate follow-on slice inside Phase 1 — messy concept-related surfaces in `src/lib/`, `src/tools/`, `src/hooks/`, CLI/bootstrap logic, workflows, and scripts must now be classified against the ingress ledger before later migration waves touch them
+- `docs/deep-scan-audit/02-SAFE-TO-ARCHIVE-2026-03-12.md` is useful for candidate generation, but not archive authority — live consumer tracing already disproves several “safe” archive candidates, so `P1-D.1c` must treat those packets as hypotheses until verified against `src`, `tests`, and runtime entrypoints
+- `P1-D.1c` subset 2 result: the current deep-scan `src/lib` archive list yields zero proven archive/remove targets; the real next tranche must pivot to startup formation overlaps, shell bootstrap donors, legacy planning/state readers, and workflow/template producers instead of trying to delete still-live graph/session/governance helpers
+- `P1-D.1c` subset 3 result: startup formation is narrower and cleaner — readability projections are no longer eager startup outputs, and the root shell donor trio now fails closed instead of seeding legacy state; the remaining hotspot is the mixed `.hivemind/sessions/active/` layout split between markdown session files and per-session profile/bootstrap directories
+- `P1-D.1c` subset 4 result: the obvious active-session path conflict is reduced — profile/bootstrap shims no longer share the `sessions/active/` path with markdown session projections, but profile authority is still compatibility-only and the `/hivefiver` command/workflow branch still carries legacy stage taxonomy that must be normalized further
+- `P1-D.1c` subset 5 result: runtime bootstrap ownership is materially narrower — the hook path and the manual bootstrap tool now converge on one `src/lib` owner, and the hot-path plan/context tools no longer do stale load/save choreography when mutating brain-state-adjacent session context
 - `P1-D`: state-authority planning remains active; `.hivemind` state shape, startup formation ownership, bootstrap/profile ownership, and lineage-separated pathing are still unresolved
 
 **Next**:
 
 - `P1-D.1a`: freeze the registry-led `.hivemind` ecosystem model — root manifest = topology only, session/plan manifests = authoritative registries, `state/tasks.json` = operational write model, `graph/tasks.json` = durable global task graph, readable markdown = projection only
 - `P1-D.1b`: aggressive `.hivemind` ingress regulation cycle — classify each state/artifact surface as `authority`, `projection`, `quarantine`, `evidence`, `archive`, or `compatibility`, and forbid projections from driving runtime decisions
-- `P1-D.1c`: aggressive isolation/archive cycle — downgrade duplicate bootstrap, planning, workflow-output, and script-era surfaces before they can keep poisoning `.hivemind`; this is now the next execution slice after the ingress ledger landed
+- `P1-D.1c`: aggressive isolation/archive cycle — downgrade duplicate bootstrap, planning, workflow-output, and script-era surfaces before they can keep poisoning `.hivemind`; after the verification tranche disproved the shallow dead-code list, startup-formation overlaps and shell bootstrap donors are now the front of that queue
+- `P1-D.1c` subset 6: active-session layout isolation — finish collapsing session formation around one runtime owner by reducing the remaining split between `src/lib/session-engine.ts`, `src/tools/hivemind-session.ts`, and markdown session projection layout under `.hivemind/sessions/active/`
+- `P1-D.1c` subset 7: command/workflow intake normalization — collapse the remaining `/hivefiver*` stage taxonomy and workflow-era startup assumptions onto canonical `src` intake/session contracts instead of compatibility wrappers
 - `P1-C.2b.c`: main/sub-session survival model for canonical tasks — child-session tasks must become explicit delegates of parent-linked global tasks instead of shadow TODO universes, but only after `P1-D.1a` through `P1-D.1c`
 - `P1-D.2`: aggressive state-shape reconciliation between live `.hivemind` stores and current `BrainState` ownership, plus lineage-separated state-path migration in `.hivemind/`
 - `P1-E`: Command/agent contract normalization
@@ -410,17 +422,21 @@ The following surfaces are now explicitly queued for isolation and archive/depre
 3. `src/lib/manifest.ts` deprecated graph task read/write shims
 4. `src/tools/hivemind-inspect.ts` direct flat-state inspection assumptions that predate ingress classification
 5. `src/lib/session_coherence.ts` archive/body parsing fallback that bypasses stronger task/graph authority
-6. `src/cli/init.ts`, `src/lib/fs/planning-ops.ts`, and `src/hooks/event-handler.ts` overlapping startup formation responsibilities for manifests, session scaffolding, planning roots, and bootstrap side effects
-7. `scripts/auto-init.sh`, `scripts/detect-entry.sh`, and `scripts/classify-intent.sh` duplicate bootstrap/entry/classification shell paths that can still seed unresolved or mixed-era state assumptions
+6. `src/cli/init.ts`, `src/lib/fs/planning-ops.ts`, and `src/hooks/event-handler.ts` startup formation responsibilities are partially isolated now, but the remaining active-session layout and bootstrap/profile authority split still need a bounded follow-on tranche
+7. `scripts/auto-init.sh`, `scripts/detect-entry.sh`, and `scripts/classify-intent.sh` are now fail-closed compatibility markers; they stay on the watchlist until stale callers are removed and no workflow/command still treats them as viable startup donors
 8. `scripts/check-state-write-boundary.sh` and `scripts/check-docs-ownership-boundary.sh` stale references to the deleted plugin surface and missing `agents/hivefiver-reserved.md`
 9. `.opencode/tool/*.ts` wrapper-only transport surfaces after the `src/tools` cutover
 10. `src/hooks/tool-gate.ts` deprecated/helper-only compatibility exports that survive only for older callers
-11. `src/tools/hivemind-bootstrap.ts` unresolved-lineage bootstrap shims that still mirror older state assumptions
+11. `src/tools/hivemind-bootstrap.ts` as a recovery-only compatibility wrapper that should eventually leave the hot runtime export surface once session formation is fully collapsed into the canonical `src/lib` owner
 12. `.hivemind/anchors/`, `.hivemind/mems/`, `.hivemind/INDEX.md`, and `.hivemind/sessions/index.md` as readability/compatibility surfaces only until regenerated from manifest-backed truth
 13. workflow/template stage-output surfaces that can materialize state-like artifacts without a frozen ingress policy, especially under `.opencode/workflows/` and `.opencode/templates/`
 14. `src/tools/hivemind-doc-weaver.ts` as a compatibility-only wrapper pending full caller normalization onto `hivemind_doc`
 15. `.hivemind/state/runtime-profile.json`, `.hivemind/state/context-recovery.json`, and `.hivemind/state/health-metrics.json` as compatibility-era state projections that must not silently re-enter runtime authority
 16. `.hivemind/sessions/active/*/profile.json` as bootstrap/session shims that remain unresolved until `P1-B` closeout freezes profile authority
+17. deep-scan “safe to archive” candidates remain provisional until consumer tracing proves zero live imports, zero test coverage dependency, and zero runtime entrypoint references
+18. startup formation overlaps in `src/cli/init.ts`, `src/lib/fs/planning-ops.ts`, and `src/hooks/event-handler.ts` now move to the front of the `P1-D.1c` target queue because the first deep-scan archive list proved too shallow to isolate the real `.hivemind` formation noise
+19. shell bootstrap donors in `scripts/auto-init.sh`, `scripts/detect-entry.sh`, and `scripts/classify-intent.sh` now move to the front of the `P1-D.1c` target queue because they can still seed mixed-era startup assumptions even when the obvious dead-code list is disproved
+20. `.opencode/skills/hivefiver-mode/scripts/*.sh` and the `/hivefiver*` command/workflow intake branch now survive only as compatibility bridges until their stage taxonomy and startup assumptions are normalized onto canonical `src` contracts
 
 Any future cycle that touches one of these surfaces must classify it as `retain`, `isolate`, `compatibility-only`, or `archive/remove` before the cycle closes.
 
@@ -578,7 +594,7 @@ No new document may silently compete with `PLAN.md`.
 
 ## 11. Immediate Next Moves
 
-**Current cycle**: `P1-D.1b` completed; `.hivemind` ingress classes are now explicitly frozen, canonical task/export readers are bound to that rulebook, and the next slice can attack dead-surface isolation/archive from a stronger foundation
+**Current cycle**: `P1-D.1c` subset 5 completed; runtime bootstrap ownership is now collapsed onto a canonical `src/lib` owner and the hottest plan/context mutation paths no longer rely on stale direct-save choreography, which clears the way for a more aggressive active-session layout cut
 
 The current execution slice covers:
 
@@ -608,16 +624,21 @@ The current execution slice covers:
    - canonical task reads assert `state/tasks.json` and `graph/tasks.json` as authority-classified sources;
    - `state-snapshot.ts` now emits ingress warnings when compatibility surfaces like `runtime-profile.json`, `context-recovery.json`, and `health-metrics.json` are still read;
    - `hiveops-export.ts` now treats gates as authority reads and handoff/checkpoint files as evidence writes.
-9. Prepare the next aggressive execution slices with narrower ownership boundaries:
-   - `P1-D.1c` dead-surface isolation/archive wave;
-   - stale boundary-script references must be cleaned so the repo-level regression gate stops failing for dead-surface reasons instead of runtime reasons;
-   - `P1-C.2b.c` main/sub-session survival can only resume after the ingress/archive foundations stop letting compatibility and readability surfaces pose as authority;
-   - keep deletion bias as the default, not the exception.
+9. Land the first archive/isolation wave against live repo truth:
+   - stale boundary-script references are now cleaned and `npm run lint:boundary` is green again;
+- deep-scan archive packets are now treated as candidate lists only, not direct deletion authority;
+- the first archive-candidate verification tranche produced zero proven `archive/remove` targets from the proposed `src/lib` list and instead confirmed that several graph/session/governance helpers remain live;
+- missing `.hivemind` compatibility surfaces are now understood as “stay absent + keep downgraded in policy/tests”, not “archive them again”;
+- the startup-formation isolation tranche landed: runtime-ready/init flows no longer eagerly create readability projections, and the legacy shell startup donors now fail closed instead of mutating `.hivemind`;
+- `P1-D.1c` must archive or downgrade only what survives consumer tracing against runtime code, tests, and entrypoints;
+- `P1-C.2b.c` main/sub-session survival can only resume after the ingress/archive foundations stop letting compatibility and readability surfaces pose as authority.
 
 **Planned follow-on cycles** (each requires separate authorization):
 
 - `P1-D.1c` dead/compat isolation cycle:
   freeze the first archive tranche for messy lib/tool/hook surfaces, then quarantine or archive the ones that no longer own live runtime behavior so the next aggressive `src/lib` / `hooks` / `schema` refactor stops reasoning through stale compatibility code.
+- `P1-D.1c` active-session layout isolation tranche:
+  target `src/lib/session-engine.ts`, `src/hooks/event-handler.ts`, and `src/tools/hivemind-bootstrap.ts` so `.hivemind/sessions/active/` stops mixing markdown session files, bootstrap profile directories, and unresolved-lineage recovery shims under one path contract.
 - `P1-C.2b.c` main/sub-session survival cycle:
   make child-session tasks explicit delegates of parent-linked canonical tasks instead of separate shadow TODO universes; main sessions keep global navigation authority while child sessions attach scoped outputs and evidence.
 - `P1-D.2` aggressive lineage migration cycle:

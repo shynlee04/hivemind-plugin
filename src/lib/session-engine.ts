@@ -22,7 +22,7 @@ import {
 import {
   archiveSession,
   generateIndexMd,
-  initializePlanningDirectory,
+  ensurePlanningRuntimeReady,
   instantiateSession,
   listArchives,
   readActiveMd,
@@ -125,7 +125,7 @@ export async function startSession(directory: string, options: SessionOptions): 
 
   const config = await loadConfig(directory)
   const stateManager = createStateManager(directory)
-  await initializePlanningDirectory(directory)
+  await ensurePlanningRuntimeReady(directory)
 
   let state = await stateManager.load()
   if (state && state.session.governance_status === "OPEN") {

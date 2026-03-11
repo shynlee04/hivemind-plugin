@@ -9,8 +9,8 @@ permission:
   bash:
     "*": deny
     "grep *": allow
-    "npx *": allow
     "ls *": allow
+    "npx *": allow
     "git *": allow
     "npm *": allow
     "pnpm *": allow

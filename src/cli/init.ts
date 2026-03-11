@@ -4,7 +4,7 @@
  * Creates:
  *   - .hivemind/ hierarchical runtime structure
  *   - canonical readable planning root under .hivemind/project/planning/
- *   - root INDEX.md and session scaffolds
+ *   - active planning/session scaffolds
  *   - brain.json and hierarchy.json with initial runtime state
  *   - config.json with governance preferences
  *   - plugin registration and OpenCode defaults
@@ -508,7 +508,7 @@ async function printInitSuccess(
   log("")
   log("✓ Planning directory created:")
   log(`  ${hivemindDir}/`)
-  log("  ├── INDEX.md             (root state entry point)")
+  log("  ├── INDEX.md             (projection; generated on demand)")
   log("  ├── state/               (brain, hierarchy, anchors, tasks)")
   log("  ├── memory/              (mems + manifest)")
   log("  ├── sessions/")
@@ -600,6 +600,63 @@ function logHiveFiverAuditResult(
   log("")
 }
 
+/**
+ * Run the canonical fresh-init formation sequence.
+ *
+ * This keeps project bootstrap ownership in one place so init/profile paths do
+ * not drift apart while startup formation is being isolated.
+ */
+async function runFreshInitialization(
+  directory: string,
+  config: ReturnType<typeof createConfig>,
+  options: InitOptions,
+  profileKey?: ProfilePresetKey,
+): Promise<{ sessionId: string; state: ReturnType<typeof createBrainState> }> {
+  const paths = getEffectivePaths(directory)
+
+  if (!options.silent) {
+    log("Creating planning directory...")
+  }
+  await initializePlanningDirectory(directory)
+
+  await seedPlanTemplates(directory)
+  if (!options.silent) {
+    log(`  ✓ Seeded plan templates to plans/templates/`)
+  }
+
+  await seedTenCommandments(directory)
+  if (!options.silent) {
+    log(`  ✓ Copied 10 Commandments to ${paths.docsDir}/`)
+  }
+
+  await saveConfig(directory, config)
+
+  const stateManager = createStateManager(directory)
+  const sessionId = generateSessionId()
+  const state = createBrainState(sessionId, config)
+  await stateManager.save(state)
+
+  await saveTree(directory, createTree())
+
+  registerPluginInConfig(directory, options.silent ?? false)
+  ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
+
+  if (profileKey) {
+    updateOpencodeJsonWithProfile(directory, profileKey, options.silent ?? false)
+  }
+
+  injectAgentsDocs(directory, options.silent ?? false)
+  await syncAssetsForInit(directory, options)
+
+  await seedHiveFiverOnboardingTasks(directory, sessionId)
+  logHiveFiverAuditResult(
+    auditHiveFiverAssets(directory, { profile: resolveAuditProfile(options) }),
+    options.silent ?? false,
+  )
+
+  return { sessionId, state }
+}
+
 export async function initProject(
   directory: string,
   options: InitOptions = {}
@@ -676,53 +733,11 @@ export async function initProject(
       log("")
     }
 
-    // Create planning directory structure
-    if (!options.silent) {
-      log("Creating planning directory...")
-    }
-    await initializePlanningDirectory(directory)
-
-    // Seed plan templates
-    await seedPlanTemplates(directory)
-    if (!options.silent) {
-      log(`  ✓ Seeded plan templates to plans/templates/`)
-    }
-
-    // Copy 10 Commandments to .hivemind
-    await seedTenCommandments(directory)
-    if (!options.silent) {
-      log(`  ✓ Copied 10 Commandments to ${p.docsDir}/`)
-    }
-
-    // Save config
-    await saveConfig(directory, config)
-
-    // Initialize brain state
-    const stateManager = createStateManager(directory)
-    const sessionId = generateSessionId()
-    const state = createBrainState(sessionId, config)
-    await stateManager.save(state)
-
-    // Initialize empty hierarchy tree (required for session-lifecycle hook)
-    await saveTree(directory, createTree())
-
-    // Auto-register plugin in opencode.json
-    registerPluginInConfig(directory, options.silent ?? false)
-    ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
-
-    // Apply profile permissions to opencode.json
-    updateOpencodeJsonWithProfile(directory, options.profile, options.silent ?? false)
-
-    // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
-    injectAgentsDocs(directory, options.silent ?? false)
-
-    // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
-    await syncAssetsForInit(directory, options)
-
-    await seedHiveFiverOnboardingTasks(directory, sessionId)
-    logHiveFiverAuditResult(
-      auditHiveFiverAssets(directory, { profile: resolveAuditProfile(options) }),
-      options.silent ?? false,
+    const { sessionId, state } = await runFreshInitialization(
+      directory,
+      config,
+      options,
+      options.profile,
     )
 
     await printInitSuccess(directory, config, sessionId, state, options.silent ?? false)
@@ -804,57 +819,13 @@ export async function initProject(
     log("")
   }
 
-  // Create planning directory structure
-  if (!options.silent) {
-    log("Creating planning directory...")
-  }
-  await initializePlanningDirectory(directory)
-
-  // Seed plan templates
-  await seedPlanTemplates(directory)
-  if (!options.silent) {
-    log(`  ✓ Seeded plan templates to plans/templates/`)
-  }
-
-  // Copy 10 Commandments to .hivemind
-  await seedTenCommandments(directory)
-  if (!options.silent) {
-    log(`  ✓ Copied 10 Commandments to ${p.docsDir}/`)
-  }
-
-  // Save config
-  await saveConfig(directory, config)
-
-  // Initialize brain state
-  const stateManager = createStateManager(directory)
-  const sessionId = generateSessionId()
-  const state = createBrainState(sessionId, config)
-  await stateManager.save(state)
-
-  // Initialize empty hierarchy tree (required for session-lifecycle hook)
-  await saveTree(directory, createTree())
-
-  // Auto-register plugin in opencode.json
-  registerPluginInConfig(directory, options.silent ?? false)
-  ensureHiveFiverDefaultsInOpencode(directory, options.silent ?? false)
-
-  // Auto-inject HiveMind section into AGENTS.md / CLAUDE.md
-  injectAgentsDocs(directory, options.silent ?? false)
-
-  // Sync OpenCode assets (.opencode/{commands,skills,...}) for first-time users
-  await syncAssetsForInit(directory, options)
-
-  await seedHiveFiverOnboardingTasks(directory, sessionId)
-  logHiveFiverAuditResult(
-    auditHiveFiverAssets(directory, { profile: resolveAuditProfile(options) }),
-    options.silent ?? false,
-  )
+  const { sessionId, state } = await runFreshInitialization(directory, config, options)
 
   if (!options.silent) {
     log("")
     log("✓ Planning directory created:")
     log(`  ${hivemindDir}/`)
-    log("  ├── INDEX.md             (root state entry point)")
+    log("  ├── INDEX.md             (projection; generated on demand)")
     log("  ├── state/               (brain, hierarchy, anchors, tasks)")
     log("  ├── memory/              (mems + manifest)")
     log("  ├── sessions/")

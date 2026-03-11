@@ -1,30 +1,39 @@
 /**
- * hivemind_doc — Unified document intelligence tool.
+ * hivemind_doc — Unified document intelligence tool (V2).
  *
  * A multi-action tool for hierarchy-aware, chunk-based, and search-first
  * document reading, writing, editing, and searching. Replaces ad-hoc document
  * operations with a structured agentic approach.
  *
- * Actions:
+ * V2 Actions (20 total):
  *   skim         — outline/hierarchy of one file or directory
  *   read         — read full file, a section, or chunked
+ *   read_lines   — read a specific line range from any file
  *   metadata     — extract YAML frontmatter
  *   list         — list document files with summary metadata
  *   search       — search across documents by keyword or regex
+ *   inspect      — extract JSDoc blocks, comments, exports from code files
+ *   index        — build comprehensive document index for a directory
+ *   xref         — find cross-document links and check integrity
+ *   context      — smart context extraction by query + token budget
  *   write        — replace a section body under a heading
+ *   upsert       — replace or create a section (write-or-create)
  *   append       — append to a section body
  *   insert       — insert a new section after a heading
  *   delete       — delete a section by heading
+ *   batch        — multiple section operations on one file atomically
+ *   batch_files  — operations across multiple files
  *   set_metadata — set/update YAML frontmatter fields
  *   create       — create a new document with frontmatter template
  *   toc          — generate a markdown table of contents
  *
  * Philosophy:
  *   1. Read before write — always skim the outline first
- *   2. Chunk discipline — files >600 LOC are never written in one shot
+ *   2. Chunk discipline — files >400 LOC are never written in one shot
  *   3. Hierarchy-first — navigate by headings, not line numbers
  *   4. Context-on-demand — pull only the section that matters
  *   5. File-type safety — only .md, .xml, .json, .yaml may be written
+ *   6. Swarm-safe — advisory locks, atomic writes, content hashing
  *
  * Supersedes: hivemind_doc_weaver
  *
@@ -39,8 +48,10 @@ import {
   readSection,
   readChunked,
   readMetadata,
+  readLines,
   generateTOC,
   writeSection,
+  upsertSection,
   appendSection,
   insertSection,
   deleteSection,
@@ -48,6 +59,13 @@ import {
   createDocument,
   searchDocuments,
   listDocuments,
+  inspectCode,
+  batchEdit,
+  batchFiles,
+  xrefDocuments,
+  indexDocuments,
+  contextExtract,
+  type WriteResult,
 } from "../lib/doc-intel.js"
 
 /**
@@ -59,16 +77,17 @@ import {
 export function createHivemindDocTool(directory: string): ToolDefinition {
   return tool({
     description:
-      "Unified document intelligence tool for hierarchy-aware reading, writing, editing, and searching. " +
-      "Actions: skim (outline), read (section/chunked), metadata (frontmatter), list (directory), " +
-      "search (keyword/regex), write (replace section), append (add to section), insert (new section), " +
-      "delete (remove section), set_metadata (update frontmatter), create (new doc), toc (table of contents). " +
-      "Write operations restricted to .md, .xml, .json, .yaml files. Files >600 LOC require section-by-section writes.",
+      "Unified document intelligence tool (V2) — 20 actions for hierarchy-aware reading, writing, editing, " +
+      "searching, code inspection, cross-document analysis, smart context extraction, and batch operations. " +
+      "All writes are swarm-safe (advisory locks, atomic writes, content hashing). " +
+      "Write operations restricted to .md, .xml, .json, .yaml files. Files >400 LOC require section-by-section writes.",
     args: {
       action: tool.schema
         .enum([
-          "skim", "read", "metadata", "list", "search",
-          "write", "append", "insert", "delete",
+          "skim", "read", "read_lines", "metadata", "list", "search",
+          "inspect", "index", "xref", "context",
+          "write", "upsert", "append", "insert", "delete",
+          "batch", "batch_files",
           "set_metadata", "create", "toc",
         ])
         .describe("What to do"),
@@ -78,11 +97,11 @@ export function createHivemindDocTool(directory: string): ToolDefinition {
       heading: tool.schema
         .string()
         .optional()
-        .describe("Target heading text (for read/write/append/delete)"),
+        .describe("Target heading text (for read/write/upsert/append/delete)"),
       content: tool.schema
         .string()
         .optional()
-        .describe("Content body (for write/append/insert/create)"),
+        .describe("Content body (for write/upsert/append/insert/create)"),
       after_heading: tool.schema
         .string()
         .optional()
@@ -94,7 +113,7 @@ export function createHivemindDocTool(directory: string): ToolDefinition {
       level: tool.schema
         .number()
         .optional()
-        .describe("Heading level 1-6 (for insert action, default: 2)"),
+        .describe("Heading level 1-6 (for insert/upsert action, default: 2)"),
       max_tokens: tool.schema
         .number()
         .optional()
@@ -102,7 +121,7 @@ export function createHivemindDocTool(directory: string): ToolDefinition {
       query: tool.schema
         .string()
         .optional()
-        .describe("Search query (for search action)"),
+        .describe("Search query (for search/context action)"),
       regex: tool.schema
         .boolean()
         .optional()
@@ -114,7 +133,7 @@ export function createHivemindDocTool(directory: string): ToolDefinition {
       glob: tool.schema
         .string()
         .optional()
-        .describe("File extension filter, e.g. '.md' (for skim/list/search on directories)"),
+        .describe("File extension filter, e.g. '.md' (for skim/list/search/xref/index/context on directories)"),
       sort: tool.schema
         .enum(["name", "date", "size"])
         .optional()
@@ -135,6 +154,28 @@ export function createHivemindDocTool(directory: string): ToolDefinition {
         .string()
         .optional()
         .describe("JSON string of key/value pairs for frontmatter (for create action)"),
+      start_line: tool.schema
+        .number()
+        .optional()
+        .describe("Start line number, 1-indexed (for read_lines action)"),
+      end_line: tool.schema
+        .number()
+        .optional()
+        .describe("End line number, 1-indexed (for read_lines action)"),
+      operations: tool.schema
+        .string()
+        .optional()
+        .describe("JSON array of operations (for batch/batch_files actions). " +
+          "batch: [{heading, op, body?, level?}]. " +
+          "batch_files: [{path, ops: [{heading, op, body?, level?}]}]"),
+      expected_hash: tool.schema
+        .string()
+        .optional()
+        .describe("Expected content hash for stale-file detection on writes (optional)"),
+      token_budget: tool.schema
+        .number()
+        .optional()
+        .describe("Max total tokens to return (for context action, default: 4000)"),
     },
     async execute(args, _context) {
       try {
@@ -143,20 +184,36 @@ export function createHivemindDocTool(directory: string): ToolDefinition {
             return handleSkim(directory, args)
           case "read":
             return handleRead(directory, args)
+          case "read_lines":
+            return handleReadLines(directory, args)
           case "metadata":
             return handleMetadata(directory, args)
           case "list":
             return handleList(directory, args)
           case "search":
             return handleSearch(directory, args)
+          case "inspect":
+            return handleInspect(directory, args)
+          case "index":
+            return handleIndex(directory, args)
+          case "xref":
+            return handleXref(directory, args)
+          case "context":
+            return handleContext(directory, args)
           case "write":
             return handleWrite(directory, args)
+          case "upsert":
+            return handleUpsert(directory, args)
           case "append":
             return handleAppend(directory, args)
           case "insert":
             return handleInsert(directory, args)
           case "delete":
             return handleDelete(directory, args)
+          case "batch":
+            return handleBatch(directory, args)
+          case "batch_files":
+            return handleBatchFiles(directory, args)
           case "set_metadata":
             return handleSetMetadata(directory, args)
           case "create":
@@ -175,7 +232,7 @@ export function createHivemindDocTool(directory: string): ToolDefinition {
   })
 }
 
-// ─── Action Handlers ──────────────────────────────────────────────────────────
+// ─── Read Action Handlers ─────────────────────────────────────────────────────
 
 /**
  * Handle skim action — extract document outline.
@@ -192,16 +249,15 @@ async function handleSkim(
     return toErrorOutput("path is required for skim")
   }
 
-  // Check if path is a directory or file by trying as document first
   try {
     const result = await skimDocument(dir, args.path)
     return toSuccessOutput("Document skimmed", undefined, {
       ...result,
     })
   } catch {
-    // Might be a directory
     const results = await skimDirectory(dir, args.path, args.glob)
     return toSuccessOutput("Directory skimmed", undefined, {
+      directory: args.path,
       files: results.length,
       documents: results,
     })
@@ -224,36 +280,55 @@ async function handleRead(
   }
 
   if (args.heading) {
-    // Read a specific section
     const content = await readSection(dir, args.path, args.heading)
     if (content === null) {
       return toErrorOutput(
-        `Heading '${args.heading}' not found in ${args.path}`,
-        "Use skim action first to see available headings",
+        `Section '${args.heading}' not found in ${args.path}`,
+        "Use skim first to see available headings.",
       )
     }
-    return toSuccessOutput("Section read", undefined, {
+    return toSuccessOutput(`Section '${args.heading}' from ${args.path}`, undefined, {
       path: args.path,
       heading: args.heading,
       content,
     })
   }
 
-  // Chunked read (always for full file)
-  const chunks = await readChunked(dir, args.path, undefined, args.max_tokens)
-  return toSuccessOutput("File read in chunks", undefined, {
+  const chunks = await readChunked(dir, args.path, undefined, args.max_tokens ?? 2000)
+  return toSuccessOutput(`Read ${args.path} (${chunks.length} chunks)`, undefined, {
     path: args.path,
-    chunks: chunks.length,
-    data: chunks,
+    chunks,
   })
 }
 
 /**
- * Handle metadata action — extract YAML frontmatter.
+ * Handle read_lines action — read specific line range.
  *
  * @param dir - Project root.
  * @param args - Tool arguments.
- * @returns JSON output with frontmatter.
+ * @returns JSON output with content and line metadata.
+ */
+async function handleReadLines(
+  dir: string,
+  args: { path: string; start_line?: number; end_line?: number },
+): Promise<string> {
+  if (!args.path?.trim()) {
+    return toErrorOutput("path is required for read_lines")
+  }
+  if (!args.start_line || !args.end_line) {
+    return toErrorOutput("start_line and end_line are required for read_lines")
+  }
+
+  const result = await readLines(dir, args.path, args.start_line, args.end_line)
+  return toSuccessOutput(`Read lines ${result.startLine}-${result.endLine} of ${args.path}`, undefined, result)
+}
+
+/**
+ * Handle metadata action — extract frontmatter.
+ *
+ * @param dir - Project root.
+ * @param args - Tool arguments.
+ * @returns JSON output with frontmatter data.
  */
 async function handleMetadata(
   dir: string,
@@ -264,7 +339,7 @@ async function handleMetadata(
   }
 
   const metadata = await readMetadata(dir, args.path)
-  return toSuccessOutput("Metadata extracted", undefined, {
+  return toSuccessOutput(`Metadata from ${args.path}`, undefined, {
     path: args.path,
     metadata,
   })
@@ -285,19 +360,19 @@ async function handleList(
     return toErrorOutput("path is required for list")
   }
 
-  const documents = await listDocuments(dir, args.path, {
+  const results = await listDocuments(dir, args.path, {
     glob: args.glob,
     sort: args.sort,
   })
-  return toSuccessOutput("Documents listed", undefined, {
-    path: args.path,
-    total: documents.length,
-    documents,
+  return toSuccessOutput(`Listed ${results.length} documents in ${args.path}`, undefined, {
+    directory: args.path,
+    total: results.length,
+    documents: results,
   })
 }
 
 /**
- * Handle search action — keyword/regex search across documents.
+ * Handle search action — search across documents.
  *
  * @param dir - Project root.
  * @param args - Tool arguments.
@@ -327,6 +402,112 @@ async function handleSearch(
 }
 
 /**
+ * Handle inspect action — extract JSDoc, comments, exports from code files.
+ *
+ * @param dir - Project root.
+ * @param args - Tool arguments.
+ * @returns JSON output with code inspection results.
+ */
+async function handleInspect(
+  dir: string,
+  args: { path: string },
+): Promise<string> {
+  if (!args.path?.trim()) {
+    return toErrorOutput("path is required for inspect")
+  }
+
+  const result = await inspectCode(dir, args.path)
+  return toSuccessOutput(`Inspected code: ${result.path}`, undefined, {
+    path: result.path,
+    jsdocBlocks: result.jsdocBlocks.length,
+    comments: result.comments.length,
+    exports: result.exports.length,
+    signatures: result.signatures.length,
+    details: result,
+  })
+}
+
+/**
+ * Handle index action — build comprehensive document index.
+ *
+ * @param dir - Project root.
+ * @param args - Tool arguments.
+ * @returns JSON output with document index.
+ */
+async function handleIndex(
+  dir: string,
+  args: { path: string; glob?: string },
+): Promise<string> {
+  if (!args.path?.trim()) {
+    return toErrorOutput("path is required for index")
+  }
+
+  const results = await indexDocuments(dir, args.path, args.glob)
+  return toSuccessOutput(`Indexed ${results.length} documents in ${args.path}`, undefined, {
+    directory: args.path,
+    total: results.length,
+    index: results,
+  })
+}
+
+/**
+ * Handle xref action — cross-document reference analysis.
+ *
+ * @param dir - Project root.
+ * @param args - Tool arguments.
+ * @returns JSON output with cross-reference results.
+ */
+async function handleXref(
+  dir: string,
+  args: { path: string; glob?: string },
+): Promise<string> {
+  if (!args.path?.trim()) {
+    return toErrorOutput("path is required for xref")
+  }
+
+  const results = await xrefDocuments(dir, args.path, args.glob)
+  const broken = results.filter(r => !r.valid)
+  return toSuccessOutput(`Cross-reference analysis of ${args.path}`, undefined, {
+    directory: args.path,
+    totalLinks: results.length,
+    brokenLinks: broken.length,
+    broken,
+    all: results,
+  })
+}
+
+/**
+ * Handle context action — smart context extraction.
+ *
+ * @param dir - Project root.
+ * @param args - Tool arguments.
+ * @returns JSON output with relevant context chunks.
+ */
+async function handleContext(
+  dir: string,
+  args: { path: string; query?: string; token_budget?: number; glob?: string },
+): Promise<string> {
+  if (!args.path?.trim()) {
+    return toErrorOutput("path is required for context")
+  }
+  if (!args.query?.trim()) {
+    return toErrorOutput("query is required for context")
+  }
+
+  const results = await contextExtract(dir, args.path, args.query, args.token_budget ?? 4000, args.glob)
+  const totalTokens = results.reduce((sum, r) => sum + r.tokenEstimate, 0)
+  return toSuccessOutput(`Extracted ${results.length} relevant sections`, undefined, {
+    query: args.query,
+    totalChunks: results.length,
+    totalTokens,
+    budget: args.token_budget ?? 4000,
+    chunks: results,
+  })
+}
+
+// ─── Write Action Handlers ────────────────────────────────────────────────────
+
+/**
  * Handle write action — replace section body.
  *
  * @param dir - Project root.
@@ -335,7 +516,7 @@ async function handleSearch(
  */
 async function handleWrite(
   dir: string,
-  args: { path: string; heading?: string; content?: string },
+  args: { path: string; heading?: string; content?: string; expected_hash?: string },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for write")
@@ -347,16 +528,14 @@ async function handleWrite(
     return toErrorOutput("content is required for write")
   }
 
-  const result = await writeSection(dir, args.path, args.heading, args.content)
+  const result = await writeSection(dir, args.path, args.heading, args.content, args.expected_hash)
 
   if ("status" in result && result.status === "chunk_required") {
     return JSON.stringify(result, null, 2)
   }
 
-  // After the chunk_required guard, result is narrowed to the success type
-  const writeResult = result as { changed: boolean; bytesChanged: number }
-
-  if (!writeResult.changed) {
+  const wr = result as WriteResult
+  if (!wr.changed) {
     return toErrorOutput(
       `No changes applied for heading '${args.heading}' in ${args.path}`,
       "Confirm the heading exists and is an exact text match. Use skim first.",
@@ -366,7 +545,47 @@ async function handleWrite(
   return toSuccessOutput(`Patched heading '${args.heading}' in ${args.path}`, undefined, {
     path: args.path,
     heading: args.heading,
-    bytesChanged: writeResult.bytesChanged,
+    bytesChanged: wr.bytesChanged,
+    hash: wr.hash,
+    opId: wr.opId,
+  })
+}
+
+/**
+ * Handle upsert action — replace or create section.
+ *
+ * @param dir - Project root.
+ * @param args - Tool arguments.
+ * @returns JSON output with result or chunk_required signal.
+ */
+async function handleUpsert(
+  dir: string,
+  args: { path: string; heading?: string; content?: string; level?: number; expected_hash?: string },
+): Promise<string> {
+  if (!args.path?.trim()) {
+    return toErrorOutput("path is required for upsert")
+  }
+  if (!args.heading?.trim()) {
+    return toErrorOutput("heading is required for upsert")
+  }
+  if (args.content === undefined || args.content === null) {
+    return toErrorOutput("content is required for upsert")
+  }
+
+  const result = await upsertSection(dir, args.path, args.heading, args.content, args.level ?? 2, args.expected_hash)
+
+  if ("status" in result && result.status === "chunk_required") {
+    return JSON.stringify(result, null, 2)
+  }
+
+  const ur = result as WriteResult
+  return toSuccessOutput(`Upserted heading '${args.heading}' in ${args.path}`, undefined, {
+    path: args.path,
+    heading: args.heading,
+    bytesChanged: ur.bytesChanged,
+    changed: ur.changed,
+    hash: ur.hash,
+    opId: ur.opId,
   })
 }
 
@@ -379,7 +598,7 @@ async function handleWrite(
  */
 async function handleAppend(
   dir: string,
-  args: { path: string; heading?: string; content?: string },
+  args: { path: string; heading?: string; content?: string; expected_hash?: string },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for append")
@@ -391,7 +610,7 @@ async function handleAppend(
     return toErrorOutput("content is required for append")
   }
 
-  const result = await appendSection(dir, args.path, args.heading, args.content)
+  const result = await appendSection(dir, args.path, args.heading, args.content, args.expected_hash)
 
   if (!result.changed) {
     return toErrorOutput(
@@ -404,6 +623,8 @@ async function handleAppend(
     path: args.path,
     heading: args.heading,
     bytesChanged: result.bytesChanged,
+    hash: result.hash,
+    opId: result.opId,
   })
 }
 
@@ -416,7 +637,7 @@ async function handleAppend(
  */
 async function handleInsert(
   dir: string,
-  args: { path: string; after_heading?: string; new_heading?: string; level?: number; content?: string },
+  args: { path: string; after_heading?: string; new_heading?: string; level?: number; content?: string; expected_hash?: string },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for insert")
@@ -435,6 +656,7 @@ async function handleInsert(
     args.new_heading,
     args.level ?? 2,
     args.content ?? "",
+    args.expected_hash,
   )
 
   if (!result.changed) {
@@ -450,6 +672,8 @@ async function handleInsert(
     new_heading: args.new_heading,
     level: args.level ?? 2,
     bytesChanged: result.bytesChanged,
+    hash: result.hash,
+    opId: result.opId,
   })
 }
 
@@ -462,7 +686,7 @@ async function handleInsert(
  */
 async function handleDelete(
   dir: string,
-  args: { path: string; heading?: string },
+  args: { path: string; heading?: string; expected_hash?: string },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for delete")
@@ -471,7 +695,7 @@ async function handleDelete(
     return toErrorOutput("heading is required for delete")
   }
 
-  const result = await deleteSection(dir, args.path, args.heading)
+  const result = await deleteSection(dir, args.path, args.heading, args.expected_hash)
 
   if (!result.changed) {
     return toErrorOutput(
@@ -484,8 +708,96 @@ async function handleDelete(
     path: args.path,
     heading: args.heading,
     bytesChanged: result.bytesChanged,
+    hash: result.hash,
+    opId: result.opId,
   })
 }
+
+// ─── Batch Action Handlers ────────────────────────────────────────────────────
+
+/**
+ * Handle batch action — multiple section ops on one file.
+ *
+ * @param dir - Project root.
+ * @param args - Tool arguments.
+ * @returns JSON output with result.
+ */
+async function handleBatch(
+  dir: string,
+  args: { path: string; operations?: string; expected_hash?: string },
+): Promise<string> {
+  if (!args.path?.trim()) {
+    return toErrorOutput("path is required for batch")
+  }
+  if (!args.operations?.trim()) {
+    return toErrorOutput("operations is required for batch (JSON array of {heading, op, body?, level?})")
+  }
+
+  let ops: Array<{ heading: string; op: string; body?: string; level?: number }>
+  try {
+    ops = JSON.parse(args.operations)
+    if (!Array.isArray(ops) || ops.length === 0) {
+      return toErrorOutput("operations must be a non-empty JSON array")
+    }
+  } catch {
+    return toErrorOutput("operations must be valid JSON", 'Example: [{"heading":"Setup","op":"write","body":"..."}]')
+  }
+
+  const result = await batchEdit(dir, args.path, ops as Array<{ heading: string; op: "write" | "append" | "delete" | "upsert"; body?: string; level?: number }>, args.expected_hash)
+
+  if ("status" in result && result.status === "chunk_required") {
+    return JSON.stringify(result, null, 2)
+  }
+
+  const br = result as WriteResult
+  return toSuccessOutput(`Batch: ${ops.length} operations on ${args.path}`, undefined, {
+    path: args.path,
+    operationCount: ops.length,
+    changed: br.changed,
+    bytesChanged: br.bytesChanged,
+    hash: br.hash,
+    opId: br.opId,
+  })
+}
+
+/**
+ * Handle batch_files action — operations across multiple files.
+ *
+ * @param dir - Project root.
+ * @param args - Tool arguments.
+ * @returns JSON output with per-file results.
+ */
+async function handleBatchFiles(
+  dir: string,
+  args: { operations?: string },
+): Promise<string> {
+  if (!args.operations?.trim()) {
+    return toErrorOutput("operations is required for batch_files (JSON array of {path, ops: [{heading, op, body?, level?}]})")
+  }
+
+  let fileOps: Array<{ path: string; ops: Array<{ heading: string; op: string; body?: string; level?: number }> }>
+  try {
+    fileOps = JSON.parse(args.operations)
+    if (!Array.isArray(fileOps) || fileOps.length === 0) {
+      return toErrorOutput("operations must be a non-empty JSON array")
+    }
+  } catch {
+    return toErrorOutput("operations must be valid JSON", 'Example: [{"path":"doc.md","ops":[{"heading":"Setup","op":"write","body":"..."}]}]')
+  }
+
+  const results = await batchFiles(dir, fileOps as Array<{ path: string; ops: Array<{ heading: string; op: "write" | "append" | "delete" | "upsert"; body?: string; level?: number }> }>)
+
+  const succeeded = results.filter(r => r.changed).length
+  const failed = results.filter(r => r.error).length
+  return toSuccessOutput(`Batch files: ${fileOps.length} files, ${succeeded} changed, ${failed} errors`, undefined, {
+    totalFiles: fileOps.length,
+    succeeded,
+    failed,
+    results,
+  })
+}
+
+// ─── Metadata & Create Handlers ───────────────────────────────────────────────
 
 /**
  * Handle set_metadata action — update frontmatter fields.
@@ -496,7 +808,7 @@ async function handleDelete(
  */
 async function handleSetMetadata(
   dir: string,
-  args: { path: string; key?: string; value?: string },
+  args: { path: string; key?: string; value?: string; expected_hash?: string },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for set_metadata")
@@ -508,7 +820,7 @@ async function handleSetMetadata(
     return toErrorOutput("value is required for set_metadata")
   }
 
-  const result = await writeMetadata(dir, args.path, { [args.key]: args.value })
+  const result = await writeMetadata(dir, args.path, { [args.key]: args.value }, args.expected_hash)
 
   if (!result.changed) {
     return toErrorOutput(`Metadata unchanged for ${args.path}`)
@@ -519,6 +831,8 @@ async function handleSetMetadata(
     key: args.key,
     value: args.value,
     bytesChanged: result.bytesChanged,
+    hash: result.hash,
+    opId: result.opId,
   })
 }
 
@@ -545,7 +859,7 @@ async function handleCreate(
     try {
       metadata = JSON.parse(args.template_metadata)
     } catch {
-      return toErrorOutput("template_metadata must be valid JSON", "Example: {\"author\": \"hivefiver\", \"date\": \"2026-03-11\"}")
+      return toErrorOutput("template_metadata must be valid JSON", '{"author": "hivefiver", "date": "2026-03-11"}')
     }
   }
 
@@ -553,6 +867,8 @@ async function handleCreate(
   return toSuccessOutput(`Created document: ${result.path}`, undefined, {
     path: result.path,
     created: result.created,
+    hash: result.hash,
+    opId: result.opId,
   })
 }
 

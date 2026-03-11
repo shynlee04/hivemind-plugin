@@ -149,6 +149,11 @@ export const HIVEMIND_INGRESS_POLICY: readonly HivemindIngressPolicyEntry[] = [
     note: "Bootstrap/session shim until profile authority is fully frozen.",
   },
   {
+    pattern: "sessions/runtime/*/profile.json",
+    classification: "compatibility",
+    note: "Canonical compatibility session-profile shim isolated away from active markdown sessions.",
+  },
+  {
     pattern: "sessions/active/*.md",
     classification: "projection",
     note: "Human-readable active session projections.",

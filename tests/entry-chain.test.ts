@@ -60,7 +60,8 @@ async function test_init() {
 
     assert(existsSync(join(hm, "config.json")), "config.json exists after init")
     assert(existsSync(getEffectivePaths(dir).brain), "brain.json exists after init")
-    assert(existsSync(join(sessions, "index.md")), "index.md exists after init")
+    assert(!existsSync(join(hm, "INDEX.md")), "root INDEX.md is not eagerly created after init")
+    assert(!existsSync(join(sessions, "index.md")), "sessions index.md is not eagerly created after init")
     assert(existsSync(join(sessions, "active.md")), "active.md exists after init")
     assert(existsSync(join(hm, "templates", "session.md")), "templates/session.md exists after init")
     assert(existsSync(join(sessions, "manifest.json")), "manifest.json exists after init")

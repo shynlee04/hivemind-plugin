@@ -99,20 +99,21 @@ async function handlePurge(directory: string): Promise<string> {
   // Phase 3A: Purge transient session memory nodes
   const sessionMemoryPurge = await purgeTransientSessionMemory(directory, state.session.id)
 
-  const nextState = recordConsolidationAndPurge(
+  const nextState = await stateManager.withState((currentState) => recordConsolidationAndPurge(
     {
-      ...state,
+      ...currentState,
       recent_messages: [],
-      // Phase 3A: Clear pending_purge flag after purge completes
       memory_governance: {
-        ...state.memory_governance,
+        ...currentState.memory_governance,
         pending_purge: false,
       },
     },
     purified.consolidated.length,
-    purified.purged_temporary_count + sessionMemoryPurge.purgedCount
-  )
-  await stateManager.save(nextState)
+    purified.purged_temporary_count + sessionMemoryPurge.purgedCount,
+  ))
+  if (!nextState) {
+    return toErrorOutput("Failed to persist purged context state.")
+  }
   eventBus.emitEvent(
     createEvent(
       "context:consolidated",

@@ -42,6 +42,7 @@ describe("hivemind ingress policy", () => {
       { path: join(tmpDir, ".hivemind", "graph", "orphans.json"), expected: "quarantine" },
       { path: join(tmpDir, ".hivemind", "handoffs", "handoff-01.json"), expected: "evidence" },
       { path: join(tmpDir, ".hivemind", "sessions", "archive", "old-session.md"), expected: "archive" },
+      { path: join(tmpDir, ".hivemind", "sessions", "runtime", "ses_test", "profile.json"), expected: "compatibility" },
       { path: join(tmpDir, ".hivemind", "INDEX.md"), expected: "projection" },
     ] as const
 

@@ -33,6 +33,7 @@ import { linkSessionToPlan, readManifest, writeManifest } from "../lib/manifest.
 import type { PlanManifest, SessionManifest, PlanType, PlanDomain, PlanPurpose } from "../lib/manifest.js"
 import { createStateManager } from "../lib/persistence.js"
 import { getEffectivePaths } from "../lib/paths.js"
+import { flushMutations } from "../lib/state-mutation-queue.js"
 
 export function createHivemindPlanTool(directory: string): ToolDefinition {
     return tool({
@@ -105,6 +106,33 @@ export function createHivemindPlanTool(directory: string): ToolDefinition {
 
 // ─── Action Handlers ─────────────────────────────────────────────────────────
 
+/**
+ * Persist active plan context through the canonical state-manager path after
+ * flushing queued hook mutations. This prevents hot-path tools from clobbering
+ * pending hook-owned updates with stale load/save cycles.
+ *
+ * @param directory - Project root containing `.hivemind/`.
+ * @param prefix - Active plan prefix to stamp into trajectory context.
+ * @param planId - Active plan ID to stamp into trajectory context.
+ * @returns Promise that resolves once active plan context is persisted.
+ */
+async function persistActivePlanContext(
+    directory: string,
+    prefix: string,
+    planId: string,
+): Promise<void> {
+    const stateManager = createStateManager(directory)
+    await flushMutations(stateManager)
+    await stateManager.withState((state) => ({
+        ...state,
+        trajectory_context: {
+            ...state.trajectory_context,
+            active_plan_prefix: prefix,
+            active_plan_id: planId,
+        },
+    }))
+}
+
 async function handleCreate(
     directory: string,
     args: {
@@ -149,14 +177,7 @@ async function handleCreate(
             rootId,
         })
 
-        // Set active plan in trajectory context
-        const stateManager = createStateManager(directory)
-        const state = await stateManager.load()
-        if (state) {
-            state.trajectory_context.active_plan_prefix = args.prefix
-            state.trajectory_context.active_plan_id = result.manifestEntry.id
-            await stateManager.save(state)
-        }
+        await persistActivePlanContext(directory, args.prefix, result.manifestEntry.id)
 
         return toSuccessOutput("Plan created", args.prefix, {
             id: result.manifestEntry.id,
@@ -213,15 +234,8 @@ async function handleUpdate(
     try {
         await updatePlanStatus(planPath, args.status as "pending" | "active" | "complete" | "blocked")
 
-        // Update trajectory context if setting to active
         if (args.status === "active") {
-            const stateManager = createStateManager(directory)
-            const state = await stateManager.load()
-            if (state) {
-                state.trajectory_context.active_plan_prefix = args.prefix
-                state.trajectory_context.active_plan_id = entry.id
-                await stateManager.save(state)
-            }
+            await persistActivePlanContext(directory, args.prefix, entry.id)
         }
 
         return toSuccessOutput("Plan updated", args.prefix, {

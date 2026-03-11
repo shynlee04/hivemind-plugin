@@ -6,10 +6,11 @@ import { describe, it } from "node:test"
 
 import type { Logger } from "../src/lib/logging.js"
 import { createStateManager } from "../src/lib/persistence.js"
-import { getEffectivePaths } from "../src/lib/paths.js"
+import { getEffectivePaths, getSessionPaths } from "../src/lib/paths.js"
 import { createTree, saveTree } from "../src/lib/hierarchy-tree.js"
 import { createConfig } from "../src/schemas/config.js"
 import { createEventHandler } from "../src/hooks/event-handler.js"
+import { createHivemindBootstrapTool } from "../src/tools/hivemind-bootstrap.js"
 
 const noopLogger: Logger = {
   info: async () => {},
@@ -42,11 +43,12 @@ describe("session.created bootstrap ownership", () => {
       const rawTree = JSON.parse(await readFile(paths.hierarchy, "utf-8"))
       assert.equal(rawTree.root, null)
 
-      const profile = JSON.parse(
-        await readFile(join(paths.activeDir, sessionId, "profile.json"), "utf-8"),
-      )
+      const profile = JSON.parse(await readFile(getSessionPaths(dir, sessionId).profile, "utf-8"))
       assert.equal(profile.session_id, sessionId)
       assert.equal(profile.agent, "unresolved")
+      assert.equal(profile.lineage_scope, "unknown")
+      assert.equal(profile.session_kind, "unresolved")
+      assert.equal(profile.brain_session_id, state.session.id)
       assert.equal(typeof profile.created_at, "number")
       assert.equal(typeof profile.updated_at, "number")
       assert(profile.updated_at >= profile.created_at)
@@ -77,11 +79,42 @@ describe("session.created bootstrap ownership", () => {
       assert.equal(updatedState.session.id, existingState.session.id)
       assert.equal(updatedState.session.opencode_session_id, sessionId)
 
-      const profile = JSON.parse(
-        await readFile(join(getEffectivePaths(dir).activeDir, sessionId, "profile.json"), "utf-8"),
-      )
+      const profile = JSON.parse(await readFile(getSessionPaths(dir, sessionId).profile, "utf-8"))
       assert.equal(profile.session_id, sessionId)
       assert.equal(profile.agent, "unresolved")
+      assert.equal(profile.lineage_scope, "unknown")
+      assert.equal(profile.session_kind, "unresolved")
+      assert.equal(profile.brain_session_id, existingState.session.id)
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it("manual bootstrap writes canonical runtime state that stateManager can load", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "hm-bootstrap-tool-canonical-"))
+
+    try {
+      const bootstrapTool = createHivemindBootstrapTool(dir)
+      const raw = await bootstrapTool.execute({ force: false }, {} as any)
+      const parsed = JSON.parse(raw as string)
+
+      assert.equal(parsed.status, "success")
+
+      const state = await createStateManager(dir).load()
+      assert(state, "expected canonical BrainState to be loadable after bootstrap")
+      assert.equal(state.session.governance_status, "LOCKED")
+      assert.equal(typeof state.session.id, "string")
+      assert.equal(state.session.id.length > 0, true)
+
+      const profilePath = parsed.metadata?.stateFiles?.profile
+      assert.equal(typeof profilePath, "string")
+
+      const profile = JSON.parse(await readFile(profilePath, "utf-8"))
+      assert.equal(profile.session_id, parsed.entity_id)
+      assert.equal(profile.brain_session_id, state.session.id)
+      assert.equal(profile.agent, "unresolved")
+      assert.equal(profile.lineage_scope, "unknown")
+      assert.equal(profile.session_kind, "unresolved")
     } finally {
       await rm(dir, { recursive: true, force: true })
     }

@@ -86,6 +86,7 @@ export interface HivemindPaths {
   sessionsDir: string
   sessionsManifest: string
   activeDir: string         // sessions/active/
+  sessionRuntimeDir: string // sessions/runtime/
   archiveDir: string        // sessions/archive/
   exportsDir: string        // sessions/archive/exports/
 
@@ -146,7 +147,7 @@ export interface HivemindPaths {
 }
 
 export interface SessionPaths {
-  sessionDir: string
+  profileDir: string
   profile: string
 }
 
@@ -182,6 +183,7 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
   const memoryDir = join(root, "memory")
   const sessionsDir = join(root, "sessions")
   const activeDir = join(sessionsDir, "active")
+  const sessionRuntimeDir = join(sessionsDir, "runtime")
   const archiveDir = join(sessionsDir, "archive")
   const plansDir = join(root, "plans")
   const planTemplatesDir = join(plansDir, "templates")
@@ -262,6 +264,7 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
     sessionsDir,
     sessionsManifest: join(sessionsDir, "manifest.json"),
     activeDir,
+    sessionRuntimeDir,
     archiveDir,
     exportsDir: join(archiveDir, "exports"),
 
@@ -312,7 +315,7 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
 }
 
 /**
- * Returns deterministic paths for a single active session directory.
+ * Returns deterministic paths for compatibility session-profile storage.
  */
 export function getSessionPaths(projectRoot: string, sessionId: string): SessionPaths {
   const safeSessionId = sanitizeSessionStamp(sessionId) ?? sanitizeSessionFileName(sessionId)
@@ -321,10 +324,10 @@ export function getSessionPaths(projectRoot: string, sessionId: string): Session
   }
 
   const paths = getHivemindPaths(projectRoot)
-  const sessionDir = join(paths.activeDir, safeSessionId)
+  const profileDir = join(paths.sessionRuntimeDir, safeSessionId)
   return {
-    sessionDir,
-    profile: join(sessionDir, "profile.json"),
+    profileDir,
+    profile: join(profileDir, "profile.json"),
   }
 }
 
@@ -591,6 +594,7 @@ export function getAllDirectories(projectRoot: string): string[] {
     p.systemDir,
     p.sessionsDir,
     p.activeDir,
+    p.sessionRuntimeDir,
     p.archiveDir,
     p.exportsDir,
     p.plansDir,
