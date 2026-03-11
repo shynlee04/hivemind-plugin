@@ -6,6 +6,7 @@
  *   skimDirectory  — batch skim across multiple files
  *   readSection    — extract a single section by heading
  *   readChunked    — token-budget-aware chunked read
+ *   upsertSection  — replace a section body or create the section if absent
  *   writeSection   — replace a section body
  *   appendSection  — append to a section body
  *   insertSection  — insert a new section after a heading
@@ -329,6 +330,52 @@ export async function generateTOC(projectRoot: string, filePath: string): Promis
 }
 
 // ─── Write Operations ───────────────────────────────────────────────────────────
+
+/**
+ * Replace a section body, or create the section if the heading is absent.
+ * Enforces file-type guard and chunk-write threshold.
+ *
+ * @param projectRoot - Project root for path resolution.
+ * @param filePath - Workspace-relative or absolute path.
+ * @param heading - Exact heading text to target or create.
+ * @param content - Replacement section body.
+ * @param level - Heading level to use when creating a missing section.
+ * @returns Result object or chunk_required signal.
+ */
+export async function upsertSection(
+  projectRoot: string,
+  filePath: string,
+  heading: string,
+  content: string,
+  level = 2,
+): Promise<{ changed: boolean; bytesChanged: number } | ChunkWriteSignal> {
+  const abs = safePath(projectRoot, filePath)
+  if (!isWritable(abs)) {
+    throw new Error(`File type not writable: ${extname(abs)}. Only ${[...WRITABLE_EXTENSIONS].join(", ")} are allowed.`)
+  }
+
+  const original = await readTextFile(abs)
+  const lineCount = original.split("\n").length
+
+  if (lineCount > CHUNK_WRITE_THRESHOLD) {
+    const outline = weaver.readOutline(original)
+    return {
+      status: "chunk_required",
+      message: `File has ${lineCount} lines (threshold: ${CHUNK_WRITE_THRESHOLD}). Write section-by-section using the section heading as target.`,
+      lineCount,
+      threshold: CHUNK_WRITE_THRESHOLD,
+      outline,
+    }
+  }
+
+  const patched = weaver.upsertSection(original, heading, content, level)
+  if (patched === original) {
+    return { changed: false, bytesChanged: 0 }
+  }
+
+  await writeFile(abs, patched, "utf-8")
+  return { changed: true, bytesChanged: Math.abs(Buffer.byteLength(patched) - Buffer.byteLength(original)) }
+}
 
 /**
  * Replace the body of a section identified by heading.

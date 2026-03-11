@@ -15,6 +15,7 @@ import { join } from "node:path"
 
 import { readManifest } from "../lib/manifest.js"
 import { getHiveOpsPaths } from "../lib/hiveops-paths.js"
+import { ensureHivemindIngressClassification } from "../lib/hivemind-ingress-policy.js"
 import { readCanonicalTaskAuthority, renderCanonicalTaskSnapshot } from "../lib/task-authority.js"
 
 interface HandoffPayload {
@@ -116,6 +117,12 @@ export function createHiveOpsExportTool(fallbackDirectory: string): ToolDefiniti
 
           await ensureDir(paths.handoffDir)
 
+          ensureHivemindIngressClassification(
+            projectRoot,
+            paths.gatesFile,
+            ["authority"],
+            "hiveops_export handoff gate read",
+          )
           const gateState = await loadJson<{ gates?: Array<{ gate: string; domain: string; status: string }> }>(paths.gatesFile)
           const passedGates = gateState?.gates
             ?.filter((gate) => gate.status === "passed")
@@ -138,7 +145,22 @@ export function createHiveOpsExportTool(fallbackDirectory: string): ToolDefiniti
             residualRisk: args.risk || "None declared",
           }
 
-          writeFileSync(join(paths.handoffDir, `${id}.json`), JSON.stringify(payload, null, 2))
+          const handoffJsonPath = join(paths.handoffDir, `${id}.json`)
+          const handoffMarkdownPath = join(paths.handoffDir, `${id}.md`)
+          ensureHivemindIngressClassification(
+            projectRoot,
+            handoffJsonPath,
+            ["evidence"],
+            "hiveops_export handoff json write",
+          )
+          ensureHivemindIngressClassification(
+            projectRoot,
+            handoffMarkdownPath,
+            ["evidence"],
+            "hiveops_export handoff markdown write",
+          )
+
+          writeFileSync(handoffJsonPath, JSON.stringify(payload, null, 2))
 
           const markdown = [
             `# Handoff: ${id}`,
@@ -171,7 +193,7 @@ export function createHiveOpsExportTool(fallbackDirectory: string): ToolDefiniti
             payload.residualRisk,
           ].join("\n")
 
-          writeFileSync(join(paths.handoffDir, `${id}.md`), markdown)
+          writeFileSync(handoffMarkdownPath, markdown)
 
           return [
             `Handoff created: ${id}`,
@@ -188,6 +210,12 @@ export function createHiveOpsExportTool(fallbackDirectory: string): ToolDefiniti
 
           await ensureDir(paths.checkpointDir)
 
+          ensureHivemindIngressClassification(
+            projectRoot,
+            paths.gatesFile,
+            ["authority"],
+            "hiveops_export checkpoint gate read",
+          )
           const gateState = await loadJson<{ gates?: Array<{ gate: string; status: string }> }>(paths.gatesFile)
           const taskAuthority = await readCanonicalTaskAuthority(projectRoot, context.sessionID || "unknown")
 
@@ -203,7 +231,14 @@ export function createHiveOpsExportTool(fallbackDirectory: string): ToolDefiniti
           }
 
           const fileName = `cp-${Date.now().toString(36)}.json`
-          writeFileSync(join(paths.checkpointDir, fileName), JSON.stringify(checkpoint, null, 2))
+          const checkpointPath = join(paths.checkpointDir, fileName)
+          ensureHivemindIngressClassification(
+            projectRoot,
+            checkpointPath,
+            ["evidence"],
+            "hiveops_export checkpoint write",
+          )
+          writeFileSync(checkpointPath, JSON.stringify(checkpoint, null, 2))
 
           return `Checkpoint saved: "${args.label}"${args.plan_id ? ` [plan:${args.plan_id}]` : ""}${args.node_id ? ` [node:${args.node_id}]` : ""} → .hivemind/checkpoints/${fileName}`
         }
@@ -220,7 +255,14 @@ export function createHiveOpsExportTool(fallbackDirectory: string): ToolDefiniti
           if (files.length === 0) return "No handoffs yet."
 
           const lines = files.map((file) => {
-            const data = readFileSync(join(paths.handoffDir, file), "utf-8")
+            const handoffPath = join(paths.handoffDir, file)
+            ensureHivemindIngressClassification(
+              projectRoot,
+              handoffPath,
+              ["evidence"],
+              "hiveops_export handoff list read",
+            )
+            const data = readFileSync(handoffPath, "utf-8")
             const parsed = JSON.parse(data) as HandoffPayload
             const plan = parsed.planId ? ` plan:${parsed.planId}` : ""
             const node = parsed.nodeId ? ` node:${parsed.nodeId}` : ""
@@ -234,10 +276,26 @@ export function createHiveOpsExportTool(fallbackDirectory: string): ToolDefiniti
           if (!args.id) return "ERROR: id is required for read"
 
           const markdownPath = join(paths.handoffDir, `${args.id}.md`)
-          if (existsSync(markdownPath)) return readFileSync(markdownPath, "utf-8")
+          if (existsSync(markdownPath)) {
+            ensureHivemindIngressClassification(
+              projectRoot,
+              markdownPath,
+              ["evidence"],
+              "hiveops_export handoff markdown read",
+            )
+            return readFileSync(markdownPath, "utf-8")
+          }
 
           const jsonPath = join(paths.handoffDir, `${args.id}.json`)
-          if (existsSync(jsonPath)) return readFileSync(jsonPath, "utf-8")
+          if (existsSync(jsonPath)) {
+            ensureHivemindIngressClassification(
+              projectRoot,
+              jsonPath,
+              ["evidence"],
+              "hiveops_export handoff json read",
+            )
+            return readFileSync(jsonPath, "utf-8")
+          }
 
           return `ERROR: Handoff ${args.id} not found in .hivemind/handoffs/`
         }

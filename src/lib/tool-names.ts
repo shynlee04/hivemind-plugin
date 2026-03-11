@@ -14,6 +14,8 @@
 export const TOOL_NAMES = {
     /** Session lifecycle: start, update, close, status, resume, branch */
     SESSION: "hivemind_session",
+    /** Unified document intelligence tool */
+    DOC: "hivemind_doc",
     /** Context mapping: set trajectory/tactic/action focus */
     CONTEXT: "map_context",
     /** Compact current session */
@@ -57,6 +59,8 @@ export const TOOL_ALIAS_MAP: Record<string, string> = {
     save_anchor: "hivemind_anchor",
     // Hierarchy legacy
     hierarchy_manage: "hivemind_hierarchy",
+    // Document legacy
+    hivemind_doc_weaver: "hivemind_doc",
 };
 
 export function normalizeToolAlias(toolName: string): string {

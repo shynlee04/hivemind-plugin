@@ -1,6 +1,7 @@
 import { readManifest } from "./manifest.js"
 import { loadGraphTasks } from "./graph/reader.js"
 import { getEffectivePaths } from "./paths.js"
+import { ensureHivemindIngressClassification } from "./hivemind-ingress-policy.js"
 import type { GraphTasksState } from "../schemas/graph-state.js"
 import type { TaskItem, TaskManifest } from "../schemas/manifest.js"
 
@@ -102,6 +103,12 @@ export async function readCanonicalTaskAuthority(
   sessionId = "unknown",
 ): Promise<CanonicalTaskAuthoritySnapshot> {
   const paths = getEffectivePaths(directory)
+  ensureHivemindIngressClassification(
+    directory,
+    paths.tasks,
+    ["authority"],
+    "readCanonicalTaskAuthority state/tasks read",
+  )
   const stateTasks = await readManifest<TaskManifest | null>(paths.tasks, null)
 
   if (stateTasks && Array.isArray(stateTasks.tasks) && stateTasks.tasks.length > 0) {
@@ -111,6 +118,12 @@ export async function readCanonicalTaskAuthority(
     }
   }
 
+  ensureHivemindIngressClassification(
+    directory,
+    paths.graphTasks,
+    ["authority"],
+    "readCanonicalTaskAuthority graph/tasks fallback read",
+  )
   const graphTasks = await loadGraphTasks(directory, { enabled: false })
   if (graphTasks.tasks.length > 0) {
     return {

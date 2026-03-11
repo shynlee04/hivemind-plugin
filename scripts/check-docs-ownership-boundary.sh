@@ -9,55 +9,40 @@ status=0
 hivefiver_file="agents/hivefiver.md"
 hivemaker_file="agents/hivemaker.md"
 hivehealer_file="agents/hivehealer.md"
-reserved_hivefiver_file="agents/hivefiver-reserved.md"
-
-extract_frontmatter() {
+require_pattern() {
   local file="$1"
-  awk '
-    BEGIN { sep=0 }
-    /^---[[:space:]]*$/ { sep+=1; next }
-    sep==1 { print }
-    sep>=2 { exit }
-  ' "$file"
+  local pattern="$2"
+  local message="$3"
+  if ! rg -q "$pattern" "$file"; then
+    echo "❌ $message"
+    status=1
+  fi
 }
 
-hivefiver_frontmatter="$(extract_frontmatter "$hivefiver_file")"
-hivefiver_reserved_frontmatter="$(extract_frontmatter "$reserved_hivefiver_file")"
-hivemaker_frontmatter="$(extract_frontmatter "$hivemaker_file")"
-hivehealer_frontmatter="$(extract_frontmatter "$hivehealer_file")"
+for required_file in "$hivefiver_file" "$hivemaker_file" "$hivehealer_file"; do
+  if [[ ! -f "$required_file" ]]; then
+    echo "❌ Missing required agent file: $required_file"
+    status=1
+  fi
+done
 
-if ! printf '%s\n' "$hivefiver_frontmatter" | rg -q 'docs/framework/\*\*'; then
-  echo "❌ hivefiver must be scoped to docs/framework/**"
-  status=1
-fi
+require_pattern "$hivefiver_file" 'Meta-builder|framework doctor' "hivefiver must remain a framework/meta-builder surface."
+require_pattern "$hivefiver_file" 'src/\*\*' "hivefiver must explicitly keep src/** out of scope."
+require_pattern "$hivefiver_file" 'tests/\*\*' "hivefiver must explicitly keep tests/** out of scope."
+require_pattern "$hivefiver_file" 'agents/\*\*|commands/\*\*|workflows/\*\*|skills/\*\*' "hivefiver must retain framework-asset scope language."
 
-if printf '%s\n' "$hivefiver_frontmatter" | rg -q 'docs/\*\*'; then
-  echo "❌ hivefiver has broad docs/** ownership (must be docs/framework/** only)"
-  status=1
-fi
+require_pattern "$hivemaker_file" 'src/\*\*|`src/`|src/' "hivemaker must explicitly own src work."
+require_pattern "$hivemaker_file" 'tests/\*\*|`tests/`|tests/' "hivemaker must explicitly own tests work."
+require_pattern "$hivemaker_file" 'docs/\*\*|docs/' "hivemaker must explicitly own docs work."
+require_pattern "$hivemaker_file" 'agents|commands|workflows|skills' "hivemaker must still forbid framework assets."
 
-if ! printf '%s\n' "$hivefiver_reserved_frontmatter" | rg -q 'docs/framework/\*\*'; then
-  echo "❌ hivefiver-reserved must be scoped to docs/framework/**"
-  status=1
-fi
-
-if printf '%s\n' "$hivefiver_reserved_frontmatter" | rg -q 'docs/\*\*'; then
-  echo "❌ hivefiver-reserved has broad docs/** ownership (must be docs/framework/** only)"
-  status=1
-fi
-
-if ! printf '%s\n' "$hivemaker_frontmatter" | rg -q 'docs/implementation/\*\*'; then
-  echo "❌ hivemaker must be scoped to docs/implementation/**"
-  status=1
-fi
-
-if ! printf '%s\n' "$hivehealer_frontmatter" | rg -q 'docs/implementation/\*\*'; then
-  echo "❌ hivehealer must be scoped to docs/implementation/**"
-  status=1
-fi
+require_pattern "$hivehealer_file" 'src/\*\*|`src/`|src/' "hivehealer must explicitly own src work."
+require_pattern "$hivehealer_file" 'tests/\*\*|`tests/`|tests/' "hivehealer must explicitly own tests work."
+require_pattern "$hivehealer_file" 'docs/\*\*|docs/' "hivehealer must explicitly own docs work."
+require_pattern "$hivehealer_file" 'agents|commands|workflows|skills' "hivehealer must still forbid framework assets."
 
 if [[ "$status" -ne 0 ]]; then
   exit 1
 fi
 
-echo "✅ Docs ownership boundary clean (framework vs implementation split enforced)."
+echo "✅ Agent/docs ownership boundary clean (framework vs implementation split enforced)."

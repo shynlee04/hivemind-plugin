@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs"
-import { readFile, writeFile } from "node:fs/promises"
-import { join } from "path"
+import { readFile } from "node:fs/promises"
+import { join, relative } from "path"
+import { readSection, upsertSection } from "./doc-intel.js"
 import { initializePlanningProjectDir } from "./fs/planning-ops.js"
 import { getEffectivePaths } from "./paths.js"
 
@@ -59,111 +60,96 @@ async function loadPlanningFile(directory: string, fileName: string): Promise<{
   return { filePath, content, existedBefore }
 }
 
-function sectionRange(lines: string[], heading: string): { start: number; end: number } | null {
-  const headingIndex = lines.findIndex((line) => line.startsWith(heading))
-  if (headingIndex === -1) {
-    return null
-  }
-  const nextHeading = lines.findIndex((line, i) => i > headingIndex && line.startsWith("## "))
-  return { start: headingIndex + 1, end: nextHeading === -1 ? lines.length : nextHeading }
-}
-
 function normalizeLines(content: string): string[] {
   const trimmed = content.trim()
   return trimmed ? trimmed.split("\n").map((line) => line.trimEnd()) : []
 }
 
-function getSectionLines(content: string, heading: string): string[] {
-  const lines = content.split("\n")
-  const range = sectionRange(lines, heading)
-  return range ? lines.slice(range.start, range.end) : []
-}
-
-function sectionEmpty(lines: string[]): boolean {
-  return lines.every((line) => {
+function sectionEmpty(content: string | null): boolean {
+  return normalizeLines(content ?? "").every((line) => {
     const value = line.trim()
     return value.length === 0 || (value.startsWith("<!--") && value.endsWith("-->"))
   })
 }
 
-function updateSection(content: string, heading: string, newContent: string, mode: "replace" | "append"): string {
-  const lines = content.split("\n")
-  const range = sectionRange(lines, heading)
-  const incoming = normalizeLines(newContent)
-  if (!range) {
-    const appended = [...lines]
-    if (appended.length > 0 && appended[appended.length - 1] !== "") {
-      appended.push("")
-    }
-    appended.push(heading, ...incoming)
-    return appended.join("\n")
-  }
+function toWorkspacePath(directory: string, filePath: string): string {
+  return relative(directory, filePath)
+}
+
+async function applySectionUpdate(
+  directory: string,
+  filePath: string,
+  heading: string,
+  newContent: string,
+  mode: "replace" | "append",
+): Promise<void> {
+  const workspacePath = toWorkspacePath(directory, filePath)
+
   if (mode === "replace") {
-    const replacement = [...incoming]
-    if (range.end < lines.length && replacement.length > 0 && replacement[replacement.length - 1] !== "") {
-      replacement.push("")
+    const result = await upsertSection(directory, workspacePath, heading, newContent)
+    if ("status" in result) {
+      throw new Error(result.message)
     }
-    return [...lines.slice(0, range.start), ...replacement, ...lines.slice(range.end)].join("\n")
+    return
   }
-  const currentSection = lines.slice(range.start, range.end)
+
+  const currentSection = normalizeLines(await readSection(directory, workspacePath, heading) ?? "")
+  const incoming = normalizeLines(newContent)
   const deduped = incoming.filter(
     (line) => line.trim().length > 0 && !currentSection.some((existing) => existing.trim() === line.trim()),
   )
   if (deduped.length === 0) {
-    return content
+    return
   }
-  const next = lines.slice(0, range.end)
-  if (next.length > 0 && next[next.length - 1] !== "") {
-    next.push("")
+
+  const merged = currentSection.length > 0
+    ? `${currentSection.join("\n")}\n\n${deduped.join("\n")}`
+    : deduped.join("\n")
+
+  const result = await upsertSection(directory, workspacePath, heading, merged)
+  if ("status" in result) {
+    throw new Error(result.message)
   }
-  next.push(...deduped)
-  if (range.end < lines.length) {
-    next.push("")
-  }
-  return [...next, ...lines.slice(range.end)].join("\n")
 }
 
-async function persist(
+async function finalizeMaterialization(
   fileName: string,
   filePath: string,
   previous: string,
-  next: string,
   existedBefore: boolean,
 ): Promise<MaterializationResult> {
+  const next = existsSync(filePath) ? await readFile(filePath, "utf-8") : ""
   if (previous === next) {
     return { file: fileName, action: "unchanged", linesWritten: 0 }
   }
-  const normalized = next.endsWith("\n") ? next : `${next}\n`
-  await writeFile(filePath, normalized)
   return {
     file: fileName,
     action: existedBefore ? "updated" : "created",
-    linesWritten: normalized.split("\n").length - 1,
+    linesWritten: next.endsWith("\n") ? next.split("\n").length - 1 : next.split("\n").length,
   }
 }
 
 export async function materializeStateMd(directory: string, params: StateMdParams): Promise<MaterializationResult> {
   const { filePath, content, existedBefore } = await loadPlanningFile(directory, "STATE.md")
-  let next = content
   if (params.currentPosition?.trim()) {
-    next = updateSection(next, "## Current Position", params.currentPosition.trim(), "replace")
+    await applySectionUpdate(directory, filePath, "Current Position", params.currentPosition.trim(), "replace")
   }
   if (params.activeBlockers) {
     const blockers = params.activeBlockers.length > 0 ? params.activeBlockers.map((item) => `- ${item}`) : ["- None"]
-    next = updateSection(next, "## Active Blockers", blockers.join("\n"), "replace")
+    await applySectionUpdate(directory, filePath, "Active Blockers", blockers.join("\n"), "replace")
   }
   if (params.recentDecisions && params.recentDecisions.length > 0) {
     const decisions = params.recentDecisions.map(({ decision, date, session_id }) => {
       const suffix = session_id ? ` (session: ${session_id})` : ""
       return `- [${date}] ${decision}${suffix}`
     })
-    next = updateSection(next, "## Recent Decisions", decisions.join("\n"), "append")
+    await applySectionUpdate(directory, filePath, "Recent Decisions", decisions.join("\n"), "append")
   }
   if (params.sessionEntry) {
     const line = `- [${params.sessionEntry.date}] ${params.sessionEntry.summary} (session: ${params.sessionEntry.session_id})`
-    next = updateSection(next, "## Session History", line, "append")
+    await applySectionUpdate(directory, filePath, "Session History", line, "append")
   }
-  return persist("STATE.md", filePath, content, next, existedBefore)
+  return finalizeMaterialization("STATE.md", filePath, content, existedBefore)
 }
 
 export async function materializeProjectMd(
@@ -171,22 +157,23 @@ export async function materializeProjectMd(
   params: ProjectMdParams,
 ): Promise<MaterializationResult> {
   const { filePath, content, existedBefore } = await loadPlanningFile(directory, "PROJECT.md")
-  let next = content
-  if (params.trajectoryIntent?.trim() && sectionEmpty(getSectionLines(next, "## Purpose"))) {
-    next = updateSection(next, "## Purpose", params.trajectoryIntent.trim(), "replace")
+  const workspacePath = toWorkspacePath(directory, filePath)
+  if (params.trajectoryIntent?.trim() && sectionEmpty(await readSection(directory, workspacePath, "Purpose"))) {
+    await applySectionUpdate(directory, filePath, "Purpose", params.trajectoryIntent.trim(), "replace")
   }
-  if (params.scope?.trim() && sectionEmpty(getSectionLines(next, "## Scope"))) {
-    next = updateSection(next, "## Scope", params.scope.trim(), "replace")
+  if (params.scope?.trim() && sectionEmpty(await readSection(directory, workspacePath, "Scope"))) {
+    await applySectionUpdate(directory, filePath, "Scope", params.scope.trim(), "replace")
   }
   if (params.keyDecisions && params.keyDecisions.length > 0) {
-    next = updateSection(
-      next,
-      "## Key Decisions",
+    await applySectionUpdate(
+      directory,
+      filePath,
+      "Key Decisions",
       params.keyDecisions.map((decision) => `- ${decision}`).join("\n"),
       "append",
     )
   }
-  return persist("PROJECT.md", filePath, content, next, existedBefore)
+  return finalizeMaterialization("PROJECT.md", filePath, content, existedBefore)
 }
 
 export async function materializeRoadmapMd(
@@ -198,7 +185,7 @@ export async function materializeRoadmapMd(
     return { file: "ROADMAP.md", action: "unchanged", linesWritten: 0 }
   }
   const rows = new Map<number, { number: number; name: string; status: string; progress: number }>()
-  for (const line of getSectionLines(content, "## Phases")) {
+  for (const line of normalizeLines(await readSection(directory, toWorkspacePath(directory, filePath), "Phases") ?? "")) {
     const trimmed = line.trim()
     if (!trimmed.startsWith("|") || trimmed.startsWith("| Phase ") || trimmed.includes("---")) {
       continue
@@ -218,9 +205,10 @@ export async function materializeRoadmapMd(
   for (const phase of params.phases) {
     rows.set(phase.number, phase)
   }
-  const next = updateSection(
-    content,
-    "## Phases",
+  await applySectionUpdate(
+    directory,
+    filePath,
+    "Phases",
     [
       "| Phase | Name | Status | Progress |",
       "|-------|------|--------|----------|",
@@ -230,7 +218,7 @@ export async function materializeRoadmapMd(
     ].join("\n"),
     "replace",
   )
-  return persist("ROADMAP.md", filePath, content, next, existedBefore)
+  return finalizeMaterialization("ROADMAP.md", filePath, content, existedBefore)
 }
 
 export async function materializeFromSessionState(

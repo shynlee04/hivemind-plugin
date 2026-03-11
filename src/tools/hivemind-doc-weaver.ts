@@ -1,15 +1,27 @@
-import { readFile, writeFile } from "node:fs/promises"
-import { join } from "node:path"
+/**
+ * Legacy `hivemind_doc_weaver` compatibility wrapper.
+ *
+ * The canonical document authority is now `hivemind_doc`.
+ * This wrapper remains only to isolate older callers while routing them
+ * through the newer `doc-intel` write path.
+ */
 
 import { tool, type ToolDefinition } from "@opencode-ai/plugin/tool"
 
-import { DocWeaver } from "../lib/code-intel/index.js"
+import { writeSection } from "../lib/doc-intel.js"
 import { toErrorOutput, toSuccessOutput } from "../lib/tool-response.js"
 
+/**
+ * Create the legacy `hivemind_doc_weaver` compatibility tool.
+ *
+ * @param directory - Project root used for path resolution.
+ * @returns OpenCode tool definition for legacy callers.
+ */
 export function createHivemindDocWeaverTool(directory: string): ToolDefinition {
   return tool({
     description:
-      "Patch a markdown section by heading and rewrite only that section body.",
+      "Compatibility-only wrapper for legacy hivemind_doc_weaver callers. " +
+      "Routes section patch requests through the canonical hivemind_doc write path.",
     args: {
       file_path: tool.schema.string().describe("Workspace-relative markdown file path"),
       heading: tool.schema.string().describe("Exact heading text to patch"),
@@ -26,30 +38,33 @@ export function createHivemindDocWeaverTool(directory: string): ToolDefinition {
         return toErrorOutput("heading is required", "Provide a non-empty heading")
       }
 
-      const absolutePath = join(directory, filePath)
-      const docWeaver = new DocWeaver()
-
       try {
-        const original = await readFile(absolutePath, "utf-8")
-        const patched = docWeaver.patchSection(original, heading, args.new_content)
+        const result = await writeSection(directory, filePath, heading, args.new_content)
 
-        if (patched === original) {
+        if ("status" in result) {
           return toErrorOutput(
-            `No section changes applied for heading '${heading}' in ${filePath}`,
-            "Confirm the heading exists and is an exact text match"
+            `Legacy doc weaving requires chunked handling for ${filePath}`,
+            "Use hivemind_doc skim/read/write section-by-section for large documents",
           )
         }
 
-        await writeFile(absolutePath, patched, "utf-8")
+        if (!result.changed) {
+          return toErrorOutput(
+            `No section changes applied for heading '${heading}' in ${filePath}`,
+            "Confirm the heading exists and is an exact text match, or use hivemind_doc.skim first",
+          )
+        }
 
         return toSuccessOutput(`Patched heading '${heading}' in ${filePath}`, undefined, {
           filePath,
           heading,
-          bytesChanged: Math.abs(Buffer.byteLength(patched) - Buffer.byteLength(original)),
+          bytesChanged: result.bytesChanged,
+          compatibility_only: true,
+          canonical_tool: "hivemind_doc",
         })
       } catch (err) {
         return toErrorOutput(
-          `Doc weaving failed: ${err instanceof Error ? err.message : String(err)}`
+          `Doc weaving failed: ${err instanceof Error ? err.message : String(err)}`,
         )
       }
     },

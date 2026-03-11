@@ -380,20 +380,22 @@ Human operators should not have to start from `brain.json` just to understand th
 - `P1-C.2b` subset 1: TODO sovereignty lock landed — canonical task authority now routes through `src/tools/hiveops-todo.ts`, `state/tasks.json`, and `graph/tasks.json`; `state-snapshot.ts` and `hiveops-export.ts` now read canonical task authority instead of treating `todo.json` as runtime truth
 - `P1-C.2b.a`: lineage identity enrichment landed — canonical tasks now carry `lineage_owner`, `owner_agent`, `origin_session_id`, `parent_session_id`, and `session_kind`; `hiveops-todo`, `todo.updated` ingestion, and manifest→graph sync propagate those fields, and task-manifest flush now materializes `state/tasks.json` before graph sync
 - `P1-C.2b.b`: workflow topology classification landed — canonical tasks now carry `workflow_topology`; manual TODO creation defaults to `unclassified` or auto-upgrades to `dependent` when dependencies exist, `todo.updated` preserves inbound topology or defaults safely, and manifest→graph sync keeps topology visible in the global task graph
+- `P1-D.1a` subset 1: document-intelligence authority slice landed — `hivemind_doc` is now the canonical document tool, `hivemind_doc_weaver` is normalized and isolated as a compatibility wrapper, and `planning-materializer.ts` now uses `doc-intel` section upserts instead of its own ad-hoc markdown section mutator logic (2026-03-11)
+- `P1-D.1b`: ingress regulation slice landed — `src/lib/hivemind-ingress-policy.ts` now classifies `.hivemind` surfaces into `authority`, `projection`, `quarantine`, `evidence`, `archive`, and `compatibility`; canonical task readers assert authority-classified sources, `state-snapshot.ts` emits warnings for compatibility reads, and `hiveops-export.ts` now reads/writes through explicit ingress classes (2026-03-11)
 
 **Active**:
 
 - `P1-D.1a`: ecosystem authority freeze is now the active Phase 1 umbrella slice — sessions, planning, tasks, workflows, hooks, tools, commands, skills, and scripts that can deterministically or programmatically shape `.hivemind/` must be frozen into one registry-led manifestation model before more task-semantic expansion proceeds
 - `P1-B` closeout: bootstrap/profile authority alignment remains unresolved — canonical brain-state lineage is classified on `session.created`, but session profile seeding still starts with `agent: "unresolved"` and must be frozen to one owner before `P1-B` can be treated as closed
-- `P1-D.1b`: `.hivemind` ingress regulation is now the immediate follow-on slice — empty or missing manifests, readability projections, compatibility files, and derived workflow outputs must stop pretending to be runtime authority
-- `P1-D.1c`: dead-surface isolation/archive wave is now queued inside Phase 1 — messy concept-related surfaces in `src/lib/`, `src/tools/`, `src/hooks/`, CLI/bootstrap logic, workflows, and scripts must be classified before later migration waves touch them
+- `P1-D.1b`: `.hivemind` ingress regulation is now frozen as the foundation rulebook — compatibility/projection surfaces are classified and canonical readers have started enforcing the boundary, but broader readers and producers still need to be cut over or downgraded
+- `P1-D.1c`: dead-surface isolation/archive wave is now the immediate follow-on slice inside Phase 1 — messy concept-related surfaces in `src/lib/`, `src/tools/`, `src/hooks/`, CLI/bootstrap logic, workflows, and scripts must now be classified against the ingress ledger before later migration waves touch them
 - `P1-D`: state-authority planning remains active; `.hivemind` state shape, startup formation ownership, bootstrap/profile ownership, and lineage-separated pathing are still unresolved
 
 **Next**:
 
 - `P1-D.1a`: freeze the registry-led `.hivemind` ecosystem model — root manifest = topology only, session/plan manifests = authoritative registries, `state/tasks.json` = operational write model, `graph/tasks.json` = durable global task graph, readable markdown = projection only
 - `P1-D.1b`: aggressive `.hivemind` ingress regulation cycle — classify each state/artifact surface as `authority`, `projection`, `quarantine`, `evidence`, `archive`, or `compatibility`, and forbid projections from driving runtime decisions
-- `P1-D.1c`: aggressive isolation/archive cycle — downgrade duplicate bootstrap, planning, workflow-output, and script-era surfaces before they can keep poisoning `.hivemind`
+- `P1-D.1c`: aggressive isolation/archive cycle — downgrade duplicate bootstrap, planning, workflow-output, and script-era surfaces before they can keep poisoning `.hivemind`; this is now the next execution slice after the ingress ledger landed
 - `P1-C.2b.c`: main/sub-session survival model for canonical tasks — child-session tasks must become explicit delegates of parent-linked global tasks instead of shadow TODO universes, but only after `P1-D.1a` through `P1-D.1c`
 - `P1-D.2`: aggressive state-shape reconciliation between live `.hivemind` stores and current `BrainState` ownership, plus lineage-separated state-path migration in `.hivemind/`
 - `P1-E`: Command/agent contract normalization
@@ -416,6 +418,9 @@ The following surfaces are now explicitly queued for isolation and archive/depre
 11. `src/tools/hivemind-bootstrap.ts` unresolved-lineage bootstrap shims that still mirror older state assumptions
 12. `.hivemind/anchors/`, `.hivemind/mems/`, `.hivemind/INDEX.md`, and `.hivemind/sessions/index.md` as readability/compatibility surfaces only until regenerated from manifest-backed truth
 13. workflow/template stage-output surfaces that can materialize state-like artifacts without a frozen ingress policy, especially under `.opencode/workflows/` and `.opencode/templates/`
+14. `src/tools/hivemind-doc-weaver.ts` as a compatibility-only wrapper pending full caller normalization onto `hivemind_doc`
+15. `.hivemind/state/runtime-profile.json`, `.hivemind/state/context-recovery.json`, and `.hivemind/state/health-metrics.json` as compatibility-era state projections that must not silently re-enter runtime authority
+16. `.hivemind/sessions/active/*/profile.json` as bootstrap/session shims that remain unresolved until `P1-B` closeout freezes profile authority
 
 Any future cycle that touches one of these surfaces must classify it as `retain`, `isolate`, `compatibility-only`, or `archive/remove` before the cycle closes.
 
@@ -573,7 +578,7 @@ No new document may silently compete with `PLAN.md`.
 
 ## 11. Immediate Next Moves
 
-**Current cycle**: `P1-C.2b.b` completed; task sovereignty plus lineage identity and workflow topology are now locked to canonical task authority and the next slices can attack session survivability/state regulation aggressively
+**Current cycle**: `P1-D.1b` completed; `.hivemind` ingress classes are now explicitly frozen, canonical task/export readers are bound to that rulebook, and the next slice can attack dead-surface isolation/archive from a stronger foundation
 
 The current execution slice covers:
 
@@ -598,21 +603,23 @@ The current execution slice covers:
    - `workflow_topology` now survives both manual TODO writes and `todo.updated` ingestion;
    - manual TODO creation defaults to `unclassified` and auto-upgrades to `dependent` when dependency edges are supplied without an explicit topology;
    - deps/list views can now expose topology without inferring it ad hoc from raw dependency arrays.
-8. Prepare the next aggressive execution slices with narrower ownership boundaries:
-   - `P1-C.2b.c` main/sub-session survival;
-   - `P1-D.1` `.hivemind` ingress regulation and state-authority freeze;
-   - explicit compatibility isolation/archive decisions for messy lib/tool/hook surfaces that still carry dead or legacy routing assumptions;
+8. Freeze the first enforceable `.hivemind` ingress rulebook:
+   - `.hivemind` surfaces now classify as `authority`, `projection`, `quarantine`, `evidence`, `archive`, or `compatibility`;
+   - canonical task reads assert `state/tasks.json` and `graph/tasks.json` as authority-classified sources;
+   - `state-snapshot.ts` now emits ingress warnings when compatibility surfaces like `runtime-profile.json`, `context-recovery.json`, and `health-metrics.json` are still read;
+   - `hiveops-export.ts` now treats gates as authority reads and handoff/checkpoint files as evidence writes.
+9. Prepare the next aggressive execution slices with narrower ownership boundaries:
+   - `P1-D.1c` dead-surface isolation/archive wave;
    - stale boundary-script references must be cleaned so the repo-level regression gate stops failing for dead-surface reasons instead of runtime reasons;
+   - `P1-C.2b.c` main/sub-session survival can only resume after the ingress/archive foundations stop letting compatibility and readability surfaces pose as authority;
    - keep deletion bias as the default, not the exception.
 
 **Planned follow-on cycles** (each requires separate authorization):
 
+- `P1-D.1c` dead/compat isolation cycle:
+  freeze the first archive tranche for messy lib/tool/hook surfaces, then quarantine or archive the ones that no longer own live runtime behavior so the next aggressive `src/lib` / `hooks` / `schema` refactor stops reasoning through stale compatibility code.
 - `P1-C.2b.c` main/sub-session survival cycle:
   make child-session tasks explicit delegates of parent-linked canonical tasks instead of separate shadow TODO universes; main sessions keep global navigation authority while child sessions attach scoped outputs and evidence.
-- `P1-D.1` aggressive `.hivemind` ingress regulation cycle:
-  classify live state/artifact surfaces as `authority`, `projection`, `quarantine`, `evidence`, `archive`, or `compatibility`; forbid projection/compatibility files from driving runtime decisions; freeze the task-state ingress rules before the broader state-shape migration.
-- dead/compat isolation cycle:
-  freeze the first archive tranche for messy lib/tool/hook surfaces, then quarantine or archive the ones that no longer own live runtime behavior so the next aggressive `src/lib` / `hooks` / `schema` refactor stops reasoning through stale compatibility code.
 - `P1-D.2` aggressive lineage migration cycle:
   implement lineage-separated state/session paths, resolve profile vs canonical state ownership, and remove the remaining `lineage` / `lineage_scope` ambiguity from active runtime stores.
 - `P1-E.1` command/agent normalization cycle:

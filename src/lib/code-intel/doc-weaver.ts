@@ -169,6 +169,32 @@ export class DocWeaver {
   }
 
   /**
+   * Replace a section body if the heading exists, or append a new heading block
+   * to the end of the document when it does not.
+   *
+   * @param content - Full document content.
+   * @param heading - Exact heading text to target or create.
+   * @param newContent - Replacement section body.
+   * @param level - Heading depth to use when creating a new section.
+   * @returns Modified document content.
+   */
+  upsertSection(content: string, heading: string, newContent: string, level = 2): string {
+    const patched = this.patchSection(content, heading, newContent)
+    if (patched !== content) return patched
+
+    const depth = Math.max(1, Math.min(6, level))
+    const normalizedHeading = `${"#".repeat(depth)} ${heading}`
+    const prefix = content.trimEnd()
+    const body = normalizeSectionBody(newContent)
+
+    if (!prefix) {
+      return `${normalizedHeading}${body}`
+    }
+
+    return `${prefix}\n\n${normalizedHeading}${body}`
+  }
+
+  /**
    * Read the body content of a section identified by heading text.
    *
    * @param content - Full document content.

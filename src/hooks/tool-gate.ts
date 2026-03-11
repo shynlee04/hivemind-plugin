@@ -30,7 +30,7 @@ export const CANONICAL_TOOL_NAMES = [
   "hivemind_anchor", "hivemind_hierarchy", "hivemind_cycle",
   "hivemind_context", "hivemind_session_memory", "hivemind_codemap",
   "hivemind_ideate", "hivemind_read_skeleton", "hivemind_precision_patch",
-  "hivemind_mesh_pull", "hivemind_doc_weaver", "hivemind_declare",
+  "hivemind_mesh_pull", "hivemind_doc", "hivemind_declare",
   "hivemind_plan",
 ] as const
 
