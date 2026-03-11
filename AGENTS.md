@@ -8,6 +8,13 @@ This file provides guidance to ALL agents working in this repository.
 **Symlinked To**: `.hivemind/AGENTS.md`, `.opencode/AGENTS.md`, `src/AGENTS.md`
 
 ---
+## Aware of your role while having SKILLS loaded
+
+- Knowing your role in agents' profile prioritize it first of everything else
+
+## SKILL must be loaded
+
+- according to your workflows and role-specific SKILLS and SKILL sets must always be accommodated 
 
 ## JSDOC Enforcement  
 CRITICAL: Before modifying any function, you MUST:  

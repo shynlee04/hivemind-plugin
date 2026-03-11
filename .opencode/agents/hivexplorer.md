@@ -9,6 +9,11 @@ permission:
   bash:
     "*": deny
     "grep *": allow
+    "npx *": allow
+    "ls *": allow
+    "git *": allow
+    "npm *": allow
+    "pnpm *": allow
     "find *": allow
     "cat *": allow
     "head *": allow

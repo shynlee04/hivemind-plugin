@@ -2,12 +2,7 @@
   "sessionId": "c5c0c2c9-28d7-4c17-9bfc-8aec73f96e40",
   "lineage": "unresolved",
   "mode": "exploration",
-  "turnCount": 0,
-  "driftScore": 100,
-  "compactionCount": 0,
-  "outOfOrderCount": 0,
-  "evidencePressure": 0,
-  "lastActivity": "2026-03-11T17:10:28.158Z",
   "createdAt": "2026-03-11T17:10:28.158Z",
+  "lastActivity": "2026-03-11T17:10:28.158Z",
   "version": "2.8.5"
 }

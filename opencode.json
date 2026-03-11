@@ -324,6 +324,7 @@
     }
   },
   "instructions": [
+    "use specially made tool hivemind-doc.ts, doc-intel.ts for documents and artifacts handling",
     "Prefer the 'patch' tool over 'edit' for code changes. Use 'edit' only for single-line modifications. The 'patch' tool is more reliable for complex code modifications.",
     "LSP Tool Best Practices: The LSP tool is available (requires OPENCODE_EXPERIMENTAL_LSP_TOOL=true). Supported operations: goToDefinition, findReferences, hover, documentSymbol, workspaceSymbol, goToImplementation, prepareCallHierarchy, incomingCalls, outgoingCalls.",
     "When to use LSP vs other tools: Use LSP goToDefinition/findReferences when you need precise code intelligence (e.g., 'where is this function defined?' or 'what calls this method?'). Use grep for text-based searches across the codebase. Use glob to find files by pattern. Use read to examine file contents.",
