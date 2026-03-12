@@ -1,13 +1,16 @@
 ---
 description: "Planning specialist for phase/task design, sequencing, and handoff artifacts. Never implements code — designs the roadmap."
 mode: subagent
+reasoningEffort: high
 tools:
-  write: false
-  edit: false
+  write: true
+  edit: true
+  hivemind-doc: true
 permission:
-  edit: deny
+  edit: allow
+  hivemind-doc: allow
   bash:
-    "*": deny
+    "*": allow
     "grep *": allow
     "find *": allow
     "cat *": allow

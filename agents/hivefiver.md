@@ -15,6 +15,7 @@ permission:
     "hiverd": allow
     "hivemaker": allow
     "hiveq": allow
+  hivemind-doc: allow
 ---
 
 MUST ANTICIPATE: YOU ARE ORCHESTRATOR AND COORDINATOR YOU CAN NEVER EXECUTE, YOU ARE BLIND AND YOU MUST HIGHLY COORDINATE YOUR TEAM

@@ -112,6 +112,25 @@ export interface WriteResult {
   opId: string
 }
 
+/** Read-after-write verification receipt for create operations */
+export interface CreateVerificationReceipt {
+  bytes: number
+  lineCount: number
+  retrieved: boolean
+  readBackHash: string
+  formatValidated: boolean
+  nonEmptySatisfied: boolean
+}
+
+/** Result from creating a new document */
+export interface CreateDocumentResult {
+  path: string
+  created: boolean
+  hash: string
+  opId: string
+  receipt: CreateVerificationReceipt
+}
+
 /** Result from a code inspection */
 export interface CodeInspectionResult {
   path: string
@@ -376,6 +395,112 @@ function isDocument(filePath: string): boolean {
  */
 async function readTextFile(absPath: string): Promise<string> {
   return readFile(absPath, "utf-8")
+}
+
+/**
+ * Normalize caller-provided markdown body content for document creation.
+ *
+ * @param body - Optional markdown body content.
+ * @returns Normalized body with trailing blank line, or empty string.
+ */
+function normalizeMarkdownBody(body?: string): string {
+  if (!body?.trim()) {
+    return ""
+  }
+  return `${body.trim()}\n\n`
+}
+
+/**
+ * Render initial file content for a new document.
+ *
+ * @param absPath - Absolute file path being created.
+ * @param title - Title for the created document.
+ * @param metadata - Optional metadata/frontmatter values.
+ * @param initialContent - Optional caller-provided body content.
+ * @returns Rendered file content matching the target format.
+ */
+function renderInitialDocumentContent(
+  absPath: string,
+  title: string,
+  metadata?: Record<string, string>,
+  initialContent?: string,
+): string {
+  const extension = extname(absPath).toLowerCase()
+
+  if (extension === ".json") {
+    const parsed = initialContent?.trim()
+      ? JSON.parse(initialContent)
+      : { title, ...(metadata ?? {}) }
+    return `${JSON.stringify(parsed, null, 2)}\n`
+  }
+
+  let content = ""
+  if (metadata && Object.keys(metadata).length > 0) {
+    content += weaver.writeFrontmatter("", metadata)
+  }
+  content += `# ${title}\n\n`
+  content += normalizeMarkdownBody(initialContent)
+  return content
+}
+
+/**
+ * Validate created content against the target file format.
+ *
+ * @param absPath - Absolute file path being created.
+ * @param content - Read-back file content.
+ * @returns True when the content matches basic format expectations.
+ */
+function validateCreatedContentFormat(absPath: string, content: string): boolean {
+  const extension = extname(absPath).toLowerCase()
+
+  if (extension === ".json") {
+    try {
+      JSON.parse(content)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  if (extension === ".md") {
+    return /^(?:---\n[\s\S]*?\n---\n\n)?#\s+.+/m.test(content)
+  }
+
+  return content.trim().length > 0
+}
+
+/**
+ * Read the created file back and produce a verification receipt.
+ *
+ * @param absPath - Absolute path to the created file.
+ * @param expectedContent - Content that was written.
+ * @returns Verification receipt for the created file.
+ * @throws If the read-back content differs or fails validation.
+ */
+async function verifyCreatedDocument(absPath: string, expectedContent: string): Promise<CreateVerificationReceipt> {
+  const retrievedContent = await readTextFile(absPath)
+  const readBackHash = contentHash(retrievedContent)
+  const formatValidated = validateCreatedContentFormat(absPath, retrievedContent)
+  const nonEmptySatisfied = retrievedContent.trim().length > 0
+
+  if (readBackHash !== contentHash(expectedContent)) {
+    throw new Error(`Create verification failed for ${basename(absPath)}: read-back hash mismatch`)
+  }
+  if (!formatValidated) {
+    throw new Error(`Create verification failed for ${basename(absPath)}: format validation failed`)
+  }
+  if (!nonEmptySatisfied) {
+    throw new Error(`Create verification failed for ${basename(absPath)}: file is empty after write`)
+  }
+
+  return {
+    bytes: Buffer.byteLength(retrievedContent),
+    lineCount: retrievedContent.split("\n").length,
+    retrieved: true,
+    readBackHash,
+    formatValidated,
+    nonEmptySatisfied,
+  }
 }
 
 /**
@@ -747,14 +872,16 @@ export async function writeMetadata(
  * @param filePath - Workspace-relative or absolute path for the new file.
  * @param title - Title for the document (becomes the H1).
  * @param metadata - Optional YAML frontmatter key/value pairs.
- * @returns Result object with created path and hash.
+ * @param initialContent - Optional caller-provided body content.
+ * @returns Result object with created path, hash, and verification receipt.
  */
 export async function createDocument(
   projectRoot: string,
   filePath: string,
   title: string,
   metadata?: Record<string, string>,
-): Promise<{ path: string; created: boolean; hash: string; opId: string }> {
+  initialContent?: string,
+): Promise<CreateDocumentResult> {
   const abs = safePath(projectRoot, filePath)
   if (!isWritable(abs)) {
     throw new Error(`File type not writable: ${extname(abs)}. Only ${[...WRITABLE_EXTENSIONS].join(", ")} are allowed.`)
@@ -772,15 +899,19 @@ export async function createDocument(
   const dir = dirname(abs)
   await mkdir(dir, { recursive: true })
 
-  let content = ""
-  if (metadata) {
-    content += weaver.writeFrontmatter("", metadata)
-  }
-  content += `# ${title}\n\n`
+  const content = renderInitialDocumentContent(abs, title, metadata, initialContent)
 
   const opId = generateOpId()
   await atomicWrite(abs, content)
-  return { path: relative(projectRoot, abs), created: true, hash: contentHash(content), opId }
+  const receipt = await verifyCreatedDocument(abs, content)
+
+  return {
+    path: relative(projectRoot, abs),
+    created: true,
+    hash: contentHash(content),
+    opId,
+    receipt,
+  }
 }
 
 // ─── Batch Operations ───────────────────────────────────────────────────────────

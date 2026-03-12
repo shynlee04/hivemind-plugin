@@ -1,0 +1,11 @@
+{
+  "anchors": [
+    {
+      "key": "doc-tool-hardening-focus",
+      "value": "Continue the existing doc-tool hardening trajectory: plan first, then TDD for create/materialize semantics, format-aware validation, and post-write verification receipts.",
+      "created_at": 1773346167309,
+      "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758"
+    }
+  ],
+  "version": "1.0.0"
+}

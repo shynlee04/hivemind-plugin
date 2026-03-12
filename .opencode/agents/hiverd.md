@@ -1,12 +1,14 @@
 ---
 description: "Research specialist for external evidence synthesis, ecosystem analysis, and technology evaluation. Cannot modify code."
 mode: subagent
+reasoningEffort: high
 tools:
-  write: false
-  edit: false
-  bash: false
+  write: true
+  edit: true
+  bash: true
 permission:
-  edit: deny
+  hivemind-doc: allow
+  edit: allow
   webfetch: allow
 ---
 

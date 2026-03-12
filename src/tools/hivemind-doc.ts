@@ -845,7 +845,7 @@ async function handleSetMetadata(
  */
 async function handleCreate(
   dir: string,
-  args: { path: string; title?: string; template_metadata?: string },
+  args: { path: string; title?: string; template_metadata?: string; content?: string },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for create")
@@ -863,12 +863,13 @@ async function handleCreate(
     }
   }
 
-  const result = await createDocument(dir, args.path, args.title, metadata)
+  const result = await createDocument(dir, args.path, args.title, metadata, args.content)
   return toSuccessOutput(`Created document: ${result.path}`, undefined, {
     path: result.path,
     created: result.created,
     hash: result.hash,
     opId: result.opId,
+    receipt: result.receipt,
   })
 }
 

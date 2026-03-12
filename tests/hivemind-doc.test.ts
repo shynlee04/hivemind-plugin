@@ -84,6 +84,15 @@ function validate(x: unknown): x is number {
 }
 `
 
+function isValidJson(text: string): boolean {
+  try {
+    JSON.parse(text)
+    return true
+  } catch {
+    return false
+  }
+}
+
 // ─── DocWeaver Extension Tests ──────────────────────────────────────────────────
 
 describe("DocWeaver extensions", () => {
@@ -242,6 +251,10 @@ describe("doc-intel library", () => {
   // Dynamic import to avoid module-level import issues
   async function getDocIntel() {
     return import("../src/lib/doc-intel.js")
+  }
+
+  async function getDocTool() {
+    return import("../src/tools/hivemind-doc.js")
   }
 
   describe("skimDocument", () => {
@@ -405,11 +418,81 @@ describe("doc-intel library", () => {
       assert.ok(content.includes("author: test"))
     })
 
+    it("should persist requested markdown body content when creating a markdown document", async () => {
+      const { createDocument } = await getDocIntel()
+      const createDocumentWithBody = createDocument as (
+        projectRoot: string,
+        filePath: string,
+        title: string,
+        metadata?: Record<string, string>,
+        content?: string,
+      ) => Promise<{ path: string; created: boolean; hash: string; opId: string }>
+      const body = "## Details\n\nPersisted body content.\n"
+      const result = await createDocumentWithBody(
+        tmpDir,
+        "docs/new-doc-with-body.md",
+        "New Document With Body",
+        { author: "test" },
+        body,
+      )
+      assert.ok(result.created)
+
+      const content = await readFile(join(tmpDir, "docs/new-doc-with-body.md"), "utf-8")
+      assert.ok(content.includes("# New Document With Body"))
+      assert.ok(content.includes("author: test"))
+      assert.ok(content.includes("## Details"), "Requested body heading should be written")
+      assert.ok(content.includes("Persisted body content."), "Requested body should be written")
+    })
+
     it("should reject creating over existing file", async () => {
       const { createDocument } = await getDocIntel()
       await assert.rejects(
         () => createDocument(tmpDir, "test.md", "Overwrite Attempt"),
         /already exists/i,
+      )
+    })
+  })
+
+  describe("hivemind_doc create action", () => {
+    it("should persist requested body content for create action", async () => {
+      const { createHivemindDocTool } = await getDocTool()
+      const tool = createHivemindDocTool(tmpDir)
+      const body = "## Steps\n\nTool-created body content.\n"
+      const raw = await tool.execute(
+        {
+          action: "create",
+          path: "docs/tool-created.md",
+          title: "Tool Created",
+          content: body,
+        },
+        {} as never,
+      )
+      const output = JSON.parse(raw) as { status: string }
+      assert.equal(output.status, "success")
+
+      const content = await readFile(join(tmpDir, "docs/tool-created.md"), "utf-8")
+      assert.ok(content.includes("## Steps"), "Create action should persist requested body content")
+      assert.ok(content.includes("Tool-created body content."), "Create action should persist requested body content")
+    })
+
+    it("should not report success for invalid json output during create", async () => {
+      const { createHivemindDocTool } = await getDocTool()
+      const tool = createHivemindDocTool(tmpDir)
+      const raw = await tool.execute(
+        {
+          action: "create",
+          path: "docs/config.json",
+          title: "Config",
+          content: '{"enabled": true}\n',
+        },
+        {} as never,
+      )
+      const output = JSON.parse(raw) as { status?: string }
+      const content = await readFile(join(tmpDir, "docs/config.json"), "utf-8")
+
+      assert.ok(
+        output.status !== "success" || isValidJson(content),
+        `create must not report success for invalid JSON output: ${content}`,
       )
     })
   })

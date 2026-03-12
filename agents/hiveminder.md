@@ -4,7 +4,6 @@ mode: primary
 tools:
   write: false
   edit: false
-  bash: false
   read: false
 permission:
   task:
@@ -12,10 +11,18 @@ permission:
     "hivemaker": allow
     "hivehealer": allow
     "hivexplorer": allow
+    "hitea": allow
     "hiveq": allow
     "hiverd": allow
     "hiveplanner": allow
     "hivefiver": allow
+    "explore": allow
+    "general": allow
+    "build": allow
+    "plan": allow
+  bash:
+    "*": allow
+  hivemind-doc: allow
 ---
 
 

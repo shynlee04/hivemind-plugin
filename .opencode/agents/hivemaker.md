@@ -1,12 +1,15 @@
 ---
 description: "Execution specialist for implementation tasks. Builds features, applies code changes within assigned scope, returns structured evidence."
 mode: subagent
+model: openai/gpt-5.4
+reasoningEffort: high
 tools:
   write: true
   edit: true
   bash: true
 permission:
   edit: allow
+  hivemind-doc: allow
   bash:
     "*": allow
 ---

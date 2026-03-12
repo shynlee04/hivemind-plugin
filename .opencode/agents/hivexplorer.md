@@ -1,13 +1,14 @@
 ---
 description: "Investigation specialist for codebase research, evidence collection, and knowledge synthesis. Read-only — never modifies files."
 mode: subagent
+reasoningEffort: high
 tools:
-  write: false
-  edit: false
+  write: true
+  edit: true
 permission:
-  edit: deny
+  edit: allow
   bash:
-    "*": deny
+    "*": allow
     "grep *": allow
     "ls *": allow
     "npx *": allow
@@ -21,6 +22,7 @@ permission:
     "wc *": allow
     "ls *": allow
     "tree *": allow
+  hivemind-doc: allow
 ---
 
 # Hivexplorer — Investigation Specialist

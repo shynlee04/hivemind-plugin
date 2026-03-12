@@ -1,13 +1,96 @@
 {
   "version": 2,
-  "root": null,
-  "cursor": null,
+  "root": {
+    "id": "t_090313032026",
+    "level": "trajectory",
+    "content": "Continue the existing doc-tool hardening work from the investigation handoff; convert findings into a concrete phased plan and then execute the first hardening phase under TDD.",
+    "status": "active",
+    "created": 1773346186797,
+    "stamp": "090313032026",
+    "children": [
+      {
+        "id": "tc_100313032026",
+        "level": "tactic",
+        "content": "Convert the investigation findings into a phased implementation plan and use it to drive the first TDD hardening slice.",
+        "status": "active",
+        "created": 1773346211538,
+        "stamp": "100313032026",
+        "children": [
+          {
+            "id": "a_100313032026",
+            "level": "action",
+            "content": "Draft the concrete hardening plan in docs/plans and define the failing tests for the first implementation phase.",
+            "status": "pending",
+            "created": 1773346217894,
+            "stamp": "100313032026",
+            "children": []
+          },
+          {
+            "id": "a_240313032026",
+            "level": "action",
+            "content": "Plan doc-tool hardening phase work, add RED regression tests for create/materialize semantics and JSON-format integrity, then run the targeted hivemind-doc test file to capture the expected failures.",
+            "status": "pending",
+            "created": 1773347073221,
+            "stamp": "240313032026",
+            "children": []
+          },
+          {
+            "id": "a_290313032026",
+            "level": "action",
+            "content": "RED tests are confirmed. Next, delegate a constrained implementation in doc-intel and hivemind-doc, then re-run the targeted test suite and inspect the changed files before proceeding.",
+            "status": "active",
+            "created": 1773347342881,
+            "stamp": "290313032026",
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "tc_300313032026",
+        "level": "tactic",
+        "content": "Continue doc-tool hardening with a minimal Phase 1 GREEN slice: inspect RED tests and current create flow, patch `doc-intel`/`hivemind-doc`, then re-run the targeted test suite.",
+        "status": "active",
+        "created": 1773347423741,
+        "stamp": "300313032026",
+        "children": [
+          {
+            "id": "a_300313032026",
+            "level": "action",
+            "content": "Inspect the doc-tool RED tests and current `create` flow, confirm the targeted suite fails for the expected reasons, then patch the minimal GREEN slice in `src/lib/doc-intel.ts` and `src/tools/hive...",
+            "status": "pending",
+            "created": 1773347445196,
+            "stamp": "300313032026",
+            "children": []
+          },
+          {
+            "id": "a_340313032026",
+            "level": "action",
+            "content": "Completed the minimal doc-tool hardening slice: `createDocument` now preserves markdown body content, format-validates JSON creates with read-after-write verification, and `hivemind_doc.create` for...",
+            "status": "pending",
+            "created": 1773347680681,
+            "stamp": "340313032026",
+            "children": []
+          },
+          {
+            "id": "a_380313032026",
+            "level": "action",
+            "content": "The first slice passes its direct tests, but a delegated verifier found `tests/planning-materializer-doc-intel.test.ts` currently fails with a missing `src/lib/planning-materializer.js` module. Rec...",
+            "status": "active",
+            "created": 1773347901003,
+            "stamp": "380313032026",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "cursor": "a_380313032026",
   "branches": [
     {
       "name": "main",
-      "cursor_id": null,
-      "created": 1773340432717,
-      "last_active": 1773340432717,
+      "cursor_id": "a_380313032026",
+      "created": 1773346186797,
+      "last_active": 1773347901003,
       "status": "active"
     }
   ],

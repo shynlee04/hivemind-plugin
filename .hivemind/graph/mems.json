@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "mems": [
+    {
+      "id": "b0375a9c-69ab-4527-b115-2bc63874060a",
+      "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
+      "origin_task_id": null,
+      "shelf": "project",
+      "type": "insight",
+      "content": "Doc-tool hardening confirmed root cause: hivemind_doc.create accepts content but handleCreate ignores it, so createDocument only writes a title stub. Phase next: plan, then TDD for persisted content, format-aware validation, and verification receipts.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-03-12T20:10:11.562Z",
+      "created_at": "2026-03-12T20:10:11.562Z",
+      "updated_at": "2026-03-12T20:10:11.562Z"
+    },
+    {
+      "id": "9b8752b1-f90e-41c4-816a-6424e6cd351d",
+      "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "origin_task_id": null,
+      "shelf": "project",
+      "type": "insight",
+      "content": "First doc-tool hardening slice is implemented and directly verified: createDocument now persists markdown body content, validates JSON create content, and returns a read-after-write receipt surfaced by hivemind_doc.create. Broader compatibility verification is blocked by a missing src/lib/planning-materializer module referenced by tests/planning-materializer-doc-intel.test.ts.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-03-12T20:39:00.358Z",
+      "created_at": "2026-03-12T20:39:00.358Z",
+      "updated_at": "2026-03-12T20:39:00.358Z"
+    }
+  ]
+}

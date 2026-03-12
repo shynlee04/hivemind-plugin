@@ -9,6 +9,7 @@ permission:
   edit: allow
   bash:
     "*": allow
+  hivemind-doc: allow
 ---
 
 # Hivemaker — Execution Specialist

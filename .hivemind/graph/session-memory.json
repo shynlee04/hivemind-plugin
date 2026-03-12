@@ -1,0 +1,18 @@
+{
+  "version": "1.0.0",
+  "session_memory": [
+    {
+      "id": "67718881-55c4-4337-9859-cddd0f8189ab",
+      "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
+      "category": "debug",
+      "source": "evidence-only investigation",
+      "content": "Investigation task: verified docs/delegation-investigation files are header-only on disk; transcript used hivemind_doc create actions only; no write/upsert/append/batch follow-up found; root cause confirmed from src/tools/hivemind-doc.ts and src/lib/doc-intel.ts that create only persists title H1 and ignores content.",
+      "condensed": "Investigation task: verified docs/delegation-investigation files are header-only on disk; transcript used hivemind_doc create actions only; no write/upsert/append/batch follow-up found; root cause confirmed from src/tools/hivemind-doc.ts an",
+      "temporary": true,
+      "classification_confidence": 0.9,
+      "created_at": "2026-03-12T19:27:14.665Z",
+      "purged_at": null,
+      "transferred_to_governance": false
+    }
+  ]
+}

@@ -1,13 +1,15 @@
 ---
 description: "Quality and verification specialist. Produces pass/fail verdicts. Never implements fixes — only verifies and reports."
 mode: subagent
+model: openai/gpt-5.4
+reasoningEffort: high
 tools:
   write: false
   edit: false
 permission:
   edit: deny
   bash:
-    "*": deny
+    "*": allow
     "npx tsc *": allow
     "npm test*": allow
     "npm run *": allow

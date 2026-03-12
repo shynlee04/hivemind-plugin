@@ -7,13 +7,14 @@ tools:
 permission:
   edit: deny
   bash:
-    "*": deny
+    "*": allow
     "npx tsc *": allow
     "npm test*": allow
     "npm run *": allow
     "grep *": allow
     "find *": allow
     "cat *": allow
+  hivemind-doc: allow
 ---
 
 # Hiveq — Quality & Verification Specialist

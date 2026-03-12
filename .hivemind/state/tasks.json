@@ -1,11 +1,11 @@
 {
   "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
-  "updated_at": 1773337738853,
+  "updated_at": 1773347931339,
   "tasks": [
     {
       "id": "todo-1",
-      "text": "Orchestrator: Create phase plan for PLAN.md validation cycle",
-      "content": "Orchestrator: Create phase plan for PLAN.md validation cycle",
+      "text": "Inspect repo structure, target artifact files, and historical investigation export to reconstruct the failed workflow",
+      "content": "Inspect repo structure, target artifact files, and historical investigation export to reconstruct the failed workflow",
       "status": "completed",
       "priority": "high",
       "domain": "hybrid",
@@ -15,7 +15,7 @@
       "hivefiver_action": "research",
       "validation_attempts": 0,
       "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
+      "evidence_confidence": "full",
       "auto_initiate": true,
       "requires_permission": false,
       "next_step_menu": [
@@ -68,68 +68,68 @@
         "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1773337738853,
-      "updated_at": 1773337738853
+      "last_realigned_at": 1773343252026,
+      "updated_at": 1773343252026,
+      "completed_at": 1773345813032
     },
     {
       "id": "todo-2",
-      "text": "Delegate: Validate symlinks & document references in PLAN.md",
-      "content": "Delegate: Validate symlinks & document references in PLAN.md",
-      "status": "in_progress",
+      "text": "Trace document tool implementation and contracts across doc-intel, doc-weaver, hivemind-doc, and related helpers/registration code",
+      "content": "Trace document tool implementation and contracts across doc-intel, doc-weaver, hivemind-doc, and related helpers/registration code",
+      "status": "completed",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
       "persona": "floppy_engineer",
       "source": "todo.updated",
-      "hivefiver_action": "research",
+      "hivefiver_action": "build",
       "validation_attempts": 0,
       "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
-      "auto_initiate": true,
-      "requires_permission": false,
+      "evidence_confidence": "full",
+      "auto_initiate": false,
+      "requires_permission": true,
+      "permission_prompt": "Approve next step: run /hivefiver build now? (Yes/No)",
       "next_step_menu": [
         {
           "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
-          "requiresPermission": false
+          "command": "hivefiver build",
+          "action": "build",
+          "label": "Implement with TDD",
+          "description": "Move from approved plan into implementation.",
+          "requiresPermission": true
         },
         {
           "id": "option-2",
-          "command": "hivefiver spec",
-          "action": "spec",
-          "label": "Build specification",
-          "description": "Distill requirements and close ambiguity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-4",
           "command": "hivefiver validate",
           "action": "validate",
           "label": "Run quality gates",
           "description": "Check tests, evidence gates, and schema quality.",
           "requiresPermission": true
+        },
+        {
+          "id": "option-3",
+          "command": "hivefiver deploy",
+          "action": "deploy",
+          "label": "Prepare deployment",
+          "description": "Prepare runtime environment and rollout steps.",
+          "requiresPermission": true
+        },
+        {
+          "id": "option-4",
+          "command": "hivefiver audit",
+          "action": "audit",
+          "label": "Audit alignment",
+          "description": "Check config drift and governance integrity.",
+          "requiresPermission": false
         }
       ],
       "workflow_topology": "unclassified",
       "recommended_skills": [
         "hivefiver-persona-routing",
         "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
         "hivefiver-domain-pack-router"
       ],
-      "canonical_command": "hivefiver research",
+      "canonical_command": "hivefiver build",
       "lineage_owner": "hiveminder",
       "origin_session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
       "session_kind": "unresolved",
@@ -137,23 +137,24 @@
         "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1773337738853,
-      "updated_at": 1773337738853
+      "last_realigned_at": 1773343252026,
+      "updated_at": 1773343252026,
+      "completed_at": 1773345819706
     },
     {
       "id": "todo-3",
-      "text": "Delegate: Validate integrity of controlled documents referenced in PLAN.md",
-      "content": "Delegate: Validate integrity of controlled documents referenced in PLAN.md",
-      "status": "in_progress",
+      "text": "Investigate delegation/orchestration paths, subagent prompting, and success-reporting/verification gaps that allow empty artifacts",
+      "content": "Investigate delegation/orchestration paths, subagent prompting, and success-reporting/verification gaps that allow empty artifacts",
+      "status": "completed",
       "priority": "high",
-      "domain": "hybrid",
+      "domain": "office-ops",
       "lane": "auto",
       "persona": "floppy_engineer",
       "source": "todo.updated",
       "hivefiver_action": "research",
       "validation_attempts": 0,
       "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
+      "evidence_confidence": "full",
       "auto_initiate": true,
       "requires_permission": false,
       "next_step_menu": [
@@ -206,152 +207,15 @@
         "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1773337738853,
-      "updated_at": 1773337738853
+      "last_realigned_at": 1773343252026,
+      "updated_at": 1773343252026,
+      "completed_at": 1773345827495
     },
     {
       "id": "todo-4",
-      "text": "Delegate: Evaluate archive consolidation approach & evidence",
-      "content": "Delegate: Evaluate archive consolidation approach & evidence",
-      "status": "in_progress",
-      "priority": "medium",
-      "domain": "hybrid",
-      "lane": "auto",
-      "persona": "floppy_engineer",
-      "source": "todo.updated",
-      "hivefiver_action": "research",
-      "validation_attempts": 0,
-      "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
-      "auto_initiate": true,
-      "requires_permission": false,
-      "next_step_menu": [
-        {
-          "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-2",
-          "command": "hivefiver spec",
-          "action": "spec",
-          "label": "Build specification",
-          "description": "Distill requirements and close ambiguity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-4",
-          "command": "hivefiver validate",
-          "action": "validate",
-          "label": "Run quality gates",
-          "description": "Check tests, evidence gates, and schema quality.",
-          "requiresPermission": true
-        }
-      ],
-      "workflow_topology": "unclassified",
-      "recommended_skills": [
-        "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
-        "hivefiver-domain-pack-router"
-      ],
-      "canonical_command": "hivefiver research",
-      "lineage_owner": "hiveminder",
-      "origin_session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
-      "session_kind": "unresolved",
-      "related_entities": {
-        "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
-        "workflow_id": "hivefiver-floppy-engineer.yaml"
-      },
-      "last_realigned_at": 1773337738853,
-      "updated_at": 1773337738853
-    },
-    {
-      "id": "todo-5",
-      "text": "Delegate: Research next Phase 1 planning steps (P1-D.1c continuation)",
-      "content": "Delegate: Research next Phase 1 planning steps (P1-D.1c continuation)",
-      "status": "in_progress",
-      "priority": "medium",
-      "domain": "hybrid",
-      "lane": "auto",
-      "persona": "floppy_engineer",
-      "source": "todo.updated",
-      "hivefiver_action": "research",
-      "validation_attempts": 0,
-      "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
-      "auto_initiate": true,
-      "requires_permission": false,
-      "next_step_menu": [
-        {
-          "id": "option-1",
-          "command": "hivefiver research",
-          "action": "research",
-          "label": "Run MCP research",
-          "description": "Gather evidence from MCP providers and synthesize findings.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-2",
-          "command": "hivefiver spec",
-          "action": "spec",
-          "label": "Build specification",
-          "description": "Distill requirements and close ambiguity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-3",
-          "command": "hivefiver audit",
-          "action": "audit",
-          "label": "Audit alignment",
-          "description": "Check config drift and governance integrity.",
-          "requiresPermission": false
-        },
-        {
-          "id": "option-4",
-          "command": "hivefiver validate",
-          "action": "validate",
-          "label": "Run quality gates",
-          "description": "Check tests, evidence gates, and schema quality.",
-          "requiresPermission": true
-        }
-      ],
-      "workflow_topology": "unclassified",
-      "recommended_skills": [
-        "hivefiver-persona-routing",
-        "hivefiver-bilingual-tutor",
-        "hivefiver-mcp-research-loop",
-        "hivefiver-skill-auditor",
-        "hivefiver-domain-pack-router"
-      ],
-      "canonical_command": "hivefiver research",
-      "lineage_owner": "hiveminder",
-      "origin_session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
-      "session_kind": "unresolved",
-      "related_entities": {
-        "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
-        "workflow_id": "hivefiver-floppy-engineer.yaml"
-      },
-      "last_realigned_at": 1773337738853,
-      "updated_at": 1773337738853
-    },
-    {
-      "id": "todo-6",
-      "text": "Reconcile findings & present next-cycle recommendations",
-      "content": "Reconcile findings & present next-cycle recommendations",
-      "status": "pending",
+      "text": "Synthesize root causes, failure taxonomy, architectural weaknesses, and prioritized fixes with verification plan",
+      "content": "Synthesize root causes, failure taxonomy, architectural weaknesses, and prioritized fixes with verification plan",
+      "status": "completed",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
@@ -360,7 +224,7 @@
       "hivefiver_action": "research",
       "validation_attempts": 0,
       "max_validation_attempts": 10,
-      "evidence_confidence": "partial",
+      "evidence_confidence": "full",
       "auto_initiate": true,
       "requires_permission": false,
       "next_step_menu": [
@@ -413,8 +277,108 @@
         "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
         "workflow_id": "hivefiver-floppy-engineer.yaml"
       },
-      "last_realigned_at": 1773337738853,
-      "updated_at": 1773337738853
+      "last_realigned_at": 1773343252026,
+      "updated_at": 1773343252026,
+      "completed_at": 1773345837509
+    },
+    {
+      "id": "task-mmnw9v1x-dxro",
+      "text": "Write implementation plan for hardening hivemind_doc/doc-intel contracts and multi-format document operations",
+      "status": "completed",
+      "priority": "high",
+      "domain": "doc-intel",
+      "source": "manual",
+      "dependencies": [],
+      "created_at": 1773345751413,
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
+      "session_kind": "unresolved",
+      "workflow_topology": "unclassified",
+      "related_entities": {
+        "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758"
+      },
+      "completed_at": 1773347331402,
+      "evidence_confidence": "full"
+    },
+    {
+      "id": "task-mmnwa08i-i5an",
+      "text": "Add failing regression tests for create/materialize semantics, validation receipts, and structured-format write integrity",
+      "status": "completed",
+      "priority": "high",
+      "domain": "doc-intel",
+      "source": "manual",
+      "dependencies": [
+        "task-mmnw9v1x-dxro"
+      ],
+      "created_at": 1773345758130,
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
+      "session_kind": "unresolved",
+      "workflow_topology": "dependent",
+      "related_entities": {
+        "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758"
+      },
+      "completed_at": 1773347331454,
+      "evidence_confidence": "full"
+    },
+    {
+      "id": "task-mmnwa88b-ak07",
+      "text": "Implement doc-intel and hivemind_doc hardening for scaffold/materialize semantics, post-write verification, and format-aware writes",
+      "status": "completed",
+      "priority": "high",
+      "domain": "doc-intel",
+      "source": "manual",
+      "dependencies": [
+        "task-mmnwa08i-i5an"
+      ],
+      "created_at": 1773345768491,
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
+      "session_kind": "unresolved",
+      "workflow_topology": "dependent",
+      "related_entities": {
+        "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758"
+      },
+      "completed_at": 1773347931286,
+      "evidence_confidence": "full"
+    },
+    {
+      "id": "task-mmnwahlq-q5k3",
+      "text": "Run targeted verification and reconcile claimed artifact behavior against disk and test outputs",
+      "status": "blocked",
+      "priority": "high",
+      "domain": "doc-intel",
+      "source": "manual",
+      "dependencies": [
+        "task-mmnwa88b-ak07"
+      ],
+      "created_at": 1773345780638,
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
+      "session_kind": "unresolved",
+      "workflow_topology": "dependent",
+      "related_entities": {
+        "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758"
+      }
+    },
+    {
+      "id": "task-mmnwaoab-hucg",
+      "text": "HARD STOP — do not claim completion until tool-level create/materialize tests, format-integrity checks, and non-empty artifact assertions all pass",
+      "status": "pending",
+      "priority": "high",
+      "domain": "doc-intel",
+      "source": "manual",
+      "dependencies": [
+        "task-mmnwahlq-q5k3"
+      ],
+      "created_at": 1773345789299,
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
+      "session_kind": "unresolved",
+      "workflow_topology": "dependent",
+      "related_entities": {
+        "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758"
+      }
     }
   ]
 }
