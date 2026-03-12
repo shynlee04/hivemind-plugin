@@ -24,6 +24,18 @@
       "staleness_stamp": "2026-03-12T20:39:00.358Z",
       "created_at": "2026-03-12T20:39:00.358Z",
       "updated_at": "2026-03-12T20:39:00.358Z"
+    },
+    {
+      "id": "fabec228-3624-405e-92f2-49abcded3c0c",
+      "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "origin_task_id": null,
+      "shelf": "project",
+      "type": "insight",
+      "content": "Hard write boundary implemented in doc-intel: denies writes to .hivemind/**, .opencode/**, opencode.json by default, with allowGovernance bypass for privileged callers. Tool surface exposes allow_governance parameter. All doc write paths enforce it.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-03-12T21:53:20.323Z",
+      "created_at": "2026-03-12T21:53:20.323Z",
+      "updated_at": "2026-03-12T21:53:20.323Z"
     }
   ]
 }

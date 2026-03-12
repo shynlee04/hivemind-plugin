@@ -238,8 +238,12 @@ describe("doc-intel library", () => {
     await writeFile(join(tmpDir, "test.md"), SAMPLE_MD, "utf-8")
     await writeFile(join(tmpDir, "large.md"), LARGE_MD, "utf-8")
     await mkdir(join(tmpDir, "docs"), { recursive: true })
+    await mkdir(join(tmpDir, ".opencode"), { recursive: true })
+    await mkdir(join(tmpDir, ".hivemind"), { recursive: true })
     await writeFile(join(tmpDir, "docs", "plan.md"), "# Plan\n\n## Step 1\n\nDo things.\n\n## Step 2\n\nDo more things.\n", "utf-8")
     await writeFile(join(tmpDir, "docs", "notes.md"), "---\ntitle: Notes\n---\n\n# Notes\n\n## Important\n\nDon't forget.\n", "utf-8")
+    await writeFile(join(tmpDir, ".opencode", "tool.md"), "# Tool Notes\n\n## Protected\n\nGovernance-owned content.\n", "utf-8")
+    await writeFile(join(tmpDir, ".hivemind", "runtime.md"), "# Runtime\n\n## Protected\n\nGovernance-owned state.\n", "utf-8")
     await writeFile(join(tmpDir, "code.ts"), SAMPLE_TS, "utf-8")
     await writeFile(join(tmpDir, "docs", "ref.md"), "# Ref\n\nSee [plan](./plan.md) and [notes](./notes.md).\nAlso [missing](./gone.md).\n", "utf-8")
   })
@@ -355,6 +359,14 @@ describe("doc-intel library", () => {
         /not writable/i,
       )
     })
+
+    it("should block writes to governance-owned paths by default", async () => {
+      const { writeSection } = await getDocIntel()
+      await assert.rejects(
+        () => writeSection(tmpDir, ".opencode/tool.md", "Protected", "Blocked write."),
+        /governance-owned path/i,
+      )
+    })
   })
 
   describe("appendSection", () => {
@@ -451,6 +463,23 @@ describe("doc-intel library", () => {
         /already exists/i,
       )
     })
+
+    it("should block createDocument for governance-owned paths by default", async () => {
+      const { createDocument } = await getDocIntel()
+      await assert.rejects(
+        () => createDocument(tmpDir, ".hivemind/blocked.md", "Blocked"),
+        /governance-owned path/i,
+      )
+    })
+
+    it("should allow createDocument for governance-owned paths with bypass", async () => {
+      const { createDocument } = await getDocIntel()
+      const result = await createDocument(tmpDir, ".hivemind/allowed.md", "Allowed", undefined, undefined, true)
+      assert.ok(result.created)
+
+      const content = await readFile(join(tmpDir, ".hivemind", "allowed.md"), "utf-8")
+      assert.ok(content.includes("# Allowed"))
+    })
   })
 
   describe("hivemind_doc create action", () => {
@@ -494,6 +523,55 @@ describe("doc-intel library", () => {
         output.status !== "success" || isValidJson(content),
         `create must not report success for invalid JSON output: ${content}`,
       )
+    })
+
+    it("should block create action for governance-owned paths by default", async () => {
+      const { createHivemindDocTool } = await getDocTool()
+      const tool = createHivemindDocTool(tmpDir)
+      const raw = await tool.execute(
+        {
+          action: "create",
+          path: ".opencode/blocked.md",
+          title: "Blocked",
+          content: "Nope",
+        },
+        {} as never,
+      )
+      const output = JSON.parse(raw) as { status: string; error?: string }
+      assert.equal(output.status, "error")
+      assert.match(output.error ?? "", /governance-owned path/i)
+    })
+
+    it("should block upsert and append actions for governance-owned paths by default", async () => {
+      const { createHivemindDocTool } = await getDocTool()
+      const tool = createHivemindDocTool(tmpDir)
+
+      const upsertRaw = await tool.execute(
+        {
+          action: "upsert",
+          path: ".opencode/tool.md",
+          heading: "Protected",
+          content: "Nope",
+        },
+        {} as never,
+      )
+      const appendRaw = await tool.execute(
+        {
+          action: "append",
+          path: ".opencode/tool.md",
+          heading: "Protected",
+          content: "Nope",
+        },
+        {} as never,
+      )
+
+      const upsertOutput = JSON.parse(upsertRaw) as { status: string; error?: string }
+      const appendOutput = JSON.parse(appendRaw) as { status: string; error?: string }
+
+      assert.equal(upsertOutput.status, "error")
+      assert.equal(appendOutput.status, "error")
+      assert.match(upsertOutput.error ?? "", /governance-owned path/i)
+      assert.match(appendOutput.error ?? "", /governance-owned path/i)
     })
   })
 
@@ -634,6 +712,14 @@ describe("doc-intel V2 functions", () => {
       assert.ok(!("status" in result))
       const body = await readSection(tmpDir, "docs/plan.md", "Step 99")
       assert.ok(body?.includes("New step."))
+    })
+
+    it("should block upsertSection for governance-owned paths by default", async () => {
+      const { upsertSection } = await getDocIntel()
+      await assert.rejects(
+        () => upsertSection(tmpDir, ".hivemind/runtime.md", "Protected", "Blocked upsert."),
+        /governance-owned path/i,
+      )
     })
   })
 

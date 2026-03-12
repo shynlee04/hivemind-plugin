@@ -81,16 +81,62 @@
             "children": []
           }
         ]
+      },
+      {
+        "id": "tc_360413032026",
+        "level": "tactic",
+        "content": "Treat planning artifacts, sessions, state management, and task systems as unstable environment concerns. The doc tools must remain self-sufficient, format-aware, and superior as direct-use tools fi...",
+        "status": "active",
+        "created": 1773351379480,
+        "stamp": "360413032026",
+        "children": [
+          {
+            "id": "a_430413032026",
+            "level": "action",
+            "content": "Add a governance-runtime write denylist to the doc tool core and tool-level action handlers, then add failing and passing tests around the boundary.",
+            "status": "pending",
+            "created": 1773351830355,
+            "stamp": "430413032026",
+            "children": []
+          },
+          {
+            "id": "a_450413032026",
+            "level": "action",
+            "content": "Add a governance-owned write denylist to doc intel/core and tool handlers, then cover it with RED-to-GREEN tests for blocked and privileged writes.",
+            "status": "pending",
+            "created": 1773351929637,
+            "stamp": "450413032026",
+            "children": []
+          },
+          {
+            "id": "a_510413032026",
+            "level": "action",
+            "content": "Added governance-owned write denylist enforcement across doc-intel write paths and tool handlers, with blocked/default and privileged-bypass tests passing.",
+            "status": "pending",
+            "created": 1773352310887,
+            "stamp": "510413032026",
+            "children": []
+          },
+          {
+            "id": "a_530413032026",
+            "level": "action",
+            "content": "Governance-runtime write denylist is now enforced in doc-intel and surfaced through hivemind_doc. Tests pass and typecheck is clean. Standalone-first constraint is active.",
+            "status": "active",
+            "created": 1773352398322,
+            "stamp": "530413032026",
+            "children": []
+          }
+        ]
       }
     ]
   },
-  "cursor": "a_380313032026",
+  "cursor": "a_530413032026",
   "branches": [
     {
       "name": "main",
-      "cursor_id": "a_380313032026",
+      "cursor_id": "a_530413032026",
       "created": 1773346186797,
-      "last_active": 1773347901003,
+      "last_active": 1773352398322,
       "status": "active"
     }
   ],

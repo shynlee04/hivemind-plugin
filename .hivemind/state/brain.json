@@ -1,12 +1,12 @@
 {
   "session": {
     "id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
-    "opencode_session_id": "ses_31c3cf278ffe5KVc9e0APtNaG7",
+    "opencode_session_id": "ses_31bfe26dcffeZOwGocvRvC4aIy",
     "mode": "plan_driven",
     "governance_mode": "assisted",
     "governance_status": "OPEN",
     "start_time": 1773346937576,
-    "last_activity": 1773347940366,
+    "last_activity": 1773352400329,
     "date": "2026-03-12",
     "meta_key": "",
     "role": "unresolved",
@@ -17,12 +17,12 @@
   },
   "hierarchy": {
     "trajectory": "",
-    "tactic": "Continue doc-tool hardening with a minimal Phase 1 GREEN slice: inspect RED tests and current create flow, patch `doc-intel`/`hivemind-doc`, then re-run the targeted test suite.",
-    "action": "The first slice passes its direct tests, but a delegated verifier found `tests/planning-materializer-doc-intel.test.ts` currently fails with a missing `src/lib/planning-materializer.js` module. Rec..."
+    "tactic": "Treat planning artifacts, sessions, state management, and task systems as unstable environment concerns. The doc tools must remain self-sufficient, format-aware, and superior as direct-use tools fi...",
+    "action": "Governance-runtime write denylist is now enforced in doc-intel and surfaced through hivemind_doc. Tests pass and typecheck is clean. Standalone-first constraint is active."
   },
   "metrics": {
-    "turn_count": 97,
-    "user_turn_count": 2,
+    "turn_count": 186,
+    "user_turn_count": 5,
     "drift_score": 100,
     "files_touched": [
       "/Users/apple/hivemind-plugin",
@@ -33,30 +33,30 @@
       "git diff -- \"src/lib/doc-intel.ts\" \"src/tools/hivemind-doc.ts\"",
       "npx tsx --test tests/hivemind-doc.test.ts && npx tsc --noEmit",
       "git diff -- src/lib/doc-intel.ts src/tools/hivemind-doc.ts tests/hivemind-doc.test.ts",
-      "npx tsx --test tests/planning-materializer-doc-intel.test.ts"
+      "npx tsx --test tests/planning-materializer-doc-intel.test.ts",
+      "git diff -- src/lib/doc-intel.ts",
+      "git diff -- src/tools/hivemind-doc.ts",
+      "git diff -- tests/hivemind-doc.test.ts",
+      "git status --short -- src/lib/doc-intel.ts src/tools/hivemind-doc.ts tests/hivemind-doc.test.ts",
+      "git diff --stat -- \"src/lib/doc-intel.ts\" \"src/tools/hivemind-doc.ts\" \"tests/hivemind-doc.test.ts\""
     ],
-    "context_updates": 6,
-    "last_context_update_turn": 2,
+    "context_updates": 11,
+    "last_context_update_turn": 5,
     "auto_health_score": 100,
-    "total_tool_calls": 97,
-    "successful_tool_calls": 97,
+    "total_tool_calls": 186,
+    "successful_tool_calls": 186,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
-    "last_section_content": "The first slice passes its direct tests, but a delegated verifier found `tests/planning-materializer-doc-intel.test.ts` currently fails with a missing `src/lib/planning-materializer.js` module. Rec...",
+    "last_section_content": "Governance-runtime write denylist is now enforced in doc-intel and surfaced through hivemind_doc. Tests pass and typecheck is clean. Standalone-first constraint is active.",
     "tool_type_counts": {
-      "read": 51,
-      "write": 15,
-      "query": 20,
-      "governance": 11
+      "read": 98,
+      "write": 26,
+      "query": 43,
+      "governance": 19
     },
-    "keyword_flags": [
-      "failure",
-      "stuck",
-      "retry",
-      "error"
-    ],
-    "keyword_flags_reset_turn": 2,
+    "keyword_flags": [],
+    "keyword_flags_reset_turn": 5,
     "write_without_read_count": 0,
     "files_read_this_session": [
       "{package.json,README.md,AGENTS.md,CLAUDE.md,docs/**,tests/**,src/**}",
@@ -95,13 +95,34 @@
       "src/lib/planning-materializer*",
       "src/**/*planning-materializer*",
       "src/**/*.{ts,tsx,js,mjs,cjs}",
-      "src/**/planning-materializer*"
+      "src/**/planning-materializer*",
+      "*.{md,ts,tsx,js,json,yaml,yml}",
+      "src/{index.ts,tools/index.ts,tools/hivemind-doc.ts,tools/hivemind-doc-weaver.ts,lib/doc-intel.ts,lib/code-intel/doc-weaver.ts}",
+      "/Users/apple/hivemind-plugin/src/tools/hivemind-doc-weaver.ts",
+      "/Users/apple/hivemind-plugin/src/index.ts",
+      "/Users/apple/hivemind-plugin/src/lib/code-intel/doc-weaver.ts",
+      "/Users/apple/hivemind-plugin/src/tools/index.ts",
+      "/.hivemind|brain|session|task|todo|planning|manifest|governance|state|anchor|memory|cycle|hierarchy",
+      "/Users/apple/hivemind-plugin/src/lib/persistence.ts",
+      "/Users/apple/hivemind-plugin/src/hooks/index.ts",
+      "/Users/apple/hivemind-plugin/src",
+      "createHivemindDocTool/(|hivemind_doc",
+      "*.ts",
+      "regenerateManifests/(|createStateManager/(|loadConfig/(",
+      "/Users/apple/hivemind-plugin/src/lib/fs/planning-ops.ts",
+      "/Users/apple/hivemind-plugin/src/hooks/messages-transform.ts",
+      "/Users/apple/hivemind-plugin/src/hooks/tool-gate.ts",
+      "/Users/apple/hivemind-plugin/src/hooks/session-lifecycle.ts",
+      "/Users/apple/hivemind-plugin/src/tools/hivemind-plan.ts",
+      "describe/(\"(hivemind_doc tool|createDocument|upsertSection|writeSection|appendSection)",
+      "createDocument/(",
+      "writeSection/(|upsertSection/(|appendSection/(|insertSection/(|deleteSection/(|writeMetadata/(|batchEdit/(|batchFiles/("
     ],
     "governance_counters": {
       "drift": 0,
       "compaction": 0,
-      "out_of_order": 137,
-      "evidence_pressure": 93
+      "out_of_order": 266,
+      "evidence_pressure": 177
     }
   },
   "first_turn_context_injected": true,
@@ -114,7 +135,7 @@
   },
   "selected_output_style_v29": "supportive_discovery",
   "memory_governance": {
-    "last_classified_at": 1773347891175
+    "last_classified_at": 1773352380252
   },
   "version": "2.0.0",
   "next_compaction_report": null,
@@ -149,9 +170,45 @@
       "failure_keywords": [
         "failed"
       ]
+    },
+    {
+      "timestamp": 1773351396292,
+      "tool": "task",
+      "task_id": "ses_31c055f76ffeJaHDbyn8DoWvLt",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773351532568,
+      "tool": "task",
+      "task_id": "ses_31c055a64ffedYaewMKRmCA5Zp",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failure",
+        "error",
+        "cannot"
+      ]
+    },
+    {
+      "timestamp": 1773351699522,
+      "tool": "task",
+      "task_id": "ses_31c055f76ffeJaHDbyn8DoWvLt",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773352336735,
+      "tool": "task",
+      "task_id": "ses_31bfe26dcffeZOwGocvRvC4aIy",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failure",
+        "error",
+        "blocked"
+      ]
     }
   ],
-  "pending_failure_ack": false,
+  "pending_failure_ack": true,
   "pending_mandatory_tools": [
     "hivemind_cycle"
   ],
@@ -165,27 +222,27 @@
   "recent_messages": [
     {
       "role": "user",
-      "content": "continue from this \"---\n## Goal\n\nInvestigate why the document tooling and delegated agent workflow claimed success while producing effectively empty investigation artifacts under `docs/delegation-investigation/`, then use those findings to redesign/harden the document system so it can reliably support document creation, editing, extraction, patching, append/upsert flows, multi-file/batch operations, and integrity/completion verification across Markdown plus structured formats (`.json`, `.xml`, `.yaml`, `.yml`).\n\nThe user then asked to combine the investigation conclusions with broader gap detection and start quick planning plus implementation sequencing for the hardening work.\n\n## Instructions\n\n- Investigate deeply and trace the failure from user request -> orchestration/delegation -> tool selection -> content generation -> write/edit operations -> verification -> final completion claim.\n- Focus first on:\n  - `src/lib/doc-intel.ts`\n  - `src/lib/code-intel/doc-weaver.ts`\n  - `src/tools/hivemind-doc-weaver.ts`\n  - `src/tools/hivemind-doc.ts`\n- Also inspect any transitively relevant files, tests, tool registration, helpers, and historical transcript evidence.\n- Use `/Users/apple/hivemind-plugin/investigate-failures-of-doc-tools.md` as critical historical evidence.\n- Be precise and evidence-driven; distinguish confirmed findings from hypotheses.\n- Central design requirement from user: harden the system so outputs cannot be reported complete unless intended files are actually written, non-empty, structurally valid, and retrievable.\n- Follow-up user instruction: combine conclusions with broader improvements so the tools can handle edit/write/extract/patch/append and hierarchical/relational in-file + batch handling, extending beyond Markdown into JSON/XML/YAML, with iterative integrity/completion checks.\n- Start quick planning and implementation sequencing.\n- No implementation code was written yet before the user asked for this handoff summary.\n\n## Discoveries\n\n- The “empty files” are not zero-byte; they are header-only stubs:\n  - `docs/delegation-investigation/README.md`\n  - `docs/delegation-investigation/01-sector-scans/tools-sector.md`\n  - `docs/delegation-investigation/02-synthesis/delegation-flow.md`\n  - `docs/delegation-investigation/02-synthesis/entity-mapping.md`\n  - `docs/delegation-investigation/02-synthesis/handoff-mechanisms.md`\n  - `docs/delegation-investigation/03-recommendations/critical-gaps.md`\n  - `docs/delegation-investigation/03-recommendations/implementation-roadmap.md`\n- Root cause is confirmed and deterministic:\n  - `src/tools/hivemind-doc.ts` advertises `content` as valid for `create`.\n  - `handleCreate()` ignores `args.content` and only passes `path`, `title`, and optional `template_metadata` into `createDocument()`.\n  - `src/lib/doc-intel.ts:createDocument()` only writes frontmatter plus `# ${title}\\n\\n`.\n- This means `hivemind_doc.create` can return success while silently discarding the requested body content.\n- The historical transcript proves that happened:\n  - The orchestration used `hivemind_doc` `action: \"create\"` calls with large `content` bodies for the target docs.\n  - After fixing initial missing-`title` errors, the tool returned success messages like `Created document: ...`.\n  - There were no follow-up `write`, `upsert`, `append`, `batch`, or verification reads for those files before the final confident completion summary.\n- Strong forensic proof:\n  - The current SHA-256 hashes of the stub files exactly match the success hashes recorded in `investigate-failures-of-doc-tools.md`.\n  - Therefore the files were created in header-only form from the start; they were not truncated later.\n- The success reporting layer is too weak:\n  - `src/lib/tool-response.ts` wraps operation success but does not encode postconditions like “requested content persisted”, “non-empty body written”, “structurally valid”, or “retrievable”.\n- Tests miss the bug:\n  - `tests/hivemind-doc.test.ts` covers `createDocument()` only as “frontmatter + title stub” creation.\n  - There is no tool-level regression test for `hivemind_doc` `action: \"create\"` with `content`.\n  - No test asserts body persistence, no test rejects misleading `content` on create, and no test checks artifact validation before completion claims.\n- `src/tools/hivemind-doc-weaver.ts` is not the cause here; it is a compatibility-only wrapper for section writes.\n- Broader architectural gap:\n  - `doc-intel` claims writable support for `.md`, `.xml`, `.json`, `.yaml`, `.yml`, but the mutation engine is fundamentally Markdown-heading-oriented via `DocWeaver`.\n  - I reproduced that `hivemind_doc.create` can “successfully” create `report.json` containing Markdown `# Report Title`, so structured-format integrity is currently not enforced.\n\n## Accomplished\n\n- Ran the required HiveMind bootstrap command:\n  - `npx -y hivemind-context-governance --mode assisted`\n- Performed repository reconnaissance:\n  - Read `package.json`, `README.md`, `AGENTS.md`, `CLAUDE.md`\n  - Scanned repo for doc-tool-related files and references\n- Inspected the actual on-disk target artifacts and confirmed they are header-only.\n- Read and analyzed the historical transcript sections that show the orchestration generating the docs and later claiming completion.\n- Inspected these core implementation files:\n  - `src/lib/doc-intel.ts`\n  - `src/lib/code-intel/doc-weaver.ts`\n  - `src/tools/hivemind-doc.ts`\n  - `src/tools/hivemind-doc-weaver.ts`\n  - `src/lib/tool-response.ts`\n  - `src/tools/index.ts`\n  - `src/index.ts`\n  - `src/lib/tool-names.ts`\n- Inspected relevant tests:\n  - `tests/hivemind-doc.test.ts`\n  - `tests/planning-materializer-doc-intel.test.ts`\n- Used subagents to independently verify the root cause and test/coverage gaps; both confirmed the same finding.\n- Reproduced the bug locally with direct runtime commands:\n  - Direct `createDocument()` call wrote only frontmatter + H1.\n  - Tool-level `hivemind_doc.create` with full `content` returned success and wrote only the title stub.\n  - Tool-level `hivemind_doc.create` for `report.json` also returned success and wrote invalid Markdown content into a `.json` file.\n- Ran targeted tests:\n  - `npx tsx --test tests/hivemind-doc.test.ts`\n  - Result: all current doc tests passed, confirming the regression is not covered.\n- Created/updated HiveOps TODO tracking for the next execution phase:\n  - planning\n  - failing tests\n  - implementation\n  - verification\n  - hard stop gate\n- Completed the investigation TODO items and started the planning task.\n- Important status: no source files were edited yet for the implementation; only investigation and reproduction were completed before the user requested a handoff summary.\n\n## Relevant files / directories\n\n- Core document tooling\n  - `src/tools/hivemind-doc.ts`\n  - `src/tools/hivemind-doc-weaver.ts`\n  - `src/lib/doc-intel.ts`\n  - `src/lib/code-intel/doc-weaver.ts`\n  - `src/lib/tool-response.ts`\n  - `src/tools/index.ts`\n  - `src/index.ts`\n  - `src/lib/tool-names.ts`\n\n- Tests\n  - `tests/hivemind-doc.test.ts`\n  - `tests/planning-materializer-doc-intel.test.ts`\n\n- Historical evidence / artifacts\n  - `investigate-failures-of-doc-tools.md`\n  - `docs/delegation-investigation/README.md`\n  - `docs/delegation-investigation/01-sector-scans/tools-sector.md`\n  - `docs/delegation-investigation/02-synthesis/delegation-flow.md`\n  - `docs/delegation-investigation/02-synthesis/entity-mapping.md`\n  - `docs/delegation-investigation/02-synthesis/handoff-mechanisms.md`\n  - `docs/delegation-investigation/03-recommendations/critical-gaps.md`\n  - `docs/delegation-investigation/03-recommendations/implementation-roadmap.md`\n\n- Governance / project context read during recon\n  - `package.json`\n  - `README.md`\n  - `AGENTS.md`\n  - `CLAUDE.md`\n\n- Agent/skill guidance relevant to verification and delegation contracts\n  - `agents/hiveminder.md`\n  - `agents/hivemaker.md`\n  - `.opencode/skills/evidence-discipline/SKILL.md`\n\n- Working directories likely to be edited next\n  - `src/lib/`\n  - `src/tools/`\n  - `tests/`\n  - `docs/plans/`\n\n- TODO / state artifacts touched during tracking\n  - `.hivemind/state/todo.json`\n\n### Recommended next step for the next agent\n\n1. Write a concrete implementation plan doc in `docs/plans/` for phased hardening.\n2. Follow strict TDD:\n   - add failing tests first for:\n     - tool-level `create` with `content`\n     - scaffold vs materialize semantics\n     - read-after-write verification receipts\n     - non-empty artifact assertions\n     - JSON/YAML/XML structural validation\n     - batch operation verification\n3. Implement phase 1 hardening in:\n   - `src/lib/doc-intel.ts`\n   - `src/tools/hivemind-doc.ts`\n   - possibly `src/lib/code-intel/doc-weaver.ts` only if Markdown path changes are needed\n4. Likely design direction:\n   - separate scaffold creation from full materialization, or make `create` truly persist provided body content\n   - add format-aware validation/parsing and forbid invalid structured writes\n   - add post-write verification receipts\n   - add explicit integrity/completion checks so orchestration cannot claim success without disk reconciliation\n5. Re-run targeted tests plus new regressions before claiming completion.\n--- \" please know your role"
-    },
-    {
-      "role": "assistant",
-      "content": "Bootstrap is complete.\n\n- Ran `npx -y hivemind-context-governance --mode assisted` in `/Users/apple/hivemind-plugin`\n- Result: HiveMind reports it was already initialized at `.hivemind`\n- It also reported asset drift in `.opencode`/root parity and suggested `sync-assets` plus `/hivefiver audit`\n- Per the bootstrap gate, I stopped after initialization and did not resume the doc-tool hardening work in this turn\n\nNext message, I can pick up from your handoff and continue the investigation/planning/implementation sequence directly."
-    },
-    {
-      "role": "user",
-      "content": "continue"
-    },
-    {
-      "role": "assistant",
-      "content": "I'm using the writing-plans skill to create the implementation plan."
-    },
-    {
-      "role": "user",
       "content": "you are orchestrator you must delegate"
     },
     {
+      "role": "assistant",
+      "content": "Delegated the work and moved the first hardening slice forward.\n\n- Added the execution plan in `docs/plans/2026-03-12-doc-intel-hardening-plan.md`\n- Added RED regressions in `tests/hivemind-doc.test.ts` for:\n  - markdown `createDocument()` body persistence\n  - tool-level `hivemind_doc.create` body passthrough\n  - `.json` create not claiming success with invalid JSON output\n- Implemented the GREEN slice in `src/lib/doc-intel.ts` and `src/tools/hivemind-doc.ts`\n- `createDocument()` now accepts initial content, validates `.json` creates, performs read-after-write verification, and returns a receipt\n- `hivemind_doc.create` now passes `content` through and includes the verification receipt in success metadata\n\nWhat changed where:\n- `src/lib/doc-intel.ts`:\n  - added create verification receipt types\n  - added format-aware create rendering/validation helpers\n  - changed `createDocument()` to persist markdown body content and verify the file after write\n- `src/tools/hivemind-doc.ts`:\n  - `handleCreate()` now accepts `content`\n  - forwards `content` into `createDocument()`\n  - returns the receipt in tool metadata\n- `tests/hivemind-doc.test.ts`:\n  - now directly instantiates `createHivemindDocTool(...)`\n  - covers the broken create flows we traced in the investigation\n\nVerification:\n- Passed: `npx tsx --test tests/hivemind-doc.test.ts`\n- Passed: `npx tsc --noEmit`\n- Blocked outside this slice: `npx tsx --test tests/planning-materializer-doc-intel.test.ts`\n  - fails with `ERR_MODULE_NOT_FOUND` for `src/lib/planning-materializer.js`\n  - `src/**/planning-materializer*` does not currently exist, so this looks like a pre-existing missing-module/import-path issue, not a regression from the create hardening\n\nSo the create/materialize fix is in place and directly verified, but full compatibility verification is still blocked by that separate missing module.\n\nIf you want, I can delegate the next step:\n1. Triage and fix the missing `planning-materializer` module/import path\n2. Continue Phase 2 hardening for `.yaml`, `.yml`, and `.xml`\n3. Extend receipts and integrity checks to `batch` and `batch_files`"
+    },
+    {
       "role": "user",
-      "content": "you are orchestrator you must delegate"
+      "content": "since we are currently in a highly rot and polluted context dev environment and currently many of these entities need either total revamp, refactored that including the planning artifacts, sessions, state, and tasks managements >>> so I highly warn not to make these tools dependent  on any of the above just yet >>> also meaning they should be used as sets of superior tools uses (both ease of uses, features, convinences,efficiencies, optimization toward context-engineering and speed, accuracy and integrity. They must far beyond superior compared to even the innate OpenCode tools when they come to the"
+    },
+    {
+      "role": "user",
+      "content": "since we are currently in a highly rot and polluted context dev environment and currently many of these entities need either total revamp, refactored that including the planning artifacts, sessions, state, and tasks managements >>> so I highly warn not to make these tools dependent  on any of the above just yet >>> also meaning they should be used as sets of superior tools uses (both ease of uses, features, convinences,efficiencies, optimization toward context-engineering and speed, accuracy and integrity. They must far beyond superior compared to even the innate OpenCode tools when they come to these features ````/**\n * hivemind_doc — Unified document intelligence tool (V2).\n *\n * A multi-action tool for hierarchy-aware, chunk-based, and search-first\n * document reading, writing, editing, and searching. Replaces ad-hoc document\n * operations with a structured agentic approach.\n *\n * V2 Actions (20 total):\n *   skim         — outline/hierarchy of one file or directory\n *   read         — read full file, a section, or chunked\n *   read_lines   — read a specific line range from any file\n *   metadata     — extract YAML frontmatter\n *   list         — list document files with summary metadata\n *   search       — search across documents by keyword or regex\n *   inspect      — extract JSDoc blocks, comments, exports from code files\n *   index        — build comprehensive document index for a directory\n *   xref         — find cross-document links and check integrity\n *   context      — smart context extraction by query + token budget\n *   write        — replace a section body under a heading\n *   upsert       — replace or create a section (write-or-create)\n *   append       — append to a section body\n *   insert       — insert a new section after a heading\n *   delete       — delete a section by heading\n *   batch        — multiple section operations on one file atomically\n *   batch_files  — operations across multiple files\n *   set_metadata — set/update YAML frontmatter fields\n *   create       — create a new document with frontmatter template\n *   toc          — generate a markdown table of contents\n *\n * Philosophy:\n *   1. Read before write — always skim the outline first\n *   2. Chunk discipline — files >400 LOC are never written in one shot\n *   3. Hierarchy-first — navigate by headings, not line numbers\n *   4. Context-on-demand — pull only the section that matters\n *   5. File-type safety — only .md, .xml, .json, .yaml may be written\n *   6. Swarm-safe — advisory locks, atomic writes, content hashing\n *\n * Supersedes: hivemind_doc_weaver\n *\n * @module hivemind-doc\n */ ``` (now expanded to supporting  xml, json, yaml CRUD operations too) "
+    },
+    {
+      "role": "assistant",
+      "content": "Agreed. I’m treating that as a hard architectural constraint now:\n\n- `hivemind_doc` / `doc-intel` should be a standalone document engine first, not a consumer of polluted planning/session/state/task systems\n- any HiveMind/governance integration should stay optional, outer-layer, and removable without breaking core doc behavior\n- success must come from filesystem truth and format validation, not from any session/task/plan artifact\n\nI delegated an audit before answering, and the result is:\n\n- the core is currently mostly clean:\n  - `src/lib/doc-intel.ts`\n  - `src/lib/code-intel/doc-weaver.ts`\n  - `src/tools/hivemind-doc.ts`\n  do not directly depend on planning/session/task/state modules\n- the real coupling risk is the plugin/runtime enclosure:\n  - `src/tools/index.ts`\n  - `src/index.ts`\n  - hook surfaces like `src/hooks/tool-gate.ts`\n  - soft-governance/session tracking around tool execution\n- there is also a dangerous pollution vector today: the doc tool can still target governance-owned paths unless we explicitly block them\n\nSo the revised direction is:\n\n- `doc-intel` becomes the canonical standalone contract\n- filesystem is the only source of truth\n- every mutating action must be verified by read-after-write\n- `.md`, `.json`, `.yaml`, `.yml`, `.xml` each get explicit semantics\n- planning/session/task/state systems are consumers later, never prerequisites now\n\nWhat I’ll preserve going forward:\n\n- no dependency on `.hivemind` artifacts for normal doc operations\n- no success claims based on planner/session/task state\n- no markdown-fallback corruption for structured formats\n- no “smart integration” that drags polluted runtime concerns into the core\n\nWhat should happen next, in order:\n\n1. Add a hard write boundary so `hivemind_doc` cannot mutate `.hivemind/**`, session/planning/state/task artifacts, or other governance runtime files by default\n2. Continue expanding standalone format-aware CRUD in `src/lib/doc-intel.ts` for YAML/XML the same way we started for Markdown/JSON\n3. Split doc-tool registration from the broader plugin/runtime path so the tool can be mounted with minimal governance baggage\n\nThat matches your warning, and I’ll treat “standalone-first, superior-to-innate-tools” as the governing design rule from here."
+    },
+    {
+      "role": "user",
+      "content": "ok please do as you suggested"
     }
   ],
   "offtrack_todo_pending": [
@@ -193,6 +250,13 @@
       "id": "8e506230-94b2-48fd-95eb-8ac2077ca602",
       "content": "Objective: Implement the first GREEN slice for doc-tool hardening in /Users/apple/hivemind-plugin so the newly added RED tests in `tests/hivemind-doc.test.ts` pass.\n\nScope:\n- Modify only the minimum necessary production files under `src/`.\n- Primary targets: `src/lib/doc-intel.ts` and `src/tools/hivemind-doc.ts`.\n- Avoid broad redesign of batch flows or doc-weaver unless absolutely required.\n\nAcceptance criteria:\n1. `createDocument` can persist caller-provided markdown body content for `.md` files.\n2. `hivemind_doc.create` passes `content` through to the library instead of dropping it.\n3. `.json` create cannot return success with markdown-shaped output; valid JSON content should stay valid after write.\n4. Success should be backed by a read-after-write verification receipt from the library, and the tool should surface that receipt in metadata.\n5. The targeted suite `npx tsx --test tests/hivemind-doc.test.ts` must pass.\n\nConstraints:\n- Keep the implementation minimal and aligned with the current tests.\n- Preserve existing existing-file rejection behavior.\n- Do not rewrite unrelated sections or batch APIs in this slice.\n- If you need a small helper for format-aware create verification, keep it local to `doc-intel.ts`.\n- Run the targeted test suite after implementation; include the result.\n\nSuggested implementation direction (not mandatory if you find a better minimal fix):\n- Extend `createDocument` with optional initial content and extension-aware rendering/verification.\n- For `.md`, keep frontmatter + H1 and append normalized body.\n- For `.json`, accept only valid JSON content (or return error) and verify readback via `JSON.parse`.\n- Return a richer receipt: hash/opId plus bytes, lineCount, retrieved/readBackHash, formatValidated, nonEmptySatisfied.\n- Thread that receipt through `handleCreate()`.\n\nReturn exactly one final message containing:\n1. Files changed.\n2. What changed in each file.\n3. The verification command run.\n4. The observed test result summary.\n5. Any remaining limitations intentionally deferred to a later phase.",
       "created_at": 1773347399469,
+      "source": "messages-transform",
+      "status": "pending"
+    },
+    {
+      "id": "8550fbb1-64f6-41ab-9d78-8c53b6d6786f",
+      "content": "Thoroughness: medium.\n\nObjective: Audit whether the current document tool core is dependent on planning/session/state/task management systems, and identify any hidden coupling risks.\n\nScope:\n- Inspect `src/lib/doc-intel.ts`, `src/tools/hivemind-doc.ts`, `src/tools/hivemind-doc-weaver.ts`, `src/lib/code-intel/doc-weaver.ts`, `src/tools/index.ts`, `src/index.ts`, and any directly imported dependencies from those files.\n- Focus specifically on dependencies on planning artifacts, session systems, hivemind state, task/todo systems, or governance runtime files.\n- Do NOT edit files.\n\nReturn exactly one final message containing:\n1. Confirmed direct dependencies that exist today.\n2. Confirmed non-dependencies (important negatives).\n3. Coupling risks that could accidentally pull these tools into polluted planning/session/state domains later.\n4. A short recommendation for keeping the doc tools standalone-first and superior to innate tools.",
+      "created_at": 1773351633091,
       "source": "messages-transform",
       "status": "pending"
     }

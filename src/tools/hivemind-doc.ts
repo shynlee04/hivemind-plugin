@@ -176,50 +176,54 @@ export function createHivemindDocTool(directory: string): ToolDefinition {
         .number()
         .optional()
         .describe("Max total tokens to return (for context action, default: 4000)"),
+      allow_governance: tool.schema
+        .boolean()
+        .optional()
+        .describe("Allow writes to governance-owned paths for privileged callers (default: false)"),
     },
     async execute(args, _context) {
       try {
         switch (args.action) {
           case "skim":
-            return handleSkim(directory, args)
+            return await handleSkim(directory, args)
           case "read":
-            return handleRead(directory, args)
+            return await handleRead(directory, args)
           case "read_lines":
-            return handleReadLines(directory, args)
+            return await handleReadLines(directory, args)
           case "metadata":
-            return handleMetadata(directory, args)
+            return await handleMetadata(directory, args)
           case "list":
-            return handleList(directory, args)
+            return await handleList(directory, args)
           case "search":
-            return handleSearch(directory, args)
+            return await handleSearch(directory, args)
           case "inspect":
-            return handleInspect(directory, args)
+            return await handleInspect(directory, args)
           case "index":
-            return handleIndex(directory, args)
+            return await handleIndex(directory, args)
           case "xref":
-            return handleXref(directory, args)
+            return await handleXref(directory, args)
           case "context":
-            return handleContext(directory, args)
+            return await handleContext(directory, args)
           case "write":
-            return handleWrite(directory, args)
+            return await handleWrite(directory, args)
           case "upsert":
-            return handleUpsert(directory, args)
+            return await handleUpsert(directory, args)
           case "append":
-            return handleAppend(directory, args)
+            return await handleAppend(directory, args)
           case "insert":
-            return handleInsert(directory, args)
+            return await handleInsert(directory, args)
           case "delete":
-            return handleDelete(directory, args)
+            return await handleDelete(directory, args)
           case "batch":
-            return handleBatch(directory, args)
+            return await handleBatch(directory, args)
           case "batch_files":
-            return handleBatchFiles(directory, args)
+            return await handleBatchFiles(directory, args)
           case "set_metadata":
-            return handleSetMetadata(directory, args)
+            return await handleSetMetadata(directory, args)
           case "create":
-            return handleCreate(directory, args)
+            return await handleCreate(directory, args)
           case "toc":
-            return handleTOC(directory, args)
+            return await handleTOC(directory, args)
           default:
             return toErrorOutput(`Unknown action: ${args.action}`)
         }
@@ -516,7 +520,7 @@ async function handleContext(
  */
 async function handleWrite(
   dir: string,
-  args: { path: string; heading?: string; content?: string; expected_hash?: string },
+  args: { path: string; heading?: string; content?: string; expected_hash?: string; allow_governance?: boolean },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for write")
@@ -528,7 +532,7 @@ async function handleWrite(
     return toErrorOutput("content is required for write")
   }
 
-  const result = await writeSection(dir, args.path, args.heading, args.content, args.expected_hash)
+  const result = await writeSection(dir, args.path, args.heading, args.content, args.expected_hash, args.allow_governance ?? false)
 
   if ("status" in result && result.status === "chunk_required") {
     return JSON.stringify(result, null, 2)
@@ -560,7 +564,7 @@ async function handleWrite(
  */
 async function handleUpsert(
   dir: string,
-  args: { path: string; heading?: string; content?: string; level?: number; expected_hash?: string },
+  args: { path: string; heading?: string; content?: string; level?: number; expected_hash?: string; allow_governance?: boolean },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for upsert")
@@ -572,7 +576,7 @@ async function handleUpsert(
     return toErrorOutput("content is required for upsert")
   }
 
-  const result = await upsertSection(dir, args.path, args.heading, args.content, args.level ?? 2, args.expected_hash)
+  const result = await upsertSection(dir, args.path, args.heading, args.content, args.level ?? 2, args.expected_hash, args.allow_governance ?? false)
 
   if ("status" in result && result.status === "chunk_required") {
     return JSON.stringify(result, null, 2)
@@ -598,7 +602,7 @@ async function handleUpsert(
  */
 async function handleAppend(
   dir: string,
-  args: { path: string; heading?: string; content?: string; expected_hash?: string },
+  args: { path: string; heading?: string; content?: string; expected_hash?: string; allow_governance?: boolean },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for append")
@@ -610,7 +614,7 @@ async function handleAppend(
     return toErrorOutput("content is required for append")
   }
 
-  const result = await appendSection(dir, args.path, args.heading, args.content, args.expected_hash)
+  const result = await appendSection(dir, args.path, args.heading, args.content, args.expected_hash, args.allow_governance ?? false)
 
   if (!result.changed) {
     return toErrorOutput(
@@ -637,7 +641,7 @@ async function handleAppend(
  */
 async function handleInsert(
   dir: string,
-  args: { path: string; after_heading?: string; new_heading?: string; level?: number; content?: string; expected_hash?: string },
+  args: { path: string; after_heading?: string; new_heading?: string; level?: number; content?: string; expected_hash?: string; allow_governance?: boolean },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for insert")
@@ -657,6 +661,7 @@ async function handleInsert(
     args.level ?? 2,
     args.content ?? "",
     args.expected_hash,
+    args.allow_governance ?? false,
   )
 
   if (!result.changed) {
@@ -686,7 +691,7 @@ async function handleInsert(
  */
 async function handleDelete(
   dir: string,
-  args: { path: string; heading?: string; expected_hash?: string },
+  args: { path: string; heading?: string; expected_hash?: string; allow_governance?: boolean },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for delete")
@@ -695,7 +700,7 @@ async function handleDelete(
     return toErrorOutput("heading is required for delete")
   }
 
-  const result = await deleteSection(dir, args.path, args.heading, args.expected_hash)
+  const result = await deleteSection(dir, args.path, args.heading, args.expected_hash, args.allow_governance ?? false)
 
   if (!result.changed) {
     return toErrorOutput(
@@ -724,7 +729,7 @@ async function handleDelete(
  */
 async function handleBatch(
   dir: string,
-  args: { path: string; operations?: string; expected_hash?: string },
+  args: { path: string; operations?: string; expected_hash?: string; allow_governance?: boolean },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for batch")
@@ -743,7 +748,13 @@ async function handleBatch(
     return toErrorOutput("operations must be valid JSON", 'Example: [{"heading":"Setup","op":"write","body":"..."}]')
   }
 
-  const result = await batchEdit(dir, args.path, ops as Array<{ heading: string; op: "write" | "append" | "delete" | "upsert"; body?: string; level?: number }>, args.expected_hash)
+  const result = await batchEdit(
+    dir,
+    args.path,
+    ops as Array<{ heading: string; op: "write" | "append" | "delete" | "upsert"; body?: string; level?: number }>,
+    args.expected_hash,
+    args.allow_governance ?? false,
+  )
 
   if ("status" in result && result.status === "chunk_required") {
     return JSON.stringify(result, null, 2)
@@ -769,7 +780,7 @@ async function handleBatch(
  */
 async function handleBatchFiles(
   dir: string,
-  args: { operations?: string },
+  args: { operations?: string; allow_governance?: boolean },
 ): Promise<string> {
   if (!args.operations?.trim()) {
     return toErrorOutput("operations is required for batch_files (JSON array of {path, ops: [{heading, op, body?, level?}]})")
@@ -785,7 +796,11 @@ async function handleBatchFiles(
     return toErrorOutput("operations must be valid JSON", 'Example: [{"path":"doc.md","ops":[{"heading":"Setup","op":"write","body":"..."}]}]')
   }
 
-  const results = await batchFiles(dir, fileOps as Array<{ path: string; ops: Array<{ heading: string; op: "write" | "append" | "delete" | "upsert"; body?: string; level?: number }> }>)
+  const results = await batchFiles(
+    dir,
+    fileOps as Array<{ path: string; ops: Array<{ heading: string; op: "write" | "append" | "delete" | "upsert"; body?: string; level?: number }> }>,
+    args.allow_governance ?? false,
+  )
 
   const succeeded = results.filter(r => r.changed).length
   const failed = results.filter(r => r.error).length
@@ -808,7 +823,7 @@ async function handleBatchFiles(
  */
 async function handleSetMetadata(
   dir: string,
-  args: { path: string; key?: string; value?: string; expected_hash?: string },
+  args: { path: string; key?: string; value?: string; expected_hash?: string; allow_governance?: boolean },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for set_metadata")
@@ -820,7 +835,7 @@ async function handleSetMetadata(
     return toErrorOutput("value is required for set_metadata")
   }
 
-  const result = await writeMetadata(dir, args.path, { [args.key]: args.value }, args.expected_hash)
+  const result = await writeMetadata(dir, args.path, { [args.key]: args.value }, args.expected_hash, args.allow_governance ?? false)
 
   if (!result.changed) {
     return toErrorOutput(`Metadata unchanged for ${args.path}`)
@@ -845,7 +860,7 @@ async function handleSetMetadata(
  */
 async function handleCreate(
   dir: string,
-  args: { path: string; title?: string; template_metadata?: string; content?: string },
+  args: { path: string; title?: string; template_metadata?: string; content?: string; allow_governance?: boolean },
 ): Promise<string> {
   if (!args.path?.trim()) {
     return toErrorOutput("path is required for create")
@@ -863,7 +878,7 @@ async function handleCreate(
     }
   }
 
-  const result = await createDocument(dir, args.path, args.title, metadata, args.content)
+  const result = await createDocument(dir, args.path, args.title, metadata, args.content, args.allow_governance ?? false)
   return toSuccessOutput(`Created document: ${result.path}`, undefined, {
     path: result.path,
     created: result.created,

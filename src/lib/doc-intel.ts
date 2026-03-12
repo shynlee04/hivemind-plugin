@@ -48,6 +48,19 @@ const WRITABLE_EXTENSIONS = new Set([".md", ".xml", ".json", ".yaml", ".yml"])
 const DOCUMENT_EXTENSIONS = new Set([".md", ".xml", ".json", ".yaml", ".yml", ".txt"])
 
 /**
+ * Governance-owned paths that remain read-only unless a privileged caller opts in.
+ * Supports exact file matches and directory prefixes via `/**` suffix.
+ */
+export const GOVERNANCE_WRITE_DENYLIST = [
+  ".hivemind/**",
+  ".opencode/**",
+  "opencode.json",
+  "AGENTS.md",
+  "CLAUDE.md",
+  "src/AGENTS.md",
+] as const
+
+/**
  * Line count threshold above which single-shot writes are rejected.
  * Agent must write section-by-section using chunked operations.
  */
@@ -309,13 +322,17 @@ async function acquireLock(absPath: string, timeoutMs = 5000): Promise<() => Pro
  * @param absPath - Absolute file path.
  * @param transform - Function that transforms original content.
  * @param expectedHash - Optional expected hash for stale-file detection.
+ * @param allowGovernance - Whether privileged callers may bypass governance denylist checks.
  * @returns WriteResult with hash, opId, and change info.
  */
 async function lockedTransform(
+  projectRoot: string,
   absPath: string,
   transform: (original: string) => string,
   expectedHash?: string,
+  allowGovernance = false,
 ): Promise<WriteResult> {
+  assertGovernanceWriteAllowed(projectRoot, absPath, allowGovernance)
   const release = await acquireLock(absPath)
   try {
     const original = await readTextFile(absPath)
@@ -382,6 +399,52 @@ function isWritable(filePath: string): boolean {
  */
 function isDocument(filePath: string): boolean {
   return DOCUMENT_EXTENSIONS.has(extname(filePath).toLowerCase())
+}
+
+/**
+ * Convert an absolute path to a normalized project-relative path.
+ *
+ * @param projectRoot - Absolute path to the project root.
+ * @param absPath - Absolute path to normalize.
+ * @returns Project-relative path with forward slashes.
+ */
+function relativeProjectPath(projectRoot: string, absPath: string): string {
+  return relative(resolve(projectRoot), absPath).replace(/\\/g, "/")
+}
+
+/**
+ * Check whether a normalized project-relative path matches the governance denylist.
+ *
+ * @param normalizedPath - Project-relative path using forward slashes.
+ * @returns Matching denylist pattern, if any.
+ */
+function matchGovernanceWriteDenylist(normalizedPath: string): string | undefined {
+  return GOVERNANCE_WRITE_DENYLIST.find((pattern) => {
+    if (pattern.endsWith("/**")) {
+      const prefix = pattern.slice(0, -3)
+      return normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`)
+    }
+    return normalizedPath === pattern
+  })
+}
+
+/**
+ * Enforce the governance write boundary for privileged and non-privileged callers.
+ *
+ * @param projectRoot - Absolute path to the project root.
+ * @param absPath - Absolute target path.
+ * @param allowGovernance - Whether the caller may bypass governance denylist checks.
+ */
+function assertGovernanceWriteAllowed(projectRoot: string, absPath: string, allowGovernance = false): void {
+  if (allowGovernance) return
+
+  const normalizedPath = relativeProjectPath(projectRoot, absPath)
+  const matchedPattern = matchGovernanceWriteDenylist(normalizedPath)
+  if (matchedPattern) {
+    throw new Error(
+      `Write blocked for governance-owned path: ${normalizedPath} (matched ${matchedPattern}). Pass allowGovernance=true only for privileged callers.`,
+    )
+  }
 }
 
 // ─── File Helpers ───────────────────────────────────────────────────────────────
@@ -710,6 +773,7 @@ async function checkChunkThreshold(abs: string): Promise<ChunkWriteSignal | null
  * @param content - Replacement section body.
  * @param level - Heading level to use when creating a missing section.
  * @param expectedHash - Optional hash for stale-file detection.
+ * @param allowGovernance - Whether privileged callers may bypass governance denylist checks.
  * @returns WriteResult or chunk_required signal.
  */
 export async function upsertSection(
@@ -719,16 +783,19 @@ export async function upsertSection(
   content: string,
   level = 2,
   expectedHash?: string,
+  allowGovernance = false,
 ): Promise<WriteResult | ChunkWriteSignal> {
   const abs = safePath(projectRoot, filePath)
   if (!isWritable(abs)) {
     throw new Error(`File type not writable: ${extname(abs)}. Only ${[...WRITABLE_EXTENSIONS].join(", ")} are allowed.`)
   }
 
+  assertGovernanceWriteAllowed(projectRoot, abs, allowGovernance)
+
   const chunkSignal = await checkChunkThreshold(abs)
   if (chunkSignal) return chunkSignal
 
-  return lockedTransform(abs, (original) => weaver.upsertSection(original, heading, content, level), expectedHash)
+  return lockedTransform(projectRoot, abs, (original) => weaver.upsertSection(original, heading, content, level), expectedHash, allowGovernance)
 }
 
 /**
@@ -740,6 +807,7 @@ export async function upsertSection(
  * @param heading - Exact heading text to target.
  * @param content - Replacement section body.
  * @param expectedHash - Optional hash for stale-file detection.
+ * @param allowGovernance - Whether privileged callers may bypass governance denylist checks.
  * @returns WriteResult or chunk_required signal.
  */
 export async function writeSection(
@@ -748,16 +816,19 @@ export async function writeSection(
   heading: string,
   content: string,
   expectedHash?: string,
+  allowGovernance = false,
 ): Promise<WriteResult | ChunkWriteSignal> {
   const abs = safePath(projectRoot, filePath)
   if (!isWritable(abs)) {
     throw new Error(`File type not writable: ${extname(abs)}. Only ${[...WRITABLE_EXTENSIONS].join(", ")} are allowed.`)
   }
 
+  assertGovernanceWriteAllowed(projectRoot, abs, allowGovernance)
+
   const chunkSignal = await checkChunkThreshold(abs)
   if (chunkSignal) return chunkSignal
 
-  return lockedTransform(abs, (original) => weaver.patchSection(original, heading, content), expectedHash)
+  return lockedTransform(projectRoot, abs, (original) => weaver.patchSection(original, heading, content), expectedHash, allowGovernance)
 }
 
 /**
@@ -769,6 +840,7 @@ export async function writeSection(
  * @param heading - Exact heading text to target.
  * @param content - Content to append.
  * @param expectedHash - Optional hash for stale-file detection.
+ * @param allowGovernance - Whether privileged callers may bypass governance denylist checks.
  * @returns WriteResult with changed flag, hash, opId.
  */
 export async function appendSection(
@@ -777,13 +849,16 @@ export async function appendSection(
   heading: string,
   content: string,
   expectedHash?: string,
+  allowGovernance = false,
 ): Promise<WriteResult> {
   const abs = safePath(projectRoot, filePath)
   if (!isWritable(abs)) {
     throw new Error(`File type not writable: ${extname(abs)}. Only ${[...WRITABLE_EXTENSIONS].join(", ")} are allowed.`)
   }
 
-  return lockedTransform(abs, (original) => weaver.appendToSection(original, heading, content), expectedHash)
+  assertGovernanceWriteAllowed(projectRoot, abs, allowGovernance)
+
+  return lockedTransform(projectRoot, abs, (original) => weaver.appendToSection(original, heading, content), expectedHash, allowGovernance)
 }
 
 /**
@@ -797,6 +872,7 @@ export async function appendSection(
  * @param level - Heading level (1–6).
  * @param body - Body content for the new section.
  * @param expectedHash - Optional hash for stale-file detection.
+ * @param allowGovernance - Whether privileged callers may bypass governance denylist checks.
  * @returns WriteResult with changed flag.
  */
 export async function insertSection(
@@ -807,13 +883,16 @@ export async function insertSection(
   level: number,
   body: string,
   expectedHash?: string,
+  allowGovernance = false,
 ): Promise<WriteResult> {
   const abs = safePath(projectRoot, filePath)
   if (!isWritable(abs)) {
     throw new Error(`File type not writable: ${extname(abs)}. Only ${[...WRITABLE_EXTENSIONS].join(", ")} are allowed.`)
   }
 
-  return lockedTransform(abs, (original) => weaver.insertAfterSection(original, afterHeading, newHeading, level, body), expectedHash)
+  assertGovernanceWriteAllowed(projectRoot, abs, allowGovernance)
+
+  return lockedTransform(projectRoot, abs, (original) => weaver.insertAfterSection(original, afterHeading, newHeading, level, body), expectedHash, allowGovernance)
 }
 
 /**
@@ -824,6 +903,7 @@ export async function insertSection(
  * @param filePath - Workspace-relative or absolute path.
  * @param heading - Exact heading text to delete.
  * @param expectedHash - Optional hash for stale-file detection.
+ * @param allowGovernance - Whether privileged callers may bypass governance denylist checks.
  * @returns WriteResult with changed flag.
  */
 export async function deleteSection(
@@ -831,13 +911,16 @@ export async function deleteSection(
   filePath: string,
   heading: string,
   expectedHash?: string,
+  allowGovernance = false,
 ): Promise<WriteResult> {
   const abs = safePath(projectRoot, filePath)
   if (!isWritable(abs)) {
     throw new Error(`File type not writable: ${extname(abs)}. Only ${[...WRITABLE_EXTENSIONS].join(", ")} are allowed.`)
   }
 
-  return lockedTransform(abs, (original) => weaver.deleteSection(original, heading), expectedHash)
+  assertGovernanceWriteAllowed(projectRoot, abs, allowGovernance)
+
+  return lockedTransform(projectRoot, abs, (original) => weaver.deleteSection(original, heading), expectedHash, allowGovernance)
 }
 
 /**
@@ -848,6 +931,7 @@ export async function deleteSection(
  * @param filePath - Workspace-relative or absolute path.
  * @param metadata - Key/value pairs to set in the frontmatter.
  * @param expectedHash - Optional hash for stale-file detection.
+ * @param allowGovernance - Whether privileged callers may bypass governance denylist checks.
  * @returns WriteResult with changed flag.
  */
 export async function writeMetadata(
@@ -855,13 +939,16 @@ export async function writeMetadata(
   filePath: string,
   metadata: Record<string, string>,
   expectedHash?: string,
+  allowGovernance = false,
 ): Promise<WriteResult> {
   const abs = safePath(projectRoot, filePath)
   if (!isWritable(abs)) {
     throw new Error(`File type not writable: ${extname(abs)}. Only ${[...WRITABLE_EXTENSIONS].join(", ")} are allowed.`)
   }
 
-  return lockedTransform(abs, (original) => weaver.writeFrontmatter(original, metadata), expectedHash)
+  assertGovernanceWriteAllowed(projectRoot, abs, allowGovernance)
+
+  return lockedTransform(projectRoot, abs, (original) => weaver.writeFrontmatter(original, metadata), expectedHash, allowGovernance)
 }
 
 /**
@@ -873,6 +960,7 @@ export async function writeMetadata(
  * @param title - Title for the document (becomes the H1).
  * @param metadata - Optional YAML frontmatter key/value pairs.
  * @param initialContent - Optional caller-provided body content.
+ * @param allowGovernance - Whether privileged callers may bypass governance denylist checks.
  * @returns Result object with created path, hash, and verification receipt.
  */
 export async function createDocument(
@@ -881,11 +969,14 @@ export async function createDocument(
   title: string,
   metadata?: Record<string, string>,
   initialContent?: string,
+  allowGovernance = false,
 ): Promise<CreateDocumentResult> {
   const abs = safePath(projectRoot, filePath)
   if (!isWritable(abs)) {
     throw new Error(`File type not writable: ${extname(abs)}. Only ${[...WRITABLE_EXTENSIONS].join(", ")} are allowed.`)
   }
+
+  assertGovernanceWriteAllowed(projectRoot, abs, allowGovernance)
 
   // Check if file already exists
   try {
@@ -924,6 +1015,7 @@ export async function createDocument(
  * @param filePath - Workspace-relative or absolute path.
  * @param ops - Array of edit operations.
  * @param expectedHash - Optional hash for stale-file detection.
+ * @param allowGovernance - Whether privileged callers may bypass governance denylist checks.
  * @returns WriteResult or chunk_required signal.
  */
 export async function batchEdit(
@@ -931,16 +1023,20 @@ export async function batchEdit(
   filePath: string,
   ops: BatchEditOp[],
   expectedHash?: string,
+  allowGovernance = false,
 ): Promise<WriteResult | ChunkWriteSignal> {
   const abs = safePath(projectRoot, filePath)
   if (!isWritable(abs)) {
     throw new Error(`File type not writable: ${extname(abs)}. Only ${[...WRITABLE_EXTENSIONS].join(", ")} are allowed.`)
   }
 
+  assertGovernanceWriteAllowed(projectRoot, abs, allowGovernance)
+
   const chunkSignal = await checkChunkThreshold(abs)
   if (chunkSignal) return chunkSignal
 
   return lockedTransform(
+    projectRoot,
     abs,
     (original) => weaver.batchPatchSections(original, ops.map(o => ({
       heading: o.heading,
@@ -949,6 +1045,7 @@ export async function batchEdit(
       level: o.level,
     }))),
     expectedHash,
+    allowGovernance,
   )
 }
 
@@ -959,11 +1056,13 @@ export async function batchEdit(
  *
  * @param projectRoot - Project root for path resolution.
  * @param ops - Array of per-file operations.
+ * @param allowGovernance - Whether privileged callers may bypass governance denylist checks.
  * @returns Array of per-file results.
  */
 export async function batchFiles(
   projectRoot: string,
   ops: BatchFileOp[],
+  allowGovernance = false,
 ): Promise<BatchFileResult[]> {
   const results: BatchFileResult[] = []
 
@@ -975,7 +1074,10 @@ export async function batchFiles(
         continue
       }
 
+      assertGovernanceWriteAllowed(projectRoot, abs, allowGovernance)
+
       const result = await lockedTransform(
+        projectRoot,
         abs,
         (original) => weaver.batchPatchSections(original, fileOp.ops.map(o => ({
           heading: o.heading,
@@ -983,6 +1085,8 @@ export async function batchFiles(
           body: o.body,
           level: o.level,
         }))),
+        undefined,
+        allowGovernance,
       )
 
       results.push({ path: fileOp.path, ...result })
