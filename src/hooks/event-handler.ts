@@ -34,8 +34,7 @@ import { detectAutoRealignment } from "../lib/hivefiver-integration.js"
 import { resolveCanonicalSessionId } from "../lib/graph-io.js"
 import { resolveRuntimeSessionLineage } from "../lib/runtime-session-lineage.js"
 import { classifyLineageScope } from "../lib/session-intent-classifier.js"
-import { normalizeTaskLineageOwner, normalizeTaskSessionKind, resolveTaskOwnershipContext } from "../lib/task-ownership.js"
-import { normalizeTaskWorkflowTopology } from "../lib/task-topology.js"
+import { normalizeTaskLineageOwner, normalizeTaskSessionKind, resolveTaskOwnershipContext, normalizeTaskWorkflowTopology } from "../lib/task-governance.js"
 import { ensureSessionRuntimeBootstrap } from "../lib/session-runtime.js"
 
 function normalizeStringArray(value: unknown): string[] | undefined {

@@ -16,7 +16,7 @@ import { join } from "node:path"
 import { readManifest } from "../lib/manifest.js"
 import { getHiveOpsPaths } from "../lib/hiveops-paths.js"
 import { ensureHivemindIngressClassification } from "../lib/hivemind-ingress-policy.js"
-import { readCanonicalTaskAuthority, renderCanonicalTaskSnapshot } from "../lib/task-authority.js"
+import { readCanonicalTaskAuthority, renderCanonicalTaskSnapshot } from "../lib/task-governance.js"
 
 interface HandoffPayload {
   id: string

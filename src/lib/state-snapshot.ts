@@ -9,7 +9,7 @@ import {
   ensureHivemindIngressClassification,
   type HivemindIngressReadWarning,
 } from "./hivemind-ingress-policy.js"
-import { readCanonicalTaskAuthority } from "./task-authority.js"
+import { readCanonicalTaskAuthority } from "./task-governance.js"
 import type { BrainState } from "../schemas/brain-state.js"
 
 export interface UnifiedStateSnapshot {

@@ -28,7 +28,7 @@ import { createLogger, noopLogger } from "./logging.js";
 import { writeManifest } from "./manifest.js";
 import { getEffectivePaths } from "./paths.js";
 import { loadGraphTasks, saveGraphTasks } from "./graph-io.js";
-import { normalizeTaskWorkflowTopology, resolveTaskWorkflowTopology } from "./task-topology.js";
+import { normalizeTaskWorkflowTopology, resolveTaskWorkflowTopology } from "./task-governance.js";
 
 // Initialize logger - use noop logger initially, replace with real logger on first use
 let loggerPromise: Promise<{
