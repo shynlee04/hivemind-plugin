@@ -399,6 +399,15 @@ Human operators should not have to start from `brain.json` just to understand th
 - `P1-D.1c` subset 3 result: startup formation is narrower and cleaner — readability projections are no longer eager startup outputs, and the root shell donor trio now fails closed instead of seeding legacy state; the remaining hotspot is the mixed `.hivemind/sessions/active/` layout split between markdown session files and per-session profile/bootstrap directories
 - `P1-D.1c` subset 4 result: the obvious active-session path conflict is reduced — profile/bootstrap shims no longer share the `sessions/active/` path with markdown session projections, but profile authority is still compatibility-only and the `/hivefiver` command/workflow branch still carries legacy stage taxonomy that must be normalized further
 - `P1-D.1c` subset 5 result: runtime bootstrap ownership is materially narrower — the hook path and the manual bootstrap tool now converge on one `src/lib` owner, and the hot-path plan/context tools no longer do stale load/save choreography when mutating brain-state-adjacent session context
+- `P1-D.1c` subset 6 precursor: `src/lib` consolidation tranche landed (2026-03-12) — 12 files archived/consolidated, ~1,200 lines removed, zero new regressions:
+  - **Dead code archived** (`.archive/dead-code/2026-03-12/`): `session-memory-classifier.ts` (zero consumers), `swarm-executor.ts` + `session-swarm.ts` (cascading dead — hook never mounted)
+  - **Task cluster consolidated** (`.archive/consolidated/2026-03-12/task-cluster/`): `task-authority.ts` + `task-ownership.ts` + `task-topology.ts` merged into `src/lib/task-governance.ts`, 5 consumers rewired
+  - **Session cluster consolidated** (`.archive/consolidated/2026-03-12/session-cluster/`): `session-profile.ts` absorbed into `session-runtime.ts`, `session-coherence-types.ts` absorbed into `session_coherence.ts`
+  - **Governance cluster consolidated** (`.archive/consolidated/2026-03-12/governance-cluster/`): `context-escalation.ts` absorbed into `session-governance.ts` (its own JSDoc said to merge there)
+  - **Barrel cleared**: all 32 phantom `export *` removed from `src/lib/index.ts` (zero barrel consumers)
+  - **Deprecated scripts archived** (`.archive/deprecated-scripts/2026-03-12/`): `auto-init.sh`, `classify-intent.sh`, `detect-entry.sh`
+  - Verification: `npx tsc --noEmit` clean, `npm test` 359/367 (7 pre-existing + 1 flaky, 0 new failures)
+  - Full archive manifest: `.archive/dead-code/2026-03-12/INVENTORY.md`
 - `P1-D`: state-authority planning remains active; `.hivemind` state shape, startup formation ownership, bootstrap/profile ownership, and lineage-separated pathing are still unresolved
 
 **Next**:
@@ -423,7 +432,7 @@ The following surfaces are now explicitly queued for isolation and archive/depre
 4. `src/tools/hivemind-inspect.ts` direct flat-state inspection assumptions that predate ingress classification
 5. `src/lib/session_coherence.ts` archive/body parsing fallback that bypasses stronger task/graph authority
 6. `src/cli/init.ts`, `src/lib/fs/planning-ops.ts`, and `src/hooks/event-handler.ts` startup formation responsibilities are partially isolated now, but the remaining active-session layout and bootstrap/profile authority split still need a bounded follow-on tranche
-7. `scripts/auto-init.sh`, `scripts/detect-entry.sh`, and `scripts/classify-intent.sh` are now fail-closed compatibility markers; they stay on the watchlist until stale callers are removed and no workflow/command still treats them as viable startup donors
+7. ~~`scripts/auto-init.sh`, `scripts/detect-entry.sh`, and `scripts/classify-intent.sh`~~ **RESOLVED 2026-03-12**: archived to `.archive/deprecated-scripts/2026-03-12/` — no live callers remain; all three were self-documented as deprecated
 8. `scripts/check-state-write-boundary.sh` and `scripts/check-docs-ownership-boundary.sh` stale references to the deleted plugin surface and missing `agents/hivefiver-reserved.md`
 9. `.opencode/tool/*.ts` wrapper-only transport surfaces after the `src/tools` cutover
 10. `src/hooks/tool-gate.ts` deprecated/helper-only compatibility exports that survive only for older callers
@@ -435,7 +444,7 @@ The following surfaces are now explicitly queued for isolation and archive/depre
 16. `.hivemind/sessions/active/*/profile.json` as bootstrap/session shims that remain unresolved until `P1-B` closeout freezes profile authority
 17. deep-scan “safe to archive” candidates remain provisional until consumer tracing proves zero live imports, zero test coverage dependency, and zero runtime entrypoint references
 18. startup formation overlaps in `src/cli/init.ts`, `src/lib/fs/planning-ops.ts`, and `src/hooks/event-handler.ts` now move to the front of the `P1-D.1c` target queue because the first deep-scan archive list proved too shallow to isolate the real `.hivemind` formation noise
-19. shell bootstrap donors in `scripts/auto-init.sh`, `scripts/detect-entry.sh`, and `scripts/classify-intent.sh` now move to the front of the `P1-D.1c` target queue because they can still seed mixed-era startup assumptions even when the obvious dead-code list is disproved
+19. ~~shell bootstrap donors in `scripts/auto-init.sh`, `scripts/detect-entry.sh`, and `scripts/classify-intent.sh`~~ **RESOLVED 2026-03-12**: all three archived as deprecated donors; no runtime or workflow caller depends on them
 20. `.opencode/skills/hivefiver-mode/scripts/*.sh` and the `/hivefiver*` command/workflow intake branch now survive only as compatibility bridges until their stage taxonomy and startup assumptions are normalized onto canonical `src` contracts
 
 Any future cycle that touches one of these surfaces must classify it as `retain`, `isolate`, `compatibility-only`, or `archive/remove` before the cycle closes.
@@ -594,7 +603,7 @@ No new document may silently compete with `PLAN.md`.
 
 ## 11. Immediate Next Moves
 
-**Current cycle**: `P1-D.1c` subset 5 completed; runtime bootstrap ownership is now collapsed onto a canonical `src/lib` owner and the hottest plan/context mutation paths no longer rely on stale direct-save choreography, which clears the way for a more aggressive active-session layout cut
+**Current cycle**: `P1-D.1c` subset 6 precursor completed; `src/lib` consolidation tranche archived 12 files (~1,200 lines), consolidated 4 file clusters (task 3→1, session 2→parent, governance 1→parent), cleared `src/lib/index.ts` barrel (32 phantom exports, zero consumers), and archived 3 deprecated shell scripts — `tsc` clean, zero new test regressions — planning cluster consolidation and phantom tool investigation remain for the next slice
 
 The current execution slice covers:
 

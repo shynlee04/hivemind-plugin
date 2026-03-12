@@ -12,6 +12,6 @@ export type {
   FirstTurnConfig,
   MainSessionStartInput,
   MainSessionStartOutput,
-} from "../../lib/session-coherence-types.js"
+} from "../../lib/session_coherence.js"
 
-export { DEFAULT_FIRST_TURN_CONFIG } from "../../lib/session-coherence-types.js"
+export { DEFAULT_FIRST_TURN_CONFIG } from "../../lib/session_coherence.js"

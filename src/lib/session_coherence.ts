@@ -1,6 +1,9 @@
 /**
  * Session Coherence Library — First-turn context retrieval and prompt transformation
  *
+ * Consolidated from: session_coherence.ts + session-coherence-types.ts
+ * Date: 2026-03-12
+ *
  * Pure TypeScript logic for:
  * - Detecting first turn of session
  * - Loading last session context (from ARCHIVED session after compact)
@@ -14,14 +17,70 @@ import { join } from "path"
 import { getEffectivePaths } from "./paths.js"
 import type { BrainState } from "../schemas/brain-state.js"
 import type { HierarchyState } from "../schemas/hierarchy.js"
-import type {
-  LastSessionContext,
-  PriorTask,
-  PriorMem,
-  PriorAnchor,
-  FirstTurnConfig,
-} from "./session-coherence-types.js"
 import { DEFAULT_CONTEXT_BUDGET } from "./budget.js"
+
+// ─── Shared Types (absorbed from session-coherence-types.ts) ─────────────────
+
+export interface LastSessionContext {
+  sessionId: string
+  trajectory: string | null
+  activeTasks: PriorTask[]
+  pendingTodos: string[]
+  relevantMems: PriorMem[]
+  anchors: PriorAnchor[]
+  mode: string | null
+  lastCompactSummary: string | null
+}
+
+export interface PriorTask {
+  id: string
+  content: string
+  status: string
+  stamp: string
+}
+
+export interface PriorMem {
+  id: string
+  content: string
+  shelf: string
+  createdAt: string
+}
+
+export interface PriorAnchor {
+  key: string
+  value: string
+  timestamp: string
+}
+
+export interface PromptTransformationResult {
+  prompt: string
+  isFirstTurn: boolean
+  sessionId: string
+}
+
+export interface FirstTurnConfig {
+  maxTasks: number
+  maxMems: number
+  maxTodos: number
+  includeAnchors: boolean
+  budget: number
+}
+
+export const DEFAULT_FIRST_TURN_CONFIG: FirstTurnConfig = {
+  maxTasks: 5,
+  maxMems: 3,
+  maxTodos: 10,
+  includeAnchors: true,
+  budget: DEFAULT_CONTEXT_BUDGET,
+}
+
+export interface MainSessionStartInput {}
+
+export interface MainSessionStartOutput {
+  messages: unknown[]
+}
+
+// ─── Session Coherence Logic ─────────────────────────────────────────────────
 
 /**
  * Default configuration for first-turn context retrieval
