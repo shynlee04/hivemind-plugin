@@ -1,0 +1,237 @@
+{
+  "session": {
+    "id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
+    "opencode_session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758",
+    "mode": "exploration",
+    "governance_mode": "assisted",
+    "governance_status": "LOCKED",
+    "start_time": 1773340432711,
+    "last_activity": 1773341572354,
+    "date": "2026-03-12",
+    "meta_key": "",
+    "role": "unresolved",
+    "kind": "unresolved",
+    "lineage_scope": "project",
+    "role_source": "inferred",
+    "by_ai": true
+  },
+  "hierarchy": {
+    "trajectory": "",
+    "tactic": "",
+    "action": ""
+  },
+  "metrics": {
+    "turn_count": 78,
+    "user_turn_count": 0,
+    "drift_score": 100,
+    "files_touched": [
+      "[via bash]",
+      "/Users/apple/hivemind-plugin/docs/synthesis/monitoring-gatekeeping-synthesis.md",
+      "Cannot find module '../lib/paths.js' or its corresponding type declarations.",
+      "Cannot find module '../lib/session-runtime.js' or its corresponding type declarations.",
+      "Cannot find module '../lib/persistence.js' or its corresponding type declarations.",
+      "Cannot find module '../lib/tool-response.js' or its corresponding type declarations.",
+      "'ZodIssueCode' is deprecated.",
+      "'(params?: string | { version?: \"v1\" | \"v2\" | \"v3\" | \"v4\" | \"v5\" | \"v6\" | \"v7\" | \"v8\" | undefined; abort?: boolean | undefined; error?: string | $ZodErrorMap<$ZodIssueInvalidStringFormat> | undefined; message?: string | undefined; } | undefined): ZodString' is deprecated.",
+      "'(params?: string | { abort?: boolean | undefined; precision?: number | null | undefined; offset?: boolean | undefined; local?: boolean | undefined; error?: string | $ZodErrorMap<$ZodIssueInvalidStringFormat> | undefined; message?: string | undefined; } | undefined): ZodString' is deprecated.",
+      "mkdir -p /Users/apple/hivemind-plugin/docs/synthesis && ls -la /Users/apple/hivemind-plugin/docs/synthesis/",
+      "mkdir -p /Users/apple/hivemind-plugin/.hivemind/synthesis",
+      "/Users/apple/hivemind-plugin/.hivemind/synthesis/entity-relationship-map.md"
+    ],
+    "context_updates": 0,
+    "last_context_update_turn": 0,
+    "auto_health_score": 100,
+    "total_tool_calls": 78,
+    "successful_tool_calls": 78,
+    "violation_count": 0,
+    "consecutive_failures": 0,
+    "consecutive_same_section": 0,
+    "last_section_content": "",
+    "tool_type_counts": {
+      "read": 50,
+      "write": 5,
+      "query": 20,
+      "governance": 3
+    },
+    "keyword_flags": [
+      "error",
+      "failure",
+      "retry",
+      "loop",
+      "stuck",
+      "confused"
+    ],
+    "keyword_flags_reset_turn": 0,
+    "write_without_read_count": 2,
+    "files_read_this_session": [
+      "/Users/apple/hivemind-plugin/src/tools/hiveops-export.ts",
+      "/Users/apple/hivemind-plugin/src/tools/hiveops-todo.ts",
+      "/Users/apple/hivemind-plugin/src/tools/hiveops-gate.ts",
+      "/Users/apple/hivemind-plugin/src/schemas/delegation-packet.ts",
+      "/Users/apple/hivemind-plugin/src/schemas/graph-nodes.ts",
+      "/Users/apple/hivemind-plugin/src/hooks/soft-governance.ts",
+      "/Users/apple/hivemind-plugin/.opencode/skills/verification-methodology/references/gate-types.md",
+      "**/detection*.ts",
+      "**/long-session*.ts",
+      "/Users/apple/hivemind-plugin/src/hooks/event-handler.ts",
+      "/Users/apple/hivemind-plugin/src/tools/hivemind-cycle.ts",
+      "/Users/apple/hivemind-plugin/src/lib/session-split.ts",
+      "/Users/apple/hivemind-plugin/.opencode/skills",
+      "entry-resolution/**/*",
+      "/Users/apple/hivemind-plugin/src/lib/persistence.ts",
+      "/Users/apple/hivemind-plugin/src/lib/manifest.ts",
+      "/Users/apple/hivemind-plugin/src/lib/graph-io.ts",
+      "/Users/apple/hivemind-plugin/src/lib/chain-analysis.ts",
+      "/Users/apple/hivemind-plugin/src/lib/long-session.ts",
+      "/Users/apple/hivemind-plugin/.opencode/skills/delegation-framework/SKILL.md",
+      "/Users/apple/hivemind-plugin/.opencode/skills/entry-resolution/SKILL.md",
+      "/Users/apple/hivemind-plugin/src/lib",
+      "*session*.ts",
+      "*task*.ts",
+      "/Users/apple/hivemind-plugin/src/lib/runtime-session-lineage.ts",
+      "/Users/apple/hivemind-plugin/src/lib/task-governance.ts",
+      "/Users/apple/hivemind-plugin/src/lib/session-intent-classifier.ts",
+      "**/*soft-governance*.ts",
+      "**/*messages-transform*.ts",
+      "**/*delegation*.ts",
+      "/Users/apple/hivemind-plugin/src/tools/hivemind-hierarchy.ts",
+      "**/*brain-state*.ts",
+      "/Users/apple/hivemind-plugin/src/tools/hivemind-session.ts",
+      "/Users/apple/hivemind-plugin/src/lib/graph/writer.ts",
+      "/Users/apple/hivemind-plugin/src/hooks/messages-transform.ts",
+      "/Users/apple/hivemind-plugin/src/schemas/brain-state.ts",
+      "/Users/apple/hivemind-plugin/src/schemas/graph-state.ts",
+      "/Users/apple/hivemind-plugin/src/schemas/manifest.ts",
+      "/Users/apple/hivemind-plugin/.opencode/skills/context-integrity/SKILL.md",
+      "/Users/apple/hivemind-plugin/src/lib/hierarchy-tree.ts",
+      "**/*session-engine*.ts",
+      "**/*context-integrity*/**",
+      "/Users/apple/hivemind-plugin/src/lib/session-engine.ts",
+      "docs/delegation-investigation/**/*"
+    ],
+    "governance_counters": {
+      "drift": 0,
+      "compaction": 0,
+      "out_of_order": 23,
+      "evidence_pressure": 76
+    }
+  },
+  "first_turn_context_injected": false,
+  "first_turn_confirmation": {
+    "required": true,
+    "confirmed": false,
+    "rationale_option": null,
+    "selected_output_style": null,
+    "confirmed_at": null
+  },
+  "selected_output_style_v29": "supportive_discovery",
+  "memory_governance": {
+    "last_classified_at": 1773340514231
+  },
+  "version": "2.0.0",
+  "next_compaction_report": null,
+  "compaction_count": 0,
+  "last_compaction_time": 0,
+  "compaction_limit_reached": false,
+  "cycle_log": [
+    {
+      "timestamp": 1773340629618,
+      "tool": "task",
+      "task_id": "ses_31cad868fffeh4fEOdD2tMtXFG",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failed",
+        "failure",
+        "error",
+        "blocked",
+        "unable",
+        "timeout"
+      ]
+    },
+    {
+      "timestamp": 1773340716671,
+      "tool": "task",
+      "task_id": "ses_31cad2fe4ffe5yQvJ1MAWQR6QT",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failure"
+      ]
+    },
+    {
+      "timestamp": 1773340797575,
+      "tool": "task",
+      "task_id": "ses_31cad5a33ffeQVOSekmlrnTCsF",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failed",
+        "failure",
+        "error",
+        "blocked",
+        "unable",
+        "partially",
+        "could not",
+        "cannot",
+        "not found",
+        "crashed",
+        "timed out",
+        "timeout",
+        "exception",
+        "rejected"
+      ]
+    },
+    {
+      "timestamp": 1773341165964,
+      "tool": "task",
+      "task_id": "ses_31cad0564ffeM9aZ5MRIeWJBOl",
+      "failure_detected": false,
+      "failure_keywords": []
+    }
+  ],
+  "pending_failure_ack": true,
+  "pending_mandatory_tools": [
+    "hivemind_cycle",
+    "hivemind_session"
+  ],
+  "framework_selection": {
+    "choice": null,
+    "active_phase": "",
+    "active_spec_path": "",
+    "acceptance_note": "",
+    "updated_at": 0
+  },
+  "recent_messages": [
+    {
+      "role": "user",
+      "content": "**Synthesis Task: Entity Relationship & State Mapping**\n\nSynthesize findings into a unified entity relationship map.\n\n**Source Data:**\n1. **Tools**: `hivemind-plan.ts` (plans), `hivemind-hierarchy.ts` (hierarchy), `hiveops-todo.ts` (tasks), `hivemind-session.ts` (sessions)\n2. **Libs**: `persistence.ts` (state), `manifest.ts` (manifests), `graph-io.ts` (graph), `chain-analysis.ts` (chain)\n3. **Hooks**: `event-handler.ts` (state mutations), `soft-governance.ts` (cycle_log)\n4. **Schema**: BrainState, TaskNode, SessionNode, PlanNode, DelegationNode, HierarchyState\n5. **Skills**: `entry-resolution/` (hierarchy chain), `context-integrity/` (context loss detection)\n\n**Synthesis Mission:**\n\n1. **Entity catalog:**\n   - Sessions (main, sub, trajectory)\n   - Tasks (canonical, graph, manifest)\n   - Plans (root, sub, atomic)\n   - Delegations (packet, node)\n   - State (brain, hierarchy, graph)\n   - Manifests (session, task, plan)\n\n2. **Relationship mapping:**\n   - Session → Tasks (ownership, context)\n   - Task → Subtasks → Delegations\n   - Plan → Phases → Tasks\n   - Session → Hierarchy (trajectory/tactic/action)\n   - Session → Parent Session (sub-session relationship)\n\n3. **State flow:**\n   - How does state propagate across entities?\n   - What mutations are allowed?\n   - How is consistency maintained?\n\n4. **File storage mapping:**\n   - Where is each entity stored?\n   - What is the canonical source for each?\n   - What are projections/compatibility surfaces?\n\n**Deliverable**: Structured synthesis report with:\n- Entity relationship diagram (ASCII/text)\n- State flow mapping\n- File storage inventory\n- Consistency mechanism documentation\n- Recommendations for refactor\n\nReturn findings for final synthesis."
+    },
+    {
+      "role": "assistant",
+      "content": "I'll synthesize the entity relationships and state mapping for the HiveMind system. Let me first auto-initialize and then conduct the research synthesis."
+    },
+    {
+      "role": "assistant",
+      "content": "Now let me read the core files to understand the entity relationships and state flow:"
+    },
+    {
+      "role": "assistant",
+      "content": "Now let me read the tool files and schema files:"
+    }
+  ],
+  "offtrack_todo_pending": [],
+  "trajectory_context": {
+    "session_type": "main",
+    "memory_class": "planning",
+    "active_plan_prefix": null,
+    "active_plan_id": null,
+    "disclosure_depth": "summary",
+    "revalidation_count": 0,
+    "context_preparation": {
+      "sot_searched": false,
+      "skills_activated": [],
+      "investigation_complete": false,
+      "mapped_nodes": [],
+      "success_metrics": []
+    }
+  },
+  "checkpoints": []
+}

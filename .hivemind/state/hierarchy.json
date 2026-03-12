@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "root": null,
+  "cursor": null,
+  "branches": [
+    {
+      "name": "main",
+      "cursor_id": null,
+      "created": 1773340432717,
+      "last_active": 1773340432717,
+      "status": "active"
+    }
+  ],
+  "primary_branch": "main"
+}
