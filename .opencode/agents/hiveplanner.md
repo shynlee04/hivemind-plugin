@@ -1,6 +1,7 @@
 ---
 description: "Planning specialist for phase/task design, sequencing, and handoff artifacts. Never implements code — designs the roadmap."
 mode: subagent
+model: openai/gpt-5.4
 reasoningEffort: high
 tools:
   write: true

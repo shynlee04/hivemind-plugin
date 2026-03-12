@@ -10,6 +10,7 @@ import assert from "node:assert/strict"
 import { mkdtemp, writeFile, mkdir, rm, readFile } from "node:fs/promises"
 import { join } from "node:path"
 import { tmpdir } from "node:os"
+import { parse as parseYaml } from "yaml"
 
 import { DocWeaver, estimateTokens } from "../src/lib/code-intel/doc-weaver.js"
 
@@ -91,6 +92,31 @@ function isValidJson(text: string): boolean {
   } catch {
     return false
   }
+}
+
+function isWellFormedXml(text: string): boolean {
+  const trimmed = text.trim()
+  if (!trimmed.startsWith("<?xml") || !/<[A-Za-z_][\w:.-]*[\s>]/.test(trimmed)) {
+    return false
+  }
+
+  const stack: string[] = []
+  const tagMatches = trimmed.matchAll(/<\/?([A-Za-z_][\w:.-]*)(?:\s[^<>]*)?\s*(\/?)>/g)
+  for (const match of tagMatches) {
+    const [fullTag, tagName, selfClosingMarker] = match
+    if (fullTag.startsWith("</")) {
+      if (stack.pop() !== tagName) {
+        return false
+      }
+      continue
+    }
+    if (selfClosingMarker === "/") {
+      continue
+    }
+    stack.push(tagName)
+  }
+
+  return stack.length === 0
 }
 
 // ─── DocWeaver Extension Tests ──────────────────────────────────────────────────
@@ -454,6 +480,71 @@ describe("doc-intel library", () => {
       assert.ok(content.includes("author: test"))
       assert.ok(content.includes("## Details"), "Requested body heading should be written")
       assert.ok(content.includes("Persisted body content."), "Requested body should be written")
+    })
+
+    it("should create YAML scaffolding from metadata without markdown headings", async () => {
+      const { createDocument } = await getDocIntel()
+      const result = await createDocument(tmpDir, "docs/config.yaml", "Config", { author: "test", status: "draft" })
+      assert.ok(result.created)
+      assert.equal(result.receipt.retrieved, true)
+      assert.equal(result.receipt.formatValidated, true)
+
+      const content = await readFile(join(tmpDir, "docs/config.yaml"), "utf-8")
+      assert.ok(content.includes("title: Config"))
+      assert.ok(!content.includes("# Config"))
+      assert.deepEqual(parseYaml(content), {
+        title: "Config",
+        author: "test",
+        status: "draft",
+      })
+    })
+
+    it("should create YAML from provided initial content and verify receipt", async () => {
+      const { createDocument } = await getDocIntel()
+      const result = await createDocument(
+        tmpDir,
+        "docs/provided.yaml",
+        "Ignored Title",
+        undefined,
+        "enabled: true\ncount: 3\n",
+      )
+      assert.ok(result.created)
+      assert.equal(result.receipt.retrieved, true)
+      assert.equal(result.receipt.formatValidated, true)
+
+      const content = await readFile(join(tmpDir, "docs/provided.yaml"), "utf-8")
+      assert.ok(!content.includes("# "))
+      assert.deepEqual(parseYaml(content), {
+        enabled: true,
+        count: 3,
+      })
+    })
+
+    it("should create XML scaffolding from metadata without markdown headings", async () => {
+      const { createDocument } = await getDocIntel()
+      const result = await createDocument(tmpDir, "docs/config.xml", "Config")
+      assert.ok(result.created)
+      assert.equal(result.receipt.retrieved, true)
+      assert.equal(result.receipt.formatValidated, true)
+
+      const content = await readFile(join(tmpDir, "docs/config.xml"), "utf-8")
+      assert.ok(content.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"))
+      assert.ok(content.includes("<title>Config</title>"))
+      assert.ok(!content.includes("# Config"))
+      assert.equal(isWellFormedXml(content), true)
+    })
+
+    it("should create XML from provided initial content and verify receipt", async () => {
+      const { createDocument } = await getDocIntel()
+      const xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<root><item>value</item></root>\n"
+      const result = await createDocument(tmpDir, "docs/provided.xml", "Ignored Title", undefined, xml)
+      assert.ok(result.created)
+      assert.equal(result.receipt.retrieved, true)
+      assert.equal(result.receipt.formatValidated, true)
+
+      const content = await readFile(join(tmpDir, "docs/provided.xml"), "utf-8")
+      assert.equal(content, xml)
+      assert.equal(isWellFormedXml(content), true)
     })
 
     it("should reject creating over existing file", async () => {

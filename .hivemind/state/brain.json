@@ -1,12 +1,12 @@
 {
   "session": {
     "id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
-    "opencode_session_id": "ses_31bfe26dcffeZOwGocvRvC4aIy",
+    "opencode_session_id": "ses_31be0763bffeN8KxrQ6W65iFqi",
     "mode": "plan_driven",
     "governance_mode": "assisted",
     "governance_status": "OPEN",
     "start_time": 1773346937576,
-    "last_activity": 1773352400329,
+    "last_activity": 1773353941954,
     "date": "2026-03-12",
     "meta_key": "",
     "role": "unresolved",
@@ -21,7 +21,7 @@
     "action": "Governance-runtime write denylist is now enforced in doc-intel and surfaced through hivemind_doc. Tests pass and typecheck is clean. Standalone-first constraint is active."
   },
   "metrics": {
-    "turn_count": 186,
+    "turn_count": 252,
     "user_turn_count": 5,
     "drift_score": 100,
     "files_touched": [
@@ -43,19 +43,24 @@
     "context_updates": 11,
     "last_context_update_turn": 5,
     "auto_health_score": 100,
-    "total_tool_calls": 186,
-    "successful_tool_calls": 186,
+    "total_tool_calls": 252,
+    "successful_tool_calls": 252,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
     "last_section_content": "Governance-runtime write denylist is now enforced in doc-intel and surfaced through hivemind_doc. Tests pass and typecheck is clean. Standalone-first constraint is active.",
     "tool_type_counts": {
-      "read": 98,
-      "write": 26,
-      "query": 43,
+      "read": 145,
+      "write": 32,
+      "query": 56,
       "governance": 19
     },
-    "keyword_flags": [],
+    "keyword_flags": [
+      "failure",
+      "error",
+      "stuck",
+      "retry"
+    ],
     "keyword_flags_reset_turn": 5,
     "write_without_read_count": 0,
     "files_read_this_session": [
@@ -116,13 +121,30 @@
       "/Users/apple/hivemind-plugin/src/tools/hivemind-plan.ts",
       "describe/(\"(hivemind_doc tool|createDocument|upsertSection|writeSection|appendSection)",
       "createDocument/(",
-      "writeSection/(|upsertSection/(|appendSection/(|insertSection/(|deleteSection/(|writeMetadata/(|batchEdit/(|batchFiles/("
+      "writeSection/(|upsertSection/(|appendSection/(|insertSection/(|deleteSection/(|writeMetadata/(|batchEdit/(|batchFiles/(",
+      "**/*.{yml,yaml,xml}",
+      "*.{ts,js,json}",
+      "import.*yaml|require.*yaml|from 'yaml'|from \"yaml\"",
+      "import.*xml|require.*xml|from '.*xml|from \".*xml",
+      "/.parse/(|/.stringify/(|/.load/(|/.dump/(",
+      "/Users/apple/hivemind-plugin/src/lib/skill-registry.ts",
+      "/Users/apple/hivemind-plugin/src/lib/fs/session-io.ts",
+      "src/lib/doc-intel.ts",
+      "createDocument|renderInitialDocumentContent|verifyCreatedDocument|WRITABLE_EXTENSIONS|DocWeaver|create/(|upsert|append|insert|delete|batch|yaml|xml",
+      "{package.json,README.md,AGENTS.md,CLAUDE.md,src/lib/doc-intel.ts,src/tools/hivemind-doc.ts}",
+      "src/tools/hivemind-doc.ts",
+      "**/*{doc-intel,hivemind-doc}*.{test,spec}.{ts,tsx,js,mjs,cjs}",
+      "JSON.parse|JSON.stringify|writeFrontmatter|readFrontmatter|readOutline|readSectionContent|batchPatchSections|patchSection|appendToSection|insertAfterSection|deleteSection",
+      "</?xml|<[^>]+>|packCognitiveState|xml",
+      "/Users/apple/hivemind-plugin/src/lib/cognitive-packer.ts",
+      "describe/(\"createDocument\"|createDocument/(",
+      "from \"yaml\"|yaml/."
     ],
     "governance_counters": {
       "drift": 0,
       "compaction": 0,
-      "out_of_order": 266,
-      "evidence_pressure": 177
+      "out_of_order": 351,
+      "evidence_pressure": 235
     }
   },
   "first_turn_context_injected": true,
@@ -206,11 +228,125 @@
         "error",
         "blocked"
       ]
+    },
+    {
+      "timestamp": 1773353018623,
+      "tool": "task",
+      "task_id": "ses_31bedc827ffeqQpfP7s0w8qp6v",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failure",
+        "error"
+      ]
+    },
+    {
+      "timestamp": 1773353129939,
+      "tool": "task",
+      "task_id": "ses_31bedd4f5ffe6FCUQLZAaenlZe",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773353776073,
+      "tool": "task",
+      "task_id": "ses_31be60afaffeaZ7T5tg5YdvuVB",
+      "failure_detected": true,
+      "failure_keywords": [
+        "error"
+      ]
+    },
+    {
+      "timestamp": 1773347701139,
+      "tool": "task",
+      "task_id": "ses_31c42be0fffecru3RW14nl1m5B",
+      "failure_detected": true,
+      "failure_keywords": [
+        "error"
+      ]
+    },
+    {
+      "timestamp": 1773347890533,
+      "tool": "task",
+      "task_id": "ses_31c3cf278ffe5KVc9e0APtNaG7",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failed"
+      ]
+    },
+    {
+      "timestamp": 1773351396292,
+      "tool": "task",
+      "task_id": "ses_31c055f76ffeJaHDbyn8DoWvLt",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773351532568,
+      "tool": "task",
+      "task_id": "ses_31c055a64ffedYaewMKRmCA5Zp",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failure",
+        "error",
+        "cannot"
+      ]
+    },
+    {
+      "timestamp": 1773351699522,
+      "tool": "task",
+      "task_id": "ses_31c055f76ffeJaHDbyn8DoWvLt",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773352336735,
+      "tool": "task",
+      "task_id": "ses_31bfe26dcffeZOwGocvRvC4aIy",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failure",
+        "error",
+        "blocked"
+      ]
+    },
+    {
+      "timestamp": 1773353018623,
+      "tool": "task",
+      "task_id": "ses_31bedc827ffeqQpfP7s0w8qp6v",
+      "failure_detected": true,
+      "failure_keywords": [
+        "failure",
+        "error"
+      ]
+    },
+    {
+      "timestamp": 1773353129939,
+      "tool": "task",
+      "task_id": "ses_31bedd4f5ffe6FCUQLZAaenlZe",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773353776073,
+      "tool": "task",
+      "task_id": "ses_31be60afaffeaZ7T5tg5YdvuVB",
+      "failure_detected": true,
+      "failure_keywords": [
+        "error"
+      ]
+    },
+    {
+      "timestamp": 1773353818474,
+      "tool": "task",
+      "task_id": "ses_31be0763bffeN8KxrQ6W65iFqi",
+      "failure_detected": false,
+      "failure_keywords": []
     }
   ],
   "pending_failure_ack": true,
   "pending_mandatory_tools": [
-    "hivemind_cycle"
+    "hivemind_cycle",
+    "hivemind_session"
   ],
   "framework_selection": {
     "choice": null,
