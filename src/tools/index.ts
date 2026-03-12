@@ -35,10 +35,12 @@ export { createHivemindReadSkeletonTool } from "./hivemind-read-skeleton.js"
 export { createHivemindPrecisionPatchTool } from "./hivemind-precision-patch.js"
 export { createHivemindMeshPullTool } from "./hivemind-mesh-pull.js"
 export { createHivemindDocTool } from "./hivemind-doc.js"
-export { createHivemindDeclareTool } from "./hivemind-declare.js"
 export { createHivemindPlanTool } from "./hivemind-plan.js"
-export { createHivemindBootstrapTool } from "./hivemind-bootstrap.js"
-export { createHiveOpsGateTool } from "./hiveops-gate.js"
-export { createHiveOpsSotTool } from "./hiveops-sot.js"
-export { createHiveOpsExportTool } from "./hiveops-export.js"
-export { createHiveOpsTodoTool } from "./hiveops-todo.js"
+
+// Unmounted tools — files exist in src/tools/ but are NOT registered in src/index.ts.
+// Removed from barrel 2026-03-12. Import directly from the tool file if mounting later.
+// - hivemind-declare.ts   (governance-only refs in soft-governance/tool-gate/detection)
+// - hiveops-gate.ts       (P1-C.1 compatibility debt)
+// - hiveops-sot.ts        (P1-C.1 compatibility debt)
+// - hiveops-export.ts     (P1-C.1 compatibility debt)
+// - hiveops-todo.ts       (P1-C.1 compatibility debt)

@@ -369,7 +369,7 @@ export function createSoftGovernanceHook(
           _output.output,
           `\n---\n⛔ GOVERNANCE DENIAL: ${TOOL_DENIAL_REASONS.NO_STATE}`,
           `Run: \`npx -y hivemind-context-governance --mode assisted\` to auto-initialize.`,
-          `Or call \`hivemind_bootstrap\` tool as manual fallback.`,
+          `Or call \`hivemind_session({ action: "bootstrap" })\` as manual fallback.`,
         ].join("\n")
         return
       }

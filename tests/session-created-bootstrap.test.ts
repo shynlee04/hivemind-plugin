@@ -10,7 +10,7 @@ import { getEffectivePaths, getSessionPaths } from "../src/lib/paths.js"
 import { createTree, saveTree } from "../src/lib/hierarchy-tree.js"
 import { createConfig } from "../src/schemas/config.js"
 import { createEventHandler } from "../src/hooks/event-handler.js"
-import { createHivemindBootstrapTool } from "../src/tools/hivemind-bootstrap.js"
+import { createHivemindSessionTool } from "../src/tools/hivemind-session.js"
 
 const noopLogger: Logger = {
   info: async () => {},
@@ -94,8 +94,8 @@ describe("session.created bootstrap ownership", () => {
     const dir = await mkdtemp(join(tmpdir(), "hm-bootstrap-tool-canonical-"))
 
     try {
-      const bootstrapTool = createHivemindBootstrapTool(dir)
-      const raw = await bootstrapTool.execute({ force: false }, {} as any)
+      const sessionTool = createHivemindSessionTool(dir)
+      const raw = await sessionTool.execute({ action: "bootstrap", force: false }, {} as any)
       const parsed = JSON.parse(raw as string)
 
       assert.equal(parsed.status, "success")

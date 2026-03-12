@@ -53,7 +53,6 @@ import {
   createHivemindMeshPullTool,
   createHivemindDocTool,
   createHivemindPlanTool,
-  createHivemindBootstrapTool,
 } from "./tools/index.js"
 import {
   createSessionLifecycleHook,
@@ -149,7 +148,6 @@ export const HiveMindPlugin: Plugin = async ({
       hivemind_mesh_pull: createHivemindMeshPullTool(effectiveDir),
       hivemind_doc: createHivemindDocTool(effectiveDir),
       hivemind_plan: createHivemindPlanTool(effectiveDir),
-      hivemind_bootstrap: createHivemindBootstrapTool(effectiveDir),
     },
 
     /**

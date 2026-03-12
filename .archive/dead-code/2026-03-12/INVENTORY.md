@@ -1,4 +1,4 @@
-# Archive Inventory — 2026-03-12
+# Archive Inventory — 2026-03-12 (Cycles 1 + 2)
 
 All files archived during the `P1-D.1c` subset 6 precursor consolidation tranche.
 Refer to `PLAN.md §Phase 1 Status Ledger` for the binding cycle record.
@@ -41,14 +41,16 @@ Refer to `PLAN.md §Phase 1 Status Ledger` for the binding cycle record.
 
 **Consumers rewired (5)**: `hiveops-export.ts`, `state-snapshot.ts`, `hiveops-todo.ts`, `event-handler.ts`, `state-mutation-queue.ts`
 
-### `session-cluster/` (2 files absorbed)
+### `session-cluster/` (4 files absorbed/archived)
 
 | Archived File | Lines | Absorbed Into |
 |--------------|:---:|------------|
 | `session-profile.ts` | 64 | `src/lib/session-runtime.ts` |
 | `session-coherence-types.ts` | 65 | `src/lib/session_coherence.ts` |
+| `onboarding.ts` | 118 | `src/hooks/session-lifecycle.ts` (Cycle 2) |
+| `hivemind-bootstrap.ts` | 69 | `src/tools/hivemind-session.ts` as `bootstrap` action (Cycle 2) |
 
-**Consumers rewired**: `hooks/session_coherence/types.ts` (re-exports now point to `session_coherence.ts`)
+**Consumers rewired**: `hooks/session_coherence/types.ts`, `session-lifecycle.ts`, `src/index.ts`, `soft-governance.ts`, `session-created-bootstrap.test.ts`
 
 ### `governance-cluster/` (1 file absorbed)
 
@@ -74,7 +76,18 @@ Refer to `PLAN.md §Phase 1 Status Ledger` for the binding cycle record.
 
 `src/lib/index.ts` cleared of all 32 wildcard `export *` re-exports — zero consumers used the barrel. All imports across `src/`, `tests/`, and `scripts/` are direct file-to-file.
 
-See `BARREL-CLEANUP-NOTES.md` in this directory for the full consumer analysis and feature-similarity recommendations.
+### Phantom Tool Exports (Cycle 2)
+
+5 unmounted tool exports removed from `src/tools/index.ts` barrel:
+- `hivemind-declare.ts` — governance-only string refs
+- `hiveops-gate.ts` — P1-C.1 compatibility debt
+- `hiveops-sot.ts` — P1-C.1 compatibility debt
+- `hiveops-export.ts` — P1-C.1 compatibility debt
+- `hiveops-todo.ts` — P1-C.1 compatibility debt
+
+Tool files remain in `src/tools/`; only barrel re-exports removed.
+
+See `BARREL-CLEANUP-NOTES.md` in this directory for the full consumer analysis.
 
 ---
 
@@ -86,6 +99,15 @@ See `BARREL-CLEANUP-NOTES.md` in this directory for the full consumer analysis a
 | `project-snapshot.ts` | Dead | **Alive** | `session-governance.ts` |
 | `session-split.ts` | Dead | **Alive** | `soft-governance.ts` |
 
+## Dead Code — Cycle 2
+
+### `compaction-engine.ts` (448 lines)
+
+**Status**: Dead — zero runtime consumers. Only 2 test consumers (`compact-purification.test.ts`, `max-compaction-enforcement.test.ts`).
+**Intended Feature**: Full compaction lifecycle: identify turning points, generate compaction reports, execute compaction (archive + index + graph + hierarchy reset).
+**Key Exports**: `TurningPoint`, `CompactionReport`, `identifyTurningPoints()`, `generateNextCompactionReport()`, `executeCompaction()`
+**Overlap Note**: Related compaction-triggering logic lives in `session-lifecycle.ts` (stale session archival) and `hivemind_session close` action. If revived, integrate into session-engine or make a dedicated compaction tool action.
+
 ---
 
 ## Verification
@@ -93,6 +115,5 @@ See `BARREL-CLEANUP-NOTES.md` in this directory for the full consumer analysis a
 | Gate | Result |
 |------|--------|
 | `npx tsc --noEmit` | ✅ Clean |
-| `npm test` | 359/367 (7 pre-existing + 1 flaky) |
+| `npm test` | 358/367 (9 pre-existing) |
 | New regressions | **0** |
-""", "ArtifactType": "other", "Summary": "Comprehensive archive inventory for the 2026-03-12 consolidation tranche covering dead code, consolidated clusters, deprecated scripts, barrel cleanup, and corrected false positives."}

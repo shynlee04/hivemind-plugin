@@ -8,7 +8,9 @@ import {
   type HierarchyLevel,
   type SessionResult,
 } from "../lib/session-engine.js"
-import { createStateManager } from "../lib/persistence.js"
+import { createStateManager, loadConfig } from "../lib/persistence.js"
+import { getEffectivePaths } from "../lib/paths.js"
+import { ensureSessionRuntimeBootstrap } from "../lib/session-runtime.js"
 import {
   addGraphTask,
   loadGraphTasks,
@@ -132,8 +134,8 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
       "Always returns JSON for FK chaining.",
     args: {
       action: tool.schema
-        .enum(["start", "update", "close", "status", "resume", "branch"])
-        .describe("What to do: start | update | close | status | resume | branch"),
+        .enum(["start", "update", "close", "status", "resume", "branch", "bootstrap"])
+        .describe("What to do: start | update | close | status | resume | branch | bootstrap"),
       mode: tool.schema
         .enum(["plan_driven", "quick_fix", "exploration"])
         .optional()
@@ -182,6 +184,11 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
         .string()
         .optional()
         .describe("For branch create: node ID to fork from"),
+      force: tool.schema
+        .boolean()
+        .optional()
+        .default(false)
+        .describe("For bootstrap: force recreation of runtime bootstrap state"),
     },
     async execute(args, _context) {
       // CHIMERA-3: Always return JSON for FK chaining - no conditionals
@@ -421,6 +428,38 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
           }
         }
         default:
+          // bootstrap action — recovery-only, repairs canonical runtime bootstrap state
+          if (args.action === "bootstrap") {
+            try {
+              const bsStateManager = createStateManager(directory)
+              const bsConfig = await loadConfig(directory)
+              const bsPaths = getEffectivePaths(directory)
+              const bsResult = await ensureSessionRuntimeBootstrap(directory, bsStateManager, bsConfig, {
+                force: args.force ?? false,
+                role: "unresolved",
+                lineageScope: "unknown",
+                sessionKind: "unresolved",
+                mode: "exploration",
+              })
+              return toSuccessOutput("HiveMind runtime bootstrap completed", bsResult.runtimeSessionId, {
+                force: args.force ?? false,
+                runtimeSessionId: bsResult.runtimeSessionId,
+                brainSessionId: bsResult.state.session.id,
+                createdState: bsResult.createdState,
+                rewroteState: bsResult.rewroteState,
+                rewroteHierarchy: bsResult.rewroteHierarchy,
+                stateFiles: {
+                  brain: bsPaths.brain,
+                  hierarchy: bsPaths.hierarchy,
+                  profile: bsResult.profilePath,
+                },
+                profile: bsResult.profile,
+              })
+            } catch (error) {
+              const message = error instanceof Error ? error.message : String(error)
+              return toErrorOutput(`Bootstrap failed: ${message}`)
+            }
+          }
           result = {
             success: false,
             action: "update",
