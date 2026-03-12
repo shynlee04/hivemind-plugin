@@ -10,7 +10,7 @@ import {
 import { createConfig } from "../src/schemas/config.js";
 import { isSessionStale, getStalenessInfo } from "../src/lib/staleness.js";
 import { detectChainBreaks, detectTreeChainBreaks } from "../src/lib/chain-analysis.js";
-import { shouldSuggestCommit } from "../src/lib/commit-advisor.js";
+import { shouldSuggestCommit, type CommitSuggestion } from "../src/hooks/soft-governance.js";
 import { getToolActivation } from "../src/lib/tool-activation.js";
 
 import type { BrainState } from "../src/schemas/brain-state.js";

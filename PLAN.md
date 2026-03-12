@@ -408,6 +408,21 @@ Human operators should not have to start from `brain.json` just to understand th
   - **Deprecated scripts archived** (`.archive/deprecated-scripts/2026-03-12/`): `auto-init.sh`, `classify-intent.sh`, `detect-entry.sh`
   - Verification: `npx tsc --noEmit` clean, `npm test` 359/367 (7 pre-existing + 1 flaky, 0 new failures)
   - Full archive manifest: `.archive/dead-code/2026-03-12/INVENTORY.md`
+- `P1-D.1c` subset 6 cycle 2: session domain consolidation + phantom tools cleanup landed (2026-03-12) — 3 more files archived/consolidated, 5 phantom barrel exports removed, zero new regressions:
+  - **Batch A**: `onboarding.ts` (118 lines, 4 functions) absorbed back into `session-lifecycle.ts` — JSDoc said it was extracted from there; single consumer re-absorption
+  - **Batch B**: `compaction-engine.ts` (448 lines) archived as dead code — zero runtime consumers, only 2 orphaned test files reference it
+  - **Batch C**: 5 unmounted tool exports removed from `src/tools/index.ts` barrel — `hivemind-declare`, `hiveops-gate`, `hiveops-sot`, `hiveops-export`, `hiveops-todo`; files remain in `src/tools/`, only barrel re-exports removed
+  - **Batch D**: `hivemind-bootstrap.ts` (69 lines) absorbed into `hivemind-session.ts` as `action: "bootstrap"` — plugin entry, barrel, `soft-governance.ts` ref, and test all updated
+  - **Tool surface change**: `hivemind_bootstrap` standalone tool removed; agents now call `hivemind_session({ action: "bootstrap" })`
+  - Cumulative file reduction (Cycles 1+2): `src/lib/` 73→65, `src/hooks/` 10→9, `src/tools/` 21→20, `scripts/` 9→6, barrel exports 21→15 — **15 total files archived**
+  - Verification: `npx tsc --noEmit` clean, `npm test` 358/367 (9 pre-existing, 0 new failures)
+  - Updated archive manifest: `.archive/dead-code/2026-03-12/INVENTORY.md`
+- `P1-D.1c` subset 6 cycle 3: utility/dead-code cleanup + single-consumer absorptions landed (2026-03-12) — 3 more files archived/absorbed, zero new regressions:
+  - **Batch A**: `planning-materializer.ts` (248 lines) archived as dead code — zero runtime consumers, only 1 orphaned test file
+  - **Batch B**: `intent-clarification.ts` (98 lines) absorbed into `messages-transform.ts` — single consumer, `getContextAction` already available from `session_coherence.ts`
+  - **Batch C**: `commit-advisor.ts` (35 lines) absorbed into `soft-governance.ts` — single consumer, test import updated to new path
+  - Cumulative file reduction (Cycles 1+2+3): `src/lib/` 73→62, `src/hooks/` 10→9, `src/tools/` 21→20, `scripts/` 9→6 — **18 total files archived**
+  - Verification: `npx tsc --noEmit` clean, `npm test` same pre-existing failures, 0 new regressions
 - `P1-D`: state-authority planning remains active; `.hivemind` state shape, startup formation ownership, bootstrap/profile ownership, and lineage-separated pathing are still unresolved
 
 **Next**:
@@ -436,7 +451,7 @@ The following surfaces are now explicitly queued for isolation and archive/depre
 8. `scripts/check-state-write-boundary.sh` and `scripts/check-docs-ownership-boundary.sh` stale references to the deleted plugin surface and missing `agents/hivefiver-reserved.md`
 9. `.opencode/tool/*.ts` wrapper-only transport surfaces after the `src/tools` cutover
 10. `src/hooks/tool-gate.ts` deprecated/helper-only compatibility exports that survive only for older callers
-11. `src/tools/hivemind-bootstrap.ts` as a recovery-only compatibility wrapper that should eventually leave the hot runtime export surface once session formation is fully collapsed into the canonical `src/lib` owner
+11. ~~`src/tools/hivemind-bootstrap.ts`~~ **RESOLVED 2026-03-12**: absorbed into `hivemind-session.ts` as `action: "bootstrap"`; standalone tool removed from plugin entry and barrel
 12. `.hivemind/anchors/`, `.hivemind/mems/`, `.hivemind/INDEX.md`, and `.hivemind/sessions/index.md` as readability/compatibility surfaces only until regenerated from manifest-backed truth
 13. workflow/template stage-output surfaces that can materialize state-like artifacts without a frozen ingress policy, especially under `.opencode/workflows/` and `.opencode/templates/`
 14. `src/tools/hivemind-doc-weaver.ts` as a compatibility-only wrapper pending full caller normalization onto `hivemind_doc`

@@ -33,7 +33,7 @@ import {
   queueOffTrackIntent,
 } from "../schemas/brain-state.js"
 import { detectChainBreaks } from "../lib/chain-analysis.js"
-import { shouldSuggestCommit } from "../lib/commit-advisor.js"
+// commit-advisor logic (absorbed 2026-03-12) — see inline at bottom of file
 import { detectLongSession } from "../lib/long-session.js"
 import { evaluateEntityChecklist } from "../lib/entity-checklist.js"
 import { loadGraphTasks, loadTrajectory } from "../lib/graph-io.js"
@@ -867,4 +867,36 @@ function trackToolHealth(state: BrainState, success: boolean): BrainState {
       last_activity: Date.now(),
     },
   }
+}
+
+// ─── Commit Advisor Logic (absorbed from commit-advisor.ts, 2026-03-12) ───
+
+/** Minimum turns between repeated commit suggestions */
+const MIN_TURNS_BETWEEN_SUGGESTIONS = 3;
+
+export interface CommitSuggestion {
+  reason: string;
+  files: number;
+}
+
+/**
+ * Returns a commit suggestion if conditions are met, or null.
+ *
+ * Triggers when files touched >= threshold, with a cooldown
+ * of MIN_TURNS_BETWEEN_SUGGESTIONS turns since the last suggestion.
+ */
+export function shouldSuggestCommit(
+  state: BrainState,
+  threshold: number
+): CommitSuggestion | null {
+  const fileCount = state.metrics.files_touched.length;
+
+  if (fileCount < threshold) return null;
+
+  if (state.metrics.turn_count < MIN_TURNS_BETWEEN_SUGGESTIONS) return null;
+
+  return {
+    reason: `${fileCount} files touched — consider committing your work.`,
+    files: fileCount,
+  };
 }
