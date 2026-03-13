@@ -36,6 +36,18 @@
       "staleness_stamp": "2026-03-12T21:53:20.323Z",
       "created_at": "2026-03-12T21:53:20.323Z",
       "updated_at": "2026-03-12T21:53:20.323Z"
+    },
+    {
+      "id": "2363e6b2-03eb-4f0b-831f-13bbecdcab20",
+      "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "origin_task_id": null,
+      "shelf": "project",
+      "type": "insight",
+      "content": "Doc-intelligence handoff prepared for next-session modernization refactor. Verified prior state: YAML/XML create hardening complete in src/lib/doc-intel.ts; handoff artifact at docs/handoffs/2026-03-13/doc-intel-modernization-handoff.md; structured export id handoff-mmoh55wq. New session should begin from docs/planning-draft/modernize-doc-intelligence-layer.md and docs/synthesis/tools-plugins-organized-structured.md with architecture split and migration map before implementation.",
+      "relevance_score": 1,
+      "staleness_stamp": "2026-03-13T05:47:11.126Z",
+      "created_at": "2026-03-13T05:47:11.126Z",
+      "updated_at": "2026-03-13T05:47:11.126Z"
     }
   ]
 }

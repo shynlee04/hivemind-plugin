@@ -1,0 +1,31 @@
+# Handoff: handoff-mmoh55wq
+
+**From:** hiveminder
+**To:** orchestrator
+**Plan:** none
+**Node:** none
+**Date:** 2026-03-13T05:46:44.138Z
+
+## Summary
+Prepare transition from completed doc-tool hardening slices into a new-session doc-intelligence modernization/refactor effort.
+
+## Completed Gates
+
+## Next Actions
+1. 1) Read `docs/planning-draft/modernize-doc-intelligence-layer.md`. 2) Read `docs/synthesis/tools-plugins-organized-structured.md`. 3) Produce architecture split + file migration map. 4) Start implementation from standalone-first library decomposition.
+
+## Blockers
+- No active blocker for handoff creation. Broader refactor still depends on architecture decisions; unrelated planning-materializer missing-module issue remains out of scope.
+
+## Key Decisions
+- Completed YAML/XML create hardening should not be redone; standalone-first and governance-write-boundary constraints remain authoritative; future design should split doc
+- handoff
+- and inspect families while keeping SDK surfaces isolated from `src/lib`.
+
+## Artifacts Modified
+- ``/Users/apple/hivemind-plugin/docs/handoffs/2026-03-13/doc-intel-modernization-handoff.md``
+- ``/Users/apple/hivemind-plugin/docs/planning-draft/modernize-doc-intelligence-layer.md``
+- ``/Users/apple/hivemind-plugin/docs/synthesis/tools-plugins-organized-structured.md``
+
+## Residual Risk
+The modernization draft is substantial and should begin with architecture/spec work before implementation to avoid reintroducing coupling and context-rot.

@@ -5,6 +5,12 @@
       "value": "Continue the existing doc-tool hardening trajectory: plan first, then TDD for create/materialize semantics, format-aware validation, and post-write verification receipts.",
       "created_at": 1773346167309,
       "session_id": "28371ebd-e8c8-4607-8b1d-11a140b31758"
+    },
+    {
+      "key": "doc-tool-modernization-focus",
+      "value": "New session focus: architecture/spec-first modernization of doc-intel into cleaner hivemind_doc, hivemind_handoff, and hivemind_inspect boundaries; do not resume the completed YAML/XML hardening slice unless regression evidence appears.",
+      "created_at": 1773381615834,
+      "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73"
     }
   ],
   "version": "1.0.0"
