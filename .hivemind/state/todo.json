@@ -2,149 +2,109 @@
   "items": [
     {
       "id": "todo-1",
-      "content": "Inspect repo structure, target artifact files, and historical investigation export to reconstruct the failed workflow",
+      "content": "Commit touched files (doc-intel, hivemind-doc, hivemind-doc.test)",
       "status": "completed",
       "priority": "high",
       "created": 0,
-      "updated": 1773345813032,
+      "updated": 1773422407973,
       "depends_on": [],
       "blocks": [],
       "workflow_topology": "unclassified",
       "domain": "hybrid",
-      "evidence": "full"
+      "evidence": "partial"
     },
     {
       "id": "todo-2",
-      "content": "Trace document tool implementation and contracts across doc-intel, doc-weaver, hivemind-doc, and related helpers/registration code",
-      "status": "completed",
+      "content": "Implement YAML/XML create scaffolding (RED then GREEN)",
+      "status": "cancelled",
       "priority": "high",
       "created": 0,
-      "updated": 1773345819706,
+      "updated": 1773422407973,
       "depends_on": [],
       "blocks": [],
       "workflow_topology": "unclassified",
       "domain": "hybrid",
-      "evidence": "full"
+      "evidence": "partial"
     },
     {
       "id": "todo-3",
-      "content": "Investigate delegation/orchestration paths, subagent prompting, and success-reporting/verification gaps that allow empty artifacts",
-      "status": "completed",
+      "content": "Verify YAML/XML create with tests + typecheck",
+      "status": "cancelled",
       "priority": "high",
       "created": 0,
-      "updated": 1773345827495,
-      "depends_on": [],
-      "blocks": [],
-      "workflow_topology": "unclassified",
-      "domain": "office-ops",
-      "evidence": "full"
-    },
-    {
-      "id": "todo-4",
-      "content": "Synthesize root causes, failure taxonomy, architectural weaknesses, and prioritized fixes with verification plan",
-      "status": "completed",
-      "priority": "high",
-      "created": 0,
-      "updated": 1773345837509,
+      "updated": 1773422407973,
       "depends_on": [],
       "blocks": [],
       "workflow_topology": "unclassified",
       "domain": "hybrid",
-      "evidence": "full"
+      "evidence": "partial"
     },
     {
-      "id": "task-mmnw9v1x-dxro",
-      "content": "Write implementation plan for hardening hivemind_doc/doc-intel contracts and multi-format document operations",
-      "status": "completed",
-      "priority": "high",
-      "created": 1773345751413,
-      "updated": 1773347331402,
+      "id": "todo-4",
+      "content": "Commit YAML/XML slice",
+      "status": "cancelled",
+      "priority": "medium",
+      "created": 0,
+      "updated": 1773422407973,
       "depends_on": [],
-      "blocks": [
-        "task-mmnwa08i-i5an"
-      ],
+      "blocks": [],
       "workflow_topology": "unclassified",
-      "domain": "doc-intel",
-      "evidence": "full"
+      "domain": "hybrid",
+      "evidence": "partial"
     },
     {
-      "id": "task-mmnwa08i-i5an",
-      "content": "Add failing regression tests for create/materialize semantics, validation receipts, and structured-format write integrity",
+      "id": "task-mmp5krpz-383t",
+      "content": "Ground-truth audit of current .hivemind state surfaces, runtime generators, and contamination sources",
       "status": "completed",
       "priority": "high",
-      "created": 1773345758130,
-      "updated": 1773347331454,
-      "depends_on": [
-        "task-mmnw9v1x-dxro"
-      ],
-      "blocks": [
-        "task-mmnwa88b-ak07"
-      ],
-      "workflow_topology": "dependent",
-      "domain": "doc-intel",
+      "created": 1773421843031,
+      "updated": 1773422407898,
+      "depends_on": [],
+      "blocks": [],
+      "workflow_topology": "unclassified",
+      "domain": "framework",
       "evidence": "full"
     },
     {
-      "id": "task-mmnwa88b-ak07",
-      "content": "Implement doc-intel and hivemind_doc hardening for scaffold/materialize semantics, post-write verification, and format-aware writes",
+      "id": "task-mmp5kt3u-muhy",
+      "content": "OpenCode capability and constraint synthesis from local docs for target architecture decisions",
       "status": "completed",
       "priority": "high",
-      "created": 1773345768491,
-      "updated": 1773347931286,
-      "depends_on": [
-        "task-mmnwa08i-i5an"
-      ],
-      "blocks": [
-        "task-mmnwahlq-q5k3"
-      ],
-      "workflow_topology": "dependent",
-      "domain": "doc-intel",
+      "created": 1773421844826,
+      "updated": 1773422407923,
+      "depends_on": [],
+      "blocks": [],
+      "workflow_topology": "unclassified",
+      "domain": "framework",
       "evidence": "full"
     },
     {
-      "id": "task-mmnwahlq-q5k3",
-      "content": "Run targeted verification and reconcile claimed artifact behavior against disk and test outputs",
-      "status": "blocked",
+      "id": "task-mmp5ktvs-yryl",
+      "content": "Selective GSD comparative research focused on session/workflow/state patterns worth adapting to OpenCode",
+      "status": "completed",
       "priority": "high",
-      "created": 1773345780638,
-      "updated": 1773369199799,
-      "depends_on": [
-        "task-mmnwa88b-ak07"
-      ],
-      "blocks": [
-        "task-mmnwaoab-hucg"
-      ],
-      "workflow_topology": "dependent",
-      "domain": "doc-intel"
+      "created": 1773421845832,
+      "updated": 1773422407973,
+      "depends_on": [],
+      "blocks": [],
+      "workflow_topology": "unclassified",
+      "domain": "framework",
+      "evidence": "full"
     },
     {
-      "id": "task-mmnwaoab-hucg",
-      "content": "HARD STOP — do not claim completion until tool-level create/materialize tests, format-integrity checks, and non-empty artifact assertions all pass",
+      "id": "task-mmp5kz31-4lh2",
+      "content": "HARD STOP — deliver evidence-backed architecture synthesis with contamination-safe implementation order and no code mutations yet",
       "status": "pending",
       "priority": "high",
-      "created": 1773345789299,
-      "updated": 1773369199799,
-      "depends_on": [
-        "task-mmnwahlq-q5k3"
-      ],
-      "blocks": [],
-      "workflow_topology": "dependent",
-      "domain": "doc-intel"
-    },
-    {
-      "id": "task-mmoa8b28-12za",
-      "content": "Resume YAML/XML doc-intel create hardening via executor delegation",
-      "status": "in_progress",
-      "priority": "high",
-      "created": 1773369193472,
-      "updated": 1773369199799,
+      "created": 1773421852573,
+      "updated": 1773422407973,
       "depends_on": [],
       "blocks": [],
-      "workflow_topology": "dependent",
-      "domain": "product"
+      "workflow_topology": "unclassified",
+      "domain": "framework"
     }
   ],
   "version": 1,
-  "lastSync": 1773369199799,
-  "activeItem": "task-mmoa8b28-12za"
+  "lastSync": 1773422407973,
+  "activeItem": null
 }

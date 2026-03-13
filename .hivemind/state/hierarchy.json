@@ -1,13 +1,41 @@
 {
   "version": 2,
-  "root": null,
-  "cursor": null,
+  "root": {
+    "id": "t_100014032026",
+    "level": "trajectory",
+    "content": "Strategic redesign of HiveMind session, workflow, task, and state architecture for OpenCode with contamination avoidance and delegation-first synthesis.",
+    "status": "active",
+    "created": 1773421843218,
+    "stamp": "100014032026",
+    "children": [
+      {
+        "id": "tc_110014032026",
+        "level": "tactic",
+        "content": "Recover ground truth, compare selectively with GSD, and synthesize a contamination-safe target architecture for OpenCode.",
+        "status": "active",
+        "created": 1773421902255,
+        "stamp": "110014032026",
+        "children": [
+          {
+            "id": "a_200014032026",
+            "level": "action",
+            "content": "Synthesize delegated findings into target architecture, cleanup/migration strategy, and implementation order before doc-intelligence modernization resumes.",
+            "status": "active",
+            "created": 1773422424569,
+            "stamp": "200014032026",
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  "cursor": "a_200014032026",
   "branches": [
     {
       "name": "main",
-      "cursor_id": null,
-      "created": 1773382379687,
-      "last_active": 1773382379687,
+      "cursor_id": "a_200014032026",
+      "created": 1773421843218,
+      "last_active": 1773422424570,
       "status": "active"
     }
   ],

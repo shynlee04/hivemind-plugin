@@ -1,6 +1,6 @@
 {
   "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
-  "updated_at": 1773368354477,
+  "updated_at": 1773422407973,
   "tasks": [
     {
       "id": "todo-1",
@@ -75,7 +75,7 @@
       "id": "todo-2",
       "text": "Implement YAML/XML create scaffolding (RED then GREEN)",
       "content": "Implement YAML/XML create scaffolding (RED then GREEN)",
-      "status": "in_progress",
+      "status": "cancelled",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
@@ -143,7 +143,7 @@
       "id": "todo-3",
       "text": "Verify YAML/XML create with tests + typecheck",
       "content": "Verify YAML/XML create with tests + typecheck",
-      "status": "pending",
+      "status": "cancelled",
       "priority": "high",
       "domain": "hybrid",
       "lane": "auto",
@@ -212,7 +212,7 @@
       "id": "todo-4",
       "text": "Commit YAML/XML slice",
       "content": "Commit YAML/XML slice",
-      "status": "pending",
+      "status": "cancelled",
       "priority": "medium",
       "domain": "hybrid",
       "lane": "auto",
@@ -276,6 +276,80 @@
       },
       "last_realigned_at": 1773368354477,
       "updated_at": 1773368354477
+    },
+    {
+      "id": "task-mmp5krpz-383t",
+      "text": "Ground-truth audit of current .hivemind state surfaces, runtime generators, and contamination sources",
+      "status": "completed",
+      "priority": "high",
+      "domain": "framework",
+      "source": "manual",
+      "dependencies": [],
+      "created_at": 1773421843031,
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "session_kind": "unresolved",
+      "workflow_topology": "unclassified",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73"
+      },
+      "completed_at": 1773422407898,
+      "evidence_confidence": "full"
+    },
+    {
+      "id": "task-mmp5kt3u-muhy",
+      "text": "OpenCode capability and constraint synthesis from local docs for target architecture decisions",
+      "status": "completed",
+      "priority": "high",
+      "domain": "framework",
+      "source": "manual",
+      "dependencies": [],
+      "created_at": 1773421844826,
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "session_kind": "unresolved",
+      "workflow_topology": "unclassified",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73"
+      },
+      "completed_at": 1773422407923,
+      "evidence_confidence": "full"
+    },
+    {
+      "id": "task-mmp5ktvs-yryl",
+      "text": "Selective GSD comparative research focused on session/workflow/state patterns worth adapting to OpenCode",
+      "status": "completed",
+      "priority": "high",
+      "domain": "framework",
+      "source": "manual",
+      "dependencies": [],
+      "created_at": 1773421845832,
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "session_kind": "unresolved",
+      "workflow_topology": "unclassified",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73"
+      },
+      "completed_at": 1773422407973,
+      "evidence_confidence": "full"
+    },
+    {
+      "id": "task-mmp5kz31-4lh2",
+      "text": "HARD STOP — deliver evidence-backed architecture synthesis with contamination-safe implementation order and no code mutations yet",
+      "status": "pending",
+      "priority": "high",
+      "domain": "framework",
+      "source": "manual",
+      "dependencies": [],
+      "created_at": 1773421852573,
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "session_kind": "unresolved",
+      "workflow_topology": "unclassified",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73"
+      }
     }
   ]
 }

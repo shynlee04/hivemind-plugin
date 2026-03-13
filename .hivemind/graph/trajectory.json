@@ -8,8 +8,8 @@
     "active_task_ids": [
       "b1fc6ac8-e7f4-4d71-9318-9521fad4bb6f"
     ],
-    "intent": "Continue the existing doc-tool hardening work from the investigation handoff; convert findings into a concrete phased plan and then execute the first hardening phase under TDD.",
+    "intent": "Strategic redesign of HiveMind session, workflow, task, and state architecture for OpenCode with contamination avoidance and delegation-first synthesis.",
     "created_at": "2026-03-12T20:09:46.803Z",
-    "updated_at": "2026-03-13T02:38:31.815Z"
+    "updated_at": "2026-03-13T17:20:24.580Z"
   }
 }

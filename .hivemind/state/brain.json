@@ -1,12 +1,12 @@
 {
   "session": {
     "id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
-    "opencode_session_id": "ses_31870f049ffeMBwuaeED4ttMda",
+    "opencode_session_id": "ses_317d0ce44ffezpTsfXq1uixpm4",
     "mode": "exploration",
     "governance_mode": "assisted",
     "governance_status": "LOCKED",
     "start_time": 1773382379686,
-    "last_activity": 1773412294691,
+    "last_activity": 1773422491612,
     "date": "2026-03-13",
     "meta_key": "",
     "role": "unresolved",
@@ -16,13 +16,13 @@
     "by_ai": true
   },
   "hierarchy": {
-    "trajectory": "",
-    "tactic": "",
-    "action": ""
+    "trajectory": "Strategic redesign of HiveMind session, workflow, task, and state architecture for OpenCode with contamination avoidance and delegation-first synthesis.",
+    "tactic": "Recover ground truth, compare selectively with GSD, and synthesize a contamination-safe target architecture for OpenCode.",
+    "action": "Synthesize delegated findings into target architecture, cleanup/migration strategy, and implementation order before doc-intelligence modernization resumes."
   },
   "metrics": {
-    "turn_count": 163,
-    "user_turn_count": 0,
+    "turn_count": 369,
+    "user_turn_count": 2,
     "drift_score": 100,
     "files_touched": [
       "[via bash]",
@@ -73,30 +73,30 @@
       "/Users/apple/.config/opencode/opencode.json",
       "cd /Users/apple/hivemind-plugin && node -e \"JSON.parse(require('fs').readFileSync('opencode.json', 'utf8')); console.log('✓ Project opencode.json is valid JSON')\"",
       "node -e \"JSON.parse(require('fs').readFileSync(require('os').homedir() + '/.config/opencode/opencode.json', 'utf8')); console.log('✓ Global opencode.json is valid JSON')\"",
-      "npx -y @brave/brave-search-mcp-server --version 2>&1 || echo \"(Version check not available - package ready to install on first use)\""
+      "npx -y @brave/brave-search-mcp-server --version 2>&1 || echo \"(Version check not available - package ready to install on first use)\"",
+      "node -e \"const fs=require('fs'); const path=require('path'); const root='/Users/apple/hivemind-plugin/.hivemind'; const count=(p, filter)=>fs.existsSync(p)?fs.readdirSync(p,{withFileTypes:true}).filter(filter).length:0; const runtimeRoot=path.join(root,'sessions','runtime'); const runtimeProfiles=fs.existsSync(runtimeRoot)?fs.readdirSync(runtimeRoot,{withFileTypes:true}).filter(d=>d.isDirectory()&&fs.existsSync(path.join(runtimeRoot,d.name,'profile.json'))).length:0; const stateDir=path.join(root,'state'); const brainBackups=fs.existsSync(stateDir)?fs.readdirSync(stateDir).filter(n=>n.startsWith('brain.json.bak')).length:0; console.log(JSON.stringify({runtimeProfiles,brainBackups,checkpoints:count(path.join(root,'checkpoints'),d=>d.isFile()&&d.name.endsWith('.json')),sessionExports:count(path.join(root,'sessions'),d=>d.isFile()&&d.name.startsWith('session-')&&d.name.endsWith('.json'))},null,2));\""
     ],
-    "context_updates": 0,
-    "last_context_update_turn": 0,
+    "context_updates": 3,
+    "last_context_update_turn": 2,
     "auto_health_score": 100,
-    "total_tool_calls": 163,
-    "successful_tool_calls": 163,
+    "total_tool_calls": 369,
+    "successful_tool_calls": 369,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
-    "last_section_content": "",
+    "last_section_content": "Synthesize delegated findings into target architecture, cleanup/migration strategy, and implementation order before doc-intelligence modernization resumes.",
     "tool_type_counts": {
-      "read": 80,
-      "write": 57,
-      "query": 24,
-      "governance": 2
+      "read": 235,
+      "write": 63,
+      "query": 62,
+      "governance": 9
     },
     "keyword_flags": [
       "error",
       "failure",
-      "loop",
       "retry"
     ],
-    "keyword_flags_reset_turn": 0,
+    "keyword_flags_reset_turn": 2,
     "write_without_read_count": 18,
     "files_read_this_session": [
       "/Users/apple/hivemind-plugin/src/lib/doc-intel.ts",
@@ -143,16 +143,153 @@
       "/Users/apple/hivemind-plugin/.opencode/tool",
       "/Users/apple/hivemind-plugin/.hivemind",
       "/Users/apple/hivemind-plugin/.env",
-      "**/*opencode.json"
+      "**/*opencode.json",
+      "/Users/apple/hivemind-plugin/README.md",
+      "docs/synthesis/*.md",
+      "/Users/apple/hivemind-plugin/AGENTS.md",
+      "/Users/apple/hivemind-plugin/CLAUDE.md",
+      "src/**/*",
+      "/.hivemind|hivemind",
+      "*.{ts,tsx,js,mjs,cjs,json,md}",
+      "**/*.{ts,tsx,js,mjs,cjs,json,md}",
+      "{README.md,AGENTS.md,CLAUDE.md,package.json}",
+      "**/*",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-non-interactive-shell.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-plugins.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-permissions.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-tools.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-custom-tools.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-skills.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-commands.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-agents.md",
+      "/Users/apple/hivemind-plugin/.hivemind/state/manifest.json",
+      "/Users/apple/hivemind-plugin/.hivemind/sessions/manifest.json",
+      "/Users/apple/hivemind-plugin/.hivemind/codewiki/manifest.json",
+      "/Users/apple/hivemind-plugin/.hivemind/codemap/manifest.json",
+      "/Users/apple/hivemind-plugin/.hivemind/plans/manifest.json",
+      "/Users/apple/hivemind-plugin/.hivemind/memory/manifest.json",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-mcp.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-tui.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-config.md",
+      "/Users/apple/hivemind-plugin/.hivemind/manifest.json",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-lsp.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-github-integration.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-server.md",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-sdk.md",
+      "subtask|/$ARGUMENTS|!`|@",
+      "/Users/apple/hivemind-plugin/docs/synthesis",
+      "opencode-commands.md",
+      "sessions/runtime|session-.*/.json|sessions/manifest/.json|profile/.json",
+      "*.ts",
+      "codemap|codewiki|memory/manifest|plans/manifest|graph/|session-memory|verification-ledger|pending-changes",
+      "ensure.*hivemind|initialize.*hivemind|manifest",
+      "opencode-custom-tools.md",
+      "load order|tool.execute.before|tool.execute.after|shell.env|Duplicate|takes precedence|custom tool|same name",
+      "opencode-plugins.md",
+      "brain/.json|hierarchy/.json|anchors/.json|tasks/.json|todo/.json|sot-index/.json",
+      "/Users/apple/hivemind-plugin/docs/synthesis/opencode-cli.md",
+      "/Users/apple/hivemind-plugin/src/tools/hiveops-todo.ts",
+      "/Users/apple/hivemind-plugin/src/lib/manifest.ts",
+      "/Users/apple/hivemind-plugin/src/lib/persistence.ts",
+      "/Users/apple/hivemind-plugin/src/lib/task-governance.ts",
+      "/Users/apple/hivemind-plugin/src/lib/state-mutation-queue.ts",
+      "/Users/apple/hivemind-plugin/src/lib/graph-io.ts",
+      "/Users/apple/hivemind-plugin/src/hooks/event-handler.ts",
+      "/Users/apple/hivemind-plugin/src/tools/hivemind-codemap.ts",
+      "/Users/apple/hivemind-plugin/src/lib/graph/writer.ts",
+      "/Users/apple/hivemind-plugin/src/lib/fs/planning-ops.ts",
+      "/Users/apple/hivemind-plugin/src/lib/state-snapshot.ts",
+      "/Users/apple/hivemind-plugin/src/lib/code-intel/codemap-io.ts",
+      "/Users/apple/hivemind-plugin/src/lib/session-engine.ts",
+      "/Users/apple/hivemind-plugin/src/lib/graph/reader.ts",
+      "/Users/apple/hivemind-plugin/src/lib/code-intel/knowledge-commits.ts",
+      "/Users/apple/hivemind-plugin/src/cli/init.ts",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/trajectory.json",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/orphans.json",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/project/project.json",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/verification-ledger.json",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/tasks.json",
+      "/Users/apple/hivemind-plugin/.hivemind/state/tasks.json",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/session-memory.json",
+      "/Users/apple/hivemind-plugin/.hivemind/state/todo.json",
+      "/Users/apple/hivemind-plugin/.hivemind/state/sot-index.json",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/mems.json",
+      "commands/gsd",
+      "sessions/runtime/*/profile.json",
+      "sessions/session-*.json",
+      "checkpoints/*.json",
+      "graph/project/**/*.json",
+      "handoffs/*",
+      "graph/codebase/**/*.json",
+      "/Users/apple/hivemind-plugin/.hivemind/sessions/runtime/4ed621ce-f035-455d-aa5d-80e659f64d73/profile.json",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/project/research/entities.json",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/project/requirements/entities.json",
+      "/Users/apple/hivemind-plugin/.hivemind/handoffs/handoff-mmoh55wq.json",
+      "/Users/apple/hivemind-plugin/.hivemind/sessions/session-4ed621ce-f035-455d-aa5d-80e659f64d73.json",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/codebase/codewiki/entities.json",
+      "/Users/apple/hivemind-plugin/.hivemind/checkpoints/cp-mmo08gro.json",
+      "/Users/apple/hivemind-plugin/.hivemind/sessions/runtime/ses_31cdabf94ffeXx8JVpPwgSx2oD/profile.json",
+      "/Users/apple/hivemind-plugin/.hivemind/graph/codebase/codemap/entities.json",
+      "/Users/apple/hivemind-plugin/src/hooks/messages-transform.ts",
+      "/Users/apple/hivemind-plugin/src/lib/hivemind-ingress-policy.ts",
+      "package.json",
+      "commands/gsd/new-project.md",
+      "get-shit-done/references/questioning.md",
+      "/Users/apple/hivemind-plugin/.hivemind/graph",
+      "/Users/apple/hivemind-plugin/.hivemind/sessions",
+      "/Users/apple/hivemind-plugin/.hivemind/state",
+      "/Users/apple/hivemind-plugin/.hivemind/sessions/active",
+      "/Users/apple/hivemind-plugin/.hivemind/codewiki",
+      "manifest.json",
+      "/Users/apple/hivemind-plugin/.hivemind/memory",
+      "/Users/apple/hivemind-plugin/.hivemind/codemap",
+      "get-shit-done/references/continuation-format.md",
+      "get-shit-done/references/tdd.md",
+      "get-shit-done/templates/roadmap.md",
+      "get-shit-done/templates/state.md",
+      "get-shit-done/templates/verification-report.md",
+      "get-shit-done/templates/project.md",
+      "get-shit-done/templates/continue-here.md",
+      "get-shit-done/references/verification-patterns.md",
+      "getSessionPaths/(|ensureSessionRuntimeBootstrap/(|opencode_session_id|runtimeSessionId",
+      "/Users/apple/hivemind-plugin/src/lib/runtime-session-lineage.ts",
+      "get-shit-done/workflows/plan-phase.md",
+      "get-shit-done/workflows/new-project.md",
+      "get-shit-done/workflows/verify-phase.md",
+      "get-shit-done/workflows/new-milestone.md",
+      "get-shit-done/workflows/execute-phase.md",
+      "get-shit-done/workflows/resume-project.md",
+      "get-shit-done/workflows/check-todos.md",
+      "get-shit-done/workflows/add-todo.md",
+      "agents/gsd-debugger.md",
+      "agents/gsd-planner.md",
+      "commands/gsd/check-todos.md",
+      "commands/gsd/add-todo.md",
+      "commands/gsd/verify-work.md",
+      "agents/gsd-verifier.md",
+      "commands/gsd/resume-work.md",
+      "/Users/apple/hivemind-plugin/src/lib/session-runtime.ts",
+      "brain/.json|project/planning|manifest|initialize|ensure",
+      "/Users/apple/hivemind-plugin/src/cli",
+      "init.ts",
+      "regenerateManifests|sessions/manifest|planning|manifest",
+      "/Users/apple/hivemind-plugin/src/lib/fs",
+      "planning-ops.ts",
+      "runtime|profile/.json|getSessionPaths|sessionId|opencode",
+      "session-runtime.ts",
+      "tasks/.json|mems/.json|graph/tasks/.json|graph/mems/.json|authority",
+      "hivemind-ingress-policy.ts",
+      "tasks/.json|graph/tasks/.json|todo/.json|sync|materialize",
+      "state-mutation-queue.ts"
     ],
     "governance_counters": {
       "drift": 0,
       "compaction": 0,
-      "out_of_order": 81,
-      "evidence_pressure": 162
+      "out_of_order": 178,
+      "evidence_pressure": 367
     }
   },
-  "first_turn_context_injected": false,
+  "first_turn_context_injected": true,
   "first_turn_confirmation": {
     "required": true,
     "confirmed": false,
@@ -162,7 +299,7 @@
   },
   "selected_output_style_v29": "supportive_discovery",
   "memory_governance": {
-    "last_classified_at": 1773382380505
+    "last_classified_at": 1773422491608
   },
   "version": "2.0.0",
   "next_compaction_report": null,
@@ -229,12 +366,109 @@
       "task_id": "ses_31a0f56a2ffegmO4eDQ52SDIiK",
       "failure_detected": false,
       "failure_keywords": []
+    },
+    {
+      "timestamp": 1773422042924,
+      "tool": "task",
+      "task_id": "ses_317d0ce44ffezpTsfXq1uixpm4",
+      "failure_detected": true,
+      "failure_keywords": [
+        "cannot",
+        "timeout"
+      ]
+    },
+    {
+      "timestamp": 1773422242282,
+      "tool": "task",
+      "task_id": "ses_317d0d556ffe76G6bEjQiCSM9e",
+      "failure_detected": true,
+      "failure_keywords": [
+        "partially"
+      ]
+    },
+    {
+      "timestamp": 1773383239792,
+      "tool": "task",
+      "task_id": "ses_31a219a75ffe7E4gKJYslktOQ1",
+      "failure_detected": true,
+      "failure_keywords": [
+        "error"
+      ]
+    },
+    {
+      "timestamp": 1773383427040,
+      "tool": "task",
+      "task_id": "ses_31a1e8254ffePYhVJQ6wT5sMu4",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773383735673,
+      "tool": "task",
+      "task_id": "ses_31a182ea8fferVOu4AragL5NNu",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773383812126,
+      "tool": "task",
+      "task_id": "ses_31a174539ffev70n0Mjvoby0ge",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773383969378,
+      "tool": "task",
+      "task_id": "ses_31a163279ffet4CCUprhuQ3lyD",
+      "failure_detected": true,
+      "failure_keywords": [
+        "error"
+      ]
+    },
+    {
+      "timestamp": 1773384249378,
+      "tool": "task",
+      "task_id": "ses_31a13a4edffen6yRk3uexVJdXU",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773384870263,
+      "tool": "task",
+      "task_id": "ses_31a0f56a2ffegmO4eDQ52SDIiK",
+      "failure_detected": false,
+      "failure_keywords": []
+    },
+    {
+      "timestamp": 1773422042924,
+      "tool": "task",
+      "task_id": "ses_317d0ce44ffezpTsfXq1uixpm4",
+      "failure_detected": true,
+      "failure_keywords": [
+        "cannot",
+        "timeout"
+      ]
+    },
+    {
+      "timestamp": 1773422242282,
+      "tool": "task",
+      "task_id": "ses_317d0d556ffe76G6bEjQiCSM9e",
+      "failure_detected": true,
+      "failure_keywords": [
+        "partially"
+      ]
+    },
+    {
+      "timestamp": 1773422384478,
+      "tool": "task",
+      "task_id": "ses_317d0d03affeSuRCHowQn07gu4",
+      "failure_detected": false,
+      "failure_keywords": []
     }
   ],
   "pending_failure_ack": true,
   "pending_mandatory_tools": [
-    "hivemind_cycle",
-    "hivemind_session"
+    "hivemind_cycle"
   ],
   "framework_selection": {
     "choice": null,
@@ -246,11 +480,15 @@
   "recent_messages": [
     {
       "role": "user",
-      "content": "You are a planner only. Do NOT edit code. Produce a concrete architecture/spec-first modernization plan for the doc-intelligence layer in /Users/apple/hivemind-plugin.\n\nContext:\n- The completed YAML/XML create hardening slice is DONE and out of scope unless regression evidence appears.\n- User explicitly wants the orchestrator to delegate and avoid stuffing main context with direct execution.\n- The environment is polluted by legacy plans, wrappers, stale session artifacts, and partially broken runtime tools.\n- Standalone-first operation is mandatory: doc tooling must not depend on sessions, planning, state, task systems, or unstable governance surfaces in order to work.\n\nPrimary inputs to read:\n1. /Users/apple/hivemind-plugin/docs/handoffs/2026-03-13/doc-intel-modernization-handoff.md\n2. /Users/apple/hivemind-plugin/docs/planning-draft/modernize-doc-intelligence-layer.md\n3. /Users/apple/hivemind-plugin/docs/synthesis/tools-plugins-organized-structured.md\n4. /Users/apple/hivemind-plugin/PLAN.md\n5. Current code targets: /Users/apple/hivemind-plugin/src/lib/doc-intel.ts, /Users/apple/hivemind-plugin/src/lib/code-intel/doc-weaver.ts, /Users/apple/hivemind-plugin/src/tools/hivemind-doc.ts, /Users/apple/hivemind-plugin/src/tools/hivemind-inspect.ts, /Users/apple/hivemind-plugin/src/tools/hiveops-export.ts\n\nWhat to produce:\nReturn exactly one final message with these sections:\n1. Recommended architecture decision (one chosen approach, with 1-2 rejected alternatives briefly)\n2. Capability map for hivemind_doc, hivemind_handoff, hivemind_inspect, and shared libs\n3. File-by-file migration map for the key target and donor files\n4. Staged implementation order optimized for low fragility and delegated execution\n5. Compatibility and deprecation strategy\n6. Acceptance criteria for phase 1 of the modernization\n\nConstraints:\n- Prefer a design that lets the orchestrator delegate implementation in bounded slices.\n- Treat `docs/synthesis/tools-plugins-organized-structured.md` as advisory, not authoritative.\n- Assume session/config runtime surfaces may be broken; plan around that.\n- Be practical and implementation-oriented, not aspirational."
+      "content": "before the @docs/planning-draft/modernize-doc-intelligence-layer.md and @docs/synthesis/tools-plugins-organized-structured.md  can be carried out >>> the more strategic approaches to this ```jsx\nDeeply analyze this project and redesign Hivemind’s session, workflow, task, and state architecture by selectively learning from GSD, then adapting and improving those ideas for the opencode ecosystem rather than copying GSD or Claude Code patterns.\n\n## Goal\n \nBuild a stronger Hivemind workflow framework where a **session** is the atomic unit of coordinated execution: `hiveminder` agents orchestrate workflows, tasks, delegation waves, meta initiators, and chaining patterns to produce results that satisfy explicit success metrics, acceptance criteria, and full workflow coverage.\n\nUsers may start with:\n- absurd, ambiguous, or multi-layered prompts\n- attached files\n- slash commands\n- skills\n- `@agent` mentions\n- correct or incorrect usage of the above\n- edge cases caused by malformed intent, partial context, bad setup, or broken state\n\nThe objective is to make the system robust enough to recover intent, stabilize context, launch the right workflows, govern delegation, and complete work with measurable integrity.\n\n---\n\n## Core operating model\n\nTreat Hivemind as a context-engineered, delegation-driven, high-autonomy system with deterministic support from commands, tools, scripts, templates, references, hooks, plugins, schemas, and custom engines.\n\nPrioritize:\n1. context integrity\n2. workflow completion\n3. clean session trajectory\n4. evidence-based handoffs\n5. root-cause fixes over symptom patching\n6. low-noise, high-signal state management\n7. gradual hardening only after foundations are correct\n\nDo not clone GSD. Learn from it selectively, then transform and improve the concepts to fit opencode’s architecture, capabilities, non-interactive shell model, chaining patterns, tooling surface, and higher degree of composability.\n\n---\n\n## Mandatory startup sequence for every session\n\n### 1) Bootstrap and integrity check first\nBefore anything else, inspect:\n\n- `.hivemind/states/*.*/*.*`\n- root configs\n- profiles\n- settings\n- any active state/index/manifest structures needed to navigate workflows and tasks\n\nUse this check to validate:\n- setup completeness\n- user intent continuity\n- session recoverability\n- workflow/task navigability\n- profile and settings integrity\n\nIf setup is missing, broken, or insufficient, automatically run `hm-init`.\n\n### 2) Recover and clarify user intent\nOnce initialization is guaranteed to be functional, infer the user’s real intent by matching:\n- the prompt\n- slash commands\n- skills\n- `@agent` mentions\n- attached files\n- prior session context\n- existing states/configs/profiles\n- relevant artifacts and symlinked references\n\nDo this through delegated waves of:\n- exploration\n- investigation\n- synthesis\n\nThe output of this stage must become one of the following:\n\n- a transformed, clear, connected, session-aware intent package with context/artifact symlinks, or\n- an evidence-rich handoff that gives `hiveminder` enough basis to choose the next deterministic step\n\n### 3) Ask clarification questions only when needed\nConditionally ask targeted QA questions to restore:\n- completeness\n- scope clarity\n- missing requirements\n- context integrity\n- ambiguity resolution\n\nUse a mix of:\n- stepwise questions\n- multiple-choice questions\n- short open-ended questions\n\nOnly do this when it materially improves correctness. Do not stall progress with unnecessary questioning.\n\n### 4) Build the session trajectory\nAfter intent is sufficiently clear, create the session’s **trajectory outline and skeleton**. This is the per-session guidance map that informs traversal, rerouting, branching, delegation, monitoring, and verification.\n\nThe session trajectory must always include:\n\n#### 4.1 Persistent profile/state/config context\nAuto-parse and strategically persist all relevant:\n- profiles\n- settings\n- configs\n- states\n\nThese must be represented in a concise, hierarchical, relational form that supports context-on-demand loading.\n\nThey are mandatory steering inputs for:\n- workflow behavior\n- agent behavior\n- communication style\n- delegation routing\n- planning style\n- verification style\n\nThey must be emphasized and included persistently in context so they are available across turns and API calls.\n\n#### 4.2 Delegation waves and branch planning\nSet up:\n- delegation waves\n- branch conditions\n- custom TODO tasks\n- measurable success metrics\n- expected returns\n- acceptance criteria\n- handoff evidence requirements\n\n#### 4.3 Monitoring and gatekeeping for sub-sessions\nThe trajectory must explicitly govern:\n- sub-session spawning\n- sub-session tracking\n- handoff validation\n- retry/reroute paths\n- failure containment\n\n#### 4.4 TODO governance\nUse the innate `todoread` and `todowrite` tools for granular task control.\n\nSupport:\n- arbitrarily many TODO items\n- controlled governance over task integration\n- custom TODO IDs and names\n- rerouting and reordering when conditions change\n\nTreat the last item in the active TODO chain as the completion marker unless a stronger completion condition is explicitly defined.\n\n---\n\n## Knowledge ingestion and learning scope\n\nStudy GSD deeply, but only as reference material to be transformed into better Hivemind/opencode patterns.\n\n### Primary GSD sources\n\n#### Core tool entry\n- https://github.com/gsd-build/get-shit-done/blob/main/get-shit-done/bin/gsd-tools.cjs\n\n#### GSD bin/lib modules to inspect and selectively synthesize\nDownload and analyze these:\n- `commands.cjs`\n- `config.cjs`\n- `core.cjs`\n- `frontmatter.cjs`\n- `init.cjs`\n- `milestone.cjs`\n- `phase.cjs`\n- `roadmap.cjs`\n- `state.cjs`\n- `template.cjs`\n- `verify.cjs`\n\nSource:\n- https://github.com/gsd-build/get-shit-done/tree/main/get-shit-done/bin/lib\n\n### Commands and agents\nStudy GSD’s `commands` and `agents` as references only. Align concepts where useful, but adapt for:\n- opencode’s non-interactive shell\n- different chaining and stacking methods\n- heavier use of tools, libs, engines, hooks, and plugins\n- greater deterministic and programmatic composition\n\nSources:\n- https://github.com/gsd-build/get-shit-done/tree/0f38e3467ecf9f9346d42d520e1fd6ad19a8ee99/commands/gsd\n- https://github.com/gsd-build/get-shit-done/tree/0f38e3467ecf9f9346d42d520e1fd6ad19a8ee99/agents\n\n### Workflows\nStudy GSD workflows as examples of structured stepwise execution, context linkage, templates, and references.\n\nSource:\n- https://github.com/gsd-build/get-shit-done/tree/0f38e3467ecf9f9346d42d520e1fd6ad19a8ee99/get-shit-done/workflows\n\nKey workflows to learn from include:\n- `add-phase.md`\n- `add-tests.md`\n- `add-todo.md`\n- `audit-milestone.md`\n- `check-todos.md`\n- `cleanup.md`\n- `complete-milestone.md`\n- `diagnose-issues.md`\n- `discovery-phase.md`\n- `discuss-phase.md`\n- `execute-phase.md`\n- `execute-plan.md`\n- `health.md`\n- `help.md`\n- `insert-phase.md`\n- `list-phase-assumptions.md`\n- `map-codebase.md`\n- `new-milestone.md`\n- `new-project.md`\n- `node-repair.md`\n- `pause-work.md`\n- `plan-milestone-gaps.md`\n- `plan-phase.md`\n- `progress.md`\n- `quick.md`\n- `remove-phase.md`\n- `research-phase.md`\n- `resume-project.md`\n- `set-profile.md`\n- `settings.md`\n- `transition.md`\n- `update.md`\n- `validate-phase.md`\n- `verify-phase.md`\n- `verify-work.md`\n\n### Templates\nStudy templates as guidance for state, planning, continuity, verification, summary, debugging, and project structure. Transform them to fit Hivemind.\n\nSource:\n- https://github.com/gsd-build/get-shit-done/tree/0f38e3467ecf9f9346d42d520e1fd6ad19a8ee99/get-shit-done/templates\n\nImportant templates include:\n- `DEBUG.md`\n- `UAT.md`\n- `VALIDATION.md`\n- `config.json`\n- `context.md`\n- `continue-here.md`\n- `debug-subagent-prompt.md`\n- `discovery.md`\n- `milestone-archive.md`\n- `milestone.md`\n- `phase-prompt.md`\n- `planner-subagent-prompt.md`\n- `project.md`\n- `requirements.md`\n- `research.md`\n- `retrospective.md`\n- `roadmap.md`\n- `state.md`\n- `summary-complex.md`\n- `summary-minimal.md`\n- `summary-standard.md`\n- `summary.md`\n- `user-setup.md`\n- `verification-report.md`\n\nAlso inspect both subfolders:\n- `templates/codebase`\n- `templates/research-project`\n\n### References\nStudy GSD references for context integrity, checkpoints, continuation, planning, model/profile resolution, questioning, TDD, and verification patterns.\n\nSource:\n- https://github.com/gsd-build/get-shit-done/tree/0f38e3467ecf9f9346d42d520e1fd6ad19a8ee99/get-shit-done/references\n\nKey references include:\n- `checkpoints.md`\n- `continuation-format.md`\n- `decimal-phase-calculation.md`\n- `git-integration.md`\n- `git-planning-commit.md`\n- `model-profile-resolution.md`\n- `model-profiles.md`\n- `phase-argument-parsing.md`\n- `planning-config.md`\n- `questioning.md`\n- `tdd.md`\n- `ui-brand.md`\n- `verification-patterns.md`\n\n---\n\n## Mandatory opencode-side knowledge to ingest\n\nStudy these local synthesis documents thoroughly and use them as the real target environment:\n\n```text\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-agents.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-cli.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-commands.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-config.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-custom-tools.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-github-integration.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-lsp.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-mcp.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-non-interactive-shell.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-permissions.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-plugins.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-sdk.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-server.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-skills.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-tools.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-tui.md\n```\n\nTreat these as first-class implementation constraints and opportunities.\n\n---\n\n## Adaptation principles\n\nApply the following principles while designing and refactoring:\n\n1. Use permissions, configuration, and tightly-scoped subagents to construct stronger on-demand context.\n2. Pack commands with:\n   - shell/bash execution\n   - positional arguments\n   - prompt configuration\n   - templates\n   - file references\n   - explicit `agent` routing\n   - explicit `subtask` routing\n3. Exploit opencode’s greater ability to stack:\n   - custom tools\n   - libs\n   - hooks\n   - scripts\n   - plugins\n   - engines\n   - auto mechanisms\n4. Prefer deterministic support plus agentic reasoning, not one without the other.\n5. Organize all context hierarchically so agents can retrieve the minimum necessary context first, then dive deeper only when needed.\n6. Prevent context pollution aggressively.\n7. Design for branched routing and recovery, not just the happy path.\n8. Start from one clear entry command whenever possible, then let chaining and delegation expand programmatically.\n\nThe main deficiency to fix is not capability. It is organization, routing discipline, and protection against noisy or polluted context.\n\n---\n\n## Pitfalls to prevent at this stage\n\nDo **not** make the following mistakes:\n\n1. Do not prematurely over-regulate or over-classify sessions, workflows, tasks, planning artifacts, naming, structure, or sources of truth.\n2. Do not make any evolving structure a hard prerequisite that blocks planning, refactoring, recovery, or migration.\n3. Do not enforce rigid workflows, permissions, pathing, or deterministic retrieval before foundational integrity is working.\n4. Do not inject rotten context, legacy noise, or unstable regulation into the core flow.\n5. Foundation first:\n   - working mechanisms\n   - context integrity recovery\n   - conflict-free operation\n   - then regulation and enforcement later\n\nAt this stage, flexibility with disciplined cleanup is better than rigid governance on top of broken foundations.\n\n---\n\n## Target direction for `.hivemind`\n\nDesign the `.hivemind` layer around concise, retraceable, always-relevant project intelligence.\n\n### 1) `.hivemind/hiveneuron.json`\nThis should become the compact root neural index of current, meaningful system state.\n\nRequirements:\n- hierarchical\n- current\n- readable\n- concise\n- auto-maintained\n- deterministic where possible\n- never exceed ~300 LOC\n- include only relevant active or strategically necessary session/workflow/task state\n- support symlink-style references to deeper artifacts rather than duplicating everything\n- show:\n  - statuses\n  - metadata\n  - dependencies\n  - interdependencies\n  - planning artifacts\n  - verification artifacts\n  - integrity reports\n  - gaps\n  - audits\n  - concise one-line descriptions\n- include the essential config/settings/profile setup state\n- support auto updates with atomic git commits\n- support setup and maintenance workflows such as:\n  - `hm-init`\n  - `hm-settings`\n  - `hm-doctor`\n  - `hm-improve`\n\n### 2) `.hivemind/hivebrain.md`\nThis should become the broader human-readable context map.\n\nFormat:\n- hybrid between YAML, Markdown, and XML-style structured readability\n\nPurpose:\n- contextual inventory\n- notes\n- checkpoints\n- manifestations\n- validation synthesis\n- broad overview of “what is going on”\n- broad overview of “what each sector/entity should do next”\n- improved successor to GSD’s `state.md`\n- should reflect the intended `.hivemind` story across all important sectors and the intended two-lineage separation\n- should synthesize not just state, but intuitive prioritization and order of attack\n\n### 3) `.hivemind/states`\nRefactor this completely.\n\nRequirements:\n- retain only relevant state\n- separate the intended two lineages cleanly\n- eliminate noisy, auto-spawned, low-value state\n- make state navigable, compact, and recoverable\n- treat state as a support layer for workflows, not a dumping ground\n\n---\n\n## Audit and cleanup mandate for current `.hivemind`\n\nAggressively inspect the current `.hivemind` manifestation and treat it as likely polluted until proven otherwise.\n\nIf folders, subfolders, or file types exist that do not belong in the target architecture:\n- do not patch them locally first\n- trace them from `dist` back to their true source in:\n  - libs\n  - tools\n  - commands\n  - CLI\n  - hooks\n  - schema\n  - plugins\n  - source modules\n  - any generation pipeline\n- fix the root cause, not just the emitted artifact\n\nFor legacy or rotten outputs:\n- archive or isolate them with inventory and notes\n- mark them clearly as:\n  - legacy\n  - removable\n  - migration candidates\n  - refactor candidates\n  - consolidation candidates\n- isolate them to reduce context pollution and unblock recovery\n\nAnything that auto-spawns meaningless trash across sessions, profiles, hierarchy, or states must be removed meticulously.\n\n### Treat the following current areas as high-priority audit targets\nAt minimum, inspect and classify these patterns:\n\n- `.hivemind/checkpoints/*`\n- `.hivemind/codemap/**`\n- `.hivemind/codewiki/**`\n- `.hivemind/graph/**`\n- `.hivemind/handoffs/*`\n- `.hivemind/logs/*.log`\n- `.hivemind/memory/**`\n- `.hivemind/plans/**`\n- `.hivemind/sessions/active/**`\n- `.hivemind/sessions/runtime/**`\n- `.hivemind/sessions/manifest.json`\n- `.hivemind/sessions/session-*.json`\n- `.hivemind/state/**`\n- `.hivemind/synthesis/**`\n- `.hivemind/manifest.json`\n\nAlso inspect specific noisy patterns already present, including:\n- repeated `ses_*` runtime session directories\n- backup chains such as `brain.json.bak*`\n- graph entities and ledgers under `.hivemind/graph/**`\n- scattered manifests with unclear ownership\n- state duplication between `graph`, `state`, `sessions`, `memory`, and `plans`\n\nDo not assume these are valid just because they exist.\n\n---\n\n## Session lifecycle reference\n\nUse the following GSD-style atomic workflow lifecycle only as a reference model, not as a rigid prerequisite:\n\n```text\n.hivemind/project/\n  PROJECT.md\n  PRD.md\n  ROADMAP.md\n  PROJECT-STATE.md\n  config.json\n  MILESTONES.md\n  research/\n  todos/\n    pending/\n    done/\n  debug/\n    resolved/\n  codebase/\n  phases/\n    XX-phase-name/\n      XX-YY-PLAN.md\n      XX-YY-SUMMARY.md\n      CONTEXT.md\n      RESEARCH.md\n      VERIFICATION.md\n```\n\nPreserve the strengths of this pattern:\n- project vision\n- scoped requirements\n- roadmap/phasing\n- evolving project state\n- research\n- codebase mapping\n- execution plans\n- execution summaries\n- verification artifacts\n\nBut do not hard-code this structure as a blocking prerequisite for progress.\n\n---\n\n## How to execute this work\n\nWork iteratively through delegated investigation and synthesis waves.\n\n### Wave 1: ground truth recovery\n- inspect current codebase\n- inspect current `.hivemind`\n- inspect opencode synthesis docs\n- identify actual runtime behavior\n- identify root generators of noisy state\n- identify what is foundational vs accidental\n\n### Wave 2: comparative learning\n- ingest GSD concepts selectively\n- compare GSD workflow/state/template/reference patterns against Hivemind needs\n- identify what to keep, reject, adapt, or improve\n\n### Wave 3: architecture synthesis\nProduce a superior Hivemind architecture that:\n- fits opencode\n- supports high-autonomy delegation\n- supports deterministic tooling\n- minimizes noise\n- maximizes context integrity\n- preserves recovery and continuation\n- supports measurable completion\n\n### Wave 4: cleanup and migration design\nDefine how to:\n- isolate or archive polluted legacy artifacts\n- stop further bad emissions\n- migrate or regenerate only what is worth keeping\n- preserve useful evidence without preserving clutter\n\n### Wave 5: workflow and command design\nDesign or refine the entry and maintenance workflows around:\n- `hm-init`\n- `hm-settings`\n- `hm-doctor`\n- `hm-improve`\n\nAlso define how commands, workflows, tools, templates, references, and hidden/subagents should compose together.\n\n### Wave 6: TODO and delegation governance\nDefine the governance model for:\n- TODO creation\n- TODO mutation\n- delegation wave planning\n- branch handling\n- handoff evidence\n- verification gates\n- session completion\n\n---\n\n## Required outputs\n\nProduce a high-quality synthesis and action plan that includes all of the following:\n\n1. **A selective GSD-to-Hivemind knowledge transfer**\n   - what is worth adopting\n   - what must be changed\n   - what must be rejected\n   - why\n\n2. **A proposed target architecture for `.hivemind`**\n   - root files\n   - state model\n   - session model\n   - artifact model\n   - handoff model\n   - verification model\n   - TODO/task governance\n   - context-loading strategy\n\n3. **A root-cause map**\n   - which source modules currently generate polluted `.hivemind` outputs\n   - how those emissions propagate from source to `dist` to runtime artifacts\n\n4. **A cleanup and migration strategy**\n   - what to delete\n   - what to archive\n   - what to isolate\n   - what to migrate\n   - what to regenerate\n\n5. **A session bootstrap and continuation design**\n   - how `hm-init` should behave\n   - how integrity checks should work\n   - how session recovery should work\n   - how continuation should preserve context without polluting it\n\n6. **A trajectory and delegation model**\n   - intent recovery\n   - clarification logic\n   - trajectory construction\n   - delegation wave planning\n   - branch/reroute model\n   - sub-session monitoring\n   - evidence-rich handoffs\n\n7. **A verification and completion model**\n   - success metrics\n   - acceptance criteria\n   - gatekeeping patterns\n   - verification artifacts\n   - completion detection\n\n8. **A concise but high-signal representation strategy**\n   - what belongs in `hiveneuron.json`\n   - what belongs in `hivebrain.md`\n   - what belongs in deeper linked artifacts only\n   - what must never be persisted by default\n\n9. **A practical implementation order**\n   - foundation first\n   - integrity recovery second\n   - cleanup third\n   - hardening and enforcement later\n\n---\n\n## Final quality bar\n\nThe end result must push Hivemind beyond GSD by combining:\n- better context engineering\n- better routing\n- better delegation\n- better state hygiene\n- better use of opencode tooling\n- better deterministic support\n- better recovery from ambiguity and broken setup\n- better completion reliability\n\nDo not optimize for superficial structure. Optimize for:\n- robust foundations\n- clean signals\n- recoverability\n- controllable autonomy\n- meaningful progress\n- completion with evidence\n\n```\n\n## Referenced  Notes\n\n/Users/apple/hivemind-plugin/docs/reference/note-1.png\n/Users/apple/hivemind-plugin/docs/reference/note-2.png\n/Users/apple/hivemind-plugin/docs/reference/note-3.png\n\n- These need frequent of reinstallation - clean build - and restart platform to take effects → let me know when you need such "
     },
     {
       "role": "assistant",
-      "content": "I'm using the writing-plans skill to create the implementation plan."
+      "content": "Bootstrap is done. I ran `npx -y hivemind-context-governance --mode assisted` in `/Users/apple/hivemind-plugin`.\n\n- HiveMind reports the project is already initialized at `.hivemind`\n- It also flagged framework drift: missing HiveFiver assets in root and `.opencode`, plus invalid agent/workflow assets that should be audited before deeper redesign work\n- I have not started the requested architecture analysis yet, per the bootstrap gate\n\nRecommended next step:\n- `Option 1`: do a ground-truth recovery and architecture audit first, because your request is strategic and depends on separating real runtime behavior from polluted `.hivemind` state\n- Style: `architecture_planning`\n\nPlease confirm I should proceed with hierarchy alignment as `phase: hivemind architecture redesign`, `workflow: ground-truth recovery + comparative synthesis`, `task: strategic audit before doc-intelligence modernization`, or tell me what to adjust before execution."
+    },
+    {
+      "role": "user",
+      "content": "please do not utilize what have been marked and fucked up and poisoning context - plese proceed as instructed and you are coordinator/orchestrator you must delegate"
     }
   ],
   "offtrack_todo_pending": [
@@ -258,6 +496,13 @@
       "id": "7b62d451-bd91-4a38-a9a3-2e1e146a31f1",
       "content": "You are a planner only. Do NOT edit code. Produce a concrete architecture/spec-first modernization plan for the doc-intelligence layer in /Users/apple/hivemind-plugin.\n\nContext:\n- The completed YAML/XML create hardening slice is DONE and out of scope unless regression evidence appears.\n- User explicitly wants the orchestrator to delegate and avoid stuffing main context with direct execution.\n- The environment is polluted by legacy plans, wrappers, stale session artifacts, and partially broken runtime tools.\n- Standalone-first operation is mandatory: doc tooling must not depend on sessions, planning, state, task systems, or unstable governance surfaces in order to work.\n\nPrimary inputs to read:\n1. /Users/apple/hivemind-plugin/docs/handoffs/2026-03-13/doc-intel-modernization-handoff.md\n2. /Users/apple/hivemind-plugin/docs/planning-draft/modernize-doc-intelligence-layer.md\n3. /Users/apple/hivemind-plugin/docs/synthesis/tools-plugins-organized-structured.md\n4. /Users/apple/hivemind-plugin/PLAN.md\n5. Current code targets: /Users/apple/hivemind-plugin/src/lib/doc-intel.ts, /Users/apple/hivemind-plugin/src/lib/code-intel/doc-weaver.ts, /Users/apple/hivemind-plugin/src/tools/hivemind-doc.ts, /Users/apple/hivemind-plugin/src/tools/hivemind-inspect.ts, /Users/apple/hivemind-plugin/src/tools/hiveops-export.ts\n\nWhat to produce:\nReturn exactly one final message with these sections:\n1. Recommended architecture decision (one chosen approach, with 1-2 rejected alternatives briefly)\n2. Capability map for hivemind_doc, hivemind_handoff, hivemind_inspect, and shared libs\n3. File-by-file migration map for the key target and donor files\n4. Staged implementation order optimized for low fragility and delegated execution\n5. Compatibility and deprecation strategy\n6. Acceptance criteria for phase 1 of the modernization\n\nConstraints:\n- Prefer a design that lets the orchestrator delegate implementation in bounded slices.\n- Treat `docs/synthesis/tools-plugins-organized-structured.md` as advisory, not authoritative.\n- Assume session/config runtime surfaces may be broken; plan around that.\n- Be practical and implementation-oriented, not aspirational.",
       "created_at": 1773382380505,
+      "source": "messages-transform",
+      "status": "pending"
+    },
+    {
+      "id": "f06bfca9-bd6c-4e4b-b188-4208431a1c71",
+      "content": "before the @docs/planning-draft/modernize-doc-intelligence-layer.md and @docs/synthesis/tools-plugins-organized-structured.md  can be carried out >>> the more strategic approaches to this ```jsx\nDeeply analyze this project and redesign Hivemind’s session, workflow, task, and state architecture by selectively learning from GSD, then adapting and improving those ideas for the opencode ecosystem rather than copying GSD or Claude Code patterns.\n\n## Goal\n \nBuild a stronger Hivemind workflow framework where a **session** is the atomic unit of coordinated execution: `hiveminder` agents orchestrate workflows, tasks, delegation waves, meta initiators, and chaining patterns to produce results that satisfy explicit success metrics, acceptance criteria, and full workflow coverage.\n\nUsers may start with:\n- absurd, ambiguous, or multi-layered prompts\n- attached files\n- slash commands\n- skills\n- `@agent` mentions\n- correct or incorrect usage of the above\n- edge cases caused by malformed intent, partial context, bad setup, or broken state\n\nThe objective is to make the system robust enough to recover intent, stabilize context, launch the right workflows, govern delegation, and complete work with measurable integrity.\n\n---\n\n## Core operating model\n\nTreat Hivemind as a context-engineered, delegation-driven, high-autonomy system with deterministic support from commands, tools, scripts, templates, references, hooks, plugins, schemas, and custom engines.\n\nPrioritize:\n1. context integrity\n2. workflow completion\n3. clean session trajectory\n4. evidence-based handoffs\n5. root-cause fixes over symptom patching\n6. low-noise, high-signal state management\n7. gradual hardening only after foundations are correct\n\nDo not clone GSD. Learn from it selectively, then transform and improve the concepts to fit opencode’s architecture, capabilities, non-interactive shell model, chaining patterns, tooling surface, and higher degree of composability.\n\n---\n\n## Mandatory startup sequence for every session\n\n### 1) Bootstrap and integrity check first\nBefore anything else, inspect:\n\n- `.hivemind/states/*.*/*.*`\n- root configs\n- profiles\n- settings\n- any active state/index/manifest structures needed to navigate workflows and tasks\n\nUse this check to validate:\n- setup completeness\n- user intent continuity\n- session recoverability\n- workflow/task navigability\n- profile and settings integrity\n\nIf setup is missing, broken, or insufficient, automatically run `hm-init`.\n\n### 2) Recover and clarify user intent\nOnce initialization is guaranteed to be functional, infer the user’s real intent by matching:\n- the prompt\n- slash commands\n- skills\n- `@agent` mentions\n- attached files\n- prior session context\n- existing states/configs/profiles\n- relevant artifacts and symlinked references\n\nDo this through delegated waves of:\n- exploration\n- investigation\n- synthesis\n\nThe output of this stage must become one of the following:\n\n- a transformed, clear, connected, session-aware intent package with context/artifact symlinks, or\n- an evidence-rich handoff that gives `hiveminder` enough basis to choose the next deterministic step\n\n### 3) Ask clarification questions only when needed\nConditionally ask targeted QA questions to restore:\n- completeness\n- scope clarity\n- missing requirements\n- context integrity\n- ambiguity resolution\n\nUse a mix of:\n- stepwise questions\n- multiple-choice questions\n- short open-ended questions\n\nOnly do this when it materially improves correctness. Do not stall progress with unnecessary questioning.\n\n### 4) Build the session trajectory\nAfter intent is sufficiently clear, create the session’s **trajectory outline and skeleton**. This is the per-session guidance map that informs traversal, rerouting, branching, delegation, monitoring, and verification.\n\nThe session trajectory must always include:\n\n#### 4.1 Persistent profile/state/config context\nAuto-parse and strategically persist all relevant:\n- profiles\n- settings\n- configs\n- states\n\nThese must be represented in a concise, hierarchical, relational form that supports context-on-demand loading.\n\nThey are mandatory steering inputs for:\n- workflow behavior\n- agent behavior\n- communication style\n- delegation routing\n- planning style\n- verification style\n\nThey must be emphasized and included persistently in context so they are available across turns and API calls.\n\n#### 4.2 Delegation waves and branch planning\nSet up:\n- delegation waves\n- branch conditions\n- custom TODO tasks\n- measurable success metrics\n- expected returns\n- acceptance criteria\n- handoff evidence requirements\n\n#### 4.3 Monitoring and gatekeeping for sub-sessions\nThe trajectory must explicitly govern:\n- sub-session spawning\n- sub-session tracking\n- handoff validation\n- retry/reroute paths\n- failure containment\n\n#### 4.4 TODO governance\nUse the innate `todoread` and `todowrite` tools for granular task control.\n\nSupport:\n- arbitrarily many TODO items\n- controlled governance over task integration\n- custom TODO IDs and names\n- rerouting and reordering when conditions change\n\nTreat the last item in the active TODO chain as the completion marker unless a stronger completion condition is explicitly defined.\n\n---\n\n## Knowledge ingestion and learning scope\n\nStudy GSD deeply, but only as reference material to be transformed into better Hivemind/opencode patterns.\n\n### Primary GSD sources\n\n#### Core tool entry\n- https://github.com/gsd-build/get-shit-done/blob/main/get-shit-done/bin/gsd-tools.cjs\n\n#### GSD bin/lib modules to inspect and selectively synthesize\nDownload and analyze these:\n- `commands.cjs`\n- `config.cjs`\n- `core.cjs`\n- `frontmatter.cjs`\n- `init.cjs`\n- `milestone.cjs`\n- `phase.cjs`\n- `roadmap.cjs`\n- `state.cjs`\n- `template.cjs`\n- `verify.cjs`\n\nSource:\n- https://github.com/gsd-build/get-shit-done/tree/main/get-shit-done/bin/lib\n\n### Commands and agents\nStudy GSD’s `commands` and `agents` as references only. Align concepts where useful, but adapt for:\n- opencode’s non-interactive shell\n- different chaining and stacking methods\n- heavier use of tools, libs, engines, hooks, and plugins\n- greater deterministic and programmatic composition\n\nSources:\n- https://github.com/gsd-build/get-shit-done/tree/0f38e3467ecf9f9346d42d520e1fd6ad19a8ee99/commands/gsd\n- https://github.com/gsd-build/get-shit-done/tree/0f38e3467ecf9f9346d42d520e1fd6ad19a8ee99/agents\n\n### Workflows\nStudy GSD workflows as examples of structured stepwise execution, context linkage, templates, and references.\n\nSource:\n- https://github.com/gsd-build/get-shit-done/tree/0f38e3467ecf9f9346d42d520e1fd6ad19a8ee99/get-shit-done/workflows\n\nKey workflows to learn from include:\n- `add-phase.md`\n- `add-tests.md`\n- `add-todo.md`\n- `audit-milestone.md`\n- `check-todos.md`\n- `cleanup.md`\n- `complete-milestone.md`\n- `diagnose-issues.md`\n- `discovery-phase.md`\n- `discuss-phase.md`\n- `execute-phase.md`\n- `execute-plan.md`\n- `health.md`\n- `help.md`\n- `insert-phase.md`\n- `list-phase-assumptions.md`\n- `map-codebase.md`\n- `new-milestone.md`\n- `new-project.md`\n- `node-repair.md`\n- `pause-work.md`\n- `plan-milestone-gaps.md`\n- `plan-phase.md`\n- `progress.md`\n- `quick.md`\n- `remove-phase.md`\n- `research-phase.md`\n- `resume-project.md`\n- `set-profile.md`\n- `settings.md`\n- `transition.md`\n- `update.md`\n- `validate-phase.md`\n- `verify-phase.md`\n- `verify-work.md`\n\n### Templates\nStudy templates as guidance for state, planning, continuity, verification, summary, debugging, and project structure. Transform them to fit Hivemind.\n\nSource:\n- https://github.com/gsd-build/get-shit-done/tree/0f38e3467ecf9f9346d42d520e1fd6ad19a8ee99/get-shit-done/templates\n\nImportant templates include:\n- `DEBUG.md`\n- `UAT.md`\n- `VALIDATION.md`\n- `config.json`\n- `context.md`\n- `continue-here.md`\n- `debug-subagent-prompt.md`\n- `discovery.md`\n- `milestone-archive.md`\n- `milestone.md`\n- `phase-prompt.md`\n- `planner-subagent-prompt.md`\n- `project.md`\n- `requirements.md`\n- `research.md`\n- `retrospective.md`\n- `roadmap.md`\n- `state.md`\n- `summary-complex.md`\n- `summary-minimal.md`\n- `summary-standard.md`\n- `summary.md`\n- `user-setup.md`\n- `verification-report.md`\n\nAlso inspect both subfolders:\n- `templates/codebase`\n- `templates/research-project`\n\n### References\nStudy GSD references for context integrity, checkpoints, continuation, planning, model/profile resolution, questioning, TDD, and verification patterns.\n\nSource:\n- https://github.com/gsd-build/get-shit-done/tree/0f38e3467ecf9f9346d42d520e1fd6ad19a8ee99/get-shit-done/references\n\nKey references include:\n- `checkpoints.md`\n- `continuation-format.md`\n- `decimal-phase-calculation.md`\n- `git-integration.md`\n- `git-planning-commit.md`\n- `model-profile-resolution.md`\n- `model-profiles.md`\n- `phase-argument-parsing.md`\n- `planning-config.md`\n- `questioning.md`\n- `tdd.md`\n- `ui-brand.md`\n- `verification-patterns.md`\n\n---\n\n## Mandatory opencode-side knowledge to ingest\n\nStudy these local synthesis documents thoroughly and use them as the real target environment:\n\n```text\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-agents.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-cli.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-commands.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-config.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-custom-tools.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-github-integration.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-lsp.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-mcp.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-non-interactive-shell.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-permissions.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-plugins.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-sdk.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-server.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-skills.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-tools.md\n/Users/apple/hivemind-plugin/docs/synthesis/opencode-tui.md\n```\n\nTreat these as first-class implementation constraints and opportunities.\n\n---\n\n## Adaptation principles\n\nApply the following principles while designing and refactoring:\n\n1. Use permissions, configuration, and tightly-scoped subagents to construct stronger on-demand context.\n2. Pack commands with:\n   - shell/bash execution\n   - positional arguments\n   - prompt configuration\n   - templates\n   - file references\n   - explicit `agent` routing\n   - explicit `subtask` routing\n3. Exploit opencode’s greater ability to stack:\n   - custom tools\n   - libs\n   - hooks\n   - scripts\n   - plugins\n   - engines\n   - auto mechanisms\n4. Prefer deterministic support plus agentic reasoning, not one without the other.\n5. Organize all context hierarchically so agents can retrieve the minimum necessary context first, then dive deeper only when needed.\n6. Prevent context pollution aggressively.\n7. Design for branched routing and recovery, not just the happy path.\n8. Start from one clear entry command whenever possible, then let chaining and delegation expand programmatically.\n\nThe main deficiency to fix is not capability. It is organization, routing discipline, and protection against noisy or polluted context.\n\n---\n\n## Pitfalls to prevent at this stage\n\nDo **not** make the following mistakes:\n\n1. Do not prematurely over-regulate or over-classify sessions, workflows, tasks, planning artifacts, naming, structure, or sources of truth.\n2. Do not make any evolving structure a hard prerequisite that blocks planning, refactoring, recovery, or migration.\n3. Do not enforce rigid workflows, permissions, pathing, or deterministic retrieval before foundational integrity is working.\n4. Do not inject rotten context, legacy noise, or unstable regulation into the core flow.\n5. Foundation first:\n   - working mechanisms\n   - context integrity recovery\n   - conflict-free operation\n   - then regulation and enforcement later\n\nAt this stage, flexibility with disciplined cleanup is better than rigid governance on top of broken foundations.\n\n---\n\n## Target direction for `.hivemind`\n\nDesign the `.hivemind` layer around concise, retraceable, always-relevant project intelligence.\n\n### 1) `.hivemind/hiveneuron.json`\nThis should become the compact root neural index of current, meaningful system state.\n\nRequirements:\n- hierarchical\n- current\n- readable\n- concise\n- auto-maintained\n- deterministic where possible\n- never exceed ~300 LOC\n- include only relevant active or strategically necessary session/workflow/task state\n- support symlink-style references to deeper artifacts rather than duplicating everything\n- show:\n  - statuses\n  - metadata\n  - dependencies\n  - interdependencies\n  - planning artifacts\n  - verification artifacts\n  - integrity reports\n  - gaps\n  - audits\n  - concise one-line descriptions\n- include the essential config/settings/profile setup state\n- support auto updates with atomic git commits\n- support setup and maintenance workflows such as:\n  - `hm-init`\n  - `hm-settings`\n  - `hm-doctor`\n  - `hm-improve`\n\n### 2) `.hivemind/hivebrain.md`\nThis should become the broader human-readable context map.\n\nFormat:\n- hybrid between YAML, Markdown, and XML-style structured readability\n\nPurpose:\n- contextual inventory\n- notes\n- checkpoints\n- manifestations\n- validation synthesis\n- broad overview of “what is going on”\n- broad overview of “what each sector/entity should do next”\n- improved successor to GSD’s `state.md`\n- should reflect the intended `.hivemind` story across all important sectors and the intended two-lineage separation\n- should synthesize not just state, but intuitive prioritization and order of attack\n\n### 3) `.hivemind/states`\nRefactor this completely.\n\nRequirements:\n- retain only relevant state\n- separate the intended two lineages cleanly\n- eliminate noisy, auto-spawned, low-value state\n- make state navigable, compact, and recoverable\n- treat state as a support layer for workflows, not a dumping ground\n\n---\n\n## Audit and cleanup mandate for current `.hivemind`\n\nAggressively inspect the current `.hivemind` manifestation and treat it as likely polluted until proven otherwise.\n\nIf folders, subfolders, or file types exist that do not belong in the target architecture:\n- do not patch them locally first\n- trace them from `dist` back to their true source in:\n  - libs\n  - tools\n  - commands\n  - CLI\n  - hooks\n  - schema\n  - plugins\n  - source modules\n  - any generation pipeline\n- fix the root cause, not just the emitted artifact\n\nFor legacy or rotten outputs:\n- archive or isolate them with inventory and notes\n- mark them clearly as:\n  - legacy\n  - removable\n  - migration candidates\n  - refactor candidates\n  - consolidation candidates\n- isolate them to reduce context pollution and unblock recovery\n\nAnything that auto-spawns meaningless trash across sessions, profiles, hierarchy, or states must be removed meticulously.\n\n### Treat the following current areas as high-priority audit targets\nAt minimum, inspect and classify these patterns:\n\n- `.hivemind/checkpoints/*`\n- `.hivemind/codemap/**`\n- `.hivemind/codewiki/**`\n- `.hivemind/graph/**`\n- `.hivemind/handoffs/*`\n- `.hivemind/logs/*.log`\n- `.hivemind/memory/**`\n- `.hivemind/plans/**`\n- `.hivemind/sessions/active/**`\n- `.hivemind/sessions/runtime/**`\n- `.hivemind/sessions/manifest.json`\n- `.hivemind/sessions/session-*.json`\n- `.hivemind/state/**`\n- `.hivemind/synthesis/**`\n- `.hivemind/manifest.json`\n\nAlso inspect specific noisy patterns already present, including:\n- repeated `ses_*` runtime session directories\n- backup chains such as `brain.json.bak*`\n- graph entities and ledgers under `.hivemind/graph/**`\n- scattered manifests with unclear ownership\n- state duplication between `graph`, `state`, `sessions`, `memory`, and `plans`\n\nDo not assume these are valid just because they exist.\n\n---\n\n## Session lifecycle reference\n\nUse the following GSD-style atomic workflow lifecycle only as a reference model, not as a rigid prerequisite:\n\n```text\n.hivemind/project/\n  PROJECT.md\n  PRD.md\n  ROADMAP.md\n  PROJECT-STATE.md\n  config.json\n  MILESTONES.md\n  research/\n  todos/\n    pending/\n    done/\n  debug/\n    resolved/\n  codebase/\n  phases/\n    XX-phase-name/\n      XX-YY-PLAN.md\n      XX-YY-SUMMARY.md\n      CONTEXT.md\n      RESEARCH.md\n      VERIFICATION.md\n```\n\nPreserve the strengths of this pattern:\n- project vision\n- scoped requirements\n- roadmap/phasing\n- evolving project state\n- research\n- codebase mapping\n- execution plans\n- execution summaries\n- verification artifacts\n\nBut do not hard-code this structure as a blocking prerequisite for progress.\n\n---\n\n## How to execute this work\n\nWork iteratively through delegated investigation and synthesis waves.\n\n### Wave 1: ground truth recovery\n- inspect current codebase\n- inspect current `.hivemind`\n- inspect opencode synthesis docs\n- identify actual runtime behavior\n- identify root generators of noisy state\n- identify what is foundational vs accidental\n\n### Wave 2: comparative learning\n- ingest GSD concepts selectively\n- compare GSD workflow/state/template/reference patterns against Hivemind needs\n- identify what to keep, reject, adapt, or improve\n\n### Wave 3: architecture synthesis\nProduce a superior Hivemind architecture that:\n- fits opencode\n- supports high-autonomy delegation\n- supports deterministic tooling\n- minimizes noise\n- maximizes context integrity\n- preserves recovery and continuation\n- supports measurable completion\n\n### Wave 4: cleanup and migration design\nDefine how to:\n- isolate or archive polluted legacy artifacts\n- stop further bad emissions\n- migrate or regenerate only what is worth keeping\n- preserve useful evidence without preserving clutter\n\n### Wave 5: workflow and command design\nDesign or refine the entry and maintenance workflows around:\n- `hm-init`\n- `hm-settings`\n- `hm-doctor`\n- `hm-improve`\n\nAlso define how commands, workflows, tools, templates, references, and hidden/subagents should compose together.\n\n### Wave 6: TODO and delegation governance\nDefine the governance model for:\n- TODO creation\n- TODO mutation\n- delegation wave planning\n- branch handling\n- handoff evidence\n- verification gates\n- session completion\n\n---\n\n## Required outputs\n\nProduce a high-quality synthesis and action plan that includes all of the following:\n\n1. **A selective GSD-to-Hivemind knowledge transfer**\n   - what is worth adopting\n   - what must be changed\n   - what must be rejected\n   - why\n\n2. **A proposed target architecture for `.hivemind`**\n   - root files\n   - state model\n   - session model\n   - artifact model\n   - handoff model\n   - verification model\n   - TODO/task governance\n   - context-loading strategy\n\n3. **A root-cause map**\n   - which source modules currently generate polluted `.hivemind` outputs\n   - how those emissions propagate from source to `dist` to runtime artifacts\n\n4. **A cleanup and migration strategy**\n   - what to delete\n   - what to archive\n   - what to isolate\n   - what to migrate\n   - what to regenerate\n\n5. **A session bootstrap and continuation design**\n   - how `hm-init` should behave\n   - how integrity checks should work\n   - how session recovery should work\n   - how continuation should preserve context without polluting it\n\n6. **A trajectory and delegation model**\n   - intent recovery\n   - clarification logic\n   - trajectory construction\n   - delegation wave planning\n   - branch/reroute model\n   - sub-session monitoring\n   - evidence-rich handoffs\n\n7. **A verification and completion model**\n   - success metrics\n   - acceptance criteria\n   - gatekeeping patterns\n   - verification artifacts\n   - completion detection\n\n8. **A concise but high-signal representation strategy**\n   - what belongs in `hiveneuron.json`\n   - what belongs in `hivebrain.md`\n   - what belongs in deeper linked artifacts only\n   - what must never be persisted by default\n\n9. **A practical implementation order**\n   - foundation first\n   - integrity recovery second\n   - cleanup third\n   - hardening and enforcement later\n\n---\n\n## Final quality bar\n\nThe end result must push Hivemind beyond GSD by combining:\n- better context engineering\n- better routing\n- better delegation\n- better state hygiene\n- better use of opencode tooling\n- better deterministic support\n- better recovery from ambiguity and broken setup\n- better completion reliability\n\nDo not optimize for superficial structure. Optimize for:\n- robust foundations\n- clean signals\n- recoverability\n- controllable autonomy\n- meaningful progress\n- completion with evidence\n\n```\n\n## Referenced  Notes\n\n/Users/apple/hivemind-plugin/docs/reference/note-1.png\n/Users/apple/hivemind-plugin/docs/reference/note-2.png\n/Users/apple/hivemind-plugin/docs/reference/note-3.png\n\n- These need frequent of reinstallation - clean build - and restart platform to take effects → let me know when you need such",
+      "created_at": 1773421695171,
       "source": "messages-transform",
       "status": "pending"
     }
