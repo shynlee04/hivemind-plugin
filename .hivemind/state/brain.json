@@ -1,12 +1,12 @@
 {
   "session": {
     "id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
-    "opencode_session_id": "ses_31a13a4edffen6yRk3uexVJdXU",
+    "opencode_session_id": "ses_31a0f56a2ffegmO4eDQ52SDIiK",
     "mode": "exploration",
     "governance_mode": "assisted",
     "governance_status": "LOCKED",
     "start_time": 1773382379686,
-    "last_activity": 1773384262444,
+    "last_activity": 1773384870262,
     "date": "2026-03-13",
     "meta_key": "",
     "role": "unresolved",
@@ -21,7 +21,7 @@
     "action": ""
   },
   "metrics": {
-    "turn_count": 95,
+    "turn_count": 114,
     "user_turn_count": 0,
     "drift_score": 100,
     "files_touched": [
@@ -48,21 +48,27 @@
       "Cannot find name 'relativeProjectPath'.",
       "npx tsx --test tests/*.test.ts 2>&1 | tail -30",
       "Verify safety.ts exports",
-      "Verify read-ops.ts exports"
+      "Verify read-ops.ts exports",
+      "/Users/apple/hivemind-plugin/src/lib/doc-intel/write-ops.ts",
+      "'resolve' is declared but its value is never read.",
+      "'isAbsolute' is declared but its value is never read.",
+      "'estimateTokens' is declared but its value is never read.",
+      "'HeadingHierarchy' is declared but never used.",
+      "npx tsc --noEmit --skipLibCheck src/lib/doc-intel/types.ts src/lib/doc-intel/write-ops.ts 2>&1"
     ],
     "context_updates": 0,
     "last_context_update_turn": 0,
     "auto_health_score": 100,
-    "total_tool_calls": 95,
-    "successful_tool_calls": 95,
+    "total_tool_calls": 114,
+    "successful_tool_calls": 114,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
     "last_section_content": "",
     "tool_type_counts": {
-      "read": 48,
-      "write": 23,
-      "query": 22,
+      "read": 60,
+      "write": 29,
+      "query": 23,
       "governance": 2
     },
     "keyword_flags": [
@@ -72,7 +78,7 @@
       "retry"
     ],
     "keyword_flags_reset_turn": 0,
-    "write_without_read_count": 13,
+    "write_without_read_count": 18,
     "files_read_this_session": [
       "/Users/apple/hivemind-plugin/src/lib/doc-intel.ts",
       "/Users/apple/hivemind-plugin/src/tools/hivemind-inspect.ts",
@@ -104,13 +110,18 @@
       "/Users/apple/hivemind-plugin/src/lib/doc-intel/index.ts",
       "/Users/apple/hivemind-plugin/src/lib/doc-intel/read-ops.ts",
       "tests/*doc-intel*.test.ts",
-      "tests/*read-ops*.test.ts"
+      "tests/*read-ops*.test.ts",
+      "/Users/apple/hivemind-plugin/src/lib/doc-intel/safety.ts",
+      "/Users/apple/hivemind-plugin/src/lib/doc-intel/formats/xml.ts",
+      "import.*proper-lockfile",
+      "/Users/apple/hivemind-plugin/src",
+      "/Users/apple/hivemind-plugin/tsconfig.json"
     ],
     "governance_counters": {
       "drift": 0,
       "compaction": 0,
-      "out_of_order": 43,
-      "evidence_pressure": 94
+      "out_of_order": 50,
+      "evidence_pressure": 113
     }
   },
   "first_turn_context_injected": false,
@@ -183,6 +194,13 @@
       "task_id": "ses_31a13a4edffen6yRk3uexVJdXU",
       "failure_detected": false,
       "failure_keywords": []
+    },
+    {
+      "timestamp": 1773384870263,
+      "tool": "task",
+      "failure_detected": false,
+      "failure_keywords": [],
+      "task_id": "ses_31a0f56a2ffegmO4eDQ52SDIiK"
     }
   ],
   "pending_failure_ack": true,

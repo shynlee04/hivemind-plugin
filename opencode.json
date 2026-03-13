@@ -321,6 +321,16 @@
           }
         }
       }
+    },
+    "openai": {
+      "models": {
+        "gpt-5.4": {
+          "limit": {
+            "context": 300000,
+            "output": 128000
+          }
+        }
+      }
     }
   },
   "instructions": [
