@@ -2,7 +2,7 @@
 
 This file provides guidance to ALL agents working in this repository.
 
-**Last Updated**: 2026-03-10
+**Last Updated**: 2026-03-13
 **Version**: 3.3-strategic-resync
 **Maintained By**: hivefiver meta-builder
 **Symlinked To**: `.hivemind/AGENTS.md`, `.opencode/AGENTS.md`, `src/AGENTS.md`
@@ -344,7 +344,7 @@ workflows/hiverd-deep-research.yaml
 workflows/hiverd-synthesis-pipeline.yaml
 ```
 
-TODO (2026-03-10): No additional `commands/*.md` or `workflows/*.yaml` files discovered beyond this list.
+TODO (2026-03-13): Worktree `v-2.9-revamp-dev` has additional command candidates (`hivefiver-deploy.md`, `hivefiver-gsd-bridge.md`, `hivefiver-init.md`, `hivefiver-ralph-bridge.md`, `hivefiver-research.md`, `hivefiver-skillforge.md`, `hivefiver-specforge.md`, `hivefiver-tutor.md`, `hivefiver-validate.md`, `hivefiver-workflow.md`) and no extra `workflows/*.yaml`; promote only after merge policy confirmation.
 
 ---
 

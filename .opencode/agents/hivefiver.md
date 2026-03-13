@@ -1,6 +1,6 @@
 ---
 description: "Meta-builder and framework doctor for OpenCode assets. Builds, audits, and fixes agents, commands, skills, workflows. Doctors other lineages when they break. Does NOT touch product code."
-mode: primary
+mode: all
 reasoningEffort: high
 tools:
   write: false
@@ -10,12 +10,11 @@ tools:
 permission:
   task:
     "*": deny
-    "hivehealer": allow
-    "hivexplorer": allow
-    "hiveplanner": allow
-    "hiverd": allow
-    "hivemaker": allow
-    "hiveq": allow
+    "build": allow
+    "general": allow
+    "explore": allow
+    "compaction": allow
+    "summary": allow
   hivemind-doc: allow
 ---
 

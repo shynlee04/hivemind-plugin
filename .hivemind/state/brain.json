@@ -1,12 +1,12 @@
 {
   "session": {
     "id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
-    "opencode_session_id": "ses_31a0f56a2ffegmO4eDQ52SDIiK",
+    "opencode_session_id": "ses_31870f049ffeMBwuaeED4ttMda",
     "mode": "exploration",
     "governance_mode": "assisted",
     "governance_status": "LOCKED",
     "start_time": 1773382379686,
-    "last_activity": 1773384870262,
+    "last_activity": 1773412294691,
     "date": "2026-03-13",
     "meta_key": "",
     "role": "unresolved",
@@ -21,7 +21,7 @@
     "action": ""
   },
   "metrics": {
-    "turn_count": 114,
+    "turn_count": 163,
     "user_turn_count": 0,
     "drift_score": 100,
     "files_touched": [
@@ -54,21 +54,40 @@
       "'isAbsolute' is declared but its value is never read.",
       "'estimateTokens' is declared but its value is never read.",
       "'HeadingHierarchy' is declared but never used.",
-      "npx tsc --noEmit --skipLibCheck src/lib/doc-intel/types.ts src/lib/doc-intel/write-ops.ts 2>&1"
+      "npx tsc --noEmit --skipLibCheck src/lib/doc-intel/types.ts src/lib/doc-intel/write-ops.ts 2>&1",
+      "ls -la .opencode/ && cat ~/.config/opencode/opencode.json 2>/dev/null || echo \"No global opencode.json found\"",
+      "List .opencode directory and check global config",
+      "which kilo || ls -la bin/ || grep -r \"kilo\" package.json",
+      "/Users/apple/.local/share/kilo/tool-output/tool_ce68b7e9d001DHLqK02W6jPPEp",
+      "ls -la ~/.config/kilo/ || ls -la ~/.config/ | grep kilo",
+      "cd /Users/apple/hivemind-plugin && kilo run \"List project files\"",
+      "cd /Users/apple/hivemind-plugin && kilo debug config | head -50",
+      "Check if kilo uses project's opencode.json",
+      "cd /Users/apple/hivemind-plugin && npm run typecheck:core",
+      "diff -u /Users/apple/hivemind-plugin/opencode.json /Users/apple/.config/opencode/opencode.json",
+      "cd /Users/apple/hivemind-plugin && npx -y hivemind-context-governance --mode assisted",
+      "cd /Users/apple/hivemind-plugin && npx hivemind-context-governance status",
+      "cd /Users/apple/hivemind-plugin && kilo run \"Check if opencode plugin is loaded\" --agent hiveq",
+      "/Users/apple/hivemind-plugin/.env",
+      "/Users/apple/hivemind-plugin/opencode.json",
+      "/Users/apple/.config/opencode/opencode.json",
+      "cd /Users/apple/hivemind-plugin && node -e \"JSON.parse(require('fs').readFileSync('opencode.json', 'utf8')); console.log('✓ Project opencode.json is valid JSON')\"",
+      "node -e \"JSON.parse(require('fs').readFileSync(require('os').homedir() + '/.config/opencode/opencode.json', 'utf8')); console.log('✓ Global opencode.json is valid JSON')\"",
+      "npx -y @brave/brave-search-mcp-server --version 2>&1 || echo \"(Version check not available - package ready to install on first use)\""
     ],
     "context_updates": 0,
     "last_context_update_turn": 0,
     "auto_health_score": 100,
-    "total_tool_calls": 114,
-    "successful_tool_calls": 114,
+    "total_tool_calls": 163,
+    "successful_tool_calls": 163,
     "violation_count": 0,
     "consecutive_failures": 0,
     "consecutive_same_section": 0,
     "last_section_content": "",
     "tool_type_counts": {
-      "read": 60,
-      "write": 29,
-      "query": 23,
+      "read": 80,
+      "write": 57,
+      "query": 24,
       "governance": 2
     },
     "keyword_flags": [
@@ -115,13 +134,22 @@
       "/Users/apple/hivemind-plugin/src/lib/doc-intel/formats/xml.ts",
       "import.*proper-lockfile",
       "/Users/apple/hivemind-plugin/src",
-      "/Users/apple/hivemind-plugin/tsconfig.json"
+      "/Users/apple/hivemind-plugin/tsconfig.json",
+      "/Users/apple/hivemind-plugin/package.json",
+      "/Users/apple/hivemind-plugin/opencode.json",
+      "/Users/apple/.config/opencode/opencode.json",
+      "/Users/apple/hivemind-plugin/.opencode",
+      "/Users/apple/hivemind-plugin/.opencode/package.json",
+      "/Users/apple/hivemind-plugin/.opencode/tool",
+      "/Users/apple/hivemind-plugin/.hivemind",
+      "/Users/apple/hivemind-plugin/.env",
+      "**/*opencode.json"
     ],
     "governance_counters": {
       "drift": 0,
       "compaction": 0,
-      "out_of_order": 50,
-      "evidence_pressure": 113
+      "out_of_order": 81,
+      "evidence_pressure": 162
     }
   },
   "first_turn_context_injected": false,
@@ -198,9 +226,9 @@
     {
       "timestamp": 1773384870263,
       "tool": "task",
+      "task_id": "ses_31a0f56a2ffegmO4eDQ52SDIiK",
       "failure_detected": false,
-      "failure_keywords": [],
-      "task_id": "ses_31a0f56a2ffegmO4eDQ52SDIiK"
+      "failure_keywords": []
     }
   ],
   "pending_failure_ack": true,
