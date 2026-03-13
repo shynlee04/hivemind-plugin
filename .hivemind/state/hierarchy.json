@@ -121,22 +121,40 @@
             "id": "a_530413032026",
             "level": "action",
             "content": "Governance-runtime write denylist is now enforced in doc-intel and surfaced through hivemind_doc. Tests pass and typecheck is clean. Standalone-first constraint is active.",
-            "status": "active",
+            "status": "pending",
             "created": 1773352398322,
             "stamp": "530413032026",
+            "children": []
+          },
+          {
+            "id": "a_340913032026",
+            "level": "action",
+            "content": "Implement the interrupted YAML/XML create hardening directly in `src/lib/doc-intel.ts` under TDD, keeping standalone-first behavior and governance write boundaries unchanged.",
+            "status": "pending",
+            "created": 1773369297877,
+            "stamp": "340913032026",
+            "children": []
+          },
+          {
+            "id": "a_380913032026",
+            "level": "action",
+            "content": "Implement the interrupted YAML/XML create hardening directly in `src/lib/doc-intel.ts` under TDD, keeping standalone-first behavior and governance write boundaries unchanged.",
+            "status": "active",
+            "created": 1773369511804,
+            "stamp": "380913032026",
             "children": []
           }
         ]
       }
     ]
   },
-  "cursor": "a_530413032026",
+  "cursor": "a_380913032026",
   "branches": [
     {
       "name": "main",
-      "cursor_id": "a_530413032026",
+      "cursor_id": "a_380913032026",
       "created": 1773346186797,
-      "last_active": 1773352398322,
+      "last_active": 1773369511804,
       "status": "active"
     }
   ],

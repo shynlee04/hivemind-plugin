@@ -107,7 +107,7 @@
       "status": "blocked",
       "priority": "high",
       "created": 1773345780638,
-      "updated": 1773347931339,
+      "updated": 1773369199799,
       "depends_on": [
         "task-mmnwa88b-ak07"
       ],
@@ -123,16 +123,28 @@
       "status": "pending",
       "priority": "high",
       "created": 1773345789299,
-      "updated": 1773347931339,
+      "updated": 1773369199799,
       "depends_on": [
         "task-mmnwahlq-q5k3"
       ],
       "blocks": [],
       "workflow_topology": "dependent",
       "domain": "doc-intel"
+    },
+    {
+      "id": "task-mmoa8b28-12za",
+      "content": "Resume YAML/XML doc-intel create hardening via executor delegation",
+      "status": "in_progress",
+      "priority": "high",
+      "created": 1773369193472,
+      "updated": 1773369199799,
+      "depends_on": [],
+      "blocks": [],
+      "workflow_topology": "dependent",
+      "domain": "product"
     }
   ],
   "version": 1,
-  "lastSync": 1773347931339,
-  "activeItem": null
+  "lastSync": 1773369199799,
+  "activeItem": "task-mmoa8b28-12za"
 }

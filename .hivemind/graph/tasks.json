@@ -2059,7 +2059,7 @@
       "status": "complete",
       "file_locks": [],
       "created_at": "2026-03-12T20:02:31.413Z",
-      "updated_at": "2026-03-12T20:38:51.339Z",
+      "updated_at": "2026-03-13T02:33:19.799Z",
       "plan_id": null,
       "milestone_id": null,
       "project_id": null,
@@ -2077,7 +2077,7 @@
       "status": "complete",
       "file_locks": [],
       "created_at": "2026-03-12T20:02:38.130Z",
-      "updated_at": "2026-03-12T20:38:51.339Z",
+      "updated_at": "2026-03-13T02:33:19.799Z",
       "plan_id": null,
       "milestone_id": null,
       "project_id": null,
@@ -2098,7 +2098,7 @@
       "status": "complete",
       "file_locks": [],
       "created_at": "2026-03-12T20:02:48.491Z",
-      "updated_at": "2026-03-12T20:38:51.339Z",
+      "updated_at": "2026-03-13T02:33:19.799Z",
       "plan_id": null,
       "milestone_id": null,
       "project_id": null,
@@ -2119,7 +2119,7 @@
       "status": "blocked",
       "file_locks": [],
       "created_at": "2026-03-12T20:03:00.638Z",
-      "updated_at": "2026-03-12T20:38:51.339Z",
+      "updated_at": "2026-03-13T02:33:19.799Z",
       "plan_id": null,
       "milestone_id": null,
       "project_id": null,
@@ -2140,7 +2140,7 @@
       "status": "pending",
       "file_locks": [],
       "created_at": "2026-03-12T20:03:09.299Z",
-      "updated_at": "2026-03-12T20:38:51.339Z",
+      "updated_at": "2026-03-13T02:33:19.799Z",
       "plan_id": null,
       "milestone_id": null,
       "project_id": null,
@@ -3779,6 +3779,547 @@
       ],
       "dependencies": [
         "54b2a57a-38db-4bdc-a3fa-14407655ad66"
+      ],
+      "priority": "medium",
+      "domain": "office-ops",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "validate",
+      "canonical_command": "hivefiver validate",
+      "recommended_skills": [
+        "hivefiver-ralph-tasking",
+        "hivefiver-gsd-compat"
+      ],
+      "menu_step": 4,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-enterprise-architect.yaml",
+        "export_id": "ralph-prd"
+      }
+    },
+    {
+      "id": "f6cfbbbe-528f-4a08-8c6a-8ef57983a5c6",
+      "parent_phase_id": "af5472ca-5051-4f3f-8ef7-d11d3082b2c0",
+      "title": "Run HiveFiver startup realignment and lane detection",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:27:11.844Z",
+      "updated_at": "2026-03-13T02:27:11.844Z",
+      "acceptance_criteria": [
+        "Persona lane selected",
+        "Project type detected (greenfield/brownfield)",
+        "Governance mode locked"
+      ],
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "vibecoder",
+      "source": "init.seed",
+      "hivefiver_action": "init",
+      "canonical_command": "hivefiver init",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "menu_step": 1,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-vibecoder.yaml",
+        "requirement_node_id": "rq-bootstrap"
+      }
+    },
+    {
+      "id": "0512810a-e559-45b0-903d-aaf5bdd62768",
+      "parent_phase_id": "af5472ca-5051-4f3f-8ef7-d11d3082b2c0",
+      "title": "Build intake baseline and generate first executable specification",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:27:11.844Z",
+      "updated_at": "2026-03-13T02:27:11.844Z",
+      "acceptance_criteria": [
+        "MCQ intake completed",
+        "Ambiguity map emitted",
+        "Spec candidate selected"
+      ],
+      "dependencies": [
+        "f6cfbbbe-528f-4a08-8c6a-8ef57983a5c6"
+      ],
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "init.seed",
+      "hivefiver_action": "spec",
+      "canonical_command": "hivefiver spec",
+      "recommended_skills": [
+        "hivefiver-spec-distillation",
+        "hivefiver-bilingual-tutor"
+      ],
+      "menu_step": 2,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-floppy-engineer.yaml",
+        "requirement_node_id": "rq-spec"
+      }
+    },
+    {
+      "id": "c5682368-deb7-4702-9e71-19ed9a019335",
+      "parent_phase_id": "af5472ca-5051-4f3f-8ef7-d11d3082b2c0",
+      "title": "Audit and configure non-negotiable MCP providers",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:27:11.844Z",
+      "updated_at": "2026-03-13T02:27:11.844Z",
+      "acceptance_criteria": [
+        "Context7, DeepWiki, Repomix status captured",
+        "Tavily API guidance emitted",
+        "Confidence downgrade policy configured"
+      ],
+      "dependencies": [
+        "0512810a-e559-45b0-903d-aaf5bdd62768"
+      ],
+      "priority": "high",
+      "domain": "dev",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "research",
+      "canonical_command": "hivefiver research",
+      "recommended_skills": [
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor"
+      ],
+      "menu_step": 3,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-mcp-fallback.yaml",
+        "mcp_provider_id": "stack-core"
+      }
+    },
+    {
+      "id": "2cf8ac46-6a23-4c38-9b64-908a33cc97bf",
+      "parent_phase_id": "af5472ca-5051-4f3f-8ef7-d11d3082b2c0",
+      "title": "Prepare TODO-to-Ralph export mapping and validation",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:27:11.844Z",
+      "updated_at": "2026-03-13T02:27:11.844Z",
+      "acceptance_criteria": [
+        "tasks/prd.json schema validated",
+        "Dependency map generated",
+        "Related entity links preserved"
+      ],
+      "dependencies": [
+        "c5682368-deb7-4702-9e71-19ed9a019335"
+      ],
+      "priority": "medium",
+      "domain": "office-ops",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "validate",
+      "canonical_command": "hivefiver validate",
+      "recommended_skills": [
+        "hivefiver-ralph-tasking",
+        "hivefiver-gsd-compat"
+      ],
+      "menu_step": 4,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-enterprise-architect.yaml",
+        "export_id": "ralph-prd"
+      }
+    },
+    {
+      "id": "77baf2fd-95a5-5a7e-997c-cfbcad88800c",
+      "parent_phase_id": "0b415bc8-19c3-5fe6-95ab-76932d2eff2c",
+      "title": "Resume YAML/XML doc-intel create hardening via executor delegation",
+      "status": "invalidated",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:33:13.472Z",
+      "updated_at": "2026-03-13T02:34:57.891Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "priority": "high",
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "parent_session_id": null,
+      "session_kind": "unresolved",
+      "workflow_topology": "dependent"
+    },
+    {
+      "id": "228453ff-3c20-4cad-a610-1967b689980c",
+      "parent_phase_id": "fc69be8e-9a49-414e-87ba-0b47f08311c2",
+      "title": "Run HiveFiver startup realignment and lane detection",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:34:03.259Z",
+      "updated_at": "2026-03-13T02:34:03.259Z",
+      "acceptance_criteria": [
+        "Persona lane selected",
+        "Project type detected (greenfield/brownfield)",
+        "Governance mode locked"
+      ],
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "vibecoder",
+      "source": "init.seed",
+      "hivefiver_action": "init",
+      "canonical_command": "hivefiver init",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "menu_step": 1,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-vibecoder.yaml",
+        "requirement_node_id": "rq-bootstrap"
+      }
+    },
+    {
+      "id": "614f295b-e456-4518-8014-14cc972c8fe5",
+      "parent_phase_id": "fc69be8e-9a49-414e-87ba-0b47f08311c2",
+      "title": "Build intake baseline and generate first executable specification",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:34:03.259Z",
+      "updated_at": "2026-03-13T02:34:03.259Z",
+      "acceptance_criteria": [
+        "MCQ intake completed",
+        "Ambiguity map emitted",
+        "Spec candidate selected"
+      ],
+      "dependencies": [
+        "228453ff-3c20-4cad-a610-1967b689980c"
+      ],
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "init.seed",
+      "hivefiver_action": "spec",
+      "canonical_command": "hivefiver spec",
+      "recommended_skills": [
+        "hivefiver-spec-distillation",
+        "hivefiver-bilingual-tutor"
+      ],
+      "menu_step": 2,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-floppy-engineer.yaml",
+        "requirement_node_id": "rq-spec"
+      }
+    },
+    {
+      "id": "b5abb2a5-7399-4725-8cc9-42eb48d88511",
+      "parent_phase_id": "fc69be8e-9a49-414e-87ba-0b47f08311c2",
+      "title": "Audit and configure non-negotiable MCP providers",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:34:03.259Z",
+      "updated_at": "2026-03-13T02:34:03.259Z",
+      "acceptance_criteria": [
+        "Context7, DeepWiki, Repomix status captured",
+        "Tavily API guidance emitted",
+        "Confidence downgrade policy configured"
+      ],
+      "dependencies": [
+        "614f295b-e456-4518-8014-14cc972c8fe5"
+      ],
+      "priority": "high",
+      "domain": "dev",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "research",
+      "canonical_command": "hivefiver research",
+      "recommended_skills": [
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor"
+      ],
+      "menu_step": 3,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-mcp-fallback.yaml",
+        "mcp_provider_id": "stack-core"
+      }
+    },
+    {
+      "id": "7f34272f-6ac2-46cc-81ab-56be0dc03faa",
+      "parent_phase_id": "fc69be8e-9a49-414e-87ba-0b47f08311c2",
+      "title": "Prepare TODO-to-Ralph export mapping and validation",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:34:03.259Z",
+      "updated_at": "2026-03-13T02:34:03.259Z",
+      "acceptance_criteria": [
+        "tasks/prd.json schema validated",
+        "Dependency map generated",
+        "Related entity links preserved"
+      ],
+      "dependencies": [
+        "b5abb2a5-7399-4725-8cc9-42eb48d88511"
+      ],
+      "priority": "medium",
+      "domain": "office-ops",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "validate",
+      "canonical_command": "hivefiver validate",
+      "recommended_skills": [
+        "hivefiver-ralph-tasking",
+        "hivefiver-gsd-compat"
+      ],
+      "menu_step": 4,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-enterprise-architect.yaml",
+        "export_id": "ralph-prd"
+      }
+    },
+    {
+      "id": "aaac80a6-53a2-5e3d-9b53-bf75fe0c4a60",
+      "parent_phase_id": "327d896e-7092-5553-a692-f62409be4f1c",
+      "title": "Commit touched files (doc-intel, hivemind-doc, hivemind-doc.test)",
+      "status": "complete",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:34:57.866Z",
+      "updated_at": "2026-03-13T02:19:14.477Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high",
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "parent_session_id": null,
+      "session_kind": "unresolved",
+      "workflow_topology": "unclassified"
+    },
+    {
+      "id": "61b88664-5868-520f-a92d-293356709a32",
+      "parent_phase_id": "327d896e-7092-5553-a692-f62409be4f1c",
+      "title": "Implement YAML/XML create scaffolding (RED then GREEN)",
+      "status": "invalidated",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:34:57.866Z",
+      "updated_at": "2026-03-13T02:34:57.891Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: build | command: hivefiver build | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-domain-pack-router",
+      "priority": "high",
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "parent_session_id": null,
+      "session_kind": "unresolved",
+      "workflow_topology": "unclassified"
+    },
+    {
+      "id": "62942637-bb6e-57fb-bed9-2ba11756f164",
+      "parent_phase_id": "327d896e-7092-5553-a692-f62409be4f1c",
+      "title": "Verify YAML/XML create with tests + typecheck",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:34:57.866Z",
+      "updated_at": "2026-03-13T02:19:14.477Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "high",
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "parent_session_id": null,
+      "session_kind": "unresolved",
+      "workflow_topology": "unclassified"
+    },
+    {
+      "id": "63a38c50-1b83-5802-88b7-c70f59d24238",
+      "parent_phase_id": "327d896e-7092-5553-a692-f62409be4f1c",
+      "title": "Commit YAML/XML slice",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:34:57.866Z",
+      "updated_at": "2026-03-13T02:19:14.477Z",
+      "plan_id": null,
+      "milestone_id": null,
+      "project_id": null,
+      "description": "action: research | command: hivefiver research | skills: hivefiver-persona-routing, hivefiver-bilingual-tutor, hivefiver-mcp-research-loop, hivefiver-skill-auditor, hivefiver-domain-pack-router",
+      "priority": "medium",
+      "lineage_owner": "hiveminder",
+      "origin_session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+      "parent_session_id": null,
+      "session_kind": "unresolved",
+      "workflow_topology": "unclassified"
+    },
+    {
+      "id": "3001461c-c30f-4f2e-9040-51e1c52aaf64",
+      "parent_phase_id": "d6289928-406e-432b-b48a-6c9b9a8b7003",
+      "title": "Run HiveFiver startup realignment and lane detection",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:40:08.620Z",
+      "updated_at": "2026-03-13T02:40:08.620Z",
+      "acceptance_criteria": [
+        "Persona lane selected",
+        "Project type detected (greenfield/brownfield)",
+        "Governance mode locked"
+      ],
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "vibecoder",
+      "source": "init.seed",
+      "hivefiver_action": "init",
+      "canonical_command": "hivefiver init",
+      "recommended_skills": [
+        "hivefiver-persona-routing",
+        "hivefiver-bilingual-tutor"
+      ],
+      "menu_step": 1,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-vibecoder.yaml",
+        "requirement_node_id": "rq-bootstrap"
+      }
+    },
+    {
+      "id": "d0cd0bc6-c842-4e03-8fcd-be9e3e674cad",
+      "parent_phase_id": "d6289928-406e-432b-b48a-6c9b9a8b7003",
+      "title": "Build intake baseline and generate first executable specification",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:40:08.620Z",
+      "updated_at": "2026-03-13T02:40:08.620Z",
+      "acceptance_criteria": [
+        "MCQ intake completed",
+        "Ambiguity map emitted",
+        "Spec candidate selected"
+      ],
+      "dependencies": [
+        "3001461c-c30f-4f2e-9040-51e1c52aaf64"
+      ],
+      "priority": "high",
+      "domain": "hybrid",
+      "lane": "auto",
+      "persona": "floppy_engineer",
+      "source": "init.seed",
+      "hivefiver_action": "spec",
+      "canonical_command": "hivefiver spec",
+      "recommended_skills": [
+        "hivefiver-spec-distillation",
+        "hivefiver-bilingual-tutor"
+      ],
+      "menu_step": 2,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-floppy-engineer.yaml",
+        "requirement_node_id": "rq-spec"
+      }
+    },
+    {
+      "id": "de510e30-c8b1-4836-aad3-3709e124ef47",
+      "parent_phase_id": "d6289928-406e-432b-b48a-6c9b9a8b7003",
+      "title": "Audit and configure non-negotiable MCP providers",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:40:08.620Z",
+      "updated_at": "2026-03-13T02:40:08.620Z",
+      "acceptance_criteria": [
+        "Context7, DeepWiki, Repomix status captured",
+        "Tavily API guidance emitted",
+        "Confidence downgrade policy configured"
+      ],
+      "dependencies": [
+        "d0cd0bc6-c842-4e03-8fcd-be9e3e674cad"
+      ],
+      "priority": "high",
+      "domain": "dev",
+      "lane": "auto",
+      "persona": "enterprise_architect",
+      "source": "init.seed",
+      "hivefiver_action": "research",
+      "canonical_command": "hivefiver research",
+      "recommended_skills": [
+        "hivefiver-mcp-research-loop",
+        "hivefiver-skill-auditor"
+      ],
+      "menu_step": 3,
+      "menu_total": 4,
+      "validation_attempts": 0,
+      "max_validation_attempts": 10,
+      "evidence_confidence": "partial",
+      "related_entities": {
+        "session_id": "4ed621ce-f035-455d-aa5d-80e659f64d73",
+        "workflow_id": "hivefiver-mcp-fallback.yaml",
+        "mcp_provider_id": "stack-core"
+      }
+    },
+    {
+      "id": "59e23bcc-caf1-4ff6-833f-57c5681f1240",
+      "parent_phase_id": "d6289928-406e-432b-b48a-6c9b9a8b7003",
+      "title": "Prepare TODO-to-Ralph export mapping and validation",
+      "status": "pending",
+      "file_locks": [],
+      "created_at": "2026-03-13T02:40:08.620Z",
+      "updated_at": "2026-03-13T02:40:08.620Z",
+      "acceptance_criteria": [
+        "tasks/prd.json schema validated",
+        "Dependency map generated",
+        "Related entity links preserved"
+      ],
+      "dependencies": [
+        "de510e30-c8b1-4836-aad3-3709e124ef47"
       ],
       "priority": "medium",
       "domain": "office-ops",

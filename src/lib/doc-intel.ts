@@ -29,6 +29,7 @@
 import { readFile, writeFile, readdir, stat, access, mkdir, rename, unlink } from "node:fs/promises"
 import { join, extname, relative, isAbsolute, resolve, dirname, basename } from "node:path"
 import { createHash, randomBytes } from "node:crypto"
+import { parse as parseYaml, stringify as stringifyYaml } from "yaml"
 
 import { DocWeaver, estimateTokens } from "./code-intel/doc-weaver.js"
 import type { HeadingHierarchy, DocumentChunk, BatchSectionOp } from "./code-intel/doc-weaver.js"
@@ -474,6 +475,120 @@ function normalizeMarkdownBody(body?: string): string {
 }
 
 /**
+ * Render YAML content for a newly created document.
+ *
+ * @param title - Title used when scaffolding YAML content.
+ * @param metadata - Optional metadata to merge into scaffolded YAML.
+ * @param initialContent - Optional caller-provided YAML content.
+ * @returns Canonical YAML string with trailing newline.
+ */
+function renderYamlContent(
+  title: string,
+  metadata?: Record<string, string>,
+  initialContent?: string,
+): string {
+  const parsed = initialContent !== undefined
+    ? parseYaml(initialContent)
+    : { title, ...(metadata ?? {}) }
+  return `${stringifyYaml(parsed).trimEnd()}\n`
+}
+
+/**
+ * Escape XML text content.
+ *
+ * @param value - Raw text value.
+ * @returns Escaped XML-safe text.
+ */
+function escapeXmlText(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+}
+
+/**
+ * Escape XML attribute values.
+ *
+ * @param value - Raw attribute value.
+ * @returns Escaped XML-safe attribute text.
+ */
+function escapeXmlAttribute(value: string): string {
+  return escapeXmlText(value)
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;")
+}
+
+/**
+ * Perform minimal XML well-formedness validation.
+ *
+ * @param content - XML content to validate.
+ * @returns True when the content looks well formed.
+ */
+function isWellFormedXml(content: string): boolean {
+  const trimmed = content.trim()
+  if (!trimmed.startsWith("<?xml") || !/<[A-Za-z_][\w:.-]*[\s>]/.test(trimmed)) {
+    return false
+  }
+
+  const stack: string[] = []
+  const tagMatches = trimmed.matchAll(/<\/?([A-Za-z_][\w:.-]*)(?:\s[^<>]*)?\s*(\/?)>/g)
+  for (const match of tagMatches) {
+    const [fullTag, tagName, selfClosingMarker] = match
+    if (fullTag.startsWith("</")) {
+      if (stack.pop() !== tagName) {
+        return false
+      }
+      continue
+    }
+    if (selfClosingMarker === "/") {
+      continue
+    }
+    stack.push(tagName)
+  }
+
+  return stack.length === 0
+}
+
+/**
+ * Render XML content for a newly created document.
+ *
+ * @param title - Title used when scaffolding XML content.
+ * @param metadata - Optional metadata to include in deterministic XML scaffold.
+ * @param initialContent - Optional caller-provided XML content.
+ * @returns XML string with trailing newline.
+ */
+function renderXmlContent(
+  title: string,
+  metadata?: Record<string, string>,
+  initialContent?: string,
+): string {
+  if (initialContent !== undefined) {
+    if (!isWellFormedXml(initialContent)) {
+      throw new Error("Invalid XML initialContent: content must be minimally well formed")
+    }
+    return initialContent
+  }
+
+  const lines = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    "<document>",
+    `  <title>${escapeXmlText(title)}</title>`,
+  ]
+
+  const entries = Object.entries(metadata ?? {}).sort(([left], [right]) => left.localeCompare(right))
+  if (entries.length > 0) {
+    lines.push("  <metadata>")
+    for (const [key, value] of entries) {
+      lines.push(`    <item key="${escapeXmlAttribute(key)}">${escapeXmlText(value)}</item>`)
+    }
+    lines.push("  </metadata>")
+  }
+
+  lines.push("</document>")
+  return `${lines.join("\n")}\n`
+}
+
+/**
  * Render initial file content for a new document.
  *
  * @param absPath - Absolute file path being created.
@@ -495,6 +610,14 @@ function renderInitialDocumentContent(
       ? JSON.parse(initialContent)
       : { title, ...(metadata ?? {}) }
     return `${JSON.stringify(parsed, null, 2)}\n`
+  }
+
+  if (extension === ".yaml" || extension === ".yml") {
+    return renderYamlContent(title, metadata, initialContent)
+  }
+
+  if (extension === ".xml") {
+    return renderXmlContent(title, metadata, initialContent)
   }
 
   let content = ""
@@ -523,6 +646,19 @@ function validateCreatedContentFormat(absPath: string, content: string): boolean
     } catch {
       return false
     }
+  }
+
+  if (extension === ".yaml" || extension === ".yml") {
+    try {
+      parseYaml(content)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  if (extension === ".xml") {
+    return isWellFormedXml(content)
   }
 
   if (extension === ".md") {
