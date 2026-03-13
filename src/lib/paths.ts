@@ -144,11 +144,50 @@ export interface HivemindPaths {
   docsDir: string
   templatesDir: string
   sessionTemplate: string   // templates/session.md
+  kernel: KernelPaths
 }
 
 export interface SessionPaths {
   profileDir: string
   profile: string
+}
+
+export interface KernelLineagePaths {
+  root: string
+  sessionsDir: string
+  workflowsDir: string
+  tasksDir: string
+  todoChainsDir: string
+  handoffsDir: string
+  verificationDir: string
+}
+
+export interface KernelPaths {
+  hiveneuron: string
+  hivebrain: string
+  configDir: string
+  profileConfig: string
+  governanceConfig: string
+  guardrailsConfig: string
+  statesDir: string
+  sharedDir: string
+  integrity: string
+  sessionMap: string
+  artifactIndex: string
+  verificationIndex: string
+  lineagesDir: string
+  hivefiver: KernelLineagePaths
+  hiveminder: KernelLineagePaths
+  artifactsDir: string
+  artifactsAuditsDir: string
+  artifactsHandoffsDir: string
+  artifactsPlanningDir: string
+  artifactsResearchDir: string
+  artifactsSummariesDir: string
+  artifactsVerificationDir: string
+  artifactsIntelDir: string
+  archiveDir: string
+  metaModuleDir: string
 }
 
 /**
@@ -220,6 +259,28 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
   const logsDir = join(root, "logs")
   const docsDir = join(root, "docs")
   const templatesDir = join(root, "templates")
+  const kernelConfigDir = join(root, "config")
+  const kernelStatesDir = join(root, "states")
+  const kernelSharedDir = join(kernelStatesDir, "shared")
+  const kernelLineagesDir = join(kernelStatesDir, "lineages")
+  const kernelHivefiverRoot = join(kernelLineagesDir, "hivefiver")
+  const kernelHiveminderRoot = join(kernelLineagesDir, "hiveminder")
+  const kernelArtifactsDir = join(root, "artifacts")
+  const kernelArchiveDir = join(root, "archive")
+  const kernelMetaModuleDir = join(root, "meta-module")
+
+  const kernelLineage = (lineageRoot: string): KernelLineagePaths => ({
+    root: lineageRoot,
+    sessionsDir: join(lineageRoot, "sessions"),
+    workflowsDir: join(lineageRoot, "workflows"),
+    tasksDir: join(lineageRoot, "tasks"),
+    todoChainsDir: join(lineageRoot, "todo-chains"),
+    handoffsDir: join(lineageRoot, "handoffs"),
+    verificationDir: join(lineageRoot, "verification"),
+  })
+
+  const kernelHivefiver = kernelLineage(kernelHivefiverRoot)
+  const kernelHiveminder = kernelLineage(kernelHiveminderRoot)
 
   return {
     root,
@@ -311,6 +372,33 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
     docsDir,
     templatesDir,
     sessionTemplate: join(templatesDir, "session.md"),
+    kernel: {
+      hiveneuron: join(root, "hiveneuron.json"),
+      hivebrain: join(root, "hivebrain.md"),
+      configDir: kernelConfigDir,
+      profileConfig: join(kernelConfigDir, "profile.json"),
+      governanceConfig: join(kernelConfigDir, "governance.json"),
+      guardrailsConfig: join(kernelConfigDir, "guardrails.json"),
+      statesDir: kernelStatesDir,
+      sharedDir: kernelSharedDir,
+      integrity: join(kernelSharedDir, "integrity.json"),
+      sessionMap: join(kernelSharedDir, "session-map.json"),
+      artifactIndex: join(kernelSharedDir, "artifact-index.json"),
+      verificationIndex: join(kernelSharedDir, "verification-index.json"),
+      lineagesDir: kernelLineagesDir,
+      hivefiver: kernelHivefiver,
+      hiveminder: kernelHiveminder,
+      artifactsDir: kernelArtifactsDir,
+      artifactsAuditsDir: join(kernelArtifactsDir, "audits"),
+      artifactsHandoffsDir: join(kernelArtifactsDir, "handoffs"),
+      artifactsPlanningDir: join(kernelArtifactsDir, "planning"),
+      artifactsResearchDir: join(kernelArtifactsDir, "research"),
+      artifactsSummariesDir: join(kernelArtifactsDir, "summaries"),
+      artifactsVerificationDir: join(kernelArtifactsDir, "verification"),
+      artifactsIntelDir: join(kernelArtifactsDir, "intel"),
+      archiveDir: kernelArchiveDir,
+      metaModuleDir: kernelMetaModuleDir,
+    },
   }
 }
 
@@ -621,5 +709,33 @@ export function getAllDirectories(projectRoot: string): string[] {
     p.logsDir,
     p.docsDir,
     p.templatesDir,
+    p.kernel.configDir,
+    p.kernel.statesDir,
+    p.kernel.sharedDir,
+    p.kernel.lineagesDir,
+    p.kernel.hivefiver.root,
+    p.kernel.hivefiver.sessionsDir,
+    p.kernel.hivefiver.workflowsDir,
+    p.kernel.hivefiver.tasksDir,
+    p.kernel.hivefiver.todoChainsDir,
+    p.kernel.hivefiver.handoffsDir,
+    p.kernel.hivefiver.verificationDir,
+    p.kernel.hiveminder.root,
+    p.kernel.hiveminder.sessionsDir,
+    p.kernel.hiveminder.workflowsDir,
+    p.kernel.hiveminder.tasksDir,
+    p.kernel.hiveminder.todoChainsDir,
+    p.kernel.hiveminder.handoffsDir,
+    p.kernel.hiveminder.verificationDir,
+    p.kernel.artifactsDir,
+    p.kernel.artifactsAuditsDir,
+    p.kernel.artifactsHandoffsDir,
+    p.kernel.artifactsPlanningDir,
+    p.kernel.artifactsResearchDir,
+    p.kernel.artifactsSummariesDir,
+    p.kernel.artifactsVerificationDir,
+    p.kernel.artifactsIntelDir,
+    p.kernel.archiveDir,
+    p.kernel.metaModuleDir,
   ]
 }

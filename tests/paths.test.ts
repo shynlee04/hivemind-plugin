@@ -47,6 +47,19 @@ function assert(cond: boolean, name: string) {
 
 let tmpDir: string
 
+function collectStringValues(value: unknown): string[] {
+  if (typeof value === "string") {
+    return [value]
+  }
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => collectStringValues(item))
+  }
+  if (value && typeof value === "object") {
+    return Object.values(value).flatMap((item) => collectStringValues(item))
+  }
+  return []
+}
+
 // ─── Setup / Teardown ────────────────────────────────────────────────
 
 async function setup() {
@@ -143,8 +156,20 @@ async function testGetHivemindPaths() {
   assert(paths.templatesDir === join(tmpDir, ".hivemind", "templates"), "templatesDir path")
   assert(paths.sessionTemplate === join(tmpDir, ".hivemind", "templates", "session.md"), "session template path")
 
+  // Kernel
+  assert(paths.kernel.hiveneuron === join(tmpDir, ".hivemind", "hiveneuron.json"), "kernel hiveneuron path")
+  assert(paths.kernel.hivebrain === join(tmpDir, ".hivemind", "hivebrain.md"), "kernel hivebrain path")
+  assert(paths.kernel.configDir === join(tmpDir, ".hivemind", "config"), "kernel config dir path")
+  assert(paths.kernel.statesDir === join(tmpDir, ".hivemind", "states"), "kernel states dir path")
+  assert(paths.kernel.sharedDir === join(tmpDir, ".hivemind", "states", "shared"), "kernel shared dir path")
+  assert(paths.kernel.sessionMap === join(tmpDir, ".hivemind", "states", "shared", "session-map.json"), "kernel session map path")
+  assert(paths.kernel.hivefiver.sessionsDir === join(tmpDir, ".hivemind", "states", "lineages", "hivefiver", "sessions"), "kernel hivefiver sessions dir path")
+  assert(paths.kernel.hiveminder.tasksDir === join(tmpDir, ".hivemind", "states", "lineages", "hiveminder", "tasks"), "kernel hiveminder tasks dir path")
+  assert(paths.kernel.artifactsIntelDir === join(tmpDir, ".hivemind", "artifacts", "intel"), "kernel artifacts intel dir path")
+  assert(paths.kernel.metaModuleDir === join(tmpDir, ".hivemind", "meta-module"), "kernel meta-module dir path")
+
   // All paths under .hivemind/
-  const allValues = Object.values(paths) as string[]
+  const allValues = collectStringValues(paths)
   const allUnder = allValues.every((p) => p.startsWith(join(tmpDir, ".hivemind")))
   assert(allUnder, "all paths are under .hivemind/")
 }
@@ -265,7 +290,7 @@ async function testGetAllDirectories() {
   process.stderr.write("\n--- getAllDirectories ---\n")
 
   const dirs = getAllDirectories(tmpDir)
-  assert(dirs.length === 44, "44 directories in structure")
+  assert(dirs.length === 72, "72 directories in structure")
   assert(dirs[0] === join(tmpDir, ".hivemind"), "root is first")
   assert(dirs.includes(join(tmpDir, ".hivemind", "project")), "includes project/")
   assert(dirs.includes(join(tmpDir, ".hivemind", "project", "planning")), "includes project/planning/")

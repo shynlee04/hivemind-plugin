@@ -25,6 +25,7 @@ import {
 import type { StateManager } from "./persistence.js"
 import { getEffectivePaths, getSessionPaths } from "./paths.js"
 import { createTree, saveTree, treeExists } from "./hierarchy-tree.js"
+import { ensureSessionKernelState } from "./session-kernel.js"
 
 // ─── Session Profile (absorbed from session-profile.ts) ──────────────────────
 
@@ -99,6 +100,11 @@ export interface SessionRuntimeBootstrapResult {
   profile: SessionProfile
   runtimeSessionId: string
   profilePath: string
+  kernelSessionId: string
+  hiveneuronPath: string
+  hivebrainPath: string
+  sessionMapPath: string
+  kernelSessionPath: string
   createdState: boolean
   rewroteState: boolean
   rewroteHierarchy: boolean
@@ -124,7 +130,7 @@ function hasCanonicalRuntimeStateShape(state: BrainState | null): state is Brain
  * @param stateManager - Canonical state manager responsible for `brain.json`.
  * @param config - Loaded HiveMind configuration used when a new brain state is required.
  * @param options - Runtime/bootstrap seed values and optional force rewrite flag.
- * @returns Bootstrap result describing the canonical state/profile that now exist on disk.
+ * @returns Bootstrap result describing the canonical state, runtime profile, and session-kernel projection that now exist on disk.
  */
 export async function ensureSessionRuntimeBootstrap(
   directory: string,
@@ -210,11 +216,26 @@ export async function ensureSessionRuntimeBootstrap(
     { force },
   )
 
+  const kernel = await ensureSessionKernelState(directory, config, {
+    brainSessionId: state.session.id,
+    opencodeSessionId: runtimeSessionId,
+    role: nextRole || "unresolved",
+    lineageScope: nextLineageScope,
+    sessionKind: nextSessionKind,
+    intentSummary: "OpenCode-native runtime bootstrap",
+    force,
+  })
+
   return {
     state,
     profile,
     runtimeSessionId,
     profilePath: sessionPaths.profile,
+    kernelSessionId: kernel.canonicalSessionId,
+    hiveneuronPath: kernel.hiveneuronPath,
+    hivebrainPath: kernel.hivebrainPath,
+    sessionMapPath: kernel.sessionMapPath,
+    kernelSessionPath: kernel.sessionPath,
     createdState,
     rewroteState,
     rewroteHierarchy,

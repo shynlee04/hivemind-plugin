@@ -452,8 +452,13 @@ export function createHivemindSessionTool(directory: string): ToolDefinition {
                   brain: bsPaths.brain,
                   hierarchy: bsPaths.hierarchy,
                   profile: bsResult.profilePath,
+                  hiveneuron: bsResult.hiveneuronPath,
+                  hivebrain: bsResult.hivebrainPath,
+                  sessionMap: bsResult.sessionMapPath,
+                  kernelSession: bsResult.kernelSessionPath,
                 },
                 profile: bsResult.profile,
+                kernelSessionId: bsResult.kernelSessionId,
               })
             } catch (error) {
               const message = error instanceof Error ? error.message : String(error)

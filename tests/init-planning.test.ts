@@ -79,6 +79,8 @@ async function test_runtime_ready_skips_readability_projections() {
   assert(existsSync(paths.planningDir), "planning dir created by runtime-ready")
   assert(existsSync(effective.projectPlanningDir), "canonical project planning dir created by runtime-ready")
   assert(existsSync(effective.tasks), "tasks.json created by runtime-ready")
+  assert(existsSync(effective.kernel.statesDir), "kernel states dir created by runtime-ready")
+  assert(existsSync(effective.kernel.hivefiver.sessionsDir), "kernel hivefiver sessions dir created by runtime-ready")
   assert(existsSync(paths.sessionsManifestPath), "sessions manifest created by runtime-ready")
   assert(existsSync(paths.plansManifestPath), "plans manifest created by runtime-ready")
   assert(existsSync(paths.templatePath), "session template created by runtime-ready")
@@ -253,6 +255,12 @@ async function test_init_project() {
   assert(existsSync(join(hivemindDir, "config.json")), "config.json created")
   assert(existsSync(getEffectivePaths(dir).projectPlanningConfig), "planning config created")
   assert(existsSync(join(hivemindDir, "docs", "10-commandments.md")), "10-commandments.md copied to docs/")
+  assert(existsSync(getEffectivePaths(dir).kernel.hiveneuron), "hiveneuron.json created")
+  assert(existsSync(getEffectivePaths(dir).kernel.hivebrain), "hivebrain.md created")
+  assert(existsSync(getEffectivePaths(dir).kernel.profileConfig), "kernel profile config created")
+  assert(existsSync(getEffectivePaths(dir).kernel.governanceConfig), "kernel governance config created")
+  assert(existsSync(getEffectivePaths(dir).kernel.guardrailsConfig), "kernel guardrails config created")
+  assert(existsSync(getEffectivePaths(dir).kernel.sessionMap), "kernel session map created")
 
   await cleanup()
 }

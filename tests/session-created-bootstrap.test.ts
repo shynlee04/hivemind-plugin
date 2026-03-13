@@ -52,6 +52,17 @@ describe("session.created bootstrap ownership", () => {
       assert.equal(typeof profile.created_at, "number")
       assert.equal(typeof profile.updated_at, "number")
       assert(profile.updated_at >= profile.created_at)
+
+      const hiveneuron = JSON.parse(await readFile(paths.kernel.hiveneuron, "utf-8"))
+      assert.equal(hiveneuron.current_lineage, "hivefiver")
+      assert.equal(hiveneuron.active_opencode_session_id, sessionId)
+      assert.equal(hiveneuron.active_session_id, `SES-${state.session.id}`)
+
+      const sessionMap = JSON.parse(await readFile(paths.kernel.sessionMap, "utf-8"))
+      assert.equal(sessionMap.active_opencode_session_id, sessionId)
+      assert.equal(sessionMap.active_session_id, `SES-${state.session.id}`)
+      assert.equal(sessionMap.sessions[0].brain_session_id, state.session.id)
+      assert.equal(sessionMap.sessions[0].canonical_session_id, `SES-${state.session.id}`)
     } finally {
       await rm(dir, { recursive: true, force: true })
     }
@@ -85,6 +96,10 @@ describe("session.created bootstrap ownership", () => {
       assert.equal(profile.lineage_scope, "unknown")
       assert.equal(profile.session_kind, "unresolved")
       assert.equal(profile.brain_session_id, existingState.session.id)
+
+      const sessionMap = JSON.parse(await readFile(getEffectivePaths(dir).kernel.sessionMap, "utf-8"))
+      assert.equal(sessionMap.active_opencode_session_id, sessionId)
+      assert.equal(sessionMap.active_session_id, `SES-${existingState.session.id}`)
     } finally {
       await rm(dir, { recursive: true, force: true })
     }
@@ -108,6 +123,11 @@ describe("session.created bootstrap ownership", () => {
 
       const profilePath = parsed.metadata?.stateFiles?.profile
       assert.equal(typeof profilePath, "string")
+      assert.equal(typeof parsed.metadata?.stateFiles?.hiveneuron, "string")
+      assert.equal(typeof parsed.metadata?.stateFiles?.hivebrain, "string")
+      assert.equal(typeof parsed.metadata?.stateFiles?.sessionMap, "string")
+      assert.equal(typeof parsed.metadata?.stateFiles?.kernelSession, "string")
+      assert.equal(parsed.metadata?.kernelSessionId, `SES-${state.session.id}`)
 
       const profile = JSON.parse(await readFile(profilePath, "utf-8"))
       assert.equal(profile.session_id, parsed.entity_id)
@@ -115,6 +135,9 @@ describe("session.created bootstrap ownership", () => {
       assert.equal(profile.agent, "unresolved")
       assert.equal(profile.lineage_scope, "unknown")
       assert.equal(profile.session_kind, "unresolved")
+
+      const hiveneuron = JSON.parse(await readFile(parsed.metadata.stateFiles.hiveneuron, "utf-8"))
+      assert.equal(hiveneuron.active_session_id, `SES-${state.session.id}`)
     } finally {
       await rm(dir, { recursive: true, force: true })
     }

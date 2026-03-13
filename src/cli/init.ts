@@ -35,13 +35,14 @@ import {
   normalizeAutomationLabel,
 } from "../schemas/config.js"
 import { createBrainState, generateSessionId } from "../schemas/brain-state.js"
-import { createStateManager, saveConfig } from "../lib/persistence.js"
+import { createStateManager, loadConfig, saveConfig } from "../lib/persistence.js"
 import { initializePlanningDirectory } from "../lib/planning-fs.js"
 import { getEffectivePaths } from "../lib/paths.js"
 import { seedPlanTemplates } from "../lib/plan-fs.js"
 import { syncOpencodeAssets } from "./sync-assets.js"
 import type { AssetSyncProfile, AssetSyncTarget } from "./sync-assets.js"
 import { createTree, saveTree } from "../lib/hierarchy-tree.js"
+import { ensureSessionKernelState } from "../lib/session-kernel.js"
 import {
   auditHiveFiverAssets,
   seedHiveFiverOnboardingTasks,
@@ -508,6 +509,13 @@ async function printInitSuccess(
   log("")
   log("✓ Planning directory created:")
   log(`  ${hivemindDir}/`)
+  log("  ├── hiveneuron.json      (compact kernel index)")
+  log("  ├── hivebrain.md         (readable kernel projection)")
+  log("  ├── config/              (profile, governance, guardrails)")
+  log("  ├── states/              (shared + lineage kernel state)")
+  log("  ├── artifacts/           (audits, handoffs, research, verification)")
+  log("  ├── archive/             (dated legacy quarantine)")
+  log("  ├── meta-module/         (dated health/status projections)")
   log("  ├── INDEX.md             (projection; generated on demand)")
   log("  ├── state/               (brain, hierarchy, anchors, tasks)")
   log("  ├── memory/              (mems + manifest)")
@@ -635,6 +643,14 @@ async function runFreshInitialization(
   const sessionId = generateSessionId()
   const state = createBrainState(sessionId, config)
   await stateManager.save(state)
+  await ensureSessionKernelState(directory, config, {
+    brainSessionId: sessionId,
+    role: "hivefiver",
+    lineageScope: "meta-framework",
+    sessionKind: "main",
+    intentSummary: "Initial hm-init bootstrap",
+    force: true,
+  })
 
   await saveTree(directory, createTree())
 
@@ -689,6 +705,17 @@ export async function initProject(
 
     const existingStateManager = createStateManager(directory)
     const existingState = await existingStateManager.load()
+    const existingConfig = await loadConfig(directory)
+    if (existingState) {
+      await ensureSessionKernelState(directory, existingConfig, {
+        brainSessionId: existingState.session.id,
+        opencodeSessionId: existingState.session.opencode_session_id,
+        role: existingState.session.role || "unresolved",
+        lineageScope: existingState.session.lineage_scope,
+        sessionKind: existingState.session.kind,
+        intentSummary: "Existing runtime upgraded onto session kernel",
+      })
+    }
     await seedHiveFiverOnboardingTasks(directory, existingState?.session.id ?? "unknown")
     logHiveFiverAuditResult(
       auditHiveFiverAssets(directory, { profile: resolveAuditProfile(options) }),
@@ -825,6 +852,13 @@ export async function initProject(
     log("")
     log("✓ Planning directory created:")
     log(`  ${hivemindDir}/`)
+    log("  ├── hiveneuron.json      (compact kernel index)")
+    log("  ├── hivebrain.md         (readable kernel projection)")
+    log("  ├── config/              (profile, governance, guardrails)")
+    log("  ├── states/              (shared + lineage kernel state)")
+    log("  ├── artifacts/           (audits, handoffs, research, verification)")
+    log("  ├── archive/             (dated legacy quarantine)")
+    log("  ├── meta-module/         (dated health/status projections)")
     log("  ├── INDEX.md             (projection; generated on demand)")
     log("  ├── state/               (brain, hierarchy, anchors, tasks)")
     log("  ├── memory/              (mems + manifest)")
