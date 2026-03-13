@@ -10,6 +10,13 @@ import {
   syncKernelSteeringState,
   writeKernelMetaModuleArtifacts,
 } from "./session-kernel.js"
+import { ensureRepoArchiveStructure, getRepoArchiveStatus } from "./repo-archive.js"
+import {
+  ensurePlanningAuthoritySurfaces,
+  getPlanningAuthorityStatus,
+  readActivePhaseSignals,
+} from "./planning-authority.js"
+import { initializePlanningDirectory } from "./planning-fs.js"
 
 export type DoctorMode = "report" | "repair"
 
@@ -215,6 +222,9 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
   ])
   const config = await loadConfig(directory)
   const kernelSessionMap = await loadKernelSessionMap(directory)
+  const repoArchiveStatus = getRepoArchiveStatus(directory)
+  const planningAuthorityStatus = await getPlanningAuthorityStatus(directory)
+  const activePhaseSignals = await readActivePhaseSignals(directory)
 
   const brainSessionId = (brain.session as Record<string, unknown> | undefined)?.id as string | undefined
   const trajectorySessionId = ((trajectory.trajectory as Record<string, unknown> | undefined)?.session_id as string | undefined)
@@ -256,6 +266,65 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
         evidence: { path: sharedPath },
       })
     }
+  }
+
+  if (!repoArchiveStatus.exists) {
+    issues.push({
+      code: "REPO_ARCHIVE_SURFACE_MISSING",
+      severity: "warn",
+      message: "repo archive taxonomy is incomplete or missing required archive buckets",
+      evidence: {
+        root: repoArchiveStatus.paths.root,
+        missingPaths: repoArchiveStatus.missingPaths,
+      },
+    })
+  }
+
+  if (planningAuthorityStatus.brokenSymlinks.length > 0) {
+    issues.push({
+      code: "PROJECT_ENTRY_SURFACE_DRIFT",
+      severity: "warn",
+      message: "root or mirrored planning authority symlinks are missing or point to unexpected targets",
+      evidence: {
+        brokenSymlinks: planningAuthorityStatus.brokenSymlinks,
+      },
+    })
+  }
+
+  if (planningAuthorityStatus.missingDocs.length > 0) {
+    issues.push({
+      code: "PLANNING_AUTHORITY_DOC_MISSING",
+      severity: "warn",
+      message: "one or more canonical governance/plan authority documents are missing",
+      evidence: {
+        missingDocs: planningAuthorityStatus.missingDocs,
+      },
+    })
+  }
+
+  if (planningAuthorityStatus.missingLedgerPaths.length > 0) {
+    issues.push({
+      code: "PLANNING_LEDGER_SURFACE_MISSING",
+      severity: "warn",
+      message: "the generated planning ledger is missing required surfaces",
+      evidence: {
+        missingLedgerPaths: planningAuthorityStatus.missingLedgerPaths,
+      },
+    })
+  }
+
+  if (planningAuthorityStatus.backlogEntries.length > 0) {
+    issues.push({
+      code: "PLANNING_BACKLOG_DRIFT",
+      severity: "warn",
+      message: "docs/plans still contains non-active backlog entries at the root authority level",
+      evidence: {
+        backlogEntries: planningAuthorityStatus.backlogEntries.map((entry) => ({
+          name: entry.name,
+          classification: entry.classification,
+        })),
+      },
+    })
   }
 
   if ((sessionsManifest.sessions?.length ?? 0) === 0 && allFiles.length > 0) {
@@ -327,6 +396,21 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
   if (issues.some((issue) => issue.code.startsWith("KERNEL_"))) {
     actions.push("sync_kernel_control_plane")
   }
+  if (issues.some((issue) => issue.code === "REPO_ARCHIVE_SURFACE_MISSING")) {
+    actions.push("ensure_repo_archive")
+  }
+  if (
+    issues.some((issue) =>
+      [
+        "PROJECT_ENTRY_SURFACE_DRIFT",
+        "PLANNING_AUTHORITY_DOC_MISSING",
+        "PLANNING_LEDGER_SURFACE_MISSING",
+        "PLANNING_BACKLOG_DRIFT",
+      ].includes(issue.code),
+    )
+  ) {
+    actions.push("normalize_planning_authority")
+  }
 
   if (mode === "repair") {
     actions.push("build_doctor_report")
@@ -338,6 +422,9 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
     let forensicsDir: string | undefined
     if (!dryRun) {
       await syncKernelSteeringState(directory, config)
+      await ensureRepoArchiveStructure(directory)
+      await ensurePlanningAuthoritySurfaces(directory)
+      await initializePlanningDirectory(directory)
       forensicsDir = await ensureForensics(paths)
       const rebuiltManifest = toSessionManifest(paths.sessionsDir, allFiles, selectedSessionId)
       await writeJson(paths.sessionsManifest, rebuiltManifest)
@@ -420,6 +507,8 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
           `- Doctor mode: ${mode}`,
           `- Broken: ${issues.some((issue) => issue.severity === "error") ? "yes" : "no"}`,
           `- Selected session: ${selectedSessionId ?? "(none)"}`,
+          `- Current phase: ${activePhaseSignals.currentPhase ?? "(unknown)"}`,
+          `- Current gate: ${activePhaseSignals.currentGate ?? "(unknown)"}`,
         ],
         diagnosisTrackingLines: [
           "# Diagnosis Tracking",
@@ -431,6 +520,8 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
           "",
           `- Governance mode: ${config.governance_mode}`,
           `- Kernel sync action queued: ${actions.includes("sync_kernel_control_plane") ? "yes" : "no"}`,
+          `- Repo archive ready: ${actions.includes("ensure_repo_archive") ? "yes" : "already"}`,
+          `- Planning authority normalized: ${actions.includes("normalize_planning_authority") ? "yes" : "already"}`,
           `- Repaired at: ${generatedAt}`,
         ],
       })
@@ -448,6 +539,8 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
           "active.md rewritten from canonical state",
           "brain/trajectory session ids aligned",
           "kernel control plane refreshed",
+          "repo archive taxonomy ensured",
+          "planning authority surfaces normalized",
         ],
       }
 

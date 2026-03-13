@@ -6,6 +6,7 @@ import {
   syncKernelSteeringState,
   writeKernelMetaModuleArtifacts,
 } from "../lib/session-kernel.js"
+import { readActivePhaseSignals } from "../lib/planning-authority.js"
 
 export interface HarnessOptions {
   serverUrl?: string
@@ -18,6 +19,8 @@ export interface HarnessResult {
   statusCode: number | null
   version: string | null
   sessionCount: number
+  currentPhase: string | null
+  currentGate: string | null
   metaArtifacts: {
     healthStatus: string
     diagnosisTracking: string
@@ -86,6 +89,7 @@ export async function runHarnessCommand(
   const timeoutMs = options.timeoutMs ?? 2500
   const health = await fetchHealth(serverUrl, timeoutMs)
   const sessionMap = await loadKernelSessionMap(directory)
+  const phaseSignals = await readActivePhaseSignals(directory)
 
   const recommendedCommands = health.healthy
     ? [
@@ -105,6 +109,8 @@ export async function runHarnessCommand(
       `- Healthy: ${health.healthy ? "yes" : "no"}`,
       `- Status code: ${health.statusCode ?? "unreachable"}`,
       `- OpenCode version: ${health.version ?? "unknown"}`,
+      `- Current phase: ${phaseSignals.currentPhase ?? "(unknown)"}`,
+      `- Current gate: ${phaseSignals.currentGate ?? "(unknown)"}`,
     ],
     diagnosisTrackingLines: [
       "# Diagnosis Tracking",
@@ -112,6 +118,7 @@ export async function runHarnessCommand(
       `- Session count in kernel map: ${sessionMap?.sessions.length ?? 0}`,
       `- Active kernel session: ${sessionMap?.active_session_id ?? "(none)"}`,
       `- Active OpenCode session: ${sessionMap?.active_opencode_session_id ?? "(none)"}`,
+      `- Active phase index: ${phaseSignals.activePhaseIndexPath}`,
       `- Recommended next command: ${recommendedCommands[0]}`,
     ],
     metaStateLines: [
@@ -130,6 +137,8 @@ export async function runHarnessCommand(
     statusCode: health.statusCode,
     version: health.version,
     sessionCount: sessionMap?.sessions.length ?? 0,
+    currentPhase: phaseSignals.currentPhase,
+    currentGate: phaseSignals.currentGate,
     metaArtifacts,
     recommendedCommands,
   }

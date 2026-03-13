@@ -66,6 +66,10 @@ async function test_init_planning_directory() {
   assert(existsSync(paths.archiveDir), "archive dir created")
   assert(existsSync(effective.projectPlanningDir), "canonical project planning dir created")
   assert(existsSync(effective.projectPlanningConfig), "project planning config created")
+  assert(existsSync(effective.projectPlanningIndex), "project planning ledger index created")
+  assert(existsSync(effective.projectPlanningProjectState), "project planning project-state created")
+  assert(existsSync(effective.projectPlanningControlPlanePlan), "control-plane phase plan created")
+  assert(existsSync(effective.projectPlanningSessionKernelPlan), "session-kernel phase plan created")
 
   await cleanup()
 }
@@ -258,6 +262,12 @@ async function test_init_project() {
   assert(existsSync(getEffectivePaths(dir).kernel.hiveneuron), "hiveneuron.json created")
   assert(existsSync(getEffectivePaths(dir).kernel.hivebrain), "hivebrain.md created")
   assert(existsSync(getEffectivePaths(dir).kernel.profileConfig), "kernel profile config created")
+  assert(existsSync(join(dir, "AGENTS.md")), "root AGENTS.md entry surface created")
+  assert(existsSync(join(dir, "PLAN.md")), "root PLAN.md entry surface created")
+  assert(existsSync(getEffectivePaths(dir).projectPlanningIndex), "planning ledger index created during init")
+  assert(existsSync(getEffectivePaths(dir).projectPlanningProjectState), "planning project-state created during init")
+  assert(existsSync(getEffectivePaths(dir).projectPlanningControlPlanePlan), "planning control-plane plan created during init")
+  assert(existsSync(getEffectivePaths(dir).projectPlanningSessionKernelPlan), "planning session-kernel plan created during init")
   assert(existsSync(getEffectivePaths(dir).kernel.governanceConfig), "kernel governance config created")
   assert(existsSync(getEffectivePaths(dir).kernel.guardrailsConfig), "kernel guardrails config created")
   assert(existsSync(getEffectivePaths(dir).kernel.sessionMap), "kernel session map created")

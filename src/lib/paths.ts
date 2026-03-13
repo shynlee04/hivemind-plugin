@@ -48,7 +48,9 @@ export interface HivemindPaths {
   projectDir: string
   projectPlanningDir: string
   projectPlanningConfig: string
+  projectPlanningIndex: string
   projectPlanningProject: string
+  projectPlanningProjectState: string
   projectPlanningRequirements: string
   projectPlanningRoadmap: string
   projectPlanningState: string
@@ -62,6 +64,10 @@ export interface HivemindPaths {
   projectPlanningDebugResolvedDir: string
   projectPlanningCodebaseDir: string
   projectPlanningPhasesDir: string
+  projectPlanningControlPlaneDir: string
+  projectPlanningControlPlanePlan: string
+  projectPlanningSessionKernelDir: string
+  projectPlanningSessionKernelPlan: string
 
   // state/ (hot — updated every turn)
   stateDir: string
@@ -238,6 +244,8 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
   const projectPlanningDebugResolvedDir = join(projectPlanningDebugDir, "resolved")
   const projectPlanningCodebaseDir = join(projectPlanningDir, "codebase")
   const projectPlanningPhasesDir = join(projectPlanningDir, "phases")
+  const projectPlanningControlPlaneDir = join(projectPlanningPhasesDir, "00-control-plane")
+  const projectPlanningSessionKernelDir = join(projectPlanningPhasesDir, "01-session-kernel")
   const graphDir = join(root, "graph")
   const graphCodebaseDir = join(graphDir, "codebase")
   const graphCodebaseCodewikiDir = join(graphCodebaseDir, "codewiki")
@@ -291,7 +299,9 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
     projectDir,
     projectPlanningDir,
     projectPlanningConfig: join(projectPlanningDir, "config.json"),
+    projectPlanningIndex: join(projectPlanningDir, "INDEX.md"),
     projectPlanningProject: join(projectPlanningDir, "PROJECT.md"),
+    projectPlanningProjectState: join(projectPlanningDir, "PROJECT-STATE.md"),
     projectPlanningRequirements: join(projectPlanningDir, "REQUIREMENTS.md"),
     projectPlanningRoadmap: join(projectPlanningDir, "ROADMAP.md"),
     projectPlanningState: join(projectPlanningDir, "STATE.md"),
@@ -305,6 +315,10 @@ export function getHivemindPaths(projectRoot: string): HivemindPaths {
     projectPlanningDebugResolvedDir,
     projectPlanningCodebaseDir,
     projectPlanningPhasesDir,
+    projectPlanningControlPlaneDir,
+    projectPlanningControlPlanePlan: join(projectPlanningControlPlaneDir, "00-01-PLAN.md"),
+    projectPlanningSessionKernelDir,
+    projectPlanningSessionKernelPlan: join(projectPlanningSessionKernelDir, "01-01-PLAN.md"),
 
     stateDir,
     stateManifest: join(stateDir, "manifest.json"),
@@ -677,6 +691,8 @@ export function getAllDirectories(projectRoot: string): string[] {
     p.projectPlanningDebugResolvedDir,
     p.projectPlanningCodebaseDir,
     p.projectPlanningPhasesDir,
+    p.projectPlanningControlPlaneDir,
+    p.projectPlanningSessionKernelDir,
     p.stateDir,
     p.memoryDir,
     p.systemDir,

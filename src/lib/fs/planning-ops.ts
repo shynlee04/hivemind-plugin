@@ -24,7 +24,48 @@ import {
   writeManifest,
 } from "./session-io.js";
 
+const PROJECT_STATE_TEMPLATE = `# Project State
+
+> Rolling operational snapshot for the generated planning ledger.
+
+## Current Position
+Cycle 3A is active: planning authority normalization is restoring the generated ledger, collapsing the root plan backlog, and protecting compatibility until later lineage import/quarantine.
+
+## Current Focus
+Phase 00-control-plane is active.
+
+## Active Blockers
+- Root \`docs/plans/\` backlog must be normalized into one active set plus archived history.
+- \`.hivemind/project/planning/\` must stay additive while \`STATE.md\` compatibility remains in use.
+- Session import/quarantine is intentionally deferred until the next cycle closes this planning tranche.
+
+## Recent Decisions
+- Keep the three-tier authority stack fixed:
+  - root \`AGENTS.md\` -> dated governance doc
+  - root \`PLAN.md\` -> dated master plan
+  - \`.hivemind/project/planning/\` -> generated operational ledger
+- Keep \`STATE.md\` as a compatibility mirror during Cycle 3A.
+- Keep \`.hivemind/sessions/archive/\` compatibility-only until writer authority remap.
+`
+
 const PROJECT_PLANNING_TEMPLATES: Record<string, string> = {
+  "INDEX.md": `# Planning Ledger Index
+
+> Generated operational ledger for the current long-haul tranche.
+
+## Authority Links
+- Human governance entrypoint: \`AGENTS.md\`
+- Human execution entrypoint: \`PLAN.md\`
+- Runtime-facing ledger root: this directory
+
+## Active Phases
+- \`00-control-plane/00-01-PLAN.md\` — planning authority normalization
+- \`01-session-kernel/01-01-PLAN.md\` — lineage import/quarantine readiness
+
+## Current Gate
+- Current phase: \`00-control-plane\`
+- Current gate: \`Cycle 3A — Planning authority normalization\`
+`,
   "PROJECT.md": `# Project Vision
 
 > Canonical readable planning root for HIVEMIND.
@@ -47,6 +88,7 @@ Stabilize HIVEMIND as a deterministic OpenCode-native orchestration framework wi
 - \`.hivemind/project/planning\` is the canonical readable planning root; legacy \`.planning/\` is compatibility-only.
 - Dual-lineage work stays separated first and synthesized only after the overlap is explicit.
 `,
+  "PROJECT-STATE.md": PROJECT_STATE_TEMPLATE,
   "REQUIREMENTS.md": `# Requirements
 
 > Active long-haul requirements for the planning-root and orchestration redesign.
@@ -75,27 +117,13 @@ Stabilize HIVEMIND as a deterministic OpenCode-native orchestration framework wi
 | 4 | Long-haul master-plan replacement | pending | 0% |
 | 5 | Post-resync implementation return | pending | 0% |
 `,
-  "STATE.md": `# Project State
+  "STATE.md": `# Project State (Compatibility Mirror)
 
-> Cross-session planning SOT. Runtime truth still lives in JSON authorities.
+This file is preserved during Cycle 3A for compatibility readers.
 
-## Current Position
-The March 6 implementation baseline is complete. The active pivot is a deeper architectural resync on how init/bootstrap and later automation form \`.hivemind\`, how readable planning should be structured, and how external synthesis should be packetized for manual Devin handoff.
+The canonical ledger snapshot now lives in \`PROJECT-STATE.md\`.
 
-## Active Blockers
-- Direct GX-Pack fallback runtime coverage still lacks a stable import/test harness.
-- Planning-root consumers still include legacy \`.planning/\` assumptions.
-- Readable planning root is scaffolded but not yet fully normalized into live SOT.
-
-## Recent Decisions
-- Keep the March 6 authority split locked: injection = cognitive packer, navigation = hierarchy tree, metadata = brain state.
-- Keep child-session lineage runtime-only until a later explicit decision reopens persistence.
-- Use \`.hivemind/project/planning\` as the canonical readable planning root.
-- Use fresh dated question packets for manual Devin research loops instead of reusing mixed prompt-plus-reply artifacts.
-
-## Session History
-- [2026-03-06] Completed the child-session minimization tranche and state-authority rationalization pass.
-- [2026-03-06] Pivoted from immediate runtime cleanup to deeper planning/composition resynchronization.
+${PROJECT_STATE_TEMPLATE}
 `,
   "MILESTONES.md": `# Milestones
 
@@ -107,7 +135,7 @@ The March 6 implementation baseline is complete. The active pivot is a deeper ar
 };
 
 const PROJECT_PLANNING_CONFIG = {
-  version: "2026-03-06",
+  version: "2026-03-14",
   planning_root: ".hivemind/project/planning",
   readable_sot_root: ".hivemind/project/planning",
   runtime_state_root: ".hivemind",
@@ -131,6 +159,33 @@ const PROJECT_PLANNING_CONFIG = {
   },
 }
 
+const PROJECT_PHASE_PLAN_TEMPLATES: Record<string, string> = {
+  [join("phases", "00-control-plane", "00-01-PLAN.md")]: `# 00-01 PLAN — Control Plane
+
+## Scope
+- restore planning authority surfaces
+- normalize root symlink entrypoints
+- collapse legacy root plan backlog into dated archive storage
+
+## Acceptance
+- \`.hivemind/project/planning/\` exists with ledger index and phase packets
+- root \`AGENTS.md\` and \`PLAN.md\` resolve to dated canonical docs
+- \`docs/plans/\` contains only active surfaces plus \`archive/\`
+`,
+  [join("phases", "01-session-kernel", "01-01-PLAN.md")]: `# 01-01 PLAN — Session Kernel
+
+## Scope
+- prepare lineage import/quarantine
+- snapshot current \`.hivemind\`
+- import selected live lineage into kernel contracts without mutating compatibility-only consumers
+
+## Acceptance
+- dry-run import chooses the expected lineage
+- retain/isolate/regenerate ledger is written
+- compatibility runtime consumers remain untouched during readiness work
+`,
+}
+
 const PROJECT_PLANNING_SUBDIRS = [
   "research",
   join("todos", "pending"),
@@ -139,6 +194,8 @@ const PROJECT_PLANNING_SUBDIRS = [
   join("debug", "resolved"),
   "codebase",
   "phases",
+  join("phases", "00-control-plane"),
+  join("phases", "01-session-kernel"),
 ] as const;
 
 export async function initializePlanningProjectDir(
@@ -150,6 +207,14 @@ export async function initializePlanningProjectDir(
   if (!existsSync(planningDir)) {
     await mkdir(planningDir, { recursive: true });
     created = true;
+  }
+
+  const projectStatePath = join(planningDir, "PROJECT-STATE.md")
+  const legacyStatePath = join(planningDir, "STATE.md")
+  if (!existsSync(projectStatePath) && existsSync(legacyStatePath)) {
+    const legacyState = await readFile(legacyStatePath, "utf-8")
+    await writeFile(projectStatePath, legacyState, "utf-8")
+    created = true
   }
 
   for (const [fileName, content] of Object.entries(PROJECT_PLANNING_TEMPLATES)) {
@@ -171,6 +236,14 @@ export async function initializePlanningProjectDir(
     if (!existsSync(gitkeepPath)) {
       await writeFile(gitkeepPath, "");
       created = true;
+    }
+  }
+
+  for (const [relativePath, content] of Object.entries(PROJECT_PHASE_PLAN_TEMPLATES)) {
+    const filePath = join(planningDir, relativePath)
+    if (!existsSync(filePath)) {
+      await writeFile(filePath, content, "utf-8")
+      created = true
     }
   }
 

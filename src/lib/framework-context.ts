@@ -60,9 +60,23 @@ async function readPlanningSignals(planningDir: string | null): Promise<{
     return { activePhase: null, phaseGoal: null }
   }
 
-  const statePath = join(planningDir, "STATE.md")
+  const stateCandidates = [
+    join(planningDir, "PROJECT-STATE.md"),
+    join(planningDir, "STATE.md"),
+  ]
   const roadmapPath = join(planningDir, "ROADMAP.md")
-  if (!(await pathExists(statePath)) || !(await pathExists(roadmapPath))) {
+  if (!(await pathExists(roadmapPath))) {
+    return { activePhase: null, phaseGoal: null }
+  }
+
+  let statePath: string | null = null
+  for (const candidate of stateCandidates) {
+    if (await pathExists(candidate)) {
+      statePath = candidate
+      break
+    }
+  }
+  if (!statePath) {
     return { activePhase: null, phaseGoal: null }
   }
 

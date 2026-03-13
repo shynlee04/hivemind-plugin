@@ -16,7 +16,7 @@ import { readManifest } from "../src/lib/planning-fs.js"
 import { loadGraphMems } from "../src/lib/graph-io.js"
 import { getEffectivePaths } from "../src/lib/paths.js"
 import { mkdtemp, rm, readdir, writeFile, readFile } from "fs/promises"
-import { existsSync, writeFileSync, readFileSync } from "fs"
+import { existsSync, lstatSync, readFileSync, readlinkSync, writeFileSync } from "fs"
 import { tmpdir } from "os"
 import { join } from "path"
 
@@ -493,12 +493,12 @@ async function test_agentsMdInjection() {
       "AGENTS.md contains HiveMind end marker"
     )
     assert(
-      agentsMd.includes("declare_intent") && agentsMd.includes("map_context") && agentsMd.includes("compact_session"),
-      "AGENTS.md contains core tool names"
+      agentsMd.includes("hm-init") && agentsMd.includes("hm-doctor") && agentsMd.includes("hm-harness"),
+      "AGENTS.md contains current kernel command surfaces"
     )
     assert(
-      agentsMd.includes("Available Tools (10)"),
-      "AGENTS.md contains tool count"
+      agentsMd.includes(".hivemind/hiveneuron.json") && agentsMd.includes(".archive/"),
+      "AGENTS.md contains current kernel and archive surfaces"
     )
   } finally {
     await cleanTmpDir(dir)
@@ -530,7 +530,7 @@ async function test_agentsMdIdempotent() {
       "AGENTS.md has exactly 1 start marker (idempotent)"
     )
     assert(
-      agentsMd.includes("declare_intent"),
+      agentsMd.includes("hm-init"),
       "AGENTS.md section was updated with current content"
     )
     assert(
@@ -566,18 +566,18 @@ async function test_claudeMdInjection() {
       "CLAUDE.md also receives HiveMind section"
     )
     assert(
-      claudeMd.includes("declare_intent"),
-      "CLAUDE.md contains core tool names"
+      claudeMd.includes("hm-doctor"),
+      "CLAUDE.md contains current kernel command guidance"
     )
   } finally {
     await cleanTmpDir(dir)
   }
 }
 
-// ─── Test 17: no AGENTS.md — no file created ─────────────────────────
+// ─── Test 17: root authority symlinks are created on init ────────────
 
 async function test_noAgentsMdNoCreation() {
-  process.stderr.write("\n--- entry-chain: no AGENTS.md present → no file created ---\n")
+  process.stderr.write("\n--- entry-chain: root authority symlinks created on init ---\n")
   const dir = await makeTmpDir()
 
   try {
@@ -585,12 +585,32 @@ async function test_noAgentsMdNoCreation() {
     await initProject(dir, { governanceMode: "assisted", language: "en", silent: true })
 
     assert(
-      !existsSync(join(dir, "AGENTS.md")),
-      "AGENTS.md NOT created when it didn't exist before init"
+      existsSync(join(dir, "AGENTS.md")),
+      "AGENTS.md created as root authority entrypoint"
+    )
+    assert(
+      existsSync(join(dir, "PLAN.md")),
+      "PLAN.md created as root authority entrypoint"
+    )
+    assert(
+      lstatSync(join(dir, "AGENTS.md")).isSymbolicLink(),
+      "AGENTS.md is a symlink"
+    )
+    assert(
+      lstatSync(join(dir, "PLAN.md")).isSymbolicLink(),
+      "PLAN.md is a symlink"
+    )
+    assert(
+      readlinkSync(join(dir, "AGENTS.md")) === "docs/governance/project-governance-2026-03-14.md",
+      "AGENTS.md points to canonical governance doc"
+    )
+    assert(
+      readlinkSync(join(dir, "PLAN.md")) === "docs/plans/project-master-plan-2026-03-14.md",
+      "PLAN.md points to canonical master plan"
     )
     assert(
       !existsSync(join(dir, "CLAUDE.md")),
-      "CLAUDE.md NOT created when it didn't exist before init"
+      "CLAUDE.md still not created when it didn't exist before init"
     )
   } finally {
     await cleanTmpDir(dir)

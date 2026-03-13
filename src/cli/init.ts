@@ -43,6 +43,8 @@ import { syncOpencodeAssets } from "./sync-assets.js"
 import type { AssetSyncProfile, AssetSyncTarget } from "./sync-assets.js"
 import { createTree, saveTree } from "../lib/hierarchy-tree.js"
 import { ensureSessionKernelState } from "../lib/session-kernel.js"
+import { ensureRepoArchiveStructure } from "../lib/repo-archive.js"
+import { ensurePlanningAuthoritySurfaces } from "../lib/planning-authority.js"
 import {
   auditHiveFiverAssets,
   seedHiveFiverOnboardingTasks,
@@ -56,6 +58,8 @@ const HIVEMIND_SECTION_END_MARKER = "<!-- HIVEMIND-GOVERNANCE-END -->"
 /**
  * Generates the HiveMind section to append to AGENTS.md or CLAUDE.md.
  * This survives model changes, compaction, and chaos — any AI agent reads AGENTS.md.
+ *
+ * @returns Canonical HiveMind governance section for AGENTS.md-compatible files.
  */
 function generateHiveMindAgentsSection(): string {
   return `
@@ -63,45 +67,33 @@ ${HIVEMIND_SECTION_MARKER}
 
 ## HiveMind Context Governance
 
-This project uses **HiveMind** for AI session management. It prevents drift, tracks decisions, and preserves memory across sessions.
+This project uses **HiveMind** as an OpenCode-native control plane. Sessions execute through OpenCode; durable steering state lives in the HiveMind kernel.
 
 ### Required Workflow
 
 1. **START** every session with:
-   \`\`\`
-   declare_intent({ mode: "plan_driven" | "quick_fix" | "exploration", focus: "What you're working on" })
-   \`\`\`
-2. **UPDATE** when switching focus:
-   \`\`\`
-   map_context({ level: "trajectory" | "tactic" | "action", content: "New focus" })
-   \`\`\`
-3. **END** when done:
-   \`\`\`
-   compact_session({ summary: "What was accomplished" })
-   \`\`\`
+   - Run \`hm-init\` or let the bootstrap probe materialize the kernel surfaces.
+2. **RECOVER** integrity before deep work:
+   - Run \`hm-doctor\` when session continuity, kernel state, or legacy surfaces look broken.
+3. **WORK** from the session kernel:
+   - Treat \`.hivemind/hiveneuron.json\`, \`.hivemind/hivebrain.md\`, and \`.hivemind/states/**\` as the durable control plane.
+4. **VERIFY** orchestration health:
+   - Use \`hm-harness\` to probe OpenCode server readiness and refresh meta-module artifacts.
+5. **ARCHIVE** legacy surfaces intentionally:
+   - Use repo-root \`.archive/\` for strategic quarantine and deprecation buckets, not as live runtime state.
 
-### Available Tools (10)
+### Session Kernel Highlights
 
-| Group | Tools |
-|-------|-------|
-| Core | \`declare_intent\`, \`map_context\`, \`compact_session\` |
-| Cognitive Mesh | \`scan_hierarchy\`, \`save_anchor\`, \`think_back\` |
-| Memory | \`save_mem\`, \`recall_mems\` |
-| Hierarchy | \`hierarchy_manage\` |
-| Delegation | \`export_cycle\` |
+- Session is the atomic unit of coordinated execution.
+- Main-session TODO ownership stays native to OpenCode; subagents return evidence packets instead of mutating shared TODO state.
+- Verification closes work only when evidence, artifacts, and acceptance criteria align.
 
-### Why It Matters
+### Canonical Surfaces
 
-- **Without \`declare_intent\`**: Drift detection is OFF, work is untracked
-- **Without \`map_context\`**: Context degrades every turn, warnings pile up
-- **Without \`compact_session\`**: Intelligence lost on session end
-- **\`save_mem\` + \`recall_mems\`**: Persistent memory across sessions — decisions survive
-
-### State Files
-
-- \`.hivemind/state/brain.json\` — Machine state (do not edit manually)
-- \`.hivemind/state/hierarchy.json\` — Decision tree
-- \`.hivemind/sessions/\` — Session files and archives
+- \`.hivemind/hiveneuron.json\` — compact neural index
+- \`.hivemind/hivebrain.md\` — human-readable context map
+- \`.hivemind/states/shared/session-map.json\` — OpenCode ↔ HiveMind session linkage
+- \`.archive/\` — strategic archive taxonomy for dead code, deprecated scripts, consolidated donors, and archived skills
 
 ${HIVEMIND_SECTION_END_MARKER}
 `
@@ -526,9 +518,13 @@ async function printInitSuccess(
   log("  ├── plans/               (plan registry)")
   log("  ├── project/")
   log("  │   └── planning/        (canonical readable planning root)")
+  log("  │       ├── INDEX.md     (generated phase ledger index)")
   log("  │       ├── PROJECT.md   (vision + architecture stance)")
   log("  │       ├── ROADMAP.md   (long-haul phases)")
-  log("  │       ├── STATE.md     (cross-session planning SOT)")
+  log("  │       ├── PROJECT-STATE.md  (rolling ledger snapshot)")
+  log("  │       ├── STATE.md     (compatibility mirror)")
+  log("  │       ├── phases/00-control-plane/00-01-PLAN.md")
+  log("  │       ├── phases/01-session-kernel/01-01-PLAN.md")
   log("  │       └── config.json  (planning workflow policy)")
   log("  ├── codemap/             (SOT manifest)")
   log("  ├── codewiki/            (SOT manifest)")
@@ -625,6 +621,7 @@ async function runFreshInitialization(
   if (!options.silent) {
     log("Creating planning directory...")
   }
+  await ensurePlanningAuthoritySurfaces(directory)
   await initializePlanningDirectory(directory)
 
   await seedPlanTemplates(directory)
@@ -638,6 +635,7 @@ async function runFreshInitialization(
   }
 
   await saveConfig(directory, config)
+  await ensureRepoArchiveStructure(directory)
 
   const stateManager = createStateManager(directory)
   const sessionId = generateSessionId()
@@ -697,6 +695,9 @@ export async function initProject(
   // The directory may exist from logger side-effects without full initialization.
   if (existsSync(brainPath)) {
     // Existing user upgrade path: keep state, refresh OpenCode assets, AND ensure plugin is registered
+    await ensureRepoArchiveStructure(directory)
+    await ensurePlanningAuthoritySurfaces(directory)
+    await initializePlanningDirectory(directory)
     await syncAssetsForInit(directory, options)
 
     // Ensure plugin is registered in opencode.json (this was missing!)
@@ -869,9 +870,13 @@ export async function initProject(
     log("  ├── plans/               (plan registry)")
     log("  ├── project/")
     log("  │   └── planning/        (canonical readable planning root)")
+    log("  │       ├── INDEX.md     (generated phase ledger index)")
     log("  │       ├── PROJECT.md   (vision + architecture stance)")
     log("  │       ├── ROADMAP.md   (long-haul phases)")
-    log("  │       ├── STATE.md     (cross-session planning SOT)")
+    log("  │       ├── PROJECT-STATE.md  (rolling ledger snapshot)")
+    log("  │       ├── STATE.md     (compatibility mirror)")
+    log("  │       ├── phases/00-control-plane/00-01-PLAN.md")
+    log("  │       ├── phases/01-session-kernel/01-01-PLAN.md")
     log("  │       └── config.json  (planning workflow policy)")
     log("  ├── codemap/             (SOT manifest)")
     log("  ├── codewiki/            (SOT manifest)")

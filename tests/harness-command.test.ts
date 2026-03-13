@@ -35,6 +35,8 @@ describe("harness command", () => {
 
       assert.equal(result.healthy, true)
       assert.equal(result.version, "test-opencode")
+      assert.equal(result.currentPhase, "00-control-plane")
+      assert.equal(result.currentGate, "Cycle 3A - Planning authority normalization")
       assert.equal(result.recommendedCommands[0].startsWith("opencode attach"), true)
       assert.equal(result.metaArtifacts.healthStatus.endsWith(".md"), true)
     } finally {
