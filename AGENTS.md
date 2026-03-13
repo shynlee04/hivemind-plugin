@@ -2,7 +2,7 @@
 
 This file provides guidance to ALL agents working in this repository.
 
-**Last Updated**: 2026-03-13
+**Last Updated**: 2026-03-14
 **Version**: 3.3-strategic-resync
 **Maintained By**: hivefiver meta-builder
 **Symlinked To**: `.hivemind/AGENTS.md`, `.opencode/AGENTS.md`, `src/AGENTS.md`
@@ -265,6 +265,7 @@ npx hivemind-context-governance             # Interactive setup wizard
 npx hivemind-context-governance init --mode assisted
 npx hivemind-context-governance migrate     # One-time legacy flat-file -> graph migration
 npx hivemind-context-governance doctor      # Diagnose/repair .hivemind lineage integrity
+npx hivemind-context-governance hivefiver-intake --text "..."   # Legacy /hivefiver startup compatibility bridge
 npx hivemind-context-governance status
 npx hivemind-context-governance settings
 npx hivemind-context-governance scan --action analyze --json

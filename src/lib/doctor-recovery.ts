@@ -3,6 +3,13 @@ import { existsSync } from "node:fs"
 import { dirname, join, relative } from "node:path"
 import { getEffectivePaths } from "./paths.js"
 import { createDefaultSessionManifest, type SessionManifest, type SessionManifestEntry } from "./manifest.js"
+import { loadConfig } from "./persistence.js"
+import {
+  ensureSessionKernelState,
+  loadKernelSessionMap,
+  syncKernelSteeringState,
+  writeKernelMetaModuleArtifacts,
+} from "./session-kernel.js"
 
 export type DoctorMode = "report" | "repair"
 
@@ -24,12 +31,18 @@ export interface DoctorRunResult {
   broken: boolean
   generatedAt: string
   selectedSessionId: string | null
+  kernelSessionId?: string
   issues: DoctorIssue[]
   actions: string[]
   repaired: boolean
   reportPath: string
   lineageRepairPath?: string
   forensicsDir?: string
+  metaArtifacts?: {
+    healthStatus: string
+    diagnosisTracking: string
+    metaState: string
+  }
 }
 
 interface SessionFileInfo {
@@ -200,6 +213,8 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
     readJson<Record<string, unknown>>(paths.graphTrajectory, {}),
     readJson<SessionManifest>(paths.sessionsManifest, createDefaultSessionManifest()),
   ])
+  const config = await loadConfig(directory)
+  const kernelSessionMap = await loadKernelSessionMap(directory)
 
   const brainSessionId = (brain.session as Record<string, unknown> | undefined)?.id as string | undefined
   const trajectorySessionId = ((trajectory.trajectory as Record<string, unknown> | undefined)?.session_id as string | undefined)
@@ -208,6 +223,40 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
   const archivedFiles = await listSessionFiles(paths.archiveDir, "archived")
   const allFiles = [...activeFiles, ...archivedFiles]
   const activeIds = activeFiles.map((entry) => entry.id)
+
+  if (!existsSync(paths.kernel.hiveneuron)) {
+    issues.push({
+      code: "KERNEL_HIVENEURON_MISSING",
+      severity: "error",
+      message: "hiveneuron.json is missing from the kernel root",
+      evidence: { path: paths.kernel.hiveneuron },
+    })
+  }
+
+  if (!existsSync(paths.kernel.hivebrain)) {
+    issues.push({
+      code: "KERNEL_HIVEBRAIN_MISSING",
+      severity: "warn",
+      message: "hivebrain.md is missing from the kernel root",
+      evidence: { path: paths.kernel.hivebrain },
+    })
+  }
+
+  for (const sharedPath of [
+    paths.kernel.profileConfig,
+    paths.kernel.governanceConfig,
+    paths.kernel.guardrailsConfig,
+    paths.kernel.sessionMap,
+  ]) {
+    if (!existsSync(sharedPath)) {
+      issues.push({
+        code: "KERNEL_SHARED_SURFACE_MISSING",
+        severity: "warn",
+        message: "one or more kernel shared surfaces are missing",
+        evidence: { path: sharedPath },
+      })
+    }
+  }
 
   if ((sessionsManifest.sessions?.length ?? 0) === 0 && allFiles.length > 0) {
     issues.push({
@@ -258,6 +307,27 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
     })
   }
 
+  if (
+    kernelSessionMap &&
+    selectedSessionId &&
+    kernelSessionMap.active_session_id &&
+    kernelSessionMap.active_session_id !== `SES-${selectedSessionId}`
+  ) {
+    issues.push({
+      code: "KERNEL_ACTIVE_SESSION_MISMATCH",
+      severity: "warn",
+      message: "kernel session map does not match the selected active session",
+      evidence: {
+        selectedSessionId,
+        kernelActiveSessionId: kernelSessionMap.active_session_id,
+      },
+    })
+  }
+
+  if (issues.some((issue) => issue.code.startsWith("KERNEL_"))) {
+    actions.push("sync_kernel_control_plane")
+  }
+
   if (mode === "repair") {
     actions.push("build_doctor_report")
     actions.push("snapshot_forensics")
@@ -267,10 +337,12 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
 
     let forensicsDir: string | undefined
     if (!dryRun) {
+      await syncKernelSteeringState(directory, config)
       forensicsDir = await ensureForensics(paths)
       const rebuiltManifest = toSessionManifest(paths.sessionsDir, allFiles, selectedSessionId)
       await writeJson(paths.sessionsManifest, rebuiltManifest)
 
+      let kernelSessionId: string | undefined
       if (selectedSessionId) {
         const nextBrain = { ...brain }
         const session = ((nextBrain.session ?? {}) as Record<string, unknown>)
@@ -304,11 +376,69 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
           action: String(hierarchy.action ?? ""),
         })
         await writeFile(join(paths.sessionsDir, "active.md"), activeMd, "utf-8")
+
+        const kernelResult = await ensureSessionKernelState(directory, config, {
+          brainSessionId: selectedSessionId,
+          opencodeSessionId:
+            typeof session.opencode_session_id === "string"
+              ? session.opencode_session_id
+              : null,
+          role: typeof session.role === "string" ? session.role : "unresolved",
+          lineageScope:
+            session.lineage_scope === "project" || session.lineage_scope === "meta-framework"
+              ? session.lineage_scope
+              : "unknown",
+          sessionKind: typeof session.kind === "string" ? session.kind : "unresolved",
+          intentSummary: "Doctor recovery realignment",
+          force: true,
+        })
+        kernelSessionId = kernelResult.canonicalSessionId
+      } else if (brainSessionId) {
+        const brainSession = (brain.session ?? {}) as Record<string, unknown>
+        const kernelResult = await ensureSessionKernelState(directory, config, {
+          brainSessionId,
+          opencodeSessionId:
+            typeof brainSession.opencode_session_id === "string"
+              ? brainSession.opencode_session_id
+              : null,
+          role: typeof brainSession.role === "string" ? brainSession.role : "unresolved",
+          lineageScope:
+            brainSession.lineage_scope === "project" || brainSession.lineage_scope === "meta-framework"
+              ? brainSession.lineage_scope
+              : "unknown",
+          sessionKind: typeof brainSession.kind === "string" ? brainSession.kind : "unresolved",
+          intentSummary: "Doctor recovery kernel refresh",
+          force: true,
+        })
+        kernelSessionId = kernelResult.canonicalSessionId
       }
+
+      const metaArtifacts = await writeKernelMetaModuleArtifacts(directory, {
+        healthStatusLines: [
+          "# Health Status",
+          "",
+          `- Doctor mode: ${mode}`,
+          `- Broken: ${issues.some((issue) => issue.severity === "error") ? "yes" : "no"}`,
+          `- Selected session: ${selectedSessionId ?? "(none)"}`,
+        ],
+        diagnosisTrackingLines: [
+          "# Diagnosis Tracking",
+          "",
+          ...issues.map((issue) => `- [${issue.severity}] ${issue.code}: ${issue.message}`),
+        ],
+        metaStateLines: [
+          "# Meta State",
+          "",
+          `- Governance mode: ${config.governance_mode}`,
+          `- Kernel sync action queued: ${actions.includes("sync_kernel_control_plane") ? "yes" : "no"}`,
+          `- Repaired at: ${generatedAt}`,
+        ],
+      })
 
       const lineageRepair = {
         generated_at: generatedAt,
         selected_session_id: selectedSessionId,
+        kernel_session_id: kernelSessionId ?? null,
         hard_reset: hardReset,
         dry_run: dryRun,
         issues,
@@ -317,6 +447,7 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
           "sessions manifest rebuilt from on-disk session files",
           "active.md rewritten from canonical state",
           "brain/trajectory session ids aligned",
+          "kernel control plane refreshed",
         ],
       }
 
@@ -341,12 +472,14 @@ export async function runDoctorRecovery(directory: string, options: DoctorRunOpt
         broken: report.broken,
         generatedAt,
         selectedSessionId,
+        kernelSessionId,
         issues,
         actions,
         repaired: true,
         reportPath: join(paths.root, "recovery", "doctor-report.json"),
         lineageRepairPath: join(paths.root, "recovery", "lineage-repair.json"),
         forensicsDir,
+        metaArtifacts,
       }
     }
   }

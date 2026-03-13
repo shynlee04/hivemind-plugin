@@ -80,6 +80,21 @@ export interface EnsureSessionKernelResult {
   sessionPath: string
 }
 
+export interface SyncKernelSteeringResult {
+  profilePath: string
+  governancePath: string
+  guardrailsPath: string
+  integrityPath: string
+  artifactIndexPath: string
+  verificationIndexPath: string
+}
+
+export interface KernelMetaModulePayload {
+  healthStatusLines: string[]
+  diagnosisTrackingLines: string[]
+  metaStateLines: string[]
+}
+
 interface KernelConfigProjection {
   profile: Record<string, unknown>
   governance: Record<string, unknown>
@@ -349,27 +364,7 @@ function lineagePaths(kernel: KernelPaths, lineage: KernelLineage) {
   return lineage === "hivefiver" ? kernel.hivefiver : kernel.hiveminder
 }
 
-/**
- * Ensure the OpenCode-native session kernel projection exists alongside the
- * legacy runtime state without replacing compatibility surfaces yet.
- *
- * @param directory Project root containing `.hivemind`.
- * @param config Loaded HiveMind config used to materialize steering projections.
- * @param options Runtime/bootstrap values required to correlate OpenCode and HiveMind sessions.
- * @returns Paths and identifiers for the kernel files that now exist on disk.
- */
-export async function ensureSessionKernelState(
-  directory: string,
-  config: HiveMindConfig,
-  options: EnsureSessionKernelOptions,
-): Promise<EnsureSessionKernelResult> {
-  const paths = getEffectivePaths(directory)
-  const nowIso = toIsoTimestamp()
-  const lineage = toKernelLineage(options.lineageScope, options.role)
-  const canonicalSessionId = toKernelSessionId(options.brainSessionId)
-  const activeLineagePaths = lineagePaths(paths.kernel, lineage)
-  const sessionPath = join(activeLineagePaths.sessionsDir, `${canonicalSessionId}.json`)
-
+async function ensureKernelDirectories(paths: ReturnType<typeof getEffectivePaths>): Promise<void> {
   const directories = [
     paths.kernel.configDir,
     paths.kernel.statesDir,
@@ -401,13 +396,115 @@ export async function ensureSessionKernelState(
     paths.kernel.metaModuleDir,
   ]
   await Promise.all(directories.map((dirPath) => mkdir(dirPath, { recursive: true })))
+}
+
+/**
+ * Sync kernel steering/config files without requiring an active session repair.
+ *
+ * @param directory Project root containing `.hivemind`.
+ * @param config Loaded HiveMind config.
+ * @returns Paths to the refreshed steering and shared index files.
+ */
+export async function syncKernelSteeringState(
+  directory: string,
+  config: HiveMindConfig,
+): Promise<SyncKernelSteeringResult> {
+  const paths = getEffectivePaths(directory)
+  const nowIso = toIsoTimestamp()
+  await ensureKernelDirectories(paths)
 
   const configProjection = buildConfigProjection(config, nowIso)
+  const integrity = await readJsonFile(
+    paths.kernel.integrity,
+    defaultIntegrity(nowIso),
+    (value) => KernelIntegrityStateSchema.safeParse(value).success
+      ? KernelIntegrityStateSchema.parse(value)
+      : null,
+  )
+  const artifactIndex = await readJsonFile(
+    paths.kernel.artifactIndex,
+    defaultArtifactIndex(nowIso),
+    (value) => KernelArtifactIndexSchema.safeParse(value).success
+      ? KernelArtifactIndexSchema.parse(value)
+      : null,
+  )
+  const verificationIndex = await readJsonFile(
+    paths.kernel.verificationIndex,
+    defaultVerificationIndex(nowIso),
+    (value) => KernelVerificationIndexSchema.safeParse(value).success
+      ? KernelVerificationIndexSchema.parse(value)
+      : null,
+  )
+
   await Promise.all([
     writeJsonFile(paths.kernel.profileConfig, configProjection.profile),
     writeJsonFile(paths.kernel.governanceConfig, configProjection.governance),
     writeJsonFile(paths.kernel.guardrailsConfig, configProjection.guardrails),
+    writeJsonFile(paths.kernel.integrity, {
+      ...integrity,
+      version: KERNEL_STATE_VERSION,
+      updated_at: nowIso,
+    }),
+    writeJsonFile(paths.kernel.artifactIndex, {
+      ...artifactIndex,
+      version: KERNEL_STATE_VERSION,
+      updated_at: nowIso,
+    }),
+    writeJsonFile(paths.kernel.verificationIndex, {
+      ...verificationIndex,
+      version: KERNEL_STATE_VERSION,
+      updated_at: nowIso,
+    }),
   ])
+
+  return {
+    profilePath: paths.kernel.profileConfig,
+    governancePath: paths.kernel.governanceConfig,
+    guardrailsPath: paths.kernel.guardrailsConfig,
+    integrityPath: paths.kernel.integrity,
+    artifactIndexPath: paths.kernel.artifactIndex,
+    verificationIndexPath: paths.kernel.verificationIndex,
+  }
+}
+
+/**
+ * Load the kernel session map when present.
+ *
+ * @param directory Project root containing `.hivemind`.
+ * @returns Parsed kernel session map or `null` if none exists yet.
+ */
+export async function loadKernelSessionMap(directory: string): Promise<KernelSessionMap | null> {
+  const paths = getEffectivePaths(directory)
+  return readJsonFile(
+    paths.kernel.sessionMap,
+    null,
+    (value) => KernelSessionMapSchema.safeParse(value).success
+      ? KernelSessionMapSchema.parse(value)
+      : null,
+  )
+}
+
+/**
+ * Ensure the OpenCode-native session kernel projection exists alongside the
+ * legacy runtime state without replacing compatibility surfaces yet.
+ *
+ * @param directory Project root containing `.hivemind`.
+ * @param config Loaded HiveMind config used to materialize steering projections.
+ * @param options Runtime/bootstrap values required to correlate OpenCode and HiveMind sessions.
+ * @returns Paths and identifiers for the kernel files that now exist on disk.
+ */
+export async function ensureSessionKernelState(
+  directory: string,
+  config: HiveMindConfig,
+  options: EnsureSessionKernelOptions,
+): Promise<EnsureSessionKernelResult> {
+  const paths = getEffectivePaths(directory)
+  const nowIso = toIsoTimestamp()
+  const lineage = toKernelLineage(options.lineageScope, options.role)
+  const canonicalSessionId = toKernelSessionId(options.brainSessionId)
+  const activeLineagePaths = lineagePaths(paths.kernel, lineage)
+  const sessionPath = join(activeLineagePaths.sessionsDir, `${canonicalSessionId}.json`)
+  await syncKernelSteeringState(directory, config)
 
   const integrity = await readJsonFile(
     paths.kernel.integrity,
@@ -550,4 +647,26 @@ export function getMetaModulePaths(directory: string, date = new Date()) {
 export function getLegacyArchivePath(directory: string, date = new Date()): string {
   const paths = getEffectivePaths(directory)
   return join(paths.kernel.archiveDir, `legacy-${toDateStamp(date)}`)
+}
+
+/**
+ * Write dated meta-module artifacts for doctor/harness/reporting workflows.
+ *
+ * @param directory Project root containing `.hivemind`.
+ * @param payload Content sections to persist under `.hivemind/meta-module/`.
+ * @param date Optional date used for file naming.
+ * @returns Paths to the dated meta-module artifacts.
+ */
+export async function writeKernelMetaModuleArtifacts(
+  directory: string,
+  payload: KernelMetaModulePayload,
+  date = new Date(),
+) {
+  const paths = getMetaModulePaths(directory, date)
+  await Promise.all([
+    writeTextFile(paths.healthStatus, payload.healthStatusLines.join("\n")),
+    writeTextFile(paths.diagnosisTracking, payload.diagnosisTrackingLines.join("\n")),
+    writeTextFile(paths.metaState, payload.metaStateLines.join("\n")),
+  ])
+  return paths
 }

@@ -13,7 +13,11 @@
   },
   "bin": {
     "hivemind-context-governance": "dist/cli.js",
-    "hivemind": "dist/cli.js"
+    "hivemind": "dist/cli.js",
+    "hm-init": "dist/cli.js",
+    "hm-doctor": "dist/cli.js",
+    "hm-settings": "dist/cli.js",
+    "hm-harness": "dist/cli.js"
   },
   "files": [
     "dist",

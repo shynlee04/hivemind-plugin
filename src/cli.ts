@@ -17,6 +17,9 @@ import { argv } from "node:process"
 import { existsSync } from "node:fs"
 import { join } from "node:path"
 import { initProject } from "./cli/init.js"
+import { runHarnessCommand } from "./cli/harness.js"
+import { resolveCliInvocation } from "./cli/command-routing.js"
+import { updateProjectSettings } from "./cli/settings.js"
 import { syncOpencodeAssets } from "./cli/sync-assets.js"
 import type { AssetSyncProfile } from "./cli/sync-assets.js"
 import { runScanCommand } from "./cli/scan.js"
@@ -28,15 +31,16 @@ import { migrateToGraph, isGraphMigrationNeeded } from "./lib/graph-migrate.js"
 import { runDoctorRecovery } from "./lib/doctor-recovery.js"
 import { runHiveFiverIntakeBridge } from "./cli/hivefiver-intake.js"
 
-const COMMANDS = ["init", "migrate", "scan", "sync-assets", "doctor", "status", "compact", "dashboard", "settings", "purge", "help", "hivefiver-intake"] as const
-type Command = (typeof COMMANDS)[number]
-
 function printHelp(): void {
   const help = `
 HiveMind Context Governance — CLI
 
 Usage:
   npx hivemind-context-governance [command] [options]
+  hm-init [options]
+  hm-doctor [options]
+  hm-settings [options]
+  hm-harness [options]
 
 Commands:
   (default)     Interactive setup wizard (or initialize with flags)
@@ -47,7 +51,8 @@ Commands:
   doctor        Diagnose/repair .hivemind lineage integrity
   hivefiver-intake Compatibility bridge for legacy /hivefiver startup scripts
   status        Show current session and governance state
-  settings      Show current configuration
+  settings      Show or update current configuration
+  harness       Inspect OpenCode server readiness and write meta-module artifacts
   compact       Archive current session and reset (OpenCode only)
   dashboard     Launch live TUI dashboard
   purge         Remove .hivemind/ entirely and unregister plugin
@@ -64,7 +69,7 @@ Options:
   --tdd                    Enforce test-driven development
   --sync-mode <prompt|none|core|balanced|full>  Init sync behavior (default: prompt)
   --target <project|global|both>  Asset sync target (default: project)
-  --profile <core|balanced|full|legacy-compat>  Asset sync profile (default: core)
+  --profile <beginner|intermediate|advanced|expert|coach>  Init/settings profile preset
   --overwrite              Overwrite existing files during asset sync
   --backup-on-overwrite    Backup replaced files as .bak.<timestamp>
   --include-legacy         Include legacy compatibility command surfaces
@@ -76,11 +81,18 @@ Options:
   --doctor-mode <report|repair>  Doctor mode (default: report)
   --dry-run                Compute doctor actions without writing repair changes
   --hard-reset             Doctor repair with forensic snapshot + canonical manifest rebuild
+  --server-url <url>       Harness server URL (default: OPENCODE_SERVER_URL or http://127.0.0.1:4096)
+  --timeout-ms <ms>        Harness server health timeout in milliseconds
   --refresh <seconds>      Dashboard refresh interval (default: 2)
   --action <status|analyze|recommend|orchestrate>  Scan action (default: analyze, for scan command)
   --text <value>           Input text for hivefiver-intake bridge actions
   --json                   Return machine-readable JSON (for scan command)
   --include-drift          Include drift report (status action)
+
+Command-specific notes:
+  sync-assets --profile <core|balanced|full|legacy-compat>
+  settings    Re-run with any config flags to update live settings
+  harness     Writes dated files under .hivemind/meta-module/
 
 Examples:
   npx hivemind-context-governance              # Interactive wizard
@@ -191,11 +203,26 @@ function hasInitFlags(flags: Record<string, string>): boolean {
     "style",
     "code-review",
     "tdd",
+    "profile",
     "target",
     "sync-mode",
     "overwrite",
   ]
   return initFlagNames.some((name) => name in flags)
+}
+
+function hasSettingsFlags(flags: Record<string, string>): boolean {
+  const settingsFlagNames = [
+    "lang",
+    "mode",
+    "automation",
+    "expert",
+    "style",
+    "code-review",
+    "tdd",
+    "profile",
+  ]
+  return settingsFlagNames.some((name) => name in flags)
 }
 
 async function main(): Promise<void> {
@@ -221,8 +248,7 @@ async function main(): Promise<void> {
     return
   }
 
-  // Default to "init" when no command given (npx hivemind-context-governance)
-  const command = (positionalArgs[0] ?? "init") as Command
+  const { command, remainingArgs } = resolveCliInvocation(argv[1], positionalArgs)
   const directory = process.cwd()
   const forceFlag = "force" in flags
 
@@ -262,6 +288,7 @@ async function main(): Promise<void> {
           syncMode: (flags["sync-mode"] as "prompt" | "none" | "core" | "balanced" | "full") ?? undefined,
           overwriteAssets: "overwrite" in flags,
           backupAssetsOnOverwrite: "backup-on-overwrite" in flags,
+          profile: flags["profile"] as any,
           force: forceFlag,
         })
       }
@@ -319,6 +346,14 @@ async function main(): Promise<void> {
       if (result.lineageRepairPath) {
         console.log(`Repair artifact: ${result.lineageRepairPath}`)
       }
+      if (result.kernelSessionId) {
+        console.log(`Kernel session: ${result.kernelSessionId}`)
+      }
+      if (result.metaArtifacts) {
+        console.log(`Health artifact: ${result.metaArtifacts.healthStatus}`)
+        console.log(`Diagnosis artifact: ${result.metaArtifacts.diagnosisTracking}`)
+        console.log(`Meta-state artifact: ${result.metaArtifacts.metaState}`)
+      }
       break
     }
 
@@ -366,7 +401,7 @@ async function main(): Promise<void> {
       if (!action) {
         throw new Error("hivefiver-intake requires --action <classify-intent|guided-discovery|route-stage>")
       }
-      const text = flags["text"] ?? positionalArgs.slice(1).join(" ")
+      const text = flags["text"] ?? remainingArgs.join(" ")
       const output = runHiveFiverIntakeBridge({ action, text })
       console.log(JSON.stringify(output, null, 2))
       break
@@ -377,8 +412,48 @@ async function main(): Promise<void> {
       break
 
     case "settings":
+      if (hasSettingsFlags(flags)) {
+        const result = await updateProjectSettings(directory, {
+          language: (flags["lang"] as "en" | "vi") ?? undefined,
+          governanceMode:
+            (flags["mode"] as "permissive" | "assisted" | "strict") ?? undefined,
+          automationLevel: flags["automation"] ?? undefined,
+          expertLevel:
+            (flags["expert"] as "beginner" | "intermediate" | "advanced" | "expert") ?? undefined,
+          outputStyle:
+            (flags["style"] as "explanatory" | "outline" | "skeptical" | "architecture" | "minimal") ?? undefined,
+          requireCodeReview: "code-review" in flags ? true : undefined,
+          enforceTdd: "tdd" in flags ? true : undefined,
+          profile: flags["profile"] as any,
+        })
+        console.log("Settings updated.")
+        if (result.profileApplied) {
+          console.log(`Profile: ${result.profileApplied}`)
+        }
+        console.log(`Updated fields: ${result.updatedFields.length > 0 ? result.updatedFields.join(", ") : "(none)"}`)
+      }
       await showSettings(directory)
       break
+
+    case "harness": {
+      const result = await runHarnessCommand(directory, {
+        serverUrl: flags["server-url"] ?? undefined,
+        timeoutMs: flags["timeout-ms"] ? Number.parseInt(flags["timeout-ms"], 10) : undefined,
+      })
+      console.log(`Harness server: ${result.serverUrl}`)
+      console.log(`Healthy: ${result.healthy ? "yes" : "no"}`)
+      console.log(`Status code: ${result.statusCode ?? "unreachable"}`)
+      console.log(`Version: ${result.version ?? "unknown"}`)
+      console.log(`Kernel sessions: ${result.sessionCount}`)
+      console.log("Recommended commands:")
+      for (const line of result.recommendedCommands) {
+        console.log(`  - ${line}`)
+      }
+      console.log(`Health artifact: ${result.metaArtifacts.healthStatus}`)
+      console.log(`Diagnosis artifact: ${result.metaArtifacts.diagnosisTracking}`)
+      console.log(`Meta-state artifact: ${result.metaArtifacts.metaState}`)
+      break
+    }
 
     case "compact":
       // eslint-disable-next-line no-console
