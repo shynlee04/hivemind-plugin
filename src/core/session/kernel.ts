@@ -3,9 +3,9 @@
  * Core session lifecycle management (≤200 LOC)
  */
 
-import { nanoid } from 'nanoid'
-import { eventBus } from '../../shared/event-bus'
-import { log } from '../../shared/logging'
+import { randomUUID } from 'node:crypto'
+import { eventBus } from '../../shared/event-bus.js'
+import { log } from '../../shared/logging.js'
 
 export interface Session {
   id: string
@@ -27,7 +27,7 @@ let activeSession: Session | null = null
 
 export function createSession(options: SessionCreateOptions = {}): Session {
   const session: Session = {
-    id: `ses_${nanoid(16)}`,
+    id: `ses_${randomUUID().replace(/-/g, '').slice(0, 16)}`,
     status: 'pending',
     intent: options.intent,
     focus: options.focus,

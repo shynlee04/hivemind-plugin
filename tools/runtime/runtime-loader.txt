@@ -1,0 +1,3 @@
+Decide between initial, interdependent, and mid-session loading.
+Use handoff continuity, workflow readiness, and session scope to keep context bounded.
+Escalate to fuller loading only when the runtime path requires it.

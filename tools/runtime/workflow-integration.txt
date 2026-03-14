@@ -1,0 +1,3 @@
+Carry workflow continuity across commands, agents, and delegated sub-sessions.
+Return evidence, handoff summaries, and exact next steps to the main session.
+Never let sub-sessions become independent todo authorities unless explicitly escalated.

@@ -3,8 +3,8 @@
  * Determine when sessions should split or compact (≤200 LOC)
  */
 
-import { Session } from './kernel'
-import { log } from '../../shared/logging'
+import { Session } from './kernel.js'
+import { log } from '../../shared/logging.js'
 
 export interface BoundaryCheck {
   shouldSplit: boolean

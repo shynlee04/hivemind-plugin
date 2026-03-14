@@ -3,8 +3,8 @@
  * Maintain logical consistency across session (≤200 LOC)
  */
 
-import { Session } from './kernel'
-import { log } from '../../shared/logging'
+import { Session } from './kernel.js'
+import { log } from '../../shared/logging.js'
 
 export interface CoherenceCheck {
   coherent: boolean
@@ -12,7 +12,7 @@ export interface CoherenceCheck {
   suggestions: string[]
 }
 
-export function checkCoherence(session: Session, contextSnapshot: unknown): CoherenceCheck {
+export function checkCoherence(_session: Session, _contextSnapshot: unknown): CoherenceCheck {
   const issues: string[] = []
   const suggestions: string[] = []
   

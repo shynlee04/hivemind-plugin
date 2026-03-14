@@ -3,7 +3,7 @@
  * Detect user intent from prompts (≤200 LOC)
  */
 
-import { log } from '../../shared/logging'
+import { log } from '../../shared/logging.js'
 
 export type IntentType = 
   | 'implementation'

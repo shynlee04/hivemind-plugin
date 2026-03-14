@@ -1,0 +1,3 @@
+Transform runtime state into prompt packets without duplicating governance doctrine.
+Respect session scope, workflow stage, lineage, and prompt quality.
+Prefer structured packets over raw file dumps.

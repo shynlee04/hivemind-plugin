@@ -84,6 +84,7 @@
   "devDependencies": {
     "@opencode-ai/plugin": "^1.1.53",
     "@types/node": "^20.10.0",
+    "hivemind-context-governance": "^2.8.5",
     "tsx": "^4.7.0"
   },
   "peerDependencies": {

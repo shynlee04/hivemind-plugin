@@ -2,7 +2,7 @@
  * Shared utilities barrel export
  */
 
-export * from './paths'
-export * from './tool-response'
-export * from './event-bus'
-export * from './logging'
+export * from './paths.js'
+export * from './tool-response.js'
+export * from './event-bus.js'
+export * from './logging.js'

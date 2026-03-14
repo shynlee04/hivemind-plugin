@@ -5,8 +5,8 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
-import { getHivemindPath } from '../../shared/paths'
-import { log } from '../../shared/logging'
+import { getHivemindPath } from '../../shared/paths.js'
+import { log } from '../../shared/logging.js'
 
 export interface Anchor {
   key: string

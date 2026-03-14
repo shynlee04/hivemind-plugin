@@ -2,5 +2,5 @@
  * State module barrel export
  */
 
-export * from './active'
-export * from './anchors'
+export * from './active.js'
+export * from './anchors.js'
