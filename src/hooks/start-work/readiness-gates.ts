@@ -4,7 +4,7 @@ export function resolveReadinessGates(
   input: StartWorkInput,
   purposeClass: PurposeClass,
 ): ReadinessGate[] {
-  if (!input.hasHivemind) {
+  if (input.hasHivemind === false) {
     return [{
       blocking: true,
       commandId: 'hm-init',
@@ -12,7 +12,7 @@ export function resolveReadinessGates(
     }]
   }
 
-  if (!input.hivemindHealthy) {
+  if (input.hivemindHealthy === false) {
     return [{
       blocking: true,
       commandId: 'hm-doctor',
@@ -20,7 +20,7 @@ export function resolveReadinessGates(
     }]
   }
 
-  if (!input.hasWorkflow && ['planning', 'implementation', 'gatekeeping', 'tdd', 'course-correction'].includes(purposeClass)) {
+  if (input.hasWorkflow === false && ['planning', 'implementation', 'gatekeeping', 'tdd', 'course-correction'].includes(purposeClass)) {
     return [{
       blocking: false,
       commandId: 'hm-harness',

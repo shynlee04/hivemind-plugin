@@ -2,6 +2,18 @@
 description: "Bootstrap the Hivemind control plane and collect the minimum required profile, governance, and readiness state."
 agent: hivefiver
 subtask: false
+consumes_state:
+  - entry
+produces_state:
+  - workflow-authority
+  - trajectory-ledger
+  - recovery-checkpoint
+  - planning-projection
+verification_contract: bootstrap-readiness
+closeout_gate: required
+artifact_projections:
+  - planning
+  - recovery
 ---
 
 # HM Init

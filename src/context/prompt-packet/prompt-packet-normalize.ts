@@ -10,7 +10,11 @@ export interface NormalizedPromptPacketState {
   lineage: KernelLineage
   sessionId: string
   parentSessionId: string | null
+  trajectoryId: string
   workflowId: string
+  taskIds: string[]
+  subtaskIds: string[]
+  checkpointId: string
   todoChainId: string
   branchFocus: string
   governanceMode: string
@@ -19,6 +23,8 @@ export interface NormalizedPromptPacketState {
   artifactLanguage: string
   expertLevel: string
   outputStyle: string
+  verificationContract: string
+  returnContract: string
   guardrails: string[]
   facilitators: string[]
   mcpReadiness: string[]
@@ -46,7 +52,11 @@ export function normalizePromptPacketState(
     lineage: state.lineage ?? 'hivefiver',
     sessionId: state.sessionId,
     parentSessionId: state.parentSessionId ?? null,
+    trajectoryId: state.trajectoryId ?? 'unassigned',
     workflowId: state.workflowId ?? 'unassigned',
+    taskIds: fallbackList(state.taskIds),
+    subtaskIds: fallbackList(state.subtaskIds),
+    checkpointId: state.checkpointId ?? 'unassigned',
     todoChainId: state.todoChainId ?? 'unassigned',
     branchFocus: state.branchFocus ?? 'delegated-scope-pending',
     governanceMode: state.governanceMode ?? 'assisted',
@@ -55,6 +65,8 @@ export function normalizePromptPacketState(
     artifactLanguage: state.artifactLanguage ?? state.language ?? 'en',
     expertLevel: state.expertLevel ?? 'intermediate',
     outputStyle: state.outputStyle ?? 'explanatory',
+    verificationContract: state.verificationContract ?? 'unassigned',
+    returnContract: state.returnContract ?? 'deliver findings, evidence refs, and exact next steps',
     guardrails: fallbackList(state.guardrails),
     facilitators: fallbackList(state.facilitators),
     mcpReadiness: fallbackList(state.mcpReadiness),

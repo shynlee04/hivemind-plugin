@@ -11,9 +11,13 @@ describe('prompt packet compiler', () => {
         sessionId: 'ses_main',
         sessionClass: 'workflow-execution',
         lineage: 'hivefiver',
+        trajectoryId: 'trj-main',
         workflowId: 'wf-runtime',
+        taskIds: ['task-main'],
+        checkpointId: 'chk-main',
         todoChainId: 'todo-main',
         branchFocus: 'refactor compiler',
+        verificationContract: 'vc-main',
         guardrails: ['tdd'],
       },
       'main',
@@ -22,6 +26,9 @@ describe('prompt packet compiler', () => {
     assert.equal(packet.sessionScope, 'main')
     assert.match(packet.systemPacket, /<hivemind-kernel-packet>/)
     assert.match(packet.messagePacket, /<hivemind-lineage-refresh>/)
+    assert.match(packet.systemPacket, /trajectory=trj-main/)
+    assert.match(packet.systemPacket, /task_ids=task-main/)
+    assert.match(packet.systemPacket, /verification_contract=vc-main/)
   })
 
   it('compiles bounded delegation packet for sub-sessions', () => {
@@ -30,8 +37,12 @@ describe('prompt packet compiler', () => {
         sessionId: 'ses_sub',
         parentSessionId: 'ses_parent',
         lineage: 'hivefiver',
+        trajectoryId: 'trj-sub',
         workflowId: 'wf-runtime',
+        taskIds: ['task-sub'],
+        checkpointId: 'chk-sub',
         branchFocus: 'investigate docs',
+        returnContract: 'return evidence and exact next steps',
       },
       'sub-session',
     )
@@ -40,6 +51,9 @@ describe('prompt packet compiler', () => {
     assert.match(packet.systemPacket, /<hivemind-delegation-packet>/)
     assert.match(packet.messagePacket, /<hivemind-delegation-refresh>/)
     assert.doesNotMatch(packet.systemPacket, /<hivemind-kernel-packet>/)
+    assert.match(packet.systemPacket, /trajectory=trj-sub/)
+    assert.match(packet.systemPacket, /checkpoint_id=chk-sub/)
+    assert.match(packet.systemPacket, /return_contract=return evidence and exact next steps/)
   })
 })
 

@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, it } from 'node:test'
 
 import { resolveStartWork } from '../src/hooks/start-work/index.js'
+import { bootstrapWorkflowAuthority } from '../src/core/workflow-management/index.js'
+import { bootstrapTrajectoryLedger, closeTrajectory } from '../src/core/trajectory/index.js'
 
 describe('start-work router', () => {
   it('forces hm-init when no hivemind state exists', () => {
@@ -53,5 +58,103 @@ describe('start-work router', () => {
     assert.equal(decision.sessionState, 'sub-session')
     assert.equal(decision.purposeClass, 'research')
     assert.equal(decision.recommendedCommandId, 'hm-research')
+  })
+
+  it('gates sub-session entries that have no linked task authority', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'hm-start-work-'))
+
+    try {
+      bootstrapWorkflowAuthority(dir, {
+        workflowId: 'wf_parent',
+        sessionScope: 'main',
+        lineage: 'hivefiver',
+      })
+
+      const decision = resolveStartWork({
+        userMessage: 'continue delegated implementation',
+        sessionId: 'ses_sub_orphan',
+        sessionScope: 'sub-session',
+        projectRoot: dir,
+        activeLineage: 'hivefiver',
+      })
+
+      assert.equal(decision.riskLevel, 'gated')
+      assert.equal(decision.traversalOutcome, 'route')
+      assert.equal(decision.continuityAlerts.includes('missing-task-link'), true)
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('attaches to an active trajectory instead of treating the session as the authority', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'hm-start-work-trajectory-'))
+
+    try {
+      bootstrapWorkflowAuthority(dir, {
+        workflowId: 'wf_active',
+        sessionScope: 'main',
+        lineage: 'hivefiver',
+      })
+      await bootstrapTrajectoryLedger(dir, {
+        trajectoryId: 'trj_active',
+        workflowId: 'wf_active',
+        sessionId: 'ses_existing',
+        lineage: 'hivefiver',
+        purposeClass: 'planning',
+        taskIds: ['task_active'],
+      })
+
+      const decision = resolveStartWork({
+        userMessage: 'continue the active planning workflow',
+        sessionId: 'ses_new',
+        sessionScope: 'main',
+        projectRoot: dir,
+        activeLineage: 'hivefiver',
+        workflowId: 'wf_active',
+      })
+
+      assert.equal(decision.trajectoryAssessment?.action, 'attach-active')
+      assert.equal(decision.trajectoryAssessment?.activeTrajectoryId, 'trj_active')
+      assert.equal(decision.routeDisposition, 'attach')
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('resumes last-closed trajectories when there is no active one and the prompt signals continuation', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'hm-start-work-resume-'))
+
+    try {
+      bootstrapWorkflowAuthority(dir, {
+        workflowId: 'wf_closed',
+        sessionScope: 'main',
+        lineage: 'hivefiver',
+      })
+      await bootstrapTrajectoryLedger(dir, {
+        trajectoryId: 'trj_closed',
+        workflowId: 'wf_closed',
+        sessionId: 'ses_closed',
+        lineage: 'hivefiver',
+        purposeClass: 'implementation',
+        taskIds: ['task_closed'],
+      })
+      await closeTrajectory(dir, 'trj_closed', {
+        closingSummary: 'Implementation branch validated',
+      })
+
+      const decision = resolveStartWork({
+        userMessage: 'resume the implementation work we validated last time',
+        sessionId: 'ses_resume',
+        sessionScope: 'main',
+        projectRoot: dir,
+        activeLineage: 'hivefiver',
+      })
+
+      assert.equal(decision.trajectoryAssessment?.action, 'resume-closed')
+      assert.equal(decision.trajectoryAssessment?.lastClosedTrajectoryId, 'trj_closed')
+      assert.equal(decision.routeDisposition, 'resume')
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
   })
 })

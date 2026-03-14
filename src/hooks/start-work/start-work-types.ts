@@ -1,4 +1,6 @@
 import type { KernelLineage, SessionScope } from '../../context/prompt-packet/prompt-packet-types.js'
+import type { TrajectoryAssessment } from '../../core/trajectory/index.js'
+import type { WorkflowAuthorityStatus } from '../../core/workflow-management/index.js'
 
 export type PurposeClass =
   | 'discovery'
@@ -12,18 +14,24 @@ export type PurposeClass =
 
 export type SessionStateKind = 'fresh' | 'ongoing' | 'continuation' | 'sub-session'
 export type RuntimeRiskLevel = 'none' | 'gated' | 'blocked'
+export type TraversalOutcome = 'bootstrap' | 'repair' | 'route' | 'refuse'
 
 export interface StartWorkInput {
   userMessage: string
   sessionId: string
   sessionScope: SessionScope
+  projectRoot?: string
+  workflowId?: string
+  taskIds?: string[]
   parentSessionId?: string
   attachments?: string[]
   activeLineage?: KernelLineage
-  hasHivemind: boolean
-  hivemindHealthy: boolean
-  hasWorkflow: boolean
-  hasHandoff: boolean
+  activeAgent?: string
+  turnCount?: number
+  hasHivemind?: boolean
+  hivemindHealthy?: boolean
+  hasWorkflow?: boolean
+  hasHandoff?: boolean
 }
 
 export interface ReadinessGate {
@@ -41,6 +49,13 @@ export interface StartWorkDecision {
   confidence: number
   reasons: string[]
   readiness: ReadinessGate[]
+  traversalOutcome: TraversalOutcome
+  commandAgent?: string
+  continuityAlerts: string[]
+  workflowAuthority?: WorkflowAuthorityStatus
+  trajectoryAssessment?: TrajectoryAssessment
+  routeDisposition?: 'attach' | 'resume' | 'create' | 'defer' | 'refuse'
+  nextTransition?: string
   requiredCommandId?: string
   recommendedCommandId?: string
   autoRoute: boolean

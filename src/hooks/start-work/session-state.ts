@@ -15,3 +15,11 @@ export function detectSessionState(input: StartWorkInput): SessionStateKind {
 
   return 'fresh'
 }
+
+export function detectContinuityAlerts(input: StartWorkInput): string[] {
+  if (input.sessionScope === 'sub-session' && !input.hasHandoff && (input.taskIds?.length ?? 0) === 0) {
+    return ['missing-task-link']
+  }
+
+  return []
+}

@@ -2,6 +2,18 @@
 description: "Validate workflow readiness, continuity, and integration posture before high-control work proceeds."
 agent: hivefiver
 subtask: false
+consumes_state:
+  - workflow-authority
+  - trajectory-ledger
+  - task-ledger
+produces_state:
+  - readiness-verdict
+  - recovery-checkpoint
+  - planning-projection
+verification_contract: harness-readiness
+closeout_gate: advisory
+artifact_projections:
+  - planning
 ---
 
 # HM Harness

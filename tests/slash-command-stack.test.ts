@@ -3,9 +3,13 @@ import { describe, it } from 'node:test'
 
 import {
   discoverSlashCommandBundles,
+  executeSlashCommandBundle,
   findSlashCommandBundle,
   previewSlashCommandBundle,
 } from '../src/tools/slash-command/index.js'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { createAutoSlashCommandPlan, resolveStartWork } from '../src/index.js'
 
 describe('slash-command stack', () => {
@@ -16,12 +20,15 @@ describe('slash-command stack', () => {
   })
 
   it('loads same-name command instruction text', async () => {
-    const bundle = findSlashCommandBundle('hm-implement')
+    const bundle = findSlashCommandBundle('hm-plan')
     assert.ok(bundle)
 
     const preview = await previewSlashCommandBundle(bundle!)
     assert.equal(preview.frontmatter.agent, 'hivefiver')
     assert.match(preview.body, /## Process/)
+    assert.equal(preview.contract.usesArguments, true)
+    assert.equal(preview.contract.producesState.includes('planning-projection'), true)
+    assert.equal(preview.contract.verificationContract, 'planning-traceability')
     assert.equal(preview.workflowChain.length, 3)
   })
 
@@ -40,5 +47,34 @@ describe('slash-command stack', () => {
     const plan = createAutoSlashCommandPlan(decision)
     assert.equal(plan.commandBinding.bundle?.id, 'hm-doctor')
     assert.equal(plan.commandBinding.autoRoute, false)
+  })
+
+  it('executes hm-init against workflow authority instead of previewing only', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'hm-command-init-'))
+
+    try {
+      const bundle = findSlashCommandBundle('hm-init')
+      assert.ok(bundle)
+
+      const result = await executeSlashCommandBundle(bundle!, {
+        projectRoot: dir,
+        sessionId: 'wf_init',
+        sessionScope: 'main',
+        lineage: 'hivefiver',
+        purposeClass: 'planning',
+        trajectoryId: 'trj_init',
+        workflowId: 'wf_init',
+        taskIds: ['task_init'],
+      })
+
+      assert.equal(result.executionMode, 'handler')
+      assert.equal(result.report.status, 'initialized')
+      assert.equal(Array.isArray(result.entityBindings?.taskIds), true)
+      assert.equal(result.stateTransitions?.includes('recovery-checkpoint-created'), true)
+      assert.equal(result.artifactRefs?.length, 1)
+      assert.equal(result.verificationContractId, 'bootstrap-readiness')
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
   })
 })

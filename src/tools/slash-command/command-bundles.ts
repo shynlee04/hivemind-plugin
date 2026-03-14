@@ -4,6 +4,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-init',
     title: 'Initialize control plane',
+    agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['planning', 'implementation'],
     commandFile: 'hm-init.md',
@@ -16,6 +17,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-doctor',
     title: 'Repair broken control plane',
+    agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['course-correction', 'gatekeeping'],
     commandFile: 'hm-doctor.md',
@@ -28,6 +30,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-harness',
     title: 'Validate workflow readiness',
+    agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['planning', 'implementation', 'gatekeeping', 'tdd'],
     commandFile: 'hm-harness.md',
@@ -40,6 +43,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-settings',
     title: 'Reconfigure control plane settings',
+    agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['planning'],
     commandFile: 'hm-settings.md',
@@ -52,6 +56,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-research',
     title: 'Run research and synthesis workflow',
+    agent: 'hiverd',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['research'],
     commandFile: 'hm-research.md',
@@ -64,6 +69,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-plan',
     title: 'Build structured implementation plan',
+    agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['planning'],
     commandFile: 'hm-plan.md',
@@ -76,6 +82,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-implement',
     title: 'Execute implementation workflow',
+    agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['implementation'],
     commandFile: 'hm-implement.md',
@@ -88,6 +95,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-verify',
     title: 'Run verification and review workflow',
+    agent: 'hiveq',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['gatekeeping'],
     commandFile: 'hm-verify.md',
@@ -100,6 +108,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-tdd',
     title: 'Enforce test-driven development flow',
+    agent: 'hiveq',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['tdd'],
     commandFile: 'hm-tdd.md',
@@ -112,6 +121,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-course-correct',
     title: 'Recover or realign an active workflow',
+    agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['course-correction'],
     commandFile: 'hm-course-correct.md',

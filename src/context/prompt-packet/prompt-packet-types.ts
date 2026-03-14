@@ -6,7 +6,11 @@ export interface PromptPacketState {
   parentSessionId?: string
   sessionClass?: string
   lineage?: KernelLineage
+  trajectoryId?: string
   workflowId?: string
+  taskIds?: string[]
+  subtaskIds?: string[]
+  checkpointId?: string
   todoChainId?: string
   branchFocus?: string
   governanceMode?: string
@@ -15,6 +19,8 @@ export interface PromptPacketState {
   artifactLanguage?: string
   expertLevel?: string
   outputStyle?: string
+  verificationContract?: string
+  returnContract?: string
   guardrails?: string[]
   facilitators?: string[]
   mcpReadiness?: string[]

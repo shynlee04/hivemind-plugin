@@ -2,6 +2,18 @@
 description: "Audit and repair unhealthy control-plane state before workflow execution continues."
 agent: hivefiver
 subtask: false
+consumes_state:
+  - workflow-authority
+  - trajectory-ledger
+produces_state:
+  - repair-actions
+  - recovery-checkpoint
+  - planning-projection
+verification_contract: recovery-health
+closeout_gate: required
+artifact_projections:
+  - planning
+  - recovery
 ---
 
 # HM Doctor

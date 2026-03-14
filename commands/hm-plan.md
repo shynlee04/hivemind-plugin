@@ -2,6 +2,16 @@
 description: "Convert the current request into a structured plan with routed workflow stages, constraints, and next execution steps."
 agent: hivefiver
 subtask: true
+consumes_state:
+  - trajectory-ledger
+  - workflow-authority
+produces_state:
+  - workflow-plan
+  - planning-projection
+verification_contract: planning-traceability
+closeout_gate: advisory
+artifact_projections:
+  - planning
 ---
 
 # HM Plan
