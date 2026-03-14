@@ -40,12 +40,6 @@
       "enabled": true,
       "timeout": 15000
     },
-    "exa": {
-      "type": "remote",
-      "url": "https://mcp.exa.com/mcp",
-      "enabled": true,
-      "timeout": 15000
-    },
     "repomix": {
       "type": "local",
       "command": [
@@ -370,11 +364,11 @@
     },
     "compaction": {
       "mode": "all",
-      "hidden": true
+      "hidden": false
     },
     "summary": {
       "mode": "all",
-      "hidden": true
+      "hidden": false
     },
     "hivefiver": {
       "mode": "primary",
