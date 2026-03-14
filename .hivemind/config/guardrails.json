@@ -1,0 +1,11 @@
+{
+  "version": "3.0.0",
+  "updated_at": "2026-03-14T00:35:15.237Z",
+  "require_code_review": false,
+  "enforce_tdd": false,
+  "max_response_tokens": 4096,
+  "completion_rule": {
+    "mode": "last-open-todo",
+    "description": "Close the session when the last open TODO item is complete unless stricter workflow gates exist."
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "version": "3.0.0",
+  "updated_at": "2026-03-14T00:35:15.236Z",
+  "boot_health": "ready",
+  "current_lineage": "hiveminder",
+  "active_session_id": "SES-fcc2a0b4-b0d9-44cf-8f05-52b90fae1ed1",
+  "active_opencode_session_id": "ses_3163b5674ffe35GRL986rxDuzp",
+  "active_workflow_id": null,
+  "active_todo_chain_id": null,
+  "branch_status": "idle",
+  "integrity_grade": "healthy",
+  "critical_gaps": [],
+  "settings_digest": {
+    "language": "en",
+    "governance_mode": "assisted",
+    "automation_level": "assisted",
+    "expert_level": "intermediate",
+    "output_style": "explanatory"
+  },
+  "refs": {
+    "integrity": {
+      "path": "./states/shared/integrity.json",
+      "id": null,
+      "description": "Kernel integrity status"
+    },
+    "session_map": {
+      "path": "./states/shared/session-map.json",
+      "id": null,
+      "description": "OpenCode to Hivemind session map"
+    },
+    "artifact_index": {
+      "path": "./states/shared/artifact-index.json",
+      "id": null,
+      "description": "Kernel artifact index"
+    },
+    "verification_index": {
+      "path": "./states/shared/verification-index.json",
+      "id": null,
+      "description": "Kernel verification index"
+    },
+    "profile": {
+      "path": "./config/profile.json",
+      "id": null,
+      "description": "Profile steering inputs"
+    },
+    "governance": {
+      "path": "./config/governance.json",
+      "id": null,
+      "description": "Governance steering inputs"
+    },
+    "guardrails": {
+      "path": "./config/guardrails.json",
+      "id": null,
+      "description": "Guardrail steering inputs"
+    },
+    "session": {
+      "path": "./states/lineages/hiveminder/sessions/SES-fcc2a0b4-b0d9-44cf-8f05-52b90fae1ed1.json",
+      "id": "SES-fcc2a0b4-b0d9-44cf-8f05-52b90fae1ed1",
+      "description": "Active kernel session record"
+    },
+    "workflow": null,
+    "todo_chain": null
+  }
+}

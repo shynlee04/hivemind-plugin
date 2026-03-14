@@ -1,8 +1,0 @@
-{
-  "label": "strategic-architecture-research-wave",
-  "timestamp": 1773422408078,
-  "agent": "hiveminder",
-  "todoSnapshot": "[\"completed: Commit touched files (doc-intel, hivemind-doc, hivemind-doc.test)\",\"cancelled: Implement YAML/XML create scaffolding (RED then GREEN)\",\"cancelled: Verify YAML/XML create with tests + typecheck\",\"cancelled: Commit YAML/XML slice\",\"completed: Ground-truth audit of current .hivemind state surfaces, runtime generators, and contamination sources\",\"completed: OpenCode capability and constraint synthesis from local docs for target architecture decisions\",\"completed: Selective GSD comparative research focused on session/workflow/state patterns worth adapting to OpenCode\",\"pending: HARD STOP — deliver evidence-backed architecture synthesis with contamination-safe implementation order and no code mutations yet\"]",
-  "gateSnapshot": "[]",
-  "stateHash": "mmp5wvpq"
-}

@@ -1,8 +1,0 @@
-{
-  "label": "doc-tool-hardening-red-tests",
-  "timestamp": 1773347283554,
-  "agent": "hiveminder",
-  "todoSnapshot": "[\"completed: Inspect repo structure, target artifact files, and historical investigation export to reconstruct the failed workflow\",\"completed: Trace document tool implementation and contracts across doc-intel, doc-weaver, hivemind-doc, and related helpers/registration code\",\"completed: Investigate delegation/orchestration paths, subagent prompting, and success-reporting/verification gaps that allow empty artifacts\",\"completed: Synthesize root causes, failure taxonomy, architectural weaknesses, and prioritized fixes with verification plan\",\"in_progress: Write implementation plan for hardening hivemind_doc/doc-intel contracts and multi-format document operations\",\"pending: Add failing regression tests for create/materialize semantics, validation receipts, and structured-format write integrity\",\"pending: Implement doc-intel and hivemind_doc hardening for scaffold/materialize semantics, post-write verification, and format-aware writes\",\"pending: Run targeted verification and reconcile claimed artifact behavior against disk and test outputs\",\"pending: HARD STOP — do not claim completion until tool-level create/materialize tests, format-integrity checks, and non-empty artifact assertions all pass\"]",
-  "gateSnapshot": "[]",
-  "stateHash": "mmnx6p9e"
-}

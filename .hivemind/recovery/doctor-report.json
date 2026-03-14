@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-03-14T00:43:07.765Z",
+  "mode": "report",
+  "dry_run": false,
+  "hard_reset": false,
+  "broken": true,
+  "selected_session_id": null,
+  "issues": [
+    {
+      "code": "ACTIVE_MD_BLANK_WITH_BRAIN_SESSION",
+      "severity": "error",
+      "message": "active.md is blank while brain has active session",
+      "evidence": {
+        "brainSessionId": "fcc2a0b4-b0d9-44cf-8f05-52b90fae1ed1"
+      }
+    }
+  ],
+  "actions": []
+}
