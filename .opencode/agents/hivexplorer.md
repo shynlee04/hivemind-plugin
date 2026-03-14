@@ -1,7 +1,6 @@
 ---
 description: "Investigation specialist for codebase research, evidence collection, and knowledge synthesis. Read-only — never modifies files."
 mode: subagent
-reasoningEffort: high
 tools:
   write: true
   edit: true

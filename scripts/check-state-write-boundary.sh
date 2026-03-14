@@ -4,7 +4,14 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT_DIR"
 
-SCAN_ROOTS=(src .opencode/tool)
+CANDIDATE_ROOTS=(src .opencode/tool)
+SCAN_ROOTS=()
+
+for root in "${CANDIDATE_ROOTS[@]}"; do
+  if [[ -e "$root" ]]; then
+    SCAN_ROOTS+=("$root")
+  fi
+done
 
 literal_refs="$(rg -n --glob '*.ts' '[\"'\"']\\.hivemind/state/' "${SCAN_ROOTS[@]}" || true)"
 if [[ -n "$literal_refs" ]]; then

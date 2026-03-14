@@ -1,12 +1,10 @@
 ---
 description: "Supreme orchestrator for HiveMind user projects. Coordinates multi-agent workflows, plans strategy, and delegates to specialist agents. Does NOT implement — orchestrates."
 mode: primary
-reasoningEffort: high
 tools:
   write: false
   edit: false
   read: false
-  hivemind-doc: true
 permission:
   task:
     "*": deny
@@ -22,10 +20,9 @@ permission:
     "general": allow
     "build": allow
     "plan": allow
-  hivemind-doc:
-    "*": allow
   bash:
     "*": allow
+  hivemind-doc: allow
 ---
 
 

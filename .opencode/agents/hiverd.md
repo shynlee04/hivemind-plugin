@@ -1,15 +1,14 @@
 ---
 description: "Research specialist for external evidence synthesis, ecosystem analysis, and technology evaluation. Cannot modify code."
 mode: subagent
-reasoningEffort: high
 tools:
   write: true
   edit: true
   bash: true
 permission:
-  hivemind-doc: allow
   edit: allow
   webfetch: allow
+  hivemind-doc: allow
 ---
 
 # Hiverd — Elite Research Specialist

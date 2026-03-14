@@ -1,4 +1,4 @@
-import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
@@ -9,13 +9,14 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const PACKAGE_ROOT = resolve(__dirname, '..', '..')
 const LOCAL_PLUGIN_FILE = 'hivemind-context-governance.ts'
 const PACKAGE_PLUGIN_NAME = 'hivemind-context-governance'
+const PACKAGE_PLUGIN_ENTRY = 'hivemind-context-governance/plugin'
 
 function getPluginStubSource(targetDirectory: string): string {
   if (resolve(targetDirectory) === PACKAGE_ROOT) {
     return 'export { HiveMindPlugin as default, HiveMindPlugin } from "../../src/plugin/opencode-plugin.ts"\n'
   }
 
-  return `export { HiveMindPlugin as default, HiveMindPlugin } from "${PACKAGE_PLUGIN_NAME}"\n`
+  return `export { HiveMindPlugin as default, HiveMindPlugin } from "${PACKAGE_PLUGIN_ENTRY}"\n`
 }
 
 async function ensureOpencodeConfig(directory: string): Promise<void> {
@@ -53,6 +54,31 @@ async function ensureCommandMirror(directory: string): Promise<string[]> {
   return mirrored
 }
 
+async function ensureAgentMirror(directory: string): Promise<string[]> {
+  const targetDir = join(directory, '.opencode', 'agents')
+  await mkdir(targetDir, { recursive: true })
+  const mirrored: string[] = []
+  const sourceDir = join(PACKAGE_ROOT, 'agents')
+
+  if (!existsSync(sourceDir)) {
+    return mirrored
+  }
+
+  const agentEntries = await readdir(sourceDir, { withFileTypes: true })
+  for (const entry of agentEntries) {
+    if (!entry.isFile() || !entry.name.endsWith('.md')) {
+      continue
+    }
+
+    const source = join(sourceDir, entry.name)
+    const target = join(targetDir, entry.name)
+    await copyFile(source, target)
+    mirrored.push(target)
+  }
+
+  return mirrored
+}
+
 async function ensurePluginStub(directory: string): Promise<string> {
   const targetDir = join(directory, '.opencode', 'plugins')
   const targetFile = join(targetDir, LOCAL_PLUGIN_FILE)
@@ -64,15 +90,18 @@ async function ensurePluginStub(directory: string): Promise<string> {
 export interface RuntimeSurfaceSyncResult {
   pluginFile: string
   mirroredCommandFiles: string[]
+  mirroredAgentFiles: string[]
 }
 
 export async function syncRuntimeSurface(directory: string): Promise<RuntimeSurfaceSyncResult> {
   await ensureOpencodeConfig(directory)
   const mirroredCommandFiles = await ensureCommandMirror(directory)
+  const mirroredAgentFiles = await ensureAgentMirror(directory)
   const pluginFile = await ensurePluginStub(directory)
 
   return {
     pluginFile,
     mirroredCommandFiles,
+    mirroredAgentFiles,
   }
 }

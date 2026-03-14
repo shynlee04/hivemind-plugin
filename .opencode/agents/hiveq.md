@@ -1,8 +1,6 @@
 ---
 description: "Quality and verification specialist. Produces pass/fail verdicts. Never implements fixes — only verifies and reports."
 mode: subagent
-model: openai/gpt-5.4
-reasoningEffort: high
 tools:
   write: false
   edit: false
@@ -16,6 +14,7 @@ permission:
     "grep *": allow
     "find *": allow
     "cat *": allow
+  hivemind-doc: allow
 ---
 
 # Hiveq — Quality & Verification Specialist

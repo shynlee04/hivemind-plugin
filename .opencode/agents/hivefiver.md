@@ -1,7 +1,6 @@
 ---
 description: "Meta-builder and framework doctor for OpenCode assets. Builds, audits, and fixes agents, commands, skills, workflows. Doctors other lineages when they break. Does NOT touch product code."
 mode: all
-reasoningEffort: high
 tools:
   write: false
   edit: false

@@ -1,15 +1,11 @@
 ---
 description: "Planning specialist for phase/task design, sequencing, and handoff artifacts. Never implements code — designs the roadmap."
 mode: subagent
-model: openai/gpt-5.4
-reasoningEffort: high
 tools:
   write: true
   edit: true
-  hivemind-doc: true
 permission:
   edit: allow
-  hivemind-doc: allow
   bash:
     "*": allow
     "grep *": allow
@@ -17,6 +13,7 @@ permission:
     "cat *": allow
     "ls *": allow
     "tree *": allow
+  hivemind-doc: allow
 ---
 
 # Hiveplanner — Planning Specialist

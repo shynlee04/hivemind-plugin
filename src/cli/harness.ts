@@ -158,7 +158,7 @@ export async function runHarnessCommand(directory: string, options: HarnessOptio
     currentGate: 'Runtime entry attachment and CLI recovery',
     metaArtifacts,
     recommendedCommands: health.healthy
-      ? ['opencode attach', 'hm-harness', 'hm-plan']
+      ? ['opencode attach', 'hm-harness', '/hm-plan']
       : ['opencode serve', 'hm-doctor', 'hm-init'],
     commandResult,
   }

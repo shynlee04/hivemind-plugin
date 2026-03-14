@@ -10,20 +10,6 @@ import { createPluginRuntimePlan } from './runtime-plan.js'
 import { createSystemTransform } from './system-transform.js'
 import { loadRuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
 
-type MessagePart = {
-  id?: string
-  sessionID?: string
-  messageID?: string
-  type?: string
-  text?: string
-  synthetic?: boolean
-  experimental_providerMetadata?: {
-    opencode?: {
-      ui_hidden?: boolean
-    }
-  }
-}
-
 type MessageLike = {
   info?: {
     id?: string

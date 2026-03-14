@@ -9,6 +9,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./plugin": {
+      "import": "./dist/plugin/opencode-plugin.js",
+      "types": "./dist/plugin/opencode-plugin.d.ts"
     }
   },
   "bin": {
@@ -69,6 +73,8 @@
     "access": "public"
   },
   "dependencies": {
+    "@opencode-ai/plugin": "^1.2.26",
+    "@opencode-ai/sdk": "^1.2.26",
     "@clack/prompts": "^1.0.0",
     "@types/proper-lockfile": "^4.1.4",
     "@z_ai/coding-helper": "^0.0.7",
@@ -83,7 +89,6 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@opencode-ai/plugin": "^1.1.53",
     "@types/node": "^20.10.0",
     "hivemind-context-governance": "^2.8.5",
     "tsx": "^4.7.0"
