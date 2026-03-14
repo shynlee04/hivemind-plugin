@@ -1,7 +1,12 @@
 import { assessTrajectoryEntrySync } from '../../core/trajectory/index.js'
 import type { TrajectoryAssessmentAction } from '../../core/trajectory/index.js'
 import { inspectWorkflowAuthority } from '../../core/workflow-management/index.js'
-import { findSlashCommandBundle } from '../../tools/slash-command/index.js'
+import { resolveOpencodeKnowledgeSurfaces } from '../../shared/opencode-knowledge.js'
+import {
+  pickRuntimePressureContract,
+  type RuntimePressureId,
+} from '../../shared/pressure-contract.js'
+import { findSlashCommandBundle } from '../../commands/slash-command/index.js'
 import type { RuntimeRiskLevel, StartWorkDecision, StartWorkInput, TraversalOutcome } from './start-work-types.js'
 import { classifyPurpose } from './purpose-classifier.js'
 import { resolveLineage } from './lineage-router.js'
@@ -100,6 +105,39 @@ function resolveRouteDisposition(
   return 'create'
 }
 
+function resolvePressureSignals(
+  input: StartWorkInput,
+  readinessPressureIds: RuntimePressureId[],
+  trajectoryAction: TrajectoryAssessmentAction | undefined,
+  wrongAgent: boolean,
+): RuntimePressureId[] {
+  const pressureSignals = new Set<RuntimePressureId>(readinessPressureIds)
+
+  if (trajectoryAction === 'attach-active' || trajectoryAction === 'resume-closed') {
+    pressureSignals.add('trajectory-continuation')
+  }
+
+  if (trajectoryAction === 'refuse-conflict' || wrongAgent) {
+    pressureSignals.add('active-trajectory-conflict')
+  }
+
+  if (input.sessionScope === 'sub-session' || input.hasHandoff) {
+    pressureSignals.add('delegated-handoff')
+  }
+
+  if (pressureSignals.size === 0) {
+    pressureSignals.add('steady-state')
+  }
+
+  return [...pressureSignals]
+}
+
+/**
+ * Resolve the authoritative start-work decision for an incoming user turn.
+ *
+ * @param input The entry context used to classify purpose, lineage, readiness, and trajectory continuity.
+ * @returns A unified routing decision with pressure, safety, and evidence expectations attached.
+ */
 export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
   const route = resolveLineage(input.userMessage, input.activeLineage)
   const purpose = classifyPurpose(input.userMessage, input.attachments)
@@ -140,6 +178,9 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
     sessionState = 'continuation'
   }
   const readiness = resolveReadinessGates(enrichedInput, purpose.purposeClass)
+  const readinessPressureIds = readiness
+    .map((gate) => gate.pressureId)
+    .filter((pressureId): pressureId is RuntimePressureId => pressureId !== undefined)
   const requiredCommandId = readiness.find((gate) => gate.commandId)?.commandId
   const recommendedCommandId = requiredCommandId ?? resolveRecommendedCommand(purpose.purposeClass)
   const commandAgent = recommendedCommandId
@@ -157,6 +198,13 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
   const autoRoute = traversalOutcome === 'route'
     && AUTO_ROUTE_PURPOSES.has(purpose.purposeClass)
     && riskLevel !== 'blocked'
+  const pressureSignals = resolvePressureSignals(
+    enrichedInput,
+    readinessPressureIds,
+    trajectoryAssessment?.action,
+    wrongAgent,
+  )
+  const pressureContract = pickRuntimePressureContract(pressureSignals)
 
   return {
     sessionId: input.sessionId,
@@ -179,5 +227,8 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
     recommendedCommandId,
     autoRoute,
     riskLevel,
+    opencodeKnowledge: resolveOpencodeKnowledgeSurfaces(purpose.purposeClass, input.userMessage),
+    pressureSignals,
+    pressureContract,
   }
 }

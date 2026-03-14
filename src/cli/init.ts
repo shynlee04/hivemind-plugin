@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto'
 import type { KernelLineage, SessionScope } from '../context/prompt-packet/index.js'
 import type { PurposeClass } from '../hooks/start-work/index.js'
 import { saveRuntimeAttachmentSettings, type RuntimeAttachmentSettings } from '../shared/runtime-attachment.js'
-import { executeSlashCommandBundle, findSlashCommandBundle } from '../tools/slash-command/index.js'
+import { executeSlashCommandBundle, findSlashCommandBundle } from '../commands/slash-command/index.js'
 import { syncRuntimeSurface, type RuntimeSurfaceSyncResult } from './runtime-assets.js'
 
 export interface InitOptions extends Partial<RuntimeAttachmentSettings> {

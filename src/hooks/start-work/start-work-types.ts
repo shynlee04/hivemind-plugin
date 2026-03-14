@@ -1,6 +1,11 @@
 import type { KernelLineage, SessionScope } from '../../context/prompt-packet/prompt-packet-types.js'
 import type { TrajectoryAssessment } from '../../core/trajectory/index.js'
 import type { WorkflowAuthorityStatus } from '../../core/workflow-management/index.js'
+import type { OpencodeKnowledgeSurface } from '../../shared/opencode-knowledge.js'
+import type {
+  RuntimePressureContract,
+  RuntimePressureId,
+} from '../../shared/pressure-contract.js'
 
 export type PurposeClass =
   | 'discovery'
@@ -38,6 +43,7 @@ export interface ReadinessGate {
   blocking: boolean
   commandId?: string
   reason: string
+  pressureId?: RuntimePressureId
 }
 
 export interface StartWorkDecision {
@@ -60,4 +66,7 @@ export interface StartWorkDecision {
   recommendedCommandId?: string
   autoRoute: boolean
   riskLevel: RuntimeRiskLevel
+  opencodeKnowledge: OpencodeKnowledgeSurface[]
+  pressureSignals: RuntimePressureId[]
+  pressureContract: RuntimePressureContract
 }

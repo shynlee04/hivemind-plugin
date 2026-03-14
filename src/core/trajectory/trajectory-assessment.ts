@@ -1,5 +1,6 @@
 import type { TrajectoryRecord } from './trajectory-types.js'
 import type { AssessTrajectoryEntryInput, TrajectoryAssessment } from './trajectory-types.js'
+import { getRuntimePressureContract } from '../../shared/pressure-contract.js'
 import { loadTrajectoryLedger, loadTrajectoryLedgerSync } from './trajectory-store.js'
 
 const CONTINUATION_PATTERN = /\b(continue|continuation|resume|pick up|last time|validated|again)\b/i
@@ -34,6 +35,18 @@ function resolveLatestCheckpoint(
   }
 }
 
+function buildEvidenceRefs(
+  activeTrajectoryId: string | undefined,
+  lastClosedTrajectoryId: string | undefined,
+  checkpointId: string | undefined,
+): string[] {
+  return [
+    activeTrajectoryId ? `trajectory:${activeTrajectoryId}` : undefined,
+    lastClosedTrajectoryId ? `trajectory:${lastClosedTrajectoryId}` : undefined,
+    checkpointId ? `checkpoint:${checkpointId}` : undefined,
+  ].filter((value): value is string => value !== undefined)
+}
+
 export async function assessTrajectoryEntry(
   projectRoot: string,
   input: AssessTrajectoryEntryInput,
@@ -60,12 +73,15 @@ function assessAgainstLedger(
 
   if (activeTrajectory) {
     if (matchesLineage(activeTrajectory, input) && matchesWorkflow(activeTrajectory, input.workflowId)) {
+      const latestCheckpoint = resolveLatestCheckpoint(ledger, activeTrajectory.id)
       return {
         action: 'attach-active',
         activeTrajectoryId: activeTrajectory.id,
         matchedWorkflowId: activeTrajectory.workflowIds[0],
-        ...resolveLatestCheckpoint(ledger, activeTrajectory.id),
+        ...latestCheckpoint,
         reasons: ['matched-active-trajectory'],
+        evidenceRefs: buildEvidenceRefs(activeTrajectory.id, undefined, latestCheckpoint.checkpointId),
+        pressureContract: getRuntimePressureContract('trajectory-continuation'),
       }
     }
 
@@ -73,6 +89,8 @@ function assessAgainstLedger(
       action: 'refuse-conflict',
       activeTrajectoryId: activeTrajectory.id,
       reasons: ['active-trajectory-conflict'],
+      evidenceRefs: buildEvidenceRefs(activeTrajectory.id, undefined, undefined),
+      pressureContract: getRuntimePressureContract('active-trajectory-conflict'),
     }
   }
 
@@ -87,12 +105,15 @@ function assessAgainstLedger(
     && matchesLineage(closedTrajectory, input)
     && matchesWorkflow(closedTrajectory, input.workflowId)
   ) {
+      const latestCheckpoint = resolveLatestCheckpoint(ledger, closedTrajectory.id)
       return {
         action: 'resume-closed',
         lastClosedTrajectoryId: closedTrajectory.id,
         matchedWorkflowId: closedTrajectory.workflowIds[0],
-        ...resolveLatestCheckpoint(ledger, closedTrajectory.id),
+        ...latestCheckpoint,
         reasons: ['resume-last-closed-trajectory'],
+        evidenceRefs: buildEvidenceRefs(undefined, closedTrajectory.id, latestCheckpoint.checkpointId),
+        pressureContract: getRuntimePressureContract('trajectory-continuation'),
       }
   }
 
@@ -100,5 +121,7 @@ function assessAgainstLedger(
     action: 'create-new',
     lastClosedTrajectoryId: ledger.lastClosedTrajectoryId ?? undefined,
     reasons: ['create-new-trajectory'],
+    evidenceRefs: buildEvidenceRefs(undefined, ledger.lastClosedTrajectoryId ?? undefined, undefined),
+    pressureContract: getRuntimePressureContract('steady-state'),
   }
 }

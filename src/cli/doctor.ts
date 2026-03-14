@@ -1,6 +1,6 @@
 import type { KernelLineage, SessionScope } from '../context/prompt-packet/index.js'
 import type { PurposeClass } from '../hooks/start-work/index.js'
-import { executeSlashCommandBundle, findSlashCommandBundle } from '../tools/slash-command/index.js'
+import { executeSlashCommandBundle, findSlashCommandBundle } from '../commands/slash-command/index.js'
 
 export interface DoctorOptions {
   sessionId: string

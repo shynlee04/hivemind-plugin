@@ -3,7 +3,7 @@ import * as path from 'node:path'
 
 import { getHivemindPath } from '../shared/paths.js'
 import { loadRuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
-import { executeSlashCommandBundle, findSlashCommandBundle } from '../tools/slash-command/index.js'
+import { executeSlashCommandBundle, findSlashCommandBundle } from '../commands/slash-command/index.js'
 import { syncRuntimeSurface } from './runtime-assets.js'
 
 export interface HarnessOptions {

@@ -1,6 +1,7 @@
 import type { KernelLineage } from '../../context/prompt-packet/prompt-packet-types.js'
 import type { PurposeClass } from '../../hooks/start-work/start-work-types.js'
-import type { CommandAssetFrontmatter, CommandRuntimeContract } from '../runtime/instruction-loader.js'
+import type { CommandAssetFrontmatter, CommandRuntimeContract } from '../../hooks/runtime-bridge/instruction-loader.js'
+import type { RuntimePressureContract } from '../../shared/pressure-contract.js'
 
 export interface SlashCommandBundle {
   id: string
@@ -14,6 +15,10 @@ export interface SlashCommandBundle {
   structuredOutput: string
   continuationMode: 'resume' | 'handoff' | 'iterative'
   autoRouteAllowed: boolean
+  workflowPhase: string
+  hostEvent: string
+  stateAuthority: string
+  pressureContract: RuntimePressureContract
 }
 
 export interface CommandExecutionPreview {
@@ -27,6 +32,7 @@ export interface CommandExecutionPreview {
   toolGrantIds: string[]
   structuredOutput: string
   continuationMode: SlashCommandBundle['continuationMode']
+  pressureContract: RuntimePressureContract
 }
 
 export interface CommandExecutionInput {
@@ -66,4 +72,5 @@ export interface CommandExecutionResult {
   artifactRefs?: string[]
   closeoutStatus?: 'open' | 'ready' | 'blocked'
   verificationContractId?: string
+  pressureContract: RuntimePressureContract
 }

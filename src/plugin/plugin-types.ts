@@ -4,7 +4,9 @@ import type { RuntimePromptTransformationInput } from '../hooks/prompt-transform
 import type { StartWorkInput, StartWorkDecision } from '../hooks/start-work/index.js'
 import type { AutoSlashCommandPlan } from '../hooks/auto-slash-command/index.js'
 import type { PluginContext } from '../plugin-handlers/index.js'
-import type { CommandExecutionPreview } from '../tools/slash-command/index.js'
+import type { OpencodeKnowledgeSurface } from '../shared/opencode-knowledge.js'
+import type { RuntimePressureContract } from '../shared/pressure-contract.js'
+import type { CommandExecutionPreview } from '../commands/slash-command/index.js'
 
 export interface PluginRuntimeInput {
   startWork: StartWorkInput
@@ -17,21 +19,28 @@ export interface HookDescriptor {
   description: string
 }
 
-export interface ToolRegistryEntry {
+export interface RuntimeSurfaceEntry {
   id: string
-  kind: 'runtime-tool' | 'slash-command'
+  kind: 'hook-bridge' | 'slash-command' | 'agent-tool'
   contractFile: string
+  hostEvent: string
+  workflowPhase: string
+  purposeClasses: string[]
+  stateAuthority: string
+  pressureContract: RuntimePressureContract
 }
 
 export interface PluginRuntimePlan {
   startWork: StartWorkDecision
   autoSlash: AutoSlashCommandPlan
   pluginContext: PluginContext
+  opencodeKnowledge: OpencodeKnowledgeSurface[]
+  opencodeKnowledgePacket: string
   promptPacket: CompiledPromptPacket
   systemTransform: string
   messageTransform: string
   commandPreview?: CommandExecutionPreview
-  toolRegistry: ToolRegistryEntry[]
+  runtimeSurfaces: RuntimeSurfaceEntry[]
   hooks: HookDescriptor[]
 }
 

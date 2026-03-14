@@ -6,7 +6,7 @@ import {
   executeSlashCommandBundle,
   findSlashCommandBundle,
   previewSlashCommandBundle,
-} from '../src/tools/slash-command/index.js'
+} from '../src/commands/slash-command/index.js'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'

@@ -1,6 +1,6 @@
 import type { CommandBinding } from './handler-types.js'
 import type { StartWorkDecision } from '../hooks/start-work/index.js'
-import { findSlashCommandBundle } from '../tools/slash-command/index.js'
+import { findSlashCommandBundle } from '../commands/slash-command/index.js'
 
 export function resolveCommandBinding(startWork: StartWorkDecision): CommandBinding {
   const commandId = startWork.requiredCommandId ?? startWork.recommendedCommandId

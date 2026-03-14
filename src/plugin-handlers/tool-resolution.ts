@@ -1,6 +1,6 @@
 import type { ToolGrant } from './handler-types.js'
 import type { StartWorkDecision } from '../hooks/start-work/index.js'
-import type { SlashCommandBundle } from '../tools/slash-command/index.js'
+import type { SlashCommandBundle } from '../commands/slash-command/index.js'
 
 function toToolGrant(toolId: string): ToolGrant {
   return {

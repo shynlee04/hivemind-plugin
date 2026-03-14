@@ -1,0 +1,10 @@
+{
+  "trajectoryId": "trj_a1234e15fb4a",
+  "workflowId": "wf_ae971f326d00",
+  "taskIds": [],
+  "checkpointIds": [
+    "chk_trj_a1234e15fb4a_1"
+  ],
+  "recoveryOutcomes": [],
+  "projectedAt": "2026-03-14T23:26:22.907Z"
+}

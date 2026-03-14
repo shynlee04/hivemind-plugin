@@ -3,21 +3,21 @@ import {
   type RuntimeLoadInput,
 } from '../../hooks/runtime-loader/index.js'
 import { success } from '../../shared/tool-response.js'
-import { loadRuntimeToolInstruction } from './instruction-loader.js'
-import type { RuntimeToolDefinition } from './runtime-tool-types.js'
+import { loadRuntimeHookInstruction } from './instruction-loader.js'
+import type { RuntimeHookBridgeDefinition } from './hook-bridge-types.js'
 
-export const runtimeLoaderTool: RuntimeToolDefinition<
+export const runtimeLoaderHookBridge: RuntimeHookBridgeDefinition<
   RuntimeLoadInput,
   { stage: ReturnType<typeof resolveRuntimeLoadStage> }
 > = {
   id: 'runtime-loader',
   instructionFile: 'runtime-loader.txt',
-  loadInstruction: () => loadRuntimeToolInstruction('runtime-loader'),
+  loadInstruction: () => loadRuntimeHookInstruction('runtime-loader'),
   async execute(input) {
     const stage = resolveRuntimeLoadStage(input)
-    const instruction = await loadRuntimeToolInstruction('runtime-loader')
+    const instruction = await loadRuntimeHookInstruction('runtime-loader')
     return success('Resolved runtime load stage', { stage }, {
-      tool: 'runtime-loader',
+      hook: 'runtime-loader',
       instruction,
     })
   },

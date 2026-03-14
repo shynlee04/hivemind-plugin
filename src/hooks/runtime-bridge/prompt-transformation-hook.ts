@@ -3,21 +3,21 @@ import {
   type RuntimePromptTransformationInput,
 } from '../../hooks/prompt-transformation/index.js'
 import { success } from '../../shared/tool-response.js'
-import { loadRuntimeToolInstruction } from './instruction-loader.js'
-import type { RuntimeToolDefinition } from './runtime-tool-types.js'
+import { loadRuntimeHookInstruction } from './instruction-loader.js'
+import type { RuntimeHookBridgeDefinition } from './hook-bridge-types.js'
 
-export const promptTransformationTool: RuntimeToolDefinition<
+export const promptTransformationHookBridge: RuntimeHookBridgeDefinition<
   RuntimePromptTransformationInput,
   ReturnType<typeof transformRuntimePrompt>
 > = {
   id: 'prompt-transformation',
   instructionFile: 'prompt-transformation.txt',
-  loadInstruction: () => loadRuntimeToolInstruction('prompt-transformation'),
+  loadInstruction: () => loadRuntimeHookInstruction('prompt-transformation'),
   async execute(input) {
     const packet = transformRuntimePrompt(input)
-    const instruction = await loadRuntimeToolInstruction('prompt-transformation')
+    const instruction = await loadRuntimeHookInstruction('prompt-transformation')
     return success('Transformed runtime prompt into packet', packet, {
-      tool: 'prompt-transformation',
+      hook: 'prompt-transformation',
       instruction,
     })
   },

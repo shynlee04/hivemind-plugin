@@ -2,13 +2,22 @@ import type { Part } from '@opencode-ai/sdk'
 import { tool, type Plugin } from '@opencode-ai/plugin'
 
 import { recordTrajectoryEvent } from '../core/trajectory/index.js'
-import { executeSlashCommandBundle, findSlashCommandBundle, discoverSlashCommandBundles } from '../tools/slash-command/index.js'
+import { executeSlashCommandBundle, findSlashCommandBundle, discoverSlashCommandBundles } from '../commands/slash-command/index.js'
 import { initSdkContext, resetSdkContext } from '../hooks/sdk-context.js'
 import { createEventHandler } from '../hooks/event-handler.js'
+import {
+  createHivemindHandoffTool,
+  createHivemindTaskTool,
+  createHivemindTrajectoryTool,
+} from '../tools/index.js'
 import { createMessagesTransform } from './messages-transform.js'
 import { createPluginRuntimePlan } from './runtime-plan.js'
 import { createSystemTransform } from './system-transform.js'
 import { loadRuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
+import {
+  renderOpencodeKnowledgePacket,
+  resolveBaselineOpencodeKnowledgeSurfaces,
+} from '../shared/opencode-knowledge.js'
 
 type MessageLike = {
   info?: {
@@ -98,6 +107,9 @@ export const HiveMindPlugin: Plugin = async (input) => {
   const directory = input.directory
   initSdkContext(input)
   const eventHandler = createEventHandler(directory)
+  const baselineOpencodeKnowledge = renderOpencodeKnowledgePacket(
+    resolveBaselineOpencodeKnowledgeSurfaces(),
+  )
 
   return {
     event: async (eventInput) => {
@@ -166,6 +178,9 @@ export const HiveMindPlugin: Plugin = async (input) => {
           return JSON.stringify(result, null, 2)
         },
       }),
+      hivemind_task: createHivemindTaskTool(directory),
+      hivemind_trajectory: createHivemindTrajectoryTool(directory),
+      hivemind_handoff: createHivemindHandoffTool(directory),
     },
     'shell.env': async (_input, output) => {
       const snapshot = await loadRuntimeBindingsSnapshot(directory)
@@ -199,6 +214,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
     },
     'experimental.chat.system.transform': async (systemInput, output) => {
       const snapshot = await loadRuntimeBindingsSnapshot(directory)
+      output.system.push(baselineOpencodeKnowledge)
       output.system.push(createSystemTransform({
         sessionId: systemInput.sessionID ?? 'unknown-session',
         sessionScope: 'main',
@@ -289,10 +305,12 @@ export const HiveMindPlugin: Plugin = async (input) => {
         checkpointId: snapshot.checkpointId,
         branchFocus: snapshot.branchFocus,
       })
-      lastUserMessage.parts = [
-        createSyntheticPart(sessionID, messageID, messagePacket),
-        ...(lastUserMessage.parts ?? []),
-      ]
+      const injectedParts: Part[] = []
+      if (runtimePlan.data?.opencodeKnowledgePacket) {
+        injectedParts.push(createSyntheticPart(sessionID, messageID, runtimePlan.data.opencodeKnowledgePacket))
+      }
+      injectedParts.push(createSyntheticPart(sessionID, messageID, messagePacket))
+      lastUserMessage.parts = [...injectedParts, ...(lastUserMessage.parts ?? [])]
 
       const routeReminder = buildRouteReminder(runtimePlan)
       if (routeReminder) {
@@ -304,6 +322,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
     },
     'experimental.session.compacting': async (compactionInput, output) => {
       const snapshot = await loadRuntimeBindingsSnapshot(directory)
+      output.context.push(baselineOpencodeKnowledge)
       output.context.push(createSystemTransform({
         sessionId: compactionInput.sessionID,
         sessionScope: 'main',

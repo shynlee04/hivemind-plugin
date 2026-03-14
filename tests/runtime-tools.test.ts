@@ -2,20 +2,20 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 import {
-  contextInjectionTool,
-  promptTransformationTool,
-  runtimeLoaderTool,
-  workflowIntegrationTool,
-} from '../src/tools/index.js'
+  contextInjectionHookBridge,
+  promptTransformationHookBridge,
+  runtimeLoaderHookBridge,
+  workflowIntegrationHookBridge,
+} from '../src/hooks/index.js'
 
-describe('runtime tools', () => {
-  it('loads instruction text through the runtime tool path', async () => {
-    const instruction = await contextInjectionTool.loadInstruction()
+describe('runtime hook bridges', () => {
+  it('loads instruction text through the runtime hook bridge path', async () => {
+    const instruction = await contextInjectionHookBridge.loadInstruction()
     assert.match(instruction, /Inject only the lineage-scoped packet needed/)
   })
 
-  it('executes prompt transformation tool with instruction-backed metadata', async () => {
-    const response = await promptTransformationTool.execute({
+  it('executes prompt transformation hook bridge with instruction-backed metadata', async () => {
+    const response = await promptTransformationHookBridge.execute({
       sessionId: 'ses_main',
       sessionScope: 'main',
       lineage: 'hivefiver',
@@ -28,14 +28,14 @@ describe('runtime tools', () => {
     assert.match(String(response.metadata?.instruction ?? ''), /Transform runtime state into prompt packets/)
   })
 
-  it('executes runtime loader and workflow integration tools', async () => {
-    const loader = await runtimeLoaderTool.execute({
+  it('executes runtime loader and workflow integration hook bridges', async () => {
+    const loader = await runtimeLoaderHookBridge.execute({
       prompt: 'continue delegated work',
       sessionScope: 'sub-session',
       hasWorkflow: true,
       hasHandoff: true,
     })
-    const integration = await workflowIntegrationTool.execute({
+    const integration = await workflowIntegrationHookBridge.execute({
       workflow: {
         id: 'wf-sub',
         intent: 'continue delegated work',

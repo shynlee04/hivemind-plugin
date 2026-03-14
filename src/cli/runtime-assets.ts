@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 
-import { discoverSlashCommandBundles } from '../tools/slash-command/index.js'
+import { discoverSlashCommandBundles } from '../commands/slash-command/index.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PACKAGE_ROOT = resolve(__dirname, '..', '..')

@@ -1,5 +1,6 @@
 import type { KernelLineage, SessionScope } from '../../context/prompt-packet/prompt-packet-types.js'
 import type { PurposeClass } from '../../hooks/start-work/start-work-types.js'
+import type { RuntimePressureContract } from '../../shared/pressure-contract.js'
 
 export type TrajectoryStatus = 'active' | 'closed'
 export type TrajectoryRecoveryOutcome = 'bootstrap' | 'repair' | 'rebind' | 'resume' | 'none'
@@ -128,4 +129,6 @@ export interface TrajectoryAssessment {
   checkpointId?: string
   resumeTarget?: string
   reasons: string[]
+  evidenceRefs: string[]
+  pressureContract: RuntimePressureContract
 }

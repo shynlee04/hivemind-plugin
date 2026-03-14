@@ -1,4 +1,4 @@
-# src/tools/slash-command/ — Composite Command Bundles
+# src/commands/slash-command/ — Composite Command Bundles
 
 ## Responsibilities
 - Define command bundles with workflow chains, tool grants, structured output, and continuation policy.

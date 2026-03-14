@@ -16,6 +16,7 @@ export function buildPluginContext(startWork: StartWorkDecision): PluginContext 
     toolGrants: resolveToolGrants(startWork, commandBinding.bundle),
     sessionInheritance: resolveSessionInheritance(startWork),
     docSurfaces: resolveDocKnowledgeSurfaces(startWork.purposeClass),
+    opencodeKnowledge: startWork.opencodeKnowledge,
     startWork,
   }
 }

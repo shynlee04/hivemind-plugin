@@ -9,7 +9,7 @@ export async function loadToolInstruction(
   return readFile(instructionUrl, 'utf-8')
 }
 
-export async function loadRuntimeToolInstruction(name: string): Promise<string> {
+export async function loadRuntimeHookInstruction(name: string): Promise<string> {
   return loadToolInstruction('runtime', name)
 }
 

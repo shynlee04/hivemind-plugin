@@ -9,6 +9,7 @@ export function resolveReadinessGates(
       blocking: true,
       commandId: 'hm-init',
       reason: 'No .hivemind bootstrap state is available.',
+      pressureId: 'fresh-bootstrap',
     }]
   }
 
@@ -17,6 +18,7 @@ export function resolveReadinessGates(
       blocking: true,
       commandId: 'hm-doctor',
       reason: 'The .hivemind control plane is unhealthy and must be repaired first.',
+      pressureId: 'control-plane-repair',
     }]
   }
 
@@ -25,6 +27,7 @@ export function resolveReadinessGates(
       blocking: false,
       commandId: 'hm-harness',
       reason: 'High-control work needs workflow readiness and harness validation.',
+      pressureId: 'workflow-readiness',
     }]
   }
 

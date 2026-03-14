@@ -1,5 +1,5 @@
 import { recordTrajectoryEvent } from '../../core/trajectory/index.js'
-import { loadCommandAsset } from '../runtime/instruction-loader.js'
+import { loadCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
 import { executeRecoveryHandler } from './recovery-handlers.js'
 import type {
   CommandExecutionInput,
@@ -24,6 +24,7 @@ export async function previewSlashCommandBundle(
     toolGrantIds: bundle.toolGrantIds,
     structuredOutput: bundle.structuredOutput,
     continuationMode: bundle.continuationMode,
+    pressureContract: bundle.pressureContract,
   }
 }
 
@@ -51,6 +52,9 @@ export async function executeSlashCommandBundle(
       toolGrantIds: bundle.toolGrantIds,
       continuationMode: bundle.continuationMode,
       arguments: input.arguments ?? '',
+      safetyLevel: bundle.pressureContract.safety.level,
+      failureBehavior: bundle.pressureContract.failureBehavior,
+      expectedEvidence: bundle.pressureContract.evidence.requiredArtifacts,
     },
     entityBindings: {
       trajectoryId: input.trajectoryId,
@@ -62,6 +66,7 @@ export async function executeSlashCommandBundle(
     artifactRefs: asset.contract.artifactProjections.map((projection) => `projection:${projection}`),
     closeoutStatus: asset.contract.closeoutGate === 'required' ? 'blocked' : 'open',
     verificationContractId: asset.contract.verificationContract,
+    pressureContract: bundle.pressureContract,
   }
 
   await recordCommandEvent(bundle, input, result.executionMode)

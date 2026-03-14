@@ -8,6 +8,7 @@ import {
   recordTrajectoryRecoveryOutcome,
 } from '../core/index.js'
 import { inspectWorkflowAuthority } from '../core/workflow-management/index.js'
+import { getRuntimePressureContract } from '../shared/pressure-contract.js'
 import type {
   CreateRecoveryCheckpointInput,
   RecoveryAssessment,
@@ -63,6 +64,18 @@ export async function assessRecoveryState(
       return true
     })
   const hasBlockedConflict = failureClasses.includes('active-trajectory-conflict')
+  const pressureContract = getRuntimePressureContract(
+    hasBlockedConflict
+      ? 'active-trajectory-conflict'
+      : failureClasses.length > 0
+        ? 'control-plane-repair'
+        : 'steady-state',
+  )
+  const evidenceRefs = [
+    ...workflowAuthority.evidenceRefs,
+    trajectoryInspection.filePath,
+    latestCheckpoint?.id ? `checkpoint:${latestCheckpoint.id}` : undefined,
+  ].filter((value): value is string => value !== undefined)
 
   return {
     status: hasBlockedConflict
@@ -75,6 +88,8 @@ export async function assessRecoveryState(
     reasons: failureClasses.length > 0 ? [...failureClasses] : ['recovery-state-healthy'],
     resumeTarget: latestCheckpoint?.resumeTarget,
     checkpointId: latestCheckpoint?.id,
+    evidenceRefs,
+    pressureContract,
   }
 }
 

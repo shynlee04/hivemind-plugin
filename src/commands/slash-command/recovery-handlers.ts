@@ -7,7 +7,7 @@ import {
 import { createPlanningGovernanceProjection } from '../../governance/index.js'
 import { assessRecoveryState, createRecoveryCheckpoint, repairRecoveryState } from '../../recovery/index.js'
 import type { CommandExecutionInput, CommandExecutionResult, SlashCommandBundle } from './command-types.js'
-import type { LoadedCommandAsset } from '../runtime/instruction-loader.js'
+import type { LoadedCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
 
 function resolveEntityBindings(input: CommandExecutionInput): NonNullable<CommandExecutionResult['entityBindings']> {
   return {

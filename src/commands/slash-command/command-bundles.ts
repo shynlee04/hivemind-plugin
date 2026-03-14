@@ -1,4 +1,5 @@
 import type { SlashCommandBundle } from './command-types.js'
+import { getRuntimePressureContract } from '../../shared/pressure-contract.js'
 
 export const slashCommandBundles: SlashCommandBundle[] = [
   {
@@ -13,6 +14,10 @@ export const slashCommandBundles: SlashCommandBundle[] = [
     structuredOutput: 'bootstrap-report',
     continuationMode: 'resume',
     autoRouteAllowed: true,
+    workflowPhase: 'recovery-checkpoint',
+    hostEvent: 'slash-command.requested',
+    stateAuthority: 'workflow',
+    pressureContract: getRuntimePressureContract('fresh-bootstrap'),
   },
   {
     id: 'hm-doctor',
@@ -26,6 +31,10 @@ export const slashCommandBundles: SlashCommandBundle[] = [
     structuredOutput: 'doctor-report',
     continuationMode: 'handoff',
     autoRouteAllowed: true,
+    workflowPhase: 'recovery-checkpoint',
+    hostEvent: 'slash-command.requested',
+    stateAuthority: 'recovery',
+    pressureContract: getRuntimePressureContract('control-plane-repair'),
   },
   {
     id: 'hm-harness',
@@ -39,6 +48,10 @@ export const slashCommandBundles: SlashCommandBundle[] = [
     structuredOutput: 'harness-report',
     continuationMode: 'iterative',
     autoRouteAllowed: true,
+    workflowPhase: 'workflow-readiness',
+    hostEvent: 'slash-command.requested',
+    stateAuthority: 'workflow',
+    pressureContract: getRuntimePressureContract('workflow-readiness'),
   },
   {
     id: 'hm-settings',
@@ -52,6 +65,10 @@ export const slashCommandBundles: SlashCommandBundle[] = [
     structuredOutput: 'settings-report',
     continuationMode: 'resume',
     autoRouteAllowed: false,
+    workflowPhase: 'governance-projection',
+    hostEvent: 'slash-command.requested',
+    stateAuthority: 'plugin-control-plane',
+    pressureContract: getRuntimePressureContract('steady-state'),
   },
   {
     id: 'hm-research',
@@ -65,6 +82,10 @@ export const slashCommandBundles: SlashCommandBundle[] = [
     structuredOutput: 'research-report',
     continuationMode: 'handoff',
     autoRouteAllowed: true,
+    workflowPhase: 'command-transition',
+    hostEvent: 'slash-command.requested',
+    stateAuthority: 'delegation',
+    pressureContract: getRuntimePressureContract('delegated-handoff'),
   },
   {
     id: 'hm-plan',
@@ -78,6 +99,10 @@ export const slashCommandBundles: SlashCommandBundle[] = [
     structuredOutput: 'plan-report',
     continuationMode: 'resume',
     autoRouteAllowed: true,
+    workflowPhase: 'command-transition',
+    hostEvent: 'slash-command.requested',
+    stateAuthority: 'workflow',
+    pressureContract: getRuntimePressureContract('workflow-readiness'),
   },
   {
     id: 'hm-implement',
@@ -91,6 +116,10 @@ export const slashCommandBundles: SlashCommandBundle[] = [
     structuredOutput: 'implementation-report',
     continuationMode: 'iterative',
     autoRouteAllowed: true,
+    workflowPhase: 'command-transition',
+    hostEvent: 'slash-command.requested',
+    stateAuthority: 'workflow',
+    pressureContract: getRuntimePressureContract('task-mutation'),
   },
   {
     id: 'hm-verify',
@@ -104,6 +133,10 @@ export const slashCommandBundles: SlashCommandBundle[] = [
     structuredOutput: 'verification-report',
     continuationMode: 'handoff',
     autoRouteAllowed: true,
+    workflowPhase: 'command-transition',
+    hostEvent: 'slash-command.requested',
+    stateAuthority: 'workflow',
+    pressureContract: getRuntimePressureContract('handoff-validation'),
   },
   {
     id: 'hm-tdd',
@@ -117,6 +150,10 @@ export const slashCommandBundles: SlashCommandBundle[] = [
     structuredOutput: 'tdd-report',
     continuationMode: 'iterative',
     autoRouteAllowed: true,
+    workflowPhase: 'command-transition',
+    hostEvent: 'slash-command.requested',
+    stateAuthority: 'workflow',
+    pressureContract: getRuntimePressureContract('task-mutation'),
   },
   {
     id: 'hm-course-correct',
@@ -130,5 +167,9 @@ export const slashCommandBundles: SlashCommandBundle[] = [
     structuredOutput: 'recovery-report',
     continuationMode: 'handoff',
     autoRouteAllowed: true,
+    workflowPhase: 'recovery-checkpoint',
+    hostEvent: 'slash-command.requested',
+    stateAuthority: 'recovery',
+    pressureContract: getRuntimePressureContract('control-plane-repair'),
   },
 ]

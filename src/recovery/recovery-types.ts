@@ -1,6 +1,7 @@
 import type { KernelLineage, SessionScope } from '../context/prompt-packet/prompt-packet-types.js'
 import type { PurposeClass } from '../hooks/start-work/start-work-types.js'
 import type { TrajectoryRecoveryOutcome } from '../core/trajectory/index.js'
+import type { RuntimePressureContract } from '../shared/pressure-contract.js'
 
 export type RecoveryFailureClass =
   | 'missing-hivemind'
@@ -31,6 +32,8 @@ export interface RecoveryAssessment {
   reasons: string[]
   resumeTarget?: string
   checkpointId?: string
+  evidenceRefs: string[]
+  pressureContract: RuntimePressureContract
 }
 
 export interface RecoveryRepairResult extends RecoveryAssessment {

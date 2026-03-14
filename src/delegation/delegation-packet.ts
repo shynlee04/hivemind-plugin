@@ -1,3 +1,5 @@
+import type { RuntimePressureId } from '../shared/pressure-contract.js'
+
 export interface DelegationEvidenceItem {
   kind: 'command_output' | 'file_diff' | 'test_report' | 'trace' | 'citation'
   description: string
@@ -5,6 +7,7 @@ export interface DelegationEvidenceItem {
 }
 
 export interface DelegationPacket {
+  delegationId?: string
   sourceSessionId: string
   targetSessionId: string
   sourceAgent: string
@@ -17,11 +20,16 @@ export interface DelegationPacket {
   constraints: string[]
   memoryScope: string[]
   successMetrics: string[]
+  evidenceContractId?: string
   requiredEvidence: DelegationEvidenceItem[]
   returnContract: string
+  returnGate?: string
+  resumeTarget?: string
+  pressureContractId: RuntimePressureId
 }
 
 export function createDelegationPacket(input: {
+  delegationId?: string
   sourceSessionId: string
   targetSessionId: string
   sourceAgent?: string
@@ -34,10 +42,15 @@ export function createDelegationPacket(input: {
   constraints?: string[]
   memoryScope?: string[]
   successMetrics?: string[]
+  evidenceContractId?: string
   requiredEvidence?: DelegationEvidenceItem[]
   returnContract?: string
+  returnGate?: string
+  resumeTarget?: string
+  pressureContractId?: RuntimePressureId
 }): DelegationPacket {
   return {
+    delegationId: input.delegationId,
     sourceSessionId: input.sourceSessionId,
     targetSessionId: input.targetSessionId,
     sourceAgent: input.sourceAgent ?? 'orchestrator',
@@ -50,7 +63,11 @@ export function createDelegationPacket(input: {
     constraints: input.constraints ?? [],
     memoryScope: input.memoryScope ?? [],
     successMetrics: input.successMetrics ?? [],
+    evidenceContractId: input.evidenceContractId,
     requiredEvidence: input.requiredEvidence ?? [],
     returnContract: input.returnContract ?? 'Return evidence and the next recommended workflow routing.',
+    returnGate: input.returnGate,
+    resumeTarget: input.resumeTarget,
+    pressureContractId: input.pressureContractId ?? 'delegated-handoff',
   }
 }

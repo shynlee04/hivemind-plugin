@@ -2,6 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 
 import { getHivemindPath } from '../../shared/paths.js'
+import { getRuntimePressureContract } from '../../shared/pressure-contract.js'
 import type { KernelLineage, SessionScope } from '../../context/prompt-packet/prompt-packet-types.js'
 
 export interface WorkflowAuthorityIssue {
@@ -30,6 +31,8 @@ export interface WorkflowAuthorityStatus {
   issues: WorkflowAuthorityIssue[]
   linkedWorkflowId?: string
   linkedTaskIds: string[]
+  evidenceRefs: string[]
+  pressureContract: ReturnType<typeof getRuntimePressureContract>
 }
 
 function parseTaskCollection(filePath: string): { tasks: Array<{ id: string; status?: string }> } | null {
@@ -113,6 +116,15 @@ export function inspectWorkflowAuthority(
     }
   }
 
+  const evidenceRefs = [hivemindPath, planningPath, stateTasksPath, graphTasksPath]
+  const pressureContract = getRuntimePressureContract(
+    issues.some((issue) => issue.severity === 'blocking')
+      ? 'control-plane-repair'
+      : linkedTaskIds.length > 0
+        ? 'task-mutation'
+        : 'steady-state',
+  )
+
   return {
     exists,
     healthy: !issues.some((issue) => issue.severity === 'blocking'),
@@ -125,6 +137,8 @@ export function inspectWorkflowAuthority(
     issues,
     linkedWorkflowId: input.workflowId,
     linkedTaskIds,
+    evidenceRefs,
+    pressureContract,
   }
 }
 

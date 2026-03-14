@@ -2,15 +2,15 @@ import { buildWorkflowIntegrationState } from '../../hooks/workflow-integration/
 import { routeWorkflow } from '../../core/workflow-management/index.js'
 import type { HandoffRecord, WorkflowRecord } from '../../core/workflow-management/index.js'
 import { success } from '../../shared/tool-response.js'
-import { loadRuntimeToolInstruction } from './instruction-loader.js'
-import type { RuntimeToolDefinition } from './runtime-tool-types.js'
+import { loadRuntimeHookInstruction } from './instruction-loader.js'
+import type { RuntimeHookBridgeDefinition } from './hook-bridge-types.js'
 
 export interface WorkflowIntegrationInput {
   workflow: WorkflowRecord
   handoff?: HandoffRecord
 }
 
-export const workflowIntegrationTool: RuntimeToolDefinition<
+export const workflowIntegrationHookBridge: RuntimeHookBridgeDefinition<
   WorkflowIntegrationInput,
   {
     decision: ReturnType<typeof routeWorkflow>
@@ -19,13 +19,13 @@ export const workflowIntegrationTool: RuntimeToolDefinition<
 > = {
   id: 'workflow-integration',
   instructionFile: 'workflow-integration.txt',
-  loadInstruction: () => loadRuntimeToolInstruction('workflow-integration'),
+  loadInstruction: () => loadRuntimeHookInstruction('workflow-integration'),
   async execute(input) {
     const decision = routeWorkflow(input.workflow)
     const continuity = buildWorkflowIntegrationState(input.workflow, input.handoff)
-    const instruction = await loadRuntimeToolInstruction('workflow-integration')
+    const instruction = await loadRuntimeHookInstruction('workflow-integration')
     return success('Integrated workflow continuity and routing', { decision, continuity }, {
-      tool: 'workflow-integration',
+      hook: 'workflow-integration',
       instruction,
     })
   },

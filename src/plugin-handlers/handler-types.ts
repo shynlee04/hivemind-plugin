@@ -1,7 +1,8 @@
 import type { KernelLineage, SessionScope } from '../context/prompt-packet/prompt-packet-types.js'
 import type { DocKnowledgeSurface } from '../intelligence/doc/index.js'
 import type { StartWorkDecision } from '../hooks/start-work/index.js'
-import type { SlashCommandBundle } from '../tools/slash-command/index.js'
+import type { OpencodeKnowledgeSurface } from '../shared/opencode-knowledge.js'
+import type { SlashCommandBundle } from '../commands/slash-command/index.js'
 
 export interface CommandBinding {
   bundle?: SlashCommandBundle
@@ -28,5 +29,6 @@ export interface PluginContext {
   toolGrants: ToolGrant[]
   sessionInheritance: SessionInheritance
   docSurfaces: DocKnowledgeSurface[]
+  opencodeKnowledge: OpencodeKnowledgeSurface[]
   startWork: StartWorkDecision
 }
