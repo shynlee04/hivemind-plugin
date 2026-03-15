@@ -37,8 +37,8 @@ describe('runtime tools', () => {
     assert.equal(agentToolCatalog.some((entry) => entry.id === 'hivemind_runtime_command'), true)
     assert.equal(runtimeStatusSurface?.contractFile, 'src/tools/runtime/tools.ts')
     assert.equal(runtimeCommandSurface?.contractFile, 'src/tools/runtime/tools.ts')
-    assert.equal(contextInjectionSurface?.hostEvent, 'messages.transform')
-    assert.equal(promptTransformationSurface?.hostEvent, 'messages.transform')
+    assert.equal(contextInjectionSurface?.hostEvent, 'experimental.chat.messages.transform')
+    assert.equal(promptTransformationSurface?.hostEvent, 'experimental.chat.messages.transform')
     assert.equal(compactionSurface?.hostEvent, 'slash-command.requested')
   })
 

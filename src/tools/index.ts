@@ -49,4 +49,22 @@ export const agentToolCatalog: AgentToolCatalogEntry[] = [
     stateAuthority: 'delegation',
     pressureContract: getRuntimePressureContract('handoff-validation'),
   },
+  {
+    id: 'hivemind_runtime_status',
+    contractFile: 'src/tools/runtime/tools.ts',
+    hostEvent: 'tool.call',
+    workflowPhase: 'runtime-inspection',
+    purposeClasses: ['discovery', 'gatekeeping'],
+    stateAuthority: 'plugin-control-plane',
+    pressureContract: getRuntimePressureContract('steady-state'),
+  },
+  {
+    id: 'hivemind_runtime_command',
+    contractFile: 'src/tools/runtime/tools.ts',
+    hostEvent: 'tool.call',
+    workflowPhase: 'runtime-command',
+    purposeClasses: ['implementation', 'course-correction'],
+    stateAuthority: 'plugin-control-plane',
+    pressureContract: getRuntimePressureContract('control-plane-repair'),
+  },
 ]

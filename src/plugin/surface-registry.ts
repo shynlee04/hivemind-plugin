@@ -98,28 +98,5 @@ export function createRuntimeSurfaceRegistry(): RuntimeSurfaceEntry[] {
     pressureContract: tool.pressureContract,
   }))
 
-  const runtimeAdminTools: RuntimeSurfaceEntry[] = [
-    {
-      id: 'hivemind_runtime_status',
-      kind: 'agent-tool',
-      contractFile: 'src/plugin/opencode-plugin.ts',
-      hostEvent: 'tool.call',
-      workflowPhase: 'governance-projection',
-      purposeClasses: ['planning', 'implementation', 'gatekeeping', 'course-correction'],
-      stateAuthority: 'plugin-control-plane',
-      pressureContract: getRuntimePressureContract('steady-state'),
-    },
-    {
-      id: 'hivemind_runtime_command',
-      kind: 'agent-tool',
-      contractFile: 'src/plugin/opencode-plugin.ts',
-      hostEvent: 'tool.call',
-      workflowPhase: 'command-transition',
-      purposeClasses: ['planning', 'implementation', 'gatekeeping', 'tdd', 'course-correction'],
-      stateAuthority: 'plugin-control-plane',
-      pressureContract: getRuntimePressureContract('workflow-readiness'),
-    },
-  ]
-
-  return [...hookBridges, ...controlPlanePrimitives, ...slashCommands, ...runtimeAdminTools, ...agentTools]
+  return [...hookBridges, ...controlPlanePrimitives, ...slashCommands, ...agentTools]
 }

@@ -47,3 +47,32 @@ export function isHivemindPath(filePath: string): boolean {
 export function isSessionFile(filePath: string): boolean {
   return filePath.includes(SESSIONS_DIR)
 }
+
+/**
+ * Canonical path authority: derives all runtime paths from a single project root.
+ * All modules should use this instead of building paths ad-hoc.
+ */
+export function getEffectivePaths(projectRoot: string) {
+  const root = path.join(projectRoot, HIVEMIND_DIR)
+  const stateDir = path.join(root, STATE_DIR)
+  const configDir = path.join(root, CONFIG_DIR)
+  const graphDir = path.join(root, GRAPH_DIR)
+  const sessionsDir = path.join(root, SESSIONS_DIR)
+  const projectPlanningDir = path.join(root, 'project', 'planning')
+  const handoffsDir = path.join(root, 'handoffs')
+
+  return {
+    root,
+    stateDir,
+    configDir,
+    graphDir,
+    sessionsDir,
+    projectPlanningDir,
+    handoffsDir,
+    runtimeAttachmentSettings: path.join(configDir, 'runtime-attachment.json'),
+    workflowTasksState: path.join(stateDir, 'tasks.json'),
+    workflowTasksGraph: path.join(graphDir, 'tasks.json'),
+    trajectoryLedger: path.join(stateDir, 'trajectory-ledger.json'),
+  }
+}
+

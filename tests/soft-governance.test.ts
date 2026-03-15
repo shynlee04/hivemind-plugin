@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 import { initSdkContext, resetSdkContext } from '../src/hooks/sdk-context.js'
-import { emitGovernanceToast, resetToastCooldowns } from '../src/hooks/soft-governance.js'
+import { showGovernanceToast, resetToastCooldowns } from '../src/hooks/soft-governance.js'
 
 describe('soft governance toast bridge', () => {
   it('emits toasts through client.tui.showToast when available', async () => {
@@ -22,19 +22,15 @@ describe('soft governance toast bridge', () => {
       project: {} as never,
     })
 
-    const emitted = await emitGovernanceToast({
-      id: 'runtime-cutover',
-      message: 'Runtime cutover toast',
-      variant: 'info',
-    })
+    await showGovernanceToast('runtime-cutover', 'Runtime cutover toast')
 
-    assert.equal(emitted, true)
-    assert.deepEqual(seen, [{ message: 'Runtime cutover toast', variant: 'info' }])
+    assert.equal(seen.length, 1)
+    assert.deepEqual(seen[0], { message: 'Runtime cutover toast', variant: 'info' })
 
     resetSdkContext()
   })
 
-  it('throttles repeated toast ids until cooldown reset', async () => {
+  it('throttles repeated toast categories until cooldown reset', async () => {
     const seen: string[] = []
     resetSdkContext()
     resetToastCooldowns()
@@ -51,34 +47,29 @@ describe('soft governance toast bridge', () => {
       project: {} as never,
     })
 
-    const first = await emitGovernanceToast({
-      id: 'same-warning',
-      message: 'Same warning',
-      variant: 'warning',
-      cooldownMs: 60_000,
-    })
-    const second = await emitGovernanceToast({
-      id: 'same-warning',
-      message: 'Same warning',
-      variant: 'warning',
-      cooldownMs: 60_000,
-    })
+    // First call should emit
+    await showGovernanceToast('same-warning', 'Same warning')
+    assert.equal(seen.length, 1)
 
-    assert.equal(first, true)
-    assert.equal(second, false)
-    assert.deepEqual(seen, ['Same warning'])
+    // Second call within cooldown should be throttled
+    await showGovernanceToast('same-warning', 'Same warning')
+    assert.equal(seen.length, 1, 'should throttle duplicate within cooldown')
 
+    // After reset, should emit again
     resetToastCooldowns()
-    const third = await emitGovernanceToast({
-      id: 'same-warning',
-      message: 'Same warning',
-      variant: 'warning',
-      cooldownMs: 60_000,
-    })
+    await showGovernanceToast('same-warning', 'Same warning')
+    assert.equal(seen.length, 2, 'should emit after cooldown reset')
 
-    assert.equal(third, true)
     assert.deepEqual(seen, ['Same warning', 'Same warning'])
 
     resetSdkContext()
+  })
+
+  it('returns silently when no SDK client available', async () => {
+    resetSdkContext()
+    resetToastCooldowns()
+
+    // Should not throw — fire-and-forget pattern
+    await showGovernanceToast('no-client', 'Should not error')
   })
 })
