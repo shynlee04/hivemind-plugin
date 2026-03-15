@@ -80,6 +80,9 @@ function buildRouteReminder(plan: Awaited<ReturnType<typeof createPluginRuntimeP
     `route_disposition=${decision.routeDisposition ?? 'create'}`,
     `risk=${decision.riskLevel}`,
     `next_transition=${decision.nextTransition ?? 'none'}`,
+    'execution_rule=use-hivemind-runtime-command-for-hm-bundles',
+    'mutation_rule=never-bootstrap-hivemind-by-manual-file-writes',
+    'intake_rule=if-bootstrap-profile-is-missing-ask-user-before-running-hm-init',
     '</hivemind-route-bridge>',
   ].join('\n')
 }
@@ -140,11 +143,20 @@ export const HiveMindPlugin: Plugin = async (input) => {
         },
       }),
       hivemind_runtime_command: tool({
-        description: 'Execute a HiveMind hm-* command bundle against the active revamp runtime.',
+        description:
+          'Execute a HiveMind hm-* command bundle against the active revamp runtime. ' +
+          'Use this instead of manually creating .hivemind files or simulating bootstrap with bash.',
         args: {
           command: tool.schema.string(),
           arguments: tool.schema.string().optional(),
           userMessage: tool.schema.string().optional(),
+          preferredUserName: tool.schema.string().optional(),
+          language: tool.schema.string().optional(),
+          artifactLanguage: tool.schema.string().optional(),
+          governanceMode: tool.schema.string().optional(),
+          automationLevel: tool.schema.string().optional(),
+          expertLevel: tool.schema.string().optional(),
+          outputStyle: tool.schema.string().optional(),
         },
         async execute(args, context) {
           const snapshot = await loadRuntimeBindingsSnapshot(directory)
@@ -157,6 +169,13 @@ export const HiveMindPlugin: Plugin = async (input) => {
             projectRoot: directory,
             sessionId: context.sessionID,
             sessionScope: 'main',
+            preferredUserName: args.preferredUserName,
+            language: args.language,
+            artifactLanguage: args.artifactLanguage,
+            governanceMode: args.governanceMode,
+            automationLevel: args.automationLevel,
+            expertLevel: args.expertLevel,
+            outputStyle: args.outputStyle,
             trajectoryId: snapshot.trajectoryId,
             workflowId: snapshot.workflowId,
             taskIds: snapshot.taskIds,
@@ -205,6 +224,8 @@ export const HiveMindPlugin: Plugin = async (input) => {
           `trajectory=${snapshot.trajectoryId ?? 'none'}`,
           `workflow=${snapshot.workflowId ?? 'none'}`,
           `task_ids=${snapshot.taskIds.join(',')}`,
+          'execution_rule=call-hivemind_runtime_command-to-run-hm-bundle',
+          'mutation_rule=do-not-hand-write-hivemind-state-files',
           '</hivemind-command-context>',
         ].join('\n'),
       ))

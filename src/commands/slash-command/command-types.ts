@@ -39,6 +39,13 @@ export interface CommandExecutionInput {
   projectRoot: string
   sessionId: string
   sessionScope: 'main' | 'sub-session'
+  preferredUserName?: string
+  language?: string
+  artifactLanguage?: string
+  governanceMode?: string
+  automationLevel?: string
+  expertLevel?: string
+  outputStyle?: string
   purposeClass?: PurposeClass
   lineage?: KernelLineage
   trajectoryId?: string

@@ -6,6 +6,7 @@ import {
 } from '../../core/index.js'
 import { createPlanningGovernanceProjection } from '../../governance/index.js'
 import { assessRecoveryState, createRecoveryCheckpoint, repairRecoveryState } from '../../recovery/index.js'
+import { saveBootstrapRuntimeAttachmentSettings } from '../../shared/runtime-attachment.js'
 import type { CommandExecutionInput, CommandExecutionResult, SlashCommandBundle } from './command-types.js'
 import type { LoadedCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
 
@@ -35,6 +36,17 @@ async function runInit(
   input: CommandExecutionInput,
 ): Promise<CommandExecutionResult> {
   const ids = resolveRuntimeIds(input)
+  const profileSettings = await saveBootstrapRuntimeAttachmentSettings(input.projectRoot, {
+    preferredUserName: input.preferredUserName,
+    defaultLineage: input.lineage,
+    defaultPurposeClass: input.purposeClass,
+    governanceMode: input.governanceMode,
+    automationLevel: input.automationLevel,
+    language: input.language,
+    artifactLanguage: input.artifactLanguage,
+    outputStyle: input.outputStyle,
+    expertLevel: input.expertLevel,
+  })
   const status = bootstrapWorkflowAuthority(input.projectRoot, {
     workflowId: ids.workflowId,
     taskIds: input.taskIds ?? [],
@@ -82,6 +94,15 @@ async function runInit(
       planning_projection: projection.filePath,
       missing_prerequisites: status.issues.map((issue) => issue.code),
       next_command: input.purposeClass ? `hm-${input.purposeClass === 'planning' ? 'plan' : 'harness'}` : 'hm-harness',
+      profile: {
+        preferredUserName: profileSettings.preferredUserName ?? null,
+        chatLanguage: profileSettings.language,
+        artifactLanguage: profileSettings.artifactLanguage,
+        expertiseLevel: profileSettings.expertLevel,
+        governanceMode: profileSettings.governanceMode,
+        automationLevel: profileSettings.automationLevel,
+        outputStyle: profileSettings.outputStyle,
+      },
       safetyLevel: bundle.pressureContract.safety.level,
       failureBehavior: bundle.pressureContract.failureBehavior,
       expectedEvidence: bundle.pressureContract.evidence.requiredArtifacts,
