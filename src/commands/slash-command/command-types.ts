@@ -9,24 +9,38 @@ import type { PurposeClass } from '../../hooks/start-work/start-work-types.js'
 import type { CommandAssetFrontmatter, CommandRuntimeContract } from '../../hooks/runtime-bridge/instruction-loader.js'
 import type { RuntimePressureContract } from '../../shared/pressure-contract.js'
 
-export interface SlashCommandBundle {
+/** Core command identity */
+export interface SlashCommandCore {
   id: string
   title: string
-  controlPlanePrimitiveId?: ControlPlanePrimitiveId
   agent: string
+  commandFile: string
   lineages: KernelLineage[]
   purposeClasses: PurposeClass[]
-  commandFile: string
-  workflowChain: string[]
-  toolGrantIds: string[]
-  structuredOutput: string
+}
+
+/** Routing and execution behavior */
+export interface SlashCommandRouting {
+  controlPlanePrimitiveId?: ControlPlanePrimitiveId
   continuationMode: 'resume' | 'handoff' | 'iterative'
   autoRouteAllowed: boolean
   workflowPhase: string
   hostEvent: string
+}
+
+/** Runtime contracts and grants */
+export interface SlashCommandContracts {
+  workflowChain: string[]
+  toolGrantIds: string[]
+  structuredOutput: string
   stateAuthority: string
   pressureContract: RuntimePressureContract
 }
+
+/** Full slash command bundle — composed via intersection for backward compatibility */
+export type SlashCommandBundle = SlashCommandCore
+  & SlashCommandRouting
+  & SlashCommandContracts
 
 export interface CommandExecutionPreview {
   commandId: string
@@ -42,13 +56,19 @@ export interface CommandExecutionPreview {
   pressureContract: RuntimePressureContract
 }
 
-export interface CommandExecutionInput {
+/** Core execution input — session and identity */
+export interface CommandInputCore {
   projectRoot: string
   sessionId: string
   sessionScope: 'main' | 'sub-session'
-  presetId?: ControlPlaneRecommendedPresetId
-  intakeEvidence?: ControlPlaneIntakeEvidence
-  requestedSettingsGroups?: ControlPlaneProfileGroupId[]
+  purposeClass?: PurposeClass
+  lineage?: KernelLineage
+  activeAgent?: string
+  userMessage?: string
+}
+
+/** Profile preferences for execution */
+export interface CommandInputProfile {
   preferredUserName?: string
   language?: string
   artifactLanguage?: string
@@ -56,18 +76,31 @@ export interface CommandExecutionInput {
   automationLevel?: string
   expertLevel?: string
   outputStyle?: string
-  purposeClass?: PurposeClass
-  lineage?: KernelLineage
+}
+
+/** Entity bindings for execution */
+export interface CommandInputBindings {
   trajectoryId?: string
-  arguments?: string
-  activeAgent?: string
-  parentSessionId?: string
-  userMessage?: string
   workflowId?: string
   taskIds?: string[]
   subtaskIds?: string[]
   delegationId?: string
+  parentSessionId?: string
 }
+
+/** Control plane overrides */
+export interface CommandInputOverrides {
+  presetId?: ControlPlaneRecommendedPresetId
+  intakeEvidence?: ControlPlaneIntakeEvidence
+  requestedSettingsGroups?: ControlPlaneProfileGroupId[]
+  arguments?: string
+}
+
+/** Full command execution input — composed via intersection for backward compatibility */
+export type CommandExecutionInput = CommandInputCore
+  & CommandInputProfile
+  & CommandInputBindings
+  & CommandInputOverrides
 
 export interface CommandEntityBindings {
   trajectoryId?: string

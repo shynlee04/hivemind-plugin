@@ -1,4 +1,4 @@
-# src/intelligence/doc/ — Document Intelligence Surface
+# src/intelligence/doc/ — Document Intelligence Surface [ROUTER-ONLY]
 
 Routes document knowledge surfaces based on purpose class.
 

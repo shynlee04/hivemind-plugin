@@ -50,7 +50,8 @@ export interface ReadinessGate {
   pressureId?: RuntimePressureId
 }
 
-export interface StartWorkDecision {
+/** Core session identity and classification */
+export interface StartWorkCore {
   sessionId: string
   sessionScope: SessionScope
   sessionState: SessionStateKind
@@ -58,22 +59,40 @@ export interface StartWorkDecision {
   purposeClass: PurposeClass
   confidence: number
   reasons: string[]
-  readiness: ReadinessGate[]
+}
+
+/** Routing and traversal decisions */
+export interface StartWorkRouting {
   traversalOutcome: TraversalOutcome
+  routeDisposition?: 'attach' | 'resume' | 'create' | 'defer' | 'refuse'
+  nextTransition?: string
   commandAgent?: string
+  autoRoute: boolean
+  programmaticInitiationRequired: boolean
+}
+
+/** Downstream context — readiness, workflow, trajectory state */
+export interface StartWorkContext {
+  readiness: ReadinessGate[]
   continuityAlerts: string[]
   workflowAuthority?: WorkflowAuthorityStatus
   trajectoryAssessment?: TrajectoryAssessment
-  routeDisposition?: 'attach' | 'resume' | 'create' | 'defer' | 'refuse'
-  nextTransition?: string
+  opencodeKnowledge: OpencodeKnowledgeSurface[]
+}
+
+/** Meta signals — pressure, risk, control plane */
+export interface StartWorkMeta {
+  riskLevel: RuntimeRiskLevel
+  pressureSignals: RuntimePressureId[]
+  pressureContract: RuntimePressureContract
   requiredControlPlaneId?: ControlPlanePrimitiveId
   recommendedControlPlaneId?: ControlPlanePrimitiveId
   requiredCommandId?: string
   recommendedCommandId?: string
-  programmaticInitiationRequired: boolean
-  autoRoute: boolean
-  riskLevel: RuntimeRiskLevel
-  opencodeKnowledge: OpencodeKnowledgeSurface[]
-  pressureSignals: RuntimePressureId[]
-  pressureContract: RuntimePressureContract
 }
+
+/** Full start-work decision — composed via intersection for backward compatibility */
+export type StartWorkDecision = StartWorkCore
+  & StartWorkRouting
+  & StartWorkContext
+  & StartWorkMeta

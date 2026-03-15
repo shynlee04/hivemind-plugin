@@ -16,10 +16,15 @@ import {
 } from '../control-plane/control-plane-intake.js'
 import type { ControlPlaneProfileFieldId } from '../control-plane/index.js'
 
-export interface RuntimeAttachmentSettings {
+/** Core attachment identity */
+export interface AttachmentCore {
   attachmentMode: 'local-worktree' | 'npm-package'
   defaultLineage: KernelLineage
   defaultPurposeClass: PurposeClass
+}
+
+/** User profile within attachment */
+export interface AttachmentProfile {
   preferredUserName?: string
   governanceMode: string
   automationLevel: string
@@ -27,6 +32,10 @@ export interface RuntimeAttachmentSettings {
   artifactLanguage: string
   outputStyle: string
   expertLevel: string
+}
+
+/** Feature arrays and contracts */
+export interface AttachmentFeatures {
   branchFocus: string
   guardrails: string[]
   facilitators: string[]
@@ -35,6 +44,11 @@ export interface RuntimeAttachmentSettings {
   verificationContract?: string
   returnContract?: string
 }
+
+/** Full runtime attachment settings — composed via intersection for backward compatibility */
+export type RuntimeAttachmentSettings = AttachmentCore
+  & AttachmentProfile
+  & AttachmentFeatures
 
 export interface RuntimeBindingsSnapshot extends RuntimeAttachmentSettings {
   hasRuntimeAttachment: boolean

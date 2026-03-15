@@ -18,30 +18,51 @@ export interface TrajectoryEvent {
   createdAt?: string
 }
 
-export interface TrajectoryRecord {
+/** Core trajectory identity and lifecycle — always present */
+export interface TrajectoryCore {
   id: string
   lineage: KernelLineage
   purposeClass: PurposeClass
+  status: TrajectoryStatus
+  createdAt: string
+  updatedAt: string
+}
+
+/** Entity bindings — what this trajectory is attached to */
+export interface TrajectoryBindings {
   workflowIds: string[]
   sessionIds: string[]
   taskIds: string[]
   subtaskIds: string[]
   delegationIds: string[]
+}
+
+/** Evidence and event history */
+export interface TrajectoryEvidence {
+  events: TrajectoryEvent[]
   eventSummaries: string[]
   evidenceRefs: string[]
+  checkpointIds: string[]
+}
+
+/** Planning and routing metadata */
+export interface TrajectoryPlanning {
   planningRefs: string[]
   graphNodeBindings: string[]
   rerouteNotes: string[]
-  checkpointIds: string[]
-  nextAllowedTransitions: string[]
   branchNotes: string[]
-  events: TrajectoryEvent[]
-  status: TrajectoryStatus
-  createdAt: string
-  updatedAt: string
-  closedAt?: string
-  closingSummary?: string
+  nextAllowedTransitions: string[]
 }
+
+/** Full trajectory record — composed via intersection for backward compatibility */
+export type TrajectoryRecord = TrajectoryCore
+  & TrajectoryBindings
+  & TrajectoryEvidence
+  & TrajectoryPlanning
+  & {
+    closedAt?: string
+    closingSummary?: string
+  }
 
 export interface TrajectoryCheckpoint {
   id: string

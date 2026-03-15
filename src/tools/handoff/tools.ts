@@ -11,31 +11,10 @@ import {
 } from '../../delegation/index.js'
 import { recordTrajectoryEvent } from '../../core/trajectory/index.js'
 import { error, success } from '../../shared/tool-response.js'
+import { parseList, parseJsonArray, renderToolResult as render } from '../../shared/tool-helpers.js'
 import { handoffActionPressureContracts, type HivemindHandoffToolArgs } from './types.js'
 
-function parseList(value?: string): string[] {
-  return (value ?? '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
 
-function parseJsonArray<T>(value?: string): T[] {
-  if (!value) {
-    return []
-  }
-
-  try {
-    const parsed = JSON.parse(value) as T[]
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return []
-  }
-}
-
-function render(result: unknown): string {
-  return JSON.stringify(result, null, 2)
-}
 
 async function recordHandoffEvent(projectRoot: string, trajectoryId: string | undefined, summary: string): Promise<void> {
   if (!trajectoryId) {

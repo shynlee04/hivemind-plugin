@@ -11,18 +11,10 @@ import {
   verifyWorkflowTask,
 } from '../../core/workflow-management/index.js'
 import { error, success } from '../../shared/tool-response.js'
+import { parseList, renderToolResult as render } from '../../shared/tool-helpers.js'
 import { taskActionPressureContracts, type HivemindTaskToolArgs } from './types.js'
 
-function parseList(value?: string): string[] {
-  return (value ?? '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
 
-function render(result: unknown): string {
-  return JSON.stringify(result, null, 2)
-}
 
 export function createHivemindTaskTool(projectRoot: string): ReturnType<typeof tool> {
   return tool({

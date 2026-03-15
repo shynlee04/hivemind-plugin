@@ -1,15 +1,20 @@
 import type { Part } from '@opencode-ai/sdk'
-import { tool, type Plugin } from '@opencode-ai/plugin'
+import { type Plugin } from '@opencode-ai/plugin'
 
 import { recordTrajectoryEvent } from '../core/trajectory/index.js'
-import { executeSlashCommandBundle, findSlashCommandBundle, discoverSlashCommandBundles } from '../commands/slash-command/index.js'
+import { findSlashCommandBundle } from '../commands/slash-command/index.js'
 import { initSdkContext, resetSdkContext } from '../hooks/sdk-context.js'
 import { createEventHandler } from '../hooks/event-handler.js'
+import { showGovernanceToast } from '../hooks/soft-governance.js'
 import {
   createHivemindHandoffTool,
   createHivemindTaskTool,
   createHivemindTrajectoryTool,
 } from '../tools/index.js'
+import {
+  createHivemindRuntimeStatusTool,
+  createHivemindRuntimeCommandTool,
+} from '../tools/runtime/index.js'
 import { createMessagesTransform } from './messages-transform.js'
 import { createPluginRuntimePlan } from './runtime-plan.js'
 import { createSystemTransform } from './system-transform.js'
@@ -102,11 +107,20 @@ async function recordToolEvent(directory: string, sessionID: string, toolName: s
   })
 }
 
+/** Tools that are managed by HiveMind and should not require separate permission prompts */
+const HIVEMIND_MANAGED_TOOLS = new Set([
+  'hivemind_runtime_status',
+  'hivemind_runtime_command',
+  'hivemind_task',
+  'hivemind_trajectory',
+  'hivemind_handoff',
+])
+
 /**
  * Real OpenCode plugin entry for the revamp lane.
  *
- * This adapter turns the internal trajectory/workflow/task runtime into an actual
- * OpenCode-loadable plugin with live hooks, tool exposure, and command/runtime bridging.
+ * Assembly-only: imports hooks and tools, registers them, exports Plugin.
+ * No business logic. No tool definitions. No event processing beyond delegation.
  */
 export const HiveMindPlugin: Plugin = async (input) => {
   const directory = input.directory
@@ -121,110 +135,69 @@ export const HiveMindPlugin: Plugin = async (input) => {
       await eventHandler(eventInput)
     },
     tool: {
-      hivemind_runtime_status: tool({
-        description: 'Inspect active HiveMind runtime attachment, trajectory, workflow, and command availability.',
-        args: {},
-        async execute(_args, context) {
-          const snapshot = await loadRuntimeBindingsSnapshot(directory)
-          context.metadata({
-            title: 'HiveMind runtime status',
-            metadata: {
-              trajectoryId: snapshot.trajectoryId,
-              workflowId: snapshot.workflowId,
-            },
-          })
-          return JSON.stringify({
-            attached: true,
-            sessionID: context.sessionID,
-            attachmentMode: snapshot.attachmentMode,
-            hasRuntimeAttachment: snapshot.hasRuntimeAttachment,
-            profileComplete: snapshot.profileComplete,
-            missingProfileFields: snapshot.missingProfileFields,
-            interactiveBootstrapRequired: snapshot.interactiveBootstrapRequired,
-            trajectoryId: snapshot.trajectoryId,
-            workflowId: snapshot.workflowId,
-            taskIds: snapshot.taskIds,
-            bootstrapProfile: snapshot.bootstrapProfile,
-            availableCommands: discoverSlashCommandBundles().map((bundle) => bundle.id),
-          }, null, 2)
-        },
-      }),
-      hivemind_runtime_command: tool({
-        description:
-          'Execute a HiveMind hm-* command bundle against the active revamp runtime. ' +
-          'Use this instead of manually creating .hivemind files or simulating bootstrap with bash.',
-        args: {
-          command: tool.schema.string(),
-          arguments: tool.schema.string().optional(),
-          userMessage: tool.schema.string().optional(),
-          preferredUserName: tool.schema.string().optional(),
-          language: tool.schema.string().optional(),
-          artifactLanguage: tool.schema.string().optional(),
-          governanceMode: tool.schema.string().optional(),
-          automationLevel: tool.schema.string().optional(),
-          expertLevel: tool.schema.string().optional(),
-          outputStyle: tool.schema.string().optional(),
-          presetId: tool.schema.enum(['guided-onboarding']).optional(),
-          requestedSettingsGroups: tool.schema.array(
-            tool.schema.enum(['identity-language', 'expertise-style', 'governance-automation']),
-          ).optional(),
-          intakeEvidence: tool.schema.object({
-            source: tool.schema.enum(['question-tool', 'cli-flags', 'runtime-tool', 'preset']),
-            questionnaireId: tool.schema.enum(['bootstrap-profile-v1', 'settings-profile-v1']),
-            displayLanguage: tool.schema.string(),
-            completedGroups: tool.schema.array(
-              tool.schema.enum(['identity-language', 'expertise-style', 'governance-automation']),
-            ),
-            usedRecommendedPresetGroups: tool.schema.array(
-              tool.schema.enum(['identity-language', 'expertise-style', 'governance-automation']),
-            ).optional(),
-          }).optional(),
-        },
-        async execute(args, context) {
-          const snapshot = await loadRuntimeBindingsSnapshot(directory)
-          const bundle = findSlashCommandBundle(args.command)
-          if (!bundle) {
-            throw new Error(`Unknown HiveMind command: ${args.command}`)
-          }
-
-          const result = await executeSlashCommandBundle(bundle, {
-            projectRoot: directory,
-            sessionId: context.sessionID,
-            sessionScope: 'main',
-            presetId: args.presetId,
-            intakeEvidence: args.intakeEvidence,
-            requestedSettingsGroups: args.requestedSettingsGroups,
-            preferredUserName: args.preferredUserName,
-            language: args.language,
-            artifactLanguage: args.artifactLanguage,
-            governanceMode: args.governanceMode,
-            automationLevel: args.automationLevel,
-            expertLevel: args.expertLevel,
-            outputStyle: args.outputStyle,
-            trajectoryId: snapshot.trajectoryId,
-            workflowId: snapshot.workflowId,
-            taskIds: snapshot.taskIds,
-            subtaskIds: snapshot.subtaskIds,
-            lineage: snapshot.defaultLineage,
-            purposeClass: snapshot.defaultPurposeClass,
-            arguments: args.arguments,
-            userMessage: args.userMessage ?? `execute ${args.command}`,
-            activeAgent: context.agent,
-          })
-
-          context.metadata({
-            title: `HiveMind command ${args.command}`,
-            metadata: {
-              command: args.command,
-              closeoutStatus: result.closeoutStatus,
-            },
-          })
-          return JSON.stringify(result, null, 2)
-        },
-      }),
+      hivemind_runtime_status: createHivemindRuntimeStatusTool(directory),
+      hivemind_runtime_command: createHivemindRuntimeCommandTool(directory),
       hivemind_task: createHivemindTaskTool(directory),
       hivemind_trajectory: createHivemindTrajectoryTool(directory),
       hivemind_handoff: createHivemindHandoffTool(directory),
+    },
+    'chat.message': async (messageInput, output) => {
+      const snapshot = await loadRuntimeBindingsSnapshot(directory)
+      const sessionID = messageInput.sessionID
+
+      // Inject baseline OpenCode knowledge
+      output.parts.push({
+        id: `hm_knowledge_${Date.now()}`,
+        sessionID,
+        messageID: messageInput.messageID ?? sessionID,
+        type: 'text',
+        text: baselineOpencodeKnowledge,
+        synthetic: true,
+      } as Part)
+
+      // Inject runtime context summary
+      const contextSummary = [
+        '<hivemind-session-context>',
+        `trajectory=${snapshot.trajectoryId ?? 'none'}`,
+        `workflow=${snapshot.workflowId ?? 'none'}`,
+        `lineage=${snapshot.defaultLineage}`,
+        `profile_complete=${snapshot.profileComplete}`,
+        `task_count=${snapshot.taskIds.length}`,
+        '</hivemind-session-context>',
+      ].join('\n')
+
+      output.parts.push({
+        id: `hm_context_${Date.now()}`,
+        sessionID,
+        messageID: messageInput.messageID ?? sessionID,
+        type: 'text',
+        text: contextSummary,
+        synthetic: true,
+      } as Part)
+    },
+    'permission.ask': async (permissionInput, output) => {
+      // Auto-allow HiveMind managed tool calls (they have their own governance)
+      if (permissionInput.metadata) {
+        const toolName = (permissionInput.metadata as Record<string, unknown>).tool as string | undefined
+        if (toolName && HIVEMIND_MANAGED_TOOLS.has(toolName)) {
+          output.status = 'allow'
+          return
+        }
+      }
+
+      // For state mutations, surface a governance toast
+      if (permissionInput.type === 'write') {
+        await showGovernanceToast(
+          'mutation-gate',
+          `HiveMind: Permission requested for ${permissionInput.type} operation`,
+        )
+      }
+    },
+    'tool.execute.before': async (toolInput, _output) => {
+      // Record tool execution intent for trajectory tracking
+      if (HIVEMIND_MANAGED_TOOLS.has(toolInput.tool)) {
+        await recordToolEvent(directory, toolInput.sessionID, `${toolInput.tool}:pre`)
+      }
     },
     'shell.env': async (_input, output) => {
       const snapshot = await loadRuntimeBindingsSnapshot(directory)
