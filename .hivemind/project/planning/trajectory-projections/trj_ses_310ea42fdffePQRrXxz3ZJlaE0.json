@@ -1,0 +1,12 @@
+{
+  "trajectoryId": "trj_ses_310ea42fdffePQRrXxz3ZJlaE0",
+  "workflowId": "ses_310ea42fdffePQRrXxz3ZJlaE0",
+  "taskIds": [],
+  "checkpointIds": [
+    "chk_trj_ses_310ea42fdffePQRrXxz3ZJlaE0_1"
+  ],
+  "recoveryOutcomes": [
+    "repair"
+  ],
+  "projectedAt": "2026-03-15T01:35:46.375Z"
+}

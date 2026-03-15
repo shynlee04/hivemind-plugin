@@ -26,6 +26,24 @@ describe('start-work router', () => {
     assert.equal(decision.pressureSignals.includes('fresh-bootstrap'), true)
   })
 
+  it('forces hm-init when workflow state exists but bootstrap profile intake is incomplete', () => {
+    const decision = resolveStartWork({
+      userMessage: 'continue the planning work',
+      sessionId: 'ses_profile_gap',
+      sessionScope: 'main',
+      hasRuntimeAttachment: false,
+      profileComplete: false,
+      hasHivemind: true,
+      hivemindHealthy: true,
+      hasWorkflow: true,
+      hasHandoff: false,
+    })
+
+    assert.equal(decision.requiredCommandId, 'hm-init')
+    assert.equal(decision.riskLevel, 'blocked')
+    assert.equal(decision.pressureSignals.includes('fresh-bootstrap'), true)
+  })
+
   it('routes framework implementation into hivefiver command stack', () => {
     const decision = resolveStartWork({
       userMessage: 'implement the plugin hook refactor and workflow chain',

@@ -21,7 +21,7 @@ export interface HookDescriptor {
 
 export interface RuntimeSurfaceEntry {
   id: string
-  kind: 'hook-bridge' | 'slash-command' | 'agent-tool'
+  kind: 'hook-bridge' | 'slash-command' | 'agent-tool' | 'control-plane-primitive'
   contractFile: string
   hostEvent: string
   workflowPhase: string

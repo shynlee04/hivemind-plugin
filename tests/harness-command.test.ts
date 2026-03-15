@@ -22,7 +22,7 @@ describe("harness command", () => {
     })
 
     try {
-      await initProject(dir, { silent: true })
+      await initProject(dir, { presetId: "guided-onboarding", silent: true })
       await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", () => resolve()))
       const address = server.address()
       if (!address || typeof address === "string") {

@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "activeTrajectoryId": null,
+  "lastClosedTrajectoryId": null,
+  "trajectories": [],
+  "checkpoints": [
+    {
+      "id": "chk_trj_ses_310d882daffelQX7PQjxpZXD8P_1",
+      "trajectoryId": "trj_ses_310d882daffelQX7PQjxpZXD8P",
+      "workflowId": "ses_310d882daffelQX7PQjxpZXD8P",
+      "taskIds": [],
+      "subtaskIds": [],
+      "source": "command:hm-harness",
+      "resumeTarget": "command:hm-doctor",
+      "createdAt": "2026-03-15T01:44:00.419Z"
+    },
+    {
+      "id": "chk_trj_ses_310cb2d29ffegC1yXiJ9SzzBfA_2",
+      "trajectoryId": "trj_ses_310cb2d29ffegC1yXiJ9SzzBfA",
+      "workflowId": "ses_310cb2d29ffegC1yXiJ9SzzBfA",
+      "taskIds": [],
+      "subtaskIds": [],
+      "source": "command:hm-harness",
+      "resumeTarget": "command:hm-plan",
+      "createdAt": "2026-03-15T01:55:51.538Z"
+    }
+  ],
+  "recoveryLog": []
+}

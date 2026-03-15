@@ -11,6 +11,10 @@ import {
   normalizePreferredUserName,
   type BootstrapProfile,
 } from './bootstrap-profile.js'
+import {
+  CONTROL_PLANE_PROFILE_FIELDS,
+} from '../control-plane/control-plane-intake.js'
+import type { ControlPlaneProfileFieldId } from '../control-plane/index.js'
 
 export interface RuntimeAttachmentSettings {
   attachmentMode: 'local-worktree' | 'npm-package'
@@ -33,9 +37,13 @@ export interface RuntimeAttachmentSettings {
 }
 
 export interface RuntimeBindingsSnapshot extends RuntimeAttachmentSettings {
+  hasRuntimeAttachment: boolean
   hasHivemind: boolean
   hivemindHealthy: boolean
   hasWorkflow: boolean
+  profileComplete: boolean
+  missingProfileFields: ControlPlaneProfileFieldId[]
+  interactiveBootstrapRequired: boolean
   bootstrapProfile: BootstrapProfile
   trajectoryId?: string
   workflowId?: string
@@ -171,6 +179,7 @@ export async function saveBootstrapRuntimeAttachmentSettings(
 
 export async function loadRuntimeBindingsSnapshot(projectRoot: string): Promise<RuntimeBindingsSnapshot> {
   const settings = await loadRuntimeAttachmentSettings(projectRoot)
+  const hasRuntimeAttachment = await runtimeAttachmentSettingsExist(projectRoot)
   const bootstrapProfile = createBootstrapProfile({
     preferredUserName: settings.preferredUserName,
     language: settings.language,
@@ -195,12 +204,19 @@ export async function loadRuntimeBindingsSnapshot(projectRoot: string): Promise<
     lineage: activeTrajectory?.lineage ?? settings.defaultLineage,
   })
   const checkpointId = activeTrajectory?.checkpointIds.at(-1)
+  const profileComplete = hasRuntimeAttachment
+  const missingProfileFields = profileComplete ? [] : [...CONTROL_PLANE_PROFILE_FIELDS]
+  const interactiveBootstrapRequired = !profileComplete
 
   return {
     ...settings,
+    hasRuntimeAttachment,
     hasHivemind: inspection.exists || workflowAuthority.exists,
     hivemindHealthy: inspection.healthy && workflowAuthority.healthy,
     hasWorkflow: !!workflowId,
+    profileComplete,
+    missingProfileFields,
+    interactiveBootstrapRequired,
     bootstrapProfile,
     trajectoryId: activeTrajectory?.id,
     workflowId,

@@ -82,7 +82,9 @@ function buildRouteReminder(plan: Awaited<ReturnType<typeof createPluginRuntimeP
     `next_transition=${decision.nextTransition ?? 'none'}`,
     'execution_rule=use-hivemind-runtime-command-for-hm-bundles',
     'mutation_rule=never-bootstrap-hivemind-by-manual-file-writes',
-    'intake_rule=if-bootstrap-profile-is-missing-ask-user-before-running-hm-init',
+    'intake_rule=if-bootstrap-profile-is-missing-run-the-question-tool-wizard-before-hm-init',
+    'intake_rule=hm-settings-must-use-question-tool-group-selection-before-runtime-mutation',
+    'question_rule=do-not-ask-free-text-permission-questions-when-a-control-plane-wizard-is-required',
     '</hivemind-route-bridge>',
   ].join('\n')
 }
@@ -135,9 +137,14 @@ export const HiveMindPlugin: Plugin = async (input) => {
             attached: true,
             sessionID: context.sessionID,
             attachmentMode: snapshot.attachmentMode,
+            hasRuntimeAttachment: snapshot.hasRuntimeAttachment,
+            profileComplete: snapshot.profileComplete,
+            missingProfileFields: snapshot.missingProfileFields,
+            interactiveBootstrapRequired: snapshot.interactiveBootstrapRequired,
             trajectoryId: snapshot.trajectoryId,
             workflowId: snapshot.workflowId,
             taskIds: snapshot.taskIds,
+            bootstrapProfile: snapshot.bootstrapProfile,
             availableCommands: discoverSlashCommandBundles().map((bundle) => bundle.id),
           }, null, 2)
         },
@@ -157,6 +164,21 @@ export const HiveMindPlugin: Plugin = async (input) => {
           automationLevel: tool.schema.string().optional(),
           expertLevel: tool.schema.string().optional(),
           outputStyle: tool.schema.string().optional(),
+          presetId: tool.schema.enum(['guided-onboarding']).optional(),
+          requestedSettingsGroups: tool.schema.array(
+            tool.schema.enum(['identity-language', 'expertise-style', 'governance-automation']),
+          ).optional(),
+          intakeEvidence: tool.schema.object({
+            source: tool.schema.enum(['question-tool', 'cli-flags', 'runtime-tool', 'preset']),
+            questionnaireId: tool.schema.enum(['bootstrap-profile-v1', 'settings-profile-v1']),
+            displayLanguage: tool.schema.string(),
+            completedGroups: tool.schema.array(
+              tool.schema.enum(['identity-language', 'expertise-style', 'governance-automation']),
+            ),
+            usedRecommendedPresetGroups: tool.schema.array(
+              tool.schema.enum(['identity-language', 'expertise-style', 'governance-automation']),
+            ).optional(),
+          }).optional(),
         },
         async execute(args, context) {
           const snapshot = await loadRuntimeBindingsSnapshot(directory)
@@ -169,6 +191,9 @@ export const HiveMindPlugin: Plugin = async (input) => {
             projectRoot: directory,
             sessionId: context.sessionID,
             sessionScope: 'main',
+            presetId: args.presetId,
+            intakeEvidence: args.intakeEvidence,
+            requestedSettingsGroups: args.requestedSettingsGroups,
             preferredUserName: args.preferredUserName,
             language: args.language,
             artifactLanguage: args.artifactLanguage,
@@ -285,6 +310,8 @@ export const HiveMindPlugin: Plugin = async (input) => {
           projectRoot: directory,
           workflowId: snapshot.workflowId,
           taskIds: snapshot.taskIds,
+          hasRuntimeAttachment: snapshot.hasRuntimeAttachment,
+          profileComplete: snapshot.profileComplete,
           activeLineage: snapshot.defaultLineage,
           hasHivemind: snapshot.hasHivemind,
           hivemindHealthy: snapshot.hivemindHealthy,

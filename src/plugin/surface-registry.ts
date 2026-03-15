@@ -4,6 +4,7 @@ import {
   runtimeLoaderHookBridge,
   workflowIntegrationHookBridge,
 } from '../hooks/runtime-bridge/index.js'
+import { discoverControlPlanePrimitives, isControlPlanePrimitiveId } from '../control-plane/index.js'
 import { discoverSlashCommandBundles } from '../commands/slash-command/index.js'
 import { agentToolCatalog } from '../tools/index.js'
 import { getRuntimePressureContract } from '../shared/pressure-contract.js'
@@ -58,16 +59,33 @@ export function createRuntimeSurfaceRegistry(): RuntimeSurfaceEntry[] {
     ...hookBridgeMetadata[bridge.id],
   }))
 
-  const slashCommands: RuntimeSurfaceEntry[] = discoverSlashCommandBundles().map((bundle) => ({
-    id: bundle.id,
-    kind: 'slash-command',
-    contractFile: bundle.commandFile,
-    hostEvent: bundle.hostEvent,
-    workflowPhase: bundle.workflowPhase,
-    purposeClasses: bundle.purposeClasses,
-    stateAuthority: bundle.stateAuthority,
-    pressureContract: bundle.pressureContract,
+  const controlPlanePrimitives: RuntimeSurfaceEntry[] = discoverControlPlanePrimitives().map((primitive) => ({
+    id: primitive.id,
+    kind: 'control-plane-primitive',
+    contractFile: `commands/${primitive.adapterCommandId}.md`,
+    hostEvent: primitive.hostEvent,
+    workflowPhase: primitive.workflowPhase,
+    purposeClasses: primitive.purposeClasses,
+    stateAuthority: primitive.stateAuthority,
+    pressureContract: primitive.pressureContract,
   }))
+
+  const slashCommands: RuntimeSurfaceEntry[] = discoverSlashCommandBundles().flatMap((bundle): RuntimeSurfaceEntry[] => {
+    if (isControlPlanePrimitiveId(bundle.controlPlanePrimitiveId)) {
+      return []
+    }
+
+    return [{
+      id: bundle.id,
+      kind: 'slash-command',
+      contractFile: bundle.commandFile,
+      hostEvent: bundle.hostEvent,
+      workflowPhase: bundle.workflowPhase,
+      purposeClasses: bundle.purposeClasses,
+      stateAuthority: bundle.stateAuthority,
+      pressureContract: bundle.pressureContract,
+    }]
+  })
 
   const agentTools: RuntimeSurfaceEntry[] = agentToolCatalog.map((tool) => ({
     id: tool.id,
@@ -103,5 +121,5 @@ export function createRuntimeSurfaceRegistry(): RuntimeSurfaceEntry[] {
     },
   ]
 
-  return [...hookBridges, ...slashCommands, ...runtimeAdminTools, ...agentTools]
+  return [...hookBridges, ...controlPlanePrimitives, ...slashCommands, ...runtimeAdminTools, ...agentTools]
 }

@@ -1,0 +1,31 @@
+{
+  "attachmentMode": "local-worktree",
+  "defaultLineage": "hiveminder",
+  "defaultPurposeClass": "planning",
+  "governanceMode": "agent-driven-human-is-dumb",
+  "automationLevel": "full",
+  "language": "vi",
+  "artifactLanguage": "en",
+  "outputStyle": "ExplainlikeIamAFiveYearOld",
+  "expertLevel": "retarded",
+  "branchFocus": "runtime-entry-attachment",
+  "guardrails": [
+    "workflow-first",
+    "trajectory-aware",
+    "bounded-delegation"
+  ],
+  "facilitators": [
+    "hm-init",
+    "hm-doctor",
+    "hm-harness"
+  ],
+  "mcpReadiness": [
+    "context7",
+    "deepwiki",
+    "tavily",
+    "repomix"
+  ],
+  "hivebrainDigest": [
+    "runtime-attachment-active"
+  ]
+}

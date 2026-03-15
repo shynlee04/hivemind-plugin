@@ -40,6 +40,7 @@ describe('slash-command stack', () => {
     const preview = await previewSlashCommandBundle(bundle!)
     assert.match(preview.body, /hivemind_runtime_command/)
     assert.match(preview.body, /Never hand-write `.hivemind\/\*\*` files/)
+    assert.match(preview.body, /question` tool wizard|question tool wizard/)
     assert.equal(preview.contract.verificationContract, 'bootstrap-readiness')
   })
 
@@ -57,10 +58,12 @@ describe('slash-command stack', () => {
 
     const plan = createAutoSlashCommandPlan(decision)
     assert.equal(plan.commandBinding.bundle?.id, 'hm-doctor')
-    assert.equal(plan.commandBinding.autoRoute, false)
+    assert.equal(plan.commandBinding.bindingKind, 'control-plane')
+    assert.equal(plan.commandBinding.initiationMode, 'programmatic-required')
+    assert.equal(plan.commandBinding.autoRoute, true)
   })
 
-  it('executes hm-init against workflow authority instead of previewing only', async () => {
+  it('blocks hm-init behind a question gate when intake is missing', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'hm-command-init-'))
 
     try {
@@ -78,23 +81,17 @@ describe('slash-command stack', () => {
         taskIds: ['task_init'],
       })
 
-      assert.equal(result.executionMode, 'handler')
-      assert.equal(result.report.status, 'initialized')
-      assert.equal(Array.isArray(result.entityBindings?.taskIds), true)
-      assert.equal(result.stateTransitions?.includes('recovery-checkpoint-created'), true)
-      assert.equal(result.artifactRefs?.length, 1)
+      assert.equal(result.executionMode, 'question-gate')
+      assert.equal(result.report.status, 'intake-required')
+      assert.equal(result.report.next_command, 'hm-init')
+      assert.equal((result.report.intake as { questionnaireId: string }).questionnaireId, 'bootstrap-profile-v1')
+      assert.equal((result.report.intake as { nextAction: string }).nextAction, 'question-tool:bootstrap-profile-v1')
       assert.equal(result.verificationContractId, 'bootstrap-readiness')
       assert.equal(result.pressureContract.id, 'fresh-bootstrap')
       assert.deepEqual(result.report.expectedEvidence, ['readiness-gate', 'checkpoint', 'planning-projection'])
-      assert.deepEqual(result.report.profile, {
-        preferredUserName: null,
-        chatLanguage: 'en',
-        artifactLanguage: 'en',
-        expertiseLevel: 'advanced',
-        governanceMode: 'assisted',
-        automationLevel: 'assisted',
-        outputStyle: 'concise',
-      })
+      assert.equal(result.closeoutStatus, 'blocked')
+      assert.equal(result.artifactRefs, undefined)
+      assert.equal(result.stateTransitions, undefined)
     } finally {
       await rm(dir, { recursive: true, force: true })
     }
@@ -132,6 +129,48 @@ describe('slash-command stack', () => {
         expertiseLevel: 'beginner',
         governanceMode: 'strict',
         automationLevel: 'guided',
+        outputStyle: 'explanatory',
+      })
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('accepts guided-onboarding preset groups when hm-init intake used the recommended defaults', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'hm-command-init-preset-'))
+
+    try {
+      const bundle = findSlashCommandBundle('hm-init')
+      assert.ok(bundle)
+
+      const result = await executeSlashCommandBundle(bundle!, {
+        projectRoot: dir,
+        sessionId: 'wf_init_preset',
+        sessionScope: 'main',
+        lineage: 'hivefiver',
+        purposeClass: 'planning',
+        trajectoryId: 'trj_init_preset',
+        workflowId: 'wf_init_preset',
+        language: 'vi',
+        artifactLanguage: 'en',
+        presetId: 'guided-onboarding',
+        intakeEvidence: {
+          source: 'question-tool',
+          questionnaireId: 'bootstrap-profile-v1',
+          displayLanguage: 'vi',
+          completedGroups: ['identity-language', 'expertise-style', 'governance-automation'],
+          usedRecommendedPresetGroups: ['expertise-style', 'governance-automation'],
+        },
+      })
+
+      assert.equal(result.executionMode, 'handler')
+      assert.deepEqual(result.report.profile, {
+        preferredUserName: null,
+        chatLanguage: 'vi',
+        artifactLanguage: 'en',
+        expertiseLevel: 'beginner',
+        governanceMode: 'assisted',
+        automationLevel: 'assisted',
         outputStyle: 'explanatory',
       })
     } finally {

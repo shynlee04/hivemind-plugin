@@ -1,10 +1,14 @@
 import type { KernelLineage, SessionScope } from '../context/prompt-packet/prompt-packet-types.js'
+import type { ControlPlanePrimitive } from '../control-plane/index.js'
 import type { DocKnowledgeSurface } from '../intelligence/doc/index.js'
 import type { StartWorkDecision } from '../hooks/start-work/index.js'
 import type { OpencodeKnowledgeSurface } from '../shared/opencode-knowledge.js'
 import type { SlashCommandBundle } from '../commands/slash-command/index.js'
 
 export interface CommandBinding {
+  bindingKind: 'none' | 'control-plane' | 'workflow-command'
+  initiationMode: 'advisory' | 'explicit' | 'programmatic-required'
+  controlPlanePrimitive?: ControlPlanePrimitive
   bundle?: SlashCommandBundle
   autoRoute: boolean
   reason: string

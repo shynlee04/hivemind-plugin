@@ -5,43 +5,87 @@ import { join } from "node:path"
 import { describe, it } from "node:test"
 
 import { initProject } from "../src/cli/init.js"
-import { updateProjectSettings } from "../src/cli/settings.js"
-import { loadConfig } from "../src/lib/persistence.js"
-import { getEffectivePaths } from "../src/lib/paths.js"
+import { runSettingsCommand, updateProjectSettings } from "../src/cli/settings.js"
+import { getConfigPath } from "../src/shared/paths.js"
+import { loadRuntimeAttachmentSettings } from "../src/shared/runtime-attachment.js"
 
 describe("settings command support", () => {
   it("updates persisted config and kernel steering files", async () => {
     const dir = await mkdtemp(join(tmpdir(), "hm-settings-"))
 
     try {
-      await initProject(dir, { silent: true })
+      await initProject(dir, { presetId: "guided-onboarding", silent: true })
       const result = await updateProjectSettings(dir, {
         language: "vi",
         governanceMode: "strict",
         expertLevel: "advanced",
         outputStyle: "architecture",
-        requireCodeReview: true,
       })
 
       assert.equal(result.updatedFields.includes("language"), true)
-      assert.equal(result.updatedFields.includes("governance_mode"), true)
+      assert.equal(result.updatedFields.includes("governanceMode"), true)
 
-      const config = await loadConfig(dir)
-      assert.equal(config.language, "vi")
-      assert.equal(config.governance_mode, "strict")
-      assert.equal(config.agent_behavior.expert_level, "advanced")
-      assert.equal(config.agent_behavior.output_style, "architecture")
-      assert.equal(config.agent_behavior.constraints.require_code_review, true)
+      const settings = await loadRuntimeAttachmentSettings(dir)
+      const persisted = JSON.parse(
+        await readFile(getConfigPath(dir, "runtime-attachment.json"), "utf-8"),
+      ) as {
+        language: string
+        governanceMode: string
+        expertLevel: string
+        outputStyle: string
+      }
+      assert.equal(settings.language, "vi")
+      assert.equal(settings.governanceMode, "strict")
+      assert.equal(settings.expertLevel, "advanced")
+      assert.equal(settings.outputStyle, "architecture")
+      assert.equal(persisted.language, "vi")
+      assert.equal(persisted.governanceMode, "strict")
+      assert.equal(persisted.expertLevel, "advanced")
+      assert.equal(persisted.outputStyle, "architecture")
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
 
-      const governanceProjection = JSON.parse(
-        await readFile(getEffectivePaths(dir).kernel.governanceConfig, "utf-8"),
+  it("runs hm-settings through the canonical command bundle and returns changed fields", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "hm-settings-command-"))
+
+    try {
+      await initProject(dir, {
+        presetId: "guided-onboarding",
+        silent: true,
+      })
+
+      const result = await runSettingsCommand(dir, {
+        sessionId: "ses_settings",
+        language: "vi",
+        artifactLanguage: "en",
+      })
+
+      assert.equal(result.executionMode, "handler")
+      assert.deepEqual(result.report.changed_fields, ["chatLanguage"])
+      assert.equal((result.report.updated_settings as { chatLanguage: string }).chatLanguage, "vi")
+      assert.equal((result.report.updated_settings as { artifactLanguage: string }).artifactLanguage, "en")
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it("fails fast when hm-settings CLI parity has neither explicit deltas nor preset", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "hm-settings-empty-"))
+
+    try {
+      await initProject(dir, {
+        presetId: "guided-onboarding",
+        silent: true,
+      })
+
+      await assert.rejects(
+        () => runSettingsCommand(dir, {
+          sessionId: "ses_settings_empty",
+        }),
+        /hm-settings requires explicit profile intake before execution/,
       )
-      const profileProjection = JSON.parse(
-        await readFile(getEffectivePaths(dir).kernel.profileConfig, "utf-8"),
-      )
-      assert.equal(governanceProjection.governance_mode, "strict")
-      assert.equal(profileProjection.chat_language, "vi")
-      assert.equal(profileProjection.output_style, "architecture")
     } finally {
       await rm(dir, { recursive: true, force: true })
     }

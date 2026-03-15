@@ -5,6 +5,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-init',
     title: 'Initialize control plane',
+    controlPlanePrimitiveId: 'hm-init',
     agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['planning', 'implementation'],
@@ -22,6 +23,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-doctor',
     title: 'Repair broken control plane',
+    controlPlanePrimitiveId: 'hm-doctor',
     agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['course-correction', 'gatekeeping'],
@@ -39,6 +41,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-harness',
     title: 'Validate workflow readiness',
+    controlPlanePrimitiveId: 'hm-harness',
     agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['planning', 'implementation', 'gatekeeping', 'tdd'],
@@ -56,6 +59,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-settings',
     title: 'Reconfigure control plane settings',
+    controlPlanePrimitiveId: 'hm-settings',
     agent: 'hivefiver',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['planning'],

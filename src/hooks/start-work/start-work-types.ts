@@ -1,4 +1,5 @@
 import type { KernelLineage, SessionScope } from '../../context/prompt-packet/prompt-packet-types.js'
+import type { ControlPlanePrimitiveId } from '../../control-plane/index.js'
 import type { TrajectoryAssessment } from '../../core/trajectory/index.js'
 import type { WorkflowAuthorityStatus } from '../../core/workflow-management/index.js'
 import type { OpencodeKnowledgeSurface } from '../../shared/opencode-knowledge.js'
@@ -33,6 +34,8 @@ export interface StartWorkInput {
   activeLineage?: KernelLineage
   activeAgent?: string
   turnCount?: number
+  hasRuntimeAttachment?: boolean
+  profileComplete?: boolean
   hasHivemind?: boolean
   hivemindHealthy?: boolean
   hasWorkflow?: boolean
@@ -41,6 +44,7 @@ export interface StartWorkInput {
 
 export interface ReadinessGate {
   blocking: boolean
+  primitiveId?: ControlPlanePrimitiveId
   commandId?: string
   reason: string
   pressureId?: RuntimePressureId
@@ -62,8 +66,11 @@ export interface StartWorkDecision {
   trajectoryAssessment?: TrajectoryAssessment
   routeDisposition?: 'attach' | 'resume' | 'create' | 'defer' | 'refuse'
   nextTransition?: string
+  requiredControlPlaneId?: ControlPlanePrimitiveId
+  recommendedControlPlaneId?: ControlPlanePrimitiveId
   requiredCommandId?: string
   recommendedCommandId?: string
+  programmaticInitiationRequired: boolean
   autoRoute: boolean
   riskLevel: RuntimeRiskLevel
   opencodeKnowledge: OpencodeKnowledgeSurface[]

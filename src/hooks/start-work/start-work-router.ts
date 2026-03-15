@@ -1,6 +1,7 @@
 import { assessTrajectoryEntrySync } from '../../core/trajectory/index.js'
 import type { TrajectoryAssessmentAction } from '../../core/trajectory/index.js'
 import { inspectWorkflowAuthority } from '../../core/workflow-management/index.js'
+import { findControlPlanePrimitive } from '../../control-plane/index.js'
 import { resolveOpencodeKnowledgeSurfaces } from '../../shared/opencode-knowledge.js'
 import {
   pickRuntimePressureContract,
@@ -24,7 +25,7 @@ const AUTO_ROUTE_PURPOSES = new Set([
 
 function resolveRiskLevel(
   input: StartWorkInput,
-  requiredCommandId: string | undefined,
+  requiredControlPlaneId: StartWorkDecision['requiredControlPlaneId'],
   continuityAlerts: string[],
   wrongAgent: boolean,
   trajectoryAction?: TrajectoryAssessmentAction,
@@ -33,7 +34,7 @@ function resolveRiskLevel(
     return 'blocked'
   }
 
-  if (requiredCommandId === 'hm-init' || requiredCommandId === 'hm-doctor') {
+  if (requiredControlPlaneId === 'hm-init' || requiredControlPlaneId === 'hm-doctor') {
     return 'blocked'
   }
 
@@ -64,7 +65,7 @@ function resolveRecommendedCommand(purposeClass: StartWorkDecision['purposeClass
 }
 
 function resolveTraversalOutcome(
-  requiredCommandId: string | undefined,
+  requiredControlPlaneId: StartWorkDecision['requiredControlPlaneId'],
   wrongAgent: boolean,
   trajectoryAction?: TrajectoryAssessmentAction,
 ): TraversalOutcome {
@@ -72,11 +73,11 @@ function resolveTraversalOutcome(
     return 'refuse'
   }
 
-  if (requiredCommandId === 'hm-init') {
+  if (requiredControlPlaneId === 'hm-init') {
     return 'bootstrap'
   }
 
-  if (requiredCommandId === 'hm-doctor') {
+  if (requiredControlPlaneId === 'hm-doctor') {
     return 'repair'
   }
 
@@ -181,23 +182,34 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
   const readinessPressureIds = readiness
     .map((gate) => gate.pressureId)
     .filter((pressureId): pressureId is RuntimePressureId => pressureId !== undefined)
-  const requiredCommandId = readiness.find((gate) => gate.commandId)?.commandId
+  const requiredControlPlaneId = readiness.find((gate) => gate.primitiveId)?.primitiveId
+  const recommendedControlPlaneId = requiredControlPlaneId
+  const requiredCommandId = requiredControlPlaneId
+    ? findControlPlanePrimitive(requiredControlPlaneId)?.adapterCommandId ?? requiredControlPlaneId
+    : readiness.find((gate) => gate.commandId)?.commandId
   const recommendedCommandId = requiredCommandId ?? resolveRecommendedCommand(purpose.purposeClass)
-  const commandAgent = recommendedCommandId
-    ? findSlashCommandBundle(recommendedCommandId)?.agent
+  const commandAgent = (requiredControlPlaneId
+    ? findControlPlanePrimitive(requiredControlPlaneId)?.adapterCommandId
+    : recommendedCommandId)
+    ? findSlashCommandBundle(requiredControlPlaneId
+      ? findControlPlanePrimitive(requiredControlPlaneId)?.adapterCommandId ?? recommendedCommandId!
+      : recommendedCommandId!,
+    )?.agent
     : undefined
   const wrongAgent = !!(enrichedInput.activeAgent && commandAgent && enrichedInput.activeAgent !== commandAgent)
   const riskLevel = resolveRiskLevel(
     enrichedInput,
-    requiredCommandId,
+    requiredControlPlaneId,
     continuityAlerts,
     wrongAgent,
     trajectoryAssessment?.action,
   )
-  const traversalOutcome = resolveTraversalOutcome(requiredCommandId, wrongAgent, trajectoryAssessment?.action)
-  const autoRoute = traversalOutcome === 'route'
-    && AUTO_ROUTE_PURPOSES.has(purpose.purposeClass)
-    && riskLevel !== 'blocked'
+  const traversalOutcome = resolveTraversalOutcome(requiredControlPlaneId, wrongAgent, trajectoryAssessment?.action)
+  const programmaticInitiationRequired = !!requiredControlPlaneId
+  const autoRoute = programmaticInitiationRequired
+    || (traversalOutcome === 'route'
+      && AUTO_ROUTE_PURPOSES.has(purpose.purposeClass)
+      && riskLevel !== 'blocked')
   const pressureSignals = resolvePressureSignals(
     enrichedInput,
     readinessPressureIds,
@@ -223,8 +235,11 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
     routeDisposition: resolveRouteDisposition(trajectoryAssessment?.action),
     nextTransition: trajectoryAssessment?.resumeTarget
       ?? (requiredCommandId ? `command:${requiredCommandId}` : recommendedCommandId ? `command:${recommendedCommandId}` : undefined),
+    requiredControlPlaneId,
+    recommendedControlPlaneId,
     requiredCommandId,
     recommendedCommandId,
+    programmaticInitiationRequired,
     autoRoute,
     riskLevel,
     opencodeKnowledge: resolveOpencodeKnowledgeSurfaces(purpose.purposeClass, input.userMessage),

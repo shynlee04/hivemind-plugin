@@ -13,7 +13,7 @@ export function buildPluginContext(startWork: StartWorkDecision): PluginContext 
     lineage: startWork.lineage,
     category: resolveCategoryRoute(startWork.purposeClass),
     commandBinding,
-    toolGrants: resolveToolGrants(startWork, commandBinding.bundle),
+    toolGrants: resolveToolGrants(startWork, commandBinding.bundle, commandBinding),
     sessionInheritance: resolveSessionInheritance(startWork),
     docSurfaces: resolveDocKnowledgeSurfaces(startWork.purposeClass),
     opencodeKnowledge: startWork.opencodeKnowledge,

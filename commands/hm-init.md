@@ -30,21 +30,28 @@ Establish the control plane when `.hivemind` is missing or incomplete, then hand
 1. First inspect runtime state with `hivemind_runtime_status`.
 2. Never hand-write `.hivemind/**` files with `bash`, `write`, or ad hoc JSON scaffolding.
 3. To actually run bootstrap, you must call `hivemind_runtime_command` with `command: "hm-init"`.
-4. If profile choices are missing, ask the user for them before running bootstrap:
-   - preferred user name
-   - chat language
-   - artifact language
-   - expertise level
-   - governance mode
-   - automation level
-   - output style
-5. If the user gives partial profile choices, pass the provided values to `hivemind_runtime_command` and let the runtime defaults fill the rest.
+4. If `profileComplete` is false, you must immediately use the built-in `question` tool wizard before attempting bootstrap.
+5. Do not ask a free-text permission question like "do you want me to run hm-init?" when bootstrap is already required.
+6. Do not let runtime defaults silently fill missing profile groups. Missing intake must be completed explicitly or via the recommended preset groups.
 
 ## Process
 1. Inspect whether the control plane exists at all.
-2. If required profile/governance choices are still unknown, stop and ask the user concise intake questions instead of guessing.
-3. Execute `hivemind_runtime_command` for `hm-init` with any known bootstrap profile values.
-4. Return the startup report and next workflow command instead of drifting directly into unrelated work.
+2. If the bootstrap profile is incomplete, run a staged `question` wizard:
+   - Stage 1: `preferredUserName`, `chatLanguage`, `artifactLanguage`
+   - Stage 2: `expertiseLevel`, `outputStyle`
+   - Stage 3: `governanceMode`, `automationLevel`
+3. For Stages 2 and 3, offer "use recommended defaults" as the `guided-onboarding` preset.
+4. After all stages are complete, execute `hivemind_runtime_command` for `hm-init` and include:
+   - explicit profile values collected so far
+   - `presetId: "guided-onboarding"` if any preset group was used
+   - `intakeEvidence` with:
+     - `source: "question-tool"`
+     - `questionnaireId: "bootstrap-profile-v1"`
+     - `displayLanguage`
+     - `completedGroups: ["identity-language", "expertise-style", "governance-automation"]`
+     - `usedRecommendedPresetGroups` for any stage that used the preset
+5. If the runtime returns `executionMode: "question-gate"`, continue the wizard instead of improvising with defaults or shell writes.
+6. Return the startup report and next workflow command instead of drifting directly into unrelated work.
 
 ## Output Contract
 - status

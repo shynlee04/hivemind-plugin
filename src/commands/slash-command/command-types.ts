@@ -1,4 +1,10 @@
 import type { KernelLineage } from '../../context/prompt-packet/prompt-packet-types.js'
+import type {
+  ControlPlaneIntakeEvidence,
+  ControlPlanePrimitiveId,
+  ControlPlaneProfileGroupId,
+  ControlPlaneRecommendedPresetId,
+} from '../../control-plane/index.js'
 import type { PurposeClass } from '../../hooks/start-work/start-work-types.js'
 import type { CommandAssetFrontmatter, CommandRuntimeContract } from '../../hooks/runtime-bridge/instruction-loader.js'
 import type { RuntimePressureContract } from '../../shared/pressure-contract.js'
@@ -6,6 +12,7 @@ import type { RuntimePressureContract } from '../../shared/pressure-contract.js'
 export interface SlashCommandBundle {
   id: string
   title: string
+  controlPlanePrimitiveId?: ControlPlanePrimitiveId
   agent: string
   lineages: KernelLineage[]
   purposeClasses: PurposeClass[]
@@ -39,6 +46,9 @@ export interface CommandExecutionInput {
   projectRoot: string
   sessionId: string
   sessionScope: 'main' | 'sub-session'
+  presetId?: ControlPlaneRecommendedPresetId
+  intakeEvidence?: ControlPlaneIntakeEvidence
+  requestedSettingsGroups?: ControlPlaneProfileGroupId[]
   preferredUserName?: string
   language?: string
   artifactLanguage?: string
@@ -71,7 +81,7 @@ export interface CommandExecutionResult {
   commandId: string
   title: string
   agent: string
-  executionMode: 'handler' | 'preview'
+  executionMode: 'handler' | 'preview' | 'question-gate'
   contract: CommandRuntimeContract
   report: Record<string, unknown>
   entityBindings?: CommandEntityBindings

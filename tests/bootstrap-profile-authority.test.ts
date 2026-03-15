@@ -37,6 +37,23 @@ describe('bootstrap profile authority', () => {
     }
   })
 
+  it('requires complete explicit bootstrap flags or a preset in non-interactive init', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'hm-bootstrap-noninteractive-'))
+
+    try {
+      await assert.rejects(
+        () => initProject(dir, {
+          language: 'vi',
+          governanceMode: 'strict',
+          silent: true,
+        }),
+        /hm-init requires explicit profile intake before execution/,
+      )
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
   it('keeps hm-init bootstrap-authoritative and reserves reconfiguration for settings', async () => {
     const dir = await mkdtemp(join(tmpdir(), 'hm-bootstrap-guard-'))
 
@@ -44,21 +61,33 @@ describe('bootstrap profile authority', () => {
       await initProject(dir, {
         preferredUserName: 'Apple',
         language: 'vi',
+        artifactLanguage: 'en',
         governanceMode: 'strict',
+        automationLevel: 'guided',
+        expertLevel: 'advanced',
+        outputStyle: 'architecture',
         silent: true,
       })
 
       await initProject(dir, {
         preferredUserName: 'Codex',
         language: 'en',
+        artifactLanguage: 'vi',
         governanceMode: 'assisted',
+        automationLevel: 'assisted',
+        expertLevel: 'beginner',
+        outputStyle: 'concise',
         silent: true,
       })
 
       const afterSecondInit = await loadRuntimeAttachmentSettings(dir)
       assert.equal(afterSecondInit.preferredUserName, 'Apple')
       assert.equal(afterSecondInit.language, 'vi')
+      assert.equal(afterSecondInit.artifactLanguage, 'en')
       assert.equal(afterSecondInit.governanceMode, 'strict')
+      assert.equal(afterSecondInit.automationLevel, 'guided')
+      assert.equal(afterSecondInit.expertLevel, 'advanced')
+      assert.equal(afterSecondInit.outputStyle, 'architecture')
 
       await updateProjectSettings(dir, {
         preferredUserName: 'Codex',

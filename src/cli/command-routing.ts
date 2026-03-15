@@ -1,23 +1,17 @@
 import { basename } from 'node:path'
+import { CONTROL_PLANE_CLI_COMMANDS, discoverControlPlanePrimitives } from '../control-plane/index.js'
 
-export const CLI_COMMANDS = [
-  'init',
-  'doctor',
-  'settings',
-  'harness',
-  'help',
-] as const
+export const CLI_COMMANDS = [...CONTROL_PLANE_CLI_COMMANDS, 'help'] as const
 
 export type CliCommand = (typeof CLI_COMMANDS)[number]
 
 const BINARY_ALIASES: Record<string, CliCommand> = {
-  'hm-init': 'init',
-  'hm-doctor': 'doctor',
-  'hm-settings': 'settings',
-  'hm-harness': 'harness',
-  hivemind: 'init',
-  'hivemind-context-governance': 'init',
-}
+  ...Object.fromEntries(
+    discoverControlPlanePrimitives().flatMap((primitive) =>
+      primitive.binaryAliases.map((alias) => [alias, primitive.cliCommand]),
+    ),
+  ),
+} as Record<string, CliCommand>
 
 /**
  * Resolve the effective CLI command from the executable path and positional args.

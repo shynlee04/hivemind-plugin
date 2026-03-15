@@ -1,6 +1,6 @@
 import { recordTrajectoryEvent } from '../../core/trajectory/index.js'
 import { loadCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
-import { executeRecoveryHandler } from './recovery-handlers.js'
+import { executeControlPlaneHandler } from '../../control-plane/index.js'
 import type {
   CommandExecutionInput,
   CommandExecutionPreview,
@@ -33,7 +33,7 @@ export async function executeSlashCommandBundle(
   input: CommandExecutionInput,
 ): Promise<CommandExecutionResult> {
   const asset = await loadCommandAsset(bundle.id)
-  const handled = await executeRecoveryHandler(bundle, asset, input)
+  const handled = await executeControlPlaneHandler(bundle, asset, input)
   if (handled) {
     await recordCommandEvent(bundle, input, handled.executionMode)
     return handled

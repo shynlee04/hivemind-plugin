@@ -6,7 +6,7 @@ import { resolveCliInvocation } from './cli/command-routing.js'
 import { runDoctorCommand } from './cli/doctor.js'
 import { runHarnessCommand } from './cli/harness.js'
 import { initProject } from './cli/init.js'
-import { updateProjectSettings } from './cli/settings.js'
+import { runSettingsCommand } from './cli/settings.js'
 
 type ParsedArgs = {
   flags: Record<string, string | boolean>
@@ -59,6 +59,7 @@ function printHelp(): void {
     '  --automation <value>        Automation posture',
     '  --output-style <value>      Output style preference',
     '  --expert-level <value>      User expertise level',
+    '  --preset <value>            Use an explicit non-interactive preset (guided-onboarding)',
   ].join('\n'))
 }
 
@@ -100,6 +101,7 @@ export async function runCli(argv: string[], executablePath?: string): Promise<n
         automationLevel: typeof flags.automation === 'string' ? flags.automation : undefined,
         outputStyle: typeof flags['output-style'] === 'string' ? flags['output-style'] : undefined,
         expertLevel: typeof flags['expert-level'] === 'string' ? flags['expert-level'] : undefined,
+        presetId: typeof flags.preset === 'string' ? flags.preset as 'guided-onboarding' : undefined,
         silent: true,
       })
       break
@@ -109,7 +111,8 @@ export async function runCli(argv: string[], executablePath?: string): Promise<n
       })
       break
     case 'settings':
-      result = await updateProjectSettings(directory, {
+      result = await runSettingsCommand(directory, {
+        sessionId: typeof flags['session-id'] === 'string' ? flags['session-id'] : `ses_settings_${Date.now()}`,
         preferredUserName: typeof flags.name === 'string'
           ? flags.name
           : typeof flags['preferred-name'] === 'string'
@@ -125,6 +128,7 @@ export async function runCli(argv: string[], executablePath?: string): Promise<n
         automationLevel: typeof flags.automation === 'string' ? flags.automation : undefined,
         outputStyle: typeof flags['output-style'] === 'string' ? flags['output-style'] : undefined,
         expertLevel: typeof flags['expert-level'] === 'string' ? flags['expert-level'] : undefined,
+        presetId: typeof flags.preset === 'string' ? flags.preset as 'guided-onboarding' : undefined,
       })
       break
     case 'harness':

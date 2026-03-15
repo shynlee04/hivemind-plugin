@@ -1,33 +1,19 @@
+import { findControlPlanePrimitive, resolveControlPlaneGate } from '../../control-plane/index.js'
 import type { PurposeClass, ReadinessGate, StartWorkInput } from './start-work-types.js'
 
 export function resolveReadinessGates(
   input: StartWorkInput,
   purposeClass: PurposeClass,
 ): ReadinessGate[] {
-  if (input.hasHivemind === false) {
+  const gate = resolveControlPlaneGate(input, purposeClass)
+  if (gate) {
+    const primitive = findControlPlanePrimitive(gate.primitiveId)
     return [{
-      blocking: true,
-      commandId: 'hm-init',
-      reason: 'No .hivemind bootstrap state is available.',
-      pressureId: 'fresh-bootstrap',
-    }]
-  }
-
-  if (input.hivemindHealthy === false) {
-    return [{
-      blocking: true,
-      commandId: 'hm-doctor',
-      reason: 'The .hivemind control plane is unhealthy and must be repaired first.',
-      pressureId: 'control-plane-repair',
-    }]
-  }
-
-  if (input.hasWorkflow === false && ['planning', 'implementation', 'gatekeeping', 'tdd', 'course-correction'].includes(purposeClass)) {
-    return [{
-      blocking: false,
-      commandId: 'hm-harness',
-      reason: 'High-control work needs workflow readiness and harness validation.',
-      pressureId: 'workflow-readiness',
+      blocking: gate.blocking,
+      primitiveId: gate.primitiveId,
+      commandId: primitive?.adapterCommandId ?? gate.primitiveId,
+      reason: gate.reason,
+      pressureId: primitive?.pressureContract.id,
     }]
   }
 
