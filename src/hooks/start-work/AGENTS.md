@@ -1,10 +1,22 @@
-# src/hooks/start-work/ — First-Message Authority
+# src/hooks/start-work/ — Session Entry Orchestrator
 
-## Responsibilities
-- Resolve session state, lineage, purpose class, readiness gates, and initial command routing.
-- Decide whether `hm-init`, `hm-doctor`, or workflow commands must run before deeper work.
+The **real** session lifecycle system. This is where purpose classification, lineage resolution, readiness gates, trajectory assessment, and control-plane gating happen.
 
-## Rules
-- This layer runs before plugin assembly, tool grants, or workflow execution.
-- Keep the purpose model aligned to the 8-class runtime taxonomy.
-- Sub-sessions inherit bounded context and must not replay full bootstrap packets.
+## Boundary
+
+| File | Purpose |
+|------|---------|
+| `start-work-router.ts` | Main orchestrator — heaviest hook (~467 tokens compressed) |
+| `purpose-classifier.ts` | Classifies user intent into `PurposeClass` |
+| `session-state-detector.ts` | Detects session state from runtime bindings |
+| `readiness-gates.ts` | Checks runtime prerequisites before session start |
+| `start-work-types.ts` | `StartWorkDecision`, `PurposeClass`, `SessionStateKind` |
+
+## Key Types
+
+- `PurposeClass`: `discovery`, `brainstorming`, `research`, `planning`, `implementation`, `gatekeeping`, `tdd`, `course-correction`
+- `SessionStateKind`: classifies runtime state for routing decisions
+- `StartWorkDecision`: 25+ field aggregate of all session entry decisions
+
+> [!IMPORTANT]
+> This module is the authoritative session lifecycle — NOT `core/session/`. Any session-related work must use types and functions from here.

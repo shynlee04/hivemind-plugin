@@ -1,70 +1,67 @@
-# src/tools/ — Tool Constitution
+# src/tools/ — Agent-Callable Tools (Write-Side CQRS)
 
-## Purpose
-- Define what counts as a real callable HiveMind tool surface.
-- Keep tool families separate from internal runtime hooks and from slash-command bundles.
-- Ensure every tool contributes directly to runtime flow, workflow/task/trajectory integrity, context engineering, or retrieval/inspection utility.
+Custom tools exposed to agents during sessions. These are the **only** write-side surfaces.
 
-## Taxonomy
-- `custom tool`
-  An OpenCode-callable limb with a stable name, argument schema, output contract, and direct agent value.
-- `runtime hook`
-  Internal hook/runtime bridge surface used by plugin/runtime code. Hooks are not public tools even if they expose `execute()`.
-- `slash-command bundle`
-  Command/runtime orchestration surface loaded from `/commands/*.md` and bundle metadata. Commands are not tools.
+## Boundary
 
-## Current Surfaces
-- `src/tools/`
-  Actual agent-callable tool families now live here.
-- `src/hooks/runtime-bridge/`
-  Instruction-backed hook bridges for context injection, prompt transformation, runtime loading, and workflow integration.
-- `src/commands/slash-command/`
-  Command bundles and handlers for `hm-*` orchestration. These are command surfaces, not tool families.
+Each tool subdirectory follows: `tools.ts` (implementation), `types.ts` (args + contracts), `index.ts` (barrel).
 
-## MVP Direction
-- Stable public tool families should converge toward:
-  - `hivemind_task`
-  - `hivemind_trajectory`
-  - `hivemind_handoff`
-  - `hivemind_doc`
-  - `hivemind_inspect`
-  - `hivemind_runtime_status` as a narrow admin/diagnostic tool only
-- Anything outside those families must justify why it is a tool instead of:
-  - a core/library function
-  - a runtime hook
-  - a CLI command
-  - a slash-command bundle
+## Audit Findings (2026-03-15)
 
-## Packing Standard
-- Every real tool family should be packed like a product surface:
-  - `index.ts`
-  - `types.ts`
-  - `tools.ts`
-  - optional support modules such as `constants.ts`, `executor.ts`, `validators.ts`, `prompt-builder.ts`
-- Prefer factory creation for tools with runtime/config/dependency injection.
-- Keep registration centralized at the plugin/tool-registry edge.
+> [!CAUTION]
+> **Zero Zod validation** exists in any tool. All args use raw TypeScript interfaces. The SDK provides `tool.schema` (re-exported Zod) specifically for this — it MUST be used.
 
-## Design Rules
-- Tools must be superior to built-ins for a specific repeated job, not generic catch-all wrappers.
-- Tool descriptions are part of the control plane and must state:
-  - when to use
-  - when not to use
-  - required parameters
-  - dangerous or privileged modes
-- Use an `action` enum only when actions share:
-  - one resource family
-  - one permission/risk profile
-  - one mental model
-- Split into separate tools when invocation timing, side-effect level, or output shape materially diverges.
+> [!WARNING]
+> `parseList()` and `render()` helper functions are **duplicated** identically across `handoff/tools.ts`, `task/tools.ts`, and `trajectory/tools.ts`. Extract to `shared/tool-helpers.ts`.
 
-## Integrity Rules
-- Tools must not infer authority from sessions alone when workflow/task/trajectory state exists.
-- Mutation-oriented tools must map effects back to workflow/task/trajectory context where applicable.
-- Non-interactive shell assumptions apply everywhere.
-- `/commands/*.md` may document command behavior, but command markdown must not silently become tool authority.
-- Do not ship new public tools that overlap built-in OpenCode tools unless replacement behavior is intentional and explicit.
+### Required Pattern (Every Tool)
 
-## Non-Goals
-- Do not preserve archived chunky tool monoliths as-is.
-- Do not call runtime hooks “tools” in new docs or types.
-- Do not expand the public tool set before the existing families are coherent and discoverable.
+```typescript
+import { tool } from '@opencode-ai/plugin'
+const s = tool.schema  // this IS zod
+
+export function createHivemindXxxTool(projectRoot: string) {
+  return tool({
+    description: 'Clear, agent-facing description of what this tool does',
+    args: {
+      action: s.enum(['create', 'list', 'get']).describe('Operation to perform'),
+      id: s.string().optional().describe('Record identifier'),
+      // ... all args with .describe() for agent introspection
+    },
+    async execute(args, context) {
+      // USE context.sessionID, context.agent, context.directory
+      // NOT custom session resolution
+      return JSON.stringify({ status: 'success', data: result })
+    }
+  })
+}
+```
+
+### What `ToolContext` Gives You (Use It)
+
+| Property | Type | Use Instead Of |
+|----------|------|----------------|
+| `context.sessionID` | `string` | Custom session tracking |
+| `context.agent` | `string` | Agent name resolution |
+| `context.directory` | `string` | `process.cwd()` or hardcoded paths |
+| `context.worktree` | `string` | Manual worktree resolution |
+| `context.abort` | `AbortSignal` | Custom timeout logic |
+| `context.metadata()` | `function` | Manual metadata attachment |
+| `context.ask()` | `function` | Custom permission patterns |
+
+## Tool Inventory
+
+| Tool | Directory | Status |
+|------|-----------|--------|
+| `hivemind_task` | `task/` | ✅ Structured, needs Zod migration |
+| `hivemind_trajectory` | `trajectory/` | ✅ Structured, needs Zod migration |
+| `hivemind_handoff` | `handoff/` | ✅ Structured, needs Zod migration |
+| `hivemind_runtime_status` | ⚠️ `plugin/` (inline) | Extract to `runtime/` |
+| `hivemind_runtime_command` | ⚠️ `plugin/` (inline) | Extract to `runtime/` |
+
+## Rules
+
+- ~300 LOC limit per tool implementation
+- Every arg must have `.describe()` for agent introspection
+- Return `JSON.stringify()` — tools speak JSON, agents parse
+- No direct file I/O to `.hivemind/` — delegate to `core/` modules

@@ -1,18 +1,17 @@
-# src/delegation/ — Delegation Contracts
+# src/delegation/ — Handoff Context Packaging
 
-## Responsibilities
-- Define bounded delegation packets that bind source/target sessions, agents, trajectory, workflow, and task scope.
-- Carry evidence, return, and memory contracts for delegated sub-sessions.
+Creates, stores, and manages delegation handoff records for sub-session workflows.
 
-## Owned Failures
-- Delegations without trajectory/workflow/task anchors
-- Missing return contract or required evidence contract
-- Delegation packets that imply session ownership instead of bounded execution scope
+## Boundary
 
-## Mutation Boundary
-- May construct and normalize delegation packets.
-- Must not directly mutate workflow, task, or trajectory state.
+| File | Purpose |
+|------|---------|
+| `delegation-packet.ts` | `createDelegationPacket()` — structured handoff context |
+| `delegation-store.ts` | CRUD for `DelegationHandoffRecord` with file persistence |
 
-## Contracts
-- Inbound: orchestrator/start-work/command runtime handoff requests
-- Outbound: bounded packet for prompt packets, sub-session runtime, and return validation
+## Design
+
+- Delegation packets capture source/target sessions, evidence requirements, return contracts
+- Handoff records persist in `.hivemind/state/handoffs/` as JSON files
+- Lifecycle: `create → update → validate → close`
+- Exposed to agents via `hivemind_handoff` tool in `src/tools/handoff/`

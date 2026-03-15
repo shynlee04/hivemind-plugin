@@ -1,21 +1,20 @@
-# src/recovery/ — Checkpointed Recovery Spine
+# src/recovery/ — State Assessment & Repair
 
-## Responsibilities
-- Detect recoverable vs blocked runtime failures.
-- Create checkpoints, propose resume targets, dedupe repeated repairs, and perform targeted repair actions.
-- Reconstruct continuity from trajectory/workflow/task state instead of replaying sessions.
+Detects state failures, creates checkpoints, and repairs broken runtime state.
 
-## Owned Failures
-- Missing or corrupt `.hivemind` runtime roots
-- Missing or corrupt trajectory ledgers
-- Missing workflow/task ledgers
-- Recovery loops without dedupe guards
+## Boundary
 
-## Mutation Boundary
-- May create checkpoints and recovery outcomes.
-- May repair trajectory/workflow state and write recovery artifacts.
-- Must not act as a long-term source of truth for workflow or task ownership.
+| File | Purpose |
+|------|---------|
+| `recovery-engine.ts` | `assessRecoveryState()`, `createRecoveryCheckpoint()`, `repairRecoveryState()` |
+| `recovery-types.ts` | 9 failure classes, assessment/repair result types |
 
-## Contracts
-- Inbound: recovery command handlers, harness checks, doctor/init bootstrap
-- Outbound: recovery assessment, repair actions, resume targets, checkpoint ids
+## Failure Classes
+
+`missing-hivemind`, `missing-planning-root`, `missing-state-tasks`, `missing-graph-tasks`, `missing-trajectory-ledger`, `corrupt-trajectory-ledger`, `missing-task-link`, `unknown-task-link`, `active-trajectory-conflict`
+
+## Design
+
+- Recovery assessment → failure classification → repair action
+- Checkpoints persist in trajectory ledger for resume capability
+- Recovery outcomes feed back to trajectory store via `recordTrajectoryRecoveryOutcome()`

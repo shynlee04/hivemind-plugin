@@ -1,18 +1,15 @@
-# src/governance/ — Durable Projection And Planning SOT
+# src/governance/ — Planning Projection
 
-## Responsibilities
-- Project trajectory/workflow/task/checkpoint state into readable planning and governance artifacts.
-- Separate transient recovery/handoff state from durable planning references.
+Minimal module. Projects trajectory and workflow state into planning artifacts.
 
-## Owned Failures
-- Missing planning projection for active trajectory state
-- Projections that lose entity ids or checkpoint continuity
-- Governance artifacts that drift away from current runtime truth
+## Boundary
 
-## Mutation Boundary
-- May write durable planning/governance projections under `.hivemind/project/planning/`.
-- Must not own runtime routing, recovery decisions, or command execution.
+| File | Purpose |
+|------|---------|
+| `planning-projection.ts` | `createPlanningGovernanceProjection()` — aggregates trajectory + workflow state |
 
-## Contracts
-- Inbound: trajectory/workflow/task/recovery state
-- Outbound: readable planning SOT with stable ids and projection references
+## Design
+
+- Reads from `core/trajectory/` and `core/workflow-management/`
+- Writes projection to `.hivemind/state/planning/`
+- Consumed by the `hm-init` and `hm-doctor` control-plane handlers

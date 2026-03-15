@@ -6,6 +6,26 @@
       "sourceType": "github",
       "computedHash": "df4926e4c95de857ade6a3b6457c79b1f347299847a0b748fac01ea5de50dffe"
     },
+    "agent-governance": {
+      "source": "github/awesome-copilot",
+      "sourceType": "github",
+      "computedHash": "6106aa97a33ff7ba0755fcfcdb1069ee5041dc60729e7a672924d770a60fa775"
+    },
+    "define-architecture": {
+      "source": "mblode/agent-skills",
+      "sourceType": "github",
+      "computedHash": "58007e635a3b6083b3f1b1d57fbeefd12227135db5230563bf3500176f43e65d"
+    },
+    "find-skills": {
+      "source": "vercel-labs/skills",
+      "sourceType": "github",
+      "computedHash": "d31e234f0c90694a670222cdd1dafa853e051d7066beda389f1097c22dadd461"
+    },
+    "review-agents-md": {
+      "source": "richtabor/agent-skills",
+      "sourceType": "github",
+      "computedHash": "2fc9beecb8cda3d6e9c196660d02ed87496bd7da5b78ac680121c25071b8b938"
+    },
     "skill-creator": {
       "source": "vercel-labs/agent-browser",
       "sourceType": "github",
@@ -25,6 +45,16 @@
       "source": "obra/superpowers",
       "sourceType": "github",
       "computedHash": "1f5831dbfcddda9ac3e706f2ca81a3887fef9598159966d27ef672d86e255242"
+    },
+    "typescript-best-practices": {
+      "source": "jwynia/agent-skills",
+      "sourceType": "github",
+      "computedHash": "db4675b9948beee1b029809ac861474048ac334c80f6dea60435a96afc122d38"
+    },
+    "write-agents-entry": {
+      "source": "nesnilnehc/ai-cortex",
+      "sourceType": "github",
+      "computedHash": "7d0e511498c99d6dee6e15165141882b5ddbd4aa34dc2bb27b8e66c697108d97"
     },
     "writing-skills": {
       "source": "obra/superpowers",

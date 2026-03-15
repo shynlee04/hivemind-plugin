@@ -1,10 +1,20 @@
-# src/plugin-handlers/ — Resolution and Inheritance
+# src/plugin-handlers/ — Decision Routing Layer
 
-## Responsibilities
-- Resolve command bundles, tool grants, category routing, session inheritance, and doc surfaces.
-- Compile the workflow-aware runtime context before plugin assembly.
+Resolves command bindings, tool grants, session inheritance, and category routing for the plugin context.
 
-## Rules
-- This is the command/tool/agent/provider/MCP inheritance boundary.
-- Keep lineage-aware overrides here, not in hooks.
-- Commands are composite orchestration bundles, not thin wrappers.
+## Boundary
+
+| File | Purpose |
+|------|---------|
+| `plugin-context.ts` | `buildPluginContext()` — assembles full context from StartWorkDecision |
+| `command-resolution.ts` | Maps StartWorkDecision → CommandBinding (control-plane or workflow) |
+| `tool-resolution.ts` | Resolves which tools should be granted to the agent |
+| `session-inheritance.ts` | Determines session scope, prompt mode, todo authority |
+| `category-routing.ts` | Maps purpose class → routing category |
+| `handler-types.ts` | `PluginContext`, `CommandBinding`, `ToolGrant`, `SessionInheritance` types |
+
+## Design
+
+- All resolution is **pure functions** with `StartWorkDecision` as input
+- `PluginContext` aggregates all decisions into a single object for hook consumption
+- This layer is the bridge between `hooks/start-work/` (read-side) and `plugin/` (assembly)

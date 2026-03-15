@@ -1,18 +1,17 @@
-# src/context/prompt-packet/ — Runtime Packet Compiler
+# src/context/prompt-packet/ — Prompt Compilation
 
-## Responsibilities
-- Render the minimum main-session or sub-session packet required for trajectory/workflow/task-aware execution.
-- Carry trajectory, workflow, task, delegation, and verification context without replaying full runtime history.
+Compiles session state into system and message packets for main and sub-sessions.
 
-## Owned Failures
-- Missing trajectory/task bindings in packets
-- Sub-session packets that accidentally inherit main-session authority
-- Prompt packets that omit return/evidence expectations
+## Boundary
 
-## Mutation Boundary
-- Pure compilation only; no durable writes.
-- Must not invent workflow or task ownership that the runtime has not already resolved.
+| File | Purpose |
+|------|---------|
+| `prompt-compiler.ts` | `compilePromptPacket()` — main entry, scope-aware |
+| `prompt-packet-normalize.ts` | Normalizes 24+ `PromptPacketState` fields with fallbacks |
+| `prompt-packet-renderers.ts` | 4 renderers: main system, main message, sub system, sub message |
+| `prompt-packet-types.ts` | `SessionScope`, `KernelLineage`, `PromptPacketState`, `CompiledPromptPacket` |
 
-## Contracts
-- Inbound: normalized prompt packet state
-- Outbound: main or delegated runtime packet strings
+## Audit Note
+
+> [!WARNING]
+> **`PromptPacketState` has 24+ optional fields.** This creates a massive payload that every prompt compilation must normalize. Consider splitting into core state (8 fields) + extension groups.
