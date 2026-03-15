@@ -7,6 +7,7 @@ import type {
 export interface NormalizedPromptPacketState {
   sessionScope: SessionScope
   sessionClass: string
+  preferredUserName: string | null
   lineage: KernelLineage
   sessionId: string
   parentSessionId: string | null
@@ -49,6 +50,7 @@ export function normalizePromptPacketState(
   return {
     sessionScope: scope,
     sessionClass: defaultSessionClass(scope, state.sessionClass),
+    preferredUserName: state.preferredUserName?.trim() ? state.preferredUserName.trim() : null,
     lineage: state.lineage ?? 'hivefiver',
     sessionId: state.sessionId,
     parentSessionId: state.parentSessionId ?? null,

@@ -19,10 +19,17 @@ describe('plugin runtime plan', () => {
       promptState: {
         sessionId: 'ses_runtime',
         sessionScope: 'main',
+        preferredUserName: 'Apple',
         lineage: 'hivefiver',
         workflowId: 'wf_runtime',
         todoChainId: 'todo_runtime',
         branchFocus: 'start-work driven orchestration',
+        language: 'vi',
+        artifactLanguage: 'en',
+        governanceMode: 'strict',
+        automationLevel: 'guided',
+        expertLevel: 'beginner',
+        outputStyle: 'explanatory',
       },
     })
 
@@ -39,6 +46,10 @@ describe('plugin runtime plan', () => {
     assert.equal(response.data?.runtimeSurfaces.find((entry) => entry.id === 'hivemind_task')?.pressureContract.id, 'task-mutation')
     assert.equal(response.data?.commandPreview?.frontmatter.agent, 'hivefiver')
     assert.match(response.data?.commandPreview?.body ?? '', /## Output Contract/)
+    assert.match(response.data?.systemTransform ?? '', /preferred_user_name=Apple/)
+    assert.match(response.data?.messageTransform ?? '', /language=vi/)
+    assert.match(response.data?.messageTransform ?? '', /artifact_language=en/)
+    assert.match(response.data?.messageTransform ?? '', /expert_level=beginner/)
   })
 
   it('uses delegated prompt mode for sub-sessions', async () => {
@@ -58,15 +69,25 @@ describe('plugin runtime plan', () => {
         sessionId: 'ses_child',
         parentSessionId: 'ses_parent',
         sessionScope: 'sub-session',
+        preferredUserName: 'Apple',
         lineage: 'hivefiver',
         workflowId: 'wf_child',
         branchFocus: 'delegated verification',
+        language: 'vi',
+        artifactLanguage: 'en',
+        governanceMode: 'strict',
+        automationLevel: 'guided',
+        expertLevel: 'advanced',
+        outputStyle: 'concise',
       },
     })
 
     assert.equal(response.data?.pluginContext.sessionInheritance.promptMode, 'delegated')
     assert.equal(response.data?.pluginContext.sessionInheritance.todoAuthority, 'delegated')
     assert.match(response.data?.systemTransform ?? '', /<hivemind-delegation-packet>/)
+    assert.match(response.data?.systemTransform ?? '', /preferred_user_name=Apple/)
+    assert.match(response.data?.systemTransform ?? '', /language=vi/)
+    assert.match(response.data?.messageTransform ?? '', /artifact_language=en/)
     assert.equal(response.data?.startWork.pressureSignals.includes('delegated-handoff'), true)
   })
 })

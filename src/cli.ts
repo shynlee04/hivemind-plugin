@@ -50,6 +50,15 @@ function printHelp(): void {
     '',
     'Alias binaries:',
     '  hm-init, hm-doctor, hm-settings, hm-harness',
+    '',
+    'Profile flags:',
+    '  --name <value>              Preferred user name for runtime guidance',
+    '  --lang <value>              Chat language (for example: en, vi, Vietnamese)',
+    '  --artifact-lang <value>     Artifact/document language override',
+    '  --governance <value>        Governance posture',
+    '  --automation <value>        Automation posture',
+    '  --output-style <value>      Output style preference',
+    '  --expert-level <value>      User expertise level',
   ].join('\n'))
 }
 
@@ -76,7 +85,17 @@ export async function runCli(argv: string[], executablePath?: string): Promise<n
   switch (resolved.command) {
     case 'init':
       result = await initProject(directory, {
+        preferredUserName: typeof flags.name === 'string'
+          ? flags.name
+          : typeof flags['preferred-name'] === 'string'
+            ? flags['preferred-name']
+            : undefined,
         language: typeof flags.lang === 'string' ? flags.lang : undefined,
+        artifactLanguage: typeof flags['artifact-lang'] === 'string'
+          ? flags['artifact-lang']
+          : typeof flags['artifact-language'] === 'string'
+            ? flags['artifact-language']
+            : undefined,
         governanceMode: typeof flags.governance === 'string' ? flags.governance : undefined,
         automationLevel: typeof flags.automation === 'string' ? flags.automation : undefined,
         outputStyle: typeof flags['output-style'] === 'string' ? flags['output-style'] : undefined,
@@ -91,7 +110,17 @@ export async function runCli(argv: string[], executablePath?: string): Promise<n
       break
     case 'settings':
       result = await updateProjectSettings(directory, {
+        preferredUserName: typeof flags.name === 'string'
+          ? flags.name
+          : typeof flags['preferred-name'] === 'string'
+            ? flags['preferred-name']
+            : undefined,
         language: typeof flags.lang === 'string' ? flags.lang : undefined,
+        artifactLanguage: typeof flags['artifact-lang'] === 'string'
+          ? flags['artifact-lang']
+          : typeof flags['artifact-language'] === 'string'
+            ? flags['artifact-language']
+            : undefined,
         governanceMode: typeof flags.governance === 'string' ? flags.governance : undefined,
         automationLevel: typeof flags.automation === 'string' ? flags.automation : undefined,
         outputStyle: typeof flags['output-style'] === 'string' ? flags['output-style'] : undefined,

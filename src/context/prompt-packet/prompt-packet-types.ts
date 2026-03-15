@@ -5,6 +5,7 @@ export interface PromptPacketState {
   sessionId: string
   parentSessionId?: string
   sessionClass?: string
+  preferredUserName?: string
   lineage?: KernelLineage
   trajectoryId?: string
   workflowId?: string
