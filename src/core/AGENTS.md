@@ -8,19 +8,15 @@ Trajectory ledger, workflow authority, and task lifecycle state.
 |-----------|--------|---------|
 | `trajectory/` | ✅ Active | Trajectory ledger, events, checkpoints, assessment |
 | `workflow-management/` | ✅ Active | Workflow authority, task lifecycle, routing, continuity |
-| `session/` | ⛔ Deprecated | Dead code — zero consumers, parallel to `hooks/start-work/` |
+| `hierarchy/` | ✅ Active | Hierarchy tree and ancestor chain |
+| `planning/` | ✅ Active | Planning framework and materialization |
+| `state/` | ✅ Active | State persistence layer |
 
-## Audit Findings (2026-03-15)
-
-> [!CAUTION]
-> **`core/session/` is dead code.** `kernel.ts`, `boundary.ts`, `coherence.ts`, and `intent-classifier.ts` define a `Session` type that nothing in the codebase imports. The real session lifecycle lives in `hooks/start-work/`. Do NOT extend, import from, or reference `core/session/`.
-
-> [!WARNING]
-> `coherence.ts` has two TODO stubs: "Implement actual coherence checks" and "Implement repair strategies". These are misleading — they promise functionality that has never existed.
+> [!NOTE]
+> `core/session/` was **removed** in L1 cutover (2026-03-15). Session lifecycle is owned by `hooks/start-work/`. Do NOT recreate a session module here — see **Authority Principle** in root AGENTS.md.
 
 ## Rules
 
 - Trajectory and workflow modules are the state authority — tools delegate here
 - State files live in `.hivemind/state/` — resolved via `shared/paths.ts`
 - All state reads/writes go through store functions, never direct file I/O
-- `core/session/*` — do not touch, scheduled for removal

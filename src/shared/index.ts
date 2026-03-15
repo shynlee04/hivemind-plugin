@@ -4,7 +4,6 @@
 
 export * from './paths.js'
 export * from './tool-response.js'
-export * from './event-bus.js'
 export * from './logging.js'
 export * from './runtime-attachment.js'
 export * from './opencode-knowledge.js'

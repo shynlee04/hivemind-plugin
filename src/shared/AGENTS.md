@@ -4,8 +4,8 @@ Common modules used across the plugin.
 
 ## Audit Findings (2026-03-15)
 
-> [!WARNING]
-> **`event-bus.ts` reimplements SDK events.** OpenCode's `event` hook + `client.tui.publish()` + `client.event.subscribe()` provide the same pub/sub pattern with SDK-native observability. Do not extend EventBus — wire new events through SDK.
+> [!NOTE]
+> **`event-bus.ts` was REMOVED** in L1 cutover. The SDK `event` hook + `client.tui.publish()` + `client.event.subscribe()` provide the same pub/sub pattern. Do NOT recreate an EventBus — see Authority Principle.
 
 > [!IMPORTANT]
 > **`logging.ts` should augment with `client.app.log()`** for structured server-side logging that persists beyond console. Custom `log()` is fine for dev, but production should use the SDK.
@@ -21,7 +21,6 @@ Common modules used across the plugin.
 | `pressure-contract.ts` | ✅ | Pressure contract registry and resolution |
 | `opencode-knowledge.ts` | ✅ | OpenCode-specific knowledge surfaces |
 | `logging.ts` | ⚠️ | Custom logger — supplement with `client.app.log()` |
-| `event-bus.ts` | ⛔ Deprecated | Custom EventBus — use SDK event system instead |
 
 ## Dedup Needed
 

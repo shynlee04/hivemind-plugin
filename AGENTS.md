@@ -12,6 +12,16 @@ This file governs development of the framework. Loaded once per OpenCode session
 - **Dev mirror**: `.opencode/` — local testing only, re-exports from root
 - **Sector governance**: each `src/*/AGENTS.md` owns its domain boundary
 
+## Governing Principles
+
+These principles govern all design and implementation decisions. They are the root — not the anti-patterns or conventions that follow.
+
+1. **SDK-First**: Before writing ANY custom abstraction, check if the SDK provides it. `tool.schema`, `client.app.log()`, `client.tui.showToast()`, `permission.ask` — these exist. Use them.
+2. **CQRS Hard Boundary**: Tools write. Hooks read. Plugin assembles. No exceptions. No "hooks that also write." No "plugin entry with business logic."
+3. **Interface Decomposition**: No type exceeds 10 fields at the core level. Extensions compose via intersection (`TrajectoryCore & TrajectoryBindings`). Never a 20-field monolith.
+4. **Consumer-First**: Every shipped asset (`commands/`, `agents/`, `workflows/`) must work for npm consumers who install the package. Not just for internal dev.
+5. **Authority Principle**: Each concern has ONE owner. `hooks/start-work/` owns session lifecycle. `core/trajectory/` owns trajectory state. `shared/paths.ts` owns path resolution. No second implementations.
+
 ## OpenCode SDK Contract
 
 This project builds ON the OpenCode SDK. The SDK is the authority — not custom reimplementations.
@@ -135,18 +145,18 @@ npx tsx --test tests/<file>.test.ts  # Single test
 | Hooks | `src/hooks/` | Read-side. Context injection via synthetic Parts. 7 sub-modules. |
 | Plugin | `src/plugin/` | Assembly only. No inline tools. No business logic. |
 | Core | `src/core/` | State management. ⚠️ `core/session/` is deprecated — do not extend. |
-| Shared | `src/shared/` | Utilities. ⚠️ `event-bus.ts` is deprecated — use SDK events. |
+| Shared | `src/shared/` | Utilities. Path resolution, logging, profile, pressure contracts. |
 
 ## Known Debt (Audit 2026-03-15)
 
-- [ ] `core/session/` — orphaned module, zero consumers, scheduled for removal
-- [ ] `shared/event-bus.ts` — reimplements SDK event system, scheduled for deprecation
+- [x] `core/session/` — **REMOVED** (L1 cutover, zero consumers confirmed)
+- [x] `shared/event-bus.ts` — **REMOVED** (L1 cutover, only consumer was deleted `core/session/kernel.ts`)
 - [ ] `shared/logging.ts` — should augment with `client.app.log()`
 - [ ] `hooks/soft-governance.ts` — empty placeholder, wire to `client.tui.showToast()`
 - [ ] 2 inline tools in `opencode-plugin.ts` — extract to `src/tools/runtime/`
 - [ ] Zero Zod in tool defs — migrate 5 tools to `tool.schema` arg definitions
-- [ ] `intelligence/doc/` — implementation removed during refactor, needs restoration
-- [ ] `core/session/coherence.ts` — 2 TODO stubs, either implement or remove
+- [ ] `intelligence/doc/` — router-only stub, full restoration planned for future version
+- [ ] Type monoliths (6 types with 17-25 fields) — decompose per Interface Decomposition principle
 
 ## Reference
 
