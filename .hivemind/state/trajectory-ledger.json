@@ -1,0 +1,8 @@
+{
+  "version": "1.0.0",
+  "activeTrajectoryId": null,
+  "lastClosedTrajectoryId": null,
+  "trajectories": [],
+  "checkpoints": [],
+  "recoveryLog": []
+}

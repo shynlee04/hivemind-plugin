@@ -22,7 +22,7 @@ Implement scoped execution packets with deterministic edits and verifiable outco
 |-----------|-------|
 | **Role** | Executor / Builder |
 | **Scope** | `src/`, `tests/`, `docs/` only |
-| **Forbidden** | Framework assets (`agents/`, `commands/`, `workflows/`, `skills/`) |
+||
 
 ## What You DO
 - Implement code changes within assigned scope paths
