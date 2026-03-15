@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.9.5] - 2026-03-16
+
+### Breaking Changes
+- **Hard cutover to SDK-native architecture** — No compatibility shims
+- Removed `src/core/session/` (5 files) — SDK hooks replace session middleware
+- Removed `src/shared/event-bus.ts` — SDK hook system replaces custom pub/sub
+- Removed `src/hooks/session-lifecycle.ts`, `src/hooks/messages-transform.ts` — Replaced by stable hook bridges
+- Removed `src/schemas/` — Zod schemas now live in tool definition files
+- Renamed `emitGovernanceToast()` → `showGovernanceToast(category, message)`
+
+### Added
+- **Stable SDK hooks**: `chat.message` (Part injection), `permission.ask` (auto-allow HiveMind tools), `tool.execute.before` (trajectory pre-flight)
+- **SDK client integrations**: `soft-governance.ts` → `client.tui.showToast()` (throttled), `logging.ts` → `client.app.log()` (fire-and-forget)
+- **`getEffectivePaths(root)`** — Canonical path authority replacing ad-hoc path construction
+- **Runtime tools in `agentToolCatalog`** — `hivemind_runtime_status` and `hivemind_runtime_command` now registered
+- **7 new governance guard scripts**: `check-no-event-bus`, `check-no-core-session`, `check-tool-schema`, `check-hooks-readonly`, `check-plugin-assembly`, `check-agents-presence`, `check-asset-refs`
+- **Test infrastructure**: `tests/helpers/` (mock-sdk, mock-paths, mock-tools)
+- **3 new test suites**: tool-contract (8), tool-helpers-dedup (16), plugin-assembly-smoke (4)
+- **5 documentation files**: SDK architecture overview, 2 ADRs, migration guide, test architecture
+- **58 total tests pass** across 20 clean test files
+
+### Changed
+- **Type decomposition**: `TrajectoryRecord` (22→4 groups), `StartWorkDecision` (26→4), `PromptPacketState` (25→4), `SlashCommandBundle` (17→3), `CommandExecutionInput` (25→4), `RuntimeAttachmentSettings` (17→3)
+- **Plugin entry is assembly-only** — All tool definitions extracted to `src/tools/`
+- **`lint:boundary` expanded** from 4 guards to 11
+- **Surface registry deduplicated** — Runtime admin tools now sourced from `agentToolCatalog`
+- All sector `AGENTS.md` charters present and validated
+- `intelligence/doc/` flagged as `[ROUTER-ONLY]`
+
+### Fixed
+- 5 pre-existing test failures fixed: agent-boundary (stale YAML assertions), soft-governance (API rename), runtime-tools (surface registry drift), local-charter (section model change), runtime hook names
+
 ### Added
 - `experimental.chat.messages.transform` hook with stop-checklist injection and continuity context enrichment (`<anchor-context>`, `<focus>`)
 - Session boundary manager (`src/lib/session-boundary.ts`) with lifecycle warning integration and checklist-boundary recommendation
