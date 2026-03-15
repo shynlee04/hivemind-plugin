@@ -35,7 +35,7 @@ type MessageLike = {
 
 function createSyntheticPart(sessionID: string, messageID: string, text: string): Part {
   return {
-    id: `hm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+    id: `prt_hm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     sessionID,
     messageID,
     type: 'text',
@@ -147,7 +147,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
 
       // Inject baseline OpenCode knowledge
       output.parts.push({
-        id: `hm_knowledge_${Date.now()}`,
+        id: `prt_hm_knowledge_${Date.now()}`,
         sessionID,
         messageID: messageInput.messageID ?? sessionID,
         type: 'text',
@@ -167,7 +167,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
       ].join('\n')
 
       output.parts.push({
-        id: `hm_context_${Date.now()}`,
+        id: `prt_hm_context_${Date.now()}`,
         sessionID,
         messageID: messageInput.messageID ?? sessionID,
         type: 'text',
