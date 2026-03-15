@@ -36,8 +36,9 @@ describe('hivemind_task tool', () => {
       workflowId: 'wf-task',
       taskId: 'task-alpha',
       title: 'Implement the real task limb',
-    }, mockContext))) as { status: string }
+    }, mockContext))) as { status: string; data?: { pressureContract?: { id?: string } } }
     assert.equal(createResult.status, 'success')
+    assert.equal(createResult.data?.pressureContract?.id, 'task-mutation')
 
     const activateResult = JSON.parse(String(await toolDef.execute({
       action: 'activate',
@@ -60,8 +61,9 @@ describe('hivemind_task tool', () => {
       workflowId: 'wf-task',
       taskId: 'task-alpha',
       evidenceRefs: 'test:targeted',
-    }, mockContext))) as { status: string }
+    }, mockContext))) as { status: string; data?: { pressureContract?: { id?: string } } }
     assert.equal(completeResult.status, 'success')
+    assert.equal(completeResult.data?.pressureContract?.id, 'task-mutation')
 
     const tasksRaw = await readFile(join(projectRoot, '.hivemind', 'state', 'tasks.json'), 'utf-8')
     const tasks = JSON.parse(tasksRaw) as { tasks: Array<{ id: string; status: string; evidenceRefs: string[] }> }

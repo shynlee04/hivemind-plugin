@@ -48,6 +48,8 @@ describe('recovery checkpoint spine', () => {
 
       assert.equal(assessment.status, 'healthy')
       assert.equal(assessment.resumeTarget, 'command:hm-implement')
+      assert.equal(assessment.pressureContract.id, 'steady-state')
+      assert.equal(assessment.evidenceRefs.includes('checkpoint:chk_') || assessment.evidenceRefs.some((item) => item.startsWith('checkpoint:')), true)
 
       const ledger = await loadTrajectoryLedger(dir)
       assert.equal(ledger.trajectories[0]?.checkpointIds.length, 1)
@@ -74,6 +76,7 @@ describe('recovery checkpoint spine', () => {
       })
       assert.equal(assessment.status, 'recoverable')
       assert.equal(assessment.failureClasses.includes('corrupt-trajectory-ledger'), true)
+      assert.equal(assessment.pressureContract.id, 'control-plane-repair')
 
       const repaired = await repairRecoveryState(dir, {
         sessionScope: 'main',
@@ -86,6 +89,7 @@ describe('recovery checkpoint spine', () => {
       assert.equal(repaired.status, 'healthy')
       assert.equal(repaired.recoveryOutcome, 'repair')
       assert.equal(repaired.repairActions.includes('rebuild-trajectory-ledger'), true)
+      assert.equal(Array.isArray(repaired.evidenceRefs), true)
 
       const ledger = await loadTrajectoryLedger(dir)
       assert.equal(Array.isArray(ledger.recoveryLog), true)

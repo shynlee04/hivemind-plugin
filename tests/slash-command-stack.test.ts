@@ -30,6 +30,7 @@ describe('slash-command stack', () => {
     assert.equal(preview.contract.producesState.includes('planning-projection'), true)
     assert.equal(preview.contract.verificationContract, 'planning-traceability')
     assert.equal(preview.workflowChain.length, 3)
+    assert.equal(preview.pressureContract.id, 'workflow-readiness')
   })
 
   it('uses readiness gates to prefer doctor/init commands', () => {
@@ -73,6 +74,8 @@ describe('slash-command stack', () => {
       assert.equal(result.stateTransitions?.includes('recovery-checkpoint-created'), true)
       assert.equal(result.artifactRefs?.length, 1)
       assert.equal(result.verificationContractId, 'bootstrap-readiness')
+      assert.equal(result.pressureContract.id, 'fresh-bootstrap')
+      assert.deepEqual(result.report.expectedEvidence, ['readiness-gate', 'checkpoint', 'planning-projection'])
     } finally {
       await rm(dir, { recursive: true, force: true })
     }

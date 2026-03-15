@@ -37,8 +37,9 @@ describe('hivemind_trajectory tool', () => {
       workflowId: 'wf-alpha',
       purposeClass: 'implementation',
       taskIds: 'task-alpha',
-    }, mockContext))) as { status: string }
+    }, mockContext))) as { status: string; data?: { pressureContract?: { id?: string } } }
     assert.equal(attachResult.status, 'success')
+    assert.equal(attachResult.data?.pressureContract?.id, 'trajectory-continuation')
 
     const traverseResult = JSON.parse(String(await toolDef.execute({
       action: 'traverse',
@@ -70,8 +71,9 @@ describe('hivemind_trajectory tool', () => {
       action: 'close',
       trajectoryId: 'trj-alpha',
       summary: 'close trajectory after validation',
-    }, mockContext))) as { status: string }
+    }, mockContext))) as { status: string; data?: { pressureContract?: { id?: string } } }
     assert.equal(closeResult.status, 'success')
+    assert.equal(closeResult.data?.pressureContract?.id, 'trajectory-control')
 
     const ledgerRaw = await readFile(join(projectRoot, '.hivemind', 'state', 'trajectory-ledger.json'), 'utf-8')
     const ledger = JSON.parse(ledgerRaw) as {

@@ -82,6 +82,9 @@ async function runInit(
       planning_projection: projection.filePath,
       missing_prerequisites: status.issues.map((issue) => issue.code),
       next_command: input.purposeClass ? `hm-${input.purposeClass === 'planning' ? 'plan' : 'harness'}` : 'hm-harness',
+      safetyLevel: bundle.pressureContract.safety.level,
+      failureBehavior: bundle.pressureContract.failureBehavior,
+      expectedEvidence: bundle.pressureContract.evidence.requiredArtifacts,
     },
     entityBindings: {
       ...resolveEntityBindings(input),
@@ -97,6 +100,7 @@ async function runInit(
     artifactRefs: [projection.filePath],
     closeoutStatus: status.healthy ? 'ready' : 'blocked',
     verificationContractId: asset.contract.verificationContract,
+    pressureContract: bundle.pressureContract,
   }
 }
 
@@ -139,6 +143,9 @@ async function runDoctor(
       checkpoint_id: checkpoint.id,
       planning_projection: projection.filePath,
       next_command: repaired.status === 'healthy' ? 'hm-harness' : 'hm-doctor',
+      safetyLevel: bundle.pressureContract.safety.level,
+      failureBehavior: bundle.pressureContract.failureBehavior,
+      expectedEvidence: bundle.pressureContract.evidence.requiredArtifacts,
     },
     entityBindings: {
       ...resolveEntityBindings(input),
@@ -149,6 +156,7 @@ async function runDoctor(
     artifactRefs: [projection.filePath],
     closeoutStatus: repaired.status === 'healthy' ? 'ready' : 'blocked',
     verificationContractId: asset.contract.verificationContract,
+    pressureContract: bundle.pressureContract,
   }
 }
 
@@ -191,6 +199,9 @@ async function runHarness(
       checkpoint_id: checkpoint.id,
       planning_projection: projection.filePath,
       next_command: assessment.status === 'healthy' ? undefined : assessment.failureClasses.includes('missing-hivemind') ? 'hm-init' : 'hm-doctor',
+      safetyLevel: bundle.pressureContract.safety.level,
+      failureBehavior: bundle.pressureContract.failureBehavior,
+      expectedEvidence: bundle.pressureContract.evidence.requiredArtifacts,
     },
     entityBindings: {
       ...resolveEntityBindings(input),
@@ -203,6 +214,7 @@ async function runHarness(
     artifactRefs: [projection.filePath],
     closeoutStatus: assessment.status === 'healthy' ? 'ready' : 'blocked',
     verificationContractId: asset.contract.verificationContract,
+    pressureContract: bundle.pressureContract,
   }
 }
 

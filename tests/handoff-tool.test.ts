@@ -40,17 +40,19 @@ describe('hivemind_handoff tool', () => {
       requiredEvidence: JSON.stringify([
         { kind: 'test_report', description: 'vitest green', required: true },
       ]),
-    }, mockContext))) as { status: string; data?: { id?: string } }
+    }, mockContext))) as { status: string; data?: { record?: { id?: string }; pressureContract?: { id?: string } } }
     assert.equal(createResult.status, 'success')
-    const handoffId = createResult.data?.id
+    assert.equal(createResult.data?.pressureContract?.id, 'delegated-handoff')
+    const handoffId = createResult.data?.record?.id
     assert.ok(handoffId)
 
     const validateBefore = JSON.parse(String(await toolDef.execute({
       action: 'validate',
       id: handoffId,
-    }, mockContext))) as { data?: { valid?: boolean; missingEvidence?: string[] } }
+    }, mockContext))) as { data?: { valid?: boolean; missingEvidence?: string[]; pressureContract?: { id?: string } } }
     assert.equal(validateBefore.data?.valid, false)
     assert.deepEqual(validateBefore.data?.missingEvidence, ['test_report:vitest green'])
+    assert.equal(validateBefore.data?.pressureContract?.id, 'handoff-validation')
 
     const updateResult = JSON.parse(String(await toolDef.execute({
       action: 'update',
@@ -65,9 +67,10 @@ describe('hivemind_handoff tool', () => {
       action: 'close',
       id: handoffId,
       summary: 'handoff complete',
-    }, mockContext))) as { data?: { valid?: boolean; record?: { status?: string } } }
+    }, mockContext))) as { data?: { valid?: boolean; record?: { status?: string }; pressureContract?: { id?: string } } }
     assert.equal(closeResult.data?.valid, true)
     assert.equal(closeResult.data?.record?.status, 'closed')
+    assert.equal(closeResult.data?.pressureContract?.id, 'handoff-validation')
 
     const files = await readdir(join(projectRoot, '.hivemind', 'handoffs'))
     assert.equal(files.some((file) => file === `${handoffId}.json`), true)

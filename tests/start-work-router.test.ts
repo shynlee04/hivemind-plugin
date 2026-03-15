@@ -22,6 +22,8 @@ describe('start-work router', () => {
 
     assert.equal(decision.requiredCommandId, 'hm-init')
     assert.equal(decision.riskLevel, 'blocked')
+    assert.equal(decision.pressureContract.id, 'fresh-bootstrap')
+    assert.equal(decision.pressureSignals.includes('fresh-bootstrap'), true)
   })
 
   it('routes framework implementation into hivefiver command stack', () => {
@@ -40,6 +42,7 @@ describe('start-work router', () => {
     assert.equal(decision.purposeClass, 'implementation')
     assert.equal(decision.recommendedCommandId, 'hm-implement')
     assert.equal(decision.autoRoute, true)
+    assert.equal(decision.pressureContract.id, 'steady-state')
   })
 
   it('keeps sub-session continuity bounded', () => {
@@ -58,6 +61,7 @@ describe('start-work router', () => {
     assert.equal(decision.sessionState, 'sub-session')
     assert.equal(decision.purposeClass, 'research')
     assert.equal(decision.recommendedCommandId, 'hm-research')
+    assert.equal(decision.pressureSignals.includes('delegated-handoff'), true)
   })
 
   it('gates sub-session entries that have no linked task authority', async () => {
@@ -81,6 +85,7 @@ describe('start-work router', () => {
       assert.equal(decision.riskLevel, 'gated')
       assert.equal(decision.traversalOutcome, 'route')
       assert.equal(decision.continuityAlerts.includes('missing-task-link'), true)
+      assert.equal(decision.pressureSignals.includes('delegated-handoff'), true)
     } finally {
       await rm(dir, { recursive: true, force: true })
     }
@@ -116,6 +121,7 @@ describe('start-work router', () => {
       assert.equal(decision.trajectoryAssessment?.action, 'attach-active')
       assert.equal(decision.trajectoryAssessment?.activeTrajectoryId, 'trj_active')
       assert.equal(decision.routeDisposition, 'attach')
+      assert.equal(decision.pressureContract.id, 'trajectory-continuation')
     } finally {
       await rm(dir, { recursive: true, force: true })
     }
@@ -153,6 +159,7 @@ describe('start-work router', () => {
       assert.equal(decision.trajectoryAssessment?.action, 'resume-closed')
       assert.equal(decision.trajectoryAssessment?.lastClosedTrajectoryId, 'trj_closed')
       assert.equal(decision.routeDisposition, 'resume')
+      assert.equal(decision.pressureSignals.includes('trajectory-continuation'), true)
     } finally {
       await rm(dir, { recursive: true, force: true })
     }

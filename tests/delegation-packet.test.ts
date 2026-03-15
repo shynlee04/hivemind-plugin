@@ -25,5 +25,6 @@ describe('delegation packet', () => {
     assert.equal(packet.sourceAgent, 'hiveminder')
     assert.equal(packet.memoryScope[0], 'debug')
     assert.match(packet.returnContract, /evidence/)
+    assert.equal(packet.pressureContractId, 'delegated-handoff')
   })
 })
