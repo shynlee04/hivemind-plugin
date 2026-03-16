@@ -1,12 +1,13 @@
 import type { ToolResponse } from '../shared/tool-response.js'
 import type { CompiledPromptPacket } from '../context/prompt-packet/index.js'
 import type { RuntimePromptTransformationInput } from '../hooks/prompt-transformation/index.js'
-import type { StartWorkInput, StartWorkDecision } from '../hooks/start-work/index.js'
+import type { StartWorkEntryKernel, StartWorkInput, StartWorkDecision } from '../hooks/start-work/index.js'
 import type { AutoSlashCommandPlan } from '../hooks/auto-slash-command/index.js'
 import type { PluginContext } from '../plugin-handlers/index.js'
 import type { OpencodeKnowledgeSurface } from '../shared/opencode-knowledge.js'
 import type { RuntimePressureContract } from '../shared/pressure-contract.js'
 import type { CommandExecutionPreview } from '../commands/slash-command/index.js'
+import type { RuntimeAttachmentEntryKernel } from '../shared/runtime-attachment.js'
 
 export interface PluginRuntimeInput {
   startWork: StartWorkInput
@@ -32,6 +33,7 @@ export interface RuntimeSurfaceEntry {
 
 export interface PluginRuntimePlan {
   startWork: StartWorkDecision
+  entryKernel: RuntimeEntryKernelContract
   autoSlash: AutoSlashCommandPlan
   pluginContext: PluginContext
   opencodeKnowledge: OpencodeKnowledgeSurface[]
@@ -42,6 +44,26 @@ export interface PluginRuntimePlan {
   commandPreview?: CommandExecutionPreview
   runtimeSurfaces: RuntimeSurfaceEntry[]
   hooks: HookDescriptor[]
+}
+
+export interface RuntimeEntryKernelFieldOwnership {
+  session: 'start-work'
+  routing: 'start-work'
+  safety: 'start-work'
+  defaults: 'runtime-attachment'
+  profile: 'runtime-attachment'
+  bindings: 'runtime-attachment'
+}
+
+export interface RuntimeEntryKernelContract {
+  version: 'v1'
+  fieldOwnership: RuntimeEntryKernelFieldOwnership
+  session: StartWorkEntryKernel['session']
+  routing: StartWorkEntryKernel['routing']
+  safety: StartWorkEntryKernel['safety']
+  defaults: RuntimeAttachmentEntryKernel['defaults']
+  profile: RuntimeAttachmentEntryKernel['profile']
+  bindings: RuntimeAttachmentEntryKernel['bindings']
 }
 
 export type PluginRuntimeResponse = ToolResponse<PluginRuntimePlan>

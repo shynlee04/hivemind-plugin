@@ -66,6 +66,55 @@ export interface RuntimeBindingsSnapshot extends RuntimeAttachmentSettings {
   checkpointId?: string
 }
 
+export interface RuntimeAttachmentEntryDefaults {
+  attachmentMode: 'local-worktree' | 'npm-package'
+  defaultLineage: KernelLineage
+  defaultPurposeClass: PurposeClass
+  branchFocus: string
+  guardrails: string[]
+  facilitators: string[]
+  mcpReadiness: string[]
+  hivebrainDigest: string[]
+  verificationContract?: string
+  returnContract?: string
+}
+
+export interface RuntimeAttachmentEntryProfile {
+  preferredUserName?: string
+  governanceMode: string
+  automationLevel: string
+  language: string
+  artifactLanguage: string
+  outputStyle: string
+  expertLevel: string
+}
+
+export interface RuntimeAttachmentEntryBindings {
+  hasRuntimeAttachment: boolean
+  hasHivemind: boolean
+  hivemindHealthy: boolean
+  hasWorkflow: boolean
+  profileComplete: boolean
+  missingProfileFields: ControlPlaneProfileFieldId[]
+  interactiveBootstrapRequired: boolean
+  trajectoryId?: string
+  workflowId?: string
+  taskIds: string[]
+  subtaskIds: string[]
+  checkpointId?: string
+}
+
+export interface RuntimeAttachmentEntryKernel {
+  defaults: RuntimeAttachmentEntryDefaults
+  profile: RuntimeAttachmentEntryProfile
+  bindings: RuntimeAttachmentEntryBindings
+}
+
+export interface RuntimeAttachmentEntryKernelSource extends Partial<RuntimeBindingsSnapshot> {
+  taskIds?: string[]
+  subtaskIds?: string[]
+}
+
 function getRuntimeAttachmentSettingsPath(projectRoot: string): string {
   return getConfigPath(projectRoot, 'runtime-attachment.json')
 }
@@ -96,6 +145,60 @@ function mergeStringArray(candidate: unknown, fallback: string[]): string[] {
   return Array.isArray(candidate)
     ? candidate.filter((item): item is string => typeof item === 'string')
     : fallback
+}
+
+export function buildRuntimeAttachmentEntryKernel(
+  source: RuntimeAttachmentEntryKernelSource = {},
+): RuntimeAttachmentEntryKernel {
+  const defaults = defaultRuntimeAttachmentSettings()
+  const profile = createBootstrapProfile({
+    preferredUserName: source.preferredUserName,
+    language: source.language ?? defaults.language,
+    artifactLanguage: source.artifactLanguage ?? defaults.artifactLanguage,
+    expertLevel: source.expertLevel ?? defaults.expertLevel,
+    governanceMode: source.governanceMode ?? defaults.governanceMode,
+    automationLevel: source.automationLevel ?? defaults.automationLevel,
+    outputStyle: source.outputStyle ?? defaults.outputStyle,
+  })
+  const profileComplete = source.profileComplete ?? false
+
+  return {
+    defaults: {
+      attachmentMode: source.attachmentMode === 'npm-package' ? 'npm-package' : defaults.attachmentMode,
+      defaultLineage: source.defaultLineage === 'hiveminder' ? 'hiveminder' : defaults.defaultLineage,
+      defaultPurposeClass: source.defaultPurposeClass ?? defaults.defaultPurposeClass,
+      branchFocus: source.branchFocus ?? defaults.branchFocus,
+      guardrails: mergeStringArray(source.guardrails, defaults.guardrails),
+      facilitators: mergeStringArray(source.facilitators, defaults.facilitators),
+      mcpReadiness: mergeStringArray(source.mcpReadiness, defaults.mcpReadiness),
+      hivebrainDigest: mergeStringArray(source.hivebrainDigest, defaults.hivebrainDigest),
+      verificationContract: source.verificationContract,
+      returnContract: source.returnContract,
+    },
+    profile: {
+      preferredUserName: profile.preferredUserName,
+      governanceMode: profile.governanceMode,
+      automationLevel: profile.automationLevel,
+      language: profile.chatLanguage,
+      artifactLanguage: profile.artifactLanguage,
+      outputStyle: profile.outputStyle,
+      expertLevel: profile.expertiseLevel,
+    },
+    bindings: {
+      hasRuntimeAttachment: source.hasRuntimeAttachment ?? false,
+      hasHivemind: source.hasHivemind ?? false,
+      hivemindHealthy: source.hivemindHealthy ?? false,
+      hasWorkflow: source.hasWorkflow ?? false,
+      profileComplete,
+      missingProfileFields: profileComplete ? [] : [...CONTROL_PLANE_PROFILE_FIELDS],
+      interactiveBootstrapRequired: source.interactiveBootstrapRequired ?? !profileComplete,
+      trajectoryId: source.trajectoryId,
+      workflowId: source.workflowId,
+      taskIds: source.taskIds ?? [],
+      subtaskIds: source.subtaskIds ?? [],
+      checkpointId: source.checkpointId,
+    },
+  }
 }
 
 export async function loadRuntimeAttachmentSettings(projectRoot: string): Promise<RuntimeAttachmentSettings> {

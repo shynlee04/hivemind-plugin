@@ -91,6 +91,72 @@ export interface StartWorkMeta {
   recommendedCommandId?: string
 }
 
+export interface StartWorkEntryKernelSession {
+  sessionId: string
+  sessionScope: SessionScope
+  sessionState: SessionStateKind
+}
+
+export interface StartWorkEntryKernelRouting {
+  lineage: KernelLineage
+  purposeClass: PurposeClass
+  traversalOutcome: TraversalOutcome
+  routeDisposition?: 'attach' | 'resume' | 'create' | 'defer' | 'refuse'
+  nextTransition?: string
+  commandAgent?: string
+  autoRoute: boolean
+  programmaticInitiationRequired: boolean
+  requiredCommandId?: string
+  recommendedCommandId?: string
+}
+
+export interface StartWorkEntryKernelSafety {
+  riskLevel: RuntimeRiskLevel
+  readiness: ReadinessGate[]
+  continuityAlerts: string[]
+  pressureSignals: RuntimePressureId[]
+  pressureContract: RuntimePressureContract
+  requiredControlPlaneId?: ControlPlanePrimitiveId
+  recommendedControlPlaneId?: ControlPlanePrimitiveId
+}
+
+export interface StartWorkEntryKernel {
+  session: StartWorkEntryKernelSession
+  routing: StartWorkEntryKernelRouting
+  safety: StartWorkEntryKernelSafety
+}
+
+export function buildStartWorkEntryKernel(decision: StartWorkDecision): StartWorkEntryKernel {
+  return {
+    session: {
+      sessionId: decision.sessionId,
+      sessionScope: decision.sessionScope,
+      sessionState: decision.sessionState,
+    },
+    routing: {
+      lineage: decision.lineage,
+      purposeClass: decision.purposeClass,
+      traversalOutcome: decision.traversalOutcome,
+      routeDisposition: decision.routeDisposition,
+      nextTransition: decision.nextTransition,
+      commandAgent: decision.commandAgent,
+      autoRoute: decision.autoRoute,
+      programmaticInitiationRequired: decision.programmaticInitiationRequired,
+      requiredCommandId: decision.requiredCommandId,
+      recommendedCommandId: decision.recommendedCommandId,
+    },
+    safety: {
+      riskLevel: decision.riskLevel,
+      readiness: decision.readiness,
+      continuityAlerts: decision.continuityAlerts,
+      pressureSignals: decision.pressureSignals,
+      pressureContract: decision.pressureContract,
+      requiredControlPlaneId: decision.requiredControlPlaneId,
+      recommendedControlPlaneId: decision.recommendedControlPlaneId,
+    },
+  }
+}
+
 /** Full start-work decision — composed via intersection for backward compatibility */
 export type StartWorkDecision = StartWorkCore
   & StartWorkRouting
