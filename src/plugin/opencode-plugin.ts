@@ -16,7 +16,7 @@ import {
   createHivemindRuntimeCommandTool,
 } from '../tools/runtime/index.js'
 import { createMessagesTransform } from './messages-transform.js'
-import { createPluginRuntimePlan } from './runtime-plan.js'
+import { buildRouteReminder, createPluginRuntimePlan } from './runtime-plan.js'
 import { createSystemTransform } from './system-transform.js'
 import { loadRuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
 import {
@@ -65,33 +65,6 @@ function findLastUserMessage(messages: MessageLike[]): MessageLike | undefined {
   }
 
   return undefined
-}
-
-function buildRouteReminder(plan: Awaited<ReturnType<typeof createPluginRuntimePlan>>): string | null {
-  const decision = plan.data?.startWork
-  if (!decision) {
-    return null
-  }
-
-  const commandId = decision.requiredCommandId ?? decision.recommendedCommandId
-  if (!commandId) {
-    return null
-  }
-
-  return [
-    '<hivemind-route-bridge>',
-    `command=${commandId}`,
-    `outcome=${decision.traversalOutcome}`,
-    `route_disposition=${decision.routeDisposition ?? 'create'}`,
-    `risk=${decision.riskLevel}`,
-    `next_transition=${decision.nextTransition ?? 'none'}`,
-    'execution_rule=use-hivemind-runtime-command-for-hm-bundles',
-    'mutation_rule=never-bootstrap-hivemind-by-manual-file-writes',
-    'intake_rule=if-bootstrap-profile-is-missing-run-the-question-tool-wizard-before-hm-init',
-    'intake_rule=hm-settings-must-use-question-tool-group-selection-before-runtime-mutation',
-    'question_rule=do-not-ask-free-text-permission-questions-when-a-control-plane-wizard-is-required',
-    '</hivemind-route-bridge>',
-  ].join('\n')
 }
 
 async function recordToolEvent(directory: string, sessionID: string, toolName: string): Promise<void> {
@@ -335,7 +308,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
       injectedParts.push(createSyntheticPart(sessionID, messageID, messagePacket))
       lastUserMessage.parts = [...injectedParts, ...(lastUserMessage.parts ?? [])]
 
-      const routeReminder = buildRouteReminder(runtimePlan)
+      const routeReminder = buildRouteReminder(runtimePlan.data)
       if (routeReminder) {
         lastUserMessage.parts = [
           ...(lastUserMessage.parts ?? []),

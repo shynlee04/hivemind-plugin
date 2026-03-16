@@ -6,6 +6,8 @@
 
 HiveMind là plugin [OpenCode](https://opencode.ai) giúp AI agent không bị trôi ngữ cảnh, không quên quyết định kiến trúc, và không mất trạng thái khi session kéo dài. Trọng tâm v2.8: onboarding rõ ràng, governance chặt, và triển khai thực chiến cho team Việt Nam trước.
 
+> Note: this README is being aligned to the current revamp runtime. The authoritative product model is `docs/architecture/2026-03-16-hivemind-master-model.md`. If examples below mention older workflow names such as `declare_intent`, `map_context`, `scan_hierarchy`, or `save_mem`, or older subsystem labels such as `FileGuard` or `Mems Brain`, treat them as legacy vocabulary rather than the current runtime contract.
+
 ### 10 kịch bản demo ấn tượng để ra mắt
 1. `SaaS 0→1 cho người không biết code`: menu hỏi đáp + auto-lane để ra PRD có thể triển khai.
 2. `Giải cứu prompt hỗn loạn của team enterprise`: bóc tách yêu cầu, ambiguity map, risk register.
@@ -23,7 +25,7 @@ HiveMind là plugin [OpenCode](https://opencode.ai) giúp AI agent không bị t
 HiveMind is an [OpenCode](https://opencode.ai) plugin that prevents AI agents from drifting, forgetting, and losing coherence during long coding sessions. It enforces one backbone: *declare what you're doing, track as you go, archive when done*.
 
 ```
-10 tools · 6 hooks · 5 skills · 3 slash commands · interactive CLI · Ink TUI dashboard · EN/VI
+Plugin runtime · command bundles · CLI entry surfaces · project skills · EN/VI docs
 ```
 
 [![npm version](https://img.shields.io/npm/v/hivemind-context-governance)](https://www.npmjs.com/package/hivemind-context-governance)
@@ -204,9 +206,33 @@ HiveMind fires **6 hooks automatically** on every turn:
 
 ---
 
-## Tools Reference (10)
+## Runtime Surfaces
 
-### Core Lifecycle (3 tools)
+This branch currently exposes its dependable runtime through plugin hooks, agent-callable tools, control-plane commands, and shipped command assets. The master model and current `src/` tree are the authority when README wording falls behind.
+
+### Agent-callable tools
+
+The current source-backed tool set is:
+
+| Tool | Purpose |
+|------|---------|
+| `hivemind_runtime_status` | Inspect runtime attachment, workflow state, and available command surfaces |
+| `hivemind_runtime_command` | Run canonical `hm-*` control-plane and workflow bundles through the runtime bridge |
+| `hivemind_task` | Create, inspect, activate, verify, and complete workflow tasks |
+| `hivemind_trajectory` | Attach, checkpoint, traverse, and close trajectory state |
+| `hivemind_handoff` | Create, validate, update, and close delegation handoff artifacts |
+
+### Plugin hooks and command surfaces
+
+- Plugin hooks drive runtime attachment, prompt transformation, command context, permission handling, and compaction context.
+- Control-plane commands handle bootstrap, repair, harness, and settings via `hm-init`, `hm-doctor`, `hm-harness`, and `hm-settings`.
+- Workflow command bundles such as `hm-plan`, `hm-research`, `hm-implement`, `hm-tdd`, and `hm-verify` remain source-backed command assets, not standalone runtime engines.
+
+### Legacy vocabulary in older sections
+
+Some sections below still describe older governance-oriented tool names and session verbs. Until the full README rewrite lands, use `docs/architecture/2026-03-16-hivemind-master-model.md` and current source under `src/` as the canonical runtime truth.
+
+### Core Lifecycle (legacy vocabulary)
 
 | Tool | Agent Thought | What It Does |
 |------|--------------|-------------|
@@ -262,9 +288,9 @@ compact_session({ summary: "Auth middleware complete" })
 
 ---
 
-## Slash Commands (Shipped)
+## Slash Commands (legacy snapshot)
 
-HiveMind ships 3 OpenCode slash commands that work immediately after install:
+Older README snapshots describe three project-facing slash commands here. The current repo ships a larger command asset set under `commands/`, including both `hm-*` workflow/control-plane bundles and `hivemind-*` helper commands.
 
 | Command | Purpose |
 |---------|---------|
@@ -279,9 +305,9 @@ HiveMind ships 3 OpenCode slash commands that work immediately after install:
 
 ---
 
-## Skills (5 Behavioral Governance Skills)
+## Skills (legacy snapshot)
 
-Skills teach the agent *how* to use governance effectively:
+Older README snapshots describe a smaller governance skill set here. The current package ships project skills under `skills/`, and the registry in `skills/registry.yaml` is the best source of truth for active root skills.
 
 | Skill | Purpose |
 |-------|---------|
@@ -529,6 +555,8 @@ MIT
 ---
 
 # 🇻🇳 Hướng Dẫn Tiếng Việt (Chi Tiết)
+
+> Lưu ý: phần README này đang được chỉnh lại để khớp với runtime revamp hiện tại. Nguồn sự thật của sản phẩm là `docs/architecture/2026-03-16-hivemind-master-model.md`. Nếu bên dưới còn nhắc các tên cũ như `declare_intent`, `map_context`, `scan_hierarchy`, hoặc `save_mem`, hay các nhãn hệ cũ như `FileGuard` hoặc `Mems Brain`, hãy xem đó là ngôn ngữ lịch sử chứ không phải hợp đồng runtime hiện tại.
 
 > *Phần này không phải bản dịch — mà được viết riêng cho người dùng Việt Nam, với giải thích kỹ hơn về cách hoạt động và lý do tại sao.*
 

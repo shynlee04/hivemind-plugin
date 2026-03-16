@@ -6,11 +6,44 @@ import { renderOpencodeKnowledgePacket } from '../shared/opencode-knowledge.js'
 import { buildRuntimeAttachmentEntryKernel } from '../shared/runtime-attachment.js'
 import { success } from '../shared/tool-response.js'
 import { previewSlashCommandBundle } from '../commands/slash-command/index.js'
-import type { PluginRuntimeInput, PluginRuntimeResponse, RuntimeEntryKernelContract } from './plugin-types.js'
+import type {
+  PluginRuntimeInput,
+  PluginRuntimePlan,
+  PluginRuntimeResponse,
+  RuntimeEntryKernelContract,
+} from './plugin-types.js'
 import { createMessagesTransform } from './messages-transform.js'
 import { createSystemTransform } from './system-transform.js'
 import { createRuntimeSurfaceRegistry } from './surface-registry.js'
 import { createCoreHooks } from './create-core-hooks.js'
+
+export function buildRouteReminder(plan?: Pick<PluginRuntimePlan, 'entryKernel'>): string | null {
+  const routing = plan?.entryKernel.routing
+  const safety = plan?.entryKernel.safety
+  if (!routing || !safety) {
+    return null
+  }
+
+  const commandId = routing.requiredCommandId ?? routing.recommendedCommandId
+  if (!commandId) {
+    return null
+  }
+
+  return [
+    '<hivemind-route-bridge>',
+    `command=${commandId}`,
+    `outcome=${routing.traversalOutcome}`,
+    `route_disposition=${routing.routeDisposition ?? 'create'}`,
+    `risk=${safety.riskLevel}`,
+    `next_transition=${routing.nextTransition ?? 'none'}`,
+    'execution_rule=use-hivemind-runtime-command-for-hm-bundles',
+    'mutation_rule=never-bootstrap-hivemind-by-manual-file-writes',
+    'intake_rule=if-bootstrap-profile-is-missing-run-the-question-tool-wizard-before-hm-init',
+    'intake_rule=hm-settings-must-use-question-tool-group-selection-before-runtime-mutation',
+    'question_rule=do-not-ask-free-text-permission-questions-when-a-control-plane-wizard-is-required',
+    '</hivemind-route-bridge>',
+  ].join('\n')
+}
 
 export async function createPluginRuntimePlan(input: PluginRuntimeInput): Promise<PluginRuntimeResponse> {
   const startWork = resolveStartWork(input.startWork)

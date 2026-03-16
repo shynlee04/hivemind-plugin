@@ -1,0 +1,33 @@
+# Plugin Boundary Map - 2026-03-16
+
+This note maps the current plugin-layer responsibilities in `src/plugin/opencode-plugin.ts` against the boundary rules in `AGENTS.md`, `src/plugin/AGENTS.md`, and `docs/governance/2026-03-16-authority-sync-note.md`.
+
+## Source Priority For This Map
+
+- Live implementation wins for what the plugin currently does: `src/plugin/opencode-plugin.ts:98`, `docs/governance/2026-03-16-authority-sync-note.md:35`, `docs/governance/2026-03-16-authority-sync-note.md:37`.
+- Root boundary rules win for repo-wide ownership: `AGENTS.md:42`, `AGENTS.md:43`, `AGENTS.md:46`, `AGENTS.md:169`.
+- `src/plugin/AGENTS.md` still governs intended plugin scope, but some factual migration notes are stale and must not override current code: `src/plugin/AGENTS.md:7`, `docs/governance/2026-03-16-authority-sync-note.md:28`.
+
+## Classification Map
+
+| Responsibility block | Evidence | Bucket | Why it belongs here |
+|---|---|---|---|
+| Plugin bootstrap and surface registration | `src/plugin/opencode-plugin.ts:98`, `src/plugin/opencode-plugin.ts:100`, `src/plugin/opencode-plugin.ts:106`, `src/plugin/opencode-plugin.ts:110`, `src/plugin/opencode-plugin.ts:350`, `src/plugin/AGENTS.md:3`, `src/plugin/AGENTS.md:17` | `assembly-allowed` | This is the plugin's core allowed role: initialize plugin context, assemble imported hooks and tools, and export the `Plugin`. That matches both root and sector rules that the plugin layer is an assembly surface. |
+| Imported tool registration and event delegation | `src/plugin/opencode-plugin.ts:101`, `src/plugin/opencode-plugin.ts:107`, `src/plugin/opencode-plugin.ts:111`, `src/plugin/opencode-plugin.ts:115`, `AGENTS.md:43`, `AGENTS.md:167`, `AGENTS.md:169` | `assembly-allowed` | The plugin imports tool factories and the event handler, then registers them without redefining tool implementations inline. The authority sync note confirms the runtime tools are already extracted and that older prose calling them inline is stale. |
+| Permission gate allowlist and mutation toast behavior | `src/plugin/opencode-plugin.ts:83`, `src/plugin/opencode-plugin.ts:151`, `src/plugin/opencode-plugin.ts:155`, `src/plugin/opencode-plugin.ts:162`, `src/plugin/opencode-plugin.ts:163`, `AGENTS.md:42`, `AGENTS.md:60`, `AGENTS.md:127` | `policy-gated` | This block is explicitly about governance policy. It decides which tool calls bypass prompts and when writes trigger user-facing notice. The behavior is not generic assembly; it is a policy enforcement surface tied to SDK permission controls. |
+| Shell environment attachment for runtime state | `src/plugin/opencode-plugin.ts:175`, `src/plugin/opencode-plugin.ts:177`, `src/plugin/opencode-plugin.ts:179`, `src/plugin/AGENTS.md:42`, `docs/governance/2026-03-16-authority-sync-note.md:16` | `assembly-allowed` | The shell hook injects environment variables based on the runtime snapshot. Sector guidance already lists `shell.env` in the plugin entry, so this remains one of the clearer examples of allowed plugin assembly work. |
+| Local synthetic-part helpers and message-shaping utilities | `src/plugin/opencode-plugin.ts:36`, `src/plugin/opencode-plugin.ts:52`, `src/plugin/opencode-plugin.ts:59`, `src/plugin/opencode-plugin.ts:188`, `src/plugin/opencode-plugin.ts:293`, `src/plugin/AGENTS.md:7`, `src/plugin/AGENTS.md:28`, `docs/governance/2026-03-16-authority-sync-note.md:59` | `extract-later` | These helpers are not tool implementations, but they are still local logic living in the plugin entry rather than in dedicated adapter modules. The authority sync note already records that the plugin is only partially verified as "assembly-only," so these are credible future extraction targets without claiming they are invalid today. |
+| Chat-message and command-context packet construction | `src/plugin/opencode-plugin.ts:117`, `src/plugin/opencode-plugin.ts:131`, `src/plugin/opencode-plugin.ts:182`, `src/plugin/opencode-plugin.ts:193`, `src/plugin/opencode-plugin.ts:198`, `src/plugin/AGENTS.md:29`, `src/plugin/AGENTS.md:30`, `docs/governance/2026-03-16-authority-sync-note.md:59` | `extract-later` | The plugin is doing real string assembly and packet formatting for injected Parts. That is boundary-adjacent logic rather than pure registration. The current code may still be tolerated as adapter work, but it is the kind of behavior most likely to move into the dedicated transform modules named in sector docs. |
+| System, message, and compaction transform orchestration | `src/plugin/opencode-plugin.ts:207`, `src/plugin/opencode-plugin.ts:210`, `src/plugin/opencode-plugin.ts:236`, `src/plugin/opencode-plugin.ts:251`, `src/plugin/opencode-plugin.ts:319`, `src/plugin/AGENTS.md:43`, `src/plugin/AGENTS.md:44`, `src/plugin/AGENTS.md:45`, `docs/governance/2026-03-16-authority-sync-note.md:16` | `needs-authority-clarification` | The hooks are adopted in live code, but sector docs still attribute some ownership to other modules using partially stale adoption tables. The question is no longer whether the hooks exist; it is how much orchestration and packet-building is still acceptable in the plugin entry before it stops being assembly-only. |
+| Trajectory-event recording from hook execution | `src/plugin/opencode-plugin.ts:70`, `src/plugin/opencode-plugin.ts:76`, `src/plugin/opencode-plugin.ts:169`, `src/plugin/opencode-plugin.ts:172`, `src/plugin/opencode-plugin.ts:204`, `src/plugin/opencode-plugin.ts:205`, `AGENTS.md:43`, `AGENTS.md:124`, `docs/governance/2026-03-16-authority-sync-note.md:60` | `needs-authority-clarification` | This is the clearest unresolved conflict. Root governance says hooks are read-only and tools own writes, but the plugin's tool-execution hooks call a trajectory writer path. The authority sync note explicitly freezes this as unresolved rather than resolved. |
+
+## Short Follow-On Notes
+
+- Likely follow-on inspection targets, if a later cycle needs them, are the plugin-local helper functions and the hook-driven trajectory recording path in `src/plugin/opencode-plugin.ts`.
+- Any later refactor should start from the authority sync note's rule that live `src/**/*.ts` behavior wins over stale migration prose when they disagree.
+
+## Boundary Takeaways
+
+- The plugin layer is truthfully not "tools-inline" anymore; tool extraction has already happened and older prose on that point is stale.
+- The plugin layer is still not a cleanly settled assembly-only surface because some hook bodies perform formatting and some hook paths appear to trigger writes.
+- The main stable buckets today are registration/bootstrap as `assembly-allowed`, permission behavior as `policy-gated`, helper-and-packet logic as `extract-later`, and CQRS-sensitive write behavior as `needs-authority-clarification`.

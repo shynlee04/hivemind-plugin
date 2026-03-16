@@ -6,14 +6,14 @@ Entry: `opencode-plugin.ts` — the sole file that registers hooks, tools, and t
 
 This directory is **assembly only**. It composes hooks and tools — it must not contain business logic, state management, or tool implementations.
 
-## Audit Findings (2026-03-15)
+## Audit Findings (2026-03-16)
 
-> [!WARNING]
-> Two tools (`hivemind_runtime_status`, `hivemind_runtime_command`) are defined **inline** in `opencode-plugin.ts`. This violates the extraction pattern used by the other 3 tools.
+> [!NOTE]
+> `hivemind_runtime_status` and `hivemind_runtime_command` are now extracted into `src/tools/runtime/tools.ts`. `opencode-plugin.ts` should remain assembly-only and must not regress back to inline tool logic.
 
-### Required Corrections
+### Current Enforcement
 
-1. **Extract inline tools** to `src/tools/runtime/tools.ts` + `src/tools/runtime/types.ts`
+1. **Keep runtime tools extracted** in `src/tools/runtime/`
 2. **Plugin entry must only**: import and register hooks, import and register tools, export the `Plugin`
 3. **No tool logic** in this directory — all tool execute functions belong in `src/tools/`
 
@@ -58,7 +58,7 @@ This directory is **assembly only**. It composes hooks and tools — it must not
 | API | Decision | Replaces | File |
 |-----|----------|----------|------|
 | `client.app.log()` | 🔜 Adopt now | Augments `shared/logging.ts` | `shared/logging.ts` |
-| `client.tui.showToast()` | 🔜 Adopt now | `hooks/soft-governance.ts` empty stubs | `hooks/soft-governance.ts` |
+| `client.tui.showToast()` | ✅ Adopted | Replaced earlier placeholder toast wiring | `hooks/soft-governance.ts` |
 | `client.session.*` | 🔜 Adopt now | Custom session tracking | `hooks/start-work/` |
 | `client.app.agents()` | ⏳ Adopt later | — | Runtime agent validation |
 | `client.tool.ids()` | ⏳ Adopt later | — | Runtime tool validation |

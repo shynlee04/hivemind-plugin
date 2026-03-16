@@ -8,7 +8,13 @@ import {
   type RuntimePressureId,
 } from '../../shared/pressure-contract.js'
 import { findSlashCommandBundle } from '../../commands/slash-command/index.js'
-import type { RuntimeRiskLevel, StartWorkDecision, StartWorkInput, TraversalOutcome } from './start-work-types.js'
+import {
+  buildStartWorkEntryKernel,
+  type RuntimeRiskLevel,
+  type StartWorkDecision,
+  type StartWorkInput,
+  type TraversalOutcome,
+} from './start-work-types.js'
 import { classifyPurpose } from './purpose-classifier.js'
 import { resolveLineage } from './lineage-router.js'
 import { detectContinuityAlerts, detectSessionState } from './session-state.js'
@@ -209,6 +215,8 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
   const autoRoute = programmaticInitiationRequired
     || (traversalOutcome === 'route'
       && AUTO_ROUTE_PURPOSES.has(purpose.purposeClass)
+      && !purpose.reasons.includes('mixed-intent')
+      && purpose.confidence >= 0.5
       && riskLevel !== 'blocked')
   const pressureSignals = resolvePressureSignals(
     enrichedInput,
@@ -218,7 +226,7 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
   )
   const pressureContract = pickRuntimePressureContract(pressureSignals)
 
-  return {
+  const decision: StartWorkDecision = {
     sessionId: input.sessionId,
     sessionScope: input.sessionScope,
     sessionState,
@@ -245,5 +253,31 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
     opencodeKnowledge: resolveOpencodeKnowledgeSurfaces(purpose.purposeClass, input.userMessage),
     pressureSignals,
     pressureContract,
+  }
+
+  const entryKernel = buildStartWorkEntryKernel(decision)
+
+  return {
+    ...decision,
+    sessionId: entryKernel.session.sessionId,
+    sessionScope: entryKernel.session.sessionScope,
+    sessionState: entryKernel.session.sessionState,
+    lineage: entryKernel.routing.lineage,
+    purposeClass: entryKernel.routing.purposeClass,
+    traversalOutcome: entryKernel.routing.traversalOutcome,
+    routeDisposition: entryKernel.routing.routeDisposition,
+    nextTransition: entryKernel.routing.nextTransition,
+    commandAgent: entryKernel.routing.commandAgent,
+    autoRoute: entryKernel.routing.autoRoute,
+    programmaticInitiationRequired: entryKernel.routing.programmaticInitiationRequired,
+    requiredCommandId: entryKernel.routing.requiredCommandId,
+    recommendedCommandId: entryKernel.routing.recommendedCommandId,
+    riskLevel: entryKernel.safety.riskLevel,
+    readiness: entryKernel.safety.readiness,
+    continuityAlerts: entryKernel.safety.continuityAlerts,
+    pressureSignals: entryKernel.safety.pressureSignals,
+    pressureContract: entryKernel.safety.pressureContract,
+    requiredControlPlaneId: entryKernel.safety.requiredControlPlaneId,
+    recommendedControlPlaneId: entryKernel.safety.recommendedControlPlaneId,
   }
 }

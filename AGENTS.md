@@ -140,8 +140,8 @@ npx tsx --test tests/<file>.test.ts  # Single test
 
 | Tool | Location | Pattern |
 |------|----------|---------|
-| `hivemind_runtime_status` | `src/plugin/` (inline) | Should -> `src/tools/runtime/` |
-| `hivemind_runtime_command` | `src/plugin/` (inline) | Should -> `src/tools/runtime/` |
+| `hivemind_runtime_status` | `src/tools/runtime/` | Correct pattern |
+| `hivemind_runtime_command` | `src/tools/runtime/` | Correct pattern |
 | `hivemind_task` | `src/tools/task/` | Correct pattern |
 | `hivemind_trajectory` | `src/tools/trajectory/` | Correct pattern |
 | `hivemind_handoff` | `src/tools/handoff/` | Correct pattern |
@@ -175,9 +175,9 @@ npx tsx --test tests/<file>.test.ts  # Single test
 - [x] `core/session/` - **REMOVED** (L1 cutover, zero consumers confirmed)
 - [x] `shared/event-bus.ts` - **REMOVED** (L1 cutover, only consumer was deleted `core/session/kernel.ts`)
 - [ ] `shared/logging.ts` - should augment with `client.app.log()`
-- [ ] `hooks/soft-governance.ts` - empty placeholder, wire to `client.tui.showToast()`
-- [ ] 2 inline tools in `opencode-plugin.ts` - extract to `src/tools/runtime/`
-- [ ] Zero Zod in tool defs - migrate 5 tools to `tool.schema` arg definitions
+- [x] `hooks/soft-governance.ts` - now uses `client.tui.showToast()` with cooldown tracking
+- [x] 2 inline tools in `opencode-plugin.ts` - extracted to `src/tools/runtime/`
+- [x] Zero Zod in tool defs - current tool args use `tool.schema`
 - [ ] `intelligence/doc/` - router-only stub, full restoration planned for future version
 - [ ] Type monoliths (6 types with 17-25 fields) - decompose per Interface Decomposition principle
 

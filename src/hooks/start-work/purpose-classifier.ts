@@ -28,6 +28,9 @@ export interface PurposeClassification {
   reasons: string[]
 }
 
+const SAFE_DISCOVERY_PURPOSES: PurposeClass[] = ['research', 'planning', 'brainstorming']
+const EXECUTION_PURPOSES: PurposeClass[] = ['implementation', 'tdd', 'gatekeeping', 'course-correction']
+
 function escapeKeyword(keyword: string): string {
   return keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+')
 }
@@ -39,15 +42,35 @@ function matchesKeyword(input: string, keyword: string): boolean {
 
 export function classifyPurpose(userMessage: string, attachments: string[] = []): PurposeClassification {
   const normalized = userMessage.toLowerCase()
+  const matchedPurposes = PURPOSE_ORDER
+    .map((purpose) => {
+      const matches = PURPOSE_PATTERNS[purpose].filter((keyword) => matchesKeyword(normalized, keyword))
+      if (attachments.length > 0 && purpose === 'research') {
+        matches.push('attachment-context')
+      }
+
+      return {
+        purpose,
+        matches,
+        score: matches.length,
+      }
+    })
+
+  const safePurpose = matchedPurposes.find((entry) => SAFE_DISCOVERY_PURPOSES.includes(entry.purpose) && entry.score > 0)
+  const executionPurpose = matchedPurposes.find((entry) => EXECUTION_PURPOSES.includes(entry.purpose) && entry.score > 0)
+
+  if (safePurpose && executionPurpose) {
+    return {
+      purposeClass: safePurpose.purpose,
+      confidence: 0.34,
+      reasons: ['mixed-intent', ...safePurpose.matches, ...executionPurpose.matches],
+    }
+  }
+
   let bestPurpose: PurposeClass = 'discovery'
   let bestMatches: string[] = []
 
-  for (const purpose of PURPOSE_ORDER) {
-    const matches = PURPOSE_PATTERNS[purpose].filter((keyword) => matchesKeyword(normalized, keyword))
-    if (attachments.length > 0 && purpose === 'research') {
-      matches.push('attachment-context')
-    }
-
+  for (const { purpose, matches } of matchedPurposes) {
     if (matches.length > bestMatches.length) {
       bestPurpose = purpose
       bestMatches = matches

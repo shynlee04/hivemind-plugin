@@ -182,4 +182,23 @@ describe('start-work router', () => {
       await rm(dir, { recursive: true, force: true })
     }
   })
+
+  it('treats mixed-intent prompts conservatively instead of auto-routing into tdd', () => {
+    const decision = resolveStartWork({
+      userMessage: 'I was thinking we may need to refactor session handling, but first research what other frameworks do, and also there is a failing test, and should we add TDD for this?',
+      sessionId: 'ses_mixed_prompt',
+      sessionScope: 'main',
+      activeLineage: 'hivefiver',
+      hasHivemind: true,
+      hivemindHealthy: true,
+      hasWorkflow: true,
+      hasHandoff: false,
+    })
+
+    assert.equal(decision.purposeClass, 'research')
+    assert.equal(decision.recommendedCommandId, 'hm-research')
+    assert.equal(decision.autoRoute, false)
+    assert.equal(decision.confidence < 0.5, true)
+    assert.equal(decision.reasons.includes('mixed-intent'), true)
+  })
 })

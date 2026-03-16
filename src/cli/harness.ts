@@ -27,6 +27,27 @@ export interface HarnessResult {
   commandResult: Awaited<ReturnType<typeof executeSlashCommandBundle>>
 }
 
+function resolveRecommendedCommands(
+  health: { healthy: boolean },
+  commandResult: Awaited<ReturnType<typeof executeSlashCommandBundle>>,
+): string[] {
+  const report = commandResult.report as { next_command?: string }
+
+  if (commandResult.closeoutStatus !== 'ready') {
+    if (report.next_command === 'hm-init') {
+      return ['hm-init', 'hm-doctor', 'opencode serve']
+    }
+
+    if (report.next_command === 'hm-doctor') {
+      return ['hm-doctor', 'hm-harness', 'opencode serve']
+    }
+  }
+
+  return health.healthy
+    ? ['opencode attach', 'hm-harness', '/hm-plan']
+    : ['opencode serve', 'hm-doctor', 'hm-init']
+}
+
 function formatDateStamp(date = new Date()): string {
   return date.toISOString().slice(0, 10)
 }
@@ -157,9 +178,7 @@ export async function runHarnessCommand(directory: string, options: HarnessOptio
     currentPhase: '00-control-plane',
     currentGate: 'Runtime entry attachment and CLI recovery',
     metaArtifacts,
-    recommendedCommands: health.healthy
-      ? ['opencode attach', 'hm-harness', '/hm-plan']
-      : ['opencode serve', 'hm-doctor', 'hm-init'],
+    recommendedCommands: resolveRecommendedCommands(health, commandResult),
     commandResult,
   }
 }

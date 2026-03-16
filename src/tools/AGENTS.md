@@ -6,10 +6,10 @@ Custom tools exposed to agents during sessions. These are the **only** write-sid
 
 Each tool subdirectory follows: `tools.ts` (implementation), `types.ts` (args + contracts), `index.ts` (barrel).
 
-## Audit Findings (2026-03-15)
+## Audit Findings (2026-03-16)
 
-> [!CAUTION]
-> **Zero Zod validation** exists in any tool. All args use raw TypeScript interfaces. The SDK provides `tool.schema` (re-exported Zod) specifically for this — it MUST be used.
+> [!NOTE]
+> The five current tool implementations now define `args` with `tool.schema`. The remaining contract-quality work is consistency and coverage, not initial Zod adoption.
 
 > [!WARNING]
 > `parseList()` and `render()` helper functions are **duplicated** identically across `handoff/tools.ts`, `task/tools.ts`, and `trajectory/tools.ts`. Extract to `shared/tool-helpers.ts`.
@@ -53,11 +53,11 @@ export function createHivemindXxxTool(projectRoot: string) {
 
 | Tool | Directory | Status |
 |------|-----------|--------|
-| `hivemind_task` | `task/` | ✅ Structured, needs Zod migration |
-| `hivemind_trajectory` | `trajectory/` | ✅ Structured, needs Zod migration |
-| `hivemind_handoff` | `handoff/` | ✅ Structured, needs Zod migration |
-| `hivemind_runtime_status` | ⚠️ `plugin/` (inline) | Extract to `runtime/` |
-| `hivemind_runtime_command` | ⚠️ `plugin/` (inline) | Extract to `runtime/` |
+| `hivemind_task` | `task/` | ✅ Structured, `tool.schema` args live in `tools.ts` |
+| `hivemind_trajectory` | `trajectory/` | ✅ Structured, `tool.schema` args live in `tools.ts` |
+| `hivemind_handoff` | `handoff/` | ✅ Structured, `tool.schema` args live in `tools.ts` |
+| `hivemind_runtime_status` | `runtime/` | ✅ Extracted runtime tool |
+| `hivemind_runtime_command` | `runtime/` | ✅ Extracted runtime tool |
 
 ## Rules
 

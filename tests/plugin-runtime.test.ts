@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 import { createPluginRuntimePlan } from '../src/plugin/index.js'
+import { buildRouteReminder } from '../src/plugin/runtime-plan.js'
 
 describe('plugin runtime plan', () => {
   it('assembles start-work, handler context, packet transforms, and command preview', async () => {
@@ -106,5 +107,57 @@ describe('plugin runtime plan', () => {
     assert.match(response.data?.systemTransform ?? '', /language=vi/)
     assert.match(response.data?.messageTransform ?? '', /artifact_language=en/)
     assert.equal(response.data?.startWork.pressureSignals.includes('delegated-handoff'), true)
+  })
+
+  it('derives route reminder authority from entryKernel routing fields', async () => {
+    const response = await createPluginRuntimePlan({
+      startWork: {
+        userMessage: 'plan the workflow roadmap for the hook refactor',
+        sessionId: 'ses_route_authority',
+        sessionScope: 'main',
+        activeLineage: 'hivefiver',
+        hasHivemind: true,
+        hivemindHealthy: true,
+        hasWorkflow: true,
+        hasHandoff: false,
+      },
+      promptState: {
+        sessionId: 'ses_route_authority',
+        sessionScope: 'main',
+        preferredUserName: 'Apple',
+        lineage: 'hivefiver',
+        workflowId: 'wf_runtime',
+        branchFocus: 'start-work driven orchestration',
+        language: 'en',
+        artifactLanguage: 'en',
+        governanceMode: 'strict',
+        automationLevel: 'guided',
+        expertLevel: 'advanced',
+        outputStyle: 'concise',
+      },
+    })
+
+    assert.equal(response.status, 'success')
+    assert.ok(response.data)
+
+    const tamperedPlan = {
+      ...response.data,
+      startWork: {
+        ...response.data.startWork,
+        requiredCommandId: 'hm-init',
+        recommendedCommandId: 'hm-init',
+        traversalOutcome: 'bootstrap' as const,
+        routeDisposition: 'refuse' as const,
+        riskLevel: 'blocked' as const,
+        nextTransition: 'command:hm-init',
+      },
+    }
+
+    const reminder = buildRouteReminder(tamperedPlan)
+    assert.equal(reminder?.includes('command=hm-plan'), true)
+    assert.equal(reminder?.includes('outcome=route'), true)
+    assert.equal(reminder?.includes('route_disposition=create'), true)
+    assert.equal(reminder?.includes('risk=none'), true)
+    assert.equal(reminder?.includes('next_transition=command:hm-plan'), true)
   })
 })
