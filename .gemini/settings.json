@@ -1,0 +1,53 @@
+{
+  "mcpServers": {
+    "notion": {
+      "command": "env",
+      "args": [
+        "OPENAPI_MCP_HEADERS={\"Authorization\": \"Bearer YOUR_NOTION_API_TOKEN_HERE\", \"Notion-Version\": \"2022-06-28\"}",
+        "npx",
+        "-y",
+        "@notionhq/notion-mcp-server"
+      ]
+    },
+    "stitch": {
+      "command": "https://stitch.googleapis.com/mcp",
+      "args": []
+    },
+    "deepwiki": {
+      "command": "https://mcp.deepwiki.com/mcp",
+      "args": []
+    },
+    "tavily": {
+      "command": "https://mcp.tavily.com/mcp/?tavilyApiKey=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",
+      "args": []
+    },
+    "repomix": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "repomix",
+        "--mcp"
+      ]
+    },
+    "gitmcp": {
+      "command": "https://gitmcp.io/https://github.com/anomalyco/opencode/https://github.com/anomalyco/opencode",
+      "args": []
+    },
+    "fetcher": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "fetcher-mcp"
+      ]
+    },
+    "brave-search": {
+      "command": "env",
+      "args": [
+        "BRAVE_API_KEY=BSAoe1zO-z-9yeDLJ__8L4n11Y8EL7V",
+        "npx",
+        "-y",
+        "@brave/brave-search-mcp-server"
+      ]
+    }
+  }
+}
