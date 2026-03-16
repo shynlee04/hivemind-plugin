@@ -3,6 +3,17 @@
   "activeTrajectoryId": null,
   "lastClosedTrajectoryId": null,
   "trajectories": [],
-  "checkpoints": [],
+  "checkpoints": [
+    {
+      "id": "chk_trj_ses_30cbce6e0ffez4C1pV9i3i5Hn2_1",
+      "trajectoryId": "trj_ses_30cbce6e0ffez4C1pV9i3i5Hn2",
+      "workflowId": "ses_30cbce6e0ffez4C1pV9i3i5Hn2",
+      "taskIds": [],
+      "subtaskIds": [],
+      "source": "tool:hivemind_trajectory",
+      "resumeTarget": "command:hm-harness",
+      "createdAt": "2026-03-16T01:56:05.308Z"
+    }
+  ],
   "recoveryLog": []
 }

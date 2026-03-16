@@ -1,4 +1,4 @@
-# HiveMind — OpenCode Meta-Framework Dev-Kit & Plugin
+# HiveMind - OpenCode Meta-Framework Dev-Kit & Plugin
 
 Installable context-governance framework for OpenCode. npm: `hivemind-context-governance`.
 
@@ -7,16 +7,39 @@ Installable context-governance framework for OpenCode. npm: `hivemind-context-go
 This file governs development of the framework. Loaded once per OpenCode session.
 
 - **Shipped product**: `commands/`, `agents/`, `workflows/`, `skills/`, `dist/`, `bin/`
-- **Source code**: `src/` — the OpenCode plugin implementation
-- **Runtime-generated**: `.hivemind/` (after `hm-init`), `dist/` (after build)
-- **Dev mirror**: `.opencode/` — local testing only, re-exports from root
+- **Source code**: `src/` - the OpenCode plugin implementation
+- **Agent authority surface**: root `agents/**` is the source authoring surface for agent contracts
+- **Dev projection**: `.opencode/agents/**` is an optional synced local mirror of root `agents/**`, never an independent authority
+- **Runtime-generated**: `.hivemind/` is runtime output after `hm-init`, not an authoring surface
 - **Sector governance**: each `src/*/AGENTS.md` owns its domain boundary
+
+## Agent Contract Semantics
+
+Every root agent profile in `agents/**` should expose the same contract fields so role routing stays machine-stable.
+
+| Field | Meaning |
+|-------|---------|
+| `may_execute` | Whether the agent may directly perform its scoped work |
+| `may_delegate` | Whether the agent may route work to other agents |
+| `terminal` | Whether the agent is a leaf specialist and should not delegate |
+| `accept_gate` | The narrow task types the agent may accept |
+| `workflow_order` | The ordered steps the agent follows once work is accepted |
+| `verify_gate` | The evidence standard required before returning success |
+| `failure_return` | The required blocked or partial return mode when evidence is missing or scope breaks |
+| `scope_paths` | The hard boundary for files or surfaces the agent may work against |
+
+Contract rules:
+- Root `agents/**` definitions are authoritative.
+- `.opencode/agents/**` should stay synced to root definitions for local dev only.
+- `hiveminder` stays orchestration-only: delegation, acceptance, and verification authority; no direct implementation posture.
+- `hivefiver` is the framework-writer for framework assets and may optionally delegate only for bounded research, planning, or verification support.
+- `hivexplorer`, `hiverd`, and `hiveq` stay terminal and non-mutating.
 
 ## Governing Principles
 
-These principles govern all design and implementation decisions. They are the root — not the anti-patterns or conventions that follow.
+These principles govern all design and implementation decisions. They are the root - not the anti-patterns or conventions that follow.
 
-1. **SDK-First**: Before writing ANY custom abstraction, check if the SDK provides it. `tool.schema`, `client.app.log()`, `client.tui.showToast()`, `permission.ask` — these exist. Use them.
+1. **SDK-First**: Before writing ANY custom abstraction, check if the SDK provides it. `tool.schema`, `client.app.log()`, `client.tui.showToast()`, `permission.ask` - these exist. Use them.
 2. **CQRS Hard Boundary**: Tools write. Hooks read. Plugin assembles. No exceptions. No "hooks that also write." No "plugin entry with business logic."
 3. **Interface Decomposition**: No type exceeds 10 fields at the core level. Extensions compose via intersection (`TrajectoryCore & TrajectoryBindings`). Never a 20-field monolith.
 4. **Consumer-First**: Every shipped asset (`commands/`, `agents/`, `workflows/`) must work for npm consumers who install the package. Not just for internal dev.
@@ -24,39 +47,39 @@ These principles govern all design and implementation decisions. They are the ro
 
 ## OpenCode SDK Contract
 
-This project builds ON the OpenCode SDK. The SDK is the authority — not custom reimplementations.
+This project builds ON the OpenCode SDK. The SDK is the authority - not custom reimplementations.
 
 ### Plugin Hooks (17 Available)
 
 | Hook | Status | What It Gives You |
 |------|--------|-------------------|
-| `event` | ✅ Used | All OpenCode lifecycle events — replaces custom EventBus |
-| `chat.message` | ⬜ Available | Track messages per-session — use instead of custom session tracking |
-| `chat.params` | ⬜ Available | Control temperature/topP/topK per-agent |
-| `chat.headers` | ⬜ Available | Custom auth headers per request |
-| `permission.ask` | ⬜ Available | Gate file/state mutations with user consent |
-| `command.execute.before` | ✅ Used | Pre-command context injection |
-| `tool.execute.before` | ⬜ Available | Pre-validate or transform tool args before execution |
-| `tool.execute.after` | ✅ Used | Post-tool observation and state capture |
-| `tool.definition` | ⬜ Available | Dynamically modify tool descriptions and parameters |
-| `shell.env` | ✅ Used | Inject environment variables |
-| `system.transform` | ✅ Used | Modify system prompt per-session |
-| `messages.transform` | ✅ Used | Transform message history |
-| `session.compacting` | ✅ Used | Customize compaction prompt and context |
-| `config` | ⬜ Available | React to config changes at runtime |
-| `auth` | ⬜ Available | OAuth and API key auth flows |
-| `text.complete` | ⬜ Available | Streaming text injection |
+| `event` | Yes Used | All OpenCode lifecycle events - replaces custom EventBus |
+| `chat.message` | Available | Track messages per-session - use instead of custom session tracking |
+| `chat.params` | Available | Control temperature/topP/topK per-agent |
+| `chat.headers` | Available | Custom auth headers per request |
+| `permission.ask` | Available | Gate file/state mutations with user consent |
+| `command.execute.before` | Yes Used | Pre-command context injection |
+| `tool.execute.before` | Available | Pre-validate or transform tool args before execution |
+| `tool.execute.after` | Yes Used | Post-tool observation and state capture |
+| `tool.definition` | Available | Dynamically modify tool descriptions and parameters |
+| `shell.env` | Yes Used | Inject environment variables |
+| `system.transform` | Yes Used | Modify system prompt per-session |
+| `messages.transform` | Yes Used | Transform message history |
+| `session.compacting` | Yes Used | Customize compaction prompt and context |
+| `config` | Available | React to config changes at runtime |
+| `auth` | Available | OAuth and API key auth flows |
+| `text.complete` | Available | Streaming text injection |
 
 ### Client API (`client.*`)
 
 `client.session`, `client.command`, `client.tui`, `client.vcs`, `client.mcp`, `client.pty`, `client.file`, `client.find`, `client.tool`, `client.config`, `client.app`, `client.provider`, `client.lsp`, `client.formatter`, `client.auth`, `client.event`, `client.global`, `client.path`
 
 Key capabilities currently underutilized:
-- `client.app.log()` — structured server logging (instead of custom `shared/logging.ts`)
-- `client.tui.showToast()` — native notifications (instead of empty `soft-governance.ts`)
-- `client.session.*` — session management (instead of dead `core/session/kernel.ts`)
+- `client.app.log()` - structured server logging (instead of custom `shared/logging.ts`)
+- `client.tui.showToast()` - native notifications (instead of empty `soft-governance.ts`)
+- `client.session.*` - session management (instead of dead `core/session/kernel.ts`)
 
-### Tool Definition — `tool.schema` IS Zod
+### Tool Definition - `tool.schema` IS Zod
 
 ```typescript
 import { tool } from '@opencode-ai/plugin'
@@ -69,30 +92,30 @@ tool({
     taskId: s.string().optional().describe('Task identifier'),
   },
   async execute(args, context) {
-    // context.sessionID — current session
-    // context.agent     — calling agent name
-    // context.directory — project root
-    // context.worktree  — worktree root
-    // context.abort     — AbortSignal
-    // context.metadata() — set tool metadata
-    // context.ask()      — request user permission
+    // context.sessionID - current session
+    // context.agent     - calling agent name
+    // context.directory - project root
+    // context.worktree  - worktree root
+    // context.abort     - AbortSignal
+    // context.metadata() - set tool metadata
+    // context.ask()      - request user permission
     return JSON.stringify({ status: 'success', data: result })
   }
 })
 ```
 
-## ❌ Anti-Patterns — Never Do These
+## Anti-Patterns - Never Do These
 
-1. **Never** import from `shared/event-bus.ts` — use `event` hook + `client.tui.publish()`
-2. **Never** import from `core/session/kernel.ts` — dead code, will be removed
-3. **Never** define tool args as raw TypeScript interfaces — use `tool.schema` (Zod)
-4. **Never** define tools inline in `opencode-plugin.ts` — extract to `src/tools/`
-5. **Never** duplicate helpers across tool files — use `shared/tool-helpers.ts`
-6. **Never** hand-write `.hivemind/` files — use `hivemind_runtime_command`
-7. **Never** run commands expecting interactive prompts — shell has no TTY
-8. **Never** glob `**/*.md` — use targeted file reads
+1. **Never** import from `shared/event-bus.ts` - use `event` hook + `client.tui.publish()`
+2. **Never** import from `core/session/kernel.ts` - dead code, will be removed
+3. **Never** define tool args as raw TypeScript interfaces - use `tool.schema` (Zod)
+4. **Never** define tools inline in `opencode-plugin.ts` - extract to `src/tools/`
+5. **Never** duplicate helpers across tool files - use `shared/tool-helpers.ts`
+6. **Never** hand-write `.hivemind/` files - use `hivemind_runtime_command`
+7. **Never** run commands expecting interactive prompts - shell has no TTY
+8. **Never** glob `**/*.md` - use targeted file reads
 
-## ✅ Required Patterns
+## Required Patterns
 
 1. **Must** use `tool.schema` (Zod) for all tool arg definitions
 2. **Must** use `context.sessionID`/`context.agent`/`context.directory` from `ToolContext`
@@ -102,7 +125,7 @@ tool({
 6. **Must** load role-specific skills before acting (`npx skills add` / `npx skills update`)
 7. **Shall** use `client.app.log()` for structured logging alongside console
 8. **Shall** use `permission.ask` hook or `context.ask()` for state mutations
-9. **Shall** resolve paths via `getEffectivePaths()` — never hardcode `.hivemind/`
+9. **Shall** resolve paths via `getEffectivePaths()` - never hardcode `.hivemind/`
 
 ## Operations
 
@@ -117,25 +140,25 @@ npx tsx --test tests/<file>.test.ts  # Single test
 
 | Tool | Location | Pattern |
 |------|----------|---------|
-| `hivemind_runtime_status` | `src/plugin/` (⚠️ inline) | Should → `src/tools/runtime/` |
-| `hivemind_runtime_command` | `src/plugin/` (⚠️ inline) | Should → `src/tools/runtime/` |
-| `hivemind_task` | `src/tools/task/` | ✅ Correct pattern |
-| `hivemind_trajectory` | `src/tools/trajectory/` | ✅ Correct pattern |
-| `hivemind_handoff` | `src/tools/handoff/` | ✅ Correct pattern |
+| `hivemind_runtime_status` | `src/plugin/` (inline) | Should -> `src/tools/runtime/` |
+| `hivemind_runtime_command` | `src/plugin/` (inline) | Should -> `src/tools/runtime/` |
+| `hivemind_task` | `src/tools/task/` | Correct pattern |
+| `hivemind_trajectory` | `src/tools/trajectory/` | Correct pattern |
+| `hivemind_handoff` | `src/tools/handoff/` | Correct pattern |
 
 ## Agent Roster
 
-| Agent | Mode | Domain |
-|-------|------|--------|
-| hiveminder | primary | Orchestration — delegates, never implements |
-| hivefiver | all | Meta-builder — framework assets, not product code |
-| hivemaker | subagent | Implementation — `src/`, `tests/` |
-| hivehealer | subagent | Recovery and debugging |
-| hivexplorer | subagent | Codebase research (read-only) |
-| hiverd | subagent | External research (no code access) |
-| hiveq | subagent | Quality gates and verification |
-| hiveplanner | subagent | Phase planning and synthesis |
-| hitea | subagent | Testing infrastructure |
+| Agent | Mode | Execution | Domain |
+|-------|------|-----------|--------|
+| hiveminder | primary | Delegate + verify only | Orchestration and bounded routing |
+| hivefiver | all | Execute + optional support delegation | Framework assets: `agents/`, `commands/`, `workflows/`, `skills/` |
+| hivemaker | subagent | Execute | Product implementation in `src/`, `tests/`, `docs/` |
+| hivehealer | subagent | Execute | Product remediation and hardening |
+| hivexplorer | subagent | Execute, terminal, non-mutating | Repository investigation and evidence collection |
+| hiverd | subagent | Execute, terminal, non-mutating | External research and ecosystem evidence |
+| hiveq | subagent | Execute, terminal, non-mutating | Verification and PASS/FAIL reporting |
+| hiveplanner | subagent | Execute, terminal | Plans, sequencing, and handoff artifacts |
+| hitea | subagent | Execute, terminal | Testing infrastructure and test authoring |
 
 ## Layer Architecture
 
@@ -144,19 +167,19 @@ npx tsx --test tests/<file>.test.ts  # Single test
 | Tools | `src/tools/` | Write-side (CQRS). LLM-facing. Zod schemas required. ~300 LOC limit. |
 | Hooks | `src/hooks/` | Read-side. Context injection via synthetic Parts. 7 sub-modules. |
 | Plugin | `src/plugin/` | Assembly only. No inline tools. No business logic. |
-| Core | `src/core/` | State management. ⚠️ `core/session/` is deprecated — do not extend. |
+| Core | `src/core/` | State management. `core/session/` is deprecated - do not extend. |
 | Shared | `src/shared/` | Utilities. Path resolution, logging, profile, pressure contracts. |
 
 ## Known Debt (Audit 2026-03-15)
 
-- [x] `core/session/` — **REMOVED** (L1 cutover, zero consumers confirmed)
-- [x] `shared/event-bus.ts` — **REMOVED** (L1 cutover, only consumer was deleted `core/session/kernel.ts`)
-- [ ] `shared/logging.ts` — should augment with `client.app.log()`
-- [ ] `hooks/soft-governance.ts` — empty placeholder, wire to `client.tui.showToast()`
-- [ ] 2 inline tools in `opencode-plugin.ts` — extract to `src/tools/runtime/`
-- [ ] Zero Zod in tool defs — migrate 5 tools to `tool.schema` arg definitions
-- [ ] `intelligence/doc/` — router-only stub, full restoration planned for future version
-- [ ] Type monoliths (6 types with 17-25 fields) — decompose per Interface Decomposition principle
+- [x] `core/session/` - **REMOVED** (L1 cutover, zero consumers confirmed)
+- [x] `shared/event-bus.ts` - **REMOVED** (L1 cutover, only consumer was deleted `core/session/kernel.ts`)
+- [ ] `shared/logging.ts` - should augment with `client.app.log()`
+- [ ] `hooks/soft-governance.ts` - empty placeholder, wire to `client.tui.showToast()`
+- [ ] 2 inline tools in `opencode-plugin.ts` - extract to `src/tools/runtime/`
+- [ ] Zero Zod in tool defs - migrate 5 tools to `tool.schema` arg definitions
+- [ ] `intelligence/doc/` - router-only stub, full restoration planned for future version
+- [ ] Type monoliths (6 types with 17-25 fields) - decompose per Interface Decomposition principle
 
 ## Reference
 
@@ -165,5 +188,5 @@ npx tsx --test tests/<file>.test.ts  # Single test
 | Package | `hivemind-context-governance` on npm |
 | Plugin entry | `dist/plugin/opencode-plugin.js` |
 | Config | `opencode.json` |
-| Dev mirror | `.opencode/` (agents, commands, plugins — not shipped) |
-| Runtime state | `.hivemind/` (generated after `hm-init`) |
+| Dev mirror | `.opencode/` (agents, commands, plugins - not shipped) |
+| Runtime state | `.hivemind/` (generated runtime output, not agent-authoring input) |
