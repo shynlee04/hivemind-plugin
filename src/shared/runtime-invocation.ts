@@ -1,10 +1,20 @@
 import type { KernelLineage, SessionScope } from '../context/prompt-packet/prompt-packet-types.js'
+import type {
+  EntryKernelQaState,
+  EntryKernelReleaseState,
+  EntryKernelStateKind,
+} from './entry-kernel-state.js'
+import {
+  createRuntimeInvocationLifecycle,
+  type RuntimeInvocationLifecycle,
+} from './lifecycle-spine.js'
 
 export type RuntimeInvokerClass = 'user' | 'main-agent' | 'sub-agent'
 
 export interface RuntimeInvocationV1 {
   version: 'v1'
   invocationId: string
+  lifecycle: RuntimeInvocationLifecycle
   invokerClass: RuntimeInvokerClass
   sessionId: string
   parentSessionId?: string
@@ -16,6 +26,9 @@ export interface RuntimeInvocationV1 {
   workflowId?: string
   taskIds: string[]
   subtaskIds: string[]
+  entryState: EntryKernelStateKind
+  qaState: EntryKernelQaState
+  releaseState: EntryKernelReleaseState
   gateState: string
   sotRefs: string[]
   artifactRefs: string[]
@@ -53,6 +66,9 @@ export function createRuntimeInvocation(input: {
   workflowId?: string
   taskIds?: string[]
   subtaskIds?: string[]
+  entryState: EntryKernelStateKind
+  qaState: EntryKernelQaState
+  releaseState: EntryKernelReleaseState
   gateState: string
   sotRefs?: string[]
   artifactRefs?: string[]
@@ -62,6 +78,11 @@ export function createRuntimeInvocation(input: {
   return {
     version: 'v1',
     invocationId: createInvocationId(input.sessionId),
+    lifecycle: createRuntimeInvocationLifecycle({
+      entryState: input.entryState,
+      qaState: input.qaState,
+      releaseState: input.releaseState,
+    }),
     invokerClass: resolveRuntimeInvokerClass(input),
     sessionId: input.sessionId,
     parentSessionId: input.parentSessionId,
@@ -73,6 +94,9 @@ export function createRuntimeInvocation(input: {
     workflowId: input.workflowId,
     taskIds: input.taskIds ?? [],
     subtaskIds: input.subtaskIds ?? [],
+    entryState: input.entryState,
+    qaState: input.qaState,
+    releaseState: input.releaseState,
     gateState: input.gateState,
     sotRefs: input.sotRefs ?? [],
     artifactRefs: input.artifactRefs ?? [],

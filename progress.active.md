@@ -44,6 +44,15 @@
 - Slash-command bundles must only target agents present in the projected registry.
 - Repo parity checks must compare runtime agent files against generated projection output, not raw canonical markdown.
 
+### Current Lifecycle-Spine Slice
+- The next stable layer is not another projection or docs pass.
+- The stable layer is the lifecycle split between:
+  - `entry`
+  - `runtime invocation`
+  - `turn output`
+- This slice keeps the split executable and test-backed before wider workflow/session/trajectory work.
+- User rule added for this slice: keep touched source files under `300` LOC and preserve split modules instead of growing monoliths.
+
 ### New Evidence
 - Official OpenCode docs confirm markdown agents are configured through supported frontmatter fields like `description`, `mode`, `tools`, `permission`, `model`, and `temperature`.
 - Official OpenCode config schema at `https://opencode.ai/config.json` confirms the agent/config contract is schema-shaped and bounded.
@@ -52,6 +61,21 @@
   - schema-valid runtime projection from canonical agent markdown
   - runtime sync writing projected `.opencode/agents/**`
   - slash-command bundle to projected-agent binding integrity
+- `tests/lifecycle-spine.test.ts` now covers:
+  - entry kernel lifecycle identity
+  - runtime invocation lifecycle identity
+  - completed turn-output lifecycle identity
+
+### Lifecycle-Spine Evidence
+- `src/shared/lifecycle-spine.ts` centralizes lifecycle identity without inflating existing files.
+- `src/shared/entry-kernel-state.ts` now marks entry state as its own lifecycle authority.
+- `src/shared/runtime-invocation.ts` now records request lifecycle plus entry/QA/release context.
+- `src/shared/turn-output.ts` now records completed-turn lifecycle linked to the originating runtime invocation.
+- `src/plugin/runtime-plan.ts` and `src/commands/slash-command/command-runner.ts` now pass explicit entry/QA/release context into runtime invocation creation.
+
+### Verification Evidence For Current Slice
+- `npx tsx --test tests/lifecycle-spine.test.ts tests/plugin-runtime.test.ts tests/runtime-turn-output.test.ts tests/control-plane-runtime-tools.test.ts tests/start-work-router.test.ts` -> pass
+- `npx tsc --noEmit` -> pass
 
 ### Completed Slice
 - `hivemind_runtime_command` auto-init now creates user-side `.opencode/**` through the init authority path instead of leaving that responsibility to harness or repo-time assumptions.

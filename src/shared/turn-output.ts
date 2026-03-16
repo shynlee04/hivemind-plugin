@@ -5,12 +5,18 @@ import YAML from 'yaml'
 
 import type { KernelLineage, SessionScope } from '../context/prompt-packet/prompt-packet-types.js'
 import { getHivemindPath } from './paths.js'
+import type { EntryKernelQaState } from './entry-kernel-state.js'
+import {
+  createTurnOutputLifecycle,
+  type TurnOutputLifecycle,
+} from './lifecycle-spine.js'
 import type { RuntimeInvocationV1 } from './runtime-invocation.js'
 
 export interface TurnOutputEnvelopeV1 {
   version: 'v1'
   turnId: string
   invocationId: string
+  lifecycle: TurnOutputLifecycle
   sessionId: string
   parentSessionId?: string
   sessionScope: SessionScope
@@ -23,7 +29,7 @@ export interface TurnOutputEnvelopeV1 {
   taskIds: string[]
   subtaskIds: string[]
   status: string
-  qaState: string
+  qaState: EntryKernelQaState
   pivot?: string
   rationale: string[]
   workflowEffects: string[]
@@ -39,7 +45,7 @@ export interface TurnOutputEnvelopeV1 {
 export interface TurnExportProjectionV1 {
   version: 'v1'
   sessionScope: SessionScope
-  qaState: string
+  qaState: EntryKernelQaState
   exportFormats: Array<'yaml' | 'markdown'>
   parentSessionId?: string
   delegationId?: string
@@ -54,7 +60,7 @@ function createTurnId(sessionId: string): string {
 export function createTurnOutputEnvelope(input: {
   runtimeInvocation: RuntimeInvocationV1
   status: string
-  qaState: string
+  qaState: EntryKernelQaState
   pivot?: string
   rationale?: string[]
   workflowEffects?: string[]
@@ -70,6 +76,12 @@ export function createTurnOutputEnvelope(input: {
     version: 'v1',
     turnId: createTurnId(input.runtimeInvocation.sessionId),
     invocationId: input.runtimeInvocation.invocationId,
+    lifecycle: createTurnOutputLifecycle({
+      entryState: input.runtimeInvocation.entryState,
+      qaState: input.qaState,
+      releaseState: input.runtimeInvocation.releaseState,
+      invocationPhase: input.runtimeInvocation.lifecycle.phase,
+    }),
     sessionId: input.runtimeInvocation.sessionId,
     parentSessionId: input.runtimeInvocation.parentSessionId,
     sessionScope: input.runtimeInvocation.sessionScope,
@@ -98,7 +110,7 @@ export function createTurnOutputEnvelope(input: {
 
 export function createTurnOutputProjection(input: {
   sessionScope: SessionScope
-  qaState: string
+  qaState: EntryKernelQaState
   parentSessionId?: string
   delegationId?: string
 }): TurnExportProjectionV1 {

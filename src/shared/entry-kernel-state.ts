@@ -4,6 +4,7 @@ import * as path from 'node:path'
 import { inspectTrajectoryLedger } from '../core/trajectory/index.js'
 import { inspectWorkflowAuthority } from '../core/workflow-management/index.js'
 import { getConfigPath } from './paths.js'
+import { createEntryKernelLifecycle, type EntryKernelLifecycle } from './lifecycle-spine.js'
 
 export type EntryKernelStateKind = 'uninitialized' | 'repair-required' | 'qa-pending' | 'ready' | 'blocked'
 export type EntryKernelQaState = 'not-required' | 'pending' | 'passed' | 'failed' | 'blocked'
@@ -15,6 +16,7 @@ export interface EntryKernelStateV1 {
   state: EntryKernelStateKind
   qaState: EntryKernelQaState
   releaseState: EntryKernelReleaseState
+  lifecycle: EntryKernelLifecycle
   reason: string
   profileValidated: boolean
   lastRecoveryAction?: EntryKernelRecoveryAction
@@ -39,6 +41,7 @@ function defaultEntryKernelState(): EntryKernelStateV1 {
     state: 'uninitialized',
     qaState: 'blocked',
     releaseState: 'blocked',
+    lifecycle: createEntryKernelLifecycle('uninitialized'),
     reason: 'runtime-uninitialized',
     profileValidated: false,
     lastUpdatedAt: createTimestamp(),
@@ -67,6 +70,7 @@ export async function loadStoredEntryKernelState(projectRoot: string): Promise<E
       ...defaultEntryKernelState(),
       ...parsed,
       version: 'v1',
+      lifecycle: createEntryKernelLifecycle(parsed.state ?? 'uninitialized'),
       lastUpdatedAt: parsed.lastUpdatedAt ?? createTimestamp(),
       profileValidated: parsed.profileValidated ?? false,
     }
@@ -74,6 +78,7 @@ export async function loadStoredEntryKernelState(projectRoot: string): Promise<E
     return {
       ...defaultEntryKernelState(),
       state: 'repair-required',
+      lifecycle: createEntryKernelLifecycle('repair-required'),
       reason: 'entry-kernel-state-corrupt',
     }
   }
@@ -84,10 +89,12 @@ export async function saveEntryKernelState(
   partial: Partial<EntryKernelStateV1>,
 ): Promise<EntryKernelStateV1> {
   const filePath = getEntryKernelStatePath(projectRoot)
+  const current = await loadStoredEntryKernelState(projectRoot)
   const next: EntryKernelStateV1 = {
-    ...(await loadStoredEntryKernelState(projectRoot)),
+    ...current,
     ...partial,
     version: 'v1',
+    lifecycle: createEntryKernelLifecycle(partial.state ?? current.state),
     lastUpdatedAt: createTimestamp(),
   }
   await fs.mkdir(path.dirname(filePath), { recursive: true })
@@ -115,6 +122,7 @@ export async function detectEntryKernelState(
       state: 'uninitialized',
       qaState: 'blocked',
       releaseState: 'blocked',
+      lifecycle: createEntryKernelLifecycle('uninitialized'),
       reason: 'runtime-uninitialized',
       profileValidated: false,
     }
@@ -126,6 +134,7 @@ export async function detectEntryKernelState(
       state: 'repair-required',
       qaState: 'blocked',
       releaseState: 'blocked',
+      lifecycle: createEntryKernelLifecycle('repair-required'),
       reason: 'runtime-repair-required',
     }
   }
@@ -135,6 +144,7 @@ export async function detectEntryKernelState(
       ...stored,
       state: 'qa-pending',
       releaseState: 'blocked',
+      lifecycle: createEntryKernelLifecycle('qa-pending'),
       reason: stored.reason || 'qa-validation-required',
     }
   }
@@ -143,6 +153,7 @@ export async function detectEntryKernelState(
     return {
       ...stored,
       state: 'ready',
+      lifecycle: createEntryKernelLifecycle('ready'),
       reason: stored.reason || 'runtime-ready',
     }
   }
@@ -152,6 +163,7 @@ export async function detectEntryKernelState(
     state: 'ready',
     qaState: stored.qaState === 'failed' ? 'failed' : 'passed',
     releaseState: 'released',
+    lifecycle: createEntryKernelLifecycle('ready'),
     reason: stored.reason || 'runtime-ready',
   }
 }

@@ -21,6 +21,7 @@ Common modules used across the plugin.
 | `pressure-contract.ts` | ✅ | Pressure contract registry and resolution |
 | `opencode-knowledge.ts` | ✅ | OpenCode-specific knowledge surfaces |
 | `opencode-agent-registry.ts` | ✅ | Canonical agent parsing + OpenCode-safe runtime projection |
+| `lifecycle-spine.ts` | ✅ | Shared lifecycle identities for entry, runtime invocation, and turn output |
 | `logging.ts` | ⚠️ | Custom logger — supplement with `client.app.log()` |
 
 ## Runtime Projection Rule
@@ -28,6 +29,13 @@ Common modules used across the plugin.
 - Root `agents/**` may carry HiveMind-only contract metadata for authoring and governance.
 - `.opencode/agents/**` must be generated through `opencode-agent-registry.ts`, which strips non-SDK frontmatter and validates the remaining projection against the OpenCode-safe schema.
 - Never copy canonical agent files directly into `.opencode/agents/**`.
+
+## Lifecycle Spine Rule
+
+- `entry-kernel-state.ts` owns entry lifecycle state and release gating.
+- `runtime-invocation.ts` owns provider-request lifecycle records and must never masquerade as entry state.
+- `turn-output.ts` owns completed-turn lifecycle records and exports.
+- Shared lifecycle identities must stay decomposed through `lifecycle-spine.ts`; do not collapse entry, runtime invocation, and turn into one monolithic type.
 
 ## Dedup Needed
 

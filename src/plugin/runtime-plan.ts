@@ -123,6 +123,9 @@ export async function createPluginRuntimePlan(input: PluginRuntimeInput): Promis
     workflowId: input.promptState.workflowId,
     taskIds: input.promptState.taskIds,
     subtaskIds: input.promptState.subtaskIds,
+    entryState,
+    qaState,
+    releaseState: entryState === 'ready' ? 'released' : 'blocked',
     gateState: entryState,
     requestReason: input.startWork.userMessage,
   })
