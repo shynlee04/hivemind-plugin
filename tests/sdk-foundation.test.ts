@@ -5,8 +5,6 @@ import { join } from 'node:path'
 import { describe, it } from 'node:test'
 
 import {
-  attachStructuredLogger,
-  clearStructuredLogger,
   createEventHandler,
   getClient,
   getProject,
@@ -51,10 +49,18 @@ describe('sdk foundation', () => {
 
   it('emits structured logs through client.app.log when attached', async () => {
     const seen: Array<{ level: string; message: string }> = []
-    attachStructuredLogger({
-      log: async (entry: { level: string; message: string }) => {
-        seen.push(entry)
-      },
+    resetSdkContext()
+    initSdkContext({
+      client: {
+        app: {
+          log: async ({ body }: { body: { level: string; message: string } }) => {
+            seen.push(body)
+          },
+        },
+      } as never,
+      $: {} as never,
+      serverUrl: new URL('http://localhost'),
+      project: {} as never,
     })
 
     log.info('structured info')
@@ -65,7 +71,7 @@ describe('sdk foundation', () => {
     assert.equal(seen.some((entry) => entry.level === 'info' && entry.message.includes('structured info')), true)
     assert.equal(seen.some((entry) => entry.level === 'warn' && entry.message.includes('structured warn')), true)
 
-    clearStructuredLogger()
+    resetSdkContext()
   })
 
   it('projects runtime events without requiring hook-side writes', async () => {
@@ -77,12 +83,18 @@ describe('sdk foundation', () => {
       await handler({
         event: {
           type: 'session.created',
+          properties: {
+            info: {} as never,
+          },
         },
       })
 
       await handler({
         event: {
           type: 'session.compacted',
+          properties: {
+            sessionID: 'ses_sdk_foundation',
+          },
         },
       })
 

@@ -1,39 +1,33 @@
 ---
-description: "Launch the HiveMind TUI dashboard for live monitoring of session health, tasks, and agent activity."
+description: "Explain that the legacy HiveMind dashboard is not a live revamp CLI surface and route users to the current runtime inspection path."
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Dashboard
 
-Launch the interactive Terminal User Interface (TUI) dashboard.
+The legacy HiveMind dashboard is not a live public CLI or TUI surface in the current `ecosystem-revamp` runtime.
 
-## Usage
+## Current Runtime Path
 
-```bash
-hivemind dashboard [options]
+- Inspect runtime attachment and health with `hm-harness`.
+- Inspect runtime context inside OpenCode with `hivemind_runtime_status`.
+- Read project and roadmap artifacts with `hivemind_doc` before choosing a workflow lane.
+
+## Why This Command Is Blocked
+
+- `package.json` does not ship a `dashboard` binary.
+- `src/cli.ts` only routes `init`, `doctor`, `settings`, `harness`, and `help`.
+- `README.md` documents the revamp runtime through those live control-plane commands and in-OpenCode runtime tools.
+
+## Recommended Next Step
+
+If the user asks for dashboard-like visibility, route them to the current inspection flow instead of implying a non-existent executable:
+
+```text
+hm-harness -> hivemind_runtime_status -> hivemind_doc -> hm-plan / hm-research / hm-verify
 ```
-
-## Options
-
-*   --lang <en|vi>: Set initial language (default: en).
-*   --refresh <seconds>: Set refresh interval in seconds (default: 2).
-
-## Features
-
-*   **Telemetry Header**: Live monitoring of Drift, Turns, and Session Mode.
-*   **Trajectory Pane**: Active session details and hierarchy structure.
-*   **Navigation Tabs**: Switch between 5 views using [1-5] keys or [Tab].
-    1.  Main (Trajectory + Logs)
-    2.  Swarm Orchestrator (TODO)
-    3.  Time Travel Debugger (TODO)
-    4.  Tool Registry (TODO)
-    5.  Settings
-*   **Interactive Controls**:
-    *   `[L]`: Toggle Language (EN/VIETNAMESE)
-    *   `[R]`: Manual Refresh
-    *   `[Q]`: Quit
 
 ## Migration Note
 
-This implementation uses `ink` and `react` on Node.js as a compatibility layer.
-The target architecture is `@opentui/core` on Bun (US-032).
+Older dashboard ideas may still exist in historical planning or archived surfaces, but they are not part of the current shipped revamp runtime.

@@ -1,6 +1,7 @@
 ---
 description: Synthesize multiple research outputs into a unified, coherent report.
 agent: hiverd
+subtask: true
 ---
 
 # HiveRD Synthesize

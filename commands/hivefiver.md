@@ -1,6 +1,7 @@
 ---
 description: HiveFiver meta-builder root router. Resolves /hivefiver <action> to the correct stage command. Supports both explicit stage keywords AND free-form intent classification.
 agent: hivefiver
+subtask: false
 ---
 
 <enforcement>

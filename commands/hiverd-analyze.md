@@ -1,6 +1,7 @@
 ---
 description: Deep analysis of a codebase, architecture, or domain with structured findings.
 agent: hiverd
+subtask: true
 ---
 
 # HiveRD Analyze

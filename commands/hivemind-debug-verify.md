@@ -1,6 +1,7 @@
 ---
 description: "Verify that a debug fix is complete and no regressions exist. Run after hivehealer completes a fix."
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Debug Verify Command

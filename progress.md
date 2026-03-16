@@ -99,3 +99,92 @@
 - `npx tsc --noEmit` -> pass.
 - `npm run build` -> pass.
 - Manual QA via `node --input-type=module` against `dist/index.js` returned `skimTitle: "Manual Guide"`, `firstHeading: "Intro"`, `section: "Plugin boundary verification lives here."`, `resultCount: 1`.
+
+### Truth-Surface Cleanup
+- Rewrote the remaining stale README runtime sections so the public narrative now points at the live runtime path (`hm-*` command flow, current tool surfaces, current architecture boundaries) instead of removed lifecycle verbs and obsolete structure counts.
+- Updated `src/intelligence/doc/AGENTS.md` to acknowledge that the first public read-only doc surface is already live through `hivemind_doc`.
+- Corrected `src/AGENTS.md` from 5 tools to 6 tools and removed invalid phantom dependencies from `skills/registry.yaml`.
+- Updated stale skill references in `skills/evidence-discipline/references/evidence-catalogue.md` and `skills/verification-methodology/SKILL.md`.
+
+### Verification Evidence (Truth-Surface Slice)
+- `grep` over `README.md` no longer finds the targeted removed verbs or obsolete architecture identifiers (`declare_intent`, `map_context`, `scan_hierarchy`, `save_mem`, `src/index.ts`, `src/lib/`, `Tools (10)`, `Commands (3)`).
+- `grep` over `src/**/*.md` and `skills/**/*.md` no longer finds the targeted stale references (`hivemind-governance`, `src/lib/state-queue.ts`, `save_mem`, `recall_mems`, or the old doc-tool restoration wording).
+- `npm test` still fails for pre-existing branch issues unrelated to this slice, including missing-module tests (`tests/cli-scan.test.ts`, `tests/dashboard-v2-snapshot.test.ts`, `tests/hivemind-cycle-sessionsdir-parity.test.ts`, `tests/sdk-foundation.test.ts`, `tests/string-utils.test.ts`, `tests/sync-assets.test.ts`) and existing agent-policy expectation drift in `tests/agent-boundary-policy.test.ts`.
+- `lint:boundary` still passes for the touched truth surfaces, with only the pre-existing `.describe()` advisory warnings in `src/tools/handoff/tools.ts`, `src/tools/task/tools.ts`, and `src/tools/trajectory/tools.ts`.
+- `npx tsc --noEmit` -> pass.
+- `npm run build` -> pass.
+
+### Tool-Contract Metadata Cleanup
+- Added `.describe()` coverage to every arg in `src/tools/handoff/tools.ts`, `src/tools/task/tools.ts`, and `src/tools/trajectory/tools.ts`.
+- Kept the slice metadata-only: no behavior changes, only agent-introspection descriptions on existing `tool.schema` args.
+
+### Verification Evidence (Describe Slice)
+- Direct file reads plus a dedicated background inspection confirmed all three touched tool schemas now have `.describe()` coverage on every arg.
+- `npx tsc --noEmit` -> pass.
+- `npm test` -> pass (`124` tests passed, `0` failed).
+- `npm run build` -> pass.
+- `npm run lint:boundary` -> pass with no remaining `.describe()` advisory warnings.
+- Manual QA via `git diff -- src/tools/handoff/tools.ts src/tools/task/tools.ts src/tools/trajectory/tools.ts` confirmed the slice stayed constrained to metadata-only additions.
+- Manual QA via dist artifact existence checks confirmed `dist/cli.js`, `dist/index.js`, and `dist/plugin/opencode-plugin.js` were rebuilt successfully.
+
+### README CLI Truth Cleanup
+- Rewrote the remaining public CLI command documentation in `README.md` so it now matches the revamp branch's live shipped control-plane binaries and runtime guidance.
+- Removed active documentation of non-shipped public CLI surfaces (`scan`, `sync-assets`, `status`, `dashboard`, `purge`) and replaced them with the current `init`/`doctor`/`harness`/`settings` path plus in-OpenCode runtime inspection guidance.
+- Aligned the upgrade, brownfield, troubleshooting, and Vietnamese runtime sections to the same current public surface.
+
+### Verification Evidence (README CLI Slice)
+- `grep` over `README.md` no longer finds active command examples for `npx hivemind-context-governance scan`, `sync-assets`, `status`, `dashboard`, or `purge`.
+- The only remaining matches for `scan`, `sync-assets`, and `dashboard` in `README.md` are explanatory statements that those public CLIs are not shipped in the revamp branch.
+- `npx tsc --noEmit` -> pass.
+- `npm test` -> pass (`124` tests passed, `0` failed).
+- `npm run build` -> pass.
+- Manual QA via source comparison confirmed `README.md` now matches the live CLI/control-plane inventory from `package.json`, `src/cli/command-routing.ts`, `src/control-plane/control-plane-registry.ts`, and `src/cli.ts`.
+
+### Current Decision Point
+- Oracle was launched to choose the next highest-leverage bounded stabilization slice after the verified README CLI-surface cleanup.
+- Continuity artifacts were updated while waiting so the next slice starts from the current verified branch state instead of stale progress notes.
+
+### Command-Asset Dashboard Truth Cleanup
+- Rewrote `commands/hivemind-dashboard.md` so it no longer advertises a live `hivemind dashboard [options]` executable or TUI launch path.
+- Reframed the asset as a blocked legacy surface notice that routes users to the current runtime inspection path: `hm-harness`, `hivemind_runtime_status`, and `hivemind_doc`.
+
+### Verification Evidence (Dashboard Command Slice)
+- `grep` over `commands/**/*.md` and `README.md` no longer finds `hivemind dashboard`, `npx hivemind-context-governance dashboard`, or the old launch phrasing.
+- Direct read of `commands/hivemind-dashboard.md` confirms it now explains the surface is not shipped and points to the live runtime path instead.
+- `npx tsc --noEmit` -> pass.
+- `npm test` -> pass (`124` tests passed, `0` failed).
+- `npm run build && test -f dist/cli.js && test -f dist/index.js && test -f dist/plugin/opencode-plugin.js` -> pass.
+
+### Command-Asset Scan/Status Truth Cleanup
+- Background inspection identified two more sibling command assets whose filenames and opening copy still implied removed public `scan` and `status` CLIs: `commands/hivemind-scan.md` and `commands/hivemind-status.md`.
+- Rewrote only the description/opening lines in those two files so they explicitly read as in-OpenCode workflows rather than shipped public CLIs, while preserving their current runtime-tool guidance.
+
+### Verification Evidence (Scan/Status Command Slice)
+- `grep` over `commands/hivemind-scan.md`, `commands/hivemind-status.md`, and `commands/hivemind-dashboard.md` no longer finds executable-looking `hivemind scan`, `hivemind status`, `npx hivemind-context-governance scan`, or `npx hivemind-context-governance status` claims.
+- Direct reads confirm `commands/hivemind-scan.md` and `commands/hivemind-status.md` now declare themselves in-OpenCode workflows rather than live public CLIs.
+- `npx tsc --noEmit` -> pass.
+- `npm test` -> pass (`124` tests passed, `0` failed).
+- `npm run build && test -f dist/cli.js && test -f dist/index.js && test -f dist/plugin/opencode-plugin.js` -> pass.
+
+### Next Decision Point
+- The removed-public-CLI grep is now clean across `commands/`, so the next bounded stabilization slice should target a different contract or truth-surface gap instead of more dashboard/scan/status cleanup.
+
+### Command Frontmatter Contract Cleanup
+- Used `commands/AGENTS.md` plus Oracle and Explore review to confirm the next bounded gap was command frontmatter compliance, not more command-body truth cleanup.
+- Normalized the shipped command pack so all `commands/*.md` files now have explicit, parseable `description`, `agent`, and `subtask` fields.
+- Preserved the observed role pattern while normalizing:
+  - top-level `hivemind-*` helpers and root `hivefiver*` entry commands use `subtask: false`
+  - bounded specialist `hiveq-*`/`hiverd-*` command assets use `subtask: true`
+- Kept the previously repaired truth-surface bodies in `commands/hivemind-dashboard.md`, `commands/hivemind-scan.md`, and `commands/hivemind-status.md` unchanged during the frontmatter pass.
+
+### Verification Evidence (Command Frontmatter Slice)
+- Oracle confirmed the real issue was malformed frontmatter shape, not a missing-`subtask` gap, and recommended a metadata-only normalization pass.
+- `grep` over `commands/*.md` now shows every shipped command file exposing the required `description`, `agent`, and `subtask` keys with valid inline values.
+- Direct reads of `commands/hiveq-verify.md`, `commands/hiverd-research.md`, `commands/hivemind-status.md`, and `commands/hivefiver.md` confirm the frontmatter is now parseable and role-consistent.
+- `npx tsc --noEmit` -> pass.
+- `npm test` -> pass (`124` tests passed, `0` failed).
+- `npm run build && test -f dist/cli.js && test -f dist/index.js && test -f dist/plugin/opencode-plugin.js` -> pass.
+
+### Current Decision Point
+- Public command truth surfaces and command frontmatter are both now clean and verified.
+- The next bounded stabilization slice should target a different remaining architecture or contract gap beyond command-surface cleanup.

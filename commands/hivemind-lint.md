@@ -1,6 +1,7 @@
 ---
 description: Run comprehensive linting, type checking, and quality validation.
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Lint & Quality Gate

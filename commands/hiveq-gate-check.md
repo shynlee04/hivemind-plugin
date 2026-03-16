@@ -1,6 +1,7 @@
 ---
 description: Run a specific quality gate and produce structured pass/fail result.
 agent: hiveq
+subtask: true
 ---
 
 # HiveQ Gate Check

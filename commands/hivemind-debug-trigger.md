@@ -1,6 +1,7 @@
 ---
 description: "Trigger a debug orchestration session. Use when LSP errors, test failures, or runtime bugs require structured investigation."
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Debug Trigger Command

@@ -1,6 +1,7 @@
 ---
 description: "Run divergent ideation session with convergent evaluation and decision documentation."
 agent: hiverd
+subtask: true
 ---
 
 # HiveRD Brainstorm

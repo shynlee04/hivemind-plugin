@@ -1,6 +1,7 @@
 ---
 description: "Run structured multi-source research on a topic with evidence gathering, source evaluation, and synthesis."
 agent: hiverd
+subtask: true
 ---
 
 # HiveRD Research

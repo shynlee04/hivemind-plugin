@@ -18,10 +18,11 @@ Routes document knowledge surfaces based on purpose class and exposes the first 
 | `read-ops.ts` | ✅ Live | Standalone `skim`, `read`, `chunk`, and `search` behavior |
 | `index.ts` | ✅ Live | Barrel exports router + read foundation |
 
-## Restoration Needed
+## Remaining Restoration Work
 
-If doc intelligence is a priority, the following must be rebuilt:
-- Public `hivemind-doc` tool exposure for the read-only foundation
+The first public read-only surface is already live through `hivemind_doc`.
+
+What still remains for later restoration:
 - Multi-format support beyond markdown-first reads
-- Cross-document integrity/index/xref layers
+- Cross-document integrity, indexing, and xref layers
 - Any write-capable or inspect-heavy restoration after the read foundation is stable

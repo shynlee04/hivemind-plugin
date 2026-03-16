@@ -1,6 +1,7 @@
 ---
 description: "Enforce context-before-actions discipline using the current runtime and direct codebase reads."
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Context-First Enforcer

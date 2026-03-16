@@ -1,6 +1,7 @@
 ---
 description: "Validate delegation context and produce a bounded packet using current task and handoff surfaces."
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Delegation Validator

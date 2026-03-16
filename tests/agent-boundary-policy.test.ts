@@ -16,24 +16,24 @@ describe("agent boundary policy", () => {
     assert.match(content, /edit:\s*false/);
     assert.match(content, /read:\s*false/);
 
-    // Check Markdown content forbids src/ and tests/
-    assert.match(content, /src\//);
-    assert.match(content, /tests\//);
+    assert.match(content, /may_execute:\s*false/);
+    assert.match(content, /may_delegate:\s*true/);
+    assert.match(content, /NEVER implement code/i);
+    assert.match(content, /edit files directly/i);
   });
 
   it("hivefiver is constrained to framework assets", () => {
     const content = readAgent("agents/hivefiver.md");
 
-    // Check YAML header tools
-    assert.match(content, /write:\s*false/);
-    assert.match(content, /edit:\s*false/);
-    assert.match(content, /read:\s*false/);
+    assert.match(content, /write:\s*true/);
+    assert.match(content, /edit:\s*true/);
+    assert.match(content, /read:\s*true/);
+    assert.match(content, /may_execute:\s*true/);
 
-    // Check Markdown scoping — Forbidden heading + list items on separate lines
-    assert.match(content, /Forbidden/);
     assert.match(content, /src\/\*\*/);
     assert.match(content, /tests\/\*\*/);
     assert.match(content, /\.opencode\/agents\/\*\*/);
+    assert.match(content, /edit `src\/\*\*` or `tests\/\*\*`/);
   });
 
   it("implementation agents are scoped appropriately", () => {
@@ -47,9 +47,8 @@ describe("agent boundary policy", () => {
     assert.match(maker, /edit:\s*allow/);
     assert.match(maker, /bash:\s*"\*":\s*allow/);
 
-    // Check Markdown scoping
-    assert.match(maker, /Scope.*src\/.*tests\/.*docs\//);
-    assert.match(maker, /Forbidden.*framework assets/i);
+    assert.match(maker, /scope_paths:[\s\S]*src\/\*\*[\s\S]*tests\/\*\*[\s\S]*docs\/\*\*/);
+    assert.match(maker, /author or edit framework assets like/i);
   });
 
   it("runtime mirror matches canonical agent files", () => {

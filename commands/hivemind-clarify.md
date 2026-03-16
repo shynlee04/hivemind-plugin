@@ -1,6 +1,7 @@
 ---
 description: "Use when intent is unclear or context is incomplete. Gather current runtime and project evidence before proceeding."
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Clarify

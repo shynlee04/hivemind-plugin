@@ -22,15 +22,15 @@ export function createHivemindTaskTool(projectRoot: string): ReturnType<typeof t
       'Canonical task and subtask authority for HiveMind workflows. ' +
       'Use this to create, inspect, activate, rotate, verify, and complete workflow-bound execution nodes.',
     args: {
-      action: tool.schema.enum(['create', 'list', 'get', 'activate', 'rotate', 'verify', 'complete']),
-      workflowId: tool.schema.string().optional(),
-      taskId: tool.schema.string().optional(),
-      title: tool.schema.string().optional(),
-      kind: tool.schema.enum(['task', 'subtask']).optional(),
-      parentTaskId: tool.schema.string().optional(),
-      dependencyIds: tool.schema.string().optional(),
-      verificationContractId: tool.schema.string().optional(),
-      evidenceRefs: tool.schema.string().optional(),
+      action: tool.schema.enum(['create', 'list', 'get', 'activate', 'rotate', 'verify', 'complete']).describe('Task authority action to perform'),
+      workflowId: tool.schema.string().optional().describe('Workflow identifier that owns the task'),
+      taskId: tool.schema.string().optional().describe('Task identifier to inspect or mutate'),
+      title: tool.schema.string().optional().describe('Human-readable task title override'),
+      kind: tool.schema.enum(['task', 'subtask']).optional().describe('Whether the node is a task or subtask'),
+      parentTaskId: tool.schema.string().optional().describe('Parent task identifier for subtask creation or activation'),
+      dependencyIds: tool.schema.string().optional().describe('Comma-separated task dependency identifiers'),
+      verificationContractId: tool.schema.string().optional().describe('Verification contract identifier required for verify'),
+      evidenceRefs: tool.schema.string().optional().describe('Comma-separated evidence references for completion'),
     },
     async execute(args: HivemindTaskToolArgs, context) {
       const pressureContract = taskActionPressureContracts[args.action]

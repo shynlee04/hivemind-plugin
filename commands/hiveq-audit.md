@@ -1,6 +1,7 @@
 ---
 description: Comprehensive audit of codebase or module against defined standards.
 agent: hiveq
+subtask: true
 ---
 
 # HiveQ Audit

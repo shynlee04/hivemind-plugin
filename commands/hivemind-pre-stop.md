@@ -1,6 +1,7 @@
 ---
 description: "Run before stopping work to summarize progress, verify state, and prepare a clean continuation handoff."
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Pre-Stop Gate

@@ -1,6 +1,7 @@
 ---
 description: "Check compliance with framework conventions, naming rules, and asset organization."
 agent: hiveq
+subtask: true
 ---
 
 # HiveQ Compliance

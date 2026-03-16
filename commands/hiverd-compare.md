@@ -1,6 +1,7 @@
 ---
 description: "Comparative analysis of technologies, patterns, or approaches with weighted scoring."
 agent: hiverd
+subtask: true
 ---
 
 # HiveRD Compare

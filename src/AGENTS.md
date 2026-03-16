@@ -13,7 +13,7 @@ The plugin entry is `plugin/opencode-plugin.ts` → registers hooks, tools, and 
 src/
 ├── plugin/          Assembly — hooks + tools composition (NO business logic)
 ├── hooks/           Read-side — 7 sub-modules injecting context via Parts
-├── tools/           Write-side — 5 structured agent-callable tools
+├── tools/           Write-side — 6 structured agent-callable tools
 ├── plugin-handlers/ Decision routing — command, tool, session resolution
 ├── core/            State — trajectory and workflow authority
 ├── commands/        Slash-command bundle registry and execution

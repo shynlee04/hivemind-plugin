@@ -1,6 +1,7 @@
 ---
 description: Verify phase or task completion against acceptance criteria using
 agent: hiveq
+subtask: true
 ---
 
 # HiveQ Verify

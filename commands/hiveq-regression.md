@@ -1,6 +1,7 @@
 ---
 description: Detect regressions across recent changes by comparing against baselines.
 agent: hiveq
+subtask: true
 ---
 
 # HiveQ Regression

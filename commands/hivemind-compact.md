@@ -1,6 +1,7 @@
 ---
 description: "Archive the current session, preserve context, and prepare for the next session handoff."
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Session Compact

@@ -28,7 +28,7 @@
 
 | Platform | Run Command | Search | State Persistence |
 |----------|------------|--------|-------------------|
-| OpenCode | `bash` tool | `grep`/`rg` via bash | `save_mem`, `recall_mems` |
+| OpenCode | `bash` tool | `grep`/`rg` via bash | Runtime artifacts, handoff records, task state |
 | Claude Code | `run_command` | `grep_search` | Artifacts, task files |
 | Antigravity | `run_command` | `grep_search`, `find_by_name` | Artifacts, task_boundary |
 | Cursor/Windsurf | Integrated terminal | IDE search | Manual via comments/TODO |

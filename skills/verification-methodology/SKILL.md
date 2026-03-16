@@ -18,7 +18,7 @@ Traditional verification checks "what was done." Goal-backward checks "what SHOU
 1. **Extract acceptance criteria** from the planning artifact (phase plan, task definition, PRD)
 2. **For each criterion**, define what evidence would prove it:
    - Command output (e.g., "npm test shows 0 failures")
-   - File existence (e.g., "src/lib/state-queue.ts exists")
+   - File existence (e.g., "src/shared/runtime-attachment.ts exists")
    - Code pattern (e.g., "grep finds pattern in all hooks")
    - Metric (e.g., "all files ≤ 550 LOC")
 3. **Collect evidence** by running commands and reading files

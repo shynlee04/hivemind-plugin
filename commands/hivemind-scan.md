@@ -1,9 +1,12 @@
 ---
-description: "Scan the project codebase and build a HiveMind backbone. Run on first use or when switching projects."
+description: "Run an in-OpenCode reconnaissance workflow using the current runtime surfaces; this is not a shipped public scan CLI."
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Project Scan
+
+This is an in-OpenCode guidance workflow, not a live public `scan` CLI in the current `ecosystem-revamp` runtime.
 
 You are performing a HiveMind brownfield reconnaissance and stabilization scan.
 Run this before any major refactor or when entering an unfamiliar project.

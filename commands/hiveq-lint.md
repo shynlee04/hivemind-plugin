@@ -1,6 +1,7 @@
 ---
 description: Static analysis of framework assets — commands, workflows, skills
 agent: hiveq
+subtask: true
 ---
 
 # HiveQ Lint

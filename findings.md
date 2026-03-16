@@ -82,3 +82,43 @@
 - `src/intelligence/doc/` now has a real standalone read foundation alongside the existing router: `types.ts`, `safety.ts`, `formats/md.ts`, and `read-ops.ts`.
 - The implemented first-wave surface is intentionally markdown-first and read-only: `skimDocument`, `skimDirectory`, `readSection`, `readChunked`, and `searchDocuments`.
 - The slice stays standalone: it reads plain markdown files under an arbitrary project root and does not depend on `.hivemind`, runtime attachment, session lineage, or old governance/task state.
+
+### Truth-surface cleanup after public doc-tool exposure
+- `README.md` was still the highest-risk stale surface after the doc-tool landed: it taught removed verbs such as `declare_intent`, `map_context`, `scan_hierarchy`, and `save_mem` as active behavior, and its architecture overview still named `src/index.ts`, `src/lib/`, and outdated tool/command counts.
+- `src/intelligence/doc/AGENTS.md` still claimed public doc-tool exposure had to be rebuilt even though `hivemind_doc` is already live.
+- `src/AGENTS.md` still undercounted the tool inventory, saying `src/tools/` had 5 tools instead of 6.
+- `skills/registry.yaml` had invalid `depends_on: [hivemind-governance]` entries even though no root `skills/hivemind-governance/` exists, violating the registry's own no-phantom rule.
+- `skills/evidence-discipline/references/evidence-catalogue.md` and `skills/verification-methodology/SKILL.md` still taught pre-revamp references (`save_mem`/`recall_mems`, `src/lib/state-queue.ts`) and were aligned to current runtime surfaces.
+
+### Tool-schema metadata cleanup
+- `src/tools/AGENTS.md` requires every tool arg to carry `.describe()` for agent introspection.
+- The remaining advisory boundary warnings were isolated to `src/tools/handoff/tools.ts`, `src/tools/task/tools.ts`, and `src/tools/trajectory/tools.ts`, where arg schemas were using `tool.schema` but still lacked descriptions.
+- The current bounded fix was metadata-only: add `.describe(...)` to every arg in those three files without changing behavior or contracts.
+- Post-fix verification showed the three files now have full arg-description coverage and no remaining `.describe()` gaps were found by direct inspection.
+
+### README CLI surface drift after the earlier narrative cleanup
+- `package.json` currently ships only six CLI binaries: `hivemind-context-governance`, `hivemind`, `hm-init`, `hm-doctor`, `hm-settings`, and `hm-harness`.
+- `src/cli/command-routing.ts`, `src/control-plane/control-plane-registry.ts`, and `src/cli.ts` confirm the live public control-plane commands are only `init`, `doctor`, `harness`, `settings`, and `help`.
+- `README.md` still documented removed public CLI surfaces in multiple sections, including `scan`, `sync-assets`, `status`, `dashboard`, and `purge`, even though those revamp-era public entrypoints are not shipped by current source.
+- The bounded truth fix is therefore to align README command, upgrade, brownfield, and troubleshooting guidance to the live runtime path (`init`, `doctor`, `harness`, `settings`, in-OpenCode `hivemind_runtime_status`/`hivemind_doc`, and `hm-*` workflow commands) instead of documenting removed CLIs.
+
+### Remaining command-asset dashboard drift
+- After the README CLI cleanup, `commands/hivemind-dashboard.md` was still the standout shipped command asset contradicting the live runtime.
+- That file explicitly advertised `hivemind dashboard [options]` and described a live TUI dashboard even though `package.json`, `src/cli.ts`, and `src/cli/command-routing.ts` ship no such public CLI surface.
+- Sibling command assets `commands/hivemind-status.md` and `commands/hivemind-scan.md` are already aligned to the current runtime because they call `hivemind_runtime_status`/`hivemind_runtime_command` and avoid removed public CLI syntax.
+- The bounded repair is therefore command-asset-only: rewrite `commands/hivemind-dashboard.md` as a blocked legacy surface notice that routes users to `hm-harness`, `hivemind_runtime_status`, and `hivemind_doc` instead of implying an executable dashboard.
+
+### Remaining `hivemind-*` command-asset naming drift
+- After the dashboard correction, a focused command-asset follow-up showed `commands/hivemind-scan.md` and `commands/hivemind-status.md` still read like live public `scan`/`status` surfaces because of their filenames and opening text, even without explicit CLI code blocks.
+- Both files were already using the live runtime tools correctly (`hivemind_runtime_status`, `hivemind_runtime_command`), so the issue was naming and opening-copy implication rather than behavioral guidance.
+- The bounded repair is wording-only: explicitly mark both files as in-OpenCode workflows, not shipped public CLIs, while preserving their source-backed runtime steps.
+- After those edits, the removed-public-CLI grep across `commands/` is clean for `dashboard`, `scan`, `status`, `sync-assets`, and `purge` phrasing.
+
+### Command frontmatter contract normalization
+- `commands/AGENTS.md` requires every command file to declare machine-parseable `description`, `agent`, and `subtask` frontmatter.
+- The next real gap after truth-surface cleanup was not missing descriptions or agents; it was malformed command frontmatter across 25 files, where `agent` and `subtask` had become split or implied inconsistently.
+- Oracle review confirmed the correct bounded slice: keep command body text unchanged, normalize only the frontmatter shape, and preserve the role-based `subtask` split already evidenced in the repo.
+- Observed role pattern now made explicit across the full command pack:
+  - top-level/root/orchestration helper commands use `subtask: false`
+  - bounded specialist/stage commands use `subtask: true`
+- After normalization, all shipped command assets under `commands/*.md` expose valid `description`, `agent`, and `subtask` headers, and representative files from the `hivemind-*`, `hiveq-*`, `hiverd-*`, and `hivefiver*` families now match that contract cleanly.

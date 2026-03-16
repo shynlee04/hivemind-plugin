@@ -1,6 +1,7 @@
 ---
 description: Generate structured documentation from analysis findings.
 agent: hiverd
+subtask: true
 ---
 
 # HiveRD Document

@@ -28,8 +28,7 @@ skills:
       - "agent profile refactor"
       - "permission envelope design"
     supersedes: []
-    depends_on:
-      - hivemind-governance
+    depends_on: []
 
   - name: meta-builder-governance
     domain: framework-governance
@@ -45,8 +44,7 @@ skills:
       - "skill overlap review"
     supersedes:
       - hivefiver-skill-auditor
-    depends_on:
-      - hivemind-governance
+    depends_on: []
 
   # --- Promoted governance-core ---
 

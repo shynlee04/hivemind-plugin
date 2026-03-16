@@ -1,9 +1,12 @@
 ---
-description: Show current HiveMind runtime state, active bindings, and the smallest next recovery step.
+description: Explain the current HiveMind runtime state through the live inspection tool; this is not a shipped public status CLI.
 agent: hiveminder
+subtask: false
 ---
 
 # HiveMind Status Check
+
+This is an in-OpenCode status-check workflow, not a live public `status` CLI in the current `ecosystem-revamp` runtime.
 
 Show the user the current source-backed HiveMind state.
 
