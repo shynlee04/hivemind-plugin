@@ -3,7 +3,9 @@ import { createAutoSlashCommandPlan } from '../hooks/auto-slash-command/index.js
 import { buildStartWorkEntryKernel, resolveStartWork } from '../hooks/start-work/index.js'
 import { buildPluginContext } from '../plugin-handlers/index.js'
 import { renderOpencodeKnowledgePacket } from '../shared/opencode-knowledge.js'
+import { createRuntimeInvocation } from '../shared/runtime-invocation.js'
 import { buildRuntimeAttachmentEntryKernel } from '../shared/runtime-attachment.js'
+import { createTurnOutputProjection } from '../shared/turn-output.js'
 import { success } from '../shared/tool-response.js'
 import { previewSlashCommandBundle } from '../commands/slash-command/index.js'
 import type {
@@ -48,6 +50,12 @@ export function buildRouteReminder(plan?: Pick<PluginRuntimePlan, 'entryKernel'>
 export async function createPluginRuntimePlan(input: PluginRuntimeInput): Promise<PluginRuntimeResponse> {
   const startWork = resolveStartWork(input.startWork)
   const startWorkKernel = buildStartWorkEntryKernel(startWork)
+  const entryState = startWork.requiredControlPlaneId === 'hm-init'
+    ? 'uninitialized'
+    : startWork.requiredControlPlaneId === 'hm-doctor'
+      ? 'repair-required'
+      : 'ready'
+  const qaState = entryState === 'ready' ? 'not-required' : 'pending'
   const attachmentKernel = buildRuntimeAttachmentEntryKernel({
     preferredUserName: input.promptState.preferredUserName,
     language: input.promptState.language,
@@ -68,6 +76,9 @@ export async function createPluginRuntimePlan(input: PluginRuntimeInput): Promis
     taskIds: input.promptState.taskIds,
     subtaskIds: input.promptState.subtaskIds,
     checkpointId: input.promptState.checkpointId,
+    entryState,
+    qaState,
+    releaseState: entryState === 'ready' ? 'released' : 'blocked',
     hasRuntimeAttachment: input.startWork.hasRuntimeAttachment,
     hasHivemind: input.startWork.hasHivemind,
     hivemindHealthy: input.startWork.hivemindHealthy,
@@ -102,6 +113,24 @@ export async function createPluginRuntimePlan(input: PluginRuntimeInput): Promis
   const commandPreview = autoSlash.commandBinding.bundle
     ? await previewSlashCommandBundle(autoSlash.commandBinding.bundle)
     : undefined
+  const runtimeInvocation = createRuntimeInvocation({
+    sessionId: input.startWork.sessionId,
+    parentSessionId: input.startWork.parentSessionId,
+    sessionScope: input.startWork.sessionScope,
+    activeAgent: input.startWork.activeAgent,
+    lineage: startWork.lineage,
+    trajectoryId: input.promptState.trajectoryId,
+    workflowId: input.promptState.workflowId,
+    taskIds: input.promptState.taskIds,
+    subtaskIds: input.promptState.subtaskIds,
+    gateState: entryState,
+    requestReason: input.startWork.userMessage,
+  })
+  const turnOutputProjection = createTurnOutputProjection({
+    sessionScope: input.startWork.sessionScope,
+    qaState,
+    parentSessionId: input.startWork.parentSessionId,
+  })
 
   return success('Built plugin runtime orchestration plan', {
     startWork,
@@ -114,6 +143,8 @@ export async function createPluginRuntimePlan(input: PluginRuntimeInput): Promis
     systemTransform: promptPacket.systemPacket,
     messageTransform: promptPacket.messagePacket,
     commandPreview,
+    runtimeInvocation,
+    turnOutputProjection,
     runtimeSurfaces: createRuntimeSurfaceRegistry(),
     hooks: createCoreHooks(),
   }, {

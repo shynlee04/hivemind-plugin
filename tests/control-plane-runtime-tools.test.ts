@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { access, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
@@ -77,16 +77,21 @@ describe('control-plane runtime tools', () => {
 
       const rawStatus = await runtimeStatus!.execute({}, createToolContext(dir, 'ses_runtime_status_gate'))
       const status = JSON.parse(rawStatus) as {
-        hasRuntimeAttachment: boolean
-        profileComplete: boolean
-        interactiveBootstrapRequired: boolean
-        missingProfileFields: string[]
+        entryState: { state: string; interactiveBootstrapRequired: boolean }
+        qaState: { state: string }
+        runtimeState: {
+          hasRuntimeAttachment: boolean
+          profileComplete: boolean
+          missingProfileFields: string[]
+        }
       }
 
-      assert.equal(status.hasRuntimeAttachment, false)
-      assert.equal(status.profileComplete, false)
-      assert.equal(status.interactiveBootstrapRequired, true)
-      assert.deepEqual(status.missingProfileFields, [
+      assert.equal(status.entryState.state, 'uninitialized')
+      assert.equal(status.entryState.interactiveBootstrapRequired, true)
+      assert.equal(status.qaState.state, 'blocked')
+      assert.equal(status.runtimeState.hasRuntimeAttachment, false)
+      assert.equal(status.runtimeState.profileComplete, false)
+      assert.deepEqual(status.runtimeState.missingProfileFields, [
         'preferredUserName',
         'chatLanguage',
         'artifactLanguage',
@@ -95,6 +100,42 @@ describe('control-plane runtime tools', () => {
         'governanceMode',
         'automationLevel',
       ])
+
+      await assert.rejects(access(join(dir, '.hivemind')))
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('auto-recovers runtime entry before workflow commands and stops in qa-pending', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'hm-runtime-tool-autorecover-'))
+
+    try {
+      const hooks = await createPluginHooks(dir)
+      const runtimeCommand = hooks.tool?.hivemind_runtime_command
+      assert.ok(runtimeCommand)
+
+      const raw = await runtimeCommand!.execute({
+        command: 'hm-plan',
+      }, createToolContext(dir, 'ses_runtime_autorecover'))
+      const result = JSON.parse(raw) as {
+        closeoutStatus: string
+        report: {
+          status: string
+          entry_state: string
+          auto_recovery?: { action: string; qaState: string }
+          next_command: string
+        }
+      }
+
+      assert.equal(result.closeoutStatus, 'qa-pending')
+      assert.equal(result.report.status, 'qa-pending')
+      assert.equal(result.report.entry_state, 'qa-pending')
+      assert.deepEqual(result.report.auto_recovery, {
+        action: 'hm-init',
+        qaState: 'qa-pending',
+      })
+      assert.equal(result.report.next_command, 'hm-harness')
     } finally {
       await rm(dir, { recursive: true, force: true })
     }

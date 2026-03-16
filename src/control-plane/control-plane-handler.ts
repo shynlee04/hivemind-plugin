@@ -6,6 +6,7 @@ import {
 } from '../core/index.js'
 import { createPlanningGovernanceProjection } from '../governance/index.js'
 import { assessRecoveryState, createRecoveryCheckpoint, repairRecoveryState } from '../recovery/index.js'
+import { markEntryKernelQaPending, markEntryKernelReady } from '../shared/entry-kernel-state.js'
 import {
   loadRuntimeBindingsSnapshot,
   saveBootstrapRuntimeAttachmentSettings,
@@ -15,6 +16,20 @@ import type { CommandExecutionInput, CommandExecutionResult, SlashCommandBundle 
 import type { LoadedCommandAsset } from '../hooks/runtime-bridge/instruction-loader.js'
 import { findControlPlanePrimitive } from './control-plane-registry.js'
 import { resolveControlPlaneIntakeGate } from './control-plane-intake.js'
+
+function snapshotProfileValidated(input: CommandExecutionInput): boolean {
+  return !!(
+    input.preferredUserName
+    || input.language
+    || input.artifactLanguage
+    || input.governanceMode
+    || input.automationLevel
+    || input.expertLevel
+    || input.outputStyle
+    || input.intakeEvidence
+    || input.presetId
+  )
+}
 
 function resolveEntityBindings(input: CommandExecutionInput): NonNullable<CommandExecutionResult['entityBindings']> {
   return {
@@ -70,10 +85,11 @@ async function runInit(
 ): Promise<CommandExecutionResult> {
   const primitive = findControlPlanePrimitive('hm-init')
   const snapshot = await loadRuntimeBindingsSnapshot(input.projectRoot)
+  const autoRecovery = input.entryKernelAction === 'auto-init'
   const intakeResolution = primitive
     ? resolveControlPlaneIntakeGate(primitive, input, snapshot)
     : { gate: null, profileInput: {} }
-  if (intakeResolution.gate) {
+  if (intakeResolution.gate && !autoRecovery) {
     return createQuestionGateResult(bundle, asset, input, intakeResolution.gate)
   }
 
@@ -88,6 +104,11 @@ async function runInit(
     artifactLanguage: intakeResolution.profileInput.artifactLanguage,
     outputStyle: intakeResolution.profileInput.outputStyle,
     expertLevel: intakeResolution.profileInput.expertLevel,
+  })
+  await markEntryKernelQaPending(input.projectRoot, {
+    reason: autoRecovery ? 'auto-init-complete-awaiting-qa' : 'init-complete-awaiting-qa',
+    recoveryAction: autoRecovery ? 'hm-init' : undefined,
+    profileValidated: !autoRecovery && snapshotProfileValidated(input),
   })
   const status = bootstrapWorkflowAuthority(input.projectRoot, {
     workflowId: ids.workflowId,
@@ -129,13 +150,19 @@ async function runInit(
     executionMode: 'handler',
     contract: asset.contract,
     report: {
-      status: status.healthy ? 'initialized' : 'degraded',
+      status: 'qa-pending',
+      entry_state: 'qa-pending',
+      qa_state: 'pending',
       created_state: status.exists,
       trajectory_state: trajectoryLedger.activeTrajectoryId,
       checkpoint_id: checkpoint.id,
       planning_projection: projection.filePath,
       missing_prerequisites: status.issues.map((issue) => issue.code),
-      next_command: input.purposeClass ? `hm-${input.purposeClass === 'planning' ? 'plan' : 'harness'}` : 'hm-harness',
+      next_command: 'hm-harness',
+      auto_recovery: autoRecovery ? {
+        action: 'hm-init',
+        qaState: 'qa-pending',
+      } : undefined,
       profile: {
         preferredUserName: profileSettings.preferredUserName ?? null,
         chatLanguage: profileSettings.language,
@@ -167,9 +194,10 @@ async function runInit(
       'trajectory-bootstrapped',
       'recovery-checkpoint-created',
       'planning-projection-created',
+      'entry-kernel-qa-pending',
     ],
     artifactRefs: [projection.filePath],
-    closeoutStatus: status.healthy ? 'ready' : 'blocked',
+    closeoutStatus: 'qa-pending',
     verificationContractId: asset.contract.verificationContract,
     pressureContract: bundle.pressureContract,
   }
@@ -180,6 +208,7 @@ async function runDoctor(
   asset: LoadedCommandAsset,
   input: CommandExecutionInput,
 ): Promise<CommandExecutionResult> {
+  const snapshot = await loadRuntimeBindingsSnapshot(input.projectRoot)
   const trajectoryLedger = await loadTrajectoryLedger(input.projectRoot)
   const ids = resolveRuntimeIds(input, trajectoryLedger.activeTrajectoryId)
   const repaired = await repairRecoveryState(input.projectRoot, {
@@ -199,6 +228,13 @@ async function runDoctor(
     resumeTarget: repaired.status === 'healthy' ? 'command:hm-harness' : 'command:hm-doctor',
   })
   const projection = await createPlanningGovernanceProjection(input.projectRoot, ids)
+  if (repaired.status === 'healthy') {
+    await markEntryKernelQaPending(input.projectRoot, {
+      reason: 'doctor-complete-awaiting-qa',
+      recoveryAction: 'hm-doctor',
+      profileValidated: snapshot.profileComplete || snapshotProfileValidated(input),
+    })
+  }
 
   return {
     commandId: bundle.id,
@@ -207,6 +243,9 @@ async function runDoctor(
     executionMode: 'handler',
     contract: asset.contract,
     report: {
+      status: repaired.status === 'healthy' ? 'qa-pending' : 'blocked',
+      entry_state: repaired.status === 'healthy' ? 'qa-pending' : 'blocked',
+      qa_state: repaired.status === 'healthy' ? 'pending' : 'failed',
       health_status: repaired.status,
       blockers: repaired.failureClasses,
       repair_actions: repaired.repairActions,
@@ -214,6 +253,10 @@ async function runDoctor(
       checkpoint_id: checkpoint.id,
       planning_projection: projection.filePath,
       next_command: repaired.status === 'healthy' ? 'hm-harness' : 'hm-doctor',
+      auto_recovery: input.entryKernelAction === 'auto-doctor' ? {
+        action: 'hm-doctor',
+        qaState: 'qa-pending',
+      } : undefined,
       safetyLevel: bundle.pressureContract.safety.level,
       failureBehavior: bundle.pressureContract.failureBehavior,
       expectedEvidence: bundle.pressureContract.evidence.requiredArtifacts,
@@ -223,9 +266,9 @@ async function runDoctor(
       trajectoryId: ids.trajectoryId,
       workflowId: ids.workflowId,
     },
-    stateTransitions: [...repaired.repairActions, 'recovery-checkpoint-created', 'planning-projection-created'],
+    stateTransitions: [...repaired.repairActions, 'recovery-checkpoint-created', 'planning-projection-created', ...(repaired.status === 'healthy' ? ['entry-kernel-qa-pending'] : [])],
     artifactRefs: [projection.filePath],
-    closeoutStatus: repaired.status === 'healthy' ? 'ready' : 'blocked',
+    closeoutStatus: repaired.status === 'healthy' ? 'qa-pending' : 'blocked',
     verificationContractId: asset.contract.verificationContract,
     pressureContract: bundle.pressureContract,
   }
@@ -255,6 +298,9 @@ async function runHarness(
     resumeTarget: assessment.status === 'healthy' ? 'command:hm-plan' : 'command:hm-doctor',
   })
   const projection = await createPlanningGovernanceProjection(input.projectRoot, ids)
+  if (assessment.status === 'healthy') {
+    await markEntryKernelReady(input.projectRoot, 'harness-qa-passed')
+  }
 
   return {
     commandId: bundle.id,
@@ -263,6 +309,9 @@ async function runHarness(
     executionMode: 'handler',
     contract: asset.contract,
     report: {
+      status: assessment.status === 'healthy' ? 'ready' : 'blocked',
+      entry_state: assessment.status === 'healthy' ? 'ready' : 'blocked',
+      qa_state: assessment.status === 'healthy' ? 'passed' : 'failed',
       readiness: assessment.status === 'healthy',
       integration_gaps: assessment.failureClasses,
       approved_workflow_chain: assessment.status === 'healthy' ? bundle.workflowChain : [],
@@ -284,7 +333,7 @@ async function runHarness(
       workflowId: ids.workflowId,
     },
     stateTransitions: assessment.status === 'healthy'
-      ? ['recovery-spine-ready', 'recovery-checkpoint-created', 'planning-projection-created']
+      ? ['recovery-spine-ready', 'recovery-checkpoint-created', 'planning-projection-created', 'entry-kernel-ready']
       : ['recovery-spine-blocked', 'recovery-checkpoint-created', 'planning-projection-created'],
     artifactRefs: [projection.filePath],
     closeoutStatus: assessment.status === 'healthy' ? 'ready' : 'blocked',

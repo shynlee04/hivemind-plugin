@@ -8,6 +8,8 @@ import type { OpencodeKnowledgeSurface } from '../shared/opencode-knowledge.js'
 import type { RuntimePressureContract } from '../shared/pressure-contract.js'
 import type { CommandExecutionPreview } from '../commands/slash-command/index.js'
 import type { RuntimeAttachmentEntryKernel } from '../shared/runtime-attachment.js'
+import type { RuntimeInvocationV1 } from '../shared/runtime-invocation.js'
+import type { TurnExportProjectionV1 } from '../shared/turn-output.js'
 
 export interface PluginRuntimeInput {
   startWork: StartWorkInput
@@ -42,6 +44,8 @@ export interface PluginRuntimePlan {
   systemTransform: string
   messageTransform: string
   commandPreview?: CommandExecutionPreview
+  runtimeInvocation: RuntimeInvocationV1
+  turnOutputProjection: TurnExportProjectionV1
   runtimeSurfaces: RuntimeSurfaceEntry[]
   hooks: HookDescriptor[]
 }

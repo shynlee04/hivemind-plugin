@@ -4,6 +4,12 @@ import { describe, it } from "node:test"
 import { resolveCliInvocation } from "../src/cli/command-routing.js"
 
 describe("cli command routing", () => {
+  it("defaults to help when no alias or explicit command is provided", () => {
+    const resolved = resolveCliInvocation("/tmp/hivemind-context-governance", [])
+    assert.equal(resolved.command, "help")
+    assert.deepEqual(resolved.remainingArgs, [])
+  })
+
   it("routes hm-init binary to init when no explicit command is provided", () => {
     const resolved = resolveCliInvocation("/tmp/hm-init", [])
     assert.equal(resolved.command, "init")

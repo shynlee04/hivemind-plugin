@@ -122,6 +122,8 @@ describe('slash-command stack', () => {
       })
 
       assert.equal(result.executionMode, 'handler')
+      assert.equal(result.closeoutStatus, 'qa-pending')
+      assert.equal(result.report.entry_state, 'qa-pending')
       assert.deepEqual(result.report.profile, {
         preferredUserName: 'Apple',
         chatLanguage: 'vi',

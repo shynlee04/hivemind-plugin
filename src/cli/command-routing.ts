@@ -43,7 +43,7 @@ export function resolveCliInvocation(
   }
 
   return {
-    command: 'init',
+    command: 'help',
     remainingArgs: positionalArgs,
   }
 }

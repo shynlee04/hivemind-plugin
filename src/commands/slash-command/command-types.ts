@@ -8,6 +8,8 @@ import type {
 import type { PurposeClass } from '../../hooks/start-work/start-work-types.js'
 import type { CommandAssetFrontmatter, CommandRuntimeContract } from '../../hooks/runtime-bridge/instruction-loader.js'
 import type { RuntimePressureContract } from '../../shared/pressure-contract.js'
+import type { RuntimeInvocationV1 } from '../../shared/runtime-invocation.js'
+import type { TurnExportProjectionV1, TurnOutputEnvelopeV1 } from '../../shared/turn-output.js'
 
 /** Core command identity */
 export interface SlashCommandCore {
@@ -94,6 +96,7 @@ export interface CommandInputOverrides {
   intakeEvidence?: ControlPlaneIntakeEvidence
   requestedSettingsGroups?: ControlPlaneProfileGroupId[]
   arguments?: string
+  entryKernelAction?: 'auto-init' | 'auto-doctor'
 }
 
 /** Full command execution input — composed via intersection for backward compatibility */
@@ -120,7 +123,10 @@ export interface CommandExecutionResult {
   entityBindings?: CommandEntityBindings
   stateTransitions?: string[]
   artifactRefs?: string[]
-  closeoutStatus?: 'open' | 'ready' | 'blocked'
+  closeoutStatus?: 'open' | 'ready' | 'blocked' | 'qa-pending'
   verificationContractId?: string
   pressureContract: RuntimePressureContract
+  runtimeInvocation?: RuntimeInvocationV1
+  turnOutput?: TurnOutputEnvelopeV1
+  turnOutputProjection?: TurnExportProjectionV1
 }

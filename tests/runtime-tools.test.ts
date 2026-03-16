@@ -58,13 +58,13 @@ describe('runtime tools', () => {
         directory: projectRoot,
         worktree: projectRoot,
       })) as {
-        attached: boolean
-        hasRuntimeAttachment: boolean
-        availableCommands: string[]
+        entryState: { state: string }
+        runtimeState: { hasRuntimeAttachment: boolean }
+        workflowGateState: { availableCommands: string[] }
       }
-      assert.equal(statusPayload.attached, true)
-      assert.equal(statusPayload.hasRuntimeAttachment, false)
-      assert.equal(statusPayload.availableCommands.includes('hm-init'), true)
+      assert.equal(statusPayload.entryState.state, 'uninitialized')
+      assert.equal(statusPayload.runtimeState.hasRuntimeAttachment, false)
+      assert.equal(statusPayload.workflowGateState.availableCommands.includes('hm-init'), true)
 
       const gatedPayload = JSON.parse(await runtimeCommand.execute({
         command: 'hm-init',

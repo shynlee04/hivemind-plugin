@@ -5,6 +5,7 @@ import type { KernelLineage } from '../context/prompt-packet/prompt-packet-types
 import type { PurposeClass } from '../hooks/start-work/start-work-types.js'
 import { inspectTrajectoryLedger, loadTrajectoryLedger } from '../core/trajectory/index.js'
 import { inspectWorkflowAuthority } from '../core/workflow-management/index.js'
+import { detectEntryKernelState, type EntryKernelQaState, type EntryKernelStateKind } from './entry-kernel-state.js'
 import { getConfigPath } from './paths.js'
 import {
   createBootstrapProfile,
@@ -51,6 +52,9 @@ export type RuntimeAttachmentSettings = AttachmentCore
   & AttachmentFeatures
 
 export interface RuntimeBindingsSnapshot extends RuntimeAttachmentSettings {
+  entryState: EntryKernelStateKind
+  qaState: EntryKernelQaState
+  releaseState: 'blocked' | 'released'
   hasRuntimeAttachment: boolean
   hasHivemind: boolean
   hivemindHealthy: boolean
@@ -90,6 +94,9 @@ export interface RuntimeAttachmentEntryProfile {
 }
 
 export interface RuntimeAttachmentEntryBindings {
+  entryState: EntryKernelStateKind
+  qaState: EntryKernelQaState
+  releaseState: 'blocked' | 'released'
   hasRuntimeAttachment: boolean
   hasHivemind: boolean
   hivemindHealthy: boolean
@@ -185,6 +192,9 @@ export function buildRuntimeAttachmentEntryKernel(
       expertLevel: profile.expertiseLevel,
     },
     bindings: {
+      entryState: source.entryState ?? 'uninitialized',
+      qaState: source.qaState ?? 'blocked',
+      releaseState: source.releaseState ?? 'blocked',
       hasRuntimeAttachment: source.hasRuntimeAttachment ?? false,
       hasHivemind: source.hasHivemind ?? false,
       hivemindHealthy: source.hivemindHealthy ?? false,
@@ -297,19 +307,7 @@ export async function saveBootstrapRuntimeAttachmentSettings(
 export async function loadRuntimeBindingsSnapshot(projectRoot: string): Promise<RuntimeBindingsSnapshot> {
   const settings = await loadRuntimeAttachmentSettings(projectRoot)
   const hasRuntimeAttachment = await runtimeAttachmentSettingsExist(projectRoot)
-
-  // Lazy initialization: create minimal state on first run
-  if (!hasRuntimeAttachment) {
-    try {
-      await createMinimalHivemindStructure(projectRoot)
-      await createMinimalRuntimeConfig(projectRoot)
-      // Mark profile complete for first run to allow operations
-      // This will be overwritten when user runs full init wizard
-    } catch (error) {
-      // Silently fail - if bootstrap fails, operations may be limited
-      console.error('Failed to bootstrap minimal HiveMind structure:', error)
-    }
-  }
+  const entryKernelState = await detectEntryKernelState(projectRoot)
 
   const bootstrapProfile = createBootstrapProfile({
     preferredUserName: settings.preferredUserName,
@@ -335,12 +333,15 @@ export async function loadRuntimeBindingsSnapshot(projectRoot: string): Promise<
     lineage: activeTrajectory?.lineage ?? settings.defaultLineage,
   })
   const checkpointId = activeTrajectory?.checkpointIds.at(-1)
-  const profileComplete = hasRuntimeAttachment
+  const profileComplete = hasRuntimeAttachment && entryKernelState.profileValidated
   const missingProfileFields = profileComplete ? [] : [...CONTROL_PLANE_PROFILE_FIELDS]
   const interactiveBootstrapRequired = !profileComplete
 
   return {
     ...settings,
+    entryState: entryKernelState.state,
+    qaState: entryKernelState.qaState,
+    releaseState: entryKernelState.releaseState,
     hasRuntimeAttachment,
     hasHivemind: inspection.exists || workflowAuthority.exists,
     hivemindHealthy: inspection.healthy && workflowAuthority.healthy,
@@ -355,48 +356,4 @@ export async function loadRuntimeBindingsSnapshot(projectRoot: string): Promise<
     subtaskIds: activeTrajectory?.subtaskIds ?? [],
     checkpointId,
   }
-}
-
-/**
- * Creates minimal .hivemind/ directory structure for first run
- * Allows read operations immediately while user controls when to run full init
- */
-async function createMinimalHivemindStructure(projectRoot: string): Promise<void> {
-  const hivemindRoot = path.join(projectRoot, '.hivemind')
-  const stateDir = path.join(hivemindRoot, 'state')
-  const projectDir = path.join(hivemindRoot, 'project')
-
-  await fs.mkdir(hivemindRoot, { recursive: true })
-  await fs.mkdir(stateDir, { recursive: true })
-  await fs.mkdir(projectDir, { recursive: true })
-
-  // Create empty trajectory ledger
-  await fs.writeFile(
-    path.join(stateDir, 'trajectory-ledger.json'),
-    JSON.stringify({ trajectories: [] }, null, 2)
-  )
-}
-
-/**
- * Creates minimal runtime config for first run
- * Ensures profileComplete=true so operations aren't blocked
- */
-async function createMinimalRuntimeConfig(projectRoot: string): Promise<void> {
-  const configPath = path.join(projectRoot, '.hivemind', 'config', 'runtime-attachment.json')
-  await fs.mkdir(path.dirname(configPath), { recursive: true })
-
-  const minimalConfig = {
-    profileComplete: true,
-    createdAt: new Date().toISOString(),
-    version: '2.9.5-minimal-bootstrap',
-    // Set other defaults to prevent blocking
-    chatLanguage: 'en',
-    artifactLanguage: 'typescript',
-    expertLevel: 'balanced',
-    outputStyle: 'concise',
-    governanceMode: 'strict',
-    automationLevel: 'partial'
-  }
-
-  await fs.writeFile(configPath, JSON.stringify(minimalConfig, null, 2))
 }

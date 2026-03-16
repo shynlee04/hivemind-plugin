@@ -127,7 +127,7 @@ const controlPlanePrimitives: ControlPlanePrimitive[] = [
     title: 'Bootstrap control plane',
     adapterCommandId: 'hm-init',
     cliCommand: 'init',
-    binaryAliases: ['hm-init', 'hivemind', 'hivemind-context-governance'],
+    binaryAliases: ['hm-init'],
     workflowPhase: 'bootstrap-profile',
     hostEvent: 'slash-command.requested',
     purposeClasses: ['planning', 'implementation'],

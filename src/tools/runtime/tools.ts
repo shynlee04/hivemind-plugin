@@ -33,18 +33,44 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
         },
       })
       return renderToolResult({
-        attached: true,
-        sessionID: context.sessionID,
-        attachmentMode: snapshot.attachmentMode,
-        hasRuntimeAttachment: snapshot.hasRuntimeAttachment,
-        profileComplete: snapshot.profileComplete,
-        missingProfileFields: snapshot.missingProfileFields,
-        interactiveBootstrapRequired: snapshot.interactiveBootstrapRequired,
-        trajectoryId: snapshot.trajectoryId,
-        workflowId: snapshot.workflowId,
-        taskIds: snapshot.taskIds,
-        bootstrapProfile: snapshot.bootstrapProfile,
-        availableCommands: discoverSlashCommandBundles().map((bundle) => bundle.id),
+        entryState: {
+          state: snapshot.entryState,
+          interactiveBootstrapRequired: snapshot.interactiveBootstrapRequired,
+          recommendedNext: snapshot.entryState === 'uninitialized'
+            ? 'hm-init'
+            : snapshot.entryState === 'repair-required'
+              ? 'hm-doctor'
+              : snapshot.qaState === 'pending'
+                ? 'hm-harness'
+                : 'none',
+        },
+        qaState: {
+          state: snapshot.qaState,
+          releaseState: snapshot.releaseState,
+        },
+        runtimeState: {
+          sessionID: context.sessionID,
+          attachmentMode: snapshot.attachmentMode,
+          hasRuntimeAttachment: snapshot.hasRuntimeAttachment,
+          hasHivemind: snapshot.hasHivemind,
+          hivemindHealthy: snapshot.hivemindHealthy,
+          hasWorkflow: snapshot.hasWorkflow,
+          profileComplete: snapshot.profileComplete,
+          missingProfileFields: snapshot.missingProfileFields,
+          bootstrapProfile: snapshot.bootstrapProfile,
+        },
+        lineageSessionState: {
+          lineage: snapshot.defaultLineage,
+          purposeClass: snapshot.defaultPurposeClass,
+          trajectoryId: snapshot.trajectoryId,
+          workflowId: snapshot.workflowId,
+          taskIds: snapshot.taskIds,
+          subtaskIds: snapshot.subtaskIds,
+          checkpointId: snapshot.checkpointId,
+        },
+        workflowGateState: {
+          availableCommands: discoverSlashCommandBundles().map((bundle) => bundle.id),
+        },
       })
     },
   })

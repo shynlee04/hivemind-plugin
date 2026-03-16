@@ -14,7 +14,7 @@ export type RecoveryFailureClass =
   | 'unknown-task-link'
   | 'active-trajectory-conflict'
 
-export type RecoveryStatus = 'healthy' | 'recoverable' | 'blocked'
+export type RecoveryStatus = 'healthy' | 'recoverable' | 'blocked' | 'qa-pending'
 
 export interface RecoveryAssessmentInput {
   sessionScope: SessionScope
