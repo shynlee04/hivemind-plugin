@@ -21,6 +21,7 @@ coverage/
 tasks/
 *.tmp.txt
 test_output*.txt
+.archive
 
 # IDE/Agent configs - USER LOCAL
 .agent/

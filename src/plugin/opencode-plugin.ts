@@ -61,6 +61,15 @@ export const HiveMindPlugin: Plugin = async (input) => {
       const snapshot = await loadRuntimeBindingsSnapshot(directory)
       const sessionID = messageInput.sessionID
 
+      // Show degraded mode warning if HiveMind exists but isn't healthy
+      if (snapshot.hasHivemind && !snapshot.hivemindHealthy) {
+        await showGovernanceToast(
+          'degraded-mode',
+          'Running in degraded mode. HiveMind initialized with minimal state. Run `hm-init` for full capabilities and expert-level configuration.',
+          'warning'
+        )
+      }
+
       // Inject baseline OpenCode knowledge
       output.parts.push({
         id: `prt_hm_knowledge_${Date.now()}`,

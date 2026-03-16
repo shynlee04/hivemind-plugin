@@ -21,8 +21,13 @@ const TOAST_COOLDOWN_MS = 5_000
  *
  * @param category - Toast category for throttling (e.g. 'mutation-gate', 'workflow-warning')
  * @param message - Message to display
+ * @param variant - Toast variant (defaults to 'info')
  */
-export async function showGovernanceToast(category: string, message: string): Promise<void> {
+export async function showGovernanceToast(
+  category: string,
+  message: string,
+  variant?: 'info' | 'warning' | 'error'
+): Promise<void> {
   const now = Date.now()
   const lastShown = toastCooldowns.get(category) ?? 0
 
@@ -34,7 +39,7 @@ export async function showGovernanceToast(category: string, message: string): Pr
 
   await withClient(async (client) => {
     await client.tui.showToast({
-      body: { message, variant: 'info' },
+      body: { message, variant: variant ?? 'info' },
     })
   })
 }
