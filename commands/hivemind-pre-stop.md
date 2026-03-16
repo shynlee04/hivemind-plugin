@@ -11,9 +11,9 @@ Use this helper before pausing work.
 ## Current Runtime-Safe Checklist
 
 1. Review unfinished work in:
-- `task_plan.md`
-- `findings.md`
-- `progress.md`
+- `MASTER.active.md`
+- `task_plan.active.md`
+- `progress.active.md`
 
 2. Re-run the appropriate verification commands for the work you just completed.
 

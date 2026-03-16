@@ -28,20 +28,28 @@ describe("agent boundary policy", () => {
     assert.match(content, /write:\s*true/);
     assert.match(content, /edit:\s*true/);
     assert.match(content, /read:\s*true/);
+    assert.match(content, /bash:\s*true/);
     assert.match(content, /may_execute:\s*true/);
+    assert.match(content, /may_delegate:\s*true/);
 
-    assert.match(content, /src\/\*\*/);
-    assert.match(content, /tests\/\*\*/);
-    assert.match(content, /\.opencode\/agents\/\*\*/);
-    assert.match(content, /edit `src\/\*\*` or `tests\/\*\*`/);
+    assert.match(content, /agents\/\*\*/);
+    assert.match(content, /commands\/\*\*/);
+    assert.match(content, /workflows\/\*\*/);
+    assert.match(content, /skills\/\*\*/);
+    assert.doesNotMatch(content, /\n\s*-\s+\.opencode\//);
   });
 
-  it("implementation agents are scoped appropriately", () => {
+  it("implementation and planning agents stay terminal and scoped appropriately", () => {
     const maker = readAgent("agents/hivemaker.md");
+    const healer = readAgent("agents/hivehealer.md");
+    const planner = readAgent("agents/hiveplanner.md");
 
     // Check YAML header tools
     assert.match(maker, /write:\s*true/);
     assert.match(maker, /edit:\s*true/);
+    assert.match(maker, /task:\s*false/);
+    assert.match(maker, /may_delegate:\s*false/);
+    assert.match(maker, /terminal:\s*true/);
 
     // Check permissions
     assert.match(maker, /edit:\s*allow/);
@@ -49,25 +57,14 @@ describe("agent boundary policy", () => {
 
     assert.match(maker, /scope_paths:[\s\S]*src\/\*\*[\s\S]*tests\/\*\*[\s\S]*docs\/\*\*/);
     assert.match(maker, /author or edit framework assets like/i);
-  });
+    assert.match(healer, /task:\s*false/);
+    assert.match(healer, /may_delegate:\s*false/);
+    assert.match(healer, /terminal:\s*true/);
+    assert.match(healer, /NEVER[\s\S]*edit framework assets/i);
 
-  it("runtime mirror matches canonical agent files", () => {
-    const canonicalFiles = [
-      "hitea.md",
-      "hivefiver.md",
-      "hivehealer.md",
-      "hivemaker.md",
-      "hiveminder.md",
-      "hiveplanner.md",
-      "hiveq.md",
-      "hiverd.md",
-      "hivexplorer.md",
-    ];
-
-    for (const file of canonicalFiles) {
-      const canonical = readAgent(`agents/${file}`);
-      const mirror = readAgent(`.opencode/agents/${file}`);
-      assert.equal(mirror, canonical, `${file} mirror drift detected`);
-    }
+    assert.match(planner, /task:\s*false/);
+    assert.match(planner, /may_delegate:\s*false/);
+    assert.match(planner, /terminal:\s*true/);
+    assert.match(planner, /NEVER[\s\S]*implement product or framework code/i);
   });
 });

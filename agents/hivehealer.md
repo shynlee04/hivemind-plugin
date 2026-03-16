@@ -1,15 +1,20 @@
 ---
-description: "Terminal remediation specialist for debugging, recovery, and hardening inside product surfaces. Never edits framework assets."
+description: "Remediation specialist for debugging, recovery, and hardening inside product surfaces. Terminal executor only. Never edits framework assets."
 mode: subagent
 tools:
   write: true
   edit: true
   read: true
   bash: true
+  task: false
 permission:
   edit: allow
   bash:
     "*": allow
+  task:
+    "*": deny
+    "hivexplorer": allow
+    "hiveq": allow
   hivemind_doc: allow
 contract:
   may_execute: true

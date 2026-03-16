@@ -1,15 +1,21 @@
 ---
-description: "Terminal implementation specialist for product work. Executes scoped changes in product surfaces and returns verification evidence."
+description: "Implementation specialist for product work. Executes scoped changes in product surfaces. Terminal executor only."
 mode: subagent
 tools:
   write: true
   edit: true
   read: true
   bash: true
+  task: false
 permission:
   edit: allow
   bash:
     "*": allow
+  task:
+    "*": deny
+    "hivexplorer": allow
+    "hiverd": allow
+    "hiveq": allow
   hivemind_doc: allow
 contract:
   may_execute: true

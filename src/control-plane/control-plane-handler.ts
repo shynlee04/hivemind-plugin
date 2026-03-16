@@ -4,6 +4,7 @@ import {
   bootstrapWorkflowAuthority,
   loadTrajectoryLedger,
 } from '../core/index.js'
+import { syncRuntimeSurface } from '../cli/runtime-assets.js'
 import { createPlanningGovernanceProjection } from '../governance/index.js'
 import { assessRecoveryState, createRecoveryCheckpoint, repairRecoveryState } from '../recovery/index.js'
 import { markEntryKernelQaPending, markEntryKernelReady } from '../shared/entry-kernel-state.js'
@@ -142,6 +143,7 @@ async function runInit(
     resumeTarget: 'command:hm-harness',
   })
   const projection = await createPlanningGovernanceProjection(input.projectRoot, ids)
+  const runtimeSurfaceSync = await syncRuntimeSurface(input.projectRoot)
 
   return {
     commandId: bundle.id,
@@ -157,6 +159,11 @@ async function runInit(
       trajectory_state: trajectoryLedger.activeTrajectoryId,
       checkpoint_id: checkpoint.id,
       planning_projection: projection.filePath,
+      runtime_surfaces: {
+        pluginFile: runtimeSurfaceSync.pluginFile,
+        mirroredCommandCount: runtimeSurfaceSync.mirroredCommandFiles.length,
+        mirroredAgentCount: runtimeSurfaceSync.mirroredAgentFiles.length,
+      },
       missing_prerequisites: status.issues.map((issue) => issue.code),
       next_command: 'hm-harness',
       auto_recovery: autoRecovery ? {
@@ -194,9 +201,10 @@ async function runInit(
       'trajectory-bootstrapped',
       'recovery-checkpoint-created',
       'planning-projection-created',
+      'runtime-surface-synced',
       'entry-kernel-qa-pending',
     ],
-    artifactRefs: [projection.filePath],
+    artifactRefs: [projection.filePath, runtimeSurfaceSync.pluginFile],
     closeoutStatus: 'qa-pending',
     verificationContractId: asset.contract.verificationContract,
     pressureContract: bundle.pressureContract,
@@ -228,6 +236,9 @@ async function runDoctor(
     resumeTarget: repaired.status === 'healthy' ? 'command:hm-harness' : 'command:hm-doctor',
   })
   const projection = await createPlanningGovernanceProjection(input.projectRoot, ids)
+  const runtimeSurfaceSync = repaired.status === 'healthy'
+    ? await syncRuntimeSurface(input.projectRoot)
+    : null
   if (repaired.status === 'healthy') {
     await markEntryKernelQaPending(input.projectRoot, {
       reason: 'doctor-complete-awaiting-qa',
@@ -252,6 +263,13 @@ async function runDoctor(
       active_trajectory: trajectoryLedger.activeTrajectoryId,
       checkpoint_id: checkpoint.id,
       planning_projection: projection.filePath,
+      runtime_surfaces: runtimeSurfaceSync
+        ? {
+            pluginFile: runtimeSurfaceSync.pluginFile,
+            mirroredCommandCount: runtimeSurfaceSync.mirroredCommandFiles.length,
+            mirroredAgentCount: runtimeSurfaceSync.mirroredAgentFiles.length,
+          }
+        : undefined,
       next_command: repaired.status === 'healthy' ? 'hm-harness' : 'hm-doctor',
       auto_recovery: input.entryKernelAction === 'auto-doctor' ? {
         action: 'hm-doctor',
@@ -266,8 +284,17 @@ async function runDoctor(
       trajectoryId: ids.trajectoryId,
       workflowId: ids.workflowId,
     },
-    stateTransitions: [...repaired.repairActions, 'recovery-checkpoint-created', 'planning-projection-created', ...(repaired.status === 'healthy' ? ['entry-kernel-qa-pending'] : [])],
-    artifactRefs: [projection.filePath],
+    stateTransitions: [
+      ...repaired.repairActions,
+      'recovery-checkpoint-created',
+      'planning-projection-created',
+      ...(runtimeSurfaceSync ? ['runtime-surface-synced'] : []),
+      ...(repaired.status === 'healthy' ? ['entry-kernel-qa-pending'] : []),
+    ],
+    artifactRefs: [
+      projection.filePath,
+      ...(runtimeSurfaceSync ? [runtimeSurfaceSync.pluginFile] : []),
+    ],
     closeoutStatus: repaired.status === 'healthy' ? 'qa-pending' : 'blocked',
     verificationContractId: asset.contract.verificationContract,
     pressureContract: bundle.pressureContract,

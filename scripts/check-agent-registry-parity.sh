@@ -7,6 +7,11 @@ cd "$ROOT_DIR"
 status=0
 
 echo "== Agent Registry Parity Check =="
+if [[ ! -d ".opencode/agents" ]]; then
+  echo "ℹ️  Skipping runtime mirror parity in repo-time validation: .opencode/agents is a user-local runtime projection."
+  exit 0
+fi
+
 while IFS= read -r canonical; do
   base="$(basename "$canonical")"
   runtime=".opencode/agents/$base"

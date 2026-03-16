@@ -4,7 +4,6 @@ import * as path from 'node:path'
 import { getHivemindPath } from '../shared/paths.js'
 import { loadRuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
 import { executeSlashCommandBundle, findSlashCommandBundle } from '../commands/slash-command/index.js'
-import { syncRuntimeSurface } from './runtime-assets.js'
 
 export interface HarnessOptions {
   serverUrl?: string
@@ -141,7 +140,6 @@ async function writeHarnessArtifacts(
  * @returns Harness report and dated artifact locations.
  */
 export async function runHarnessCommand(directory: string, options: HarnessOptions = {}): Promise<HarnessResult> {
-  await syncRuntimeSurface(directory)
   const snapshot = await loadRuntimeBindingsSnapshot(directory)
   const bundle = findSlashCommandBundle('hm-harness')
   if (!bundle) {

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict"
 import { createServer } from "node:http"
-import { mkdtemp, rm, writeFile } from "node:fs/promises"
+import { access, mkdtemp, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { describe, it } from "node:test"
@@ -38,6 +38,7 @@ describe("harness command", () => {
       assert.equal(result.commandResult.closeoutStatus, "blocked")
       assert.equal(report.next_command, "hm-init")
       assert.deepEqual(result.recommendedCommands, ["hm-init", "hm-doctor", "opencode serve"])
+      await assert.rejects(access(join(dir, ".opencode")))
     } finally {
       server.close()
       await rm(dir, { recursive: true, force: true })

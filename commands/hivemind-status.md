@@ -18,10 +18,10 @@ Show the user the current source-backed HiveMind state.
 hivemind_runtime_status({})
 ```
 
-2. If needed, read project planning artifacts for additional continuity:
-- `task_plan.md`
-- `findings.md`
-- `progress.md`
+2. If needed, read the active continuity artifacts for additional context:
+- `MASTER.active.md`
+- `task_plan.active.md`
+- `progress.active.md`
 
 3. If runtime health is blocked, recommend the next control-plane command instead of inventing legacy lifecycle calls.
 

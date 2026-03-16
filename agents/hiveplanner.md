@@ -1,11 +1,12 @@
 ---
-description: "Terminal planning specialist for task design, sequencing, and handoff artifacts. Designs the roadmap without implementing product or framework changes."
+description: "Planning specialist for task design, sequencing, and handoff artifacts. Terminal planner only. Designs the roadmap without implementing product or framework changes."
 mode: subagent
 tools:
   write: true
   edit: true
   read: true
   bash: true
+  task: false
 permission:
   edit: allow
   bash:
@@ -14,6 +15,10 @@ permission:
     "ls *": allow
     "pwd": allow
     "rg *": allow
+  task:
+    "*": deny
+    "hivexplorer": allow
+    "hiverd": allow
   hivemind_doc: allow
 contract:
   may_execute: true

@@ -9,9 +9,20 @@ This file governs development of the framework. Loaded once per OpenCode session
 - **Shipped product**: `commands/`, `agents/`, `workflows/`, `skills/`, `dist/`, `bin/`
 - **Source code**: `src/` - the OpenCode plugin implementation
 - **Agent authority surface**: root `agents/**` is the source authoring surface for agent contracts
-- **Dev projection**: `.opencode/agents/**` is an optional synced local mirror of root `agents/**`, never an independent authority
+- **Install/runtime entry**: stable docs under `docs/guide/**` describe the single bootstrap path; `src/cli/` + `src/control-plane/` own the executable behavior
+- **Live install/runtime entry is limited to** `dist/cli.js` binaries, the `hivemind-context-governance/plugin` export, and the consumer-side `.opencode/plugins/hivemind-context-governance.ts` stub written by runtime sync
+- **Dev projection**: `.opencode/agents/**` is a user-local runtime projection of root `agents/**`, never an independent authority and never a repo-time prerequisite
 - **Runtime-generated**: `.hivemind/` is runtime output after `hm-init`, not an authoring surface
 - **Sector governance**: each `src/*/AGENTS.md` owns its domain boundary
+- **A root `commands/*.md` file is a live runtime command surface only when registered** in `src/commands/slash-command/command-bundles.ts` or mapped from a control-plane primitive
+- **Unregistered command markdown is documentation or legacy material** and must not imply shipped executable behavior
+- **SOT and governance paths must stay stable and non-date-stamped**; dated filenames are for evidence/history only, never the authority path
+- **Compatibility entry files should prefer symlinks back to the stable authority surface** instead of carrying parallel governance text
+
+Live install/runtime entry is limited to `dist/cli.js` binaries, the `hivemind-context-governance/plugin` export, and the consumer-side `.opencode/plugins/hivemind-context-governance.ts` stub written by runtime sync.
+A root `commands/*.md` file is a live runtime command surface only when registered in `src/commands/slash-command/command-bundles.ts` or mapped from a control-plane primitive.
+Unregistered command markdown is documentation or legacy material and must not imply shipped executable behavior.
+SOT and governance paths must stay stable and non-date-stamped. Compatibility entry files should prefer symlinks back to the stable authority surface.
 
 ## Agent Contract Semantics
 
@@ -30,7 +41,7 @@ Every root agent profile in `agents/**` should expose the same contract fields s
 
 Contract rules:
 - Root `agents/**` definitions are authoritative.
-- `.opencode/agents/**` should stay synced to root definitions for local dev only.
+- `.opencode/agents/**` should stay synced to root definitions only after first-run runtime projection; repo-time checks must not require it to exist.
 - `hiveminder` stays orchestration-only: delegation, acceptance, and verification authority; no direct implementation posture.
 - `hivefiver` is the framework-writer for framework assets and may optionally delegate only for bounded research, planning, or verification support.
 - `hivexplorer`, `hiverd`, and `hiveq` stay terminal and non-mutating.
@@ -44,6 +55,7 @@ These principles govern all design and implementation decisions. They are the ro
 3. **Interface Decomposition**: No type exceeds 10 fields at the core level. Extensions compose via intersection (`TrajectoryCore & TrajectoryBindings`). Never a 20-field monolith.
 4. **Consumer-First**: Every shipped asset (`commands/`, `agents/`, `workflows/`) must work for npm consumers who install the package. Not just for internal dev.
 5. **Authority Principle**: Each concern has ONE owner. `hooks/start-work/` owns session lifecycle. `core/trajectory/` owns trajectory state. `shared/paths.ts` owns path resolution. No second implementations.
+6. **Projection-Not-Authority**: Root markdown command files are thin public projections. Install/runtime behavior must live in TypeScript control-plane and feature modules, never only in loose root `.md` files.
 
 ## OpenCode SDK Contract
 

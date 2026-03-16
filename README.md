@@ -49,90 +49,28 @@ Without governance, long AI sessions decay:
 
 ---
 
- ## Quick Start
+## Quick Start
 
-### One Command - That's It
+Install and configure HiveMind by following the instructions here:
 
-```bash
-npx hivemind-context-governance init --mode assisted
-```
+- [docs/guide/installation.md](docs/guide/installation.md)
 
-**What happens (guaranteed):**
-1. Downloads from npm automatically (no manual install needed)
-2. Creates `.hivemind/` directory with brain.json, config.json
-3. Registers plugin in `opencode.json` (so OpenCode auto-loads it)
-4. Syncs commands/skills into `.opencode/`
-5. Creates session template files
-6. Opens a session in `OPEN` mode (assisted) or `LOCKED` mode (strict)
+This revamp branch now treats install and bootstrap as a single controlled entry:
+- use one install/bootstrap path
+- let first-run runtime create `.hivemind/` and the user-local `.opencode/**` projection
+- let recovery flows repair that projection later; do not hand-author `.hivemind/` or `.opencode/**`
 
-**Works on any machine, any project. No exceptions.**
-
-### Verify Installation (Optional)
-
-The wizard walks you through step by step:
-
-```
-◆  Welcome to HiveMind Context Governance!
-
-◆  Select governance mode:
-│  ○ strict    — Session starts LOCKED. Must declare intent before writes.
-│  ● assisted  — Session starts OPEN. Guidance without blocking. (recommended)
-│  ○ permissive — Always OPEN. Silent tracking only.
-
-◆  Select language:
-│  ● English
-│  ○ Tiếng Việt
-
-◆  Select automation level:
-│  ○ manual   — No automation, you control everything
-│  ○ guided   — Suggestions only
-│  ● assisted — Balanced automation (recommended)
-│  ○ full     — Maximum automation
-│  ○ coach    — Maximum handholding, skeptical of everything
-
-◆  Configuration saved! .hivemind/ created.
-```
-
-### Non-Interactive Alternative
+If you need the direct non-interactive entry, run:
 
 ```bash
-npx hivemind-context-governance init --mode strict --lang vi --automation full
+npx hivemind-context-governance init --preset guided-onboarding
 ```
 
-This does **exactly the same** as the interactive wizard:
-- Creates `.hivemind/` structure
-- Registers plugin in `opencode.json` 
-- Syncs OpenCode assets
-- Initializes brain state with your chosen settings
-
-### Verify Installation
-
-After running `init`, verify the runtime attachment and mirrored surfaces:
+Then verify with:
 
 ```bash
 npx hivemind-context-governance harness --json
 ```
-
-Or manually check `opencode.json` contains:
-```json
-{
-  "plugin": ["hivemind-context-governance"]
-}
-```
-
-### Open OpenCode
-
-That's it. The plugin auto-activates. The AI agent gets governance context injected into every turn.
-
-**Important:** If you run `init` again on an existing project, it will:
-- Keep your existing `.hivemind/` state
-- Refresh OpenCode assets
-- Ensure plugin is still registered in `opencode.json`
-
-**How it works:**
-- `init` automatically registers `hivemind-context-governance` in `opencode.json`'s `plugin` array
-- OpenCode reads this on startup and auto-loads the plugin
-- If you manually edit `opencode.json`, make sure `plugin` is an array containing `"hivemind-context-governance"`
 
 ---
 
@@ -255,20 +193,21 @@ The most important skill themes in the current runtime are:
 ## CLI Commands
 
 ```bash
-npx hivemind-context-governance             # Interactive setup wizard
-npx hivemind-context-governance init        # Bootstrap runtime entry surfaces
-npx hivemind-context-governance doctor      # Repair runtime entry and recovery spine
-npx hivemind-context-governance harness     # Validate runtime attachment and server health
-npx hivemind-context-governance settings    # Persist runtime attachment defaults
-npx hivemind-context-governance help        # Show help
+npx hivemind-context-governance help                           # Show help
+npx hivemind-context-governance init --preset guided-onboarding # Bootstrap runtime entry surfaces
+npx hivemind-context-governance doctor                         # Repair runtime entry and recovery spine
+npx hivemind-context-governance harness --json                # Validate runtime attachment and server health
+npx hivemind-context-governance settings --preset guided-onboarding # Persist runtime attachment defaults
 ```
 
 ### Flags
 
 | Flag | Values | Default |
 |------|--------|---------|
-| `--mode` | `permissive` · `assisted` · `strict` | `assisted` |
+| `--name` | any string | none |
 | `--lang` | `en` · `vi` | `en` |
+| `--artifact-lang` | language code or label | follows `--lang` |
+| `--governance` | project-defined governance posture | runtime default |
 | `--automation` | `manual` · `guided` · `assisted` · `full` · `coach` | `assisted` |
 | `--expert-level` | `beginner` · `intermediate` · `advanced` · `expert` | `intermediate` |
 | `--output-style` | `explanatory` · `outline` · `skeptical` · `architecture` · `minimal` | `explanatory` |
@@ -277,15 +216,14 @@ npx hivemind-context-governance help        # Show help
 | `--server-url` | OpenCode server URL *(for harness)* | runtime default |
 | `--session-id` | session identifier *(for doctor/settings)* | generated |
 | `--json` | *(flag)* print structured output | off |
-| `--force` | *(flag)* — removes existing `.hivemind/` before re-init | off |
 
 ### Runtime Surface Sync
 
-The revamp branch does not ship a public `sync-assets` CLI. Instead, runtime mirroring happens through the live control-plane commands.
+The revamp branch does not ship a public `sync-assets` CLI. Runtime projection happens only through the first-run and repair entry flows.
 
-- `init` bootstraps `.hivemind/`, registers the plugin, and mirrors command and agent assets into `.opencode/`.
-- `harness` re-checks runtime health and refreshes those mirrored surfaces before reporting readiness.
-- `doctor` repairs damaged runtime state and returns the next safe command.
+- `init` bootstraps `.hivemind/`, writes the local `.opencode/plugins/hivemind-context-governance.ts` stub, and mirrors command and agent assets into `.opencode/`.
+- `harness` re-checks runtime health and reports the next safe command without mutating the runtime projection.
+- `doctor` repairs damaged runtime state and re-syncs the runtime projection only when recovery reaches a healthy state.
 
 Public v2.8 package intentionally ships only the operational pack:
 - `commands`
@@ -309,7 +247,7 @@ If the runtime is healthy, `harness` confirms the current attachment and mirrore
 This revamp branch does not ship the older public `scan` or `dashboard` CLIs. For brownfield work, use the current runtime path instead:
 
 ```bash
-npx hivemind-context-governance init --mode assisted
+npx hivemind-context-governance init --preset guided-onboarding
 npx hivemind-context-governance harness --json
 ```
 
@@ -319,9 +257,9 @@ Then, inside OpenCode, inspect runtime context with `hivemind_runtime_status` an
 
 ## First-Run Experience
 
-When OpenCode loads HiveMind **before** `hivemind init` was run:
+When OpenCode loads HiveMind before the runtime entry is initialized:
 
-1. **Setup guidance injected** — the agent sees instructions to run the wizard
+1. **Setup guidance injected** — the agent sees instructions to use the dated install guide or the single bootstrap entry
 2. **Project snapshot** — auto-detects project name, tech stack (20+ frameworks), top-level dirs, artifacts
 3. **First-run recon protocol** — the agent is guided to inspect the repo, read docs, isolate stale context, and build a backbone *before* coding
 
@@ -333,7 +271,7 @@ Recommended execution order:
 
 1. Bootstrap and inspect runtime readiness:
 ```bash
-npx hivemind-context-governance init --mode assisted
+npx hivemind-context-governance init --preset guided-onboarding
 npx hivemind-context-governance harness --json
 ```
 2. In OpenCode, inspect the runtime and project artifacts:
@@ -380,14 +318,15 @@ This sequence keeps brownfield work on the current runtime path instead of the r
 # 1. Update
 npm install hivemind-context-governance@latest
 
-# 2. Re-initialize (preserves existing data)
-npx hivemind-context-governance
+# 2. Re-run the bounded bootstrap entry
+npx hivemind-context-governance init --preset guided-onboarding
 
 # 3. Verify runtime readiness
 npx hivemind-context-governance harness --json
 
-# 4. Optional: clean re-init
-npx hivemind-context-governance init --force
+# 4. Optional: remove broken runtime state first, then re-run the same entry
+rm -rf .hivemind
+npx hivemind-context-governance init --preset guided-onboarding
 ```
 
 **Migration handled automatically:**
@@ -402,32 +341,32 @@ npx hivemind-context-governance init --force
 
 ### "Plugin not loading" or "Setup guidance keeps appearing"
 
-**Cause:** The plugin was never registered in `opencode.json`.
+**Cause:** The first-run runtime entry never completed, so the user-local `.opencode/**` projection or `.hivemind/` state is missing.
 
-**Fix:** Run the init command **once**:
+**Fix:** Re-run the single bootstrap entry:
 ```bash
-npx hivemind-context-governance init --mode assisted
+npx hivemind-context-governance init --preset guided-onboarding
 ```
 
 This does **all** of the following:
-- Creates `.hivemind/` directory structure
-- Registers plugin in `opencode.json` (so OpenCode auto-loads it)
-- Syncs commands/skills into `.opencode/`
-- Initializes brain state
+- Creates or repairs `.hivemind/`
+- Writes the local `.opencode/plugins/hivemind-context-governance.ts` stub
+- Mirrors shipped command and agent assets into `.opencode/`
+- Seeds the runtime attachment and bootstrap profile
 
 **Important:** If you run `init` again on an existing project:
-- It keeps your existing `.hivemind/` state ✅
-- It refreshes OpenCode assets ✅
-- It ensures plugin is still registered ✅
+- It keeps your existing `.hivemind/` state unless repair is required ✅
+- It refreshes user-local runtime projection assets ✅
+- It does not turn `.opencode/**` into source authority ✅
 
 ### Other Issues
 
 | Symptom | Cause | Fix |
 |---------|-------|-----|
-| Setup guidance keeps appearing | `.hivemind/config.json` missing | Run `npx hivemind-context-governance init --mode assisted` |
+| Setup guidance keeps appearing | `.hivemind/` or the user-local `.opencode/**` projection is missing | Run `npx hivemind-context-governance init --preset guided-onboarding` |
 | Framework conflict warning | Both `.planning/` and `.spec-kit/` exist | Select one framework via locked menu |
 | Session feels stale after idle | Runtime context is out of date or the branch needs re-attachment | Run `hm-harness`, then inspect `hivemind_runtime_status` |
-| Want fresh start | Old config causing issues | Remove `.hivemind/` manually, then run `npx hivemind-context-governance init --mode assisted` |
+| Want fresh start | Old runtime state causing issues | Remove `.hivemind/` manually, then run `npx hivemind-context-governance init --preset guided-onboarding` |
 | "Plugin already registered" message | Normal behavior on upgrade | No action needed |
 
 ---
@@ -495,37 +434,21 @@ HiveMind hiện tại hoạt động như một lớp runtime cho OpenCode, khô
 
 ## Cài Đặt Từ Đầu Đến Cuối
 
-### Một Lệnh - Xong Ngay
+Làm theo hướng dẫn cài đặt đã khóa ngày tại đây:
+
+- [docs/guide/installation.md](docs/guide/installation.md)
+
+Nếu cần lệnh bootstrap không tương tác trực tiếp:
 
 ```bash
-npx hivemind-context-governance init --mode assisted
+npx hivemind-context-governance init --preset guided-onboarding
 ```
 
-**Điều gì sẽ xảy ra (đảm bảo):**
-1. Tự động tải từ npm (không cần cài thủ công)
-2. Tạo thư mục `.hivemind/` với brain.json, config.json
-3. Đăng ký plugin trong `opencode.json` (để OpenCode tự động load)
-4. Đồng bộ commands/skills vào `.opencode/`
-5. Tạo các file session template
-6. Mở session ở chế độ `OPEN` (assisted) hoặc `LOCKED` (strict)
-
-**Hoạt động trên mọi máy, mọi project. Không ngoại lệ.**
-
-### Xác Nhận Cài Đặt (Tùy Chọn)
-
-Wizard cho phép bạn chọn mode, ngôn ngữ, và mức automation rồi tạo `.hivemind/`, sync asset OpenCode, và đăng ký plugin trong `opencode.json`.
-
-### Cài Đặt Không Tương Tác
-
-```bash
-npx hivemind-context-governance init --mode strict --lang vi --automation full
-```
-
-Lệnh này làm **đúng như** wizard tương tác:
-- Tạo cấu trúc `.hivemind/`
-- Đăng ký plugin trong `opencode.json`
-- Đồng bộ OpenCode assets
-- Khởi tạo brain state với cài đặt đã chọn
+Lệnh này sẽ:
+- Tạo hoặc sửa `.hivemind/`
+- Tạo projection `.opencode/**` ở phía project người dùng
+- Ghi plugin stub vào `.opencode/plugins/`
+- Khởi tạo runtime attachment cho lần chạy đầu
 
 ### Mở OpenCode
 
@@ -537,19 +460,14 @@ Xong. Plugin tự động hoạt động. AI agent sẽ nhận governance contex
 npx hivemind-context-governance harness --json
 ```
 
-Hoặc kiểm tra thủ công `opencode.json` có chứa:
-```json
-{
-  "plugin": ["hivemind-context-governance"]
-}
-```
+Hoặc kiểm tra thủ công `.opencode/plugins/hivemind-context-governance.ts` đã được tạo.
 
 ### Sử Dụng CLI / Command Surface
 
 Dùng CLI hoặc command asset hiện tại để quét dự án và dựng baseline trước khi sửa code:
 
 ```bash
-npx hivemind-context-governance init --mode assisted
+npx hivemind-context-governance init --preset guided-onboarding
 npx hivemind-context-governance harness --json
 ```
 
@@ -557,7 +475,7 @@ npx hivemind-context-governance harness --json
 
 Khi người dùng nói: *"Hãy quét dự án và refactor"*, đi theo thứ tự hiện tại:
 
-1. Chạy `init` và `harness` để bootstrap runtime, mirror lại asset, và kiểm tra readiness.
+1. Chạy `init` và `harness` để bootstrap runtime, tạo projection user-side, và kiểm tra readiness.
 2. Trong OpenCode, dùng `hivemind_runtime_status` và `hivemind_doc` để đọc runtime state và artifact trước khi sửa code.
 3. Chuyển sang lane công việc rõ ràng qua `hm-plan`, `hm-research`, `hm-implement`, và `hm-verify`.
 
@@ -583,14 +501,14 @@ Khi HiveMind được load nhưng chưa cấu hình:
 # 1. Cập nhật
 npm install hivemind-context-governance@latest
 
-# 2. Chạy lại wizard (dữ liệu cũ được giữ nguyên)
-npx hivemind-context-governance
+# 2. Chạy lại bootstrap entry (dữ liệu cũ được giữ nguyên)
+npx hivemind-context-governance init --preset guided-onboarding
 
 # 3. Kiểm tra runtime
 npx hivemind-context-governance harness --json
 
 # 4. Nếu cần reset hoàn toàn
-npx hivemind-context-governance init --force
+npx hivemind-context-governance init --preset guided-onboarding
 ```
 
 ## Gợi Ý Vận Hành Tốt Nhất

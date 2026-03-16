@@ -30,7 +30,7 @@ Read the actual project surfaces before recommending action:
 - root `AGENTS.md`
 - `README.md`
 - top-level project structure
-- any active planning artifacts such as `task_plan.md`, `findings.md`, and `progress.md`
+- any active planning artifacts such as `MASTER.active.md`, `task_plan.active.md`, and `progress.active.md`
 
 Focus on:
 - authority drift between docs and source

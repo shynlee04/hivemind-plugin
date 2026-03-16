@@ -16,12 +16,12 @@ Use this helper before broad changes or when context feels thin.
 hivemind_runtime_status({})
 ```
 
-2. Read the real authority and planning surfaces for the current project:
+2. Read the real authority and active planning surfaces for the current project:
 - `AGENTS.md`
 - `README.md`
-- `task_plan.md`
-- `findings.md`
-- `progress.md`
+- `MASTER.active.md`
+- `task_plan.active.md`
+- `progress.active.md`
 
 3. Explore the codebase directly:
 

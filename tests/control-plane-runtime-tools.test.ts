@@ -136,6 +136,8 @@ describe('control-plane runtime tools', () => {
         qaState: 'qa-pending',
       })
       assert.equal(result.report.next_command, 'hm-harness')
+      await access(join(dir, '.opencode', 'agents', 'hivefiver.md'))
+      await access(join(dir, '.opencode', 'plugins', 'hivemind-context-governance.ts'))
     } finally {
       await rm(dir, { recursive: true, force: true })
     }

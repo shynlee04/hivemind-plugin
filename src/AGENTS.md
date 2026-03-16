@@ -6,6 +6,8 @@ Source root for the OpenCode plugin. TypeScript, compiled to `dist/`.
 
 Everything under `src/` ships as the npm package `hivemind-context-governance`.
 The plugin entry is `plugin/opencode-plugin.ts` → registers hooks, tools, and event handlers.
+Install/bootstrap authority lives in `cli/` + `control-plane/`; root markdown assets may describe that path but must not own it.
+Stable governance and SOT paths should stay non-date-stamped. Compatibility aliases should point back to stable authority paths rather than become parallel authorities.
 
 ## Architecture
 
@@ -16,7 +18,7 @@ src/
 ├── tools/           Write-side — 6 structured agent-callable tools
 ├── plugin-handlers/ Decision routing — command, tool, session resolution
 ├── core/            State — trajectory and workflow authority
-├── commands/        Slash-command bundle registry and execution
+├── commands/        Slash-command bundle registry, projection, and execution
 ├── context/         Prompt packet compilation and rendering
 ├── control-plane/   Gate/intake system for CLI commands
 ├── delegation/      Handoff packet creation and store
@@ -35,6 +37,12 @@ All code in `src/` must use OpenCode SDK primitives:
 - `ToolContext` properties for session/agent/directory context — never custom session models
 - `client.app.log()` for server logging — `shared/logging.ts` is supplementary only
 - Plugin hooks for event handling — never `shared/event-bus.ts`
+
+## Runtime Direction
+
+- Prefer TS-owned feature behavior over markdown-only runtime logic.
+- Keep root `commands/*.md` as thin OpenCode-facing projections; the source authority remains the registries and handlers under `src/`.
+- Keep first-run and repair entry flows as the only writers of user-local `.opencode/**` runtime projection.
 
 ## Deprecated Modules (Audit 2026-03-15)
 
