@@ -18,7 +18,7 @@ description: "Use when making completion claims, accepting conflicting instructi
 ## Platform Adaptation
 
 > Evidence collection tools differ by platform. The DISCIPLINE is universal:
-> - **OpenCode**: `bash` tool for command execution, `recall_mems` for decisions
+> - **OpenCode**: `bash` tool for command execution plus current planning/runtime artifacts for decision history
 > - **Claude Code/Antigravity**: `run_command` for verification, file system for state
 > - **Cursor/Windsurf**: Integrated terminal for command execution
 >
@@ -104,4 +104,3 @@ This skill activates at **Steps 7-8 (Execute, Gatekeeping)** — enforces proof-
 |----------|---------|---------|
 | [evidence-catalogue.md](references/evidence-catalogue.md) | Need to identify evidence types or platform-specific tools | Evidence types, collection strategies, chain validation |
 | [evidence-report.md](templates/evidence-report.md) | Producing evidence output | Fill-in report: claim → evidence → verdict |
-

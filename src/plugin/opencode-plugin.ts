@@ -1,12 +1,19 @@
 import type { Part } from '@opencode-ai/sdk'
 import { type Plugin } from '@opencode-ai/plugin'
 
-import { recordTrajectoryEvent } from '../core/trajectory/index.js'
 import { findSlashCommandBundle } from '../commands/slash-command/index.js'
 import { initSdkContext, resetSdkContext } from '../hooks/sdk-context.js'
 import { createEventHandler } from '../hooks/event-handler.js'
 import { showGovernanceToast } from '../hooks/soft-governance.js'
 import {
+  createSyntheticPart,
+  findLastUserMessage,
+  getMessageText,
+  type MessageLike,
+} from '../hooks/prompt-transformation/index.js'
+import { isHivemindManagedTool, recordToolEvent } from '../hooks/runtime-loader/index.js'
+import {
+  createHivemindDocTool,
   createHivemindHandoffTool,
   createHivemindTaskTool,
   createHivemindTrajectoryTool,
@@ -23,71 +30,6 @@ import {
   renderOpencodeKnowledgePacket,
   resolveBaselineOpencodeKnowledgeSurfaces,
 } from '../shared/opencode-knowledge.js'
-
-type MessageLike = {
-  info?: {
-    id?: string
-    role?: string
-    sessionID?: string
-  }
-  parts?: Part[]
-}
-
-function createSyntheticPart(sessionID: string, messageID: string, text: string): Part {
-  return {
-    id: `prt_hm_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-    sessionID,
-    messageID,
-    type: 'text',
-    text,
-    synthetic: true,
-    experimental_providerMetadata: {
-      opencode: {
-        ui_hidden: true,
-      },
-    },
-  } as Part
-}
-
-function getMessageText(message: MessageLike): string {
-  return (message.parts ?? [])
-    .filter((part) => part.type === 'text')
-    .map((part) => part.text ?? '')
-    .join(' ')
-}
-
-function findLastUserMessage(messages: MessageLike[]): MessageLike | undefined {
-  for (let index = messages.length - 1; index >= 0; index -= 1) {
-    const message = messages[index]
-    if (message.info?.role === 'user') {
-      return message
-    }
-  }
-
-  return undefined
-}
-
-async function recordToolEvent(directory: string, sessionID: string, toolName: string): Promise<void> {
-  const snapshot = await loadRuntimeBindingsSnapshot(directory)
-  if (!snapshot.trajectoryId) {
-    return
-  }
-
-  await recordTrajectoryEvent(directory, snapshot.trajectoryId, {
-    kind: 'transition',
-    summary: `tool:${toolName}:${sessionID}`,
-    evidenceRefs: snapshot.taskIds,
-  })
-}
-
-/** Tools that are managed by HiveMind and should not require separate permission prompts */
-const HIVEMIND_MANAGED_TOOLS = new Set([
-  'hivemind_runtime_status',
-  'hivemind_runtime_command',
-  'hivemind_task',
-  'hivemind_trajectory',
-  'hivemind_handoff',
-])
 
 /**
  * Real OpenCode plugin entry for the revamp lane.
@@ -110,6 +52,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
     tool: {
       hivemind_runtime_status: createHivemindRuntimeStatusTool(directory),
       hivemind_runtime_command: createHivemindRuntimeCommandTool(directory),
+      hivemind_doc: createHivemindDocTool(directory),
       hivemind_task: createHivemindTaskTool(directory),
       hivemind_trajectory: createHivemindTrajectoryTool(directory),
       hivemind_handoff: createHivemindHandoffTool(directory),
@@ -152,7 +95,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
       // Auto-allow HiveMind managed tool calls (they have their own governance)
       if (permissionInput.metadata) {
         const toolName = (permissionInput.metadata as Record<string, unknown>).tool as string | undefined
-        if (toolName && HIVEMIND_MANAGED_TOOLS.has(toolName)) {
+        if (isHivemindManagedTool(toolName)) {
           output.status = 'allow'
           return
         }
@@ -168,7 +111,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
     },
     'tool.execute.before': async (toolInput, _output) => {
       // Record tool execution intent for trajectory tracking
-      if (HIVEMIND_MANAGED_TOOLS.has(toolInput.tool)) {
+      if (isHivemindManagedTool(toolInput.tool)) {
         await recordToolEvent(directory, toolInput.sessionID, `${toolInput.tool}:pre`)
       }
     },

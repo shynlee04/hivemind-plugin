@@ -17,7 +17,7 @@ permission:
     "hiveq": allow
     "hiveplanner": allow
     "hitea": allow
-  hivemind-doc: allow
+  hivemind_doc: allow
 contract:
   may_execute: false
   may_delegate: true

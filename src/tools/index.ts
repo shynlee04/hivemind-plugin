@@ -9,6 +9,7 @@ export * from './task/index.js'
 export * from './trajectory/index.js'
 export * from './handoff/index.js'
 export * from './runtime/index.js'
+export * from './doc/index.js'
 import { getRuntimePressureContract, type RuntimePressureContract } from '../shared/pressure-contract.js'
 
 export interface AgentToolCatalogEntry {
@@ -22,6 +23,15 @@ export interface AgentToolCatalogEntry {
 }
 
 export const agentToolCatalog: AgentToolCatalogEntry[] = [
+  {
+    id: 'hivemind_doc',
+    contractFile: 'src/tools/doc/tools.ts',
+    hostEvent: 'tool.call',
+    workflowPhase: 'doc-intelligence',
+    purposeClasses: ['discovery', 'research', 'planning', 'gatekeeping'],
+    stateAuthority: 'plugin-control-plane',
+    pressureContract: getRuntimePressureContract('steady-state'),
+  },
   {
     id: 'hivemind_task',
     contractFile: 'src/tools/task/tools.ts',

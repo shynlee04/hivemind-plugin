@@ -9,7 +9,7 @@ This directory is **assembly only**. It composes hooks and tools — it must not
 ## Audit Findings (2026-03-16)
 
 > [!NOTE]
-> `hivemind_runtime_status` and `hivemind_runtime_command` are now extracted into `src/tools/runtime/tools.ts`. `opencode-plugin.ts` should remain assembly-only and must not regress back to inline tool logic.
+> `hivemind_runtime_status`, `hivemind_runtime_command`, and `hivemind_doc` are registered through extracted tool modules. `opencode-plugin.ts` should remain assembly-only and must not regress back to local helper or inline tool logic.
 
 ### Current Enforcement
 
@@ -43,10 +43,10 @@ This directory is **assembly only**. It composes hooks and tools — it must not
 | `system.transform` | ✅ Adopted | `hooks/context-injection/` | System prompt enrichment |
 | `messages.transform` | ✅ Adopted | `hooks/prompt-transformation/` | Message history injection |
 | `session.compacting` | ✅ Adopted | `hooks/workflow-integration/` | Compaction context |
-| `chat.message` | 🔜 Adopt now | `hooks/start-work/` | Replace custom session tracking — gives sessionID, agent, model per message |
+| `chat.message` | ✅ Adopted | plugin entry + `hooks/start-work/` | Injects baseline knowledge and runtime session context |
 | `chat.params` | 🔜 Adopt now | `hooks/context-injection/` | Per-agent temperature control (hivefiver=0.7, hivemaker=0.3) |
-| `permission.ask` | 🔜 Adopt now | new `hooks/permission/` | Gate `.hivemind/` state writes — makes pressure contracts enforceable |
-| `tool.execute.before` | 🔜 Adopt now | `hooks/runtime-loader/` | Pre-validate tool args + inject session context |
+| `permission.ask` | ✅ Adopted | plugin entry | Auto-allows managed HiveMind tools and surfaces mutation toasts for write requests |
+| `tool.execute.before` | ✅ Adopted | `hooks/runtime-loader/` | Records managed-tool execution intent before tool calls |
 | `tool.definition` | ⏳ Adopt later | — | Dynamic tool description enrichment — useful but not critical for 2.9.5 |
 | `config` | ⏳ Adopt later | — | React to `opencode.json` changes at runtime |
 | `chat.headers` | ❌ Reject | — | No custom auth headers needed |
@@ -57,9 +57,9 @@ This directory is **assembly only**. It composes hooks and tools — it must not
 
 | API | Decision | Replaces | File |
 |-----|----------|----------|------|
-| `client.app.log()` | 🔜 Adopt now | Augments `shared/logging.ts` | `shared/logging.ts` |
+| `client.app.log()` | ✅ Adopted | Augments `shared/logging.ts` | `shared/logging.ts` |
 | `client.tui.showToast()` | ✅ Adopted | Replaced earlier placeholder toast wiring | `hooks/soft-governance.ts` |
-| `client.session.*` | 🔜 Adopt now | Custom session tracking | `hooks/start-work/` |
+| `client.session.*` | ⏳ Adopt later | Custom session tracking | `hooks/start-work/` |
 | `client.app.agents()` | ⏳ Adopt later | — | Runtime agent validation |
 | `client.tool.ids()` | ⏳ Adopt later | — | Runtime tool validation |
 | `client.tui.executeCommand()` | ⏳ Adopt later | — | Programmatic command execution |

@@ -65,7 +65,7 @@ Overall: PASS (all pass), FAIL (any fails), PARTIAL (some inconclusive).
 ## Platform Adaptation
 
 > Verification is universal. Only the tools differ:
-> - **OpenCode**: `bash` for commands, `recall_mems` for decision history
+> - **OpenCode**: `bash` for commands plus current planning/runtime artifacts for decision history
 > - **Claude Code / Antigravity**: `run_command` for tests/builds, artifact files for state
 > - **Cursor / Windsurf**: Integrated terminal for commands, IDE search for patterns
 >

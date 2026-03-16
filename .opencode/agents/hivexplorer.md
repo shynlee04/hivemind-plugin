@@ -17,7 +17,7 @@ permission:
     "rg *": allow
     "wc *": allow
     "tree *": allow
-  hivemind-doc: allow
+  hivemind_doc: allow
 contract:
   may_execute: true
   may_delegate: false

@@ -17,7 +17,7 @@ description: "Use when delegating work to subagents or deciding between parallel
 ## Platform Adaptation
 
 > Delegation mechanics differ by platform. The DECISION FRAMEWORK is universal:
-> - **OpenCode**: `Task(subagent_type="name", prompt="...")` + `export_cycle()`
+> - **OpenCode**: `task(...)` delegation plus explicit verification and, when needed, handoff/task artifact capture through the live HiveMind runtime surfaces
 > - **Claude Code**: Subagent tool calls with structured prompts
 > - **Antigravity**: `browser_subagent` / `run_command` patterns
 > - **Codex**: Task-based delegation via API

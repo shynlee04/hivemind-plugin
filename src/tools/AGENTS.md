@@ -9,7 +9,7 @@ Each tool subdirectory follows: `tools.ts` (implementation), `types.ts` (args + 
 ## Audit Findings (2026-03-16)
 
 > [!NOTE]
-> The five current tool implementations now define `args` with `tool.schema`. The remaining contract-quality work is consistency and coverage, not initial Zod adoption.
+> The six current tool implementations now define `args` with `tool.schema`. The remaining contract-quality work is consistency and coverage, not initial Zod adoption.
 
 > [!WARNING]
 > `parseList()` and `render()` helper functions are **duplicated** identically across `handoff/tools.ts`, `task/tools.ts`, and `trajectory/tools.ts`. Extract to `shared/tool-helpers.ts`.
@@ -56,6 +56,7 @@ export function createHivemindXxxTool(projectRoot: string) {
 | `hivemind_task` | `task/` | ✅ Structured, `tool.schema` args live in `tools.ts` |
 | `hivemind_trajectory` | `trajectory/` | ✅ Structured, `tool.schema` args live in `tools.ts` |
 | `hivemind_handoff` | `handoff/` | ✅ Structured, `tool.schema` args live in `tools.ts` |
+| `hivemind_doc` | `doc/` | ✅ Read-only markdown-first doc tool |
 | `hivemind_runtime_status` | `runtime/` | ✅ Extracted runtime tool |
 | `hivemind_runtime_command` | `runtime/` | ✅ Extracted runtime tool |
 

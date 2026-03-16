@@ -8,14 +8,14 @@ agent: hiveminder
 Perform a clean session archival with context preservation.
 
 ## Pre-Compact Checklist
-1. Call `scan_hierarchy({ include_drift: true })` — verify you completed what was declared
-2. Review any pending items: are there uncompleted actions in the hierarchy?
-3. If there are important decisions or patterns learned, call `save_mem` to persist them
+1. Review the active plan or progress artifacts for unfinished work.
+2. Summarize completed work, remaining blockers, and the exact next step.
+3. If the session produced reusable delegation output, capture it in the live handoff/task surfaces rather than inventing legacy memory calls.
 
 ## Compact
-Call `compact_session({ summary: "<brief summary of what was accomplished>" })`
+Session compaction is handled by the OpenCode session compaction flow plus HiveMind's `experimental.session.compacting` hook. Do not call removed legacy tools such as `compact_session`.
 
 ## Post-Compact
 - Inform the user the session was archived
-- Show the archive location
-- Remind them to call `declare_intent` when starting new work
+- Provide the continuation summary and next bounded task
+- Point the next session to the current planning artifacts and any handoff output

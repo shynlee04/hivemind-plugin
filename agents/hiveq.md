@@ -16,7 +16,7 @@ permission:
     "npm test*": allow
     "ls *": allow
     "rg *": allow
-  hivemind-doc: allow
+  hivemind_doc: allow
 contract:
   may_execute: true
   may_delegate: false

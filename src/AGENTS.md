@@ -13,17 +13,17 @@ The plugin entry is `plugin/opencode-plugin.ts` → registers hooks, tools, and 
 src/
 ├── plugin/          Assembly — hooks + tools composition (NO business logic)
 ├── hooks/           Read-side — 7 sub-modules injecting context via Parts
-├── tools/           Write-side — 3 structured tools (⚠️ 2 more inline in plugin)
+├── tools/           Write-side — 5 structured agent-callable tools
 ├── plugin-handlers/ Decision routing — command, tool, session resolution
-├── core/            State — trajectory, workflow, ⚠️ session (deprecated)
+├── core/            State — trajectory and workflow authority
 ├── commands/        Slash-command bundle registry and execution
 ├── context/         Prompt packet compilation and rendering
 ├── control-plane/   Gate/intake system for CLI commands
 ├── delegation/      Handoff packet creation and store
 ├── recovery/        State assessment, checkpoint, repair
 ├── governance/      Planning projection (minimal)
-├── intelligence/    Doc surface routing (⚠️ implementation gutted)
-├── shared/          Utilities — paths, logging, ⚠️ event-bus (deprecated)
+├── intelligence/    Doc surface routing + markdown-first read foundation
+├── shared/          Utilities — paths, logging, runtime helpers
 ├── cli/             CLI entrypoint and command routing
 └── cli.ts           CLI binary entrypoint
 ```
@@ -40,6 +40,6 @@ All code in `src/` must use OpenCode SDK primitives:
 
 | Module | Issue | Action |
 |--------|-------|--------|
-| `core/session/` | Orphaned — zero consumers, parallel to `hooks/start-work/` | Remove |
-| `shared/event-bus.ts` | Reimplements SDK events | Replace with `event` hook |
-| `hooks/soft-governance.ts` | Empty placeholder | Wire to `client.tui.showToast()` |
+| `core/session/` | Removed in L1 cutover; do not recreate | Keep session lifecycle in `hooks/start-work/` |
+| `shared/event-bus.ts` | Removed in L1 cutover; do not recreate | Use SDK `event` hook |
+| `hooks/soft-governance.ts` | Live toast-throttling helper | Keep using `client.tui.showToast()` |

@@ -21,8 +21,8 @@ Hooks are read-only observers. They inject context into agent sessions via synth
 > [!IMPORTANT]
 > `start-work/` is the **real** session lifecycle — not `core/session/`. This is where purpose classification, lineage resolution, readiness gates, trajectory assessment, and control-plane gating happen.
 
-> [!WARNING]
-> `soft-governance.ts` has an intentionally empty `resetToastCooldowns()`. To properly notify users, use `client.tui.showToast()` from the SDK.
+> [!NOTE]
+> `soft-governance.ts` now uses `client.tui.showToast()` with cooldown tracking. Keep notifications lightweight and non-blocking.
 
 ### Available But Unused Hooks
 

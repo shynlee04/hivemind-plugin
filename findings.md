@@ -58,3 +58,27 @@
 - `src/plugin/AGENTS.md`, `src/tools/AGENTS.md`, and root `AGENTS.md` had stale debt notes claiming inline runtime tools and missing `tool.schema` adoption even though the current source already has extracted runtime tools and `tool.schema` args.
 - Those authority docs now reflect the current state: runtime tools live in `src/tools/runtime/`, current tool args use `tool.schema`, and `hooks/soft-governance.ts` is no longer an empty placeholder.
 - `README.md` now points readers to the master model as the authoritative product definition, replaces the frozen snapshot counts with current generic runtime-surface language, and marks older workflow/tool terminology as legacy vocabulary rather than current runtime contract.
+
+### End-to-end mixed-intent runtime proof
+- Added an end-to-end plugin runtime regression in `tests/plugin-runtime.test.ts` using the exact messy prompt from the master model.
+- The runtime plan already preserved the safer advisory route without additional production changes: `createPluginRuntimePlan()` keeps the prompt on `hm-research`, leaves `autoRoute` disabled, and binds the preview to `hiverd`.
+- Manual QA through the built package entry (`dist/index.js`) returned `purposeClass: "research"`, `recommendedCommandId: "hm-research"`, `autoRoute: false`, `bindingKind: "workflow-command"`, `commandBindingAutoRoute: false`, `previewAgent: "hiverd"`.
+
+### Remaining blocker ranking after completed runtime slices
+- The strongest live blockers are now: plugin entry boundary blur, centralized mutation gating in the plugin, shipped truth-surface drift, incomplete command/runtime convergence outside the control plane, router-only live doc intelligence, and still-broad orchestration contracts.
+- File evidence for those blockers came from `src/plugin/opencode-plugin.ts`, `src/plugin/AGENTS.md`, `src/commands/slash-command/command-runner.ts`, `src/control-plane/control-plane-handler.ts`, `src/AGENTS.md`, `commands/hivemind-scan.md`, `commands/hivemind-compact.md`, and `skills/delegation-framework/SKILL.md`.
+
+### Plugin assembly boundary cleanup slice
+- Added a new regression in `tests/plugin-assembly-smoke.test.ts` proving `src/plugin/opencode-plugin.ts` should not keep local helper implementations or managed-tool policy constants.
+- Extracted synthetic message helpers into `src/hooks/prompt-transformation/synthetic-parts.ts` and tool-governance helpers into `src/hooks/runtime-loader/tool-governance.ts`, then re-exported them through the existing hook barrels.
+- `src/plugin/opencode-plugin.ts` now imports those helpers instead of defining local helper logic, which makes the entry file more honestly assembly-focused without changing runtime behavior.
+
+### First restoration slice recommendation from archive evidence
+- The best first restoration slice is a standalone, markdown-first, read-only doc-intel foundation: `skim`, targeted section `read`, chunked `read`, and `search`.
+- Best archived source set: `.archive/legacy-src-20260314-140720/lib/doc-intel/read-ops.ts`, `.archive/legacy-src-20260314-140720/lib/doc-intel/types.ts`, `.archive/legacy-src-20260314-140720/lib/doc-intel/safety.ts`, `.archive/legacy-src-20260314-140720/lib/doc-intel/index.ts`, and `.archive/legacy-src-20260314-140720/lib/doc-intel/formats/md.ts`.
+- Keep absent in the first wave: all write paths, `.hivemind`/session/task/planning coupling, compatibility wrappers, public tool re-exposure, and heavier `xref`/`context`/`inspect` behaviors.
+
+### First-wave doc-intel foundation landed
+- `src/intelligence/doc/` now has a real standalone read foundation alongside the existing router: `types.ts`, `safety.ts`, `formats/md.ts`, and `read-ops.ts`.
+- The implemented first-wave surface is intentionally markdown-first and read-only: `skimDocument`, `skimDirectory`, `readSection`, `readChunked`, and `searchDocuments`.
+- The slice stays standalone: it reads plain markdown files under an arbitrary project root and does not depend on `.hivemind`, runtime attachment, session lineage, or old governance/task state.

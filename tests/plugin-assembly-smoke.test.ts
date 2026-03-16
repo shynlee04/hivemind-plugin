@@ -5,7 +5,7 @@
  * - HiveMindPlugin is a function
  * - It returns a Hooks object with expected hook keys
  * - No inline tool definitions in plugin entry source
- * - All 5 tools are registered
+ * - All 6 tools are registered
  * - New L5 hooks (chat.message, permission.ask, tool.execute.before) are registered
  */
 
@@ -21,6 +21,27 @@ describe('plugin assembly smoke test', () => {
     const src = await readFile(join(process.cwd(), 'src/plugin/opencode-plugin.ts'), 'utf-8')
     const inlineToolDefs = (src.match(/\btool\(\{/g) ?? []).length
     assert.equal(inlineToolDefs, 0, 'plugin entry should have zero inline tool({...}) definitions')
+  })
+
+  it('plugin entry source keeps helper logic out of the assembly file', async () => {
+    const src = await readFile(join(process.cwd(), 'src/plugin/opencode-plugin.ts'), 'utf-8')
+
+    const forbiddenLocalHelpers = [
+      'type MessageLike =',
+      'function createSyntheticPart(',
+      'function getMessageText(',
+      'function findLastUserMessage(',
+      'async function recordToolEvent(',
+      'const HIVEMIND_MANAGED_TOOLS =',
+    ]
+
+    for (const signature of forbiddenLocalHelpers) {
+      assert.equal(
+        src.includes(signature),
+        false,
+        `plugin entry should not define local helper logic: ${signature}`,
+      )
+    }
   })
 
   it('plugin entry exports HiveMindPlugin', async () => {
@@ -51,17 +72,18 @@ describe('plugin assembly smoke test', () => {
     assert.ok(hooks['tool.execute.before'], 'should have tool.execute.before hook')
   })
 
-  it('registers all 5 HiveMind tools', async () => {
+  it('registers all 6 HiveMind tools', async () => {
     const { input } = createMockPluginInput()
     const mod = await import('../src/plugin/opencode-plugin.js')
     const hooks = await mod.HiveMindPlugin(input)
 
     const toolKeys = Object.keys(hooks.tool ?? {})
+    assert.ok(toolKeys.includes('hivemind_doc'), 'should register doc tool')
     assert.ok(toolKeys.includes('hivemind_runtime_status'), 'should register runtime_status')
     assert.ok(toolKeys.includes('hivemind_runtime_command'), 'should register runtime_command')
     assert.ok(toolKeys.includes('hivemind_task'), 'should register task')
     assert.ok(toolKeys.includes('hivemind_trajectory'), 'should register trajectory')
     assert.ok(toolKeys.includes('hivemind_handoff'), 'should register handoff')
-    assert.equal(toolKeys.length, 5, 'should have exactly 5 tools')
+    assert.equal(toolKeys.length, 6, 'should have exactly 6 tools')
   })
 })

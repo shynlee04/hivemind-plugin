@@ -1,171 +1,47 @@
 ---
-description: "Enforce context-before-actions discipline. Validates investigation scope and evidence before proceeding."
+description: "Enforce context-before-actions discipline using the current runtime and direct codebase reads."
 agent: hiveminder
 ---
 
 # HiveMind Context-First Enforcer
 
-**Investigation should precede action for best results.**
+Use this helper before broad changes or when context feels thin.
 
-## Context-First Protocol
+## Current Runtime-Safe Flow
 
-### Phase 1: Investigation (Recommended)
+1. Inspect the live runtime first:
 
-**Before write/edit operations, consider:**
-
-```typescript
-// 1. Brownfield scan
-scan_hierarchy({ action: "analyze" })
-
-// 2. Check for stale context
-// Look for:
-// - "timestamp_gap" signals
-// - "framework_conflict" warnings
-// - "poisoned_context" flags
-
-// 3. Recall relevant memories
-recall_mems({ query: "[what you're about to work on]" })
-
-// 4. Load relevant anchors
-save_anchor({ mode: "list" })
+```ts
+hivemind_runtime_status({})
 ```
 
-### Phase 2: Codebase Exploration
+2. Read the real authority and planning surfaces for the current project:
+- `AGENTS.md`
+- `README.md`
+- `task_plan.md`
+- `findings.md`
+- `progress.md`
 
-**Find all relevant files:**
+3. Explore the codebase directly:
 
-```typescript
-// A. File discovery
-glob({ pattern: "**/*[keyword]*.{ts,js,md}" })
-
-// B. Content search
-grep({ pattern: "[function|class|pattern name]" })
-
-// C. Deep read (for complex tasks)
-Task({
-  subagent_type: "hivexplorer",
-  description: "Deep investigation of [area]",
-  prompt: "Read and analyze all files related to [topic]. Report patterns, relationships, and potential impact areas."
-})
-```
-
-### Phase 3: Understanding (MANDATORY)
-
-**Before modifying:**
-
-```typescript
-// Read specific files with context
+```ts
+glob({ pattern: "**/*keyword*.{ts,js,md}" })
+grep({ pattern: "relevant_pattern" })
 read({ filePath: "/absolute/path/to/file.ts" })
-read({ filePath: "/absolute/path/to/related.ts" })
-
-// Check patterns in similar files
-grep({ pattern: "similar pattern", include: "*.ts" })
 ```
 
-## Context Violation Detection
+4. If runtime state is missing or unhealthy, recover with the live command surface:
 
-**Auto-detected violations:**
-
-| Violation | Detection | Consequence |
-|-----------|-----------|-------------|
-| Write without read | `write_without_read_count` | Warning + required justification |
-| Edit without context | No prior reads in session | Block + require investigation |
-| Skip brownfield scan | No scan_hierarchy call | Warning + auto-trigger scan |
-| Ignore memories | `recall_mems` not called | Suggest memory check |
-
-## Evidence Requirements
-
-**Before claiming "context acquired":**
-
-```markdown
-## Context Evidence
-
-### Investigation Performed
-- [ ] scan_hierarchy({ action: "analyze" }) - Result: [summary]
-- [ ] recall_mems({ query: "..." }) - Found: [count] relevant
-- [ ] Files discovered: [list]
-- [ ] Key files read: [list]
-
-### Patterns Identified
-- Pattern 1: [description]
-- Pattern 2: [description]
-
-### Impact Analysis
-- Files affected: [list]
-- Dependencies: [list]
-- Risks: [list]
+```ts
+hivemind_runtime_command({ command: "hm-init" })
+// or
+hivemind_runtime_command({ command: "hm-doctor" })
 ```
 
-## Brownfield Protocol
+## Output Contract
 
-**For existing projects (ALWAYS):**
-
-```typescript
-// 1. Run brownfield scan
-scan_hierarchy({ action: "analyze", json: true })
-
-// 2. Check recommendations
-scan_hierarchy({ action: "recommend" })
-
-// 3. Establish baseline
-scan_hierarchy({ action: "orchestrate", json: true })
-
-// 4. Set intent
-declare_intent({ mode: "plan_driven", focus: "[specific work]" })
-map_context({ level: "tactic", content: "[specific approach]" })
-```
-
-## Context-Before-Actions Checklist
-
-**Tick before each write/edit:**
-
-- [ ] Relevant files read
-- [ ] Patterns understood
-- [ ] Edge cases identified
-- [ ] Similar implementations found
-- [ ] Impact assessed
-- [ ] Brownfield scan completed (if applicable)
-
-## Command Usage
-
-```bash
-# Validate context acquired
-/hivemind-context
-
-# Force brownfield protocol
-/hivemind-context --brownfield
-
-# Check context violations
-/hivemind-context --violations
-
-# Before specific write
-/hivemind-context --before-write="src/file.ts"
-```
-
-## Integration with Session Lifecycle
-
-**This command integrates with:**
-
-1. **session-lifecycle.ts** - Tracks reads vs writes
-2. **soft-governance.ts** - Detects violations
-3. **tool-gate.ts** - Blocks writes without context
-
-**Auto-triggers:**
-- On first write attempt → Check context exists
-- After 10 turns without scan → Warn about drift
-- When drift > 70 → Require scan_hierarchy
-
-## Enforcement Levels
-
-| Level | Trigger | Action |
-|-------|---------|--------|
-| Advisory | First violation | Warning in prompt |
-| Warning | 2+ violations | Required justification |
-| Blocked | 3+ violations | Cannot write without scan |
-
-## Skill Loading
-
-```typescript
-skill({ name: "context-integrity" })
-skill({ name: "evidence-discipline" })
-```
+Report in this order:
+1. Runtime readiness
+2. Files and artifacts reviewed
+3. Key patterns or risks found
+4. Smallest safe next step

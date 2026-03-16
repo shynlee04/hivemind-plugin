@@ -14,7 +14,7 @@ permission:
     "ls *": allow
     "pwd": allow
     "rg *": allow
-  hivemind-doc: allow
+  hivemind_doc: allow
 contract:
   may_execute: true
   may_delegate: false

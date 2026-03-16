@@ -24,3 +24,7 @@ Refactor the current `ecosystem-revamp` codebase into a stable, source-aligned H
 - Do not begin broad implementation until the stabilization roadmap is reviewed.
 - Prefer current source plus the master model over older narrative docs when they disagree.
 - Recovery note: completed background exploration was recovered from agent session transcripts after disconnect.
+- Current bounded stabilization work has moved from discovery into targeted source cleanup slices.
+- Latest completed slice: make `src/plugin/opencode-plugin.ts` more honestly assembly-only by extracting helper and tool-governance logic into hook modules.
+- Latest completed restoration-enabling slice: standalone markdown-first read-only doc intelligence (`skim`, section `read`, chunked `read`, `search`) sourced from the archived doc-intel library modules.
+- Next likely slice: align shipped truth surfaces and then expose only the same fixed first-wave doc-intel behavior through a narrow public tool surface, without reintroducing write paths or heavier inspect/xref/context actions.

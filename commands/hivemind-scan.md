@@ -8,53 +8,49 @@ agent: hiveminder
 You are performing a HiveMind brownfield reconnaissance and stabilization scan.
 Run this before any major refactor or when entering an unfamiliar project.
 
-## Step 1: Analyze
-Call:
+## Step 1: Inspect runtime readiness
+Call the live runtime inspection tool:
 
 ```ts
-scan_hierarchy({ action: "analyze", json: true })
+hivemind_runtime_status({})
 ```
 
 Extract and report:
-- Project name and stack hints
-- Framework mode (`gsd`, `spec-kit`, `both`, `none`) + BMAD detection
-- Top-level structure and notable artifacts
-- Any stale/context-poisoning signals
+- Runtime attachment state
+- Active trajectory/workflow/task bindings
+- Missing profile or bootstrap fields
+- Available `hm-*` command surfaces
 
-## Step 2: Recommend
-Call:
+## Step 2: Analyze the repo directly
+Read the actual project surfaces before recommending action:
 
-```ts
-scan_hierarchy({ action: "recommend" })
-```
+- root `AGENTS.md`
+- `README.md`
+- top-level project structure
+- any active planning artifacts such as `task_plan.md`, `findings.md`, and `progress.md`
 
 Focus on:
-- Framework conflict handling (especially `.planning` + `.spec-kit`)
-- Poisoned-context cleanup order
-- Explicit lifecycle sequence (`declare_intent` -> `map_context` -> execution)
+- authority drift between docs and source
+- runtime readiness gaps blocking `hm-*` workflows
+- the safest next bounded slice
 
-## Step 3: Orchestrate Baseline (Safe, Non-Destructive)
-If HiveMind is initialized, call:
-
-```ts
-scan_hierarchy({ action: "orchestrate", json: true })
-```
-
-This persists baseline intelligence:
-- Anchors for stack/framework/risk context
-- `project-intel` memory entry for cross-session continuity
-
-## Step 4: Lock Execution Focus
-Call:
+## Step 3: Bootstrap or repair only if needed
+If the runtime status shows missing or unhealthy state, call the live runtime command tool:
 
 ```ts
-declare_intent({ mode: "exploration", focus: "Brownfield stabilization" })
-map_context({ level: "tactic", content: "Context purification and framework resolution" })
+hivemind_runtime_command({ command: "hm-init" })
+// or
+hivemind_runtime_command({ command: "hm-doctor" })
 ```
+
+Then re-check readiness with `hivemind_runtime_status({})`.
+
+## Step 4: Recommend the next bounded move
+Do not invent legacy lifecycle calls. Recommend the smallest source-backed next step based on the current runtime and the files you actually read.
 
 ## Output Contract
 Report in this order:
-1. Risks and framework mode
-2. Recommendation sequence
-3. Orchestrated baseline status (anchors/memory)
+1. Runtime readiness and blockers
+2. Authority or source-truth risks
+3. Recovery action taken, if any
 4. Next executable step

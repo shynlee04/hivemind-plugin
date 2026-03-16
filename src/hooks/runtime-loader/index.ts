@@ -3,3 +3,4 @@
  */
 
 export * from './runtime-stage.js'
+export * from './tool-governance.js'

@@ -160,4 +160,43 @@ describe('plugin runtime plan', () => {
     assert.equal(reminder?.includes('risk=none'), true)
     assert.equal(reminder?.includes('next_transition=command:hm-plan'), true)
   })
+
+  it('keeps mixed-intent prompts advisory through the plugin runtime plan', async () => {
+    const response = await createPluginRuntimePlan({
+      startWork: {
+        userMessage: 'I was thinking we may need to refactor session handling, but first research what other frameworks do, and also there is a failing test, and should we add TDD for this?',
+        sessionId: 'ses_runtime_mixed',
+        sessionScope: 'main',
+        activeLineage: 'hivefiver',
+        hasHivemind: true,
+        hivemindHealthy: true,
+        hasWorkflow: true,
+        hasHandoff: false,
+      },
+      promptState: {
+        sessionId: 'ses_runtime_mixed',
+        sessionScope: 'main',
+        preferredUserName: 'Apple',
+        lineage: 'hivefiver',
+        workflowId: 'wf_runtime_mixed',
+        branchFocus: 'mixed-intent safety',
+        language: 'en',
+        artifactLanguage: 'en',
+        governanceMode: 'strict',
+        automationLevel: 'guided',
+        expertLevel: 'advanced',
+        outputStyle: 'concise',
+      },
+    })
+
+    assert.equal(response.status, 'success')
+    assert.equal(response.data?.startWork.purposeClass, 'research')
+    assert.equal(response.data?.startWork.recommendedCommandId, 'hm-research')
+    assert.equal(response.data?.startWork.autoRoute, false)
+    assert.equal(response.data?.entryKernel.routing.recommendedCommandId, 'hm-research')
+    assert.equal(response.data?.entryKernel.routing.autoRoute, false)
+    assert.equal(response.data?.autoSlash.commandBinding.bindingKind, 'workflow-command')
+    assert.equal(response.data?.autoSlash.commandBinding.autoRoute, false)
+    assert.equal(response.data?.commandPreview?.frontmatter.agent, 'hiverd')
+  })
 })

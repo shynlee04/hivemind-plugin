@@ -1,204 +1,25 @@
 ---
-description: "Invoke the hiveminder agent for strategic planning, architecture review, or cross-agent orchestration."
+description: "Invoke hiveminder for current-runtime planning, analysis, and orchestration without legacy lifecycle verbs."
 agent: hiveminder
 subtask: false
 ---
+
 # HiveMind Orchestration Command
 
-<enforcement>
-Runtime pre-turn gate:
-!`bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh pre-turn .`
-
-Scoped parity check (hiveminder domain only):
-!`bash .opencode/skills/hivefiver-coordination/scripts/hivefiver-tools.sh parity check 'hiveminder|hivemind'`
-
-Pipeline state snapshot:
-!`bash .opencode/skills/hivefiver-coordination/scripts/state-update.sh read .`
-</enforcement>
-
-## Task
-
-$ARGUMENTS
-
-## Usage
-
-```
-/hiveminder-orchestrate [action] [scope]
-```
-
-**Actions:**
-- `plan` - Strategic planning for $ARGUMENTS
-- `review` - Architecture review of $ARGUMENTS
-- `analyze` - Deep analysis of $ARGUMENTS
-- `debug` - Orchestrate debug workflow for $ARGUMENTS
-
-**Examples:**
-```
-/hiveminder-orchestrate plan authentication system
-/hiveminder-orchestrate review src/lib/
-/hiveminder-orchestrate analyze performance bottlenecks
-/hiveminder-orchestrate debug test failures in v3 suite
-```
+Use this helper for strategic planning, review, or orchestration.
 
 ## Workflow
 
-### Step 1: Governance Checkpoint
-Load governance skill and verify session state:
-
-```ts
-skill("hivemind-governance")
-skill("session-lifecycle")
-skill("delegation-intelligence")
-skill("evidence-discipline")
-scan_hierarchy({ action: "analyze", json: true })
-```
-
-Extract:
-- Session ID and mode
-- Current drift score
-- Trajectory alignment status
-
-### Step 2: Context Acquisition
-Gather necessary context before planning:
-
-```ts
-scan_hierarchy({ action: "analyze" })
-save_anchor({ mode: "list" })
-recall_mems({ query: "[relevant topic]" })
-```
-
-Focus on:
-- Current hierarchy state (trajectory -> tactic -> action)
-- Immutable anchors and locked decisions
-- Related memories from past sessions
-
-### Step 3: Analysis Phase
-Deep scan target area:
-
-```ts
-// For code analysis
-glob({ pattern: "[target]/**/*" })
-grep({ pattern: "[relevant-pattern]", include: "[file-pattern]" })
-
-// For state analysis
-scan_hierarchy({ action: "recommend" })
-```
-
-Identify:
-- Patterns found in codebase
-- Gaps in implementation
-- Technical debt items
-- Risk areas
-
-### Step 4: Planning Phase
-Create strategic plan with tactics:
-
-```ts
-declare_intent({ mode: "plan_driven", focus: "[focus area]" })
-map_context({ level: "tactic", content: "[tactic description]" })
-```
-
-Define:
-- Tactics (high-level approaches)
-- Actions (specific implementation steps)
-- Quality gates (verification criteria)
-
-### Step 5: Delegation Phase
-Coordinate specialized agents:
-
-```ts
-// Parallel delegation for independent tasks
-task({ subagent_type: "hivemaker", description: "[task 1]", prompt: "..." })
-task({ subagent_type: "hivexplorer", description: "[task 2]", prompt: "..." })
-
-// Export cycle after delegation
-export_cycle({ outcome: "success", findings: "[summary]" })
-```
-
-Assign:
-- Task to specialized agent
-- Parallel vs sequential execution
-- Verification requirements
+1. Check runtime readiness with `hivemind_runtime_status({})`.
+2. Read the current authority and planning files directly.
+3. Analyze the relevant source paths with `glob`, `grep`, and `read`.
+4. Produce one bounded plan or one bounded delegation packet.
+5. Verify delegated returns before reporting back.
 
 ## Output Format
 
-```
-=== HIVEMINDER ORCHESTRATION ===
-
-## Context
-- Session: [session-id]
-- Focus: [analysis area]
-- Drift: [score]/100
-
-## Analysis
-- Patterns found: [count]
-- Gaps identified:
-  1. [gap 1]
-  2. [gap 2]
-- Technical debt:
-  1. [debt item 1]
-  2. [debt item 2]
-
-## Strategic Plan
-1. [Tactic 1]
-   - Action: [specific step]
-   - Agent: [assigned agent type]
-   - Gate: [verification command]
-
-2. [Tactic 2]
-   - Action: [specific step]
-   - Agent: [assigned agent type]
-   - Gate: [verification command]
-
-## Quality Gates
-- [ ] Type check: `npx tsc --noEmit`
-- [ ] Tests pass: `npm test`
-- [ ] Code review requested
-
-## Next Steps
-- [ ] [Step 1 - immediate action]
-- [ ] [Step 2 - follow-up]
-- [ ] [Step 3 - verification]
-
-=== END ORCHESTRATION ===
-```
-
-## Agent Assignment Guide
-
-| Task Type | Agent | Use Case |
-|-----------|-------|----------|
-| Investigation | `hivexplorer` | Deep codebase analysis, pattern detection |
-| Implementation | `hivemaker` | Code changes, refactoring, new features |
-| Review | `hivehealer` | Quality validation, architecture review |
-| Exploration | `hivexplorer` | Quick file searches, context gathering |
-
-## Constraints
-
-- NEVER skip governance checkpoint
-- ALWAYS read files before planning changes
-- ALWAYS request code review before finalizing
-- NEVER delegate to same agent type (hivemaker -> hivemaker)
-- ALWAYS export cycle after delegation returns
-
-## Unknown Action Fallback
-
-If action is missing or not one of `plan`, `review`, `analyze`, `debug`:
-1. Default to `analyze`
-2. Return a warning in output under `analysis` describing the fallback
-3. Continue execution with scoped parity and governance evidence
-
-## Post-Turn Enforcement
-
-Run before final output:
-
-```bash
-bash .opencode/skills/hivefiver-coordination/scripts/runtime-gate.sh post-turn .
-```
-
-## Exit Conditions
-
-Orchestration completes when:
-1. All tactics have assigned actions
-2. Quality gates are defined
-3. Delegation chain is established
-4. Export cycle has recorded findings
+Return:
+- current runtime state
+- key findings
+- bounded plan or delegation route
+- explicit verification gate for the next step

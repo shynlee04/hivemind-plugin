@@ -57,9 +57,9 @@ This project builds ON the OpenCode SDK. The SDK is the authority - not custom r
 | `chat.message` | Available | Track messages per-session - use instead of custom session tracking |
 | `chat.params` | Available | Control temperature/topP/topK per-agent |
 | `chat.headers` | Available | Custom auth headers per request |
-| `permission.ask` | Available | Gate file/state mutations with user consent |
+| `permission.ask` | Yes Used | Gate file/state mutations with user consent |
 | `command.execute.before` | Yes Used | Pre-command context injection |
-| `tool.execute.before` | Available | Pre-validate or transform tool args before execution |
+| `tool.execute.before` | Yes Used | Pre-validate or transform tool args before execution |
 | `tool.execute.after` | Yes Used | Post-tool observation and state capture |
 | `tool.definition` | Available | Dynamically modify tool descriptions and parameters |
 | `shell.env` | Yes Used | Inject environment variables |
@@ -75,9 +75,9 @@ This project builds ON the OpenCode SDK. The SDK is the authority - not custom r
 `client.session`, `client.command`, `client.tui`, `client.vcs`, `client.mcp`, `client.pty`, `client.file`, `client.find`, `client.tool`, `client.config`, `client.app`, `client.provider`, `client.lsp`, `client.formatter`, `client.auth`, `client.event`, `client.global`, `client.path`
 
 Key capabilities currently underutilized:
-- `client.app.log()` - structured server logging (instead of custom `shared/logging.ts`)
-- `client.tui.showToast()` - native notifications (instead of empty `soft-governance.ts`)
 - `client.session.*` - session management (instead of dead `core/session/kernel.ts`)
+- `client.app.agents()` - runtime agent validation for shipped framework surfaces
+- `client.tool.ids()` - runtime tool validation for shipped framework surfaces
 
 ### Tool Definition - `tool.schema` IS Zod
 
@@ -136,12 +136,13 @@ npm test                  # Full test suite
 npx tsx --test tests/<file>.test.ts  # Single test
 ```
 
-## Custom Tools (5)
+## Custom Tools (6)
 
 | Tool | Location | Pattern |
 |------|----------|---------|
 | `hivemind_runtime_status` | `src/tools/runtime/` | Correct pattern |
 | `hivemind_runtime_command` | `src/tools/runtime/` | Correct pattern |
+| `hivemind_doc` | `src/tools/doc/` | Correct pattern |
 | `hivemind_task` | `src/tools/task/` | Correct pattern |
 | `hivemind_trajectory` | `src/tools/trajectory/` | Correct pattern |
 | `hivemind_handoff` | `src/tools/handoff/` | Correct pattern |
@@ -174,11 +175,11 @@ npx tsx --test tests/<file>.test.ts  # Single test
 
 - [x] `core/session/` - **REMOVED** (L1 cutover, zero consumers confirmed)
 - [x] `shared/event-bus.ts` - **REMOVED** (L1 cutover, only consumer was deleted `core/session/kernel.ts`)
-- [ ] `shared/logging.ts` - should augment with `client.app.log()`
+- [x] `shared/logging.ts` - now augments with `client.app.log()`
 - [x] `hooks/soft-governance.ts` - now uses `client.tui.showToast()` with cooldown tracking
 - [x] 2 inline tools in `opencode-plugin.ts` - extracted to `src/tools/runtime/`
 - [x] Zero Zod in tool defs - current tool args use `tool.schema`
-- [ ] `intelligence/doc/` - router-only stub, full restoration planned for future version
+- [ ] `intelligence/doc/` - first-wave markdown read foundation is live; public read-only expansion is in progress and broader restoration remains future work
 - [ ] Type monoliths (6 types with 17-25 fields) - decompose per Interface Decomposition principle
 
 ## Reference

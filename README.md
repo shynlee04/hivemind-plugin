@@ -216,6 +216,7 @@ The current source-backed tool set is:
 
 | Tool | Purpose |
 |------|---------|
+| `hivemind_doc` | Read-only markdown document intelligence: skim outlines, read sections, chunk large docs, and search project artifacts |
 | `hivemind_runtime_status` | Inspect runtime attachment, workflow state, and available command surfaces |
 | `hivemind_runtime_command` | Run canonical `hm-*` control-plane and workflow bundles through the runtime bridge |
 | `hivemind_task` | Create, inspect, activate, verify, and complete workflow tasks |

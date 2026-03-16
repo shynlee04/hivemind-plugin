@@ -58,3 +58,44 @@
 ### Documentation Truth Alignment
 - Updated root and sector `AGENTS.md` files to remove stale claims about inline runtime tools, absent `tool.schema` adoption, and empty soft-governance wiring.
 - Updated `README.md` so high-visibility product framing now points to the master model and no longer presents frozen tool/skill counts as the authoritative current runtime picture.
+
+### End-to-End Runtime Routing Proof
+- Added a mixed-intent advisory-routing regression to `tests/plugin-runtime.test.ts`.
+- The new test passed immediately, confirming the runtime plan layer already preserves the safer start-work routing behavior.
+
+### Verification Evidence (Plugin Runtime Slice)
+- `npx tsx --test tests/plugin-runtime.test.ts` -> pass.
+- `npx tsx --test tests/plugin-runtime.test.ts tests/start-work-router.test.ts tests/slash-command-stack.test.ts tests/control-plane-runtime-tools.test.ts` -> all pass.
+- `npx tsc --noEmit` -> pass.
+- `npm run build` -> pass.
+- Manual QA via `node --input-type=module` against `dist/index.js` returned `purposeClass: "research"`, `recommendedCommandId: "hm-research"`, `autoRoute: false`, `bindingKind: "workflow-command"`, `commandBindingAutoRoute: false`, `previewAgent: "hiverd"`.
+
+### Blocker Reassessment
+- Retrieved a fresh blocker ranking after the completed runtime/routing/truth-alignment slices.
+- The top remaining blocker with a bounded next step was plugin-entry boundary blur in `src/plugin/opencode-plugin.ts`, followed by centralized mutation gating and shipped truth-surface drift.
+- The archive/doc-intel research completed in parallel and confirmed the first safe restoration target is a markdown-first, read-only library slice (`skim`, section `read`, chunked `read`, `search`) rather than write paths or public tool restoration.
+
+### Plugin Assembly Boundary Cleanup
+- Wrote a failing regression in `tests/plugin-assembly-smoke.test.ts` asserting that `src/plugin/opencode-plugin.ts` must not define local helper logic or managed-tool policy constants.
+- Extracted prompt helper logic into `src/hooks/prompt-transformation/synthetic-parts.ts`.
+- Extracted managed-tool policy and trajectory tool-event recording into `src/hooks/runtime-loader/tool-governance.ts`.
+- Updated `src/plugin/opencode-plugin.ts` to import those helpers instead of defining them inline.
+
+### Verification Evidence (Plugin Boundary Slice)
+- `npx tsx --test tests/plugin-assembly-smoke.test.ts` -> fail first on local helper logic, then pass after refactor.
+- `npx tsx --test tests/plugin-assembly-smoke.test.ts tests/plugin-runtime.test.ts tests/control-plane-runtime-tools.test.ts` -> all pass.
+- `npx tsc --noEmit` -> pass.
+- `npm run build` -> pass.
+- Manual QA via `node --input-type=module` against `dist/index.js` confirmed `permission.ask` remains registered and still auto-allows `hivemind_task` with `status: "allow"` and no toast.
+
+### First-Wave Doc-Intel Foundation
+- Added `tests/doc-intelligence-read.test.ts` as the first focused restoration target for standalone markdown-first read behavior.
+- Implemented the minimal read-only library surface under `src/intelligence/doc/`: `types.ts`, `safety.ts`, `formats/md.ts`, and `read-ops.ts`.
+- Updated `src/intelligence/doc/index.ts` to export the new read foundation alongside the existing router surface.
+
+### Verification Evidence (Doc-Intel Slice)
+- `npx tsx --test tests/doc-intelligence-read.test.ts` -> fail first on missing exports, then pass after implementation.
+- `npx tsx --test tests/plugin-assembly-smoke.test.ts tests/plugin-runtime.test.ts tests/control-plane-runtime-tools.test.ts tests/doc-intelligence-read.test.ts` -> all pass.
+- `npx tsc --noEmit` -> pass.
+- `npm run build` -> pass.
+- Manual QA via `node --input-type=module` against `dist/index.js` returned `skimTitle: "Manual Guide"`, `firstHeading: "Intro"`, `section: "Plugin boundary verification lives here."`, `resultCount: 1`.
