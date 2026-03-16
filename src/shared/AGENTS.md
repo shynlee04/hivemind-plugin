@@ -20,7 +20,14 @@ Common modules used across the plugin.
 | `runtime-attachment.ts` | ✅ | Settings load/save + runtime bindings snapshot |
 | `pressure-contract.ts` | ✅ | Pressure contract registry and resolution |
 | `opencode-knowledge.ts` | ✅ | OpenCode-specific knowledge surfaces |
+| `opencode-agent-registry.ts` | ✅ | Canonical agent parsing + OpenCode-safe runtime projection |
 | `logging.ts` | ⚠️ | Custom logger — supplement with `client.app.log()` |
+
+## Runtime Projection Rule
+
+- Root `agents/**` may carry HiveMind-only contract metadata for authoring and governance.
+- `.opencode/agents/**` must be generated through `opencode-agent-registry.ts`, which strips non-SDK frontmatter and validates the remaining projection against the OpenCode-safe schema.
+- Never copy canonical agent files directly into `.opencode/agents/**`.
 
 ## Dedup Needed
 

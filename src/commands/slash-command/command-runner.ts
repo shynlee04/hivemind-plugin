@@ -2,6 +2,7 @@ import { recordTrajectoryEvent } from '../../core/trajectory/index.js'
 import { loadCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
 import { executeControlPlaneHandler } from '../../control-plane/index.js'
 import { detectEntryKernelState } from '../../shared/entry-kernel-state.js'
+import { assertSlashCommandAgentBindings } from '../../shared/opencode-agent-registry.js'
 import { createRuntimeInvocation } from '../../shared/runtime-invocation.js'
 import {
   createTurnOutputEnvelope,
@@ -18,6 +19,7 @@ import { findSlashCommandBundle } from './command-discovery.js'
 export async function previewSlashCommandBundle(
   bundle: SlashCommandBundle,
 ): Promise<CommandExecutionPreview> {
+  assertSlashCommandAgentBindings([bundle])
   const asset = await loadCommandAsset(bundle.id)
 
   return {
@@ -39,6 +41,7 @@ export async function executeSlashCommandBundle(
   bundle: SlashCommandBundle,
   input: CommandExecutionInput,
 ): Promise<CommandExecutionResult> {
+  assertSlashCommandAgentBindings([bundle])
   const autoRecovered = await maybeAutoRecoverEntry(bundle, input)
   if (autoRecovered) {
     return autoRecovered

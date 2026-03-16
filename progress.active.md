@@ -38,6 +38,21 @@
 - Reconcile framework agent contracts that drifted during previous edits, starting with `hivefiver`, `hivemaker`, `hivehealer`, and `hiveplanner`.
 - Enforce stable non-date-stamped SOT/governance paths for install and compatibility entry surfaces.
 
+### New Active Slice
+- Canonical root `agents/**` remain HiveMind authoring truth, including contract metadata.
+- Runtime `.opencode/agents/**` must now be generated from an OpenCode-safe schema projection, not copied verbatim from source.
+- Slash-command bundles must only target agents present in the projected registry.
+- Repo parity checks must compare runtime agent files against generated projection output, not raw canonical markdown.
+
+### New Evidence
+- Official OpenCode docs confirm markdown agents are configured through supported frontmatter fields like `description`, `mode`, `tools`, `permission`, `model`, and `temperature`.
+- Official OpenCode config schema at `https://opencode.ai/config.json` confirms the agent/config contract is schema-shaped and bounded.
+- `oh-my-opencode` validates plugin-facing config with an explicit JSON schema and TypeScript/Zod-backed loading, which reinforces projection + validation over raw copy behavior.
+- `tests/opencode-agent-projection.test.ts` now covers:
+  - schema-valid runtime projection from canonical agent markdown
+  - runtime sync writing projected `.opencode/agents/**`
+  - slash-command bundle to projected-agent binding integrity
+
 ### Completed Slice
 - `hivemind_runtime_command` auto-init now creates user-side `.opencode/**` through the init authority path instead of leaving that responsibility to harness or repo-time assumptions.
 - `hm-doctor` now re-syncs runtime surfaces when recovery reaches a healthy state.

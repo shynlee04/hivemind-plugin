@@ -27,3 +27,4 @@ Defines, discovers, and executes slash-command bundles that map to `.opencode/co
 - Bundle `commandFile` maps to a `.md` asset in `commands/`
 - Bundles are the bridge between CLI invocation and control-plane handling
 - Bundle metadata is runtime authority; command frontmatter must mirror `id`, `agent`, and `commandFile` rather than inventing parallel routing truth
+- Command execution must fail fast if a bundle references an agent that is missing from the schema-validated runtime registry projection

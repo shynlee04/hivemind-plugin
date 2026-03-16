@@ -42,6 +42,7 @@ Every root agent profile in `agents/**` should expose the same contract fields s
 Contract rules:
 - Root `agents/**` definitions are authoritative.
 - `.opencode/agents/**` should stay synced to root definitions only after first-run runtime projection; repo-time checks must not require it to exist.
+- `src/shared/opencode-agent-registry.ts` owns the schema-validated projection from canonical root agent frontmatter into OpenCode-safe runtime agent markdown.
 - `hiveminder` stays orchestration-only: delegation, acceptance, and verification authority; no direct implementation posture.
 - `hivefiver` is the framework-writer for framework assets and may optionally delegate only for bounded research, planning, or verification support.
 - `hivexplorer`, `hiverd`, and `hiveq` stay terminal and non-mutating.

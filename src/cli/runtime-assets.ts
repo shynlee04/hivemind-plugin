@@ -1,9 +1,10 @@
-import { copyFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, resolve } from 'node:path'
 
 import { discoverSlashCommandBundles } from '../commands/slash-command/command-discovery.js'
+import { createOpencodeAgentRegistry } from '../shared/opencode-agent-registry.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PACKAGE_ROOT = resolve(__dirname, '..', '..')
@@ -58,21 +59,10 @@ async function ensureAgentMirror(directory: string): Promise<string[]> {
   const targetDir = join(directory, '.opencode', 'agents')
   await mkdir(targetDir, { recursive: true })
   const mirrored: string[] = []
-  const sourceDir = join(PACKAGE_ROOT, 'agents')
 
-  if (!existsSync(sourceDir)) {
-    return mirrored
-  }
-
-  const agentEntries = await readdir(sourceDir, { withFileTypes: true })
-  for (const entry of agentEntries) {
-    if (!entry.isFile() || !entry.name.endsWith('.md')) {
-      continue
-    }
-
-    const source = join(sourceDir, entry.name)
-    const target = join(targetDir, entry.name)
-    await copyFile(source, target)
+  for (const agent of createOpencodeAgentRegistry(PACKAGE_ROOT)) {
+    const target = join(targetDir, `${agent.id}.md`)
+    await writeFile(target, agent.runtimeMarkdown, 'utf-8')
     mirrored.push(target)
   }
 

@@ -13,6 +13,7 @@ Advance the long-haul schema-first harness work by fixing the current red gate w
 - [complete] Write/update failing tests for first-run projection ownership and framework-agent boundary truth
 - [complete] Implement the minimal framework/code changes to pass those tests
 - [complete] Re-run verification, update rolling artifacts, enforce stable SOT path rules, and prepare the atomic commit
+- [in_progress] Enforce schema-validated OpenCode agent projection and deterministic slash-command agent binding
 
 ## Bounded Slice
 1. Update the root rolling artifacts with the corrected runtime-projection rule.
@@ -56,6 +57,23 @@ Advance the long-haul schema-first harness work by fixing the current red gate w
 - Full suite is green after the correction.
 - Stable-path governance rules are now encoded in README, AGENTS, tests, and compatibility symlinks.
 - Next slice should target the broader lifecycle/schema constitution work rather than more `.opencode/**` ownership cleanup.
+
+## Active Red-Green Slice
+1. Red:
+   - prove canonical `agents/**` cannot be mirrored raw into `.opencode/agents/**`
+   - prove every slash-command bundle resolves to a registered projected agent
+2. Green:
+   - add shared OpenCode-safe agent projection registry
+   - switch runtime agent sync to projection output
+   - fail fast during bundle preview/execution when an agent binding is missing
+   - make repo parity checks compare against generated projection, not raw source files
+3. Verification:
+   - `npx tsx --test tests/opencode-agent-projection.test.ts`
+   - `npx tsx --test tests/plugin-runtime.test.ts tests/runtime-turn-output.test.ts tests/agent-boundary-policy.test.ts`
+   - `bash scripts/check-agent-registry-parity.sh`
+   - `npx tsc --noEmit`
+   - `npm test`
+   - `npm run build`
 
 ## Next Verification Commands
 - `bash scripts/check-agent-registry-parity.sh`

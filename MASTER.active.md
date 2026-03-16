@@ -9,6 +9,11 @@
 - New addition: after every completed runtime turn, the system emits a native-feeling assistant message plus a paired structured turn-output schema. Sub-session outputs use the same family but are delegation-aware and link back to the parent chain. These exports become the long-haul memory, handoff, investigation, and resume substrate.
 
 ## Current Traversal Loop - 2026-03-17
+- Active schema/runtime slice:
+  - keep root `agents/**` as canonical HiveMind authoring assets
+  - generate `.opencode/agents/**` through a schema-validated OpenCode-safe projection
+  - make slash-command execution fail fast if a bundle points to an unregistered agent
+  - keep this slice executable and test-backed rather than expanding docs
 - Fresh validation checkpoint:
   - `npx tsc --noEmit` passes
   - `npm test` is currently blocked by repo-time assumptions that `.opencode/**` exists in the framework worktree
