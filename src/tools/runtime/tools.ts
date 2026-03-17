@@ -61,6 +61,8 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
       const availableCommands = discoverSlashCommandBundles().map((bundle) => bundle.id)
       const payload: HivemindRuntimeStatusPayload = {
         ...statusSnapshot,
+        workflowSummary: statusSnapshot.workflowSummary,
+        recentEvents: statusSnapshot.recentEvents,
         workflowGateState: {
           availableCommands,
         },

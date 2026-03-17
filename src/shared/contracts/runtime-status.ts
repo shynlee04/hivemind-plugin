@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { runtimeRecentEventSchema } from './runtime-events.js'
+
 export const runtimeAuthoritySchema = z.enum(['managed-sdk', 'attached-sdk', 'none'])
 
 export const runtimeStatusEntryStateSchema = z.object({
@@ -31,6 +33,21 @@ export const runtimeEntryDecisionSchema = z.object({
   recommendedCommands: z.array(z.string()),
 })
 
+export const runtimeWorkflowGateStateSchema = z.enum([
+  'idle',
+  'bootstrap-required',
+  'qa-pending',
+  'blocked',
+  'ready',
+])
+
+export const runtimeWorkflowSummarySchema = z.object({
+  workflowId: z.string(),
+  gateState: runtimeWorkflowGateStateSchema,
+  currentTaskIds: z.array(z.string()),
+  currentSubtaskIds: z.array(z.string()),
+})
+
 export const runtimeStatusSchema = z.object({
   runtimeAuthority: runtimeAuthoritySchema,
   runtimeInstanceId: z.string().optional(),
@@ -38,6 +55,8 @@ export const runtimeStatusSchema = z.object({
   entryState: runtimeStatusEntryStateSchema,
   qaState: runtimeStatusQaStateSchema,
   lineageSessionState: runtimeStatusLineageSessionStateSchema,
+  workflowSummary: runtimeWorkflowSummarySchema.nullable().default(null),
+  recentEvents: z.array(runtimeRecentEventSchema).default([]),
 })
 
 export type RuntimeStatusEntryState = z.infer<typeof runtimeStatusEntryStateSchema>
@@ -45,6 +64,8 @@ export type RuntimeStatusQaState = z.infer<typeof runtimeStatusQaStateSchema>
 export type RuntimeStatusLineageSessionState = z.infer<typeof runtimeStatusLineageSessionStateSchema>
 export type RuntimeEntryCloseoutStatus = z.infer<typeof runtimeEntryCloseoutStatusSchema>
 export type RuntimeEntryDecision = z.infer<typeof runtimeEntryDecisionSchema>
+export type RuntimeWorkflowGateState = z.infer<typeof runtimeWorkflowGateStateSchema>
+export type RuntimeWorkflowSummary = z.infer<typeof runtimeWorkflowSummarySchema>
 export type RuntimeStatus = z.infer<typeof runtimeStatusSchema>
 
 function resolveRecommendedCommands(input: {
