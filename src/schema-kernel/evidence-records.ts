@@ -32,6 +32,27 @@ export const recoveryReplayEnvelopeSchema = z.object({
   recordedAt: timestampSchema,
 }).strict()
 
+export interface CreateArtifactFreshnessRegistryRecordInput {
+  artifactRef: string
+  status: ArtifactFreshnessRegistryRecord['artifacts'][number]['status']
+  checkedAt: string
+  inputs?: string[]
+}
+
+export function createArtifactFreshnessRegistryRecord(
+  input: CreateArtifactFreshnessRegistryRecordInput,
+): ArtifactFreshnessRegistryRecord {
+  return artifactFreshnessRegistrySchema.parse({
+    version: 'v1',
+    artifacts: [{
+      artifactRef: input.artifactRef,
+      status: input.status,
+      checkedAt: input.checkedAt,
+      inputs: input.inputs ?? [],
+    }],
+  })
+}
+
 export type ArtifactFreshnessRegistryRecord = z.infer<typeof artifactFreshnessRegistrySchema>
 export type DeadlockCheckpointRecord = z.infer<typeof deadlockCheckpointSchema>
 export type RecoveryReplayEnvelopeRecord = z.infer<typeof recoveryReplayEnvelopeSchema>

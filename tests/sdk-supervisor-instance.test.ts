@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 import {
+  createSupervisorStatusReport,
   createSupervisorInstanceRegistry,
   registerSupervisorInstance,
   summarizeSupervisorHealth,
@@ -45,5 +46,18 @@ describe('sdk supervisor instance registry', () => {
     assert.equal(summary.healthyInstances, 1)
     assert.equal(summary.degradedInstances, 1)
     assert.equal(summary.blockedInstances, 0)
+  })
+
+  it('builds a runtime-status supervisor report with validated registry output', () => {
+    const report = createSupervisorStatusReport({
+      instanceId: 'sup_runtime_status',
+      status: 'degraded',
+      startedAt: '2026-03-17T00:00:00.000Z',
+      lastHeartbeatAt: '2026-03-17T00:00:05.000Z',
+    })
+
+    assert.equal(report.registry.version, 'v1')
+    assert.equal(report.registry.instances[0]?.transport, 'same-local-env')
+    assert.equal(report.health.overallStatus, 'degraded')
   })
 })

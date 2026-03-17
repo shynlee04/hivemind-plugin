@@ -59,6 +59,33 @@ export const workflowGuardStateSchema = z.object({
   writableSurfaceStatus: z.enum(['exclusive', 'shared-conflict']),
 }).strict()
 
+export interface CreateSessionRegistryRecordInput {
+  sessionId: string
+  scope: SessionRegistryRecord['sessions'][number]['scope']
+  leaseId: string
+  status: SessionRegistryRecord['sessions'][number]['status']
+  workflowIds?: string[]
+  writableSurfaces?: string[]
+  updatedAt: string
+}
+
+export function createSessionRegistryRecord(
+  input: CreateSessionRegistryRecordInput,
+): SessionRegistryRecord {
+  return sessionRegistrySchema.parse({
+    version: 'v1',
+    sessions: [{
+      sessionId: input.sessionId,
+      scope: input.scope,
+      leaseId: input.leaseId,
+      status: input.status,
+      workflowIds: input.workflowIds ?? [],
+      writableSurfaces: input.writableSurfaces ?? [],
+      updatedAt: input.updatedAt,
+    }],
+  })
+}
+
 export type SupervisorInstanceRegistryRecord = z.infer<typeof supervisorInstanceRegistrySchema>
 export type SessionRegistryRecord = z.infer<typeof sessionRegistrySchema>
 export type WorkflowExecutionGraphRecord = z.infer<typeof workflowExecutionGraphSchema>

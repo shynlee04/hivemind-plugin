@@ -12,8 +12,10 @@ import {
   findSlashCommandBundle,
   discoverSlashCommandBundles,
 } from '../../commands/slash-command/index.js'
+import { buildRuntimeStatusSnapshot } from '../../sdk-supervisor/index.js'
 import { loadRuntimeBindingsSnapshot } from '../../shared/runtime-attachment.js'
 import { renderToolResult } from '../../shared/tool-helpers.js'
+import type { HivemindRuntimeStatusPayload } from './types.js'
 
 /**
  * Create the hivemind_runtime_status tool.
@@ -25,14 +27,13 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
     args: {},
     async execute(_args, context) {
       const snapshot = await loadRuntimeBindingsSnapshot(projectRoot)
-      context.metadata({
-        title: 'HiveMind runtime status',
-        metadata: {
-          trajectoryId: snapshot.trajectoryId,
-          workflowId: snapshot.workflowId,
-        },
+      const statusSnapshot = await buildRuntimeStatusSnapshot({
+        projectRoot,
+        sessionId: context.sessionID,
+        agentId: context.agent,
+        snapshot,
       })
-      return renderToolResult({
+      const payload: HivemindRuntimeStatusPayload = {
         entryState: {
           state: snapshot.entryState,
           interactiveBootstrapRequired: snapshot.interactiveBootstrapRequired,
@@ -59,6 +60,8 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
           missingProfileFields: snapshot.missingProfileFields,
           bootstrapProfile: snapshot.bootstrapProfile,
         },
+        kernelState: statusSnapshot.kernel,
+        supervisorState: statusSnapshot.supervisor,
         lineageSessionState: {
           lineage: snapshot.defaultLineage,
           purposeClass: snapshot.defaultPurposeClass,
@@ -71,7 +74,16 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
         workflowGateState: {
           availableCommands: discoverSlashCommandBundles().map((bundle) => bundle.id),
         },
+      }
+      context.metadata({
+        title: 'HiveMind runtime status',
+        metadata: {
+          trajectoryId: snapshot.trajectoryId,
+          workflowId: snapshot.workflowId,
+          supervisorStatus: statusSnapshot.supervisor.health.overallStatus,
+        },
       })
+      return renderToolResult(payload)
     },
   })
 }

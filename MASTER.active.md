@@ -46,13 +46,14 @@ The rejected alternatives stay rejected for concrete reasons. `Single-kernel onl
   - plugin enforcement surfaces registered in `src/plugin/opencode-plugin.ts`
   - additive schema authority in `src/schema-kernel/`
   - additive supervisor instance/health seams in `src/sdk-supervisor/`
+  - `hivemind_runtime_status` reporting supervisor health and schema-kernel lifecycle/session/freshness records together
 - Not yet real:
   - workflow waves/dependency graph contracts
   - session leases
-  - freshness registry
+  - persisted freshness registry authority beyond inspection-time synthesis
   - deadlock/watchdog model
   - replay envelope authority
-  - status output for supervisor/freshness/watchdog health
+  - freshness/watchdog status output beyond the first supervisor/kernel slice
 
 ## Non-Negotiable Rules
 - All user entry must eventually resolve through the supervisor authority.
@@ -94,6 +95,7 @@ The rejected alternatives stay rejected for concrete reasons. `Single-kernel onl
 ## Stress-Cert Exit Gates
 - All P0 stress blockers green.
 - `hivemind_runtime_status` reports supervisor + kernel health.
+- Step 1 is now real: runtime status reports validated schema-kernel entry/runtime invocation/session/freshness records plus supervisor registry/health evidence.
 - Restart recovery proven by tests.
 - Concurrent session isolation proven by tests.
 - Delegated return verification proven by tests.
@@ -109,5 +111,7 @@ The rejected alternatives stay rejected for concrete reasons. `Single-kernel onl
 
 ## Current Authorization Boundary
 - This branch is executing Phase 1 in additive bounded slices.
-- The current active slice is `status/reporting and runtime enforcement wiring`.
+- The current active slice is `zero-trust delegation receipt verification`.
+- The current sub-slice that just landed is `runtime-status supervisor/kernel integration`.
+- The next bounded slice remains `zero-trust delegation receipt verification`.
 - Next root doc changes must stay tied to tested implementation progress, not speculative future state.

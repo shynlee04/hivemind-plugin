@@ -1,10 +1,26 @@
 import type { SupervisorInstanceRegistryRecord } from '../schema-kernel/index.js'
+import {
+  createSupervisorInstanceRegistry,
+  registerSupervisorInstance,
+} from './instance-registry.js'
 
 export interface SupervisorHealthSummary {
   overallStatus: 'healthy' | 'degraded' | 'blocked'
   healthyInstances: number
   degradedInstances: number
   blockedInstances: number
+}
+
+export interface CreateSupervisorStatusReportInput {
+  instanceId: string
+  startedAt: string
+  lastHeartbeatAt: string
+  status: 'healthy' | 'degraded' | 'blocked'
+}
+
+export interface SupervisorStatusReport {
+  registry: SupervisorInstanceRegistryRecord
+  health: SupervisorHealthSummary
 }
 
 /**
@@ -41,5 +57,16 @@ export function summarizeSupervisorHealth(
   return {
     overallStatus,
     ...summary,
+  }
+}
+
+export function createSupervisorStatusReport(
+  input: CreateSupervisorStatusReportInput,
+): SupervisorStatusReport {
+  const registry = registerSupervisorInstance(createSupervisorInstanceRegistry(), input)
+
+  return {
+    registry,
+    health: summarizeSupervisorHealth(registry),
   }
 }

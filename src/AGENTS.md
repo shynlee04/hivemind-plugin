@@ -60,6 +60,7 @@ All code must use native SDK primitives:
 - `src/shared/` currently carries the live entry/runtime/turn contract seam.
 - New durable contract ownership should move into `src/schema-kernel/` in additive slices instead of growing `src/shared/`.
 - New orchestration behavior that coordinates sessions/workflows across turns should land in `src/sdk-supervisor/`, not in plugin hooks or oversized control-plane handlers.
+- `src/tools/runtime/` is now the live reporting seam where schema-kernel runtime records and sdk-supervisor health summaries surface through `hivemind_runtime_status`; keep future reporting slices additive and inspection-first there instead of rebuilding ad hoc status logic elsewhere.
 
 ## Runtime Direction
 

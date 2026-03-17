@@ -60,10 +60,51 @@ describe('runtime tools', () => {
       })) as {
         entryState: { state: string }
         runtimeState: { hasRuntimeAttachment: boolean }
+        kernelState: {
+          entry: {
+            version: string
+            lifecycle: { layer: string }
+            state: string
+          }
+          runtimeInvocation: {
+            version: string
+            sessionId: string
+            requestReason: string
+          }
+          sessionRegistry: {
+            version: string
+            sessions: Array<{ sessionId: string; scope: string }>
+          }
+          freshnessRegistry: {
+            artifacts: Array<{ artifactRef: string; status: string }>
+          }
+        }
+        supervisorState: {
+          registry: {
+            version: string
+            instances: Array<{ transport: string; status: string }>
+          }
+          health: { overallStatus: string }
+        }
         workflowGateState: { availableCommands: string[] }
       }
       assert.equal(statusPayload.entryState.state, 'uninitialized')
       assert.equal(statusPayload.runtimeState.hasRuntimeAttachment, false)
+      assert.equal(statusPayload.kernelState.entry.version, 'v1')
+      assert.equal(statusPayload.kernelState.entry.lifecycle.layer, 'entry-kernel')
+      assert.equal(statusPayload.kernelState.entry.state, 'uninitialized')
+      assert.equal(statusPayload.kernelState.runtimeInvocation.version, 'v1')
+      assert.equal(statusPayload.kernelState.runtimeInvocation.sessionId, 'ses-runtime')
+      assert.equal(statusPayload.kernelState.runtimeInvocation.requestReason, 'runtime-status-inspection')
+      assert.equal(statusPayload.kernelState.sessionRegistry.version, 'v1')
+      assert.equal(statusPayload.kernelState.sessionRegistry.sessions[0]?.sessionId, 'ses-runtime')
+      assert.equal(statusPayload.kernelState.sessionRegistry.sessions[0]?.scope, 'main')
+      assert.equal(statusPayload.kernelState.freshnessRegistry.artifacts[0]?.artifactRef, 'MASTER.active.md')
+      assert.equal(statusPayload.kernelState.freshnessRegistry.artifacts[0]?.status, 'warn')
+      assert.equal(statusPayload.supervisorState.registry.version, 'v1')
+      assert.equal(statusPayload.supervisorState.registry.instances[0]?.transport, 'same-local-env')
+      assert.equal(statusPayload.supervisorState.registry.instances[0]?.status, 'degraded')
+      assert.equal(statusPayload.supervisorState.health.overallStatus, 'degraded')
       assert.equal(statusPayload.workflowGateState.availableCommands.includes('hm-init'), true)
 
       const gatedPayload = JSON.parse(await runtimeCommand.execute({

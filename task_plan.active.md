@@ -58,6 +58,9 @@ Land Phase 1 of the stress-cert architecture pack in additive, test-driven slice
 - [complete] Add the first additive schema-kernel slice under TDD.
 - [complete] Scaffold the SDK supervisor sector with instance registry and health seams.
 - [in_progress] Wire supervisor and schema-kernel seams into status/reporting and runtime enforcement paths.
+  - [complete] Step 1 runtime integration: `hivemind_runtime_status` now emits schema-kernel-backed entry/runtime invocation records plus supervisor registry/health evidence under TDD.
+  - [pending] Step 2 zero-trust delegation receipt verification in plugin/runtime enforcement.
+  - [pending] Step 3 supervisor session/workflow/event registry expansion and control-plane wiring.
 - [pending] Tighten plugin enforcement and zero-trust delegation verification.
 - [pending] Add concurrency/freshness/deadlock/replay evidence models.
 - [pending] Run full repo verification and update rolling artifacts with fresh evidence.
@@ -129,5 +132,9 @@ Land Phase 1 of the stress-cert architecture pack in additive, test-driven slice
 ## Fresh Evidence
 - `tests/schema-kernel-contracts.test.ts` is green.
 - `tests/sdk-supervisor-instance.test.ts` is green.
+- `tests/runtime-tools.test.ts` is green with kernel/supervisor runtime-status assertions.
+- `tests/control-plane-runtime-tools.test.ts` is green with degraded bootstrap/runtime-status assertions.
+- Step 1 exit gate is satisfied: runtime status now reports supervisor + kernel evidence together.
 - `npx tsc --noEmit` is green.
-- `npm test` is green.
+- `npm test` is green with `143` passing tests.
+- `npx tsx --test` still includes unrelated pre-existing failures outside the npm test scope (`tests/code-intel/hivemind-codemap.test.ts` and HF-HARDEN red suites).

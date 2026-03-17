@@ -25,3 +25,4 @@ In Phase 1, this sector should trend toward thin intake/command adaptation while
 - `init` and healthy `doctor` are the only control-plane paths allowed to trigger `syncRuntimeSurface()`
 - All 4 commands ultimately execute through `executeSlashCommandBundle()`
 - Avoid growing `control-plane-handler.ts` into a supervisor substitute; extract future orchestration state into dedicated supervisor and schema-kernel modules
+- Runtime status reporting now consumes supervisor/kernel evidence through `hivemind_runtime_status`; this sector may influence the underlying state, but it should not grow a parallel status-report assembler.

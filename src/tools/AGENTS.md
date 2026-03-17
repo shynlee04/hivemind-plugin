@@ -11,8 +11,8 @@ Each tool subdirectory follows: `tools.ts` (implementation), `types.ts` (args + 
 > [!NOTE]
 > The six current tool implementations now define `args` with `tool.schema`. The remaining contract-quality work is consistency and coverage, not initial Zod adoption.
 
-> [!WARNING]
-> `parseList()` and `render()` helper functions are **duplicated** identically across `handoff/tools.ts`, `task/tools.ts`, and `trajectory/tools.ts`. Extract to `shared/tool-helpers.ts`.
+> [!NOTE]
+> Common helper duplication was removed by extracting shared JSON/list helpers into `src/shared/tool-helpers.ts`. Keep future helper reuse there instead of reintroducing per-tool copies.
 
 ### Required Pattern (Every Tool)
 
@@ -67,3 +67,4 @@ export function createHivemindXxxTool(projectRoot: string) {
 - Return `JSON.stringify()` — tools speak JSON, agents parse
 - No direct file I/O to `.hivemind/` — delegate to `core/` modules
 - Runtime tools are the durable gateway that future supervisor actions must call instead of mutating state directly
+- `hivemind_runtime_status` is now the additive inspection seam for schema-kernel lifecycle records and sdk-supervisor health summaries

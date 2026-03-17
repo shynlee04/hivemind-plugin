@@ -13,7 +13,7 @@ Owns additive supervisor-side orchestration for Phase 1.
 | File | Purpose |
 |------|---------|
 | `instance-registry.ts` | Supervisor instance registry creation and upsert helpers |
-| `health.ts` | Aggregate supervisor health summaries for status/reporting seams |
+| `health.ts` | Aggregate supervisor health summaries and build runtime status supervisor reports |
 | `index.ts` | Sector barrel |
 
 ## Rules
@@ -21,3 +21,4 @@ Owns additive supervisor-side orchestration for Phase 1.
 - Keep the supervisor additive-first until runtime status and CLI/control-plane paths consume it.
 - Use `src/schema-kernel/` contracts for persisted and cross-session records.
 - Do not re-embed plugin hook logic or tool execution logic here.
+- `hivemind_runtime_status` is the first live consumer of this sector; future session/workflow/event registries should extend that reporting seam instead of introducing a second supervisor status path.

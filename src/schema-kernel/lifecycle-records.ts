@@ -109,6 +109,94 @@ export const delegationReceiptSchema = z.object({
   recordedAt: timestampSchema,
 }).strict()
 
+export interface CreateEntryKernelStateRecordInput {
+  state: EntryKernelStateRecord['state']
+  qaState: EntryKernelStateRecord['qaState']
+  releaseState: EntryKernelStateRecord['releaseState']
+  reason: string
+  profileValidated: boolean
+  lastUpdatedAt: string
+  lastRecoveryAction?: EntryKernelStateRecord['lastRecoveryAction']
+}
+
+export interface CreateRuntimeInvocationRecordInput {
+  invocationId: string
+  sessionId: string
+  sessionScope: RuntimeInvocationRecord['sessionScope']
+  entryState: RuntimeInvocationRecord['entryState']
+  qaState: RuntimeInvocationRecord['qaState']
+  releaseState: RuntimeInvocationRecord['releaseState']
+  gateState: string
+  requestReason: string
+  invokerClass?: RuntimeInvocationRecord['invokerClass']
+  agentId?: string
+  agentMode?: RuntimeInvocationRecord['agentMode']
+  lineage?: RuntimeInvocationRecord['lineage']
+  trajectoryId?: string
+  workflowId?: string
+  taskIds?: string[]
+  subtaskIds?: string[]
+  sotRefs?: string[]
+  artifactRefs?: string[]
+  delegationId?: string
+  parentSessionId?: string
+}
+
+export function createEntryKernelStateRecord(
+  input: CreateEntryKernelStateRecordInput,
+): EntryKernelStateRecord {
+  return entryKernelStateSchema.parse({
+    version: 'v1',
+    state: input.state,
+    qaState: input.qaState,
+    releaseState: input.releaseState,
+    lifecycle: {
+      layer: 'entry-kernel',
+      phase: 'session-entry',
+      state: input.state,
+    },
+    reason: input.reason,
+    profileValidated: input.profileValidated,
+    lastRecoveryAction: input.lastRecoveryAction,
+    lastUpdatedAt: input.lastUpdatedAt,
+  })
+}
+
+export function createRuntimeInvocationRecord(
+  input: CreateRuntimeInvocationRecordInput,
+): RuntimeInvocationRecord {
+  return runtimeInvocationSchema.parse({
+    version: 'v1',
+    invocationId: input.invocationId,
+    lifecycle: {
+      layer: 'runtime-invocation',
+      phase: 'request',
+      entryState: input.entryState,
+      qaState: input.qaState,
+      releaseState: input.releaseState,
+    },
+    invokerClass: input.invokerClass ?? 'main-agent',
+    sessionId: input.sessionId,
+    parentSessionId: input.parentSessionId,
+    sessionScope: input.sessionScope,
+    agentId: input.agentId,
+    agentMode: input.agentMode,
+    lineage: input.lineage,
+    trajectoryId: input.trajectoryId,
+    workflowId: input.workflowId,
+    taskIds: input.taskIds ?? [],
+    subtaskIds: input.subtaskIds ?? [],
+    entryState: input.entryState,
+    qaState: input.qaState,
+    releaseState: input.releaseState,
+    gateState: input.gateState,
+    sotRefs: input.sotRefs ?? [],
+    artifactRefs: input.artifactRefs ?? [],
+    delegationId: input.delegationId,
+    requestReason: input.requestReason,
+  })
+}
+
 export type EntryKernelStateRecord = z.infer<typeof entryKernelStateSchema>
 export type RuntimeInvocationRecord = z.infer<typeof runtimeInvocationSchema>
 export type TurnOutputEnvelopeRecord = z.infer<typeof turnOutputEnvelopeSchema>

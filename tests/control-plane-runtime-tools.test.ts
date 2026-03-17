@@ -84,6 +84,24 @@ describe('control-plane runtime tools', () => {
           profileComplete: boolean
           missingProfileFields: string[]
         }
+        kernelState: {
+          entry: {
+            version: string
+            qaState: string
+            profileValidated: boolean
+          }
+          sessionRegistry: {
+            version: string
+            sessions: Array<{ sessionId: string; status: string }>
+          }
+          freshnessRegistry: {
+            artifacts: Array<{ artifactRef: string; status: string }>
+          }
+        }
+        supervisorState: {
+          health: { overallStatus: string }
+          registry: { instances: Array<{ status: string }> }
+        }
       }
 
       assert.equal(status.entryState.state, 'uninitialized')
@@ -100,6 +118,16 @@ describe('control-plane runtime tools', () => {
         'governanceMode',
         'automationLevel',
       ])
+      assert.equal(status.kernelState.entry.version, 'v1')
+      assert.equal(status.kernelState.entry.qaState, 'blocked')
+      assert.equal(status.kernelState.entry.profileValidated, false)
+      assert.equal(status.kernelState.sessionRegistry.version, 'v1')
+      assert.equal(status.kernelState.sessionRegistry.sessions[0]?.sessionId, 'ses_runtime_status_gate')
+      assert.equal(status.kernelState.sessionRegistry.sessions[0]?.status, 'waiting')
+      assert.equal(status.kernelState.freshnessRegistry.artifacts[0]?.artifactRef, 'MASTER.active.md')
+      assert.equal(status.kernelState.freshnessRegistry.artifacts[0]?.status, 'warn')
+      assert.equal(status.supervisorState.health.overallStatus, 'degraded')
+      assert.equal(status.supervisorState.registry.instances[0]?.status, 'degraded')
 
       await assert.rejects(access(join(dir, '.hivemind')))
     } finally {

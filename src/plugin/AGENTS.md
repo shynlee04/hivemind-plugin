@@ -10,6 +10,7 @@ This directory is **assembly and enforcement wiring only**. It composes hooks an
 
 > [!NOTE]
 > `hivemind_runtime_status`, `hivemind_runtime_command`, and `hivemind_doc` are registered through extracted tool modules. `opencode-plugin.ts` should remain assembly-only and must not regress back to local helper or inline tool logic.
+> The enriched runtime-status projection now lives in `src/tools/runtime/` and consumes `src/schema-kernel/` + `src/sdk-supervisor/`; do not mirror that reporting logic back into plugin assembly.
 
 ### Current Enforcement
 
