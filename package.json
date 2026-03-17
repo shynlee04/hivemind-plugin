@@ -34,6 +34,9 @@
     "LICENSE",
     "CHANGELOG.md"
   ],
+  "workspaces": [
+    "apps/*"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/shynlee04/hivemind-plugin.git"
@@ -90,6 +93,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@opentui/core": "^0.1.88",
+    "@opentui/react": "^0.1.88",
     "@types/ink": "^0.5.2",
     "@types/node": "^20.10.0",
     "@types/react": "^19.2.14",
