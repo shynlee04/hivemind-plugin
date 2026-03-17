@@ -46,6 +46,9 @@ describe('control-plane runtime tools', () => {
       }, createToolContext(dir))
       const result = JSON.parse(raw) as {
         executionMode: string
+        closeoutStatus: string
+        nextCommand?: string
+        recommendedCommands: string[]
         report: {
           status: string
           intake: { questionnaireId: string; nextAction: string }
@@ -53,6 +56,9 @@ describe('control-plane runtime tools', () => {
       }
 
       assert.equal(result.executionMode, 'question-gate')
+      assert.equal(result.closeoutStatus, 'blocked')
+      assert.equal(result.nextCommand, 'hm-init')
+      assert.deepEqual(result.recommendedCommands, ['hm-init', 'hm-doctor', 'opencode serve'])
       assert.equal(result.report.status, 'intake-required')
       assert.equal(result.report.intake.questionnaireId, 'bootstrap-profile-v1')
       assert.equal(result.report.intake.nextAction, 'question-tool:bootstrap-profile-v1')

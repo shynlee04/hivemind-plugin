@@ -13,9 +13,34 @@ import {
   discoverSlashCommandBundles,
 } from '../../commands/slash-command/index.js'
 import { buildRuntimeStatusSnapshot } from '../../sdk-supervisor/index.js'
+import { buildRuntimeEntryDecision } from '../../shared/contracts/runtime-status.js'
 import { loadRuntimeBindingsSnapshot } from '../../shared/runtime-attachment.js'
 import { renderToolResult } from '../../shared/tool-helpers.js'
 import type { HivemindRuntimeStatusPayload } from './types.js'
+
+const runtimeEntryCommands = new Set(['hm-init', 'hm-doctor', 'hm-harness'])
+
+function withRuntimeEntryDecision<T extends { closeoutStatus?: 'open' | 'ready' | 'blocked' | 'qa-pending'; report: Record<string, unknown> }>(
+  result: T,
+  serverHealthy?: boolean,
+): T & {
+  closeoutStatus: 'open' | 'ready' | 'blocked' | 'qa-pending'
+  nextCommand?: string
+  recommendedCommands: string[]
+} {
+  const entryDecision = buildRuntimeEntryDecision({
+    closeoutStatus: result.closeoutStatus,
+    report: result.report,
+    serverHealthy,
+  })
+
+  return {
+    ...result,
+    closeoutStatus: entryDecision.closeoutStatus,
+    nextCommand: entryDecision.nextCommand,
+    recommendedCommands: entryDecision.recommendedCommands,
+  }
+}
 
 /**
  * Create the hivemind_runtime_status tool.
@@ -99,7 +124,7 @@ export function createHivemindRuntimeCommandTool(projectRoot: string): ReturnTyp
         && !!snapshot.serverBaseUrl
         && snapshot.hivemindHealthy
       ) {
-        const redirectedResult = {
+        const redirectedResult = withRuntimeEntryDecision({
           commandId: args.command,
           closeoutStatus: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
           report: {
@@ -114,7 +139,7 @@ export function createHivemindRuntimeCommandTool(projectRoot: string): ReturnTyp
             },
           },
           stateTransitions: ['attach-active-bootstrap-refused'],
-        }
+        }, snapshot.hivemindHealthy)
         context.metadata({
           title: `HiveMind command ${args.command}`,
           metadata: {
@@ -155,15 +180,18 @@ export function createHivemindRuntimeCommandTool(projectRoot: string): ReturnTyp
         userMessage: args.userMessage ?? `execute ${args.command}`,
         activeAgent: context.agent,
       })
+      const output = runtimeEntryCommands.has(args.command)
+        ? withRuntimeEntryDecision(result, snapshot.hivemindHealthy)
+        : result
 
       context.metadata({
         title: `HiveMind command ${args.command}`,
         metadata: {
           command: args.command,
-          closeoutStatus: result.closeoutStatus,
+          closeoutStatus: output.closeoutStatus,
         },
       })
-      return renderToolResult(result)
+      return renderToolResult(output)
     },
   })
 }
