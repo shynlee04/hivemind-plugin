@@ -1,0 +1,8 @@
+{
+  "track_id": "opentui_integration_20260317",
+  "type": "feature",
+  "status": "new",
+  "created_at": "2026-03-17T00:00:00Z",
+  "updated_at": "2026-03-17T00:00:00Z",
+  "description": "Integrate OpenTUI client with SSE streaming for agent interactions, focusing on upgraded features over innate OpenCode: delegation, robust workflows, interactive planning artifacts (QA quizzes, multi-branch task planning, hierarchy codewiki/techstackwiki), and human-agent collaboration across multiple roles (multitab, work pipeline status, visible execution status, and interactive mouse-click steering inputs for injections)."
+}
