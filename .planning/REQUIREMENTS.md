@@ -86,36 +86,36 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CTRL-01 | TBD | Pending |
-| CTRL-02 | TBD | Pending |
-| CTRL-03 | TBD | Pending |
-| CTRL-04 | TBD | Pending |
-| EXEC-01 | TBD | Pending |
-| EXEC-02 | TBD | Pending |
-| EXEC-03 | TBD | Pending |
-| EXEC-04 | TBD | Pending |
-| SAFE-01 | TBD | Pending |
-| SAFE-02 | TBD | Pending |
-| SAFE-03 | TBD | Pending |
-| FLOW-01 | TBD | Pending |
-| FLOW-02 | TBD | Pending |
-| FLOW-03 | TBD | Pending |
-| FLOW-04 | TBD | Pending |
-| INSP-01 | TBD | Pending |
-| INSP-02 | TBD | Pending |
-| INSP-03 | TBD | Pending |
-| TUI-01 | TBD | Pending |
-| TUI-02 | TBD | Pending |
-| TUI-03 | TBD | Pending |
-| VERF-01 | TBD | Pending |
-| VERF-02 | TBD | Pending |
-| VERF-03 | TBD | Pending |
+| CTRL-01 | Phase 1 - Runtime Authority Baseline | Pending |
+| CTRL-02 | Phase 1 - Runtime Authority Baseline | Pending |
+| CTRL-03 | Phase 2 - Unified Runtime Operations | Pending |
+| CTRL-04 | Phase 2 - Unified Runtime Operations | Pending |
+| EXEC-01 | Phase 3 - Tool-Governed Mutation Foundation | Pending |
+| EXEC-02 | Phase 4 - Deterministic Routing and Receipts | Pending |
+| EXEC-03 | Phase 4 - Deterministic Routing and Receipts | Pending |
+| EXEC-04 | Phase 7 - Live Official-Boundary Proof | Pending |
+| SAFE-01 | Phase 3 - Tool-Governed Mutation Foundation | Pending |
+| SAFE-02 | Phase 3 - Tool-Governed Mutation Foundation | Pending |
+| SAFE-03 | Phase 4 - Deterministic Routing and Receipts | Pending |
+| FLOW-01 | Phase 5 - Continuity and Recovery Contract | Pending |
+| FLOW-02 | Phase 5 - Continuity and Recovery Contract | Pending |
+| FLOW-03 | Phase 5 - Continuity and Recovery Contract | Pending |
+| FLOW-04 | Phase 5 - Continuity and Recovery Contract | Pending |
+| INSP-01 | Phase 6 - Inspection and Evidence Separation | Pending |
+| INSP-02 | Phase 6 - Inspection and Evidence Separation | Pending |
+| INSP-03 | Phase 2 - Unified Runtime Operations | Pending |
+| TUI-01 | Phase 8 - TUI Stabilization on Backend Truth | Pending |
+| TUI-02 | Phase 8 - TUI Stabilization on Backend Truth | Pending |
+| TUI-03 | Phase 8 - TUI Stabilization on Backend Truth | Pending |
+| VERF-01 | Phase 7 - Live Official-Boundary Proof | Pending |
+| VERF-02 | Phase 7 - Live Official-Boundary Proof | Pending |
+| VERF-03 | Phase 7 - Live Official-Boundary Proof | Pending |
 
 **Coverage:**
 - v1 requirements: 24 total
-- Mapped to phases: 0
-- Unmapped: 24 ⚠️
+- Mapped to phases: 24
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-17*
-*Last updated: 2026-03-17 after initial definition*
+*Last updated: 2026-03-18 after roadmap mapping*
