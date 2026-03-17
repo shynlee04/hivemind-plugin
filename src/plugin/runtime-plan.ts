@@ -1,6 +1,7 @@
 import { buildContextInjectionPlan } from '../hooks/context-injection/index.js'
 import { createAutoSlashCommandPlan } from '../hooks/auto-slash-command/index.js'
 import { buildStartWorkEntryKernel, resolveStartWork } from '../hooks/start-work/index.js'
+import { getAttachedSdkAuthority } from '../hooks/sdk-context.js'
 import { buildPluginContext } from '../plugin-handlers/index.js'
 import { renderOpencodeKnowledgePacket } from '../shared/opencode-knowledge.js'
 import { createRuntimeInvocation } from '../shared/runtime-invocation.js'
@@ -31,11 +32,16 @@ export function buildRouteReminder(plan?: Pick<PluginRuntimePlan, 'entryKernel'>
     return null
   }
 
+  const runtimeAuthority = routing.routeDisposition === 'attach' || routing.routeDisposition === 'resume'
+    ? 'attached-sdk'
+    : 'managed-sdk'
+
   return [
     '<hivemind-route-bridge>',
     `command=${commandId}`,
     `outcome=${routing.traversalOutcome}`,
     `route_disposition=${routing.routeDisposition ?? 'create'}`,
+    `runtime_authority=${runtimeAuthority}`,
     `risk=${safety.riskLevel}`,
     `next_transition=${routing.nextTransition ?? 'none'}`,
     'execution_rule=use-hivemind-runtime-command-for-hm-bundles',
@@ -48,7 +54,15 @@ export function buildRouteReminder(plan?: Pick<PluginRuntimePlan, 'entryKernel'>
 }
 
 export async function createPluginRuntimePlan(input: PluginRuntimeInput): Promise<PluginRuntimeResponse> {
-  const startWork = resolveStartWork(input.startWork)
+  const attachedSdkAuthority = getAttachedSdkAuthority()
+  const normalizedStartWorkInput = attachedSdkAuthority && input.startWork.hivemindHealthy
+    ? {
+        ...input.startWork,
+        hasRuntimeAttachment: true,
+        profileComplete: true,
+      }
+    : input.startWork
+  const startWork = resolveStartWork(normalizedStartWorkInput)
   const startWorkKernel = buildStartWorkEntryKernel(startWork)
   const entryState = startWork.requiredControlPlaneId === 'hm-init'
     ? 'uninitialized'
@@ -76,6 +90,10 @@ export async function createPluginRuntimePlan(input: PluginRuntimeInput): Promis
     taskIds: input.promptState.taskIds,
     subtaskIds: input.promptState.subtaskIds,
     checkpointId: input.promptState.checkpointId,
+    runtimeAuthority: (startWork.routeDisposition === 'attach' || startWork.routeDisposition === 'resume') && attachedSdkAuthority
+      ? attachedSdkAuthority.runtimeAuthority
+      : undefined,
+    serverBaseUrl: attachedSdkAuthority?.serverBaseUrl,
     entryState,
     qaState,
     releaseState: entryState === 'ready' ? 'released' : 'blocked',

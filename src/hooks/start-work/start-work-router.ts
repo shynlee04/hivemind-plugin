@@ -112,6 +112,10 @@ function resolveRouteDisposition(
   return 'create'
 }
 
+function isAttachOrResumeAction(trajectoryAction: TrajectoryAssessmentAction | undefined): boolean {
+  return trajectoryAction === 'attach-active' || trajectoryAction === 'resume-closed'
+}
+
 function resolvePressureSignals(
   input: StartWorkInput,
   readinessPressureIds: RuntimePressureId[],
@@ -185,10 +189,18 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
     sessionState = 'continuation'
   }
   const readiness = resolveReadinessGates(enrichedInput, purpose.purposeClass)
-  const readinessPressureIds = readiness
+  const routeDisposition = resolveRouteDisposition(trajectoryAssessment?.action)
+  const requiredControlPlaneIdFromReadiness = readiness.find((gate) => gate.primitiveId)?.primitiveId
+  const preferAttachOrResume = isAttachOrResumeAction(trajectoryAssessment?.action)
+    && requiredControlPlaneIdFromReadiness === 'hm-init'
+    && enrichedInput.hivemindHealthy
+  const effectiveReadiness = preferAttachOrResume
+    ? readiness.filter((gate) => gate.primitiveId !== 'hm-init')
+    : readiness
+  const readinessPressureIds = effectiveReadiness
     .map((gate) => gate.pressureId)
     .filter((pressureId): pressureId is RuntimePressureId => pressureId !== undefined)
-  const requiredControlPlaneId = readiness.find((gate) => gate.primitiveId)?.primitiveId
+  const requiredControlPlaneId = effectiveReadiness.find((gate) => gate.primitiveId)?.primitiveId
   const recommendedControlPlaneId = requiredControlPlaneId
   const requiredCommandId = requiredControlPlaneId
     ? findControlPlanePrimitive(requiredControlPlaneId)?.adapterCommandId ?? requiredControlPlaneId
@@ -233,14 +245,20 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
     lineage: route.lineage,
     purposeClass: purpose.purposeClass,
     confidence: purpose.confidence,
-    reasons: [...route.reasons, ...purpose.reasons, ...continuityAlerts, ...(trajectoryAssessment?.reasons ?? [])],
-    readiness,
+    reasons: [
+      ...route.reasons,
+      ...purpose.reasons,
+      ...continuityAlerts,
+      ...(trajectoryAssessment?.reasons ?? []),
+      ...(preferAttachOrResume ? ['prefer-attach-or-resume-over-bootstrap'] : []),
+    ],
+    readiness: effectiveReadiness,
     traversalOutcome,
     commandAgent,
     continuityAlerts,
     workflowAuthority,
     trajectoryAssessment,
-    routeDisposition: resolveRouteDisposition(trajectoryAssessment?.action),
+    routeDisposition,
     nextTransition: trajectoryAssessment?.resumeTarget
       ?? (requiredCommandId ? `command:${requiredCommandId}` : recommendedCommandId ? `command:${recommendedCommandId}` : undefined),
     requiredControlPlaneId,

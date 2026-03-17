@@ -3,6 +3,11 @@ import type { PluginInput } from '@opencode-ai/plugin'
 type ClientRef = PluginInput['client']
 type ShellRef = PluginInput['$']
 
+export interface AttachedSdkAuthority {
+  runtimeAuthority: 'attached-sdk'
+  serverBaseUrl: string
+}
+
 let clientRef: ClientRef | null = null
 let shellRef: ShellRef | null = null
 let serverUrlRef: URL | null = null
@@ -40,6 +45,26 @@ export function getShell(): ShellRef | null {
 
 export function getServerUrl(): URL | null {
   return serverUrlRef
+}
+
+export function getServerBaseUrl(): string | undefined {
+  if (!serverUrlRef) {
+    return undefined
+  }
+
+  return serverUrlRef.origin
+}
+
+export function getAttachedSdkAuthority(): AttachedSdkAuthority | null {
+  const serverBaseUrl = getServerBaseUrl()
+  if (!serverBaseUrl) {
+    return null
+  }
+
+  return {
+    runtimeAuthority: 'attached-sdk',
+    serverBaseUrl,
+  }
 }
 
 export function getProject(): PluginInput['project'] | null {
