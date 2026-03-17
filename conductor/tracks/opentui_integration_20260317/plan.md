@@ -16,9 +16,9 @@
 - [x] Task: Implement Multi-branch task planning UI 6bfb95e
     - [x] Write Tests: State management and render tests for multi-branch planning
     - [x] Implement Feature: Build task planning visualization components
-- [ ] Task: Implement Hierarchy CodeWiki/TechStackWiki UI
-    - [ ] Write Tests: Data parsing and rendering tests for hierarchy wikis
-    - [ ] Implement Feature: Build hierarchical tree view components
+- [x] Task: Implement Hierarchy CodeWiki/TechStackWiki UI e3ec40a
+    - [x] Write Tests: Data parsing and rendering tests for hierarchy wikis
+    - [x] Implement Feature: Build hierarchical tree view components
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Interactive Planning Artifacts' (Protocol in workflow.md)
 
 ## Phase 3: Human-Agent Collaboration Features
