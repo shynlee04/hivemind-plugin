@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 02-00-PLAN.md
-last_updated: "2026-03-17T23:21:26.705Z"
-last_activity: 2026-03-18 - completed 02-00 TUI infrastructure foundation
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-17T23:34:50.726Z"
+last_activity: 2026-03-17 - completed 02-01 runtime status canonicalization
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 6
-  completed_plans: 3
-  percent: 50
+  completed_plans: 4
+  percent: 67
 ---
 
 # Project State
@@ -26,25 +26,25 @@ See: `.planning/PROJECT.md` (updated 2026-03-17)
 ## Current Position
 
 Phase: 2 of 8 (Unified Runtime Operations)
-Plan: 1 of 4 in current phase
-Status: Phase 02 in progress, ready for 02-01
-Last activity: 2026-03-18 - completed 02-00 TUI infrastructure foundation
+Plan: 2 of 4 in current phase
+Status: Phase 02 in progress, ready for 02-02
+Last activity: 2026-03-17 - completed 02-01 runtime status canonicalization
 
-Progress: [█████░░░░░] 50%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
+- Total plans completed: 4
 - Average duration: 10 min
-- Total execution time: 0.5 hours
+- Total execution time: 0.7 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Runtime Authority Baseline | 2 | 22 min | 11 min |
-| 2. Unified Runtime Operations | 1 | 9 min | 9 min |
+| 2. Unified Runtime Operations | 2 | 17 min | 9 min |
 | 3. Tool-Governed Mutation Foundation | 0 | 0 min | 0 min |
 | 4. Deterministic Routing and Receipts | 0 | 0 min | 0 min |
 | 5. Continuity and Recovery Contract | 0 | 0 min | 0 min |
@@ -53,11 +53,12 @@ Progress: [█████░░░░░] 50%
 | 8. TUI Stabilization on Backend Truth | 0 | 0 min | 0 min |
 
 **Recent Trend:**
-- Last 5 plans: 3 plans
+- Last 5 plans: 4 plans
 - Trend: Stable
 | Phase 01-runtime-authority-baseline P01 | 15 min | 3 tasks | 8 files |
 | Phase 01 P02 | 7 min | 3 tasks | 10 files |
 | Phase 02 P00 | 9 min | 3 tasks | 9 files |
+| Phase 02 P01 | 8 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Managed runtime creation uses ephemeral ports during hm-init verification to avoid local collisions.
 - [Phase 02]: Use apps/opentui as the Bun-owned app boundary while keeping the shipped package on Node.
 - [Phase 02]: Parse shared runtime status contracts in the OpenTUI adapter so the UI stays a consumer of backend-owned truth.
+- [Phase 02]: Canonical runtime status keeps runtime authority fields top-level while entry and QA state move into nested shared-contract records.
+- [Phase 02]: buildRuntimeStatusSnapshot now owns runtime state assembly so hivemind_runtime_status only adds availableCommands metadata.
 
 ### Pending Todos
 
@@ -89,6 +92,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T23:21:26.698Z
-Stopped at: Completed 02-00-PLAN.md
+Last session: 2026-03-17T23:34:50.720Z
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
