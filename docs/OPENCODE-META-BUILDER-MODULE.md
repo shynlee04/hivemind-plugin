@@ -552,7 +552,7 @@ export const TaskTool = Tool.define("task", async (ctx) => {
         seen.add(name)
         const filepath = name.startsWith("~/")
           ? path.join(os.homedir(), name.slice(2))
-          : path.resolve(Instance.worktree, name)
+          : path.resolve(Instance, name)
 
         const stats = await fs.stat(filepath).catch(() => undefined)
         if (!stats) {
@@ -975,7 +975,7 @@ When to use the Task tool:
         .env({
           ...process.env,
           GIT_DIR: git,
-          GIT_WORK_TREE: Instance.worktree,
+          GIT_WORK_TREE: Instance,
         })
         .quiet()
         .nothrow()
@@ -983,8 +983,8 @@ When to use the Task tool:
       await $`git --git-dir ${git} config core.autocrlf false`.quiet().nothrow()
       log.info("initialized")
     }
-    await $`git --git-dir ${git} --work-tree ${Instance.worktree} add .`.quiet().cwd(Instance.directory).nothrow()
-    const hash = await $`git --git-dir ${git} --work-tree ${Instance.worktree} write-tree`
+    await $`git --git-dir ${git} --work-tree ${Instance} add .`.quiet().cwd(Instance.directory).nothrow()
+    const hash = await $`git --git-dir ${git} --work-tree ${Instance} write-tree`
       .quiet()
       .cwd(Instance.directory)
       .nothrow()
@@ -1142,7 +1142,7 @@ export namespace Todo {
 
     if (!Flag.OPENCODE_DISABLE_PROJECT_CONFIG) {
       for (const file of FILES) {
-        const matches = await Filesystem.findUp(file, Instance.directory, Instance.worktree)
+        const matches = await Filesystem.findUp(file, Instance.directory, Instance)
         if (matches.length > 0) {
           matches.forEach((p) => {
             paths.add(path.resolve(p))
@@ -1415,7 +1415,7 @@ When constructing the summary, try to stick to this template:
       for await (const root of Filesystem.up({
         targets: EXTERNAL_DIRS,
         start: Instance.directory,
-        stop: Instance.worktree,
+        stop: Instance,
       })) {
         await scanExternal(root, "project")
       }
@@ -1613,7 +1613,7 @@ export const SkillTool = Tool.define("skill", async (ctx) => {
         description: "create/update AGENTS.md",
         source: "command",
         get template() {
-          return PROMPT_INITIALIZE.replace("${path}", Instance.worktree)
+          return PROMPT_INITIALIZE.replace("${path}", Instance)
         },
         hints: hints(PROMPT_INITIALIZE),
       },
@@ -1622,7 +1622,7 @@ export const SkillTool = Tool.define("skill", async (ctx) => {
         description: "review changes [commit|branch|pr], defaults to uncommitted",
         source: "command",
         get template() {
-          return PROMPT_REVIEW.replace("${path}", Instance.worktree)
+          return PROMPT_REVIEW.replace("${path}", Instance)
         },
         subtask: true,
         hints: hints(PROMPT_REVIEW),

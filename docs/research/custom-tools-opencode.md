@@ -98,7 +98,7 @@ export default tool({
   },
 })
 
-Use context.directory for the session working directory. Use context.worktree for the git worktree root.
+Use context.directory for the session working directory. Use context for the git worktree root.
 
 Examples
 Write a tool in Python
@@ -126,7 +126,7 @@ export default tool({
     b: tool.schema.number().describe("Second number"),
   },
   async execute(args, context) {
-    const script = path.join(context.worktree, ".opencode/tools/add.py")
+    const script = path.join(context, ".opencode/tools/add.py")
     const result = await Bun.$`python3 ${script} ${args.a} ${args.b}`.text()
     return result.trim()
   },

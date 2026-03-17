@@ -64,7 +64,7 @@ export function createMockPluginInput(opts: MockPluginInputOptions = {}) {
     client: createMockClient(calls),
     project: createMockProject(),
     directory: opts.directory ?? '/tmp/test-project',
-    worktree: opts.worktree ?? '/tmp/test-worktree',
+    worktree: opts ?? '/tmp/test-worktree',
     serverUrl: new URL(opts.serverUrl ?? 'http://localhost:3000'),
     $: createMockShell(),
   }

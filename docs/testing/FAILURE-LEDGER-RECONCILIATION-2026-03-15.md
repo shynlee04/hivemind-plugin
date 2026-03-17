@@ -5,7 +5,7 @@
 
 ## Why This Exists
 
-The prior matrix in [STRESS-TEST-MATRIX-2026-03-14.md](/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/docs/testing/STRESS-TEST-MATRIX-2026-03-14.md) correctly captured that the revamp had routing without enough execution backplane. It is still useful as adversarial evidence, but several claims are now stale because the revamp lane has since landed:
+The prior matrix in [STRESS-TEST-MATRIX-2026-03-14.md](/Users/apple/hivemind-plugin/s/ecosystem-revamp/docs/testing/STRESS-TEST-MATRIX-2026-03-14.md) correctly captured that the revamp had routing without enough execution backplane. It is still useful as adversarial evidence, but several claims are now stale because the revamp lane has since landed:
 
 - trajectory ledger/store/assessment
 - start-work trajectory attach/resume

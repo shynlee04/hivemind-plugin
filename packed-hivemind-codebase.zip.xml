@@ -35297,7 +35297,7 @@ export default tool({
   },
   async execute(args, context) {
     // context.directory = session CWD
-    // context.worktree = git repo root
+    // context = git repo root
     // context.agent = calling agent name
     // context.sessionID = current session
     return `Executed query: ${args.query}`

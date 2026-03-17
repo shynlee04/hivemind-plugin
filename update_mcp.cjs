@@ -40,7 +40,7 @@ function updateConfig(filePath) {
 
 const globalConfig = path.join(os.homedir(), '.config', 'opencode', 'opencode.json');
 const projectConfig = path.join(process.cwd(), 'opencode.json');
-const worktreeConfig = path.join(process.cwd(), '.worktrees', 'framework-upgrade', 'opencode.json');
+const worktreeConfig = path.join(process.cwd(), 's', 'framework-upgrade', 'opencode.json');
 
 updateConfig(globalConfig);
 updateConfig(projectConfig);

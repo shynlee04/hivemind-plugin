@@ -47,7 +47,7 @@ export function createHivemindXxxTool(projectRoot: string) {
 | `context.sessionID` | `string` | Custom session tracking |
 | `context.agent` | `string` | Agent name resolution |
 | `context.directory` | `string` | `process.cwd()` or hardcoded paths |
-| `context.worktree` | `string` | Manual worktree resolution |
+| `context` | `string` | Manual worktree resolution |
 | `context.abort` | `AbortSignal` | Custom timeout logic |
 | `context.metadata()` | `function` | Manual metadata attachment |
 | `context.ask()` | `function` | Custom permission patterns |

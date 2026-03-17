@@ -277,6 +277,6 @@ Mistakes here usually force architectural rework, invalidate runtime claims, or 
 - HIGH - OpenCode CLI docs, `https://opencode.ai/docs/cli/` (last updated Mar 15, 2026)
 - HIGH - OpenCode TUI docs, `https://opencode.ai/docs/tui/` (last updated Mar 15, 2026)
 - HIGH - OpenCode Permissions docs, `https://opencode.ai/docs/permissions/` (last updated Mar 15, 2026)
-- HIGH - Repo governance authority, `/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/AGENTS.md`
-- HIGH - Repo source boundary authority, `/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/AGENTS.md`
-- HIGH - Repo plugin assembly authority, `/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/plugin/AGENTS.md`
+- HIGH - Repo governance authority, `/Users/apple/hivemind-plugin/s/ecosystem-revamp/AGENTS.md`
+- HIGH - Repo source boundary authority, `/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/AGENTS.md`
+- HIGH - Repo plugin assembly authority, `/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/plugin/AGENTS.md`

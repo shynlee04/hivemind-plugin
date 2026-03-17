@@ -541,7 +541,7 @@ Set `steps: N` on your orchestrator agent definition. After N agentic iterations
 ```typescript
   export function plan(input: { slug: string; time: { created: number } }) {
     const base = Instance.project.vcs
-      ? path.join(Instance.worktree, ".opencode", "plans")
+      ? path.join(Instance, ".opencode", "plans")
       : path.join(Global.Path.data, "plans")
     return path.join(base, [input.time.created, input.slug].join("-") + ".md")
   }
@@ -607,7 +607,7 @@ Set `steps: N` on your orchestrator agent definition. After N agentic iterations
             edit: {
               "*": "deny",
               [path.join(".opencode", "plans", "*.md")]: "allow",
-              [path.relative(Instance.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
+              [path.relative(Instance, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
             },
           }),
           user,
@@ -757,7 +757,7 @@ Set `steps: N` on your orchestrator agent definition. After N agentic iterations
           variant: lastUser.variant,
           path: {
             cwd: Instance.directory,
-            root: Instance.worktree,
+            root: Instance,
           },
           cost: 0,
           tokens: {
@@ -1268,7 +1268,7 @@ export const PlanExitTool = Tool.define("plan_exit", {
   parameters: z.object({}),
   async execute(_params, ctx) {
     const session = await Session.get(ctx.sessionID)
-    const plan = path.relative(Instance.worktree, Session.plan(session))
+    const plan = path.relative(Instance, Session.plan(session))
     const answers = await Question.ask({
       sessionID: ctx.sessionID,
       questions: [
@@ -1810,7 +1810,7 @@ export interface Hooks {
       for await (const root of Filesystem.up({
         targets: EXTERNAL_DIRS,
         start: Instance.directory,
-        stop: Instance.worktree,
+        stop: Instance,
       })) {
         await scanExternal(root, "project")
       }
@@ -1958,7 +1958,7 @@ export interface Hooks {
           const pluginCtx = {
             ...ctx,
             directory: Instance.directory,
-            worktree: Instance.worktree,
+            worktree: Instance,
           } as unknown as PluginToolContext
           const result = await def.execute(args as any, pluginCtx)
           const out = await Truncate.output(result, {}, initCtx?.agent)
@@ -1994,7 +1994,7 @@ function globalFiles() {
 
 async function resolveRelative(instruction: string): Promise<string[]> {
   if (!Flag.OPENCODE_DISABLE_PROJECT_CONFIG) {
-    return Filesystem.globUp(instruction, Instance.directory, Instance.worktree).catch(() => [])
+    return Filesystem.globUp(instruction, Instance.directory, Instance).catch(() => [])
   }
   if (!Flag.OPENCODE_CONFIG_DIR) {
     log.warn(
@@ -2075,7 +2075,7 @@ async function resolveRelative(instruction: string): Promise<string[]> {
     const input: PluginInput = {
       client,
       project: Instance.project,
-      worktree: Instance.worktree,
+      worktree: Instance,
       directory: Instance.directory,
       serverUrl: Server.url(),
       $: Bun.$,

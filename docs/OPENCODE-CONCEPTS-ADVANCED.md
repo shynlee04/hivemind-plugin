@@ -758,7 +758,7 @@ A plugin is a function that receives the OpenCode SDK client and returns a hooks
             edit: {
               "*": "deny",
               [path.join(".opencode", "plans", "*.md")]: "allow",
-              [path.relative(Instance.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
+              [path.relative(Instance, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
             },
           }),
           user,
@@ -921,7 +921,7 @@ A plugin is a function that receives the OpenCode SDK client and returns a hooks
     // Project config overrides global and remote config.
     if (!Flag.OPENCODE_DISABLE_PROJECT_CONFIG) {
       for (const file of ["opencode.jsonc", "opencode.json"]) {
-        const found = await Filesystem.findUp(file, Instance.directory, Instance.worktree)
+        const found = await Filesystem.findUp(file, Instance.directory, Instance)
         for (const resolved of found.toReversed()) {
           result = merge(result, await loadFile(resolved))
         }
@@ -940,7 +940,7 @@ A plugin is a function that receives the OpenCode SDK client and returns a hooks
             Filesystem.up({
               targets: [".opencode"],
               start: Instance.directory,
-              stop: Instance.worktree,
+              stop: Instance,
             }),
           )
         : []),
@@ -1716,7 +1716,7 @@ A plugin is a function that receives the OpenCode SDK client and returns a hooks
         description: "create/update AGENTS.md",
         source: "command",
         get template() {
-          return PROMPT_INITIALIZE.replace("${path}", Instance.worktree)
+          return PROMPT_INITIALIZE.replace("${path}", Instance)
         },
         hints: hints(PROMPT_INITIALIZE),
       },
@@ -1725,7 +1725,7 @@ A plugin is a function that receives the OpenCode SDK client and returns a hooks
         description: "review changes [commit|branch|pr], defaults to uncommitted",
         source: "command",
         get template() {
-          return PROMPT_REVIEW.replace("${path}", Instance.worktree)
+          return PROMPT_REVIEW.replace("${path}", Instance)
         },
         subtask: true,
         hints: hints(PROMPT_REVIEW),
@@ -1872,7 +1872,7 @@ export namespace Skill {
       for await (const root of Filesystem.up({
         targets: EXTERNAL_DIRS,
         start: Instance.directory,
-        stop: Instance.worktree,
+        stop: Instance,
       })) {
         await scanExternal(root, "project")
       }
@@ -2354,7 +2354,7 @@ export const BatchTool = Tool.define("batch", async () => {
           variant: lastUser.variant,
           path: {
             cwd: Instance.directory,
-            root: Instance.worktree,
+            root: Instance,
           },
           cost: 0,
           tokens: {
@@ -2565,7 +2565,7 @@ export const BatchTool = Tool.define("batch", async () => {
           variant: lastUser.variant,
           path: {
             cwd: Instance.directory,
-            root: Instance.worktree,
+            root: Instance,
           },
           cost: 0,
           tokens: {

@@ -1,7 +1,7 @@
 # Runtime Entry Audit
 
 Date: 2026-03-15
-Scope: `.worktrees/ecosystem-revamp`
+Scope: `s/ecosystem-revamp`
 Companion to: `docs/testing/STRESS-TEST-MATRIX-2026-03-14.md`
 
 ## Findings

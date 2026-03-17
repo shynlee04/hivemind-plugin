@@ -471,8 +471,8 @@ export function buildToolExecuteAfterHook(state: { current: EnforcementState; sa
 
       if (dirtyScore > 90) {
         // AUTO-PURGE: snapshot → spawn retrieval → archive
-        const snapshot = captureSchematicSnapshot(state.worktree, state.current)
-        writeSnapshot(state.worktree, snapshot)
+        const snapshot = captureSchematicSnapshot(state, state.current)
+        writeSnapshot(state, snapshot)
 
         // Spawn retrieval agent (non-blocking)
         const prompt = buildRetrievalPrompt(snapshot)
@@ -753,7 +753,7 @@ export function buildCompactionHook(state: { current: EnforcementState; worktree
     }
 
     // 2. Archive current enforcement state
-    const archiveDir = join(state.worktree, ".hivemind/archive", new Date().toISOString().slice(0, 10))
+    const archiveDir = join(state, ".hivemind/archive", new Date().toISOString().slice(0, 10))
     mkdirSync(archiveDir, { recursive: true })
     writeFileSync(
       join(archiveDir, `enforcement-${Date.now()}.json`),
@@ -761,11 +761,11 @@ export function buildCompactionHook(state: { current: EnforcementState; worktree
     )
 
     // 3. Run export pipeline
-    await state.$`bash .opencode/skills/gx-context-engine/scripts/gx-handoff-purify.sh ${state.worktree}`.quiet()
-    await state.$`bash .opencode/skills/gx-context-engine/scripts/gx-sot-register.sh ${state.worktree}`.quiet()
+    await state.$`bash .opencode/skills/gx-context-engine/scripts/gx-handoff-purify.sh ${state}`.quiet()
+    await state.$`bash .opencode/skills/gx-context-engine/scripts/gx-sot-register.sh ${state}`.quiet()
 
     // 4. Spawn retrieval agent for next session
-    const retrievalPrompt = buildRetrievalPrompt(state.worktree, state.current)
+    const retrievalPrompt = buildRetrievalPrompt(state, state.current)
     state.$`opencode run --agent hivexplorer --title "gx-context-retrieval-${Date.now()}" "${retrievalPrompt}"`.quiet()
   }
 }

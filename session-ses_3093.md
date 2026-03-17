@@ -115,13 +115,13 @@ drwxr-xr-x   23 apple  staff      736 Mar 14 13:54 workflows
 **Input:**
 ```json
 {
-  "filePath": "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/package.json"
+  "filePath": "/Users/apple/hivemind-plugin/s/ecosystem-revamp/package.json"
 }
 ```
 
 **Output:**
 ```
-<path>/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/package.json</path>
+<path>/Users/apple/hivemind-plugin/s/ecosystem-revamp/package.json</path>
 <type>file</type>
 <content>1: {
 2:   "name": "hivemind-context-governance",
@@ -357,9 +357,9 @@ The dist/ is already built. Now let me check what CLI commands are available and
 **Output:**
 ```
 Error: hm-init requires explicit profile intake before execution. Missing groups: identity-language, expertise-style, governance-automation. Missing fields: chatLanguage, artifactLanguage, expertiseLevel, outputStyle, governanceMode, automationLevel. Supply explicit flags or use --preset guided-onboarding.
-    at initProject (file:///Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/dist/cli/init.js:40:15)
-    at runCli (file:///Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/dist/cli.js:72:28)
-    at file:///Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/dist/cli.js:136:5
+    at initProject (file:///Users/apple/hivemind-plugin/s/ecosystem-revamp/dist/cli/init.js:40:15)
+    at runCli (file:///Users/apple/hivemind-plugin/s/ecosystem-revamp/dist/cli.js:72:28)
+    at file:///Users/apple/hivemind-plugin/s/ecosystem-revamp/dist/cli.js:136:5
     at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:639:26)
@@ -388,9 +388,9 @@ The CLI requires some profile configuration before running. Let me check what op
 **Output:**
 ```
 Error: hm-init requires explicit profile intake before execution. Missing groups: identity-language, expertise-style, governance-automation. Missing fields: chatLanguage, artifactLanguage, expertiseLevel, outputStyle, governanceMode, automationLevel. Supply explicit flags or use --preset guided-onboarding.
-    at initProject (file:///Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/dist/cli/init.js:40:15)
-    at runCli (file:///Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/dist/cli.js:72:28)
-    at file:///Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/dist/cli.js:136:5
+    at initProject (file:///Users/apple/hivemind-plugin/s/ecosystem-revamp/dist/cli/init.js:40:15)
+    at runCli (file:///Users/apple/hivemind-plugin/s/ecosystem-revamp/dist/cli.js:72:28)
+    at file:///Users/apple/hivemind-plugin/s/ecosystem-revamp/dist/cli.js:136:5
     at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
     at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:639:26)
@@ -414,13 +414,13 @@ Let me check the CLI source to understand the required flags and presets:
 **Input:**
 ```json
 {
-  "filePath": "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/cli/init.ts"
+  "filePath": "/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/cli/init.ts"
 }
 ```
 
 **Output:**
 ```
-<path>/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/cli/init.ts</path>
+<path>/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/cli/init.ts</path>
 <type>file</type>
 <content>1: import { randomUUID } from 'node:crypto'
 2: 
@@ -543,7 +543,7 @@ Let me check the CLI source to understand the required flags and presets:
 </content>
 
 <system-reminder>
-Instructions from: /Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/AGENTS.md
+Instructions from: /Users/apple/hivemind-plugin/s/ecosystem-revamp/src/AGENTS.md
 # src/ — Plugin Source Code
 
 Source root for the OpenCode plugin. TypeScript, compiled to `dist/`.
@@ -608,7 +608,7 @@ Let me check what presets are available in the control-plane:
 **Input:**
 ```json
 {
-  "path": "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src",
+  "path": "/Users/apple/hivemind-plugin/s/ecosystem-revamp/src",
   "pattern": "guided-onboarding|preset"
 }
 ```
@@ -616,27 +616,27 @@ Let me check what presets are available in the control-plane:
 **Output:**
 ```
 Found 58 matches
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/shared/intake-record.ts:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/shared/intake-record.ts:
   Line 66:   intakeSource: 'question-tool' | 'cli-flags' | 'runtime-tool' | 'preset' | 'orphaned-session-fallback'
   Line 73:   /** Groups used from recommended preset (optional) */
   Line 205:   'preset',
 
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/tools/runtime/types.ts:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/tools/runtime/types.ts:
   Line 16:   presetId?: 'guided-onboarding'
   Line 19:     source: 'question-tool' | 'cli-flags' | 'runtime-tool' | 'preset'
 
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/tools/runtime/tools.ts:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/tools/runtime/tools.ts:
   Line 73:       presetId: tool.schema.enum(['guided-onboarding']).optional().describe('Control plane preset'),
   Line 78:         source: tool.schema.enum(['question-tool', 'cli-flags', 'runtime-tool', 'preset']),
   Line 100:         presetId: args.presetId,
 
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/commands/slash-command/command-types.ts:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/commands/slash-command/command-types.ts:
   Line 93:   presetId?: ControlPlaneRecommendedPresetId
 
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/control-plane/AGENTS.md:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/control-plane/AGENTS.md:
   Line 22: - Non-interactive mode requires `--preset` or explicit CLI flags
 
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/cli/settings.ts:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/cli/settings.ts:
   Line 21:   presetId?: ControlPlaneRecommendedPresetId
   Line 48:  * @param options Settings deltas, preset choice, and runtime session bindings.
   Line 72:   const normalizedRequestedSettingsGroups: ControlPlaneProfileGroupId[] = options.presetId
@@ -645,7 +645,7 @@ Found 58 matches
   Line 100:       source: options.presetId ? 'preset' : 'cli-flags',
   Line 104:       usedRecommendedPresetGroups: options.presetId ? normalizedRequestedSettingsGroups : [],
 
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/control-plane/control-plane-intake.ts:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/control-plane/control-plane-intake.ts:
   Line 104:   presetId: ControlPlaneRecommendedPresetId | undefined,
   Line 107:   if (!presetId) {
   Line 117:   presetId: ControlPlaneRecommendedPresetId | undefined,
@@ -672,7 +672,7 @@ Found 58 matches
   Line 314:   const presetGroups = resolvePresetGroups(input.presetId, evidence)
   Line 382:     const hasRequestedDelta = hasAnyRequestedSettingDelta(input, requestedGroups, presetGroups)
 
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/cli/init.ts:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/cli/init.ts:
   Line 16:   presetId?: ControlPlaneRecommendedPresetId
   Line 44:  * @param options Runtime defaults, bootstrap bindings, and non-interactive preset choices.
   Line 61:     presetId: options.presetId,
@@ -680,18 +680,18 @@ Found 58 matches
   Line 87:       source: options.presetId ? 'preset' : 'cli-flags',
   Line 91:       usedRecommendedPresetGroups: options.presetId ? ['identity-language', 'expertise-style', 'governance-automation'] : [],
 
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/cli.ts:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/cli.ts:
   Line 62:     '  --preset <value>            Use an explicit non-interactive preset (guided-onboarding)',
   Line 104:         presetId: typeof flags.preset === 'string' ? flags.preset as 'guided-onboarding' : undefined,
   Line 131:         presetId: typeof flags.preset === 'string' ? flags.preset as 'guided-onboarding' : undefined,
 
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/control-plane/control-plane-registry.ts:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/control-plane/control-plane-registry.ts:
   Line 142:     nonInteractiveMode: 'flags-or-preset-required',
   Line 143:     recommendedPresetId: 'guided-onboarding',
   Line 207:     nonInteractiveMode: 'flags-or-preset-required',
   Line 208:     recommendedPresetId: 'guided-onboarding',
 
-/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/control-plane/control-plane-types.ts:
+/Users/apple/hivemind-plugin/s/ecosystem-revamp/src/control-plane/control-plane-types.ts:
   Line 7: export type ControlPlaneRecommendedPresetId = 'guided-onboarding'
   Line 19:   source: 'question-tool' | 'cli-flags' | 'runtime-tool' | 'preset'
   Line 59:   nonInteractiveMode: 'flags-or-preset-required' | 'allow-explicit-values'
@@ -729,29 +729,29 @@ Now I understand the initialization process. The CLI requires either a preset or
   trajectoryId: 'trj_b0f3afbef6b3',
   workflowId: 'wf_15b62145e0da',
   sync: {
-    pluginFile: '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/plugins/hivemind-context-governance.ts',
+    pluginFile: '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/plugins/hivemind-context-governance.ts',
     mirroredCommandFiles: [
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/commands/hm-init.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/commands/hm-doctor.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/commands/hm-harness.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/commands/hm-settings.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/commands/hm-research.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/commands/hm-plan.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/commands/hm-implement.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/commands/hm-verify.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/commands/hm-tdd.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/commands/hm-course-correct.md'
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/commands/hm-init.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/commands/hm-doctor.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/commands/hm-harness.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/commands/hm-settings.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/commands/hm-research.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/commands/hm-plan.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/commands/hm-implement.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/commands/hm-verify.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/commands/hm-tdd.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/commands/hm-course-correct.md'
     ],
     mirroredAgentFiles: [
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/agents/hitea.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/agents/hivefiver.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/agents/hivehealer.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/agents/hivemaker.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/agents/hiveminder.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/agents/hiveplanner.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/agents/hiveq.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/agents/hiverd.md',
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/agents/hivexplorer.md'
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/agents/hitea.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/agents/hivefiver.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/agents/hivehealer.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/agents/hivemaker.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/agents/hiveminder.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/agents/hiveplanner.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/agents/hiveq.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/agents/hiverd.md',
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.opencode/agents/hivexplorer.md'
     ]
   },
   commandResult: {
@@ -777,7 +777,7 @@ Now I understand the initialization process. The CLI requires either a preset or
       created_state: true,
       trajectory_state: 'trj_b0f3afbef6b3',
       checkpoint_id: 'chk_trj_b0f3afbef6b3_1',
-      planning_projection: '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.hivemind/project/planning/trajectory-projections/trj_b0f3afbef6b3.json',
+      planning_projection: '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.hivemind/project/planning/trajectory-projections/trj_b0f3afbef6b3.json',
       missing_prerequisites: [],
       next_command: 'hm-plan',
       profile: [Object],
@@ -800,7 +800,7 @@ Now I understand the initialization process. The CLI requires either a preset or
       'planning-projection-created'
     ],
     artifactRefs: [
-      '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.hivemind/project/planning/trajectory-projections/trj_b0f3afbef6b3.json'
+      '/Users/apple/hivemind-plugin/s/ecosystem-revamp/.hivemind/project/planning/trajectory-projections/trj_b0f3afbef6b3.json'
     ],
     closeoutStatus: 'ready',
     verificationContractId: 'bootstrap-readiness',

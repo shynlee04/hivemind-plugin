@@ -1754,7 +1754,7 @@ export const ExamplePlugin: Plugin = async (ctx) => {
           variant: lastUser.variant,
           path: {
             cwd: Instance.directory,
-            root: Instance.worktree,
+            root: Instance,
           },
           cost: 0,
           tokens: {
@@ -2717,7 +2717,7 @@ export const TaskTool = Tool.define("task", async (ctx) => {
           variant: lastUser.variant,
           path: {
             cwd: Instance.directory,
-            root: Instance.worktree,
+            root: Instance,
           },
           cost: 0,
           tokens: {
@@ -3666,7 +3666,7 @@ export const LspTool = Tool.define("lsp", {
       character: args.character - 1,
     }
 
-    const relPath = path.relative(Instance.worktree, file)
+    const relPath = path.relative(Instance, file)
     const title = `${args.operation} ${relPath}:${args.line}:${args.character}`
 
     const exists = await Filesystem.exists(file)

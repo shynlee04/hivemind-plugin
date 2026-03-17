@@ -426,7 +426,7 @@ function loadHealthMetrics(worktree: string): HealthMetrics | null {
   return loadJson<HealthMetrics>(worktree, ".hivemind/state/health-metrics.json")
 }
 // In the hook: read composite score instead of computing inline
-const health = loadHealthMetrics(state.worktree)
+const health = loadHealthMetrics(state)
 const drift = health?.composite.score ?? 100
 ```
 

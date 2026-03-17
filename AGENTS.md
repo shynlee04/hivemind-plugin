@@ -174,7 +174,7 @@ tool({
     // context.sessionID - current session
     // context.agent     - calling agent name
     // context.directory - project root
-    // context.worktree  - worktree root
+    // context  - worktree root
     // context.abort     - AbortSignal
     // context.metadata() - set tool metadata
     // context.ask()      - request user permission

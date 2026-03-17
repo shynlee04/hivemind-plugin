@@ -266,7 +266,7 @@ NOTE: At any point in time through this workflow you should feel free to ask the
       summary: true,
       path: {
         cwd: Instance.directory,
-        root: Instance.worktree,
+        root: Instance,
       },
       cost: 0,
       tokens: {
@@ -495,7 +495,7 @@ export type AgentConfig = {
             edit: {
               "*": "deny",
               [path.join(".opencode", "plans", "*.md")]: "allow",
-              [path.relative(Instance.worktree, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
+              [path.relative(Instance, path.join(Global.Path.data, path.join("plans", "*.md")))]: "allow",
             },
           }),
           user,

@@ -852,7 +852,7 @@ The five mechanisms form a deterministic pipeline:
 
     if (!Flag.OPENCODE_DISABLE_PROJECT_CONFIG) {
       for (const file of FILES) {
-        const matches = await Filesystem.findUp(file, Instance.directory, Instance.worktree)
+        const matches = await Filesystem.findUp(file, Instance.directory, Instance)
         if (matches.length > 0) {
           matches.forEach((p) => {
             paths.add(path.resolve(p))
@@ -991,7 +991,7 @@ The five mechanisms form a deterministic pipeline:
           variant: lastUser.variant,
           path: {
             cwd: Instance.directory,
-            root: Instance.worktree,
+            root: Instance,
           },
           cost: 0,
           tokens: {
@@ -1440,7 +1440,7 @@ NOTE: At any point in time through this workflow you should feel free to ask the
       summary: true,
       path: {
         cwd: Instance.directory,
-        root: Instance.worktree,
+        root: Instance,
       },
       cost: 0,
       tokens: {

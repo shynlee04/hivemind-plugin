@@ -712,7 +712,7 @@ export const NotificationPlugin = async ({ project, client, $, directory, worktr
           variant: lastUser.variant,
           path: {
             cwd: Instance.directory,
-            root: Instance.worktree,
+            root: Instance,
           },
           cost: 0,
           tokens: {
@@ -1201,7 +1201,7 @@ Reasoning is tracked through `ReasoningPart` objects that capture the model's in
         seen.add(name)
         const filepath = name.startsWith("~/")
           ? path.join(os.homedir(), name.slice(2))
-          : path.resolve(Instance.worktree, name)
+          : path.resolve(Instance, name)
 
         const stats = await fs.stat(filepath).catch(() => undefined)
         if (!stats) {
@@ -1319,7 +1319,7 @@ Reasoning is tracked through `ReasoningPart` objects that capture the model's in
           variant: lastUser.variant,
           path: {
             cwd: Instance.directory,
-            root: Instance.worktree,
+            root: Instance,
           },
           cost: 0,
           tokens: {

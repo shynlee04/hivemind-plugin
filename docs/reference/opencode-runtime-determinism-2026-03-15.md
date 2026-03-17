@@ -1,7 +1,7 @@
 # OpenCode Runtime Determinism
 
 Date: 2026-03-15
-Scope: `.worktrees/ecosystem-revamp`
+Scope: `s/ecosystem-revamp`
 
 ## Core Knowledge
 
