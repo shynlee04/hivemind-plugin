@@ -61,9 +61,10 @@ None yet.
 - Phase 5: Minimum continuation record shape still needs implementation-time validation.
 - Phase 7: Live proof artifact format and review workflow need explicit execution decisions.
 - Phase 8: Ink-first stabilization is planned; OpenTUI promotion stays gated on backend contract stability.
+- Phase 1 Plan 01-01: `npx tsc --noEmit` is blocked by pre-existing repo-wide TypeScript issues outside the plan scope; see `.planning/phases/01-runtime-authority-baseline/deferred-items.md`.
 
 ## Session Continuity
 
 Last session: 2026-03-18
-Stopped at: Initialized roadmap and traceability for brownfield migration planning
+Stopped at: Partial execution of 01-01-PLAN.md blocked by pre-existing repo-wide TypeScript errors
 Resume file: None
