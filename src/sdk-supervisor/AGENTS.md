@@ -14,6 +14,7 @@ Owns additive supervisor-side orchestration for Phase 1.
 |------|---------|
 | `instance-registry.ts` | Supervisor instance registry creation and upsert helpers |
 | `health.ts` | Aggregate supervisor health summaries and build runtime status supervisor reports |
+| `runtime-status.ts` | Build additive runtime-status snapshots that combine schema-kernel records with supervisor health |
 | `index.ts` | Sector barrel |
 
 ## Rules

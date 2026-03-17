@@ -64,7 +64,7 @@
   - `npx tsx --test tests/schema-kernel-contracts.test.ts tests/sdk-supervisor-instance.test.ts` -> pass
   - `npx tsx --test tests/runtime-tools.test.ts tests/control-plane-runtime-tools.test.ts` -> pass
   - `npx tsc --noEmit` -> pass
-  - `npm test` -> pass (`143` tests passed, `0` failed)
+  - `npm test` -> pass (`144` tests passed, `0` failed)
 
 ### New Evidence From This Slice
 - `src/schema-kernel/` now exists as a real sector with additive Phase 1 contract schemas for:
@@ -102,4 +102,4 @@
 ### Latest Verification
 - `npx tsx --test tests/runtime-tools.test.ts tests/control-plane-runtime-tools.test.ts tests/sdk-supervisor-instance.test.ts tests/schema-kernel-contracts.test.ts` -> pass
 - `npx tsc --noEmit` -> pass
-- `npm test` -> pass (`143` tests passed, `0` failed)
+- `npm test` -> pass (`144` tests passed, `0` failed)

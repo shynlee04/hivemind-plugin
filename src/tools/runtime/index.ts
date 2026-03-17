@@ -3,4 +3,7 @@
  */
 
 export { createHivemindRuntimeStatusTool, createHivemindRuntimeCommandTool } from './tools.js'
-export type { HivemindRuntimeCommandArgs } from './types.js'
+export type {
+  HivemindRuntimeCommandArgs,
+  HivemindRuntimeStatusPayload,
+} from './types.js'
