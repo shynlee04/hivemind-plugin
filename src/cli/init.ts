@@ -9,6 +9,7 @@ import {
 } from '../control-plane/index.js'
 import type { PurposeClass } from '../hooks/start-work/index.js'
 import type { RuntimeAttachmentSettings } from '../shared/runtime-attachment.js'
+import { buildRuntimeEntryDecision } from '../shared/contracts/runtime-status.js'
 import { executeSlashCommandBundle, findSlashCommandBundle } from '../commands/slash-command/index.js'
 import { syncRuntimeSurface, type RuntimeSurfaceSyncResult } from './runtime-assets.js'
 
@@ -30,6 +31,9 @@ export interface InitProjectResult {
   trajectoryId: string
   workflowId: string
   sync: RuntimeSurfaceSyncResult
+  closeoutStatus: 'open' | 'ready' | 'blocked' | 'qa-pending'
+  nextCommand?: string
+  recommendedCommands: string[]
   commandResult: Awaited<ReturnType<typeof executeSlashCommandBundle>>
 }
 
@@ -105,12 +109,19 @@ export async function initProject(directory: string, options: InitOptions = {}):
     outputStyle: options.outputStyle,
     userMessage: 'initialize hivemind runtime entry surfaces',
   })
+  const entryDecision = buildRuntimeEntryDecision({
+    closeoutStatus: commandResult.closeoutStatus,
+    report: commandResult.report,
+  })
 
   return {
     sessionId,
     trajectoryId,
     workflowId,
     sync,
+    closeoutStatus: entryDecision.closeoutStatus,
+    nextCommand: entryDecision.nextCommand,
+    recommendedCommands: entryDecision.recommendedCommands,
     commandResult,
   }
 }

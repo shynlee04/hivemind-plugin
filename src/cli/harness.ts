@@ -1,6 +1,7 @@
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
+import { buildRuntimeEntryDecision } from '../shared/contracts/runtime-status.js'
 import { getHivemindPath } from '../shared/paths.js'
 import { loadRuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
 import { executeSlashCommandBundle, findSlashCommandBundle } from '../commands/slash-command/index.js'
@@ -26,26 +27,7 @@ export interface HarnessResult {
   commandResult: Awaited<ReturnType<typeof executeSlashCommandBundle>>
 }
 
-function resolveRecommendedCommands(
-  health: { healthy: boolean },
-  commandResult: Awaited<ReturnType<typeof executeSlashCommandBundle>>,
-): string[] {
-  const report = commandResult.report as { next_command?: string }
-
-  if (commandResult.closeoutStatus !== 'ready') {
-    if (report.next_command === 'hm-init') {
-      return ['hm-init', 'hm-doctor', 'opencode serve']
-    }
-
-    if (report.next_command === 'hm-doctor') {
-      return ['hm-doctor', 'hm-harness', 'opencode serve']
-    }
-  }
-
-  return health.healthy
-    ? ['opencode attach', 'hm-harness', '/hm-plan']
-    : ['opencode serve', 'hm-doctor', 'hm-init']
-}
+const runtimeEntryRecoveryCommands = ['hm-init', 'hm-doctor'] as const
 
 function formatDateStamp(date = new Date()): string {
   return date.toISOString().slice(0, 10)
@@ -88,6 +70,7 @@ async function writeHarnessArtifacts(
     health: { healthy: boolean; statusCode: number | null; version: string | null }
     snapshot: Awaited<ReturnType<typeof loadRuntimeBindingsSnapshot>>
     commandResult: Awaited<ReturnType<typeof executeSlashCommandBundle>>
+    runtimeEntryRecoveryCommands: readonly string[]
   },
 ): Promise<HarnessResult['metaArtifacts']> {
   const dateStamp = formatDateStamp()
@@ -123,6 +106,7 @@ async function writeHarnessArtifacts(
     `- Governance mode: ${result.snapshot.governanceMode}`,
     `- Automation level: ${result.snapshot.automationLevel}`,
     `- Output style: ${result.snapshot.outputStyle}`,
+    `- Runtime entry recovery commands: ${result.runtimeEntryRecoveryCommands.join(', ')}`,
   ].join('\n'))
 
   return {
@@ -166,6 +150,12 @@ export async function runHarnessCommand(directory: string, options: HarnessOptio
     health,
     snapshot,
     commandResult,
+    runtimeEntryRecoveryCommands,
+  })
+  const entryDecision = buildRuntimeEntryDecision({
+    closeoutStatus: commandResult.closeoutStatus,
+    report: commandResult.report,
+    serverHealthy: health.healthy,
   })
 
   return {
@@ -176,7 +166,7 @@ export async function runHarnessCommand(directory: string, options: HarnessOptio
     currentPhase: '00-control-plane',
     currentGate: 'Runtime entry attachment and CLI recovery',
     metaArtifacts,
-    recommendedCommands: resolveRecommendedCommands(health, commandResult),
+    recommendedCommands: entryDecision.recommendedCommands,
     commandResult,
   }
 }

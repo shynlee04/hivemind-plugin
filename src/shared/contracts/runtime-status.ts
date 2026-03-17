@@ -23,6 +23,14 @@ export const runtimeStatusLineageSessionStateSchema = z.object({
   checkpointId: z.string().optional(),
 })
 
+export const runtimeEntryCloseoutStatusSchema = z.enum(['open', 'ready', 'blocked', 'qa-pending'])
+
+export const runtimeEntryDecisionSchema = z.object({
+  closeoutStatus: runtimeEntryCloseoutStatusSchema,
+  nextCommand: z.string().optional(),
+  recommendedCommands: z.array(z.string()),
+})
+
 export const runtimeStatusSchema = z.object({
   runtimeAuthority: runtimeAuthoritySchema,
   runtimeInstanceId: z.string().optional(),
@@ -35,4 +43,54 @@ export const runtimeStatusSchema = z.object({
 export type RuntimeStatusEntryState = z.infer<typeof runtimeStatusEntryStateSchema>
 export type RuntimeStatusQaState = z.infer<typeof runtimeStatusQaStateSchema>
 export type RuntimeStatusLineageSessionState = z.infer<typeof runtimeStatusLineageSessionStateSchema>
+export type RuntimeEntryCloseoutStatus = z.infer<typeof runtimeEntryCloseoutStatusSchema>
+export type RuntimeEntryDecision = z.infer<typeof runtimeEntryDecisionSchema>
 export type RuntimeStatus = z.infer<typeof runtimeStatusSchema>
+
+function resolveRecommendedCommands(input: {
+  closeoutStatus: RuntimeEntryCloseoutStatus
+  nextCommand?: string
+  serverHealthy?: boolean
+}): string[] {
+  if (input.closeoutStatus !== 'ready') {
+    if (input.nextCommand === 'hm-init') {
+      return ['hm-init', 'hm-doctor', 'opencode serve']
+    }
+
+    if (input.nextCommand === 'hm-doctor') {
+      return ['hm-doctor', 'hm-harness', 'opencode serve']
+    }
+
+    if (input.nextCommand === 'hm-harness') {
+      return ['hm-harness', 'opencode attach', '/hm-plan']
+    }
+  }
+
+  return input.serverHealthy
+    ? ['opencode attach', 'hm-harness', '/hm-plan']
+    : ['opencode serve', 'hm-doctor', 'hm-init']
+}
+
+export function readRuntimeEntryNextCommand(report: Record<string, unknown>): string | undefined {
+  const nextCommand = report.next_command
+  return typeof nextCommand === 'string' ? nextCommand : undefined
+}
+
+export function buildRuntimeEntryDecision(input: {
+  closeoutStatus?: RuntimeEntryCloseoutStatus
+  report?: Record<string, unknown>
+  serverHealthy?: boolean
+}): RuntimeEntryDecision {
+  const closeoutStatus = input.closeoutStatus ?? 'open'
+  const nextCommand = input.report ? readRuntimeEntryNextCommand(input.report) : undefined
+
+  return {
+    closeoutStatus,
+    nextCommand,
+    recommendedCommands: resolveRecommendedCommands({
+      closeoutStatus,
+      nextCommand,
+      serverHealthy: input.serverHealthy,
+    }),
+  }
+}

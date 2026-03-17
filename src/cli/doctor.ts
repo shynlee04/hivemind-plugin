@@ -1,5 +1,6 @@
 import type { KernelLineage, SessionScope } from '../context/prompt-packet/index.js'
 import type { PurposeClass } from '../hooks/start-work/index.js'
+import { buildRuntimeEntryDecision } from '../shared/contracts/runtime-status.js'
 import { executeSlashCommandBundle, findSlashCommandBundle } from '../commands/slash-command/index.js'
 
 export interface DoctorOptions {
@@ -13,6 +14,12 @@ export interface DoctorOptions {
   purposeClass?: PurposeClass
 }
 
+export interface DoctorCommandResult extends Awaited<ReturnType<typeof executeSlashCommandBundle>> {
+  closeoutStatus: 'open' | 'ready' | 'blocked' | 'qa-pending'
+  nextCommand?: string
+  recommendedCommands: string[]
+}
+
 /**
  * Run the revamp recovery spine through the canonical hm-doctor command bundle.
  *
@@ -20,13 +27,13 @@ export interface DoctorOptions {
  * @param options Runtime command bindings for the recovery call.
  * @returns Canonical command execution result.
  */
-export async function runDoctorCommand(directory: string, options: DoctorOptions) {
+export async function runDoctorCommand(directory: string, options: DoctorOptions): Promise<DoctorCommandResult> {
   const bundle = findSlashCommandBundle('hm-doctor')
   if (!bundle) {
     throw new Error('Missing hm-doctor command bundle.')
   }
 
-  return executeSlashCommandBundle(bundle, {
+  const commandResult = await executeSlashCommandBundle(bundle, {
     projectRoot: directory,
     sessionId: options.sessionId,
     sessionScope: options.sessionScope ?? 'main',
@@ -38,4 +45,16 @@ export async function runDoctorCommand(directory: string, options: DoctorOptions
     purposeClass: options.purposeClass ?? 'course-correction',
     userMessage: 'repair runtime entry surfaces and recovery spine',
   })
+
+  const entryDecision = buildRuntimeEntryDecision({
+    closeoutStatus: commandResult.closeoutStatus,
+    report: commandResult.report,
+  })
+
+  return {
+    ...commandResult,
+    closeoutStatus: entryDecision.closeoutStatus,
+    nextCommand: entryDecision.nextCommand,
+    recommendedCommands: entryDecision.recommendedCommands,
+  }
 }
