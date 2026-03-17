@@ -49,6 +49,9 @@ export interface HivemindRuntimeStatusPayload {
   runtimeState: {
     sessionID: string
     attachmentMode: string
+    runtimeAuthority: string
+    runtimeInstanceId?: string
+    serverBaseUrl?: string
     hasRuntimeAttachment: boolean
     hasHivemind: boolean
     hivemindHealthy: boolean

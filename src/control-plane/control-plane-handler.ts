@@ -13,6 +13,7 @@ import {
   saveBootstrapRuntimeAttachmentSettings,
   saveRuntimeAttachmentSettings,
 } from '../shared/runtime-attachment.js'
+import { createManagedRuntime } from './sdk-runtime.js'
 import type { CommandExecutionInput, CommandExecutionResult, SlashCommandBundle } from '../commands/slash-command/command-types.js'
 import type { LoadedCommandAsset } from '../hooks/runtime-bridge/instruction-loader.js'
 import { findControlPlanePrimitive } from './control-plane-registry.js'
@@ -95,6 +96,9 @@ async function runInit(
   }
 
   const ids = resolveRuntimeIds(input)
+  const managedRuntime = await createManagedRuntime({
+    sessionId: input.sessionId,
+  })
   const profileSettings = await saveBootstrapRuntimeAttachmentSettings(input.projectRoot, {
     preferredUserName: intakeResolution.profileInput.preferredUserName,
     defaultLineage: input.lineage,
@@ -105,6 +109,11 @@ async function runInit(
     artifactLanguage: intakeResolution.profileInput.artifactLanguage,
     outputStyle: intakeResolution.profileInput.outputStyle,
     expertLevel: intakeResolution.profileInput.expertLevel,
+  })
+  await saveRuntimeAttachmentSettings(input.projectRoot, {
+    runtimeAuthority: 'managed-sdk',
+    runtimeInstanceId: managedRuntime.runtimeInstanceId,
+    serverBaseUrl: managedRuntime.serverBaseUrl,
   })
   await markEntryKernelQaPending(input.projectRoot, {
     reason: autoRecovery ? 'auto-init-complete-awaiting-qa' : 'init-complete-awaiting-qa',
@@ -163,6 +172,11 @@ async function runInit(
         pluginFile: runtimeSurfaceSync.pluginFile,
         mirroredCommandCount: runtimeSurfaceSync.mirroredCommandFiles.length,
         mirroredAgentCount: runtimeSurfaceSync.mirroredAgentFiles.length,
+      },
+      runtimeAuthority: {
+        runtimeAuthority: 'managed-sdk',
+        runtimeInstanceId: managedRuntime.runtimeInstanceId,
+        serverBaseUrl: managedRuntime.serverBaseUrl,
       },
       missing_prerequisites: status.issues.map((issue) => issue.code),
       next_command: 'hm-harness',

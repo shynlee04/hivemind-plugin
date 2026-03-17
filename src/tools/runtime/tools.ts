@@ -52,6 +52,9 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
         runtimeState: {
           sessionID: context.sessionID,
           attachmentMode: snapshot.attachmentMode,
+          runtimeAuthority: snapshot.runtimeAuthority,
+          runtimeInstanceId: snapshot.runtimeInstanceId,
+          serverBaseUrl: snapshot.serverBaseUrl,
           hasRuntimeAttachment: snapshot.hasRuntimeAttachment,
           hasHivemind: snapshot.hasHivemind,
           hivemindHealthy: snapshot.hivemindHealthy,
@@ -78,6 +81,8 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
       context.metadata({
         title: 'HiveMind runtime status',
         metadata: {
+          runtimeAuthority: snapshot.runtimeAuthority,
+          runtimeInstanceId: snapshot.runtimeInstanceId,
           trajectoryId: snapshot.trajectoryId,
           workflowId: snapshot.workflowId,
           supervisorStatus: statusSnapshot.supervisor.health.overallStatus,
