@@ -45,12 +45,13 @@ Plans:
   1. User can inspect authoritative runtime status from a single backend-owned source of truth.
   2. User can run bootstrap, doctor, and harness flows against that same runtime contract and get consistent results.
   3. User can inspect current runtime authority, active workflow state, and last significant runtime events from one additive inspection seam.
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
-- [ ] 02-01: Consolidate runtime status and authority reporting
-- [ ] 02-02: Rebind bootstrap, doctor, and harness flows to the shared runtime contract
-- [ ] 02-03: Expose workflow and event inspection through one additive seam
+- [ ] 02-00-PLAN.md — Establish Bun/OpenTUI app boundary and shared runtime-status contracts
+- [ ] 02-01-PLAN.md — Consolidate runtime status and authority reporting
+- [ ] 02-02-PLAN.md — Rebind bootstrap, doctor, and harness flows to the shared runtime contract
+- [ ] 02-03-PLAN.md — Expose workflow and event inspection through one additive seam
 
 ### Phase 3: Tool-Governed Mutation Foundation
 **Goal**: User can run governed workflows where critical state changes go through registered tools and official mutation gates.
@@ -149,7 +150,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Runtime Authority Baseline | 2/2 | Complete   | 2026-03-17 |
-| 2. Unified Runtime Operations | 0/3 | Not started | - |
+| 2. Unified Runtime Operations | 0/4 | Not started | - |
 | 3. Tool-Governed Mutation Foundation | 0/3 | Not started | - |
 | 4. Deterministic Routing and Receipts | 0/2 | Not started | - |
 | 5. Continuity and Recovery Contract | 0/3 | Not started | - |

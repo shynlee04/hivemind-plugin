@@ -21,14 +21,14 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-17)
 
 **Core value:** At runtime, HiveMind must reliably steer OpenCode agents through deterministic, tool-using workflows that are provably aligned with the live OpenCode client/server/plugin contract.
-**Current focus:** Phase 1 - Runtime Authority Baseline
+**Current focus:** Phase 2 - Unified Runtime Operations (TUI infrastructure first)
 
 ## Current Position
 
-Phase: 1 of 8 (Runtime Authority Baseline)
-Plan: 2 of 2 in current phase
-Status: Phase 01 complete, ready for 02-01
-Last activity: 2026-03-18 - completed 01-02 attach semantics and live sanity gate
+Phase: 2 of 8 (Unified Runtime Operations)
+Plan: 0 of 4 in current phase
+Status: Phase 01 complete, ready for 02-00
+Last activity: 2026-03-18 - rebaselined Phase 2 to start with TUI infrastructure
 
 Progress: [██████████] 100%
 
