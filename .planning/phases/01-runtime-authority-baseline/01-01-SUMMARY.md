@@ -119,6 +119,10 @@ None - no external service configuration required.
 - Plan 01-02 will use `attachManagedRuntime()` to bind to existing runtimes via `attached-sdk` authority mode
 - The authority seam (`runtimeAuthority`, `runtimeInstanceId`, `serverBaseUrl`) is now available across all Phase 1 surfaces
 
+## Self-Check: PASSED
+
+All key files verified on disk. All task commits verified in git history.
+
 ---
 *Phase: 01-runtime-authority-baseline*
 *Completed: 2026-03-18*
