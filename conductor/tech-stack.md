@@ -9,5 +9,10 @@
 - **@opencode-ai/plugin:** Utilized for the execution plane, attaching runtime context, and interacting with agent loops.
 
 ## User Interface
-- **OpenTUI:** Used for building the ongoing interactive client interface (replacing any legacy Ink implementations).
-- **Communication Protocol:** The OpenTUI client communicates with the user's local OpenCode instance (acting as the server) via HTTP APIs and direct streaming with SSE.
+- **Authoritative Contract:** The primary product contract is the OpenCode server/client SDK + plugin boundary.
+- **Renderer Choice:** Terminal or dashboard renderers are adapter concerns. OpenTUI may be used only when it fits the authoritative boundary and packaging/runtime constraints.
+- **Communication Protocol:** Any client surface communicates with the user's local OpenCode instance via official HTTP APIs, SDK calls, plugin surfaces, and direct streaming with SSE.
+
+## Internal Contracts
+- **Allowed:** HiveMind-owned internal schemas for user profiles, settings, planning metadata, display state, and delegation/read-model projections.
+- **Not Allowed:** Parallel execution/session/workflow/event contracts that bypass or compete with the authoritative OpenCode boundary.

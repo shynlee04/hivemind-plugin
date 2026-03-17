@@ -110,6 +110,7 @@ These principles govern all design and implementation decisions. They are the ro
 5. **Authority Principle**: Each concern has ONE owner. `hooks/start-work/` owns session lifecycle. `core/trajectory/` owns trajectory state. `shared/paths.ts` owns path resolution. No second implementations.
 6. **Projection-Not-Authority**: Root markdown command files are thin public projections. Install/runtime behavior must live in TypeScript control-plane and feature modules, never only in loose root `.md` files.
 7. **Official-Interface Verification**: Local mocks, stubs, health checks, and bundle execution are supporting evidence only. Claims about runtime behavior must be proven against the official OpenCode server/client/plugin boundary or explicitly labeled as non-live evidence.
+8. **Internal-Only Interfaces Are Allowed**: Additive internal schemas, settings, view-models, and read models are allowed when they stay repo-owned, have one authority owner, and do not create a competing execution, session, workflow, tool, or event contract beside OpenCode.
 
 ## OpenCode SDK Contract
 
@@ -120,6 +121,12 @@ This project builds ON the OpenCode SDK. The SDK is the authority - not custom r
 - Real behavioral proof comes from a live OpenCode instance exercised through official server/client/plugin interfaces.
 - Mocked `PluginInput`, stub HTTP servers, local command-bundle execution, and synthesized runtime JSON are useful diagnostics, but they do not prove live OpenCode behavior on their own.
 - When current official OpenCode docs are the only available source of truth, document that evidence explicitly and avoid overstating runtime certainty.
+
+### Internal Interface Boundary
+
+- Allowed internal surfaces: user profile schemas, settings fields, planning metadata, dashboard state, display filters, delegation read models, and local policy/config records that remain internal to HiveMind.
+- Required rule: internal contracts must translate outward through existing OpenCode SDK/API/plugin/tool boundaries at the edge instead of inventing a second public runtime protocol.
+- Not allowed: shadow session models, parallel workflow engines, custom event buses, bypass command protocols, or state stores that compete with OpenCode/runtime truth.
 
 ### Plugin Hooks (17 Available)
 
@@ -199,6 +206,7 @@ tool({
 8. **Shall** use `permission.ask` hook or `context.ask()` for state mutations
 9. **Shall** resolve paths via `getEffectivePaths()` - never hardcode `.hivemind/`
 10. **Shall** label readiness diagnostics, mock coverage, and live OpenCode contract probes separately in docs, plans, and completion claims
+11. **Shall** classify new interfaces as either `internal-only` or `official-boundary-facing` before implementation, and document the owner of each contract
 
 ## Operations
 

@@ -76,11 +76,10 @@
     "@clack/prompts": "^1.0.0",
     "@opencode-ai/plugin": ">=1.1.0",
     "@opencode-ai/sdk": "^1.2.26",
-    "@opentui/core": "^0.1.0",
-    "@opentui/react": "^0.1.0",
     "@types/proper-lockfile": "^4.1.4",
     "@z_ai/coding-helper": "^0.0.7",
     "ignore": "^7.0.5",
+    "ink": "^6.8.0",
     "magic-string": "^0.30.21",
     "proper-lockfile": "^4.1.2",
     "remark": "^15.0.1",
@@ -91,6 +90,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@types/ink": "^0.5.2",
     "@types/node": "^20.10.0",
     "@types/react": "^19.2.14",
     "hivemind-context-governance": "^2.8.5",
@@ -98,7 +98,7 @@
   },
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.1.0",
-    "react": ">=18.0.0"
+    "react": "^19.2.4"
   },
   "peerDependenciesMeta": {
     "@opencode-ai/plugin": {
