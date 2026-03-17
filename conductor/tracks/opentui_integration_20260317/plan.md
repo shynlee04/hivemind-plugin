@@ -13,9 +13,9 @@
 - [x] Task: Implement Interactive QA Quizzes UI 161c649
     - [x] Write Tests: Render tests for quiz components
     - [x] Implement Feature: Build quiz components in OpenTUI
-- [ ] Task: Implement Multi-branch task planning UI
-    - [ ] Write Tests: State management and render tests for multi-branch planning
-    - [ ] Implement Feature: Build task planning visualization components
+- [x] Task: Implement Multi-branch task planning UI 6bfb95e
+    - [x] Write Tests: State management and render tests for multi-branch planning
+    - [x] Implement Feature: Build task planning visualization components
 - [ ] Task: Implement Hierarchy CodeWiki/TechStackWiki UI
     - [ ] Write Tests: Data parsing and rendering tests for hierarchy wikis
     - [ ] Implement Feature: Build hierarchical tree view components
