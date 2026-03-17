@@ -18,6 +18,7 @@ import {
   createSupervisorStatusReport,
   type SupervisorStatusReport,
 } from './health.js'
+import type { RuntimeStatus } from '../shared/contracts/runtime-status.js'
 
 export interface RuntimeKernelStatusSnapshot {
   entry: EntryKernelStateRecord
@@ -37,12 +38,25 @@ export interface BuildRuntimeStatusSnapshotInput {
   recordedAt?: string
 }
 
-export interface RuntimeStatusSnapshot {
-  runtimeAuthority: RuntimeBindingsSnapshot['runtimeAuthority']
-  runtimeInstanceId?: string
-  serverBaseUrl?: string
+export interface RuntimeStatusSnapshot extends RuntimeStatus {
   kernel: RuntimeKernelStatusSnapshot
   supervisor: SupervisorStatusReport
+}
+
+function getRecommendedNext(snapshot: RuntimeBindingsSnapshot): string {
+  if (snapshot.entryState === 'uninitialized') {
+    return 'hm-init'
+  }
+
+  if (snapshot.entryState === 'repair-required') {
+    return 'hm-doctor'
+  }
+
+  if (snapshot.qaState === 'pending') {
+    return 'hm-harness'
+  }
+
+  return 'none'
 }
 
 /**
@@ -62,6 +76,24 @@ export async function buildRuntimeStatusSnapshot(
     runtimeAuthority: snapshot.runtimeAuthority,
     runtimeInstanceId: snapshot.runtimeInstanceId,
     serverBaseUrl: snapshot.serverBaseUrl,
+    entryState: {
+      state: snapshot.entryState,
+      interactiveBootstrapRequired: snapshot.interactiveBootstrapRequired,
+      recommendedNext: getRecommendedNext(snapshot),
+    },
+    qaState: {
+      state: snapshot.qaState,
+      releaseState: snapshot.releaseState,
+    },
+    lineageSessionState: {
+      lineage: snapshot.defaultLineage,
+      purposeClass: snapshot.defaultPurposeClass,
+      trajectoryId: snapshot.trajectoryId,
+      workflowId: snapshot.workflowId,
+      taskIds: snapshot.taskIds,
+      subtaskIds: snapshot.subtaskIds,
+      checkpointId: snapshot.checkpointId,
+    },
     kernel: {
       entry: createEntryKernelStateRecord({
         state: snapshot.entryState,

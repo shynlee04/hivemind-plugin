@@ -12,6 +12,7 @@ import type {
   WorkflowGuardStateRecord,
   WorkflowWaveStateRecord,
 } from '../../schema-kernel/index.js'
+import type { RuntimeStatus } from '../../shared/contracts/runtime-status.js'
 import type { SupervisorHealthSummary } from '../../sdk-supervisor/index.js'
 
 export interface HivemindRuntimeCommandArgs {
@@ -36,16 +37,7 @@ export interface HivemindRuntimeCommandArgs {
   }
 }
 
-export interface HivemindRuntimeStatusPayload {
-  entryState: {
-    state: string
-    interactiveBootstrapRequired: boolean
-    recommendedNext: string
-  }
-  qaState: {
-    state: string
-    releaseState: string
-  }
+export interface HivemindRuntimeStatusPayload extends RuntimeStatus {
   runtimeState: {
     sessionID: string
     attachmentMode: string
@@ -72,15 +64,6 @@ export interface HivemindRuntimeStatusPayload {
   supervisorState: {
     registry: SupervisorInstanceRegistryRecord
     health: SupervisorHealthSummary
-  }
-  lineageSessionState: {
-    lineage: string
-    purposeClass: string
-    trajectoryId?: string
-    workflowId?: string
-    taskIds: string[]
-    subtaskIds: string[]
-    checkpointId?: string
   }
   workflowGateState: {
     availableCommands: string[]

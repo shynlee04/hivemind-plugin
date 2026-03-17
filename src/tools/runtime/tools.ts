@@ -34,21 +34,11 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
         snapshot,
       })
       const payload: HivemindRuntimeStatusPayload = {
-        entryState: {
-          state: snapshot.entryState,
-          interactiveBootstrapRequired: snapshot.interactiveBootstrapRequired,
-          recommendedNext: snapshot.entryState === 'uninitialized'
-            ? 'hm-init'
-            : snapshot.entryState === 'repair-required'
-              ? 'hm-doctor'
-              : snapshot.qaState === 'pending'
-                ? 'hm-harness'
-                : 'none',
-        },
-        qaState: {
-          state: snapshot.qaState,
-          releaseState: snapshot.releaseState,
-        },
+        runtimeAuthority: statusSnapshot.runtimeAuthority,
+        runtimeInstanceId: statusSnapshot.runtimeInstanceId,
+        serverBaseUrl: statusSnapshot.serverBaseUrl,
+        entryState: statusSnapshot.entryState,
+        qaState: statusSnapshot.qaState,
         runtimeState: {
           sessionID: context.sessionID,
           attachmentMode: snapshot.attachmentMode,
@@ -65,15 +55,7 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
         },
         kernelState: statusSnapshot.kernel,
         supervisorState: statusSnapshot.supervisor,
-        lineageSessionState: {
-          lineage: snapshot.defaultLineage,
-          purposeClass: snapshot.defaultPurposeClass,
-          trajectoryId: snapshot.trajectoryId,
-          workflowId: snapshot.workflowId,
-          taskIds: snapshot.taskIds,
-          subtaskIds: snapshot.subtaskIds,
-          checkpointId: snapshot.checkpointId,
-        },
+        lineageSessionState: statusSnapshot.lineageSessionState,
         workflowGateState: {
           availableCommands: discoverSlashCommandBundles().map((bundle) => bundle.id),
         },
