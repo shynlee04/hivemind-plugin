@@ -165,8 +165,33 @@ describe('plugin runtime plan', () => {
     assert.equal(reminder?.includes('command=hm-plan'), true)
     assert.equal(reminder?.includes('outcome=route'), true)
     assert.equal(reminder?.includes('route_disposition=create'), true)
+    assert.equal(reminder?.includes('runtime_authority=managed-sdk'), true)
     assert.equal(reminder?.includes('risk=none'), true)
     assert.equal(reminder?.includes('next_transition=command:hm-plan'), true)
+  })
+
+  it('labels attach route reminders as attached-sdk authority', () => {
+    const reminder = buildRouteReminder({
+      entryKernel: {
+        routing: {
+          traversalOutcome: 'route',
+          routeDisposition: 'attach',
+          requiredCommandId: 'hm-harness',
+          recommendedCommandId: 'hm-plan',
+          autoRoute: true,
+          programmaticInitiationRequired: false,
+          lineage: 'hivefiver',
+          purposeClass: 'planning',
+        },
+        safety: {
+          riskLevel: 'none',
+        },
+      },
+    } as any)
+
+    assert.equal(reminder?.includes('route_disposition=attach'), true)
+    assert.equal(reminder?.includes('runtime_authority=attached-sdk'), true)
+    assert.equal(reminder?.includes('command=hm-harness'), true)
   })
 
   it('keeps mixed-intent prompts advisory through the plugin runtime plan', async () => {

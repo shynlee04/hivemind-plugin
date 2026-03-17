@@ -204,7 +204,7 @@ export function resolveStartWork(input: StartWorkInput): StartWorkDecision {
   const recommendedControlPlaneId = requiredControlPlaneId
   const requiredCommandId = requiredControlPlaneId
     ? findControlPlanePrimitive(requiredControlPlaneId)?.adapterCommandId ?? requiredControlPlaneId
-    : readiness.find((gate) => gate.commandId)?.commandId
+    : effectiveReadiness.find((gate) => gate.commandId)?.commandId
   const recommendedCommandId = requiredCommandId ?? resolveRecommendedCommand(purpose.purposeClass)
   const commandAgent = (requiredControlPlaneId
     ? findControlPlanePrimitive(requiredControlPlaneId)?.adapterCommandId

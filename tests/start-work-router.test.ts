@@ -183,6 +183,48 @@ describe('start-work router', () => {
     }
   })
 
+  it('prefers attach-active continuation instead of hm-init when runtime authority is already healthy', async () => {
+    const dir = await mkdtemp(join(tmpdir(), 'hm-start-work-attach-authority-'))
+
+    try {
+      bootstrapWorkflowAuthority(dir, {
+        workflowId: 'wf_attach_active',
+        sessionScope: 'main',
+        lineage: 'hivefiver',
+      })
+      await bootstrapTrajectoryLedger(dir, {
+        trajectoryId: 'trj_attach_active',
+        workflowId: 'wf_attach_active',
+        sessionId: 'ses_attach_existing',
+        lineage: 'hivefiver',
+        purposeClass: 'planning',
+        taskIds: ['task_attach_active'],
+      })
+
+      const decision = resolveStartWork({
+        userMessage: 'continue the existing attached workflow',
+        sessionId: 'ses_attach_current',
+        sessionScope: 'main',
+        projectRoot: dir,
+        workflowId: 'wf_attach_active',
+        activeLineage: 'hivefiver',
+        hasRuntimeAttachment: false,
+        profileComplete: false,
+        hasHivemind: true,
+        hivemindHealthy: true,
+        hasWorkflow: true,
+      })
+
+      assert.equal(decision.trajectoryAssessment?.action, 'attach-active')
+      assert.equal(decision.routeDisposition, 'attach')
+      assert.equal(decision.requiredCommandId, undefined)
+      assert.notEqual(decision.recommendedCommandId, 'hm-init')
+      assert.equal(decision.reasons.includes('prefer-attach-or-resume-over-bootstrap'), true)
+    } finally {
+      await rm(dir, { recursive: true, force: true })
+    }
+  })
+
   it('treats mixed-intent prompts conservatively instead of auto-routing into tdd', () => {
     const decision = resolveStartWork({
       userMessage: 'I was thinking we may need to refactor session handling, but first research what other frameworks do, and also there is a failing test, and should we add TDD for this?',

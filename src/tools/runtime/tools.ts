@@ -5,7 +5,7 @@
  * against the HiveMind revamp runtime.
  */
 
-import { tool } from '@opencode-ai/plugin'
+import { tool } from '@opencode-ai/plugin/tool'
 
 import {
   executeSlashCommandBundle,
@@ -131,6 +131,39 @@ export function createHivemindRuntimeCommandTool(projectRoot: string): ReturnTyp
     },
     async execute(args, context) {
       const snapshot = await loadRuntimeBindingsSnapshot(projectRoot)
+      if (
+        args.command === 'hm-init'
+        && snapshot.runtimeAuthority === 'attached-sdk'
+        && !!snapshot.serverBaseUrl
+        && snapshot.hivemindHealthy
+      ) {
+        const redirectedResult = {
+          commandId: args.command,
+          closeoutStatus: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
+          report: {
+            status: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
+            routeDisposition: 'attach',
+            next_command: 'hm-harness',
+            guidance: 'Attached OpenCode runtime already healthy; skipped competing hm-init bootstrap.',
+            runtimeAuthority: {
+              runtimeAuthority: snapshot.runtimeAuthority,
+              runtimeInstanceId: snapshot.runtimeInstanceId,
+              serverBaseUrl: snapshot.serverBaseUrl,
+            },
+          },
+          stateTransitions: ['attach-active-bootstrap-refused'],
+        }
+        context.metadata({
+          title: `HiveMind command ${args.command}`,
+          metadata: {
+            command: args.command,
+            closeoutStatus: redirectedResult.closeoutStatus,
+            routeDisposition: 'attach',
+          },
+        })
+        return renderToolResult(redirectedResult)
+      }
+
       const bundle = findSlashCommandBundle(args.command)
       if (!bundle) {
         throw new Error(`Unknown HiveMind command: ${args.command}`)

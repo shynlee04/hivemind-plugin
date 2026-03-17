@@ -19,6 +19,12 @@ import type { LoadedCommandAsset } from '../hooks/runtime-bridge/instruction-loa
 import { findControlPlanePrimitive } from './control-plane-registry.js'
 import { resolveControlPlaneIntakeGate } from './control-plane-intake.js'
 
+function hasAttachedSdkAuthority(snapshot: Awaited<ReturnType<typeof loadRuntimeBindingsSnapshot>>): boolean {
+  return snapshot.runtimeAuthority === 'attached-sdk'
+    && !!snapshot.serverBaseUrl
+    && snapshot.hivemindHealthy
+}
+
 function snapshotProfileValidated(input: CommandExecutionInput): boolean {
   return !!(
     input.preferredUserName
@@ -87,6 +93,37 @@ async function runInit(
 ): Promise<CommandExecutionResult> {
   const primitive = findControlPlanePrimitive('hm-init')
   const snapshot = await loadRuntimeBindingsSnapshot(input.projectRoot)
+  if (hasAttachedSdkAuthority(snapshot)) {
+    return {
+      commandId: bundle.id,
+      title: bundle.title,
+      agent: bundle.agent,
+      executionMode: 'handler',
+      contract: asset.contract,
+      report: {
+        status: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
+        entry_state: snapshot.entryState,
+        qa_state: snapshot.qaState,
+        routeDisposition: 'attach',
+        next_command: 'hm-harness',
+        guidance: 'Attached OpenCode runtime is already authoritative; bootstrap was redirected to attach continuation.',
+        runtimeAuthority: {
+          runtimeAuthority: snapshot.runtimeAuthority,
+          runtimeInstanceId: snapshot.runtimeInstanceId,
+          serverBaseUrl: snapshot.serverBaseUrl,
+        },
+        safetyLevel: bundle.pressureContract.safety.level,
+        failureBehavior: bundle.pressureContract.failureBehavior,
+        expectedEvidence: bundle.pressureContract.evidence.requiredArtifacts,
+      },
+      entityBindings: resolveEntityBindings(input),
+      stateTransitions: ['attach-active-bootstrap-refused'],
+      closeoutStatus: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
+      verificationContractId: asset.contract.verificationContract,
+      pressureContract: bundle.pressureContract,
+    }
+  }
+
   const autoRecovery = input.entryKernelAction === 'auto-init'
   const intakeResolution = primitive
     ? resolveControlPlaneIntakeGate(primitive, input, snapshot)
