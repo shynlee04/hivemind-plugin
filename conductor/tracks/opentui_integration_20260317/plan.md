@@ -25,7 +25,7 @@
 - [x] Task: Implement Multi-tab and Pipeline Status UI 536806d
     - [x] Write Tests: Tab switching and status update tests
     - [x] Implement Feature: Build multi-tab layout and pipeline status dashboard
-- [ ] Task: Implement Live Execution Status & Mouse-click Steering
-    - [ ] Write Tests: Mouse event handling and steering injection tests
-    - [ ] Implement Feature: Add agent execution status indicators and mouse-click event handlers for context injection
+- [x] Task: Implement Live Execution Status & Mouse-click Steering afef52a
+    - [x] Write Tests: Mouse event handling and steering injection tests
+    - [x] Implement Feature: Add agent execution status indicators and mouse-click event handlers for context injection
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Human-Agent Collaboration Features' (Protocol in workflow.md)
