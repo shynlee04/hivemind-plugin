@@ -58,7 +58,11 @@ describe('runtime tools', () => {
         directory: projectRoot,
         worktree: projectRoot,
       })) as {
+        runtimeAuthority: string
+        runtimeInstanceId?: string
+        serverBaseUrl?: string
         entryState: { state: string }
+        qaState: { state: string; releaseState: string }
         runtimeState: { hasRuntimeAttachment: boolean }
         kernelState: {
           entry: {
@@ -88,7 +92,12 @@ describe('runtime tools', () => {
         }
         workflowGateState: { availableCommands: string[] }
       }
+      assert.equal(statusPayload.runtimeAuthority, 'none')
+      assert.equal(statusPayload.runtimeInstanceId, undefined)
+      assert.equal(statusPayload.serverBaseUrl, undefined)
       assert.equal(statusPayload.entryState.state, 'uninitialized')
+      assert.equal(statusPayload.qaState.state, 'blocked')
+      assert.equal(statusPayload.qaState.releaseState, 'blocked')
       assert.equal(statusPayload.runtimeState.hasRuntimeAttachment, false)
       assert.equal(statusPayload.kernelState.entry.version, 'v1')
       assert.equal(statusPayload.kernelState.entry.lifecycle.layer, 'entry-kernel')

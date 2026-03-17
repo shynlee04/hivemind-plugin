@@ -77,8 +77,11 @@ describe('control-plane runtime tools', () => {
 
       const rawStatus = await runtimeStatus!.execute({}, createToolContext(dir, 'ses_runtime_status_gate'))
       const status = JSON.parse(rawStatus) as {
+        runtimeAuthority: string
+        runtimeInstanceId?: string
+        serverBaseUrl?: string
         entryState: { state: string; interactiveBootstrapRequired: boolean }
-        qaState: { state: string }
+        qaState: { state: string; releaseState: string }
         runtimeState: {
           hasRuntimeAttachment: boolean
           profileComplete: boolean
@@ -102,11 +105,16 @@ describe('control-plane runtime tools', () => {
           health: { overallStatus: string }
           registry: { instances: Array<{ status: string }> }
         }
+        workflowGateState: { availableCommands: string[] }
       }
 
+      assert.equal(status.runtimeAuthority, 'none')
+      assert.equal(status.runtimeInstanceId, undefined)
+      assert.equal(status.serverBaseUrl, undefined)
       assert.equal(status.entryState.state, 'uninitialized')
       assert.equal(status.entryState.interactiveBootstrapRequired, true)
       assert.equal(status.qaState.state, 'blocked')
+      assert.equal(status.qaState.releaseState, 'blocked')
       assert.equal(status.runtimeState.hasRuntimeAttachment, false)
       assert.equal(status.runtimeState.profileComplete, false)
       assert.deepEqual(status.runtimeState.missingProfileFields, [
@@ -128,6 +136,7 @@ describe('control-plane runtime tools', () => {
       assert.equal(status.kernelState.freshnessRegistry.artifacts[0]?.status, 'warn')
       assert.equal(status.supervisorState.health.overallStatus, 'degraded')
       assert.equal(status.supervisorState.registry.instances[0]?.status, 'degraded')
+      assert.equal(status.workflowGateState.availableCommands.includes('hm-init'), true)
 
       await assert.rejects(access(join(dir, '.hivemind')))
     } finally {
