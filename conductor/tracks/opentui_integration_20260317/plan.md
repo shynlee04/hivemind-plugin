@@ -21,11 +21,11 @@
     - [x] Implement Feature: Build hierarchical tree view components
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Interactive Planning Artifacts' (Protocol in workflow.md) 1dbb494
 
-## Phase 3: Human-Agent Collaboration Features
+## Phase 3: Human-Agent Collaboration Features [checkpoint: 1d1fb81]
 - [x] Task: Implement Multi-tab and Pipeline Status UI 536806d
     - [x] Write Tests: Tab switching and status update tests
     - [x] Implement Feature: Build multi-tab layout and pipeline status dashboard
 - [x] Task: Implement Live Execution Status & Mouse-click Steering afef52a
     - [x] Write Tests: Mouse event handling and steering injection tests
     - [x] Implement Feature: Add agent execution status indicators and mouse-click event handlers for context injection
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Human-Agent Collaboration Features' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Human-Agent Collaboration Features' (Protocol in workflow.md) 1d1fb81
