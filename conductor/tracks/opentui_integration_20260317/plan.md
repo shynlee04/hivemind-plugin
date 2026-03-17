@@ -29,3 +29,6 @@
     - [x] Write Tests: Mouse event handling and steering injection tests
     - [x] Implement Feature: Add agent execution status indicators and mouse-click event handlers for context injection
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Human-Agent Collaboration Features' (Protocol in workflow.md) 1d1fb81
+
+## Phase: Review Fixes
+- [x] Task: Apply review suggestions cf3f0c5
