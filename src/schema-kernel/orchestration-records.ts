@@ -12,6 +12,9 @@ export const supervisorInstanceRegistrySchema = z.object({
   instances: z.array(z.object({
     instanceId: z.string().min(1),
     status: z.enum(['healthy', 'degraded', 'blocked']),
+    runtimeAuthority: z.enum(['managed-sdk', 'attached-sdk', 'none']),
+    runtimeInstanceId: z.string().min(1).optional(),
+    serverBaseUrl: z.string().url().optional(),
     startedAt: timestampSchema,
     lastHeartbeatAt: timestampSchema,
     transport: z.literal('same-local-env'),

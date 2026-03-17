@@ -38,6 +38,9 @@ export interface BuildRuntimeStatusSnapshotInput {
 }
 
 export interface RuntimeStatusSnapshot {
+  runtimeAuthority: RuntimeBindingsSnapshot['runtimeAuthority']
+  runtimeInstanceId?: string
+  serverBaseUrl?: string
   kernel: RuntimeKernelStatusSnapshot
   supervisor: SupervisorStatusReport
 }
@@ -56,6 +59,9 @@ export async function buildRuntimeStatusSnapshot(
   const { snapshot } = input
 
   return {
+    runtimeAuthority: snapshot.runtimeAuthority,
+    runtimeInstanceId: snapshot.runtimeInstanceId,
+    serverBaseUrl: snapshot.serverBaseUrl,
     kernel: {
       entry: createEntryKernelStateRecord({
         state: snapshot.entryState,
@@ -107,10 +113,13 @@ export async function buildRuntimeStatusSnapshot(
       }),
     },
     supervisor: createSupervisorStatusReport({
-      instanceId: `sup:${input.sessionId}`,
+      instanceId: snapshot.runtimeInstanceId ?? `sup:${input.sessionId}`,
       startedAt: recordedAt,
       lastHeartbeatAt: recordedAt,
-      status: snapshot.hasRuntimeAttachment && snapshot.hivemindHealthy ? 'healthy' : 'degraded',
+      status: snapshot.runtimeAuthority !== 'none' && snapshot.hivemindHealthy ? 'healthy' : 'degraded',
+      runtimeAuthority: snapshot.runtimeAuthority,
+      runtimeInstanceId: snapshot.runtimeInstanceId,
+      serverBaseUrl: snapshot.serverBaseUrl,
     }),
   }
 }

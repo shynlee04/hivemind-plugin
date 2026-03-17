@@ -6,6 +6,9 @@ import {
 export interface RegisterSupervisorInstanceInput {
   instanceId: string
   status: 'healthy' | 'degraded' | 'blocked'
+  runtimeAuthority: 'managed-sdk' | 'attached-sdk' | 'none'
+  runtimeInstanceId?: string
+  serverBaseUrl?: string
   startedAt: string
   lastHeartbeatAt: string
 }

@@ -24,6 +24,15 @@ export interface AttachmentCore {
   defaultPurposeClass: PurposeClass
 }
 
+export type RuntimeAuthority = 'managed-sdk' | 'attached-sdk' | 'none'
+
+/** Persisted runtime authority identity */
+export interface AttachmentRuntimeAuthority {
+  runtimeAuthority: RuntimeAuthority
+  runtimeInstanceId?: string
+  serverBaseUrl?: string
+}
+
 /** User profile within attachment */
 export interface AttachmentProfile {
   preferredUserName?: string
@@ -48,6 +57,7 @@ export interface AttachmentFeatures {
 
 /** Full runtime attachment settings — composed via intersection for backward compatibility */
 export type RuntimeAttachmentSettings = AttachmentCore
+  & AttachmentRuntimeAuthority
   & AttachmentProfile
   & AttachmentFeatures
 
@@ -83,6 +93,12 @@ export interface RuntimeAttachmentEntryDefaults {
   returnContract?: string
 }
 
+export interface RuntimeAttachmentEntryAuthority {
+  runtimeAuthority: RuntimeAuthority
+  runtimeInstanceId?: string
+  serverBaseUrl?: string
+}
+
 export interface RuntimeAttachmentEntryProfile {
   preferredUserName?: string
   governanceMode: string
@@ -113,6 +129,7 @@ export interface RuntimeAttachmentEntryBindings {
 
 export interface RuntimeAttachmentEntryKernel {
   defaults: RuntimeAttachmentEntryDefaults
+  authority: RuntimeAttachmentEntryAuthority
   profile: RuntimeAttachmentEntryProfile
   bindings: RuntimeAttachmentEntryBindings
 }
@@ -133,6 +150,9 @@ function defaultRuntimeAttachmentSettings(): RuntimeAttachmentSettings {
     attachmentMode: 'local-worktree',
     defaultLineage: 'hivefiver',
     defaultPurposeClass: 'planning',
+    runtimeAuthority: 'none',
+    runtimeInstanceId: undefined,
+    serverBaseUrl: undefined,
     preferredUserName: undefined,
     governanceMode: profile.governanceMode,
     automationLevel: profile.automationLevel,
@@ -146,6 +166,16 @@ function defaultRuntimeAttachmentSettings(): RuntimeAttachmentSettings {
     mcpReadiness: ['context7', 'deepwiki', 'tavily', 'repomix'],
     hivebrainDigest: ['runtime-attachment-active'],
   }
+}
+
+function normalizeRuntimeAuthority(candidate: unknown): RuntimeAuthority {
+  return candidate === 'managed-sdk' || candidate === 'attached-sdk'
+    ? candidate
+    : 'none'
+}
+
+function normalizeOptionalString(candidate: unknown): string | undefined {
+  return typeof candidate === 'string' && candidate.length > 0 ? candidate : undefined
 }
 
 function mergeStringArray(candidate: unknown, fallback: string[]): string[] {
@@ -191,6 +221,11 @@ export function buildRuntimeAttachmentEntryKernel(
       outputStyle: profile.outputStyle,
       expertLevel: profile.expertiseLevel,
     },
+    authority: {
+      runtimeAuthority: normalizeRuntimeAuthority(source.runtimeAuthority),
+      runtimeInstanceId: normalizeOptionalString(source.runtimeInstanceId),
+      serverBaseUrl: normalizeOptionalString(source.serverBaseUrl),
+    },
     bindings: {
       entryState: source.entryState ?? 'uninitialized',
       qaState: source.qaState ?? 'blocked',
@@ -231,6 +266,9 @@ export async function loadRuntimeAttachmentSettings(projectRoot: string): Promis
       attachmentMode: parsed.attachmentMode === 'npm-package' ? 'npm-package' : defaults.attachmentMode,
       defaultLineage: parsed.defaultLineage === 'hiveminder' ? 'hiveminder' : defaults.defaultLineage,
       defaultPurposeClass: parsed.defaultPurposeClass ?? defaults.defaultPurposeClass,
+      runtimeAuthority: normalizeRuntimeAuthority(parsed.runtimeAuthority),
+      runtimeInstanceId: normalizeOptionalString(parsed.runtimeInstanceId),
+      serverBaseUrl: normalizeOptionalString(parsed.serverBaseUrl),
       preferredUserName: normalizePreferredUserName(parsed.preferredUserName),
       governanceMode: profile.governanceMode,
       automationLevel: profile.automationLevel,
@@ -272,6 +310,9 @@ export async function saveRuntimeAttachmentSettings(
   await fs.mkdir(path.dirname(filePath), { recursive: true })
   const normalizedSettings: RuntimeAttachmentSettings = {
     ...merged,
+    runtimeAuthority: normalizeRuntimeAuthority(merged.runtimeAuthority),
+    runtimeInstanceId: normalizeOptionalString(merged.runtimeInstanceId),
+    serverBaseUrl: normalizeOptionalString(merged.serverBaseUrl),
     preferredUserName: normalizedProfile.preferredUserName,
     governanceMode: normalizedProfile.governanceMode,
     automationLevel: normalizedProfile.automationLevel,

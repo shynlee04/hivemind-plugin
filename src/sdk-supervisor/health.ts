@@ -16,6 +16,9 @@ export interface CreateSupervisorStatusReportInput {
   startedAt: string
   lastHeartbeatAt: string
   status: 'healthy' | 'degraded' | 'blocked'
+  runtimeAuthority: 'managed-sdk' | 'attached-sdk' | 'none'
+  runtimeInstanceId?: string
+  serverBaseUrl?: string
 }
 
 export interface SupervisorStatusReport {
