@@ -10,6 +10,26 @@ export interface RuntimeStatusViewProps extends LoadRuntimeStatusInput {
   initialStatus?: RuntimeStatus
 }
 
+export function renderRuntimeStatusLines(status: RuntimeStatus): string[] {
+  const workflowSummary = status.workflowSummary
+    ? `${status.workflowSummary.workflowId} (${status.workflowSummary.gateState}) tasks=${status.workflowSummary.currentTaskIds.join(',') || 'none'}`
+    : 'none'
+  const recentEvents = status.recentEvents.length > 0
+    ? status.recentEvents.map((event) => `${event.recordedAt} ${event.source}/${event.eventKind}: ${event.summary}`)
+    : ['none']
+
+  return [
+    'HiveMind Runtime Status',
+    `runtimeAuthority: ${status.runtimeAuthority}`,
+    `serverBaseUrl: ${status.serverBaseUrl ?? 'not attached'}`,
+    `entryState: ${status.entryState.state}`,
+    `qaState: ${status.qaState.state}`,
+    `workflowSummary: ${workflowSummary}`,
+    'recentEvents:',
+    ...recentEvents,
+  ]
+}
+
 export function RuntimeStatusView(props: RuntimeStatusViewProps) {
   const [status, setStatus] = useState<RuntimeStatus | null>(props.initialStatus ?? null)
   const [loading, setLoading] = useState(props.initialStatus === undefined)
@@ -58,19 +78,7 @@ export function RuntimeStatusView(props: RuntimeStatusViewProps) {
     return <text>No runtime status available.</text>
   }
 
-  const lines = [
-    'HiveMind Runtime Status',
-    `runtimeAuthority: ${status.runtimeAuthority}`,
-    `serverBaseUrl: ${status.serverBaseUrl ?? 'not attached'}`,
-    `entryState: ${status.entryState}`,
-    `qaState: ${status.qaState}`,
-    `workflowId: ${status.workflowId ?? 'none'}`,
-    `trajectoryId: ${status.trajectoryId ?? 'none'}`,
-    `recommendedNext: ${status.recommendedNext}`,
-    `supervisorStatus: ${status.supervisorStatus}`,
-  ]
-
   return (
-    <text>{lines.join('\n')}</text>
+    <text>{renderRuntimeStatusLines(status).join('\n')}</text>
   )
 }

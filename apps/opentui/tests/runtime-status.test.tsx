@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, test } from 'bun:test'
 
 import { parseRuntimeStatus } from '../src/adapters/runtime-client.js'
+import { renderRuntimeStatusLines } from '../src/views/runtime-status.js'
 
 const testDirectory = fileURLToPath(new URL('.', import.meta.url))
 const repoRoot = resolve(testDirectory, '..', '..', '..')
@@ -55,21 +56,83 @@ describe('opentui workspace boundary', () => {
       runtimeAuthority: 'managed-sdk',
       runtimeInstanceId: 'runtime-123',
       serverBaseUrl: 'http://127.0.0.1:4096',
-      entryState: 'ready',
-      interactiveBootstrapRequired: false,
-      recommendedNext: 'none',
-      qaState: 'pending',
-      releaseState: 'blocked',
-      supervisorStatus: 'healthy',
-      trajectoryId: 'traj-1',
-      workflowId: 'wf-1',
-      taskIds: ['task-1'],
-      subtaskIds: ['subtask-1'],
-      checkpointId: 'checkpoint-1',
+      entryState: {
+        state: 'ready',
+        interactiveBootstrapRequired: false,
+        recommendedNext: 'none',
+      },
+      qaState: {
+        state: 'pending',
+        releaseState: 'blocked',
+      },
+      lineageSessionState: {
+        lineage: 'hivefiver',
+        purposeClass: 'planning',
+        trajectoryId: 'traj-1',
+        workflowId: 'wf-1',
+        taskIds: ['task-1'],
+        subtaskIds: ['subtask-1'],
+        checkpointId: 'checkpoint-1',
+      },
+      workflowSummary: {
+        workflowId: 'wf-1',
+        gateState: 'ready',
+        currentTaskIds: ['task-1'],
+        currentSubtaskIds: ['subtask-1'],
+      },
+      recentEvents: [{
+        eventKind: 'workflow',
+        source: 'workflow-authority',
+        recordedAt: '2026-03-18T00:00:00.000Z',
+        summary: 'Workflow wf-1 is ready with 1 active task link(s).',
+      }],
     })
 
     expect(status.runtimeAuthority).toBe('managed-sdk')
     expect(status.serverBaseUrl).toBe('http://127.0.0.1:4096')
-    expect(status.workflowId).toBe('wf-1')
+    expect(status.workflowSummary?.workflowId).toBe('wf-1')
+    expect(status.recentEvents[0]?.summary).toContain('Workflow wf-1')
+  })
+
+  test('runtime status view renders workflowSummary and recentEvents only from the contract', () => {
+    const lines = renderRuntimeStatusLines(parseRuntimeStatus({
+      runtimeAuthority: 'managed-sdk',
+      runtimeInstanceId: 'runtime-123',
+      serverBaseUrl: 'http://127.0.0.1:4096',
+      entryState: {
+        state: 'ready',
+        interactiveBootstrapRequired: false,
+        recommendedNext: 'none',
+      },
+      qaState: {
+        state: 'passed',
+        releaseState: 'released',
+      },
+      lineageSessionState: {
+        lineage: 'hivefiver',
+        purposeClass: 'planning',
+        trajectoryId: 'traj-1',
+        workflowId: 'wf-1',
+        taskIds: ['task-1'],
+        subtaskIds: ['subtask-1'],
+        checkpointId: 'checkpoint-1',
+      },
+      workflowSummary: {
+        workflowId: 'wf-1',
+        gateState: 'ready',
+        currentTaskIds: ['task-1'],
+        currentSubtaskIds: ['subtask-1'],
+      },
+      recentEvents: [{
+        eventKind: 'summary',
+        source: 'trajectory-ledger',
+        recordedAt: '2026-03-18T00:00:00.000Z',
+        summary: 'Runtime status tool inspected active workflow.',
+      }],
+    }))
+
+    expect(lines.join('\n')).toContain('workflowSummary: wf-1 (ready) tasks=task-1')
+    expect(lines.join('\n')).toContain('recentEvents:')
+    expect(lines.join('\n')).toContain('trajectory-ledger/summary: Runtime status tool inspected active workflow.')
   })
 })

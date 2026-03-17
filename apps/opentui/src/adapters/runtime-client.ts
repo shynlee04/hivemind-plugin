@@ -29,26 +29,5 @@ export async function loadRuntimeStatus(input: LoadRuntimeStatusInput = {}): Pro
     snapshot,
   })
 
-  return parseRuntimeStatus({
-    runtimeAuthority: statusSnapshot.runtimeAuthority,
-    runtimeInstanceId: statusSnapshot.runtimeInstanceId,
-    serverBaseUrl: statusSnapshot.serverBaseUrl,
-    entryState: snapshot.entryState,
-    interactiveBootstrapRequired: snapshot.interactiveBootstrapRequired,
-    recommendedNext: snapshot.entryState === 'uninitialized'
-      ? 'hm-init'
-      : snapshot.entryState === 'repair-required'
-        ? 'hm-doctor'
-        : snapshot.qaState === 'pending'
-          ? 'hm-harness'
-          : 'none',
-    qaState: snapshot.qaState,
-    releaseState: snapshot.releaseState,
-    supervisorStatus: statusSnapshot.supervisor.health.overallStatus,
-    trajectoryId: snapshot.trajectoryId,
-    workflowId: snapshot.workflowId,
-    taskIds: snapshot.taskIds,
-    subtaskIds: snapshot.subtaskIds,
-    checkpointId: snapshot.checkpointId,
-  })
+  return parseRuntimeStatus(statusSnapshot)
 }
