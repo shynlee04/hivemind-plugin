@@ -55,6 +55,12 @@ All code must use native SDK primitives:
 - `permission.ask` interceptors instead of LLM system prompts for hard governance
 - `tool.execute.after` to validate subagent returns (Zero-Trust Delegation)
 
+## Verification Authority
+
+- Behavioral claims about `src/` must prefer live OpenCode proof over local approximation.
+- A real OpenCode server plus official client/plugin surfaces is the authoritative verification boundary for runtime determinism, session behavior, event flow, and hook behavior.
+- Local bundle execution, direct tool instantiation, mock `PluginInput`, and ad hoc health fetches remain useful slice diagnostics, but they must not be presented as equivalent to live OpenCode verification.
+
 ## Phase 1 Direction
 
 - `src/shared/` currently carries the live entry/runtime/turn contract seam.
@@ -67,6 +73,7 @@ All code must use native SDK primitives:
 - Prefer TS-owned feature behavior over markdown-only runtime logic.
 - Keep root `commands/*.md` as thin OpenCode-facing projections; the source authority remains the registries and handlers under `src/`.
 - Keep first-run and repair entry flows as the only writers of user-local `.opencode/**` runtime projection.
+- Treat runtime diagnostics and live contract proof as separate evidence classes in tests, docs, and progress artifacts.
 
 ## Deprecated Modules (Audit 2026-03-15)
 

@@ -18,8 +18,58 @@ This file governs development of the framework. Loaded once per OpenCode session
 - **Sector governance**: each `src/*/AGENTS.md` owns its domain boundary
 - **A root `commands/*.md` file is a live runtime command surface only when registered** in `src/commands/slash-command/command-bundles.ts` or mapped from a control-plane primitive
 - **Unregistered command markdown is documentation or legacy material** and must not imply shipped executable behavior
+- **Proposal and history surfaces are advisory only**: `conductor/**`, `docs/plans/archive/**`, and dated evidence docs under `docs/**` inform decisions but never override root governance, sector charters, or active phase artifacts
+- **Runtime behavior claims require official-interface evidence**: determinism, harness coverage, SDK behavior, plugin behavior, and runtime assertions must be backed by live OpenCode server/client/plugin verification or current official OpenCode documentation
 - **SOT and governance paths must stay stable and non-date-stamped**; dated filenames are for evidence/history only, never the authority path
 - **Compatibility entry files should prefer symlinks back to the stable authority surface** instead of carrying parallel governance text
+
+# **Non Negotiable CONSTITUTIONS**
+
+**THE DEVELOPMENT PHILOSOPHIES**
+
+- Architecture and Coding As Corporate-Level standards - Code LOC less than 300 ; No God Components, No God functions, No dead codes nor zombies allowed
+
+**Following CLEAN CODE practices**
+
+ npx skills add `https://github.com/sickn33/antigravity-awesome-skills --skill clean-code`
+
+- Modular Code development
+
+- JSDoc standards
+
+- Ultra reusability and maintainability
+
+- Apply patterns designs 
+
+**USE SKILL, AT EVERY SINGLE TASK, DO NOT ASSUME USE `find-skill` to look for the best stack of SKILLS**
+
+- not the generic SKILL
+- get user intent
+- analyze the tasks very carefully
+- check if any of these related 
+
+*verbs and adjectives*
+
+- for planning, debugging, audit, review, research, advice, architect, those that are related development process; as for these look for both the task-related and the-stack, the-techniques
+
+*for nouns*
+- focusing more on those of stacks, sdk, patterns, schema, frontend, backend, fullstack, name of the stak
+
+**TDD IS CRITICAL AND ENFORCE**
+
+- Tests **MUST** be conducted formally by running SKILLS sets of spec-driven tests 
+
+- Tests must be built on the understanding of the whole project - running through **SCHEMA** validation; cross-dependencies **CONTRACTS** to ENSURE API interfaces and types are correctly implemented AND **NO TOLORENCE** FOR ANY OF THIS IS SKPPED
+
+- NO nonsensical TESTS allowed, meaning, test units must gradually built into a test suite.
+
+- **DO NOT** edit TEST files to pass the tests in GREEN-PHASE (tests must legitimately passed), **NEVER ALLOW** to run any new development if **TESTS ARE NOT PASSED** - **MUST ALWAYS FOLLOW** npx skills add https://github.com/obra/superpowers --skill test-driven-development 
+
+- IN THIS PROJECT ALL TESTS MUST SURFACE API OF THE SKD USED in package.json
+
+**Every Taskks must go through both VERIFICATION and VALIDATION, and incremental GATEKEEPING and valid INTEGRATION Tests, IF NOT AGENTS CAN'T CLAIM COMPLETION**
+
+
 
 Live install/runtime entry is limited to `dist/cli.js` binaries, the `hivemind-context-governance/plugin` export, and the consumer-side `.opencode/plugins/hivemind-context-governance.ts` stub written by runtime sync.
 A root `commands/*.md` file is a live runtime command surface only when registered in `src/commands/slash-command/command-bundles.ts` or mapped from a control-plane primitive.
@@ -59,10 +109,17 @@ These principles govern all design and implementation decisions. They are the ro
 4. **Consumer-First**: Every shipped asset (`commands/`, `agents/`, `workflows/`) must work for npm consumers who install the package. Not just for internal dev.
 5. **Authority Principle**: Each concern has ONE owner. `hooks/start-work/` owns session lifecycle. `core/trajectory/` owns trajectory state. `shared/paths.ts` owns path resolution. No second implementations.
 6. **Projection-Not-Authority**: Root markdown command files are thin public projections. Install/runtime behavior must live in TypeScript control-plane and feature modules, never only in loose root `.md` files.
+7. **Official-Interface Verification**: Local mocks, stubs, health checks, and bundle execution are supporting evidence only. Claims about runtime behavior must be proven against the official OpenCode server/client/plugin boundary or explicitly labeled as non-live evidence.
 
 ## OpenCode SDK Contract
 
 This project builds ON the OpenCode SDK. The SDK is the authority - not custom reimplementations.
+
+### Live Verification Authority
+
+- Real behavioral proof comes from a live OpenCode instance exercised through official server/client/plugin interfaces.
+- Mocked `PluginInput`, stub HTTP servers, local command-bundle execution, and synthesized runtime JSON are useful diagnostics, but they do not prove live OpenCode behavior on their own.
+- When current official OpenCode docs are the only available source of truth, document that evidence explicitly and avoid overstating runtime certainty.
 
 ### Plugin Hooks (17 Available)
 
@@ -141,6 +198,7 @@ tool({
 7. **Shall** use `client.app.log()` for structured logging alongside console
 8. **Shall** use `permission.ask` hook or `context.ask()` for state mutations
 9. **Shall** resolve paths via `getEffectivePaths()` - never hardcode `.hivemind/`
+10. **Shall** label readiness diagnostics, mock coverage, and live OpenCode contract probes separately in docs, plans, and completion claims
 
 ## Operations
 

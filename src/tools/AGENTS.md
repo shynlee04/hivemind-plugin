@@ -14,6 +14,9 @@ Each tool subdirectory follows: `tools.ts` (implementation), `types.ts` (args + 
 > [!NOTE]
 > Common helper duplication was removed by extracting shared JSON/list helpers into `src/shared/tool-helpers.ts`. Keep future helper reuse there instead of reintroducing per-tool copies.
 
+> [!NOTE]
+> Direct tool instantiation and runtime-tool assertions are local evidence. They do not, by themselves, prove behavior through the live OpenCode server/client/plugin boundary.
+
 ### Required Pattern (Every Tool)
 
 ```typescript
@@ -68,3 +71,4 @@ export function createHivemindXxxTool(projectRoot: string) {
 - No direct file I/O to `.hivemind/` — delegate to `core/` modules
 - Runtime tools are the durable gateway that future supervisor actions must call instead of mutating state directly
 - `hivemind_runtime_status` is now the additive inspection seam for schema-kernel lifecycle records and sdk-supervisor health summaries
+- Keep readiness/status tooling distinct from live OpenCode contract probes in docs, plans, and completion claims

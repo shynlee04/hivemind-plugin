@@ -48,6 +48,7 @@ The rejected alternatives stay rejected for concrete reasons. `Single-kernel onl
   - additive supervisor instance/health seams in `src/sdk-supervisor/`
   - `hivemind_runtime_status` reporting supervisor health and schema-kernel lifecycle/session/freshness records together
 - Not yet real:
+  - live OpenCode server/client/plugin contract probes that prove runtime behavior through official interfaces rather than local harness approximations
   - workflow waves/dependency graph contracts
   - session leases
   - persisted freshness registry authority beyond inspection-time synthesis
@@ -113,5 +114,5 @@ The rejected alternatives stay rejected for concrete reasons. `Single-kernel onl
 - This branch is executing Phase 1 in additive bounded slices.
 - The current active slice is `zero-trust delegation receipt verification`.
 - The current sub-slice that just landed is `runtime-status supervisor/kernel integration`.
-- The next bounded slice remains `zero-trust delegation receipt verification`.
+- The next bounded slice is `live official-interface verification planning and probes`, followed by `zero-trust delegation receipt verification`.
 - Next root doc changes must stay tied to tested implementation progress, not speculative future state.

@@ -1,0 +1,37 @@
+version: v1
+turnId: turn_ses_harness_1773760253499_1773760253544
+invocationId: inv_ses_harness_1773760253499_1773760253544
+lifecycle:
+  layer: turn-output
+  phase: completed
+  entryState: uninitialized
+  qaState: blocked
+  releaseState: blocked
+  invocationPhase: request
+sessionId: ses_harness_1773760253499
+sessionScope: main
+lineage: hivefiver
+taskIds: []
+subtaskIds: []
+status: blocked
+qaState: blocked
+pivot: hm-init
+rationale:
+  - command:hm-harness
+  - execution:handler
+workflowEffects:
+  - recovery-spine-blocked
+  - recovery-checkpoint-created
+  - planning-projection-created
+dependencyEffects: []
+sotEffects: []
+artifactRefs:
+  - /Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.hivemind/project/planning/trajectory-projections/trj_ses_harness_1773760253499.json
+toolEvidence:
+  - readiness-gate
+  - checkpoint
+  - planning-projection
+followups:
+  - hm-init
+resumeHints:
+  - workflow:ses_harness_1773760253499

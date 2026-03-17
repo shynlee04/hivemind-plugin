@@ -11,6 +11,7 @@ This directory is **assembly and enforcement wiring only**. It composes hooks an
 > [!NOTE]
 > `hivemind_runtime_status`, `hivemind_runtime_command`, and `hivemind_doc` are registered through extracted tool modules. `opencode-plugin.ts` should remain assembly-only and must not regress back to local helper or inline tool logic.
 > The enriched runtime-status projection now lives in `src/tools/runtime/` and consumes `src/schema-kernel/` + `src/sdk-supervisor/`; do not mirror that reporting logic back into plugin assembly.
+> Plugin behavior claims require a real OpenCode-loaded plugin path or explicit official SDK documentation; mocked `PluginInput` alone is not enough.
 
 ### Current Enforcement
 
@@ -80,3 +81,9 @@ In AGENTS.md documentation, use short canonical names for readability (e.g., `sy
 
 > [!IMPORTANT]
 > **ADR**: Hook name adapter REJECTED. Cost/benefit negative — the adapter becomes tech debt the moment SDK drops `experimental.` prefix. See `docs/adr/001-no-hook-adapter.md`.
+
+## Verification Rule
+
+- Prove hook and plugin assembly behavior against a live OpenCode plugin load path whenever making determinism or enforcement claims.
+- Treat unit tests with mocked plugin context as fast local evidence, not final runtime authority.
+- If live verification is unavailable for a slice, document the gap plainly in rolling artifacts and completion notes.

@@ -6,6 +6,7 @@ Land Phase 1 of the stress-cert architecture pack in additive, test-driven slice
 ## Phase 1 Posture
 - Chosen posture: `SDK supervisor control + plugin enforcement kernel + tool-only durable mutation`.
 - Current truth: entry/runtime/turn lifecycle seams already exist in `src/shared/`, but the supervisor layer, schema kernel authority, zero-trust delegation receipts, freshness registry, and deadlock/watchdog model are not yet implemented as first-class sectors.
+- Verification truth: current green runtime coverage is still mostly local readiness, mock, and synthesized-runtime evidence; it is not yet a full live OpenCode server/client/plugin contract gate.
 - Delivery rule: rewrite rolling docs first, then add Phase 1 slices under TDD so the docs stay behind or equal to reality, never ahead of it.
 
 ## Workstream Order
@@ -50,7 +51,10 @@ Land Phase 1 of the stress-cert architecture pack in additive, test-driven slice
 6. `Status, harness, and certification`
    - Extend `hivemind_runtime_status` and harness reporting to show supervisor + kernel health.
    - Add stress-critical test coverage.
-7. `Final doc reconciliation`
+7. `Live official-interface verification`
+   - Add real OpenCode server/client/plugin probes for lifecycle, sessions, events, and hook behavior.
+   - Reclassify harness and direct runtime-tool checks as readiness/diagnostic evidence unless a live probe also passes.
+8. `Final doc reconciliation`
    - Update rolling docs only after code/tests for the slice are green.
 
 ## Current Slice
@@ -59,6 +63,7 @@ Land Phase 1 of the stress-cert architecture pack in additive, test-driven slice
 - [complete] Scaffold the SDK supervisor sector with instance registry and health seams.
 - [in_progress] Wire supervisor and schema-kernel seams into status/reporting and runtime enforcement paths.
   - [complete] Step 1 runtime integration: `hivemind_runtime_status` now emits schema-kernel-backed entry/runtime invocation/session/freshness records plus supervisor registry/health evidence through `src/sdk-supervisor/runtime-status.ts` under TDD.
+- [pending] Add live official-interface verification probes and document the boundary between local diagnostics and runtime proof.
   - [pending] Step 2 zero-trust delegation receipt verification in plugin/runtime enforcement.
   - [pending] Step 3 supervisor session/workflow/event registry expansion and control-plane wiring.
 - [pending] Tighten plugin enforcement and zero-trust delegation verification.
@@ -128,6 +133,7 @@ Land Phase 1 of the stress-cert architecture pack in additive, test-driven slice
 - Runtime status reports supervisor + kernel health together.
 - Restart recovery and concurrent session isolation are proven by tests.
 - Rolling docs and sector charters match implemented behavior.
+- Live-verification gaps are called out explicitly wherever only local or mock evidence exists.
 
 ## Fresh Evidence
 - `tests/schema-kernel-contracts.test.ts` is green.
@@ -135,6 +141,9 @@ Land Phase 1 of the stress-cert architecture pack in additive, test-driven slice
 - `tests/runtime-tools.test.ts` is green with kernel/supervisor runtime-status assertions.
 - `tests/control-plane-runtime-tools.test.ts` is green with degraded bootstrap/runtime-status assertions.
 - Step 1 exit gate is satisfied: runtime status now reports supervisor + kernel evidence together.
+- No live OpenCode server/client/plugin contract probe suite exists yet, so runtime determinism is not fully certified.
+- `bash scripts/check-agent-registry-parity.sh` is green.
 - `npx tsc --noEmit` is green.
 - `npm test` is green with `144` passing tests.
+- `npm run build` is green.
 - `npx tsx --test` still includes unrelated pre-existing failures outside the npm test scope (`tests/code-intel/hivemind-codemap.test.ts` and HF-HARDEN red suites).

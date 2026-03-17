@@ -30,10 +30,8 @@ These SDK hooks could enhance the current design:
 
 | Hook | Potential Use |
 |------|--------------|
-| `tool.execute.before` | Pre-validate tool args before execution |
 | `tool.definition` | Dynamically modify tool descriptions per-session |
 | `chat.params` | Control temperature/topP per-agent lineage |
-| `permission.ask` | Gate state mutations with user consent |
 | `config` | React to config changes at runtime |
 
 ## Key Files
@@ -51,3 +49,4 @@ These SDK hooks could enhance the current design:
 - Each hook file ≤ 200 LOC — split if larger
 - Use `sdk-context.ts` for cached client/shell references
 - Cross-session orchestration does not belong here; route it toward `src/sdk-supervisor/`
+- Mocked plugin context can prove local hook logic, but live hook behavior still requires a real OpenCode-loaded plugin verification path
