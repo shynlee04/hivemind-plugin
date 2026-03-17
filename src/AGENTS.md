@@ -13,9 +13,11 @@ Stable governance and SOT paths should stay non-date-stamped. Compatibility alia
 
 ```
 src/
-├── plugin/          Assembly — hooks + tools composition (NO business logic)
-├── hooks/           Read-side — 7 sub-modules injecting context via Parts
+├── plugin/          Assembly + enforcement wiring (NO business logic)
+├── hooks/           Read-side/intercept — inject context and enforce in-band guards
 ├── tools/           Write-side — 6 structured agent-callable tools
+├── sdk-supervisor/  Additive Phase 1 orchestration control (new sector)
+├── schema-kernel/   Additive Phase 1 contract authority (new sector)
 ├── plugin-handlers/ Decision routing — command, tool, session resolution
 ├── core/            State — trajectory and workflow authority
 ├── commands/        Slash-command bundle registry, projection, and execution
@@ -30,13 +32,34 @@ src/
 └── cli.ts           CLI binary entrypoint
 ```
 
-## SDK Usage Rules
+## SDK Usage Rules (Programmatic Governance)
 
-All code in `src/` must use OpenCode SDK primitives:
-- `tool.schema` (Zod) for tool argument validation — never raw interfaces
-- `ToolContext` properties for session/agent/directory context — never custom session models
-- `client.app.log()` for server logging — `shared/logging.ts` is supplementary only
-- Plugin hooks for event handling — never `shared/event-bus.ts`
+The `src/` directory is strictly bound by the **Dual-Plane SDK Architecture**. Confusing these two API surfaces is the most fatal error in this codebase.
+
+**1. The Control Plane (`@opencode-ai/sdk`)**
+Code in `src/cli/` and `src/control-plane/` **MUST ONLY** import from `@opencode-ai/sdk`. This plane operates *outside* the agent loop. It is responsible for:
+- Spawning local servers (`createOpencodeServer`)
+- Initializing sessions (`client.session.create`)
+- Managing high-level state.
+*Never* use plugin hooks here.
+
+**2. The Execution Plane (`@opencode-ai/plugin`)**
+Code in `src/plugin/`, `src/hooks/`, and `src/tools/` **MUST ONLY** import from `@opencode-ai/plugin`. This plane operates *inside* the agent loop. It is responsible for:
+- Registering custom native tools (`tool()`)
+- Intercepting behavior (`system.transform`)
+- Enforcing rules (`permission.ask`)
+*Never* use the Client SDK here (it will cause infinite server recursion).
+
+All code must use native SDK primitives:
+- `tool.schema` (Zod) for tool argument validation inside plugins
+- `permission.ask` interceptors instead of LLM system prompts for hard governance
+- `tool.execute.after` to validate subagent returns (Zero-Trust Delegation)
+
+## Phase 1 Direction
+
+- `src/shared/` currently carries the live entry/runtime/turn contract seam.
+- New durable contract ownership should move into `src/schema-kernel/` in additive slices instead of growing `src/shared/`.
+- New orchestration behavior that coordinates sessions/workflows across turns should land in `src/sdk-supervisor/`, not in plugin hooks or oversized control-plane handlers.
 
 ## Runtime Direction
 

@@ -66,3 +66,4 @@ export function createHivemindXxxTool(projectRoot: string) {
 - Every arg must have `.describe()` for agent introspection
 - Return `JSON.stringify()` — tools speak JSON, agents parse
 - No direct file I/O to `.hivemind/` — delegate to `core/` modules
+- Runtime tools are the durable gateway that future supervisor actions must call instead of mutating state directly

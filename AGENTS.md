@@ -8,6 +8,8 @@ This file governs development of the framework. Loaded once per OpenCode session
 
 - **Shipped product**: `commands/`, `agents/`, `workflows/`, `skills/`, `dist/`, `bin/`
 - **Source code**: `src/` - the OpenCode plugin implementation
+- **Schema contract authority**: `src/schema-kernel/` owns additive machine-authoritative Phase 1 record contracts as they land
+- **Supervisor orchestration authority**: `src/sdk-supervisor/` owns additive Phase 1 orchestration control as it lands
 - **Agent authority surface**: root `agents/**` is the source authoring surface for agent contracts
 - **Install/runtime entry**: stable docs under `docs/guide/**` describe the single bootstrap path; `src/cli/` + `src/control-plane/` own the executable behavior
 - **Live install/runtime entry is limited to** `dist/cli.js` binaries, the `hivemind-context-governance/plugin` export, and the consumer-side `.opencode/plugins/hivemind-context-governance.ts` stub written by runtime sync
@@ -179,10 +181,12 @@ npx tsx --test tests/<file>.test.ts  # Single test
 | Layer | Location | Rule |
 |-------|----------|------|
 | Tools | `src/tools/` | Write-side (CQRS). LLM-facing. Zod schemas required. ~300 LOC limit. |
-| Hooks | `src/hooks/` | Read-side. Context injection via synthetic Parts. 7 sub-modules. |
-| Plugin | `src/plugin/` | Assembly only. No inline tools. No business logic. |
+| Hooks | `src/hooks/` | Read-side and in-band interception. No durable writes. |
+| Plugin | `src/plugin/` | Assembly and enforcement wiring only. No inline tools. No business logic. |
+| Supervisor | `src/sdk-supervisor/` | Additive Phase 1 orchestration control: instances, sessions, workflows, health. |
+| Schema Kernel | `src/schema-kernel/` | Additive Phase 1 contract authority for persisted and cross-session records. |
 | Core | `src/core/` | State management. `core/session/` is deprecated - do not extend. |
-| Shared | `src/shared/` | Utilities. Path resolution, logging, profile, pressure contracts. |
+| Shared | `src/shared/` | Transitional utilities and current lifecycle primitives; migrate durable contract authority toward schema kernel. |
 
 ## Known Debt (Audit 2026-03-15)
 

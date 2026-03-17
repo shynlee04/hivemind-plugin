@@ -6,6 +6,7 @@ Manages the 4 CLI primitives (`hm-init`, `hm-doctor`, `hm-harness`, `hm-settings
 
 The control plane decides whether a CLI command can proceed (gate), collects required user profile fields (intake), and dispatches to the handler.
 It is also the authority for first-run and repair entry flows that may write user-local runtime projection under `.opencode/**`.
+In Phase 1, this sector should trend toward thin intake/command adaptation while longer-lived orchestration authority moves into `src/sdk-supervisor/`.
 
 ## Files
 
@@ -23,3 +24,4 @@ It is also the authority for first-run and repair entry flows that may write use
 - Non-interactive mode requires `--preset` or explicit CLI flags
 - `init` and healthy `doctor` are the only control-plane paths allowed to trigger `syncRuntimeSurface()`
 - All 4 commands ultimately execute through `executeSlashCommandBundle()`
+- Avoid growing `control-plane-handler.ts` into a supervisor substitute; extract future orchestration state into dedicated supervisor and schema-kernel modules

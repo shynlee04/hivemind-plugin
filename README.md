@@ -85,15 +85,16 @@ HiveMind currently works as a plugin-native runtime layer for OpenCode. Instead 
 3. Use source-backed tools to inspect docs, manage workflow tasks, checkpoint trajectory state, and create delegation handoffs.
 4. Run workflow bundles such as `hm-plan`, `hm-research`, `hm-implement`, `hm-tdd`, and `hm-verify` through the runtime bridge when a command path is appropriate.
 
-### Runtime layers
+### Runtime layers (Dual-Plane Architecture)
 
-| Layer | Current responsibility |
-|------|------------------------|
-| Plugin hooks | Attach runtime context, transform prompts, inject command context, gate tool use, preserve compaction continuity |
-| Runtime tools | Expose `hivemind_doc`, `hivemind_runtime_status`, `hivemind_runtime_command`, `hivemind_task`, `hivemind_trajectory`, and `hivemind_handoff` |
-| Control-plane commands | Handle bootstrap, repair, harness readiness, and settings through `hm-init`, `hm-doctor`, `hm-harness`, and `hm-settings` |
-| Workflow bundles | Provide plan, research, implementation, TDD, course-correction, and verification command assets |
-| Project state | Persist runtime data under `.hivemind/` for continuity, checkpoints, and repair |
+HiveMind is strictly built on a **Dual-Plane SDK Architecture**. Confusing these two planes will break the system.
+
+| Layer | API Surface | Responsibility |
+|-------|-------------|----------------|
+| **Control Plane** | `@opencode-ai/sdk` | Runs *outside* the agent loop. Handles bootstrap, CLI commands (`hm-init`, `hm-doctor`), session creation, and external orchestration. |
+| **Execution Plane** | `@opencode-ai/plugin` | Runs *inside* the agent loop. Attaches runtime context, transforms prompts (`system.transform`), enforces hard governance (`permission.ask`), and exposes native tools. |
+| Workflow bundles | Markdown + Hooks | Provide plan, research, implementation, TDD, course-correction, and verification command assets. |
+| Project state | File system | Persist runtime data under `.hivemind/` for continuity, checkpoints, and repair. |
 
 ### Data surfaces
 

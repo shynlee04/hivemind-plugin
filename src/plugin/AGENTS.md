@@ -4,7 +4,7 @@ Entry: `opencode-plugin.ts` — the sole file that registers hooks, tools, and t
 
 ## Boundary
 
-This directory is **assembly only**. It composes hooks and tools — it must not contain business logic, state management, or tool implementations.
+This directory is **assembly and enforcement wiring only**. It composes hooks and tools and binds them to OpenCode hook surfaces. It must not contain business logic, state management, or tool implementations.
 
 ## Audit Findings (2026-03-16)
 
@@ -16,6 +16,8 @@ This directory is **assembly only**. It composes hooks and tools — it must not
 1. **Keep runtime tools extracted** in `src/tools/runtime/`
 2. **Plugin entry must only**: import and register hooks, import and register tools, export the `Plugin`
 3. **No tool logic** in this directory — all tool execute functions belong in `src/tools/`
+4. **No supervisor orchestration logic** in this directory — cross-session/workflow control belongs in `src/sdk-supervisor/`
+5. **No durable contract ownership** in this directory — persisted and cross-session contract authority belongs in `src/schema-kernel/`
 
 ## Files
 

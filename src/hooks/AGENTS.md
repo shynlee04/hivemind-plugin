@@ -1,6 +1,6 @@
 # src/hooks/ — Read-Side Context Injection (CQRS)
 
-Hooks are read-only observers. They inject context into agent sessions via synthetic `Part` objects. They never mutate state.
+Hooks are read/inject/intercept surfaces. They may classify, inject, and reject or observe execution, but they never own durable state mutation.
 
 ## Boundary
 
@@ -46,7 +46,8 @@ These SDK hooks could enhance the current design:
 
 ## Rules
 
-- Hooks are **read-only** — never write to `.hivemind/` state
+- Hooks are **non-durable** — never write to `.hivemind/` state directly
 - Hooks inject context via `Part` objects, never via return values
 - Each hook file ≤ 200 LOC — split if larger
 - Use `sdk-context.ts` for cached client/shell references
+- Cross-session orchestration does not belong here; route it toward `src/sdk-supervisor/`

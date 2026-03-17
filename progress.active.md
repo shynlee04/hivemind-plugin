@@ -3,111 +3,85 @@
 ## 2026-03-17
 
 ### Current Gate
-- The repo-level entry/runtime corrections remain in place and verified.
-- Fresh validation showed `npx tsc --noEmit` passes.
-- Fresh validation showed `npm test` passes end-to-end with the new governance-path guard.
-- Fresh validation showed `npm run build` passes.
+- Phase 1 is not complete.
+- The repo now has additive `src/schema-kernel/` and `src/sdk-supervisor/` sectors, but they are still foundational and not yet wired into runtime status/reporting or enforcement-critical flows.
+- The root rolling artifacts were still describing an older lifecycle-spine slice and needed to be reset before more implementation work.
 
-### User Correction Locked
-- `.opencode/**` is not a source-authority surface.
-- `.opencode/**` is user-local runtime projection created on first run at the consumer side.
-- Repo-time validation must not require `.opencode/**` to exist in the framework worktree.
-- First-run runtime flows (`hm-init`, auto-init, and repair flows where applicable) must own projection creation.
-- SOT and governance paths must stay stable and non-date-stamped.
-- Compatibility entry files should prefer symlinks back to the stable authority surface instead of carrying parallel governance text.
+### Already-Landed Strengths
+- `src/shared/entry-kernel-state.ts` already models the entry gate lifecycle.
+- `src/shared/runtime-invocation.ts` already models provider-bound runtime requests.
+- `src/shared/turn-output.ts` already models structured turn outputs and export projections.
+- `src/plugin/opencode-plugin.ts` already registers the critical OpenCode enforcement surfaces:
+  - `permission.ask`
+  - `tool.execute.before`
+  - `tool.execute.after`
+  - `command.execute.before`
+  - `chat.message`
+  - `experimental.chat.system.transform`
+  - `experimental.chat.messages.transform`
+  - `event`
+- Existing tests already cover adjacent foundations:
+  - lifecycle split
+  - runtime tools
+  - recovery checkpoints
+  - workflow authority
+  - delegation packets
+  - plugin assembly/runtime shape
 
-### Evidence
-- `tests/runtime-surface-governance.test.ts` now guards:
-  - stable `docs/guide/installation.md` as the install SOT path
-  - no legacy planning-file leakage in shipped `hivemind-*.md` command assets
-  - real runtime registry statements in `AGENTS.md`
-  - symlinked compatibility surfaces for `CLAUDE.md` and the dated install alias
-  - `syncRuntimeSurface()` remaining limited to first-run and repair flows
-- `CLAUDE.md` now resolves to `AGENTS.md` as a compatibility symlink.
-- `docs/guide/installation-2026-03-17.md` now resolves to `docs/guide/installation.md` as a compatibility symlink.
+### Open P0 Blockers
+- Schema-kernel authority exists but is not yet consumed by live runtime/status/control-plane paths.
+- SDK supervisor scaffolding exists but is not yet expanded to session registry, workflow scheduling, leases, or event mirroring.
+- Runtime status does not yet report supervisor/session/workflow/freshness/watchdog state as requested.
+- No deterministic delegation receipt model or zero-trust receipt verification path.
+- No freshness registry, deadlock checkpoint authority, or replay envelope contract family.
+- No dedicated stress-cert tests for concurrency, restart reconstruction, or stale-artifact blocking.
 
-### External Validation
-- OpenCode official docs keep plugins and custom tools on the native `@opencode-ai/plugin` + `tool.schema` path.
-- JSON Schema direction should stay Draft 2020-12 with explicit validation gates if/when HiveMind exports schemas.
-- Oh My OpenAgent is a useful comparative reference for strict schema validation, but not an authority over HiveMind runtime ownership rules.
+### Evidence Gathered This Turn
+- `task_plan.active.md`, `progress.active.md`, and `MASTER.active.md` were out of sync with the requested Phase 1 posture.
+- `docs/testing/STRESS-TEST.md` remains the acceptance anchor for Categories A-F style stress behavior.
+- `src/control-plane/control-plane-handler.ts` still owns too much orchestration glue and is the likely extraction seam for future supervisor work.
+- `src/plugin/runtime-plan.ts` already exposes a natural seam where schema-kernel contracts can be introduced without destabilizing public CLI/package surfaces.
+- `src/hooks/event-handler.ts` and plugin hook registration already provide the initial enforcement/event touchpoints needed for a later supervisor mirror.
 
 ### Active Slice
-- Restore the rolling root artifacts.
-- Move `.opencode/**` generation responsibility to first-run/repair execution paths rather than repo-time assumptions.
-- Remove repo-time tests and boundary scripts that read `.opencode/**` as if it were canonical source.
-- Reconcile framework agent contracts that drifted during previous edits, starting with `hivefiver`, `hivemaker`, `hivehealer`, and `hiveplanner`.
-- Enforce stable non-date-stamped SOT/governance paths for install and compatibility entry surfaces.
+- Reset the rolling artifacts and stable architecture SOT to the Phase 1 stress-cert posture.
+- Add the first additive schema-kernel slice under TDD.
+- Add the first additive sdk-supervisor slice under TDD.
 
-### New Active Slice
-- Canonical root `agents/**` remain HiveMind authoring truth, including contract metadata.
-- Runtime `.opencode/agents/**` must now be generated from an OpenCode-safe schema projection, not copied verbatim from source.
-- Slash-command bundles must only target agents present in the projected registry.
-- Repo parity checks must compare runtime agent files against generated projection output, not raw canonical markdown.
+### Evidence Required Before Claiming Phase 1 Complete
+- `src/schema-kernel/` exists with the Phase 1 contract family and tests.
+- `src/sdk-supervisor/` exists with at least instance/session/workflow health scaffolding and tests.
+- `hivemind_runtime_status` reports supervisor + kernel state together.
+- Dedicated tests prove:
+  - concurrent session isolation
+  - workflow wave/dependency blocking
+  - stale-reference warning/block behavior
+  - timeout/deadlock checkpoint behavior
+  - restart recovery replay
+  - delegated result verification before parent continuation
 
-### Current Lifecycle-Spine Slice
-- The next stable layer is not another projection or docs pass.
-- The stable layer is the lifecycle split between:
-  - `entry`
-  - `runtime invocation`
-  - `turn output`
-- This slice keeps the split executable and test-backed before wider workflow/session/trajectory work.
-- User rule added for this slice: keep touched source files under `300` LOC and preserve split modules instead of growing monoliths.
+### Verification Status
+- Fresh verification for the new Phase 1 reset is now green:
+  - `npx tsx --test tests/schema-kernel-contracts.test.ts tests/sdk-supervisor-instance.test.ts` -> pass
+  - `npx tsc --noEmit` -> pass
+  - `npm test` -> pass (`142` tests passed, `0` failed)
 
-### New Evidence
-- Official OpenCode docs confirm markdown agents are configured through supported frontmatter fields like `description`, `mode`, `tools`, `permission`, `model`, and `temperature`.
-- Official OpenCode config schema at `https://opencode.ai/config.json` confirms the agent/config contract is schema-shaped and bounded.
-- `oh-my-opencode` validates plugin-facing config with an explicit JSON schema and TypeScript/Zod-backed loading, which reinforces projection + validation over raw copy behavior.
-- `tests/opencode-agent-projection.test.ts` now covers:
-  - schema-valid runtime projection from canonical agent markdown
-  - runtime sync writing projected `.opencode/agents/**`
-  - slash-command bundle to projected-agent binding integrity
-- `tests/lifecycle-spine.test.ts` now covers:
-  - entry kernel lifecycle identity
-  - runtime invocation lifecycle identity
-  - completed turn-output lifecycle identity
-
-### Lifecycle-Spine Evidence
-- `src/shared/lifecycle-spine.ts` centralizes lifecycle identity without inflating existing files.
-- `src/shared/entry-kernel-state.ts` now marks entry state as its own lifecycle authority.
-- `src/shared/runtime-invocation.ts` now records request lifecycle plus entry/QA/release context.
-- `src/shared/turn-output.ts` now records completed-turn lifecycle linked to the originating runtime invocation.
-- `src/plugin/runtime-plan.ts` and `src/commands/slash-command/command-runner.ts` now pass explicit entry/QA/release context into runtime invocation creation.
-
-### Verification Evidence For Current Slice
-- `npx tsx --test tests/lifecycle-spine.test.ts tests/plugin-runtime.test.ts tests/runtime-turn-output.test.ts tests/control-plane-runtime-tools.test.ts tests/start-work-router.test.ts` -> pass
-- `npx tsc --noEmit` -> pass
-
-### Completed Slice
-- `hivemind_runtime_command` auto-init now creates user-side `.opencode/**` through the init authority path instead of leaving that responsibility to harness or repo-time assumptions.
-- `hm-doctor` now re-syncs runtime surfaces when recovery reaches a healthy state.
-- `harness` no longer writes `.opencode/**` implicitly during inspection.
-- Repo-time parity checks now skip missing `.opencode/agents/**` because that surface is runtime-side, not source authority.
-- Touched framework-agent contracts now match their intended execution/delegation posture for this slice.
-- `docs/guide/installation.md` is now the stable install SOT path.
-- `docs/guide/installation-2026-03-17.md` is now a compatibility symlink, not the authority file.
-- `CLAUDE.md` is now a compatibility symlink back to `AGENTS.md`.
-
-### Verification Evidence
-- `npx tsx --test tests/runtime-surface-governance.test.ts` -> pass
-- `npx tsc --noEmit` -> pass
-- `bash scripts/check-agent-registry-parity.sh` -> pass with runtime-projection skip message
-- `npm test` -> pass (`131` tests passed, `0` failed)
-- `npm run build` -> pass
-- Prior bounded-slice gates still remain green:
-- `npx tsx --test tests/agent-boundary-policy.test.ts tests/control-plane-runtime-tools.test.ts tests/harness-command.test.ts` -> pass
-- `bash scripts/check-agent-registry-parity.sh` -> pass with runtime-projection skip message
-- `npx tsx --test tests/slash-command-stack.test.ts tests/runtime-entry-attachment.test.ts` -> pass
-
-### Remaining Drift Outside This Slice
-- The worktree still shows deleted `.opencode/**` and `.hivemind/**` files from the local workspace state. Those were intentionally treated as evidence of the user-local/runtime distinction and were not restored.
-- `MASTER.active.md` still points at broader cycle work that has not yet been implemented, especially the larger lifecycle/schema-family expansion.
-
-### New Active Rule Correction
-- `docs/guide/installation.md` should be the stable SOT install path.
-- `docs/guide/installation-2026-03-17.md` should survive only as a compatibility symlink, not as the authority file.
-- `CLAUDE.md` should collapse to an `AGENTS.md` symlink instead of carrying its own governance prose.
+### New Evidence From This Slice
+- `src/schema-kernel/` now exists as a real sector with additive Phase 1 contract schemas for:
+  - entry/runtime/turn records
+  - delegation receipts
+  - supervisor/session/workflow records
+  - freshness/deadlock/replay evidence
+- `src/sdk-supervisor/` now exists as a real sector with:
+  - validated instance registry creation
+  - same-local-env instance upsert
+  - aggregate supervisor health summary
+- New AGENTS charters exist for both new sectors, and root/src charters were updated to classify their ownership.
 
 ### Reminder
-- Keep `MASTER.active.md`, `task_plan.active.md`, and `progress.active.md` rolling every bounded slice.
-- No completion claims without fresh verification evidence.
-- Treat `.opencode/**` and `.hivemind/**` as runtime-side projections, never repo-side authoring truth.
+- Keep the Trio-3 rolling on every bounded slice:
+  - `MASTER.active.md`
+  - `task_plan.active.md`
+  - `progress.active.md`
+- Keep AGENTS charters aligned with any new sector or shifted authority.
+- Do not claim completion without fresh test evidence.
