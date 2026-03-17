@@ -1,6 +1,6 @@
 export class MultiBranchPlanner {
-    public branches: string[];
-    public activeBranch: string;
+    branches: string[];
+    activeBranch: string;
 
     constructor(branches: string[]) {
         if (branches.length === 0) {
@@ -10,7 +10,7 @@ export class MultiBranchPlanner {
         this.activeBranch = branches[0];
     }
 
-    public switchBranch(branch: string): void {
+    switchBranch(branch: string): void {
         if (this.branches.includes(branch)) {
             this.activeBranch = branch;
         }

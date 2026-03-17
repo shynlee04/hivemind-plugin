@@ -1,14 +1,24 @@
-export class SseConnectionHandler {
-    private url: string;
-    public status: 'disconnected' | 'connecting' | 'connected' = 'disconnected';
+import { createOpencodeClient } from '@opencode-ai/sdk';
 
-    constructor(url: string) {
-        this.url = url;
+export class SseConnectionHandler {
+    private client;
+    private _status: 'disconnected' | 'connecting' | 'connected' = 'disconnected';
+
+    constructor(baseUrl: string) {
+        this.client = createOpencodeClient({ baseUrl });
     }
 
-    public async connect(): Promise<void> {
-        this.status = 'connecting';
-        // Implementation details for EventSource or fetch stream will go here
-        this.status = 'connected';
+    get status() { return this._status; }
+
+    async connect() {
+        this._status = 'connecting';
+        try {
+            const result = await this.client.event.subscribe();
+            this._status = 'connected';
+            return result;
+        } catch (e) {
+            this._status = 'disconnected';
+            throw e;
+        }
     }
 }

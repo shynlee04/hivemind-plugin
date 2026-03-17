@@ -5,8 +5,8 @@ export interface WikiNode {
 }
 
 export class HierarchyWiki {
-    public rootNode: WikiNode;
-    public currentNode: WikiNode;
+    rootNode: WikiNode;
+    currentNode: WikiNode;
     private nodeMap: Map<string, WikiNode> = new Map();
 
     constructor(rootNode: WikiNode) {
@@ -24,7 +24,7 @@ export class HierarchyWiki {
         }
     }
 
-    public navigate(nodeId: string): void {
+    navigate(nodeId: string): void {
         const node = this.nodeMap.get(nodeId);
         if (node) {
             this.currentNode = node;

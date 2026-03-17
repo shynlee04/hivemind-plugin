@@ -1,6 +1,6 @@
 export class MultiTabPipeline {
-    public tabs: string[];
-    public activeTab: string;
+    tabs: string[];
+    activeTab: string;
     private statuses: Map<string, string> = new Map();
 
     constructor(tabs: string[]) {
@@ -15,19 +15,19 @@ export class MultiTabPipeline {
         }
     }
 
-    public switchTab(tab: string): void {
+    switchTab(tab: string): void {
         if (this.tabs.includes(tab)) {
             this.activeTab = tab;
         }
     }
 
-    public updateStatus(tab: string, status: string): void {
+    updateStatus(tab: string, status: string): void {
         if (this.tabs.includes(tab)) {
             this.statuses.set(tab, status);
         }
     }
 
-    public getStatus(tab: string): string | undefined {
+    getStatus(tab: string): string | undefined {
         return this.statuses.get(tab);
     }
 }
