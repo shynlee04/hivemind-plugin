@@ -75,7 +75,7 @@
   "dependencies": {
     "@clack/prompts": "^1.0.0",
     "@opencode-ai/plugin": ">=1.1.0",
-    "@opencode-ai/sdk": "^1.2.26",
+    "@opencode-ai/sdk": "^1.2.27",
     "@types/proper-lockfile": "^4.1.4",
     "@z_ai/coding-helper": "^0.0.7",
     "ignore": "^7.0.5",
