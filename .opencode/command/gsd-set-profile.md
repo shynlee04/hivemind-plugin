@@ -8,4 +8,4 @@ tools:
 
 Show the following output to the user verbatim, with no extra commentary:
 
-!`node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/get-shit-done/bin/gsd-tools.cjs" config-set-model-profile $ARGUMENTS --raw`
+!`node "/Users/apple/hivemind-plugin/.opencode/get-shit-done/bin/gsd-tools.cjs" config-set-model-profile $ARGUMENTS --raw`

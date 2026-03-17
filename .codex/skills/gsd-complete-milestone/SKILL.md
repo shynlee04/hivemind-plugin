@@ -55,8 +55,8 @@ Output: Milestone archived (roadmap + requirements), PROJECT.md evolved, git tag
 <execution_context>
 **Load these files NOW (before proceeding):**
 
-- @/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/workflows/complete-milestone.md (main workflow)
-- @/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/templates/milestone-archive.md (archive template)
+- @/Users/apple/hivemind-plugin/.codex/get-shit-done/workflows/complete-milestone.md (main workflow)
+- @/Users/apple/hivemind-plugin/.codex/get-shit-done/templates/milestone-archive.md (archive template)
   </execution_context>
 
 <context>

@@ -26,7 +26,7 @@ Documents are reference material for Claude when planning/executing. Always incl
 Load codebase mapping context:
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/bin/gsd-tools.cjs" init map-codebase)
+INIT=$(node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" init map-codebase)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -251,7 +251,7 @@ Continue to commit_codebase_map.
 Commit the codebase map:
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/bin/gsd-tools.cjs" commit "docs: map existing codebase" --files .planning/codebase/*.md
+node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" commit "docs: map existing codebase" --files .planning/codebase/*.md
 ```
 
 Continue to offer_next.

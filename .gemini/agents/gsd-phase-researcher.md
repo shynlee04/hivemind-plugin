@@ -132,7 +132,7 @@ When researching "best library for X": find what the ecosystem actually uses, do
 Check `brave_search` from init context. If `true`, use Brave Search for higher quality results:
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/bin/gsd-tools.cjs" websearch "your query" --limit 10
+node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" websearch "your query" --limit 10
 ```
 
 **Options:**
@@ -377,7 +377,7 @@ Orchestrator provides: phase number/name, description/goal, requirements, constr
 
 Load phase context using init command:
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/bin/gsd-tools.cjs" init phase-op "$PHASE")
+INIT=$(node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" init phase-op "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -480,7 +480,7 @@ Write to: `$PHASE_DIR/$PADDED_PHASE-RESEARCH.md`
 ## Step 7: Commit Research (optional)
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/bin/gsd-tools.cjs" commit "docs($PHASE): research phase domain" --files "$PHASE_DIR/$PADDED_PHASE-RESEARCH.md"
+node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" commit "docs($PHASE): research phase domain" --files "$PHASE_DIR/$PADDED_PHASE-RESEARCH.md"
 ```
 
 ## Step 8: Return Structured Result

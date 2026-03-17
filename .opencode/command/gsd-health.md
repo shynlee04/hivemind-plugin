@@ -12,10 +12,10 @@ Validate `.planning/` directory integrity and report actionable issues. Checks f
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/get-shit-done/workflows/health.md
+@/Users/apple/hivemind-plugin/.opencode/get-shit-done/workflows/health.md
 </execution_context>
 
 <process>
-Execute the health workflow from @/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/get-shit-done/workflows/health.md end-to-end.
+Execute the health workflow from @/Users/apple/hivemind-plugin/.opencode/get-shit-done/workflows/health.md end-to-end.
 Parse --repair flag from arguments and pass to workflow.
 </process>

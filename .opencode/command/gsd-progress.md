@@ -14,10 +14,10 @@ Provides situational awareness before continuing work.
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/get-shit-done/workflows/progress.md
+@/Users/apple/hivemind-plugin/.opencode/get-shit-done/workflows/progress.md
 </execution_context>
 
 <process>
-Execute the progress workflow from @/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/get-shit-done/workflows/progress.md end-to-end.
+Execute the progress workflow from @/Users/apple/hivemind-plugin/.opencode/get-shit-done/workflows/progress.md end-to-end.
 Preserve all routing logic (Routes A through F) and edge case handling.
 </process>

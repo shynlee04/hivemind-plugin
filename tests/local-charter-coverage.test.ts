@@ -3,11 +3,11 @@ import { readFileSync } from 'node:fs'
 import { describe, it } from 'node:test'
 
 const CHARTERS = [
-  '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/core/trajectory/AGENTS.md',
-  '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/delegation/AGENTS.md',
-  '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/context/prompt-packet/AGENTS.md',
-  '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/recovery/AGENTS.md',
-  '/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/src/governance/AGENTS.md',
+  '/Users/apple/hivemind-plugin/src/core/trajectory/AGENTS.md',
+  '/Users/apple/hivemind-plugin/src/delegation/AGENTS.md',
+  '/Users/apple/hivemind-plugin/src/context/prompt-packet/AGENTS.md',
+  '/Users/apple/hivemind-plugin/src/recovery/AGENTS.md',
+  '/Users/apple/hivemind-plugin/src/governance/AGENTS.md',
 ]
 
 describe('local charter coverage', () => {

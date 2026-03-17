@@ -28,8 +28,8 @@ Extract implementation decisions that downstream agents need — researcher and 
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/get-shit-done/workflows/discuss-phase.md
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/get-shit-done/templates/context.md
+@/Users/apple/hivemind-plugin/.opencode/get-shit-done/workflows/discuss-phase.md
+@/Users/apple/hivemind-plugin/.opencode/get-shit-done/templates/context.md
 </execution_context>
 
 <context>

@@ -24,7 +24,7 @@ Wait for response before continuing.
 **Check if project exists.**
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" state load 2>/dev/null)
+INIT=$(node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" state load 2>/dev/null)
 ```
 
 Track whether `.planning/` exists — some routes require it, others don't.

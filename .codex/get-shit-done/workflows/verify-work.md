@@ -15,7 +15,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 </philosophy>
 
 <template>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/templates/UAT.md
+@/Users/apple/hivemind-plugin/.codex/get-shit-done/templates/UAT.md
 </template>
 
 <process>
@@ -24,7 +24,7 @@ No Pass/Fail buttons. No severity questions. Just: "Here's what should happen. D
 If {{GSD_ARGS}} contains a phase number, load context:
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" init verify-work "${PHASE_ARG}")
+INIT=$(node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" init verify-work "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -306,7 +306,7 @@ Clear Current Test section:
 
 Commit the UAT file:
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
+node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" commit "test({phase_num}): complete UAT - {passed} passed, {issues} issues" --files ".planning/phases/XX-name/{phase_num}-UAT.md"
 ```
 
 Present summary:
@@ -349,7 +349,7 @@ Spawning parallel debug agents to investigate each issue.
 ```
 
 - Load diagnose-issues workflow
-- Follow @/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/workflows/diagnose-issues.md
+- Follow @/Users/apple/hivemind-plugin/.codex/get-shit-done/workflows/diagnose-issues.md
 - Spawn parallel debug agents for each issue
 - Collect root causes
 - Update UAT.md with root causes

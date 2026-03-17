@@ -12,10 +12,10 @@ Output ONLY the reference content below. Do NOT add:
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/get-shit-done/workflows/help.md
+@/Users/apple/hivemind-plugin/.opencode/get-shit-done/workflows/help.md
 </execution_context>
 
 <process>
-Output the complete GSD command reference from @/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.opencode/get-shit-done/workflows/help.md.
+Output the complete GSD command reference from @/Users/apple/hivemind-plugin/.opencode/get-shit-done/workflows/help.md.
 Display the reference content directly — no additions or modifications.
 </process>

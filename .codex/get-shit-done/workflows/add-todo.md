@@ -12,7 +12,7 @@ Read all files referenced by the invoking prompt's execution_context before star
 Load todo context:
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" init todos)
+INIT=$(node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" init todos)
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -84,7 +84,7 @@ Use values from init context: `timestamp` and `date` are already available.
 
 Generate slug for the title:
 ```bash
-slug=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" generate-slug "$title" --raw)
+slug=$(node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" generate-slug "$title" --raw)
 ```
 
 Write to `.planning/todos/pending/${date}-${slug}.md`:
@@ -119,7 +119,7 @@ If `.planning/STATE.md` exists:
 Commit the todo and any updated state:
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" commit "docs: capture todo - [title]" --files .planning/todos/pending/[filename] .planning/STATE.md
+node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" commit "docs: capture todo - [title]" --files .planning/todos/pending/[filename] .planning/STATE.md
 ```
 
 Tool respects `commit_docs` config and gitignore automatically.

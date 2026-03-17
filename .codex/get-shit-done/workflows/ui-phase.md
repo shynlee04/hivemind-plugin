@@ -5,7 +5,7 @@ UI-SPEC.md locks spacing, typography, color, copywriting, and design system deci
 </purpose>
 
 <required_reading>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin/.codex/get-shit-done/references/ui-brand.md
 </required_reading>
 
 <process>
@@ -13,7 +13,7 @@ UI-SPEC.md locks spacing, typography, color, copywriting, and design system deci
 ## 1. Initialize
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" init plan-phase "$PHASE")
+INIT=$(node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" init plan-phase "$PHASE")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -24,14 +24,14 @@ Parse JSON for: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded
 Resolve UI agent models:
 
 ```bash
-UI_RESEARCHER_MODEL=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-ui-researcher --raw)
-UI_CHECKER_MODEL=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-ui-checker --raw)
+UI_RESEARCHER_MODEL=$(node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-ui-researcher --raw)
+UI_CHECKER_MODEL=$(node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-ui-checker --raw)
 ```
 
 Check config:
 
 ```bash
-UI_ENABLED=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" config-get workflow.ui_phase 2>/dev/null || echo "true")
+UI_ENABLED=$(node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" config-get workflow.ui_phase 2>/dev/null || echo "true")
 ```
 
 **If `UI_ENABLED` is `false`:**
@@ -47,7 +47,7 @@ Exit workflow.
 Extract phase number from {{GSD_ARGS}}. If not provided, detect next unplanned phase.
 
 ```bash
-PHASE_INFO=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "${PHASE}")
+PHASE_INFO=$(node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" roadmap get-phase "${PHASE}")
 ```
 
 **If `found` is false:** Error with available phases.
@@ -101,7 +101,7 @@ Display:
 Build prompt:
 
 ```markdown
-Read /Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/agents/gsd-ui-researcher.md for instructions.
+Read /Users/apple/hivemind-plugin/.codex/agents/gsd-ui-researcher.md for instructions.
 
 <objective>
 Create UI design contract for Phase {phase_number}: {phase_name}
@@ -118,7 +118,7 @@ Answer: "What visual and interaction contracts does this phase need?"
 
 <output>
 Write to: {phase_dir}/{padded_phase}-UI-SPEC.md
-Template: /Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/templates/UI-SPEC.md
+Template: /Users/apple/hivemind-plugin/.codex/get-shit-done/templates/UI-SPEC.md
 </output>
 
 <config>
@@ -161,7 +161,7 @@ Display:
 Build prompt:
 
 ```markdown
-Read /Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/agents/gsd-ui-checker.md for instructions.
+Read /Users/apple/hivemind-plugin/.codex/agents/gsd-ui-checker.md for instructions.
 
 <objective>
 Validate UI design contract for Phase {phase_number}: {phase_name}
@@ -261,13 +261,13 @@ Dimensions: 6/6 passed
 ## 11. Commit (if configured)
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" commit "docs(${padded_phase}): UI design contract" --files "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
+node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" commit "docs(${padded_phase}): UI design contract" --files "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
 ```
 
 ## 12. Update State
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/bin/gsd-tools.cjs" state record-session \
+node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" state record-session \
   --stopped-at "Phase ${PHASE} UI-SPEC approved" \
   --resume-file "${PHASE_DIR}/${PADDED_PHASE}-UI-SPEC.md"
 ```

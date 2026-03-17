@@ -260,7 +260,7 @@ Usage: `$gsd-debug` (resume active session)
 **`$gsd-note <text>`**
 Zero-friction idea capture — one command, instant save, no questions.
 
-- Saves timestamped note to `.planning/notes/` (or `/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/notes/` globally)
+- Saves timestamped note to `.planning/notes/` (or `/Users/apple/hivemind-plugin/.codex/notes/` globally)
 - Three subcommands: append (default), list, promote
 - Promote converts a note into a structured todo
 - Works without a project (falls back to global scope)

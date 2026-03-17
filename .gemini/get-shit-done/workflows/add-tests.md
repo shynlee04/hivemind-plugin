@@ -33,7 +33,7 @@ Exit.
 Load phase operation context:
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/bin/gsd-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
@@ -297,7 +297,7 @@ Create a test coverage report and present to user:
 
 Record test generation in project state:
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/bin/gsd-tools.cjs" state-snapshot
+node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" state-snapshot
 ```
 
 If there are passing tests to commit:

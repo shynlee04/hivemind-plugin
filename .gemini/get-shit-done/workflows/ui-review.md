@@ -3,7 +3,7 @@ Retroactive 6-pillar visual audit of implemented frontend code. Standalone comma
 </purpose>
 
 <required_reading>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin/.gemini/get-shit-done/references/ui-brand.md
 </required_reading>
 
 <process>
@@ -11,14 +11,14 @@ Retroactive 6-pillar visual audit of implemented frontend code. Standalone comma
 ## 0. Initialize
 
 ```bash
-INIT=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/bin/gsd-tools.cjs" init phase-op "${PHASE_ARG}")
+INIT=$(node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" init phase-op "${PHASE_ARG}")
 if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 ```
 
 Parse: `phase_dir`, `phase_number`, `phase_name`, `phase_slug`, `padded_phase`, `commit_docs`.
 
 ```bash
-UI_AUDITOR_MODEL=$(node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-ui-auditor --raw)
+UI_AUDITOR_MODEL=$(node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" resolve-model gsd-ui-auditor --raw)
 ```
 
 Display banner:
@@ -65,7 +65,7 @@ Build file list for auditor:
 Build prompt:
 
 ```markdown
-Read /Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/agents/gsd-ui-auditor.md for instructions.
+Read /Users/apple/hivemind-plugin/.gemini/agents/gsd-ui-auditor.md for instructions.
 
 <objective>
 Conduct 6-pillar visual audit of Phase {phase_number}: {phase_name}
@@ -141,7 +141,7 @@ Full review: {path to UI-REVIEW.md}
 ## 5. Commit (if configured)
 
 ```bash
-node "/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.gemini/get-shit-done/bin/gsd-tools.cjs" commit "docs(${padded_phase}): UI audit review" --files "${PHASE_DIR}/${PADDED_PHASE}-UI-REVIEW.md"
+node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" commit "docs(${padded_phase}): UI audit review" --files "${PHASE_DIR}/${PADDED_PHASE}-UI-REVIEW.md"
 ```
 
 </process>

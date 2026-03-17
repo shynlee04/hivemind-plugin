@@ -58,11 +58,11 @@ Routes to the resume-project workflow which handles:
   </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/workflows/resume-project.md
+@/Users/apple/hivemind-plugin/.codex/get-shit-done/workflows/resume-project.md
 </execution_context>
 
 <process>
-**Follow the resume-project workflow** from `@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/workflows/resume-project.md`.
+**Follow the resume-project workflow** from `@/Users/apple/hivemind-plugin/.codex/get-shit-done/workflows/resume-project.md`.
 
 The workflow handles all resumption logic including:
 

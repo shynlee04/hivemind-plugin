@@ -54,8 +54,8 @@ Create executable phase prompts (PLAN.md files) for a roadmap phase with integra
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/workflows/plan-phase.md
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/references/ui-brand.md
+@/Users/apple/hivemind-plugin/.codex/get-shit-done/workflows/plan-phase.md
+@/Users/apple/hivemind-plugin/.codex/get-shit-done/references/ui-brand.md
 </execution_context>
 
 <context>
@@ -72,6 +72,6 @@ Normalize phase input in step 2 before any directory lookups.
 </context>
 
 <process>
-Execute the plan-phase workflow from @/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/workflows/plan-phase.md end-to-end.
+Execute the plan-phase workflow from @/Users/apple/hivemind-plugin/.codex/get-shit-done/workflows/plan-phase.md end-to-end.
 Preserve all workflow gates (validation, research, planning, verification loop, routing).
 </process>

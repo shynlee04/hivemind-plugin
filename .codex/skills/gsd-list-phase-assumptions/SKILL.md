@@ -53,7 +53,7 @@ Output: Conversational output only (no file creation) - ends with "What do you t
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/workflows/list-phase-assumptions.md
+@/Users/apple/hivemind-plugin/.codex/get-shit-done/workflows/list-phase-assumptions.md
 </execution_context>
 
 <context>

@@ -54,7 +54,7 @@ Output: .planning/codebase/ folder with 7 structured documents about the codebas
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/.codex/get-shit-done/workflows/map-codebase.md
+@/Users/apple/hivemind-plugin/.codex/get-shit-done/workflows/map-codebase.md
 </execution_context>
 
 <context>
