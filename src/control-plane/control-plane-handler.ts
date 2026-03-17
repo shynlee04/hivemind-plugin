@@ -135,6 +135,9 @@ async function runInit(
   const ids = resolveRuntimeIds(input)
   const managedRuntime = await createManagedRuntime({
     sessionId: input.sessionId,
+    serverOptions: {
+      port: 0,
+    },
   })
   const profileSettings = await saveBootstrapRuntimeAttachmentSettings(input.projectRoot, {
     preferredUserName: intakeResolution.profileInput.preferredUserName,

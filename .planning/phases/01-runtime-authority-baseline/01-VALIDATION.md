@@ -43,7 +43,7 @@ created: 2026-03-18
 | 01-01-02 | 01 | 1 | CTRL-01 | unit/integration | `npx tsx --test tests/sdk-supervisor-instance.test.ts tests/plugin-assembly-smoke.test.ts` | ✅ | ⬜ pending |
 | 01-02-01 | 02 | 2 | CTRL-02 | unit | `npx tsx --test tests/start-work-router.test.ts tests/plugin-runtime.test.ts` | ✅ | ⬜ pending |
 | 01-02-02 | 02 | 2 | CTRL-02 | integration | `npx tsx --test tests/runtime-turn-output.test.ts tests/start-work-router.test.ts` | ✅ | ⬜ pending |
-| 01-02-03 | 02 | 2 | CTRL-02 | narrow live sanity | `npx tsx --test tests/runtime-authority-live-sanity.test.ts` | ⬜ pending | ⬜ pending |
+| 01-02-03 | 02 | 2 | CTRL-02 | narrow live sanity | `npx tsx --test tests/runtime-authority-live-sanity.test.ts` | ✅ | ✅ green |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
