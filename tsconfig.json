@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
@@ -18,7 +18,8 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "jsx": "react"
+    "jsx": "react-jsx",
+    "jsxImportSource": "@opentui/react"
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "tests", "src/dashboard-v2"]

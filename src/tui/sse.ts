@@ -10,7 +10,7 @@ export class SseConnectionHandler {
 
     get status() { return this._status; }
 
-    async connect() {
+    async connect(): Promise<unknown> {
         this._status = 'connecting';
         try {
             const result = await this.client.event.subscribe();
