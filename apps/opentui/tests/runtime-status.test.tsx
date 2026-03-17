@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url'
 
 import { describe, expect, test } from 'bun:test'
 
+import { parseRuntimeStatus } from '../src/adapters/runtime-client.js'
+
 const testDirectory = fileURLToPath(new URL('.', import.meta.url))
 const repoRoot = resolve(testDirectory, '..', '..', '..')
 const appPackagePath = resolve(repoRoot, 'apps/opentui/package.json')
@@ -46,5 +48,28 @@ describe('opentui workspace boundary', () => {
     const source = readFileSync(fileURLToPath(import.meta.url), 'utf8')
 
     expect(source).toContain("from 'bun:test'")
+  })
+
+  test('runtime client parses the backend-owned status contract', () => {
+    const status = parseRuntimeStatus({
+      runtimeAuthority: 'managed-sdk',
+      runtimeInstanceId: 'runtime-123',
+      serverBaseUrl: 'http://127.0.0.1:4096',
+      entryState: 'ready',
+      interactiveBootstrapRequired: false,
+      recommendedNext: 'none',
+      qaState: 'pending',
+      releaseState: 'blocked',
+      supervisorStatus: 'healthy',
+      trajectoryId: 'traj-1',
+      workflowId: 'wf-1',
+      taskIds: ['task-1'],
+      subtaskIds: ['subtask-1'],
+      checkpointId: 'checkpoint-1',
+    })
+
+    expect(status.runtimeAuthority).toBe('managed-sdk')
+    expect(status.serverBaseUrl).toBe('http://127.0.0.1:4096')
+    expect(status.workflowId).toBe('wf-1')
   })
 })
