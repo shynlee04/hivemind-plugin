@@ -33,31 +33,11 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
         agentId: context.agent,
         snapshot,
       })
+      const availableCommands = discoverSlashCommandBundles().map((bundle) => bundle.id)
       const payload: HivemindRuntimeStatusPayload = {
-        runtimeAuthority: statusSnapshot.runtimeAuthority,
-        runtimeInstanceId: statusSnapshot.runtimeInstanceId,
-        serverBaseUrl: statusSnapshot.serverBaseUrl,
-        entryState: statusSnapshot.entryState,
-        qaState: statusSnapshot.qaState,
-        runtimeState: {
-          sessionID: context.sessionID,
-          attachmentMode: snapshot.attachmentMode,
-          runtimeAuthority: snapshot.runtimeAuthority,
-          runtimeInstanceId: snapshot.runtimeInstanceId,
-          serverBaseUrl: snapshot.serverBaseUrl,
-          hasRuntimeAttachment: snapshot.hasRuntimeAttachment,
-          hasHivemind: snapshot.hasHivemind,
-          hivemindHealthy: snapshot.hivemindHealthy,
-          hasWorkflow: snapshot.hasWorkflow,
-          profileComplete: snapshot.profileComplete,
-          missingProfileFields: snapshot.missingProfileFields,
-          bootstrapProfile: snapshot.bootstrapProfile,
-        },
-        kernelState: statusSnapshot.kernel,
-        supervisorState: statusSnapshot.supervisor,
-        lineageSessionState: statusSnapshot.lineageSessionState,
+        ...statusSnapshot,
         workflowGateState: {
-          availableCommands: discoverSlashCommandBundles().map((bundle) => bundle.id),
+          availableCommands,
         },
       }
       context.metadata({
