@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: planning
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-17T20:56:04.642Z"
-last_activity: 2026-03-18 - roadmap, phase mappings, and state initialization created
+status: completed
+stopped_at: Completed 01-02-PLAN.md
+last_updated: "2026-03-17T21:44:14.428Z"
+last_activity: 2026-03-18 - completed 01-02 attach semantics and live sanity gate
 progress:
   total_phases: 8
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 50
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
@@ -26,24 +26,24 @@ See: `.planning/PROJECT.md` (updated 2026-03-17)
 ## Current Position
 
 Phase: 1 of 8 (Runtime Authority Baseline)
-Plan: 1 of 2 in current phase
-Status: Plan 01 complete, ready for 01-02
-Last activity: 2026-03-18 - completed 01-01 managed runtime authority baseline
+Plan: 2 of 2 in current phase
+Status: Phase 01 complete, ready for 02-01
+Last activity: 2026-03-18 - completed 01-02 attach semantics and live sanity gate
 
-Progress: [█████░░░░░] 50%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 15 min
-- Total execution time: 0.3 hours
+- Total plans completed: 2
+- Average duration: 11 min
+- Total execution time: 0.4 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1. Runtime Authority Baseline | 1 | 15 min | 15 min |
+| 1. Runtime Authority Baseline | 2 | 22 min | 11 min |
 | 2. Unified Runtime Operations | 0 | 0 min | 0 min |
 | 3. Tool-Governed Mutation Foundation | 0 | 0 min | 0 min |
 | 4. Deterministic Routing and Receipts | 0 | 0 min | 0 min |
@@ -53,9 +53,10 @@ Progress: [█████░░░░░] 50%
 | 8. TUI Stabilization on Backend Truth | 0 | 0 min | 0 min |
 
 **Recent Trend:**
-- Last 5 plans: none
+- Last 5 plans: 2 plans
 - Trend: Stable
 | Phase 01-runtime-authority-baseline P01 | 15 min | 3 tasks | 8 files |
+| Phase 01 P02 | 7 min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - Phase 3: Make registered tools and official permission surfaces the only critical mutation path.
 - Phase 7: Require live official-boundary proof before claiming deterministic runtime behavior.
 - Phase 8: Keep the terminal UI bound to backend truth rather than letting it become an authority surface.
+- [Phase 01]: Route reminders classify attach/resume flows as attached-sdk authority.
+- [Phase 01]: hm-init redirects to hm-harness when a healthy attached-sdk authority already exists.
+- [Phase 01]: Managed runtime creation uses ephemeral ports during hm-init verification to avoid local collisions.
 
 ### Pending Todos
 
@@ -82,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T20:56:04.639Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-03-17T21:44:14.425Z
+Stopped at: Completed 01-02-PLAN.md
 Resume file: None

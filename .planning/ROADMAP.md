@@ -12,7 +12,7 @@ This brownfield roadmap corrects HiveMind into a single-runtime, evidence-first 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Runtime Authority Baseline** - Align managed and attached runtime ownership to the official SDK lifecycle.
+- [x] **Phase 1: Runtime Authority Baseline** - Align managed and attached runtime ownership to the official SDK lifecycle. (completed 2026-03-17)
 - [ ] **Phase 2: Unified Runtime Operations** - Bring status, bootstrap, doctor, harness, and workflow inspection behind one additive authority seam.
 - [ ] **Phase 3: Tool-Governed Mutation Foundation** - Route governed workflow writes through registered tools and official permission surfaces.
 - [ ] **Phase 4: Deterministic Routing and Receipts** - Make routed execution budgets, policy defaults, and approval outcomes auditable.
@@ -148,7 +148,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Runtime Authority Baseline | 0/2 | Not started | - |
+| 1. Runtime Authority Baseline | 2/2 | Complete   | 2026-03-17 |
 | 2. Unified Runtime Operations | 0/3 | Not started | - |
 | 3. Tool-Governed Mutation Foundation | 0/3 | Not started | - |
 | 4. Deterministic Routing and Receipts | 0/2 | Not started | - |
