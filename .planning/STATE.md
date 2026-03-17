@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-stopped_at: Completed 02-01-PLAN.md
-last_updated: "2026-03-17T23:34:50.726Z"
-last_activity: 2026-03-17 - completed 02-01 runtime status canonicalization
+status: executing
+stopped_at: Completed 02-02-PLAN.md
+last_updated: "2026-03-17T23:48:34.561Z"
+last_activity: 2026-03-17 - completed 02-02 shared runtime entry guidance alignment
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
-  percent: 67
+  completed_plans: 5
+  percent: 83
 ---
 
 # Project State
@@ -26,25 +26,25 @@ See: `.planning/PROJECT.md` (updated 2026-03-17)
 ## Current Position
 
 Phase: 2 of 8 (Unified Runtime Operations)
-Plan: 2 of 4 in current phase
-Status: Phase 02 in progress, ready for 02-02
-Last activity: 2026-03-17 - completed 02-01 runtime status canonicalization
+Plan: 3 of 4 in current phase
+Status: Phase 02 in progress, ready for 02-03
+Last activity: 2026-03-17 - completed 02-02 shared runtime entry guidance alignment
 
-Progress: [███████░░░] 67%
+Progress: [████████░░] 83%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 10 min
-- Total execution time: 0.7 hours
+- Total plans completed: 5
+- Average duration: 9 min
+- Total execution time: 0.8 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Runtime Authority Baseline | 2 | 22 min | 11 min |
-| 2. Unified Runtime Operations | 2 | 17 min | 9 min |
+| 2. Unified Runtime Operations | 3 | 23 min | 8 min |
 | 3. Tool-Governed Mutation Foundation | 0 | 0 min | 0 min |
 | 4. Deterministic Routing and Receipts | 0 | 0 min | 0 min |
 | 5. Continuity and Recovery Contract | 0 | 0 min | 0 min |
@@ -53,12 +53,13 @@ Progress: [███████░░░] 67%
 | 8. TUI Stabilization on Backend Truth | 0 | 0 min | 0 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 plans
+- Last 5 plans: 5 plans
 - Trend: Stable
 | Phase 01-runtime-authority-baseline P01 | 15 min | 3 tasks | 8 files |
 | Phase 01 P02 | 7 min | 3 tasks | 10 files |
 | Phase 02 P00 | 9 min | 3 tasks | 9 files |
 | Phase 02 P01 | 8 min | 2 tasks | 6 files |
+| Phase 02 P02 | 6 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -79,6 +80,8 @@ Recent decisions affecting current work:
 - [Phase 02]: Parse shared runtime status contracts in the OpenTUI adapter so the UI stays a consumer of backend-owned truth.
 - [Phase 02]: Canonical runtime status keeps runtime authority fields top-level while entry and QA state move into nested shared-contract records.
 - [Phase 02]: buildRuntimeStatusSnapshot now owns runtime state assembly so hivemind_runtime_status only adds availableCommands metadata.
+- [Phase 02]: Shared runtime-entry guidance now lives in src/shared/contracts/runtime-status.ts.
+- [Phase 02]: hivemind_runtime_command decorates hm-init, hm-doctor, and hm-harness with the same next-step semantics used by CLI flows.
 
 ### Pending Todos
 
@@ -92,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T23:34:50.720Z
-Stopped at: Completed 02-01-PLAN.md
+Last session: 2026-03-17T23:47:36.505Z
+Stopped at: Completed 02-02-PLAN.md
 Resume file: None
