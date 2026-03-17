@@ -4,7 +4,7 @@
 
 OpenCode exposes three layers of extensibility:
 1. **The JavaScript SDK** (`@opencode-ai/sdk`) — for programmatic control of a running server
-2. **The Plugin System** (`@opencode-ai/plugin`) — for hooks, custom tools, and workflow interception
+2. **The Plugin System** (`@opencode-ai/plugin`) — for ho.oks, custom tools, and workflow interception
 3. **File-System-Based Extensions** — agents, commands, and local tool files loaded from config directories
 
 ```mermaid
