@@ -9,7 +9,7 @@
 
 - [x] **CTRL-01**: User can start a HiveMind-managed OpenCode runtime through the official SDK server/client lifecycle
 - [x] **CTRL-02**: User can attach HiveMind to an existing OpenCode runtime without creating a competing runtime instance
-- [ ] **CTRL-03**: User can inspect authoritative runtime status from a single backend-owned source of truth
+- [x] **CTRL-03**: User can inspect authoritative runtime status from a single backend-owned source of truth
 - [ ] **CTRL-04**: User can run bootstrap, doctor, and harness flows against the same authoritative runtime contract
 
 ### Deterministic Execution
@@ -88,7 +88,7 @@
 |-------------|-------|--------|
 | CTRL-01 | Phase 1 - Runtime Authority Baseline | Complete |
 | CTRL-02 | Phase 1 - Runtime Authority Baseline | Complete |
-| CTRL-03 | Phase 2 - Unified Runtime Operations | Pending |
+| CTRL-03 | Phase 2 - Unified Runtime Operations | Complete |
 | CTRL-04 | Phase 2 - Unified Runtime Operations | Pending |
 | EXEC-01 | Phase 3 - Tool-Governed Mutation Foundation | Pending |
 | EXEC-02 | Phase 4 - Deterministic Routing and Receipts | Pending |

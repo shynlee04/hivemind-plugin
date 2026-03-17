@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 01-02-PLAN.md
-last_updated: "2026-03-17T21:44:14.428Z"
-last_activity: 2026-03-18 - completed 01-02 attach semantics and live sanity gate
+status: in_progress
+stopped_at: Completed 02-00-PLAN.md
+last_updated: "2026-03-17T23:21:26.705Z"
+last_activity: 2026-03-18 - completed 02-00 TUI infrastructure foundation
 progress:
   total_phases: 8
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
-  percent: 100
+  total_plans: 6
+  completed_plans: 3
+  percent: 50
 ---
 
 # Project State
@@ -26,25 +26,25 @@ See: `.planning/PROJECT.md` (updated 2026-03-17)
 ## Current Position
 
 Phase: 2 of 8 (Unified Runtime Operations)
-Plan: 0 of 4 in current phase
-Status: Phase 01 complete, ready for 02-00
-Last activity: 2026-03-18 - rebaselined Phase 2 to start with TUI infrastructure
+Plan: 1 of 4 in current phase
+Status: Phase 02 in progress, ready for 02-01
+Last activity: 2026-03-18 - completed 02-00 TUI infrastructure foundation
 
-Progress: [██████████] 100%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
-- Average duration: 11 min
-- Total execution time: 0.4 hours
+- Total plans completed: 3
+- Average duration: 10 min
+- Total execution time: 0.5 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Runtime Authority Baseline | 2 | 22 min | 11 min |
-| 2. Unified Runtime Operations | 0 | 0 min | 0 min |
+| 2. Unified Runtime Operations | 1 | 9 min | 9 min |
 | 3. Tool-Governed Mutation Foundation | 0 | 0 min | 0 min |
 | 4. Deterministic Routing and Receipts | 0 | 0 min | 0 min |
 | 5. Continuity and Recovery Contract | 0 | 0 min | 0 min |
@@ -53,10 +53,11 @@ Progress: [██████████] 100%
 | 8. TUI Stabilization on Backend Truth | 0 | 0 min | 0 min |
 
 **Recent Trend:**
-- Last 5 plans: 2 plans
+- Last 5 plans: 3 plans
 - Trend: Stable
 | Phase 01-runtime-authority-baseline P01 | 15 min | 3 tasks | 8 files |
 | Phase 01 P02 | 7 min | 3 tasks | 10 files |
+| Phase 02 P00 | 9 min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Route reminders classify attach/resume flows as attached-sdk authority.
 - [Phase 01]: hm-init redirects to hm-harness when a healthy attached-sdk authority already exists.
 - [Phase 01]: Managed runtime creation uses ephemeral ports during hm-init verification to avoid local collisions.
+- [Phase 02]: Use apps/opentui as the Bun-owned app boundary while keeping the shipped package on Node.
+- [Phase 02]: Parse shared runtime status contracts in the OpenTUI adapter so the UI stays a consumer of backend-owned truth.
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T21:44:14.425Z
-Stopped at: Completed 01-02-PLAN.md
+Last session: 2026-03-17T23:21:26.698Z
+Stopped at: Completed 02-00-PLAN.md
 Resume file: None
