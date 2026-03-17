@@ -19,7 +19,7 @@ created: 2026-03-18
 |----------|-------|
 | **Framework** | `tsx --test` + repository `npm test` gate |
 | **Config file** | `package.json` |
-| **Quick run command** | `npx tsx --test tests/runtime-entry-attachment.test.ts tests/sdk-supervisor-instance.test.ts tests/start-work-router.test.ts tests/plugin-runtime.test.ts` |
+| **Quick run command** | `npx tsx --test tests/runtime-entry-attachment.test.ts tests/sdk-supervisor-instance.test.ts tests/start-work-router.test.ts tests/plugin-runtime.test.ts tests/runtime-authority-live-sanity.test.ts` |
 | **Full suite command** | `npm test` |
 | **Estimated runtime** | ~120 seconds |
 
@@ -28,6 +28,7 @@ created: 2026-03-18
 ## Sampling Rate
 
 - **After every task commit:** Run `npx tsx --test tests/runtime-entry-attachment.test.ts tests/sdk-supervisor-instance.test.ts tests/start-work-router.test.ts tests/plugin-runtime.test.ts`
+- **Before Phase 1 closeout:** Run `npx tsx --test tests/runtime-authority-live-sanity.test.ts` as the required `narrow live sanity` lane
 - **After every plan wave:** Run `npm test`
 - **Before `$gsd-verify-work`:** Full suite must be green
 - **Max feedback latency:** 120 seconds
@@ -42,6 +43,7 @@ created: 2026-03-18
 | 01-01-02 | 01 | 1 | CTRL-01 | unit/integration | `npx tsx --test tests/sdk-supervisor-instance.test.ts tests/plugin-assembly-smoke.test.ts` | ✅ | ⬜ pending |
 | 01-02-01 | 02 | 2 | CTRL-02 | unit | `npx tsx --test tests/start-work-router.test.ts tests/plugin-runtime.test.ts` | ✅ | ⬜ pending |
 | 01-02-02 | 02 | 2 | CTRL-02 | integration | `npx tsx --test tests/runtime-turn-output.test.ts tests/start-work-router.test.ts` | ✅ | ⬜ pending |
+| 01-02-03 | 02 | 2 | CTRL-02 | narrow live sanity | `npx tsx --test tests/runtime-authority-live-sanity.test.ts` | ⬜ pending | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -58,9 +60,14 @@ created: 2026-03-18
 
 ---
 
-## Manual-Only Verifications
+## Evidence Lanes
 
-All Phase 1 behaviors have automated verification at planning time. Live official-boundary proof is intentionally deferred to Phase 7 and should not be treated as a substitute for this phase's fast regression loop.
+- `local tests` — focused `tsx --test` regressions for attachment, supervisor, routing, and runtime-turn output
+- `local diagnostics` — `hm-harness`, `/global/health`, and related readiness artifacts; useful but not completion proof on their own
+- `narrow live sanity` — a required Phase 1 live check that boots a real local OpenCode runtime and proves single-runtime `init/attach/reuse` behavior
+- `later full live proof` — the broader official-boundary proof suite reserved for Phase 7
+
+Phase 1 completion requires `local tests` plus the `narrow live sanity` lane. `local diagnostics` remain supporting evidence, and `later full live proof` stays deferred to Phase 7.
 
 ---
 
