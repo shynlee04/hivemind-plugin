@@ -7,7 +7,7 @@
 
 ### Runtime Control
 
-- [ ] **CTRL-01**: User can start a HiveMind-managed OpenCode runtime through the official SDK server/client lifecycle
+- [x] **CTRL-01**: User can start a HiveMind-managed OpenCode runtime through the official SDK server/client lifecycle
 - [ ] **CTRL-02**: User can attach HiveMind to an existing OpenCode runtime without creating a competing runtime instance
 - [ ] **CTRL-03**: User can inspect authoritative runtime status from a single backend-owned source of truth
 - [ ] **CTRL-04**: User can run bootstrap, doctor, and harness flows against the same authoritative runtime contract
@@ -86,7 +86,7 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CTRL-01 | Phase 1 - Runtime Authority Baseline | Pending |
+| CTRL-01 | Phase 1 - Runtime Authority Baseline | Complete |
 | CTRL-02 | Phase 1 - Runtime Authority Baseline | Pending |
 | CTRL-03 | Phase 2 - Unified Runtime Operations | Pending |
 | CTRL-04 | Phase 2 - Unified Runtime Operations | Pending |
