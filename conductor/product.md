@@ -15,7 +15,7 @@ The focus is on achieving a well-rounded, battle-tested, and architecturally str
 ## Key Differentiators
 - **Dual-Plane Architecture:** Clear separation of the control plane (CLI/SDK) and execution plane (in-loop plugin hooks).
 - **State Checkpoints & Continuity:** Robust trajectory checkpointing, state reversion, and prevention of amnesia.
-- **Collaborative Workflows:** Robust delegation and collaboration between agents and humans, integrating a "pattern weaver" mindset to explore and learn within specific stacks and codebase knowledge.
+- **Collaborative Workflows:** Robust delegation and collaboration between agents and humans. Features rich OpenTUI interactive components (QA Quizzes, Multi-branch Planners, and Hierarchy Wikis) with live execution steering, integrating a "pattern weaver" mindset to explore and learn within specific stacks.
 - **Bilingual Support:** First-class support for both English and Vietnamese documentation and workflows.
 
 ## Success Criteria
