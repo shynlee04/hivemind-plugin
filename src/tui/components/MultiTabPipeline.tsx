@@ -1,5 +1,3 @@
-import React from 'react';
-
 export interface MultiTabPipelineProps {
     tabs: string[];
     activeTab: string;

@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ExecutionStatus } from './components/ExecutionStatus.js';
 import { MultiTabPipeline } from './components/MultiTabPipeline.js';
 import { MultiBranchPlanner } from './components/MultiBranchPlanner.js';
 import { HierarchyWiki } from './components/HierarchyWiki.js';
 import { SseConnectionHandler } from './sse.js';
-import type { EventSubscribeResponses } from '@opencode-ai/sdk/dist/gen/core/serverSentEvents.gen.js';
 
 const MOCK_WIKI = {
     id: 'root',
@@ -27,7 +26,7 @@ const MOCK_WIKI = {
 
 export function Dashboard() {
     const [status, setStatus] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
-    const [events, setEvents] = useState<EventSubscribeResponses[]>([]);
+    const [events, setEvents] = useState<any[]>([]);
     const [activeTab, setActiveTab] = useState('Planning');
     const [activeBranch, setActiveBranch] = useState('main');
     const [activeWikiNode, setActiveWikiNode] = useState('root');
@@ -39,7 +38,7 @@ export function Dashboard() {
             try {
                 setStatus('connecting');
                 const handler = new SseConnectionHandler('http://127.0.0.1:4096');
-                const result = await handler.connect() as { events: AsyncIterable<EventSubscribeResponses> };
+                const result = await handler.connect() as { events: AsyncIterable<any> };
                 
                 if (isMounted) setStatus('connected');
                 
@@ -62,7 +61,7 @@ export function Dashboard() {
     return (
         <box flexDirection="column" width="100%" height="100%" gap={1} padding={1}>
             <text>
-                <ascii-font font="Standard">HiveMind OpenTUI</ascii-font>
+                <ascii-font font="block" text="HiveMind OpenTUI" />
             </text>
             
             <MultiTabPipeline 

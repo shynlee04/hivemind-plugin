@@ -1,5 +1,3 @@
-import React from 'react';
-
 export interface MultiBranchPlannerProps {
     branches: string[];
     activeBranch: string;
@@ -18,7 +16,7 @@ export function MultiBranchPlanner({ branches, activeBranch, onBranchSelect }: M
                         onMouseDown={() => onBranchSelect(branch)}
                     >
                         <text>
-                            {branch === activeBranch ? <span fg="green">➜ </span> : <span dim>  </span>}
+                            {branch === activeBranch ? <span fg="green">➜ </span> : <span fg="gray">  </span>}
                             {branch}
                         </text>
                     </box>

@@ -1,5 +1,3 @@
-import React from 'react';
-
 export interface WikiNode {
     id: string;
     title: string;

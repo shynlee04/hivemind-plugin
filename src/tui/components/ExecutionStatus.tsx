@@ -1,9 +1,6 @@
-import React from 'react';
-import type { EventSubscribeResponses } from '@opencode-ai/sdk/dist/gen/core/serverSentEvents.gen.js';
-
 export interface ExecutionStatusProps {
     status: 'disconnected' | 'connecting' | 'connected';
-    events: EventSubscribeResponses[];
+    events: any[];
     onSteeringMessage?: (message: string) => void;
 }
 
@@ -11,7 +8,7 @@ export function ExecutionStatus({ status, events, onSteeringMessage }: Execution
     const statusColor = status === 'connected' ? 'green' : status === 'connecting' ? 'yellow' : 'red';
     
     return (
-        <box border padding={1} flexDirection="column" gap={1}>
+        <box border padding={1} flexDirection="column" gap={1} onMouseDown={() => onSteeringMessage?.('Clicked Execution Status')}>
             <box>
                 <text>
                     <strong>Execution Status: </strong>
@@ -21,11 +18,11 @@ export function ExecutionStatus({ status, events, onSteeringMessage }: Execution
             <box flexDirection="column" height={10}>
                 <scrollbox>
                     {events.length === 0 ? (
-                        <text dim>Waiting for events...</text>
+                        <text fg="gray">Waiting for events...</text>
                     ) : (
                         events.map((event, i) => (
                             <text key={i}>
-                                <span dim>[{new Date().toLocaleTimeString()}]</span> {JSON.stringify(event.data)}
+                                <span fg="gray">[{new Date().toLocaleTimeString()}]</span> {JSON.stringify(event.data)}
                             </text>
                         ))
                     )}
