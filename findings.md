@@ -122,3 +122,15 @@
   - top-level/root/orchestration helper commands use `subtask: false`
   - bounded specialist/stage commands use `subtask: true`
 - After normalization, all shipped command assets under `commands/*.md` expose valid `description`, `agent`, and `subtask` headers, and representative files from the `hivemind-*`, `hiveq-*`, `hiverd-*`, and `hivefiver*` families now match that contract cleanly.
+
+## 2026-03-17
+
+### Brownfield initialization baseline
+- `node /Users/apple/.config/opencode/get-shit-done/bin/gsd-tools.js init new-project` reports `project_exists: false`, `planning_exists: false`, `is_brownfield: true`, `needs_codebase_map: true`, and default planning models of `sonnet`.
+- Even though the generic auto workflow assumes greenfield, the actual repo context is brownfield: existing CLI/runtime surfaces, tests, and planning artifacts prove this should be initialized as a refactor/migration project rather than a net-new product.
+- The initialization framing should center on four active outcomes: correct OpenCode SDK client/server usage, deterministic tool-using agents and harnesses, OpenTUI completion, and progressive layer-by-layer migration.
+
+### Research and roadmap outcome
+- The research synthesis recommends a contract-first modular monolith with a hard dual-plane split: `@opencode-ai/sdk` for control-plane orchestration, `@opencode-ai/plugin` for execution-plane hooks/tools, `Zod 4` as the single schema layer, and `Ink` as the conservative shipped TUI path while OpenTUI remains experimental.
+- The resulting roadmap maps all 24 v1 requirements across 8 phases in dependency order: runtime authority -> unified operations -> tool-governed mutation -> deterministic receipts -> continuity/recovery -> inspection/evidence separation -> live proof -> TUI stabilization.
+- The most important strategic deferment is broad feature restoration; live official-boundary verification and backend truth now explicitly gate replay, policy packs, richer OpenTUI, and broader intelligence work.

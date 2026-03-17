@@ -34,3 +34,4 @@ Refactor the current `ecosystem-revamp` codebase into a stable, source-aligned H
 - Latest completed command-asset truth follow-up: rewrote `commands/hivemind-scan.md` and `commands/hivemind-status.md` so they explicitly read as in-OpenCode workflows instead of implying shipped public `scan` or `status` CLIs.
 - Latest completed command-contract slice: normalized `commands/*.md` frontmatter so every shipped command file now has parseable `description`, `agent`, and `subtask` fields that match `commands/AGENTS.md`.
 - Current decision point: choose the next bounded stabilization slice after the verified command-frontmatter normalization; removed-public-CLI grep is clean across `commands/`, and command metadata is now structurally compliant.
+- Brownfield initialization for `.planning/` should treat the repo as an existing OpenCode plugin/CLI product and plan the next milestone around deterministic runtime migration, live OpenCode verification, and OpenTUI completion.

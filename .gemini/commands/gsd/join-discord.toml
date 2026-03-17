@@ -1,0 +1,2 @@
+description = "Join the GSD Discord community"
+prompt = "<objective>\nDisplay the Discord invite link for the GSD community server.\n</objective>\n\n<output>\n# Join the GSD Discord\n\nConnect with other GSD users, get help, share what you're building, and stay updated.\n\n**Invite link:** https://discord.gg/gsd\n\nClick the link or paste it into your browser to join.\n</output>"

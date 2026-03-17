@@ -188,3 +188,19 @@
 ### Current Decision Point
 - Public command truth surfaces and command frontmatter are both now clean and verified.
 - The next bounded stabilization slice should target a different remaining architecture or contract gap beyond command-surface cleanup.
+
+## 2026-03-17
+
+### Project Initialization Start
+- Ran `gsd-tools init new-project` and confirmed the repo is not yet initialized under `.planning/`, but is detected as a brownfield codebase with git already present.
+- Read the new-project workflow, questioning/reference templates, and current repo planning artifacts to initialize the project from existing context instead of treating it as a blank greenfield idea.
+- Wrote and committed `.planning/PROJECT.md` and `.planning/config.json` as the first two initialization artifacts.
+
+### Current Next
+- Research the 2026 ecosystem for OpenCode-native plugin/runtime architecture, deterministic agent tooling, and terminal UI implementation.
+- Convert that research into scoped brownfield requirements and a dependency-aware roadmap.
+
+### Project Initialization Complete
+- Wrote and committed `.planning/research/STACK.md`, `.planning/research/FEATURES.md`, `.planning/research/ARCHITECTURE.md`, `.planning/research/PITFALLS.md`, and `.planning/research/SUMMARY.md`.
+- Wrote and committed `.planning/REQUIREMENTS.md`, then used a roadmapper pass to create `.planning/ROADMAP.md`, `.planning/STATE.md`, and update requirement traceability.
+- The project is now initialized around an 8-phase brownfield roadmap focused on runtime authority alignment, deterministic tool use, live proof, and terminal UI stabilization.
