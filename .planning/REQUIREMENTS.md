@@ -72,6 +72,13 @@
 - **REST-01**: User can access additional restored intelligence capabilities beyond the current read-only document surface
 - **REST-02**: User can use safe parallel/worktree orchestration after single-session determinism is proven
 
+
+### Architecture and Integration
+
+- [ ] **ARCH-01**: The codebase must follow a hybrid feature structure where `src/features/*` owns behavior and `tools/`, `hooks/`, etc. are thin adapters.
+- [ ] **INT-01**: The OpenTUI dashboard must be fully extracted into an isolated Bun app boundary at `apps/opentui`.
+- [ ] **FLOW-01_1**: The client and server must be wired end-to-end to prove innate OpenCode capabilities function without communication errors.
+
 ## Out of Scope
 
 | Feature | Reason |
@@ -110,10 +117,13 @@
 | VERF-01 | Phase 7 - Live Official-Boundary Proof | Pending |
 | VERF-02 | Phase 7 - Live Official-Boundary Proof | Pending |
 | VERF-03 | Phase 7 - Live Official-Boundary Proof | Pending |
+| ARCH-01 | Phase 2.1 - Feature Architecture Migration | Pending |
+| INT-01 | Phase 2.2 - TUI End-to-End Server Connection | Pending |
+| FLOW-01_1 | Phase 2.2 - TUI End-to-End Server Connection | Pending |
 
 **Coverage:**
-- v1 requirements: 24 total
-- Mapped to phases: 24
+- v1 requirements: 27 total
+- Mapped to phases: 27
 - Unmapped: 0
 
 ---
