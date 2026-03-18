@@ -61,14 +61,16 @@ Plans:
 **Requirements**: ARCH-01 (Architecture Migration)
 **Success Criteria** (what must be TRUE):
   1. The codebase is reorganized to use `src/features/*` for ownership.
-  2. `tools/`, `hooks/`, `commands/`, and `plugin/` act as thin OpenCode adapter surfaces.
-  3. Runtime-entry, session-entry, workflow, trajectory, and handoff behavior are consolidated into `features/`.
-**Plans**: 3 plans
+  2. `src/tools/`, `src/hooks/`, `src/commands/`, and `src/plugin/` act as thin OpenCode adapter or assembly surfaces.
+  3. Runtime-entry, session-entry, workflow, trajectory, handoff, doc-intelligence, and runtime-observability behavior are consolidated into `src/features/*`.
+  4. CLI and slash-command runtime-entry flows delegate through feature-owned modules and shared contracts instead of owning orchestration directly.
+**Plans**: 4 plans
 
 Plans:
 - [ ] 2.1-01-PLAN.md — Establish `src/features/` directories and shared contracts boundary
 - [ ] 2.1-02-PLAN.md — Migrate runtime-entry, session-entry, and handoff to features
-- [ ] 2.1-03-PLAN.md — Convert existing tools, hooks, and commands into thin adapters
+- [ ] 2.1-03-PLAN.md — Convert tool authority files into thin feature-backed adapters
+- [ ] 2.1-04-PLAN.md — Migrate CLI and slash-command runtime flows and finalize hook/plugin assembly wiring
 
 ### Phase 2.2: TUI End-to-End Server Connection (INSERTED)
 **Goal**: Extract the OpenTUI dashboard into a proper app boundary and establish a working end-to-end connection with the OpenCode server.
@@ -183,7 +185,7 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 2.2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Runtime Authority Baseline | 2/2 | Complete   | 2026-03-17 |
 | 2. Unified Runtime Operations | 4/4 | Complete | 2026-03-18 |
-| 2.1. Feature Architecture Migration | 0/3 | Not started | - |
+| 2.1. Feature Architecture Migration | 0/4 | Not started | - |
 | 2.2. TUI End-to-End Server Connection | 0/3 | Not started | - |
 | 3. Tool-Governed Mutation Foundation | 0/3 | Not started | - |
 | 4. Deterministic Routing and Receipts | 0/2 | Not started | - |
