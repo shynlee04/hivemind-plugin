@@ -4,8 +4,8 @@ milestone: v1.0
 milestone_name: milestone
 status: in_progress
 stopped_at: Phase 2.1 complete; ready for 2.2-01 TUI extraction work
-last_updated: "2026-03-18T14:03:50Z"
-last_activity: 2026-03-18 - completed Phase 2.1 feature architecture migration
+last_updated: "2026-03-18T21:15:59Z"
+last_activity: 2026-03-19 - completed writing pass 1 for the parallel .planning skill-module branch; runtime execution still paused at Phase 2.2
 progress:
   total_phases: 10
   completed_phases: 3
@@ -28,7 +28,7 @@ See: `.planning/PROJECT.md` (updated 2026-03-17)
 Phase: 2.2 of 10 (TUI End-to-End Server Connection)
 Plan: 1 of 3 in current phase
 Status: Phase 2.1 complete, ready for 2.2-01
-Last activity: 2026-03-18 - completed Phase 2.1 feature architecture migration
+Last activity: 2026-03-19 - completed writing pass 1 for the parallel .planning skill-module branch; runtime execution remains paused at Phase 2.2
 
 Progress: [████------] 41%
 
@@ -91,13 +91,16 @@ Recent decisions affecting current work:
 
 ### Pending Todos
 
-None yet.
+- Pending authorization: continue the skill-pack planning branch from `.planning/skill-module/index.md`.
+- Pending naming confirmation for the companion pack: `meta-builder-hivemind` versus `hivemind-skill-writer`.
+- Pending Pack 1 writing cycle: `context-intelligence` draft remains the next authorized output for the branch.
 
 ### Blockers/Concerns
 
 - Phase 5: Minimum continuation record shape still needs implementation-time validation.
 - Phase 7: Live proof artifact format and review workflow need explicit execution decisions.
 - Phase 8: Ink-first stabilization is planned; OpenTUI promotion stays gated on backend contract stability.
+- The skill-pack initiative is now tracked under `.planning/skill-module/**`, but it remains a parallel planning branch and must not silently replace the active runtime roadmap without explicit promotion.
 
 ## Session Continuity
 

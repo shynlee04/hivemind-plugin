@@ -1,6 +1,6 @@
 {
   "mode": "interactive",
-  "granularity": "standard",
+  "granularity": "fine",
   "workflow": {
     "research": true,
     "plan_check": true,
@@ -10,14 +10,14 @@
   },
   "planning": {
     "commit_docs": true,
-    "search_gitignored": false
+    "search_gitignored": true
   },
   "parallelization": {
     "enabled": true,
     "plan_level": true,
-    "task_level": false,
-    "skip_checkpoints": true,
-    "max_concurrent_agents": 3,
+    "task_level": true,
+    "skip_checkpoints": false,
+    "max_concurrent_agents": 4,
     "min_plans_for_parallel": 2
   },
   "gates": {
