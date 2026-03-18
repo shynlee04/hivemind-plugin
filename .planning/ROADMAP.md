@@ -66,9 +66,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 2.1-01: Establish `src/features/` directories and shared contracts boundary
-- [ ] 2.1-02: Migrate runtime-entry, session-entry, and handoff to features
-- [ ] 2.1-03: Convert existing tools, hooks, and commands into thin adapters
+- [ ] 2.1-01-PLAN.md — Establish `src/features/` directories and shared contracts boundary
+- [ ] 2.1-02-PLAN.md — Migrate runtime-entry, session-entry, and handoff to features
+- [ ] 2.1-03-PLAN.md — Convert existing tools, hooks, and commands into thin adapters
 
 ### Phase 2.2: TUI End-to-End Server Connection (INSERTED)
 **Goal**: Extract the OpenTUI dashboard into a proper app boundary and establish a working end-to-end connection with the OpenCode server.
