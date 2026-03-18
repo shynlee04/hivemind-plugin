@@ -8,39 +8,11 @@
 import { tool } from '@opencode-ai/plugin/tool'
 
 import {
-  executeSlashCommandBundle,
-  findSlashCommandBundle,
-  discoverSlashCommandBundles,
-} from '../../commands/slash-command/index.js'
-import { buildRuntimeStatusSnapshot } from '../../sdk-supervisor/index.js'
-import { buildRuntimeEntryDecision } from '../../shared/contracts/runtime-status.js'
-import { loadRuntimeBindingsSnapshot } from '../../shared/runtime-attachment.js'
+  buildHivemindRuntimeStatus,
+  executeHivemindRuntimeCommand,
+} from '../../features/runtime-observability/status.js'
 import { renderToolResult } from '../../shared/tool-helpers.js'
 import type { HivemindRuntimeStatusPayload } from './types.js'
-
-const runtimeEntryCommands = new Set(['hm-init', 'hm-doctor', 'hm-harness'])
-
-function withRuntimeEntryDecision<T extends { closeoutStatus?: 'open' | 'ready' | 'blocked' | 'qa-pending'; report: Record<string, unknown> }>(
-  result: T,
-  serverHealthy?: boolean,
-): T & {
-  closeoutStatus: 'open' | 'ready' | 'blocked' | 'qa-pending'
-  nextCommand?: string
-  recommendedCommands: string[]
-} {
-  const entryDecision = buildRuntimeEntryDecision({
-    closeoutStatus: result.closeoutStatus,
-    report: result.report,
-    serverHealthy,
-  })
-
-  return {
-    ...result,
-    closeoutStatus: entryDecision.closeoutStatus,
-    nextCommand: entryDecision.nextCommand,
-    recommendedCommands: entryDecision.recommendedCommands,
-  }
-}
 
 /**
  * Create the hivemind_runtime_status tool.
@@ -51,32 +23,12 @@ export function createHivemindRuntimeStatusTool(projectRoot: string): ReturnType
     description: 'Inspect active HiveMind runtime attachment, trajectory, workflow, and command availability.',
     args: {},
     async execute(_args, context) {
-      const snapshot = await loadRuntimeBindingsSnapshot(projectRoot)
-      const statusSnapshot = await buildRuntimeStatusSnapshot({
-        projectRoot,
-        sessionId: context.sessionID,
-        agentId: context.agent,
-        snapshot,
+      const result = await buildHivemindRuntimeStatus(projectRoot, {
+        sessionID: context.sessionID,
+        agent: context.agent,
       })
-      const availableCommands = discoverSlashCommandBundles().map((bundle) => bundle.id)
-      const payload: HivemindRuntimeStatusPayload = {
-        ...statusSnapshot,
-        workflowSummary: statusSnapshot.workflowSummary,
-        recentEvents: statusSnapshot.recentEvents,
-        workflowGateState: {
-          availableCommands,
-        },
-      }
-      context.metadata({
-        title: 'HiveMind runtime status',
-        metadata: {
-          runtimeAuthority: snapshot.runtimeAuthority,
-          runtimeInstanceId: snapshot.runtimeInstanceId,
-          trajectoryId: snapshot.trajectoryId,
-          workflowId: snapshot.workflowId,
-          supervisorStatus: statusSnapshot.supervisor.health.overallStatus,
-        },
-      })
+      context.metadata(result.metadata)
+      const payload: HivemindRuntimeStatusPayload = result.payload
       return renderToolResult(payload)
     },
   })
@@ -119,81 +71,12 @@ export function createHivemindRuntimeCommandTool(projectRoot: string): ReturnTyp
       }).optional().describe('Evidence from intake questionnaire completion'),
     },
     async execute(args, context) {
-      const snapshot = await loadRuntimeBindingsSnapshot(projectRoot)
-      if (
-        args.command === 'hm-init'
-        && snapshot.runtimeAuthority === 'attached-sdk'
-        && !!snapshot.serverBaseUrl
-        && snapshot.hivemindHealthy
-      ) {
-        const redirectedResult = withRuntimeEntryDecision({
-          commandId: args.command,
-          closeoutStatus: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
-          report: {
-            status: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
-            routeDisposition: 'attach',
-            next_command: 'hm-harness',
-            guidance: 'Attached OpenCode runtime already healthy; skipped competing hm-init bootstrap.',
-            runtimeAuthority: {
-              runtimeAuthority: snapshot.runtimeAuthority,
-              runtimeInstanceId: snapshot.runtimeInstanceId,
-              serverBaseUrl: snapshot.serverBaseUrl,
-            },
-          },
-          stateTransitions: ['attach-active-bootstrap-refused'],
-        }, snapshot.hivemindHealthy)
-        context.metadata({
-          title: `HiveMind command ${args.command}`,
-          metadata: {
-            command: args.command,
-            closeoutStatus: redirectedResult.closeoutStatus,
-            routeDisposition: 'attach',
-          },
-        })
-        return renderToolResult(redirectedResult)
-      }
-
-      const bundle = findSlashCommandBundle(args.command)
-      if (!bundle) {
-        throw new Error(`Unknown HiveMind command: ${args.command}`)
-      }
-
-      const result = await executeSlashCommandBundle(bundle, {
-        projectRoot,
-        sessionId: context.sessionID,
-        sessionScope: 'main',
-        presetId: args.presetId,
-        intakeEvidence: args.intakeEvidence,
-        requestedSettingsGroups: args.requestedSettingsGroups,
-        preferredUserName: args.preferredUserName,
-        language: args.language,
-        artifactLanguage: args.artifactLanguage,
-        governanceMode: args.governanceMode,
-        automationLevel: args.automationLevel,
-        expertLevel: args.expertLevel,
-        outputStyle: args.outputStyle,
-        trajectoryId: snapshot.trajectoryId,
-        workflowId: snapshot.workflowId,
-        taskIds: snapshot.taskIds,
-        subtaskIds: snapshot.subtaskIds,
-        lineage: snapshot.defaultLineage,
-        purposeClass: snapshot.defaultPurposeClass,
-        arguments: args.arguments,
-        userMessage: args.userMessage ?? `execute ${args.command}`,
-        activeAgent: context.agent,
+      const result = await executeHivemindRuntimeCommand(projectRoot, args, {
+        sessionID: context.sessionID,
+        agent: context.agent,
       })
-      const output = runtimeEntryCommands.has(args.command)
-        ? withRuntimeEntryDecision(result, snapshot.hivemindHealthy)
-        : result
-
-      context.metadata({
-        title: `HiveMind command ${args.command}`,
-        metadata: {
-          command: args.command,
-          closeoutStatus: output.closeoutStatus,
-        },
-      })
-      return renderToolResult(output)
+      context.metadata(result.metadata)
+      return renderToolResult(result.payload)
     },
   })
 }

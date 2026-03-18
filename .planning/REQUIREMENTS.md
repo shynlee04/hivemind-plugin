@@ -75,7 +75,7 @@
 
 ### Architecture and Integration
 
-- [ ] **ARCH-01**: The codebase must follow a hybrid feature structure where `src/features/*` owns behavior and `tools/`, `hooks/`, etc. are thin adapters.
+- [x] **ARCH-01**: The codebase must follow a hybrid feature structure where `src/features/*` owns behavior and `tools/`, `hooks/`, etc. are thin adapters.
 - [ ] **INT-01**: The OpenTUI dashboard must be fully extracted into an isolated Bun app boundary at `apps/opentui`.
 - [ ] **FLOW-01_1**: The client and server must be wired end-to-end to prove innate OpenCode capabilities function without communication errors.
 
@@ -117,7 +117,7 @@
 | VERF-01 | Phase 7 - Live Official-Boundary Proof | Pending |
 | VERF-02 | Phase 7 - Live Official-Boundary Proof | Pending |
 | VERF-03 | Phase 7 - Live Official-Boundary Proof | Pending |
-| ARCH-01 | Phase 2.1 - Feature Architecture Migration | Pending |
+| ARCH-01 | Phase 2.1 - Feature Architecture Migration | Complete |
 | INT-01 | Phase 2.2 - TUI End-to-End Server Connection | Pending |
 | FLOW-01_1 | Phase 2.2 - TUI End-to-End Server Connection | Pending |
 

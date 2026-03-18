@@ -1,15 +1,9 @@
-import { tool } from '@opencode-ai/plugin/tool'
+import { tool } from '@opencode-ai/plugin'
 
-import {
-  readChunked,
-  readSection,
-  searchDocuments,
-  skimDirectory,
-  skimDocument,
-} from '../../intelligence/doc/index.js'
+import { executeHivemindDocAction } from '../../features/doc-intelligence/doc.js'
 import { error, success } from '../../shared/tool-response.js'
 import { renderToolResult } from '../../shared/tool-helpers.js'
-import { docActionPressureContracts, type HivemindDocToolArgs } from './types.js'
+import type { HivemindDocToolArgs } from './types.js'
 
 const s = tool.schema
 
@@ -28,62 +22,14 @@ export function createHivemindDocTool(projectRoot: string): ReturnType<typeof to
       globFilter: s.string().optional().describe('Optional extension filter such as .md or .markdown.'),
     },
     async execute(args: HivemindDocToolArgs, context) {
-      const pressureContract = docActionPressureContracts[args.action]
-
-      if (args.action === 'skim') {
-        if (!args.filePath) {
-          return renderToolResult(error('filePath is required for skim'))
-        }
-
-        const result = await skimDocument(projectRoot, args.filePath)
-        context.metadata({
-          title: `HiveMind doc skim ${result.path}`,
-          metadata: { action: args.action },
-        })
-        return renderToolResult(success('Skimmed markdown document', result, { pressureContract }))
+      const result = await executeHivemindDocAction(projectRoot, args)
+      if (result.kind === 'error') {
+        return renderToolResult(error(result.message))
       }
-
-      if (args.action === 'skim_directory') {
-        if (!args.dirPath) {
-          return renderToolResult(error('dirPath is required for skim_directory'))
-        }
-
-        const result = await skimDirectory(projectRoot, args.dirPath, args.globFilter)
-        return renderToolResult(success('Skimmed markdown directory', result, { pressureContract }))
+      if (result.metadata) {
+        context.metadata(result.metadata)
       }
-
-      if (args.action === 'read') {
-        if (!args.filePath) {
-          return renderToolResult(error('filePath is required for read'))
-        }
-
-        if (!args.heading) {
-          return renderToolResult(error('heading is required for read'))
-        }
-
-        const result = await readSection(projectRoot, args.filePath, args.heading)
-        return renderToolResult(success('Read markdown section', result, { pressureContract }))
-      }
-
-      if (args.action === 'chunk') {
-        if (!args.filePath) {
-          return renderToolResult(error('filePath is required for chunk'))
-        }
-
-        const result = await readChunked(projectRoot, args.filePath, args.heading, args.maxTokens)
-        return renderToolResult(success('Chunked markdown document', result, { pressureContract }))
-      }
-
-      if (!args.dirPath) {
-        return renderToolResult(error('dirPath is required for search'))
-      }
-
-      if (!args.query) {
-        return renderToolResult(error('query is required for search'))
-      }
-
-      const result = await searchDocuments(projectRoot, args.dirPath, args.query, args.globFilter)
-      return renderToolResult(success('Searched markdown documents', result, { pressureContract }))
+      return renderToolResult(success(result.message, result.data))
     },
   })
 }

@@ -12,16 +12,14 @@ import {
   type MessageLike,
 } from '../hooks/prompt-transformation/index.js'
 import { isHivemindManagedTool, recordToolEvent } from '../hooks/runtime-loader/index.js'
-import {
-  createHivemindDocTool,
-  createHivemindHandoffTool,
-  createHivemindTaskTool,
-  createHivemindTrajectoryTool,
-} from '../tools/index.js'
+import { createHivemindDocTool } from '../tools/doc/index.js'
+import { createHivemindHandoffTool } from '../tools/handoff/index.js'
 import {
   createHivemindRuntimeStatusTool,
   createHivemindRuntimeCommandTool,
 } from '../tools/runtime/index.js'
+import { createHivemindTaskTool as createTaskTool } from '../tools/task/index.js'
+import { createHivemindTrajectoryTool as createTrajectoryTool } from '../tools/trajectory/index.js'
 import { createMessagesTransform } from './messages-transform.js'
 import { buildRouteReminder, createPluginRuntimePlan } from './runtime-plan.js'
 import { createSystemTransform } from './system-transform.js'
@@ -53,8 +51,8 @@ export const HiveMindPlugin: Plugin = async (input) => {
       hivemind_runtime_status: createHivemindRuntimeStatusTool(directory),
       hivemind_runtime_command: createHivemindRuntimeCommandTool(directory),
       hivemind_doc: createHivemindDocTool(directory),
-      hivemind_task: createHivemindTaskTool(directory),
-      hivemind_trajectory: createHivemindTrajectoryTool(directory),
+      hivemind_task: createTaskTool(directory),
+      hivemind_trajectory: createTrajectoryTool(directory),
       hivemind_handoff: createHivemindHandoffTool(directory),
     },
     'chat.message': async (messageInput, output) => {

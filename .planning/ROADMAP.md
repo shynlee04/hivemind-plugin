@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Runtime Authority Baseline** - Align managed and attached runtime ownership to the official SDK lifecycle. (completed 2026-03-17)
 - [x] **Phase 2: Unified Runtime Operations** - Bring status, bootstrap, doctor, harness, and workflow inspection behind one additive authority seam. (completed 2026-03-18)
-- [ ] **Phase 2.1: Feature Architecture Migration (INSERTED)** - Migrate to a hybrid feature structure to solve discoverability issues and isolate behavior.
+- [x] **Phase 2.1: Feature Architecture Migration (INSERTED)** - Migrate to a hybrid feature structure to solve discoverability issues and isolate behavior. (completed 2026-03-18)
 - [ ] **Phase 2.2: TUI End-to-End Server Connection (INSERTED)** - Extract the OpenTUI dashboard into a proper app boundary and establish a working end-to-end connection with the OpenCode server.
 - [ ] **Phase 3: Tool-Governed Mutation Foundation** - Route governed workflow writes through registered tools and official permission surfaces.
 - [ ] **Phase 4: Deterministic Routing and Receipts** - Make routed execution budgets, policy defaults, and approval outcomes auditable.
@@ -67,13 +67,13 @@ Plans:
 **Plans**: 7 plans
 
 Plans:
-- [ ] 2.1-01-PLAN.md — Establish `src/features/` directories and shared contracts boundary
-- [ ] 2.1-02-PLAN.md — Migrate runtime-entry, session-entry, and handoff to features
-- [ ] 2.1-03-PLAN.md — Convert trajectory and workflow tool authority files into thin feature-backed adapters
-- [ ] 2.1-04-PLAN.md — Convert runtime-observability and doc-intelligence tool authority files into thin feature-backed adapters
-- [ ] 2.1-05-PLAN.md — Migrate CLI and slash-command runtime flows and finalize hook/plugin assembly wiring
-- [ ] 2.1-06-PLAN.md — Migrate control-plane handler and runtime surface sync to features
-- [ ] 2.1-07-PLAN.md — Migrate hook helpers to session-entry and finalize recovery handler integration
+- [x] 2.1-01-PLAN.md — Establish `src/features/` directories and shared contracts boundary
+- [x] 2.1-02-PLAN.md — Migrate runtime-entry, session-entry, and handoff to features
+- [x] 2.1-03-PLAN.md — Convert trajectory and workflow tool authority files into thin feature-backed adapters
+- [x] 2.1-04-PLAN.md — Convert runtime-observability and doc-intelligence tool authority files into thin feature-backed adapters
+- [x] 2.1-05-PLAN.md — Migrate CLI and slash-command runtime flows and finalize hook/plugin assembly wiring
+- [x] 2.1-06-PLAN.md — Migrate control-plane handler and runtime surface sync to features
+- [x] 2.1-07-PLAN.md — Migrate hook helpers to session-entry and finalize recovery handler integration
 
 ### Phase 2.2: TUI End-to-End Server Connection (INSERTED)
 **Goal**: Extract the OpenTUI dashboard into a proper app boundary and establish a working end-to-end connection with the OpenCode server.
@@ -188,7 +188,7 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 2.2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Runtime Authority Baseline | 2/2 | Complete   | 2026-03-17 |
 | 2. Unified Runtime Operations | 4/4 | Complete | 2026-03-18 |
-| 2.1. Feature Architecture Migration | 0/7 | Not started | - |
+| 2.1 Feature Architecture Migration | 7/7 | Complete | 2026-03-18 |
 | 2.2. TUI End-to-End Server Connection | 0/3 | Not started | - |
 | 3. Tool-Governed Mutation Foundation | 0/3 | Not started | - |
 | 4. Deterministic Routing and Receipts | 0/2 | Not started | - |

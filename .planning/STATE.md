@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Gap closure phases 2.1 and 2.2 created for architecture and TUI E2E connection
-last_updated: "2026-03-18T01:49:53.560Z"
-last_activity: 2026-03-18 - completed 02-03 workflow and event inspection seam
+status: in_progress
+stopped_at: Phase 2.1 complete; ready for 2.2-01 TUI extraction work
+last_updated: "2026-03-18T14:03:50Z"
+last_activity: 2026-03-18 - completed Phase 2.1 feature architecture migration
 progress:
   total_phases: 10
-  completed_phases: 2
-  total_plans: 6
-  completed_plans: 6
-  percent: 100
+  completed_phases: 3
+  total_plans: 32
+  completed_plans: 13
+  percent: 41
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-17)
 
 **Core value:** At runtime, HiveMind must reliably steer OpenCode agents through deterministic, tool-using workflows that are provably aligned with the live OpenCode client/server/plugin contract.
-**Current focus:** Phase 3 - Tool-Governed Mutation Foundation
+**Current focus:** Phase 2.2 - TUI End-to-End Server Connection
 
 ## Current Position
 
-Phase: 3 of 8 (Tool-Governed Mutation Foundation)
+Phase: 2.2 of 10 (TUI End-to-End Server Connection)
 Plan: 1 of 3 in current phase
-Status: Phase 02 complete, ready for 03-01
-Last activity: 2026-03-18 - completed 02-03 workflow and event inspection seam
+Status: Phase 2.1 complete, ready for 2.2-01
+Last activity: 2026-03-18 - completed Phase 2.1 feature architecture migration
 
-Progress: [██████████] 100%
+Progress: [████------] 41%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 8 min
-- Total execution time: 0.9 hours
+- Total plans completed: 13
+- Average duration: 10 min
+- Total execution time: 2.1 hours
 
 **By Phase:**
 
@@ -45,6 +45,8 @@ Progress: [██████████] 100%
 |-------|-------|-------|----------|
 | 1. Runtime Authority Baseline | 2 | 22 min | 11 min |
 | 2. Unified Runtime Operations | 4 | 29 min | 7 min |
+| 2.1 Feature Architecture Migration | 7 | 75 min | 11 min |
+| 2.2 TUI End-to-End Server Connection | 0 | 0 min | 0 min |
 | 3. Tool-Governed Mutation Foundation | 0 | 0 min | 0 min |
 | 4. Deterministic Routing and Receipts | 0 | 0 min | 0 min |
 | 5. Continuity and Recovery Contract | 0 | 0 min | 0 min |
@@ -55,11 +57,11 @@ Progress: [██████████] 100%
 **Recent Trend:**
 - Last 5 plans: 5 plans
 - Trend: Stable
-| Phase 02 P00 | 9 min | 3 tasks | 9 files |
-| Phase 02 P01 | 8 min | 2 tasks | 6 files |
-| Phase 02 P02 | 6 min | 2 tasks | 7 files |
-| Phase 02 P03 | 6 min | 2 tasks | 8 files |
-| Phase 01 P02 | 7 min | 3 tasks | 10 files |
+| Phase 2.1 P07 | 18 min | 3 tasks | 13 files |
+| Phase 2.1 P06 | 10 min | 2 tasks | 10 files |
+| Phase 2.1 P05 | 7 min | 3 tasks | 10 files |
+| Phase 2.1 P04 | 5 min | 2 tasks | 6 files |
+| Phase 2.1 P03 | 6 min | 1 task | 6 files |
 
 ## Accumulated Context
 
@@ -84,6 +86,8 @@ Recent decisions affecting current work:
 - [Phase 02]: hivemind_runtime_command decorates hm-init, hm-doctor, and hm-harness with the same next-step semantics used by CLI flows.
 - [Phase 02]: Reduce recent events into stable backend-owned records before exposing them to tools or the TUI. — This keeps the terminal UI and runtime status tool bound to one additive inspection seam instead of interpreting raw SDK event payloads independently.
 - [Phase 02]: Scope workflow inspection to active workflow identity, gate state, and current task links instead of exposing raw workflow graphs. — Phase 2 only needs operator-facing inspection readiness, so a reduced summary satisfies INSP-03 without creating a second workflow authority surface.
+- [Phase 2.1]: `src/features/*` now owns runtime-entry, session-entry, workflow, trajectory, handoff, doc-intelligence, and runtime-observability behavior, while tools, hooks, commands, and plugin surfaces stay thin adapters.
+- [Phase 2.1]: Recovery command flows now route through the live slash-command runner seam instead of a detached compatibility shim.
 
 ### Pending Todos
 
@@ -97,6 +101,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T01:49:53.554Z
-Stopped at: Gap closure phases 2.1 and 2.2 created for architecture and TUI E2E connection
+Last session: 2026-03-18T14:03:50Z
+Stopped at: Phase 2.1 complete; ready for 2.2-01 TUI extraction work
 Resume file: .planning/ROADMAP.md
