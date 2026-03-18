@@ -14,6 +14,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Runtime Authority Baseline** - Align managed and attached runtime ownership to the official SDK lifecycle. (completed 2026-03-17)
 - [x] **Phase 2: Unified Runtime Operations** - Bring status, bootstrap, doctor, harness, and workflow inspection behind one additive authority seam. (completed 2026-03-18)
+- [ ] **Phase 2.1: Feature Architecture Migration (INSERTED)** - Migrate to a hybrid feature structure to solve discoverability issues and isolate behavior.
+- [ ] **Phase 2.2: TUI End-to-End Server Connection (INSERTED)** - Extract the OpenTUI dashboard into a proper app boundary and establish a working end-to-end connection with the OpenCode server.
 - [ ] **Phase 3: Tool-Governed Mutation Foundation** - Route governed workflow writes through registered tools and official permission surfaces.
 - [ ] **Phase 4: Deterministic Routing and Receipts** - Make routed execution budgets, policy defaults, and approval outcomes auditable.
 - [ ] **Phase 5: Continuity and Recovery Contract** - Preserve deterministic continuation through compaction, attach, fork, and repair flows.
@@ -52,6 +54,36 @@ Plans:
 - [x] 02-01-PLAN.md — Consolidate runtime status and authority reporting
 - [x] 02-02-PLAN.md — Rebind bootstrap, doctor, and harness flows to the shared runtime contract
 - [x] 02-03-PLAN.md — Expose workflow and event inspection through one additive seam
+
+### Phase 2.1: Feature Architecture Migration (INSERTED)
+**Goal**: Migrate to a hybrid feature structure to solve discoverability issues and isolate behavior.
+**Depends on**: Phase 2
+**Requirements**: ARCH-01 (Architecture Migration)
+**Success Criteria** (what must be TRUE):
+  1. The codebase is reorganized to use `src/features/*` for ownership.
+  2. `tools/`, `hooks/`, `commands/`, and `plugin/` act as thin OpenCode adapter surfaces.
+  3. Runtime-entry, session-entry, workflow, trajectory, and handoff behavior are consolidated into `features/`.
+**Plans**: 3 plans
+
+Plans:
+- [ ] 2.1-01: Establish `src/features/` directories and shared contracts boundary
+- [ ] 2.1-02: Migrate runtime-entry, session-entry, and handoff to features
+- [ ] 2.1-03: Convert existing tools, hooks, and commands into thin adapters
+
+### Phase 2.2: TUI End-to-End Server Connection (INSERTED)
+**Goal**: Extract the OpenTUI dashboard into a proper app boundary and establish a working end-to-end connection with the OpenCode server.
+**Depends on**: Phase 2.1
+**Requirements**: INT-01 (TUI Integration), FLOW-01 (Innate OpenCode Functionality)
+**Success Criteria** (what must be TRUE):
+  1. The dashboard is fully extracted into an isolated `apps/opentui` Bun app boundary.
+  2. The TUI is wired to the OpenCode server using shared runtime-status contracts.
+  3. Innate OpenCode work functions without communication problems between the client and server.
+**Plans**: 3 plans
+
+Plans:
+- [ ] 2.2-01: Extract the OpenTUI dashboard into `apps/opentui`
+- [ ] 2.2-02: Wire the TUI client to the OpenCode server via shared contracts
+- [ ] 2.2-03: Establish an end-to-end test proving innate OpenCode capability across the boundary
 
 ### Phase 3: Tool-Governed Mutation Foundation
 **Goal**: User can run governed workflows where critical state changes go through registered tools and official mutation gates.
@@ -145,12 +177,14 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
+Phases execute in numeric order: 1 → 2 → 2.1 → 2.2 → 3 → 4 → 5 → 6 → 7 → 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Runtime Authority Baseline | 2/2 | Complete   | 2026-03-17 |
 | 2. Unified Runtime Operations | 4/4 | Complete | 2026-03-18 |
+| 2.1. Feature Architecture Migration | 0/3 | Not started | - |
+| 2.2. TUI End-to-End Server Connection | 0/3 | Not started | - |
 | 3. Tool-Governed Mutation Foundation | 0/3 | Not started | - |
 | 4. Deterministic Routing and Receipts | 0/2 | Not started | - |
 | 5. Continuity and Recovery Contract | 0/3 | Not started | - |
