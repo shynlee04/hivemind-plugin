@@ -10,7 +10,7 @@ coverage/
 
 
 # Git worktrees
-s/
+.worktrees/
 
 # Development artifacts - INTERNAL ONLY
 
