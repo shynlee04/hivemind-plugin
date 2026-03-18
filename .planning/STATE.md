@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 02-02-PLAN.md
-last_updated: "2026-03-17T23:48:34.561Z"
-last_activity: 2026-03-17 - completed 02-02 shared runtime entry guidance alignment
+status: ready
+stopped_at: Completed 02-03-PLAN.md
+last_updated: "2026-03-18T00:01:51.028Z"
+last_activity: 2026-03-18 - completed 02-03 workflow and event inspection seam
 progress:
   total_phases: 8
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
-  completed_plans: 5
-  percent: 83
+  completed_plans: 6
+  percent: 100
 ---
 
 # Project State
@@ -21,30 +21,30 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-17)
 
 **Core value:** At runtime, HiveMind must reliably steer OpenCode agents through deterministic, tool-using workflows that are provably aligned with the live OpenCode client/server/plugin contract.
-**Current focus:** Phase 2 - Unified Runtime Operations (TUI infrastructure first)
+**Current focus:** Phase 3 - Tool-Governed Mutation Foundation
 
 ## Current Position
 
-Phase: 2 of 8 (Unified Runtime Operations)
-Plan: 3 of 4 in current phase
-Status: Phase 02 in progress, ready for 02-03
-Last activity: 2026-03-17 - completed 02-02 shared runtime entry guidance alignment
+Phase: 3 of 8 (Tool-Governed Mutation Foundation)
+Plan: 1 of 3 in current phase
+Status: Phase 02 complete, ready for 03-01
+Last activity: 2026-03-18 - completed 02-03 workflow and event inspection seam
 
-Progress: [████████░░] 83%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 9 min
-- Total execution time: 0.8 hours
+- Total plans completed: 6
+- Average duration: 8 min
+- Total execution time: 0.9 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Runtime Authority Baseline | 2 | 22 min | 11 min |
-| 2. Unified Runtime Operations | 3 | 23 min | 8 min |
+| 2. Unified Runtime Operations | 4 | 29 min | 7 min |
 | 3. Tool-Governed Mutation Foundation | 0 | 0 min | 0 min |
 | 4. Deterministic Routing and Receipts | 0 | 0 min | 0 min |
 | 5. Continuity and Recovery Contract | 0 | 0 min | 0 min |
@@ -55,11 +55,11 @@ Progress: [████████░░] 83%
 **Recent Trend:**
 - Last 5 plans: 5 plans
 - Trend: Stable
-| Phase 01-runtime-authority-baseline P01 | 15 min | 3 tasks | 8 files |
-| Phase 01 P02 | 7 min | 3 tasks | 10 files |
 | Phase 02 P00 | 9 min | 3 tasks | 9 files |
 | Phase 02 P01 | 8 min | 2 tasks | 6 files |
 | Phase 02 P02 | 6 min | 2 tasks | 7 files |
+| Phase 02 P03 | 6 min | 2 tasks | 8 files |
+| Phase 01 P02 | 7 min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -82,6 +82,8 @@ Recent decisions affecting current work:
 - [Phase 02]: buildRuntimeStatusSnapshot now owns runtime state assembly so hivemind_runtime_status only adds availableCommands metadata.
 - [Phase 02]: Shared runtime-entry guidance now lives in src/shared/contracts/runtime-status.ts.
 - [Phase 02]: hivemind_runtime_command decorates hm-init, hm-doctor, and hm-harness with the same next-step semantics used by CLI flows.
+- [Phase 02]: Reduce recent events into stable backend-owned records before exposing them to tools or the TUI. — This keeps the terminal UI and runtime status tool bound to one additive inspection seam instead of interpreting raw SDK event payloads independently.
+- [Phase 02]: Scope workflow inspection to active workflow identity, gate state, and current task links instead of exposing raw workflow graphs. — Phase 2 only needs operator-facing inspection readiness, so a reduced summary satisfies INSP-03 without creating a second workflow authority surface.
 
 ### Pending Todos
 
@@ -95,6 +97,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-17T23:47:36.505Z
-Stopped at: Completed 02-02-PLAN.md
+Last session: 2026-03-18T00:01:51.023Z
+Stopped at: Completed 02-03-PLAN.md
 Resume file: None

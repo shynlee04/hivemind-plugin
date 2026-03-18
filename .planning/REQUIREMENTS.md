@@ -36,7 +36,7 @@
 
 - [ ] **INSP-01**: User can read and search runtime-relevant documents and artifacts through stable read-only inspection surfaces
 - [ ] **INSP-02**: User can distinguish local diagnostics from live OpenCode proof in status, reports, and verification output
-- [ ] **INSP-03**: User can inspect current runtime authority, active workflow state, and last significant runtime events from one additive inspection seam
+- [x] **INSP-03**: User can inspect current runtime authority, active workflow state, and last significant runtime events from one additive inspection seam
 
 ### Operator UI
 
@@ -103,7 +103,7 @@
 | FLOW-04 | Phase 5 - Continuity and Recovery Contract | Pending |
 | INSP-01 | Phase 6 - Inspection and Evidence Separation | Pending |
 | INSP-02 | Phase 6 - Inspection and Evidence Separation | Pending |
-| INSP-03 | Phase 2 - Unified Runtime Operations | Pending |
+| INSP-03 | Phase 2 - Unified Runtime Operations | Complete |
 | TUI-01 | Phase 8 - TUI Stabilization on Backend Truth | Pending |
 | TUI-02 | Phase 8 - TUI Stabilization on Backend Truth | Pending |
 | TUI-03 | Phase 8 - TUI Stabilization on Backend Truth | Pending |

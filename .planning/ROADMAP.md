@@ -13,7 +13,7 @@ This brownfield roadmap corrects HiveMind into a single-runtime, evidence-first 
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Runtime Authority Baseline** - Align managed and attached runtime ownership to the official SDK lifecycle. (completed 2026-03-17)
-- [ ] **Phase 2: Unified Runtime Operations** - Bring status, bootstrap, doctor, harness, and workflow inspection behind one additive authority seam.
+- [x] **Phase 2: Unified Runtime Operations** - Bring status, bootstrap, doctor, harness, and workflow inspection behind one additive authority seam. (completed 2026-03-18)
 - [ ] **Phase 3: Tool-Governed Mutation Foundation** - Route governed workflow writes through registered tools and official permission surfaces.
 - [ ] **Phase 4: Deterministic Routing and Receipts** - Make routed execution budgets, policy defaults, and approval outcomes auditable.
 - [ ] **Phase 5: Continuity and Recovery Contract** - Preserve deterministic continuation through compaction, attach, fork, and repair flows.
@@ -48,10 +48,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-00-PLAN.md — Establish Bun/OpenTUI app boundary and shared runtime-status contracts
-- [ ] 02-01-PLAN.md — Consolidate runtime status and authority reporting
-- [ ] 02-02-PLAN.md — Rebind bootstrap, doctor, and harness flows to the shared runtime contract
-- [ ] 02-03-PLAN.md — Expose workflow and event inspection through one additive seam
+- [x] 02-00-PLAN.md — Establish Bun/OpenTUI app boundary and shared runtime-status contracts
+- [x] 02-01-PLAN.md — Consolidate runtime status and authority reporting
+- [x] 02-02-PLAN.md — Rebind bootstrap, doctor, and harness flows to the shared runtime contract
+- [x] 02-03-PLAN.md — Expose workflow and event inspection through one additive seam
 
 ### Phase 3: Tool-Governed Mutation Foundation
 **Goal**: User can run governed workflows where critical state changes go through registered tools and official mutation gates.
@@ -150,7 +150,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Runtime Authority Baseline | 2/2 | Complete   | 2026-03-17 |
-| 2. Unified Runtime Operations | 3/4 | In Progress | - |
+| 2. Unified Runtime Operations | 4/4 | Complete | 2026-03-18 |
 | 3. Tool-Governed Mutation Foundation | 0/3 | Not started | - |
 | 4. Deterministic Routing and Receipts | 0/2 | Not started | - |
 | 5. Continuity and Recovery Contract | 0/3 | Not started | - |
