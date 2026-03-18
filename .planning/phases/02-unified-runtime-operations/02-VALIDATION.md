@@ -191,11 +191,44 @@ All test files have been verified to exist and contain substantial test code:
 
 ---
 
+## Manual End-User Audit 2026-03-18
+
+### Real CLI Exercise
+
+Commands were exercised from a temporary consumer workspace created via `npm install /Users/apple/hivemind-plugin/hivemind-context-governance-2.9.5.tgz`.
+
+| Flow | Command | Result | Evidence |
+|------|---------|--------|----------|
+| Fresh workspace readiness | `node node_modules/hivemind-context-governance/dist/cli.js harness --json` | ✅ PASS | Returned `recommendedCommands: ["hm-init", "hm-doctor", "opencode serve"]` and created dated runtime-entry artifacts under `.hivemind/project/planning/runtime-entry/`. |
+| Bootstrap via shipped package | `node node_modules/hivemind-context-governance/dist/cli.js init --preset guided-onboarding --json` | ❌ ESCALATED | Bootstrap created `.hivemind/` and `.opencode/` state, but the shipped CLI JSON omitted the top-level `closeoutStatus`, `nextCommand`, and `recommendedCommands` fields required by the Phase 2 runtime-entry contract. |
+| Doctor via shipped package | `node node_modules/hivemind-context-governance/dist/cli.js doctor --session-id <init-session> --json` | ❌ ESCALATED | The command executed, but the shipped CLI JSON again omitted the top-level `closeoutStatus`, `nextCommand`, and `recommendedCommands` fields claimed by Phase 2. |
+
+### Root Cause Isolation
+
+- `src/cli/init.ts` and `src/cli/doctor.ts` include `buildRuntimeEntryDecision(...)` and return the shared top-level fields.
+- `dist/cli/init.js` and `dist/cli/doctor.js` do not include that shared-contract logic, proving the packed artifact was generated from stale `dist/` output.
+- Source-path execution confirmed the intended behavior: `npx tsx src/cli.ts init --project-root <temp> --preset guided-onboarding --json` returned `closeoutStatus`, `nextCommand`, and `recommendedCommands` exactly as the Phase 2 contract describes.
+
+### Live Runtime and TUI Exercise
+
+| Flow | Command | Result | Evidence |
+|------|---------|--------|----------|
+| Harness against live OpenCode runtime | `npx tsx src/cli.ts harness --project-root <temp> --server-url <live-url> --json` | ✅ PASS | Returned `healthy: true`, `statusCode: 200`, `version: "1.2.27"`, and `recommendedCommands: ["opencode attach", "hm-harness", "/hm-plan"]`. |
+| OpenTUI runtime-status screen | `bun run /Users/apple/hivemind-plugin/apps/opentui/src/main.tsx` | ✅ PASS | Terminal render showed `runtimeAuthority: managed-sdk`, `serverBaseUrl: http://127.0.0.1:4096`, `workflowSummary: wf_1feddd6a937d (ready)`, and reduced `recentEvents` lines from backend-owned data. |
+
+### End-User Verdict
+
+- Automated verification is still green for the Phase 2 source surfaces.
+- Real end-user bootstrap and doctor flows are **not fully validated** for the shipped package because the packed CLI artifact does not expose the top-level runtime-entry contract fields claimed by the report.
+- Manual terminal validation for the OpenTUI consumer is green on the source path.
+
+---
+
 ## Conclusion
 
-Phase 02 is **Nyquist-compliant**. All requirements have automated verification through focused integration tests. All test files exist and contain substantial verification code. The two W0 status marks in the original VALIDATION.md were data entry errors that have been resolved through this audit.
+Phase 02 is **Nyquist-compliant for automated source-level verification**, but the 2026-03-18 manual end-user audit found a shipped-artifact regression in the packaged CLI output for `hm-init` and `hm-doctor`. All automated test files still exist and contain substantial verification code, and the two W0 status marks in the original VALIDATION.md were data entry errors that were resolved through the earlier audit.
 
-**Status:** Ready for Phase 3 planning.
+**Status:** Source validation ready for Phase 3 planning; packaged CLI contract needs follow-up before claiming end-user parity.
 
 ---
 

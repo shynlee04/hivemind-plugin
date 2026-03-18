@@ -134,3 +134,14 @@
 - The research synthesis recommends a contract-first modular monolith with a hard dual-plane split: `@opencode-ai/sdk` for control-plane orchestration, `@opencode-ai/plugin` for execution-plane hooks/tools, `Zod 4` as the single schema layer, and `Ink` as the conservative shipped TUI path while OpenTUI remains experimental.
 - The resulting roadmap maps all 24 v1 requirements across 8 phases in dependency order: runtime authority -> unified operations -> tool-governed mutation -> deterministic receipts -> continuity/recovery -> inspection/evidence separation -> live proof -> TUI stabilization.
 - The most important strategic deferment is broad feature restoration; live official-boundary verification and backend truth now explicitly gate replay, policy packs, richer OpenTUI, and broader intelligence work.
+
+## 2026-03-18
+
+### Autonomous workflow bootstrap
+- `gsd-tools.cjs init milestone-op` reports milestone `v1.0`, `phase_count: 10`, `completed_phases: 2`, `roadmap_exists: true`, and `state_exists: true`.
+- `gsd-tools.cjs roadmap analyze` identifies the first incomplete phase as `2.1` and shows incomplete phases `2.1`, `2.2`, `3`, `4`, `5`, `6`, `7`, and `8`.
+- `.planning/STATE.md` is internally inconsistent: frontmatter says `status: completed` and `percent: 100`, while body says current focus is Phase 3 and roadmap data shows only two phases completed.
+
+### Execution implications
+- The workflow should trust `roadmap analyze` plus per-phase init state over stale `STATE.md` aggregate fields when deciding what to execute next.
+- The inserted decimal phases are real remaining work and must be executed before Phase 3 because the roadmap orders phases numerically.

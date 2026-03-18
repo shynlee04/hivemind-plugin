@@ -31,8 +31,6 @@ This file governs development of the framework. Loaded once per OpenCode session
 
 **Following CLEAN CODE practices**
 
- npx skills add `https://github.com/sickn33/antigravity-awesome-skills --skill clean-code`
-
 - Modular Code development
 
 - JSDoc standards
@@ -40,20 +38,7 @@ This file governs development of the framework. Loaded once per OpenCode session
 - Ultra reusability and maintainability
 
 - Apply patterns designs 
-
-**USE SKILL, AT EVERY SINGLE TASK, DO NOT ASSUME USE `find-skill` to look for the best stack of SKILLS**
-
-- not the generic SKILL
-- get user intent
 - analyze the tasks very carefully
-- check if any of these related 
-
-*verbs and adjectives*
-
-- for planning, debugging, audit, review, research, advice, architect, those that are related development process; as for these look for both the task-related and the-stack, the-techniques
-
-*for nouns*
-- focusing more on those of stacks, sdk, patterns, schema, frontend, backend, fullstack, name of the stak
 
 **TDD IS CRITICAL AND ENFORCE**
 
@@ -62,42 +47,11 @@ This file governs development of the framework. Loaded once per OpenCode session
 - Tests must be built on the understanding of the whole project - running through **SCHEMA** validation; cross-dependencies **CONTRACTS** to ENSURE API interfaces and types are correctly implemented AND **NO TOLORENCE** FOR ANY OF THIS IS SKPPED
 
 - NO nonsensical TESTS allowed, meaning, test units must gradually built into a test suite.
+**NEVER ALLOW** to run any new development if **TESTS ARE NOT PASSED** - **MUST ALWAYS FOLLOW** npx skills add https://github.com/obra/superpowers --skill test-driven-development 
 
-- **DO NOT** edit TEST files to pass the tests in GREEN-PHASE (tests must legitimately passed), **NEVER ALLOW** to run any new development if **TESTS ARE NOT PASSED** - **MUST ALWAYS FOLLOW** npx skills add https://github.com/obra/superpowers --skill test-driven-development 
+- IN THIS PROJECT ALL TESTS MUST SURFACE API OF THE SKD USED in package.json - NO TEST WITH SDK CAN USE STUB
 
-- IN THIS PROJECT ALL TESTS MUST SURFACE API OF THE SKD USED in package.json
-
-**Every Taskks must go through both VERIFICATION and VALIDATION, and incremental GATEKEEPING and valid INTEGRATION Tests, IF NOT AGENTS CAN'T CLAIM COMPLETION**
-
-
-
-Live install/runtime entry is limited to `dist/cli.js` binaries, the `hivemind-context-governance/plugin` export, and the consumer-side `.opencode/plugins/hivemind-context-governance.ts` stub written by runtime sync.
-A root `commands/*.md` file is a live runtime command surface only when registered in `src/commands/slash-command/command-bundles.ts` or mapped from a control-plane primitive.
-Unregistered command markdown is documentation or legacy material and must not imply shipped executable behavior.
-SOT and governance paths must stay stable and non-date-stamped. Compatibility entry files should prefer symlinks back to the stable authority surface.
-
-## Agent Contract Semantics
-
-Every root agent profile in `agents/**` should expose the same contract fields so role routing stays machine-stable.
-
-| Field | Meaning |
-|-------|---------|
-| `may_execute` | Whether the agent may directly perform its scoped work |
-| `may_delegate` | Whether the agent may route work to other agents |
-| `terminal` | Whether the agent is a leaf specialist and should not delegate |
-| `accept_gate` | The narrow task types the agent may accept |
-| `workflow_order` | The ordered steps the agent follows once work is accepted |
-| `verify_gate` | The evidence standard required before returning success |
-| `failure_return` | The required blocked or partial return mode when evidence is missing or scope breaks |
-| `scope_paths` | The hard boundary for files or surfaces the agent may work against |
-
-Contract rules:
-- Root `agents/**` definitions are authoritative.
-- `.opencode/agents/**` should stay synced to root definitions only after first-run runtime projection; repo-time checks must not require it to exist.
-- `src/shared/opencode-agent-registry.ts` owns the schema-validated projection from canonical root agent frontmatter into OpenCode-safe runtime agent markdown.
-- `hiveminder` stays orchestration-only: delegation, acceptance, and verification authority; no direct implementation posture.
-- `hivefiver` is the framework-writer for framework assets and may optionally delegate only for bounded research, planning, or verification support.
-- `hivexplorer`, `hiverd`, and `hiveq` stay terminal and non-mutating.
+**Every Tasks must go through both VERIFICATION and VALIDATION, and incremental GATEKEEPING and valid INTEGRATION Tests, IF NOT AGENTS CAN'T CLAIM COMPLETION**
 
 ## Governing Principles
 
@@ -228,19 +182,9 @@ npx tsx --test tests/<file>.test.ts  # Single test
 | `hivemind_trajectory` | `src/tools/trajectory/` | Correct pattern |
 | `hivemind_handoff` | `src/tools/handoff/` | Correct pattern |
 
-## Agent Roster
+## GSD Agent Framework
 
-| Agent | Mode | Execution | Domain |
-|-------|------|-----------|--------|
-| hiveminder | primary | Delegate + verify only | Orchestration and bounded routing |
-| hivefiver | all | Execute + optional support delegation | Framework assets: `agents/`, `commands/`, `workflows/`, `skills/` |
-| hivemaker | subagent | Execute | Product implementation in `src/`, `tests/`, `docs/` |
-| hivehealer | subagent | Execute | Product remediation and hardening |
-| hivexplorer | subagent | Execute, terminal, non-mutating | Repository investigation and evidence collection |
-| hiverd | subagent | Execute, terminal, non-mutating | External research and ecosystem evidence |
-| hiveq | subagent | Execute, terminal, non-mutating | Verification and PASS/FAIL reporting |
-| hiveplanner | subagent | Execute, terminal | Plans, sequencing, and handoff artifacts |
-| hitea | subagent | Execute, terminal | Testing infrastructure and test authoring |
+This project uses the GSD (Get Sh*t Done) agent framework for workflow execution. See `.opencode/agents/gsd-*.md` for available agents.
 
 ## Layer Architecture
 

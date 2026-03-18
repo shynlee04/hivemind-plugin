@@ -69,6 +69,7 @@ describe('schema kernel contracts', () => {
         {
           instanceId: 'sup_local',
           status: 'healthy',
+          runtimeAuthority: 'managed-sdk',
           startedAt: '2026-03-17T00:00:00.000Z',
           lastHeartbeatAt: '2026-03-17T00:00:05.000Z',
           transport: 'same-local-env',
@@ -195,6 +196,7 @@ describe('schema kernel contracts', () => {
         {
           instanceId: 'sup_local',
           status: 'healthy',
+          runtimeAuthority: 'managed-sdk',
           startedAt: '2026-03-17T00:00:00.000Z',
           lastHeartbeatAt: '2026-03-17T00:00:05.000Z',
           transport: 'remote',

@@ -5,14 +5,34 @@
   "trajectories": [],
   "checkpoints": [
     {
-      "id": "chk_trj_ses_harness_1773760253499_1",
-      "trajectoryId": "trj_ses_harness_1773760253499",
-      "workflowId": "ses_harness_1773760253499",
+      "id": "chk_trj_ses_30165cac3ffeGqldBqjEqeUTs0_1",
+      "trajectoryId": "trj_ses_30165cac3ffeGqldBqjEqeUTs0",
+      "workflowId": "ses_30165cac3ffeGqldBqjEqeUTs0",
       "taskIds": [],
       "subtaskIds": [],
       "source": "command:hm-harness",
       "resumeTarget": "command:hm-doctor",
-      "createdAt": "2026-03-17T15:10:53.542Z"
+      "createdAt": "2026-03-18T01:41:19.190Z"
+    },
+    {
+      "id": "chk_trj_ses_2ff723f3affeYecs1HDNptxEm5_2",
+      "trajectoryId": "trj_ses_2ff723f3affeYecs1HDNptxEm5",
+      "workflowId": "ses_2ff723f3affeYecs1HDNptxEm5",
+      "taskIds": [],
+      "subtaskIds": [],
+      "source": "command:hm-harness",
+      "resumeTarget": "command:hm-plan",
+      "createdAt": "2026-03-18T10:46:36.040Z"
+    },
+    {
+      "id": "chk_trj_ses_2ff4137d7ffeYCfVl5WU2Wb9Au_3",
+      "trajectoryId": "trj_ses_2ff4137d7ffeYCfVl5WU2Wb9Au",
+      "workflowId": "ses_2ff4137d7ffeYCfVl5WU2Wb9Au",
+      "taskIds": [],
+      "subtaskIds": [],
+      "source": "command:hm-harness",
+      "resumeTarget": "command:hm-plan",
+      "createdAt": "2026-03-18T11:41:10.997Z"
     }
   ],
   "recoveryLog": []

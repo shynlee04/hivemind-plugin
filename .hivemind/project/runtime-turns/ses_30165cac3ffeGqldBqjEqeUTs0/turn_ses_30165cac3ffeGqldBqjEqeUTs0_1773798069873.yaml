@@ -1,0 +1,43 @@
+version: v1
+turnId: turn_ses_30165cac3ffeGqldBqjEqeUTs0_1773798069873
+invocationId: inv_ses_30165cac3ffeGqldBqjEqeUTs0_1773798069873
+lifecycle:
+  layer: turn-output
+  phase: completed
+  entryState: qa-pending
+  qaState: pending
+  releaseState: blocked
+  invocationPhase: request
+sessionId: ses_30165cac3ffeGqldBqjEqeUTs0
+sessionScope: main
+agentId: gsd-phase-researcher
+agentMode: primary
+lineage: hivefiver
+taskIds: []
+subtaskIds: []
+status: qa-pending
+qaState: pending
+pivot: hm-harness
+rationale:
+  - command:hm-init
+  - execution:handler
+workflowEffects:
+  - workflow-authority-bootstrapped
+  - trajectory-bootstrapped
+  - recovery-checkpoint-created
+  - planning-projection-created
+  - runtime-surface-synced
+  - entry-kernel-qa-pending
+dependencyEffects: []
+sotEffects: []
+artifactRefs:
+  - /Users/apple/hivemind-plugin/.hivemind/project/planning/trajectory-projections/trj_ses_30165cac3ffeGqldBqjEqeUTs0.json
+  - /Users/apple/hivemind-plugin/.opencode/plugins/hivemind-context-governance.ts
+toolEvidence:
+  - readiness-gate
+  - checkpoint
+  - planning-projection
+followups:
+  - hm-harness
+resumeHints:
+  - workflow:ses_30165cac3ffeGqldBqjEqeUTs0

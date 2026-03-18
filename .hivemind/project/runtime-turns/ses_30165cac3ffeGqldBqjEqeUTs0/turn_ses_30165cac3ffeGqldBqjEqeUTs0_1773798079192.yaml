@@ -1,21 +1,23 @@
 version: v1
-turnId: turn_ses_harness_1773760253499_1773760253544
-invocationId: inv_ses_harness_1773760253499_1773760253544
+turnId: turn_ses_30165cac3ffeGqldBqjEqeUTs0_1773798079192
+invocationId: inv_ses_30165cac3ffeGqldBqjEqeUTs0_1773798079192
 lifecycle:
   layer: turn-output
   phase: completed
-  entryState: uninitialized
-  qaState: blocked
+  entryState: qa-pending
+  qaState: pending
   releaseState: blocked
   invocationPhase: request
-sessionId: ses_harness_1773760253499
+sessionId: ses_30165cac3ffeGqldBqjEqeUTs0
 sessionScope: main
+agentId: gsd-phase-researcher
+agentMode: primary
 lineage: hivefiver
 taskIds: []
 subtaskIds: []
 status: blocked
-qaState: blocked
-pivot: hm-init
+qaState: pending
+pivot: hm-doctor
 rationale:
   - command:hm-harness
   - execution:handler
@@ -26,12 +28,12 @@ workflowEffects:
 dependencyEffects: []
 sotEffects: []
 artifactRefs:
-  - /Users/apple/hivemind-plugin/s/ecosystem-revamp/.hivemind/project/planning/trajectory-projections/trj_ses_harness_1773760253499.json
+  - /Users/apple/hivemind-plugin/.hivemind/project/planning/trajectory-projections/trj_ses_30165cac3ffeGqldBqjEqeUTs0.json
 toolEvidence:
   - readiness-gate
   - checkpoint
   - planning-projection
 followups:
-  - hm-init
+  - hm-doctor
 resumeHints:
-  - workflow:ses_harness_1773760253499
+  - workflow:ses_30165cac3ffeGqldBqjEqeUTs0

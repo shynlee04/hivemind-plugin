@@ -1,0 +1,22 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "minimax-coding-plan/MiniMax-M2.7",
+  "plugin": [],
+  "provider": {
+    "minimax": {
+      "options": {
+        "apiKey": "{env:MINIMAX_API_KEY}"
+      }
+    },
+    "openai": {
+      "models": {
+        "gpt-5.4": {
+          "limit": {
+            "context": 200000,
+            "output": 128000
+          }
+        }
+      }
+    }
+  }
+}

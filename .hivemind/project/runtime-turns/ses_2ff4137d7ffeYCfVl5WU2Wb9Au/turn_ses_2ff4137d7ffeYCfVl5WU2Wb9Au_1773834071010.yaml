@@ -1,0 +1,38 @@
+version: v1
+turnId: turn_ses_2ff4137d7ffeYCfVl5WU2Wb9Au_1773834071010
+invocationId: inv_ses_2ff4137d7ffeYCfVl5WU2Wb9Au_1773834071010
+lifecycle:
+  layer: turn-output
+  phase: completed
+  entryState: ready
+  qaState: passed
+  releaseState: released
+  invocationPhase: request
+sessionId: ses_2ff4137d7ffeYCfVl5WU2Wb9Au
+sessionScope: main
+agentId: general
+agentMode: primary
+lineage: hivefiver
+taskIds: []
+subtaskIds: []
+status: ready
+qaState: passed
+rationale:
+  - command:hm-harness
+  - execution:handler
+workflowEffects:
+  - recovery-spine-ready
+  - recovery-checkpoint-created
+  - planning-projection-created
+  - entry-kernel-ready
+dependencyEffects: []
+sotEffects: []
+artifactRefs:
+  - /Users/apple/hivemind-plugin/.hivemind/project/planning/trajectory-projections/trj_ses_2ff4137d7ffeYCfVl5WU2Wb9Au.json
+toolEvidence:
+  - readiness-gate
+  - checkpoint
+  - planning-projection
+followups: []
+resumeHints:
+  - workflow:ses_2ff4137d7ffeYCfVl5WU2Wb9Au

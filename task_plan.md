@@ -35,3 +35,24 @@ Refactor the current `ecosystem-revamp` codebase into a stable, source-aligned H
 - Latest completed command-contract slice: normalized `commands/*.md` frontmatter so every shipped command file now has parseable `description`, `agent`, and `subtask` fields that match `commands/AGENTS.md`.
 - Current decision point: choose the next bounded stabilization slice after the verified command-frontmatter normalization; removed-public-CLI grep is clean across `commands/`, and command metadata is now structurally compliant.
 - Brownfield initialization for `.planning/` should treat the repo as an existing OpenCode plugin/CLI product and plan the next milestone around deterministic runtime migration, live OpenCode verification, and OpenTUI completion.
+
+## 2026-03-18 Autonomous Milestone Run
+
+### Goal
+- Execute the remaining milestone workflow from `.planning/ROADMAP.md` in numeric order using the autonomous discuss -> plan -> execute loop, then finish audit -> complete -> cleanup.
+
+### Current Phase
+- [complete] Workflow bootstrap and phase discovery
+- [in_progress] Phase 2.1 autonomous execution
+- [pending] Remaining phase loop (2.2 -> 8)
+- [pending] Milestone lifecycle (audit -> complete -> cleanup)
+
+### Key Questions
+1. Which incomplete phase is first by numeric order after applying roadmap state? -> `2.1`
+2. Are there blocking state issues that prevent entering the phase loop? -> Not yet; `STATE.md` has concerns but no explicit stop condition.
+
+### Decisions Made
+| Decision | Rationale |
+|----------|-----------|
+| Use `gsd-tools.cjs` milestone and roadmap commands as the authority for phase discovery | The autonomous workflow explicitly resolves phase state through init/analyze commands |
+| Treat `.planning/STATE.md` concerns as non-blocking unless a phase run or verification result says otherwise | The workflow only stops on actual blockers or user decisions |

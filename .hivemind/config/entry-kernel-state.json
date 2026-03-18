@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "state": "ready",
+  "qaState": "passed",
+  "releaseState": "released",
+  "lifecycle": {
+    "layer": "entry-kernel",
+    "phase": "session-entry",
+    "state": "ready"
+  },
+  "reason": "harness-qa-passed",
+  "profileValidated": true,
+  "lastUpdatedAt": "2026-03-18T11:41:11.002Z",
+  "lastRecoveryAction": "hm-doctor"
+}

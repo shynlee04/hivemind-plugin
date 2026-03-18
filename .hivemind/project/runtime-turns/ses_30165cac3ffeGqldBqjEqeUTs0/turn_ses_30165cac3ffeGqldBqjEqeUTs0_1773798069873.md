@@ -1,17 +1,17 @@
 # HiveMind Turn Output
 
-- session: `ses_harness_1773760253499`
+- session: `ses_30165cac3ffeGqldBqjEqeUTs0`
 - scope: `main`
 - trajectory: `none`
 - workflow: `none`
-- qa_state: `blocked`
-- status: `blocked`
+- qa_state: `pending`
+- status: `qa-pending`
 
 ## Rationale
 
-- command:hm-harness
+- command:hm-init
 - execution:handler
 
 ## Followups
 
-- hm-init
+- hm-harness

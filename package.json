@@ -117,5 +117,9 @@
     "@opentui/core": {
       "web-tree-sitter": "$web-tree-sitter"
     }
+  },
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
   }
 }

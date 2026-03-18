@@ -105,7 +105,7 @@ function projectRuntimeFrontmatter(frontmatter: CanonicalAgentFrontmatter): Runt
 export function createOpencodeAgentRegistry(rootDir: string = PACKAGE_ROOT): OpencodeAgentRegistryEntry[] {
   const agentsDir = join(rootDir, 'agents')
   const entries = readdirSync(agentsDir, { withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.md') && !entry.name.endsWith('.deprecated.md'))
     .sort((left, right) => left.name.localeCompare(right.name))
 
   return entries.map((entry) => {

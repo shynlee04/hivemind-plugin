@@ -1,0 +1,31 @@
+version: v1
+turnId: turn_ses_2ffb44dceffe7GU6umIc1Tx1E4_1773826500957
+invocationId: inv_ses_2ffb44dceffe7GU6umIc1Tx1E4_1773826500957
+lifecycle:
+  layer: turn-output
+  phase: completed
+  entryState: qa-pending
+  qaState: pending
+  releaseState: blocked
+  invocationPhase: request
+sessionId: ses_2ffb44dceffe7GU6umIc1Tx1E4
+sessionScope: main
+agentId: gsd-roadmapper
+agentMode: primary
+lineage: hivefiver
+taskIds: []
+subtaskIds: []
+status: open
+qaState: pending
+rationale:
+  - command:hm-research
+  - execution:preview
+workflowEffects: []
+dependencyEffects: []
+sotEffects: []
+artifactRefs: []
+toolEvidence:
+  - handoff-record
+  - route-decision
+followups: []
+resumeHints: []
