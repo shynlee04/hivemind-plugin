@@ -35,11 +35,28 @@ P1 routing skill for HiveMind-specific skill authoring, auditing, refactoring, a
 ## Routing Logic
 
 ```
-IF task == "create skill"load references/01-skill-anatomy.md + references/03-three-patterns.md
+IF task == "create skill" → load references/01-skill-anatomy.md + references/03-three-patterns.md
 IF task == "audit skill" → load references/05-skill-quality-matrix.md
 IF task == "refactor skill" → load references/03-three-patterns.md + references/04-tdd-workflow.md
 IF task == "package skill set" → load references/06-agent-activation.md
 ```
+
+## NO-LOAD Rules (Critical)
+
+A P1 router must often decide NOT to activate. This is a success case, not a miss.
+
+**DO NOT activate when:**
+- Context depth exceeds 70% — skill operations will exhaust remaining context
+- Session state is "degraded" or "interrupted" — defer to context-rot-recovery first
+- Task is trivial (e.g., "fix typo in skill") — no specialist depth needed
+- Another hivemind-skill-writer instance is already running — prevent duplicate activation
+- Stack budget is exhausted (3 skills already loaded) — wait for slot
+
+**FAIL signals — stop immediately when:**
+- Entry state is "unknown" — cannot safely route without context-intelligence
+- Trust score below threshold — skill work may cause harm
+- Context rot severity ≥ 7 — degradation will corrupt skill output
+- Cross-framework conflict detected — .claude/.codex collision without clear authority
 
 ## Core Philosophy
 
