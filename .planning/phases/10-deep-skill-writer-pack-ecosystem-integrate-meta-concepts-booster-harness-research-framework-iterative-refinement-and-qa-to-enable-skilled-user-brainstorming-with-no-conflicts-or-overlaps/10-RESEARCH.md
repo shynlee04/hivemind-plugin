@@ -603,6 +603,127 @@ const RELEASE_CRITERIA = {
 
 ---
 
+## Appended Bundle — GSD Script, Checklist, Integrity, Metrics, and Harness Notes
+
+This appended section captures the requested bundle without changing the existing plan documents.
+
+### 1. Easy-to-learn script bundle
+
+#### GSD learning scripts
+
+```bash
+# Load planning/state context in one place
+node get-shit-done/bin/gsd-tools.cjs state load
+
+# Resolve a phase directory deterministically
+node get-shit-done/bin/gsd-tools.cjs find-phase 10
+
+# Gather workflow-specific initialization context
+node get-shit-done/bin/gsd-tools.cjs init execute-phase 10
+
+# Verify references in a planning artifact
+node get-shit-done/bin/gsd-tools.cjs verify references .planning/phases/.../10-PLAN.md
+```
+
+#### HiveMind learning scripts
+
+```bash
+# Trace HiveMind, OpenCode, and runtime paths
+node bin/hivemind-tools.cjs trace-paths --json
+
+# Validate the HiveMind ecosystem chain
+node bin/hivemind-tools.cjs ecosystem-check --json
+
+# Inspect current sessions without mutation
+node bin/hivemind-tools.cjs inspect sessions --json
+```
+
+#### Safe discovery scripts
+
+```bash
+find . \
+  -not -path '*/node_modules/*' \
+  -not -path '*/dist/*' \
+  -not -path '*/.git/*' \
+  -type f
+```
+
+```bash
+git log --oneline --decorate -20
+```
+
+```bash
+find . -type f | grep -E 'AGENTS\.md|README\.md|config\.json|opencode\.jsonc?'
+```
+
+### 2. Integrity checklist bundle
+
+#### Planning integrity
+
+- [ ] `PROJECT.md`, `ROADMAP.md`, and `STATE.md` roles stay distinct
+- [ ] phase references resolve to real files
+- [ ] `.planning/` gitignore policy is documented if relevant
+- [ ] branching assumptions are explicit when phase/milestone strategy is discussed
+
+#### Skill-pack integrity
+
+- [ ] pack boundaries are explicit
+- [ ] no-load rules exist for entry skills
+- [ ] reference depth remains 1 level
+- [ ] deterministic checks are separated from human-facing guidance
+- [ ] overlap with existing skills/packs is checked before adding new ones
+
+#### Runtime and authority integrity
+
+- [ ] `.opencode/**` is treated as projection or mirror input, not universal authority
+- [ ] `.hivemind/**` is treated as runtime output, not authoring truth
+- [ ] `bin/` and `src/hooks/` are described as mechanism surfaces, not just docs
+- [ ] config-driven variation is documented rather than hidden
+
+### 3. Metrics bundle
+
+| Metric | Meaning | How to inspect |
+|-------|---------|----------------|
+| command determinism | repeated shell logic has been centralized | inspect `gsd-tools.cjs` and `hivemind-tools.cjs` usage |
+| reference integrity | references and links resolve | run `verify references` and manual path checks |
+| planning integrity | planning docs and config agree | `state load`, roadmap/phase commands |
+| runtime integrity | runtime/install state is structurally valid | `ecosystem-check`, `validate` |
+| stack discipline | pack and skill loads stay bounded | manual audit against pack rules |
+| git hygiene | commits capture outcomes rather than noisy process churn | compare work to git integration guidance |
+| conflict hygiene | no duplicate ownership across packs/skills | audit map before adding new skill surfaces |
+
+### 4. Meta-framework concepts to preserve
+
+- **Booster** = light enhancement that improves decisions without taking over runtime authority
+- **Harness** = bounded mechanism that shapes routing/checks without becoming a second workflow engine
+- **Prompt contract vs runtime engine** = markdown commands/workflows/skills explain behavior; tools/hooks/plugins enforce or inspect behavior
+- **Cross-framework humility** = visible framework surfaces are inputs, not automatic authority
+- **OpenCode-first authority** = HiveMind remains OpenCode-first even while learning from GSD patterns
+
+### 5. Deterministic harness notes
+
+Use these repo surfaces as the main references for future harness-oriented writing:
+
+- `get-shit-done/workflows/help.md` — lifecycle, `.planning/` layout, common workflows
+- `get-shit-done/bin/gsd-tools.cjs` — deterministic planning helper command surface
+- `get-shit-done/references/planning-config.md` — `.planning/config.json` behavior and branching implications
+- `get-shit-done/references/git-integration.md` — atomic commit timing and “commit outcomes, not process”
+- `bin/hivemind-tools.cjs` — path tracing, validation, inspection, and source audit
+- `src/hooks/soft-governance.ts` — SDK-first runtime governance signal pattern
+- `AGENTS.md` — authority, shipped surfaces, generated/runtime surfaces, and SDK-first rules
+
+### 6. Practical teaching rule for future docs
+
+When documenting a concept in this phase area, always answer:
+
+1. where the mechanism actually lives,
+2. who controls it,
+3. whether it is advisory, deterministic, runtime, or generated,
+4. what conflict it avoids,
+5. what script or checklist the user can run to inspect it safely.
+
+---
+
 ## Metadata
 
 **Confidence breakdown:**
