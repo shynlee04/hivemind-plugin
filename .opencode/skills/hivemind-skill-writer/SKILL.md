@@ -32,6 +32,12 @@ P1 routing skill for HiveMind-specific skill authoring, auditing, refactoring, a
 - Identifying skill redundancy
 - Planning skill migration
 
+**TDD-Specific Triggers:**
+- "validate this skill" / "test this skill"
+- "baseline this skill" / "write test for skill"
+- "improve this skill" / "iterate on skill"
+- "TDD for skills" / "test-driven skill development"
+
 ## Routing Logic
 
 ```
@@ -39,6 +45,10 @@ IF task == "create skill" → load references/01-skill-anatomy.md + references/0
 IF task == "audit skill" → load references/05-skill-quality-matrix.md
 IF task == "refactor skill" → load references/03-three-patterns.md + references/04-tdd-workflow.md
 IF task == "package skill set" → load references/06-agent-activation.md
+IF task == "write new skill" → load references/04-tdd-workflow.md + references/01-skill-anatomy.md
+IF task == "validate skill" → load references/04-tdd-workflow.md + references/05-skill-quality-matrix.md
+IF task == "test skill" → load references/04-tdd-workflow.md
+IF task == "iterate skill" → load references/04-tdd-workflow.md + references/03-three-patterns.md
 ```
 
 ## NO-LOAD Rules (Critical)
