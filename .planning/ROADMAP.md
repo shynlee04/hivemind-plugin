@@ -261,3 +261,26 @@ Plans:
 - [x] 11-09-PLAN.md — Delete non-start-work wrapper families by conditional consumer-proof outcome
 - [x] 11-10-PLAN.md — Delete start-work shims by conditional consumer-proof outcome
 - [x] 11-11-PLAN.md — Finalize preserved-boundary runtime and tool proofs after cleanup
+
+### Phase 12: Agent-Work Contract
+
+**Goal:** User can establish, track, and transfer work contracts between agent sessions with full fidelity. Implements the Agent-Work Contract feature per the planning artifact.
+
+**Requirements**: AWC-01 (Contract Schema), AWC-02 (Contract Store), AWC-03 (Event Hooks), AWC-04 (Intent Classification), AWC-05 (Tool Integration)
+
+**Depends on**: Phase 11
+
+**Success Criteria** (what must be TRUE):
+1. User can create a contract for a work session
+2. User can track task progress within the contract
+3. User can delegate work to sub-sessions via delegation records
+4. Delegated work returns to parent contract with evidence
+5. Contracts survive session compaction via preservation packets
+6. Contracts are archived and retrievable after session end
+
+**Plans:** 3 plans
+
+Plans:
+- [ ] agent-work-contract-01-PLAN.md — Establish Zod schemas and feature foundation
+- [ ] agent-work-contract-02-PLAN.md — Implement contract store, classifiers, and chain executor
+- [ ] agent-work-contract-03-PLAN.md — Wire hooks and tools with delegation pattern
