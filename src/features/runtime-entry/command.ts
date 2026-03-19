@@ -1,5 +1,4 @@
 import { recordTrajectoryEvent } from '../../core/trajectory/index.js'
-import { loadCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
 import { executeControlPlaneHandler } from '../../control-plane/index.js'
 import { detectEntryKernelState } from '../../shared/entry-kernel-state.js'
 import { assertSlashCommandAgentBindings } from '../../shared/opencode-agent-registry.js'
@@ -15,7 +14,8 @@ import type {
   SlashCommandBundle,
 } from '../../commands/slash-command/command-types.js'
 import { findSlashCommandBundle } from '../../commands/slash-command/command-discovery.js'
-import type { LoadedCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
+
+import { loadCommandAsset, type LoadedCommandAsset } from './instruction-loader.js'
 
 type RecoveryHandler = (
   bundle: SlashCommandBundle,

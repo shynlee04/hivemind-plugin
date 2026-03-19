@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 11-01-PLAN.md
-last_updated: "2026-03-19T14:48:27.055Z"
-last_activity: "2026-03-19 - Completed 11-01: Consumer proof matrix plus real-plugin detox red baseline"
+stopped_at: Completed 11-03-PLAN.md
+last_updated: "2026-03-19T14:59:49.896Z"
+last_activity: "2026-03-19 - Completed 11-03: start-work shim consumer relocation and delete-ready proof"
 progress:
   total_phases: 13
   completed_phases: 3
   total_plans: 34
-  completed_plans: 19
-  percent: 56
+  completed_plans: 20
+  percent: 59
 ---
 
 # Project State
@@ -26,18 +26,18 @@ See: `.planning/PROJECT.md` (updated 2026-03-17)
 ## Current Position
 
 Phase: 11 of 13 (Runtime Context Detox and Plugin Flattening)
-Plan: 01 of 11 in current phase (completed)
-Status: Phase 11-01 complete, Phase 11 remains in progress
-Last activity: 2026-03-19 - Completed 11-01: Consumer proof matrix plus real-plugin detox red baseline
+Plan: 02 of 11 in current phase (next incomplete)
+Status: Phase 11-03 complete, Phase 11 remains in progress
+Last activity: 2026-03-19 - Completed 11-03: start-work shim consumer relocation and delete-ready proof
 
-Progress: [██████░░░░] 56%
+Progress: [██████░░░░] 59%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 19
+- Total plans completed: 20
 - Average duration: 10 min
-- Total execution time: 2.1 hours
+- Total execution time: 2.2 hours
 
 **By Phase:**
 
@@ -55,7 +55,7 @@ Progress: [██████░░░░] 56%
 | 8. TUI Stabilization on Backend Truth | 0 | 0 min | 0 min |
 | 9. Non-breaking Skills Ecosystem | 0 | 0 min | 0 min |
 | 10. Deep-skill-writer-pack Ecosystem | 1 | 7 min | 7 min |
-| 11. Runtime Context Detox and Plugin Flattening | 1 | 12 min | 12 min |
+| 11. Runtime Context Detox and Plugin Flattening | 2 | 20 min | 10 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 plans
@@ -71,6 +71,7 @@ Progress: [██████░░░░] 56%
 | Phase 10-deep-skill-writer-pack-ecosystem P04 | 7 | 3 tasks | 5 files |
 | Phase 10-deep-skill-writer-pack-ecosystem P05 | 3 | 3 tasks | 3 files |
 | Phase 11 P01 | 12 min | 2 tasks | 7 files |
+| Phase 11 P03 | 8 min | 1 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -100,6 +101,8 @@ Recent decisions affecting current work:
 - [Phase 11]: Phase 11 deletes only after a written consumer-proof matrix names survivor ownership and zero-consumer evidence.
 - [Phase 11]: Plugin detox tests now assert the real HiveMindPlugin hook path instead of preserving createPluginRuntimePlan() or runtime surface registries.
 - [Phase 11]: Expected-red runtime failures stay visible, while unrelated doc-tool assertion noise was removed from the task 2 baseline.
+- [Phase 11]: Preserved runtime, control-plane, trajectory, and slash-command consumers now import feature-owned start-work types directly. — This removes the hook-layer type shim as hidden authority and leaves src/hooks/start-work/start-work-types.ts delete-ready by proof.
+- [Phase 11]: The consumer-proof matrix is updated in the same task commit as the relocation. — Later delete plans can rely on explicit repo evidence instead of reconstructing survivor status.
 
 ### Pending Todos
 
@@ -128,6 +131,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-19T14:48:27.049Z
-Stopped at: Completed 11-01-PLAN.md
+Last session: 2026-03-19T14:59:49.888Z
+Stopped at: Completed 11-03-PLAN.md
 Resume file: None

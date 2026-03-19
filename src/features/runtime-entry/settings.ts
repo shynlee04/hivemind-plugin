@@ -5,13 +5,13 @@ import type {
   CommandExecutionResult,
   SlashCommandBundle,
 } from '../../commands/slash-command/command-types.js'
-import type { LoadedCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
 import {
   loadRuntimeBindingsSnapshot,
   saveRuntimeAttachmentSettings,
 } from '../../shared/runtime-attachment.js'
 
 import { createQuestionGateResult, resolveEntityBindings } from './handler-shared.js'
+import type { LoadedCommandAsset } from './instruction-loader.js'
 
 export async function runSettingsHandler(
   bundle: SlashCommandBundle,

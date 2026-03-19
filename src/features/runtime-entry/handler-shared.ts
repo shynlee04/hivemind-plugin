@@ -4,8 +4,9 @@ import type {
   CommandExecutionResult,
   SlashCommandBundle,
 } from '../../commands/slash-command/command-types.js'
-import type { LoadedCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
 import type { loadRuntimeBindingsSnapshot } from '../../shared/runtime-attachment.js'
+
+import type { LoadedCommandAsset } from './instruction-loader.js'
 
 export function hasAttachedSdkAuthority(
   snapshot: Awaited<ReturnType<typeof loadRuntimeBindingsSnapshot>>,
