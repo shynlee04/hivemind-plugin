@@ -1,3 +1,1 @@
-export * from './messages-transform.js'
-export * from './system-transform.js'
-export * from './opencode-plugin.js'
+export { HiveMindPlugin } from './opencode-plugin.js'
