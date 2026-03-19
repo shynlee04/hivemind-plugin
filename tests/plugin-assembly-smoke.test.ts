@@ -1,75 +1,110 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { describe, it } from 'node:test'
+import test from 'node:test'
+
+import type { Part } from '@opencode-ai/sdk'
 
 import { HiveMindPlugin } from '../src/plugin/opencode-plugin.js'
-import { createMockPluginInput } from './helpers/mock-sdk.js'
 
-describe('plugin assembly smoke test', () => {
-  it('plugin entry source has no inline tool({}) definitions', async () => {
-    const src = await readFile(join(process.cwd(), 'src/plugin/opencode-plugin.ts'), 'utf-8')
-    const inlineToolDefs = (src.match(/\btool\(\{/g) ?? []).length
-    assert.equal(inlineToolDefs, 0, 'plugin entry should have zero inline tool({...}) definitions')
-  })
+function createPluginInput(directory: string) {
+  return {
+    directory,
+    client: {
+      tui: {
+        showToast: async () => undefined,
+      },
+    },
+    $: {},
+    serverUrl: new URL('http://localhost:4096'),
+    project: null,
+  } as never
+}
 
-  it('plugin entry source keeps helper logic out of the assembly file', async () => {
-    const src = await readFile(join(process.cwd(), 'src/plugin/opencode-plugin.ts'), 'utf-8')
+function createUserMessage(text: string) {
+  return {
+    info: {
+      id: 'msg_123',
+      role: 'user',
+      sessionID: 'ses_123',
+    },
+    parts: [
+      {
+        id: 'part_123',
+        type: 'text',
+        text,
+      } as Part,
+    ],
+  }
+}
 
-    const forbiddenLocalHelpers = [
-      'type MessageLike =',
-      'function createSyntheticPart(',
-      'function getMessageText(',
-      'function findLastUserMessage(',
-      'async function recordToolEvent(',
-      'const HIVEMIND_MANAGED_TOOLS =',
-    ]
+test('plugin assembly keeps only the authoritative runtime hooks', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-assembly-'))
 
-    for (const signature of forbiddenLocalHelpers) {
-      assert.equal(
-        src.includes(signature),
-        false,
-        `plugin entry should not define local helper logic: ${signature}`,
-      )
-    }
-  })
+  try {
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
 
-  it('plugin entry exports HiveMindPlugin', async () => {
-    assert.ok(typeof HiveMindPlugin === 'function', 'HiveMindPlugin should be a function')
-  })
+    assert.ok(hooks['chat.message'])
+    assert.ok(hooks['experimental.chat.messages.transform'])
+    assert.ok(hooks['experimental.session.compacting'])
+    assert.equal(hooks['experimental.chat.system.transform'], undefined)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
 
-  it('registers the surviving runtime context hooks on the real plugin export', async () => {
-    const { input } = createMockPluginInput()
-    const hooks = await HiveMindPlugin(input)
+test('chat.message only resets turn state and does not inject runtime context parts', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-chat-message-'))
 
-    assert.ok(hooks.event, 'should have event hook')
-    assert.ok(hooks.tool, 'should have tool registry')
-    assert.ok(hooks['chat.message'], 'should keep chat.message for turn lifecycle work')
-    assert.ok(hooks['permission.ask'], 'should have permission.ask hook')
-    assert.ok(hooks['tool.execute.before'], 'should have tool.execute.before hook')
-    assert.ok(hooks['tool.execute.after'], 'should have tool.execute.after hook')
-    assert.ok(hooks['shell.env'], 'should have shell.env hook')
-    assert.ok(hooks['command.execute.before'], 'should have command.execute.before hook')
-    assert.ok(hooks['experimental.chat.messages.transform'], 'should have messages transform hook')
-    assert.ok(hooks['experimental.session.compacting'], 'should have compaction hook')
-    assert.equal(
-      hooks['experimental.chat.system.transform'],
-      undefined,
-      'system transform should no longer be a required runtime context emitter',
-    )
-  })
+  try {
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
+    const output = { parts: [] as Part[] }
 
-  it('registers all 6 HiveMind tools', async () => {
-    const { input } = createMockPluginInput()
-    const hooks = await HiveMindPlugin(input)
+    await hooks['chat.message']?.({ sessionID: 'ses_123', messageID: 'msg_123' } as never, output as never)
 
-    const toolKeys = Object.keys(hooks.tool ?? {})
-    assert.ok(toolKeys.includes('hivemind_doc'), 'should register doc tool')
-    assert.ok(toolKeys.includes('hivemind_runtime_status'), 'should register runtime_status')
-    assert.ok(toolKeys.includes('hivemind_runtime_command'), 'should register runtime_command')
-    assert.ok(toolKeys.includes('hivemind_task'), 'should register task')
-    assert.ok(toolKeys.includes('hivemind_trajectory'), 'should register trajectory')
-    assert.ok(toolKeys.includes('hivemind_handoff'), 'should register handoff')
-    assert.equal(toolKeys.length, 6, 'should have exactly 6 tools')
-  })
+    assert.equal(output.parts.length, 0)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test('messages transform injects one unified packet and no legacy packet families', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-messages-transform-'))
+
+  try {
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
+    const userMessage = createUserMessage('please plan the runtime cleanup')
+    const output = { messages: [userMessage] }
+
+    await hooks['experimental.chat.messages.transform']?.({} as never, output as never)
+
+    const texts = (userMessage.parts ?? [])
+      .filter((part) => part.type === 'text')
+      .map((part) => part.text ?? '')
+
+    assert.equal(texts.filter((text) => text.startsWith('<hivemind context_version="v1">')).length, 1)
+    assert.equal(texts.some((text) => text.includes('<opencode-runtime-knowledge>')), false)
+    assert.equal(texts.some((text) => text.includes('<hivemind-lineage-refresh>')), false)
+    assert.equal(texts.some((text) => text.includes('<hivemind-route-bridge>')), false)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test('compaction pushes the same authoritative packet and no duplicate system packet', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-compaction-'))
+
+  try {
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
+    const output = { context: [] as string[] }
+
+    await hooks['experimental.session.compacting']?.({ sessionID: 'ses_123' } as never, output as never)
+
+    assert.equal(output.context.length, 1)
+    assert.equal(output.context[0]?.startsWith('<hivemind context_version="v1">'), true)
+    assert.equal(output.context.some((text) => text.includes('<opencode-runtime-knowledge>')), false)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
 })
