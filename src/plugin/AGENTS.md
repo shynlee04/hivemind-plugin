@@ -13,6 +13,9 @@ This directory is **assembly and enforcement wiring only**. It composes hooks an
 > The enriched runtime-status projection now lives in `src/tools/runtime/` and consumes `src/schema-kernel/` + `src/sdk-supervisor/`; do not mirror that reporting logic back into plugin assembly.
 > Plugin behavior claims require a real OpenCode-loaded plugin path or explicit official SDK documentation; mocked `PluginInput` alone is not enough.
 
+> [!NOTE]
+> Phase 11 removed the synthetic plugin bridge family that previously wrapped plan, registry, hook-descriptor, and helper-type concerns. The surviving plugin boundary is the direct `HiveMindPlugin` assembly plus packet and route helpers that it imports explicitly.
+
 ### Current Enforcement
 
 1. **Keep runtime tools extracted** in `src/tools/runtime/`
