@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in_progress
-stopped_at: Completed 11-03-PLAN.md
-last_updated: "2026-03-19T14:59:49.896Z"
-last_activity: "2026-03-19 - Completed 11-03: start-work shim consumer relocation and delete-ready proof"
+stopped_at: Completed 11-04-PLAN.md
+last_updated: "2026-03-19T15:06:08.696Z"
+last_activity: "2026-03-19 - Completed 11-04: reduced-scope runtime-entry loader authority"
 progress:
   total_phases: 13
   completed_phases: 3
   total_plans: 34
-  completed_plans: 20
-  percent: 59
+  completed_plans: 21
+  percent: 62
 ---
 
 # Project State
@@ -27,15 +27,15 @@ See: `.planning/PROJECT.md` (updated 2026-03-17)
 
 Phase: 11 of 13 (Runtime Context Detox and Plugin Flattening)
 Plan: 02 of 11 in current phase (next incomplete)
-Status: Phase 11-03 complete, Phase 11 remains in progress
-Last activity: 2026-03-19 - Completed 11-03: start-work shim consumer relocation and delete-ready proof
+Status: Phase 11-04 complete, Phase 11 remains in progress
+Last activity: 2026-03-19 - Completed 11-04: reduced-scope runtime-entry loader authority
 
-Progress: [██████░░░░] 59%
+Progress: [██████░░░░] 62%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20
+- Total plans completed: 21
 - Average duration: 10 min
 - Total execution time: 2.2 hours
 
@@ -72,6 +72,7 @@ Progress: [██████░░░░] 59%
 | Phase 10-deep-skill-writer-pack-ecosystem P05 | 3 | 3 tasks | 3 files |
 | Phase 11 P01 | 12 min | 2 tasks | 7 files |
 | Phase 11 P03 | 8 min | 1 tasks | 9 files |
+| Phase 11 P04 | 7 min | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,8 @@ Recent decisions affecting current work:
 - [Phase 11]: Expected-red runtime failures stay visible, while unrelated doc-tool assertion noise was removed from the task 2 baseline.
 - [Phase 11]: Preserved runtime, control-plane, trajectory, and slash-command consumers now import feature-owned start-work types directly. — This removes the hook-layer type shim as hidden authority and leaves src/hooks/start-work/start-work-types.ts delete-ready by proof.
 - [Phase 11]: The consumer-proof matrix is updated in the same task commit as the relocation. — Later delete plans can rely on explicit repo evidence instead of reconstructing survivor status.
+- [Phase 11]: Treat src/features/runtime-entry/instruction-loader.ts as the surviving loader authority. — The reduced 11-04 scope only needs runtime-entry proof against the feature-owned loader path, while the hook bridge stays a compatibility seam for other consumers.
+- [Phase 11]: Ignore runtime-surface sync reporting in hm-init and hm-doctor for the reduced plan scope. — The user explicitly marked command-sync surfaces as noise, so runtime-entry handlers should stop surfacing those artifacts in this plan.
 
 ### Pending Todos
 
@@ -131,6 +134,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-19T14:59:49.888Z
-Stopped at: Completed 11-03-PLAN.md
+Last session: 2026-03-19T15:05:40.349Z
+Stopped at: Completed 11-04-PLAN.md
 Resume file: None
