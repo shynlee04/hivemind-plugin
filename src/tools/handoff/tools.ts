@@ -1,4 +1,4 @@
-import { tool } from '@opencode-ai/plugin'
+import { tool } from '@opencode-ai/plugin/tool'
 
 import { executeHivemindHandoffAction } from '../../features/handoff/index.js'
 import { error, success } from '../../shared/tool-response.js'
