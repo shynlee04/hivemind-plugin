@@ -198,7 +198,7 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 2.2 → 3 → 4 → 5 → 6
 | 8. TUI Stabilization on Backend Truth | 0/3 | Not started | - |
 | 9. Context-Intelligence Skills | 0/0 | Planned | - |
 | 10. Deep-skill-writer-pack Ecosystem | 5/6 | In Progress|  |
-| 11. Runtime Context Detox and Plugin Flattening | 3/11 | In Progress|  |
+| 11. Runtime Context Detox and Plugin Flattening | 4/11 | In Progress|  |
 
 ### Phase 9: non-breaking skills for context-intelligence; recovery of the meta builder to become the healer and framework doctor, customization and tailor the meta concepts to end users when using hivemind project
 
@@ -241,13 +241,13 @@ Plans:
 **Requirements**: P11-01, P11-02, P11-03, P11-04, P11-05, P11-06, P11-07
 **Depends on:** Phase 2.1
 **Priority:** Immediate corrective phase — execute before the remaining pending roadmap phases.
-**Plans:** 3/11 plans executed
+**Plans:** 4/11 plans executed
 
 Plans:
 - [x] 11-01-PLAN.md — Capture consumer proof and replace false-confidence plugin baselines
-- [ ] 11-02-PLAN.md — Collapse plugin context emission to one cached snapshot and one authoritative packet
-- [ ] 11-03-PLAN.md — Relocate preserved consumers off start-work hook shims
-- [ ] 11-04-PLAN.md — Move the runtime-entry command asset loader to a feature-owned authority
+- [x] 11-02-PLAN.md — Collapse plugin context emission to one cached snapshot and one authoritative packet
+- [x] 11-03-PLAN.md — Relocate preserved consumers off start-work hook shims
+- [x] 11-04-PLAN.md — Move the runtime-entry command asset loader to a feature-owned authority
 - [ ] 11-05-PLAN.md — Rebind control-plane and slash-command consumers to the feature-owned loader
 - [ ] 11-06-PLAN.md — Delete plugin-local orchestration files only where consumer proof allows
 - [ ] 11-07-PLAN.md — Resolve shared runtime-context conditional targets by proof
