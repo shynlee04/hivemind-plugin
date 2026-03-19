@@ -6,7 +6,7 @@ import type {
   ControlPlaneRecommendedPresetId,
 } from '../../control-plane/index.js'
 import type { PurposeClass } from '../../features/session-entry/start-work-types.js'
-import type { CommandAssetFrontmatter, CommandRuntimeContract } from '../../hooks/runtime-bridge/instruction-loader.js'
+import type { CommandAssetFrontmatter, CommandRuntimeContract } from '../../features/runtime-entry/instruction-loader.js'
 import type { RuntimePressureContract } from '../../shared/pressure-contract.js'
 import type { RuntimeInvocationV1 } from '../../shared/runtime-invocation.js'
 import type { TurnExportProjectionV1, TurnOutputEnvelopeV1 } from '../../shared/turn-output.js'

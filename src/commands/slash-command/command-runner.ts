@@ -3,7 +3,7 @@ import {
   previewRuntimeEntryCommandBundle,
 } from '../../features/runtime-entry/command.js'
 import { executeControlPlaneHandler } from '../../control-plane/index.js'
-import type { LoadedCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
+import type { LoadedCommandAsset } from '../../features/runtime-entry/instruction-loader.js'
 import type {
   CommandExecutionInput,
   CommandExecutionPreview,

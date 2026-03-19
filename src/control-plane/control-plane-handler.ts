@@ -3,7 +3,7 @@ import { runDoctorHandler } from '../features/runtime-entry/doctor.js'
 import { runHarnessHandler } from '../features/runtime-entry/harness.js'
 import { runSettingsHandler } from '../features/runtime-entry/settings.js'
 import type { CommandExecutionInput, CommandExecutionResult, SlashCommandBundle } from '../commands/slash-command/command-types.js'
-import type { LoadedCommandAsset } from '../hooks/runtime-bridge/instruction-loader.js'
+import type { LoadedCommandAsset } from '../features/runtime-entry/instruction-loader.js'
 
 type ControlPlaneHandler = (
   bundle: SlashCommandBundle,
