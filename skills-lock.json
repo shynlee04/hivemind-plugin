@@ -26,6 +26,11 @@
       "sourceType": "github",
       "computedHash": "2fc9beecb8cda3d6e9c196660d02ed87496bd7da5b78ac680121c25071b8b938"
     },
+    "self-improving-agent": {
+      "source": "charon-fan/agent-playbook",
+      "sourceType": "github",
+      "computedHash": "5b95ba0530d21f79cf01f7d593463812e7702b1358dd89d259b8073cf6012349"
+    },
     "skill-creator": {
       "source": "vercel-labs/agent-browser",
       "sourceType": "github",

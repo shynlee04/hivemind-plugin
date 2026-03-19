@@ -1,96 +1,83 @@
 # Skill Revamp — Progress Tracking
 
 ## Date: 2026-03-19
-## Status: RESET AND REVISED PLANNING
+## Status: AUDIT IN PROGRESS — hivemind-skill-writer
 
 ---
 
-## Master Plan
+## AUDIT: hivemind-skill-writer Investigation
 
-**Document:** `docs/skill-revamp/MASTER-PLAN.md`
-**Status:** REVISED — Covers all 12 sections with proper P1/P2/P3 architecture
+### What Was Found
 
----
+| File | Lines | Issue |
+|------|-------|-------|
+| SKILL.md | 218 | References broken (06-knowledge-delta.md missing) |
+| references/01-skill-anatomy.md | 249 | P2 content in P1 skill |
+| references/02-frontmatter-standard.md | 309 | P2 content |
+| references/03-three-patterns.md | 281 | P2 content |
+| references/04-tdd-workflow.md | 318 | P2 content |
+| references/05-skill-quality-matrix.md | 339 | P2 content |
+| references/index.md | 114 | P2 content |
+| **TOTAL** | **1828** | **TOO MUCH for one turn** |
 
-## Critical Change: RESET
-
-**What was removed:**
-- `skills/context-intelligence/` — Was bloated (6 references, L1-L4 escalation)
-- `skills/delegation-intelligence/` — Created as standalone P1, should be P2 branch
-- `skills/workflow-coordination/` — Created as standalone P1, should be P2 branch
-- `skills/hivemind-skill-writer/references/06-knowledge-delta.md` — Unnecessary addition
-
-**Why:**
-- Previous context-intelligence was adding ceremony, not reducing it
-- Delegation/workflow were created as standalone when they should be branches
-- No TDD validation was performed
-- Violated degree-of-freedom principles
-
----
-
-## Revised Architecture
+### Broken Reference
 
 ```
-P1 (Thin Router):     context-intelligence
-P2 (Branch):         context-intelligence-delegation
-P2 (Branch):         context-intelligence-workflow  
-P3 (Specialist):      context-intelligence-recovery
-Meta-Builder (P1):    hivemind-skill-writer
+SKILL.md line 217 references:
+- `references/06-knowledge-delta.md` — Expert vs Redundant vs Activation
+
+BUT: 06-knowledge-delta.md DOES NOT EXIST
 ```
 
----
+### Root Cause
 
-## Milestone Sequence
-
-| Milestone | Skill | TDD Required | Status |
-|-----------|-------|-------------|--------|
-| M1 | context-intelligence (P1 router) | YES | PLANNING |
-| M2 | context-intelligence-delegation (P2) | YES | PENDING |
-| M3 | context-intelligence-workflow (P2) | YES | PENDING |
-| M4 | context-intelligence-recovery (P3) | YES | PENDING |
-| M5 | Integration & Audit | YES | PENDING |
+1. **P1 skill with P2 depth**: hivemind-skill-writer is labeled P1 (routing) but has 6 full P2 references
+2. **Too heavy**: 1828 lines cannot load in one turn
+3. **No progressive disclosure**: All references load at once instead of on-demand
+4. **Missing cross-skill paths**: Doesn't map to hivefiver's 7 use cases
 
 ---
 
-## Current State: hivemind-skill-writer
+## What Needs Fixing
 
-**Location:** `skills/hivemind-skill-writer/`
-**Status:** COMPLETE (kept from previous round)
+### Option A: Fix hivemind-skill-writer as P1+P2 Hybrid (RECOMMENDED)
 
-**Deliverables:**
-```
-skills/hivemind-skill-writer/
-├── SKILL.md
-└── references/
-    ├── 01-skill-anatomy.md
-    ├── 02-frontmatter-standard.md
-    ├── 03-three-patterns.md
-    ├── 04-tdd-workflow.md
-    ├── 05-skill-quality-matrix.md
-    └── index.md
-```
+1. **Remove broken reference** to 06-knowledge-delta.md
+2. **Reduce SKILL.md** to <100 lines (P1 routing only)
+3. **Shrink references** to essential-only (anatomy + patterns)
+4. **Add cross-skill paths** for hivefiver's 7 use cases
+5. **Fix duplicate** - decide which skills/ directory is authoritative
+
+### Option B: Keep as-is but mark deprecated
+
+- Document that it's too heavy for production use
+- Create lightweight hivemind-skill-writer-lite instead
 
 ---
 
-## Next Steps (Awaiting User Review)
+## hivefiver Use Cases Not Addressed
 
-1. **User reviews MASTER-PLAN** — Confirm understanding
-2. **Define first TDD test case for M1** — What failing scenario does P1 router address?
-3. **Implement M1: Thin P1 router** — Only routes, no heavy references
-4. **Validate with TDD** — RED-GREEN-REFACTOR cycle
+Current hivemind-skill-writer does NOT properly route to:
+
+| hivefiver Task | Current Routing | Problem |
+|----------------|-----------------|---------|
+| "create a command" | No route | Missing cross-skill |
+| "design agent team" | No route | Missing cross-skill |
+| "create a tool" | No route | Missing cross-skill |
+| "audit skill" | No route | Only self-routing |
+| "fix skill" | No route | Missing cross-skill |
+| "investigation" | No route | Missing cross-skill |
+| "write skill" | Self only | Should be Discover→Design→Implement→Validate |
 
 ---
 
-## Quality Gates (Same as Before)
+## Next Steps (Pending User Decision)
 
-| Check | Target |
-|-------|--------|
-| Stack ≤3 at entry | 100% |
-| Reference depth 1-level | 100% |
-| Skill-Judge score ≥90% | All skills |
-| TDD validation | Every skill |
-| GSD unaffected | 100% |
-| npm run build passes | 100% |
+1. **Decide**: Fix existing hivemind-skill-writer OR create lightweight version
+2. **Audit**: Which directory is authoritative (skills/ vs .opencode/skills/)
+3. **TDD**: Write failing test for cross-skill routing
+4. **Implement**: P1 routing + essential references only
+5. **Validate**: Stack ≤3, references on-demand
 
 ---
 
@@ -98,10 +85,10 @@ skills/hivemind-skill-writer/
 
 | Date | Action | Details |
 |------|--------|---------|
-| 2026-03-19 | RESET | Removed bloated context-intelligence, standalone delegation/workflow |
-| 2026-03-19 | REVISED | New MASTER-PLAN with proper P1/P2/P3 architecture |
-| 2026-03-19 | KEEP | hivemind-skill-writer (meta-builder, was correct) |
+| 2026-03-19 | AUDIT | Found 1828 lines, broken ref, P1/P2 mismatch |
+| 2026-03-19 | INVESTIGATION | Missing 06-knowledge-delta.md |
+| 2026-03-19 | DISCOVERY | No cross-skill paths for hivefiver |
 
 ---
 
-**Note:** Previous Round 2 "context-intelligence" was problematic — it tried to be everything at once. The new architecture has context-intelligence as a THIN P1 router that routes to P2/P3 branches.
+**Awaiting user decision on how to fix hivemind-skill-writer.**

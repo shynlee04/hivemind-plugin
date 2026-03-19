@@ -1,621 +1,983 @@
-# HiveMind SKILL PACKAGES — Revised Master Plan
+# HiveMind Skill Packages — Revised Master Plan for Context Intelligence and Skill-System Architecture
 
 **Date:** 2026-03-19  
-**Status:** REVISED PLANNING  
-**Author:** Based on user guidance + planning docs audit
+**Status:** Revised planning authority for the current skill-pack cycle  
+**Primary scope:** Pack 1 `context-intelligence` + companion authoring and audit posture  
+**Audience:** HiveMind maintainers, future pack authors, end users creating skills in mixed-agent environments
+
+---
+
+## Table of Contents
+
+- [1. Executive Framing](#1-executive-framing)
+- [2. Skill-System Philosophy](#2-skill-system-philosophy)
+- [3. System Boundaries and Authority Model](#3-system-boundaries-and-authority-model)
+- [4. Context Intelligence Pack Architecture](#4-context-intelligence-pack-architecture)
+- [5. Pattern Model and Composition Rules](#5-pattern-model-and-composition-rules)
+- [6. Branching and Milestone Plan](#6-branching-and-milestone-plan)
+- [7. Pack and Skill Inventory Recommendations](#7-pack-and-skill-inventory-recommendations)
+- [8. Hivemind-Specific Skill-Writing and Audit Guidance](#8-hivemind-specific-skill-writing-and-audit-guidance)
+- [9. Evaluation and TDD Strategy](#9-evaluation-and-tdd-strategy)
+- [10. Documentation, Naming, and Packaging Standards](#10-documentation-naming-and-packaging-standards)
+- [11. Operational Safeguards](#11-operational-safeguards)
+- [12. Refactor / Consolidate / Migrate / Remove Framework](#12-refactor--consolidate--migrate--remove-framework)
+- [13. Risks and Anti-Patterns](#13-risks-and-anti-patterns)
+- [14. Recommended Next Actions](#14-recommended-next-actions)
+- [15. Source Inputs and Research Notes](#15-source-inputs-and-research-notes)
 
 ---
 
 ## 1. Executive Framing
 
-### What This Plan Solves
+### 1.1 What this plan is solving
 
-The HiveMind plugin needs a skill-pack architecture that handles:
-- Front-facing entry complexity (multiple agent roles, delegated subagents)
-- Long-session context drift and degradation
-- Context rot, pollution, and poisoning in multi-agent IDE environments
-- Mixed platform surfaces (`.opencode`, `.claude`, `.codex`, `.agent`)
-- Workflow hierarchy and deterministic enforcement
-- Without becoming another bloated governance layer
+HiveMind needs a skill system that improves context integrity instead of adding another layer of noise. The system must work at two levels at once:
 
-### What Previous Attempts Got Wrong
+1. **Pack level** — architecture, branching, milestones, packaging, compatibility, evaluation, and safe rollout.
+2. **Individual skill level** — triggering quality, skill boundaries, references, stacking logic, auditing rules, TDD expectations, and behavior under degraded context.
 
-| Failure | Why It Failed |
-|---------|---------------|
-| **Bloated context-intelligence** | Tried to be everything at once — 6 references, L1-L4 escalation, ceremony |
-| **Standalone delegation/workflow skills** | Created as P1 when they should be P2/P3 branches |
-| **No TDD validation** | Wrote skills without failing tests first |
-| **Ignored degree of freedom** | Made everything mandatory instead of conditional |
-| **Forgot progressive disclosure** | Loaded heavy skills when light routing was needed |
+This revised plan is the implementation blueprint for both levels simultaneously.
 
-### Architectural Stance
+### 1.2 What previous attempts got wrong
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    ARCHITECTURAL PRINCIPLES                        │
-├─────────────────────────────────────────────────────────────────┤
-│  1. P1 skills are THIN routers, not heavy packs                 │
-│  2. Branches live UNDER P1, not beside it                       │
-│  3. TDD is NON-NEGOTIABLE — no skill without failing test       │
-│  4. Max 3 skills at entry — preserve room for GSD and others    │
-│  5. 1-level reference horizon — no reference chains              │
-│  6. Progressive disclosure — load depth only when triggered       │
-│  7. GSD is legitimate — hivemind-* overlay supports, not replaces│
-└─────────────────────────────────────────────────────────────────┘
-```
+Previous planning and draft implementation strands failed in predictable ways:
+
+| Failure | Why it failed | Required correction |
+|---------|---------------|---------------------|
+| Context intelligence became bloated | The entry skill tried to contain routing, governance, recovery, delegation, and workflow depth at once | Keep Pack 1 entry thin; move operational depth into branches |
+| Pack planning collapsed into single-skill planning | The system was discussed as if one skill could solve entry, workflow, delegation, and governance | Treat pack design and skill design as separate but linked planning layers |
+| Progressive disclosure was referenced but not enforced | References were stacked too deeply and too eagerly | Keep a 1-level reference horizon and on-demand loading only |
+| Degree of freedom was not controlled | Some sections were too vague to help; others were overly deterministic | Calibrate flexibility by fragility, authority risk, and error cost |
+| Evaluation arrived too late | Drafting happened before test baselines and failure modes were defined | Use TDD for skills and packs, not just code |
+| End-user pack authoring was under-modeled | Planning focused only on this repo and not on future consumers | Define rules that survive outside this codebase |
+| Context integrity was treated as style | Context rot, hierarchy collapse, stale governance, and framework collisions were not treated as structural risk | Treat context intelligence as a reliability system |
+
+### 1.3 Architectural stance of this revision
+
+This revision adopts the following non-negotiable posture:
+
+1. **Pack 1 is an entry-defense and routing pack, not a deep handbook.**
+2. **The pack system is branch-oriented, not pile-oriented.** New roles create bounded branches, not more weight inside one entry skill.
+3. **Context intelligence is a support harness, not a second governance regime.** It must narrow, denoise, and recover, not dominate.
+4. **Determinism is reserved for truly authoritative elements only.** Examples: naming rules, packaging rules, frontmatter stability, authority resolution protocol, evaluation gates.
+5. **Pack design must remain compatible with HiveMind, OpenCode, GSD, and mixed IDE agent surfaces.**
+6. **Every stable skill must be test-backed, reviewable, and auditable.**
+
+### 1.4 Immediate strategic outcome
+
+The immediate output of this plan is a pack architecture that enables HiveMind to ship:
+
+- a **thin Pattern 1 router** for context-aware session framing,
+- a set of **Pattern 2 branch skills** for normal operational narrowing,
+- a set of **Pattern 3 specialist skills** for fragile or authority-sensitive depth,
+- a separate **companion pack** for authoring, auditing, packaging, refactoring, and migration.
 
 ---
 
 ## 2. Skill-System Philosophy
 
-### Progressive Disclosure
+### 2.1 Progressive disclosure
 
-| Level | Trigger | Content | Token Budget |
-|-------|---------|---------|--------------|
-| **L1** | Always on entry | Name + Description | ~100 tokens |
-| **L2** | On trigger match | SKILL.md body | ~500 lines |
-| **L3** | Explicit request | references/, scripts/, templates/ | As needed |
+Progressive disclosure is not decorative. It is the main control against token waste, confused routing, and false certainty.
 
-**Critical:** The agent sees ALL skill descriptions first. Description = WHAT + WHEN + KEYWORDS. Vague description = skill never triggers.
+| Layer | What loads | Purpose | Rule |
+|------|-------------|---------|------|
+| L0 | name + description | Trigger discovery | Must describe WHAT, WHEN, and distinguishing conditions |
+| L1 | `SKILL.md` core body | Session framing or bounded procedure | Must stay load-attractive and decision-oriented |
+| L2 | `references/`, `templates/`, `scripts/` | Depth, examples, deterministic helpers | Load only when the branch decision is already made |
 
-### Degree of Freedom Control
+**Design consequence:** the pack must narrow from broad entry to bounded operational depth without loading everything at once.
 
-| Level | When to Use | Example |
-|-------|--------------|---------|
-| **HIGH** | Multiple valid paths, principle-driven | Entry routing, architecture decisions |
-| **MEDIUM** | Preferred patterns exist, adaptation normal | Workflow branches, delegation |
-| **LOW** | Fragile or high-cost errors | Naming rules, evaluation rules |
+### 2.2 Degree of freedom
 
-### The 3 Patterns System
+Degree of freedom is the allowed range of adaptation inside a skill.
 
-#### Pattern 1: High-Level Routing (P1)
-- **Role:** Must-load entry frame that routes to appropriate branches
-- **Shape:** Thin SKILL.md (~100 lines), references only on demand
-- **Philosophy:** Breadth-oriented, supports progressive disclosure without becoming vague
-- **Must answer:** What kind of session is this? What branch should load?
+| Level | Use when | Example |
+|------|----------|---------|
+| High | Multiple valid paths exist and premature constraint would harm reasoning | Entry routing, ambiguity assessment, delegation/no-delegation decision |
+| Medium | The work is narrow enough for a preferred shape, but local adaptation still matters | Workflow branch, delegation branch, investigation branch |
+| Low | Errors are fragile, expensive, or authority-sensitive | Frontmatter format, naming rules, evaluation gate criteria, reference depth rule |
 
-#### Pattern 2: Domain/Classification (P2)
-- **Role:** Narrow the work once situation is known
-- **Shape:** Mid-depth references, templates, bounded guidance
-- **Philosophy:** One level deeper than P1, step-by-step workflow shape
-- **Examples:** Delegation branch, workflow coordination branch
+**Operating rule:** a skill must never be more rigid than the problem requires, and never more vague than the problem can tolerate.
 
-#### Pattern 3: Specialist Depth (P3)
-- **Role:** Deep expertise for fragile situations
-- **Shape:** TOC + in-text jumps, strongly organized, constrained vertical depth
-- **Philosophy:** Expert-only knowledge, used when problem requires serious depth
-- **Examples:** AGENTS.md maintenance, context rot recovery, pack migration
+### 2.3 The three-pattern model
 
-### Stacking Rules
+#### Pattern 1 — High-level routing
 
-```
-ENTRY STACK (max 3 skills):
-├── context-intelligence (P1) — ALWAYS if context-aware
-├── [branch skill] (P2) — if situation warrants
-└── [specialist skill] (P3) — if depth required
+Pattern 1 skills answer: *What kind of session is this, what is the likely context shape, and what should happen next?*
 
-hivemind-skill-writer does NOT count against stack (stacking: 0)
-```
+They should:
 
-### Reference Rules
+- remain broad without becoming empty,
+- frame session type and context integrity,
+- decide whether to branch, stack, delegate, or stop,
+- avoid operational depth except for safe entry checks.
 
-- **ONLY 1-level deep** from SKILL.md
-- No reference chains (reference A cannot reference B)
-- Use TOC + in-text jumps for deeper content
-- Shard long documents into numbered files with `index.md`
+#### Pattern 2 — Classification and domain branches
 
----
+Pattern 2 skills answer: *Now that the session shape is known, what branch of work are we actually in?*
 
-## 3. Pack Architecture
+They should:
 
-### Context Intelligence Pack Overview
+- provide stepwise workflow shape,
+- specify what artifacts to inspect,
+- define branch-specific QA and validation,
+- recommend templates and references,
+- stay narrower than Pattern 1 but shallower than Pattern 3.
 
-```
-context-intelligence/                    # P1 - Entry Pack (THIN)
-├── SKILL.md                            # Lightweight router only
-└── references/                         # Branch entry points
-    ├── 01-session-routing.md           # → Delegation branch
-    ├── 02-workflow-routing.md          # → Workflow branch  
-    ├── 03-recovery-routing.md          # → Recovery branch
-    └── index.md
+#### Pattern 3 — Deep expertise and fragile interpretation
 
-context-intelligence-delegation/         # P2 - Branch
-├── SKILL.md                            # Delegation-specific guidance
-└── references/
-    └── ...
+Pattern 3 skills answer: *This case is sensitive, conflicted, degraded, or authority-heavy; how do we resolve it safely?*
 
-context-intelligence-workflow/           # P2 - Branch
-├── SKILL.md
-└── references/
-    └── ...
+They should:
 
-context-intelligence-recovery/           # P3 - Specialist
-├── SKILL.md
-└── references/
-    └── ...
-```
+- use TOCs and in-text jump links,
+- keep structure strict and navigable,
+- prefer references and assets over inline text sprawl,
+- handle uncertainty, ambiguity, and same-level authority conflict explicitly.
 
-### Skill Tree Across Patterns
+### 2.4 One-level reference horizon
 
-| Pattern | Skill | Purpose | When to Load |
-|---------|-------|---------|--------------|
-| **P1** | `context-intelligence` | Entry routing, session type detection | Always on context-aware entry |
-| **P1** | `hivemind-skill-writer` | Meta-builder, skill authoring | When creating/auditing skills |
-| **P2** | `context-intelligence-delegation` | Scope rules, handoff packets | When delegated or delegating |
-| **P2** | `context-intelligence-workflow` | Phase management, transition gates | When executing workflows |
-| **P3** | `context-intelligence-recovery` | Rot detection, trust rebuilding | When context degradation suspected |
+HiveMind will use a **1-level reference horizon**:
 
-### What Is Core vs Optional vs Future Expansion
+- `SKILL.md` may point to files in `references/`, `templates/`, or `scripts/`.
+- A reference file must not require another reference file to be understood.
+- Long, deep material must be sharded inside the pack and surfaced through a local `index.md`, not a reference chain.
 
-| Component | Status | Rationale |
-|-----------|--------|-----------|
-| `context-intelligence` (P1 router) | **CORE** | Must-load entry |
-| `context-intelligence-delegation` (P2) | **CORE** | Common delegation scenario |
-| `context-intelligence-workflow` (P2) | **CORE** | Common workflow scenario |
-| `context-intelligence-recovery` (P3) | **OPTIONAL** | Only when degraded |
-| Intent capture skill | **FUTURE** | User intent detection |
-| QA skills | **FUTURE** | Quality assurance flows |
-| Cross-reference intelligence | **FUTURE** | Understanding skill relationships |
+This prevents A → B → C loading cascades that destroy context locality.
+
+### 2.5 Stacking philosophy
+
+Agents may load up to **3 skills per entry/turn**. The stack must preserve room for workflow, testing, framework, or role-specific needs.
+
+**Default stack model:**
+
+1. one Pattern 1 entry skill,
+2. up to one Pattern 2 branch skill,
+3. up to one Pattern 3 specialist skill.
+
+If more is needed, the session should delegate or defer rather than continue stacking.
+
+### 2.6 QA-first interaction model
+
+Most skills in this system should behave in the following order:
+
+1. clarify intent and uncertainty,
+2. perform short-step investigation,
+3. escalate to deeper research only if justified,
+4. confirm the frame and findings,
+5. recommend or execute the plan,
+6. run a progress and evaluation loop.
+
+This interaction model is part of the architecture, not optional style guidance.
 
 ---
 
-## 4. Branching and Milestone Plan
+## 3. System Boundaries and Authority Model
 
-### Implementation Branches
+### 3.1 Pack ecosystem boundary
 
+The revised HiveMind skill ecosystem has two major lanes:
+
+| Lane | Purpose | Role |
+|------|---------|------|
+| `context-intelligence` | Entry defense, context routing, recovery awareness, safe branch selection | Pack 1, must-load at meaningful entry points |
+| Companion authoring pack | Skill writing, auditing, evaluation, packaging, consolidation, migration, removal | Separate pack; canonical candidate remains `meta-builder-hivemind` |
+
+The companion authoring pack must not replace or absorb Pack 1.
+
+### 3.2 Hivemind-specific boundary rules
+
+1. HiveMind remains **OpenCode-first**, but not OpenCode-only in awareness.
+2. Runtime and generated surfaces such as `.hivemind/` and `dist/` are not authoring truth.
+3. Root and nested governance files must be interpreted by scope, freshness, and authority, not by filename prestige alone.
+4. GSD remains a legitimate framework surface and must not be shadowed by redundant HiveMind ceremony.
+
+### 3.3 Compatibility stance
+
+The pack system must operate safely across:
+
+- HiveMind-specific repo conventions,
+- OpenCode plugin surfaces,
+- GSD agents and workflows,
+- adjacent IDE surfaces such as `.claude`, `.codex`, `.cursor`, `.roo`, `.qwen`, `.gemini`, `.agent`, and related mirrors,
+- future end-user environments that will not share this repo’s exact file tree.
+
+### 3.4 Authority conflict posture
+
+When same-level authority sources disagree, skills must:
+
+1. recognize conflict instead of forcing a decision,
+2. inspect freshness, scope, and evidence,
+3. prefer the **latest valid same-level authority** only when that preference is logically justified,
+4. surface uncertainty explicitly when no safe resolution exists.
+
+---
+
+## 4. Context Intelligence Pack Architecture
+
+### 4.1 Pack mission
+
+The Context Intelligence Pack exists to improve context integrity in multi-layered development environments by:
+
+- defending against context rot, pollution, and false authority,
+- helping agents preserve hierarchy and breadth/depth awareness,
+- improving session routing and branch selection,
+- protecting the main session from unnecessary investigative sprawl,
+- supporting deterministic elements where they are genuinely authoritative.
+
+### 4.2 Pack shape
+
+```text
+skills/
+└── context-intelligence/
+    ├── SKILL.md
+    ├── references/
+    │   ├── 01-session-routing.md
+    │   ├── 02-context-state-and-recovery-thresholds.md
+    │   ├── 03-stack-and-delegation-decisions.md
+    │   └── index.md
+    ├── scripts/
+    │   └── discovery-*        # optional and read-only by default
+    └── templates/
+        └── context-checklist.md
 ```
-skill-revamp/
-├── main                              # Stable skills
-├── feature/context-intelligence       # P1 router + P2 branches
-└── feature/skill-writer-enhancement  # hivemind-skill-writer improvements
-```
 
-### Milestone Sequence
+Pattern 2 and Pattern 3 branches live as separate sibling skill directories, not as ever-expanding content inside the Pattern 1 entry skill.
 
-| Milestone | What | Deliverable | Validation |
+### 4.3 Core architecture decisions
+
+| Decision | Why it exists |
+|---------|---------------|
+| Entry skill stays thin | Entry routing is harmed by depth overload |
+| Session taxonomy is explicit | Main session, resumed session, delegated session, and degraded session need different treatment |
+| Rot detection is always-aware but not always-deep | Constant paranoia is noisy; constant awareness is useful |
+| Pack depth is branch-driven | Different problem shapes require different guidance bundles |
+| Context recovery is conditional | Recovery content should not load unless degradation signals justify it |
+
+### 4.4 Pattern 1 anchor skill
+
+**Stable anchor:** `context-intelligence`  
+**Working role example:** `Hivemind-runtime-context` as the conceptual top-level router persona within the pack.
+
+This skill should determine:
+
+- whether the session is user-facing, resumed, delegated, interrupted, degraded, or recovered,
+- whether branch loading is necessary,
+- whether stacking is justified,
+- whether deeper work should be delegated instead of explored inline,
+- whether the main session should stop and confirm rather than act.
+
+### 4.5 Pack-level structure across patterns
+
+| Pattern | Pack role in Context Intelligence | Loading posture |
+|---------|----------------------------------|-----------------|
+| Pattern 1 | Entry routing, session framing, stack discipline, context integrity awareness | Broad, thin, must-load at meaningful entry points |
+| Pattern 2 | Branch-specific operational narrowing | Conditional load after Pattern 1 classification |
+| Pattern 3 | Recovery, governance-sensitive resolution, migration, or conflict-sensitive depth | Specialist load only when risk or ambiguity warrants it |
+
+### 4.6 What is core vs optional vs future expansion
+
+| Component | Status | Why |
+|----------|--------|-----|
+| `context-intelligence` | Core | Required entry router and context defense frame |
+| `context-intelligence-delegation` | Core | Delegation is a first-class reality in HiveMind and GSD workflows |
+| `context-intelligence-workflow` | Core | Workflow hierarchy is central to pack value |
+| `context-intelligence-recovery` | Core but conditional | Recovery is essential capability but should not load by default |
+| `context-intelligence-governance-resolution` | Optional early specialist | Needed when AGENTS/CLAUDE/GEMINI/governance collisions are active |
+| `context-intelligence-tech-research-bridge` | Future | Useful when codebase investigation and external tech synthesis must be coordinated |
+| `context-intelligence-history-mapping` | Future | Useful for long-lived repos with heavy archival and branch history |
+| intent-capture branch | Future | Better placed after entry and branch skeleton is stable |
+
+---
+
+## 5. Pattern Model and Composition Rules
+
+### 5.1 Pattern 1 responsibilities
+
+Pattern 1 entry skills must do the following and no more:
+
+1. classify session state,
+2. assess context confidence,
+3. recommend stack shape,
+4. recommend delegation or main-session preservation where needed,
+5. identify when no extra skill is necessary.
+
+### 5.2 Pattern 2 responsibilities
+
+Pattern 2 branch skills must:
+
+- narrow the domain or operating lane,
+- specify artifacts to inspect,
+- define short procedural flow,
+- define branch-specific QA checks,
+- point to templates and shallow references.
+
+### 5.3 Pattern 3 responsibilities
+
+Pattern 3 specialist skills must:
+
+- handle fragile, high-cost, or ambiguous cases,
+- define authority conflict rules,
+- separate confidence, evidence, and uncertainty,
+- provide stop-and-confirm thresholds.
+
+### 5.4 Stacking rules
+
+| Situation | Recommended action |
+|----------|--------------------|
+| Fresh but normal session | Load Pattern 1 only |
+| Session clearly falls into one operational lane | Load Pattern 1 + one Pattern 2 |
+| Risk, ambiguity, or degradation is materially present | Load Pattern 1 + one Pattern 2 + one Pattern 3 |
+| More than 3 skills seem necessary | Delegate or split the work; do not keep stacking |
+| Deep exploration threatens to pollute the main thread | Delegate a sub-session and reintegrate summary output |
+
+### 5.5 No-load rules
+
+A good entry router must often decide **not** to load more skills. That is a success case, not a miss.
+
+Do not load extra skills when:
+
+- the task is simple and stable,
+- context integrity is high,
+- no branch-specific discipline is required,
+- the user’s intent is already narrow and operationally clear,
+- additional loading would add explanation without improving decisions.
+
+### 5.6 Delegation rules
+
+Delegate instead of exploring inline when:
+
+- the investigation is likely to require multiple tool calls and broad discovery,
+- the main session needs to preserve strategic clarity,
+- the work crosses branches or frameworks and needs bounded research,
+- there is governance ambiguity that needs isolated inspection,
+- the return can be summarized as evidence instead of conversation sprawl.
+
+### 5.7 Skill composition rules
+
+1. A skill may assume the pattern above it, but it must not duplicate it.
+2. Pattern 2 skills may reference Pattern 1 concepts, but should not restate Pattern 1 routing logic.
+3. Pattern 3 skills may assume prior narrowing and should not re-teach the whole system.
+4. Composition must be horizontal at the reference layer. Skills may align, but references should not chain.
+
+---
+
+## 6. Branching and Milestone Plan
+
+### 6.1 Main branch themes
+
+| Branch lane | Purpose |
+|------------|---------|
+| `main` | Stable shipped skills and approved docs |
+| `feature/context-intelligence-core` | Pattern 1 router and core entry references |
+| `feature/context-intelligence-branches` | Pattern 2 and Pattern 3 branch implementation |
+| `feature/meta-builder-hivemind` | Companion pack for authoring, audit, and packaging |
+| `feature/skill-evals-and-gates` | TDD harnesses, evaluation assets, pressure tests |
+
+### 6.2 Milestone sequence
+
+| Milestone | Goal | Main output | Dependency |
 |-----------|------|-------------|------------|
-| **M1** | P1 router for context-intelligence | Thin SKILL.md that routes to branches | TDD: Session type detection works |
-| **M2** | Delegation branch (P2) | Scope rules, handoff packets | TDD: Delegation scenarios pass |
-| **M3** | Workflow branch (P2) | Phase management, gates | TDD: Workflow scenarios pass |
-| **M4** | Recovery branch (P3) | Rot detection, trust rebuilding | TDD: Degraded session recovery |
-| **M5** | Integration & audit | Full stack, Skill-Judge eval | All tests pass, ≤3 skills load |
+| M0 | Finalize pack and branch architecture | This plan + stable naming posture | none |
+| M1 | Ship thin Pattern 1 router | `context-intelligence/SKILL.md` + 3 shallow references | M0 |
+| M2 | Ship core Pattern 2 branches | delegation + workflow branch skills | M1 |
+| M3 | Ship first Pattern 3 specialist | recovery branch with TOC and thresholds | M1 |
+| M4 | Ship companion authoring/audit pack posture | meta-builder naming, writing, audit, migration rules | M1 plus naming freeze checkpoint |
+| M5 | Cross-pack evaluation and packaging hardening | stress tests, judge rubric, promotion rules | M2-M4 |
+| M6 | Optional expansions | governance-resolution, history-mapping, tech-research bridge | only after M5 evidence |
 
-### Conditional Branches and Future Expansions
+### 6.3 Conditional branches
 
-| Branch | Condition | Expansion Path |
-|--------|-----------|----------------|
-| Intent capture | User needs intent detection | New P2 skill |
-| QA skills | Quality assurance workflow | New P2/P3 skills |
-| Cross-reference intelligence | Skill conflict detection | New P1/P2 skills |
+| Conditional branch | Trigger for creation | Keep out of initial core because |
+|--------------------|--------------------|---------------------------------|
+| Governance resolution specialist | Active AGENTS/CLAUDE/GEMINI or multi-charter confusion | It is fragile specialist depth, not universal entry logic |
+| Tech research bridge | Repeated need to connect repo investigation with external stack synthesis | Requires stronger evaluation and may compete with research skills |
+| History mapping | Repeated confusion from archives, forks, and same-level dated plans | Too heavy for initial core and should be proven by real failure modes |
+| Intent capture lane | Entry prompts routinely fail because user goals remain underspecified | Better built after core routing signals are validated |
 
-### Dependencies and Order of Work
+### 6.4 Framework-specific variants
 
-```
-M1 (P1 router) → M2 (Delegation) → M3 (Workflow) → M4 (Recovery) → M5 (Integration)
-     ↓               ↓                  ↓                  ↓
-  Standalone    Depends on M1      Depends on M1      Depends on M1
-```
+Framework-aware variants are allowed only when the difference is meaningful and stable.
 
----
+Allowed examples:
 
-## 5. Skill Inventory Recommendations
+- OpenCode-first variant notes,
+- GSD workflow alignment notes,
+- cross-IDE surface awareness notes.
 
-### Candidate Skills for Context-Intelligence Pack
+Not allowed in the core:
 
-#### P1: context-intelligence (REVISED — THIN ROUTER)
+- separate pack forks for every framework,
+- names that imply framework authority the pack does not own,
+- duplicated packs that differ only by platform branding.
 
-**File:** `skills/context-intelligence/SKILL.md`
+### 6.5 Environment-specific variants
 
-**What it does:**
-- Detects session type (FRESH/RESUMED/DELEGATED/DEGRADED/INTERRUPTED/RECOVERED)
-- Routes to appropriate P2/P3 branch based on session type
-- Provides always-active context rot warning signals
-- Does NOT try to be everything — just routes
+Environment-specific guidance should stay inside references unless it crosses a threshold of real operational difference. Variants may exist for:
 
-**When to load:**
-- Every context-aware session start
-- After compaction
-- When delegation scope unclear
-- When context drift suspected
+- local repo vs global skill installation,
+- monorepo vs single-package repo,
+- shallow vs archive-heavy repository history,
+- low-trust or degraded session environments.
 
-**What it references:**
-- `references/01-session-routing.md` — Decision matrix for which branch to load
+### 6.6 Order of work
 
-**What it does NOT contain:**
-- Detailed delegation rules (→ delegation branch)
-- Workflow phase definitions (→ workflow branch)
-- Recovery protocols (→ recovery branch)
-
-#### P2: context-intelligence-delegation
-
-**File:** `skills/context-intelligence-delegation/SKILL.md`
-
-**What it does:**
-- Scope inheritance rules
-- Handoff packet format
-- Zero-trust receipt validation
-- Chain of command
-
-**When to load:**
-- When receiving delegated task
-- When granting delegation
-- When validating subagent return
-
-#### P2: context-intelligence-workflow
-
-**File:** `skills/context-intelligence-workflow/SKILL.md`
-
-**What it does:**
-- Phase lifecycle management
-- Transition gate validation
-- Milestone tracking
-- Parallel coordination rules
-
-**When to load:**
-- When executing multi-phase workflows
-- When phase transition occurs
-- When milestone completion needs validation
-
-#### P3: context-intelligence-recovery
-
-**File:** `skills/context-intelligence-recovery/SKILL.md`
-
-**What it does:**
-- Context rot detection (severity 0-4)
-- Trust scoring and recovery
-- Emergency isolation protocols
-- Authority rebuilding
-
-**When to load:**
-- When context degradation suspected
-- When severity > 1 detected
-- When recovery protocol needed
-
-### Skills to Avoid Creating
-
-| Skill | Why Not |
-|-------|---------|
-| Heavy standalone context-intelligence | Was bloated, added ceremony |
-| Delegation as standalone P1 | Should be P2 under context-intelligence |
-| Workflow as standalone P1 | Should be P2 under context-intelligence |
+1. stabilize naming and branch boundaries,
+2. write the Pattern 1 router and its reference skeleton,
+3. add branch skills for delegation and workflow,
+4. add recovery specialist depth,
+5. build the authoring/audit companion pack in parallel with evaluation harnesses,
+6. add future branches only after evidence shows repeated unmet need.
 
 ---
 
-## 6. Hivemind-Specific Skill-Writing and Audit Guidance
+## 7. Pack and Skill Inventory Recommendations
 
-### Standards for Writing Skills in This Ecosystem
+### 7.1 Recommended pack inventory
 
-1. **Description MUST answer:** WHAT + WHEN + KEYWORDS
-2. **Iron Law:** NO SKILL WITHOUT FAILING TEST FIRST
-3. **Progressive disclosure:** L1 → L2 → L3 on trigger
-4. **Reference depth:** ONLY 1 level
-5. **Stacking:** Max 3 at entry (P1 doesn't count if it's the router)
-6. **Freedom calibration:** Match specificity to fragility
+| Pack | Role | Pattern center | Status |
+|------|------|----------------|--------|
+| `context-intelligence` | Entry routing and context defense | Pattern 1 | Core |
+| `meta-builder-hivemind` | Skill authoring, auditing, packaging, migration | Cross-pattern companion | Planned |
+| `hivemind-skill-writer` | Accepted alias for the companion pack | Alias only | Transitional |
 
-### How to Avoid Conflicts and Brittle Determinism
+### 7.2 Context Intelligence skill inventory
 
-| Anti-Pattern | Prevention |
-|--------------|------------|
-| Overlapping skills | Clear P1/P2/P3 boundaries |
-| Brittle absolute paths | Use regex, fuzzy matching where safe |
-| Deterministic ceremony | Only mandate where fragility requires it |
-| Reference chains | 1-level only, use TOC/jumps |
-| Token waste | Expert knowledge only, delete redundant |
+| Skill | Pattern | Purpose | When to load | When not to load | Main references | Must avoid |
+|------|---------|---------|--------------|------------------|-----------------|------------|
+| `context-intelligence` | P1 | Session framing, context confidence, stack decisions, no-load decisions | Meaningful entry, resume, compaction recovery, unclear scope | When the session is trivial and already narrow | session routing, state thresholds, stack decisions | Becoming a giant handbook |
+| `context-intelligence-delegation` | P2 | Delegation shape, scope inheritance, handoff validation, return integration | Delegating or receiving delegated work | When no delegation exists | handoff packet template, delegation QA checklist | Replacing project workflow logic |
+| `context-intelligence-workflow` | P2 | Workflow hierarchy, phase shape, validation order, milestone posture | Multi-phase work, planning-to-execution transitions, orchestration tasks | Single short tasks with no phase complexity | workflow branch matrix, planning/TDD template map | Becoming a planning megaskill |
+| `context-intelligence-recovery` | P3 | Rot severity model, recovery posture, trust rebuilding, stop-and-confirm thresholds | Degraded context, ambiguity, resumed partial state, polluted signals | Clean fresh sessions | recovery thresholds, isolation checklist | Default loading, panic-heavy behavior |
+| `context-intelligence-governance-resolution` | P3 | Resolve governance collisions across `AGENTS.md`, framework docs, nested charters, stale mirrors | Conflicting authority or hierarchy confusion | Stable single-charter sessions | authority comparison matrix, freshness heuristic | Claiming certainty without evidence |
 
-### How End Users Should Benefit
+### 7.3 Companion pack skill inventory
 
-1. **hivemind-skill-writer** is the meta-builder — teaches HOW to write skills
-2. **context-intelligence** shows the pattern — P1 router + P2/P3 branches
-3. **Reference templates** demonstrate proper structure
-4. **TDD workflow** ensures quality before shipping
+The companion pack should be a separate implementation lane with its own stable pack identity.
 
----
+| Skill | Pattern role | Purpose | Must avoid |
+|------|---------------|---------|------------|
+| `meta-builder-hivemind` / `hivemind-skill-writer` | Companion router | Guide HiveMind-specific skill writing, audit, packaging, migration, and removal | Trying to replace Pack 1 context routing |
+| `skill-audit-hivemind` | Specialist branch | Audit pack and skill quality, collisions, determinism, overlap, and authority claims | Becoming a generic style linter |
+| `skill-migration-hivemind` | Specialist branch | Refactor, consolidate, shard, alias, migrate, or remove skills safely | Triggering before an audit exists |
 
-## 7. Evaluation and TDD Strategy
+### 7.4 Cross-skill chaining scenarios that must be supported
 
-### Quality Metrics (from Skill-Judge)
-
-| Dimension | Max | Focus |
-|-----------|-----|-------|
-| D1: Knowledge Delta | 20 | Expert knowledge not in model |
-| D2: Mindset + Procedures | 15 | Thinking patterns + domain workflows |
-| D3: Anti-Pattern Quality | 15 | Specific NEVER lists with WHY |
-| D4: Spec Compliance | 15 | Description = WHAT + WHEN + KEYWORDS |
-| D5: Progressive Disclosure | 15 | Layering with triggers |
-| D6: Freedom Calibration | 15 | Match specificity to fragility |
-| D7: Pattern Recognition | 10 | Follows established pattern |
-| D8: Practical Usability | 15 | Decision trees, fallbacks, edge cases |
-
-**Target:** 90%+ (108/120) for production-ready skills
-
-### TDD Workflow for Skills
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        RED PHASE                                  │
-│  1. Identify failing scenario (real user prompt that fails)      │
-│  2. Write test prompt for the scenario                           │
-│  3. Run WITHOUT skill — observe exact failure mode                │
-│  4. Document: What should have happened but didn't               │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                        GREEN PHASE                                │
-│  1. Write MINIMAL skill addressing specific failure               │
-│  2. Run WITH skill — observe pass                                │
-│  3. Verify failure mode is resolved                               │
-│  4. Document: What changed and why                               │
-└─────────────────────────────────────────────────────────────────┘
-                              ↓
-┌─────────────────────────────────────────────────────────────────┐
-│                        REFACTOR PHASE                             │
-│  1. Remove duplication                                           │
-│  2. Tighten trigger accuracy                                     │
-│  3. Ensure reference depth compliance                            │
-│  4. Validate stacking ≤ 3                                        │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Stress Test Cases
-
-| Scenario | What It Tests |
-|----------|---------------|
-| Fresh session | P1 router detects correctly |
-| Delegated subagent | Scope boundaries respected |
-| Resumed after gap | Continuity without hallucination |
-| Degraded context | Recovery branch triggers |
-| Mixed platform surfaces | Cross-framework recognition |
-| Context polluted | Stop-and-confirm protocol |
+1. **Context as governance** → `context-intelligence` + governance-resolution branch.
+2. **Use-case branch to delegation** → `context-intelligence` + delegation branch.
+3. **Workflow branch plus evaluation** → `context-intelligence` + workflow branch + evaluation companion skill.
+4. **Deep codebase investigation plus tech research** → `context-intelligence` + branch + external research companion.
+5. **Main-session framing plus delegated sub-session investigation plus reintegration** → Pattern 1 entry router + delegation branch + return-summary protocol.
 
 ---
 
-## 8. Documentation and Packaging Standards
+## 8. Hivemind-Specific Skill-Writing and Audit Guidance
 
-### Naming Principles
+### 8.1 Writing standards for this ecosystem
 
-- Use kebab-case
-- Descriptive names over generic verbs
-- Role or problem nouns over action nouns
-- No giant umbrella names
-- Stable canonical names — don't rename frequently
+Every new HiveMind skill should meet all of the following:
 
-### Sharding Rules
+1. **It solves a distinct boundary problem.**
+2. **Its description contains WHAT, WHEN, and differentiating context.**
+3. **Its degree of freedom is intentional.**
+4. **Its reference layer is one level deep.**
+5. **Its instructions are interactive before action-heavy.**
+6. **Its deterministic claims are reserved for authoritative or fragile domains.**
+7. **Its language explains uncertainty explicitly.**
+8. **Its design is compatible with mixed frameworks rather than hostile to them.**
 
-| Content Length | Shard Strategy |
-|----------------|----------------|
-| < 100 lines | Single file |
-| 100-300 lines | File with inline sections |
-| 300+ lines | Numbered files + `index.md` |
+### 8.2 Writing standards for future end users
 
-### Frontmatter Standard
+End users who create skills later in their own environments should be able to adopt these rules without knowing this repo’s internals.
 
-```yaml
+That means HiveMind skills should teach reusable methods such as:
+
+- how to classify a session before acting,
+- how to decide whether to stack or branch,
+- how to audit a skill without collapsing into style-only review,
+- how to keep references shallow and names stable,
+- how to distinguish useful determinism from brittle ceremony.
+
+### 8.3 Audit standards for existing skills
+
+When auditing an existing skill, inspect the following dimensions:
+
+| Dimension | What to inspect |
+|----------|-----------------|
+| Trigger clarity | Would the right prompts actually activate it? |
+| Knowledge delta | Does it contain expert value or token waste? |
+| Boundary clarity | Does it duplicate another skill’s role? |
+| Degree-of-freedom calibration | Is it too rigid or too vague? |
+| Reference discipline | Does it chain references or dump too much inline? |
+| Compatibility | Does it collide with OpenCode, GSD, or mixed framework norms? |
+| Evaluation readiness | Can its benefit be tested, observed, and compared? |
+
+### 8.4 Preventing dumb determinism
+
+Do not write a rule as absolute merely because it sounds tidy.
+
+Absolute language is allowed when dealing with:
+
+- frontmatter stability,
+- naming format,
+- reference depth constraints,
+- stop-and-confirm gates for dangerous ambiguity,
+- known runtime/generated surface boundaries.
+
+Absolute language is **not** justified for:
+
+- generic repo structure assumptions,
+- framework preference claims without evidence,
+- speculative authority resolution,
+- broad procedural statements that vary by environment.
+
+### 8.5 Avoiding overlap and selection confusion
+
+Before approving a new skill, ask:
+
+1. What exact role does it play in P1, P2, or P3?
+2. What currently stable skill would a user confuse it with?
+3. Should this be a branch, a reference, an alias, or a new pack?
+4. Does it create a new load decision, or merely duplicate an old one?
+
+If the answer to question 4 is duplication, the skill should not ship as a new top-level entity.
+
+### 8.6 Interaction standard for resulting skills
+
+The resulting skills should be:
+
+- confidence-building without false confidence,
+- concise in steps but rich in reasoning,
+- QA-first and no-assumption by default,
+- willing to investigate briefly before planning deeply,
+- capable of preserving the main session by delegating deeper work,
+- explicit about when to stop, narrow, ask, or recover.
+
 ---
-name: skill-name-with-kebab-case
-description: >
-  Use when [specific triggering conditions].
-  Describes [what skill does].
-  Keywords: trigger, words, here
-version: 1.0.0
-tags: [pattern, type, gsd]
-stacking: 1  # 0 for meta-builder, 1 for P1, 2+ for P2/P3
-entry: after-context-intelligence  # if applicable
-references:
-  - 01-topic.md
-  - 02-topic.md
+
+## 9. Evaluation and TDD Strategy
+
+### 9.1 Evaluation posture
+
+Evaluation is comparative and scenario-based. A skill pack that works only in clean ideal conditions is not ready.
+
+### 9.2 Quality rubric
+
+Use the pack evaluation rubric already drafted for the revamp and combine it with skill-level quality judgment.
+
+#### Pack-level rubric
+
+| Dimension | Weight | Meaning |
+|----------|--------|---------|
+| Trigger clarity | 20 | Right pack loads, wrong pack does not |
+| Degree-of-freedom control | 15 | Flexibility and strictness are well-calibrated |
+| Branch clarity | 15 | Pattern 1 / 2 / 3 boundaries are visible |
+| Context-rot defense | 20 | Pack survives degraded or polluted context |
+| Cross-framework resilience | 10 | Pack sees mixed surfaces without inheriting them blindly |
+| TDD and eval readiness | 10 | Failure cases and validation lanes are runnable |
+| Packaging discipline | 10 | Naming, reference depth, and asset rules hold |
+
+#### Skill-level rubric
+
+Use a combined quality lens informed by the local `skill-judge`, `writing-skills`, and `skill-creator` references:
+
+| Dimension | Why it matters |
+|----------|----------------|
+| Knowledge delta | Prevents token waste |
+| Mindset and procedure transfer | Teaches how to think and what domain-specific steps matter |
+| Anti-pattern quality | Teaches what not to do and why |
+| Description quality | Determines whether the skill is even discoverable |
+| Progressive disclosure quality | Keeps the skill operationally usable |
+| Practical usability | Supports real work instead of abstract advice |
+
+### 9.3 TDD workflow for skills
+
+Every skill should follow a skill-specific RED → GREEN → REFACTOR loop.
+
+#### RED
+
+- identify a real failure scenario,
+- capture the user-style prompt or degraded condition,
+- run the task without the skill or with the old skill,
+- document the exact miss, confusion, collision, or hallucination risk.
+
+#### GREEN
+
+- write the minimum skill content needed to address the observed failure,
+- rerun the scenario,
+- confirm that the failure is reduced without adding new confusion.
+
+#### REFACTOR
+
+- tighten trigger language,
+- remove redundancy,
+- split or shard if it became too large,
+- verify reference depth, stack fit, and composition hygiene.
+
+### 9.4 Pressure-test lanes
+
+The pack and its skills must be stress-tested under:
+
+| Lane | Expected proof |
+|------|----------------|
+| Baseline no-skill | Shows current failure or confusion mode |
+| With-pack run | Shows meaningful improvement |
+| Delegated-session stress | Scope boundaries stay explicit |
+| Mid-session degradation stress | Session recovery stays sane |
+| Pollution stress | False authority is downgraded, not obeyed blindly |
+| Cross-framework stress | Mixed surfaces are recognized without collision |
+| End-user environment stress | Pack logic still makes sense outside this repo |
+| Governance ambiguity stress | Same-level conflicts do not produce false certainty |
+
+### 9.5 Promotion gates
+
+| Gate | Requirement |
+|------|-------------|
+| Draft readiness | Role is clear, naming is stable enough, and load shape is attractive |
+| Branch readiness | At least one real failure scenario and one passing branch scenario exist |
+| Promotion readiness | Pack-level score ≥ 80/100 and skill-level judge score ≥ 90/120 target band or equivalent threshold |
+| Reference-skill readiness | The skill has proven reusable value, test evidence, and a stable template or chain pattern |
+
+### 9.6 Reference-skill graduation
+
+A skill should graduate into a **reference skill** only when:
+
+1. it has repeated successful use,
+2. its trigger behavior is stable,
+3. its structure is useful as a template for new end users,
+4. its chain links do not create selection confusion.
+
 ---
-```
 
-### TOC and Jump Links
+## 10. Documentation, Naming, and Packaging Standards
 
-For P3 skills or long documents:
-```markdown
-# Table of Contents
-- [Section 1](#section-1)
-- [Section 2](#section-2)
+### 10.1 Naming principles
 
----
+1. Use kebab-case.
+2. Prefer role nouns or problem nouns over vague action labels.
+3. Keep one canonical pack id and preserve aliases as aliases only.
+4. Do not create names that imply authority the pack does not own.
+5. Widen the system by branch, not by endlessly widening one pack name.
 
-## Section 1
-Content here...
+### 10.2 Current naming posture
 
-## Section 2  
-Content here...
-```
+| Name | Status | Meaning |
+|------|--------|---------|
+| `context-intelligence` | Stable target | Pack 1 entry pack |
+| `meta-builder-hivemind` | Draft canonical candidate | Companion authoring and audit pack |
+| `hivemind-skill-writer` | Accepted alias | User-facing shorthand until naming freeze |
 
-### Assets Organization
+### 10.3 Packaging logic
 
-```
+```text
 skill-name/
 ├── SKILL.md
 ├── references/
-│   ├── 01-topic.md
+│   ├── 01-*.md
+│   ├── 02-*.md
 │   └── index.md
-├── scripts/           # Only if needed
-│   └── discovery*.sh   # Read-only by default
-└── templates/        # Only if needed
-    └── *.md
+├── scripts/
+│   └── discovery-*.sh | .ts | .py
+├── templates/
+│   └── *.md
+└── assets/
+    └── only when materially useful
 ```
+
+### 10.4 Sharding rules
+
+| Content size | Rule |
+|-------------|------|
+| Thin entry skill | keep `SKILL.md` compact and decision-oriented |
+| Mid-depth branch | allow bounded references and templates |
+| Specialist depth | shard into numbered files plus `index.md`, TOC, and jump links |
+
+### 10.5 Frontmatter stability
+
+Stable frontmatter matters because pack identity and discoverability depend on it.
+
+Required stable fields for HiveMind skill packages should include at minimum:
+
+- `name`
+- `description`
+
+Allowed additional fields may include:
+
+- `version`
+- `tags`
+- `stacking`
+- `entry`
+- `references`
+
+These extra fields should remain stable once adopted; changing them casually creates routing drift.
+
+### 10.6 TOCs and jump links
+
+Pattern 3 skills and long planning docs should always provide:
+
+- a Table of Contents,
+- explicit section anchors,
+- jump links for recovery, thresholds, and authority-resolution sections,
+- local sharding rather than inline text dumping.
+
+### 10.7 Reference, template, and asset organization
+
+| Surface | Use for | Must avoid |
+|---------|---------|------------|
+| `references/` | Explanation, decision matrices, branch detail | Reference chains |
+| `templates/` | Output structures, checklists, handoff forms | Heavy prose duplicated from `SKILL.md` |
+| `assets/` | Rare static support files | Becoming a second document system |
+| `scripts/` | Deterministic helper logic and safe exploration | Risky mutation by default |
 
 ---
 
-## 9. Operational Safeguards
+## 11. Operational Safeguards
 
-### Git and Worktree Practices
+### 11.1 Git and worktree practices
 
-1. **Atomic commits:** Plan + code together
-2. **Worktree isolation:** When uncertain about changes, use `.worktree`
-3. **Branch per milestone:** `feature/context-intelligence`, `feature/delegation-branch`
+The plan and the resulting skills must promote:
 
-### Safe Discovery Scripts
+1. atomic git commits for planning and implementation changes,
+2. branch-per-milestone or branch-per-lane work,
+3. `.worktrees` or worktree-based isolation when large experiments are needed,
+4. a clean separation between discovery, planning, and mutation.
+
+### 11.2 Discovery-first shell posture
+
+Default script posture must be read-only and exploratory.
+
+**Preferred shell patterns:**
 
 ```bash
-# SAFE — Read-only discovery
-ls -la src/
-git log --oneline -10
-find . -name "*.ts" -not -path "*/node_modules/*"
-
-# UNSAFE — Never by default
-rm -rf
-git push --force
+find . \
+  -not -path '*/node_modules/*' \
+  -not -path '*/.git/*' \
+  -not -path '*/dist/*' \
+  -not -path '*/coverage/*' \
+  -not -path '*/.cache/*' \
+  -not -path '*/.hivemind/*' \
+  -type f
 ```
 
-### Hierarchy-Aware Inspection
+```bash
+git log --oneline --decorate -20
+```
 
-1. **Shell commands for tree inspection:**
-   ```bash
-   # Full tree excluding noise
-   find . -not -path "*/node_modules/*" \
-          -not -path "*/.git/*" \
-          -not -path "*/dist/*" \
-          -not -path "*/.hivemind/*" \
-          -type f | head -50
-   ```
+```bash
+find . -type f | grep -E 'AGENTS\.md|CLAUDE\.md|GEMINI\.md|README\.md'
+```
 
-2. **Platform-specific awareness:**
-   - `.opencode/` — Primary for this project
-   - `.hivemind/` — Runtime output only
-   - `dist/` — Build output only
+### 11.3 Safe inspection expectations
 
-### Time and Date Awareness
+Skills should encourage:
 
-- When same-level entities conflict, prefer **latest valid authority**
-- Document timestamps vs git history — verify consistency
-- Date conflict resolution is contextual, not absolute
+- hierarchy-aware code-tree inspection,
+- exclusion of noisy directories,
+- regex-based lookup before hardcoded path assumptions,
+- fuzzy matching when folder or filename variance is likely,
+- default read-only exploration unless mutation is explicitly required.
 
----
+### 11.4 Multi-environment handling
 
-## 10. Refactor / Consolidate / Migrate / Remove Framework
+Scripts and skill guidance should assume that:
 
-### Decision Rules
+- some users operate in monorepos,
+- some install skills globally,
+- some use mirrored framework directories,
+- some environments have weak shell capabilities or inconsistent cert stores,
+- some platforms differ in layout but still represent the same role concepts.
 
-| Situation | Decision | Rationale |
-|-----------|----------|-----------|
-| Skill overlaps with GSD | **DON'T CREATE** | GSD is legitimate |
-| Skill adds ceremony | **REFACTOR** or **REMOVE** | Ceremony = bad |
-| Skill is bloated | **SHARD** into P1 + branches | Progressive disclosure |
-| Skill is redundant with model knowledge | **REMOVE** | Waste of tokens |
-| Skill conflicts with another | **CONSOLIDATE** or **ISOLATE** | Clear boundaries |
+### 11.5 Historical context mapping
 
-### Consolidation Criteria
+Skills should encourage techniques such as:
 
-When to consolidate multiple skills:
-- They serve the same P1/P2/P3 role
-- They have overlapping triggers
-- They reference each other excessively
+- reading recent git history before acting on a stale-looking artifact,
+- comparing timestamps and commit evidence when same-level files conflict,
+- treating dated plans as advisory unless explicitly promoted,
+- maintaining context maps of stable authority vs archive/history surfaces.
 
-When to keep separate:
-- Different P1/P2/P3 roles
-- Different trigger conditions
-- Different loading contexts
+### 11.6 Safe recovery from degraded context
 
-### Migration Path
+When context is incomplete or degraded, the safe operating sequence is:
 
-For existing skills that need migration:
-1. **Audit** — Run Skill-Judge evaluation
-2. **Classify** — Keep / Refactor / Consolidate / Migrate / Remove
-3. **Plan** — Write migration plan with TDD tests
-4. **Execute** — Implement changes
-5. **Validate** — Ensure no regression
+1. pause and classify the degradation,
+2. gather minimal evidence,
+3. re-anchor user intent and current state,
+4. avoid mutation until confidence is restored,
+5. escalate to recovery specialist guidance only when needed.
 
 ---
 
-## 11. Risks and Anti-Patterns
+## 12. Refactor / Consolidate / Migrate / Remove Framework
 
-### What Must NOT Happen
+### 12.1 Decision rules
 
-| Anti-Pattern | Why It Fails |
-|---------------|--------------|
-| One giant master skill | Becomes bloated, ceremony-heavy |
-| Duplicated pack roles | Confusion about which to load |
-| Entry packs with mandatory ceremonies | Adds friction, not value |
-| Specialist packs loaded by default | Wastes context window |
-| Reference chains (A→B→C) | Breaks progressive disclosure |
-| Brittle absolute paths | Fails across environments |
-| Ignoring GSD framework | Reinvents wheel, causes conflicts |
+| Situation | Action | Reason |
+|----------|--------|--------|
+| Skill duplicates another stable role | Consolidate or remove | Reduces selection confusion |
+| Skill is too large for its pattern role | Shard into pattern-correct pieces | Restores progressive disclosure |
+| Skill mostly repeats model-known material | Remove or rewrite | Poor knowledge delta |
+| Skill conflicts with GSD or legitimate framework behavior | Refactor or isolate | Compatibility matters |
+| Skill is useful but misplaced in the wrong pack | Migrate | Pack boundary clarity |
+| Skill is obsolete but historically relevant | Deprecate and archive | Preserve history without keeping it live |
 
-### Examples of Bad Behavior This Plan Prevents
+### 12.2 Consolidation criteria
 
-1. **Context-intelligence trying to be everything:**
-   - Previous attempt had 6 references, L1-L4 layers
-   - Now: Thin P1 router that just routes to branches
+Consolidate skills when they:
 
-2. **Delegation as standalone P1:**
-   - Should be P2 under context-intelligence
-   - Now: Branch skill loaded when delegation detected
+- share the same operating role,
+- overlap heavily in triggers,
+- compete for the same user prompt shape,
+- create duplicate references or boundary claims.
 
-3. **No TDD validation:**
-   - Skills written without failing tests first
-   - Now: RED-GREEN-REFACTOR is NON-NEGOTIABLE
+Do **not** consolidate when they:
 
-4. **Max stack violation:**
-   - Loading 5+ skills at entry
-   - Now: Max 3 at entry, P1 doesn't count if router
+- occupy different pattern roles,
+- have meaningfully different risk profiles,
+- serve different entry conditions or different session states.
 
----
+### 12.3 Migration framework
 
-## 12. Recommended Next Actions
+1. audit the existing skill,
+2. classify it against the pattern model,
+3. map overlaps and conflicts,
+4. define a TDD migration baseline,
+5. move or shard it into the correct pack or branch,
+6. validate that routing and stack behavior improved.
 
-### Immediate (Before Writing Any Code)
+### 12.4 Remove framework
 
-1. **User reviews this plan** — Confirm understanding of P1/P2/P3 system
-2. **Define first TDD test case** — What failing scenario does P1 router need to address?
-3. **Sketch P1 router structure** — What does the thin SKILL.md look like?
+Removal is appropriate when a skill:
 
-### Phase 1: Context-Intelligence P1 Router
+- provides no meaningful knowledge delta,
+- creates false determinism,
+- duplicates another live skill’s value,
+- causes routing confusion that outweighs any benefit,
+- depends on stale assumptions about repo or framework shape.
 
-| Step | Task | Deliverable |
-|------|------|-------------|
-| 1.1 | Write TDD test for session type detection | Failing test prompt |
-| 1.2 | Write thin P1 router SKILL.md | Routes to branches only |
-| 1.3 | Write session-routing reference | Decision matrix |
-| 1.4 | Validate with test | Test passes |
+### 12.5 Alias framework
 
-### Phase 2: Delegation Branch (P2)
+Aliases are allowed only when they reduce adoption friction without creating parallel pack identities. Example:
 
-| Step | Task | Deliverable |
-|------|------|-------------|
-| 2.1 | Write TDD test for delegation scenario | Failing test prompt |
-| 2.2 | Write delegation branch SKILL.md | Scope rules, handoff format |
-| 2.3 | Validate with test | Test passes |
+- `hivemind-skill-writer` may remain an accepted alias while `meta-builder-hivemind` is the candidate canonical name.
 
-### Phase 3: Workflow Branch (P2)
+Alias rules:
 
-| Step | Task | Deliverable |
-|------|------|-------------|
-| 3.1 | Write TDD test for workflow scenario | Failing test prompt |
-| 3.2 | Write workflow branch SKILL.md | Phase management |
-| 3.3 | Validate with test | Test passes |
-
-### Phase 4: Recovery Branch (P3)
-
-| Step | Task | Deliverable |
-|------|------|-------------|
-| 4.1 | Write TDD test for recovery scenario | Failing test prompt |
-| 4.2 | Write recovery branch SKILL.md | Rot detection, trust rebuild |
-| 4.3 | Validate with test | Test passes |
-
-### Phase 5: Integration
-
-| Step | Task | Deliverable |
-|------|------|-------------|
-| 5.1 | Full stack test | ≤3 skills load |
-| 5.2 | Skill-Judge evaluation | All skills ≥90% |
-| 5.3 | GSD alignment check | GSD still works |
-| 5.4 | User acceptance | User approves |
+1. the alias must not become a separate pack,
+2. the alias must point to the same conceptual boundary,
+3. the alias must be retired or frozen deliberately, not accidentally.
 
 ---
 
-## Summary: What We Learned
+## 13. Risks and Anti-Patterns
 
-| What I Did Wrong | What Should Happen |
-|------------------|---------------------|
-| Created bloated context-intelligence with 6 refs | P1 = thin router, branches are separate skills |
-| Created delegation/workflow as standalone | They are P2 branches under P1 |
-| Skipped TDD | RED-GREEN-REFACTOR is mandatory |
-| Ignored degree of freedom | Only mandate where fragility requires |
-| Added ceremony | Context defense should enable, not obstruct |
+### 13.1 What must not happen
+
+| Anti-pattern | Why it is dangerous |
+|-------------|---------------------|
+| One giant master skill | Destroys routing clarity and progressive disclosure |
+| Loading many vague skills at entry | Consumes context without useful narrowing |
+| Branches that duplicate each other | Causes load confusion and poor trigger quality |
+| Specialist depth in Pattern 1 | Pollutes every session with low-frequency content |
+| Brittle absolute path assumptions | Breaks in end-user environments and mixed frameworks |
+| Ceremonial determinism | Adds false confidence and obstructs work |
+| Testing that proves nothing | Produces fake readiness |
+| Governance overreach | Collides with legitimate framework surfaces |
+| Accidental over-automation | Encourages mutation before sufficient understanding |
+
+### 13.2 Bad skill-pack behavior this plan is designed to prevent
+
+1. **Entry router becomes the entire operating manual.**
+2. **Delegation logic loads even when no delegation exists.**
+3. **Recovery logic behaves like panic mode in clean sessions.**
+4. **Authoring pack collides with planning or TDD packs instead of coordinating with them.**
+5. **Skills claim authoritative resolution when the evidence is mixed or stale.**
+6. **Skills teach humans and models to obey directory names instead of actual authority.**
+
+### 13.3 Hallucination and overreach risks
+
+The plan explicitly guards against:
+
+- invented authority claims,
+- overconfident freshness resolution,
+- assuming that generated/runtime surfaces are authoring truth,
+- interpreting all framework files as equally authoritative,
+- treating every vague prompt as justification for deep branch loading.
 
 ---
 
-**Next:** Awaiting user review of this plan before proceeding to implementation.
+## 14. Recommended Next Actions
+
+### 14.1 Immediate next steps
+
+1. Freeze this document as the current planning blueprint.
+2. Use it to rewrite the thin Pattern 1 `context-intelligence` skill.
+3. Define the first failing TDD scenarios for:
+   - fresh session routing,
+   - delegated sub-session scope,
+   - resumed/degraded session recovery.
+4. Stabilize the companion pack naming decision boundary without minting extra names.
+
+### 14.2 What should be drafted first
+
+Draft in this order:
+
+1. `context-intelligence/SKILL.md`
+2. `context-intelligence/references/01-session-routing.md`
+3. `context-intelligence/references/03-stack-and-delegation-decisions.md`
+4. `context-intelligence-delegation/SKILL.md`
+5. `context-intelligence-workflow/SKILL.md`
+6. `context-intelligence-recovery/SKILL.md`
+
+### 14.3 What must be validated before expansion
+
+Before any optional or future branch is approved, validate that:
+
+1. Pattern 1 stays thin and useful.
+2. Pattern 2 branches do not compete with each other.
+3. Pattern 3 depth is invoked only when risk warrants it.
+4. The stack remains within the 3-skill entry constraint.
+5. Pack logic still works in a degraded or partially pruned session.
+6. Companion pack guidance does not clash with planning or TDD workflows.
+
+### 14.4 Promotion-ready implementation sequence
+
+| Step | Outcome |
+|------|---------|
+| Draft P1 router | Entry discipline becomes concrete |
+| Add branch skills | Pack becomes operational |
+| Add recovery specialist | Safe degraded-context handling becomes real |
+| Run pressure tests | Confidence comes from evidence, not prose |
+| Build companion authoring pack | End-user skill creation becomes coherent |
+| Promote stable templates | Future pack and skill writing becomes faster and safer |
+
+---
+
+## 15. Source Inputs and Research Notes
+
+### 15.1 Local source inputs applied
+
+- `docs/draft-notes/context-intelligence-entry-pack-plan-2026-03-19.md`
+- `docs/draft-notes/setting-the-theme.md`
+- `docs/skill-revamp/architecture.md`
+- `docs/skill-revamp/progress.md`
+- `docs/skill-revamp/eval-tracking.md`
+- `docs/skill-revamp/planning/skill-pack-naming/name-of-skill-planning.md`
+- `docs/HIVEMIND-FRAMEWORK-AUDIT-CRITERIA.md`
+
+### 15.2 External reference inputs applied
+
+The plan incorporated directly accessible local copies or installed skills for:
+
+- Softaworks `skill-judge`
+- Obra `writing-skills`
+- Anthropic `skill-creator`
+
+### 15.3 Accessibility note
+
+The `skills.sh` Vercel Labs `skill-creator` page was attempted during planning but was not directly readable in this environment because of local SSL certificate verification failure. No details were fabricated from that inaccessible fetch. The plan instead relied on the locally available external skill references and the already-drafted local revamp materials that explicitly encode progressive disclosure and degree-of-freedom concerns.
+
+### 15.4 Planning conclusion
+
+This master plan is intentionally stricter about boundaries, branching, evaluation, and safety than earlier drafts. That strictness is directed at architecture, not at user workflows. The aim is to produce a skill system that is more intelligent, more context-aware, and less noisy across both this repository and future end-user environments.

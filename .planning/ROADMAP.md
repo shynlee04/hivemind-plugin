@@ -197,7 +197,7 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 2.2 → 3 → 4 → 5 → 6
 | 7. Live Official-Boundary Proof | 0/3 | Not started | - |
 | 8. TUI Stabilization on Backend Truth | 0/3 | Not started | - |
 | 9. Context-Intelligence Skills | 0/0 | Planned | - |
-| 10. Deep-skill-writer-pack Ecosystem | 4/6 | In Progress|  |
+| 10. Deep-skill-writer-pack Ecosystem | 5/6 | In Progress|  |
 
 ### Phase 9: non-breaking skills for context-intelligence; recovery of the meta builder to become the healer and framework doctor, customization and tailor the meta concepts to end users when using hivemind project
 
@@ -214,7 +214,7 @@ Plans:
 **Goal:** Integrate meta-concepts (booster/harness), research framework, iterative refinement, and QA to enable skilled user brainstorming with no conflicts or overlaps.
 **Requirements**: PH10-01 (Booster/Harness), PH10-02 (TDD), PH10-03 (Iterative Refinement), PH10-04 (Brainstorming), PH10-05 (Skill-Judge)
 **Depends on:** Phase 9
-**Plans:** 4/6 plans executed
+**Plans:** 5/9 plans executed
 
 **Success Criteria:**
 1. User can author skills with TDD workflow validation
@@ -229,3 +229,7 @@ Plans:
 - [ ] 10-03: Skill-Judge Evaluation System — Complete 120-point quality scoring across 5 dimensions
 - [ ] 10-04: Iterative Refinement Loop — Add self-improvement hooks and pattern extraction
 - [ ] 10-05: Conflict Detection System — Enable conflict-free brainstorming with cross-pack overlap detection
+- [ ] 10-06-PLAN.md — Re-anchor authority on the shipped `skills/` pack and align the local OpenCode mirror
+- [ ] 10-07-PLAN.md — Replace false-confidence TDD and Skill-Judge tests with real Node-runner behavior checks
+- [ ] 10-08-PLAN.md — Replace iterative-refinement and conflict-detection placeholders with executable proofs
+- [ ] 10-09-PLAN.md — Fold Phase 10 into `npm test` and prove the packaged skill pack end-to-end
