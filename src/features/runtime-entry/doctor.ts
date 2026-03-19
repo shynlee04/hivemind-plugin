@@ -12,7 +12,7 @@ import type {
   SlashCommandBundle,
 } from '../../commands/slash-command/command-types.js'
 import { executeSlashCommandBundle, findSlashCommandBundle } from '../../commands/slash-command/index.js'
-import type { LoadedCommandAsset } from '../../hooks/runtime-bridge/instruction-loader.js'
+import type { LoadedCommandAsset } from './instruction-loader.js'
 import { syncRuntimeSurface } from '../../cli/runtime-assets.js'
 
 import {
