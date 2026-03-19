@@ -18,7 +18,6 @@ src/
 ├── tools/           Write-side — 6 structured agent-callable tools
 ├── sdk-supervisor/  Additive Phase 1 orchestration control (new sector)
 ├── schema-kernel/   Additive Phase 1 contract authority (new sector)
-├── plugin-handlers/ Decision routing — command, tool, session resolution
 ├── core/            State — trajectory and workflow authority
 ├── commands/        Slash-command bundle registry, projection, and execution
 ├── context/         Prompt packet compilation and rendering
