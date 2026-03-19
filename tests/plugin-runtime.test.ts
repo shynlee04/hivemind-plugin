@@ -1,103 +1,171 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, rm } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
-import { describe, it } from 'node:test'
+import test from 'node:test'
 
-import { HiveMindPlugin } from '../src/plugin/opencode-plugin.js'
-import { createMockPluginInput } from './helpers/mock-sdk.js'
+import type { RuntimeBindingsSnapshot } from '../src/features/runtime-entry/attachment.js'
+import type { StartWorkDecision } from '../src/hooks/start-work/start-work-types.js'
+import { getRuntimePressureContract } from '../src/shared/pressure-contract.js'
+import {
+  createHivemindContextPacket,
+  renderHivemindContext,
+} from '../src/plugin/context-renderer.js'
+import { createTurnSnapshotLoader } from '../src/plugin/runtime-snapshot.js'
 
-function count(text: string, needle: string): number {
-  return text.split(needle).length - 1
+function createSnapshot(overrides: Partial<RuntimeBindingsSnapshot> = {}): RuntimeBindingsSnapshot {
+  return {
+    attachmentMode: 'local-worktree',
+    defaultLineage: 'hivefiver',
+    defaultPurposeClass: 'planning',
+    runtimeAuthority: 'attached-sdk',
+    runtimeInstanceId: 'rt_123',
+    serverBaseUrl: 'http://localhost:4096',
+    preferredUserName: 'Taylor',
+    governanceMode: 'assisted',
+    automationLevel: 'guarded',
+    language: 'en',
+    artifactLanguage: 'en',
+    outputStyle: 'concise',
+    expertLevel: 'advanced',
+    branchFocus: 'runtime-context-detox',
+    guardrails: ['workflow-first'],
+    facilitators: ['hm-init'],
+    mcpReadiness: ['context7'],
+    hivebrainDigest: ['runtime-authority'],
+    verificationContract: 'prove-with-tests',
+    returnContract: 'brief',
+    entryState: 'ready',
+    qaState: 'passed',
+    releaseState: 'released',
+    hasRuntimeAttachment: true,
+    hasHivemind: true,
+    hivemindHealthy: true,
+    hasWorkflow: true,
+    profileComplete: true,
+    missingProfileFields: [],
+    interactiveBootstrapRequired: false,
+    bootstrapProfile: {
+      preferredUserName: 'Taylor',
+      chatLanguage: 'en',
+      artifactLanguage: 'en',
+      expertiseLevel: 'advanced',
+      governanceMode: 'assisted',
+      automationLevel: 'guarded',
+      outputStyle: 'concise',
+    },
+    trajectoryId: 'traj_123',
+    workflowId: 'wf_123',
+    taskIds: ['task-1', 'task-2'],
+    subtaskIds: [],
+    checkpointId: 'cp_123',
+    ...overrides,
+  }
 }
 
-function collectText(values: unknown[]): string {
-  return values
-    .filter((value): value is string => typeof value === 'string')
-    .join('\n')
+function createDecision(overrides: Partial<StartWorkDecision> = {}): StartWorkDecision {
+  return {
+    sessionId: 'ses_123',
+    sessionScope: 'main',
+    sessionState: 'fresh',
+    lineage: 'hivefiver',
+    purposeClass: 'planning',
+    confidence: 0.9,
+    reasons: ['planning-keyword'],
+    readiness: [],
+    traversalOutcome: 'route',
+    commandAgent: 'planner',
+    continuityAlerts: [],
+    workflowAuthority: undefined,
+    trajectoryAssessment: undefined,
+    routeDisposition: 'create',
+    nextTransition: 'command:hm-plan',
+    requiredControlPlaneId: undefined,
+    recommendedControlPlaneId: undefined,
+    requiredCommandId: undefined,
+    recommendedCommandId: 'hm-plan',
+    programmaticInitiationRequired: false,
+    autoRoute: true,
+    riskLevel: 'none',
+    opencodeKnowledge: [],
+    pressureSignals: ['steady-state'],
+    pressureContract: getRuntimePressureContract('steady-state'),
+    ...overrides,
+  }
 }
 
-describe('plugin runtime detox baseline', () => {
-  it('injects exactly one authoritative hivemind packet into message history', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-runtime-'))
-
-    try {
-      const { input } = createMockPluginInput({ directory, worktree: directory })
-      const hooks = await HiveMindPlugin(input)
-      const output = {
-        messages: [
-          {
-            info: {
-              id: 'msg_runtime',
-              role: 'user',
-              sessionID: 'ses_runtime',
-            },
-            parts: [
-              {
-                type: 'text',
-                text: 'plan the runtime detox migration',
-              },
-            ],
-          },
-        ],
-      }
-
-      await hooks['experimental.chat.messages.transform']?.({} as never, output as never)
-
-      const partText = collectText(
-        (output.messages[0]?.parts ?? []).map((part) =>
-          part && typeof part === 'object' && 'text' in part ? part.text : undefined,
-        ),
-      )
-
-      assert.equal(count(partText, '<hivemind context_version="v1">'), 1)
-      assert.equal(partText.includes('<hivemind-kernel-packet>'), false)
-      assert.equal(partText.includes('<hivemind-lineage-refresh>'), false)
-      assert.equal(partText.includes('<opencode-runtime-knowledge>'), false)
-      assert.equal(partText.includes('<hivemind-route-bridge>'), false)
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+test('createTurnSnapshotLoader caches one snapshot per turn and resets explicitly', async () => {
+  let calls = 0
+  const snapshot = createSnapshot()
+  const loader = createTurnSnapshotLoader('/tmp/hivemind', async () => {
+    calls += 1
+    return snapshot
   })
 
-  it('treats chat.message as turn lifecycle reset work, not a packet emitter', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-chat-message-'))
+  const first = await loader.getSnapshot()
+  const second = await loader.getSnapshot()
 
-    try {
-      const { input } = createMockPluginInput({ directory, worktree: directory })
-      const hooks = await HiveMindPlugin(input)
-      const output = { parts: [] as Array<{ text?: string }> }
+  assert.equal(calls, 1)
+  assert.equal(first, snapshot)
+  assert.equal(second, snapshot)
 
-      await hooks['chat.message']?.({
-        sessionID: 'ses_runtime',
-        messageID: 'msg_runtime',
-      } as never, output as never)
+  loader.resetTurnSnapshot()
 
-      assert.equal(output.parts.length, 0, 'chat.message should not inject baseline runtime packets')
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+  const third = await loader.getSnapshot()
+  assert.equal(calls, 2)
+  assert.equal(third, snapshot)
+})
+
+test('renderHivemindContext emits the authoritative packet in stable field order', () => {
+  const packet = renderHivemindContext({
+    session_id: 'ses_123',
+    lineage: 'hivefiver',
+    trajectory: 'traj_123',
+    workflow: 'wf_123',
+    task_ids: ['task-1', 'task-2'],
+    entry_state: 'ready',
+    purpose: 'planning',
+    risk: 'none',
+    route_command: 'hm-plan',
+    governance_mode: 'assisted',
+    language: 'en',
   })
 
-  it('stores a single authoritative packet during compaction', async () => {
-    const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-compaction-'))
+  assert.equal(
+    packet,
+    [
+      '<hivemind context_version="v1">',
+      'session_id=ses_123',
+      'lineage=hivefiver',
+      'trajectory=traj_123',
+      'workflow=wf_123',
+      'task_ids=task-1,task-2',
+      'entry_state=ready',
+      'purpose=planning',
+      'risk=none',
+      'route_command=hm-plan',
+      'governance_mode=assisted',
+      'language=en',
+      '</hivemind>',
+    ].join('\n'),
+  )
+})
 
-    try {
-      const { input } = createMockPluginInput({ directory, worktree: directory })
-      const hooks = await HiveMindPlugin(input)
-      const output = { context: [] as string[] }
+test('createHivemindContextPacket maps snapshot and routing decision into the unified fields', () => {
+  const packet = createHivemindContextPacket({
+    sessionId: 'ses_123',
+    snapshot: createSnapshot({ entryState: 'repair-required', governanceMode: 'strict', language: 'fr' }),
+    startWork: createDecision({ purposeClass: 'implementation', riskLevel: 'gated', requiredCommandId: 'hm-implement' }),
+  })
 
-      await hooks['experimental.session.compacting']?.({
-        sessionID: 'ses_runtime',
-      } as never, output as never)
-
-      const contextText = collectText(output.context)
-
-      assert.equal(count(contextText, '<hivemind context_version="v1">'), 1)
-      assert.equal(contextText.includes('<hivemind-kernel-packet>'), false)
-      assert.equal(contextText.includes('<opencode-runtime-knowledge>'), false)
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+  assert.deepEqual(packet, {
+    session_id: 'ses_123',
+    lineage: 'hivefiver',
+    trajectory: 'traj_123',
+    workflow: 'wf_123',
+    task_ids: ['task-1', 'task-2'],
+    entry_state: 'repair-required',
+    purpose: 'implementation',
+    risk: 'gated',
+    route_command: 'hm-implement',
+    governance_mode: 'strict',
+    language: 'fr',
   })
 })
