@@ -42,7 +42,7 @@ A **Booster** is a meta-skill that augments agent intelligence without creating 
 
 ### Definition
 
-A **Harness** provides context enhancement without hard-state architectures. It offers a structured approach to investigation and introspection that can be safely used without permanent side effects.
+A **Harness** provides context enhancement without hard-state architectures. It offers a structured approach to investigation and introspection with **progressive disclosure** — loading detail only when needed — that can be safely used without permanent side effects.
 
 ### Characteristics
 
