@@ -1,6 +1,6 @@
 import { findControlPlanePrimitive } from '../control-plane/index.js'
 import type { CommandBinding } from './handler-types.js'
-import type { StartWorkDecision } from '../hooks/start-work/index.js'
+import type { StartWorkDecision } from '../features/session-entry/start-work-types.js'
 import { findSlashCommandBundle } from '../commands/slash-command/index.js'
 
 export function resolveCommandBinding(startWork: StartWorkDecision): CommandBinding {

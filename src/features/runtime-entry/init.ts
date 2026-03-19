@@ -14,7 +14,7 @@ import {
 import type { ControlPlaneRecommendedPresetId } from '../../control-plane/control-plane-types.js'
 import { findControlPlanePrimitive } from '../../control-plane/control-plane-registry.js'
 import { createManagedRuntime } from '../../control-plane/sdk-runtime.js'
-import type { PurposeClass } from '../../hooks/start-work/index.js'
+import type { PurposeClass } from '../../features/session-entry/start-work-types.js'
 import { createRecoveryCheckpoint } from '../../recovery/index.js'
 import { markEntryKernelQaPending } from '../../shared/entry-kernel-state.js'
 import type { RuntimeAttachmentSettings } from '../../shared/runtime-attachment.js'

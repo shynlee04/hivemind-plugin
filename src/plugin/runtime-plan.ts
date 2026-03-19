@@ -1,6 +1,7 @@
 import { buildContextInjectionPlan } from '../hooks/context-injection/index.js'
 import { createAutoSlashCommandPlan } from '../hooks/auto-slash-command/index.js'
-import { buildStartWorkEntryKernel, resolveStartWork } from '../hooks/start-work/index.js'
+import { buildStartWorkEntryKernel } from '../features/session-entry/start-work-types.js'
+import { resolveStartWork } from '../hooks/start-work/start-work-router.js'
 import { getAttachedSdkAuthority } from '../hooks/sdk-context.js'
 import { buildPluginContext } from '../plugin-handlers/index.js'
 import { renderOpencodeKnowledgePacket } from '../shared/opencode-knowledge.js'

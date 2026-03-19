@@ -1,7 +1,7 @@
 import type { KernelLineage, SessionScope } from '../context/prompt-packet/prompt-packet-types.js'
 import type { ControlPlanePrimitive } from '../control-plane/index.js'
 import type { DocKnowledgeSurface } from '../intelligence/doc/index.js'
-import type { StartWorkDecision } from '../hooks/start-work/index.js'
+import type { StartWorkDecision } from '../features/session-entry/start-work-types.js'
 import type { OpencodeKnowledgeSurface } from '../shared/opencode-knowledge.js'
 import type { SlashCommandBundle } from '../commands/slash-command/index.js'
 

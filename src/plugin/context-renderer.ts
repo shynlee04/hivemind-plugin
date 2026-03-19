@@ -1,5 +1,5 @@
 import type { RuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
-import type { StartWorkDecision } from '../hooks/start-work/start-work-types.js'
+import type { StartWorkDecision } from '../features/session-entry/start-work-types.js'
 
 export interface HivemindContextPacket {
   session_id: string

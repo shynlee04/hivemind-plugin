@@ -5,7 +5,7 @@ import { initSdkContext, resetSdkContext } from '../hooks/sdk-context.js'
 import { createEventHandler } from '../hooks/event-handler.js'
 import { showGovernanceToast } from '../hooks/soft-governance.js'
 import { resolveStartWork } from '../hooks/start-work/start-work-router.js'
-import type { StartWorkInput } from '../hooks/start-work/start-work-types.js'
+import type { StartWorkInput } from '../features/session-entry/start-work-types.js'
 import {
   createSyntheticPart,
   findLastUserMessage,

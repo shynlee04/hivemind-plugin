@@ -1,7 +1,7 @@
 # Phase 11 Consumer Proof Matrix
 
 Generated: 2026-03-19
-Plan: 11-01
+Plan: 11-10
 Scope: Conditional deletion targets named in `11-CONTEXT.md`
 
 This matrix records current repo-evidence consumers before any Phase 11 cleanup deletes or relocates runtime-context layers. Import consumers are taken from `src/**` and `tests/**` references; historical docs are noted only when they explain why a target is still planned.
@@ -12,6 +12,7 @@ This matrix records current repo-evidence consumers before any Phase 11 cleanup 
 - `relocate-first` - live consumers remain, but the surviving owner is already known and imports should move before deletion.
 - `keep-for-preserved-boundary` - current phase boundary still preserves this surface as a live authority seam.
 - `defer` - current consumers exist, but the final survivor owner is not yet narrow enough to delete in 11-01.
+- `deleted` - zero-consumer proof was re-run and the target was removed in a later Phase 11 cleanup plan.
 
 ## Conditional Target Matrix
 
@@ -28,18 +29,19 @@ This matrix records current repo-evidence consumers before any Phase 11 cleanup 
 | `src/hooks/context-injection/` | `src/plugin/runtime-plan.ts`; `src/hooks/runtime-bridge/context-injection-hook.ts` | No direct hook registration in `HiveMindPlugin`; only indirect plan/bridge plumbing | `defer` | Expected end state is deletion, but 11-01 must first remove `runtime-plan.ts` and bridge-only references | `rg -n "hooks/context-injection|buildContextInjectionPlan" src tests` returns no `src/**` or `tests/**` consumer lines |
 | `src/hooks/prompt-transformation/` | `src/plugin/opencode-plugin.ts`; `src/plugin/messages-transform.ts`; `src/plugin/system-transform.ts`; `src/plugin/plugin-types.ts`; `src/hooks/runtime-bridge/prompt-transformation-hook.ts` | `HiveMindPlugin['experimental.chat.messages.transform']` depends on synthetic-part helpers; plugin adapters wrap `transformRuntimePrompt()` for both message and system packet families | `relocate-first` | Move surviving helpers (`createSyntheticPart`, `findLastUserMessage`, `getMessageText`, and any kept packet rendering seam) to `src/plugin/` or another final preserved owner, then delete wrappers | `rg -n "hooks/prompt-transformation|transformRuntimePrompt|createSyntheticPart|findLastUserMessage|getMessageText" src tests` returns no old-path imports |
 | `src/plugin-handlers/` | `src/plugin/runtime-plan.ts`; `src/plugin/plugin-types.ts`; `src/hooks/auto-slash-command/auto-slash-command.ts`; `src/hooks/auto-slash-command/auto-slash-command-types.ts`; `src/index.ts` barrel | No direct plugin hook key points at this directory; current live use is routing/helper composition | `defer` | Decide in Plan 11-08 whether `resolveCommandBinding()` and related types stay as a minimal helper seam for `src/hooks/auto-slash-command/` or move into `src/plugin/`/`src/features/session-entry/` | `rg -n "plugin-handlers|buildPluginContext|resolveCommandBinding|PluginContext|CommandBinding" src tests` shows no remaining preserved consumer after the 11-08 decision |
-| `src/hooks/start-work/purpose-classifier.ts` | None in `src/**` or `tests/**`; only historical docs/plans reference it | None | `delete-now` | Feature-owned implementation already lives in `src/features/session-entry/purpose-classifier.ts` | `rg -n "hooks/start-work/purpose-classifier" src tests` returns no matches |
-| `src/hooks/start-work/lineage-router.ts` | None in `src/**` or `tests/**`; only historical docs/plans reference it | None | `delete-now` | Feature-owned implementation already lives in `src/features/session-entry/lineage-router.ts` | `rg -n "hooks/start-work/lineage-router" src tests` returns no matches |
-| `src/hooks/start-work/readiness-gates.ts` | None in `src/**` or `tests/**`; only historical docs/plans reference it | None | `delete-now` | Feature-owned implementation already lives in `src/features/session-entry/readiness-gates.ts` | `rg -n "hooks/start-work/readiness-gates" src tests` returns no matches |
-| `src/hooks/start-work/session-state.ts` | None in `src/**` or `tests/**`; only historical docs/plans reference it | None | `delete-now` | Feature-owned implementation already lives in `src/features/session-entry/session-state.ts` | `rg -n "hooks/start-work/session-state" src tests` returns no matches |
-| `src/hooks/start-work/start-work-types.ts` | None in `src/**` or `tests/**` after Plan 11-03 relocated preserved type consumers to `src/features/session-entry/start-work-types.ts` | No plugin hook registers it directly; shim is no longer a preserved consumer path | `delete-now` | Feature-owned authority already lives in `src/features/session-entry/start-work-types.ts` | `rg -n "hooks/start-work/start-work-types" src tests` returns no matches |
+| `src/hooks/start-work/purpose-classifier.ts` | None after Plan 11-10; only historical docs/plans reference the removed shim path | None | `deleted` | Feature-owned implementation lives in `src/features/session-entry/purpose-classifier.ts` | Completed in Plan 11-10 via `rg -n "hooks/start-work/purpose-classifier" src tests` |
+| `src/hooks/start-work/lineage-router.ts` | None after Plan 11-10; only historical docs/plans reference the removed shim path | None | `deleted` | Feature-owned implementation lives in `src/features/session-entry/lineage-router.ts` | Completed in Plan 11-10 via `rg -n "hooks/start-work/lineage-router" src tests` |
+| `src/hooks/start-work/readiness-gates.ts` | None after Plan 11-10; only historical docs/plans reference the removed shim path | None | `deleted` | Feature-owned implementation lives in `src/features/session-entry/readiness-gates.ts` | Completed in Plan 11-10 via `rg -n "hooks/start-work/readiness-gates" src tests` |
+| `src/hooks/start-work/session-state.ts` | None after Plan 11-10; only historical docs/plans reference the removed shim path | None | `deleted` | Feature-owned implementation lives in `src/features/session-entry/session-state.ts` | Completed in Plan 11-10 via `rg -n "hooks/start-work/session-state" src tests` |
+| `src/hooks/start-work/start-work-types.ts` | None after Plan 11-10; plugin, runtime-plan, plugin-handler, runtime-entry, and test consumers now import `src/features/session-entry/start-work-types.ts` directly | No plugin hook registers it directly; shim is no longer a preserved consumer path | `deleted` | Feature-owned authority lives in `src/features/session-entry/start-work-types.ts` | Completed in Plan 11-10 via `rg -n "hooks/start-work/start-work-types" src tests` |
 
 ## Notes By Family
 
 - `runtime-plan.ts`, `surface-registry.ts`, `create-core-hooks.ts`, and `plugin-types.ts` are still mutually reinforcing. None should be deleted from 11-01 based on architecture intent alone.
 - `runtime-bridge/instruction-loader.ts` is no longer needed by preserved control-plane or slash-command consumers after Plan 11-05; the remaining bridge dependency is the deferred plugin-orchestration family headed by `src/plugin/surface-registry.ts`.
 - `prompt-transformation/` still touches the real plugin path today, so test rewrites must stop preserving the old wrapper hierarchy before later delete plans can land cleanly.
-- All five `src/hooks/start-work/*` shims now have zero `src/**` and `tests/**` import consumers, including `start-work-types.ts` after Plan 11-03.
+- Plan 11-10 removed all five `src/hooks/start-work/*` shim files after re-running zero-consumer proof.
+- `start-work-types.ts` needed one more relocation pass before deletion: plugin, runtime-plan, plugin-handler, runtime-entry, and test consumers now import `src/features/session-entry/start-work-types.ts` directly.
 
 ## Evidence Commands Used
 

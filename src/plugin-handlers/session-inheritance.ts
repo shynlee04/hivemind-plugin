@@ -1,5 +1,5 @@
 import type { SessionInheritance } from './handler-types.js'
-import type { StartWorkDecision } from '../hooks/start-work/index.js'
+import type { StartWorkDecision } from '../features/session-entry/start-work-types.js'
 
 export function resolveSessionInheritance(startWork: StartWorkDecision): SessionInheritance {
   if (startWork.sessionScope === 'sub-session') {

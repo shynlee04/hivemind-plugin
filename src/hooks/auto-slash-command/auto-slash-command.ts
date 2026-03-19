@@ -1,4 +1,4 @@
-import type { StartWorkDecision } from '../start-work/index.js'
+import type { StartWorkDecision } from '../../features/session-entry/start-work-types.js'
 import { resolveCommandBinding } from '../../plugin-handlers/index.js'
 import type { AutoSlashCommandPlan } from './auto-slash-command-types.js'
 

@@ -1,4 +1,4 @@
-import type { PurposeClass } from '../hooks/start-work/index.js'
+import type { PurposeClass } from '../features/session-entry/start-work-types.js'
 
 export function resolveCategoryRoute(purposeClass: PurposeClass): string {
   const categories: Record<PurposeClass, string> = {

@@ -14,11 +14,14 @@ import {
   type StartWorkDecision,
   type StartWorkInput,
   type TraversalOutcome,
-} from './start-work-types.js'
-import { classifyPurpose } from './purpose-classifier.js'
-import { resolveLineage } from './lineage-router.js'
-import { detectContinuityAlerts, detectSessionState } from './session-state.js'
-import { resolveReadinessGates } from './readiness-gates.js'
+} from '../../features/session-entry/start-work-types.js'
+import { classifyPurpose } from '../../features/session-entry/purpose-classifier.js'
+import { resolveLineage } from '../../features/session-entry/lineage-router.js'
+import {
+  detectContinuityAlerts,
+  detectSessionState,
+} from '../../features/session-entry/session-state.js'
+import { resolveReadinessGates } from '../../features/session-entry/readiness-gates.js'
 
 const AUTO_ROUTE_PURPOSES = new Set([
   'research',

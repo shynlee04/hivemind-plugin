@@ -1,5 +1,5 @@
 import type { ToolGrant } from './handler-types.js'
-import type { StartWorkDecision } from '../hooks/start-work/index.js'
+import type { StartWorkDecision } from '../features/session-entry/start-work-types.js'
 import type { SlashCommandBundle } from '../commands/slash-command/index.js'
 import type { CommandBinding } from './handler-types.js'
 

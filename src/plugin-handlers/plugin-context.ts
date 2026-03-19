@@ -1,5 +1,5 @@
 import { resolveDocKnowledgeSurfaces } from '../intelligence/doc/index.js'
-import type { StartWorkDecision } from '../hooks/start-work/index.js'
+import type { StartWorkDecision } from '../features/session-entry/start-work-types.js'
 import type { PluginContext } from './handler-types.js'
 import { resolveCategoryRoute } from './category-routing.js'
 import { resolveCommandBinding } from './command-resolution.js'

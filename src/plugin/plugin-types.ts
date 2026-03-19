@@ -1,7 +1,11 @@
 import type { ToolResponse } from '../shared/tool-response.js'
 import type { CompiledPromptPacket } from '../context/prompt-packet/index.js'
 import type { RuntimePromptTransformationInput } from '../hooks/prompt-transformation/index.js'
-import type { StartWorkEntryKernel, StartWorkInput, StartWorkDecision } from '../hooks/start-work/index.js'
+import type {
+  StartWorkEntryKernel,
+  StartWorkInput,
+  StartWorkDecision,
+} from '../features/session-entry/start-work-types.js'
 import type { AutoSlashCommandPlan } from '../hooks/auto-slash-command/index.js'
 import type { PluginContext } from '../plugin-handlers/index.js'
 import type { OpencodeKnowledgeSurface } from '../shared/opencode-knowledge.js'

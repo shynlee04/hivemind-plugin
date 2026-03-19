@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 
 import type { RuntimeBindingsSnapshot } from '../src/features/runtime-entry/attachment.js'
-import type { StartWorkDecision } from '../src/hooks/start-work/start-work-types.js'
+import type { StartWorkDecision } from '../src/features/session-entry/start-work-types.js'
 import { getRuntimePressureContract } from '../src/shared/pressure-contract.js'
 import {
   createHivemindContextPacket,

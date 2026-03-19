@@ -1,7 +1,7 @@
 import type { KernelLineage, SessionScope } from '../../context/prompt-packet/index.js'
 import { loadTrajectoryLedger } from '../../core/index.js'
 import { createPlanningGovernanceProjection } from '../../governance/index.js'
-import type { PurposeClass } from '../../hooks/start-work/index.js'
+import type { PurposeClass } from '../../features/session-entry/start-work-types.js'
 import { createRecoveryCheckpoint, repairRecoveryState } from '../../recovery/index.js'
 import { markEntryKernelQaPending } from '../../shared/entry-kernel-state.js'
 import { loadRuntimeBindingsSnapshot } from '../../shared/runtime-attachment.js'
