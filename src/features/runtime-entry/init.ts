@@ -30,8 +30,6 @@ import type {
   SlashCommandBundle,
 } from '../../commands/slash-command/command-types.js'
 import { executeSlashCommandBundle, findSlashCommandBundle } from '../../commands/slash-command/index.js'
-import type { LoadedCommandAsset } from './instruction-loader.js'
-import { syncRuntimeSurface, type RuntimeSurfaceSyncResult } from '../../cli/runtime-assets.js'
 
 import {
   createQuestionGateResult,
@@ -40,6 +38,7 @@ import {
   resolveRuntimeIds,
   snapshotProfileValidated,
 } from './handler-shared.js'
+import type { LoadedCommandAsset } from './instruction-loader.js'
 
 export interface InitOptions extends Partial<RuntimeAttachmentSettings> {
   presetId?: ControlPlaneRecommendedPresetId
@@ -58,7 +57,6 @@ export interface InitProjectResult {
   sessionId: string
   trajectoryId: string
   workflowId: string
-  sync: RuntimeSurfaceSyncResult
   closeoutStatus: 'open' | 'ready' | 'blocked' | 'qa-pending'
   nextCommand?: string
   recommendedCommands: string[]
@@ -101,7 +99,6 @@ export async function initProject(directory: string, options: InitOptions = {}):
   if (!bundle) {
     throw new Error('Missing hm-init command bundle.')
   }
-  const sync = await syncRuntimeSurface(directory)
 
   const commandResult = await executeSlashCommandBundle(bundle, {
     projectRoot: directory,
@@ -139,7 +136,6 @@ export async function initProject(directory: string, options: InitOptions = {}):
     sessionId,
     trajectoryId,
     workflowId,
-    sync,
     closeoutStatus: entryDecision.closeoutStatus,
     nextCommand: entryDecision.nextCommand,
     recommendedCommands: entryDecision.recommendedCommands,
@@ -253,7 +249,6 @@ export async function runInitHandler(
     resumeTarget: 'command:hm-harness',
   })
   const projection = await createPlanningGovernanceProjection(input.projectRoot, ids)
-  const runtimeSurfaceSync = await syncRuntimeSurface(input.projectRoot)
 
   return {
     commandId: bundle.id,
@@ -269,11 +264,6 @@ export async function runInitHandler(
       trajectory_state: trajectoryLedger.activeTrajectoryId,
       checkpoint_id: checkpoint.id,
       planning_projection: projection.filePath,
-      runtime_surfaces: {
-        pluginFile: runtimeSurfaceSync.pluginFile,
-        mirroredCommandCount: runtimeSurfaceSync.mirroredCommandFiles.length,
-        mirroredAgentCount: runtimeSurfaceSync.mirroredAgentFiles.length,
-      },
       runtimeAuthority: {
         runtimeAuthority: 'managed-sdk',
         runtimeInstanceId: managedRuntime.runtimeInstanceId,
@@ -318,10 +308,9 @@ export async function runInitHandler(
       'trajectory-bootstrapped',
       'recovery-checkpoint-created',
       'planning-projection-created',
-      'runtime-surface-synced',
       'entry-kernel-qa-pending',
     ],
-    artifactRefs: [projection.filePath, runtimeSurfaceSync.pluginFile],
+    artifactRefs: [projection.filePath],
     closeoutStatus: 'qa-pending',
     verificationContractId: asset.contract.verificationContract,
     pressureContract: bundle.pressureContract,
