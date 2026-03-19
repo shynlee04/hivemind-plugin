@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 11-10-PLAN.md
-last_updated: "2026-03-19T15:23:00.556Z"
-last_activity: "2026-03-19 - Completed 11-10: removed start-work shim files after proof"
+stopped_at: Completed 11-06-PLAN.md
+last_updated: "2026-03-19T15:34:49.351Z"
+last_activity: "2026-03-19 - Completed 11-06: flattened surviving plugin export boundary"
 progress:
   total_phases: 13
   completed_phases: 3
   total_plans: 34
-  completed_plans: 24
-  percent: 71
+  completed_plans: 25
+  percent: 74
 ---
 
 # Project State
@@ -26,18 +26,18 @@ See: `.planning/PROJECT.md` (updated 2026-03-17)
 ## Current Position
 
 Phase: 11 of 13 (Runtime Context Detox and Plugin Flattening)
-Plan: 06 of 11 in current phase (next incomplete)
-Status: Phase 11-10 complete, Phase 11 remains in progress
-Last activity: 2026-03-19 - Completed 11-10: removed start-work shim files after proof
+Plan: 07 of 11 in current phase (next incomplete)
+Status: Phase 11-06 complete, Phase 11 remains in progress
+Last activity: 2026-03-19 - Completed 11-06: flattened surviving plugin export boundary
 
-Progress: [███████░░░] 71%
+Progress: [███████░░░] 74%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 24
+- Total plans completed: 25
 - Average duration: 10 min
-- Total execution time: 2.2 hours
+- Total execution time: 2.3 hours
 
 **By Phase:**
 
@@ -55,7 +55,7 @@ Progress: [███████░░░] 71%
 | 8. TUI Stabilization on Backend Truth | 0 | 0 min | 0 min |
 | 9. Non-breaking Skills Ecosystem | 0 | 0 min | 0 min |
 | 10. Deep-skill-writer-pack Ecosystem | 1 | 7 min | 7 min |
-| 11. Runtime Context Detox and Plugin Flattening | 6 | 44 min | 7 min |
+| 11. Runtime Context Detox and Plugin Flattening | 7 | 50 min | 7 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 plans
@@ -76,6 +76,7 @@ Progress: [███████░░░] 71%
 | Phase 11 P04 | 7 min | 1 tasks | 3 files |
 | Phase 11 P05 | 0 min | 1 tasks | 5 files |
 | Phase 11 P10 | 8 min | 1 tasks | 23 files |
+| Phase 11 P06 | 6 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,8 @@ Recent decisions affecting current work:
 - [Phase 11]: src/hooks/runtime-bridge/instruction-loader.ts stays deferred only for plugin-orchestration cleanup because preserved command flows no longer depend on it.
 - [Phase 11]: Relocate remaining start-work type consumers to src/features/session-entry/start-work-types.ts before deleting the shim file.
 - [Phase 11]: Keep src/hooks/start-work/start-work-router.ts as the preserved hook entrypoint while deleting only the thin shim files in the family.
+- [Phase 11]: Treat the consumer proof matrix as the delete gate for plugin-local helper families. — Keeps Phase 11 deletions bound to zero-consumer evidence instead of architectural intent alone.
+- [Phase 11]: Export only HiveMindPlugin from the surviving plugin assembly boundary. — Prevents wildcard barrels from leaking deleted plugin scaffolding back into the public package surface.
 
 ### Pending Todos
 
@@ -143,6 +146,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-19T15:23:00.543Z
-Stopped at: Completed 11-10-PLAN.md
+Last session: 2026-03-19T15:34:49.345Z
+Stopped at: Completed 11-06-PLAN.md
 Resume file: None
