@@ -2,44 +2,45 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: ready
-stopped_at: Completed 11-11-PLAN.md
-last_updated: "2026-03-19T16:02:09.925Z"
-last_activity: "2026-03-19 - Completed 11-11: closed reduced-scope preserved-boundary runtime and tool proof"
+status: rebaselining
+stopped_at: Archived legacy phases 1-8 after direction change
+last_updated: "2026-03-20T00:00:00.000Z"
+last_activity: "2026-03-20 - Archived legacy phases 1-8 and invalidated prior roadmap truth"
 progress:
-  total_phases: 13
-  completed_phases: 4
-  total_plans: 34
-  completed_plans: 29
-  percent: 85
+  total_phases: 3
+  completed_phases: 1
+  total_plans: 20
+  completed_plans: 16
+  percent: 80
 ---
 
 # Project State
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-03-17)
+See: `.planning/PROJECT.md` (updated 2026-03-20)
 
 **Core value:** At runtime, HiveMind must reliably steer OpenCode agents through deterministic, tool-using workflows that are provably aligned with the live OpenCode client/server/plugin contract.
-**Current focus:** Next roadmap phase selection after completing Phase 11
+**Current focus:** Rebaseline the roadmap after archiving legacy phases 1 through 8
 
 ## Current Position
 
-Phase: 11 of 13 (Runtime Context Detox and Plugin Flattening)
-Plan: 11 of 11 in current phase (complete)
-Status: Phase 11 is complete; next roadmap phase is not yet in execution
-Last activity: 2026-03-19 - Completed 11-11: closed reduced-scope preserved-boundary runtime and tool proof
+Phase set: legacy phases 1 through 8 archived; active direction pending replacement planning
+Plan: none active
+Status: Rebaselining after invalidating the former 1 through 8 roadmap contract
+Last activity: 2026-03-20 - Archived legacy phases 1 through 8 after direction change
 
-Progress: [█████████░] 85%
+Progress: active roadmap progress is being recalculated after the archive reset
 
 ## Performance Metrics
 
 **Velocity:**
+- Historical note: these totals include work from archived legacy phases 1 through 8.
 - Total plans completed: 29
 - Average duration: 10 min
 - Total execution time: 2.5 hours
 
-**By Phase:**
+**By Phase (historical record; phases 1 through 8 archived on 2026-03-20):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
@@ -145,7 +146,7 @@ Recent decisions affecting current work:
 
 ### Blockers/Concerns
 
-- Phase 5: Minimum continuation record shape still needs implementation-time validation.
+- The legacy roadmap contract for phases 1 through 8 is no longer valid; replacement direction is not yet written into canonical planning artifacts.
 - `npm test` still stops in `scripts/check-agent-registry-parity.sh` because `.opencode/agents/*.md` runtime mirrors are missing; reduced Phase 11 closeout treated that as out-of-scope agent-surface noise.
 
 ### Quick Tasks Completed
@@ -153,8 +154,7 @@ Recent decisions affecting current work:
 |# | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260319-bd4 | Create customized hivemind-skill-writer pack system with agent/sub-agent architecture | 2026-03-19 |6854d0d | [quick/260319-bd4-create-customized-hivemind-skill-writer-](./quick/260319-bd4-create-customized-hivemind-skill-writer-/) |
-- Phase 7: Live proof artifact format and review workflow need explicit execution decisions.
-- Phase 8: Ink-first stabilization is planned; OpenTUI promotion stays gated on backend contract stability.
+- Historical Phase 7 and Phase 8 notes are archived and must not drive current execution.
 - The skill-pack initiative is now tracked under `.planning/skill-module/**`, but it remains a parallel planning branch and must not silently replace the active runtime roadmap without explicit promotion.
 
 ## Session Continuity

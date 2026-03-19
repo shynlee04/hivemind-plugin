@@ -1,5 +1,7 @@
 # HiveMind Runtime Refactor and Deterministic Execution Migration
 
+Archive note (2026-03-20): the original migration direction that drove roadmap phases 1 through 8 is now archived. This document remains as historical project context until replacement direction is written into the canonical planning surfaces.
+
 ## What This Is
 
 HiveMind is an OpenCode-native governance plugin and CLI that helps developers turn messy brownfield coding work into guided, evidence-first workflows. This project initializes a brownfield refactor and migration program for the existing HiveMind codebase so the backend, harness agents, runtime control, and OpenTUI surfaces converge on a correct, deterministic OpenCode SDK architecture.

@@ -4,6 +4,10 @@
 
 This brownfield roadmap corrects HiveMind into a single-runtime, evidence-first OpenCode governance layer without rewriting proven package surfaces. The sequence follows the migration risk profile: establish one authoritative runtime, consolidate tool-governed mutation and deterministic routing, prove behavior against live OpenCode boundaries, then stabilize the terminal UI on top of that backend truth.
 
+## Archive Notice
+
+As of 2026-03-20, the legacy roadmap direction that defined Phases 1 through 8 is archived after a project direction change. Those phases remain in this file as historical record only and must not be treated as current execution truth.
+
 ## Phases
 
 **Phase Numbering:**
@@ -12,18 +16,20 @@ This brownfield roadmap corrects HiveMind into a single-runtime, evidence-first 
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Runtime Authority Baseline** - Align managed and attached runtime ownership to the official SDK lifecycle. (completed 2026-03-17)
-- [x] **Phase 2: Unified Runtime Operations** - Bring status, bootstrap, doctor, harness, and workflow inspection behind one additive authority seam. (completed 2026-03-18)
-- [x] **Phase 2.1: Feature Architecture Migration (INSERTED)** - Migrate to a hybrid feature structure to solve discoverability issues and isolate behavior. (completed 2026-03-18)
-- [ ] **Phase 2.2: TUI End-to-End Server Connection (INSERTED)** - Extract the OpenTUI dashboard into a proper app boundary and establish a working end-to-end connection with the OpenCode server.
-- [ ] **Phase 3: Tool-Governed Mutation Foundation** - Route governed workflow writes through registered tools and official permission surfaces.
-- [ ] **Phase 4: Deterministic Routing and Receipts** - Make routed execution budgets, policy defaults, and approval outcomes auditable.
-- [ ] **Phase 5: Continuity and Recovery Contract** - Preserve deterministic continuation through compaction, attach, fork, and repair flows.
-- [ ] **Phase 6: Inspection and Evidence Separation** - Keep runtime inspection read-only and clearly separate diagnostics from live proof.
-- [ ] **Phase 7: Live Official-Boundary Proof** - Prove deterministic behavior against real OpenCode server, client, and plugin paths.
-- [ ] **Phase 8: TUI Stabilization on Backend Truth** - Finish the operator terminal UI as a consumer of the authoritative runtime contract.
+- **Phase 1: Runtime Authority Baseline** - Archived 2026-03-20 after direction change; retained for historical reference.
+- **Phase 2: Unified Runtime Operations** - Archived 2026-03-20 after direction change; retained for historical reference.
+- **Phase 2.1: Feature Architecture Migration (INSERTED)** - Archived 2026-03-20 after direction change; retained for historical reference.
+- **Phase 2.2: TUI End-to-End Server Connection (INSERTED)** - Archived 2026-03-20 after direction change; retained for historical reference.
+- **Phase 3: Tool-Governed Mutation Foundation** - Archived 2026-03-20 after direction change; retained for historical reference.
+- **Phase 4: Deterministic Routing and Receipts** - Archived 2026-03-20 after direction change; retained for historical reference.
+- **Phase 5: Continuity and Recovery Contract** - Archived 2026-03-20 after direction change; retained for historical reference.
+- **Phase 6: Inspection and Evidence Separation** - Archived 2026-03-20 after direction change; retained for historical reference.
+- **Phase 7: Live Official-Boundary Proof** - Archived 2026-03-20 after direction change; retained for historical reference.
+- **Phase 8: TUI Stabilization on Backend Truth** - Archived 2026-03-20 after direction change; retained for historical reference.
 
 ## Phase Details
+
+Archive note: the detailed Phase 1 through Phase 8 sections below are legacy material preserved for history. They are no longer the active roadmap contract.
 
 ### Phase 1: Runtime Authority Baseline
 **Goal**: User can launch or attach HiveMind to the authoritative OpenCode runtime without split-brain ownership.
@@ -182,20 +188,20 @@ Plans:
 ## Progress
 
 **ExecutionOrder:**
-Phases execute in numeric order: 1 → 2 → 2.1 → 2.2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
+Legacy phases 1 through 8 are archived. Active execution order must be rebaselined from the post-archive direction instead of following the older 1 → 8 sequence.
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Runtime Authority Baseline | 2/2 | Complete | 2026-03-17 |
-| 2. Unified Runtime Operations | 4/4 | Complete | 2026-03-18 |
-| 2.1 Feature Architecture Migration | 7/7 | Complete | 2026-03-18 |
-| 2.2. TUI End-to-End Server Connection | 0/3 | Not started | - |
-| 3. Tool-Governed Mutation Foundation | 0/3 | Not started | - |
-| 4. Deterministic Routing and Receipts | 0/2 | Not started | - |
-| 5. Continuity and Recovery Contract | 0/3 | Not started | - |
-| 6. Inspection and Evidence Separation | 0/2 | Not started | - |
-| 7. Live Official-Boundary Proof | 0/3 | Not started | - |
-| 8. TUI Stabilization on Backend Truth | 0/3 | Not started | - |
+| 1. Runtime Authority Baseline | 2/2 | Archived (legacy complete) | 2026-03-17 |
+| 2. Unified Runtime Operations | 4/4 | Archived (legacy complete) | 2026-03-18 |
+| 2.1 Feature Architecture Migration | 7/7 | Archived (legacy complete) | 2026-03-18 |
+| 2.2. TUI End-to-End Server Connection | 0/3 | Archived | 2026-03-20 |
+| 3. Tool-Governed Mutation Foundation | 0/3 | Archived | 2026-03-20 |
+| 4. Deterministic Routing and Receipts | 0/2 | Archived | 2026-03-20 |
+| 5. Continuity and Recovery Contract | 0/3 | Archived | 2026-03-20 |
+| 6. Inspection and Evidence Separation | 0/2 | Archived | 2026-03-20 |
+| 7. Live Official-Boundary Proof | 0/3 | Archived | 2026-03-20 |
+| 8. TUI Stabilization on Backend Truth | 0/3 | Archived | 2026-03-20 |
 | 9. Context-Intelligence Skills | 0/0 | Planned | - |
 | 10. Deep-skill-writer-pack Ecosystem | 5/6 | In Progress|  |
 | 11. Runtime Context Detox and Plugin Flattening | 11/11 | Complete   | 2026-03-19 |

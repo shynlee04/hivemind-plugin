@@ -33,6 +33,46 @@
       "source": "command:hm-harness",
       "resumeTarget": "command:hm-plan",
       "createdAt": "2026-03-18T11:41:10.997Z"
+    },
+    {
+      "id": "chk_trj_ses_2f86eff84ffecj34JHANsBS8nH_4",
+      "trajectoryId": "trj_ses_2f86eff84ffecj34JHANsBS8nH",
+      "workflowId": "ses_2f86eff84ffecj34JHANsBS8nH",
+      "taskIds": [],
+      "subtaskIds": [],
+      "source": "command:hm-harness",
+      "resumeTarget": "command:hm-plan",
+      "createdAt": "2026-03-19T19:28:59.094Z"
+    },
+    {
+      "id": "chk_trj_ses_2f86eff84ffecj34JHANsBS8nH_5",
+      "trajectoryId": "trj_ses_2f86eff84ffecj34JHANsBS8nH",
+      "workflowId": "ses_2f86eff84ffecj34JHANsBS8nH",
+      "taskIds": [],
+      "subtaskIds": [],
+      "source": "command:hm-harness",
+      "resumeTarget": "command:hm-plan",
+      "createdAt": "2026-03-19T19:42:54.247Z"
+    },
+    {
+      "id": "chk_trj_ses_2f86eff84ffecj34JHANsBS8nH_6",
+      "trajectoryId": "trj_ses_2f86eff84ffecj34JHANsBS8nH",
+      "workflowId": "ses_2f86eff84ffecj34JHANsBS8nH",
+      "taskIds": [],
+      "subtaskIds": [],
+      "source": "command:hm-harness",
+      "resumeTarget": "command:hm-plan",
+      "createdAt": "2026-03-19T20:01:45.322Z"
+    },
+    {
+      "id": "chk_trj_ses_2f86eff84ffecj34JHANsBS8nH_7",
+      "trajectoryId": "trj_ses_2f86eff84ffecj34JHANsBS8nH",
+      "workflowId": "ses_2f86eff84ffecj34JHANsBS8nH",
+      "taskIds": [],
+      "subtaskIds": [],
+      "source": "command:hm-harness",
+      "resumeTarget": "command:hm-plan",
+      "createdAt": "2026-03-19T20:03:21.790Z"
     }
   ],
   "recoveryLog": []

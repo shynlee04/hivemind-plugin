@@ -77,6 +77,8 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.0.0",
+    "@json-render/core": "^0.14.1",
+    "@json-render/react": "^0.14.1",
     "@opencode-ai/plugin": ">=1.1.0",
     "@opencode-ai/sdk": "^1.2.27",
     "@types/proper-lockfile": "^4.1.4",

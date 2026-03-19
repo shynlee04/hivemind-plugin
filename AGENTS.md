@@ -72,6 +72,33 @@ These principles govern all design and implementation decisions. They are the ro
 
 This project builds ON the OpenCode SDK. The SDK is the authority - not custom reimplementations.
 
+### SDK Reference (Downloaded 2026-03-20)
+
+The complete OpenCode SDK is available at `.repo-sdk-packed/opencode-api-sdk.xml` for reference.
+Key patterns from SDK analysis:
+
+```typescript
+// Tool creation - tool.schema is Zod
+import { tool } from '@opencode-ai/plugin'
+
+export default tool({
+  description: 'Description',
+  args: {
+    query: tool.schema.string().describe('...'),
+    limit: tool.schema.number().default(10),
+  },
+  async execute(args, context) {
+    // context.sessionID, context.agent, context.directory, context.worktree, context.abort
+    return JSON.stringify({ ... })
+  }
+})
+```
+
+**Key SDK surfaces:**
+- `tool.schema` - Zod re-export for type-safe arg definitions
+- `context` in execute: `{ sessionID, agent, directory, worktree, abort, metadata(), ask() }`
+- Plugin hooks: `event`, `chat.message`, `chat.params`, `chat.headers`, `permission.ask`, `command.execute.before`, `tool.execute.before`, `tool.execute.after`, `tool.definition`, `shell.env`, `system.transform`, `messages.transform`, `session.compacting`, `config`, `auth`, `text.complete`
+
 ### Live Verification Authority
 
 - Real behavioral proof comes from a live OpenCode instance exercised through official server/client/plugin interfaces.

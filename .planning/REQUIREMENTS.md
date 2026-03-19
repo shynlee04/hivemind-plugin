@@ -3,6 +3,8 @@
 **Defined:** 2026-03-17
 **Core Value:** At runtime, HiveMind must reliably steer OpenCode agents through deterministic, tool-using workflows that are provably aligned with the live OpenCode client/server/plugin contract.
 
+Archive note (2026-03-20): requirements mapped only to legacy roadmap phases 1 through 8 are retained here for traceability, but that roadmap direction is archived and no longer represents current execution truth.
+
 ## v1 Requirements
 
 ### Runtime Control
@@ -93,33 +95,33 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CTRL-01 | Phase 1 - Runtime Authority Baseline | Complete |
-| CTRL-02 | Phase 1 - Runtime Authority Baseline | Complete |
-| CTRL-03 | Phase 2 - Unified Runtime Operations | Complete |
-| CTRL-04 | Phase 2 - Unified Runtime Operations | Complete |
-| EXEC-01 | Phase 3 - Tool-Governed Mutation Foundation | Pending |
-| EXEC-02 | Phase 4 - Deterministic Routing and Receipts | Pending |
-| EXEC-03 | Phase 4 - Deterministic Routing and Receipts | Pending |
-| EXEC-04 | Phase 7 - Live Official-Boundary Proof | Pending |
-| SAFE-01 | Phase 3 - Tool-Governed Mutation Foundation | Pending |
-| SAFE-02 | Phase 3 - Tool-Governed Mutation Foundation | Pending |
-| SAFE-03 | Phase 4 - Deterministic Routing and Receipts | Pending |
-| FLOW-01 | Phase 5 - Continuity and Recovery Contract | Pending |
-| FLOW-02 | Phase 5 - Continuity and Recovery Contract | Pending |
-| FLOW-03 | Phase 5 - Continuity and Recovery Contract | Pending |
-| FLOW-04 | Phase 5 - Continuity and Recovery Contract | Pending |
-| INSP-01 | Phase 6 - Inspection and Evidence Separation | Pending |
-| INSP-02 | Phase 6 - Inspection and Evidence Separation | Pending |
-| INSP-03 | Phase 2 - Unified Runtime Operations | Complete |
-| TUI-01 | Phase 8 - TUI Stabilization on Backend Truth | Pending |
-| TUI-02 | Phase 8 - TUI Stabilization on Backend Truth | Pending |
-| TUI-03 | Phase 8 - TUI Stabilization on Backend Truth | Pending |
-| VERF-01 | Phase 7 - Live Official-Boundary Proof | Pending |
-| VERF-02 | Phase 7 - Live Official-Boundary Proof | Pending |
-| VERF-03 | Phase 7 - Live Official-Boundary Proof | Pending |
-| ARCH-01 | Phase 2.1 - Feature Architecture Migration | Complete |
-| INT-01 | Phase 2.2 - TUI End-to-End Server Connection | Pending |
-| FLOW-01_1 | Phase 2.2 - TUI End-to-End Server Connection | Pending |
+| CTRL-01 | Phase 1 - Runtime Authority Baseline | Archived (legacy complete) |
+| CTRL-02 | Phase 1 - Runtime Authority Baseline | Archived (legacy complete) |
+| CTRL-03 | Phase 2 - Unified Runtime Operations | Archived (legacy complete) |
+| CTRL-04 | Phase 2 - Unified Runtime Operations | Archived (legacy complete) |
+| EXEC-01 | Phase 3 - Tool-Governed Mutation Foundation | Archived |
+| EXEC-02 | Phase 4 - Deterministic Routing and Receipts | Archived |
+| EXEC-03 | Phase 4 - Deterministic Routing and Receipts | Archived |
+| EXEC-04 | Phase 7 - Live Official-Boundary Proof | Archived |
+| SAFE-01 | Phase 3 - Tool-Governed Mutation Foundation | Archived |
+| SAFE-02 | Phase 3 - Tool-Governed Mutation Foundation | Archived |
+| SAFE-03 | Phase 4 - Deterministic Routing and Receipts | Archived |
+| FLOW-01 | Phase 5 - Continuity and Recovery Contract | Archived |
+| FLOW-02 | Phase 5 - Continuity and Recovery Contract | Archived |
+| FLOW-03 | Phase 5 - Continuity and Recovery Contract | Archived |
+| FLOW-04 | Phase 5 - Continuity and Recovery Contract | Archived |
+| INSP-01 | Phase 6 - Inspection and Evidence Separation | Archived |
+| INSP-02 | Phase 6 - Inspection and Evidence Separation | Archived |
+| INSP-03 | Phase 2 - Unified Runtime Operations | Archived (legacy complete) |
+| TUI-01 | Phase 8 - TUI Stabilization on Backend Truth | Archived |
+| TUI-02 | Phase 8 - TUI Stabilization on Backend Truth | Archived |
+| TUI-03 | Phase 8 - TUI Stabilization on Backend Truth | Archived |
+| VERF-01 | Phase 7 - Live Official-Boundary Proof | Archived |
+| VERF-02 | Phase 7 - Live Official-Boundary Proof | Archived |
+| VERF-03 | Phase 7 - Live Official-Boundary Proof | Archived |
+| ARCH-01 | Phase 2.1 - Feature Architecture Migration | Archived (legacy complete) |
+| INT-01 | Phase 2.2 - TUI End-to-End Server Connection | Archived |
+| FLOW-01_1 | Phase 2.2 - TUI End-to-End Server Connection | Archived |
 
 **Coverage:**
 - v1 requirements: 27 total
@@ -128,4 +130,4 @@
 
 ---
 *Requirements defined: 2026-03-17*
-*Last updated: 2026-03-18 after roadmap mapping*
+*Last updated: 2026-03-20 after archiving roadmap phases 1-8*

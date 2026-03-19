@@ -22,6 +22,8 @@ tasks/
 *.tmp.txt
 test_output*.txt
 .archive
+.repo-sdk-packed/
+
 
 # IDE/Agent configs - USER LOCAL
 .agent/
