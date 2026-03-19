@@ -27,6 +27,15 @@ P1 routing skill for HiveMind-specific skill authoring, auditing, refactoring, a
 - "skill quality check" / "skill design"
 - "refactor this skill" / "package this skill set"
 
+**Brainstorming Triggers:**
+- "brainstorm" / "ideate" / "explore"
+- "what if" / "how might we"
+- "generate ideas" / "think through"
+
+**Conflict Detection Triggers:**
+- "check skill overlap" / "find conflicts"
+- "validate skill stack" / "verify no conflicts"
+
 **Secondary Triggers:**
 - Detecting skill quality issues
 - Identifying skill redundancy
@@ -146,6 +155,24 @@ Every skill operation must integrate with context-intelligence:
 - **Rot Detection**: Watch for degradation signals during skill work
 - **Recovery Awareness**: Know when to escalate skill issues
 
+## Conflict Prevention
+
+### Overlap Detection
+
+Before activating skills, check:
+- Trigger overlap with existing stack
+- Domain overlap with loaded skills
+- Authority boundary violations
+- Stack budget status
+
+### Brainstorming Mode
+
+When user enters brainstorming mode:
+1. Load context-intelligence (P1)
+2. Assess domain
+3. Load domain-specific P2 if needed
+4. Maintain stack ≤3
+
 ## Stacking Discipline
 
 At entry, max **3 skills** may load:
@@ -163,10 +190,12 @@ context-rot-recovery (1) — if degraded
 
 - **NEVER** explain what Claude already knows ("what is X", "how to write a for-loop")
 - **NEVER** give high scores for well-formatted but redundant content
-- **NEVER** let length impress you — a50-line Skill can outperform 500-line
+- **NEVER** let length impress you — a 50-line Skill can outperform 500-line
 - **NEVER** forgive vague descriptions — poor description = skill never triggers
 - **NEVER** put "when to use" only in body — description is what Agent sees first
 - **NEVER** skip mentally testing decision trees
+- **NEVER** load skills with overlapping triggers
+- **NEVER** exceed stack budget of 3 skills
 
 ## References
 
@@ -178,3 +207,4 @@ context-rot-recovery (1) — if degraded
 - `references/06-agent-activation.md` — Agent/sub-agent activation patterns
 - `references/06-knowledge-delta.md` — Expert vs Redundant vs Activation
 - `references/07-iterative-refinement.md` — Self-improvement loops and hooks
+- `references/08-conflict-detection.md` — Cross-pack overlap detection logic
