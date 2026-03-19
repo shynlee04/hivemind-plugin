@@ -36,7 +36,13 @@ P1 routing skill for HiveMind-specific skill authoring, auditing, refactoring, a
 - "validate this skill" / "test this skill"
 - "baseline this skill" / "write test for skill"
 - "improve this skill" / "iterate on skill"
+- "refine skill quality"
 - "TDD for skills" / "test-driven skill development"
+
+**Refinement Triggers:**
+- "improve this skill" / "iterate on skill"
+- "refine skill quality"
+- Skill-Judge score <3.5 validation failure
 
 **Audit-Specific Triggers:**
 - "evaluate this skill" / "score this skill"
@@ -55,6 +61,8 @@ IF task == "write new skill" → load references/04-tdd-workflow.md + references
 IF task == "validate skill" → load references/04-tdd-workflow.md + references/05-skill-quality-matrix.md
 IF task == "test skill" → load references/04-tdd-workflow.md
 IF task == "iterate skill" → load references/04-tdd-workflow.md + references/03-three-patterns.md
+IF task == "improve skill" → load references/07-iterative-refinement.md
+IF task == "iterate skill" → load references/07-iterative-refinement.md
 ```
 
 ## Quality Thresholds (from Skill-Judge)
@@ -113,6 +121,22 @@ Every skill must be validated against a real failure scenario before being writt
 
 **Equation:** `General Agent + Excellent Skill = Domain Expert Agent`
 
+## Self-Improvement Integration
+
+Every skill operation integrates with iterative refinement:
+
+- **Pattern Extraction:** Successful skill creation → semantic memory
+- **Confidence Threshold:** Only patterns with confidence >0.8
+- **Refinement Loop:** Skill-Judge <3.5 → refinement cycle
+
+### Hook Integration
+
+| Hook | When | Action |
+|------|------|--------|
+| `before_skill_audit` | Pre-audit | Log session context, validate skill structure |
+| `after_skill_create` | Post-create | Extract pattern, update semantic memory |
+| `on_validation_fail` | Skill-Judge <3.5 | Trigger refinement loop |
+
 ## Context-Intelligence Integration
 
 Every skill operation must integrate with context-intelligence:
@@ -153,3 +177,4 @@ context-rot-recovery (1) — if degraded
 - `references/05-skill-quality-matrix.md` — Skill-Judge metrics (120-point system)
 - `references/06-agent-activation.md` — Agent/sub-agent activation patterns
 - `references/06-knowledge-delta.md` — Expert vs Redundant vs Activation
+- `references/07-iterative-refinement.md` — Self-improvement loops and hooks
