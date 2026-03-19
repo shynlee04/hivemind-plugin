@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Completed 10-05 PLAN.md - Conflict detection with overlap matrix and brainstorming integration
-last_updated: "2026-03-19T03:07:13Z"
-last_activity: "2026-03-19 - Completed 10-05: Conflict detection reference (08-conflict-detection.md), SKILL.md updated with brainstorming triggers, test scaffold with 30 todo tests"
+status: in_progress
+stopped_at: Completed 11-01-PLAN.md
+last_updated: "2026-03-19T14:48:27.055Z"
+last_activity: "2026-03-19 - Completed 11-01: Consumer proof matrix plus real-plugin detox red baseline"
 progress:
-  total_phases: 12
+  total_phases: 13
   completed_phases: 3
-  total_plans: 19
-  completed_plans: 18
-  percent: 47
+  total_plans: 34
+  completed_plans: 19
+  percent: 56
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-17)
 
 **Core value:** At runtime, HiveMind must reliably steer OpenCode agents through deterministic, tool-using workflows that are provably aligned with the live OpenCode client/server/plugin contract.
-**Current focus:** Phase 2.2 - TUI End-to-End Server Connection
+**Current focus:** Phase 11 - Runtime Context Detox and Plugin Flattening
 
 ## Current Position
 
-Phase: 10 of 12 (Deep-skill-writer-pack Ecosystem)
-Plan: 05 of 05 in current phase (just completed)
-Status: Phase 10-05 complete, Phase 10 ecosystem complete
-Last activity: 2026-03-19 - Completed 10-05: Conflict detection reference (08-conflict-detection.md), SKILL.md updated with brainstorming triggers, test scaffold with 30 todo tests
+Phase: 11 of 13 (Runtime Context Detox and Plugin Flattening)
+Plan: 01 of 11 in current phase (completed)
+Status: Phase 11-01 complete, Phase 11 remains in progress
+Last activity: 2026-03-19 - Completed 11-01: Consumer proof matrix plus real-plugin detox red baseline
 
-Progress: [██████████] 95%
+Progress: [██████░░░░] 56%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 19
 - Average duration: 10 min
 - Total execution time: 2.1 hours
 
@@ -55,6 +55,7 @@ Progress: [██████████] 95%
 | 8. TUI Stabilization on Backend Truth | 0 | 0 min | 0 min |
 | 9. Non-breaking Skills Ecosystem | 0 | 0 min | 0 min |
 | 10. Deep-skill-writer-pack Ecosystem | 1 | 7 min | 7 min |
+| 11. Runtime Context Detox and Plugin Flattening | 1 | 12 min | 12 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 plans
@@ -69,6 +70,7 @@ Progress: [██████████] 95%
 | Phase 10-03 P03 | 5 min | 3 tasks | 3 files |
 | Phase 10-deep-skill-writer-pack-ecosystem P04 | 7 | 3 tasks | 5 files |
 | Phase 10-deep-skill-writer-pack-ecosystem P05 | 3 | 3 tasks | 3 files |
+| Phase 11 P01 | 12 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -95,6 +97,9 @@ Recent decisions affecting current work:
 - [Phase 02]: Scope workflow inspection to active workflow identity, gate state, and current task links instead of exposing raw workflow graphs. — Phase 2 only needs operator-facing inspection readiness, so a reduced summary satisfies INSP-03 without creating a second workflow authority surface.
 - [Phase 2.1]: `src/features/*` now owns runtime-entry, session-entry, workflow, trajectory, handoff, doc-intelligence, and runtime-observability behavior, while tools, hooks, commands, and plugin surfaces stay thin adapters.
 - [Phase 2.1]: Recovery command flows now route through the live slash-command runner seam instead of a detached compatibility shim.
+- [Phase 11]: Phase 11 deletes only after a written consumer-proof matrix names survivor ownership and zero-consumer evidence.
+- [Phase 11]: Plugin detox tests now assert the real HiveMindPlugin hook path instead of preserving createPluginRuntimePlan() or runtime surface registries.
+- [Phase 11]: Expected-red runtime failures stay visible, while unrelated doc-tool assertion noise was removed from the task 2 baseline.
 
 ### Pending Todos
 
@@ -106,6 +111,7 @@ Recent decisions affecting current work:
 
 - Phase 9 added: non-breaking skills for context-intelligence; recovery of the meta builder to become the healer and framework doctor, customization and tailor the meta concepts to end users when using hivemind project
 - Phase 10 added: Deep-skill-writer-pack ecosystem — integrate meta-concepts (booster/harness), research framework, iterative refinement, and QA to enable skilled user brainstorming with no conflicts or overlaps
+- Phase 11 added: Runtime Context Detox and Plugin Flattening
 
 ### Blockers/Concerns
 
@@ -122,6 +128,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-19T03:07:13Z
-Stopped at: Completed 10-05 PLAN.md - Conflict detection with overlap matrix and brainstorming integration
+Last session: 2026-03-19T14:48:27.049Z
+Stopped at: Completed 11-01-PLAN.md
 Resume file: None

@@ -198,6 +198,7 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 2.2 → 3 → 4 → 5 → 6
 | 8. TUI Stabilization on Backend Truth | 0/3 | Not started | - |
 | 9. Context-Intelligence Skills | 0/0 | Planned | - |
 | 10. Deep-skill-writer-pack Ecosystem | 5/6 | In Progress|  |
+| 11. Runtime Context Detox and Plugin Flattening | 1/11 | In Progress | 2026-03-19 |
 
 ### Phase 9: non-breaking skills for context-intelligence; recovery of the meta builder to become the healer and framework doctor, customization and tailor the meta concepts to end users when using hivemind project
 
@@ -233,3 +234,24 @@ Plans:
 - [ ] 10-07-PLAN.md — Replace false-confidence TDD and Skill-Judge tests with real Node-runner behavior checks
 - [ ] 10-08-PLAN.md — Replace iterative-refinement and conflict-detection placeholders with executable proofs
 - [ ] 10-09-PLAN.md — Fold Phase 10 into `npm test` and prove the packaged skill pack end-to-end
+
+### Phase 11: Runtime Context Detox and Plugin Flattening
+
+**Goal:** Remove poisoned multi-injection runtime context, eliminate dead per-turn orchestration, and flatten plugin ownership around the authoritative seams that are actually consumed at runtime.
+**Requirements**: P11-01, P11-02, P11-03, P11-04, P11-05, P11-06, P11-07
+**Depends on:** Phase 2.1
+**Priority:** Immediate corrective phase — execute before the remaining pending roadmap phases.
+**Plans:** 1/11 plans executed
+
+Plans:
+- [x] 11-01-PLAN.md — Capture consumer proof and replace false-confidence plugin baselines
+- [ ] 11-02-PLAN.md — Collapse plugin context emission to one cached snapshot and one authoritative packet
+- [ ] 11-03-PLAN.md — Relocate preserved consumers off start-work hook shims
+- [ ] 11-04-PLAN.md — Move the runtime-entry command asset loader to a feature-owned authority
+- [ ] 11-05-PLAN.md — Rebind control-plane and slash-command consumers to the feature-owned loader
+- [ ] 11-06-PLAN.md — Delete plugin-local orchestration files only where consumer proof allows
+- [ ] 11-07-PLAN.md — Resolve shared runtime-context conditional targets by proof
+- [ ] 11-08-PLAN.md — Resolve `src/plugin-handlers/` to inline or justified survivors
+- [ ] 11-09-PLAN.md — Delete non-start-work wrapper families by conditional consumer-proof outcome
+- [ ] 11-10-PLAN.md — Delete start-work shims by conditional consumer-proof outcome
+- [ ] 11-11-PLAN.md — Finalize preserved-boundary runtime and tool proofs after cleanup
