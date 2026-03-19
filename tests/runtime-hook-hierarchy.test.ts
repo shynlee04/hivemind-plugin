@@ -1,56 +1,42 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
-import {
-  buildContextInjectionPlan,
-  buildWorkflowIntegrationState,
-  resolveRuntimeLoadStage,
-  transformRuntimePrompt,
-} from '../src/index.js'
 import { routeWorkflow } from '../src/core/workflow-management/index.js'
+import {
+  createSyntheticPart,
+  findLastUserMessage,
+  getMessageText,
+} from '../src/hooks/prompt-transformation/index.js'
 
 describe('runtime hook hierarchy', () => {
-  it('connects prompt transformation to injection planning', () => {
-    const packet = transformRuntimePrompt({
-      sessionId: 'ses_main',
-      sessionScope: 'main',
-      lineage: 'hivefiver',
-      workflowId: 'wf-refactor',
-      todoChainId: 'todo-refactor',
-      branchFocus: 'split runtime families',
-    })
-    const plan = buildContextInjectionPlan(packet)
+  it('keeps only direct message helpers in the surviving prompt path', () => {
+    const firstPart = createSyntheticPart('ses_main', 'msg_main', '<hivemind context_version="v1">')
+    const assistantPart = createSyntheticPart('ses_assistant', 'msg_assistant', 'assistant output')
+    const userTextPart = createSyntheticPart('ses_main', 'msg_main', 'continue the runtime audit')
+    const lastUser = findLastUserMessage([
+      {
+        info: { role: 'assistant' },
+        parts: [assistantPart],
+      },
+      {
+        info: { role: 'user', id: 'msg_main', sessionID: 'ses_main' },
+        parts: [firstPart, userTextPart],
+      },
+    ])
 
-    assert.match(plan.systemText, /<hivemind-kernel-packet>/)
-    assert.match(plan.messageText ?? '', /<hivemind-lineage-refresh>/)
-    assert.equal(plan.sessionScope, 'main')
+    assert.ok(lastUser)
+    assert.equal(getMessageText(lastUser), '<hivemind context_version="v1"> continue the runtime audit')
   })
 
-  it('derives runtime stage and workflow continuity without conflict', () => {
-    const stage = resolveRuntimeLoadStage({
-      prompt: 'continue the delegated audit with handoff continuity',
-      sessionScope: 'sub-session',
-      hasWorkflow: true,
-      hasHandoff: true,
-    })
-
-    const workflow = {
+  it('keeps workflow routing independent from deleted wrapper chains', () => {
+    const decision = routeWorkflow({
       id: 'wf-refactor',
       intent: 'continue runtime hierarchy refactor',
-      stage,
-      scope: 'sub-session' as const,
-      lineage: 'hivefiver' as const,
-    }
-    const decision = routeWorkflow(workflow)
-    const continuity = buildWorkflowIntegrationState(workflow, {
-      sourceSessionId: 'ses_parent',
-      targetSessionId: 'ses_child',
-      summary: 'carry the delegated continuity packet forward',
-      requiredNextSteps: ['return evidence', 'update handoff'],
+      stage: 'interdependent',
+      scope: 'sub-session',
+      lineage: 'hivefiver',
     })
 
-    assert.equal(stage, 'interdependent')
     assert.equal(decision.loadStrategy, 'bounded')
-    assert.equal(continuity.nextSteps.length, 2)
   })
 })

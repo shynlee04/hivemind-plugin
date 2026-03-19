@@ -4,13 +4,14 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
 
+import { HiveMindPlugin } from '../src/plugin/opencode-plugin.js'
 import {
   agentToolCatalog,
   createHivemindDocTool,
   createHivemindRuntimeCommandTool,
   createHivemindRuntimeStatusTool,
 } from '../src/tools/index.js'
-import { createRuntimeSurfaceRegistry } from '../src/plugin/index.js'
+import { createMockPluginInput } from './helpers/mock-sdk.js'
 
 const mockContext = {
   sessionID: 'ses-runtime',
@@ -26,24 +27,21 @@ const mockContext = {
 } as const
 
 describe('runtime tools', () => {
-  it('registers runtime tools as first-class tool modules and canonical runtime surfaces', async () => {
-    const surfaces = createRuntimeSurfaceRegistry()
-    const docSurface = surfaces.find((entry) => entry.id === 'hivemind_doc')
-    const runtimeStatusSurface = surfaces.find((entry) => entry.id === 'hivemind_runtime_status')
-    const runtimeCommandSurface = surfaces.find((entry) => entry.id === 'hivemind_runtime_command')
-    const contextInjectionSurface = surfaces.find((entry) => entry.id === 'context-injection')
-    const promptTransformationSurface = surfaces.find((entry) => entry.id === 'prompt-transformation')
-    const compactionSurface = surfaces.find((entry) => entry.id === 'hm-plan')
+  it('registers the six stable SDK tools through the real plugin export', async () => {
+    const { input } = createMockPluginInput()
+    const hooks = await HiveMindPlugin(input)
+    const toolKeys = Object.keys(hooks.tool ?? {})
 
     assert.equal(agentToolCatalog.some((entry) => entry.id === 'hivemind_doc'), true)
     assert.equal(agentToolCatalog.some((entry) => entry.id === 'hivemind_runtime_status'), true)
     assert.equal(agentToolCatalog.some((entry) => entry.id === 'hivemind_runtime_command'), true)
-    assert.equal(docSurface?.contractFile, 'src/tools/doc/tools.ts')
-    assert.equal(runtimeStatusSurface?.contractFile, 'src/tools/runtime/tools.ts')
-    assert.equal(runtimeCommandSurface?.contractFile, 'src/tools/runtime/tools.ts')
-    assert.equal(contextInjectionSurface?.hostEvent, 'experimental.chat.messages.transform')
-    assert.equal(promptTransformationSurface?.hostEvent, 'experimental.chat.messages.transform')
-    assert.equal(compactionSurface?.hostEvent, 'slash-command.requested')
+    assert.equal(toolKeys.includes('hivemind_doc'), true)
+    assert.equal(toolKeys.includes('hivemind_runtime_status'), true)
+    assert.equal(toolKeys.includes('hivemind_runtime_command'), true)
+    assert.equal(toolKeys.includes('hivemind_task'), true)
+    assert.equal(toolKeys.includes('hivemind_trajectory'), true)
+    assert.equal(toolKeys.includes('hivemind_handoff'), true)
+    assert.equal(toolKeys.length, 6)
   })
 
   it('executes extracted runtime status and command tools through the tool module family', async () => {
@@ -159,12 +157,12 @@ describe('runtime tools', () => {
         worktree: projectRoot,
       })) as {
         status: string
-        data: { path: string; metadata: { title: string } }
+        data: { result: { path: string; metadata: { title: string } } }
       }
 
       assert.equal(skimPayload.status, 'success')
-      assert.equal(skimPayload.data.path, 'docs/guide.md')
-      assert.equal(skimPayload.data.metadata.title, 'Tool Guide')
+      assert.equal(skimPayload.data.result.path, 'docs/guide.md')
+      assert.equal(skimPayload.data.result.metadata.title, 'Tool Guide')
 
       const readPayload = JSON.parse(await docTool.execute({
         action: 'read',
@@ -175,10 +173,10 @@ describe('runtime tools', () => {
         directory: projectRoot,
         worktree: projectRoot,
       })) as {
-        data: string | null
+        data: { result: string | null }
       }
 
-      assert.equal(readPayload.data, 'Tool verification text lives here.')
+      assert.equal(readPayload.data.result, 'Tool verification text lives here.')
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
     }

@@ -1,235 +1,103 @@
 import assert from 'node:assert/strict'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, it } from 'node:test'
 
-import { createPluginRuntimePlan } from '../src/plugin/index.js'
-import { buildRouteReminder } from '../src/plugin/runtime-plan.js'
+import { HiveMindPlugin } from '../src/plugin/opencode-plugin.js'
+import { createMockPluginInput } from './helpers/mock-sdk.js'
 
-describe('plugin runtime plan', () => {
-  it('assembles start-work, handler context, packet transforms, and command preview', async () => {
-    const response = await createPluginRuntimePlan({
-      startWork: {
-        userMessage: 'plan the workflow roadmap for the hook refactor',
-        sessionId: 'ses_runtime',
-        sessionScope: 'main',
-        activeLineage: 'hivefiver',
-        hasHivemind: true,
-        hivemindHealthy: true,
-        hasWorkflow: true,
-        hasHandoff: false,
-      },
-      promptState: {
-        sessionId: 'ses_runtime',
-        sessionScope: 'main',
-        preferredUserName: 'Apple',
-        lineage: 'hivefiver',
-        workflowId: 'wf_runtime',
-        todoChainId: 'todo_runtime',
-        branchFocus: 'start-work driven orchestration',
-        language: 'vi',
-        artifactLanguage: 'en',
-        governanceMode: 'strict',
-        automationLevel: 'guided',
-        expertLevel: 'beginner',
-        outputStyle: 'explanatory',
-      },
-    })
+function count(text: string, needle: string): number {
+  return text.split(needle).length - 1
+}
 
-    assert.equal(response.status, 'success')
-    assert.equal(response.data?.startWork.lineage, 'hivefiver')
-    assert.equal(response.data?.pluginContext.category, 'planning')
-    assert.equal(response.data?.promptPacket.sessionScope, 'main')
-    assert.ok(response.data?.runtimeSurfaces.some((entry) => entry.id === 'hm-plan'))
-    assert.ok(response.data?.runtimeSurfaces.some((entry) => entry.id === 'hivemind_task'))
-    assert.ok(response.data?.runtimeSurfaces.some((entry) => entry.id === 'hivemind_trajectory'))
-    assert.ok(response.data?.runtimeSurfaces.some((entry) => entry.id === 'hivemind_handoff'))
-    assert.equal(response.data?.startWork.pressureContract.id, 'steady-state')
-    assert.equal(response.data?.entryKernel.version, 'v1')
-    assert.equal(response.data?.entryKernel.fieldOwnership.session, 'start-work')
-    assert.equal(response.data?.entryKernel.fieldOwnership.routing, 'start-work')
-    assert.equal(response.data?.entryKernel.fieldOwnership.profile, 'runtime-attachment')
-    assert.equal(response.data?.entryKernel.fieldOwnership.bindings, 'runtime-attachment')
-    assert.equal(response.data?.entryKernel.session.sessionState, 'ongoing')
-    assert.equal(response.data?.entryKernel.routing.recommendedCommandId, 'hm-plan')
-    assert.equal(response.data?.entryKernel.profile.preferredUserName, 'Apple')
-    assert.equal(response.data?.entryKernel.profile.language, 'vi')
-    assert.equal(response.data?.entryKernel.bindings.workflowId, 'wf_runtime')
-    assert.equal(response.data?.entryKernel.bindings.profileComplete, false)
-    assert.equal(response.data?.entryKernel.defaults.branchFocus, 'start-work driven orchestration')
-    assert.equal(response.data?.runtimeSurfaces.find((entry) => entry.id === 'hm-plan')?.hostEvent, 'slash-command.requested')
-    assert.equal(response.data?.runtimeSurfaces.find((entry) => entry.id === 'hivemind_task')?.pressureContract.id, 'task-mutation')
-    assert.equal(response.data?.commandPreview?.frontmatter.agent, 'hivefiver')
-    assert.equal(response.data?.runtimeInvocation.invokerClass, 'user')
-    assert.equal(response.data?.runtimeInvocation.sessionScope, 'main')
-    assert.equal(response.data?.runtimeInvocation.workflowId, 'wf_runtime')
-    assert.equal(response.data?.turnOutputProjection.sessionScope, 'main')
-    assert.equal(response.data?.turnOutputProjection.qaState, 'not-required')
-    assert.match(response.data?.commandPreview?.body ?? '', /## Output Contract/)
-    assert.match(response.data?.systemTransform ?? '', /preferred_user_name=Apple/)
-    assert.match(response.data?.messageTransform ?? '', /language=vi/)
-    assert.match(response.data?.messageTransform ?? '', /artifact_language=en/)
-    assert.match(response.data?.messageTransform ?? '', /expert_level=beginner/)
-  })
+function collectText(values: unknown[]): string {
+  return values
+    .filter((value): value is string => typeof value === 'string')
+    .join('\n')
+}
 
-  it('uses delegated prompt mode for sub-sessions', async () => {
-    const response = await createPluginRuntimePlan({
-      startWork: {
-        userMessage: 'investigate the delegated handoff evidence',
-        sessionId: 'ses_child',
-        sessionScope: 'sub-session',
-        parentSessionId: 'ses_parent',
-        activeLineage: 'hivefiver',
-        hasHivemind: true,
-        hivemindHealthy: true,
-        hasWorkflow: true,
-        hasHandoff: true,
-      },
-      promptState: {
-        sessionId: 'ses_child',
-        parentSessionId: 'ses_parent',
-        sessionScope: 'sub-session',
-        preferredUserName: 'Apple',
-        lineage: 'hivefiver',
-        workflowId: 'wf_child',
-        branchFocus: 'delegated verification',
-        language: 'vi',
-        artifactLanguage: 'en',
-        governanceMode: 'strict',
-        automationLevel: 'guided',
-        expertLevel: 'advanced',
-        outputStyle: 'concise',
-      },
-    })
+describe('plugin runtime detox baseline', () => {
+  it('injects exactly one authoritative hivemind packet into message history', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-runtime-'))
 
-    assert.equal(response.data?.pluginContext.sessionInheritance.promptMode, 'delegated')
-    assert.equal(response.data?.pluginContext.sessionInheritance.todoAuthority, 'delegated')
-    assert.equal(response.data?.entryKernel.session.sessionScope, 'sub-session')
-    assert.equal(response.data?.entryKernel.bindings.hasWorkflow, true)
-    assert.equal(response.data?.entryKernel.bindings.workflowId, 'wf_child')
-    assert.equal(response.data?.entryKernel.profile.outputStyle, 'concise')
-    assert.equal(response.data?.entryKernel.defaults.branchFocus, 'delegated verification')
-    assert.equal(response.data?.runtimeInvocation.invokerClass, 'sub-agent')
-    assert.equal(response.data?.runtimeInvocation.parentSessionId, 'ses_parent')
-    assert.equal(response.data?.turnOutputProjection.sessionScope, 'sub-session')
-    assert.match(response.data?.systemTransform ?? '', /<hivemind-delegation-packet>/)
-    assert.match(response.data?.systemTransform ?? '', /preferred_user_name=Apple/)
-    assert.match(response.data?.systemTransform ?? '', /language=vi/)
-    assert.match(response.data?.messageTransform ?? '', /artifact_language=en/)
-    assert.equal(response.data?.startWork.pressureSignals.includes('delegated-handoff'), true)
-  })
+    try {
+      const { input } = createMockPluginInput({ directory, worktree: directory })
+      const hooks = await HiveMindPlugin(input)
+      const output = {
+        messages: [
+          {
+            info: {
+              id: 'msg_runtime',
+              role: 'user',
+              sessionID: 'ses_runtime',
+            },
+            parts: [
+              {
+                type: 'text',
+                text: 'plan the runtime detox migration',
+              },
+            ],
+          },
+        ],
+      }
 
-  it('derives route reminder authority from entryKernel routing fields', async () => {
-    const response = await createPluginRuntimePlan({
-      startWork: {
-        userMessage: 'plan the workflow roadmap for the hook refactor',
-        sessionId: 'ses_route_authority',
-        sessionScope: 'main',
-        activeLineage: 'hivefiver',
-        hasHivemind: true,
-        hivemindHealthy: true,
-        hasWorkflow: true,
-        hasHandoff: false,
-      },
-      promptState: {
-        sessionId: 'ses_route_authority',
-        sessionScope: 'main',
-        preferredUserName: 'Apple',
-        lineage: 'hivefiver',
-        workflowId: 'wf_runtime',
-        branchFocus: 'start-work driven orchestration',
-        language: 'en',
-        artifactLanguage: 'en',
-        governanceMode: 'strict',
-        automationLevel: 'guided',
-        expertLevel: 'advanced',
-        outputStyle: 'concise',
-      },
-    })
+      await hooks['experimental.chat.messages.transform']?.({} as never, output as never)
 
-    assert.equal(response.status, 'success')
-    assert.ok(response.data)
+      const partText = collectText(
+        (output.messages[0]?.parts ?? []).map((part) =>
+          part && typeof part === 'object' && 'text' in part ? part.text : undefined,
+        ),
+      )
 
-    const tamperedPlan = {
-      ...response.data,
-      startWork: {
-        ...response.data.startWork,
-        requiredCommandId: 'hm-init',
-        recommendedCommandId: 'hm-init',
-        traversalOutcome: 'bootstrap' as const,
-        routeDisposition: 'refuse' as const,
-        riskLevel: 'blocked' as const,
-        nextTransition: 'command:hm-init',
-      },
+      assert.equal(count(partText, '<hivemind context_version="v1">'), 1)
+      assert.equal(partText.includes('<hivemind-kernel-packet>'), false)
+      assert.equal(partText.includes('<hivemind-lineage-refresh>'), false)
+      assert.equal(partText.includes('<opencode-runtime-knowledge>'), false)
+      assert.equal(partText.includes('<hivemind-route-bridge>'), false)
+    } finally {
+      await rm(directory, { recursive: true, force: true })
     }
-
-    const reminder = buildRouteReminder(tamperedPlan)
-    assert.equal(reminder?.includes('command=hm-plan'), true)
-    assert.equal(reminder?.includes('outcome=route'), true)
-    assert.equal(reminder?.includes('route_disposition=create'), true)
-    assert.equal(reminder?.includes('runtime_authority=managed-sdk'), true)
-    assert.equal(reminder?.includes('risk=none'), true)
-    assert.equal(reminder?.includes('next_transition=command:hm-plan'), true)
   })
 
-  it('labels attach route reminders as attached-sdk authority', () => {
-    const reminder = buildRouteReminder({
-      entryKernel: {
-        routing: {
-          traversalOutcome: 'route',
-          routeDisposition: 'attach',
-          requiredCommandId: 'hm-harness',
-          recommendedCommandId: 'hm-plan',
-          autoRoute: true,
-          programmaticInitiationRequired: false,
-          lineage: 'hivefiver',
-          purposeClass: 'planning',
-        },
-        safety: {
-          riskLevel: 'none',
-        },
-      },
-    } as any)
+  it('treats chat.message as turn lifecycle reset work, not a packet emitter', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-chat-message-'))
 
-    assert.equal(reminder?.includes('route_disposition=attach'), true)
-    assert.equal(reminder?.includes('runtime_authority=attached-sdk'), true)
-    assert.equal(reminder?.includes('command=hm-harness'), true)
+    try {
+      const { input } = createMockPluginInput({ directory, worktree: directory })
+      const hooks = await HiveMindPlugin(input)
+      const output = { parts: [] as Array<{ text?: string }> }
+
+      await hooks['chat.message']?.({
+        sessionID: 'ses_runtime',
+        messageID: 'msg_runtime',
+      } as never, output as never)
+
+      assert.equal(output.parts.length, 0, 'chat.message should not inject baseline runtime packets')
+    } finally {
+      await rm(directory, { recursive: true, force: true })
+    }
   })
 
-  it('keeps mixed-intent prompts advisory through the plugin runtime plan', async () => {
-    const response = await createPluginRuntimePlan({
-      startWork: {
-        userMessage: 'I was thinking we may need to refactor session handling, but first research what other frameworks do, and also there is a failing test, and should we add TDD for this?',
-        sessionId: 'ses_runtime_mixed',
-        sessionScope: 'main',
-        activeLineage: 'hivefiver',
-        hasHivemind: true,
-        hivemindHealthy: true,
-        hasWorkflow: true,
-        hasHandoff: false,
-      },
-      promptState: {
-        sessionId: 'ses_runtime_mixed',
-        sessionScope: 'main',
-        preferredUserName: 'Apple',
-        lineage: 'hivefiver',
-        workflowId: 'wf_runtime_mixed',
-        branchFocus: 'mixed-intent safety',
-        language: 'en',
-        artifactLanguage: 'en',
-        governanceMode: 'strict',
-        automationLevel: 'guided',
-        expertLevel: 'advanced',
-        outputStyle: 'concise',
-      },
-    })
+  it('stores a single authoritative packet during compaction', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-compaction-'))
 
-    assert.equal(response.status, 'success')
-    assert.equal(response.data?.startWork.purposeClass, 'research')
-    assert.equal(response.data?.startWork.recommendedCommandId, 'hm-research')
-    assert.equal(response.data?.startWork.autoRoute, false)
-    assert.equal(response.data?.entryKernel.routing.recommendedCommandId, 'hm-research')
-    assert.equal(response.data?.entryKernel.routing.autoRoute, false)
-    assert.equal(response.data?.autoSlash.commandBinding.bindingKind, 'workflow-command')
-    assert.equal(response.data?.autoSlash.commandBinding.autoRoute, false)
-    assert.equal(response.data?.commandPreview?.frontmatter.agent, 'hiverd')
+    try {
+      const { input } = createMockPluginInput({ directory, worktree: directory })
+      const hooks = await HiveMindPlugin(input)
+      const output = { context: [] as string[] }
+
+      await hooks['experimental.session.compacting']?.({
+        sessionID: 'ses_runtime',
+      } as never, output as never)
+
+      const contextText = collectText(output.context)
+
+      assert.equal(count(contextText, '<hivemind context_version="v1">'), 1)
+      assert.equal(contextText.includes('<hivemind-kernel-packet>'), false)
+      assert.equal(contextText.includes('<opencode-runtime-knowledge>'), false)
+    } finally {
+      await rm(directory, { recursive: true, force: true })
+    }
   })
 })
