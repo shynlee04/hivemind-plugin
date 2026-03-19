@@ -32,14 +32,14 @@ This matrix records current repo-evidence consumers before any Phase 11 cleanup 
 | `src/hooks/start-work/lineage-router.ts` | None in `src/**` or `tests/**`; only historical docs/plans reference it | None | `delete-now` | Feature-owned implementation already lives in `src/features/session-entry/lineage-router.ts` | `rg -n "hooks/start-work/lineage-router" src tests` returns no matches |
 | `src/hooks/start-work/readiness-gates.ts` | None in `src/**` or `tests/**`; only historical docs/plans reference it | None | `delete-now` | Feature-owned implementation already lives in `src/features/session-entry/readiness-gates.ts` | `rg -n "hooks/start-work/readiness-gates" src tests` returns no matches |
 | `src/hooks/start-work/session-state.ts` | None in `src/**` or `tests/**`; only historical docs/plans reference it | None | `delete-now` | Feature-owned implementation already lives in `src/features/session-entry/session-state.ts` | `rg -n "hooks/start-work/session-state" src tests` returns no matches |
-| `src/hooks/start-work/start-work-types.ts` | `src/shared/opencode-knowledge.ts`; `src/recovery/recovery-types.ts`; `src/intelligence/doc/doc-surface-router.ts`; `src/features/runtime-entry/attachment.ts`; `src/core/trajectory/trajectory-types.ts`; `src/control-plane/control-plane-types.ts`; `src/control-plane/control-plane-registry.ts`; `src/commands/slash-command/command-types.ts` | No plugin hook registers it directly; this shim survives only as a type import path | `relocate-first` | Move imports to `src/features/session-entry/start-work-types.ts`, then delete the shim | `rg -n "hooks/start-work/start-work-types" src tests` returns no matches |
+| `src/hooks/start-work/start-work-types.ts` | None in `src/**` or `tests/**` after Plan 11-03 relocated preserved type consumers to `src/features/session-entry/start-work-types.ts` | No plugin hook registers it directly; shim is no longer a preserved consumer path | `delete-now` | Feature-owned authority already lives in `src/features/session-entry/start-work-types.ts` | `rg -n "hooks/start-work/start-work-types" src tests` returns no matches |
 
 ## Notes By Family
 
 - `runtime-plan.ts`, `surface-registry.ts`, `create-core-hooks.ts`, and `plugin-types.ts` are still mutually reinforcing. None should be deleted from 11-01 based on architecture intent alone.
 - `runtime-bridge/` is not globally dead: the bridge wrapper files look disposable, but `instruction-loader.ts` is still a live preserved dependency for runtime-entry and slash-command consumers.
 - `prompt-transformation/` still touches the real plugin path today, so test rewrites must stop preserving the old wrapper hierarchy before later delete plans can land cleanly.
-- Four of the five `src/hooks/start-work/*` shims already have zero `src/**` and `tests/**` import consumers. `start-work-types.ts` is the only shim that still blocks deletion.
+- All five `src/hooks/start-work/*` shims now have zero `src/**` and `tests/**` import consumers, including `start-work-types.ts` after Plan 11-03.
 
 ## Evidence Commands Used
 

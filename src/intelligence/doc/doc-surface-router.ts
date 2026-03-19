@@ -1,4 +1,4 @@
-import type { PurposeClass } from '../../hooks/start-work/start-work-types.js'
+import type { PurposeClass } from '../../features/session-entry/start-work-types.js'
 
 export interface DocKnowledgeSurface {
   surfaceId: 'planning' | 'handoff' | 'verification' | 'research' | 'artifacts'

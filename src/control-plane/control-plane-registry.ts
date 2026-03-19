@@ -1,4 +1,4 @@
-import type { PurposeClass, StartWorkInput } from '../hooks/start-work/start-work-types.js'
+import type { PurposeClass, StartWorkInput } from '../features/session-entry/start-work-types.js'
 import { getRuntimePressureContract } from '../shared/pressure-contract.js'
 import type {
   ControlPlaneCliCommand,

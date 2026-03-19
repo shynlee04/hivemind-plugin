@@ -1,4 +1,4 @@
-import type { PurposeClass, StartWorkInput } from '../hooks/start-work/start-work-types.js'
+import type { PurposeClass, StartWorkInput } from '../features/session-entry/start-work-types.js'
 import type { RuntimePressureContract } from '../shared/pressure-contract.js'
 
 export type ControlPlanePrimitiveId = 'hm-init' | 'hm-doctor' | 'hm-harness' | 'hm-settings'

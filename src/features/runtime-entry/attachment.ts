@@ -2,7 +2,7 @@ import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
 import type { KernelLineage } from '../../context/prompt-packet/prompt-packet-types.js'
-import type { PurposeClass } from '../../hooks/start-work/start-work-types.js'
+import type { PurposeClass } from '../../features/session-entry/start-work-types.js'
 import { inspectTrajectoryLedger, loadTrajectoryLedger } from '../../core/trajectory/index.js'
 import { inspectWorkflowAuthority } from '../../core/workflow-management/index.js'
 import { detectEntryKernelState, type EntryKernelQaState, type EntryKernelStateKind } from '../../shared/entry-kernel-state.js'

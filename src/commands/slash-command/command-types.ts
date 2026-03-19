@@ -5,7 +5,7 @@ import type {
   ControlPlaneProfileGroupId,
   ControlPlaneRecommendedPresetId,
 } from '../../control-plane/index.js'
-import type { PurposeClass } from '../../hooks/start-work/start-work-types.js'
+import type { PurposeClass } from '../../features/session-entry/start-work-types.js'
 import type { CommandAssetFrontmatter, CommandRuntimeContract } from '../../hooks/runtime-bridge/instruction-loader.js'
 import type { RuntimePressureContract } from '../../shared/pressure-contract.js'
 import type { RuntimeInvocationV1 } from '../../shared/runtime-invocation.js'
