@@ -181,12 +181,12 @@ Plans:
 
 ## Progress
 
-**Execution Order:**
-Phases execute in numeric order: 1 → 2 → 2.1 → 2.2 → 3 → 4 → 5 → 6 → 7 → 8
+**ExecutionOrder:**
+Phases execute in numeric order: 1 → 2 → 2.1 → 2.2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Runtime Authority Baseline | 2/2 | Complete   | 2026-03-17 |
+| 1. Runtime Authority Baseline | 2/2 | Complete | 2026-03-17 |
 | 2. Unified Runtime Operations | 4/4 | Complete | 2026-03-18 |
 | 2.1 Feature Architecture Migration | 7/7 | Complete | 2026-03-18 |
 | 2.2. TUI End-to-End Server Connection | 0/3 | Not started | - |
@@ -196,3 +196,36 @@ Phases execute in numeric order: 1 → 2 → 2.1 → 2.2 → 3 → 4 → 5 → 6
 | 6. Inspection and Evidence Separation | 0/2 | Not started | - |
 | 7. Live Official-Boundary Proof | 0/3 | Not started | - |
 | 8. TUI Stabilization on Backend Truth | 0/3 | Not started | - |
+| 9. Context-Intelligence Skills | 0/0 | Planned | - |
+| 10. Deep-skill-writer-pack Ecosystem | 0/5 | Planned | - |
+
+### Phase 9: non-breaking skills for context-intelligence; recovery of the meta builder to become the healer and framework doctor, customization and tailor the meta concepts to end users when using hivemind project
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 8
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 9 to break down)
+
+### Phase 10: Deep-skill-writer-pack Ecosystem
+
+**Goal:** Integrate meta-concepts (booster/harness), research framework, iterative refinement, and QA to enable skilled user brainstorming with no conflicts or overlaps.
+**Requirements**: PH10-01 (Booster/Harness), PH10-02 (TDD), PH10-03 (Iterative Refinement), PH10-04 (Brainstorming), PH10-05 (Skill-Judge)
+**Depends on:** Phase 9
+**Plans:** 5 plans
+
+**Success Criteria:**
+1. User can author skills with TDD workflow validation
+2. User can evaluate skill quality via Skill-Judge metrics (≥3.5 threshold)
+3. User can iterate on skills through self-improvement loops
+4. User can brainstorm without cross-pack conflicts
+5. Booster/harness patterns augment intelligence non-breakingly
+
+Plans:
+- [ ] 10-01: Booster/Harness Meta-Concept Integration —Establish foundation patterns for non-breaking agent intelligence augmentation
+- [ ] 10-02: TDD Workflow Implementation — Implement RED-GREEN-REFACTOR cycle for skill authoring
+- [ ] 10-03: Skill-Judge Evaluation System — Complete 120-point quality scoring across 5 dimensions
+- [ ] 10-04: Iterative Refinement Loop — Add self-improvement hooks and pattern extraction
+- [ ] 10-05: Conflict Detection System — Enable conflict-free brainstorming with cross-pack overlap detection
