@@ -3,14 +3,15 @@ import * as path from 'node:path'
 
 import YAML from 'yaml'
 
-import type { KernelLineage, SessionScope } from '../context/prompt-packet/prompt-packet-types.js'
-import { getHivemindPath } from './paths.js'
-import type { EntryKernelQaState } from './entry-kernel-state.js'
+import type { SessionScope } from '../../context/prompt-packet/prompt-packet-types.js'
+import type { EntryKernelQaState } from '../../shared/entry-kernel-state.js'
+import { getHivemindPath } from '../../shared/paths.js'
 import {
   createTurnOutputLifecycle,
   type TurnOutputLifecycle,
-} from './lifecycle-spine.js'
-import type { RuntimeInvocationV1 } from './runtime-invocation.js'
+} from '../../shared/lifecycle-spine.js'
+
+import type { RuntimeInvocationV1 } from './invocation.js'
 
 export interface TurnOutputEnvelopeV1 {
   version: 'v1'
@@ -22,7 +23,7 @@ export interface TurnOutputEnvelopeV1 {
   sessionScope: SessionScope
   agentId?: string
   agentMode?: 'all' | 'primary' | 'sub'
-  lineage?: KernelLineage
+  lineage?: RuntimeInvocationV1['lineage']
   delegationId?: string
   trajectoryId?: string
   workflowId?: string

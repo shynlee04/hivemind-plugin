@@ -2,11 +2,6 @@ import { recordTrajectoryEvent } from '../../core/trajectory/index.js'
 import { executeControlPlaneHandler } from '../../control-plane/index.js'
 import { detectEntryKernelState } from '../../shared/entry-kernel-state.js'
 import { assertSlashCommandAgentBindings } from '../../shared/opencode-agent-registry.js'
-import { createRuntimeInvocation } from '../../shared/runtime-invocation.js'
-import {
-  createTurnOutputEnvelope,
-  exportTurnOutputProjection,
-} from '../../shared/turn-output.js'
 import type {
   CommandExecutionInput,
   CommandExecutionPreview,
@@ -16,6 +11,8 @@ import type {
 import { findSlashCommandBundle } from '../../commands/slash-command/command-discovery.js'
 
 import { loadCommandAsset, type LoadedCommandAsset } from './instruction-loader.js'
+import { createRuntimeInvocation } from './invocation.js'
+import { createTurnOutputEnvelope, exportTurnOutputProjection } from './turn-output.js'
 
 type RecoveryHandler = (
   bundle: SlashCommandBundle,
