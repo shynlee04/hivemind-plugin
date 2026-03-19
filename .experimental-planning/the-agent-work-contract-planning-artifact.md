@@ -1,3 +1,11 @@
+# Agent-Work Contract Planning Artifact
+
+> **Validated against SDK**: `@opencode-ai/plugin@1.2.27`, `@opencode-ai/sdk@^1.2.27`  
+> **Audit Date**: 2026-03-20  
+> **Sources**: `opencode-api-sdk.xml`, `json-render.xml`, `octto.xml`, `src/` codebase
+
+---
+
 Here's my full analysis of your hivemind-plugin codebase, its conflicts, and the architecture for your core feature group.
 
 ---
@@ -36,11 +44,36 @@ This function is consumed by: `core/workflow-management`, `recovery`, `features/
 
 ### The Entry Point is a Barrel Re-export Chain
 
-`src/index.ts` re-exports **everything** from 11 domains. This means any consumer of the package gets the entire surface area, and there's no boundary enforcement: [0-cite-4](#0-cite-4) 
+`src/index.ts` re-exports **everything** from 11 domains. This means any consumer of the package gets the entire surface area, and there's no boundary enforcement: [0-cite-4](#0-cite-4)
+
+> [!IMPORTANT]
+> Replace `export *` with **scoped named exports**:
+> ```typescript
+> // Plugin consumers only need:
+> export { HiveMindPlugin } from './plugin/opencode-plugin.js'
+> export type { RuntimeBindingsSnapshot } from './features/runtime-entry/attachment.js'
+> 
+> // CLI consumers need:
+> export { runInit, runDoctor, runHarness } from './cli/index.js'
+> 
+> // Shared types for tools:
+> export type { StartWorkDecision } from './features/session-entry/start-work-types.js'
+> ```
 
 ### The `start-work-router.ts` is a 300-line Monolith
 
-This single function `resolveStartWork` does purpose classification, lineage routing, trajectory assessment, workflow authority inspection, readiness gating, pressure signal resolution, and entry kernel building — all synchronously in one pass: [0-cite-5](#0-cite-5) 
+This single function `resolveStartWork` does purpose classification, lineage routing, trajectory assessment, workflow authority inspection, readiness gating, pressure signal resolution, and entry kernel building — all synchronously in one pass: [0-cite-5](#0-cite-5)
+
+### LOC Violations & Type Monoliths
+
+| File | LOC | Issue |
+|---|---|---|
+| `start-work-router.ts` | **305** | Exceeds 300 LOC limit. `resolveStartWork()` does 7 responsibilities in one pass |
+| `intake-record.ts` | **333** | Exceeds 300 LOC. `CreateIntakeRecordInput` has **15 fields** violating 10-field decomposition principle |
+| `pressure-contract.ts` | 270 | Within limit but carries massive static library. `RuntimePressureContract` is 5 interfaces totaling 14 fields composed |
+
+> [!IMPORTANT]
+> Type monoliths like `CreateIntakeRecordInput` (15 fields) and `StartWorkDecision` (20+ fields) should be decomposed via intersection types: `type IntakeRecord = IntakeRecordCore & IntakeRecordLineage & IntakeRecordWorkflow & IntakeRecordProfile` 
 
 ---
 
@@ -97,7 +130,16 @@ graph TD
 - `runtime-attachment.json` is written by: init, settings, doctor, runtime command tool
 - `entry-kernel-state.json` is written by: init, doctor, harness, entry-kernel-state module
 
-There's no locking or coordination between these writers.
+**No locking or coordination** — confirmed: no lock files, no mutex, no `proper-lockfile` usage in these hot paths.
+
+> [!IMPORTANT]
+> `proper-lockfile` is already a dependency. Assign **single write authority** per state file:
+> | State File | Single Writer |
+> |---|---|
+> | `trajectory-ledger.json` | `core/trajectory/trajectory-store.ts` |
+> | `runtime-attachment.json` | `features/runtime-entry/attachment.ts` |
+> | `entry-kernel-state.json` | `shared/entry-kernel-state.ts` |
+> All other consumers read via `TurnSnapshotLoader`.
 
 ---
 
@@ -243,13 +285,22 @@ src/features/agent-work-contract/
 └── index.ts                     # Feature barrel
 ```
 
-**Correction (2026-03-20):** The original draft assumed a feature-local `session-start-hook.ts`. Current repo evidence and refreshed Phase 11 research show that OpenCode already delivers `session.created` through the existing plugin `event` hook. Treat `event` as the side-effect seam, `chat.message` as optional coordination only, `experimental.chat.messages.transform` as the sole runtime injector, and `experimental.session.compacting` as the compaction seam.
+**Correction (2026-03-20):** The original draft assumed a feature-local `session-start-hook.ts`. Current repo evidence and refreshed SDK research show that OpenCode already delivers `session.created` through the existing plugin `event` hook.
+
+> [!CRITICAL]
+> **Hook Naming**: The SDK uses `experimental.*` prefix for some hooks. Use canonical names in code:
+> - `session.compacting` → `"experimental.session.compacting"`
+> - `messages.transform` → `"experimental.chat.messages.transform"`
+> - `system.transform` → `"experimental.chat.system.transform"`
+> - `text.complete` → `"experimental.text.complete"`
+>
+> The plugin entry `opencode-plugin.ts` already uses correct names (lines 147, 187). Update all documentation to match.
 
 This is **fully transferable** because:
 1. All imports are relative within the feature
 2. The only external dependency is the OpenCode plugin types (`@opencode-ai/plugin`)
 3. The hooks expose the standard `Hooks` interface from the SDK
-4. The tools use `tool()` from `@opencode-ai/plugin/tool` [0-cite-7](#0-cite-7) [0-cite-8](#0-cite-8) 
+4. The tools use `tool()` from `@opencode-ai/plugin` (SDK exports `tool` directly from root, not a `/tool` subpath) [0-cite-7](#0-cite-7) [0-cite-8](#0-cite-8) 
 
 ---
 
@@ -263,11 +314,11 @@ The OpenCode SDK gives you two surfaces:
 
 Your current `sdk-context.ts` already captures the client reference correctly: [0-cite-11](#0-cite-11) 
 
-**Shift toward SDK**: Instead of reading `.hivemind/` files directly in hooks, use the SDK client to:
-1. **Read session state** via `client.session.get()` instead of parsing files
-2. **Show toasts** via `client.tui.showToast()` (you already do this)
-3. **Create sub-sessions** via `client.session.create()` for delegation
-4. **Subscribe to events** via SSE for real-time state changes
+**Shift toward SDK** (mark = aspirational, not current state):
+1. **Read session state** via `client.session.get()` instead of parsing files *(⚠️ aspirational — SDK has this API but codebase still reads `.hivemind/` files directly)*
+2. **Show toasts** via `client.tui.showToast()` ✅ (already implemented)
+3. **Create sub-sessions** via `client.session.create()` for delegation *(⚠️ aspirational — API exists, not yet integrated)*
+4. **Subscribe to events** via SSE for real-time state changes *(⚠️ aspirational)*
 
 The key principle: **hooks should be thin dispatchers that call feature functions, and feature functions should use the SDK client when available, falling back to disk reads when not**.
 
@@ -298,19 +349,22 @@ For your agent-work contract, this means:
 
 ### Concrete Application: Interactive Planning Artifact Transfer
 
-```typescript
-// Inspired by json-render's defineSchema + octto's session store
-import { defineSchema } from './planning-schema'
+> [!IMPORTANT]
+> The pseudocode below is **inspirational** — `s.ref()` and `s.map()` are NOT actual json-render API. The real `defineSchema` uses builder primitives: `s.string()`, `s.object()`, `s.array()`, `s.enum()`, `s.literal()`. See [json-render.xml](file:///Users/apple/hivemind-plugin/.repo-sdk-packed/json-render.xml) line 82291 for the actual API.
 
-const planningSchema = defineSchema((s) => ({
+```typescript
+// CORRECT API pattern for defineSchema (builder, not refs):
+import { defineSchema, createSpecStreamCompiler } from '@json-render/core'
+
+const contractSchema = defineSchema((s) => ({
   spec: s.object({
     phase: s.string(),
     plan: s.string(),
-    type: s.ref('catalog.workTypes'),
+    type: s.enum(['quick-action', 'research-brainstorm', 'project-driven']),
     tasks: s.array(s.object({
       id: s.string(),
       title: s.string(),
-      delegation: s.ref('catalog.delegationModes'),
+      delegation: s.enum(['parallel', 'sequential', 'handoff']),
       depends_on: s.array(s.string()),
     })),
     must_haves: s.object({
@@ -321,11 +375,11 @@ const planningSchema = defineSchema((s) => ({
       })),
     }),
   }),
-  catalog: s.object({
-    workTypes: s.map({ props: s.zod() }),
-    delegationModes: s.map({ props: s.zod() }),
-  }),
 }))
+
+// For streaming/patchable output (SpecStream RFC 6902):
+const compiler = createSpecStreamCompiler<ContractSpec>()
+compiler.push(jsonlChunk)  // → { result, newPatches }
 ```
 
 This gives you:
@@ -344,6 +398,9 @@ The `.hivemind/` bootstrap-on-first-run model is correct. The core problem is th
 2. **Use JSON** for contract schema (Zod-validated, RFC 6902 patchable)
 3. **Single snapshot per turn** — extend `TurnSnapshotLoader` to be the only reader, not `loadRuntimeBindingsSnapshot` scattered everywhere
 4. **SDK-first for runtime operations** — use the client for session/message operations, disk only for persistent state
-5. **Chain actions as hook registrations** — each chain action (task complete → export, compaction 80% → launch agent) is a separate hook that checks a condition and dispatches
+5. **Chain actions as hook registrations** — ⚠️ this is a **custom abstraction** the artifact proposes, not an existing SDK mechanism. Build it as a feature-level dispatcher pattern, not a SDK feature.
+6. **Decompose start-work-router.ts** — Apply Chain of Responsibility: extract 7 focused resolvers (lineage, purpose, trajectory, workflow, readiness, pressure, risk) + thin orchestrator
+7. **Zod-first for serialized state** — Replace 80+ lines of manual validation in `intake-record.ts` and `entry-kernel-state.ts` with `.safeParse()` patterns
+8. **Repository pattern for writers** — `proper-lockfile` is already a dependency. Assign single write authority per state file (trajectory → `core/trajectory/`, attachment → `features/runtime-entry/`, entry-kernel → `shared/`)
 
 The json-render `defineSchema` + `SpecStream` pattern and octto's branch-based exploration are the right models for making your planning artifacts both machine-readable and agent-steerable.
