@@ -10,5 +10,5 @@
     "_auto_chain_active": false,
     "nyquist_validation": true
   },
-  "granularity": "fine"
+  "granularity": "default"
 }
