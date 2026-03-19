@@ -40,14 +40,16 @@ This file governs development of the framework. Loaded once per OpenCode session
 - Apply patterns designs 
 - analyze the tasks very carefully
 
+**ALL DELEGATED AGENTS** FOCUS ON COMPLETE THE DELEGATED TASKS - Do not load skills unless being asked by orchestrator/coordinator. YOU MUST COMPLETE TASKS NOT LOADING SKILLS TO VERIFY
+
 **TDD IS CRITICAL AND ENFORCE**
 
-- Tests **MUST** be conducted formally by running SKILLS sets of spec-driven tests 
+- Tests **MUST** be conducted formally by running SKILLS sets of spec-driven tests. If you are running - ONLY RUN 1 Framework DO NOT MIX 
 
 - Tests must be built on the understanding of the whole project - running through **SCHEMA** validation; cross-dependencies **CONTRACTS** to ENSURE API interfaces and types are correctly implemented AND **NO TOLORENCE** FOR ANY OF THIS IS SKPPED
 
 - NO nonsensical TESTS allowed, meaning, test units must gradually built into a test suite.
-**NEVER ALLOW** to run any new development if **TESTS ARE NOT PASSED** - **MUST ALWAYS FOLLOW** npx skills add https://github.com/obra/superpowers --skill test-driven-development 
+**NEVER ALLOW** to run any new development if **TESTS ARE NOT PASSED** - **MUST ALWAYS FOLLOW** nt 
 
 - IN THIS PROJECT ALL TESTS MUST SURFACE API OF THE SKD USED in package.json - NO TEST WITH SDK CAN USE STUB
 

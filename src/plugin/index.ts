@@ -1,7 +1,3 @@
-export * from './plugin-types.js'
 export * from './messages-transform.js'
 export * from './system-transform.js'
-export * from './surface-registry.js'
-export * from './create-core-hooks.js'
-export * from './runtime-plan.js'
 export * from './opencode-plugin.js'

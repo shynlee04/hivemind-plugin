@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-03-19T06:24:49.633Z",
+  "version": "1.0.0",
+  "mode": "quick",
+  "rot_level": "CLEAN",
+  "rot_score": 0,
+  "issues": [],
+  "path_validation": {
+    "task_plan_exists": true,
+    "agents_md_exists": true,
+    "session_exists": false
+  }
+}

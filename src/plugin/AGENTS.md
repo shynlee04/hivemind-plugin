@@ -26,13 +26,11 @@ This directory is **assembly and enforcement wiring only**. It composes hooks an
 | File | Purpose |
 |------|---------|
 | `opencode-plugin.ts` | Plugin factory — hook registration + tool assembly |
-| `create-core-hooks.ts` | Constructs hook registration objects |
-| `surface-registry.ts` | Published runtime registry of tools/hooks |
-| `plugin-types.ts` | Plugin-internal types |
-| `runtime-plan.ts` | Runtime capability planning |
 | `messages-transform.ts` | Messages transform hook adapter |
 | `system-transform.ts` | System transform hook adapter |
-| `sdk-context.ts` | Caches `PluginInput` (client, shell, directory, worktree) |
+| `context-renderer.ts` | Canonical HiveMind context packet assembly |
+| `route-hint.ts` | Minimal route reminder rendering |
+| `runtime-snapshot.ts` | Per-turn runtime snapshot caching |
 
 ## SDK Adoption Map (L2, 2026-03-15)
 
