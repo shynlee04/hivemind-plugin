@@ -38,6 +38,12 @@ P1 routing skill for HiveMind-specific skill authoring, auditing, refactoring, a
 - "improve this skill" / "iterate on skill"
 - "TDD for skills" / "test-driven skill development"
 
+**Audit-Specific Triggers:**
+- "evaluate this skill" / "score this skill"
+- "what's wrong with this skill"
+- "improve skill quality"
+- "skill quality review" / "skill audit"
+
 ## Routing Logic
 
 ```
@@ -50,6 +56,21 @@ IF task == "validate skill" → load references/04-tdd-workflow.md + references/
 IF task == "test skill" → load references/04-tdd-workflow.md
 IF task == "iterate skill" → load references/04-tdd-workflow.md + references/03-three-patterns.md
 ```
+
+## Quality Thresholds (from Skill-Judge)
+
+All skills must meet these minimums before release:
+
+| Dimension | Weight | Minimum Score |
+|-----------|--------|---------------|
+| Overall Score | - | ≥3.5 |
+| Trigger Accuracy | 25% | ≥3.0 |
+| Action Coherence | 25% | ≥4.0 |
+| Reference Integrity | 20% | ≥3.0 |
+| Non-Redundancy | 15% | ≥3.0 |
+| Edge Case Coverage | 15% | ≥3.0 |
+
+**All thresholds must be met for release.** See `references/05-skill-quality-matrix.md` for full evaluation criteria.
 
 ## NO-LOAD Rules (Critical)
 
