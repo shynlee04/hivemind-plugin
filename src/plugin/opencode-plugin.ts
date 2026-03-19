@@ -1,10 +1,11 @@
-import type { Part } from '@opencode-ai/sdk'
 import { type Plugin } from '@opencode-ai/plugin'
 
 import { findSlashCommandBundle } from '../commands/slash-command/index.js'
 import { initSdkContext, resetSdkContext } from '../hooks/sdk-context.js'
 import { createEventHandler } from '../hooks/event-handler.js'
 import { showGovernanceToast } from '../hooks/soft-governance.js'
+import { resolveStartWork } from '../hooks/start-work/start-work-router.js'
+import type { StartWorkInput } from '../hooks/start-work/start-work-types.js'
 import {
   createSyntheticPart,
   findLastUserMessage,
@@ -20,14 +21,35 @@ import {
 } from '../tools/runtime/index.js'
 import { createHivemindTaskTool as createTaskTool } from '../tools/task/index.js'
 import { createHivemindTrajectoryTool as createTrajectoryTool } from '../tools/trajectory/index.js'
-import { createMessagesTransform } from './messages-transform.js'
-import { buildRouteReminder, createPluginRuntimePlan } from './runtime-plan.js'
-import { createSystemTransform } from './system-transform.js'
-import { loadRuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
 import {
-  renderOpencodeKnowledgePacket,
-  resolveBaselineOpencodeKnowledgeSurfaces,
-} from '../shared/opencode-knowledge.js'
+  createHivemindContextPacket,
+  renderHivemindContext,
+} from './context-renderer.js'
+import { renderRouteHint } from './route-hint.js'
+import { createTurnSnapshotLoader } from './runtime-snapshot.js'
+
+function createStartWorkInput(input: {
+  directory: string
+  sessionId: string
+  userMessage: string
+  snapshot: Awaited<ReturnType<ReturnType<typeof createTurnSnapshotLoader>['getSnapshot']>>
+}): StartWorkInput {
+  return {
+    userMessage: input.userMessage,
+    sessionId: input.sessionId,
+    sessionScope: 'main',
+    projectRoot: input.directory,
+    workflowId: input.snapshot.workflowId,
+    taskIds: input.snapshot.taskIds,
+    hasRuntimeAttachment: input.snapshot.hasRuntimeAttachment,
+    profileComplete: input.snapshot.profileComplete,
+    activeLineage: input.snapshot.defaultLineage,
+    hasHivemind: input.snapshot.hasHivemind,
+    hivemindHealthy: input.snapshot.hivemindHealthy,
+    hasWorkflow: input.snapshot.hasWorkflow,
+    hasHandoff: false,
+  }
+}
 
 /**
  * Real OpenCode plugin entry for the revamp lane.
@@ -39,9 +61,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
   const directory = input.directory
   initSdkContext(input)
   const eventHandler = createEventHandler(directory)
-  const baselineOpencodeKnowledge = renderOpencodeKnowledgePacket(
-    resolveBaselineOpencodeKnowledgeSurfaces(),
-  )
+  const turnSnapshot = createTurnSnapshotLoader(directory)
 
   return {
     event: async (eventInput) => {
@@ -55,9 +75,9 @@ export const HiveMindPlugin: Plugin = async (input) => {
       hivemind_trajectory: createTrajectoryTool(directory),
       hivemind_handoff: createHivemindHandoffTool(directory),
     },
-    'chat.message': async (messageInput, output) => {
-      const snapshot = await loadRuntimeBindingsSnapshot(directory)
-      const sessionID = messageInput.sessionID
+    'chat.message': async (_messageInput, _output) => {
+      turnSnapshot.resetTurnSnapshot()
+      const snapshot = await turnSnapshot.getSnapshot()
 
       // Show degraded mode warning if HiveMind exists but isn't healthy
       if (snapshot.hasHivemind && !snapshot.hivemindHealthy) {
@@ -67,36 +87,6 @@ export const HiveMindPlugin: Plugin = async (input) => {
           'warning'
         )
       }
-
-      // Inject baseline OpenCode knowledge
-      output.parts.push({
-        id: `prt_hm_knowledge_${Date.now()}`,
-        sessionID,
-        messageID: messageInput.messageID ?? sessionID,
-        type: 'text',
-        text: baselineOpencodeKnowledge,
-        synthetic: true,
-      } as Part)
-
-      // Inject runtime context summary
-      const contextSummary = [
-        '<hivemind-session-context>',
-        `trajectory=${snapshot.trajectoryId ?? 'none'}`,
-        `workflow=${snapshot.workflowId ?? 'none'}`,
-        `lineage=${snapshot.defaultLineage}`,
-        `profile_complete=${snapshot.profileComplete}`,
-        `task_count=${snapshot.taskIds.length}`,
-        '</hivemind-session-context>',
-      ].join('\n')
-
-      output.parts.push({
-        id: `prt_hm_context_${Date.now()}`,
-        sessionID,
-        messageID: messageInput.messageID ?? sessionID,
-        type: 'text',
-        text: contextSummary,
-        synthetic: true,
-      } as Part)
     },
     'permission.ask': async (permissionInput, output) => {
       // Auto-allow HiveMind managed tool calls (they have their own governance)
@@ -123,7 +113,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
       }
     },
     'shell.env': async (_input, output) => {
-      const snapshot = await loadRuntimeBindingsSnapshot(directory)
+      const snapshot = await turnSnapshot.getSnapshot()
       output.env.HIVEMIND_RUNTIME_ATTACHED = '1'
       output.env.HIVEMIND_ATTACHMENT_MODE = snapshot.attachmentMode
       if (snapshot.trajectoryId) output.env.HIVEMIND_ACTIVE_TRAJECTORY = snapshot.trajectoryId
@@ -135,7 +125,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
         return
       }
 
-      const snapshot = await loadRuntimeBindingsSnapshot(directory)
+      const snapshot = await turnSnapshot.getSnapshot()
       output.parts.unshift(createSyntheticPart(
         commandInput.sessionID,
         commandInput.sessionID,
@@ -154,35 +144,6 @@ export const HiveMindPlugin: Plugin = async (input) => {
     'tool.execute.after': async (toolInput) => {
       await recordToolEvent(directory, toolInput.sessionID, toolInput.tool)
     },
-    'experimental.chat.system.transform': async (systemInput, output) => {
-      const snapshot = await loadRuntimeBindingsSnapshot(directory)
-      output.system.push(baselineOpencodeKnowledge)
-      output.system.push(createSystemTransform({
-        sessionId: systemInput.sessionID ?? 'unknown-session',
-        sessionScope: 'main',
-        parentSessionId: undefined,
-        lineage: snapshot.defaultLineage,
-        trajectoryId: snapshot.trajectoryId,
-        workflowId: snapshot.workflowId,
-        taskIds: snapshot.taskIds,
-        subtaskIds: snapshot.subtaskIds,
-        checkpointId: snapshot.checkpointId,
-        preferredUserName: snapshot.preferredUserName,
-        governanceMode: snapshot.governanceMode,
-        automationLevel: snapshot.automationLevel,
-        language: snapshot.language,
-        artifactLanguage: snapshot.artifactLanguage,
-        expertLevel: snapshot.expertLevel,
-        outputStyle: snapshot.outputStyle,
-        branchFocus: snapshot.branchFocus,
-        verificationContract: snapshot.verificationContract,
-        returnContract: snapshot.returnContract,
-        guardrails: snapshot.guardrails,
-        facilitators: snapshot.facilitators,
-        mcpReadiness: snapshot.mcpReadiness,
-        hivebrainDigest: snapshot.hivebrainDigest,
-      }))
-    },
     'experimental.chat.messages.transform': async (_input, output) => {
       const messages = output.messages as MessageLike[]
       const lastUserMessage = findLastUserMessage(messages)
@@ -196,69 +157,26 @@ export const HiveMindPlugin: Plugin = async (input) => {
         return
       }
 
-      const snapshot = await loadRuntimeBindingsSnapshot(directory)
+      const snapshot = await turnSnapshot.getSnapshot()
       const userMessage = getMessageText(lastUserMessage)
-      const runtimePlan = await createPluginRuntimePlan({
-        startWork: {
-          userMessage,
-          sessionId: sessionID,
-          sessionScope: 'main',
-          projectRoot: directory,
-          workflowId: snapshot.workflowId,
-          taskIds: snapshot.taskIds,
-          hasRuntimeAttachment: snapshot.hasRuntimeAttachment,
-          profileComplete: snapshot.profileComplete,
-          activeLineage: snapshot.defaultLineage,
-          hasHivemind: snapshot.hasHivemind,
-          hivemindHealthy: snapshot.hivemindHealthy,
-          hasWorkflow: snapshot.hasWorkflow,
-          hasHandoff: false,
-        },
-        promptState: {
-          sessionId: sessionID,
-          sessionScope: 'main',
-          lineage: snapshot.defaultLineage,
-          trajectoryId: snapshot.trajectoryId,
-          workflowId: snapshot.workflowId,
-          taskIds: snapshot.taskIds,
-          subtaskIds: snapshot.subtaskIds,
-          checkpointId: snapshot.checkpointId,
-          preferredUserName: snapshot.preferredUserName,
-          governanceMode: snapshot.governanceMode,
-          automationLevel: snapshot.automationLevel,
-          language: snapshot.language,
-          artifactLanguage: snapshot.artifactLanguage,
-          expertLevel: snapshot.expertLevel,
-          outputStyle: snapshot.outputStyle,
-          branchFocus: snapshot.branchFocus,
-          verificationContract: snapshot.verificationContract,
-          returnContract: snapshot.returnContract,
-          guardrails: snapshot.guardrails,
-          facilitators: snapshot.facilitators,
-          mcpReadiness: snapshot.mcpReadiness,
-          hivebrainDigest: snapshot.hivebrainDigest,
-        },
-      })
-
-      const messagePacket = runtimePlan.data?.messageTransform ?? createMessagesTransform({
+      const startWork = resolveStartWork(createStartWorkInput({
+        directory,
         sessionId: sessionID,
-        sessionScope: 'main',
-        lineage: snapshot.defaultLineage,
-        trajectoryId: snapshot.trajectoryId,
-        workflowId: snapshot.workflowId,
-        taskIds: snapshot.taskIds,
-        subtaskIds: snapshot.subtaskIds,
-        checkpointId: snapshot.checkpointId,
-        branchFocus: snapshot.branchFocus,
-      })
-      const injectedParts: Part[] = []
-      if (runtimePlan.data?.opencodeKnowledgePacket) {
-        injectedParts.push(createSyntheticPart(sessionID, messageID, runtimePlan.data.opencodeKnowledgePacket))
-      }
-      injectedParts.push(createSyntheticPart(sessionID, messageID, messagePacket))
+        userMessage,
+        snapshot,
+      }))
+      const packet = renderHivemindContext(createHivemindContextPacket({
+        sessionId: sessionID,
+        snapshot,
+        startWork,
+      }))
+      const injectedParts = [createSyntheticPart(sessionID, messageID, packet)]
       lastUserMessage.parts = [...injectedParts, ...(lastUserMessage.parts ?? [])]
 
-      const routeReminder = buildRouteReminder(runtimePlan.data)
+      const routeReminder = renderRouteHint({
+        routeCommand: startWork.requiredCommandId ?? startWork.recommendedCommandId,
+        risk: startWork.riskLevel,
+      })
       if (routeReminder) {
         lastUserMessage.parts = [
           ...(lastUserMessage.parts ?? []),
@@ -267,32 +185,11 @@ export const HiveMindPlugin: Plugin = async (input) => {
       }
     },
     'experimental.session.compacting': async (compactionInput, output) => {
-      const snapshot = await loadRuntimeBindingsSnapshot(directory)
-      output.context.push(baselineOpencodeKnowledge)
-      output.context.push(createSystemTransform({
+      const snapshot = await turnSnapshot.getSnapshot()
+      output.context.push(renderHivemindContext(createHivemindContextPacket({
         sessionId: compactionInput.sessionID,
-        sessionScope: 'main',
-        lineage: snapshot.defaultLineage,
-        trajectoryId: snapshot.trajectoryId,
-        workflowId: snapshot.workflowId,
-        taskIds: snapshot.taskIds,
-        subtaskIds: snapshot.subtaskIds,
-        checkpointId: snapshot.checkpointId,
-        preferredUserName: snapshot.preferredUserName,
-        governanceMode: snapshot.governanceMode,
-        automationLevel: snapshot.automationLevel,
-        language: snapshot.language,
-        artifactLanguage: snapshot.artifactLanguage,
-        expertLevel: snapshot.expertLevel,
-        outputStyle: snapshot.outputStyle,
-        branchFocus: snapshot.branchFocus,
-        verificationContract: snapshot.verificationContract,
-        returnContract: snapshot.returnContract,
-        guardrails: snapshot.guardrails,
-        facilitators: snapshot.facilitators,
-        mcpReadiness: snapshot.mcpReadiness,
-        hivebrainDigest: snapshot.hivebrainDigest,
-      }))
+        snapshot,
+      })))
     },
   }
 }
