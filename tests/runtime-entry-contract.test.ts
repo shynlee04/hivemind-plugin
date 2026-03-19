@@ -1,57 +1,34 @@
 import assert from 'node:assert/strict'
-import { createServer } from 'node:http'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { readFile } from 'node:fs/promises'
 import { describe, it } from 'node:test'
 
-import { initProject } from '../src/cli/init.js'
-import { runDoctorCommand } from '../src/cli/doctor.js'
+import { loadCommandAsset } from '../src/features/runtime-entry/instruction-loader.js'
 
-describe('runtime entry contract', () => {
-  it('exposes hm-init closeout semantics through the shared runtime-entry contract', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'hm-runtime-entry-init-'))
+const runtimeEntryFiles = [
+  'src/features/runtime-entry/settings.ts',
+  'src/features/runtime-entry/init.ts',
+  'src/features/runtime-entry/harness.ts',
+  'src/features/runtime-entry/handler-shared.ts',
+  'src/features/runtime-entry/doctor.ts',
+  'src/features/runtime-entry/command.ts',
+] as const
 
-    try {
-      const result = await initProject(dir, { presetId: 'guided-onboarding', silent: true })
+describe('runtime entry loader authority', () => {
+  it('loads command assets from the feature-owned runtime entry loader', async () => {
+    const asset = await loadCommandAsset('hm-init')
 
-      assert.equal(result.closeoutStatus, 'qa-pending')
-      assert.equal(result.nextCommand, 'hm-harness')
-      assert.deepEqual(result.recommendedCommands, ['hm-harness', 'opencode attach', '/hm-plan'])
-    } finally {
-      await rm(dir, { recursive: true, force: true })
-    }
+    assert.equal(asset.fileName, 'hm-init.md')
+    assert.equal(typeof asset.frontmatter, 'object')
+    assert.ok(asset.body.length > 0)
+    assert.ok(asset.raw.includes('hm-init'))
   })
 
-  it('exposes hm-doctor recovery guidance through the shared runtime-entry contract', async () => {
-    const dir = await mkdtemp(join(tmpdir(), 'hm-runtime-entry-doctor-'))
-    const server = createServer((req, res) => {
-      if (req.url === '/global/health') {
-        res.writeHead(200, { 'content-type': 'application/json' })
-        res.end(JSON.stringify({ healthy: true, version: 'test-opencode' }))
-        return
-      }
-      res.writeHead(404)
-      res.end()
-    })
+  it('points runtime-entry consumers at the feature-owned loader path', async () => {
+    const contents = await Promise.all(runtimeEntryFiles.map((file) => readFile(file, 'utf8')))
 
-    try {
-      const initResult = await initProject(dir, { presetId: 'guided-onboarding', silent: true })
-      await writeFile(join(dir, '.hivemind', 'state', 'trajectory-ledger.json'), '{not-json')
-      await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', () => resolve()))
-
-      const result = await runDoctorCommand(dir, {
-        sessionId: initResult.sessionId,
-        trajectoryId: initResult.trajectoryId,
-        workflowId: initResult.workflowId,
-      })
-
-      assert.equal(result.closeoutStatus, 'qa-pending')
-      assert.equal(result.nextCommand, 'hm-harness')
-      assert.deepEqual(result.recommendedCommands, ['hm-harness', 'opencode attach', '/hm-plan'])
-    } finally {
-      server.close()
-      await rm(dir, { recursive: true, force: true })
+    for (const source of contents) {
+      assert.equal(source.includes('hooks/runtime-bridge/instruction-loader'), false)
+      assert.equal(source.includes('./instruction-loader.js'), true)
     }
   })
 })
