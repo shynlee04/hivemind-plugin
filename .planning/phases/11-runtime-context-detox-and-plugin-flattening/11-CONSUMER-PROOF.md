@@ -51,6 +51,7 @@ This matrix records current repo-evidence consumers before any Phase 11 cleanup 
 - `start-work-types.ts` needed one more relocation pass before deletion: plugin, runtime-plan, plugin-handler, runtime-entry, and test consumers now import `src/features/session-entry/start-work-types.ts` directly.
 - Plan 11-07 deleted `src/shared/runtime-invocation.ts` and `src/shared/turn-output.ts` after relocating preserved consumers into `src/features/runtime-entry/` and removing the shared barrel exports.
 - `src/shared/lifecycle-spine.ts` remains the minimal shared survivor because `entry-kernel-state`, runtime invocation, and turn output still need one small lifecycle identity contract.
+- The preserved owner for `src/shared/lifecycle-spine.ts` is the shared lifecycle identity seam itself, not the runtime-entry feature; deleting it now would force `entry-kernel-state` to depend on a feature-owned module.
 - Plan 11-08 removed the `src/plugin-handlers/` TypeScript family after proving only `resolveCommandBinding()` and `CommandBinding` still had live consumers, then relocating that logic into the `src/hooks/auto-slash-command/` owner.
 
 ## Evidence Commands Used
