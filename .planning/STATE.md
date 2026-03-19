@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 11-08-PLAN.md
-last_updated: "2026-03-19T15:43:32.125Z"
-last_activity: "2026-03-19 - Completed 11-08: flattened plugin handler family"
+stopped_at: Completed 11-07-PLAN.md
+last_updated: "2026-03-19T15:46:07.559Z"
+last_activity: "2026-03-19 - Completed 11-07: resolved shared runtime-context conditional targets"
 progress:
   total_phases: 13
   completed_phases: 3
   total_plans: 34
-  completed_plans: 26
-  percent: 76
+  completed_plans: 27
+  percent: 79
 ---
 
 # Project State
@@ -26,16 +26,16 @@ See: `.planning/PROJECT.md` (updated 2026-03-17)
 ## Current Position
 
 Phase: 11 of 13 (Runtime Context Detox and Plugin Flattening)
-Plan: 07 of 11 in current phase (next incomplete)
-Status: Phase 11-08 complete out of order; Phase 11 remains in progress with 11-07 still next
-Last activity: 2026-03-19 - Completed 11-08: flattened plugin handler family
+Plan: 09 of 11 in current phase (next incomplete)
+Status: Phase 11-07 and Phase 11-08 are complete; Phase 11 remains in progress with 11-09 next
+Last activity: 2026-03-19 - Completed 11-07: resolved shared runtime-context conditional targets
 
-Progress: [████████░░] 76%
+Progress: [████████░░] 79%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 26
+- Total plans completed: 27
 - Average duration: 10 min
 - Total execution time: 2.4 hours
 
@@ -55,7 +55,7 @@ Progress: [████████░░] 76%
 | 8. TUI Stabilization on Backend Truth | 0 | 0 min | 0 min |
 | 9. Non-breaking Skills Ecosystem | 0 | 0 min | 0 min |
 | 10. Deep-skill-writer-pack Ecosystem | 1 | 7 min | 7 min |
-| 11. Runtime Context Detox and Plugin Flattening | 8 | 57 min | 7 min |
+| 11. Runtime Context Detox and Plugin Flattening | 9 | 59 min | 7 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 plans
@@ -78,6 +78,7 @@ Progress: [████████░░] 76%
 | Phase 11 P10 | 8 min | 1 tasks | 23 files |
 | Phase 11 P06 | 6 min | 2 tasks | 4 files |
 | Phase 11 P08 | 7 min | 1 tasks | 13 files |
+| Phase 11 P07 | 2 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -121,6 +122,8 @@ Recent decisions affecting current work:
 - [Phase 11]: Export only HiveMindPlugin from the surviving plugin assembly boundary. — Prevents wildcard barrels from leaking deleted plugin scaffolding back into the public package surface.
 - [Phase 11]: Move command binding resolution into src/hooks/auto-slash-command/ because it is the only surviving runtime consumer. — Keeping the resolver with its only consumer removes the shared plugin-handler layer without changing behavior ownership.
 - [Phase 11]: Delete the src/plugin-handlers/ TypeScript family once zero-consumer proof is explicit per file. — The proof matrix now names each former handler file individually, so the family no longer needs a preserved directory-level evaluation target.
+- [Phase 11]: Move runtime invocation and turn output ownership into src/features/runtime-entry/ and delete the shared shim files. — Preserved consumers are runtime-entry and slash-command flows, so the shared shims no longer own behavior.
+- [Phase 11]: Keep src/shared/lifecycle-spine.ts as the minimal shared lifecycle identity owner. — entry-kernel-state still depends on the lifecycle contract outside the runtime-entry feature boundary, so a shared survivor remains justified.
 
 ### Pending Todos
 
@@ -150,6 +153,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-19T15:43:32.118Z
-Stopped at: Completed 11-08-PLAN.md
+Last session: 2026-03-19T15:46:07.553Z
+Stopped at: Completed 11-07-PLAN.md
 Resume file: None
