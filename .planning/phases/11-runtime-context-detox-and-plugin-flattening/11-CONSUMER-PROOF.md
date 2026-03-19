@@ -1,10 +1,17 @@
 # Phase 11 Consumer Proof Matrix
 
 Generated: 2026-03-19
-Plan: 11-09
+Plan: 11-11
 Scope: Conditional deletion targets named in `11-CONTEXT.md`
 
 This matrix records current repo-evidence consumers before any Phase 11 cleanup deletes or relocates runtime-context layers. Import consumers are taken from `src/**` and `tests/**` references; historical docs are noted only when they explain why a target is still planned.
+
+## Reduced-Scope Final Proof
+
+- Preserved-boundary proof is narrowed to the surviving runtime/plugin surfaces: `tests/runtime-tools.test.ts`, `tests/runtime-entry-contract.test.ts`, `tests/runtime-authority-live-sanity.test.ts`, `tests/plugin-runtime.test.ts`, and `tests/plugin-assembly-smoke.test.ts`.
+- `tests/control-plane-runtime-tools.test.ts` and `tests/schema-kernel-contracts.test.ts` are not present in the current worktree, so reduced-scope execution does not recreate those removed proof surfaces.
+- `npm test` is blocked by `scripts/check-agent-registry-parity.sh` reporting missing `.opencode/agents/*.md` runtime mirrors; this is tracked as removable agent-surface noise rather than a surviving runtime/plugin boundary failure.
+- Final green evidence for this reduced scope is therefore: `npx tsc --noEmit`, `npm run typecheck:core`, and `npx tsx --test tests/*.test.ts`.
 
 ## Classification Legend
 
