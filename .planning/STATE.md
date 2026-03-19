@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 11-09-PLAN.md
-last_updated: "2026-03-19T15:54:00.453Z"
-last_activity: "2026-03-19 - Completed 11-09: removed dead hook wrapper families by consumer proof"
+status: ready
+stopped_at: Completed 11-11-PLAN.md
+last_updated: "2026-03-19T16:02:09.925Z"
+last_activity: "2026-03-19 - Completed 11-11: closed reduced-scope preserved-boundary runtime and tool proof"
 progress:
   total_phases: 13
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 34
-  completed_plans: 28
-  percent: 82
+  completed_plans: 29
+  percent: 85
 ---
 
 # Project State
@@ -21,21 +21,21 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-03-17)
 
 **Core value:** At runtime, HiveMind must reliably steer OpenCode agents through deterministic, tool-using workflows that are provably aligned with the live OpenCode client/server/plugin contract.
-**Current focus:** Phase 11 - Runtime Context Detox and Plugin Flattening
+**Current focus:** Next roadmap phase selection after completing Phase 11
 
 ## Current Position
 
 Phase: 11 of 13 (Runtime Context Detox and Plugin Flattening)
-Plan: 11 of 11 in current phase (next incomplete)
-Status: Phase 11-09 and Phase 11-10 are complete; Phase 11 remains in progress with 11-11 next
-Last activity: 2026-03-19 - Completed 11-09: removed dead hook wrapper families by consumer proof
+Plan: 11 of 11 in current phase (complete)
+Status: Phase 11 is complete; next roadmap phase is not yet in execution
+Last activity: 2026-03-19 - Completed 11-11: closed reduced-scope preserved-boundary runtime and tool proof
 
-Progress: [████████░░] 82%
+Progress: [█████████░] 85%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 28
+- Total plans completed: 29
 - Average duration: 10 min
 - Total execution time: 2.5 hours
 
@@ -55,7 +55,7 @@ Progress: [████████░░] 82%
 | 8. TUI Stabilization on Backend Truth | 0 | 0 min | 0 min |
 | 9. Non-breaking Skills Ecosystem | 0 | 0 min | 0 min |
 | 10. Deep-skill-writer-pack Ecosystem | 1 | 7 min | 7 min |
-| 11. Runtime Context Detox and Plugin Flattening | 10 | 65 min | 7 min |
+| 11. Runtime Context Detox and Plugin Flattening | 11 | 66 min | 6 min |
 
 **Recent Trend:**
 - Last 5 plans: 5 plans
@@ -80,6 +80,7 @@ Progress: [████████░░] 82%
 | Phase 11 P08 | 7 min | 1 tasks | 13 files |
 | Phase 11 P07 | 2 min | 2 tasks | 8 files |
 | Phase 11 P09 | 6 min | 1 tasks | 20 files |
+| Phase 11 P11 | 1 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -127,6 +128,8 @@ Recent decisions affecting current work:
 - [Phase 11]: Keep src/shared/lifecycle-spine.ts as the minimal shared lifecycle identity owner. — entry-kernel-state still depends on the lifecycle contract outside the runtime-entry feature boundary, so a shared survivor remains justified.
 - [Phase 11]: Move surviving prompt helper ownership into src/plugin/ before deleting the hook-layer wrapper families.
 - [Phase 11]: Delete runtime-bridge entirely once instruction-loader and bridge definitions have zero preserved consumers.
+- [Phase 11]: Use @opencode-ai/plugin/tool directly for preserved tool factories so typecheck matches the installed SDK surface.
+- [Phase 11]: Close Phase 11 with reduced-scope proof limited to surviving runtime/plugin boundaries and explicitly skip removed command/agent/schema-noise surfaces.
 
 ### Pending Todos
 
@@ -143,7 +146,7 @@ Recent decisions affecting current work:
 ### Blockers/Concerns
 
 - Phase 5: Minimum continuation record shape still needs implementation-time validation.
-- Global TypeScript verification still fails in pre-existing `src/tools/*/tools.ts` plugin import/type errors unrelated to 11-09.
+- `npm test` still stops in `scripts/check-agent-registry-parity.sh` because `.opencode/agents/*.md` runtime mirrors are missing; reduced Phase 11 closeout treated that as out-of-scope agent-surface noise.
 
 ### Quick Tasks Completed
 
@@ -156,6 +159,6 @@ Recent decisions affecting current work:
 
 ## Session Continuity
 
-Last session: 2026-03-19T15:54:00.443Z
-Stopped at: Completed 11-09-PLAN.md
+Last session: 2026-03-19T16:02:09.920Z
+Stopped at: Completed 11-11-PLAN.md
 Resume file: None
