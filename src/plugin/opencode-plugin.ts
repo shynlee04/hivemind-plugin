@@ -6,12 +6,6 @@ import { createEventHandler } from '../hooks/event-handler.js'
 import { showGovernanceToast } from '../hooks/soft-governance.js'
 import { resolveStartWork } from '../hooks/start-work/start-work-router.js'
 import type { StartWorkInput } from '../features/session-entry/start-work-types.js'
-import {
-  createSyntheticPart,
-  findLastUserMessage,
-  getMessageText,
-  type MessageLike,
-} from '../hooks/prompt-transformation/index.js'
 import { isHivemindManagedTool, recordToolEvent } from '../hooks/runtime-loader/index.js'
 import { createHivemindDocTool } from '../tools/doc/index.js'
 import { createHivemindHandoffTool } from '../tools/handoff/index.js'
@@ -27,6 +21,12 @@ import {
 } from './context-renderer.js'
 import { renderRouteHint } from './route-hint.js'
 import { createTurnSnapshotLoader } from './runtime-snapshot.js'
+import {
+  createSyntheticPart,
+  findLastUserMessage,
+  getMessageText,
+  type MessageLike,
+} from './synthetic-parts.js'
 
 function createStartWorkInput(input: {
   directory: string

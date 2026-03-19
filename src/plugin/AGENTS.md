@@ -42,14 +42,14 @@ This directory is **assembly and enforcement wiring only**. It composes hooks an
 | Hook | Decision | Responsible Module | Rationale |
 |------|----------|-------------------|-----------|
 | `event` | ✅ Adopted | `hooks/event-handler.ts` | All lifecycle events |
-| `command.execute.before` | ✅ Adopted | `hooks/runtime-bridge/` | Pre-command context |
+| `command.execute.before` | ✅ Adopted | `plugin/opencode-plugin.ts` | Pre-command context |
 | `tool.execute.after` | ✅ Adopted | `hooks/runtime-loader/` | Post-tool state capture |
 | `shell.env` | ✅ Adopted | plugin entry | Env injection |
-| `system.transform` | ✅ Adopted | `hooks/context-injection/` | System prompt enrichment |
-| `messages.transform` | ✅ Adopted | `hooks/prompt-transformation/` | Message history injection |
+| `system.transform` | ✅ Retired | — | Phase 11 removed the duplicate system-transform runtime emitter |
+| `messages.transform` | ✅ Adopted | `plugin/opencode-plugin.ts` + `plugin/synthetic-parts.ts` | Message history injection |
 | `session.compacting` | ✅ Adopted | `hooks/workflow-integration/` | Compaction context |
 | `chat.message` | ✅ Adopted | plugin entry + `hooks/start-work/` | Injects baseline knowledge and runtime session context |
-| `chat.params` | 🔜 Adopt now | `hooks/context-injection/` | Per-agent temperature control (hivefiver=0.7, hivemaker=0.3) |
+| `chat.params` | 🔜 Adopt later | — | Per-agent temperature control remains optional after wrapper-family deletion |
 | `permission.ask` | ✅ Adopted | plugin entry | Auto-allows managed HiveMind tools and surfaces mutation toasts for write requests |
 | `tool.execute.before` | ✅ Adopted | `hooks/runtime-loader/` | Records managed-tool execution intent before tool calls |
 | `tool.definition` | ⏳ Adopt later | — | Dynamic tool description enrichment — useful but not critical for 2.9.5 |

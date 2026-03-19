@@ -1,7 +1,7 @@
 import {
   transformRuntimePrompt,
   type RuntimePromptTransformationInput,
-} from '../hooks/prompt-transformation/index.js'
+} from './runtime-prompt.js'
 
 export function createSystemTransform(input: RuntimePromptTransformationInput): string {
   return transformRuntimePrompt(input).systemPacket
