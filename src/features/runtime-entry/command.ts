@@ -17,6 +17,7 @@ import {
 import { loadCommandAsset, type LoadedCommandAsset } from './instruction-loader.js'
 import { createRuntimeInvocation } from './invocation.js'
 import { createTurnOutputEnvelope, exportTurnOutputProjection } from './turn-output.js'
+import { upsertWorkflowContinuityTransaction } from './workflow-continuity.js'
 
 type RecoveryHandler = (
   bundle: SlashCommandBundle,
@@ -194,13 +195,57 @@ async function finalizeCommandResult(
     resumeHints: result.entityBindings?.workflowId ? [`workflow:${result.entityBindings.workflowId}`] : [],
   })
   const turnOutputProjection = await exportTurnOutputProjection(input.projectRoot, turnOutput)
+  const sessionContractLinkage = shouldLinkCommandSessionContract(bundle.id)
+    ? await upsertCommandSessionContract({
+        commandId: bundle.id,
+        projectRoot: input.projectRoot,
+        executionInput: input,
+        result,
+        turnOutputProjection,
+      })
+    : null
+  const continuityLinkage = shouldLinkCommandSessionContract(bundle.id) && sessionContractLinkage
+    ? await upsertWorkflowContinuityTransaction({
+        commandId: bundle.id,
+        projectRoot: input.projectRoot,
+        executionInput: input,
+        phase: bundle.id === 'hm-plan' ? 'planning' : 'implementation',
+        turnOutputProjection,
+        sessionContractLinkage,
+      })
+    : null
 
   return {
     ...result,
+    report: continuityLinkage
+      ? {
+          ...result.report,
+          continuity: {
+            continuityId: continuityLinkage.transaction.continuityId,
+            continuityKey: continuityLinkage.transaction.continuityKey,
+            phase: continuityLinkage.transaction.phase,
+            currentSessionId: continuityLinkage.transaction.currentSessionId,
+            priorSessionId: continuityLinkage.transaction.priorSessionId,
+            linkedContractId: continuityLinkage.transaction.linkedContractId,
+          },
+        }
+      : result.report,
     artifactRefs: [
       ...(result.artifactRefs ?? []),
       ...(turnOutputProjection.yamlPath ? [turnOutputProjection.yamlPath] : []),
       ...(turnOutputProjection.markdownPath ? [turnOutputProjection.markdownPath] : []),
+      ...(sessionContractLinkage
+        ? [
+            sessionContractLinkage.contractFilePath,
+            `agent-work-contract:${sessionContractLinkage.contract.contractId}`,
+          ]
+        : []),
+      ...(continuityLinkage
+        ? [
+            continuityLinkage.filePath,
+            `workflow-continuity:${continuityLinkage.transaction.continuityId}`,
+          ]
+        : []),
     ],
     runtimeInvocation,
     turnOutput,

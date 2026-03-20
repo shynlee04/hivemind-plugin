@@ -98,6 +98,9 @@ test('ExportContractTool - execute - exports full validated contract payload', a
     assert.equal(parsed.data.format, 'contract')
     assert.equal(parsed.data.payload.contractId, 'contract-export-123')
     assert.equal(parsed.data.payload.briefing.summary, 'Export the validated packet.')
+    assert.equal(parsed.data.contract.contractId, 'contract-export-123')
+    assert.equal(parsed.data.summary.contractId, 'contract-export-123')
+    assert.equal(parsed.data.summary.compactionAction, 'export-summary')
     assert.equal(metadataCalls.length, 1)
     assert.deepEqual(metadataCalls[0], {
       title: 'Agent-work contract exported',
@@ -137,6 +140,9 @@ test('ExportContractTool - execute - exports compaction-safe summary payload', a
     assert.equal(parsed.data.payload.contractId, 'contract-export-123')
     assert.equal(parsed.data.payload.compactionAction, 'export-summary')
     assert.deepEqual(parsed.data.payload.activeTaskIds, ['task-export-1'])
+    assert.equal(parsed.data.contract.contractId, 'contract-export-123')
+    assert.equal(parsed.data.contract.workflow.phase, 'implementation')
+    assert.equal(parsed.data.summary.contractId, 'contract-export-123')
   } finally {
     await rm(root, { recursive: true, force: true })
   }

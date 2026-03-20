@@ -52,14 +52,21 @@ function createContextWithoutWorktree(root: string) {
 }
 
 test('CreateContractTool - ids - do not collide with managed or catalogued tool ids', () => {
-  for (const toolId of [
-    HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID,
-    HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID,
-    HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID,
-  ]) {
-    assert.equal(HIVEMIND_MANAGED_TOOLS.has(toolId), false)
-    assert.equal(agentToolCatalog.some((entry) => entry.id === toolId), false)
-  }
+  assert.equal(HIVEMIND_MANAGED_TOOLS.has(HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID), false)
+  assert.equal(
+    agentToolCatalog.some((entry) => entry.id === HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID),
+    false,
+  )
+  assert.equal(HIVEMIND_MANAGED_TOOLS.has(HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID), true)
+  assert.equal(
+    agentToolCatalog.some((entry) => entry.id === HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID),
+    true,
+  )
+  assert.equal(HIVEMIND_MANAGED_TOOLS.has(HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID), true)
+  assert.equal(
+    agentToolCatalog.some((entry) => entry.id === HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID),
+    true,
+  )
 })
 
 test('CreateContractTool - create - validates args, asks permission, and persists via context worktree', async () => {
@@ -72,6 +79,11 @@ test('CreateContractTool - create - validates args, asks permission, and persist
       action: 'create',
       contractId: 'contract-create-123',
       rawIntent: 'implement the export summary feature',
+      workflow: {
+        planningPath: '.hivemind/project/planning/export-summary.md',
+        phase: 'implementation',
+        tasks: [],
+      },
       briefing: {
         summary: 'Implement the validated tool path.',
         workflowState: 'implementation',
@@ -90,6 +102,7 @@ test('CreateContractTool - create - validates args, asks permission, and persist
     assert.equal(parsed.data.contract.sessionId, 'session-tool-123')
     assert.equal(parsed.data.contract.userIntent.purposeClass, 'project-driven')
     assert.equal(parsed.data.contract.responseMode, 'broad-search-execute')
+    assert.equal(parsed.data.contract.workflow.planningPath, '.hivemind/project/planning/export-summary.md')
     assert.equal(askCalls.length, 1)
     assert.deepEqual(askCalls[0], {
       permission: 'edit',
@@ -114,6 +127,7 @@ test('CreateContractTool - create - validates args, asks permission, and persist
     assert.equal(metadataCall.title, 'Agent-work contract created')
     assert.equal(metadataCall.metadata.worktree, contextRoot)
     assert.ok(persisted)
+    assert.equal(persisted?.workflow.planningPath, '.hivemind/project/planning/export-summary.md')
     await access(join(contextRoot, '.hivemind', 'agent-work-contract', 'contract-create-123.json'))
     await assert.rejects(access(join(projectRoot, '.hivemind', 'agent-work-contract', 'contract-create-123.json')))
   } finally {

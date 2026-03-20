@@ -3,6 +3,7 @@ import { loadTrajectoryLedger } from '../../core/index.js'
 import { createPlanningGovernanceProjection } from '../../governance/index.js'
 import type { PurposeClass } from '../../features/session-entry/start-work-types.js'
 import { createRecoveryCheckpoint, repairRecoveryState } from '../../recovery/index.js'
+import { syncRuntimeSurface } from '../../cli/runtime-assets.js'
 import { markEntryKernelQaPending } from '../../shared/entry-kernel-state.js'
 import { loadRuntimeBindingsSnapshot } from '../../shared/runtime-attachment.js'
 import { buildRuntimeEntryDecision } from '../../shared/contracts/runtime-status.js'
@@ -94,6 +95,9 @@ export async function runDoctorHandler(
     resumeTarget: repaired.status === 'healthy' ? 'command:hm-harness' : 'command:hm-doctor',
   })
   const projection = await createPlanningGovernanceProjection(input.projectRoot, ids)
+  const runtimeSurfaceSync = repaired.status === 'healthy'
+    ? await syncRuntimeSurface(input.projectRoot)
+    : null
   if (repaired.status === 'healthy') {
     await markEntryKernelQaPending(input.projectRoot, {
       reason: 'doctor-complete-awaiting-qa',
@@ -118,6 +122,13 @@ export async function runDoctorHandler(
       active_trajectory: trajectoryLedger.activeTrajectoryId,
       checkpoint_id: checkpoint.id,
       planning_projection: projection.filePath,
+      runtime_surface_sync: runtimeSurfaceSync
+        ? {
+            plugin_file: runtimeSurfaceSync.pluginFile,
+            mirrored_command_files: runtimeSurfaceSync.mirroredCommandFiles,
+            mirrored_agent_files: runtimeSurfaceSync.mirroredAgentFiles,
+          }
+        : undefined,
       next_command: repaired.status === 'healthy' ? 'hm-harness' : 'hm-doctor',
       auto_recovery: input.entryKernelAction === 'auto-doctor'
         ? {
@@ -138,10 +149,18 @@ export async function runDoctorHandler(
       ...repaired.repairActions,
       'recovery-checkpoint-created',
       'planning-projection-created',
+      ...(runtimeSurfaceSync ? ['runtime-surface-synced'] : []),
       ...(repaired.status === 'healthy' ? ['entry-kernel-qa-pending'] : []),
     ],
     artifactRefs: [
       projection.filePath,
+      ...(runtimeSurfaceSync
+        ? [
+            runtimeSurfaceSync.pluginFile,
+            ...runtimeSurfaceSync.mirroredCommandFiles,
+            ...runtimeSurfaceSync.mirroredAgentFiles,
+          ]
+        : []),
     ],
     closeoutStatus: repaired.status === 'healthy' ? 'qa-pending' : 'blocked',
     verificationContractId: asset.contract.verificationContract,

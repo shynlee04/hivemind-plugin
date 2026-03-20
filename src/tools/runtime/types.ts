@@ -37,6 +37,28 @@ export interface HivemindRuntimeCommandArgs {
   }
 }
 
+export interface HivemindRuntimeLatestSessionContractSummary {
+  contractId: string
+  sessionId: string
+  updatedAt: string
+  delegationExportSessionId?: string
+  continuityId?: string
+  continuityKey?: string
+  continuityPhase?: string
+  continuityCurrentSessionId?: string
+  continuityPriorSessionId?: string
+  continuityTurnOutputRefs?: string[]
+  planningPath?: string
+  responseMode: string
+  workflowPhase: string
+  activeTaskIds: string[]
+  pendingTaskIds: string[]
+  briefingSummary: string
+  followUp: string[]
+  recentAnchorDescriptions: string[]
+  compactionAction: string
+}
+
 export interface HivemindRuntimeStatusPayload extends RuntimeStatus {
   runtimeState: {
     sessionID: string
@@ -65,6 +87,7 @@ export interface HivemindRuntimeStatusPayload extends RuntimeStatus {
     registry: SupervisorInstanceRegistryRecord
     health: SupervisorHealthSummary
   }
+  latestSessionContract: HivemindRuntimeLatestSessionContractSummary | null
   workflowGateState: {
     availableCommands: string[]
   }

@@ -5,6 +5,8 @@ export const HIVEMIND_MANAGED_TOOLS = new Set([
   'hivemind_doc',
   'hivemind_runtime_status',
   'hivemind_runtime_command',
+  'hivemind_agent_work_create_contract',
+  'hivemind_agent_work_export_contract',
   'hivemind_task',
   'hivemind_trajectory',
   'hivemind_handoff',

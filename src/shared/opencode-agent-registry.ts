@@ -35,6 +35,18 @@ export interface SlashCommandAgentBindingValidation {
 
 const RUNTIME_FRONTMATTER_KEYS = ['description', 'mode', 'tools', 'permission'] as const
 
+export const OPENCODE_AGENT_REGISTRY_IDS = [
+  'hivefiver',
+  'hivemaker',
+  'hiveminder',
+  'hiveplanner',
+  'hiveq',
+  'hivehealer',
+  'hivexplorer',
+  'hiverd',
+  'hitea',
+] as const
+
 function splitFrontmatter(markdown: string): {
   frontmatter: CanonicalAgentFrontmatter
   body: string
@@ -98,19 +110,7 @@ function buildRegistryEntry(packageRoot: string, id: string): OpencodeAgentRegis
 }
 
 export function createOpencodeAgentRegistry(packageRoot: string): OpencodeAgentRegistryEntry[] {
-  const agentIds = [
-    'hivefiver',
-    'hivemaker',
-    'hiveminder',
-    'hiveplanner',
-    'hiveq',
-    'hivehealer',
-    'hivexplorer',
-    'hiverd',
-    'hitea',
-  ]
-
-  return agentIds.map((id) => buildRegistryEntry(packageRoot, id))
+  return OPENCODE_AGENT_REGISTRY_IDS.map((id) => buildRegistryEntry(packageRoot, id))
 }
 
 export function validateSlashCommandAgentBindings(

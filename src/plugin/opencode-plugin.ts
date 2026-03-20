@@ -7,6 +7,10 @@ import { showGovernanceToast } from '../hooks/soft-governance.js'
 import { resolveStartWork } from '../hooks/start-work/start-work-router.js'
 import { ContractStore } from '../features/agent-work-contract/engine/contract-store.js'
 import { createCompactionPreservationPacket } from '../features/agent-work-contract/hooks/index.js'
+import {
+  createAgentWorkCreateContractTool,
+  createAgentWorkExportContractTool,
+} from '../features/agent-work-contract/tools/index.js'
 import type { StartWorkInput } from '../features/session-entry/start-work-types.js'
 import { isHivemindManagedTool, recordToolEvent } from '../hooks/runtime-loader/index.js'
 import { createHivemindDocTool } from '../tools/doc/index.js'
@@ -85,6 +89,8 @@ export const HiveMindPlugin: Plugin = async (input) => {
     tool: {
       hivemind_runtime_status: createHivemindRuntimeStatusTool(directory),
       hivemind_runtime_command: createHivemindRuntimeCommandTool(directory),
+      hivemind_agent_work_create_contract: createAgentWorkCreateContractTool(directory),
+      hivemind_agent_work_export_contract: createAgentWorkExportContractTool(directory),
       hivemind_doc: createHivemindDocTool(directory),
       hivemind_task: createTaskTool(directory),
       hivemind_trajectory: createTrajectoryTool(directory),

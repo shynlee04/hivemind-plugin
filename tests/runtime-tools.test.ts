@@ -18,6 +18,8 @@ const AGENT_WORK_FEATURE_TOOL_IDS = [
 ].sort()
 
 const AUTHORITATIVE_RUNTIME_TOOL_IDS = [
+  'hivemind_agent_work_create_contract',
+  'hivemind_agent_work_export_contract',
   'hivemind_doc',
   'hivemind_handoff',
   'hivemind_runtime_command',
@@ -41,7 +43,7 @@ function createPluginInput(directory: string) {
   } as never
 }
 
-test('plugin registers the six preserved SDK tools only through the surviving assembly', async () => {
+test('plugin registers the promoted runtime tools through the surviving assembly', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'hm-runtime-tools-'))
 
   try {
@@ -49,7 +51,10 @@ test('plugin registers the six preserved SDK tools only through the surviving as
     const toolIds = Object.keys(hooks.tool ?? {}).sort()
 
     assert.deepEqual(toolIds, AUTHORITATIVE_RUNTIME_TOOL_IDS)
-    assert.deepEqual(toolIds.filter((toolId) => AGENT_WORK_FEATURE_TOOL_IDS.includes(toolId)), [])
+    assert.deepEqual(toolIds.filter((toolId) => AGENT_WORK_FEATURE_TOOL_IDS.includes(toolId)), [
+      agentWorkContractTools.HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID,
+      agentWorkContractTools.HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID,
+    ])
 
     for (const toolId of toolIds) {
       const definition = hooks.tool?.[toolId]
@@ -70,7 +75,7 @@ test('surviving runtime/plugin entrypoints expose current runtime surfaces witho
   assert.equal('pluginTypes' in hiveMindRoot, false)
 })
 
-test('agent-work contract feature exports stay feature-local while runtime authorities stay synchronized', async () => {
+test('agent-work contract runtime promotion keeps authorities synchronized while classify-intent stays feature-local', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'hm-runtime-tool-sync-'))
 
   try {
@@ -95,11 +100,24 @@ test('agent-work contract feature exports stay feature-local while runtime autho
     assert.equal(new Set(managedToolIds).size, managedToolIds.length)
     assert.equal(new Set(catalogToolIds).size, catalogToolIds.length)
 
-    for (const toolId of AGENT_WORK_FEATURE_TOOL_IDS) {
-      assert.equal(pluginToolIds.includes(toolId), false)
-      assert.equal(HIVEMIND_MANAGED_TOOLS.has(toolId), false)
-      assert.equal(agentToolCatalog.some((entry) => entry.id === toolId), false)
-    }
+    assert.equal(pluginToolIds.includes(agentWorkContractTools.HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID), false)
+    assert.equal(HIVEMIND_MANAGED_TOOLS.has(agentWorkContractTools.HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID), false)
+    assert.equal(
+      agentToolCatalog.some((entry) => entry.id === agentWorkContractTools.HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID),
+      false,
+    )
+    assert.equal(pluginToolIds.includes(agentWorkContractTools.HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID), true)
+    assert.equal(HIVEMIND_MANAGED_TOOLS.has(agentWorkContractTools.HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID), true)
+    assert.equal(
+      agentToolCatalog.some((entry) => entry.id === agentWorkContractTools.HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID),
+      true,
+    )
+    assert.equal(pluginToolIds.includes(agentWorkContractTools.HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID), true)
+    assert.equal(HIVEMIND_MANAGED_TOOLS.has(agentWorkContractTools.HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID), true)
+    assert.equal(
+      agentToolCatalog.some((entry) => entry.id === agentWorkContractTools.HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID),
+      true,
+    )
   } finally {
     await rm(directory, { recursive: true, force: true })
   }

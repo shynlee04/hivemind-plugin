@@ -119,20 +119,22 @@ test('plugin assembly keeps exactly one root event hook, one inline compaction h
 
   assert.equal(typeof hooks.event, 'function')
   assert.equal(typeof hooks['experimental.session.compacting'], 'function')
-  assert.equal(hookKeys.filter((key) => key === 'event').length, 1)
-  assert.equal(hookKeys.filter((key) => key === 'experimental.session.compacting').length, 1)
-  assert.deepEqual(registeredToolIds, [
+    assert.equal(hookKeys.filter((key) => key === 'event').length, 1)
+    assert.equal(hookKeys.filter((key) => key === 'experimental.session.compacting').length, 1)
+    assert.deepEqual(registeredToolIds, [
+      'hivemind_agent_work_create_contract',
+      'hivemind_agent_work_export_contract',
       'hivemind_doc',
       'hivemind_handoff',
       'hivemind_runtime_command',
       'hivemind_runtime_status',
       'hivemind_task',
       'hivemind_trajectory',
-    ])
-  assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID), false)
-  assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID), false)
-  assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID), false)
-})
+    ].sort())
+    assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID), false)
+    assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID), true)
+    assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID), true)
+  })
 
 test('chat.message only resets turn state and does not inject runtime context parts', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-chat-message-'))

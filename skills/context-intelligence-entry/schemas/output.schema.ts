@@ -129,7 +129,7 @@ export const PlatformChecksSchema = z.object({
   platform_dirs_found: z.array(z.string()),
   platform_dirs_count: z.number().int().min(0),
   context_bloat: z.boolean().optional(),
-  skill_counts_by_platform: z.record(z.number()).optional(),
+  skill_counts_by_platform: z.record(z.string(), z.number()).optional(),
   has_root_skills: z.boolean(),
   broken_symlinks: z.number().int().min(0).optional(),
   symlink_check_error: z.boolean().optional()
@@ -191,7 +191,7 @@ export const TrustSchema = z.object({
   score: z.number().min(0).max(1),
   level: TrustLevelEnum,
   signals: z.array(SignalSchema),
-  breakdown: z.record(z.number())
+  breakdown: z.record(z.string(), z.number())
 });
 
 // ============================================================================

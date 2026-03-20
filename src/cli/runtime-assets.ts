@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url'
+
 import {
   syncRuntimeSurface as syncRuntimeSurfaceWithOptions,
   type RuntimeSurfaceSyncOptions,
@@ -10,7 +12,7 @@ const PACKAGE_PLUGIN_ENTRY = 'hivemind-context-governance/plugin'
 
 function resolveRuntimeSurfaceSyncOptions(): RuntimeSurfaceSyncOptions {
   return {
-    packageRoot: '',
+    packageRoot: fileURLToPath(new URL('../../', import.meta.url)),
     localPluginFile: LOCAL_PLUGIN_FILE,
     packagePluginName: PACKAGE_PLUGIN_NAME,
     packagePluginEntry: PACKAGE_PLUGIN_ENTRY,

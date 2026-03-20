@@ -11,12 +11,16 @@ external_opt_in: true
 # Phantom entries (in registry but no root dir) are forbidden.
 # Mirror-only skills (.opencode/skills/) are NOT listed here — they resolve via fallback.
 #
-# Phase G: 7 hivefiver-* skills consolidated. Their content lives in:
-#   persona-routing, domain-pack-router, bilingual-tutor → entry-resolution/references/
-#   mcp-research-loop → research-methodology/references/
-#   skill-auditor → meta-builder-governance/references/
-#   spec-distillation, ralph-tasking → renamed lineage-agnostic root skills
+# Archival Note (2026-03-20):
+#   Phantom entries removed: context-integrity, delegation-framework, evidence-discipline,
+#   verification-methodology, meta-builder-governance, wrong-start-resolver, entry-resolution.
+#   These moved to skills/_archived/ or skills/_deprecated_hive/.
+
 skills:
+  # ============================================================================
+  # GOVERNANCE-CORE BUNDLE
+  # ============================================================================
+
   - name: agent-role-boundary
     domain: agent-governance
     bundle: governance-core
@@ -29,101 +33,6 @@ skills:
       - "permission envelope design"
     supersedes: []
     depends_on: []
-
-  - name: meta-builder-governance
-    domain: framework-governance
-    bundle: meta-core
-    knowledge_delta_score: 0.92
-    status: active
-    owner: hivemind-core
-    disclosure_level: L1
-    triggers:
-      - "framework refactor"
-      - "deprecation policy"
-      - "skill audit"
-      - "skill overlap review"
-    supersedes:
-      - hivefiver-skill-auditor
-    depends_on: []
-
-  # --- Promoted governance-core ---
-
-  - name: context-integrity
-    domain: context-governance
-    bundle: governance-core
-    knowledge_delta_score: 0.90
-    status: active
-    owner: hivemind-core
-    disclosure_level: L1
-    triggers:
-      - "context drift repair"
-      - "post-compaction recovery"
-    supersedes: []
-    depends_on: []
-
-  - name: delegation-framework
-    domain: delegation-governance
-    bundle: governance-core
-    knowledge_delta_score: 0.89
-    status: active
-    owner: hivemind-core
-    disclosure_level: L1
-    triggers:
-      - "delegation decision"
-      - "subagent dispatch"
-    supersedes:
-      - delegation-intelligence
-      - delegation-packet-contract
-    depends_on:
-      - evidence-discipline
-
-  # --- Promoted verification-core ---
-
-  - name: evidence-discipline
-    domain: verification
-    bundle: verification-core
-    knowledge_delta_score: 0.91
-    status: active
-    owner: hivemind-core
-    disclosure_level: L1
-    triggers:
-      - "completion claim"
-      - "result validation"
-    supersedes: []
-    depends_on: []
-
-  - name: verification-methodology
-    domain: verification
-    bundle: verification-core
-    knowledge_delta_score: 0.83
-    status: active
-    owner: hivemind-core
-    disclosure_level: L2
-    triggers:
-      - "deliverable verification"
-      - "acceptance criteria check"
-    supersedes: []
-    depends_on:
-      - evidence-discipline
-
-  # --- Promoted research-core ---
-
-  - name: research-methodology
-    domain: research-ops
-    bundle: research-core
-    knowledge_delta_score: 0.80
-    status: active
-    owner: hivemind-core
-    disclosure_level: L2
-    triggers:
-      - "structured research"
-      - "multi-source investigation"
-      - "mcp evidence loop"
-    supersedes:
-      - hivefiver-mcp-research-loop
-    depends_on: []
-
-  # --- Architectural skills ---
 
   - name: platform-adapter
     domain: platform-governance
@@ -138,41 +47,181 @@ skills:
     supersedes: []
     depends_on: []
 
-  - name: wrong-start-resolver
-    domain: session-governance
-    bundle: governance-core
-    knowledge_delta_score: 0.88
-    status: active
-    owner: hivemind-core
-    disclosure_level: L0
-    triggers:
-      - "wrong agent detected"
-      - "lineage mismatch"
-    supersedes: []
-    depends_on:
-      - entry-resolution
-
-  - name: entry-resolution
-    domain: session-governance
-    bundle: governance-core
+  - name: context-entry-verify
+    domain: verification
+    bundle: verification-core
     knowledge_delta_score: 0.95
     status: active
     owner: hivemind-core
     disclosure_level: L0
     triggers:
-      - "session start"
-      - "intent classification"
-      - "persona route"
-      - "route by domain"
-    supersedes:
-      - entry-protocol
-      - hivefiver-persona-routing
-      - hivefiver-domain-pack-router
-      - hivefiver-bilingual-tutor
-    depends_on:
-      - platform-adapter
+      - "starting work"
+      - "before execution"
+      - "gate checkpoint"
+      - "verifying completion"
+    supersedes: []
+    depends_on: []
 
-  # --- Lineage-agnostic domain skills (renamed from hivefiver-*) ---
+  - name: context-intelligence-entry
+    domain: context-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.92
+    status: active
+    owner: hivemind-core
+    disclosure_level: L0
+    triggers:
+      - "session start"
+      - "context check"
+      - "help me"
+      - "continue"
+      - "what did we do"
+      - "what status"
+    supersedes: []
+    depends_on: []
+
+  - name: git-atomic-memory
+    domain: memory-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.85
+    status: active
+    owner: hivemind-core
+    disclosure_level: L1
+    triggers:
+      - "git memory"
+      - "atomic commits"
+      - "session memory"
+    supersedes: []
+    depends_on: []
+
+  - name: harness-architecture
+    domain: architecture-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.94
+    status: active
+    owner: hivemind-core
+    disclosure_level: L1
+    triggers:
+      - "harness architecture"
+      - "CLI tools"
+      - "plugin creation"
+      - "session lifecycle"
+      - "control plane"
+      - "execution plane"
+    supersedes: []
+    depends_on: []
+
+  - name: opencode-delegation
+    domain: delegation-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.91
+    status: active
+    owner: hivemind-core
+    disclosure_level: L1
+    triggers:
+      - "delegating implementation"
+      - "sub-agent dispatch"
+      - "TaskTool usage"
+      - "implementation delegation"
+    supersedes: []
+    depends_on: []
+
+  # ============================================================================
+  # SKILL-AUTHORING BUNDLE
+  # ============================================================================
+
+  - name: hivemind-skill-writer
+    domain: skill-authoring
+    bundle: meta-core
+    knowledge_delta_score: 0.90
+    status: active
+    owner: hivemind-core
+    disclosure_level: L2
+    triggers:
+      - "write a skill"
+      - "create a new skill"
+      - "audit this skill"
+      - "is this skill good"
+      - "skill quality"
+      - "skill design"
+      - "skill authoring"
+    supersedes: []
+    depends_on: []
+
+  - name: use-hivemind-skill-writer
+    domain: skill-authoring
+    bundle: meta-core
+    knowledge_delta_score: 0.88
+    status: active
+    owner: hivemind-core
+    disclosure_level: L2
+    triggers:
+      - "write a skill"
+      - "create a new skill"
+      - "audit this skill"
+      - "is this skill good"
+      - "skill quality"
+      - "skill design"
+      - "refactor skill"
+      - "fix skill routing"
+    supersedes: []
+    depends_on: []
+
+  - name: hivemind-skill-write
+    domain: skill-authoring
+    bundle: meta-core
+    knowledge_delta_score: 0.89
+    status: active
+    owner: hivemind-core
+    disclosure_level: L2
+    triggers:
+      - "writing skills"
+      - "creating skills"
+      - "refactoring skills"
+      - "composing skills"
+      - "skill templates"
+      - "YAML frontmatter"
+    supersedes: []
+    depends_on: []
+
+  - name: hivemind-skill-doctor
+    domain: skill-authoring
+    bundle: meta-core
+    knowledge_delta_score: 0.91
+    status: active
+    owner: hivemind-core
+    disclosure_level: L2
+    triggers:
+      - "auditing skills"
+      - "skill quality evaluation"
+      - "diagnosing skill problems"
+      - "skill compliance validation"
+      - "fixing skill issues"
+      - "Skill-Judge evaluation"
+    supersedes: []
+    depends_on:
+      - hivemind-skill-writer
+
+  # ============================================================================
+  # RESEARCH-CORE BUNDLE
+  # ============================================================================
+
+  - name: research-methodology
+    domain: research-ops
+    bundle: research-core
+    knowledge_delta_score: 0.80
+    status: active
+    owner: hivemind-core
+    disclosure_level: L2
+    triggers:
+      - "structured research"
+      - "multi-source investigation"
+      - "mcp evidence loop"
+    supersedes: []
+    depends_on: []
+
+  # ============================================================================
+  # META-CORE BUNDLE (Lineage-agnostic domain skills)
+  # ============================================================================
 
   - name: spec-distillation
     domain: spec-engineering
@@ -184,8 +233,9 @@ skills:
     triggers:
       - "spec generation"
       - "requirements distillation"
-    supersedes:
-      - hivefiver-spec-distillation
+      - "noisy requirements"
+      - "contradictory requirements"
+    supersedes: []
     depends_on: []
 
   - name: ralph-tasking
@@ -198,7 +248,8 @@ skills:
     triggers:
       - "ralph bridge"
       - "task conversion"
-    supersedes:
-      - hivefiver-ralph-tasking
+      - "prd json"
+      - "beads dependency"
+    supersedes: []
     depends_on:
       - spec-distillation

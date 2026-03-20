@@ -44,15 +44,19 @@ export function createAgentWorkExportContractTool(projectRoot: string): ReturnTy
           return renderToolResult(error(`Contract ${args.contractId} not found`))
         }
 
+        const fullContract = AgentWorkContractSchema.parse(contract)
+        const summary = createCompactionPreservationPacket(contract)
         const payload = args.format === 'contract'
-          ? AgentWorkContractSchema.parse(contract)
-          : createCompactionPreservationPacket(contract)
+          ? fullContract
+          : summary
 
         context.metadata(createMetadata('Agent-work contract exported', context, args.contractId, args.format))
         return renderToolResult(success('Exported agent-work contract payload', {
           contractId: args.contractId,
           format: args.format,
           payload,
+          contract: fullContract,
+          summary,
         }))
       } catch (caughtError) {
         const message = caughtError instanceof Error ? caughtError.message : 'Unknown export-contract tool failure'

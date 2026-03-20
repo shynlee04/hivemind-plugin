@@ -14,6 +14,7 @@ import {
 import type { ControlPlaneRecommendedPresetId } from '../../control-plane/control-plane-types.js'
 import { findControlPlanePrimitive } from '../../control-plane/control-plane-registry.js'
 import { createManagedRuntime } from '../../control-plane/sdk-runtime.js'
+import { syncRuntimeSurface } from '../../cli/runtime-assets.js'
 import type { PurposeClass } from '../../features/session-entry/start-work-types.js'
 import { createRecoveryCheckpoint } from '../../recovery/index.js'
 import { markEntryKernelQaPending } from '../../shared/entry-kernel-state.js'
@@ -196,6 +197,7 @@ export async function runInitHandler(
       port: 0,
     },
   })
+  const runtimeSurfaceSync = await syncRuntimeSurface(input.projectRoot)
   const profileSettings = await saveBootstrapRuntimeAttachmentSettings(input.projectRoot, {
     preferredUserName: intakeResolution.profileInput.preferredUserName,
     defaultLineage: input.lineage,
@@ -269,6 +271,11 @@ export async function runInitHandler(
         runtimeInstanceId: managedRuntime.runtimeInstanceId,
         serverBaseUrl: managedRuntime.serverBaseUrl,
       },
+      runtime_surface_sync: {
+        plugin_file: runtimeSurfaceSync.pluginFile,
+        mirrored_command_files: runtimeSurfaceSync.mirroredCommandFiles,
+        mirrored_agent_files: runtimeSurfaceSync.mirroredAgentFiles,
+      },
       missing_prerequisites: status.issues.map((issue) => issue.code),
       next_command: 'hm-harness',
       auto_recovery: autoRecovery
@@ -308,9 +315,15 @@ export async function runInitHandler(
       'trajectory-bootstrapped',
       'recovery-checkpoint-created',
       'planning-projection-created',
+      'runtime-surface-synced',
       'entry-kernel-qa-pending',
     ],
-    artifactRefs: [projection.filePath],
+    artifactRefs: [
+      projection.filePath,
+      runtimeSurfaceSync.pluginFile,
+      ...runtimeSurfaceSync.mirroredCommandFiles,
+      ...runtimeSurfaceSync.mirroredAgentFiles,
+    ],
     closeoutStatus: 'qa-pending',
     verificationContractId: asset.contract.verificationContract,
     pressureContract: bundle.pressureContract,

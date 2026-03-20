@@ -2,6 +2,16 @@
 description: "Execute an implementation workflow with workflow-aware context loading, bounded delegation, and verification-ready outputs."
 agent: hivefiver
 subtask: true
+consumes_state:
+  - workflow-plan
+  - planning-projection
+produces_state:
+  - implementation-runtime
+  - verification-evidence
+verification_contract: implementation-traceability
+closeout_gate: advisory
+artifact_projections:
+  - planning
 ---
 
 # HM Implement

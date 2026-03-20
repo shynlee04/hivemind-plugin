@@ -77,4 +77,22 @@ export const agentToolCatalog: AgentToolCatalogEntry[] = [
     stateAuthority: 'plugin-control-plane',
     pressureContract: getRuntimePressureContract('control-plane-repair'),
   },
+  {
+    id: 'hivemind_agent_work_create_contract',
+    contractFile: 'src/features/agent-work-contract/tools/create-contract-tool.ts',
+    hostEvent: 'tool.call',
+    workflowPhase: 'agent-work-contract',
+    purposeClasses: ['planning', 'implementation', 'gatekeeping'],
+    stateAuthority: 'workflow',
+    pressureContract: getRuntimePressureContract('task-mutation'),
+  },
+  {
+    id: 'hivemind_agent_work_export_contract',
+    contractFile: 'src/features/agent-work-contract/tools/export-contract-tool.ts',
+    hostEvent: 'tool.call',
+    workflowPhase: 'agent-work-contract',
+    purposeClasses: ['planning', 'implementation', 'gatekeeping', 'course-correction'],
+    stateAuthority: 'workflow',
+    pressureContract: getRuntimePressureContract('steady-state'),
+  },
 ]

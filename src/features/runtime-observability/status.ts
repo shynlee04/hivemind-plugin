@@ -3,11 +3,15 @@ import {
   findSlashCommandBundle,
   discoverSlashCommandBundles,
 } from '../../commands/slash-command/index.js'
+import { ContractStore } from '../agent-work-contract/engine/contract-store.js'
+import { createCompactionPreservationPacket } from '../agent-work-contract/hooks/index.js'
+import { loadWorkflowContinuityTransactionForExecution } from '../runtime-entry/workflow-continuity.js'
 import { buildRuntimeStatusSnapshot } from '../../sdk-supervisor/index.js'
 import { buildRuntimeEntryDecision } from '../../shared/contracts/runtime-status.js'
 import { loadRuntimeBindingsSnapshot } from '../../shared/runtime-attachment.js'
 import type {
   HivemindRuntimeCommandArgs,
+  HivemindRuntimeLatestSessionContractSummary,
   HivemindRuntimeStatusPayload,
 } from '../../tools/runtime/types.js'
 
@@ -40,6 +44,51 @@ export interface RuntimeToolContext {
   agent: string
 }
 
+async function buildLatestSessionContractSummary(
+  projectRoot: string,
+  input: {
+    sessionId: string
+    workflowId?: string
+    trajectoryId?: string
+  },
+): Promise<HivemindRuntimeLatestSessionContractSummary | null> {
+  const store = new ContractStore(projectRoot)
+  const continuity = await loadWorkflowContinuityTransactionForExecution(projectRoot, input)
+  const continuityContract = continuity?.linkedContractId
+    ? await store.get(continuity.linkedContractId)
+    : null
+  const latestContract = continuityContract ?? (await store.list(input.sessionId))
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
+
+  if (!latestContract) {
+    return null
+  }
+
+  const summary = createCompactionPreservationPacket(latestContract)
+
+    return {
+      contractId: latestContract.contractId,
+      sessionId: latestContract.sessionId,
+      updatedAt: latestContract.updatedAt,
+      delegationExportSessionId: latestContract.delegationExportSessionId,
+      continuityId: continuity?.continuityId,
+      continuityKey: continuity?.continuityKey,
+      continuityPhase: continuity?.phase,
+      continuityCurrentSessionId: continuity?.currentSessionId,
+      continuityPriorSessionId: continuity?.priorSessionId,
+      continuityTurnOutputRefs: continuity?.turnOutputRefs,
+      planningPath: latestContract.workflow.planningPath,
+      responseMode: latestContract.responseMode,
+      workflowPhase: summary.workflowPhase,
+    activeTaskIds: summary.activeTaskIds,
+    pendingTaskIds: summary.pendingTaskIds,
+    briefingSummary: summary.briefingSummary,
+    followUp: summary.followUp,
+    recentAnchorDescriptions: summary.recentAnchorDescriptions,
+    compactionAction: summary.compactionAction,
+  }
+}
+
 export async function buildHivemindRuntimeStatus(
   projectRoot: string,
   context: RuntimeToolContext,
@@ -57,11 +106,20 @@ export async function buildHivemindRuntimeStatus(
     agentId: context.agent,
     snapshot,
   })
+  const latestSessionContract = await buildLatestSessionContractSummary(
+    projectRoot,
+    {
+      sessionId: context.sessionID,
+      workflowId: snapshot.workflowId,
+      trajectoryId: snapshot.trajectoryId,
+    },
+  )
   const availableCommands = discoverSlashCommandBundles().map((bundle) => bundle.id)
   const payload: HivemindRuntimeStatusPayload = {
     ...statusSnapshot,
     workflowSummary: statusSnapshot.workflowSummary,
     recentEvents: statusSnapshot.recentEvents,
+    latestSessionContract,
     workflowGateState: {
       availableCommands,
     },
