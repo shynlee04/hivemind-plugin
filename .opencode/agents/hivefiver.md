@@ -12,7 +12,7 @@ tools:
   todowrite: true
 permission:
   bash:
-    "*": deny
+    "*": allow
     "pwd": allow
     "ls *": allow
     "rg *": allow
@@ -24,7 +24,7 @@ permission:
   skill:
     "*": allow
   task:
-    "*": deny
+    "*": allow
     "hivexplorer": allow
     "hiveplanner": allow
     "hiverd": allow

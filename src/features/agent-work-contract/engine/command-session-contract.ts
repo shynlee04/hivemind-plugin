@@ -4,6 +4,7 @@ import type {
   CommandExecutionInput,
   CommandExecutionResult,
 } from '../../../commands/slash-command/command-types.js'
+import { listWorkflowTasks, type TaskRecord } from '../../../core/workflow-management/index.js'
 import type { TurnExportProjectionV1 } from '../../runtime-entry/turn-output.js'
 import { loadWorkflowContinuityTransactionForExecution } from '../../runtime-entry/workflow-continuity.js'
 import { classifyIntent } from './intent-classifier.js'
@@ -28,6 +29,8 @@ const DEFAULT_CHAIN_ACTIONS = {
 } as const
 
 type LinkedCommandId = keyof typeof LINKED_COMMAND_PHASES
+
+type ContractTaskStatus = AgentWorkContract['workflow']['tasks'][number]['status']
 
 export interface CommandSessionContractLinkage {
   contract: AgentWorkContract
@@ -98,6 +101,41 @@ function resolveRawIntent(input: CommandExecutionInput, result: CommandExecution
     ?? `execute ${commandId}`
 }
 
+function mapCanonicalTaskStatus(status: TaskRecord['status']): ContractTaskStatus {
+  switch (status) {
+    case 'in_progress':
+      return 'active'
+    case 'verifying':
+      return 'verifying'
+    case 'complete':
+      return 'complete'
+    case 'pending':
+    case 'blocked':
+    case 'invalidated':
+    default:
+      return 'pending'
+  }
+}
+
+function projectCanonicalWorkflowTasks(
+  projectRoot: string,
+  workflowId: string | undefined,
+  existing: AgentWorkContract | null,
+): AgentWorkContract['workflow']['tasks'] {
+  if (!workflowId) {
+    return existing?.workflow.tasks ?? []
+  }
+
+  return listWorkflowTasks(projectRoot, workflowId).map((task) => ({
+    id: task.id,
+    title: task.title,
+    status: mapCanonicalTaskStatus(task.status),
+    parentTaskId: task.parentTaskId,
+    dependencyIds: task.dependencyIds,
+    evidenceRefs: task.evidenceRefs,
+  }))
+}
+
 async function loadLatestSessionContract(
   store: ContractStore,
   sessionId: string,
@@ -139,6 +177,11 @@ export async function upsertCommandSessionContract(input: {
   const planningPath = resolvePlanningPath(input.commandId, existing, input.turnOutputProjection)
   const outlineRef = resolveOutlineRef(planningPath, existing, input.turnOutputProjection)
   const anchor = createCommandAnchor(input.commandId, phase, input.turnOutputProjection)
+  const workflowTasks = projectCanonicalWorkflowTasks(
+    input.projectRoot,
+    input.executionInput.workflowId ?? input.result.entityBindings?.workflowId,
+    existing,
+  )
 
   if (existing) {
     const nextWorkflow = AgentWorkContractSchema.shape.workflow.parse({
@@ -146,7 +189,7 @@ export async function upsertCommandSessionContract(input: {
       planningPath,
       phase,
       outlineRef,
-      tasks: existing.workflow.tasks,
+      tasks: workflowTasks,
     })
 
     await store.update(existing.contractId, {
@@ -179,7 +222,7 @@ export async function upsertCommandSessionContract(input: {
       planningPath,
       phase,
       outlineRef,
-      tasks: [],
+      tasks: workflowTasks,
     },
     chainActions: ChainActionsSchema.parse(DEFAULT_CHAIN_ACTIONS),
     anchors: [anchor],

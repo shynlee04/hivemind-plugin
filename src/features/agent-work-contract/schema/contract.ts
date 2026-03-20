@@ -209,6 +209,23 @@ export const CompactionPreservationPacketSchema = z.object({
   followUp: z.array(z.string().min(1)),
   recentAnchorDescriptions: z.array(z.string().min(1)),
   compactionAction: ChainActionsSchema.shape.onCompaction80,
+  // TDD-specific fields
+  lastTestStatus: z.string().optional(),
+  lastTestFile: z.string().optional(),
+  testCountRun: z.number().optional(),
+  testCountPass: z.number().optional(),
+  nextAction: z.string().optional(),
+  // BMAD-specific fields
+  currentPhase: z.string().optional(),
+  phaseSequence: z.array(z.string()).optional(),
+  completedPhases: z.array(z.string()).optional(),
+  pendingDecisions: z.number().optional(),
+  decisionRefs: z.array(z.string()).optional(),
+  nextArtifact: z.string().optional(),
+  // Research-specific fields
+  researchDepth: z.string().optional(),
+  sourcesConsulted: z.array(z.string()).optional(),
+  keyFindings: z.array(z.string()).optional(),
 })
 
 // Type exports using Zod inference

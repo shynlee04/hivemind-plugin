@@ -12,8 +12,9 @@ tools:
   todowrite: true
 permission:
   bash:
-    "*": deny
+    "*": allow
     "pwd": allow
+    "node": allow
     "ls *": allow
     "git status*": allow
     "git diff*": allow
@@ -23,7 +24,7 @@ permission:
   skill:
     "*": allow
   task:
-    "*": deny
+    "*": allow
     "hivefiver": allow
     "hivemaker": allow
     "hivehealer": allow

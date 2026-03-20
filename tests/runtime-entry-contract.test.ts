@@ -6,6 +6,7 @@ import { describe, it } from 'node:test'
 
 import { executeSlashCommandBundle, findSlashCommandBundle } from '../src/commands/slash-command/index.js'
 import { bootstrapTrajectoryLedger } from '../src/core/index.js'
+import { createWorkflowTask } from '../src/core/workflow-management/index.js'
 import { ContractStore } from '../src/features/agent-work-contract/engine/contract-store.js'
 import { initProject, runDoctorCommand } from '../src/features/runtime-entry/index.js'
 import { saveRuntimeAttachmentSettings } from '../src/features/runtime-entry/attachment.js'
@@ -64,6 +65,11 @@ describe('runtime entry loader authority', () => {
 
     try {
       await bootstrapReadyRuntime(projectRoot)
+      createWorkflowTask(projectRoot, {
+        workflowId: 'wf_123',
+        taskId: 'task-2',
+        title: 'task-2',
+      })
       const planBundle = findSlashCommandBundle('hm-plan')
       const implementBundle = findSlashCommandBundle('hm-implement')
 
@@ -91,10 +97,27 @@ describe('runtime entry loader authority', () => {
         sessionId: 'ses_123',
       })
 
+      assert.equal(planResult.executionMode, 'handler')
       assert.equal(afterPlan.length, 1)
       assert.equal(afterPlan[0]?.workflow.phase, 'planning')
       assert.equal(afterPlan[0]?.workflow.planningPath, planResult.turnOutputProjection?.markdownPath)
       assert.equal(afterPlan[0]?.workflow.outlineRef, planResult.turnOutputProjection?.yamlPath)
+      assert.deepEqual(afterPlan[0]?.workflow.tasks, [
+        {
+          id: 'task-1',
+          title: 'task-1',
+          status: 'active',
+          dependencyIds: [],
+          evidenceRefs: [],
+        },
+        {
+          id: 'task-2',
+          title: 'task-2',
+          status: 'pending',
+          dependencyIds: [],
+          evidenceRefs: [],
+        },
+      ])
       assert.equal(afterPlan[0]?.anchors?.length ?? 0, 1)
       assert.equal(afterPlan[0]?.anchors?.[0]?.kind, 'planning-shift')
       assert.equal(continuityAfterPlan?.continuityKey, 'workflow:wf_123')
@@ -127,12 +150,14 @@ describe('runtime entry loader authority', () => {
         sessionId: 'ses_456',
       })
 
+      assert.equal(implementResult.executionMode, 'handler')
       assert.equal(afterImplement.length, 1)
       assert.equal(newSessionContracts.length, 0)
       assert.equal(afterImplement[0]?.contractId, afterPlan[0]?.contractId)
       assert.equal(afterImplement[0]?.workflow.phase, 'implementation')
       assert.equal(afterImplement[0]?.workflow.planningPath, planResult.turnOutputProjection?.markdownPath)
       assert.equal(afterImplement[0]?.workflow.outlineRef, implementResult.turnOutputProjection?.markdownPath)
+      assert.deepEqual(afterImplement[0]?.workflow.tasks, afterPlan[0]?.workflow.tasks)
       assert.equal(afterImplement[0]?.anchors?.length ?? 0, 2)
       assert.equal(afterImplement[0]?.anchors?.at(-1)?.kind, 'stage-shift')
       assert.match(afterImplement[0]?.anchors?.at(-1)?.snapshotRef ?? '', /runtime-turns\/ses_456\//)

@@ -7,9 +7,18 @@
  */
 
 import assert from 'node:assert/strict'
+import { mkdtemp, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import test from 'node:test'
 
+import { executeSlashCommandBundle, findSlashCommandBundle } from '../../../commands/slash-command/index.js'
+import { bootstrapTrajectoryLedger } from '../../../core/index.js'
+import { createWorkflowTask } from '../../../core/workflow-management/index.js'
+import { ContractStore } from '../engine/contract-store.js'
 import * as compactionPreservation from './compaction-preservation.js'
+import { saveRuntimeAttachmentSettings } from '../../runtime-entry/attachment.js'
+import { markEntryKernelReady } from '../../../shared/entry-kernel-state.js'
 
 function createContract(overrides: Record<string, unknown> = {}) {
   return {
@@ -71,6 +80,24 @@ function createContract(overrides: Record<string, unknown> = {}) {
     ],
     ...overrides,
   }
+}
+
+async function bootstrapReadyRuntime(projectRoot: string): Promise<void> {
+  await saveRuntimeAttachmentSettings(projectRoot, {
+    runtimeAuthority: 'attached-sdk',
+    runtimeInstanceId: 'rt_test',
+    serverBaseUrl: 'http://localhost:4096',
+    preferredUserName: 'Taylor',
+  })
+  await bootstrapTrajectoryLedger(projectRoot, {
+    trajectoryId: 'traj_123',
+    workflowId: 'wf_123',
+    sessionId: 'ses_123',
+    lineage: 'hivefiver',
+    purposeClass: 'planning',
+    taskIds: ['task-1'],
+  })
+  await markEntryKernelReady(projectRoot)
 }
 
 test('CompactionPreservation - createCompactionPreservationPacket - derives compaction-safe packet', () => {
@@ -238,6 +265,43 @@ test('CompactionPreservation - createCompactionPreservationPacket - truncates an
   }))
 
   assert.deepEqual(packet.recentAnchorDescriptions, ['anchor-2', 'anchor-3', 'anchor-4'])
+})
+
+test('CompactionPreservation - createCompactionPreservationPacket - reflects canonical task state after runtime command linkage', async () => {
+  const projectRoot = await mkdtemp(join(tmpdir(), 'hm-compaction-canonical-'))
+
+  try {
+    await bootstrapReadyRuntime(projectRoot)
+    createWorkflowTask(projectRoot, {
+      workflowId: 'wf_123',
+      taskId: 'task-2',
+      title: 'task-2',
+    })
+    const planBundle = findSlashCommandBundle('hm-plan')
+
+    assert.ok(planBundle)
+
+    await executeSlashCommandBundle(planBundle, {
+      projectRoot,
+      sessionId: 'ses_123',
+      sessionScope: 'main',
+      trajectoryId: 'traj_123',
+      workflowId: 'wf_123',
+      taskIds: ['task-1'],
+      lineage: 'hivefiver',
+      purposeClass: 'planning',
+      activeAgent: 'runtime-agent',
+      userMessage: 'Create compaction state from canonical workflow tasks.',
+    })
+
+    const [contract] = await new ContractStore(projectRoot).list('ses_123')
+    const packet = compactionPreservation.createCompactionPreservationPacket(contract)
+
+    assert.deepEqual(packet.activeTaskIds, ['task-1'])
+    assert.deepEqual(packet.pendingTaskIds, ['task-2'])
+  } finally {
+    await rm(projectRoot, { recursive: true, force: true })
+  }
 })
 
 test('CompactionPreservation - createCompactionPreservationPacket - rejects partial contract payloads', () => {

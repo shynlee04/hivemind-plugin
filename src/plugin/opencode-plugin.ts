@@ -24,6 +24,9 @@ import { createHivemindTrajectoryTool as createTrajectoryTool } from '../tools/t
 import {
   createHivemindContextPacket,
   renderHivemindContext,
+  renderToolPrecedence,
+  renderTurnHierarchy,
+  type TurnHierarchyContext,
 } from './context-renderer.js'
 import { renderRouteHint } from './route-hint.js'
 import { createTurnSnapshotLoader } from './runtime-snapshot.js'
@@ -147,6 +150,25 @@ export const HiveMindPlugin: Plugin = async (input) => {
       }
 
       const snapshot = await turnSnapshot.getSnapshot()
+
+      // Build tool precedence chain for bundle execution
+      const toolPrecedenceChain = {
+        chain: [
+          {
+            tool: 'hivemind_runtime_command',
+            action: 'execute',
+            args: { bundleId: bundle.id },
+          },
+        ],
+        mandatory_reads: [
+          { path: '.hivemind/session.json', reason: 'active_session_state' },
+          ...(snapshot.trajectoryId ? [{ path: `.hivemind/trajectory/${snapshot.trajectoryId}.json`, reason: 'trajectory_state' }] : []),
+          ...(snapshot.workflowId ? [{ path: `.hivemind/workflow/${snapshot.workflowId}.json`, reason: 'workflow_state' }] : []),
+        ],
+      }
+
+      const toolPrecedenceJson = renderToolPrecedence(toolPrecedenceChain)
+
       output.parts.unshift(createSyntheticPart(
         commandInput.sessionID,
         commandInput.sessionID,
@@ -156,7 +178,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
           `trajectory=${snapshot.trajectoryId ?? 'none'}`,
           `workflow=${snapshot.workflowId ?? 'none'}`,
           `task_ids=${snapshot.taskIds.join(',')}`,
-          'execution_rule=call-hivemind_runtime_command-to-run-hm-bundle',
+          `tool_precedence=${toolPrecedenceJson}`,
           'mutation_rule=do-not-hand-write-hivemind-state-files',
           '</hivemind-command-context>',
         ].join('\n'),
@@ -188,12 +210,30 @@ export const HiveMindPlugin: Plugin = async (input) => {
         userMessage,
         snapshot,
       }))
+
+      // Build turn hierarchy context from snapshot with defaults
+      const turnHierarchyContext: TurnHierarchyContext = {
+        turn_depth: 0,
+        turn_type: 'root',
+        sibling_count: 0,
+        trajectory_path: [
+          snapshot.trajectoryId,
+          snapshot.workflowId,
+          snapshot.checkpointId,
+          ...snapshot.taskIds,
+        ].filter((id): id is string => id !== undefined),
+      }
+
       const packet = renderHivemindContext(createHivemindContextPacket({
         sessionId: sessionID,
         snapshot,
         startWork,
       }))
-      const injectedParts = [createSyntheticPart(sessionID, messageID, packet)]
+      const turnHierarchyPacket = renderTurnHierarchy(turnHierarchyContext)
+      const injectedParts = [
+        createSyntheticPart(sessionID, messageID, turnHierarchyPacket),
+        createSyntheticPart(sessionID, messageID, packet),
+      ]
       lastUserMessage.parts = [...injectedParts, ...(lastUserMessage.parts ?? [])]
 
       const routeReminder = renderRouteHint({

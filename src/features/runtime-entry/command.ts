@@ -17,6 +17,7 @@ import {
 import { loadCommandAsset, type LoadedCommandAsset } from './instruction-loader.js'
 import { createRuntimeInvocation } from './invocation.js'
 import { createTurnOutputEnvelope, exportTurnOutputProjection } from './turn-output.js'
+import { runImplementHandler, runPlanHandler } from './workflow-command-handler.js'
 import { upsertWorkflowContinuityTransaction } from './workflow-continuity.js'
 
 type RecoveryHandler = (
@@ -28,6 +29,11 @@ type RecoveryHandler = (
 interface RuntimeEntryCommandExecutionOptions {
   executeRecoveryHandler?: RecoveryHandler
 }
+
+const runtimeCommandHandlers = {
+  'hm-plan': runPlanHandler,
+  'hm-implement': runImplementHandler,
+} as const
 
 function shouldUseRecoveryHandler(bundle: SlashCommandBundle, input: CommandExecutionInput): boolean {
   return bundle.id === 'hm-init'
@@ -69,9 +75,12 @@ export async function executeRuntimeEntryCommandBundle(
   }
 
   const asset = await loadCommandAsset(bundle.id)
+  const runtimeHandler = runtimeCommandHandlers[bundle.id as keyof typeof runtimeCommandHandlers]
   const handled = shouldUseRecoveryHandler(bundle, input) && options.executeRecoveryHandler
     ? await options.executeRecoveryHandler(bundle, asset, input)
-    : await executeControlPlaneHandler(bundle, asset, input)
+    : runtimeHandler
+      ? await runtimeHandler(bundle, asset, input)
+      : await executeControlPlaneHandler(bundle, asset, input)
   if (handled) {
     await recordCommandEvent(bundle, input, handled.executionMode)
     return finalizeCommandResult(bundle, input, handled)

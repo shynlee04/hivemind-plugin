@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import test from 'node:test'
 
 import { bootstrapTrajectoryLedger, loadTrajectoryLedger } from '../src/core/index.js'
+import { createWorkflowTask } from '../src/core/workflow-management/index.js'
 import { executeSlashCommandBundle, findSlashCommandBundle } from '../src/commands/slash-command/index.js'
 import { ContractStore } from '../src/features/agent-work-contract/engine/contract-store.js'
 import {
@@ -557,6 +558,11 @@ test('runtime status surfaces continuity-bearing contract state across session c
 
   try {
     await bootstrapReadyRuntime(directory)
+    createWorkflowTask(directory, {
+      workflowId: 'wf_123',
+      taskId: 'task-2',
+      title: 'task-2',
+    })
     const planBundle = findSlashCommandBundle('hm-plan')
     const implementBundle = findSlashCommandBundle('hm-implement')
 
@@ -614,6 +620,8 @@ test('runtime status surfaces continuity-bearing contract state across session c
     assert.equal(payload.latestSessionContract.continuityCurrentSessionId, 'ses_456')
     assert.equal(payload.latestSessionContract.continuityPriorSessionId, 'ses_123')
     assert.equal(payload.latestSessionContract.continuityPhase, 'implementation')
+    assert.deepEqual(payload.latestSessionContract.activeTaskIds, ['task-1'])
+    assert.deepEqual(payload.latestSessionContract.pendingTaskIds, ['task-2'])
     assert.deepEqual(payload.latestSessionContract.continuityTurnOutputRefs, [
       implementResult.turnOutputProjection?.markdownPath,
       implementResult.turnOutputProjection?.yamlPath,
