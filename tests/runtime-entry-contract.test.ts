@@ -381,7 +381,15 @@ describe('runtime entry loader authority', () => {
       const mirroredCommands = await readdir(join(projectRoot, '.opencode', 'commands'))
 
       assert.equal(result.commandResult.stateTransitions?.includes('runtime-surface-synced'), true)
+      assert.equal(result.runtime_identity.cardId, 'hivemind-runtime-identity-v1')
+      assert.equal(result.runtime_identity.activeRuntimeAuthority, 'managed-sdk')
+      assert.equal(result.runtime_identity.runtimePosture, 'singular-runtime-authority')
+      assert.equal(result.readiness_signal.cardId, 'hivemind-readiness-signal-v1')
+      assert.equal(result.readiness_signal.readinessState, 'qa-pending')
+      assert.equal(result.readiness_signal.exactNextCommand, 'hm-harness')
       assert.ok(report.runtime_surface_sync)
+      assert.equal((result.commandResult.report as { runtime_identity?: { cardId?: string } }).runtime_identity?.cardId, 'hivemind-runtime-identity-v1')
+      assert.equal((result.commandResult.report as { readiness_signal?: { exactNextCommand?: string } }).readiness_signal?.exactNextCommand, 'hm-harness')
       assert.equal(report.runtime_surface_sync?.plugin_file.endsWith('.opencode/plugins/hivemind-context-governance.ts'), true)
       assert.equal(mirroredCommands.includes('hm-plan.md'), true)
       assert.equal(mirroredCommands.includes('hm-implement.md'), true)
@@ -389,6 +397,27 @@ describe('runtime entry loader authority', () => {
         await readFile(join(projectRoot, '.opencode', 'plugins', 'hivemind-context-governance.ts'), 'utf8'),
         /hivemind-context-governance\/plugin/,
       )
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('init redirect on attached runtime preserves the identity and readiness contract', async () => {
+    const projectRoot = await mkdtemp(join(tmpdir(), 'hm-runtime-entry-init-attach-redirect-'))
+
+    try {
+      await bootstrapReadyRuntime(projectRoot)
+
+      const result = await initProject(projectRoot, {
+        presetId: 'guided-onboarding',
+      })
+
+      assert.equal(result.closeoutStatus, 'ready')
+      assert.equal(result.runtime_identity.activeRuntimeAuthority, 'attached-sdk')
+      assert.equal(result.runtime_identity.routeDisposition, 'attach')
+      assert.equal(result.readiness_signal.exactNextCommand, 'hm-harness')
+      assert.equal((result.commandResult.report as { runtime_identity?: { activeRuntimeAuthority?: string } }).runtime_identity?.activeRuntimeAuthority, 'attached-sdk')
+      assert.equal((result.commandResult.report as { readiness_signal?: { readinessState?: string } }).readiness_signal?.readinessState, 'ready')
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
     }

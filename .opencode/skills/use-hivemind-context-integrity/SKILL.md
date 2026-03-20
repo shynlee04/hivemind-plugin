@@ -1,6 +1,10 @@
 ---
 name: use-hivemind-context-integrity
-description: "Entry router for context health and rot detection. Routes to context-intelligence-entry for rot checks, context-entry-verify for truth gates, use-hivemind-context-verify for verification needs. PO entry skill for session start and recovery. Triggers: context health, context rot, drift detection, context integrity, session start, after compaction."
+description: "Entry router for context health and rot detection. Routes to
+  context-intelligence-entry for rot checks, context-entry-verify for truth
+  gates, use-hivemind-context-verify for verification needs. PO entry skill for
+  session start and recovery. Triggers: context health, context rot, drift
+  detection, context integrity, session start, after compaction."
 ---
 
 # use-hivemind-context-integrity

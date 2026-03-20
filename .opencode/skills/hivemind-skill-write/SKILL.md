@@ -1,6 +1,8 @@
 ---
 name: hivemind-skill-write
-description: Use when writing, creating, refactoring, or composing HiveMind skills — provides step-by-step authoring guidance, templates, YAML/frontmatter standards, and validation patterns.
+description: Use when writing, creating, refactoring, or composing HiveMind
+  skills — provides step-by-step authoring guidance, templates, YAML/frontmatter
+  standards, and validation patterns.
 ---
 
 # hivemind-skill-write

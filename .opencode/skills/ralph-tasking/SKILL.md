@@ -1,6 +1,10 @@
 ---
-name: "ralph-tasking"
-description: "Convert distilled specs and plans into Ralph PRD JSON and beads dependency graphs. Use when output must be Ralph-compatible PRD JSON, when building beads dependency graphs, or when entry-resolution routes to Ralph tooling. Lineage-agnostic — any project generating Ralph-compatible output uses this skill."
+name: ralph-tasking
+description: Convert distilled specs and plans into Ralph PRD JSON and beads
+  dependency graphs. Use when output must be Ralph-compatible PRD JSON, when
+  building beads dependency graphs, or when entry-resolution routes to Ralph
+  tooling. Lineage-agnostic — any project generating Ralph-compatible output
+  uses this skill.
 ---
 
 # Ralph Tasking

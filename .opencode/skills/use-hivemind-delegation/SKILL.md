@@ -1,6 +1,8 @@
 ---
 name: use-hivemind-delegation
-description: Entry router for handoff protocol and scope inheritance. Routes to delegation implementation for bounded packets, parent context, result contracts, and chain auditing. P1 skill for delegation workflows.
+description: Entry router for handoff protocol and scope inheritance. Routes to
+  delegation implementation for bounded packets, parent context, result
+  contracts, and chain auditing. P1 skill for delegation workflows.
 ---
 
 # use-hivemind-delegation

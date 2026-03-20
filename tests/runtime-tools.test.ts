@@ -178,3 +178,39 @@ test('runtime status tool exposes executable command capabilities instead of a f
     await rm(directory, { recursive: true, force: true })
   }
 })
+
+test('runtime command hm-init redirect returns identity and readiness blocks for attached authority', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-runtime-tool-init-redirect-'))
+
+  try {
+    await bootstrapReadyRuntime(directory)
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
+    const commandTool = hooks.tool?.hivemind_runtime_command
+
+    assert.ok(commandTool)
+
+    const payload = JSON.parse(await commandTool.execute({ command: 'hm-init' } as never, {
+      sessionID: 'ses_123',
+      messageID: 'msg_123',
+      agent: 'runtime-agent',
+      directory,
+      worktree: directory,
+      abort: new AbortController().signal,
+      metadata() {},
+      async ask() {
+        throw new Error('runtime command should not ask for permissions on redirect')
+      },
+    } as never))
+
+    assert.equal(payload.closeoutStatus, 'ready')
+    assert.equal(payload.runtime_identity.cardId, 'hivemind-runtime-identity-v1')
+    assert.equal(payload.runtime_identity.activeRuntimeAuthority, 'attached-sdk')
+    assert.equal(payload.runtime_identity.routeDisposition, 'attach')
+    assert.equal(payload.readiness_signal.cardId, 'hivemind-readiness-signal-v1')
+    assert.equal(payload.readiness_signal.exactNextCommand, 'hm-harness')
+    assert.equal(payload.report.runtime_identity.activeRuntimeAuthority, 'attached-sdk')
+    assert.equal(payload.report.readiness_signal.readinessState, 'ready')
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})

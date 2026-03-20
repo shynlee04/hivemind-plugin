@@ -1,104 +1,42 @@
 ---
 name: hivemind-skill-writer
-description: Use when creating, auditing, refactoring, or packaging HiveMind framework skills. Activates the meta-builder for skill authoring, TDD workflows, and quality validation. Bundles skill-writing guidance, Skill-Judge metrics, and HiveMind-specific packaging patterns. Triggers: "write a skill", "create a new skill", "audit this skill", "is this skill good", "skill quality", "skill design", "skill authoring".
+description: "Use when creating, auditing, refactoring, or packaging HiveMind
+  framework skills. Activates the meta-builder for skill authoring, TDD
+  workflows, and quality validation. Bundles skill-writing guidance, Skill-Judge
+  metrics, and HiveMind-specific packaging patterns. Triggers: write a skill,
+  create a new skill, audit this skill, is this skill good, skill quality, skill
+  design, skill authoring."
 ---
 
 # hivemind-skill-writer
 
 ## Purpose
 
-P1 routing skill for HiveMind-specific skill authoring, auditing, refactoring, and packaging. Acts as thin router to specialized references.
+Meta-builder skill for authoring HiveMind-specific skills. Use when creating, auditing, refactoring, or packaging skills for the HiveMind ecosystem.
 
 ## When to Activate
 
-**Primary Triggers:**
-- "create a new skill" / "write a skill for..."
-- "audit this skill" / "is this skill good"
-- "skill quality check" / "skill design"
-- "refactor this skill" / "package this skill set"
-
-**Brainstorming Triggers:**
-- "brainstorm" / "ideate" / "explore"
-- "what if" / "how might we"
-- "generate ideas" / "think through"
-
-**Conflict Detection Triggers:**
-- "check skill overlap" / "find conflicts"
-- "validate skill stack" / "verify no conflicts"
+**Primary Triggers (answer WHAT + WHEN + KEYWORDS):**
+- "create a new skill"
+- "write a skill for..."
+- "audit this skill"
+- "is this skill good"
+- "skill quality check"
+- "skill design"
+- "skill authoring"
+- "refactor this skill"
+- "package this skill set"
 
 **Secondary Triggers:**
 - Detecting skill quality issues
 - Identifying skill redundancy
 - Planning skill migration
 
-**TDD-Specific Triggers:**
-- "validate this skill" / "test this skill"
-- "baseline this skill" / "write test for skill"
-- "improve this skill" / "iterate on skill"
-- "refine skill quality"
-- "TDD for skills" / "test-driven skill development"
-
-**Refinement Triggers:**
-- "improve this skill" / "iterate on skill"
-- "refine skill quality"
-- Skill-Judge score <3.5 validation failure
-
-**Audit-Specific Triggers:**
-- "evaluate this skill" / "score this skill"
-- "what's wrong with this skill"
-- "improve skill quality"
-- "skill quality review" / "skill audit"
-
-## Routing Logic
-
-```
-IF task == "create skill" → load references/01-skill-anatomy.md + references/03-three-patterns.md
-IF task == "audit skill" → load references/05-skill-quality-matrix.md
-IF task == "refactor skill" → load references/03-three-patterns.md + references/04-tdd-workflow.md
-IF task == "package skill set" → load references/06-agent-activation.md
-IF task == "write new skill" → load references/04-tdd-workflow.md + references/01-skill-anatomy.md
-IF task == "validate skill" → load references/04-tdd-workflow.md + references/05-skill-quality-matrix.md
-IF task == "test skill" → load references/04-tdd-workflow.md
-IF task == "iterate skill" → load references/04-tdd-workflow.md + references/03-three-patterns.md
-IF task == "improve skill" → load references/07-iterative-refinement.md
-IF task == "iterate skill" → load references/07-iterative-refinement.md
-```
-
-## Quality Thresholds (from Skill-Judge)
-
-All skills must meet these minimums before release:
-
-| Dimension | Weight | Minimum Score |
-|-----------|--------|---------------|
-| Overall Score | - | ≥3.5 |
-| Trigger Accuracy | 25% | ≥3.0 |
-| Action Coherence | 25% | ≥4.0 |
-| Reference Integrity | 20% | ≥3.0 |
-| Non-Redundancy | 15% | ≥3.0 |
-| Edge Case Coverage | 15% | ≥3.0 |
-
-**All thresholds must be met for release.** See `references/05-skill-quality-matrix.md` for full evaluation criteria.
-
-## NO-LOAD Rules (Critical)
-
-A P1 router must often decide NOT to activate. This is a success case, not a miss.
-
-**DO NOT activate when:**
-- Context depth exceeds 70% — skill operations will exhaust remaining context
-- Session state is "degraded" or "interrupted" — defer to context-rot-recovery first
-- Task is trivial (e.g., "fix typo in skill") — no specialist depth needed
-- Another hivemind-skill-writer instance is already running — prevent duplicate activation
-- Stack budget is exhausted (3 skills already loaded) — wait for slot
-
-**FAIL signals — stop immediately when:**
-- Entry state is "unknown" — cannot safely route without context-intelligence
-- Trust score below threshold — skill work may cause harm
-- Context rot severity ≥ 7 — degradation will corrupt skill output
-- Cross-framework conflict detected — .claude/.codex collision without clear authority
-
 ## Core Philosophy
 
-### The Iron Law> **NO SKILL WITHOUT A FAILING TEST FIRST**
+### The Iron Law
+
+> **NO SKILL WITHOUT A FAILING TEST FIRST**
 
 Every skill must be validated against a real failure scenario before being written.
 
@@ -106,62 +44,142 @@ Every skill must be validated against a real failure scenario before being writt
 
 > **Good Skill = Expert-only Knowledge − What Claude Already Knows**
 
+A Skill's value is measured by its **knowledge delta** — the gap between what it provides and what the model already knows.
+
 | Knowledge Type | Definition | Treatment |
 |---------------|------------|-----------|
 | **Expert** | Claude genuinely doesn't know this | MUST keep — this is the Skill's value |
 | **Activation** | Claude knows but may not think of | Keep if brief — serves as reminder |
 | **Redundant** | Claude definitely knows this | DELETE — wastes tokens |
 
+**Evaluation**: For each section, ask "Does Claude already know this?"
+
 ### Tool vs Skill
 
-| Concept | Essence | Function ||---------|---------|----------|
+| Concept | Essence | Function |
+|---------|---------|----------|
 | **Tool** | What model CAN do | Execute actions (bash, read_file, write_file) |
-| **Skill** | What model KNOWS how to do | Guide decisions (PDF processing, MCP building) |
+| **Skill** | What model KNOWS how to do | Guide decisions (PDF processing, MCP building, frontend design) |
 
 **Equation:** `General Agent + Excellent Skill = Domain Expert Agent`
 
-## Self-Improvement Integration
+### The 5 Patterns System
 
-Every skill operation integrates with iterative refinement:
+| Pattern | ~Lines | Purpose | When to Use |
+|---------|--------|---------|--------------|
+| **Mindset** | ~50 | Thinking > technique, strong NEVER list | Creative tasks requiring taste |
+| **Navigation** | ~30 | Minimal SKILL.md, routes to sub-files | Multiple distinct scenarios |
+| **Philosophy** | ~150 | Philosophy → Express, emphasizes craft | Art/creation requiring originality |
+| **Process** | ~200 | Phased workflow, checkpoints | Complex multi-step projects |
+| **Tool** | ~300 | Decision trees, code examples | Precise operations on specific formats |
 
-- **Pattern Extraction:** Successful skill creation → semantic memory
-- **Confidence Threshold:** Only patterns with confidence >0.8
-- **Refinement Loop:** Skill-Judge <3.5 → refinement cycle
+### Progressive Disclosure
 
-### Hook Integration
+| Level | Content | When |
+|-------|---------|------|
+| **L1** | Metadata (name + description) | Always loaded (~100 tokens) |
+| **L2** | SKILL.md body | On trigger match (~500 lines) |
+| **L3** | references/, scripts/, templates/ | Explicit request |
 
-| Hook | When | Action |
-|------|------|--------|
-| `before_skill_audit` | Pre-audit | Log session context, validate skill structure |
-| `after_skill_create` | Post-create | Extract pattern, update semantic memory |
-| `on_validation_fail` | Skill-Judge <3.5 | Trigger refinement loop |
+### Description — THE MOST IMPORTANT FIELD
+
+The description determines if a skill ever gets activated. It MUST answer:
+
+1. **WHAT**: What does this Skill do?
+2. **WHEN**: In what situations should it be used?
+3. **KEYWORDS**: What terms should trigger this Skill?
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  SKILL ACTIVATION FLOW                                              │
+│                                                                     │
+│  User Request → Agent sees ALL skill descriptions → Decides which   │
+│                 (only descriptions, not bodies!)      to activate    │
+│                                                                     │
+│  If description doesn't match → Skill NEVER gets loaded            │
+│  If description is vague → Skill might not trigger when it should  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Excellent description format:**
+```yaml
+description: >
+  Create, edit, and analyze .docx files. 
+  Use when working with Word documents, tracked changes, 
+  or professional document formatting.
+  Triggers: .docx, tracked changes, Word documents, document editing
+```
+
+### Freedom Calibration
+
+Match specificity to task fragility:
+
+| Task Type | Freedom | Why |
+|-----------|---------|-----|
+| Creative/Design | HIGH | Multiple valid approaches, differentiation is value |
+| Code review | MEDIUM | Principles exist but judgment required |
+| Precise operations | LOW | One wrong byte corrupts file, consistency critical |
+
+### TDD Workflow (RED-GREEN-REFACTOR)
+
+**RED Phase:**
+1. Identify the failing scenario
+2. Write test prompt for the scenario
+3. Run without skill — observe failure
+4. Document exact failure mode
+
+**GREEN Phase:**
+1. Write minimal skill addressing failure
+2. Run with skill — observe pass
+3. Verify failure mode resolved
+4. Document success criteria
+
+**REFACTOR Phase:**
+1. Remove duplication
+2. Tighten trigger accuracy
+3. Ensure reference depth compliance
+4. Validate stacking ≤3
+
+## Skill-Judge Quality Metrics (120 points)
+
+| Dimension | Max | Focus |
+|-----------|-----|-------|
+| **D1: Knowledge Delta** | 20 | Expert knowledge not in model |
+| **D2: Mindset + Procedures** | 15 | Thinking patterns + domain workflows |
+| **D3: Anti-Pattern Quality** | 15 | Specific NEVER lists with WHY |
+| **D4: Spec Compliance** | 15 | Description = WHAT + WHEN + KEYWORDS |
+| **D5: Progressive Disclosure** | 15 | Layering with triggers |
+| **D6: Freedom Calibration** | 15 | Match specificity to fragility |
+| **D7: Pattern Recognition** | 10 | Follows established pattern |
+| **D8: Practical Usability** | 15 | Decision trees, fallbacks, edge cases |
+
+### Scoring
+
+| Grade | Percentage | Meaning |
+|-------|------------|---------|
+| **A** | 90%+ (108+) | Excellent — production-ready |
+| **B** | 80-89% (96-107) | Good — minor improvements |
+| **C** | 70-79% (84-95) | Adequate — clear improvement path |
+| **D** | 60-69% (72-83) | Below average — significant issues |
+| **F** | <60% (<72) | Poor — fundamental redesign needed |
+
+### Quality Thresholds
+
+| Score | Grade | Action |
+|-------|-------|--------|
+| 4.5+ | EXCELLENT | Ready for release |
+| 4.0+ | GOOD | Minor improvements |
+| 3.0+ | ACCEPTABLE | Address gaps |
+| <3.0 | NEEDS WORK | Major revision required |
 
 ## Context-Intelligence Integration
 
-Every skill operation must integrate with context-intelligence:
+Every skill must integrate with context-intelligence:
 
-- **Entry State Recognition**: Check session state before skill operations
-- **Trust Threshold**: Verify minimum trust scores for skill operations
-- **Rot Detection**: Watch for degradation signals during skill work
-- **Recovery Awareness**: Know when to escalate skill issues
-
-## Conflict Prevention
-
-### Overlap Detection
-
-Before activating skills, check:
-- Trigger overlap with existing stack
-- Domain overlap with loaded skills
-- Authority boundary violations
-- Stack budget status
-
-### Brainstorming Mode
-
-When user enters brainstorming mode:
-1. Load context-intelligence (P1)
-2. Assess domain
-3. Load domain-specific P2 if needed
-4. Maintain stack ≤3
+- **Entry State Recognition**: Acknowledge session state
+- **Trust Threshold**: Know minimum trust scores
+- **Rot Detection**: Watch for degradation signals
+- **Recovery Awareness**: Know when to escalate
 
 ## Stacking Discipline
 
@@ -184,17 +202,13 @@ context-rot-recovery (1) — if degraded
 - **NEVER** forgive vague descriptions — poor description = skill never triggers
 - **NEVER** put "when to use" only in body — description is what Agent sees first
 - **NEVER** skip mentally testing decision trees
-- **NEVER** load skills with overlapping triggers
-- **NEVER** exceed stack budget of 3 skills
 
 ## References
 
 - `references/01-skill-anatomy.md` — Full anatomy template
 - `references/02-frontmatter-standard.md` — YAML schema
-- `references/03-three-patterns.md` — Pattern system (P1/P2/P3)
-- `references/04-tdd-workflow.md` — TDD methodology for skills
+- `references/03-three-patterns.md` — Pattern system (HiveMind + Skill-Judge)
+- `references/04-tdd-workflow.md` — TDD methodology
 - `references/05-skill-quality-matrix.md` — Skill-Judge metrics (120-point system)
-- `references/06-agent-activation.md` — Agent/sub-agent activation patterns
 - `references/06-knowledge-delta.md` — Expert vs Redundant vs Activation
-- `references/07-iterative-refinement.md` — Self-improvement loops and hooks
-- `references/08-conflict-detection.md` — Cross-pack overlap detection logic
+

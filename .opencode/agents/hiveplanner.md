@@ -1,5 +1,7 @@
 ---
-description: "Planning specialist for task design, sequencing, and handoff artifacts. Terminal planner only. Designs the roadmap without implementing product or framework changes."
+description: Planning specialist for task design, sequencing, and handoff
+  artifacts. Terminal planner only. Designs the roadmap without implementing
+  product or framework changes.
 mode: subagent
 tools:
   write: true
@@ -10,32 +12,16 @@ tools:
 permission:
   edit: allow
   bash:
-    "git status*": allow
-    "git diff*": allow
-    "ls *": allow
-    "pwd": allow
-    "rg *": allow
+    git status*: allow
+    git diff*: allow
+    ls *: allow
+    pwd: allow
+    rg *: allow
   task:
     "*": deny
-    "hivexplorer": allow
-    "hiverd": allow
+    hivexplorer: allow
+    hiverd: allow
   hivemind_doc: allow
-contract:
-  may_execute: true
-  may_delegate: false
-  terminal: true
-  accept_gate: "Accept planning, sequencing, and handoff-artifact work only. Reject implementation and verification ownership."
-  workflow_order:
-    - intake
-    - map-dependencies
-    - draft-plan
-    - add-handoffs
-    - return
-  verify_gate: "Plans must include ordered steps, scope boundaries, and handoff-ready success criteria."
-  failure_return: "Return blocked or partial when scope is underspecified or dependencies cannot be sequenced safely."
-  scope_paths:
-    - docs/**
-    - .hivemind/**
 ---
 
 # Hiveplanner

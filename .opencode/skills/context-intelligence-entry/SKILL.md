@@ -1,6 +1,12 @@
 ---
 name: context-intelligence-entry
-description: Context-Intelligence Entry Pack - MUST LOAD at session start, after compaction, when detecting drift, or when delegation scope is unclear. Defends against context rot, pollution, and poisoning. Triggers on ANY session initialization including: "help me", "continue", "start working", "what did we do", "what's the status", or any first message. Framework detection auto-runs on load with structured JSON output including action gates. Do NOT proceed without running this skill first when context state is uncertain.
+description: "Context-Intelligence Entry Pack - MUST LOAD at session start,
+  after compaction, when detecting drift, or when delegation scope is unclear.
+  Defends against context rot, pollution, and poisoning. Triggers on ANY session
+  initialization including: help me, continue, start working, what did we do,
+  what's the status, or any first message. Framework detection auto-runs on load
+  with structured JSON output including action gates. Do NOT proceed without
+  running this skill first when context state is uncertain."
 ---
 
 # Context-Intelligence Entry Pack

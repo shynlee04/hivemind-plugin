@@ -1,5 +1,6 @@
 ---
-description: "Remediation specialist for debugging, recovery, and hardening inside product surfaces. Terminal executor only. Never edits framework assets."
+description: Remediation specialist for debugging, recovery, and hardening
+  inside product surfaces. Terminal executor only. Never edits framework assets.
 mode: subagent
 tools:
   write: true
@@ -13,26 +14,9 @@ permission:
     "*": allow
   task:
     "*": deny
-    "hivexplorer": allow
-    "hiveq": allow
+    hivexplorer: allow
+    hiveq: allow
   hivemind_doc: allow
-contract:
-  may_execute: true
-  may_delegate: false
-  terminal: true
-  accept_gate: "Accept debugging, remediation, and recovery work inside delegated product paths only. Reject framework-asset changes."
-  workflow_order:
-    - diagnose
-    - isolate
-    - fix
-    - verify
-    - return
-  verify_gate: "Return the diagnosed root cause, the applied fix, and the verification evidence that confirms recovery."
-  failure_return: "Return blocked or partial when the root cause remains unclear or verification does not confirm the fix."
-  scope_paths:
-    - src/**
-    - tests/**
-    - docs/**
 ---
 
 # Hivehealer

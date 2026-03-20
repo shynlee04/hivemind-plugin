@@ -19,29 +19,19 @@ skill-name/
 
 ### Minimum Frontmatter
 
-> **CRITICAL: Only `name` and `description` are allowed in YAMLfrontmatter.**All other fields are FORBIDDEN.
-
 ```yaml
 ---
 name: skill-name-with-hyphens
-description: Use when [triggering conditions] — [effect] — [constraints]. Include WHAT, WHEN, and KEYWORDS for activation.
+description: Use when [triggering conditions] — [effect]
+version: 1.0.0
+framework: hivemind
+pack: pack-name
+entry-level: L1|L2|L3
+pattern: P1|P2|P3
+stacking: 0-3
+owner: hivemind
+status: active
 ---
-```
-
-### Internal Metadata (in SKILL.md body, NOT frontmatter)
-
-Internal HiveMind metadata belongs in the SKILL.md body:
-
-```markdown
-## Pattern
-
-**Pattern:** P1 (High-level routing)
-**Stacking:** 1 (counts against stack limit)
-
-## Dependencies
-
-**Depends-on:** None (entry skill)
-**Enables:** delegation-scope, workflow-hierarchy
 ```
 
 ### Required Sections in SKILL.md

@@ -1,6 +1,8 @@
 ---
-name: "research-methodology"
-description: "Use when conducting structured research requiring multi-source investigation. Provides question framing, source evaluation, evidence grading, and confidence scoring."
+name: research-methodology
+description: Use when conducting structured research requiring multi-source
+  investigation. Provides question framing, source evaluation, evidence grading,
+  and confidence scoring.
 ---
 
 # Research Methodology

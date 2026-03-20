@@ -1,0 +1,12 @@
+# Verification Result Template
+
+```json
+{
+  "build": { "passed": false, "evidence": "", "command": "npx tsc --noEmit" },
+  "test": { "passed": false, "evidence": "", "command": "npm test" },
+  "git": { "passed": false, "evidence": "", "command": "git status --porcelain" },
+  "overall": "PASS|FAIL",
+  "blocked": true,
+  "timestamp": "ISO-8601"
+}
+```

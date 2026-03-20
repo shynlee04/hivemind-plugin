@@ -6,6 +6,7 @@ import { resolveCliInvocation } from './cli/command-routing.js'
 import { runDoctorCommand } from './cli/doctor.js'
 import { runHarnessCommand } from './cli/harness.js'
 import { initProject } from './cli/init.js'
+import type { InitProjectResult } from './features/runtime-entry/index.js'
 import { runSettingsCommand } from './cli/settings.js'
 
 type ParsedArgs = {
@@ -61,6 +62,33 @@ function printHelp(): void {
     '  --expert-level <value>      User expertise level',
     '  --preset <value>            Use an explicit non-interactive preset (guided-onboarding)',
   ].join('\n'))
+}
+
+function formatAuthorityEndpoint(result: InitProjectResult): string {
+  const runtimeInstanceId = result.runtime_identity.runtimeInstanceId ?? 'pending-runtime-instance'
+  const serverBaseUrl = result.runtime_identity.serverBaseUrl ?? 'pending-server-endpoint'
+  return `${runtimeInstanceId} @ ${serverBaseUrl}`
+}
+
+function formatInitReadinessCard(result: InitProjectResult): string {
+  return [
+    'HiveMind Runtime Readiness',
+    `Identity: ${result.runtime_identity.harnessFramework} ${result.runtime_identity.runtimeIdentity}`,
+    `Authority: ${result.runtime_identity.activeAuthorityLabel}`,
+    `Runtime: ${formatAuthorityEndpoint(result)}`,
+    `Posture: ${result.runtime_identity.runtimePosture}; ${result.runtime_identity.collaborationIdentity}`,
+    `State: ${result.readiness_signal.readinessState}`,
+    `Entry/QA: ${result.readiness_signal.entryState ?? 'unknown'} / ${result.readiness_signal.qaState ?? 'unknown'}`,
+    `Next: ${result.readiness_signal.exactNextCommand ?? 'none'}`,
+  ].join('\n')
+}
+
+function isInitProjectResult(value: unknown): value is InitProjectResult {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  return 'runtime_identity' in value && 'readiness_signal' in value && 'commandResult' in value
 }
 
 /**
@@ -144,7 +172,7 @@ export async function runCli(argv: string[], executablePath?: string): Promise<n
   if (json) {
     console.log(JSON.stringify(result, null, 2))
   } else {
-    console.log(result)
+    console.log(resolved.command === 'init' && isInitProjectResult(result) ? formatInitReadinessCard(result) : result)
   }
   return 0
 }

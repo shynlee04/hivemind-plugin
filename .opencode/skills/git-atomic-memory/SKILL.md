@@ -1,20 +1,20 @@
 ---
 name: git-atomic-memory
-description:
-  Use when encoding commit intent as semantic memory, retrieving past decisions from git history,
-  resuming work after context loss, or building knowledge networks from commit chains.
-  
-  PRIMARY USERS:
-  • hiveminder (orchestrator): Links delegation handoffs to commit anchors
-  • hivemaker (executor): Resumes work from previous sessions via commit context
-  • hiveq (verifier): Traces decision history to validate implementation
-  • hiverd (researcher): Investigates code history for intent and rationale
-  • hivefiver (setup): Restores session context from git memory anchors
-  
-  SESSION CONTEXT:
-  • Main session: Encode intent during commits, build knowledge network
-  • Sub-session: Retrieve parent decisions via commit links, resume from anchors
-  • Resumed session: Restore trajectory from semantic memory
+description: >
+  Use when encoding commit intent as semantic memory, retrieving past decisions
+  from git history, resuming work after context loss, or building knowledge
+  networks from commit chains.
+
+  PRIMARY USERS: • hiveminder (orchestrator): Links delegation handoffs to
+  commit anchors • hivemaker (executor): Resumes work from previous sessions via
+  commit context • hiveq (verifier): Traces decision history to validate
+  implementation • hiverd (researcher): Investigates code history for intent and
+  rationale • hivefiver (setup): Restores session context from git memory
+  anchors
+
+  SESSION CONTEXT: • Main session: Encode intent during commits, build knowledge
+  network • Sub-session: Retrieve parent decisions via commit links, resume from
+  anchors • Resumed session: Restore trajectory from semantic memory
 
   Triggers: "what did we decide", "why was this changed", "resume from commits",
   "commit intent", "decision history", "git memory", "session to commit link",

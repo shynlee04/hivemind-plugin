@@ -172,88 +172,14 @@ For P2/P3, create minimal reference bundle.
 - [ ] Frontmatter complete
 - [ ] No broken links
 
-### Step 4: Run Skill-Judge (Enhanced)
+### Step 4: Run Skill-Judge
 
-Evaluate against 5 dimensions with passing thresholds:
-
-| Dimension | Weight | Threshold | Description |
-|-----------|--------|------------|-------------|
-| **Trigger Accuracy** | 25% | ≥3.0 | Description triggers on specific conditions |
-| **Action Coherence** | 25% | ≥4.0 | ONE thing well, no mission creep |
-| **Reference Integrity** | 20% | ≥3.0 | 1-level depth, no circular refs |
-| **Non-Redundancy** | 15% | ≥3.0 | No overlap with existing skills |
-| **Edge Case Coverage** | 15% | ≥3.0 | Handles degraded/delegated states |
-| **Overall Score** | - | **≥3.5** | All thresholds must be met for release |
-
-**All thresholds must be met for release.** If any single threshold fails, the skill must be revised before release.
-
-### Step 5: Pressure Scenarios for Discipline Skills
-
-From writing-skills superpowers, discipline skills require combining 3+ pressures:
-
-**The Four Pressures:**
-1. **Rationalization pressure** — When Claude justifies instead of executing
-2. **Performance pressure** — When speed conflicts with correctness  
-3. **Edge case pressure** — When boundary conditions reveal flaws
-4. **Authority conflict pressure** — When competing directives create tension
-
-**Test combination pattern:**
-```markdown
-## Pressure Test: [Skill Name]
-
-**Rationalization + Edge Case:**
-- Given: [edge condition]
-- When: [tempted to rationalize]
-- Then: [skill should prevent]
-
-**Performance + Authority:**
-- Given: [time pressure + conflicting authority]
-- When: [skill triggered]
-- Then: [correct behavior]
-```
-
-### Step 6: Knowledge Delta Test
-
-Before writing skill content, classify knowledge using the Knowledge Delta:
-
-| Type | Question | Action |
-|------|----------|--------|
-| **Expert** | "Does Claude genuinely NOT know this?" | KEEP — this is the skill's value |
-| **Activation** | "Does Claude know but may not think of?" | Keep brief — serves as reminder |
-| **Redundant** | "Does Claude definitely know this?" | DELETE — wastes tokens |
-
-**Knowledge Delta Test Protocol:**
-1. Read proposed content
-2. Ask: "Would Claude produce this without being told?"
-3. If YES → Redundant → DELETE
-4. If Claude would think of it but forget → Activation → Keep minimal
-5. If Claude genuinely doesn't know → Expert → KEEP
-
-### Step 7: Baseline Recording Protocol
-
-**CRITICAL:** Record baseline behavior verbatim before writing the skill.
-
-```markdown
-## Baseline: [Date]
-
-**Context:** [Session state]
-**Skill State:** [Loaded or not loaded]
-**Prompt:** [Exact test prompt]
-
-**Without Skill Output:**
-```
-[Exact verbatim output - copy-paste exactly]
-```
-
-**Gap:** [Specific failure identified]
-**Severity:** [Impact: Low/Medium/High/Critical]
-```
-
-**Recording Rules:**
-- Copy-paste actual output, never paraphrase
-- Include exact formatting/whitespace
-- Note session state at time of capture
-- Identify specific gap, not vague "could be better"
+Evaluate against 5 dimensions:
+1. Trigger Accuracy (25%)
+2. Action Coherence (25%)
+3. Reference Integrity (20%)
+4. Non-Redundancy (15%)
+5. Edge Case Coverage (15%)
 
 ---
 

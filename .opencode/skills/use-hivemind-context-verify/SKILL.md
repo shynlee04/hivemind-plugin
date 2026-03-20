@@ -1,6 +1,8 @@
 ---
 name: use-hivemind-context-verify
-description: Entry router for context truth verification. Routes to build gates, test gates, git state checks, and truth anchor verification. P0 verification skill for completion claims and project truth validation.
+description: Entry router for context truth verification. Routes to build gates,
+  test gates, git state checks, and truth anchor verification. P0 verification
+  skill for completion claims and project truth validation.
 ---
 
 # use-hivemind-context-verify

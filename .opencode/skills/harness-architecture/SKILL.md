@@ -1,6 +1,9 @@
 ---
 name: harness-architecture
-description: Evaluate, design, and enforce OpenCode SDK Harness Architecture. Use when building CLI tools, creating Plugins, writing custom agent routing, or debugging session lifecycle state. MANDATORY when deciding whether to place code in the Control Plane (Client SDK) or Execution Plane (Plugin SDK).
+description: Evaluate, design, and enforce OpenCode SDK Harness Architecture.
+  Use when building CLI tools, creating Plugins, writing custom agent routing,
+  or debugging session lifecycle state. MANDATORY when deciding whether to place
+  code in the Control Plane (Client SDK) or Execution Plane (Plugin SDK).
 ---
 
 # Harness Architecture Directives

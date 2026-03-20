@@ -1,5 +1,6 @@
 ---
-description: "Terminal external-research specialist for ecosystem, documentation, and market evidence. Never mutates repository files or delegates."
+description: Terminal external-research specialist for ecosystem, documentation,
+  and market evidence. Never mutates repository files or delegates.
 mode: subagent
 tools:
   write: false
@@ -10,23 +11,6 @@ permission:
   edit: deny
   webfetch: allow
   hivemind_doc: allow
-contract:
-  may_execute: true
-  may_delegate: false
-  terminal: true
-  accept_gate: "Accept external research, documentation lookup, and ecosystem comparison tasks only. Reject repository edits and internal implementation work."
-  workflow_order:
-    - refine-question
-    - gather-sources
-    - compare
-    - grade-confidence
-    - return
-  verify_gate: "Cite sources, note confidence, and surface contradictions instead of smoothing them over."
-  failure_return: "Return blocked or partial when authoritative external evidence cannot be obtained."
-  scope_paths:
-    - external-docs
-    - external-web
-    - ecosystem-sources
 ---
 
 # Hiverd

@@ -1,5 +1,6 @@
 ---
-description: "Implementation specialist for product work. Executes scoped changes in product surfaces. Terminal executor only."
+description: Implementation specialist for product work. Executes scoped changes
+  in product surfaces. Terminal executor only.
 mode: subagent
 tools:
   write: true
@@ -13,26 +14,10 @@ permission:
     "*": allow
   task:
     "*": deny
-    "hivexplorer": allow
-    "hiverd": allow
-    "hiveq": allow
+    hivexplorer: allow
+    hiverd: allow
+    hiveq: allow
   hivemind_doc: allow
-contract:
-  may_execute: true
-  may_delegate: false
-  terminal: true
-  accept_gate: "Accept scoped product implementation only. Reject framework-asset authoring and any work outside delegated paths."
-  workflow_order:
-    - read-packet
-    - implement
-    - verify
-    - return
-  verify_gate: "Run the required checks for the delegated change and report files touched plus observed verification output."
-  failure_return: "Return blocked or partial when scope conflicts, verification fails, or required context is missing."
-  scope_paths:
-    - src/**
-    - tests/**
-    - docs/**
 ---
 
 # Hivemaker

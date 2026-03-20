@@ -1,5 +1,6 @@
 ---
-description: "Terminal repository investigator for read-only codebase research, evidence collection, and synthesis. Never mutates files or delegates."
+description: Terminal repository investigator for read-only codebase research,
+  evidence collection, and synthesis. Never mutates files or delegates.
 mode: subagent
 tools:
   write: false
@@ -9,31 +10,15 @@ tools:
 permission:
   edit: deny
   bash:
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "ls *": allow
-    "pwd": allow
-    "rg *": allow
-    "wc *": allow
-    "tree *": allow
+    git status*: allow
+    git diff*: allow
+    git log*: allow
+    ls *: allow
+    pwd: allow
+    rg *: allow
+    wc *: allow
+    tree *: allow
   hivemind_doc: allow
-contract:
-  may_execute: true
-  may_delegate: false
-  terminal: true
-  accept_gate: "Accept repository read/search/evidence tasks only. Reject edits, planning ownership, and implementation work."
-  workflow_order:
-    - scope-check
-    - inspect
-    - collect-evidence
-    - synthesize
-    - return
-  verify_gate: "Cite file paths and line references for each material claim."
-  failure_return: "Return blocked or partial when required files are missing or evidence cannot be grounded in repository reads."
-  scope_paths:
-    - repository-read-only
-    - project-files
 ---
 
 # Hivexplorer

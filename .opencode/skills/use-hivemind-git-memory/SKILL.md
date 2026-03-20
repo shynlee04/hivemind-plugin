@@ -1,6 +1,8 @@
 ---
 name: use-hivemind-git-memory
-description: Entry router for git-based semantic memory operations. Routes to git-atomic-memory for commit linking, intent encoding, and knowledge network formation. P1 skill for memory workflows.
+description: Entry router for git-based semantic memory operations. Routes to
+  git-atomic-memory for commit linking, intent encoding, and knowledge network
+  formation. P1 skill for memory workflows.
 ---
 
 # use-hivemind-git-memory

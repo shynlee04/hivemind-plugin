@@ -73,6 +73,16 @@
       "source": "command:hm-harness",
       "resumeTarget": "command:hm-plan",
       "createdAt": "2026-03-19T20:03:21.790Z"
+    },
+    {
+      "id": "chk_trj_ses_harness_1774039169268_8",
+      "trajectoryId": "trj_ses_harness_1774039169268",
+      "workflowId": "ses_harness_1774039169268",
+      "taskIds": [],
+      "subtaskIds": [],
+      "source": "command:hm-harness",
+      "resumeTarget": "command:hm-plan",
+      "createdAt": "2026-03-20T20:39:29.391Z"
     }
   ],
   "recoveryLog": []

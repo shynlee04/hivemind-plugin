@@ -1728,7 +1728,6 @@ function generateFixes(result) {
 
 // Cache file path
 const CACHE_FILE_PATH = '.hivemind/context-check.json';
-let CACHE_FILE = null;
 
 /**
  * Check cache validity
@@ -1766,44 +1765,6 @@ function writeCache(projectDir, result) {
     }
     fs.writeFileSync(cacheFile, JSON.stringify(result, null, 2));
   } catch (e) {}
-}
-      }
-    } catch (e) {}
-  }
-  
-  // PRIMARY: AGENTS.md exists
-  if (!fs.existsSync(path.join(projectDir, 'AGENTS.md'))) {
-    issues.push('AGENTS.md missing');
-    rotPoints += 2;
-  }
-  
-  // PRIMARY: .hivemind/session valid (if exists)
-  const sessionFile = path.join(projectDir, '.hivemind', 'session');
-  if (fs.existsSync(sessionFile)) {
-    // Session exists - check if recent
-    try {
-      const stat = fs.statSync(sessionFile);
-      const hoursSince = (Date.now() - stat.mtime.getTime()) / (1000 * 60 * 60);
-      if (hoursSince > 24) {
-        issues.push(`Session stale: ${Math.floor(hoursSince)}h old`);
-        rotPoints += 1;
-      }
-    } catch (e) {}
-  }
-  
-  return {
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    mode: 'quick',
-    rot_level: rotPoints >= 5 ? 'DEGRADED' : rotPoints >= 2 ? 'SUSPECT' : 'CLEAN',
-    rot_score: rotPoints,
-    issues,
-    path_validation: {
-      task_plan_exists: fs.existsSync(taskPlan),
-      agents_md_exists: fs.existsSync(path.join(projectDir, 'AGENTS.md')),
-      session_exists: fs.existsSync(sessionFile)
-    }
-  };
 }
 
 /**

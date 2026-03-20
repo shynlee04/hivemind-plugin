@@ -1,6 +1,8 @@
 ---
 name: use-hivemind-hierarchy
-description: Entry router for role boundaries, agent authority, and permission envelopes. Routes to agent-role-boundary and permission design skills. P1 skill for hierarchy management.
+description: Entry router for role boundaries, agent authority, and permission
+  envelopes. Routes to agent-role-boundary and permission design skills. P1
+  skill for hierarchy management.
 ---
 
 # use-hivemind-hierarchy

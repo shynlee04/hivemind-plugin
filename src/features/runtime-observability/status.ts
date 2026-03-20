@@ -8,6 +8,7 @@ import { createCompactionPreservationPacket } from '../agent-work-contract/hooks
 import { loadWorkflowContinuityTransactionForExecution } from '../runtime-entry/workflow-continuity.js'
 import { buildRuntimeStatusSnapshot } from '../../sdk-supervisor/index.js'
 import {
+  attachRuntimeIdentityAndReadiness,
   buildRuntimeEntryDecision,
   DECLARED_CHAIN_ACTIONS,
   resolveRuntimeChainActionSupportMode,
@@ -64,18 +65,28 @@ function withRuntimeEntryDecision<T extends { closeoutStatus?: 'open' | 'ready' 
   closeoutStatus: 'open' | 'ready' | 'blocked' | 'qa-pending'
   nextCommand?: string
   recommendedCommands: string[]
+  runtime_identity: import('../../shared/contracts/runtime-status.js').RuntimeIdentity
+  readiness_signal: import('../../shared/contracts/runtime-status.js').ReadinessSignal
 } {
   const entryDecision = buildRuntimeEntryDecision({
     closeoutStatus: result.closeoutStatus,
     report: result.report,
     serverHealthy,
   })
+  const report = attachRuntimeIdentityAndReadiness({
+    closeoutStatus: entryDecision.closeoutStatus,
+    report: result.report,
+    serverHealthy,
+  })
 
   return {
     ...result,
+    report,
     closeoutStatus: entryDecision.closeoutStatus,
     nextCommand: entryDecision.nextCommand,
     recommendedCommands: entryDecision.recommendedCommands,
+    runtime_identity: report.runtime_identity,
+    readiness_signal: report.readiness_signal,
   }
 }
 
@@ -208,11 +219,14 @@ export async function executeHivemindRuntimeCommand(
     && !!snapshot.serverBaseUrl
     && snapshot.hivemindHealthy
   ) {
+    const closeoutStatus = snapshot.qaState === 'pending' ? 'qa-pending' : 'ready'
     const redirectedResult = withRuntimeEntryDecision({
       commandId: args.command,
-      closeoutStatus: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
+      closeoutStatus,
       report: {
-        status: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
+        status: closeoutStatus,
+        entry_state: snapshot.entryState,
+        qa_state: snapshot.qaState,
         routeDisposition: 'attach',
         next_command: 'hm-harness',
         guidance: 'Attached OpenCode runtime already healthy; skipped competing hm-init bootstrap.',

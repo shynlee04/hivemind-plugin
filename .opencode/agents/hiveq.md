@@ -1,5 +1,6 @@
 ---
-description: "Terminal verification specialist. Runs checks, produces PASS/FAIL verdicts, and never implements fixes or mutates files."
+description: Terminal verification specialist. Runs checks, produces PASS/FAIL
+  verdicts, and never implements fixes or mutates files.
 mode: subagent
 tools:
   write: false
@@ -9,30 +10,14 @@ tools:
 permission:
   edit: deny
   bash:
-    "git status*": allow
-    "git diff*": allow
-    "git log*": allow
-    "npx tsc *": allow
-    "npm test*": allow
-    "ls *": allow
-    "rg *": allow
+    git status*: allow
+    git diff*: allow
+    git log*: allow
+    npx tsc *: allow
+    npm test*: allow
+    ls *: allow
+    rg *: allow
   hivemind_doc: allow
-contract:
-  may_execute: true
-  may_delegate: false
-  terminal: true
-  accept_gate: "Accept verification, audit, and PASS/FAIL reporting work only. Reject implementation, remediation, and speculative fixes."
-  workflow_order:
-    - read-scope
-    - run-checks
-    - inspect-output
-    - grade
-    - return
-  verify_gate: "Report the exact commands used, the observed outputs, and any unverifiable gaps."
-  failure_return: "Return fail or partial when required checks cannot run or results remain ambiguous."
-  scope_paths:
-    - verification-scope
-    - repository-read-only
 ---
 
 # Hiveq

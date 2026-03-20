@@ -24,7 +24,12 @@ import {
   saveBootstrapRuntimeAttachmentSettings,
   saveRuntimeAttachmentSettings,
 } from '../../shared/runtime-attachment.js'
-import { buildRuntimeEntryDecision } from '../../shared/contracts/runtime-status.js'
+import {
+  attachRuntimeIdentityAndReadiness,
+  buildRuntimeEntryDecision,
+  type ReadinessSignal,
+  type RuntimeIdentity,
+} from '../../shared/contracts/runtime-status.js'
 import type {
   CommandExecutionInput,
   CommandExecutionResult,
@@ -61,7 +66,22 @@ export interface InitProjectResult {
   closeoutStatus: 'open' | 'ready' | 'blocked' | 'qa-pending'
   nextCommand?: string
   recommendedCommands: string[]
+  runtime_identity: RuntimeIdentity
+  readiness_signal: ReadinessSignal
   commandResult: Awaited<ReturnType<typeof executeSlashCommandBundle>>
+}
+
+function buildInitReport(input: {
+  closeoutStatus: 'open' | 'ready' | 'blocked' | 'qa-pending'
+  report: Record<string, unknown>
+}): Record<string, unknown> & {
+  runtime_identity: RuntimeIdentity
+  readiness_signal: ReadinessSignal
+} {
+  return attachRuntimeIdentityAndReadiness({
+    closeoutStatus: input.closeoutStatus,
+    report: input.report,
+  })
 }
 
 function createRuntimeId(prefix: string): string {
@@ -132,6 +152,10 @@ export async function initProject(directory: string, options: InitOptions = {}):
     closeoutStatus: commandResult.closeoutStatus,
     report: commandResult.report,
   })
+  const report = buildInitReport({
+    closeoutStatus: entryDecision.closeoutStatus,
+    report: commandResult.report,
+  })
 
   return {
     sessionId,
@@ -140,7 +164,12 @@ export async function initProject(directory: string, options: InitOptions = {}):
     closeoutStatus: entryDecision.closeoutStatus,
     nextCommand: entryDecision.nextCommand,
     recommendedCommands: entryDecision.recommendedCommands,
-    commandResult,
+    runtime_identity: report.runtime_identity,
+    readiness_signal: report.readiness_signal,
+    commandResult: {
+      ...commandResult,
+      report,
+    },
   }
 }
 
@@ -152,14 +181,11 @@ export async function runInitHandler(
   const primitive = findControlPlanePrimitive('hm-init')
   const snapshot = await loadRuntimeBindingsSnapshot(input.projectRoot)
   if (hasAttachedSdkAuthority(snapshot)) {
-    return {
-      commandId: bundle.id,
-      title: bundle.title,
-      agent: bundle.agent,
-      executionMode: 'handler',
-      contract: asset.contract,
+    const closeoutStatus = snapshot.qaState === 'pending' ? 'qa-pending' : 'ready'
+    const report = buildInitReport({
+      closeoutStatus,
       report: {
-        status: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
+        status: closeoutStatus,
         entry_state: snapshot.entryState,
         qa_state: snapshot.qaState,
         routeDisposition: 'attach',
@@ -174,9 +200,18 @@ export async function runInitHandler(
         failureBehavior: bundle.pressureContract.failureBehavior,
         expectedEvidence: bundle.pressureContract.evidence.requiredArtifacts,
       },
+    })
+
+    return {
+      commandId: bundle.id,
+      title: bundle.title,
+      agent: bundle.agent,
+      executionMode: 'handler',
+      contract: asset.contract,
+      report,
       entityBindings: resolveEntityBindings(input),
       stateTransitions: ['attach-active-bootstrap-refused'],
-      closeoutStatus: snapshot.qaState === 'pending' ? 'qa-pending' : 'ready',
+      closeoutStatus,
       verificationContractId: asset.contract.verificationContract,
       pressureContract: bundle.pressureContract,
     }
@@ -251,13 +286,9 @@ export async function runInitHandler(
     resumeTarget: 'command:hm-harness',
   })
   const projection = await createPlanningGovernanceProjection(input.projectRoot, ids)
-
-  return {
-    commandId: bundle.id,
-    title: bundle.title,
-    agent: bundle.agent,
-    executionMode: 'handler',
-    contract: asset.contract,
+  const closeoutStatus = 'qa-pending'
+  const report = buildInitReport({
+    closeoutStatus,
     report: {
       status: 'qa-pending',
       entry_state: 'qa-pending',
@@ -305,6 +336,15 @@ export async function runInitHandler(
           }
         : undefined,
     },
+  })
+
+  return {
+    commandId: bundle.id,
+    title: bundle.title,
+    agent: bundle.agent,
+    executionMode: 'handler',
+    contract: asset.contract,
+    report,
     entityBindings: {
       ...resolveEntityBindings(input),
       trajectoryId: ids.trajectoryId,
@@ -324,7 +364,7 @@ export async function runInitHandler(
       ...runtimeSurfaceSync.mirroredCommandFiles,
       ...runtimeSurfaceSync.mirroredAgentFiles,
     ],
-    closeoutStatus: 'qa-pending',
+    closeoutStatus,
     verificationContractId: asset.contract.verificationContract,
     pressureContract: bundle.pressureContract,
   }

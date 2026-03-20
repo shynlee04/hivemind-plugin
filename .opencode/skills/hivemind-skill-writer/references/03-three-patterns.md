@@ -262,48 +262,6 @@ Is this an entry/routing skill?
 
 ---
 
-## Domain Interconnectedness
-
-Skills must understand their place in the domain ecosystem:
-
-### Cross-Pack Integration
-
-| Pack | Integrates With | Activation |
-|------|----------------|------------|
-| context-intelligence | All packs | P1 entry, stacking: 1 |
-| hivemind-skill-writer | context-intelligence | Companion, stacking: 0 |
-| skill-audit-hivemind | hivemind-skill-writer | P3 specialist on demand |
-| skill-migration-hivemind | hivemind-skill-writer | P3 specialist when migrating |
-
-### Subagent Routing
-
-P1 skills may need to spawn subagents for:
-
-- **Cross-domain detection** — when work spans multiple skill domains
-- **Multi-framework audit** — when checking .claude, .cursor, .opencode surfaces
-- **Pack migration coordination** — when refactor affects multiple packs
-
-### Decision Tree
-
-```
-Is task single-domain?
-├── YES → Primary execution
-└── NO → Check domain count
-    ├── 2 domains → Subagent for secondary
-    └── 3+ domains → Multi-agent orchestration
-```
-
-### Integration with context-intelligence
-
-Every skill operation must integrate with Pack 1:
-
-- **Entry State Recognition** — Check session state before operations
-- **Trust Threshold** — Verify minimum trust scores
-- **Rot Detection** — Watch for degradation signals
-- **Recovery Awareness** — Know when to escalate
-
----
-
 ## Reference Depth Rule
 
 ```

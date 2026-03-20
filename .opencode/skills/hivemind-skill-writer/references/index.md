@@ -8,7 +8,6 @@
 - [Three Patterns](#03-three-patternsmd) — P1/P2/P3 system
 - [TDD Workflow](#04-tdd-workflowmd) — Test-driven development
 - [Skill Quality Matrix](#05-skill-quality-matrixmd) — Evaluation framework
-- [Agent Activation](#06-agent-activationmd) — Agent/sub-agent patterns
 
 ---
 
@@ -41,7 +40,6 @@
 - Decision tree for choosing pattern
 - Stacking rules
 - Anti-patterns
-- Domain Interconnectedness
 
 ### 04-tdd-workflow.md
 **Purpose:** Test-driven development for skills  
@@ -62,15 +60,6 @@
 - Overall calculation formula
 - Grade thresholds
 - Evaluation template
-
-### 06-agent-activation.md
-**Purpose:** Agent and sub-agent activation patterns  
-**Topics:**
-- Agent Activation Matrix
-- Command Activation Patterns
-- Domain Interconnectedness Map
-- Subagent Spawn Decision Tree
-- Integration with context-intelligence
 
 ---
 
@@ -115,24 +104,6 @@ Is complex/expertise skill? → P3
 - Max 3 skills at entry
 - hivemind-skill-writer: stacking: 0
 - context-intelligence: stacking: 1
-
-### Subagent Routing
-
-| Task Type | Action |
-|-----------|--------|
-| Single-domain | Primary execution |
-|Cross-pack | Subagent for secondary |
-| Multi-framework | Subagent for detection |
-
-### Domain Interconnection
-
-```
-context-intelligence (Pack 1)
-    │
-    ├── Session detection → skill routing
-    ├── Delegation detection → subagent spawn
-    └── Rot detection → recovery activation
-```
 
 ---
 

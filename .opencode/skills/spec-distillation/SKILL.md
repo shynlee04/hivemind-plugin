@@ -1,6 +1,11 @@
 ---
-name: "spec-distillation"
-description: "Distill noisy, contradictory, or incomplete requirements into structured specs. Use when user requirements are noisy or contradictory, when entry-resolution classifies intent as needing spec work, or when multiple stakeholder inputs need reconciliation. Provides ambiguity mapping, clarification loops, and spec candidate generation. Lineage-agnostic — works for both framework and product domains."
+name: spec-distillation
+description: Distill noisy, contradictory, or incomplete requirements into
+  structured specs. Use when user requirements are noisy or contradictory, when
+  entry-resolution classifies intent as needing spec work, or when multiple
+  stakeholder inputs need reconciliation. Provides ambiguity mapping,
+  clarification loops, and spec candidate generation. Lineage-agnostic — works
+  for both framework and product domains.
 ---
 
 # Spec Distillation

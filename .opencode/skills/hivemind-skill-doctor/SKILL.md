@@ -1,6 +1,8 @@
 ---
 name: hivemind-skill-doctor
-description: Use when auditing skills, evaluating skill quality, diagnosing skill problems, validating skill compliance, or fixing skill issues — operates Skill-Judge evaluation, conflict detection, and repair guidance.
+description: Use when auditing skills, evaluating skill quality, diagnosing
+  skill problems, validating skill compliance, or fixing skill issues — operates
+  Skill-Judge evaluation, conflict detection, and repair guidance.
 ---
 
 # hivemind-skill-doctor

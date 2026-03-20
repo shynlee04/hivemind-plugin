@@ -1,146 +1,78 @@
 ---
 name: use-hivemind-delegation
-description: Entry router for handoff protocol and scope inheritance. Routes to delegation implementation for bounded packets, parent context, result contracts, and chain auditing. P1 skill for delegation workflows.
+description: "When user says 'delegate', 'handoff', or 'send to subagent': establish bounded context, verify scope, route to delegation implementation. Block if scope is unclear."
 ---
 
 # use-hivemind-delegation
 
-Entry router for HiveMind delegation workflow. Routes, does NOT implement.
+When user wants to delegate work to a subagent: establish the bounded context, verify scope declaration, and route to the delegation implementation specialist. This skill ensures every delegation has explicit boundaries before work begins.
 
-## When to Activate
+## Integration
 
-**Primary Triggers:** "delegate", "handoff", "subagent scope", "parent context", "delegation packet", "bounded context", "handoff protocol"
+### Upstream Dependencies
+| Skill | Required Before | Why |
+|-------|----------------|-----|
+| `use-hivemind` | Always | Framework context and lineage |
+| `use-hivemind-hierarchy` | For authority verification | Cannot delegate without boundary check |
 
-**Secondary Triggers:** "subagent", "delegation", "scope inheritance", "result contract", "chain audit", "bounded delegation"
+### Downstream Routes
+| Skill | Routes To | When |
+|-------|-----------|------|
+| `hivemind-delegation-write` | Handoff implementation | Scope bounded, contract established |
 
-## Do NOT Activate When
+### Cross-Domain Coupling
+| Coupled Skill | Relationship | Direction |
+|---------------|-------------|-----------|
+| `use-hivemind-hierarchy` | Authority envelope for delegation | Bidirectional |
+| `use-hivemind-context-verify` | Completion check after delegation | Bidirectional |
 
-| Condition | Threshold | Action |
-|-----------|-----------|--------|
-| Context depth exceeds | >70% | Defer to context recovery first |
-| Session state is degraded | `interrupted` or `degraded` | Skip activation |
-| Stack budget exhausted | Active skills ≥3 | Skip activation |
-| Authority unclear | Conflicting SOT | Escalate first |
-| Domain work (not delegation) | User implementing features | Use domain skills directly |
-
-## Two HiveMind Lineages
-
-| Lineage | Purpose | Confusion Pattern |
-|---------|---------|-------------------|
-| **hivefiver** | Meta-builder lineage: skills that build skills, agent orchestration | Confusing self-referential work with project work |
-| **hiveminder** | Project-oriented lineage: skills that apply to project work | Treating project work as framework work |
-
-**Rule:** Delegation applies to both lineages. hivefiver delegates to meta-builder subagents. hiveminder delegates to project subagents.
-
-## Routing Logic
-
+### Activation Chain
 ```
-DELEGATION CONTEXT DETECTED:
-├── incoming-handoff → route to handoff processing
-├── scope-declaration → route to scope boundary setting
-├── parent-link → route to parent-child relationship documentation
-├── result-contract → route to return format establishment
-├── chain-audit → route to delegation traceability
-│
-├── IMPLEMENTATION:
-│   ├── hivemind-delegation-write → full implementation
-│   └── hivemind-delegation-doctor → audit/repair
-│
-└── UNKNOWN
-    └── Ask clarifying question before routing
+P0: use-hivemind
+    ↓
+P1: use-hivemind-hierarchy (authority check)
+    ↓
+P1: use-hivemind-delegation ← This skill
+    ↓
+P2: hivemind-delegation-write (implementation)
 ```
 
-## Coordinator vs Specialist Behavior
+## Anti-Pattern: When NOT to Use This Skill
 
-| Behavior | Coordinator (this skill) | Specialist (sub-skills) |
-|----------|-------------------------|------------------------|
-| **Role** | Route, gatekeep, teach boundaries | Execute delegation implementation |
-| **Reading** | Broad delegation context | Deep handoff packet analysis |
-| **Execution** | Delegate, don't implement | Process handoff packets |
-| **Monitoring** | Gatekeep delegation quality | Report back with results |
-| **Depth** | Strategic delegation overview | Detailed packet processing |
+- User says "just delegate this" without scope → WRONG, scope is mandatory
+- Agent says "I'll handle this subagent work myself" → WRONG, never implement in router
+- Agent skips result contract → WRONG, every delegation needs return format
+- User says "delegate = abandon" → WRONG, delegation preserves context
+- Agent doesn't pass parent context to subagent → WRONG, continuity must be maintained
+- Agent delegates without user consent → WRONG, scope declaration requires approval
 
-**Never** let this skill jump into the specialist implementation role without explicit handoff to a sub-skill.
+## Process Flow
 
-## NO-LOAD Rules
-
-| Condition | Threshold | Action |
-|-----------|-----------|--------|
-| Context depth exceeds | >70% | Defer to `use-hivemind-context-integrity` |
-| Session state is degraded | `interrupted` or `degraded` | Skip activation |
-| Stack budget exhausted | Active skills ≥3 | Wait for slot |
-| Authority unclear | Conflicting SOT | Escalate first |
-| No scope declared | No explicit boundaries | Ask for scope before routing |
-
-## Degrees of Freedom Model
-
-### Degree 1: High Freedom (Router Mode)
-- Ask clarifying questions about delegation intent
-- Present delegation alternatives
-- "Best when / better when" delegation patterns
-
-### Degree 2: Medium Freedom (Teaching Mode)
-- Explain handoff packet structure
-- Show result contract templates
-- Demonstrate scope inheritance patterns
-
-### Degree 3: Low Freedom (Deterministic Mode)
-- Explicit routing when delegation type is clear
-- Mandatory result contract enforcement
-- Fixed handoff packet processing
-
-## Platform Knowledge
-
-### OpenCode-Specific Delegation
-
-| Concept | OpenCode Implementation |
-|---------|------------------------|
-| **Delegation** | Task tool with `subagent_type` parameter |
-| **Handoff Packet** | JSON package with scope, context, artifacts |
-| **Result Contract** | Explicit return format specification |
-| **Scope Declaration** | Bounded context in delegation packet |
-| **Parent Context** | Session state passed to subagent |
-| **Chain Audit** | Delegation history in trajectory |
-
-### TaskTool Pattern
-
-```typescript
-// Delegation via TaskTool
-{
-  subagent_type: "hiverd" | "hiveq" | "hivexplorer" | ...,
-  prompt: "Bounded packet with explicit scope",
-  task_id: "optional-continuation"
+```digraph delegation-flow {
+  "Delegation Request" -> "Scope Declared?"
+  "Scope Declared?" -> "Yes" [label="yes"]
+  "Scope Declared?" -> "Ask for scope" [label="no"]
+  "Yes" -> "Parent Context Linked?"
+  "Parent Context Linked?" -> "Yes" [label="yes"]
+  "Parent Context Linked?" -> "Request parent link" [label="no"]
+  "Yes" -> "Result Contract Defined?"
+  "Result Contract Defined?" -> "Yes" [label="yes"]
+  "Result Contract Defined?" -> "Establish contract" [label="no"]
+  "Yes" -> "Route to specialist"
+  "Route to specialist" -> "hivemind-delegation-write"
 }
 ```
 
-## Hard Behavior Rules
+## Step-by-Step Protocol
 
-1. **Delegation requires scope.** Never delegate without explicit scope declaration. Ask for scope before routing.
+1. **DETECT** — Is this a delegation request?
+2. **CHECK** — Is scope explicitly declared?
+3. **IF** no scope → Ask user to define boundaries before proceeding
+4. **VERIFY** — Is parent context being linked?
+5. **ESTABLISH** — Is result contract defined?
+6. **ROUTE** — Delegate to `hivemind-delegation-write` for implementation
 
-2. **Result contract is mandatory.** Every delegation needs a return format. Reference template, don't use implementation.
+## Terminal State
 
-3. **Parent context must be inherited.** Subagent must understand caller context. Handoff packet must include previous turn artifacts.
-
-4. **Chain must be auditable.** Every delegation recorded for traceability. Reference chain audit format, don't implement.
-
-## Related Skills
-
-| Skill | Relationship |
-|-------|--------------|
-| `use-hivemind-context-integrity` | Prerequisite - context health before delegation |
-| `hivemind-delegation-write` | Implementation layer - route to for handoff processing |
-| `hivemind-delegation-doctor` | Audit layer - route to for delegation quality check |
-| `use-hivemind-session-resume` | Session continuation - coordinates with delegation |
-| `harness-architecture` | SDK harness - delegation architecture reference |
-
-## References
-
-| Reference | When to Load |
-|-----------|--------------|
-| `hivemind-delegation-write/SKILL.md` | When routing for handoff packet implementation |
-| `harnes-architecture/SKILL.md` | When OpenCode delegation patterns needed |
-| `AGENTS.md` | When delegation network architecture needed |
-
----
-
-**Pattern:** P1 (Entry Layer) | **Degrees of Freedom:** High (Router) | **Stack Impact:** Does not count against stack budget
+- **If scope unclear**: Blocked, awaiting scope declaration from user
+- **If all prerequisites met**: Routed to `hivemind-delegation-write`

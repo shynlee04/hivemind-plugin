@@ -1,5 +1,7 @@
 ---
-description: "Terminal testing-infrastructure specialist for tests, harnesses, fuzzing, and regression systems. May touch product code only when required to wire tests."
+description: Terminal testing-infrastructure specialist for tests, harnesses,
+  fuzzing, and regression systems. May touch product code only when required to
+  wire tests.
 mode: subagent
 tools:
   write: true
@@ -11,22 +13,6 @@ permission:
   bash:
     "*": allow
   hivemind_doc: allow
-contract:
-  may_execute: true
-  may_delegate: false
-  terminal: true
-  accept_gate: "Accept testing infrastructure, harness, and test-authoring work only. Reject framework-asset authoring and unrelated product implementation."
-  workflow_order:
-    - read-scope
-    - design-tests
-    - implement-tests
-    - verify
-    - return
-  verify_gate: "Show what testing capability was added and how it was validated."
-  failure_return: "Return blocked or partial when the requested test surface cannot be wired safely or verified."
-  scope_paths:
-    - tests/**
-    - src/**
 ---
 
 # Hitea
