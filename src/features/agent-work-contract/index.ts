@@ -13,7 +13,6 @@ export * from './schema/index.js'
 // Type exports - TypeScript interfaces for operations
 export * from './types.js'
 
-// Engine, hooks, and tools remain task-gated for subsequent work
-// export * from './engine/index.js'
-// export * from './hooks/index.js'
-// export * from './tools/index.js'
+// Stable feature root exports only. Feature-local tool factories stay on
+// sub-barrels until they are promoted through runtime authority sync.
+export * from './hooks/index.js'

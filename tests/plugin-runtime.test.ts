@@ -6,6 +6,7 @@ import test from 'node:test'
 
 import { bootstrapTrajectoryLedger, loadTrajectoryLedger } from '../src/core/index.js'
 import { ContractStore } from '../src/features/agent-work-contract/engine/contract-store.js'
+import { HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID } from '../src/features/agent-work-contract/tools/index.js'
 import type { RuntimeBindingsSnapshot } from '../src/features/runtime-entry/attachment.js'
 import type { StartWorkDecision } from '../src/features/session-entry/start-work-types.js'
 import { HiveMindPlugin } from '../src/plugin/opencode-plugin.js'
@@ -354,6 +355,40 @@ test('tool.execute.after records only managed-tool events', async () => {
     const summaries = trajectory?.events.map((event) => event.summary) ?? []
 
     assert.deepEqual(summaries, ['tool:hivemind_task:ses_123'])
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test('tool.execute.before and after ignore feature-local agent-work tools', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-tool-feature-local-'))
+
+  try {
+    await bootstrapTrajectoryLedger(directory, {
+      trajectoryId: 'traj_123',
+      workflowId: 'wf_123',
+      sessionId: 'ses_123',
+      lineage: 'hivefiver',
+      purposeClass: 'planning',
+      taskIds: ['task-1', 'task-2'],
+    })
+
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
+
+    await hooks['tool.execute.before']?.({
+      sessionID: 'ses_123',
+      tool: HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID,
+    } as never, {} as never)
+
+    await hooks['tool.execute.after']?.({
+      sessionID: 'ses_123',
+      tool: HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID,
+    } as never, {} as never)
+
+    const ledger = await loadTrajectoryLedger(directory)
+    const trajectory = ledger.trajectories.find((item) => item.id === 'traj_123')
+
+    assert.deepEqual(trajectory?.events ?? [], [])
   } finally {
     await rm(directory, { recursive: true, force: true })
   }

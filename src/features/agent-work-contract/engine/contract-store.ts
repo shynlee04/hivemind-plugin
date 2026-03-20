@@ -8,9 +8,10 @@
  * @module agent-work-contract/engine/contract-store
  */
 
-import { access, mkdir, readFile, rm, writeFile, readdir } from 'node:fs/promises'
+import { access, mkdir, open, readFile, rm, writeFile, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import lockfile from 'proper-lockfile'
+import { ZodError } from 'zod'
 import { AgentWorkContractSchema } from '../schema/contract.js'
 import type { AgentWorkContract } from '../schema/index.js'
 import type { ContractStoreOperations } from '../types.js'
@@ -37,6 +38,42 @@ export class ContractStore implements ContractStoreOperations {
   private readonly contractDirectory: string
 
   /**
+   * Extracts unknown top-level fields for forward compatibility.
+   *
+   * @param value - Raw parsed contract content
+   * @returns Unknown fields not represented in the current schema
+   */
+  private getForwardCompatFields(value: Record<string, unknown>): Record<string, unknown> {
+    const schemaKeys = new Set(Object.keys(AgentWorkContractSchema.shape))
+    const forwardCompatFields: Record<string, unknown> = {}
+
+    for (const key of Object.keys(value)) {
+      if (!schemaKeys.has(key)) {
+        forwardCompatFields[key] = value[key]
+      }
+    }
+
+    return forwardCompatFields
+  }
+
+  /**
+   * Reattaches unknown fields after schema validation strips them.
+   *
+   * @param validated - Schema-validated contract
+   * @param raw - Raw parsed contract content
+   * @returns Validated contract with forward-compatible fields restored
+   */
+  private restoreForwardCompatFields(
+    validated: AgentWorkContract,
+    raw: Record<string, unknown>,
+  ): AgentWorkContract {
+    return {
+      ...validated,
+      ...this.getForwardCompatFields(raw),
+    } as AgentWorkContract
+  }
+
+  /**
    * Creates a new ContractStore instance.
    *
    * @param baseDirectory - The base directory (typically project root)
@@ -61,6 +98,26 @@ export class ContractStore implements ContractStoreOperations {
   }
 
   /**
+   * Detects missing-file errors from filesystem operations.
+   *
+   * @param error - Unknown thrown value
+   * @returns True when the error represents a missing file
+   */
+  private isMissingFileError(error: unknown): boolean {
+    return (error as NodeJS.ErrnoException).code === 'ENOENT'
+  }
+
+  /**
+   * Detects malformed stored-contract errors that should not abort listing.
+   *
+   * @param error - Unknown thrown value
+   * @returns True when the stored contract cannot be parsed or validated
+   */
+  private isMalformedContractError(error: unknown): boolean {
+    return error instanceof SyntaxError || error instanceof ZodError
+  }
+
+  /**
    * Creates a new contract in the store.
    *
    * @param contract - The contract to create
@@ -70,18 +127,19 @@ export class ContractStore implements ContractStoreOperations {
     await this.ensureDirectory()
     const filePath = this.getContractPath(contract.contractId)
 
-    // Check if contract already exists
+    let handle
     try {
-      await access(filePath)
-      throw new Error(`Contract ${contract.contractId} already exists`)
+      handle = await open(filePath, 'wx')
+      await handle.writeFile(JSON.stringify(contract, null, 2), 'utf-8')
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        throw error
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
+        throw new Error(`Contract ${contract.contractId} already exists`)
       }
-    }
 
-    // Write contract (file locking is implicit via atomic writeFile)
-    await writeFile(filePath, JSON.stringify(contract, null, 2), 'utf-8')
+      throw error
+    } finally {
+      await handle?.close()
+    }
   }
 
   /**
@@ -96,12 +154,14 @@ export class ContractStore implements ContractStoreOperations {
 
     try {
       const content = await readFile(filePath, 'utf-8')
-      const parsed = JSON.parse(content)
+      const parsed = JSON.parse(content) as Record<string, unknown>
       
       // Validate with Zod schema
-      return AgentWorkContractSchema.parse(parsed)
+      const validated = AgentWorkContractSchema.parse(parsed)
+
+      return this.restoreForwardCompatFields(validated, parsed)
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      if (this.isMissingFileError(error)) {
         return null
       }
       throw error
@@ -133,24 +193,17 @@ export class ContractStore implements ContractStoreOperations {
     try {
       // Read current state within lock
       const content = await readFile(filePath, 'utf-8')
-      const existing = JSON.parse(content)
-      
-      // Preserve forward-compat fields (unknown keys) before Zod strips them
-      const schemaKeys = new Set(Object.keys(AgentWorkContractSchema.shape))
-      const forwardCompatFields: Record<string, unknown> = {}
-      for (const key of Object.keys(existing)) {
-        if (!schemaKeys.has(key)) {
-          forwardCompatFields[key] = (existing as Record<string, unknown>)[key]
-        }
-      }
+      const existing = JSON.parse(content) as Record<string, unknown>
+      const existingValidated = AgentWorkContractSchema.parse(existing)
+      const forwardCompatFields = this.getForwardCompatFields(existing)
 
       // Merge updates with existing contract
       const updated: AgentWorkContract = {
-        ...existing,
+        ...existingValidated,
         ...updates,
-        contractId: existing.contractId, // Preserve immutable fields
-        sessionId: existing.sessionId,
-        createdAt: existing.createdAt,
+        contractId: existingValidated.contractId, // Preserve immutable fields
+        sessionId: existingValidated.sessionId,
+        createdAt: existingValidated.createdAt,
         updatedAt: new Date().toISOString(), // Always update timestamp
       }
 
@@ -205,7 +258,17 @@ export class ContractStore implements ContractStoreOperations {
         if (file === 'archived') continue // Skip archived directory
 
         const contractId = file.replace('.json', '')
-        const contract = await this.get(contractId)
+        let contract: AgentWorkContract | null
+
+        try {
+          contract = await this.get(contractId)
+        } catch (error) {
+          if (this.isMalformedContractError(error)) {
+            continue
+          }
+
+          throw error
+        }
         
         if (contract && contract.sessionId === sessionId) {
           contracts.push(contract)
@@ -214,7 +277,7 @@ export class ContractStore implements ContractStoreOperations {
 
       return contracts
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      if (this.isMissingFileError(error)) {
         return []
       }
       throw error

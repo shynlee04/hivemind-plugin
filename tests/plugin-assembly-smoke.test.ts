@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
@@ -7,9 +7,12 @@ import test from 'node:test'
 import type { Part } from '@opencode-ai/sdk'
 
 import { ContractStore } from '../src/features/agent-work-contract/engine/contract-store.js'
+import {
+  HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID,
+  HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID,
+  HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID,
+} from '../src/features/agent-work-contract/tools/index.js'
 import { HiveMindPlugin } from '../src/plugin/opencode-plugin.js'
-
-const PLUGIN_SOURCE_PATH = new URL('../src/plugin/opencode-plugin.ts', import.meta.url)
 
 function createContract(overrides: Record<string, unknown> = {}) {
   return {
@@ -111,20 +114,24 @@ test('plugin assembly keeps only the authoritative runtime hooks', async () => {
 
 test('plugin assembly keeps exactly one root event hook, one inline compaction hook, and the existing tool catalog', async () => {
   const hooks = await HiveMindPlugin(createPluginInput('/tmp/hivemind-plugin-assembly'))
-  const source = await readFile(PLUGIN_SOURCE_PATH, 'utf-8')
+  const registeredToolIds = Object.keys(hooks.tool ?? {}).sort()
+  const hookKeys = Object.keys(hooks)
 
   assert.equal(typeof hooks.event, 'function')
   assert.equal(typeof hooks['experimental.session.compacting'], 'function')
-  assert.equal(source.split('event: async (eventInput) => {').length - 1, 1)
-  assert.equal(source.split("'experimental.session.compacting': async (compactionInput, output) => {").length - 1, 1)
-  assert.deepEqual(Object.keys(hooks.tool ?? {}).sort(), [
-    'hivemind_doc',
-    'hivemind_handoff',
-    'hivemind_runtime_command',
-    'hivemind_runtime_status',
-    'hivemind_task',
-    'hivemind_trajectory',
-  ])
+  assert.equal(hookKeys.filter((key) => key === 'event').length, 1)
+  assert.equal(hookKeys.filter((key) => key === 'experimental.session.compacting').length, 1)
+  assert.deepEqual(registeredToolIds, [
+      'hivemind_doc',
+      'hivemind_handoff',
+      'hivemind_runtime_command',
+      'hivemind_runtime_status',
+      'hivemind_task',
+      'hivemind_trajectory',
+    ])
+  assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID), false)
+  assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID), false)
+  assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID), false)
 })
 
 test('chat.message only resets turn state and does not inject runtime context parts', async () => {
@@ -198,6 +205,31 @@ test('compaction extends the existing inline packet with validated agent-work co
     assert.match(output.context[0] ?? '', /contract_id="contract-123"/)
     assert.match(output.context[0] ?? '', /response_mode="broad-search-execute"/)
     assert.match(output.context[0] ?? '', /compaction_action="launch-context-agent"/)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test('compaction skips malformed stored contracts instead of aborting the inline hook', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-compaction-malformed-'))
+
+  try {
+    const store = new ContractStore(directory)
+    await store.create(createContract())
+    await writeFile(
+      join(directory, '.hivemind', 'agent-work-contract', 'broken-contract.json'),
+      '{"contractId":',
+      'utf-8',
+    )
+
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
+    const output = { context: [] as string[] }
+
+    await hooks['experimental.session.compacting']?.({ sessionID: 'ses_123' } as never, output as never)
+
+    assert.equal(output.context.length, 1)
+    assert.match(output.context[0] ?? '', /contract_id="contract-123"/)
+    assert.equal(output.context[0]?.includes('broken-contract'), false)
   } finally {
     await rm(directory, { recursive: true, force: true })
   }

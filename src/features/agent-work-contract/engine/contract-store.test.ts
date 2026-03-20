@@ -9,7 +9,7 @@
 
 import assert from 'node:assert/strict'
 import test from 'node:test'
-import { mkdtemp, rm, readFile, access } from 'node:fs/promises'
+import { mkdtemp, rm, readFile, access, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { ContractStore } from './contract-store.js'
@@ -383,6 +383,63 @@ test('ContractStore - concurrent create operations are atomic', async () => {
     // All should succeed
     const all = await store.list('session1')
     assert.ok(all.length >= 3) // At least our 3 test contracts
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test('ContractStore - create - allows only one concurrent create for the same contract ID', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-contract-store-'))
+
+  try {
+    const store = new ContractStore(directory)
+    const contract = createTestContract({ contractId: 'same-id', sessionId: 'session-same-id' })
+
+    const results = await Promise.allSettled([
+      store.create(contract),
+      store.create(contract),
+      store.create(contract),
+      store.create(contract),
+    ])
+
+    const fulfilled = results.filter((result) => result.status === 'fulfilled')
+    const rejected = results.filter((result) => result.status === 'rejected')
+
+    assert.equal(fulfilled.length, 1)
+    assert.equal(rejected.length, 3)
+    for (const result of rejected) {
+      assert.match(result.reason instanceof Error ? result.reason.message : String(result.reason), /already exists/)
+    }
+
+    const retrieved = await store.get(contract.contractId)
+    assert.ok(retrieved !== null)
+    assert.equal(retrieved?.contractId, contract.contractId)
+    assert.equal(retrieved?.sessionId, contract.sessionId)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test('ContractStore - list - skips malformed stored contracts and keeps valid ones', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-contract-store-'))
+
+  try {
+    const store = new ContractStore(directory)
+    const validContract = createTestContract({ contractId: 'valid-contract', sessionId: 'session-valid' })
+    await store.create(validContract)
+
+    const malformedPath = join(
+      directory,
+      '.hivemind',
+      'agent-work-contract',
+      'malformed-contract.json',
+    )
+    await writeFile(malformedPath, '{"contractId":', 'utf-8')
+
+    const contracts = await store.list('session-valid')
+
+    assert.equal(contracts.length, 1)
+    assert.equal(contracts[0]?.contractId, validContract.contractId)
   } finally {
     await rm(directory, { recursive: true, force: true })
   }

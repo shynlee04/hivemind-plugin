@@ -7,7 +7,11 @@
  * @module agent-work-contract/hooks
  */
 
-export * from './agent-work-event-handler.js'
+export {
+  AgentWorkEventPacketSchema,
+  extractAgentWorkEventPacket,
+  type AgentWorkEventPacket,
+} from './agent-work-event-handler.js'
 export {
   createCompactionPreservationPacket,
   renderCompactionPreservationContext,
