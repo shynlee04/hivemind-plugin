@@ -1,0 +1,133 @@
+import { readdirSync, statSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+
+import YAML from 'yaml'
+
+export interface SkillFrontmatter {
+  name: string
+  description: string
+  [key: string]: unknown
+}
+
+export interface OpencodeSkillRegistryEntry {
+  id: string
+  sourcePath: string
+  frontmatter: SkillFrontmatter
+  body: string
+  runtimeMarkdown: string
+  referenceFiles: Map<string, string>
+  templateFiles: Map<string, string>
+  testFiles: Map<string, string>
+}
+
+interface DiscoveredSkill {
+  skillDir: string
+  skillId: string
+}
+
+function splitFrontmatter(markdown: string): {
+  frontmatter: SkillFrontmatter
+  body: string
+} {
+  const match = markdown.match(/^---\n([\s\S]*?)\n---\n?([\s\S]*)$/)
+  if (!match) {
+    throw new Error('Skill markdown must start with YAML frontmatter')
+  }
+
+  const [, yamlSource, body = ''] = match
+  const parsed = YAML.parse(yamlSource) as SkillFrontmatter | null
+  
+  if (!parsed?.name || !parsed?.description) {
+    throw new Error('Skill frontmatter must include name and description')
+  }
+
+  return {
+    frontmatter: parsed,
+    body,
+  }
+}
+
+function projectRuntimeFrontmatter(
+  frontmatter: SkillFrontmatter,
+): { name: string; description: string } {
+  return {
+    name: frontmatter.name,
+    description: frontmatter.description,
+  }
+}
+
+function renderRuntimeMarkdown(
+  frontmatter: Pick<SkillFrontmatter, 'name' | 'description'>,
+  body: string,
+): string {
+  const renderedFrontmatter = YAML.stringify(frontmatter).trimEnd()
+  const trimmedBody = body.replace(/^\n+/, '')
+  return `---\n${renderedFrontmatter}\n---\n\n${trimmedBody}`
+}
+
+function readMarkdownFiles(baseDir: string, subDir: string): Map<string, string> {
+  const files = new Map<string, string>()
+  const fullPath = join(baseDir, subDir)
+
+  try {
+    const entries = readdirSync(fullPath, { withFileTypes: true })
+    for (const entry of entries) {
+      if (entry.isFile() && entry.name.endsWith('.md')) {
+        const content = readFileSync(join(fullPath, entry.name), 'utf-8')
+        files.set(`${subDir}/${entry.name}`, content)
+      }
+    }
+  } catch {
+    // Directory doesn't exist, return empty map
+  }
+
+  return files
+}
+
+function discoverSkills(packageRoot: string): DiscoveredSkill[] {
+  const skillsRoot = join(packageRoot, 'skills')
+  const discovered: DiscoveredSkill[]=[]
+
+  try {
+    const entries = readdirSync(skillsRoot, { withFileTypes: true })
+    for (const entry of entries) {
+      if (entry.isDirectory() && !entry.name.startsWith('_')) {
+        const skillDir = join(skillsRoot, entry.name)
+        const skillFile = join(skillDir, 'SKILL.md')
+        try {
+          statSync(skillFile)
+          discovered.push({ skillDir, skillId: entry.name })
+        } catch {
+          // SKILL.md doesn't exist, skip
+        }
+      }
+    }
+  } catch {
+    // skills directory doesn't exist
+  }
+
+  return discovered
+}
+
+function buildRegistryEntry(skill: DiscoveredSkill): OpencodeSkillRegistryEntry {
+  const sourcePath = join(skill.skillDir, 'SKILL.md')
+  const source = readFileSync(sourcePath, 'utf-8')
+  const { frontmatter, body } = splitFrontmatter(source)
+  const runtimeFrontmatter = projectRuntimeFrontmatter(frontmatter)
+
+  return {
+    id: skill.skillId,
+    sourcePath,
+    frontmatter,
+    body,
+    runtimeMarkdown: renderRuntimeMarkdown(runtimeFrontmatter, body),
+    referenceFiles: readMarkdownFiles(skill.skillDir, 'references'),
+    templateFiles: readMarkdownFiles(skill.skillDir, 'templates'),
+    testFiles: readMarkdownFiles(skill.skillDir, 'tests'),
+  }
+}
+
+export function createOpencodeSkillRegistry(packageRoot: string): OpencodeSkillRegistryEntry[] {
+  const skills = discoverSkills(packageRoot)
+  return skills.map((skill) => buildRegistryEntry(skill))
+}

@@ -1,3 +1,10 @@
+# INTERNAL HIVEMIND METADATA
+# ==========================
+# This file contains HiveMind-internal metadata for skill management.
+# It is NOT used by OpenCode for skill loading.
+# OpenCode skills require only: name, description (2 fields max).
+# For official skill acceptance, see SKILL.md frontmatter standards.
+
 version: "1.0.0"
 source_of_truth: true
 local_first_resolution: true

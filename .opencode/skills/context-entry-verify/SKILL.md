@@ -1,17 +1,23 @@
 ---
 name: context-entry-verify
 description: Deterministic verification skill. Use when starting work, before execution, at gate checkpoints, or when verifying completion claims. Runs hard-proof JSON gates against real project state.
-triggers:
-  - starting work
-  - before execution
-  - gate checkpoints
-  - verifying completion claims
-auto_run: before-work-execution
 ---
 
 # Context-Entry Verify
 
 **Purpose:** Provides deterministic JSON-verified proof of project reality.
+
+## Activation Metadata
+
+> **Note:** The followingfields are HiveMind-internal metadata, NOT OpenCode frontmatter fields.
+
+**Triggers:**
+- starting work
+- before execution
+- gate checkpoints
+- verifying completion claims
+
+**Auto-run:** before-work-execution
 
 **Different from context-intelligence-entry:** That skill checks agent session health (rot, trust, action gates). This skill checks project truth (build, tests, git state, architecture).
 
