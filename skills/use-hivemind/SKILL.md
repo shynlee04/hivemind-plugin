@@ -37,13 +37,50 @@ Establish HiveMind framework context and route to the correct implementation ski
 
 This skill activates when ANY of these scenarios occur:
 
+### Session & Context (1-7)
 1. **Session initialization**: New conversation starts, user says "help me", "start working", "continue"
 2. **Context disruption**: After `/clear` command, after compaction, context feels unclear or confused
-3. **Framework reference**: User mentions "hivemind", "hive", "framework", "meta", "skill system", "agent hierarchy"
-4. **Lineage confusion**: Agent or user asks "which lineage", "hivefiver or hiveminder", "who should do this"
-5. **Meta-work requested**: User asks about skill authoring, agent creation, framework development
-6. **Drift detection**: Context drift, pollution, or chain breaks are detected
-7. **Skill routing request**: User asks "what skill do I use for X", "route to correct skill"
+3. **After-session resume**: User says "resume", "pick up", "where did we leave off", "continue from"
+4. **Context degradation**: User mentions "context rot", "lost context", "forgot what I was doing"
+5. **Stack confusion**: User or agent says "too many skills", "stack overflow", "which skills loaded"
+6. **Session health check**: User asks "is context healthy", "check session state", "how's my context"
+7. **After interruption**: Session resumes after error, timeout, or unexpected termination
+
+### Framework Reference (8-14)
+8. **Framework reference**: User mentions "hivemind", "hive", "framework", "meta", "skill system", "agent hierarchy"
+9. **Lineage confusion**: Agent or user asks "which lineage", "hivefiver or hiveminder", "who should do this"
+10. **Meta-work requested**: User asks about skill authoring, agent creation, framework development
+11. **Drift detection**: Context drift, pollution, or chain breaks are detected
+12. **Skill routing request**: User asks "what skill do I use for X", "route to correct skill"
+13. **Agent identity**: User asks "who am I", "what agent", "what can I do here"
+14. **Permission inquiry**: User asks "can I", "am I allowed to", "do I have permission"
+
+### Platform Detection (15-20)
+15. **Platform mention**: User mentions "opencode", "claude code", "cursor", "codex", "gemini"
+16. **OpenCode context**: Working in `.opencode/` directory, `opencode.json` present
+17. **Platform detection**: Agent needs to determine which platform is active
+18. **Agent tools check**: User asks "what tools do I have", "show me available tools"
+19. **Agent capability**: User asks "can you delegate", "can you use subagents"
+20. **Project vs global**: Unclear whether work is project-scoped or global
+
+### Skill & Hierarchy (21-28)
+21. **Skill activation**: User says "load a skill", "activate skill", "use skill", "which skills"
+22. **Skill conflict**: User mentions "skill overlap", "which skill wins", "multiple skills"
+23. **Hierarchy clarification**: User asks "who is orchestrator", "what is coordinator", "role confusion"
+24. **Delegation request**: User mentions "delegate", "handoff", "send to subagent"
+25. **Context verification**: User claims "done", "finished", "verify this is complete"
+26. **Git memory**: User asks "what did we decide", "why was this changed", "commit history"
+27. **TDD/Testing**: User mentions "test", "TDD", "verify", "assertion"
+28. **Plan request**: User asks "make a plan", "what are the steps", "how do we proceed"
+
+### Explicit Activation (29-35)
+29. **Explicit hivemind**: User says "use hivemind", "load hivemind framework"
+30. **Framework guide**: User asks "hivemind guide", "how does hivemind work", "explain framework"
+31. **Start hivemind**: User says "start hivemind", "initialize framework", "bootstrap hivemind"
+32. **Skill system**: User mentions "skill routing", "agent hierarchy", "framework design"
+33. **Context chain**: User mentions "parent context", "child context", "context inheritance"
+34. **Memory encoding**: User asks "save this", "remember this", "encode to git"
+35. **Verification gate**: User mentions "gate", "checkpoint", "before merge"
 
 ## Step-by-Step Protocol
 
