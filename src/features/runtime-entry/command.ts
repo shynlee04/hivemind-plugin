@@ -9,6 +9,10 @@ import type {
   SlashCommandBundle,
 } from '../../commands/slash-command/command-types.js'
 import { findSlashCommandBundle } from '../../commands/slash-command/command-discovery.js'
+import {
+  shouldLinkCommandSessionContract,
+  upsertCommandSessionContract,
+} from '../agent-work-contract/engine/command-session-contract.js'
 
 import { loadCommandAsset, type LoadedCommandAsset } from './instruction-loader.js'
 import { createRuntimeInvocation } from './invocation.js'
