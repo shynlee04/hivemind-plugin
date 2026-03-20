@@ -1,12 +1,67 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import test from 'node:test'
 
 import type { Part } from '@opencode-ai/sdk'
 
+import { ContractStore } from '../src/features/agent-work-contract/engine/contract-store.js'
 import { HiveMindPlugin } from '../src/plugin/opencode-plugin.js'
+
+const PLUGIN_SOURCE_PATH = new URL('../src/plugin/opencode-plugin.ts', import.meta.url)
+
+function createContract(overrides: Record<string, unknown> = {}) {
+  return {
+    contractId: 'contract-123',
+    sessionId: 'ses_123',
+    delegationExportSessionId: 'delegation-789',
+    createdAt: '2026-03-20T10:00:00.000Z',
+    updatedAt: '2026-03-20T10:10:00.000Z',
+    userIntent: {
+      raw: 'Preserve contract context during compaction',
+      confidence: 0.98,
+      purposeClass: 'project-driven' as const,
+      requiresPlan: true,
+      requiresGovernance: true,
+    },
+    responseMode: 'broad-search-execute' as const,
+    workflow: {
+      phase: 'implementation',
+      tasks: [
+        {
+          id: 'task-active',
+          title: 'Keep one hook registration',
+          status: 'active' as const,
+        },
+        {
+          id: 'task-pending',
+          title: 'Verify runtime wiring',
+          status: 'pending' as const,
+        },
+      ],
+    },
+    chainActions: {
+      onTaskComplete: 'next-task' as const,
+      onWorkflowEnd: 'archive' as const,
+      onDelegation: 'handoff-packet' as const,
+      onCompaction80: 'launch-context-agent' as const,
+    },
+    briefing: {
+      summary: 'Continue plugin wiring safely.',
+      workflowState: 'implementation',
+      followUp: ['extend inline compaction hook'],
+    },
+    anchors: [
+      {
+        timestamp: '2026-03-20T10:01:00.000Z',
+        kind: 'planning-shift' as const,
+        description: 'Verified single compaction registration.',
+      },
+    ],
+    ...overrides,
+  }
+}
 
 function createPluginInput(directory: string) {
   return {
@@ -52,6 +107,24 @@ test('plugin assembly keeps only the authoritative runtime hooks', async () => {
   } finally {
     await rm(directory, { recursive: true, force: true })
   }
+})
+
+test('plugin assembly keeps exactly one root event hook, one inline compaction hook, and the existing tool catalog', async () => {
+  const hooks = await HiveMindPlugin(createPluginInput('/tmp/hivemind-plugin-assembly'))
+  const source = await readFile(PLUGIN_SOURCE_PATH, 'utf-8')
+
+  assert.equal(typeof hooks.event, 'function')
+  assert.equal(typeof hooks['experimental.session.compacting'], 'function')
+  assert.equal(source.split('event: async (eventInput) => {').length - 1, 1)
+  assert.equal(source.split("'experimental.session.compacting': async (compactionInput, output) => {").length - 1, 1)
+  assert.deepEqual(Object.keys(hooks.tool ?? {}).sort(), [
+    'hivemind_doc',
+    'hivemind_handoff',
+    'hivemind_runtime_command',
+    'hivemind_runtime_status',
+    'hivemind_task',
+    'hivemind_trajectory',
+  ])
 })
 
 test('chat.message only resets turn state and does not inject runtime context parts', async () => {
@@ -104,6 +177,27 @@ test('compaction pushes the same authoritative packet and no duplicate system pa
     assert.equal(output.context.length, 1)
     assert.equal(output.context[0]?.startsWith('<hivemind context_version="v1">'), true)
     assert.equal(output.context.some((text) => text.includes('<opencode-runtime-knowledge>')), false)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test('compaction extends the existing inline packet with validated agent-work context when a contract exists', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-plugin-compaction-contract-'))
+
+  try {
+    const store = new ContractStore(directory)
+    await store.create(createContract())
+
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
+    const output = { context: [] as string[] }
+
+    await hooks['experimental.session.compacting']?.({ sessionID: 'ses_123' } as never, output as never)
+
+    assert.equal(output.context.length, 1)
+    assert.match(output.context[0] ?? '', /contract_id="contract-123"/)
+    assert.match(output.context[0] ?? '', /response_mode="broad-search-execute"/)
+    assert.match(output.context[0] ?? '', /compaction_action="launch-context-agent"/)
   } finally {
     await rm(directory, { recursive: true, force: true })
   }

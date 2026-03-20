@@ -1,4 +1,5 @@
 import type { PurposeClass } from './start-work-types.js'
+import { matchesKeyword } from '../../shared/keyword-matcher.js'
 
 const PURPOSE_PATTERNS: Record<PurposeClass, string[]> = {
   discovery: ['what is', 'show me', 'list', 'explain', 'discover', 'explore'],
@@ -31,14 +32,7 @@ export interface PurposeClassification {
 const SAFE_DISCOVERY_PURPOSES: PurposeClass[] = ['research', 'planning', 'brainstorming']
 const EXECUTION_PURPOSES: PurposeClass[] = ['implementation', 'tdd', 'gatekeeping', 'course-correction']
 
-function escapeKeyword(keyword: string): string {
-  return keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s+')
-}
 
-function matchesKeyword(input: string, keyword: string): boolean {
-  const pattern = new RegExp(`\\b${escapeKeyword(keyword)}\\b`, 'i')
-  return pattern.test(input)
-}
 
 export function classifyPurpose(userMessage: string, attachments: string[] = []): PurposeClassification {
   const normalized = userMessage.toLowerCase()

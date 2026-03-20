@@ -5,6 +5,8 @@ import { initSdkContext, resetSdkContext } from '../hooks/sdk-context.js'
 import { createEventHandler } from '../hooks/event-handler.js'
 import { showGovernanceToast } from '../hooks/soft-governance.js'
 import { resolveStartWork } from '../hooks/start-work/start-work-router.js'
+import { ContractStore } from '../features/agent-work-contract/engine/contract-store.js'
+import { createCompactionPreservationPacket } from '../features/agent-work-contract/hooks/index.js'
 import type { StartWorkInput } from '../features/session-entry/start-work-types.js'
 import { isHivemindManagedTool, recordToolEvent } from '../hooks/runtime-loader/index.js'
 import { createHivemindDocTool } from '../tools/doc/index.js'
@@ -49,6 +51,19 @@ function createStartWorkInput(input: {
     hasWorkflow: input.snapshot.hasWorkflow,
     hasHandoff: false,
   }
+}
+
+async function resolveCompactionAgentWorkPacket(
+  directory: string,
+  sessionId: string,
+) {
+  const contracts = await new ContractStore(directory).list(sessionId)
+  const latestContract = contracts
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
+
+  return latestContract
+    ? createCompactionPreservationPacket(latestContract)
+    : undefined
 }
 
 /**
@@ -142,7 +157,9 @@ export const HiveMindPlugin: Plugin = async (input) => {
       ))
     },
     'tool.execute.after': async (toolInput) => {
-      await recordToolEvent(directory, toolInput.sessionID, toolInput.tool)
+      if (isHivemindManagedTool(toolInput.tool)) {
+        await recordToolEvent(directory, toolInput.sessionID, toolInput.tool)
+      }
     },
     'experimental.chat.messages.transform': async (_input, output) => {
       const messages = output.messages as MessageLike[]
@@ -186,9 +203,14 @@ export const HiveMindPlugin: Plugin = async (input) => {
     },
     'experimental.session.compacting': async (compactionInput, output) => {
       const snapshot = await turnSnapshot.getSnapshot()
+      const agentWorkPacket = await resolveCompactionAgentWorkPacket(
+        directory,
+        compactionInput.sessionID,
+      )
       output.context.push(renderHivemindContext(createHivemindContextPacket({
         sessionId: compactionInput.sessionID,
         snapshot,
+        agentWorkPacket,
       })))
     },
   }
