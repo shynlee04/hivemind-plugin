@@ -91,17 +91,57 @@ Master entry point for HiveMind Context Governance framework. Routes, does NOT i
 
 | Skill | Relationship |
 |-------|--------------|
-| `use-hivemind-skill-writer` | Entry router for skill authoring |
-| `use-hivemind-context-integrity` | Entry router for context health |
-| `use-hivemind-context-verify` | Entry router for verification |
-| `use-hivemind-git-memory` | Entry router for git memory |
-| `use-hivemind-delegation` | Entry router for handoffs |
-| `use-hivemind-hierarchy` | Entry router for agent roles |
-| `use-hivemind-session-resume` | Entry router for session continuation |
+| `use-hivemind-context-integrity` | Context health entry |
+| `use-hivemind-context-verify` | Truth verification entry |
+| `use-hivemind-skill-writer` | Skill design entry |
+| `use-hivemind-git-memory` | Memory entry |
+| `use-hivemind-delegation` | Handoff entry |
+| `context-intelligence-entry` | Implementation for context health |
+
+## Coordinator vs Specialist Behavior
+
+| Behavior | Coordinator (this skill) | Specialist (sub-skills) |
+|----------|-------------------------|------------------------|
+| **Role** | Route, gatekeep, teach boundaries | Execute deep implementation |
+| **Reading** | Broad by default | Deep investigation when delegated |
+| **Execution** | Delegate, don't implement | Implement directly |
+| **Monitoring** | Gatekeep and sequence | Report back with evidence |
+| **Depth** | Strategic overview | Detailed implementation |
+
+**Never** let this skill jump into the specialist implementation role without explicit handoff to a sub-skill.
+
+## Degrees of Freedom Model
+
+### Degree 1: High Freedom (Router Mode)
+- Ask clarifying questions about lineage
+- Present platform alternatives
+- "Best when / better when" skill routing
+
+### Degree 2: Medium Freedom (Teaching Mode)
+- Explain framework architecture
+- Show delegation network mapping
+- Lane-switch guidance for lineages
+
+### Degree 3: Low Freedom (Deterministic Mode)
+- Explicit routing when lineage is clear
+- Mandatory session-start loading
+- Platform detection with fixed mapping
 
 ## NO-LOAD Rules
 
-Context depth >70% → Defer to context recovery. Session degraded → Skip activation. Stack budget exhausted (≥3skills) → Skip activation. Authority unclear → Escalate first.
+| Condition | Threshold | Action |
+|-----------|-----------|--------|
+| Context depth exceeds | >70% | Defer to context recovery first |
+| Session state is degraded | `interrupted` or `degraded` | Skip activation |
+| Stack budget exhausted | Active skills ≥3 | Wait for slot |
+| Authority unclear | Conflicting SOT | Escalate first |
+
+## Hard Behavior Rules
+
+1. **Framework work ≠ project work.** Explicitly identify lineage before routing. hivefiver = framework dev, hiveminder = project dev.
+2. **Session start is privileged.** Always load first, defer other skills until framework context is established.
+3. **Platform matters.** Different platforms have different activation contracts. Detect before routing.
+4. **Routing is not implementation.** Never implement directly. Hand off to specialist skills for execution.
 
 ---
 

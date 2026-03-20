@@ -15,14 +15,34 @@ Entry router for context truth verification. Routes, does NOT implement.
 
 **Secondary Triggers:** "verify build", "verify tests", "check git state", "truth anchor", "proof of completion"
 
+## Two HiveMind Lineages
+
+| Lineage | Purpose | Confusion Pattern |
+|---------|---------|-------------------|
+| **hivefiver** | Meta-builder: framework verification, skill audits | Confusing framework verification with project verification |
+| **hiveminder** | Project-oriented: product verification, completion gates | Confusing project verification with framework work |
+
+**Rule:** Verification scope must match lineage. Framework gates for framework work, project gates for project work.
+
+## Coordinator vs Specialist Behavior
+
+| Behavior | Coordinator (this skill) | Specialist (sub-skills) |
+|----------|-------------------------|------------------------|
+| **Role** | Route verification requests | Execute gate chains |
+| **Reading** | Parse verification type | Run deterministic checks |
+| **Execution** | Delegate, don't run gates | Implement gate execution |
+| **Monitoring** | Gatekeep completion claims | Report gate results |
+
+**Never** run gates directly. Always delegate to context-entry-verify.
+
 ## Do NOT Activate When
 
-| Condition | Action |
-|-----------|--------|
-| Deep implementation needed | Delegate to context-entry-verify |
-| Context health check needed | Delegate to use-hivemind-context-integrity |
-| Active skills ≥3 | Skip activation (stack budget) |
-| User requests specific gate | Route directly to that gate |
+| Condition | Threshold | Action |
+|-----------|-----------|--------|
+| Context depth exceeds | >70% | Defer to context recovery first |
+| Session state | `interrupted`/`degraded` | Skip activation |
+| Active skills | ≥3 | Wait for slot |
+| Context health issue | Any | Route to context-integrity first |
 
 ## Routing Decision Matrix
 
@@ -83,13 +103,31 @@ When user claims completion:
 
 | Skill | Relationship |
 |-------|--------------|
-| `context-entry-verify` | Implementation for truth gates |
-| `use-hivemind-context-integrity` | Entry for context health |
-| `use-hivemind` | Master entry point (parent) |
+| `use-hivemind` | Parent master entry |
+| `use-hivemind-context-integrity` | Sibling context health entry |
+| `context-entry-verify` | Implementation for gate execution |
+| `evidence-discipline` | Supporting evidence patterns |
 
-## NO-LOAD Rules
+## Degrees of Freedom Model
 
-Active skills ≥3 → Skip activation. User specifies gate directly → Route directly. Context health issue → Route to use-hivemind-context-integrity first.
+### Degree 1: High Freedom (Router Mode)
+- Ask clarifying questions about verification scope
+- Present gate alternatives
+
+### Degree 2: Medium Freedom (Teaching Mode)
+- Explain verification protocol
+- Show gate-chain mapping
+
+### Degree 3: Low Freedom (Deterministic Mode)
+- Explicit routing when verification type is clear
+- Mandatory gate enforcement for completion claims
+
+## Hard Behavior Rules
+
+1. **Verification before completion.** No completion claims without passing gates. Block and report on failure.
+2. **Truth is deterministic.** Use hard-proof JSON gates, not soft assertions. Gate-chain output is truth.
+3. **Routing to gates, not execution.** Delegate to context-entry-verify for implementation. Never run gates directly.
+4. **Never bypass failure.** When gate fails, await user instruction. Do NOT proceed autonomously.
 
 ---
 

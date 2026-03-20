@@ -15,14 +15,34 @@ Entry router for context health and rot detection. Routes, does NOT implement.
 
 **Secondary Triggers:** "check context", "context state", "is context clean", "context recovery"
 
+## Two HiveMind Lineages
+
+| Lineage | Purpose | Confusion Pattern |
+|---------|---------|-------------------|
+| **hivefiver** | Meta-builder: framework skills, agent orchestration | Confusing framework work with project work |
+| **hiveminder** | Project-oriented: product implementation | Confusing project work with framework work |
+
+**Rule:** When in self-referential mode, explicitly state which lineage context this belongs to.
+
+## Coordinator vs Specialist Behavior
+
+| Behavior | Coordinator (this skill) | Specialist (sub-skills) |
+|----------|-------------------------|------------------------|
+| **Role** | Route, gatekeep, detect issue type | Execute detection and recovery |
+| **Reading** | Scan for issue patterns | Deep investigation when delegated |
+| **Execution** | Delegate, don't implement | Implement directly |
+| **Monitoring** | Gatekeep routing | Report with evidence |
+
+**Never** implement rot detection or recovery directly. Always delegate.
+
 ## Do NOT Activate When
 
-| Condition | Action |
-|-----------|--------|
-| Deep implementation needed | Delegate to context-intelligence-entry |
-| Project truth verification | Delegate to context-entry-verify |
-| Active skills ≥3 | Skip activation (stack budget) |
-| User requests specific skill | Route directly to that skill |
+| Condition | Threshold | Action |
+|-----------|-----------|--------|
+| Context depth exceeds | >70% | Defer to context recovery first |
+| Session state | `interrupted`/`degraded` | Skip activation |
+| Active skills | ≥3 | Wait for slot |
+| Deep implementation | Any | Delegate to specialist |
 
 ## Routing Decision Matrix
 
@@ -85,15 +105,32 @@ node skills/context-intelligence-entry/scripts/context-harness-init.cjs --quick
 
 | Skill | Relationship |
 |-------|--------------|
+| `use-hivemind` | Parent master entry |
 | `context-intelligence-entry` | Implementation for rot detection |
 | `context-entry-verify` | Implementation for truth gates |
-| `use-hivemind-context-verify` | Entry router for verification |
-| `use-hivemind-delegation` | Entry router for handoffs |
-| `use-hivemind` | Master entry point (parent) |
+| `use-hivemind-context-verify` | Sibling verification entry |
+| `use-hivemind-delegation` | Sibling handoff entry |
 
-## NO-LOAD Rules
+## Degrees of Freedom Model
 
-Active skills ≥3 → Skip activation. If user specifies skill directly → Route directly. If deep implementation needed → Delegate, do not load.
+### Degree 1: High Freedom (Router Mode)
+- Ask clarifying questions about symptoms
+- Present routing alternatives
+
+### Degree 2: Medium Freedom (Teaching Mode)
+- Explain issue detection logic
+- Show routing matrix mapping
+
+### Degree 3: Low Freedom (Deterministic Mode)
+- Explicit routing when issue type is clear
+- Mandatory health check routing
+
+## Hard Behavior Rules
+
+1. **Context health is prerequisite.** Cannot proceed with degraded context. Route to recovery first.
+2. **Routing ≠ implementation.** Never implement rot recovery directly. Delegate to context-intelligence-entry.
+3. **Detection before routing.** Parse issue type (drift/pollution/chain break) before delegating.
+4. **Health check first.** Always run entry health check before deciding routing path.
 
 ---
 
