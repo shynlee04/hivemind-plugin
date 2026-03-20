@@ -200,6 +200,19 @@ function resolveRouteCommand(
  * @returns Canonical packet fields for runtime injection and compaction.
  */
 export function createHivemindContextPacket(input: HivemindContextPacketInput): HivemindContextPacket {
+  // Determine purpose from startWork first, then agentWorkPacket, then snapshot default
+  let purpose: string = input.startWork?.purposeClass ?? input.snapshot.defaultPurposeClass
+  if (!input.startWork?.purposeClass && input.agentWorkPacket) {
+    try {
+      const parsedPacket = CompactionPreservationPacketSchema.parse(input.agentWorkPacket)
+      if (parsedPacket.purposeClass) {
+        purpose = parsedPacket.purposeClass
+      }
+    } catch {
+      // Fall back to snapshot default if agentWorkPacket parsing fails
+    }
+  }
+
   return {
     session_id: input.sessionId,
     lineage: input.startWork?.lineage ?? input.snapshot.defaultLineage,
@@ -207,7 +220,7 @@ export function createHivemindContextPacket(input: HivemindContextPacketInput): 
     workflow: resolvePacketValue(input.snapshot.workflowId),
     task_ids: input.snapshot.taskIds,
     entry_state: input.snapshot.entryState,
-    purpose: input.startWork?.purposeClass ?? input.snapshot.defaultPurposeClass,
+    purpose,
     risk: input.startWork?.riskLevel ?? 'none',
     route_command: resolveRouteCommand(input.startWork),
     governance_mode: input.snapshot.governanceMode,
@@ -327,38 +340,6 @@ export function renderToolPrecedence(chain: ToolPrecedenceChain): string {
 export type WorkflowStyle = 'tdd' | 'bmad' | 'research' | 'default'
 
 /**
- * Extended agent work packet with TDD-specific fields.
- */
-interface TDDWorkFields {
-  lastTestStatus?: string
-  lastTestFile?: string
-  testCountRun?: number
-  testCountPass?: number
-  nextAction?: string
-}
-
-/**
- * Extended agent work packet with BMAD-specific fields.
- */
-interface BMADWorkFields {
-  currentPhase?: string
-  phaseSequence?: string[]
-  completedPhases?: string[]
-  pendingDecisions?: number
-  decisionRefs?: string[]
-  nextArtifact?: string
-}
-
-/**
- * Extended agent work packet with Research-specific fields.
- */
-interface ResearchWorkFields {
-  researchDepth?: string
-  sourcesConsulted?: string[]
-  keyFindings?: string[]
-}
-
-/**
  * Detect workflow style from a HivemindContextPacket.
  *
  * @param packet Canonical runtime packet fields.
@@ -415,30 +396,35 @@ export function detectWorkflowStyle(packet: HivemindContextPacket): WorkflowStyl
  * @returns Serialized `<hivemind-compaction workflow_style='tdd'>` block.
  */
 export function renderTDDCompaction(packet: HivemindContextPacket): string {
-  // Extract extended TDD fields from agentWorkPacket if available
-  const extendedFields = (packet as HivemindContextPacket & TDDWorkFields)
-
   const lines: string[] = [
     `<hivemind-compaction workflow_style='tdd'>`,
     renderField('session_id', packet.session_id),
     renderField('purpose', packet.purpose),
   ]
 
-  // TDD-specific fields
-  if (extendedFields.lastTestStatus) {
-    lines.push(renderField('last_test_status', `'${extendedFields.lastTestStatus}'`))
+  // Agent-work contract fields (must be preserved when contract exists)
+  if (packet.contract_id) {
+    lines.push(renderField('contract_id', packet.contract_id))
+    lines.push(renderField('response_mode', resolvePacketValue(packet.response_mode)))
+    lines.push(renderField('workflow_phase', resolvePacketValue(packet.workflow_phase)))
+    lines.push(renderField('compaction_action', resolvePacketValue(packet.compaction_action)))
   }
-  if (extendedFields.lastTestFile) {
-    lines.push(renderField('last_test_file', `'${extendedFields.lastTestFile}'`))
+
+  // TDD-specific fields (use snake_case from HivemindContextPacket)
+  if (packet.last_test_status) {
+    lines.push(`last_test_status='${packet.last_test_status}'`)
   }
-  if (extendedFields.testCountRun !== undefined) {
-    lines.push(renderField('test_count_run', String(extendedFields.testCountRun)))
+  if (packet.last_test_file) {
+    lines.push(`last_test_file='${packet.last_test_file}'`)
   }
-  if (extendedFields.testCountPass !== undefined) {
-    lines.push(renderField('test_count_pass', String(extendedFields.testCountPass)))
+  if (packet.test_count_run !== undefined) {
+    lines.push(`test_count_run=${packet.test_count_run}`)
   }
-  if (extendedFields.nextAction) {
-    lines.push(renderField('next_action', extendedFields.nextAction))
+  if (packet.test_count_pass !== undefined) {
+    lines.push(`test_count_pass=${packet.test_count_pass}`)
+  }
+  if (packet.next_action) {
+    lines.push(`next_action=${packet.next_action}`)
   }
 
   // Standard fields
@@ -457,32 +443,37 @@ export function renderTDDCompaction(packet: HivemindContextPacket): string {
  * @returns Serialized `<hivemind-compaction workflow_style='bmad'>` block.
  */
 export function renderBMADCompaction(packet: HivemindContextPacket): string {
-  // Extract extended BMAD fields from agentWorkPacket if available
-  const extendedFields = (packet as HivemindContextPacket & BMADWorkFields)
-
   const lines: string[] = [
     `<hivemind-compaction workflow_style='bmad'>`,
     renderField('session_id', packet.session_id),
   ]
 
-  // BMAD-specific fields
-  if (extendedFields.currentPhase) {
-    lines.push(renderField('current_phase', `'${extendedFields.currentPhase}'`))
+  // Agent-work contract fields (must be preserved when contract exists)
+  if (packet.contract_id) {
+    lines.push(renderField('contract_id', packet.contract_id))
+    lines.push(renderField('response_mode', resolvePacketValue(packet.response_mode)))
+    lines.push(renderField('workflow_phase', resolvePacketValue(packet.workflow_phase)))
+    lines.push(renderField('compaction_action', resolvePacketValue(packet.compaction_action)))
   }
-  if (extendedFields.phaseSequence && extendedFields.phaseSequence.length > 0) {
-    lines.push(renderField('phase_sequence', extendedFields.phaseSequence))
+
+  // BMAD-specific fields (use snake_case from HivemindContextPacket)
+  if (packet.current_phase) {
+    lines.push(`current_phase='${packet.current_phase}'`)
   }
-  if (extendedFields.completedPhases && extendedFields.completedPhases.length > 0) {
-    lines.push(renderField('completed_phases', extendedFields.completedPhases))
+  if (packet.phase_sequence && packet.phase_sequence.length > 0) {
+    lines.push(`phase_sequence=${JSON.stringify(packet.phase_sequence)}`)
   }
-  if (extendedFields.pendingDecisions !== undefined) {
-    lines.push(renderField('pending_decisions', String(extendedFields.pendingDecisions)))
+  if (packet.completed_phases && packet.completed_phases.length > 0) {
+    lines.push(`completed_phases=${JSON.stringify(packet.completed_phases)}`)
   }
-  if (extendedFields.decisionRefs && extendedFields.decisionRefs.length > 0) {
-    lines.push(renderField('decision_refs', extendedFields.decisionRefs))
+  if (packet.pending_decisions !== undefined) {
+    lines.push(`pending_decisions=${packet.pending_decisions}`)
   }
-  if (extendedFields.nextArtifact) {
-    lines.push(renderField('next_artifact', `'${extendedFields.nextArtifact}'`))
+  if (packet.decision_refs && packet.decision_refs.length > 0) {
+    lines.push(`decision_refs=${JSON.stringify(packet.decision_refs)}`)
+  }
+  if (packet.next_artifact) {
+    lines.push(`next_artifact='${packet.next_artifact}'`)
   }
 
   // Standard fields
@@ -501,24 +492,29 @@ export function renderBMADCompaction(packet: HivemindContextPacket): string {
  * @returns Serialized `<hivemind-compaction workflow_style='research'>` block.
  */
 export function renderResearchCompaction(packet: HivemindContextPacket): string {
-  // Extract extended Research fields from agentWorkPacket if available
-  const extendedFields = (packet as HivemindContextPacket & ResearchWorkFields)
-
   const lines: string[] = [
     `<hivemind-compaction workflow_style='research'>`,
     renderField('session_id', packet.session_id),
-    renderField('purpose', `'${packet.purpose}'`),
+    `purpose='${packet.purpose}'`,
   ]
 
-  // Research-specific fields
-  if (extendedFields.researchDepth) {
-    lines.push(renderField('research_depth', extendedFields.researchDepth))
+  // Agent-work contract fields (must be preserved when contract exists)
+  if (packet.contract_id) {
+    lines.push(renderField('contract_id', packet.contract_id))
+    lines.push(renderField('response_mode', resolvePacketValue(packet.response_mode)))
+    lines.push(renderField('workflow_phase', resolvePacketValue(packet.workflow_phase)))
+    lines.push(renderField('compaction_action', resolvePacketValue(packet.compaction_action)))
   }
-  if (extendedFields.sourcesConsulted && extendedFields.sourcesConsulted.length > 0) {
-    lines.push(renderField('sources_consulted', extendedFields.sourcesConsulted))
+
+  // Research-specific fields (use snake_case from HivemindContextPacket)
+  if (packet.research_depth) {
+    lines.push(`research_depth='${packet.research_depth}'`)
   }
-  if (extendedFields.keyFindings && extendedFields.keyFindings.length > 0) {
-    lines.push(renderField('key_findings', extendedFields.keyFindings))
+  if (packet.sources_consulted && packet.sources_consulted.length > 0) {
+    lines.push(`sources_consulted=${JSON.stringify(packet.sources_consulted)}`)
+  }
+  if (packet.key_findings && packet.key_findings.length > 0) {
+    lines.push(`key_findings=${JSON.stringify(packet.key_findings)}`)
   }
 
   // Standard fields
@@ -543,11 +539,21 @@ export function renderDefaultCompaction(packet: HivemindContextPacket): string {
     renderField('purpose', packet.purpose),
     renderField('workflow', packet.workflow),
     renderField('trajectory', packet.trajectory),
-    renderField('recent_anchors', packet.recent_anchors ?? []),
-    renderField('pending_task_ids', packet.pending_task_ids ?? []),
-    renderField('active_task_ids', packet.active_task_ids ?? []),
-    renderField('briefing_summary', resolvePacketValue(packet.briefing_summary)),
   ]
+
+  // Agent-work contract fields (must be preserved when contract exists)
+  if (packet.contract_id) {
+    lines.push(renderField('contract_id', packet.contract_id))
+    lines.push(renderField('response_mode', resolvePacketValue(packet.response_mode)))
+    lines.push(renderField('workflow_phase', resolvePacketValue(packet.workflow_phase)))
+    lines.push(renderField('compaction_action', resolvePacketValue(packet.compaction_action)))
+  }
+
+  // Standard fields
+  lines.push(renderField('recent_anchors', packet.recent_anchors ?? []))
+  lines.push(renderField('pending_task_ids', packet.pending_task_ids ?? []))
+  lines.push(renderField('active_task_ids', packet.active_task_ids ?? []))
+  lines.push(renderField('briefing_summary', resolvePacketValue(packet.briefing_summary)))
 
   lines.push('</hivemind-compaction>')
   return lines.join('\n')

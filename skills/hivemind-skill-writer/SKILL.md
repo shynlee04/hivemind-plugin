@@ -1,6 +1,6 @@
 ---
 name: hivemind-skill-writer
-description: Use when creating, auditing, refactoring, or packaging HiveMind framework skills. Activates the meta-builder for skill authoring, TDD workflows, and quality validation. Bundles skill-writing guidance, Skill-Judge metrics, and HiveMind-specific packaging patterns. Triggers: "write a skill", "create a new skill", "audit this skill", "is this skill good", "skill quality", "skill design", "skill authoring".
+description: "Use when creating, auditing, refactoring, or packaging HiveMind framework skills. Activates the meta-builder for skill authoring, TDD workflows, and quality validation. Bundles skill-writing guidance, Skill-Judge metrics, and HiveMind-specific packaging patterns. Triggers: write a skill, create a new skill, audit this skill, is this skill good, skill quality, skill design, skill authoring."
 version: 1.0.0
 framework: hivemind
 pack: hivemind-skill-writer

@@ -260,3 +260,115 @@ skills:
     supersedes: []
     depends_on:
       - spec-distillation
+  # ============================================================================
+  # USE-HIVEMIND ENTRY SKILLS (P0/P1)
+  # ============================================================================
+
+  - name: use-hivemind
+    domain: framework-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.95
+    status: active
+    owner: hivemind-core
+    disclosure_level: L0
+    triggers:
+      - "use hivemind"
+      - "hive framework"
+      - "what is hivemind"
+      - "start hivemind"
+      - "load hivemind"
+      - "hivemind skills"
+      - "framework guide"
+      - "meta framework"
+    supersedes: []
+    depends_on: []
+
+  - name: use-hivemind-context-integrity
+    domain: context-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.90
+    status: active
+    owner: hivemind-core
+    disclosure_level: L0
+    triggers:
+      - "context health"
+      - "context rot"
+      - "drift detection"
+      - "context integrity"
+      - "session start"
+      - "after compaction"
+    supersedes:
+      - context-intelligence-entry
+    depends_on: []
+
+  - name: use-hivemind-context-verify
+    domain: verification
+    bundle: verification-core
+    knowledge_delta_score: 0.85
+    status: active
+    owner: hivemind-core
+    disclosure_level: L1
+    triggers:
+      - "verify context"
+      - "truth check"
+      - "validate state"
+      - "completion claim"
+      - "gate checkpoint"
+    supersedes: []
+    depends_on:
+      - use-hivemind-context-integrity
+
+  - name: use-hivemind-delegation
+    domain: delegation-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.88
+    status: active
+    owner: hivemind-core
+    disclosure_level: L1
+    triggers:
+      - "delegate"
+      - "handoff"
+      - "subagent scope"
+      - "parent context"
+      - "delegation packet"
+      - "bounded context"
+    supersedes:
+      - opencode-delegation
+    depends_on:
+      - use-hivemind-context-integrity
+
+  - name: use-hivemind-hierarchy
+    domain: agent-governance
+    bundle: governance-core
+    knowledge_delta_score: 0.87
+    status: active
+    owner: hivemind-core
+    disclosure_level: L1
+    triggers:
+      - "role boundary"
+      - "agent hierarchy"
+      - "authority"
+      - "permission envelope"
+      - "agent profile"
+      - "orchestrator role"
+    supersedes:
+      - agent-role-boundary
+    depends_on: []
+
+  - name: use-hivemind-git-memory
+    domain: memory-governance
+    bundle: memory-core
+    knowledge_delta_score: 0.82
+    status: active
+    owner: hivemind-core
+    disclosure_level: L1
+    triggers:
+      - "git memory"
+      - "commit intent"
+      - "anchor"
+      - "session resume from git"
+      - "semantic memory"
+      - "knowledge network"
+    supersedes:
+      - git-atomic-memory
+    depends_on: []
