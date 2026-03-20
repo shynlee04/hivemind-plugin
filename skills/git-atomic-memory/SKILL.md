@@ -1,6 +1,6 @@
 ---
 name: git-atomic-memory
-description:
+description: >
   Use when encoding commit intent as semantic memory, retrieving past decisions from git history,
   resuming work after context loss, or building knowledge networks from commit chains.
   
@@ -15,10 +15,25 @@ description:
   • Main session: Encode intent during commits, build knowledge network
   • Sub-session: Retrieve parent decisions via commit links, resume from anchors
   • Resumed session: Restore trajectory from semantic memory
-
+  
   Triggers: "what did we decide", "why was this changed", "resume from commits",
   "commit intent", "decision history", "git memory", "session to commit link",
   "link commit to session", "retrieve decision context"
+version: "1.0.0"
+framework: hivemind
+pack: git-memory
+entry-level: L2
+pattern: P2
+stacking: 0
+owner: hivemind-skill-writer
+status: active
+depends_on:
+  - context-intelligence-entry
+enables:
+  - session-memory-resume
+complementary:
+  - git-advanced-workflows
+  - conventional-commit
 ---
 
 # Git Atomic Memory

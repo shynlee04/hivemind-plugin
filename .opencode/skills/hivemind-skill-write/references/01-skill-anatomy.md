@@ -1,0 +1,1 @@
+../../hivemind-skill-writer/references/01-skill-anatomy.md

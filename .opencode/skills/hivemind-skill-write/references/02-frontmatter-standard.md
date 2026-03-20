@@ -1,0 +1,1 @@
+../../hivemind-skill-writer/references/02-frontmatter-standard.md

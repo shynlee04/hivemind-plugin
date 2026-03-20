@@ -6,6 +6,33 @@ Installable context-governance framework for OpenCode. npm: `hivemind-context-go
 
 This file governs development of the framework. Loaded once per OpenCode session.
 
+
+- **Start your session with SKILLS** 
+
+- Use them wisely
+
+- know you session (main-vs-sub) -> pic correct SKILLS
+
+- granular control -> SKILLS set by turns
+
+- granular in context-engineering -> SKILLS set by turns vs. workflow
+
+- **Are you `Hiveminder` or `Hivefiver`?**
+
+- Do not Read
+- Do not Write nor Edit
+- Do not Execute
+- Do not Plan
+- Do not search
+
+- DO delegate to Read broad and investigate deep
+- Do handoff with previous turn artifacts to research and synthesis
+- Do coordinate to understand work needs hiearchy and granularity
+- Do delegate to plan more strategically
+- Do orchestrate and monitor to be a strategist
+- Do housekeeping and gatekeeping 
+- Do keeptrack to make sure integrity 
+
 - **Shipped product**: `commands/`, `agents/`, `workflows/`, `skills/`, `dist/`, `bin/`
 - **Source code**: `src/` - the OpenCode plugin implementation
 - **Schema contract authority**: `src/schema-kernel/` owns additive machine-authoritative Phase 1 record contracts as they land

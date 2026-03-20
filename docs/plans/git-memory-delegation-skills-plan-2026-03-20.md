@@ -1190,6 +1190,43 @@ When delegating to `general` agent for implementation:
 
 ---
 
-## Status: Ready for Delegation
+## Status: Batch 1 Corrections Applied
+
+### Critical Fix Applied (2026-03-20)
+
+**Issue Identified:** YAML frontmatter in hivemind-skill-writer references containedFORBIDDEN fields thatbreak cross-platform compatibility.
+
+**Root Cause:** The `02-frontmatter-standard.md` reference file documented a complete schema with `version`, `framework`, `pack`, `entry-level`, `pattern`, `stacking`, `owner`, `status`, `tags`, `depends-on` - all of which are **FORBIDDEN** in YAML frontmatter.
+
+**Correct Standard:** YAMLfrontmatter mustONLY contain:
+- `name` (required)
+- `description` (required)
+
+All other fields belong in the SKILL.md body, NOT in frontmatter.
+
+**Files Fixed:**
+1. `.opencode/skills/hivemind-skill-writer/references/02-frontmatter-standard.md` - Completely rewritten with correct schema
+2. `.opencode/skills/hivemind-skill-writer/references/01-skill-anatomy.md` - Updated minimum frontmatter example
+3. `knowledge-of-skill-for-HIVEMIND-meta-builder.md` - Added CRITICAL frontmatter rule section
+
+**Verification:**
+- skill-judge evaluation shows git-atomic-memory frontmatter is correct (only name + description)
+- hivemind-skill-writer references now teach correct frontmatter standards
+
+---
+
+### Batch1 Status: Corrections Complete, Ready for Testing
+
+The git-atomic-memory skill has correct frontmatter. The plan is ready for incremental batch execution with the corrected skill-writer references.
+
+**Next Steps:**
+1. User manually places corrected skill in `.opencode/`
+2. User restarts session with handoff knowledge
+3. Launch `general` agent with test case for Batch 1
+4. Verify skill passes Skill-Judge ≥3.5
+5. Update plan document with Batch 1 results
+6. Proceed to Batch 2 (delegation-handoff)
+
+---
 
 This plan is ready for incremental batch execution. Each batch should be completed and audited before proceeding to the next.

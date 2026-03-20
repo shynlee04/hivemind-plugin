@@ -1,0 +1,1 @@
+../../hivemind-skill-writer/references/08-conflict-detection.md
