@@ -16,8 +16,8 @@ import {
 
 import { loadCommandAsset, type LoadedCommandAsset } from './instruction-loader.js'
 import { createRuntimeInvocation } from './invocation.js'
+import { runtimeCommandHandlers } from './runtime-command-handlers.js'
 import { createTurnOutputEnvelope, exportTurnOutputProjection } from './turn-output.js'
-import { runImplementHandler, runPlanHandler } from './workflow-command-handler.js'
 import { upsertWorkflowContinuityTransaction } from './workflow-continuity.js'
 
 type RecoveryHandler = (
@@ -29,11 +29,6 @@ type RecoveryHandler = (
 interface RuntimeEntryCommandExecutionOptions {
   executeRecoveryHandler?: RecoveryHandler
 }
-
-const runtimeCommandHandlers = {
-  'hm-plan': runPlanHandler,
-  'hm-implement': runImplementHandler,
-} as const
 
 function shouldUseRecoveryHandler(bundle: SlashCommandBundle, input: CommandExecutionInput): boolean {
   return bundle.id === 'hm-init'

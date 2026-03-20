@@ -20,6 +20,11 @@ export interface WorkflowContinuityTransactionV1 {
   turnOutputRefs: string[]
   linkedContractId?: string
   linkedContractFile?: string
+  delegationId?: string
+  handoffRef?: string
+  targetSessionId?: string
+  resumeTarget?: string
+  delegationStatus?: 'open' | 'validated' | 'closed'
   createdAt: string
   updatedAt: string
 }
@@ -93,6 +98,47 @@ async function readContinuityTransaction(
   }
 }
 
+async function listWorkflowContinuityTransactions(projectRoot: string): Promise<WorkflowContinuityTransactionV1[]> {
+  const directory = getContinuityDirectory(projectRoot)
+
+  try {
+    const entries = await fs.readdir(directory, { withFileTypes: true })
+    const transactions = await Promise.all(entries
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+      .map(async (entry) => {
+        try {
+          const content = await fs.readFile(path.join(directory, entry.name), 'utf8')
+          return JSON.parse(content) as WorkflowContinuityTransactionV1
+        } catch {
+          return null
+        }
+      }))
+
+    return transactions.filter((transaction): transaction is WorkflowContinuityTransactionV1 => transaction !== null)
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return []
+    }
+
+    throw error
+  }
+}
+
+async function findSessionLinkedContinuityTransaction(
+  projectRoot: string,
+  sessionId: string,
+): Promise<WorkflowContinuityTransactionV1 | null> {
+  const transactions = await listWorkflowContinuityTransactions(projectRoot)
+
+  return transactions
+    .filter((transaction) => (
+      transaction.currentSessionId === sessionId
+      || transaction.priorSessionId === sessionId
+      || transaction.targetSessionId === sessionId
+    ))
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0] ?? null
+}
+
 export async function loadWorkflowContinuityTransactionForExecution(
   projectRoot: string,
   input: WorkflowContinuityIdentityInput,
@@ -104,7 +150,7 @@ export async function loadWorkflowContinuityTransactionForExecution(
     }
   }
 
-  return null
+  return findSessionLinkedContinuityTransaction(projectRoot, input.sessionId)
 }
 
 export async function upsertWorkflowContinuityTransaction(input: {
@@ -136,6 +182,65 @@ export async function upsertWorkflowContinuityTransaction(input: {
     turnOutputRefs: getTurnOutputRefs(input.turnOutputProjection),
     linkedContractId: input.sessionContractLinkage.contract.contractId,
     linkedContractFile: input.sessionContractLinkage.contractFilePath,
+    createdAt: existing?.createdAt ?? now,
+    updatedAt: now,
+  }
+
+  await fs.writeFile(filePath, JSON.stringify(transaction, null, 2), 'utf8')
+
+  return {
+    transaction,
+    filePath,
+  }
+}
+
+export async function upsertWorkflowDelegationContinuityLinkage(input: {
+  projectRoot: string
+  identity: WorkflowContinuityIdentityInput
+  actingSessionId: string
+  linkedContractId?: string
+  linkedContractFile?: string
+  delegation: {
+    delegationId: string
+    handoffRef: string
+    targetSessionId: string
+    resumeTarget?: string
+    status: 'open' | 'validated' | 'closed'
+  }
+}): Promise<WorkflowContinuityLinkage | null> {
+  const existing = await loadWorkflowContinuityTransactionForExecution(input.projectRoot, input.identity)
+  const continuityKey = existing?.continuityKey ?? resolveWorkflowContinuityKey(input.identity)
+  const continuityId = buildContinuityId(continuityKey)
+  const filePath = getContinuityFilePath(input.projectRoot, continuityId)
+  const linkedContractId = existing?.linkedContractId ?? input.linkedContractId
+  const linkedContractFile = existing?.linkedContractFile ?? input.linkedContractFile
+
+  if (!linkedContractId) {
+    return null
+  }
+
+  const now = new Date().toISOString()
+
+  await fs.mkdir(getContinuityDirectory(input.projectRoot), { recursive: true })
+
+  const transaction: WorkflowContinuityTransactionV1 = {
+    version: 'v1',
+    continuityId,
+    continuityKey,
+    commandId: existing?.commandId ?? 'hm-plan',
+    phase: existing?.phase ?? 'planning',
+    currentSessionId: input.actingSessionId,
+    priorSessionId: existing && existing.currentSessionId !== input.actingSessionId
+      ? existing.currentSessionId
+      : existing?.priorSessionId,
+    turnOutputRefs: existing?.turnOutputRefs ?? [],
+    linkedContractId,
+    linkedContractFile,
+    delegationId: input.delegation.delegationId,
+    handoffRef: input.delegation.handoffRef,
+    targetSessionId: input.delegation.targetSessionId,
+    resumeTarget: input.delegation.resumeTarget,
+    delegationStatus: input.delegation.status,
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   }

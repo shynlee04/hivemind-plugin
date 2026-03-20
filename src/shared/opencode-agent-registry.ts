@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import YAML from 'yaml'
 
@@ -34,6 +35,7 @@ export interface SlashCommandAgentBindingValidation {
 }
 
 const RUNTIME_FRONTMATTER_KEYS = ['description', 'mode', 'tools', 'permission'] as const
+const DEFAULT_AGENT_REGISTRY_PACKAGE_ROOT = fileURLToPath(new URL('../../', import.meta.url))
 
 export const OPENCODE_AGENT_REGISTRY_IDS = [
   'hivefiver',
@@ -129,7 +131,9 @@ export function validateSlashCommandAgentBindings(
 
 export function assertSlashCommandAgentBindings(
   bundles: SlashCommandBundle[],
-  registry: OpencodeAgentRegistryEntry[] = createOpencodeAgentRegistry(process.cwd()),
+  registry: OpencodeAgentRegistryEntry[] = createOpencodeAgentRegistry(
+    DEFAULT_AGENT_REGISTRY_PACKAGE_ROOT,
+  ),
 ): void {
   const validation = validateSlashCommandAgentBindings(bundles, registry)
   if (validation.missingAgentIds.length === 0) {

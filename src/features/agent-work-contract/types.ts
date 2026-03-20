@@ -137,7 +137,19 @@ export interface AnchorPointType {
 export type ChainActionEvent =
   | { trigger: 'onTaskComplete'; payload: { contractId: string; taskId: string } }
   | { trigger: 'onWorkflowEnd'; payload: { contractId: string } }
-  | { trigger: 'onDelegation'; payload: { contractId: string; delegationId: string } }
+  | {
+      trigger: 'onDelegation'
+      payload: {
+        contractId: string
+        delegationId: string
+        handoffRef?: string
+        targetSessionId?: string
+        resumeTarget?: string
+        taskRefs?: string[]
+        subtaskRefs?: string[]
+        status?: 'open' | 'validated' | 'closed'
+      }
+    }
   | { trigger: 'onCompaction80'; payload: { contractId: string } }
 
 /**

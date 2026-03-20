@@ -196,6 +196,7 @@ export class ContractStore implements ContractStoreOperations {
       const existing = JSON.parse(content) as Record<string, unknown>
       const existingValidated = AgentWorkContractSchema.parse(existing)
       const forwardCompatFields = this.getForwardCompatFields(existing)
+      const updateForwardCompatFields = this.getForwardCompatFields(updates as Record<string, unknown>)
 
       // Merge updates with existing contract
       const updated: AgentWorkContract = {
@@ -209,7 +210,11 @@ export class ContractStore implements ContractStoreOperations {
 
       // Validate merged result and restore forward-compat fields for persistence
       const validated = AgentWorkContractSchema.parse(updated)
-      const final: Record<string, unknown> = { ...validated, ...forwardCompatFields }
+      const final: Record<string, unknown> = {
+        ...validated,
+        ...forwardCompatFields,
+        ...updateForwardCompatFields,
+      }
       
       // Write updated contract atomically
       await writeFile(filePath, JSON.stringify(final, null, 2), 'utf-8')

@@ -5,14 +5,17 @@ import { join } from 'node:path'
 import { describe, it } from 'node:test'
 
 import { executeSlashCommandBundle, findSlashCommandBundle } from '../src/commands/slash-command/index.js'
+import { previewSlashCommandBundle } from '../src/commands/slash-command/command-runner.js'
 import { bootstrapTrajectoryLedger } from '../src/core/index.js'
 import { createWorkflowTask } from '../src/core/workflow-management/index.js'
 import { ContractStore } from '../src/features/agent-work-contract/engine/contract-store.js'
+import { executeHivemindHandoffAction } from '../src/features/handoff/index.js'
 import { initProject, runDoctorCommand } from '../src/features/runtime-entry/index.js'
 import { saveRuntimeAttachmentSettings } from '../src/features/runtime-entry/attachment.js'
 import { loadCommandAsset } from '../src/features/runtime-entry/instruction-loader.js'
 import { loadWorkflowContinuityTransactionForExecution } from '../src/features/runtime-entry/workflow-continuity.js'
 import { markEntryKernelReady } from '../src/shared/entry-kernel-state.js'
+import { createOpencodeAgentRegistry } from '../src/shared/opencode-agent-registry.js'
 
 const runtimeEntryFiles = [
   'src/features/runtime-entry/settings.ts',
@@ -205,6 +208,157 @@ describe('runtime entry loader authority', () => {
       })
 
       assert.equal(continuity, null)
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('resolves slash-command agent bindings from the package root when cwd is a consumer project', async () => {
+    const projectRoot = await mkdtemp(join(tmpdir(), 'hm-runtime-entry-consumer-cwd-'))
+    const originalCwd = process.cwd()
+
+    try {
+      const bundle = findSlashCommandBundle('hm-plan')
+
+      assert.ok(bundle)
+      assert.throws(() => createOpencodeAgentRegistry(projectRoot), /ENOENT|no such file/i)
+
+      process.chdir(projectRoot)
+
+      const preview = await previewSlashCommandBundle(bundle)
+
+      assert.equal(preview.commandId, 'hm-plan')
+      assert.equal(preview.frontmatter.agent, bundle.agent)
+    } finally {
+      process.chdir(originalCwd)
+      await rm(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('inspection-first runtime commands execute through real handlers', async () => {
+    const projectRoot = await mkdtemp(join(tmpdir(), 'hm-runtime-entry-inspection-handlers-'))
+
+    try {
+      await bootstrapReadyRuntime(projectRoot)
+      createWorkflowTask(projectRoot, {
+        workflowId: 'wf_123',
+        taskId: 'task-2',
+        title: 'task-2',
+      })
+
+      for (const commandId of ['hm-research', 'hm-verify', 'hm-tdd', 'hm-course-correct'] as const) {
+        const bundle = findSlashCommandBundle(commandId)
+
+        assert.ok(bundle)
+
+        const result = await executeSlashCommandBundle(bundle, {
+          projectRoot,
+          sessionId: `ses_${commandId}`,
+          sessionScope: 'main',
+          trajectoryId: 'traj_123',
+          workflowId: 'wf_123',
+          taskIds: ['task-1'],
+          lineage: 'hivefiver',
+          purposeClass: bundle.purposeClasses[0],
+          activeAgent: bundle.agent,
+          userMessage: `Inspect ${commandId} runtime readiness.`,
+        })
+
+        assert.equal(result.executionMode, 'handler')
+        assert.equal(result.closeoutStatus, 'ready')
+      }
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('handoff creation persists delegation continuity and preserves the original linked contract', async () => {
+    const projectRoot = await mkdtemp(join(tmpdir(), 'hm-runtime-entry-delegation-continuity-'))
+
+    try {
+      await bootstrapReadyRuntime(projectRoot)
+      createWorkflowTask(projectRoot, {
+        workflowId: 'wf_123',
+        taskId: 'task-2',
+        title: 'task-2',
+      })
+      const planBundle = findSlashCommandBundle('hm-plan')
+
+      assert.ok(planBundle)
+
+      await executeSlashCommandBundle(planBundle, {
+        projectRoot,
+        sessionId: 'ses_123',
+        sessionScope: 'main',
+        trajectoryId: 'traj_123',
+        workflowId: 'wf_123',
+        taskIds: ['task-1'],
+        lineage: 'hivefiver',
+        purposeClass: 'planning',
+        activeAgent: 'runtime-agent',
+        userMessage: 'Plan before creating a delegation handoff.',
+      })
+
+      const store = new ContractStore(projectRoot)
+      const [contract] = await store.list('ses_123')
+      const handoffResult = await executeHivemindHandoffAction(projectRoot, {
+        action: 'create',
+        workflowId: 'wf_123',
+        trajectoryId: 'traj_123',
+        targetAgent: 'delegate-agent',
+        targetSessionId: 'ses_delegate_456',
+        scope: 'Implement delegated task slice',
+        summary: 'Delegate the implementation slice.',
+        taskIds: 'task-1',
+        resumeTarget: 'command:hm-implement',
+      }, {
+        sessionID: 'ses_123',
+        agent: 'runtime-agent',
+      })
+      const continuity = await loadWorkflowContinuityTransactionForExecution(projectRoot, {
+        sessionId: 'ses_delegate_456',
+      })
+      const linkedContract = await store.get(contract?.contractId ?? '')
+      const handoffData = handoffResult.kind === 'success'
+        ? handoffResult.data as {
+            record: { id: string }
+            chainAction?: { executed: boolean }
+          }
+        : null
+      const delegationProjection = (linkedContract as typeof linkedContract & {
+        delegationProjection?: {
+          handoffs: Array<{ delegationId: string; taskRefs: string[]; status: string }>
+        }
+      })?.delegationProjection
+      const delegatedHandoff = delegationProjection?.handoffs[0]
+
+      assert.equal(handoffResult.kind, 'success')
+      assert.equal(handoffData?.chainAction?.executed, true)
+      assert.equal(continuity?.linkedContractId, contract?.contractId)
+      assert.equal(continuity?.delegationId, handoffData?.record.id)
+      assert.match(continuity?.handoffRef ?? '', /\.hivemind\/handoffs\//)
+      assert.equal(continuity?.targetSessionId, 'ses_delegate_456')
+      assert.equal(continuity?.resumeTarget, 'command:hm-implement')
+      assert.deepEqual(linkedContract?.workflow.tasks, [
+        {
+          id: 'task-1',
+          title: 'task-1',
+          status: 'active',
+          dependencyIds: [],
+          evidenceRefs: [],
+        },
+        {
+          id: 'task-2',
+          title: 'task-2',
+          status: 'pending',
+          dependencyIds: [],
+          evidenceRefs: [],
+        },
+      ])
+      assert.equal(delegationProjection?.handoffs.length, 1)
+      assert.equal(delegatedHandoff?.delegationId, handoffData?.record.id)
+      assert.deepEqual(delegatedHandoff?.taskRefs, ['task-1'])
+      assert.equal(delegatedHandoff?.status, 'open')
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
     }

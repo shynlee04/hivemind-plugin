@@ -5,11 +5,14 @@ import test from 'node:test'
 import { mkdtemp, rm } from 'node:fs/promises'
 
 import * as hiveMindRoot from '../src/index.js'
+import { bootstrapTrajectoryLedger } from '../src/core/index.js'
+import { saveRuntimeAttachmentSettings } from '../src/features/runtime-entry/attachment.js'
 import { HiveMindPlugin } from '../src/plugin/opencode-plugin.js'
 import * as agentWorkContractHooks from '../src/features/agent-work-contract/hooks/index.js'
 import * as agentWorkContractTools from '../src/features/agent-work-contract/tools/index.js'
 import { HIVEMIND_MANAGED_TOOLS } from '../src/hooks/runtime-loader/tool-governance.js'
 import { agentToolCatalog } from '../src/tools/index.js'
+import { markEntryKernelReady } from '../src/shared/entry-kernel-state.js'
 
 const AGENT_WORK_FEATURE_TOOL_IDS = [
   agentWorkContractTools.HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID,
@@ -41,6 +44,24 @@ function createPluginInput(directory: string) {
     project: null,
     worktree: directory,
   } as never
+}
+
+async function bootstrapReadyRuntime(projectRoot: string): Promise<void> {
+  await saveRuntimeAttachmentSettings(projectRoot, {
+    runtimeAuthority: 'attached-sdk',
+    runtimeInstanceId: 'rt_test',
+    serverBaseUrl: 'http://localhost:4096',
+    preferredUserName: 'Taylor',
+  })
+  await bootstrapTrajectoryLedger(projectRoot, {
+    trajectoryId: 'traj_123',
+    workflowId: 'wf_123',
+    sessionId: 'ses_123',
+    lineage: 'hivefiver',
+    purposeClass: 'planning',
+    taskIds: ['task-1'],
+  })
+  await markEntryKernelReady(projectRoot)
 }
 
 test('plugin registers the promoted runtime tools through the surviving assembly', async () => {
@@ -118,6 +139,41 @@ test('agent-work contract runtime promotion keeps authorities synchronized while
       agentToolCatalog.some((entry) => entry.id === agentWorkContractTools.HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID),
       true,
     )
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test('runtime status tool exposes executable command capabilities instead of a flat command list', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-runtime-tool-capabilities-'))
+
+  try {
+    await bootstrapReadyRuntime(directory)
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
+    const statusTool = hooks.tool?.hivemind_runtime_status
+
+    assert.ok(statusTool)
+
+    const payload = JSON.parse(await statusTool.execute({} as never, {
+      sessionID: 'ses_123',
+      messageID: 'msg_123',
+      agent: 'runtime-agent',
+      directory,
+      worktree: directory,
+      abort: new AbortController().signal,
+      metadata() {},
+      async ask() {
+        throw new Error('runtime status should not ask for permissions')
+      },
+    } as never))
+
+    assert.equal(payload.workflowGateState.availableCommands.includes('hm-research'), true)
+    assert.equal(payload.workflowGateState.commandCapabilities['hm-research'], 'handler')
+    assert.equal(payload.workflowGateState.commandCapabilities['hm-verify'], 'handler')
+    assert.equal(payload.workflowGateState.commandCapabilities['hm-tdd'], 'handler')
+    assert.equal(payload.workflowGateState.commandCapabilities['hm-course-correct'], 'handler')
+    assert.equal(payload.workflowGateState.commandCapabilities['hm-init'], 'control-plane')
+    assert.equal(payload.capabilityMatrix.chainActions.support['handoff-packet'], 'live')
   } finally {
     await rm(directory, { recursive: true, force: true })
   }

@@ -8,6 +8,7 @@ import { bootstrapTrajectoryLedger, loadTrajectoryLedger } from '../src/core/ind
 import { createWorkflowTask } from '../src/core/workflow-management/index.js'
 import { executeSlashCommandBundle, findSlashCommandBundle } from '../src/commands/slash-command/index.js'
 import { ContractStore } from '../src/features/agent-work-contract/engine/contract-store.js'
+import { executeHivemindHandoffAction } from '../src/features/handoff/index.js'
 import {
   HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID,
   HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID,
@@ -553,6 +554,52 @@ test('runtime status reports the latest session contract summary from persisted 
   }
 })
 
+test('runtime status reports truthful command and chain-action capabilities', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-runtime-status-capabilities-'))
+
+  try {
+    await bootstrapReadyRuntime(directory)
+
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
+    const statusTool = hooks.tool?.hivemind_runtime_status
+
+    assert.ok(statusTool)
+
+    const payload = JSON.parse(await statusTool.execute({} as never, {
+      sessionID: 'ses_123',
+      messageID: 'msg_123',
+      agent: 'runtime-agent',
+      directory,
+      worktree: directory,
+      abort: new AbortController().signal,
+      metadata() {},
+      async ask() {
+        throw new Error('runtime status should not ask for permissions')
+      },
+    } as never))
+
+    assert.equal(payload.capabilityMatrix.commands['hm-research'].executionMode, 'handler')
+    assert.equal(payload.capabilityMatrix.commands['hm-verify'].executionMode, 'handler')
+    assert.equal(payload.capabilityMatrix.commands['hm-tdd'].executionMode, 'handler')
+    assert.equal(payload.capabilityMatrix.commands['hm-course-correct'].executionMode, 'handler')
+    assert.equal(payload.capabilityMatrix.commands['hm-plan'].executionMode, 'handler')
+    assert.equal(payload.capabilityMatrix.commands['hm-implement'].executionMode, 'handler')
+    assert.equal(payload.capabilityMatrix.commands['hm-init'].executionMode, 'control-plane')
+    assert.equal(payload.capabilityMatrix.commands['hm-doctor'].executionMode, 'control-plane')
+    assert.equal(payload.capabilityMatrix.commands['hm-harness'].executionMode, 'control-plane')
+    assert.equal(payload.capabilityMatrix.commands['hm-settings'].executionMode, 'control-plane')
+    assert.equal(payload.workflowGateState.commandCapabilities['hm-research'], 'handler')
+    assert.equal(payload.workflowGateState.commandCapabilities['hm-init'], 'control-plane')
+    assert.equal(payload.capabilityMatrix.chainActions.support['handoff-packet'], 'live')
+    assert.equal(payload.capabilityMatrix.chainActions.support['export-messages'], 'metadata-only')
+    assert.equal(payload.capabilityMatrix.chainActions.support['next-task'], 'metadata-only')
+    assert.equal(payload.capabilityMatrix.chainActions.support['archive'], 'metadata-only')
+    assert.equal(payload.capabilityMatrix.chainActions.support['launch-context-agent'], 'metadata-only')
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
 test('runtime status surfaces continuity-bearing contract state across session changes without contract tools', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'hm-runtime-command-contract-'))
 
@@ -627,6 +674,89 @@ test('runtime status surfaces continuity-bearing contract state across session c
       implementResult.turnOutputProjection?.yamlPath,
     ])
     assert.ok((payload.latestSessionContract.recentAnchorDescriptions ?? []).length >= 1)
+  } finally {
+    await rm(directory, { recursive: true, force: true })
+  }
+})
+
+test('runtime status recovers the linked contract through delegation continuity for a follow-on session', async () => {
+  const directory = await mkdtemp(join(tmpdir(), 'hm-runtime-delegation-status-'))
+
+  try {
+    await bootstrapReadyRuntime(directory)
+    createWorkflowTask(directory, {
+      workflowId: 'wf_123',
+      taskId: 'task-2',
+      title: 'task-2',
+    })
+    const planBundle = findSlashCommandBundle('hm-plan')
+
+    assert.ok(planBundle)
+
+    await executeSlashCommandBundle(planBundle, {
+      projectRoot: directory,
+      sessionId: 'ses_123',
+      sessionScope: 'main',
+      trajectoryId: 'traj_123',
+      workflowId: 'wf_123',
+      taskIds: ['task-1'],
+      lineage: 'hivefiver',
+      purposeClass: 'planning',
+      activeAgent: 'runtime-agent',
+      userMessage: 'Plan before delegation continuity recovery.',
+    })
+
+    const handoffResult = await executeHivemindHandoffAction(directory, {
+      action: 'create',
+      workflowId: 'wf_123',
+      trajectoryId: 'traj_123',
+      targetAgent: 'delegate-agent',
+      targetSessionId: 'ses_delegate_456',
+      scope: 'Implement delegated slice',
+      summary: 'Create the delegation continuity packet.',
+      taskIds: 'task-1',
+      resumeTarget: 'command:hm-implement',
+    }, {
+      sessionID: 'ses_123',
+      agent: 'runtime-agent',
+    })
+    const hooks = await HiveMindPlugin(createPluginInput(directory))
+    const statusTool = hooks.tool?.hivemind_runtime_status
+
+    assert.equal(handoffResult.kind, 'success')
+    assert.ok(statusTool)
+
+    const payload = JSON.parse(await statusTool.execute({} as never, {
+      sessionID: 'ses_delegate_456',
+      messageID: 'msg_123',
+      agent: 'runtime-agent',
+      directory,
+      worktree: directory,
+      abort: new AbortController().signal,
+      metadata() {},
+      async ask() {
+        throw new Error('runtime status should not ask for permissions')
+      },
+    } as never))
+    const latest = payload.latestSessionContract as {
+      contractId: string
+      continuityCurrentSessionId?: string
+      continuityTargetSessionId?: string
+      continuityResumeTarget?: string
+      delegationId?: string
+      handoffRef?: string
+      activeTaskIds: string[]
+      pendingTaskIds: string[]
+    }
+
+    assert.equal(latest.contractId, 'awc-session-ses_123')
+    assert.equal(latest.continuityCurrentSessionId, 'ses_123')
+    assert.equal(latest.continuityTargetSessionId, 'ses_delegate_456')
+    assert.equal(latest.continuityResumeTarget, 'command:hm-implement')
+    assert.match(latest.delegationId ?? '', /^dlg_/)
+    assert.match(latest.handoffRef ?? '', /\.hivemind\/handoffs\//)
+    assert.deepEqual(latest.activeTaskIds, ['task-1'])
+    assert.deepEqual(latest.pendingTaskIds, ['task-2'])
   } finally {
     await rm(directory, { recursive: true, force: true })
   }

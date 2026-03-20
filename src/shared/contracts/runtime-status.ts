@@ -26,6 +26,8 @@ export const runtimeStatusLineageSessionStateSchema = z.object({
 })
 
 export const runtimeEntryCloseoutStatusSchema = z.enum(['open', 'ready', 'blocked', 'qa-pending'])
+export const runtimeCommandCapabilityModeSchema = z.enum(['handler', 'control-plane', 'preview'])
+export const runtimeChainActionSupportModeSchema = z.enum(['live', 'metadata-only'])
 
 export const runtimeEntryDecisionSchema = z.object({
   closeoutStatus: runtimeEntryCloseoutStatusSchema,
@@ -63,10 +65,41 @@ export type RuntimeStatusEntryState = z.infer<typeof runtimeStatusEntryStateSche
 export type RuntimeStatusQaState = z.infer<typeof runtimeStatusQaStateSchema>
 export type RuntimeStatusLineageSessionState = z.infer<typeof runtimeStatusLineageSessionStateSchema>
 export type RuntimeEntryCloseoutStatus = z.infer<typeof runtimeEntryCloseoutStatusSchema>
+export type RuntimeCommandCapabilityMode = z.infer<typeof runtimeCommandCapabilityModeSchema>
+export type RuntimeChainActionSupportMode = z.infer<typeof runtimeChainActionSupportModeSchema>
 export type RuntimeEntryDecision = z.infer<typeof runtimeEntryDecisionSchema>
 export type RuntimeWorkflowGateState = z.infer<typeof runtimeWorkflowGateStateSchema>
 export type RuntimeWorkflowSummary = z.infer<typeof runtimeWorkflowSummarySchema>
 export type RuntimeStatus = z.infer<typeof runtimeStatusSchema>
+
+export const DECLARED_CHAIN_ACTIONS = {
+  onTaskComplete: ['export-workflow', 'next-task', 'close'],
+  onWorkflowEnd: ['export-contract', 'archive'],
+  onDelegation: ['export-messages', 'handoff-packet'],
+  onCompaction80: ['launch-context-agent', 'export-summary'],
+} as const
+
+export function resolveRuntimeCommandCapabilityMode(input: {
+  commandId: string
+  handlerCommandIds: readonly string[]
+  controlPlanePrimitiveId?: string
+}): RuntimeCommandCapabilityMode {
+  if (input.handlerCommandIds.includes(input.commandId)) {
+    return 'handler'
+  }
+
+  if (input.controlPlanePrimitiveId) {
+    return 'control-plane'
+  }
+
+  return 'preview'
+}
+
+export function resolveRuntimeChainActionSupportMode(
+  action: string,
+): RuntimeChainActionSupportMode {
+  return action === 'handoff-packet' ? 'live' : 'metadata-only'
+}
 
 function resolveRecommendedCommands(input: {
   closeoutStatus: RuntimeEntryCloseoutStatus

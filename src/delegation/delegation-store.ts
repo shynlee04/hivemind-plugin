@@ -42,7 +42,7 @@ function getHandoffDirectory(projectRoot: string): string {
   return path.join(getHivemindPath(projectRoot), 'handoffs')
 }
 
-function getHandoffPath(projectRoot: string, id: string): string {
+export function getDelegationHandoffPath(projectRoot: string, id: string): string {
   return path.join(getHandoffDirectory(projectRoot), `${id}.json`)
 }
 
@@ -66,7 +66,7 @@ function readHandoffFile(filePath: string): DelegationHandoffRecord | null {
 
 function writeHandoffRecord(projectRoot: string, record: DelegationHandoffRecord): DelegationHandoffRecord {
   ensureHandoffDirectory(projectRoot)
-  fs.writeFileSync(getHandoffPath(projectRoot, record.id), JSON.stringify(record, null, 2))
+  fs.writeFileSync(getDelegationHandoffPath(projectRoot, record.id), JSON.stringify(record, null, 2))
   return record
 }
 
@@ -101,7 +101,7 @@ export function readDelegationHandoff(
   projectRoot: string,
   id: string,
 ): DelegationHandoffRecord | null {
-  return readHandoffFile(getHandoffPath(projectRoot, id))
+  return readHandoffFile(getDelegationHandoffPath(projectRoot, id))
 }
 
 export function listDelegationHandoffs(projectRoot: string): DelegationHandoffRecord[] {
@@ -152,7 +152,7 @@ export function validateDelegationHandoff(
       record: null,
       valid: false,
       missingEvidence: ['handoff-not-found'],
-      evidenceRefs: [getHandoffPath(projectRoot, id)],
+      evidenceRefs: [getDelegationHandoffPath(projectRoot, id)],
       pressureContract: getRuntimePressureContract('handoff-validation'),
     }
   }
@@ -163,11 +163,19 @@ export function validateDelegationHandoff(
     .filter((item) => !evidenceKeys.has(`${item.kind}:${item.description}`))
     .map((item) => `${item.kind}:${item.description}`)
 
+  const nextRecord = missingEvidence.length === 0 && record.status === 'open'
+    ? writeHandoffRecord(projectRoot, {
+        ...record,
+        status: 'validated',
+        updatedAt: new Date().toISOString(),
+      })
+    : record
+
   return {
-    record,
+    record: nextRecord,
     valid: missingEvidence.length === 0,
     missingEvidence,
-    evidenceRefs: [getHandoffPath(projectRoot, id)],
+    evidenceRefs: [getDelegationHandoffPath(projectRoot, id)],
     pressureContract: getRuntimePressureContract('handoff-validation'),
   }
 }
@@ -199,7 +207,7 @@ export function closeDelegationHandoff(
     record,
     valid: true,
     missingEvidence: [],
-    evidenceRefs: [getHandoffPath(projectRoot, id)],
+    evidenceRefs: [getDelegationHandoffPath(projectRoot, id)],
     pressureContract: getRuntimePressureContract('handoff-validation'),
   }
 }

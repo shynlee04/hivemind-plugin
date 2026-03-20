@@ -14,6 +14,10 @@ import type {
 } from '../../schema-kernel/index.js'
 import type { RuntimeStatus } from '../../shared/contracts/runtime-status.js'
 import type { SupervisorHealthSummary } from '../../sdk-supervisor/index.js'
+import type {
+  RuntimeChainActionSupportMode,
+  RuntimeCommandCapabilityMode,
+} from '../../shared/contracts/runtime-status.js'
 
 export interface HivemindRuntimeCommandArgs {
   command: string
@@ -60,6 +64,18 @@ export interface HivemindRuntimeLatestSessionContractSummary {
 }
 
 export interface HivemindRuntimeStatusPayload extends RuntimeStatus {
+  capabilityMatrix: {
+    commands: Record<string, {
+      executionMode: RuntimeCommandCapabilityMode
+      agent: string
+      commandFile: string
+      stateAuthority: string
+    }>
+    chainActions: {
+      declared: Record<string, string[]>
+      support: Record<string, RuntimeChainActionSupportMode>
+    }
+  }
   runtimeState: {
     sessionID: string
     attachmentMode: string
@@ -90,5 +106,6 @@ export interface HivemindRuntimeStatusPayload extends RuntimeStatus {
   latestSessionContract: HivemindRuntimeLatestSessionContractSummary | null
   workflowGateState: {
     availableCommands: string[]
+    commandCapabilities: Record<string, RuntimeCommandCapabilityMode>
   }
 }

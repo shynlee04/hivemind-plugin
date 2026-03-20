@@ -7,8 +7,14 @@ import { ContractStore } from '../agent-work-contract/engine/contract-store.js'
 import { createCompactionPreservationPacket } from '../agent-work-contract/hooks/index.js'
 import { loadWorkflowContinuityTransactionForExecution } from '../runtime-entry/workflow-continuity.js'
 import { buildRuntimeStatusSnapshot } from '../../sdk-supervisor/index.js'
-import { buildRuntimeEntryDecision } from '../../shared/contracts/runtime-status.js'
+import {
+  buildRuntimeEntryDecision,
+  DECLARED_CHAIN_ACTIONS,
+  resolveRuntimeChainActionSupportMode,
+  resolveRuntimeCommandCapabilityMode,
+} from '../../shared/contracts/runtime-status.js'
 import { loadRuntimeBindingsSnapshot } from '../../shared/runtime-attachment.js'
+import { RUNTIME_HANDLER_COMMAND_IDS } from '../runtime-entry/runtime-command-handlers.js'
 import type {
   HivemindRuntimeCommandArgs,
   HivemindRuntimeLatestSessionContractSummary,
@@ -16,6 +22,40 @@ import type {
 } from '../../tools/runtime/types.js'
 
 const runtimeEntryCommands = new Set(['hm-init', 'hm-doctor', 'hm-harness'])
+
+function buildCapabilityMatrix() {
+  const commands = Object.fromEntries(
+    discoverSlashCommandBundles().map((bundle) => [
+      bundle.id,
+      {
+        executionMode: resolveRuntimeCommandCapabilityMode({
+          commandId: bundle.id,
+          handlerCommandIds: RUNTIME_HANDLER_COMMAND_IDS,
+          controlPlanePrimitiveId: bundle.controlPlanePrimitiveId,
+        }),
+        agent: bundle.agent,
+        commandFile: bundle.commandFile,
+        stateAuthority: bundle.stateAuthority,
+      },
+    ]),
+  )
+  const declared = Object.fromEntries(
+    Object.entries(DECLARED_CHAIN_ACTIONS).map(([trigger, actions]) => [trigger, [...actions]]),
+  )
+  const support = Object.fromEntries(
+    Object.values(DECLARED_CHAIN_ACTIONS)
+      .flatMap((actions) => actions)
+      .map((action) => [action, resolveRuntimeChainActionSupportMode(action)]),
+  )
+
+  return {
+    commands,
+    chainActions: {
+      declared,
+      support,
+    },
+  }
+}
 
 function withRuntimeEntryDecision<T extends { closeoutStatus?: 'open' | 'ready' | 'blocked' | 'qa-pending'; report: Record<string, unknown> }>(
   result: T,
@@ -66,27 +106,32 @@ async function buildLatestSessionContractSummary(
 
   const summary = createCompactionPreservationPacket(latestContract)
 
-    return {
-      contractId: latestContract.contractId,
-      sessionId: latestContract.sessionId,
-      updatedAt: latestContract.updatedAt,
-      delegationExportSessionId: latestContract.delegationExportSessionId,
-      continuityId: continuity?.continuityId,
-      continuityKey: continuity?.continuityKey,
-      continuityPhase: continuity?.phase,
-      continuityCurrentSessionId: continuity?.currentSessionId,
-      continuityPriorSessionId: continuity?.priorSessionId,
-      continuityTurnOutputRefs: continuity?.turnOutputRefs,
-      planningPath: latestContract.workflow.planningPath,
-      responseMode: latestContract.responseMode,
-      workflowPhase: summary.workflowPhase,
+  return {
+    contractId: latestContract.contractId,
+    sessionId: latestContract.sessionId,
+    updatedAt: latestContract.updatedAt,
+    delegationExportSessionId: latestContract.delegationExportSessionId,
+    continuityId: continuity?.continuityId,
+    continuityKey: continuity?.continuityKey,
+    continuityPhase: continuity?.phase,
+    continuityCurrentSessionId: continuity?.currentSessionId,
+    continuityPriorSessionId: continuity?.priorSessionId,
+    continuityTurnOutputRefs: continuity?.turnOutputRefs,
+    planningPath: latestContract.workflow.planningPath,
+    responseMode: latestContract.responseMode,
+    workflowPhase: summary.workflowPhase,
     activeTaskIds: summary.activeTaskIds,
     pendingTaskIds: summary.pendingTaskIds,
     briefingSummary: summary.briefingSummary,
     followUp: summary.followUp,
     recentAnchorDescriptions: summary.recentAnchorDescriptions,
     compactionAction: summary.compactionAction,
-  }
+    delegationId: continuity?.delegationId,
+    handoffRef: continuity?.handoffRef,
+    continuityTargetSessionId: continuity?.targetSessionId,
+    continuityResumeTarget: continuity?.resumeTarget,
+    continuityDelegationStatus: continuity?.delegationStatus,
+  } as HivemindRuntimeLatestSessionContractSummary
 }
 
 export async function buildHivemindRuntimeStatus(
@@ -114,14 +159,19 @@ export async function buildHivemindRuntimeStatus(
       trajectoryId: snapshot.trajectoryId,
     },
   )
+  const capabilityMatrix = buildCapabilityMatrix()
   const availableCommands = discoverSlashCommandBundles().map((bundle) => bundle.id)
   const payload: HivemindRuntimeStatusPayload = {
     ...statusSnapshot,
     workflowSummary: statusSnapshot.workflowSummary,
     recentEvents: statusSnapshot.recentEvents,
+    capabilityMatrix,
     latestSessionContract,
     workflowGateState: {
       availableCommands,
+      commandCapabilities: Object.fromEntries(
+        Object.entries(capabilityMatrix.commands).map(([commandId, capability]) => [commandId, capability.executionMode]),
+      ),
     },
   }
 
