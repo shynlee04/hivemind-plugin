@@ -132,3 +132,14 @@ When user claims completion:
 ---
 
 **Pattern:** P1 (Entry Routing) | **Degrees of Freedom:** High (Router) | **Stack Impact:** Does not count against stack budget
+## NO-LOAD Rules
+
+Do NOT activate this skill when:
+
+| Condition | Threshold | Action |
+|-----------|-----------|--------|
+| Context depth exceeds | >70% | Defer to `use-hivemind-context-integrity` first |
+| Session state is degraded | `interrupted` or `degraded` | Skip activation entirely |
+| Stack budget exhausted | Active skills ≥3 | Wait for slot |
+| Authority unclear | Conflicting SOT | Escalate first |
+| Verification already in progress | Active verification | Skip duplicate verification |
