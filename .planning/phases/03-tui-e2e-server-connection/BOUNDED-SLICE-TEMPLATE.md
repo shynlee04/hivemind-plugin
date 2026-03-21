@@ -71,6 +71,45 @@ The following **MUST NOT** appear in adapters:
 
 ---
 
+## Evidence Lane Specification
+
+### Mandatory Evidence Lane Selection
+
+Every bounded slice MUST explicitly declare which evidence lanes apply:
+
+| Evidence Lane | Standard | Required | Justification if Skipped |
+|--------------|----------|----------|--------------------------|
+| **Local diagnostics** | VER-01 | ALWAYS | N/A |
+| **Integration checks** | VER-02 | Conditional | Module has no integration paths OR |
+| **Live official-interface proof** | VER-03 | Conditional | Live proof unavailable because |
+
+### Evidence Lane Selection Table (Module-Specific)
+
+```
+| Evidence Lane | Required | Justification if Skipped |
+|--------------|----------|--------------------------|
+| Local diagnostics (VER-01) | YES/NO | N/A or reason |
+| Integration checks (VER-02) | YES/NO | Module has no integration paths OR |
+| Live official-interface proof (VER-03) | YES/NO | Live proof unavailable because |
+```
+
+### Non-Live Evidence Labeling Rule
+
+Any completion claim that cannot provide live official-interface proof MUST:
+- Include the label `[non-live evidence]` in the completion artifact
+- Provide explicit justification for why live proof is unavailable
+- State what live proof would be required to upgrade to full evidence
+
+### Evidence Upgrade Path
+
+For each `[non-live evidence]` item, document:
+
+| Item | Current Evidence | Why Blocked | What Would Enable Live Proof |
+|------|-----------------|-------------|----------------------------|
+| `{item}` | `{type}` | `{reason}` | `{required condition}` |
+
+---
+
 ## Exit Gate
 
 **The following must be TRUE before authorizing the next slice:**
@@ -82,6 +121,13 @@ The following **MUST NOT** appear in adapters:
    - Live official-interface proof, OR
    - Explicit `[non-live evidence]` labeling with justification
 5. [ ] Adapter thinness verified (no business logic in adapters)
+6. [ ] **Evidence Lane Specification is complete:**
+   - [ ] Local diagnostics (VER-01) lane selected or explicitly not applicable
+   - [ ] Integration checks (VER-02) lane selected or explicitly not applicable
+   - [ ] Live official-interface proof (VER-03) lane selected with live proof OR labeled `[non-live evidence]`
+7. [ ] **All `[non-live evidence]` items have:**
+   - [ ] Explicit justification for why live proof is unavailable
+   - [ ] Clear statement of what would enable live proof upgrade
 
 ---
 
@@ -138,6 +184,20 @@ The following **MUST NOT** appear in adapters:
 | Integration checks | VER-02 | Tool responds to CLI invocation with correct output |
 | Live official-interface proof | VER-03 | SSE connection established to runtime |
 
+#### Evidence Lane Selection (Runtime Entry Module)
+
+| Evidence Lane | Required | Justification |
+|--------------|----------|---------------|
+| Local diagnostics (VER-01) | **YES** | Type check + lint always required |
+| Integration checks (VER-02) | **YES** | Tool connects to sdk-supervisor and schema-kernel |
+| Live official-interface proof (VER-03) | **YES** | Runtime status tool claims runtime attachment state |
+
+#### [non-live evidence] Items (Runtime Entry Module)
+
+| Item | Current Evidence | Why Blocked | What Would Enable Live Proof |
+|------|-----------------|-------------|----------------------------|
+| SDK supervisor health aggregation | Local test with mocked snapshots | SDK supervisor health aggregation requires live OpenCode runtime | Live OpenCode runtime with actual health snapshot export |
+
 ---
 
 ### Exit Gate (Runtime Entry Module)
@@ -149,6 +209,12 @@ Before the next module slice starts:
 3. [ ] Tool invocation produces expected output
 4. [ ] SDK supervisor can observe runtime events
 5. [ ] All evidence meets VER-01/VER-02/VER-03 standards
+6. [ ] **Evidence Lane Specification is complete:**
+   - [ ] Local diagnostics (VER-01) lane: **YES** — type check + lint
+   - [ ] Integration checks (VER-02) lane: **YES** — sdk-supervisor/schema-kernel integration
+   - [ ] Live official-interface proof (VER-03) lane: **YES** with SSE connection OR labeled `[non-live evidence]` for mocked SDK supervisor health
+7. [ ] **All `[non-live evidence]` items have explicit justification:**
+   - SDK supervisor health aggregation: `[non-live evidence]` — justification: "SDK supervisor health aggregation requires live OpenCode runtime; local test uses mocked snapshots"
 
 ---
 
