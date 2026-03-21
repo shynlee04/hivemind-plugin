@@ -1,63 +1,115 @@
 # External Integrations
 
-**Analysis Date:** 2024-05-24
+**Analysis Date:** 2026-03-21
 
 ## APIs & External Services
 
 **OpenCode Platform:**
-- OpenCode AI Core - Provides runtime context, logging, and state management for the plugin.
-  - SDK/Client: `@opencode-ai/sdk`, `@opencode-ai/plugin`
-  - Auth: Handled natively by the OpenCode AI host environment.
+- OpenCode Plugin SDK - Hooks (`event`, `chat.message`, `permission.ask`, `tool.execute.before/after`, `command.execute.before`, `shell.env`, `messages.transform`, `session.compacting`)
+- OpenCode SDK - Client/Server runtime (`createOpencode`, `createOpencodeClient`)
+- Server URL: configurable via `OPENCODE_SERVER_URL` env var (default: `http://127.0.0.1:4096`)
+- Client connection: SSE via `client.event.subscribe()`
 
 ## Data Storage
 
-**Databases:**
-- None detected.
+**Local Filesystem Only:**
+- No external databases detected
+- State stored in `.hivemind/` directory
+- Session state: `.hivemind/session.json`
+- Trajectory state: `.hivemind/trajectory/{id}.json`
+- Workflow state: `.hivemind/workflow/{id}.json`
+- Profile/settings: `.opencode/` user-local projection
 
-**File Storage:**
-- Local filesystem only - Primarily manages local project `.hivemind/` and `.planning/` files. Uses `proper-lockfile` to ensure safe concurrent operations on local files.
-
-**Caching:**
-- None detected.
+**File Locking:**
+- `proper-lockfile` ^4.1.2 - Concurrent access protection
 
 ## Authentication & Identity
 
-**Auth Provider:**
-- Custom - Handled by the OpenCode AI host environment context. No explicit authentication implementations exist within the plugin codebase.
+**OpenCode Session Identity:**
+- Session IDs managed by OpenCode SDK
+- `context.sessionID` from `ToolContext`
+- Agent name resolution via `context.agent`
+
+**Runtime Attachment:**
+- Managed via `HIVEMIND_RUNTIME_ATTACHED` env var
+- Attachment mode tracked in snapshot
 
 ## Monitoring & Observability
 
-**Error Tracking:**
-- None detected. Relies on OpenCode AI platform logging.
+**Logging:**
+- `client.app.log()` - Structured logging (SDK)
+- `console.log/error` - CLI output
+- `shared/logging.ts` - Custom logging wrapper with `HIVEMIND_DEBUG` flag
 
-**Logs:**
-- Standard console logging and OpenCode AI plugin context logging (`sdk.logger`).
+**Runtime Status:**
+- `hivemind_runtime_status` tool - Inspection of active runtime
+- `hivemind_runtime_command` tool - Command execution against runtime
 
 ## CI/CD & Deployment
 
-**Hosting:**
-- npm Registry (published as `hivemind-context-governance`)
+**GitHub Actions:**
+- CI workflow: `.github/workflows/ci.yml`
+- Build matrix: Node.js 18.x, 20.x
+- Gates: TypeScript check → Lint boundary → Tests → Build
+- Publish workflow: `.github/workflows/publish.yml`
 
-**CI Pipeline:**
-- GitHub Actions - Automated testing, boundary checks, and publishing.
-  - Configurations: `.github/workflows/ci.yml`, `.github/workflows/publish.yml`, `.github/workflows/dev-v3.yml`
+**npm Package:**
+- Package: `hivemind-context-governance`
+- Registry: npm public (`publishConfig.access: public`)
+- Binaries: `hivemind`, `hm-init`, `hm-doctor`, `hm-settings`, `hm-harness`
 
 ## Environment Configuration
 
-**Required env vars:**
-- None explicitly required by the plugin itself.
+**CLI Flags:**
+- `--project-root <path>` - Project directory
+- `--server-url <url>` - OpenCode server URL
+- `--name`, `--lang`, `--artifact-lang` - User preferences
+- `--governance`, `--automation`, `--expert-level` - Runtime settings
+- `--preset guided-onboarding` - Non-interactive preset
+- `--json` - JSON output format
 
-**Secrets location:**
-- Not applicable. No internal secrets required.
+**Runtime Environment Variables:**
+- `HIVEMIND_DEBUG` - Enable debug logging (from `process.env.HIVEMIND_DEBUG`)
+- `OPENCODE_SERVER_URL` - OpenCode server endpoint (default: `http://127.0.0.1:4096`)
+- `HIVEMIND_RUNTIME_ATTACHED` - Set by `shell.env` hook
+- `HIVEMIND_ATTACHMENT_MODE` - Current attachment mode
+- `HIVEMIND_ACTIVE_TRAJECTORY` - Active trajectory ID
+- `HIVEMIND_ACTIVE_WORKFLOW` - Active workflow ID
 
 ## Webhooks & Callbacks
 
-**Incoming:**
-- None detected.
+**OpenCode Hooks (Incoming):**
+| Hook | Purpose |
+|------|---------|
+| `event` | All lifecycle events |
+| `chat.message` | Message interception |
+| `permission.ask` | Permission requests |
+| `tool.execute.before` | Pre-tool validation |
+| `tool.execute.after` | Post-tool observation |
+| `command.execute.before` | Pre-command context |
+| `shell.env` | Environment injection |
+| `messages.transform` | Message history transformation |
+| `session.compacting` | Compaction customization |
 
-**Outgoing:**
-- None detected.
+**CLI Commands (Outgoing):**
+| Command | Handler |
+|---------|---------|
+| `hm-init` | Bootstrap runtime entry surfaces |
+| `hm-doctor` | Repair runtime entry and recovery |
+| `hm-settings` | Persist runtime attachment defaults |
+| `hm-harness` | Validate runtime attachment health |
+
+## No External Database/Auth Providers
+
+This codebase does NOT integrate with:
+- No MongoDB, PostgreSQL, Redis, or other databases
+- No OAuth providers (GitHub, Google, etc.)
+- No external auth services
+- No cloud storage (AWS S3, etc.)
+- No messaging/notification services (Slack, Discord, SendGrid)
+
+**Data is stored entirely in local filesystem** under `.hivemind/` and `.opencode/` directories.
 
 ---
 
-*Integration audit: 2024-05-24*
+*Integration audit: 2026-03-21*
