@@ -92,6 +92,28 @@ export class SchemaMigrationError extends RuntimeError {
 }
 
 /**
+ * Corruption errors occur when persistent state is unreadable or invalid.
+ * Used when JSON parsing fails or schema validation detects corrupted data.
+ * These errors should be surfaced (not silently masked) so repair flows can run.
+ */
+export class CorruptionError extends RuntimeError {
+  public readonly resourceType: string
+  public readonly resourcePath: string | null
+
+  constructor(
+    message: string,
+    resourceType: string,
+    resourcePath: string | null = null,
+    context: Record<string, unknown> = {},
+  ) {
+    super(message, 'TASK_LEDGER_CORRUPTION', { resourceType, resourcePath, ...context })
+    this.name = 'CorruptionError'
+    this.resourceType = resourceType
+    this.resourcePath = resourcePath
+  }
+}
+
+/**
  * Delegation errors occur in delegation store operations.
  */
 export class DelegationError extends RuntimeError {

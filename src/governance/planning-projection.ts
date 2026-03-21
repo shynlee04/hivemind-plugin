@@ -21,8 +21,13 @@ export async function createPlanningGovernanceProjection(
 ): Promise<PlanningGovernanceProjection> {
   const ledger = await loadTrajectoryLedger(projectRoot)
   const trajectory = ledger.trajectories.find((item) => item.id === input.trajectoryId)
-  const taskState = readWorkflowTaskState(projectRoot)
-  const taskIds = taskState.tasks
+  const taskResult = readWorkflowTaskState(projectRoot)
+
+  if (!taskResult.ok) {
+    throw taskResult.error
+  }
+
+  const taskIds = taskResult.value.tasks
     .filter((task) => task.workflowId === input.workflowId)
     .map((task) => task.id)
   const checkpointIds = trajectory?.checkpointIds ?? []

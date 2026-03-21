@@ -58,9 +58,14 @@ export async function executeHivemindTrajectoryAction(
         return { kind: 'error', message: `Trajectory ${selectedTrajectoryId} was not found` }
       }
 
-      const taskState = readWorkflowTaskState(projectRoot)
-      const tasks = taskState.tasks.filter((task) => trajectory.taskIds.includes(task.id))
-      const subtasks = taskState.tasks.filter((task) => trajectory.subtaskIds.includes(task.id))
+      const taskResult = readWorkflowTaskState(projectRoot)
+      if (!taskResult.ok) {
+        return { kind: 'error', message: `Failed to load task state: ${taskResult.error.message}` }
+      }
+
+      const taskState = taskResult.value
+      const tasks = taskState.tasks.filter((task: { id: string }) => trajectory.taskIds.includes(task.id))
+      const subtasks = taskState.tasks.filter((task: { id: string }) => trajectory.subtaskIds.includes(task.id))
 
       return {
         kind: 'success',

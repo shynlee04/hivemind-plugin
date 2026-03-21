@@ -2,6 +2,7 @@ import * as fs from 'node:fs'
 import * as path from 'node:path'
 
 import { getHivemindPath } from '../../shared/paths.js'
+import { Result, ok, err, CorruptionError } from '../../shared/errors.js'
 import type { WorkflowRecord } from './workflow-types.js'
 
 export type TaskStatus = 'pending' | 'in_progress' | 'blocked' | 'invalidated' | 'verifying' | 'complete'
@@ -71,19 +72,50 @@ function getTaskLedgerPaths(projectRoot: string): { stateTasksPath: string; grap
   }
 }
 
-function loadLifecycleState(filePath: string): TaskLifecycleState {
+/**
+ * Load task lifecycle state from disk.
+ * Returns a discriminated result: ok with state, or error with corruption details.
+ * Does NOT silently fall back to empty state on parse errors.
+ */
+function loadLifecycleState(filePath: string): Result<TaskLifecycleState, CorruptionError> {
   if (!fs.existsSync(filePath)) {
-    return { version: '1.0.0', tasks: [] }
+    return ok({ version: '1.0.0', tasks: [] })
   }
 
   try {
-    const parsed = JSON.parse(fs.readFileSync(filePath, 'utf-8')) as TaskLifecycleState
-    return {
+    const raw = fs.readFileSync(filePath, 'utf-8')
+    const parsed = JSON.parse(raw) as TaskLifecycleState
+
+    if (!parsed || typeof parsed !== 'object') {
+      return err(new CorruptionError(
+        'Task ledger JSON is not a valid object',
+        'task-ledger',
+        filePath,
+        { parsedType: typeof parsed },
+      ))
+    }
+
+    if (!Array.isArray(parsed.tasks)) {
+      return err(new CorruptionError(
+        'Task ledger is missing or has invalid tasks array',
+        'task-ledger',
+        filePath,
+        { hasTasks: 'tasks' in parsed, tasksType: typeof parsed.tasks },
+      ))
+    }
+
+    return ok({
       version: parsed.version ?? '1.0.0',
       tasks: parsed.tasks ?? [],
-    }
-  } catch {
-    return { version: '1.0.0', tasks: [] }
+    })
+  } catch (e) {
+    const message = e instanceof Error ? e.message : String(e)
+    return err(new CorruptionError(
+      `Task ledger parse error: ${message}`,
+      'task-ledger',
+      filePath,
+      { originalError: message },
+    ))
   }
 }
 
@@ -150,7 +182,13 @@ export function activateWorkflowTask(
   input: ActivateWorkflowTaskInput,
 ): TaskLifecycleResult {
   const { stateTasksPath } = getTaskLedgerPaths(projectRoot)
-  const state = loadLifecycleState(stateTasksPath)
+  const result = loadLifecycleState(stateTasksPath)
+
+  if (!result.ok) {
+    throw result.error
+  }
+
+  const state = result.value
   const now = new Date().toISOString()
   const invalidatedTaskIds: string[] = []
 
@@ -195,7 +233,13 @@ export function createWorkflowTask(
   input: CreateWorkflowTaskInput,
 ): TaskLifecycleResult {
   const { stateTasksPath } = getTaskLedgerPaths(projectRoot)
-  const state = loadLifecycleState(stateTasksPath)
+  const result = loadLifecycleState(stateTasksPath)
+
+  if (!result.ok) {
+    throw result.error
+  }
+
+  const state = result.value
   const now = new Date().toISOString()
 
   ensureTaskRecord(state, input, now)
@@ -213,8 +257,14 @@ export function verifyWorkflowTask(
   input: VerifyWorkflowTaskInput,
 ): TaskLifecycleResult {
   const { stateTasksPath } = getTaskLedgerPaths(projectRoot)
-  const state = loadLifecycleState(stateTasksPath)
-  const task = state.tasks.find((item) => item.id === input.taskId)
+  const result = loadLifecycleState(stateTasksPath)
+
+  if (!result.ok) {
+    throw result.error
+  }
+
+  const state = result.value
+  const task = state.tasks.find((item: TaskRecord) => item.id === input.taskId)
   if (!task) {
     state.tasks.push({
       id: input.taskId,
@@ -246,8 +296,14 @@ export function completeWorkflowTask(
   input: CompleteWorkflowTaskInput,
 ): TaskLifecycleResult {
   const { stateTasksPath } = getTaskLedgerPaths(projectRoot)
-  const state = loadLifecycleState(stateTasksPath)
-  const task = state.tasks.find((item) => item.id === input.taskId)
+  const result = loadLifecycleState(stateTasksPath)
+
+  if (!result.ok) {
+    throw result.error
+  }
+
+  const state = result.value
+  const task = state.tasks.find((item: TaskRecord) => item.id === input.taskId)
   const now = new Date().toISOString()
 
   if (task) {
@@ -264,25 +320,34 @@ export function completeWorkflowTask(
   }
 }
 
-export function readWorkflowTaskState(projectRoot: string): TaskLifecycleState {
+export function readWorkflowTaskState(projectRoot: string): Result<TaskLifecycleState, CorruptionError> {
   return loadLifecycleState(getTaskLedgerPaths(projectRoot).stateTasksPath)
 }
 
 export function readWorkflowTask(
   projectRoot: string,
   taskId: string,
-): TaskRecord | undefined {
-  return readWorkflowTaskState(projectRoot).tasks.find((task) => task.id === taskId)
+): Result<TaskRecord | undefined, CorruptionError> {
+  const result = loadLifecycleState(getTaskLedgerPaths(projectRoot).stateTasksPath)
+  if (!result.ok) {
+    return result
+  }
+  return ok(result.value.tasks.find((task: TaskRecord) => task.id === taskId))
 }
 
 export function listWorkflowTasks(
   projectRoot: string,
   workflowId?: string,
 ): TaskRecord[] {
-  const tasks = readWorkflowTaskState(projectRoot).tasks
+  const result = readWorkflowTaskState(projectRoot)
+  if (!result.ok) {
+    throw result.error
+  }
+
+  const tasks = result.value.tasks
   if (!workflowId) {
     return tasks
   }
 
-  return tasks.filter((task) => task.workflowId === workflowId)
+  return tasks.filter((task: TaskRecord) => task.workflowId === workflowId)
 }
