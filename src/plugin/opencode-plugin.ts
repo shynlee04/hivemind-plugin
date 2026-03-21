@@ -1,15 +1,21 @@
+/**
+ * Real OpenCode plugin entry for the revamp lane.
+ *
+ * Assembly-only: imports hooks and tools, registers them, exports Plugin.
+ * No business logic. No tool definitions. No event processing beyond delegation.
+ */
+
 import { type Plugin } from '@opencode-ai/plugin'
 
 import { findSlashCommandBundle } from '../commands/slash-command/index.js'
 import { initSdkContext, resetSdkContext } from '../hooks/sdk-context.js'
 import { createEventHandler } from '../hooks/event-handler.js'
 import { showGovernanceToast } from '../hooks/soft-governance.js'
-import { resolveStartWork } from '../hooks/start-work/start-work-router.js'
+
 import {
   createAgentWorkCreateContractTool,
   createAgentWorkExportContractTool,
 } from '../features/agent-work-contract/tools/index.js'
-import { maybeExecuteNlFirstRuntimeDispatch } from '../features/runtime-entry/nl-first-dispatch.js'
 import { isHivemindManagedTool, recordToolEvent } from '../hooks/runtime-loader/index.js'
 import { createHivemindDocTool } from '../tools/doc/index.js'
 import { createHivemindHandoffTool } from '../tools/handoff/index.js'
@@ -19,22 +25,11 @@ import {
 } from '../tools/runtime/index.js'
 import { createHivemindTaskTool as createTaskTool } from '../tools/task/index.js'
 import { createHivemindTrajectoryTool as createTrajectoryTool } from '../tools/trajectory/index.js'
-import {
-  createHivemindContextPacket,
-  renderHivemindContext,
-  renderToolPrecedence,
-  renderTurnHierarchy,
-  type TurnHierarchyContext,
-} from './context-renderer.js'
-import { renderRouteHint } from './route-hint.js'
+import { renderToolPrecedence } from './context-renderer.js'
 import { createTurnSnapshotLoader } from './runtime-snapshot.js'
-import {
-  createSyntheticPart,
-  findLastUserMessage,
-  getMessageText,
-  type MessageLike,
-} from './synthetic-parts.js'
-import { createStartWorkInput, resolveCompactionAgentWorkPacket } from './input-helpers.js'
+import { createSyntheticPart } from './synthetic-parts.js'
+import { createMessagesTransformHandler } from './messages-transform-adapter.js'
+import { createCompactionHandler } from './compaction-adapter.js'
 
 /**
  * Real OpenCode plugin entry for the revamp lane.
@@ -48,6 +43,18 @@ export const HiveMindPlugin: Plugin = async (input) => {
   const eventHandler = createEventHandler(directory)
   const turnSnapshot = createTurnSnapshotLoader(directory)
   const nlFirstDispatchKeys = new Set<string>()
+
+  // Create isolated hook adapters
+  const messagesTransform = createMessagesTransformHandler({
+    directory,
+    turnSnapshot,
+    nlFirstDispatchKeys,
+  })
+
+  const compactionHandler = createCompactionHandler({
+    directory,
+    turnSnapshot,
+  })
 
   return {
     event: async (eventInput) => {
@@ -153,112 +160,8 @@ export const HiveMindPlugin: Plugin = async (input) => {
         await recordToolEvent(directory, toolInput.sessionID, toolInput.tool)
       }
     },
-    'experimental.chat.messages.transform': async (transformInput, output) => {
-      const messages = output.messages as MessageLike[]
-      const lastUserMessage = findLastUserMessage(messages)
-      if (!lastUserMessage) {
-        return
-      }
-
-      const sessionID = lastUserMessage.info?.sessionID
-      const messageID = lastUserMessage.info?.id
-      if (!sessionID || !messageID) {
-        return
-      }
-
-      const snapshot = await turnSnapshot.getSnapshot()
-      const userMessage = getMessageText(lastUserMessage)
-      const activeAgent = typeof (transformInput as { agent?: unknown } | undefined)?.agent === 'string'
-        ? (transformInput as { agent: string }).agent
-        : undefined
-      const startWork = resolveStartWork(createStartWorkInput({
-        directory,
-        sessionId: sessionID,
-        userMessage,
-        activeAgent,
-        snapshot,
-      }))
-      const routedCommand = startWork.requiredCommandId ?? startWork.recommendedCommandId
-      const dispatchKey = `${sessionID}:${messageID}:${routedCommand ?? 'none'}`
-      const alreadyDispatched = nlFirstDispatchKeys.has(dispatchKey)
-      let dispatchedNow = false
-
-      if (!alreadyDispatched) {
-        const dispatch = await maybeExecuteNlFirstRuntimeDispatch({
-          projectRoot: directory,
-          startWork,
-          snapshot,
-          userMessage,
-          context: {
-            sessionID,
-            agent: activeAgent ?? 'hivefiver',
-          },
-        })
-
-        if (dispatch.plan.shouldDispatch) {
-          nlFirstDispatchKeys.add(dispatchKey)
-          dispatchedNow = true
-          turnSnapshot.resetTurnSnapshot()
-        }
-      }
-
-      const renderSnapshot = await turnSnapshot.getSnapshot()
-
-      // Build turn hierarchy context from snapshot with defaults
-      const turnHierarchyContext: TurnHierarchyContext = {
-        turn_depth: 0,
-        turn_type: 'root',
-        sibling_count: 0,
-        trajectory_path: [
-          renderSnapshot.trajectoryId,
-          renderSnapshot.workflowId,
-          renderSnapshot.checkpointId,
-          ...renderSnapshot.taskIds,
-        ].filter((id): id is string => id !== undefined),
-      }
-
-      const packet = renderHivemindContext(createHivemindContextPacket({
-        sessionId: sessionID,
-        snapshot: renderSnapshot,
-        startWork,
-      }))
-      const turnHierarchyPacket = renderTurnHierarchy(turnHierarchyContext)
-      const injectedParts = [
-        createSyntheticPart(sessionID, messageID, turnHierarchyPacket),
-        createSyntheticPart(sessionID, messageID, packet),
-      ]
-      lastUserMessage.parts = [...injectedParts, ...(lastUserMessage.parts ?? [])]
-
-      const routeReminder = alreadyDispatched || dispatchedNow
-        ? undefined
-        : renderRouteHint({
-            routeCommand: routedCommand,
-            risk: startWork.riskLevel,
-          })
-      if (routeReminder) {
-        lastUserMessage.parts = [
-          ...(lastUserMessage.parts ?? []),
-          createSyntheticPart(sessionID, messageID, routeReminder),
-        ]
-      }
-    },
-    'experimental.session.compacting': async (compactionInput, output) => {
-      const snapshot = await turnSnapshot.getSnapshot()
-      const agentWorkPacket = await resolveCompactionAgentWorkPacket(
-        directory,
-        compactionInput.sessionID,
-      )
-      const packet = createHivemindContextPacket({
-        sessionId: compactionInput.sessionID,
-        snapshot,
-        agentWorkPacket,
-      })
-
-      // Always use renderHivemindContext for the authoritative format
-      // This correctly includes contract_id and all agent-work fields when a contract exists
-      const renderedContext = renderHivemindContext(packet)
-      output.context.push(renderedContext)
-    },
+    'experimental.chat.messages.transform': messagesTransform,
+    'experimental.session.compacting': compactionHandler,
   }
 }
 
