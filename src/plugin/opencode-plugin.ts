@@ -5,13 +5,11 @@ import { initSdkContext, resetSdkContext } from '../hooks/sdk-context.js'
 import { createEventHandler } from '../hooks/event-handler.js'
 import { showGovernanceToast } from '../hooks/soft-governance.js'
 import { resolveStartWork } from '../hooks/start-work/start-work-router.js'
-import { ContractStore } from '../features/agent-work-contract/engine/contract-store.js'
-import { createCompactionPreservationPacket } from '../features/agent-work-contract/hooks/index.js'
 import {
   createAgentWorkCreateContractTool,
   createAgentWorkExportContractTool,
 } from '../features/agent-work-contract/tools/index.js'
-import type { StartWorkInput } from '../features/session-entry/start-work-types.js'
+import { maybeExecuteNlFirstRuntimeDispatch } from '../features/runtime-entry/nl-first-dispatch.js'
 import { isHivemindManagedTool, recordToolEvent } from '../hooks/runtime-loader/index.js'
 import { createHivemindDocTool } from '../tools/doc/index.js'
 import { createHivemindHandoffTool } from '../tools/handoff/index.js'
@@ -36,42 +34,7 @@ import {
   getMessageText,
   type MessageLike,
 } from './synthetic-parts.js'
-
-function createStartWorkInput(input: {
-  directory: string
-  sessionId: string
-  userMessage: string
-  snapshot: Awaited<ReturnType<ReturnType<typeof createTurnSnapshotLoader>['getSnapshot']>>
-}): StartWorkInput {
-  return {
-    userMessage: input.userMessage,
-    sessionId: input.sessionId,
-    sessionScope: 'main',
-    projectRoot: input.directory,
-    workflowId: input.snapshot.workflowId,
-    taskIds: input.snapshot.taskIds,
-    hasRuntimeAttachment: input.snapshot.hasRuntimeAttachment,
-    profileComplete: input.snapshot.profileComplete,
-    activeLineage: input.snapshot.defaultLineage,
-    hasHivemind: input.snapshot.hasHivemind,
-    hivemindHealthy: input.snapshot.hivemindHealthy,
-    hasWorkflow: input.snapshot.hasWorkflow,
-    hasHandoff: false,
-  }
-}
-
-async function resolveCompactionAgentWorkPacket(
-  directory: string,
-  sessionId: string,
-) {
-  const contracts = await new ContractStore(directory).list(sessionId)
-  const latestContract = contracts
-    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0]
-
-  return latestContract
-    ? createCompactionPreservationPacket(latestContract)
-    : undefined
-}
+import { createStartWorkInput, resolveCompactionAgentWorkPacket } from './input-helpers.js'
 
 /**
  * Real OpenCode plugin entry for the revamp lane.
@@ -84,6 +47,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
   initSdkContext(input)
   const eventHandler = createEventHandler(directory)
   const turnSnapshot = createTurnSnapshotLoader(directory)
+  const nlFirstDispatchKeys = new Set<string>()
 
   return {
     event: async (eventInput) => {
@@ -189,7 +153,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
         await recordToolEvent(directory, toolInput.sessionID, toolInput.tool)
       }
     },
-    'experimental.chat.messages.transform': async (_input, output) => {
+    'experimental.chat.messages.transform': async (transformInput, output) => {
       const messages = output.messages as MessageLike[]
       const lastUserMessage = findLastUserMessage(messages)
       if (!lastUserMessage) {
@@ -204,12 +168,41 @@ export const HiveMindPlugin: Plugin = async (input) => {
 
       const snapshot = await turnSnapshot.getSnapshot()
       const userMessage = getMessageText(lastUserMessage)
+      const activeAgent = typeof (transformInput as { agent?: unknown } | undefined)?.agent === 'string'
+        ? (transformInput as { agent: string }).agent
+        : undefined
       const startWork = resolveStartWork(createStartWorkInput({
         directory,
         sessionId: sessionID,
         userMessage,
+        activeAgent,
         snapshot,
       }))
+      const routedCommand = startWork.requiredCommandId ?? startWork.recommendedCommandId
+      const dispatchKey = `${sessionID}:${messageID}:${routedCommand ?? 'none'}`
+      const alreadyDispatched = nlFirstDispatchKeys.has(dispatchKey)
+      let dispatchedNow = false
+
+      if (!alreadyDispatched) {
+        const dispatch = await maybeExecuteNlFirstRuntimeDispatch({
+          projectRoot: directory,
+          startWork,
+          snapshot,
+          userMessage,
+          context: {
+            sessionID,
+            agent: activeAgent ?? 'hivefiver',
+          },
+        })
+
+        if (dispatch.plan.shouldDispatch) {
+          nlFirstDispatchKeys.add(dispatchKey)
+          dispatchedNow = true
+          turnSnapshot.resetTurnSnapshot()
+        }
+      }
+
+      const renderSnapshot = await turnSnapshot.getSnapshot()
 
       // Build turn hierarchy context from snapshot with defaults
       const turnHierarchyContext: TurnHierarchyContext = {
@@ -217,16 +210,16 @@ export const HiveMindPlugin: Plugin = async (input) => {
         turn_type: 'root',
         sibling_count: 0,
         trajectory_path: [
-          snapshot.trajectoryId,
-          snapshot.workflowId,
-          snapshot.checkpointId,
-          ...snapshot.taskIds,
+          renderSnapshot.trajectoryId,
+          renderSnapshot.workflowId,
+          renderSnapshot.checkpointId,
+          ...renderSnapshot.taskIds,
         ].filter((id): id is string => id !== undefined),
       }
 
       const packet = renderHivemindContext(createHivemindContextPacket({
         sessionId: sessionID,
-        snapshot,
+        snapshot: renderSnapshot,
         startWork,
       }))
       const turnHierarchyPacket = renderTurnHierarchy(turnHierarchyContext)
@@ -236,10 +229,12 @@ export const HiveMindPlugin: Plugin = async (input) => {
       ]
       lastUserMessage.parts = [...injectedParts, ...(lastUserMessage.parts ?? [])]
 
-      const routeReminder = renderRouteHint({
-        routeCommand: startWork.requiredCommandId ?? startWork.recommendedCommandId,
-        risk: startWork.riskLevel,
-      })
+      const routeReminder = alreadyDispatched || dispatchedNow
+        ? undefined
+        : renderRouteHint({
+            routeCommand: routedCommand,
+            risk: startWork.riskLevel,
+          })
       if (routeReminder) {
         lastUserMessage.parts = [
           ...(lastUserMessage.parts ?? []),

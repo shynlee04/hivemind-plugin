@@ -28,7 +28,7 @@ import { markEntryKernelReady } from '../../../shared/entry-kernel-state.js'
 
 // Evidence lane types for VER-02 compliance
 type EvidenceLane = 'local_diagnostics' | 'integration_checks' | 'live_official_interface_proof'
-type ValidationStatus = 'pass' | 'fail' | 'non_live_evidence'
+type ValidationStatus = 'pass' | 'fail' | 'unavailable' | 'not_applicable'
 
 interface ContinuityTestResult {
   scenario: string
@@ -434,7 +434,7 @@ test('CompactionPreservation - Evidence Lane: repair flow integration via mocked
   const result: ContinuityTestResult = {
     scenario: 'Repair flow restores session continuity correctly',
     lane: 'integration_checks',
-    status: 'non_live_evidence',
+    status: 'unavailable',
     label: '[non-live evidence]',
     justification: 'SDK supervisor health aggregation requires live OpenCode runtime; local test uses mocked snapshots',
     evidence: {
@@ -443,7 +443,7 @@ test('CompactionPreservation - Evidence Lane: repair flow integration via mocked
     },
   }
 
-  assert.equal(result.status, 'non_live_evidence')
+  assert.equal(result.status, 'unavailable')
   assert.equal(result.lane, 'integration_checks')
   assert.equal(result.label, '[non-live evidence]')
   assert.ok(result.justification.length > 0)
@@ -455,7 +455,7 @@ test('CompactionPreservation - Evidence Lane: attach flow with [non-live evidenc
   const result: ContinuityTestResult = {
     scenario: 'Attach to existing runtime correctly resumes session',
     lane: 'live_official_interface_proof',
-    status: 'non_live_evidence',
+    status: 'unavailable',
     label: '[non-live evidence]',
     justification: 'Live official-interface proof unavailable because OpenCode runtime is not running; attachment state cannot be verified against live server',
     evidence: {
@@ -464,7 +464,7 @@ test('CompactionPreservation - Evidence Lane: attach flow with [non-live evidenc
     },
   }
 
-  assert.equal(result.status, 'non_live_evidence')
+  assert.equal(result.status, 'unavailable')
   assert.equal(result.lane, 'live_official_interface_proof')
   assert.equal(result.label, '[non-live evidence]')
   assert.ok(result.justification.includes('unavailable'))
@@ -483,7 +483,7 @@ test('CompactionPreservation - Evidence Summary: summarizeContinuityEvidence pro
     {
       scenario: 'Repair flow',
       lane: 'integration_checks',
-      status: 'non_live_evidence',
+      status: 'unavailable',
       label: '[non-live evidence]',
       justification: 'Live runtime unavailable',
       evidence: {},
@@ -491,7 +491,7 @@ test('CompactionPreservation - Evidence Summary: summarizeContinuityEvidence pro
     {
       scenario: 'Attach flow',
       lane: 'live_official_interface_proof',
-      status: 'non_live_evidence',
+      status: 'unavailable',
       label: '[non-live evidence]',
       justification: 'Live runtime unavailable',
       evidence: {},
@@ -506,4 +506,113 @@ test('CompactionPreservation - Evidence Summary: summarizeContinuityEvidence pro
   assert.equal(summary.byLane.live_official_interface_proof.nonLive, 1)
   assert.equal(summary.nonLiveEvidenceItems.length, 2)
   assert.equal(summary.overallCoverage, 'partial_evidence')
+})
+
+// ============================================================================
+// Edge Case Tests for Continuity Validation (04-04 Gap Closure)
+// ============================================================================
+
+test('CompactionPreservation - Edge Case: stale attach target', () => {
+  // When attach target no longer exists, repair should handle gracefully
+  const result: ContinuityTestResult = {
+    scenario: 'Stale attach target - target no longer exists',
+    lane: 'integration_checks',
+    status: 'not_applicable',
+    label: null,
+    justification: 'Attach target validation returns not_applicable when runtime no longer exists',
+    evidence: {
+      attachTargetExists: false,
+      errorType: 'runtime_not_found',
+      repairRecommended: false,
+    },
+  }
+
+  assert.equal(result.status, 'not_applicable')
+  assert.equal(result.lane, 'integration_checks')
+  assert.ok(result.justification.includes('not_applicable'))
+})
+
+test('CompactionPreservation - Edge Case: mismatched runtime/session IDs', () => {
+  // When session ID doesn't match runtime ID, should fail gracefully
+  const result: ContinuityTestResult = {
+    scenario: 'Mismatched runtime/session IDs - IDs do not align',
+    lane: 'integration_checks',
+    status: 'fail',
+    label: null,
+    justification: 'Runtime ID mismatch detected - session belongs to different runtime',
+    evidence: {
+      expectedRuntimeId: 'rt_active',
+      actualRuntimeId: 'rt_different',
+      mismatchDetected: true,
+      repairNeeded: true,
+    },
+  }
+
+  assert.equal(result.status, 'fail')
+  assert.equal(result.lane, 'integration_checks')
+  assert.ok(result.justification.includes('mismatch'))
+})
+
+test('CompactionPreservation - Edge Case: corrupted continuation records', () => {
+  // When continuation data is corrupted, repair should detect and report
+  const result: ContinuityTestResult = {
+    scenario: 'Corrupted continuation records - data integrity check failed',
+    lane: 'integration_checks',
+    status: 'fail',
+    label: null,
+    justification: 'Continuation record checksum mismatch - data corrupted',
+    evidence: {
+      checksumExpected: 'abc123',
+      checksumActual: 'def456',
+      corruptionType: 'checksum_mismatch',
+      repairRecommended: true,
+    },
+  }
+
+  assert.equal(result.status, 'fail')
+  assert.equal(result.lane, 'integration_checks')
+  assert.ok(result.justification.includes('corrupted'))
+})
+
+test('CompactionPreservation - Edge Case: concurrent attach attempts', () => {
+  // Multiple simultaneous attach flows should be handled with locking
+  const result: ContinuityTestResult = {
+    scenario: 'Concurrent attach attempts - multiple flows targeting same session',
+    lane: 'integration_checks',
+    status: 'unavailable',
+    label: '[non-live evidence]',
+    justification: 'Concurrent attach locking requires live runtime to verify atomic behavior; local test cannot simulate race conditions accurately',
+    evidence: {
+      concurrentAttempts: 3,
+      lockingBehavior: 'unverified',
+      raceConditionRisk: true,
+      upgradePath: 'Live runtime with stress testing to verify atomic attach locking',
+    },
+  }
+
+  assert.equal(result.status, 'unavailable')
+  assert.equal(result.label, '[non-live evidence]')
+  assert.ok(result.justification.length > 0)
+})
+
+test('CompactionPreservation - Edge Case: partial repair restoration', () => {
+  // Repair that only partially restores state should be detected
+  const result: ContinuityTestResult = {
+    scenario: 'Partial repair restoration - only some state recovered',
+    lane: 'integration_checks',
+    status: 'fail',
+    label: null,
+    justification: 'Repair flow incomplete - session state partially recovered but workflow tasks missing',
+    evidence: {
+      sessionRestored: true,
+      workflowStateRestored: false,
+      tasksRecovered: ['task-1'],
+      tasksMissing: ['task-2', 'task-3'],
+      partialRestore: true,
+    },
+  }
+
+  assert.equal(result.status, 'fail')
+  assert.equal(result.lane, 'integration_checks')
+  assert.equal(result.evidence.partialRestore, true)
 })

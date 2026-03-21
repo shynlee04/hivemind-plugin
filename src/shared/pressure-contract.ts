@@ -44,14 +44,32 @@ export interface RuntimeEvidenceCaptureSpec {
   stateOwners: string[]
 }
 
-export interface RuntimePressureContract {
+/**
+ * Metadata portion of RuntimePressureContract - identity and description.
+ */
+export interface RuntimePressureMetadata {
   id: RuntimePressureId
   title: string
   summary: string
-  failureBehavior: RuntimeFailureBehavior
-  safety: RuntimeSafetyExpectation
-  evidence: RuntimeEvidenceCaptureSpec
 }
+
+/**
+ * Failure handling portion of RuntimePressureContract.
+ */
+export interface RuntimePressureFailure {
+  failureBehavior: RuntimeFailureBehavior
+}
+
+/**
+ * Composed RuntimePressureContract using intersection types.
+ * Preserves backward compatibility: contract.safety.level and contract.evidence.requiredArtifacts
+ * continue to work because safety and evidence are kept as named property wrappers.
+ */
+export type RuntimePressureContract =
+  & RuntimePressureMetadata
+  & RuntimePressureFailure
+  & { safety: RuntimeSafetyExpectation }
+  & { evidence: RuntimeEvidenceCaptureSpec }
 
 const PRESSURE_PRIORITY: RuntimePressureId[] = [
   'active-trajectory-conflict',
