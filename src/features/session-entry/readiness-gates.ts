@@ -6,13 +6,13 @@ export function resolveReadinessGates(
   purposeClass: PurposeClass,
 ): ReadinessGate[] {
   const gate = resolveControlPlaneGate(input, purposeClass)
-  if (gate) {
-    const primitive = findControlPlanePrimitive(gate.primitiveId)
+  if (gate.status === 'matched') {
+    const primitive = findControlPlanePrimitive(gate.decision.primitiveId)
     return [{
-      blocking: gate.blocking,
-      primitiveId: gate.primitiveId,
-      commandId: primitive?.adapterCommandId ?? gate.primitiveId,
-      reason: gate.reason,
+      blocking: gate.decision.blocking,
+      primitiveId: gate.decision.primitiveId,
+      commandId: primitive?.adapterCommandId ?? gate.decision.primitiveId,
+      reason: gate.decision.reason,
       pressureId: primitive?.pressureContract.id,
     }]
   }

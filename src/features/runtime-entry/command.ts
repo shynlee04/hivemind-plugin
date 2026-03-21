@@ -20,6 +20,26 @@ import { runtimeCommandHandlers } from './runtime-command-handlers.js'
 import { createTurnOutputEnvelope, exportTurnOutputProjection } from './turn-output.js'
 import { upsertWorkflowContinuityTransaction } from './workflow-continuity.js'
 
+/**
+ * Reason codes for why auto-recovery was skipped.
+ * These provide diagnostic metadata instead of silent null returns.
+ */
+export type AutoRecoverySkipReasonCode =
+  | 'MISSING_PROJECT_ROOT'     // Line 123-124: input.projectRoot is falsy
+  | 'COMMAND_EXCLUDED'        // Line 127-128: bundle.id is a self-recovery command
+  | 'NON_RECOVERABLE_STATE'    // Line 135-136: entry kernel state is not uninitialized/repair-required
+  | 'MISSING_RECOVERY_BUNDLE'  // Line 142-143: recovery bundle not found
+  | 'RECOVERY_NOT_NEEDED'      // State allows direct execution
+
+/**
+ * Result of maybeAutoRecoverEntry with explicit status discrimination.
+ * - status: 'skipped' means recovery was not performed; reason explains why
+ * - status: 'recovered' means recovery was performed; result contains the execution result
+ */
+export type AutoRecoveryResult =
+  | { status: 'skipped'; reason: AutoRecoverySkipReasonCode; detail?: string }
+  | { status: 'recovered'; result: CommandExecutionResult }
+
 type RecoveryHandler = (
   bundle: SlashCommandBundle,
   asset: LoadedCommandAsset,
@@ -65,8 +85,8 @@ export async function executeRuntimeEntryCommandBundle(
 ): Promise<CommandExecutionResult> {
   assertSlashCommandAgentBindings([bundle])
   const autoRecovered = await maybeAutoRecoverEntry(bundle, input, options)
-  if (autoRecovered) {
-    return autoRecovered
+  if (autoRecovered.status === 'recovered') {
+    return autoRecovered.result
   }
 
   const asset = await loadCommandAsset(bundle.id)
@@ -119,13 +139,13 @@ async function maybeAutoRecoverEntry(
   bundle: SlashCommandBundle,
   input: CommandExecutionInput,
   options: RuntimeEntryCommandExecutionOptions,
-): Promise<CommandExecutionResult | null> {
+): Promise<AutoRecoveryResult> {
   if (!input.projectRoot) {
-    return null
+    return { status: 'skipped', reason: 'MISSING_PROJECT_ROOT', detail: 'input.projectRoot is required for auto-recovery' }
   }
 
   if (['hm-init', 'hm-doctor', 'hm-settings', 'hm-harness'].includes(bundle.id)) {
-    return null
+    return { status: 'skipped', reason: 'COMMAND_EXCLUDED', detail: `${bundle.id} is a self-recovery command and does not auto-recover` }
   }
 
   const entryKernelState = await detectEntryKernelState(input.projectRoot, {
@@ -133,17 +153,17 @@ async function maybeAutoRecoverEntry(
     taskIds: input.taskIds,
   })
   if (entryKernelState.state !== 'uninitialized' && entryKernelState.state !== 'repair-required') {
-    return null
+    return { status: 'skipped', reason: 'NON_RECOVERABLE_STATE', detail: `entry kernel state is '${entryKernelState.state}', expected 'uninitialized' or 'repair-required'` }
   }
 
   const recoveryBundle = findSlashCommandBundle(
     entryKernelState.state === 'uninitialized' ? 'hm-init' : 'hm-doctor',
   )
   if (!recoveryBundle) {
-    return null
+    return { status: 'skipped', reason: 'MISSING_RECOVERY_BUNDLE', detail: `recovery bundle '${entryKernelState.state === 'uninitialized' ? 'hm-init' : 'hm-doctor'}' not found` }
   }
 
-  return executeRuntimeEntryCommandBundle(
+  const result = await executeRuntimeEntryCommandBundle(
     recoveryBundle,
     {
       ...input,
@@ -152,6 +172,8 @@ async function maybeAutoRecoverEntry(
     },
     options,
   )
+
+  return { status: 'recovered', result }
 }
 
 async function finalizeCommandResult(

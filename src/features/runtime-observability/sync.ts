@@ -10,6 +10,17 @@ export interface RuntimeSurfaceSyncOptions {
   localPluginFile: string
   packagePluginName: string
   packagePluginEntry: string
+  /**
+   * When true, returns would-delete list without removing unmanaged files.
+   * @default false
+   */
+  dryRun?: boolean
+  /**
+   * List of absolute paths to protect from deletion during sync.
+   * Files matching these paths will not be listed in wouldDelete.
+   * @default []
+   */
+  protectedPaths?: string[]
 }
 
 export interface RuntimeSurfaceSyncResult {
@@ -17,6 +28,21 @@ export interface RuntimeSurfaceSyncResult {
   mirroredCommandFiles: string[]
   mirroredAgentFiles: string[]
   mirroredSkillFiles: string[]
+  /**
+   * Only present when dryRun is true.
+   * List of paths that would be deleted if not in dry-run mode.
+   */
+  wouldDelete?: string[]
+  /**
+   * Only present when dryRun is true and protectedPaths were provided.
+   * List of paths that were protected from deletion.
+   */
+  protected?: string[]
+  /**
+   * Only present when dryRun is true.
+   * Always true when present.
+   */
+  dryRun?: true
 }
 
 function renderLocalPluginStub(options: RuntimeSurfaceSyncOptions): string {
@@ -28,11 +54,18 @@ function renderLocalPluginStub(options: RuntimeSurfaceSyncOptions): string {
   ].join('\n')
 }
 
+interface SyncDirectoryResult {
+  writtenPaths: string[]
+  wouldDelete: string[]
+  protectedItems: string[]
+}
+
 async function syncMirrorDirectory(
   directory: string,
   files: Map<string, string>,
   managedExtension: string,
-): Promise<string[]> {
+  options: RuntimeSurfaceSyncOptions,
+): Promise<SyncDirectoryResult> {
   await mkdir(directory, { recursive: true })
 
   const sortedEntries = [...files.entries()].sort(([left], [right]) => left.localeCompare(right))
@@ -52,18 +85,33 @@ async function syncMirrorDirectory(
   })
 
   const managedNames = new Set(files.keys())
-  await Promise.all(existingEntries.map(async (entry) => {
-    if (!entry.isFile() || !entry.name.endsWith(managedExtension) || managedNames.has(entry.name)) {
-      return
-    }
-    await rm(join(directory, entry.name), { force: true })
-  }))
+  const protectedPathsSet = new Set(options.protectedPaths ?? [])
+  const wouldDelete: string[] = []
+  const protectedItems: string[] = []
 
-  return writtenPaths
-}async function syncSkillDirectory(
+  for (const entry of existingEntries) {
+    if (!entry.isFile() || !entry.name.endsWith(managedExtension) || managedNames.has(entry.name)) {
+      continue
+    }
+    const fullPath = join(directory, entry.name)
+    if (protectedPathsSet.has(fullPath)) {
+      protectedItems.push(fullPath)
+      continue
+    }
+    wouldDelete.push(fullPath)
+    if (!options.dryRun) {
+      await rm(fullPath, { force: true })
+    }
+  }
+
+  return { writtenPaths, wouldDelete, protectedItems }
+}
+
+async function syncSkillDirectory(
   skillsRoot: string,
   skillFiles: Map<string, string>,
-): Promise<string[]> {
+  options: RuntimeSurfaceSyncOptions,
+): Promise<SyncDirectoryResult> {
   await mkdir(skillsRoot, { recursive: true })
 
   const skillDirs = new Set<string>()
@@ -100,14 +148,26 @@ async function syncMirrorDirectory(
     throw error
   })
 
-  await Promise.all(existingSkills.map(async (entry) => {
-    if (!entry.isDirectory() || skillDirs.has(entry.name)) {
-      return
-    }
-    await rm(join(skillsRoot, entry.name), { recursive: true, force: true })
-  }))
+  const protectedPathsSet = new Set(options.protectedPaths ?? [])
+  const wouldDelete: string[] = []
+  const protectedItems: string[] = []
 
-  return writtenPaths
+  for (const entry of existingSkills) {
+    if (!entry.isDirectory() || skillDirs.has(entry.name)) {
+      continue
+    }
+    const fullPath = join(skillsRoot, entry.name)
+    if (protectedPathsSet.has(fullPath)) {
+      protectedItems.push(fullPath)
+      continue
+    }
+    wouldDelete.push(fullPath)
+    if (!options.dryRun) {
+      await rm(fullPath, { recursive: true, force: true })
+    }
+  }
+
+  return { writtenPaths, wouldDelete, protectedItems }
 }
 
 export async function syncRuntimeSurface(
@@ -152,14 +212,30 @@ export async function syncRuntimeSurface(
 
   await mkdir(pluginsRoot, { recursive: true })
   await writeFile(pluginFile, renderLocalPluginStub(options))
-  const mirroredCommandFiles = await syncMirrorDirectory(commandsRoot, commandFiles, '.md')
-  const mirroredAgentFiles = await syncMirrorDirectory(agentsRoot, agentFiles, '.md')
-  const mirroredSkillFiles = await syncSkillDirectory(skillsRoot, skillFiles)
+  const mirroredCommandFiles = await syncMirrorDirectory(commandsRoot, commandFiles, '.md', options)
+  const mirroredAgentFiles = await syncMirrorDirectory(agentsRoot, agentFiles, '.md', options)
+  const mirroredSkillFiles = await syncSkillDirectory(skillsRoot, skillFiles, options)
 
-  return {
+  const result: RuntimeSurfaceSyncResult = {
     pluginFile,
-    mirroredCommandFiles,
-    mirroredAgentFiles,
-    mirroredSkillFiles,
+    mirroredCommandFiles: mirroredCommandFiles.writtenPaths,
+    mirroredAgentFiles: mirroredAgentFiles.writtenPaths,
+    mirroredSkillFiles: mirroredSkillFiles.writtenPaths,
   }
+
+  if (options.dryRun) {
+    result.dryRun = true
+    result.wouldDelete = [
+      ...mirroredCommandFiles.wouldDelete,
+      ...mirroredAgentFiles.wouldDelete,
+      ...mirroredSkillFiles.wouldDelete,
+    ]
+    result.protected = [
+      ...mirroredCommandFiles.protectedItems,
+      ...mirroredAgentFiles.protectedItems,
+      ...mirroredSkillFiles.protectedItems,
+    ]
+  }
+
+  return result
 }

@@ -11,11 +11,36 @@ import { createRecoveryCheckpoint } from '../recovery/index.js'
 import { recordTrajectoryEvent } from '../core/trajectory/index.js'
 
 function normalizeEventSummary(event: Event): string {
-  if (!event || typeof event !== 'object' || !('type' in event)) {
-    return 'event:unknown'
+  if (!event || typeof event !== 'object') {
+    console.warn('[event-handler] Malformed event received: not an object', { event })
+    return 'event:malformed'
   }
 
-  return `event:${String(event.type)}`
+  if (!('type' in event)) {
+    console.warn('[event-handler] Malformed event received: missing type field', { event })
+    return 'event:malformed'
+  }
+
+  // Emit diagnostic for unknown/unexpected event types
+  const eventType = String(event.type)
+  const KNOWN_EVENT_TYPES = [
+    'session.started',
+    'session.ended',
+    'session.compacted',
+    'message.added',
+    'message.updated',
+    'tool.executed',
+    'command.executed',
+    'agent.created',
+    'trajectory.started',
+    'trajectory.ended',
+  ]
+
+  if (!KNOWN_EVENT_TYPES.includes(eventType) && !eventType.startsWith('agent-work')) {
+    console.warn(`[event-handler] Unknown event type received: "${eventType}" - this event will be recorded but may not be fully handled`)
+  }
+
+  return `event:${eventType}`
 }
 
 async function resolveAgentWorkEvidence(

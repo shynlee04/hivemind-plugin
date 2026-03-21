@@ -10,7 +10,18 @@
  * @module plugin/evidence-reporter
  */
 
+import { z } from 'zod'
+
 import { type EvidenceResult, EvidenceLane } from '../shared/evidence-lane.js'
+
+/**
+ * Schema for validating evidence object at runtime.
+ * Ensures evidence has expected structure before property access.
+ */
+const EvidenceObjectSchema = z.object({
+  upgradePath: z.string().optional(),
+  blockedReason: z.string().optional(),
+}).passthrough()
 
 export interface EvidenceStatusReport {
   timestamp: string
@@ -93,15 +104,25 @@ function formatLaneBadge(lane: EvidenceLane): string {
 }
 
 /**
- * Generate upgrade path from evidence
+ * Safely extract upgrade path from evidence using schema validation.
+ * Returns null if evidence is not an object or lacks required fields.
  */
-function extractUpgradePath(result: EvidenceResult): string | null {
-  const evidence = result.evidence as Record<string, unknown>
-  if (evidence.upgradePath && typeof evidence.upgradePath === 'string') {
-    return evidence.upgradePath
+function extractUpgradePath(evidence: unknown): string | null {
+  if (evidence === null || evidence === undefined || typeof evidence !== 'object') {
+    return null
   }
-  if (evidence.blockedReason) {
-    return `Resolve: ${evidence.blockedReason}`
+
+  const validation = EvidenceObjectSchema.safeParse(evidence)
+  if (!validation.success) {
+    return null
+  }
+
+  const validated = validation.data
+  if (validated.upgradePath && typeof validated.upgradePath === 'string') {
+    return validated.upgradePath
+  }
+  if (validated.blockedReason) {
+    return `Resolve: ${validated.blockedReason}`
   }
   return null
 }
@@ -137,11 +158,16 @@ export function reportEvidenceStatus(results: EvidenceResult[]): EvidenceStatusR
     }
 
     if (result.label === '[non-live evidence]' || result.status === 'unavailable') {
+      // Safely validate evidence object before property access
+      const validatedEvidence = result.evidence && typeof result.evidence === 'object'
+        ? result.evidence as Record<string, unknown>
+        : {}
+
       nonLiveEvidenceItems.push({
         lane: result.lane,
         justification: result.justification || 'No justification provided',
-        evidence: result.evidence as Record<string, unknown>,
-        upgradePath: extractUpgradePath(result),
+        evidence: validatedEvidence,
+        upgradePath: extractUpgradePath(result.evidence),
       })
     }
   }

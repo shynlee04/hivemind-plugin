@@ -98,26 +98,56 @@ async function readContinuityTransaction(
   }
 }
 
-async function listWorkflowContinuityTransactions(projectRoot: string): Promise<WorkflowContinuityTransactionV1[]> {
+/**
+ * Result of listing workflow continuity transactions.
+ * Explicitly tracks both valid transactions and corruption errors.
+ */
+export interface ListContinuityResult {
+  transactions: WorkflowContinuityTransactionV1[]
+  errors: Array<{
+    file: string
+    error: string
+  }>
+}
+
+async function listWorkflowContinuityTransactions(projectRoot: string): Promise<ListContinuityResult> {
   const directory = getContinuityDirectory(projectRoot)
 
   try {
     const entries = await fs.readdir(directory, { withFileTypes: true })
-    const transactions = await Promise.all(entries
+    const results = await Promise.all(entries
       .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
       .map(async (entry) => {
+        const filePath = path.join(directory, entry.name)
         try {
-          const content = await fs.readFile(path.join(directory, entry.name), 'utf8')
-          return JSON.parse(content) as WorkflowContinuityTransactionV1
-        } catch {
-          return null
+          const content = await fs.readFile(filePath, 'utf8')
+          const transaction = JSON.parse(content) as WorkflowContinuityTransactionV1
+          return { ok: true as const, transaction, file: entry.name }
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : String(err)
+          return {
+            ok: false as const,
+            file: entry.name,
+            error: errorMessage,
+          }
         }
       }))
 
-    return transactions.filter((transaction): transaction is WorkflowContinuityTransactionV1 => transaction !== null)
+    const transactions: WorkflowContinuityTransactionV1[] = []
+    const errors: ListContinuityResult['errors'] = []
+
+    for (const result of results) {
+      if (result.ok) {
+        transactions.push(result.transaction)
+      } else {
+        errors.push({ file: result.file, error: result.error })
+      }
+    }
+
+    return { transactions, errors }
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
-      return []
+      return { transactions: [], errors: [] }
     }
 
     throw error
@@ -128,7 +158,12 @@ async function findSessionLinkedContinuityTransaction(
   projectRoot: string,
   sessionId: string,
 ): Promise<WorkflowContinuityTransactionV1 | null> {
-  const transactions = await listWorkflowContinuityTransactions(projectRoot)
+  const { transactions, errors } = await listWorkflowContinuityTransactions(projectRoot)
+
+  // Log corruption errors for visibility (errors are no longer silently dropped)
+  if (errors.length > 0) {
+    console.warn(`[workflow-continuity] ${errors.length} corrupted continuity record(s) found:`, errors)
+  }
 
   return transactions
     .filter((transaction) => (

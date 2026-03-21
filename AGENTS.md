@@ -25,6 +25,11 @@ This file governs development of the framework. Loaded once per OpenCode session
 - Do not Plan
 - Do not search
 
+> **NOTE**: The prohibition above applies to `Hiveminder` and `Hivefiver` roles (orchestration/monitoring). 
+> Delegated execution agents (GSD orchestrators, phase executors, subagents spawned via workflow) are **EXEMPT** 
+> from this prohibition — they are explicitly delegated to Read, Write, Execute, Plan, and Search
+> as bounded by their workflow contracts. See `.opencode/agents/gsd-*.md` for available agents.
+
 - DO delegate to Read broad and investigate deep
 - Do handoff with previous turn artifacts to research and synthesis
 - Do coordinate to understand work needs hiearchy and granularity
@@ -263,7 +268,7 @@ This project uses the GSD (Get Sh*t Done) agent framework for workflow execution
 - [x] 2 inline tools in `opencode-plugin.ts` - extracted to `src/tools/runtime/`
 - [x] Zero Zod in tool defs - current tool args use `tool.schema`
 - [ ] `intelligence/doc/` - first-wave markdown read foundation is live; public read-only expansion is in progress and broader restoration remains future work
-- [ ] Type monoliths (6 types with 17-25 fields) - decompose per Interface Decomposition principle
+- [x] Type monoliths - **RESOLVED** per CONCERNSV1.md audit; `PressureContract` and `TrajectoryRecord` properly decomposed via intersection types (`TrajectoryCore & TrajectoryBindings & TrajectoryEvidence & TrajectoryPlanning`, `RuntimePressureMetadata & RuntimePressureFailure & { safety } & { evidence }`)
 
 ## Reference
 

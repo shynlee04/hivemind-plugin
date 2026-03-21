@@ -7,6 +7,14 @@ import type {
   ControlPlanePrimitiveId,
 } from './control-plane-types.js'
 
+/**
+ * Result of resolveControlPlaneGate with explicit status discrimination.
+ * Distinguishes between a matched gate decision and no matching primitive.
+ */
+export type ControlPlaneGateResolution =
+  | { status: 'matched'; decision: ControlPlaneGateDecision }
+  | { status: 'no_match'; reason: string; evaluatedPrimitives: ControlPlanePrimitiveId[] }
+
 const HIGH_CONTROL_PURPOSES = new Set<PurposeClass>([
   'planning',
   'implementation',
@@ -237,15 +245,22 @@ export function findControlPlanePrimitiveByCliCommand(command: ControlPlaneCliCo
 export function resolveControlPlaneGate(
   input: StartWorkInput,
   purposeClass: PurposeClass,
-): ControlPlaneGateDecision | null {
+): ControlPlaneGateResolution {
+  const evaluatedPrimitives: ControlPlanePrimitiveId[] = []
+
   for (const primitive of controlPlanePrimitives) {
+    evaluatedPrimitives.push(primitive.id)
     const detected = primitive.detect(input, purposeClass)
     if (detected) {
-      return detected
+      return { status: 'matched', decision: detected }
     }
   }
 
-  return null
+  return {
+    status: 'no_match',
+    reason: `No control plane primitive matched for purpose '${purposeClass}' with message '${input.userMessage}'`,
+    evaluatedPrimitives,
+  }
 }
 
 export function isControlPlanePrimitiveId(value: string | undefined): value is ControlPlanePrimitiveId {

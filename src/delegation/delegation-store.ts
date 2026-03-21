@@ -5,6 +5,11 @@ import { getHivemindPath } from '../shared/paths.js'
 import { getRuntimePressureContract } from '../shared/pressure-contract.js'
 import type { DelegationEvidenceItem, DelegationPacket } from './delegation-packet.js'
 import { createDelegationPacket } from './delegation-packet.js'
+import {
+  validateDelegationRecord,
+  formatValidationIssues,
+} from './delegation-record.schema.js'
+import { Result, ValidationError } from '../shared/errors.js'
 
 export interface DelegationEvidenceRecord {
   kind: DelegationEvidenceItem['kind']
@@ -52,16 +57,67 @@ function ensureHandoffDirectory(projectRoot: string): string {
   return directory
 }
 
-function readHandoffFile(filePath: string): DelegationHandoffRecord | null {
+/**
+ * Read and validate a handoff file from disk.
+ * Returns structured result with either the validated record or validation error details.
+ * Distinguishes between not-found (ENOENT), JSON parse errors (CORRUPTED),
+ * and schema validation failures (SCHEMA_VALIDATION_FAILED).
+ */
+function readHandoffFileResult(filePath: string): Result<DelegationHandoffRecord, ValidationError> {
   if (!fs.existsSync(filePath)) {
-    return null
+    return { ok: false, error: new ValidationError(`Handoff file not found: ${filePath}`, { filePath }) }
   }
 
+  let rawContent: string
   try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf-8')) as DelegationHandoffRecord
+    rawContent = fs.readFileSync(filePath, 'utf-8')
+  } catch (parseError) {
+    return {
+      ok: false,
+      error: new ValidationError(`Failed to read handoff file: ${filePath}`, { filePath, cause: String(parseError) }),
+    }
+  }
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(rawContent)
   } catch {
+    return {
+      ok: false,
+      error: new ValidationError(`Invalid JSON in handoff file: ${filePath}`, { filePath }),
+    }
+  }
+
+  const validationResult = validateDelegationRecord(parsed)
+  if (!validationResult.ok) {
+    const detail = formatValidationIssues(validationResult.issues)
+    return {
+      ok: false,
+      error: new ValidationError(
+        `Handoff record schema validation failed: ${filePath}`,
+        { filePath, detail },
+        validationResult.issues,
+      ),
+    }
+  }
+
+  // Cast is safe after runtime validation - schema ensures pressureContractId is a string
+  // and the DelegationHandoffRecord interface accepts string for that field
+  return { ok: true, value: validationResult.value as unknown as DelegationHandoffRecord }
+}
+
+/**
+ * Read a handoff file, returning null if not found or validation fails.
+ * For detailed error information, use readHandoffFileResult.
+ */
+function readHandoffFile(filePath: string): DelegationHandoffRecord | null {
+  const result = readHandoffFileResult(filePath)
+  if (!result.ok) {
+    // Log the validation error for diagnostics
+    console.warn(`[delegation-store] ${result.error.message}`)
     return null
   }
+  return result.value
 }
 
 function writeHandoffRecord(projectRoot: string, record: DelegationHandoffRecord): DelegationHandoffRecord {
@@ -106,10 +162,20 @@ export function readDelegationHandoff(
 
 export function listDelegationHandoffs(projectRoot: string): DelegationHandoffRecord[] {
   const directory = ensureHandoffDirectory(projectRoot)
-  return fs.readdirSync(directory)
+  const results = fs.readdirSync(directory)
     .filter((file) => file.endsWith('.json'))
-    .map((file) => readHandoffFile(path.join(directory, file)))
-    .filter((record): record is DelegationHandoffRecord => record !== null)
+    .map((file) => readHandoffFileResult(path.join(directory, file)))
+
+  // Log any validation errors for diagnostics
+  for (const result of results) {
+    if (!result.ok) {
+      console.warn(`[delegation-store] ${result.error.message}`)
+    }
+  }
+
+  return results
+    .filter((result): result is { ok: true; value: DelegationHandoffRecord } => result.ok)
+    .map((result) => result.value)
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
 }
 
@@ -117,11 +183,14 @@ export function updateDelegationHandoff(
   projectRoot: string,
   input: UpdateDelegationHandoffInput,
 ): DelegationHandoffRecord | null {
-  const existing = readDelegationHandoff(projectRoot, input.id)
-  if (!existing) {
+  const result = readHandoffFileResult(getDelegationHandoffPath(projectRoot, input.id))
+  if (!result.ok) {
+    // Log corruption but maintain backward compatibility by returning null
+    console.warn(`[delegation-store] ${result.error.message}`)
     return null
   }
 
+  const existing = result.value
   const mergedEvidence = [
     ...existing.evidence,
     ...(input.evidence ?? []),

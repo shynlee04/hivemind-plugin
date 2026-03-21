@@ -23,6 +23,37 @@ export interface HarnessOptions {
   timeoutMs?: number
 }
 
+/**
+ * Readiness probe result with explicit diagnostic vs proven distinction.
+ *
+ * DIAGNOSTIC_READINESS: Indirect evidence (server health, bundle execution)
+ * PROVEN_READINESS: Actual session lifecycle proof (session create → command → tool → teardown)
+ *
+ * Currently harness only provides diagnostic readiness. Proven readiness requires
+ * a multi-step probe that actually exercises the OpenCode session lifecycle.
+ */
+export interface ReadinessProbeResult {
+  /** Diagnostic readiness - indirect evidence only (server health + bundle execution) */
+  diagnosticReadiness: {
+    serverHealth: boolean
+    serverStatusCode: number | null
+    serverVersion: string | null
+    bundleExecutionMode: string | null
+    bundleCloseoutStatus: string | null
+  }
+  /** Proven readiness - actual session lifecycle proof (NOT YET IMPLEMENTED) */
+  provenReadiness: {
+    implemented: false
+    reason: 'Multi-step session lifecycle probe not yet implemented'
+    wouldRequire: [
+      'session.create',
+      'command.execute',
+      'tool.execute',
+      'session.complete/teardown',
+    ]
+  }
+}
+
 export interface HarnessResult {
   serverUrl: string
   healthy: boolean
@@ -37,6 +68,8 @@ export interface HarnessResult {
   }
   recommendedCommands: string[]
   commandResult: Awaited<ReturnType<typeof executeSlashCommandBundle>>
+  /** Explicit readiness probe result distinguishing diagnostic vs proven readiness */
+  readinessProbe: ReadinessProbeResult
 }
 
 const runtimeEntryRecoveryCommands = ['hm-init', 'hm-doctor'] as const
@@ -163,6 +196,27 @@ export async function runHarnessCommand(directory: string, options: HarnessOptio
     serverHealthy: health.healthy,
   })
 
+  // Build explicit readiness probe result distinguishing diagnostic vs proven readiness
+  const readinessProbe: ReadinessProbeResult = {
+    diagnosticReadiness: {
+      serverHealth: health.healthy,
+      serverStatusCode: health.statusCode,
+      serverVersion: health.version,
+      bundleExecutionMode: commandResult.executionMode,
+      bundleCloseoutStatus: commandResult.closeoutStatus ?? null,
+    },
+    provenReadiness: {
+      implemented: false,
+      reason: 'Multi-step session lifecycle probe not yet implemented',
+      wouldRequire: [
+        'session.create',
+        'command.execute',
+        'tool.execute',
+        'session.complete/teardown',
+      ],
+    },
+  }
+
   return {
     serverUrl,
     healthy: health.healthy,
@@ -173,6 +227,7 @@ export async function runHarnessCommand(directory: string, options: HarnessOptio
     metaArtifacts,
     recommendedCommands: entryDecision.recommendedCommands,
     commandResult,
+    readinessProbe,
   }
 }
 
