@@ -99,7 +99,7 @@ export async function executeHivemindHandoffAction(
         kind: 'success',
         message: 'Listed delegation handoffs',
         data: {
-          handoffs: listDelegationHandoffs(projectRoot),
+          handoffs: await listDelegationHandoffs(projectRoot),
           pressureContract,
         },
       }
@@ -111,7 +111,7 @@ export async function executeHivemindHandoffAction(
         kind: 'success',
         message: 'Loaded delegation handoff',
         data: {
-          record: readDelegationHandoff(projectRoot, args.id),
+          record: await readDelegationHandoff(projectRoot, args.id),
           pressureContract,
         },
       }
@@ -121,40 +121,36 @@ export async function executeHivemindHandoffAction(
       }
       {
         const handoffId = args.id
-      return {
-        kind: 'success',
-        message: 'Validated delegation handoff',
-        data: {
-          ...(await (async () => {
-            const result = validateDelegationHandoff(projectRoot, handoffId)
-            const linkage = result.record
-              ? await syncDelegationContinuity({
-                  projectRoot,
-                  record: result.record,
-                  actingSessionId: context.sessionID,
-                })
-              : { continuity: null, chainAction: null }
+        const result = await validateDelegationHandoff(projectRoot, handoffId)
+        const linkage = result.record
+          ? await syncDelegationContinuity({
+              projectRoot,
+              record: result.record,
+              actingSessionId: context.sessionID,
+            })
+          : { continuity: null, chainAction: null }
 
-            if (result.record && linkage.chainAction?.executed) {
-              await recordHandoffEvent(projectRoot, result.record.packet.trajectoryId, `handoff:${handoffId}:delegation-dispatched`)
-            }
+        if (result.record && linkage.chainAction?.executed) {
+          await recordHandoffEvent(projectRoot, result.record.packet.trajectoryId, `handoff:${handoffId}:delegation-dispatched`)
+        }
 
-            return {
-              ...result,
-              continuity: linkage.continuity?.transaction,
-              chainAction: linkage.chainAction,
-            }
-          })()),
-          pressureContract,
-        },
-      }
+        return {
+          kind: 'success',
+          message: 'Validated delegation handoff',
+          data: {
+            ...result,
+            continuity: linkage.continuity?.transaction,
+            chainAction: linkage.chainAction,
+            pressureContract,
+          },
+        }
       }
     case 'close':
       if (!args.id || !args.summary) {
         return { kind: 'error', message: 'id and summary are required for close' }
       }
       {
-        const result = closeDelegationHandoff(projectRoot, args.id, args.summary)
+        const result = await closeDelegationHandoff(projectRoot, args.id, args.summary)
         await recordHandoffEvent(projectRoot, result.record?.packet.trajectoryId, `handoff:${args.id}:closed`)
         const linkage = result.record
           ? await syncDelegationContinuity({
@@ -182,7 +178,7 @@ export async function executeHivemindHandoffAction(
         return { kind: 'error', message: 'id is required for update' }
       }
       {
-        const result = updateDelegationHandoff(projectRoot, {
+        const result = await updateDelegationHandoff(projectRoot, {
           id: args.id,
           summary: args.summary,
           nextSteps: parseList(args.nextSteps),
@@ -216,7 +212,7 @@ export async function executeHivemindHandoffAction(
         return { kind: 'error', message: 'targetAgent, workflowId, scope, and summary are required for create' }
       }
       {
-        const record = createDelegationHandoff(projectRoot, {
+        const record = await createDelegationHandoff(projectRoot, {
           packet: {
             delegationId: args.id,
             sourceSessionId: args.sourceSessionId ?? context.sessionID,

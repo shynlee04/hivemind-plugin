@@ -252,7 +252,7 @@ describe('runtime resilience: delegation-store.ts null return discrimination', (
   })
 
   it('createDelegationHandoff works correctly for happy path', async () => {
-    const record = createDelegationHandoff(projectRoot, {
+    const record = await createDelegationHandoff(projectRoot, {
       packet: {
         sourceSessionId: 'ses_1',
         targetAgent: 'test-agent',

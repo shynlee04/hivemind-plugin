@@ -23,6 +23,7 @@ describe('runtime surface sync dry-run mode', () => {
       // Create stale unmanaged files
       await writeFile(join(projectRoot, '.opencode', 'commands', 'stale-command.md'), 'stale content')
       await writeFile(join(projectRoot, '.opencode', 'agents', 'stale-agent.md'), 'stale content')
+      await writeFile(join(projectRoot, '.opencode', 'commands', 'hm-plan.md'), 'outdated managed content')
 
       // Run sync with dry-run
       const result = await syncRuntimeSurface(projectRoot, {
@@ -51,6 +52,10 @@ describe('runtime surface sync dry-run mode', () => {
       assert.ok(result.wouldDelete, 'should have wouldDelete array')
       assert.ok(Array.isArray(result.wouldDelete), 'wouldDelete should be array')
       assert.equal(result.dryRun, true, 'dryRun flag should be true')
+      assert.equal(
+        await readFile(join(projectRoot, '.opencode', 'commands', 'hm-plan.md'), 'utf-8'),
+        await readFile(join(repoRoot, 'commands', 'hm-plan.md'), 'utf-8'),
+      )
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
     }

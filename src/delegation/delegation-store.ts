@@ -1,4 +1,4 @@
-import * as fs from 'node:fs'
+import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
 import { getHivemindPath } from '../shared/paths.js'
@@ -51,9 +51,9 @@ export function getDelegationHandoffPath(projectRoot: string, id: string): strin
   return path.join(getHandoffDirectory(projectRoot), `${id}.json`)
 }
 
-function ensureHandoffDirectory(projectRoot: string): string {
+async function ensureHandoffDirectory(projectRoot: string): Promise<string> {
   const directory = getHandoffDirectory(projectRoot)
-  fs.mkdirSync(directory, { recursive: true })
+  await fs.mkdir(directory, { recursive: true })
   return directory
 }
 
@@ -63,14 +63,16 @@ function ensureHandoffDirectory(projectRoot: string): string {
  * Distinguishes between not-found (ENOENT), JSON parse errors (CORRUPTED),
  * and schema validation failures (SCHEMA_VALIDATION_FAILED).
  */
-function readHandoffFileResult(filePath: string): Result<DelegationHandoffRecord, ValidationError> {
-  if (!fs.existsSync(filePath)) {
+async function readHandoffFileResult(filePath: string): Promise<Result<DelegationHandoffRecord, ValidationError>> {
+  try {
+    await fs.access(filePath)
+  } catch {
     return { ok: false, error: new ValidationError(`Handoff file not found: ${filePath}`, { filePath }) }
   }
 
   let rawContent: string
   try {
-    rawContent = fs.readFileSync(filePath, 'utf-8')
+    rawContent = await fs.readFile(filePath, 'utf-8')
   } catch (parseError) {
     return {
       ok: false,
@@ -101,8 +103,6 @@ function readHandoffFileResult(filePath: string): Result<DelegationHandoffRecord
     }
   }
 
-  // Cast is safe after runtime validation - schema ensures pressureContractId is a string
-  // and the DelegationHandoffRecord interface accepts string for that field
   return { ok: true, value: validationResult.value as unknown as DelegationHandoffRecord }
 }
 
@@ -110,19 +110,18 @@ function readHandoffFileResult(filePath: string): Result<DelegationHandoffRecord
  * Read a handoff file, returning null if not found or validation fails.
  * For detailed error information, use readHandoffFileResult.
  */
-function readHandoffFile(filePath: string): DelegationHandoffRecord | null {
-  const result = readHandoffFileResult(filePath)
+async function readHandoffFile(filePath: string): Promise<DelegationHandoffRecord | null> {
+  const result = await readHandoffFileResult(filePath)
   if (!result.ok) {
-    // Log the validation error for diagnostics
     console.warn(`[delegation-store] ${result.error.message}`)
     return null
   }
   return result.value
 }
 
-function writeHandoffRecord(projectRoot: string, record: DelegationHandoffRecord): DelegationHandoffRecord {
-  ensureHandoffDirectory(projectRoot)
-  fs.writeFileSync(getDelegationHandoffPath(projectRoot, record.id), JSON.stringify(record, null, 2))
+async function writeHandoffRecord(projectRoot: string, record: DelegationHandoffRecord): Promise<DelegationHandoffRecord> {
+  await ensureHandoffDirectory(projectRoot)
+  await fs.writeFile(getDelegationHandoffPath(projectRoot, record.id), JSON.stringify(record, null, 2))
   return record
 }
 
@@ -130,10 +129,10 @@ function buildDelegationId(existingId?: string): string {
   return existingId ?? `dlg_${Date.now().toString(36)}`
 }
 
-export function createDelegationHandoff(
+export async function createDelegationHandoff(
   projectRoot: string,
   input: CreateDelegationHandoffInput,
-): DelegationHandoffRecord {
+): Promise<DelegationHandoffRecord> {
   const createdAt = new Date().toISOString()
   const delegationId = buildDelegationId(input.packet.delegationId)
   const packet = createDelegationPacket({
@@ -153,20 +152,20 @@ export function createDelegationHandoff(
   })
 }
 
-export function readDelegationHandoff(
+export async function readDelegationHandoff(
   projectRoot: string,
   id: string,
-): DelegationHandoffRecord | null {
+): Promise<DelegationHandoffRecord | null> {
   return readHandoffFile(getDelegationHandoffPath(projectRoot, id))
 }
 
-export function listDelegationHandoffs(projectRoot: string): DelegationHandoffRecord[] {
-  const directory = ensureHandoffDirectory(projectRoot)
-  const results = fs.readdirSync(directory)
-    .filter((file) => file.endsWith('.json'))
-    .map((file) => readHandoffFileResult(path.join(directory, file)))
+export async function listDelegationHandoffs(projectRoot: string): Promise<DelegationHandoffRecord[]> {
+  const directory = await ensureHandoffDirectory(projectRoot)
+  const files = (await fs.readdir(directory)).filter((file) => file.endsWith('.json'))
+  const results = await Promise.all(
+    files.map((file) => readHandoffFileResult(path.join(directory, file)))
+  )
 
-  // Log any validation errors for diagnostics
   for (const result of results) {
     if (!result.ok) {
       console.warn(`[delegation-store] ${result.error.message}`)
@@ -179,13 +178,12 @@ export function listDelegationHandoffs(projectRoot: string): DelegationHandoffRe
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
 }
 
-export function updateDelegationHandoff(
+export async function updateDelegationHandoff(
   projectRoot: string,
   input: UpdateDelegationHandoffInput,
-): DelegationHandoffRecord | null {
-  const result = readHandoffFileResult(getDelegationHandoffPath(projectRoot, input.id))
+): Promise<DelegationHandoffRecord | null> {
+  const result = await readHandoffFileResult(getDelegationHandoffPath(projectRoot, input.id))
   if (!result.ok) {
-    // Log corruption but maintain backward compatibility by returning null
     console.warn(`[delegation-store] ${result.error.message}`)
     return null
   }
@@ -205,17 +203,17 @@ export function updateDelegationHandoff(
   })
 }
 
-export function validateDelegationHandoff(
+export async function validateDelegationHandoff(
   projectRoot: string,
   id: string,
-): {
+): Promise<{
   record: DelegationHandoffRecord | null
   valid: boolean
   missingEvidence: string[]
   evidenceRefs: string[]
   pressureContract: ReturnType<typeof getRuntimePressureContract>
-} {
-  const record = readDelegationHandoff(projectRoot, id)
+}> {
+  const record = await readDelegationHandoff(projectRoot, id)
   if (!record) {
     return {
       record: null,
@@ -233,7 +231,7 @@ export function validateDelegationHandoff(
     .map((item) => `${item.kind}:${item.description}`)
 
   const nextRecord = missingEvidence.length === 0 && record.status === 'open'
-    ? writeHandoffRecord(projectRoot, {
+    ? await writeHandoffRecord(projectRoot, {
         ...record,
         status: 'validated',
         updatedAt: new Date().toISOString(),
@@ -249,23 +247,23 @@ export function validateDelegationHandoff(
   }
 }
 
-export function closeDelegationHandoff(
+export async function closeDelegationHandoff(
   projectRoot: string,
   id: string,
   closeSummary: string,
-): {
+): Promise<{
   record: DelegationHandoffRecord | null
   valid: boolean
   missingEvidence: string[]
   evidenceRefs: string[]
   pressureContract: ReturnType<typeof getRuntimePressureContract>
-} {
-  const validation = validateDelegationHandoff(projectRoot, id)
+}> {
+  const validation = await validateDelegationHandoff(projectRoot, id)
   if (!validation.record || !validation.valid) {
     return validation
   }
 
-  const record = writeHandoffRecord(projectRoot, {
+  const record = await writeHandoffRecord(projectRoot, {
     ...validation.record,
     status: 'closed',
     closeSummary,

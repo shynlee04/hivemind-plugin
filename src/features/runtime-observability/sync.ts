@@ -60,6 +60,21 @@ interface SyncDirectoryResult {
   protectedItems: string[]
 }
 
+async function writeFileIfChanged(filePath: string, content: string): Promise<void> {
+  const existingContent = await readFile(filePath, 'utf-8').catch((error: NodeJS.ErrnoException) => {
+    if (error.code === 'ENOENT') {
+      return undefined
+    }
+    throw error
+  })
+
+  if (existingContent === content) {
+    return
+  }
+
+  await writeFile(filePath, content)
+}
+
 async function syncMirrorDirectory(
   directory: string,
   files: Map<string, string>,
@@ -73,7 +88,7 @@ async function syncMirrorDirectory(
 
   for (const [fileName, content] of sortedEntries) {
     const filePath = join(directory, fileName)
-    await writeFile(filePath, content)
+    await writeFileIfChanged(filePath, content)
     writtenPaths.push(filePath)
   }
 
@@ -136,7 +151,7 @@ async function syncSkillDirectory(
       const filePath = join(skillsRoot, relativePath)
       const parentDir = join(filePath, '..')
       await mkdir(parentDir, { recursive: true })
-      await writeFile(filePath, content)
+      await writeFileIfChanged(filePath, content)
       writtenPaths.push(filePath)
     }
   }
@@ -211,7 +226,7 @@ export async function syncRuntimeSurface(
   }
 
   await mkdir(pluginsRoot, { recursive: true })
-  await writeFile(pluginFile, renderLocalPluginStub(options))
+  await writeFileIfChanged(pluginFile, renderLocalPluginStub(options))
   const mirroredCommandFiles = await syncMirrorDirectory(commandsRoot, commandFiles, '.md', options)
   const mirroredAgentFiles = await syncMirrorDirectory(agentsRoot, agentFiles, '.md', options)
   const mirroredSkillFiles = await syncSkillDirectory(skillsRoot, skillFiles, options)

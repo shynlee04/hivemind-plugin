@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, readdir, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -10,6 +10,7 @@ import { syncRuntimeSurface } from '../src/cli/runtime-assets.js'
 import { createOpencodeAgentRegistry } from '../src/shared/opencode-agent-registry.js'
 
 const repoRoot = fileURLToPath(new URL('..', import.meta.url))
+const MTIME_TICK_MS = 50
 
 describe('runtime surface sync', () => {
   it('writes the authoritative plugin, command, and agent mirrors deterministically', async () => {
@@ -26,6 +27,15 @@ describe('runtime surface sync', () => {
       await writeFile(join(projectRoot, '.opencode', 'plugins', 'hivemind-context-governance.ts'), 'stale plugin')
 
       const first = await syncRuntimeSurface(projectRoot)
+      const planPath = join(projectRoot, '.opencode', 'commands', 'hm-plan.md')
+      const agentPath = join(projectRoot, '.opencode', 'agents', 'hivefiver.md')
+      const pluginPath = first.pluginFile
+      const firstPlanStat = await stat(planPath)
+      const firstAgentStat = await stat(agentPath)
+      const firstPluginStat = await stat(pluginPath)
+
+      await new Promise((resolve) => setTimeout(resolve, MTIME_TICK_MS))
+
       const second = await syncRuntimeSurface(projectRoot)
       const mirroredCommands = (await readdir(join(projectRoot, '.opencode', 'commands'))).sort()
       const mirroredAgents = (await readdir(join(projectRoot, '.opencode', 'agents'))).sort()
@@ -41,6 +51,9 @@ describe('runtime surface sync', () => {
       assert.deepEqual(mirroredCommands, expectedCommands)
       assert.deepEqual(mirroredAgents, expectedAgents)
       assert.deepEqual(second, first)
+      assert.equal((await stat(planPath)).mtimeMs, firstPlanStat.mtimeMs)
+      assert.equal((await stat(agentPath)).mtimeMs, firstAgentStat.mtimeMs)
+      assert.equal((await stat(pluginPath)).mtimeMs, firstPluginStat.mtimeMs)
       assert.equal(mirroredCommands.includes('hivemind-status.md'), false)
       assert.equal(mirroredCommands.includes('hm-plan.md'), true)
       assert.equal(mirroredCommands.includes('hm-implement.md'), true)
