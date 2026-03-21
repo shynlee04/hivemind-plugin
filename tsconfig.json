@@ -22,5 +22,5 @@
     "jsxImportSource": "@opentui/react"
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests", "src/dashboard-v2"]
+  "exclude": ["node_modules", "dist", "tests"]
 }

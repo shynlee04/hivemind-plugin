@@ -51,8 +51,6 @@
     "dev": "tsc --watch",
     "typecheck": "npm run typecheck:core",
     "typecheck:core": "tsc --noEmit",
-    "typecheck:dashboard-v2": "bash -lc 'if [ ! -d src/dashboard-v2/node_modules ]; then npm --prefix src/dashboard-v2 install --no-audit --no-fund; fi; npm --prefix src/dashboard-v2 run typecheck'",
-    "typecheck:all": "npm run typecheck:core && npm run typecheck:dashboard-v2",
     "lint:boundary": "bash scripts/check-sdk-boundary.sh && bash scripts/check-agent-registry-parity.sh && bash scripts/check-state-write-boundary.sh && bash scripts/check-docs-ownership-boundary.sh && bash scripts/check-no-event-bus.sh && bash scripts/check-no-core-session.sh && bash scripts/check-tool-schema.sh && bash scripts/check-hooks-readonly.sh && bash scripts/check-plugin-assembly.sh && bash scripts/check-agents-presence.sh && bash scripts/check-asset-refs.sh",
     "guard:public": "bash scripts/guard-public-branch.sh origin/master HEAD",
     "test": "npm run lint:boundary && tsx --test \"tests/**/*.test.ts\" \"src/**/*.test.ts\"",
@@ -100,7 +98,6 @@
     "@types/ink": "^0.5.2",
     "@types/node": "^20.10.0",
     "@types/react": "^19.2.14",
-    "hivemind-context-governance": "^2.8.5",
     "tsx": "^4.7.0"
   },
   "peerDependencies": {
