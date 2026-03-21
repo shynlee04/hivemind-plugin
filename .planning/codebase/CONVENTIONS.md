@@ -1,231 +1,82 @@
 # Coding Conventions
 
-**Analysis Date:** 2026-03-21
+**Analysis Date:** 2024-05-24
 
 ## Naming Patterns
 
 **Files:**
-- **Hyphenated lowercase:** `tool-helpers.ts`, `opencode-agent-registry.ts`, `workflow-continuity.ts`
-- **Descriptive module names:** `runtime-observability`, `agent-work-contract`, `workflow-management`
-- **Type definitions in `types.ts`:** Each tool directory has `tools.ts`, `types.ts`, `index.ts`
+- kebab-case for all files (e.g., `command-routing.ts`, `chain-executor.ts`, `contract-store.test.ts`)
 
 **Functions:**
-- **camelCase:** `createHivemindRuntimeStatusTool`, `executeHivemindHandoffAction`, `renderToolResult`
-- **Verb-noun patterns:** `bootstrapTrajectoryLedger`, `loadRuntimeBindingsSnapshot`, `resolveStartWork`
-- **Action-oriented:** `parseList`, `renderToolResult`, `createSnapshot`
+- camelCase for regular functions (e.g., `resolveCliInvocation`, `dispatchDelegationHandoffPacketAction`)
+- PascalCase for React components or factory functions if applicable, though primarily standard TS functions are camelCase.
 
 **Variables:**
-- **camelCase:** `projectRoot`, `sessionId`, `trajectoryId`, `workflowId`
-- **Descriptive:** `sessionScope`, `purposeClass`, `lineage`, `readiness`
+- camelCase for local variables and properties
+- UPPER_SNAKE_CASE for global constants (e.g., `CLI_COMMANDS`, `AUTHORITATIVE_RUNTIME_TOOL_IDS`)
 
 **Types:**
-- **PascalCase for interfaces:** `HivemindRuntimeCommandArgs`, `HivemindHandoffToolArgs`, `RuntimeBindingsSnapshot`
-- **Enum values lowercase:** `'create'`, `'read'`, `'list'`, `'update'`, `'close'`
+- PascalCase for interfaces and types (e.g., `ChainActionHandler`, `DelegationProjectionState`, `AgentWorkContract`)
 
 ## Code Style
 
 **Formatting:**
-- **Tool:** No ESLint config detected (`.eslintrc*` or `eslint.config.*` not found)
-- **TypeScript:** `tsconfig.json` with strict mode enabled (`"strict": true`)
-- **Indentation:** 2-space JSON output in `renderToolResult()`
-- **Line length:** No enforced limit visible, but files typically under 300 LOC
+- TypeScript is strictly used with strict boundary checks.
+- Native ESM modules, meaning relative imports require `.js` extension (e.g., `import { discoverControlPlanePrimitives } from '../control-plane/index.js'`)
 
 **Linting:**
-- **TypeScript compiler gate:** `npm run typecheck` runs `tsc --noEmit` before commit
-- **No linter configured:** Code relies on TypeScript compiler for validation
-- **Strict mode enabled:** All type errors caught at compile time
-
-**TypeScript Config:**
-```json
-{
-  "strict": true,
-  "noUnusedLocals": true,
-  "noUnusedParameters": true,
-  "noImplicitReturns": true,
-  "noFallthroughCasesInSwitch": true,
-  "forceConsistentCasingInFileNames": true
-}
-```
+- Boundary Linting: Uses a suite of custom bash scripts for boundary enforcement instead of standard ESLint (e.g., `check-sdk-boundary.sh`, `check-state-write-boundary.sh`, `check-no-event-bus.sh`).
+- Typechecking: Runs `tsc --noEmit` locally.
 
 ## Import Organization
 
 **Order:**
-1. Node.js built-ins: `import { mkdtemp, rm } from 'node:fs/promises'`
-2. Third-party dependencies: `import { tool } from '@opencode-ai/plugin/tool'`
-3. Internal modules: `import { loadTrajectoryLedger } from '../core/index.js'`
-4. Types: `import type { RuntimeBindingsSnapshot } from './types.js'`
+1. Built-in Node modules with `node:` prefix (e.g., `import { basename } from 'node:path'`)
+2. External dependencies
+3. Type imports using `import type { ... }`
+4. Relative internal imports with `.js` extensions (e.g., `import { ContractStore } from './contract-store.js'`)
 
 **Path Aliases:**
-- **No path aliases configured:** Direct relative imports used (`../core/index.js`)
-- **Consistent relative paths:** All modules use consistent directory structure
-
-**Type imports:**
-- **Separate type imports:** `import type { HivemindRuntimeStatusPayload } from './types.js'`
-- **Value imports mixed with types:** Common pattern in tool files
-
-## CQRS Enforcement (Critical Pattern)
-
-**Rule:** Tools write, hooks read. No exceptions.
-
-**Tool Side (`src/tools/`):**
-- **Write operations only:** All tools perform state mutations via delegated functions
-- **No direct file I/O to `.hivemind/`:** Tools delegate to `core/` modules
-- **Tool definition pattern:**
-```typescript
-export function createHivemindXxxTool(projectRoot: string): ReturnType<typeof tool> {
-  return tool({
-    description: 'Clear agent-facing description',
-    args: {
-      action: s.enum(['create', 'list', 'get']).describe('Operation'),
-      id: s.string().optional().describe('Record identifier'),
-    },
-    async execute(args, context) {
-      // USE context.sessionID, context.agent, context.directory
-      // DELEGATE writes to core/ features
-      const result = await executeFeatureAction(projectRoot, args, {
-        sessionID: context.sessionID,
-        agent: context.agent,
-      })
-      return renderToolResult(result)
-    },
-  })
-}
-```
-
-**Hook Side (`src/hooks/`):**
-- **Read/inject/intercept only:** No durable writes
-- **Context injection via `Part` objects:** Hooks inject context, never return values
-- **Event observation:** Hook `event-handler.ts` observes but does not mutate state
-
-**Anti-Patterns:**
-- **Never** import from `core/session/kernel.ts` - removed in L1 cutover
-- **Never** import from `shared/event-bus.ts` - use SDK `event` hook
-- **Never** write to `.hivemind/` in hooks - violates CQRS boundary
-- **Never** define hooks as inline in `opencode-plugin.ts` - extract to `src/hooks/`
-
-## JSDoc Standards
-
-**When Required:**
-- **All exported functions:** Every export has JSDoc with `@param`, `@returns`, `@example`
-- **Tool functions:** Document description, args, context usage
-- **Complex helpers:** Document behavior with examples
-
-**Pattern from `src/shared/tool-helpers.ts`:**
-```typescript
-/**
- * Parse a comma-separated string into a trimmed, non-empty array.
- * @param value - Comma-separated string (e.g. "a, b, c")
- * @returns Array of trimmed non-empty strings
- * @example parseList('a, b, c') // ['a', 'b', 'c']
- */
-export function parseList(value?: string): string[] {
-  return (value ?? '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean)
-}
-```
-
-**Module-level JSDoc:**
-```typescript
-/**
- * Runtime tools — extracted from inline definitions in opencode-plugin.ts
- *
- * These tools provide runtime status inspection and command execution
- * against HiveMind revamp runtime.
- */
-```
+- Standard relative imports (`../` and `./`) are primarily used. Path aliases do not appear to be heavily utilized.
 
 ## Error Handling
 
 **Patterns:**
-- **Tool responses:** Use `{ status: 'success' | 'error', message, data }` pattern
-- **Shared helpers:** `error()` and `success()` from `src/shared/tool-response.js`
-- **Early returns:** Hooks use early returns to skip processing
-- **No silent failures:** All errors surface with messages
-
-**Error response pattern:**
-```typescript
-if (result.kind === 'error') {
-  return render(error(result.message))
-}
-return render(success(result.message, result.data))
-```
+- Errors are allowed to bubble up but are gracefully logged when not blocking (e.g., `console.error('Chain executor handler error...', error)`).
+- Throwing explicit `new Error('...')` with contextual messages.
 
 ## Logging
 
-**Framework:** Mixed approach
-- **Console:** `console.log()` used in feature modules
-- **Client logging:** `client.app.log()` for structured server-side logging
-- **TUI notifications:** `client.tui.showToast()` with cooldown tracking in hooks
+**Framework:** `console` methods directly (e.g., `console.error`)
 
-**Logging convention:**
-- **Dev logging:** Custom `log()` functions in `src/shared/logging.ts`
-- **Production:** Use `client.app.log()` for persistence
-- **Toast notifications:** Lightweight, non-blocking user feedback
+**Patterns:**
+- Errors in asynchronous executors are logged with context and stack trace without halting the execution queue.
 
 ## Comments
 
 **When to Comment:**
-- **Module headers:** Every major file has header comment describing purpose
-- **Complex logic:** Algorithm explanations for readability
-- **Migration markers:** Comments explaining removed/deprecated patterns
+- Module headers explicitly document the module's purpose.
+- Documentation for complex orchestration or handler patterns.
 
-**Inline documentation:**
-```typescript
-// Use SDK hooks for event handling - no custom EventBus needed
-// See Authority Principle: each concern has ONE owner
-```
+**JSDoc/TSDoc:**
+- Functions and classes have comprehensive TSDoc comments explaining parameters, returns, and providing `@example` code snippets.
+- Use `@module` for file-level documentation.
 
 ## Function Design
 
-**Size:** Target ~300 LOC limit per module
-- **Tools:** Most tool files under 100 lines (max: 111 lines for types)
-- **Hooks:** Typically under 200 lines
-- **Helpers:** Concise utilities (44 lines in `tool-helpers.ts`)
+**Size:** Concise, single-purpose functions where possible.
 
 **Parameters:**
-- **Context object:** Every hook/tool receives `ToolContext` with `sessionID`, `agent`, `directory`
-- **Project root:** Passed as `projectRoot` to avoid hardcoded paths
-- **No direct path construction:** Use `getEffectivePaths()` from `src/shared/paths.ts`
+- Use of configuration objects/interfaces for complex inputs (e.g., `dispatchDelegationHandoffPacketAction(input: { ... })`).
+- Positional arguments used only for simple, predictable signatures.
 
 **Return Values:**
-- **Tools:** Always return `JSON.stringify()` output for LLM parsing
-- **Hooks:** Never return values - inject via side effects only
-- **Feature modules:** Return `{ kind: 'success' | 'error', ... }` result objects
+- Returning explicit structured objects or promises of specific types.
 
 ## Module Design
 
-**Exports:**
-- **Named exports preferred:** `export function createXxxTool()`, `export function parseList()`
-- **Barrel files:** Each directory has `index.ts` re-exporting all public exports
-- **Type-only exports:** `export type { XxxArgs } from './types.js'`
+**Exports:** 
+- Named exports are highly preferred (`export function`, `export type`, `export class`). Default exports are avoided.
 
-**Barrel pattern:**
-```typescript
-// src/tools/index.ts
-export { createHivemindTaskTool } from './task/index.js'
-export { createHivemindTrajectoryTool } from './trajectory/index.js'
-export { createHivemindHandoffTool } from './handoff/index.js'
-```
-
-## Cross-Cutting Concerns
-
-**Path Resolution:**
-- **Authority:** `src/shared/paths.ts` owns all path constants
-- **Helper:** `getEffectivePaths(projectRoot)` derives all runtime paths from single root
-- **Never hardcode:** `.hivemind/`, `.opencode/` paths - use path builders
-
-**Context Injection:**
-- **Governance layer:** `src/context/` compiles prompt packets
-- **System transforms:** `src/hooks/context-injection/` builds governance packets
-- **Part objects:** Hooks create `Part` objects for message history injection
-
-**SDK Usage Authority:**
-- **Tools:** Must use `tool.schema` (Zod re-export) for args
-- **Context:** Use `context.sessionID`, `context.agent`, `context.directory` from `ToolContext`
-- **No custom session tracking:** Never implement custom session resolution - use SDK
-
----
-
-*Convention analysis: 2026-03-21*
+**Barrel Files:** 
+- Uses `index.js` or `index.ts` heavily to re-export modules (e.g., `../control-plane/index.js`).
