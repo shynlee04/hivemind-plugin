@@ -89,7 +89,7 @@ This router exists because the workspace is too polluted or complex for a single
 | Family | Role | Current Shape |
 | --- | --- | --- |
 | `context` | trust, diagnostics, authority baseline, verification proof | `context-intelligence-entry` + `context-entry-verify` |
-| `delegation` | bounded partitioning, role envelopes, handoff discipline | `hivemind-delegation-protocol` |
+| `delegation` | bounded partitioning, role envelopes, handoff discipline | `use-hivemind-delegation` |
 | `git-memory` | continuity, retrieval, recovery anchors | `git-continuity-memory` |
 | `codemap` | whole-codebase mapping, high/low scan lattice, seam inventory | `hivemind-codemap` |
 | `system-debug` | reproducibility, narrowing, containment, debug-to-refactor transition | `hivemind-system-debug` |
@@ -122,7 +122,7 @@ Read `references/branch-families.md` before expanding the center.
 
 ### Pattern 2: Context Isolation Through Delegation
 - Split work by branch family, seam, or concern.
-- Use `hivemind-delegation-protocol` for every real handoff.
+- Use `use-hivemind-delegation` for every real handoff.
 - Use parallel delegation only after Stage 4 partitioning.
 
 ### Pattern 3: One Advanced Router
@@ -136,10 +136,10 @@ Read `references/branch-families.md` before expanding the center.
 | Stage | Objective | Main Branch Families | Primary Output |
 | --- | --- | --- | --- |
 | 1. Triage and contamination assessment | classify the defect and choose the smallest safe family entry | router + `spec-distillation` when the request is still noisy | investigation report |
-| 2. Context isolation | set authority boundaries and execution slices | `context` + `hivemind-delegation-protocol` | partition plan |
+| 2. Context isolation | set authority boundaries and execution slices | `context` + `use-hivemind-delegation` | partition plan |
 | 3. History and memory retrieval | decide if git continuity is trustworthy enough to guide recovery | `git-continuity-memory` | continuity manifest + knowledge synthesis |
 | 4. Architectural decomposition | split the problem into bounded structural slices | `hivemind-codemap` | detox assessment report |
-| 5. Risk containment | define rollback, quarantine, and safe sequencing | `hivemind-system-debug` + `hivemind-delegation-protocol` | partition plan |
+| 5. Risk containment | define rollback, quarantine, and safe sequencing | `hivemind-system-debug` + `use-hivemind-delegation` | partition plan |
 | 6. Systematic debugging | reproduce, narrow, collect evidence, contain risk | `hivemind-system-debug` | debug stage report |
 | 7. Refactor strategy selection | choose reusable refactor technique per slice | router refactor techniques + `hivemind-codemap` | refactor stage report |
 | 8. Staged restoration | land bounded restorative change only after loop closure and cleanup proof | selected local family owners + `context-entry-verify` | refactor stage report |
@@ -168,7 +168,7 @@ If any item fails, stop and route back to Stage 2, Stage 4, or Stage 6 instead o
 | Bundle | Scope | Primary Target Skills |
 | --- | --- | --- |
 | A | entry diagnostics and hard verification | `context-intelligence-entry`, `context-entry-verify` |
-| B | deterministic delegation and handoff packets | `hivemind-delegation-protocol` |
+| B | deterministic delegation and handoff packets | `use-hivemind-delegation` |
 | C | git continuity and semantic retrieval | `git-continuity-memory` |
 | D | codemap and staged refactor routing | `hivemind-codemap`, `spec-distillation`, router refs |
 | E | debug containment and restoration proof | `hivemind-system-debug`, `context-entry-verify` |
@@ -193,7 +193,7 @@ Use these only after Stages 2-6 complete. Read `references/refactor-techniques.m
 - Stage 2 and Stage 5 default to sequential isolation.
 - Stage 4 is the only stage that can authorize parallel swarms.
 - Read `references/deterministic-delegation.md` and emit `templates/partition-plan.md` before dispatching any parallel swarm.
-- Use `hivemind-delegation-protocol` as the local delegation family.
+- Use `use-hivemind-delegation` as the local delegation family.
 - Route whole-codebase mapping through `hivemind-codemap` rather than overloading the center.
 - Route unresolved breakage through `hivemind-system-debug` before choosing refactor.
 

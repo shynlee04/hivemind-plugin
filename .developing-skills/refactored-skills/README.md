@@ -6,7 +6,7 @@ Treat the skills here as the reusable pack for most framework-facing work:
 - `spec-distillation` for noisy or contradictory requests
 - `context-intelligence-entry` for session/context diagnostics, rot detection, distrust handling
 - `context-entry-verify` for hard project proof
-- `hivemind-delegation-protocol` for bounded delegation, handoff packets, codescan delegation, iterative loop control
+- `use-hivemind-delegation` for bounded delegation, handoff packets, codescan delegation, iterative loop control
 - `git-continuity-memory` for recovery from git history, continuity anchors, session carry-forward, activity pathing
 - `hivemind-codemap` for repo mapping, seam discovery, structured bash scanning
 - `hivemind-system-debug` for reproduction, containment, and debug-to-refactor transitions
@@ -19,7 +19,7 @@ Treat the skills here as the reusable pack for most framework-facing work:
 3. `context-entry-verify` if you need hard build/test/git proof.
 4. `use-hivemind-detox-refactor` when the task becomes multi-stage and needs routing.
 5. From the router, branch into:
-   - `hivemind-delegation-protocol`
+   - `use-hivemind-delegation`
    - `git-continuity-memory`
    - `hivemind-codemap`
    - `hivemind-system-debug`
@@ -94,7 +94,7 @@ When documents, frameworks, or tests cannot be trusted, the distrust protocol in
 
 ### Codescan Delegation
 
-Code scanning delegation follows the agent selection and scan pass patterns in `hivemind-delegation-protocol/references/codescan-delegation.md`. Iterative loop control uses `hivemind-delegation-protocol/references/iterative-loop-control.md`.
+Code scanning delegation follows the agent selection and scan pass patterns in `use-hivemind-delegation/references/codescan-delegation.md`. Iterative loop control uses `use-hivemind-delegation/references/iterative-loop-control.md`.
 
 Codescan must run by phases: `high-level-map` -> `pipeline-map` -> `journey-map` -> `low-level-proof` -> `cross-pass-synthesis`. Each deeper phase must read the prior phase synthesis artifact first rather than restarting from raw low-level reads.
 

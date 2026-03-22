@@ -1,10 +1,10 @@
 ---
-name: hivemind-delegation-protocol
+name: use-hivemind-delegation
 description: |
-  Enforce delegation when front-facing agents must split work across subagents. Use when: delegating to subagent, splitting work into slices, dispatching with scope boundary, emitting delegation packets, managing handoff with return contracts, coordinating sequential or parallel agent dispatch, or resuming prior subagent sessions via task_id. Covers delegation decision rules, role selection, task decomposition, handoff packets, return contracts, resume protocol, failure recovery, and iterative loop control.
+  Enforce delegation when front-facing agents must split work across subagents. Use when: delegating to subagent, splitting work into slices, dispatching with scope boundary, emitting delegation packets, managing handoff with return contracts, coordinating sequential or parallel agent dispatch, or resuming prior subagent sessions via task_id. Covers delegation decision rules, role selection, task decomposition, handoff packets, return contracts, resume protocol, and basic failure recovery.
 ---
 
-# hivemind-delegation-protocol
+# use-hivemind-delegation
 
 Local delegation family for the refactored pack. Governs when, how, and with what constraints a front-facing agent dispatches work to subagents.
 
@@ -44,6 +44,7 @@ Local delegation family for the refactored pack. Governs when, how, and with wha
 | `spec-distillation` | Planning mode — distillation outputs feed into planning delegation |
 | `context-intelligence-entry` | Stale session probe — delegate this when orchestrator context is suspect |
 | `git-continuity-memory` | Git-aware continuity — commit SHAs and branch state recorded in packets |
+| `hivemind-gatekeeping-delegation` | Iterative loops, synthesis gates, cascading failure — extracted from this skill |
 
 `activity_type` and `phase_type` enum values are defined in the pack-level AGENTS.md under Typed Activity Contract.
 
@@ -174,8 +175,7 @@ When a delegation fails, returns partial results, or is blocked:
 - Collect all returns before deciding on integration
 - If a parallel slice fails and others succeed, integrate successes and re-delegate only the failed slice
 
-### Cascading Failure
-- If >50% of parallel slices fail, stop and reassess the task decomposition — the slices may be incorrectly scoped
+For cascading failure and parallel-slice isolation at scale, see `hivemind-gatekeeping-delegation`.
 
 Read `references/failure-recovery.md` for detailed recovery procedures, timeout heuristics, and blocked-route resolution patterns.
 
@@ -193,15 +193,7 @@ Read `references/codescan-delegation.md` for agent selection table, scan pass st
 
 ## Iterative Loop Control
 
-For multi-pass or iterative delegation:
-- Set `max_iterations` before starting (default: 10).
-- Each iteration produces a compressed `carry_forward` summary — not full output.
-- The checkpoint file is the loop's memory — read it before deciding the next iteration.
-- Stop when any stop condition fires. Never iterate past `max_iterations`.
-- For fine-grained tracking within an iteration, use bead-style progress records.
-- `cleanup_allowed` stays `no` while any active loop or packet remains open.
-
-Read `references/iterative-loop-control.md` for checkpoint schema, carry-forward compression, bead-style tracking, and storage conventions.
+For iterative loop control, carry-forward compression, synthesis gates, and integration verification, see `hivemind-gatekeeping-delegation`.
 
 ## Session Resume in Delegation
 
@@ -262,12 +254,11 @@ Append delegation events to `{activity}/delegation/registry.json` with:
 | `references/delegation-decision.md` | Extended decision criteria, cost/benefit, when-not-to-delegate |
 | `references/role-boundaries.md` | Parent/child responsibilities, invalid delegation examples |
 | `references/codescan-delegation.md` | Agent selection, scan pass structure, resumable protocol |
-| `references/iterative-loop-control.md` | Checkpoint schema, carry-forward, bead tracking |
-| `references/failure-recovery.md` | Partial return, timeout, escalation, cascade handling |
+| `references/failure-recovery.md` | Partial return, timeout, escalation |
 | `templates/delegation-packet.md` | Full packet JSON template |
 | `templates/handoff-brief.md` | Human-readable brief template |
-| `templates/loop-checkpoint.md` | Loop state JSON template |
 | `templates/codescan-delegation-packet.md` | Codescan-specific packet template |
+| `hivemind-gatekeeping-delegation` | Iterative loops, synthesis gates, cascading failure |
 | `tests/direct-invocation.md` | Basic delegation scenario with validation |
 | `tests/parallel-delegation.md` | Parallel dispatch scenario with validation |
 | `tests/failure-recovery.md` | Blocked-route recovery scenario with validation |

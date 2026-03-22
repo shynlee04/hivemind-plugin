@@ -10,7 +10,7 @@ This file is transitional. It bridges the earlier bundle-first model to the curr
 
 ## Bundle B - Deterministic Delegation
 - Maps to branch family: `delegation`
-- Skills: `hivemind-delegation-protocol`
+- Skills: `use-hivemind-delegation`
 - Router role: partitioning, mode choice, and bounded handoff
 - Expected outputs: partition plan, delegation packet, handoff brief
 

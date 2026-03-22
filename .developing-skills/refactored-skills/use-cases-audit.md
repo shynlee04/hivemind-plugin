@@ -163,7 +163,7 @@ This is the boundary the failed audit missed.
 | Is this path source authority or projection? | `src/**` runtime sync code + root governance | generic detox summary |
 | Is the file structurally used or orphaned? | `hivemind-codemap` | git memory alone |
 | Was a cleanup claim actually verified? | `context-entry-verify` / explicit verification evidence | optimistic stage summary |
-| What may be delegated, resumed, and checkpointed? | `hivemind-delegation-protocol` | git history |
+| What may be delegated, resumed, and checkpointed? | `use-hivemind-delegation` | git history |
 
 ## Audit Rules That Must Be Added
 

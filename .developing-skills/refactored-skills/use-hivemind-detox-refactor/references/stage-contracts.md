@@ -19,7 +19,7 @@
 - Objective: define authority boundaries, scope, and dispatch rules before deeper work.
 - Inputs: selected concern, authority surfaces, drift signals.
 - Outputs: partition plan with scope, constraints, and execution mode.
-- Linked skills: `context-intelligence-entry`, `context-entry-verify`, `hivemind-delegation-protocol`.
+- Linked skills: `context-intelligence-entry`, `context-entry-verify`, `use-hivemind-delegation`.
 - Linked assets/tools: `references/deterministic-delegation.md`, `references/linked-knowledge.md`.
 - Execution mode: manual or sequential subagents.
 - Report template: `templates/partition-plan.md`.
@@ -64,7 +64,7 @@
 - Objective: define rollback, quarantine, and safe sequencing.
 - Inputs: slice map, known blockers, blast-radius analysis.
 - Outputs: updated partition plan and containment notes.
-- Linked skills: `hivemind-system-debug`, `hivemind-delegation-protocol`.
+- Linked skills: `hivemind-system-debug`, `use-hivemind-delegation`.
 - Linked assets/tools: `references/deterministic-delegation.md`, `templates/partition-plan.md`.
 - Execution mode: manual or sequential.
 - Report template: `templates/partition-plan.md`.

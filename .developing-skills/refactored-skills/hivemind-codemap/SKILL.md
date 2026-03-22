@@ -142,7 +142,7 @@ This structure supports:
 
 ## Delegation Integration
 
-When delegating scan work through `hivemind-delegation-protocol`:
+When delegating scan work through `use-hivemind-delegation`:
 - Use `codescan-delegation.md` from the delegation protocol for agent selection and packet structure.
 - The codemap skill owns the scan mechanics; the delegation skill owns the handoff discipline.
 - Use `iterative-loop-control.md` from the delegation protocol for multi-iteration checkpoint management.
@@ -151,7 +151,7 @@ When delegating scan work through `hivemind-delegation-protocol`:
 
 Codemap work is **never** run inline in the orchestrator's session. The orchestrator:
 1. Selects the scan level (`quick`, `deep`, `exhaustive`) and tool mode (`native`, `repomix`, `hybrid`).
-2. Emits a delegation packet via `hivemind-delegation-protocol`.
+2. Emits a delegation packet via `use-hivemind-delegation`.
 3. Receives only: seam count, critical seam list, hotspot count, blocked routes, and output paths.
 4. Does NOT read full scan output or seam inventories into its own session.
 5. Refers subagents to the detailed output files when further work on a specific slice is needed.

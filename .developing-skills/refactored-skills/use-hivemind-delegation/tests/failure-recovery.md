@@ -21,22 +21,3 @@ A delegated agent returns `status: "partial"` with `blocked_routes: ["requires s
 | Re-delegation packet | New packet includes expanded `authority_surfaces` with `shared/types.ts` |
 | Child's recommendation followed | Re-delegation packet aligns with child's `recommended_next_action` |
 | Audit trail | Registry entry records the blocker and resolution |
-
-## Scenario 2: Cascading Parallel Failure
-
-Three parallel slices dispatched. Two return `status: "complete"`. One returns `status: "blocked"` with `blocked_routes: ["external API dependency"]`.
-
-## Expected Behavior
-
-1. Orchestrator integrates the two successful returns
-2. Does NOT abort the successful slices
-3. Escalates the blocked slice: Level 3 (escalate to user with evidence)
-4. Logs all three results to the delegation registry
-
-## Validation
-
-| Check | Pass Condition |
-|-------|---------------|
-| Success isolation | Two successful returns are integrated and not discarded |
-| Escalation level correct | Blocked slice escalates to user (not re-delegated, since blocker is external) |
-| Partial completion marked | Workflow status reflects 2/3 complete with 1 escalated |

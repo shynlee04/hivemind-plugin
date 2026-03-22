@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Prevent uncontrolled iteration in multi-pass delegation. Make loop state explicit, bounded, and recoverable.
+Prevent unbounded iteration in multi-pass delegation. Make loop state explicit, bounded, and recoverable.
 
 ## Loop Checkpoint Schema
 
@@ -110,7 +110,7 @@ This style of tracking makes it possible to:
 ## Delegation Fit
 
 - Sequential loops: one iteration at a time, checkpoint between each.
-- Parallel batches within an iteration: allowed when batches are isolated (see delegation-modes.md).
+- Parallel batches within an iteration: allowed when batches are isolated.
 - Never run parallel iterations — each iteration depends on the previous one's carry-forward.
 - Each deeper phase must read the previous phase synthesis or checkpoint before planning a new batch.
 

@@ -73,11 +73,4 @@ When `blocked_routes` are returned:
 
 3. **Track resolution:** Record the blocker and resolution in the delegation registry for pattern detection.
 
-## Cascading Failure Protocol
-
-If multiple delegations fail in sequence:
-
-1. Check if failures share a root cause (same blocker type, same authority surface)
-2. If shared root cause: fix at the root, then re-delegate all affected slices
-3. If independent failures: handle each through the escalation ladder individually
-4. If >3 consecutive failures across different slices: the task may need re-planning, not re-delegation
+For cascading failure protocols, see `hivemind-gatekeeping-delegation/references/cascading-failure.md`.

@@ -23,7 +23,7 @@
 ## 2. Delegation Family
 - Purpose: define bounded partitioning, role envelopes, and deterministic handoff rules.
 - Current roots:
-  - `hivemind-delegation-protocol`
+  - `use-hivemind-delegation`
 - Router entry conditions:
   - multi-slice work
   - swarm planning

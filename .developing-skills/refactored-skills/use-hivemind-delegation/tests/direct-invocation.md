@@ -6,7 +6,7 @@ A router has isolated three slices: codemap, debug, and verification. Only the c
 
 ## Expected Behavior
 
-1. `hivemind-delegation-protocol` keeps debug and verification sequential (shared authority surface or dependency)
+1. `use-hivemind-delegation` keeps debug and verification sequential (shared authority surface or dependency)
 2. Emits a delegation packet before any child dispatch
 3. Blocks vague recursive handoff
 4. Requires a structured return contract
