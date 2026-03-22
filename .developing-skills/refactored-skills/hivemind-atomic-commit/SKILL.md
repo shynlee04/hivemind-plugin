@@ -37,7 +37,7 @@ Local commit discipline family for the refactored pack. Governs how changes are 
 | Skill | Relationship |
 |-------|-------------|
 | `git-continuity-memory` | Records commit anchors and session continuity — this skill produces the commits that continuity tracks |
-| `hivemind-delegation-protocol` | Delegation dispatches that need commit discipline use this skill's gate and classification before committing |
+| `use-hivemind-delegation` | Delegation dispatches that need commit discipline use this skill's gate and classification before committing |
 | `hivemind-codemap` | Codemap seam discovery informs surface ownership — this skill validates commits against surface boundaries |
 
 ## Activity Classification
