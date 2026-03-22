@@ -1,0 +1,10 @@
+# Health Check Result Template
+
+```json
+{
+  "rot_level": "CLEAN|DRIFT|POLLUTION|CHAIN_BREAK",
+  "indicators": [],
+  "timestamp": "ISO-8601",
+  "session_id": "optional"
+}
+```

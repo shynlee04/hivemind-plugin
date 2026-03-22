@@ -1,0 +1,120 @@
+{
+  "timestamp": "2026-03-20T22:24:32.013Z",
+  "version": "1.0.0",
+  "duration_ms": 86,
+  "session_type": "NEW",
+  "rot_level": "POISONED",
+  "rot_score": 8,
+  "rot_points": {
+    "governance": 7,
+    "temporal": 1,
+    "delegation": 0,
+    "workflow": 0,
+    "platform": 0,
+    "flood": 0
+  },
+  "trust": {
+    "score": 0.8,
+    "level": "MEDIUM",
+    "signals": [
+      {
+        "type": "GIT_VERIFIED",
+        "applicable": false,
+        "score": 0,
+        "source": "not a git repo or error"
+      },
+      {
+        "type": "LOCAL_FILE",
+        "applicable": true,
+        "score": 0.8,
+        "source": "file system accessible"
+      }
+    ],
+    "breakdown": {
+      "LOCAL_FILE": {
+        "weight": 0.7,
+        "score": 0.8,
+        "contribution": 0.5599999999999999
+      }
+    }
+  },
+  "dimensions": {
+    "governance_integrity": {
+      "checks": {
+        "agents_md_exists": false,
+        "governance_dirs_exist": false,
+        "formatters_configured": false,
+        "tests_exist": false,
+        "project_config_exists": false
+      },
+      "rot_points": 7
+    },
+    "temporal_consistency": {
+      "checks": {
+        "is_git_repo": false,
+        "git_error": true,
+        "has_future_dated_files": false
+      },
+      "rot_points": 1
+    },
+    "delegation_scope": {
+      "checks": {
+        "has_session_state": false,
+        "has_delegation_marker": false,
+        "has_interrupted_marker": false,
+        "multiple_context_dirs": 0
+      },
+      "rot_points": 0
+    },
+    "workflow_integrity": {
+      "checks": {
+        "tests_exist": false,
+        "todo_fixme_count": 0,
+        "merge_conflict_markers": 0
+      },
+      "rot_points": 0
+    },
+    "platform_surface": {
+      "checks": {
+        "primary_framework": "NONE",
+        "primary_framework_dir": null,
+        "primary_framework_score": 0,
+        "all_frameworks": [],
+        "duplicate_skills": [],
+        "platform_dirs_found": [],
+        "platform_dirs_count": 0,
+        "has_root_skills": false,
+        "root_skill_count": 0,
+        "broken_symlinks": 0,
+        "framework_reasoning": []
+      },
+      "rot_points": 0
+    }
+  },
+  "context_flood": {
+    "has_flood": false,
+    "flood_score": 0,
+    "issues": [],
+    "metrics": {
+      "activePlanningDocs": 0,
+      "filesystemBloat": {
+        "note": "Filesystem bloat does NOT count as rot - only affects storage, not runtime"
+      }
+    }
+  },
+  "action_gate": {
+    "read_files": true,
+    "write_files": false,
+    "delete_files": false,
+    "execute_commands": false,
+    "delegate": false,
+    "claim_completion": false
+  },
+  "recommendations": [
+    {
+      "priority": "HIGH",
+      "action": "Create AGENTS.md governance file",
+      "reason": "No governance file found"
+    }
+  ]
+}
