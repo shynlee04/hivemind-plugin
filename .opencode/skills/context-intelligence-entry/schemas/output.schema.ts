@@ -1,293 +1,191 @@
-/**
- * Context Intelligence Output Schema
- * 
- * Zod schema for structured context state output.
- * Agents can include this in context each iteration.
- * 
- * @version 1.0.0
- */
-
 import { z } from 'zod';
 
-// ============================================================================
-// Enums
-// ============================================================================
+const SessionTypeEnum = z.enum(['NEW', 'RESUMED', 'DEGRADED', 'DELEGATED', 'INTERRUPTED']);
+const RotLevelEnum = z.enum(['CLEAN', 'SUSPECT', 'DEGRADED', 'POLLUTED', 'POISONED']);
+const TrustLevelEnum = z.enum(['HIGH', 'MEDIUM', 'LOW']);
+const SignalTypeEnum = z.enum(['GIT_VERIFIED', 'DOCUMENTATION', 'TYPE_CHECKED', 'LOCAL_FILE']);
+const PriorityEnum = z.enum(['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']);
 
-export const SessionTypeEnum = z.enum([
-  'NEW',
-  'RESUMED',
-  'DEGRADED',
-  'DELEGATED',
-  'INTERRUPTED'
-]);
-
-export const RotLevelEnum = z.enum([
-  'CLEAN',
-  'SUSPECT',
-  'DEGRADED',
-  'POLLUTED',
-  'POISONED'
-]);
-
-export const TrustLevelEnum = z.enum([
-  'HIGH',
-  'MEDIUM',
-  'LOW',
-  'CRITICAL'
-]);
-
-export const SignalTypeEnum = z.enum([
-  'LIVE_SDK',
-  'USER_CONFIRM',
-  'GIT_VERIFIED',
-  'TYPE_CHECKED',
-  'LOCAL_FILE',
-  'DOCUMENTATION',
-  'INHERITED',
-  'UNVERIFIED',
-  'CONTRADICTORY'
-]);
-
-export const PriorityEnum = z.enum([
-  'CRITICAL',
-  'HIGH',
-  'MEDIUM',
-  'LOW'
-]);
-
-// ============================================================================
-// Signal Schema
-// ============================================================================
-
-export const SignalSchema = z.object({
+const SignalSchema = z.object({
   type: SignalTypeEnum,
   applicable: z.boolean(),
   score: z.number().min(0).max(1),
-  weight: z.number().min(0).max(1).optional(),
-  contribution: z.number().min(0).max(1).optional(),
-  source: z.string().optional()
+  source: z.string(),
 });
 
-// ============================================================================
-// Rot Points Schema
-// ============================================================================
-
-export const RotPointsSchema = z.object({
-  governance: z.number().int().min(0),
-  temporal: z.number().int().min(0),
-  delegation: z.number().int().min(0),
-  workflow: z.number().int().min(0),
-  platform: z.number().int().min(0),
-  flood: z.number().int().min(0)
-});
-
-// ============================================================================
-// Dimension Check Schemas
-// ============================================================================
-
-export const GovernanceChecksSchema = z.object({
-  agents_md_exists: z.boolean(),
-  governance_dirs_exist: z.boolean(),
-  formatters_configured: z.boolean(),
-  tests_exist: z.boolean(),
-  project_config_exists: z.boolean()
-});
-
-export const TemporalChecksSchema = z.object({
-  is_git_repo: z.boolean(),
-  has_uncommitted_changes: z.boolean().optional(),
-  last_commit_days_ago: z.number().int().optional(),
-  stale_commits: z.boolean().optional(),
-  has_future_dated_files: z.boolean().optional(),
-  git_error: z.boolean().optional(),
-  future_date_check_error: z.boolean().optional()
-});
-
-export const DelegationChecksSchema = z.object({
-  has_session_state: z.boolean(),
-  has_delegation_marker: z.boolean(),
-  has_interrupted_marker: z.boolean(),
-  multiple_context_dirs: z.number().int().min(0),
-  delegation_has_scope: z.boolean().optional(),
-  delegation_has_task: z.boolean().optional(),
-  delegation_has_boundaries: z.boolean().optional(),
-  delegation_parse_error: z.boolean().optional()
-});
-
-export const WorkflowChecksSchema = z.object({
-  plan_files_count: z.number().int().min(0).optional(),
-  orphaned_plan_files: z.number().int().min(0).optional(),
-  plan_check_error: z.boolean().optional(),
-  tests_exist: z.boolean(),
-  todo_fixme_count: z.number().int().min(0).optional(),
-  todo_check_error: z.boolean().optional(),
-  merge_conflict_markers: z.number().int().min(0),
-  merge_check_error: z.boolean().optional()
-});
-
-export const PlatformChecksSchema = z.object({
-  platform_dirs_found: z.array(z.string()),
-  platform_dirs_count: z.number().int().min(0),
-  context_bloat: z.boolean().optional(),
-  skill_counts_by_platform: z.record(z.number()).optional(),
-  has_root_skills: z.boolean(),
-  broken_symlinks: z.number().int().min(0).optional(),
-  symlink_check_error: z.boolean().optional()
-});
-
-// ============================================================================
-// Dimension Detail Schemas
-// ============================================================================
-
-export const GovernanceIntegritySchema = z.object({
-  checks: GovernanceChecksSchema,
-  rot_points: z.number().int().min(0)
-});
-
-export const TemporalConsistencySchema = z.object({
-  checks: TemporalChecksSchema,
-  rot_points: z.number().int().min(0)
-});
-
-export const DelegationScopeSchema = z.object({
-  checks: DelegationChecksSchema,
-  rot_points: z.number().int().min(0)
-});
-
-export const WorkflowIntegritySchema = z.object({
-  checks: WorkflowChecksSchema,
-  rot_points: z.number().int().min(0)
-});
-
-export const PlatformSurfaceSchema = z.object({
-  checks: PlatformChecksSchema,
-  rot_points: z.number().int().min(0)
-});
-
-// ============================================================================
-// Context Flood Schema
-// ============================================================================
-
-export const ContextFloodMetricsSchema = z.object({
-  docs_count: z.number().int().min(0),
-  plan_count: z.number().int().min(0),
-  dated_docs: z.number().int().min(0),
-  max_depth: z.number().int().min(0),
-  draft_dirs_count: z.number().int().min(0)
-});
-
-export const ContextFloodSchema = z.object({
-  has_flood: z.boolean(),
-  flood_score: z.number().int().min(0),
-  issues: z.array(z.string()),
-  metrics: ContextFloodMetricsSchema
-});
-
-// ============================================================================
-// Trust Schema
-// ============================================================================
-
-export const TrustSchema = z.object({
+const ContributionSchema = z.object({
+  weight: z.number().min(0).max(1),
   score: z.number().min(0).max(1),
-  level: TrustLevelEnum,
-  signals: z.array(SignalSchema),
-  breakdown: z.record(z.number())
+  contribution: z.number().min(0),
 });
 
-// ============================================================================
-// Action Gate Schema
-// ============================================================================
-
-export const ActionGateSchema = z.object({
+const ActionGateSchema = z.object({
   read_files: z.boolean(),
   write_files: z.boolean(),
   delete_files: z.boolean(),
   execute_commands: z.boolean(),
   delegate: z.boolean(),
-  claim_completion: z.boolean()
+  claim_completion: z.boolean(),
 });
 
-// ============================================================================
-// Recommendation Schema
-// ============================================================================
+// Advisory only. This package diagnoses context trust; it does not prove project readiness.
 
-export const RecommendationSchema = z.object({
-  priority: PriorityEnum,
-  action: z.string(),
-  reason: z.string()
-});
-
-// ============================================================================
-// Main Output Schema
-// ============================================================================
-
-export const ContextIntelligenceOutputSchema = z.object({
-  // Metadata
-  timestamp: z.string().datetime(),
+const QuickOutputSchema = z.object({
+  timestamp: z.string(),
   version: z.string(),
+  mode: z.literal('quick'),
   duration_ms: z.number().int().min(0),
-  
-  // Session classification
   session_type: SessionTypeEnum,
-  
-  // Rot assessment
+  state: z.object({
+    task_plan_exists: z.boolean(),
+    agents_md_exists: z.boolean(),
+    session_exists: z.boolean(),
+    git_clean: z.boolean(),
+    session_stale: z.boolean(),
+  }),
+  issues: z.array(z.string()),
+  can_proceed: z.boolean(),
+});
+
+const RotFailureSchema = z.object({
+  check: z.string(),
+  reason: z.string(),
+  fix: z.string(),
+  details: z.array(z.string()).optional(),
+});
+
+const RotPassSchema = z.object({
+  check: z.string(),
+  reason: z.string(),
+});
+
+const RotOutputSchema = z.object({
+  timestamp: z.string(),
+  version: z.string(),
+  mode: z.literal('rot'),
+  duration_ms: z.number().int().min(0),
+  result: z.enum(['PASS', 'FAIL']),
+  passed: z.boolean(),
+  checks: z.object({
+    total: z.number().int().min(0),
+    passed: z.number().int().min(0),
+    failed: z.number().int().min(0),
+  }),
+  passes: z.array(RotPassSchema),
+  failures: z.array(RotFailureSchema),
+  action_gate: ActionGateSchema,
+});
+
+const FrameworkSchema = z.object({
+  directory: z.string(),
+  name: z.string(),
+  score: z.number().min(0),
+  findings: z.array(z.string()),
+  skill_count: z.number().int().min(0),
+});
+
+const FullOutputSchema = z.object({
+  timestamp: z.string(),
+  version: z.string(),
+  mode: z.literal('full'),
+  duration_ms: z.number().int().min(0),
+  session_type: SessionTypeEnum,
   rot_level: RotLevelEnum,
   rot_score: z.number().int().min(0),
-  rot_points: RotPointsSchema,
-  
-  // Trust scoring
-  trust: TrustSchema,
-  
-  // Dimension details
-  dimensions: z.object({
-    governance_integrity: GovernanceIntegritySchema,
-    temporal_consistency: TemporalConsistencySchema,
-    delegation_scope: DelegationScopeSchema,
-    workflow_integrity: WorkflowIntegritySchema,
-    platform_surface: PlatformSurfaceSchema
+  rot_points: z.object({
+    governance: z.number().int().min(0),
+    temporal: z.number().int().min(0),
+    delegation: z.number().int().min(0),
+    workflow: z.number().int().min(0),
+    platform: z.number().int().min(0),
+    flood: z.number().int().min(0),
   }),
-  
-  // Context flood special check
-  context_flood: ContextFloodSchema,
-  
-  // Action gates
+  trust: z.object({
+    score: z.number().min(0).max(1),
+    level: TrustLevelEnum,
+    signals: z.array(SignalSchema),
+    breakdown: z.record(z.string(), ContributionSchema),
+  }),
+  dimensions: z.object({
+    governance_integrity: z.object({
+      checks: z.object({
+        agents_md_exists: z.boolean(),
+        governance_dirs_exist: z.boolean(),
+        formatters_configured: z.boolean(),
+        tests_exist: z.boolean(),
+        project_config_exists: z.boolean(),
+      }),
+      rot_points: z.number().int().min(0),
+    }),
+    temporal_consistency: z.object({
+      checks: z.object({
+        is_git_repo: z.boolean(),
+        has_uncommitted_changes: z.boolean(),
+        merge_conflict_count: z.number().int().min(0),
+        last_commit_days_ago: z.number().int().optional(),
+        stale_commits: z.boolean().optional(),
+      }),
+      rot_points: z.number().int().min(0),
+    }),
+    delegation_scope: z.object({
+      checks: z.object({
+        has_session_state: z.boolean(),
+        has_delegation_marker: z.boolean(),
+        has_interrupted_marker: z.boolean(),
+        multiple_context_dirs: z.number().int().min(0),
+      }),
+      rot_points: z.number().int().min(0),
+    }),
+    workflow_integrity: z.object({
+      checks: z.object({
+        plan_files_count: z.number().int().min(0),
+        tests_exist: z.boolean(),
+        merge_conflict_markers: z.number().int().min(0),
+      }),
+      rot_points: z.number().int().min(0),
+    }),
+    platform_surface: z.object({
+      checks: z.object({
+        primary_framework: z.string(),
+        primary_framework_dir: z.string().nullable(),
+        primary_framework_score: z.number().min(0),
+        all_frameworks: z.array(FrameworkSchema),
+        platform_dirs_found: z.array(z.string()),
+        platform_dirs_count: z.number().int().min(0),
+        has_root_skills: z.boolean(),
+        root_skill_count: z.number().int().min(0),
+      }),
+      rot_points: z.number().int().min(0),
+    }),
+  }),
+  context_flood: z.object({
+    has_flood: z.boolean(),
+    flood_score: z.number().int().min(0),
+    issues: z.array(z.string()),
+    metrics: z.object({
+      activePlanningDocs: z.number().int().min(0),
+      filesystemBloat: z.object({ note: z.string() }),
+    }),
+  }),
   action_gate: ActionGateSchema,
-  
-  // Recommendations
-  recommendations: z.array(RecommendationSchema)
+  recommendations: z.array(
+    z.object({
+      priority: PriorityEnum,
+      action: z.string(),
+      reason: z.string(),
+    }),
+  ),
 });
 
-// ============================================================================
-// Exports
-// ============================================================================
-
-export type SessionType = z.infer<typeof SessionTypeEnum>;
-export type RotLevel = z.infer<typeof RotLevelEnum>;
-export type TrustLevel = z.infer<typeof TrustLevelEnum>;
-export type SignalType = z.infer<typeof SignalTypeEnum>;
-export type Priority = z.infer<typeof PriorityEnum>;
-
-export type Signal = z.infer<typeof SignalSchema>;
-export type RotPoints = z.infer<typeof RotPointsSchema>;
-export type GovernanceChecks = z.infer<typeof GovernanceChecksSchema>;
-export type TemporalChecks = z.infer<typeof TemporalChecksSchema>;
-export type DelegationChecks = z.infer<typeof DelegationChecksSchema>;
-export type WorkflowChecks = z.infer<typeof WorkflowChecksSchema>;
-export type PlatformChecks = z.infer<typeof PlatformChecksSchema>;
-
-export type GovernanceIntegrity = z.infer<typeof GovernanceIntegritySchema>;
-export type TemporalConsistency = z.infer<typeof TemporalConsistencySchema>;
-export type DelegationScope = z.infer<typeof DelegationScopeSchema>;
-export type WorkflowIntegrity = z.infer<typeof WorkflowIntegritySchema>;
-export type PlatformSurface = z.infer<typeof PlatformSurfaceSchema>;
-
-export type ContextFloodMetrics = z.infer<typeof ContextFloodMetricsSchema>;
-export type ContextFlood = z.infer<typeof ContextFloodSchema>;
-export type Trust = z.infer<typeof TrustSchema>;
-export type ActionGate = z.infer<typeof ActionGateSchema>;
-export type Recommendation = z.infer<typeof RecommendationSchema>;
+export const ContextIntelligenceOutputSchema = z.union([
+  QuickOutputSchema,
+  RotOutputSchema,
+  FullOutputSchema,
+]);
 
 export type ContextIntelligenceOutput = z.infer<typeof ContextIntelligenceOutputSchema>;
+export type QuickOutput = z.infer<typeof QuickOutputSchema>;
+export type RotOutput = z.infer<typeof RotOutputSchema>;
+export type FullOutput = z.infer<typeof FullOutputSchema>;
 
-// Default export
 export default ContextIntelligenceOutputSchema;

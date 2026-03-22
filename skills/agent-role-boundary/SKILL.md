@@ -1,6 +1,6 @@
 ---
 name: "agent-role-boundary"
-description: "Enforces Diamond role separation: orchestrator, executor, verifier, researcher, planner, and meta-builder boundaries. Use when defining agent profiles, when delegation recursion risks appear, when an agent acts outside its role, or when role boundaries are unclear during handoff. Prevents overlap between orchestration, execution, verification, and framework-authoring concerns."
+description: "Describes Diamond role separation: orchestrator, executor, verifier, researcher, planner, and meta-builder boundaries. Use as guidance when defining agent profiles, when delegation recursion risks appear, when an agent acts outside its role, or when role boundaries are unclear during handoff. NOTE: This is documentation only - it does not enforce role separation."
 ---
 
 # Agent Role Boundary

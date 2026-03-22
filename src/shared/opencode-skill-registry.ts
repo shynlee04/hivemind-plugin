@@ -84,14 +84,15 @@ function readMarkdownFiles(baseDir: string, subDir: string): Map<string, string>
   return files
 }
 
-function discoverSkills(packageRoot: string): DiscoveredSkill[] {
+function discoverSkills(packageRoot: string, excludedSkillIds: string[] = []): DiscoveredSkill[] {
   const skillsRoot = join(packageRoot, 'skills')
   const discovered: DiscoveredSkill[]=[]
+  const excludedSet = new Set(excludedSkillIds)
 
   try {
     const entries = readdirSync(skillsRoot, { withFileTypes: true })
     for (const entry of entries) {
-      if (entry.isDirectory() && !entry.name.startsWith('_')) {
+      if (entry.isDirectory() && !entry.name.startsWith('_') && !excludedSet.has(entry.name)) {
         const skillDir = join(skillsRoot, entry.name)
         const skillFile = join(skillDir, 'SKILL.md')
         try {
@@ -127,7 +128,10 @@ function buildRegistryEntry(skill: DiscoveredSkill): OpencodeSkillRegistryEntry 
   }
 }
 
-export function createOpencodeSkillRegistry(packageRoot: string): OpencodeSkillRegistryEntry[] {
-  const skills = discoverSkills(packageRoot)
+export function createOpencodeSkillRegistry(
+  packageRoot: string,
+  excludedSkillIds: string[] = [],
+): OpencodeSkillRegistryEntry[] {
+  const skills = discoverSkills(packageRoot, excludedSkillIds)
   return skills.map((skill) => buildRegistryEntry(skill))
 }

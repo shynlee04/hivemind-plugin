@@ -28,7 +28,7 @@ This file governs development of the framework. Loaded once per OpenCode session
 > **NOTE**: The prohibition above applies to `Hiveminder` and `Hivefiver` roles (orchestration/monitoring). 
 > Delegated execution agents (GSD orchestrators, phase executors, subagents spawned via workflow) are **EXEMPT** 
 > from this prohibition — they are explicitly delegated to Read, Write, Execute, Plan, and Search
-> as bounded by their workflow contracts. See `.opencode/agents/gsd-*.md` for available agents.
+> as bounded by their workflow contracts. See `.opencode/agents/` for available agents (projected from root `agents/*.deprecated.md` via `opencode-agent-registry.ts` at build/dev time, or consult the GSD agent framework documentation).
 
 - DO delegate to Read broad and investigate deep
 - Do handoff with previous turn artifacts to research and synthesis
@@ -44,8 +44,8 @@ This file governs development of the framework. Loaded once per OpenCode session
 - **Supervisor orchestration authority**: `src/sdk-supervisor/` owns additive Phase 1 orchestration control as it lands
 - **Agent authority surface**: root `agents/**` is the source authoring surface for agent contracts
 - **Install/runtime entry**: stable docs under `docs/guide/**` describe the single bootstrap path; `src/cli/` + `src/control-plane/` own the executable behavior
-- **Live install/runtime entry is limited to** `dist/cli.js` binaries, the `hivemind-context-governance/plugin` export, and the consumer-side `.opencode/plugins/hivemind-context-governance.ts` stub written by runtime sync
-- **Dev projection**: `.opencode/agents/**` is a user-local runtime projection of root `agents/**`, never an independent authority and never a repo-time prerequisite
+- **Live install/runtime entry is limited to** `dist/cli.js` binaries, the `hivemind-context-governance/plugin` export, and the consumer-side `.opencode/plugins/hivemind-context-governance.ts` stub written by `hm-init` and `hm-doctor` (plugin-only sync, no command/agent/skill mirroring)
+- **Dev projection**: `.opencode/agents/` may contain runtime projections during development but is **not** auto-generated at install time; root `agents/*.deprecated.md` is the canonical source
 - **Runtime-generated**: `.hivemind/` is runtime output after `hm-init`, not an authoring surface
 - **Sector governance**: each `src/*/AGENTS.md` owns its domain boundary
 - **A root `commands/*.md` file is a live runtime command surface only when registered** in `src/commands/slash-command/command-bundles.ts` or mapped from a control-plane primitive
@@ -245,7 +245,7 @@ npx tsx --test tests/<file>.test.ts  # Single test
 
 ## GSD Agent Framework
 
-This project uses the GSD (Get Sh*t Done) agent framework for workflow execution. See `.opencode/agents/gsd-*.md` for available agents.
+This project uses the GSD (Get Sh*t Done) agent framework for workflow execution. See `.opencode/agents/` or root `agents/` for available agents.
 
 ## Layer Architecture
 
@@ -277,5 +277,5 @@ This project uses the GSD (Get Sh*t Done) agent framework for workflow execution
 | Package | `hivemind-context-governance` on npm |
 | Plugin entry | `dist/plugin/opencode-plugin.js` |
 | Config | `opencode.json` |
-| Dev mirror | `.opencode/` (agents, commands, plugins - not shipped) |
+| Dev projection | `.opencode/` (plugins only at runtime; agents/commands may exist from dev builds but are not shipped) |
 | Runtime state | `.hivemind/` (generated runtime output, not agent-authoring input) |

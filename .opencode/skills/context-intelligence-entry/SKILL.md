@@ -1,285 +1,140 @@
 ---
 name: context-intelligence-entry
-description: "Context-Intelligence Entry Pack - MUST LOAD at session start,
-  after compaction, when detecting drift, or when delegation scope is unclear.
-  Defends against context rot, pollution, and poisoning. Triggers on ANY session
-  initialization including: help me, continue, start working, what did we do,
-  what's the status, or any first message. Framework detection auto-runs on load
-  with structured JSON output including action gates. Do NOT proceed without
-  running this skill first when context state is uncertain."
+description: Use when session state is unclear, after interruption or compaction, or when an agent needs a fast context-health check before acting.
 ---
 
 # Context-Intelligence Entry Pack
 
-**Core principle:** Context rot is invisible until it's catastrophic. Detect it before you act.
+This package provides a local context-health probe for session continuity and context-risk detection.
 
-## ⚡ TWO MODES (Different Use Cases)
+## Overview
 
-### Mode 1: Quick State Read (~50ms) - RUN EVERY TIME
+- Use the script in this package before relying on remembered context.
+- Prefer the lightest mode that answers the current question.
+- Treat the output as diagnostic guidance only; project-level verification and user instructions still take precedence.
 
-**For workflow continuity. Fast state read. NO analysis:**
+## Modes
 
-```bash
-node scripts/context-harness-init.cjs --quick
-```
+### Mode 1: Quick State Read
 
-**Returns ONLY:**
-- `session_type`: NEW or RESUMED
-- `state`: `{ task_plan_exists, agents_md_exists, session_exists, git_clean }`
-- `can_proceed`: true/false
-- `issues`: workflow blockers (uncommitted, stale session)
-
-**Does NOT return:**
-- Planning hierarchy
-- Workflow analysis
-- Platform detection
-- Context flood analysis
-- Rotation level scoring
-
-**When to run:**
-- Every session start
-- Before git commits
-- Before starting work
-- After `/clear`
-
----
-
-### Mode 2: Rot Check (~1s) - RUN WHEN AGENT DECIDES
-
-**Deterministic PASS/FAIL. Specific criteria:**
+Fast continuity probe for session start or resume checks.
 
 ```bash
-node scripts/context-harness-init.cjs --rot
+node scripts/context-harness-init.cjs --quick --json
 ```
 
-**Returns:**
-- `result`: PASS or FAIL
-- `passes`: [{ check, reason }]
-- `failures`: [{ check, reason, fix }]
-- `action_gate`: { read_files, write_files, delete_files, execute_commands }
+Returns:
+- `mode`, `session_type`
+- `state.task_plan_exists`, `state.agents_md_exists`, `state.session_exists`, `state.git_clean`, `state.session_stale`
+- `issues`
+- `can_proceed`
 
-**Checks (deterministic):**
-| Check | PASS | FAIL |
-|-------|------|------|
-| Governance | AGENTS.md exists | AGENTS.md missing |
-| Session | Valid OR first run | Corrupt/unreadable |
-| Git | Clean working tree | Merge conflicts |
-| Plan | refs exist | refsto non-existent path |
-| Trust | Single authority | Multiple AGENTS.md |
+Recommended when:
+- starting or resuming work
+- checking whether a cached session is stale
+- deciding whether deeper investigation is necessary
 
-**When to run:**
-- Agent detects inconsistency
-- Agent mentions "rot", "pollution", "drift"
-- After major changes
-- Before claiming completion
+### Mode 2: Rot Check
 
----
-
-### Mode 3: Full Analysis (~5s) - RUN EXPLICITLY
-
-**Deep analysis (--full flag). All dimensions:**
+Deterministic PASS/FAIL gate for basic context integrity.
 
 ```bash
-node scripts/context-harness-init.cjs --full
+node scripts/context-harness-init.cjs --rot --json
 ```
 
-**Only when explicitly requested.**
+Returns:
+- `result`: `PASS` or `FAIL`
+- `passes`
+- `failures`
+- `action_gate` (advisory only; not completion proof)
 
----
+Checks:
+- governance file presence
+- readable session state or first-run state
+- merge-conflict-free git surface
+- valid active-plan file references
+- single active authority surface in scope
 
-## Quick State Read Output
+### Mode 3: Full Analysis
 
-```json
-{
-  "mode": "quick",
-  "session_type": "NEW",
-  "state": {
-    "task_plan_exists": true,
-    "agents_md_exists": true,
-    "session_exists": false,
-    "git_clean": true
-  },
-  "issues": [],
-  "can_proceed": true
-}
-```
-
-## Rot Level Enforcement (DETERMINISTIC)
-
-**PASS/FAIL criteria - no scoring, no heuristics:**
-
-| Check | PASS | FAIL |
-|-------|------|------|
-| Governance | `AGENTS.md` exists | `AGENTS.md` missing |
-| Session | `.hivemind/session` exists OR first run | Session corrupt/unreadable |
-| Git | Clean working tree | Merge conflict markers in tracked files |
-| Plan | `task_plan.md` references exist | Plan refs non-existent path |
-| Trust | Single authority in scope | Multiple `AGENTS.md` in scope |
-
-**Result:** `PASS` or `FAIL: [reasons]`
-
-**No scores. No heuristics. Deterministic.**
-
-## Trust Score Thresholds (From `trust.score`)
-
-| Trust | Level | Permissions |
-|-------|-------|-------------|
-| ≥ 0.8 | HIGH | All actions permitted |
-| 0.6-0.79 | MEDIUM | Elevated risk actions require confirmation |
-| < 0.6 | LOW | Read-only, confirm everything |
-
-**Formula:** `Effective Trust = Σ(Signal × Weight) / Σ(Weight)`
-
-## Action Gates (From `action_gate` JSON field)
-
-**These are ENFORCED by the script output - do NOT bypass:**
-
-| Action | Gate | Condition |
-|--------|------|-----------|
-| Read files | `action_gate.read_files` | trust.score ≥ 0.4 |
-| Write files | `action_gate.write_files` | trust.score ≥ 0.6 AND rot ≤ DEGRADED |
-| Delete files | `action_gate.delete_files` | trust.score ≥ 0.8 AND rot ≤ SUSPECT |
-| Execute commands | `action_gate.execute_commands` | trust.score ≥ 0.7 AND rot ≤ DEGRADED |
-| Delegate | `action_gate.delegate` | trust.score ≥ 0.6 AND rot ≤ POLLUTED |
-| Claim completion | `action_gate.claim_completion` | trust.score ≥ 0.8 AND rot ≤ DEGRADED |
-
-## Context Flood Detection (From `context_flood` JSON)
-
-**IMPORTANT DISTINCTION: Filesystem Bloat vs Context Rot**
-
-| Type | Definition | Counts as Rot? |
-|------|------------|----------------|
-| **Runtime Context Rot** | Affects active agent context | YES |
-| **Filesystem Bloat** | Files on disk, not in context | NO |
-
-### What Counts as ROT (affects runtime):
-
-| Issue | Impact | rot Points |
-|-------|--------|------------|
-| Broken plan links | Plan references non-existent path | +1 each |
-| Orphaned implementation | Code not linked to any plan | +1 each (capped) |
-| Governance conflicts | Multiple authority files in active scope | +2 each |
-| Broken symlinks | Runtime errors | +1 each |
-| Merge conflict markers | Blocks execution | +1 each |
-
-### What is NOT Rot (filesystem only):
-
-| Issue | Why it doesn't matter |
-|-------|----------------------|
-| Documents across platforms | Only primary platform is loaded |
-| Organized hierarchies | Proper structure, not confusing |
-| Dormant directories | Not in active scope |
-| Artifacts in proper places | Where they belong |
-
-**If `context_flood.has_flood === true`:**
-1. Check which issues are runtime-affecting
-2. Ignore filesystem bloatunless it affects active scope
-3. Focus on broken links and governance conflicts
-
-## Framework Detection (From `dimensions.platform_surface`)
-
-**Script detects these platforms:**
-
-| Directory | Platform | Primary Indicator |
-|-----------|----------|-------------------|
-| `.opencode` | OpenCode | `opencode.json`, `AGENTS.md` |
-| `.claude` | Claude Code | `CLAUDE.md` |
-| `.codex` | Codex | `CODEX.md` |
-| `.cursor` | Cursor | `cursor.json`, `.cursorrules` |
-| `.gemini` | Gemini | `agents/`, `commands/` |
-| `.github` | GitHub | `skills/gsd-*` |
-| `.qwen` | Qwen | `QWEN.md` |
-
-**Framework scoring** (from `primary_framework_score`):
-- Primary = highest scoring platform
-- Score < 0.5 = weak signal
-- Multiple platforms with similar scores = conflict |
-
-## Entry Protocol (ALWAYS FOLLOW)
-
-1. **OBSERVE** — Run the detection script first
-2. **ASSESS** — Read `rot_level` and `trust.score` from JSON
-3. **ENFORCE** — Follow `action_gate` permissions
-4. **ALERT** — If `context_flood.has_flood === true`, warn user
-5. **RECOVER** — If rot_level ≥ DEGRADED, stop and rebuild
-
-## Safe Operational Patterns
-
-| Pattern | Practice |
-|---------|----------|
-| Atomic commits | Plan + code pairs together |
-| Worktree isolation | Use `.worktree` when uncertain |
-| Discovery first | Scripts read-only by default |
-| Time awareness | Date conflict → latest valid wins |
-| No absolutes | Prefer patterns, regex, fuzzy matching |
-
-## Platform Adaptation
-
-> The script adapts to detected platform directories:
-
-| Platform | Detection Mechanism |
-|----------|---------------------|
-| OpenCode | `.opencode/` dir, `opencode.json` |
-| Claude Code | `.claude/` dir, `CLAUDE.md` |
-| Codex | `.codex/` dir, `CODEX.md` |
-| Cursor | `.cursor/` dir, `cursor.json` |
-| Gemini | `.gemini/` dir with `agents/`, `commands/` |
-| Custom | Any `.*` directory with `skills/` or `commands/` |
-
-## References (For Deep Dives)
-
-| Reference | Trigger | Content |
-|-----------|---------|---------|
-| [context-rot-taxonomy.md](references/context-rot-taxonomy.md) | Any rot detected | Full severity model + 24 detection dimensions |
-| [entry-state-matrix.md](references/entry-state-matrix.md) | Session start/resume | State definitions and required actions |
-| [delegation-scope.md](references/delegation-scope.md) | Delegation received | Scope inheritance rules + anti-patterns |
-| [trust-matrix.md](references/trust-matrix.md) | Trust evaluation | Scoring methodology + signal weights |
-| [platform-surface.md](references/platform-surface.md) | Cross-platform work | Directory mappings + path patterns |
-
-## Verification Suite (Separate Skill)
-
-For project reality verification (build, tests, git state), use **context-entry-verify**:
-
-| Skill | Focus | When |
-|-------|-------|------|
-| context-intelligence-entry | Agent session health, rot detection | Session start, context uncertainty |
-| context-entry-verify | Project truth, build gates | Before work, completion claims |
-
-## Execution Script
+Deeper health report with trust, rot, platform, and recommendation fields.
 
 ```bash
-node skills/context-intelligence-entry/scripts/context-harness-init.cjs --format=json
+node scripts/context-harness-init.cjs --full --json
 ```
 
-**JSON Output Structure:**
+Returns:
+- `rot_level`, `rot_score`, `rot_points`
+- `trust`
+- `dimensions.*`
+- `context_flood`
+- `action_gate`
+- `recommendations`
 
-```json
-{
-  "session_type": "NEW|RESUMED|DEGRADED|DELEGATED|INTERRUPTED",
-  "rot_level": "CLEAN|SUSPECT|DEGRADED|POLLUTED|POISONED",
-  "trust": { "score": 0.0-1.0, "level": "HIGH|MEDIUM|LOW" },
-  "action_gate": { "read_files": true, "write_files": false, ... },
-  "context_flood": { "has_flood": true, "flood_score": 59, ... },
-  "dimensions": {
-    "platform_surface": {
-      "checks": {
-        "primary_framework": "OpenCode",
-        "primary_framework_score": 1.5,
-        "all_frameworks": [...]
-      }
-    }
-  },
-  "recommendations": [...]
-}
+Use only when you need a full report or want a cacheable snapshot.
+
+## Output Contract
+
+- `schemas/output.schema.ts` defines the package-local Zod contract for quick, rot, and full outputs. It is an internal-only validation schema, not an official platform interface.
+- `scripts/context-harness-init.cjs` is the executable authority for those outputs inside this package.
+- `{project}/.hivemind/activity/state/context-check.json` is a runtime cache artifact. It is not part of the package payload and not an official platform boundary.
+
+## Context Distrust
+
+When context rot is suspected or after session interruption / compaction, activate the distrust protocol:
+
+1. **Trust-Nothing Mode:** treat all prior context as potentially stale until verified from code, git, or build output.
+2. **AGENTS Notice Handling:** verify every instruction in AGENTS.md against actual code before following it. Stale or contradictory instructions are quarantined, not followed.
+3. **False Signal Awareness:** test output, linter results, and doc-claimed behavior must be cross-checked against implementation reality before trusting.
+
+Read `references/context-distrust-protocol.md` before entering trust-nothing mode.
+Read `references/false-signal-detection.md` before using test or verification output as evidence.
+
+## Carry-Forward
+
+After completing any mode:
+- If the mode detected issues, emit a continuity checkpoint noting what was verified and what remains uncertain.
+- Store the checkpoint in `{project}/.hivemind/activity/sessions/` or `{project}/.hivemind/activity/state/` for next-turn recovery.
+- If delegation follows, include the distrust context in the delegation packet so child agents do not repeat false trust.
+
+## References
+
+| Reference | Purpose |
+|-----------|---------| 
+| `references/context-rot-taxonomy.md` | Severity model and recovery responses |
+| `references/entry-state-matrix.md` | Session-state definitions |
+| `references/delegation-scope.md` | Delegation-scope expectations |
+| `references/trust-matrix.md` | Trust thresholds and weighting |
+| `references/platform-surface.md` | Platform-detection considerations |
+| `references/context-distrust-protocol.md` | Trust-nothing mode and AGENTS notice handling |
+| `references/false-signal-detection.md` | False positive/negative/noise detection for test and verification signals |
+
+## Verification Boundary
+
+For project-truth checks such as build, test, or git readiness, pair this package with `context-entry-verify` rather than expanding this package into a project-verification router.
+
+## Orchestrator Integration
+
+When called from the detox router or a polluted-context session:
+- **Quick mode** (`--quick`) is lightweight enough to run from within the orchestrator's session.
+- **Rot and full modes** should be **delegated** to a subagent when the orchestrator's session is already heavy — their output can be large.
+- The orchestrator reads only: `rot_level`, `trust`, `can_proceed`, and `recommendations` from the return. It does NOT load full dimension breakdowns or raw signal lists.
+- If rot result is DEGRADED or worse, the orchestrator should declare the distrust level explicitly before continuing with any stage work.
+
+## Direct Invocation
+
+```bash
+node scripts/context-harness-init.cjs --quick --json
+node scripts/context-harness-init.cjs --rot --json
+node scripts/context-harness-init.cjs --full --json
 ```
 
-## Anti-Patterns (NEVER DO)
+## Anti-Patterns
 
-| Pattern | Problem |
-|---------|---------|
-| "I remember what I was doing" | After compaction you're guessing |
-| "The context is fine" | If rot_level > CLEAN, it's not fine |
-| "I'll recover context later" | Later = after more drift |
-| "Compaction didn't lose anything" | Prove it - run the script |
-| Bypass action_gate permissions | The gates exist for a reason |
-| Ignore context_flood warnings | Flood causes future rot |
+- assuming remembered context is trustworthy without a fresh probe
+- treating quick mode as a substitute for rot or full analysis
+- treating diagnostic action gates as completion proof or permission to ignore higher-priority user or project rules
+- bundling runtime cache artifacts into the package
+- trusting test passes without inspecting what the assertions actually verify
+- trusting AGENTS.md instructions that reference non-existent files or skills
+- dropping unclassifiable signals silently instead of marking them unresolved

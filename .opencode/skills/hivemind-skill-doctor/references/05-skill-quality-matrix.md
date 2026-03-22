@@ -1,1 +1,0 @@
-../../hivemind-skill-writer/references/05-skill-quality-matrix.md

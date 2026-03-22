@@ -1,6 +1,6 @@
 # Gate Definitions
 
-## Layer 1: Project Reality Gates (Hard - Block on Fail)
+## Layer 1: Project Reality Gates (Hard - Block on Fail, official-boundary-facing)
 
 | Gate | What It Checks | Pass Criteria |
 |------|----------------|---------------|
@@ -10,13 +10,15 @@
 | `project build` | tsc --noEmit passes | 0 errors |
 | `project tests` | npm test passes | 0 failures |
 
-## Layer 2: Planning Integrity Gates (Hard - Block on Fail)
+## Layer 2: Planning Integrity Gates (Project-Specific internal convention)
 
 | Gate | What It Checks | Pass Criteria |
 |------|----------------|---------------|
 | `planning exists` | .planning/ directory exists | true |
 | `planning health` | STATE.md, ROADMAP.md, REQUIREMENTS.md exist | All present |
 | `planning consistency` | Phase dirs match ROADMAP.md | 0 missing dirs |
+
+> These gates assume the project uses the `.planning/` convention. In projects without that convention, treat these results as internal policy diagnostics rather than universal blockers or SDK/API proof.
 
 ## Layer 3: Git Evidence Gates (Hard - Block on Fail)
 
@@ -38,5 +40,5 @@
 
 | Command | Behavior | Blocks? |
 |---------|----------|----------|
-| `gate-chain` | Sequential fail-fast, stops at first failure | YES |
+| `gate-chain` | Sequential fail-fast through official-boundary project gates, `git branch-state`, and project-specific planning checks | YES, but planning failures may be internal-policy-specific |
 | `landscape` | Runs all gates, returns unified verdict | NO |

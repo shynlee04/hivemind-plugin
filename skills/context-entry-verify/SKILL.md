@@ -1,6 +1,6 @@
 ---
 name: context-entry-verify
-description: Deterministic verification skill. Use when starting work, before execution, at gate checkpoints, or when verifying completion claims. Runs hard-proof JSON gates against real project state.
+description: Deterministic verification skill. Use when starting work, before execution, at gate checkpoints, or when verifying completion claims. Runs hard-proof JSON gates against real project state. NOTE: This skill RUNS verification and REPORTS results - it does not block or enforce.
 triggers:
   - starting work
   - before execution
@@ -18,18 +18,18 @@ auto_run: before-work-execution
 ## Auto-Run Behavior
 
 Runs `hm-verify.cjs gate-chain --raw` **before** any work execution:
-- If all gates pass → proceed with work
-- If any gate fails → delegate report to user, wait for instruction
+- If all gates pass → report success, recommend proceeding
+- If any gate fails → report failure with evidence, await user instruction
 
 ## Commands
 
-| Command | Purpose | Blocks On Fail? |
-|---------|---------|-----------------|
-| `gate-chain` | Sequential fail-fast verification | YES |
-| `landscape` | Full landscape report (all gates) | NO |
-| `project build` | TypeScript compile check | YES |
-| `project tests` | Run npm test | YES |
-| `git branch-state` | Check for uncommitted changes | YES |
+| Command | Purpose | Reports |
+|---------|---------|---------|
+| `gate-chain` | Sequential verification | Pass/Fail with evidence |
+| `landscape` | Full landscape report (all gates) | All results |
+| `project build` | TypeScript compile check | Pass/Fail |
+| `project tests` | Run npm test | Pass/Fail |
+| `git branch-state` | Check for uncommitted changes | Pass/Fail |
 
 ## Delegation Protocol
 
@@ -39,7 +39,6 @@ When `gate-chain` fails:
 2. Report to user: "Gate [X] failed"
 3. Provide evidence (full gate result JSON)
 4. Await user instruction
-5. Do NOT proceed past failure autonomously
 
 ## Usage Examples
 

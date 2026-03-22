@@ -1,6 +1,6 @@
 ---
 name: context-intelligence-entry
-description: "Context-Intelligence Entry Pack - MUST LOAD at session start, after compaction, when detecting drift, or when delegation scope is unclear. Defends against context rot, pollution, and poisoning. Triggers on ANY session initialization including: help me, continue, start working, what did we do, what's the status, or any first message. Framework detection auto-runs on load with structured JSON output including action gates. Do NOT proceed without running this skill first when context state is uncertain."
+description: "Context-Intelligence Entry Pack - RUN at session start, after compaction, when detecting drift, or when delegation scope is unclear. Detects context rot, pollution, and poisoning. Triggers on ANY session initialization including: help me, continue, start working, what did we do, what's the status, or any first message. Framework detection auto-runs on load with structured JSON output including action gates. NOTE: This is a diagnostic tool - action_gate values are recommendations only, not enforced restrictions."
 ---
 
 # Context-Intelligence Entry Pack
@@ -126,16 +126,16 @@ node scripts/context-harness-init.cjs --full
 
 ## Action Gates (From `action_gate` JSON field)
 
-**These are ENFORCED by the script output - do NOT bypass:**
+> **IMPORTANT DISCLAIMER:** The `action_gate` values are ADVISORY OUTPUT ONLY. They represent the script's recommendations based on computed trust scores. The script is a **diagnostic tool** - it does NOT enforce any restrictions. Actual enforcement must be implemented by the calling agent/hook via `permission.ask` or similar OpenCode mechanisms.
 
 | Action | Gate | Condition |
 |--------|------|-----------|
-| Read files | `action_gate.read_files` | trust.score ≥ 0.4 |
-| Write files | `action_gate.write_files` | trust.score ≥ 0.6 AND rot ≤ DEGRADED |
-| Delete files | `action_gate.delete_files` | trust.score ≥ 0.8 AND rot ≤ SUSPECT |
-| Execute commands | `action_gate.execute_commands` | trust.score ≥ 0.7 AND rot ≤ DEGRADED |
-| Delegate | `action_gate.delegate` | trust.score ≥ 0.6 AND rot ≤ POLLUTED |
-| Claim completion | `action_gate.claim_completion` | trust.score ≥ 0.8 AND rot ≤ DEGRADED |
+| Read files | `action_gate.read_files` | trust.score ≥ 0.4 (RECOMMENDATION ONLY) |
+| Write files | `action_gate.write_files` | trust.score ≥ 0.6 AND rot ≤ DEGRADED (ADVISORY) |
+| Delete files | `action_gate.delete_files` | trust.score ≥ 0.8 AND rot ≤ SUSPECT (ADVISORY) |
+| Execute commands | `action_gate.execute_commands` | trust.score ≥ 0.7 AND rot ≤ DEGRADED (ADVISORY) |
+| Delegate | `action_gate.delegate` | trust.score ≥ 0.6 AND rot ≤ POLLUTED (ADVISORY) |
+| Claim completion | `action_gate.claim_completion` | trust.score ≥ 0.8 AND rot ≤ DEGRADED (ADVISORY) |
 
 ## Context Flood Detection (From `context_flood` JSON)
 
@@ -193,9 +193,9 @@ node scripts/context-harness-init.cjs --full
 
 1. **OBSERVE** — Run the detection script first
 2. **ASSESS** — Read `rot_level` and `trust.score` from JSON
-3. **ENFORCE** — Follow `action_gate` permissions
+3. **CONSIDER** — Review `action_gate` permissions as recommendations, not enforced rules
 4. **ALERT** — If `context_flood.has_flood === true`, warn user
-5. **RECOVER** — If rot_level ≥ DEGRADED, stop and rebuild
+5. **RECOVER** — If rot_level ≥ DEGRADED, assess and address issues
 
 ## Safe Operational Patterns
 
@@ -275,5 +275,5 @@ node skills/context-intelligence-entry/scripts/context-harness-init.cjs --format
 | "The context is fine" | If rot_level > CLEAN, it's not fine |
 | "I'll recover context later" | Later = after more drift |
 | "Compaction didn't lose anything" | Prove it - run the script |
-| Bypass action_gate permissions | The gates exist for a reason |
+| Treat action_gate as enforced | These are recommendations only - no enforcement mechanism exists |
 | Ignore context_flood warnings | Flood causes future rot |

@@ -5,7 +5,7 @@ Manages the 4 CLI primitives (`hm-init`, `hm-doctor`, `hm-harness`, `hm-settings
 ## Boundary
 
 The control plane decides whether a CLI command can proceed (gate), collects required user profile fields (intake), and dispatches to the handler.
-It is also the authority for first-run and repair entry flows that may write user-local runtime projection under `.opencode/**`.
+It is also the authority for first-run and repair entry flows that write user-local runtime projection under `.opencode/**`; these writes require user consent via `permission.ask` or `context.ask()` before mutation.
 In Phase 1, this sector should trend toward thin intake/command adaptation while longer-lived orchestration authority moves into `src/sdk-supervisor/`.
 
 ## Files
@@ -22,7 +22,7 @@ In Phase 1, this sector should trend toward thin intake/command adaptation while
 - Gate system is `detect()` pattern — each primitive probes user input for activation keywords
 - Intake resolves required profile fields before allowing execution
 - Non-interactive mode requires `--preset` or explicit CLI flags
-- `init` and healthy `doctor` are the only control-plane paths allowed to trigger `syncRuntimeSurface()`
+- First-run (`hm-init`) and repair (`hm-doctor`) entry flows write user-local runtime projection under `.opencode/plugins/` only after obtaining user consent (e.g., via `permission.ask` hook or explicit CLI flag confirmation); all other control-plane paths are read-only
 - All 4 commands ultimately execute through `executeSlashCommandBundle()`
 - `hm-harness` is currently a readiness and diagnostic surface, not authoritative proof of live OpenCode behavior
 - Future control-plane verification should exercise real OpenCode server/client flows rather than only raw health fetches or local bundle execution

@@ -17,6 +17,7 @@ Manages the trajectory ledger — the persistent record of session trajectories,
 - Assessment determines whether to attach to active, resume closed, or create new
 - Recovery outcomes feed back via `recordTrajectoryRecoveryOutcome()`
 - Exposed to agents via `hivemind_trajectory` tool
+- **User consent**: Tool execution requires `context.ask()` for writes; automatic trajectory operations are internal state management
 
 ## Audit Note
 

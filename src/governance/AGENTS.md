@@ -11,5 +11,6 @@ Minimal module. Projects trajectory and workflow state into planning artifacts.
 ## Design
 
 - Reads from `core/trajectory/` and `core/workflow-management/`
-- Writes projection to `.hivemind/state/planning/`
+- Writes projection to `.hivemind/project/planning/trajectory-projections/`
 - Consumed by the `hm-init` and `hm-doctor` control-plane handlers
+- **User consent**: Automatic during command execution; projections are internal state

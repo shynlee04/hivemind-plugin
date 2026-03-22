@@ -2,9 +2,11 @@
 
 ## Supported Platforms
 
+These directories are detection and install/projection clues. They are not automatically the source authority for a skill's authored content.
+
 | Platform | Directory | Config File | Skill Directory |
 |----------|-----------|-------------|------------------|
-| OpenCode | `.opencode/` | `opencode.json` | `.opencode/skills/` |
+| OpenCode | `.opencode/` | `opencode.json` | `.opencode/skills/` runtime projection or local install surface |
 | Claude Code | `.claude/` | `CLAUDE.md` | `.claude/skills/` |
 | Codex | `.codex/` | `CODEX.md` | `.codex/skills/` |
 | Qwen | `.qwen/` | `QWEN.md` | `.qwen/skills/` |
@@ -67,6 +69,8 @@ function detectPlatform() {
 
 ### Platform-Specific Skill Directories
 
+Treat these as runtime lookup paths. They may contain source authority, generated projection, symlinked mirrors, or local-only overrides depending on the workspace.
+
 | Platform | Skills Path | Priority |
 |----------|-------------|----------|
 | OpenCode | `.opencode/skills/` | 1 |
@@ -76,9 +80,11 @@ function detectPlatform() {
 
 ### Skill Loading Order
 
-1. **Platform-specific skills** (`.{platform}/skills/`)
+1. **Platform-specific skill lookup path** (`.{platform}/skills/`)
 2. **Root skills** (`skills/`)
 3. **Deprecated skills** (`skills/_deprecated_*`) - *Should be skipped*
+
+This order describes lookup precedence, not source-authority precedence. Always verify whether a located surface is authored source, runtime projection, or local config before making cleanup or restoration decisions.
 
 ### Symlink Resolution
 

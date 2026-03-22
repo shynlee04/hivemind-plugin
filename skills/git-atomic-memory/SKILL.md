@@ -3,19 +3,19 @@ name: git-atomic-memory
 description: >
   Use when encoding commit intent as semantic memory, retrieving past decisions from git history,
   resuming work after context loss, or building knowledge networks from commit chains.
-  
+   
   PRIMARY USERS:
   • hiveminder (orchestrator): Links delegation handoffs to commit anchors
   • hivemaker (executor): Resumes work from previous sessions via commit context
   • hiveq (verifier): Traces decision history to validate implementation
   • hiverd (researcher): Investigates code history for intent and rationale
   • hivefiver (setup): Restores session context from git memory anchors
-  
+   
   SESSION CONTEXT:
   • Main session: Encode intent during commits, build knowledge network
   • Sub-session: Retrieve parent decisions via commit links, resume from anchors
   • Resumed session: Restore trajectory from semantic memory
-  
+   
   Triggers: "what did we decide", "why was this changed", "resume from commits",
   "commit intent", "decision history", "git memory", "session to commit link",
   "link commit to session", "retrieve decision context"
@@ -25,10 +25,8 @@ pack: git-memory
 entry-level: L2
 pattern: P2
 stacking: 0
-owner: hivemind-skill-writer
-status: active
-depends_on:
-  - context-intelligence-entry
+owner: hiveminder
+status: independent
 enables:
   - session-memory-resume
 complementary:
@@ -178,6 +176,33 @@ START: What is your goal?
 
 ### Dependency Chain
 
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    SKILL DEPENDENCY CHAIN                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   git-atomic-memory (P2) ──────────────────────────────────┐   │
+│   → Encodes commit intent                                    │   │
+│   → Links sessions to commits                                 │   │
+│   → Forms knowledge networks                                  │   │
+│                           │                                     │   │
+│                           ▼                                     │   │
+│   ENABLES:                                                       │
+│   ┌─────────────────────────────────────────────────────────┐   │
+│   │ session-memory-resume (P2)                               │   │
+│   │    → Uses anchors from this skill                        │   │
+│   │    → Uses session linking for resume                     │   │
+│   │    → Restores trajectory from commit network              │   │
+│   └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+│   COMPLEMENTS:                                                   │
+│   ┌─────────────────────────────────────────────────────────┐   │
+│   │ • git-advanced-workflows: Operations layer (rebase, etc)│   │
+│   │ • conventional-commit: Formatting layer (messages)        │   │
+│   │ • delegation-handoff: Uses anchors for handoff           │   │
+│   └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    SKILL DEPENDENCY CHAIN                       │

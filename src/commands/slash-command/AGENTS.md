@@ -18,7 +18,7 @@ Defines, discovers, and executes slash-command bundles that map to `.opencode/co
 > **`SlashCommandBundle` has 18 fields** including `pressureContract`, `stateAuthority`, `hostEvent`, `continuationMode`. This creates high coupling — every bundle definition requires understanding all 18 properties. Consider splitting into core bundle (5 fields) + extension interfaces.
 
 > [!IMPORTANT]
-> **The bundle registry is the sole runtime authority for mirrored command surfaces; as of 2026-03-17 it registers 10 command bundles.**
+> **The bundle registry is the sole runtime authority for command surfaces; as of 2026-03-17 it registers 10 command bundles.**
 > Mirror scope equals `discoverSlashCommandBundles()`, not the contents of root `commands/`.
 
 ## Architecture Rules

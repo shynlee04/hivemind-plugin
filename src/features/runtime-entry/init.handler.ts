@@ -212,8 +212,6 @@ export async function runInitHandler(
       },
       runtime_surface_sync: {
         plugin_file: runtimeSurfaceSync.pluginFile,
-        mirrored_command_files: runtimeSurfaceSync.mirroredCommandFiles,
-        mirrored_agent_files: runtimeSurfaceSync.mirroredAgentFiles,
       },
       missing_prerequisites: status.issues.map((issue) => issue.code),
       next_command: 'hm-harness',
@@ -269,8 +267,6 @@ export async function runInitHandler(
     artifactRefs: [
       projection.filePath,
       runtimeSurfaceSync.pluginFile,
-      ...runtimeSurfaceSync.mirroredCommandFiles,
-      ...runtimeSurfaceSync.mirroredAgentFiles,
     ],
     closeoutStatus,
     verificationContractId: asset.contract.verificationContract,

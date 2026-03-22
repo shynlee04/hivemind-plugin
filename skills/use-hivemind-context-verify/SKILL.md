@@ -1,81 +1,53 @@
 ---
 name: use-hivemind-context-verify
-description: "When user claims 'done', 'verify', or 'check': run build/test/git gates against project state. Block completion if any gate fails. Returns pass/fail with evidence."
+description: "When user claims 'done', 'verify', or 'check': runs build/test/git gates against project state. Returns pass/fail with evidence. NOTE: This is a verification router - it runs scripts and reports results, it does not block or enforce."
 ---
 
 # use-hivemind-context-verify
 
-When user claims work is complete or asks to verify: run gates and block until evidence is shown. This skill routes verification requests to the gate execution specialist and enforces that completion claims are backed by deterministic proof.
+Verification router for completion claims. Runs build/test/git gates and reports results.
 
-## Integration
+## When to Activate
 
-### Upstream Dependencies
-| Skill | Required Before | Why |
-|-------|----------------|-----|
-| `use-hivemind` | Always | Framework context required |
-| `use-hivemind-context-integrity` | Before verification | Context must be healthy before truth-seeking |
+| Trigger | Action |
+|---------|--------|
+| "done" | Run verification gates |
+| "verify" | Run verification gates |
+| "check" | Run verification gates |
+| "is it complete" | Run verification gates |
 
-### Downstream Routes
-| Skill | Routes To | When |
-|-------|-----------|------|
-| `context-entry-verify` | Gate execution | All verification requests |
+## Scripts
 
-### Cross-Domain Coupling
-| Coupled Skill | Relationship | Direction |
-|---------------|-------------|-----------|
-| `use-hivemind-context-integrity` | Verify after integrity cleared | Bidirectional |
-| `use-hivemind-delegation` | Completion check before handoff | Bidirectional |
+This skill has its own verification scripts:
 
-### Activation Chain
-```
-P0: use-hivemind
-    ↓
-P1: use-hivemind-context-integrity (health check)
-    ↓
-P1: use-hivemind-context-verify ← This skill
-    ↓
-P2: context-entry-verify (implementation)
-```
+- `scripts/gate-runner.cjs` — Executes build/test/git gates
 
-## Anti-Pattern: When NOT to Use This Skill
+### Gate Commands
 
-- User says "just trust me, it's done" → WRONG, must run gates
-- Agent thinks "this is a small change, skip verification" → WRONG, never skip
-- User says "looks good to me" without evidence → WRONG, need deterministic proof
-- Agent bypasses gates to "move faster" → WRONG, gates are non-negotiable
-- Agent says "verify = validate" → WRONG, verify is truth-seeking, not compliance-checking
-- User asks "check if my context is healthy" → WRONG, route to context-integrity instead
+| Gate | Command | Pass Criteria |
+|------|---------|---------------|
+| build | `npx tsc --noEmit` | Exit code 0 |
+| test | `npm test` | Exit code 0 |
+| git | `git status --porcelain` | Empty output |
 
 ## Process Flow
 
-```digraph context-verify {
-  "User claims 'done'" -> "Detect verification need"
-  "Detect verification need" -> "Run build gate"
-  "Run build gate" -> "Build passes?"
-  "Build passes?" -> "Run test gate" [label="yes"]
-  "Build passes?" -> "BLOCK + Report" [label="no"]
-  "Run test gate" -> "Tests pass?"
-  "Tests pass?" -> "Run git gate" [label="yes"]
-  "Tests pass?" -> "BLOCK + Report" [label="no"]
-  "Run git gate" -> "Git clean?"
-  "Git clean?" -> "Report PASS" [label="yes"]
-  "Git clean?" -> "BLOCK + Report" [label="no"]
-}
+```
+User claims "done" → Run gate-runner.cjs → Report results
 ```
 
 ## Step-by-Step Protocol
 
-1. **DETECT** — Did user claim done OR request verification?
-2. **INFORM** — Tell user you are running gates
-3. **ROUTE** — Delegate to `context-entry-verify` with appropriate gate type
-4. **RUN build gate** — `npx tsc --noEmit` or equivalent
-5. **IF fail** → BLOCK, report failure with evidence, STOP
-6. **RUN test gate** — `npm test` or equivalent
-7. **IF fail** → BLOCK, report failure with evidence, STOP
-8. **RUN git gate** — `git status` check
-9. **IF all pass** → Report PASS, accept completion
+1. **DETECT** — Did user claim completion or request verification?
+2. **RUN GATES** — Execute `node scripts/gate-runner.cjs` or specific gate
+3. **REPORT** — Return pass/fail with evidence
+4. **RECOMMEND** — Based on results, suggest next steps
 
 ## Terminal State
 
-- **If gates pass**: Completion accepted, proceed
-- **If gates fail**: Blocked, awaiting user instruction
+- **Gates pass**: Completion verified, recommend proceeding
+- **Gates fail**: Report failures with evidence, recommend fixes
+
+## No Enforcement
+
+> This skill RUNS verification and REPORTS results. It does NOT block or enforce. Actual enforcement must be implemented by the calling context via permission hooks or user consent.

@@ -1,118 +1,93 @@
-# Phase 1 Stress-Cert Architecture Charter
+# Master Active - HIVEMIND SKILLS PACKAGING
 
-## Summary
-- Objective: replace the fragmentary lifecycle-first slice with a whole-project Phase 1 architecture pack that a fresh session can trust without re-scanning and that can grow toward the stress matrix in `docs/testing/STRESS-TEST.md`.
-- Chosen posture: `SDK-centric supervisor control with same-local-env OpenCode server/client instances`, paired with a mandatory `plugin enforcement kernel` inside the controlled runtime.
-- Phase 1 scope: one additive architecture pack across contracts, orchestration boundaries, enforcement hooks, mutation tools, recovery evidence, concurrency safety, and certification coverage.
-- Stable authority doc: `docs/architecture/stress-cert-sdk-control-architecture.md`.
+**Created:** 2026-03-21  
+**Updated:** 2026-03-21  
+**Status:** PIVOT - Independent skills packaging
 
-## Why This Posture
-1. `SDK supervisor control`
-   - Best fit for session creation, scheduling, dependency blocking, restart recovery, SSE observation, and concurrency supervision.
-2. `Plugin enforcement kernel`
-   - Required because pure external orchestration cannot replace plugin-native interception points like `permission.ask`, `tool.execute.before`, `tool.execute.after`, `shell.env`, and prompt/context transforms.
-3. `Tool-only durable mutation`
-   - Preserves the repo’s CQRS rule and keeps durable state changes traceable.
+## Strategic Pivot
 
-The best path is the hybrid supervisor-plus-kernel model because the repo already has strong in-band enforcement seams but still lacks an out-of-band authority for workflow/session orchestration. A supervisor-only design would leave plugin-native governance weak, while a plugin-only design would keep lifecycle orchestration trapped inside prompt-adjacent code and large handlers.
+**Previous:** Pollution detection and isolation  
+**Current:** Independent skill packaging - each skill as a standalone unit with methods, scripts, assets, and deterministic references
 
-The rejected alternatives stay rejected for concrete reasons. `Single-kernel only` is too weak for restart supervision, concurrent session leasing, deadlock handling, and event-driven workflow scheduling. `Pure external SDK orchestration` cannot own in-band governance and delegated-result enforcement, which are central to the stress-cert requirements.
+### Core Objective
+Make each Hivemind skill an independent package that:
+1. Does not enforce on particular tools
+2. Has its own methods, scripts, and templates
+3. Works without depending on other polluted skills
+4. Can be audited, refactored, or removed independently
 
-## Layer Map
-1. `SDK Supervisor Control Layer`
-   - Target sector: `src/sdk-supervisor/`
-   - Owns instance management, session registry, workflow scheduling, dependency blocking, wave planning, deadlock/watchdog supervision, freshness monitoring, restart recovery orchestration, and event mirroring.
-2. `Plugin Enforcement Kernel`
-   - Existing sectors: `src/plugin/`, `src/hooks/`
-   - Owns in-band governance, route/phase injection, delegated-result interception, compaction anchors, and runtime command bridging.
-3. `Tool Mutation Pack`
-   - Existing sector: `src/tools/`
-   - Owns all durable writes and user-visible state transitions.
-4. `Core Domain Engines`
-   - Existing sectors: `src/core/`, `src/delegation/`, `src/recovery/`, `src/governance/`
-   - Own pure workflow, trajectory, delegation, recovery, and planning logic.
-5. `Schema Kernel`
-   - Target sector: `src/schema-kernel/`
-   - Owns the contract family for Phase 1 persisted and cross-session records.
-6. `CLI And Command Bridge`
-   - Existing sectors: `src/cli/`, `src/commands/`, `src/control-plane/`
-   - Stay thin over supervisor-issued work and runtime-command execution.
+### Truthful Baseline
+- `skills/` directory contains 22 skill packages
+- Each skill should be independently auditable
+- External skills (`skill-creator`, `skill-review`) provide patterns
+- Source truth lives in `src/` - skills are output artifacts
 
-## Truthful Baseline
-- Already real:
-  - entry lifecycle authority in `src/shared/entry-kernel-state.ts`
-  - runtime invocation authority in `src/shared/runtime-invocation.ts`
-  - turn-output authority in `src/shared/turn-output.ts`
-  - plugin enforcement surfaces registered in `src/plugin/opencode-plugin.ts`
-  - additive schema authority in `src/schema-kernel/`
-  - additive supervisor instance/health seams in `src/sdk-supervisor/`
-  - `hivemind_runtime_status` reporting supervisor health and schema-kernel lifecycle/session/freshness records together
-- Not yet real:
-  - live OpenCode server/client/plugin contract probes that prove runtime behavior through official interfaces rather than local harness approximations
-  - workflow waves/dependency graph contracts
-  - session leases
-  - persisted freshness registry authority beyond inspection-time synthesis
-  - deadlock/watchdog model
-  - replay envelope authority
-  - freshness/watchdog status output beyond the first supervisor/kernel slice
+### Strategic Approach
+
+1. **STEAL THE PATTERNS** - Use external `skill-creator` for skill structure
+2. **ISOLATE FALSE CLAIMS** - Remove enforcement claims from SKILL.md files
+3. **GIVE EACH SKILL OWN METHODS** - Scripts, templates, references
+4. **SHUT THEM UP** - Remove noise, keep deterministic behavior
+
+## High-Level Tasks
+
+| Phase | Focus | Skills | Status |
+|-------|-------|--------|--------|
+| 1 | Remove false enforcement | `use-hivemind`, `context-intelligence-entry`, `agent-role-boundary`, `use-hivemind-delegation` | COMPLETED |
+| 2 | Make independent | `use-hivemind-skill-writer`, `context-entry-verify`, `git-atomic-memory`, `use-hivemind-context-verify` | COMPLETED |
+| 3 | Reference external | `hivemind-skill-writer`, `hivemind-skill-write`, `hivemind-skill-doctor` | COMPLETED |
+| 4 | Monitor | `spec-distillation`, `research-methodology` | CLEAN |
+
+## Pattern Reference
+
+### Pattern: Independent Skill Structure
+```
+skill-name/
+├── SKILL.md              # Minimal entry - no false claims
+├── references/           # Quick deterministic refs
+│   ├── patterns.md
+│   └── workflows.md
+├── scripts/              # Own scripts (no enforcement)
+│   └── *.cjs
+└── templates/            # Reusable templates
+    └── *.md
+```
+
+### Pattern: External Skill Reference
+Instead of reinventing, reference external skills:
+- `skill-creator` for creating skills
+- `skill-review` for auditing skills
+- `orchestrator` for delegation
+- `evidence-discipline` for verification
+
+## Delegation Strategy
+
+For each skill audit/refactor:
+1. Load `skill-creator` and `skill-review` externally
+2. Delegate to isolated subagent
+3. Each subagent audits one skill independently
+4. Synthesize findings without mixing contexts
 
 ## Non-Negotiable Rules
-- All user entry must eventually resolve through the supervisor authority.
-- All durable mutations go through runtime tools.
-- Hooks stay read/inject/intercept only.
-- All delegated returns must pass kernel verification before parent continuation.
-- All async tool and delegation paths must honor `context.abort`.
-- All artifacts and receipts must carry timestamps and deterministic verification inputs.
-- Parallel work is allowed only when dependency and writable-surface analysis proves safety.
-- Restart recovery must rebuild from stored contracts and checkpoints, never prompt memory alone.
-- Public package exports stay stable: `"."` and `"./plugin"`.
 
-## Phase 1 Contract Family
-- `EntryKernelStateV1`
-- `RuntimeInvocationV1`
-- `TurnOutputEnvelopeV1`
-- `SupervisorInstanceRegistryV1`
-- `SessionRegistryV1`
-- `WorkflowExecutionGraphV1`
-- `WorkflowWaveStateV1`
-- `WorkflowGuardStateV1`
-- `DelegationReceiptV1`
-- `ArtifactFreshnessRegistryV1`
-- `DeadlockCheckpointV1`
-- `RecoveryReplayEnvelopeV1`
+1. **No enforcement claims** - If skill claims to block/enforce, verify code exists
+2. **Independent scripts** - Each skill's scripts must be self-contained
+3. **Deterministic references** - Templates and patterns must be repeatable
+4. **External over internal** - Prefer external skills to rebuilding
 
-## Implementation Sequence
-1. Create `src/schema-kernel/` and make the contract family machine-authoritative.
-2. Create `src/sdk-supervisor/` with instance/session/workflow/event/health scaffolding.
-3. Refactor CLI/control-plane orchestration toward supervisor-owned decisions.
-4. Strip durable writes out of hooks.
-5. Add zero-trust delegated-result verification.
-6. Add abort-aware runtime operations, dependency graphs, waves, and leases.
-7. Add freshness, deadlock, and replay evidence.
-8. Extend status/harness reporting.
-9. Add stress-cert coverage.
-10. Reconcile docs last for each slice.
+## Decision Points
 
-## Stress-Cert Exit Gates
-- All P0 stress blockers green.
-- `hivemind_runtime_status` reports supervisor + kernel health.
-- Step 1 is now real: runtime status reports validated schema-kernel entry/runtime invocation/session/freshness records plus supervisor registry/health evidence.
-- Restart recovery proven by tests.
-- Concurrent session isolation proven by tests.
-- Delegated return verification proven by tests.
-- Freshness and deadlock behavior proven by tests.
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| Skill claims enforcement but has no code | REMOVE claim | False signals are worse than silence |
+| Skill depends on polluted skill | ISOLATE | Prevent transitive pollution |
+| External skill exists for the purpose | USE EXTERNAL | Don't reinvent |
+| Skill has no scripts/templates | ADD minimal | Skills must be packages, not docs |
 
-## Rejected Alternatives
-- `Single-kernel only`
-  - Rejected because orchestration, concurrency, restart supervision, and watchdog behavior need an out-of-band authority.
-- `Pure external SDK orchestration`
-  - Rejected because plugin-native enforcement hooks are required for hard governance.
-- `Package split in Phase 1`
-  - Rejected because it would spread unresolved authority boundaries across more surfaces before the contracts are stable.
+## Exit Gates
 
-## Current Authorization Boundary
-- This branch is executing Phase 1 in additive bounded slices.
-- The current active slice is `zero-trust delegation receipt verification`.
-- The current sub-slice that just landed is `runtime-status supervisor/kernel integration`.
-- The next bounded slice is `live official-interface verification planning and probes`, followed by `zero-trust delegation receipt verification`.
-- Next root doc changes must stay tied to tested implementation progress, not speculative future state.
+1. `npm run build` passes
+2. `npx tsc --noEmit` passes
+3. Each skill has minimal SKILL.md without false claims
+4. Skills needing scripts have deterministic own scripts
+5. External patterns referenced instead of reimplemented

@@ -71,7 +71,7 @@ All code must use native SDK primitives:
 
 - Prefer TS-owned feature behavior over markdown-only runtime logic.
 - Keep root `commands/*.md` as thin OpenCode-facing projections; the source authority remains the registries and handlers under `src/`.
-- Keep first-run and repair entry flows as the only writers of user-local `.opencode/**` runtime projection.
+- Keep first-run and repair entry flows as the only writers of user-local `.opencode/**` plugin stub; no command/agent/skill mirroring occurs.
 - Treat runtime diagnostics and live contract proof as separate evidence classes in tests, docs, and progress artifacts.
 
 ## Deprecated Modules (Audit 2026-03-15)

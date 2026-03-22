@@ -1,6 +1,6 @@
 ---
 name: use-hivemind
-description: "Establish HiveMind framework context at session start. Detect lineage (hivefiver vs hiveminder), route to correct implementation skill. Blocks when context is degraded."
+description: "Establish HiveMind framework context at session start. Detect lineage (hivefiver vs hiveminder), route to correct implementation skill. NOTE: This is a ROUTER skill only - it does not block, stop, or enforce anything. It routes to specialists based on lineage identification."
 ---
 
 # use-hivemind
@@ -22,16 +22,18 @@ Establish HiveMind framework context and route to the correct implementation ski
   "Detect Platform" -> "Check Context Health"
   "Check Context Health" -> "Health OK?"
   "Health OK?" -> "Identify Lineage" [label="yes"]
-  "Health OK?" -> "BLOCK - Context Degraded" [label="no"]
+  "Health OK?" -> "Route to diagnostics" [label="no"]
   "Identify Lineage" -> "hivefiver?" [label="framework"]
   "Identify Lineage" -> "hiveminder?" [label="project"]
   "hivefiver?" -> "Route to skill authoring" [label="yes"]
   "hiveminder?" -> "Route to domain skills" [label="yes"]
   "Route to skill authoring" -> "hivemind-skill-write"
   "Route to domain skills" -> "Domain specialist"
-  "BLOCK - Context Degraded" -> "context-intelligence-entry"
+  "Route to diagnostics" -> "context-intelligence-entry"
 }
 ```
+
+> **NOTE:** This diagram shows routing decisions only. There is no "BLOCK" - when context health fails, this skill routes to `context-intelligence-entry` for assessment. The routing is advisory, not enforced.
 
 ## Activation Triggers (Semantically)
 
@@ -85,8 +87,8 @@ This skill activates when ANY of these scenarios occur:
 ## Step-by-Step Protocol
 
 1. **DETECT** — Is this session start, after compaction, or framework reference?
-2. **CHECK** — Run context health assessment
-3. **IF** context health fails → Route to `context-intelligence-entry`, STOP
+2. **CHECK** — Run context health assessment (via `context-intelligence-entry`)
+3. **IF** context health fails → Route to `context-intelligence-entry` for assessment
 4. **IDENTIFY** — Is this hivefiver (framework) or hiveminder (project) lineage?
 5. **ROUTE** — Send to appropriate specialist skill based on lineage:
    - hivefiver + "write/audit skill" → `hivemind-skill-write`
@@ -111,8 +113,10 @@ This skill activates when ANY of these scenarios occur:
 
 ## No-Load Conditions
 
-- Context depth >70% → Defer to `context-intelligence-entry` for recovery
-- Session state is degraded → Skip activation entirely
-- Stack budget exhausted (Active skills ≥3) → Wait for available slot
-- Authority unclear (Conflicting SOT) → Escalate before routing
-- Another meta-skill active → Defer to active meta-skill
+> **NOTE:** These are routing considerations, not enforced gates. This skill can only recommend routing - it cannot actually block, defer, or skip activation.
+
+- Context depth >70% → Consider routing to `context-intelligence-entry` first
+- Session state is degraded → Recommend `context-intelligence-entry` assessment
+- Stack budget exhausted (Active skills ≥3) → Note limitation in routing
+- Authority unclear (Conflicting SOT) → Flag ambiguity in recommendation
+- Another meta-skill active → Coordinate routing with active meta-skill

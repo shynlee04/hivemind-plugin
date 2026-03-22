@@ -374,11 +374,8 @@ describe('runtime entry loader authority', () => {
       const report = result.commandResult.report as {
         runtime_surface_sync?: {
           plugin_file: string
-          mirrored_command_files: string[]
-          mirrored_agent_files: string[]
         }
       }
-      const mirroredCommands = await readdir(join(projectRoot, '.opencode', 'commands'))
 
       assert.equal(result.commandResult.stateTransitions?.includes('runtime-surface-synced'), true)
       assert.equal(result.runtime_identity.cardId, 'hivemind-runtime-identity-v1')
@@ -391,8 +388,6 @@ describe('runtime entry loader authority', () => {
       assert.equal((result.commandResult.report as { runtime_identity?: { cardId?: string } }).runtime_identity?.cardId, 'hivemind-runtime-identity-v1')
       assert.equal((result.commandResult.report as { readiness_signal?: { exactNextCommand?: string } }).readiness_signal?.exactNextCommand, 'hm-harness')
       assert.equal(report.runtime_surface_sync?.plugin_file.endsWith('.opencode/plugins/hivemind-context-governance.ts'), true)
-      assert.equal(mirroredCommands.includes('hm-plan.md'), true)
-      assert.equal(mirroredCommands.includes('hm-implement.md'), true)
       assert.match(
         await readFile(join(projectRoot, '.opencode', 'plugins', 'hivemind-context-governance.ts'), 'utf8'),
         /hivemind-context-governance\/plugin/,
@@ -438,18 +433,13 @@ describe('runtime entry loader authority', () => {
       const report = result.report as {
         runtime_surface_sync?: {
           plugin_file: string
-          mirrored_command_files: string[]
-          mirrored_agent_files: string[]
         }
       }
-      const mirroredCommands = await readdir(join(projectRoot, '.opencode', 'commands'))
 
       assert.equal(result.closeoutStatus, 'qa-pending')
       assert.equal(result.stateTransitions?.includes('runtime-surface-synced'), true)
       assert.ok(report.runtime_surface_sync)
-      assert.equal(mirroredCommands.includes('hm-plan.md'), true)
-      assert.equal(mirroredCommands.includes('hm-implement.md'), true)
-      assert.equal(report.runtime_surface_sync?.mirrored_command_files.some((file) => file.endsWith('hm-plan.md')), true)
+      assert.equal(report.runtime_surface_sync?.plugin_file.endsWith('.opencode/plugins/hivemind-context-governance.ts'), true)
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
     }

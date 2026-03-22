@@ -1,1 +1,0 @@
-../../hivemind-skill-writer/references/04-tdd-workflow.md

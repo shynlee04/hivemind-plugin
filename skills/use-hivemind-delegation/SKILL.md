@@ -1,6 +1,6 @@
 ---
 name: use-hivemind-delegation
-description: "When user says 'delegate', 'handoff', or 'send to subagent': establish bounded context, verify scope, route to delegation implementation. Block if scope is unclear."
+description: "When user says 'delegate', 'handoff', or 'send to subagent': establish bounded context, verify scope, route to delegation implementation. NOTE: This is a ROUTER skill - it does not block or enforce. It routes to specialists and recommends next steps."
 ---
 
 # use-hivemind-delegation
@@ -74,5 +74,7 @@ P2: hivemind-delegation-write (implementation)
 
 ## Terminal State
 
-- **If scope unclear**: Blocked, awaiting scope declaration from user
-- **If all prerequisites met**: Routed to `hivemind-delegation-write`
+> **NOTE:** This skill is a router only. It does not block or enforce.
+
+- **If scope unclear**: Recommend scope declaration, do not block
+- **If all prerequisites met**: Route to `hivemind-delegation-write`

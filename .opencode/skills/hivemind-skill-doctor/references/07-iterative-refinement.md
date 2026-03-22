@@ -1,1 +1,0 @@
-../../hivemind-skill-writer/references/07-iterative-refinement.md

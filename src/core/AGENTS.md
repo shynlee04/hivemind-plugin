@@ -18,5 +18,11 @@ Trajectory ledger, workflow authority, and task lifecycle state.
 ## Rules
 
 - Trajectory and workflow modules are the state authority — tools delegate here
-- State files live in `.hivemind/state/` — resolved via `shared/paths.ts`
+- State files live in `.hivemind/` subdirectories (not just `.hivemind/state/`):
+  - `.hivemind/state/trajectory-ledger.json` - trajectory events
+  - `.hivemind/state/tasks.json` and `.hivemind/graph/tasks.json` - task lifecycle
+  - `.hivemind/project/planning/` - planning projections
+  - `.hivemind/handoffs/` - delegation handoffs
+  - `.hivemind/agent-work-contract/` - work contracts
 - All state reads/writes go through store functions, never direct file I/O
+- **User consent required** for any tool-triggered writes via `context.ask()`

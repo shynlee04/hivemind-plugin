@@ -1,11 +1,6 @@
 ---
-name: spec-distillation
-description: Distill noisy, contradictory, or incomplete requirements into
-  structured specs. Use when user requirements are noisy or contradictory, when
-  entry-resolution classifies intent as needing spec work, or when multiple
-  stakeholder inputs need reconciliation. Provides ambiguity mapping,
-  clarification loops, and spec candidate generation. Lineage-agnostic — works
-  for both framework and product domains.
+name: "spec-distillation"
+description: "Use when requirements are noisy, contradictory, or incomplete, when multiple stakeholder inputs need reconciliation, or when a vague request must be distilled into a structured spec candidate before planning or execution."
 ---
 
 # Spec Distillation
@@ -15,9 +10,9 @@ description: Distill noisy, contradictory, or incomplete requirements into
 ## When to Use
 
 - Requirements are noisy, contradictory, or incomplete
-- Entry-resolution routes here after classifying complex intent
 - Multiple stakeholder perspectives need reconciliation
 - Transition from vague idea to actionable plan
+- Direct invocation is valid when no sibling router or upstream triage package is available
 
 Do NOT use for simple, clear, single-task requests. Those go directly to execution.
 
@@ -80,6 +75,14 @@ Raw Input
 |----------|---------|
 | [ambiguity-taxonomy.md](references/ambiguity-taxonomy.md) | 4-category taxonomy: scope, delivery, technical, governance |
 | [spec-candidate.md](templates/spec-candidate.md) | Fill-in spec candidate template |
+| `scripts/extract-requirements.sh` | Optional local helper that buckets raw notes into rough requirement groups before manual distillation |
+| [direct-invocation.md](tests/direct-invocation.md) | Standalone validation scenario proving the package works without sibling routers |
+
+## Independence Rules
+
+- This package can be invoked directly; it does not require a sibling routing skill.
+- Local references, templates, and helper scripts support the workflow, but none are required to understand the activation contract.
+- If upstream triage exists, it may choose this skill, but the skill must remain usable without that upstream layer.
 
 ## Anti-Patterns
 
@@ -90,3 +93,18 @@ Raw Input
 | Single spec candidate | No tradeoff comparison — decision quality drops |
 | No classification buckets | Requirements dump — unstructured, unmaintainable |
 | Ignoring contradiction | Contradictory requirements create impossible specs |
+
+## Step-by-Step Protocol
+
+1. **EXTRACT** — Break input into requirement atoms
+2. **CLASSIFY** — Assign each atom to a bucket (functional/non-functional/integration/risk/operations)
+3. **MAP** — Build ambiguity map, identify clear vs ambiguous vs contradictory
+4. **CLARIFY** — Use MCQ-first loop for high-impact ambiguity (max 10 rounds)
+5. **GENERATE** — Produce 2-3 spec candidates with tradeoffs
+6. **RECOMMEND** — Select candidate with rationale, document rejected alternatives
+
+## Terminal State
+
+- **If spec complete**: Proceed to execution planning
+- **If ambiguity unresolved**: BLOCK, continue clarification loop
+- **If contradiction detected**: Document both sides, escalate to user

@@ -24,11 +24,20 @@ Common modules used across the plugin.
 | `lifecycle-spine.ts` | ✅ | Shared lifecycle identities for entry, runtime invocation, and turn output |
 | `logging.ts` | ⚠️ | Custom logger — supplement with `client.app.log()` |
 
-## Runtime Projection Rule
+## Registry Note
 
-- Root `agents/**` may carry HiveMind-only contract metadata for authoring and governance.
-- `.opencode/agents/**` must be generated through `opencode-agent-registry.ts`, which strips non-SDK frontmatter and validates the remaining projection against the OpenCode-safe schema.
-- Never copy canonical agent files directly into `.opencode/agents/**`.
+> [!NOTE]
+> As of 2026-03-22, `opencode-agent-registry.ts` is a **read-only in-memory registry**. It no longer generates `.opencode/agents/**` projections. The registry provides agent metadata for internal use (capability matrix, validation) but does not write to the filesystem.
+> Root `agents/*.deprecated.md` files are the canonical source for agent metadata.
+
+## User-Space Governance
+
+> [!IMPORTANT]
+> **`.opencode/*` and `.hivemind/*` are user-side spaces.**
+> - `.opencode/plugins/**` is written by `hm-init` and `hm-doctor` (plugin stub only)
+> - `.hivemind/**` is created at bootstrap/init runtime
+> - Any write operations to these directories MUST require explicit user consent via `context.ask()`
+> - Agents must use the question tool and provide rationale before appending or overwriting files in these spaces
 
 ## Lifecycle Spine Rule
 

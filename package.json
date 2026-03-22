@@ -51,7 +51,7 @@
     "dev": "tsc --watch",
     "typecheck": "npm run typecheck:core",
     "typecheck:core": "tsc --noEmit",
-    "lint:boundary": "bash scripts/check-sdk-boundary.sh && bash scripts/check-agent-registry-parity.sh && bash scripts/check-state-write-boundary.sh && bash scripts/check-docs-ownership-boundary.sh && bash scripts/check-no-event-bus.sh && bash scripts/check-no-core-session.sh && bash scripts/check-tool-schema.sh && bash scripts/check-hooks-readonly.sh && bash scripts/check-plugin-assembly.sh && bash scripts/check-agents-presence.sh && bash scripts/check-asset-refs.sh",
+    "lint:boundary": "bash scripts/check-sdk-boundary.sh && bash scripts/check-state-write-boundary.sh && bash scripts/check-docs-ownership-boundary.sh && bash scripts/check-no-event-bus.sh && bash scripts/check-no-core-session.sh && bash scripts/check-tool-schema.sh && bash scripts/check-hooks-readonly.sh && bash scripts/check-plugin-assembly.sh && bash scripts/check-agents-presence.sh && bash scripts/check-asset-refs.sh",
     "guard:public": "bash scripts/guard-public-branch.sh origin/master HEAD",
     "test": "npm run lint:boundary && tsx --test \"tests/**/*.test.ts\" \"src/**/*.test.ts\"",
     "prepublishOnly": "npm run typecheck && npm test && npm run build"

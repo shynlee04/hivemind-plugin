@@ -1,1 +1,0 @@
-../../hivemind-skill-writer/references/03-three-patterns.md

@@ -125,8 +125,6 @@ export async function runDoctorHandler(
       runtime_surface_sync: runtimeSurfaceSync
         ? {
             plugin_file: runtimeSurfaceSync.pluginFile,
-            mirrored_command_files: runtimeSurfaceSync.mirroredCommandFiles,
-            mirrored_agent_files: runtimeSurfaceSync.mirroredAgentFiles,
           }
         : undefined,
       next_command: repaired.status === 'healthy' ? 'hm-harness' : 'hm-doctor',
@@ -154,13 +152,7 @@ export async function runDoctorHandler(
     ],
     artifactRefs: [
       projection.filePath,
-      ...(runtimeSurfaceSync
-        ? [
-            runtimeSurfaceSync.pluginFile,
-            ...runtimeSurfaceSync.mirroredCommandFiles,
-            ...runtimeSurfaceSync.mirroredAgentFiles,
-          ]
-        : []),
+      ...(runtimeSurfaceSync ? [runtimeSurfaceSync.pluginFile] : []),
     ],
     closeoutStatus: repaired.status === 'healthy' ? 'qa-pending' : 'blocked',
     verificationContractId: asset.contract.verificationContract,

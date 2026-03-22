@@ -222,9 +222,9 @@ npx hivemind-context-governance settings --preset guided-onboarding # Persist ru
 
 The revamp branch does not ship a public `sync-assets` CLI. Runtime projection happens only through the first-run and repair entry flows.
 
-- `init` bootstraps `.hivemind/`, writes the local `.opencode/plugins/hivemind-context-governance.ts` stub, and mirrors command and agent assets into `.opencode/`.
+- `init` bootstraps `.hivemind/`, writes the local `.opencode/plugins/hivemind-context-governance.ts` stub, and initializes the runtime surface.
 - `harness` re-checks runtime health and reports the next safe command without mutating the runtime projection.
-- `doctor` repairs damaged runtime state and re-syncs the runtime projection only when recovery reaches a healthy state.
+- `doctor` repairs damaged runtime state only when recovery reaches a healthy state.
 
 Public v2.8 package intentionally ships only the operational pack:
 - `commands`
@@ -241,7 +241,7 @@ npm install hivemind-context-governance@latest
 npx hivemind-context-governance harness --json
 ```
 
-If the runtime is healthy, `harness` confirms the current attachment and mirrored surfaces. If it is not, it points you to `hm-init` or `hm-doctor`.
+If the runtime is healthy, `harness` confirms the current attachment and runtime surface. If it is not, it points you to `hm-init` or `hm-doctor`.
 
 ### Brownfield Scan via CLI
 
@@ -352,12 +352,11 @@ npx hivemind-context-governance init --preset guided-onboarding
 This does **all** of the following:
 - Creates or repairs `.hivemind/`
 - Writes the local `.opencode/plugins/hivemind-context-governance.ts` stub
-- Mirrors shipped command and agent assets into `.opencode/`
 - Seeds the runtime attachment and bootstrap profile
 
 **Important:** If you run `init` again on an existing project:
 - It keeps your existing `.hivemind/` state unless repair is required ✅
-- It refreshes user-local runtime projection assets ✅
+- It refreshes user-local runtime surface as needed ✅
 - It does not turn `.opencode/**` into source authority ✅
 
 ### Other Issues
