@@ -19,6 +19,19 @@
 
 **Session freshness rule:** If the orchestrator's session context grows stale or overloaded, delegate a fresh `context-intelligence-entry` probe rather than trusting accumulated context. The orchestrator routes and synthesizes; it never scans, debugs, or audits inline.
 
+### .opencode/ Write Prohibition
+
+**DIRECT_WRITE_BAN**: Direct file writes to `.opencode/` directory are **prohibited** without explicit user confirmation.
+
+- `.opencode/` contains the user's project metadata and client-side resources
+- It is the user's project configuration space, NOT storage for agent-generated skills, artifacts, or project activities
+- All skill operations, file creation, and artifact generation MUST occur within `.developing-skills/` or other designated workspaces
+- User confirmation (via `context.ask()` or `permission.ask`) is REQUIRED before any write interaction with `.opencode/`
+- Read operations from `.opencode/` are permitted for context gathering
+- This prohibition applies to: code files, artifacts, planning documents, skill files, schemas, templates, and any CRUD operations
+
+**Enforcement**: Any agent (regardless of framework, orchestration layer, or implementation) operating in a user-facing conversation MUST respect this boundary. Soft enforcement via SKILL.md entries must be effective across all agent variants.
+
 ## Context Rot Handling
 
 Context rot is a first-class risk. Treat it as the default state until proven otherwise.
