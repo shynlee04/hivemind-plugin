@@ -122,8 +122,10 @@ Loop checkpoints are stored at:
 
 ## Anti-Patterns
 
-- Running iterations without a max_iterations cap
-- Carrying forward full output instead of compressed summaries
-- Ignoring stop conditions and continuing past useful work
-- Starting a new iteration without reading the prior checkpoint
-- Using chat memory instead of the checkpoint file for loop state
+| Anti-Pattern | Why It's Dangerous |
+|--------------|-------------------|
+| Running iterations without a `max_iterations` cap | Infinite loop risk → session exhaustion → orchestrator loses ability to synthesize results |
+| Carrying forward full output instead of compressed summaries | Context bloat → each iteration loads more data → subagent context overflows → degraded output quality |
+| Ignoring stop conditions and continuing past useful work | Diminishing returns waste resources and may produce contradictory findings that confuse synthesis |
+| Starting a new iteration without reading the prior checkpoint | Duplicate work, missed findings, and broken chain of evidence across iterations |
+| Using chat memory instead of the checkpoint file for loop state | Chat memory is ephemeral — compaction or turn boundaries erase it; checkpoints persist across sessions |
