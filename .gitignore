@@ -1,6 +1,6 @@
 # Build artifacts
-node_modules/
-dist/
+!node_modules/
+!dist/
 *.log
 .DS_Store
 .env
@@ -32,6 +32,8 @@ test_output*.txt
 .kilocode/
 .qoder/
 .windsurf/
+.!hivemind/
+
 
 # Internal documentation - NOT FOR PUBLIC
 
@@ -39,3 +41,5 @@ test_output*.txt
 # Backup files
 *.bak
 *.bak.*
+node_modules/
+dist/
