@@ -29,7 +29,14 @@ import { renderToolPrecedence } from './context-renderer.js'
 import { createTurnSnapshotLoader } from './runtime-snapshot.js'
 import { createSyntheticPart } from './synthetic-parts.js'
 import { createMessagesTransformHandler } from './messages-transform-adapter.js'
+import { getAndClearInjectionPayload } from './injection-store.js'
 import { createCompactionHandler } from './compaction-adapter.js'
+import { upsertSessionInspectionExport, writeDiagnosticLog /** @deprecated — use session journal handlers */ } from '../sdk-supervisor/index.js'
+import {
+  createTransformHandler,
+  createTextCompleteHandler,
+  createCompactionJournalHandler,
+} from '../hooks/index.js'
 
 /**
  * Real OpenCode plugin entry for the revamp lane.
@@ -56,9 +63,16 @@ export const HiveMindPlugin: Plugin = async (input) => {
     turnSnapshot,
   })
 
+  // Session journal handlers (Plan #10) — wired alongside legacy
+  const transformHandler = createTransformHandler({ directory })
+  const compactionJournalHandler = createCompactionJournalHandler({ directory })
+
   return {
     event: async (eventInput) => {
       await eventHandler(eventInput)
+    },
+    'experimental.chat.system.transform': async (input, output) => {
+      await transformHandler(input, output)
     },
     tool: {
       hivemind_runtime_status: createHivemindRuntimeStatusTool(directory),
@@ -160,8 +174,54 @@ export const HiveMindPlugin: Plugin = async (input) => {
         await recordToolEvent(directory, toolInput.sessionID, toolInput.tool)
       }
     },
+    'experimental.text.complete': async (input, output) => {
+      const sessionId = input.sessionID
+      const assistantText = typeof output.text === 'string' ? output.text : ''
+
+      if (!sessionId || assistantText.length === 0) {
+        return
+      }
+
+      await upsertSessionInspectionExport(directory, {
+        sessionId,
+        assistantText,
+      }).catch(err => console.error('[session-journal] upsertSessionInspectionExport failed:', err))
+
+      const snapshot = await turnSnapshot.getSnapshot()
+      const injection = getAndClearInjectionPayload(sessionId)
+      await writeDiagnosticLog(directory, {
+        sessionId,
+        timestamp: new Date().toISOString(),
+        assistantText,
+        purpose: snapshot.defaultPurposeClass,
+        sessionState: snapshot.entryState,
+        trajectory: snapshot.trajectoryId ?? 'none',
+        workflow: snapshot.workflowId ?? 'none',
+        agent: snapshot.preferredUserName ?? 'hivefiver',
+        injection: injection ? {
+          purposeClass: injection.purposeClass,
+          sessionState: injection.sessionState,
+          agent: injection.agent,
+          variant: injection.variant,
+          sessionRole: injection.sessionRole,
+          skillBundle: injection.skillBundle,
+          skillFocusBlock: injection.skillFocusBlock,
+          turnHierarchyBlock: injection.turnHierarchyBlock,
+          contextBlock: injection.contextBlock,
+          routeHintBlock: injection.routeHintBlock,
+        } : undefined,
+      }).catch(err => console.error('[session-journal] writeDiagnosticLog failed:', err))
+
+      await createTextCompleteHandler({ directory })(
+        { sessionID: sessionId, messageID: '', partID: '' },
+        { text: assistantText },
+      ).catch(err => console.error('[session-journal] text-complete handler failed:', err))
+    },
     'experimental.chat.messages.transform': messagesTransform,
-    'experimental.session.compacting': compactionHandler,
+    'experimental.session.compacting': async (input: { sessionID: string }, output: { context: string[]; prompt?: string }) => {
+      await compactionHandler(input, output)
+      await compactionJournalHandler(input, output).catch(err => console.error('[session-journal] compaction failed:', err))
+    },
   }
 }
 

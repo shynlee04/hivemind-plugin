@@ -1,0 +1,18 @@
+# Session Inspection Export
+
+- ses_id: `ses_2e4f5d5d9ffeg5y1QUnwV5g9zH`
+- prepared_at: `2026-03-23T14:17:23.717Z`
+
+## Assistant Output
+
+**Pollution notice injected into root `AGENTS.md`.**
+
+| Checkpoint | Status |
+|---|---|
+| Notice block inserted | Lines 9–119 (`HIVEMIND-SKILLS-PACK-NOTICE-START` → `END`) |
+| Original content preserved | Continues at line 121+ |
+| No duplication | Confirmed single insertion |
+
+The workspace `AGENTS.md` now carries the full pollution posture, `.opencode/` write prohibition, context rot handling, code-over-doc truth verification, test-signal skepticism, delegation continuity, and activity folder conventions.
+
+**Ready for Stage 1 triage.** State the specific concern — the defect, recovery target, or investigation scope — to begin classification and routing.

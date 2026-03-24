@@ -1,0 +1,108 @@
+# Session Inspection Export
+
+- ses_id: `ses_2e4b915d7ffekYM5tCr7aZ8CwH`
+- prepared_at: `2026-03-23T15:19:55.946Z`
+
+## Assistant Output
+
+Now I have enough data to compile the comprehensive analysis. Let me provide the structured summary:
+
+## Codebase Investigation Report
+
+**File:** `/Users/apple/hivemind-plugin/.worktrees/product-detox/session-ses_314c.md`
+**Scope:** Large multi-session HiveMind orchestration session file (14,377 lines)
+
+---
+
+### Structured Analysis
+
+```json
+{
+  "sessionId": "ses_314c5504dffekx4RoQ4VatrMEN",
+  "totalLinesApprox": 14377,
+  "agentTypes": [
+    "Orchestrator (main)",
+    "Hiveminder (main)",
+    "Plan (main)",
+    "explore (subagent)",
+    "hivemaker (subagent)"
+  ],
+  "turnStructure": "Delineated by '## User' and '## Assistant (AgentType · model · duration)' headers",
+  "metaFieldsFound": [
+    "purposeClass",
+    "sessionRole",
+    "lineage (hiveminder/hivefiver)",
+    "current_lineage",
+    "active_session_id",
+    "opencode_session_id",
+    "mode (exploration, research, etc.)",
+    "governance_mode",
+    "turn_count",
+    "user_turn_count",
+    "drift_score",
+    "role (unresolved)",
+    "kind (unresolved)",
+    "lineage_scope (project)",
+    "role_source (inferred)",
+    "by_ai (boolean)"
+  ],
+  "delegationPattern": "Sub-sessions created via 'task' tool with subagent_type field (explore, hivemaker, etc.), tracked via task_id for resume. Task results wrapped in <task_result> tags. task_id references embedded inline for resuming.",
+  "timestampFormat": "ISO8601: '2026-03-14T07:23:37.778Z' and '3/14/2026, 2:23:37 PM'",
+  "toolInvocationPattern": "Tool invocations use '**Tool: toolname**' header followed by '**Input:**' with JSON, then '**Output:**' with result. Tools include: bash, read, task, todowrite, hivemind_doc, repomix_file_system_read_file, webfetch, hivemind_runtime_status, hivemind_runtime_command, hivemind_task, hivemind_handoff, hivemind_trajectory, hivemind_doc",
+  "compactionEvents": "PRESENT - Referenced via 'compact_session' function, 'session.compacting' hook, 'npx hivemind-context-governance compact' command. Turn threshold warnings at line 2178 (100 turns, threshold: 20), line 12733 (135 turns). Compaction hooks mentioned extensively.",
+  "userMessagePattern": "'## User' header followed by content (may include @ mentions like @continue-s'path' or @docs/...)",
+  "assistantOutputPattern": "'## Assistant (AgentType · model · duration)' header, followed by optional '_Thinking:' block, then tool invocations or text output",
+  "sessionTypeField": "Not explicitly labeled as 'main/sub' but lineage field distinguishes: 'hiveminder' vs 'hivefiver'. Also 'fork #2' notation in nested session headers.",
+  "rawSamples": [
+    "# New session - 2026-03-14T07:23:37.778Z",
+    "**Session ID:** ses_314c5504dffekx4RoQ4VatrMEN",
+    "## Assistant (Orchestrator · openrouter/hunter-alpha · 10.8s)",
+    "continue from @continue-s'/Users/apple/hivemind-plugin/.worktrees/ecosystem-revamp/continue-session-ses_314c.md'",
+    "task_id: ses_3163b7fcaffet0vOfi0jPSfimQ (for resuming to continue this task if needed)",
+    "current_lineage: hiveminder",
+    "active_opencode_session_id: ses_3163b5674ffe35GRL986rxDuzp",
+    "⚠️ Session has 135 turns (threshold: 20) - Consider running `compact_session`",
+    "**Tool: task** ... **Input:** { \"subagent_type\": \"explore\", ... } ... **Output:** <task_result>...</task_result>"
+  ]
+}
+```
+
+---
+
+### Key Observations
+
+| Aspect | Finding |
+|--------|---------|
+| **Session ID format** | `ses_` prefix + 24-char nanoid (e.g., `ses_314c5504dffekx4RoQ4VatrMEN`) |
+| **Nested sessions** | Line 80 shows `# New session - 2026-03-14T00:34:07.481Z (fork #2)` with its own session ID |
+| **Lineage system** | Dual-lineage: `hiveminder` (orchestration) and `hivefiver` (healer/meta-builder) |
+| **Tool ecosystem** | 300+ tool invocations across bash, read, task, specialized hivemind_* tools |
+| **Delegation IDs** | `task_id: ses_*` used for resume, appearing 19 times in file |
+| **Turn counting** | Metrics stored in session JSON: `turn_count: 118` at line 2845 |
+| **Compaction triggers** | Warning at turn 100 (threshold 20), actual at turn 135 |
+| **Subagent types used** | `explore`, `hivemaker` (appears in task tool prompts) |
+| **Continuation pattern** | User message references `@continue-s'path'` to prior session file |
+| **Model diversity** | Both `openrouter/hunter-alpha` and `zai-org/GLM-5-Turbo` used |
+
+---
+
+### Gap Analysis
+
+| Expected | Found |
+|----------|-------|
+| `hivemind_task` tool invocations | **ABSENT** - grep found no actual invocations (only references in content) |
+| `hivemind_handoff` tool invocations | **ABSENT** - grep found no actual invocations |
+| `hivemind_trajectory` tool invocations | **ABSENT** - grep found no actual invocations |
+| Compaction events (actual tool calls) | **ABSENT** - only discussed, not invoked |
+| Formal session type labels (main/sub) | **ABSENT** - inferred from context and lineage |
+
+---
+
+### Git Context
+
+The session references multiple worktrees and continuation sessions:
+- **Current worktree:** `product-detox`
+- **Referenced worktree:** `ecosystem-revamp`
+- **Continue session:** `continue-session-ses_314c.md` in ecosystem-revamp
+- **Nested session ID:** `ses_314c8b268ffeA02VLwWkQY7yHv` (fork #2)
+- **Runtime session directories:** `ses_3163b*` patterns in `.hivemind/sessions/runtime/`

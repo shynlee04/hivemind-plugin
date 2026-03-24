@@ -9,6 +9,8 @@ import {
 import { loadRuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
 import { createRecoveryCheckpoint } from '../recovery/index.js'
 import { recordTrajectoryEvent } from '../core/trajectory/index.js'
+import { getClient } from './sdk-context.js'
+import { appendSessionEvent } from '../features/event-tracker/writers/events-writer.js'
 
 function normalizeEventSummary(event: Event): string {
   if (!event || typeof event !== 'object') {
@@ -27,6 +29,7 @@ function normalizeEventSummary(event: Event): string {
     'session.started',
     'session.ended',
     'session.compacted',
+    'session.idle',
     'message.added',
     'message.updated',
     'tool.executed',
@@ -89,6 +92,30 @@ export function createEventHandler(directory: string) {
     const event = input.event
     const agentWorkEvent = extractAgentWorkEventPacket(input)
     const snapshot = await loadRuntimeBindingsSnapshot(directory)
+
+    // Handle session.idle events - fetch session data and write to journal
+    if (event.type === 'session.idle') {
+      const client = getClient()
+      const sessionId = event.properties.sessionID
+
+      if (client && sessionId) {
+        // Fetch session data
+        await client.session.get({ path: { id: sessionId } })
+        // Fetch session messages
+        await client.session.messages({
+          path: { id: sessionId },
+          query: { directory },
+        })
+        // Write to session journal
+        await appendSessionEvent(directory, {
+          sessionId,
+          timestamp: new Date().toISOString(),
+          type: 'session.idle',
+          summary: `Session ${sessionId} became idle`,
+        }).catch(err => console.error('[session-journal] appendSessionEvent (session.idle) failed:', err))
+      }
+    }
+
     if (!snapshot.trajectoryId) {
       return
     }

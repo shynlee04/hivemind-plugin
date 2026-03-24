@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "kind": "session-inspection-purification",
+  "status": "prepared",
+  "ses_id": "ses_2e5be9ff6ffejqR3nxHH16P0FY",
+  "markdown_path": "/Users/apple/hivemind-plugin/.worktrees/product-detox/.hivemind/session-inspection/ses_2e5be9ff6ffejqR3nxHH16P0FY/assistant-output.md",
+  "tool_hints": [
+    "grep",
+    "read"
+  ],
+  "instruction": "Read the saved markdown_path from disk and use ses_id as the purification target.",
+  "prepared_at": "2026-03-23T10:49:18.522Z"
+}

@@ -1,0 +1,57 @@
+{
+  "_meta": {
+    "created_at": "ISO-8601",
+    "updated_at": "ISO-8601",
+    "spec_source": "path/to/source-spec.md",
+    "decomposition_method": "plan-breakdown v1.0"
+  },
+  "plan_id": "descriptive-plan-id",
+  "total_slices": 0,
+  "total_waves": 0,
+  "critical_path_length": 0,
+  "slices": [
+    {
+      "slice_id": "example-slice",
+      "order": 1,
+      "wave": 0,
+      "concern": "write",
+      "authority_surfaces": ["tool"],
+      "in_scope": ["src/tools/example.ts"],
+      "out_of_scope": ["src/hooks/**"],
+      "description": "Example slice — replace with actual slice",
+      "depends_on": [],
+      "blocks": [],
+      "parallel_safe": true,
+      "gate": {
+        "command": "npx tsc --noEmit",
+        "expected_pass": true
+      },
+      "evidence_required": ["files_modified", "type_check_result"],
+      "estimated_complexity": "low"
+    }
+  ],
+  "waves": [
+    {
+      "wave": 0,
+      "slice_ids": ["example-slice"],
+      "dispatch_mode": "parallel",
+      "independence_proof": {
+        "no_shared_files": true,
+        "no_shared_types": true,
+        "no_output_chain": true,
+        "no_directory_conflict": true
+      }
+    }
+  ],
+  "dependency_graph": {
+    "adjacency_list": {
+      "example-slice": []
+    },
+    "in_degrees": {
+      "example-slice": 0
+    }
+  },
+  "parallel_candidates": ["example-slice"],
+  "sequential_forced": [],
+  "re_decomposition_log": []
+}

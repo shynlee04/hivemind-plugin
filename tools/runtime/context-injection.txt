@@ -1,3 +1,0 @@
-Inject only the lineage-scoped packet needed for the current runtime scope.
-Main sessions receive the full lineage packet.
-Sub-sessions receive only bounded delegation context and must not replay full bootstrap state.

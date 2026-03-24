@@ -15,6 +15,12 @@ export interface RuntimeSurfaceSyncResult {
   pluginFile: string
 }
 
+interface OpenCodeConfig {
+  $schema?: string
+  plugin?: string[]
+  [key: string]: unknown
+}
+
 function renderLocalPluginStub(options: RuntimeSurfaceSyncOptions): string {
   return [
     `import plugin from '${options.packagePluginEntry}'`,
@@ -25,12 +31,7 @@ function renderLocalPluginStub(options: RuntimeSurfaceSyncOptions): string {
 }
 
 async function writeFileIfChanged(filePath: string, content: string): Promise<void> {
-  const existingContent = await readFile(filePath, 'utf-8').catch((error: NodeJS.ErrnoException) => {
-    if (error.code === 'ENOENT') {
-      return undefined
-    }
-    throw error
-  })
+  const existingContent = await readFileIfChanged(filePath, 'utf-8')
 
   if (existingContent === content) {
     return
@@ -39,9 +40,54 @@ async function writeFileIfChanged(filePath: string, content: string): Promise<vo
   await writeFile(filePath, content)
 }
 
-async function readFile(filePath: string, encoding: BufferEncoding): Promise<string> {
-  const { readFile } = await import('node:fs/promises')
-  return readFile(filePath, encoding)
+async function readFileIfChanged(filePath: string, encoding: BufferEncoding): Promise<string | undefined> {
+  try {
+    const { readFile: fsReadFile } = await import('node:fs/promises')
+    return await fsReadFile(filePath, encoding)
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      return undefined
+    }
+    throw error
+  }
+}
+
+/**
+ * Adds the plugin reference to opencode.json's plugin array if not already present.
+ * The plugin path is relative to the project root (directory).
+ */
+async function syncPluginConfig(
+  directory: string,
+  localPluginFile: string,
+): Promise<void> {
+  const configPath = join(directory, 'opencode.json')
+  let config: OpenCodeConfig = {}
+
+  const existingContent = await readFileIfChanged(configPath, 'utf-8')
+  if (existingContent) {
+    try {
+      config = JSON.parse(existingContent)
+    } catch {
+      // If JSON is invalid, start fresh
+      config = {}
+    }
+  }
+
+  // Initialize plugin array if not present
+  if (!config.plugin) {
+    config.plugin = []
+  }
+
+  // Compute relative path from project root to plugin stub
+  const relativePluginPath = `.opencode/plugins/${localPluginFile}`
+
+  // Add plugin reference if not already present
+  if (!config.plugin.includes(relativePluginPath)) {
+    config.plugin.push(relativePluginPath)
+  }
+
+  // Write updated config
+  await writeFile(configPath, JSON.stringify(config, null, 2) + '\n')
 }
 
 export async function syncRuntimeSurface(
@@ -54,6 +100,9 @@ export async function syncRuntimeSurface(
 
   await mkdir(pluginsRoot, { recursive: true })
   await writeFileIfChanged(pluginFile, renderLocalPluginStub(options))
+
+  // Also update opencode.json plugin array so OpenCode auto-loads the plugin
+  await syncPluginConfig(directory, options.localPluginFile)
 
   return { pluginFile }
 }

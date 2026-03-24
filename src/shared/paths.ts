@@ -35,6 +35,14 @@ export function getSessionPath(projectRoot: string, sessionId: string): string {
   return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR, sessionId)
 }
 
+export function getSessionInspectionPath(projectRoot: string, sessionId: string): string {
+  return path.join(projectRoot, HIVEMIND_DIR, 'session-inspection', sessionId)
+}
+
+export function getErrorLogPath(projectRoot: string): string {
+  return path.join(projectRoot, HIVEMIND_DIR, 'error-log')
+}
+
 export function getConfigPath(projectRoot: string, configName: string): string {
   return path.join(projectRoot, HIVEMIND_DIR, CONFIG_DIR, configName)
 }
@@ -58,8 +66,10 @@ export function getEffectivePaths(projectRoot: string) {
   const configDir = path.join(root, CONFIG_DIR)
   const graphDir = path.join(root, GRAPH_DIR)
   const sessionsDir = path.join(root, SESSIONS_DIR)
+  const sessionInspectionDir = path.join(root, 'session-inspection')
   const projectPlanningDir = path.join(root, 'project', 'planning')
   const handoffsDir = path.join(root, 'handoffs')
+  const errorLogDir = path.join(root, 'error-log')
 
   return {
     root,
@@ -67,12 +77,13 @@ export function getEffectivePaths(projectRoot: string) {
     configDir,
     graphDir,
     sessionsDir,
+    sessionInspectionDir,
     projectPlanningDir,
     handoffsDir,
+    errorLogDir,
     runtimeAttachmentSettings: path.join(configDir, 'runtime-attachment.json'),
     workflowTasksState: path.join(stateDir, 'tasks.json'),
     workflowTasksGraph: path.join(graphDir, 'tasks.json'),
     trajectoryLedger: path.join(stateDir, 'trajectory-ledger.json'),
   }
 }
-

@@ -2,6 +2,6 @@
   "type": "commonjs",
   "dependencies": {
     "@opencode-ai/plugin": "1.2.27",
-    "@kilocode/plugin": "7.0.51"
+    "@kilocode/plugin": "7.1.3"
   }
 }

@@ -94,7 +94,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-plan',
     title: 'Build structured implementation plan',
-    agent: 'hivefiver',
+    agent: 'hiveplanner',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['planning'],
     commandFile: 'hm-plan.md',
@@ -111,7 +111,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-implement',
     title: 'Execute implementation workflow',
-    agent: 'hivefiver',
+    agent: 'hivemaker',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['implementation'],
     commandFile: 'hm-implement.md',
@@ -145,7 +145,7 @@ export const slashCommandBundles: SlashCommandBundle[] = [
   {
     id: 'hm-tdd',
     title: 'Enforce test-driven development flow',
-    agent: 'hiveq',
+    agent: 'verifier',
     lineages: ['hivefiver', 'hiveminder'],
     purposeClasses: ['tdd'],
     commandFile: 'hm-tdd.md',

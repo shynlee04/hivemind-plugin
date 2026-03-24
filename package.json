@@ -21,7 +21,8 @@
     "hm-init": "dist/cli.js",
     "hm-doctor": "dist/cli.js",
     "hm-settings": "dist/cli.js",
-    "hm-harness": "dist/cli.js"
+    "hm-harness": "dist/cli.js",
+    "hm-sync": "dist/cli.js"
   },
   "files": [
     "dist",
