@@ -1,0 +1,23 @@
+{
+  "_meta": {
+    "created_at": "2026-03-25T03:59:16.000Z",
+    "updated_at": "2026-03-25T03:59:16.000Z"
+  },
+  "status": "completed",
+  "scope": "Make test 2 pass: turn contains assistantContent when hook fires with text",
+  "files_modified": [
+    "src/hooks/text-complete-handler.ts"
+  ],
+  "verification": {
+    "tsc": "pass",
+    "vitest": "2/2 passed",
+    "build": "pass"
+  },
+  "changes": [
+    "Modified handleTextComplete to use consolidated writer (initSession + addTurn) instead of writing a stub file",
+    "Added turn with assistantContent from hook output",
+    "Renamed generated session file to match input sessionId"
+  ],
+  "tdd_phase": "green",
+  "deviations": []
+}

@@ -1,4 +1,6 @@
 import type { Event } from '@opencode-ai/sdk'
+import { readFile, writeFile } from 'node:fs/promises'
+import { join } from 'node:path'
 
 import { loadTrajectoryLedger } from '../core/trajectory/index.js'
 import { ContractStore } from '../features/agent-work-contract/engine/contract-store.js'
@@ -10,7 +12,7 @@ import { loadRuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
 import { createRecoveryCheckpoint } from '../recovery/index.js'
 import { recordTrajectoryEvent } from '../core/trajectory/index.js'
 import { getClient } from './sdk-context.js'
-import { appendSessionEvent } from '../features/event-tracker/writers/events-writer.js'
+import { addEvent, getSessionPath, findSessionBySdkId } from '../features/event-tracker/consolidated-writer.js'
 
 function normalizeEventSummary(event: Event): string {
   if (!event || typeof event !== 'object') {
@@ -83,6 +85,7 @@ async function matchesActiveTrajectorySession(
 
 /**
  * Create a lightweight OpenCode event hook that bridges runtime events into the active trajectory ledger.
+ * Uses consolidated writer for session.idle events.
  *
  * @param directory Project root used to resolve runtime state.
  * @returns OpenCode `event` hook.
@@ -93,12 +96,17 @@ export function createEventHandler(directory: string) {
     const agentWorkEvent = extractAgentWorkEventPacket(input)
     const snapshot = await loadRuntimeBindingsSnapshot(directory)
 
-    // Handle session.idle events - fetch session data and write to journal
+    // Handle session.idle events - write to consolidated session
     if (event.type === 'session.idle') {
       const client = getClient()
-      const sessionId = event.properties.sessionID
+      const sessionId = (event.properties as { sessionID?: string })?.sessionID
 
-      if (client && sessionId) {
+      if (!sessionId) {
+        // No session ID provided, exit early
+        return
+      }
+
+      if (client) {
         // Fetch session data
         await client.session.get({ path: { id: sessionId } })
         // Fetch session messages
@@ -106,13 +114,24 @@ export function createEventHandler(directory: string) {
           path: { id: sessionId },
           query: { directory },
         })
-        // Write to session journal
-        await appendSessionEvent(directory, {
+      }
+
+      // Write to consolidated session
+      try {
+        await addEvent(directory, {
           sessionId,
-          timestamp: new Date().toISOString(),
-          type: 'session.idle',
-          summary: `Session ${sessionId} became idle`,
-        }).catch(err => console.error('[session-journal] appendSessionEvent (session.idle) failed:', err))
+          event: {
+            turnNumber: 0, // System events are not tied to specific turns
+            type: 'session_idle',
+            importance: 'low',
+            timestamp: new Date().toISOString(),
+            data: {
+              sessionId,
+            },
+          },
+        })
+      } catch (err) {
+        console.error('[session-journal] addEvent (session.idle) failed:', err)
       }
     }
 
@@ -149,4 +168,34 @@ export function createEventHandler(directory: string) {
       })
     }
   }
+}
+
+/**
+ * Handle session.idle events by logging them to the session file.
+ * Resolves the session by SDK session ID using the semantic naming lookup.
+ *
+ * @param event - Session idle event with type and sessionID property
+ * @param projectRoot - Project root directory
+ */
+export async function handleSessionIdleEvent(
+  event: { type: string; properties: { sessionID: string } },
+  projectRoot: string
+): Promise<void> {
+  const sessionDir = join(projectRoot, '.hivemind', 'sessions')
+  const sdkSessionId = event.properties.sessionID
+
+  // Resolve semantic session ID
+  let semanticSessionId = await findSessionBySdkId(sessionDir, sdkSessionId)
+  if (!semanticSessionId) {
+    // Fallback: try direct path (backwards compat)
+    semanticSessionId = sdkSessionId
+  }
+
+  const sessionPath = getSessionPath(sessionDir, semanticSessionId)
+  const content = await readFile(sessionPath, 'utf-8')
+  const session = JSON.parse(content)
+  session.events.push({
+    type: 'session.idle',
+  })
+  await writeFile(sessionPath, JSON.stringify(session, null, 2), 'utf-8')
 }

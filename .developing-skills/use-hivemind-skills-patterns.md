@@ -1,7 +1,7 @@
 ---
 name: use-hivemind-skills-patterns
 description: |
-  Master index for the use-hivemind-* delegation skill family. Use when: determining which delegation skills to load, resolving load priority conflicts, understanding dependency order between delegation skills, or routing delegation work to the correct domain skill. Governs the 14-skill delegation ecosystem.
+  Master index for the use-hivemind-* delegation skill family. Use when: determining which delegation skills to load, resolving load priority conflicts, understanding dependency order between delegation skills, or routing delegation work to the correct domain skill. Governs the 30+ skill ecosystem.
 ---
 
 # use-hivemind-* Skill Family — Master Index
@@ -12,7 +12,10 @@ Load priority, dependency graph, and routing rules for the use-hivemind-* delega
 
 | Skill | Trigger Summary | Load Priority |
 |-------|----------------|---------------|
-| `use-hivemind-delegation` | Universal delegation mechanics — decision rules, packets, role boundaries, failure recovery | 1 (always first) |
+| `use-hivemind` | Master session entry — lineage detection, context gate, routing | 0 (always first) |
+| `use-hivemind-delegation` | Universal delegation mechanics — decision rules, packets, role boundaries, failure recovery | 1 (entry router) |
+| `use-hivemind-git-memory` | Entry for git memory operations — routes to continuity, commit, enforce, retrace | 1 (entry router) |
+| `use-hivemind-research` | Entry for research work — routes to framework and tools | 1 (entry router) |
 | `hivemind-gatekeeping-delegation` | Iterative loops, synthesis gates, carry-forward compression, cascading failure | 2 (when loops or multi-pass) |
 | `tdd-delegation` | TDD loop delegation, test gates, build-verify cycles | 3 (when TDD work) |
 | `course-correction-delegation` | Debug/refactor/audit delegation, course correction patterns | 3 (when course correction) |
@@ -25,27 +28,41 @@ Load priority, dependency graph, and routing rules for the use-hivemind-* delega
 | `git-memory-enforce` | Memory-first commit discipline — commits carry decision context | 3 (when committing) |
 | `skill-universal-design` | Universal skill design — platform-agnostic patterns | 3 (when designing skills) |
 | `skill-conflict-detect` | Skill conflict detection — overlap, contradiction, boundary violations | 3 (when auditing skills) |
+| `agent-role-boundary` | Diamond role separation — 6 roles, permission matrix | 3 (depth) |
 
 ## Dependency Graph
 
 ```
-use-hivemind-delegation (CORE — always loaded)
-├── hivemind-gatekeeping-delegation (extends core with loops)
-├── tdd-delegation (extends core with TDD pattern)
-│   └── tdd-phase-execution (extends TDD with phase granularity)
-│       └── test-gatekeeping-flow (methodology for test gates)
-├── course-correction-delegation (extends core with domain patterns)
-├── research-delegation (extends core with research pattern)
-├── plan-engineering (extends core with plan lifecycle)
-│   ├── plan-breakdown (decomposition methodology)
-│   └── spec-distillation (upstream input)
-├── hierarchy-retrace (extends core with decision indexing)
-│   ├── git-continuity-memory (git-level anchors)
-│   └── hivemind-atomic-commit (commit leaf nodes)
-├── git-memory-enforce (extends core with memory discipline)
-│   └── hivemind-atomic-commit (commit mechanics)
-└── skill-universal-design (extends core with universal patterns)
-    └── skill-conflict-detect (conflict detection methodology)
+use-hivemind (SESSION ENTRY — always loaded first)
+├── use-hivemind-delegation (entry router for delegation)
+│   ├── hivemind-gatekeeping-delegation (loop control)
+│   ├── tdd-delegation (TDD pattern)
+│   │   ├── tdd-phase-execution (phase granularity)
+│   │   └── test-gatekeeping-flow (test enforcement)
+│   ├── course-correction-delegation (debug/refactor)
+│   ├── research-delegation (evidence collection)
+│   ├── plan-engineering (plan lifecycle)
+│   │   └── plan-breakdown (decomposition)
+│   ├── hierarchy-retrace (decision indexing)
+│   ├── git-memory-enforce (memory discipline)
+│   ├── skill-universal-design (universal patterns)
+│   │   └── skill-conflict-detect (conflict detection)
+│   └── agent-role-boundary (role enforcement)
+├── use-hivemind-git-memory (entry for git memory)
+│   ├── git-continuity-memory (continuity)
+│   ├── hivemind-atomic-commit (commit discipline)
+│   ├── git-memory-enforce (enforcement)
+│   └── hierarchy-retrace (indexing)
+├── use-hivemind-research (entry for research)
+│   ├── hivemind-research-framework (methodology)
+│   └── hivemind-research-tools (MCP protocols)
+├── use-hivemind-skill-writer (entry for skill authoring)
+│   ├── hivemind-skill-write (creation)
+│   └── hivemind-skill-doctor (auditing)
+└── use-hivemind-detox-refactor (entry for multi-stage refactor)
+    ├── hivemind-codemap (scanning)
+    ├── hivemind-system-debug (debugging)
+    └── spec-distillation (requirements)
 ```
 
 Domain skills are independent of each other. All depend only on core. Gatekeeping can compose with any domain skill.
@@ -72,6 +89,15 @@ Domain skills are independent of each other. All depend only on core. Gatekeepin
 | Memory commits | `use-hivemind-delegation` → `git-memory-enforce` |
 | Skill authoring | `use-hivemind-delegation` → `skill-universal-design` → `skill-conflict-detect` |
 | Full TDD + planning | `use-hivemind-delegation` → `hivemind-gatekeeping-delegation` → `plan-engineering` → `tdd-phase-execution` |
+
+## Load-3 Constraint
+
+At any entry point, exactly 3 skills load:
+- Slot 1: Entry router (`use-hivemind-*` or `use-hivemind`)
+- Slot 2: Domain skill (loop control, TDD, debug, etc.)
+- Slot 3: Depth skill (specialist methodology)
+
+No exceptions. Loading >3 skills causes context bloat and routing errors.
 
 ## Routing Rules
 

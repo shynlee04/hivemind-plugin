@@ -1,9 +1,5 @@
 # Delegation Decision Criteria
 
-## Purpose
-
-Provides the decision framework for when to delegate work to subagents versus executing inline. Covers the cost/benefit analysis, delegation overhead, and the deterministic decision flow that orchestrators must follow.
-
 ## When to Delegate
 
 Delegate when **any** of the following conditions are true:
@@ -57,9 +53,3 @@ Do slices share state or dependencies?
   YES → Sequential delegation
   NO → Parallel delegation (with independence proof)
 ```
-
-## Related
-
-- `delegation-modes.md` for mode selection after decision
-- `role-boundaries.md` for parent/child responsibility enforcement
-- `failure-recovery.md` for handling delegation failures

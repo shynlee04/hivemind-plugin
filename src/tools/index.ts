@@ -95,4 +95,13 @@ export const agentToolCatalog: AgentToolCatalogEntry[] = [
     stateAuthority: 'workflow',
     pressureContract: getRuntimePressureContract('steady-state'),
   },
+  {
+    id: 'hivemind_journal',
+    contractFile: 'src/tools/hivemind-journal.ts',
+    hostEvent: 'tool.call',
+    workflowPhase: 'session-journal',
+    purposeClasses: ['discovery', 'brainstorming', 'research', 'planning', 'implementation', 'gatekeeping', 'tdd', 'course-correction'],
+    stateAuthority: 'plugin-control-plane',
+    pressureContract: getRuntimePressureContract('steady-state'),
+  },
 ]

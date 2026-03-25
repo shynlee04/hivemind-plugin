@@ -1,9 +1,5 @@
 # Role Boundaries
 
-## Purpose
-
-Defines the responsibility contract between orchestrator and child agents, enforcement rules for scope violations, and catalogs valid and invalid delegation patterns. Ensures each delegation maintains clear authority boundaries.
-
 ## Front-Facing Agent (Orchestrator) Responsibilities
 
 | Responsibility | Why |
@@ -54,9 +50,3 @@ If a child violates its responsibilities:
 | Read-only scan with explore agent | No mutation risk; fast; low context cost |
 | Verification-only after implementation is complete | Separate success test from implementation; evidence-based |
 | Planning-only — child returns stages, not edits | Bounded output type; orchestrator decides what to execute |
-
-## Related
-
-- `delegation-decision.md` for decision criteria
-- `failure-recovery.md` for boundary violation recovery
-- `hivemind-gatekeeping-delegation` for iterative boundary enforcement

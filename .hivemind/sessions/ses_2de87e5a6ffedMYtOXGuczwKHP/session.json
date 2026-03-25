@@ -1,0 +1,14 @@
+{
+  "sessionId": "ses_2de87e5a6ffedMYtOXGuczwKHP",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-24T20:10:40.137Z",
+  "updated": "2026-03-24T20:18:11.553Z",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "status": "active",
+  "userMessageCount": 0,
+  "agentOutputCount": 0,
+  "delegationCount": 0
+}

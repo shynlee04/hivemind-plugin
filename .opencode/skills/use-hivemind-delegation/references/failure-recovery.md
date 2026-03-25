@@ -74,9 +74,3 @@ When `blocked_routes` are returned:
 3. **Track resolution:** Record the blocker and resolution in the delegation registry for pattern detection.
 
 For cascading failure protocols, see `hivemind-gatekeeping-delegation/references/cascading-failure.md`.
-
-## Related
-
-- `delegation-decision.md` for re-delegation criteria
-- `role-boundaries.md` for scope violation handling
-- `hivemind-gatekeeping-delegation` for cascading failure recovery

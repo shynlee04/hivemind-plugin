@@ -1,0 +1,68 @@
+{
+  "_meta": {
+    "created_at": "2026-03-25T00:26:00.000Z",
+    "updated_at": "2026-03-25T01:15:00.000Z",
+    "phase": "P0",
+    "task": "journal-tool"
+  },
+  "delegation_packet": {
+    "scope": "Create hivemind-journal tool as CQRS write-side bridge for session journaling",
+    "constraints": [
+      "Use tool.schema (Zod) for args schema",
+      "Use context.sessionID, context.agent, context.directory from ToolContext",
+      "Do NOT modify existing hooks",
+      "Register in: opencode-plugin.ts, index.ts, tool-governance.ts, runtime-tools.test.ts"
+    ],
+    "expected_return": "{ success: boolean, path: string }"
+  },
+  "status": "completed",
+  "files_created": [
+    "src/tools/hivemind-journal.ts",
+    "src/tools/hivemind-journal.test.ts"
+  ],
+  "files_modified": [
+    "src/plugin/opencode-plugin.ts",
+    "src/tools/index.ts",
+    "src/hooks/runtime-loader/tool-governance.ts",
+    "tests/runtime-tools.test.ts"
+  ],
+  "verification_results": {
+    "npm_run_build": {
+      "command": "npm run build",
+      "result": "success",
+      "output": "Build succeeded"
+    },
+    "journal_tool_tests": {
+      "command": "npx tsx --test src/tools/hivemind-journal.test.ts",
+      "result": "passed",
+      "passed": 11,
+      "failed": 0
+    }
+  },
+  "tool_schema": {
+    "args": {
+      "sessionId": "string",
+      "eventType": "enum (assistant_output | user_message | tool_call | compaction | trajectory | diagnostic)",
+      "payload": "object",
+      "timestamp": "string"
+    },
+    "eventRouting": {
+      "assistant_output": "appendSessionEvent → events.md",
+      "user_message": "appendSessionEvent → events.md",
+      "tool_call": "appendSessionEvent → events.md",
+      "compaction": "appendSessionEvent → events.md",
+      "trajectory": "appendSessionEvent → events.md",
+      "diagnostic": "appendSessionDiagnostic → diagnostics.log"
+    }
+  },
+  "pre_existing_failures": {
+    "tests/runtime-resilience.test.ts": {
+      "issue": "async/await handling",
+      "status": "unrelated_to_this_work"
+    }
+  },
+  "next_steps": [
+    "No further P0 tasks for journal-tool",
+    "Optional: Create barrel export in src/tools/index.ts if required"
+  ]
+}

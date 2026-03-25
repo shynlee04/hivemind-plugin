@@ -1,7 +1,5 @@
 # Delegation Packet
 
-<!-- _meta: { "created_at": "2026-03-24T00:00:00Z", "updated_at": "2026-03-24T00:00:00Z" } -->
-
 ```json
 {
   "packet_id": "deleg_1711072800_tool_fix",
@@ -36,13 +34,18 @@
     "Which tests were fixed and how",
     "Whether production code was changed and why"
   ],
-  "return_contract": {
-    "status": "completed | partial | blocked",
-    "evidence": { "confirmed": [], "inferred": [], "unverified": [] },
-    "artifacts": [],
-    "blocked_routes": [],
-    "recommended_next_action": ""
-  },
+  "return_contract": [
+    "status",
+    "activity_type",
+    "phase_type",
+    "findings",
+    "confirmed",
+    "inferred",
+    "unverified",
+    "blocked_routes",
+    "artifacts_written",
+    "recommended_next_action"
+  ],
   "return_gate": "All 3 failing tests pass AND no new failures AND tsc compiles clean"
 }
 ```

@@ -124,10 +124,3 @@ For iterative scanning:
 3. `journey-map`: targeted reads to connect pipelines to user-visible journeys and degraded paths.
 4. `low-level-proof`: batch review on the specific slices that still need proof.
 5. `cross-pass-synthesis`: reconcile coverage, risks, and next slices at `{activity}/codescan/cross-pass-synthesis.json`.
-
-## Related
-
-- `delegation-modes.md` for mode selection
-- `failure-recovery.md` for scan failure handling
-- `hivemind-codemap` for scan mechanics
-- `hivemind-gatekeeping-delegation` for multi-pass scan loop control

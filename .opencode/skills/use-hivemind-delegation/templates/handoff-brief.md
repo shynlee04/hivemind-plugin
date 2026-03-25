@@ -1,7 +1,5 @@
 # Handoff Brief
 
-<!-- _meta: { "created_at": "2026-03-24T00:00:00Z", "updated_at": "2026-03-24T00:00:00Z" } -->
-
 **Packet ID:** deleg_1711072800_tool_fix
 
 **Concern:** Fix failing tests in src/tools/runtime/

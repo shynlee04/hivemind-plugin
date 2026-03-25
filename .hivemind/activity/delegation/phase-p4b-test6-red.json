@@ -1,0 +1,32 @@
+{
+  "_meta": {
+    "created_at": "2026-03-25T04:29:00.000Z",
+    "updated_at": "2026-03-25T04:29:00.000Z"
+  },
+  "pass_id": "p4b-test6-red",
+  "batch_id": "session-idle-event-red",
+  "status": "completed",
+  "tdd_phase": "red",
+  "gate_result": "fail_as_expected",
+  "test_files": [
+    "tests/hooks/session-idle-handler.test.ts"
+  ],
+  "test_output": {
+    "runner": "vitest",
+    "command": "npx vitest run tests/hooks/session-idle-handler.test.ts",
+    "result": "FAIL",
+    "tests_total": 1,
+    "tests_failed": 1,
+    "tests_passed": 0,
+    "error": "TypeError: handleSessionIdleEvent is not a function"
+  },
+  "evidence": {
+    "test_file": "tests/hooks/session-idle-handler.test.ts",
+    "missing_export": "handleSessionIdleEvent from src/hooks/event-handler.ts",
+    "failure_reason": "handleSessionIdleEvent is not exported from event-handler.ts"
+  },
+  "summary": "RED phase: single failing test for session.idle event logging. Test imports handleSessionIdleEvent from event-handler.ts and verifies the session JSON file contains events array with session.idle entry. Fails because handleSessionIdleEvent does not exist.",
+  "recommended_next_action": "GREEN: export handleSessionIdleEvent from src/hooks/event-handler.ts that writes session.idle event to .hivemind/sessions/{sessionId}.json events array",
+  "blocked_routes": [],
+  "coverage_gaps": []
+}

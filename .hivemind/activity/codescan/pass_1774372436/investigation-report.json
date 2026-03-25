@@ -1,0 +1,343 @@
+{
+  "pass_id": "pass_1774372436",
+  "timestamp": "2026-03-25T00:00:00Z",
+  "scope": "src directory",
+  "total_ts_files": 281,
+  "total_test_files": 41,
+  
+  "directory_structure": {
+    "src/": {
+      "purpose": "Main source directory for HiveMind Context Governance plugin",
+      "files": ["cli.ts", "index.ts"]
+    },
+    "src/archive/": {
+      "purpose": "Archived/deprecated modules no longer in active use",
+      "subdirs": {
+        "schema-kernel/": "Archived schema kernel contracts"
+      }
+    },
+    "src/cli/": {
+      "purpose": "CLI command implementations for hm-init, hm-doctor, hm-harness, hm-settings, hm-sync",
+      "files": ["doctor.ts", "harness.ts", "init.ts", "settings.ts", "command-routing.ts", "runtime-assets.ts"]
+    },
+    "src/commands/": {
+      "purpose": "Slash command registry and execution",
+      "subdirs": {
+        "slash-command/": {
+          "purpose": "Command bundle discovery and execution",
+          "files": ["command-bundles.ts", "command-discovery.ts", "command-runner.ts", "command-types.ts"]
+        }
+      }
+    },
+    "src/context/": {
+      "purpose": "Context management and prompt packets",
+      "subdirs": {
+        "prompt-packet/": "Prompt packet handling for session context"
+      }
+    },
+    "src/control-plane/": {
+      "purpose": "CLI command gate, intake, and registry for 4 CLI primitives",
+      "files": ["control-plane-handler.ts", "control-plane-intake.ts", "control-plane-registry.ts", "control-plane-types.ts", "sdk-runtime.ts"]
+    },
+    "src/core/": {
+      "purpose": "State management authority - trajectory ledger and workflow authority",
+      "subdirs": {
+        "trajectory/": {
+          "purpose": "Trajectory state, events, checkpoints, assessment, and ledger",
+          "files": ["trajectory-store.ts", "trajectory-store.operations.ts", "trajectory-store.ledger.ts", "trajectory-assessment.ts", "trajectory-types.ts"]
+        },
+        "workflow-management/": {
+          "purpose": "Workflow authority, task lifecycle, routing, continuity",
+          "files": ["workflow-authority.ts", "task-lifecycle.ts", "workflow-router.ts", "workflow-types.ts", "continuity.ts"]
+        }
+      }
+    },
+    "src/delegation/": {
+      "purpose": "Handoff context packaging for sub-session workflows",
+      "files": ["delegation-packet.ts", "delegation-store.ts", "delegation-record.schema.ts"]
+    },
+    "src/features/": {
+      "purpose": "Feature modules implementing domain-specific functionality",
+      "subdirs": {
+        "agent-work-contract/": {
+          "purpose": "Agent work contract engine, schema, hooks, and tools",
+          "subsubdirs": {
+            "engine/": "Contract store, chain executor, intent classifier, anchor recorder",
+            "hooks/": "Agent work event handler, compaction preservation",
+            "schema/": "Contract, delegation, intent schemas",
+            "tools/": "Create/export contract tools"
+          }
+        },
+        "doc-intelligence/": "Markdown-first document intelligence",
+        "event-tracker/": {
+          "purpose": "Event tracking, classification, parsing, and writing",
+          "subsubdirs": {
+            "classifier/": "Event classification and delegation evidence",
+            "parser/": "Turn parsing, header/meta parsing, delegation extraction, counter",
+            "session-writer/": "Session metadata and delegation append writers",
+            "writers/": "Index writer, formatter, synthesizer, diagnostics"
+          }
+        },
+        "handoff/": "Handoff feature implementation",
+        "runtime-entry/": {
+          "purpose": "Runtime entry surfaces - init, doctor, harness, settings, attachment",
+          "files": ["init-project.ts", "init.handler.ts", "attachment.ts", "attachment.builder.ts", "doctor.ts", "harness.ts", "settings.ts", "workflow-continuity.ts"]
+        },
+        "runtime-observability/": "Status reporting and sync",
+        "session-entry/": {
+          "purpose": "Session entry - purpose classification, lineage routing, intake, readiness",
+          "files": ["purpose-classifier.ts", "lineage-router.ts", "intake.ts", "readiness-gates.ts", "profile-resolution.ts", "language-resolution.ts"]
+        },
+        "trajectory/": "Trajectory feature implementation",
+        "workflow/": "Workflow task implementation"
+      }
+    },
+    "src/governance/": {
+      "purpose": "Governance rules and posture management"
+    },
+    "src/hooks/": {
+      "purpose": "OpenCode plugin hooks - read-side and in-band interception",
+      "subdirs": {
+        "auto-slash-command/": "Auto slash command execution",
+        "runtime-loader/": "Runtime tool loading and event recording",
+        "start-work/": {
+          "purpose": "Session entry orchestrator - purpose classification, lineage resolution, readiness gates",
+          "files": ["start-work-router.ts"]
+        },
+        "workflow-integration/": "Workflow integration hooks"
+      },
+      "files": ["event-handler.ts", "transform-handler.ts", "soft-governance.ts", "sdk-context.ts", "compaction-handler.ts", "text-complete-handler.ts"]
+    },
+    "src/intelligence/": {
+      "purpose": "Intelligence layer for document handling",
+      "subdirs": {
+        "doc/": {
+          "purpose": "Document intelligence and format handling",
+          "subdirs": {
+            "formats/": "Document format handlers"
+          }
+        }
+      }
+    },
+    "src/plugin/": {
+      "purpose": "OpenCode plugin assembly - wires hooks and tools (NO business logic)",
+      "files": ["opencode-plugin.ts", "context-renderer.ts", "context-renderer.*.ts", "runtime-snapshot.ts", "runtime-prompt.ts", "messages-transform.ts", "messages-transform-adapter.ts", "injection-store.ts", "compaction-adapter.ts", "route-hint.ts", "skill-focus-renderer.ts", "skill-exposure-map.ts", "evidence-reporter.ts", "system-transform.ts", "synthetic-parts.ts", "input-helpers.ts"]
+    },
+    "src/recovery/": {
+      "purpose": "Recovery spine and error recovery",
+      "files": ["recovery-engine.ts", "recovery-types.ts"]
+    },
+    "src/schema-kernel/": {
+      "purpose": "Schema authority for persisted and cross-session records"
+    },
+    "src/sdk-supervisor/": {
+      "purpose": "Additive Phase 1 orchestration control - instances, sessions, workflows, health",
+      "files": ["instance-registry.ts", "health.ts", "runtime-status.ts", "session-inspection.ts", "diagnostic-log.ts"]
+    },
+    "src/shared/": {
+      "purpose": "Shared utilities and transitional primitives",
+      "files": [
+        "paths.ts", "tool-response.ts", "logging.ts", "runtime-attachment.ts",
+        "entry-kernel-state.ts", "opencode-knowledge.ts", "opencode-agent-registry.ts",
+        "opencode-skill-registry.ts", "lifecycle-spine.ts", "pressure-contract.ts",
+        "bootstrap-profile.ts", "tool-helpers.ts", "intake-record.ts", "intake-record.*.ts",
+        "errors.ts", "evidence-lane.ts", "keyword-matcher.ts"
+      ],
+      "subdirs": {
+        "contracts/": {
+          "purpose": "Runtime events and status contracts",
+          "files": ["runtime-status.ts", "runtime-events.ts"]
+        }
+      }
+    },
+    "src/tools/": {
+      "purpose": "Agent-callable tools (write-side CQRS) - 6 tools exposed to agents",
+      "subdirs": {
+        "doc/": "hivemind_doc tool - read-only markdown doc intelligence",
+        "handoff/": "hivemind_handoff tool - delegation handoff records",
+        "runtime/": "hivemind_runtime_status and hivemind_runtime_command tools",
+        "task/": "hivemind_task tool - workflow task management",
+        "trajectory/": "hivemind_trajectory tool - trajectory control"
+      }
+    }
+  },
+
+  "key_files": [
+    {
+      "path": "src/index.ts",
+      "purpose": "Main barrel export - exports all core modules and the HiveMindPlugin"
+    },
+    {
+      "path": "src/cli.ts",
+      "purpose": "CLI entry point - routes to init/doctor/harness/settings/sync commands"
+    },
+    {
+      "path": "src/plugin/opencode-plugin.ts",
+      "purpose": "Real OpenCode plugin assembly - wires 17 hooks and 8 tools, no business logic"
+    }
+  ],
+
+  "tools_inventory": {
+    "hivemind_doc": {"directory": "tools/doc", "workflow_phase": "doc-intelligence"},
+    "hivemind_task": {"directory": "tools/task", "workflow_phase": "tool-execution"},
+    "hivemind_trajectory": {"directory": "tools/trajectory", "workflow_phase": "trajectory-attachment"},
+    "hivemind_handoff": {"directory": "tools/handoff", "workflow_phase": "recovery-checkpoint"},
+    "hivemind_runtime_status": {"directory": "tools/runtime", "workflow_phase": "runtime-inspection"},
+    "hivemind_runtime_command": {"directory": "tools/runtime", "workflow_phase": "runtime-command"},
+    "hivemind_agent_work_create_contract": {"directory": "features/agent-work-contract/tools", "workflow_phase": "agent-work-contract"},
+    "hivemind_agent_work_export_contract": {"directory": "features/agent-work-contract/tools", "workflow_phase": "agent-work-contract"}
+  },
+
+  "hooks_inventory": [
+    "event", "chat.message", "permission.ask", "tool.execute.before", "tool.execute.after",
+    "shell.env", "command.execute.before", "experimental.text.complete",
+    "experimental.chat.messages.transform", "experimental.session.compacting",
+    "experimental.chat.system.transform"
+  ],
+
+  "dependencies": {
+    "layer_architecture": {
+      "tools": "src/tools/ - Write-side CQRS, LLM-facing, Zod schemas required",
+      "hooks": "src/hooks/ - Read-side and in-band interception, no durable writes",
+      "plugin": "src/plugin/ - Assembly and enforcement wiring only",
+      "sdk-supervisor": "src/sdk-supervisor/ - Additive Phase 1 orchestration control",
+      "schema-kernel": "src/schema-kernel/ - Additive Phase 1 contract authority",
+      "core": "src/core/ - State management (trajectory + workflow-management)",
+      "shared": "src/shared/ - Transitional utilities"
+    },
+    "module_dependencies": {
+      "plugin": ["hooks", "tools", "sdk-supervisor", "commands"],
+      "tools": ["core", "shared", "features"],
+      "hooks": ["core", "sdk-supervisor", "features"],
+      "control-plane": ["features", "sdk-supervisor"],
+      "cli": ["control-plane", "features"]
+    }
+  },
+
+  "test_coverage": {
+    "total_test_files": 41,
+    "test_locations": [
+      "src/sdk-supervisor/session-inspection.test.ts",
+      "src/plugin/context-renderer.test.ts",
+      "src/hooks/event-handler.test.ts",
+      "src/hooks/start-work/start-work-router.test.ts",
+      "src/features/event-tracker/**/*.test.ts (28 files)",
+      "src/features/agent-work-contract/**/*.test.ts (8 files)"
+    ],
+    "test_patterns": {
+      "integration": "src/features/event-tracker/session-writer/*.red.test.ts",
+      "unit": "src/features/agent-work-contract/engine/*.test.ts",
+      "classifier": "src/features/event-tracker/classifier/*.test.ts",
+      "parser": "src/features/event-tracker/parser/*.test.ts"
+    }
+  },
+
+  "package_json": {
+    "name": "hivemind-context-governance",
+    "version": "2.9.5",
+    "type": "module",
+    "main": "dist/index.js",
+    "exports": {
+      ".": "./dist/index.js",
+      "./plugin": "./dist/plugin/opencode-plugin.js"
+    },
+    "bin": {
+      "hivemind-context-governance": "dist/cli.js",
+      "hivemind": "dist/cli.js",
+      "hm-init": "dist/cli.js",
+      "hm-doctor": "dist/cli.js",
+      "hm-settings": "dist/cli.js",
+      "hm-harness": "dist/cli.js",
+      "hm-sync": "dist/cli.js"
+    },
+    "key_dependencies": [
+      "@opencode-ai/plugin (>=1.1.0)",
+      "@opencode-ai/sdk (^1.2.27)",
+      "zod (^4.3.6)",
+      "typescript (^5.3.0)",
+      "yaml (^2.8.2)",
+      "remark (^15.0.1)",
+      "web-tree-sitter (^0.26.5)"
+    ]
+  },
+
+  "barrel_export_files": [
+    "src/index.ts",
+    "src/plugin/index.ts",
+    "src/core/index.ts",
+    "src/shared/index.ts",
+    "src/shared/contracts/index.ts",
+    "src/hooks/index.ts",
+    "src/tools/index.ts",
+    "src/tools/task/index.ts",
+    "src/tools/trajectory/index.ts",
+    "src/tools/handoff/index.ts",
+    "src/tools/runtime/index.ts",
+    "src/tools/doc/index.ts",
+    "src/sdk-supervisor/index.ts",
+    "src/schema-kernel/index.ts",
+    "src/recovery/index.ts",
+    "src/control-plane/index.ts",
+    "src/delegation/index.ts",
+    "src/commands/index.ts",
+    "src/commands/slash-command/index.ts",
+    "src/context/index.ts",
+    "src/context/prompt-packet/index.ts",
+    "src/intelligence/index.ts",
+    "src/intelligence/doc/index.ts",
+    "src/governance/index.ts",
+    "src/features/workflow/index.ts",
+    "src/features/trajectory/index.ts",
+    "src/features/session-entry/index.ts",
+    "src/features/runtime-observability/index.ts",
+    "src/features/runtime-entry/index.ts",
+    "src/features/doc-intelligence/index.ts",
+    "src/features/handoff/index.ts",
+    "src/features/agent-work-contract/index.ts",
+    "src/features/agent-work-contract/tools/index.ts",
+    "src/features/agent-work-contract/schema/index.ts",
+    "src/features/agent-work-contract/hooks/index.ts",
+    "src/features/agent-work-contract/engine/index.ts",
+    "src/hooks/workflow-integration/index.ts",
+    "src/hooks/start-work/index.ts",
+    "src/hooks/runtime-loader/index.ts",
+    "src/hooks/auto-slash-command/index.ts",
+    "src/archive/schema-kernel/index.ts"
+  ],
+
+  "gaps_and_anomalies": [
+    {
+      "issue": "features/index.ts missing",
+      "description": "src/features/ has no index.ts barrel export - each feature exports individually"
+    },
+    {
+      "issue": "dashboard-v2/ directory empty",
+      "description": "src/dashboard-v2/ exists but contains no files"
+    },
+    {
+      "issue": "archive/ schema-kernel",
+      "description": "src/archive/schema-kernel/ contains archived files separate from active src/schema-kernel/"
+    },
+    {
+      "issue": "hooks/start-work/index.ts exports only start-work-router",
+      "description": "Start-work-router is ~467 tokens compressed - potential hotspot"
+    },
+    {
+      "issue": "SlashCommandBundle has 18 fields",
+      "description": "High coupling noted in AGENTS.md - bundle definitions require understanding all 18 properties"
+    },
+    {
+      "issue": "core/session/ REMOVED",
+      "description": "L1 cutover removed core/session/ - session lifecycle now in hooks/start-work/"
+    }
+  ],
+
+  "architectural_notes": [
+    "CQRS Hard Boundary: Tools write, Hooks read, Plugin assembles",
+    "SDK-First: Use @opencode-ai/plugin and @opencode-ai/sdk before custom abstractions",
+    "Interface Decomposition: No type exceeds 10 fields at core level",
+    "Consumer-First: All shipped assets must work for npm consumers",
+    "Authority Principle: Each concern has ONE owner",
+    "300 LOC limit per tool implementation"
+  ]
+}

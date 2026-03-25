@@ -1,143 +1,163 @@
 ---
 name: use-hivemind
-description: "Establish HiveMind framework context at session start. Detect lineage (hivefiver vs hiveminder), route to correct implementation skill. Blocks when context is degraded."
+description: |
+  Master session entry router. Detects lineage (hivefiver vs hiveminder), checks context health, routes to correct domain router. Blocks when context is degraded. Max 3 skills in stack. Every agent session must start here.
 ---
 
 # use-hivemind
 
-Establish HiveMind framework context and route to the correct implementation skill. This is the master entry point that runs at session start, after compaction, or when the user mentions framework terms.
+This is the front door to the HiveMind skill ecosystem. Every agent turn — whether a fresh session, a resume after compaction, or a mid-conversation framework reference — must enter through this skill. It performs three critical gatekeeping functions before any work proceeds: lineage detection (who am I and what kind of work is this), context health verification (is the session state trustworthy), and routing (which domain router handles the request). If context is degraded, it blocks all work and delegates recovery. If lineage is ambiguous, it asks one clarifying question. It never implements — it routes only.
 
-## Anti-Pattern: When NOT to Use This Skill
+## Purpose
 
-- User says "just write some code" → WRONG, this is for framework routing, not implementation
-- Agent says "I'll implement this directly" → WRONG, never implement in a router skill
-- Session asks "what is hivemind" and agent bypasses routing to explain everything → WRONG, route to specialist
-- Agent confuses hivefiver lineage with hiveminder lineage → WRONG, identify lineage before routing
-- Agent says "framework work = project work" → WRONG, these are different lineages with different skills
+- Session entry point for all agent turns
+- Lineage detection: hiveminder (orchestrator) vs hivefiver (executor)
+- Context health gate before any work proceeds
+- Load-3 constraint enforcement (1 entry + 1 domain + 1 depth)
+- Routing to correct domain router based on request type
 
-## Process Flow
+## When to Activate
 
-```digraph hivemind-entry {
-  "Session Start" -> "Detect Platform"
-  "Detect Platform" -> "Check Context Health"
-  "Check Context Health" -> "Health OK?"
-  "Health OK?" -> "Identify Lineage" [label="yes"]
-  "Health OK?" -> "BLOCK - Context Degraded" [label="no"]
-  "Identify Lineage" -> "hivefiver?" [label="framework"]
-  "Identify Lineage" -> "hiveminder?" [label="project"]
-  "hivefiver?" -> "Route to skill authoring" [label="yes"]
-  "hiveminder?" -> "Route to domain skills" [label="yes"]
-  "Route to skill authoring" -> "hivemind-skill-write"
-  "Route to domain skills" -> "Domain specialist"
-  "BLOCK - Context Degraded" -> "context-intelligence-entry"
-}
-```
+| Trigger | Example Phrases |
+|---------|----------------|
+| Session start | "help me", "start working", "continue", "begin" |
+| Post-compaction | After `/clear`, context feels unclear, session resumes |
+| Framework reference | User mentions "hivemind", "hive", "framework", "skill system" |
+| Lineage confusion | "which lineage", "who should do this", "am I building framework or project" |
+| Stack confusion | "too many skills", "which skills loaded", "stack overflow" |
+| Skill routing | "what skill do I use for X", "route me" |
+| Delegation intent | "delegate", "handoff", "send to subagent" |
+| Verification gate | "am I done", "verify this", "before merge" |
+| Context rot | "lost context", "forgot what I was doing", "context seems wrong" |
+| Explicit activation | "use hivemind", "load hivemind framework" |
 
-## Activation Triggers (Semantically)
+## Routing Matrix
 
-This skill activates when ANY of these scenarios occur:
+| Request Type | Route To | Description |
+|-------------|----------|-------------|
+| Delegation work | `use-hivemind-delegation` | Splitting work across subagents, handoff packets, return contracts |
+| Skill creation/audit | `use-hivemind-skill-writer` | Authoring, auditing, or refactoring HiveMind skills |
+| Git memory operations | `use-hivemind-git-memory` | Commit-based memory encoding, semantic retrieval, continuity |
+| Multi-stage refactor | `use-hivemind-detox-refactor` | Framework refactor, recovery, detox across context and code |
+| Research questions | `use-hivemind-research` | Multi-source investigation, evidence grading, synthesis |
+| Planning work | `plan-engineering` | Plan lifecycle, phase decomposition, execution tracking |
+| Simple questions | Execute inline | Answer directly without routing — no skill loading needed |
 
-### Session & Context (1-7)
-1. **Session initialization**: New conversation starts, user says "help me", "start working", "continue"
-2. **Context disruption**: After `/clear` command, after compaction, context feels unclear or confused
-3. **After-session resume**: User says "resume", "pick up", "where did we leave off", "continue from"
-4. **Context degradation**: User mentions "context rot", "lost context", "forgot what I was doing"
-5. **Stack confusion**: User or agent says "too many skills", "stack overflow", "which skills loaded"
-6. **Session health check**: User asks "is context healthy", "check session state", "how's my context"
-7. **After interruption**: Session resumes after error, timeout, or unexpected termination
+**Routing decision:** Match the request intent to the table above. If the request spans multiple categories, pick the primary intent. If ambiguous, ask one clarifying question.
 
-### Framework Reference (8-14)
-8. **Framework reference**: User mentions "hivemind", "hive", "framework", "meta", "skill system", "agent hierarchy"
-9. **Lineage confusion**: Agent or user asks "which lineage", "hivefiver or hiveminder", "who should do this"
-10. **Meta-work requested**: User asks about skill authoring, agent creation, framework development
-11. **Drift detection**: Context drift, pollution, or chain breaks are detected
-12. **Skill routing request**: User asks "what skill do I use for X", "route to correct skill"
-13. **Agent identity**: User asks "who am I", "what agent", "what can I do here"
-14. **Permission inquiry**: User asks "can I", "am I allowed to", "do I have permission"
+## Load-3 Constraint
 
-### Platform Detection (15-20)
-15. **Platform mention**: User mentions "opencode", "claude code", "cursor", "codex", "gemini"
-16. **OpenCode context**: Working in `.opencode/` directory, `opencode.json` present
-17. **Platform detection**: Agent needs to determine which platform is active
-18. **Agent tools check**: User asks "what tools do I have", "show me available tools"
-19. **Agent capability**: User asks "can you delegate", "can you use subagents"
-20. **Project vs global**: Unclear whether work is project-scoped or global
+The skill stack has a hard maximum of **3 active skills**. Every load must follow this formula:
 
-### Skill & Hierarchy (21-28)
-21. **Skill activation**: User says "load a skill", "activate skill", "use skill", "which skills"
-22. **Skill conflict**: User mentions "skill overlap", "which skill wins", "multiple skills"
-23. **Hierarchy clarification**: User asks "who is orchestrator", "what is coordinator", "role confusion"
-24. **Delegation request**: User mentions "delegate", "handoff", "send to subagent"
-25. **Context verification**: User claims "done", "finished", "verify this is complete"
-26. **Git memory**: User asks "what did we decide", "why was this changed", "commit history"
-27. **TDD/Testing**: User mentions "test", "TDD", "verify", "assertion"
-28. **Plan request**: User asks "make a plan", "what are the steps", "how do we proceed"
+| Slot | Purpose | Example |
+|------|---------|---------|
+| 1 — Entry | This skill (`use-hivemind`) | Always loaded first |
+| 2 — Domain | Domain router for the request type | `use-hivemind-delegation`, `plan-engineering`, etc. |
+| 3 — Depth | Implementation skill within the domain | `tdd-delegation`, `hivemind-atomic-commit`, etc. |
 
-### Explicit Activation (29-35)
-29. **Explicit hivemind**: User says "use hivemind", "load hivemind framework"
-30. **Framework guide**: User asks "hivemind guide", "how does hivemind work", "explain framework"
-31. **Start hivemind**: User says "start hivemind", "initialize framework", "bootstrap hivemind"
-32. **Skill system**: User mentions "skill routing", "agent hierarchy", "framework design"
-33. **Context chain**: User mentions "parent context", "child context", "context inheritance"
-34. **Memory encoding**: User asks "save this", "remember this", "encode to git"
-35. **Verification gate**: User mentions "gate", "checkpoint", "before merge"
+**Enforcement rules:**
+
+- Before loading any skill, count current active skills
+- If stack is already at 3 → defer, do not load another skill
+- If stack exceeds 3 → stop, ask user to resolve (unload one skill) before proceeding
+- This skill itself occupies slot 1 — the remaining 2 slots are for domain + depth
+
+## Lineage Detection
+
+Two lineages exist in the HiveMind ecosystem. Detect which one applies before routing:
+
+| Lineage | Role | Characteristics | Routes To |
+|---------|------|-----------------|-----------|
+| **Hiveminder** | Orchestrator | Coordinates work, delegates to subagents, never reads deep | Domain routers (`use-hivemind-delegation`, `plan-engineering`, etc.) |
+| **Hivefiver** | Executor | Implements bounded work, writes code, produces artifacts | Implementation skills (`tdd-delegation`, `hivemind-atomic-commit`, etc.) |
+
+**Detection logic:**
+
+1. Is the agent's role explicitly stated in the session context? → Use that.
+2. Is the request about coordinating/planning vs. implementing/executing? → Hiveminder coordinates, hivefiver executes.
+3. Is there a delegation packet with `agent` field? → The agent field determines lineage.
+4. If still unclear → ask: "Are you orchestrating work (hiveminder) or executing directly (hivefiver)?"
+
+**Key distinction:** Hiveminder never loads depth skills — it loads domain routers only. Hivefiver loads depth skills within a domain. This prevents orchestrator sessions from accumulating implementation context.
+
+## Context Health Gate
+
+Before routing, the session state must be verified as trustworthy:
+
+1. **Check staleness** — Is the session context fresh? (last file read within reasonable window, no interrupted compaction)
+2. **Check for drift** — Does the user indicate confusion or loss of context?
+3. **Check for pollution** — Are there conflicting signals, stale references, or corrupted state?
+
+**If context health fails:**
+
+- **DO NOT** route to any domain router
+- **DO NOT** attempt work of any kind
+- **Delegate immediately** to `context-intelligence-entry` for recovery
+- Report: `blocked` — context degraded, recovery delegated
+
+**If context health passes:**
+
+- Proceed to lineage detection, then routing
 
 ## Step-by-Step Protocol
 
-0. **CHECK STACK** — Before anything, check: "How many skills currently loaded?"
-   - If ≥3 → DEFER with message: "Stack budget exceeded. Please resolve [skill name] to continue."
-   - If <3 → Continue to step 1
+```
+0. CHECK STACK     → If ≥3 active skills, DEFER (wait for slot)
+1. DETECT          → Is this session start, post-compaction, or framework reference?
+2. CONTEXT GATE    → Run context health assessment
+3. IF DEGRADED     → Route to `context-intelligence-entry`, STOP
+4. IDENTIFY LINEAGE → Hiveminder (orchestrator) or Hivefiver (executor)?
+5. CLASSIFY REQUEST → Match to routing matrix
+6. LOAD DOMAIN     → Load the domain router (slot 2)
+7. EXECUTE         → Domain router handles depth skill loading (slot 3)
+```
 
-1. **DETECT** — Is this session start, after compaction, or framework reference?
-2. **CHECK** — Run context health assessment
-3. **IF** context health fails → Route to `context-intelligence-entry`, STOP
-4. **IDENTIFY** — Is this hivefiver (framework) or hiveminder (project) lineage?
-5. **ROUTE** — Send to appropriate specialist skill based on lineage:
-   - hivefiver + "write/audit skill" → `hivemind-skill-write`
-   - hivefiver + "context/delegation" → respective specialist
-   - hiveminder + "implement feature" → domain skills
-6. **TEACH** — If lineage unclear, ask one clarifying question
+## Anti-Patterns
 
-## High DoF Mode - Clarifying Questions
+| Anti-Pattern | Why It Fails | Correct Behavior |
+|-------------|-------------|-----------------|
+| Loading >3 skills | Stack budget exceeded, context overload | Enforce load-3, defer excess |
+| Skipping entry router | No lineage check, no context gate | Always start here |
+| Doing deep reads inline | Orchestrator should not scan code | Delegate to `hivexplorer` or equivalent |
+| Implementing in router | Routing ≠ execution | Route to specialist, never implement |
+| Loading depth skill without domain | Missing domain context | Always load domain router first |
+| Answering "what is hivemind" inline | Bypasses routing | Route to appropriate specialist |
+| Loading multiple domain routers | Conflicting routing paths | Pick primary intent, route once |
 
-When user request is ambiguous (high DoF), ask exactly ONE question:
+## Platform Detection
 
-1. **"Are you building the framework itself (hivefiver) or building with agents (hiveminder)?"**
-   - If framework → route to `hivemind-skill-write`
-   - If project → continue lineage detection
+This skill is **platform-agnostic**. It works in OpenCode, Claude Code, Cursor, Gemini CLI, and any agent system that supports skill loading. Platform-specific behaviors (stack budget enforcement, skill loading mechanism) are handled by the platform layer, not by this skill.
 
-Never give a list of options. Ask ONE question that distinguishes intent.
-
-## Key Principles
-
-- **Framework work ≠ project work**: Explicitly identify lineage before routing. hivefiver = framework dev, hiveminder = project dev.
-- **Routing is not implementation**: Never implement directly. Hand off to specialist skills for execution.
-- **Session start is privileged**: Always load first, defer other skills until framework context is established.
-- **Platform detection is mandatory**: OpenCode vs Claude Code vs Cursor have different activation contracts.
-- **Two lineages, two paths**: hivefiver routes to meta-builder skills; hiveminder routes to domain skills.
+| Platform | Stack Budget | Skill Loading |
+|----------|-------------|---------------|
+| OpenCode | 3 max | `skill` tool |
+| Claude Code | 3 max | CLAUDE.md or skill tool |
+| Cursor | Platform-defined | Rules system |
+| Gemini CLI | Platform-defined | Context system |
+| Custom | 3 recommended | Platform-specific |
 
 ## Terminal State
 
-- **Lineage identified**: User/agent knows which path to take
-- **Specialist skill loaded**: Correct implementation skill is active
-- **Context healthy**: Session ready for work
-- **Next skill**: `hivemind-skill-write` (hivefiver) or domain specialist (hiveminder)
+- Lineage identified (hiveminder or hivefiver)
+- Context health verified (or recovery delegated)
+- Domain router loaded (slot 2)
+- Ready for depth skill load (slot 3) or inline execution
 
 ## No-Load Conditions
 
-- Context depth >70% → Defer to `context-intelligence-entry` for recovery
-- Session state is degraded → Skip activation entirely
-- Stack budget exhausted (Active skills ≥3) → Wait for available slot
-- Authority unclear (Conflicting SOT) → Escalate before routing
-- Another meta-skill active → Defer to active meta-skill
+Do not load this skill — defer or block — when:
 
-## Platform Activation Contracts
+| Condition | Action |
+|-----------|--------|
+| Stack already at 3 skills | Defer until a slot opens |
+| Context health fails | Block, delegate to `context-intelligence-entry` |
+| Another entry router is active | Defer to the active router |
+| Authority unclear (conflicting SOT) | Escalate before routing |
+| Simple question, no routing needed | Answer inline, do not load skills |
 
-| Platform | Skill Loading | Stack Budget |
-|----------|--------------|--------------|
-| OpenCode | `skill` tool | 3 max |
-| Claude Code | Via CLAUDE.md | 3 max |
-| Cursor | Rules system | Different |
-| Codex | Task context | Different |
+## Independence Rules
 
-**Note:** Always check `.opencode/` vs `.claude/` to determine platform.
+- Self-contained routing logic — no external dependencies beyond skill names
+- No implementation — routes only, never executes work
+- No deep reads — context assessment is shallow (session state, not code inspection)
+- No mutation — this skill never writes files, modifies state, or commits

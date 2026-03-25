@@ -10,6 +10,7 @@ export const HIVEMIND_MANAGED_TOOLS = new Set([
   'hivemind_task',
   'hivemind_trajectory',
   'hivemind_handoff',
+  'hivemind_journal',
 ])
 
 export function isHivemindManagedTool(toolName: string | undefined): boolean {

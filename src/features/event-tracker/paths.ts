@@ -84,3 +84,14 @@ export function getEventTrackerIndexPath(projectRoot: string): string {
 export function getSessionSynthesisPath(projectRoot: string, sessionId: string): string {
   return getSessionFilePath(projectRoot, sessionId, 'synthesis.md')
 }
+
+/**
+ * Builds the consolidated session JSON path (session/v2 format).
+ * Produces a single JSON file with turn-based structure replacing the 3-file approach.
+ * @param projectRoot Absolute or workspace project root.
+ * @param sessionId Semantic session ID (ses_<timestamp>_<purpose>_<agent>).
+ * @returns Path to consolidated session JSON file.
+ */
+export function getConsolidatedSessionPath(projectRoot: string, sessionId: string): string {
+  return getSessionFilePath(projectRoot, sessionId, `${sessionId}.json`)
+}

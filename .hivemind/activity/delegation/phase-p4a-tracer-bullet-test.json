@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "created_at": "2026-03-25T03:50:00.000Z",
+    "updated_at": "2026-03-25T03:50:00.000Z"
+  },
+  "status": "completed",
+  "scope": "Tracer bullet integration test: text-complete hook → consolidated writer",
+  "test_file": "tests/integration/text-complete-consolidated.test.ts",
+  "evidence": {
+    "test_runner": "vitest",
+    "test_count": 1,
+    "passing": 0,
+    "failing": 1,
+    "failure_type": "TypeError",
+    "failure_message": "handleTextComplete is not a function",
+    "failure_location": "tests/integration/text-complete-consolidated.test.ts:48:11",
+    "root_cause": "src/hooks/text-complete-handler.ts exports createTextCompleteHandler (factory), not handleTextComplete (standalone function). The integration path does not exist yet.",
+    "command": "npx vitest run tests/integration/text-complete-consolidated.test.ts"
+  },
+  "analysis": {
+    "what_fails": "The test imports handleTextComplete from src/hooks/text-complete-handler.js. This named export does not exist. The module exports createTextCompleteHandler which returns a closure (input, output) => Promise<void>.",
+    "what_would_make_it_pass": "Either: (1) Export a handleTextComplete(input, output, projectRoot) function from the handler that internally uses initSession + addTurn from consolidated-writer, writing to .hivemind/sessions/{sdkSessionId}.json, or (2) Create a new integration adapter that bridges the factory pattern to the standalone function interface.",
+    "integration_gap": "The handler currently passes `directory` (project root) directly to consolidated-writer functions. The consolidated writer writes to `{directory}/{generatedId}.json`. The desired behavior is writing to `{projectRoot}/.hivemind/sessions/{sdkSessionId}.json` — meaning the session directory path needs to be constructed using the shared paths module.",
+    "session_file_path_mismatch": "Consolidated writer gets projectRoot as sessionDir and writes {projectRoot}/{generatedId}.json. Expected: {projectRoot}/.hivemind/sessions/{sdkSessionId}.json"
+  },
+  "blocked_routes": [],
+  "recommended_next_action": "Implement handleTextComplete export in src/hooks/text-complete-handler.ts that accepts (input, output, projectRoot) and writes consolidated session file to .hivemind/sessions/{sessionId}.json using the shared paths module."
+}

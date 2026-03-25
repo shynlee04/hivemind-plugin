@@ -1,6 +1,7 @@
 ---
 name: hivemind-atomic-commit
-description: Use when committing changes requires typed activity classification, dependency-aware ordering, pre-commit gate validation, and rollback planning. Covers atomic commit discipline classify touched files by activity class, detect dependency ordering, run pre-commit gates (branch, worktree, secrets, conflicts), produce typed commit messages with conventional commit format and activity metadata, and emit rollback plans for reversibility.
+description: |
+  Use when committing changes requires typed activity classification, dependency-aware ordering, pre-commit gate validation, and rollback planning. Covers atomic commit discipline: classify touched files by activity class, detect dependency ordering, run pre-commit gates (branch, worktree, secrets, conflicts), produce typed commit messages with conventional commit format and activity metadata, and emit rollback plans for reversibility.
 ---
 
 # hivemind-atomic-commit

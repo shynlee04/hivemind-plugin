@@ -1,7 +1,5 @@
 # Codescan Delegation Packet
 
-<!-- _meta: { "created_at": "2026-03-24T00:00:00Z", "updated_at": "2026-03-24T00:00:00Z" } -->
-
 ```json
 {
   "packet_id": "",
@@ -40,13 +38,20 @@
     "coverage_gaps recorded",
     "blocked_routes recorded when proof is incomplete"
   ],
-  "return_contract": {
-    "status": "completed | partial | blocked",
-    "evidence": { "confirmed": [], "inferred": [], "unverified": [] },
-    "artifacts": [],
-    "blocked_routes": [],
-    "recommended_next_action": ""
-  },
+  "return_contract": [
+    "status",
+    "batch_id",
+    "activity_type",
+    "phase_type",
+    "files_checked",
+    "clean_files",
+    "findings",
+    "blocked_files",
+    "blocked_routes",
+    "coverage_gaps",
+    "artifacts_written",
+    "recommended_next_action"
+  ],
   "return_gate": "all files in scope checked OR blocked_files documented"
 }
 ```

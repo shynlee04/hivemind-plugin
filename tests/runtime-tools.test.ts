@@ -25,6 +25,7 @@ const AUTHORITATIVE_RUNTIME_TOOL_IDS = [
   'hivemind_agent_work_export_contract',
   'hivemind_doc',
   'hivemind_handoff',
+  'hivemind_journal',
   'hivemind_runtime_command',
   'hivemind_runtime_status',
   'hivemind_task',

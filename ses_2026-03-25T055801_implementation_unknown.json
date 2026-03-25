@@ -1,0 +1,50 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2026-03-25T055801_implementation_unknown",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-24T22:58:01.684Z",
+  "updated": "2026-03-24T22:58:01.688Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-24T22:58:01.684Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "The `toolName` and `callID` are nested inside `data`, but the test expects them at the top level of the event object. Let me fix this."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-24T22:58:01.684Z",
+      "data": {
+        "text": "The `toolName` and `callID` are nested inside `data`, but the test expects them at the top level of the event object. Let me fix this.",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-24T22:58:01.684Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=134"
+    }
+  ]
+}

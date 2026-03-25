@@ -25,6 +25,7 @@ import {
 } from '../tools/runtime/index.js'
 import { createHivemindTaskTool as createTaskTool } from '../tools/task/index.js'
 import { createHivemindTrajectoryTool as createTrajectoryTool } from '../tools/trajectory/index.js'
+import { createHivemindJournalTool } from '../tools/hivemind-journal.js'
 import { renderToolPrecedence } from './context-renderer.js'
 import { createTurnSnapshotLoader } from './runtime-snapshot.js'
 import { createSyntheticPart } from './synthetic-parts.js'
@@ -83,6 +84,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
       hivemind_task: createTaskTool(directory),
       hivemind_trajectory: createTrajectoryTool(directory),
       hivemind_handoff: createHivemindHandoffTool(directory),
+      hivemind_journal: createHivemindJournalTool(directory),
     },
     'chat.message': async (_messageInput, _output) => {
       turnSnapshot.resetTurnSnapshot()

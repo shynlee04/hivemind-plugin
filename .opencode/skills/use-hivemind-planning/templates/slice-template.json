@@ -1,0 +1,29 @@
+{
+  "slice_id": "{authority}-{concern}-{target}",
+  "order": 0,
+  "wave": 0,
+  "concern": "read | write | verify",
+  "authority_surfaces": ["tool", "hook", "core", "shared", "test", "schema", "config", "docs"],
+  "in_scope": [
+    "path/to/file1.ts",
+    "path/to/file2.ts"
+  ],
+  "out_of_scope": [
+    "path/to/unrelated/**"
+  ],
+  "description": "Human-readable description of what this slice accomplishes",
+  "depends_on": ["slice_id_of_dependency"],
+  "blocks": ["slice_id_that_depends_on_this"],
+  "parallel_safe": true,
+  "gate": {
+    "command": "npx tsc --noEmit",
+    "expected_pass": true
+  },
+  "evidence_required": [
+    "files_modified",
+    "diff_output",
+    "type_check_result",
+    "test_output"
+  ],
+  "estimated_complexity": "low | medium | high"
+}

@@ -1,9 +1,5 @@
 # Delegation Modes
 
-## Purpose
-
-Defines the rules for choosing between sequential and parallel delegation execution modes. Provides the deterministic parallel gate that must be satisfied before parallel dispatch is allowed, and maps each delegation mode to its appropriate use case.
-
 ## Sequential First
 
 Default to `sequential`. Stay sequential when:
@@ -54,10 +50,3 @@ Every delegation packet must include:
 - `success_metrics` — how to determine the child is done
 - `return_contract` — what the child must return
 - `return_gate` — what must be true before the child considers itself complete
-
-## Related
-
-- `hivemind-gatekeeping-delegation` for iterative loop control
-- `research-delegation` for research-specific mode selection
-- `tdd-delegation` for TDD-specific mode selection
-- `course-correction-delegation` for debug/refactor mode selection
