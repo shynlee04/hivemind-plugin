@@ -193,22 +193,22 @@ If a skill should be available across multiple platforms:
 
 ```bash
 # Create skill once
-mkdir -p skills/context-intelligence-entry
+mkdir -p skills/use-hivemind-context
 
 # Symlink to platforms
-ln -s ../../skills/context-intelligence-entry .opencode/skills/context-intelligence-entry
-ln -s ../../skills/context-intelligence-entry .claude/skills/context-intelligence-entry
-ln -s ../../skills/context-intelligence-entry .codex/skills/context-intelligence-entry
+ln -s ../../skills/use-hivemind-context .opencode/skills/use-hivemind-context
+ln -s ../../skills/use-hivemind-context .claude/skills/use-hivemind-context
+ln -s ../../skills/use-hivemind-context .codex/skills/use-hivemind-context
 ```
 
 ### Verification
 
 ```bash
 # Verify symlinks
-find . -type l -name "context-intelligence-entry" 2>/dev/null
+find . -type l -name "use-hivemind-context" 2>/dev/null
 
 # Check symlink targets
-ls -la .opencode/skills/context-intelligence-entry
+ls -la .opencode/skills/use-hivemind-context
 ```
 
 ---

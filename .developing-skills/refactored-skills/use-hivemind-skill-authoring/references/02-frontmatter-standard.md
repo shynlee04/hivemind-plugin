@@ -38,7 +38,7 @@ name: context-intelligence
 name: delegation-scope
 name: context-rot-recovery
 name: git-atomic-memory
-name: hivemind-skill-writer
+name: use-hivemind-skill-authoring
 ```
 
 **Rules:**
@@ -159,7 +159,7 @@ description: Use when encoding commit intent as semantic memory, retrieving past
 
 ```yaml
 ---
-name: hivemind-skill-writer
+name: use-hivemind-skill-authoring
 description: Use when creating, auditing, refactoring, or packaging HiveMind framework skills. Activates the meta-builder for skill authoring, TDD workflows, and quality validation. Triggers: "write a skill", "create a new skill", "audit this skill", "is this skill good", "skill quality", "skill design", "skill authoring".
 ---
 ```
@@ -293,7 +293,7 @@ Dependencies belong in SKILL.md body:
 ```markdown
 ## Dependencies
 
-**Depends-on:** context-intelligence-entry (P1)
+**Depends-on:** use-hivemind-context (P1)
 **Enables:** session-memory-resume (P2)
 **Complements:** git-advanced-workflows, conventional-commit
 ```
@@ -305,7 +305,7 @@ Dependencies belong in SKILL.md body:
 
 | Skill | Relationship | When to Chain |
 |-------|-------------|---------------|
-| `context-intelligence-entry` | **DEPENDS_ON** (P1) | Must load first for session validation |
+| `use-hivemind-context` | **DEPENDS_ON** (P1) | Must load first for session validation |
 | `session-memory-resume` | **ENABLES** (P2) | Uses anchors from this skill |
 | `delegation-handoff` | **COMPLEMENTS** (P1) | Uses anchors for handoff context |
 ```

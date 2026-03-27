@@ -1,6 +1,6 @@
 ---
 name: "use-hivemind-research"
-description: "Router for structured research workflows. Use when the user asks research questions, needs multi-source investigation, technology evaluation, API analysis, pattern discovery, or evidence-based findings. Routes to hivemind-research-framework (methodology) and hivemind-research-tools (MCP tool protocols)."
+description: "Router for structured research workflows. Use when the user asks research questions, needs multi-source investigation, technology evaluation, API analysis, pattern discovery, or evidence-based findings. Routes to use-hivemind-research (methodology) and use-hivemind-research (MCP tool protocols)."
 ---
 
 # use-hivemind-research — Research Router
@@ -20,9 +20,9 @@ Thin entry point that classifies the research request and delegates to the corre
 ```mermaid
 flowchart TD
     A[Research Request] --> B{Requires methodology?}
-    B -->|Yes| C[hivemind-research-framework]
+    B -->|Yes| C[use-hivemind-research]
     B -->|No| D{Requires MCP tools?}
-    D -->|Yes| E[hivemind-research-tools]
+    D -->|Yes| E[use-hivemind-research]
     D -->|No| F[Handle inline — simple lookup]
     C --> G[Framework delegates tool calls to Tools]
     E --> H[Tools references Framework for grading]
@@ -77,8 +77,8 @@ Hand off using the research delegation packet:
 | Skill | Integration Point |
 |---|---|
 | use-hivemind-delegation | Subagent spawning for parallel research threads |
-| spec-distillation | Refining vague research requests into answerable questions |
-| context-intelligence-entry | Session health check before long research runs |
+| hivemind-spec-driven | Refining vague research requests into answerable questions |
+| use-hivemind-context | Session health check before long research runs |
 
 ## Anti-Patterns at Router Level
 
@@ -91,5 +91,5 @@ Hand off using the research delegation packet:
 
 | Resource | Path | Purpose |
 |---|---|---|
-| hivemind-research-framework | `../hivemind-research-framework/SKILL.md` | Methodology, types, grading |
-| hivemind-research-tools | `../hivemind-research-tools/SKILL.md` | MCP protocols, chaining, fallbacks |
+| use-hivemind-research | `../use-hivemind-research/SKILL.md` | Methodology, types, grading |
+| use-hivemind-research | `../use-hivemind-research/SKILL.md` | MCP protocols, chaining, fallbacks |
