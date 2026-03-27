@@ -1,88 +1,136 @@
 # Technology Stack
 
-**Analysis Date:** 2026-03-21
+**Analysis Date:** 2026-03-27
 
 ## Languages
 
 **Primary:**
-- TypeScript - main implementation language across `src/**/*.ts`, plugin assembly in `src/plugin/opencode-plugin.ts`, control plane in `src/control-plane/sdk-runtime.ts`, and CLI entry in `src/cli.ts`
+- TypeScript 5.3+ — All source code under `src/`, tests under `tests/` and co-located `*.test.ts`
+- ESM (ECMAScript Modules) — `"type": "module"` in `package.json`; all imports use `.js` extensions
 
 **Secondary:**
-- TSX - terminal UI views in `src/tui/Dashboard.tsx`, `src/tui/client.ts`, and `apps/opentui/src/main.tsx`
-- JavaScript / CommonJS - utility and legacy-support scripts in `bin/hivemind-tools.cjs` and `get-shit-done/bin/lib/*.cjs`
-- Markdown / YAML - shipped command, skill, workflow, and documentation assets in `commands/**`, `skills/**`, `workflows/**`, and parsed registry content in `src/shared/opencode-agent-registry.ts` and `src/shared/opencode-skill-registry.ts`
+- JavaScript (CJS) — `update_mcp.cjs` (development utility script)
+- Bash — 12+ boundary-lint scripts under `scripts/`
+- Markdown — Agent definitions (`agents/*.deprecated.md`), command files (`commands/`), skill packs
 
 ## Runtime
 
 **Environment:**
-- Node.js `>=20.0.0` required by `package.json`
-- ES module runtime with NodeNext resolution in `package.json` and `tsconfig.json`
+- Node.js >=20.0.0 (hard engine requirement in `package.json`)
+- CI tests against Node 18.x and 20.x (see `.github/workflows/ci.yml`)
+- Publish workflow uses Node 22 (see `.github/workflows/publish.yml`)
 
 **Package Manager:**
-- npm - primary package manager driven by `package-lock.json`, install/test/build scripts in `package.json`, and CI in `.github/workflows/ci.yml`
-- Bun - secondary workspace-local runtime for `apps/opentui/package.json`; lockfile present at `.opencode/bun.lock`
-- Lockfile: present (`package-lock.json` at repo root)
+- npm (primary) — `package-lock.json` present, `npm ci` in CI
+- No yarn or pnpm lockfiles
 
 ## Frameworks
 
 **Core:**
-- OpenCode Plugin SDK (`@opencode-ai/plugin`) - in-agent plugin surface and hook/tool registration in `src/plugin/opencode-plugin.ts` and `src/tools/runtime/tools.ts`
-- OpenCode SDK (`@opencode-ai/sdk`) - out-of-agent runtime creation and attachment in `src/control-plane/sdk-runtime.ts` and live sanity coverage in `tests/runtime-authority-live-sanity.test.ts`
-- Zod (`zod`) - schema and contract validation in `src/shared/contracts/runtime-status.ts`, `src/delegation/delegation-record.schema.ts`, and `src/features/agent-work-contract/schema/*.ts`
+- `@opencode-ai/plugin` >=1.1.0 — OpenCode plugin SDK; provides `tool()`, `Plugin` type, hook system, `ToolContext`
+- `@opencode-ai/sdk` ^1.2.27 — OpenCode client SDK; provides `createOpencode`, `createOpencodeClient`, `OpencodeClient`, `Event`, `Part`
+
+**Schema & Validation:**
+- `zod` ^4.3.6 — Used for all tool argument schemas (`tool.schema` re-exports Zod), record contracts, intent classification, and runtime validation
+
+**CLI UI:**
+- `@clack/prompts` ^1.0.0 — Interactive CLI prompts for `hm-init`, `hm-settings`, `hm-doctor`
+- `ink` ^6.8.0 — React-based terminal UI (peer dependency `react` ^19.2.4)
 
 **Testing:**
-- Node test runner via `tsx --test` - wired in `package.json` (`npm test`) and exercised across `tests/*.test.ts`
+- Node.js built-in `node:test` — Primary test runner for co-located tests in `src/`
+- `tsx` ^4.7.0 — TypeScript execution for tests (`tsx --test`)
+- `vitest` ^4.1.1 — Listed in devDependencies; used in some test paths
 
-**Build/Dev:**
-- TypeScript compiler (`tsc`) - compile/typecheck pipeline in `package.json` and config in `tsconfig.json`
-- TSX (`tsx`) - test runner and TypeScript execution in `package.json`
-- GitHub Actions - CI and release automation in `.github/workflows/ci.yml`, `.github/workflows/dev-v3.yml`, and `.github/workflows/publish.yml`
-- OpenTUI + React (`@opentui/react`, `react`) - terminal UI layer in `src/tui/client.ts`, `src/tui/Dashboard.tsx`, and `apps/opentui/src/main.tsx`
-- Ink (`ink`) - dependency declared in `package.json` for terminal UI support alongside OpenTUI surfaces
-- Remark (`remark`) - markdown parsing in `src/intelligence/doc/formats/md.ts`
-- YAML (`yaml`) - frontmatter and runtime export parsing in `src/shared/opencode-agent-registry.ts`, `src/shared/opencode-skill-registry.ts`, and `src/features/runtime-entry/turn-output.ts`
-- web-tree-sitter - pinned in `package.json` and overridden for OpenTUI compatibility there
+**Build:**
+- `tsc` (TypeScript compiler) — `npm run build` compiles `src/` → `dist/`
+- Strict mode enabled: `strict: true`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`, `noFallthroughCasesInSwitch`
+- Target: ES2022, Module: NodeNext, JSX: `react-jsx` with `@opentui/react` as JSX import source
+
+**Document Processing:**
+- `remark` ^15.0.1 — Markdown parsing for doc intelligence
+- `unist-util-visit` ^5.1.0 — AST traversal for markdown document analysis
+
+**Data & Serialization:**
+- `yaml` ^2.8.2 — YAML parsing for skill registries, agent definitions, command bundles, and config files
+- `@json-render/core` ^0.14.1 + `@json-render/react` ^0.14.1 — JSON template rendering
+
+**Source Manipulation:**
+- `magic-string` ^0.30.21 — Source code string manipulation (transforms)
+- `web-tree-sitter` ^0.26.5 — Tree-sitter WASM binding for code parsing/analysis
+
+**Infrastructure:**
+- `proper-lockfile` ^4.1.2 — File-based locking for concurrent contract store access
+- `ignore` ^7.0.5 — Gitignore-style file filtering
+- `@z_ai/coding-helper` ^0.0.7 — AI coding assistance utilities
 
 ## Key Dependencies
 
-**Critical:**
-- `@opencode-ai/plugin` - package's shipped plugin contract; exported through `package.json` (`./plugin`) and implemented in `src/plugin/opencode-plugin.ts`
-- `@opencode-ai/sdk` - managed/attached runtime authority and event client integration in `src/control-plane/sdk-runtime.ts`, `src/tui/sse.ts`, and `tests/runtime-authority-live-sanity.test.ts`
-- `zod` - runtime contract validation for status, delegation, and agent-work records in `src/shared/contracts/runtime-status.ts` and `src/features/agent-work-contract/schema/*.ts`
-- `yaml` - required to project root `agents/**` and `skills/**` into `.opencode/**` mirrors via `src/shared/opencode-agent-registry.ts`, `src/shared/opencode-skill-registry.ts`, and `src/features/runtime-observability/sync.ts`
+**Critical (plugin runtime):**
+- `@opencode-ai/plugin` — Plugin registration, tool definition, hook wiring
+- `@opencode-ai/sdk` — Client API for session management, TUI, VCS, events
+- `zod` — Schema validation for all tool args and record contracts
+
+**Important (doc intelligence):**
+- `remark` + `unist-util-visit` — Markdown document analysis pipeline
+- `web-tree-sitter` — Source code structural analysis
+- `yaml` — Configuration and skill/agent file parsing
 
 **Infrastructure:**
-- `@clack/prompts` - interactive CLI intake dependency declared in `package.json`
-- `proper-lockfile` - filesystem locking dependency declared in `package.json`
-- `remark` + `unist-util-visit` - markdown intelligence pipeline in `src/intelligence/doc/formats/md.ts`
-- `@opentui/core` / `@opentui/react` / `react` - TUI rendering stack in `apps/opentui/package.json` and `src/tui/client.ts`
-- `ignore` and `magic-string` - repo utility dependencies declared in `package.json`
+- `proper-lockfile` — Concurrent write safety for contract store (`src/features/agent-work-contract/engine/contract-store.crud.ts`)
+- `@clack/prompts` — CLI interactivity
+- `ignore` — File filtering for scan operations
 
 ## Configuration
 
 **Environment:**
-- OpenCode provider config lives in `opencode.json`; current repo config references `MINIMAX_API_KEY` for the `minimax` provider and customizes `openai` model limits there
-- OpenCode server attachment falls back to `OPENCODE_SERVER_URL` in `src/features/runtime-entry/harness.ts`
-- Debug logging is gated by `HIVEMIND_DEBUG` in `src/shared/logging.ts`
-- A root `.env` file exists at `.env`; contents were not read
+- `opencode.json` — OpenCode project configuration (model, providers, plugin registration)
+- `.hivemind/` — Runtime state directory (generated by `hm-init`, not checked in)
+- `.opencode/` — User-local OpenCode configuration (agents, plugins)
+- `.env` / `.env.local` — Environment variables (gitignored, present per `.gitignore`)
 
 **Build:**
-- TypeScript build config: `tsconfig.json`
-- npm scripts and package metadata: `package.json`
-- Runtime/plugin config: `opencode.json`
-- CI/release config: `.github/workflows/ci.yml`, `.github/workflows/dev-v3.yml`, `.github/workflows/publish.yml`
+- `tsconfig.json` — TypeScript configuration at project root
+  - Target: ES2022
+  - Module: NodeNext (ESM)
+  - Strict mode enabled
+  - JSX: react-jsx via `@opentui/react`
+  - Declaration + source maps enabled
+
+**Linting (boundary enforcement, not traditional lint):**
+- 12+ bash scripts under `scripts/` enforcing architectural boundaries:
+  - `check-sdk-boundary.sh` — No direct SDK reimplementation
+  - `check-state-write-boundary.sh` — Write discipline (CQRS)
+  - `check-no-event-bus.sh` — No custom event bus (use SDK `event` hook)
+  - `check-no-core-session.sh` — No imports from deprecated `core/session/`
+  - `check-tool-schema.sh` — All tool args must use `tool.schema` (Zod)
+  - `check-hooks-readonly.sh` — Hooks must not perform durable writes
+  - `check-plugin-assembly.sh` — Plugin entry must be assembly-only
+  - `check-agents-presence.sh` — Shipped agents must exist
+  - `check-asset-refs.sh` — Asset references must be valid
+  - `guard-public-branch.sh` — Prevent dev-only paths from reaching master
+- Run via `npm run lint:boundary`
 
 ## Platform Requirements
 
 **Development:**
-- OpenCode must already be installed for bootstrap flows per `docs/guide/installation.md`
-- Node 20+ and npm are required by `package.json`; Bun is additionally required only for `apps/opentui/package.json`
-- Repo expects writable local runtime surfaces under `.hivemind/**` and `.opencode/**` as created by `src/features/runtime-entry/init.handler.ts` and `src/features/runtime-observability/sync.ts`
+- Node.js >=20.0.0
+- npm
+- Unix-compatible shell (bash scripts)
+- OpenCode CLI installed (for plugin development)
 
 **Production:**
-- Primary distribution target is the npm package `hivemind-context-governance` published from `package.json` and `.github/workflows/publish.yml`
-- Runtime target is an OpenCode-managed or attached server lifecycle, created through `src/control-plane/sdk-runtime.ts` and consumed by the plugin export in `src/plugin/index.ts`
+- Published as npm package `hivemind-context-governance`
+- Consumed as OpenCode plugin via `opencode.json` plugin array
+- CLI binaries: `hivemind`, `hm-init`, `hm-doctor`, `hm-settings`, `hm-harness`
+- Runtime state stored in consumer project's `.hivemind/` directory
+- No database, no network services — fully local filesystem-based
+
+**Module Format:**
+- ESM-only package (`"type": "module"`)
+- Exports: `.` (core) and `./plugin` (OpenCode plugin entry)
+- Binaries compiled to `dist/cli.js`
 
 ---
 
-*Stack analysis: 2026-03-21*
+*Stack analysis: 2026-03-27*

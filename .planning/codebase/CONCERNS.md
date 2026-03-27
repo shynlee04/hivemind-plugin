@@ -1,146 +1,228 @@
 # Codebase Concerns
 
-**Analysis Date:** 2026-03-21
+**Analysis Date:** 2026-03-27
 
 ## Tech Debt
 
-**Authority surfaces still depend on archived implementations:**
-- Issue: live exports point at archive paths instead of first-class implementation surfaces.
-- Files: `src/schema-kernel/index.ts`, `src/archive/schema-kernel/shared.ts`, `src/archive/schema-kernel/lifecycle-records.ts`, `src/archive/schema-kernel/orchestration-records.ts`, `src/archive/schema-kernel/evidence-records.ts`, `src/features/agent-work-contract/engine/contract-store.ts`, `src/features/agent-work-contract/engine/contract-store.archive.ts`
-- Impact: maintainers have to reason across "canonical" and "archive" locations; refactors can break the real authority behind a stable API without touching the advertised surface.
-- Fix approach: move the active implementations into non-archive directories, keep archive paths as thin compatibility shims, and update docs/tests to point at the new authority.
+### CQRS Architecture Violation in Hook Layer
 
-**Runtime validators currently return simulated success instead of executing real checks:**
-- Issue: validator lanes report pass states from hard-coded evidence objects and comments such as "Simulate local diagnostics validation" and "Simulate integration check validation." 
-- Files: `src/tools/runtime/runtime-command-validator.ts`, `src/tools/runtime/runtime-status-validator.ts`, `tests/runtime-validator-regression.test.ts`
-- Impact: verification output can look authoritative even when no `tsc`, no integration probe, and no live boundary proof actually ran.
-- Fix approach: replace simulated evidence with real command execution and boundary probes, then keep regression tests focused on summary semantics only.
+- Issue: Five hook files perform direct filesystem writes (`mkdir`, `writeFile`) despite the AGENTS.md mandate that "hooks are read-only" and the `check-hooks-readonly.sh` boundary check explicitly forbidding it. The `src/internal/session-writers.ts` facade exists to solve this but is not used by these hooks.
+- Files:
+  - `src/hooks/chat-message-handler.ts` (line 46: `mkdir`)
+  - `src/hooks/event-handler.ts` (line 217: `writeFile`)
+  - `src/hooks/tool-execution-handler.ts` (line 40: `mkdir`)
+  - `src/hooks/text-complete-handler.ts` (line 172: `mkdir`)
+  - `src/hooks/compaction-handler.ts` (line 109: `mkdir`)
+- Impact: The `npm test` command **fails** at the `lint:boundary` gate. Every `npm test` invocation exits with a non-zero code due to `check-hooks-readonly.sh`. This means CI is red and the project cannot publish cleanly via `prepublishOnly`.
+- Fix approach: Refactor all five hook handlers to delegate writes through `src/internal/session-writers.ts` (the `SessionWriters` interface) instead of calling `mkdir`/`writeFile` directly. The consolidated-writer module already handles directory creation internally.
 
-**Schema/tool typing carries a known `any` escape hatch:**
-- Issue: the create-contract tool keeps an explicit `as any` bridge because of a Zod version mismatch between the package root and the plugin dependency tree.
-- Files: `src/features/agent-work-contract/tools/create-contract-tool.schema.ts`, `package.json`
-- Impact: one of the most central tool contracts bypasses type safety exactly where argument schemas should be strongest.
-- Fix approach: dedupe Zod versions across the package graph, then remove the `any` export and bind the tool args to a single schema authority.
+### Duplicated Session-Resolve Logic Across Hooks
 
-**Stale workspace/script artifacts remain in the repo:**
-- Issue: root scripts still reference `src/dashboard-v2`, and that directory only contains leftover artifacts instead of an active workspace.
-- Files: `package.json`, `tsconfig.json`, `src/dashboard-v2/package-lock.json`, `src/dashboard-v2/src/index.tsx.bak`
-- Impact: contributor setup and CI intent are harder to trust because the advertised typecheck lane does not match the current workspace layout.
-- Fix approach: either restore the dashboard as a real workspace or remove the dead script/path references and leftover files.
+- Issue: Four hook handlers contain near-identical session-resolution logic: find-by-SDK-ID → try-direct-path → create-new → symlink-backwards-compat. This is copy-pasted across `chat-message-handler.ts`, `tool-execution-handler.ts`, `compaction-handler.ts`, and `text-complete-handler.ts`.
+- Files:
+  - `src/hooks/chat-message-handler.ts` (lines 51-67)
+  - `src/hooks/tool-execution-handler.ts` (lines 43-67)
+  - `src/hooks/compaction-handler.ts` (lines 112-136)
+  - `src/hooks/text-complete-handler.ts` (lines 82-102)
+- Impact: Any bug fix or behavior change must be applied in four places. The `text-complete-handler.ts` and `compaction-handler.ts` also have factory variants (`createTextCompleteHandler`, `createCompactionJournalHandler`) that already use a slightly different internal pattern, creating two parallel implementations.
+- Fix approach: Extract a `resolveOrCreateSession(sessionsDir, sdkSessionId)` helper in `src/features/event-tracker/consolidated-writer.ts` that encapsulates the full resolution chain. All hooks call this single function.
+
+### Unreachable `handleCompaction` Standalone Function
+
+- Issue: `src/hooks/compaction-handler.ts` exports both `createCompactionJournalHandler` (factory, used by plugin) and `handleCompaction` (standalone, unused). The standalone function duplicates the factory's logic and appears to be dead code.
+- Files: `src/hooks/compaction-handler.ts` (lines 100-155)
+- Impact: Dead code that confuses readers and must be maintained in parallel with the factory variant.
+- Fix approach: Remove `handleCompaction` if no callers exist. Verify via grep.
+
+### `sessionWriters` Uninitialized Singleton
+
+- Issue: `src/internal/session-writers.ts` exports a default `sessionWriters` object that throws on every method call. It is designed to be replaced via `createSessionWriters(projectRoot)`, but this replacement is never performed at plugin boot — nothing calls `createSessionWriters` and reassigns the singleton.
+- Files: `src/internal/session-writers.ts` (lines 135-156)
+- Impact: Any caller using the default export will get runtime errors. The facade was built to solve the CQRS violation (above) but is not actually wired in.
+- Fix approach: Either initialize it at plugin boot in `opencode-plugin.ts` or remove the singleton export entirely.
+
+### Archive Directory With Orphaned Code
+
+- Issue: `src/archive/schema-kernel/` contains 5 files defining Zod schemas and factory functions (`evidence-records.ts`, `lifecycle-records.ts`, `orchestration-records.ts`, `shared.ts`, `index.ts`). No source file in `src/` imports from this archive directory (confirmed via grep). The schemas appear to be superseded by the live `src/schema-kernel/` directory.
+- Files: `src/archive/schema-kernel/evidence-records.ts`, `src/archive/schema-kernel/lifecycle-records.ts`, `src/archive/schema-kernel/orchestration-records.ts`, `src/archive/schema-kernel/shared.ts`, `src/archive/schema-kernel/index.ts`
+- Impact: Dead code that adds confusion about which schema definitions are authoritative. Zero consumers.
+- Fix approach: Delete the entire `src/archive/` directory.
 
 ## Known Bugs
 
-**Root test command skips a large share of active tests:**
-- Symptoms: `npm test` only runs `tests/*.test.ts`, while many active tests live under nested folders and co-located source paths.
-- Files: `package.json`, `tests/unit/context-renderer/tool-precedence.test.ts`, `tests/unit/context-renderer/workflow-style.test.ts`, `tests/unit/context-renderer/turn-hierarchy.test.ts`, `src/plugin/context-renderer.test.ts`, `src/features/agent-work-contract/engine/contract-store.test.ts`, `src/hooks/start-work/start-work-router.test.ts`
-- Trigger: running the root `test` script.
-- Workaround: run targeted `tsx --test` commands for co-located and nested tests until the root script is widened.
+### Test Suite Boundary Check Failure
 
-**Workspace TUI tests are outside the root verification path:**
-- Symptoms: the Bun-based OpenTUI app has its own tests and typecheck script, but the root package does not invoke them.
-- Files: `package.json`, `apps/opentui/package.json`, `apps/opentui/tests/runtime-status.test.tsx`
-- Trigger: relying on root `npm test` or `npm run typecheck` as full-repo validation.
-- Workaround: run `npm --prefix apps/opentui test` and `npm --prefix apps/opentui run typecheck` separately.
+- Symptoms: `npm test` fails at the `lint:boundary` step. The test runner never reaches actual test execution because the boundary lint fails first.
+- Files: All hook files listed in CQRS violation above
+- Trigger: Run `npm test` at any time
+- Workaround: Run `tsx --test "src/**/*.test.ts"` directly, skipping the boundary check
+
+### TypeScript Compilation Error in Test File
+
+- Symptoms: `npx tsc --noEmit` reports `TS6133: 'result' is declared but its value is never read` in `src/features/event-tracker/session-structure.test.ts` line 144
+- Files: `src/features/event-tracker/session-structure.test.ts` (line 144)
+- Trigger: Run `npx tsc --noEmit`
+- Workaround: None — this is a compilation warning that does not block the build but indicates an incomplete test assertion
+
+### `@deprecated` Import Still in Plugin Assembly
+
+- Issue: `src/plugin/opencode-plugin.ts` line 42 imports `writeDiagnosticLog` with a `@deprecated` JSDoc tag, yet uses it in the `experimental.text.complete` handler (line 241). The deprecated import suggests this function should be replaced by session journal handlers.
+- Files: `src/plugin/opencode-plugin.ts` (line 42, line 241)
+- Symptoms: No runtime failure yet, but the deprecated function may be removed in a future release, causing a sudden break.
+- Workaround: None
 
 ## Security Considerations
 
-**File path construction trusts raw IDs for persisted state:**
-- Risk: contract IDs and delegation IDs are interpolated directly into filesystem paths with no slug or traversal guard.
-- Files: `src/features/agent-work-contract/engine/contract-store.base.ts`, `src/features/agent-work-contract/schema/contract.ts`, `src/delegation/delegation-store.ts`, `src/delegation/delegation-record.schema.ts`
-- Current mitigation: IDs must be non-empty strings and some callers generate IDs internally.
-- Recommendations: constrain IDs to a safe character set in schema validation, normalize with `basename`-style protection, and reject any path segment containing separators or traversal markers.
+### `permission.ask` Auto-Allows All HiveMind Tools
 
-**Runtime surface sync can delete local runtime assets by directory sweep:**
-- Risk: sync deletes unmanaged command/agent/skill files and whole skill directories unless they are explicitly protected.
-- Files: `src/features/runtime-observability/sync.ts`, `src/shared/opencode-skill-registry.ts`, `tests/runtime-surface-sync.test.ts`
-- Current mitigation: `dryRun` and `protectedPaths` options exist.
-- Recommendations: default to dry-run for interactive flows, log explicit deletion plans, and scope deletion to files with a managed marker instead of directory absence alone.
+- Risk: The `permission.ask` hook in `opencode-plugin.ts` (lines 149-157) automatically allows any tool call where `isHivemindManagedTool(toolName)` returns true, without user confirmation. This means all 11 HiveMind tools bypass the user consent gate entirely.
+- Files: `src/plugin/opencode-plugin.ts` (lines 149-157), `src/hooks/runtime-loader/index.ts` (contains `isHivemindManagedTool`)
+- Current mitigation: The tools are internal-only and governed by their own internal logic. They cannot write arbitrary files — writes go through `getHivemindPath()`.
+- Recommendations: Consider whether certain high-impact tools (like `hivemind_runtime_command` which can execute commands) should still require user consent. The current blanket auto-allow may be overly permissive.
+
+### Synchronous Filesystem Operations in Plugin Init Path
+
+- Risk: `ensureAgentProjection()` in `opencode-plugin.ts` (lines 70-82) uses `existsSync`, `mkdirSync`, `readFileSync`, and `writeFileSync` synchronously during plugin initialization. This blocks the event loop during plugin load.
+- Files: `src/plugin/opencode-plugin.ts` (lines 70-82)
+- Current mitigation: Only runs once at plugin startup; the operations are small (single file copy).
+- Recommendations: Convert to async equivalents or accept the one-time synchronous cost with a comment justifying it.
+
+### Path Traversal in Session ID Handling
+
+- Risk: Session IDs are used directly in file paths (`join(sessionsDir, semanticSessionId)`) in multiple locations. If a session ID contained `../`, it could escape the sessions directory.
+- Files: `src/features/event-tracker/consolidated-writer.ts`, `src/hooks/chat-message-handler.ts`, `src/hooks/tool-execution-handler.ts`
+- Current mitigation: Session IDs are generated internally with `ses_YYYY-MM-DDTHHmmss_<purpose>_<agent>` format. SDK session IDs come from the OpenCode server. The risk is theoretical since neither source produces malicious IDs.
+- Recommendations: Add a path-safety check (reject IDs containing `..` or `/`) in `getSessionPath()` in `src/shared/paths.ts`.
 
 ## Performance Bottlenecks
 
-**Hot-path state access uses synchronous filesystem calls:**
-- Problem: workflow authority, task lifecycle, delegation storage, trajectory ledger reads, and skill registry discovery all perform blocking disk I/O.
-- Files: `src/core/workflow-management/workflow-authority.ts`, `src/core/workflow-management/task-lifecycle.ts`, `src/delegation/delegation-store.ts`, `src/core/trajectory/trajectory-store.ledger.ts`, `src/shared/opencode-skill-registry.ts`
-- Cause: repeated use of `existsSync`, `readFileSync`, `writeFileSync`, `mkdirSync`, and `readdirSync` in request-time code paths.
-- Improvement path: move these surfaces to async I/O, add memoization for read-mostly registries, and batch disk access when assembling status responses.
+### Consolidated Writer File I/O on Every Turn
 
-**Contract summary lookup scales by scanning and sorting the full session store:**
-- Problem: runtime status builds the latest session contract by listing every contract for a session and sorting in memory.
-- Files: `src/features/runtime-observability/status.ts`, `src/features/agent-work-contract/engine/contract-store.archive.ts`
-- Cause: `store.list(sessionId)` reads all contract JSON files, then `buildLatestSessionContractSummary` sorts them to find one record.
-- Improvement path: keep an index keyed by session and `updatedAt`, or persist a "latest contract" pointer alongside continuity state.
+- Problem: Every assistant turn triggers at least 3 file I/O operations: read session JSON → modify in memory → write temp file → rename (atomic). The `text.complete` handler triggers up to 5 operations (read, increment counter, add turn, add event, rename).
+- Files: `src/features/event-tracker/consolidated-writer.ts` (643 lines, handles all session I/O)
+- Cause: Single JSON file per session pattern requires full read-modify-write cycles. The atomic write (temp + rename) is correct for safety but doubles I/O.
+- Improvement path: Consider a write-ahead log or append-only format for high-frequency events, with periodic compaction to the full JSON. Alternatively, batch events within a turn into a single write operation.
 
-**Document search walks markdown trees sequentially and loads every file:**
-- Problem: markdown search and skim operations recurse through the entire tree and read full file contents for each candidate.
-- Files: `src/intelligence/doc/read-ops.ts`, `src/intelligence/doc/formats/md.ts`
-- Cause: recursive `walk()` plus full-content reads for outline extraction and search.
-- Improvement path: add indexing/caching, parallelize bounded reads, and short-circuit large directories with explicit include scopes.
+### `findSessionBySdkId` Scans All Session Files
+
+- Problem: `findSessionBySdkId(sessionsDir, sdkSessionId)` reads and parses every JSON file in the sessions directory to find one by SDK ID in metadata. This is O(n) where n is the number of sessions.
+- Files: `src/features/event-tracker/consolidated-writer.ts` (used by every hook handler on every turn)
+- Cause: The reverse lookup (SDK ID → semantic ID) has no index. The backwards-compat symlinks only cover the forward direction.
+- Improvement path: Maintain an in-memory LRU cache mapping SDK session IDs to semantic IDs. The `text-complete-handler.ts` already has a local `sdkToConsolidatedCache` (line 50) but it is per-handler-instance and not shared across hooks.
+
+### Runtime Status Snapshot Builds From Multiple File Reads
+
+- Problem: `buildRuntimeStatusSnapshot` in `src/sdk-supervisor/runtime-status.ts` (300 lines) reads and parses multiple JSON files from `.hivemind/state/` to assemble a status report. Each `hivemind_runtime_status` tool call triggers this.
+- Cause: No caching layer between file system and status tool.
+- Improvement path: Cache the status snapshot with a short TTL (e.g., 5 seconds) keyed by session ID. Invalidate on tool execution events.
 
 ## Fragile Areas
 
-**Plugin assembly concentrates many hook interactions in one file:**
-- Files: `src/plugin/opencode-plugin.ts`, `tests/plugin-assembly-smoke.test.ts`, `tests/plugin-runtime.test.ts`
-- Why fragile: one module coordinates event handling, permission gating, command context injection, message transforms, compaction injection, and NL-first dispatch state.
-- Safe modification: isolate each hook into a small feature-specific adapter and keep `src/plugin/opencode-plugin.ts` as wiring only.
-- Test coverage: smoke/integration coverage exists, but several relevant tests are outside the root `npm test` pattern.
+### Plugin Entry Point Complexity
 
-**Task ledgers silently recover from malformed state by resetting to empty structures:**
-- Files: `src/core/workflow-management/task-lifecycle.ts`, `src/core/workflow-management/workflow-authority.ts`
-- Why fragile: unreadable JSON returns default empty task collections, which can mask corruption as "no tasks" instead of surfacing a repair-needed state.
-- Safe modification: preserve parse failures as explicit diagnostics and route callers through repair flow instead of silent fallback.
-- Test coverage: no root-level regression test currently proves corruption handling through the shipped `npm test` lane.
+- Files: `src/plugin/opencode-plugin.ts` (281 lines)
+- Why fragile: The single `HiveMindPlugin` function wires 12 tools, 8 hooks, and multiple handlers. Adding a new tool or hook requires touching this file directly. The function contains inline logic for `permission.ask` auto-allow, `shell.env` injection, and `command.execute.before` context injection — mixing assembly with business logic.
+- Safe modification: Extract hook registrations into separate adapter modules (similar to how `compaction-adapter.ts` and `messages-transform-adapter.ts` already work). Keep the plugin file as pure assembly.
+- Test coverage: Zero test coverage. No test file exists for `opencode-plugin.ts`.
 
-**The OpenTUI dashboard is still mock-driven and loosely typed:**
-- Files: `src/tui/Dashboard.tsx`, `src/tui/components/ExecutionStatus.tsx`, `src/tui/sse.ts`
-- Why fragile: hard-coded wiki data, hard-coded server URL, and `any[]` event state make runtime breakage more likely when the backend contract changes.
-- Safe modification: replace mocks with typed adapters, inject the server endpoint from config, and lock event shapes to shared contracts.
-- Test coverage: current root validation does not exercise `src/tui/**` directly.
+### Control Plane Registry Keyword Detection
+
+- Files: `src/control-plane/control-plane-registry.ts` (268 lines)
+- Why fragile: CLI command detection relies on substring matching of user messages against keyword lists (`EXPLICIT_KEYWORDS`). This is brittle — a user casually mentioning "initialize hivemind" in a question could trigger the init gate unexpectedly.
+- Safe modification: Consider requiring exact command syntax (e.g., `/hm-init`) or a prefix pattern rather than substring search within free-form messages.
+- Test coverage: Zero test coverage.
+
+### Dual Handler Pattern (Factory + Standalone)
+
+- Files: `src/hooks/compaction-handler.ts` exports both `createCompactionJournalHandler` (factory) and `handleCompaction` (standalone). `src/hooks/chat-message-handler.ts` and `src/hooks/tool-execution-handler.ts` export only standalone functions. `src/hooks/text-complete-handler.ts` exports only a factory.
+- Why fragile: Three different patterns across four hook files. The plugin entry point uses the factory pattern for some (`compaction`, `text-complete`, `transform`) and standalone functions for others (`event`). This inconsistency makes it unclear which pattern to follow for new hooks.
+- Safe modification: Standardize on the factory pattern (`createXxxHandler(deps)`) for all hooks. The plugin entry already has the dependency injection setup.
+- Test coverage: Zero direct test coverage for any hook handler files.
 
 ## Scaling Limits
 
-**Runtime surface mirroring scales with total shipped asset count:**
-- Current capacity: acceptable for the current command/agent/skill set.
-- Limit: every sync reads and rewrites all mirrored assets under `.opencode`, so startup/sync cost rises linearly with asset growth.
-- Scaling path: add change detection via content hashing and update only modified assets.
+### Single-Process File-Based State
 
-**Contract and handoff persistence depend on per-file JSON stores:**
-- Current capacity: workable for small session counts and short-lived artifacts.
-- Limit: directory scans and file-per-record persistence get slower and more failure-prone as sessions, contracts, and handoffs accumulate.
-- Scaling path: add indexed metadata files or move to a small embedded database while keeping the same public contract shapes.
+- Current capacity: All state (sessions, tasks, trajectories, workflows, contracts, handoffs) is stored as JSON files in `.hivemind/`. The file system is the database.
+- Limit: No concurrent access control beyond `proper-lockfile` (listed in dependencies). Multiple OpenCode instances running against the same project directory could corrupt state files during simultaneous read-modify-write cycles.
+- Scaling path: The `proper-lockfile` dependency is available but not used for session writes. For single-user scenarios this is acceptable. Multi-user would require a proper database or at minimum advisory locking on all state file writes.
+
+### In-Memory State Without Persistence Safeguards
+
+- Current capacity: `src/hooks/sdk-context.ts` holds SDK context in module-level variables. `src/plugin/skill-exposure-map.ts` holds cached config in a module-level `let`. `src/hooks/transform-handler.ts` uses `setInjectionPayload`/`getAndClearInjectionPayload` for per-turn injection state.
+- Limit: All module-level state is lost on process restart. No recovery mechanism exists for in-flight operations.
+- Scaling path: Acceptable for current architecture since OpenCode sessions are ephemeral. Document the assumption that process restart loses all in-memory state.
 
 ## Dependencies at Risk
 
-**The package depends on itself in `devDependencies`:**
-- Risk: local installs and release workflows can resolve the published package differently from the workspace source tree.
-- Impact: contributors may test against a hybrid of local source and published package metadata.
-- Migration plan: remove `hivemind-context-governance` from `devDependencies` and rely on the workspace package itself during local development.
+### `@opencode-ai/sdk` as Dependency AND Peer Dependency
 
-**Zod version skew is already affecting implementation choices:**
-- Risk: two Zod authorities are present, and tool schema code documents the mismatch as an active workaround.
-- Impact: future tool surfaces can accumulate more `any` escapes or runtime/schema divergence.
-- Migration plan: pin one Zod version across direct and nested consumers or route all tool-schema creation through the SDK-exported schema surface only.
+- Risk: `@opencode-ai/sdk` (^1.2.27) appears in both `dependencies` and `peerDependencies`. The `peerDependenciesMeta` marks it as non-optional, meaning npm will warn if the consumer doesn't have it installed.
+- Files: `package.json` (line 81, line 103)
+- Impact: Confusing dependency declaration. Consumers may get version conflicts or double-installation warnings.
+- Migration plan: Move `@opencode-ai/sdk` to `peerDependencies` only (non-optional), since the plugin runs inside OpenCode which already provides the SDK. Remove from `dependencies`.
+
+### `vitest` in devDependencies but `tsx --test` Used for Running Tests
+
+- Risk: `vitest` (^4.1.1) is listed in devDependencies but the test script uses `tsx --test` (Node.js built-in test runner). Vitest is not used for anything in the project.
+- Files: `package.json` (line 100)
+- Impact: Unnecessary dependency. May confuse contributors who expect Vitest configuration files or Vitest-specific APIs.
+- Migration plan: Remove `vitest` from devDependencies unless there is a plan to migrate.
+
+### `@z_ai/coding-helper` — Unknown Utility Package
+
+- Risk: `@z_ai/coding-helper` (^0.0.7) is listed in dependencies but has zero imports in the codebase (confirmed via grep).
+- Files: `package.json` (line 83)
+- Impact: Unnecessary dependency. Version 0.0.7 suggests pre-release/unstable.
+- Migration plan: Remove from dependencies.
 
 ## Missing Critical Features
 
-**Document intelligence remains markdown-first and read-only:**
-- Problem: the live doc-intel surface explicitly omits multi-format support, indexing/xref, and any write-capable restoration.
-- Blocks: richer repo intelligence workflows, cross-document linking, and non-markdown document handling.
-- Files: `src/intelligence/doc/AGENTS.md`, `src/intelligence/doc/read-ops.ts`, `src/intelligence/doc/index.ts`
+### No Integration or E2E Tests
+
+- Problem: All 49 test files are unit tests. No tests verify that tools, hooks, and the plugin assembly work together. The plugin entry point (`opencode-plugin.ts`), all hook handlers, the CLI entry (`cli.ts`), and the control plane have zero test coverage.
+- Blocks: Cannot safely refactor the plugin assembly, hook wiring, or tool registration without regression risk.
+- Priority: High
+
+### No Evidence Lane Validation in Production Code
+
+- Problem: `src/tools/runtime/runtime-status-validator.ts` and `src/tools/runtime/runtime-command-validator.ts` contain evidence lane validation logic that uses `console.log` for output instead of returning structured results. These appear to be diagnostic scripts, not integrated into the tool execution path.
+- Files: `src/tools/runtime/runtime-status-validator.ts`, `src/tools/runtime/runtime-command-validator.ts`
+- Blocks: Cannot verify evidence lane coverage programmatically during tool execution.
+- Priority: Medium
+
+### Recovery Engine Has No Test Coverage
+
+- Problem: `src/recovery/recovery-engine.ts` and `src/recovery/recovery-types.ts` implement state repair logic but have zero test coverage. These are critical for resilience.
+- Files: `src/recovery/recovery-engine.ts`, `src/recovery/recovery-types.ts`
+- Blocks: Cannot verify that state recovery actually repairs broken state correctly.
+- Priority: Medium
 
 ## Test Coverage Gaps
 
-**Co-located feature tests are not covered by the default root suite:**
-- What's not tested: contract engine, tool implementations, hook behavior, and start-work routing in the default `npm test` lane.
-- Files: `package.json`, `src/features/agent-work-contract/tools/create-contract-tool.test.ts`, `src/features/agent-work-contract/tools/export-contract-tool.test.ts`, `src/features/agent-work-contract/engine/chain-executor.test.ts`, `src/features/agent-work-contract/engine/contract-store.test.ts`, `src/hooks/start-work/start-work-router.test.ts`
-- Risk: feature regressions can merge while the root test command still passes.
-- Priority: High
+### Massive Test Coverage Gap (~170 Files Untested)
 
-**OpenTUI workspace tests and typechecks are opt-in only:**
-- What's not tested: the Bun workspace runtime client and view contract in normal root CI usage.
-- Files: `apps/opentui/package.json`, `apps/opentui/tests/runtime-status.test.tsx`, `apps/opentui/src/views/runtime-status.tsx`
-- Risk: frontend/runtime-contract drift can ship unnoticed.
-- Priority: Medium
+- What's not tested: 170 of ~210 non-test source files have no corresponding `.test.ts` file. Critical untested areas include:
+  - **Plugin assembly**: `src/plugin/opencode-plugin.ts` (281 lines)
+  - **All 5 hook handlers**: `src/hooks/chat-message-handler.ts`, `src/hooks/event-handler.ts`, `src/hooks/tool-execution-handler.ts`, `src/hooks/text-complete-handler.ts`, `src/hooks/compaction-handler.ts`
+  - **CLI entry**: `src/cli.ts` and all `src/cli/*.ts` files (5 files)
+  - **Control plane**: `src/control-plane/*.ts` (6 files)
+  - **Core state management**: `src/core/trajectory/*.ts` (6 files), `src/core/workflow-management/*.ts` (6 files)
+  - **Delegation**: `src/delegation/*.ts` (4 files)
+  - **Recovery**: `src/recovery/*.ts` (3 files)
+  - **Intelligence/doc**: `src/intelligence/doc/*.ts` (6 files)
+  - **All tool implementations**: `src/tools/**/*.ts` (no tool has its own test file; only `hivefiver-tools.test.ts` and `hivemind-journal.test.ts` exist)
+- Files: See full list in exploration output (170 entries)
+- Risk: Any change to untested code could introduce regressions unnoticed. The boundary lint catches architecture violations but not logic bugs.
+- Priority: High for plugin assembly, hook handlers, and tool implementations; Medium for everything else
+
+### Swallowed Errors (33 Silent catch Blocks)
+
+- What's not tested: 33 locations use `catch { }` or `catch { /* ignore */ }` patterns with no error logging. Errors are silently swallowed, making debugging extremely difficult when something goes wrong in production.
+- Files: Distributed across `src/` — see grep results for full list
+- Risk: Silent failures in session writes, state reads, config loading, and event processing. Operators have no visibility into what's failing.
+- Priority: High — at minimum, all silent catches should log to `console.error` or the structured logger.
 
 ---
 
-*Concerns audit: 2026-03-21*
+*Concerns audit: 2026-03-27*

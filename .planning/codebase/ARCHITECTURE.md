@@ -1,187 +1,251 @@
 # Architecture
 
-**Analysis Date:** 2026-03-21
+**Analysis Date:** 2026-03-27
 
 ## Pattern Overview
 
-**Overall:** Layered plugin-plus-control-plane architecture with projection-driven runtime surfaces.
+**Overall:** CQRS Plugin Architecture on OpenCode SDK
 
 **Key Characteristics:**
-- `src/plugin/opencode-plugin.ts` is assembly-only: it wires hooks, tool registrations, prompt/context injection, and OpenCode lifecycle hooks without defining business logic inline.
-- `src/control-plane/` and `src/commands/slash-command/` split command intent from command execution: slash bundles describe runtime contracts, while control-plane handlers execute the primitives.
-- Persistent runtime state is file-backed under `.hivemind/` through path helpers in `src/shared/paths.ts`, workflow authority in `src/core/workflow-management/workflow-authority.ts`, trajectory storage in `src/core/trajectory/trajectory-store.ts`, and recovery logic in `src/recovery/recovery-engine.ts`.
+- Assembly-only plugin entry — `src/plugin/opencode-plugin.ts` wires hooks and tools, contains zero business logic
+- CQRS hard boundary — tools write state, hooks read/inject context, plugin assembles
+- Interface decomposition — no type exceeds 10 fields at the core level; extensions compose via intersection types
+- SDK-First — all SDK surfaces (`tool.schema`, `client.app.log()`, `client.tui.showToast()`) used directly; no custom reimplementations
+- Authority principle — each concern has one owner module; no second implementations
 
 ## Layers
 
-**Plugin Assembly Layer:**
-- Purpose: Register the OpenCode plugin surface and intercept chat, command, tool, shell, permission, and compaction hooks.
-- Location: `src/plugin/opencode-plugin.ts`, `src/plugin/index.ts`, `src/plugin/context-renderer.ts`, `src/plugin/runtime-snapshot.ts`
-- Contains: OpenCode `Plugin` export, synthetic prompt/context packet injection, route hints, snapshot loading.
-- Depends on: `src/hooks/`, `src/tools/`, `src/features/runtime-entry/`, `src/features/agent-work-contract/`, `src/commands/slash-command/`
-- Used by: package export `./plugin` in `package.json`, generated runtime stub in `.opencode/plugins/`
+**Plugin Layer (Assembly):**
+- Purpose: Registers hooks and tools with the OpenCode runtime; wires SDK context
+- Location: `src/plugin/`
+- Contains: Plugin entry (`opencode-plugin.ts`), context rendering, system/message transforms, compaction adapters, skill injection, runtime snapshot loading, synthetic part injection, route hints, injection store, evidence reporter
+- Depends on: `src/hooks/`, `src/tools/`, `src/features/`, `src/core/`, `src/shared/`
+- Used by: OpenCode runtime (consumed via `dist/plugin/opencode-plugin.js`)
 
-**Hook Layer:**
-- Purpose: Read-side interception and event bridging during OpenCode runtime execution.
-- Location: `src/hooks/index.ts`, `src/hooks/event-handler.ts`, `src/hooks/start-work/start-work-router.ts`, `src/hooks/runtime-loader/`, `src/hooks/workflow-integration/`
-- Contains: event normalization, start-work routing, runtime loader helpers, soft-governance notifications.
-- Depends on: `src/core/`, `src/features/session-entry/`, `src/shared/`, `src/recovery/`
-- Used by: `src/plugin/opencode-plugin.ts`
+**Hooks Layer (Read-Side Interception):**
+- Purpose: Read-only context injection and in-band interception of OpenCode lifecycle events
+- Location: `src/hooks/`
+- Contains: Event handler, compaction handler, transform handler, text-complete handler, chat-message handler, tool-execution handler, soft governance (toast throttling), SDK context initialization, start-work router, auto-slash-command, runtime-loader, workflow-integration
+- Depends on: `src/core/`, `src/features/`, `src/shared/`
+- Used by: Plugin layer
+- Key contract: Hooks MUST NOT perform durable writes
 
-**Tool Layer:**
-- Purpose: Expose agent-callable write-side tools that mutate or inspect governed runtime state.
-- Location: `src/tools/index.ts`, `src/tools/runtime/`, `src/tools/task/`, `src/tools/trajectory/`, `src/tools/handoff/`, `src/tools/doc/`
-- Contains: runtime status/command tools, task mutation, trajectory control, handoff persistence, doc intelligence entrypoints.
-- Depends on: `src/shared/pressure-contract.ts`, `src/features/`, `src/core/`, `src/delegation/`
-- Used by: `src/plugin/opencode-plugin.ts` tool registration and agent workflows
+**Tools Layer (Write-Side CQRS):**
+- Purpose: Agent-callable execution limbs — the only write-side surfaces exposed to agents
+- Location: `src/tools/`
+- Contains: 12 tools — `hivemind_runtime_status`, `hivemind_runtime_command`, `hivemind_doc`, `hivemind_task`, `hivemind_trajectory`, `hivemind_handoff`, `hivemind_agent_work_create_contract`, `hivemind_agent_work_export_contract`, `hivemind_journal`, `hivemind_hm_init`, `hivemind_hm_doctor`, `hivemind_hm_setting`
+- Depends on: `src/core/`, `src/features/`, `src/schema-kernel/`, `src/sdk-supervisor/`, `src/shared/`
+- Used by: Plugin layer (registered in tool map)
+- Key contract: ~300 LOC limit per tool; all args use `tool.schema` (Zod); return `JSON.stringify()`
 
-**Control-Plane Layer:**
-- Purpose: Define the authoritative bootstrap, repair, harness, and settings primitives and decide when they gate entry.
-- Location: `src/control-plane/control-plane-registry.ts`, `src/control-plane/control-plane-types.ts`, `src/control-plane/control-plane-handler.ts`, `src/control-plane/control-plane-intake.ts`
-- Contains: primitive metadata, gating rules, intake requirements, CLI mapping, handler dispatch.
-- Depends on: `src/features/session-entry/`, `src/features/runtime-entry/`, `src/shared/pressure-contract.ts`
-- Used by: `src/features/session-entry/readiness-gates.ts`, `src/cli/command-routing.ts`, `src/features/runtime-entry/command.ts`
+**Core Layer (State Management):**
+- Purpose: Trajectory ledger, workflow authority, and task lifecycle state
+- Location: `src/core/`
+- Contains: `trajectory/` (ledger, events, checkpoints, assessment), `workflow-management/` (authority, task lifecycle, routing, continuity)
+- Depends on: `src/shared/paths.ts`
+- Used by: Tools, hooks, features
+- Key contract: State files live in `.hivemind/` subdirectories; all reads/writes go through store functions
 
-**Command Bundle Layer:**
-- Purpose: Describe slash-command workflows as typed runtime bundles backed by markdown assets.
-- Location: `src/commands/slash-command/command-bundles.ts`, `src/commands/slash-command/command-runner.ts`, `src/features/runtime-entry/instruction-loader.ts`, `commands/*.md`
-- Contains: bundle catalog, command lookup, preview/execute wrappers, markdown frontmatter/body contract parsing.
-- Depends on: `src/features/runtime-entry/`, `src/control-plane/`
-- Used by: plugin command interception, CLI/runtime command execution, runtime surface sync
+**Schema Kernel (Contract Authority):**
+- Purpose: Machine-authoritative contracts for persisted and cross-session Phase 1 records
+- Location: `src/schema-kernel/`
+- Contains: Config records, agent records, default agent templates, skill injection records; re-exports from `src/archive/schema-kernel/` (shared, lifecycle, orchestration, evidence)
+- Depends on: `zod`
+- Used by: All layers that produce or consume persisted records
 
-**Runtime Entry Layer:**
-- Purpose: Execute bootstrap, harness, settings, workflow commands, and runtime attachment flows.
-- Location: `src/features/runtime-entry/index.ts`, `src/features/runtime-entry/init-project.ts`, `src/features/runtime-entry/init.handler.ts`, `src/features/runtime-entry/harness.ts`, `src/features/runtime-entry/command.ts`
-- Contains: init/doctor/harness/settings handlers, runtime invocation creation, turn output projection, runtime attachment persistence, automatic recovery before command execution.
-- Depends on: `src/control-plane/`, `src/core/`, `src/governance/`, `src/recovery/`, `src/shared/`, `src/cli/runtime-assets.ts`
-- Used by: CLI commands, slash-command runner, plugin auto-routing
+**SDK Supervisor (Orchestration Authority):**
+- Purpose: Additive Phase 1 orchestration control — instances, sessions, workflows, health, diagnostics
+- Location: `src/sdk-supervisor/`
+- Contains: Instance registry, health checks, runtime status, session inspection, diagnostic log
+- Depends on: `src/schema-kernel/`, `src/features/`
+- Used by: Tools, hooks, plugin
 
-**State and Governance Layer:**
-- Purpose: Own workflow authority, trajectory ledgers, recovery checkpoints, and planning projections stored in `.hivemind/`.
-- Location: `src/core/trajectory/trajectory-store.ts`, `src/core/workflow-management/workflow-authority.ts`, `src/core/workflow-management/task-lifecycle.ts`, `src/governance/planning-projection.ts`, `src/recovery/recovery-engine.ts`
-- Contains: file-backed state bootstrapping, task lifecycle, checkpoint creation, planning projections, repair routines.
-- Depends on: `src/shared/paths.ts`, `src/shared/pressure-contract.ts`
-- Used by: runtime entry handlers, hooks, runtime status reporting
+**Features Layer (Domain Modules):**
+- Purpose: Self-contained domain modules implementing specific framework capabilities
+- Location: `src/features/`
+- Contains: `agent-work-contract/` (contract store, engine, tools, hooks), `session-entry/` (intake gates, lineage routing, profile resolution, purpose classification), `event-tracker/` (consolidated session writer, session structure, classifiers, parsers, writers), `runtime-entry/` (init flow), `runtime-observability/`, `doc-intelligence/`, `handoff/`, `trajectory/`, `workflow/`
+- Depends on: `src/schema-kernel/`, `src/shared/`
+- Used by: Core, tools, hooks
 
-**Schema/Supervisor Layer:**
-- Purpose: Provide stable internal contracts and status projections over runtime/session state.
-- Location: `src/schema-kernel/index.ts`, `src/sdk-supervisor/runtime-status.ts`, `src/sdk-supervisor/health.ts`, `src/archive/schema-kernel/`
-- Contains: canonical schema export surface, runtime status snapshot builder, supervisor health reports.
-- Depends on: `src/core/trajectory/`, `src/shared/runtime-attachment.ts`
-- Used by: runtime status/reporting tools and supervisor-facing diagnostics
+**Shared Layer (Transitional Utilities):**
+- Purpose: Cross-cutting utilities and current lifecycle primitives
+- Location: `src/shared/`
+- Contains: Path resolution (`paths.ts`), pressure contracts, entry kernel state, lifecycle spine, intake records, keyword matcher, logging, errors, evidence lane, bootstrap profile, config groups, skill registries, tool helpers, tool response, tiered injection
+- Depends on: `node:fs`, `node:path`, `zod`
+- Used by: All layers
+- Key contract: `getEffectivePaths()` is the single path authority — never hardcode `.hivemind/` paths
 
-**Projection/Mirroring Layer:**
-- Purpose: Mirror canonical repo assets into OpenCode runtime folders and keep consumer surfaces synchronized.
-- Location: `src/features/runtime-observability/sync.ts`, `src/shared/opencode-agent-registry.ts`, `src/shared/opencode-skill-registry.ts`
-- Contains: `.opencode/` sync, agent markdown projection, skill runtime projection, local plugin stub generation.
-- Depends on: `commands/`, `agents/`, `skills/`
-- Used by: `src/features/runtime-entry/init.handler.ts`, runtime sync tests in `tests/sync-dry-run.test.ts` and `tests/runtime-surface-sync.test.ts`
+**Control Plane Layer (CLI Command Gate):**
+- Purpose: Manages the 4 CLI primitives (`hm-init`, `hm-doctor`, `hm-harness`, `hm-settings`) and their intake/gate flows
+- Location: `src/control-plane/`
+- Contains: Control plane handler, intake resolver, primitive registry, types
+- Depends on: `src/features/session-entry/`, `src/shared/pressure-contract.ts`
+- Used by: CLI entry (`src/cli/`)
+
+**Context Layer (Prompt Engineering):**
+- Purpose: Prompt packet compilation and normalization for system/message transforms
+- Location: `src/context/`
+- Contains: `prompt-packet/` (compiler, normalizer, renderers, types)
+- Depends on: `src/shared/`, `src/features/session-entry/`
+- Used by: Plugin layer (system-transform, messages-transform)
+
+**Delegation Layer:**
+- Purpose: Delegation packet schema, records, and store for sub-agent handoffs
+- Location: `src/delegation/`
+- Contains: Delegation packet, record schema, store
+- Depends on: `src/schema-kernel/`, `src/shared/`
+- Used by: Tools, hooks
+
+**Recovery Layer:**
+- Purpose: Recovery engine for runtime state repair
+- Location: `src/recovery/`
+- Contains: Recovery engine, recovery types
+- Depends on: `src/core/`, `src/shared/`
+- Used by: Hooks, control plane
+
+**Governance Layer:**
+- Purpose: Planning projection authority
+- Location: `src/governance/`
+- Contains: Planning projection
+- Depends on: `src/shared/`
+- Used by: Plugin layer
+
+**CLI Layer:**
+- Purpose: Binary entry point for npm package CLI commands
+- Location: `src/cli.ts` and `src/cli/`
+- Contains: Command routing, init, doctor, harness, settings
+- Depends on: `src/control-plane/`, `src/features/runtime-entry/`
+- Used by: npm consumers via `bin` entries (`hivemind`, `hm-init`, `hm-doctor`, `hm-settings`, `hm-harness`)
 
 ## Data Flow
 
-**User Turn Routing:**
+**Plugin Initialization Flow:**
 
-1. OpenCode enters `src/plugin/opencode-plugin.ts`, which loads snapshot state and intercepts `chat.message`, `command.execute.before`, and `experimental.chat.messages.transform`.
-2. `src/hooks/start-work/start-work-router.ts` classifies purpose, lineage, readiness, continuity, and pressure to choose a required or recommended command.
-3. `src/plugin/opencode-plugin.ts` injects turn hierarchy and HiveMind context packets, optionally auto-dispatches a runtime command via `src/features/runtime-entry/nl-first-dispatch.ts`, and records tool or command events.
+1. OpenCode loads `hivemind-context-governance` plugin from `dist/plugin/opencode-plugin.js`
+2. `HiveMindPlugin()` factory function invoked with `PluginInput` (client, shell, serverUrl, project, directory)
+3. `ensureAgentProjection()` auto-creates `.opencode/agents/hivefiver.md` from canonical source if missing
+4. `initSkillInjection()` resolves skill exposure map for default agent
+5. `initSdkContext()` caches SDK client/shell/server references in module-level state (`src/hooks/sdk-context.ts`)
+6. Event handler, turn snapshot loader, messages transform, and compaction handlers created
+7. Plugin object returned with hooks (`event`, `chat.message`, `permission.ask`, `tool.execute.before/after`, `shell.env`, `command.execute.before`, `system.transform`, `messages.transform`, `session.compacting`, `text.complete`) and tool registrations
 
-**Command Execution:**
+**Agent Tool Invocation Flow:**
 
-1. Slash metadata comes from `src/commands/slash-command/command-bundles.ts` and markdown assets from `commands/*.md`, parsed by `src/features/runtime-entry/instruction-loader.ts`.
-2. `src/commands/slash-command/command-runner.ts` delegates execution to `src/features/runtime-entry/command.ts`.
-3. `src/features/runtime-entry/command.ts` auto-recovers with `hm-init` or `hm-doctor` when entry state is uninitialized or repair-required, then dispatches to runtime handlers or control-plane handlers.
-4. Finalization in `src/features/runtime-entry/command.ts` records trajectory transitions, writes turn output projections, links agent-work contracts, and writes workflow continuity artifacts.
+1. Agent calls a `hivemind_*` tool (e.g., `hivemind_runtime_command`)
+2. OpenCode routes to `tool.execute.before` hook — records intent via `recordToolEvent()`
+3. Plugin dispatches to the tool's `execute()` function
+4. Tool reads `context.sessionID`, `context.agent`, `context.directory` from SDK `ToolContext`
+5. Tool delegates to core/features/shared modules for state operations
+6. Tool returns `JSON.stringify(result)` — no direct file I/O to `.hivemind/`
+7. `tool.execute.after` hook records completion
 
-**Bootstrap and Recovery:**
+**Session Lifecycle Flow:**
 
-1. `src/features/runtime-entry/init-project.ts` resolves intake and executes `hm-init` through the same slash-command pipeline used in-session.
-2. `src/features/runtime-entry/init.handler.ts` creates a managed runtime, syncs `.opencode/` runtime assets, saves runtime attachment settings, bootstraps workflow authority, bootstraps the trajectory ledger, creates a recovery checkpoint, and writes a planning projection.
-3. `src/features/runtime-entry/harness.ts` and `src/recovery/recovery-engine.ts` assess health, checkpoint current state, and route the next command to `hm-plan` or `hm-doctor`.
+1. `chat.message` hook fires on new message — resets turn snapshot
+2. `system.transform` hook fires — `TransformHandler` captures injection payload for session journal
+3. `messages.transform` hook fires — `MessagesTransformAdapter` injects HiveMind context packet
+4. `text.complete` hook fires — writes diagnostic log and session inspection export
+5. `session.compacting` hook fires — compaction handler + journal handler write compaction events
+
+**Entry Kernel State Flow:**
+
+1. `entry-kernel-state.json` in `.hivemind/config/` tracks session readiness
+2. State machine: `uninitialized` → `repair-required` → `qa-pending` → `ready` → `blocked`
+3. `src/shared/entry-kernel-state.ts` inspects trajectory ledger + workflow authority to determine state
+4. Tools and hooks check entry kernel state before allowing mutations
 
 **State Management:**
-- Runtime attachment settings are normalized and persisted through `src/features/runtime-entry/attachment.persistence.ts`.
-- Workflow task state is mirrored into both `.hivemind/state/tasks.json` and `.hivemind/graph/tasks.json` by `src/core/workflow-management/task-lifecycle.ts`.
-- Trajectory events, checkpoints, and recovery outcomes are written through `src/core/trajectory/trajectory-store.ts` and `src/recovery/recovery-engine.ts`.
+- All persistent state lives in `.hivemind/` directory (runtime-generated, not authoring surface)
+- State subdirectories: `.hivemind/state/`, `.hivemind/config/`, `.hivemind/graph/`, `.hivemind/sessions/`, `.hivemind/session-inspection/`, `.hivemind/project/planning/`, `.hivemind/error-log/`
+- Tools are the ONLY write-side surfaces; hooks are read-only
+- Path resolution centralized in `src/shared/paths.ts` via `getEffectivePaths()`
+- Pressure contracts (`src/shared/pressure-contract.ts`) define safety expectations for each runtime operation
 
 ## Key Abstractions
 
-**SlashCommandBundle:**
-- Purpose: Represent the authoritative metadata for each slash command.
+**Entry Kernel State:**
+- Purpose: Determines if the HiveMind runtime is ready for agent operations
+- Examples: `src/shared/entry-kernel-state.ts`, `src/shared/lifecycle-spine.ts`
+- Pattern: State machine with `loadStoredEntryKernelState()` / `assessAndPersistEntryKernelState()` transitions
+
+**Runtime Pressure Contract:**
+- Purpose: Defines safety levels, failure behaviors, and evidence requirements per operation type
+- Examples: `src/shared/pressure-contract.ts`
+- Pattern: Intersection type decomposition (`RuntimePressureMetadata & RuntimePressureFailure & { safety } & { evidence }`)
+
+**Agent Tool Catalog:**
+- Purpose: Typed registry mapping each tool to its contract file, workflow phase, purpose classes, and state authority
+- Examples: `src/tools/index.ts` (`agentToolCatalog`)
+- Pattern: Static typed array with `AgentToolCatalogEntry` entries
+
+**Context Packet:**
+- Purpose: Canonical HiveMind context assembled for injection into system prompts and message transforms
+- Examples: `src/plugin/context-renderer.ts`, `src/plugin/context-renderer.types.ts`
+- Pattern: Builder pattern with decomposed modules (types, constants, builder, renderers, compaction renderers)
+
+**Prompt Packet:**
+- Purpose: Compiled prompt instructions for system-transform and messages-transform hooks
+- Examples: `src/context/prompt-packet/prompt-compiler.ts`, `src/context/prompt-packet/prompt-packet-types.ts`
+- Pattern: Compiler pattern — takes `PromptPacketState` + `SessionScope`, produces `CompiledPromptPacket`
+
+**SDK Context Authority:**
+- Purpose: Single point of access to the OpenCode SDK client, shell, and server URL
+- Examples: `src/hooks/sdk-context.ts`
+- Pattern: Module-level singleton with `initSdkContext()` / `getClient()` / `withClient()` pattern
+
+**Slash Command Bundle:**
+- Purpose: Typed command definition with frontmatter metadata, resolved at runtime
 - Examples: `src/commands/slash-command/command-bundles.ts`, `src/commands/slash-command/command-types.ts`
-- Pattern: static registry + runtime asset lookup
+- Pattern: Registry pattern — `findSlashCommandBundle()` resolves command ID to bundle
 
-**ControlPlanePrimitive:**
-- Purpose: Represent bootstrap/repair/readiness/settings primitives independent from markdown command bodies.
-- Examples: `src/control-plane/control-plane-registry.ts`, `src/control-plane/control-plane-types.ts`
-- Pattern: registry object with `detect()` gate function and runtime pressure contract
-
-**RuntimeBindingsSnapshot / Runtime Attachment:**
-- Purpose: Represent the attached runtime authority, profile defaults, current workflow links, and readiness state.
-- Examples: `src/features/runtime-entry/attachment.ts`, `src/features/runtime-entry/attachment.persistence.ts`, `src/features/runtime-entry/snapshot-loader.ts`
-- Pattern: persisted settings + computed snapshot
-
-**Trajectory Ledger:**
-- Purpose: Represent long-lived workflow trajectory, events, checkpoints, and recovery log.
-- Examples: `src/core/trajectory/trajectory-store.ts`, `src/core/trajectory/trajectory-store.operations.ts`
-- Pattern: file-backed append/update ledger with inspection and bootstrap helpers
-
-**Workflow Authority:**
-- Purpose: Represent whether `.hivemind/` planning and task ledgers are present and healthy for controlled work.
-- Examples: `src/core/workflow-management/workflow-authority.ts`, `src/core/workflow-management/task-lifecycle.ts`
-- Pattern: file-system inspection + bootstrap repair
-
-**Command Runtime Contract:**
-- Purpose: Derive structured execution metadata from markdown commands.
-- Examples: `src/features/runtime-entry/instruction-loader.ts`, `commands/hm-init.md`, `commands/hm-plan.md`
-- Pattern: frontmatter/body parser that extracts arguments, sections, outputs, state consumption, and closeout gates
-
-**Runtime Surface Projection:**
-- Purpose: Mirror canonical repo assets into consumer-facing `.opencode/` runtime surfaces.
-- Examples: `src/features/runtime-observability/sync.ts`, `src/shared/opencode-agent-registry.ts`, `src/shared/opencode-skill-registry.ts`
-- Pattern: canonical source projection, not independent authoring
+**Control Plane Primitive:**
+- Purpose: Type-safe CLI command definition with gate detection, intake requirements, and pressure contract
+- Examples: `src/control-plane/control-plane-types.ts` (`ControlPlanePrimitive`)
+- Pattern: Interface with `detect()` method — each primitive probes input for activation keywords
 
 ## Entry Points
 
-**Package Barrel:**
-- Location: `src/index.ts`
-- Triggers: package import from `dist/index.js`
-- Responsibilities: export the core, shared, control-plane, hook, delegation, intelligence, recovery, and tool surfaces
-
-**OpenCode Plugin Entry:**
+**Plugin Entry (Primary Runtime):**
 - Location: `src/plugin/opencode-plugin.ts`
-- Triggers: `./plugin` export from `package.json` and generated `.opencode/plugins/` stub
-- Responsibilities: register hooks and tools, attach prompt context, auto-route runtime commands, emit environment state
+- Triggers: OpenCode loads plugin from `opencode.json` configuration
+- Responsibilities: Assembly only — wires hooks, registers tools, exports `Plugin` object
 
-**CLI Entry:**
+**CLI Entry (Binary Commands):**
 - Location: `src/cli.ts`
-- Triggers: `hivemind`, `hm-init`, `hm-doctor`, `hm-settings`, `hm-harness` binaries declared in `package.json`
-- Responsibilities: parse flags, resolve command aliases through `src/cli/command-routing.ts`, invoke init/doctor/settings/harness handlers
+- Triggers: npm consumer runs `hivemind`, `hm-init`, `hm-doctor`, `hm-settings`, or `hm-harness`
+- Responsibilities: Argument parsing, command routing to `src/control-plane/` handlers
 
-**Slash Command Catalog:**
-- Location: `src/commands/slash-command/command-bundles.ts`
-- Triggers: command discovery via `findSlashCommandBundle()` and runtime sync
-- Responsibilities: define workflow chain, agent, pressure contract, and command file mapping for each command
+**Package Entry (Library Export):**
+- Location: `src/index.ts`
+- Triggers: `import { ... } from 'hivemind-context-governance'`
+- Responsibilities: Barrel re-export of all public modules (core, shared, context, control-plane, delegation, governance, hooks, commands, plugin, intelligence, recovery, tools)
 
-**Runtime Status Builder:**
-- Location: `src/sdk-supervisor/runtime-status.ts`
-- Triggers: runtime status inspection/reporting paths
-- Responsibilities: synthesize kernel, supervisor, workflow, and event status from snapshot plus trajectory state
+**SDK Context Bootstrap:**
+- Location: `src/hooks/sdk-context.ts` → `initSdkContext()`
+- Triggers: Called once during plugin initialization
+- Responsibilities: Caches `client`, `$` (shell), `serverUrl`, `project` references from `PluginInput`
 
 ## Error Handling
 
-**Strategy:** Fail closed on missing bootstrap or unhealthy state, then route through explicit repair/bootstrap commands.
+**Strategy:** Graceful degradation with fallback values; diagnostic logging; never crash the host
 
 **Patterns:**
-- `src/control-plane/control-plane-registry.ts` produces blocking or advisory gate decisions instead of letting invalid work proceed.
-- `src/features/runtime-entry/command.ts` auto-recovers to `hm-init` or `hm-doctor` when entry state is not ready.
-- `src/hooks/event-handler.ts` tolerates malformed or unknown events by warning and still recording normalized summaries when possible.
-- `src/core/workflow-management/workflow-authority.ts` and `src/recovery/recovery-engine.ts` classify missing files into repairable failure classes.
+- Tools return JSON results with `status: 'success' | 'error'` — never throw to the agent
+- `withClient()` wraps SDK calls with fallback on failure (`src/hooks/sdk-context.ts`)
+- Boundary lint scripts enforce architectural rules (e.g., `check-hooks-readonly.sh`, `check-no-event-bus.sh`)
+- `try/catch {}` silently in non-critical paths (e.g., injection store, toast display)
+- `console.error('[prefix]')` for diagnostic logging alongside `client.app.log()`
 
 ## Cross-Cutting Concerns
 
-**Logging:** `src/shared/logging.ts` and targeted `console.warn` usage in `src/hooks/event-handler.ts` support diagnostics; runtime evidence reporting lives in `src/plugin/evidence-reporter.ts`.
-**Validation:** Zod-backed schemas exist in tool contracts and delegation records such as `src/delegation/delegation-record.schema.ts`; command markdown contracts are parsed in `src/features/runtime-entry/instruction-loader.ts`.
-**Authentication:** No application-level auth boundary is implemented in the repo; the runtime assumes OpenCode host/plugin authority and tracks runtime identity through `src/features/runtime-entry/attachment.persistence.ts` and `src/control-plane/sdk-runtime.ts`.
+**Logging:** Dual approach — `console.error()` for diagnostics + `withClient(client => client.app.log())` for SDK-structured logging. Diagnostic log writer in `src/sdk-supervisor/diagnostic-log.ts`.
+
+**Validation:** Zod schemas via `tool.schema` for all tool arguments. Schema-kernel contracts validated on write. Entry kernel state assessment validates trajectory + workflow before allowing mutations.
+
+**Authentication:** Delegated to OpenCode's `permission.ask` hook. HiveMind auto-allows its own managed tools (`isHivemindManagedTool()`). Write operations surface governance toasts.
+
+**Boundary Enforcement:** 9 shell scripts in `scripts/` enforce architectural invariants at build/test time (SDK boundary, state-write boundary, hooks-readonly, no-event-bus, no-core-session, tool-schema, plugin-assembly, agents-presence, asset-refs).
 
 ---
 
-*Architecture analysis: 2026-03-21*
+*Architecture analysis: 2026-03-27*
