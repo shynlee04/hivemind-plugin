@@ -8,24 +8,18 @@
  * @module hooks/text-complete-handler
  */
 
-import { existsSync } from 'node:fs'
-import { mkdir } from 'node:fs/promises'
-import { join } from 'node:path'
 import { PURPOSE_CLASS_VALUES } from '../features/event-tracker/types.js'
 import type { PurposeClass } from '../features/event-tracker/types.js'
 import { getAndClearInjectionPayload } from '../plugin/injection-store.js'
 import {
-  initSession,
   addTurn,
   addEvent,
   addDiagnostic,
   incrementCounter,
   updateStatus,
   loadSession,
-  getSessionPath,
-  findSessionBySdkId,
-  createSdkSymlink,
 } from '../features/event-tracker/consolidated-writer.js'
+import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
 /** Narrow a string to PurposeClass via sentinel array lookup. */
 function isPurposeClass(value: string): value is PurposeClass {
@@ -45,7 +39,8 @@ export interface TextCompleteHandlerDeps {
  */
 export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
   const { directory } = deps
-  const sessionsDir = join(directory, '.hivemind', 'sessions')
+  const sessionResolver = createSessionResolver(directory)
+  const sessionsDir = sessionResolver.getSessionsDir()
 
   /** In-memory cache mapping SDK sessionId to consolidated sessionId. */
   const sessionCache = new Map<string, string>()
@@ -80,21 +75,12 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
       let consolidatedSessionId = sessionCache.get(sdkSessionId)
 
       if (!consolidatedSessionId) {
-        // Try to load existing session
-        try {
-          const existingSession = await loadSession(sessionsDir, sdkSessionId)
-          consolidatedSessionId = existingSession.sessionId
-          sessionCache.set(sdkSessionId, consolidatedSessionId)
-        } catch {
-          // Session doesn't exist, create new
-          consolidatedSessionId = await initSession(sessionsDir, {
-            sdkSessionId,
-            lineage,
-            purposeClass,
-            agent,
-          })
-          sessionCache.set(sdkSessionId, consolidatedSessionId)
-        }
+        consolidatedSessionId = await sessionResolver.resolveOrCreate(sdkSessionId, {
+          lineage,
+          purposeClass,
+          agent,
+        })
+        sessionCache.set(sdkSessionId, consolidatedSessionId)
       }
 
       // Get current turn number
@@ -168,64 +154,28 @@ export async function handleTextComplete(
   const sdkSessionId = input.sessionID
   if (!sdkSessionId) return
 
-  const sessionsDir = join(projectRoot, '.hivemind', 'sessions')
-  await mkdir(sessionsDir, { recursive: true })
-
+  const resolver = createSessionResolver(projectRoot)
+  const sessionsDir = resolver.getSessionsDir()
   const assistantText = typeof output.text === 'string' ? output.text : ''
+  const semanticSessionId = await resolver.resolveOrCreate(sdkSessionId, {
+    lineage: 'hiveminder',
+    purposeClass: 'implementation',
+    agent: 'unknown',
+  })
 
-  // Resolve semantic session ID: try by SDK ID first, then direct path, then create
-  let semanticSessionId: string | null = null
+  const existing = await loadSession(sessionsDir, semanticSessionId)
+  const turnNumber = existing.turns.length + 1
 
-  // 1. Try finding existing session by SDK session ID in metadata
-  semanticSessionId = await findSessionBySdkId(sessionsDir, sdkSessionId)
-
-  // 2. Try loading by direct path (backwards compat with SDK-named files)
-  if (!semanticSessionId) {
-    const directPath = getSessionPath(sessionsDir, sdkSessionId)
-    if (existsSync(directPath)) {
-      semanticSessionId = sdkSessionId
-    }
-  }
-
-  if (semanticSessionId) {
-    // Existing session: add turn
-    const existing = await loadSession(sessionsDir, semanticSessionId)
-    const turnNumber = existing.turns.length + 1
-    await addTurn(sessionsDir, {
-      sessionId: semanticSessionId,
-      turn: {
-        turnNumber,
-        timestamp: new Date().toISOString(),
-        agent: 'unknown',
-        model: 'unknown',
-        duration: null,
-        userMessage: '',
-        assistantContent: assistantText,
-      },
-    })
-  } else {
-    // New session: create with semantic name, store SDK ID in metadata
-    semanticSessionId = await initSession(sessionsDir, {
-      lineage: 'hiveminder',
-      purposeClass: 'implementation',
+  await addTurn(sessionsDir, {
+    sessionId: semanticSessionId,
+    turn: {
+      turnNumber,
+      timestamp: new Date().toISOString(),
       agent: 'unknown',
-      sdkSessionId,
-    })
-
-    // Create backwards-compat symlink from SDK ID to semantic file
-    await createSdkSymlink(sessionsDir, sdkSessionId, semanticSessionId)
-
-    await addTurn(sessionsDir, {
-      sessionId: semanticSessionId,
-      turn: {
-        turnNumber: 1,
-        timestamp: new Date().toISOString(),
-        agent: 'unknown',
-        model: 'unknown',
-        duration: null,
-        userMessage: '',
-        assistantContent: assistantText,
-      },
-    })
-  }
+      model: 'unknown',
+      duration: null,
+      userMessage: '',
+      assistantContent: assistantText,
+    },
+  })
 }

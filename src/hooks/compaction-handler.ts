@@ -7,17 +7,11 @@
  * @module hooks/compaction-handler
  */
 
-import { existsSync } from 'node:fs'
-import { mkdir } from 'node:fs/promises'
-import { join } from 'node:path'
 import {
   addEvent,
   incrementCounter,
-  initSession,
-  getSessionPath,
-  findSessionBySdkId,
-  createSdkSymlink,
 } from '../features/event-tracker/consolidated-writer.js'
+import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
 /** Dependencies injected into the compaction journal handler factory. */
 export interface CompactionJournalHandlerDeps {
@@ -32,7 +26,8 @@ export interface CompactionJournalHandlerDeps {
  */
 export function createCompactionJournalHandler(deps: CompactionJournalHandlerDeps) {
   const { directory } = deps
-  const sessionsDir = join(directory, '.hivemind', 'sessions')
+  const sessionResolver = createSessionResolver(directory)
+  const sessionsDir = sessionResolver.getSessionsDir()
 
   return async (
     input: { sessionID: string },
@@ -49,21 +44,11 @@ export function createCompactionJournalHandler(deps: CompactionJournalHandlerDep
       contextLength > 30 ? 'high' : contextLength > 10 ? 'medium' : 'low'
 
     try {
-      // Resolve or create consolidated session
-      let consolidatedSessionId: string | null = null
-      try {
-        consolidatedSessionId = await findSessionBySdkId(sessionsDir, sessionId)
-      } catch {
-        // ignore
-      }
-      if (!consolidatedSessionId) {
-        consolidatedSessionId = await initSession(sessionsDir, {
-          sdkSessionId: sessionId,
-          lineage: 'hiveminder',
-          purposeClass: 'implementation',
-          agent: 'unknown',
-        })
-      }
+      const consolidatedSessionId = await sessionResolver.resolveOrCreate(sessionId, {
+        lineage: 'hiveminder',
+        purposeClass: 'implementation',
+        agent: 'unknown',
+      })
 
       // Add compaction event to session
       await addEvent(sessionsDir, {
@@ -105,35 +90,13 @@ export async function handleCompaction(
   const sdkSessionId = input.sessionID
   if (!sdkSessionId) return
 
-  const sessionsDir = join(projectRoot, '.hivemind', 'sessions')
-  await mkdir(sessionsDir, { recursive: true })
-
-  // Resolve semantic session ID: try by SDK ID first, then direct path, then create
-  let semanticSessionId: string | null = null
-
-  // 1. Try finding existing session by SDK session ID in metadata
-  semanticSessionId = await findSessionBySdkId(sessionsDir, sdkSessionId)
-
-  // 2. Try loading by direct path (backwards compat with SDK-named files)
-  if (!semanticSessionId) {
-    const directPath = getSessionPath(sessionsDir, sdkSessionId)
-    if (existsSync(directPath)) {
-      semanticSessionId = sdkSessionId
-    }
-  }
-
-  if (!semanticSessionId) {
-    // Create new session with semantic name, store SDK ID in metadata
-    semanticSessionId = await initSession(sessionsDir, {
-      lineage: 'hiveminder',
-      purposeClass: 'implementation',
-      agent: 'unknown',
-      sdkSessionId,
-    })
-
-    // Create backwards-compat symlink from SDK ID to semantic file
-    await createSdkSymlink(sessionsDir, sdkSessionId, semanticSessionId)
-  }
+  const resolver = createSessionResolver(projectRoot)
+  const sessionsDir = resolver.getSessionsDir()
+  const semanticSessionId = await resolver.resolveOrCreate(sdkSessionId, {
+    lineage: 'hiveminder',
+    purposeClass: 'implementation',
+    agent: 'unknown',
+  })
 
   // Add compaction event
   await addEvent(sessionsDir, {

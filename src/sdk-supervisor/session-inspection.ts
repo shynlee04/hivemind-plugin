@@ -1,7 +1,9 @@
+/** @deprecated — use session journal handlers instead */
+
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
-import { getSessionInspectionPath } from '../shared/paths.js'
+import { getHivemindPath } from '../shared/paths.js'
 
 const SESSION_INSPECTION_MARKDOWN_FILE = 'assistant-output.md'
 const SESSION_INSPECTION_COMMAND_FILE = 'purification-command.json'
@@ -80,7 +82,7 @@ export async function upsertSessionInspectionExport(
     assistantText: string
   },
 ): Promise<SessionInspectionExportResult> {
-  const directoryPath = getSessionInspectionPath(projectRoot, input.sessionId)
+  const directoryPath = path.join(getHivemindPath(projectRoot), 'session-inspection', input.sessionId)
   const markdownPath = path.join(directoryPath, SESSION_INSPECTION_MARKDOWN_FILE)
   const commandPath = path.join(directoryPath, SESSION_INSPECTION_COMMAND_FILE)
   const preparedAt = new Date().toISOString()

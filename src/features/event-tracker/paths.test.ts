@@ -23,8 +23,14 @@ function expectedInSession(filename: string): string {
   return path.join(expectedSessionDir(), filename)
 }
 
+function expectedSessionsRoot(): string {
+  return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR)
+}
+
 test('exports required path builders', () => {
   assert.equal(typeof eventTrackerPaths.getEventTrackerSessionDir, 'function')
+  assert.equal(typeof eventTrackerPaths.getJourneyEventsPath, 'function')
+  assert.equal(typeof eventTrackerPaths.getErrorLogsPath, 'function')
   assert.equal(typeof eventTrackerPaths.getSessionEventsPath, 'function')
   assert.equal(typeof eventTrackerPaths.getSessionDiagnosticsPath, 'function')
   assert.equal(typeof eventTrackerPaths.getSessionDelegationPath, 'function')
@@ -40,6 +46,16 @@ test('builds deterministic session directory path using shared SESSIONS_DIR auth
 
   assert.equal(first, second)
   assert.equal(first, expectedSessionDir())
+})
+
+test('builds journey-events path under the sessions root', () => {
+  const actual = eventTrackerPaths.getJourneyEventsPath(projectRoot)
+  assert.equal(actual, path.join(expectedSessionsRoot(), 'journey-events'))
+})
+
+test('builds error-logs path under the sessions root', () => {
+  const actual = eventTrackerPaths.getErrorLogsPath(projectRoot)
+  assert.equal(actual, path.join(expectedSessionsRoot(), 'error-logs'))
 })
 
 test('builds events.md path via join-based composition', () => {

@@ -9,7 +9,7 @@
 import * as fs from 'node:fs/promises'
 import * as path from 'node:path'
 
-import { getErrorLogPath } from '../shared/paths.js'
+import { getHivemindPath } from '../shared/paths.js'
 
 export interface DiagnosticLogEntry {
   sessionId: string
@@ -96,7 +96,7 @@ export async function writeDiagnosticLog(
   projectRoot: string,
   entry: DiagnosticLogEntry,
 ): Promise<string> {
-  const errorLogDir = getErrorLogPath(projectRoot)
+  const errorLogDir = path.join(getHivemindPath(projectRoot), 'error-log')
   await fs.mkdir(errorLogDir, { recursive: true })
 
   const filename = `${entry.sessionId}-${Date.now()}.md`

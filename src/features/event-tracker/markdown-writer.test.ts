@@ -15,6 +15,11 @@ import test from 'node:test'
 
 import type { SessionV3 } from './types.js'
 
+type SessionWithMarkdownMeta = SessionV3 & {
+  actors?: string[]
+  toolsUsed?: string[]
+}
+
 // ---------------------------------------------------------------------------
 // Dynamic import — forces RED gate (module may not exist yet)
 // ---------------------------------------------------------------------------
@@ -64,7 +69,11 @@ test('initEventsMarkdown creates events.md with session header fields', async ()
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown } = await loadMarkdownWriter()
-    const session = makeSession()
+    const session: SessionWithMarkdownMeta = {
+      ...makeSession(),
+      actors: ['hiveminder', 'hiveq'],
+      toolsUsed: ['read', 'bash'],
+    }
 
     await initEventsMarkdown(tmpDir, session)
 
@@ -82,6 +91,10 @@ test('initEventsMarkdown creates events.md with session header fields', async ()
       'should include Purpose field')
     assert.ok(content.includes('**Agent:** hiveminder'),
       'should include Agent field')
+    assert.ok(content.includes('**Actors:** hiveminder, hiveq'),
+      'should include actors field')
+    assert.ok(content.includes('**Tools Used:** read, bash'),
+      'should include tools used field')
     assert.ok(content.includes('**Status:** active'),
       'should include Status field')
   } finally {
@@ -100,7 +113,7 @@ test('initEventsMarkdown creates TOC placeholder section', async () => {
     const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
 
     assert.ok(content.includes('## Table of Contents'), 'should include TOC heading')
-    assert.ok(content.includes('| Turn | Timestamp | Type | Summary |'),
+    assert.ok(content.includes('| # | Timestamp | Type | Summary |'),
       'should include TOC table header')
     assert.ok(content.includes('---'), 'should include separator')
   } finally {
@@ -320,11 +333,11 @@ test('generateTOC builds TOC from turn headers in events.md', async () => {
 
     const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
 
-    assert.ok(content.includes('| 1 | 2026-03-26T11:53:16Z | user_message | User asks about session errors... |'),
+    assert.ok(content.includes('| 1 | 2026-03-26T11:53:16Z | User Message | User asks about session errors... |'),
       'should include TOC row for turn 1')
-    assert.ok(content.includes('| 2 | 2026-03-26T11:53:45Z | assistant_output | Resolved import issue... |'),
+    assert.ok(content.includes('| 2 | 2026-03-26T11:53:45Z | Assistant Output | Resolved import issue... |'),
       'should include TOC row for turn 2')
-    assert.ok(content.includes('| 3 | 2026-03-26T12:01:22Z | delegation | Delegated to code-skeptic... |'),
+    assert.ok(content.includes('| 3 | 2026-03-26T12:01:22Z | Delegation | Delegated to code-skeptic... |'),
       'should include TOC row for turn 3')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
@@ -518,6 +531,63 @@ test('appendTurnToMarkdown appends error turn', async () => {
       'should include error turn header')
     assert.ok(content.includes('TypeError: Cannot read properties of undefined'),
       'should include error message')
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true })
+  }
+})
+
+test('appendToolBatch appends a tool batch table', async () => {
+  const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
+  try {
+    const { initEventsMarkdown, appendToolBatch } = await loadMarkdownWriter()
+
+    await initEventsMarkdown(tmpDir, makeSession())
+    await appendToolBatch(tmpDir, {
+      turnNumber: 7,
+      toolName: 'hivemind_task',
+      invocations: [
+        { action: 'create', result: 'task_created:task_001' },
+        { action: 'verify', result: 'verified ok' },
+      ],
+    })
+
+    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+
+    assert.ok(content.includes('## Tool Batch: hivemind_task (Turn 7)'),
+      'should include tool batch heading')
+    assert.ok(content.includes('| Action | Result |'),
+      'should include tool batch table header')
+    assert.ok(content.includes('| create | task_created:task_001 |'),
+      'should include first tool invocation row')
+    assert.ok(content.includes('| verify | verified ok |'),
+      'should include second tool invocation row')
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true })
+  }
+})
+
+test('appendDelegation appends a delegations section', async () => {
+  const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
+  try {
+    const { initEventsMarkdown, appendDelegation } = await loadMarkdownWriter()
+
+    await initEventsMarkdown(tmpDir, makeSession())
+    await appendDelegation(tmpDir, {
+      parentSessionId: 'ses_parent_001',
+      childSessionId: 'ses_child_001',
+      actor: 'hiveminder',
+      summary: 'Delegated markdown verification to hiveq',
+    })
+
+    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+
+    assert.ok(content.includes('## Delegations'), 'should include delegations section heading')
+    assert.ok(content.includes('### ses_parent_001 -> ses_child_001'),
+      'should include delegation relationship heading')
+    assert.ok(content.includes('**Actor:** hiveminder'),
+      'should include delegation actor')
+    assert.ok(content.includes('**Summary:** Delegated markdown verification to hiveq'),
+      'should include delegation summary')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }

@@ -7,17 +7,11 @@
  * @module hooks/chat-message-handler
  */
 
-import { existsSync } from 'node:fs'
-import { mkdir } from 'node:fs/promises'
-import { join } from 'node:path'
 import {
-  initSession,
   addTurn,
-  getSessionPath,
   loadSession,
-  findSessionBySdkId,
-  createSdkSymlink,
 } from '../features/event-tracker/consolidated-writer.js'
+import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
 /**
  * Handle `chat.message` hook — captures user messages in session journal.
@@ -42,37 +36,14 @@ export async function handleChatMessage(
   output: { message: { role: string; content: string }; parts: unknown[] },
   projectRoot: string
 ): Promise<void> {
-  const sessionsDir = join(projectRoot, '.hivemind', 'sessions')
-  await mkdir(sessionsDir, { recursive: true })
-
+  const resolver = createSessionResolver(projectRoot)
+  const sessionsDir = resolver.getSessionsDir()
   const sdkSessionId = input.sessionID
-
-  // Resolve semantic session ID: try by SDK ID first, then direct path, then create
-  let semanticSessionId: string | null = null
-
-  // 1. Try finding existing session by SDK session ID in metadata
-  semanticSessionId = await findSessionBySdkId(sessionsDir, sdkSessionId)
-
-  // 2. Try loading by direct path (backwards compat with SDK-named files)
-  if (!semanticSessionId) {
-    const directPath = getSessionPath(sessionsDir, sdkSessionId)
-    if (existsSync(directPath)) {
-      semanticSessionId = sdkSessionId
-    }
-  }
-
-  if (!semanticSessionId) {
-    // Create new session with semantic name, store SDK ID in metadata
-    semanticSessionId = await initSession(sessionsDir, {
-      lineage: 'hiveminder',
-      purposeClass: 'implementation',
-      agent: input.agent || 'unknown',
-      sdkSessionId,
-    })
-
-    // Create backwards-compat symlink from SDK ID to semantic file
-    await createSdkSymlink(sessionsDir, sdkSessionId, semanticSessionId)
-  }
+  const semanticSessionId = await resolver.resolveOrCreate(sdkSessionId, {
+    lineage: 'hiveminder',
+    purposeClass: 'implementation',
+    agent: input.agent || 'unknown',
+  })
 
   // Load existing session to calculate correct turn number
   const existing = await loadSession(sessionsDir, semanticSessionId)

@@ -17,6 +17,24 @@ export function getEventTrackerSessionDir(projectRoot: string, sessionId: string
 }
 
 /**
+ * Builds the journey-events directory path.
+ * @param projectRoot Absolute or workspace project root.
+ * @returns Path to the journey-events directory under .hivemind/sessions.
+ */
+export function getJourneyEventsPath(projectRoot: string): string {
+  return path.join(getEventTrackerSessionDir(projectRoot, ''), 'journey-events')
+}
+
+/**
+ * Builds the error-logs directory path.
+ * @param projectRoot Absolute or workspace project root.
+ * @returns Path to the error-logs directory under .hivemind/sessions.
+ */
+export function getErrorLogsPath(projectRoot: string): string {
+  return path.join(getEventTrackerSessionDir(projectRoot, ''), 'error-logs')
+}
+
+/**
  * Builds the events file path for a session.
  * @param projectRoot Absolute or workspace project root.
  * @param sessionId Session identifier.

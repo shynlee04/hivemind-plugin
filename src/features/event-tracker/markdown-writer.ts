@@ -2,13 +2,13 @@
  * Markdown Writer — Human-readable events.md generation (ADR-017)
  *
  * Generates and maintains session events.md files in the ADR-specified format.
- * All writes are append-only via `fs.promises.appendFile`, except `generateTOC`
- * which rewrites the TOC section by reading and replacing it in-place.
+ * Event additions are append-only via `fs.promises.appendFile`, except
+ * `generateTOC` and existing diagnostic rewrites which replace in-place.
  *
  * @module event-tracker/markdown-writer
  */
 
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import type { SessionV3 } from './types.js'
@@ -35,6 +35,84 @@ function resolveTurnLabel(type: string): string {
   return TURN_LABELS[type] ?? type.charAt(0).toUpperCase() + type.slice(1)
 }
 
+function escapeTableCell(value: string): string {
+  return value.replace(/\|/g, '\\|').replace(/\n/g, '<br>')
+}
+
+function readStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
+}
+
+function uniqueOrdered(values: string[]): string[] {
+  return [...new Set(values)]
+}
+
+function extractSessionMetadata(session: SessionV3): Record<string, unknown> {
+  return typeof session === 'object' && session !== null
+    ? (session as unknown as Record<string, unknown>)
+    : {}
+}
+
+function resolveActors(session: SessionV3): string[] {
+  const metadata = extractSessionMetadata(session)
+  const nestedMetadata = metadata['metadata']
+  const nestedRecord =
+    typeof nestedMetadata === 'object' && nestedMetadata !== null
+      ? (nestedMetadata as Record<string, unknown>)
+      : {}
+
+  return uniqueOrdered([
+    session.agent,
+    ...readStringArray(metadata['actors']),
+    ...readStringArray(metadata['participants']),
+    ...readStringArray(nestedRecord['actors']),
+    ...readStringArray(nestedRecord['participants']),
+  ])
+}
+
+function resolveToolsUsed(session: SessionV3): string[] {
+  const metadata = extractSessionMetadata(session)
+  const nestedMetadata = metadata['metadata']
+  const nestedRecord =
+    typeof nestedMetadata === 'object' && nestedMetadata !== null
+      ? (nestedMetadata as Record<string, unknown>)
+      : {}
+
+  return uniqueOrdered([
+    ...readStringArray(metadata['toolsUsed']),
+    ...readStringArray(metadata['toolNames']),
+    ...readStringArray(metadata['tools']),
+    ...readStringArray(nestedRecord['toolsUsed']),
+    ...readStringArray(nestedRecord['toolNames']),
+    ...readStringArray(nestedRecord['tools']),
+  ])
+}
+
+function formatActors(session: SessionV3): string {
+  return resolveActors(session).join(', ')
+}
+
+function formatToolsUsed(session: SessionV3): string {
+  const toolsUsed = resolveToolsUsed(session)
+  return toolsUsed.length > 0 ? toolsUsed.join(', ') : 'none'
+}
+
+/** A single tool batch entry rendered into the journey-events markdown. */
+export interface ToolBatchEntry {
+  turnNumber: number
+  toolName: string
+  invocations: Array<{ action: string; result: string }>
+}
+
+/** A delegation record rendered into the journey-events markdown. */
+export interface DelegationRecord {
+  parentSessionId: string
+  childSessionId: string
+  actor: string
+  summary: string
+}
+
 // ---------------------------------------------------------------------------
 // File I/O helpers
 // ---------------------------------------------------------------------------
@@ -45,7 +123,6 @@ function resolveTurnLabel(type: string): string {
 async function appendToEvents(sessionDir: string, content: string): Promise<void> {
   await mkdir(sessionDir, { recursive: true })
   const eventsPath = join(sessionDir, 'events.md')
-  const { appendFile } = await import('node:fs/promises')
   await appendFile(eventsPath, content, 'utf8')
 }
 
@@ -70,7 +147,8 @@ async function readEvents(sessionDir: string): Promise<string> {
  *
  * Writes the ADR-specified header block:
  * - `# Session: {semanticSessionId}` heading
- * - Metadata fields (Session ID, Parent, Lineage, Purpose, Agent, Status)
+ * - Metadata fields (Session ID, Parent, Lineage, Purpose, Agent, Actors,
+ *   Tools Used, Status)
  * - Table of Contents placeholder with column headers
  *
  * @param sessionDir - Absolute path to the session directory
@@ -87,14 +165,16 @@ export async function initEventsMarkdown(sessionDir: string, session: SessionV3)
     `**Lineage:** ${session.lineage}`,
     `**Purpose:** ${session.purposeClass}`,
     `**Agent:** ${session.agent}`,
+    `**Actors:** ${formatActors(session)}`,
+    `**Tools Used:** ${formatToolsUsed(session)}`,
     `**Status:** ${session.status}`,
     '',
     '---',
     '',
     '## Table of Contents',
     '',
-    '| Turn | Timestamp | Type | Summary |',
-    '|------|-----------|------|---------|',
+    '| # | Timestamp | Type | Summary |',
+    '|---|-----------|------|---------|',
     '',
     '---',
     '',
@@ -177,11 +257,31 @@ export async function generateTOC(sessionDir: string, session: SessionV3): Promi
   const content = await readEvents(sessionDir)
   if (!content) return
 
+  const headerLines = [
+    `# Session: ${session.semanticSessionId}`,
+    '',
+    `**Session ID:** ${session.sessionId}`,
+    `**Parent:** ${session.parentSessionId ?? 'null'}`,
+    `**Lineage:** ${session.lineage}`,
+    `**Purpose:** ${session.purposeClass}`,
+    `**Agent:** ${session.agent}`,
+    `**Actors:** ${formatActors(session)}`,
+    `**Tools Used:** ${formatToolsUsed(session)}`,
+    `**Status:** ${session.status}`,
+    '',
+    '---',
+    '',
+    '## Table of Contents',
+    '',
+    '| # | Timestamp | Type | Summary |',
+    '|---|-----------|------|---------|',
+  ]
+
   // Build TOC rows from session.toc
   const tocRows = session.toc
     .map(
       (entry) =>
-        `| ${entry.turnNumber} | ${entry.timestamp} | ${entry.type} | ${entry.summary} |`,
+        `| ${entry.turnNumber} | ${entry.timestamp} | ${resolveTurnLabel(entry.type)} | ${escapeTableCell(entry.summary)} |`,
     )
     .join('\n')
 
@@ -190,21 +290,78 @@ export async function generateTOC(sessionDir: string, session: SessionV3): Promi
   if (tocHeaderStart === -1) return
 
   // The TOC ends at the next `---` separator after the table header row
-  const tableHeaderEnd = content.indexOf('|------|-----------|------|---------|', tocHeaderStart)
+  const tableHeaderEnd = content.indexOf('|---|-----------|------|---------|', tocHeaderStart)
   if (tableHeaderEnd === -1) return
 
   // Find the end of current TOC content (next --- after table header)
-  const afterTableHeader = tableHeaderEnd + '|------|-----------|------|---------|'.length
+  const afterTableHeader = tableHeaderEnd + '|---|-----------|------|---------|'.length
   const separatorIdx = content.indexOf('\n---', afterTableHeader)
   if (separatorIdx === -1) return
 
-  // Rebuild: everything before TOC rows + new TOC rows + everything from separator onward
-  const beforeRows = content.slice(0, afterTableHeader)
+  // Rebuild: refreshed header + TOC rows + everything from separator onward
   const afterSeparator = content.slice(separatorIdx)
-  const newContent = beforeRows + '\n' + tocRows + afterSeparator
+  const newContent = headerLines.join('\n') + '\n' + tocRows + afterSeparator
 
   const eventsPath = join(sessionDir, 'events.md')
   await writeFile(eventsPath, newContent, 'utf8')
+}
+
+/**
+ * Append a tool batch section to events.md.
+ *
+ * Renders the batch as a markdown table with action/result rows grouped under a
+ * tool-specific heading.
+ *
+ * @param sessionDir - Absolute path to the session directory
+ * @param batch      - Tool batch data for a single turn/tool pair
+ */
+export async function appendToolBatch(sessionDir: string, batch: ToolBatchEntry): Promise<void> {
+  const lines = [
+    `## Tool Batch: ${batch.toolName} (Turn ${batch.turnNumber})`,
+    '',
+    '| Action | Result |',
+    '|--------|--------|',
+    ...batch.invocations.map(
+      (invocation) =>
+        `| ${escapeTableCell(invocation.action)} | ${escapeTableCell(invocation.result)} |`,
+    ),
+    '',
+    '---',
+    '',
+  ]
+
+  await appendToEvents(sessionDir, lines.join('\n'))
+}
+
+/**
+ * Append a delegation record to the Delegations section of events.md.
+ *
+ * Creates the section on first use, then appends a delegation block describing
+ * the parent/child relationship and summary.
+ *
+ * @param sessionDir  - Absolute path to the session directory
+ * @param delegation  - Delegation metadata to append
+ */
+export async function appendDelegation(
+  sessionDir: string,
+  delegation: DelegationRecord,
+): Promise<void> {
+  const content = await readEvents(sessionDir)
+  const lines: string[] = []
+
+  if (!content.includes('## Delegations')) {
+    lines.push('## Delegations', '')
+  }
+
+  lines.push(`### ${delegation.parentSessionId} -> ${delegation.childSessionId}`)
+  lines.push('')
+  lines.push(`**Actor:** ${delegation.actor}`)
+  lines.push(`**Summary:** ${delegation.summary}`)
+  lines.push('')
+  lines.push('---')
+  lines.push('')
+
+  await appendToEvents(sessionDir, lines.join('\n'))
 }
 
 /**

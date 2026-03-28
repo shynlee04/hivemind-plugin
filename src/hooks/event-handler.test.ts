@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { describe, it, mock, afterEach } from 'node:test'
 
 import type { Event } from '@opencode-ai/sdk'
 
+import { createSessionResolver } from '../../src/features/session-journal/session-resolver.js'
+import { getSessionPath } from '../../src/features/event-tracker/consolidated-writer.js'
 import { createEventHandler } from '../../src/hooks/event-handler.js'
 import { initSdkContext, resetSdkContext } from '../../src/hooks/sdk-context.js'
 
@@ -249,5 +254,113 @@ describe('event-handler session.idle integration with journal', () => {
       1,
       'client.session.messages() must be called to capture conversation for journal',
     )
+  })
+})
+
+describe('createEventHandler sub-session linking', () => {
+  afterEach(() => {
+    resetSdkContext()
+  })
+
+  it('links parent and child sessions when session.created includes parentSessionId', async () => {
+    const projectRoot = await mkdtemp(join(tmpdir(), 'event-handler-session-link-'))
+
+    try {
+      const eventHandler = createEventHandler(projectRoot)
+      const sessionResolver = createSessionResolver(projectRoot)
+
+      await eventHandler({
+        event: {
+          type: 'session.created',
+          properties: {
+            sessionID: 'sdk-parent-session',
+          },
+        } as unknown as Event,
+      })
+
+      await eventHandler({
+        event: {
+          type: 'session.created',
+          properties: {
+            sessionID: 'sdk-child-session',
+            parentSessionId: 'sdk-parent-session',
+          },
+        } as unknown as Event,
+      })
+
+      const parentId = await sessionResolver.resolve('sdk-parent-session')
+      const childId = await sessionResolver.resolve('sdk-child-session')
+
+      assert.ok(parentId, 'parent session should resolve after session.created')
+      assert.ok(childId, 'child session should resolve after session.created')
+
+      const sessionsDir = sessionResolver.getSessionsDir()
+      const parent = JSON.parse(
+        await readFile(getSessionPath(sessionsDir, parentId as string), 'utf8')
+      ) as {
+        childSessionIds: string[]
+      }
+      const child = JSON.parse(
+        await readFile(getSessionPath(sessionsDir, childId as string), 'utf8')
+      ) as {
+        parentSessionId: string | null
+      }
+
+      assert.deepEqual(parent.childSessionIds, [childId], 'parent should track child session IDs')
+      assert.equal(child.parentSessionId, parentId, 'child should track parent session ID')
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true })
+    }
+  })
+
+  it('links delegated child sessions when agent.created includes parentSessionId', async () => {
+    const projectRoot = await mkdtemp(join(tmpdir(), 'event-handler-agent-link-'))
+
+    try {
+      const eventHandler = createEventHandler(projectRoot)
+      const sessionResolver = createSessionResolver(projectRoot)
+
+      await eventHandler({
+        event: {
+          type: 'session.created',
+          properties: {
+            sessionID: 'sdk-parent-agent-session',
+          },
+        } as unknown as Event,
+      })
+
+      await eventHandler({
+        event: {
+          type: 'agent.created',
+          properties: {
+            sessionID: 'sdk-agent-child-session',
+            parentSessionId: 'sdk-parent-agent-session',
+          },
+        } as unknown as Event,
+      })
+
+      const parentId = await sessionResolver.resolve('sdk-parent-agent-session')
+      const childId = await sessionResolver.resolve('sdk-agent-child-session')
+
+      assert.ok(parentId, 'parent session should resolve before agent delegation')
+      assert.ok(childId, 'child session should be created for delegated agent session')
+
+      const sessionsDir = sessionResolver.getSessionsDir()
+      const parent = JSON.parse(
+        await readFile(getSessionPath(sessionsDir, parentId as string), 'utf8')
+      ) as {
+        childSessionIds: string[]
+      }
+      const child = JSON.parse(
+        await readFile(getSessionPath(sessionsDir, childId as string), 'utf8')
+      ) as {
+        parentSessionId: string | null
+      }
+
+      assert.deepEqual(parent.childSessionIds, [childId], 'agent-created child should be linked to parent')
+      assert.equal(child.parentSessionId, parentId, 'agent-created child should store parent ID')
+    } finally {
+      await rm(projectRoot, { recursive: true, force: true })
+    }
   })
 })

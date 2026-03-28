@@ -1,5 +1,3 @@
 export * from './instance-registry.js'
 export * from './health.js'
 export * from './runtime-status.js'
-export * from './session-inspection.js'
-export * from './diagnostic-log.js'

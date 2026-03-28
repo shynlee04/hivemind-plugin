@@ -11,9 +11,11 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { findSlashCommandBundle } from '../commands/slash-command/index.js'
+import { handleChatMessage } from '../hooks/chat-message-handler.js'
 import { initSdkContext, resetSdkContext } from '../hooks/sdk-context.js'
 import { createEventHandler } from '../hooks/event-handler.js'
 import { showGovernanceToast } from '../hooks/soft-governance.js'
+import { handleToolExecution } from '../hooks/tool-execution-handler.js'
 
 import {
   createAgentWorkCreateContractTool,
@@ -33,13 +35,11 @@ import { createHivemindHmInitTool } from '../tools/hivefiver-init/index.js'
 import { createHivemindHmDoctorTool } from '../tools/hivefiver-doctor/index.js'
 import { createHivemindHmSettingTool } from '../tools/hivefiver-setting/index.js'
 import { renderToolPrecedence } from './context-renderer.js'
-import { resolveDefaultAgent, initSkillInjection } from './skill-exposure-map.js'
+import { initSkillInjection } from './skill-exposure-map.js'
 import { createTurnSnapshotLoader } from './runtime-snapshot.js'
 import { createSyntheticPart } from './synthetic-parts.js'
 import { createMessagesTransformHandler } from './messages-transform-adapter.js'
-import { getAndClearInjectionPayload } from './injection-store.js'
 import { createCompactionHandler } from './compaction-adapter.js'
-import { upsertSessionInspectionExport, writeDiagnosticLog /** @deprecated — use session journal handlers */ } from '../sdk-supervisor/index.js'
 import {
   createTransformHandler,
   createTextCompleteHandler,
@@ -133,7 +133,12 @@ export const HiveMindPlugin: Plugin = async (input) => {
       hivemind_hm_doctor: createHivemindHmDoctorTool(directory),
       hivemind_hm_setting: createHivemindHmSettingTool(directory),
     },
-    'chat.message': async (_messageInput, _output) => {
+    'chat.message': async (messageInput, output) => {
+      await handleChatMessage(
+        messageInput,
+        output as unknown as { message: { role: string; content: string }; parts: unknown[] },
+        directory,
+      ).catch(() => undefined)
       turnSnapshot.resetTurnSnapshot()
       const snapshot = await turnSnapshot.getSnapshot()
 
@@ -218,7 +223,8 @@ export const HiveMindPlugin: Plugin = async (input) => {
         ].join('\n'),
       ))
     },
-    'tool.execute.after': async (toolInput) => {
+    'tool.execute.after': async (toolInput, output) => {
+      await handleToolExecution(toolInput, output, directory).catch(() => undefined)
       if (isHivemindManagedTool(toolInput.tool)) {
         await recordToolEvent(directory, toolInput.sessionID, toolInput.tool)
       }
@@ -230,36 +236,6 @@ export const HiveMindPlugin: Plugin = async (input) => {
       if (!sessionId || assistantText.length === 0) {
         return
       }
-
-      await upsertSessionInspectionExport(directory, {
-        sessionId,
-        assistantText,
-      }).catch(err => console.error('[session-journal] upsertSessionInspectionExport failed:', err))
-
-      const snapshot = await turnSnapshot.getSnapshot()
-      const injection = getAndClearInjectionPayload(sessionId)
-      await writeDiagnosticLog(directory, {
-        sessionId,
-        timestamp: new Date().toISOString(),
-        assistantText,
-        purpose: snapshot.defaultPurposeClass,
-        sessionState: snapshot.entryState,
-        trajectory: snapshot.trajectoryId ?? 'none',
-        workflow: snapshot.workflowId ?? 'none',
-        agent: snapshot.preferredUserName ?? resolveDefaultAgent(),
-        injection: injection ? {
-          purposeClass: injection.purposeClass,
-          sessionState: injection.sessionState,
-          agent: injection.agent,
-          variant: injection.variant,
-          sessionRole: injection.sessionRole,
-          skillBundle: injection.skillBundle,
-          skillFocusBlock: injection.skillFocusBlock,
-          turnHierarchyBlock: injection.turnHierarchyBlock,
-          contextBlock: injection.contextBlock,
-          routeHintBlock: injection.routeHintBlock,
-        } : undefined,
-      }).catch(err => console.error('[session-journal] writeDiagnosticLog failed:', err))
 
       await createTextCompleteHandler({ directory })(
         { sessionID: sessionId, messageID: '', partID: '' },

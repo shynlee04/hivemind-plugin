@@ -10,7 +10,7 @@ coverage/
 
 
 # Git worktrees
-.worktrees/
+!.worktrees/
 
 # Development artifacts - INTERNAL ONLY
 
@@ -32,7 +32,9 @@ test_output*.txt
 .kilocode/
 .qoder/
 .windsurf/
-.!hivemind/
+.hivemind/error-log/
+.hivemind/sessions/
+.hivemind/session-inspection/
 
 
 # Internal documentation - NOT FOR PUBLIC

@@ -7,9 +7,13 @@
  * @module event-tracker/consolidated-writer
  */
 
+import { existsSync } from 'node:fs'
 import { mkdir, readFile, readdir, rename, symlink, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import type { PurposeClass, SessionV3 } from './types.js'
+import { appendHierarchyLink } from '../session-journal/hierarchy-writer.js'
+
+const JOURNEY_EVENTS_DIR = 'journey-events'
 
 // ============================================================================
 // Types
@@ -185,6 +189,18 @@ async function ensureDir(dir: string): Promise<void> {
   }
 }
 
+function getJourneyEventsDir(sessionDir: string): string {
+  return join(sessionDir, JOURNEY_EVENTS_DIR)
+}
+
+function getLegacySessionPath(sessionDir: string, sessionId: string): string {
+  return join(sessionDir, `${sessionId}.json`)
+}
+
+function getJourneyEventSessionPath(sessionDir: string, sessionId: string): string {
+  return join(getJourneyEventsDir(sessionDir), `${sessionId}.json`)
+}
+
 /**
  * Update a session file using a modifier function.
  * Encapsulates the read-modify-write pattern with atomic persistence.
@@ -218,7 +234,17 @@ async function modifySession(
  * // Returns: '/sessions/ses_2026-03-25T120000_implementation_hitea.json'
  */
 export function getSessionPath(sessionDir: string, sessionId: string): string {
-  return join(sessionDir, `${sessionId}.json`)
+  const legacyPath = getLegacySessionPath(sessionDir, sessionId)
+  if (existsSync(legacyPath)) {
+    return legacyPath
+  }
+
+  const journeyEventsPath = getJourneyEventSessionPath(sessionDir, sessionId)
+  if (existsSync(journeyEventsPath)) {
+    return journeyEventsPath
+  }
+
+  return journeyEventsPath
 }
 
 /**
@@ -259,23 +285,28 @@ export async function findSessionBySdkId(
   sessionDir: string,
   sdkSessionId: string
 ): Promise<string | null> {
-  try {
-    const files = await readdir(sessionDir)
-    for (const file of files) {
-      if (!file.endsWith('.json')) continue
-      try {
-        const content = await readFile(join(sessionDir, file), 'utf8')
-        const session = JSON.parse(content) as SessionV2
-        if (session.sdkSessionId === sdkSessionId) {
-          return session.semanticSessionId ?? session.sessionId
+  const candidateDirs = [getJourneyEventsDir(sessionDir), sessionDir]
+
+  for (const dir of candidateDirs) {
+    try {
+      const files = await readdir(dir)
+      for (const file of files) {
+        if (!file.endsWith('.json')) continue
+        try {
+          const content = await readFile(join(dir, file), 'utf8')
+          const session = JSON.parse(content) as SessionV2
+          if (session.sdkSessionId === sdkSessionId) {
+            return session.semanticSessionId ?? session.sessionId
+          }
+        } catch {
+          // Skip corrupted files
         }
-      } catch {
-        // Skip corrupted files
       }
+    } catch {
+      // Directory doesn't exist yet
     }
-  } catch {
-    // Directory doesn't exist yet
   }
+
   return null
 }
 
@@ -298,7 +329,8 @@ export async function createSdkSymlink(
 ): Promise<void> {
   if (sdkSessionId === semanticSessionId) return
 
-  const sdkPath = getSessionPath(sessionDir, sdkSessionId)
+  const semanticPath = getSessionPath(sessionDir, semanticSessionId)
+  const sdkPath = join(dirname(semanticPath), `${sdkSessionId}.json`)
   const semanticFilename = `${semanticSessionId}.json`
 
   try {
@@ -346,7 +378,7 @@ export async function initSession(
   sessionDir: string,
   input: InitSessionInput
 ): Promise<string> {
-  await ensureDir(sessionDir)
+  await ensureDir(getJourneyEventsDir(sessionDir))
 
   const semanticName = generateSessionId(input.purposeClass, input.agent)
   let filename = semanticName
@@ -381,7 +413,7 @@ export async function initSession(
     diagnostics: [],
   }
 
-  const filePath = getSessionPath(sessionDir, filename)
+  const filePath = getJourneyEventSessionPath(sessionDir, filename)
   await atomicWrite(filePath, JSON.stringify(session, null, 2))
 
   return filename
@@ -556,13 +588,17 @@ export async function linkSubSession(
 ): Promise<void> {
   // Update parent to include child
   await modifySession(sessionDir, parentSessionId, (parent) => {
-    parent.childSessionIds.push(childSessionId)
+    if (!parent.childSessionIds.includes(childSessionId)) {
+      parent.childSessionIds.push(childSessionId)
+    }
   })
 
   // Update child to reference parent
   await modifySession(sessionDir, childSessionId, (child) => {
     child.parentSessionId = parentSessionId
   })
+
+  await appendHierarchyLink(sessionDir, parentSessionId, childSessionId)
 }
 
 // ============================================================================

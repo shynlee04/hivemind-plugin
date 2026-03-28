@@ -137,6 +137,14 @@ async function loadConsolidatedWriter() {
   return import('./consolidated-writer.js')
 }
 
+function expectedJourneyEventsDir(baseDir: string): string {
+  return join(baseDir, 'journey-events')
+}
+
+function expectedSessionPath(baseDir: string, sessionId: string): string {
+  return join(expectedJourneyEventsDir(baseDir), `${sessionId}.json`)
+}
+
 // ---------------------------------------------------------------------------
 // Test Fixtures
 // ---------------------------------------------------------------------------
@@ -209,7 +217,7 @@ test('initSession creates session file with correct v2 schema structure', async 
     )
 
     // Verify file exists
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const fileStats = await stat(filePath)
     assert.ok(fileStats.isFile(), 'session file should exist')
 
@@ -235,7 +243,7 @@ test('initSession creates comprehensive counters object initialized to zero', as
     const { initSession } = await loadConsolidatedWriter()
 
     const sessionId = await initSession(tmpDir, makeInitInput())
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     // Verify all counter fields exist and are zero-initialized
@@ -258,7 +266,7 @@ test('initSession initializes empty turns events and diagnostics arrays', async 
     const { initSession } = await loadConsolidatedWriter()
 
     const sessionId = await initSession(tmpDir, makeInitInput())
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     assert.ok(Array.isArray(content.turns), 'turns should be an array')
@@ -303,8 +311,8 @@ test('initSession generates session file named ses_ISO-date_purpose_agent.json',
       assert.ok(sessionIdPattern.test(sessionId), `sessionId "${sessionId}" should match pattern`)
 
       // File should be named <sessionId>.json
-      const filePath = join(tmpDir, `${sessionId}.json`)
-      assert.ok(existsSync(filePath), `file ${sessionId}.json should exist`)
+        const filePath = expectedSessionPath(tmpDir, sessionId)
+        assert.ok(existsSync(filePath), `file ${sessionId}.json should exist`)
     }
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
@@ -328,7 +336,7 @@ test('addTurn appends turn to turns array and increments turnCount', async () =>
       turn: makeTurn({ turnNumber: 1 }),
     })
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     // Verify turn was added
@@ -357,7 +365,7 @@ test('addTurn increments userMessageCount when turn has userMessage', async () =
       turn: makeTurn({ userMessage: 'Test message' }),
     })
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     assert.equal(content.counters.userMessageCount, 1, 'userMessageCount should increment')
@@ -379,7 +387,7 @@ test('addTurn increments assistantOutputCount when turn has assistantContent', a
       turn: makeTurn({ assistantContent: 'Assistant response' }),
     })
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     assert.equal(content.counters.assistantOutputCount, 1, 'assistantOutputCount should increment')
@@ -405,7 +413,7 @@ test('addEvent appends event to events array', async () => {
       event: makeEvent({ type: 'session_start', importance: 'high' }),
     })
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     assert.equal(content.events.length, 1, 'should have 1 event')
@@ -437,7 +445,7 @@ test('addEvent enters event with correct turnNumber and timestamp', async () => 
       },
     })
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
     const event = content.events[0] as AddEventInput['event']
 
@@ -465,7 +473,7 @@ test('addDiagnostic appends diagnostic to diagnostics array', async () => {
       diagnostic: makeDiagnostic({ level: 'warn', message: 'Test warning' }),
     })
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     assert.equal(content.diagnostics.length, 1, 'should have 1 diagnostic')
@@ -495,7 +503,7 @@ test('addDiagnostic accepts optional context field', async () => {
       },
     })
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
     const diag = content.diagnostics[0] as AddDiagnosticInput['diagnostic'] & {
       context: Record<string, unknown>
@@ -527,7 +535,7 @@ test('incrementCounter increments specified counter by 1', async () => {
     await incrementCounter(tmpDir, sessionId, 'compactionCount')
     await incrementCounter(tmpDir, sessionId, 'turnCount')
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     assert.equal(content.counters.userMessageCount, 1)
@@ -552,7 +560,7 @@ test('incrementCounter increments by specified amount', async () => {
     // Increment by 5
     await incrementCounter(tmpDir, sessionId, 'delegationCount', 5)
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     assert.equal(content.counters.delegationCount, 5, 'should increment by 5')
@@ -576,7 +584,7 @@ test('updateStatus changes session status', async () => {
     // Update to completed
     await updateStatus(tmpDir, sessionId, 'completed')
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     assert.equal(content.status, 'completed', 'status should be completed')
@@ -592,7 +600,7 @@ test('updateStatus updates the updated timestamp', async () => {
     const { initSession, updateStatus } = await loadConsolidatedWriter()
 
     const sessionId = await initSession(tmpDir, makeInitInput())
-    const beforePath = join(tmpDir, `${sessionId}.json`)
+    const beforePath = expectedSessionPath(tmpDir, sessionId)
     const beforeContent = JSON.parse(await readFile(beforePath, 'utf8')) as SessionV2
 
     // Small delay to ensure timestamp difference
@@ -619,7 +627,7 @@ test('updateStatus accepts active completed and abandoned values', async () => {
     const { initSession, updateStatus } = await loadConsolidatedWriter()
 
     const sessionId = await initSession(tmpDir, makeInitInput())
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
 
     // Cycle through all valid statuses
     for (const status of ['active', 'completed', 'abandoned', 'active'] as const) {
@@ -657,12 +665,12 @@ test('linkSubSession sets parentSessionId on child session', async () => {
     await linkSubSession(tmpDir, parentSessionId, childSessionId)
 
     // Verify parent has child in childSessionIds
-    const parentPath = join(tmpDir, `${parentSessionId}.json`)
+    const parentPath = expectedSessionPath(tmpDir, parentSessionId)
     const parentContent = JSON.parse(await readFile(parentPath, 'utf8')) as SessionV2
     assert.deepEqual(parentContent.childSessionIds, [childSessionId], 'parent should have child ID')
 
     // Verify child has parentSessionId set
-    const childPath = join(tmpDir, `${childSessionId}.json`)
+    const childPath = expectedSessionPath(tmpDir, childSessionId)
     const childContent = JSON.parse(await readFile(childPath, 'utf8')) as SessionV2
     assert.equal(childContent.parentSessionId, parentSessionId, 'child should have parent ID')
   } finally {
@@ -697,7 +705,7 @@ test('linkSubSession appends to childSessionIds for multiple children', async ()
     await linkSubSession(tmpDir, parentId, child1)
     await linkSubSession(tmpDir, parentId, child2)
 
-    const parentPath = join(tmpDir, `${parentId}.json`)
+    const parentPath = expectedSessionPath(tmpDir, parentId)
     const parentContent = JSON.parse(await readFile(parentPath, 'utf8')) as SessionV2
 
     assert.equal(parentContent.childSessionIds.length, 2, 'should have 2 children')
@@ -717,8 +725,8 @@ test('linkSubSession updates timestamps on both sessions', async () => {
     const parentId = await initSession(tmpDir, makeInitInput())
     const childId = await initSession(tmpDir, makeInitInput({ purposeClass: 'tdd' }))
 
-    const parentPath = join(tmpDir, `${parentId}.json`)
-    const childPath = join(tmpDir, `${childId}.json`)
+    const parentPath = expectedSessionPath(tmpDir, parentId)
+    const childPath = expectedSessionPath(tmpDir, childId)
 
     const parentBefore = JSON.parse(await readFile(parentPath, 'utf8')) as SessionV2
     const childBefore = JSON.parse(await readFile(childPath, 'utf8')) as SessionV2
@@ -738,6 +746,49 @@ test('linkSubSession updates timestamps on both sessions', async () => {
   }
 })
 
+test('linkSubSession writes hierarchy.json with parent and child nodes', async () => {
+  const tmpDir = await mkdtemp(join(tmpdir(), 'consolidated-writer-hierarchy-'))
+
+  try {
+    const { initSession, linkSubSession } = await loadConsolidatedWriter()
+
+    const parentId = await initSession(tmpDir, {
+      lineage: 'hiveminder',
+      purposeClass: 'planning',
+      agent: 'hiveminder',
+    })
+
+    const childId = await initSession(tmpDir, {
+      lineage: 'hivefiver',
+      purposeClass: 'implementation',
+      agent: 'hivemaker',
+    })
+
+    await linkSubSession(tmpDir, parentId, childId)
+
+    const hierarchyPath = join(expectedJourneyEventsDir(tmpDir), 'hierarchy.json')
+    const hierarchy = JSON.parse(await readFile(hierarchyPath, 'utf8')) as {
+      nodes: Array<{
+        sessionId: string
+        parentSessionId: string | null
+        childSessionIds: string[]
+      }>
+      updatedAt: string
+    }
+
+    const parentNode = hierarchy.nodes.find((node) => node.sessionId === parentId)
+    const childNode = hierarchy.nodes.find((node) => node.sessionId === childId)
+
+    assert.ok(parentNode, 'parent hierarchy node should exist')
+    assert.ok(childNode, 'child hierarchy node should exist')
+    assert.deepEqual(parentNode?.childSessionIds, [childId], 'parent node should list child')
+    assert.equal(childNode?.parentSessionId, parentId, 'child node should reference parent')
+    assert.equal(typeof hierarchy.updatedAt, 'string', 'hierarchy should include updatedAt timestamp')
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true })
+  }
+})
+
 // ============================================================================
 // Integration Tests
 // ============================================================================
@@ -751,7 +802,30 @@ test('getSessionPath returns correct file path for session', async () => {
     const sessionId = await initSession(tmpDir, makeInitInput())
     const sessionPath = getSessionPath(tmpDir, sessionId)
 
-    assert.equal(sessionPath, join(tmpDir, `${sessionId}.json`), 'path should be <dir>/<sessionId>.json')
+    assert.equal(
+      sessionPath,
+      expectedSessionPath(tmpDir, sessionId),
+      'path should be <dir>/journey-events/<sessionId>.json'
+    )
+  } finally {
+    await rm(tmpDir, { recursive: true, force: true })
+  }
+})
+
+test('getSessionPath falls back to legacy root files when they already exist', async () => {
+  const tmpDir = await mkdtemp(join(tmpdir(), 'consolidated-writer-legacy-'))
+
+  try {
+    const { getSessionPath } = await loadConsolidatedWriter()
+    const sessionId = 'ses_legacy'
+    const legacyPath = join(tmpDir, `${sessionId}.json`)
+    await readFile(legacyPath, 'utf8').catch(async () => {
+      await import('node:fs/promises').then(({ writeFile }) =>
+        writeFile(legacyPath, JSON.stringify({ _schema: 'session/v2' }), 'utf8')
+      )
+    })
+
+    assert.equal(getSessionPath(tmpDir, sessionId), legacyPath)
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
@@ -788,7 +862,7 @@ test('session writes are idempotent for same sessionId', async () => {
     await addTurn(tmpDir, { sessionId, turn })
     await addTurn(tmpDir, { sessionId, turn })
 
-    const filePath = join(tmpDir, `${sessionId}.json`)
+    const filePath = expectedSessionPath(tmpDir, sessionId)
     const content = JSON.parse(await readFile(filePath, 'utf8')) as SessionV2
 
     // Should only have one turn because we're re-adding the same turnNumber
