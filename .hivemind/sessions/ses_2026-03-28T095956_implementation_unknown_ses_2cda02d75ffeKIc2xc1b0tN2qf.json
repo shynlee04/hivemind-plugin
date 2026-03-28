@@ -7,7 +7,7 @@
   "purposeClass": "implementation",
   "agent": "unknown",
   "created": "2026-03-28T02:59:56.627Z",
-  "updated": "2026-03-28T03:54:52.819Z",
+  "updated": "2026-03-28T07:03:48.987Z",
   "status": "active",
   "parentSessionId": null,
   "childSessionIds": [],
@@ -16,7 +16,7 @@
     "assistantOutputCount": 2,
     "toolCallCount": 0,
     "delegationCount": 0,
-    "compactionCount": 0,
+    "compactionCount": 1,
     "turnCount": 1
   },
   "turns": [
@@ -64,6 +64,42 @@
       "type": "session_idle",
       "importance": "low",
       "timestamp": "2026-03-28T03:54:52.819Z",
+      "data": {
+        "sessionId": "ses_2cda02d75ffeKIc2xc1b0tN2qf"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-28T05:47:55.190Z",
+      "data": {
+        "sessionId": "ses_2cda02d75ffeKIc2xc1b0tN2qf"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-28T05:52:53.445Z",
+      "data": {
+        "sessionId": "ses_2cda02d75ffeKIc2xc1b0tN2qf"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "compaction",
+      "importance": "low",
+      "timestamp": "2026-03-28T07:02:43.533Z",
+      "data": {
+        "contextLength": 1
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-28T07:03:48.987Z",
       "data": {
         "sessionId": "ses_2cda02d75ffeKIc2xc1b0tN2qf"
       }

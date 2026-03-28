@@ -1,6 +1,7 @@
 ---
 name: use-hivemind-delegation
-description: Enforce delegation when front-facing agents must split work across subagents. Covers delegation decision rules, role selection, task decomposition, handoff packets, return contracts, resume protocol, and failure recovery.
+description: Delegation protocol for front-facing agents splitting work across subagents — covers decision rules, task decomposition, handoff packets, return contracts, and failure recovery.
+parent: use-hivemind
 ---
 
 # use-hivemind-delegation
@@ -24,9 +25,32 @@ Local delegation family for the refactored pack. Governs when, how, and with wha
 - Work spans >3 files or requires deep reads the orchestrator must not do
 - Session context is stale or suspect and fresh subagent context is needed
 
-## Do Not Use This For
+## Table of Contents
 
-- Normal single-slice execution with fresh context and ≤3 files
+- [Use This For](#use-this-for)
+- [Do Not Use This For](#do-not-use-this-for)
+- [Sibling Skills](#sibling-skills)
+- [Delegation Decision Rules](#decision-rules)
+- [Task Decomposition Rules](#task-decomposition-rules)
+- [Orchestrator Protection](#orchestrator-protection)
+- [How-To-Process vs How-To-Implement in Packets](#how-to-process-vs-how-to-implement)
+- [Core Protocol](#core-protocol)
+- [Shared Return Contract](#shared-return-contract)
+- [Delegation Modes](#delegation-modes)
+- [Role Boundaries](#role-boundaries)
+- [Failure and Recovery](#failure-and-recovery)
+- [Codescan Delegation](#codescan-delegation)
+- [Investigation Swarm Delegation](#investigation-swarm-delegation)
+- [Hierarchical Consumption](#hierarchical-consumption)
+- [Iterative Loop Control](#iterative-loop-control)
+- [Session Resume in Delegation](#session-resume)
+- [Workflow Example](#workflow-example)
+- [Granularity Gate](#granularity-gate)
+- [Parallel Dispatch Safety](#parallel-dispatch-safety)
+- [Hierarchical Packet Construction](#hierarchical-packet-construction)
+- [Context Window Management](#context-window-management)
+- [Bundled Resources](#bundled-resources)
+- [Independence Rules](#independence-rules)- Normal single-slice execution with fresh context and ≤3 files
 - Vague delegation with no scope or return contract — clarify scope first, then delegate
 - Recursive delegation when the parent scope is already unclear — decompose the parent before re-delegating
 - Tasks completable in <3 inline actions unless session freshness requires a fresh context
@@ -334,65 +358,6 @@ Append delegation events to `{activity}/delegation/registry.json` with:
 | Synthesis | Integrate 2 fixes, re-delegate blocked with expanded authority | Updated packet |
 | Integration | Full test suite → all pass → workflow complete | Done |
 
-## Granularity Gate
-
-<HARD-GATE>
-Before emitting a delegation packet, the orchestrator must pass through the granularity gate. Tasks exceeding these thresholds MUST be decomposed further.
-
-| Threshold | Rule | Action if Exceeded |
-|-----------|------|-------------------|
-| >3 file changes | Break into sequential or parallel sub-tasks | Decompose by authority surface, then concern |
-| >500 LOC write/edit/patch | Never in a single delegation | Split into ≤500 LOC slices with clear seams |
-| Mixed read+write across domains | Separate read-only from write-capable | Different packets, different agents |
-
-**Absolute rule:** NEVER dispatch parallel agents that edit/write/change/move/patch/update the same domain, same concerns, or dependent entities. Parallel is valid ONLY for independent READ at the smallest unit.
-</HARD-GATE>
-
-## Parallel Dispatch Safety
-
-| Parallel is SAFE when | Parallel is FORBIDDEN when |
-|----------------------|---------------------------|
-| Deep investigation with multiple offset reads | Any agent will write/edit/patch the same file |
-| Research via tavily/webfetch/context7/repomix/deepwiki | Slices share mutable state or imports |
-| Nested knowledge synthesis across independent domains | Slices modify the same concern or domain |
-| All agents are read-only (hivexplorer, hiverd) | Integration order matters (sequential dependency) |
-| Token-exhaustive operations needing window isolation | One slice's output is another slice's input |
-
-<HARD-GATE>
-If ANY agent in a parallel wave will write, edit, or mutate — all write agents in that wave MUST be sequential. Parallel write is allowed only when slices touch completely disjoint file sets with zero shared imports. When in doubt, sequential wins.
-</HARD-GATE>
-
-## Hierarchical Packet Construction
-
-Every delegation packet must include these elements — no exceptions:
-
-| Packet Element | Requirement | Example |
-|---------------|-------------|---------|
-| Prerequisite context | Validated output artifacts with valid paths | `prerequisite_refs: [".hivemind/activity/codescan/wave-1a/audit.json"]` |
-| Skills to load | What skills and how-to-process — NOT what-to-do | `skills: ["hivemind-codemap"]` |
-| Parent planning refs | Links to active planning and governance docs | `parent_planning_ref: ".hivemind/activity/plans/plan-v2.md"` |
-| Governance docs | Applicable AGENTS.md, ROADMAP, or sector charters | `governance_docs: ["AGENTS.md", "src/tools/AGENTS.md"]` |
-| Boundaries | Success metrics, files to create/modify, explicit out-of-scope | `out_of_scope: ["src/core/*", "dist/*"]` |
-| Stopping conditions | When to stop trying and return blocked/partial | `stop_on: ["3 failed fix attempts", "type errors persist"]` |
-| Delegation awareness | Agent knows it is delegated, not user-facing | `delegated: true, lineage: "hivefiver"` |
-| Overlap validation | Confirm no naming or implementation conflicts with other slices | `conflict_check: ["naming", "imports", "types"]` |
-
-Evidence, review, and feedback artifacts must output to `.hivemind/activity/{domain}/{pass_id}/` hierarchy.
-
-## Context Window Management
-
-Each delegation operates within a ~200k token context window. Plan accordingly:
-
-| Operation Type | Token Cost | Strategy |
-|---------------|-----------|----------|
-| Deep codebase scan (repomix, codemap) | High (50-100k) | Parallel breakdown by module |
-| Multi-source research (tavily, webfetch, context7) | High (40-80k) | Parallel by source type |
-| Implementation (write code, tests) | Medium (20-50k) | Sequential, bounded by LOC gate |
-| Verification (type check, test run) | Low (5-20k) | Sequential after implementation |
-
-**Rule:** If an operation is token-exhaustive (>50% window), break it into parallel independent slices. Research and investigation are highest-risk — plan parallel breakdown before dispatch.
-
-
 ## Bundled Resources
 
 | Resource | Purpose |
@@ -402,14 +367,35 @@ Each delegation operates within a ~200k token context window. Plan accordingly:
 | `references/role-boundaries.md` | Parent/child responsibilities, invalid delegation examples |
 | `references/codescan-delegation.md` | Agent selection, scan pass structure, resumable protocol |
 | `references/failure-recovery.md` | Partial return, timeout, escalation |
+| `references/multi-wave-dispatch.md` | Multi-wave dispatch flow, investigation swarms, hierarchical consumption |
+| `references/architecture-audit-delegation.md` | Architecture audit delegation packet pattern |
+| `references/debug-delegation.md` | Debug workflow delegation patterns |
+| `references/domain-escalation.md` | Domain escalation rules and triggers |
+| `references/evidence-collection.md` | Evidence collection methodology for delegation |
+| `references/parallel-dispatch.md` | Parallel dispatch coordination and safety |
+| `references/rb-role-platform-mapping.md` | Role-based role-to-platform mapping |
+| `references/refactor-delegation.md` | Refactor workflow delegation patterns |
+| `references/research-thread-management.md` | Research thread lifecycle management |
+| `references/role-platform-mapping.md` | Role-to-platform agent mapping |
+| `references/source-validation.md` | Source validation for delegated work |
+| `references/subagent-driven-development.md` | Subagent-driven development workflow |
 | `templates/delegation-packet.md` | Full packet JSON template |
 | `templates/handoff-brief.md` | Human-readable brief template |
 | `templates/codescan-delegation-packet.md` | Codescan-specific packet template |
-| `hivemind-gatekeeping` | Iterative loops, synthesis gates, cascading failure |
-| `references/multi-wave-dispatch.md` | Multi-wave dispatch flow, investigation swarms, hierarchical consumption, dynamic skill assignment |
+| `templates/audit-delegation-packet.md` | Architecture audit packet template |
+| `templates/debug-delegation-packet.md` | Debug workflow packet template |
+| `templates/evidence-table.md` | Evidence table template for returns |
+| `templates/implementer-prompt.md` | Implementer agent prompt template |
+| `templates/rb-role-declaration.md` | Role-based role declaration template |
+| `templates/refactor-delegation-packet.md` | Refactor workflow packet template |
+| `templates/research-delegation-packet.md` | Research delegation packet template |
+| `templates/role-declaration.md` | Role declaration template |
+| `templates/spec-reviewer-prompt.md` | Spec reviewer prompt template |
 | `tests/direct-invocation.md` | Basic delegation scenario with validation |
 | `tests/parallel-delegation.md` | Parallel dispatch scenario with validation |
 | `tests/failure-recovery.md` | Blocked-route recovery scenario with validation |
+| `tests/course-correction.md` | Course correction scenario with validation |
+| `tests/research-delegation.md` | Research delegation scenario with validation |
 
 ## Independence Rules
 

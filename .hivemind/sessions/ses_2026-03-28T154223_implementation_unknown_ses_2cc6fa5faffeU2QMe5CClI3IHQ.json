@@ -1,0 +1,61 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2cc6fa5faffeU2QMe5CClI3IHQ",
+  "semanticSessionId": "ses_2026-03-28T154223_implementation_unknown_ses_2cc6fa5faffeU2QMe5CClI3IHQ",
+  "sdkSessionId": "ses_2cc6fa5faffeU2QMe5CClI3IHQ",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-28T08:42:23.538Z",
+  "updated": "2026-03-28T08:42:24.325Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-28T08:42:23.538Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Done. Added reasoning/thinking summary config for:\n\n| Provider | Model |\n|----------|-------|\n| `opencode` | mimo-v2-pro-free, kimi-k2.5 |\n| `kilo` | mimo-v2-pro-free |\n| `zai-coding-plan` | glm-5.1 |\n\nJSON is valid. These models now have `thinking.type: enabled` with 16k budget and `reasoningSummary: auto` for session export."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-28T08:42:23.538Z",
+      "data": {
+        "text": "Done. Added reasoning/thinking summary config for:\n\n| Provider | Model |\n|----------|-------|\n| `opencode` | mimo-v2-pro-free, kimi-k2.5 |\n| `kilo` | mimo-v2-pro-free |\n| `zai-coding-plan` | glm-5.1 |\n\nJSON is valid. These models now have `thinking.type: enabled` with 16k budget and `reasoningSummary: auto` for session export.",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-28T08:42:24.324Z",
+      "data": {
+        "sessionId": "ses_2cc6fa5faffeU2QMe5CClI3IHQ"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-28T08:42:23.538Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=328"
+    }
+  ]
+}

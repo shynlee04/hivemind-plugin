@@ -1,11 +1,30 @@
 ---
 name: use-hivemind-tdd
-description: The TDD domain. Write the test first. Make it fail. Make it pass. Clean it up. Repeat for every phase. No exceptions.
+parent: use-hivemind
+description: TDD lifecycle enforcement — write failing tests first, implement to pass, refactor cleanly. No exceptions.
 ---
 
 # use-hivemind-tdd
 
 You're building something. The test comes first — always. This skill governs the entire TDD lifecycle: from writing the first failing test to claiming completion after the last refactor. It consolidates delegation mechanics, phase-level enforcement, and gate protocol into one place.
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [The TDD Loop](#the-tdd-loop)
+- [Gate 1: RED (Pre-Implementation)](#gate-1-red-pre-implementation)
+- [Gate 2: GREEN (Post-Implementation)](#gate-2-green-post-implementation)
+- [Gate 3: REFACTOR (Post-Cleanup)](#gate-3-refactor-post-cleanup)
+- [Gate 4: Phase Transition](#gate-4-phase-transition)
+- [Gate 5: Completion](#gate-5-completion)
+- [Phase TDD Lifecycle](#phase-tdd-lifecycle)
+- [Test Writing Order](#test-writing-order)
+- [Multi-Phase State Tracking](#multi-phase-state-tracking)
+- [Evidence Format](#evidence-format)
+- [Anti-Patterns](#anti-patterns)
+- [Regression Response](#regression-response)
+- [Bundled Resources](#bundled-resources)
+- [Independence Rules](#independence-rules)
 
 ## Load Position
 

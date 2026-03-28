@@ -12,17 +12,243 @@
     "read": "allow"
   },
   "provider": {
+    "_global": {
+      "options": {
+        "reasoningSummary": "auto"
+      }
+    },
     "minimax": {
       "options": {
-        "apiKey": "{env:MINIMAX_API_KEY}"
+        "apiKey": "{env:MINIMAX_API_KEY}",
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
       }
     },
     "openai": {
+      "options": {
+        "reasoningEffort": "high",
+        "textVerbosity": "low",
+        "reasoningSummary": "auto",
+        "include": ["reasoning"]
+      },
       "models": {
         "gpt-5.4": {
           "limit": {
             "context": 200000,
             "output": 128000
+          }
+        }
+      }
+    },
+    "anthropic": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "google": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "deepseek": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "xai": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "cohere": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "mistral": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "meta": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "bedrock": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "vertex": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "openrouter": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "ollama": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "lmstudio": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "groq": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "perplexity": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "together": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "fireworks": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "anyscale": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "sambanova": {
+      "options": {
+        "thinking": {
+          "type": "enabled",
+          "budgetTokens": 16000
+        },
+        "reasoningSummary": "auto"
+      }
+    },
+    "opencode": {
+      "models": {
+        "mimo-v2-pro-free": {
+          "options": {
+            "thinking": {
+              "type": "enabled",
+              "budgetTokens": 16000
+            },
+            "reasoningSummary": "auto"
+          }
+        },
+        "kimi-k2.5": {
+          "options": {
+            "thinking": {
+              "type": "enabled",
+              "budgetTokens": 16000
+            },
+            "reasoningSummary": "auto"
+          }
+        }
+      }
+    },
+    "kilo": {
+      "models": {
+        "mimo-v2-pro-free": {
+          "options": {
+            "thinking": {
+              "type": "enabled",
+              "budgetTokens": 16000
+            },
+            "reasoningSummary": "auto"
+          }
+        }
+      }
+    },
+    "zai-coding-plan": {
+      "models": {
+        "glm-5.1": {
+          "options": {
+            "thinking": {
+              "type": "enabled",
+              "budgetTokens": 16000
+            },
+            "reasoningSummary": "auto"
           }
         }
       }

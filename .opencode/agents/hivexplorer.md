@@ -1,7 +1,6 @@
 ---
 description: "Terminal repository investigator for read-only codebase research, evidence collection, and synthesis. Never mutates files or delegates implementation work."
 mode: subagent
-model: minimax-coding-plan/MiniMax-M2.7
 tools:
   write: false
   edit: false

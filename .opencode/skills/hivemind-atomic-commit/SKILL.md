@@ -1,11 +1,31 @@
 ---
 name: hivemind-atomic-commit
-description: Use when committing changes requires typed activity classification, dependency-aware ordering, pre-commit gate validation, and rollback planning. Covers atomic commit discipline: classify touched files by activity class, detect dependency ordering, run pre-commit gates (branch, worktree, secrets, conflicts), produce typed commit messages with conventional commit format and activity metadata, and emit rollback plans for reversibility.
+description: Typed commit discipline — classifies changes by activity, validates pre-commit gates, produces structured commit messages with rollback support.
+parent: use-hivemind
 ---
 
 # hivemind-atomic-commit
 
 Local commit discipline family for the refactored pack. Governs how changes are classified, ordered, validated, and committed as atomic, typed units with rollback support.
+
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Use This For](#use-this-for)
+- [Do Not Use This For](#do-not-use-this-for)
+- [Sibling Skills](#sibling-skills)
+- [Activity Classification](#activity-classification)
+- [Activity Mapping](#activity-mapping)
+- [Git Gate Protocol](#git-gate-protocol)
+- [Rollback Support](#rollback-support)
+- [Core Process](#core-process)
+- [Commit Message Format](#commit-message-format)
+- [Rollback Plan](#rollback-plan)
+- [Surface Ownership](#surface-ownership)
+- [Bundled Resources](#bundled-resources)
+- [Independence Rules](#independence-rules)
+- [.opencode/ Write Prohibition](#opencode-write-prohibition)
+- [Orchestrator Integration](#orchestrator-integration)
 
 ## Purpose
 
@@ -154,6 +174,7 @@ Read `references/surface-ownership.md` for the 12 surface classes, ownership ver
 | `templates/commit-gate-result.md` | JSON template for gate check results |
 | `templates/rollback-plan.md` | JSON template for rollback planning |
 | `tests/direct-invocation.md` | Basic scenario with validation |
+| `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
 
 ## Independence Rules
 

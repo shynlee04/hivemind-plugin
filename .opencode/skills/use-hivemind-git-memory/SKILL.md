@@ -1,6 +1,7 @@
 ---
 name: use-hivemind-git-memory
-description: Git-based semantic memory operations — session recovery, continuity state, decision retrieval, and hierarchy indexing. Use when resuming interrupted work, tracing decision rationale, or querying indexed commit chains.
+description: Git-based semantic memory operations for session recovery, continuity state, decision retrieval, and hierarchy indexing across multi-turn workflows.
+parent: use-hivemind
 ---
 
 # use-hivemind-git-memory
@@ -14,6 +15,18 @@ Monolithic implementation guide for all git-based semantic memory operations. Th
 - Register memory-enforced commits in the hierarchy index for future retrieval
 - Manage long-haul task checkpoints spanning multiple turns
 - Maintain deterministic path resolution for all git-memory artifacts
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When to Activate](#when-to-activate)
+- [Prerequisites](#prerequisites)
+- [Bundled Resources](#bundled-resources)
+- [Implementation Operations](#implementation-operations)
+- [Sibling Skills](#sibling-skills)
+- [Anti-Patterns](#anti-patterns)
+- [Independence Rules](#independence-rules)
+- [Return Contract](#return-contract)
 
 ## Load Position
 

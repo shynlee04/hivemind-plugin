@@ -1,12 +1,10 @@
 ---
 description: "Architect for system design, technical decisions, pattern selection, and scalability planning. Use before implementations, when making tech stack decisions, designing APIs, evaluating architecture trade-offs, or planning refactoring strategies."
 mode: subagent
-model: zai-coding-plan/glm-5.1
 reasoningEffort: high
 tools:
   write: false
   edit: false
----
 permission:
   edit: deny
   bash:
@@ -27,6 +25,7 @@ permission:
     "hiveq": allow
     "hivexplorer": allow
 ---
+
 # Architect — System Design Authority
 
 ## Role Priming

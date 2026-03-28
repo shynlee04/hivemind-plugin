@@ -1,0 +1,37 @@
+version: v1
+turnId: turn_ses_doctor_1774671520869_1774671521049
+invocationId: inv_ses_doctor_1774671520869_1774671521048
+lifecycle:
+  layer: turn-output
+  phase: completed
+  entryState: qa-pending
+  qaState: pending
+  releaseState: blocked
+  invocationPhase: request
+sessionId: ses_doctor_1774671520869
+sessionScope: main
+taskIds: []
+subtaskIds: []
+status: qa-pending
+qaState: pending
+pivot: hm-harness
+rationale:
+  - command:hm-doctor
+  - execution:handler
+workflowEffects:
+  - recovery-checkpoint-created
+  - planning-projection-created
+  - entry-kernel-qa-pending
+dependencyEffects: []
+sotEffects: []
+artifactRefs:
+  - /Users/apple/hivemind-plugin/.worktrees/product-detox/.hivemind/project/planning/trajectory-projections/trj_ses_doctor_1774671520869.json
+toolEvidence:
+  - readiness-gate
+  - repair-actions
+  - checkpoint
+  - planning-projection
+followups:
+  - hm-harness
+resumeHints:
+  - workflow:ses_doctor_1774671520869

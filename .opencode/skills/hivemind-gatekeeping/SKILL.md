@@ -1,9 +1,42 @@
 ---
 name: hivemind-gatekeeping
-description: Loop control and synthesis gates. When work needs iteration, this skill governs the loop. Checkpoints, gates, carry-forward compression, cascading failure recovery.
+description: Loop control and synthesis gates — checkpoints, carry-forward compression, cascading failure recovery, and iterative loop governance.
+parent: use-hivemind
 ---
 
 # hivemind-gatekeeping
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When You Need This](#when-you-need-this)
+- [Loop Setup](#loop-setup)
+- [Iteration Rules](#iteration-rules)
+- [Synthesis Gates](#synthesis-gates)
+  - [The Four Checks](#the-four-checks)
+  - [When a Gate Fails](#when-a-gate-fails)
+- [Evidence-Based Gatekeeping](#evidence-based-gatekeeping)
+  - [Claim vs. Evidence](#claim-vs-evidence)
+  - [Excuse Prevention](#excuse-prevention)
+  - [Gate Evidence Record](#gate-evidence-record)
+- [Incremental Gatekeeping](#incremental-gatekeeping)
+  - [Gate Granularity](#gate-granularity)
+  - [File-Level Gate](#file-level-gate)
+  - [Module-Level Gate](#module-level-gate)
+  - [Phase-Level Gate](#phase-level-gate)
+- [Cross-Team Boundary Gatekeeping](#cross-team-boundary-gatekeeping)
+  - [Pre-Commit Boundary Check](#pre-commit-boundary-check)
+  - [Post-Implementation Contract Check](#post-implementation-contract-check)
+  - [Scope Violation Detection](#scope-violation-detection)
+- [Bead Tracking](#bead-tracking)
+- [Integration Verification](#integration-verification)
+- [Cascading Failure](#cascading-failure)
+  - [Parallel Collapse (>50% Fail)](#parallel-collapse-50-fail)
+  - [Same Failure, 3+ Iterations](#same-failure-3-iterations)
+  - [Decision Matrix](#decision-matrix)
+- [Anti-Patterns](#anti-patterns)
+- [Storage](#storage)
+- [Bundled Resources](#bundled-resources)
 
 ## Load Position
 

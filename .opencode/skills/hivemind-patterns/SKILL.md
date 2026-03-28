@@ -1,9 +1,42 @@
 ---
 name: hivemind-patterns
-description: Architecture patterns reference. Clean Architecture, CQRS, design patterns, anti-patterns. When you need to make structural decisions, start here.
+description: Architecture patterns reference — Clean Architecture, CQRS, design patterns, and anti-patterns for structural decisions.
+parent: use-hivemind
 ---
 
 # hivemind-patterns
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When You Need This](#when-you-need-this)
+- [Clean Architecture](#clean-architecture)
+  - [The Four Layers](#the-four-layers)
+  - [The Dependency Rule](#the-dependency-rule)
+  - [Practical Check](#practical-check)
+- [CQRS](#cqrs)
+  - [The Hard Boundary](#the-hard-boundary)
+  - [Why It Matters](#why-it-matters)
+  - [When to Use It](#when-to-use-it)
+  - [When NOT to Use It](#when-not-to-use-it)
+  - [Anti-Pattern: The Leaky Command](#anti-pattern-the-leaky-command)
+- [Design Patterns](#design-patterns)
+  - [Strategy](#strategy)
+  - [Observer](#observer)
+  - [Factory](#factory)
+  - [Decorator](#decorator)
+  - [Repository](#repository)
+- [Anti-Pattern Catalog](#anti-pattern-catalog)
+  - [God Component](#god-component)
+  - [God Function](#god-function)
+  - [Dead Code](#dead-code)
+  - [Zombie Code](#zombie-code)
+  - [Tight Coupling](#tight-coupling)
+  - [Primitive Obsession](#primitive-obsession)
+- [Pattern Selection Decision Tree](#pattern-selection-decision-tree)
+  - [The Golden Rule](#the-golden-rule)
+- [Bundled Resources](#bundled-resources)
+- [References](#references)
 
 ## Load Position
 Layer: Depth. Requires `use-hivemind` (entry router) loaded first.

@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "created_at": "2026-03-28T15:00:00Z",
+    "updated_at": "2026-03-28T16:30:00Z"
+  },
+  "session_type": "orchestration-resume",
+  "branch": "v2.9.5-detox-dev",
+  "last_commit": "005126f8",
+  "current_phase": "phase-5-implementation",
+  "previous_phases_completed": [
+    "phase-0-orchestration-setup",
+    "phase-1-research-wave-1",
+    "phase-2-audit-wave-2",
+    "phase-3-pattern-gate",
+    "phase-4-integration-planning-wave-3"
+  ],
+  "phase_4_partial": {
+    "hiveplanner": "completed",
+    "architect": "interrupted-by-disconnect-skipped"
+  },
+  "orchestration_plan": ".hivemind/activity/plans/orchestration-master-plan-2026-03-28-v2.md",
+  "integration_plan": ".hivemind/activity/plans/integration-plan-2026-03-28.md",
+  "skills_root": ".developing-skills/refactored-skills/",
+  "active_wave": "batch-1",
+  "active_batches": ["batch-1"],
+  "completed_batches": [],
+  "batch_state": {
+    "batch-1": "dispatching",
+    "batch-2": "pending",
+    "batch-3": "pending",
+    "batch-4": "pending"
+  },
+  "carry_forward": [
+    "7 overloaded skills identified: use-hivemind(389), use-hivemind-delegation(405), hivemind-gatekeeping(336), hivemind-refactor(314), use-hivemind-context(302), use-hivemind-planning(315), use-hivemind-tdd(346)",
+    "3 orphaned skills: hivemind-system-debug, hivemind-patterns, use-hivemind-skill-authoring",
+    "5 Pattern 3 skills missing conditional loading: refactor, system-debug, patterns, delegation, research",
+    "Highest-value external assets: ADR template, 42-rule clean arch, INVEST/Fibonacci, ISTQB test design, code review checklists",
+    "Integration plan: 53 tasks across 4 batches, critical path Batch1.1→Batch2.1→Batch4.4"
+  ],
+  "blocked_routes": [],
+  "new_skills_planned": ["hivemind-architecture", "hivemind-execution"],
+  "pattern_assignments": {
+    "hivemind-architecture": "pattern-3",
+    "hivemind-execution": "pattern-1",
+    "hivemind-refactor": "pattern-3",
+    "hivemind-patterns": "pattern-3",
+    "use-hivemind-planning": "pattern-1",
+    "use-hivemind-tdd": "pattern-1",
+    "hivemind-gatekeeping": "pattern-1",
+    "hivemind-system-debug": "pattern-3",
+    "hivemind-spec-driven": "pattern-1",
+    "use-hivemind-delegation": "pattern-3",
+    "use-hivemind-context": "pattern-1",
+    "use-hivemind-research": "pattern-3",
+    "hivemind-atomic-commit": "pattern-1",
+    "hivemind-codemap": "pattern-1",
+    "use-hivemind-git-memory": "pattern-1",
+    "use-hivemind": "pattern-1"
+  },
+  "user_transfer_protocol": "User manually copies to .opencode/skills/ after each batch and restarts"
+}

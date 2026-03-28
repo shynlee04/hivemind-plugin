@@ -2,7 +2,6 @@
 description: "Terminal external-research specialist for ecosystem, documentation, and market evidence. Never mutates repository files or delegates."
 mode: subagent
 model: minimax-coding-plan/MiniMax-M2.7
-reasoningEffort: medium
 tools:
   write: false
   edit: false

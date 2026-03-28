@@ -2,7 +2,6 @@
 description: "Implementation specialist for product work. Executes scoped code changes, file creation, and modification. Terminal executor — implements what architect designs and hiveq verifies."
 mode: subagent
 model: zai-coding-plan/glm-5.1
-reasoningEffort: high
 tools:
   write: true
   edit: true
