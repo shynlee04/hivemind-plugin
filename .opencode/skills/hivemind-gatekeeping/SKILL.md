@@ -30,6 +30,7 @@ parent: use-hivemind
   - [Scope Violation Detection](#scope-violation-detection)
 - [Bead Tracking](#bead-tracking)
 - [Integration Verification](#integration-verification)
+- [Review Gates](#review-gates)
 - [Cascading Failure](#cascading-failure)
   - [Parallel Collapse (>50% Fail)](#parallel-collapse-50-fail)
   - [Same Failure, 3+ Iterations](#same-failure-3-iterations)
@@ -268,6 +269,14 @@ When parallel slices come back, you can't just merge and move on. Verify they ac
 
 If two slices both modify `src/shared/types.ts` and produce incompatible definitions, re-delegate the one that's wrong. Don't re-run both.
 
+## Review Gates
+
+Review gates sit between phases. After a batch completes, before verification begins, a review gate checks output completeness, cross-reference validity, and pattern compliance. Unlike synthesis gates (which control iteration loops), review gates control phase transitions.
+
+For full review gate protocol, see `references/review-gate.md`.
+
+For integration checkpoints that verify parallel batch composition, see `references/integration-checkpoint.md`.
+
 ## Cascading Failure
 
 When things go wrong at scale, you need a plan.
@@ -334,3 +343,5 @@ Scan-specific loops: `{activity}/codescan/{pass_id}/loop-checkpoint.json`
 | `tests/iterative-loop.md` | Iterative loop scenario with validation |
 | `tests/cascading-failure.md` | Cascading failure scenario with validation |
 | `references/evidence-based-gatekeeping.md` | Evidence requirements for every gate check, excuse prevention |
+| `references/review-gate.md` | Review gate checkpoints between phases |
+| `references/integration-checkpoint.md` | Integration verification for parallel batch completion |

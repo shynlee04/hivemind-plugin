@@ -33,6 +33,8 @@ parent: use-hivemind
   - [Zombie Code](#zombie-code)
   - [Tight Coupling](#tight-coupling)
   - [Primitive Obsession](#primitive-obsession)
+- [Architecture Patterns](#architecture-patterns)
+  - [When to Load](#when-to-load)
 - [Pattern Selection Decision Tree](#pattern-selection-decision-tree)
   - [The Golden Rule](#the-golden-rule)
 - [Bundled Resources](#bundled-resources)
@@ -218,6 +220,23 @@ Is the problem about object creation?
 ### The Golden Rule
 If you can't articulate the problem clearly, you don't need a pattern yet. You need to understand the problem better. Patterns are solutions. Start with the problem.
 
+## Architecture Patterns
+
+When designing new systems or evaluating existing architecture, load the architecture patterns reference for detailed pattern comparisons, trade-off analysis, and selection guidance.
+
+### When to Load
+| Condition | Load Reference |
+|-----------|---------------|
+| Designing a new system | architecture-patterns.md |
+| Evaluating microservice boundaries | architecture-patterns.md |
+| Comparing architecture approaches | architecture-patterns.md |
+
+## Sibling Skills
+
+| Skill | Relationship |
+|-------|-------------|
+| `use-hivemind` | Entry router — triggers this skill for structural decisions |
+
 ## Bundled Resources
 
 | Resource | Path | Purpose |
@@ -225,6 +244,7 @@ If you can't articulate the problem clearly, you don't need a pattern yet. You n
 | Anti-Pattern Catalog | `references/anti-pattern-catalog.md` | Comprehensive catalog of architectural anti-patterns |
 | Pattern Catalog | `references/pattern-catalog.md` | Design and architecture pattern reference |
 | Pattern Decision | `templates/pattern-decision.md` | Template for pattern selection decisions |
+| Architecture Patterns | `references/architecture-patterns.md` | Architecture pattern catalog with selection guide |
 
 ## References
 

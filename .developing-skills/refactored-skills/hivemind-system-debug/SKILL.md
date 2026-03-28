@@ -82,6 +82,13 @@ Debug work is **always delegated** from the orchestrator. The orchestrator:
 - refactor readiness recommendation
 - evidence classification (confirmed / inferred / unverified)
 
+## Sibling Skills
+
+| Skill | Relationship |
+|-------|-------------|
+| `use-hivemind` | Entry router — triggers this skill for debug workflows |
+| `use-hivemind-delegation` | Delegation protocol — debug dispatches through this |
+
 ## Bundled Resources
 
 | Resource | Path | Purpose |

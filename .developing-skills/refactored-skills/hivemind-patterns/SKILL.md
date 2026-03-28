@@ -231,6 +231,12 @@ When designing new systems or evaluating existing architecture, load the archite
 | Evaluating microservice boundaries | architecture-patterns.md |
 | Comparing architecture approaches | architecture-patterns.md |
 
+## Sibling Skills
+
+| Skill | Relationship |
+|-------|-------------|
+| `use-hivemind` | Entry router — triggers this skill for structural decisions |
+
 ## Bundled Resources
 
 | Resource | Path | Purpose |

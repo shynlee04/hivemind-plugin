@@ -212,6 +212,8 @@ Skills are loaded in conditional batches based on the current plan, workflow pha
 | Multi-stage refactor | `use-hivemind` | Framework refactor, recovery, detox across context and code |
 | Research questions | `use-hivemind-research` | Multi-source investigation, evidence grading, synthesis |
 | Planning work | `use-hivemind-planning` | Plan lifecycle, phase decomposition, execution tracking |
+| Debug/recovery workflows | `hivemind-system-debug` | Debug delegation, remediation, recovery routing |
+| Architecture/pattern decisions | `hivemind-patterns` | Pattern selection, anti-pattern detection, CQRS guidance |
 | Simple questions | Execute inline | Answer directly without routing — no skill loading needed |
 
 **Routing decision:** Match the request intent to the table above. If the request spans multiple categories, pick the primary intent. If ambiguous, ask one clarifying question.
@@ -223,8 +225,8 @@ The skill batch is composed dynamically. Every load must follow dependency order
 | Layer | Purpose | When Loaded | Examples |
 |-------|---------|-------------|---------|
 | Entry | Session router | Always loaded first | `use-hivemind` |
-| Domain | Domain router for current phase | When the task enters a specific domain | `use-hivemind-delegation`, `use-hivemind-planning`, `use-hivemind-context`, etc. |
-| Depth | Implementation/complement skills | When the task needs specific methodology | `use-hivemind-tdd`, `hivemind-atomic-commit`, `hivemind-gatekeeping`, etc. |
+| Domain | Domain router for current phase | When the task enters a specific domain | `use-hivemind-delegation`, `use-hivemind-planning`, `use-hivemind-context`, `use-hivemind-skill-authoring`, etc. |
+| Depth | Implementation/complement skills | When the task needs specific methodology | `use-hivemind-tdd`, `hivemind-atomic-commit`, `hivemind-gatekeeping`, `hivemind-system-debug`, `hivemind-patterns`, etc. |
 
 **Composition rules:**
 

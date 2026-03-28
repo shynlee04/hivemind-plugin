@@ -50,12 +50,16 @@ Local delegation family for the refactored pack. Governs when, how, and with wha
 - [Hierarchical Packet Construction](#hierarchical-packet-construction)
 - [Context Window Management](#context-window-management)
 - [Bundled Resources](#bundled-resources)
-- [Independence Rules](#independence-rules)- Normal single-slice execution with fresh context and ≤3 files
-- Vague delegation with no scope or return contract — clarify scope first, then delegate
-- Recursive delegation when the parent scope is already unclear — decompose the parent before re-delegating
-- Tasks completable in <3 inline actions unless session freshness requires a fresh context
+- [Conditional Loading](#conditional-loading)
+- [Independence Rules](#independence-rules)
 
-**If delegation criteria are not met, execute inline.** If the user requested delegation but scope is unclear, emit a scope-clarification question rather than a delegation packet.
+## Do Not Use This For
+
+- Single-file edits with clear scope and fresh context — execute inline
+- Tasks completable in <3 inline actions — overhead exceeds value
+- Vague delegation with no scope — clarify scope first, then decide
+- Domain-specific loops (TDD, debug, refactor, research) — those domain skills handle their own loop control
+- Simple questions answerable without delegation — answer directly
 
 ## Sibling Skills
 
@@ -356,8 +360,6 @@ Append delegation events to `{activity}/delegation/registry.json` with:
 | Dispatch | 3 subagents in parallel, self-contained prompts | 3 running |
 | Returns | 2 complete, 1 partial (`blocked: shared/types.ts`) | Synthesize |
 | Synthesis | Integrate 2 fixes, re-delegate blocked with expanded authority | Updated packet |
-| Integration | Full test suite → all pass → workflow complete | Done |
-
 ## Bundled Resources
 
 | Resource | Purpose |
@@ -379,6 +381,8 @@ Append delegation events to `{activity}/delegation/registry.json` with:
 | `references/role-platform-mapping.md` | Role-to-platform agent mapping |
 | `references/source-validation.md` | Source validation for delegated work |
 | `references/subagent-driven-development.md` | Subagent-driven development workflow |
+| `references/multi-reviewer-protocol.md` | Multi-agent review dispatch, dimension ownership, synthesis |
+| `references/hard-stop-conditions.md` | Immediate delegation stop triggers and recovery protocol |
 | `templates/delegation-packet.md` | Full packet JSON template |
 | `templates/handoff-brief.md` | Human-readable brief template |
 | `templates/codescan-delegation-packet.md` | Codescan-specific packet template |
