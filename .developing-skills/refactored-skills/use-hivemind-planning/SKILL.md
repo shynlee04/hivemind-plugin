@@ -305,6 +305,30 @@ Carry-forward            →     Verification gate evidence
 3. **Re-decomposition triggers TDD reset.** When a slice re-decomposes, discard its test suite and start RED fresh on the new slices.
 4. **Planning carries the what; TDD carries the how.** Planning says "this slice implements X." TDD says "here's the test proving X works."
 
+## Concrete Bash Examples
+
+```bash
+git diff --stat HEAD~1..HEAD
+npx tsc --noEmit 2>&1 | head -10
+npm test 2>&1 | head -20
+```
+
+## External Research MCP Matrix
+
+| Research Need | Preferred MCP Tool | Why |
+| --- | --- | --- |
+| current library constraints | `context7_query-docs` | version-specific API proof |
+| public repo structure or examples | `deepwiki_ask_question` | repo-grounded summary |
+| remote codebase packaging | `repomix_pack_remote_repository` | full repo evidence |
+| broad external search | `tavily_tavily_search` | current web discovery |
+
+## Dependency Decision Tree
+
+1. **IF** two slices edit the same file or schema, **THEN** classify the edge as `peer` and keep them sequential.
+2. **IF** slice B consumes an interface or output created by slice A, **THEN** classify it as `hard` and schedule A first.
+3. **IF** the only coupling is tooling or tests, **THEN** classify it as `dev` and isolate verification from implementation.
+4. **IF** dependency confidence is low, **THEN** load `references/dependency-analysis-reference.md` and gather proof before parallel dispatch.
+
 ## Sibling Skills
 
 | Parent | This Skill | Depth Partner | TDD Partner |
@@ -342,3 +366,12 @@ This skill integrates with: `hivemind-spec-driven` (requirement extraction), and
 | Parallel Candidates | `tests/parallel-candidates.md` | Test for parallel candidate handling |
 | Plan Scenario | `tests/plan-scenario.md` | Test for full planning scenario |
 | Re-Decomposition | `tests/re-decomposition.md` | Test for re-decomposition protocol |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

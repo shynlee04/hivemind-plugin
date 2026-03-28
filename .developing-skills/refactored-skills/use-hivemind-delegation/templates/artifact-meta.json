@@ -1,0 +1,9 @@
+{
+  "_meta": {
+    "created_at": "2026-03-29T00:00:00Z",
+    "updated_at": "2026-03-29T00:00:00Z",
+    "producer": "PRODUCER_NAME",
+    "producer_version": "1.0.0",
+    "parent_packet_id": null
+  }
+}

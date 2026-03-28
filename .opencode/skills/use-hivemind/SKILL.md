@@ -1,6 +1,7 @@
 ---
 name: use-hivemind
 description: Master session entry router. Detects lineage (hivefiver vs hiveminder), checks context health, routes to correct domain router. Blocks when context is degraded. Loads skill batches dynamically based on plan, workflow, and task context. Every agent session must start here.
+parent: none
 ---
 
 # use-hivemind
@@ -214,6 +215,7 @@ Skills are loaded in conditional batches based on the current plan, workflow pha
 | Planning work | `use-hivemind-planning` | Plan lifecycle, phase decomposition, execution tracking |
 | Debug/recovery workflows | `hivemind-system-debug` | Debug delegation, remediation, recovery routing |
 | Architecture/pattern decisions | `hivemind-patterns` | Pattern selection, anti-pattern detection, CQRS guidance |
+| Investigation & synthesis | `hivemind-synthesis` | Investigation, research, and synthesis orchestration — codebase, sessions, activity analysis |
 | Simple questions | Execute inline | Answer directly without routing — no skill loading needed |
 
 **Routing decision:** Match the request intent to the table above. If the request spans multiple categories, pick the primary intent. If ambiguous, ask one clarifying question.
@@ -379,6 +381,36 @@ Do not load this skill — defer or block — when:
 - No mutation — this skill never writes files, modifies state, or commits
 - No how-to-implement — delegates process guidance, never specifies implementation details
 
+## OpenCode Tool Matrix
+
+| Session Entry Need | Preferred Tool | Why |
+| --- | --- | --- |
+| load the next skill batch | `skill` | official skill activation |
+| inspect light session artifacts | `read` | shallow context only |
+| locate likely governance files | `glob` | bounded discovery |
+| verify branch freshness | `bash` | authoritative git evidence |
+
+## MCP Priority Order
+
+1. `context7_query-docs` for current library behavior.
+2. `deepwiki_ask_question` for indexed public repositories.
+3. `tavily_tavily_search` or `exa_web_search_exa` for broader external discovery.
+
+## Concrete Bash Examples
+
+```bash
+git status --short --branch
+git log --oneline -5
+npx tsc --noEmit 2>&1 | head -10
+```
+
+## Session Entry Decision Tree
+
+1. **IF** context health is uncertain, **THEN** load `use-hivemind-context` before any deeper routing.
+2. **IF** the task needs planning, **THEN** route to `use-hivemind-planning`.
+3. **IF** the task needs implementation with tests, **THEN** route through planning or delegation and then to `use-hivemind-tdd`.
+4. **IF** the request is a simple answer with no routing need, **THEN** do not load extra domain skills.
+
 ## Bundled Resources
 
 | Resource | Purpose |
@@ -389,3 +421,12 @@ Do not load this skill — defer or block — when:
 | `references/agent-roles.md` | All agent role definitions, boundary matrix |
 | `references/verification-before-completion.md` | Evidence-before-assertions gate |
 | `templates/load-template.md` | Dynamic batch loading templates for common workflows |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

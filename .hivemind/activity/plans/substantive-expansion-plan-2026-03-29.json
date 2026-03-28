@@ -1,0 +1,236 @@
+{
+  "_meta": {
+    "created_at": "2026-03-29T12:00:00Z",
+    "updated_at": "2026-03-29T12:00:00Z",
+    "producer": "hiveplanner",
+    "plan_id": "substantive-expansion-plan-2026-03-29"
+  },
+  "plan_path": ".hivemind/activity/plans/substantive-expansion-plan-2026-03-29.md",
+  "json_path": ".hivemind/activity/plans/substantive-expansion-plan-2026-03-29.json",
+  "total_batches": 6,
+  "total_new_files": 42,
+  "total_modified_files": 18,
+  "total_new_lines_estimated": 8550,
+  "critical_path": "BATCH-5 → BATCH-1 → BATCH-2",
+  "parallel_groups": [
+    ["BATCH-1", "BATCH-3", "BATCH-4"],
+    ["BATCH-6"]
+  ],
+  "batches": [
+    {
+      "batch_id": "batch-1",
+      "title": "Research Package",
+      "skills_affected": ["use-hivemind-research"],
+      "files_to_create": 9,
+      "files_to_modify": 1,
+      "estimated_lines": 1485,
+      "priority": "critical",
+      "dependencies": ["batch-5"],
+      "deliverables": {
+        "references": [
+          "references/mcp-tool-protocols.md (~300 lines)",
+          "references/research-classification.md (~250 lines)",
+          "references/vocabulary-discovery.md (~150 lines)",
+          "references/cross-stack-workflow.md (~200 lines)",
+          "references/evidence-contract.md (~150 lines)"
+        ],
+        "templates": [
+          "templates/research-packet.json (~80 lines)",
+          "templates/claims-evidence-table.md (~60 lines)"
+        ],
+        "scripts": [
+          "scripts/hm-research-validate.sh (~80 lines)"
+        ],
+        "skill_md_additions": "OpenCode tool matrix, MCP priority table, activity output section, 3 bash examples, 1 decision tree (~200 lines added)"
+      },
+      "success_criteria": [
+        "SKILL.md has ≥5 concrete bash command examples with expected output",
+        "SKILL.md has MCP tool function signatures with rate limits and fallbacks",
+        "templates/research-packet.json has all fields with example values",
+        "references/mcp-tool-protocols.md covers all 6 MCP server categories",
+        "scripts/hm-research-validate.sh exits 0 on valid, 1 on invalid research output",
+        "4-mode depth scaling (Quick/Standard/Deep/UltraDeep) documented with thresholds",
+        "Vocabulary discovery phase documented with 5-step process"
+      ]
+    },
+    {
+      "batch_id": "batch-2",
+      "title": "Synthesis Package",
+      "skills_affected": ["hivemind-synthesis"],
+      "files_to_create": 8,
+      "files_to_modify": 1,
+      "estimated_lines": 1225,
+      "priority": "high",
+      "dependencies": ["batch-5", "batch-1"],
+      "deliverables": {
+        "references": [
+          "references/source-credibility-scoring.md (~250 lines)",
+          "references/claims-evidence-methodology.md (~150 lines)",
+          "references/progressive-assembly.md (~200 lines)",
+          "references/mcp-tool-catalog.md (~200 lines)"
+        ],
+        "templates": [
+          "templates/synthesis-report.md (~100 lines)",
+          "templates/credibility-scorecard.json (~80 lines)"
+        ],
+        "scripts": [
+          "scripts/hm-synthesis-validate.sh (~100 lines)"
+        ],
+        "skill_md_additions": "Claims-evidence tables, credibility scoring, progressive assembly, activity output section (~200 lines added)"
+      },
+      "success_criteria": [
+        "SKILL.md has claims-evidence table format with field descriptions",
+        "Source credibility scoring (0-100) with domain authority, recency, expertise, bias components",
+        "Progressive assembly strategy documented (section-by-section for large syntheses)",
+        "Counterevidence register template provided",
+        "Diminishing-returns detection criteria listed",
+        "3+ concrete bash examples for synthesis validation"
+      ]
+    },
+    {
+      "batch_id": "batch-3",
+      "title": "Delegation Package",
+      "skills_affected": ["use-hivemind-delegation"],
+      "files_to_create": 8,
+      "files_to_modify": 1,
+      "estimated_lines": 1100,
+      "priority": "high",
+      "dependencies": ["batch-5"],
+      "deliverables": {
+        "references": [
+          "references/multi-packet-protocol.md (~200 lines)",
+          "references/hierarchical-json-schema.md (~150 lines)",
+          "references/cross-domain-evidence.md (~150 lines)"
+        ],
+        "templates": [
+          "templates/delegation-packet-multi.json (~100 lines)",
+          "templates/hierarchical-investigation-schema.json (~80 lines)"
+        ],
+        "scripts": [
+          "scripts/hm-delegation-validate.sh (~80 lines)"
+        ],
+        "skill_md_additions": "Multi-packet support, hierarchical JSON, cross-domain evidence, activity output section (~200 lines added)"
+      },
+      "success_criteria": [
+        "Multi-packet delegation format documented with sequential/parallel modes",
+        "Hierarchical JSON schema supports TOC, metadata grep, offset reading",
+        "Cross-domain multi-slice investigation template provided",
+        "Structured evidence return schema (JSON) for sub-agent returns",
+        "Delta-query specification format for gap-filling",
+        "3+ concrete bash examples for delegation packet validation"
+      ]
+    },
+    {
+      "batch_id": "batch-4",
+      "title": "Refactor Package",
+      "skills_affected": ["hivemind-refactor"],
+      "files_to_create": 7,
+      "files_to_modify": 1,
+      "estimated_lines": 1030,
+      "priority": "high",
+      "dependencies": ["batch-5"],
+      "deliverables": {
+        "references": [
+          "references/code-review-checklist.md (~200 lines)",
+          "references/tool-driven-refactor.md (~150 lines)"
+        ],
+        "templates": [
+          "templates/refactor-checklist.md (~80 lines)",
+          "templates/refactor-packet.json (~70 lines)"
+        ],
+        "scripts": [
+          "scripts/hm-refactor-gate.sh (~80 lines)"
+        ],
+        "skill_md_additions": "Code review with tool references, LSP integration, activity output section (~200 lines added)"
+      },
+      "success_criteria": [
+        "Code review checklist references specific OpenCode tools (grep, glob, lsp, read)",
+        "LSP operations documented for refactor impact analysis (findReferences, prepareCallHierarchy)",
+        "Tool selection matrix for refactor operations (when grep vs lsp vs read)",
+        "3+ concrete bash examples with git rollback commands",
+        "Refactor packet template with scope, tools, verification gates"
+      ]
+    },
+    {
+      "batch_id": "batch-5",
+      "title": "Activity Folder Protocol",
+      "skills_affected": ["ALL 18 SKILLS"],
+      "files_to_create": 6,
+      "files_to_modify": 18,
+      "estimated_lines": 780,
+      "priority": "critical",
+      "dependencies": [],
+      "deliverables": {
+        "shared_references": [
+          ".developing-skills/shared-refs/activity-folder-protocol.md (~150 lines)",
+          ".developing-skills/shared-refs/opencode-tool-matrix.md (~120 lines)",
+          ".developing-skills/shared-refs/mcp-priority-order.md (~80 lines)",
+          ".developing-skills/shared-refs/tool-selection-decision-trees.md (~80 lines)"
+        ],
+        "scripts": [
+          "scripts/hm-artifact-validate.sh (~50 lines)",
+          "scripts/hm-artifact-create.sh (~50 lines)"
+        ],
+        "skill_md_additions": "15-line Activity Output section added to all 18 SKILL.md files (~270 lines total)"
+      },
+      "success_criteria": [
+        "Activity folder protocol document covers naming, hierarchy, timestamps, attribution",
+        "OpenCode tool matrix covers all 14 built-in tools with when-to-use conditions",
+        "MCP priority order document covers all 6 priority levels with rate limits",
+        "hm-artifact-validate.sh confirms filename has date, JSON has _meta, path is valid",
+        "hm-artifact-create.sh creates artifact with auto-populated _meta",
+        "All 18 SKILL.md files have Activity Output section referencing shared protocol"
+      ]
+    },
+    {
+      "batch_id": "batch-6",
+      "title": "Remaining Skills",
+      "skills_affected": [
+        "hivemind-execution",
+        "hivemind-architecture",
+        "hivemind-patterns",
+        "hivemind-codemap",
+        "hivemind-system-debug",
+        "hivemind-spec-driven",
+        "use-hivemind-planning",
+        "use-hivemind-tdd",
+        "use-hivemind-context",
+        "use-hivemind-git-memory",
+        "hivemind-gatekeeping",
+        "use-hivemind-skill-authoring",
+        "hivemind-atomic-commit",
+        "use-hivemind"
+      ],
+      "files_to_create": 15,
+      "files_to_modify": 14,
+      "estimated_lines": 2930,
+      "priority": "medium",
+      "dependencies": ["batch-5"],
+      "deliverables": {
+        "per_skill_additions": "Each of 14 skills gets: 3+ bash examples, 1+ decision tree, 1+ template, OpenCode tool matrix reference, activity output section. Skills needing MCP integration get MCP priority reference.",
+        "new_references": [
+          "hivemind-architecture: pattern-selection-reference.md (~150 lines), adr-template.md (~100 lines)",
+          "hivemind-patterns: pattern-catalog-reference.md (~250 lines)",
+          "hivemind-codemap: lsp-integration-reference.md (~100 lines), scan-plan-template.md (~50 lines)",
+          "hivemind-system-debug: debug-workflow-reference.md (~150 lines), diagnosis-template.md (~100 lines)",
+          "use-hivemind-planning: dependency-analysis-reference.md (~100 lines)",
+          "use-hivemind-context: freshness-probe-reference.md (~100 lines)",
+          "use-hivemind-git-memory: git-command-reference.md (~100 lines)",
+          "use-hivemind-skill-authoring: audit-checklist-reference.md (~150 lines)",
+          "hivemind-atomic-commit: git-gate-reference.md (~100 lines)"
+        ]
+      },
+      "success_criteria": [
+        "All 14 skills have ≥3 concrete bash command examples",
+        "All 14 skills have ≥1 IF/THEN decision tree with concrete conditions",
+        "All 14 skills have ≥1 fill-in template with fields and example values",
+        "All 14 skills reference the shared OpenCode tool matrix",
+        "All 14 skills have Activity Output section",
+        "Skills with external data needs reference MCP priority order",
+        "No SKILL.md exceeds 500 lines (detailed content in references/)"
+      ]
+    }
+  ],
+  "blocked_routes": [],
+  "recommended_next_action": "Execute BATCH-5 (Activity Protocol) first — it creates shared infrastructure referenced by all other batches. Then dispatch BATCH-1, BATCH-3, and BATCH-4 in parallel since they are independent. BATCH-2 follows BATCH-1. BATCH-6 can run in parallel with BATCH-1 through BATCH-4 once BATCH-5 completes."
+}

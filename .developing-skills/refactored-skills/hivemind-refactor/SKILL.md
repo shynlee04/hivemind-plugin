@@ -351,3 +351,110 @@ When review spans multiple dimensions, dispatch separate agents per dimension us
 - It provides methodology, not delegation mechanics — delegation packets come from the delegation skill
 - Refactor artifacts are stored in `{project}/.hivemind/activity/refactor/{session_id}/`
 - This skill composes with `hivemind-gatekeeping` for multi-iteration refactor loops
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.
+
+## OpenCode Tool Matrix for Refactoring
+
+| Task | Primary Tool | Why | Fallback |
+|---|---|---|---|
+| declaration lookup | `lsp goToDefinition` | semantic symbol jump | `grep` + `read` |
+| impact analysis | `lsp findReferences` | full caller list before rename/move | `grep` |
+| structure scan | `lsp documentSymbol` | file/class outline for seams | `read` |
+| dead code check | `lsp prepareCallHierarchy` + `incomingCalls` | inbound call graph | `grep` |
+| pattern sweep | `grep` | fast broad smell detection | `read` |
+| targeted inspection | `read` | confirm nearby logic and comments | none |
+| code change | `edit` / `patch` | precise refactor updates | `write` for new files |
+| verification | `bash` | `npx tsc --noEmit`, `npm test`, `npm run lint`, `npm run build` | none |
+
+Prefer semantic tools first. Use `grep` when the symbol name is uncertain or LSP is unavailable.
+
+## LSP Integration for Refactoring
+
+Enable the LSP tool before relying on symbol-aware workflows. Use it for semantic refactors, not just text edits.
+
+1. Use `goToDefinition` before rename or move work to confirm the authority declaration.
+2. Use `findReferences` before edits to measure the blast radius.
+3. Use `documentSymbol` to pick extract seams and spot oversized files.
+4. Use `prepareCallHierarchy` plus `incomingCalls` to detect orphaned code before delete or inline work.
+5. Re-run `findReferences` after the refactor to confirm stale references are gone.
+
+Reference `references/lsp-refactor-workflows.md` for the full sequences and JSON examples.
+
+## Code Review Checklist Reference
+
+Load `references/code-review-checklist.md` when:
+
+- the refactor crosses more than one file
+- a rename or move changes public or shared symbols
+- the plan touches inheritance, interfaces, or conditional dispatch
+- the verification gates pass but reviewer confidence is still low
+
+Use the checklist to bind each review question to a tool, expected output, and pass condition.
+
+## Bash Examples (5)
+
+```bash
+npx tsc --noEmit 2>&1
+```
+
+```bash
+npm test 2>&1 | tail -5
+```
+
+```bash
+git diff --stat
+```
+
+```bash
+git checkout -- src/orders/service.ts tests/orders/service.test.ts
+```
+
+```text
+lsp { "operation": "findReferences", "filePath": "src/orders/service.ts", "position": { "line": 42, "character": 14 } }
+```
+
+Use these examples exactly as review probes: type safety, regression, scope summary, rollback, and reference mapping.
+
+## Decision Tree: Refactor Technique Selection
+
+| If the smell is... | Choose... | Confirm with... |
+|---|---|---|
+| one function doing multiple jobs | Extract Function | `lsp documentSymbol` |
+| wrapper logic adding no clarity | Inline | `lsp findReferences` |
+| logic living with the wrong owner | Move | `lsp goToDefinition` |
+| vague or misleading naming | Rename | `lsp findReferences` |
+| subclass adds no real behavior | Collapse Hierarchy | `lsp documentSymbol` |
+| consumers need a smaller contract | Extract Interface | `grep` + `read` |
+| numeric/string literal hides policy | Replace Magic Number | `grep` |
+| too many related positional args | Introduce Parameter Object | `read` |
+| type switch keeps growing | Replace Conditional with Polymorphism | `grep` + `npm test` |
+
+If `incomingCalls` returns zero and exports are not consumed, treat the symbol as a dead-code candidate before deleting it.
+
+## Cross-Skill Chaining
+
+- Load `hivemind-gatekeeping` when the refactor needs staged verification loops or multi-pass review.
+- Load `use-hivemind-tdd` if the refactor reveals missing safety tests and behavior must be locked before structural change.
+- Load `hivemind-codemap` when the blast radius is uncertain across the codebase.
+- Use `references/refactor-techniques-catalog.md` and `references/lsp-refactor-workflows.md` as the detailed follow-on resources.
+
+## Metrics & Verification
+
+Capture these metrics for every refactor session:
+
+- pre/post `git diff --stat`
+- reference count delta from `lsp findReferences`
+- type error delta from `npx tsc --noEmit`
+- regression result from `npm test`
+- lint delta from `npm run lint`
+- integration result from `npm run build`
+
+Use `scripts/hm-refactor-verify.sh` to run the verification bundle and emit a rollback command.

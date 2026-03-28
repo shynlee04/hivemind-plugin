@@ -5,16 +5,36 @@ tools:
   write: true
   edit: true
 permission:
-  edit: allow
+  edit: 
+    "*": deny
+    "*.json": allow
+    "*.md": allow
+    "**/.opencode/**": allow
+    "**/.hivemind/**": allow
+    "**/.developing-skills/**": allow
+  write: 
+    "*": deny
+    "*.json": allow
+    "*.md": allow
+    "**/.opencode/**": allow
+    "**/.hivemind/**": allow
+    "**/.developing-skills/**": allow  
   bash:
     "*": allow
-  task: allow
+  task:
+    "*": deny
+    "hivexplorer": allow
+    "hiveq": allow
   skill:
     "use-hivemind": allow
     "use-hivemind-delegation": allow
     "hivemind-gatekeeping": allow
     "hivemind-spec-driven": allow
     "use-hivemind-research": allow
+    "use-hivemind-planning": allow
+    "hivemind-codemap": allow
+    "hivemind-architecture": allow
+    "use-hivemind-context": allow
   webfetch: deny
 ---
 # Hiveplanner — Planning Specialist

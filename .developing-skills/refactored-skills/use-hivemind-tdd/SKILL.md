@@ -351,6 +351,28 @@ Prioritize test effort by risk score from `references/risk-based-testing.md`:
 | Prior phase test breaks during refactor | REVERT refactor. Re-run. Fix if still broken. |
 | Build breaks after green | Green is not truly green. Fix and re-verify. |
 
+## Cross-Skill Chaining
+
+| Current TDD Need | Next Skill | Trigger |
+| --- | --- | --- |
+| requirement ambiguity blocks RED | `hivemind-spec-driven` | acceptance criteria are still unclear |
+| implementation is green and needs commit discipline | `hivemind-atomic-commit` | all gates pass and a commit is requested |
+| repeated integration failures need loop control | `hivemind-gatekeeping` | the same verification loop repeats |
+
+## Test Pattern MCP Integration
+
+| Need | MCP Tool | Why |
+| --- | --- | --- |
+| current framework syntax | `context7_query-docs` | version-specific test docs |
+| public repo testing patterns | `deepwiki_ask_question` | repo-grounded examples |
+| broader code examples | `exa_get_code_context_exa` | quick code-oriented discovery |
+
+## Test Escalation Decision Tree
+
+1. **IF** the RED test passes immediately, **THEN** rewrite it because it proves nothing.
+2. **IF** GREEN passes locally but build or integration gates fail, **THEN** stay in GREEN and expand verification.
+3. **IF** REFACTOR breaks prior behavior, **THEN** revert to the last green state before continuing.
+
 ## Bundled Resources
 
 | Resource | Path | Purpose |
@@ -384,3 +406,12 @@ Prioritize test effort by risk score from `references/risk-based-testing.md`:
 - Universal and framework-agnostic — applies to any project with test-driven development
 
 > **External skills note:** Skills marked *(external)* above are NOT bundled with this skill. They must be loaded separately via the `skill` tool (e.g., `skill: hivemind-atomic-commit`) before their functionality is available.
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

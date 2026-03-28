@@ -242,12 +242,44 @@ When designing new systems or evaluating existing architecture, load the archite
 | CQRS boundary decisions | `architecture-patterns.md` (CQRS section) |
 | Database selection needed | `architecture-patterns.md` + `hivemind-architecture` |
 
+## OpenCode Tool Matrix
+
+| Pattern Question | Preferred Tool | Why |
+| --- | --- | --- |
+| locate candidate implementations | `grep` | fast pattern hunting |
+| inspect concrete code blocks | `read` | exact implementation context |
+| trace class or interface usage | `lsp.findReferences` | semantic coupling proof |
+| validate current library idioms | `context7_query-docs` | up-to-date API examples |
+
+## Concrete Bash Examples
+
+```bash
+grep -n "switch (.*type" -n src/**/*.ts
+npx tsc --noEmit 2>&1 | head -10
+npm test 2>&1 | head -20
+```
+
+## Pattern Application Workflow
+
+1. Capture the problem statement first.
+2. Load `references/pattern-catalog-with-code.md` for code-backed candidate patterns.
+3. Record the chosen pattern with `templates/pattern-application.json`.
+4. Verify the pattern reduces complexity or coupling without changing behavior.
+
+## Pattern Selection Decision Tree Extension
+
+1. **IF** the pain is interchangeable behavior, **THEN** prefer Strategy.
+2. **IF** callers suffer from subsystem sprawl, **THEN** prefer Facade.
+3. **IF** construction rules are duplicated, **THEN** consider Factory.
+4. **IF** a pattern adds indirection without removing real complexity, **THEN** reject it.
+
 ## Sibling Skills
 
 | Skill | Relationship |
 |-------|-------------|
 | `use-hivemind` | Entry router — triggers this skill for structural decisions |
 | `use-hivemind-skill-authoring` | Domain router — when skill authoring involves pattern decisions, both load together |
+| `hivemind-synthesis` | Architecture pattern validation — verifies synthesis output against architectural patterns |
 
 ## Bundled Resources
 
@@ -264,3 +296,12 @@ When designing new systems or evaluating existing architecture, load the archite
 - Martin Fowler, *Patterns of Enterprise Application Architecture* (2002)
 - Eric Evans, *Domain-Driven Design* (2003)
 - Gang of Four, *Design Patterns* (1994)
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

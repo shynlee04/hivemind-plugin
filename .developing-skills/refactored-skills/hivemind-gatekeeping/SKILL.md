@@ -330,6 +330,35 @@ Loop checkpoints: `{activity}/delegation/{loop_id}-checkpoint.json`
 Gate results: `{activity}/delegation/{loop_id}-gate-{iteration}.json`
 Scan-specific loops: `{activity}/codescan/{pass_id}/loop-checkpoint.json`
 
+## External Verification MCP Matrix
+
+| Verification Need | Preferred MCP Tool | Why |
+| --- | --- | --- |
+| validate library behavior | `context7_query-docs` | current versioned docs |
+| validate public repo patterns | `deepwiki_ask_question` | repository-grounded answers |
+| gather external supporting evidence | `tavily_tavily_search` | current web discovery |
+
+## Cross-Skill Verification Chain
+
+1. `use-hivemind-delegation` dispatches bounded slices.
+2. `hivemind-synthesis` compresses multi-slice findings.
+3. `hivemind-gatekeeping` checks evidence, contradictions, and carry-forward quality.
+4. `hivemind-atomic-commit` is loaded only after gates truly pass and a commit is requested.
+
+## Gate Escalation Decision Tree
+
+1. **IF** a gate lacks command evidence, **THEN** fail the gate immediately.
+2. **IF** one slice fails integration while others pass, **THEN** isolate the failing slice instead of restarting the whole batch.
+3. **IF** the same gate fails repeatedly with no new evidence, **THEN** stop the loop and escalate.
+
+## Sibling Skills
+
+| Skill | Relationship |
+|-------|-------------|
+| `use-hivemind-delegation` | Delegation protocol that triggers this skill |
+| `hivemind-synthesis` | Pre-gatekeeping on synthesized SDK — feeds into synthesis gates |
+| `hivemind-codemap` | Scan results that pass through gate checks |
+
 ## Bundled Resources
 
 | Resource | Purpose |
@@ -345,3 +374,12 @@ Scan-specific loops: `{activity}/codescan/{pass_id}/loop-checkpoint.json`
 | `references/evidence-based-gatekeeping.md` | Evidence requirements for every gate check, excuse prevention |
 | `references/review-gate.md` | Review gate checkpoints between phases |
 | `references/integration-checkpoint.md` | Integration verification for parallel batch completion |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

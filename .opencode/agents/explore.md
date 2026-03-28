@@ -8,13 +8,15 @@ tools:
 permission:
   bash:
     "*": allow
-  edit: deny
+  edit: 
+    "*": deny
     "*.json": allow
     "*.md": allow
     "**/.opencode/**": allow
     "**/.hivemind/**": allow
     "**/.developing-skills/**": allow
-  write: deny
+  write: 
+    "*": deny
     "*.json": allow
     "*.md": allow
     "**/.opencode/**": allow
@@ -29,6 +31,7 @@ permission:
     "use-hivemind-delegation": allow
     "use-hivemind-research": allow
     "use-hivemind-git-memory": allow
+    "hivemind-gatekeeping": allow
 ---
 # Hivexplorer — Repository Investigator
 

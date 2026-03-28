@@ -224,6 +224,34 @@ Write acceptance criteria in Given/When/Then format from `references/acceptance-
 
 **You classified everything as "functional."** Performance constraints are non-functional. API contracts are integration. Audit requirements are risk. Use all five buckets or your spec has blind spots.
 
+## OpenCode Tool Matrix
+
+| Spec Task | Preferred Tool | Why |
+| --- | --- | --- |
+| locate related requirement files | `glob` | fast discovery |
+| find prior requirement language | `grep` | cross-file consistency |
+| inspect exact source or tests | `read` | precise evidence |
+| validate external APIs or libraries | `context7_query-docs` | current docs |
+
+## Concrete Bash Examples
+
+```bash
+git diff --name-only HEAD~1..HEAD
+npx tsc --noEmit 2>&1 | head -10
+npm test 2>&1 | head -20
+```
+
+## Spec Validation Decision Tree
+
+1. **IF** a requirement cannot be expressed as a testable statement, **THEN** it is not ready for spec approval.
+2. **IF** acceptance criteria exist without a matching requirement atom, **THEN** mark them orphaned and reconcile.
+3. **IF** a candidate leaves open ambiguities, **THEN** keep it in draft status.
+4. **IF** the traceability matrix shows uncovered requirements, **THEN** stop before implementation.
+
+## Advanced Candidate Template
+
+Use `templates/spec-candidate-advanced.json` when the spec needs explicit requirement atoms, GWT acceptance criteria, assumptions, and rejected reasons in one record.
+
 ## Bundled Resources
 
 | Resource | Path | Purpose |
@@ -235,3 +263,12 @@ Write acceptance criteria in Given/When/Then format from `references/acceptance-
 | Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
 | Spec Template | `templates/spec-template.md` | Template for spec document structure |
 | Spec Scenario | `tests/spec-scenario.md` | Test scenario for spec-driven workflow |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

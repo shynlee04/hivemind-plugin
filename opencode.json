@@ -1,5 +1,8 @@
 {
   "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "./prompts/hiveminder-mandate.md"
+  ],
   "model": "minimax-coding-plan/MiniMax-M2.7",
   "plugin": [
     ".opencode/plugins/hivemind-context-governance.ts"
@@ -12,18 +15,14 @@
     "read": "allow"
   },
   "provider": {
-    "_global": {
-      "options": {
-        "reasoningSummary": "auto"
-      }
-    },
     "minimax": {
       "options": {
         "apiKey": "{env:MINIMAX_API_KEY}",
         "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
+          "type": "enabled"
         },
+        "reasoningEffort": "high",
+        "textVerbosity": "low",
         "reasoningSummary": "auto"
       }
     },
@@ -32,7 +31,9 @@
         "reasoningEffort": "high",
         "textVerbosity": "low",
         "reasoningSummary": "auto",
-        "include": ["reasoning"]
+        "include": [
+          "reasoning"
+        ]
       },
       "models": {
         "gpt-5.4": {
@@ -46,162 +47,40 @@
     "anthropic": {
       "options": {
         "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
+          "type": "enabled"
         },
+        "reasoningEffort": "high",
+        "textVerbosity": "low",
         "reasoningSummary": "auto"
       }
     },
     "google": {
       "options": {
         "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
+          "type": "enabled"
         },
+        "reasoningEffort": "high",
+        "textVerbosity": "low",
         "reasoningSummary": "auto"
       }
     },
     "deepseek": {
       "options": {
         "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
+          "type": "enabled"
         },
+        "reasoningEffort": "high",
+        "textVerbosity": "low",
         "reasoningSummary": "auto"
       }
     },
-    "xai": {
+    "xiaomi": {
       "options": {
         "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
+          "type": "enabled"
         },
-        "reasoningSummary": "auto"
-      }
-    },
-    "cohere": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "mistral": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "meta": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "bedrock": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "vertex": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "openrouter": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "ollama": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "lmstudio": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "groq": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "perplexity": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "together": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "fireworks": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "anyscale": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
-        "reasoningSummary": "auto"
-      }
-    },
-    "sambanova": {
-      "options": {
-        "thinking": {
-          "type": "enabled",
-          "budgetTokens": 16000
-        },
+        "reasoningEffort": "high",
+        "textVerbosity": "low",
         "reasoningSummary": "auto"
       }
     },
@@ -210,18 +89,20 @@
         "mimo-v2-pro-free": {
           "options": {
             "thinking": {
-              "type": "enabled",
-              "budgetTokens": 16000
+              "type": "enabled"
             },
+            "reasoningEffort": "high",
+            "textVerbosity": "low",
             "reasoningSummary": "auto"
           }
         },
         "kimi-k2.5": {
           "options": {
             "thinking": {
-              "type": "enabled",
-              "budgetTokens": 16000
+              "type": "enabled"
             },
+            "reasoningEffort": "high",
+            "textVerbosity": "low",
             "reasoningSummary": "auto"
           }
         }
@@ -232,9 +113,10 @@
         "mimo-v2-pro-free": {
           "options": {
             "thinking": {
-              "type": "enabled",
-              "budgetTokens": 16000
+              "type": "enabled"
             },
+            "reasoningEffort": "high",
+            "textVerbosity": "low",
             "reasoningSummary": "auto"
           }
         }
@@ -245,9 +127,10 @@
         "glm-5.1": {
           "options": {
             "thinking": {
-              "type": "enabled",
-              "budgetTokens": 16000
+              "type": "enabled"
             },
+            "reasoningEffort": "high",
+            "textVerbosity": "low",
             "reasoningSummary": "auto"
           }
         }

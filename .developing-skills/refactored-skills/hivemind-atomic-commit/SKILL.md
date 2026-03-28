@@ -157,6 +157,33 @@ Commits must respect surface class ownership boundaries. Each surface class has 
 
 Read `references/surface-ownership.md` for the 12 surface classes, ownership verification, and conflict resolution.
 
+## OpenCode Tool Matrix
+
+| Commit Task | Preferred Tool | Why |
+| --- | --- | --- |
+| inspect staged scope | `bash` | git is authoritative |
+| review touched files | `read` | exact file evidence |
+| search related ownership rules | `grep` | fast policy lookup |
+
+## Concrete Bash Examples
+
+```bash
+git diff --cached --name-only
+git diff --cached --check
+npm test 2>&1 | head -20
+```
+
+## Pre-Commit Decision Tree
+
+1. **IF** staged files mix unrelated concerns, **THEN** split the commit.
+2. **IF** `git diff --cached --check` reports conflict markers or whitespace errors, **THEN** stop and fix them.
+3. **IF** verification commands fail, **THEN** do not commit.
+4. **IF** the user did not request a commit, **THEN** stop after preparing gate evidence.
+
+## Git Gate Scripts
+
+Use `references/git-gate-reference.md` for the minimum bash gate set and `templates/commit-gate.json` to record pass/fail evidence before any commit attempt.
+
 ## Bundled Resources
 
 | Resource | Purpose |
@@ -202,3 +229,12 @@ When an orchestrator uses this skill:
 4. The orchestrator does NOT stage or commit files directly — the subagent executes
 
 If gate checks fail, the subagent returns `gate_failed` with blocked reasons. The orchestrator decides whether to fix and retry or escalate.
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

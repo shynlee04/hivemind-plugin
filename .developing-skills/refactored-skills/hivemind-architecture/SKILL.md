@@ -252,6 +252,38 @@ The following architectural anti-patterns must be avoided. When detected during 
 
 **Correction:** Use the pattern selection matrix. Match each module's characteristics to the appropriate pattern.
 
+## OpenCode Tool Matrix
+
+| Decision Task | Preferred Tool | Why | Fallback |
+| --- | --- | --- | --- |
+| inspect a concrete module boundary | `read` | exact source truth | `glob` then `read` |
+| find existing architecture mentions | `grep` | cross-file evidence | `git log -- <path>` |
+| trace an interface owner | `lsp.goToDefinition` | semantic navigation | `grep` |
+| validate library or framework claims | `context7_query-docs` | current docs | `webfetch` |
+| inspect public repo examples | `deepwiki_ask_question` | repo-grounded summary | `gitmcp_search_github_com_code` |
+
+## Concrete Bash Examples
+
+```bash
+git log --oneline -- docs/ src/ | head -10
+npx tsc --noEmit 2>&1 | head -10
+npm test 2>&1 | head -20
+```
+
+## ADR Workflow
+
+1. Read the affected source paths first.
+2. Load `references/pattern-selection-decision-tree.md` to select the smallest fitting architecture pattern.
+3. Use `references/adr-tool-reference.md` to capture code, command, and external evidence.
+4. Draft the decision in `templates/adr-template-advanced.md`.
+5. Verify the decision against type, test, and build evidence before marking it accepted.
+
+## Reference-Backed Pattern Routing
+
+- Use **Clean Architecture** when the core problem is dependency direction and layer discipline.
+- Use **Hexagonal Architecture** when the main risk is adapter sprawl around a stable domain core.
+- Use **DDD** when aggregates, invariants, and bounded contexts dominate the change surface.
+
 ## Sibling Skills
 
 | Skill | Relationship |
@@ -276,3 +308,12 @@ The following architectural anti-patterns must be avoided. When detected during 
 | Dependency Categories | `references/dependency-categories.md` | Stable vs volatile dependency taxonomy |
 | Architecture Decision Template | `templates/architecture-decision.md` | ADR markdown template with all fields |
 | Blueprint Template | `templates/blueprint-template.md` | System blueprint with layers, data flow, scaling |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

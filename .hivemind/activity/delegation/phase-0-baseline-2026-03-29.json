@@ -1,0 +1,52 @@
+{
+  "_meta": {
+    "created_at": "2026-03-29T03:23:07+07:00",
+    "updated_at": "2026-03-29T03:23:07+07:00",
+    "producer": "hiveminder-phase-0"
+  },
+  "phase": "0",
+  "title": "Baseline Verification",
+  "plan_ref": "PLAN-2026-03-29-SJ",
+  "results": {
+    "tsc": {
+      "command": "npx tsc --noEmit",
+      "exit_code": 0,
+      "errors": 0,
+      "status": "PASS"
+    },
+    "npm_test": {
+      "command": "npm test",
+      "exit_code": 1,
+      "boundary_check": "FAIL",
+      "boundary_violations": [
+        "src/hooks/chat-message-handler.ts:46 — mkdir (write in hook)",
+        "src/hooks/text-complete-handler.ts:172 — mkdir (write in hook)",
+        "src/hooks/event-handler.ts:217 — writeFile (write in hook)",
+        "src/hooks/compaction-handler.ts:109 — mkdir (write in hook)",
+        "src/hooks/tool-execution-handler.ts:40 — mkdir (write in hook)"
+      ],
+      "unit_tests_total": 77,
+      "unit_tests_passed": 0,
+      "unit_tests_failed": 69,
+      "unit_tests_skipped": 8,
+      "status": "FAIL"
+    },
+    "git": {
+      "branch": "v2.9.5-detox-dev",
+      "ahead_of_remote": 1,
+      "uncommitted_changes": 200,
+      "untracked_files": "many (skills refactoring, error logs, session files)"
+    }
+  },
+  "context_health": "SUSPECT",
+  "context_notes": "Many uncommitted changes from skill refactoring. Hooks violate CQRS boundary (write-side in hooks). Unit tests all failing — likely import path issues from prior refactoring.",
+  "key_findings": [
+    "tsc compiles clean — zero type errors",
+    "5 hooks perform filesystem writes (CQRS boundary violation)",
+    "69 of 77 unit tests fail — import paths and handler wiring issues",
+    "Phase plan's critical finding confirmed: handlers exist but aren't wired in opencode-plugin.ts",
+    "Massive uncommitted changeset from skill refactoring pass"
+  ],
+  "blocked_routes": [],
+  "recommended_next_action": "Proceed with Phase 1 (Kill Redundancy) — remove writeDiagnosticLog and upsertSessionInspectionExport from opencode-plugin.ts, then Phase 2 (Wire Existing Handlers)"
+}

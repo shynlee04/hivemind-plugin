@@ -72,6 +72,7 @@ Local delegation family for the refactored pack. Governs when, how, and with wha
 | `use-hivemind-context` | Stale session probe — delegate this when orchestrator context is suspect |
 | `use-hivemind-git-memory` | Git-aware continuity — commit SHAs and branch state recorded in packets |
 | `hivemind-gatekeeping` | Iterative loops, synthesis gates, cascading failure — extracted from this skill |
+| `hivemind-synthesis` | Investigation swarm orchestration — coordinates parallel hivexplorer waves through this protocol |
 
 `activity_type` and `phase_type` enum values are defined in the pack-level AGENTS.md under Typed Activity Contract.
 
@@ -407,3 +408,64 @@ Append delegation events to `{activity}/delegation/registry.json` with:
 - It does not require old router-to-router chains.
 - It may be selected directly or from `use-hivemind`.
 - Delegation artifacts are stored in `{project}/.hivemind/activity/delegation/` at runtime.
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.
+
+## OpenCode Tool Matrix
+
+| Need | Tool | Why |
+|------|------|-----|
+| delegate bounded work | `task` | launches clean subagent session |
+| persist handoff state | `hivemind_handoff` | stores resumable packet metadata |
+| track workflow linkage | `hivemind_task` | ties packets to workflow/task IDs |
+| record trajectory checkpoints | `hivemind_trajectory` | preserves phase transitions |
+| inspect delegation docs | `hivemind_doc` | read-only doc access |
+| verify current runtime | `hivemind_runtime_status` | confirm attached workflow state |
+
+## Multi-Packet Protocol
+
+Use multi-packet flow when one question crosses domains, authority levels, or evidence sources. Split by domain → slice → finding, keep each slice to one core question, and store large results with a TOC plus offset index for jump-reading. Run packets in parallel only for isolated slices; otherwise chain them with `parent_packet_id`, synthesis checkpoints, and delta-queries for gap fill.
+
+## Evidence Return Contract
+
+Every return must include `status`, `summary`, `evidence`, `blocked_routes`, `recommended_next`, and `_meta`. Each evidence item uses `{ claim, evidence_quote, source_url, source_title, confidence }`, with `confidence` scored `0..1`. `hivexplorer` emphasizes file-backed discovery, `hiverd` emphasizes external source freshness, `hiveq` maps requirements to proof, and `hivemaker` reports changed files plus verification output.
+
+## Cross-Domain Coordination
+
+Use sequential dispatch when slices share mutable files, depend on previous evidence, or need conflict arbitration. Use parallel dispatch when slices are read-only, isolated, and mergeable by synthesis. Detect shared state early, normalize evidence before merging, and issue delta-queries only for unresolved claims instead of restarting the whole investigation.
+
+## Bash Examples (5)
+
+- `cat .hivemind/activity/delegation/packet.json | jq '.scope'`
+- `ls .hivemind/activity/agents/*/`
+- `grep -r "blocked_routes" .hivemind/activity/`
+- `jq '._meta.producer' .hivemind/activity/**/*.json`
+- `find .hivemind/activity -name "*.json" -mtime -1`
+
+## Decision Tree: Delegation Pattern
+
+- Single domain + one bounded concern → one packet.
+- Cross-domain + isolated read-only slices → parallel multi-packet.
+- Cross-domain + shared mutable state → sequential packets.
+- Deep investigation with unresolved gaps → chained packets with synthesis checkpoints.
+- Large result sets → require TOC, offsets, and metadata filtering.
+- More than 15-20 files in one slice or >9 active summaries → split again.
+
+## Cross-Skill Chaining
+
+Load `use-hivemind-research` when a packet needs external evidence, `use-hivemind-context` when freshness is suspect, and `hivemind-gatekeeping` when synthesis or blocked-route review needs a formal gate. Keep delegation as the contract layer; let sibling skills own their domain-specific loops.
+
+## Metrics & Verification
+
+Track packet completeness, evidence density, blocked-route count, delta-query rate, and synthesis closure time. Validate JSON packets with `scripts/hm-packet-validate.sh`, confirm large outputs expose `_meta.producer`, and keep SKILL.md concise enough to preserve progressive disclosure.
+
+## Batch 3 Resource Additions
+
+New references: `references/multi-packet-protocol.md`, `references/evidence-return-schema.md`, `references/cross-domain-coordination.md`. New templates: `templates/delegation-packet.json`, `templates/multi-domain-investigation.json`, `templates/evidence-return.json`. New validator: `scripts/hm-packet-validate.sh` for packet, return, and multi-domain schema checks.

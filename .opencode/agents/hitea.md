@@ -21,6 +21,9 @@ permission:
     "use-hivemind-tdd": allow
     "hivemind-atomic-commit": allow
     "use-hivemind-git-memory": allow
+    "hivemind-execution": allow
+    "hivemind-spec-driven": allow
+    "hivemind-refactor": allow
 
 ---
 # Hitea — Testing Infrastructure Specialist

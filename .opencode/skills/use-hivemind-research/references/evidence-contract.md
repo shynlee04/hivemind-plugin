@@ -1,147 +1,134 @@
 # Evidence Contract
 
-Defines the grading system, confidence scoring rules, and evidence quality standards for all research conducted under use-hivemind-research.
+All research outputs must connect claims to evidence, evidence to source quality, and source quality to a confidence decision.
 
-## 4-Dimension Grading
+## Evidence Grades
 
-Every piece of evidence receives grades on 4 independent dimensions:
-
-### Dimension 1: Source Authority
-
-| Grade | Criteria | Examples |
+| Grade | Meaning | Minimum Standard |
 |---|---|---|
-| **H** (High) | Official source, maintained by authors/maintainers | Official docs, GitHub repo (active), RFC/spec |
-| **M** | Authoritative but not primary | Blog post by core contributor, conference talk |
-| **L** | Unverified, community-sourced, anonymous | Stack Overflow answer, random blog, forum post |
+| HIGH | Primary or official source, current enough, directly relevant, corroborated or clearly authoritative | Official docs, active repo maintainer statements, local code truth, standards/specs |
+| MEDIUM | Credible but indirect, slightly stale, or only partially corroborated | Reputable industry articles, contributor blog posts, curated tutorials |
+| LOW | Weak authority, stale, noisy, or contradicted | Unverified blogs, forums, thin AI summaries, unsupported snippets |
 
-### Dimension 2: Recency
+### Grade Rules
 
-| Grade | Criteria | Risk |
+- A claim that depends only on LOW evidence must never be labeled high confidence.
+- HIGH evidence can still produce a medium-confidence claim when the evidence is incomplete or contradicted.
+- LOW evidence can remain in the packet only if it is explicitly labeled as caveat, counterexample, or gap signal.
+
+## Source Credibility Scoring
+
+Score every source on a 0-100 scale using this weighted model:
+
+- **Domain authority**: 35%
+- **Recency**: 20%
+- **Expertise**: 25%
+- **Bias / balance**: 20%
+
+### Component Guidance
+
+| Component | 90-100 | 60-89 | 0-59 |
+|---|---|---|---|
+| Domain authority | official vendor docs, standards body, active maintainer repo, recognized academic/gov domain | established industry publication or reputable consultancy | unknown personal blog, aggregator, marketing landing page |
+| Recency | updated within 6 months | 6-18 months | older than 18 months unless historical source is required |
+| Expertise | written by maintainers, standards authors, or domain experts | credible practitioner | unclear authorship or generic content farm |
+| Bias | balanced trade-offs, explicit caveats | mild promotional slant | sales-heavy, sensational, or one-sided |
+
+### Score Buckets
+
+| Score | Label | Use Rule |
 |---|---|---|
-| **H** | Published/updated within 6 months | Low risk of staleness |
-| **M** | Published 6-18 months ago | Moderate risk — API may have changed |
-| **L** | Published >18 months ago | High risk — likely outdated, must flag |
+| 80-100 | Strong | Can support critical claims |
+| 60-79 | Acceptable | Can support secondary claims or corroborate stronger sources |
+| 0-59 | Weak | Use only as caveat, counterpoint, or gap signal |
 
-### Dimension 3: Corroboration
+## Claim Confidence Rules
 
-| Grade | Criteria | Strength |
-|---|---|---|
-| **H** | 2+ independent sources agree on the same finding | Strong — cross-validated |
-| **M** | Single reliable source, no contradictions | Moderate — plausible but unverified |
-| **L** | Contradicted by another source | Weak — conflict must be resolved |
+| Confidence | Requirements |
+|---|---|
+| High | Claim has at least one Strong source and one additional corroborating source, or local code truth plus official docs |
+| Medium | Claim has one Strong or Acceptable source with limited corroboration and explicit caveats |
+| Low | Claim relies on weak evidence, unresolved contradiction, or inference-heavy reasoning |
 
-### Dimension 4: Relevance
+### Mandatory Downgrades
 
-| Grade | Criteria | Utility |
-|---|---|---|
-| **H** | Directly answers the sub-question | Maximum — can use as-is |
-| **M** | Answers a related question, provides context | Useful — needs interpretation |
-| **L** | Tangential, only loosely related | Minimal — only supporting role |
+- Downgrade to **Medium** if sources disagree but the preferred interpretation is still justified.
+- Downgrade to **Low** if the claim depends on one source only and that source is not Strong.
+- Downgrade to **Low** if the evidence quote does not directly support the claim text.
 
-## Confidence Determination Rules
+## Claims-Evidence Table Format
 
-### Matrix
+Prefer `templates/claims-evidence-table.md` for human-readable packaging.
 
-| Authority | Recency | Corroboration | Relevance | Confidence |
-|---|---|---|---|---|
-| H | H | H | H | **full** |
-| H | H | H | M | **full** |
-| H | H | M | H | **full** |
-| M | H | H | H | **full** |
-| H | M | M | H | **partial** |
-| M | M | H | H | **partial** |
-| H | H | L | H | **partial** |
-| Any | Any | L | Any | **partial** (contradiction flag) |
-| L | Any | Any | Any | **low** |
-| Any | L | Any | Any | **low** |
-| Any | Any | Any | L | **low** (if all findings are tangential) |
-| L | L | L | L | **low** |
+| Column | Purpose |
+|---|---|
+| Claim # | Stable identifier such as `C-01` |
+| Claim Text | Single verifiable statement |
+| Evidence Quote | Exact excerpt or direct factual summary |
+| Source URL | URL or repo identifier |
+| Source Title | Human-readable source name |
+| Credibility Score | 0-100 composite score |
+| Confidence Level | High / Medium / Low |
 
-### Simplified Rule
+## Return Contract JSON Schema
 
-```
-IF any dimension is L → confidence = low
-ELSE IF 2+ dimensions are M → confidence = partial
-ELSE → confidence = full
-```
-
-### Script-Based Scoring
-
-For deterministic scoring, use `scripts/score-confidence.sh`:
-
-```bash
-./scripts/score-confidence.sh <corroborated_count> <critical_gap_count> <unresolved_contradictions>
-# Output: full | partial | low
-```
-
-Rules:
-- `full`: corroborated >= 4, gaps == 0, contradictions == 0
-- `partial`: corroborated >= 2, gaps <= 1, contradictions <= 1
-- `low`: everything else
-
-## Evidence Quality Standards
-
-### Minimum Requirements
-
-Every finding must have:
-- At least 1 source graded on all 4 dimensions
-- Explicit confidence level
-- Citation with provider and URL/identifier
-- Date of evidence collection
-
-### Strong Evidence (full confidence)
-
-- 2+ independent sources from different providers
-- All dimensions H
-- No contradictions with other evidence
-- Directly answers the sub-question
-
-### Acceptable Evidence (partial confidence)
-
-- 1 reliable source OR strong inference from indirect evidence
-- No L dimensions
-- Minor gaps documented
-- Caveats clearly stated
-
-### Insufficient Evidence (low confidence)
-
-- Single unreliable source
-- Any L dimension
-- Contradictions unresolved
-- Critical gaps in coverage
-
-### When Evidence Is Insufficient
-
-1. **Document the gap** explicitly
-2. **Try alternative providers** — switch from Context7 to Tavily, or from Repomix to Grep
-3. **Reformulate the question** — sometimes a different phrasing gets better results
-4. **After 3 attempts**: emit low-confidence finding with gap description
-
-## Evidence Table Format
-
-Use `templates/evidence-table.md` for structured tracking.
-
-```markdown
-| Claim ID | Claim | Domain | Provider | Source URL | Grading (A/R/C/R) | Confidence | Notes |
-|---|---|---|---|---|---|---|---|
-| E-001 | [finding] | [domain] | [provider] | [url] | H/H/H/H | full | |
+```json
+{
+  "_meta": {
+    "created_at": "2026-03-29T00:00:00Z",
+    "updated_at": "2026-03-29T00:00:00Z",
+    "producer": "use-hivemind-research",
+    "mode": "standard"
+  },
+  "topic": "string",
+  "primary_type": "technology-eval",
+  "decision_stakes": "team-local",
+  "claims": [
+    {
+      "id": "C-01",
+      "text": "string",
+      "confidence": "High",
+      "evidence_ids": ["E-01", "E-02"],
+      "caveats": ["string"]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E-01",
+      "claim_id": "C-01",
+      "grade": "HIGH",
+      "source_title": "string",
+      "source_url": "https://example.com",
+      "evidence_quote": "string",
+      "credibility_score": 86,
+      "credibility_breakdown": {
+        "domain_authority": 90,
+        "recency": 80,
+        "expertise": 85,
+        "bias": 88
+      }
+    }
+  ],
+  "blocked_routes": [],
+  "open_questions": [],
+  "recommended_next_action": "string"
+}
 ```
 
-### Grading Column Format
+## Validation Gates
 
-`A/R/C/R` = Authority / Recency / Corroboration / Relevance
+The output fails validation if any of these are true:
 
-Each is H, M, or L.
+- `_meta.created_at` or `_meta.updated_at` is missing
+- evidence count is below the packet threshold
+- any evidence item lacks `credibility_score`
+- any output contains placeholders such as `TODO`, `TBD`, `<fill-me>`, or `[insert]`
 
-Example: `H/M/H/H` = High authority, Medium recency, High corroboration, High relevance
+Run `scripts/hm-research-validate.sh <output.json> <min-evidence>` before handoff.
 
-## Cross-Package Integration
+## Packaging Rules
 
-This evidence contract is referenced by:
-- **use-hivemind-research SKILL.md** — uses grading for all findings
-- **use-hivemind-research SKILL.md** — tool results feed into grading system
-- **hivemind-research SKILL.md** — router ensures grading is applied
-
-The contract is bidirectional:
-- Framework defines HOW to grade
-- Tools supply WHAT to grade
+- Keep claims short and singular; split compound claims.
+- Evidence quotes must be specific enough to audit later.
+- Record contradictions in `open_questions` or `caveats`; do not bury them in prose.
+- Prefer independent domains when corroborating major claims.

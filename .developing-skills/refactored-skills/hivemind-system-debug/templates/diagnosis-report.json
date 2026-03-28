@@ -1,0 +1,28 @@
+{
+  "diagnosis_id": "diagnosis-001",
+  "symptom": "",
+  "reproduction": {
+    "command": "",
+    "status": "failing"
+  },
+  "evidence": {
+    "confirmed": [],
+    "inferred": [],
+    "unverified": []
+  },
+  "hypotheses": [
+    {
+      "name": "",
+      "status": "open",
+      "test_command": ""
+    }
+  ],
+  "fix": {
+    "summary": "",
+    "paths": []
+  },
+  "verification": {
+    "original_probe": "",
+    "broader_checks": []
+  }
+}

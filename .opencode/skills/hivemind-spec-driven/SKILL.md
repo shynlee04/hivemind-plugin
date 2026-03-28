@@ -39,6 +39,8 @@ Consolidates: `hivemind-spec-driven` (expanded to full SDE lifecycle).
 - [Traceability Matrix](#traceability-matrix)
 - [Spec Candidate Format](#spec-candidate-format)
 - [Sibling Skills](#sibling-skills)
+- [Feature Proposal Format](#feature-proposal-format)
+- [Acceptance Criteria Patterns](#acceptance-criteria-patterns)
 - [Anti-Patterns](#anti-patterns)
 - [Bundled Resources](#bundled-resources)
 
@@ -188,6 +190,22 @@ For rejected candidates, fill `rejected_reason` with a one-line explanation of w
 | `use-hivemind-tdd` | Downstream — acceptance criteria become test gates |
 | `use-hivemind-tdd` | Downstream — traceable requirements drive TDD red phase |
 
+## Feature Proposal Format
+
+Before writing specs, structure the feature proposal using Problem/Solution/Impact from `references/problem-solution-impact.md`:
+- **Problem**: What breaks without this feature?
+- **Solution**: What approach solves it?
+- **Impact**: How do we measure success?
+
+A proposal without evidence in all 3 sections is not ready for spec writing.
+
+## Acceptance Criteria Patterns
+
+Write acceptance criteria in Given/When/Then format from `references/acceptance-criteria-patterns.md`:
+- Functional: Given [state], When [action], Then [result]
+- Non-functional: Given [state], When [load], Then [threshold]
+- Integration: Given [A state], When [call B], Then [B state]
+
 ## Anti-Patterns
 
 **You're writing code before the spec is approved.** Stop. Every line you write on ambiguous requirements is a line you'll rewrite. Spec first, code second.
@@ -206,12 +224,51 @@ For rejected candidates, fill `rejected_reason` with a one-line explanation of w
 
 **You classified everything as "functional."** Performance constraints are non-functional. API contracts are integration. Audit requirements are risk. Use all five buckets or your spec has blind spots.
 
+## OpenCode Tool Matrix
+
+| Spec Task | Preferred Tool | Why |
+| --- | --- | --- |
+| locate related requirement files | `glob` | fast discovery |
+| find prior requirement language | `grep` | cross-file consistency |
+| inspect exact source or tests | `read` | precise evidence |
+| validate external APIs or libraries | `context7_query-docs` | current docs |
+
+## Concrete Bash Examples
+
+```bash
+git diff --name-only HEAD~1..HEAD
+npx tsc --noEmit 2>&1 | head -10
+npm test 2>&1 | head -20
+```
+
+## Spec Validation Decision Tree
+
+1. **IF** a requirement cannot be expressed as a testable statement, **THEN** it is not ready for spec approval.
+2. **IF** acceptance criteria exist without a matching requirement atom, **THEN** mark them orphaned and reconcile.
+3. **IF** a candidate leaves open ambiguities, **THEN** keep it in draft status.
+4. **IF** the traceability matrix shows uncovered requirements, **THEN** stop before implementation.
+
+## Advanced Candidate Template
+
+Use `templates/spec-candidate-advanced.json` when the spec needs explicit requirement atoms, GWT acceptance criteria, assumptions, and rejected reasons in one record.
+
 ## Bundled Resources
 
 | Resource | Path | Purpose |
 |----------|------|---------|
 | Acceptance Criteria | `references/acceptance-criteria.md` | Criteria format and quality standards |
+| Problem/Solution/Impact | `references/problem-solution-impact.md` | Feature proposal triad with scoring rubrics |
+| Acceptance Criteria Patterns | `references/acceptance-criteria-patterns.md` | GWT patterns for functional, non-functional, and integration criteria |
 | Traceability Matrix | `references/traceability-matrix.md` | Requirement-to-test traceability mapping |
 | Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
 | Spec Template | `templates/spec-template.md` | Template for spec document structure |
 | Spec Scenario | `tests/spec-scenario.md` | Test scenario for spec-driven workflow |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

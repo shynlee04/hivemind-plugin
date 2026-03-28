@@ -5,19 +5,28 @@ tools:
   write:  false
   edit: false
 permission:
-  edit: deny
-  "*.json": allow
+  edit: 
+    "*": deny
+    "*.json": allow
+    "*.md": allow
+    "**/.opencode/**": allow
+    "**/.hivemind/**": allow
+    "**/.developing-skills/**": allow
+  write: 
+    "*": deny
+    "*.json": allow
     "*.md": allow
     "**/.opencode/**": allow
     "**/.hivemind/**": allow
     "**/.developing-skills/**": allow
   skill:
     "use-hivemind": allow
-    "use-hivemind-context-integrity": allow
-    "agent-role-boundary": allow
-    "tdd-delegation": allow
-    "context-entry-verify": allow
+    "use-hivemind-context": allow
+    "use-hivemind-delegation": allow
+    "use-hivemind-tdd": allow
     "hivemind-atomic-commit": allow
+    "hivemind-spec-driven": allow
+    "hivemind-gatekeeping": allow
   bash: allow
   webfetch: deny
 ---

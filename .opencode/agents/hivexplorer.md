@@ -1,26 +1,29 @@
 ---
 description: "Terminal repository investigator for read-only codebase research, evidence collection, and synthesis. Never mutates files or delegates implementation work."
 mode: subagent
+model: minimax-coding-plan/MiniMax-M2.7
 tools:
   write: false
   edit: false
 permission:
+  edit: 
+    "*": deny
+    "*.json": allow
+    "*.md": allow
+    "**/.opencode/**": allow
+    "**/.hivemind/**": allow
+    "**/.developing-skills/**": allow
+  write: 
+    "*": deny
+    "*.json": allow
+    "*.md": allow
+    "**/.opencode/**": allow
+    "**/.hivemind/**": allow
+    "**/.developing-skills/**": allow  
   bash:
     "*": allow
-  edit: deny
-    "*.json": allow
-    "*.md": allow
-    "**/.opencode/**": allow
-    "**/.hivemind/**": allow
-    "**/.developing-skills/**": allow
-  write: deny
-    "*.json": allow
-    "*.md": allow
-    "**/.opencode/**": allow
-    "**/.hivemind/**": allow
-    "**/.developing-skills/**": allow
   task:
-    "*": allow
+    "*": deny
   skill:
     "use-hivemind": allow
     "use-hivemind-context": allow
@@ -28,6 +31,7 @@ permission:
     "use-hivemind-delegation": allow
     "use-hivemind-research": allow
     "use-hivemind-git-memory": allow
+    "hivemind-gatekeeping": allow
 ---
 
 # Hivexplorer — Repository Investigator

@@ -17,6 +17,7 @@ parent: use-hivemind
 - [Debug Output Storage](#debug-output-storage)
 - [Orchestrator Integration](#orchestrator-integration)
 - [Outputs](#outputs)
+- [Conditional Loading](#conditional-loading)
 - [Bundled Resources](#bundled-resources)
 
 ## Load Position
@@ -82,12 +83,51 @@ Debug work is **always delegated** from the orchestrator. The orchestrator:
 - refactor readiness recommendation
 - evidence classification (confirmed / inferred / unverified)
 
+## OpenCode Tool Matrix
+
+| Debug Step | Preferred Tool | Why |
+| --- | --- | --- |
+| isolate failing files | `glob` + `grep` | narrow the search space |
+| inspect the failing implementation | `read` | exact code path |
+| run the failing probe | `bash` | real runtime evidence |
+| inspect external docs or APIs | `context7_query-docs` / `webfetch` | current source of truth |
+
+## Concrete Bash Examples
+
+```bash
+npx tsx --test tests/failing.test.ts 2>&1 | head -20
+npx tsc --noEmit 2>&1 | head -20
+npm run build 2>&1 | head -20
+```
+
+## Debug Decision Tree
+
+1. **IF** the failure cannot be reproduced, **THEN** stop and request a tighter reproduction.
+2. **IF** the failure reproduces but spans many modules, **THEN** isolate the smallest failing command before touching code.
+3. **IF** the suspected fix changes contracts or architecture, **THEN** escalate instead of improvising.
+4. **IF** the original probe passes but broader verification fails, **THEN** continue diagnosis instead of claiming success.
+
+## Diagnosis Artifacts
+
+Use `references/debug-workflow-reference.md` for the reproduce → isolate → hypothesize → test → fix → verify loop. Use `references/diagnosis-template.md` for narrative notes and `templates/diagnosis-report.json` for machine-readable output.
+
 ## Sibling Skills
 
 | Skill | Relationship |
 |-------|-------------|
 | `use-hivemind` | Entry router — triggers this skill for debug workflows |
 | `use-hivemind-delegation` | Delegation protocol — debug dispatches through this |
+| `hivemind-execution` | Execution workflow — receives confirmed debug findings for remediation |
+
+## Conditional Loading
+
+| Condition | Load Reference |
+|-----------|---------------|
+| Runtime error encountered | `debug-loop.md` |
+| Test failure to investigate | `verification-before-completion.md` |
+| Build failure diagnosis | `debug-loop.md` + delegation to `hivemind-execution` |
+| Multi-system integration issue | `debug-loop.md` + `hivemind-codemap` scan |
+| Flaky test detection | `verification-before-completion.md` + `hivemind-gatekeeping` |
 
 ## Bundled Resources
 
@@ -96,3 +136,12 @@ Debug work is **always delegated** from the orchestrator. The orchestrator:
 | Debug Loop | `references/debug-loop.md` | Debug-to-refactor transition loop protocol |
 | Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
 | Direct Invocation | `tests/direct-invocation.md` | Test scenario for direct skill invocation |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

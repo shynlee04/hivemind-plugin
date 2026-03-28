@@ -1,0 +1,39 @@
+{
+  "refactor_id": "refactor-2026-03-29-orders-service-extract-function",
+  "target_files": [
+    "src/orders/service.ts",
+    "tests/orders/service.test.ts"
+  ],
+  "technique": "extract-function",
+  "before_snapshot": {
+    "git_diff_stat": "git diff --stat -- src/orders/service.ts tests/orders/service.test.ts",
+    "typecheck": "green",
+    "tests": "green"
+  },
+  "steps": [
+    {
+      "action": "map references",
+      "tool": "lsp.findReferences",
+      "command": "lsp { \"operation\": \"findReferences\", \"filePath\": \"src/orders/service.ts\", \"position\": { \"line\": 42, \"character\": 14 } }",
+      "expected": "All call sites are known before extraction."
+    },
+    {
+      "action": "verify structure",
+      "tool": "lsp.documentSymbol",
+      "command": "lsp { \"operation\": \"documentSymbol\", \"filePath\": \"src/orders/service.ts\" }",
+      "expected": "One clear extraction seam is identified."
+    },
+    {
+      "action": "run verification",
+      "tool": "bash",
+      "command": "npx tsc --noEmit && npm test && npm run lint && npm run build",
+      "expected": "All gates pass after the refactor."
+    }
+  ],
+  "after_snapshot": {
+    "git_diff_stat": "git diff --stat -- src/orders/service.ts tests/orders/service.test.ts",
+    "old_symbol_references": 0,
+    "new_symbol_references": 4
+  },
+  "verification_result": "pending"
+}

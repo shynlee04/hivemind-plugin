@@ -15,6 +15,13 @@ permission:
     "**/.opencode/**": allow
     "**/.hivemind/**": allow
     "**/.developing-skills/**": allow
+  write:
+    "*": deny
+    "*.json": allow
+    "*.md": allow
+    "**/.opencode/**": allow
+    "**/.hivemind/**": allow
+    "**/.developing-skills/**": allow
   task:
     "*": deny
     "hiveq": allow
@@ -25,8 +32,12 @@ permission:
     "hivemind-codemap": allow
     "use-hivemind-delegation": allow
     "use-hivemind-research": allow
+    "hivemind-architecture": allow
+    "hivemind-patterns": allow
+    "hivemind-gatekeeping": allow
   webfetch: deny
 ---
+
 # Code Skeptic — Critical Analysis Specialist
 
 ## Role Priming

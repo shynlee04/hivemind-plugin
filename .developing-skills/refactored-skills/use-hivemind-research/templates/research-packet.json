@@ -1,0 +1,94 @@
+{
+  "_meta": {
+    "created_at": "<ISO-8601>",
+    "updated_at": "<ISO-8601>",
+    "producer": "use-hivemind-research",
+    "packet_id": "<packet-id>"
+  },
+  "mode": "standard",
+  "depth": {
+    "time_budget_minutes": 8,
+    "min_sources": 10,
+    "credibility_floor": 60,
+    "claims_coverage_target": 75
+  },
+  "topic": "<research-topic>",
+  "primary_type": "technology-eval",
+  "secondary_types": [],
+  "decision_stakes": "team-local",
+  "stakeholders": [
+    "<team>",
+    "<operator>",
+    "<user-group>"
+  ],
+  "domains": [
+    "<domain-1>",
+    "<domain-2>"
+  ],
+  "controversies": [
+    "<possible disagreement>",
+    "<known trade-off>"
+  ],
+  "vocabulary_map": {
+    "outsider_terms": [
+      "<user phrasing>"
+    ],
+    "expert_terms": [
+      "<expert phrasing>"
+    ],
+    "adjacent_terms": [
+      "<neighbor term>"
+    ],
+    "exclude_terms": [
+      "<noise filter>"
+    ]
+  },
+  "search_queries": {
+    "primary": [
+      "<primary query 1>",
+      "<primary query 2>"
+    ],
+    "counter_perspective": [
+      "<adversarial query 1>"
+    ]
+  },
+  "mcp_tool_chain": [
+    {
+      "order": 1,
+      "tool": "exa_web_search_exa",
+      "purpose": "broad semantic discovery",
+      "inputs": {
+        "query": "<semantic query>",
+        "numResults": 5
+      }
+    },
+    {
+      "order": 2,
+      "tool": "tavily_tavily_extract",
+      "purpose": "extract shortlisted evidence",
+      "inputs": {
+        "urls": []
+      }
+    },
+    {
+      "order": 3,
+      "tool": "context7_query-docs",
+      "purpose": "validate official version-specific behavior",
+      "inputs": {
+        "libraryId": "<context7-id>",
+        "query": "<official-doc query>"
+      }
+    }
+  ],
+  "evidence_thresholds": {
+    "min_evidence_items": 10,
+    "min_strong_sources": 3,
+    "max_low_credibility_sources": 2
+  },
+  "stop_conditions": [
+    "source target met",
+    "credibility floor met",
+    "no unresolved critical contradiction"
+  ],
+  "output_path": ".hivemind/activity/research/<artifact>.json"
+}

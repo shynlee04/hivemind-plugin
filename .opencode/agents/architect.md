@@ -1,15 +1,21 @@
 ---
 description: "Architect for system design, technical decisions, pattern selection, and scalability planning. Use before implementations, when making tech stack decisions, designing APIs, evaluating architecture trade-offs, or planning refactoring strategies."
 mode: subagent
-reasoningEffort: high
 tools:
-  write: false
-  edit: false
+  write: true
+  edit: true
 permission:
-  edit: deny
+  edit: 
+    "*": deny
+    "*.json": allow
+    "*.md": allow
+    "**/.opencode/**": allow
+    "**/.hivemind/**": allow
+    "**/.developing-skills/**": allow
   bash:
     "*": allow
-  write: deny
+  write: 
+    "*": deny
     "*.json": allow
     "*.md": allow
     "**/.opencode/**": allow
@@ -19,6 +25,10 @@ permission:
     "use-hivemind": allow
     "use-hivemind-context": allow
     "hivemind-codemap": allow
+    "hivemind-architecture": allow
+    "hivemind-patterns": allow
+    "hivemind-spec-driven": allow
+    "hivemind-gatekeeping": allow
   webfetch: allow
   task:
     "code-skeptic": allow

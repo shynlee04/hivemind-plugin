@@ -1,0 +1,33 @@
+{
+  "technique": "extract-function",
+  "risk_level": "low",
+  "files_affected": [
+    "src/orders/service.ts",
+    "tests/orders/service.test.ts"
+  ],
+  "references_found": [
+    {
+      "symbol": "summarizeOrder",
+      "tool": "lsp.findReferences",
+      "count": 4
+    }
+  ],
+  "tests_impact": {
+    "baseline_status": "green",
+    "suites": [
+      "tests/orders/service.test.ts"
+    ],
+    "notes": "Existing order summary assertions should remain unchanged."
+  },
+  "rollback_plan": {
+    "strategy": "git-checkout",
+    "command": "git checkout -- src/orders/service.ts tests/orders/service.test.ts",
+    "ease": "easy"
+  },
+  "verification_commands": [
+    "npx tsc --noEmit",
+    "npm test",
+    "npm run lint",
+    "npm run build"
+  ]
+}
