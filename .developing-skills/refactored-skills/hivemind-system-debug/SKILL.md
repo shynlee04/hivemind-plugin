@@ -89,6 +89,7 @@ Debug work is **always delegated** from the orchestrator. The orchestrator:
 |-------|-------------|
 | `use-hivemind` | Entry router — triggers this skill for debug workflows |
 | `use-hivemind-delegation` | Delegation protocol — debug dispatches through this |
+| `hivemind-execution` | Execution workflow — receives confirmed debug findings for remediation |
 
 ## Conditional Loading
 

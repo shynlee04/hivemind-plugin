@@ -16,6 +16,8 @@ parent: use-hivemind
   - [Step 3 — Delegate with Context](#step-3--delegate-with-context)
 - [Sibling Skill Integration](#sibling-skill-integration)
 - [Anti-Patterns at Router Level](#anti-patterns-at-router-level)
+- [Experiment Safety Protocol](#experiment-safety-protocol)
+- [Results Formatting](#results-formatting)
 - [Conditional Loading](#conditional-loading)
 - [Bundled Resources](#bundled-resources)
 
@@ -105,6 +107,34 @@ Hand off using the research delegation packet:
 3. **Inline research for complex questions** — no evidence grading, no confidence scoring
 4. **Recursive routing** — router must not call itself
 
+## Experiment Safety Protocol
+
+Research investigations are experiments. Every experiment needs safety rails.
+
+| Rule | Implementation |
+|------|----------------|
+| Isolate research threads | Each investigation runs on its own branch or in a separate artifact folder |
+| Checkpoint before deep dive | Commit state before entering a research rabbit hole |
+| Rollback on dead end | If investigation yields nothing, discard artifacts and revert to checkpoint |
+| Preserve evidence | Findings captured before rollback — never lose confirmed data |
+| Abort conditions | Stop when: source is unreliable, 3 parallel threads converge on same gap, cost exceeds value |
+
+For full protocol details, see `references/experiment-safety.md`.
+
+## Results Formatting
+
+All research outputs must follow a structured format for downstream consumption.
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `source` | string | Yes | Origin of the finding (repo name, doc URL, commit SHA) |
+| `finding` | string | Yes | The discovered fact or conclusion |
+| `confidence` | enum | Yes | `confirmed` / `inferred` / `unverified` |
+| `evidence_path` | string | Yes | Relative path to supporting artifact |
+| `timestamp` | ISO 8601 | Yes | When the finding was captured |
+
+For TSV/JSON templates and aggregation rules, see `references/results-format.md`.
+
 ## Conditional Loading
 
 | Condition | Load Reference |
@@ -127,6 +157,8 @@ Hand off using the research delegation packet:
 | Fallback Hierarchy | `references/fallback-hierarchy.md` | Provider fallback order when primary MCP tools are unavailable |
 | MCP Setup Guide | `references/mcp-setup-guide.md` | MCP provider configuration and capability verification |
 | Repomix Ingestion | `references/repomix-ingestion.md` | Codebase analysis via Repomix for research contexts |
+| Experiment Safety | `references/experiment-safety.md` | Git-backed experiment safety, rollback, isolation |
+| Results Format | `references/results-format.md` | Structured results format (TSV/JSON), aggregation rules |
 | Check MCP Readiness | `scripts/check-mcp-readiness.mjs` | MCP provider readiness verification script |
 | Score Confidence | `scripts/score-confidence.sh` | Confidence scoring helper script |
 | Evidence Table | `templates/evidence-table.md` | Template for evidence table format |

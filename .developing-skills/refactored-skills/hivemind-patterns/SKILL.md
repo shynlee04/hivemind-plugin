@@ -247,6 +247,7 @@ When designing new systems or evaluating existing architecture, load the archite
 | Skill | Relationship |
 |-------|-------------|
 | `use-hivemind` | Entry router — triggers this skill for structural decisions |
+| `use-hivemind-skill-authoring` | Domain router — when skill authoring involves pattern decisions, both load together |
 
 ## Bundled Resources
 

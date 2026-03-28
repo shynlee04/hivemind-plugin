@@ -216,6 +216,13 @@ Let's be real — here's how skill authoring goes wrong:
 
 ---
 
+## Sibling Skills
+
+| Skill | Relationship |
+|-------|-------------|
+| `use-hivemind` | Entry router — parent of this domain skill |
+| `hivemind-patterns` | Architecture pattern reference — loaded when skill authoring involves structural decisions |
+
 ## Bundled Resources
 
 | File | Purpose |
