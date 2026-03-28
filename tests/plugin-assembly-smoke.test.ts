@@ -13,6 +13,7 @@ import {
   HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID,
 } from '../src/features/agent-work-contract/tools/index.js'
 import { HiveMindPlugin } from '../src/plugin/opencode-plugin.js'
+import { resolveDefaultAgent, initSkillInjection } from '../src/plugin/skill-exposure-map.js'
 
 function createContract(overrides: Record<string, unknown> = {}) {
   return {
@@ -126,11 +127,16 @@ test('plugin assembly keeps exactly one root event hook, one inline compaction h
       'hivemind_agent_work_export_contract',
       'hivemind_doc',
       'hivemind_handoff',
+      'hivemind_hm_doctor',
+      'hivemind_hm_init',
+      'hivemind_hm_setting',
+      'hivemind_journal',
       'hivemind_runtime_command',
       'hivemind_runtime_status',
       'hivemind_task',
       'hivemind_trajectory',
     ].sort())
+    assert.equal(registeredToolIds.length, 12, 'plugin should register exactly 12 tools')
     assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_CLASSIFY_INTENT_TOOL_ID), false)
     assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_CREATE_CONTRACT_TOOL_ID), true)
     assert.equal(registeredToolIds.includes(HIVEMIND_AGENT_WORK_EXPORT_CONTRACT_TOOL_ID), true)
@@ -235,4 +241,11 @@ test('compaction skips malformed stored contracts instead of aborting the inline
   } finally {
     await rm(directory, { recursive: true, force: true })
   }
+})
+
+test('resolveDefaultAgent returns hiveminder when no config is loaded', () => {
+  // initSkillInjection may or may not have been called; resolveDefaultAgent
+  // must still return a safe fallback of 'hiveminder'
+  const agent = resolveDefaultAgent()
+  assert.equal(agent, 'hiveminder', 'default agent should be hiveminder when no config is loaded')
 })

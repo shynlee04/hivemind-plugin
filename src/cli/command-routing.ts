@@ -1,7 +1,7 @@
 import { basename } from 'node:path'
 import { CONTROL_PLANE_CLI_COMMANDS, discoverControlPlanePrimitives } from '../control-plane/index.js'
 
-export const CLI_COMMANDS = [...CONTROL_PLANE_CLI_COMMANDS, 'sync', 'help'] as const
+export const CLI_COMMANDS = [...CONTROL_PLANE_CLI_COMMANDS, 'help'] as const
 
 export type CliCommand = (typeof CLI_COMMANDS)[number]
 
@@ -11,7 +11,6 @@ const BINARY_ALIASES: Record<string, CliCommand> = {
       primitive.binaryAliases.map((alias) => [alias, primitive.cliCommand]),
     ),
   ),
-  'hm-sync': 'sync',
 } as Record<string, CliCommand>
 
 /**

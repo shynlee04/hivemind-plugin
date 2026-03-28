@@ -1,6 +1,6 @@
 # Evidence Contract
 
-Defines the grading system, confidence scoring rules, and evidence quality standards for all research conducted under hivemind-research-framework.
+Defines the grading system, confidence scoring rules, and evidence quality standards for all research conducted under use-hivemind-research.
 
 ## 4-Dimension Grading
 
@@ -138,8 +138,8 @@ Example: `H/M/H/H` = High authority, Medium recency, High corroboration, High re
 ## Cross-Package Integration
 
 This evidence contract is referenced by:
-- **hivemind-research-framework SKILL.md** — uses grading for all findings
-- **hivemind-research-tools SKILL.md** — tool results feed into grading system
+- **use-hivemind-research SKILL.md** — uses grading for all findings
+- **use-hivemind-research SKILL.md** — tool results feed into grading system
 - **hivemind-research SKILL.md** — router ensures grading is applied
 
 The contract is bidirectional:

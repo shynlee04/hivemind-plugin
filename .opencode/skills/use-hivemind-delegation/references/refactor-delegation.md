@@ -56,6 +56,6 @@ Delegate refactor work with the assess→plan→execute→verify pattern.
 
 ## Cross-Reference
 
-Refactor methodology: `use-hivemind-detox-refactor`
+Refactor methodology: `use-hivemind`
 Delegation mechanics: `use-hivemind-delegation`
-Loop gating: `hivemind-gatekeeping-delegation`
+Loop gating: `hivemind-gatekeeping`

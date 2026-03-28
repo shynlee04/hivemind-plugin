@@ -32,6 +32,7 @@ export interface CompactionJournalHandlerDeps {
  */
 export function createCompactionJournalHandler(deps: CompactionJournalHandlerDeps) {
   const { directory } = deps
+  const sessionsDir = join(directory, '.hivemind', 'sessions')
 
   return async (
     input: { sessionID: string },
@@ -48,9 +49,25 @@ export function createCompactionJournalHandler(deps: CompactionJournalHandlerDep
       contextLength > 30 ? 'high' : contextLength > 10 ? 'medium' : 'low'
 
     try {
+      // Resolve or create consolidated session
+      let consolidatedSessionId: string | null = null
+      try {
+        consolidatedSessionId = await findSessionBySdkId(sessionsDir, sessionId)
+      } catch {
+        // ignore
+      }
+      if (!consolidatedSessionId) {
+        consolidatedSessionId = await initSession(sessionsDir, {
+          sdkSessionId: sessionId,
+          lineage: 'hiveminder',
+          purposeClass: 'implementation',
+          agent: 'unknown',
+        })
+      }
+
       // Add compaction event to session
-      await addEvent(directory, {
-        sessionId,
+      await addEvent(sessionsDir, {
+        sessionId: consolidatedSessionId,
         event: {
           turnNumber: 0, // Compaction events are not tied to specific turns
           type: 'compaction',
@@ -64,7 +81,7 @@ export function createCompactionJournalHandler(deps: CompactionJournalHandlerDep
       })
 
       // Increment compaction counter
-      await incrementCounter(directory, sessionId, 'compactionCount', 1)
+      await incrementCounter(sessionsDir, consolidatedSessionId, 'compactionCount', 1)
     } catch (err) {
       console.error('[session-journal] writeEvent (compaction) failed:', err)
     }

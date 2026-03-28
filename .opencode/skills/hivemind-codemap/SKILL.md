@@ -5,7 +5,7 @@ description: Use when detox or restoration work needs whole-codebase mapping, se
 
 # hivemind-codemap
 
-This is the deep codemap branch family for `use-hivemind-detox-refactor`.
+This is the deep codemap branch family for `use-hivemind`.
 
 ## Purpose
 - map the codebase before refactor strategy
@@ -166,17 +166,20 @@ If the orchestrator catches itself doing multi-file reads or pattern matching, i
 - optional repomix extraction report
 - bash scan helper JSON outputs (per command)
 
-## References
-- `references/scan-layers.md`
-- `references/scan-levels.md`
-- `references/batching-loop.md`
-- `references/repomix-mode.md`
-- `references/codemap-techniques.md`
-- `references/delegation-contract.md`
-- `scripts/hm-codescan.sh`
-- `templates/scan-plan.md`
-- `templates/codemap-scan-state.json.md`
-- `templates/seam-inventory.md`
-- `templates/codemap-synthesis-report.md`
-- `templates/repomix-extraction-report.md`
-- `tests/direct-invocation.md`
+## Bundled Resources
+
+| Resource | Path | Purpose |
+|----------|------|---------|
+| Scan Layers | `references/scan-layers.md` | High-level to low-level scan pass definitions |
+| Scan Levels | `references/scan-levels.md` | Depth granularity for each scan pass |
+| Batching Loop | `references/batching-loop.md` | Batch processing loop for large codebases |
+| Repomix Mode | `references/repomix-mode.md` | Repomix integration for codebase packing |
+| Codemap Techniques | `references/codemap-techniques.md` | Specific scanning techniques and patterns |
+| Delegation Contract | `references/delegation-contract.md` | Contract format for codemap delegation packets |
+| Codescan Script | `scripts/hm-codescan.sh` | Bash helper for automated code scanning |
+| Scan Plan | `templates/scan-plan.md` | Template for scan pass planning |
+| Scan State | `templates/codemap-scan-state.json.md` | JSON template for scan state tracking |
+| Seam Inventory | `templates/seam-inventory.md` | Template for recording discovered seams |
+| Synthesis Report | `templates/codemap-synthesis-report.md` | Template for scan result synthesis |
+| Repomix Report | `templates/repomix-extraction-report.md` | Template for repomix extraction results |
+| Direct Invocation | `tests/direct-invocation.md` | Test scenario for direct skill invocation |

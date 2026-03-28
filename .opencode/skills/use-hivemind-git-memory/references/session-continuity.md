@@ -86,7 +86,7 @@ At the end of each turn or before handoff:
 5. **Attach a brief `commit_anchor`** when the turn meaningfully changes planning, delegation, verification, or refactor posture.
 6. **Record any active `task_id`s** from subagent work in the `subsessions` array.
 7. **Record any output paths** generated during this turn so the next turn knows where to find them.
-8. **If a long-haul task is active**, update `longhaul/task-state.json` with the latest checkpoint.
+8. **If a long-haul task is active**, update `activity/{domain}/task-state.json` with the latest checkpoint (where `{domain}` is the current active domain).
 
 At the start of a new turn:
 
@@ -100,7 +100,7 @@ At the start of a new turn:
 
 For work spanning many turns (refactors, large scans, phased restoration):
 
-Stored at `{project}/.hivemind/activity/longhaul/task-state.json`:
+Stored at `{project}/.hivemind/activity/{domain}/task-state.json` (domain-scoped, not global):
 
 ```json
 {
@@ -134,7 +134,7 @@ Stored at `{project}/.hivemind/activity/longhaul/task-state.json`:
 
 ## Git-Memory Integration
 
-When using `git-continuity-memory` to resume:
+When using `use-hivemind-git-memory` to resume:
 - Check `continuity.json` first for recent session state.
 - Fall back to git history only when `continuity.json` is missing, stale (>24h since `last_turn_at`), or the session has no `ses_id` / `sessionID` linkage.
 - If both sources exist, prefer `continuity.json` for recent state and git history for rationale and decisions.
@@ -158,5 +158,5 @@ Example:
 
 - Starting a fresh subagent without checking if a `task_id` exists for resuming prior context
 - Assuming continuity state is current without checking `last_turn_at` age
-- Hardcoding paths to activity files instead of reading `active-paths.json`
-- Storing session state in ad-hoc locations instead of the determined folder structure
+- Assuming all activity artifacts live under one flat structure
+- Mixing artifacts from different domains in the same folder

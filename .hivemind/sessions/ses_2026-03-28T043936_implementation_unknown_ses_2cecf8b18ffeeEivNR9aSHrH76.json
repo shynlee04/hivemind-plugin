@@ -1,0 +1,79 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2cecf8b18ffeeEivNR9aSHrH76",
+  "semanticSessionId": "ses_2026-03-28T043936_implementation_unknown_ses_2cecf8b18ffeeEivNR9aSHrH76",
+  "sdkSessionId": "ses_2cecf8b18ffeeEivNR9aSHrH76",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-27T21:39:36.590Z",
+  "updated": "2026-03-27T21:43:10.892Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-27T21:39:36.589Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "You're right. That was an anti-pattern — I wrote the plan myself instead of delegating. The orchestrator dispatches; it doesn't write plans. Let me revert that and do it correctly."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-27T21:39:36.589Z",
+      "data": {
+        "text": "You're right. That was an anti-pattern — I wrote the plan myself instead of delegating. The orchestrator dispatches; it doesn't write plans. Let me revert that and do it correctly.",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T21:43:10.524Z",
+      "data": {
+        "sessionId": "ses_2cecf8b18ffeeEivNR9aSHrH76"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T21:43:10.702Z",
+      "data": {
+        "sessionId": "ses_2cecf8b18ffeeEivNR9aSHrH76"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T21:43:10.892Z",
+      "data": {
+        "sessionId": "ses_2cecf8b18ffeeEivNR9aSHrH76"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-27T21:39:36.589Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=180"
+    }
+  ]
+}

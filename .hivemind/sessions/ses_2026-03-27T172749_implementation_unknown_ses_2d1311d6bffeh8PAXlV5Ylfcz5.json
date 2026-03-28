@@ -1,0 +1,52 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d1311d6bffeh8PAXlV5Ylfcz5",
+  "semanticSessionId": "ses_2026-03-27T172749_implementation_unknown_ses_2d1311d6bffeh8PAXlV5Ylfcz5",
+  "sdkSessionId": "ses_2d1311d6bffeh8PAXlV5Ylfcz5",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-27T10:27:49.032Z",
+  "updated": "2026-03-27T10:27:49.035Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-27T10:27:49.031Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "One test fails — the file with `{\"test\": true}` has no `semanticSessionId` field. The semantic ID should come from the filename pattern `{semanticId}.json`:"
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-27T10:27:49.031Z",
+      "data": {
+        "text": "One test fails — the file with `{\"test\": true}` has no `semanticSessionId` field. The semantic ID should come from the filename pattern `{semanticId}.json`:",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-27T10:27:49.031Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=156"
+    }
+  ]
+}

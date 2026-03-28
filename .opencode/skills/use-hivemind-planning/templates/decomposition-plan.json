@@ -3,7 +3,7 @@
     "created_at": "ISO-8601",
     "updated_at": "ISO-8601",
     "spec_source": "path/to/source-spec.md",
-    "decomposition_method": "plan-breakdown v1.0"
+    "decomposition_method": "use-hivemind-planning v1.0"
   },
   "plan_id": "descriptive-plan-id",
   "total_slices": 0,

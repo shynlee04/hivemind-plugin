@@ -1,0 +1,52 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d6140197ffeqPEBGBFG4klcgf",
+  "semanticSessionId": "ses_2026-03-26T183441_implementation_unknown_ses_2d6140197ffeqPEBGBFG4klcgf",
+  "sdkSessionId": "ses_2d6140197ffeqPEBGBFG4klcgf",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-26T11:34:41.905Z",
+  "updated": "2026-03-26T11:34:41.909Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-26T11:34:41.905Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "I have all the information needed. Let me now write the diagnosis report."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-26T11:34:41.905Z",
+      "data": {
+        "text": "I have all the information needed. Let me now write the diagnosis report.",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-26T11:34:41.905Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=73"
+    }
+  ]
+}

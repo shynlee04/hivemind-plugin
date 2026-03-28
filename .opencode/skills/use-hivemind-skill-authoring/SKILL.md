@@ -1,21 +1,13 @@
 ---
 name: use-hivemind-skill-authoring
-description: |
-  The skill authoring domain. Creating, reviewing, auditing skills. Universal design principles. Conflict detection. Everything you need to build skills that work everywhere.
-parent: use-hivemind
-consolidates:
-  - use-hivemind-skill-writer
-  - hivemind-skill-doctor
-  - hivemind-skill-write
-  - skill-universal-design
-  - skill-conflict-detect
+description: The skill authoring domain. Creating, reviewing, auditing skills. Universal design principles. Conflict detection. Everything you need to build skills that work everywhere.
 ---
 
 # use-hivemind-skill-authoring
 
 ## Load Position
 
-Slot: 2. Requires `use-hivemind` in Slot 1.
+Layer: Domain. Requires `use-hivemind` (entry router) loaded first.
 
 If you're building a skill, reviewing one, or wondering whether two skills are stepping on each other — this is where you start.
 
@@ -37,7 +29,7 @@ If you're building a skill, reviewing one, or wondering whether two skills are s
 Every HiveMind skill is a single `SKILL.md` file. Here's what goes where:
 
 ```
-YAML frontmatter        ← name, description, parent, consolidates
+YAML frontmatter        ← name, description, parent
 Load Position           ← which slot, what dependency
 Purpose                 ← one paragraph: what this skill does
 Sections                ← domain-specific content
@@ -73,15 +65,13 @@ All HiveMind skills follow a strict naming pattern:
 ```markdown
 ---
 name: your-skill-name
-description: |
-  One sentence. Active voice. What this skill does for the user.
-parent: use-hivemind-skill-authoring  # or appropriate parent
+description: One sentence. Active voice. What this skill does for the user.
 ---
 
 # your-skill-name
 
 ## Load Position
-Slot: X. Requires [dependency] in Slot Y.
+Layer: [domain|depth]. Requires [dependency] loaded first.
 
 ## When You Need This
 [Table or list of trigger situations]
@@ -152,7 +142,7 @@ The 9-phase audit. Run this on any skill before shipping:
 | Phase | What to Check | Pass Criteria |
 |-------|---------------|---------------|
 | 1. Frontmatter | name, description, parent present | All required fields filled |
-| 2. Load Position | Slot declared, dependencies listed | No circular deps |
+| 2. Load Position | Layer and prerequisites declared | No circular deps |
 | 3. Trigger clarity | "When You Need This" is specific | No ambiguity about when to load |
 | 4. Content depth | Core sections are substantive | No placeholder text |
 | 5. Anti-patterns | What NOT to do is explicit | At least 3 entries |
@@ -210,14 +200,15 @@ Let's be real — here's how skill authoring goes wrong:
 
 ---
 
-## Deprecation Notice
+## Bundled Resources
 
-The following skills are consolidated into this domain router:
-
-- `use-hivemind-skill-writer` → superseded by Creation Template section
-- `hivemind-skill-doctor` → superseded by Review Checklist section
-- `hivemind-skill-write` → superseded by Skill Anatomy section
-- `skill-universal-design` → superseded by Universal Design section
-- `skill-conflict-detect` → superseded by Conflict Detection section
-
-Load this skill instead of any of the above.
+| File | Purpose |
+|------|---------|
+| `references/01-skill-anatomy.md` | Skill structure reference |
+| `references/02-frontmatter-standard.md` | Frontmatter field specification |
+| `references/03-three-patterns.md` | Skill architecture patterns |
+| `references/04-tdd-workflow.md` | TDD workflow for skill development |
+| `references/05-skill-quality-matrix.md` | Quality scoring matrix |
+| `references/07-iterative-refinement.md` | Iterative improvement process |
+| `references/08-conflict-detection.md` | Conflict detection methodology |
+| `references/sw-04-tdd-workflow.md` | Supplementary TDD workflow |

@@ -52,7 +52,7 @@ See references/ for detailed guidance.
 | Skill | Pack | Routing Target |
 |-------|------|---------------|
 | `context-intelligence` | context-intelligence | delegation, workflow, recovery |
-| `hivemind-skill-writer` | hivemind-skill-writer | anatomy, quality, tdd |
+| `use-hivemind-skill-authoring` | use-hivemind-skill-authoring | anatomy, quality, tdd |
 | `explore-context` | explore | deep-scan, surface |
 
 ### Stacking with P1
@@ -222,7 +222,7 @@ Is this an entry/routing skill?
 ### When to Use P1
 
 - Entry skills that route to sub-packs
-- Meta skills (like hivemind-skill-writer)
+- Meta skills (like use-hivemind-skill-authoring)
 - Thin skills that just delegate
 
 ### When to Use P2
@@ -271,9 +271,9 @@ Skills must understand their place in the domain ecosystem:
 | Pack | Integrates With | Activation |
 |------|----------------|------------|
 | context-intelligence | All packs | P1 entry, stacking: 1 |
-| hivemind-skill-writer | context-intelligence | Companion, stacking: 0 |
-| skill-audit-hivemind | hivemind-skill-writer | P3 specialist on demand |
-| skill-migration-hivemind | hivemind-skill-writer | P3 specialist when migrating |
+| use-hivemind-skill-authoring | context-intelligence | Companion, stacking: 0 |
+| use-hivemind-skill-authoring | use-hivemind-skill-authoring | P3 specialist on demand |
+| use-hivemind-skill-authoring | use-hivemind-skill-authoring | P3 specialist when migrating |
 
 ### Subagent Routing
 

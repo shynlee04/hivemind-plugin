@@ -33,7 +33,7 @@ Protocol for verifying context integrity before routing, implementing, or commit
 |-------|---------|--------|
 | **CLEAN** | All sources corroborate. Code, docs, and git align. | Proceed with full confidence. |
 | **SUSPECT** | Some documents are stale or unverified. Minor conflicts detected. | Verify critical claims before routing. Cross-check with code. |
-| **DEGRADED** | Multiple sources conflict. Docs contradict code. Prior session memory unreliable. | Delegate a fresh `context-intelligence-entry` probe. Do not proceed without probe results. |
+| **DEGRADED** | Multiple sources conflict. Docs contradict code. Prior session memory unreliable. | Delegate a fresh `use-hivemind-context` probe. Do not proceed without probe results. |
 | **POLLUTED** | Stale material everywhere. Tests may emit false signals. Governance files may reference non-existent entities. | Quarantine stale material. Escalate to orchestrator. Block implementation until context is restored. |
 | **POISONED** | Nothing trustworthy. Cannot verify any claim. Context is irrecoverable. | Block all work. Require human intervention to reset context. |
 
@@ -95,7 +95,7 @@ Automatic escalation to higher distrust levels when:
 3. If corroboration found → downgrade to CLEAN.
 
 ### DEGRADED Recovery
-1. Dispatch `context-intelligence-entry` probe.
+1. Dispatch `use-hivemind-context` probe.
 2. Map actual file structure vs documented structure.
 3. Identify and quarantine conflicting sources.
 4. Re-derive routing decisions from verified state only.

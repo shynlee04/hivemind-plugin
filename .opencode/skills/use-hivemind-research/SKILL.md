@@ -1,9 +1,13 @@
 ---
 name: "use-hivemind-research"
-description: "Router for structured research workflows. Use when the user asks research questions, needs multi-source investigation, technology evaluation, API analysis, pattern discovery, or evidence-based findings. Routes to hivemind-research-framework (methodology) and hivemind-research-tools (MCP tool protocols)."
+description: Router for structured research workflows. Use when the user asks research questions, needs multi-source investigation, technology evaluation, API analysis, pattern discovery, or evidence-based findings.
 ---
 
 # use-hivemind-research — Research Router
+
+## Load Position
+
+Layer: Domain. Requires `use-hivemind` (entry router) loaded first.
 
 Thin entry point that classifies the research request and delegates to the correct specialist skill.
 
@@ -20,9 +24,9 @@ Thin entry point that classifies the research request and delegates to the corre
 ```mermaid
 flowchart TD
     A[Research Request] --> B{Requires methodology?}
-    B -->|Yes| C[hivemind-research-framework]
+    B -->|Yes| C[use-hivemind-research]
     B -->|No| D{Requires MCP tools?}
-    D -->|Yes| E[hivemind-research-tools]
+    D -->|Yes| E[use-hivemind-research]
     D -->|No| F[Handle inline — simple lookup]
     C --> G[Framework delegates tool calls to Tools]
     E --> H[Tools references Framework for grading]
@@ -77,8 +81,8 @@ Hand off using the research delegation packet:
 | Skill | Integration Point |
 |---|---|
 | use-hivemind-delegation | Subagent spawning for parallel research threads |
-| spec-distillation | Refining vague research requests into answerable questions |
-| context-intelligence-entry | Session health check before long research runs |
+| hivemind-spec-driven | Refining vague research requests into answerable questions |
+| use-hivemind-context | Session health check before long research runs |
 
 ## Anti-Patterns at Router Level
 
@@ -91,5 +95,16 @@ Hand off using the research delegation packet:
 
 | Resource | Path | Purpose |
 |---|---|---|
-| hivemind-research-framework | `../hivemind-research-framework/SKILL.md` | Methodology, types, grading |
-| hivemind-research-tools | `../hivemind-research-tools/SKILL.md` | MCP protocols, chaining, fallbacks |
+| Evidence Contract | `references/evidence-contract.md` | Evidence grading, confidence scoring, source credibility |
+| Tool Protocols | `references/tool-protocols.md` | MCP tool chaining, provider selection, fallback sequences |
+| Research Classification | `references/research-classification.md` | Request type taxonomy, signal-word matching, routing rules |
+| Anti-Patterns | `references/anti-patterns.md` | Common research mistakes and how the router avoids them |
+| Delegation for Research | `references/delegation-for-research.md` | Subagent spawning patterns for parallel research threads |
+| Fallback Hierarchy | `references/fallback-hierarchy.md` | Provider fallback order when primary MCP tools are unavailable |
+| MCP Setup Guide | `references/mcp-setup-guide.md` | MCP provider configuration and capability verification |
+| Repomix Ingestion | `references/repomix-ingestion.md` | Codebase analysis via Repomix for research contexts |
+| Check MCP Readiness | `scripts/check-mcp-readiness.mjs` | MCP provider readiness verification script |
+| Score Confidence | `scripts/score-confidence.sh` | Confidence scoring helper script |
+| Evidence Table | `templates/evidence-table.md` | Template for evidence table format |
+| MCP Config | `templates/mcp-config-template.json` | JSON template for MCP configuration |
+| Research Packet | `templates/research-packet.md` | Template for research delegation packets |

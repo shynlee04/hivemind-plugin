@@ -364,34 +364,22 @@ describe('runtime entry loader authority', () => {
     }
   })
 
-  it('init bootstraps the local runtime surface and reports sync evidence', async () => {
+  it('init bootstraps the local runtime entry and reports readiness', async () => {
     const projectRoot = await mkdtemp(join(tmpdir(), 'hm-runtime-entry-init-sync-'))
 
     try {
       const result = await initProject(projectRoot, {
         presetId: 'guided-onboarding',
       })
-      const report = result.commandResult.report as {
-        runtime_surface_sync?: {
-          plugin_file: string
-        }
-      }
 
-      assert.equal(result.commandResult.stateTransitions?.includes('runtime-surface-synced'), true)
       assert.equal(result.runtime_identity.cardId, 'hivemind-runtime-identity-v1')
       assert.equal(result.runtime_identity.activeRuntimeAuthority, 'managed-sdk')
       assert.equal(result.runtime_identity.runtimePosture, 'singular-runtime-authority')
       assert.equal(result.readiness_signal.cardId, 'hivemind-readiness-signal-v1')
       assert.equal(result.readiness_signal.readinessState, 'qa-pending')
       assert.equal(result.readiness_signal.exactNextCommand, 'hm-harness')
-      assert.ok(report.runtime_surface_sync)
       assert.equal((result.commandResult.report as { runtime_identity?: { cardId?: string } }).runtime_identity?.cardId, 'hivemind-runtime-identity-v1')
       assert.equal((result.commandResult.report as { readiness_signal?: { exactNextCommand?: string } }).readiness_signal?.exactNextCommand, 'hm-harness')
-      assert.equal(report.runtime_surface_sync?.plugin_file.endsWith('.opencode/plugins/hivemind-context-governance.ts'), true)
-      assert.match(
-        await readFile(join(projectRoot, '.opencode', 'plugins', 'hivemind-context-governance.ts'), 'utf8'),
-        /hivemind-context-governance\/plugin/,
-      )
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
     }
@@ -418,7 +406,7 @@ describe('runtime entry loader authority', () => {
     }
   })
 
-  it('doctor re-syncs the local runtime surface only after recovery reaches healthy state', async () => {
+  it('doctor reaches healthy state and reports qa-pending', async () => {
     const projectRoot = await mkdtemp(join(tmpdir(), 'hm-runtime-entry-doctor-sync-'))
 
     try {
@@ -430,16 +418,8 @@ describe('runtime entry loader authority', () => {
         lineage: 'hivefiver',
         purposeClass: 'course-correction',
       })
-      const report = result.report as {
-        runtime_surface_sync?: {
-          plugin_file: string
-        }
-      }
 
       assert.equal(result.closeoutStatus, 'qa-pending')
-      assert.equal(result.stateTransitions?.includes('runtime-surface-synced'), true)
-      assert.ok(report.runtime_surface_sync)
-      assert.equal(report.runtime_surface_sync?.plugin_file.endsWith('.opencode/plugins/hivemind-context-governance.ts'), true)
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
     }

@@ -319,3 +319,48 @@ export interface SessionTreeNode {
   entry: IndexEntry
   children: SessionTreeNode[]
 }
+
+// ---------------------------------------------------------------------------
+// Session V3 (ADR-017)
+// ---------------------------------------------------------------------------
+
+/** Activity counters for a SessionV3 record. */
+export interface SessionV3Counters {
+  userMessageCount: number
+  assistantOutputCount: number
+  toolCallCount: number
+  delegationCount: number
+  compactionCount: number
+}
+
+/** A single entry in the session's auto-generated table of contents. */
+export interface TableOfContentsEntry {
+  turnNumber: number
+  timestamp: string
+  type: 'user_message' | 'assistant_output' | 'delegation' | 'compaction' | 'error'
+  summary: string
+}
+
+/**
+ * Session V3 record schema (ADR-017).
+ * The canonical persisted shape for session.json going forward.
+ */
+export interface SessionV3 {
+  _schema: 'session/v3'
+  sessionId: string
+  semanticSessionId: string
+  parentSessionId: string | null
+  lineage: Lineage
+  purposeClass: PurposeClass
+  agent: string
+  startedAt: string
+  endedAt: string | null
+  turnCount: number
+  status: 'active' | 'completed' | 'errored'
+  summary: string
+  keyFindings: string[]
+  subsessionIds: string[]
+  resumable: boolean
+  counters: SessionV3Counters
+  toc: TableOfContentsEntry[]
+}

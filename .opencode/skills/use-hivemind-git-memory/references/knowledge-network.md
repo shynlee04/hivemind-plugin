@@ -39,7 +39,7 @@ jq -r '
   "\(.sha) -> packet: \(.packet_id // "none")" ,
   "\(.sha) -> phase: \(.plan_phase // "none")" ,
   "\(.sha) -> agent: \(.who_decided // "none")"
-' .hivemind/activity/memory-index/index.json
+' .hivemind/activity/git-memory/index/index.json
 ```
 
 ### From Git History
@@ -64,7 +64,7 @@ done
 Input: commit_sha
 1. Read memory record for commit_sha
 2. Extract decision_id from linkage
-3. Read decision from .hivemind/activity/hierarchy/{decision_id}.json
+3. Read decision from .hivemind/activity/git-memory/decisions/{decision_id}.json
 4. Extract packet_id from linkage
 5. Read packet from .hivemind/activity/delegation/{packet_id}.json
 6. Extract plan_phase from linkage

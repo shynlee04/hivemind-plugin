@@ -1,0 +1,100 @@
+{
+  "_meta": {
+    "created_at": "2026-03-27T20:05:00.000Z",
+    "orchestrator": "hiveminder",
+    "workflow": "session-hierarchy-restructure",
+    "session_id": "ses_2dad408cbffeg9dyGcAUhNodTo",
+    "handoff_version": 1
+  },
+  "status": "wave-3-complete",
+  "context_summary": {
+    "original_problem": "ENOENT errors from session journal writer targeting wrong paths",
+    "root_cause": "3 handler factories passed project root to consolidated-writer instead of .hivemind/sessions; event-handler never called initSession; session ID mismatch (semantic vs raw SDK)",
+    "fix_applied": "Path fix + init-before-add logic + findSessionBySdkId return fix",
+    "fix_verified": "ENOENT errors stopped; new files created at .hivemind/sessions/ with correct paths",
+    "structural_problem": "Hundreds of flat JSON files with no hierarchy, no relationships, no readability",
+    "solution_design": "ADR-017: hierarchical session directory structure with human-readable events.md"
+  },
+  "verified_on_disk": {
+    "build_status": "npm run build — zero errors",
+    "test_status": "571/571 tests pass, zero failures",
+    "dist_output": "dist/ built successfully, plugin at dist/plugin/opencode-plugin.js"
+  },
+  "completed_slices": {
+    "v3-types": {
+      "status": "complete",
+      "red_test": "src/features/event-tracker/session-v3-types.test.ts",
+      "green_file": "src/features/event-tracker/types.ts",
+      "tests": "23/23 pass",
+      "evidence": "SessionV3, SessionV3Counters, TableOfContentsEntry types added"
+    },
+    "writer-v3-init": {
+      "status": "complete",
+      "red_test": "src/features/event-tracker/consolidated-writer-v3.test.ts",
+      "green_file": "src/features/event-tracker/consolidated-writer.ts",
+      "tests": "11/11 pass",
+      "evidence": "initSessionV3() function creates directory-based session with session.json"
+    },
+    "directory-structure": {
+      "status": "complete",
+      "red_test": "src/features/event-tracker/session-structure.test.ts",
+      "green_file": "src/features/event-tracker/session-structure.ts",
+      "tests": "11/11 pass",
+      "evidence": "getSessionDirPath, getSubSessionDirPath, createSessionDir, createSubSessionDir, migrateFlatToDirectory"
+    },
+    "markdown-writer": {
+      "status": "complete",
+      "red_test": "src/features/event-tracker/markdown-writer.test.ts",
+      "green_file": "src/features/event-tracker/markdown-writer.ts",
+      "tests": "15/15 pass",
+      "evidence": "initEventsMarkdown, appendTurnToMarkdown, generateTOC, appendDiagnosticToMarkdown"
+    }
+  },
+  "remaining_slices": {
+    "handlers": {
+      "status": "pending",
+      "description": "Wire 4 handler factories to dual-write: keep existing consolidated-writer calls + add V3 initSessionV3 + appendTurnToMarkdown calls",
+      "files": [
+        "src/hooks/chat-message-handler.ts",
+        "src/hooks/text-complete-handler.ts",
+        "src/hooks/event-handler.ts",
+        "src/hooks/compaction-handler.ts"
+      ],
+      "note": "Unused imports were added by a previous agent but removed to fix build. The actual wiring (calling initSessionV3 + appendTurnToMarkdown) has NOT been done yet."
+    },
+    "toc-generator": {
+      "status": "pending",
+      "description": "generateTOC is implemented in markdown-writer.ts but not called from any handler yet"
+    },
+    "migration-script": {
+      "status": "pending",
+      "description": "Move existing flat ses_*.json files into directory structure"
+    },
+    "integration-tests": {
+      "status": "pending",
+      "description": "End-to-end tests for the full V3 session lifecycle"
+    }
+  },
+  "artifacts_on_disk": {
+    "adr": ".hivemind/plans/2026-03-26-session-hierarchy-restructure.md",
+    "slice_decomposition": ".hivemind/activity/planning/plan-session-hierarchy-slices-2026-03-26.json",
+    "orchestration_state": ".hivemind/activity/handoff/2026-03-26-session-hierarchy-orchestration.json",
+    "design_handoff": ".hivemind/activity/handoff/2026-03-26-design-hivemind-session-hierarchy.json",
+    "this_handoff": ".hivemind/activity/handoff/2026-03-27-session-hierarchy-consolidation.json",
+    "manual_export": "session-ses_2dad.md"
+  },
+  "known_issues": {
+    "pre_existing": [
+      "session-structure.test.ts:144 — unused variable (cosmetic, not blocking build)",
+      "9 handler unit tests are stale — assert old appendSessionEvent API, need rewrite for consolidated writer"
+    ],
+    "workspace_pollution": "2015 modified/untracked files in .worktrees/product-detox — includes skill refactors, session trash, activity artifacts"
+  },
+  "next_session_plan": {
+    "phase_1": "Wire handlers to V3 + markdown (dual-write pattern)",
+    "phase_2": "Integration tests for V3 session lifecycle",
+    "phase_3": "Migration script for existing flat files",
+    "phase_4": "Legacy cleanup (error-log, session-inspection consolidation)",
+    "skills_to_load": ["use-hivemind", "use-hivemind-delegation", "hivemind-gatekeeping"]
+  }
+}

@@ -2,6 +2,7 @@
 description: "Terminal external-research specialist for ecosystem, documentation, and market evidence. Never mutates repository files or delegates."
 mode: subagent
 model: minimax-coding-plan/MiniMax-M2.7
+reasoningEffort: medium
 tools:
   write: false
   edit: false
@@ -13,11 +14,8 @@ permission:
     "*": deny
   skill:
     "use-hivemind": allow
-    "use-hivemind-context-integrity": allow
-    "research-delegation": allow
-    "hivemind-research": allow
-    "hivemind-research-framework": allow
-    "hivemind-research-tools": allow
+    "use-hivemind-context": allow
+    "use-hivemind-research": allow
   webfetch: allow
   websearch: allow
   codesearch: allow
@@ -102,7 +100,7 @@ Present findings with source citations, confidence grades, and any contradiction
 | Skill                       | When to Load                          | Purpose                                           |
 | --------------------------- | ------------------------------------- | ------------------------------------------------- |
 | `use-hivemind-delegation` | When returning to caller              | Return contract structure                         |
-| `research-delegation`     | When conducting multi-source research | Evidence collection, source validation, synthesis |
+| `use-hivemind-research`   | When conducting multi-source research | Evidence collection, source validation, synthesis |
 
 ---
 
@@ -277,9 +275,8 @@ You MUST load these skills before researching ANYTHING. Research without delegat
 
 | Skill | Purpose | When |
 |-------|---------|------|
-| `research-delegation` | Evidence collection with source validation, grading, and multi-source synthesis | ALWAYS — this is your core methodology |
+| `use-hivemind-research` | Evidence collection, source validation, grading, multi-source synthesis, and methodology routing | ALWAYS — this is your core methodology |
 | `use-hivemind-delegation` | Understand your return contract and evidence requirements | When returning research to caller |
-| `hivemind-research` | Route to correct research methodology based on question type | When research question is complex or multi-faceted |
 
 **Stack budget:** Max 3 active. You are a terminal agent — you do NOT delegate. These skills structure YOUR research, not downstream work.
 

@@ -30,7 +30,7 @@ After a successful memory-enforced commit, register it in the hierarchy index.
 ### Storage Layout
 
 ```
-{project}/.hivemind/activity/memory-index/
+{project}/.hivemind/activity/git-memory/index/
 ├── index.json                  # Rolling index of all memory-enforced commits
 ├── abc1234.json               # Individual record by full SHA
 ├── def5678.json
@@ -102,7 +102,7 @@ Each tag gets its own file in `tags/`:
 1. Commit succeeds (hivemind-atomic-commit gates + memory gates pass)
 2. Extract commit SHA: git rev-parse HEAD
 3. Build registration record from commit message footer
-4. Write record to .hivemind/activity/memory-index/{sha}.json
+4. Write record to .hivemind/activity/git-memory/index/{sha}.json
 5. Update index.json: append commit, update by_packet/by_decision/by_phase/by_agent
 6. Update tag files: for each retrieval_tag, add commit SHA to tag file
 7. Report: commit SHA, memory context, linked packet, tags registered
@@ -133,7 +133,7 @@ done
 
 ```bash
 # Verify all index entries have corresponding commits
-for sha in .hivemind/activity/memory-index/*.json; do
+for sha in .hivemind/activity/git-memory/index/*.json; do
   base=$(basename "$sha" .json)
   [ "$base" = "index" ] && continue
   [ -d "$base" ] && continue

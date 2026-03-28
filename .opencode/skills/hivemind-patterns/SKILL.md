@@ -1,13 +1,12 @@
 ---
 name: hivemind-patterns
-description: |
-  Architecture patterns reference. Clean Architecture, CQRS, design patterns, anti-patterns. When you need to make structural decisions, start here.
+description: Architecture patterns reference. Clean Architecture, CQRS, design patterns, anti-patterns. When you need to make structural decisions, start here.
 ---
 
 # hivemind-patterns
 
 ## Load Position
-Slot: 3 (Depth). Requires `use-hivemind` in Slot 1.
+Layer: Depth. Requires `use-hivemind` (entry router) loaded first.
 
 ## When You Need This
 - You're designing a new system or module and don't know how to structure it
@@ -185,6 +184,14 @@ Is the problem about object creation?
 
 ### The Golden Rule
 If you can't articulate the problem clearly, you don't need a pattern yet. You need to understand the problem better. Patterns are solutions. Start with the problem.
+
+## Bundled Resources
+
+| Resource | Path | Purpose |
+|----------|------|---------|
+| Anti-Pattern Catalog | `references/anti-pattern-catalog.md` | Comprehensive catalog of architectural anti-patterns |
+| Pattern Catalog | `references/pattern-catalog.md` | Design and architecture pattern reference |
+| Pattern Decision | `templates/pattern-decision.md` | Template for pattern selection decisions |
 
 ## References
 

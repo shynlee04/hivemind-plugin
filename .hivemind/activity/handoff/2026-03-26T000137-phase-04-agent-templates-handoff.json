@@ -1,0 +1,67 @@
+{
+  "_meta": {
+    "created_at": "2026-03-26T00:01:37+07:00",
+    "updated_at": "2026-03-26T00:01:37+07:00",
+    "slice_id": "phase-04-agent-definitions",
+    "agent": "hivemaker"
+  },
+  "status": "complete",
+  "slice_id": "phase-04-agent-definitions",
+  "files_created": [
+    "src/schema-kernel/default-agent-templates.ts",
+    "src/schema-kernel/default-agent-templates.test.ts"
+  ],
+  "files_modified": [
+    "src/schema-kernel/index.ts"
+  ],
+  "agent_count": 10,
+  "tdd_cycle": {
+    "red": {
+      "status": "complete",
+      "tests_written": 15,
+      "test_files": ["src/schema-kernel/default-agent-templates.test.ts"],
+      "failure_confirmed": true,
+      "failure_reason": "ERR_MODULE_NOT_FOUND — default-agent-templates.js does not exist"
+    },
+    "green": {
+      "status": "complete",
+      "tests_passing": 15,
+      "tests_failing": 0,
+      "iterations": 2,
+      "fix_applied": "hiverd description reduced from 3 to 2 sentences"
+    },
+    "refactor": {
+      "status": "complete",
+      "tests_still_passing": true,
+      "changes": "Verified descriptions are concise and accurate"
+    }
+  },
+  "verification": {
+    "npx_tsc_noEmit": {
+      "command": "npx tsc --noEmit",
+      "exit_code": 0,
+      "output": "",
+      "status": "pass"
+    },
+    "test_file": {
+      "command": "npx tsx --test src/schema-kernel/default-agent-templates.test.ts",
+      "exit_code": 0,
+      "tests_passed": 15,
+      "tests_failed": 0,
+      "status": "pass"
+    },
+    "npm_test": {
+      "command": "npm test",
+      "exit_code": 1,
+      "status": "pre-existing-failure",
+      "note": "lint:boundary fails on pre-existing hook filesystem writes in src/hooks/ — unrelated to this slice"
+    },
+    "npm_run_build": {
+      "command": "npm run build",
+      "exit_code": 0,
+      "status": "pass"
+    }
+  },
+  "blocked_routes": [],
+  "recommended_next_action": "Phase 05 plugin integration can proceed. Hook boundary violations in src/hooks/ are a separate concern."
+}

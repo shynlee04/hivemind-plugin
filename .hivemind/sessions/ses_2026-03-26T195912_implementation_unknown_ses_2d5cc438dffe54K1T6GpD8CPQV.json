@@ -1,0 +1,61 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d5cc438dffe54K1T6GpD8CPQV",
+  "semanticSessionId": "ses_2026-03-26T195912_implementation_unknown_ses_2d5cc438dffe54K1T6GpD8CPQV",
+  "sdkSessionId": "ses_2d5cc438dffe54K1T6GpD8CPQV",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-26T12:59:12.957Z",
+  "updated": "2026-03-26T13:00:03.494Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-26T12:59:12.956Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Now I have sufficient evidence to write the diagnosis. Let me create the output directory and write the report."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-26T12:59:12.956Z",
+      "data": {
+        "text": "Now I have sufficient evidence to write the diagnosis. Let me create the output directory and write the report.",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-26T13:00:03.494Z",
+      "data": {
+        "sessionId": "ses_2d5cc438dffe54K1T6GpD8CPQV"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-26T12:59:12.956Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=111"
+    }
+  ]
+}

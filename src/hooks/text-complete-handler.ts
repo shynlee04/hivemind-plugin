@@ -45,6 +45,7 @@ export interface TextCompleteHandlerDeps {
  */
 export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
   const { directory } = deps
+  const sessionsDir = join(directory, '.hivemind', 'sessions')
 
   /** In-memory cache mapping SDK sessionId to consolidated sessionId. */
   const sessionCache = new Map<string, string>()
@@ -81,12 +82,13 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
       if (!consolidatedSessionId) {
         // Try to load existing session
         try {
-          const existingSession = await loadSession(directory, sdkSessionId)
+          const existingSession = await loadSession(sessionsDir, sdkSessionId)
           consolidatedSessionId = existingSession.sessionId
           sessionCache.set(sdkSessionId, consolidatedSessionId)
         } catch {
           // Session doesn't exist, create new
-          consolidatedSessionId = await initSession(directory, {
+          consolidatedSessionId = await initSession(sessionsDir, {
+            sdkSessionId,
             lineage,
             purposeClass,
             agent,
@@ -100,7 +102,7 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
       turnCounter.set(sdkSessionId, currentTurnNumber)
 
       // 1. Add turn to session
-      await addTurn(directory, {
+      await addTurn(sessionsDir, {
         sessionId: consolidatedSessionId,
         turn: {
           turnNumber: currentTurnNumber,
@@ -114,7 +116,7 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
       })
 
       // 2. Write assistant_output event
-      await addEvent(directory, {
+      await addEvent(sessionsDir, {
         sessionId: consolidatedSessionId,
         event: {
           turnNumber: currentTurnNumber,
@@ -129,10 +131,10 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
       })
 
       // 3. Increment assistant output counter
-      await incrementCounter(directory, consolidatedSessionId, 'assistantOutputCount', 1)
+      await incrementCounter(sessionsDir, consolidatedSessionId, 'assistantOutputCount', 1)
 
       // 4. Write diagnostic entry
-      await addDiagnostic(directory, {
+      await addDiagnostic(sessionsDir, {
         sessionId: consolidatedSessionId,
         diagnostic: {
           timestamp,
@@ -142,7 +144,7 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
       })
 
       // 5. Update session status
-      await updateStatus(directory, consolidatedSessionId, 'active')
+      await updateStatus(sessionsDir, consolidatedSessionId, 'active')
     } catch (err) {
       console.error('[session-journal] consolidated write failed:', err)
     }

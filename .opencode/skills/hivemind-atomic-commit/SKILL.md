@@ -1,7 +1,6 @@
 ---
 name: hivemind-atomic-commit
-description: |
-  Use when committing changes requires typed activity classification, dependency-aware ordering, pre-commit gate validation, and rollback planning. Covers atomic commit discipline: classify touched files by activity class, detect dependency ordering, run pre-commit gates (branch, worktree, secrets, conflicts), produce typed commit messages with conventional commit format and activity metadata, and emit rollback plans for reversibility.
+description: Use when committing changes requires typed activity classification, dependency-aware ordering, pre-commit gate validation, and rollback planning. Covers atomic commit discipline: classify touched files by activity class, detect dependency ordering, run pre-commit gates (branch, worktree, secrets, conflicts), produce typed commit messages with conventional commit format and activity metadata, and emit rollback plans for reversibility.
 ---
 
 # hivemind-atomic-commit
@@ -29,14 +28,14 @@ Local commit discipline family for the refactored pack. Governs how changes are 
 
 - Trivial single-file commits with no rollback risk (use `git commit` directly)
 - Commits that are purely WIP checkpoints (use `git stash` or WIP branches)
-- Rebasing, cherry-picking, or history rewriting (use `git-advanced-workflows`)
+- Rebasing, cherry-picking, or history rewriting (use platform git tools)
 - Merging branches (use platform merge tools)
 
 ## Sibling Skills
 
 | Skill | Relationship |
 |-------|-------------|
-| `git-continuity-memory` | Records commit anchors and session continuity — this skill produces the commits that continuity tracks |
+| `use-hivemind-git-memory` | Records commit anchors and session continuity — this skill produces the commits that continuity tracks |
 | `use-hivemind-delegation` | Delegation dispatches that need commit discipline use this skill's gate and classification before committing |
 | `hivemind-codemap` | Codemap seam discovery informs surface ownership — this skill validates commits against surface boundaries |
 

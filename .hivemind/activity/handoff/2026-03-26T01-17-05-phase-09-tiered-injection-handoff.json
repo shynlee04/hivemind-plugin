@@ -1,0 +1,78 @@
+{
+  "_meta": {
+    "created_at": "2026-03-26T01:17:05+07:00",
+    "updated_at": "2026-03-26T01:17:05+07:00",
+    "slice_id": "phase-09-tiered-injection",
+    "agent": "hivemaker",
+    "activity_type": "feature",
+    "phase_type": "core-logic"
+  },
+  "status": "complete",
+  "slice_id": "phase-09-tiered-injection",
+  "files_created": [
+    "src/shared/tiered-injection.ts",
+    "src/shared/tiered-injection.test.ts"
+  ],
+  "files_modified": [
+    "src/plugin/skill-exposure-map.ts"
+  ],
+  "tier1_skills_count": 3,
+  "tier2_rules_count": 8,
+  "backward_compatible": true,
+  "tdd_cycle": {
+    "red": {
+      "status": "complete",
+      "tests_written": 27,
+      "test_files": ["src/shared/tiered-injection.test.ts"],
+      "initial_failure": "ERR_MODULE_NOT_FOUND for ./tiered-injection.js"
+    },
+    "green": {
+      "status": "complete",
+      "tests_passing": 27,
+      "tests_failing": 0,
+      "implementation_files": [
+        "src/shared/tiered-injection.ts",
+        "src/plugin/skill-exposure-map.ts"
+      ]
+    },
+    "refactor": {
+      "status": "complete",
+      "tests_still_passing": true,
+      "regressions": 0
+    }
+  },
+  "verification": {
+    "npx_tsc_noEmit": {
+      "exit_code": 0,
+      "errors": 0,
+      "status": "pass"
+    },
+    "tiered_injection_tests": {
+      "command": "npx tsx --test src/shared/tiered-injection.test.ts",
+      "total": 27,
+      "passed": 27,
+      "failed": 0,
+      "status": "pass"
+    },
+    "related_tests": {
+      "command": "npx tsx --test src/shared/tiered-injection.test.ts src/shared/skill-injection-loader.test.ts src/schema-kernel/schema-records.test.ts",
+      "total": 68,
+      "passed": 68,
+      "failed": 0,
+      "status": "pass"
+    },
+    "npm_run_build": {
+      "exit_code": 0,
+      "status": "pass"
+    }
+  },
+  "blocked_routes": [],
+  "recommended_next_action": "Phase 10 or next phase in the plan. The two-tier injection system is operational: Tier 1 (core init) activates during project-initiation, Tier 2 (task-conditional) activates when taskClassification is provided. The resolveSkillBundle() API is backward-compatible — existing 3-arg callers continue to work without changes.",
+  "implementation_summary": {
+    "tier1_description": "Core init skills (use-hivemind, use-hivemind-delegation, hivemind-spec-driven) loaded during project-initiation phase",
+    "tier2_description": "8 task-conditional rules covering all TaskClassification values: tdd, research, debug, refactor, implementation, codebase-scan, spec-driven, investigation",
+    "exposure_map_integration": "resolveSkillBundle() now accepts optional 4th parameter taskClassification. Internally delegates to resolveTieredSkills().",
+    "deduplication": "All sources (shared, tier1, agent, tier2, purpose, subsession) deduplicated by skill name",
+    "max_skills_cap": "Respected when set; null = unlimited"
+  }
+}

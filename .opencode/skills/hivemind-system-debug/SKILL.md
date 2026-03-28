@@ -5,7 +5,11 @@ description: Use when detox or restoration work has unresolved breakage and need
 
 # hivemind-system-debug
 
-This is the deep system-debug branch family for `use-hivemind-detox-refactor`.
+## Load Position
+
+Layer: Depth. Requires `use-hivemind` (entry router) loaded first.
+
+This is the deep system-debug branch family for `use-hivemind`.
 
 ## Purpose
 - reproduce failures before proposing repair
@@ -36,13 +40,13 @@ This is the deep system-debug branch family for `use-hivemind-detox-refactor`.
 
 During debugging, context rot is especially dangerous because misleading signals can send investigation in the wrong direction.
 
-1. **Do not trust test output blindly during debug.** A test may pass because it encodes the wrong behavior, or fail because of setup noise — neither proves or disproves the bug being investigated. Apply the false signal detection protocol from `context-intelligence-entry/references/false-signal-detection.md`.
+1. **Do not trust test output blindly during debug.** A test may pass because it encodes the wrong behavior, or fail because of setup noise — neither proves or disproves the bug being investigated. Apply the false signal detection protocol from `use-hivemind-context/references/false-signal-detection.md`.
 2. **Do not trust documents that describe the system's intended behavior.** During debug, verify what the system *actually does* from code reads and execution, not from what docs say it *should* do.
 3. **Record evidence classification.** For each piece of evidence collected, note whether it is `confirmed` (directly observed), `inferred` (reconstructed), or `unverified` (claimed but not checked).
 
 ## Debug Output Storage
 
-Debug artifacts are stored in `{project}/.hivemind/activity/agents/{agent_name}/{pass_id}/`:
+Debug artifacts are stored in `{project}/.hivemind/activity/debug/{session_id}/`:
 
 - `debug-report.json` — structured report with hypotheses, evidence, and conclusions
 - `containment-notes.json` — rollback posture and risk assessment
@@ -64,6 +68,10 @@ Debug work is **always delegated** from the orchestrator. The orchestrator:
 - refactor readiness recommendation
 - evidence classification (confirmed / inferred / unverified)
 
-## References
-- `references/debug-loop.md`
-- `tests/direct-invocation.md`
+## Bundled Resources
+
+| Resource | Path | Purpose |
+|----------|------|---------|
+| Debug Loop | `references/debug-loop.md` | Debug-to-refactor transition loop protocol |
+| Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
+| Direct Invocation | `tests/direct-invocation.md` | Test scenario for direct skill invocation |

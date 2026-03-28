@@ -1,0 +1,51 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2026-03-25T220527_implementation_unknown",
+  "semanticSessionId": "ses_2026-03-25T220527_implementation_unknown",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-25T15:05:27.307Z",
+  "updated": "2026-03-25T15:05:27.312Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-25T15:05:27.307Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "The `config/` directory is removed. Zero code changes remain.\n\n---\n\n## Investigation Report: Skill Injection Pipeline\n\n### The Injection Mechanism (Traced dist → src)\n\nThe injection fires on **every user message** via this chain:\n\n```\nopencode-plugin.ts:222            ← registers experimental.chat.messages.transform hook\n  → messages-transform-adapter.ts:41    ← injection engine\n    → skill-exposure-map.ts:137         ← resolves skill bundle (HARDCODED — root problem)\n      → skill-focus-renderer.ts:32      ← renders <available_skills> XML block\n        → synthetic-parts.ts:12         ← wraps as hidden synthetic Part\n          → prepended BEFORE user message parts (line 170)\n```\n\nOnly fires on `variant === 'new'` or `'continue'`. Skips tool results and thinking turns.\n\n### Status: ALIVE but BROKEN\n\n| Dimension | State |\n|-----------|-------|\n| Mechanically functional | YES — hook fires, resolves, renders, injects |\n| Content correct | NO — 11 of 21 injected skill names don't exist on disk |\n| MAX_SKILLS | 7 (should be 3 per policy) |\n| File-system registry connected | NO — `opencode-skill-registry.ts` discovers 15 real skills but is NOT wired to injection |\n\n### The Core Disconnect\n\nTwo systems exist that never talk to each other:\n\n| System | File | What it does | Wired to injection? |\n|--------|------|-------------|-------------------|\n| Hardcoded exposure map | `src/plugin/skill-exposure-map.ts` | Static `AGENT_BUNDLES` dict with 21 skill names | **YES** |\n| File-system registry | `src/shared/opencode-skill-registry.ts` | Scans `.opencode/skills/*/SKILL.md`, discovers 15 real skills | **NO** |\n\n### Skill Name Drift (21 names in injection map vs 15 skills on disk)\n\n**Skills that exist in `.opencode/skills/` (15):**\n`hivemind-atomic-commit`, `hivemind-codemap`, `hivemind-gatekeeping`, `hivemind-patterns`, `hivemind-refactor`, `hivemind-spec-driven`, `hivemind-system-debug`, `use-hivemind`, `use-hivemind-context`, `use-hivemind-delegation`, `use-hivemind-git-memory`, `use-hivemind-planning`, `use-hivemind-research`, `use-hivemind-skill-authoring`, `use-hivemind-tdd`\n\n**Old names in injection map that need renaming:**\n\n| Old Name (in code) | New Name (on disk) | Status |\n|---|---|---|\n| `hivemind-gatekeeping-delegation` | `hivemind-gatekeeping` | RENAME |\n| `git-continuity-memory` | `use-hivemind-git-memory` | RENAME |\n| `tdd-delegation` | `use-hivemind-tdd` | RENAME |\n| `research-delegation` | `use-hivemind-research` | RENAME |\n| `spec-distillation` | `hivemind-spec-driven` | RENAME |\n| `course-correction-delegation` | — | DEPRECATED (split into `hivemind-system-debug` + `hivemind-refactor`) |\n| `hivemind-research-tools` | — | ABSORBED into `use-hivemind-research` |\n| `hivemind-research-framework` | — | ABSORBED into `use-hivemind-research` |\n\n**Names in injection map with NO disk equivalent at all (external `.agents/skills/` only):**\n`verification-before-completion`, `test-driven-development`, `clean-code`, `refactor`, `writing-plans`, `breakdown-plan`, `deep-research`, `systematic-debugging`, `qa-test-planner`, `context-map`\n\n### Agent Config Drift\n\nHiveminder's prompt mandates loading 3 skills at session start:\n1. `use-hivemind-context-integrity` — **DEPRECATED** (in `_deprecated_hive/`), renamed to `use-hivemind-context`\n2. `hivemind-gatekeeping-delegation` — renamed to `hivemind-gatekeeping`\n3. `use-hivemind-git-memory` — **EXISTS** ✓\n\n12 orphaned references across all agent `.md` files point to skills that don't exist in `.opencode/skills/`.\n\n### What You Need to Decide\n\n1. **Should the hardcoded `skill-exposure-map.ts` constants be replaced by a JSON config file?** This would let you edit skill names without touching TypeScript — just edit JSON + rebuild.\n2. **Should `opencode-skill-registry.ts` be wired to the injection pipeline?** This would auto-validate that injected skill names actually exist on disk.\n3. **What should `MAX_SKILLS` be?** Currently 7. Policy says 3. The `use-hivemind` skill says \"max 3 active skills loaded simultaneously.\"\n4. **Which of the 15 real skills should each agent bundle contain?** The current bundles were designed around old skill names — the mapping needs rethinking.\n\nNo code was changed. Awaiting your direction on how to proceed."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-25T15:05:27.307Z",
+      "data": {
+        "text": "The `config/` directory is removed. Zero code changes remain.\n\n---\n\n## Investigation Report: Skill Injection Pipeline\n\n### The Injection Mechanism (Traced dist → src)\n\nThe injection fires on **every user message** via this chain:\n\n```\nopencode-plugin.ts:222            ← registers experimental.chat.messages.transform hook\n  → messages-transform-adapter.ts:41    ← injection engine\n    → skill-exposure-map.ts:137         ← resolves skill bundle (HARDCODED — root problem)\n      → skill-focus-rendere",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-25T15:05:27.307Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=4245"
+    }
+  ]
+}

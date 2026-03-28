@@ -87,7 +87,7 @@ test-trajectory-update    → verify-full-suite
 
 ## When Steps Fail
 
-- **Step 1 fails** (cannot classify surface): The spec is ambiguous. Return to `spec-distillation`.
+- **Step 1 fails** (cannot classify surface): The spec is ambiguous. Return to `hivemind-spec-driven`.
 - **Step 2 fails** (concerns are entangled): The plan has mixed concerns. Split the spec first, then re-decompose.
 - **Step 3 fails** (clusters exceed 5 files): Subdivide by sub-directory or sub-concern.
 - **Step 4 fails** (no valid split found): The plan is too coarse. Escalate to user.

@@ -1,33 +1,30 @@
 ---
 name: hivemind-spec-driven
-description: |
-  Spec-driven engineering. From vague requirements to testable specs. Every requirement must be testable. Every test must trace to a requirement. Consolidates spec-distillation into a full SDE methodology covering requirements extraction, ambiguity resolution, acceptance criteria, and traceability.
+description: Spec-driven engineering. From vague requirements to testable specs. Every requirement must be testable. Every test must trace to a requirement. Covers requirements extraction, ambiguity resolution, acceptance criteria, and traceability.
 ---
 
 <!-- LOAD-POSITION
-slot: 3
+slot: depth
 role: depth
-max-stack: 3
+prerequisites: use-hivemind-planning
 -->
 
 ## Load Position
 
-**Slot: 3 (Depth)**
-
-This skill provides specialized methodology. It loads LAST, after entry router and domain skill are in place.
+**Layer: Depth**. Loads after entry router and planning domain skill are in place.
 
 | Constraint | Rule |
 |-----------|------|
-| Stack position | Slot 3 of 3 |
-| Load order | After `use-hivemind` (Slot 1) and `use-hivemind-planning` (Slot 2) |
-| Max active | 3 skills total |
-| Conflict | Requires entry router in slot 1 AND planning domain in slot 2 |
+| Position | Depth layer |
+| Load order | After `use-hivemind` and `use-hivemind-planning` |
+| Prerequisites | `use-hivemind-planning` |
+| Conflict | Requires planning domain skill loaded |
 
 # hivemind-spec-driven
 
 You've got a feature to build. The requirements might be crystal clear or they might be a swamp of contradictions and half-formed ideas. Either way, you need a spec that's testable, traceable, and unambiguous before anyone writes a single line of code. That's what this skill does.
 
-Consolidates: `spec-distillation` (expanded to full SDE lifecycle).
+Consolidates: `hivemind-spec-driven` (expanded to full SDE lifecycle).
 
 ## When You Need This
 
@@ -40,8 +37,8 @@ Consolidates: `spec-distillation` (expanded to full SDE lifecycle).
 ## Do Not Use This For
 
 - Simple, clear, single-task requests — those go straight to execution
-- Debug loops or course correction — use `course-correction-delegation`
-- Refactoring existing code — use `review-and-refactor`
+- Debug loops or course correction — use `use-hivemind-delegation`
+- Refactoring existing code — use `hivemind-refactor`
 - Writing tests — delegate to implementation agents after spec is approved
 
 ## The Spec Flow
@@ -172,8 +169,8 @@ For rejected candidates, fill `rejected_reason` with a one-line explanation of w
 | Skill | Relationship |
 |-------|-------------|
 | `use-hivemind-planning` | Parent domain — this skill feeds specs into planning's decomposition |
-| `test-gatekeeping-flow` | Downstream — acceptance criteria become test gates |
-| `tdd-delegation` | Downstream — traceable requirements drive TDD red phase |
+| `use-hivemind-tdd` | Downstream — acceptance criteria become test gates |
+| `use-hivemind-tdd` | Downstream — traceable requirements drive TDD red phase |
 
 ## Anti-Patterns
 
@@ -192,3 +189,13 @@ For rejected candidates, fill `rejected_reason` with a one-line explanation of w
 **You're clarifying with open-ended questions.** "What do you want?" gets you "I don't know, something nice." MCQ gets you actionable answers. Use MCQ.
 
 **You classified everything as "functional."** Performance constraints are non-functional. API contracts are integration. Audit requirements are risk. Use all five buckets or your spec has blind spots.
+
+## Bundled Resources
+
+| Resource | Path | Purpose |
+|----------|------|---------|
+| Acceptance Criteria | `references/acceptance-criteria.md` | Criteria format and quality standards |
+| Traceability Matrix | `references/traceability-matrix.md` | Requirement-to-test traceability mapping |
+| Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
+| Spec Template | `templates/spec-template.md` | Template for spec document structure |
+| Spec Scenario | `tests/spec-scenario.md` | Test scenario for spec-driven workflow |

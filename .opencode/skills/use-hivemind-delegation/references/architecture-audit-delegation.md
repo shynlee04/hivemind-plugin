@@ -46,4 +46,4 @@ Delegate architecture audits with the scan→analyze→recommend pattern.
 
 Scan methodology: `hivemind-codemap`
 Delegation mechanics: `use-hivemind-delegation`
-Loop gating: `hivemind-gatekeeping-delegation`
+Loop gating: `hivemind-gatekeeping`

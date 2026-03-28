@@ -1,6 +1,8 @@
 ---
 description: "Terminal testing-infrastructure specialist for tests, harnesses, fuzzing, and regression systems. May touch product code only when required to wire tests."
 mode: subagent
+model: zai-coding-plan/glm-5.1
+reasoningEffort: high
 tools:
   write: true
   edit: true
@@ -15,8 +17,8 @@ permission:
   skill:
     "use-hivemind": allow
     "use-hivemind-delegation": allow
-    "use-hivemind-context-integrity": allow
-    "tdd-delegation": allow
+    "use-hivemind-context": allow
+    "use-hivemind-tdd": allow
     "hivemind-atomic-commit": allow
     "use-hivemind-git-memory": allow
 
@@ -101,9 +103,8 @@ Report test suites added, validation commands run, and execution output.
 | Skill                       | When to Load                             | Purpose                        |
 | --------------------------- | ---------------------------------------- | ------------------------------ |
 | `use-hivemind-delegation` | When returning to orchestrator           | Return contract structure      |
-| `tdd-delegation`          | When building TDD test suites            | Red-green-refactor enforcement |
-| `qa-test-planner`         | When generating comprehensive test plans | Test case generation           |
-| `test-driven-development` | When implementing test-first             | TDD methodology                |
+| `use-hivemind-tdd`        | When building TDD test suites            | Red-green-refactor enforcement |
+| `use-hivemind-tdd`        | When implementing test-first             | TDD methodology                |
 
 ---
 
@@ -344,11 +345,11 @@ You MUST load these skills before writing ANY test. Tests without TDD enforcemen
 
 | Skill | Purpose | When |
 |-------|---------|------|
-| `tdd-delegation` | Enforce red→green→refactor with test gates | ALWAYS — you are the RED phase enforcer |
+| `use-hivemind-tdd` | Enforce red→green→refactor with test gates | ALWAYS — you are the RED phase enforcer |
 | `use-hivemind-delegation` | Understand delegation packet scope and return contracts | When receiving test scope from orchestrator |
-| `use-hivemind-context-integrity` | Verify you're testing against current code, not stale state | Before generating tests for code you haven't just read |
+| `use-hivemind-context` | Verify you're testing against current code, not stale state | Before generating tests for code you haven't just read |
 
-**Stack budget:** Max 3 active. TDD is your core discipline. Delegation keeps you scoped. Context-integrity keeps you grounded.
+**Stack budget:** Max 3 active. TDD is your core discipline. Delegation keeps you scoped. Context keeps you grounded.
 
 ---
 

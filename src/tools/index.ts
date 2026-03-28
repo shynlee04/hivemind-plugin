@@ -10,6 +10,9 @@ export * from './trajectory/index.js'
 export * from './handoff/index.js'
 export * from './runtime/index.js'
 export * from './doc/index.js'
+export * from './hivefiver-init/index.js'
+export * from './hivefiver-doctor/index.js'
+export * from './hivefiver-setting/index.js'
 import { getRuntimePressureContract, type RuntimePressureContract } from '../shared/pressure-contract.js'
 
 export interface AgentToolCatalogEntry {
@@ -101,6 +104,33 @@ export const agentToolCatalog: AgentToolCatalogEntry[] = [
     hostEvent: 'tool.call',
     workflowPhase: 'session-journal',
     purposeClasses: ['discovery', 'brainstorming', 'research', 'planning', 'implementation', 'gatekeeping', 'tdd', 'course-correction'],
+    stateAuthority: 'plugin-control-plane',
+    pressureContract: getRuntimePressureContract('steady-state'),
+  },
+  {
+    id: 'hivemind_hm_init',
+    contractFile: 'src/tools/hivefiver-init/tools.ts',
+    hostEvent: 'tool.call',
+    workflowPhase: 'bootstrap',
+    purposeClasses: ['discovery', 'implementation'],
+    stateAuthority: 'plugin-control-plane',
+    pressureContract: getRuntimePressureContract('steady-state'),
+  },
+  {
+    id: 'hivemind_hm_doctor',
+    contractFile: 'src/tools/hivefiver-doctor/tools.ts',
+    hostEvent: 'tool.call',
+    workflowPhase: 'diagnostics',
+    purposeClasses: ['discovery', 'gatekeeping'],
+    stateAuthority: 'plugin-control-plane',
+    pressureContract: getRuntimePressureContract('steady-state'),
+  },
+  {
+    id: 'hivemind_hm_setting',
+    contractFile: 'src/tools/hivefiver-setting/tools.ts',
+    hostEvent: 'tool.call',
+    workflowPhase: 'configuration',
+    purposeClasses: ['discovery', 'implementation'],
     stateAuthority: 'plugin-control-plane',
     pressureContract: getRuntimePressureContract('steady-state'),
   },

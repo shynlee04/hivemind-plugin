@@ -1,9 +1,12 @@
 ---
 description: "Architect for system design, technical decisions, pattern selection, and scalability planning. Use before implementations, when making tech stack decisions, designing APIs, evaluating architecture trade-offs, or planning refactoring strategies."
 mode: subagent
+model: zai-coding-plan/glm-5.1
+reasoningEffort: high
 tools:
-  write: true
+  write: false
   edit: false
+---
 permission:
   edit: deny
   bash:
@@ -13,26 +16,16 @@ permission:
     "*.md": allow
     "**/.opencode/**": allow
     "**/.hivemind/**": allow
-    "**/.developing-skills/**": allow 
-  edit: deny
-    "*.json": allow
-    "*.md": allow
-    "**/.opencode/**": allow
-    "**/.hivemind/**": allow
     "**/.developing-skills/**": allow
+  skill:
+    "use-hivemind": allow
+    "use-hivemind-context": allow
+    "hivemind-codemap": allow
+  webfetch: allow
   task:
-    "*": deny
     "code-skeptic": allow
     "hiveq": allow
     "hivexplorer": allow
-  skill:
-    "use-hivemind": allow
-    "use-hivemind-context-integrity": allow
-    "context-intelligence-entry": allow
-    "hivemind-codemap": allow
-    "agent-role-boundary": allow
-    "spec-distillation": allow
-  webfetch: allow
 ---
 # Architect — System Design Authority
 
@@ -353,10 +346,10 @@ You MUST load these skills before designing ANYTHING. A design created without c
 | Skill | Purpose | When |
 |-------|---------|------|
 | `hivemind-codemap` | Whole-codebase mapping — discover seams, dependencies, existing patterns | Before EVERY design phase. No map → no design. |
-| `use-hivemind-hierarchy` | Enforce role boundaries — you design, you do not implement | When tempted to write implementation code |
-| `spec-distillation` | Transform messy/contradictory requirements into structured spec candidates | When requirements are ambiguous, multi-source, or conflicting |
+| `use-hivemind` | Enforce role boundaries — you design, you do not implement | When tempted to write implementation code |
+> **Note:** Requirements that be messy or ambiguous, or conflicting — use `use-hivemind-planning` for spec work |
 
-**Stack budget:** Max 3 active. You need codemap for context, hierarchy for boundaries, spec-distillation for clarity. More than 3 fragments your design thinking.
+**Stack budget:** Max 3 active. You need codemap for context, `use-hivemind` for boundaries. `hivemind-gatekeeping` for gate validation.
 
 ---
 
@@ -417,7 +410,7 @@ CONTEXT DISCOVERY (hivemind-codemap)
         → TRADE-OFF ANALYSIS (every decision has a cost)
           → INTERFACE DEFINITION (TypeScript contracts)
             → CHALLENGE (code-skeptic reviews assumptions)
-              → GATE (hivemind-gatekeeping-delegation validates)
+              → GATE (hivemind-gatekeeping validates)
                 → COMMIT ADR (hivemind-atomic-commit)
                   → HANDOFF to hiveplanner
 ```

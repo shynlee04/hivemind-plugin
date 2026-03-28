@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Validate that `spec-distillation` can be selected and used directly without relying on `entry-resolution` or any sibling routing package.
+Validate that `hivemind-spec-driven` can be selected and used directly without relying on `entry-resolution` or any sibling routing package.
 
 ## Scenario
 

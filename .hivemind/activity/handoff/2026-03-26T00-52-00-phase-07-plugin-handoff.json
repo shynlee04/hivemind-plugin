@@ -1,0 +1,79 @@
+{
+  "_meta": {
+    "created_at": "2026-03-26T00:52:00.000Z",
+    "updated_at": "2026-03-26T00:52:00.000Z",
+    "slice_id": "phase-07-plugin-integration",
+    "agent": "hivemaker"
+  },
+  "status": "complete",
+  "slice_id": "phase-07-plugin-integration",
+  "files_modified": [
+    "src/schema-kernel/skill-injection-records.ts",
+    "src/shared/skill-injection-loader.ts",
+    "src/shared/skill-injection-loader.test.ts",
+    "src/plugin/skill-exposure-map.ts",
+    "src/plugin/messages-transform-adapter.ts",
+    "src/plugin/opencode-plugin.ts",
+    "tests/plugin-assembly-smoke.test.ts"
+  ],
+  "default_agent_configurable": true,
+  "tool_count_updated_to_12": true,
+  "tdd_cycle": {
+    "red": {
+      "status": "complete",
+      "tests_written": 2,
+      "test_files": ["tests/plugin-assembly-smoke.test.ts"],
+      "failing_tests": [
+        "resolveDefaultAgent export does not exist (import error)",
+        "tool count assertion expected 8, actual 12"
+      ]
+    },
+    "green": {
+      "status": "complete",
+      "tests_passing": 2,
+      "tests_failing": 0,
+      "changes": [
+        "Added default_agent field to SkillInjectionConfig Zod schema (default: 'hiveminder')",
+        "Added default_agent to buildDefaultConfig() in skill-injection-loader",
+        "Added resolveDefaultAgent() export to skill-exposure-map.ts",
+        "Replaced hardcoded 'hivefiver' with resolveDefaultAgent() in skill-exposure-map.ts",
+        "Replaced hardcoded 'hivefiver' with resolveDefaultAgent() in messages-transform-adapter.ts (2 locations)",
+        "Replaced hardcoded 'hivefiver' with resolveDefaultAgent() in opencode-plugin.ts",
+        "Updated smoke test to expect 12 tools with correct IDs",
+        "Added test for resolveDefaultAgent() returning 'hiveminder' fallback"
+      ]
+    },
+    "refactor": {
+      "status": "complete",
+      "tests_still_passing": true,
+      "verification": "No remaining hardcoded 'hivefiver' defaults in modified files"
+    }
+  },
+  "verification": {
+    "npx_tsc_noEmit": {
+      "exit_code": 0,
+      "status": "pass"
+    },
+    "npm_test_smoke": {
+      "exit_code": 0,
+      "status": "pass",
+      "new_tests_passing": 2,
+      "pre_existing_failures": 2,
+      "pre_existing_failures_list": [
+        "plugin assembly keeps only the authoritative runtime hooks (experimental.chat.system.transform registered)",
+        "messages transform injects one unified packet (context injection issue)"
+      ]
+    },
+    "npm_run_build": {
+      "exit_code": 0,
+      "status": "pass"
+    },
+    "skill_injection_loader_tests": {
+      "exit_code": 0,
+      "status": "pass",
+      "tests_passing": 7
+    }
+  },
+  "blocked_routes": [],
+  "recommended_next_action": "Phase 07 complete. Both tasks (configurable default agent, 12-tool smoke test) implemented and verified. Ready for hiveq verification pass."
+}

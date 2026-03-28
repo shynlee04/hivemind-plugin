@@ -1,0 +1,61 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d616bc2cffeUQJKh0FPGpf7HH",
+  "semanticSessionId": "ses_2026-03-26T183212_implementation_unknown_ses_2d616bc2cffeUQJKh0FPGpf7HH",
+  "sdkSessionId": "ses_2d616bc2cffeUQJKh0FPGpf7HH",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-26T11:32:12.397Z",
+  "updated": "2026-03-26T11:33:17.414Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-26T11:32:12.396Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "I now have all the evidence. Let me compose the verification report."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-26T11:32:12.396Z",
+      "data": {
+        "text": "I now have all the evidence. Let me compose the verification report.",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-26T11:33:17.413Z",
+      "data": {
+        "sessionId": "ses_2d616bc2cffeUQJKh0FPGpf7HH"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-26T11:32:12.396Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=68"
+    }
+  ]
+}

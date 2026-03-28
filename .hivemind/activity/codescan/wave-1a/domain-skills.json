@@ -1,0 +1,456 @@
+{
+  "_meta": {
+    "created_at": "2026-03-28T10:15:00Z",
+    "updated_at": "2026-03-28T10:15:00Z",
+    "scan_type": "domain-skills-inventory",
+    "source_directory": ".developing-skills/refactored-skills/",
+    "git_commit": "28663dfd7873963337adaadc0adff25ceb34ffa4",
+    "uncommitted_changes": true,
+    "uncommitted_note": "Multiple SKILL.md files and reference files modified but not committed in target directory",
+    "skills_scanned": 8,
+    "investigator": "hivexplorer",
+    "pass_id": "wave-1a"
+  },
+  "skills": [
+    {
+      "skill_name": "use-hivemind",
+      "yaml_name": "use-hivemind",
+      "yaml_description_length": 284,
+      "yaml_description_first_80_chars": "Master session entry router. Detects lineage (hivefiver vs hiveminder), checks context health, routes to",
+      "references_count": 5,
+      "reference_files": [
+        "references/agent-roles.md",
+        "references/context-health-check.md",
+        "references/orchestrator-delegation.md",
+        "references/orchestrator-mandate.md",
+        "references/verification-before-completion.md"
+      ],
+      "templates_count": 1,
+      "template_files": [
+        "templates/load-template.md"
+      ],
+      "tests_count": 0,
+      "test_files": [],
+      "schemas_count": 0,
+      "scripts_count": 0,
+      "artifacts_count": 0,
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "hivemind-atomic-commit",
+        "hivemind-gatekeeping",
+        "hivemind-patterns",
+        "use-hivemind-context",
+        "use-hivemind-delegation",
+        "use-hivemind-git-memory",
+        "use-hivemind-planning",
+        "use-hivemind-research",
+        "use-hivemind-skill-authoring",
+        "use-hivemind-tdd"
+      ],
+      "total_lines": 358,
+      "total_files": 7
+    },
+    {
+      "skill_name": "use-hivemind-context",
+      "yaml_name": "use-hivemind-context",
+      "yaml_description_length": 185,
+      "yaml_description_first_80_chars": "The context health domain. Before you trust anything — docs, memory, prior sessions — check it here. Route",
+      "references_count": 9,
+      "reference_files": [
+        "references/context-distrust-protocol.md",
+        "references/context-rot-taxonomy.md",
+        "references/delegation-scope.md",
+        "references/entry-state-matrix.md",
+        "references/false-signal-detection.md",
+        "references/gate-chain-order.md",
+        "references/gate-definitions.md",
+        "references/platform-surface.md",
+        "references/trust-matrix.md"
+      ],
+      "templates_count": 0,
+      "template_files": [],
+      "tests_count": 1,
+      "test_files": [
+        "tests/direct-invocation.md"
+      ],
+      "schemas_count": 1,
+      "scripts_count": 2,
+      "script_files": [
+        "scripts/context-harness-init.cjs",
+        "scripts/hm-verify.cjs"
+      ],
+      "artifacts_count": 0,
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "hivemind-gatekeeping",
+        "use-hivemind-context"
+      ],
+      "total_lines": 281,
+      "total_files": 14
+    },
+    {
+      "skill_name": "use-hivemind-delegation",
+      "yaml_name": "use-hivemind-delegation",
+      "yaml_description_length": 210,
+      "yaml_description_first_80_chars": "Enforce delegation when front-facing agents must split work across subagents. Covers delegation decision rule",
+      "references_count": 17,
+      "reference_files": [
+        "references/architecture-audit-delegation.md",
+        "references/codescan-delegation.md",
+        "references/debug-delegation.md",
+        "references/delegation-decision.md",
+        "references/delegation-modes.md",
+        "references/domain-escalation.md",
+        "references/evidence-collection.md",
+        "references/failure-recovery.md",
+        "references/multi-wave-dispatch.md",
+        "references/parallel-dispatch.md",
+        "references/rb-role-platform-mapping.md",
+        "references/refactor-delegation.md",
+        "references/research-thread-management.md",
+        "references/role-boundaries.md",
+        "references/role-platform-mapping.md",
+        "references/source-validation.md",
+        "references/subagent-driven-development.md"
+      ],
+      "templates_count": 12,
+      "template_files": [
+        "templates/audit-delegation-packet.md",
+        "templates/codescan-delegation-packet.md",
+        "templates/debug-delegation-packet.md",
+        "templates/delegation-packet.md",
+        "templates/evidence-table.md",
+        "templates/handoff-brief.md",
+        "templates/implementer-prompt.md",
+        "templates/rb-role-declaration.md",
+        "templates/refactor-delegation-packet.md",
+        "templates/research-delegation-packet.md",
+        "templates/role-declaration.md",
+        "templates/spec-reviewer-prompt.md"
+      ],
+      "tests_count": 5,
+      "test_files": [
+        "tests/course-correction.md",
+        "tests/direct-invocation.md",
+        "tests/failure-recovery.md",
+        "tests/parallel-delegation.md",
+        "tests/research-delegation.md"
+      ],
+      "schemas_count": 0,
+      "scripts_count": 0,
+      "artifacts_count": 3,
+      "artifact_files": [
+        "_artifacts/01-synthesis-2026-03-22.md",
+        "_artifacts/02-audit-2026-03-22.md",
+        "_artifacts/03-change-summary-2026-03-22.md"
+      ],
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "hivemind-codemap",
+        "hivemind-gatekeeping",
+        "hivemind-spec-driven",
+        "hivemind-system-debug",
+        "use-hivemind-context",
+        "use-hivemind-delegation",
+        "use-hivemind-git-memory"
+      ],
+      "total_lines": 419,
+      "total_files": 38
+    },
+    {
+      "skill_name": "use-hivemind-git-memory",
+      "yaml_name": "use-hivemind-git-memory",
+      "yaml_description_length": 210,
+      "yaml_description_first_80_chars": "Git-based semantic memory operations — session recovery, continuity state, decision retrieval, and hierarch",
+      "references_count": 12,
+      "reference_files": [
+        "references/activity-pathing.md",
+        "references/anchor-format.md",
+        "references/commit-memory-schema.md",
+        "references/context-capture.md",
+        "references/index-registration.md",
+        "references/knowledge-network.md",
+        "references/memory-fields.md",
+        "references/memory-message-format.md",
+        "references/packet-linkage.md",
+        "references/retrieval-methodology.md",
+        "references/retrieval-playbook.md",
+        "references/session-continuity.md"
+      ],
+      "templates_count": 6,
+      "template_files": [
+        "templates/commit-memory-record.md",
+        "templates/continuity-result.md",
+        "templates/longhaul-task-state.md",
+        "templates/memory-gate-result.md",
+        "templates/memory-index-entry.md",
+        "templates/session-continuity-state.md"
+      ],
+      "tests_count": 2,
+      "test_files": [
+        "tests/direct-invocation.md",
+        "tests/git-memory-enforce-direct-invocation.md"
+      ],
+      "schemas_count": 0,
+      "scripts_count": 0,
+      "artifacts_count": 0,
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "hivemind-atomic-commit",
+        "use-hivemind-context",
+        "use-hivemind-delegation",
+        "use-hivemind-git-memory"
+      ],
+      "total_lines": 181,
+      "total_files": 21
+    },
+    {
+      "skill_name": "use-hivemind-planning",
+      "yaml_name": "use-hivemind-planning",
+      "yaml_description_length": 200,
+      "yaml_description_first_80_chars": "The planning domain. From vague requirements to executable phases with numbered steps and dependency maps.",
+      "references_count": 11,
+      "reference_files": [
+        "references/ambiguity-taxonomy.md",
+        "references/decomposition-steps.md",
+        "references/dependency-ordering.md",
+        "references/phase-numbering.md",
+        "references/plan-execution.md",
+        "references/plan-lifecycle.md",
+        "references/plan-to-delegation.md",
+        "references/planning-lifecycle.md",
+        "references/re-decomposition-protocol.md",
+        "references/slice-splitting-heuristics.md",
+        "references/verification-before-completion.md"
+      ],
+      "templates_count": 4,
+      "template_files": [
+        "templates/decomposition-plan.json",
+        "templates/plan-record.md",
+        "templates/slice-template.json",
+        "templates/spec-candidate.md"
+      ],
+      "tests_count": 5,
+      "test_files": [
+        "tests/basic-decomposition.md",
+        "tests/direct-invocation.md",
+        "tests/parallel-candidates.md",
+        "tests/plan-scenario.md",
+        "tests/re-decomposition.md"
+      ],
+      "schemas_count": 0,
+      "scripts_count": 1,
+      "script_files": [
+        "scripts/extract-requirements.sh"
+      ],
+      "artifacts_count": 0,
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "hivemind-codemap",
+        "hivemind-spec-driven",
+        "use-hivemind-delegation",
+        "use-hivemind-planning",
+        "use-hivemind-tdd"
+      ],
+      "total_lines": 296,
+      "total_files": 22
+    },
+    {
+      "skill_name": "use-hivemind-research",
+      "yaml_name": "use-hivemind-research",
+      "yaml_description_length": 208,
+      "yaml_description_first_80_chars": "Router for structured research workflows. Use when the user asks research questions, needs multi-source inve",
+      "references_count": 8,
+      "reference_files": [
+        "references/anti-patterns.md",
+        "references/delegation-for-research.md",
+        "references/evidence-contract.md",
+        "references/fallback-hierarchy.md",
+        "references/mcp-setup-guide.md",
+        "references/repomix-ingestion.md",
+        "references/research-classification.md",
+        "references/tool-protocols.md"
+      ],
+      "templates_count": 3,
+      "template_files": [
+        "templates/evidence-table.md",
+        "templates/mcp-config-template.json",
+        "templates/research-packet.md"
+      ],
+      "tests_count": 0,
+      "test_files": [],
+      "schemas_count": 0,
+      "scripts_count": 2,
+      "script_files": [
+        "scripts/check-mcp-readiness.mjs",
+        "scripts/score-confidence.sh"
+      ],
+      "artifacts_count": 0,
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "hivemind-spec-driven",
+        "use-hivemind-context",
+        "use-hivemind-delegation",
+        "use-hivemind-research"
+      ],
+      "total_lines": 110,
+      "total_files": 14
+    },
+    {
+      "skill_name": "use-hivemind-skill-authoring",
+      "yaml_name": "use-hivemind-skill-authoring",
+      "yaml_description_length": 175,
+      "yaml_description_first_80_chars": "The skill authoring domain. Creating, reviewing, auditing skills. Universal design principles. Conflict detec",
+      "references_count": 8,
+      "reference_files": [
+        "references/01-skill-anatomy.md",
+        "references/02-frontmatter-standard.md",
+        "references/03-three-patterns.md",
+        "references/04-tdd-workflow.md",
+        "references/05-skill-quality-matrix.md",
+        "references/07-iterative-refinement.md",
+        "references/08-conflict-detection.md",
+        "references/sw-04-tdd-workflow.md"
+      ],
+      "templates_count": 0,
+      "template_files": [],
+      "tests_count": 0,
+      "test_files": [],
+      "schemas_count": 0,
+      "scripts_count": 0,
+      "artifacts_count": 0,
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "hivemind-atomic-commit",
+        "use-hivemind-skill-authoring"
+      ],
+      "total_lines": 214,
+      "total_files": 9
+    },
+    {
+      "skill_name": "use-hivemind-tdd",
+      "yaml_name": "use-hivemind-tdd",
+      "yaml_description_length": 137,
+      "yaml_description_first_80_chars": "The TDD domain. Write the test first. Make it fail. Make it pass. Clean it up. Repeat for every phase. No e",
+      "references_count": 10,
+      "reference_files": [
+        "references/interface-design.md",
+        "references/mocking-guide.md",
+        "references/phase-tdd-strategy.md",
+        "references/tdd-loop-delegation.md",
+        "references/tdd-loop.md",
+        "references/test-first-packet.md",
+        "references/test-gate-enforcement.md",
+        "references/test-quality.md",
+        "references/verification-before-completion.md",
+        "references/vertical-slicing.md"
+      ],
+      "templates_count": 3,
+      "template_files": [
+        "templates/build-verify-checkpoint.md",
+        "templates/tdd-checkpoint.md",
+        "templates/tdd-delegation-packet.md"
+      ],
+      "tests_count": 2,
+      "test_files": [
+        "tests/tdd-delegation.md",
+        "tests/tdd-scenario.md"
+      ],
+      "schemas_count": 0,
+      "scripts_count": 0,
+      "artifacts_count": 0,
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "hivemind-atomic-commit",
+        "hivemind-gatekeeping",
+        "use-hivemind-tdd"
+      ],
+      "total_lines": 327,
+      "total_files": 16
+    }
+  ],
+  "summary": {
+    "total_skills": 8,
+    "total_references": 80,
+    "total_templates": 29,
+    "total_tests": 15,
+    "total_schemas": 2,
+    "total_scripts": 5,
+    "total_artifacts": 3,
+    "total_files_all": 141,
+    "total_lines_all": 2186,
+    "skills_with_toc": 0,
+    "skills_with_bundled_resources": 8,
+    "skills_with_cross_references_section": 0,
+    "skills_with_zero_tests": 3,
+    "skills_with_zero_templates": 2,
+    "skills_exceeding_300_lines": 3,
+    "largest_skill_by_files": "use-hivemind-delegation (38 files)",
+    "largest_skill_by_lines": "use-hivemind-delegation (419 lines)",
+    "smallest_skill_by_files": "use-hivemind (7 files)",
+    "smallest_skill_by_lines": "use-hivemind-research (110 lines)"
+  },
+  "cross_reference_matrix": {
+    "use-hivemind": ["hivemind-atomic-commit", "hivemind-gatekeeping", "hivemind-patterns", "use-hivemind-context", "use-hivemind-delegation", "use-hivemind-git-memory", "use-hivemind-planning", "use-hivemind-research", "use-hivemind-skill-authoring", "use-hivemind-tdd"],
+    "use-hivemind-context": ["hivemind-gatekeeping", "use-hivemind-context"],
+    "use-hivemind-delegation": ["hivemind-codemap", "hivemind-gatekeeping", "hivemind-spec-driven", "hivemind-system-debug", "use-hivemind-context", "use-hivemind-delegation", "use-hivemind-git-memory"],
+    "use-hivemind-git-memory": ["hivemind-atomic-commit", "use-hivemind-context", "use-hivemind-delegation", "use-hivemind-git-memory"],
+    "use-hivemind-planning": ["hivemind-codemap", "hivemind-spec-driven", "use-hivemind-delegation", "use-hivemind-planning", "use-hivemind-tdd"],
+    "use-hivemind-research": ["hivemind-spec-driven", "use-hivemind-context", "use-hivemind-delegation", "use-hivemind-research"],
+    "use-hivemind-skill-authoring": ["hivemind-atomic-commit", "use-hivemind-skill-authoring"],
+    "use-hivemind-tdd": ["hivemind-atomic-commit", "hivemind-gatekeeping", "use-hivemind-tdd"]
+  },
+  "cross_reference_frequency": {
+    "hivemind-atomic-commit": { "referenced_by": ["use-hivemind", "use-hivemind-git-memory", "use-hivemind-skill-authoring", "use-hivemind-tdd"], "count": 4 },
+    "hivemind-codemap": { "referenced_by": ["use-hivemind-delegation", "use-hivemind-planning"], "count": 2 },
+    "hivemind-gatekeeping": { "referenced_by": ["use-hivemind", "use-hivemind-context", "use-hivemind-delegation", "use-hivemind-tdd"], "count": 4 },
+    "hivemind-patterns": { "referenced_by": ["use-hivemind"], "count": 1 },
+    "hivemind-spec-driven": { "referenced_by": ["use-hivemind-delegation", "use-hivemind-planning", "use-hivemind-research"], "count": 3 },
+    "hivemind-system-debug": { "referenced_by": ["use-hivemind-delegation"], "count": 1 },
+    "use-hivemind-context": { "referenced_by": ["use-hivemind", "use-hivemind-context", "use-hivemind-delegation", "use-hivemind-git-memory", "use-hivemind-research"], "count": 5 },
+    "use-hivemind-delegation": { "referenced_by": ["use-hivemind", "use-hivemind-delegation", "use-hivemind-git-memory", "use-hivemind-planning", "use-hivemind-research"], "count": 5 },
+    "use-hivemind-git-memory": { "referenced_by": ["use-hivemind", "use-hivemind-delegation", "use-hivemind-git-memory"], "count": 3 },
+    "use-hivemind-planning": { "referenced_by": ["use-hivemind", "use-hivemind-planning"], "count": 2 },
+    "use-hivemind-research": { "referenced_by": ["use-hivemind", "use-hivemind-research"], "count": 2 },
+    "use-hivemind-skill-authoring": { "referenced_by": ["use-hivemind", "use-hivemind-skill-authoring"], "count": 2 },
+    "use-hivemind-tdd": { "referenced_by": ["use-hivemind", "use-hivemind-planning", "use-hivemind-tdd"], "count": 3 }
+  },
+  "gaps": {
+    "skills_with_zero_tests": [
+      "use-hivemind (0 tests)",
+      "use-hivemind-research (0 tests)",
+      "use-hivemind-skill-authoring (0 tests)"
+    ],
+    "skills_with_zero_templates": [
+      "use-hivemind-context (0 templates)",
+      "use-hivemind-skill-authoring (0 templates)"
+    ],
+    "no_toc_in_any_skill": true,
+    "no_cross_references_section_in_any_skill": true,
+    "self_references_detected": [
+      "use-hivemind-context references itself",
+      "use-hivemind-delegation references itself",
+      "use-hivemind-git-memory references itself",
+      "use-hivemind-planning references itself",
+      "use-hivemind-research references itself",
+      "use-hivemind-skill-authoring references itself",
+      "use-hivemind-tdd references itself"
+    ]
+  }
+}

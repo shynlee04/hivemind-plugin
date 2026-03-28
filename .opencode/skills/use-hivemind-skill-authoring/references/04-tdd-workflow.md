@@ -70,10 +70,10 @@ You are in a [session state].
 
 Your task: [specific task]
 
-Without hivemind-skill-writer loaded:
+Without use-hivemind-skill-authoring loaded:
 - [Observed behavior - FAIL]
 
-With hivemind-skill-writer loaded:
+With use-hivemind-skill-authoring loaded:
 - [Expected behavior - PASS]
 ```
 
@@ -273,7 +273,7 @@ Before writing skill content, classify knowledge using the Knowledge Delta:
 | Scenario | Description | Pattern |
 |----------|-------------|---------|
 | TRIGGER_VAGUE | Description too broad | Refactor |
-| STACK_OVERFLOW | >3 skills at entry | Refactor |
+| STACK_OVERFLOW | Skills loaded without prerequisites | Refactor |
 | REF_DEPTH_2 | 2-level references | Refactor |
 
 ### Non-Breaking Scenarios
@@ -282,7 +282,7 @@ Before writing skill content, classify knowledge using the Knowledge Delta:
 |----------|-------------|----------|
 | GSD_AFFECTED | GSD workflows still work | Unaffected |
 | NO_CEREMONY | No added workflow friction | No overhead |
-| STACK_OK | 3 skills max | Compliant |
+| STACK_OK | Prerequisites satisfied | Compliant |
 
 ---
 

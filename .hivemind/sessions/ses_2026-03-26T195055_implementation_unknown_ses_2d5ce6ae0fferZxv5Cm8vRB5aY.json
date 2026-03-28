@@ -1,0 +1,61 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d5ce6ae0fferZxv5Cm8vRB5aY",
+  "semanticSessionId": "ses_2026-03-26T195055_implementation_unknown_ses_2d5ce6ae0fferZxv5Cm8vRB5aY",
+  "sdkSessionId": "ses_2d5ce6ae0fferZxv5Cm8vRB5aY",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-26T12:50:55.692Z",
+  "updated": "2026-03-26T12:53:47.590Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-26T12:50:55.671Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Now I have the full picture. The test expects `SessionV3`, `TableOfContentsEntry`, and `SessionV3Counters`. The ADR schema (lines 62-103) defines the exact shape. `PurposeClass` already exists in types.ts. Let me implement."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-26T12:50:55.671Z",
+      "data": {
+        "text": "Now I have the full picture. The test expects `SessionV3`, `TableOfContentsEntry`, and `SessionV3Counters`. The ADR schema (lines 62-103) defines the exact shape. `PurposeClass` already exists in types.ts. Let me implement.",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-26T12:53:47.590Z",
+      "data": {
+        "sessionId": "ses_2d5ce6ae0fferZxv5Cm8vRB5aY"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-26T12:50:55.671Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=223"
+    }
+  ]
+}

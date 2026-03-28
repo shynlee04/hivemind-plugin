@@ -1,6 +1,8 @@
 ---
 description: "Planning specialist for task design, sequencing, dependency analysis, and handoff artifacts. Designs the roadmap without implementing product changes."
 mode: subagent
+model: zai-coding-plan/glm-5.1
+reasoningEffort: high
 tools:
   write: true
   edit: true
@@ -12,10 +14,9 @@ permission:
   skill:
     "use-hivemind": allow
     "use-hivemind-delegation": allow
-    "hivemind-gatekeeping-delegation": allow
-    "spec-distillation": allow
-    "hivemind-research": allow
-    "hivemind-research-framework": allow
+    "hivemind-gatekeeping": allow
+    "hivemind-spec-driven": allow
+    "use-hivemind-research": allow
   webfetch: deny
 ---
 # Hiveplanner — Planning Specialist
@@ -103,8 +104,7 @@ Ensure each plan step is:
 | Skill                       | When to Load                     | Purpose                          |
 | --------------------------- | -------------------------------- | -------------------------------- |
 | `use-hivemind-delegation` | When defining delegation packets | Packet structure for plan steps  |
-| `writing-plans`           | When creating multi-step plans   | Plan structure and formatting    |
-| `breakdown-plan`          | When decomposing complex tasks   | Epic > Feature > Story hierarchy |
+| `use-hivemind-planning`   | When creating multi-step plans   | Plan structure and formatting    |
 
 ---
 
@@ -332,9 +332,9 @@ You MUST load these skills before planning ANYTHING. A plan without dependency r
 
 | Skill | Purpose | When |
 |-------|---------|------|
-| `hivemind-research` | Route research needs to the right methodology and tools | When plan requires external dependency validation or technology evaluation |
-| `spec-distillation` | Transform messy requirements into structured spec candidates | When incoming requirements are ambiguous, contradictory, or multi-source |
-| `hivemind-gatekeeping-delegation` | Define synthesis gates between plan steps | When plan has 3+ steps with interdependencies |
+| `use-hivemind-research` | Route research needs to the right methodology and tools | When plan requires external dependency validation or technology evaluation |
+| `use-hivemind-planning` | Transform messy requirements into structured plan steps | When incoming requirements are ambiguous, contradictory, or multi-source |
+| `hivemind-gatekeeping` | Define synthesis gates between plan steps | When plan has 3+ steps with interdependencies |
 
 **Stack budget:** Max 3 active. Research validates assumptions, spec-distillation clarifies intent, gatekeeping enforces step sequencing.
 
@@ -395,7 +395,7 @@ INTAKE (read orchestration packet)
     → SPEC DISTILLATION (if requirements are messy)
       → DEPENDENCY ANALYSIS (sequence, parallelism, external)
         → PLAN CREATION (steps with agents, scope, criteria)
-          → GATE (hivemind-gatekeeping-delegation: plan completeness)
+          → GATE (hivemind-gatekeeping: plan completeness)
             → WRITE to .hivemind/plans/
               → HANDOFF to hiveminder
 ```

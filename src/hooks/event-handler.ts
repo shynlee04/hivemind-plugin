@@ -12,7 +12,7 @@ import { loadRuntimeBindingsSnapshot } from '../shared/runtime-attachment.js'
 import { createRecoveryCheckpoint } from '../recovery/index.js'
 import { recordTrajectoryEvent } from '../core/trajectory/index.js'
 import { getClient } from './sdk-context.js'
-import { addEvent, getSessionPath, findSessionBySdkId } from '../features/event-tracker/consolidated-writer.js'
+import { addEvent, getSessionPath, findSessionBySdkId, initSession } from '../features/event-tracker/consolidated-writer.js'
 
 function normalizeEventSummary(event: Event): string {
   if (!event || typeof event !== 'object') {
@@ -91,6 +91,7 @@ async function matchesActiveTrajectorySession(
  * @returns OpenCode `event` hook.
  */
 export function createEventHandler(directory: string) {
+  const sessionsDir = join(directory, '.hivemind', 'sessions')
   return async (input: { event: Event }): Promise<void> => {
     const event = input.event
     const agentWorkEvent = extractAgentWorkEventPacket(input)
@@ -116,10 +117,26 @@ export function createEventHandler(directory: string) {
         })
       }
 
+      // Resolve or create consolidated session
+      let consolidatedSessionId: string | null = null
+      try {
+        consolidatedSessionId = await findSessionBySdkId(sessionsDir, sessionId)
+      } catch {
+        // ignore
+      }
+      if (!consolidatedSessionId) {
+        consolidatedSessionId = await initSession(sessionsDir, {
+          sdkSessionId: sessionId,
+          lineage: 'hivefiver',
+          purposeClass: 'implementation',
+          agent: 'unknown',
+        })
+      }
+
       // Write to consolidated session
       try {
-        await addEvent(directory, {
-          sessionId,
+        await addEvent(sessionsDir, {
+          sessionId: consolidatedSessionId,
           event: {
             turnNumber: 0, // System events are not tied to specific turns
             type: 'session_idle',

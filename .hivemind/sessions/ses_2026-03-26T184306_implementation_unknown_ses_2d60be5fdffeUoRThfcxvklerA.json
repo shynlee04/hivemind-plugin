@@ -1,0 +1,61 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d60be5fdffeUoRThfcxvklerA",
+  "semanticSessionId": "ses_2026-03-26T184306_implementation_unknown_ses_2d60be5fdffeUoRThfcxvklerA",
+  "sdkSessionId": "ses_2d60be5fdffeUoRThfcxvklerA",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-26T11:43:06.830Z",
+  "updated": "2026-03-26T11:52:15.293Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-26T11:43:06.829Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Now I have the full picture. Let me write the failing tests."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-26T11:43:06.829Z",
+      "data": {
+        "text": "Now I have the full picture. Let me write the failing tests.",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-26T11:52:15.293Z",
+      "data": {
+        "sessionId": "ses_2d60be5fdffeUoRThfcxvklerA"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-26T11:43:06.829Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=60"
+    }
+  ]
+}

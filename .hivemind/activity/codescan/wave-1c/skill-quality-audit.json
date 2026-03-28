@@ -1,0 +1,147 @@
+{
+  "_meta": { "created_at": "2026-03-28T08:50:00Z", "wave": "1c", "scope": "remaining 5 skills + hiveminder-operation-guidelines", "git_commit": "28663df" },
+  "skills_audited": 6,
+  "results": [
+    {
+      "skill_name": "hivemind-spec-driven",
+      "path": ".developing-skills/refactored-skills/hivemind-spec-driven/SKILL.md",
+      "line_count": 194,
+      "phases": {
+        "1_frontmatter": { "pass": false, "details": "name + description present. parent MISSING." },
+        "2_load_position": { "pass": true, "details": "Slot 3 declared, dependencies: use-hivemind, use-hivemind-planning." },
+        "3_trigger_clarity": { "pass": true, "details": "5 specific triggers." },
+        "4_content_depth": { "pass": true, "details": "194 lines — 7-step flow, classification, ambiguity, acceptance criteria, traceability." },
+        "5_anti_patterns": { "pass": true, "details": "8 entries." },
+        "6_naming": { "pass": true, "details": "hivemind-spec-driven — correct." },
+        "7_line_count": { "pass": true, "details": "194 < 450." },
+        "8_independence": { "pass": true, "details": "Clean Sibling Skills table." },
+        "9_universal_design": { "pass": true, "details": "Domain-neutral terminology." }
+      },
+      "bundled_resources_integrity": { "pass": false, "missing": ["No Bundled Resources table. 5 files on disk (3 references, 1 template, 1 test) undeclared."], "stale_refs": [] },
+      "cross_reference_errors": [
+        "Sibling Skills table (lines 175-176): use-hivemind-tdd appears twice with slightly different descriptions",
+        "References review-and-refactor which is not a valid sibling name — should be hivemind-refactor"
+      ],
+      "issues": [
+        { "severity": "medium", "description": "parent field missing from frontmatter" },
+        { "severity": "medium", "description": "No Bundled Resources table — 5 files undeclared" },
+        { "severity": "low", "description": "Duplicate Sibling Skills row for use-hivemind-tdd" },
+        { "severity": "low", "description": "Invalid cross-skill reference: review-and-refactor" }
+      ]
+    },
+    {
+      "skill_name": "hivemind-system-debug",
+      "path": ".developing-skills/refactored-skills/hivemind-system-debug/SKILL.md",
+      "line_count": 69,
+      "phases": {
+        "1_frontmatter": { "pass": false, "details": "name + description present. parent MISSING." },
+        "2_load_position": { "pass": false, "details": "No Load Position section at all." },
+        "3_trigger_clarity": { "pass": true, "details": "Use This For / Do Not Use This For." },
+        "4_content_depth": { "pass": true, "details": "69 lines — Core Process (6 steps), Context Distrust, Debug Output Storage." },
+        "5_anti_patterns": { "pass": true, "details": "3 entries." },
+        "6_naming": { "pass": true, "details": "hivemind-system-debug — correct." },
+        "7_line_count": { "pass": true, "details": "69 < 450." },
+        "8_independence": { "pass": true, "details": "Clean handoff." },
+        "9_universal_design": { "pass": true, "details": "Abstract terminology." }
+      },
+      "bundled_resources_integrity": { "pass": false, "missing": ["Bundled Resources table lists 2 files but 3 exist. Missing: references/verification-before-completion.md"], "stale_refs": [] },
+      "cross_reference_errors": [],
+      "issues": [
+        { "severity": "medium", "description": "parent field missing from frontmatter" },
+        { "severity": "medium", "description": "No Load Position section" },
+        { "severity": "low", "description": "1 bundled resource not listed in table" }
+      ]
+    },
+    {
+      "skill_name": "use-hivemind-research",
+      "path": ".developing-skills/refactored-skills/use-hivemind-research/SKILL.md",
+      "line_count": 101,
+      "phases": {
+        "1_frontmatter": { "pass": false, "details": "name + description present. parent MISSING." },
+        "2_load_position": { "pass": false, "details": "No Load Position section. No slot, no dependencies declared." },
+        "3_trigger_clarity": { "pass": true, "details": "Use This For section with 4 triggers." },
+        "4_content_depth": { "pass": true, "details": "101 lines — routing logic, classification table, delegation packet." },
+        "5_anti_patterns": { "pass": true, "details": "4 entries." },
+        "6_naming": { "pass": true, "details": "use-hivemind-research — correct." },
+        "7_line_count": { "pass": true, "details": "101 < 450." },
+        "8_independence": { "pass": true, "details": "Sibling Skill Integration table." },
+        "9_universal_design": { "pass": true, "details": "Abstract terminology." }
+      },
+      "bundled_resources_integrity": { "pass": false, "missing": ["5 files on disk NOT listed: templates/research-packet.md, templates/mcp-config-template.json, templates/evidence-table.md, scripts/score-confidence.sh, scripts/check-mcp-readiness.mjs"], "stale_refs": [] },
+      "cross_reference_errors": [],
+      "issues": [
+        { "severity": "medium", "description": "parent field missing from frontmatter" },
+        { "severity": "medium", "description": "No Load Position section" },
+        { "severity": "medium", "description": "5 bundled resources (templates + scripts) not listed in table" }
+      ]
+    },
+    {
+      "skill_name": "use-hivemind-skill-authoring",
+      "path": ".developing-skills/refactored-skills/use-hivemind-skill-authoring/SKILL.md",
+      "line_count": 223,
+      "phases": {
+        "1_frontmatter": { "pass": false, "details": "name + description + parent present. BUT consolidates field lists use-hivemind-skill-authoring 5 times (self-reference)." },
+        "2_load_position": { "pass": true, "details": "Slot 2 declared inline. No HTML comment block." },
+        "3_trigger_clarity": { "pass": true, "details": "6 routes in When You Need This table." },
+        "4_content_depth": { "pass": true, "details": "223 lines — Skill Anatomy, Naming, Creation Template, Universal Design, Conflict Detection, 9-phase Review." },
+        "5_anti_patterns": { "pass": true, "details": "8 entries." },
+        "6_naming": { "pass": true, "details": "use-hivemind-skill-authoring — correct." },
+        "7_line_count": { "pass": true, "details": "223 < 450." },
+        "8_independence": { "pass": true, "details": "Handoff Paths table." },
+        "9_universal_design": { "pass": true, "details": "Platform Abstraction Matrix." }
+      },
+      "bundled_resources_integrity": { "pass": false, "missing": ["No Bundled Resources table. 8 reference files on disk undeclared."], "stale_refs": [] },
+      "cross_reference_errors": ["consolidates field lists its own name 5 times", "Deprecation Notice lists use-hivemind-skill-authoring 5 times as superseded by itself"],
+      "issues": [
+        { "severity": "high", "description": "consolidates field is nonsensical — lists own name 5 times" },
+        { "severity": "medium", "description": "No Bundled Resources table — 8 reference files undeclared" },
+        { "severity": "low", "description": "Deprecation Notice also self-references 5 times" }
+      ]
+    },
+    {
+      "skill_name": "use-hivemind-tdd",
+      "path": ".developing-skills/refactored-skills/use-hivemind-tdd/SKILL.md",
+      "line_count": 319,
+      "phases": {
+        "1_frontmatter": { "pass": false, "details": "name + description present. parent MISSING." },
+        "2_load_position": { "pass": true, "details": "Slot 2, dependency on use-hivemind, HTML comment block." },
+        "3_trigger_clarity": { "pass": true, "details": "TDD Loop (RED/GREEN/REFACTOR) trigger." },
+        "4_content_depth": { "pass": true, "details": "319 lines — 5 gates, phase lifecycle, test writing order, evidence format." },
+        "5_anti_patterns": { "pass": true, "details": "10 entries." },
+        "6_naming": { "pass": true, "details": "use-hivemind-tdd — correct." },
+        "7_line_count": { "pass": true, "details": "319 < 450." },
+        "8_independence": { "pass": true, "details": "Independence Rules section." },
+        "9_universal_design": { "pass": true, "details": "Abstract terminology." }
+      },
+      "bundled_resources_integrity": { "pass": false, "missing": ["Table lists 6 files but 15 exist. Missing 9: references/tdd-loop.md, references/vertical-slicing.md, references/test-quality.md, references/mocking-guide.md, references/verification-before-completion.md, references/test-first-packet.md, references/interface-design.md, tests/tdd-delegation.md, tests/tdd-scenario.md"], "stale_refs": [] },
+      "cross_reference_errors": [],
+      "issues": [
+        { "severity": "medium", "description": "parent field missing from frontmatter" },
+        { "severity": "medium", "description": "Bundled Resources table only 40% complete — 9 of 15 files undeclared" }
+      ]
+    },
+    {
+      "skill_name": "hiveminder-operation-guidelines",
+      "path": ".developing-skills/refactored-skills/hiveminder-operation-guidelines.md",
+      "line_count": 67,
+      "assessment": "NOT a skill — standalone .md file at skill-root level. Contains dispatch flow logic, sequential vs parallel rules, context window mgmt, agent roles. No YAML frontmatter. No SKILL.md conventions. Inconsistent with skill directory pattern.",
+      "issues": [
+        { "severity": "high", "description": "Orphaned .md file — not a SKILL.md, no frontmatter, at skill-root level inconsistent with all other skills" },
+        { "severity": "medium", "description": "Should be converted to proper SKILL.md or moved to references/ directory" }
+      ]
+    }
+  ],
+  "summary": {
+    "total_passes": 37,
+    "total_failures": 11,
+    "critical_issues": 0,
+    "high_issues": 2,
+    "medium_issues": 11,
+    "low_issues": 4,
+    "top_findings": [
+      "Bundled Resources tables missing/incomplete in ALL 6 files (5 skills + 1 orphan)",
+      "use-hivemind-skill-authoring self-references 5 times in consolidates field",
+      "hiveminder-operation-guidelines.md is orphaned — not a SKILL.md, no frontmatter"
+    ]
+  }
+}

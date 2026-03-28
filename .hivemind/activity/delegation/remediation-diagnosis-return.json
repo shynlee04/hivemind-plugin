@@ -1,0 +1,65 @@
+{
+  "_meta": {
+    "created_at": "2026-03-26T18:35:00+07:00",
+    "slice_id": "remediation-diagnosis",
+    "agent": "hivehealer"
+  },
+  "status": "completed",
+  "phase": "diagnosis",
+  "findings": {
+    "problems_diagnosed": 3,
+    "root_causes_identified": 3,
+    "design_flaws_flagged": 1
+  },
+  "problems": {
+    "A": {
+      "summary": "initSkillInjection() never called from opencode-plugin.ts",
+      "root_cause": "Wiring omission during module decomposition refactor",
+      "fix_complexity": "trivial",
+      "fix_risk": "low",
+      "independent": true
+    },
+    "B": {
+      "summary": "Skill discovery scans wrong path — misses skills/skills/ and .opencode/skills/",
+      "root_cause": "Stale path assumption after directory restructure",
+      "fix_complexity": "low",
+      "fix_risk": "low",
+      "depends_on": "A"
+    },
+    "C": {
+      "summary": "Loop checkpoint stale — reports 3 phases done, actual is ~10",
+      "root_cause": "Checkpoint never updated after phase 03",
+      "fix_complexity": "trivial",
+      "fix_risk": "none",
+      "independent": true
+    }
+  },
+  "design_flaw": {
+    "problem": "B",
+    "description": "Skill discovery hardcoded to single path; should scan .opencode/skills/ (OpenCode official) and project-internal paths",
+    "recommendation": "architect-review"
+  },
+  "evidence": {
+    "diagnosis_report": ".hivemind/activity/agents/hivehealer/remediation-diagnosis/diagnosis.md",
+    "files_read": [
+      "src/plugin/opencode-plugin.ts",
+      "src/shared/opencode-skill-registry.ts",
+      "src/plugin/skill-exposure-map.ts",
+      "src/shared/skill-injection-loader.ts",
+      "src/plugin/messages-transform-adapter.ts",
+      ".hivemind/activity/delegation/hivefiver-refactor-loop-checkpoint.json",
+      ".hivemind/activity/delegation/phase-11-full-verification.json"
+    ],
+    "commands_run": [
+      "grep initSkillInjection across src/",
+      "find skills/**/SKILL.md",
+      "ls skills/skills/",
+      "ls .opencode/skills/",
+      "git log --oneline for affected files"
+    ]
+  },
+  "recommended_next_action": "Fix Problem A first (trivial 1-line wiring), then Problem B (add scan path), then update checkpoint C. Hand to hiveq for fix verification.",
+  "blocked_routes": [],
+  "handoff_to": "hiveq",
+  "handoff_scope": "Apply fixes for Problems A, B, C and verify recovery"
+}

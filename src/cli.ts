@@ -7,7 +7,6 @@ import { runDoctorCommand } from './cli/doctor.js'
 import { runHarnessCommand } from './cli/harness.js'
 import { initProject } from './cli/init.js'
 import type { InitProjectResult } from './features/runtime-entry/index.js'
-import { syncRuntimeSurface } from './cli/runtime-assets.js'
 import { runSettingsCommand } from './cli/settings.js'
 
 type ParsedArgs = {
@@ -49,10 +48,9 @@ function printHelp(): void {
     '  doctor    Repair runtime entry and recovery spine',
     '  settings  Persist runtime attachment defaults',
     '  harness   Validate runtime attachment and server health',
-    '  sync      Sync plugin surface to opencode.json (quiet, no init)',
     '',
     'Alias binaries:',
-    '  hm-init, hm-doctor, hm-settings, hm-harness, hm-sync',
+    '  hm-init, hm-doctor, hm-settings, hm-harness',
     '',
     'Profile flags:',
     '  --name <value>              Preferred user name for runtime guidance',
@@ -165,9 +163,6 @@ export async function runCli(argv: string[], executablePath?: string): Promise<n
       result = await runHarnessCommand(directory, {
         serverUrl: typeof flags['server-url'] === 'string' ? flags['server-url'] : undefined,
       })
-      break
-    case 'sync':
-      result = await syncRuntimeSurface(directory)
       break
     default:
       printHelp()

@@ -9,7 +9,6 @@ import {
 } from '../../control-plane/control-plane-intake.js'
 import { findControlPlanePrimitive } from '../../control-plane/control-plane-registry.js'
 import { createManagedRuntime } from '../../control-plane/sdk-runtime.js'
-import { syncRuntimeSurface } from '../../cli/runtime-assets.js'
 import { createRecoveryCheckpoint } from '../../recovery/index.js'
 import { markEntryKernelQaPending } from '../../shared/entry-kernel-state.js'
 import {
@@ -122,9 +121,6 @@ export async function runInitHandler(
     },
   })
 
-  // Sync runtime surface (plugin and command files)
-  const runtimeSurfaceSync = await syncRuntimeSurface(input.projectRoot)
-
   // Save bootstrap profile settings
   const profileSettings = await saveBootstrapRuntimeAttachmentSettings(input.projectRoot, {
     preferredUserName: intakeResolution.profileInput.preferredUserName,
@@ -210,9 +206,6 @@ export async function runInitHandler(
         runtimeInstanceId: managedRuntime.runtimeInstanceId,
         serverBaseUrl: managedRuntime.serverBaseUrl,
       },
-      runtime_surface_sync: {
-        plugin_file: runtimeSurfaceSync.pluginFile,
-      },
       missing_prerequisites: status.issues.map((issue) => issue.code),
       next_command: 'hm-harness',
       auto_recovery: autoRecovery
@@ -261,12 +254,10 @@ export async function runInitHandler(
       'trajectory-bootstrapped',
       'recovery-checkpoint-created',
       'planning-projection-created',
-      'runtime-surface-synced',
       'entry-kernel-qa-pending',
     ],
     artifactRefs: [
       projection.filePath,
-      runtimeSurfaceSync.pluginFile,
     ],
     closeoutStatus,
     verificationContractId: asset.contract.verificationContract,

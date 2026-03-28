@@ -9,6 +9,7 @@
 
 import { mkdir, readFile, readdir, rename, symlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import type { PurposeClass, SessionV3 } from './types.js'
 
 // ============================================================================
 // Types
@@ -70,6 +71,16 @@ export interface InitSessionInput {
     | 'gatekeeping'
     | 'tdd'
     | 'course-correction'
+  agent: string
+  parentSessionId?: string | null
+}
+
+/**
+ * Input for initializing a new consolidated session V3.
+ */
+export interface InitSessionV3Input {
+  lineage: 'hivefiver' | 'hiveminder'
+  purposeClass: PurposeClass
   agent: string
   parentSessionId?: string | null
 }
@@ -256,7 +267,7 @@ export async function findSessionBySdkId(
         const content = await readFile(join(sessionDir, file), 'utf8')
         const session = JSON.parse(content) as SessionV2
         if (session.sdkSessionId === sdkSessionId) {
-          return session.sessionId
+          return session.semanticSessionId ?? session.sessionId
         }
       } catch {
         // Skip corrupted files
@@ -552,4 +563,82 @@ export async function linkSubSession(
   await modifySession(sessionDir, childSessionId, (child) => {
     child.parentSessionId = parentSessionId
   })
+}
+
+// ============================================================================
+// Public API - V3 Write Operations (ADR-017)
+// ============================================================================
+
+/**
+ * Initialize a new consolidated session using the V3 directory-based schema.
+ *
+ * Creates a directory `{semanticSessionId}/` containing `session.json` with
+ * the V3 schema format. When `parentSessionId` is set, the directory is
+ * created under `{parentDir}/subsessions/{childSemanticId}/` instead.
+ *
+ * @param sessionsDir - Root directory for all session directories
+ * @param input - Session initialization parameters
+ * @returns The generated semantic session ID
+ *
+ * @example
+ * const id = await initSessionV3('/sessions', {
+ *   lineage: 'hiveminder',
+ *   purposeClass: 'implementation',
+ *   agent: 'hitea',
+ * })
+ * // Creates: /sessions/ses_2026-03-27T120000_implementation_hitea/session.json
+ * // Returns: 'ses_2026-03-27T120000_implementation_hitea'
+ */
+export async function initSessionV3(
+  sessionsDir: string,
+  input: InitSessionV3Input
+): Promise<string> {
+  const semanticSessionId = generateSessionId(input.purposeClass, input.agent)
+  const now = new Date().toISOString()
+
+  // Determine directory path: root or subsession
+  let sessionDir: string
+  if (input.parentSessionId) {
+    sessionDir = join(
+      sessionsDir,
+      input.parentSessionId,
+      'subsessions',
+      semanticSessionId
+    )
+  } else {
+    sessionDir = join(sessionsDir, semanticSessionId)
+  }
+
+  await mkdir(sessionDir, { recursive: true })
+
+  const session: SessionV3 = {
+    _schema: 'session/v3',
+    sessionId: semanticSessionId,
+    semanticSessionId,
+    parentSessionId: input.parentSessionId ?? null,
+    lineage: input.lineage,
+    purposeClass: input.purposeClass,
+    agent: input.agent,
+    startedAt: now,
+    endedAt: null,
+    turnCount: 0,
+    status: 'active',
+    summary: '',
+    keyFindings: [],
+    subsessionIds: [],
+    resumable: false,
+    counters: {
+      userMessageCount: 0,
+      assistantOutputCount: 0,
+      toolCallCount: 0,
+      delegationCount: 0,
+      compactionCount: 0,
+    },
+    toc: [],
+  }
+
+  const filePath = join(sessionDir, 'session.json')
+  await atomicWrite(filePath, JSON.stringify(session, null, 2))
+
+  return semanticSessionId
 }

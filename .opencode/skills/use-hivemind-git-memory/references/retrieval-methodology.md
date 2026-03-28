@@ -17,16 +17,16 @@
 
 ### Index-Based Retrieval (Preferred)
 
-When `.hivemind/activity/memory-index/index.json` exists:
+When `.hivemind/activity/git-memory/index/index.json` exists:
 
 | Operation | Command | Returns |
 |-----------|---------|---------|
-| By tag | `grep -r "git-memory" .hivemind/activity/memory-index/` | Files referencing the tag |
-| By packet | `jq '.by_packet["batch_007"]' .hivemind/activity/memory-index/index.json` | Commit SHAs for packet |
-| By decision | `jq '.by_decision["decision_X"]' .hivemind/activity/memory-index/index.json` | Commit SHAs for decision |
-| By phase | `jq '.by_phase["implementation"]' .hivemind/activity/memory-index/index.json` | Commit SHAs in phase |
-| By agent | `jq '.by_agent["hivemaker"]' .hivemind/activity/memory-index/index.json` | Commit SHAs by agent |
-| Full record | `cat .hivemind/activity/memory-index/{sha}.json` | Complete memory record |
+| By tag | `grep -r "git-memory" .hivemind/activity/git-memory/index/` | Files referencing the tag |
+| By packet | `jq '.by_packet["batch_007"]' .hivemind/activity/git-memory/index/index.json` | Commit SHAs for packet |
+| By decision | `jq '.by_decision["decision_X"]' .hivemind/activity/git-memory/index/index.json` | Commit SHAs for decision |
+| By phase | `jq '.by_phase["implementation"]' .hivemind/activity/git-memory/index/index.json` | Commit SHAs in phase |
+| By agent | `jq '.by_agent["hivemaker"]' .hivemind/activity/git-memory/index/index.json` | Commit SHAs by agent |
+| Full record | `cat .hivemind/activity/git-memory/index/{sha}.json` | Complete memory record |
 
 ## Chain Reconstruction
 
@@ -42,7 +42,7 @@ PACKET=$(git log -1 --format='%B' $SHA | grep -oP 'packet_id: \K\S+')
 PHASE=$(git log -1 --format='%B' $SHA | grep -oP 'plan_phase: \K\S+')
 
 # Step 2: Look up decision in hierarchy
-cat .hivemind/activity/hierarchy/${DECISION}.json
+cat .hivemind/activity/git-memory/decisions/${DECISION}.json
 
 # Step 3: Look up packet in delegation records
 cat .hivemind/activity/delegation/${PACKET}.json
@@ -60,7 +60,7 @@ git log --all --grep="packet_id: ${PACKET}" --format='%H %ai %s' | sort -k2
 
 # Or via index
 jq -r '.commits[] | select(.packet_id == "'$PACKET'") | .sha' \
-  .hivemind/activity/memory-index/index.json
+  .hivemind/activity/git-memory/index/index.json
 ```
 
 ### Peer-Find (commit + tag → related commits)

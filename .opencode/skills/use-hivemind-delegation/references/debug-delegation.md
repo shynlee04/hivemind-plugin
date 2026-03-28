@@ -58,4 +58,4 @@ Delegate debug loops with the reproduce→narrow→contain→evidence pattern.
 
 Debug methodology details: `hivemind-system-debug`
 Delegation mechanics: `use-hivemind-delegation`
-Loop gating: `hivemind-gatekeeping-delegation`
+Loop gating: `hivemind-gatekeeping`

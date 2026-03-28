@@ -22,7 +22,7 @@ import {
 import { createStartWorkInput } from './input-helpers.js'
 import { resolveStartWork } from '../hooks/start-work/start-work-router.js'
 import { maybeExecuteNlFirstRuntimeDispatch } from '../features/runtime-entry/nl-first-dispatch.js'
-import { resolveSkillBundle, resolveSessionRole } from './skill-exposure-map.js'
+import { resolveSkillBundle, resolveSessionRole, resolveDefaultAgent } from './skill-exposure-map.js'
 import { renderSkillFocusBlock } from './skill-focus-renderer.js'
 import { setInjectionPayload } from './injection-store.js'
 
@@ -89,7 +89,7 @@ export function createMessagesTransformHandler(deps: MessagesTransformDeps) {
         userMessage,
         context: {
           sessionID,
-          agent: activeAgent ?? 'hivefiver',
+          agent: activeAgent ?? resolveDefaultAgent(),
         },
       })
 
@@ -155,7 +155,7 @@ export function createMessagesTransformHandler(deps: MessagesTransformDeps) {
     setInjectionPayload({
       sessionId: sessionID,
       timestamp: new Date().toISOString(),
-      agent: activeAgent ?? 'hivefiver',
+      agent: activeAgent ?? resolveDefaultAgent(),
       purposeClass: startWork.purposeClass,
       sessionState: startWork.sessionState,
       skillBundle,

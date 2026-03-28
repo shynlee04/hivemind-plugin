@@ -1,0 +1,60 @@
+{
+  "_meta": {
+    "created_at": "2026-03-26T18:17:17+07:00",
+    "updated_at": "2026-03-26T18:17:17+07:00"
+  },
+  "slice_id": "discovery-hivefiver-scope",
+  "agent": "hiveq",
+  "mode": "verification",
+  "status": "gaps_found",
+  "score": "0/6",
+  "summary": "All 6 hivefiver components fail the user's project+global scope requirements. Tools are structurally wired but substantively placeholder. Zero global path resolution. Zero .opencode/ content detection. Zero archive-vs-merge capability. Config groups read schema defaults, never disk state.",
+  "findings": {
+    "hm_init": {
+      "detects_project": false,
+      "detects_global": false,
+      "respects_existing": "placeholder",
+      "archive_vs_merge": false,
+      "key_issue": "Only checks .hivemind/ existence; never reads .opencode/ or ~/.config/opencode/"
+    },
+    "hm_doctor": {
+      "detects_project": "partial",
+      "detects_global": false,
+      "respects_existing": "placeholder",
+      "archive_vs_merge": false,
+      "key_issue": "Checks .opencode/ dir existence but never reads content; no global path scanning"
+    },
+    "hm_setting": {
+      "detects_project": false,
+      "detects_global": false,
+      "respects_existing": false,
+      "archive_vs_merge": false,
+      "key_issue": "getConfigGroup() returns schema defaults via UserPreferences.parse({}), never reads opencode.json. _projectRoot param unused."
+    },
+    "skill_injection_loader": {
+      "scans_project_skills": false,
+      "scans_global_skills": false,
+      "merges_both": false,
+      "key_issue": "Scans {packageRoot}/skills/ (wrong) instead of .opencode/skills/ or ~/.config/opencode/skills/"
+    },
+    "config_groups": {
+      "knows_project_vs_global": false,
+      "reads_opencode_json": false,
+      "key_issue": "Pure schema defaults. No I/O. getConfigGroup() calls UserPreferences.parse({}) always."
+    },
+    "paths": {
+      "exposes_project_paths": true,
+      "exposes_global_paths": false,
+      "key_issue": "getEffectivePaths() only returns .hivemind/ subdirs. No getGlobalPaths(). Zero grep matches for global path patterns."
+    }
+  },
+  "blocked_routes": [
+    "Cannot verify 'respects existing configs' — no actual read logic exists to test",
+    "Cannot verify 'archive vs merge' — no such options exist in any tool"
+  ],
+  "recommended_next_action": "Implement global path resolution layer in paths.ts, then update each hivefiver tool to detect and respect both project and global config levels before proposing changes",
+  "output_paths": {
+    "report": ".hivemind/activity/agents/hiveq/discovery-hivefiver-scope/report.md",
+    "return_contract": ".hivemind/activity/agents/hiveq/discovery-hivefiver-scope/return-contract.json"
+  }
+}

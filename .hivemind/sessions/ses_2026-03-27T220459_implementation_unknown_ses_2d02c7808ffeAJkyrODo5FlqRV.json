@@ -1,0 +1,52 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d02c7808ffeAJkyrODo5FlqRV",
+  "semanticSessionId": "ses_2026-03-27T220459_implementation_unknown_ses_2d02c7808ffeAJkyrODo5FlqRV",
+  "sdkSessionId": "ses_2d02c7808ffeAJkyrODo5FlqRV",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-27T15:04:59.958Z",
+  "updated": "2026-03-27T15:05:00.029Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-27T15:04:59.954Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Now let me check if the multi-wave-dispatch reference file exists."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-27T15:04:59.954Z",
+      "data": {
+        "text": "Now let me check if the multi-wave-dispatch reference file exists.",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-27T15:04:59.954Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=66"
+    }
+  ]
+}

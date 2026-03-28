@@ -1,0 +1,35 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2cf275e01ffeNbOJ2bbV68INpB",
+  "semanticSessionId": "ses_2026-03-28T030351_implementation_unknown_ses_2cf275e01ffeNbOJ2bbV68INpB",
+  "sdkSessionId": "ses_2cf275e01ffeNbOJ2bbV68INpB",
+  "lineage": "hivefiver",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-27T20:03:51.984Z",
+  "updated": "2026-03-27T20:03:51.984Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 0,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 0
+  },
+  "turns": [],
+  "events": [
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T20:03:51.984Z",
+      "data": {
+        "sessionId": "ses_2cf275e01ffeNbOJ2bbV68INpB"
+      }
+    }
+  ],
+  "diagnostics": []
+}

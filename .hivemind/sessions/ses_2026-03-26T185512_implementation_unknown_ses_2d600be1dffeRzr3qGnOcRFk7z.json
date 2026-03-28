@@ -1,0 +1,61 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d600be1dffeRzr3qGnOcRFk7z",
+  "semanticSessionId": "ses_2026-03-26T185512_implementation_unknown_ses_2d600be1dffeRzr3qGnOcRFk7z",
+  "sdkSessionId": "ses_2d600be1dffeRzr3qGnOcRFk7z",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-26T11:55:12.034Z",
+  "updated": "2026-03-26T11:55:41.363Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-26T11:55:12.030Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "All 5 tests pass. Config file doesn't exist but fallback works. Now writing"
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-26T11:55:12.030Z",
+      "data": {
+        "text": "All 5 tests pass. Config file doesn't exist but fallback works. Now writing",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-26T11:55:41.363Z",
+      "data": {
+        "sessionId": "ses_2d600be1dffeRzr3qGnOcRFk7z"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-26T11:55:12.030Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=75"
+    }
+  ]
+}

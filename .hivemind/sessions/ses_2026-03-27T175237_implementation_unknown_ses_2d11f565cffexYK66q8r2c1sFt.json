@@ -1,0 +1,52 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d11f565cffexYK66q8r2c1sFt",
+  "semanticSessionId": "ses_2026-03-27T175237_implementation_unknown_ses_2d11f565cffexYK66q8r2c1sFt",
+  "sdkSessionId": "ses_2d11f565cffexYK66q8r2c1sFt",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-27T10:52:37.493Z",
+  "updated": "2026-03-27T10:52:37.498Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-27T10:52:37.493Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Zero type errors from our files. Here's the implementation report:\n\n---\n\n## Implementation Complete\n\n**Scope:** `markdown-writer.ts` — human-readable `events.md` generation for sessions (ADR-017)\n**Files Created:**\n- `src/features/event-tracker/markdown-writer.ts`\n- `src/features/event-tracker/markdown-writer.test.ts`\n\n### Changes Made\n\n**`markdown-writer.ts`** — 4 exported functions:\n\n1. **`initEventsMarkdown(sessionDir, session)`** — Creates `events.md` with ADR-specified header: semantic session ID heading, metadata fields (Session ID, Parent, Lineage, Purpose, Agent, Status), and TOC placeholder with column headers. Uses `writeFile` for initial creation.\n\n2. **`appendTurnToMarkdown(sessionDir, turn)`** — Appends turn entries with type-specific formatting:\n   - `user_message` → `## Turn N — User Message`\n   - `assistant_output` → `## Turn N — Assistant Output` + Model/Duration metadata\n   - `tool_call` → `## Turn N — Tool Invocation` + Tool/Action metadata (pruned — no JSON dumps)\n   - `delegation` → `## Turn N — Delegation`\n   - `compaction` → `## Turn N — Compaction`\n   - `error` → `## Turn N — Error`\n\n3. **`generateTOC(sessionDir, session)`** — Reads existing `events.md`, replaces the TOC section between the column-header row and the next `---` separator with rows from `session.toc`.\n\n4. **`appendDiagnosticToMarkdown(sessionDir, entry)`** — Appends diagnostic rows. Auto-creates the `## Diagnostics` section with table headers on first call; inserts rows before the separator on subsequent calls.\n\n**`markdown-writer.test.ts`** — 15 tests covering all 4 functions + edge cases (multi-append, TOC regeneration, tool_call JSON pruning, delegation/compaction/error types, parent session ID).\n\n### Verification Results\n\n| Command | Result | Status |\n|---------|--------|--------|\n| `npx tsc --noEmit` | Zero errors in our files (1 pre-existing error in `session-structure.test.ts`) | ✓ |\n| `npx tsx --test markdown-writer.test.ts` | 15/15 pass, 0 fail | ✓ |\n| `npm run build` | Blocked by pre-existing error in `session-structure.test.ts` | ⚠ pre-existing |\n| `npm run lint` | No lint script configured | N/A |\n\n### Deviations\nNone — implementation matches the ADR-017 format specification exactly.\n\n### Open Issues\n- `npm run build` is blocked by a pre-existing `noUnusedLocals` error in `session-structure.test.ts:144` — unrelated to this work."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-27T10:52:37.493Z",
+      "data": {
+        "text": "Zero type errors from our files. Here's the implementation report:\n\n---\n\n## Implementation Complete\n\n**Scope:** `markdown-writer.ts` — human-readable `events.md` generation for sessions (ADR-017)\n**Files Created:**\n- `src/features/event-tracker/markdown-writer.ts`\n- `src/features/event-tracker/markdown-writer.test.ts`\n\n### Changes Made\n\n**`markdown-writer.ts`** — 4 exported functions:\n\n1. **`initEventsMarkdown(sessionDir, session)`** — Creates `events.md` with ADR-specified header: semantic sess",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-27T10:52:37.493Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=2370"
+    }
+  ]
+}

@@ -1,18 +1,17 @@
 ---
 name: use-hivemind-planning
-description: |
-  The planning domain. Before you code, you plan. Before you plan, you spec. This skill takes you from vague requirements to executable phases with numbered phases and dependency maps.
+description: The planning domain. From vague requirements to executable phases with numbered steps and dependency maps. Covers requirement distillation, feasibility validation, slice decomposition, and progress tracking.
 ---
 
 # use-hivemind-planning
 
 You've got a thing to build. Maybe the requirements are clear. Maybe they're a mess. Either way, you need a structured path from "what the human wants" to "here's what each subagent does." This skill is that path. It handles the full arc: distilling noisy specs, validating feasibility, decomposing into bounded slices, mapping dependencies, and tracking progress through to done.
 
-Consolidates: `plan-engineering`, `plan-breakdown`, `spec-distillation`, `hivemind-codemap` (feasibility section).
+Consolidates: `use-hivemind-planning`, `use-hivemind-planning`, `hivemind-spec-driven`, `hivemind-codemap` (feasibility section).
 
 ## Load Position
 
-**Slot 2 (Domain — planning)**. `use-hivemind` must be loaded first.
+**Layer: Domain — planning**. `use-hivemind` must be loaded first.
 
 ## When to Load
 
@@ -227,10 +226,71 @@ You're skipping dependency analysis. Parallel dispatch fails unpredictably when 
 
 You're planning without a spec. Planning on ambiguous requirements is building on sand. Distill first, validate second, decompose third.
 
+## TDD Integration
+
+Planning outputs become TDD inputs. This section documents the handoff chain from validated plan to test-driven implementation.
+
+### Handoff Flow
+
+```
+Planning (this skill)          TDD (use-hivemind-tdd)
+─────────────────────          ──────────────────────
+Spec distillation        →     Acceptance criteria extraction
+Phase decomposition     →     Test suite scoping (per-slice)
+Slice definition         →     RED phase (failing tests first)
+Validation gate          →     GREEN phase (minimum passing code)
+Re-decomposition         →     REFACTOR phase (clean while green)
+Carry-forward            →     Verification gate evidence
+```
+
+### How Planning Outputs Map to TDD Inputs
+
+| Planning Artifact | TDD Consumer | Purpose |
+|-------------------|-------------|---------|
+| Requirement atoms (Five-Bucket) | Acceptance criteria per test case | Each functional atom becomes ≥1 test |
+| Phase gates (`npx tsc`, `npm test`) | TDD cycle gates | Same commands, different phase role |
+| Slice `in_scope` / `out_of_scope` | Test boundary definition | In-scope = test must cover; out-of-scope = test must not assert |
+| Dependency graph edges | Test execution order | Dependents run after their dependencies green |
+| Ambiguity map (Clear tag) | Test assertion source | Clear requirements map to unambiguous assertions |
+| Feasibility evidence | TDD pre-condition check | Target must exist before RED phase writes tests |
+
+### Coordination Rules
+
+1. **Spec must validate before TDD starts.** Never enter RED phase on ambiguous requirements. Return to Spec Distillation.
+2. **One slice = one TDD cycle.** RED → GREEN → REFACTOR within slice boundaries. No cross-slice TDD.
+3. **Re-decomposition triggers TDD reset.** When a slice re-decomposes, discard its test suite and start RED fresh on the new slices.
+4. **Planning carries the what; TDD carries the how.** Planning says "this slice implements X." TDD says "here's the test proving X works."
+
 ## Sibling Skills
 
-| Parent | This Skill | Depth Partner |
-|--------|-----------|---------------|
-| use-hivemind | use-hivemind-planning | use-hivemind-delegation |
+| Parent | This Skill | Depth Partner | TDD Partner |
+|--------|-----------|---------------|-------------|
+| use-hivemind | use-hivemind-planning | use-hivemind-delegation | use-hivemind-tdd |
 
-This skill consolidates: `plan-engineering` (lifecycle + retraceability), `plan-breakdown` (decomposition methodology), `spec-distillation` (requirement extraction), and `hivemind-codemap` (feasibility scanning). Detailed references, templates, and scan helpers live in the respective `references/` directories.
+This skill consolidates: `use-hivemind-planning` (lifecycle + retraceability), `use-hivemind-planning` (decomposition methodology), `hivemind-spec-driven` (requirement extraction), and `hivemind-codemap` (feasibility scanning). Detailed references, templates, and scan helpers live in the respective `references/` directories.
+
+## Bundled Resources
+
+| Resource | Path | Purpose |
+|----------|------|---------|
+| Ambiguity Taxonomy | `references/ambiguity-taxonomy.md` | Classification of requirement ambiguity types |
+| Decomposition Steps | `references/decomposition-steps.md` | Step-by-step task decomposition protocol |
+| Dependency Ordering | `references/dependency-ordering.md` | Dependency graph construction and topological sort |
+| Phase Numbering | `references/phase-numbering.md` | Phase numbering conventions and hierarchy |
+| Plan Execution | `references/plan-execution.md` | Plan execution tracking and progress reporting |
+| Plan Lifecycle | `references/plan-lifecycle.md` | Plan creation through completion lifecycle |
+| Plan to Delegation | `references/plan-to-delegation.md` | Converting plans to delegation packets |
+| Planning Lifecycle | `references/planning-lifecycle.md` | End-to-end planning process lifecycle |
+| Re-Decomposition Protocol | `references/re-decomposition-protocol.md` | When and how to re-decompose failed slices |
+| Slice Splitting Heuristics | `references/slice-splitting-heuristics.md` | Heuristics for splitting work into slices |
+| Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
+| Extract Requirements | `scripts/extract-requirements.sh` | Bash helper for requirement extraction |
+| Decomposition Plan | `templates/decomposition-plan.json` | JSON template for decomposition plans |
+| Plan Record | `templates/plan-record.md` | Template for plan record documentation |
+| Slice Template | `templates/slice-template.json` | JSON template for work slices |
+| Spec Candidate | `templates/spec-candidate.md` | Template for spec candidate documents |
+| Basic Decomposition | `tests/basic-decomposition.md` | Test for basic decomposition scenario |
+| Direct Invocation | `tests/direct-invocation.md` | Test for direct skill invocation |
+| Parallel Candidates | `tests/parallel-candidates.md` | Test for parallel candidate handling |
+| Plan Scenario | `tests/plan-scenario.md` | Test for full planning scenario |
+| Re-Decomposition | `tests/re-decomposition.md` | Test for re-decomposition protocol |

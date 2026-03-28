@@ -1,0 +1,62 @@
+{
+  "_meta": {
+    "created_at": "2026-03-25T23:55:00.000Z",
+    "updated_at": "2026-03-25T23:55:00.000Z"
+  },
+  "phase": "03",
+  "slice_id": "phase-03-schema-definition",
+  "status": "complete",
+  "files_created": [
+    "src/schema-kernel/config-records.ts",
+    "src/schema-kernel/agent-records.ts",
+    "src/schema-kernel/skill-injection-records.ts",
+    "src/schema-kernel/schema-records.test.ts"
+  ],
+  "files_modified": [
+    "src/schema-kernel/index.ts"
+  ],
+  "tdd_cycle": {
+    "red": {
+      "status": "complete",
+      "tests_written": 33,
+      "initial_failure": "ERR_MODULE_NOT_FOUND — modules do not exist yet",
+      "test_file": "src/schema-kernel/schema-records.test.ts"
+    },
+    "green": {
+      "status": "complete",
+      "tests_passing": 33,
+      "tests_failing": 0,
+      "type_check": "clean",
+      "build": "succeeded"
+    },
+    "refactor": {
+      "status": "complete",
+      "tests_still_passing": true,
+      "no_duplicate_types": true
+    }
+  },
+  "verification": {
+    "typecheck": {
+      "command": "npx tsc --noEmit",
+      "result": "clean — zero errors",
+      "status": "pass"
+    },
+    "tests": {
+      "command": "npx tsx --test src/schema-kernel/schema-records.test.ts",
+      "result": "33 passed, 0 failed",
+      "status": "pass"
+    },
+    "build": {
+      "command": "npm run build",
+      "result": "succeeded",
+      "status": "pass"
+    },
+    "lint_boundary": {
+      "note": "Pre-existing failures in src/hooks/ (not caused by this phase)",
+      "status": "pre-existing-failure"
+    }
+  },
+  "carry_forward": [],
+  "blocks": ["04", "05", "06"],
+  "exported_at": "2026-03-25T23:55:00.000Z"
+}

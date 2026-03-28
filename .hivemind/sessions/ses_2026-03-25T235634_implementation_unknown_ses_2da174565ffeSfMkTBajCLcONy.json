@@ -1,0 +1,52 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2da174565ffeSfMkTBajCLcONy",
+  "semanticSessionId": "ses_2026-03-25T235634_implementation_unknown_ses_2da174565ffeSfMkTBajCLcONy",
+  "sdkSessionId": "ses_2da174565ffeSfMkTBajCLcONy",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-25T16:56:34.386Z",
+  "updated": "2026-03-25T16:56:34.388Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-25T16:56:34.385Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "All 33 tests pass, type check clean. Now writing the handoff artifact:"
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-25T16:56:34.385Z",
+      "data": {
+        "text": "All 33 tests pass, type check clean. Now writing the handoff artifact:",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-25T16:56:34.385Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=70"
+    }
+  ]
+}

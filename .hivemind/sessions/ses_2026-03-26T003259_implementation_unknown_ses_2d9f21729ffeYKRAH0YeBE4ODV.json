@@ -1,0 +1,61 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d9f21729ffeYKRAH0YeBE4ODV",
+  "semanticSessionId": "ses_2026-03-26T003259_implementation_unknown_ses_2d9f21729ffeYKRAH0YeBE4ODV",
+  "sdkSessionId": "ses_2d9f21729ffeYKRAH0YeBE4ODV",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-25T17:32:59.201Z",
+  "updated": "2026-03-25T17:32:59.419Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-25T17:32:59.201Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Here is the complete tool creation pattern used in this codebase.\n\n---\n\n## Tool Structure: 3-File Convention\n\nEach tool lives in `src/tools/<name>/` with:\n\n| File | Purpose |\n|------|---------|\n| `index.ts` | Barrel re-export of types + tools |\n| `tools.ts` | Tool definition (Zod args, `execute()`, factory export) |\n| `types.ts` | TypeScript interfaces, action unions, pressure contracts |\n\n---\n\n## `index.ts` — Barrel Export\n\n**File:** `src/tools/task/index.ts` (2 lines)\n\n```ts\nexport * from './types.js'\nexport * from './tools.js'\n```\n\n---\n\n## `tools.ts` — Tool Definition\n\n**File:** `src/tools/task/tools.ts` (42 lines)\n\nThe pattern:\n\n```ts\nimport { tool } from '@opencode-ai/plugin/tool'\nimport { executeHivemindTaskAction } from '../../features/workflow/task.js'\nimport { error, success } from '../../shared/tool-response.js'\nimport { renderToolResult as render } from '../../shared/tool-helpers.js'\nimport type { HivemindTaskToolArgs } from './types.js'\n\nexport function createHivemindTaskTool(projectRoot: string): ReturnType<typeof tool> {\n  return tool({\n    description: 'Canonical task and subtask authority for HiveMind workflows. ...',\n    args: {\n      action: tool.schema.enum(['create', 'list', 'get', 'activate', 'rotate', 'verify', 'complete'])\n        .describe('Task authority action to perform'),\n      workflowId: tool.schema.string().optional().describe('Workflow identifier that owns the task'),\n      taskId: tool.schema.string().optional().describe('Task identifier to inspect or mutate'),\n      // ... all args use tool.schema (Zod) with .describe() on every field\n    },\n    async execute(args: HivemindTaskToolArgs, context) {\n      // 1. Delegate business logic to a feature module\n      const result = executeHivemindTaskAction(projectRoot, args, {\n        sessionID: context.sessionID,\n      })\n      // 2. Error path\n      if (result.kind === 'error') {\n        return render(error(result.message, result.details))\n      }\n      // 3. Attach metadata if present\n      if (result.metadata) {\n        context.metadata(result.metadata)\n      }\n      // 4. Success path — always JSON\n      return render(success(result.message, result.data))\n    },\n  })\n}\n```\n\nKey observations:\n\n1. **Factory function** — `createHivemindXxxTool(projectRoot)` returns a `tool()` instance. The `projectRoot` is injected at plugin assembly time.\n2. **`tool.schema` IS Zod** — `tool.schema.string()`, `.enum()`, `.number()`, `.optional()`, `.describe()` are all Zod methods re-exported by the SDK.\n3. **Every arg has `.describe()`** — Required for agent introspection.\n4. **`execute(args, context)` receives `context`** with `sessionID`, `agent`, `directory`, `worktree`, `abort`, `metadata()`, `ask()`.\n5. **Return value is always `JSON.stringify()`** — via `renderToolResult()` (2-space indent).\n6. **Business logic is delegated** — `executeHivemindTaskAction()` lives in `src/features/workflow/task.js`, keeping the tool file thin (~42 lines).\n\n---\n\n## `types.ts` — TypeScript Contracts\n\n**File:** `src/tools/task/types.ts` (33 lines)\n\n```ts\nexport type HivemindTaskAction = 'create' | 'list' | 'get' | 'activate' | 'rotate' | 'verify' | 'complete'\n\nexport interface HivemindTaskToolArgs {\n  action: HivemindTaskAction\n  workflowId?: string\n  taskId?: string\n  title?: string\n  kind?: 'task' | 'subtask'\n  parentTaskId?: string\n  dependencyIds?: string\n  verificationContractId?: string\n  evidenceRefs?: string\n}\n\nexport const taskActionPressureContracts: Record<HivemindTaskAction, RuntimePressureContract> = {\n  create: getRuntimePressureContract('task-mutation'),\n  list: getRuntimePressureContract('steady-state'),\n  // ...\n}\n```\n\n---\n\n## Shared Utilities\n\n| File | Exports | Purpose |\n|------|---------|---------|\n| `src/shared/tool-response.ts` | `success()`, `error()`, `pending()`, `ToolResponse` | Standard `{ status, message, data }` response envelope |\n| `src/shared/tool-helpers.ts` | `parseList()`, `parseJsonArray()`, `renderToolResult()` | Comma parsing, JSON parsing, pretty-print JSON output |\n\n---\n\n## Summary of the Pattern\n\n```\nTool factory(projectRoot) \n  → tool({ description, args: { ...tool.schema.*.describe() }, execute(args, context) })\n    → delegates to feature module for business logic\n    → returns renderToolResult(success(...)) or renderToolResult(error(...))\n    → context.sessionID / context.metadata() used for runtime integration\n```"
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-25T17:32:59.201Z",
+      "data": {
+        "text": "Here is the complete tool creation pattern used in this codebase.\n\n---\n\n## Tool Structure: 3-File Convention\n\nEach tool lives in `src/tools/<name>/` with:\n\n| File | Purpose |\n|------|---------|\n| `index.ts` | Barrel re-export of types + tools |\n| `tools.ts` | Tool definition (Zod args, `execute()`, factory export) |\n| `types.ts` | TypeScript interfaces, action unions, pressure contracts |\n\n---\n\n## `index.ts` — Barrel Export\n\n**File:** `src/tools/task/index.ts` (2 lines)\n\n```ts\nexport * from './t",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-25T17:32:59.419Z",
+      "data": {
+        "sessionId": "ses_2d9f21729ffeYKRAH0YeBE4ODV"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-25T17:32:59.201Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=4386"
+    }
+  ]
+}

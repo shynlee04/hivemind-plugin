@@ -1,0 +1,61 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d1251cf0ffddCK5I3iMVQTpHg",
+  "semanticSessionId": "ses_2026-03-27T173613_implementation_unknown_ses_2d1251cf0ffddCK5I3iMVQTpHg",
+  "sdkSessionId": "ses_2d1251cf0ffddCK5I3iMVQTpHg",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-27T10:36:13.133Z",
+  "updated": "2026-03-27T10:37:53.934Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-27T10:36:13.133Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Now let me check for a few more concern areas:"
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-27T10:36:13.133Z",
+      "data": {
+        "text": "Now let me check for a few more concern areas:",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T10:37:53.933Z",
+      "data": {
+        "sessionId": "ses_2d1251cf0ffddCK5I3iMVQTpHg"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-27T10:36:13.133Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=46"
+    }
+  ]
+}

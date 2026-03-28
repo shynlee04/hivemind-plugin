@@ -1,27 +1,24 @@
 ---
 name: hivemind-refactor
-description: |
-  Refactor methodology. Smallest safe change. Behavior preservation is non-negotiable. Assess, plan, execute, verify — in that order.
+description: Refactor methodology. Smallest safe change. Behavior preservation is non-negotiable. Assess, plan, execute, verify — in that order.
 ---
 
 <!-- LOAD-POSITION
-slot: 3
+slot: depth
 role: depth
-max-stack: 3
+prerequisites: use-hivemind-delegation
 -->
 
 ## Load Position
 
-**Slot: 3 (Depth)**
-
-This skill provides refactor methodology. It loads AFTER an entry router (Slot 1) and AFTER a domain delegation skill (Slot 2, specifically `use-hivemind-delegation`).
+**Layer: Depth**. Loads after entry router and domain skill are in place.
 
 | Constraint | Rule |
 |-----------|------|
-| Stack position | Slot 3 of 3 |
-| Load order | After entry router + domain delegation |
-| Max active | 3 skills total |
-| Requires | `use-hivemind-delegation` in Slot 2 |
+| Position | Depth layer |
+| Load order | After entry router + domain skill |
+| Prerequisites | `use-hivemind-delegation` |
+| Conflict | None — loads alongside any domain skill |
 
 # hivemind-refactor
 
@@ -78,9 +75,9 @@ Not all smells are equal. Classify before acting:
 |-------|----------|-------------|
 | Poor naming | Low | Rename with confidence |
 | Duplication | Medium | Extract shared logic |
-| Long function | Medium | Decompose into smaller functions |
-| God component | High | Split by responsibility |
-| Tangled dependencies | High | Introduce seams, extract interfaces |
+| God Function | Medium | Decompose into smaller functions |
+| God Component | High | Split by responsibility |
+| Tight Coupling | High | Introduce seams, extract interfaces |
 | Dead code | Low | Remove (after confirming no callers) |
 | Magic values | Low | Extract to named constants |
 
@@ -262,14 +259,26 @@ Fix-forward is how refactors become rewrites. Revert-first is how refactors stay
 | Skill | Relationship |
 |-------|-------------|
 | `use-hivemind-delegation` | Required prerequisite — provides delegation protocol |
-| `tdd-delegation` | If refactor adds behavior, transition to TDD |
-| `course-correction-delegation` | If refactor breaks things, debug delegation takes over |
+| `use-hivemind-tdd` | If refactor adds behavior, transition to TDD |
 | `hivemind-codemap` | For whole-codebase assessment before large refactors |
-| `clean-code` | Principles that guide refactor decisions |
+| `hivemind-patterns` | Architecture pattern reference for refactor decisions |
+
+## Bundled Resources
+
+| Resource | Path | Purpose |
+|----------|------|---------|
+| Code Review Reception | `references/code-review-reception.md` | How to receive and process code review feedback |
+| Code Review Request | `references/code-review-request.md` | How to request effective code reviews |
+| Code Smell Taxonomy | `references/code-smell-taxonomy.md` | Classification of code smells and their fixes |
+| Refactor Techniques | `references/refactor-techniques.md` | Catalog of refactoring techniques |
+| Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
+| Code Reviewer Prompt | `templates/code-reviewer-prompt.md` | Template for code review prompts |
+| Refactor Checklist | `templates/refactor-checklist.md` | Template for refactor verification checklist |
+| Refactor Scenario | `tests/refactor-scenario.md` | Test scenario for refactoring workflow |
 
 ## Independence Rules
 
-- This skill operates at Slot 3 depth — it requires `use-hivemind-delegation` in Slot 2
-- It provides methodology, not delegation mechanics — delegation packets come from the Slot 2 skill
-- Refactor artifacts are stored in `{project}/.hivemind/activity/agents/{agent_name}/{pass_id}/`
-- This skill composes with `hivemind-gatekeeping-delegation` for multi-iteration refactor loops
+- This skill operates at depth level — it requires `use-hivemind-delegation` as a prerequisite
+- It provides methodology, not delegation mechanics — delegation packets come from the delegation skill
+- Refactor artifacts are stored in `{project}/.hivemind/activity/refactor/{session_id}/`
+- This skill composes with `hivemind-gatekeeping` for multi-iteration refactor loops

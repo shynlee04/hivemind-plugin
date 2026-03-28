@@ -1,0 +1,51 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2026-03-25T214550_implementation_unknown",
+  "semanticSessionId": "ses_2026-03-25T214550_implementation_unknown",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-25T14:45:50.132Z",
+  "updated": "2026-03-25T14:45:50.215Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-25T14:45:50.117Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "The complete file has been read. Here is a summary of every key element with exact line references:\n\n## File: `/Users/apple/hivemind-plugin/.worktrees/product-detox/src/plugin/skill-exposure-map.ts` (255 lines)\n\n### 1. `SHARED_SKILLS` (lines 22–27)\nAlways-on skills across all agents:\n- `use-hivemind-delegation`\n\n### 2. `MAX_SKILLS` (line 30)\n```typescript\nconst MAX_SKILLS = 7\n```\n\n### 3. `AGENT_BUNDLES` (lines 38–94)\n9 agent entries keyed by registered agent ID:\n\n| Agent | Skills (by name) | Lines |\n|-------|-------------------|-------|\n| `hiveminder` | `hivemind-gatekeeping-delegation`, `git-continuity-memory`, `hivemind-atomic-commit` | 39–43 |\n| `hivefiver` | `hivemind-gatekeeping-delegation`, `git-continuity-memory`, `hivemind-atomic-commit` | 45–49 |\n| `hiveq` | `tdd-delegation`, `verification-before-completion`, `test-driven-development` | 51–55 |\n| `hivemaker` | `tdd-delegation`, `clean-code`, `refactor`, `test-driven-development` | 57–62 |\n| `hiveplanner` | `writing-plans`, `breakdown-plan`, `spec-distillation` | 64–68 |\n| `hivexplorer` | `research-delegation`, `context-map`, `hivemind-codemap`, `hivemind-research` | 70–75 |\n| `hiverd` | `research-delegation`, `deep-research`, `hivemind-research` | 77–81 |\n| `hivehealer` | `course-correction-delegation`, `systematic-debugging`, `hivemind-system-debug` | 83–87 |\n| `hitea` | `tdd-delegation`, `qa-test-planner`, `test-driven-development` | 89–93 |\n\n### 4. `PURPOSE_CONDITIONAL` (lines 97–122)\n6 purpose classes:\n\n| Purpose | Skills |\n|---------|--------|\n| `tdd` | `tdd-delegation`, `test-driven-development` |\n| `research` | `research-delegation`, `deep-research` |\n| `planning` | `writing-plans`, `breakdown-plan` |\n| `implementation` | `clean-code`, `refactor` |\n| `course-correction` | `course-correction-delegation`, `systematic-debugging` |\n| `gatekeeping` | `hivemind-gatekeeping-delegation`, `verification-before-completion` |\n\n### 5. `SUBSESSION_ADDITIONS` (lines 125–127)\n- `git-continuity-memory`\n\n### 6. `resolveSkillBundle` function (lines 137–188)\nResolution order:\n1. Shared skills (always-on)\n2. Agent-specific bundle (falls back to `hivefiver` for unknown agents)\n3. Purpose-conditional skills (if `purposeClass` matches)\n4. Sub-session additions (if `sessionState === 'sub-session'`)\n5. Deduplicates via `seen` Set, caps at `MAX_SKILLS` (7)\n\n### 7. `resolveSessionRole` function (lines 212–240)\nReturns `SessionRole` (`orchestrate` | `specialist` | `standalone`):\n- `hiveminder`/`hivefiver` → `orchestrate`\n- `sub-session` state → `specialist`\n- Specialist agents (`hiveq`, `hivemaker`, `hivehealer`, `hitea`) → `specialist`\n- Standalone agents (`hivexplorer`, `hiverd`, `hiveplanner`) → `standalone`\n- Default: `sub-session` → `specialist`, else `orchestrate`\n\n### 8. `renderSessionRoleDirective` function (lines 246–255)\nReturns natural-language directive strings for each `SessionRole`.\n\n### Complete list of all unique skill name strings in the file:\n1. `use-hivemind-delegation`\n2. `hivemind-gatekeeping-delegation`\n3. `git-continuity-memory`\n4. `hivemind-atomic-commit`\n5. `tdd-delegation`\n6. `verification-before-completion`\n7. `test-driven-development`\n8. `clean-code`\n9. `refactor`\n10. `writing-plans`\n11. `breakdown-plan`\n12. `spec-distillation`\n13. `research-delegation`\n14. `context-map`\n15. `hivemind-codemap`\n16. `hivemind-research`\n17. `deep-research`\n18. `course-correction-delegation`\n19. `systematic-debugging`\n20. `hivemind-system-debug`\n21. `qa-test-planner`"
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-25T14:45:50.117Z",
+      "data": {
+        "text": "The complete file has been read. Here is a summary of every key element with exact line references:\n\n## File: `/Users/apple/hivemind-plugin/.worktrees/product-detox/src/plugin/skill-exposure-map.ts` (255 lines)\n\n### 1. `SHARED_SKILLS` (lines 22–27)\nAlways-on skills across all agents:\n- `use-hivemind-delegation`\n\n### 2. `MAX_SKILLS` (line 30)\n```typescript\nconst MAX_SKILLS = 7\n```\n\n### 3. `AGENT_BUNDLES` (lines 38–94)\n9 agent entries keyed by registered agent ID:\n\n| Agent | Skills (by name) | Lin",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-25T14:45:50.117Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=3474"
+    }
+  ]
+}

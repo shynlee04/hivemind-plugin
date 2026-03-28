@@ -29,7 +29,7 @@ Establish the control plane when `.hivemind` is missing or incomplete, then hand
 ## Mandatory Execution Rules
 1. First inspect runtime state with `hivemind_runtime_status`.
 2. Never hand-write `.hivemind/**` files with `bash`, `write`, or ad hoc JSON scaffolding.
-3. To actually run bootstrap, you must call `hivemind_runtime_command` with `command: "hm-init"`.
+3. To actually run bootstrap, you must call `hivemind_hm_init` with `mode: "auto"` (or `"greenfield"` / `"brownfield"` when explicitly directed).
 4. If `profileComplete` is false, you must immediately use the built-in `question` tool wizard before attempting bootstrap.
 5. Do not ask a free-text permission question like "do you want me to run hm-init?" when bootstrap is already required.
 6. Do not let runtime defaults silently fill missing profile groups. Missing intake must be completed explicitly or via the recommended preset groups.
@@ -41,9 +41,8 @@ Establish the control plane when `.hivemind` is missing or incomplete, then hand
    - Stage 2: `expertiseLevel`, `outputStyle`
    - Stage 3: `governanceMode`, `automationLevel`
 3. For Stages 2 and 3, offer "use recommended defaults" as the `guided-onboarding` preset.
-4. After all stages are complete, execute `hivemind_runtime_command` for `hm-init` and include:
-   - explicit profile values collected so far
-   - `presetId: "guided-onboarding"` if any preset group was used
+4. After all stages are complete, execute `hivemind_hm_init` with `mode: "auto"` and include:
+   - `force: true` only when a full re-bootstrap is explicitly requested
    - `intakeEvidence` with:
      - `source: "question-tool"`
      - `questionnaireId: "bootstrap-profile-v1"`

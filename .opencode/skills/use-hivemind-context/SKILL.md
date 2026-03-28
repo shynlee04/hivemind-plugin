@@ -1,43 +1,41 @@
 ---
 name: use-hivemind-context
-description: |
-  The context health domain. Before you trust anything — docs, memory, prior sessions — check it here. Documents are advisory, code is truth. Routes to session health probes and project verification gates.
+description: The context health domain. Before you trust anything — docs, memory, prior sessions — check it here. Documents are advisory, code is truth. Routes to session health probes and project verification gates.
 ---
 
 <!-- LOAD-POSITION
-slot: 2
+slot: domain
 role: domain
-max-stack: 3
 -->
 
 ## Load Position
 
-**Slot: 2 (Domain — context health)**. `use-hivemind` is always loaded first.
+**Layer: Domain — context health**. `use-hivemind` is always loaded first.
 
 | Constraint | Rule |
 |-----------|------|
-| Stack position | Slot 2 of 3 |
+| Position | Domain layer |
 | Load order | After `use-hivemind` |
-| Max active | 3 skills total |
-| Conflict | Cannot co-load with another domain router |
+| Prerequisites | `use-hivemind` (entry router) |
+| Conflict | Cannot co-load with another domain skill for the same concern |
 
 # use-hivemind-context
 
 You're about to trust something — a doc, a memory, a prior session's claim, a test result. Stop. This domain router puts a checkpoint between "I remember" and "I trust." It doesn't do the checking itself. It dispatches to the right specialist based on what kind of doubt you have: session health uncertainty, or project-structural verification.
 
-**Parent:** `use-hivemind` (Slot 1 entry router)
+**Parent:** `use-hivemind` (entry router)
 
 ## When You Need This
 
 | Signal | Route To |
 |--------|----------|
-| Session just resumed after interruption, compaction, or `/clear` | `context-intelligence-entry` (quick mode) |
-| Something feels off — docs don't match code, memory seems stale | `context-intelligence-entry` (rot mode) |
-| Need a full trust breakdown before a major decision | `context-intelligence-entry` (full mode) |
-| Before starting work — baseline project health | `context-entry-verify` (gate-chain or landscape) |
-| Between implementation phases — gate checkpoint | `context-entry-verify` (individual gates) |
-| Validating a completion claim with hard evidence | `context-entry-verify` (gate-chain) |
-| After merges, dependency changes, or long gaps | `context-entry-verify` (landscape) |
+| Session just resumed after interruption, compaction, or `/clear` | `use-hivemind-context` (quick mode) |
+| Something feels off — docs don't match code, memory seems stale | `use-hivemind-context` (rot mode) |
+| Need a full trust breakdown before a major decision | `use-hivemind-context` (full mode) |
+| Before starting work — baseline project health | `use-hivemind-context` (gate-chain or landscape) |
+| Between implementation phases — gate checkpoint | `use-hivemind-context` (individual gates) |
+| Validating a completion claim with hard evidence | `use-hivemind-context` (gate-chain) |
+| After merges, dependency changes, or long gaps | `use-hivemind-context` (landscape) |
 
 ## The 3-Step Trust Check
 
@@ -71,13 +69,13 @@ When DEGRADED or worse, say it out loud: "Context is DEGRADED. Distrusting [spec
 ```
 Input: what's doubted?
   ├── Session health, freshness, prior memory
-  │     → context-intelligence-entry
+  │     → use-hivemind-context
   │       ├── --quick  (fast continuity probe)
   │       ├── --rot    (deterministic PASS/FAIL gate)
   │       └── --full   (deep trust breakdown)
   │
   └── Project state, build, tests, git structure
-        → context-entry-verify
+        → use-hivemind-context
           ├── gate-chain  (fail-fast sequential)
           ├── landscape   (full report, never blocks)
           └── individual  (targeted gate checks)
@@ -85,7 +83,7 @@ Input: what's doubted?
 
 ## Verification Gates (Project Reality)
 
-When `context-entry-verify` is dispatched, these four layers run:
+When `use-hivemind-context` is dispatched for project verification, these four layers run:
 
 | Layer | What It Checks | Gate Type |
 |-------|---------------|-----------|
@@ -104,6 +102,99 @@ Quick checks you can run before dispatching:
 - **Git recency**: `git log --oneline -5` — if the latest commit is days old, session memory is stale
 - **Session state**: Check `.hivemind/activity/sessions/continuity.json` exists and has a recent `updated_at`
 - **Test signal**: Run `npx tsc --noEmit && npm test` — if tests pass but code looks wrong, the test is lying
+
+## Cross-Team Context Awareness
+
+Context rot from other agents is invisible without git probing. Before dispatching, check for cross-team contamination.
+
+<HARD-GATE>
+The orchestrator MUST run these probes before trusting context that touches shared files. Skipping this step means you inherit invisible breakage from other agents.
+</HARD-GATE>
+
+| Probe | Command | Trigger |
+|-------|---------|---------|
+| Uncommitted changes from other agents | `git status` | Before any dispatch to shared files |
+| Recent commits on shared interfaces | `git log --oneline --since="48 hours ago" -- <path>` | Before dispatching to files others may have touched |
+| Branch divergence | `git fetch --dry-run` | Before starting work on a feature branch |
+| Worktree isolation check | `git worktree list` | When multiple agents are active |
+
+**Cross-team drift rules:**
+
+1. **Another agent modified a file you depend on** → your context is at least **SUSPECT**. Cross-check that file's current state before proceeding.
+2. **Shared interfaces changed in the last 48 hours** → read the diff. If types, schemas, or exported APIs changed, your implementation context is **DEGRADED**.
+3. **Multiple worktrees active** → assume concurrent work is happening. Never trust that a file you read 10 minutes ago is still accurate without re-checking.
+4. **Uncommitted changes on files you're about to edit** → stop. Another agent has a lock on that state. Coordinate or rebase before touching.
+
+When cross-team changes are detected, declare it: "Cross-team drift detected on [files]. Reclassifying context to [level]."
+
+## Multi-Source Comparison
+
+When sources disagree, you need a systematic way to resolve conflicts. Never guess — compare and decide.
+
+<HARD-GATE>
+When docs contradict code → code wins. Always. No exceptions. This is the single most important rule in the context health domain.
+</HARD-GATE>
+
+**Resolution hierarchy:**
+
+| Source A | Source B | Winner | Why |
+|----------|----------|--------|-----|
+| Documentation | Code | **Code** | Docs are advisory. Code is truth. |
+| Git history | Session memory | **Git history** | Memory is reconstructed. Git is recorded. |
+| Test output | Implementation | **Read the assertion** | Test may be trivially true (`assert(true)`). Inspect what it actually checks before trusting the pass. |
+| Doc X (recent) | Doc Y (old) | **Doc X** | Prefer the fresher source, but verify both against code. |
+| AGENTS.md instruction | Filesystem | **Filesystem** | If the file doesn't exist, the instruction is stale regardless of what AGENTS.md says. |
+| Build output | README claims | **Build output** | Build output is deterministic. README claims are aspirational. |
+
+**When multiple docs give different answers:**
+
+1. List every source that addresses the claim.
+2. For each source, check if it matches the current code. Discard any that don't.
+3. If remaining sources still disagree, check git history for which one was written after the other.
+4. Quarantine the stale one — mark it as `<!-- STALE: superseded by [source] on [date] -->` if you have write access, or flag it explicitly in your output if you don't.
+5. Never leave contradictions unresolved. If you can't determine which is correct, escalate to the orchestrator with both options and the evidence.
+
+**Test-signal cross-check protocol:**
+
+| Test Signal | Interpretation |
+|-------------|----------------|
+| Passes, code matches intent | Trust the pass |
+| Passes, code looks wrong | **False positive** — read the assertion. The test may encode the wrong behavior. |
+| Fails with setup error | **Noise** — isolate the environment issue from the logic issue |
+| Fails, only on certain runs | **Flaky** — do not use as architectural evidence |
+| Passes but is trivially true | **Nonsensical** — quarantine the test |
+
+## Context Preservation Across Long Sessions
+
+Long sessions rot faster than short ones. Context decays with every compaction, every delegation, every phase transition. Manage it explicitly.
+
+<HARD-GATE>
+Emits continuity checkpoints at EVERY phase transition. No exceptions. A phase transition without a checkpoint is a context loss event.
+</HARD-GATE>
+
+**Continuity checkpoint protocol:**
+
+1. **At phase transition** → emit checkpoint to `{project}/.hivemind/activity/sessions/continuity.json`
+2. **Carry-forward compression** → ≤5 items:
+   - Key findings (what you learned)
+   - Blocked routes (what didn't work and why)
+   - Recommended next action (what to do next)
+   - Output paths (where artifacts live)
+   - Active distrust (what's still SUSPECT or worse)
+3. **After compaction** → reload `continuity.json` and verify state matches expectations
+4. **After delegation** → include distrust context in delegation packet so child agents don't repeat false trust
+
+**Staleness guard:**
+
+- If context grows stale during a long session → **delegate a fresh probe** instead of trusting accumulated context
+- The orchestrator must NOT accumulate implementation detail — that pollutes routing context
+- If you've been working for >30 minutes without a checkpoint, emit one now
+
+**Compaction awareness:**
+
+- After `session.compacting` fires, your session context has been rewritten
+- The compaction prompt may have lost nuance — re-verify critical claims after compaction
+- Continuity checkpoints survive compaction because they're written to disk, not session memory
 
 ## Distrust Protocol
 
@@ -125,7 +216,7 @@ When the orchestrator's session is already heavy:
 ## Handoff Paths
 
 ```
-.hivemind/activity/state/context-check.json    ← runtime cache (not official boundary)
+.hivemind/activity/context/check-cache.json    ← runtime cache (not official boundary)
 .hivemind/activity/codescan/                   ← scan outputs per pass
 .hivemind/activity/sessions/continuity.json    ← session continuity state
 ```
@@ -137,7 +228,7 @@ Paths are relative to project root. Resolve via `pathing/active-paths.json`.
 After any context check completes:
 
 - If issues were found, emit a continuity checkpoint noting what was verified and what remains uncertain
-- Store it in `{project}/.hivemind/activity/sessions/` or `{project}/.hivemind/activity/state/`
+- Store it in `{project}/.hivemind/activity/context/` or `{project}/.hivemind/activity/sessions/`
 - If delegation follows, include the distrust context in the delegation packet so child agents don't repeat false trust
 - Compress to ≤5 key findings, blocked routes, recommended next action, output paths
 
@@ -145,9 +236,9 @@ After any context check completes:
 
 | Parent | This Skill | Depth Partners |
 |--------|-----------|----------------|
-| `use-hivemind` | `use-hivemind-context` | `context-intelligence-entry`, `context-entry-verify` |
+| `use-hivemind` | `use-hivemind-context` | `hivemind-gatekeeping` |
 
-This router consolidates: `context-intelligence-entry` (session health, rot detection, trust scoring) and `context-entry-verify` (project verification gates, build/test/git checks). Domain-specific scripts and references remain in their respective `scripts/` and `references/` directories.
+This router consolidates the former `context-intelligence-entry` (session health, rot detection, trust scoring) and `context-entry-verify` (project verification gates, build/test/git checks) into unified `use-hivemind-context` routing, alongside `hivemind-gatekeeping` (iterative verification loops, checkpoint gates, carry-forward compression). Domain-specific scripts and references remain in their respective `scripts/` and `references/` directories.
 
 ## Anti-Patterns
 
@@ -162,3 +253,29 @@ This router consolidates: `context-intelligence-entry` (session health, rot dete
 **You skip the distrust declaration and just keep working.** If context is DEGRADED and you don't say so, the next agent inherits your false confidence. Declare the level. Every time.
 
 **You run full analysis when quick mode would answer the question.** Full analysis is expensive. If you just need to know "is this session fresh?", quick mode is the right tool. Don't bring a spectrometer to check if the light is on.
+
+**Trusting cross-team state without checking git.** Other agents are working. Shared files may have changed since you last read them. Run `git status` before dispatching to shared paths.
+
+**Single-source verification.** Trusting one document without cross-checking against code or git is asking for stale context. Compare at least two sources before committing to a decision.
+
+**Accumulating implementation context.** The orchestrator reads code files, pollutes routing context. Implementation detail belongs in subagent sessions, not the orchestrator's mental model.
+
+**Skipping continuity checkpoint.** Phase transition without writing state to disk means the next agent starts blind. Emit the checkpoint. Every time.
+
+## Bundled Resources
+
+| Resource | Path | Purpose |
+|----------|------|---------|
+| Context Distrust Protocol | `references/context-distrust-protocol.md` | When and how to distrust context sources |
+| Context Rot Taxonomy | `references/context-rot-taxonomy.md` | Classification of context degradation types |
+| Delegation Scope | `references/delegation-scope.md` | Scope boundaries for context delegation |
+| Entry State Matrix | `references/entry-state-matrix.md` | Session state detection and handling matrix |
+| False Signal Detection | `references/false-signal-detection.md` | Identifying false positives in context assessment |
+| Gate Chain Order | `references/gate-chain-order.md` | Order of context verification gates |
+| Gate Definitions | `references/gate-definitions.md` | Formal definitions of each verification gate |
+| Platform Surface | `references/platform-surface.md` | Platform-specific context surfaces |
+| Trust Matrix | `references/trust-matrix.md` | Trust levels for different context sources |
+| Output Schema | `schemas/output.schema.ts` | TypeScript schema for context assessment output |
+| Context Harness Init | `scripts/context-harness-init.cjs` | Context harness initialization script |
+| HM Verify | `scripts/hm-verify.cjs` | Context verification execution script |
+| Direct Invocation | `tests/direct-invocation.md` | Test scenario for direct skill invocation |

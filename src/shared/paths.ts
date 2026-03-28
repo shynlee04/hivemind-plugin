@@ -11,16 +11,9 @@ export const STATE_DIR = 'state'
 export const SESSIONS_DIR = 'sessions'
 export const GRAPH_DIR = 'graph'
 export const CONFIG_DIR = 'config'
-export const ARTIFACTS_DIR = 'artifacts'
-export const CHECKPOINTS_DIR = 'checkpoints'
 
 // State files
-export const STATE_FILES = {
-  hiveneuron: 'hiveneuron.json',
-  hivebrain: 'hivebrain.md',
-  brain: 'brain.json',
-  anchors: 'anchors.json',
-} as const
+export const STATE_FILES = {} as const
 
 // Path builders
 export function getHivemindPath(projectRoot: string): string {
@@ -68,7 +61,6 @@ export function getEffectivePaths(projectRoot: string) {
   const sessionsDir = path.join(root, SESSIONS_DIR)
   const sessionInspectionDir = path.join(root, 'session-inspection')
   const projectPlanningDir = path.join(root, 'project', 'planning')
-  const handoffsDir = path.join(root, 'handoffs')
   const errorLogDir = path.join(root, 'error-log')
 
   return {
@@ -79,7 +71,6 @@ export function getEffectivePaths(projectRoot: string) {
     sessionsDir,
     sessionInspectionDir,
     projectPlanningDir,
-    handoffsDir,
     errorLogDir,
     runtimeAttachmentSettings: path.join(configDir, 'runtime-attachment.json'),
     workflowTasksState: path.join(stateDir, 'tasks.json'),

@@ -1,6 +1,8 @@
 ---
 description: "Implementation specialist for product work. Executes scoped code changes, file creation, and modification. Terminal executor — implements what architect designs and hiveq verifies."
 mode: subagent
+model: zai-coding-plan/glm-5.1
+reasoningEffort: high
 tools:
   write: true
   edit: true
@@ -17,9 +19,8 @@ permission:
   skill:
     "use-hivemind": allow
     "use-hivemind-delegation": allow
-    "agent-role-boundary": allow
-    "use-hivemind-context-integrity": allow
-    "tdd-delegation": allow
+    "use-hivemind-context": allow
+    "use-hivemind-tdd": allow
     "hivemind-atomic-commit": allow
 ---
 ## Role Priming
@@ -109,9 +110,8 @@ Report files modified, verification results, and any issues encountered.
 | Skill                       | When to Load                   | Purpose                             |
 | --------------------------- | ------------------------------ | ----------------------------------- |
 | `use-hivemind-delegation` | When returning to orchestrator | Return contract structure           |
-| `tdd-delegation`          | When packet specifies TDD      | Red-green-refactor loop enforcement |
-| `clean-code`              | Always                         | Clean code principles               |
-| `refactor`                | When refactoring existing code | Surgical refactoring patterns       |
+| `use-hivemind-tdd`        | When packet specifies TDD      | Red-green-refactor loop enforcement |
+| `hivemind-refactor`       | When refactoring existing code | Surgical refactoring patterns       |
 
 ---
 
@@ -333,11 +333,11 @@ You MUST load these skills before writing ANY code. Code written without TDD enf
 
 | Skill | Purpose | When |
 |-------|---------|------|
-| `tdd-delegation` | Enforce red→green→refactor cycle with test gates | When packet specifies TDD OR when building new features |
+| `use-hivemind-tdd` | Enforce red→green→refactor cycle with test gates | When packet specifies TDD OR when building new features |
 | `hivemind-atomic-commit` | Classify changes, run pre-commit gates, produce typed commits | After EVERY successful implementation — before returning |
-| `use-hivemind-context-integrity` | Verify you're working on current context, not stale state | When context feels uncertain, after reading many files |
+| `use-hivemind-context` | Verify you're working on current context, not stale state | When context feels uncertain, after reading many files |
 
-**Stack budget:** Max 3 active. TDD keeps you honest, atomic-commit keeps you traceable, context-integrity keeps you grounded.
+**Stack budget:** Max 3 active. TDD keeps you honest, atomic-commit keeps you traceable, context keeps you grounded.
 
 ---
 

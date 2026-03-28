@@ -1,0 +1,61 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d02fc4d6ffektPNwZ5KW4WcVD",
+  "semanticSessionId": "ses_2026-03-27T220237_implementation_unknown_ses_2d02fc4d6ffektPNwZ5KW4WcVD",
+  "sdkSessionId": "ses_2d02fc4d6ffektPNwZ5KW4WcVD",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-27T15:02:37.659Z",
+  "updated": "2026-03-27T15:03:35.028Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-27T15:02:37.630Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Now I'll create the orchestrator mandate document."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-27T15:02:37.630Z",
+      "data": {
+        "text": "Now I'll create the orchestrator mandate document.",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T15:03:35.012Z",
+      "data": {
+        "sessionId": "ses_2d02fc4d6ffektPNwZ5KW4WcVD"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-27T15:02:37.630Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=50"
+    }
+  ]
+}

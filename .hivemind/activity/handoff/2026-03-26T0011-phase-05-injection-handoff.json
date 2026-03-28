@@ -1,0 +1,74 @@
+{
+  "_meta": {
+    "created_at": "2026-03-26T00:11:00+07:00",
+    "updated_at": "2026-03-26T00:11:00+07:00",
+    "phase_id": "phase-05-skill-injection-refactor",
+    "activity_type": "refactor",
+    "tdd_enforced": true
+  },
+  "status": "complete",
+  "slice_id": "phase-05-skill-injection-refactor",
+  "files_created": [
+    "src/shared/skill-injection-loader.ts",
+    "src/shared/skill-injection-loader.test.ts"
+  ],
+  "files_modified": [
+    "src/plugin/skill-exposure-map.ts",
+    "src/schema-kernel/skill-injection-records.ts",
+    "src/schema-kernel/schema-records.test.ts"
+  ],
+  "hardcoded_names_removed": 5,
+  "hardcoded_constants_removed": [
+    "SHARED_SKILLS",
+    "AGENT_BUNDLES",
+    "PURPOSE_CONDITIONAL",
+    "SUBSESSION_ADDITIONS",
+    "MAX_SKILLS"
+  ],
+  "loader_connects_registry": true,
+  "tdd_cycle": {
+    "red": {
+      "status": "complete",
+      "tests_written": 7,
+      "test_files": ["src/shared/skill-injection-loader.test.ts"],
+      "initial_result": "FAIL (ERR_MODULE_NOT_FOUND)",
+      "verified_at": "2026-03-26T00:11:00+07:00"
+    },
+    "green": {
+      "status": "complete",
+      "tests_passing": 7,
+      "tests_failing": 0,
+      "loader_tests_pass": true,
+      "schema_tests_pass": true,
+      "type_check_clean": true,
+      "build_succeeds": true,
+      "verified_at": "2026-03-26T00:11:00+07:00"
+    },
+    "refactor": {
+      "status": "complete",
+      "hardcoded_removed": true,
+      "signature_preserved": true,
+      "tests_still_passing": true,
+      "verified_at": "2026-03-26T00:11:00+07:00"
+    }
+  },
+  "verification": {
+    "npx_tsc_noemit": "PASS (0 errors)",
+    "loader_tests": "PASS (7/7)",
+    "schema_tests": "PASS (34/34)",
+    "all_relevant_tests": "PASS (66/66)",
+    "npm_run_build": "PASS",
+    "npm_test_full": "SKIPPED (pre-existing hooks-boundary lint failures unrelated to this phase)"
+  },
+  "corrections_applied": [
+    "Correction 1: No .opencode/ overwrites — not applicable to this phase (loader infrastructure only)",
+    "Correction 2: max_skills cap removed — schema changed to nullable().default(null), no hard limit"
+  ],
+  "blocked_routes": [],
+  "recommended_next_action": "Phase 06+: Create config/skill-injection.json and wire initSkillInjection() call in opencode-plugin.ts",
+  "open_items": [
+    "initSkillInjection() call not wired in opencode-plugin.ts (out of scope per delegation packet)",
+    "config/skill-injection.json not created (Phase 06+ hivefiver work)",
+    "hooks-boundary lint failures are pre-existing and unrelated to this phase"
+  ]
+}

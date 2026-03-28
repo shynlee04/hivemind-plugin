@@ -1,4 +1,5 @@
-import { readdirSync, statSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { homedir } from 'node:os'
 import { join } from 'node:path'
 
 import YAML from 'yaml'
@@ -84,27 +85,32 @@ function readMarkdownFiles(baseDir: string, subDir: string): Map<string, string>
   return files
 }
 
-function discoverSkills(packageRoot: string, excludedSkillIds: string[] = []): DiscoveredSkill[] {
-  const skillsRoot = join(packageRoot, 'skills')
-  const discovered: DiscoveredSkill[]=[]
+function discoverSkills(scanRoots: string[], excludedSkillIds: string[] = []): DiscoveredSkill[] {
+  const discovered: DiscoveredSkill[] = []
   const excludedSet = new Set(excludedSkillIds)
+  const seen = new Set<string>()
 
-  try {
-    const entries = readdirSync(skillsRoot, { withFileTypes: true })
-    for (const entry of entries) {
-      if (entry.isDirectory() && !entry.name.startsWith('_') && !excludedSet.has(entry.name)) {
-        const skillDir = join(skillsRoot, entry.name)
-        const skillFile = join(skillDir, 'SKILL.md')
-        try {
-          statSync(skillFile)
-          discovered.push({ skillDir, skillId: entry.name })
-        } catch {
-          // SKILL.md doesn't exist, skip
-        }
+  for (const root of scanRoots) {
+    if (!existsSync(root)) continue
+
+    try {
+      const entries = readdirSync(root, { withFileTypes: true })
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue
+        if (entry.name.startsWith('_')) continue
+        if (excludedSet.has(entry.name)) continue
+        if (seen.has(entry.name)) continue
+
+        const skillDir = join(root, entry.name)
+        const skillMd = join(skillDir, 'SKILL.md')
+        if (!existsSync(skillMd)) continue
+
+        seen.add(entry.name)
+        discovered.push({ skillDir, skillId: entry.name })
       }
+    } catch {
+      // directory read failed, skip this root
     }
-  } catch {
-    // skills directory doesn't exist
   }
 
   return discovered
@@ -132,6 +138,10 @@ export function createOpencodeSkillRegistry(
   packageRoot: string,
   excludedSkillIds: string[] = [],
 ): OpencodeSkillRegistryEntry[] {
-  const skills = discoverSkills(packageRoot, excludedSkillIds)
+  const scanRoots = [
+    join(packageRoot, '.opencode', 'skills'),
+    join(homedir(), '.config', 'opencode', 'skills'),
+  ]
+  const skills = discoverSkills(scanRoots, excludedSkillIds)
   return skills.map((skill) => buildRegistryEntry(skill))
 }

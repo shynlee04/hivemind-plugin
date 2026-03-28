@@ -205,4 +205,4 @@ Context7 (docs claim) → Repomix (verify in code) → Confirm or flag discrepan
 Repomix-A + Repomix-B (parallel) → Context7-A + Context7-B (parallel) → Tavily (articles) → Synthesis
 ```
 
-See `hivemind-research-tools/SKILL.md` for full chaining protocol details.
+See `use-hivemind-research/SKILL.md` for full chaining protocol details.

@@ -1,0 +1,52 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2d9dfcf93ffeoAyHOSxxVzT5l9",
+  "semanticSessionId": "ses_2026-03-26T010142_implementation_unknown_ses_2d9dfcf93ffeoAyHOSxxVzT5l9",
+  "sdkSessionId": "ses_2d9dfcf93ffeoAyHOSxxVzT5l9",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-25T18:01:42.624Z",
+  "updated": "2026-03-25T18:01:42.631Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-25T18:01:42.622Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Need to add `default_agent` to test fixtures in skill-injection-loader.test.ts:"
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-25T18:01:42.622Z",
+      "data": {
+        "text": "Need to add `default_agent` to test fixtures in skill-injection-loader.test.ts:",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-25T18:01:42.622Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=79"
+    }
+  ]
+}

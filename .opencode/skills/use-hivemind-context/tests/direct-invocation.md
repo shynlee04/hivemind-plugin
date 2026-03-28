@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Verify that the isolated `context-intelligence-entry` package behaves as a standalone package and that its three advertised modes are real.
+Verify that the isolated `use-hivemind-context` package behaves as a standalone package and that its three advertised modes are real.
 
 ## Commands
 
-Run from `.developing-skills/refactored-skills/context-intelligence-entry/` or from the repo root with an explicit path.
+Run from `.developing-skills/refactored-skills/use-hivemind-context/` or from the repo root with an explicit path.
 
 ```bash
 node scripts/context-harness-init.cjs --quick --json

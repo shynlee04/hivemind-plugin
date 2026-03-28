@@ -1,0 +1,291 @@
+{
+  "_meta": {
+    "created_at": "2026-03-26T18:36:55+07:00",
+    "updated_at": "2026-03-26T18:36:55+07:00",
+    "plan_id": "plan-2026-03-26-remediation",
+    "source_spec": "delegation-packet-remediation-plan",
+    "planner_agent": "hiveplanner",
+    "mode": "planning"
+  },
+  "status": "validated",
+  "validation": {
+    "completeness": {
+      "functional": true,
+      "non_functional": true,
+      "integration": true,
+      "risk": true,
+      "operations": true
+    },
+    "feasibility": {
+      "target_exists": true,
+      "evidence": "hivexplorer confirmed all target files exist. See delegation return ses_2d610bfd7ffe0O8eYCyAAy2gf6."
+    },
+    "constraints": {
+      "resource_limits": "Minimal safe change — no scope creep beyond 3 verified problems",
+      "timeline": "Problem B blocked on architect decision"
+    },
+    "ambiguity_residual": [
+      {
+        "item": "Problem B design decision",
+        "impact": "HIGH",
+        "status": "blocked",
+        "owner": "architect",
+        "note": "discoverSkills() scans wrong path. Architect must decide: fix path to skills/skills/*, or restructure directory, or add multi-path scan."
+      }
+    ]
+  },
+  "dependency_graph": {
+    "critical_path": ["01-fix-a", "02-fix-b", "04-integration"],
+    "parallel_waves": [
+      ["01-fix-a", "03-fix-c"],
+      ["02-fix-b"]
+    ],
+    "edges": [
+      { "from": "02-fix-b", "to": "01-fix-a", "type": "soft-dependency", "reason": "Both must complete before integration test" },
+      { "from": "04-integration", "to": "02-fix-b", "type": "hard-dependency", "reason": "Integration test requires A + B both working" },
+      { "from": "04-integration", "to": "01-fix-a", "type": "hard-dependency", "reason": "Integration test requires A + B both working" },
+      { "from": "02-fix-b", "to": "architect-decision", "type": "blocked", "reason": "B fix depends on architect design decision for scan path strategy" }
+    ]
+  },
+  "phases": [
+    {
+      "phase_id": "01-fix-a",
+      "title": "Wire initSkillInjection into plugin init",
+      "problem": "A (CRITICAL)",
+      "concerns": ["write", "verify"],
+      "files": ["src/plugin/opencode-plugin.ts"],
+      "dependencies": [],
+      "parallel_safe": true,
+      "parallel_with": ["03-fix-c"],
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test",
+      "blocked": false,
+      "slices": [
+        {
+          "slice_id": "01a-test-init-skill-injection",
+          "order": 1,
+          "concern": "verify",
+          "target_agent": "hitea",
+          "authority_surfaces": ["plugin"],
+          "in_scope": ["tests/plugin/skill-injection.test.ts"],
+          "out_of_scope": ["src/shared/**", "src/tools/**"],
+          "description": "Write failing test that asserts initSkillInjection is called during plugin assembly",
+          "depends_on": [],
+          "gate": {
+            "command": "npx tsx --test tests/plugin/skill-injection.test.ts",
+            "expected_pass": false
+          },
+          "tdd_phase": "red",
+          "evidence_required": ["test_file_exists", "test_fails_with_expected_error"],
+          "estimated_complexity": "low"
+        },
+        {
+          "slice_id": "01b-wire-init-skill-injection",
+          "order": 2,
+          "concern": "write",
+          "target_agent": "hivemaker",
+          "authority_surfaces": ["plugin"],
+          "in_scope": ["src/plugin/opencode-plugin.ts"],
+          "out_of_scope": ["src/shared/**", "src/tools/**"],
+          "description": "Add import of initSkillInjection from skill-exposure-map.ts and call it in plugin init with packageRoot",
+          "depends_on": ["01a-test-init-skill-injection"],
+          "gate": {
+            "command": "npx tsc --noEmit && npx tsx --test tests/plugin/skill-injection.test.ts",
+            "expected_pass": true
+          },
+          "tdd_phase": "green",
+          "evidence_required": ["import_added", "function_called", "test_passes", "typecheck_clean"],
+          "estimated_complexity": "low",
+          "implementation_hints": {
+            "import": "import { resolveDefaultAgent, initSkillInjection } from './skill-exposure-map.js'",
+            "call_location": "Inside plugin init/assembly, after plugin() returns, call initSkillInjection(packageRoot)",
+            "packageRoot": "Use context.directory or resolved package root from plugin setup"
+          }
+        },
+        {
+          "slice_id": "01c-verify-01a-refactor",
+          "order": 3,
+          "concern": "verify",
+          "target_agent": "code-skeptic",
+          "authority_surfaces": ["plugin"],
+          "in_scope": ["src/plugin/opencode-plugin.ts", "tests/plugin/skill-injection.test.ts"],
+          "out_of_scope": ["src/shared/**"],
+          "description": "Cross-verify: confirm initSkillInjection is called exactly once, cachedConfig is populated, resolveSkillBundle returns real data",
+          "depends_on": ["01b-wire-init-skill-injection"],
+          "gate": {
+            "command": "npx tsc --noEmit && npm test",
+            "expected_pass": true
+          },
+          "tdd_phase": "refactor",
+          "evidence_required": ["single_call_confirmed", "cached_config_populated", "no_side_effects"],
+          "estimated_complexity": "low"
+        }
+      ]
+    },
+    {
+      "phase_id": "02-fix-b",
+      "title": "Fix skill registry scan path",
+      "problem": "B (HIGH)",
+      "concerns": ["write", "verify"],
+      "files": ["src/shared/opencode-skill-registry.ts"],
+      "dependencies": ["01-fix-a"],
+      "parallel_safe": false,
+      "status": "blocked",
+      "blocked_reason": "Awaiting architect design decision on scan path strategy",
+      "gate": "npx tsc --noEmit && npm test",
+      "slices": [
+        {
+          "slice_id": "02a-test-scan-path",
+          "order": 1,
+          "concern": "verify",
+          "target_agent": "hitea",
+          "authority_surfaces": ["shared"],
+          "in_scope": ["tests/shared/skill-registry.test.ts"],
+          "out_of_scope": ["src/plugin/**", "src/tools/**"],
+          "description": "Write failing test that asserts discoverSkills() finds skills at the correct path (design pending from architect)",
+          "depends_on": ["01c-verify-01a-refactor", "architect-decision"],
+          "gate": {
+            "command": "npx tsx --test tests/shared/skill-registry.test.ts",
+            "expected_pass": false
+          },
+          "tdd_phase": "red",
+          "evidence_required": ["test_file_exists", "test_fails_with_path_error"],
+          "estimated_complexity": "medium"
+        },
+        {
+          "slice_id": "02b-fix-scan-path",
+          "order": 2,
+          "concern": "write",
+          "target_agent": "hivemaker",
+          "authority_surfaces": ["shared"],
+          "in_scope": ["src/shared/opencode-skill-registry.ts"],
+          "out_of_scope": ["src/plugin/**", "src/tools/**"],
+          "description": "Update discoverSkills() to scan correct paths per architect decision. Options: (a) scan skills/skills/*, (b) scan .opencode/skills/*, (c) multi-path scan with fallback",
+          "depends_on": ["02a-test-scan-path"],
+          "gate": {
+            "command": "npx tsc --noEmit && npx tsx --test tests/shared/skill-registry.test.ts",
+            "expected_pass": true
+          },
+          "tdd_phase": "green",
+          "evidence_required": ["path_fixed", "skills_discovered", "test_passes", "typecheck_clean"],
+          "estimated_complexity": "medium"
+        },
+        {
+          "slice_id": "02c-verify-02b-refactor",
+          "order": 3,
+          "concern": "verify",
+          "target_agent": "code-skeptic",
+          "authority_surfaces": ["shared"],
+          "in_scope": ["src/shared/opencode-skill-registry.ts", "tests/shared/skill-registry.test.ts"],
+          "out_of_scope": ["src/plugin/**"],
+          "description": "Cross-verify: confirm discoverSkills() finds skills at correct paths, no regressions to excluded dirs, _ prefix filter still works",
+          "depends_on": ["02b-fix-scan-path"],
+          "gate": {
+            "command": "npx tsc --noEmit && npm test",
+            "expected_pass": true
+          },
+          "tdd_phase": "refactor",
+          "evidence_required": ["correct_path_scanned", "deprecated_excluded", "no_regressions"],
+          "estimated_complexity": "low"
+        }
+      ]
+    },
+    {
+      "phase_id": "03-fix-c",
+      "title": "Update stale loop checkpoint",
+      "problem": "C (LOW)",
+      "concerns": ["write"],
+      "files": [".hivemind/activity/delegation/hivefiver-refactor-loop-checkpoint.json"],
+      "dependencies": [],
+      "parallel_safe": true,
+      "parallel_with": ["01-fix-a"],
+      "status": "pending",
+      "gate": "json_valid",
+      "slices": [
+        {
+          "slice_id": "03a-update-checkpoint",
+          "order": 1,
+          "concern": "write",
+          "target_agent": "hivemaker",
+          "authority_surfaces": ["config"],
+          "in_scope": [".hivemind/activity/delegation/hivefiver-refactor-loop-checkpoint.json"],
+          "out_of_scope": ["src/**"],
+          "description": "Update current_iteration to 10, phases_completed to 10, and mark all completed phases with status complete. Update coverage_status and carry_forward.",
+          "depends_on": [],
+          "gate": {
+            "command": "cat .hivemind/activity/delegation/hivefiver-refactor-loop-checkpoint.json | python3 -m json.tool",
+            "expected_pass": true
+          },
+          "tdd_phase": "green",
+          "evidence_required": ["json_valid", "phases_count_10", "iteration_10"],
+          "estimated_complexity": "low"
+        }
+      ]
+    },
+    {
+      "phase_id": "04-integration",
+      "title": "Integration verification",
+      "problem": "cross-cutting",
+      "concerns": ["verify"],
+      "files": ["src/plugin/opencode-plugin.ts", "src/shared/opencode-skill-registry.ts"],
+      "dependencies": ["01-fix-a", "02-fix-b"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test && npm run build",
+      "slices": [
+        {
+          "slice_id": "04a-integration-test",
+          "order": 1,
+          "concern": "verify",
+          "target_agent": "hiveq",
+          "authority_surfaces": ["plugin", "shared"],
+          "in_scope": ["src/plugin/opencode-plugin.ts", "src/shared/opencode-skill-registry.ts", "tests/"],
+          "out_of_scope": [],
+          "description": "Full integration test: plugin init calls initSkillInjection, skill registry discovers skills at correct path, end-to-end flow works",
+          "depends_on": ["01c-verify-01a-refactor", "02c-verify-02b-refactor"],
+          "gate": {
+            "command": "npx tsc --noEmit && npm test && npm run build",
+            "expected_pass": true
+          },
+          "tdd_phase": "verify",
+          "evidence_required": ["typecheck_clean", "all_tests_pass", "build_succeeds", "skills_discovered_end_to_end"],
+          "estimated_complexity": "medium"
+        }
+      ]
+    }
+  ],
+  "architect_decisions_needed": [
+    {
+      "decision": "Skill registry scan path strategy",
+      "context": "discoverSkills() scans {packageRoot}/skills/ which has no SKILL.md files. Actual skills live at skills/skills/{name}/SKILL.md (authoring) and .opencode/skills/{name}/SKILL.md (runtime). OpenCode official paths: .opencode/skills/ + ~/.config/opencode/skills/",
+      "options": [
+        "A: Fix path to skills/skills/* (simplest, authoring path)",
+        "B: Scan .opencode/skills/* (runtime path, OpenCode official)",
+        "C: Multi-path scan with fallback (skills/skills/* → .opencode/skills/* → ~/.config/opencode/skills/*)",
+        "D: Reconstruct directory to skills/{name}/SKILL.md (cleanest but risks breaking other references)"
+      ],
+      "urgency": "before-02-fix-b",
+      "blocks": ["02-fix-b"]
+    }
+  ],
+  "risks": [
+    {
+      "risk": "Architect decision on Problem B is delayed",
+      "probability": "medium",
+      "impact": "high",
+      "mitigation": "Phase 01 and 03 proceed independently. B is the only blocker for integration. If architect delays >24h, escalate to user."
+    },
+    {
+      "risk": "initSkillInjection call site location unclear in plugin assembly",
+      "probability": "low",
+      "impact": "medium",
+      "mitigation": "hivexplorer confirmed the function signature: initSkillInjection(packageRoot: string). Find the plugin init entry point and call after packageRoot is resolved."
+    },
+    {
+      "risk": "Checkpoint update (Problem C) is trivial but could be wrong if actual phase list is unknown",
+      "probability": "low",
+      "impact": "low",
+      "mitigation": "hivexplorer confirmed checkpoint has 11 max_iterations and 3 completed phases. Actual completion state must be verified before writing."
+    }
+  ]
+}

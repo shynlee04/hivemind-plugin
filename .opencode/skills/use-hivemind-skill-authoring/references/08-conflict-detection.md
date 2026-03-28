@@ -105,7 +105,7 @@ IF brainstorm_signal → load context-intelligence (P1)
 
 ```
 context-intelligence (P1) — always loaded
-    ├── hivemind-skill-writer (companion) — if creating skills
+    ├── use-hivemind-skill-authoring (companion) — if creating skills
     ├── domain-specific P2 — if domain detected
     └── Specialist P3 — only if justified
 ```
@@ -181,7 +181,7 @@ Every skill operation must integrate with context-intelligence entry checks:
 |-------|-------------------|
 | Entry state | Session state recognition |
 | Trust threshold | Minimum trust score |
-| Stack budget | Max 3 skills per entry |
+| Stack budget | Dynamic, task-driven |
 | Authority conflict | Same-level disagreement |
 | Overlap detection | Cross-pack matrix |
 
@@ -196,7 +196,7 @@ Every skill operation must integrate with context-intelligence entry checks:
 | Duplicate triggers | Multiple skills fire on same prompt | Consolidate or differentiate |
 | Domain confusion | Skills claim same domain | Define clear boundaries |
 | Authority pollution | Old/stale authorities treated as truth | Freshness validation |
-| Stack explosion | >3 skills loaded at entry | Stack budget enforcement |
+| Stack explosion | Skills loaded without prerequisites | Prerequisite chain enforcement |
 
 ### Brainstorming Anti-Patterns
 

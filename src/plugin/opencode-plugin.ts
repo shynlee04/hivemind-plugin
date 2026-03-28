@@ -6,6 +6,9 @@
  */
 
 import { type Plugin } from '@opencode-ai/plugin'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { findSlashCommandBundle } from '../commands/slash-command/index.js'
 import { initSdkContext, resetSdkContext } from '../hooks/sdk-context.js'
@@ -26,7 +29,11 @@ import {
 import { createHivemindTaskTool as createTaskTool } from '../tools/task/index.js'
 import { createHivemindTrajectoryTool as createTrajectoryTool } from '../tools/trajectory/index.js'
 import { createHivemindJournalTool } from '../tools/hivemind-journal.js'
+import { createHivemindHmInitTool } from '../tools/hivefiver-init/index.js'
+import { createHivemindHmDoctorTool } from '../tools/hivefiver-doctor/index.js'
+import { createHivemindHmSettingTool } from '../tools/hivefiver-setting/index.js'
 import { renderToolPrecedence } from './context-renderer.js'
+import { resolveDefaultAgent, initSkillInjection } from './skill-exposure-map.js'
 import { createTurnSnapshotLoader } from './runtime-snapshot.js'
 import { createSyntheticPart } from './synthetic-parts.js'
 import { createMessagesTransformHandler } from './messages-transform-adapter.js'
@@ -40,6 +47,41 @@ import {
 } from '../hooks/index.js'
 
 /**
+ * Resolve the package root from the current module location.
+ *
+ * At runtime the compiled plugin lives at `dist/plugin/opencode-plugin.js`.
+ * The canonical agent sources sit at `agents/*.deprecated.md` relative to package root.
+ */
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const packageRoot = join(__dirname, '..', '..')
+
+/**
+ * Ensure `.opencode/agents/hivefiver.md` exists on first run.
+ *
+ * When HiveMind is installed fresh, the projected agent file is missing.
+ * `hm-init` requires `hivefiver`, so we auto-create it from the bundled
+ * canonical source before any tool can fail on the missing file.
+ *
+ * - Never overwrites an existing projection (user may have customized it).
+ * - Silently skips if the bundled source is unavailable (e.g. unusual install layout).
+ *
+ * @param projectRoot - The consumer project root (typically `input.directory`)
+ */
+function ensureAgentProjection(projectRoot: string): void {
+  const agentDir = join(projectRoot, '.opencode', 'agents')
+  const targetPath = join(agentDir, 'hivefiver.md')
+
+  if (existsSync(targetPath)) return // user has it already — don't touch
+
+  const sourcePath = join(packageRoot, 'agents', 'hivefiver.deprecated.md')
+  if (!existsSync(sourcePath)) return // bundled source missing — skip gracefully
+
+  mkdirSync(agentDir, { recursive: true })
+  const content = readFileSync(sourcePath, 'utf-8')
+  writeFileSync(targetPath, content, 'utf-8')
+}
+
+/**
  * Real OpenCode plugin entry for the revamp lane.
  *
  * Assembly-only: imports hooks and tools, registers them, exports Plugin.
@@ -47,6 +89,8 @@ import {
  */
 export const HiveMindPlugin: Plugin = async (input) => {
   const directory = input.directory
+  ensureAgentProjection(directory)
+  initSkillInjection(directory)
   initSdkContext(input)
   const eventHandler = createEventHandler(directory)
   const turnSnapshot = createTurnSnapshotLoader(directory)
@@ -85,6 +129,9 @@ export const HiveMindPlugin: Plugin = async (input) => {
       hivemind_trajectory: createTrajectoryTool(directory),
       hivemind_handoff: createHivemindHandoffTool(directory),
       hivemind_journal: createHivemindJournalTool(directory),
+      hivemind_hm_init: createHivemindHmInitTool(directory),
+      hivemind_hm_doctor: createHivemindHmDoctorTool(directory),
+      hivemind_hm_setting: createHivemindHmSettingTool(directory),
     },
     'chat.message': async (_messageInput, _output) => {
       turnSnapshot.resetTurnSnapshot()
@@ -199,7 +246,7 @@ export const HiveMindPlugin: Plugin = async (input) => {
         sessionState: snapshot.entryState,
         trajectory: snapshot.trajectoryId ?? 'none',
         workflow: snapshot.workflowId ?? 'none',
-        agent: snapshot.preferredUserName ?? 'hivefiver',
+        agent: snapshot.preferredUserName ?? resolveDefaultAgent(),
         injection: injection ? {
           purposeClass: injection.purposeClass,
           sessionState: injection.sessionState,

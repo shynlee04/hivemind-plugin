@@ -1,0 +1,52 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2da05383bffeTDK3GfaZMML7H6",
+  "semanticSessionId": "ses_2026-03-26T001941_implementation_unknown_ses_2da05383bffeTDK3GfaZMML7H6",
+  "sdkSessionId": "ses_2da05383bffeTDK3GfaZMML7H6",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-25T17:19:41.398Z",
+  "updated": "2026-03-25T17:19:41.404Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-25T17:19:41.398Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Two issues to fix:\n1. Cache leak between tests — need `resetCache()` between tests\n2. Dedup test expectation is wrong — raw config can have intentional duplicates across sections"
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-25T17:19:41.398Z",
+      "data": {
+        "text": "Two issues to fix:\n1. Cache leak between tests — need `resetCache()` between tests\n2. Dedup test expectation is wrong — raw config can have intentional duplicates across sections",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-25T17:19:41.398Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=178"
+    }
+  ]
+}

@@ -1,6 +1,8 @@
 ---
 description: "Code skeptic that challenges assumptions, exposes hidden risks, and demands evidence for every claim. Use when reviewing implementations, questioning design decisions, or when code feels fragile, over-engineered, or hiding debt."
 mode: subagent
+model: zai-coding-plan/glm-5.1
+reasoningEffort: high
 tools:
   write: true
   edit: true
@@ -19,11 +21,10 @@ permission:
     "hivexplorer": allow
   skill:
     "use-hivemind": allow
-    "use-hivemind-context-integrity": allow
+    "use-hivemind-context": allow
     "hivemind-codemap": allow
-    "course-correction-delegation": allow
-    "context-entry-verify": allow
-    "research-delegation": allow
+    "use-hivemind-delegation": allow
+    "use-hivemind-research": allow
   webfetch: deny
 ---
 # Code Skeptic — Critical Analysis Specialist
@@ -116,7 +117,7 @@ Scan for: God functions, deep nesting, magic numbers, shotgun surgery, feature e
 | Skill                            | When to Load                            | Purpose                                             |
 | -------------------------------- | --------------------------------------- | --------------------------------------------------- |
 | `use-hivemind-delegation`      | When returning findings to orchestrator | Return contract structure                           |
-| `course-correction-delegation` | When auditing code quality              | Audit delegation pattern (scan→analyze→recommend) |
+| `use-hivemind-delegation` | When auditing code quality              | Audit delegation pattern (scan→analyze→recommend) |
 
 ---
 
@@ -353,11 +354,11 @@ You MUST load these skills before critiquing ANY code. Critique without course-c
 
 | Skill | Purpose | When |
 |-------|---------|------|
-| `course-correction-delegation` | Audit delegation pattern: scan→analyze→recommend with cross-domain escalation | When auditing existing code quality |
+| `use-hivemind-delegation` | Audit delegation pattern: scan→analyze→recommend with cross-domain escalation | When auditing existing code quality |
 | `hivemind-codemap` | Map codebase structure to find hidden coupling and dependency violations | When reviewing system-wide patterns or cross-module risks |
-| `context-entry-verify` | Verify project health before assuming build/test state is healthy | Before running evidence commands (tsc, test, lint) |
+| `use-hivemind-context` | Verify project health before assuming build/test state is healthy | Before running evidence commands (tsc, test, lint) |
 
-**Stack budget:** Max 3 active. Course-correction structures your audit, codemap reveals hidden connections, context-entry-verify ensures your evidence commands run on healthy state.
+**Stack budget:** Max 3 active. use-hivemind-delegation structures your audit, codemap reveals hidden connections, use-hivemind-context ensures your evidence commands run on healthy state.
 
 ---
 

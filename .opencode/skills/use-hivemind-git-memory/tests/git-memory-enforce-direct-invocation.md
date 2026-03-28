@@ -11,7 +11,7 @@
 2. Packet linkage binds commit to `batch_007` and `plan_phase: implementation`
 3. Commit message includes all memory footer fields
 4. Memory gates pass: context present, linkage valid, tags valid
-5. Index registration creates `.hivemind/activity/memory-index/{sha}.json`
+5. Index registration creates `.hivemind/activity/git-memory/index/{sha}.json`
 6. Index aggregation updates `index.json` with by_packet, by_decision, by_phase, by_agent
 
 **Validation:**
@@ -23,10 +23,10 @@ git log -1 --format='%B' | grep -q "retrieval_tags:" || echo "FAIL: missing retr
 
 # Verify index record exists
 SHA=$(git rev-parse HEAD)
-test -f ".hivemind/activity/memory-index/${SHA}.json" || echo "FAIL: no index record"
+test -f ".hivemind/activity/git-memory/index/${SHA}.json" || echo "FAIL: no index record"
 
 # Verify index aggregation
-jq -e '.by_packet["batch_007"] | index("'"$SHA"'")' .hivemind/activity/memory-index/index.json || echo "FAIL: not in by_packet"
+jq -e '.by_packet["batch_007"] | index("'"$SHA"'")' .hivemind/activity/git-memory/index/index.json || echo "FAIL: not in by_packet"
 ```
 
 ## Scenario 2: Orphan Detection
@@ -70,7 +70,7 @@ RESULT=$(git log --all --grep="packet_id: batch_007" --oneline | wc -l)
 [ "$RESULT" -ge 2 ] || echo "FAIL: expected ≥2 commits, got $RESULT"
 
 # Index retrieval
-SHAS=$(jq -r '.by_packet["batch_007"] | length' .hivemind/activity/memory-index/index.json)
+SHAS=$(jq -r '.by_packet["batch_007"] | length' .hivemind/activity/git-memory/index/index.json)
 [ "$SHAS" -ge 2 ] || echo "FAIL: expected ≥2 index entries, got $SHAS"
 ```
 
@@ -82,7 +82,7 @@ SHAS=$(jq -r '.by_packet["batch_007"] | length' .hivemind/activity/memory-index/
 
 **Then:**
 1. Extract `decision_id` from commit message
-2. Look up decision in `.hivemind/activity/hierarchy/`
+2. Look up decision in `.hivemind/activity/git-memory/decisions/`
 3. Extract `packet_id` from commit message
 4. Look up packet in `.hivemind/activity/delegation/`
 5. Full chain reconstructed: commit → decision → packet → phase
@@ -105,7 +105,7 @@ echo "Chain: $SHA → $DECISION → $PACKET → $PHASE"
 
 **Given:** New session starts, continuity.json has `last_packet_id: batch_007`.
 
-**When:** Agent uses git-memory-enforce to resume context.
+**When:** Agent uses use-hivemind-git-memory to resume context.
 
 **Then:**
 1. Read `continuity.json` for packet_id
@@ -117,7 +117,7 @@ echo "Chain: $SHA → $DECISION → $PACKET → $PHASE"
 ```bash
 # Cross-session retrieval
 PACKET=$(jq -r '.last_packet_id' .hivemind/activity/sessions/continuity.json)
-SHAS=$(jq -r '.by_packet["'"$PACKET"'"][]' .hivemind/activity/memory-index/index.json)
+SHAS=$(jq -r '.by_packet["'"$PACKET"'"][]' .hivemind/activity/git-memory/index/index.json)
 
 for sha in $SHAS; do
   CONTEXT=$(git log -1 --format='%B' $sha | grep -oP 'memory_context: \K.*')

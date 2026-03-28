@@ -1,0 +1,52 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2da397d01ffeO6CnITD5HrpVps",
+  "semanticSessionId": "ses_2026-03-25T231949_implementation_unknown_ses_2da397d01ffeO6CnITD5HrpVps",
+  "sdkSessionId": "ses_2da397d01ffeO6CnITD5HrpVps",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-25T16:19:49.675Z",
+  "updated": "2026-03-25T16:19:49.739Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-25T16:19:49.675Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Now let me write the human-readable summary."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-25T16:19:49.675Z",
+      "data": {
+        "text": "Now let me write the human-readable summary.",
+        "actor": "unknown"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-25T16:19:49.675Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=44"
+    }
+  ]
+}

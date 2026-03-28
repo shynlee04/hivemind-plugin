@@ -1,0 +1,153 @@
+{
+  "_meta": {
+    "created_at": "2026-03-25T23:36:42+07:00",
+    "updated_at": "2026-03-25T23:36:42+07:00",
+    "investigator": "hivexplorer",
+    "slice_id": "phase-02-legacy-cli-audit"
+  },
+  "status": "complete",
+  "slice_id": "phase-02-legacy-cli-audit",
+  "git_head": "7183335",
+  "files_checked": [
+    "src/cli.ts",
+    "src/cli/command-routing.ts",
+    "src/cli/init.ts",
+    "src/cli/runtime-assets.ts",
+    "src/features/runtime-entry/init.handler.ts",
+    "src/features/runtime-entry/doctor.ts",
+    "src/features/runtime-observability/sync.ts",
+    "scripts/sync-agent-registry.ts.deprecated",
+    "scripts/check-agent-registry-parity.sh.deprecated",
+    "scripts/check-agent-registry-parity.ts.deprecated",
+    "bin/hivemind-tools.cjs",
+    "src/control-plane/control-plane-registry.ts"
+  ],
+  "findings": [
+    {
+      "file": "src/cli.ts",
+      "line_count": 194,
+      "purpose": "Main CLI entry point — parses argv, resolves command dispatch, runs init/doctor/settings/harness/sync",
+      "alive_or_dead": "alive",
+      "recommendation": "modify",
+      "risk": "high",
+      "evidence": "Compiled to dist/cli.js (7815 bytes). package.json bin: 7 entries all → dist/cli.js. Line 10 imports syncRuntimeSurface. Line 169-171 calls it for 'sync' command."
+    },
+    {
+      "file": "src/cli/command-routing.ts",
+      "line_count": 50,
+      "purpose": "Resolves binary name and positional args to CLI command; maps hm-sync→sync alias",
+      "alive_or_dead": "alive",
+      "recommendation": "modify",
+      "risk": "high",
+      "evidence": "Compiled to dist/cli/command-routing.js. Line 4: CLI_COMMANDS includes 'sync'. Line 14: 'hm-sync': 'sync' alias."
+    },
+    {
+      "file": "src/cli/init.ts",
+      "line_count": 2,
+      "purpose": "Thin re-export barrel for initProject from features/runtime-entry",
+      "alive_or_dead": "alive",
+      "recommendation": "keep",
+      "risk": "low",
+      "evidence": "Single re-export line. dist/cli/init.js exists. Harmless at 2 lines."
+    },
+    {
+      "file": "src/cli/runtime-assets.ts",
+      "line_count": 26,
+      "purpose": "Sync bridge wrapper — passes hardcoded package constants to syncRuntimeSurface",
+      "alive_or_dead": "alive",
+      "recommendation": "remove",
+      "risk": "medium",
+      "evidence": "Compiled to dist/cli/runtime-assets.js (811 bytes). Sole direct importer of sync.ts. Called by cli.ts:170, init.handler.ts:126, doctor.ts:99."
+    },
+    {
+      "file": "src/features/runtime-entry/init.handler.ts",
+      "line_count": 275,
+      "purpose": "Init handler — bootstraps workflow authority, trajectory ledger, recovery, governance, and calls sync",
+      "alive_or_dead": "alive",
+      "recommendation": "modify",
+      "risk": "high",
+      "evidence": "Compiled to dist/features/runtime-entry/init.handler.js (10819 bytes). Line 12 imports syncRuntimeSurface. Line 126 calls it. Lines 213-216, 269 reference sync result."
+    },
+    {
+      "file": "src/features/runtime-entry/doctor.ts",
+      "line_count": 161,
+      "purpose": "Doctor handler — repairs recovery state, conditionally calls sync when healthy",
+      "alive_or_dead": "alive",
+      "recommendation": "modify",
+      "risk": "high",
+      "evidence": "Compiled to dist/features/runtime-entry/doctor.js (5668 bytes). Line 6 imports syncRuntimeSurface. Line 98-100 conditionally calls it. Lines 125-129, 150, 155 reference sync result."
+    },
+    {
+      "file": "src/features/runtime-observability/sync.ts",
+      "line_count": 108,
+      "purpose": "Core 'false sync' — writes .opencode/plugins/ stub and adds to opencode.json plugin array",
+      "alive_or_dead": "alive",
+      "recommendation": "modify",
+      "risk": "medium",
+      "evidence": "Compiled to dist/features/runtime-observability/sync.js (2486 bytes). Lines 93-107: main function. Lines 24-31: renders 4-line plugin stub. Lines 59-91: syncPluginConfig mutates opencode.json. Conflicts with .opencode/ write prohibition in AGENTS.md."
+    },
+    {
+      "file": "scripts/sync-agent-registry.ts.deprecated",
+      "line_count": 28,
+      "purpose": "Regenerates .opencode/agents/*.md from canonical agents/*.deprecated.md sources",
+      "alive_or_dead": "dead",
+      "recommendation": "remove",
+      "risk": "low",
+      "evidence": "File extension .deprecated. Zero references in package.json scripts. Zero imports from src/. Companion files also deprecated: check-agent-registry-parity.sh.deprecated (8 lines), check-agent-registry-parity.ts.deprecated (35 lines)."
+    },
+    {
+      "file": "bin/hivemind-tools.cjs",
+      "line_count": 1422,
+      "purpose": "Standalone legacy CJS CLI — ecosystem verification, path tracing, state inspection, validation, source auditing",
+      "alive_or_dead": "dead",
+      "recommendation": "deprecate",
+      "risk": "low",
+      "evidence": "Shipped via package.json 'files' but no bin entry, no script reference, no source import. CJS in ESM project. 1422 lines of untyped JavaScript. Has unique functionality (inspect, validate, ecosystem-check, source-audit) not in TypeScript CLI."
+    },
+    {
+      "file": "src/control-plane/control-plane-registry.ts",
+      "line_count": 268,
+      "purpose": "Registers 4 control-plane primitives with keyword detection, binary aliases, gate resolution",
+      "alive_or_dead": "alive",
+      "recommendation": "keep",
+      "risk": "high",
+      "evidence": "Compiled to dist/control-plane/. Imported by command-routing.ts, init.handler.ts, control-plane intake/handler. No sync references. Core infrastructure."
+    }
+  ],
+  "false_sync_analysis": {
+    "what_it_writes": "Two artifacts: (1) .opencode/plugins/hivemind-context-governance.ts — a 4-line stub that re-exports from the package entry point; (2) opencode.json — pushes '.opencode/plugins/hivemind-context-governance.ts' into the plugin array if not present.",
+    "callers": [
+      "src/cli.ts:170 (sync command)",
+      "src/features/runtime-entry/init.handler.ts:126 (init bootstrap)",
+      "src/features/runtime-entry/doctor.ts:99 (doctor repair when healthy)"
+    ],
+    "conflicts_with_hivefiver": true,
+    "conflict_reasons": [
+      "Writes to .opencode/plugins/ without permission.ask — violates AGENTS.md .opencode/ Write Prohibition",
+      "Mutates opencode.json without user consent — state mutation should go through permission.ask",
+      "Redundant with npm bin registration — 7 bin aliases already register the plugin via package.json",
+      "Legacy mechanism from pre-bin-registration era"
+    ],
+    "recommendation": "Remove entirely. Delete sync command from CLI dispatch. Remove sync calls from init/doctor handlers. Delete runtime-assets.ts bridge. Either refactor sync.ts to read-only status check or delete. Remove hm-sync from package.json bin entries."
+  },
+  "hivemind_tools_analysis": {
+    "unique_functionality": [
+      "trace-paths — show all .hivemind/ paths with existence checks",
+      "verify-install — 6-check install verification (brain, config, plugin, archive, schema)",
+      "migrate-check — detect legacy structures needing migration",
+      "inspect brain/tree/config/sessions/detection — state pretty-printing",
+      "state load/get/hierarchy — JSON state queries with dot notation",
+      "session active/history/trace — session management and stamp grepping",
+      "config get — dot-notation config reader",
+      "validate schema/chain/stamps — JSON validation and hierarchy chain checks",
+      "ecosystem-check — full 9-step chain verification",
+      "source-audit — maps src/ files to responsibilities",
+      "filetree — lists .hivemind/ file tree"
+    ],
+    "consumers": [],
+    "consumer_evidence": "Zero references in src/. Zero references in package.json scripts. Zero references in package.json bin entries. Only referenced in .hivemind/ session artifacts (documentation).",
+    "recommendation": "DEPRECATE. Rename to .deprecated. Port most valuable commands (ecosystem-check, validate, inspect) into TypeScript CLI in a future phase."
+  },
+  "blocked_routes": [],
+  "recommended_next_action": "Execute Phase 10 (legacy removal) in this order: (1) Remove 3 .deprecated scripts — zero risk. (2) Remove syncRuntimeSurface from init handler and doctor handler. (3) Remove sync command from CLI dispatch and routing. (4) Delete runtime-assets.ts bridge. (5) Refactor or delete sync.ts. (6) Remove hm-sync from package.json bin. (7) Deprecate bin/hivemind-tools.cjs. (8) Run npx tsc --noEmit + npm test gate."
+}

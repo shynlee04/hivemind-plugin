@@ -1,0 +1,97 @@
+{
+  "_schema": "session/v2",
+  "sessionId": "ses_2ceed69f5ffe1i6rF1Ly8XSfNy",
+  "semanticSessionId": "ses_2026-03-28T035720_implementation_unknown_ses_2ceed69f5ffe1i6rF1Ly8XSfNy",
+  "sdkSessionId": "ses_2ceed69f5ffe1i6rF1Ly8XSfNy",
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "unknown",
+  "created": "2026-03-27T20:57:20.134Z",
+  "updated": "2026-03-27T21:22:54.624Z",
+  "status": "active",
+  "parentSessionId": null,
+  "childSessionIds": [],
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 2,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0,
+    "turnCount": 1
+  },
+  "turns": [
+    {
+      "turnNumber": 1,
+      "timestamp": "2026-03-27T20:57:20.134Z",
+      "agent": "unknown",
+      "model": "unknown",
+      "duration": null,
+      "userMessage": "",
+      "assistantContent": "Now I need to assess context health before any work proceeds."
+    }
+  ],
+  "events": [
+    {
+      "turnNumber": 1,
+      "type": "assistant_output",
+      "importance": "medium",
+      "timestamp": "2026-03-27T20:57:20.134Z",
+      "data": {
+        "text": "Now I need to assess context health before any work proceeds.",
+        "actor": "unknown"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T21:08:56.809Z",
+      "data": {
+        "sessionId": "ses_2ceed69f5ffe1i6rF1Ly8XSfNy"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T21:08:56.995Z",
+      "data": {
+        "sessionId": "ses_2ceed69f5ffe1i6rF1Ly8XSfNy"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T21:22:54.317Z",
+      "data": {
+        "sessionId": "ses_2ceed69f5ffe1i6rF1Ly8XSfNy"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T21:22:54.398Z",
+      "data": {
+        "sessionId": "ses_2ceed69f5ffe1i6rF1Ly8XSfNy"
+      }
+    },
+    {
+      "turnNumber": 0,
+      "type": "session_idle",
+      "importance": "low",
+      "timestamp": "2026-03-27T21:22:54.624Z",
+      "data": {
+        "sessionId": "ses_2ceed69f5ffe1i6rF1Ly8XSfNy"
+      }
+    }
+  ],
+  "diagnostics": [
+    {
+      "timestamp": "2026-03-27T20:57:20.134Z",
+      "level": "info",
+      "message": "turn_complete agent=unknown text_len=61"
+    }
+  ]
+}

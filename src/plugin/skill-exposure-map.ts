@@ -1,190 +1,96 @@
 /**
  * Skill Exposure Map — Selective skill bundle resolution per agent and runtime state.
  *
- * Resolves the top 6-7 skills for the active agent based on:
+ * Resolves skills for the active agent based on:
  * - The agent's registered identity
  * - The current purpose class (workflow type)
  * - The session state (main vs sub-session)
  *
- * Registry constraint: ONLY the 9 registered agent IDs from OPENCODE_AGENT_REGISTRY_IDS
- * are valid keys. Subagents spawned via Task() use their parent agent's skill bundle.
+ * Configuration is loaded dynamically via the skill injection loader.
+ * Call `initSkillInjection(packageRoot)` once at plugin startup.
  *
- * @note The 9 valid agent IDs are: hiveminder, hivefiver, hiveq, hivemaker, hiveplanner,
- *       hivexplorer, hiverd, hivehealer, hitea. AGENT_BUNDLES is keyed by these strings.
+ * Registry constraint: ONLY the 9 registered agent IDs are valid keys.
+ * Subagents spawned via Task() use their parent agent's skill bundle.
+ *
+ * @module plugin/skill-exposure-map
  */
+
+import { loadSkillInjectionConfig, type SkillInjectionConfig } from '../shared/skill-injection-loader.js'
+import { resolveTieredSkills } from '../shared/tiered-injection.js'
+import type { TaskClassification } from '../schema-kernel/agent-records.js'
 
 export interface SkillEntry {
   name: string
   description: string
 }
 
-/** Always-on skills shared across all agents */
-const SHARED_SKILLS: SkillEntry[] = [
-  {
-    name: 'use-hivemind-delegation',
-    description: 'Enforce delegation when front-facing agents must split work across subagents',
-  },
-]
-
-/** Maximum skills to expose per turn (leaves room for conditional additions) */
-const MAX_SKILLS = 7
+/** Cached config — populated by initSkillInjection() */
+let cachedConfig: SkillInjectionConfig | null = null
 
 /**
- * Base skill bundles per registered agent ID.
- * Only the 9 agents from OPENCODE_AGENT_REGISTRY_IDS are valid.
- * Subagents (architect, code-skeptic, handoff) are NOT registered — they
- * receive their dispatching parent's bundle.
+ * Resolve the default agent name from the loaded config.
+ *
+ * Returns the configured `default_agent` field, or falls back to `'hiveminder'`
+ * if no config has been loaded yet.
+ *
+ * @returns The default agent ID
  */
-const AGENT_BUNDLES: Record<string, SkillEntry[]> = {
-  hiveminder: [
-    { name: 'hivemind-gatekeeping-delegation', description: 'Gatekeeping for multi-pass delegation loops and synthesis gates' },
-    { name: 'git-continuity-memory', description: 'Git-aware context continuity, commit SHAs, and branch state for delegation resume' },
-    { name: 'hivemind-atomic-commit', description: 'Atomic commit discipline with typed activity classification and pre-commit gates' },
-  ],
-
-  hivefiver: [
-    { name: 'hivemind-gatekeeping-delegation', description: 'Gatekeeping for multi-pass delegation loops and synthesis gates' },
-    { name: 'git-continuity-memory', description: 'Git-aware context continuity and branch state management' },
-    { name: 'hivemind-atomic-commit', description: 'Atomic commit discipline with typed activity classification' },
-  ],
-
-  hiveq: [
-    { name: 'tdd-delegation', description: 'TDD-aware delegation for red-green-refactor loops with phase gates' },
-    { name: 'verification-before-completion', description: 'Run verification commands and confirm output before completing claims' },
-    { name: 'test-driven-development', description: 'Test-first development with 80%+ coverage requirements' },
-  ],
-
-  hivemaker: [
-    { name: 'tdd-delegation', description: 'TDD-aware delegation for red-green-refactor loops with phase gates' },
-    { name: 'clean-code', description: 'Clean Code principles: meaningful names, small functions, clear intent' },
-    { name: 'refactor', description: 'Surgical refactoring to improve maintainability without changing behavior' },
-    { name: 'test-driven-development', description: 'Test-first development with red-green-refactor discipline' },
-  ],
-
-  hiveplanner: [
-    { name: 'writing-plans', description: 'Create structured implementation plans with success criteria and dependencies' },
-    { name: 'breakdown-plan', description: 'Break down work into Epic > Feature > Story/Enabler > Test hierarchy' },
-    { name: 'spec-distillation', description: 'Distill noisy requirements into structured spec candidates before planning' },
-  ],
-
-  hivexplorer: [
-    { name: 'research-delegation', description: 'Research-specific delegation for evidence collection and multi-source synthesis' },
-    { name: 'context-map', description: 'Map all files relevant to a task before making changes' },
-    { name: 'hivemind-codemap', description: 'Whole-codebase mapping, seam discovery, and concern slicing for refactors' },
-    { name: 'hivemind-research', description: 'Structured research methodology with question framing and evidence grading' },
-  ],
-
-  hiverd: [
-    { name: 'research-delegation', description: 'Research-specific delegation for evidence collection and multi-source synthesis' },
-    { name: 'deep-research', description: 'Enterprise-grade research with multi-source synthesis and citation tracking' },
-    { name: 'hivemind-research', description: 'Structured research methodology with question framing and evidence grading' },
-  ],
-
-  hivehealer: [
-    { name: 'course-correction-delegation', description: 'Debug loop delegation: reproduce, narrow, contain, and prove evidence' },
-    { name: 'systematic-debugging', description: 'Reproduce, narrow, contain, and create evidence before fixing bugs' },
-    { name: 'hivemind-system-debug', description: 'Detox and restoration work with reproducibility and rollback logic' },
-  ],
-
-  hitea: [
-    { name: 'tdd-delegation', description: 'TDD-aware delegation for red-green-refactor loops with phase gates' },
-    { name: 'qa-test-planner', description: 'Comprehensive test plans with manual test cases and regression suites' },
-    { name: 'test-driven-development', description: 'Test-first development with 80%+ coverage requirements' },
-  ],
+export function resolveDefaultAgent(): string {
+  return cachedConfig?.default_agent ?? 'hiveminder'
 }
 
-/** Conditional skill additions keyed by purpose class */
-const PURPOSE_CONDITIONAL: Record<string, SkillEntry[]> = {
-  tdd: [
-    { name: 'tdd-delegation', description: 'TDD-aware delegation for red-green-refactor loops with phase gates' },
-    { name: 'test-driven-development', description: 'Test-first development with 80%+ coverage requirements' },
-  ],
-  research: [
-    { name: 'research-delegation', description: 'Research-specific delegation for evidence collection and multi-source synthesis' },
-    { name: 'deep-research', description: 'Enterprise-grade research with multi-source synthesis and citation tracking' },
-  ],
-  planning: [
-    { name: 'writing-plans', description: 'Create structured implementation plans with success criteria and dependencies' },
-    { name: 'breakdown-plan', description: 'Break down work into Epic > Feature > Story/Enabler > Test hierarchy' },
-  ],
-  implementation: [
-    { name: 'clean-code', description: 'Clean Code principles: meaningful names, small functions, clear intent' },
-    { name: 'refactor', description: 'Surgical refactoring to improve maintainability without changing behavior' },
-  ],
-  'course-correction': [
-    { name: 'course-correction-delegation', description: 'Debug loop delegation: reproduce, narrow, contain, and prove evidence' },
-    { name: 'systematic-debugging', description: 'Reproduce, narrow, contain, and create evidence before fixing bugs' },
-  ],
-  gatekeeping: [
-    { name: 'hivemind-gatekeeping-delegation', description: 'Gatekeeping for multi-pass delegation loops and synthesis gates' },
-    { name: 'verification-before-completion', description: 'Run verification commands and confirm output before completing claims' },
-  ],
+/**
+ * Initialize skill injection from config file.
+ *
+ * Must be called once at plugin startup before resolveSkillBundle() is used.
+ * Loads from '{packageRoot}/config/skill-injection.json', falling back to defaults.
+ *
+ * @param packageRoot - Absolute path to the project root
+ */
+export function initSkillInjection(packageRoot: string): void {
+  cachedConfig = loadSkillInjectionConfig(packageRoot)
 }
-
-/** Skills added when operating as a sub-session (delegated context) */
-const SUBSESSION_ADDITIONS: SkillEntry[] = [
-  { name: 'git-continuity-memory', description: 'Git-aware context continuity and branch state management for delegated sessions' },
-]
 
 /**
  * Resolve the skill bundle for an active agent.
  *
- * @param activeAgent  - The agent ID from transformInput.agent (may be undefined)
- * @param purposeClass - The current purpose class from startWork routing
- * @param sessionState - The session state (main | sub-session | fresh | ongoing | continuation)
- * @returns Ordered skill entries capped at MAX_SKILLS (7)
+ * Delegates to the two-tier injection system (`resolveTieredSkills`) which
+ * handles shared skills, Tier 1 core init (project-initiation), agent bundles,
+ * Tier 2 task-conditional (when taskClassification is provided), purpose-conditional,
+ * and sub-session additions.
+ *
+ * The 4th parameter `taskClassification` is OPTIONAL — existing callers
+ * (e.g., messages-transform-adapter.ts) use 3 args and continue to work.
+ *
+ * @param activeAgent        - The agent ID from transformInput.agent (may be undefined)
+ * @param purposeClass       - The current purpose class from startWork routing
+ * @param sessionState       - The session state (main | sub-session | fresh | ongoing | continuation)
+ * @param taskClassification - The current task classification (optional — triggers Tier 2 injection)
+ * @returns Ordered skill entries
  */
 export function resolveSkillBundle(
   activeAgent: string | undefined,
   purposeClass: string | undefined,
   sessionState: string | undefined,
+  taskClassification?: TaskClassification | undefined,
 ): SkillEntry[] {
-  const seen = new Set<string>()
-  const result: SkillEntry[] = []
-
-  // 1. Always add shared skills first
-  for (const skill of SHARED_SKILLS) {
-    if (!seen.has(skill.name)) {
-      seen.add(skill.name)
-      result.push(skill)
-    }
+  if (!cachedConfig) {
+    // Fallback: if init was never called, return empty bundle
+    console.warn('[skill-exposure-map] resolveSkillBundle called before initSkillInjection. Returning empty bundle.')
+    return []
   }
 
-  // 2. Add agent-specific bundle
-  const effectiveAgent = (activeAgent && activeAgent in AGENT_BUNDLES)
-    ? activeAgent
-    : 'hivefiver' // Default fallback for unattributed turns
+  // Phase classification is not exposed to the adapter yet; derive from purposeClass
+  // When purposeClass is absent, phaseClassification is undefined (no Tier 1 injection)
+  const phaseClassification = undefined
 
-  const agentSkills = AGENT_BUNDLES[effectiveAgent] ?? []
-  for (const skill of agentSkills) {
-    if (!seen.has(skill.name) && result.length < MAX_SKILLS) {
-      seen.add(skill.name)
-      result.push(skill)
-    }
-  }
-
-  // 3. Add purpose-conditional skills
-  if (purposeClass && purposeClass in PURPOSE_CONDITIONAL) {
-    const conditional = PURPOSE_CONDITIONAL[purposeClass]
-    for (const skill of conditional) {
-      if (!seen.has(skill.name) && result.length < MAX_SKILLS) {
-        seen.add(skill.name)
-        result.push(skill)
-      }
-    }
-  }
-
-  // 4. Add sub-session skills if applicable
-  if (sessionState === 'sub-session') {
-    for (const skill of SUBSESSION_ADDITIONS) {
-      if (!seen.has(skill.name) && result.length < MAX_SKILLS) {
-        seen.add(skill.name)
-        result.push(skill)
-      }
-    }
-  }
-
-  return result
+  return resolveTieredSkills(
+    activeAgent,
+    phaseClassification,
+    taskClassification,
+    cachedConfig,
+    { purposeClass, sessionState },
+  )
 }
 
 /**

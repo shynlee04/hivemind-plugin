@@ -1,7 +1,6 @@
 ---
 name: use-hivemind-tdd
-description: |
-  The TDD domain. Write the test first. Make it fail. Make it pass. Clean it up. Repeat for every phase. No exceptions.
+description: The TDD domain. Write the test first. Make it fail. Make it pass. Clean it up. Repeat for every phase. No exceptions.
 ---
 
 # use-hivemind-tdd
@@ -10,14 +9,14 @@ You're building something. The test comes first — always. This skill governs t
 
 ## Load Position
 
-**Slot: 2. Requires `use-hivemind` in Slot 1.**
+**Layer: Domain**. Loaded when the task enters the TDD domain.
 
 | Constraint | Rule |
 |-----------|------|
-| Stack position | Slot 2 of 3 |
+| Position | Domain layer |
 | Load order | After entry router |
-| Max active | 3 skills total |
-| Parent | `use-hivemind` |
+| Prerequisites | `use-hivemind` (entry router) |
+| Parent | `use-hivemind` *(external — must be loaded via `skill` tool before this skill)* |
 
 ## The TDD Loop
 
@@ -299,21 +298,30 @@ Every gate requires COMMAND OUTPUT as evidence, never claims.
 
 ## Bundled Resources
 
-| Resource | Purpose |
-|---------|---------|
-| `references/tdd-loop-delegation.md` | Red-green-refactor delegation mechanics |
-| `references/test-gate-enforcement.md` | Gate rules and enforcement details |
-| `references/phase-tdd-lifecycle.md` | Detailed per-phase R-G-R rules |
-| `references/transition-gates.md` | Gate checks, failure handling, result format |
-| `references/multi-phase-checkpoint.md` | Full checkpoint schema and state rules |
-| `templates/tdd-delegation-packet.md` | Extended delegation packet JSON template |
-| `templates/phase-tdd-checkpoint.md` | Multi-phase checkpoint JSON template |
-| `templates/transition-gate-result.md` | Phase transition gate result JSON |
+| Resource | Path | Purpose |
+|----------|------|---------|
+| TDD Loop Delegation | `references/tdd-loop-delegation.md` | Red-green-refactor delegation mechanics |
+| Test Gate Enforcement | `references/test-gate-enforcement.md` | Gate rules, enforcement, checks, failure handling |
+| Phase TDD Strategy | `references/phase-tdd-strategy.md` | Per-phase R-G-R strategy and test writing order |
+| TDD Loop | `references/tdd-loop.md` | Core TDD loop protocol and phase transitions |
+| Vertical Slicing | `references/vertical-slicing.md` | Vertical slicing strategy for TDD phases |
+| Test Quality | `references/test-quality.md` | Test quality metrics and standards |
+| Mocking Guide | `references/mocking-guide.md` | Mocking patterns and anti-patterns |
+| Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
+| Test First Packet | `references/test-first-packet.md` | Test-first delegation packet format |
+| Interface Design | `references/interface-design.md` | Interface design for testability |
+| TDD Delegation Packet | `templates/tdd-delegation-packet.md` | Delegation packet JSON template |
+| TDD Checkpoint | `templates/tdd-checkpoint.md` | Multi-phase checkpoint JSON template |
+| Build Verify Checkpoint | `templates/build-verify-checkpoint.md` | Build-verify gate result JSON |
+| TDD Delegation | `tests/tdd-delegation.md` | Test scenario for TDD delegation |
+| TDD Scenario | `tests/tdd-scenario.md` | Test scenario for full TDD workflow |
 
 ## Independence Rules
 
 - This is a **domain router** — it consolidates delegation mechanics, phase enforcement, and gate protocol
-- Parent: `use-hivemind` (Slot 1)
-- Depth companions: `hivemind-atomic-commit`, `hivemind-gatekeeping-delegation`
+- Parent: `use-hivemind` *(external — must be loaded via `skill` tool before this skill)*
+- Depth companions: `hivemind-atomic-commit` *(external)*, `hivemind-gatekeeping` *(external)*
 - Checkpoints stored in `{project}/.hivemind/activity/delegation/` at runtime
 - Universal and framework-agnostic — applies to any project with test-driven development
+
+> **External skills note:** Skills marked *(external)* above are NOT bundled with this skill. They must be loaded separately via the `skill` tool (e.g., `skill: hivemind-atomic-commit`) before their functionality is available.

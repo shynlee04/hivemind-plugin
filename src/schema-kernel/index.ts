@@ -12,6 +12,11 @@ export * from '../archive/schema-kernel/lifecycle-records.js'
 export * from '../archive/schema-kernel/orchestration-records.js'
 export * from '../archive/schema-kernel/evidence-records.js'
 
+export * from './config-records.js'
+export * from './agent-records.js'
+export * from './default-agent-templates.js'
+export * from './skill-injection-records.js'
+
 // Active re-export layer markers
 export const SCHEMA_KERNEL_ACTIVE = true
 export const SCHEMA_KERNEL_CANONICAL_PATH = 'src/schema-kernel/'

@@ -1,0 +1,180 @@
+{
+  "_meta": {
+    "created_at": "2026-03-26T17:53:26+07:00",
+    "updated_at": "2026-03-26T17:53:26+07:00",
+    "schema": "verification-return-contract-v1"
+  },
+  "delegation_id": "integration-user-journeys",
+  "agent": "hiveq",
+  "mode": "verification",
+  "status": "gaps_found",
+  "score": {
+    "verified": 4,
+    "total": 6,
+    "percentage": 66.7
+  },
+  "journey_results": [
+    {
+      "id": "journey-1",
+      "name": "Greenfield Project Init",
+      "status": "partial",
+      "pass_count": 0,
+      "fail_count": 2,
+      "blocked_count": 2,
+      "gaps": [
+        "Tool does NOT reference schema types",
+        "@opencode-ai/plugin/tool import fails at runtime"
+      ]
+    },
+    {
+      "id": "journey-2",
+      "name": "Skill Injection at Session Start",
+      "status": "partial",
+      "pass_count": 4,
+      "fail_count": 0,
+      "blocked_count": 0,
+      "gaps": [
+        "CRITICAL: Skill registry path mismatch - zero skills discovered",
+        "phaseClassification always undefined - Tier 1 never injected"
+      ]
+    },
+    {
+      "id": "journey-3",
+      "name": "Settings Configuration Flow",
+      "status": "passed",
+      "pass_count": 4,
+      "fail_count": 0,
+      "blocked_count": 0,
+      "gaps": []
+    },
+    {
+      "id": "journey-4",
+      "name": "Multi-Agent Skill Resolution",
+      "status": "passed",
+      "pass_count": 5,
+      "fail_count": 0,
+      "blocked_count": 0,
+      "gaps": []
+    },
+    {
+      "id": "journey-5",
+      "name": "Config File Missing → Fallback",
+      "status": "passed",
+      "pass_count": 4,
+      "fail_count": 0,
+      "blocked_count": 0,
+      "gaps": [
+        "Default skill names don't resolve to disk due to registry path mismatch"
+      ]
+    },
+    {
+      "id": "journey-6",
+      "name": "Doctor Diagnostic Scan",
+      "status": "partial",
+      "pass_count": 0,
+      "fail_count": 1,
+      "blocked_count": 0,
+      "gaps": [
+        "Doctor is placeholder - no real validation logic",
+        "Does NOT detect CQRS violations",
+        "Does NOT validate skill names against registry"
+      ]
+    }
+  ],
+  "critical_gaps": [
+    {
+      "id": "gap-registry-path",
+      "description": "Skill registry scans {packageRoot}/skills/ but skills live in {packageRoot}/skills/skills/",
+      "file": "src/shared/opencode-skill-registry.ts",
+      "line": 88,
+      "severity": "critical",
+      "impact": "Zero skills discoverable, validateSkillNames() always reports all missing"
+    },
+    {
+      "id": "gap-cqrs-violations",
+      "description": "5 hook files perform direct filesystem writes violating CQRS boundary",
+      "files": [
+        "src/hooks/event-handler.ts:217",
+        "src/hooks/compaction-handler.ts:109",
+        "src/hooks/text-complete-handler.ts:172",
+        "src/hooks/chat-message-handler.ts:46",
+        "src/hooks/tool-execution-handler.ts:40"
+      ],
+      "severity": "high",
+      "impact": "npm test fails on lint:boundary"
+    },
+    {
+      "id": "gap-tier1-never-injected",
+      "description": "phaseClassification hardcoded to undefined, Tier 1 skills never injected",
+      "file": "src/plugin/skill-exposure-map.ts",
+      "line": 85,
+      "severity": "medium",
+      "impact": "Tier 1 core init skills (use-hivemind, hivemind-spec-driven) are dead code"
+    }
+  ],
+  "conflicts": [
+    {
+      "components": ["opencode-skill-registry.ts", "actual directory structure"],
+      "description": "Registry path 'skills/' does not match actual 'skills/skills/'"
+    },
+    {
+      "components": ["hooks/*", "CQRS boundary"],
+      "description": "Hooks perform filesystem writes, violating read-only boundary"
+    },
+    {
+      "components": ["skill-exposure-map.ts", "tiered-injection.ts"],
+      "description": "phaseClassification never set, making Tier 1 injection unreachable"
+    }
+  ],
+  "recommended_fixes": [
+    {
+      "priority": 1,
+      "description": "Fix skill registry path to match actual directory structure",
+      "file": "src/shared/opencode-skill-registry.ts",
+      "line": 88
+    },
+    {
+      "priority": 2,
+      "description": "Move filesystem writes from hooks to tools or dedicated write-side module",
+      "files": [
+        "src/hooks/event-handler.ts",
+        "src/hooks/compaction-handler.ts",
+        "src/hooks/text-complete-handler.ts",
+        "src/hooks/chat-message-handler.ts",
+        "src/hooks/tool-execution-handler.ts"
+      ]
+    },
+    {
+      "priority": 3,
+      "description": "Derive phaseClassification from purposeClass or session state",
+      "file": "src/plugin/skill-exposure-map.ts",
+      "line": 85
+    },
+    {
+      "priority": 4,
+      "description": "Implement real diagnostics in hm-doctor tool",
+      "file": "src/tools/hivefiver-doctor/tools.ts"
+    }
+  ],
+  "evidence": {
+    "tsc_output": "Zero errors - build passes",
+    "build_output": "Compiled successfully",
+    "lint_boundary_output": "5 hook write violations detected",
+    "skill_bundle_tests": "6/6 bundle resolution tests passed",
+    "config_group_tests": "4/4 config group tests passed"
+  },
+  "carry_forward": {
+    "key_findings": [
+      "Skill registry path mismatch is the root cause of 21 'missing' skills",
+      "CQRS violations in hooks block test suite from running",
+      "All 3 hivefiver tools are placeholders with no real logic",
+      "Tier 1 skill injection is dead code due to undefined phaseClassification",
+      "Config groups are properly wired to schema types and work correctly"
+    ],
+    "blocked_routes": [
+      "Cannot verify tool runtime behavior due to @opencode-ai/plugin/tool import issue",
+      "Cannot run full test suite due to lint:boundary failures"
+    ],
+    "recommended_next_action": "Fix skill registry path mismatch and CQRS violations before proceeding with further integration testing"
+  }
+}

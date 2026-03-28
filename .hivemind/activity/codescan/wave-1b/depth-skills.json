@@ -1,0 +1,254 @@
+{
+  "_meta": {
+    "created_at": "2026-03-28T10:30:00Z",
+    "updated_at": "2026-03-28T10:30:00Z",
+    "commit": "28663df",
+    "scope": "depth-skills-investigation",
+    "source_path": ".developing-skills/refactored-skills/",
+    "investigator": "hivexplorer"
+  },
+  "skills": [
+    {
+      "skill_name": "hivemind-atomic-commit",
+      "yaml_name": "hivemind-atomic-commit",
+      "yaml_description_length": 437,
+      "yaml_description_first_80_chars": "Use when committing changes requires typed activity classification, dependency-aware ordering,",
+      "references_count": 5,
+      "reference_files": [
+        "references/activity-classifier.md",
+        "references/activity-mapper.md",
+        "references/git-gate.md",
+        "references/rollback-protocol.md",
+        "references/surface-ownership.md"
+      ],
+      "templates_count": 4,
+      "template_files": [
+        "templates/activity-record.md",
+        "templates/activity-map.md",
+        "templates/commit-gate-result.md",
+        "templates/rollback-plan.md"
+      ],
+      "tests_count": 1,
+      "test_files": [
+        "tests/direct-invocation.md"
+      ],
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "use-hivemind-git-memory",
+        "use-hivemind-delegation",
+        "hivemind-codemap"
+      ],
+      "total_lines": 183
+    },
+    {
+      "skill_name": "hivemind-codemap",
+      "yaml_name": "hivemind-codemap",
+      "yaml_description_length": 167,
+      "yaml_description_first_80_chars": "Use when detox or restoration work needs whole-codebase mapping, seam discovery, high-level to lo",
+      "references_count": 6,
+      "reference_files": [
+        "references/scan-layers.md",
+        "references/scan-levels.md",
+        "references/batching-loop.md",
+        "references/repomix-mode.md",
+        "references/codemap-techniques.md",
+        "references/delegation-contract.md"
+      ],
+      "templates_count": 5,
+      "template_files": [
+        "templates/scan-plan.md",
+        "templates/codemap-scan-state.json.md",
+        "templates/seam-inventory.md",
+        "templates/codemap-synthesis-report.md",
+        "templates/repomix-extraction-report.md"
+      ],
+      "tests_count": 1,
+      "test_files": [
+        "tests/direct-invocation.md"
+      ],
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "use-hivemind-delegation"
+      ],
+      "total_lines": 185
+    },
+    {
+      "skill_name": "hivemind-gatekeeping",
+      "yaml_name": "hivemind-gatekeeping",
+      "yaml_description_length": 160,
+      "yaml_description_first_80_chars": "Loop control and synthesis gates. When work needs iteration, this skill governs the loop. Checkpoi",
+      "references_count": 5,
+      "reference_files": [
+        "references/iterative-loop-control.md",
+        "references/synthesis-gates.md",
+        "references/integration-verification.md",
+        "references/cascading-failure.md",
+        "references/evidence-based-gatekeeping.md"
+      ],
+      "templates_count": 2,
+      "template_files": [
+        "templates/loop-checkpoint.md",
+        "templates/synthesis-gate-result.md"
+      ],
+      "tests_count": 2,
+      "test_files": [
+        "tests/iterative-loop.md",
+        "tests/cascading-failure.md"
+      ],
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "use-hivemind-delegation"
+      ],
+      "total_lines": 303
+    },
+    {
+      "skill_name": "hivemind-patterns",
+      "yaml_name": "hivemind-patterns",
+      "yaml_description_length": 128,
+      "yaml_description_first_80_chars": "Architecture patterns reference. Clean Architecture, CQRS, design patterns, anti-patterns. When y",
+      "references_count": 2,
+      "reference_files": [
+        "references/anti-pattern-catalog.md",
+        "references/pattern-catalog.md"
+      ],
+      "templates_count": 1,
+      "template_files": [
+        "templates/pattern-decision.md"
+      ],
+      "tests_count": 0,
+      "test_files": [],
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [],
+      "total_lines": 201
+    },
+    {
+      "skill_name": "hivemind-refactor",
+      "yaml_name": "hivemind-refactor",
+      "yaml_description_length": 136,
+      "yaml_description_first_80_chars": "Refactor methodology. Smallest safe change. Behavior preservation is non-negotiable. Assess, plan,",
+      "references_count": 5,
+      "reference_files": [
+        "references/code-review-reception.md",
+        "references/code-review-request.md",
+        "references/code-smell-taxonomy.md",
+        "references/refactor-techniques.md",
+        "references/verification-before-completion.md"
+      ],
+      "templates_count": 2,
+      "template_files": [
+        "templates/code-reviewer-prompt.md",
+        "templates/refactor-checklist.md"
+      ],
+      "tests_count": 1,
+      "test_files": [
+        "tests/refactor-scenario.md"
+      ],
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "use-hivemind-delegation",
+        "use-hivemind-tdd",
+        "hivemind-codemap",
+        "hivemind-patterns",
+        "hivemind-gatekeeping"
+      ],
+      "total_lines": 284
+    },
+    {
+      "skill_name": "hivemind-spec-driven",
+      "yaml_name": "hivemind-spec-driven",
+      "yaml_description_length": 215,
+      "yaml_description_first_80_chars": "Spec-driven engineering. From vague requirements to testable specs. Every requirement must be testa",
+      "references_count": 3,
+      "reference_files": [
+        "references/acceptance-criteria.md",
+        "references/traceability-matrix.md",
+        "references/verification-before-completion.md"
+      ],
+      "templates_count": 1,
+      "template_files": [
+        "templates/spec-template.md"
+      ],
+      "tests_count": 1,
+      "test_files": [
+        "tests/spec-scenario.md"
+      ],
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "use-hivemind-planning",
+        "use-hivemind-tdd",
+        "use-hivemind-delegation",
+        "hivemind-refactor"
+      ],
+      "total_lines": 201
+    },
+    {
+      "skill_name": "hivemind-system-debug",
+      "yaml_name": "hivemind-system-debug",
+      "yaml_description_length": 167,
+      "yaml_description_first_80_chars": "Use when detox or restoration work has unresolved breakage and needs reproducibility, narrowing, c",
+      "references_count": 2,
+      "reference_files": [
+        "references/debug-loop.md",
+        "references/verification-before-completion.md"
+      ],
+      "templates_count": 0,
+      "template_files": [],
+      "tests_count": 1,
+      "test_files": [
+        "tests/direct-invocation.md"
+      ],
+      "has_toc": false,
+      "has_bundled_resources_section": true,
+      "has_cross_references_section": false,
+      "cross_referenced_skills": [
+        "use-hivemind-context",
+        "use-hivemind"
+      ],
+      "total_lines": 77
+    }
+  ],
+  "summary": {
+    "total_skills_scanned": 7,
+    "total_references": 28,
+    "total_templates": 15,
+    "total_tests": 7,
+    "skills_with_toc": 0,
+    "skills_with_bundled_resources": 7,
+    "skills_with_cross_references_section": 0,
+    "skills_with_sibling_skills_section": 3,
+    "avg_lines_per_skill": 204.9,
+    "longest_skill": "hivemind-gatekeeping (303 lines)",
+    "shortest_skill": "hivemind-system-debug (77 lines)",
+    "all_unique_cross_referenced_skills": [
+      "use-hivemind",
+      "use-hivemind-context",
+      "use-hivemind-delegation",
+      "use-hivemind-git-memory",
+      "use-hivemind-planning",
+      "use-hivemind-tdd",
+      "hivemind-codemap",
+      "hivemind-gatekeeping",
+      "hivemind-patterns",
+      "hivemind-refactor"
+    ],
+    "skills_missing_tests": ["hivemind-patterns"],
+    "skills_missing_templates": ["hivemind-system-debug"],
+    "shared_reference_name_verification-before-completion_across": [
+      "hivemind-refactor",
+      "hivemind-spec-driven",
+      "hivemind-system-debug"
+    ]
+  }
+}
