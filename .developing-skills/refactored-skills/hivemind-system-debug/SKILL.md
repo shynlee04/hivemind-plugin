@@ -17,6 +17,7 @@ parent: use-hivemind
 - [Debug Output Storage](#debug-output-storage)
 - [Orchestrator Integration](#orchestrator-integration)
 - [Outputs](#outputs)
+- [Conditional Loading](#conditional-loading)
 - [Bundled Resources](#bundled-resources)
 
 ## Load Position
@@ -88,6 +89,16 @@ Debug work is **always delegated** from the orchestrator. The orchestrator:
 |-------|-------------|
 | `use-hivemind` | Entry router — triggers this skill for debug workflows |
 | `use-hivemind-delegation` | Delegation protocol — debug dispatches through this |
+
+## Conditional Loading
+
+| Condition | Load Reference |
+|-----------|---------------|
+| Runtime error encountered | `debug-loop.md` |
+| Test failure to investigate | `verification-before-completion.md` |
+| Build failure diagnosis | `debug-loop.md` + delegation to `hivemind-execution` |
+| Multi-system integration issue | `debug-loop.md` + `hivemind-codemap` scan |
+| Flaky test detection | `verification-before-completion.md` + `hivemind-gatekeeping` |
 
 ## Bundled Resources
 

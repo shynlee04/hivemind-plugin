@@ -37,6 +37,7 @@ parent: use-hivemind
   - [When to Load](#when-to-load)
 - [Pattern Selection Decision Tree](#pattern-selection-decision-tree)
   - [The Golden Rule](#the-golden-rule)
+- [Conditional Loading](#conditional-loading)
 - [Bundled Resources](#bundled-resources)
 - [References](#references)
 
@@ -230,6 +231,16 @@ When designing new systems or evaluating existing architecture, load the archite
 | Designing a new system | architecture-patterns.md |
 | Evaluating microservice boundaries | architecture-patterns.md |
 | Comparing architecture approaches | architecture-patterns.md |
+
+## Conditional Loading
+
+| Condition | Load Reference |
+|-----------|---------------|
+| Designing new system architecture | `architecture-patterns.md` |
+| Evaluating existing code patterns | `pattern-catalog.md` |
+| Detecting anti-patterns in codebase | `anti-pattern-catalog.md` |
+| CQRS boundary decisions | `architecture-patterns.md` (CQRS section) |
+| Database selection needed | `architecture-patterns.md` + `hivemind-architecture` |
 
 ## Sibling Skills
 

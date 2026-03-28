@@ -16,6 +16,7 @@ parent: use-hivemind
   - [Step 3 — Delegate with Context](#step-3--delegate-with-context)
 - [Sibling Skill Integration](#sibling-skill-integration)
 - [Anti-Patterns at Router Level](#anti-patterns-at-router-level)
+- [Conditional Loading](#conditional-loading)
 - [Bundled Resources](#bundled-resources)
 
 ## Load Position
@@ -103,6 +104,16 @@ Hand off using the research delegation packet:
 2. **Loading both when one suffices** — unnecessary context overhead
 3. **Inline research for complex questions** — no evidence grading, no confidence scoring
 4. **Recursive routing** — router must not call itself
+
+## Conditional Loading
+
+| Condition | Load Reference |
+|-----------|---------------|
+| Technology evaluation needed | `evidence-contract.md` |
+| Documentation research | `mcp-setup-guide.md` |
+| Multi-source investigation | `research-classification.md` |
+| Repomix codebase analysis | `repomix-ingestion.md` |
+| Source credibility assessment | `evidence-contract.md` + `anti-patterns.md` |
 
 ## Bundled Resources
 

@@ -39,6 +39,8 @@ Consolidates: `hivemind-spec-driven` (expanded to full SDE lifecycle).
 - [Traceability Matrix](#traceability-matrix)
 - [Spec Candidate Format](#spec-candidate-format)
 - [Sibling Skills](#sibling-skills)
+- [Feature Proposal Format](#feature-proposal-format)
+- [Acceptance Criteria Patterns](#acceptance-criteria-patterns)
 - [Anti-Patterns](#anti-patterns)
 - [Bundled Resources](#bundled-resources)
 
@@ -188,6 +190,22 @@ For rejected candidates, fill `rejected_reason` with a one-line explanation of w
 | `use-hivemind-tdd` | Downstream — acceptance criteria become test gates |
 | `use-hivemind-tdd` | Downstream — traceable requirements drive TDD red phase |
 
+## Feature Proposal Format
+
+Before writing specs, structure the feature proposal using Problem/Solution/Impact from `references/problem-solution-impact.md`:
+- **Problem**: What breaks without this feature?
+- **Solution**: What approach solves it?
+- **Impact**: How do we measure success?
+
+A proposal without evidence in all 3 sections is not ready for spec writing.
+
+## Acceptance Criteria Patterns
+
+Write acceptance criteria in Given/When/Then format from `references/acceptance-criteria-patterns.md`:
+- Functional: Given [state], When [action], Then [result]
+- Non-functional: Given [state], When [load], Then [threshold]
+- Integration: Given [A state], When [call B], Then [B state]
+
 ## Anti-Patterns
 
 **You're writing code before the spec is approved.** Stop. Every line you write on ambiguous requirements is a line you'll rewrite. Spec first, code second.
@@ -211,6 +229,8 @@ For rejected candidates, fill `rejected_reason` with a one-line explanation of w
 | Resource | Path | Purpose |
 |----------|------|---------|
 | Acceptance Criteria | `references/acceptance-criteria.md` | Criteria format and quality standards |
+| Problem/Solution/Impact | `references/problem-solution-impact.md` | Feature proposal triad with scoring rubrics |
+| Acceptance Criteria Patterns | `references/acceptance-criteria-patterns.md` | GWT patterns for functional, non-functional, and integration criteria |
 | Traceability Matrix | `references/traceability-matrix.md` | Requirement-to-test traceability mapping |
 | Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
 | Spec Template | `templates/spec-template.md` | Template for spec document structure |

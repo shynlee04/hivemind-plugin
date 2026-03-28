@@ -21,6 +21,9 @@ You're building something. The test comes first — always. This skill governs t
 - [Test Writing Order](#test-writing-order)
 - [Multi-Phase State Tracking](#multi-phase-state-tracking)
 - [Evidence Format](#evidence-format)
+- [Test Design Techniques](#test-design-techniques)
+- [Quality Model](#quality-model)
+- [Quality Gates](#quality-gates)
 - [Anti-Patterns](#anti-patterns)
 - [Regression Response](#regression-response)
 - [Bundled Resources](#bundled-resources)
@@ -291,6 +294,39 @@ Every gate requires COMMAND OUTPUT as evidence, never claims.
 
 "Tests pass" is a claim. The output of `npm test` is evidence. Always show the evidence.
 
+## Test Design Techniques
+
+Beyond basic unit tests, use structured test design from `references/test-design-techniques.md`:
+- Equivalence Partitioning for input validation (especially Zod schema testing)
+- Boundary Value Analysis for edge cases
+- Decision Tables for complex conditional logic
+- State Transition for lifecycle workflows
+
+## Quality Model
+
+Assess test quality against ISO 25010 from `references/quality-model.md`. Eight characteristics with HiveMind-specific targets:
+- Functional Suitability, Performance, Compatibility, Usability
+- Reliability, Security, Maintainability, Portability
+
+Each quality characteristic is a completion blocker if unchecked.
+
+## Quality Gates
+
+Tests pass at multiple granularity levels from `references/quality-gates.md`:
+- **Unit Gate**: after each function — targeted test passes, types clean
+- **Integration Gate**: after each module — module tests pass, no import errors
+- **E2E Gate**: after each phase — full suite passes, build succeeds
+- **Deployment Gate**: before handoff — all gates pass, lint clean, docs updated
+
+## Risk-Based Testing
+
+Prioritize test effort by risk score from `references/risk-based-testing.md`:
+- Risk = Likelihood × Impact (1-9 scale)
+- Critical (9): exhaustive testing with all techniques
+- High (6): thorough testing with 2+ techniques
+- Medium (3-4): standard coverage
+- Low (1-2): smoke tests only
+
 ## Anti-Patterns
 
 | Anti-Pattern | Excuse | Reality |
@@ -334,6 +370,10 @@ Every gate requires COMMAND OUTPUT as evidence, never claims.
 | Build Verify Checkpoint | `templates/build-verify-checkpoint.md` | Build-verify gate result JSON |
 | TDD Delegation | `tests/tdd-delegation.md` | Test scenario for TDD delegation |
 | TDD Scenario | `tests/tdd-scenario.md` | Test scenario for full TDD workflow |
+| Test Design Techniques | `references/test-design-techniques.md` | ISTQB techniques adapted for HiveMind |
+| Quality Model | `references/quality-model.md` | ISO 25010 quality characteristics for HiveMind |
+| Quality Gates | `references/quality-gates.md` | Multi-granularity gate criteria and enforcement |
+| Risk-Based Testing | `references/risk-based-testing.md` | Risk × Impact prioritization and test allocation |
 
 ## Independence Rules
 
