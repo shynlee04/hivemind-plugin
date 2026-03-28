@@ -1,9 +1,22 @@
 ---
-name: "use-hivemind-research"
-description: Router for structured research workflows. Use when the user asks research questions, needs multi-source investigation, technology evaluation, API analysis, pattern discovery, or evidence-based findings.
+name: use-hivemind-research
+description: Router for structured research workflows — multi-source investigation, technology evaluation, and evidence-based findings.
+parent: use-hivemind
 ---
 
 # use-hivemind-research — Research Router
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [Use This For](#use-this-for)
+- [Routing Logic](#routing-logic)
+  - [Step 1 — Classify the Request](#step-1--classify-the-request)
+  - [Step 2 — Load the Correct Package](#step-2--load-the-correct-package)
+  - [Step 3 — Delegate with Context](#step-3--delegate-with-context)
+- [Sibling Skill Integration](#sibling-skill-integration)
+- [Anti-Patterns at Router Level](#anti-patterns-at-router-level)
+- [Bundled Resources](#bundled-resources)
 
 ## Load Position
 

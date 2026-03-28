@@ -30,12 +30,14 @@
 | 1.2 | `use-hivemind-delegation` | 476 lines + 4 duplicate sections + threshold inconsistency | HIGH | Remove 2nd copy of: Granularity Gate, Parallel Dispatch Safety, Hierarchical Packet Construction, Context Window Management. Fix threshold: canonical is >50%. Update Bundled Resources table to list all files. Target: <450 lines. |
 | 1.3 | `use-hivemind-skill-authoring` | Self-references 5 times in consolidates field | HIGH | Remove nonsensical `consolidates` field or list actual consolidated skills. Fix Deprecation Notice. Add Bundled Resources table (8 refs). |
 
-### Batch 2 — Systemic Fixes (2 skills, parallel-safe)
+### Batch 2 — Systemic Fixes (all 15 skills)
 
 | # | Scope | Issue | Fix |
 |---|-------|-------|-----|
 | 2.1 | 13 skills | Missing `parent` field in frontmatter | Add `parent: use-hivemind` or appropriate parent to: hivemind-atomic-commit, hivemind-codemap, hivemind-gatekeeping, hivemind-patterns, hivemind-refactor, hivemind-spec-driven, hivemind-system-debug, use-hivemind-delegation, use-hivemind-git-memory, use-hivemind-research, use-hivemind-skill-authoring, use-hivemind-tdd, use-hivemind-planning |
 | 2.2 | 12 skills | Missing/incomplete Bundled Resources tables | Add complete tables listing ALL files in references/, templates/, scripts/, tests/, schemas/ directories |
+| 2.3 | 15 skills | No Table of Contents | Add `## Table of Contents` with links to all major sections after the first paragraph |
+| 2.4 | 15 skills | YAML description quality | Improve `description` field: 1 sentence (what it IS) + 1 sentence (when to trigger). Target: clear, consistent, ≤200 chars |
 
 ### Batch 3 — Alignment Fixes (4 tasks)
 

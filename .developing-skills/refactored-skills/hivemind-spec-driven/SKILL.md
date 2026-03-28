@@ -1,6 +1,7 @@
 ---
 name: hivemind-spec-driven
-description: Spec-driven engineering. From vague requirements to testable specs. Every requirement must be testable. Every test must trace to a requirement. Covers requirements extraction, ambiguity resolution, acceptance criteria, and traceability.
+parent: use-hivemind
+description: Spec-driven engineering — from vague requirements to testable specs with acceptance criteria and traceability.
 ---
 
 <!-- LOAD-POSITION
@@ -25,6 +26,21 @@ prerequisites: use-hivemind-planning
 You've got a feature to build. The requirements might be crystal clear or they might be a swamp of contradictions and half-formed ideas. Either way, you need a spec that's testable, traceable, and unambiguous before anyone writes a single line of code. That's what this skill does.
 
 Consolidates: `hivemind-spec-driven` (expanded to full SDE lifecycle).
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When You Need This](#when-you-need-this)
+- [Do Not Use This For](#do-not-use-this-for)
+- [The Spec Flow](#the-spec-flow)
+- [Requirements Classification](#requirements-classification)
+- [Ambiguity Resolution](#ambiguity-resolution)
+- [Acceptance Criteria Template](#acceptance-criteria-template)
+- [Traceability Matrix](#traceability-matrix)
+- [Spec Candidate Format](#spec-candidate-format)
+- [Sibling Skills](#sibling-skills)
+- [Anti-Patterns](#anti-patterns)
+- [Bundled Resources](#bundled-resources)
 
 ## When You Need This
 

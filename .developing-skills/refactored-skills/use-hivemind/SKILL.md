@@ -7,6 +7,37 @@ description: Master session entry router. Detects lineage (hivefiver vs hivemind
 
 This is the front door to the HiveMind skill ecosystem. Every agent turn — whether a fresh session, a resume after compaction, or a mid-conversation framework reference — must enter through this skill. It performs three critical gatekeeping functions before any work proceeds: lineage detection (who am I and what kind of work is this), context health verification (is the session state trustworthy), and routing (which domain router handles the request). If context is degraded, it blocks all work and delegates recovery. If lineage is ambiguous, it asks one clarifying question. It never implements — it routes only.
 
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Orchestrator Mission](#orchestrator-mission)
+  - [Core Directives](#core-directives)
+  - [Behavioral Mandate](#behavioral-mandate)
+  - [The How-To-Process vs How-To-Implement Distinction](#the-how-to-process-vs-how-to-implement-distinction)
+- [Session Handling](#session-handling)
+- [Multi-Wave Dispatch](#multi-wave-dispatch)
+  - [The Dispatch Flow](#the-dispatch-flow)
+  - [Wave Rules](#wave-rules)
+  - [Parallel Dispatch Within Waves](#parallel-dispatch-within-waves)
+- [Cross-Team Awareness](#cross-team-awareness)
+- [Dynamic Batch Loading](#dynamic-batch-loading)
+- [When to Activate](#when-to-activate)
+- [Routing Matrix](#routing-matrix)
+- [Batch Composition Rules](#batch-composition-rules)
+- [Lineage Detection](#lineage-detection)
+- [Context Health Gate](#context-health-gate)
+- [Step-by-Step Protocol](#step-by-step-protocol)
+  - [Wave Dispatch Decision](#wave-dispatch-decision)
+- [Anti-Patterns](#anti-patterns)
+  - [Dispatch Anti-Patterns](#dispatch-anti-patterns)
+  - [Session Anti-Patterns](#session-anti-patterns)
+  - [Gatekeeping Anti-Patterns](#gatekeeping-anti-patterns)
+- [Platform Detection](#platform-detection)
+- [Terminal State](#terminal-state)
+- [No-Load Conditions](#no-load-conditions)
+- [Independence Rules](#independence-rules)
+- [Bundled Resources](#bundled-resources)
+
 ## Purpose
 
 - Session entry point for all agent turns

@@ -1,6 +1,7 @@
 ---
 name: use-hivemind-context
-description: The context health domain. Before you trust anything — docs, memory, prior sessions — check it here. Documents are advisory, code is truth. Routes to session health probes and project verification gates.
+description: Context health verification — verifies doc/code agreement, detects context rot, and runs verification gates before trusting prior sessions or memory.
+parent: use-hivemind
 ---
 
 <!-- LOAD-POSITION
@@ -24,6 +25,26 @@ role: domain
 You're about to trust something — a doc, a memory, a prior session's claim, a test result. Stop. This domain router puts a checkpoint between "I remember" and "I trust." It doesn't do the checking itself. It dispatches to the right specialist based on what kind of doubt you have: session health uncertainty, or project-structural verification.
 
 **Parent:** `use-hivemind` (entry router)
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When You Need This](#when-you-need-this)
+- [The 3-Step Trust Check](#the-3-step-trust-check)
+- [Distrust Levels](#distrust-levels)
+- [Routing Logic](#routing-logic)
+- [Verification Gates](#verification-gates-project-reality)
+- [Freshness Probe](#freshness-probe)
+- [Cross-Team Context Awareness](#cross-team-context-awareness)
+- [Multi-Source Comparison](#multi-source-comparison)
+- [Context Preservation Across Long Sessions](#context-preservation-across-long-sessions)
+- [Distrust Protocol](#distrust-protocol)
+- [Orchestrator Integration](#orchestrator-integration)
+- [Handoff Paths](#handoff-paths)
+- [Carry-Forward](#carry-forward)
+- [Sibling Skills](#sibling-skills)
+- [Anti-Patterns](#anti-patterns)
+- [Bundled Resources](#bundled-resources)
 
 ## When You Need This
 

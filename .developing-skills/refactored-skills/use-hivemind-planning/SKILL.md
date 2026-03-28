@@ -1,13 +1,32 @@
 ---
 name: use-hivemind-planning
-description: The planning domain. From vague requirements to executable phases with numbered steps and dependency maps. Covers requirement distillation, feasibility validation, slice decomposition, and progress tracking.
+parent: use-hivemind
+description: Planning lifecycle for complex tasks — requirement distillation, feasibility validation, slice decomposition, and dependency mapping through to execution.
 ---
 
 # use-hivemind-planning
 
 You've got a thing to build. Maybe the requirements are clear. Maybe they're a mess. Either way, you need a structured path from "what the human wants" to "here's what each subagent does." This skill is that path. It handles the full arc: distilling noisy specs, validating feasibility, decomposing into bounded slices, mapping dependencies, and tracking progress through to done.
 
-Consolidates: `use-hivemind-planning`, `use-hivemind-planning`, `hivemind-spec-driven`, `hivemind-codemap` (feasibility section).
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When to Load](#when-to-load)
+- [The Planning Flow](#the-planning-flow)
+- [Spec Distillation](#spec-distillation)
+- [Feasibility Validation](#feasibility-validation)
+- [Phase Numbering](#phase-numbering)
+- [Decomposition Steps](#decomposition-steps)
+- [Plan Record Schema](#plan-record-schema)
+- [Slice Template](#slice-template)
+- [Re-Decomposition](#re-decomposition)
+- [Handoff Paths](#handoff-paths)
+- [Anti-Patterns](#anti-patterns)
+- [TDD Integration](#tdd-integration)
+- [Sibling Skills](#sibling-skills)
+- [Bundled Resources](#bundled-resources)
+
+Consolidates: `hivemind-spec-driven`, `hivemind-codemap` (feasibility section).
 
 ## Load Position
 
@@ -267,7 +286,7 @@ Carry-forward            →     Verification gate evidence
 |--------|-----------|---------------|-------------|
 | use-hivemind | use-hivemind-planning | use-hivemind-delegation | use-hivemind-tdd |
 
-This skill consolidates: `use-hivemind-planning` (lifecycle + retraceability), `use-hivemind-planning` (decomposition methodology), `hivemind-spec-driven` (requirement extraction), and `hivemind-codemap` (feasibility scanning). Detailed references, templates, and scan helpers live in the respective `references/` directories.
+This skill integrates with: `hivemind-spec-driven` (requirement extraction), and `hivemind-codemap` (feasibility scanning). Detailed references, templates, and scan helpers live in the respective `references/` directories.
 
 ## Bundled Resources
 

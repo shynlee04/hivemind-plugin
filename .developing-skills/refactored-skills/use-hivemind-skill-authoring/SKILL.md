@@ -1,6 +1,7 @@
 ---
 name: use-hivemind-skill-authoring
-description: The skill authoring domain. Creating, reviewing, auditing skills. Universal design principles. Conflict detection. Everything you need to build skills that work everywhere.
+description: Skill creation, review, and auditing — naming conventions, universal design, conflict detection, and quality assurance for HiveMind skills.
+parent: use-hivemind
 ---
 
 # use-hivemind-skill-authoring
@@ -10,6 +11,21 @@ description: The skill authoring domain. Creating, reviewing, auditing skills. U
 Layer: Domain. Requires `use-hivemind` (entry router) loaded first.
 
 If you're building a skill, reviewing one, or wondering whether two skills are stepping on each other — this is where you start.
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When You Need This](#when-you-need-this)
+- [Skill Anatomy](#skill-anatomy)
+- [Naming Convention](#naming-convention)
+- [Creation Template](#creation-template)
+- [Universal Design](#universal-design)
+- [Conflict Detection](#conflict-detection)
+- [Review Checklist](#review-checklist)
+- [Platform Abstraction Matrix](#platform-abstraction-matrix)
+- [Anti-Patterns](#anti-patterns)
+- [Handoff Paths](#handoff-paths)
+- [Bundled Resources](#bundled-resources)
 
 ## When You Need This
 

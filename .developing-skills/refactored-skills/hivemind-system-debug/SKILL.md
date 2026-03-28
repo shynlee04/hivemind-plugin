@@ -1,9 +1,23 @@
 ---
 name: hivemind-system-debug
-description: Use when detox or restoration work has unresolved breakage and needs reproducibility, narrowing, containment, rollback logic, and explicit debug-to-refactor transition rules.
+description: Debug-to-refactor transitions — reproducibility, narrowing, containment, rollback logic, and transition rules for unresolved breakage.
+parent: use-hivemind
 ---
 
 # hivemind-system-debug
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [Purpose](#purpose)
+- [Use This For](#use-this-for)
+- [Do Not Use This For](#do-not-use-this-for)
+- [Core Process](#core-process)
+- [Context Distrust in Debugging](#context-distrust-in-debugging)
+- [Debug Output Storage](#debug-output-storage)
+- [Orchestrator Integration](#orchestrator-integration)
+- [Outputs](#outputs)
+- [Bundled Resources](#bundled-resources)
 
 ## Load Position
 

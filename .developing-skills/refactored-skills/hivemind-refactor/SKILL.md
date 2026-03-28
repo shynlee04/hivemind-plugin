@@ -1,6 +1,7 @@
 ---
 name: hivemind-refactor
 description: Refactor methodology. Smallest safe change. Behavior preservation is non-negotiable. Assess, plan, execute, verify — in that order.
+parent: use-hivemind
 ---
 
 <!-- LOAD-POSITION
@@ -21,6 +22,35 @@ prerequisites: use-hivemind-delegation
 | Conflict | None — loads alongside any domain skill |
 
 # hivemind-refactor
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When You Need This](#when-you-need-this)
+- [The Refactor Loop](#the-refactor-loop)
+- [Phase 1: ASSESS](#phase-1-assess)
+  - [What You Must Identify](#what-you-must-identify)
+  - [Smell Classification](#smell-classification)
+  - [Evidence You Must Return](#evidence-you-must-return)
+- [Phase 2: PLAN](#phase-2-plan)
+  - [Plan Rules](#plan-rules)
+  - [Smallest Safe Change](#smallest-safe-change)
+  - [Plan Output](#plan-output)
+- [Phase 3: EXECUTE](#phase-3-execute)
+  - [Execution Rules](#execution-rules)
+  - [What "One Change" Means](#what-one-change-means)
+- [Phase 4: VERIFY](#phase-4-verify)
+  - [Verification Gates](#verification-gates)
+  - [Behavior Preservation Proof](#behavior-preservation-proof)
+- [Refactor Techniques](#refactor-techniques)
+- [Rollback Protocol](#rollback-protocol)
+  - [When To Roll Back](#when-to-roll-back)
+  - [Rollback Command](#rollback-command)
+  - [The Revert-First Rule](#the-revert-first-rule)
+- [Anti-Patterns](#anti-patterns)
+- [Sibling Skills](#sibling-skills)
+- [Bundled Resources](#bundled-resources)
+- [Independence Rules](#independence-rules)
 
 **Refactoring is not rewriting. Rewriting changes behavior. Refactoring preserves it. If you cannot prove behavior is preserved, you are not refactoring — you are guessing.**
 

@@ -164,3 +164,69 @@ Wave 4: Verification + Review
 | Research | `use-hivemind` | `use-hivemind-research` | `hivemind-codemap` |
 | Debug | `use-hivemind` | `use-hivemind-delegation` | `hivemind-system-debug`, `hivemind-codemap` |
 | Commit | `use-hivemind` | `use-hivemind-git-memory` | `hivemind-atomic-commit` |
+
+---
+
+## Skill Quality Standards (Enforced)
+
+As of 2026-03-28, all 15 skills enforce these quality standards:
+
+| Standard | Requirement | Enforcement |
+|----------|------------|-------------|
+| YAML frontmatter | `name` + `description` (≤200 chars, active voice) | Mandatory |
+| Parent field | `parent: use-hivemind` (all except entry skill) | Mandatory |
+| Table of Contents | `## Table of Contents` with links to all `##` sections | Mandatory |
+| Bundled Resources | Complete table listing ALL files in references/, templates/, scripts/, tests/ | Mandatory |
+| Line count | SKILL.md under 450 lines | Enforced |
+| Cross-references | Bidirectional refs between related skills | Verified |
+
+### Verification Matrix (2026-03-28)
+
+| Skill | Lines | TOC | Parent | Bundled Resources | Status |
+|-------|-------|-----|--------|-------------------|--------|
+| use-hivemind | 389 | ✓ | — (entry) | ✓ | PASS |
+| use-hivemind-context | 302 | ✓ | ✓ | ✓ | PASS |
+| use-hivemind-delegation | 405 | ✓ | ✓ | ✓ | PASS |
+| use-hivemind-git-memory | 194 | ✓ | ✓ | ✓ | PASS |
+| use-hivemind-planning | 315 | ✓ | ✓ | ✓ | PASS |
+| use-hivemind-research | 123 | ✓ | ✓ | ✓ | PASS |
+| use-hivemind-skill-authoring | 230 | ✓ | ✓ | ✓ | PASS |
+| use-hivemind-tdd | 346 | ✓ | ✓ | ✓ | PASS |
+| hivemind-atomic-commit | 204 | ✓ | ✓ | ✓ | PASS |
+| hivemind-codemap | 204 | ✓ | ✓ | ✓ | PASS |
+| hivemind-gatekeeping | 336 | ✓ | ✓ | ✓ | PASS |
+| hivemind-patterns | 234 | ✓ | ✓ | ✓ | PASS |
+| hivemind-refactor | 314 | ✓ | ✓ | ✓ | PASS |
+| hivemind-spec-driven | 217 | ✓ | ✓ | ✓ | PASS |
+| hivemind-system-debug | 91 | ✓ | ✓ | ✓ | PASS |
+
+### Changelog (2026-03-28)
+
+**Batch 1 (Foundation):**
+- `use-hivemind-git-memory` — Fixed self-referential routing, added TOC, improved YAML, added parent field
+- `use-hivemind-delegation` — Removed 4 duplicate sections (476→405 lines), added TOC, improved YAML, added parent field
+- `use-hivemind-skill-authoring` — Removed self-references in consolidates field, added TOC, improved YAML, added parent field
+
+**Batch 2 (Context+Memory):**
+- `use-hivemind-context` — Added TOC, improved YAML, added parent field
+- `hivemind-atomic-commit` — Added TOC, improved YAML (trimmed long description), added parent field, fixed missing Bundled Resource entry
+- `hivemind-codemap` — Added TOC, improved YAML, added parent field
+
+**Batch 3 (Planning+TDD):**
+- `use-hivemind-planning` — Fixed double self-reference in consolidates field, added TOC, improved YAML, added parent field
+- `use-hivemind-tdd` — Added TOC, improved YAML, added parent field
+- `hivemind-spec-driven` — Added TOC, improved YAML, added parent field
+
+**Batch 4 (Remaining):**
+- `use-hivemind-research` — Fixed quoted name field, added TOC, improved YAML, added parent field
+- `hivemind-system-debug` — Added TOC, improved YAML, added parent field
+- `hivemind-patterns` — Added TOC, improved YAML, added parent field
+- `hivemind-refactor` — Added TOC, added parent field
+- `hivemind-gatekeeping` — Added TOC, improved YAML, added parent field
+- `use-hivemind` — Added TOC (entry skill, no parent — correct)
+
+**Terminology standardized across all 15 skills:**
+- "delegation packet" (canonical) — not "handoff packet" or "dispatch packet"
+- "subagent" (canonical) — not "child agent" or "delegated agent"
+- "orchestrator (hiveminder)" for formal, "orchestrator" for prose
+- "depth skill" (canonical) — not "depth partner", "depth companion", or "depth specialist"

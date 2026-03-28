@@ -1,11 +1,30 @@
 ---
 name: hivemind-codemap
-description: Use when detox or restoration work needs whole-codebase mapping, seam discovery, high-level to low-level scan passes, or explicit concern slicing before refactor.
+description: Whole-codebase mapping for detox or restoration — seam discovery, multi-layer scan passes, and concern slicing before refactor.
+parent: use-hivemind
 ---
 
 # hivemind-codemap
 
 This is the deep codemap branch family for `use-hivemind`.
+
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Use This For](#use-this-for)
+- [Preconditions](#preconditions)
+- [Do Not Use This For](#do-not-use-this-for)
+- [Scan Levels](#scan-levels)
+- [Tool Modes](#tool-modes)
+- [Core Process](#core-process)
+- [Delegation Loop](#delegation-loop)
+- [Reusable Codemap Techniques](#reusable-codemap-techniques)
+- [Bash Scan Helper](#bash-scan-helper)
+- [Iterative Output Storage](#iterative-output-storage)
+- [Delegation Integration](#delegation-integration)
+- [Orchestrator Integration](#orchestrator-integration)
+- [Outputs](#outputs)
+- [Bundled Resources](#bundled-resources)
 
 ## Purpose
 - map the codebase before refactor strategy
