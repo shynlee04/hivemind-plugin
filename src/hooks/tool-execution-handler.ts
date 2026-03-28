@@ -10,7 +10,12 @@
 import {
   addEvent,
   incrementCounter,
+  loadSession,
 } from '../features/event-tracker/consolidated-writer.js'
+import {
+  appendTurnToMarkdown,
+  ensureEventsMarkdown,
+} from '../features/event-tracker/markdown-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
 /**
@@ -61,5 +66,21 @@ export async function handleToolExecution(
   } catch {
     // Session file may lack counters structure — non-critical
     console.error('[tool-execution-handler] incrementCounter failed for session:', semanticSessionId)
+  }
+
+  const markdownSession = await loadSession(sessionsDir, semanticSessionId)
+  const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+
+  if (markdownSessionDir) {
+    await appendTurnToMarkdown(markdownSessionDir, {
+      turnNumber: markdownSession.turns.length + markdownSession.events.length,
+      timestamp: new Date().toISOString(),
+      type: 'tool_call',
+      content: output.title || input.tool,
+      metadata: {
+        tool: input.tool,
+        action: input.callID,
+      },
+    }).catch(() => undefined)
   }
 }

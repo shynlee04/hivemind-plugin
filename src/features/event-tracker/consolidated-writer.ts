@@ -234,17 +234,7 @@ async function modifySession(
  * // Returns: '/sessions/ses_2026-03-25T120000_implementation_hitea.json'
  */
 export function getSessionPath(sessionDir: string, sessionId: string): string {
-  const legacyPath = getLegacySessionPath(sessionDir, sessionId)
-  if (existsSync(legacyPath)) {
-    return legacyPath
-  }
-
-  const journeyEventsPath = getJourneyEventSessionPath(sessionDir, sessionId)
-  if (existsSync(journeyEventsPath)) {
-    return journeyEventsPath
-  }
-
-  return journeyEventsPath
+  return getJourneyEventSessionPath(sessionDir, sessionId)
 }
 
 /**
@@ -263,9 +253,18 @@ export async function loadSession(
   sessionDir: string,
   sessionId: string
 ): Promise<SessionV2> {
-  const filePath = getSessionPath(sessionDir, sessionId)
-  const content = await readFile(filePath, 'utf8')
-  return JSON.parse(content) as SessionV2
+  try {
+    const content = await readFile(getSessionPath(sessionDir, sessionId), 'utf8')
+    return JSON.parse(content) as SessionV2
+  } catch (error) {
+    const legacyPath = getLegacySessionPath(sessionDir, sessionId)
+    if (!existsSync(legacyPath)) {
+      throw error
+    }
+
+    const content = await readFile(legacyPath, 'utf8')
+    return JSON.parse(content) as SessionV2
+  }
 }
 
 /**

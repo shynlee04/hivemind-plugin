@@ -10,7 +10,12 @@
 import {
   addEvent,
   incrementCounter,
+  loadSession,
 } from '../features/event-tracker/consolidated-writer.js'
+import {
+  appendTurnToMarkdown,
+  ensureEventsMarkdown,
+} from '../features/event-tracker/markdown-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
 /** Dependencies injected into the compaction journal handler factory. */
@@ -67,6 +72,18 @@ export function createCompactionJournalHandler(deps: CompactionJournalHandlerDep
 
       // Increment compaction counter
       await incrementCounter(sessionsDir, consolidatedSessionId, 'compactionCount', 1)
+
+      const markdownSession = await loadSession(sessionsDir, consolidatedSessionId)
+      const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+
+      if (markdownSessionDir) {
+        await appendTurnToMarkdown(markdownSessionDir, {
+          turnNumber: markdownSession.turns.length + markdownSession.events.length,
+          timestamp,
+          type: 'compaction',
+          content: output.prompt || `Session compaction (${contextLength} context entries).`,
+        }).catch(() => undefined)
+      }
     } catch (err) {
       console.error('[session-journal] writeEvent (compaction) failed:', err)
     }
@@ -115,4 +132,16 @@ export async function handleCompaction(
 
   // Increment compaction counter
   await incrementCounter(sessionsDir, semanticSessionId, 'compactionCount', 1)
+
+  const markdownSession = await loadSession(sessionsDir, semanticSessionId)
+  const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+
+  if (markdownSessionDir) {
+    await appendTurnToMarkdown(markdownSessionDir, {
+      turnNumber: markdownSession.turns.length + markdownSession.events.length,
+      timestamp: new Date().toISOString(),
+      type: 'compaction',
+      content: output.prompt || `Session compaction (${output.context.length} context entries).`,
+    }).catch(() => undefined)
+  }
 }

@@ -19,6 +19,10 @@ import {
   updateStatus,
   loadSession,
 } from '../features/event-tracker/consolidated-writer.js'
+import {
+  appendTurnToMarkdown,
+  ensureEventsMarkdown,
+} from '../features/event-tracker/markdown-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
 /** Narrow a string to PurposeClass via sentinel array lookup. */
@@ -101,6 +105,21 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
         },
       })
 
+      const markdownSession = await loadSession(sessionsDir, consolidatedSessionId)
+      const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+
+      if (markdownSessionDir) {
+        await appendTurnToMarkdown(markdownSessionDir, {
+          turnNumber: currentTurnNumber,
+          timestamp,
+          type: 'assistant_output',
+          content: assistantText,
+          metadata: {
+            model: 'unknown',
+          },
+        }).catch(() => undefined)
+      }
+
       // 2. Write assistant_output event
       await addEvent(sessionsDir, {
         sessionId: consolidatedSessionId,
@@ -178,4 +197,19 @@ export async function handleTextComplete(
       assistantContent: assistantText,
     },
   })
+
+  const markdownSession = await loadSession(sessionsDir, semanticSessionId)
+  const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+
+  if (markdownSessionDir) {
+    await appendTurnToMarkdown(markdownSessionDir, {
+      turnNumber,
+      timestamp: new Date().toISOString(),
+      type: 'assistant_output',
+      content: assistantText,
+      metadata: {
+        model: 'unknown',
+      },
+    }).catch(() => undefined)
+  }
 }

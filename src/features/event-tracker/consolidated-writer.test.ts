@@ -812,7 +812,7 @@ test('getSessionPath returns correct file path for session', async () => {
   }
 })
 
-test('getSessionPath falls back to legacy root files when they already exist', async () => {
+test('getSessionPath always resolves to the journey-events JSON path', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'consolidated-writer-legacy-'))
 
   try {
@@ -825,7 +825,7 @@ test('getSessionPath falls back to legacy root files when they already exist', a
       )
     })
 
-    assert.equal(getSessionPath(tmpDir, sessionId), legacyPath)
+    assert.equal(getSessionPath(tmpDir, sessionId), expectedSessionPath(tmpDir, sessionId))
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }

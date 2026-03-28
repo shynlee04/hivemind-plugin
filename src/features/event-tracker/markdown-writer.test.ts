@@ -416,9 +416,9 @@ test('appendDiagnosticToMarkdown adds diagnostic section with entry', async () =
     const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
 
     assert.ok(content.includes('## Diagnostics'), 'should include Diagnostics heading')
-    assert.ok(content.includes('| Timestamp | Level | Message |'),
-      'should include diagnostics table header')
-    assert.ok(content.includes('| 2026-03-26T11:53:16.525Z | info | turn_complete agent=hiveminder text_len=170 |'),
+    assert.ok(content.includes('### 2026-03-26T11:53:16.525Z [info]'),
+      'should include append-only diagnostic heading')
+    assert.ok(content.includes('turn_complete agent=hiveminder text_len=170'),
       'should include diagnostic entry')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
@@ -444,10 +444,14 @@ test('appendDiagnosticToMarkdown appends multiple entries', async () => {
 
     const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
 
-    assert.ok(content.includes('| 2026-03-26T11:53:16.525Z | info |'),
+    assert.ok(content.includes('### 2026-03-26T11:53:16.525Z [info]'),
       'should include first diagnostic')
-    assert.ok(content.includes('| 2026-03-26T11:54:02.334Z | error |'),
+    assert.ok(content.includes('turn_complete agent=hiveminder'),
+      'should preserve first diagnostic message')
+    assert.ok(content.includes('### 2026-03-26T11:54:02.334Z [error]'),
       'should include second diagnostic')
+    assert.ok(content.includes('ENOENT: no such file or directory'),
+      'should preserve second diagnostic message')
 
     // Diagnostics heading should appear only once
     const diagMatches = content.match(/## Diagnostics/g) ?? []

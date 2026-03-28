@@ -14,9 +14,16 @@ import {
   addDiagnostic,
   addEvent,
   initSession,
-  linkSubSession,
+   linkSubSession,
+  loadSession,
   updateStatus,
 } from '../features/event-tracker/consolidated-writer.js'
+import {
+  appendDiagnosticToMarkdown,
+  appendTurnToMarkdown,
+  ensureEventsMarkdown,
+} from '../features/event-tracker/markdown-writer.js'
+import { appendError } from '../features/session-journal/error-log-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
 function readStringProperty(
@@ -58,6 +65,52 @@ function resolvePurposeClass(
     default:
       return 'implementation'
   }
+}
+
+function formatEventDetails(
+  summary: string,
+  details?: Record<string, unknown>,
+): string {
+  if (!details || Object.keys(details).length === 0) {
+    return summary
+  }
+
+  return `${summary}\n\n\`\`\`json\n${JSON.stringify(details, null, 2)}\n\`\`\``
+}
+
+async function appendLifecycleTurn(
+  sessionsDir: string,
+  sessionId: string,
+  turn: {
+    timestamp: string
+    type: 'error' | 'session_created' | 'session_idle'
+    content: string
+  },
+): Promise<void> {
+  const session = await loadSession(sessionsDir, sessionId)
+  const sessionDir = await ensureEventsMarkdown(sessionsDir, session)
+
+  await appendTurnToMarkdown(sessionDir, {
+    turnNumber: session.turns.length + session.events.length,
+    timestamp: turn.timestamp,
+    type: turn.type,
+    content: turn.content,
+  })
+}
+
+async function appendLifecycleDiagnostic(
+  sessionsDir: string,
+  sessionId: string,
+  diagnostic: {
+    timestamp: string
+    level: string
+    message: string
+  },
+): Promise<void> {
+  const session = await loadSession(sessionsDir, sessionId)
+  const sessionDir = await ensureEventsMarkdown(sessionsDir, session)
+
+  await appendDiagnosticToMarkdown(sessionDir, diagnostic)
 }
 
 async function linkParentChildSessions(
@@ -189,6 +242,7 @@ export function createEventHandler(directory: string) {
     const snapshot = await loadRuntimeBindingsSnapshot(directory)
 
     if (event.type === 'session.created' && sdkSessionId) {
+      const timestamp = new Date().toISOString()
       const consolidatedSessionId = await initSession(sessionsDir, {
         sdkSessionId,
         lineage: resolveLineage(sessionProperties),
@@ -206,7 +260,7 @@ export function createEventHandler(directory: string) {
             turnNumber: 0,
             type: 'session_created',
             importance: 'medium',
-            timestamp: new Date().toISOString(),
+            timestamp,
             data: {
               sessionId: sdkSessionId,
               properties: sessionProperties,
@@ -223,6 +277,12 @@ export function createEventHandler(directory: string) {
           (sessionId) => sessionResolver.resolve(sessionId),
           'session.created'
         )
+
+        await appendLifecycleTurn(sessionsDir, consolidatedSessionId, {
+          timestamp,
+          type: 'session_created',
+          content: formatEventDetails(`Session created for SDK session ${sdkSessionId}.`, sessionProperties),
+        }).catch(() => undefined)
       }
     }
 
@@ -289,6 +349,7 @@ export function createEventHandler(directory: string) {
     }
 
     if (event.type === 'session.error' && sdkSessionId) {
+      const timestamp = new Date().toISOString()
       const consolidatedSessionId = await sessionResolver.resolve(sdkSessionId).catch((err) => {
         console.error('[session-journal] resolveSession (session.error) failed:', err)
         return null
@@ -303,7 +364,7 @@ export function createEventHandler(directory: string) {
             turnNumber: 0,
             type: 'session_error',
             importance: 'high',
-            timestamp: new Date().toISOString(),
+            timestamp,
             data: {
               sessionId: sdkSessionId,
               error: errorDetails,
@@ -316,7 +377,7 @@ export function createEventHandler(directory: string) {
         await addDiagnostic(sessionsDir, {
           sessionId: consolidatedSessionId,
           diagnostic: {
-            timestamp: new Date().toISOString(),
+            timestamp,
             level: 'error',
             message: 'session.error event received',
             context: {
@@ -324,9 +385,32 @@ export function createEventHandler(directory: string) {
               error: errorDetails,
             },
           },
-        }).catch((err) => {
+          }).catch((err) => {
           console.error('[session-journal] addDiagnostic (session.error) failed:', err)
         })
+
+        await appendLifecycleTurn(sessionsDir, consolidatedSessionId, {
+          timestamp,
+          type: 'error',
+          content: formatEventDetails(`Session error for SDK session ${sdkSessionId}.`, errorDetails),
+        }).catch(() => undefined)
+
+        await appendLifecycleDiagnostic(sessionsDir, consolidatedSessionId, {
+          timestamp,
+          level: 'error',
+          message: 'session.error event received',
+        }).catch(() => undefined)
+
+        await appendError(directory, {
+          sessionId: consolidatedSessionId,
+          timestamp,
+          level: 'error',
+          message: 'session.error event received',
+          context: {
+            sessionId: sdkSessionId,
+            error: errorDetails,
+          },
+        }).catch(() => undefined)
       }
     }
 
@@ -389,6 +473,7 @@ export function createEventHandler(directory: string) {
     if (event.type === 'session.idle') {
       const client = getClient()
       const sessionId = (event.properties as { sessionID?: string })?.sessionID
+      const timestamp = new Date().toISOString()
 
       if (!sessionId) {
         // No session ID provided, exit early
@@ -427,12 +512,18 @@ export function createEventHandler(directory: string) {
             turnNumber: 0, // System events are not tied to specific turns
             type: 'session_idle',
             importance: 'low',
-            timestamp: new Date().toISOString(),
+            timestamp,
             data: {
               sessionId,
             },
           },
         })
+
+        await appendLifecycleTurn(sessionsDir, consolidatedSessionId, {
+          timestamp,
+          type: 'session_idle',
+          content: `Session idle for SDK session ${sessionId}.`,
+        }).catch(() => undefined)
       } catch (err) {
         console.error('[session-journal] addEvent (session.idle) failed:', err)
       }
@@ -506,4 +597,10 @@ export async function handleSessionIdleEvent(
       },
     },
   })
+
+  await appendLifecycleTurn(sessionDir, semanticSessionId, {
+    timestamp: new Date().toISOString(),
+    type: 'session_idle',
+    content: `Session idle for SDK session ${sdkSessionId}.`,
+  }).catch(() => undefined)
 }

@@ -8,9 +8,11 @@
  * @module event-tracker/markdown-writer
  */
 
+import { existsSync } from 'node:fs'
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
+import type { SessionV2 } from './consolidated-writer.js'
 import type { SessionV3 } from './types.js'
 
 // ---------------------------------------------------------------------------
@@ -25,6 +27,8 @@ const TURN_LABELS: Record<string, string> = {
   delegation: 'Delegation',
   compaction: 'Compaction',
   error: 'Error',
+  session_created: 'Session Created',
+  session_idle: 'Session Idle',
 }
 
 /**
@@ -96,6 +100,55 @@ function formatActors(session: SessionV3): string {
 function formatToolsUsed(session: SessionV3): string {
   const toolsUsed = resolveToolsUsed(session)
   return toolsUsed.length > 0 ? toolsUsed.join(', ') : 'none'
+}
+
+export function getJourneyMarkdownSessionDir(sessionsDir: string, sessionId: string): string {
+  return join(sessionsDir, 'journey-events', sessionId)
+}
+
+function toSessionV3(session: SessionV2): SessionV3 {
+  return {
+    _schema: 'session/v3',
+    sessionId: session.sessionId,
+    semanticSessionId: session.semanticSessionId ?? session.sessionId,
+    parentSessionId: session.parentSessionId,
+    lineage: session.lineage,
+    purposeClass: session.purposeClass,
+    agent: session.agent,
+    startedAt: session.created,
+    endedAt: session.status === 'active' ? null : session.updated,
+    turnCount: session.counters.turnCount,
+    status: session.status === 'abandoned' ? 'errored' : session.status,
+    summary: '',
+    keyFindings: [],
+    subsessionIds: session.childSessionIds,
+    resumable: session.status === 'active',
+    counters: {
+      userMessageCount: session.counters.userMessageCount,
+      assistantOutputCount: session.counters.assistantOutputCount,
+      toolCallCount: session.counters.toolCallCount,
+      delegationCount: session.counters.delegationCount,
+      compactionCount: session.counters.compactionCount,
+    },
+    toc: [],
+  }
+}
+
+export async function ensureEventsMarkdown(
+  sessionsDir: string,
+  session: SessionV2,
+): Promise<string> {
+  const sessionDir = getJourneyMarkdownSessionDir(
+    sessionsDir,
+    session.semanticSessionId ?? session.sessionId,
+  )
+  const eventsPath = join(sessionDir, 'events.md')
+
+  if (!existsSync(eventsPath)) {
+    await initEventsMarkdown(sessionDir, toSessionV3(session))
+  }
+
+  return sessionDir
 }
 
 /** A single tool batch entry rendered into the journey-events markdown. */
@@ -202,7 +255,15 @@ export async function appendTurnToMarkdown(
   turn: {
     turnNumber: number
     timestamp: string
-    type: 'user_message' | 'assistant_output' | 'tool_call' | 'delegation' | 'compaction' | 'error'
+    type:
+      | 'user_message'
+      | 'assistant_output'
+      | 'tool_call'
+      | 'delegation'
+      | 'compaction'
+      | 'error'
+      | 'session_created'
+      | 'session_idle'
     content: string
     metadata?: Record<string, string>
   },
@@ -378,49 +439,18 @@ export async function appendDiagnosticToMarkdown(
   entry: { timestamp: string; level: string; message: string },
 ): Promise<void> {
   const content = await readEvents(sessionDir)
-  const hasDiagnostics = content.includes('## Diagnostics')
+  const lines: string[] = []
 
-  if (!hasDiagnostics) {
-    // Append the full Diagnostics section header + first entry
-    const diagSection = [
-      '## Diagnostics',
-      '',
-      '| Timestamp | Level | Message |',
-      '|-----------|-------|---------|',
-      `| ${entry.timestamp} | ${entry.level} | ${entry.message} |`,
-      '',
-      '---',
-      '',
-    ].join('\n')
-
-    await appendToEvents(sessionDir, diagSection)
-  } else {
-    // Insert the new row just before the `---` after the Diagnostics section
-    // Find the diagnostics table header, then find the last row or the separator
-    const diagStart = content.indexOf('## Diagnostics')
-    const tableHeaderEnd = content.indexOf('|-----------|-------|---------|', diagStart)
-    if (tableHeaderEnd === -1) return
-
-    const afterTableHeader = tableHeaderEnd + '|-----------|-------|---------|'.length
-
-    // Find the next `---` after the table header (end of diagnostics section)
-    const separatorIdx = content.indexOf('\n---', afterTableHeader)
-    if (separatorIdx === -1) {
-      // No separator — append row at the end
-      const newRow = `| ${entry.timestamp} | ${entry.level} | ${entry.message} |`
-      const newContent = content.slice(0, afterTableHeader) + '\n' + newRow + '\n'
-
-      const eventsPath = join(sessionDir, 'events.md')
-      await writeFile(eventsPath, newContent, 'utf8')
-    } else {
-      // Insert row before the separator
-      const newRow = `| ${entry.timestamp} | ${entry.level} | ${entry.message} |`
-      const beforeSep = content.slice(0, separatorIdx)
-      const afterSep = content.slice(separatorIdx)
-      const newContent = beforeSep + '\n' + newRow + afterSep
-
-      const eventsPath = join(sessionDir, 'events.md')
-      await writeFile(eventsPath, newContent, 'utf8')
-    }
+  if (!content.includes('## Diagnostics')) {
+    lines.push('## Diagnostics', '')
   }
+
+  lines.push(`### ${entry.timestamp} [${entry.level}]`)
+  lines.push('')
+  lines.push(entry.message)
+  lines.push('')
+  lines.push('---')
+  lines.push('')
+
+  await appendToEvents(sessionDir, lines.join('\n'))
 }
