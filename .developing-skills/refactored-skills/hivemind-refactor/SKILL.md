@@ -47,8 +47,13 @@ prerequisites: use-hivemind-delegation
   - [When To Roll Back](#when-to-roll-back)
   - [Rollback Command](#rollback-command)
   - [The Revert-First Rule](#the-revert-first-rule)
+- [Code Review Integration](#code-review-integration)
+  - [Review Dispatch Triggers](#review-dispatch-triggers)
+  - [Review Checklist Usage](#review-checklist-usage)
+  - [Multi-Reviewer Dispatch](#multi-reviewer-dispatch)
 - [Anti-Patterns](#anti-patterns)
 - [Sibling Skills](#sibling-skills)
+- [Conditional Loading](#conditional-loading)
 - [Bundled Resources](#bundled-resources)
 - [Independence Rules](#independence-rules)
 
@@ -267,6 +272,26 @@ When a test breaks, your first instinct will be to fix the test or fix the code 
 
 Fix-forward is how refactors become rewrites. Revert-first is how refactors stay safe.
 
+## Code Review Integration
+
+Refactoring and code review are complementary. After the VERIFY phase, optional review dispatch can validate the refactor from multiple dimensions.
+
+### Review Dispatch Triggers
+
+| Trigger | When | Load |
+|---------|------|------|
+| High-risk refactor | Blast radius >5 files | `code-review-checklist.md` + `reviewer-dimensions.md` |
+| Severity calibration needed | Mixed P0-P3 findings | `severity-calibration.md` |
+| Structured feedback required | PR-style review needed | `review-comment-template.md` |
+
+### Review Checklist Usage
+
+During VERIFY phase, optionally run the multi-dimensional review checklist from `references/code-review-checklist.md`. Each dimension (correctness, security, performance, readability, architecture, testing) provides pass/fail criteria.
+
+### Multi-Reviewer Dispatch
+
+When review spans multiple dimensions, dispatch separate agents per dimension using `references/reviewer-dimensions.md`. Each agent owns one dimension. No overlaps.
+
 ## Anti-Patterns
 
 **These are not theoretical. Every one of these has shipped. Every one caused pain.**
@@ -293,14 +318,28 @@ Fix-forward is how refactors become rewrites. Revert-first is how refactors stay
 | `hivemind-codemap` | For whole-codebase assessment before large refactors |
 | `hivemind-patterns` | Architecture pattern reference for refactor decisions |
 
+## Conditional Loading
+
+| Condition | Load Reference |
+|-----------|---------------|
+| Smell type is Bloaters | `code-smell-taxonomy.md` |
+| Smell type is Coupling | `refactor-techniques.md` |
+| Review needed after refactor | `code-review-checklist.md` |
+| Severity calibration needed | `severity-calibration.md` |
+| Multi-agent review dispatch | `reviewer-dimensions.md` |
+
 ## Bundled Resources
 
 | Resource | Path | Purpose |
 |----------|------|---------|
+| Code Review Checklist | `references/code-review-checklist.md` | Multi-dimensional review checklist (50+ items) |
 | Code Review Reception | `references/code-review-reception.md` | How to receive and process code review feedback |
 | Code Review Request | `references/code-review-request.md` | How to request effective code reviews |
 | Code Smell Taxonomy | `references/code-smell-taxonomy.md` | Classification of code smells and their fixes |
 | Refactor Techniques | `references/refactor-techniques.md` | Catalog of refactoring techniques |
+| Review Comment Template | `references/review-comment-template.md` | Structured review comment format |
+| Reviewer Dimensions | `references/reviewer-dimensions.md` | Multi-agent review dimension allocation |
+| Severity Calibration | `references/severity-calibration.md` | P0-P3 severity scoring framework |
 | Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
 | Code Reviewer Prompt | `templates/code-reviewer-prompt.md` | Template for code review prompts |
 | Refactor Checklist | `templates/refactor-checklist.md` | Template for refactor verification checklist |
