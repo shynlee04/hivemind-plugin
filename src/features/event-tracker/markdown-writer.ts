@@ -72,7 +72,7 @@ export async function ensureEventsMarkdown(
 ): Promise<string> {
   const filePath = getJourneyMarkdownPath(
     sessionsDir,
-    session.semanticSessionId,
+    session.sessionId,
   )
 
   if (!existsSync(filePath)) {
@@ -159,7 +159,7 @@ export async function initEventsMarkdown(sessionsDir: string, session: SessionV3
   await mkdir(journeyEventsDir, { recursive: true })
   const filePath = getJourneyMarkdownPath(
     sessionsDir,
-    session.semanticSessionId ?? session.sessionId,
+    session.sessionId,
   )
   await writeFile(filePath, header, 'utf8')
 }

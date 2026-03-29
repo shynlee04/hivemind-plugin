@@ -17,6 +17,7 @@ import {
   updateSessionTimestamp,
 } from '../features/event-tracker/markdown-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
+import { getAndClearInjectionPayload } from '../plugin/injection-store.js'
 
 /**
  * Handle `chat.message` hook — captures user messages in session journal.
@@ -54,14 +55,19 @@ export async function handleChatMessage(
   const existing = await loadSession(sessionsDir, semanticSessionId)
   const turnNumber = existing.turnCount + 1
 
+  // Extract model from injection payload (set by system.transform hook)
+  const injection = getAndClearInjectionPayload(sdkSessionId)
+  const model = (injection as any)?.model ?? 'unknown'
+  const agent = input.agent || injection?.agent || 'unknown'
+
   // Add turn with user message
   await addTurn(sessionsDir, {
     sessionId: semanticSessionId,
     turn: {
       turnNumber,
       timestamp: new Date().toISOString(),
-      agent: input.agent || 'unknown',
-      model: 'unknown',
+      agent,
+      model,
       duration: null,
       userMessage: output.message.content,
       assistantContent: '',
