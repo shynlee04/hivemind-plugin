@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useMemo } from 'react'
-import { Renderer } from '@json-render/react'
+import { Renderer, JSONUIProvider } from '@json-render/react'
 import { registry } from '@/lib/registry'
 import { demoSpec } from '@/lib/demo-spec'
 
@@ -30,7 +30,9 @@ function DashboardContent() {
           Powered by json-render · {specParam ? 'dynamic spec' : 'demo spec'}
         </p>
       </div>
-      <Renderer spec={spec} registry={registry} />
+      <JSONUIProvider registry={registry}>
+        <Renderer spec={spec} registry={registry} />
+      </JSONUIProvider>
     </main>
   )
 }
