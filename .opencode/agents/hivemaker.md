@@ -1,8 +1,6 @@
 ---
 description: "Implementation specialist for product work. Executes scoped code changes, file creation, and modification. Terminal executor — implements what architect designs and hiveq verifies."
 mode: subagent
-model: openai/gpt-5.4
-reasoningEffort: high
 tools:
   write: true
   edit: true
