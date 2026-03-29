@@ -1,39 +1,38 @@
 /**
  * HIVEMIND-JOURNAL Tool
- * 
+ *
  * CQRS write-side bridge for session journaling.
  * This is the ONLY write-side entry point for session journaling.
- * 
- * Uses sessionWriters facade from src/internal/session-writers.ts
- * which routes to writer functions in src/features/event-tracker/writers/
- * - appendSessionEvent → events.md
- * - appendSessionDiagnostic → diagnostics.log
- * 
+ *
+ * Writes to the flat journey-events markdown file:
+ * - Events (assistant_output, user_message, tool_call, compaction, trajectory) → journey-events/{sessionId}.md
+ * - Diagnostic events → journey-events/{sessionId}.md (Diagnostics section)
+ *
  * @module hivemind-journal
  */
 
+import { appendFile, mkdir } from 'node:fs/promises'
+import { dirname } from 'node:path'
+
 import { tool, type ToolDefinition } from '@opencode-ai/plugin'
 
-import { createSessionWriters } from '../internal/session-writers.js'
+import { appendDiagnosticToMarkdown } from '../features/event-tracker/markdown-writer.js'
+import { getJourneyEventsMarkdownPath } from '../features/event-tracker/paths.js'
 import { renderToolResult } from '../shared/tool-helpers.js'
-import { getSessionEventsPath } from '../features/event-tracker/paths.js'
-import { getSessionDiagnosticsPath } from '../features/event-tracker/paths.js'
 
 /**
  * Event types supported by the journal tool.
- * Maps to different writer functions.
  */
-type JournalEventType = 
-  | 'assistant_output' 
-  | 'user_message' 
-  | 'tool_call' 
-  | 'compaction' 
-  | 'trajectory' 
+type JournalEventType =
+  | 'assistant_output'
+  | 'user_message'
+  | 'tool_call'
+  | 'compaction'
+  | 'trajectory'
   | 'diagnostic'
 
 /**
  * Payload shape for assistant_output, user_message, tool_call, compaction, trajectory events.
- * These write to events.md via appendSessionEvent.
  */
 type SessionEventPayload = {
   actor?: string
@@ -44,7 +43,6 @@ type SessionEventPayload = {
 
 /**
  * Payload shape for diagnostic events.
- * These write to diagnostics.log via appendSessionDiagnostic.
  */
 type DiagnosticPayload = {
   level?: string
@@ -70,7 +68,7 @@ const journalToolArgs = {
   sessionId: tool.schema.string().describe('Session identifier'),
   eventType: tool.schema.enum([
     'assistant_output',
-    'user_message', 
+    'user_message',
     'tool_call',
     'compaction',
     'trajectory',
@@ -88,75 +86,109 @@ const journalToolArgs = {
   timestamp: tool.schema.string().describe('ISO timestamp of the event'),
 } as const
 
+function asDisplayValue(value?: string): string {
+  return value?.trim() ? value : 'N/A'
+}
+
+/**
+ * Renders a session event as a markdown block for appending to journey-events.
+ * @param entry - Event data with type, timestamp, and optional fields.
+ * @returns Markdown block string ready to append.
+ */
+function renderEventBlock(entry: {
+  type: string
+  timestamp: string
+  actor?: string
+  title?: string
+  summary?: string
+  details?: string
+}): string {
+  const details = entry.details?.trim() ? entry.details : ''
+
+  return [
+    `## ${entry.type}`,
+    '',
+    `- **Timestamp**: ${entry.timestamp}`,
+    `- **Actor**: ${asDisplayValue(entry.actor)}`,
+    `- **Title**: ${asDisplayValue(entry.title)}`,
+    `- **Summary**: ${asDisplayValue(entry.summary)}`,
+    '',
+    '### Details',
+    '',
+    details,
+    '',
+  ].join('\n')
+}
+
+/**
+ * Appends content to a file, creating parent directories if needed.
+ * @param filePath - Target file path.
+ * @param content - Content to append.
+ */
+async function appendToFile(filePath: string, content: string): Promise<void> {
+  await mkdir(dirname(filePath), { recursive: true })
+  await appendFile(filePath, content, 'utf8')
+}
+
 /**
  * Creates the hivemind-journal tool.
  * This is the ONLY write-side entry point for session journaling.
- * 
+ *
  * @param projectRoot - The project root directory (passed from plugin)
  * @returns OpenCode tool definition
  */
 export function createHivemindJournalTool(projectRoot: string): ToolDefinition {
   return tool({
     description: 'Session journal writer — the sole write-side entry point for session journaling. ' +
-      'Writes assistant_output, user_message, tool_call, compaction, and trajectory events to events.md. ' +
-      'Writes diagnostic events to diagnostics.log.',
+      'Writes assistant_output, user_message, tool_call, compaction, and trajectory events to journey-events markdown. ' +
+      'Writes diagnostic events to the Diagnostics section of the same file.',
     args: journalToolArgs,
     async execute(args: HivemindJournalArgs, context) {
-      // Use context.directory for path resolution (CQRS: context carries write intent)
       const effectiveRoot = context.directory ?? projectRoot
-      const writers = createSessionWriters(effectiveRoot)
       const { sessionId, eventType, payload, timestamp } = args
+      const filePath = getJourneyEventsMarkdownPath(effectiveRoot, sessionId)
 
       try {
-        // Route to appropriate writer based on event type
         switch (eventType) {
           case 'assistant_output':
           case 'user_message':
           case 'tool_call':
           case 'compaction':
           case 'trajectory': {
-            // These all write to events.md
-            await writers.writeEvent({
-              sessionId,
-              eventType,
+            const eventPayload = payload as SessionEventPayload
+            const block = renderEventBlock({
+              type: eventType,
               timestamp,
-              actor: (payload as SessionEventPayload).actor,
-              title: (payload as SessionEventPayload).title,
-              summary: (payload as SessionEventPayload).summary,
-              details: (payload as SessionEventPayload).details,
+              actor: eventPayload.actor,
+              title: eventPayload.title,
+              summary: eventPayload.summary,
+              details: eventPayload.details,
             })
-            
-            const eventsPath = getSessionEventsPath(effectiveRoot, sessionId)
-            return renderToolResult({ success: true, path: eventsPath })
+            await appendToFile(filePath, block)
+            return renderToolResult({ success: true, path: filePath })
           }
 
           case 'diagnostic': {
-            // Diagnostic events write to diagnostics.log
-            await writers.writeDiagnostic({
-              sessionId,
+            const diagPayload = payload as DiagnosticPayload
+            await appendDiagnosticToMarkdown(filePath, {
               timestamp,
-              level: ((payload as DiagnosticPayload).level as 'info' | 'warn' | 'error') ?? 'info',
-              source: (payload as DiagnosticPayload).source,
-              message: (payload as DiagnosticPayload).message,
-              details: (payload as DiagnosticPayload).details,
+              level: diagPayload.level ?? 'info',
+              message: diagPayload.message ?? '',
             })
-            
-            const diagnosticsPath = getSessionDiagnosticsPath(effectiveRoot, sessionId)
-            return renderToolResult({ success: true, path: diagnosticsPath })
+            return renderToolResult({ success: true, path: filePath })
           }
 
           default: {
-            // Should never reach here due to enum validation
             const exhaustiveCheck: never = eventType
             throw new Error(`Unknown event type: ${exhaustiveCheck}`)
           }
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error)
-        return renderToolResult({ 
-          success: false, 
+        return renderToolResult({
+          success: false,
           error: errorMessage,
-          path: null 
+          path: null
         })
       }
     },

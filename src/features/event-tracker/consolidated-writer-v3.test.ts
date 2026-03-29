@@ -4,7 +4,7 @@
  * Tests for the v3 session writer that produces a directory structure
  * with session.json per session using the v3 schema format (ADR-017).
  *
- * These tests MUST fail because initSessionV3 does not exist yet.
+ * These tests MUST fail because initSession does not exist yet.
  * After implementation, these same tests should pass.
  *
  * @module event-tracker/consolidated-writer-v3.test
@@ -74,7 +74,8 @@ interface SessionV3 {
 /**
  * Input for initializing a new consolidated session V3.
  */
-interface InitSessionV3Input {
+interface InitSessionInput {
+  sessionId: string
   lineage: 'hivefiver' | 'hiveminder'
   purposeClass:
     | 'discovery'
@@ -101,8 +102,12 @@ async function loadConsolidatedWriterV3() {
 // Test Fixtures
 // ---------------------------------------------------------------------------
 
-function makeInitInput(overrides: Partial<InitSessionV3Input> = {}): InitSessionV3Input {
+let _sessionIdCounter = 0
+
+function makeInitInput(overrides: Partial<InitSessionInput> = {}): InitSessionInput {
+  _sessionIdCounter++
   return {
+    sessionId: `ses_test_${String(_sessionIdCounter).padStart(3, '0')}`,
     lineage: 'hiveminder',
     purposeClass: 'implementation',
     agent: 'hitea',
@@ -112,45 +117,40 @@ function makeInitInput(overrides: Partial<InitSessionV3Input> = {}): InitSession
 
 // ---------------------------------------------------------------------------
 // RED PHASE TESTS
-// Tests MUST fail because initSessionV3 does not exist yet.
+// Tests MUST fail because initSession does not exist yet.
 // ---------------------------------------------------------------------------
 
 // ============================================================================
-// Test 1: initSessionV3 creates directory structure
+// Test 1: initSession creates directory structure
 // ============================================================================
 
-test('initSessionV3 creates directory structure with session.json inside', async () => {
+test('initSession creates directory structure with session.json inside', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-init-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
-    const semanticSessionId = await initSessionV3(tmpDir, makeInitInput())
+    const semanticSessionId = await initSession(tmpDir, makeInitInput())
 
-    // Verify directory {semanticSessionId}/ is created under sessionsDir
-    const sessionDir = join(tmpDir, semanticSessionId)
-    const dirStats = await stat(sessionDir)
-    assert.ok(dirStats.isDirectory(), `directory ${semanticSessionId}/ should exist`)
-
-    // Verify session.json exists inside that directory
-    const sessionJsonPath = join(sessionDir, 'session.json')
-    const fileStats = await stat(sessionJsonPath)
-    assert.ok(fileStats.isFile(), 'session.json should exist inside directory')
+    // Verify flat file journey-events/{semanticSessionId}.json is created
+    const sessionFilePath = join(tmpDir, 'journey-events', `${semanticSessionId}.json`)
+    const fileStats = await stat(sessionFilePath)
+    assert.ok(fileStats.isFile(), 'journey-events/{semanticSessionId}.json should exist')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
 })
 
-test('initSessionV3 creates session.json with _schema session/v3', async () => {
+test('initSession creates session.json with _schema session/v3', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-schema-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
-    const semanticSessionId = await initSessionV3(tmpDir, makeInitInput())
+    const semanticSessionId = await initSession(tmpDir, makeInitInput())
 
     // Read session.json
-    const sessionJsonPath = join(tmpDir, semanticSessionId, 'session.json')
+    const sessionJsonPath = join(tmpDir, 'journey-events', `${semanticSessionId}.json`)
     const content = JSON.parse(await readFile(sessionJsonPath, 'utf8')) as SessionV3
 
     // Verify _schema field
@@ -161,23 +161,23 @@ test('initSessionV3 creates session.json with _schema session/v3', async () => {
 })
 
 // ============================================================================
-// Test 2: initSessionV3 populates all SessionV3 fields
+// Test 2: initSession populates all SessionV3 fields
 // ============================================================================
 
-test('initSessionV3 populates all required SessionV3 fields', async () => {
+test('initSession populates all required SessionV3 fields', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-fields-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
-    const semanticSessionId = await initSessionV3(tmpDir, {
+    const semanticSessionId = await initSession(tmpDir, makeInitInput({
       lineage: 'hivefiver',
       purposeClass: 'research',
       agent: 'hivexplorer',
-    })
+    }))
 
     // Read session.json
-    const sessionJsonPath = join(tmpDir, semanticSessionId, 'session.json')
+    const sessionJsonPath = join(tmpDir, 'journey-events', `${semanticSessionId}.json`)
     const content = JSON.parse(await readFile(sessionJsonPath, 'utf8')) as SessionV3
 
     // Verify identity fields
@@ -216,16 +216,16 @@ test('initSessionV3 populates all required SessionV3 fields', async () => {
   }
 })
 
-test('initSessionV3 populates all 5 counter fields at 0', async () => {
+test('initSession populates all 5 counter fields at 0', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-counters-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
-    const semanticSessionId = await initSessionV3(tmpDir, makeInitInput())
+    const semanticSessionId = await initSession(tmpDir, makeInitInput())
 
     // Read session.json
-    const sessionJsonPath = join(tmpDir, semanticSessionId, 'session.json')
+    const sessionJsonPath = join(tmpDir, 'journey-events', `${semanticSessionId}.json`)
     const content = JSON.parse(await readFile(sessionJsonPath, 'utf8')) as SessionV3
 
     // Verify counters object exists
@@ -242,16 +242,16 @@ test('initSessionV3 populates all 5 counter fields at 0', async () => {
   }
 })
 
-test('initSessionV3 populates toc as empty array', async () => {
+test('initSession populates toc as empty array', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-toc-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
-    const semanticSessionId = await initSessionV3(tmpDir, makeInitInput())
+    const semanticSessionId = await initSession(tmpDir, makeInitInput())
 
     // Read session.json
-    const sessionJsonPath = join(tmpDir, semanticSessionId, 'session.json')
+    const sessionJsonPath = join(tmpDir, 'journey-events', `${semanticSessionId}.json`)
     const content = JSON.parse(await readFile(sessionJsonPath, 'utf8')) as SessionV3
 
     // Verify toc is empty array
@@ -263,32 +263,30 @@ test('initSessionV3 populates toc as empty array', async () => {
 })
 
 // ============================================================================
-// Test 3: initSessionV3 handles parentSessionId
+// Test 3: initSession handles parentSessionId
 // ============================================================================
 
-test('initSessionV3 stores parentSessionId when provided', async () => {
+test('initSession stores parentSessionId when provided', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-parent-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
     // First create a parent session
-    const parentSemanticId = await initSessionV3(tmpDir, {
-      lineage: 'hiveminder',
+    const parentSemanticId = await initSession(tmpDir, makeInitInput({
       purposeClass: 'planning',
       agent: 'hiveminder',
-    })
+    }))
 
     // Create child session with parentSessionId
-    const childSemanticId = await initSessionV3(tmpDir, {
-      lineage: 'hiveminder',
+    const childSemanticId = await initSession(tmpDir, makeInitInput({
       purposeClass: 'implementation',
       agent: 'hitea',
       parentSessionId: parentSemanticId,
-    })
+    }))
 
-    // Read child session.json (subsessions are under parentDir/subsessions/)
-    const childSessionJsonPath = join(tmpDir, parentSemanticId, 'subsessions', childSemanticId, 'session.json')
+    // Read child session.json (flat file in journey-events/)
+    const childSessionJsonPath = join(tmpDir, 'journey-events', `${childSemanticId}.json`)
     const childContent = JSON.parse(await readFile(childSessionJsonPath, 'utf8')) as SessionV3
 
     // Verify parentSessionId is stored
@@ -298,16 +296,16 @@ test('initSessionV3 stores parentSessionId when provided', async () => {
   }
 })
 
-test('initSessionV3 stores null parentSessionId when not provided', async () => {
+test('initSession stores null parentSessionId when not provided', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-no-parent-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
-    const semanticSessionId = await initSessionV3(tmpDir, makeInitInput())
+    const semanticSessionId = await initSession(tmpDir, makeInitInput())
 
     // Read session.json
-    const sessionJsonPath = join(tmpDir, semanticSessionId, 'session.json')
+    const sessionJsonPath = join(tmpDir, 'journey-events', `${semanticSessionId}.json`)
     const content = JSON.parse(await readFile(sessionJsonPath, 'utf8')) as SessionV3
 
     // Verify parentSessionId defaults to null
@@ -318,32 +316,30 @@ test('initSessionV3 stores null parentSessionId when not provided', async () => 
 })
 
 // ============================================================================
-// Test 4: initSessionV3 creates subsession directory when parentSessionId is set
+// Test 4: initSession creates subsession directory when parentSessionId is set
 // ============================================================================
 
-test('initSessionV3 creates subsession under parentDir/subsessions/ when parentSessionId is set', async () => {
+test('initSession creates subsession under parentDir/subsessions/ when parentSessionId is set', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-subdir-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
     // Create parent session first
-    const parentSemanticId = await initSessionV3(tmpDir, {
-      lineage: 'hiveminder',
+    const parentSemanticId = await initSession(tmpDir, makeInitInput({
       purposeClass: 'planning',
       agent: 'hiveminder',
-    })
+    }))
 
     // Create child session with parentSessionId
-    const childSemanticId = await initSessionV3(tmpDir, {
-      lineage: 'hiveminder',
+    const childSemanticId = await initSession(tmpDir, makeInitInput({
       purposeClass: 'tdd',
       agent: 'hitea',
       parentSessionId: parentSemanticId,
-    })
+    }))
 
-    // Verify child is created under {parentDir}/subsessions/{childSemanticId}/
-    const expectedPath = join(tmpDir, parentSemanticId, 'subsessions', childSemanticId, 'session.json')
+    // Verify child is created as flat file in journey-events/
+    const expectedPath = join(tmpDir, 'journey-events', `${childSemanticId}.json`)
     assert.ok(existsSync(expectedPath), `child session should be at ${expectedPath}`)
 
     // Verify we can read the child session.json
@@ -355,17 +351,16 @@ test('initSessionV3 creates subsession under parentDir/subsessions/ when parentS
   }
 })
 
-test('initSessionV3 returns semanticSessionId for root sessions', async () => {
+test('initSession returns semanticSessionId for root sessions', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-return-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
-    const semanticSessionId = await initSessionV3(tmpDir, {
-      lineage: 'hiveminder',
+    const semanticSessionId = await initSession(tmpDir, makeInitInput({
       purposeClass: 'gatekeeping',
       agent: 'hivemaker',
-    })
+    }))
 
     // Verify returned ID follows expected format: ses_<ISO-date>_<purpose>_<agent>
     assert.ok(
@@ -381,13 +376,13 @@ test('initSessionV3 returns semanticSessionId for root sessions', async () => {
 // Edge Cases
 // ============================================================================
 
-test('initSessionV3 handles all purposeClass values', async () => {
+test('initSession handles all purposeClass values', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-purpose-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
-    const purposeClasses: InitSessionV3Input['purposeClass'][] = [
+    const purposeClasses: InitSessionInput['purposeClass'][] = [
       'discovery',
       'brainstorming',
       'research',
@@ -399,46 +394,38 @@ test('initSessionV3 handles all purposeClass values', async () => {
     ]
 
     for (const purposeClass of purposeClasses) {
-      const semanticSessionId = await initSessionV3(tmpDir, {
-        lineage: 'hiveminder',
+      const semanticSessionId = await initSession(tmpDir, makeInitInput({
         purposeClass,
         agent: 'test-agent',
-      })
+      }))
 
-      // Verify directory exists
-      const sessionDir = join(tmpDir, semanticSessionId)
-      assert.ok(existsSync(sessionDir), `directory for ${purposeClass} should exist`)
-
-      // Verify session.json exists
-      const sessionJsonPath = join(sessionDir, 'session.json')
-      assert.ok(existsSync(sessionJsonPath), `session.json for ${purposeClass} should exist`)
+      // Verify flat file exists
+      const sessionFilePath = join(tmpDir, 'journey-events', `${semanticSessionId}.json`)
+      assert.ok(existsSync(sessionFilePath), `journey-events/${semanticSessionId}.json for ${purposeClass} should exist`)
 
       // Read and verify purposeClass
-      const content = JSON.parse(await readFile(sessionJsonPath, 'utf8')) as SessionV3
+      const content = JSON.parse(await readFile(sessionFilePath, 'utf8')) as SessionV3
       assert.equal(content.purposeClass, purposeClass, `purposeClass should be ${purposeClass}`)
-
-      // Cleanup this session directory for the next iteration
-      await rm(sessionDir, { recursive: true, force: true })
     }
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
 })
 
-test('initSessionV3 handles both lineage values', async () => {
+test('initSession handles both lineage values', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'writer-v3-lineage-'))
 
   try {
-    const { initSessionV3 } = await loadConsolidatedWriterV3()
+    const { initSession } = await loadConsolidatedWriterV3()
 
     for (const lineage of ['hivefiver', 'hiveminder'] as const) {
-      const semanticSessionId = await initSessionV3(tmpDir, {
+      const semanticSessionId = await initSession(tmpDir, makeInitInput({
         lineage,
         purposeClass: 'implementation',
         agent: 'test-agent',
-      })
+      }))
 
-      const sessionJsonPath = join(tmpDir, semanticSessionId, 'session.json')
+      const sessionJsonPath = join(tmpDir, 'journey-events', `${semanticSessionId}.json`)
       const content = JSON.parse(await readFile(sessionJsonPath, 'utf8')) as SessionV3
 
       assert.equal(content.lineage, lineage, `lineage should be ${lineage}`)

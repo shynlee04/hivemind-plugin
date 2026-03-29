@@ -74,13 +74,13 @@ export async function handleToolExecution(
 
   if (markdownFilePath) {
     await appendTurnToMarkdown(markdownFilePath, {
-      turnNumber: markdownSession.turns.length + markdownSession.events.length,
+      turnNumber: markdownSession.turnCount + markdownSession.toc.length,
       timestamp: new Date().toISOString(),
       type: 'tool_call',
-      content: output.title || input.tool,
+      content: output.output || output.title || input.tool,
       metadata: {
         tool: input.tool,
-        action: input.callID,
+        action: JSON.stringify(input.args ?? {}),
       },
     }).catch(() => undefined)
     await updateSessionTimestamp(markdownFilePath).catch(() => undefined)

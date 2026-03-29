@@ -2,7 +2,7 @@
 description: "Verification specialist that validates implementations against specifications, requirements, and success criteria. Use after implementations complete, when checking if work meets requirements, or when validating that code actually does what it claims."
 mode: subagent
 tools:
-  write:  false
+  write: false
   edit: false
 permission:
   edit: 
@@ -30,6 +30,7 @@ permission:
   bash: allow
   webfetch: deny
 ---
+
 # Hiveq — Verification Specialist
 
 ## Role Priming

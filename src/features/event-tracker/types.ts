@@ -237,6 +237,20 @@ export type SessionInjectionAppendInput = {
   payload: string
 }
 
+/**
+ * Input for appending a session event to the journey-events markdown file.
+ * Migrated from deprecated events-writer.ts.
+ */
+export type SessionEventWriteInput = {
+  sessionId: string
+  timestamp: string
+  type: string
+  actor?: string
+  title?: string
+  summary?: string
+  details?: string
+}
+
 // ---------------------------------------------------------------------------
 // Index + Synthesis Read-Model Projections
 // ---------------------------------------------------------------------------

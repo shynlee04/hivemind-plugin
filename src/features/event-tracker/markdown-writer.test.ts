@@ -15,11 +15,6 @@ import test from 'node:test'
 
 import type { SessionV3 } from './types.js'
 
-type SessionWithMarkdownMeta = SessionV3 & {
-  actors?: string[]
-  toolsUsed?: string[]
-}
-
 // ---------------------------------------------------------------------------
 // Dynamic import — forces RED gate (module may not exist yet)
 // ---------------------------------------------------------------------------
@@ -73,11 +68,7 @@ test('initEventsMarkdown creates events.md with session header fields', async ()
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown } = await loadMarkdownWriter()
-    const session: SessionWithMarkdownMeta = {
-      ...makeSession(),
-      actors: ['hiveminder', 'hiveq'],
-      toolsUsed: ['read', 'bash'],
-    }
+    const session = makeSession()
     const filePath = getMarkdownFilePath(tmpDir, session)
 
     await initEventsMarkdown(tmpDir, session)
@@ -86,28 +77,20 @@ test('initEventsMarkdown creates events.md with session header fields', async ()
 
     assert.equal(filePath, join(tmpDir, 'journey-events', `${session.semanticSessionId}.md`))
 
-    assert.ok(content.includes('# Session: ses_2026-03-26T185316_implementation_hiveminder'),
-      'should include semantic session ID in heading')
+    assert.ok(content.includes('# ses_abc123'),
+      'should include session ID as heading')
     assert.ok(content.includes('**Session ID:** ses_abc123'),
       'should include Session ID field')
-    assert.ok(content.includes('**Parent:** null'),
-      'should include Parent field')
-    assert.ok(content.includes('**Lineage:** hiveminder'),
-      'should include Lineage field')
-    assert.ok(content.includes('**Purpose:** implementation'),
-      'should include Purpose field')
-    assert.ok(content.includes('**Agent:** hiveminder'),
-      'should include Agent field')
-    assert.ok(content.includes('**Actors:** hiveminder, hiveq'),
-      'should include actors field')
-    assert.ok(content.includes('**Tools Used:** read, bash'),
-      'should include tools used field')
-    assert.ok(content.includes('**Status:** active'),
-      'should include Status field')
     assert.ok(content.includes('**Created:**'),
       'should include Created timestamp field')
     assert.ok(content.includes('**Updated:**'),
       'should include Updated timestamp field')
+    assert.ok(!content.includes('**Parent:**'),
+      'should not include Parent field')
+    assert.ok(!content.includes('**Lineage:**'),
+      'should not include Lineage field')
+    assert.ok(!content.includes('**Status:**'),
+      'should not include Status field')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
@@ -128,24 +111,6 @@ test('initEventsMarkdown creates TOC placeholder section', async () => {
     assert.ok(content.includes('| # | Timestamp | Actor | Tools | Summary |'),
       'should include TOC table header with Actor and Tools columns')
     assert.ok(content.includes('---'), 'should include separator')
-  } finally {
-    await rm(tmpDir, { recursive: true, force: true })
-  }
-})
-
-test('initEventsMarkdown stores parent session ID when present', async () => {
-  const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
-  try {
-    const { initEventsMarkdown } = await loadMarkdownWriter()
-    const session = makeSession({ parentSessionId: 'ses_parent_001' })
-    const filePath = getMarkdownFilePath(tmpDir, session)
-
-    await initEventsMarkdown(tmpDir, session)
-
-    const content = await readFile(filePath, 'utf8')
-
-    assert.ok(content.includes('**Parent:** ses_parent_001'),
-      'should show actual parent ID instead of null')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
@@ -231,12 +196,12 @@ test('appendTurnToMarkdown appends assistant_output turn', async () => {
       timestamp: '2026-03-26T11:53:45.112Z',
       type: 'assistant_output',
       content: 'The import on line 33 only imports resolveDefaultAgent.',
-      metadata: { model: 'claude-sonnet-4-20250514', duration: '1523ms' },
+      metadata: { role: 'Hiveminder', model: 'claude-sonnet-4-20250514', duration: '1523ms' },
     })
 
     const content = await readFile(filePath, 'utf8')
 
-    assert.ok(content.includes('## Assistant (Assistant · claude-sonnet-4-20250514 · 1523ms)'),
+    assert.ok(content.includes('## Assistant (Hiveminder · claude-sonnet-4-20250514 · 1523ms)'),
       'should include assistant section header with role, model, and duration')
     assert.ok(!content.includes('## Turn 2'),
       'should not use old turn header format')
@@ -544,32 +509,6 @@ test('appendTurnToMarkdown appends compaction turn', async () => {
 
     assert.ok(content.includes('## Compaction'),
       'should include compaction section header without turn number')
-  } finally {
-    await rm(tmpDir, { recursive: true, force: true })
-  }
-})
-
-test('appendTurnToMarkdown appends error turn', async () => {
-  const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
-  try {
-    const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
-    const session = makeSession()
-    const filePath = getMarkdownFilePath(tmpDir, session)
-
-    await initEventsMarkdown(tmpDir, session)
-    await appendTurnToMarkdown(filePath, {
-      turnNumber: 6,
-      timestamp: '2026-03-26T14:00:00Z',
-      type: 'error',
-      content: 'TypeError: Cannot read properties of undefined',
-    })
-
-    const content = await readFile(filePath, 'utf8')
-
-    assert.ok(content.includes('## Error'),
-      'should include error section header without turn number')
-    assert.ok(content.includes('TypeError: Cannot read properties of undefined'),
-      'should include error message')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }

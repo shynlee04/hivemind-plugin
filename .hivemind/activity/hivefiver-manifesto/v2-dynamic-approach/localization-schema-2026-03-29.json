@@ -1,0 +1,162 @@
+{
+  "_meta": {
+    "created_at": "2026-03-29T00:00:00Z",
+    "updated_at": "2026-03-29T00:00:00Z",
+    "producer": "hivemind-orchestrator",
+    "version": "1.0"
+  },
+  "supported_languages": {
+    "en": {
+      "code": "en",
+      "name": "English",
+      "native_name": "English",
+      "direction": "ltr",
+      "aliases": ["en", "eng", "english"],
+      "detection_pattern": "default_fallback",
+      "status": "supported"
+    },
+    "vi": {
+      "code": "vi",
+      "name": "Vietnamese",
+      "native_name": "Tiếng Việt",
+      "direction": "ltr",
+      "aliases": ["vi", "vn", "vietnamese", "vietnam"],
+      "detection_pattern": "isVietnameseMessage()",
+      "status": "supported"
+    },
+    "zh": {
+      "code": "zh",
+      "name": "Chinese",
+      "native_name": "中文",
+      "direction": "ltr",
+      "aliases": ["zh", "cn", "chinese", "中文", "mandarin"],
+      "detection_pattern": "CJK_unicode_range (U+4E00-U+9FFF)",
+      "status": "new"
+    },
+    "ko": {
+      "code": "ko",
+      "name": "Korean",
+      "native_name": "한국어",
+      "direction": "ltr",
+      "aliases": ["ko", "kr", "korean", "한국어"],
+      "detection_pattern": "Hangul_unicode_range (U+AC00-U+D7AF, U+1100-U+11FF)",
+      "status": "new"
+    },
+    "ja": {
+      "code": "ja",
+      "name": "Japanese",
+      "native_name": "日本語",
+      "direction": "ltr",
+      "aliases": ["ja", "jp", "japanese", "日本語"],
+      "detection_pattern": "Japanese_unicode_range (Hiragana U+3040-U+309F, Katakana U+30A0-U+30FF)",
+      "status": "new"
+    }
+  },
+  "config_fields": {
+    "user_communication_language": {
+      "type": "enum",
+      "values": ["en", "vi", "zh", "ko", "ja"],
+      "default": "en",
+      "description": "Controls Agent↔User interaction language",
+      "affects": [
+        "TUI/GUI labels and prompts",
+        "Error messages and status updates",
+        "Interactive confirmations",
+        "hm-init interview questions",
+        "hm-doctor diagnostic output"
+      ]
+    },
+    "document_language": {
+      "type": "enum",
+      "values": ["en", "vi", "zh", "ko", "ja"],
+      "default": "en",
+      "description": "Controls generated artifacts and documents language",
+      "affects": [
+        "README and documentation files",
+        "Commit messages",
+        "Code comments and JSDoc",
+        "PR descriptions and changelogs",
+        "Generated schemas and configs"
+      ]
+    }
+  },
+  "schema_changes": {
+    "src/schema-kernel/config-records.ts": {
+      "current": "z.string().default('en')",
+      "proposed": "z.enum(['en', 'vi', 'zh', 'ko', 'ja']).default('en')",
+      "priority": "CRITICAL"
+    },
+    "src/shared/bootstrap-profile.ts": {
+      "current_aliases": {
+        "en": ["en", "eng", "english"],
+        "vi": ["vi", "vn", "vietnamese", "vietnam"]
+      },
+      "proposed_aliases": {
+        "en": ["en", "eng", "english"],
+        "vi": ["vi", "vn", "vietnamese", "vietnam"],
+        "zh": ["zh", "cn", "chinese", "中文", "mandarin"],
+        "ko": ["ko", "kr", "korean", "한국어"],
+        "ja": ["ja", "jp", "japanese", "日本語"]
+      },
+      "priority": "CRITICAL"
+    }
+  },
+  "i18n_file_structure": {
+    "directory": "src/i18n/",
+    "files": [
+      "en.json - English translations",
+      "vi.json - Vietnamese translations (Tiếng Việt)",
+      "zh.json - Chinese translations (中文)",
+      "ko.json - Korean translations (한국어)",
+      "ja.json - Japanese translations (日本語)"
+    ],
+    "format": "flat_key_value_json",
+    "example_keys": {
+      "select_communication_language": {
+        "en": "Select communication language",
+        "vi": "Chọn ngôn ngữ giao tiếp",
+        "zh": "选择沟通语言",
+        "ko": "소통 언어 선택",
+        "ja": "コミュニケーション言語を選択"
+      },
+      "select_document_language": {
+        "en": "Select document language",
+        "vi": "Chọn ngôn ngữ tài liệu",
+        "zh": "选择文档语言",
+        "ko": "문서 언어 선택",
+        "ja": "ドキュメント言語を選択"
+      },
+      "language_saved": {
+        "en": "Language settings saved successfully",
+        "vi": "Cài đặt ngôn ngữ đã được lưu thành công",
+        "zh": "语言设置已成功保存",
+        "ko": "언어 설정이 성공적으로 저장되었습니다",
+        "ja": "言語設定が正常に保存されました"
+      },
+      "invalid_language": {
+        "en": "Invalid language selection",
+        "vi": "Lựa chọn ngôn ngữ không hợp lệ",
+        "zh": "无效的语言选择",
+        "ko": "잘못된 언어 선택",
+        "ja": "無効な言語選択"
+      }
+    }
+  },
+  "tui_components": {
+    "language_selector": {
+      "library": "@json-render/ink",
+      "component": "Select",
+      "props": {
+        "label": "localized:select_communication_language",
+        "options": [
+          { "value": "en", "label": "English" },
+          { "value": "vi", "label": "Tiếng Việt" },
+          { "value": "zh", "label": "中文" },
+          { "value": "ko", "label": "한국어" },
+          { "value": "ja", "label": "日本語" }
+        ],
+        "value": { "$bindState": "/config/communication_language" }
+      }
+    }
+  }
+}

@@ -83,7 +83,7 @@ Expected Return: {status: completed|partial|blocked, evidence: {what}, artifacts
 | `hivemind-gatekeeping` | Synthesis gates for multi-iteration loops |
 | `use-hivemind-delegation` | Packet structure and return contracts |
 
-Max 3 active skills. Never load domain skills for direct execution.
+Skills are dynamically loaded by turn. Never load domain skills for direct execution.
 
 ## Context Integrity Gate (HARD — no delegation without this)
 
@@ -101,23 +101,22 @@ Before routing ANY packet: verify context health via `use-hivemind-context`. Sta
 
 ## List of available SKILLS to appoint and assign subagents using (be granular and conditional per delegation, per agent's role)
 
-```
-.opencode/skills/hivemind-architecture
-.opencode/skills/hivemind-atomic-commit
-.opencode/skills/hivemind-codemap
-.opencode/skills/hivemind-execution
-.opencode/skills/hivemind-gatekeeping
-.opencode/skills/hivemind-patterns
-.opencode/skills/hivemind-refactor
-.opencode/skills/hivemind-spec-driven
-.opencode/skills/hivemind-synthesis
-.opencode/skills/hivemind-system-debug
-.opencode/skills/use-hivemind
-.opencode/skills/use-hivemind-context
-.opencode/skills/use-hivemind-delegation
-.opencode/skills/use-hivemind-git-memory
-.opencode/skills/use-hivemind-planning
-.opencode/skills/use-hivemind-research
-.opencode/skills/use-hivemind-skill-authoring
-.opencode/skills/use-hivemind-tdd
-```
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/hivemind-architecture
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/hivemind-atomic-commit
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/hivemind-codemap
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/hivemind-execution
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/hivemind-gatekeeping
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/hivemind-patterns
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/hivemind-refactor
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/hivemind-spec-driven
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/hivemind-synthesis
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/hivemind-system-debug
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/use-hivemind
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/use-hivemind-context
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/use-hivemind-delegation
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/use-hivemind-git-memory
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/use-hivemind-ideating
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/use-hivemind-planning
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/use-hivemind-research
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/use-hivemind-skill-authoring
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.opencode/skills/use-hivemind-tdd

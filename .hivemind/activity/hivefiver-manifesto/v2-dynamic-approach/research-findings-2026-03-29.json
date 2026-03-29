@@ -1,0 +1,149 @@
+{
+  "manifesto_version": "2.0",
+  "created_at": "2026-03-29T00:00:00Z",
+  "research_components": {
+    "json_render_integration": {
+      "library": "@json-render (Vercel Labs)",
+      "packages": {
+        "@json-render/core": "Types, schemas, defineCatalog",
+        "@json-render/react": "React renderer for GUI",
+        "@json-render/ink": "Terminal UI renderer for TUI"
+      },
+      "tui_components": {
+        "interactive": ["TextInput", "Select", "MultiSelect", "Tabs", "ConfirmInput"],
+        "display": ["Box", "Text", "Table", "Card", "Metric", "StatusLine", "Badge"]
+      },
+      "confidence": "HIGH",
+      "source_urls": [
+        "https://json-render.dev/docs/api/ink",
+        "https://github.com/vercel-labs/json-render"
+      ]
+    },
+    "skill_auto_registration": {
+      "discovery_function": "discoverSkills()",
+      "discovery_source": "src/shared/opencode-skill-registry.ts:88-117",
+      "scan_locations": [
+        ".opencode/skills/ (project)",
+        "~/.config/opencode/skills/ (global)"
+      ],
+      "skill_metadata": {
+        "required": ["name", "description"],
+        "optional": ["parent"]
+      },
+      "key_finding": "SKILL.md does NOT control agent binding - 100% config-driven via permission.skill",
+      "confidence": "HIGH",
+      "source_urls": [
+        "src/shared/opencode-skill-registry.ts",
+        "src/shared/skill-injection-loader.ts"
+      ]
+    },
+    "skill_agent_wiring": {
+      "schema_source": "https://opencode.ai/config.json",
+      "wiring_mechanisms": {
+        "skill_paths": "skills.paths[] extends discovery locations",
+        "permission_skill": "permission.skill with pattern-based allow/deny/ask",
+        "agent_permission": "agent.<name>.permission.skill overrides",
+        "command_agent": "command.<name>.agent specifies execution agent"
+      },
+      "key_finding": "No direct agent.skills array - wiring via permission patterns and command templates",
+      "confidence": "HIGH",
+      "source_urls": [
+        "https://opencode.ai/docs/skills/",
+        "https://opencode.ai/docs/commands/",
+        "docs/synthesis/opencode-config.md"
+      ]
+    }
+  },
+  "implementation_phases": {
+    "phase_1": {
+      "name": "Legacy Cleanup",
+      "description": "Identify and disable false sync assets",
+      "status": "pending_authorization"
+    },
+    "phase_2": {
+      "name": "Hivefiver Implementation",
+      "description": "Build TUI/GUI configuration with @json-render",
+      "tasks": [
+        "Create tui-config-agent.ts with @json-render/ink renderer",
+        "Create ui-components.ts for reusable TUI",
+        "Create config-generator.ts for opencode.json generation",
+        "Create schema-validator.ts for OpenCode schema validation"
+      ],
+      "status": "pending_authorization",
+      "tdd_required": true
+    },
+    "phase_3": {
+      "name": "Schema Files",
+      "description": "Create schema definitions",
+      "tasks": [
+        "Create config/hivefiver-defaults.json",
+        "Create schemas/skill-mapping.schema.json",
+        "Create schemas/permission.schema.json"
+      ],
+      "status": "pending_authorization"
+    }
+  },
+  "localization": {
+    "supported_languages": {
+      "en": { "name": "English", "native": "English", "direction": "ltr", "status": "supported" },
+      "vi": { "name": "Vietnamese", "native": "Tiếng Việt", "direction": "ltr", "status": "supported" },
+      "zh": { "name": "Chinese", "native": "中文", "direction": "ltr", "status": "new" },
+      "ko": { "name": "Korean", "native": "한국어", "direction": "ltr", "status": "new" },
+      "ja": { "name": "Japanese", "native": "日本語", "direction": "ltr", "status": "new" }
+    },
+    "dual_language_config": {
+      "user_communication_language": {
+        "purpose": "Agent↔User interaction language",
+        "affects": ["TUI labels", "prompts", "error messages", "status updates", "confirmations"],
+        "default": "en"
+      },
+      "document_language": {
+        "purpose": "Generated artifacts and documents language",
+        "affects": ["README files", "commit messages", "code comments", "JSDoc", "PR descriptions", "changelogs"],
+        "default": "en"
+      }
+    },
+    "current_implementation": {
+      "schema": "z.string().default('en') - FREE FORM, NO VALIDATION",
+      "aliases": "Only en + vi in bootstrap-profile.ts",
+      "detection": "Only Vietnamese detection via isVietnameseMessage()",
+      "gaps": ["No zh/ko/ja support", "No enum validation", "No i18n files"]
+    },
+    "required_changes": [
+      {
+        "file": "src/schema-kernel/config-records.ts",
+        "change": "Add SupportedLanguage enum: ['en', 'vi', 'zh', 'ko', 'ja']",
+        "priority": "CRITICAL"
+      },
+      {
+        "file": "src/shared/bootstrap-profile.ts",
+        "change": "Expand LANGUAGE_ALIASES with zh/cn/中文, ko/kr/한국어, ja/jp/日本語",
+        "priority": "CRITICAL"
+      },
+      {
+        "file": "src/features/session-entry/language-resolution.ts",
+        "change": "Add Chinese/Korean/Japanese message detection",
+        "priority": "HIGH"
+      },
+      {
+        "file": "src/i18n/{en,vi,zh,ko,ja}.json",
+        "change": "Create i18n message files for TUI labels",
+        "priority": "HIGH"
+      }
+    ],
+    "confidence": "HIGH",
+    "source_urls": [
+      "src/schema-kernel/config-records.ts",
+      "src/shared/bootstrap-profile.ts",
+      "src/features/session-entry/language-resolution.ts"
+    ]
+  },
+  "validation_gates": {
+    "pre_commit": [
+      "npm run typecheck:core passes",
+      "npm run lint:boundary passes",
+      "npm test passes",
+      "npm run build succeeds"
+    ]
+  }
+}

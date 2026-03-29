@@ -52,7 +52,7 @@ export async function handleChatMessage(
 
   // Load existing session to calculate correct turn number
   const existing = await loadSession(sessionsDir, semanticSessionId)
-  const turnNumber = existing.turns.length + 1
+  const turnNumber = existing.turnCount + 1
 
   // Add turn with user message
   await addTurn(sessionsDir, {

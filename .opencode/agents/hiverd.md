@@ -36,6 +36,7 @@ permission:
   websearch: allow
   codesearch: allow
 ---
+
 # Hiverd — External Research Specialist
 
 ## Role Priming

@@ -1,10 +1,9 @@
 import { existsSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
-import { join } from 'node:path'
 
+import { getJourneyEventsPath, getSessionsDir } from '../event-tracker/paths.js'
 import type { PurposeClass } from '../event-tracker/types.js'
 import {
-  createSdkSymlink,
   findSessionBySdkId,
   getSessionPath,
   initSession,
@@ -25,8 +24,8 @@ export interface SessionResolver {
 }
 
 export function createSessionResolver(projectRoot: string): SessionResolver {
-  const sessionsDir = join(projectRoot, '.hivemind', 'sessions')
-  const journeyEventsDir = join(sessionsDir, 'journey-events')
+  const sessionsDir = getSessionsDir(projectRoot)
+  const journeyEventsDir = getJourneyEventsPath(projectRoot)
 
   return {
     async resolve(sdkSessionId: string): Promise<string | null> {
@@ -56,16 +55,13 @@ export function createSessionResolver(projectRoot: string): SessionResolver {
         return existing
       }
 
-      const sessionId = await initSession(sessionsDir, {
-        sdkSessionId,
+      return initSession(sessionsDir, {
+        sessionId: sdkSessionId,
         lineage: defaults.lineage,
         purposeClass: defaults.purposeClass,
         agent: defaults.agent,
         parentSessionId: defaults.parentSessionId,
       })
-
-      await createSdkSymlink(sessionsDir, sdkSessionId, sessionId)
-      return sessionId
     },
 
     getSessionsDir(): string {

@@ -15,12 +15,49 @@ import {
   validateConfigUpdate,
 } from '../../shared/config-groups.js'
 import type { ConfigGroupName } from '../../shared/config-groups.js'
-import type { HmSettingResult } from './types.js'
+import { resolveLanguageSelectorCopy, SUPPORTED_LANGUAGE_VALUES } from './i18n/index.js'
+import { renderHmSettingTui } from './render.js'
+import type {
+  HmSettingLanguageFieldDescriptor,
+  HmSettingResult,
+} from './types.js'
 
 const s = tool.schema
 
 /** Config group names accepted by the tool (union of legacy + new groups) */
 const CONFIG_GROUP_NAMES = Object.keys(CONFIG_GROUPS) as ConfigGroupName[]
+
+function createLanguageSelector(
+  currentConfig: Record<string, unknown>,
+  locale?: string,
+): Pick<HmSettingResult, 'localizedMessage' | 'languageSelector'> {
+  const { locale: resolvedLocale, copy } = resolveLanguageSelectorCopy(locale)
+  const fieldKeys: HmSettingLanguageFieldDescriptor['key'][] = [
+    'communication_language',
+    'document_language',
+  ]
+  const fields: HmSettingLanguageFieldDescriptor[] = fieldKeys.map((key) => ({
+    key,
+    label: copy.fields[key].label,
+    description: copy.fields[key].description,
+    currentValue: typeof currentConfig[key] === 'string' ? currentConfig[key] : null,
+    options: SUPPORTED_LANGUAGE_VALUES.map((value) => ({
+      value,
+      label: copy.options[value]?.label ?? value,
+      nativeLabel: copy.options[value]?.nativeLabel ?? value,
+    })),
+  }))
+
+  return {
+    localizedMessage: copy.localizedMessage,
+    languageSelector: {
+      locale: resolvedLocale,
+      title: copy.title,
+      description: copy.description,
+      fields,
+    },
+  }
+}
 
 export function createHivemindHmSettingTool(_projectRoot: string): ReturnType<typeof tool> {
   return tool({
@@ -38,11 +75,20 @@ export function createHivemindHmSettingTool(_projectRoot: string): ReturnType<ty
       ] as const).default('all')
         .describe('Configuration group to manage'),
       key: s.string().optional()
-        .describe('Specific key within group'),
+         .describe('Specific key within group'),
       value: s.string().optional()
-        .describe('New value for the key'),
+         .describe('New value for the key'),
+      locale: s.string().optional()
+        .describe('Optional locale for localized configuration copy'),
+      renderMode: s.enum(['json', 'tui'] as const).default('json')
+        .describe('Presentation mode for the result payload'),
     },
     async execute(args, _context) {
+      const renderResponse = (message: string, result: HmSettingResult) => {
+        const response = success(message, result)
+        return args.renderMode === 'tui' ? renderHmSettingTui(response) : render(response)
+      }
+
       // --- Show all groups ---
       if (args.group === 'all') {
         const allGroups: Record<string, Record<string, unknown>> = {}
@@ -60,7 +106,7 @@ export function createHivemindHmSettingTool(_projectRoot: string): ReturnType<ty
           authorizationRequired: false,
           written: false,
         }
-        return render(success('hm-setting [all]: showing all config groups', result))
+        return renderResponse('hm-setting [all]: showing all config groups', result)
       }
 
       // --- Validate group name ---
@@ -82,8 +128,9 @@ export function createHivemindHmSettingTool(_projectRoot: string): ReturnType<ty
           proposedChange: null,
           authorizationRequired: false,
           written: false,
+          ...(group === 'language' ? createLanguageSelector(groupResult.values ?? {}, args.locale) : {}),
         }
-        return render(success(`hm-setting [${group}]: showing current config`, result))
+        return renderResponse(`hm-setting [${group}]: showing current config`, result)
       }
 
       // --- Validate and propose change ---
@@ -106,12 +153,13 @@ export function createHivemindHmSettingTool(_projectRoot: string): ReturnType<ty
         },
         authorizationRequired: true,
         written: false,
+        ...(group === 'language' ? createLanguageSelector(groupResult.values ?? {}, args.locale) : {}),
       }
 
-      return render(success(
+      return renderResponse(
         `hm-setting [${group}]: proposed change "${args.key}" = "${args.value}" (requires authorization)`,
         result,
-      ))
+      )
     },
   })
 }

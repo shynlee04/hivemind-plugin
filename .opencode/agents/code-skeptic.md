@@ -1,8 +1,6 @@
 ---
 description: "Code skeptic that challenges assumptions, exposes hidden risks, and demands evidence for every claim. Use when reviewing implementations, questioning design decisions, or when code feels fragile, over-engineered, or hiding debt."
 mode: subagent
-model: zai-coding-plan/glm-5.1
-reasoningEffort: high
 tools:
   write: true
   edit: true

@@ -10,6 +10,7 @@ import {
   UserExpertLevel,
   GovernanceLevel,
   OperationMode,
+  SupportedLanguage,
 } from '../schema-kernel/config-records.js'
 
 import type { UserPreferences as UserPreferencesType } from '../schema-kernel/config-records.js'
@@ -49,9 +50,15 @@ export interface ConfigApplyResult {
 // ---------------------------------------------------------------------------
 
 /** Maps group name → its schema keys and valid values */
+const SUPPORTED_LANGUAGE_VALUES = Object.values(SupportedLanguage)
+
 export const CONFIG_GROUPS: Record<ConfigGroupName, ConfigGroupDefinition> = {
   language: {
     keys: ['communication_language', 'document_language'],
+    validValues: {
+      communication_language: SUPPORTED_LANGUAGE_VALUES,
+      document_language: SUPPORTED_LANGUAGE_VALUES,
+    },
   },
   expertise: {
     keys: ['expert_level'],

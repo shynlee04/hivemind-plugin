@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+
+import { getHierarchyPath, getJourneyEventsPath } from '../event-tracker/paths.js'
 
 export interface HierarchyNode {
   sessionId: string
@@ -12,10 +13,6 @@ interface HierarchyDocument {
   updatedAt: string
 }
 
-function getHierarchyPath(sessionsDir: string): string {
-  return join(sessionsDir, 'journey-events', 'hierarchy.json')
-}
-
 function createNode(sessionId: string, parentSessionId: string | null = null): HierarchyNode {
   return {
     sessionId,
@@ -24,8 +21,8 @@ function createNode(sessionId: string, parentSessionId: string | null = null): H
   }
 }
 
-async function loadHierarchyJson(sessionsDir: string): Promise<HierarchyDocument> {
-  const hierarchyPath = getHierarchyPath(sessionsDir)
+async function loadHierarchyJson(projectRoot: string): Promise<HierarchyDocument> {
+  const hierarchyPath = getHierarchyPath(projectRoot)
 
   try {
     const content = await readFile(hierarchyPath, 'utf8')
@@ -43,9 +40,9 @@ async function loadHierarchyJson(sessionsDir: string): Promise<HierarchyDocument
   }
 }
 
-export async function writeHierarchyJson(sessionsDir: string, nodes: HierarchyNode[]): Promise<void> {
-  const hierarchyPath = getHierarchyPath(sessionsDir)
-  await mkdir(join(sessionsDir, 'journey-events'), { recursive: true })
+export async function writeHierarchyJson(projectRoot: string, nodes: HierarchyNode[]): Promise<void> {
+  const hierarchyPath = getHierarchyPath(projectRoot)
+  await mkdir(getJourneyEventsPath(projectRoot), { recursive: true })
   await writeFile(
     hierarchyPath,
     JSON.stringify({ nodes, updatedAt: new Date().toISOString() }, null, 2),
@@ -54,11 +51,11 @@ export async function writeHierarchyJson(sessionsDir: string, nodes: HierarchyNo
 }
 
 export async function appendHierarchyLink(
-  sessionsDir: string,
+  projectRoot: string,
   parentId: string,
   childId: string
 ): Promise<void> {
-  const hierarchy = await loadHierarchyJson(sessionsDir)
+  const hierarchy = await loadHierarchyJson(projectRoot)
 
   let parentNode = hierarchy.nodes.find((node) => node.sessionId === parentId)
   if (!parentNode) {
@@ -78,5 +75,5 @@ export async function appendHierarchyLink(
     childNode.parentSessionId = parentId
   }
 
-  await writeHierarchyJson(sessionsDir, hierarchy.nodes)
+  await writeHierarchyJson(projectRoot, hierarchy.nodes)
 }

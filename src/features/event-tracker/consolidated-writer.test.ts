@@ -61,6 +61,7 @@ export interface SessionV2 {
  * Input for initializing a new consolidated session.
  */
 export interface InitSessionInput {
+  sessionId: string
   lineage: 'hivefiver' | 'hiveminder'
   purposeClass:
     | 'discovery'
@@ -149,8 +150,12 @@ function expectedSessionPath(baseDir: string, sessionId: string): string {
 // Test Fixtures
 // ---------------------------------------------------------------------------
 
+let _sessionIdCounter = 0
+
 function makeInitInput(overrides: Partial<InitSessionInput> = {}): InitSessionInput {
+  _sessionIdCounter++
   return {
+    sessionId: `ses_test_${String(_sessionIdCounter).padStart(3, '0')}`,
     lineage: 'hiveminder',
     purposeClass: 'implementation',
     agent: 'hitea',
@@ -298,11 +303,10 @@ test('initSession generates session file named ses_ISO-date_purpose_agent.json',
     ]
 
     for (const { purposeClass, agent } of cases) {
-      const sessionId = await initSession(tmpDir, {
-        lineage: 'hiveminder',
+      const sessionId = await initSession(tmpDir, makeInitInput({
         purposeClass,
         agent,
-      })
+      }))
 
       // Session ID format: ses_YYYY-MM-DDTHHMMSS_<purpose>_<agent>
       const sessionIdPattern = new RegExp(
@@ -650,17 +654,15 @@ test('linkSubSession sets parentSessionId on child session', async () => {
   try {
     const { initSession, linkSubSession } = await loadConsolidatedWriter()
 
-    const parentSessionId = await initSession(tmpDir, {
-      lineage: 'hiveminder',
+    const parentSessionId = await initSession(tmpDir, makeInitInput({
       purposeClass: 'planning',
       agent: 'hiveminder',
-    })
+    }))
 
-    const childSessionId = await initSession(tmpDir, {
-      lineage: 'hiveminder',
+    const childSessionId = await initSession(tmpDir, makeInitInput({
       purposeClass: 'tdd',
       agent: 'hitea',
-    })
+    }))
 
     await linkSubSession(tmpDir, parentSessionId, childSessionId)
 
@@ -684,23 +686,20 @@ test('linkSubSession appends to childSessionIds for multiple children', async ()
   try {
     const { initSession, linkSubSession } = await loadConsolidatedWriter()
 
-    const parentId = await initSession(tmpDir, {
-      lineage: 'hiveminder',
+    const parentId = await initSession(tmpDir, makeInitInput({
       purposeClass: 'planning',
       agent: 'hiveminder',
-    })
+    }))
 
-    const child1 = await initSession(tmpDir, {
-      lineage: 'hiveminder',
+    const child1 = await initSession(tmpDir, makeInitInput({
       purposeClass: 'tdd',
       agent: 'hitea',
-    })
+    }))
 
-    const child2 = await initSession(tmpDir, {
-      lineage: 'hiveminder',
+    const child2 = await initSession(tmpDir, makeInitInput({
       purposeClass: 'implementation',
       agent: 'hivemaker',
-    })
+    }))
 
     await linkSubSession(tmpDir, parentId, child1)
     await linkSubSession(tmpDir, parentId, child2)
@@ -752,17 +751,16 @@ test('linkSubSession writes hierarchy.json with parent and child nodes', async (
   try {
     const { initSession, linkSubSession } = await loadConsolidatedWriter()
 
-    const parentId = await initSession(tmpDir, {
-      lineage: 'hiveminder',
+    const parentId = await initSession(tmpDir, makeInitInput({
       purposeClass: 'planning',
       agent: 'hiveminder',
-    })
+    }))
 
-    const childId = await initSession(tmpDir, {
+    const childId = await initSession(tmpDir, makeInitInput({
       lineage: 'hivefiver',
       purposeClass: 'implementation',
       agent: 'hivemaker',
-    })
+    }))
 
     await linkSubSession(tmpDir, parentId, childId)
 

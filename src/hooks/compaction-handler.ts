@@ -79,7 +79,7 @@ export function createCompactionJournalHandler(deps: CompactionJournalHandlerDep
 
       if (markdownFilePath) {
         await appendTurnToMarkdown(markdownFilePath, {
-          turnNumber: markdownSession.turns.length + markdownSession.events.length,
+          turnNumber: markdownSession.turnCount + markdownSession.toc.length,
           timestamp,
           type: 'compaction',
           content: output.prompt || `Session compaction (${contextLength} context entries).`,
@@ -140,7 +140,7 @@ export async function handleCompaction(
 
   if (markdownFilePath) {
     await appendTurnToMarkdown(markdownFilePath, {
-      turnNumber: markdownSession.turns.length + markdownSession.events.length,
+      turnNumber: markdownSession.turnCount + markdownSession.toc.length,
       timestamp: new Date().toISOString(),
       type: 'compaction',
       content: output.prompt || `Session compaction (${output.context.length} context entries).`,

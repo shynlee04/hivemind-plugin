@@ -20,7 +20,6 @@ import {
 } from '../features/event-tracker/consolidated-writer.js'
 import {
   appendDiagnosticToMarkdown,
-  appendTurnToMarkdown,
   ensureEventsMarkdown,
   updateSessionTimestamp,
 } from '../features/event-tracker/markdown-writer.js'
@@ -91,11 +90,11 @@ async function appendLifecycleTurn(
   const session = await loadSession(sessionsDir, sessionId)
   const filePath = await ensureEventsMarkdown(sessionsDir, session)
 
-  await appendTurnToMarkdown(filePath, {
-    turnNumber: session.turns.length + session.events.length,
+  // Noise events → diagnostics instead of turns
+  await appendDiagnosticToMarkdown(filePath, {
     timestamp: turn.timestamp,
-    type: turn.type,
-    content: turn.content,
+    level: turn.type === 'error' ? 'error' : 'info',
+    message: turn.content,
   })
   await updateSessionTimestamp(filePath).catch(() => undefined)
 }
@@ -246,7 +245,7 @@ export function createEventHandler(directory: string) {
     if (event.type === 'session.created' && sdkSessionId) {
       const timestamp = new Date().toISOString()
       const consolidatedSessionId = await initSession(sessionsDir, {
-        sdkSessionId,
+        sessionId: sdkSessionId,
         lineage: resolveLineage(sessionProperties),
         purposeClass: resolvePurposeClass(sessionProperties),
         agent: readStringProperty(sessionProperties, 'agent', 'name') ?? 'unknown',

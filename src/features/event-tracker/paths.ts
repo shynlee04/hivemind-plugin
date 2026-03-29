@@ -38,12 +38,30 @@ export function getJourneyEventsPath(projectRoot: string): string {
 }
 
 /**
+ * Builds the sessions directory path.
+ * @param projectRoot Absolute or workspace project root.
+ * @returns Path to the sessions directory under .hivemind.
+ */
+export function getSessionsDir(projectRoot: string): string {
+  return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR)
+}
+
+/**
  * Builds the error-logs directory path.
  * @param projectRoot Absolute or workspace project root.
  * @returns Path to the error-logs directory under .hivemind/sessions.
  */
 export function getErrorLogsPath(projectRoot: string): string {
   return getErrorLogsDir(projectRoot)
+}
+
+/**
+ * Builds the hierarchy.json path.
+ * @param projectRoot Absolute or workspace project root.
+ * @returns Path to hierarchy.json under .hivemind/sessions/journey-events.
+ */
+export function getHierarchyPath(projectRoot: string): string {
+  return path.join(getJourneyEventsDir(projectRoot), 'hierarchy.json')
 }
 
 /**

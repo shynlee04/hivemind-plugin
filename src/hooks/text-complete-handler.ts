@@ -73,6 +73,7 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
         : 'implementation'
 
     const agent = injection?.agent ?? 'unknown'
+    const model = (injection as any)?.model ?? 'unknown'
     const lineage: 'hivefiver' | 'hiveminder' = 'hiveminder'
 
     try {
@@ -99,7 +100,7 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
           turnNumber: currentTurnNumber,
           timestamp,
           agent,
-          model: 'unknown',
+          model,
           duration: null,
           userMessage: '',
           assistantContent: assistantText,
@@ -116,7 +117,7 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
           type: 'assistant_output',
           content: assistantText,
           metadata: {
-            model: 'unknown',
+            model,
           },
         }).catch(() => undefined)
         await updateSessionTimestamp(markdownFilePath).catch(() => undefined)
@@ -185,7 +186,7 @@ export async function handleTextComplete(
   })
 
   const existing = await loadSession(sessionsDir, semanticSessionId)
-  const turnNumber = existing.turns.length + 1
+  const turnNumber = existing.turnCount + 1
 
   await addTurn(sessionsDir, {
     sessionId: semanticSessionId,

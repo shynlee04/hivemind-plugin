@@ -1,0 +1,413 @@
+{
+  "_meta": {
+    "created_at": "2026-03-29T17:24:32+07:00",
+    "updated_at": "2026-03-29T17:24:32+07:00",
+    "plan_id": "plan-2026-03-29-session-journal-refactor",
+    "producer": "hiveplanner",
+    "source_spec": "user-requirements-2026-03-29"
+  },
+  "status": "validated",
+  "validation": {
+    "completeness": {
+      "functional": true,
+      "non_functional": true,
+      "integration": true,
+      "risk": true,
+      "operations": true
+    },
+    "feasibility": {
+      "target_exists": true,
+      "evidence": "All 26 target files confirmed via hivexplorer investigation. Write side: 8 active + 4 dead code files exist. Read side: 7 parser + 4 classifier + 3 writer files exist. Infrastructure: 6 files exist."
+    },
+    "constraints": {
+      "resource_limits": "Each phase ≤5 files, single concern. TDD enforced. Gate after each phase.",
+      "timeline": "13 phases, estimated 4 parallel waves, critical path length 10"
+    },
+    "ambiguity_residual": []
+  },
+  "requirement_classification": {
+    "functional": [
+      "R-F1: File naming — use SDK session ID directly, not semantic name",
+      "R-F2: Header — 3 fields only (Session ID, Created, Updated), human-readable dates",
+      "R-F3: Tool input — use actual args JSON, not callID",
+      "R-F4: Tool output — use output.output, not output.title",
+      "R-F5: Model — extract from injection payload",
+      "R-F6: Duration — measure between before/after hooks",
+      "R-F7: Noise — skip Error/Diagnostics/Idle sections in markdown",
+      "R-F8: Subsessions — embedded in main session markdown via Tool:task with task_result wrapper"
+    ],
+    "non_functional": [
+      "R-NF1: TDD — write failing tests first, then implement",
+      "R-NF2: Incremental processing — triggered after each main session assistant message + user prompt",
+      "R-NF3: Gatekeeping — typecheck + test + build gates after each phase"
+    ],
+    "integration": [
+      "R-I1: Wire parser to read new turns from markdown after each write",
+      "R-I2: Wire classifier to classify events in parsed turns",
+      "R-I3: Wire synthesizer to update session synthesis incrementally",
+      "R-I4: Wire index-writer to update cross-session index",
+      "R-I5: Consolidate path authority — single source of truth (paths.ts)",
+      "R-I6: Unify error-log format — one format, not two",
+      "R-I7: Main session only — subsessions don't get own processing"
+    ],
+    "risk_compliance": [
+      "R-RC1: Remove deprecated writer chain (session-writer, events-writer, diagnostics-writer, session-writers)",
+      "R-RC2: Remove SessionV2 — keep only V3",
+      "R-RC3: Remove symlinks"
+    ],
+    "operations": []
+  },
+  "phases": [
+    {
+      "phase_id": "01-path-consolidation",
+      "concern": "infrastructure — consolidate path authority to paths.ts",
+      "files": [
+        "src/features/event-tracker/paths.ts",
+        "src/features/event-tracker/session-structure.ts"
+      ],
+      "dependencies": [],
+      "parallel_safe": true,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test -- --testPathPattern=paths",
+      "requirements": ["R-I5"],
+      "description": "Verify paths.ts is the single path authority. Update session-structure.ts to derive all paths from paths.ts. Remove any path duplication. Ensure getConsolidatedSessionPath uses SDK session ID pattern.",
+      "subtasks": [
+        "Audit paths.ts for duplicate path generation logic",
+        "Ensure session-structure.ts imports from paths.ts, not computes paths inline",
+        "Add getSdkSessionPath() if needed for direct SDK ID mapping"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "02-dead-code-removal",
+      "concern": "risk — remove deprecated writer chain",
+      "files": [
+        "src/internal/session-writers.ts",
+        "src/features/event-tracker/writers/session-writer.ts",
+        "src/features/event-tracker/writers/events-writer.ts",
+        "src/features/event-tracker/writers/diagnostics-writer.ts",
+        "src/tools/hivemind-journal.ts"
+      ],
+      "dependencies": [],
+      "parallel_safe": true,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test",
+      "requirements": ["R-RC1"],
+      "description": "Remove the entire deprecated writer chain. First update hivemind-journal.ts to stop importing createSessionWriters from internal/session-writers.ts. Route it to consolidated-writer or mark as non-write tool. Then delete the 4 deprecated files.",
+      "subtasks": [
+        "Update hivemind-journal.ts: remove import of createSessionWriters, route to consolidated-writer or disable write path",
+        "Delete src/internal/session-writers.ts",
+        "Delete src/features/event-tracker/writers/session-writer.ts",
+        "Delete src/features/event-tracker/writers/events-writer.ts",
+        "Delete src/features/event-tracker/writers/diagnostics-writer.ts"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "03-types-cleanup",
+      "concern": "risk — remove SessionV2, keep only V3",
+      "files": [
+        "src/features/event-tracker/types.ts"
+      ],
+      "dependencies": [],
+      "parallel_safe": true,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test -- --testPathPattern=types",
+      "requirements": ["R-RC2"],
+      "description": "Remove SessionV2 interface and all V2-specific types from types.ts. Keep SessionV3 as the canonical schema. Update any type exports that reference V2. Reduce types.ts from 366 LOC to under 300.",
+      "subtasks": [
+        "Identify all SessionV2 references in types.ts",
+        "Remove SessionV2 interface",
+        "Verify SessionV3 has all needed fields",
+        "Update exports"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "04-consolidated-writer-refactor",
+      "concern": "write — refactor consolidated-writer.ts to V3-only with SDK ID naming",
+      "files": [
+        "src/features/event-tracker/consolidated-writer.ts",
+        "src/features/event-tracker/consolidated-writer.test.ts",
+        "src/features/event-tracker/consolidated-writer-v3.test.ts"
+      ],
+      "dependencies": ["01-path-consolidation", "02-dead-code-removal", "03-types-cleanup"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test -- --testPathPattern=consolidated-writer",
+      "requirements": ["R-F1", "R-RC2"],
+      "description": "Remove SessionV2 from consolidated-writer.ts. Use SDK session ID directly for file naming (not semantic name). Remove createSdkSymlink(). Reduce LOC from 665 to under 300 by extracting helpers. All session paths use getConsolidatedSessionPath with SDK ID.",
+      "subtasks": [
+        "Remove SessionV2 interface and all V2 code paths",
+        "Remove createSdkSymlink function",
+        "Use SDK session ID directly in initSession/initSessionV3",
+        "Extract helper functions to reduce LOC below 300",
+        "Update tests for V3-only behavior"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "05-markdown-writer-refactor",
+      "concern": "write — refactor markdown output format",
+      "files": [
+        "src/features/event-tracker/markdown-writer.ts",
+        "src/features/event-tracker/markdown-writer.test.ts"
+      ],
+      "dependencies": ["04-consolidated-writer-refactor"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test -- --testPathPattern=markdown-writer",
+      "requirements": ["R-F2", "R-F5", "R-F6", "R-F7"],
+      "description": "Rewrite markdown header to 3 fields (Session ID, Created, Updated) with human-readable dates. Extract model from injection payload. Implement duration measurement. Skip Error/Diagnostics/Idle sections. Reduce LOC from 545 to under 300.",
+      "subtasks": [
+        "Rewrite header format: Session ID, Created (human date), Updated (human date)",
+        "Extract model name from injection payload in appendTurnToMarkdown",
+        "Add duration calculation from before/after hook timestamps",
+        "Skip Error, Diagnostics, Idle sections in markdown generation",
+        "Update tests for new format"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "06-tool-handler-fixes",
+      "concern": "write — fix tool input/output in tool execution handler",
+      "files": [
+        "src/hooks/tool-execution-handler.ts",
+        "src/hooks/text-complete-handler.ts"
+      ],
+      "dependencies": ["04-consolidated-writer-refactor"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test -- --testPathPattern=tool-execution",
+      "requirements": ["R-F3", "R-F4"],
+      "description": "Fix tool input to use actual args JSON (not callID). Fix tool output to use output.output (not output.title). Update both tool-execution-handler.ts and text-complete-handler.ts.",
+      "subtasks": [
+        "Update tool-execution-handler.ts: use args JSON for input, output.output for output",
+        "Update text-complete-handler.ts: extract model from injection payload, fix output mapping",
+        "Add tests for correct field extraction"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "07-event-handler-updates",
+      "concern": "write — update event handler for duration, lifecycle",
+      "files": [
+        "src/hooks/event-handler.ts"
+      ],
+      "dependencies": ["05-markdown-writer-refactor"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test -- --testPathPattern=event-handler",
+      "requirements": ["R-F6"],
+      "description": "Update event-handler.ts to track session lifecycle timestamps for duration measurement. Capture before/after hook timestamps. Pass timing data to markdown-writer. Reduce LOC from 608 to under 300.",
+      "subtasks": [
+        "Add timestamp capture at session start/end events",
+        "Pass timing data through to consolidated-writer and markdown-writer",
+        "Extract helper functions to reduce LOC",
+        "Remove Error/Diagnostics event handling (noise)"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "08-hook-handler-updates",
+      "concern": "write — update chat and compaction handlers",
+      "files": [
+        "src/hooks/chat-message-handler.ts",
+        "src/hooks/compaction-handler.ts",
+        "src/features/session-journal/session-resolver.ts"
+      ],
+      "dependencies": ["05-markdown-writer-refactor"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test -- --testPathPattern=chat-message-handler|compaction-handler",
+      "requirements": ["R-F8", "R-RC3"],
+      "description": "Update chat-message-handler and compaction-handler for new markdown format. Handle subsession embedding in main session markdown. Remove symlink creation from session-resolver.ts.",
+      "subtasks": [
+        "Update chat-message-handler.ts for new header/format expectations",
+        "Update compaction-handler.ts for new format",
+        "Remove createSdkSymlink call from session-resolver.ts",
+        "Handle subsession events as embedded Tool:task with task_result wrapper"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "09-classifier-adapter-update",
+      "concern": "integration — update classifier to not import deprecated writers",
+      "files": [
+        "src/features/event-tracker/classifier/writer-adapter.ts",
+        "src/features/event-tracker/classifier/event-classifier.ts"
+      ],
+      "dependencies": ["02-dead-code-removal"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test -- --testPathPattern=classifier",
+      "requirements": ["R-RC1"],
+      "description": "Update writer-adapter.ts to stop importing SessionEventWriteInput from deprecated events-writer.ts. Map to consolidated-writer types instead. Update event-classifier.ts if needed.",
+      "subtasks": [
+        "Remove import of SessionEventWriteInput from events-writer.js in writer-adapter.ts",
+        "Map EventEntry to consolidated-writer input format",
+        "Update event-classifier.ts if it references deprecated types"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "10-read-side-wiring",
+      "concern": "integration — activate incremental read-side processing",
+      "files": [
+        "src/features/event-tracker/parser/turn-parser.ts",
+        "src/features/event-tracker/classifier/event-classifier.ts",
+        "src/features/event-tracker/writers/synthesizer.ts",
+        "src/features/event-tracker/writers/index-writer.ts",
+        "src/hooks/tool-execution-handler.ts"
+      ],
+      "dependencies": ["07-event-handler-updates", "08-hook-handler-updates", "09-classifier-adapter-update"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test",
+      "requirements": ["R-I1", "R-I2", "R-I3", "R-I4", "R-NF2", "R-I7"],
+      "description": "Wire the read-side pipeline to run incrementally after each main session turn. After markdown write completes: parse new turns → classify events → update synthesis → update index. Main session only — skip for subsessions.",
+      "subtasks": [
+        "Add read-side trigger after markdown write in text-complete-handler",
+        "Wire parser to parse new turns from updated markdown",
+        "Wire classifier to classify parsed events",
+        "Wire synthesizer to incrementally update session synthesis",
+        "Wire index-writer to update cross-session index",
+        "Gate: main session only (skip subsessions)"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "11-session-resolver-cleanup",
+      "concern": "infrastructure — clean up session resolver",
+      "files": [
+        "src/features/session-journal/session-resolver.ts"
+      ],
+      "dependencies": ["01-path-consolidation", "04-consolidated-writer-refactor"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test -- --testPathPattern=session-resolver",
+      "requirements": ["R-RC3"],
+      "description": "Remove symlink-related code from session-resolver.ts. Simplify to pure SDK session ID resolution without semantic name mapping.",
+      "subtasks": [
+        "Remove createSdkSymlink import and usage",
+        "Remove semantic name resolution logic",
+        "Simplify to direct SDK ID → path mapping"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "12-error-log-unification",
+      "concern": "infrastructure — unify error-log format",
+      "files": [
+        "src/features/session-journal/error-log-writer.ts",
+        "src/hooks/event-handler.ts"
+      ],
+      "dependencies": ["07-event-handler-updates"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test -- --testPathPattern=error-log",
+      "requirements": ["R-I6"],
+      "description": "Unify error-log format between error-log-writer.ts and any diagnostic writing in event-handler.ts. Single format, single writer.",
+      "subtasks": [
+        "Audit current error-log format in error-log-writer.ts",
+        "Audit diagnostic format in event-handler.ts",
+        "Unify to single format",
+        "Remove duplicate error-writing paths"
+      ],
+      "linked_commits": []
+    },
+    {
+      "phase_id": "13-integration-verification",
+      "concern": "verification — full integration test pass",
+      "files": [],
+      "dependencies": ["10-read-side-wiring", "11-session-resolver-cleanup", "12-error-log-unification"],
+      "parallel_safe": false,
+      "status": "pending",
+      "gate": "npx tsc --noEmit && npm test && npm run build",
+      "requirements": ["R-NF1", "R-NF3"],
+      "description": "Full integration verification. Run typecheck, all tests, and build. Verify no regressions. Verify all deprecated code is removed. Verify read-side pipeline runs incrementally.",
+      "subtasks": [
+        "Run npx tsc --noEmit — zero errors",
+        "Run npm test — all tests pass",
+        "Run npm run build — build succeeds",
+        "Verify no imports of deprecated files remain",
+        "Verify read-side pipeline triggers after write"
+      ],
+      "linked_commits": []
+    }
+  ],
+  "dependency_graph": {
+    "critical_path": [
+      "03-types-cleanup",
+      "04-consolidated-writer-refactor",
+      "05-markdown-writer-refactor",
+      "07-event-handler-updates",
+      "10-read-side-wiring",
+      "13-integration-verification"
+    ],
+    "critical_path_length": 6,
+    "parallel_waves": [
+      {
+        "wave": 1,
+        "phases": ["01-path-consolidation", "02-dead-code-removal", "03-types-cleanup"],
+        "rationale": "All three have zero dependencies. Infrastructure changes that don't touch each other's files."
+      },
+      {
+        "wave": 2,
+        "phases": ["04-consolidated-writer-refactor"],
+        "rationale": "Depends on all wave 1 phases. Single phase, sequential."
+      },
+      {
+        "wave": 3,
+        "phases": ["05-markdown-writer-refactor", "06-tool-handler-fixes"],
+        "rationale": "Both depend on phase 04 only. No shared files between them. Parallel safe."
+      },
+      {
+        "wave": 4,
+        "phases": ["07-event-handler-updates", "08-hook-handler-updates", "09-classifier-adapter-update"],
+        "rationale": "07 depends on 05. 08 depends on 05. 09 depends on 02. All can run in parallel — no shared mutable files."
+      },
+      {
+        "wave": 5,
+        "phases": ["10-read-side-wiring", "11-session-resolver-cleanup"],
+        "rationale": "10 depends on 07+08+09. 11 depends on 01+04. Can run in parallel."
+      },
+      {
+        "wave": 6,
+        "phases": ["12-error-log-unification"],
+        "rationale": "Depends on 07. Sequential after wave 4."
+      },
+      {
+        "wave": 7,
+        "phases": ["13-integration-verification"],
+        "rationale": "Final gate. Depends on all implementation phases."
+      }
+    ],
+    "edges": [
+      { "from": "04", "to": "01", "type": "hard", "rationale": "consolidated-writer uses paths.ts" },
+      { "from": "04", "to": "02", "type": "hard", "rationale": "consolidated-writer imports from deprecated writers" },
+      { "from": "04", "to": "03", "type": "hard", "rationale": "consolidated-writer exports SessionV2" },
+      { "from": "05", "to": "04", "type": "hard", "rationale": "markdown-writer imports SessionV2 from consolidated-writer" },
+      { "from": "06", "to": "04", "type": "hard", "rationale": "tool handlers use consolidated-writer functions" },
+      { "from": "07", "to": "05", "type": "hard", "rationale": "event-handler writes markdown via markdown-writer" },
+      { "from": "08", "to": "05", "type": "hard", "rationale": "chat/compaction handlers write markdown" },
+      { "from": "09", "to": "02", "type": "hard", "rationale": "classifier/writer-adapter imports from deprecated events-writer" },
+      { "from": "10", "to": "07", "type": "hard", "rationale": "read-side wiring depends on final markdown format" },
+      { "from": "10", "to": "08", "type": "hard", "rationale": "read-side wiring depends on hook handler updates" },
+      { "from": "10", "to": "09", "type": "hard", "rationale": "read-side wiring uses classifier" },
+      { "from": "11", "to": "01", "type": "hard", "rationale": "session-resolver uses paths.ts" },
+      { "from": "11", "to": "04", "type": "hard", "rationale": "session-resolver imports createSdkSymlink from consolidated-writer" },
+      { "from": "12", "to": "07", "type": "hard", "rationale": "error-log unification depends on event-handler cleanup" },
+      { "from": "13", "to": "10", "type": "hard", "rationale": "verification needs all implementation complete" },
+      { "from": "13", "to": "11", "type": "hard", "rationale": "verification needs resolver cleanup" },
+      { "from": "13", "to": "12", "type": "hard", "rationale": "verification needs error-log unification" }
+    ]
+  },
+  "carry_forward": [
+    "consolidated-writer.ts is 665 LOC — must be split/delegated below 300",
+    "event-handler.ts is 608 LOC — must be split/delegated below 300",
+    "markdown-writer.ts is 545 LOC — must be split/delegated below 300",
+    "classifier/writer-adapter.ts is the ONLY read→write bridge — must update its import after dead code removal",
+    "hivemind-journal.ts is the sole consumer of deprecated session-writers.ts — must update before deletion"
+  ]
+}

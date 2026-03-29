@@ -1,5 +1,4 @@
-import type { EventEntry } from '../types.js'
-import type { SessionEventWriteInput } from '../writers/events-writer.js'
+import type { EventEntry, SessionEventWriteInput } from '../types.js'
 
 function asText(value: unknown): string {
   return typeof value === 'string' && value.trim() ? value : 'N/A'

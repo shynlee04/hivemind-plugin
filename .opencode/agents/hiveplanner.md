@@ -37,6 +37,7 @@ permission:
     "use-hivemind-context": allow
   webfetch: deny
 ---
+
 # Hiveplanner — Planning Specialist
 
 ## Role Priming

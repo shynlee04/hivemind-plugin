@@ -1,89 +1,28 @@
 /**
  * Consolidated Session Writer
  *
- * Produces a single JSON file per session using the v2 schema format.
+ * Produces a single JSON file per session using the V3 schema (ADR-017).
  * All writes are atomic (write to temp, then rename) to prevent corruption.
  *
  * @module event-tracker/consolidated-writer
  */
 
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, readdir, rename, symlink, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import type { PurposeClass, SessionV3 } from './types.js'
+import type { Lineage, PurposeClass, SessionV3 } from './types.js'
 import { appendHierarchyLink } from '../session-journal/hierarchy-writer.js'
-
-const JOURNEY_EVENTS_DIR = 'journey-events'
 
 // ============================================================================
 // Types
 // ============================================================================
 
 /**
- * Session v2 schema — the consolidated session file format.
- * Single JSON file that contains all session data.
- */
-export interface SessionV2 {
-  _schema: 'session/v2'
-  sessionId: string
-  /** The semantic session ID used as the filename. */
-  semanticSessionId?: string
-  /** The original SDK session ID, stored for lookup when filenames are semantic. */
-  sdkSessionId?: string
-  lineage: 'hivefiver' | 'hiveminder'
-  purposeClass:
-    | 'discovery'
-    | 'brainstorming'
-    | 'research'
-    | 'planning'
-    | 'implementation'
-    | 'gatekeeping'
-    | 'tdd'
-    | 'course-correction'
-  agent: string
-  created: string
-  updated: string
-  status: 'active' | 'completed' | 'abandoned'
-  parentSessionId: string | null
-  childSessionIds: string[]
-  counters: {
-    userMessageCount: number
-    assistantOutputCount: number
-    toolCallCount: number
-    delegationCount: number
-    compactionCount: number
-    turnCount: number
-  }
-  turns: unknown[]
-  events: unknown[]
-  diagnostics: unknown[]
-}
-
-/**
- * Input for initializing a new consolidated session.
+ * Input for initializing a new consolidated session (V3 schema).
  */
 export interface InitSessionInput {
-  lineage: 'hivefiver' | 'hiveminder'
-  /** The original SDK session ID for cross-referencing. */
-  sdkSessionId?: string
-  purposeClass:
-    | 'discovery'
-    | 'brainstorming'
-    | 'research'
-    | 'planning'
-    | 'implementation'
-    | 'gatekeeping'
-    | 'tdd'
-    | 'course-correction'
-  agent: string
-  parentSessionId?: string | null
-}
-
-/**
- * Input for initializing a new consolidated session V3.
- */
-export interface InitSessionV3Input {
-  lineage: 'hivefiver' | 'hiveminder'
+  sessionId: string
+  lineage: Lineage
   purposeClass: PurposeClass
   agent: string
   parentSessionId?: string | null
@@ -134,6 +73,7 @@ export interface AddDiagnosticInput {
 
 /**
  * Counter increment specification.
+ * In V3, `turnCount` is a top-level field; others live in `counters`.
  */
 export type CounterType =
   | 'userMessageCount'
@@ -146,25 +86,6 @@ export type CounterType =
 // ============================================================================
 // Internal Utilities
 // ============================================================================
-
-/**
- * Generate a session ID in the format: ses_YYYY-MM-DDTHHmmss_<purpose>_<agent>
- * @internal
- */
-function generateSessionId(
-  purposeClass: InitSessionInput['purposeClass'],
-  agent: string
-): string {
-  const now = new Date()
-  const year = now.getFullYear()
-  const month = String(now.getMonth() + 1).padStart(2, '0')
-  const day = String(now.getDate()).padStart(2, '0')
-  const hour = String(now.getHours()).padStart(2, '0')
-  const minute = String(now.getMinutes()).padStart(2, '0')
-  const second = String(now.getSeconds()).padStart(2, '0')
-  const isoDate = `${year}-${month}-${day}T${hour}${minute}${second}`
-  return `ses_${isoDate}_${purposeClass}_${agent}`
-}
 
 /**
  * Write data to a temp file, then rename to target path.
@@ -190,7 +111,7 @@ async function ensureDir(dir: string): Promise<void> {
 }
 
 function getJourneyEventsDir(sessionDir: string): string {
-  return join(sessionDir, JOURNEY_EVENTS_DIR)
+  return join(sessionDir, 'journey-events')
 }
 
 function getLegacySessionPath(sessionDir: string, sessionId: string): string {
@@ -209,11 +130,10 @@ function getJourneyEventSessionPath(sessionDir: string, sessionId: string): stri
 async function modifySession(
   sessionDir: string,
   sessionId: string,
-  modifier: (session: SessionV2) => void
+  modifier: (session: SessionV3) => void
 ): Promise<void> {
   const session = await loadSession(sessionDir, sessionId)
   modifier(session)
-  session.updated = new Date().toISOString()
   const filePath = getSessionPath(sessionDir, sessionId)
   await atomicWrite(filePath, JSON.stringify(session, null, 2))
 }
@@ -231,7 +151,7 @@ async function modifySession(
  *
  * @example
  * const path = getSessionPath('/sessions', 'ses_2026-03-25T120000_implementation_hitea')
- * // Returns: '/sessions/ses_2026-03-25T120000_implementation_hitea.json'
+ * // Returns: '/sessions/journey-events/ses_2026-03-25T120000_implementation_hitea.json'
  */
 export function getSessionPath(sessionDir: string, sessionId: string): string {
   return getJourneyEventSessionPath(sessionDir, sessionId)
@@ -252,10 +172,10 @@ export function getSessionPath(sessionDir: string, sessionId: string): string {
 export async function loadSession(
   sessionDir: string,
   sessionId: string
-): Promise<SessionV2> {
+): Promise<SessionV3> {
   try {
     const content = await readFile(getSessionPath(sessionDir, sessionId), 'utf8')
-    return JSON.parse(content) as SessionV2
+    return JSON.parse(content) as SessionV3
   } catch (error) {
     const legacyPath = getLegacySessionPath(sessionDir, sessionId)
     if (!existsSync(legacyPath)) {
@@ -263,166 +183,101 @@ export async function loadSession(
     }
 
     const content = await readFile(legacyPath, 'utf8')
-    return JSON.parse(content) as SessionV2
+    return JSON.parse(content) as SessionV3
   }
 }
 
 /**
  * Find a session file by its SDK session ID.
- * Scans all .json files in the session directory and returns the
- * semantic session ID whose file contains a matching `sdkSessionId` field.
+ * Since filenames are SDK IDs, this simply checks if the file exists.
  *
  * @param sessionDir - Directory containing session files
  * @param sdkSessionId - The SDK session ID to search for
- * @returns The semantic session ID if found, or null
+ * @returns The session ID if the file exists, or null
  *
  * @example
- * const semanticId = await findSessionBySdkId('/sessions', 'ses_test_001')
- * // Returns: 'ses_2026-03-25T120000_implementation_hiveminder' or null
+ * const sessionId = await findSessionBySdkId('/sessions', 'ses_test_001')
+ * // Returns: 'ses_test_001' or null
  */
 export async function findSessionBySdkId(
   sessionDir: string,
   sdkSessionId: string
 ): Promise<string | null> {
-  const candidateDirs = [getJourneyEventsDir(sessionDir), sessionDir]
-
-  for (const dir of candidateDirs) {
-    try {
-      const files = await readdir(dir)
-      for (const file of files) {
-        if (!file.endsWith('.json')) continue
-        try {
-          const content = await readFile(join(dir, file), 'utf8')
-          const session = JSON.parse(content) as SessionV2
-          if (session.sdkSessionId === sdkSessionId) {
-            return session.semanticSessionId ?? session.sessionId
-          }
-        } catch {
-          // Skip corrupted files
-        }
-      }
-    } catch {
-      // Directory doesn't exist yet
-    }
+  const filePath = getJourneyEventSessionPath(sessionDir, sdkSessionId)
+  if (existsSync(filePath)) {
+    return sdkSessionId
   }
-
   return null
 }
 
-/**
- * Create a backwards-compatibility symlink from SDK session ID to semantic filename.
- * This allows tests and code that reference `${sdkId}.json` to find the semantic file.
- *
- * @param sessionDir - Directory containing session files
- * @param sdkSessionId - The SDK session ID (used as symlink name)
- * @param semanticSessionId - The semantic session ID (target of symlink)
- *
- * @example
- * await createSdkSymlink('/sessions', 'ses_test_001', 'ses_2026-03-25T120000_implementation_hiveminder_ses_test_001')
- * // Creates: /sessions/ses_test_001.json → /sessions/ses_2026-03-25T120000_implementation_hiveminder_ses_test_001.json
- */
-export async function createSdkSymlink(
-  sessionDir: string,
-  sdkSessionId: string,
-  semanticSessionId: string
-): Promise<void> {
-  if (sdkSessionId === semanticSessionId) return
-
-  const semanticPath = getSessionPath(sessionDir, semanticSessionId)
-  const sdkPath = join(dirname(semanticPath), `${sdkSessionId}.json`)
-  const semanticFilename = `${semanticSessionId}.json`
-
-  try {
-    await symlink(semanticFilename, sdkPath)
-  } catch {
-    // Symlink already exists or error — ignore
-  }
-}
-
 // ============================================================================
-// Public API - Write Operations
+// Public API - Write Operations (V3 schema)
 // ============================================================================
 
 /**
  * Initialize a new consolidated session file.
  *
- * Creates a new session with v2 schema format, zero-initialized counters,
- * and empty arrays for turns, events, and diagnostics.
- *
- * When `sdkSessionId` is provided, it is appended to the semantic filename
- * to enable discovery (e.g., `ses_<timestamp>_<purpose>_<agent>_<sdkId>.json`).
+ * Creates a new session with V3 schema format, zero-initialized counters,
+ * and empty table of contents.
  *
  * @param sessionDir - Directory to store session files (created if needed)
  * @param input - Session initialization parameters
- * @returns The generated session ID
- *
- * @example
- * const sessionId = await initSession('/sessions', {
- *   lineage: 'hiveminder',
- *   purposeClass: 'implementation',
- *   agent: 'hitea'
- * })
- * // Returns: 'ses_2026-03-25T120000_implementation_hitea'
+ * @returns The generated semantic session ID
  *
  * @example
  * const sessionId = await initSession('/sessions', {
  *   lineage: 'hiveminder',
  *   purposeClass: 'implementation',
  *   agent: 'hitea',
- *   sdkSessionId: 'ses_test_001'
  * })
- * // Returns: 'ses_2026-03-25T120000_implementation_hitea_ses_test_001'
+ * // Returns: 'ses_2026-03-25T120000_implementation_hitea'
  */
 export async function initSession(
   sessionDir: string,
   input: InitSessionInput
 ): Promise<string> {
-  await ensureDir(getJourneyEventsDir(sessionDir))
-
-  const semanticName = generateSessionId(input.purposeClass, input.agent)
-  let filename = semanticName
-  if (input.sdkSessionId) {
-    filename = `${semanticName}_${input.sdkSessionId}`
-  }
+  const sessionId = input.sessionId
   const now = new Date().toISOString()
 
-  const session: SessionV2 = {
-    _schema: 'session/v2',
-    sessionId: input.sdkSessionId ?? filename,
-    semanticSessionId: filename,
-    sdkSessionId: input.sdkSessionId,
+  await ensureDir(getJourneyEventsDir(sessionDir))
+
+  const session: SessionV3 = {
+    _schema: 'session/v3',
+    sessionId,
+    semanticSessionId: sessionId,
+    parentSessionId: input.parentSessionId ?? null,
     lineage: input.lineage,
     purposeClass: input.purposeClass,
     agent: input.agent,
-    created: now,
-    updated: now,
+    startedAt: now,
+    endedAt: null,
+    turnCount: 0,
     status: 'active',
-    parentSessionId: input.parentSessionId ?? null,
-    childSessionIds: [],
+    summary: '',
+    keyFindings: [],
+    subsessionIds: [],
+    resumable: false,
     counters: {
       userMessageCount: 0,
       assistantOutputCount: 0,
       toolCallCount: 0,
       delegationCount: 0,
       compactionCount: 0,
-      turnCount: 0,
     },
-    turns: [],
-    events: [],
-    diagnostics: [],
+    toc: [],
   }
 
-  const filePath = getJourneyEventSessionPath(sessionDir, filename)
+  const filePath = getJourneyEventSessionPath(sessionDir, sessionId)
   await atomicWrite(filePath, JSON.stringify(session, null, 2))
 
-  return filename
+  return sessionId
 }
 
 /**
  * Add a turn to the session.
  *
- * Appends the turn to the turns array and increments turnCount.
- * Also increments userMessageCount and assistantOutputCount if content is present.
+ * Increments turnCount and relevant counters. V3 does not store turn bodies
+ * in the session file; counters track aggregate statistics.
  *
  * @param sessionDir - Directory containing session files
  * @param input - Turn data with sessionId and turn details
@@ -446,8 +301,7 @@ export async function addTurn(
   input: AddTurnInput
 ): Promise<void> {
   await modifySession(sessionDir, input.sessionId, (session) => {
-    session.turns.push(input.turn)
-    session.counters.turnCount++
+    session.turnCount++
 
     if (input.turn.userMessage && input.turn.userMessage.length > 0) {
       session.counters.userMessageCount++
@@ -462,65 +316,42 @@ export async function addTurn(
 /**
  * Add an event to the session.
  *
- * Appends the event to the events array for tracking tool invocations,
- * delegations, and other session events.
+ * In V3, events are not stored in the session file. This function is a no-op
+ * kept for API compatibility during migration.
  *
- * @param sessionDir - Directory containing session files
- * @param input - Event data with sessionId and event details
- *
- * @example
- * await addEvent('/sessions', {
- *   sessionId: 'ses_2026-03-25T120000_implementation_hitea',
- *   event: {
- *     turnNumber: 1,
- *     type: 'tool_invocation',
- *     importance: 'medium',
- *     timestamp: new Date().toISOString(),
- *     data: { toolName: 'hivemind_task', action: 'create' }
- *   }
- * })
+ * @param _sessionDir - Directory containing session files (unused in V3)
+ * @param _input - Event data (unused in V3)
  */
 export async function addEvent(
-  sessionDir: string,
-  input: AddEventInput
+  _sessionDir: string,
+  _input: AddEventInput
 ): Promise<void> {
-  await modifySession(sessionDir, input.sessionId, (session) => {
-    session.events.push(input.event)
-  })
+  // V3 does not store events in-session; events go to separate files.
+  // Kept as no-op for API compatibility.
 }
 
 /**
  * Add a diagnostic entry to the session.
  *
- * Appends diagnostic information for debugging and monitoring purposes.
+ * In V3, diagnostics are not stored in the session file. This function is a no-op
+ * kept for API compatibility during migration.
  *
- * @param sessionDir - Directory containing session files
- * @param input - Diagnostic data with sessionId and diagnostic details
- *
- * @example
- * await addDiagnostic('/sessions', {
- *   sessionId: 'ses_2026-03-25T120000_implementation_hitea',
- *   diagnostic: {
- *     timestamp: new Date().toISOString(),
- *     level: 'warn',
- *     message: 'Rate limit approaching',
- *     context: { remainingCalls: 10 }
- *   }
- * })
+ * @param _sessionDir - Directory containing session files (unused in V3)
+ * @param _input - Diagnostic data (unused in V3)
  */
 export async function addDiagnostic(
-  sessionDir: string,
-  input: AddDiagnosticInput
+  _sessionDir: string,
+  _input: AddDiagnosticInput
 ): Promise<void> {
-  await modifySession(sessionDir, input.sessionId, (session) => {
-    session.diagnostics.push(input.diagnostic)
-  })
+  // V3 does not store diagnostics in-session.
+  // Kept as no-op for API compatibility.
 }
 
 /**
  * Increment a counter in the session.
  *
  * Updates the specified counter by the given amount (default: 1).
+ * For `turnCount`, updates the top-level field; for others, updates `counters`.
  *
  * @param sessionDir - Directory containing session files
  * @param sessionId - Session identifier
@@ -541,18 +372,23 @@ export async function incrementCounter(
   amount: number = 1
 ): Promise<void> {
   await modifySession(sessionDir, sessionId, (session) => {
-    session.counters[counter] += amount
+    if (counter === 'turnCount') {
+      session.turnCount += amount
+    } else {
+      session.counters[counter] += amount
+    }
   })
 }
 
 /**
  * Update the session status.
  *
- * Changes the session status to active, completed, or abandoned.
+ * Changes the session status. When status is no longer 'active',
+ * sets `endedAt` to the current time.
  *
  * @param sessionDir - Directory containing session files
  * @param sessionId - Session identifier
- * @param status - New status value
+ * @param status - New status value ('abandoned' maps to 'errored' in V3)
  *
  * @example
  * await updateStatus('/sessions', sessionId, 'completed')
@@ -563,14 +399,17 @@ export async function updateStatus(
   status: 'active' | 'completed' | 'abandoned'
 ): Promise<void> {
   await modifySession(sessionDir, sessionId, (session) => {
-    session.status = status
+    session.status = status === 'abandoned' ? 'errored' : status
+    if (session.status !== 'active') {
+      session.endedAt = new Date().toISOString()
+    }
   })
 }
 
 /**
  * Link a child session to a parent session.
  *
- * Updates both sessions: adds childSessionId to parent's childSessionIds array,
+ * Updates both sessions: adds childSessionId to parent's subsessionIds array,
  * and sets parentSessionId on the child.
  *
  * @param sessionDir - Directory containing session files
@@ -587,8 +426,8 @@ export async function linkSubSession(
 ): Promise<void> {
   // Update parent to include child
   await modifySession(sessionDir, parentSessionId, (parent) => {
-    if (!parent.childSessionIds.includes(childSessionId)) {
-      parent.childSessionIds.push(childSessionId)
+    if (!parent.subsessionIds.includes(childSessionId)) {
+      parent.subsessionIds.push(childSessionId)
     }
   })
 
@@ -597,69 +436,7 @@ export async function linkSubSession(
     child.parentSessionId = parentSessionId
   })
 
-  await appendHierarchyLink(sessionDir, parentSessionId, childSessionId)
-}
-
-// ============================================================================
-// Public API - V3 Write Operations (ADR-017)
-// ============================================================================
-
-/**
- * Initialize a new consolidated session using the V3 schema.
- *
- * Writes a single flat JSON file at `journey-events/{semanticSessionId}.json`
- * using the V3 schema format.
- *
- * @param sessionsDir - Root directory for all session files
- * @param input - Session initialization parameters
- * @returns The generated semantic session ID
- *
- * @example
- * const id = await initSessionV3('/sessions', {
- *   lineage: 'hiveminder',
- *   purposeClass: 'implementation',
- *   agent: 'hitea',
- * })
- * // Creates: /sessions/journey-events/ses_2026-03-27T120000_implementation_hitea.json
- * // Returns: 'ses_2026-03-27T120000_implementation_hitea'
- */
-export async function initSessionV3(
-  sessionsDir: string,
-  input: InitSessionV3Input
-): Promise<string> {
-  const semanticSessionId = generateSessionId(input.purposeClass, input.agent)
-  const now = new Date().toISOString()
-
-  await ensureDir(getJourneyEventsDir(sessionsDir))
-
-  const session: SessionV3 = {
-    _schema: 'session/v3',
-    sessionId: semanticSessionId,
-    semanticSessionId,
-    parentSessionId: input.parentSessionId ?? null,
-    lineage: input.lineage,
-    purposeClass: input.purposeClass,
-    agent: input.agent,
-    startedAt: now,
-    endedAt: null,
-    turnCount: 0,
-    status: 'active',
-    summary: '',
-    keyFindings: [],
-    subsessionIds: [],
-    resumable: false,
-    counters: {
-      userMessageCount: 0,
-      assistantOutputCount: 0,
-      toolCallCount: 0,
-      delegationCount: 0,
-      compactionCount: 0,
-    },
-    toc: [],
-  }
-
-  const filePath = getJourneyEventSessionPath(sessionsDir, semanticSessionId)
-  await atomicWrite(filePath, JSON.stringify(session, null, 2))
-
-  return semanticSessionId
+  // Derive projectRoot from sessionDir (sessionDir = join(projectRoot, '.hivemind', 'sessions'))
+  const projectRoot = dirname(dirname(sessionDir))
+  await appendHierarchyLink(projectRoot, parentSessionId, childSessionId)
 }

@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 
-import type { SessionEventWriteInput } from '../writers/events-writer.js'
-import type { EventEntry } from '../types.js'
+import type { EventEntry, SessionEventWriteInput } from '../types.js'
 import {
   mapEventEntriesToSessionEventInputs,
   mapEventEntryToSessionEventInput,

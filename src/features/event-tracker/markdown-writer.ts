@@ -12,7 +12,6 @@ import { existsSync } from 'node:fs'
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 
-import type { SessionV2 } from './consolidated-writer.js'
 import type { SessionV3 } from './types.js'
 
 // ---------------------------------------------------------------------------
@@ -26,9 +25,6 @@ const TURN_LABELS: Record<string, string> = {
   tool_call: 'Tool Invocation',
   delegation: 'Delegation',
   compaction: 'Compaction',
-  error: 'Error',
-  session_created: 'Session Created',
-  session_idle: 'Session Idle',
 }
 
 /**
@@ -61,113 +57,26 @@ function resolveToolsFromSummary(summary: string): string {
   // Match known tool patterns: tool names containing underscores or tool_ prefixed words
   const toolMatches = summary.match(/\b\w+_\w+\b/g)
   if (toolMatches && toolMatches.length > 0) {
-    return uniqueOrdered(toolMatches).join(', ')
+    return [...new Set(toolMatches)].join(', ')
   }
   return '—'
-}
-
-function readStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) return []
-  return value.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
-}
-
-function uniqueOrdered(values: string[]): string[] {
-  return [...new Set(values)]
-}
-
-function extractSessionMetadata(session: SessionV3): Record<string, unknown> {
-  return typeof session === 'object' && session !== null
-    ? (session as unknown as Record<string, unknown>)
-    : {}
-}
-
-function resolveActors(session: SessionV3): string[] {
-  const metadata = extractSessionMetadata(session)
-  const nestedMetadata = metadata['metadata']
-  const nestedRecord =
-    typeof nestedMetadata === 'object' && nestedMetadata !== null
-      ? (nestedMetadata as Record<string, unknown>)
-      : {}
-
-  return uniqueOrdered([
-    session.agent,
-    ...readStringArray(metadata['actors']),
-    ...readStringArray(metadata['participants']),
-    ...readStringArray(nestedRecord['actors']),
-    ...readStringArray(nestedRecord['participants']),
-  ])
-}
-
-function resolveToolsUsed(session: SessionV3): string[] {
-  const metadata = extractSessionMetadata(session)
-  const nestedMetadata = metadata['metadata']
-  const nestedRecord =
-    typeof nestedMetadata === 'object' && nestedMetadata !== null
-      ? (nestedMetadata as Record<string, unknown>)
-      : {}
-
-  return uniqueOrdered([
-    ...readStringArray(metadata['toolsUsed']),
-    ...readStringArray(metadata['toolNames']),
-    ...readStringArray(metadata['tools']),
-    ...readStringArray(nestedRecord['toolsUsed']),
-    ...readStringArray(nestedRecord['toolNames']),
-    ...readStringArray(nestedRecord['tools']),
-  ])
-}
-
-function formatActors(session: SessionV3): string {
-  return resolveActors(session).join(', ')
-}
-
-function formatToolsUsed(session: SessionV3): string {
-  const toolsUsed = resolveToolsUsed(session)
-  return toolsUsed.length > 0 ? toolsUsed.join(', ') : 'none'
 }
 
 export function getJourneyMarkdownPath(sessionsDir: string, sessionId: string): string {
   return join(sessionsDir, 'journey-events', `${sessionId}.md`)
 }
 
-function toSessionV3(session: SessionV2): SessionV3 {
-  return {
-    _schema: 'session/v3',
-    sessionId: session.sessionId,
-    semanticSessionId: session.semanticSessionId ?? session.sessionId,
-    parentSessionId: session.parentSessionId,
-    lineage: session.lineage,
-    purposeClass: session.purposeClass,
-    agent: session.agent,
-    startedAt: session.created,
-    endedAt: session.status === 'active' ? null : session.updated,
-    turnCount: session.counters.turnCount,
-    status: session.status === 'abandoned' ? 'errored' : session.status,
-    summary: '',
-    keyFindings: [],
-    subsessionIds: session.childSessionIds,
-    resumable: session.status === 'active',
-    counters: {
-      userMessageCount: session.counters.userMessageCount,
-      assistantOutputCount: session.counters.assistantOutputCount,
-      toolCallCount: session.counters.toolCallCount,
-      delegationCount: session.counters.delegationCount,
-      compactionCount: session.counters.compactionCount,
-    },
-    toc: [],
-  }
-}
-
 export async function ensureEventsMarkdown(
   sessionsDir: string,
-  session: SessionV2,
+  session: SessionV3,
 ): Promise<string> {
   const filePath = getJourneyMarkdownPath(
     sessionsDir,
-    session.semanticSessionId ?? session.sessionId,
+    session.semanticSessionId,
   )
 
   if (!existsSync(filePath)) {
-    await initEventsMarkdown(sessionsDir, toSessionV3(session))
+    await initEventsMarkdown(sessionsDir, session)
   }
 
   return filePath
@@ -218,32 +127,22 @@ async function readEvents(filePath: string): Promise<string> {
 /**
  * Initialize events.md with the session header and TOC placeholder.
  *
- * Writes the ADR-specified header block:
- * - `# Session: {semanticSessionId}` heading
- * - Metadata fields (Session ID, Parent, Lineage, Purpose, Agent, Actors,
- *   Tools Used, Status)
+ * Writes the header block:
+ * - `# {sessionId}` heading
+ * - Metadata fields (Session ID, Created, Updated)
  * - Table of Contents placeholder with column headers
  *
  * @param sessionsDir - Absolute path to the sessions directory
  * @param session    - SessionV3 record with header metadata
  */
 export async function initEventsMarkdown(sessionsDir: string, session: SessionV3): Promise<void> {
-  const parentValue = session.parentSessionId ?? 'null'
-
-  const now = new Date().toISOString()
+  const now = new Date().toLocaleString()
   const header = [
-    `# Session: ${session.semanticSessionId}`,
+    `# ${session.sessionId}`,
     '',
     `**Session ID:** ${session.sessionId}`,
     `**Created:** ${now}`,
     `**Updated:** ${now}`,
-    `**Parent:** ${parentValue}`,
-    `**Lineage:** ${session.lineage}`,
-    `**Purpose:** ${session.purposeClass}`,
-    `**Agent:** ${session.agent}`,
-    `**Actors:** ${formatActors(session)}`,
-    `**Tools Used:** ${formatToolsUsed(session)}`,
-    `**Status:** ${session.status}`,
     '',
     '---',
     '',
@@ -289,9 +188,6 @@ export async function appendTurnToMarkdown(
       | 'tool_call'
       | 'delegation'
       | 'compaction'
-      | 'error'
-      | 'session_created'
-      | 'session_idle'
     content: string
     metadata?: Record<string, string>
   },
@@ -363,18 +259,11 @@ export async function generateTOC(filePath: string, session: SessionV3): Promise
   if (!content) return
 
   const headerLines = [
-    `# Session: ${session.semanticSessionId}`,
+    `# ${session.sessionId}`,
     '',
     `**Session ID:** ${session.sessionId}`,
-    `**Created:** ${session.startedAt}`,
-    `**Updated:** ${session.endedAt ?? new Date().toISOString()}`,
-    `**Parent:** ${session.parentSessionId ?? 'null'}`,
-    `**Lineage:** ${session.lineage}`,
-    `**Purpose:** ${session.purposeClass}`,
-    `**Agent:** ${session.agent}`,
-    `**Actors:** ${formatActors(session)}`,
-    `**Tools Used:** ${formatToolsUsed(session)}`,
-    `**Status:** ${session.status}`,
+    `**Created:** ${new Date(session.startedAt).toLocaleString()}`,
+    `**Updated:** ${new Date(session.endedAt ?? Date.now()).toLocaleString()}`,
     '',
     '---',
     '',
@@ -498,7 +387,7 @@ export async function appendDelegation(
 /**
  * Update the `**Updated:**` timestamp field in the events.md file.
  *
- * Replaces the existing Updated field value with the current ISO timestamp.
+ * Replaces the existing Updated field value with a human-readable timestamp.
  * This should be called whenever new content is appended to the session journal.
  *
  * @param filePath - Absolute path to the session markdown file
@@ -507,7 +396,7 @@ export async function updateSessionTimestamp(filePath: string): Promise<void> {
   const content = await readEvents(filePath)
   if (!content) return
 
-  const now = new Date().toISOString()
+  const now = new Date().toLocaleString()
   const updatedPattern = /\*\*Updated:\*\* .+/
   const newContent = content.replace(updatedPattern, `**Updated:** ${now}`)
 
