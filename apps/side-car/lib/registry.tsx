@@ -13,6 +13,8 @@ const catalog = defineCatalog(schema, {
     Card: shadcnComponentDefinitions.Card,
     Badge: shadcnComponentDefinitions.Badge,
     Text: shadcnComponentDefinitions.Text,
+    Alert: shadcnComponentDefinitions.Alert,
+    Separator: shadcnComponentDefinitions.Separator,
   },
   actions: {},
 })
@@ -24,5 +26,7 @@ export const { registry } = defineRegistry(catalog, {
     Card: shadcnComponents.Card,
     Badge: shadcnComponents.Badge,
     Text: shadcnComponents.Text,
+    Alert: shadcnComponents.Alert,
+    Separator: shadcnComponents.Separator,
   },
 })

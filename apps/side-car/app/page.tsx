@@ -1,45 +1,38 @@
 'use client'
 
-import { Suspense } from 'react'
+import { useEffect, useState } from 'react'
 import { Renderer, JSONUIProvider } from '@json-render/react'
 import { registry } from '@/lib/registry'
 
-/** Minimal skeleton spec for Cycle 1 — real spec arrives in Cycle 2. */
-const skeletonSpec = {
-  root: 'app',
+const LOADING_SPEC = {
+  root: 'root',
   elements: {
-    app: {
-      type: 'Stack',
-      props: { direction: 'vertical', gap: 'md' },
-      children: ['title', 'status'],
-    },
-    title: {
-      type: 'Heading',
-      props: { text: 'HiveMind Dashboard', level: 'h1' },
-      children: [] as string[],
-    },
-    status: {
+    root: {
       type: 'Text',
-      props: { text: 'Loading — dashboard spec pending (Cycle 2)' },
-      children: [] as string[],
+      props: { text: 'Loading dashboard...' },
     },
   },
 }
 
 function DashboardContent() {
+  const [spec, setSpec] = useState(LOADING_SPEC)
+
+  useEffect(() => {
+    fetch('/api/dashboard')
+      .then((res) => res.json())
+      .then((data) => setSpec(data))
+      .catch(() => setSpec(LOADING_SPEC))
+  }, [])
+
   return (
     <main className="container mx-auto py-8">
       <JSONUIProvider registry={registry}>
-        <Renderer spec={skeletonSpec} registry={registry} />
+        <Renderer spec={spec} registry={registry} />
       </JSONUIProvider>
     </main>
   )
 }
 
 export default function DashboardPage() {
-  return (
-    <Suspense fallback={<div className="container mx-auto py-8">Loading dashboard...</div>}>
-      <DashboardContent />
-    </Suspense>
-  )
+  return <DashboardContent />
 }

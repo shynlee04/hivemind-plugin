@@ -2,6 +2,7 @@ import type { RuntimeStatusSnapshot } from '../../sdk-supervisor/runtime-status.
 import type { RuntimeBindingsSnapshot } from '../../shared/runtime-attachment.js'
 
 import { renderHmSettingDashboardTui } from './render.js'
+import { buildHmSettingDashboardSpec } from './spec-builder.js'
 import type { HmSettingDashboardProof, HmSettingGroup } from './types.js'
 
 interface BuildHmSettingDashboardProofInput {
@@ -50,6 +51,7 @@ export function buildHmSettingDashboardProof(
     },
   }
 
+  dashboard.dashboardSpec = buildHmSettingDashboardSpec(dashboard)
   dashboard.rendered = renderHmSettingDashboardTui(dashboard)
   return dashboard
 }
