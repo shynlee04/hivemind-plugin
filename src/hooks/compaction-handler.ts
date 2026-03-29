@@ -15,6 +15,7 @@ import {
 import {
   appendTurnToMarkdown,
   ensureEventsMarkdown,
+  updateSessionTimestamp,
 } from '../features/event-tracker/markdown-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
@@ -83,6 +84,7 @@ export function createCompactionJournalHandler(deps: CompactionJournalHandlerDep
           type: 'compaction',
           content: output.prompt || `Session compaction (${contextLength} context entries).`,
         }).catch(() => undefined)
+        await updateSessionTimestamp(markdownFilePath).catch(() => undefined)
       }
     } catch (err) {
       console.error('[session-journal] writeEvent (compaction) failed:', err)
@@ -143,5 +145,6 @@ export async function handleCompaction(
       type: 'compaction',
       content: output.prompt || `Session compaction (${output.context.length} context entries).`,
     }).catch(() => undefined)
+    await updateSessionTimestamp(markdownFilePath).catch(() => undefined)
   }
 }

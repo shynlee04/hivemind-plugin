@@ -22,6 +22,7 @@ import {
   appendDiagnosticToMarkdown,
   appendTurnToMarkdown,
   ensureEventsMarkdown,
+  updateSessionTimestamp,
 } from '../features/event-tracker/markdown-writer.js'
 import { appendError } from '../features/session-journal/error-log-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
@@ -96,6 +97,7 @@ async function appendLifecycleTurn(
     type: turn.type,
     content: turn.content,
   })
+  await updateSessionTimestamp(filePath).catch(() => undefined)
 }
 
 async function appendLifecycleDiagnostic(

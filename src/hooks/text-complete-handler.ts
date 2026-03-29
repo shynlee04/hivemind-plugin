@@ -22,6 +22,7 @@ import {
 import {
   appendTurnToMarkdown,
   ensureEventsMarkdown,
+  updateSessionTimestamp,
 } from '../features/event-tracker/markdown-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
@@ -118,6 +119,7 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
             model: 'unknown',
           },
         }).catch(() => undefined)
+        await updateSessionTimestamp(markdownFilePath).catch(() => undefined)
       }
 
       // 2. Write assistant_output event
@@ -211,5 +213,6 @@ export async function handleTextComplete(
         model: 'unknown',
       },
     }).catch(() => undefined)
+    await updateSessionTimestamp(markdownFilePath).catch(() => undefined)
   }
 }

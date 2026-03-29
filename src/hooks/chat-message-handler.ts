@@ -14,6 +14,7 @@ import {
 import {
   appendTurnToMarkdown,
   ensureEventsMarkdown,
+  updateSessionTimestamp,
 } from '../features/event-tracker/markdown-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
@@ -77,5 +78,6 @@ export async function handleChatMessage(
       type: 'user_message',
       content: output.message.content,
     }).catch(() => undefined)
+    await updateSessionTimestamp(markdownFilePath).catch(() => undefined)
   }
 }

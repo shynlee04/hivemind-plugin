@@ -104,6 +104,10 @@ test('initEventsMarkdown creates events.md with session header fields', async ()
       'should include tools used field')
     assert.ok(content.includes('**Status:** active'),
       'should include Status field')
+    assert.ok(content.includes('**Created:**'),
+      'should include Created timestamp field')
+    assert.ok(content.includes('**Updated:**'),
+      'should include Updated timestamp field')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
@@ -121,8 +125,8 @@ test('initEventsMarkdown creates TOC placeholder section', async () => {
     const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Table of Contents'), 'should include TOC heading')
-    assert.ok(content.includes('| # | Timestamp | Type | Summary |'),
-      'should include TOC table header')
+    assert.ok(content.includes('| # | Timestamp | Actor | Tools | Summary |'),
+      'should include TOC table header with Actor and Tools columns')
     assert.ok(content.includes('---'), 'should include separator')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
@@ -168,10 +172,10 @@ test('appendTurnToMarkdown appends user_message turn with correct header', async
 
     const content = await readFile(filePath, 'utf8')
 
-    assert.ok(content.includes('## Turn 1 — User Message'),
-      'should include turn header with label')
-    assert.ok(content.includes('**Timestamp:** 2026-03-26T11:53:16.525Z'),
-      'should include timestamp')
+    assert.ok(content.includes('## User'),
+      'should include user section header')
+    assert.ok(!content.includes('## Turn 1 — User Message'),
+      'should not use old turn header format')
     assert.ok(content.includes('ok it is going to be a very complex work'),
       'should include content')
   } finally {
@@ -202,8 +206,7 @@ test('appendTurnToMarkdown preserves existing content on append', async () => {
 
     const content = await readFile(filePath, 'utf8')
 
-    assert.ok(content.includes('## Turn 1 — User Message'), 'should have turn 1')
-    assert.ok(content.includes('## Turn 2 — User Message'), 'should have turn 2')
+    assert.ok(content.includes('## User'), 'should have user section headers')
     assert.ok(content.includes('First message'), 'should preserve first content')
     assert.ok(content.includes('Second message'), 'should have second content')
   } finally {
@@ -233,12 +236,12 @@ test('appendTurnToMarkdown appends assistant_output turn', async () => {
 
     const content = await readFile(filePath, 'utf8')
 
-    assert.ok(content.includes('## Turn 2 — Assistant Output'),
-      'should include assistant output header')
-    assert.ok(content.includes('**Model:** claude-sonnet-4-20250514'),
-      'should include model metadata')
-    assert.ok(content.includes('**Duration:** 1523ms'),
-      'should include duration metadata')
+    assert.ok(content.includes('## Assistant (Assistant · claude-sonnet-4-20250514 · 1523ms)'),
+      'should include assistant section header with role, model, and duration')
+    assert.ok(!content.includes('## Turn 2'),
+      'should not use old turn header format')
+    assert.ok(content.includes('_Thinking:_'),
+      'should include Thinking prefix')
     assert.ok(content.includes('The import on line 33 only imports resolveDefaultAgent.'),
       'should include content')
   } finally {
@@ -250,7 +253,7 @@ test('appendTurnToMarkdown appends assistant_output turn', async () => {
 // Test 4: appendTurnToMarkdown appends tool_call turn (pruned)
 // ---------------------------------------------------------------------------
 
-test('appendTurnToMarkdown appends tool_call turn with tool name and result only', async () => {
+test('appendTurnToMarkdown appends tool_call turn with **Tool:** format', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
@@ -268,20 +271,22 @@ test('appendTurnToMarkdown appends tool_call turn with tool name and result only
 
     const content = await readFile(filePath, 'utf8')
 
-    assert.ok(content.includes('## Turn 3 — Tool Invocation'),
-      'should include tool invocation header')
     assert.ok(content.includes('**Tool:** hivemind_task'),
-      'should include tool name')
-    assert.ok(content.includes('**Action:** create'),
-      'should include action')
+      'should include **Tool:** line with tool name')
+    assert.ok(content.includes('**Input:**'),
+      'should include **Input:** block')
+    assert.ok(content.includes('**Output:**'),
+      'should include **Output:** block')
     assert.ok(content.includes('task_created:task_implementation_001'),
-      'should include result summary')
+      'should include result in output block')
+    assert.ok(!content.includes('## Tool Invocation'),
+      'should NOT include ## Tool Invocation heading')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
 })
 
-test('appendTurnToMarkdown tool_call does not dump full JSON', async () => {
+test('appendTurnToMarkdown tool_call renders Input/Output code fences', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
@@ -299,13 +304,12 @@ test('appendTurnToMarkdown tool_call does not dump full JSON', async () => {
 
     const content = await readFile(filePath, 'utf8')
 
-    // Should not contain JSON braces in the turn block
-    const toolTurnStart = content.indexOf('## Turn 1 — Tool Invocation')
-    const nextSeparator = content.indexOf('---', toolTurnStart + 1)
-    const toolBlock = content.slice(toolTurnStart, nextSeparator)
-
-    assert.ok(!toolBlock.includes('{'), 'should not contain JSON object braces')
-    assert.ok(!toolBlock.includes('"'), 'should not contain JSON quotes')
+    // Input block uses ```json fence
+    assert.ok(content.includes('```json\nrun\n```'),
+      'should wrap action in json code fence')
+    // Output block uses ``` fence
+    assert.ok(content.includes('**Output:**\n```\ncreated successfully\n```'),
+      'should wrap result in plain code fence')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
@@ -352,12 +356,12 @@ test('generateTOC builds TOC from turn headers in events.md', async () => {
 
     const content = await readFile(filePath, 'utf8')
 
-    assert.ok(content.includes('| 1 | 2026-03-26T11:53:16Z | User Message | User asks about session errors... |'),
-      'should include TOC row for turn 1')
-    assert.ok(content.includes('| 2 | 2026-03-26T11:53:45Z | Assistant Output | Resolved import issue... |'),
-      'should include TOC row for turn 2')
-    assert.ok(content.includes('| 3 | 2026-03-26T12:01:22Z | Delegation | Delegated to code-skeptic... |'),
-      'should include TOC row for turn 3')
+    assert.ok(content.includes('| 1 | 2026-03-26T11:53:16Z | User'),
+      'should include TOC row for turn 1 with User actor')
+    assert.ok(content.includes('| 2 | 2026-03-26T11:53:45Z | Assistant'),
+      'should include TOC row for turn 2 with Assistant actor')
+    assert.ok(content.includes('| 3 | 2026-03-26T12:01:22Z | Delegation'),
+      'should include TOC row for turn 3 with Delegation actor')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
@@ -411,8 +415,8 @@ test('generateTOC replaces previous TOC entries', async () => {
     assert.equal(tocMatches.length, 1, 'TOC heading should not be duplicated')
 
     // Turn content should still be present
-    assert.ok(content.includes('## Turn 1 — User Message'), 'turn 1 content preserved')
-    assert.ok(content.includes('## Turn 2 — Assistant Output'), 'turn 2 content preserved')
+    assert.ok(content.includes('## User'), 'turn 1 content preserved')
+    assert.ok(content.includes('## Assistant'), 'turn 2 content preserved')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
@@ -508,8 +512,8 @@ test('appendTurnToMarkdown appends delegation turn', async () => {
 
     const content = await readFile(filePath, 'utf8')
 
-    assert.ok(content.includes('## Turn 4 — Delegation'),
-      'should include delegation turn header')
+    assert.ok(content.includes('## Delegation'),
+      'should include delegation section header without turn number')
     assert.ok(content.includes('Delegated to code-skeptic for review'),
       'should include content')
   } finally {
@@ -538,8 +542,8 @@ test('appendTurnToMarkdown appends compaction turn', async () => {
 
     const content = await readFile(filePath, 'utf8')
 
-    assert.ok(content.includes('## Turn 5 — Compaction'),
-      'should include compaction turn header')
+    assert.ok(content.includes('## Compaction'),
+      'should include compaction section header without turn number')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }
@@ -562,8 +566,8 @@ test('appendTurnToMarkdown appends error turn', async () => {
 
     const content = await readFile(filePath, 'utf8')
 
-    assert.ok(content.includes('## Turn 6 — Error'),
-      'should include error turn header')
+    assert.ok(content.includes('## Error'),
+      'should include error section header without turn number')
     assert.ok(content.includes('TypeError: Cannot read properties of undefined'),
       'should include error message')
   } finally {
@@ -590,14 +594,18 @@ test('appendToolBatch appends a tool batch table', async () => {
 
     const content = await readFile(filePath, 'utf8')
 
-    assert.ok(content.includes('## Tool Batch: hivemind_task (Turn 7)'),
-      'should include tool batch heading')
-    assert.ok(content.includes('| Action | Result |'),
-      'should include tool batch table header')
-    assert.ok(content.includes('| create | task_created:task_001 |'),
-      'should include first tool invocation row')
-    assert.ok(content.includes('| verify | verified ok |'),
-      'should include second tool invocation row')
+    assert.ok(content.includes('**Tool:** hivemind_task'),
+      'should include tool name')
+    assert.ok(content.includes('**Input:**'),
+      'should include Input block')
+    assert.ok(content.includes('```json'),
+      'should include JSON code fence for input')
+    assert.ok(content.includes('**Output:**'),
+      'should include Output block')
+    assert.ok(content.includes('task_created:task_001'),
+      'should include first tool invocation result')
+    assert.ok(content.includes('verified ok'),
+      'should include second tool invocation result')
   } finally {
     await rm(tmpDir, { recursive: true, force: true })
   }

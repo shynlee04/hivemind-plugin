@@ -43,6 +43,29 @@ function escapeTableCell(value: string): string {
   return value.replace(/\|/g, '\\|').replace(/\n/g, '<br>')
 }
 
+/**
+ * Resolves the actor display name for a TOC row based on event type.
+ * User messages → "User", assistant → agent name, others → type label.
+ */
+function resolveActorFromType(type: string): string {
+  if (type === 'user_message') return 'User'
+  if (type === 'assistant_output') return 'Assistant'
+  return resolveTurnLabel(type)
+}
+
+/**
+ * Extracts tool names mentioned in a summary string for the TOC Tools column.
+ * Returns the comma-separated tool references, or "—" if none found.
+ */
+function resolveToolsFromSummary(summary: string): string {
+  // Match known tool patterns: tool names containing underscores or tool_ prefixed words
+  const toolMatches = summary.match(/\b\w+_\w+\b/g)
+  if (toolMatches && toolMatches.length > 0) {
+    return uniqueOrdered(toolMatches).join(', ')
+  }
+  return '—'
+}
+
 function readStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return []
   return value.filter((entry): entry is string => typeof entry === 'string' && entry.length > 0)
@@ -207,10 +230,13 @@ async function readEvents(filePath: string): Promise<string> {
 export async function initEventsMarkdown(sessionsDir: string, session: SessionV3): Promise<void> {
   const parentValue = session.parentSessionId ?? 'null'
 
+  const now = new Date().toISOString()
   const header = [
     `# Session: ${session.semanticSessionId}`,
     '',
     `**Session ID:** ${session.sessionId}`,
+    `**Created:** ${now}`,
+    `**Updated:** ${now}`,
     `**Parent:** ${parentValue}`,
     `**Lineage:** ${session.lineage}`,
     `**Purpose:** ${session.purposeClass}`,
@@ -223,8 +249,8 @@ export async function initEventsMarkdown(sessionsDir: string, session: SessionV3
     '',
     '## Table of Contents',
     '',
-    '| # | Timestamp | Type | Summary |',
-    '|---|-----------|------|---------|',
+    '| # | Timestamp | Actor | Tools | Summary |',
+    '|---|-----------|-------|-------|---------|',
     '',
     '---',
     '',
@@ -242,10 +268,11 @@ export async function initEventsMarkdown(sessionsDir: string, session: SessionV3
 /**
  * Append a turn entry to events.md.
  *
- * Renders the turn as a markdown block with:
- * - `## Turn {N} — {Label}` header
- * - Metadata fields (Timestamp, and type-specific fields)
- * - Content in a fenced or plain block
+ * Renders the turn in the reference format:
+ * - User messages: `## User`
+ * - Assistant turns: `## Assistant ({role} · {model} · {duration})`
+ * - Other types: `## {Label}`
+ * - Assistant content prefixed with `_Thinking:\n\n`
  * - Trailing `---` separator
  *
  * @param filePath - Absolute path to the session markdown file
@@ -269,35 +296,51 @@ export async function appendTurnToMarkdown(
     metadata?: Record<string, string>
   },
 ): Promise<void> {
-  const label = resolveTurnLabel(turn.type)
   const lines: string[] = []
 
-  lines.push(`## Turn ${turn.turnNumber} — ${label}`)
-  lines.push('')
-  lines.push(`**Timestamp:** ${turn.timestamp}`)
+  // Determine section layout based on turn type
+  if (turn.type === 'tool_call') {
+    const toolName = turn.metadata?.['tool'] ?? 'unknown'
+    const action = turn.metadata?.['action'] ?? ''
+    const result = turn.content ?? ''
 
-  // Type-specific metadata fields
-  if (turn.type === 'assistant_output' && turn.metadata) {
-    if (turn.metadata['model']) {
-      lines.push(`**Model:** ${turn.metadata['model']}`)
+    lines.push(`**Tool:** ${toolName}`)
+    lines.push('')
+    lines.push('**Input:**')
+    lines.push('```json')
+    lines.push(action)
+    lines.push('```')
+    lines.push('')
+    lines.push('**Output:**')
+    lines.push('```')
+    lines.push(result)
+    lines.push('```')
+  } else if (turn.type === 'user_message') {
+    lines.push('## User')
+    lines.push('')
+    lines.push(turn.content)
+  } else if (turn.type === 'assistant_output') {
+    const role = turn.metadata?.['role'] ?? 'Assistant'
+    const model = turn.metadata?.['model'] ?? ''
+    const duration = turn.metadata?.['duration'] ?? ''
+    const parts = [role, model, duration].filter(Boolean)
+    lines.push(`## Assistant (${parts.join(' · ')})`)
+    lines.push('')
+
+    if (turn.content) {
+      lines.push('_Thinking:_')
+      lines.push('')
+      lines.push(turn.content)
     }
-    if (turn.metadata['duration']) {
-      lines.push(`**Duration:** ${turn.metadata['duration']}`)
-    }
+  } else {
+    const label = resolveTurnLabel(turn.type)
+    lines.push(`## ${label}`)
+    lines.push('')
+    lines.push(turn.content)
   }
 
-  if (turn.type === 'tool_call' && turn.metadata) {
-    if (turn.metadata['tool']) {
-      lines.push(`**Tool:** ${turn.metadata['tool']}`)
-    }
-    if (turn.metadata['action']) {
-      lines.push(`**Action:** ${turn.metadata['action']}`)
-    }
-  }
+  lines.push('')
 
-  lines.push('')
-  lines.push(turn.content)
-  lines.push('')
   lines.push('---')
   lines.push('')
 
@@ -323,6 +366,8 @@ export async function generateTOC(filePath: string, session: SessionV3): Promise
     `# Session: ${session.semanticSessionId}`,
     '',
     `**Session ID:** ${session.sessionId}`,
+    `**Created:** ${session.startedAt}`,
+    `**Updated:** ${session.endedAt ?? new Date().toISOString()}`,
     `**Parent:** ${session.parentSessionId ?? 'null'}`,
     `**Lineage:** ${session.lineage}`,
     `**Purpose:** ${session.purposeClass}`,
@@ -335,15 +380,15 @@ export async function generateTOC(filePath: string, session: SessionV3): Promise
     '',
     '## Table of Contents',
     '',
-    '| # | Timestamp | Type | Summary |',
-    '|---|-----------|------|---------|',
+    '| # | Timestamp | Actor | Tools | Summary |',
+    '|---|-----------|-------|-------|---------|',
   ]
 
   // Build TOC rows from session.toc
   const tocRows = session.toc
     .map(
       (entry) =>
-        `| ${entry.turnNumber} | ${entry.timestamp} | ${resolveTurnLabel(entry.type)} | ${escapeTableCell(entry.summary)} |`,
+        `| ${entry.turnNumber} | ${entry.timestamp} | ${escapeTableCell(resolveActorFromType(entry.type))} | ${escapeTableCell(resolveToolsFromSummary(entry.summary))} | ${escapeTableCell(entry.summary)} |`,
     )
     .join('\n')
 
@@ -353,10 +398,17 @@ export async function generateTOC(filePath: string, session: SessionV3): Promise
 
   // The TOC ends at the next `---` separator after the table header row
   const tableHeaderEnd = content.indexOf('|---|-----------|------|---------|', tocHeaderStart)
-  if (tableHeaderEnd === -1) return
+  const tableHeaderEnd2 = tableHeaderEnd === -1
+    ? content.indexOf('|---|-----------|-------|-------|---------|', tocHeaderStart)
+    : tableHeaderEnd
+  if (tableHeaderEnd2 === -1) return
+
+  const headerRowPattern = tableHeaderEnd !== -1
+    ? '|---|-----------|------|---------|'
+    : '|---|-----------|-------|-------|---------|'
 
   // Find the end of current TOC content (next --- after table header)
-  const afterTableHeader = tableHeaderEnd + '|---|-----------|------|---------|'.length
+  const afterTableHeader = tableHeaderEnd2 + headerRowPattern.length
   const separatorIdx = content.indexOf('\n---', afterTableHeader)
   if (separatorIdx === -1) return
 
@@ -370,26 +422,44 @@ export async function generateTOC(filePath: string, session: SessionV3): Promise
 /**
  * Append a tool batch section to events.md.
  *
- * Renders the batch as a markdown table with action/result rows grouped under a
- * tool-specific heading.
+ * Renders each invocation with Input/Output code blocks in the reference format:
+ * ```
+ * **Tool:** {name}
+ *
+ * **Input:**
+ * ```json
+ * {args}
+ * ```
+ *
+ * **Output:**
+ * ```
+ * {result}
+ * ```
+ * ```
  *
  * @param filePath - Absolute path to the session markdown file
  * @param batch      - Tool batch data for a single turn/tool pair
  */
 export async function appendToolBatch(filePath: string, batch: ToolBatchEntry): Promise<void> {
-  const lines = [
-    `## Tool Batch: ${batch.toolName} (Turn ${batch.turnNumber})`,
-    '',
-    '| Action | Result |',
-    '|--------|--------|',
-    ...batch.invocations.map(
-      (invocation) =>
-        `| ${escapeTableCell(invocation.action)} | ${escapeTableCell(invocation.result)} |`,
-    ),
-    '',
-    '---',
-    '',
-  ]
+  const lines: string[] = []
+
+  for (const invocation of batch.invocations) {
+    lines.push(`**Tool:** ${batch.toolName}`)
+    lines.push('')
+    lines.push('**Input:**')
+    lines.push('```json')
+    lines.push(invocation.action)
+    lines.push('```')
+    lines.push('')
+    lines.push('**Output:**')
+    lines.push('```')
+    lines.push(invocation.result)
+    lines.push('```')
+    lines.push('')
+  }
+
+  lines.push('---')
+  lines.push('')
 
   await appendToEvents(filePath, lines.join('\n'))
 }
@@ -423,6 +493,25 @@ export async function appendDelegation(
   lines.push('')
 
   await appendToEvents(filePath, lines.join('\n'))
+}
+
+/**
+ * Update the `**Updated:**` timestamp field in the events.md file.
+ *
+ * Replaces the existing Updated field value with the current ISO timestamp.
+ * This should be called whenever new content is appended to the session journal.
+ *
+ * @param filePath - Absolute path to the session markdown file
+ */
+export async function updateSessionTimestamp(filePath: string): Promise<void> {
+  const content = await readEvents(filePath)
+  if (!content) return
+
+  const now = new Date().toISOString()
+  const updatedPattern = /\*\*Updated:\*\* .+/
+  const newContent = content.replace(updatedPattern, `**Updated:** ${now}`)
+
+  await writeFile(filePath, newContent, 'utf8')
 }
 
 /**

@@ -23,7 +23,8 @@ function asDetailsValue(value?: string): string {
 /**
  * Renders a grep-friendly single-line diagnostic log entry.
  * @param entry Diagnostic data supplied by the caller.
- * @returns Single-line log entry ready to append to diagnostics.log.
+ * @returns Single-line log entry ready to append to `sessions/error-logs/{sessionId}.log`.
+ * @deprecated Use consolidated-journal-writer for session diagnostic output.
  */
 export function renderDiagnosticLogLine(entry: SessionDiagnosticWriteInput): string {
   return [
@@ -38,10 +39,11 @@ export function renderDiagnosticLogLine(entry: SessionDiagnosticWriteInput): str
 }
 
 /**
- * Appends a caller-supplied diagnostic entry to the session diagnostics log.
+ * Appends a caller-supplied diagnostic entry to the flat error log file.
  * @param projectRoot Absolute or workspace project root.
  * @param entry Diagnostic data supplied by the caller.
  * @returns Resolves when the append completes.
+ * @deprecated Use consolidated-journal-writer for session diagnostic output.
  */
 export async function appendSessionDiagnostic(
   projectRoot: string,

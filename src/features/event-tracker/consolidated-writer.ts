@@ -605,13 +605,12 @@ export async function linkSubSession(
 // ============================================================================
 
 /**
- * Initialize a new consolidated session using the V3 directory-based schema.
+ * Initialize a new consolidated session using the V3 schema.
  *
- * Creates a directory `{semanticSessionId}/` containing `session.json` with
- * the V3 schema format. When `parentSessionId` is set, the directory is
- * created under `{parentDir}/subsessions/{childSemanticId}/` instead.
+ * Writes a single flat JSON file at `journey-events/{semanticSessionId}.json`
+ * using the V3 schema format.
  *
- * @param sessionsDir - Root directory for all session directories
+ * @param sessionsDir - Root directory for all session files
  * @param input - Session initialization parameters
  * @returns The generated semantic session ID
  *
@@ -621,7 +620,7 @@ export async function linkSubSession(
  *   purposeClass: 'implementation',
  *   agent: 'hitea',
  * })
- * // Creates: /sessions/ses_2026-03-27T120000_implementation_hitea/session.json
+ * // Creates: /sessions/journey-events/ses_2026-03-27T120000_implementation_hitea.json
  * // Returns: 'ses_2026-03-27T120000_implementation_hitea'
  */
 export async function initSessionV3(
@@ -631,20 +630,7 @@ export async function initSessionV3(
   const semanticSessionId = generateSessionId(input.purposeClass, input.agent)
   const now = new Date().toISOString()
 
-  // Determine directory path: root or subsession
-  let sessionDir: string
-  if (input.parentSessionId) {
-    sessionDir = join(
-      sessionsDir,
-      input.parentSessionId,
-      'subsessions',
-      semanticSessionId
-    )
-  } else {
-    sessionDir = join(sessionsDir, semanticSessionId)
-  }
-
-  await mkdir(sessionDir, { recursive: true })
+  await ensureDir(getJourneyEventsDir(sessionsDir))
 
   const session: SessionV3 = {
     _schema: 'session/v3',
@@ -672,7 +658,7 @@ export async function initSessionV3(
     toc: [],
   }
 
-  const filePath = join(sessionDir, 'session.json')
+  const filePath = getJourneyEventSessionPath(sessionsDir, semanticSessionId)
   await atomicWrite(filePath, JSON.stringify(session, null, 2))
 
   return semanticSessionId

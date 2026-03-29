@@ -15,6 +15,7 @@ import {
 import {
   appendTurnToMarkdown,
   ensureEventsMarkdown,
+  updateSessionTimestamp,
 } from '../features/event-tracker/markdown-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
 
@@ -82,5 +83,6 @@ export async function handleToolExecution(
         action: input.callID,
       },
     }).catch(() => undefined)
+    await updateSessionTimestamp(markdownFilePath).catch(() => undefined)
   }
 }

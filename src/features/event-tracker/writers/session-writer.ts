@@ -1,5 +1,4 @@
-import { dirname } from 'node:path'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 
 import {
   getSessionDelegationPath,
@@ -50,16 +49,16 @@ async function readExistingSessionMetadata(filePath: string): Promise<SessionMet
 }
 
 /**
- * Creates or updates session.json while preserving baseline identity fields.
+ * Creates or updates the flat journey-events metadata JSON while preserving baseline identity fields.
  * @param projectRoot Absolute or workspace project root.
  * @param input Session metadata input for init or update.
+ * @deprecated Use consolidated-journal-writer for session metadata output.
  */
 export async function initOrUpdateSessionMetadata(
   projectRoot: string,
   input: SessionMetadataInput,
 ): Promise<void> {
   const metadataPath = getSessionMetadataPath(projectRoot, input.sessionId)
-  await mkdir(dirname(metadataPath), { recursive: true })
   const existing = await readExistingSessionMetadata(metadataPath)
 
   const next: SessionMeta = existing
@@ -95,9 +94,10 @@ function renderSessionDelegationBlock(entry: SessionDelegationAppendInput): stri
 }
 
 /**
- * Appends one delegation block to delegation.md.
+ * Appends one legacy delegation block to the flat journey-events markdown file.
  * @param projectRoot Absolute or workspace project root.
  * @param entry Delegation entry supplied by caller.
+ * @deprecated Delegation compatibility blocks now share the session journey-events markdown file.
  */
 export async function appendSessionDelegationEntry(
   projectRoot: string,
@@ -126,9 +126,10 @@ function renderSessionInjectionBlock(entry: SessionInjectionAppendInput): string
 }
 
 /**
- * Appends one injection block to injection.md.
+ * Appends one legacy injection block to the flat journey-events markdown file.
  * @param projectRoot Absolute or workspace project root.
  * @param entry Injection entry supplied by caller.
+ * @deprecated Injection compatibility blocks now share the session journey-events markdown file.
  */
 export async function appendSessionInjectionEntry(
   projectRoot: string,

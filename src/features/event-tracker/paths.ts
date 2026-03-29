@@ -2,6 +2,17 @@ import path from 'node:path'
 
 import { HIVEMIND_DIR, SESSIONS_DIR } from '../../shared/paths.js'
 
+function getJourneyEventsDir(projectRoot: string): string {
+  return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR, 'journey-events')
+}
+
+function getErrorLogsDir(projectRoot: string): string {
+  return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR, 'error-logs')
+}
+
+/**
+ * @deprecated Session-scoped directories are deprecated in favor of flat session files.
+ */
 function getSessionFilePath(projectRoot: string, sessionId: string, filename: string): string {
   return path.join(getEventTrackerSessionDir(projectRoot, sessionId), filename)
 }
@@ -11,6 +22,7 @@ function getSessionFilePath(projectRoot: string, sessionId: string, filename: st
  * @param projectRoot Absolute or workspace project root.
  * @param sessionId Session identifier.
  * @returns Session directory path under .hivemind/sessions.
+ * @deprecated Session-scoped directories are deprecated in favor of flat session files.
  */
 export function getEventTrackerSessionDir(projectRoot: string, sessionId: string): string {
   return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR, sessionId)
@@ -22,7 +34,7 @@ export function getEventTrackerSessionDir(projectRoot: string, sessionId: string
  * @returns Path to the journey-events directory under .hivemind/sessions.
  */
 export function getJourneyEventsPath(projectRoot: string): string {
-  return path.join(getEventTrackerSessionDir(projectRoot, ''), 'journey-events')
+  return getJourneyEventsDir(projectRoot)
 }
 
 /**
@@ -31,7 +43,27 @@ export function getJourneyEventsPath(projectRoot: string): string {
  * @returns Path to the error-logs directory under .hivemind/sessions.
  */
 export function getErrorLogsPath(projectRoot: string): string {
-  return path.join(getEventTrackerSessionDir(projectRoot, ''), 'error-logs')
+  return getErrorLogsDir(projectRoot)
+}
+
+/**
+ * Builds the flat journey-events markdown path for a session.
+ * @param projectRoot Absolute or workspace project root.
+ * @param sessionId Session identifier.
+ * @returns Path to the journey-events markdown file.
+ */
+export function getJourneyEventsMarkdownPath(projectRoot: string, sessionId: string): string {
+  return path.join(getJourneyEventsDir(projectRoot), `${sessionId}.md`)
+}
+
+/**
+ * Builds the flat error log path for a session.
+ * @param projectRoot Absolute or workspace project root.
+ * @param sessionId Session identifier.
+ * @returns Path to the session error log file.
+ */
+export function getErrorLogPath(projectRoot: string, sessionId: string): string {
+  return path.join(getErrorLogsDir(projectRoot), `${sessionId}.log`)
 }
 
 /**
@@ -41,7 +73,7 @@ export function getErrorLogsPath(projectRoot: string): string {
  * @returns Path to events markdown file.
  */
 export function getSessionEventsPath(projectRoot: string, sessionId: string): string {
-  return getSessionFilePath(projectRoot, sessionId, 'events.md')
+  return getJourneyEventsMarkdownPath(projectRoot, sessionId)
 }
 
 /**
@@ -51,27 +83,29 @@ export function getSessionEventsPath(projectRoot: string, sessionId: string): st
  * @returns Path to diagnostics log file.
  */
 export function getSessionDiagnosticsPath(projectRoot: string, sessionId: string): string {
-  return getSessionFilePath(projectRoot, sessionId, 'diagnostics.log')
+  return getErrorLogPath(projectRoot, sessionId)
 }
 
 /**
  * Builds the delegation file path for a session.
  * @param projectRoot Absolute or workspace project root.
  * @param sessionId Session identifier.
- * @returns Path to delegation markdown file.
+ * @returns Path to the compatibility markdown file under journey-events.
+ * @deprecated Delegation entries now append into the flat journey-events markdown file.
  */
 export function getSessionDelegationPath(projectRoot: string, sessionId: string): string {
-  return getSessionFilePath(projectRoot, sessionId, 'delegation.md')
+  return getJourneyEventsMarkdownPath(projectRoot, sessionId)
 }
 
 /**
  * Builds the injection file path for a session.
  * @param projectRoot Absolute or workspace project root.
  * @param sessionId Session identifier.
- * @returns Path to injection markdown file.
+ * @returns Path to the compatibility markdown file under journey-events.
+ * @deprecated Injection entries now append into the flat journey-events markdown file.
  */
 export function getSessionInjectionPath(projectRoot: string, sessionId: string): string {
-  return getSessionFilePath(projectRoot, sessionId, 'injection.md')
+  return getJourneyEventsMarkdownPath(projectRoot, sessionId)
 }
 
 /**
@@ -81,7 +115,7 @@ export function getSessionInjectionPath(projectRoot: string, sessionId: string):
  * @returns Path to session metadata JSON file.
  */
 export function getSessionMetadataPath(projectRoot: string, sessionId: string): string {
-  return getSessionFilePath(projectRoot, sessionId, 'session.json')
+  return path.join(getJourneyEventsDir(projectRoot), `${sessionId}.json`)
 }
 
 /**
@@ -98,6 +132,7 @@ export function getEventTrackerIndexPath(projectRoot: string): string {
  * @param projectRoot Absolute or workspace project root.
  * @param sessionId Session identifier.
  * @returns Path to synthesis markdown file.
+ * @deprecated Session-scoped directories are deprecated in favor of flat session files.
  */
 export function getSessionSynthesisPath(projectRoot: string, sessionId: string): string {
   return getSessionFilePath(projectRoot, sessionId, 'synthesis.md')
@@ -111,5 +146,5 @@ export function getSessionSynthesisPath(projectRoot: string, sessionId: string):
  * @returns Path to consolidated session JSON file.
  */
 export function getConsolidatedSessionPath(projectRoot: string, sessionId: string): string {
-  return getSessionFilePath(projectRoot, sessionId, `${sessionId}.json`)
+  return path.join(getJourneyEventsDir(projectRoot), `${sessionId}.json`)
 }

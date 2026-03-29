@@ -23,6 +23,14 @@ function expectedInSession(filename: string): string {
   return path.join(expectedSessionDir(), filename)
 }
 
+function expectedJourneyEventFile(extension: 'json' | 'md'): string {
+  return path.join(expectedSessionsRoot(), 'journey-events', `${sessionId}.${extension}`)
+}
+
+function expectedErrorLogFile(): string {
+  return path.join(expectedSessionsRoot(), 'error-logs', `${sessionId}.log`)
+}
+
 function expectedSessionsRoot(): string {
   return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR)
 }
@@ -58,29 +66,29 @@ test('builds error-logs path under the sessions root', () => {
   assert.equal(actual, path.join(expectedSessionsRoot(), 'error-logs'))
 })
 
-test('builds events.md path via join-based composition', () => {
+test('builds flat journey-events markdown path via join-based composition', () => {
   const actual = eventTrackerPaths.getSessionEventsPath(projectRoot, sessionId)
-  assert.equal(actual, expectedInSession('events.md'))
+  assert.equal(actual, expectedJourneyEventFile('md'))
 })
 
-test('builds diagnostics.log path via join-based composition', () => {
+test('builds flat error log path via join-based composition', () => {
   const actual = eventTrackerPaths.getSessionDiagnosticsPath(projectRoot, sessionId)
-  assert.equal(actual, expectedInSession('diagnostics.log'))
+  assert.equal(actual, expectedErrorLogFile())
 })
 
-test('builds delegation.md path via join-based composition', () => {
+test('builds delegation compatibility path via journey-events markdown composition', () => {
   const actual = eventTrackerPaths.getSessionDelegationPath(projectRoot, sessionId)
-  assert.equal(actual, expectedInSession('delegation.md'))
+  assert.equal(actual, expectedJourneyEventFile('md'))
 })
 
-test('builds injection.md path via join-based composition', () => {
+test('builds injection compatibility path via journey-events markdown composition', () => {
   const actual = eventTrackerPaths.getSessionInjectionPath(projectRoot, sessionId)
-  assert.equal(actual, expectedInSession('injection.md'))
+  assert.equal(actual, expectedJourneyEventFile('md'))
 })
 
-test('builds session.json path via join-based composition', () => {
+test('builds flat journey-events metadata path via join-based composition', () => {
   const actual = eventTrackerPaths.getSessionMetadataPath(projectRoot, sessionId)
-  assert.equal(actual, expectedInSession('session.json'))
+  assert.equal(actual, expectedJourneyEventFile('json'))
 })
 
 test('builds master index path via join-based composition', () => {
