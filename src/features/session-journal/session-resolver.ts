@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
 
-import { getJourneyEventsPath, getSessionsDir } from '../event-tracker/paths.js'
+import { getJourneyEventsPath, getSessionsDir, truncateSessionId } from '../event-tracker/paths.js'
 import type { PurposeClass } from '../event-tracker/types.js'
 import {
   findSessionBySdkId,
@@ -29,18 +29,19 @@ export function createSessionResolver(projectRoot: string): SessionResolver {
 
   return {
     async resolve(sdkSessionId: string): Promise<string | null> {
-      const existing = await findSessionBySdkId(sessionsDir, sdkSessionId)
+      const truncatedId = truncateSessionId(sdkSessionId)
+      const existing = await findSessionBySdkId(sessionsDir, truncatedId)
       if (existing) {
         return existing
       }
 
-      const directPath = getSessionPath(sessionsDir, sdkSessionId)
+      const directPath = getSessionPath(sessionsDir, truncatedId)
       if (!existsSync(directPath)) {
         return null
       }
 
       try {
-        const session = await loadSession(sessionsDir, sdkSessionId)
+        const session = await loadSession(sessionsDir, truncatedId)
         return session.sessionId
       } catch {
         return null
@@ -56,7 +57,7 @@ export function createSessionResolver(projectRoot: string): SessionResolver {
       }
 
       return initSession(sessionsDir, {
-        sessionId: sdkSessionId,
+        sessionId: truncateSessionId(sdkSessionId),
         lineage: defaults.lineage,
         purposeClass: defaults.purposeClass,
         agent: defaults.agent,

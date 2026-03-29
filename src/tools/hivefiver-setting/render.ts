@@ -19,6 +19,11 @@ const catalog = defineCatalog(schema, {
 
 const InkRenderer = createRenderer(catalog, standardComponents as never)
 
+/**
+ * @deprecated Will be replaced by json-render spec constructors.
+ * Use json-render `Spec` constructors for the composition instead.
+ Pending TDD phase for remove this function.
+ */
 function formatCurrentConfig(currentConfig: Record<string, unknown>): string {
   const entries = Object.entries(currentConfig)
 
@@ -31,6 +36,16 @@ function formatCurrentConfig(currentConfig: Record<string, unknown>): string {
     .join('\n')
 }
 
+/**
+ * Format a language field descriptor for markdown text.
+ *
+ * @deprecated Will be replaced by json-render spec constructors in TDD phase.
+ *   - Use `jsonRender` spec constructors from define structured rendering.
+ *   - Replace this function with `LanguageField` component from the json-render catalog.
+ *
+ * @param field - Language field descriptor
+ * @returns Formatted string
+ */
 function formatLanguageField(field: HmSettingLanguageFieldDescriptor): string {
   const options = field.options
     .map((option) => `${option.value} (${option.nativeLabel})`)
@@ -75,6 +90,17 @@ function formatBody(result: HmSettingResult): string {
   return sections.join('\n\n')
 }
 
+/**
+ * Format a dashboard section for markdown text.
+ *
+ * @deprecated Will be replaced by json-render spec constructors in TDD phase.
+ *   - Use `jsonRender` spec constructors for define structured rendering.
+ *   - Replace this function with `DashboardSection` component from the json-render catalog.
+ *
+ * @param title - Section title
+ * @param lines - Lines to format
+ * @returns Formatted string
+ */
 function formatDashboardSection(title: string, lines: string[]): string {
   return [
     `## ${title}`,
@@ -82,6 +108,15 @@ function formatDashboardSection(title: string, lines: string[]): string {
   ].join('\n')
 }
 
+/**
+ * Format a dashboard proof for markdown text.
+ *
+ * @deprecated Will be replaced by json-render spec constructors in TDD phase.
+ *   - Use `jsonRender` spec constructors from the `DashboardBody` component from the json-render catalog.
+ *
+ * @param dashboard - Dashboard proof object to format
+ * @returns Formatted string
+ */
 function formatDashboardBody(dashboard: HmSettingDashboardProof): string {
   const pane40Lines = [
     `- sessionId: ${dashboard.pane40.sessionId}`,

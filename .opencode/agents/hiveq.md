@@ -1,6 +1,8 @@
 ---
 description: "Verification specialist that validates implementations against specifications, requirements, and success criteria. Use after implementations complete, when checking if work meets requirements, or when validating that code actually does what it claims."
 mode: subagent
+model: openai/gpt-5.4
+reasoningEffort: high
 tools:
   write: false
   edit: false

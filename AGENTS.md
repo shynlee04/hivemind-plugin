@@ -207,7 +207,32 @@ This project builds ON the OpenCode SDK. The SDK is the authority - not custom r
 
 ### SDK Reference (Downloaded 2026-03-20)
 
-The complete OpenCode SDK is available at `.repo-sdk-packed/opencode-api-sdk.xml` for reference.
+
+The complete OpenCode SDK is available at 
+
+```
+./Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/dynamic-context-prunning
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/dynamic-context-prunning/repomix-dynamic-context-prunning.xml
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/json-render
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/json-render/repomix-json-render.xml
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/oh-my-openagents
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/oh-my-openagents/repomix-oh-my-openagents.xml
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode/opencode-agents.md
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode/opencode-built-in-tools.md
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode/opencode-commands.md
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode/opencode-configs.md
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode/opencode-custom-tools.md
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode/opencode-plugins.md
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode/opencode-rules.md
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode/opencode-sdk.md
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode/repomix-opencode.md
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode/repomix-opencode.xml
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode-workspace-background-agents
+/Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/opencode-workspace-background-agents/repomix-output-kdcokenny-opencode-workspace.xml
+``` 
+for reference.
 Key patterns from SDK analysis:
 
 ```typescript

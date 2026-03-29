@@ -1,0 +1,28 @@
+{
+  "status": "complete",
+  "summary": "Code skeptic review found the json-render side-car design is directionally plausible but not proven. Multi-render portability, Ink 40/60 layout, OpenCode side-car transport, schema-kernel migration scope, and Clean Architecture boundaries all remain high-risk proof gates rather than validated implementation facts.",
+  "severity": "high",
+  "findings": {
+    "high": 6,
+    "medium": 0,
+    "low": 2
+  },
+  "must_fix_before_merge": [
+    "Prove a domain envelope distinct from renderer specs",
+    "Prove Ink and React adapters against the same hm-settings slice",
+    "Prove OpenCode attach/event failure handling and auth assumptions",
+    "Test 40/60 layout behavior and fallback thresholds in terminals"
+  ],
+  "report_path": ".hivemind/activity/agents/code-skeptic/json-render-side-car-2026-03-30/skepticism-report.md",
+  "blocked_routes": [
+    "Implementing side-car rendering as if the current ADR claims are already proven",
+    "Moving HmSettingDashboardProof into schema-kernel without first defining additive dashboard envelope contracts",
+    "Assuming createOpencodeClient alone validates side-car runtime connectivity"
+  ],
+  "recommended_next_action": "Run Phase 0 proof gates before implementation: contract extraction spike, dual-adapter prototype, OpenCode live attach/event test, and terminal-width layout tests.",
+  "_meta": {
+    "created_at": "2026-03-30T00:00:00Z",
+    "updated_at": "2026-03-30T00:00:00Z",
+    "producer": "code-skeptic"
+  }
+}

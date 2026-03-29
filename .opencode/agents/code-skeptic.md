@@ -1,6 +1,8 @@
 ---
 description: "Code skeptic that challenges assumptions, exposes hidden risks, and demands evidence for every claim. Use when reviewing implementations, questioning design decisions, or when code feels fragile, over-engineered, or hiding debt."
 mode: subagent
+model: openai/gpt-5.4
+reasoningEffort: high
 tools:
   write: true
   edit: true

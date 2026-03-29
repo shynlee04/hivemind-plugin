@@ -38,11 +38,9 @@ export async function handleToolExecution(
 
   const resolver = createSessionResolver(projectRoot)
   const sessionsDir = resolver.getSessionsDir()
-  const semanticSessionId = await resolver.resolveOrCreate(sdkSessionId, {
-    lineage: 'hiveminder',
-    purposeClass: 'implementation',
-    agent: 'unknown',
-  })
+  const semanticSessionId = await resolver.resolve(sdkSessionId).catch(() => null)
+
+  if (!semanticSessionId) return
 
   // Add tool invocation event
   await addEvent(sessionsDir, {

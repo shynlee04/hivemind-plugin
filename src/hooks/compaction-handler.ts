@@ -18,6 +18,7 @@ import {
   updateSessionTimestamp,
 } from '../features/event-tracker/markdown-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
+import { getAndClearInjectionPayload } from '../plugin/injection-store.js'
 
 /** Dependencies injected into the compaction journal handler factory. */
 export interface CompactionJournalHandlerDeps {
@@ -50,10 +51,14 @@ export function createCompactionJournalHandler(deps: CompactionJournalHandlerDep
       contextLength > 30 ? 'high' : contextLength > 10 ? 'medium' : 'low'
 
     try {
+      // Extract agent from injection payload (set by system.transform hook)
+      const injection = getAndClearInjectionPayload(sessionId)
+      const agent = injection?.agent ?? 'unknown'
+
       const consolidatedSessionId = await sessionResolver.resolveOrCreate(sessionId, {
         lineage: 'hiveminder',
         purposeClass: 'implementation',
-        agent: 'unknown',
+        agent,
       })
 
       // Add compaction event to session
@@ -111,10 +116,14 @@ export async function handleCompaction(
 
   const resolver = createSessionResolver(projectRoot)
   const sessionsDir = resolver.getSessionsDir()
+  // Extract agent from injection payload (set by system.transform hook)
+  const injection = getAndClearInjectionPayload(sdkSessionId)
+  const agent = injection?.agent ?? 'unknown'
+
   const semanticSessionId = await resolver.resolveOrCreate(sdkSessionId, {
     lineage: 'hiveminder',
     purposeClass: 'implementation',
-    agent: 'unknown',
+    agent,
   })
 
   // Add compaction event

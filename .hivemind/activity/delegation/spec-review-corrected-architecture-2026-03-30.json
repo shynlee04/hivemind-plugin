@@ -1,0 +1,15 @@
+{
+  "status": "gaps_found",
+  "agent": "hiveq",
+  "goal": "Validate the json-render side-car spec against the corrected architecture understanding.",
+  "report_path": ".hivemind/activity/agents/hiveq/spec-review-corrected-architecture-2026-03-30/verification-report.md",
+  "summary": [
+    "Spec still uses outdated 'additive' and 'consumer-safe' language that conflicts with the corrected architecture.",
+    "Traceability is missing: no REQ IDs, acceptance criteria, or Given/When/Then markers were found in the planning artifact.",
+    "REQ-F-08, REQ-F-09, and REQ-N-01 are non-atomic and should be split before planning.",
+    "OpenCode must be described as transport-only; rendering belongs entirely to the side-car/json-render layer.",
+    "Schema-kernel ownership is the only requirement that clearly passes as written.",
+    "Relevant hm-settings tests exist but are orphaned because the spec does not map REQs to tests.",
+    "Current repo verification baseline is red: tsc/build fail, npm test times out with multiple failures, and no npm lint script exists."
+  ]
+}

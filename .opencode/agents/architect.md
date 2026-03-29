@@ -1,6 +1,8 @@
 ---
 description: "Architect for system design, technical decisions, pattern selection, and scalability planning. Use before implementations, when making tech stack decisions, designing APIs, evaluating architecture trade-offs, or planning refactoring strategies."
 mode: subagent
+model: openai/gpt-5.4
+reasoningEffort: high
 tools:
   write: true
   edit: true

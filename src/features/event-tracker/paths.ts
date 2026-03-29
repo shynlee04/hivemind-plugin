@@ -2,6 +2,16 @@ import path from 'node:path'
 
 import { HIVEMIND_DIR, SESSIONS_DIR } from '../../shared/paths.js'
 
+/**
+ * Truncates a full SDK session ID to a short filename-safe form.
+ * ses_2c7370af1ffe0Th6nnlX4dIysI → ses_2c73
+ * @param sdkId Full SDK session ID
+ * @returns Short identifier: ses_ + 4 hex chars
+ */
+export function truncateSessionId(sdkId: string): string {
+  return sdkId.slice(0, 8)
+}
+
 function getJourneyEventsDir(projectRoot: string): string {
   return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR, 'journey-events')
 }
@@ -25,7 +35,7 @@ function getSessionFilePath(projectRoot: string, sessionId: string, filename: st
  * @deprecated Session-scoped directories are deprecated in favor of flat session files.
  */
 export function getEventTrackerSessionDir(projectRoot: string, sessionId: string): string {
-  return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR, sessionId)
+  return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR, truncateSessionId(sessionId))
 }
 
 /**
@@ -71,7 +81,7 @@ export function getHierarchyPath(projectRoot: string): string {
  * @returns Path to the journey-events markdown file.
  */
 export function getJourneyEventsMarkdownPath(projectRoot: string, sessionId: string): string {
-  return path.join(getJourneyEventsDir(projectRoot), `${sessionId}.md`)
+  return path.join(getJourneyEventsDir(projectRoot), `${truncateSessionId(sessionId)}.md`)
 }
 
 /**
@@ -81,7 +91,7 @@ export function getJourneyEventsMarkdownPath(projectRoot: string, sessionId: str
  * @returns Path to the session error log file.
  */
 export function getErrorLogPath(projectRoot: string, sessionId: string): string {
-  return path.join(getErrorLogsDir(projectRoot), `${sessionId}.log`)
+  return path.join(getErrorLogsDir(projectRoot), `${truncateSessionId(sessionId)}.log`)
 }
 
 /**
@@ -133,7 +143,7 @@ export function getSessionInjectionPath(projectRoot: string, sessionId: string):
  * @returns Path to session metadata JSON file.
  */
 export function getSessionMetadataPath(projectRoot: string, sessionId: string): string {
-  return path.join(getJourneyEventsDir(projectRoot), `${sessionId}.json`)
+  return path.join(getJourneyEventsDir(projectRoot), `${truncateSessionId(sessionId)}.json`)
 }
 
 /**
@@ -164,5 +174,5 @@ export function getSessionSynthesisPath(projectRoot: string, sessionId: string):
  * @returns Path to consolidated session JSON file.
  */
 export function getConsolidatedSessionPath(projectRoot: string, sessionId: string): string {
-  return path.join(getJourneyEventsDir(projectRoot), `${sessionId}.json`)
+  return path.join(getJourneyEventsDir(projectRoot), `${truncateSessionId(sessionId)}.json`)
 }

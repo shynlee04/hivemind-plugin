@@ -1,6 +1,8 @@
 ---
 description: "Terminal testing-infrastructure specialist for tests, harnesses, fuzzing, and regression systems. May touch product code only when required to wire tests."
 mode: subagent
+model: openai/gpt-5.4
+reasoningEffort: high
 tools:
   write: true
   edit: true

@@ -1,6 +1,8 @@
 ---
 description: "Planning specialist for task design, sequencing, dependency analysis, and handoff artifacts. Designs the roadmap without implementing product changes."
 mode: subagent
+model: openai/gpt-5.4
+reasoningEffort: high
 tools:
   write: true
   edit: true

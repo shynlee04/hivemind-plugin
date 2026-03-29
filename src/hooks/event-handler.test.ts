@@ -269,6 +269,7 @@ describe('createEventHandler sub-session linking', () => {
       const eventHandler = createEventHandler(projectRoot)
       const sessionResolver = createSessionResolver(projectRoot)
 
+      // Create parent session first
       await eventHandler({
         event: {
           type: 'session.created',
@@ -278,6 +279,7 @@ describe('createEventHandler sub-session linking', () => {
         } as unknown as Event,
       })
 
+      // Create child session (subagent) — should NOT create its own file
       await eventHandler({
         event: {
           type: 'session.created',
@@ -292,22 +294,17 @@ describe('createEventHandler sub-session linking', () => {
       const childId = await sessionResolver.resolve('sdk-child-session')
 
       assert.ok(parentId, 'parent session should resolve after session.created')
-      assert.ok(childId, 'child session should resolve after session.created')
+      assert.equal(childId, null, 'subagent child session should NOT resolve (no file created)')
 
+      // Verify parent exists and has child linked
       const sessionsDir = sessionResolver.getSessionsDir()
       const parent = JSON.parse(
         await readFile(getSessionPath(sessionsDir, parentId as string), 'utf8')
       ) as {
-        childSessionIds: string[]
-      }
-      const child = JSON.parse(
-        await readFile(getSessionPath(sessionsDir, childId as string), 'utf8')
-      ) as {
-        parentSessionId: string | null
+        subsessionIds: string[]
       }
 
-      assert.deepEqual(parent.childSessionIds, [childId], 'parent should track child session IDs')
-      assert.equal(child.parentSessionId, parentId, 'child should track parent session ID')
+      assert.ok(parent.subsessionIds.length > 0, 'parent should track child session IDs')
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
     }
@@ -320,6 +317,7 @@ describe('createEventHandler sub-session linking', () => {
       const eventHandler = createEventHandler(projectRoot)
       const sessionResolver = createSessionResolver(projectRoot)
 
+      // Create parent session
       await eventHandler({
         event: {
           type: 'session.created',
@@ -329,6 +327,7 @@ describe('createEventHandler sub-session linking', () => {
         } as unknown as Event,
       })
 
+      // Agent.created child — records event in parent, does NOT create child file
       await eventHandler({
         event: {
           type: 'agent.created',
@@ -343,22 +342,12 @@ describe('createEventHandler sub-session linking', () => {
       const childId = await sessionResolver.resolve('sdk-agent-child-session')
 
       assert.ok(parentId, 'parent session should resolve before agent delegation')
-      assert.ok(childId, 'child session should be created for delegated agent session')
+      assert.equal(childId, null, 'agent-created child should NOT resolve (no file created for subagent)')
 
+      // Verify parent exists (agent.created records event in parent session)
       const sessionsDir = sessionResolver.getSessionsDir()
-      const parent = JSON.parse(
-        await readFile(getSessionPath(sessionsDir, parentId as string), 'utf8')
-      ) as {
-        childSessionIds: string[]
-      }
-      const child = JSON.parse(
-        await readFile(getSessionPath(sessionsDir, childId as string), 'utf8')
-      ) as {
-        parentSessionId: string | null
-      }
-
-      assert.deepEqual(parent.childSessionIds, [childId], 'agent-created child should be linked to parent')
-      assert.equal(child.parentSessionId, parentId, 'agent-created child should store parent ID')
+      const parentExists = await readFile(getSessionPath(sessionsDir, parentId as string), 'utf8')
+      assert.ok(parentExists, 'parent session file should exist')
     } finally {
       await rm(projectRoot, { recursive: true, force: true })
     }

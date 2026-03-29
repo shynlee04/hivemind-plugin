@@ -15,16 +15,11 @@ import {
   addEvent,
   initSession,
    linkSubSession,
-  loadSession,
   updateStatus,
 } from '../features/event-tracker/consolidated-writer.js'
-import {
-  appendDiagnosticToMarkdown,
-  ensureEventsMarkdown,
-  updateSessionTimestamp,
-} from '../features/event-tracker/markdown-writer.js'
 import { appendError } from '../features/session-journal/error-log-writer.js'
 import { createSessionResolver } from '../features/session-journal/session-resolver.js'
+import { truncateSessionId } from '../features/event-tracker/paths.js'
 
 function readStringProperty(
   properties: Record<string, unknown>,
@@ -67,59 +62,13 @@ function resolvePurposeClass(
   }
 }
 
-function formatEventDetails(
-  summary: string,
-  details?: Record<string, unknown>,
-): string {
-  if (!details || Object.keys(details).length === 0) {
-    return summary
-  }
-
-  return `${summary}\n\n\`\`\`json\n${JSON.stringify(details, null, 2)}\n\`\`\``
-}
-
-async function appendLifecycleTurn(
-  sessionsDir: string,
-  sessionId: string,
-  turn: {
-    timestamp: string
-    type: 'error' | 'session_created' | 'session_idle'
-    content: string
-  },
-): Promise<void> {
-  const session = await loadSession(sessionsDir, sessionId)
-  const filePath = await ensureEventsMarkdown(sessionsDir, session)
-
-  // Noise events → diagnostics instead of turns
-  await appendDiagnosticToMarkdown(filePath, {
-    timestamp: turn.timestamp,
-    level: turn.type === 'error' ? 'error' : 'info',
-    message: turn.content,
-  })
-  await updateSessionTimestamp(filePath).catch(() => undefined)
-}
-
-async function appendLifecycleDiagnostic(
-  sessionsDir: string,
-  sessionId: string,
-  diagnostic: {
-    timestamp: string
-    level: string
-    message: string
-  },
-): Promise<void> {
-  const session = await loadSession(sessionsDir, sessionId)
-  const filePath = await ensureEventsMarkdown(sessionsDir, session)
-
-  await appendDiagnosticToMarkdown(filePath, diagnostic)
-}
 
 async function linkParentChildSessions(
   sessionsDir: string,
   childSessionId: string,
   sessionProperties: Record<string, unknown>,
   resolveParentSessionId: (sessionId: string) => Promise<string | null>,
-  source: 'session.created' | 'agent.created'
+  _source: 'session.created' | 'agent.created'
 ): Promise<void> {
   const rawParentSessionId = readStringProperty(
     sessionProperties,
@@ -132,28 +81,21 @@ async function linkParentChildSessions(
     return
   }
 
-  const parentSessionId = await resolveParentSessionId(rawParentSessionId).catch((err) => {
-    console.error(`[session-journal] resolve parent session (${source}) failed:`, err)
-    return null
-  })
+  const parentSessionId = await resolveParentSessionId(rawParentSessionId).catch(() => null)
 
   if (!parentSessionId) {
     return
   }
 
-  await linkSubSession(sessionsDir, parentSessionId, childSessionId).catch((err) => {
-    console.error(`[session-journal] linkSubSession (${source}) failed:`, err)
-  })
+  await linkSubSession(sessionsDir, parentSessionId, childSessionId).catch(() => undefined)
 }
 
 function normalizeEventSummary(event: Event): string {
   if (!event || typeof event !== 'object') {
-    console.warn('[event-handler] Malformed event received: not an object', { event })
     return 'event:malformed'
   }
 
   if (!('type' in event)) {
-    console.warn('[event-handler] Malformed event received: missing type field', { event })
     return 'event:malformed'
   }
 
@@ -179,7 +121,7 @@ function normalizeEventSummary(event: Event): string {
   ]
 
   if (!KNOWN_EVENT_TYPES.includes(eventType) && !eventType.startsWith('agent-work')) {
-    console.warn(`[event-handler] Unknown event type received: "${eventType}" - this event will be recorded but may not be fully handled`)
+    // Unknown event type — recorded but may not be fully handled
   }
 
   return `event:${eventType}`
@@ -244,15 +186,31 @@ export function createEventHandler(directory: string) {
 
     if (event.type === 'session.created' && sdkSessionId) {
       const timestamp = new Date().toISOString()
+
+      // Check if this is a subagent session — skip file creation
+      const isSubagent = readStringProperty(
+        sessionProperties,
+        'parentSessionId',
+        'parentSessionID',
+        'parent_session_id'
+      )
+
+      if (isSubagent) {
+        // Subagent sessions don't get their own files.
+        // Still try to link parent/child if parent was already tracked.
+        const resolvedParent = await sessionResolver.resolve(isSubagent).catch(() => null)
+        if (resolvedParent) {
+          await linkSubSession(sessionsDir, resolvedParent, truncateSessionId(sdkSessionId)).catch(() => undefined)
+        }
+        return
+      }
+
       const consolidatedSessionId = await initSession(sessionsDir, {
-        sessionId: sdkSessionId,
+        sessionId: truncateSessionId(sdkSessionId),
         lineage: resolveLineage(sessionProperties),
         purposeClass: resolvePurposeClass(sessionProperties),
         agent: readStringProperty(sessionProperties, 'agent', 'name') ?? 'unknown',
-      }).catch((err) => {
-        console.error('[session-journal] initSession (session.created) failed:', err)
-        return null
-      })
+      }).catch(() => null)
 
       if (consolidatedSessionId) {
         await addEvent(sessionsDir, {
@@ -278,49 +236,36 @@ export function createEventHandler(directory: string) {
           (sessionId) => sessionResolver.resolve(sessionId),
           'session.created'
         )
-
-        await appendLifecycleTurn(sessionsDir, consolidatedSessionId, {
-          timestamp,
-          type: 'session_created',
-          content: formatEventDetails(`Session created for SDK session ${sdkSessionId}.`, sessionProperties),
-        }).catch(() => undefined)
       }
     }
 
     if (String(event.type) === 'agent.created' && sdkSessionId) {
-      const consolidatedSessionId = await sessionResolver.resolveOrCreate(sdkSessionId, {
-        lineage: resolveLineage(sessionProperties),
-        purposeClass: resolvePurposeClass(sessionProperties),
-        agent: readStringProperty(sessionProperties, 'agent', 'name') ?? 'unknown',
-      }).catch((err) => {
-        console.error('[session-journal] resolveOrCreate (agent.created) failed:', err)
-        return null
-      })
+      // Subagents do NOT get their own session files.
+      // Record the event in the parent session if one exists.
+      const parentSessionId = readStringProperty(
+        sessionProperties,
+        'parentSessionId',
+        'parentSessionID',
+        'parent_session_id'
+      )
 
-      if (consolidatedSessionId) {
-        await addEvent(sessionsDir, {
-          sessionId: consolidatedSessionId,
-          event: {
-            turnNumber: 0,
-            type: 'agent_created',
-            importance: 'medium',
-            timestamp: new Date().toISOString(),
-            data: {
-              sessionId: sdkSessionId,
-              properties: sessionProperties,
+      if (parentSessionId) {
+        const resolvedParent = await sessionResolver.resolve(parentSessionId).catch(() => null)
+        if (resolvedParent) {
+          await addEvent(sessionsDir, {
+            sessionId: resolvedParent,
+            event: {
+              turnNumber: 0,
+              type: 'agent_created',
+              importance: 'low',
+              timestamp: new Date().toISOString(),
+              data: {
+                childSessionId: sdkSessionId,
+                agent: readStringProperty(sessionProperties, 'agent', 'name') ?? 'unknown',
+              },
             },
-          },
-        }).catch((err) => {
-          console.error('[session-journal] addEvent (agent.created) failed:', err)
-        })
-
-        await linkParentChildSessions(
-          sessionsDir,
-          consolidatedSessionId,
-          sessionProperties,
-          (sessionId) => sessionResolver.resolve(sessionId),
-          'agent.created'
-        )
+          }).catch(() => undefined)
+        }
       }
     }
 
@@ -343,18 +288,13 @@ export function createEventHandler(directory: string) {
               properties: sessionProperties,
             },
           },
-        }).catch((err) => {
-          console.error('[session-journal] addEvent (session.updated) failed:', err)
-        })
+        }).catch(() => undefined)
       }
     }
 
     if (event.type === 'session.error' && sdkSessionId) {
       const timestamp = new Date().toISOString()
-      const consolidatedSessionId = await sessionResolver.resolve(sdkSessionId).catch((err) => {
-        console.error('[session-journal] resolveSession (session.error) failed:', err)
-        return null
-      })
+      const consolidatedSessionId = await sessionResolver.resolve(sdkSessionId).catch(() => null)
 
       if (consolidatedSessionId) {
         const { sessionID: _sessionID, ...errorDetails } = sessionProperties
@@ -371,9 +311,7 @@ export function createEventHandler(directory: string) {
               error: errorDetails,
             },
           },
-        }).catch((err) => {
-          console.error('[session-journal] addEvent (session.error) failed:', err)
-        })
+        }).catch(() => undefined)
 
         await addDiagnostic(sessionsDir, {
           sessionId: consolidatedSessionId,
@@ -386,21 +324,7 @@ export function createEventHandler(directory: string) {
               error: errorDetails,
             },
           },
-          }).catch((err) => {
-          console.error('[session-journal] addDiagnostic (session.error) failed:', err)
-        })
-
-        await appendLifecycleTurn(sessionsDir, consolidatedSessionId, {
-          timestamp,
-          type: 'error',
-          content: formatEventDetails(`Session error for SDK session ${sdkSessionId}.`, errorDetails),
-        }).catch(() => undefined)
-
-        await appendLifecycleDiagnostic(sessionsDir, consolidatedSessionId, {
-          timestamp,
-          level: 'error',
-          message: 'session.error event received',
-        }).catch(() => undefined)
+          }).catch(() => undefined)
 
         await appendError(directory, {
           sessionId: consolidatedSessionId,
@@ -416,10 +340,7 @@ export function createEventHandler(directory: string) {
     }
 
     if (event.type === 'session.deleted' && sdkSessionId) {
-      const consolidatedSessionId = await sessionResolver.resolve(sdkSessionId).catch((err) => {
-        console.error('[session-journal] resolveSession (session.deleted) failed:', err)
-        return null
-      })
+      const consolidatedSessionId = await sessionResolver.resolve(sdkSessionId).catch(() => null)
 
       if (consolidatedSessionId) {
         await addEvent(sessionsDir, {
@@ -433,21 +354,14 @@ export function createEventHandler(directory: string) {
               sessionId: sdkSessionId,
             },
           },
-        }).catch((err) => {
-          console.error('[session-journal] addEvent (session.deleted) failed:', err)
-        })
+        }).catch(() => undefined)
 
-        await updateStatus(sessionsDir, consolidatedSessionId, 'abandoned').catch((err) => {
-          console.error('[session-journal] updateStatus (session.deleted) failed:', err)
-        })
+        await updateStatus(sessionsDir, consolidatedSessionId, 'abandoned').catch(() => undefined)
       }
     }
 
     if (event.type === 'session.diff' && sdkSessionId) {
-      const consolidatedSessionId = await sessionResolver.resolve(sdkSessionId).catch((err) => {
-        console.error('[session-journal] resolveSession (session.diff) failed:', err)
-        return null
-      })
+      const consolidatedSessionId = await sessionResolver.resolve(sdkSessionId).catch(() => null)
 
       if (consolidatedSessionId) {
         const { sessionID: _sessionID, ...diffDetails } = sessionProperties
@@ -464,9 +378,7 @@ export function createEventHandler(directory: string) {
               diff: diffDetails,
             },
           },
-        }).catch((err) => {
-          console.error('[session-journal] addEvent (session.diff) failed:', err)
-        })
+        }).catch(() => undefined)
       }
     }
 
@@ -491,15 +403,8 @@ export function createEventHandler(directory: string) {
         })
       }
 
-      // Resolve or create consolidated session
-      const consolidatedSessionId = await sessionResolver.resolveOrCreate(sessionId, {
-        lineage: 'hivefiver',
-        purposeClass: 'implementation',
-        agent: 'unknown',
-      }).catch((err) => {
-        console.error('[session-journal] resolveOrCreate (session.idle) failed:', err)
-        return null
-      })
+      // Resolve existing session (don't create files for idle sessions)
+      const consolidatedSessionId = await sessionResolver.resolve(sessionId).catch(() => null)
 
       if (!consolidatedSessionId) {
         return
@@ -519,12 +424,6 @@ export function createEventHandler(directory: string) {
             },
           },
         })
-
-        await appendLifecycleTurn(sessionsDir, consolidatedSessionId, {
-          timestamp,
-          type: 'session_idle',
-          content: `Session idle for SDK session ${sessionId}.`,
-        }).catch(() => undefined)
       } catch (err) {
         console.error('[session-journal] addEvent (session.idle) failed:', err)
       }
@@ -580,11 +479,9 @@ export async function handleSessionIdleEvent(
   const sessionDir = sessionResolver.getSessionsDir()
   const sdkSessionId = event.properties.sessionID
 
-  const semanticSessionId = await sessionResolver.resolveOrCreate(sdkSessionId, {
-    lineage: 'hivefiver',
-    purposeClass: 'implementation',
-    agent: 'unknown',
-  })
+  const semanticSessionId = await sessionResolver.resolve(sdkSessionId).catch(() => null)
+
+  if (!semanticSessionId) return
 
   await addEvent(sessionDir, {
     sessionId: semanticSessionId,
@@ -598,10 +495,4 @@ export async function handleSessionIdleEvent(
       },
     },
   })
-
-  await appendLifecycleTurn(sessionDir, semanticSessionId, {
-    timestamp: new Date().toISOString(),
-    type: 'session_idle',
-    content: `Session idle for SDK session ${sdkSessionId}.`,
-  }).catch(() => undefined)
 }
