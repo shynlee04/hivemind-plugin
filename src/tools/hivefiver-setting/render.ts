@@ -90,67 +90,29 @@ function formatBody(result: HmSettingResult): string {
   return sections.join('\n\n')
 }
 
-/**
- * Format a dashboard section for markdown text.
- *
- * @deprecated Will be replaced by json-render spec constructors in TDD phase.
- *   - Use `jsonRender` spec constructors for define structured rendering.
- *   - Replace this function with `DashboardSection` component from the json-render catalog.
- *
- * @param title - Section title
- * @param lines - Lines to format
- * @returns Formatted string
- */
-function formatDashboardSection(title: string, lines: string[]): string {
+function buildPane40Markdown(pane40: HmSettingDashboardProof['pane40']): string {
   return [
-    `## ${title}`,
-    ...lines,
+    `- sessionId: ${pane40.sessionId}`,
+    `- runtimeAuthority: ${pane40.runtimeAuthority}`,
+    `- attachmentMode: ${pane40.attachmentMode}`,
+    `- workflowId: ${pane40.workflowId ?? 'none'}`,
+    `- trajectoryId: ${pane40.trajectoryId ?? 'none'}`,
+    `- gateSummary: ${pane40.gateSummary}`,
+    `- healthSummary: ${pane40.healthSummary}`,
+    `- recentEvents: ${pane40.recentEvents.length > 0 ? pane40.recentEvents.join(', ') : 'none'}`,
   ].join('\n')
 }
 
-/**
- * Format a dashboard proof for markdown text.
- *
- * @deprecated Will be replaced by json-render spec constructors in TDD phase.
- *   - Use `jsonRender` spec constructors from the `DashboardBody` component from the json-render catalog.
- *
- * @param dashboard - Dashboard proof object to format
- * @returns Formatted string
- */
-function formatDashboardBody(dashboard: HmSettingDashboardProof): string {
-  const pane40Lines = [
-    `- sessionId: ${dashboard.pane40.sessionId}`,
-    `- runtimeAuthority: ${dashboard.pane40.runtimeAuthority}`,
-    `- attachmentMode: ${dashboard.pane40.attachmentMode}`,
-    `- workflowId: ${dashboard.pane40.workflowId ?? 'none'}`,
-    `- trajectoryId: ${dashboard.pane40.trajectoryId ?? 'none'}`,
-    `- gateSummary: ${dashboard.pane40.gateSummary}`,
-    `- healthSummary: ${dashboard.pane40.healthSummary}`,
-    '- recentEvents:',
-    ...(dashboard.pane40.recentEvents.length > 0
-      ? dashboard.pane40.recentEvents.map((event) => `  - ${event}`)
-      : ['  - none']),
-  ]
-  const pane60Lines = [
-    `- group: ${dashboard.pane60.group}`,
-    `- changedFields: ${dashboard.pane60.changedFields.join(', ') || 'none'}`,
-    `- impactSummary: ${dashboard.pane60.impactSummary.join(', ') || 'none'}`,
-    `- nextAction: ${dashboard.pane60.nextAction}`,
-    '- currentSettings:',
-    ...(Object.entries(dashboard.pane60.currentSettings).length > 0
-      ? Object.entries(dashboard.pane60.currentSettings).map(([key, value]) => `  - ${key}: ${String(value)}`)
-      : ['  - none']),
-    '- guidance:',
-    ...(dashboard.pane60.guidance.length > 0
-      ? dashboard.pane60.guidance.map((entry) => `  - ${entry}`)
-      : ['  - none']),
-  ]
-
+function buildPane60Markdown(pane60: HmSettingDashboardProof['pane60']): string {
+  const settingsEntries = Object.entries(pane60.currentSettings)
   return [
-    `# Proof mode\n${dashboard.mode}`,
-    formatDashboardSection(dashboard.pane40.title, pane40Lines),
-    formatDashboardSection(dashboard.pane60.title, pane60Lines),
-  ].join('\n\n')
+    `- group: ${pane60.group}`,
+    `- changedFields: ${pane60.changedFields.join(', ') || 'none'}`,
+    `- impactSummary: ${pane60.impactSummary.join(', ') || 'none'}`,
+    `- nextAction: ${pane60.nextAction}`,
+    `- currentSettings: ${settingsEntries.length > 0 ? settingsEntries.map(([key, value]) => `${key}: ${String(value)}`).join(', ') : 'none'}`,
+    `- guidance: ${pane60.guidance.length > 0 ? pane60.guidance.join(', ') : 'none'}`,
+  ].join('\n')
 }
 
 export function renderHmSettingTui(response: ToolResponse<HmSettingResult>): string {
@@ -196,9 +158,51 @@ export function renderHmSettingTui(response: ToolResponse<HmSettingResult>): str
 }
 
 export function renderHmSettingDashboardTui(dashboard: HmSettingDashboardProof): string {
-  return [
-    'Hivefiver settings dashboard proof',
-    `hm-settings dashboard mode: ${dashboard.mode}`,
-    formatDashboardBody(dashboard),
-  ].join('\n\n')
+  const spec = {
+    root: 'app',
+    elements: {
+      app: {
+        type: 'Box',
+        props: { flexDirection: 'column', padding: 1 },
+        children: ['title', 'modeLine', 'content'],
+      },
+      title: {
+        type: 'Heading',
+        props: { text: 'Hivefiver settings dashboard proof', level: 'h1' },
+        children: [],
+      },
+      modeLine: {
+        type: 'StatusLine',
+        props: { text: `hm-settings dashboard mode: ${dashboard.mode}`, status: 'info' as const },
+        children: [],
+      },
+      content: {
+        type: 'Box',
+        props: { flexDirection: 'row' },
+        children: ['pane40', 'pane60'],
+      },
+      pane40: {
+        type: 'Card',
+        props: { title: dashboard.pane40.title },
+        children: ['pane40Body'],
+      },
+      pane40Body: {
+        type: 'Markdown',
+        props: { text: buildPane40Markdown(dashboard.pane40) },
+        children: [],
+      },
+      pane60: {
+        type: 'Card',
+        props: { title: dashboard.pane60.title },
+        children: ['pane60Body'],
+      },
+      pane60Body: {
+        type: 'Markdown',
+        props: { text: buildPane60Markdown(dashboard.pane60) },
+        children: [],
+      },
+    },
+  }
+
+  return renderToString(React.createElement(InkRenderer, { spec, state: {} })).trimEnd()
 }
