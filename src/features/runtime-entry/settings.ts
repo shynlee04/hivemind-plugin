@@ -40,6 +40,43 @@ export async function runSettingsHandler(
   asset: LoadedCommandAsset,
   input: CommandExecutionInput,
 ): Promise<CommandExecutionResult> {
+  // --- Dashboard shortcut: --dashboard flag returns 40/60 proof directly ---
+  if (input.arguments?.includes('--dashboard')) {
+    const dashSnapshot = await loadRuntimeBindingsSnapshot(input.projectRoot)
+    const dashStatus = await buildRuntimeStatusSnapshot({
+      projectRoot: input.projectRoot,
+      sessionId: input.sessionId,
+      agentId: bundle.agent,
+      snapshot: dashSnapshot,
+    })
+    const dashboard = buildHmSettingDashboardProof({
+      mode: dashSnapshot.profileComplete ? 'settings' : 'question-gate',
+      group: 'all',
+      sessionId: input.sessionId,
+      snapshot: dashSnapshot,
+      statusSnapshot: dashStatus,
+      changedFields: [],
+      impactSummary: [],
+      nextAction: dashSnapshot.profileComplete ? 'none' : 'answer-intake-gate',
+      guidance: ['dashboard-view'],
+      currentSettings: serializeCurrentSettings(dashSnapshot),
+    })
+
+    return {
+      commandId: bundle.id,
+      title: bundle.title,
+      agent: bundle.agent,
+      executionMode: 'handler',
+      contract: asset.contract,
+      report: { dashboard },
+      entityBindings: resolveEntityBindings(input),
+      stateTransitions: [],
+      closeoutStatus: 'ready',
+      verificationContractId: asset.contract.verificationContract,
+      pressureContract: bundle.pressureContract,
+    }
+  }
+
   const primitive = findControlPlanePrimitive('hm-settings')
   const snapshot = await loadRuntimeBindingsSnapshot(input.projectRoot)
   const intakeResolution = primitive

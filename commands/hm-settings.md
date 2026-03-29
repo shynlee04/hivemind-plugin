@@ -25,15 +25,16 @@ Update profile, governance, or guardrail posture while preserving workflow conti
 
 ## Mandatory Execution Rules
 1. First inspect runtime state with `hivemind_runtime_status`.
-2. Never mutate settings through bash or direct file scaffolding.
-3. To actually apply settings, you must call `hivemind_hm_setting` with the target `group` (e.g. `group: "language"`).
-4. Start with the built-in `question` tool to ask which profile groups the user wants to change:
+2. To show the 40/60 dashboard overview (runtime mirror + settings guidance), call `hivemind_hm_setting` with `dashboard: true`. Pass `--dashboard` as the arguments string when invoking via the command handler.
+3. Never mutate settings through bash or direct file scaffolding.
+4. To actually apply settings, you must call `hivemind_hm_setting` with the target `group` (e.g. `group: "language"`).
+5. Start with the built-in `question` tool to ask which profile groups the user wants to change:
    - `language` (maps to legacy `identity-language`)
    - `expertise` (maps to legacy `expertise-style`)
    - `governance` (maps to legacy `governance-automation`)
    - `operation-mode`
-5. Do not call `hivemind_hm_setting` with `group: "all"` when a mutation is intended — always specify the exact group.
-6. For any selected group, collect explicit `key` and `value` arguments or offer "use recommended defaults" with `guided-onboarding`.
+6. Do not call `hivemind_hm_setting` with `group: "all"` when a mutation is intended — always specify the exact group.
+7. For any selected group, collect explicit `key` and `value` arguments or offer "use recommended defaults" with `guided-onboarding`.
 
 ## Process
 1. Determine which settings groups are being changed.

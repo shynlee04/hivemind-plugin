@@ -21,6 +21,8 @@ export interface HmSettingToolArgs {
   locale?: string
   /** Output presentation mode */
   renderMode?: 'json' | 'tui'
+  /** When true, returns the 40/60 dashboard layout with runtime mirror and settings/guidance UI */
+  dashboard?: boolean
 }
 
 export interface HmSettingLanguageOptionDescriptor {

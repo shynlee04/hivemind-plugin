@@ -16,11 +16,16 @@ import {
 } from '../../shared/config-groups.js'
 import type { ConfigGroupName } from '../../shared/config-groups.js'
 import { resolveLanguageSelectorCopy, SUPPORTED_LANGUAGE_VALUES } from './i18n/index.js'
+import { buildHmSettingDashboardProof } from './dashboard.js'
 import { renderHmSettingTui } from './render.js'
 import type {
   HmSettingLanguageFieldDescriptor,
   HmSettingResult,
 } from './types.js'
+import { loadRuntimeBindingsSnapshot } from '../../features/runtime-entry/snapshot-loader.js'
+import { buildRuntimeStatusSnapshot } from '../../sdk-supervisor/runtime-status.js'
+import { findControlPlanePrimitive } from '../../control-plane/control-plane-registry.js'
+import { resolveControlPlaneIntakeGate } from '../../features/session-entry/intake.gates.js'
 
 const s = tool.schema
 
@@ -82,11 +87,61 @@ export function createHivemindHmSettingTool(_projectRoot: string): ReturnType<ty
         .describe('Optional locale for localized configuration copy'),
       renderMode: s.enum(['json', 'tui'] as const).default('json')
         .describe('Presentation mode for the result payload'),
+      dashboard: s.boolean().optional().default(false)
+        .describe('When true, returns the 40/60 dashboard layout with runtime mirror (pane40) and settings/guidance UI (pane60)'),
     },
     async execute(args, _context) {
       const renderResponse = (message: string, result: HmSettingResult) => {
         const response = success(message, result)
         return args.renderMode === 'tui' ? renderHmSettingTui(response) : render(response)
+      }
+
+      // --- Dashboard mode: return 40/60 layout with runtime mirror + settings guidance ---
+      if (args.dashboard) {
+        const projectRoot = _context.directory
+        const snapshot = await loadRuntimeBindingsSnapshot(projectRoot)
+        const statusSnapshot = await buildRuntimeStatusSnapshot({
+          projectRoot,
+          sessionId: _context.sessionID,
+          agentId: _context.agent,
+          snapshot,
+        })
+        const primitive = findControlPlanePrimitive('hm-settings')
+        const intakeResolution = primitive
+          ? resolveControlPlaneIntakeGate(primitive, {
+              projectRoot,
+              sessionId: _context.sessionID,
+              sessionScope: 'main',
+              activeAgent: _context.agent,
+            }, snapshot)
+          : { gate: null }
+        const isQuestionGate = !!intakeResolution.gate
+        const dashboard = buildHmSettingDashboardProof({
+          mode: isQuestionGate ? 'question-gate' : 'settings',
+          group: args.group,
+          sessionId: _context.sessionID,
+          snapshot,
+          statusSnapshot,
+          changedFields: [],
+          impactSummary: [],
+          nextAction: isQuestionGate ? 'answer-intake-gate' : 'none',
+          guidance: isQuestionGate && intakeResolution.gate
+            ? [
+                ...intakeResolution.gate.missingGroups.map((g: string) => `group:${g}`),
+                ...intakeResolution.gate.missingFields.map((f: string) => `field:${f}`),
+              ]
+            : ['dashboard-view'],
+          currentSettings: {
+            preferredUserName: snapshot.preferredUserName ?? null,
+            chatLanguage: snapshot.language,
+            artifactLanguage: snapshot.artifactLanguage,
+            expertiseLevel: snapshot.expertLevel,
+            governanceMode: snapshot.governanceMode,
+            automationLevel: snapshot.automationLevel,
+            outputStyle: snapshot.outputStyle,
+          },
+        })
+        return render(success('hm-setting [dashboard]: 40/60 dashboard layout', { dashboard }))
       }
 
       // --- Show all groups ---
