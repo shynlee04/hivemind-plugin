@@ -5,6 +5,8 @@ export type {
   HmSettingDashboardPane40,
   HmSettingDashboardPane60,
   HmSettingDashboardProof,
+  HmSettingDashboardSpec,
+  HmSettingDashboardSpecElement,
   HmSettingGroup,
   HmSettingLanguageFieldDescriptor,
   HmSettingLanguageOptionDescriptor,
@@ -13,3 +15,4 @@ export type {
   HmSettingProposedChange,
   HmSettingResult,
 } from './types.js'
+export { buildHmSettingDashboardSpec } from './spec-builder.js'

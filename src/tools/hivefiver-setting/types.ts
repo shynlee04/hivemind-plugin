@@ -90,4 +90,21 @@ export interface HmSettingDashboardProof {
   pane40: HmSettingDashboardPane40
   pane60: HmSettingDashboardPane60
   rendered?: string
+  dashboardSpec?: HmSettingDashboardSpec
+}
+
+/** json-render Spec element for side-car rendering */
+export interface HmSettingDashboardSpecElement {
+  type: string
+  props: Record<string, unknown>
+  children?: string[]
+  visible?: unknown
+  on?: Record<string, unknown>
+}
+
+/** json-render Spec contract for the side-car dashboard renderer */
+export interface HmSettingDashboardSpec {
+  root: string
+  elements: Record<string, HmSettingDashboardSpecElement>
+  state?: Record<string, unknown>
 }
