@@ -1,8 +1,21 @@
 'use client'
 
+import { defineCatalog } from '@json-render/core'
+import { schema } from '@json-render/react/schema'
 import { defineRegistry } from '@json-render/react'
 import { shadcnComponents } from '@json-render/shadcn'
-import { catalog } from './catalog'
+import { shadcnComponentDefinitions } from '@json-render/shadcn/catalog'
+
+const catalog = defineCatalog(schema, {
+  components: {
+    Stack: shadcnComponentDefinitions.Stack,
+    Heading: shadcnComponentDefinitions.Heading,
+    Card: shadcnComponentDefinitions.Card,
+    Badge: shadcnComponentDefinitions.Badge,
+    Text: shadcnComponentDefinitions.Text,
+  },
+  actions: {},
+})
 
 export const { registry } = defineRegistry(catalog, {
   components: {

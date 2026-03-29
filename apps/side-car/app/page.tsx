@@ -10,7 +10,7 @@ const skeletonSpec = {
   elements: {
     app: {
       type: 'Stack',
-      props: { direction: 'column', gap: '4', padding: '4' },
+      props: { direction: 'vertical', gap: 'md' },
       children: ['title', 'status'],
     },
     title: {
@@ -20,7 +20,7 @@ const skeletonSpec = {
     },
     status: {
       type: 'Text',
-      props: { children: 'Loading — dashboard spec pending (Cycle 2)' },
+      props: { text: 'Loading — dashboard spec pending (Cycle 2)' },
       children: [] as string[],
     },
   },
