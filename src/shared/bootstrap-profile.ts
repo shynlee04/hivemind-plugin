@@ -1,7 +1,16 @@
+import {
+  SupportedLanguage as SupportedLanguageValues,
+  type SupportedLanguage,
+} from '../schema-kernel/config-records.js'
+
+type BootstrapSupportedLanguage = SupportedLanguage extends string
+  ? SupportedLanguage
+  : (typeof SupportedLanguageValues)[keyof typeof SupportedLanguageValues]
+
 export interface BootstrapProfile {
   preferredUserName?: string
-  chatLanguage: string
-  artifactLanguage: string
+  chatLanguage: BootstrapSupportedLanguage
+  artifactLanguage: BootstrapSupportedLanguage
   expertiseLevel: string
   governanceMode: string
   automationLevel: string
@@ -16,20 +25,56 @@ const LANGUAGE_ALIASES: Record<string, string> = {
   vn: 'vi',
   vietnamese: 'vi',
   vietnam: 'vi',
+  // Chinese
+  zh: 'zh',
+  chinese: 'zh',
+  '中文': 'zh',
+  'zh-cn': 'zh',
+  'zh-tw': 'zh',
+  // Korean
+  ko: 'ko',
+  korean: 'ko',
+  '한국어': 'ko',
+  'ko-kr': 'ko',
+  // Japanese
+  ja: 'ja',
+  japanese: 'ja',
+  '日本語': 'ja',
+  'ja-jp': 'ja',
 }
 
-function normalizeStringValue(value: string | undefined): string | undefined {
+const SUPPORTED_PROFILE_LANGUAGES = new Set<string>(Object.values(SupportedLanguageValues))
+
+/**
+ * Trims an optional string and collapses empty values to undefined.
+ *
+ * @param value - Raw user-provided string value.
+ * @returns The trimmed string when non-empty; otherwise undefined.
+ */
+export function normalizeStringValue(value: string | undefined): string | undefined {
   const trimmed = value?.trim()
   return trimmed && trimmed.length > 0 ? trimmed : undefined
 }
 
-export function normalizeProfileLanguage(value: string | undefined, fallback = 'en'): string {
+function isSupportedLanguage(value: unknown): value is BootstrapSupportedLanguage {
+  return typeof value === 'string' && SUPPORTED_PROFILE_LANGUAGES.has(value)
+}
+
+export function normalizeProfileLanguage(
+  value: string | undefined,
+  fallback: unknown = 'en',
+): BootstrapSupportedLanguage {
   const normalized = normalizeStringValue(value)?.toLowerCase()
   if (!normalized) {
-    return fallback
+    return isSupportedLanguage(fallback) ? fallback : 'en'
   }
 
-  return LANGUAGE_ALIASES[normalized] ?? normalized
+  const resolved = LANGUAGE_ALIASES[normalized] ?? normalized
+  if (isSupportedLanguage(resolved)) {
+    return resolved
+  }
+
+  return isSupportedLanguage(fallback) ? fallback : 'en'
 }
 
 export function normalizePreferredUserName(value: string | undefined): string | undefined {

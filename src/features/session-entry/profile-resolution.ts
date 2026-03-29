@@ -12,7 +12,7 @@ import {
   ALL_PROFILE_GROUPS,
   CONTROL_PLANE_REQUIRED_PROFILE_FIELDS,
 } from './intake.constants.js'
-import { normalizeStringValue } from './language-resolution.js'
+import { normalizeStringValue } from '../../shared/bootstrap-profile.js'
 import type { ControlPlaneProfileGroupId, ControlPlaneProfileFieldId } from '../../control-plane/control-plane-types.js'
 
 /**

@@ -1,7 +1,7 @@
 import type { ControlPlaneProfileGroupId } from '../../control-plane/control-plane-types.js'
 import type { CommandExecutionInput } from '../../commands/slash-command/command-types.js'
 import { ALL_PROFILE_GROUPS } from './intake.constants.js'
-import { normalizeStringValue } from './language-resolution.js'
+import { normalizeStringValue } from '../../shared/bootstrap-profile.js'
 
 /**
  * Checks if any of the requested groups have explicit delta in the input.

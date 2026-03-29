@@ -29,10 +29,11 @@ export type {
 } from './intake.types.js'
 
 export {
-  normalizeStringValue,
   isVietnameseMessage,
   resolveDisplayLanguage,
 } from './language-resolution.js'
+
+export { normalizeStringValue } from '../../shared/bootstrap-profile.js'
 
 export {
   resolvePresetGroups,

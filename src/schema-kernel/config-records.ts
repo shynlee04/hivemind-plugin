@@ -24,16 +24,23 @@ export const OperationMode = z.enum([
   'yolo',                   // High autonomy, enforce all hierarchy
 ])
 
+/** Supported language codes — Zod schema (internal) */
+const _supportedLanguageSchema = z.enum(['en', 'vi', 'zh', 'ko', 'ja'])
+
+/** Supported language codes — plain enum object for Object.values() compatibility */
+export const SupportedLanguage = _supportedLanguageSchema.enum
+
 /** User communication and governance preferences */
 export const UserPreferences = z.object({
-  communication_language: z.string().default('en'),
-  document_language: z.string().default('en'),
+  communication_language: _supportedLanguageSchema.default('en'),
+  document_language: _supportedLanguageSchema.default('en'),
   expert_level: UserExpertLevel.default('intermediate'),
   governance_level: GovernanceLevel.default('standard'),
   operation_mode: OperationMode.default('iterative-interactive'),
 })
 
 // Derived types
+export type SupportedLanguage = z.infer<typeof SupportedLanguage>
 export type UserExpertLevel = z.infer<typeof UserExpertLevel>
 export type GovernanceLevel = z.infer<typeof GovernanceLevel>
 export type OperationMode = z.infer<typeof OperationMode>

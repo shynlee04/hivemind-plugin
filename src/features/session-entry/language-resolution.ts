@@ -1,15 +1,32 @@
-import { normalizeProfileLanguage } from '../../shared/bootstrap-profile.js'
+import {
+  normalizeProfileLanguage,
+  normalizePreferredUserName as normalizeStringValue,
+} from '../../shared/bootstrap-profile.js'
 import type { RuntimeBindingsSnapshot } from '../../shared/runtime-attachment.js'
 import type { CommandExecutionInput } from '../../commands/slash-command/command-types.js'
 
-/**
- * Normalizes a string value, returning undefined for empty/whitespace-only strings.
- * @param value - The value to normalize
- * @returns The trimmed value if non-empty, otherwise undefined
- */
-export function normalizeStringValue(value: string | undefined): string | undefined {
-  const trimmed = value?.trim()
-  return trimmed && trimmed.length > 0 ? trimmed : undefined
+export { normalizeStringValue }
+
+export type DisplayLanguage = 'en' | 'vi' | 'zh' | 'ko' | 'ja'
+
+function toDisplayLanguage(value: string | undefined): DisplayLanguage | undefined {
+  const normalized = normalizeStringValue(value)
+  if (!normalized) {
+    return undefined
+  }
+
+  const profileLanguage = normalizeProfileLanguage(normalized, 'en')
+
+  switch (profileLanguage) {
+    case 'en':
+    case 'vi':
+    case 'zh':
+    case 'ko':
+    case 'ja':
+      return profileLanguage
+    default:
+      return undefined
+  }
 }
 
 /**
@@ -31,12 +48,56 @@ export function isVietnameseMessage(message: string | undefined): boolean {
 }
 
 /**
+ * Detects whether a message contains Chinese characters from the CJK Unified Ideographs block.
+ * @param message - The message to analyze
+ * @returns True when the message includes characters in the U+4E00–U+9FFF range
+ */
+export function isChineseMessage(message: string | undefined): boolean {
+  const trimmed = normalizeStringValue(message)
+  if (!trimmed) {
+    return false
+  }
+
+  return /[\u4E00-\u9FFF]/.test(trimmed)
+}
+
+/**
+ * Detects whether a message contains Korean Hangul syllables.
+ * @param message - The message to analyze
+ * @returns True when the message includes characters in the U+AC00–U+D7AF range
+ */
+export function isKoreanMessage(message: string | undefined): boolean {
+  const trimmed = normalizeStringValue(message)
+  if (!trimmed) {
+    return false
+  }
+
+  return /[\uAC00-\uD7AF]/.test(trimmed)
+}
+
+/**
+ * Detects whether a message contains Japanese kana characters.
+ * @param message - The message to analyze
+ * @returns True when the message includes Hiragana (U+3040–U+309F) or Katakana (U+30A0–U+30FF)
+ */
+export function isJapaneseMessage(message: string | undefined): boolean {
+  const trimmed = normalizeStringValue(message)
+  if (!trimmed) {
+    return false
+  }
+
+  return /[\u3040-\u309F\u30A0-\u30FF]/.test(trimmed)
+}
+
+/**
  * Resolves the display language for questionnaire rendering.
- * Priority: explicit CLI flag > detected Vietnamese > runtime snapshot > 'en'
+ * Supports the following display languages: en, vi, zh, ko, ja.
+ * Priority: explicit CLI flag > detected Vietnamese > detected Japanese >
+ * detected Korean > detected Chinese > runtime snapshot > fallback 'en'.
  * @param userMessage - The user's input message for language detection
  * @param snapshot - Runtime bindings snapshot for fallback language
  * @param input - Full command execution input with explicit language flag
- * @returns Resolved language code ('en' or 'vi')
+ * @returns Resolved display language code
  * @example
  * const lang = resolveDisplayLanguage('xin chào', undefined, { language: 'vi' }) // 'vi'
  */
@@ -44,8 +105,8 @@ export function resolveDisplayLanguage(
   userMessage: string | undefined,
   snapshot: RuntimeBindingsSnapshot | undefined,
   input: CommandExecutionInput,
-): string {
-  const explicitLanguage = normalizeProfileLanguage(input.language, '')
+): DisplayLanguage {
+  const explicitLanguage = toDisplayLanguage(input.language)
   if (explicitLanguage) {
     return explicitLanguage
   }
@@ -54,6 +115,17 @@ export function resolveDisplayLanguage(
     return 'vi'
   }
 
-  const fallbackLanguage = normalizeProfileLanguage(snapshot?.language, 'en')
-  return fallbackLanguage || 'en'
+  if (isJapaneseMessage(userMessage)) {
+    return 'ja'
+  }
+
+  if (isKoreanMessage(userMessage)) {
+    return 'ko'
+  }
+
+  if (isChineseMessage(userMessage)) {
+    return 'zh'
+  }
+
+  return toDisplayLanguage(snapshot?.language) ?? 'en'
 }

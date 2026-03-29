@@ -100,7 +100,7 @@ describe('getConfigGroup', () => {
 
 describe('validateConfigUpdate', () => {
   it('accepts valid language value', () => {
-    const result = validateConfigUpdate('language', 'communication_language', 'fr')
+    const result = validateConfigUpdate('language', 'communication_language', 'ja')
     assert.equal(result.status, 'success')
   })
 
@@ -187,28 +187,28 @@ describe('applyConfigUpdate', () => {
 
   it('applies update on top of provided base preferences', () => {
     const base = {
-      communication_language: 'fr',
-      document_language: 'de',
+      communication_language: 'vi',
+      document_language: 'ko',
       expert_level: 'advanced' as const,
       governance_level: 'strict' as const,
       operation_mode: 'yolo' as const,
-    }
-    const result = applyConfigUpdate('language', 'communication_language', 'es', base)
+    } as const
+    const result = applyConfigUpdate('language', 'communication_language', 'ja', base)
     assert.equal(result.status, 'success')
-    assert.equal(result.preferences!.communication_language, 'es')
+    assert.equal(result.preferences!.communication_language, 'ja')
     // other base values preserved
-    assert.equal(result.preferences!.document_language, 'de')
+    assert.equal(result.preferences!.document_language, 'ko')
     assert.equal(result.preferences!.expert_level, 'advanced')
   })
 
   it('rejects invalid value even with base preferences', () => {
     const base = {
-      communication_language: 'fr',
-      document_language: 'de',
+      communication_language: 'vi',
+      document_language: 'ko',
       expert_level: 'advanced' as const,
       governance_level: 'strict' as const,
       operation_mode: 'yolo' as const,
-    }
+    } as const
     const result = applyConfigUpdate('expertise', 'expert_level', 'ninja', base)
     assert.equal(result.status, 'error')
   })
