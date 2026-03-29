@@ -61,6 +61,10 @@ function makeSession(overrides: Partial<SessionV3> = {}): SessionV3 {
   }
 }
 
+function getMarkdownFilePath(sessionsDir: string, session: SessionV3): string {
+  return join(sessionsDir, 'journey-events', `${session.semanticSessionId ?? session.sessionId}.md`)
+}
+
 // ---------------------------------------------------------------------------
 // Test 1: initEventsMarkdown creates events.md with header fields
 // ---------------------------------------------------------------------------
@@ -74,10 +78,13 @@ test('initEventsMarkdown creates events.md with session header fields', async ()
       actors: ['hiveminder', 'hiveq'],
       toolsUsed: ['read', 'bash'],
     }
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
     await initEventsMarkdown(tmpDir, session)
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
+
+    assert.equal(filePath, join(tmpDir, 'journey-events', `${session.semanticSessionId}.md`))
 
     assert.ok(content.includes('# Session: ses_2026-03-26T185316_implementation_hiveminder'),
       'should include semantic session ID in heading')
@@ -107,10 +114,11 @@ test('initEventsMarkdown creates TOC placeholder section', async () => {
   try {
     const { initEventsMarkdown } = await loadMarkdownWriter()
     const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
     await initEventsMarkdown(tmpDir, session)
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Table of Contents'), 'should include TOC heading')
     assert.ok(content.includes('| # | Timestamp | Type | Summary |'),
@@ -126,10 +134,11 @@ test('initEventsMarkdown stores parent session ID when present', async () => {
   try {
     const { initEventsMarkdown } = await loadMarkdownWriter()
     const session = makeSession({ parentSessionId: 'ses_parent_001' })
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
     await initEventsMarkdown(tmpDir, session)
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('**Parent:** ses_parent_001'),
       'should show actual parent ID instead of null')
@@ -147,16 +156,17 @@ test('appendTurnToMarkdown appends user_message turn with correct header', async
   try {
     const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
     const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
     await initEventsMarkdown(tmpDir, session)
-    await appendTurnToMarkdown(tmpDir, {
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 1,
       timestamp: '2026-03-26T11:53:16.525Z',
       type: 'user_message',
       content: 'ok it is going to be a very complex work',
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Turn 1 — User Message'),
       'should include turn header with label')
@@ -174,22 +184,23 @@ test('appendTurnToMarkdown preserves existing content on append', async () => {
   try {
     const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
     const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
     await initEventsMarkdown(tmpDir, session)
-    await appendTurnToMarkdown(tmpDir, {
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 1,
       timestamp: '2026-03-26T11:53:16.525Z',
       type: 'user_message',
       content: 'First message',
     })
-    await appendTurnToMarkdown(tmpDir, {
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 2,
       timestamp: '2026-03-26T11:54:00.000Z',
       type: 'user_message',
       content: 'Second message',
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Turn 1 — User Message'), 'should have turn 1')
     assert.ok(content.includes('## Turn 2 — User Message'), 'should have turn 2')
@@ -208,9 +219,11 @@ test('appendTurnToMarkdown appends assistant_output turn', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendTurnToMarkdown(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 2,
       timestamp: '2026-03-26T11:53:45.112Z',
       type: 'assistant_output',
@@ -218,7 +231,7 @@ test('appendTurnToMarkdown appends assistant_output turn', async () => {
       metadata: { model: 'claude-sonnet-4-20250514', duration: '1523ms' },
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Turn 2 — Assistant Output'),
       'should include assistant output header')
@@ -241,9 +254,11 @@ test('appendTurnToMarkdown appends tool_call turn with tool name and result only
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendTurnToMarkdown(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 3,
       timestamp: '2026-03-26T11:54:02.334Z',
       type: 'tool_call',
@@ -251,7 +266,7 @@ test('appendTurnToMarkdown appends tool_call turn with tool name and result only
       metadata: { tool: 'hivemind_task', action: 'create' },
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Turn 3 — Tool Invocation'),
       'should include tool invocation header')
@@ -270,9 +285,11 @@ test('appendTurnToMarkdown tool_call does not dump full JSON', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendTurnToMarkdown(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 1,
       timestamp: '2026-03-26T12:00:00.000Z',
       type: 'tool_call',
@@ -280,7 +297,7 @@ test('appendTurnToMarkdown tool_call does not dump full JSON', async () => {
       metadata: { tool: 'some_tool', action: 'run' },
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     // Should not contain JSON braces in the turn block
     const toolTurnStart = content.indexOf('## Turn 1 — Tool Invocation')
@@ -302,28 +319,30 @@ test('generateTOC builds TOC from turn headers in events.md', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendTurnToMarkdown, generateTOC } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendTurnToMarkdown(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 1,
       timestamp: '2026-03-26T11:53:16Z',
       type: 'user_message',
       content: 'User asks about session errors and wants to debug them',
     })
-    await appendTurnToMarkdown(tmpDir, {
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 2,
       timestamp: '2026-03-26T11:53:45Z',
       type: 'assistant_output',
       content: 'Resolved import issue by adding missing export',
     })
-    await appendTurnToMarkdown(tmpDir, {
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 3,
       timestamp: '2026-03-26T12:01:22Z',
       type: 'delegation',
       content: 'Delegated to code-skeptic for review of auth module',
     })
 
-    await generateTOC(tmpDir, makeSession({
+    await generateTOC(filePath, makeSession({
       toc: [
         { turnNumber: 1, timestamp: '2026-03-26T11:53:16Z', type: 'user_message', summary: 'User asks about session errors...' },
         { turnNumber: 2, timestamp: '2026-03-26T11:53:45Z', type: 'assistant_output', summary: 'Resolved import issue...' },
@@ -331,7 +350,7 @@ test('generateTOC builds TOC from turn headers in events.md', async () => {
       ],
     }))
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('| 1 | 2026-03-26T11:53:16Z | User Message | User asks about session errors... |'),
       'should include TOC row for turn 1')
@@ -348,9 +367,11 @@ test('generateTOC replaces previous TOC entries', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendTurnToMarkdown, generateTOC } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendTurnToMarkdown(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 1,
       timestamp: '2026-03-26T11:53:16Z',
       type: 'user_message',
@@ -358,14 +379,14 @@ test('generateTOC replaces previous TOC entries', async () => {
     })
 
     // First TOC generation
-    await generateTOC(tmpDir, makeSession({
+    await generateTOC(filePath, makeSession({
       toc: [
         { turnNumber: 1, timestamp: '2026-03-26T11:53:16Z', type: 'user_message', summary: 'First message' },
       ],
     }))
 
     // Add more turns
-    await appendTurnToMarkdown(tmpDir, {
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 2,
       timestamp: '2026-03-26T11:54:00Z',
       type: 'assistant_output',
@@ -373,14 +394,14 @@ test('generateTOC replaces previous TOC entries', async () => {
     })
 
     // Re-generate TOC
-    await generateTOC(tmpDir, makeSession({
+    await generateTOC(filePath, makeSession({
       toc: [
         { turnNumber: 1, timestamp: '2026-03-26T11:53:16Z', type: 'user_message', summary: 'First message' },
         { turnNumber: 2, timestamp: '2026-03-26T11:54:00Z', type: 'assistant_output', summary: 'Second response' },
       ],
     }))
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('| 1 |'), 'should have turn 1 in TOC')
     assert.ok(content.includes('| 2 |'), 'should have turn 2 in TOC')
@@ -405,15 +426,17 @@ test('appendDiagnosticToMarkdown adds diagnostic section with entry', async () =
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendDiagnosticToMarkdown } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendDiagnosticToMarkdown(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendDiagnosticToMarkdown(filePath, {
       timestamp: '2026-03-26T11:53:16.525Z',
       level: 'info',
       message: 'turn_complete agent=hiveminder text_len=170',
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Diagnostics'), 'should include Diagnostics heading')
     assert.ok(content.includes('### 2026-03-26T11:53:16.525Z [info]'),
@@ -429,20 +452,22 @@ test('appendDiagnosticToMarkdown appends multiple entries', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendDiagnosticToMarkdown } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendDiagnosticToMarkdown(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendDiagnosticToMarkdown(filePath, {
       timestamp: '2026-03-26T11:53:16.525Z',
       level: 'info',
       message: 'turn_complete agent=hiveminder',
     })
-    await appendDiagnosticToMarkdown(tmpDir, {
+    await appendDiagnosticToMarkdown(filePath, {
       timestamp: '2026-03-26T11:54:02.334Z',
       level: 'error',
       message: 'ENOENT: no such file or directory',
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('### 2026-03-26T11:53:16.525Z [info]'),
       'should include first diagnostic')
@@ -469,9 +494,11 @@ test('appendTurnToMarkdown appends delegation turn', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendTurnToMarkdown(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 4,
       timestamp: '2026-03-26T12:01:22Z',
       type: 'delegation',
@@ -479,7 +506,7 @@ test('appendTurnToMarkdown appends delegation turn', async () => {
       metadata: { delegatedTo: 'code-skeptic', packetId: 'pkt-001' },
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Turn 4 — Delegation'),
       'should include delegation turn header')
@@ -498,16 +525,18 @@ test('appendTurnToMarkdown appends compaction turn', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendTurnToMarkdown(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 5,
       timestamp: '2026-03-26T13:00:00Z',
       type: 'compaction',
       content: 'Compacted 45 messages to 8 messages',
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Turn 5 — Compaction'),
       'should include compaction turn header')
@@ -520,16 +549,18 @@ test('appendTurnToMarkdown appends error turn', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendTurnToMarkdown } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendTurnToMarkdown(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendTurnToMarkdown(filePath, {
       turnNumber: 6,
       timestamp: '2026-03-26T14:00:00Z',
       type: 'error',
       content: 'TypeError: Cannot read properties of undefined',
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Turn 6 — Error'),
       'should include error turn header')
@@ -544,9 +575,11 @@ test('appendToolBatch appends a tool batch table', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendToolBatch } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendToolBatch(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendToolBatch(filePath, {
       turnNumber: 7,
       toolName: 'hivemind_task',
       invocations: [
@@ -555,7 +588,7 @@ test('appendToolBatch appends a tool batch table', async () => {
       ],
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Tool Batch: hivemind_task (Turn 7)'),
       'should include tool batch heading')
@@ -574,16 +607,18 @@ test('appendDelegation appends a delegations section', async () => {
   const tmpDir = await mkdtemp(join(tmpdir(), 'mw-test-'))
   try {
     const { initEventsMarkdown, appendDelegation } = await loadMarkdownWriter()
+    const session = makeSession()
+    const filePath = getMarkdownFilePath(tmpDir, session)
 
-    await initEventsMarkdown(tmpDir, makeSession())
-    await appendDelegation(tmpDir, {
+    await initEventsMarkdown(tmpDir, session)
+    await appendDelegation(filePath, {
       parentSessionId: 'ses_parent_001',
       childSessionId: 'ses_child_001',
       actor: 'hiveminder',
       summary: 'Delegated markdown verification to hiveq',
     })
 
-    const content = await readFile(join(tmpDir, 'events.md'), 'utf8')
+    const content = await readFile(filePath, 'utf8')
 
     assert.ok(content.includes('## Delegations'), 'should include delegations section heading')
     assert.ok(content.includes('### ses_parent_001 -> ses_child_001'),

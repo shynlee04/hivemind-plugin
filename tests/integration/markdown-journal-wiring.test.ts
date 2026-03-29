@@ -12,7 +12,7 @@ function getJourneyEventJsonPath(projectRoot: string, sessionId: string): string
 }
 
 function getJourneyEventMarkdownPath(projectRoot: string, sessionId: string): string {
-  return join(projectRoot, '.hivemind', 'sessions', 'journey-events', sessionId, 'events.md')
+  return join(projectRoot, '.hivemind', 'sessions', 'journey-events', `${sessionId}.md`)
 }
 
 function getFlatSessionJsonPath(projectRoot: string, sessionId: string): string {

@@ -68,10 +68,10 @@ export async function handleChatMessage(
   })
 
   const markdownSession = await loadSession(sessionsDir, semanticSessionId)
-  const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+  const markdownFilePath = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
 
-  if (markdownSessionDir) {
-    await appendTurnToMarkdown(markdownSessionDir, {
+  if (markdownFilePath) {
+    await appendTurnToMarkdown(markdownFilePath, {
       turnNumber,
       timestamp: new Date().toISOString(),
       type: 'user_message',

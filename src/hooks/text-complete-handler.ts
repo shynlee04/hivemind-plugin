@@ -106,10 +106,10 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
       })
 
       const markdownSession = await loadSession(sessionsDir, consolidatedSessionId)
-      const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+      const markdownFilePath = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
 
-      if (markdownSessionDir) {
-        await appendTurnToMarkdown(markdownSessionDir, {
+      if (markdownFilePath) {
+        await appendTurnToMarkdown(markdownFilePath, {
           turnNumber: currentTurnNumber,
           timestamp,
           type: 'assistant_output',
@@ -199,10 +199,10 @@ export async function handleTextComplete(
   })
 
   const markdownSession = await loadSession(sessionsDir, semanticSessionId)
-  const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+  const markdownFilePath = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
 
-  if (markdownSessionDir) {
-    await appendTurnToMarkdown(markdownSessionDir, {
+  if (markdownFilePath) {
+    await appendTurnToMarkdown(markdownFilePath, {
       turnNumber,
       timestamp: new Date().toISOString(),
       type: 'assistant_output',

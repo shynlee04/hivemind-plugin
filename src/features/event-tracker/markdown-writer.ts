@@ -10,7 +10,7 @@
 
 import { existsSync } from 'node:fs'
 import { appendFile, mkdir, readFile, writeFile } from 'node:fs/promises'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 
 import type { SessionV2 } from './consolidated-writer.js'
 import type { SessionV3 } from './types.js'
@@ -102,8 +102,8 @@ function formatToolsUsed(session: SessionV3): string {
   return toolsUsed.length > 0 ? toolsUsed.join(', ') : 'none'
 }
 
-export function getJourneyMarkdownSessionDir(sessionsDir: string, sessionId: string): string {
-  return join(sessionsDir, 'journey-events', sessionId)
+export function getJourneyMarkdownPath(sessionsDir: string, sessionId: string): string {
+  return join(sessionsDir, 'journey-events', `${sessionId}.md`)
 }
 
 function toSessionV3(session: SessionV2): SessionV3 {
@@ -138,17 +138,16 @@ export async function ensureEventsMarkdown(
   sessionsDir: string,
   session: SessionV2,
 ): Promise<string> {
-  const sessionDir = getJourneyMarkdownSessionDir(
+  const filePath = getJourneyMarkdownPath(
     sessionsDir,
     session.semanticSessionId ?? session.sessionId,
   )
-  const eventsPath = join(sessionDir, 'events.md')
 
-  if (!existsSync(eventsPath)) {
-    await initEventsMarkdown(sessionDir, toSessionV3(session))
+  if (!existsSync(filePath)) {
+    await initEventsMarkdown(sessionsDir, toSessionV3(session))
   }
 
-  return sessionDir
+  return filePath
 }
 
 /** A single tool batch entry rendered into the journey-events markdown. */
@@ -171,21 +170,19 @@ export interface DelegationRecord {
 // ---------------------------------------------------------------------------
 
 /**
- * Ensures the session directory exists, then appends content to events.md.
+ * Ensures the markdown parent directory exists, then appends content.
  */
-async function appendToEvents(sessionDir: string, content: string): Promise<void> {
-  await mkdir(sessionDir, { recursive: true })
-  const eventsPath = join(sessionDir, 'events.md')
-  await appendFile(eventsPath, content, 'utf8')
+async function appendToEvents(filePath: string, content: string): Promise<void> {
+  await mkdir(dirname(filePath), { recursive: true })
+  await appendFile(filePath, content, 'utf8')
 }
 
 /**
- * Reads the full content of events.md. Returns empty string if missing.
+ * Reads the full content of the markdown file. Returns empty string if missing.
  */
-async function readEvents(sessionDir: string): Promise<string> {
-  const eventsPath = join(sessionDir, 'events.md')
+async function readEvents(filePath: string): Promise<string> {
   try {
-    return await readFile(eventsPath, 'utf8')
+    return await readFile(filePath, 'utf8')
   } catch {
     return ''
   }
@@ -204,10 +201,10 @@ async function readEvents(sessionDir: string): Promise<string> {
  *   Tools Used, Status)
  * - Table of Contents placeholder with column headers
  *
- * @param sessionDir - Absolute path to the session directory
+ * @param sessionsDir - Absolute path to the sessions directory
  * @param session    - SessionV3 record with header metadata
  */
-export async function initEventsMarkdown(sessionDir: string, session: SessionV3): Promise<void> {
+export async function initEventsMarkdown(sessionsDir: string, session: SessionV3): Promise<void> {
   const parentValue = session.parentSessionId ?? 'null'
 
   const header = [
@@ -233,9 +230,13 @@ export async function initEventsMarkdown(sessionDir: string, session: SessionV3)
     '',
   ].join('\n')
 
-  await mkdir(sessionDir, { recursive: true })
-  const eventsPath = join(sessionDir, 'events.md')
-  await writeFile(eventsPath, header, 'utf8')
+  const journeyEventsDir = join(sessionsDir, 'journey-events')
+  await mkdir(journeyEventsDir, { recursive: true })
+  const filePath = getJourneyMarkdownPath(
+    sessionsDir,
+    session.semanticSessionId ?? session.sessionId,
+  )
+  await writeFile(filePath, header, 'utf8')
 }
 
 /**
@@ -247,11 +248,11 @@ export async function initEventsMarkdown(sessionDir: string, session: SessionV3)
  * - Content in a fenced or plain block
  * - Trailing `---` separator
  *
- * @param sessionDir - Absolute path to the session directory
+ * @param filePath - Absolute path to the session markdown file
  * @param turn       - Turn data to append
  */
 export async function appendTurnToMarkdown(
-  sessionDir: string,
+  filePath: string,
   turn: {
     turnNumber: number
     timestamp: string
@@ -300,7 +301,7 @@ export async function appendTurnToMarkdown(
   lines.push('---')
   lines.push('')
 
-  await appendToEvents(sessionDir, lines.join('\n'))
+  await appendToEvents(filePath, lines.join('\n'))
 }
 
 /**
@@ -311,11 +312,11 @@ export async function appendTurnToMarkdown(
  * replaces it with the new TOC rows from `session.toc`, and writes the
  * updated content back.
  *
- * @param sessionDir - Absolute path to the session directory
+ * @param filePath - Absolute path to the session markdown file
  * @param session    - SessionV3 record whose `toc` entries drive the TOC
  */
-export async function generateTOC(sessionDir: string, session: SessionV3): Promise<void> {
-  const content = await readEvents(sessionDir)
+export async function generateTOC(filePath: string, session: SessionV3): Promise<void> {
+  const content = await readEvents(filePath)
   if (!content) return
 
   const headerLines = [
@@ -363,8 +364,7 @@ export async function generateTOC(sessionDir: string, session: SessionV3): Promi
   const afterSeparator = content.slice(separatorIdx)
   const newContent = headerLines.join('\n') + '\n' + tocRows + afterSeparator
 
-  const eventsPath = join(sessionDir, 'events.md')
-  await writeFile(eventsPath, newContent, 'utf8')
+  await writeFile(filePath, newContent, 'utf8')
 }
 
 /**
@@ -373,10 +373,10 @@ export async function generateTOC(sessionDir: string, session: SessionV3): Promi
  * Renders the batch as a markdown table with action/result rows grouped under a
  * tool-specific heading.
  *
- * @param sessionDir - Absolute path to the session directory
+ * @param filePath - Absolute path to the session markdown file
  * @param batch      - Tool batch data for a single turn/tool pair
  */
-export async function appendToolBatch(sessionDir: string, batch: ToolBatchEntry): Promise<void> {
+export async function appendToolBatch(filePath: string, batch: ToolBatchEntry): Promise<void> {
   const lines = [
     `## Tool Batch: ${batch.toolName} (Turn ${batch.turnNumber})`,
     '',
@@ -391,7 +391,7 @@ export async function appendToolBatch(sessionDir: string, batch: ToolBatchEntry)
     '',
   ]
 
-  await appendToEvents(sessionDir, lines.join('\n'))
+  await appendToEvents(filePath, lines.join('\n'))
 }
 
 /**
@@ -400,14 +400,14 @@ export async function appendToolBatch(sessionDir: string, batch: ToolBatchEntry)
  * Creates the section on first use, then appends a delegation block describing
  * the parent/child relationship and summary.
  *
- * @param sessionDir  - Absolute path to the session directory
+ * @param filePath    - Absolute path to the session markdown file
  * @param delegation  - Delegation metadata to append
  */
 export async function appendDelegation(
-  sessionDir: string,
+  filePath: string,
   delegation: DelegationRecord,
 ): Promise<void> {
-  const content = await readEvents(sessionDir)
+  const content = await readEvents(filePath)
   const lines: string[] = []
 
   if (!content.includes('## Delegations')) {
@@ -422,7 +422,7 @@ export async function appendDelegation(
   lines.push('---')
   lines.push('')
 
-  await appendToEvents(sessionDir, lines.join('\n'))
+  await appendToEvents(filePath, lines.join('\n'))
 }
 
 /**
@@ -431,14 +431,14 @@ export async function appendDelegation(
  * If the Diagnostics section does not exist, it is created with table headers.
  * Each entry is appended as a row in the diagnostics table.
  *
- * @param sessionDir - Absolute path to the session directory
+ * @param filePath - Absolute path to the session markdown file
  * @param entry      - Diagnostic data (timestamp, level, message)
  */
 export async function appendDiagnosticToMarkdown(
-  sessionDir: string,
+  filePath: string,
   entry: { timestamp: string; level: string; message: string },
 ): Promise<void> {
-  const content = await readEvents(sessionDir)
+  const content = await readEvents(filePath)
   const lines: string[] = []
 
   if (!content.includes('## Diagnostics')) {
@@ -452,5 +452,5 @@ export async function appendDiagnosticToMarkdown(
   lines.push('---')
   lines.push('')
 
-  await appendToEvents(sessionDir, lines.join('\n'))
+  await appendToEvents(filePath, lines.join('\n'))
 }

@@ -74,10 +74,10 @@ export function createCompactionJournalHandler(deps: CompactionJournalHandlerDep
       await incrementCounter(sessionsDir, consolidatedSessionId, 'compactionCount', 1)
 
       const markdownSession = await loadSession(sessionsDir, consolidatedSessionId)
-      const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+      const markdownFilePath = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
 
-      if (markdownSessionDir) {
-        await appendTurnToMarkdown(markdownSessionDir, {
+      if (markdownFilePath) {
+        await appendTurnToMarkdown(markdownFilePath, {
           turnNumber: markdownSession.turns.length + markdownSession.events.length,
           timestamp,
           type: 'compaction',
@@ -134,10 +134,10 @@ export async function handleCompaction(
   await incrementCounter(sessionsDir, semanticSessionId, 'compactionCount', 1)
 
   const markdownSession = await loadSession(sessionsDir, semanticSessionId)
-  const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+  const markdownFilePath = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
 
-  if (markdownSessionDir) {
-    await appendTurnToMarkdown(markdownSessionDir, {
+  if (markdownFilePath) {
+    await appendTurnToMarkdown(markdownFilePath, {
       turnNumber: markdownSession.turns.length + markdownSession.events.length,
       timestamp: new Date().toISOString(),
       type: 'compaction',

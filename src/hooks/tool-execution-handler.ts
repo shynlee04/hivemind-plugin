@@ -69,10 +69,10 @@ export async function handleToolExecution(
   }
 
   const markdownSession = await loadSession(sessionsDir, semanticSessionId)
-  const markdownSessionDir = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
+  const markdownFilePath = await ensureEventsMarkdown(sessionsDir, markdownSession).catch(() => '')
 
-  if (markdownSessionDir) {
-    await appendTurnToMarkdown(markdownSessionDir, {
+  if (markdownFilePath) {
+    await appendTurnToMarkdown(markdownFilePath, {
       turnNumber: markdownSession.turns.length + markdownSession.events.length,
       timestamp: new Date().toISOString(),
       type: 'tool_call',

@@ -88,9 +88,9 @@ async function appendLifecycleTurn(
   },
 ): Promise<void> {
   const session = await loadSession(sessionsDir, sessionId)
-  const sessionDir = await ensureEventsMarkdown(sessionsDir, session)
+  const filePath = await ensureEventsMarkdown(sessionsDir, session)
 
-  await appendTurnToMarkdown(sessionDir, {
+  await appendTurnToMarkdown(filePath, {
     turnNumber: session.turns.length + session.events.length,
     timestamp: turn.timestamp,
     type: turn.type,
@@ -108,9 +108,9 @@ async function appendLifecycleDiagnostic(
   },
 ): Promise<void> {
   const session = await loadSession(sessionsDir, sessionId)
-  const sessionDir = await ensureEventsMarkdown(sessionsDir, session)
+  const filePath = await ensureEventsMarkdown(sessionsDir, session)
 
-  await appendDiagnosticToMarkdown(sessionDir, diagnostic)
+  await appendDiagnosticToMarkdown(filePath, diagnostic)
 }
 
 async function linkParentChildSessions(
