@@ -1,0 +1,72 @@
+{
+  "packet_id": "packet-2026-03-29-example",
+  "parent_packet_id": null,
+  "investigation_id": "inv-delegation-2026-03-29",
+  "target_agent": "hivexplorer",
+  "mode": "research",
+  "execution_mode": "parallel",
+  "activity_type": "investigation",
+  "phase_type": "expansion",
+  "scope": {
+    "question": "Map packet validation requirements for delegation returns.",
+    "in_scope": [
+      ".developing-skills/refactored-skills/use-hivemind-delegation/"
+    ],
+    "out_of_scope": [
+      "src/",
+      ".opencode/"
+    ],
+    "bounded_reason": "One skill package, one return-schema concern."
+  },
+  "context": {
+    "summary": "Parent packet is building structured delegation references and templates.",
+    "inputs": [
+      ".hivemind/activity/plans/substantive-expansion-plan-2026-03-29.md"
+    ],
+    "assumptions": [
+      "Existing SKILL.md content remains authoritative for older sections."
+    ]
+  },
+  "constraints": {
+    "mutation_policy": "read-only",
+    "max_files": 20,
+    "max_summary_items": 5,
+    "forbidden": [
+      "Unbounded repo scan",
+      "Writing outside delegated scope"
+    ]
+  },
+  "expected_return": {
+    "status_values": [
+      "complete",
+      "partial",
+      "blocked"
+    ],
+    "required_fields": [
+      "status",
+      "summary",
+      "evidence",
+      "blocked_routes",
+      "recommended_next",
+      "_meta"
+    ],
+    "evidence_schema": {
+      "claim": "string",
+      "evidence_quote": "string",
+      "source_url": "string",
+      "source_title": "string",
+      "confidence": "number(0..1)"
+    },
+    "artifacts": [
+      "Optional output paths for large findings"
+    ]
+  },
+  "output_path": ".hivemind/activity/delegation/packet-2026-03-29-example-return.json",
+  "depends_on": [],
+  "delta_query": null,
+  "_meta": {
+    "created_at": "2026-03-29T12:00:00Z",
+    "updated_at": "2026-03-29T12:00:00Z",
+    "producer": "hiveminder"
+  }
+}

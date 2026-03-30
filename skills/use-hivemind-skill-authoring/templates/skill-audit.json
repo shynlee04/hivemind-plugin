@@ -1,0 +1,15 @@
+{
+  "skill": "",
+  "status": "pending",
+  "checks": {
+    "frontmatter": false,
+    "trigger_phrases": false,
+    "tool_examples": false,
+    "decision_tree": false,
+    "references_exist": false,
+    "templates_exist": false,
+    "activity_output": false
+  },
+  "findings": [],
+  "follow_up": []
+}

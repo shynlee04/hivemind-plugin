@@ -1,11 +1,30 @@
 ---
 name: hivemind-codemap
-description: Use when detox or restoration work needs whole-codebase mapping, seam discovery, high-level to low-level scan passes, or explicit concern slicing before refactor.
+description: Whole-codebase mapping for detox or restoration — seam discovery, multi-layer scan passes, and concern slicing before refactor.
+parent: use-hivemind
 ---
 
 # hivemind-codemap
 
 This is the deep codemap branch family for `use-hivemind`.
+
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Use This For](#use-this-for)
+- [Preconditions](#preconditions)
+- [Do Not Use This For](#do-not-use-this-for)
+- [Scan Levels](#scan-levels)
+- [Tool Modes](#tool-modes)
+- [Core Process](#core-process)
+- [Delegation Loop](#delegation-loop)
+- [Reusable Codemap Techniques](#reusable-codemap-techniques)
+- [Bash Scan Helper](#bash-scan-helper)
+- [Iterative Output Storage](#iterative-output-storage)
+- [Delegation Integration](#delegation-integration)
+- [Orchestrator Integration](#orchestrator-integration)
+- [Outputs](#outputs)
+- [Bundled Resources](#bundled-resources)
 
 ## Purpose
 - map the codebase before refactor strategy
@@ -166,6 +185,39 @@ If the orchestrator catches itself doing multi-file reads or pattern matching, i
 - optional repomix extraction report
 - bash scan helper JSON outputs (per command)
 
+## OpenCode Tool Matrix
+
+| Mapping Need | Preferred Tool | Why | Fallback |
+| --- | --- | --- | --- |
+| discover candidate files | `glob` | fast file discovery | `list` |
+| scan names or call sites | `grep` | cheap cross-file search | `repomix_grep_repomix_output` |
+| inspect specific seams | `read` | exact local context | `repomix_read_repomix_output` |
+| trace symbol ownership | `lsp.goToDefinition` / `lsp.findReferences` | semantic proof | `grep` |
+| inspect a remote public repo | `repomix_pack_remote_repository` | whole-repo packing | `deepwiki_read_wiki_structure` |
+
+## Concrete Bash Examples
+
+```bash
+git diff --stat HEAD~1..HEAD
+npx tsc --noEmit 2>&1 | head -10
+npm test -- --runInBand 2>&1 | head -20
+```
+
+## LSP and Remote Repo Decision Tree
+
+1. **IF** the project has a working language server, **THEN** use `lsp.documentSymbol` and `lsp.findReferences` before regex search.
+2. **IF** LSP is unavailable, **THEN** fall back to `glob` + `grep` + targeted `read`.
+3. **IF** the repo is remote-only or too large for local scanning, **THEN** use `repomix_pack_remote_repository` or `deepwiki_read_wiki_structure`.
+4. **IF** the scan must show call hierarchy evidence, **THEN** load `references/lsp-code-mapping.md` before summarizing results.
+
+## Sibling Skills
+
+| Skill | Relationship |
+|-------|-------------|
+| `use-hivemind-delegation` | Delegation protocol for scan dispatch |
+| `hivemind-synthesis` | Codebase investigation — extends scan mechanics with Repomix + MCP tool chain |
+| `hivemind-gatekeeping` | Scan results pass through gate checks |
+
 ## Bundled Resources
 
 | Resource | Path | Purpose |
@@ -183,3 +235,12 @@ If the orchestrator catches itself doing multi-file reads or pattern matching, i
 | Synthesis Report | `templates/codemap-synthesis-report.md` | Template for scan result synthesis |
 | Repomix Report | `templates/repomix-extraction-report.md` | Template for repomix extraction results |
 | Direct Invocation | `tests/direct-invocation.md` | Test scenario for direct skill invocation |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

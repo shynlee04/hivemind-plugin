@@ -1,6 +1,7 @@
 ---
 name: hivemind-refactor
 description: Refactor methodology. Smallest safe change. Behavior preservation is non-negotiable. Assess, plan, execute, verify — in that order.
+parent: use-hivemind
 ---
 
 <!-- LOAD-POSITION
@@ -21,6 +22,40 @@ prerequisites: use-hivemind-delegation
 | Conflict | None — loads alongside any domain skill |
 
 # hivemind-refactor
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When You Need This](#when-you-need-this)
+- [The Refactor Loop](#the-refactor-loop)
+- [Phase 1: ASSESS](#phase-1-assess)
+  - [What You Must Identify](#what-you-must-identify)
+  - [Smell Classification](#smell-classification)
+  - [Evidence You Must Return](#evidence-you-must-return)
+- [Phase 2: PLAN](#phase-2-plan)
+  - [Plan Rules](#plan-rules)
+  - [Smallest Safe Change](#smallest-safe-change)
+  - [Plan Output](#plan-output)
+- [Phase 3: EXECUTE](#phase-3-execute)
+  - [Execution Rules](#execution-rules)
+  - [What "One Change" Means](#what-one-change-means)
+- [Phase 4: VERIFY](#phase-4-verify)
+  - [Verification Gates](#verification-gates)
+  - [Behavior Preservation Proof](#behavior-preservation-proof)
+- [Refactor Techniques](#refactor-techniques)
+- [Rollback Protocol](#rollback-protocol)
+  - [When To Roll Back](#when-to-roll-back)
+  - [Rollback Command](#rollback-command)
+  - [The Revert-First Rule](#the-revert-first-rule)
+- [Code Review Integration](#code-review-integration)
+  - [Review Dispatch Triggers](#review-dispatch-triggers)
+  - [Review Checklist Usage](#review-checklist-usage)
+  - [Multi-Reviewer Dispatch](#multi-reviewer-dispatch)
+- [Anti-Patterns](#anti-patterns)
+- [Sibling Skills](#sibling-skills)
+- [Conditional Loading](#conditional-loading)
+- [Bundled Resources](#bundled-resources)
+- [Independence Rules](#independence-rules)
 
 **Refactoring is not rewriting. Rewriting changes behavior. Refactoring preserves it. If you cannot prove behavior is preserved, you are not refactoring — you are guessing.**
 
@@ -237,6 +272,26 @@ When a test breaks, your first instinct will be to fix the test or fix the code 
 
 Fix-forward is how refactors become rewrites. Revert-first is how refactors stay safe.
 
+## Code Review Integration
+
+Refactoring and code review are complementary. After the VERIFY phase, optional review dispatch can validate the refactor from multiple dimensions.
+
+### Review Dispatch Triggers
+
+| Trigger | When | Load |
+|---------|------|------|
+| High-risk refactor | Blast radius >5 files | `code-review-checklist.md` + `reviewer-dimensions.md` |
+| Severity calibration needed | Mixed P0-P3 findings | `severity-calibration.md` |
+| Structured feedback required | PR-style review needed | `review-comment-template.md` |
+
+### Review Checklist Usage
+
+During VERIFY phase, optionally run the multi-dimensional review checklist from `references/code-review-checklist.md`. Each dimension (correctness, security, performance, readability, architecture, testing) provides pass/fail criteria.
+
+### Multi-Reviewer Dispatch
+
+When review spans multiple dimensions, dispatch separate agents per dimension using `references/reviewer-dimensions.md`. Each agent owns one dimension. No overlaps.
+
 ## Anti-Patterns
 
 **These are not theoretical. Every one of these has shipped. Every one caused pain.**
@@ -263,14 +318,28 @@ Fix-forward is how refactors become rewrites. Revert-first is how refactors stay
 | `hivemind-codemap` | For whole-codebase assessment before large refactors |
 | `hivemind-patterns` | Architecture pattern reference for refactor decisions |
 
+## Conditional Loading
+
+| Condition | Load Reference |
+|-----------|---------------|
+| Smell type is Bloaters | `code-smell-taxonomy.md` |
+| Smell type is Coupling | `refactor-techniques.md` |
+| Review needed after refactor | `code-review-checklist.md` |
+| Severity calibration needed | `severity-calibration.md` |
+| Multi-agent review dispatch | `reviewer-dimensions.md` |
+
 ## Bundled Resources
 
 | Resource | Path | Purpose |
 |----------|------|---------|
+| Code Review Checklist | `references/code-review-checklist.md` | Multi-dimensional review checklist (50+ items) |
 | Code Review Reception | `references/code-review-reception.md` | How to receive and process code review feedback |
 | Code Review Request | `references/code-review-request.md` | How to request effective code reviews |
 | Code Smell Taxonomy | `references/code-smell-taxonomy.md` | Classification of code smells and their fixes |
 | Refactor Techniques | `references/refactor-techniques.md` | Catalog of refactoring techniques |
+| Review Comment Template | `references/review-comment-template.md` | Structured review comment format |
+| Reviewer Dimensions | `references/reviewer-dimensions.md` | Multi-agent review dimension allocation |
+| Severity Calibration | `references/severity-calibration.md` | P0-P3 severity scoring framework |
 | Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
 | Code Reviewer Prompt | `templates/code-reviewer-prompt.md` | Template for code review prompts |
 | Refactor Checklist | `templates/refactor-checklist.md` | Template for refactor verification checklist |
@@ -282,3 +351,110 @@ Fix-forward is how refactors become rewrites. Revert-first is how refactors stay
 - It provides methodology, not delegation mechanics — delegation packets come from the delegation skill
 - Refactor artifacts are stored in `{project}/.hivemind/activity/refactor/{session_id}/`
 - This skill composes with `hivemind-gatekeeping` for multi-iteration refactor loops
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.
+
+## OpenCode Tool Matrix for Refactoring
+
+| Task | Primary Tool | Why | Fallback |
+|---|---|---|---|
+| declaration lookup | `lsp goToDefinition` | semantic symbol jump | `grep` + `read` |
+| impact analysis | `lsp findReferences` | full caller list before rename/move | `grep` |
+| structure scan | `lsp documentSymbol` | file/class outline for seams | `read` |
+| dead code check | `lsp prepareCallHierarchy` + `incomingCalls` | inbound call graph | `grep` |
+| pattern sweep | `grep` | fast broad smell detection | `read` |
+| targeted inspection | `read` | confirm nearby logic and comments | none |
+| code change | `edit` / `patch` | precise refactor updates | `write` for new files |
+| verification | `bash` | `npx tsc --noEmit`, `npm test`, `npm run lint`, `npm run build` | none |
+
+Prefer semantic tools first. Use `grep` when the symbol name is uncertain or LSP is unavailable.
+
+## LSP Integration for Refactoring
+
+Enable the LSP tool before relying on symbol-aware workflows. Use it for semantic refactors, not just text edits.
+
+1. Use `goToDefinition` before rename or move work to confirm the authority declaration.
+2. Use `findReferences` before edits to measure the blast radius.
+3. Use `documentSymbol` to pick extract seams and spot oversized files.
+4. Use `prepareCallHierarchy` plus `incomingCalls` to detect orphaned code before delete or inline work.
+5. Re-run `findReferences` after the refactor to confirm stale references are gone.
+
+Reference `references/lsp-refactor-workflows.md` for the full sequences and JSON examples.
+
+## Code Review Checklist Reference
+
+Load `references/code-review-checklist.md` when:
+
+- the refactor crosses more than one file
+- a rename or move changes public or shared symbols
+- the plan touches inheritance, interfaces, or conditional dispatch
+- the verification gates pass but reviewer confidence is still low
+
+Use the checklist to bind each review question to a tool, expected output, and pass condition.
+
+## Bash Examples (5)
+
+```bash
+npx tsc --noEmit 2>&1
+```
+
+```bash
+npm test 2>&1 | tail -5
+```
+
+```bash
+git diff --stat
+```
+
+```bash
+git checkout -- src/orders/service.ts tests/orders/service.test.ts
+```
+
+```text
+lsp { "operation": "findReferences", "filePath": "src/orders/service.ts", "position": { "line": 42, "character": 14 } }
+```
+
+Use these examples exactly as review probes: type safety, regression, scope summary, rollback, and reference mapping.
+
+## Decision Tree: Refactor Technique Selection
+
+| If the smell is... | Choose... | Confirm with... |
+|---|---|---|
+| one function doing multiple jobs | Extract Function | `lsp documentSymbol` |
+| wrapper logic adding no clarity | Inline | `lsp findReferences` |
+| logic living with the wrong owner | Move | `lsp goToDefinition` |
+| vague or misleading naming | Rename | `lsp findReferences` |
+| subclass adds no real behavior | Collapse Hierarchy | `lsp documentSymbol` |
+| consumers need a smaller contract | Extract Interface | `grep` + `read` |
+| numeric/string literal hides policy | Replace Magic Number | `grep` |
+| too many related positional args | Introduce Parameter Object | `read` |
+| type switch keeps growing | Replace Conditional with Polymorphism | `grep` + `npm test` |
+
+If `incomingCalls` returns zero and exports are not consumed, treat the symbol as a dead-code candidate before deleting it.
+
+## Cross-Skill Chaining
+
+- Load `hivemind-gatekeeping` when the refactor needs staged verification loops or multi-pass review.
+- Load `use-hivemind-tdd` if the refactor reveals missing safety tests and behavior must be locked before structural change.
+- Load `hivemind-codemap` when the blast radius is uncertain across the codebase.
+- Use `references/refactor-techniques-catalog.md` and `references/lsp-refactor-workflows.md` as the detailed follow-on resources.
+
+## Metrics & Verification
+
+Capture these metrics for every refactor session:
+
+- pre/post `git diff --stat`
+- reference count delta from `lsp findReferences`
+- type error delta from `npx tsc --noEmit`
+- regression result from `npm test`
+- lint delta from `npm run lint`
+- integration result from `npm run build`
+
+Use `scripts/hm-refactor-verify.sh` to run the verification bundle and emit a rollback command.

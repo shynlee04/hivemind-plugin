@@ -1,0 +1,11 @@
+{
+  "probe_id": "context-freshness-001",
+  "rot_level": "SUSPECT",
+  "sources_checked": [
+    "git status",
+    "git log",
+    "continuity.json"
+  ],
+  "findings": [],
+  "recommended_next_action": ""
+}

@@ -1,9 +1,43 @@
 ---
 name: hivemind-gatekeeping
-description: Loop control and synthesis gates. When work needs iteration, this skill governs the loop. Checkpoints, gates, carry-forward compression, cascading failure recovery.
+description: Loop control and synthesis gates — checkpoints, carry-forward compression, cascading failure recovery, and iterative loop governance.
+parent: use-hivemind
 ---
 
 # hivemind-gatekeeping
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When You Need This](#when-you-need-this)
+- [Loop Setup](#loop-setup)
+- [Iteration Rules](#iteration-rules)
+- [Synthesis Gates](#synthesis-gates)
+  - [The Four Checks](#the-four-checks)
+  - [When a Gate Fails](#when-a-gate-fails)
+- [Evidence-Based Gatekeeping](#evidence-based-gatekeeping)
+  - [Claim vs. Evidence](#claim-vs-evidence)
+  - [Excuse Prevention](#excuse-prevention)
+  - [Gate Evidence Record](#gate-evidence-record)
+- [Incremental Gatekeeping](#incremental-gatekeeping)
+  - [Gate Granularity](#gate-granularity)
+  - [File-Level Gate](#file-level-gate)
+  - [Module-Level Gate](#module-level-gate)
+  - [Phase-Level Gate](#phase-level-gate)
+- [Cross-Team Boundary Gatekeeping](#cross-team-boundary-gatekeeping)
+  - [Pre-Commit Boundary Check](#pre-commit-boundary-check)
+  - [Post-Implementation Contract Check](#post-implementation-contract-check)
+  - [Scope Violation Detection](#scope-violation-detection)
+- [Bead Tracking](#bead-tracking)
+- [Integration Verification](#integration-verification)
+- [Review Gates](#review-gates)
+- [Cascading Failure](#cascading-failure)
+  - [Parallel Collapse (>50% Fail)](#parallel-collapse-50-fail)
+  - [Same Failure, 3+ Iterations](#same-failure-3-iterations)
+  - [Decision Matrix](#decision-matrix)
+- [Anti-Patterns](#anti-patterns)
+- [Storage](#storage)
+- [Bundled Resources](#bundled-resources)
 
 ## Load Position
 
@@ -235,6 +269,14 @@ When parallel slices come back, you can't just merge and move on. Verify they ac
 
 If two slices both modify `src/shared/types.ts` and produce incompatible definitions, re-delegate the one that's wrong. Don't re-run both.
 
+## Review Gates
+
+Review gates sit between phases. After a batch completes, before verification begins, a review gate checks output completeness, cross-reference validity, and pattern compliance. Unlike synthesis gates (which control iteration loops), review gates control phase transitions.
+
+For full review gate protocol, see `references/review-gate.md`.
+
+For integration checkpoints that verify parallel batch composition, see `references/integration-checkpoint.md`.
+
 ## Cascading Failure
 
 When things go wrong at scale, you need a plan.
@@ -288,6 +330,35 @@ Loop checkpoints: `{activity}/delegation/{loop_id}-checkpoint.json`
 Gate results: `{activity}/delegation/{loop_id}-gate-{iteration}.json`
 Scan-specific loops: `{activity}/codescan/{pass_id}/loop-checkpoint.json`
 
+## External Verification MCP Matrix
+
+| Verification Need | Preferred MCP Tool | Why |
+| --- | --- | --- |
+| validate library behavior | `context7_query-docs` | current versioned docs |
+| validate public repo patterns | `deepwiki_ask_question` | repository-grounded answers |
+| gather external supporting evidence | `tavily_tavily_search` | current web discovery |
+
+## Cross-Skill Verification Chain
+
+1. `use-hivemind-delegation` dispatches bounded slices.
+2. `hivemind-synthesis` compresses multi-slice findings.
+3. `hivemind-gatekeeping` checks evidence, contradictions, and carry-forward quality.
+4. `hivemind-atomic-commit` is loaded only after gates truly pass and a commit is requested.
+
+## Gate Escalation Decision Tree
+
+1. **IF** a gate lacks command evidence, **THEN** fail the gate immediately.
+2. **IF** one slice fails integration while others pass, **THEN** isolate the failing slice instead of restarting the whole batch.
+3. **IF** the same gate fails repeatedly with no new evidence, **THEN** stop the loop and escalate.
+
+## Sibling Skills
+
+| Skill | Relationship |
+|-------|-------------|
+| `use-hivemind-delegation` | Delegation protocol that triggers this skill |
+| `hivemind-synthesis` | Pre-gatekeeping on synthesized SDK — feeds into synthesis gates |
+| `hivemind-codemap` | Scan results that pass through gate checks |
+
 ## Bundled Resources
 
 | Resource | Purpose |
@@ -301,3 +372,14 @@ Scan-specific loops: `{activity}/codescan/{pass_id}/loop-checkpoint.json`
 | `tests/iterative-loop.md` | Iterative loop scenario with validation |
 | `tests/cascading-failure.md` | Cascading failure scenario with validation |
 | `references/evidence-based-gatekeeping.md` | Evidence requirements for every gate check, excuse prevention |
+| `references/review-gate.md` | Review gate checkpoints between phases |
+| `references/integration-checkpoint.md` | Integration verification for parallel batch completion |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

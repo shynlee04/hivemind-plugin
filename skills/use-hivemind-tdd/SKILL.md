@@ -1,11 +1,33 @@
 ---
 name: use-hivemind-tdd
-description: The TDD domain. Write the test first. Make it fail. Make it pass. Clean it up. Repeat for every phase. No exceptions.
+parent: use-hivemind
+description: TDD lifecycle enforcement — write failing tests first, implement to pass, refactor cleanly. No exceptions.
 ---
 
 # use-hivemind-tdd
 
 You're building something. The test comes first — always. This skill governs the entire TDD lifecycle: from writing the first failing test to claiming completion after the last refactor. It consolidates delegation mechanics, phase-level enforcement, and gate protocol into one place.
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [The TDD Loop](#the-tdd-loop)
+- [Gate 1: RED (Pre-Implementation)](#gate-1-red-pre-implementation)
+- [Gate 2: GREEN (Post-Implementation)](#gate-2-green-post-implementation)
+- [Gate 3: REFACTOR (Post-Cleanup)](#gate-3-refactor-post-cleanup)
+- [Gate 4: Phase Transition](#gate-4-phase-transition)
+- [Gate 5: Completion](#gate-5-completion)
+- [Phase TDD Lifecycle](#phase-tdd-lifecycle)
+- [Test Writing Order](#test-writing-order)
+- [Multi-Phase State Tracking](#multi-phase-state-tracking)
+- [Evidence Format](#evidence-format)
+- [Test Design Techniques](#test-design-techniques)
+- [Quality Model](#quality-model)
+- [Quality Gates](#quality-gates)
+- [Anti-Patterns](#anti-patterns)
+- [Regression Response](#regression-response)
+- [Bundled Resources](#bundled-resources)
+- [Independence Rules](#independence-rules)
 
 ## Load Position
 
@@ -272,6 +294,39 @@ Every gate requires COMMAND OUTPUT as evidence, never claims.
 
 "Tests pass" is a claim. The output of `npm test` is evidence. Always show the evidence.
 
+## Test Design Techniques
+
+Beyond basic unit tests, use structured test design from `references/test-design-techniques.md`:
+- Equivalence Partitioning for input validation (especially Zod schema testing)
+- Boundary Value Analysis for edge cases
+- Decision Tables for complex conditional logic
+- State Transition for lifecycle workflows
+
+## Quality Model
+
+Assess test quality against ISO 25010 from `references/quality-model.md`. Eight characteristics with HiveMind-specific targets:
+- Functional Suitability, Performance, Compatibility, Usability
+- Reliability, Security, Maintainability, Portability
+
+Each quality characteristic is a completion blocker if unchecked.
+
+## Quality Gates
+
+Tests pass at multiple granularity levels from `references/quality-gates.md`:
+- **Unit Gate**: after each function — targeted test passes, types clean
+- **Integration Gate**: after each module — module tests pass, no import errors
+- **E2E Gate**: after each phase — full suite passes, build succeeds
+- **Deployment Gate**: before handoff — all gates pass, lint clean, docs updated
+
+## Risk-Based Testing
+
+Prioritize test effort by risk score from `references/risk-based-testing.md`:
+- Risk = Likelihood × Impact (1-9 scale)
+- Critical (9): exhaustive testing with all techniques
+- High (6): thorough testing with 2+ techniques
+- Medium (3-4): standard coverage
+- Low (1-2): smoke tests only
+
 ## Anti-Patterns
 
 | Anti-Pattern | Excuse | Reality |
@@ -296,6 +351,28 @@ Every gate requires COMMAND OUTPUT as evidence, never claims.
 | Prior phase test breaks during refactor | REVERT refactor. Re-run. Fix if still broken. |
 | Build breaks after green | Green is not truly green. Fix and re-verify. |
 
+## Cross-Skill Chaining
+
+| Current TDD Need | Next Skill | Trigger |
+| --- | --- | --- |
+| requirement ambiguity blocks RED | `hivemind-spec-driven` | acceptance criteria are still unclear |
+| implementation is green and needs commit discipline | `hivemind-atomic-commit` | all gates pass and a commit is requested |
+| repeated integration failures need loop control | `hivemind-gatekeeping` | the same verification loop repeats |
+
+## Test Pattern MCP Integration
+
+| Need | MCP Tool | Why |
+| --- | --- | --- |
+| current framework syntax | `context7_query-docs` | version-specific test docs |
+| public repo testing patterns | `deepwiki_ask_question` | repo-grounded examples |
+| broader code examples | `exa_get_code_context_exa` | quick code-oriented discovery |
+
+## Test Escalation Decision Tree
+
+1. **IF** the RED test passes immediately, **THEN** rewrite it because it proves nothing.
+2. **IF** GREEN passes locally but build or integration gates fail, **THEN** stay in GREEN and expand verification.
+3. **IF** REFACTOR breaks prior behavior, **THEN** revert to the last green state before continuing.
+
 ## Bundled Resources
 
 | Resource | Path | Purpose |
@@ -315,6 +392,10 @@ Every gate requires COMMAND OUTPUT as evidence, never claims.
 | Build Verify Checkpoint | `templates/build-verify-checkpoint.md` | Build-verify gate result JSON |
 | TDD Delegation | `tests/tdd-delegation.md` | Test scenario for TDD delegation |
 | TDD Scenario | `tests/tdd-scenario.md` | Test scenario for full TDD workflow |
+| Test Design Techniques | `references/test-design-techniques.md` | ISTQB techniques adapted for HiveMind |
+| Quality Model | `references/quality-model.md` | ISO 25010 quality characteristics for HiveMind |
+| Quality Gates | `references/quality-gates.md` | Multi-granularity gate criteria and enforcement |
+| Risk-Based Testing | `references/risk-based-testing.md` | Risk × Impact prioritization and test allocation |
 
 ## Independence Rules
 
@@ -325,3 +406,12 @@ Every gate requires COMMAND OUTPUT as evidence, never claims.
 - Universal and framework-agnostic — applies to any project with test-driven development
 
 > **External skills note:** Skills marked *(external)* above are NOT bundled with this skill. They must be loaded separately via the `skill` tool (e.g., `skill: hivemind-atomic-commit`) before their functionality is available.
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

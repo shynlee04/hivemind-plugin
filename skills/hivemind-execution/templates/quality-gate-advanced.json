@@ -1,0 +1,57 @@
+{
+  "gate_id": "gate-execution-quality-001",
+  "title": "Execution quality gate",
+  "checks": [
+    {
+      "id": "type-check",
+      "command": "npx tsc --noEmit",
+      "required": true,
+      "evidence": "stdout excerpt with zero errors"
+    },
+    {
+      "id": "unit-test",
+      "command": "npm test",
+      "required": true,
+      "evidence": "passing summary line"
+    },
+    {
+      "id": "lint",
+      "command": "npm run lint",
+      "required": true,
+      "evidence": "zero violations"
+    },
+    {
+      "id": "build",
+      "command": "npm run build",
+      "required": true,
+      "evidence": "successful build footer"
+    }
+  ],
+  "evidence_requirements": {
+    "capture": [
+      "command",
+      "exit_code",
+      "status",
+      "output_excerpt"
+    ],
+    "store_in": ".hivemind/activity/verification/",
+    "max_excerpt_lines": 10
+  },
+  "pass_condition": {
+    "mode": "all-required-checks-pass",
+    "rules": [
+      "every required check has exit_code 0",
+      "every required check includes an output excerpt",
+      "no scope violation is reported"
+    ]
+  },
+  "fail_action": {
+    "default": "stop-and-fix",
+    "retry_limit": 3,
+    "escalate_when": [
+      "same check fails 3 times",
+      "failure requires architecture decision",
+      "failure is outside delegated scope"
+    ]
+  }
+}

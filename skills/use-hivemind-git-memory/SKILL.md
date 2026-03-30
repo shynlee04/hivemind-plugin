@@ -1,6 +1,7 @@
 ---
 name: use-hivemind-git-memory
-description: Git-based semantic memory operations — session recovery, continuity state, decision retrieval, and hierarchy indexing. Use when resuming interrupted work, tracing decision rationale, or querying indexed commit chains.
+description: Git-based semantic memory operations for session recovery, continuity state, decision retrieval, and hierarchy indexing across multi-turn workflows.
+parent: use-hivemind
 ---
 
 # use-hivemind-git-memory
@@ -14,6 +15,18 @@ Monolithic implementation guide for all git-based semantic memory operations. Th
 - Register memory-enforced commits in the hierarchy index for future retrieval
 - Manage long-haul task checkpoints spanning multiple turns
 - Maintain deterministic path resolution for all git-memory artifacts
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When to Activate](#when-to-activate)
+- [Prerequisites](#prerequisites)
+- [Bundled Resources](#bundled-resources)
+- [Implementation Operations](#implementation-operations)
+- [Sibling Skills](#sibling-skills)
+- [Anti-Patterns](#anti-patterns)
+- [Independence Rules](#independence-rules)
+- [Return Contract](#return-contract)
 
 ## Load Position
 
@@ -131,6 +144,33 @@ Action:
   4. Output: TaskState snapshot with next_step and blocking issues
 ```
 
+## OpenCode Tool Matrix
+
+| Git-Memory Need | Preferred Tool | Why |
+| --- | --- | --- |
+| inspect continuity artifacts | `read` | exact state recovery |
+| locate matching packet IDs or tags | `grep` | cheap indexed lookup |
+| collect git evidence | `bash` | authoritative commit output |
+
+## Concrete Bash Examples
+
+```bash
+git log --oneline --grep "decision:" -10
+git show --stat --summary HEAD
+git branch --show-current
+```
+
+## Retrieval Decision Tree
+
+1. **IF** a commit SHA is already known, **THEN** start with `git show`.
+2. **IF** only a keyword or decision label is known, **THEN** use `git log --grep` first.
+3. **IF** branch context is unclear, **THEN** confirm `git branch --show-current` before summarizing history.
+4. **IF** session state and git disagree, **THEN** trust git and mark the continuity artifact stale.
+
+## Git Command Reference
+
+Use `references/git-command-reference.md` for retrieval, diff, branch, and stash examples.
+
 ## Sibling Skills
 
 | Skill | Relationship | Role |
@@ -179,3 +219,12 @@ Returns structured results with evidence references:
 | LongHaul | `TaskStateSnapshot` | checkpoint, blocking_issues, next_step |
 
 Each result includes `_meta.timestamp` and reaches into specific files in `.hivemind/activity/` as evidence.
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

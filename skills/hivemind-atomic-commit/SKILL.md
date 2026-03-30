@@ -1,11 +1,31 @@
 ---
 name: hivemind-atomic-commit
-description: Use when committing changes requires typed activity classification, dependency-aware ordering, pre-commit gate validation, and rollback planning. Covers atomic commit discipline: classify touched files by activity class, detect dependency ordering, run pre-commit gates (branch, worktree, secrets, conflicts), produce typed commit messages with conventional commit format and activity metadata, and emit rollback plans for reversibility.
+description: Typed commit discipline — classifies changes by activity, validates pre-commit gates, produces structured commit messages with rollback support.
+parent: use-hivemind
 ---
 
 # hivemind-atomic-commit
 
 Local commit discipline family for the refactored pack. Governs how changes are classified, ordered, validated, and committed as atomic, typed units with rollback support.
+
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Use This For](#use-this-for)
+- [Do Not Use This For](#do-not-use-this-for)
+- [Sibling Skills](#sibling-skills)
+- [Activity Classification](#activity-classification)
+- [Activity Mapping](#activity-mapping)
+- [Git Gate Protocol](#git-gate-protocol)
+- [Rollback Support](#rollback-support)
+- [Core Process](#core-process)
+- [Commit Message Format](#commit-message-format)
+- [Rollback Plan](#rollback-plan)
+- [Surface Ownership](#surface-ownership)
+- [Bundled Resources](#bundled-resources)
+- [Independence Rules](#independence-rules)
+- [.opencode/ Write Prohibition](#opencode-write-prohibition)
+- [Orchestrator Integration](#orchestrator-integration)
 
 ## Purpose
 
@@ -137,6 +157,33 @@ Commits must respect surface class ownership boundaries. Each surface class has 
 
 Read `references/surface-ownership.md` for the 12 surface classes, ownership verification, and conflict resolution.
 
+## OpenCode Tool Matrix
+
+| Commit Task | Preferred Tool | Why |
+| --- | --- | --- |
+| inspect staged scope | `bash` | git is authoritative |
+| review touched files | `read` | exact file evidence |
+| search related ownership rules | `grep` | fast policy lookup |
+
+## Concrete Bash Examples
+
+```bash
+git diff --cached --name-only
+git diff --cached --check
+npm test 2>&1 | head -20
+```
+
+## Pre-Commit Decision Tree
+
+1. **IF** staged files mix unrelated concerns, **THEN** split the commit.
+2. **IF** `git diff --cached --check` reports conflict markers or whitespace errors, **THEN** stop and fix them.
+3. **IF** verification commands fail, **THEN** do not commit.
+4. **IF** the user did not request a commit, **THEN** stop after preparing gate evidence.
+
+## Git Gate Scripts
+
+Use `references/git-gate-reference.md` for the minimum bash gate set and `templates/commit-gate.json` to record pass/fail evidence before any commit attempt.
+
 ## Bundled Resources
 
 | Resource | Purpose |
@@ -154,6 +201,7 @@ Read `references/surface-ownership.md` for the 12 surface classes, ownership ver
 | `templates/commit-gate-result.md` | JSON template for gate check results |
 | `templates/rollback-plan.md` | JSON template for rollback planning |
 | `tests/direct-invocation.md` | Basic scenario with validation |
+| `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
 
 ## Independence Rules
 
@@ -181,3 +229,12 @@ When an orchestrator uses this skill:
 4. The orchestrator does NOT stage or commit files directly — the subagent executes
 
 If gate checks fail, the subagent returns `gate_failed` with blocked reasons. The orchestrator decides whether to fix and retry or escalate.
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

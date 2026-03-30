@@ -1,6 +1,7 @@
 ---
 name: use-hivemind-skill-authoring
-description: The skill authoring domain. Creating, reviewing, auditing skills. Universal design principles. Conflict detection. Everything you need to build skills that work everywhere.
+description: Skill creation, review, and auditing — naming conventions, universal design, conflict detection, and quality assurance for HiveMind skills.
+parent: use-hivemind
 ---
 
 # use-hivemind-skill-authoring
@@ -10,6 +11,21 @@ description: The skill authoring domain. Creating, reviewing, auditing skills. U
 Layer: Domain. Requires `use-hivemind` (entry router) loaded first.
 
 If you're building a skill, reviewing one, or wondering whether two skills are stepping on each other — this is where you start.
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When You Need This](#when-you-need-this)
+- [Skill Anatomy](#skill-anatomy)
+- [Naming Convention](#naming-convention)
+- [Creation Template](#creation-template)
+- [Universal Design](#universal-design)
+- [Conflict Detection](#conflict-detection)
+- [Review Checklist](#review-checklist)
+- [Platform Abstraction Matrix](#platform-abstraction-matrix)
+- [Anti-Patterns](#anti-patterns)
+- [Handoff Paths](#handoff-paths)
+- [Bundled Resources](#bundled-resources)
 
 ## When You Need This
 
@@ -200,6 +216,41 @@ Let's be real — here's how skill authoring goes wrong:
 
 ---
 
+## OpenCode Tool Matrix
+
+| Authoring Task | Preferred Tool | Why |
+| --- | --- | --- |
+| inspect the current skill | `read` | precise content review |
+| locate duplicate triggers or headings | `grep` | cross-skill audit |
+| find peer skills | `glob` | discovery by pattern |
+| verify current SDK tool names | `context7_query-docs` or local tool catalog | avoid stale API guidance |
+
+## Concrete Bash Examples
+
+```bash
+grep -n "^## " .developing-skills/refactored-skills/use-hivemind-skill-authoring/SKILL.md
+git diff --stat -- .developing-skills/refactored-skills/
+npx tsc --noEmit 2>&1 | head -10
+```
+
+## Skill Audit Decision Tree
+
+1. **IF** the description lacks concrete trigger phrases, **THEN** fail the audit.
+2. **IF** the skill references missing files, **THEN** fail the audit before content review.
+3. **IF** the skill duplicates another authority surface, **THEN** split or merge responsibilities.
+4. **IF** the skill grows too large, **THEN** move detail into references or templates before approval.
+
+## Audit Template Usage
+
+Use `references/audit-checklist.md` for manual review criteria and `templates/skill-audit.json` for structured pass/fail output.
+
+## Sibling Skills
+
+| Skill | Relationship |
+|-------|-------------|
+| `use-hivemind` | Entry router — parent of this domain skill |
+| `hivemind-patterns` | Architecture pattern reference — loaded when skill authoring involves structural decisions |
+
 ## Bundled Resources
 
 | File | Purpose |
@@ -212,3 +263,12 @@ Let's be real — here's how skill authoring goes wrong:
 | `references/07-iterative-refinement.md` | Iterative improvement process |
 | `references/08-conflict-detection.md` | Conflict detection methodology |
 | `references/sw-04-tdd-workflow.md` | Supplementary TDD workflow |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

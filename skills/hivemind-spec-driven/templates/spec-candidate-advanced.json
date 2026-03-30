@@ -1,0 +1,24 @@
+{
+  "candidate_id": "spec-candidate-001",
+  "title": "",
+  "problem": "",
+  "requirement_atoms": [
+    "REQ-01"
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-01",
+      "given": "",
+      "when": "",
+      "then": ""
+    }
+  ],
+  "assumptions": [],
+  "risks": [],
+  "verification_checks": [
+    "traceability matrix updated",
+    "requirements are testable",
+    "open ambiguities are listed"
+  ],
+  "rejected_reason": null
+}

@@ -1,11 +1,43 @@
 ---
 name: use-hivemind
 description: Master session entry router. Detects lineage (hivefiver vs hiveminder), checks context health, routes to correct domain router. Blocks when context is degraded. Loads skill batches dynamically based on plan, workflow, and task context. Every agent session must start here.
+parent: none
 ---
 
 # use-hivemind
 
 This is the front door to the HiveMind skill ecosystem. Every agent turn — whether a fresh session, a resume after compaction, or a mid-conversation framework reference — must enter through this skill. It performs three critical gatekeeping functions before any work proceeds: lineage detection (who am I and what kind of work is this), context health verification (is the session state trustworthy), and routing (which domain router handles the request). If context is degraded, it blocks all work and delegates recovery. If lineage is ambiguous, it asks one clarifying question. It never implements — it routes only.
+
+## Table of Contents
+
+- [Purpose](#purpose)
+- [Orchestrator Mission](#orchestrator-mission)
+  - [Core Directives](#core-directives)
+  - [Behavioral Mandate](#behavioral-mandate)
+  - [The How-To-Process vs How-To-Implement Distinction](#the-how-to-process-vs-how-to-implement-distinction)
+- [Session Handling](#session-handling)
+- [Multi-Wave Dispatch](#multi-wave-dispatch)
+  - [The Dispatch Flow](#the-dispatch-flow)
+  - [Wave Rules](#wave-rules)
+  - [Parallel Dispatch Within Waves](#parallel-dispatch-within-waves)
+- [Cross-Team Awareness](#cross-team-awareness)
+- [Dynamic Batch Loading](#dynamic-batch-loading)
+- [When to Activate](#when-to-activate)
+- [Routing Matrix](#routing-matrix)
+- [Batch Composition Rules](#batch-composition-rules)
+- [Lineage Detection](#lineage-detection)
+- [Context Health Gate](#context-health-gate)
+- [Step-by-Step Protocol](#step-by-step-protocol)
+  - [Wave Dispatch Decision](#wave-dispatch-decision)
+- [Anti-Patterns](#anti-patterns)
+  - [Dispatch Anti-Patterns](#dispatch-anti-patterns)
+  - [Session Anti-Patterns](#session-anti-patterns)
+  - [Gatekeeping Anti-Patterns](#gatekeeping-anti-patterns)
+- [Platform Detection](#platform-detection)
+- [Terminal State](#terminal-state)
+- [No-Load Conditions](#no-load-conditions)
+- [Independence Rules](#independence-rules)
+- [Bundled Resources](#bundled-resources)
 
 ## Purpose
 
@@ -181,6 +213,9 @@ Skills are loaded in conditional batches based on the current plan, workflow pha
 | Multi-stage refactor | `use-hivemind` | Framework refactor, recovery, detox across context and code |
 | Research questions | `use-hivemind-research` | Multi-source investigation, evidence grading, synthesis |
 | Planning work | `use-hivemind-planning` | Plan lifecycle, phase decomposition, execution tracking |
+| Debug/recovery workflows | `hivemind-system-debug` | Debug delegation, remediation, recovery routing |
+| Architecture/pattern decisions | `hivemind-patterns` | Pattern selection, anti-pattern detection, CQRS guidance |
+| Investigation & synthesis | `hivemind-synthesis` | Investigation, research, and synthesis orchestration — codebase, sessions, activity analysis |
 | Simple questions | Execute inline | Answer directly without routing — no skill loading needed |
 
 **Routing decision:** Match the request intent to the table above. If the request spans multiple categories, pick the primary intent. If ambiguous, ask one clarifying question.
@@ -192,8 +227,8 @@ The skill batch is composed dynamically. Every load must follow dependency order
 | Layer | Purpose | When Loaded | Examples |
 |-------|---------|-------------|---------|
 | Entry | Session router | Always loaded first | `use-hivemind` |
-| Domain | Domain router for current phase | When the task enters a specific domain | `use-hivemind-delegation`, `use-hivemind-planning`, `use-hivemind-context`, etc. |
-| Depth | Implementation/complement skills | When the task needs specific methodology | `use-hivemind-tdd`, `hivemind-atomic-commit`, `hivemind-gatekeeping`, etc. |
+| Domain | Domain router for current phase | When the task enters a specific domain | `use-hivemind-delegation`, `use-hivemind-planning`, `use-hivemind-context`, `use-hivemind-skill-authoring`, etc. |
+| Depth | Implementation/complement skills | When the task needs specific methodology | `use-hivemind-tdd`, `hivemind-atomic-commit`, `hivemind-gatekeeping`, `hivemind-system-debug`, `hivemind-patterns`, etc. |
 
 **Composition rules:**
 
@@ -346,6 +381,36 @@ Do not load this skill — defer or block — when:
 - No mutation — this skill never writes files, modifies state, or commits
 - No how-to-implement — delegates process guidance, never specifies implementation details
 
+## OpenCode Tool Matrix
+
+| Session Entry Need | Preferred Tool | Why |
+| --- | --- | --- |
+| load the next skill batch | `skill` | official skill activation |
+| inspect light session artifacts | `read` | shallow context only |
+| locate likely governance files | `glob` | bounded discovery |
+| verify branch freshness | `bash` | authoritative git evidence |
+
+## MCP Priority Order
+
+1. `context7_query-docs` for current library behavior.
+2. `deepwiki_ask_question` for indexed public repositories.
+3. `tavily_tavily_search` or `exa_web_search_exa` for broader external discovery.
+
+## Concrete Bash Examples
+
+```bash
+git status --short --branch
+git log --oneline -5
+npx tsc --noEmit 2>&1 | head -10
+```
+
+## Session Entry Decision Tree
+
+1. **IF** context health is uncertain, **THEN** load `use-hivemind-context` before any deeper routing.
+2. **IF** the task needs planning, **THEN** route to `use-hivemind-planning`.
+3. **IF** the task needs implementation with tests, **THEN** route through planning or delegation and then to `use-hivemind-tdd`.
+4. **IF** the request is a simple answer with no routing need, **THEN** do not load extra domain skills.
+
 ## Bundled Resources
 
 | Resource | Purpose |
@@ -356,3 +421,12 @@ Do not load this skill — defer or block — when:
 | `references/agent-roles.md` | All agent role definitions, boundary matrix |
 | `references/verification-before-completion.md` | Evidence-before-assertions gate |
 | `templates/load-template.md` | Dynamic batch loading templates for common workflows |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

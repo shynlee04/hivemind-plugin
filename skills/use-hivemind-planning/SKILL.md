@@ -1,13 +1,33 @@
 ---
 name: use-hivemind-planning
-description: The planning domain. From vague requirements to executable phases with numbered steps and dependency maps. Covers requirement distillation, feasibility validation, slice decomposition, and progress tracking.
+parent: use-hivemind
+description: Planning lifecycle for complex tasks — requirement distillation, feasibility validation, slice decomposition, and dependency mapping through to execution.
 ---
 
 # use-hivemind-planning
 
 You've got a thing to build. Maybe the requirements are clear. Maybe they're a mess. Either way, you need a structured path from "what the human wants" to "here's what each subagent does." This skill is that path. It handles the full arc: distilling noisy specs, validating feasibility, decomposing into bounded slices, mapping dependencies, and tracking progress through to done.
 
-Consolidates: `use-hivemind-planning`, `use-hivemind-planning`, `hivemind-spec-driven`, `hivemind-codemap` (feasibility section).
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When to Load](#when-to-load)
+- [The Planning Flow](#the-planning-flow)
+- [Spec Distillation](#spec-distillation)
+- [Feasibility Validation](#feasibility-validation)
+- [Phase Numbering](#phase-numbering)
+- [Decomposition Steps](#decomposition-steps)
+- [Plan Record Schema](#plan-record-schema)
+- [Slice Template](#slice-template)
+- [Re-Decomposition](#re-decomposition)
+- [Handoff Paths](#handoff-paths)
+- [Prioritization and Estimation](#prioritization-and-estimation)
+- [Anti-Patterns](#anti-patterns)
+- [TDD Integration](#tdd-integration)
+- [Sibling Skills](#sibling-skills)
+- [Bundled Resources](#bundled-resources)
+
+Consolidates: `hivemind-spec-driven`, `hivemind-codemap` (feasibility section).
 
 ## Load Position
 
@@ -208,6 +228,30 @@ Slice failed 2x
 
 Plan records are stored at `{project}/.hivemind/activity/planning/` at runtime. Resolve via `pathing/active-paths.json`, not ad-hoc paths.
 
+## Prioritization and Estimation
+
+After decomposition, prioritize slices and estimate effort.
+
+### Priority Classification
+
+Use the Priority × Value matrix from `references/priority-value-matrix.md`:
+- P0 (Critical): Blocks release → immediate dispatch
+- P1 (High): Major impact → this sprint
+- P2 (Medium): Moderate impact → next sprint
+- P3 (Low): Minor impact → backlog
+
+### Story Quality
+
+Validate each slice against INVEST criteria from `references/invest-criteria.md`. Slices that fail INVEST should be split or refined before delegation.
+
+### Effort Estimation
+
+Use Fibonacci estimation from `references/estimation-techniques.md` for effort scoring. Relative, not absolute. Compare to known tasks.
+
+### Dependency Classification
+
+Classify dependencies using `references/dependency-types.md`. Hard deps block parallel dispatch. Soft deps allow partial parallelism.
+
 ## Anti-Patterns
 
 You think the spec is clear enough. It's not. If you skipped the ambiguity map, you'll find out mid-implementation when the requirements contradict themselves.
@@ -261,13 +305,37 @@ Carry-forward            →     Verification gate evidence
 3. **Re-decomposition triggers TDD reset.** When a slice re-decomposes, discard its test suite and start RED fresh on the new slices.
 4. **Planning carries the what; TDD carries the how.** Planning says "this slice implements X." TDD says "here's the test proving X works."
 
+## Concrete Bash Examples
+
+```bash
+git diff --stat HEAD~1..HEAD
+npx tsc --noEmit 2>&1 | head -10
+npm test 2>&1 | head -20
+```
+
+## External Research MCP Matrix
+
+| Research Need | Preferred MCP Tool | Why |
+| --- | --- | --- |
+| current library constraints | `context7_query-docs` | version-specific API proof |
+| public repo structure or examples | `deepwiki_ask_question` | repo-grounded summary |
+| remote codebase packaging | `repomix_pack_remote_repository` | full repo evidence |
+| broad external search | `tavily_tavily_search` | current web discovery |
+
+## Dependency Decision Tree
+
+1. **IF** two slices edit the same file or schema, **THEN** classify the edge as `peer` and keep them sequential.
+2. **IF** slice B consumes an interface or output created by slice A, **THEN** classify it as `hard` and schedule A first.
+3. **IF** the only coupling is tooling or tests, **THEN** classify it as `dev` and isolate verification from implementation.
+4. **IF** dependency confidence is low, **THEN** load `references/dependency-analysis-reference.md` and gather proof before parallel dispatch.
+
 ## Sibling Skills
 
 | Parent | This Skill | Depth Partner | TDD Partner |
 |--------|-----------|---------------|-------------|
 | use-hivemind | use-hivemind-planning | use-hivemind-delegation | use-hivemind-tdd |
 
-This skill consolidates: `use-hivemind-planning` (lifecycle + retraceability), `use-hivemind-planning` (decomposition methodology), `hivemind-spec-driven` (requirement extraction), and `hivemind-codemap` (feasibility scanning). Detailed references, templates, and scan helpers live in the respective `references/` directories.
+This skill integrates with: `hivemind-spec-driven` (requirement extraction), and `hivemind-codemap` (feasibility scanning). Detailed references, templates, and scan helpers live in the respective `references/` directories.
 
 ## Bundled Resources
 
@@ -284,6 +352,10 @@ This skill consolidates: `use-hivemind-planning` (lifecycle + retraceability), `
 | Re-Decomposition Protocol | `references/re-decomposition-protocol.md` | When and how to re-decompose failed slices |
 | Slice Splitting Heuristics | `references/slice-splitting-heuristics.md` | Heuristics for splitting work into slices |
 | Verification Before Completion | `references/verification-before-completion.md` | Evidence-before-assertions gate protocol |
+| Priority × Value Matrix | `references/priority-value-matrix.md` | Task prioritization by urgency and business value |
+| INVEST Criteria | `references/invest-criteria.md` | Story quality validation rubric |
+| Estimation Techniques | `references/estimation-techniques.md` | Fibonacci-based effort estimation |
+| Dependency Types | `references/dependency-types.md` | Dependency taxonomy and parallelism rules |
 | Extract Requirements | `scripts/extract-requirements.sh` | Bash helper for requirement extraction |
 | Decomposition Plan | `templates/decomposition-plan.json` | JSON template for decomposition plans |
 | Plan Record | `templates/plan-record.md` | Template for plan record documentation |
@@ -294,3 +366,12 @@ This skill consolidates: `use-hivemind-planning` (lifecycle + retraceability), `
 | Parallel Candidates | `tests/parallel-candidates.md` | Test for parallel candidate handling |
 | Plan Scenario | `tests/plan-scenario.md` | Test for full planning scenario |
 | Re-Decomposition | `tests/re-decomposition.md` | Test for re-decomposition protocol |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

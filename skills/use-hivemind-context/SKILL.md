@@ -1,6 +1,7 @@
 ---
 name: use-hivemind-context
-description: The context health domain. Before you trust anything — docs, memory, prior sessions — check it here. Documents are advisory, code is truth. Routes to session health probes and project verification gates.
+description: Context health verification — verifies doc/code agreement, detects context rot, and runs verification gates before trusting prior sessions or memory.
+parent: use-hivemind
 ---
 
 <!-- LOAD-POSITION
@@ -24,6 +25,26 @@ role: domain
 You're about to trust something — a doc, a memory, a prior session's claim, a test result. Stop. This domain router puts a checkpoint between "I remember" and "I trust." It doesn't do the checking itself. It dispatches to the right specialist based on what kind of doubt you have: session health uncertainty, or project-structural verification.
 
 **Parent:** `use-hivemind` (entry router)
+
+## Table of Contents
+
+- [Load Position](#load-position)
+- [When You Need This](#when-you-need-this)
+- [The 3-Step Trust Check](#the-3-step-trust-check)
+- [Distrust Levels](#distrust-levels)
+- [Routing Logic](#routing-logic)
+- [Verification Gates](#verification-gates-project-reality)
+- [Freshness Probe](#freshness-probe)
+- [Cross-Team Context Awareness](#cross-team-context-awareness)
+- [Multi-Source Comparison](#multi-source-comparison)
+- [Context Preservation Across Long Sessions](#context-preservation-across-long-sessions)
+- [Distrust Protocol](#distrust-protocol)
+- [Orchestrator Integration](#orchestrator-integration)
+- [Handoff Paths](#handoff-paths)
+- [Carry-Forward](#carry-forward)
+- [Sibling Skills](#sibling-skills)
+- [Anti-Patterns](#anti-patterns)
+- [Bundled Resources](#bundled-resources)
 
 ## When You Need This
 
@@ -232,6 +253,36 @@ After any context check completes:
 - If delegation follows, include the distrust context in the delegation packet so child agents don't repeat false trust
 - Compress to ≤5 key findings, blocked routes, recommended next action, output paths
 
+## OpenCode Tool Matrix
+
+| Context Check | Preferred Tool | Why |
+| --- | --- | --- |
+| locate candidate files or session artifacts | `glob` | fast discovery |
+| inspect exact session state | `read` | source of truth |
+| scan contradictory claims | `grep` | cross-file mismatch hunting |
+| validate git freshness | `bash` | real branch and history evidence |
+
+## Concrete Bash Examples
+
+```bash
+find . -name "*.md" -mtime -2 | head -10
+git log --oneline --since="48 hours ago" -- . | head -10
+git status --short --branch
+```
+
+## Freshness Probe Decision Tree
+
+1. **IF** docs are older than 48 hours and code changed recently, **THEN** distrust docs first.
+2. **IF** shared files changed on the current branch, **THEN** reclassify context to at least `SUSPECT`.
+3. **IF** continuity state is missing or stale, **THEN** rebuild context before routing execution work.
+4. **IF** multiple sources disagree after probing, **THEN** escalate to a deeper context pass instead of guessing.
+
+## Freshness Reference
+
+Use `references/freshness-probe-reference.md` for the minimal command set and session-state checks.
+
+Use `templates/context-freshness-report.json` when a router needs a small machine-readable freshness verdict.
+
 ## Sibling Skills
 
 | Parent | This Skill | Depth Partners |
@@ -273,9 +324,19 @@ This router consolidates the former `context-intelligence-entry` (session health
 | False Signal Detection | `references/false-signal-detection.md` | Identifying false positives in context assessment |
 | Gate Chain Order | `references/gate-chain-order.md` | Order of context verification gates |
 | Gate Definitions | `references/gate-definitions.md` | Formal definitions of each verification gate |
+| Context Freshness Report | `templates/context-freshness-report.json` | Minimal machine-readable freshness verdict |
 | Platform Surface | `references/platform-surface.md` | Platform-specific context surfaces |
 | Trust Matrix | `references/trust-matrix.md` | Trust levels for different context sources |
 | Output Schema | `schemas/output.schema.ts` | TypeScript schema for context assessment output |
 | Context Harness Init | `scripts/context-harness-init.cjs` | Context harness initialization script |
 | HM Verify | `scripts/hm-verify.cjs` | Context verification execution script |
 | Direct Invocation | `tests/direct-invocation.md` | Test scenario for direct skill invocation |
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.

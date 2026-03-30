@@ -1,6 +1,7 @@
 ---
 name: use-hivemind-delegation
-description: Enforce delegation when front-facing agents must split work across subagents. Covers delegation decision rules, role selection, task decomposition, handoff packets, return contracts, resume protocol, and failure recovery.
+description: Delegation protocol for front-facing agents splitting work across subagents — covers decision rules, task decomposition, handoff packets, return contracts, and failure recovery.
+parent: use-hivemind
 ---
 
 # use-hivemind-delegation
@@ -24,14 +25,41 @@ Local delegation family for the refactored pack. Governs when, how, and with wha
 - Work spans >3 files or requires deep reads the orchestrator must not do
 - Session context is stale or suspect and fresh subagent context is needed
 
+## Table of Contents
+
+- [Use This For](#use-this-for)
+- [Do Not Use This For](#do-not-use-this-for)
+- [Sibling Skills](#sibling-skills)
+- [Delegation Decision Rules](#decision-rules)
+- [Task Decomposition Rules](#task-decomposition-rules)
+- [Orchestrator Protection](#orchestrator-protection)
+- [How-To-Process vs How-To-Implement in Packets](#how-to-process-vs-how-to-implement)
+- [Core Protocol](#core-protocol)
+- [Shared Return Contract](#shared-return-contract)
+- [Delegation Modes](#delegation-modes)
+- [Role Boundaries](#role-boundaries)
+- [Failure and Recovery](#failure-and-recovery)
+- [Codescan Delegation](#codescan-delegation)
+- [Investigation Swarm Delegation](#investigation-swarm-delegation)
+- [Hierarchical Consumption](#hierarchical-consumption)
+- [Iterative Loop Control](#iterative-loop-control)
+- [Session Resume in Delegation](#session-resume)
+- [Workflow Example](#workflow-example)
+- [Granularity Gate](#granularity-gate)
+- [Parallel Dispatch Safety](#parallel-dispatch-safety)
+- [Hierarchical Packet Construction](#hierarchical-packet-construction)
+- [Context Window Management](#context-window-management)
+- [Bundled Resources](#bundled-resources)
+- [Conditional Loading](#conditional-loading)
+- [Independence Rules](#independence-rules)
+
 ## Do Not Use This For
 
-- Normal single-slice execution with fresh context and ≤3 files
-- Vague delegation with no scope or return contract — clarify scope first, then delegate
-- Recursive delegation when the parent scope is already unclear — decompose the parent before re-delegating
-- Tasks completable in <3 inline actions unless session freshness requires a fresh context
-
-**If delegation criteria are not met, execute inline.** If the user requested delegation but scope is unclear, emit a scope-clarification question rather than a delegation packet.
+- Single-file edits with clear scope and fresh context — execute inline
+- Tasks completable in <3 inline actions — overhead exceeds value
+- Vague delegation with no scope — clarify scope first, then decide
+- Domain-specific loops (TDD, debug, refactor, research) — those domain skills handle their own loop control
+- Simple questions answerable without delegation — answer directly
 
 ## Sibling Skills
 
@@ -44,6 +72,7 @@ Local delegation family for the refactored pack. Governs when, how, and with wha
 | `use-hivemind-context` | Stale session probe — delegate this when orchestrator context is suspect |
 | `use-hivemind-git-memory` | Git-aware continuity — commit SHAs and branch state recorded in packets |
 | `hivemind-gatekeeping` | Iterative loops, synthesis gates, cascading failure — extracted from this skill |
+| `hivemind-synthesis` | Investigation swarm orchestration — coordinates parallel hivexplorer waves through this protocol |
 
 `activity_type` and `phase_type` enum values are defined in the pack-level AGENTS.md under Typed Activity Contract.
 
@@ -332,67 +361,6 @@ Append delegation events to `{activity}/delegation/registry.json` with:
 | Dispatch | 3 subagents in parallel, self-contained prompts | 3 running |
 | Returns | 2 complete, 1 partial (`blocked: shared/types.ts`) | Synthesize |
 | Synthesis | Integrate 2 fixes, re-delegate blocked with expanded authority | Updated packet |
-| Integration | Full test suite → all pass → workflow complete | Done |
-
-## Granularity Gate
-
-<HARD-GATE>
-Before emitting a delegation packet, the orchestrator must pass through the granularity gate. Tasks exceeding these thresholds MUST be decomposed further.
-
-| Threshold | Rule | Action if Exceeded |
-|-----------|------|-------------------|
-| >3 file changes | Break into sequential or parallel sub-tasks | Decompose by authority surface, then concern |
-| >500 LOC write/edit/patch | Never in a single delegation | Split into ≤500 LOC slices with clear seams |
-| Mixed read+write across domains | Separate read-only from write-capable | Different packets, different agents |
-
-**Absolute rule:** NEVER dispatch parallel agents that edit/write/change/move/patch/update the same domain, same concerns, or dependent entities. Parallel is valid ONLY for independent READ at the smallest unit.
-</HARD-GATE>
-
-## Parallel Dispatch Safety
-
-| Parallel is SAFE when | Parallel is FORBIDDEN when |
-|----------------------|---------------------------|
-| Deep investigation with multiple offset reads | Any agent will write/edit/patch the same file |
-| Research via tavily/webfetch/context7/repomix/deepwiki | Slices share mutable state or imports |
-| Nested knowledge synthesis across independent domains | Slices modify the same concern or domain |
-| All agents are read-only (hivexplorer, hiverd) | Integration order matters (sequential dependency) |
-| Token-exhaustive operations needing window isolation | One slice's output is another slice's input |
-
-<HARD-GATE>
-If ANY agent in a parallel wave will write, edit, or mutate — all write agents in that wave MUST be sequential. Parallel write is allowed only when slices touch completely disjoint file sets with zero shared imports. When in doubt, sequential wins.
-</HARD-GATE>
-
-## Hierarchical Packet Construction
-
-Every delegation packet must include these elements — no exceptions:
-
-| Packet Element | Requirement | Example |
-|---------------|-------------|---------|
-| Prerequisite context | Validated output artifacts with valid paths | `prerequisite_refs: [".hivemind/activity/codescan/wave-1a/audit.json"]` |
-| Skills to load | What skills and how-to-process — NOT what-to-do | `skills: ["hivemind-codemap"]` |
-| Parent planning refs | Links to active planning and governance docs | `parent_planning_ref: ".hivemind/activity/plans/plan-v2.md"` |
-| Governance docs | Applicable AGENTS.md, ROADMAP, or sector charters | `governance_docs: ["AGENTS.md", "src/tools/AGENTS.md"]` |
-| Boundaries | Success metrics, files to create/modify, explicit out-of-scope | `out_of_scope: ["src/core/*", "dist/*"]` |
-| Stopping conditions | When to stop trying and return blocked/partial | `stop_on: ["3 failed fix attempts", "type errors persist"]` |
-| Delegation awareness | Agent knows it is delegated, not user-facing | `delegated: true, lineage: "hivefiver"` |
-| Overlap validation | Confirm no naming or implementation conflicts with other slices | `conflict_check: ["naming", "imports", "types"]` |
-
-Evidence, review, and feedback artifacts must output to `.hivemind/activity/{domain}/{pass_id}/` hierarchy.
-
-## Context Window Management
-
-Each delegation operates within a ~200k token context window. Plan accordingly:
-
-| Operation Type | Token Cost | Strategy |
-|---------------|-----------|----------|
-| Deep codebase scan (repomix, codemap) | High (50-100k) | Parallel breakdown by module |
-| Multi-source research (tavily, webfetch, context7) | High (40-80k) | Parallel by source type |
-| Implementation (write code, tests) | Medium (20-50k) | Sequential, bounded by LOC gate |
-| Verification (type check, test run) | Low (5-20k) | Sequential after implementation |
-
-**Rule:** If an operation is token-exhaustive (>50% window), break it into parallel independent slices. Research and investigation are highest-risk — plan parallel breakdown before dispatch.
-
-
 ## Bundled Resources
 
 | Resource | Purpose |
@@ -402,14 +370,37 @@ Each delegation operates within a ~200k token context window. Plan accordingly:
 | `references/role-boundaries.md` | Parent/child responsibilities, invalid delegation examples |
 | `references/codescan-delegation.md` | Agent selection, scan pass structure, resumable protocol |
 | `references/failure-recovery.md` | Partial return, timeout, escalation |
+| `references/multi-wave-dispatch.md` | Multi-wave dispatch flow, investigation swarms, hierarchical consumption |
+| `references/architecture-audit-delegation.md` | Architecture audit delegation packet pattern |
+| `references/debug-delegation.md` | Debug workflow delegation patterns |
+| `references/domain-escalation.md` | Domain escalation rules and triggers |
+| `references/evidence-collection.md` | Evidence collection methodology for delegation |
+| `references/parallel-dispatch.md` | Parallel dispatch coordination and safety |
+| `references/rb-role-platform-mapping.md` | Role-based role-to-platform mapping |
+| `references/refactor-delegation.md` | Refactor workflow delegation patterns |
+| `references/research-thread-management.md` | Research thread lifecycle management |
+| `references/role-platform-mapping.md` | Role-to-platform agent mapping |
+| `references/source-validation.md` | Source validation for delegated work |
+| `references/subagent-driven-development.md` | Subagent-driven development workflow |
+| `references/multi-reviewer-protocol.md` | Multi-agent review dispatch, dimension ownership, synthesis |
+| `references/hard-stop-conditions.md` | Immediate delegation stop triggers and recovery protocol |
 | `templates/delegation-packet.md` | Full packet JSON template |
 | `templates/handoff-brief.md` | Human-readable brief template |
 | `templates/codescan-delegation-packet.md` | Codescan-specific packet template |
-| `hivemind-gatekeeping` | Iterative loops, synthesis gates, cascading failure |
-| `references/multi-wave-dispatch.md` | Multi-wave dispatch flow, investigation swarms, hierarchical consumption, dynamic skill assignment |
+| `templates/audit-delegation-packet.md` | Architecture audit packet template |
+| `templates/debug-delegation-packet.md` | Debug workflow packet template |
+| `templates/evidence-table.md` | Evidence table template for returns |
+| `templates/implementer-prompt.md` | Implementer agent prompt template |
+| `templates/rb-role-declaration.md` | Role-based role declaration template |
+| `templates/refactor-delegation-packet.md` | Refactor workflow packet template |
+| `templates/research-delegation-packet.md` | Research delegation packet template |
+| `templates/role-declaration.md` | Role declaration template |
+| `templates/spec-reviewer-prompt.md` | Spec reviewer prompt template |
 | `tests/direct-invocation.md` | Basic delegation scenario with validation |
 | `tests/parallel-delegation.md` | Parallel dispatch scenario with validation |
 | `tests/failure-recovery.md` | Blocked-route recovery scenario with validation |
+| `tests/course-correction.md` | Course correction scenario with validation |
+| `tests/research-delegation.md` | Research delegation scenario with validation |
 
 ## Independence Rules
 
@@ -417,3 +408,64 @@ Each delegation operates within a ~200k token context window. Plan accordingly:
 - It does not require old router-to-router chains.
 - It may be selected directly or from `use-hivemind`.
 - Delegation artifacts are stored in `{project}/.hivemind/activity/delegation/` at runtime.
+
+## Activity Output
+
+All artifacts produced by this skill follow the Activity Folder Protocol.
+
+**Pathing:** See `.hivemind/pathing/active-paths.json` for resolved output paths.
+**Naming:** `{category}-{semantic-id}-{YYYY-MM-DD}.{ext}`
+**Meta:** All JSON includes `_meta.created_at`, `_meta.updated_at`, `_meta.producer`.
+**Validation:** Run `bash use-hivemind-delegation/scripts/hm-artifact-validate.sh {path}` to confirm compliance.
+
+## OpenCode Tool Matrix
+
+| Need | Tool | Why |
+|------|------|-----|
+| delegate bounded work | `task` | launches clean subagent session |
+| persist handoff state | `hivemind_handoff` | stores resumable packet metadata |
+| track workflow linkage | `hivemind_task` | ties packets to workflow/task IDs |
+| record trajectory checkpoints | `hivemind_trajectory` | preserves phase transitions |
+| inspect delegation docs | `hivemind_doc` | read-only doc access |
+| verify current runtime | `hivemind_runtime_status` | confirm attached workflow state |
+
+## Multi-Packet Protocol
+
+Use multi-packet flow when one question crosses domains, authority levels, or evidence sources. Split by domain → slice → finding, keep each slice to one core question, and store large results with a TOC plus offset index for jump-reading. Run packets in parallel only for isolated slices; otherwise chain them with `parent_packet_id`, synthesis checkpoints, and delta-queries for gap fill.
+
+## Evidence Return Contract
+
+Every return must include `status`, `summary`, `evidence`, `blocked_routes`, `recommended_next`, and `_meta`. Each evidence item uses `{ claim, evidence_quote, source_url, source_title, confidence }`, with `confidence` scored `0..1`. `hivexplorer` emphasizes file-backed discovery, `hiverd` emphasizes external source freshness, `hiveq` maps requirements to proof, and `hivemaker` reports changed files plus verification output.
+
+## Cross-Domain Coordination
+
+Use sequential dispatch when slices share mutable files, depend on previous evidence, or need conflict arbitration. Use parallel dispatch when slices are read-only, isolated, and mergeable by synthesis. Detect shared state early, normalize evidence before merging, and issue delta-queries only for unresolved claims instead of restarting the whole investigation.
+
+## Bash Examples (5)
+
+- `cat .hivemind/activity/delegation/packet.json | jq '.scope'`
+- `ls .hivemind/activity/agents/*/`
+- `grep -r "blocked_routes" .hivemind/activity/`
+- `jq '._meta.producer' .hivemind/activity/**/*.json`
+- `find .hivemind/activity -name "*.json" -mtime -1`
+
+## Decision Tree: Delegation Pattern
+
+- Single domain + one bounded concern → one packet.
+- Cross-domain + isolated read-only slices → parallel multi-packet.
+- Cross-domain + shared mutable state → sequential packets.
+- Deep investigation with unresolved gaps → chained packets with synthesis checkpoints.
+- Large result sets → require TOC, offsets, and metadata filtering.
+- More than 15-20 files in one slice or >9 active summaries → split again.
+
+## Cross-Skill Chaining
+
+Load `use-hivemind-research` when a packet needs external evidence, `use-hivemind-context` when freshness is suspect, and `hivemind-gatekeeping` when synthesis or blocked-route review needs a formal gate. Keep delegation as the contract layer; let sibling skills own their domain-specific loops.
+
+## Metrics & Verification
+
+Track packet completeness, evidence density, blocked-route count, delta-query rate, and synthesis closure time. Validate JSON packets with `scripts/hm-packet-validate.sh`, confirm large outputs expose `_meta.producer`, and keep SKILL.md concise enough to preserve progressive disclosure.
+
+## Batch 3 Resource Additions
+
+New references: `references/multi-packet-protocol.md`, `references/evidence-return-schema.md`, `references/cross-domain-coordination.md`. New templates: `templates/delegation-packet.json`, `templates/multi-domain-investigation.json`, `templates/evidence-return.json`. New validator: `scripts/hm-packet-validate.sh` for packet, return, and multi-domain schema checks.
