@@ -3,7 +3,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: 'HiveMind Side-Car',
-  description: 'HiveMind dashboard proof-of-concept',
+  description: 'Real-time dashboard and control interface for the HiveMind meta-framework',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
