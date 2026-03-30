@@ -1,0 +1,162 @@
+{
+  "_meta": {
+    "created_at": "2026-03-30T10:55:14+07:00",
+    "updated_at": "2026-03-30T10:55:14+07:00",
+    "producer": "hivexplorer",
+    "investigation_scope": "deleted delegation-protocol.md content audit"
+  },
+  "deleted_file": {
+    "path": ".developing-skills/refactored-skills/use-hivemind/references/delegation-protocol.md",
+    "status": "ARCHIVED - NOT TRULY DELETED",
+    "last_commit": "4724eed0 (feat: Introduce new skills, agents, and session management...)",
+    "original_content": {
+      "lines": 27,
+      "sections": [
+        {
+          "name": "Scope Declaration",
+          "content": "Every delegation MUST have explicit scope declaration containing inclusions, exclusions, boundaries"
+        },
+        {
+          "name": "Parent Context Link",
+          "content": "Every delegation MUST preserve parent context: parent session ID, context inheritance path, chain break detection"
+        },
+        {
+          "name": "Result Contract",
+          "content": "Every delegation MUST define result contract: expected output format, required fields, success criteria, failure modes"
+        },
+        {
+          "name": "Chain Audit",
+          "content": "All delegations recorded for traceability: delegator identity, executor identity, timestamp, scope snapshot"
+        }
+      ]
+    },
+    "current_location": "skills/_deprecated_hive/use-hivemind-delegation/references/delegation-protocol.md",
+    "archive_path": ".archive/skills/_deprecated_hive/use-hivemind-delegation/references/delegation-protocol.md"
+  },
+  "use_hivemind_delegation_coverage": {
+    "multi_wave_dispatch_protocol": {
+      "status": "FULLY COVERED",
+      "location": "references/multi-wave-dispatch.md",
+      "lines": 154,
+      "covers": [
+        "Wave 1 → Wave 2 → Checkpoint → Wave 3 → Wave 4 topology",
+        "Sequential between waves, parallel within waves",
+        "Carry-forward compression (≤5 items)",
+        "Gate checkpoints between waves",
+        "Dynamic skill assignment per wave"
+      ]
+    },
+    "wave_topology": {
+      "status": "FULLY COVERED",
+      "location": "references/multi-wave-dispatch.md + references/hierarchical-consumption.md",
+      "covers": [
+        "Investigation (Wave 1)",
+        "Research (Wave 2)", 
+        "Checkpoint (Planning)",
+        "Implementation (Wave 3)",
+        "Verification (Wave 4)"
+      ]
+    },
+    "handoff_packet_format": {
+      "status": "FULLY COVERED",
+      "location": "references/investigation-swarm.md (lines 33-46)",
+      "format": {
+        "wave_id": "string",
+        "synthesis": "array max 5 items",
+        "blocked_routes": "array",
+        "gaps_identified": "array",
+        "recommended_next_action": "string",
+        "output_paths": "array"
+      }
+    },
+    "agent_selection_logic": {
+      "status": "FULLY COVERED",
+      "location": "SKILL.md lines 291-301 (codescan delegation) + references/codescan-delegation.md",
+      "rules": [
+        "explore FIRST for read-only scans",
+        "general ONLY when cross-file synthesis or deeper reasoning needed",
+        "hivexplorer for investigation swarms"
+      ]
+    },
+    "post_return_protocol": {
+      "status": "FULLY COVERED",
+      "location": "SKILL.md lines 213-226 (Shared Return Contract)",
+      "required_fields": [
+        "activity_type, phase_type, mode, execution_mode",
+        "packet_id, task_id, pass_id, batch_id, slice_id",
+        "files_checked, clean_files, blocked_files, coverage_gaps",
+        "confirmed, inferred, unverified, confidence, artifacts_written",
+        "output_paths",
+        "blocked_routes, recommended_next_action, open_loop_ids, open_packet_ids"
+      ]
+    },
+    "cross_team_awareness": {
+      "status": "FULLY COVERED",
+      "location": "references/multi-wave-dispatch.md lines 137-145",
+      "covers": [
+        "git status check before dispatch",
+        "Scope boundaries and active branches",
+        "Shared files sequential-only rule",
+        "Post-implementation contract compatibility"
+      ]
+    },
+    "scope_declaration": {
+      "status": "FULLY COVERED",
+      "location": "SKILL.md lines 109-122 (Task Decomposition Rules) + references/delegation-decision.md",
+      "covers": [
+        "Inclusions via scope and authority_surfaces",
+        "Exclusions via out_of_scope",
+        "Boundaries via constraints and stop_conditions"
+      ]
+    },
+    "parent_context_link": {
+      "status": "FULLY COVERED",
+      "location": "SKILL.md lines 319-344 (Session Resume in Delegation)",
+      "covers": [
+        "parent session ID tracking via task_id",
+        "context inheritance via carry-forward",
+        "chain break detection via delegation registry"
+      ]
+    },
+    "chain_audit": {
+      "status": "FULLY COVERED",
+      "location": "SKILL.md lines 346-351 (Delegation Audit Trail)",
+      "records": [
+        "packet_id, concern, dispatched_at, returned_at, status"
+      ]
+    }
+  },
+  "reference_files_status": {
+    "multi_wave_dispatch_md": {
+      "exists": true,
+      "lines": 154,
+      "status": "COMPREHENSIVE"
+    },
+    "investigation_swarm_md": {
+      "exists": true,
+      "lines": 55,
+      "status": "COMPREHENSIVE"
+    },
+    "hierarchical_consumption_md": {
+      "exists": true,
+      "lines": 34,
+      "status": "COMPREHENSIVE"
+    },
+    "parallel_dispatch_md": {
+      "exists": true,
+      "lines": 28,
+      "status": "POPULATED"
+    }
+  },
+  "verdict": {
+    "content_missing": false,
+    "explanation": "The deleted delegation-protocol.md (27 lines) was a basic early reference document. Its content has been FULLY EXPANDED and INCORPORATED into use-hivemind-delegation. The skill now contains 469 lines in SKILL.md plus 26 reference files covering all aspects of delegation protocol in much greater detail.",
+    "recommendation": "NO ACTION NEEDED. The deleted file content is not missing - it has been properly migrated and expanded into the current skill structure."
+  },
+  "git_history_summary": {
+    "file_created": "ff34ba01 (fix(preflight): resolve SyntaxError and establish clean baseline for TDD)",
+    "documentation_added": "88a2eb15 (refactor(delegation-protocol): rewrite SKILL.md and upgrade references)",
+    "tests_added": "242d137e (test(delegation-protocol): add test scenarios with validation criteria)",
+    "archived": "4724eed0 (feat: Introduce new skills, agents, and session management...)"
+  }
+}

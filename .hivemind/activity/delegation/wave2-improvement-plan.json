@@ -1,0 +1,820 @@
+{
+  "_meta": {
+    "created_at": "2026-03-30T09:32:23+07:00",
+    "updated_at": "2026-03-30T09:32:23+07:00",
+    "producer": "hiveplanner",
+    "plan_id": "wave2-skill-improvement-2026-03-30",
+    "source_findings": 11,
+    "total_skills": 19
+  },
+  "plan_status": "ready",
+  "goal": "Remediate 11 investigation findings across 19 HiveMind skills in 4 dependency-ordered batches, ensuring front-facing agents gain self-awareness, multi-wave dispatch sophistication, granularity enforcement, context window management, and formal stop conditions.",
+  "estimated_delegations": 9,
+  "parallel_groups": 2,
+
+  "findings_coverage": {
+    "F1_oversized_skills": {
+      "finding": "5 skills exceed 400 lines (use-hivemind-ideating=500, hivemind-synthesis=486, use-hivemind-delegation=471, hivemind-refactor=460, use-hivemind=432)",
+      "remediation": "Extract reference content to references/ directories in Batch 1 and Batch 2",
+      "batches": [1, 2, 3]
+    },
+    "F2_undocumented_skills": {
+      "finding": "4 skills missing from hiveminder-operation-guidelines.md: hivemind-architecture, hivemind-execution, use-hivemind-ideating, hivemind-synthesis",
+      "remediation": "Batch 4 updates guidelines to include all 19 skills",
+      "batches": [4]
+    },
+    "F3_territory_overlap": {
+      "finding": "hivemind-synthesis overlaps hivemind-codemap on codebase investigation",
+      "remediation": "Batch 2 adds explicit territory boundaries to both skills",
+      "batches": [2]
+    },
+    "F4_missing_do_not_use": {
+      "finding": "9 skills lack 'Do NOT Use For' sections: use-hivemind, use-hivemind-context, use-hivemind-planning, hivemind-refactor, hivemind-patterns, use-hivemind-git-memory, use-hivemind-tdd, use-hivemind-ideating, hivemind-gatekeeping",
+      "remediation": "Each batch adds/standardizes the section for skills in scope",
+      "batches": [1, 2, 3]
+    },
+    "F5_loc_rule_absent": {
+      "finding": ">500 LOC = never one task rule absent from all skills",
+      "remediation": "Batch 1 adds to use-hivemind as root policy; propagates to delegation and planning skills",
+      "batches": [1, 2]
+    },
+    "F6_multi_wave_fragmented": {
+      "finding": "Multi-wave dispatch protocol only in use-hivemind; delegation and gatekeeping have zero definitions",
+      "remediation": "Batch 1 adds multi-wave protocol to delegation and context skills",
+      "batches": [1]
+    },
+    "F7_self_awareness_fragmented": {
+      "finding": "Front-agent self-awareness (lineage, phase, progress) exists only in use-hivemind",
+      "remediation": "Batch 1 extracts self-awareness protocol into a reference that all 3 core skills include",
+      "batches": [1]
+    },
+    "F8_context_window_missing": {
+      "finding": "No systematic 200k context window handling or token budget guidance for parallel operations",
+      "remediation": "Batch 1 adds context window protocol to use-hivemind; Batch 1 adds token budget to delegation",
+      "batches": [1, 2]
+    },
+    "F9_stop_conditions_missing": {
+      "finding": "Delegation packets lack formal stop_conditions array",
+      "remediation": "Batch 1 adds stop_conditions to delegation packet template; Batch 2 adds to gatekeeping",
+      "batches": [1, 2]
+    },
+    "F10_agent_skill_mapping_incomplete": {
+      "finding": "Agent-skill mapping in guidelines missing or incomplete for hivemaker/hitea roles",
+      "remediation": "Batch 4 updates agent-skill mapping with all agents",
+      "batches": [4]
+    },
+    "F11_voice_inconsistency": {
+      "finding": "use-hivemind-ideating uses third-person; 7 skills use third-person; hivemind-synthesis has mixed voice",
+      "remediation": "Batch 3 standardizes use-hivemind-ideating to second-person imperative; Batch 2 fixes hivemind-synthesis",
+      "batches": [2, 3]
+    }
+  },
+
+  "batches": [
+    {
+      "batch_id": "batch-1-core",
+      "title": "Core Front-Agent Skills (Entry + Delegation + Context)",
+      "rationale": "These 3 skills are loaded by every orchestrator session. They are the foundation upon which all other skills depend. Fixing them first means all downstream improvements build on a solid base.",
+      "dependencies": [],
+      "estimated_loc_changes": {
+        "use-hivemind": "-80 lines extracted, +45 lines added = net -35",
+        "use-hivemind-delegation": "-60 lines extracted, +50 lines added = net -10",
+        "use-hivemind-context": "+35 lines added"
+      },
+      "skills": [
+        {
+          "skill_name": "use-hivemind",
+          "current_lines": 432,
+          "target_lines": 397,
+          "changes": [
+            {
+              "type": "extract",
+              "finding_refs": ["F1", "F7"],
+              "description": "Extract 'Orchestrator Mission' core directives (lines 14-65) to references/orchestrator-mandate.md",
+              "scope": "SKILL.md lines 14-65 → references/orchestrator-mandate.md, add 3-line import reference in SKILL.md"
+            },
+            {
+              "type": "extract",
+              "finding_refs": ["F1", "F7"],
+              "description": "Extract 'Multi-Wave Dispatch' detailed wave rules (lines 100-170) to references/multi-wave-protocol.md",
+              "scope": "SKILL.md lines 100-170 → references/multi-wave-protocol.md, add 3-line import reference"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F4"],
+              "description": "Add 'Do NOT Use This For' section after 'When to Activate' with 5 items: (1) single-file reads, (2) code implementation, (3) test execution, (4) direct file editing, (5) any task not requiring multi-agent coordination",
+              "scope": "Insert after 'When to Activate', ~10 lines"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F5"],
+              "description": "Add 'Granularity Enforcement' subsection under 'Core Directives' with: >3 files = break down, >500 LOC = never one task, parallel never for same-domain writes, delegation packet must list exact file scope",
+              "scope": "~8 lines under Core Directives"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F7"],
+              "description": "Add 'Front-Agent Self-Awareness' subsection with: (1) lineage check — am I main or sub? (2) session depth — how many turns? (3) workflow phase — what stage am I in? (4) completion gauge — what's done vs remaining? (5) context pressure — how much room do I have? Reference the extracted protocol.",
+              "scope": "~15 lines, references the extracted file"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F8"],
+              "description": "Add 'Context Window Budget' subsection with: (1) 200k token ceiling awareness, (2) parallel operation token cost estimate, (3) carry-forward compression ratio guidance, (4) when to stop loading and start delegating",
+              "scope": "~12 lines"
+            }
+          ],
+          "success_criteria": [
+            "SKILL.md under 400 lines",
+            "Has 'Do NOT Use This For' section with ≥5 items",
+            "Has 'Granularity Enforcement' subsection with >500 LOC rule",
+            "Has 'Front-Agent Self-Awareness' subsection",
+            "Has 'Context Window Budget' subsection",
+            "references/orchestrator-mandate.md exists and contains extracted content",
+            "references/multi-wave-protocol.md exists and contains extracted content",
+            "All extracted content referenced from SKILL.md with brief summary + path"
+          ]
+        },
+        {
+          "skill_name": "use-hivemind-delegation",
+          "current_lines": 471,
+          "target_lines": 461,
+          "changes": [
+            {
+              "type": "extract",
+              "finding_refs": ["F1"],
+              "description": "Extract 'Investigation Swarm Delegation' (lines 268-298) to references/investigation-swarm.md",
+              "scope": "SKILL.md lines 268-298 → references/investigation-swarm.md, add 3-line import reference"
+            },
+            {
+              "type": "extract",
+              "finding_refs": ["F1"],
+              "description": "Extract 'Hierarchical Consumption' (lines 300-315) to references/hierarchical-consumption.md",
+              "scope": "SKILL.md lines 300-315 → references/hierarchical-consumption.md"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F6"],
+              "description": "Add 'Multi-Wave Dispatch Protocol' section referencing use-hivemind's extracted protocol, with delegation-specific additions: (1) wave-to-wave handoff packet format, (2) wave synthesis checkpoint template, (3) escalation between waves, (4) when to merge waves vs keep separate",
+              "scope": "~25 lines"
+            },
+            {
+              "type": "modify",
+              "finding_refs": ["F9"],
+              "description": "Add 'stop_conditions' array to delegation packet template with: (1) scope boundary hit, (2) max files exceeded, (3) out-of-domain detection, (4) context pressure threshold, (5) parent workflow terminated. Each condition has: trigger, action, return_format.",
+              "scope": "Modify delegation packet template in references/, ~20 lines"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F8"],
+              "description": "Add 'Token Budget for Parallel Operations' subsection with: (1) per-agent allocation estimate, (2) parallel dispatch token cost formula, (3) when to reduce batch size, (4) carry-forward compression rules",
+              "scope": "~12 lines"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F5"],
+              "description": "Add 'Granularity Guard' to delegation rules: (1) >3 files = break into sub-delegations, (2) >500 LOC scope = reject and re-plan, (3) same-domain writes = sequential only",
+              "scope": "~8 lines"
+            }
+          ],
+          "success_criteria": [
+            "SKILL.md under 470 lines",
+            "Has 'Multi-Wave Dispatch Protocol' section",
+            "Delegation packet template includes stop_conditions array with ≥5 conditions",
+            "Has 'Token Budget for Parallel Operations' subsection",
+            "Has 'Granularity Guard' with >500 LOC rule",
+            "references/investigation-swarm.md exists",
+            "references/hierarchical-consumption.md exists"
+          ]
+        },
+        {
+          "skill_name": "use-hivemind-context",
+          "current_lines": 342,
+          "target_lines": 377,
+          "changes": [
+            {
+              "type": "add_section",
+              "finding_refs": ["F4"],
+              "description": "Add 'Do NOT Use This For' section with: (1) code implementation, (2) debugging, (3) research, (4) planning, (5) any task beyond context health verification",
+              "scope": "~8 lines, insert before Anti-Patterns"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F8"],
+              "description": "Add 'Context Window Awareness' subsection: (1) token pressure signals to watch, (2) when context health degrades due to window limits, (3) compaction recovery protocol, (4) carry-forward compression for context verification results",
+              "scope": "~12 lines"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F7"],
+              "description": "Add 'Session Self-Assessment' subsection: (1) how to determine current session depth, (2) compaction history check, (3) what to include in context probe results for orchestrator handoff",
+              "scope": "~15 lines"
+            }
+          ],
+          "success_criteria": [
+            "Has 'Do NOT Use This For' section with ≥5 items",
+            "Has 'Context Window Awareness' subsection",
+            "Has 'Session Self-Assessment' subsection",
+            "SKILL.md stays under 400 lines"
+          ]
+        }
+      ],
+      "delegation_packet": {
+        "target_agent": "hivemaker",
+        "scope": "3 skill files under .opencode/skills/: use-hivemind/SKILL.md, use-hivemind-delegation/SKILL.md, use-hivemind-context/SKILL.md plus new reference files",
+        "constraints": [
+          "Do NOT modify any skill other than the 3 listed",
+          "Do NOT change YAML frontmatter",
+          "All extracted content must exist in references/ with proper section headers",
+          "SKILL.md must reference extracted files with path + 1-line summary",
+          "All new sections must follow existing formatting conventions",
+          "Use second-person imperative voice throughout"
+        ],
+        "parent_governance": [
+          "AGENTS.md — Layer Architecture, CQRS boundaries",
+          ".developing-skills/refactored-skills/hiveminder-operation-guidelines.md — skill ecosystem map"
+        ]
+      }
+    },
+    {
+      "batch_id": "batch-2-orchestration",
+      "title": "Orchestration Skills (Gatekeeping + Planning + Synthesis)",
+      "rationale": "These skills handle the multi-pass orchestration loop. They need multi-wave awareness, territory boundaries, and formal stop conditions to prevent cascading failures and context rot.",
+      "dependencies": ["batch-1-core"],
+      "estimated_loc_changes": {
+        "hivemind-gatekeeping": "+30 lines added",
+        "use-hivemind-planning": "+25 lines added",
+        "hivemind-synthesis": "-120 lines extracted, +40 lines added = net -80"
+      },
+      "skills": [
+        {
+          "skill_name": "hivemind-gatekeeping",
+          "current_lines": 336,
+          "target_lines": 366,
+          "changes": [
+            {
+              "type": "add_section",
+              "finding_refs": ["F4"],
+              "description": "Add 'Do NOT Use This For' section (it exists but verify completeness) with: (1) single-pass delegation, (2) domain-specific loops (TDD/debug/refactor own their loops), (3) implementation work, (4) research, (5) planning",
+              "scope": "Verify existing section is complete, add missing items, ~5 lines"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F6"],
+              "description": "Add 'Multi-Wave Gate Protocol' section: (1) gate between investigation waves, (2) gate between research and planning, (3) gate between planning and implementation, (4) how gates compose across waves, (5) escalation from gate failure to wave re-plan",
+              "scope": "~20 lines"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F9"],
+              "description": "Add 'Stop Conditions for Gate Loops' to loop setup: (1) formal stop_conditions array requirement, (2) minimum 2 conditions per loop, (3) examples by loop type (audit, debug, refactor), (4) what to return when stop condition fires",
+              "scope": "~10 lines, modify Loop Setup section"
+            }
+          ],
+          "success_criteria": [
+            "'Do NOT Use This For' section has ≥5 items",
+            "Has 'Multi-Wave Gate Protocol' section",
+            "Loop Setup section includes formal stop_conditions requirement",
+            "SKILL.md stays under 380 lines"
+          ]
+        },
+        {
+          "skill_name": "use-hivemind-planning",
+          "current_lines": 315,
+          "target_lines": 340,
+          "changes": [
+            {
+              "type": "add_section",
+              "finding_refs": ["F4"],
+              "description": "Add 'Do NOT Use This For' section with: (1) code implementation, (2) debugging, (3) investigation/scanning, (4) verification, (5) any task not requiring decomposition into phases",
+              "scope": "~8 lines"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F5"],
+              "description": "Add 'Granularity Limits' to Decomposition Steps: (1) >500 LOC = never one slice, (2) >5 files = split by concern, (3) cross-surface slices forbidden, (4) each slice must have LOC estimate in its metadata",
+              "scope": "~10 lines, modify Step 4 Slice Sizing"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F8"],
+              "description": "Add 'Context Window Planning' subsection: (1) estimate token cost per phase, (2) plan decomposition must account for agent context limits, (3) when to plan for sub-delegation vs monolithic delegation",
+              "scope": "~7 lines"
+            }
+          ],
+          "success_criteria": [
+            "Has 'Do NOT Use This For' section with ≥5 items",
+            "Decomposition Steps includes >500 LOC granularity rule",
+            "Has 'Context Window Planning' subsection",
+            "SKILL.md stays under 350 lines"
+          ]
+        },
+        {
+          "skill_name": "hivemind-synthesis",
+          "current_lines": 486,
+          "target_lines": 406,
+          "changes": [
+            {
+              "type": "extract",
+              "finding_refs": ["F1"],
+              "description": "Extract 'Domain Bundle 1: Investigation' codebase/session/activity subsections (lines 96-140) to references/investigation-domains.md",
+              "scope": "~45 lines extracted"
+            },
+            {
+              "type": "extract",
+              "finding_refs": ["F1"],
+              "description": "Extract 'MCP Tool Usage in Synthesis' (lines 177-210) to references/mcp-tool-catalog.md (merge with existing if present)",
+              "scope": "~35 lines extracted"
+            },
+            {
+              "type": "extract",
+              "finding_refs": ["F1"],
+              "description": "Extract 'Claims-Evidence Protocol' (lines 324-370) to references/claims-evidence-framework.md",
+              "scope": "~45 lines extracted"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F3"],
+              "description": "Add 'Territory Boundary: Synthesis vs Codemap' subsection: (1) hivemind-codemap OWNS: raw scanning, file-level mapping, smell detection, seam discovery; (2) hivemind-synthesis OWNS: multi-source merging, cross-session correlation, evidence grading, compression for handoff; (3) Handoff rule: codemap produces scan output → synthesis consumes and grades; (4) NEVER run synthesis for pure codebase scanning — route to codemap",
+              "scope": "~15 lines"
+            },
+            {
+              "type": "modify",
+              "finding_refs": ["F11"],
+              "description": "Fix voice inconsistency: convert all third-person declarations to second-person imperative. Replace 'Synthesis is not assembly...' with 'You are not assembling...'. Replace 'This skill provides...' with 'Use this skill for...'",
+              "scope": "Voice audit across entire SKILL.md"
+            }
+          ],
+          "success_criteria": [
+            "SKILL.md under 420 lines",
+            "Has 'Territory Boundary: Synthesis vs Codemap' section with clear ownership table",
+            "All text uses second-person imperative voice (no third-person)",
+            "references/investigation-domains.md exists",
+            "references/mcp-tool-catalog.md exists",
+            "references/claims-evidence-framework.md exists",
+            "Extracted content referenced from SKILL.md"
+          ]
+        }
+      ],
+      "delegation_packet": {
+        "target_agent": "hivemaker",
+        "scope": "3 skill files under .opencode/skills/: hivemind-gatekeeping/SKILL.md, use-hivemind-planning/SKILL.md, hivemind-synthesis/SKILL.md plus new reference files",
+        "constraints": [
+          "DEPENDS ON Batch 1 completion — multi-wave protocol and granularity rules must exist first",
+          "Do NOT modify any skill other than the 3 listed",
+          "Do NOT change YAML frontmatter",
+          "Territory boundary must include explicit 'OWNS' and 'DOES NOT OWN' columns",
+          "Voice must be second-person imperative throughout"
+        ],
+        "parent_governance": [
+          "AGENTS.md — Layer Architecture",
+          "Batch 1 outputs: references/multi-wave-protocol.md, references/orchestrator-mandate.md"
+        ]
+      }
+    },
+    {
+      "batch_id": "batch-3-remaining",
+      "title": "Remaining Skills Quality Pass",
+      "rationale": "These skills need targeted fixes (missing sections, voice fixes, content extraction) but don't block each other. Can be parallelized into sub-groups by change type.",
+      "dependencies": ["batch-1-core"],
+      "estimated_loc_changes": {
+        "use-hivemind-ideating": "-120 lines extracted, +15 lines added = net -105",
+        "hivemind-refactor": "-100 lines extracted, +10 lines added = net -90",
+        "use-hivemind-tdd": "+10 lines added",
+        "hivemind-patterns": "+10 lines added",
+        "use-hivemind-git-memory": "+10 lines added",
+        "hivemind-codemap": "+10 lines added",
+        "hivemind-architecture": "+5 lines added",
+        "hivemind-execution": "+5 lines added",
+        "hivemind-system-debug": "+5 lines added",
+        "hivemind-spec-driven": "+0 lines (verify only)",
+        "hivemind-atomic-commit": "+0 lines (verify only)",
+        "use-hivemind-research": "+0 lines (verify only)",
+        "use-hivemind-skill-authoring": "+0 lines (verify only)"
+      },
+      "sub_groups": [
+        {
+          "sub_group_id": "batch-3a-extraction",
+          "title": "Oversized Skill Extraction + Voice Fix",
+          "skills": ["use-hivemind-ideating", "hivemind-refactor"],
+          "changes_per_skill": {
+            "use-hivemind-ideating": {
+              "current_lines": 500,
+              "target_lines": 395,
+              "changes": [
+                {
+                  "type": "extract",
+                  "finding_refs": ["F1"],
+                  "description": "Extract Phase 2-3 detailed protocols (brainstorming dialogue rules, MCP tool chaining) to references/brainstorming-pipeline.md and references/cross-stack-research.md",
+                  "scope": "~60 lines"
+                },
+                {
+                  "type": "extract",
+                  "finding_refs": ["F1"],
+                  "description": "Extract Phase 4 multi-agent review details to references/multi-agent-review.md",
+                  "scope": "~40 lines"
+                },
+                {
+                  "type": "add_section",
+                  "finding_refs": ["F4"],
+                  "description": "Add 'Do NOT Use This For' section with: (1) implementation, (2) debugging, (3) investigation, (4) code review, (5) any task where requirements are already clear and validated",
+                  "scope": "~8 lines"
+                },
+                {
+                  "type": "modify",
+                  "finding_refs": ["F11"],
+                  "description": "Voice audit: convert all third-person to second-person imperative. 'Meta-skill that turns vague ideas...' → 'You turn vague ideas...'",
+                  "scope": "Voice audit across entire SKILL.md"
+                }
+              ]
+            },
+            "hivemind-refactor": {
+              "current_lines": 460,
+              "target_lines": 370,
+              "changes": [
+                {
+                  "type": "extract",
+                  "finding_refs": ["F1"],
+                  "description": "Extract 'Code Review Integration' section (lines 289-340) to references/code-review-integration.md",
+                  "scope": "~50 lines"
+                },
+                {
+                  "type": "extract",
+                  "finding_refs": ["F1"],
+                  "description": "Extract 'LSP Integration for Refactoring' (lines 389-430) to references/lsp-refactor-workflows.md",
+                  "scope": "~40 lines"
+                },
+                {
+                  "type": "modify",
+                  "finding_refs": ["F4"],
+                  "description": "Rename 'You do NOT need this skill for' to 'Do NOT Use This For' for consistency",
+                  "scope": "Section header rename, ~3 lines"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "sub_group_id": "batch-3b-do-not-use",
+          "title": "Add Missing 'Do NOT Use For' Sections",
+          "skills": ["use-hivemind-tdd", "hivemind-patterns", "use-hivemind-git-memory"],
+          "changes_per_skill": {
+            "use-hivemind-tdd": {
+              "current_lines": 417,
+              "target_lines": 427,
+              "changes": [
+                {
+                  "type": "add_section",
+                  "finding_refs": ["F4"],
+                  "description": "Add 'Do NOT Use This For' section with: (1) code review, (2) debugging, (3) research, (4) planning, (5) refactoring without tests",
+                  "scope": "~10 lines"
+                }
+              ]
+            },
+            "hivemind-patterns": {
+              "current_lines": 307,
+              "target_lines": 317,
+              "changes": [
+                {
+                  "type": "add_section",
+                  "finding_refs": ["F4"],
+                  "description": "Add 'Do NOT Use This For' section with: (1) code implementation, (2) debugging, (3) investigation, (4) TDD, (5) any task not requiring architectural pattern selection",
+                  "scope": "~10 lines"
+                }
+              ]
+            },
+            "use-hivemind-git-memory": {
+              "current_lines": 230,
+              "target_lines": 240,
+              "changes": [
+                {
+                  "type": "add_section",
+                  "finding_refs": ["F4"],
+                  "description": "Add 'Do NOT Use This For' section with: (1) code implementation, (2) planning, (3) investigation, (4) TDD, (5) any task not requiring git-based memory persistence",
+                  "scope": "~10 lines"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "sub_group_id": "batch-3c-territory",
+          "title": "Territory Boundary Additions",
+          "skills": ["hivemind-codemap"],
+          "changes_per_skill": {
+            "hivemind-codemap": {
+              "current_lines": 246,
+              "target_lines": 256,
+              "changes": [
+                {
+                  "type": "add_section",
+                  "finding_refs": ["F3"],
+                  "description": "Add 'Territory Boundary: Codemap vs Synthesis' subsection: (1) codemap OWNS raw scanning, file mapping, smell detection; (2) codemap DOES NOT OWN multi-source merging, evidence grading, compression; (3) Handoff rule: codemap output is consumed by synthesis, never the reverse",
+                  "scope": "~10 lines"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "sub_group_id": "batch-3d-verify",
+          "title": "Verification Pass (No Changes Expected)",
+          "skills": ["hivemind-architecture", "hivemind-execution", "hivemind-system-debug", "hivemind-spec-driven", "hivemind-atomic-commit", "use-hivemind-research", "use-hivemind-skill-authoring"],
+          "changes_per_skill": {
+            "hivemind-architecture": {
+              "current_lines": 319,
+              "target_lines": 319,
+              "changes": [
+                {
+                  "type": "verify",
+                  "finding_refs": ["F4"],
+                  "description": "Verify 'Do NOT Use For' section exists and has ≥5 items. Add context window awareness note if missing.",
+                  "scope": "Read-only verification, minor additions if needed"
+                }
+              ]
+            },
+            "hivemind-execution": {
+              "current_lines": 281,
+              "target_lines": 281,
+              "changes": [
+                {
+                  "type": "verify",
+                  "finding_refs": ["F4"],
+                  "description": "Verify 'Do NOT Use For' section exists and has ≥5 items. Verify granularity rules reference Batch 1 additions.",
+                  "scope": "Read-only verification"
+                }
+              ]
+            },
+            "hivemind-system-debug": {
+              "current_lines": 147,
+              "target_lines": 147,
+              "changes": [
+                {
+                  "type": "verify",
+                  "finding_refs": ["F4"],
+                  "description": "Verify 'Do NOT Use For' section exists and has ≥3 items.",
+                  "scope": "Read-only verification"
+                }
+              ]
+            },
+            "hivemind-spec-driven": {
+              "current_lines": 274,
+              "target_lines": 274,
+              "changes": [
+                {
+                  "type": "verify",
+                  "finding_refs": ["F4"],
+                  "description": "Verify 'Do NOT Use For' section exists and has ≥4 items.",
+                  "scope": "Read-only verification"
+                }
+              ]
+            },
+            "hivemind-atomic-commit": {
+              "current_lines": 240,
+              "target_lines": 240,
+              "changes": [
+                {
+                  "type": "verify",
+                  "description": "Verify all quality standards met. No changes expected.",
+                  "scope": "Read-only verification"
+                }
+              ]
+            },
+            "use-hivemind-research": {
+              "current_lines": 123,
+              "target_lines": 123,
+              "changes": [
+                {
+                  "type": "verify",
+                  "description": "Verify all quality standards met. No changes expected.",
+                  "scope": "Read-only verification"
+                }
+              ]
+            },
+            "use-hivemind-skill-authoring": {
+              "current_lines": 230,
+              "target_lines": 230,
+              "changes": [
+                {
+                  "type": "verify",
+                  "description": "Verify all quality standards met. No changes expected.",
+                  "scope": "Read-only verification"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "delegation_packets": [
+        {
+          "target_agent": "hivemaker",
+          "sub_group": "batch-3a-extraction",
+          "scope": "2 skill files: use-hivemind-ideating/SKILL.md, hivemind-refactor/SKILL.md",
+          "constraints": [
+            "DEPENDS ON Batch 1 for granularity enforcement conventions",
+            "Extract content must preserve all information — nothing deleted, only moved",
+            "Voice must be second-person imperative for use-hivemind-ideating"
+          ]
+        },
+        {
+          "target_agent": "hivemaker",
+          "sub_group": "batch-3b-do-not-use",
+          "scope": "3 skill files: use-hivemind-tdd/SKILL.md, hivemind-patterns/SKILL.md, use-hivemind-git-memory/SKILL.md",
+          "constraints": [
+            "Add 'Do NOT Use This For' section in consistent position (after 'When to Load')",
+            "Each section must have ≥5 items",
+            "Use second-person imperative: 'Do NOT use this skill for...'"
+          ]
+        },
+        {
+          "target_agent": "hivemaker",
+          "sub_group": "batch-3c-territory",
+          "scope": "1 skill file: hivemind-codemap/SKILL.md",
+          "constraints": [
+            "Territory boundary must mirror hivemind-synthesis boundary (Batch 2 output)",
+            "Include explicit OWNS / DOES NOT OWN / HANDOFF RULE format"
+          ]
+        },
+        {
+          "target_agent": "hiveq",
+          "sub_group": "batch-3d-verify",
+          "scope": "7 skill files: verify quality standards, report gaps",
+          "constraints": [
+            "Read-only — do NOT modify files",
+            "Report any missing 'Do NOT Use For' sections",
+            "Report any voice inconsistencies",
+            "Return structured pass/fail per skill"
+          ]
+        }
+      ]
+    },
+    {
+      "batch_id": "batch-4-integration",
+      "title": "Guidelines Integration (All 19 Skills)",
+      "rationale": "The operation guidelines must reflect all 19 skills, updated agent-skill mappings, territory boundaries, and the new quality standards. This is the final integration pass that makes the ecosystem coherent.",
+      "dependencies": ["batch-1-core", "batch-2-orchestration", "batch-3-remaining"],
+      "estimated_loc_changes": {
+        "hiveminder-operation-guidelines.md": "+80 lines added, major restructuring"
+      },
+      "skills": [
+        {
+          "skill_name": "hiveminder-operation-guidelines.md",
+          "location": ".developing-skills/refactored-skills/hiveminder-operation-guidelines.md",
+          "current_lines": 232,
+          "target_lines": 312,
+          "changes": [
+            {
+              "type": "restructure",
+              "finding_refs": ["F2"],
+              "description": "Expand 'The 15-Skill Ecosystem' to 'The 19-Skill Ecosystem'. Add: hivemind-architecture (Depth: architecture decisions), hivemind-execution (Depth: execution quality gates), use-hivemind-ideating (Domain: ideation pipeline), hivemind-synthesis (Depth: multi-source synthesis + pre-gatekeeping)",
+              "scope": "Expand tree diagram and description, ~20 lines"
+            },
+            {
+              "type": "modify",
+              "finding_refs": ["F2"],
+              "description": "Add 4 missing skills to Workflow Phase → Skill Mapping table: (1) Ideation → use-hivemind-ideating, (2) Architecture Decisions → hivemind-architecture, (3) Execution Quality → hivemind-execution, (4) Synthesis → hivemind-synthesis",
+              "scope": "~8 new rows in mapping table"
+            },
+            {
+              "type": "modify",
+              "finding_refs": ["F10"],
+              "description": "Update Agent → Skill Mapping: (1) hivemaker loads use-hivemind-tdd + hivemind-execution, (2) hitea loads use-hivemind-tdd + hivemind-execution, (3) architect loads hivemind-patterns + hivemind-architecture, (4) hiveq loads hivemind-gatekeeping + hivemind-synthesis (for pre-gatekeeping)",
+              "scope": "Update agent table, ~5 row modifications"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F3"],
+              "description": "Add 'Territory Boundaries' section with ownership table: (1) hivemind-codemap vs hivemind-synthesis, (2) use-hivemind-ideating vs use-hivemind-planning, (3) hivemind-architecture vs hivemind-patterns",
+              "scope": "~15 lines"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F5", "F6", "F7", "F8"],
+              "description": "Add 'Front-Agent Mandates' section documenting the user's critical requirements: (1) self-awareness protocol, (2) delegation enforcement, (3) multi-wave sophistication, (4) sequential vs parallel decisions, (5) granularity enforcement (>500 LOC, >3 files rules), (6) how-to-process not how-to-implement, (7) parent governance inclusion",
+              "scope": "~25 lines"
+            },
+            {
+              "type": "modify",
+              "finding_refs": ["F2"],
+              "description": "Update verification matrix to include all 19 skills with current line counts from Batch 1-3 outputs",
+              "scope": "Add 4 new rows, update existing line counts"
+            },
+            {
+              "type": "add_section",
+              "finding_refs": ["F2"],
+              "description": "Update quality standards table: (1) change 'SKILL.md under 450 lines' to 'SKILL.md under 400 lines (extract to references/ if exceeding)', (2) add 'Do NOT Use This For' section as mandatory, (3) add 'Territory Boundaries' where applicable, (4) add second-person imperative voice as standard",
+              "scope": "~10 lines"
+            }
+          ],
+          "success_criteria": [
+            "Documents all 19 skills (not 15)",
+            "Workflow Phase → Skill Mapping includes ideation, architecture, execution, synthesis",
+            "Agent → Skill Mapping includes hivemaker + hivemind-execution, hitea + hivemind-execution",
+            "Has 'Territory Boundaries' section with ≥3 territory pairs",
+            "Has 'Front-Agent Mandates' section covering all 7 user requirements",
+            "Verification matrix lists all 19 skills",
+            "Quality standards updated to 400-line limit and mandatory 'Do NOT Use For'"
+          ]
+        }
+      ],
+      "delegation_packet": {
+        "target_agent": "hivemaker",
+        "scope": "1 file: .developing-skills/refactored-skills/hiveminder-operation-guidelines.md",
+        "constraints": [
+          "DEPENDS ON all previous batches completing",
+          "Must reference actual line counts from Batch 1-3 outputs",
+          "Must preserve existing content structure — extend, don't rewrite",
+          "YAML frontmatter must be updated to reference 19 skills",
+          "Changelog must be appended with Batch 4 changes"
+        ],
+        "parent_governance": [
+          "AGENTS.md — shipped product and authority surfaces",
+          "All Batch 1-3 outputs for accurate line counts and section references"
+        ]
+      }
+    }
+  ],
+
+  "dependency_graph": {
+    "edges": [
+      { "from": "batch-2-orchestration", "to": "batch-1-core", "type": "hard" },
+      { "from": "batch-3-remaining", "to": "batch-1-core", "type": "hard" },
+      { "from": "batch-3-remaining.batch-3c-territory", "to": "batch-2-orchestration", "type": "soft" },
+      { "from": "batch-4-integration", "to": "batch-1-core", "type": "hard" },
+      { "from": "batch-4-integration", "to": "batch-2-orchestration", "type": "hard" },
+      { "from": "batch-4-integration", "to": "batch-3-remaining", "type": "hard" }
+    ],
+    "parallel_waves": [
+      ["batch-1-core"],
+      ["batch-2-orchestration", "batch-3-remaining"],
+      ["batch-4-integration"]
+    ],
+    "critical_path": ["batch-1-core", "batch-2-orchestration", "batch-4-integration"]
+  },
+
+  "risks": [
+    {
+      "risk": "Content extraction breaks internal cross-references within SKILL.md",
+      "probability": "medium",
+      "impact": "medium",
+      "mitigation": "After extraction, verify all section links in TOC still resolve. Agent must run grep for broken anchors."
+    },
+    {
+      "risk": "Voice audit misses third-person fragments in long skills",
+      "probability": "medium",
+      "impact": "low",
+      "mitigation": "Batch 3d verification pass includes explicit voice consistency check per skill."
+    },
+    {
+      "risk": "Territory boundaries defined in Batch 2 contradict existing codemap behavior",
+      "probability": "low",
+      "impact": "high",
+      "mitigation": "Batch 3c runs AFTER Batch 2 and mirrors the synthesis boundary exactly. Codemap changes reference synthesis output."
+    },
+    {
+      "risk": "Guidelines verification matrix line counts become stale before Batch 4",
+      "probability": "medium",
+      "impact": "low",
+      "mitigation": "Batch 4 reads actual file line counts (wc -l) rather than trusting plan estimates."
+    },
+    {
+      "risk": "Adding sections pushes skills over line limits, creating recursive extraction needs",
+      "probability": "low",
+      "impact": "medium",
+      "mitigation": "Estimated targets include buffer. If a skill exceeds 400 lines after additions, agent must extract before adding."
+    }
+  ],
+
+  "architect_decisions_needed": [],
+
+  "execution_order": [
+    {
+      "step": 1,
+      "batch": "batch-1-core",
+      "action": "dispatch",
+      "target": "hivemaker",
+      "packet_ref": "#batch-1-core delegation_packet"
+    },
+    {
+      "step": 2,
+      "batch": "batch-2-orchestration",
+      "action": "dispatch_parallel",
+      "targets": ["hivemaker (batch-2)", "hivemaker (batch-3a + 3b + 3c)"],
+      "note": "Batch 2 and Batch 3 (excluding 3c territory) can run in parallel since Batch 3 only depends on Batch 1"
+    },
+    {
+      "step": 3,
+      "batch": "batch-3-remaining",
+      "action": "dispatch",
+      "target": "hiveq (batch-3d verification)",
+      "note": "Verification pass runs after all Batch 3 modifications complete"
+    },
+    {
+      "step": 4,
+      "batch": "batch-4-integration",
+      "action": "dispatch",
+      "target": "hivemaker",
+      "note": "Must read actual line counts from completed batches"
+    }
+  ]
+}

@@ -1,0 +1,213 @@
+{
+  "_meta": {
+    "created_at": "2026-03-30T10:34:24+07:00",
+    "updated_at": "2026-03-30T10:34:24+07:00",
+    "producer": "hivexplorer",
+    "source_skill": "use-hivemind-ideating",
+    "source_paths": [
+      ".developing-skills/refactored-skills/use-hivemind-ideating/SKILL.md",
+      ".developing-skills/refactored-skills/use-hivemind-ideating/references/intent-gate-protocol.md",
+      ".developing-skills/refactored-skills/use-hivemind-ideating/references/brainstorming-pipeline.md"
+    ]
+  },
+  "investigation_scope": {
+    "question": "Extract intent classification / user-intent pattern from use-hivemind-ideating skill",
+    "files_analyzed": 3,
+    "extraction_targets": [
+      "intent classification engine",
+      "ambiguity check logic",
+      "context-completion gate",
+      "turn-local intent reset",
+      "user-intent references",
+      "Phase 0 intent gate structure"
+    ]
+  },
+  "findings": {
+    "phase_0_intent_gate": {
+      "location": "SKILL.md:79-143",
+      "summary": "Every ideation session begins with explicit intent classification. Never assume intent from prior turns.",
+      "steps": [
+        {
+          "step": "Step 0: Intent Verbalization",
+          "location": "SKILL.md:83-87",
+          "content": "Before any action, verbalize what you detect:\n> \"I detect a **[research / implementation / investigation / evaluation / fix / open-ended]** request — [reason]. My approach: **[explore → answer / plan → execute / clarify first / etc.]**.\""
+        },
+        {
+          "step": "Step 1: Request Type Classification",
+          "location": "SKILL.md:89-97",
+          "content": {
+            "table": {
+              "Trivial": {"signal": "Single fact, known area", "depth": "Answer directly, skip pipeline"},
+              "Explicit": {"signal": "Clear goal, known scope", "depth": "Lightweight mode"},
+              "Exploratory": {"signal": "\"What if...\", \"Should we...\"", "depth": "Standard mode"},
+              "Open-ended": {"signal": "\"I want to...\", \"How might we...\"", "depth": "Standard or Deep"},
+              "Ambiguous": {"signal": "Unclear goal, contradictory signals", "depth": "Clarify first (Phase 0 loop)"}
+            }
+          }
+        },
+        {
+          "step": "Step 1.5: Turn-Local Intent Reset (MANDATORY)",
+          "location": "SKILL.md:99-107",
+          "enforcement_rules": [
+            "Re-classify from the current message only",
+            "Prior turn context informs but never overrides",
+            "Even if the previous turn was implementation, the current message may be research",
+            "Ignore accumulated context when classifying the current message",
+            "Look at the user's exact words, not the conversation history",
+            "If the message could be multiple types, pick the highest-priority match from the routing table",
+            "Log the re-classification to activity output"
+          ]
+        },
+        {
+          "step": "Step 2: Ambiguity Check",
+          "location": "SKILL.md:109-116",
+          "content": "If intent is ambiguous, ask ONE clarifying question. Do not proceed until resolved.",
+          "questions": [
+            "\"Are you asking me to research this, or do you want to start building it?\"",
+            "\"Is this a quick question or are you exploring a new feature?\"",
+            "\"Should I investigate the current state first, or are you proposing a change?\""
+          ]
+        },
+        {
+          "step": "Step 2.5: Context-Completion Gate",
+          "location": "SKILL.md:118-128",
+          "content": "Before proceeding to Phase 1, ALL three conditions must be true:",
+          "conditions": [
+            {"id": 1, "condition": "User's goal is stated or inferable", "check": "Can I write a one-sentence problem statement?"},
+            {"id": 2, "condition": "Relevant context is available", "check": "Do I know the domain, stack, and constraints?"},
+            {"id": 3, "condition": "No blocking ambiguity remains", "check": "Are there zero unresolved HIGH-IMPACT questions?"}
+          ],
+          "failure_behavior": "If any condition fails → ask one targeted question. Do not batch questions."
+        },
+        {
+          "step": "Step 3: Validation Before Acting",
+          "location": "SKILL.md:130-141",
+          "content": {
+            "assumptions_check": "List any assumptions you're making. If more than 2, ask the user to confirm.",
+            "delegation_check": "Can this be answered inline in <3 actions? If yes, handle directly and skip the pipeline.",
+            "when_to_challenge": [
+              "User proposes adding a feature that duplicates existing functionality → flag it",
+              "User wants to skip research for a cross-stack change → push back",
+              "User is solving a symptom, not the root cause → reframe the problem",
+              "User's scope keeps expanding during dialogue → invoke creep prevention early"
+            ]
+          }
+        }
+      ]
+    },
+    "routing_decision_tree": {
+      "location": "references/intent-gate-protocol.md:7-19",
+      "content": "Raw Message\n  → Is it a question? → YES → Is it about existing code? → YES → RESEARCH\n                                        → NO → Is it about a decision? → YES → EVALUATION\n                                                                              → NO → RESEARCH\n  → Is it a command? → YES → Is it \"fix/debug\"? → YES → FIX (not ideation)\n                             → Is it \"add/create/build\"? → YES → IMPLEMENTATION\n                             → Is it \"check/investigate\"? → YES → INVESTIGATION (not ideation)\n                             → Other → OPEN-ENDED\n  → Neither clear question nor command → AMBIGUOUS → Clarify first"
+    },
+    "intent_routing_map": {
+      "location": "SKILL.md:399-407",
+      "table": [
+        {"intent": "Research", "signal_words": "\"explain\", \"how does\", \"what is\"", "route": "Explore → Answer", "ideation_mode": "Lightweight or inline"},
+        {"intent": "Implementation", "signal_words": "\"add\", \"create\", \"build\", \"implement\"", "route": "Plan → Execute", "ideation_mode": "Lightweight"},
+        {"intent": "Investigation", "signal_words": "\"check\", \"why\", \"debug\", \"failing\"", "route": "Isolate → Diagnose", "ideation_mode": "Inline (not ideation)"},
+        {"intent": "Evaluation", "signal_words": "\"what do you think\", \"should we\", \"compare\"", "route": "Clarify → Evaluate", "ideation_mode": "Standard"},
+        {"intent": "Fix", "signal_words": "\"broken\", \"error\", \"crash\", \"regression\"", "route": "Diagnose → Fix", "ideation_mode": "Inline (not ideation)"},
+        {"intent": "Open-ended", "signal_words": "\"refactor\", \"migrate\", \"redesign\", \"rebuild\"", "route": "Clarify → Ideate", "ideation_mode": "Standard or Deep"}
+      ]
+    },
+    "concrete_examples_per_intent": {
+      "location": "references/intent-gate-protocol.md:42-78",
+      "examples": {
+        "Research": [
+          "\"Explain how the trajectory tool works\" → explore → answer",
+          "\"What is CQRS and when should I use it?\" → explore → answer",
+          "\"How does React's reconciliation algorithm work?\" → explore → answer"
+        ],
+        "Implementation": [
+          "\"Add a new handoff tool\" → plan → execute",
+          "\"Create a settings page with dark mode toggle\" → plan → execute",
+          "\"Implement rate limiting on the API endpoints\" → plan → execute"
+        ],
+        "Investigation_NOT_IDEATION": [
+          "\"Check why tests are failing in src/tools/\" → isolate → diagnose",
+          "\"What's causing the memory leak in production?\" → isolate → diagnose",
+          "\"Investigate the slow query on the dashboard\" → isolate → diagnose"
+        ],
+        "Evaluation": [
+          "\"What do you think about using CQRS for hooks?\" → clarify → evaluate",
+          "\"Should we use REST or GraphQL for the new API?\" → clarify → evaluate",
+          "\"Is it worth migrating to TypeScript 6?\" → clarify → evaluate"
+        ],
+        "Fix_NOT_IDEATION": [
+          "\"The build is broken after last commit\" → diagnose → fix",
+          "\"Fix the flaky test in the CI pipeline\" → diagnose → fix",
+          "\"Regression: login returns 500 error\" → diagnose → fix"
+        ],
+        "Open-ended": [
+          "\"Refactor the shared utilities\" → clarify → ideate (Standard)",
+          "\"Migrate from monolith to microservices\" → clarify → ideate (Deep)",
+          "\"Redesign the authentication flow\" → clarify → ideate (Standard)"
+        ]
+      }
+    },
+    "turn_local_intent_reset_enforcement": {
+      "location": "references/intent-gate-protocol.md:80-100",
+      "enforcement_rules": [
+        "On every new turn, re-read ONLY the current user message",
+        "Classify from scratch — ignore all prior classifications",
+        "If the message is a response to a prior question, extract the intent from the response content, not the question context",
+        "Log the re-classification to intent-log.json"
+      ],
+      "when_override_allowed": [
+        "The current message is a one-word response (\"yes\", \"no\", \"ok\")",
+        "The current message is a direct continuation (\"continue\", \"go ahead\")",
+        "The current message explicitly references a prior statement (\"as I said before...\")"
+      ],
+      "logging_command": "echo \"{\\\"intent\\\":\\\"<type>\\\",\\\"source\\\":\\\"turn-local-reset\\\",\\\"timestamp\\\":\\\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\\\"}\" >> .hivemind/activity/ideating/{session-id}/intent-log.json"
+    },
+    "context_completion_gate": {
+      "location": "references/intent-gate-protocol.md:101-115",
+      "checklist": [
+        {"id": 1, "condition": "Goal is stated or inferable", "how_to_check": "Can I write a one-sentence problem statement?"},
+        {"id": 2, "condition": "Relevant context available", "how_to_check": "Do I know: domain, stack, constraints?"},
+        {"id": 3, "condition": "No blocking ambiguity", "how_to_check": "Are there zero unresolved HIGH-IMPACT questions?"}
+      ],
+      "scoring": {
+        "all_3_true": "PROCEED to Phase 1",
+        "1_2_true": "Ask ONE targeted question, then re-check",
+        "0_true": "Ask the user to state their goal clearly"
+      }
+    },
+    "edge_cases": {
+      "location": "references/intent-gate-protocol.md:21-40",
+      "ambiguous_messages": {
+        "example": "\"I need dark mode\" — Implementation? Or evaluation of whether to add it?",
+        "resolution": "Ask \"Are you asking me to build this, or exploring whether it's worth building?\""
+      },
+      "multi_intent_messages": {
+        "example": "\"Add OAuth2 and explain how the auth flow works\"",
+        "resolution": "Split into separate intents. Handle the research inline; the implementation goes through the pipeline."
+      },
+      "carry_over_from_prior_turns": {
+        "rule": "Current message wins. Always.",
+        "example": "Prior turn: \"Add a login page\" → current turn: \"Actually, how does JWT work?\" → Classification: Research, not implementation. Prior turn is history."
+      }
+    },
+    "metrics": {
+      "location": "references/intent-gate-protocol.md:123-129",
+      "table": [
+        {"metric": "Intent accuracy", "target": "≥95% first-turn correct classification"},
+        {"metric": "Ambiguity resolution", "target": "≤2 clarifying questions before classification"},
+        {"metric": "False-positive ideation", "target": "≤5% (ideation triggered when not needed)"}
+      ]
+    },
+    "conditions": {
+      "location": "references/intent-gate-protocol.md:131-134",
+      "use_when": "Any user message that could lead to feature work or architectural change",
+      "do_not_use_when": "Simple factual questions, bug reports, direct commands with clear scope"
+    }
+  },
+  "phase_0_gate_summary": {
+    "gate_name": "Intent Gate",
+    "input": "Raw user message",
+    "output": "Classified intent + routing",
+    "gate_criteria": "Intent verbalized",
+    "pipeline_position": "Phase 0 of 7",
+    "key_principle": "Never assume intent from prior turns"
+  }
+}

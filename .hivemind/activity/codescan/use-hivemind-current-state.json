@@ -1,0 +1,154 @@
+{
+  "_meta": {
+    "created_at": "2026-03-30T10:34:24+07:00",
+    "updated_at": "2026-03-30T10:34:24+07:00",
+    "producer": "hivexplorer",
+    "purpose": "audit-use-hivemind-current-state"
+  },
+  "audit_scope": {
+    "target": "use-hivemind skill under .developing-skills/refactored-skills/",
+    "files_investigated": [
+      "SKILL.md (196 lines)",
+      "references/agent-roles.md (150 lines)",
+      "references/anti-patterns-compendium.md (132 lines)",
+      "references/context-health-protocol.md (127 lines)",
+      "references/delegation-protocol.md (232 lines)",
+      "references/orchestrator-mandate.md (246 lines)",
+      "references/orchestrator-self-assessment.md (93 lines)",
+      "references/verification-before-completion.md (47 lines)",
+      "templates/load-template.md (188 lines)"
+    ],
+    "total_lines": 1211
+  },
+  "findings": [
+    {
+      "id": 1,
+      "severity": "HIGH",
+      "category": "structural-contamination",
+      "title": "Delegation protocol content resides in use-hivemind instead of use-hivemind-delegation",
+      "evidence": {
+        "file": ".developing-skills/refactored-skills/use-hivemind/references/delegation-protocol.md",
+        "lines": 232,
+        "content_summary": "Multi-wave dispatch, topology selection, parallel dispatch rules, handoff packet format, wave flow diagrams, agent selection, escalation rules",
+        "should_be_in": "use-hivemind-delegation skill"
+      },
+      "detail": "delegation-protocol.md contains deep delegation mechanics (wave flows, topology, parallel rules, handoff packets) that belong in use-hivemind-delegation, not use-hivemind. use-hivemind is the entry router - it should route TO delegation, not contain delegation methodology.",
+      "impact": "Conceptual contamination - use-hivemind contains implementation details of a domain it merely routes to"
+    },
+    {
+      "id": 2,
+      "severity": "HIGH",
+      "category": "structural-contamination",
+      "title": "Batch loading template resides in use-hivemind instead of use-hivemind-delegation",
+      "evidence": {
+        "file": ".developing-skills/refactored-skills/use-hivemind/templates/load-template.md",
+        "lines": 188,
+        "content_summary": "Dynamic skill batch composition, layer definitions, conditional batch templates (TDD, planning, debugging, research), multi-wave rotation rules",
+        "should_be_in": "use-hivemind-delegation skill"
+      },
+      "detail": "load-template.md describes batch rotation across waves, skill prerequisite chains, and conditional loading patterns. This is delegation coordination logic, not entry routing logic. The orchestrator mandate reference (lines 172-188) even states 'Skills are loaded in conditional batches' which is delegation territory.",
+      "impact": "Batch composition and rotation is a delegation concern, not a routing concern"
+    },
+    {
+      "id": 3,
+      "severity": "MEDIUM",
+      "category": "missing-content",
+      "title": "Intent classification is absent from the SKILL.md routing logic",
+      "evidence": {
+        "file": ".developing-skills/refactored-skills/use-hivemind/SKILL.md",
+        "lines": 25,
+        "section": "Context Integrity Gate - Step 4",
+        "gap": "Step 4 says 'Conversation Context Assessment' but provides no explicit intent classification mechanism"
+      },
+      "detail": "The user explicitly requested 'intent' as a core function. The SKILL.md has no intent classification table, signal-word matching, or request type taxonomy. The Routing Decision Table exists but has no documentation on HOW to classify a request into those categories. Compare with use-hivemind-research which has explicit classification tables.",
+      "impact": "No documented mechanism for determining user intent before routing"
+    },
+    {
+      "id": 4,
+      "severity": "MEDIUM",
+      "category": "missing-content",
+      "title": "Context rot defense mechanisms documented in reference but not in SKILL.md",
+      "evidence": {
+        "file": ".developing-skills/refactored-skills/use-hivemind/references/context-health-protocol.md",
+        "lines": 127,
+        "gap": "Distrust levels (CLEAN/SUSPECT/DEGRADED/POLLUTED/POISONED) and context rot detection triggers exist in reference but SKILL.md only has a 5-step gate with no rot-specific countermeasures"
+      },
+      "detail": "context-health-protocol.md has thorough context rot detection (triggers, distrust levels, recovery actions) but this is not summarized or referenced as a required step in the SKILL.md's Context Integrity Gate. The gate mentions 'stale/corrupt state' but doesn't define the levels or triggers.",
+      "impact": "Context rot defense is buried in a reference file, not surfaced in the primary SKILL.md"
+    },
+    {
+      "id": 5,
+      "severity": "LOW",
+      "category": "structural",
+      "title": "Role detection described in frontmatter but detection logic is in reference file",
+      "evidence": {
+        "file": ".developing-skills/refactored-skills/use-hivemind/SKILL.md",
+        "line": 3,
+        "frontmatter": "description says 'Detects lineage (hivefiver vs hiveminder)'",
+        "gap": "The actual detection logic (how to determine if agent is hiveminder or hivefiver) is in orchestrator-self-assessment.md lines 46-62, not in the SKILL.md itself"
+      },
+      "detail": "The SKILL.md frontmatter promises role detection but the actual detection protocol is in a reference file. For a mandatory first-action gate, the detection logic should be in the SKILL.md itself, not deferred to a reference.",
+      "impact": "Minor - detection logic exists but is not immediately visible in SKILL.md"
+    }
+  ],
+  "broken_links_check": {
+    "status": "PASS",
+    "details": "All 7 reference files and 1 template file listed in SKILL.md exist and are readable. No orphaned references detected."
+  },
+  "structure_match_assessment": {
+    "user_requested": ["routing hub", "intent", "governance gates"],
+    "implemented": {
+      "routing_hub": "✅ Present - Routing Decision Table with 10 categories",
+      "governance_gates": "✅ Present - Context Integrity Gate (5 steps) + Anti-Patterns Summary",
+      "intent": "❌ MISSING - No intent classification mechanism in SKILL.md"
+    },
+    "verdict": "Partially matches user requirements - routing and governance are present, but intent classification is absent"
+  },
+  "wrong_content_location": [
+    {
+      "content": "delegation-protocol.md (232 lines)",
+      "belongs_in": "use-hivemind-delegation",
+      "reason": "Contains delegation methodology (wave dispatch, topology, handoffs) not entry routing"
+    },
+    {
+      "content": "load-template.md (188 lines)",
+      "belongs_in": "use-hivemind-delegation",
+      "reason": "Batch rotation and skill composition across waves is delegation coordination"
+    },
+    {
+      "content": "Multi-wave dispatch patterns section in orchestrator-mandate.md",
+      "belongs_in": "use-hivemind-delegation",
+      "reason": "Mandate references delegation protocol for full dispatch rules - the full rules belong in delegation skill"
+    }
+  ],
+  "missing_content": [
+    {
+      "what": "Intent classification",
+      "where_should_be": "SKILL.md Context Integrity Gate or its own reference",
+      "detail": "No signal-word matching, no request type taxonomy for routing decisions"
+    },
+    {
+      "what": "Context rot defense mechanisms",
+      "where_should_be": "SKILL.md Context Integrity Gate",
+      "detail": "Distrust levels and rot triggers exist in context-health-protocol.md but not summarized in SKILL.md"
+    },
+    {
+      "what": "Role detection protocol",
+      "where_should_be": "SKILL.md main body",
+      "detail": "Detection logic is in orchestrator-self-assessment.md, not immediately visible in SKILL.md"
+    }
+  ],
+  "summary_for_orchestrator": {
+    "line_count": 196,
+    "reference_count": 7,
+    "template_count": 1,
+    "total_content_lines": 1211,
+    "top_issues": [
+      "Delegation protocol content (232 lines) should be in use-hivemind-delegation, not use-hivemind",
+      "Batch loading template (188 lines) should be in use-hivemind-delegation",
+      "Intent classification is entirely absent from SKILL.md",
+      "Context rot defense levels/triggers not surfaced in SKILL.md main body"
+    ],
+    "verdict": "SKILL.md is structurally sound as entry router but contains delegation methodology that should be moved. Intent and context rot content is missing from main SKILL.md."
+  }
+}

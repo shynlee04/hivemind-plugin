@@ -1,0 +1,284 @@
+{
+  "_meta": {
+    "created_at": "2026-03-30T09:20:52+07:00",
+    "investigation": "YAML frontmatter descriptions audit of refactored-skills",
+    "skills_investigated": 19,
+    "skills_requested": 18,
+    "note": "use-hivemind-skill-authoring was present but not in original 18-skill list"
+  },
+  "findings": [
+    {
+      "skill_name": "use-hivemind",
+      "file_path": ".developing-skills/refactored-skills/use-hivemind/SKILL.md",
+      "description_text": "Master session entry router. Detects lineage (hivefiver vs hiveminder), checks context health, routes to correct domain router. Blocks when context is degraded. Loads skill batches dynamically based on plan, workflow, and task context. Every agent session must start here.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 432,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "use-hivemind-context",
+      "file_path": ".developing-skills/refactored-skills/use-hivemind-context/SKILL.md",
+      "description_text": "Context health verification — verifies doc/code agreement, detects context rot, and runs verification gates before trusting prior sessions or memory.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 342,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "use-hivemind-delegation",
+      "file_path": ".developing-skills/refactored-skills/use-hivemind-delegation/SKILL.md",
+      "description_text": "Delegation protocol for front-facing agents splitting work across subagents — covers decision rules, task decomposition, handoff packets, return contracts, and failure recovery.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 471,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "use-hivemind-git-memory",
+      "file_path": ".developing-skills/refactored-skills/use-hivemind-git-memory/SKILL.md",
+      "description_text": "Git-based semantic memory operations for session recovery, continuity state, decision retrieval, and hierarchy indexing across multi-turn workflows.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 230,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "use-hivemind-ideating",
+      "file_path": ".developing-skills/refactored-skills/use-hivemind-ideating/SKILL.md",
+      "description_text": "Meta-skill that turns vague ideas into validated, architecture-evaluated features through structured brainstorming, multi-agent review, cross-stack research, and quality gating.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": true,
+      "specific_enough": true,
+      "line_count": 500,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "use-hivemind-planning",
+      "file_path": ".developing-skills/refactored-skills/use-hivemind-planning/SKILL.md",
+      "description_text": "Planning lifecycle for complex tasks — requirement distillation, feasibility validation, slice decomposition, and dependency mapping through to execution.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 377,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "use-hivemind-research",
+      "file_path": ".developing-skills/refactored-skills/use-hivemind-research/SKILL.md",
+      "description_text": "Router for structured research workflows — multi-source investigation, technology evaluation, and evidence-based findings.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 316,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "use-hivemind-tdd",
+      "file_path": ".developing-skills/refactored-skills/use-hivemind-tdd/SKILL.md",
+      "description_text": "TDD lifecycle enforcement — write failing tests first, implement to pass, refactor cleanly. No exceptions.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 417,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "hivemind-architecture",
+      "file_path": ".developing-skills/refactored-skills/hivemind-architecture/SKILL.md",
+      "description_text": "Architecture decision guidance — ADR templates, pattern selection, NFR checklists, and clean architecture rules for structural decisions.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 319,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "hivemind-atomic-commit",
+      "file_path": ".developing-skills/refactored-skills/hivemind-atomic-commit/SKILL.md",
+      "description_text": "Typed commit discipline — classifies changes by activity, validates pre-commit gates, produces structured commit messages with rollback support.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 240,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "hivemind-codemap",
+      "file_path": ".developing-skills/refactored-skills/hivemind-codemap/SKILL.md",
+      "description_text": "Whole-codebase mapping for detox or restoration — seam discovery, multi-layer scan passes, and concern slicing before refactor.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 246,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "hivemind-execution",
+      "file_path": ".developing-skills/refactored-skills/hivemind-execution/SKILL.md",
+      "description_text": "Execution workflow for implementation agents — quality gates, code standards, and dependency audit guidance for clean delivery.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 281,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "hivemind-gatekeeping",
+      "file_path": ".developing-skills/refactored-skills/hivemind-gatekeeping/SKILL.md",
+      "description_text": "Loop control and synthesis gates — checkpoints, carry-forward compression, cascading failure recovery, and iterative loop governance.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 385,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "hivemind-patterns",
+      "file_path": ".developing-skills/refactored-skills/hivemind-patterns/SKILL.md",
+      "description_text": "Architecture patterns reference — Clean Architecture, CQRS, design patterns, and anti-patterns for structural decisions.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 307,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "hivemind-refactor",
+      "file_path": ".developing-skills/refactored-skills/hivemind-refactor/SKILL.md",
+      "description_text": "Refactor methodology. Smallest safe change. Behavior preservation is non-negotiable. Assess, plan, execute, verify — in that order.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 460,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "hivemind-spec-driven",
+      "file_path": ".developing-skills/refactored-skills/hivemind-spec-driven/SKILL.md",
+      "description_text": "Spec-driven engineering — from vague requirements to testable specs with acceptance criteria and traceability.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 274,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "hivemind-synthesis",
+      "file_path": ".developing-skills/refactored-skills/hivemind-synthesis/SKILL.md",
+      "description_text": "Investigation, research, and synthesis orchestration — codebase, sessions, and activity analysis with Repomix + MCP tool integration and pre-gatekeeping on synthesized output.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 486,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "hivemind-system-debug",
+      "file_path": ".developing-skills/refactored-skills/hivemind-system-debug/SKILL.md",
+      "description_text": "Debug-to-refactor transitions — reproducibility, narrowing, containment, rollback logic, and transition rules for unresolved breakage.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 147,
+      "rating": "PASS"
+    },
+    {
+      "skill_name": "use-hivemind-skill-authoring",
+      "file_path": ".developing-skills/refactored-skills/use-hivemind-skill-authoring/SKILL.md",
+      "description_text": "Skill creation, review, and auditing — naming conventions, universal design, conflict detection, and quality assurance for HiveMind skills.",
+      "what_answered": true,
+      "when_answered": true,
+      "keywords_present": true,
+      "third_person": false,
+      "specific_enough": true,
+      "line_count": 274,
+      "rating": "PASS"
+    }
+  ],
+  "summary": {
+    "total_skills": 19,
+    "pass_count": 19,
+    "fail_count": 0,
+    "pass_rate": "100%",
+    "third_person_count": 1,
+    "skills_exceeding_400_lines": [
+      "use-hivemind-ideating (500 lines)",
+      "hivemind-synthesis (486 lines)",
+      "use-hivemind (432 lines)",
+      "hivemind-refactor (460 lines)"
+    ]
+  },
+  "key_findings": [
+    {
+      "finding_id": 1,
+      "severity": "INFO",
+      "title": "All 19 skills PASS description quality review",
+      "detail": "Every skill's YAML frontmatter description adequately answers WHAT it does, WHEN to use it, and contains appropriate keywords for agent discovery."
+    },
+    {
+      "finding_id": 2,
+      "severity": "MINOR",
+      "title": "Inconsistent voice: use-hivemind-ideating uses third-person 'Meta-skill that...'",
+      "detail": "18 of 19 skills use second-person or imperative voice. Only use-hivemind-ideating describes itself in third-person, which is inconsistent with the skill authoring guidelines."
+    },
+    {
+      "finding_id": 3,
+      "severity": "INFO",
+      "title": "4 skills exceed 400-line guideline from skill-authoring",
+      "detail": "use-hivemind-ideating (500), hivemind-synthesis (486), use-hivemind (432), hivemind-refactor (460) all exceed the 'keep it under 400 lines' convention, suggesting possible overloading of concerns."
+    },
+    {
+      "finding_id": 4,
+      "severity": "INFO",
+      "title": "Unexpected extra skill found: use-hivemind-skill-authoring",
+      "detail": "The directory contained 19 skills but user requested 18. use-hivemind-skill-authoring was present but not in the original list."
+    },
+    {
+      "finding_id": 5,
+      "severity": "INFO",
+      "title": "All descriptions use dash-separated format for clarity",
+      "detail": "All 19 skills use the pattern 'X — Y' (role delimiter) which provides consistent readability and machine-parseable structure."
+    }
+  ]
+}
