@@ -41,3 +41,7 @@ Skip any step = lying, not verifying.
 ## Bottom Line
 No shortcuts. Run the command. Read the output. THEN claim.
 This is non-negotiable.
+
+---
+
+_Meta: purpose=evidence-before-assertions-verification-gate | loaded_when=completion-claim-or-verification-needed | parent_skill=use-hivemind_

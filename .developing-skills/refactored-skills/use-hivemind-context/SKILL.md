@@ -30,14 +30,18 @@ You're about to trust something — a doc, a memory, a prior session's claim, a 
 
 - [Load Position](#load-position)
 - [When You Need This](#when-you-need-this)
+- [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
 - [The 3-Step Trust Check](#the-3-step-trust-check)
 - [Distrust Levels](#distrust-levels)
+- [Session Position Detection](#session-position-detection)
 - [Routing Logic](#routing-logic)
 - [Verification Gates](#verification-gates-project-reality)
 - [Freshness Probe](#freshness-probe)
 - [Cross-Team Context Awareness](#cross-team-context-awareness)
 - [Multi-Source Comparison](#multi-source-comparison)
 - [Context Preservation Across Long Sessions](#context-preservation-across-long-sessions)
+- [Multi-Wave Context Protocol](#multi-wave-context-protocol)
+- [Token Budget Awareness](#token-budget-awareness)
 - [Distrust Protocol](#distrust-protocol)
 - [Orchestrator Integration](#orchestrator-integration)
 - [Handoff Paths](#handoff-paths)
@@ -57,6 +61,16 @@ You're about to trust something — a doc, a memory, a prior session's claim, a 
 | Between implementation phases — gate checkpoint | `use-hivemind-context` (individual gates) |
 | Validating a completion claim with hard evidence | `use-hivemind-context` (gate-chain) |
 | After merges, dependency changes, or long gaps | `use-hivemind-context` (landscape) |
+
+## Anti-Patterns to Avoid
+
+**NEVER skip context check when resuming after a user prompt.** The user's message arrives into an existing workflow state — an active plan, pending delegations, partial completions. Verify that state before acting. Assuming the user's prompt means "start fresh" breaks the mandate of roles.
+
+**NEVER trust session continuity without verifying artifacts.** `continuity.json` claims a task is complete? Verify the output file exists and matches expectations. `continuity.json` claims context is CLEAN? Run the freshness probe. Continuity state is a convenience layer, not a ground truth.
+
+**NEVER assume CLEAN context after compaction/disconnect without a probe.** Session compaction rewrites context. Disconnections lose state. After either event, run at minimum the quick mode freshness probe before trusting accumulated context. CLEAN requires proof, not assumption.
+
+**NEVER act on the user's next prompt without verifying workflow, orchestration, and artifact state.** Agents in the next N turns always assume they can execute after the user's next-in-turn prompt. This assumption is WRONG. Check: Is there an active workflow? Pending delegations? Unresolved returns? Documents that contradict current intent? The user's prompt exists inside a system state — verify that system state first.
 
 ## The 3-Step Trust Check
 
@@ -84,6 +98,18 @@ Declare the level explicitly. Don't mumble "it might be stale." Say what it is.
 | **POISONED** | Session context is actively contradictory. Prior session memory conflicts with git history. | Full analysis. Emit checkpoint. Do not proceed until trust is rebuilt. |
 
 When DEGRADED or worse, say it out loud: "Context is DEGRADED. Distrusting [specific sources] until verified."
+
+## Session Position Detection
+
+Before routing context checks, determine session position:
+
+| Signal | Position | Context Action |
+|--------|----------|---------------|
+| First message in session | Main, Fresh | Quick mode baseline |
+| Mid-conversation, no interruptions | Main, Accumulated | Trust accumulated unless signals indicate rot |
+| After `/clear` or compaction | Main, Recovering | Load continuity.json, run rot check |
+| After user cancel + resume | Main, Suspect | Full mode — verify everything |
+| Received delegation packet | Sub-agent | Trust packet's validated context, skip self-check |
 
 ## Routing Logic
 
@@ -216,6 +242,35 @@ Emits continuity checkpoints at EVERY phase transition. No exceptions. A phase t
 - After `session.compacting` fires, your session context has been rewritten
 - The compaction prompt may have lost nuance — re-verify critical claims after compaction
 - Continuity checkpoints survive compaction because they're written to disk, not session memory
+
+## Multi-Wave Context Protocol
+
+When the orchestrator needs context verification before dispatching multi-wave work:
+
+1. **Quick mode** on current session — is session fresh?
+2. If fresh → proceed to dispatch
+3. If SUSPECT or worse → run rot check BEFORE any dispatch
+4. Include distrust context in ALL delegation packets for the wave
+5. After wave returns → re-run quick mode to verify context didn't rot during dispatch
+
+**Between waves**: Run freshness probe on shared files touched by prior wave.
+
+## Token Budget Awareness
+
+Context health includes token budget estimation:
+
+| Operation Type | Estimated Tokens | Risk |
+|---------------|-----------------|------|
+| Single file read | 1-5k | Low |
+| Codebase scan (grep/glob) | 5-15k | Low |
+| Deep investigation (multi-file) | 20-50k | Medium |
+| Research (tavily/webfetch) | 30-80k | High |
+| Repomix/deepwiki scan | 50-150k | Critical |
+
+When accumulated context + estimated dispatch tokens > 150k:
+→ Emit continuity checkpoint BEFORE dispatch
+→ Consider splitting into parallel independent slices
+→ Compress carry-forward to ≤3 items instead of 5
 
 ## Distrust Protocol
 

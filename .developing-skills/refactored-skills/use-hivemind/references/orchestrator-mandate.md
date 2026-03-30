@@ -4,6 +4,22 @@ The complete operating contract for the hiveminder agent. This is not a suggesti
 
 ---
 
+## Table of Contents
+
+- [Mission Statement](#1-mission-statement)
+- [Core Directives](#2-core-directives)
+- [Behavioral Mandate Table](#3-behavioral-mandate-table)
+- [How-To-Process vs How-To-Implement](#4-how-to-process-vs-how-to-implement)
+- [Investigation Swarm Pattern](#5-investigation-swarm-pattern)
+- [Session Handling](#6-session-handling)
+- [Cross-Team Awareness](#7-cross-team-awareness)
+- [Dynamic Skill Loading](#8-dynamic-skill-loading)
+- [Default Agent Roster](#9-default-agent-roster)
+- [Anti-Patterns](#10-anti-patterns)
+- [Sibling Skills Cross-Reference](#11-sibling-skills-cross-reference)
+
+---
+
 ## 1. Mission Statement
 
 The hiveminder acts as the central agent responsible for maintaining end-to-end conversation integrity and context across long-running, multi-agent software remediation projects. Its primary function is **NOT** to plan, investigate, or execute — it is to oversee, dispatch, gatekeep, and synthesize.
@@ -68,36 +84,7 @@ This distinction is the single most important concept in the entire framework.
 
 ---
 
-## 5. Multi-Wave Dispatch Patterns
-
-The orchestrator dispatches **waves**, not individual agents. Each wave builds on the compressed synthesis of the prior wave.
-
-```
-Wave 1: Parallel investigation swarms (3x hivexplorer)
-   ↓ consumes compressed synthesis (≤5 items)
-Wave 2: Parallel research (hiverd + hivexplorer cross-validate)
-   ↓ consumes compressed synthesis
-Checkpoint: Build master plan (hiveplanner + architect)
-   ↓ consumes plan
-Wave 3: Parallel implementation (hivemaker + hitea)
-   ↓ consumes verification requests
-Wave 4: Verification + review (hiveq + code-skeptic)
-   ↓ final verdict
-```
-
-### Dispatch Rules
-
-<HARD-GATE>
-1. **Wave 1 always starts with investigation.** No exceptions. You cannot plan what you haven't explored.
-2. **Each wave consumes prior synthesis, not full output.** Compressed carry-forward only: ≤5 findings, blocked routes, recommended next action, output paths.
-3. **Waves are sequential (parallel within, not across).** You do not launch Wave 3 while Wave 2 is still running.
-4. **Gates between waves.** Each wave must return evidence before the next begins. No "fire and forget."
-5. **Carry-forward ≤5 items.** If your synthesis has 12 findings, you haven't synthesized. You've dumped.
-</HARD-GATE>
-
----
-
-## 6. Investigation Swarm Pattern
+## 5. Investigation Swarm Pattern
 
 The orchestrator never reads code in detail. It launches swarms of hivexplorer agents.
 
@@ -118,25 +105,7 @@ If the orchestrator catches itself doing multi-file reads → STOP. Delegate imm
 
 ---
 
-## 7. Hierarchical Consumption
-
-Output handoffs are reports consumed hierarchically. You never skip levels.
-
-```
-Wave 1 output → feeds Wave 2 decision
-Wave 2 output → feeds Checkpoint planning
-Checkpoint output → feeds Wave 3 execution
-Wave 3 output → feeds Wave 4 verification
-```
-
-**Rules:**
-- Never skip to Wave 3 without consuming Wave 1 + Wave 2
-- Compressed carry-forward only: ≤5 findings, blocked routes, next action, output paths
-- If a wave returns nothing useful, the investigation scope was wrong — re-dispatch with tighter bounds, don't skip
-
----
-
-## 8. Session Handling
+## 6. Session Handling
 
 Three states. Each requires different handling. Never assume.
 
@@ -153,7 +122,7 @@ Three states. Each requires different handling. Never assume.
 
 ---
 
-## 9. Cross-Team Awareness
+## 7. Cross-Team Awareness
 
 Assume other agents/teams work on adjacent code. You are not alone in this repository.
 
@@ -164,7 +133,7 @@ Assume other agents/teams work on adjacent code. You are not alone in this repos
 
 ---
 
-## 10. Dynamic Skill Loading
+## 8. Dynamic Skill Loading
 
 Skills are loaded in conditional batches based on the current plan, workflow phase, and task context. There is no fixed slot limit.
 
@@ -183,7 +152,7 @@ Skills are loaded in conditional batches based on the current plan, workflow pha
 
 ---
 
-## 11. Default Agent Roster
+## 9. Default Agent Roster
 
 | Agent | Role | Primary Use |
 |---|---|---|
@@ -202,51 +171,20 @@ Skills are loaded in conditional batches based on the current plan, workflow pha
 
 ---
 
-## 12. Anti-Patterns
+## 10. Anti-Patterns
 
-### 12.1 Surface-Level Dispatch
-**Scenario:** Orchestrator sends "fix the auth bug" without investigation.
-**What happens:** Agent guesses at root cause. Implements wrong fix. Breaks something else.
-**Correct:** Wave 1 investigation swarm first. Always.
+All orchestrator anti-patterns are catalogued in `anti-patterns-compendium.md`. Key categories:
 
-### 12.2 Static Skill Set
-**Scenario:** Orchestrator loads skills at session start, never adjusts.
-**What happens:** Implementation phase runs with investigation skills loaded. Agent lacks TDD enforcement.
-**Correct:** Rotate skill batch as phases change.
+- **Delegation:** AP-D01 through AP-D07 — dispatch, packet, context check violations
+- **Session:** AP-S01 through AP-S04 — context trust and resume violations
+- **Orchestration:** AP-O01 through AP-O05 — doing work, reading code, over-parallelization
+- **Gatekeeping:** AP-G01 through AP-G04 — evidence acceptance, verification violations
 
-### 12.3 Unverified Handoff
-**Scenario:** hivemaker returns "done, tests pass." Orchestrator accepts it.
-**What happens:** Tests were never run. Code doesn't compile. Downstream agents build on broken foundation.
-**Correct:** Demand evidence. Run hiveq verification gate.
-
-### 12.4 Over-Parallelization
-**Scenario:** Orchestrator dispatches 8 agents simultaneously with shared mutable state.
-**What happens:** Race conditions. Conflicting edits. Merge hell.
-**Correct:** Parallel only when slices are isolated. Sequential when state is shared.
-
-### 12.5 Ignoring Context Drift
-**Scenario:** Continuity.json references `core/session/kernel.ts`. File was deleted last week.
-**What happens:** Agent works against stale context. Implements against dead APIs.
-**Correct:** Run context health gate. Verify file existence before dispatch.
-
-### 12.6 How-To-Implement in Packet
-**Scenario:** Delegation packet specifies exact function signatures and algorithms.
-**What happens:** Agent implements your bad design instead of using their expertise. You own the bugs.
-**Correct:** Specify scope, constraints, success criteria. Let the specialist decide implementation.
-
-### 12.7 Accepting "Done" Without Proof
-**Scenario:** Agent says "refactoring complete, all green." No verification output attached.
-**What happens:** It wasn't green. It wasn't even complete. You find out at integration time.
-**Correct:** No evidence = not done. Period.
-
-### 12.8 Reading Code Yourself
-**Scenario:** Orchestrator reads 5 source files to understand the problem before dispatching.
-**What happens:** 30 minutes of context loading. Orchestrator session bloated. Still didn't dispatch.
-**Correct:** Dispatch hivexplorer swarm. Read their compressed synthesis. Move on.
+See `anti-patterns-compendium.md` for full details with scenarios and fixes.
 
 ---
 
-## 13. Sibling Skills Cross-Reference
+## 11. Sibling Skills Cross-Reference
 
 | Skill | Relationship to Orchestrator Mandate |
 |---|---|
@@ -266,3 +204,7 @@ Skills are loaded in conditional batches based on the current plan, workflow pha
 ---
 
 *Last updated: 2026-03-27. If this document contradicts the SKILL.md, the SKILL.md wins. If SKILL.md contradicts the code, the code wins.*
+
+---
+
+_Meta: purpose=orchestrator-mission-directives-and-behavioral-mandate | loaded_when=orchestrator-clarification-or-mandate-check | parent_skill=use-hivemind_

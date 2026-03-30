@@ -4,6 +4,17 @@ Complete role definitions for all 13 agents in the HiveMind framework.
 
 ---
 
+## Table of Contents
+
+- [Orchestration Agents](#orchestration-agents)
+- [Implementation Agents](#implementation-agents)
+- [Research Agents](#research-agents)
+- [Architecture Agents](#architecture-agents)
+- [Utility Agents](#utility-agents)
+- [Role Boundary Matrix](#role-boundary-matrix)
+
+---
+
 ## Orchestration Agents
 
 ### hiveminder
@@ -133,3 +144,7 @@ Complete role definitions for all 13 agents in the HiveMind framework.
 | hiverd | State | Checkpoints | No | State integrity | Continuity |
 | explore | Yes | No | No | None | None |
 | general | Yes | Conditional | Conditional | Conditional | Conditional |
+
+---
+
+_Meta: purpose=agent-inventory-roles-and-boundary-matrix | loaded_when=agent-selection-or-role-clarification | parent_skill=use-hivemind_

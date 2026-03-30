@@ -28,38 +28,42 @@ Local delegation family for the refactored pack. Governs when, how, and with wha
 ## Table of Contents
 
 - [Use This For](#use-this-for)
-- [Do Not Use This For](#do-not-use-this-for)
+- [Anti-Patterns to Avoid](#anti-patterns-to-avoid)
 - [Sibling Skills](#sibling-skills)
 - [Delegation Decision Rules](#decision-rules)
+- [Topology Decision Rules](#topology-decision-rules)
 - [Task Decomposition Rules](#task-decomposition-rules)
+- [Agent Selection](#agent-selection)
+- [Task Extraction from Plan](#task-extraction-from-plan)
 - [Orchestrator Protection](#orchestrator-protection)
 - [How-To-Process vs How-To-Implement in Packets](#how-to-process-vs-how-to-implement)
 - [Core Protocol](#core-protocol)
 - [Shared Return Contract](#shared-return-contract)
+- [Post-Return Protocol](#post-return-protocol)
 - [Delegation Modes](#delegation-modes)
 - [Role Boundaries](#role-boundaries)
 - [Failure and Recovery](#failure-and-recovery)
 - [Codescan Delegation](#codescan-delegation)
-- [Investigation Swarm Delegation](#investigation-swarm-delegation)
-- [Hierarchical Consumption](#hierarchical-consumption)
+- [Investigation Swarm Delegation](#investigation-swarm-delegation) *(detailed: references/investigation-swarm.md)*
+- [Hierarchical Consumption](#hierarchical-consumption) *(detailed: references/hierarchical-consumption.md)*
+- [Multi-Wave Dispatch Protocol](#multi-wave-dispatch-protocol)
+- [Granularity Enforcement](#granularity-enforcement)
+- [Context Window Management](#context-window-management)
 - [Iterative Loop Control](#iterative-loop-control)
 - [Session Resume in Delegation](#session-resume)
 - [Workflow Example](#workflow-example)
-- [Granularity Gate](#granularity-gate)
-- [Parallel Dispatch Safety](#parallel-dispatch-safety)
-- [Hierarchical Packet Construction](#hierarchical-packet-construction)
-- [Context Window Management](#context-window-management)
 - [Bundled Resources](#bundled-resources)
-- [Conditional Loading](#conditional-loading)
 - [Independence Rules](#independence-rules)
 
-## Do Not Use This For
+## Anti-Patterns to Avoid
 
-- Single-file edits with clear scope and fresh context — execute inline
-- Tasks completable in <3 inline actions — overhead exceeds value
-- Vague delegation with no scope — clarify scope first, then decide
-- Domain-specific loops (TDD, debug, refactor, research) — those domain skills handle their own loop control
-- Simple questions answerable without delegation — answer directly
+**NEVER dispatch without checking the active delegation registry.** Before creating a new delegation packet, read `.hivemind/activity/delegation/registry.json`. If a prior delegation covers the same scope and is still active or pending, do not create a duplicate. Re-use or resume the existing one.
+
+**NEVER create packets without verifying parent workflow state.** If you were dispatched by an orchestrator, check the parent's planning documents, governance files, and workflow phase before emitting your own sub-delegations. A child that doesn't know the parent's goals will fragment the workflow.
+
+**NEVER delegate recursively without consuming carry-forward.** If your delegation packet includes carry-forward from a parent wave, you MUST read and integrate that carry-forward (≤5 findings, blocked routes, next action) before dispatching your own children. Skipping parent context is a context integrity failure.
+
+**NEVER assume the user's next prompt resets the delegation chain.** The next agent in the sequence may receive a user message that appears disconnected from prior work. That agent must check the delegation registry, workflow state, and continuity.json before acting — not assume the user's message means "start fresh."
 
 ## Sibling Skills
 
@@ -95,6 +99,30 @@ Do NOT delegate when:
 
 **Delegation is mandatory, not optional.** If criteria are met, the orchestrator MUST emit a packet. Failure to delegate when required is a session discipline violation.
 
+### Granularity Enforcement (MANDATORY)
+
+| Rule | Threshold | Action |
+|------|-----------|--------|
+| File count | >3 files | MUST decompose into sub-tasks |
+| LOC written | >500 LOC | NEVER in one task — split by concern or file cluster |
+| Parallel writes | Same domain | FORBIDDEN — sequential only |
+| Parallel dispatch | Independent READ-only | RECOMMENDED for deep investigation or token-heavy research |
+
+If a slice exceeds 500 LOC, reject the packet and re-plan decomposition. No exceptions.
+
+## Topology Decision Rules
+
+Choose the dispatch topology before emitting packets:
+
+| Topology | When | Independence |
+|----------|------|-------------|
+| **Single agent** | Simple, isolated task | N/A |
+| **Parallel** | Independent slices, no shared state | Must prove independence |
+| **Sequential** | Output of agent A feeds agent B | Ordered dependency |
+| **Wave** | Sequential batches of parallel agents | See Multi-Wave Dispatch Protocol |
+
+**Decision:** If slices share files or mutable state → sequential. If isolated → parallel. If multi-phase → wave.
+
 ## Task Decomposition Rules
 
 Decompose large tasks before delegating. Use this priority order:
@@ -109,6 +137,32 @@ Each slice should be:
 - Bounded by explicit out-of-scope (what the slice must NOT touch)
 
 If a slice needs >5 files, split further. If a slice mixes read and write, split by concern.
+
+## Agent Selection
+
+Match task type to agent. Fallbacks exist when the primary agent is unavailable:
+
+| Task | Agent | Fallback |
+|------|-------|----------|
+| Implementation | hivemaker | build |
+| Testing | hitea | build |
+| Verification | hiveq | explore |
+| Debugging | hivehealer | general |
+| Planning | hiveplanner | plan |
+| Architecture | architect | plan |
+| Code review | code-skeptic | general |
+| Research | hiverd | explore |
+| Scanning/Investigation | hivexplorer | explore |
+| Complex coordination | handoff | general |
+
+## Task Extraction from Plan
+
+When consuming a plan for delegation:
+
+- Each plan phase → delegation packet
+- Each slice → one subagent task
+- Each gate → verification before next phase
+- Plan phases feed waves: investigation → research → planning → implementation → verification
 
 ## Orchestrator Protection
 
@@ -165,6 +219,10 @@ Delegation packets tell the subagent **what process to follow**, never **how to 
 
 The orchestrator says **what** (process). The subagent figures out **how** (implementation).
 
+<HARD-GATE>
+If a delegation packet contains specific code to write, algorithms to use, or exact function signatures to implement — the packet is INVALID. The orchestrator says WHAT process to follow. The subagent figures out HOW to implement. Re-write the packet before dispatching.
+</HARD-GATE>
+
 ## Core Protocol
 
 1. **Confirm delegation is needed** — delegation costs context-switching overhead; use the decision rules above. (See `references/delegation-decision.md` for extended criteria.)
@@ -174,6 +232,26 @@ The orchestrator says **what** (process). The subagent figures out **how** (impl
 5. **Tag the work** with `activity_type` and `phase_type` before dispatch. These tags link delegation to the development storyline and enable cross-skill continuity.
 6. **Emit a delegation packet and handoff brief** before dispatch. The packet is the contract. The brief is the human-readable summary. (See `templates/delegation-packet.md` and `templates/handoff-brief.md`.)
 7. **Require a structured return** with findings, evidence, blocked routes, and next action. (See Shared Return Contract below and `references/failure-recovery.md`.)
+8. **Include parent governance** — Always attach references to ongoing planning documents, governance files, and parent workflow state. The subagent must know it was delegated, what the parent's goals are, and how this slice fits the larger picture.
+9. **Include stop_conditions** — Every delegation packet MUST include a `stop_conditions` array (see below). A packet without stop_conditions is invalid.
+
+### Stop Conditions (Required in Every Packet)
+
+Every delegation packet MUST include a `stop_conditions` array:
+
+```json
+{
+  "stop_conditions": [
+    "max_iterations_reached: 3",
+    "same_failure_twice: escalate to orchestrator",
+    "scope_violation: return partial with blocked_routes",
+    "token_exhaustion_imminent: return compressed summary",
+    "contradiction_with_prior_findings: pause and report"
+  ]
+}
+```
+
+Stop conditions are non-negotiable. Each condition must specify a trigger and the action to take. See `references/hard-stop-conditions.md` for extended stop trigger definitions.
 
 ## Shared Return Contract
 
@@ -189,6 +267,18 @@ Every meaningful delegation return must include:
 | **Control** | `blocked_routes`, `recommended_next_action`, `open_loop_ids`, `open_packet_ids` | Enables orchestrator routing |
 
 If a child cannot produce this shape, return a bounded partial result rather than pretending the slice is complete. A partial return with `status: "partial"` and populated `blocked_routes` is always better than a fabricated `status: "complete"`.
+
+## Post-Return Protocol
+
+After agents return, follow this 5-step protocol before advancing:
+
+1. **Read evidence bundle** — not just claims. Inspect the actual output files, test results, and artifacts the agent produced.
+2. **Check return contract compliance** — does the evidence match the expected return shape (fields, output paths, status)?
+3. **Run verification gate** — if code changed → `npx tsc --noEmit` + `npm test`. Do not skip this even if the agent claims tests pass.
+4. **Synthesize into compressed carry-forward** — ≤5 findings, blocked routes, recommended next action, output paths. The orchestrator does NOT retain full agent output.
+5. **Decide next action** — advance wave, re-dispatch with tighter scope, or gate-fail and escalate.
+
+**No evidence = not done. Period.**
 
 ## Delegation Modes
 
@@ -267,52 +357,15 @@ Read `references/codescan-delegation.md` for agent selection table, scan pass st
 
 ## Investigation Swarm Delegation
 
-When the orchestrator needs broad codebase coverage fast, it launches an **investigation swarm** — parallel `hivexplorer` agents, each with a bounded slice.
+Use `references/investigation-swarm.md` for full swarm dispatch rules, packet shape, orchestrator discipline, synthesis protocol, and wave-to-wave handoff format.
 
-### Swarm Dispatch Rules
-
-1. **One concern per agent.** Each hivexplorer gets one module, one pipeline, or one question. Never hand an agent "look at everything."
-2. **Parallel within a wave.** All swarm agents in a wave run concurrently. No dependencies between them.
-3. **Bounded slices.** Each agent returns: findings with `file:line` references, evidence, and output paths. Nothing else.
-4. **Orchestrator reads ONLY the compressed synthesis** (≤5 items per agent), not full scan output.
-
-### Swarm Packet Shape
-
-Each swarm packet must include:
-- `slice_id` — unique identifier for this investigation slice
-- `scope` — the bounded question (e.g., "map all exports in src/tools/trajectory/")
-- `constraints` — always includes `read-only` for hivexplorer
-- `output_path` — where the agent writes detailed findings
-- `return_format` — compressed summary ≤5 items
-
-### Orchestrator Discipline
-
-After dispatching a swarm, the orchestrator must **wait**. If the orchestrator catches itself doing multi-file reads while agents are running, STOP immediately. The orchestrator that investigates alongside its swarm is the orchestrator that loses the thread.
-
-### Swarm Synthesis
-
-When all agents return:
-1. Read each agent's compressed summary (≤5 items)
-2. Merge into a unified finding set
-3. Identify cross-slice patterns (shared root causes, dependency chains)
-4. Feed synthesis into the next wave or into implementation delegation
+**Summary:** Launch parallel `hivexplorer` agents with one concern per agent. Each returns ≤5 findings with `file:line` refs. Orchestrator reads ONLY compressed synthesis. Parallel within a wave; sequential between waves.
 
 ## Hierarchical Consumption
 
-Wave outputs feed forward — never skip to implementation without consuming investigation and research synthesis.
+Use `references/hierarchical-consumption.md` for full wave sequencing, between-wave escalation rules, and merge-vs-split decision table.
 
-| Rule | Detail |
-|------|--------|
-| Wave feeding | Each wave's output feeds the next wave's decision. Investigation → research → implementation → verification. |
-| No skipping | Never skip to implementation without consuming investigation + research synthesis first. Discipline violation otherwise. |
-| Carry-forward | ≤5 findings, blocked routes, recommended next action, output paths between waves. |
-| Orchestrator reads | Summary fields and output path only. If detail needed, delegate another agent to read the output. |
-
-### Wave Sequencing
-
-`Wave 1 (investigation) → synthesis → Wave 2 (research/planning) → synthesis → Wave 3 (implementation) → synthesis → Wave 4 (verification)`
-
-Skip a wave only if the previous wave's synthesis explicitly confirms no gaps remain.
+**Summary:** Wave outputs feed forward. Never skip to implementation without consuming investigation + research synthesis. Carry-forward ≤5 items between waves. Orchestrator reads summary fields and output path only.
 
 ## Iterative Loop Control
 
@@ -353,14 +406,55 @@ Append delegation events to `{activity}/delegation/registry.json` with:
 
 ## Workflow Example
 
-| Step | Action | Output |
-|------|--------|--------|
-| Decision | 3 independent test failures → delegation → parallel (no shared imports) | `execution_mode: parallel` |
-| Decompose | 3 slices (A, B, C), each ≤3 files, clean boundaries | 3 packets |
-| Packets | `mode: verification`, constraints: "fix tests only" | Scope per agent |
-| Dispatch | 3 subagents in parallel, self-contained prompts | 3 running |
-| Returns | 2 complete, 1 partial (`blocked: shared/types.ts`) | Synthesize |
-| Synthesis | Integrate 2 fixes, re-delegate blocked with expanded authority | Updated packet |
+**Scenario:** 3 independent test failures → decompose into 3 slices (each ≤3 files) → dispatch parallel `verification` packets → 2 complete, 1 partial (`blocked: shared/types.ts`) → integrate successes, re-delegate blocked slice with expanded authority.
+
+## Multi-Wave Dispatch Protocol
+
+Complex tasks require multi-wave dispatch, not single-shot delegation.
+
+### Standard Investigation → Research → Planning Flow
+
+**Initial Checkpoint:**
+- Packet 1: 3 parallel hivexplorer dispatches to investigate codebase, dependencies, test coverage → SYNTHESIZE → ≤5 findings output
+- Packet 2 (sequential to Packet 1): Combine user prompt + synthesis → dispatch 2 parallel waves (hivexplorer + hiverd) for internal cross-validation + external research → SYNTHESIZE → ≤5 findings output
+- From Packet 1 + 2 output → decision checkpoint to build master planning
+
+**Checkpoint 2 (Planning):**
+- hiveplanner decomposes into phases with dependency DAG
+- architect validates architecture decisions → SYNTHESIZE → plan with gates
+
+### Wave Sequencing
+
+Wave 1 (investigation) → synthesis → Wave 2 (research/planning) → synthesis → Wave 3 (implementation) → synthesis → Wave 4 (verification)
+
+Skip a wave only if the previous wave's synthesis explicitly confirms no gaps remain.
+
+### When to Merge Waves vs Keep Separate
+
+| Scenario | Action |
+|----------|--------|
+| Waves cover independent domains | Keep separate — parallel dispatch |
+| Wave 2 depends on Wave 1's specific findings | Sequential — merge only after synthesis |
+| Both waves ask the same agent type | Merge into one wave with combined scope |
+
+Full protocol: `references/multi-wave-dispatch.md`
+
+## Context Window Management
+
+Each subagent session has ~200k context window. Plan dispatches accordingly.
+
+**Token-heavy operations** (plan for parallel to divide load):
+- Deep research: tavily, webfetch, context7, repomix, deepwiki
+- Deep investigation: "depth" and "variants" analysis
+- Multi-source comparison: cross-referencing multiple documentation sets
+
+**Token-efficient operations** (can run inline or in single dispatch):
+- Targeted file reads with grep
+- Single-file verification
+- Quick status checks
+
+**Budget rule**: If estimated token usage exceeds 100k for a single dispatch, split into parallel independent slices.
+
 ## Bundled Resources
 
 | Resource | Purpose |
@@ -428,44 +522,3 @@ All artifacts produced by this skill follow the Activity Folder Protocol.
 | record trajectory checkpoints | `hivemind_trajectory` | preserves phase transitions |
 | inspect delegation docs | `hivemind_doc` | read-only doc access |
 | verify current runtime | `hivemind_runtime_status` | confirm attached workflow state |
-
-## Multi-Packet Protocol
-
-Use multi-packet flow when one question crosses domains, authority levels, or evidence sources. Split by domain → slice → finding, keep each slice to one core question, and store large results with a TOC plus offset index for jump-reading. Run packets in parallel only for isolated slices; otherwise chain them with `parent_packet_id`, synthesis checkpoints, and delta-queries for gap fill.
-
-## Evidence Return Contract
-
-Every return must include `status`, `summary`, `evidence`, `blocked_routes`, `recommended_next`, and `_meta`. Each evidence item uses `{ claim, evidence_quote, source_url, source_title, confidence }`, with `confidence` scored `0..1`. `hivexplorer` emphasizes file-backed discovery, `hiverd` emphasizes external source freshness, `hiveq` maps requirements to proof, and `hivemaker` reports changed files plus verification output.
-
-## Cross-Domain Coordination
-
-Use sequential dispatch when slices share mutable files, depend on previous evidence, or need conflict arbitration. Use parallel dispatch when slices are read-only, isolated, and mergeable by synthesis. Detect shared state early, normalize evidence before merging, and issue delta-queries only for unresolved claims instead of restarting the whole investigation.
-
-## Bash Examples (5)
-
-- `cat .hivemind/activity/delegation/packet.json | jq '.scope'`
-- `ls .hivemind/activity/agents/*/`
-- `grep -r "blocked_routes" .hivemind/activity/`
-- `jq '._meta.producer' .hivemind/activity/**/*.json`
-- `find .hivemind/activity -name "*.json" -mtime -1`
-
-## Decision Tree: Delegation Pattern
-
-- Single domain + one bounded concern → one packet.
-- Cross-domain + isolated read-only slices → parallel multi-packet.
-- Cross-domain + shared mutable state → sequential packets.
-- Deep investigation with unresolved gaps → chained packets with synthesis checkpoints.
-- Large result sets → require TOC, offsets, and metadata filtering.
-- More than 15-20 files in one slice or >9 active summaries → split again.
-
-## Cross-Skill Chaining
-
-Load `use-hivemind-research` when a packet needs external evidence, `use-hivemind-context` when freshness is suspect, and `hivemind-gatekeeping` when synthesis or blocked-route review needs a formal gate. Keep delegation as the contract layer; let sibling skills own their domain-specific loops.
-
-## Metrics & Verification
-
-Track packet completeness, evidence density, blocked-route count, delta-query rate, and synthesis closure time. Validate JSON packets with `scripts/hm-packet-validate.sh`, confirm large outputs expose `_meta.producer`, and keep SKILL.md concise enough to preserve progressive disclosure.
-
-## Batch 3 Resource Additions
-
-New references: `references/multi-packet-protocol.md`, `references/evidence-return-schema.md`, `references/cross-domain-coordination.md`. New templates: `templates/delegation-packet.json`, `templates/multi-domain-investigation.json`, `templates/evidence-return.json`. New validator: `scripts/hm-packet-validate.sh` for packet, return, and multi-domain schema checks.
