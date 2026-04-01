@@ -1,58 +1,109 @@
-# HiveMind Stabilization and Feature Re-emergence Plan
+# Task Plan: Standalone Harness Cleanup
 
 ## Goal
-Refactor the current `ecosystem-revamp` codebase into a stable, source-aligned HiveMind product that satisfies the master model in `docs/architecture/2026-03-16-hivemind-master-model.md` and can safely support reintroduction of archived capabilities such as code intelligence and document intelligence.
+Finish the standalone `opencode-harness` pack cleanup, then recover the stalled spec/debug loop so the repo is self-contained, buildable, and working from forward-looking, internally consistent planning artifacts aligned with the active loop tracked against `/Users/apple/hivemind-plugin/.worktrees/product-detox/.hivemind/activity/experiment-plugins-tools-2026-04-01.md`.
 
 ## Current Phase
-- [complete] Phase 1 - Discover current architecture, authority surfaces, and archived feature constraints
-- [in_progress] Phase 2 - Compare current repo state against master-model release gates
-- [pending] Phase 3 - Define stabilization workstreams and dependency order
-- [pending] Phase 4 - Validate the roadmap with specialist review before execution
+Phase 9
 
-## Success Criteria
-- A clear gap map exists from current repo state to the master model's production-readiness gates.
-- Archived feature surfaces are classified by prerequisite stability dependencies.
-- A staged roadmap exists that sequences foundation work before feature restoration.
-- The roadmap identifies authoritative source paths, stale surfaces, and verification gates.
+## Phases
 
-## Risks
-- Docs and shipped surfaces may still overclaim relative to current `src/` runtime behavior.
-- Archived features may depend on legacy pathing/session assumptions that no longer fit the CQRS/plugin-native direction.
-- Multiple planning and audit artifacts may conflict, causing stale guidance contamination.
+### Phase 1: Repository Extraction Baseline
+- [x] Reduce root to standalone harness files only
+- [x] Confirm core manifest and source layout exist
+- [x] Remove unrelated monorepo surface area from the root
+- **Status:** complete
 
-## Notes
-- Do not begin broad implementation until the stabilization roadmap is reviewed.
-- Prefer current source plus the master model over older narrative docs when they disagree.
-- Recovery note: completed background exploration was recovered from agent session transcripts after disconnect.
-- Current bounded stabilization work has moved from discovery into targeted source cleanup slices.
-- Latest completed slice: make `src/plugin/opencode-plugin.ts` more honestly assembly-only by extracting helper and tool-governance logic into hook modules.
-- Latest completed restoration-enabling slice: standalone markdown-first read-only doc intelligence (`skim`, section `read`, chunked `read`, `search`) sourced from the archived doc-intel library modules.
-- Latest completed truth-surface slice: removed README runtime drift, fixed `src/intelligence/doc/AGENTS.md` to acknowledge live `hivemind_doc`, corrected stale `src/AGENTS.md` tool inventory, and cleaned stale skill-registry/reference pointers.
-- Latest completed tool-contract slice: added `.describe()` coverage to `src/tools/handoff/tools.ts`, `src/tools/task/tools.ts`, and `src/tools/trajectory/tools.ts`, then re-verified typecheck, tests, build, and boundary checks.
-- Latest completed CLI-truth slice: corrected `README.md` so its documented public CLI/runtime path now matches the revamp branch's shipped control-plane commands and current runtime guidance instead of the removed `scan`, `sync-assets`, `status`, `dashboard`, and `purge` surfaces.
-- Latest completed command-asset truth slice: rewrote `commands/hivemind-dashboard.md` so it no longer presents a non-existent `dashboard` executable and instead routes users to the live runtime inspection path.
-- Latest completed command-asset truth follow-up: rewrote `commands/hivemind-scan.md` and `commands/hivemind-status.md` so they explicitly read as in-OpenCode workflows instead of implying shipped public `scan` or `status` CLIs.
-- Latest completed command-contract slice: normalized `commands/*.md` frontmatter so every shipped command file now has parseable `description`, `agent`, and `subtask` fields that match `commands/AGENTS.md`.
-- Current decision point: choose the next bounded stabilization slice after the verified command-frontmatter normalization; removed-public-CLI grep is clean across `commands/`, and command metadata is now structurally compliant.
-- Brownfield initialization for `.planning/` should treat the repo as an existing OpenCode plugin/CLI product and plan the next milestone around deterministic runtime migration, live OpenCode verification, and OpenTUI completion.
+### Phase 2: Standalone Identity Refresh
+- [x] Reshape repo into standalone `opencode-harness`
+- [x] Preserve key root docs/config files needed for a pack
+- [x] Keep `.opencode/` alongside `src/` as the retained harness surface
+- **Status:** complete
 
-## 2026-03-18 Autonomous Milestone Run
+### Phase 3: Audit and Gap Capture
+- [x] Review current standalone repo state
+- [x] Capture likely remaining blockers from latest audit
+- [x] Resume planning-with-files tracking in repo root
+- **Status:** complete
 
-### Goal
-- Execute the remaining milestone workflow from `.planning/ROADMAP.md` in numeric order using the autonomous discuss -> plan -> execute loop, then finish audit -> complete -> cleanup.
+### Phase 4: Packaging and Build Hardening
+- [x] Replace source-first `package.json` entrypoints so `main`, `types`, and `exports` no longer resolve to `./src/*.ts`
+- [x] Add explicit build/test scripts to `package.json` so distributable validation is runnable from the package root
+- [x] Expand `package.json` publish surface beyond `src`, `README.md`, and `tsconfig.json` so built artifacts can ship
+- [x] Implement the README-promised build pipeline before claiming publish readiness
+- [x] Verify root `opencode.json` continues to resolve `./.opencode/plugins/harness-control-plane.ts` correctly through the hardened packaging flow
+- [x] Keep Phase 4 focused on build/publish hardening only; plugin-wrapper surgery is not currently needed because `.opencode/plugins/harness-control-plane.ts` is a clean re-export shim
+- **Status:** complete
 
-### Current Phase
-- [complete] Workflow bootstrap and phase discovery
-- [in_progress] Phase 2.1 autonomous execution
-- [pending] Remaining phase loop (2.2 -> 8)
-- [pending] Milestone lifecycle (audit -> complete -> cleanup)
+### Phase 5: State Persistence Hardening
+- [x] Replace in-memory-only context-checkpoint behavior with durable persistence
+- [x] Verify checkpoint lifecycle inside standalone harness boundaries
+- [x] Record follow-up cleanup required for persistence-related docs/tests
+- **Status:** complete
 
-### Key Questions
-1. Which incomplete phase is first by numeric order after applying roadmap state? -> `2.1`
-2. Are there blocking state issues that prevent entering the phase loop? -> Not yet; `STATE.md` has concerns but no explicit stop condition.
+### Phase 6: Integration and Docs Cleanup
+- [x] Remove stale integration references from the standalone pack
+- [x] Clean outdated docs/config language that still assumes prior repo shape
+- [x] Verify README and surrounding docs describe standalone usage only after Phase 4/5 hardening lands
+- **Status:** complete
 
-### Decisions Made
+### Phase 7: Final Verification and Pack Readiness
+- [x] Re-audit root contents, packaging flow, and docs consistency
+- [x] Confirm blockers are closed or explicitly tracked
+- [x] Prepare the repo for the next implementation loop
+- **Status:** complete
+
+### Phase 8: Spec Recovery Planning
+- [x] Investigate failed session artifacts for root-cause patterns
+- [x] Validate forward-looking spec docs against OpenCode and OMO constraints
+- [x] Produce an approval-gated recovery plan for doc correction before implementation resumes
+- **Status:** complete
+
+### Phase 9: Spec Correction Execution
+- [x] Research OpenCode platform capabilities from SDK lib (opencode-platform-reference >>>, oh-my-openagent-reference >>>)
+- [x] Rewrite `docs/requirements-2026-04-02.md` to remove platform/implementation contradictions
+- [x] Rewrite `docs/user-stories-2026-04-02.md` so stories align with corrected requirements and MVP scope
+- [ ] Re-validate the corrected docs against reference constraints before any code work resumes
+- **Status:** in_progress
+
+### Phase 10: Feature Gap Audit and Implementation Waves
+- [ ] Audit current source and `.opencode/` surfaces against corrected requirements
+- [ ] Group missing/broken features into implementation waves with verification gates
+- [ ] Resume implementation only after Phase 9 receives explicit user approval
+- **Status:** pending
+
+## Key Questions
+1. Which contradictions in the forward-looking docs must be corrected before any new implementation work can be trusted?
+2. How should recovery be staged so failed-session behavior does not repeat in the next cycle?
+3. Which feature gaps should remain blocked until the spec layer is repaired and re-approved?
+
+## Decisions Made
 | Decision | Rationale |
 |----------|-----------|
-| Use `gsd-tools.cjs` milestone and roadmap commands as the authority for phase discovery | The autonomous workflow explicitly resolves phase state through init/analyze commands |
-| Treat `.planning/STATE.md` concerns as non-blocking unless a phase run or verification result says otherwise | The workflow only stops on actual blockers or user decisions |
+| Resume with file-based planning in repo root | Keeps the cleanup loop state persistent across sessions |
+| Treat Phase 4 build hardening, then Phase 5 persistence hardening, then Phase 6 docs cleanup as the next sequence | Latest audit confirmed packaging blockers before persistence and docs can be closed confidently |
+| Keep the active loop anchored to the experiment activity note | Preserves continuity with the broader detox/harness migration work |
+| Target built artifacts under `dist/` for package entrypoints and publish output | Aligns standalone packaging with the validated build pipeline and pack dry-run |
+| Persist context checkpoints in `.opencode/state/opencode-harness/checkpoints.json` | Replaces process-local memory with durable standalone state storage |
+| Treat `docs/requirements-2026-04-02.md` and `docs/user-stories-2026-04-02.md` as forward-looking design inputs, not implementation status reports | Matches the user's explicit framing for the docs |
+| Correct the spec layer before auditing or implementing missing features | Prevents another validation-only loop based on contradictory requirements |
+| Gate each recovery cycle behind user authorization | Matches the requested multi-round planning workflow |
+
+## Errors Encountered
+| Error | Attempt | Resolution |
+|-------|---------|------------|
+| None in this planning step | 1 | Planning files created directly in the repo root |
+
+## Notes
+- Root is expected to remain limited to standalone harness artifacts.
+- Root `src/` is currently limited to `index.ts`, `lib/`, and `plugin.ts`.
+- `.opencode/plugins/harness-control-plane.ts` is a 2-line wrapper re-exporting from `../../src/plugin`, so Phase 4 can stay focused on package hardening.
+- Phase 4 completed with package entrypoints targeting `dist/`, package scripts in place, and dry-run validation passing for typecheck, build, and pack.
+- `.opencode/tools/context-checkpoint.ts` now persists durable JSON state at `.opencode/state/opencode-harness/checkpoints.json`.
+- Phase 6 docs cleanup closed the identified stale references, and Phase 7 final verification is now complete.
+- Final strict audit verdict: READY.
+- Final verification passed for root layout, build/publish readiness, the thin wrapper plugin path, durable checkpoint storage, and 8-layer coverage.
+- Minor caveats remain informational only: the thin wrapper plugin is intentionally kept as a minimal re-export shim, and durable checkpoint state continues to live in repo-local JSON storage that should remain included in routine smoke checks.
+- This plan is intentionally concise and should be expanded only as new blockers are confirmed.
+- Failed sessions `session-ses_2b52.md` and `session-ses_2b53.md` exposed a process failure: repeated validation without converging doc edits.
+- Phase 8 closes only the recovery-planning work; Phase 9 doc corrections and Phase 10 feature-wave execution still require explicit approval before proceeding.
