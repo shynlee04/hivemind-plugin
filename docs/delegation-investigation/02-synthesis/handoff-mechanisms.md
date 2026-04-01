@@ -1,2 +1,0 @@
-# Handoff & Sub-Session Synthesis
-

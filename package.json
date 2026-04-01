@@ -1,126 +1,50 @@
 {
-  "name": "hivemind-context-governance",
-  "version": "2.9.5",
-  "description": "Context-Aware Governance Layer for OpenCode - prevents drift and manages session state across lifecycles",
+  "name": "opencode-harness",
+  "version": "0.1.0",
+  "description": "Standalone OpenCode harness control plane package for delegated sessions, continuity, and runtime guardrails.",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./plugin": {
-      "import": "./dist/plugin/opencode-plugin.js",
-      "types": "./dist/plugin/opencode-plugin.d.ts"
-    }
-  },
-  "bin": {
-    "hivemind-context-governance": "dist/cli.js",
-    "hivemind": "dist/cli.js",
-    "hm-init": "dist/cli.js",
-    "hm-doctor": "dist/cli.js",
-    "hm-settings": "dist/cli.js",
-    "hm-harness": "dist/cli.js"
+      "import": "./dist/plugin.js",
+      "types": "./dist/plugin.d.ts"
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
-    "bin",
-    "skills",
-    "commands",
-    "agents",
-    "workflows",
+    ".opencode",
+    "opencode.json",
     "README.md",
-    "LICENSE",
-    "CHANGELOG.md"
+    "LICENSE"
   ],
-  "workspaces": [
-    "apps/*"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/shynlee04/hivemind-plugin.git"
-  },
-  "bugs": {
-    "url": "https://github.com/shynlee04/hivemind-plugin/issues"
-  },
-  "homepage": "https://github.com/shynlee04/hivemind-plugin#readme",
   "scripts": {
-    "clean": "rm -rf dist",
-    "build": "npm run clean && tsc && chmod +x dist/cli.js",
-    "dev": "tsc --watch",
-    "typecheck": "npm run typecheck:core",
-    "typecheck:core": "tsc --noEmit",
-    "lint:boundary": "bash scripts/check-sdk-boundary.sh && bash scripts/check-state-write-boundary.sh && bash scripts/check-docs-ownership-boundary.sh && bash scripts/check-no-event-bus.sh && bash scripts/check-no-core-session.sh && bash scripts/check-tool-schema.sh && bash scripts/check-hooks-readonly.sh && bash scripts/check-plugin-assembly.sh && bash scripts/check-agents-presence.sh && bash scripts/check-asset-refs.sh",
-    "guard:public": "bash scripts/guard-public-branch.sh origin/master HEAD",
-    "test": "npm run lint:boundary && tsx --test \"tests/**/*.test.ts\" \"src/**/*.test.ts\"",
-    "prepublishOnly": "npm run typecheck && npm test && npm run build"
+    "clean": "node --eval \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });\"",
+    "build": "npm run clean && tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "prepack": "npm run build"
   },
   "keywords": [
     "opencode",
     "opencode-plugin",
-    "plugin",
-    "governance",
-    "context-management",
-    "agent-lifecycle",
-    "hivemind"
+    "harness",
+    "delegation",
+    "continuity"
   ],
-  "author": "HiveMind Contributors",
   "license": "MIT",
   "engines": {
     "node": ">=20.0.0"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "dependencies": {
-    "@clack/prompts": "^1.0.0",
-    "@json-render/core": "^0.16.0",
-    "@json-render/ink": "^0.16.0",
-    "@json-render/react": "^0.16.0",
-    "@opencode-ai/plugin": ">=1.1.0",
-    "@opencode-ai/sdk": "^1.2.27",
-    "@types/proper-lockfile": "^4.1.4",
-    "@z_ai/coding-helper": "^0.0.7",
-    "fast-glob": "^3.3.3",
-    "ignore": "^7.0.5",
-    "ink": "^6.8.0",
-    "just-bash": "^2.14.0",
-    "magic-string": "^0.30.21",
-    "proper-lockfile": "^4.1.2",
-    "remark": "^15.0.1",
-    "typescript": "^5.3.0",
-    "unist-util-visit": "^5.1.0",
-    "web-tree-sitter": "^0.26.5",
-    "yaml": "^2.8.2",
-    "zod": "^4.3.6"
+  "peerDependencies": {
+    "@opencode-ai/plugin": ">=1.1.0"
   },
   "devDependencies": {
-    "@types/ink": "^0.5.2",
     "@types/node": "^20.10.0",
-    "@types/react": "^19.2.14",
-    "tsx": "^4.7.0",
-    "vitest": "^4.1.1"
-  },
-  "peerDependencies": {
-    "@opencode-ai/plugin": ">=1.1.0",
-    "react": "^19.2.4"
-  },
-  "peerDependenciesMeta": {
-    "@opencode-ai/plugin": {
-      "optional": false
-    },
-    "react": {
-      "optional": true
-    }
-  },
-  "overrides": {
-    "@opentui/core": {
-      "web-tree-sitter": "$web-tree-sitter"
-    }
-  },
-  "directories": {
-    "doc": "docs",
-    "test": "tests"
+    "typescript": "^5.3.0"
   }
 }

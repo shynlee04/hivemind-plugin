@@ -1,17 +1,12 @@
-/**
- * HiveMind Core - Barrel Export
- * Main entry point for HiveMind core modules
- */
+export { HarnessControlPlane } from "./plugin.js"
+export { HarnessControlPlane as default } from "./plugin.js"
 
-export * from './core/index.js'
-export * from './shared/index.js'
-export * from './context/index.js'
-export * from './control-plane/index.js'
-export * from './delegation/index.js'
-export * from './governance/index.js'
-export * from './hooks/index.js'
-export * from './commands/index.js'
-export { HiveMindPlugin } from './plugin/opencode-plugin.js'
-export * from './intelligence/index.js'
-export * from './recovery/index.js'
-export * from './tools/index.js'
+export * from "./lib/concurrency.js"
+export * from "./lib/continuity.js"
+export * from "./lib/helpers.js"
+export * from "./lib/lifecycle-manager.js"
+export * from "./lib/routing.js"
+export * from "./lib/runtime.js"
+export * from "./lib/session-api.js"
+export * from "./lib/state.js"
+export * from "./lib/types.js"

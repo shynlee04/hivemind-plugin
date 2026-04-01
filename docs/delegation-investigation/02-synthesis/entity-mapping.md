@@ -1,2 +1,0 @@
-# Entity Relationship & State Mapping
-

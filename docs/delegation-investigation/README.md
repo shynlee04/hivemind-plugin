@@ -1,2 +1,0 @@
-# Delegation & Workflow Investigation Index
-

@@ -1,2 +1,0 @@
-# Tools Sector - Delegation Analysis
-

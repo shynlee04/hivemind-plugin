@@ -1,47 +1,29 @@
-# Build artifacts
-!node_modules/
-!dist/
-*.log
-.DS_Store
-.env
-.env.local
+# Dependencies
+node_modules/
+
+# Build output
+dist/
 coverage/
+*.tsbuildinfo
 
+# Logs
+*.log
+npm-debug.log*
 
+# Environment files
+.env
+.env.*
 
-# Git worktrees
-!.worktrees/
+# OS and editor files
+.DS_Store
+.idea/
+.vscode/
 
-# Development artifacts - INTERNAL ONLY
+# Runtime state
+.opencode/state/
+.harness/
 
-.cursor/
-.iflow/
-.crush/
-.beads/
-tasks/
-*.tmp.txt
-test_output*.txt
-.archive
-.repo-sdk-packed/
-
-
-# IDE/Agent configs - USER LOCAL
-.agent/
-.agents/
-.claude/
-.kilocode/
-.qoder/
-.windsurf/
-.hivemind/error-log/
-.hivemind/sessions/
-.hivemind/session-inspection/
-
-
-# Internal documentation - NOT FOR PUBLIC
-
-
-# Backup files
+# Temporary files
 *.bak
 *.bak.*
-node_modules/
-dist/
+*.tmp
