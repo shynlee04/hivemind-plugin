@@ -31,10 +31,12 @@ export function buildDelegationQueueKey(args: {
   return "default"
 }
 
+export const DEFAULT_CONCURRENCY_LIMIT = 3
+
 export class DelegationConcurrencyQueue {
   private readonly lanes = new Map<string, Lane>()
 
-  constructor(private readonly defaultLimit = 1) {}
+  constructor(private readonly defaultLimit = DEFAULT_CONCURRENCY_LIMIT) {}
 
   async acquire(key: string, limit = this.defaultLimit): Promise<() => void> {
     const lane = this.getLane(key, limit)
