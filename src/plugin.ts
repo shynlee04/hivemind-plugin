@@ -31,11 +31,11 @@ import {
   type DelegationCategory,
   type PermissionRule,
   type SpecialistAgent,
+  MAX_DESCENDANTS_PER_ROOT,
   VALID_AGENTS,
 } from "./lib/types.js"
 
 const MAX_DEPTH = 3
-const MAX_DESCENDANTS_PER_ROOT = 50
 const POLL_INTERVAL_MS = 750
 const POLL_TIMEOUT_MS = 180000
 const CIRCUIT_BREAKER_THRESHOLD = 16
