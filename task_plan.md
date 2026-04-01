@@ -4,7 +4,7 @@
 Finish the standalone `opencode-harness` pack cleanup, then recover the stalled spec/debug loop so the repo is self-contained, buildable, and working from forward-looking, internally consistent planning artifacts aligned with the active loop tracked against `/Users/apple/hivemind-plugin/.worktrees/product-detox/.hivemind/activity/experiment-plugins-tools-2026-04-01.md`.
 
 ## Current Phase
-Phase 10 (Wave 4)
+Phase 10 — complete
 
 ## Phases
 
@@ -72,9 +72,9 @@ Phase 10 (Wave 4)
 - [x] Wave 1: Vitest test infrastructure (Task 1) — commit fba0243d
 - [x] Wave 2: Core constant/config fixes (Tasks 2-5) — commits 774b627c, ca573062, 74a1f5dc, 7f137ba4
 - [x] Wave 3: Prompt format + PERM-007 (Tasks 6-7) — commits 5a7513c6, ed0524d0
-- [ ] Wave 4: Missing features (Tasks 8-10) — session cancel, SSE completion, env concurrency
-- [ ] Wave 5: Verification (Tasks 11-14) — full test run, typecheck+build, pack, re-audit
-- **Status:** in_progress (Wave 4)
+- [x] Wave 4: Missing features (Tasks 8-10) — session cancel (76588d80), SSE completion, env concurrency
+- [x] Wave 5: Verification (Tasks 11-14) — 58 tests pass, typecheck clean, build clean, pack clean
+- **Status:** complete
 
 ## Key Questions
 1. Which contradictions in the forward-looking docs must be corrected before any new implementation work can be trusted?

@@ -113,13 +113,14 @@
   - `findings.md` (updated with Cycle 1&2&3 results)
   - `progress.md` (updated with Phase 9 progress)
 
-### Phase 10: Feature Gap Implementation (Waves 1-3)
-- **Status:** in_progress (Waves 1-3 complete, Wave 4 next)
+### Phase 10: Feature Gap Implementation (Waves 1-5)
+- **Status:** complete
 - Actions taken:
   - Wave 1: Installed vitest, created vitest.config.ts, 6 smoke tests passing (commit fba0243d)
   - Wave 2: Fixed MAX_DESCENDANTS 50→10 (774b627c), doom_loop deny→allow (ca573062), concurrency 1→3 (74a1f5dc), builder temp 0.2→0.15 (7f137ba4)
   - Wave 3: Rewrote buildPromptText to 6-section format (5a7513c6), added PERM-007 tool restriction (ed0524d0)
-  - 48 tests passing across 4 test files
+  - Wave 4: Added cancelDelegatedSession (76588d80), SSE completion detection, env-configurable concurrency
+  - Wave 5: 58 tests pass, typecheck clean, build clean, pack clean. All 8 critical gaps closed.
 - Files created/modified:
   - `vitest.config.ts` (created)
   - `package.json` (vitest devDependency + test scripts)
@@ -161,8 +162,8 @@
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 10 Wave 4 — implementing session cancellation, SSE completion detection, env-configurable concurrency |
-| Where am I going? | Wave 4 (Tasks 8-10), then Wave 5 verification (Tasks 11-14), then done |
-| What's the goal? | Close all critical feature gaps (103/110→110/110) in the harness plugin |
-| What have I learned? | Waves 1-3 closed 5 critical gaps. delegate-task tool is broken — use native `task` tool. lifecycle-manager.ts line 115 still passes `1` not `3`. |
-| What have I done? | 48 tests passing, 7 implementation tasks complete, planning trio updated |
+| Where am I? | Phase 10 complete — all 5 implementation waves done |
+| Where am I going? | Ready for user direction on next priorities |
+| What's the goal? | Feature gap closure — DONE. All 8 critical gaps closed, 58 tests passing. |
+| What have I learned? | delegate-task tool is broken — use native `task` tool. lifecycle-manager needed constructor fix for concurrency. SSE + polling fallback pattern works. |
+| What have I done? | 58 tests across 6 files, 10 implementation tasks complete, all verification gates passed |
