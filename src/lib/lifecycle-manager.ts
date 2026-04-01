@@ -112,9 +112,23 @@ function buildDelegationMeta(args: {
 }
 
 export class HarnessLifecycleManager {
-  private readonly queue = new DelegationConcurrencyQueue(1)
+  private readonly concurrencyLimit: number
+  private readonly queue: DelegationConcurrencyQueue
 
-  constructor(private readonly options: HarnessLifecycleManagerOptions) {}
+  constructor(private readonly options: HarnessLifecycleManagerOptions) {
+    this.concurrencyLimit = parseInt(
+      process.env.OPENCODE_HARNESS_CONCURRENCY_LIMIT ?? "3",
+      10
+    )
+    if (isNaN(this.concurrencyLimit) || this.concurrencyLimit < 1) {
+      this.concurrencyLimit = 3
+    }
+    this.queue = new DelegationConcurrencyQueue(this.concurrencyLimit)
+  }
+
+  getConcurrencyLimit(): number {
+    return this.concurrencyLimit
+  }
 
   hydrateFromContinuity(): void {
     for (const record of listSessionContinuity()) {
@@ -206,6 +220,27 @@ export class HarnessLifecycleManager {
       lastObservedAt: timestamp,
       lastError: nextStatus === "failed" ? continuity.metadata.lastError : undefined,
       lifecycle,
+    })
+  }
+
+  async cancelDelegatedSession(sessionID: string): Promise<void> {
+    try {
+      if (this.options.client?.session?.abort) {
+        await this.options.client.session.abort({ id: sessionID })
+      }
+    } catch {
+      // Graceful handling — harness-internal state cleanup proceeds
+    }
+
+    this.patchLifecycle(sessionID, {
+      status: "failed",
+      phase: "failed",
+      error: "Session cancelled by user",
+      observation: {
+        source: "cancel",
+        observedAt: now(),
+        detail: "session-cancelled",
+      },
     })
   }
 

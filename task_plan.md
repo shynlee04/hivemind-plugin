@@ -4,7 +4,7 @@
 Finish the standalone `opencode-harness` pack cleanup, then recover the stalled spec/debug loop so the repo is self-contained, buildable, and working from forward-looking, internally consistent planning artifacts aligned with the active loop tracked against `/Users/apple/hivemind-plugin/.worktrees/product-detox/.hivemind/activity/experiment-plugins-tools-2026-04-01.md`.
 
 ## Current Phase
-Phase 9
+Phase 10 (Wave 4)
 
 ## Phases
 
@@ -63,14 +63,18 @@ Phase 9
 - [x] Research OpenCode platform capabilities from SDK lib (opencode-platform-reference >>>, oh-my-openagent-reference >>>)
 - [x] Rewrite `docs/requirements-2026-04-02.md` to remove platform/implementation contradictions
 - [x] Rewrite `docs/user-stories-2026-04-02.md` so stories align with corrected requirements and MVP scope
-- [ ] Re-validate the corrected docs against reference constraints before any code work resumes
-- **Status:** in_progress
+- [x] Re-validate the corrected docs against reference constraints before any code work resumes
+- **Status:** complete
 
 ### Phase 10: Feature Gap Audit and Implementation Waves
-- [ ] Audit current source and `.opencode/` surfaces against corrected requirements
-- [ ] Group missing/broken features into implementation waves with verification gates
-- [ ] Resume implementation only after Phase 9 receives explicit user approval
-- **Status:** pending
+- [x] Audit current source and `.opencode/` surfaces against corrected requirements (103/110 requirements met)
+- [x] Group missing/broken features into implementation waves with verification gates
+- [x] Wave 1: Vitest test infrastructure (Task 1) — commit fba0243d
+- [x] Wave 2: Core constant/config fixes (Tasks 2-5) — commits 774b627c, ca573062, 74a1f5dc, 7f137ba4
+- [x] Wave 3: Prompt format + PERM-007 (Tasks 6-7) — commits 5a7513c6, ed0524d0
+- [ ] Wave 4: Missing features (Tasks 8-10) — session cancel, SSE completion, env concurrency
+- [ ] Wave 5: Verification (Tasks 11-14) — full test run, typecheck+build, pack, re-audit
+- **Status:** in_progress (Wave 4)
 
 ## Key Questions
 1. Which contradictions in the forward-looking docs must be corrected before any new implementation work can be trusted?

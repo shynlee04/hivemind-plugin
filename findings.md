@@ -41,6 +41,20 @@
 - USER STORIES REWRITE (v3.0) COMPLETED: Category routing aligned to 4 categories (research, implementation, review, visual-engineering), 26 agent-instruction criteria tagged, 40 requirement trace references added, invented platform API references removed, doom_loop descriptions corrected, /harness-doctor reduced to 5 concrete checks.
 - KEY DISCREPANCIES FOUND BETWEEN CODE AND DOCS: MAX_DESCENDANTS_PER_ROOT=50 in code vs docs saying 10; concurrency default=1 per lane in code vs docs saying 3; no tests exist at all; wisdom system referenced in agent instructions but has no code implementation.
 
+## Wave 1-3 Implementation Results
+
+- **48 tests passing** across 4 test files (helpers, constants, prompt-builder, tool-restriction)
+- All 7 tasks completed with TDD discipline (failing test → fix → passing test → commit)
+- Key fixes applied:
+  - MAX_DESCENDANTS_PER_ROOT 50→10 (GRD-002)
+  - doom_loop deny→allow (PERM-002)
+  - DEFAULT_CONCURRENCY_LIMIT 1→3 in concurrency.ts (CON-003)
+  - Builder temperature 0.2→0.15 (CAT-004)
+  - buildPromptText rewritten to produce 6-section format: TASK, EXPECTED OUTCOME, REQUIRED TOOLS, MUST DO, MUST NOT DO, CONTEXT (CAT-009)
+  - Per-delegation tool restriction enforcement in tool.execute.before (PERM-007)
+- **Known remaining issue**: `src/lib/lifecycle-manager.ts` line 115 still passes `1` explicitly to `DelegationConcurrencyQueue(1)`, overriding the `DEFAULT_CONCURRENCY_LIMIT=3` from concurrency.ts. Task 10 will fix this.
+- **delegate-task tool is broken** in this environment (TypeError: undefined is not an object evaluating this._client). All work must be done directly.
+
 ## Technical Decisions
 | Decision | Rationale |
 |----------|-----------|

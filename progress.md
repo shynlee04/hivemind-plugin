@@ -91,8 +91,8 @@
   - `progress.md` (updated)
   - `docs/recovery-plan-2026-04-02.md` (created)
 
-### Phase 9: Spec Correction Execution (Cycle 1 & 2)
-- **Status:** in_progress
+### Phase 9: Spec Correction Execution (Cycle 1 & 2 & 3)
+- **Status:** complete
 - Actions taken:
   - Dispatched research subagent to read ALL OpenCode SDK lib docs (plugins, tools, permissions, commands, skills, SDK, agents, configs)
   - Extracted actual platform capabilities: plugin hooks, tool factory, permission actions, agent config, SDK methods, event types
@@ -102,12 +102,38 @@
   - Identified key discrepancies: MAX_DESCENDANTS=50 vs docs 10, concurrency default=1 vs docs 3, no tests, no wisdom code
   - Dispatched implementation subagent to rewrite requirements (v3.0, 443 lines, 8 corrections)
   - Dispatched implementation subagent to rewrite user stories (v3.0, 12 corrections, 40 trace references)
+  - Feature gap audit completed (103/110 requirements met)
+  - 5-wave implementation plan produced (14 tasks)
 - Files created/modified:
   - `docs/requirements-2026-04-02.md` (rewritten v2.0→v3.0)
   - `docs/user-stories-2026-04-02.md` (rewritten v2.0→v3.0)
+  - `docs/feature-gap-audit-2026-04-02.md` (created)
+  - `docs/implementation-plan-2026-04-02.md` (created)
   - `task_plan.md` (updated Phase 9 status)
-  - `findings.md` (updated with Cycle 1&2 results)
+  - `findings.md` (updated with Cycle 1&2&3 results)
   - `progress.md` (updated with Phase 9 progress)
+
+### Phase 10: Feature Gap Implementation (Waves 1-3)
+- **Status:** in_progress (Waves 1-3 complete, Wave 4 next)
+- Actions taken:
+  - Wave 1: Installed vitest, created vitest.config.ts, 6 smoke tests passing (commit fba0243d)
+  - Wave 2: Fixed MAX_DESCENDANTS 50→10 (774b627c), doom_loop deny→allow (ca573062), concurrency 1→3 (74a1f5dc), builder temp 0.2→0.15 (7f137ba4)
+  - Wave 3: Rewrote buildPromptText to 6-section format (5a7513c6), added PERM-007 tool restriction (ed0524d0)
+  - 48 tests passing across 4 test files
+- Files created/modified:
+  - `vitest.config.ts` (created)
+  - `package.json` (vitest devDependency + test scripts)
+  - `tsconfig.json` (vitest/globals in types)
+  - `tests/lib/helpers.test.ts` (6 smoke tests)
+  - `tests/lib/constants.test.ts` (5 constant tests)
+  - `tests/lib/prompt-builder.test.ts` (10 prompt format tests)
+  - `tests/lib/tool-restriction.test.ts` (27 PERM-007 tests)
+  - `src/lib/types.ts` (MAX_DESCENDANTS_PER_ROOT=10)
+  - `src/lib/concurrency.ts` (DEFAULT_CONCURRENCY_LIMIT=3)
+  - `src/lib/routing.ts` (builder temp 0.15)
+  - `src/lib/helpers.ts` (6-section buildPromptText, isToolRestrictedForAgent)
+  - `src/plugin.ts` (PERM-007 enforcement in tool.execute.before)
+  - `opencode.json` (doom_loop: "allow")
 
 ## Test Results
 | Test | Input | Expected | Actual | Status |
@@ -135,8 +161,8 @@
 ## 5-Question Reboot Check
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 9 spec correction in progress; Cycle 1 (requirements) and Cycle 2 (user stories) complete |
-| Where am I going? | Cycle 3: feature gap audit comparing code against corrected docs, then implementation plan |
-| What's the goal? | Recover the harness/spec workflow so future implementation work is driven by corrected, forward-looking docs |
-| What have I learned? | Requirements v3.0 corrected 8 contradictions (doom_loop, invented APIs, env vars, tool ownership). User stories v3.0 aligned categories, added trace references, tagged agent-instruction criteria. Key code discrepancies: MAX_DESCENDANTS=50 not 10, concurrency=1 not 3, no tests, no wisdom code |
-| What have I done? | Completed spec research from OpenCode SDK lib, rewrote requirements and user stories, updated planning trio |
+| Where am I? | Phase 10 Wave 4 — implementing session cancellation, SSE completion detection, env-configurable concurrency |
+| Where am I going? | Wave 4 (Tasks 8-10), then Wave 5 verification (Tasks 11-14), then done |
+| What's the goal? | Close all critical feature gaps (103/110→110/110) in the harness plugin |
+| What have I learned? | Waves 1-3 closed 5 critical gaps. delegate-task tool is broken — use native `task` tool. lifecycle-manager.ts line 115 still passes `1` not `3`. |
+| What have I done? | 48 tests passing, 7 implementation tasks complete, planning trio updated |

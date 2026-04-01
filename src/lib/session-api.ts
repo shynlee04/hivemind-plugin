@@ -340,6 +340,85 @@ export async function waitForAssistantText(
   )
 }
 
+function getNestedValueAsString(value: unknown, path: string[]): string | undefined {
+  const result = getNestedValue(value, path)
+  return typeof result === "string" && result.length > 0 ? result : undefined
+}
+
+export async function waitForSessionCompletionViaSSE(
+  client: any,
+  sessionID: string,
+  timeoutMs: number = 30000
+): Promise<{ completionSignal: string; statusType?: string }> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      subscription?.unsubscribe?.()
+      reject(new Error(
+        `[Harness] SSE completion detection timed out for session ${sessionID} after ${timeoutMs}ms`
+      ))
+    }, timeoutMs)
+
+    let subscription: { unsubscribe?: () => void } | undefined
+
+    try {
+      subscription = client?.event?.subscribe?.((event: any) => {
+        const eventType = getNestedValueAsString(event, ["type"])
+        const eventSessionID = getEventSessionID(event)
+
+        if (eventSessionID !== sessionID) {
+          return
+        }
+
+        if (eventType === "session.updated" || eventType === "session.created") {
+          const statusType = getNestedValueAsString(event, ["data", "session", "status", "type"])
+          if (statusType === "idle") {
+            clearTimeout(timer)
+            subscription?.unsubscribe?.()
+            resolve({
+              completionSignal: "sse:idle",
+              statusType,
+            })
+          }
+        }
+
+        if (eventType === "session.deleted") {
+          clearTimeout(timer)
+          subscription?.unsubscribe?.()
+          resolve({
+            completionSignal: "sse:deleted",
+          })
+        }
+      })
+
+      if (!subscription) {
+        clearTimeout(timer)
+        reject(new Error("[Harness] SSE subscription failed — client.event.subscribe unavailable"))
+      }
+    } catch (error) {
+      clearTimeout(timer)
+      reject(error)
+    }
+  })
+}
+
+export async function waitForSessionCompletionWithFallback(
+  client: any,
+  sessionID: string,
+  pollIntervalMs: number = 750,
+  timeoutMs: number = 180000
+): Promise<{ completionSignal: string; statusType?: string; sessionStatusType?: string }> {
+  if (client?.event?.subscribe) {
+    try {
+      const result = await waitForSessionCompletionViaSSE(client, sessionID, timeoutMs)
+      return result
+    } catch {
+      // SSE failed — fall back to polling
+    }
+  }
+
+  return waitForSessionCompletion(client, sessionID, pollIntervalMs, timeoutMs)
+}
+
 export async function waitForSessionCompletion(
   client: any,
   sessionID: string,
