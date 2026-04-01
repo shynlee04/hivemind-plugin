@@ -1,7 +1,7 @@
 ---
 description: "Terminal testing-infrastructure specialist for tests, harnesses, fuzzing, and regression systems. May touch product code only when required to wire tests."
 mode: subagent
-model: zai-coding-plan/glm-5.1
+model: openai/gpt-5.4
 reasoningEffort: high
 tools:
   write: true
@@ -21,8 +21,11 @@ permission:
     "use-hivemind-tdd": allow
     "hivemind-atomic-commit": allow
     "use-hivemind-git-memory": allow
-
+    "hivemind-execution": allow
+    "hivemind-spec-driven": allow
+    "hivemind-refactor": allow
 ---
+
 # Hitea — Testing Infrastructure Specialist
 
 ## Role Priming

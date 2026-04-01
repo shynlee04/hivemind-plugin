@@ -1,8 +1,7 @@
 ---
 description: "Primary orchestrator for HiveMind. Accepts user intent, plans execution, routes bounded packets to specialist agents, and verifies delegated returns. Never implements directly."
 mode: primary
-model: zai-coding-plan/glm-5.1
-reasoningEffort: high
+prompt: "{file:./prompts/hiveminder-mandate.txt}"
 tools:
   write: false
   edit: false
@@ -46,6 +45,9 @@ permission:
     "use-hivemind-context": allow
     "hivemind-gatekeeping": allow
     "use-hivemind-git-memory": allow
+    "use-hivemind-planning": allow
+    "hivemind-spec-driven": allow
+    "hivemind-architecture": allow
   bash:
     "*": allow
     "*npx*": allow
@@ -61,6 +63,7 @@ permission:
   mcp:
     "*": deny
 ---
+
 # Hiveminder — Primary Orchestrator
 
 You are the **Hiveminder** — the Primary Orchestrator for HiveMind. Think in workflows, not files. Coordinate agents, not code. Verify evidence, not claims. NEVER implement directly.

@@ -7,7 +7,9 @@ import { renderToString } from 'ink'
 
 import type { ToolResponse } from '../../shared/tool-response.js'
 import type {
-  HmSettingDashboardProof,
+  HmSettingDashboardPane40,
+  HmSettingDashboardPane60,
+  HmSettingDashboardTuiRenderInput,
   HmSettingLanguageFieldDescriptor,
   HmSettingResult,
 } from './types.js'
@@ -90,7 +92,7 @@ function formatBody(result: HmSettingResult): string {
   return sections.join('\n\n')
 }
 
-function buildPane40Markdown(pane40: HmSettingDashboardProof['pane40']): string {
+function buildPane40Markdown(pane40: HmSettingDashboardPane40): string {
   return [
     `- sessionId: ${pane40.sessionId}`,
     `- runtimeAuthority: ${pane40.runtimeAuthority}`,
@@ -103,7 +105,7 @@ function buildPane40Markdown(pane40: HmSettingDashboardProof['pane40']): string 
   ].join('\n')
 }
 
-function buildPane60Markdown(pane60: HmSettingDashboardProof['pane60']): string {
+function buildPane60Markdown(pane60: HmSettingDashboardPane60): string {
   const settingsEntries = Object.entries(pane60.currentSettings)
   return [
     `- group: ${pane60.group}`,
@@ -157,7 +159,7 @@ export function renderHmSettingTui(response: ToolResponse<HmSettingResult>): str
   return renderToString(React.createElement(InkRenderer, { spec, state: {} })).trimEnd()
 }
 
-export function renderHmSettingDashboardTui(dashboard: HmSettingDashboardProof): string {
+export function renderHmSettingDashboardTui(dashboard: HmSettingDashboardTuiRenderInput): string {
   const spec = {
     root: 'app',
     elements: {

@@ -11,12 +11,13 @@ import test from 'node:test'
 
 import { HIVEMIND_DIR, SESSIONS_DIR } from '../../shared/paths.js'
 import * as eventTrackerPaths from './paths.js'
+import { truncateSessionId } from './paths.js'
 
 const projectRoot = path.join(path.sep, 'tmp', 'workspace')
 const sessionId = 'ses_abc123'
 
 function expectedSessionDir(): string {
-  return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR, sessionId)
+  return path.join(projectRoot, HIVEMIND_DIR, SESSIONS_DIR, truncateSessionId(sessionId))
 }
 
 function expectedInSession(filename: string): string {
@@ -24,11 +25,11 @@ function expectedInSession(filename: string): string {
 }
 
 function expectedJourneyEventFile(extension: 'json' | 'md'): string {
-  return path.join(expectedSessionsRoot(), 'journey-events', `${sessionId}.${extension}`)
+  return path.join(expectedSessionsRoot(), 'journey-events', `${truncateSessionId(sessionId)}.${extension}`)
 }
 
 function expectedErrorLogFile(): string {
-  return path.join(expectedSessionsRoot(), 'error-logs', `${sessionId}.log`)
+  return path.join(expectedSessionsRoot(), 'error-logs', `${truncateSessionId(sessionId)}.log`)
 }
 
 function expectedSessionsRoot(): string {

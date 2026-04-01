@@ -20,6 +20,10 @@ permission:
     "use-hivemind-context": allow
     "use-hivemind-tdd": allow
     "hivemind-atomic-commit": allow
+    "hivemind-execution": allow
+    "hivemind-refactor": allow
+    "hivemind-patterns": allow
+    "hivemind-spec-driven": allow
 ---
 ## Role Priming
 

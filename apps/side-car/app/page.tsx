@@ -31,6 +31,7 @@ const TABS: TabConfig[] = [
   { id: 'settings', label: 'Settings', icon: '⚙️' },
   { id: 'contracts', label: 'Contracts', icon: '📋' },
   { id: 'sessions', label: 'Sessions', icon: '📱' },
+  { id: 'events', label: 'Live Events', icon: '⚡' },
   { id: 'planner', label: 'Planner', icon: '🗺️' },
   { id: 'builder', label: 'Builder', icon: '🔧' },
 ]
@@ -159,6 +160,99 @@ function buildContractsSpec(contracts: ContractSummary[]): Spec {
 }
 
 // ---------------------------------------------------------------------------
+// Types — Live Events
+// ---------------------------------------------------------------------------
+
+/** Shape of a single SSE event from /api/events. */
+interface LiveEvent {
+  type: string
+  payload: Record<string, unknown>
+}
+
+/** Build a json-render spec for a list of live events (newest-first). */
+function buildEventsSpec(events: LiveEvent[], status: string, statusDot: string, statusColor: string): Spec {
+  const reversed = [...events].reverse()
+  const cardIds = reversed.map((_, i) => `evt-${i}`)
+  const elements: Record<string, unknown> = {
+    'events-root': {
+      type: 'Stack', props: { gap: 3, className: 'p-4' },
+      children: ['heading', 'status-row', 'sep', 'events-list'],
+    },
+    heading: { type: 'Heading', props: { level: 3, children: `Live Events (${events.length})` } },
+    'status-row': {
+      type: 'Stack', props: { direction: 'row', gap: 2, className: 'items-center' },
+      children: ['status-dot', 'status-text'],
+    },
+    'status-dot': { type: 'Text', props: { className: `inline-block w-2 h-2 rounded-full ${statusDot}` } },
+    'status-text': { type: 'Text', props: { className: `text-sm ${statusColor}`, children: status } },
+    sep: { type: 'Separator' },
+    'events-list': {
+      type: 'Stack', props: { gap: 2, className: 'max-h-[60vh] overflow-y-auto' },
+      children: cardIds.length > 0 ? cardIds : ['empty-msg'],
+    },
+    'empty-msg': { type: 'Text', props: { className: 'text-muted-foreground text-center py-8', children: 'Waiting for events...' } },
+  }
+
+  const badgeMap: Record<string, string> = {
+    'session.created': 'default', 'session.resumed': 'secondary', 'session.closed': 'outline',
+    'tool.executed': 'default', 'tool.failed': 'destructive',
+    'message.sent': 'secondary', 'message.received': 'secondary',
+    'task.started': 'default', 'task.completed': 'secondary', 'contract.created': 'default',
+  }
+
+  for (let idx = 0; idx < reversed.length; idx++) {
+    const evt = reversed[idx]
+    const agent = typeof evt.payload.agent === 'string' ? evt.payload.agent : 'unknown'
+    const ts = typeof evt.payload.ts === 'string' ? new Date(evt.payload.ts).toLocaleTimeString() : ''
+    elements[`evt-${idx}`] = {
+      type: 'Card', props: { className: 'p-3' },
+      children: [`evt-hdr-${idx}`, `evt-body-${idx}`],
+    }
+    elements[`evt-hdr-${idx}`] = {
+      type: 'Stack', props: { direction: 'row', gap: 2, className: 'items-center' },
+      children: [`evt-badge-${idx}`, `evt-agent-${idx}`, `evt-time-${idx}`],
+    }
+    elements[`evt-badge-${idx}`] = { type: 'Badge', props: { variant: badgeMap[evt.type] ?? 'outline', children: evt.type } }
+    elements[`evt-agent-${idx}`] = { type: 'Text', props: { className: 'text-xs text-muted-foreground', children: agent } }
+    elements[`evt-time-${idx}`] = { type: 'Text', props: { className: 'text-xs text-muted-foreground ml-auto', children: ts } }
+    elements[`evt-body-${idx}`] = {
+      type: 'Text', props: { className: 'text-xs font-mono text-muted-foreground mt-1', children: JSON.stringify(evt.payload, null, 2) },
+    }
+  }
+
+  return { root: 'events-root', elements: elements as Spec['elements'] }
+}
+
+/** Live Events panel — SSE-driven scrolling event log using json-render. */
+function LiveEventsPanel() {
+  const [events, setEvents] = useState<LiveEvent[]>([])
+  const [status, setStatus] = useState<'connecting' | 'connected' | 'disconnected'>('connecting')
+
+  useEffect(() => {
+    const es = new EventSource('/api/events')
+    es.onopen = () => setStatus('connected')
+    es.onerror = () => setStatus('disconnected')
+    es.onmessage = (e) => {
+      try {
+        const parsed: LiveEvent = JSON.parse(e.data)
+        if (parsed.type !== 'connected') setEvents((prev) => [...prev.slice(-99), parsed])
+      } catch { /* ignore */ }
+    }
+    return () => es.close()
+  }, [])
+
+  const sColor = status === 'connected' ? 'text-green-500' : status === 'connecting' ? 'text-yellow-500' : 'text-red-500'
+  const sDot = status === 'connected' ? 'bg-green-500' : status === 'connecting' ? 'bg-yellow-500' : 'bg-red-500'
+  const spec = buildEventsSpec(events, status, sDot, sColor)
+
+  return (
+    <JSONUIProvider registry={registry} handlers={handlers(() => () => ({}), () => ({}))}>
+      <Renderer spec={spec} registry={registry} />
+    </JSONUIProvider>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Main page
 // ---------------------------------------------------------------------------
 
@@ -249,6 +343,30 @@ export default function SideCarApp() {
     return () => clearInterval(id)
   }, [fetchContracts])
 
+  // -- Sessions state (Phase 3) --
+  const [sessionsSpec, setSessionsSpec] = useState<Spec | null>(null)
+  const [sessionsLoading, setSessionsLoading] = useState(true)
+  const [sessionsError, setSessionsError] = useState<string | null>(null)
+
+  const fetchSessions = useCallback(async () => {
+    try {
+      const res = await fetch('/api/sessions')
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setSessionsSpec(await res.json())
+      setSessionsError(null)
+    } catch (err) {
+      setSessionsError(err instanceof Error ? err.message : 'Failed to load sessions')
+    } finally {
+      setSessionsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchSessions()
+    const id = setInterval(fetchSessions, 10000)
+    return () => clearInterval(id)
+  }, [fetchSessions])
+
   return (
     <JSONUIProvider registry={registry}>
       <div className="min-h-screen bg-background text-foreground">
@@ -270,8 +388,11 @@ export default function SideCarApp() {
           <TabPanel isActive={activeTab === 'contracts'} isLoading={contractsLoading} error={contractsError} onRetry={fetchContracts}>
             <SpecRenderer spec={contractsSpec} />
           </TabPanel>
-          <TabPanel isActive={activeTab === 'sessions'}>
-            <p className="flex items-center justify-center h-64 text-muted-foreground">Sessions — Coming in Phase 3</p>
+          <TabPanel isActive={activeTab === 'sessions'} isLoading={sessionsLoading} error={sessionsError} onRetry={fetchSessions}>
+            <SpecRenderer spec={sessionsSpec} />
+          </TabPanel>
+          <TabPanel isActive={activeTab === 'events'}>
+            <LiveEventsPanel />
           </TabPanel>
           <TabPanel isActive={activeTab === 'planner'}>
             <p className="flex items-center justify-center h-64 text-muted-foreground">Planner — Coming in Phase 4</p>

@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "created_at": "2026-03-30T10:08:00+07:00",
+    "updated_at": "2026-03-30T10:08:00+07:00",
+    "producer": "hivemaker",
+    "commit_id": "c2"
+  },
+  "commit_id": "c2",
+  "group": "g2",
+  "status": "complete",
+  "commit_sha": "a2234fb5",
+  "commit_message": "docs(sdk-lib): add OpenCode server and skills reference documentation",
+  "files_committed": 2,
+  "loc_change": "+320 / 0",
+  "gate_checks": {
+    "staged_scope": { "passed": true, "evidence": "only 2 SDK doc files staged" },
+    "commit_verified": { "passed": true, "evidence": "git log -1 confirms SHA a2234fb5" }
+  },
+  "next_commit": "c3"
+}

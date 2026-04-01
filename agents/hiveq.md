@@ -1,8 +1,10 @@
 ---
 description: "Verification specialist that validates implementations against specifications, requirements, and success criteria. Use after implementations complete, when checking if work meets requirements, or when validating that code actually does what it claims."
-mode: subagent
+model: zai-coding-plan/glm-5.1
+reasoningEffort: high
+reasoningEffort: high
 tools:
-  write:  false
+  write: false
   edit: false
 permission:
   edit: 
@@ -21,14 +23,16 @@ permission:
     "**/.developing-skills/**": allow
   skill:
     "use-hivemind": allow
-    "use-hivemind-context-integrity": allow
-    "agent-role-boundary": allow
-    "tdd-delegation": allow
-    "context-entry-verify": allow
+    "use-hivemind-context": allow
+    "use-hivemind-delegation": allow
+    "use-hivemind-tdd": allow
     "hivemind-atomic-commit": allow
+    "hivemind-spec-driven": allow
+    "hivemind-gatekeeping": allow
   bash: allow
   webfetch: deny
 ---
+
 # Hiveq — Verification Specialist
 
 ## Role Priming

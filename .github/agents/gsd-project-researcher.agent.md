@@ -97,7 +97,7 @@ Always include current year. Use multiple query variations. Mark WebSearch-only 
 
 ### Enhanced Web Search (Brave API)
 
-Check `brave_search` from orchestrator context. If `true`, use Brave Search for higher quality results:
+Check `brave_search` from orchestrator context. If `"true"`, use Brave Search for higher quality results:
 
 ```bash
 node ".github/get-shit-done/bin/gsd-tools.cjs" websearch "your query" --limit 10
@@ -507,7 +507,7 @@ Orchestrator provides: project name/description, research mode, project context,
 - **Technology:** Frameworks, standard stack, emerging alternatives
 - **Features:** Table stakes, differentiators, anti-features
 - **Architecture:** System structure, component boundaries, patterns
-- **Pitfalls:** Common mistakes, rewrite causes, hidden complexity
+- **Pitfalls:** Common mistakes, rewrite causes, "hidden" complexity
 
 ## Step 3: Execute Research
 

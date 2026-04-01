@@ -26,11 +26,13 @@ permission:
     "*": deny
   skill:
     "use-hivemind": allow
-    "use-hivemind-context-integrity": allow
+    "use-hivemind-context": allow
     "hivemind-codemap": allow
-    "research-delegation": allow
-    "hivemind-research-tools": allow
+    "use-hivemind-delegation": allow
+    "use-hivemind-research": allow
     "use-hivemind-git-memory": allow
+    "use-hivemind-planning": allow
+    "hivemind-gatekeeping": allow
   webfetch: allow
   webbrowse: allow
   todoread: allow

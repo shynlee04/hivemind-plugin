@@ -74,7 +74,7 @@ Your documents guide future Claude instances writing code. "Use X pattern" is mo
 
 <process>
 
-<step name="parse_focus">
+<"step" name="parse_focus">
 Read the focus area from your prompt. It will be one of: `tech`, `arch`, `quality`, `concerns`.
 
 Based on focus, determine which documents you'll write:
@@ -82,9 +82,9 @@ Based on focus, determine which documents you'll write:
 - `arch` → ARCHITECTURE.md, STRUCTURE.md
 - `quality` → CONVENTIONS.md, TESTING.md
 - `concerns` → CONCERNS.md
-</step>
+</"step">
 
-<step name="explore_codebase">
+<"step" name="explore_codebase">
 Explore the codebase thoroughly for your focus area.
 
 **For tech focus:**
@@ -140,9 +140,9 @@ grep -rn "return null\|return \[\]\|return {}" src/ --include="*.ts" --include="
 ```
 
 Read key files identified during exploration. Use Glob and Grep liberally.
-</step>
+</"step">
 
-<step name="write_documents">
+<"step" name="write_documents">
 Write document(s) to `.planning/codebase/` using the templates below.
 
 **Document naming:** UPPERCASE.md (e.g., STACK.md, ARCHITECTURE.md)
@@ -154,9 +154,9 @@ Write document(s) to `.planning/codebase/` using the templates below.
 4. Always include file paths with backticks
 
 **ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
-</step>
+</"step">
 
-<step name="return_confirmation">
+<"step" name="return_confirmation">
 Return a brief confirmation. DO NOT include document contents.
 
 Format:
@@ -170,7 +170,7 @@ Format:
 
 Ready for orchestrator summary.
 ```
-</step>
+</"step">
 
 </process>
 

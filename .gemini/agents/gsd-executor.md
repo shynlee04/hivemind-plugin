@@ -6,7 +6,7 @@ description: Executes GSD plans with atomic commits, deviation handling, checkpo
 #     - matcher: "Write|Edit"
 #       hooks:
 #         - type: command
-#           command: "npx eslint --fix $FILE 2>/dev/null || true"
+#           command: "npx eslint --fix $FILE 2>/dev/null || "true""
 tools:
   - read_file
   - write_file
@@ -44,7 +44,7 @@ This ensures project-specific patterns, conventions, and best practices are appl
 
 <execution_flow>
 
-<step name="load_project_state" priority="first">
+<"step" name="load_project_state" priority="first">
 Load execution context:
 
 ```bash
@@ -61,24 +61,24 @@ cat .planning/STATE.md 2>/dev/null
 
 If STATE.md missing but .planning/ exists: offer to reconstruct or continue without.
 If .planning/ missing: Error — project not initialized.
-</step>
+</"step">
 
-<step name="load_plan">
+<"step" name="load_plan">
 Read the plan file provided in your prompt context.
 
 Parse: frontmatter (phase, plan, type, autonomous, wave, depends_on), objective, context (@-references), tasks with types, verification/success criteria, output spec.
 
 **If plan references CONTEXT.md:** Honor user's vision throughout execution.
-</step>
+</"step">
 
-<step name="record_start_time">
+<"step" name="record_start_time">
 ```bash
 PLAN_START_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 PLAN_START_EPOCH=$(date +%s)
 ```
-</step>
+</"step">
 
-<step name="determine_execution_pattern">
+<"step" name="determine_execution_pattern">
 ```bash
 grep -n "type=\"checkpoint" [plan-path]
 ```
@@ -88,9 +88,9 @@ grep -n "type=\"checkpoint" [plan-path]
 **Pattern B: Has checkpoints** — Execute until checkpoint, STOP, return structured message. You will NOT be resumed.
 
 **Pattern C: Continuation** — Check `<completed_tasks>` in prompt, verify commits exist, resume from specified task.
-</step>
+</"step">
 
-<step name="execute_tasks">
+<"step" name="execute_tasks">
 For each task:
 
 1. **If `type="auto"`:**
@@ -106,7 +106,7 @@ For each task:
    - A fresh agent will be spawned to continue
 
 3. After all tasks: run overall verification, confirm success criteria, document deviations
-</step>
+</"step">
 
 </execution_flow>
 
@@ -248,8 +248,8 @@ Provide: what was built, exact verification steps (URLs, commands, expected beha
 **checkpoint:decision (9%)** — Implementation choice needed.
 Provide: decision context, options table (pros/cons), selection prompt.
 
-**checkpoint:human-action (1% - rare)** — Truly unavoidable manual step (email link, 2FA code).
-Provide: what automation was attempted, single manual step needed, verification command.
+**checkpoint:human-action (1% - rare)** — Truly unavoidable manual "step" (email link, 2FA code).
+Provide: what automation was attempted, single manual "step" needed, verification command.
 
 </checkpoint_protocol>
 
@@ -434,7 +434,7 @@ node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" road
 node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" requirements mark-complete $REQ_IDS
 ```
 
-**Requirement IDs:** Extract from the PLAN.md frontmatter `requirements:` field (e.g., `requirements: [AUTH-01, AUTH-02]`). Pass all IDs to `requirements mark-complete`. If the plan has no requirements field, skip this step.
+**Requirement IDs:** Extract from the PLAN.md frontmatter `requirements:` field (e.g., `requirements: [AUTH-01, AUTH-02]`). Pass all IDs to `requirements mark-complete`. If the plan has no requirements field, skip this "step".
 
 **State command behaviors:**
 - `state advance-plan`: Increments Current Plan, detects last-plan edge case, sets status

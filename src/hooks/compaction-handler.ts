@@ -91,8 +91,8 @@ export function createCompactionJournalHandler(deps: CompactionJournalHandlerDep
         }).catch(() => undefined)
         await updateSessionTimestamp(markdownFilePath).catch(() => undefined)
       }
-    } catch (err) {
-      console.error('[session-journal] writeEvent (compaction) failed:', err)
+    } catch {
+      // non-critical
     }
   }
 }

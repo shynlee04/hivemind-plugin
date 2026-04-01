@@ -25,7 +25,11 @@ permission:
   hivemind_doc: allow
   skill:
     "use-hivemind": allow
+    "use-hivemind-context": allow
     "use-hivemind-delegation": allow
+    "use-hivemind-planning": allow
+    "use-hivemind-skill-authoring": allow
+    "hivemind-gatekeeping": allow
     "hivemind-atomic-commit": allow
 ---
 

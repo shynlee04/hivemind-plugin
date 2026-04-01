@@ -118,7 +118,7 @@ When researching "best library for X": find what the ecosystem actually uses, do
 
 ## Enhanced Web Search (Brave API)
 
-Check `brave_search` from init context. If `true`, use Brave Search for higher quality results:
+Check `brave_search` from init context. If `"true"`, use Brave Search for higher quality results:
 
 ```bash
 node ".github/get-shit-done/bin/gsd-tools.cjs" websearch "your query" --limit 10
@@ -372,7 +372,7 @@ if [[ "$INIT" == @file:* ]]; then INIT=$(cat "${INIT#@file:}"); fi
 
 Extract from init JSON: `phase_dir`, `padded_phase`, `phase_number`, `commit_docs`.
 
-Also read `.planning/config.json` — include Validation Architecture section in RESEARCH.md unless `workflow.nyquist_validation` is explicitly `false`. If the key is absent or `true`, include the section.
+Also read `.planning/config.json` — include Validation Architecture section in RESEARCH.md unless `workflow.nyquist_validation` is explicitly `false`. If the key is absent or `"true"`, include the section.
 
 Then read CONTEXT.md if exists:
 ```bash

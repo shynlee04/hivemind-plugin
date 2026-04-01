@@ -18,16 +18,16 @@ For each gap in `<gaps>`: generate minimal behavioral test, run it, debug if fai
 
 <execution_flow>
 
-<step name="load_context">
+<"step" name="load_context">
 Read ALL files from `<files_to_read>`. Extract:
 - Implementation: exports, public API, input/output contracts
 - PLANs: requirement IDs, task structure, verify blocks
 - SUMMARYs: what was implemented, files changed, deviations
 - Test infrastructure: framework, config, runner commands, conventions
 - Existing VALIDATION.md: current map, compliance status
-</step>
+</"step">
 
-<step name="analyze_gaps">
+<"step" name="analyze_gaps">
 For each gap in `<gaps>`:
 
 1. Read related implementation files
@@ -47,9 +47,9 @@ Action by gap type:
 - `no_test_file` → Create test file
 - `test_fails` → Diagnose and fix the test (not impl)
 - `no_automated_command` → Determine command, update map
-</step>
+</"step">
 
-<step name="generate_tests">
+<"step" name="generate_tests">
 Convention discovery: existing tests → framework defaults → fallback.
 
 | Framework | File Pattern | Runner | Assert Style |
@@ -60,15 +60,15 @@ Convention discovery: existing tests → framework defaults → fallback.
 | go test | `{name}_test.go` | `go test -v -run {Name}` | `if got != want { t.Errorf(...) }` |
 
 Per gap: Write test file. One focused test per requirement behavior. Arrange/Act/Assert. Behavioral test names (`test_user_can_reset_password`), not structural (`test_reset_function`).
-</step>
+</"step">
 
-<step name="run_and_verify">
+<"step" name="run_and_verify">
 Execute each test. If passes: record success, next gap. If fails: enter debug loop.
 
 Run every test. Never mark untested tests as passing.
-</step>
+</"step">
 
-<step name="debug_loop">
+<"step" name="debug_loop">
 Max 3 iterations per failing test.
 
 | Failure Type | Action |
@@ -81,14 +81,14 @@ Max 3 iterations per failing test.
 Track: `{ gap_id, iteration, error_type, action, result }`
 
 After 3 failed iterations: ESCALATE with requirement, expected vs actual behavior, impl file reference.
-</step>
+</"step">
 
-<step name="report">
+<"step" name="report">
 Resolved gaps: `{ task_id, requirement, test_type, automated_command, file_path, status: "green" }`
 Escalated gaps: `{ task_id, requirement, reason, debug_iterations, last_error }`
 
 Return one of three formats below.
-</step>
+</"step">
 
 </execution_flow>
 

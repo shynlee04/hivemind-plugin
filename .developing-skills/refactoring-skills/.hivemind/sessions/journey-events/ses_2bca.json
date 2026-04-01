@@ -1,0 +1,25 @@
+{
+  "_schema": "session/v3",
+  "sessionId": "ses_2bca",
+  "semanticSessionId": "ses_2bca",
+  "parentSessionId": null,
+  "lineage": "hiveminder",
+  "purposeClass": "implementation",
+  "agent": "hiveminder",
+  "startedAt": "2026-03-31T14:17:45.267Z",
+  "endedAt": null,
+  "turnCount": 3,
+  "status": "active",
+  "summary": "",
+  "keyFindings": [],
+  "subsessionIds": [],
+  "resumable": false,
+  "counters": {
+    "userMessageCount": 0,
+    "assistantOutputCount": 3,
+    "toolCallCount": 0,
+    "delegationCount": 0,
+    "compactionCount": 0
+  },
+  "toc": []
+}

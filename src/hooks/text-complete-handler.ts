@@ -153,8 +153,8 @@ export function createTextCompleteHandler(deps: TextCompleteHandlerDeps) {
 
       // 5. Update session status
       await updateStatus(sessionsDir, consolidatedSessionId, 'active')
-    } catch (err) {
-      console.error('[session-journal] consolidated write failed:', err)
+    } catch {
+      // non-critical
     }
   }
 }

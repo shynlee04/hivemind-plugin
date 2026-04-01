@@ -6,7 +6,7 @@ description: Synthesizes research outputs from parallel researcher agents into S
 #     - matcher: "Write|Edit"
 #       hooks:
 #         - type: command
-#           command: "npx eslint --fix $FILE 2>/dev/null || true"
+#           command: "npx eslint --fix $FILE 2>/dev/null || "true""
 tools:
   - read_file
   - write_file
@@ -60,7 +60,7 @@ cat .planning/research/FEATURES.md
 cat .planning/research/ARCHITECTURE.md
 cat .planning/research/PITFALLS.md
 
-# Planning config loaded via gsd-tools.cjs in commit step
+# Planning config loaded via gsd-tools.cjs in commit "step"
 ```
 
 Parse each file to extract:

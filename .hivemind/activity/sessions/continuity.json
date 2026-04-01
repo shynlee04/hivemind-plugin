@@ -1,13 +1,12 @@
 {
   "_meta": {
     "created_at": "2026-03-28T15:00:00Z",
-    "updated_at": "2026-03-29T03:50:00+07:00"
+    "updated_at": "2026-03-30T10:00:00Z"
   },
   "session_type": "detox-implementation",
   "branch": "v2.9.5-detox-dev",
-  "plan_id": "PLAN-2026-03-29-SJ",
-  "status": "ALL_PHASES_COMPLETE",
-  "current_phase": "done",
+  "status": "ORCHESTRATION-INITIALIZED",
+  "current_phase": "scope-assessment-delegated",
   "completed_phases": [
     "phase-0-baseline-verification",
     "phase-1-kill-redundancy",
@@ -18,28 +17,67 @@
     "phase-6-session-resolver-extraction",
     "phase-7-sub-session-linking",
     "phase-8-legacy-deprecation",
-    "phase-9-final-integration-verify"
+    "phase-9-final-integration-verify",
+    "phase-dashboard-json-render-migration",
+    "phase-side-car-mvp",
+    "cycle-3-investigation-swarm",
+    "cycle-3-synthesis-gate",
+    "wave2-batch-1-core-skills"
   ],
-  "verification_summary": {
-    "checks_passed": 19,
-    "checks_failed": 1,
-    "tsc_clean": true,
-    "build_clean": true,
-    "targeted_tests_passing": 70,
-    "targeted_tests_failing": 0,
-    "total_files_changed": 104,
-    "total_lines_added": 12728,
-    "total_lines_removed": 3266,
-    "verdict": "PASS (with pre-existing governance debt)",
-    "single_failure": "Missing AGENTS.md charters for 4 sectors (src/governance/, src/hooks/, src/plugin/, src/shared/) — pre-existing, not a regression"
+  "latest_commits": [
+    "8e7b5330 feat(side-car): complete Phase 1 shell + Phase 2 Settings/Contracts tabs",
+    "57defa7a feat(investigation): json-render deep research",
+    "fbc1ceff feat: wire spec builder to dashboard and add side-car API route"
+  ],
+  "key_findings": [
+    "Batch 1 (core skills) COMPLETED: use-hivemind 194L, delegation 524L, context 397L — all extracted to references/",
+    "Batches 2-4 NOT STARTED — orchestration, remaining, integration skills pending",
+    "Side-car F-01/F-02/F-03 remain unfixed — dashboard pipeline dead, actions empty, untyped props",
+    "353 files uncommitted — enormous batch needs atomic decomposition before any commit",
+    "Type check clean (npx tsc --noEmit: 0 errors)"
+  ],
+  "blocked_routes": [
+    "Cannot commit — 353 files need logical grouping into atomic commits",
+    "Cannot proceed to batch-2 until batch-1 work is committed safely"
+  ],
+  "recommended_next_action": "Delegate scope assessment: map 353 uncommitted files into logical commit groups. Then execute atomic commits. Then proceed batch-2.",
+  "active_distrust": "continuity.json prior session claimed SIDE-CAR-MVP-COMPLETE — contradicted by dead pipeline audit",
+  "severity_matrix": {
+    "DISASTEROUS": 3,
+    "CRITICAL": 11,
+    "HIGH": 20,
+    "MEDIUM": 20,
+    "LOW": 15,
+    "TOTAL": 69
   },
-  "carry_forward": [
-    "ALL 10 PHASES COMPLETE — 19/20 verification checks pass",
-    "Only failure: pre-existing missing AGENTS.md charters (governance debt, not session-journal regression)",
-    "104 files changed, +12,728 / -3,266 lines",
-    "All handlers wired, lifecycle events active, session resolver extracted, hierarchy tracking live",
-    "Next steps: commit the changeset, address AGENTS.md charters, or proceed with further work"
+  "verified_top_findings": [
+    {
+      "id": "F-01",
+      "severity": "DISASTEROUS",
+      "title": "Side-car pipeline entirely broken — spec never written to disk",
+      "confirmed": true,
+      "evidence": "dashboard.ts:55 builds spec, route.ts:5 reads SPEC_PATH which never exists"
+    },
+    {
+      "id": "F-02",
+      "severity": "CRITICAL",
+      "title": "All interactive UI non-functional — actions:{} empty",
+      "confirmed": true,
+      "evidence": "registry.tsx:23 actions:{}, spec-builder.ts elements have no on: handlers"
+    },
+    {
+      "id": "F-03",
+      "severity": "CRITICAL",
+      "title": "Untyped props — Record<string,unknown> throughout",
+      "confirmed": true,
+      "evidence": "types.ts:100-101 type:string props:Record<string,unknown>"
+    }
   ],
-  "blocked_routes": [],
-  "user_action_needed": "Review the changeset and request a commit when satisfied"
+  "active_orchestration": {
+    "cycle_id": "cycle-4-remediation",
+    "phase": "scope-assessment",
+    "tracking_path": ".hivemind/activity/orchestration/cycle-4/",
+    "gates_enabled": true,
+    "evidence_required": true
+  }
 }

@@ -1,6 +1,7 @@
 ---
 description: "Planning specialist for task design, sequencing, dependency analysis, and handoff artifacts. Designs the roadmap without implementing product changes."
-mode: subagent
+model: zai-coding-plan/glm-5.1
+reasoningEffort: high
 tools:
   write: true
   edit: true
@@ -31,8 +32,13 @@ permission:
     "hivemind-gatekeeping": allow
     "hivemind-spec-driven": allow
     "use-hivemind-research": allow
+    "use-hivemind-planning": allow
+    "hivemind-codemap": allow
+    "hivemind-architecture": allow
+    "use-hivemind-context": allow
   webfetch: deny
 ---
+
 # Hiveplanner — Planning Specialist
 
 ## Role Priming

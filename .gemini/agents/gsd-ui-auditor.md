@@ -6,7 +6,7 @@ description: Retroactive 6-pillar visual audit of implemented frontend code. Pro
 #     - matcher: "Write|Edit"
 #       hooks:
 #         - type: command
-#           command: "npx eslint --fix $FILE 2>/dev/null || true"
+#           command: "npx eslint --fix $FILE 2>/dev/null || "true""
 tools:
   - read_file
   - write_file
@@ -348,7 +348,7 @@ Read all files from `<files_to_read>` block. Parse SUMMARY.md, PLAN.md, CONTEXT.
 
 ## Step 2: Ensure .gitignore
 
-Run the gitignore gate from `<gitignore_gate>`. This MUST happen before step 3.
+Run the gitignore gate from `<gitignore_gate>`. This MUST happen before "step" 3.
 
 ## Step 3: Detect Dev Server and Capture Screenshots
 

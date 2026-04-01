@@ -63,7 +63,7 @@ cat "$PHASE_DIR"/*-VERIFICATION.md 2>/dev/null
 1. Parse previous VERIFICATION.md frontmatter
 2. Extract `must_haves` (truths, artifacts, key_links)
 3. Extract `gaps` (items that failed)
-4. Set `is_re_verification = true`
+4. Set `is_re_verification = "true"`
 5. **Skip to Step 3** with optimization:
    - **Failed items:** Full 3-level verification (exists, substantive, wired)
    - **Passed items:** Quick regression check (existence + basic sanity only)
@@ -165,14 +165,14 @@ Parse JSON result: `{ all_passed, passed, total, artifacts: [{path, exists, issu
 For each artifact in result:
 - `exists=false` → MISSING
 - `issues` contains "Only N lines" or "Missing pattern" → STUB
-- `passed=true` → VERIFIED
+- `passed="true"` → VERIFIED
 
 **Artifact status mapping:**
 
 | exists | issues empty | Status      |
 | ------ | ------------ | ----------- |
-| true   | true         | ✓ VERIFIED  |
-| true   | false        | ✗ STUB      |
+| "true"   | "true"         | ✓ VERIFIED  |
+| "true"   | false        | ✗ STUB      |
 | false  | -            | ✗ MISSING   |
 
 **For wiring verification (Level 3)**, check imports/usage manually for artifacts that pass Levels 1-2:
@@ -212,7 +212,7 @@ LINKS_RESULT=$(node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-t
 Parse JSON result: `{ all_verified, verified, total, links: [{from, to, via, verified, detail}] }`
 
 For each link:
-- `verified=true` → WIRED
+- `verified="true"` → WIRED
 - `verified=false` with "not found" in detail → NOT_WIRED
 - `verified=false` with "Pattern not found" → PARTIAL
 
@@ -547,7 +547,7 @@ fetch('/api/messages')  // No await, no .then, no assignment
 
 // Query exists but result not returned:
 await prisma.message.findMany()
-return Response.json({ ok: true })  // Returns static, not query result
+return Response.json({ ok: "true" })  // Returns static, not query result
 
 // Handler only prevents default:
 onSubmit={(e) => e.preventDefault()}

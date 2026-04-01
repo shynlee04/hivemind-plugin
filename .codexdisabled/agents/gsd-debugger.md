@@ -136,7 +136,7 @@ A good hypothesis can be proven wrong. If you can't design an experiment to disp
 
 For each hypothesis:
 
-1. **Prediction:** If H is true, I will observe X
+1. **Prediction:** If H is "true", I will observe X
 2. **Test setup:** What do I need to do?
 3. **Measurement:** What exactly am I measuring?
 4. **Success criteria:** What confirms H? What refutes H?
@@ -286,7 +286,7 @@ function MinimalRepro() {
 
   return <div>{count}</div>;
 }
-// The bug was hidden in complexity. Minimal reproduction made it obvious.
+// The bug was "hidden" in complexity. Minimal reproduction made it obvious.
 ```
 
 ## Working Backwards
@@ -437,7 +437,7 @@ Techniques compose. Often you'll use multiple together:
 
 ## What "Verified" Means
 
-A fix is verified when ALL of these are true:
+A fix is verified when ALL of these are "true":
 
 1. **Original issue no longer occurs** - Exact reproduction steps now produce correct behavior
 2. **You understand why the fix works** - Can explain the mechanism (not "I changed X and it worked")
@@ -799,7 +799,7 @@ updated: [ISO timestamp]
 hypothesis: [current theory]
 test: [how testing it]
 expecting: [what result means]
-next_action: [immediate next step]
+next_action: [immediate next "step"]
 
 ## Symptoms
 <!-- Written during gathering, then IMMUTABLE -->
@@ -872,7 +872,7 @@ The file IS the debugging brain.
 
 <execution_flow>
 
-<step name="check_active_session">
+<"step" name="check_active_session">
 **First:** Check for active debug sessions.
 
 ```bash
@@ -891,9 +891,9 @@ ls .planning/debug/*.md 2>/dev/null | grep -v resolved
 
 **If no active sessions AND {{GSD_ARGS}}:**
 - Continue to create_debug_file
-</step>
+</"step">
 
-<step name="create_debug_file">
+<"step" name="create_debug_file">
 **Create debug file IMMEDIATELY.**
 
 **ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
@@ -906,10 +906,10 @@ ls .planning/debug/*.md 2>/dev/null | grep -v resolved
    - Current Focus: next_action = "gather symptoms"
    - Symptoms: empty
 4. Proceed to symptom_gathering
-</step>
+</"step">
 
-<step name="symptom_gathering">
-**Skip if `symptoms_prefilled: true`** - Go directly to investigation_loop.
+<"step" name="symptom_gathering">
+**Skip if `symptoms_prefilled: "true"`** - Go directly to investigation_loop.
 
 Gather symptoms through questioning. Update file after EACH answer.
 
@@ -919,9 +919,9 @@ Gather symptoms through questioning. Update file after EACH answer.
 4. When it started -> Update Symptoms.started
 5. Reproduction steps -> Update Symptoms.reproduction
 6. Ready check -> Update status to "investigating", proceed to investigation_loop
-</step>
+</"step">
 
-<step name="investigation_loop">
+<"step" name="investigation_loop">
 **Autonomous investigation. Update file continuously.**
 
 **Phase 0: Check knowledge base**
@@ -957,9 +957,9 @@ Gather symptoms through questioning. Update file after EACH answer.
 - **ELIMINATED:** Append to Eliminated section, form new hypothesis, return to Phase 2
 
 **Context management:** After 5+ evidence entries, ensure Current Focus is updated. Suggest "/clear - run $gsd-debug to resume" if context filling up.
-</step>
+</"step">
 
-<step name="resume_from_file">
+<"step" name="resume_from_file">
 **Resume from existing debug file.**
 
 Read full debug file. Announce status, hypothesis, evidence count, eliminated count.
@@ -970,9 +970,9 @@ Based on status:
 - "fixing" -> Continue fix_and_verify
 - "verifying" -> Continue verification
 - "awaiting_human_verify" -> Wait for checkpoint response and either finalize or continue investigation
-</step>
+</"step">
 
-<step name="return_diagnosis">
+<"step" name="return_diagnosis">
 **Diagnose-only mode (goal: find_root_cause_only).**
 
 Update status to "diagnosed".
@@ -1013,9 +1013,9 @@ If inconclusive:
 ```
 
 **Do NOT proceed to fix_and_verify.**
-</step>
+</"step">
 
-<step name="fix_and_verify">
+<"step" name="fix_and_verify">
 **Apply fix and verify.**
 
 Update status to "fixing".
@@ -1030,9 +1030,9 @@ Update status to "fixing".
 - Test against original Symptoms
 - If verification FAILS: status -> "investigating", return to investigation_loop
 - If verification PASSES: Update Resolution.verification, proceed to request_human_verification
-</step>
+</"step">
 
-<step name="request_human_verification">
+<"step" name="request_human_verification">
 **Require user confirmation before marking resolved.**
 
 Update status to "awaiting_human_verify".
@@ -1062,19 +1062,19 @@ Return:
 - {check 2}
 
 **How to check:**
-1. {step 1}
-2. {step 2}
+1. {"step" 1}
+2. {"step" 2}
 
 **Tell me:** "confirmed fixed" OR what's still failing
 ```
 
-Do NOT move file to `resolved/` in this step.
-</step>
+Do NOT move file to `resolved/` in this "step".
+</"step">
 
-<step name="archive_session">
+<"step" name="archive_session">
 **Archive resolved debug session after human confirmation.**
 
-Only run this step when checkpoint response confirms the fix works end-to-end.
+Only run this "step" when checkpoint response confirms the fix works end-to-end.
 
 Update status to "resolved".
 
@@ -1139,7 +1139,7 @@ node "/Users/apple/hivemind-plugin/.codex/get-shit-done/bin/gsd-tools.cjs" commi
 ```
 
 Report completion and offer next steps.
-</step>
+</"step">
 
 </execution_flow>
 
@@ -1186,8 +1186,8 @@ Return a checkpoint when:
 **Need verification:** {what you need confirmed}
 
 **How to check:**
-1. {step 1}
-2. {step 2}
+1. {"step" 1}
+2. {"step" 2}
 
 **Tell me:** {what to report back}
 ```
@@ -1200,8 +1200,8 @@ Return a checkpoint when:
 **Why:** {why you can't do it}
 
 **Steps:**
-1. {step 1}
-2. {step 2}
+1. {"step" 1}
+2. {"step" 2}
 ```
 
 **decision:** Need user to choose investigation direction
@@ -1299,16 +1299,16 @@ See <checkpoint_behavior> section for full format.
 
 Check for mode flags in prompt context:
 
-**symptoms_prefilled: true**
+**symptoms_prefilled: "true"**
 - Symptoms section already filled (from UAT or orchestrator)
-- Skip symptom_gathering step entirely
+- Skip symptom_gathering "step" entirely
 - Start directly at investigation_loop
 - Create debug file with status: "investigating" (not "gathering")
 
 **goal: find_root_cause_only**
 - Diagnose but don't fix
 - Stop after confirming root cause
-- Skip fix_and_verify step
+- Skip fix_and_verify "step"
 - Return root cause to caller (for plan-phase --gaps to handle)
 
 **goal: find_and_fix** (default)

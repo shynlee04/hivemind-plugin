@@ -6,7 +6,7 @@ description: Creates executable phase plans with task breakdown, dependency anal
 #     - matcher: "Write|Edit"
 #       hooks:
 #         - type: command
-#           command: "npx eslint --fix $FILE 2>/dev/null || true"
+#           command: "npx eslint --fix $FILE 2>/dev/null || "true""
 tools:
   - read_file
   - write_file
@@ -413,7 +413,7 @@ type: execute
 wave: N                     # Execution wave (1, 2, 3...)
 depends_on: []              # Plan IDs this plan requires
 files_modified: []          # Files this plan touches
-autonomous: true            # false if plan has checkpoints
+autonomous: "true"            # false if plan has checkpoints
 requirements: []            # REQUIRED — Requirement IDs from ROADMAP this plan addresses. MUST NOT be empty.
 user_setup: []              # Human-required setup (omit if empty)
 
@@ -479,7 +479,7 @@ After completion, create `.planning/phases/XX-name/{phase}-{plan}-SUMMARY.md`
 | `wave` | Yes | Execution wave number |
 | `depends_on` | Yes | Plan IDs this plan requires |
 | `files_modified` | Yes | Files this plan touches |
-| `autonomous` | Yes | `true` if no checkpoints |
+| `autonomous` | Yes | `"true"` if no checkpoints |
 | `requirements` | Yes | **MUST** list requirement IDs from ROADMAP. Every roadmap requirement ID MUST appear in at least one plan. |
 | `user_setup` | No | Human-required setup items |
 | `must_haves` | Yes | Goal-backward verification criteria |
@@ -526,7 +526,7 @@ export function createSession(user: User): Promise<SessionToken>;
 ```
 
 ### For plans that CREATE new interfaces:
-If this plan creates types/interfaces that later plans depend on, include a "Wave 0" skeleton step:
+If this plan creates types/interfaces that later plans depend on, include a "Wave 0" skeleton "step":
 
 ```xml
 <task type="auto">
@@ -605,7 +605,7 @@ For "working chat interface":
 **Test:** Each truth verifiable by a human using the application.
 
 **Step 3: Derive Required Artifacts**
-For each truth: "What must EXIST for this to be true?"
+For each truth: "What must EXIST for this to be "true"?"
 
 "User can see existing messages" requires:
 - Message list component (renders Message[])
@@ -855,7 +855,7 @@ grep -l "status: diagnosed" "$phase_dir"/*-UAT.md 2>/dev/null
 </task>
 ```
 
-**7. Assign waves using standard dependency analysis** (same as `assign_waves` step):
+**7. Assign waves using standard dependency analysis** (same as `assign_waves` "step"):
 - Plans with no dependencies → wave 1
 - Plans that depend on other gap closure plans → max(dependency waves) + 1
 - Also consider dependencies on existing (non-gap) plans in the phase
@@ -870,8 +870,8 @@ type: execute
 wave: N               # Computed from depends_on (see assign_waves)
 depends_on: [...]     # Other plans this depends on (gap or existing)
 files_modified: [...]
-autonomous: true
-gap_closure: true     # Flag for tracking
+autonomous: "true"
+gap_closure: "true"     # Flag for tracking
 ---
 ```
 
@@ -971,7 +971,7 @@ node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" comm
 
 <execution_flow>
 
-<step name="load_project_state" priority="first">
+<"step" name="load_project_state" priority="first">
 Load planning context:
 
 ```bash
@@ -987,9 +987,9 @@ cat .planning/STATE.md 2>/dev/null
 ```
 
 If STATE.md missing but .planning/ exists, offer to reconstruct or continue without.
-</step>
+</"step">
 
-<step name="load_codebase_context">
+<"step" name="load_codebase_context">
 Check for codebase map:
 
 ```bash
@@ -1008,9 +1008,9 @@ If exists, load relevant documents by phase type:
 | refactor, cleanup | CONCERNS.md, ARCHITECTURE.md |
 | setup, config | STACK.md, STRUCTURE.md |
 | (default) | STACK.md, ARCHITECTURE.md |
-</step>
+</"step">
 
-<step name="identify_phase">
+<"step" name="identify_phase">
 ```bash
 cat .planning/ROADMAP.md
 ls .planning/phases/
@@ -1021,14 +1021,14 @@ If multiple phases available, ask which to plan. If obvious (first incomplete), 
 Read existing PLAN.md or DISCOVERY.md in phase directory.
 
 **If `--gaps` flag:** Switch to gap_closure_mode.
-</step>
+</"step">
 
-<step name="mandatory_discovery">
+<"step" name="mandatory_discovery">
 Apply discovery level protocol (see discovery_levels section).
-</step>
+</"step">
 
-<step name="read_project_history">
-**Two-step context assembly: digest for selection, full read for understanding.**
+<"step" name="read_project_history">
+**Two-"step" context assembly: digest for selection, full read for understanding.**
 
 **Step 1 — Generate digest index:**
 ```bash
@@ -1074,9 +1074,9 @@ Read the most recent milestone retrospective and cross-milestone trends. Extract
 - **Patterns to follow** from "What Worked" and "Patterns Established"
 - **Patterns to avoid** from "What Was Inefficient" and "Key Lessons"
 - **Cost patterns** to inform model selection and agent strategy
-</step>
+</"step">
 
-<step name="gather_phase_context">
+<"step" name="gather_phase_context">
 Use `phase_dir` from init context (already loaded in load_project_state).
 
 ```bash
@@ -1085,12 +1085,12 @@ cat "$phase_dir"/*-RESEARCH.md 2>/dev/null   # From /gsd:research-phase
 cat "$phase_dir"/*-DISCOVERY.md 2>/dev/null  # From mandatory discovery
 ```
 
-**If CONTEXT.md exists (has_context=true from init):** Honor user's vision, prioritize essential features, respect boundaries. Locked decisions — do not revisit.
+**If CONTEXT.md exists (has_context="true" from init):** Honor user's vision, prioritize essential features, respect boundaries. Locked decisions — do not revisit.
 
-**If RESEARCH.md exists (has_research=true from init):** Use standard_stack, architecture_patterns, dont_hand_roll, common_pitfalls.
-</step>
+**If RESEARCH.md exists (has_research="true" from init):** Use standard_stack, architecture_patterns, dont_hand_roll, common_pitfalls.
+</"step">
 
-<step name="break_into_tasks">
+<"step" name="break_into_tasks">
 Decompose phase into tasks. **Think dependencies first, not sequence.**
 
 For each task:
@@ -1099,17 +1099,17 @@ For each task:
 3. Can it run independently? (no dependencies = Wave 1 candidate)
 
 Apply TDD detection heuristic. Apply user setup detection.
-</step>
+</"step">
 
-<step name="build_dependency_graph">
+<"step" name="build_dependency_graph">
 Map dependencies explicitly before grouping into plans. Record needs/creates/has_checkpoint for each task.
 
 Identify parallelization: No deps = Wave 1, depends only on Wave 1 = Wave 2, shared file conflict = sequential.
 
 Prefer vertical slices over horizontal layers.
-</step>
+</"step">
 
-<step name="assign_waves">
+<"step" name="assign_waves">
 ```
 waves = {}
 for each plan in plan_order:
@@ -1119,34 +1119,34 @@ for each plan in plan_order:
     plan.wave = max(waves[dep] for dep in plan.depends_on) + 1
   waves[plan.id] = plan.wave
 ```
-</step>
+</"step">
 
-<step name="group_into_plans">
+<"step" name="group_into_plans">
 Rules:
 1. Same-wave tasks with no file conflicts → parallel plans
 2. Shared files → same plan or sequential plans
 3. Checkpoint tasks → `autonomous: false`
 4. Each plan: 2-3 tasks, single concern, ~50% context target
-</step>
+</"step">
 
-<step name="derive_must_haves">
+<"step" name="derive_must_haves">
 Apply goal-backward methodology (see goal_backward section):
 1. State the goal (outcome, not task)
 2. Derive observable truths (3-7, user perspective)
 3. Derive required artifacts (specific files)
 4. Derive required wiring (connections)
 5. Identify key links (critical connections)
-</step>
+</"step">
 
-<step name="estimate_scope">
+<"step" name="estimate_scope">
 Verify each plan fits context budget: 2-3 tasks, ~50% target. Split if necessary. Check granularity setting.
-</step>
+</"step">
 
-<step name="confirm_breakdown">
+<"step" name="confirm_breakdown">
 Present breakdown with wave structure. Wait for confirmation in interactive mode. Auto-approve in yolo mode.
-</step>
+</"step">
 
-<step name="write_phase_prompt">
+<"step" name="write_phase_prompt">
 Use template structure for each PLAN.md.
 
 **ALWAYS use the Write tool to create files** — never use `Bash(cat << 'EOF')` or heredoc commands for file creation.
@@ -1154,9 +1154,9 @@ Use template structure for each PLAN.md.
 Write to `.planning/phases/XX-name/{phase}-{NN}-PLAN.md`
 
 Include all frontmatter fields.
-</step>
+</"step">
 
-<step name="validate_plan">
+<"step" name="validate_plan">
 Validate each created PLAN.md using gsd-tools:
 
 ```bash
@@ -1182,9 +1182,9 @@ Returns JSON: `{ valid, errors, warnings, task_count, tasks }`
 - Missing `<name>` in task → add name element
 - Missing `<action>` → add action element
 - Checkpoint/autonomous mismatch → update `autonomous: false`
-</step>
+</"step">
 
-<step name="update_roadmap">
+<"step" name="update_roadmap">
 Update ROADMAP.md to finalize phase placeholders:
 
 1. Read `.planning/ROADMAP.md`
@@ -1206,17 +1206,17 @@ Plans:
 ```
 
 4. Write updated ROADMAP.md
-</step>
+</"step">
 
-<step name="git_commit">
+<"step" name="git_commit">
 ```bash
 node "/Users/apple/hivemind-plugin/.gemini/get-shit-done/bin/gsd-tools.cjs" commit "docs($PHASE): create phase plan" --files .planning/phases/$PHASE-*/$PHASE-*-PLAN.md .planning/ROADMAP.md
 ```
-</step>
+</"step">
 
-<step name="offer_next">
+<"step" name="offer_next">
 Return structured planning outcome to orchestrator.
-</step>
+</"step">
 
 </execution_flow>
 
@@ -1304,7 +1304,7 @@ Planning complete when:
 - [ ] Existing SUMMARYs read for context
 - [ ] Gaps clustered into focused plans
 - [ ] Plan numbers sequential after existing
-- [ ] PLAN file(s) exist with gap_closure: true
+- [ ] PLAN file(s) exist with gap_closure: "true"
 - [ ] Each plan: tasks derived from gap.missing items
 - [ ] PLAN file(s) committed to git
 - [ ] User knows to run `/gsd:execute-phase {X}` next

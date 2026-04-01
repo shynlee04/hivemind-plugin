@@ -1,0 +1,21 @@
+{
+  "_meta": {
+    "created_at": "2026-03-30T10:05:00+07:00",
+    "updated_at": "2026-03-30T10:05:00+07:00",
+    "producer": "hivemaker",
+    "commit_id": "c1"
+  },
+  "commit_id": "c1",
+  "group": "g1",
+  "status": "complete",
+  "commit_sha": "196f3b40",
+  "commit_message": "refactor(skills): remove deprecated _deprecated_hive skill archive",
+  "files_committed": 122,
+  "loc_change": "122 files changed, 16280 deletions(-)",
+  "gate_checks": {
+    "staged_scope": { "passed": true, "evidence": "only _deprecated_hive/ files staged" },
+    "tsc_clean": { "passed": true, "evidence": "npx tsc --noEmit — 0 errors" },
+    "commit_verified": { "passed": true, "evidence": "git log -1 confirms SHA 196f3b40" }
+  },
+  "next_commit": "c2"
+}

@@ -31,6 +31,7 @@ permission:
     "use-hivemind-delegation": allow
     "use-hivemind-research": allow
     "use-hivemind-git-memory": allow
+    "hivemind-gatekeeping": allow
 ---
 # Hivexplorer — Repository Investigator
 

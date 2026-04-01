@@ -1,0 +1,179 @@
+{
+  "_meta": {
+    "created_at": "2026-04-01T00:00:00.000Z",
+    "updated_at": "2026-04-01T00:00:00.000Z",
+    "producer": "hiverd"
+  },
+  "projects": [
+    {
+      "name": "oh-my-openagents",
+      "harness_mechanisms": [
+        "5-step initialization pipeline: loadConfig → createManagers → createTools → createHooks → createPluginInterface (src/index.ts)",
+        "Tool registry with LOW_PRIORITY_TOOL_ORDER array for deterministic tool trimming under token caps (src/plugin/tool-registry.ts)",
+        "Factory pattern for 19 of 26 tools (createXXXTool) vs direct ToolDefinition for 7 LSP tools (src/tools/AGENTS.md)",
+        "3-tier hook composition: Core(39) + Continuation(7) + Skill(2) = 48 hooks, all conditionally enabled via isHookEnabled() (src/create-hooks.ts)",
+        "Plugin interface exposes 8 OpenCode hook handlers: config, tool, chat.message, chat.params, chat.headers, event, tool.execute.before, tool.execute.after (src/plugin-interface.ts)",
+        "Background agent manager with tmux-based session isolation, concurrency limits, loop detection, circuit breakers, and compaction-aware message resolution (src/features/background-agent/manager.ts)",
+        "Model fallback chains configured per-agent with provider/model error extraction and automatic retry (src/plugin/event.ts)",
+        "First-message variant gate for one-time system prompt injection per session (src/plugin-interface.ts)",
+        "8 delegation categories mapping agent roles to specific models: visual-engineering→gemini-3.1-pro, ultrabrain→gpt-5.4, deep→gpt-5.3-codex, artistry→gemini-3.1-pro, quick→gpt-5.4-mini, writing→kimi-k2p5 (src/tools/AGENTS.md)",
+        "Disposable hook pattern with explicit dispose() lifecycle (src/create-hooks.ts)",
+        "Multi-level config merge: user ~/.config + project .opencode/ with deepMerge and Zod v4 validation (src/AGENTS.md)"
+      ],
+      "lifecycle_handling": {
+        "session_start": "event handler detects session.created → sets main session via setMainSession(), initializes model cache state, applies first-message variant gate, loads per-agent tool restrictions",
+        "turn": "chat.message handler intercepts each message; tool.execute.before/after hooks wrap every tool call with guards (commentChecker, rulesInjector, writeExistingFileGuard); contextInjector adds contextual data per-turn",
+        "compact": "compactionContextInjector hook detects compaction events; background agent uses compaction-aware message resolver (findNearestMessageExcludingCompaction) to maintain context continuity; resetMessageCursor clears stale pointers",
+        "resume": "session state tracked via subagentSessions Map; background tasks persist through tmux sessions; task history maintained via TaskHistory class; model fallback chains persist per-session",
+        "fork": "call_omo_agent and task (delegate-task) tools spawn subagent sessions with configurable model, category, and skill loading; run_in_background flag controls synchronous vs async; session_id parameter enables resume of existing sessions"
+      },
+      "transferable_patterns": [
+        "LOW_PRIORITY_TOOL_ORDER array for deterministic tool trimming when token budget is tight — src/plugin/tool-registry.ts",
+        "Factory function pattern (createXXXTool) for tools with shared context injection — src/tools/index.ts",
+        "3-tier hook composition (Core/Continuation/Skill) with per-hook enable/disable — src/create-hooks.ts",
+        "Disposable hook lifecycle with explicit dispose() — src/create-hooks.ts",
+        "Background agent manager with concurrency limits, loop detection, circuit breakers — src/features/background-agent/manager.ts",
+        "Compaction-aware message resolution — src/features/background-agent/compaction-aware-message-resolver.ts",
+        "Model fallback chain with error extraction and automatic retry — src/plugin/event.ts",
+        "First-message variant gate for one-time session setup — src/plugin-interface.ts",
+        "Agent role → model category mapping (8 categories) — src/tools/AGENTS.md",
+        "Multi-level config merge with Zod validation — src/plugin-config.ts"
+      ],
+      "anti_patterns": [
+        "2.8M tokens of packed codebase — massive surface area increases maintenance burden and context pollution",
+        "Model-specific hardcoded categories (gpt-5.4, gemini-3.1-pro, kimi-k2p5) — tight coupling to specific model versions that will stale",
+        "1687 total files — too many concerns for a single plugin; blurs line between harness and full IDE replacement",
+        "Direct ToolDefinition for LSP tools bypasses factory pattern — inconsistent tool creation approach",
+        "Plugin interface handlers created inline on each hook call (e.g., createChatParamsHandler called inside the handler) — potential performance issue",
+        "tmux-based background execution adds external process dependency — fragile across environments"
+      ],
+      "key_insights": [
+        "A 'harness' is distinguished by its manager layer (TmuxSessionManager, BackgroundManager, SkillMcpManager, ConfigHandler) that persists state across turns and sessions — not just tools+hooks",
+        "The tool registry's LOW_PRIORITY_TOOL_ORDER is a critical pattern: when token budgets are tight, deterministically trim tools by priority rather than randomly",
+        "48 hooks organized in 3 tiers with per-hook enable/disable is the most systematic hook governance pattern found — every hook is addressable",
+        "Background agent manager is the most complex single component (22k+ tokens) — handles concurrency, loop detection, circuit breakers, compaction awareness, and subagent spawn limits",
+        "Agent role classification via categories (visual-engineering, ultrabrain, deep, etc.) maps cognitive task types to model capabilities — transferable to HiveMind's agent role system"
+      ]
+    },
+    {
+      "name": "dynamic-context-pruning",
+      "harness_mechanisms": [
+        "SessionState object with persistent Maps/Sets for prune tracking, nudge anchors, tool cache, message IDs, and subagent results (lib/state/state.ts)",
+        "State persistence to disk: ~/.local/share/opencode/storage/plugin/dcp/{sessionId}.json — survives OpenCode restarts (lib/state/persistence.ts)",
+        "Message transform hook (experimental.chat.messages.transform) as the primary control surface — intercepts ALL messages before they reach the model (lib/hooks.ts)",
+        "Pruning pipeline: filterCompressedRanges → pruneToolOutputs → pruneToolInputs → pruneToolErrors — replaces stale tool outputs with placeholder text (lib/messages/prune.ts)",
+        "Compress tool (message-level or range-level) triggers LLM-assisted summarization of old conversation segments (lib/compress/pipeline.ts)",
+        "Compression blocks track which message ranges have been compressed, with active/inactive block lifecycle (lib/compress/types.ts)",
+        "Priority map builder assigns compression priorities to message types — tool outputs lowest, user messages highest (lib/messages/priority.ts)",
+        "Manual mode toggle allows user-controlled compression timing vs automatic (lib/state/state.ts)",
+        "Compaction detection: findLastCompactionTimestamp() scans messages for compaction markers → resets stale state (lib/state/state.ts)",
+        "Nudge injection: contextLimitNudge, turnNudge, iterationNudge — prompts the model to self-compress when approaching limits (lib/prompts/)",
+        "Command system: /dcp context, /dcp sweep, /dcp compress, /dcp decompress, /dcp stats, /dcp manual, /dcp help, /dcp recompress (lib/commands/)"
+      ],
+      "lifecycle_handling": {
+        "session_start": "createSessionState() initializes empty Maps/Sets; checkSession() detects session ID change from message stream → loads persisted state from disk or creates fresh state",
+        "turn": "chat.message transform hook runs on every turn: strips hallucinations, assigns message refs, syncs compression blocks, syncs tool cache, builds tool ID list, prunes stale outputs, injects compress nudges, injects message IDs, strips stale metadata",
+        "compact": "findLastCompactionTimestamp() detects compaction → resetOnCompaction() clears prune.tools Map, nudges Sets, tool cache, message IDs → saveSessionState() persists the reset; compression blocks survive compaction via block lifecycle",
+        "resume": "loadSessionState() reads from ~/.local/share/opencode/storage/plugin/dcp/{sessionId}.json → deserializes Maps from Records → restores prune state, nudges, stats; state persists across OpenCode restarts",
+        "fork": "isSubAgentSession() detects subagent context → skips pruning unless experimental.allowSubAgents is enabled; subAgentResultCache stores subagent outputs for injection into parent context"
+      },
+      "transferable_patterns": [
+        "SessionState with disk persistence — survives restarts, restores prune state — lib/state/persistence.ts",
+        "Compaction detection via timestamp scanning → state reset — lib/state/state.ts (findLastCompactionTimestamp + resetOnCompaction)",
+        "Pruning pipeline: filterCompressedRanges → pruneToolOutputs → pruneToolInputs → pruneToolErrors — lib/messages/prune.ts",
+        "Compression blocks with active/inactive lifecycle — lib/compress/types.ts",
+        "Priority map for message compression ordering — lib/messages/priority.ts",
+        "Nudge injection system (contextLimit, turn, iteration) — lib/prompts/",
+        "Manual mode toggle for user-controlled vs automatic compression — lib/state/state.ts",
+        "Hallucination stripping from message stream — lib/messages/reasoning-strip.ts",
+        "Message ID assignment and reference tracking — lib/message-ids.ts",
+        "Command system for user-facing control (/dcp context, sweep, compress, etc.) — lib/commands/"
+      ],
+      "anti_patterns": [
+        "Mutates message arrays in-place (messages.length = 0; messages.push(...)) — dangerous if other hooks hold references to the same array",
+        "Uses 'any' type for client parameter throughout — loses type safety at the SDK boundary",
+        "LLM-assisted compression adds latency and cost — compress tool calls another model to summarize, which itself consumes context",
+        "State persistence to plugin-specific storage directory bypasses OpenCode's own state management — creates parallel state system",
+        "Hallucination stripping uses string matching on known patterns — fragile to model output format changes",
+        "No explicit fork/join lifecycle — subagent handling is a boolean flag (allowSubAgents) rather than a proper session graph"
+      ],
+      "key_insights": [
+        "DCP proves that message transform hooks are the most powerful control surface — they see and modify ALL messages before the model, making them ideal for context governance",
+        "The compaction detection pattern (scan for compaction timestamp → reset state → persist) is directly applicable to HiveMind's context rot handling",
+        "Priority-based pruning (tool outputs first, user messages last) is a transferable strategy for any context management system",
+        "Disk persistence of session state is the key differentiator between a 'plugin' and a 'harness' — it creates continuity across restarts",
+        "Nudge injection (telling the model to self-compress) is a lightweight alternative to active pruning — useful as a first line of defense"
+      ]
+    },
+    {
+      "name": "json-render",
+      "harness_mechanisms": [
+        "Monorepo with 28 packages: core schema engine, framework-specific renderers (react, svelte, vue, solid, ink, react-native, react-pdf, react-email, remotion, react-three-fiber), state bridges (jotai, redux, zustand, xstate), codegen, YAML parser, MCP server, shadcn component library — packages/",
+        "Schema → Catalog → Spec pipeline: SchemaDefinition defines spec shape + catalog requirements → createCatalog() binds data → validate() checks specs → zodSchema() generates Zod for LLM structured output (packages/core/src/schema.ts)",
+        "State store with JSON Pointer paths and structural sharing (immutableSetByPath) — get/set/update/getSnapshot pattern compatible with React useSyncExternalStore (packages/core/src/state-store.ts)",
+        "MCP App pattern: registerAppTool + registerAppResource from @modelcontextprotocol/ext-apps — tools return specs, resources serve HTML iframes (packages/mcp/src/server.ts)",
+        "Catalog registry pattern: components + actions registered by name, validated against schema, rendered by framework-specific renderer (packages/core/src/types.ts)",
+        "Multi-framework renderer architecture: each package (react, svelte, vue, solid, ink) implements the same Catalog/Renderer interface with framework-specific component mapping",
+        "Streaming spec generation: AI generates specs incrementally, renderer updates in real-time via streaming state (apps/web/lib/use-playground-stream.ts)",
+        "Visibility system: components can be conditionally shown/hidden based on state paths (packages/core/src/visibility.ts)",
+        "Validation system: runtime validation of specs against catalog schemas with error reporting (packages/core/src/validation.ts)",
+        "Action system: catalog actions (button clicks, form submissions) trigger state updates via JSON Pointer paths (packages/core/src/actions.ts)"
+      ],
+      "lifecycle_handling": {
+        "session_start": "Not applicable — json-render is not an OpenCode plugin. It's a rendering library. Side-car apps (apps/web) initialize with catalog registry, state store, and renderer. MCP server initializes with tool + resource registration.",
+        "turn": "Not applicable in the OpenCode sense. In MCP context: tool call receives spec → validates → returns JSON text content → iframe resource receives via ontoolresult → renders. No message interception.",
+        "compact": "Not applicable — json-render does not manage conversation context. It manages UI state via StateStore with immutable updates.",
+        "resume": "State store is in-memory by default (createStateStore). External stores supported via StateStore interface (jotai, redux, zustand bridges). No disk persistence built-in.",
+        "fork": "Not applicable — json-render does not manage sessions. Each MCP tool invocation is stateless; state lives in the rendered app's StateStore."
+      },
+      "transferable_patterns": [
+        "Schema → Catalog → Spec pipeline with Zod generation for LLM structured output — packages/core/src/schema.ts",
+        "State store with JSON Pointer paths and structural sharing — packages/core/src/state-store.ts",
+        "MCP App pattern (registerAppTool + registerAppResource) for interactive UI in MCP hosts — packages/mcp/src/server.ts",
+        "Multi-framework renderer architecture with shared Catalog/Renderer interface — packages/react/, packages/svelte/, packages/vue/, etc.",
+        "Visibility system with state-path-based conditional rendering — packages/core/src/visibility.ts",
+        "Action system with JSON Pointer-based state updates — packages/core/src/actions.ts",
+        "Streaming spec generation with real-time renderer updates — apps/web/lib/use-playground-stream.ts",
+        "State bridge packages (jotai, redux, zustand, xstate) for external store integration — packages/jotai/, packages/zustand/, etc.",
+        "Codegen package for serializing specs to code — packages/codegen/src/serialize.ts",
+        "Skill packages with framework-specific SKILL.md files for AI agent guidance — skills/react/, skills/svelte/, etc."
+      ],
+      "anti_patterns": [
+        "1.6M tokens of packed codebase — enormous surface area; most of it is UI component libraries, not harness patterns",
+        "Not an OpenCode plugin — json-render is a rendering library with MCP support. Its 'harness' patterns are for UI rendering, not agent lifecycle management",
+        "No session management, no message interception, no context governance — fundamentally different problem domain from HiveMind",
+        "State store is in-memory only — no persistence layer, no compaction awareness, no multi-session continuity",
+        "MCP App pattern requires @modelcontextprotocol/ext-apps which is not yet widely adopted — limited host support",
+        "Monorepo complexity (28 packages) makes it difficult to extract specific patterns without pulling in unrelated dependencies"
+      ],
+      "key_insights": [
+        "json-render's Schema → Catalog → Spec pipeline is the most sophisticated typed spec system found — transferable to HiveMind's schema kernel for contract validation",
+        "The StateStore with JSON Pointer paths and structural sharing is a clean pattern for immutable state management — applicable to HiveMind's state tracking",
+        "MCP App pattern (tool returns data, resource serves UI) is a useful pattern for HiveMind's side-car app — separates data from presentation",
+        "Multi-framework renderer architecture demonstrates how to support multiple output targets with a shared interface — applicable if HiveMind needs multiple UI surfaces",
+        "json-render is NOT a harness in the OpenCode sense — it's a rendering library. Its value is in schema/state patterns, not lifecycle management"
+      ]
+    }
+  ],
+  "synthesis": {
+    "best_patterns_for_hivemind": [
+      "Tool registry with LOW_PRIORITY_TOOL_ORDER (oh-my-openagents): When token budgets are tight, deterministically trim tools by priority array rather than randomly dropping. Directly applicable to HiveMind's 7 custom tools — rank them by authority surface importance.",
+      "Message transform hook as primary control surface (DCP): The experimental.chat.messages.transform hook intercepts ALL messages before the model. This is the single most powerful hook for context governance — HiveMind should use it for context injection, pruning, and state synchronization.",
+      "Compaction detection → state reset → persist pipeline (DCP): findLastCompactionTimestamp() scans messages → resetOnCompaction() clears stale state → saveSessionState() persists. This directly addresses HiveMind's context rot problem and should be wired into the event tracker.",
+      "SessionState with disk persistence (DCP): Persisting prune state, nudges, and stats to ~/.local/share/opencode/storage/plugin/{sessionId}.json creates continuity across restarts. HiveMind's .hivemind/activity/ should adopt this pattern for session continuity.",
+      "Schema → Catalog → Spec pipeline with Zod (json-render): The typed spec system with zodSchema() generation for LLM structured output is transferable to HiveMind's schema kernel — particularly for validating agent-work contracts and delegation packets."
+    ],
+    "patterns_to_avoid": [
+      "Hardcoded model-specific categories (oh-my-openagents): Mapping agent roles to specific model versions (gpt-5.4, gemini-3.1-pro) creates tight coupling that stales quickly. HiveMind should use capability-based categories (fast, deep, creative) mapped to user-configured models.",
+      "In-place message array mutation (DCP): Setting messages.length = 0 and pushing new elements is dangerous if other hooks hold references. HiveMind should use immutable message transformations or clearly documented mutation contracts.",
+      "Parallel state systems (DCP): Persisting to plugin-specific storage directories bypasses OpenCode's own state management. HiveMind should use .hivemind/ paths managed by hivemind_runtime_command, not parallel storage locations."
+    ],
+    "key_findings": [
+      "A 'harness' is defined by its manager layer + state persistence + message transform hooks — not just tools. Oh-my-openagents has 4 managers (TmuxSessionManager, BackgroundManager, SkillMcpManager, ConfigHandler); DCP has SessionState with disk persistence; json-render has none of these (it's a rendering library).",
+      "Message transform hooks (experimental.chat.messages.transform and experimental.chat.system.transform) are the most powerful control surfaces available — they see and modify ALL messages/system prompts before the model. Both oh-my-openagents and DCP use them extensively. HiveMind should prioritize these over tool-based approaches.",
+      "Compaction awareness is the hardest problem all three projects handle differently: oh-my-openagents uses compaction-aware message resolution in background agent; DCP scans for compaction timestamps and resets state; json-render has no compaction handling. HiveMind needs DCP's approach (timestamp detection + state reset) wired into its event tracker.",
+      "State persistence across sessions is what separates plugins from harnesses: DCP persists to disk, oh-my-openagents persists via tmux sessions and task history, json-render is in-memory only. HiveMind's .hivemind/activity/ directory structure is the right approach but needs explicit persistence/recovery mechanics like DCP's saveSessionState/loadSessionState.",
+      "The tool registry priority trimming pattern (oh-my-openagents) and the schema validation pipeline (json-render) are the two most transferable patterns for HiveMind's refactor: priority trimming for token budget management, and schema validation for contract enforcement."
+    ]
+    }
+}

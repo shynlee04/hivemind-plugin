@@ -198,11 +198,14 @@ test('state seeds hasChanges and hasGuidance booleans', () => {
 // ---------------------------------------------------------------------------
 // Test 8: all element types are from the registered set
 // ---------------------------------------------------------------------------
-test('all element types are from registered set: Stack, Heading, Card, Text, Badge', () => {
+test('all element types are from registered set: Stack, Heading, Card, Text, Badge, Select, Tabs, Input, Button', () => {
   const proof = createMockProof()
   const spec = buildHmSettingDashboardSpec(proof)
 
-  const allowed = new Set(['Stack', 'Heading', 'Card', 'Text', 'Badge'])
+  const allowed = new Set([
+    'Stack', 'Heading', 'Card', 'Text', 'Badge',
+    'Select', 'Tabs', 'Input', 'Button',
+  ])
   for (const [id, el] of Object.entries(spec.elements)) {
     assert.ok(
       allowed.has(el.type),

@@ -85,22 +85,117 @@ export interface HmSettingDashboardPane60 {
   currentSettings: Record<string, unknown>
 }
 
-export interface HmSettingDashboardProof {
+/**
+ * Shared core fields used by both TUI renderer and side-car spec builder.
+ * Contains pane layout, mode, and workflow/trajectory identifiers.
+ */
+export interface HmSettingDashboardCore {
   mode: 'question-gate' | 'settings'
   pane40: HmSettingDashboardPane40
   pane60: HmSettingDashboardPane60
+}
+
+/**
+ * Side-car-only fields (language support, state seeds).
+ * Not consumed by the TUI renderer.
+ */
+export interface HmSettingDashboardSideCar {
+  /** Supported language codes for the language selector */
+  supportedLanguages?: string[]
+}
+
+/**
+ * Output-only fields (produced by rendering, not inputs).
+ */
+export interface HmSettingDashboardOutput {
   rendered?: string
   dashboardSpec?: HmSettingDashboardSpec
 }
 
-/** json-render Spec element for side-car rendering */
-export interface HmSettingDashboardSpecElement {
-  type: string
-  props: Record<string, unknown>
-  children?: string[]
-  visible?: unknown
-  on?: Record<string, unknown>
+/** TUI render input = core only (TUI is a pure function of core) */
+export type HmSettingDashboardTuiRenderInput = HmSettingDashboardCore
+
+/** Side-car render input = core + side-car-specific */
+export type HmSettingDashboardSideCarInput = HmSettingDashboardCore & HmSettingDashboardSideCar
+
+/**
+ * Full proof (intersection of all parts).
+ * Kept for backward compatibility — existing code continues to work.
+ */
+export type HmSettingDashboardProof = HmSettingDashboardCore & HmSettingDashboardSideCar & HmSettingDashboardOutput
+
+/** Component-specific prop interfaces for the json-render Spec */
+
+export interface TextProps {
+  text: string
+  variant: 'body' | 'caption' | 'muted' | 'lead'
 }
+
+export interface BadgeProps {
+  text: string
+  variant: 'default' | 'outline' | 'destructive' | 'secondary'
+}
+
+export interface CardProps {
+  title: string
+  description?: string
+  maxWidth?: string
+}
+
+export interface HeadingProps {
+  text: string
+  level: 'h1' | 'h2' | 'h3'
+}
+
+export interface StackProps {
+  direction: 'horizontal' | 'vertical'
+  gap: 'sm' | 'md' | 'lg'
+}
+
+export interface SelectProps {
+  label: string
+  name: string
+  options: string[]
+  value: string | { $bindState: string } | null
+  placeholder?: string
+}
+
+export interface TabsProps {
+  tabs: Array<{ label: string; value: string }>
+  defaultValue: string
+  value: string | { $bindState: string } | null
+}
+
+export interface InputProps {
+  label: string
+  name: string
+  type: 'text' | 'number' | 'password'
+  placeholder?: string
+  value: string | null
+}
+
+export interface ButtonProps {
+  label: string
+  variant: 'primary' | 'secondary' | 'destructive'
+  disabled: boolean | null
+}
+
+/** json-render Spec element — discriminated union of component types */
+export type HmSettingDashboardSpecElement =
+  | { type: 'Text'; props: TextProps; children?: string[]; visible?: boolean; on?: Record<string, string> }
+  | { type: 'Badge'; props: BadgeProps; children?: string[]; visible?: boolean; on?: Record<string, string> }
+  | { type: 'Card'; props: CardProps; children?: string[]; visible?: boolean; on?: Record<string, string> }
+  | { type: 'Heading'; props: HeadingProps; children?: string[]; visible?: boolean; on?: Record<string, string> }
+  | { type: 'Stack'; props: StackProps; children?: string[]; visible?: boolean; on?: Record<string, string> }
+  | { type: 'Text'; props: TextProps; children?: string[]; visible?: boolean; on?: Record<string, unknown> }
+  | { type: 'Badge'; props: BadgeProps; children?: string[]; visible?: boolean; on?: Record<string, unknown> }
+  | { type: 'Card'; props: CardProps; children?: string[]; visible?: boolean; on?: Record<string, unknown> }
+  | { type: 'Heading'; props: HeadingProps; children?: string[]; visible?: boolean; on?: Record<string, unknown> }
+  | { type: 'Stack'; props: StackProps; children?: string[]; visible?: boolean; on?: Record<string, unknown> }
+  | { type: 'Select'; props: SelectProps; children?: string[]; visible?: boolean; on?: Record<string, unknown> }
+  | { type: 'Tabs'; props: TabsProps; children?: string[]; visible?: boolean; on?: Record<string, unknown> }
+  | { type: 'Input'; props: InputProps; children?: string[]; visible?: boolean; on?: Record<string, unknown> }
+  | { type: 'Button'; props: ButtonProps; children?: string[]; visible?: boolean; on?: Record<string, unknown> }
 
 /** json-render Spec contract for the side-car dashboard renderer */
 export interface HmSettingDashboardSpec {

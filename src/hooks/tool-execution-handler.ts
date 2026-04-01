@@ -64,7 +64,6 @@ export async function handleToolExecution(
     await incrementCounter(sessionsDir, semanticSessionId, 'toolCallCount', 1)
   } catch {
     // Session file may lack counters structure — non-critical
-    console.error('[tool-execution-handler] incrementCounter failed for session:', semanticSessionId)
   }
 
   const markdownSession = await loadSession(sessionsDir, semanticSessionId)

@@ -644,6 +644,6 @@ Quality indicators:
 - **Clear success criteria:** Observable from user perspective, not implementation details
 - **Full coverage:** Every requirement mapped, no orphans
 - **Natural structure:** Phases feel inevitable, not arbitrary
-- **Honest gaps:** Coverage issues surfaced, not hidden
+- **Honest gaps:** Coverage issues surfaced, not "hidden"
 
 </success_criteria>

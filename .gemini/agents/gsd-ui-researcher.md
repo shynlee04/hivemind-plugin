@@ -6,7 +6,7 @@ description: Produces UI-SPEC.md design contract for frontend phases. Reads upst
 #     - matcher: "Write|Edit"
 #       hooks:
 #         - type: command
-#           command: "npx eslint --fix $FILE 2>/dev/null || true"
+#           command: "npx eslint --fix $FILE 2>/dev/null || "true""
 tools:
   - read_file
   - write_file

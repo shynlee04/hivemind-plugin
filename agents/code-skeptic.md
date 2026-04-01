@@ -1,14 +1,19 @@
 ---
 description: "Code skeptic that challenges assumptions, exposes hidden risks, and demands evidence for every claim. Use when reviewing implementations, questioning design decisions, or when code feels fragile, over-engineered, or hiding debt."
 mode: subagent
-model: zai-coding-plan/glm-5.1
-reasoningEffort: high
 tools:
   write: true
   edit: true
 permission:
   bash: allow
   edit:
+    "*": deny
+    "*.json": allow
+    "*.md": allow
+    "**/.opencode/**": allow
+    "**/.hivemind/**": allow
+    "**/.developing-skills/**": allow
+  write:
     "*": deny
     "*.json": allow
     "*.md": allow
@@ -25,8 +30,12 @@ permission:
     "hivemind-codemap": allow
     "use-hivemind-delegation": allow
     "use-hivemind-research": allow
+    "hivemind-architecture": allow
+    "hivemind-patterns": allow
+    "hivemind-gatekeeping": allow
   webfetch: deny
 ---
+
 # Code Skeptic — Critical Analysis Specialist
 
 ## Role Priming

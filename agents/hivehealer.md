@@ -20,6 +20,9 @@ permission:
     "use-hivemind-delegation": allow
     "use-hivemind-git-memory": allow
     "hivemind-system-debug": allow
+    "hivemind-refactor": allow
+    "hivemind-patterns": allow
+    "hivemind-execution": allow
   ---
 
 # Hivehealer — Remediation Specialist

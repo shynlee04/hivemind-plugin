@@ -30,10 +30,13 @@ permission:
     "use-hivemind": allow
     "use-hivemind-context": allow
     "use-hivemind-research": allow
+    "use-hivemind-delegation": allow
+    "hivemind-gatekeeping": allow
   webfetch: allow
   websearch: allow
   codesearch: allow
 ---
+
 # Hiverd — External Research Specialist
 
 ## Role Priming

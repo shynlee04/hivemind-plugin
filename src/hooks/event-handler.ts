@@ -225,9 +225,7 @@ export function createEventHandler(directory: string) {
               properties: sessionProperties,
             },
           },
-        }).catch((err) => {
-          console.error('[session-journal] addEvent (session.created) failed:', err)
-        })
+        }).catch(() => undefined)
 
         await linkParentChildSessions(
           sessionsDir,
@@ -270,10 +268,7 @@ export function createEventHandler(directory: string) {
     }
 
     if (event.type === 'session.updated' && sdkSessionId) {
-      const consolidatedSessionId = await sessionResolver.resolve(sdkSessionId).catch((err) => {
-        console.error('[session-journal] resolveSession (session.updated) failed:', err)
-        return null
-      })
+      const consolidatedSessionId = await sessionResolver.resolve(sdkSessionId).catch(() => null)
 
       if (consolidatedSessionId) {
         await addEvent(sessionsDir, {
@@ -424,8 +419,8 @@ export function createEventHandler(directory: string) {
             },
           },
         })
-      } catch (err) {
-        console.error('[session-journal] addEvent (session.idle) failed:', err)
+      } catch {
+        // session.idle addEvent failed — silent
       }
     }
 

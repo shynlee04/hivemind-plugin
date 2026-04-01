@@ -85,6 +85,7 @@
     "fast-glob": "^3.3.3",
     "ignore": "^7.0.5",
     "ink": "^6.8.0",
+    "just-bash": "^2.14.0",
     "magic-string": "^0.30.21",
     "proper-lockfile": "^4.1.2",
     "remark": "^15.0.1",
