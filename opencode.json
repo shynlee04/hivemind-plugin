@@ -22,7 +22,7 @@
     "glob": "allow",
     "grep": "allow",
     "lsp": "allow",
-    "doom_loop": "deny"
+    "doom_loop": "allow"
   },
   "compaction": {
     "auto": true,
