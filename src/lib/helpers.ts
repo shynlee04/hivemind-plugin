@@ -74,6 +74,18 @@ export function makeToolSignature(toolName: string, args: unknown): string {
   }
 }
 
+const AGENT_REQUIRED_TOOLS: Record<string, string[]> = {
+  researcher: ["read", "glob", "grep", "webfetch", "websearch"],
+  builder: ["read", "glob", "grep", "edit", "write", "bash"],
+  critic: ["read", "glob", "grep", "bash"],
+}
+
+const AGENT_MUST_NOT: Record<string, string[]> = {
+  researcher: ["edit", "write", "bash", "task", "skill", "webfetch", "websearch"],
+  builder: [],
+  critic: ["edit", "write", "task", "skill"],
+}
+
 export function buildPromptText(args: {
   description: string
   prompt: string
@@ -81,27 +93,38 @@ export function buildPromptText(args: {
   scope?: string
   constraints?: string[]
   guidanceText?: string
+  agent?: string
 }): string {
-  const lines = [`Task: ${args.description.trim()}`, "", args.prompt.trim()]
+  const agent = args.agent ?? "builder"
+  const requiredTools = AGENT_REQUIRED_TOOLS[agent] ?? AGENT_REQUIRED_TOOLS["builder"]
+  const mustNotTools = AGENT_MUST_NOT[agent] ?? []
 
-  if (args.category?.trim()) {
-    lines.push("", `Category: ${args.category.trim()}`)
-  }
+  const task = `TASK: ${args.description.trim()}\n${args.prompt.trim()}`
 
-  if (args.scope?.trim()) {
-    lines.push("", `Scope: ${args.scope.trim()}`)
-  }
+  const expectedOutcome = args.guidanceText?.trim()
+    ? `EXPECTED OUTCOME: ${args.guidanceText.trim()}`
+    : "EXPECTED OUTCOME: Complete the task as described"
 
-  if (args.constraints && args.constraints.length > 0) {
-    lines.push("", "Constraints:")
-    for (const constraint of args.constraints) {
-      lines.push(`- ${constraint}`)
-    }
-  }
+  const requiredToolsSection = `REQUIRED TOOLS: ${requiredTools.join(", ")}`
 
-  if (args.guidanceText?.trim()) {
-    lines.push("", "Category guidance:", args.guidanceText.trim())
-  }
+  const mustDo =
+    args.constraints && args.constraints.length > 0
+      ? `MUST DO:\n${args.constraints.map((c) => `- ${c}`).join("\n")}`
+      : "MUST DO: Follow the task instructions precisely"
 
-  return lines.join("\n")
+  const mustNotDo =
+    mustNotTools.length > 0
+      ? `MUST NOT DO:\n${mustNotTools.map((m) => `- ${m}`).join("\n")}`
+      : "MUST NOT DO: None specified"
+
+  const contextParts: string[] = []
+  if (args.scope?.trim()) contextParts.push(`scope: ${args.scope.trim()}`)
+  if (args.category?.trim()) contextParts.push(`category: ${args.category.trim()}`)
+  contextParts.push(`agent: ${agent}`)
+  const context =
+    contextParts.length > 0
+      ? `CONTEXT: ${contextParts.join(", ")}`
+      : "CONTEXT: No additional context"
+
+  return [task, expectedOutcome, requiredToolsSection, mustDo, mustNotDo, context].join("\n---\n")
 }

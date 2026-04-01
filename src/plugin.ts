@@ -458,6 +458,7 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
               scope: args.scope,
               constraints: args.constraints,
               guidanceText: route.guidanceText,
+              agent,
             }),
           })
         },
