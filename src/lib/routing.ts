@@ -15,7 +15,7 @@ type CategoryConfig = {
 
 const AGENT_TEMPERATURES: Record<SpecialistAgent, number> = {
   researcher: 0.1,
-  builder: 0.2,
+  builder: 0.15,
   critic: 0.05,
 }
 
@@ -32,7 +32,7 @@ const CATEGORY_CONFIGS: Record<DelegationCategory, CategoryConfig> = {
     category: "implementation",
     agent: "builder",
     model: "openai/gpt-5.4",
-    temperature: 0.2,
+    temperature: 0.15,
     guidanceText:
       "Prefer the smallest safe code change, preserve existing harness layers, and keep behavior portable and OpenCode-native.",
   },

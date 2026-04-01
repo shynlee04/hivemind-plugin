@@ -3,6 +3,7 @@ import fs from "node:fs"
 import path from "node:path"
 import { MAX_DESCENDANTS_PER_ROOT } from "../../src/lib/types.js"
 import { DEFAULT_CONCURRENCY_LIMIT } from "../../src/lib/concurrency.js"
+import { resolveDelegationRoute, getTemperatureForAgent } from "../../src/lib/routing.js"
 
 describe("core constants", () => {
   it("MAX_DESCENDANTS_PER_ROOT should be 10 per spec ARCH-008", () => {
@@ -17,5 +18,14 @@ describe("core constants", () => {
 
   it("default concurrency limit should be 3 per CON-001", () => {
     expect(DEFAULT_CONCURRENCY_LIMIT).toBe(3)
+  })
+
+  it("builder temperature should be 0.15 per CAT-004", () => {
+    const route = resolveDelegationRoute({ category: "implementation" })
+    expect(route.temperature).toBe(0.15)
+  })
+
+  it("builder agent base temperature should be 0.15 per CAT-004", () => {
+    expect(getTemperatureForAgent("builder")).toBe(0.15)
   })
 })
