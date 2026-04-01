@@ -10,6 +10,7 @@ import {
   getNestedValue,
   getPromptToolCompatibility,
   isObject,
+  isToolRestrictedForAgent,
   makeToolSignature,
 } from "./lib/helpers.js"
 import {
@@ -144,6 +145,18 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
         )
         throw new Error(
           `[Harness] Circuit breaker tripped for session ${sessionID} on repeated ${toolName} calls.`
+        )
+      }
+
+      // Per-delegation tool restriction enforcement (PERM-007)
+      const delegation = getDelegationMeta(sessionID)
+      if (delegation && isToolRestrictedForAgent(toolName, delegation.agent)) {
+        addWarning(
+          sessionID,
+          `Tool "${toolName}" denied for agent "${delegation.agent}"`
+        )
+        throw new Error(
+          `[Harness] Tool "${toolName}" is restricted for agent "${delegation.agent}".`
         )
       }
 

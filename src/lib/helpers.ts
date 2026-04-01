@@ -1,5 +1,16 @@
 import type { PermissionRule } from "./types.js"
 
+const RESTRICTED_TOOLS_PER_AGENT: Record<string, string[]> = {
+  researcher: ["edit", "write", "bash", "task", "skill", "webfetch", "websearch"],
+  critic: ["edit", "write", "task", "skill"],
+}
+
+export function isToolRestrictedForAgent(toolName: string, agent: string): boolean {
+  const restricted = RESTRICTED_TOOLS_PER_AGENT[agent]
+  if (!restricted) return false
+  return restricted.includes(toolName)
+}
+
 export function isObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value)
 }
