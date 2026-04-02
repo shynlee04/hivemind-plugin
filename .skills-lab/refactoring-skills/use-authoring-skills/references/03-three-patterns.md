@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Design patterns for HiveMind skills. Choose the right pattern based on purpose and depth needed.
+Design patterns for agent skills. Choose the right pattern based on purpose and depth needed.
 
 ---
 
@@ -52,7 +52,7 @@ See references/ for detailed guidance.
 | Skill | Pack | Routing Target |
 |-------|------|---------------|
 | `context-intelligence` | context-intelligence | delegation, workflow, recovery |
-| `use-hivemind-skill-authoring` | use-hivemind-skill-authoring | anatomy, quality, tdd |
+| `use-agent-skill-authoring` | use-agent-skill-authoring | anatomy, quality, tdd |
 | `explore-context` | explore | deep-scan, surface |
 
 ---
@@ -199,7 +199,7 @@ Is this an entry/routing skill?
 ### When to Use P1
 
 - Entry skills that route to sub-packs
-- Meta skills (like use-hivemind-skill-authoring)
+- Meta skills (like use-agent-skill-authoring)
 - Thin skills that just delegate
 
 ### When to Use P2

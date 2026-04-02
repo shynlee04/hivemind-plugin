@@ -76,7 +76,7 @@ Arbitrary key-value pairs for additional properties. Both keys and values must b
 
 ```yaml
 metadata:
-  author: hivemind-team
+  author: agent-team
   category: context-governance
   pattern: P1
   stacking: "1"

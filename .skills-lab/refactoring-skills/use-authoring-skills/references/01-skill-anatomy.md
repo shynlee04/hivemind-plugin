@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Standard structure for all HiveMind skills. Every skill must follow this anatomy.
+Standard structure for all agent skills. Every skill must follow this anatomy.
 
 ---
 
@@ -143,7 +143,7 @@ The sections below describe the anatomy rules that apply across all patterns.
 
 Document these integration properties for every skill:
 
-1. **Parent Pack** — Identify the pack the skill belongs to. Example: `context-intelligence` belongs to the `context-intelligence` pack; `delegation-scope` belongs to `use-hivemind-skill-authoring`.
+1. **Parent Pack** — Identify the pack the skill belongs to. Example: `context-intelligence` belongs to the `context-intelligence` pack; `delegation-scope` belongs to `use-agent-skill-authoring`.
 2. **Entry Level** — State when the skill loads during a session. Example: P1 skills load at session start; P2 skills load on demand when their domain is active; P3 skills load only when escalation triggers fire.
 3. **Pattern** — Declare the pattern (P1/P2/P3). This determines the structure template — see **03-three-patterns.md** for pattern-specific requirements.
 4. **Stacking** — State how the skill affects the stack count. Every loaded skill counts as 1 against the stack limit. Example: `P1 (1) + P2 (1) = 2 skills stacked`.

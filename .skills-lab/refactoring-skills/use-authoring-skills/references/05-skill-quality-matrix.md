@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Skill-Judge evaluation framework for assessing HiveMind skill quality across 5 dimensions.
+Skill-Judge evaluation framework for assessing agent skill quality across 5 dimensions.
 
 ---
 

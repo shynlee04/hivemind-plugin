@@ -105,7 +105,7 @@ IF brainstorm_signal → load context-intelligence (P1)
 
 ```
 context-intelligence (P1) — always loaded
-    ├── use-hivemind-skill-authoring (companion) — if creating skills
+    ├── use-agent-skill-authoring (companion) — if creating skills
     ├── domain-specific P2 — if domain detected
     └── Specialist P3 — only if justified
 ```

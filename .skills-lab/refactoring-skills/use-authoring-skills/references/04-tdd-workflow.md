@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Test-driven development methodology for HiveMind skill authoring. Every skill MUST be validated against real failure scenarios before being written.
+Test-driven development methodology for agent skill authoring. Every skill MUST be validated against real failure scenarios before being written.
 
 ---
 
@@ -70,10 +70,10 @@ You are in a [session state].
 
 Your task: [specific task]
 
-Without use-hivemind-skill-authoring loaded:
+Without use-agent-skill-authoring loaded:
 - [Observed behavior - FAIL]
 
-With use-hivemind-skill-authoring loaded:
+With use-agent-skill-authoring loaded:
 - [Expected behavior - PASS]
 ```
 
