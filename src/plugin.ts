@@ -10,14 +10,9 @@ import {
   getNestedValue,
   getPromptToolCompatibility,
   isObject,
-  isToolRestrictedForAgent,
   makeToolSignature,
 } from "./lib/helpers.js"
-import {
-  isDelegationCategory,
-  listDelegationCategories,
-  resolveDelegationRoute,
-} from "./lib/routing.js"
+
 import { createHarnessLifecycleManager } from "./lib/lifecycle-manager.js"
 import { getEffectivePromptState } from "./lib/runtime.js"
 import { getEventSessionID, getSessionID, walkParentChain } from "./lib/session-api.js"
@@ -30,14 +25,15 @@ import {
 } from "./lib/state.js"
 import {
   type DelegationCategory,
+  type DelegationRouteResolution,
   type PermissionRule,
   type SpecialistAgent,
   MAX_DESCENDANTS_PER_ROOT,
   VALID_AGENTS,
+  VALID_DELEGATION_CATEGORIES,
 } from "./lib/types.js"
 
 const MAX_DEPTH = 3
-const POLL_INTERVAL_MS = 750
 const POLL_TIMEOUT_MS = 180000
 const CIRCUIT_BREAKER_THRESHOLD = 16
 const MAX_TOOL_CALLS_PER_SESSION = 400
@@ -53,15 +49,13 @@ function normalizeCategory(value: string | undefined): DelegationCategory | unde
     return undefined
   }
 
-  if (!isDelegationCategory(normalized)) {
+  if (!VALID_DELEGATION_CATEGORIES.includes(normalized as DelegationCategory)) {
     throw new Error(
-      `[Harness] Invalid category "${value}". Allowed categories: ${listDelegationCategories()
-        .map((entry) => entry.category)
-        .join(", ")}.`
+      `[Harness] Invalid category "${value}". Allowed categories: ${VALID_DELEGATION_CATEGORIES.join(", ")}.`
     )
   }
 
-  return normalized
+  return normalized as DelegationCategory
 }
 
 function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[] {
@@ -104,7 +98,6 @@ function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[
 export const HarnessControlPlane: Plugin = async ({ client }) => {
   const lifecycleManager = createHarnessLifecycleManager({
     client,
-    pollIntervalMs: POLL_INTERVAL_MS,
     pollTimeoutMs: POLL_TIMEOUT_MS,
   })
   lifecycleManager.hydrateFromContinuity()
@@ -145,18 +138,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
         )
         throw new Error(
           `[Harness] Circuit breaker tripped for session ${sessionID} on repeated ${toolName} calls.`
-        )
-      }
-
-      // Per-delegation tool restriction enforcement (PERM-007)
-      const delegation = getDelegationMeta(sessionID)
-      if (delegation && isToolRestrictedForAgent(toolName, delegation.agent)) {
-        addWarning(
-          sessionID,
-          `Tool "${toolName}" denied for agent "${delegation.agent}"`
-        )
-        throw new Error(
-          `[Harness] Tool "${toolName}" is restricted for agent "${delegation.agent}".`
         )
       }
 
@@ -413,11 +394,21 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
           const requestedSpecialistAgent = requestedAgent as SpecialistAgent | undefined
 
           const category = normalizeCategory(args.category)
-          const route = resolveDelegationRoute({
-            agent: requestedSpecialistAgent,
-            model: args.model,
+          // TODO: replace with inline route resolution (routing.ts deleted)
+          const route: DelegationRouteResolution = {
+            requestedCategory: category,
             category,
-          })
+            requestedAgent: requestedSpecialistAgent,
+            effectiveAgent: requestedSpecialistAgent ?? "builder",
+            requestedModel: args.model,
+            effectiveModel: args.model,
+            temperature: 0.15,
+            guidanceText: undefined,
+            modelSource: args.model ? "explicit" : "none",
+            agentSource: requestedSpecialistAgent ? "explicit" : "category",
+            temperatureSource: "agent",
+            warnings: [],
+          }
           const agent = route.effectiveAgent
 
           const parentSessionID = args.session_id?.trim() || context.sessionID

@@ -1,22 +1,7 @@
 import type { PermissionRule } from "./types.js"
 
-const RESTRICTED_TOOLS_PER_AGENT: Record<string, string[]> = {
-  researcher: ["edit", "write", "bash", "task", "skill", "webfetch", "websearch"],
-  critic: ["edit", "write", "task", "skill"],
-}
-
-export function isToolRestrictedForAgent(toolName: string, agent: string): boolean {
-  const restricted = RESTRICTED_TOOLS_PER_AGENT[agent]
-  if (!restricted) return false
-  return restricted.includes(toolName)
-}
-
 export function isObject(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === "object" && !Array.isArray(value)
-}
-
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 export function getNestedValue(value: unknown, path: string[]): unknown {
@@ -85,18 +70,6 @@ export function makeToolSignature(toolName: string, args: unknown): string {
   }
 }
 
-const AGENT_REQUIRED_TOOLS: Record<string, string[]> = {
-  researcher: ["read", "glob", "grep", "webfetch", "websearch"],
-  builder: ["read", "glob", "grep", "edit", "write", "bash"],
-  critic: ["read", "glob", "grep", "bash"],
-}
-
-const AGENT_MUST_NOT: Record<string, string[]> = {
-  researcher: ["edit", "write", "bash", "task", "skill", "webfetch", "websearch"],
-  builder: [],
-  critic: ["edit", "write", "task", "skill"],
-}
-
 export function buildPromptText(args: {
   description: string
   prompt: string
@@ -105,10 +78,12 @@ export function buildPromptText(args: {
   constraints?: string[]
   guidanceText?: string
   agent?: string
+  requiredTools?: string[]
+  mustNotDo?: string[]
 }): string {
   const agent = args.agent ?? "builder"
-  const requiredTools = AGENT_REQUIRED_TOOLS[agent] ?? AGENT_REQUIRED_TOOLS["builder"]
-  const mustNotTools = AGENT_MUST_NOT[agent] ?? []
+  const requiredTools = args.requiredTools ?? []
+  const mustNotTools = args.mustNotDo ?? []
 
   const task = `TASK: ${args.description.trim()}\n${args.prompt.trim()}`
 
