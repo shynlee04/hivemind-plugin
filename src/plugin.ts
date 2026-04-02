@@ -33,9 +33,22 @@ import {
 } from "./lib/types.js"
 
 const MAX_DEPTH = 3
-const POLL_TIMEOUT_MS = 180000
+const WATCH_TIMEOUT_MS = 180000
 const CIRCUIT_BREAKER_THRESHOLD = 16
 const MAX_TOOL_CALLS_PER_SESSION = 400
+
+const AGENT_DEFAULTS: Record<string, { temperature: number }> = {
+  researcher: { temperature: 0.1 },
+  builder: { temperature: 0.15 },
+  critic: { temperature: 0.05 },
+}
+
+const AGENT_TOOLS: Record<string, { required: string[]; mustNot: string[] }> = {
+  researcher: { required: ["read", "glob", "grep", "webfetch"], mustNot: ["edit", "write", "bash", "task"] },
+  builder: { required: ["read", "glob", "grep", "edit", "write", "bash"], mustNot: ["task"] },
+  critic: { required: ["read", "glob", "grep", "bash"], mustNot: ["edit", "write", "task"] },
+}
+
 const tool = (OpenCodePlugin as { tool?: any }).tool as any
 
 function isValidAgent(value: string): value is SpecialistAgent {
@@ -97,7 +110,7 @@ function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[
 export const HarnessControlPlane: Plugin = async ({ client }) => {
   const lifecycleManager = createHarnessLifecycleManager({
     client,
-    pollTimeoutMs: POLL_TIMEOUT_MS,
+    pollTimeoutMs: WATCH_TIMEOUT_MS,
   })
   lifecycleManager.hydrateFromContinuity()
 
@@ -349,22 +362,23 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
           const requestedSpecialistAgent = requestedAgent as SpecialistAgent | undefined
 
           const category = normalizeCategory(args.category)
-          // TODO: replace with inline route resolution (routing.ts deleted)
+          const agent = requestedSpecialistAgent ?? "builder"
+          const agentDefaults = AGENT_DEFAULTS[agent] ?? { temperature: 0.15 }
+
           const route: DelegationRouteResolution = {
             requestedCategory: category,
             category,
             requestedAgent: requestedSpecialistAgent,
-            effectiveAgent: requestedSpecialistAgent ?? "builder",
+            effectiveAgent: agent,
             requestedModel: args.model,
             effectiveModel: args.model,
-            temperature: 0.15,
+            temperature: agentDefaults.temperature,
             guidanceText: undefined,
             modelSource: args.model ? "explicit" : "none",
             agentSource: requestedSpecialistAgent ? "explicit" : "category",
             temperatureSource: "agent",
             warnings: [],
           }
-          const agent = route.effectiveAgent
 
           const parentSessionID = args.session_id?.trim() || context.sessionID
           if (!parentSessionID) {
@@ -394,6 +408,8 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
 
           reserveDescendant(rootID, MAX_DESCENDANTS_PER_ROOT)
 
+          const agentTools = AGENT_TOOLS[agent] ?? { required: [], mustNot: [] }
+
           const permission = getPermissionRulesForAgent(agent)
           const toolCompatibility = getPromptToolCompatibility(permission)
           const compatibleTools = toolCompatibility ? Object.keys(toolCompatibility).sort() : []
@@ -418,6 +434,8 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
               constraints: args.constraints,
               guidanceText: route.guidanceText,
               agent,
+              requiredTools: agentTools.required,
+              mustNotDo: agentTools.mustNot,
             }),
           })
         },
