@@ -1,9 +1,9 @@
 # OpenCode Harness — System Requirements
 
 **Document:** requirements-2026-04-02.md  
-**Version:** 3.0  
+**Version:** 4.0  
 **Date:** 2026-04-02  
-**Status:** Platform-Grounded Specification  
+**Status:** Source-Validated Specification  
 
 ---
 
@@ -39,7 +39,7 @@ OpenCode Harness is a standalone control-plane package for OpenCode AI coding as
 | MOD-004 | The system SHALL provide a continuity module (`continuity.ts`) for harness-internal disk-persisted session continuity records | P0 | Not Started |
 | MOD-005 | The system SHALL provide a routing module (`routing.ts`) for delegation route resolution | P0 | Not Started |
 | MOD-006 | The system SHALL provide a concurrency module (`concurrency.ts`) for harness-internal lane-based async concurrency control. Functions like `acquire()`, `release()`, and queue management are harness-owned abstractions, NOT platform-provided APIs | P0 | Not Started |
-| MOD-007 | The system SHALL provide a session-api module (`session-api.ts`) as a thin wrapper over the OpenCode SDK (`client.session.create()`, `client.session.prompt()`, `client.session.abort()`, `client.event.subscribe()`) | P0 | Not Started |
+| MOD-007 | The system SHALL provide a session-api module (`session-api.ts`) as a thin typed wrapper over the OpenCode SDK (`client.session.create()`, `client.session.prompt()`, `client.session.promptAsync()`, `client.session.abort()`, `client.session.messages()`). The wrapper SHALL import and use real types (`Session`, `Message`, `Part`, `Event`) from `@opencode-ai/sdk`, NOT `any` | P0 | Not Started |
 | MOD-008 | The system SHALL provide a runtime module (`runtime.ts`) for effective prompt state inference and event-to-status mapping | P0 | Not Started |
 | MOD-009 | The system SHALL provide a lifecycle-manager module (`lifecycle-manager.ts`) as a central delegation orchestrator | P0 | Not Started |
 | MOD-010 | The system SHALL provide a plugin module (`plugin.ts`) as the OpenCode plugin entry point registering all hooks and custom tools | P0 | Not Started |
@@ -127,16 +127,16 @@ The platform's `doom_loop` permission is an ACTION (allow/ask/deny), not a confi
 | LIF-003 | The `failed` status SHALL be sticky — once failed, idle/completed signals SHALL NOT override | P0 | Not Started |
 | LIF-004 | The `created` status SHALL transition to `running` on receiving an `idle` signal | P1 | Not Started |
 | LIF-005 | The system SHALL support both synchronous and asynchronous session execution modes | P0 | Not Started |
-| LIF-006 | The system SHALL detect async session completion via SSE events from `client.event.subscribe()` (listening for session status changes). Polling SHALL be used as degraded-mode fallback only if SSE connection fails | P0 | Not Started |
+| LIF-006 | The system SHALL detect async session completion via the plugin's `event` hook routing `session.idle` and `session.error` events to a completion tracker (harness-internal `SessionCompletionTracker` class). Polling via `client.session.status()` SHALL be used as degraded-mode fallback only if the event hook doesn't fire | P0 | Not Started |
 
 ### 5.2 Event Processing
 
 | ID | Requirement | Priority | Status |
 |----|-------------|----------|--------|
-| EVT-001 | The system SHALL process platform session events via `client.event.subscribe()` which returns an SSE stream | P0 | Not Started |
+| EVT-001 | The system SHALL process platform session events via the plugin's `event` hook, which receives typed `Event` objects directly from the server runtime. The hook signature is `event?: (input: { event: Event }) => Promise<void>` | P0 | Not Started |
 | EVT-002 | On session creation events, the system SHALL inherit the root session ID from the parent chain | P0 | Not Started |
 | EVT-003 | On session deletion events, the system SHALL clean up all in-memory state and disk records for the session | P0 | Not Started |
-| EVT-004 | On session update events, the system SHALL hydrate delegation state and infer continuity status | P0 | Not Started |
+| EVT-004 | On session update events, the system SHALL hydrate delegation state and infer continuity status. Session lifecycle events carry typed payloads: `session.created`/`session.updated`/`session.deleted` carry `event.properties.info: Session`. Status events (`session.idle`, `session.error`, `session.status`) carry `event.properties.sessionID: string` | P0 | Not Started |
 | EVT-005 | The system SHALL detect cycles in parent chain traversal and prevent infinite loops | P0 | Not Started |
 | EVT-006 | The system SHALL extract status signals from event payload paths | P0 | Not Started |
 
@@ -157,7 +157,7 @@ Budget allocation is a **harness-internal** abstraction. The OpenCode platform d
 |----|-------------|----------|--------|
 | BGT-001 | The system SHALL provide a harness-internal background task manager API: spawn, track, cancel, query status | P0 | Not Started |
 | BGT-002 | The system SHALL support task cancellation via the platform's `client.session.abort()` method | P0 | Not Started |
-| BGT-003 | The system SHALL track async task completion via SSE events from `client.event.subscribe()` | P0 | Not Started |
+| BGT-003 | The background task manager SHALL receive session events via the plugin's `event` hook and route `session.idle`/`session.error` events to the appropriate completion watchers (harness-internal `SessionCompletionTracker`) | P0 | Not Started |
 | BGT-004 | The background task manager SHALL handle concurrent session monitoring without blocking the event loop | P0 | Not Started |
 
 ---
@@ -427,7 +427,7 @@ This version corrects all contradictions identified between the specification an
 |----|--------|------------|
 | C-1 | `delegate-task` is not a native OpenCode permission | Resolved: PERM-008 requires harness to register `delegate-task` as a custom tool via plugin `tool()` API. PERM-004, PERM-005, PERM-006 refactored to use native `task` permission with glob patterns (`task: { "*": "deny" }`). |
 | C-2 | Dynamic permissions cannot be passed to session creation | Resolved: PERM-007 refactored to use plugin `tool.execute.before` hooks for enforcement. Static agent permissions provide base layer; plugin hooks add per-delegation restrictions. |
-| C-3 | SDK-002 references non-existent `promptAsync` method | Resolved: SDK-002 rewritten to use `client.session.prompt()` for synchronous delegation and `client.session.prompt()` + `client.event.subscribe()` for asynchronous delegation. |
+| C-3 | SDK-002 references non-existent `promptAsync` method | Resolved: SDK-002 rewritten to use `client.session.prompt()` for synchronous delegation and `client.session.promptAsync()` for asynchronous delegation. The method EXISTS — returns void (204). |
 | C-4 | `session.create()` does not accept tool restrictions | Resolved: Architecture refactored to rely on agent-level static permissions + plugin-hook-enforced restrictions. Delegation uses `client.session.create({ title })` + `client.session.prompt({ body: { model, parts } })`. |
 
 ### HIGH: Resolved (v2.0)

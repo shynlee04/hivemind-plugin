@@ -1,18 +1,27 @@
 {
   "$schema": "https://app.kilo.ai/config.json",
   "plugin": [
-    "./.opencode/plugins/harness-control-plane.ts",
     "superpowers@git+https://github.com/obra/superpowers.git"
   ],
   "mcp": {
     "ctx7": {
       "type": "local",
-      "command": ["npx", "-y", "@upstash/context7-mcp@latest", "--api-key", "ctx7sk-d7dc9cd3-0635-4ac2-8536-2c480a7d1fd5"],
+      "command": [
+        "npx",
+        "-y",
+        "@upstash/context7-mcp@latest",
+        "--api-key",
+        "ctx7sk-d7dc9cd3-0635-4ac2-8536-2c480a7d1fd5"
+      ],
       "enabled": true
     },
     "MiniMax": {
       "type": "local",
-      "command": ["uvx", "minimax-coding-plan-mcp", "-y"],
+      "command": [
+        "uvx",
+        "minimax-coding-plan-mcp",
+        "-y"
+      ],
       "environment": {
         "MINIMAX_API_KEY": "sk-cp-xDMzbctSaJp9k7sXuav9yisXufMuQBNfbT4Z9IWrpmZ0ERszh42NFQPpFkEFaXEhuYa5mNTnyxWS0RDH-XN4ZIbEBN6wFkq0s1wWyfRQUT5Jo-jFXZjqw4o",
         "MINIMAX_API_HOST": "https://api.minimax.io"
@@ -21,7 +30,12 @@
     },
     "repomix": {
       "type": "local",
-      "command": ["npx", "-y", "repomix", "--mcp"],
+      "command": [
+        "npx",
+        "-y",
+        "repomix",
+        "--mcp"
+      ],
       "enabled": true
     },
     "zai-web-reader": {
@@ -42,7 +56,11 @@
     },
     "zai-vision": {
       "type": "local",
-      "command": ["npx", "-y", "@z_ai/mcp-server"],
+      "command": [
+        "npx",
+        "-y",
+        "@z_ai/mcp-server"
+      ],
       "environment": {
         "Z_AI_API_KEY": "83425c2929234e4883a1d6acc080e48e.ENScDQiEocllZiiG",
         "Z_AI_MODE": "ZAI"
