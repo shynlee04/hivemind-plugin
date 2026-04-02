@@ -1,0 +1,136 @@
+{
+  "rubric_name": "skill-quality-grading",
+  "version": "1.0",
+  "description": "Grading rubric for evaluating skill pack quality across 5 weighted dimensions. Based on the Skill-Judge framework.",
+  "dimensions": [
+    {
+      "name": "Trigger Accuracy",
+      "weight": 0.25,
+      "description": "Does the description trigger on specific conditions? Are false positives minimized?",
+      "scale": {
+        "5": "Triggers ONLY on specific conditions, zero false positives. Description is precise, keyword-rich, and uses the pushy pattern for implicit triggers.",
+        "4": "Specific triggers with minimal false positives. Description covers most triggering conditions clearly.",
+        "3": "Captures most triggering conditions but may miss edge cases or have occasional false positives.",
+        "2": "Vague description or triggers too broadly. Missing activation context or trigger keywords.",
+        "1": "Generic or non-triggering description. Agent cannot match to any real task."
+      },
+      "checklist": [
+        "Description starts with 'Use when...' or equivalent activation context",
+        "Specific triggering conditions are listed",
+        "No generic trigger words that match unrelated tasks",
+        "False positives are minimized through boundary conditions",
+        "Clear cause-effect relationship stated"
+      ]
+    },
+    {
+      "name": "Action Coherence",
+      "weight": 0.25,
+      "description": "Does the skill do ONE thing well? Are entry/exit states clear? Is there mission creep?",
+      "scale": {
+        "5": "Single purpose, clear entry/exit states, zero mission creep. Boundaries explicitly marked.",
+        "4": "Single purpose with minor optional extensions. Entry/exit states mostly clear.",
+        "3": "Clear primary purpose but some optional scope creep. Boundaries could be tighter.",
+        "2": "Multiple purposes with unclear boundaries. Skill tries to do too much.",
+        "1": "Does everything, completely unfocused. No clear purpose statement."
+      },
+      "checklist": [
+        "Single clear purpose stated in the skill body",
+        "Entry state defined (when to load the skill)",
+        "Exit state defined (when the skill's work is done)",
+        "No mission creep in the body content",
+        "Boundaries explicitly marked (what the skill does NOT do)"
+      ]
+    },
+    {
+      "name": "Reference Integrity",
+      "weight": 0.2,
+      "description": "Is reference depth = 1 level? Are references numbered and ordered? Is TOC present for P3? Are there circular references?",
+      "scale": {
+        "5": "Perfect 1-level depth, logical numbering, clear TOC for P3. All links resolve.",
+        "4": "1-level depth with minor ordering issues. All links resolve.",
+        "3": "Some references could be consolidated. Minor structural issues.",
+        "2": "2-level reference depth or circular references detected.",
+        "1": "Chaotic reference structure. Broken links, nested references, no ordering."
+      },
+      "checklist": [
+        "Reference depth = 1 level max (no nested references/)",
+        "Files numbered for ordering (01-name.md, 02-name.md)",
+        "P3 skills have index.md with TOC and jump links",
+        "All markdown links resolve to existing files",
+        "No circular references between reference files"
+      ]
+    },
+    {
+      "name": "Non-Redundancy",
+      "weight": 0.15,
+      "description": "Does this overlap with existing skills? Is the purpose distinct? Can boundaries be clearly drawn?",
+      "scale": {
+        "5": "Unique purpose, no overlap with any existing skill. Clear authority boundary.",
+        "4": "Minimal overlap with clear boundaries. Can explain the difference in one sentence.",
+        "3": "Some overlap but distinct enough. Boundaries documented.",
+        "2": "Significant overlap with existing skill. Authority boundary unclear.",
+        "1": "Duplicate of existing skill. No justification for separate existence."
+      },
+      "checklist": [
+        "No duplicate of existing skill in the same pack or sibling packs",
+        "Distinct purpose from similar skills",
+        "Boundaries clear and documented",
+        "Can explain the difference from adjacent skills in one sentence",
+        "Cross-reference matrix updated if applicable"
+      ]
+    },
+    {
+      "name": "Edge Case Coverage",
+      "weight": 0.15,
+      "description": "Does it handle degraded states? Delegation edge cases? Post-cancel scenarios? Late-session drift?",
+      "scale": {
+        "5": "All 6 entry states covered (FRESH, RESUMED, DELEGATED, DEGRADED, POST-CANCEL, LATE). Handles complex edge cases.",
+        "4": "Most entry states covered. Common edge cases handled.",
+        "3": "Basic states covered. Some edge case handling present.",
+        "2": "Only basic states covered. No edge case handling.",
+        "1": "Does not account for session complexity at all."
+      },
+      "checklist": [
+        "Entry state recognition present",
+        "Degraded state handling documented",
+        "Delegation edge cases addressed",
+        "Post-cancel scenario awareness",
+        "Late-session drift handling"
+      ]
+    }
+  ],
+  "scoring": {
+    "formula": "(Trigger × 0.25) + (Action × 0.25) + (Reference × 0.20) + (Redundancy × 0.15) + (Edge × 0.15)",
+    "grades": {
+      "EXCELLENT": { "min": 4.5, "action": "Ship it. Extract successful patterns." },
+      "GOOD": { "min": 4.0, "action": "Minor polish only. One targeted fix, then re-score." },
+      "ACCEPTABLE": { "min": 3.5, "action": "Address specific dimension gaps. Iterate up to 2 cycles." },
+      "NEEDS_WORK": { "min": 0.0, "action": "Full refinement loop required. Iterate up to 3 cycles." }
+    },
+    "block_rule": "Any single dimension scoring ≤2 blocks release regardless of overall score."
+  },
+  "grading_template": {
+    "skill_name": "",
+    "date": "YYYY-MM-DD",
+    "evaluator": "",
+    "dimension_scores": {
+      "Trigger Accuracy": { "score": 0, "evidence": "" },
+      "Action Coherence": { "score": 0, "evidence": "" },
+      "Reference Integrity": { "score": 0, "evidence": "" },
+      "Non-Redundancy": { "score": 0, "evidence": "" },
+      "Edge Case Coverage": { "score": 0, "evidence": "" }
+    },
+    "weighted_calculation": {
+      "Trigger": "X × 0.25 = X.XX",
+      "Action": "X × 0.25 = X.XX",
+      "Reference": "X × 0.20 = X.XX",
+      "Redundancy": "X × 0.15 = X.XX",
+      "Edge": "X × 0.15 = X.XX",
+      "Overall": "X.XX"
+    },
+    "grade": "",
+    "strengths": [],
+    "weaknesses": [],
+    "recommendations": []
+  }
+}
