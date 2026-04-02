@@ -14,7 +14,6 @@ import {
 } from "./lib/helpers.js"
 
 import { createHarnessLifecycleManager } from "./lib/lifecycle-manager.js"
-import { getEffectivePromptState } from "./lib/runtime.js"
 import { getEventSessionID, getSessionID, walkParentChain } from "./lib/session-api.js"
 import {
   addWarning,
@@ -155,7 +154,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
       const stats = getSessionStats(sessionID)
       const delegation = getDelegationMeta(sessionID)
       const continuity = getSessionContinuity(sessionID)
-      const effectivePrompt = getEffectivePromptState({ sessionID })
       const lifecycle = lifecycleManager.getLifecycleSnapshot(sessionID)
 
       output.metadata = {
@@ -171,8 +169,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
           specialistCategory: delegation?.category,
           specialistModel: delegation?.model,
           concurrencyKey: delegation?.queueKey,
-          effectivePrompt,
-          routeWarnings: effectivePrompt?.warnings ?? [],
           continuityStatus: continuity?.metadata.status,
           lifecycle,
           routing: continuity?.metadata.route,
@@ -208,7 +204,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
       const stats = getSessionStats(sessionID)
       const delegation = getDelegationMeta(sessionID)
       const continuity = getSessionContinuity(sessionID)
-      const effectivePrompt = getEffectivePromptState({ sessionID })
       const lifecycle = lifecycleManager.getLifecycleSnapshot(sessionID)
       const contextLines = [
         "Harness state snapshot:",
@@ -231,35 +226,11 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
         contextLines.push(`- concurrency_key: ${delegation.queueKey}`)
       }
 
-      if (effectivePrompt) {
-        contextLines.push(`- effective_agent: ${effectivePrompt.agent}`)
-        if (effectivePrompt.category) {
-          contextLines.push(`- effective_category: ${effectivePrompt.category}`)
-        }
-        if (effectivePrompt.requestedCategory && effectivePrompt.requestedCategory !== effectivePrompt.category) {
-          contextLines.push(`- requested_category: ${effectivePrompt.requestedCategory}`)
-        }
-        if (effectivePrompt.model) {
-          contextLines.push(`- effective_model: ${effectivePrompt.model}`)
-        }
-        if (effectivePrompt.temperature !== undefined) {
-          contextLines.push(`- effective_temperature: ${effectivePrompt.temperature}`)
-        }
-        contextLines.push(`- agent_source: ${effectivePrompt.agentSource}`)
-        contextLines.push(`- model_source: ${effectivePrompt.modelSource}`)
-        contextLines.push(`- temperature_source: ${effectivePrompt.temperatureSource}`)
-        if (effectivePrompt.continuityStatus) {
-          contextLines.push(`- continuity_status: ${effectivePrompt.continuityStatus}`)
-        }
-        if (lifecycle?.phase) {
-          contextLines.push(`- lifecycle_phase: ${lifecycle.phase}`)
-        }
-        if (lifecycle?.runMode) {
-          contextLines.push(`- lifecycle_run_mode: ${lifecycle.runMode}`)
-        }
-        if (effectivePrompt.warnings.length) {
-          contextLines.push(`- route_warnings: ${effectivePrompt.warnings.join(" | ")}`)
-        }
+      if (lifecycle?.phase) {
+        contextLines.push(`- lifecycle_phase: ${lifecycle.phase}`)
+      }
+      if (lifecycle?.runMode) {
+        contextLines.push(`- lifecycle_run_mode: ${lifecycle.runMode}`)
       }
 
       if (lifecycle?.queue) {
@@ -295,7 +266,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
             JSON.stringify(
               {
                 session_id: continuity.sessionID,
-                effective_prompt: effectivePrompt,
                 prompt_params: continuity.promptParams,
                 tool_profile: continuity.toolProfile,
                 metadata: continuity.metadata,
@@ -310,21 +280,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
             ),
           ].join("\n")
         )
-      }
-    },
-
-    "chat.params": async (input, output) => {
-      const sessionID = asString(getNestedValue(input, ["sessionID"]))
-      const agent = asString(getNestedValue(input, ["agent"]))?.toLowerCase()
-      const effectivePrompt = getEffectivePromptState({ sessionID, agent })
-      const promptOutput = output as Record<string, unknown>
-
-      if (effectivePrompt?.model && promptOutput.model === undefined) {
-        promptOutput.model = effectivePrompt.model
-      }
-
-      if (effectivePrompt?.temperature !== undefined) {
-        output.temperature = effectivePrompt.temperature
       }
     },
 

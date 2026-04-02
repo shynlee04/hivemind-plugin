@@ -1,35 +1,5 @@
-import { getSessionContinuity } from "./continuity.js"
 import { asString, getNestedValue } from "./helpers.js"
-import { getTemperatureForAgent } from "./routing.js"
-import { getDelegationMeta } from "./state.js"
-import type { DelegationCategory, SessionContinuityMetadata, SpecialistAgent } from "./types.js"
-import { VALID_AGENTS } from "./types.js"
-
-export type EffectivePromptState = {
-  agent: SpecialistAgent
-  category?: DelegationCategory
-  requestedCategory?: DelegationCategory
-  model?: string
-  temperature?: number
-  guidanceText?: string
-  tools: string[]
-  warnings: string[]
-  agentSource: string
-  modelSource: string
-  temperatureSource: string
-  continuityStatus?: SessionContinuityMetadata["status"]
-}
-
-function normalizeAgent(value: unknown): SpecialistAgent | undefined {
-  const normalized = asString(value)?.trim().toLowerCase()
-  return VALID_AGENTS.includes(normalized as SpecialistAgent)
-    ? (normalized as SpecialistAgent)
-    : undefined
-}
-
-function cloneStringList(values: string[] | undefined): string[] {
-  return Array.isArray(values) ? [...values] : []
-}
+import type { SessionContinuityMetadata } from "./types.js"
 
 function getStatusSignal(event: unknown): string | undefined {
   const paths = [
@@ -51,61 +21,6 @@ function getStatusSignal(event: unknown): string | undefined {
   }
 
   return undefined
-}
-
-export function getEffectivePromptState(args: {
-  sessionID?: string
-  agent?: string
-}): EffectivePromptState | undefined {
-  const continuity = args.sessionID ? getSessionContinuity(args.sessionID) : undefined
-  const route = continuity?.metadata.route
-  const delegation = args.sessionID ? getDelegationMeta(args.sessionID) : undefined
-  const inputAgent = normalizeAgent(args.agent)
-
-  const agent = continuity?.promptParams.agent ?? route?.effectiveAgent ?? delegation?.agent ?? inputAgent
-  if (!agent) {
-    return undefined
-  }
-
-  const model = continuity?.promptParams.model ?? route?.effectiveModel ?? delegation?.model
-  const temperature =
-    continuity?.promptParams.temperature ?? route?.temperature ?? getTemperatureForAgent(agent)
-  const tools = continuity?.promptParams.tools?.length
-    ? cloneStringList(continuity.promptParams.tools)
-    : cloneStringList(continuity?.toolProfile.compatibleTools)
-
-  return {
-    agent,
-    category: continuity?.promptParams.category ?? route?.category ?? delegation?.category,
-    requestedCategory: route?.requestedCategory ?? continuity?.promptParams.category,
-    model,
-    temperature,
-    guidanceText: continuity?.promptParams.guidanceText ?? route?.guidanceText,
-    tools,
-    warnings: cloneStringList(route?.warnings),
-    agentSource: continuity?.promptParams.agent
-      ? "continuity"
-      : route?.effectiveAgent
-        ? `route:${route.agentSource}`
-        : delegation?.agent
-          ? "delegation"
-          : inputAgent
-            ? "chat-input"
-            : "none",
-    modelSource: continuity?.promptParams.model
-      ? "continuity"
-      : route?.effectiveModel
-        ? `route:${route.modelSource}`
-        : delegation?.model
-          ? "delegation"
-          : "none",
-    temperatureSource: continuity?.promptParams.temperature !== undefined
-      ? "continuity"
-      : route?.temperature !== undefined
-        ? `route:${route.temperatureSource}`
-        : "agent-default",
-    continuityStatus: continuity?.metadata.status,
-  }
 }
 
 export function inferContinuityStatusFromEvent(args: {
