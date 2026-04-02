@@ -1,9 +1,6 @@
 #!/bin/bash
-# Initialize planning files for a new session
-# Usage: ./init-session.sh [project-name]
-#
-# Creates task_plan.md, findings.md, and progress.md in the current directory
-# if they don't already exist. Safe to run multiple times — skips existing files.
+# init-session.sh — Initialize planning files for a new session
+# Usage: bash init-session.sh [project-name]
 
 set -e
 
@@ -77,15 +74,13 @@ fi
 # Create findings.md if it doesn't exist
 if [ ! -f "findings.md" ]; then
     cat > findings.md << 'EOF'
-# Findings: [Task Name]
+# Findings & Decisions
 
 ## Requirements
-- [Requirement extracted from user request]
-- [Constraint identified during discovery]
+-
 
 ## Research Findings
-- [Key discovery from web search or code exploration]
-- [Technical fact discovered]
+-
 
 ## Technical Decisions
 | Decision | Rationale |
@@ -98,7 +93,14 @@ if [ ! -f "findings.md" ]; then
 | | |
 
 ## Resources
-- [URL or file path with brief description]
+-
+
+## Visual/Browser Findings
+-
+
+---
+
+*Update this file after every 2 view/browser/search operations. Multimodal content must be captured as text immediately.*
 EOF
     echo "Created findings.md"
 else
@@ -114,15 +116,34 @@ if [ ! -f "progress.md" ]; then
 
 ### Phase 1: Requirements & Discovery
 - **Status:** in_progress
-- **Started:** $(date +%H:%M)
+- **Started:** $DATE
 - Actions taken:
-  - Initialized planning session
+  -
 - Files created/modified:
-  - task_plan.md (created)
-  - findings.md (created)
-  - progress.md (created)
+  -
 
 ### Phase 2: Planning & Structure
+- **Status:** pending
+- Actions taken:
+  -
+- Files created/modified:
+  -
+
+### Phase 3: Implementation
+- **Status:** pending
+- Actions taken:
+  -
+- Files created/modified:
+  -
+
+### Phase 4: Testing & Verification
+- **Status:** pending
+- Actions taken:
+  -
+- Files created/modified:
+  -
+
+### Phase 5: Delivery
 - **Status:** pending
 - Actions taken:
   -
@@ -138,6 +159,15 @@ if [ ! -f "progress.md" ]; then
 | Timestamp | Error | Attempt | Resolution |
 |-----------|-------|---------|------------|
 | | | 1 | |
+
+## 5-Question Reboot Check
+| Question | Answer |
+|----------|--------|
+| Where am I? | Phase 1 |
+| Where am I going? | Phases 2-5 |
+| What's the goal? | [goal statement] |
+| What have I learned? | See findings.md |
+| What have I done? | See above |
 EOF
     echo "Created progress.md"
 else
