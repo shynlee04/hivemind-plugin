@@ -1,9 +1,8 @@
 #!/bin/bash
-# Check if all phases in task_plan.md are complete
+# check-complete.sh — Verify all phases in task_plan.md are completed
+# Usage: bash check-complete.sh [path-to-task_plan.md]
 # Always exits 0 — uses stdout for status reporting
 # Used by Stop hook to report task completion status
-#
-# Usage: ./check-complete.sh [path/to/task_plan.md]
 
 PLAN_FILE="${1:-task_plan.md}"
 
