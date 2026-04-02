@@ -1,4 +1,5 @@
 import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "./concurrency.js"
+import { CompletionDetector } from "./completion-detector.js"
 import {
   deleteSessionContinuity,
   getSessionContinuity,
@@ -6,6 +7,7 @@ import {
   patchSessionContinuity,
   recordSessionContinuity,
 } from "./continuity.js"
+import { asString, getNestedValue, isObject } from "./helpers.js"
 import { addWarning } from "./state.js"
 import { inferContinuityStatusFromEvent } from "./runtime.js"
 import {
@@ -67,6 +69,17 @@ function now(): number {
   return Date.now()
 }
 
+function extractTextFromResponse(response: unknown): string {
+  if (!isObject(response)) return ""
+  const parts = getNestedValue(response, ["parts"])
+  if (!Array.isArray(parts)) return ""
+  return parts
+    .filter((p) => getNestedValue(p, ["type"]) === "text")
+    .map((p) => asString(getNestedValue(p, ["text"])) ?? "")
+    .join("")
+    .trim()
+}
+
 function buildLifecycleState(args: {
   phase: SessionLifecyclePhase
   runMode: "sync" | "async"
@@ -112,6 +125,7 @@ function buildDelegationMeta(args: {
 export class HarnessLifecycleManager {
   private readonly concurrencyLimit: number
   private readonly queue: DelegationConcurrencyQueue
+  private readonly completionDetector = new CompletionDetector()
 
   constructor(private readonly options: HarnessLifecycleManagerOptions) {
     this.concurrencyLimit = parseInt(
@@ -168,7 +182,8 @@ export class HarnessLifecycleManager {
   handleEvent(args: { event: unknown; eventType: string; sessionID: string }): void {
     const { event, eventType, sessionID } = args
 
-    // TODO: replace with CompletionDetector
+    // Feed terminal events to CompletionDetector
+    this.completionDetector.feed(eventType, sessionID)
 
     if (eventType === "session.created" || eventType === "session.updated") {
       const parentID = getEventParentID(event)
@@ -232,6 +247,8 @@ export class HarnessLifecycleManager {
       // Graceful handling — harness-internal state cleanup proceeds
     }
 
+    this.completionDetector.cancel(sessionID)
+
     this.patchLifecycle(sessionID, {
       status: "failed",
       phase: "failed",
@@ -242,8 +259,6 @@ export class HarnessLifecycleManager {
         detail: "session-cancelled",
       },
     })
-
-    // TODO: replace with CompletionDetector
   }
 
   async launchDelegatedSession(args: LaunchDelegatedSessionArgs): Promise<string> {
@@ -355,24 +370,6 @@ export class HarnessLifecycleManager {
 
       const releaseQueue = await this.acquireQueue(childSessionID, queueKey, runMode)
 
-      try {
-        await this.dispatchPrompt(body, childSessionID, args.runInBackground)
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error)
-        this.patchLifecycle(childSessionID, {
-          status: "failed",
-          phase: "failed",
-          error: message,
-          observation: {
-            source: "dispatch",
-            observedAt: now(),
-            detail: "prompt-dispatch-failed",
-          },
-        })
-        releaseQueue("dispatch-failed")
-        throw error
-      }
-
       this.patchLifecycle(childSessionID, {
         status: "running",
         phase: "running",
@@ -385,6 +382,21 @@ export class HarnessLifecycleManager {
       })
 
       if (args.runInBackground) {
+        // Fire sendPrompt in background — it blocks server-side until assistant completes
+        sendPrompt(this.options.client, childSessionID, body).catch((error: unknown) => {
+          const message = error instanceof Error ? error.message : String(error)
+          this.patchLifecycle(childSessionID, {
+            status: "failed",
+            phase: "failed",
+            error: message,
+            observation: {
+              source: "dispatch",
+              observedAt: now(),
+              detail: "prompt-dispatch-failed",
+            },
+          })
+        })
+
         void this.observeBackgroundCompletion(childSessionID, releaseQueue)
 
         return JSON.stringify(
@@ -412,22 +424,23 @@ export class HarnessLifecycleManager {
         )
       }
 
+      // Sync mode: sendPrompt blocks until assistant completes
       try {
-        // TODO: replace with CompletionDetector — waitForAssistantText needs tracker
-        throw new Error("[Harness] Sync completion observation not yet implemented (CompletionDetector pending)")
+        const response = await sendPrompt(this.options.client, childSessionID, body)
+        const assistantText = extractTextFromResponse(response)
 
         this.patchLifecycle(childSessionID, {
           status: "completed",
           phase: "completed",
           completedAt: now(),
           observation: {
-            source: "observe:tracker-idle",
+            source: "observe:sync",
             observedAt: now(),
             detail: "assistant-output-ready",
           },
         })
 
-        // unreachable — throw above exits
+        return assistantText
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         this.patchLifecycle(childSessionID, {
@@ -561,21 +574,66 @@ export class HarnessLifecycleManager {
     }
   }
 
-  private async dispatchPrompt(
-    body: unknown,
-    sessionID: string,
-    _runInBackground: boolean
-  ): Promise<void> {
-    await sendPrompt(this.options.client, sessionID, body)
-  }
-
   private async observeBackgroundCompletion(
-    _sessionID: string,
+    sessionID: string,
     releaseQueue: (reason: string) => void
   ): Promise<void> {
-    // TODO: replace with CompletionDetector
     try {
-      throw new Error("[Harness] Background completion observation not yet implemented (CompletionDetector pending)")
+      const result = await this.completionDetector.watch(sessionID, this.options.pollTimeoutMs)
+
+      switch (result.signal) {
+        case "idle":
+          this.patchLifecycle(sessionID, {
+            status: "completed",
+            phase: "completed",
+            completedAt: now(),
+            observation: {
+              source: "observe:detector-idle",
+              observedAt: now(),
+              detail: "background-completion-idle",
+            },
+          })
+          break
+        case "error":
+          this.patchLifecycle(sessionID, {
+            status: "failed",
+            phase: "failed",
+            error: result.error ?? "Session error detected",
+            observation: {
+              source: "observe:detector-error",
+              observedAt: now(),
+              detail: "background-completion-error",
+            },
+          })
+          break
+        case "deleted":
+          this.patchLifecycle(sessionID, {
+            status: "failed",
+            phase: "failed",
+            error: "Session deleted during background execution",
+            observation: {
+              source: "observe:detector-deleted",
+              observedAt: now(),
+              detail: "background-completion-deleted",
+            },
+          })
+          break
+        case "timeout":
+          this.patchLifecycle(sessionID, {
+            status: "failed",
+            phase: "failed",
+            error: "Background completion timed out",
+            observation: {
+              source: "observe:detector-timeout",
+              observedAt: now(),
+              detail: "background-completion-timeout",
+            },
+          })
+          break
+        case "cancelled":
+          // Already handled by cancelDelegatedSession
+          break
+      }
     } finally {
       releaseQueue("background-complete")
     }
