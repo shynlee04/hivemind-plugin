@@ -4,7 +4,7 @@
 Finish the standalone `opencode-harness` pack cleanup, then recover the stalled spec/debug loop so the repo is self-contained, buildable, and working from forward-looking, internally consistent planning artifacts aligned with the active loop tracked against `/Users/apple/hivemind-plugin/.worktrees/product-detox/.hivemind/activity/experiment-plugins-tools-2026-04-01.md`.
 
 ## Current Phase
-Phase 10 — complete
+Phase 11 — session-api.ts Event-Driven Rewrite (Approach A)
 
 ## Phases
 
@@ -76,10 +76,27 @@ Phase 10 — complete
 - [x] Wave 5: Verification (Tasks 11-14) — 58 tests pass, typecheck clean, build clean, pack clean
 - **Status:** complete
 
+### Phase 11: session-api.ts Event-Driven Rewrite (Approach A)
+- [ ] Wave 0: Create SessionCompletionTracker class in new file `src/lib/session-completion-tracker.ts`
+- [ ] Wave 1: Rewrite `src/lib/session-api.ts` — delete all multi-path/fake SSE/polling, create 6 typed SDK wrappers
+- [ ] Wave 2: Rewrite `tests/lib/session-api.test.ts` — real contract tests, tracker unit tests
+- [ ] Wave 3: Migrate `src/lib/lifecycle-manager.ts` — use new typed imports, wire tracker
+- [ ] Wave 4: Migrate `src/plugin.ts` — wire completionTracker to event hook, update imports
+- [ ] Wave 5: Verification gate — typecheck, 58+ tests passing, build clean, pack clean
+- [ ] Wave 6: Code review via critic agent, update AGENTS.md
+- **Status:** in_progress
+
+## Approach Decision
+**Selected: Approach A (Event-Driven Tracker)**
+- `session-api.ts` (~80 LOC) — 6 typed SDK wrapper functions, zero fallbacks, real `OpenCodeClient` type
+- `session-completion-tracker.ts` (~100 LOC) — class fed by plugin's `event` hook, zero polling in normal path
+- Degraded-mode: if no event fires within 80% of timeout, single poll via `client.session.messages()`
+- Rationale: cleanest architecture, self-contained tracker class, zero coupling to SDK internals during wait
+
 ## Key Questions
-1. Which contradictions in the forward-looking docs must be corrected before any new implementation work can be trusted?
-2. How should recovery be staged so failed-session behavior does not repeat in the next cycle?
-3. Which feature gaps should remain blocked until the spec layer is repaired and re-approved?
+1. Which contradictions in the forward-looking docs must be corrected before any new implementation work can be trusted? → RESOLVED in Phase 9
+2. How should recovery be staged so failed-session behavior does not repeat in the next cycle? → RESOLVED in Phase 8
+3. Which feature gaps should remain blocked until the spec layer is repaired and re-approved? → RESOLVED in Phase 10
 
 ## Decisions Made
 | Decision | Rationale |
@@ -92,11 +109,18 @@ Phase 10 — complete
 | Treat `docs/requirements-2026-04-02.md` and `docs/user-stories-2026-04-02.md` as forward-looking design inputs, not implementation status reports | Matches the user's explicit framing for the docs |
 | Correct the spec layer before auditing or implementing missing features | Prevents another validation-only loop based on contradictory requirements |
 | Gate each recovery cycle behind user authorization | Matches the requested multi-round planning workflow |
+| Use Approach A (Event-Driven Tracker) for session-api rewrite | Zero polling in normal path, real-time event routing through plugin hook, ~200 LOC vs 473, testable class, typed SDK calls |
+| Create `SessionCompletionTracker` class in separate file | Separates completion detection from SDK wrapper functions, injectable for testing |
+| Delete all multi-path fallback code | SDK has ONE canonical call shape per method — fallback paths are dead code masking real bugs |
+| Delete all fake SSE functions | `client.event.subscribe()` doesn't exist. Plugins receive events via `event` hook, not SSE subscription |
+| Wire tracker through plugin's `event` hook | Plugins run inside the server — they don't need SSE, they get events directly via hook |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
 |-------|---------|------------|
 | None in this planning step | 1 | Planning files created directly in the repo root |
+| lifecycle-manager.ts:229 passes `{ id }` to abort instead of `{ path: { id } }` | Found during Phase 11 research | Will fix in Wave 3 migration |
+| All session-api.ts tests test non-existent APIs (`client.event.subscribe`) | Found during Phase 11 research | Will rewrite entirely in Wave 2 |
 
 ## Notes
 - Root is expected to remain limited to standalone harness artifacts.
@@ -111,3 +135,6 @@ Phase 10 — complete
 - This plan is intentionally concise and should be expanded only as new blockers are confirmed.
 - Failed sessions `session-ses_2b52.md` and `session-ses_2b53.md` exposed a process failure: repeated validation without converging doc edits.
 - Phase 8 closes only the recovery-planning work; Phase 9 doc corrections and Phase 10 feature-wave execution still require explicit approval before proceeding.
+- **Phase 11 design doc:** `docs/designs/2026-04-02-session-api-rewrite.md` — contains all validated SDK facts and proposed architecture.
+- **Phase 11 audit doc:** `docs/project/codebase-audit/honest-audit-2026-04-02.md` — exposes current session-api as 0% salvageable.
+- **Key SDK facts (opencode-platform-reference >>>):** `client.session.create/get/abort/prompt/promptAsync/messages/children` all have single canonical call shapes. `client.event.subscribe()` is the real SSE API (returns `ServerSentEventsResult` with async iterable stream), but plugins should use the `event` hook instead. `Session` type has NO `status` field. Events: `session.idle` → `{ sessionID }`, `session.error` → `{ sessionID, error }`, `session.created/updated/deleted` → `{ info: Session }`.
