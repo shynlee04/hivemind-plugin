@@ -8,6 +8,7 @@ import {
   recordSessionContinuity,
 } from "./continuity.js"
 import { asString, getNestedValue, isObject } from "./helpers.js"
+import { notifyParentSession, type TaskNotification } from "./notification-handler.js"
 import { addWarning } from "./state.js"
 import { inferContinuityStatusFromEvent } from "./runtime.js"
 import {
@@ -599,6 +600,18 @@ export class HarnessLifecycleManager {
               detail: "background-completion-idle",
             },
           })
+          {
+            const continuity = getSessionContinuity(sessionID)
+            if (continuity && continuity.metadata.parentSessionID) {
+              const notification: TaskNotification = {
+                sessionID,
+                description: continuity.metadata.description ?? "Delegated task",
+                agent: continuity.metadata.delegation?.agent ?? "unknown",
+                status: "completed",
+              }
+              void notifyParentSession(this.options.client, continuity.metadata.parentSessionID, notification)
+            }
+          }
           break
         case "error":
           this.patchLifecycle(sessionID, {
@@ -611,6 +624,19 @@ export class HarnessLifecycleManager {
               detail: "background-completion-error",
             },
           })
+          {
+            const continuity = getSessionContinuity(sessionID)
+            if (continuity && continuity.metadata.parentSessionID) {
+              const notification: TaskNotification = {
+                sessionID,
+                description: continuity.metadata.description ?? "Delegated task",
+                agent: continuity.metadata.delegation?.agent ?? "unknown",
+                status: "failed",
+                error: result.error ?? "Session error detected",
+              }
+              void notifyParentSession(this.options.client, continuity.metadata.parentSessionID, notification)
+            }
+          }
           break
         case "deleted":
           this.patchLifecycle(sessionID, {
@@ -623,6 +649,19 @@ export class HarnessLifecycleManager {
               detail: "background-completion-deleted",
             },
           })
+          {
+            const continuity = getSessionContinuity(sessionID)
+            if (continuity && continuity.metadata.parentSessionID) {
+              const notification: TaskNotification = {
+                sessionID,
+                description: continuity.metadata.description ?? "Delegated task",
+                agent: continuity.metadata.delegation?.agent ?? "unknown",
+                status: "failed",
+                error: "Session deleted during background execution",
+              }
+              void notifyParentSession(this.options.client, continuity.metadata.parentSessionID, notification)
+            }
+          }
           break
         case "timeout":
           this.patchLifecycle(sessionID, {
@@ -635,6 +674,19 @@ export class HarnessLifecycleManager {
               detail: "background-completion-timeout",
             },
           })
+          {
+            const continuity = getSessionContinuity(sessionID)
+            if (continuity && continuity.metadata.parentSessionID) {
+              const notification: TaskNotification = {
+                sessionID,
+                description: continuity.metadata.description ?? "Delegated task",
+                agent: continuity.metadata.delegation?.agent ?? "unknown",
+                status: "failed",
+                error: "Background completion timed out",
+              }
+              void notifyParentSession(this.options.client, continuity.metadata.parentSessionID, notification)
+            }
+          }
           break
         case "cancelled":
           // Already handled by cancelDelegatedSession
