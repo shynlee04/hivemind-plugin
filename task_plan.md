@@ -77,7 +77,7 @@ Phase 11 — session-api.ts Event-Driven Rewrite (Approach A)
 - **Status:** complete
 
 ### Phase 11: session-api.ts Event-Driven Rewrite (Approach A)
-- [ ] Wave 0: Create SessionCompletionTracker class in new file `src/lib/session-completion-tracker.ts`
+- [x] Wave 0: SessionCompletionTracker class — TDD RED+GREEN verified (12/12 tests, typecheck clean)
 - [ ] Wave 1: Rewrite `src/lib/session-api.ts` — delete all multi-path/fake SSE/polling, create 6 typed SDK wrappers
 - [ ] Wave 2: Rewrite `tests/lib/session-api.test.ts` — real contract tests, tracker unit tests
 - [ ] Wave 3: Migrate `src/lib/lifecycle-manager.ts` — use new typed imports, wire tracker
