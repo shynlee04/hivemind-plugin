@@ -36,7 +36,7 @@ export function inferContinuityStatusFromEvent(args: {
     case "errored":
     case "cancelled":
     case "canceled":
-      return "failed"
+      return "error"
     case "busy":
     case "retry":
     case "running":
@@ -49,20 +49,20 @@ export function inferContinuityStatusFromEvent(args: {
     case "complete":
     case "done":
     case "finished":
-      if (args.currentStatus === "failed") {
-        return "failed"
+      if (args.currentStatus === "error") {
+        return "error"
       }
-      return args.currentStatus === "created" ? "running" : "completed"
+      return args.currentStatus === "pending" ? "running" : "completed"
     default:
       break
   }
 
   if (args.eventType === "session.created") {
-    return "created"
+    return "pending"
   }
 
   if (args.eventType === "session.updated") {
-    return args.currentStatus === "created" ? "running" : args.currentStatus ?? "running"
+    return args.currentStatus === "pending" ? "running" : args.currentStatus ?? "running"
   }
 
   return undefined

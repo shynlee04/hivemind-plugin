@@ -288,10 +288,13 @@ function normalizePromptParams(value: unknown): SessionPromptParams | undefined 
 
 function normalizeStatus(value: unknown): SessionContinuityMetadata["status"] | undefined {
   switch (value) {
-    case "created":
+    case "pending":
+    case "queued":
     case "running":
     case "completed":
-    case "failed":
+    case "error":
+    case "cancelled":
+    case "interrupt":
       return value
     default:
       return undefined

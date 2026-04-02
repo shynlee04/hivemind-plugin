@@ -1,3 +1,5 @@
+import type { TaskStatus } from "./task-status.js"
+
 export const MAX_DESCENDANTS_PER_ROOT = 10
 
 export const VALID_AGENTS = ["researcher", "builder", "critic"] as const
@@ -133,7 +135,7 @@ export type SessionContinuityMetadata = {
   scope?: string
   constraints: string[]
   runInBackground: boolean
-  status: "created" | "running" | "completed" | "failed"
+  status: TaskStatus
   createdAt: number
   updatedAt: number
   lastObservedAt?: number

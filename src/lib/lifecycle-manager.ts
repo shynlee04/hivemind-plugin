@@ -160,7 +160,7 @@ export class HarnessLifecycleManager {
 
     const timestamp = now()
     const lifecycle = buildLifecycleState({
-      phase: record.metadata.status === "failed" ? "failed" : "running",
+      phase: record.metadata.status === "error" ? "failed" : "running",
       runMode: record.metadata.runInBackground ? "async" : "sync",
       queueKey: record.metadata.lifecycle?.queueKey ?? record.metadata.delegation.queueKey,
       previous: record.metadata.lifecycle,
@@ -172,9 +172,9 @@ export class HarnessLifecycleManager {
     })
 
     patchSessionContinuity(sessionID, {
-      status: record.metadata.status === "failed" ? "failed" : "running",
+      status: record.metadata.status === "error" ? "error" : "running",
       lastObservedAt: timestamp,
-      lastError: record.metadata.status === "failed" ? record.metadata.lastError : undefined,
+      lastError: record.metadata.status === "error" ? record.metadata.lastError : undefined,
       lifecycle,
     })
   }
@@ -233,7 +233,7 @@ export class HarnessLifecycleManager {
     patchSessionContinuity(sessionID, {
       status: nextStatus ?? continuity.metadata.status,
       lastObservedAt: timestamp,
-      lastError: nextStatus === "failed" ? continuity.metadata.lastError : undefined,
+      lastError: nextStatus === "error" ? continuity.metadata.lastError : undefined,
       lifecycle,
     })
   }
@@ -250,7 +250,7 @@ export class HarnessLifecycleManager {
     this.completionDetector.cancel(sessionID)
 
     this.patchLifecycle(sessionID, {
-      status: "failed",
+      status: "error",
       phase: "failed",
       error: "Session cancelled by user",
       observation: {
@@ -326,7 +326,7 @@ export class HarnessLifecycleManager {
           scope: args.scope,
           constraints: args.constraints ?? [],
           runInBackground: args.runInBackground,
-          status: "created",
+          status: "pending",
           createdAt: timestamp,
           updatedAt: timestamp,
           lifecycle: buildLifecycleState({
@@ -386,7 +386,7 @@ export class HarnessLifecycleManager {
         sendPrompt(this.options.client, childSessionID, body).catch((error: unknown) => {
           const message = error instanceof Error ? error.message : String(error)
           this.patchLifecycle(childSessionID, {
-            status: "failed",
+            status: "error",
             phase: "failed",
             error: message,
             observation: {
@@ -444,7 +444,7 @@ export class HarnessLifecycleManager {
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         this.patchLifecycle(childSessionID, {
-          status: "failed",
+          status: "error",
           phase: "failed",
           error: message,
           observation: {
@@ -470,14 +470,20 @@ export class HarnessLifecycleManager {
     previousPhase?: SessionLifecyclePhase
   ): SessionLifecyclePhase {
     switch (status) {
-      case "created":
+      case "pending":
         return previousPhase ?? "created"
+      case "queued":
+        return "queued"
       case "running":
         return previousPhase === "queued" || previousPhase === "dispatching" ? previousPhase : "running"
       case "completed":
         return "completed"
-      case "failed":
+      case "error":
         return "failed"
+      case "cancelled":
+        return "failed"
+      case "interrupt":
+        return previousPhase === "queued" || previousPhase === "dispatching" ? previousPhase : "running"
     }
   }
 
@@ -596,7 +602,7 @@ export class HarnessLifecycleManager {
           break
         case "error":
           this.patchLifecycle(sessionID, {
-            status: "failed",
+            status: "error",
             phase: "failed",
             error: result.error ?? "Session error detected",
             observation: {
@@ -608,7 +614,7 @@ export class HarnessLifecycleManager {
           break
         case "deleted":
           this.patchLifecycle(sessionID, {
-            status: "failed",
+            status: "error",
             phase: "failed",
             error: "Session deleted during background execution",
             observation: {
@@ -620,7 +626,7 @@ export class HarnessLifecycleManager {
           break
         case "timeout":
           this.patchLifecycle(sessionID, {
-            status: "failed",
+            status: "error",
             phase: "failed",
             error: "Background completion timed out",
             observation: {
