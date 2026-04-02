@@ -2,15 +2,15 @@
 
 **Goal:** Complete the first milestone of the meta-builder harness: stabilize `use-authoring-skills` (GROUP 2) and build the first 3 GROUP 1 specialist skills.
 
-**Status:** IN-PROGRESS — SOT docs updated, delegating to 4 parallel builder agents
+**Status:** ✅ MILESTONE 1 COMPLETE — All 4 skill packs built, validated, committed
 
 ## Milestone Scope
 
 This milestone covers:
-1. **use-authoring-skills** (GROUP 2) — complete missing reference files, templates, scripts
-2. **user-intent-interactive-loop** (GROUP 1) — new skill for iterative user engagement
-3. **coordinating-loop** (GROUP 1) — new skill for parallel/sequential coordination patterns
-4. **planning-with-files** (GROUP 1) — replace broken version with proper repo version
+1. **use-authoring-skills** (GROUP 2) — complete missing reference files, templates, scripts ✅
+2. **user-intent-interactive-loop** (GROUP 1) — new skill for iterative user engagement ✅
+3. **coordinating-loop** (GROUP 1) — new skill for parallel/sequential coordination patterns ✅
+4. **planning-with-files** (GROUP 1) — replace broken version with proper repo version ✅
 
 ## Phases
 
@@ -18,10 +18,10 @@ This milestone covers:
 - [x] 1. SKILL.md body rewritten (337 lines, locked decisions encoded)
 - [x] 2. Terminology cleaned (HiveMind/Claude → Agent/AGENTS.md)
 - [x] 3. Meta-builder architecture spec written
-- [ ] 4. **use-authoring-skills completion** — ref files 06, 09-12, templates, scripts
-- [ ] 5. **user-intent-interactive-loop** — GROUP 1 skill #1
-- [ ] 6. **coordinating-loop** — GROUP 1 skill #2
-- [ ] 7. **planning-with-files replacement** — GROUP 1 skill #3
+- [x] 4. **use-authoring-skills completion** — ref files 06, 09-12, templates, scripts (builder-1)
+- [x] 5. **user-intent-interactive-loop** — GROUP 1 skill #1 (builder-2)
+- [x] 6. **coordinating-loop** — GROUP 1 skill #2 (builder-3)
+- [x] 7. **planning-with-files replacement** — GROUP 1 skill #3 (builder-4)
 - [ ] 8. Validation gate — test all 4 skills against real scenarios
 - [ ] 9. Commit all, update architecture spec
 

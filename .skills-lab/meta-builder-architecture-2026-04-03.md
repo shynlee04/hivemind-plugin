@@ -112,13 +112,19 @@ When using meta-builder, load these skills together:
 
 ---
 
-## Current State
+## Current State (Updated 2026-04-03 — Milestone 1 Complete)
 
-- `use-authoring-skills/SKILL.md`: 337 lines, all locked decisions encoded, terminology cleaned
-- Reference files: 01-05, 07-08 cleaned; 06, 09-12 not yet created
-- SOT docs: realignment, task_plan, findings, progress — written but shallow
-- Scripts: none yet (check-complete.sh, init-session.sh, session-catchup.py needed)
-- Hooks: none yet (pre-tool-use, post-tool-use, stop needed)
-- OpenCode docs: 20 files not yet consumed
-- Ralph-loop pattern: not yet embedded
-- Planning-with-files: broken version in project, needs replacement from repo
+### ✅ COMPLETED Skill Packs
+- `use-authoring-skills/` — 24 files, ~4,500 lines. SKILL.md + 12 refs + 4 scripts + 4 templates + 3 hooks
+- `user-intent-interactive-loop/` — 5 files, 1,433 lines. SKILL.md + 4 refs
+- `coordinating-loop/` — 7 files, 1,205 lines. SKILL.md + 4 refs + 2 scripts
+- `planning-with-files/` — 11 files, 1,805 lines. SKILL.md + 4 refs + 3 templates + 3 scripts
+
+### ❌ NOT YET BUILT
+- **Meta-builder parent skill** — the orchestrator that routes between all GROUP 1/2 skills
+- **GROUP 2 remaining:** use-authoring-commands, use-authoring-agents, use-authoring-tools, use-authoring-workflows
+- **GROUP 1 remaining:** tech-to-feature-synthesis, deep-investigation, TDD, Spec-driven
+- **GROUP 3:** Shared concept-specific skills (stackable)
+- **Cross-package bridging spec**
+- **Integration tests** between skill packs
+- **OpenCode docs consumption** (20 files available but not yet embedded into skills)
