@@ -43,6 +43,39 @@ describe("SessionCompletionTracker", () => {
       })
     })
 
+    it("resolves watch immediately when session.idle was fed before watch starts", async () => {
+      tracker.feed("session.idle", "sess-race-idle")
+
+      const result = tracker.watch("sess-race-idle", 5000)
+
+      await expect(
+        Promise.race([
+          result,
+          Promise.resolve({ signal: "pending", sessionID: "sess-race-idle" as const }),
+        ]),
+      ).resolves.toEqual({
+        signal: "idle",
+        sessionID: "sess-race-idle",
+      })
+    })
+
+    it("resolves watch immediately when session.error was fed before watch starts", async () => {
+      tracker.feed("session.error", "sess-race-error", "boom")
+
+      const result = tracker.watch("sess-race-error", 5000)
+
+      await expect(
+        Promise.race([
+          result,
+          Promise.resolve({ signal: "pending", sessionID: "sess-race-error" as const }),
+        ]),
+      ).resolves.toEqual({
+        signal: "error",
+        sessionID: "sess-race-error",
+        error: "boom",
+      })
+    })
+
     it("resolves watch with timeout signal after timeoutMs", async () => {
       vi.useFakeTimers()
 
