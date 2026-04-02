@@ -1,7 +1,6 @@
 import type { createOpencodeClient } from "@opencode-ai/sdk"
 
 import { asString, getNestedValue, unwrapData } from "./helpers.js"
-import type { SessionCompletionTracker } from "./session-completion-tracker.js"
 
 export type OpenCodeClient = ReturnType<typeof createOpencodeClient>
 
@@ -19,15 +18,6 @@ type CreateSessionOptions = {
 
 type GetSessionMessagesOptions = {
   limit?: number
-}
-
-export type PromptBody = {
-  parts: unknown[]
-  agent?: string
-  model?: unknown
-  temperature?: number
-  tools?: unknown
-  [key: string]: unknown
 }
 
 export async function createSession(client: OpenCodeClient, opts: CreateSessionOptions): Promise<SessionRecord> {
@@ -66,7 +56,7 @@ export async function getSessionMessages(
 export async function sendPrompt(
   client: OpenCodeClient,
   sessionID: string,
-  body: PromptBody
+  body: unknown
 ): Promise<unknown> {
   const request: SessionPromptRequest = {
     path: { id: sessionID },
@@ -74,23 +64,6 @@ export async function sendPrompt(
   }
 
   return unwrapData(await client.session.prompt(request))
-}
-
-export async function sendPromptAsync(
-  client: OpenCodeClient,
-  sessionID: string,
-  body: PromptBody
-): Promise<unknown> {
-  if (typeof client.session.promptAsync === "function") {
-    return unwrapData(
-      await client.session.promptAsync({
-        path: { id: sessionID },
-        body: body as SessionPromptRequest["body"],
-      })
-    )
-  }
-
-  return sendPrompt(client, sessionID, body)
 }
 
 export function getSessionID(session: unknown): string | undefined {
@@ -144,69 +117,4 @@ export async function walkParentChain(client: OpenCodeClient, sessionID: string)
   }
 
   return chain
-}
-
-export function extractAssistantText(messages: unknown[]): string {
-  for (let index = messages.length - 1; index >= 0; index -= 1) {
-    const message = messages[index]
-    const role = asString(getNestedValue(message, ["info", "role"])) ?? asString(getNestedValue(message, ["role"]))
-
-    if (role !== "assistant") {
-      continue
-    }
-
-    const parts = getNestedValue(message, ["parts"])
-    if (!Array.isArray(parts)) {
-      continue
-    }
-
-    const text = parts
-      .map((part) => {
-        if (asString(getNestedValue(part, ["type"])) !== "text") {
-          return ""
-        }
-
-        return (
-          asString(getNestedValue(part, ["text"])) ??
-          asString(getNestedValue(part, ["text", "value"])) ??
-          asString(getNestedValue(part, ["content"])) ??
-          ""
-        )
-      })
-      .join("")
-      .trim()
-
-    if (text) {
-      return text
-    }
-  }
-
-  return ""
-}
-
-export async function waitForAssistantText(
-  client: OpenCodeClient,
-  tracker: SessionCompletionTracker,
-  sessionID: string,
-  timeoutMs: number
-): Promise<string> {
-  const result = await tracker.watch(sessionID, timeoutMs)
-
-  switch (result.signal) {
-    case "idle": {
-      const text = extractAssistantText(await getSessionMessages(client, sessionID))
-      if (text) {
-        return text
-      }
-      throw new Error(`[Harness] Session ${sessionID} completed without assistant output`)
-    }
-    case "error":
-      throw new Error(`[Harness] Session ${sessionID} failed: ${result.error ?? "Unknown error"}`)
-    case "deleted":
-      throw new Error(`[Harness] Session ${sessionID} was deleted before assistant output was available`)
-    case "timeout":
-      throw new Error(`[Harness] Timed out waiting for session ${sessionID} after ${timeoutMs}ms`)
-    case "cancelled":
-      throw new Error(`[Harness] Waiting for session ${sessionID} was cancelled`)
-  }
 }

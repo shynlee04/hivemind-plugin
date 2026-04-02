@@ -12,12 +12,10 @@ import {
   createSession,
   getEventParentID,
   getSessionID,
-  type PromptBody,
+  type OpenCodeClient,
   sendPrompt,
-  sendPromptAsync,
-  waitForAssistantText,
 } from "./session-api.js"
-import { SessionCompletionTracker } from "./session-completion-tracker.js"
+
 import {
   commitDescendant,
   forgetSession,
@@ -61,48 +59,12 @@ type LaunchDelegatedSessionArgs = {
 }
 
 type HarnessLifecycleManagerOptions = {
-  client: any
-  pollIntervalMs: number
+  client: OpenCodeClient
   pollTimeoutMs: number
 }
 
 function now(): number {
   return Date.now()
-}
-
-function extractEventErrorMessage(event: unknown): string | undefined {
-  if (!event || typeof event !== "object") {
-    return undefined
-  }
-
-  const record = event as Record<string, unknown>
-
-  if (typeof record.error === "string") {
-    return record.error
-  }
-
-  if (record.error && typeof record.error === "object") {
-    const nestedError = record.error as Record<string, unknown>
-    if (typeof nestedError.message === "string") {
-      return nestedError.message
-    }
-  }
-
-  if (typeof record.message === "string") {
-    return record.message
-  }
-
-  if (record.properties && typeof record.properties === "object") {
-    const properties = record.properties as Record<string, unknown>
-    if (typeof properties.error === "string") {
-      return properties.error
-    }
-    if (typeof properties.message === "string") {
-      return properties.message
-    }
-  }
-
-  return undefined
 }
 
 function buildLifecycleState(args: {
@@ -150,7 +112,6 @@ function buildDelegationMeta(args: {
 export class HarnessLifecycleManager {
   private readonly concurrencyLimit: number
   private readonly queue: DelegationConcurrencyQueue
-  private readonly completionTracker = new SessionCompletionTracker()
 
   constructor(private readonly options: HarnessLifecycleManagerOptions) {
     this.concurrencyLimit = parseInt(
@@ -207,17 +168,7 @@ export class HarnessLifecycleManager {
   handleEvent(args: { event: unknown; eventType: string; sessionID: string }): void {
     const { event, eventType, sessionID } = args
 
-    if (eventType === "session.deleted") {
-      this.completionTracker.feed("session.deleted", sessionID)
-    } else if (eventType === "session.idle") {
-      this.completionTracker.feed("session.idle", sessionID)
-    } else if (eventType === "session.error") {
-      this.completionTracker.feed(
-        "session.error",
-        sessionID,
-        extractEventErrorMessage(event) ?? getSessionContinuity(sessionID)?.metadata.lastError
-      )
-    }
+    // TODO: replace with CompletionDetector
 
     if (eventType === "session.created" || eventType === "session.updated") {
       const parentID = getEventParentID(event)
@@ -292,7 +243,7 @@ export class HarnessLifecycleManager {
       },
     })
 
-    this.completionTracker.cancel(sessionID)
+    // TODO: replace with CompletionDetector
   }
 
   async launchDelegatedSession(args: LaunchDelegatedSessionArgs): Promise<string> {
@@ -462,12 +413,8 @@ export class HarnessLifecycleManager {
       }
 
       try {
-        const assistantText = await waitForAssistantText(
-          this.options.client,
-          this.completionTracker,
-          childSessionID,
-          this.options.pollTimeoutMs
-        )
+        // TODO: replace with CompletionDetector — waitForAssistantText needs tracker
+        throw new Error("[Harness] Sync completion observation not yet implemented (CompletionDetector pending)")
 
         this.patchLifecycle(childSessionID, {
           status: "completed",
@@ -480,7 +427,7 @@ export class HarnessLifecycleManager {
           },
         })
 
-        return assistantText
+        // unreachable — throw above exits
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         this.patchLifecycle(childSessionID, {
@@ -615,66 +562,20 @@ export class HarnessLifecycleManager {
   }
 
   private async dispatchPrompt(
-    body: PromptBody,
+    body: unknown,
     sessionID: string,
-    runInBackground: boolean
+    _runInBackground: boolean
   ): Promise<void> {
-    if (runInBackground) {
-      await sendPromptAsync(this.options.client, sessionID, body)
-      return
-    }
-
     await sendPrompt(this.options.client, sessionID, body)
   }
 
   private async observeBackgroundCompletion(
-    sessionID: string,
+    _sessionID: string,
     releaseQueue: (reason: string) => void
   ): Promise<void> {
+    // TODO: replace with CompletionDetector
     try {
-      const result = await this.completionTracker.watch(sessionID, this.options.pollTimeoutMs)
-
-      if (result.signal === "error") {
-        throw new Error(`[Harness] ${result.error ?? "Unknown error"}`)
-      }
-
-      if (result.signal === "timeout") {
-        throw new Error(
-          `[Harness] Timed out waiting for delegated session ${sessionID} after ${this.options.pollTimeoutMs}ms`
-        )
-      }
-
-      if (result.signal === "cancelled") {
-        throw new Error(`[Harness] Delegated session ${sessionID} observation was cancelled`)
-      }
-
-      if (result.signal === "deleted") {
-        throw new Error(`[Harness] Delegated session ${sessionID} was deleted before completion`)
-      }
-
-      this.patchLifecycle(sessionID, {
-        status: "completed",
-        phase: "completed",
-        completedAt: now(),
-        observation: {
-          source: "observe:tracker-idle",
-          observedAt: now(),
-          detail: "background-idle-observed",
-        },
-      })
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error)
-      addWarning(sessionID, `Delegated session completion watcher failed: ${message}`)
-      this.patchLifecycle(sessionID, {
-        status: "failed",
-        phase: "failed",
-        error: message,
-        observation: {
-          source: "observe:async",
-          observedAt: now(),
-          detail: "background-observer-failed",
-        },
-      })
+      throw new Error("[Harness] Background completion observation not yet implemented (CompletionDetector pending)")
     } finally {
       releaseQueue("background-complete")
     }

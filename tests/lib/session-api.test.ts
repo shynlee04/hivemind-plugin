@@ -8,8 +8,6 @@ function mockClient() {
       abort: vi.fn(),
       messages: vi.fn(),
       prompt: vi.fn(),
-      promptAsync: vi.fn(),
-      children: vi.fn(),
     },
   } as any
 }
@@ -29,6 +27,7 @@ describe("session-api typed wrappers", () => {
       expect(client.session.create).toHaveBeenCalledWith({
         body: { parentID: "parent-1", title: "builder: fix bug" },
       })
+      expect(result).toEqual({ id: "s1", title: "test" })
     })
 
     it("passes directory as query param when provided", async () => {
@@ -51,9 +50,10 @@ describe("session-api typed wrappers", () => {
       client.session.get.mockResolvedValue({ data: { id: "s1" } })
 
       const { getSession } = await import("../../src/lib/session-api.js")
-      await getSession(client, "s1")
+      const result = await getSession(client, "s1")
 
       expect(client.session.get).toHaveBeenCalledWith({ path: { id: "s1" } })
+      expect(result).toEqual({ id: "s1" })
     })
   })
 
@@ -75,9 +75,10 @@ describe("session-api typed wrappers", () => {
       client.session.messages.mockResolvedValue({ data: [] })
 
       const { getSessionMessages } = await import("../../src/lib/session-api.js")
-      await getSessionMessages(client, "s1")
+      const result = await getSessionMessages(client, "s1")
 
       expect(client.session.messages).toHaveBeenCalledWith({ path: { id: "s1" } })
+      expect(result).toEqual([])
     })
 
     it("passes limit as query param", async () => {
@@ -92,6 +93,16 @@ describe("session-api typed wrappers", () => {
         query: { limit: 5 },
       })
     })
+
+    it("returns empty array when response is not an array", async () => {
+      const client = mockClient()
+      client.session.messages.mockResolvedValue({ data: "not-an-array" })
+
+      const { getSessionMessages } = await import("../../src/lib/session-api.js")
+      const result = await getSessionMessages(client, "s1")
+
+      expect(result).toEqual([])
+    })
   })
 
   describe("sendPrompt", () => {
@@ -102,71 +113,82 @@ describe("session-api typed wrappers", () => {
       const { sendPrompt } = await import("../../src/lib/session-api.js")
       await sendPrompt(client, "s1", {
         parts: [{ type: "text", text: "hello" }],
-        agent: "builder",
       })
 
       expect(client.session.prompt).toHaveBeenCalledWith({
         path: { id: "s1" },
         body: {
           parts: [{ type: "text", text: "hello" }],
-          agent: "builder",
         },
       })
     })
-  })
 
-  describe("sendPromptAsync", () => {
-    it("calls promptAsync when available", async () => {
+    it("returns unwrapped data from prompt response", async () => {
       const client = mockClient()
-      client.session.promptAsync.mockResolvedValue({ data: undefined })
+      client.session.prompt.mockResolvedValue({ data: { info: { id: "msg-1" }, parts: [] } })
 
-      const { sendPromptAsync } = await import("../../src/lib/session-api.js")
-      await sendPromptAsync(client, "s1", {
-        parts: [{ type: "text", text: "async task" }],
-      })
+      const { sendPrompt } = await import("../../src/lib/session-api.js")
+      const result = await sendPrompt(client, "s1", { parts: [] })
 
-      expect(client.session.promptAsync).toHaveBeenCalled()
-    })
-
-    it("falls back to sendPrompt when promptAsync is missing", async () => {
-      const client = mockClient()
-      delete client.session.promptAsync
-      client.session.prompt.mockResolvedValue({ data: {} })
-
-      const { sendPromptAsync } = await import("../../src/lib/session-api.js")
-      await sendPromptAsync(client, "s1", {
-        parts: [{ type: "text", text: "fallback" }],
-      })
-
-      expect(client.session.prompt).toHaveBeenCalled()
+      expect(result).toEqual({ info: { id: "msg-1" }, parts: [] })
     })
   })
 })
 
 describe("session-api helpers", () => {
-  describe("extractAssistantText", () => {
-    it("returns last assistant message text", async () => {
-      const { extractAssistantText } = await import("../../src/lib/session-api.js")
-      const messages = [
-        { info: { role: "user" }, parts: [{ type: "text", text: "do thing" }] },
-        { info: { role: "assistant" }, parts: [{ type: "text", text: "done" }] },
-      ]
-
-      expect(extractAssistantText(messages)).toBe("done")
+  describe("getSessionID", () => {
+    it("extracts id from plain object", async () => {
+      const { getSessionID } = await import("../../src/lib/session-api.js")
+      expect(getSessionID({ id: "s1" })).toBe("s1")
     })
 
-    it("returns empty string when no assistant messages", async () => {
-      const { extractAssistantText } = await import("../../src/lib/session-api.js")
-      expect(extractAssistantText([])).toBe("")
+    it("extracts sessionID from plain object", async () => {
+      const { getSessionID } = await import("../../src/lib/session-api.js")
+      expect(getSessionID({ sessionID: "s2" })).toBe("s2")
     })
 
-    it("concatenates multiple text parts", async () => {
-      const { extractAssistantText } = await import("../../src/lib/session-api.js")
-      const messages = [
-        { info: { role: "assistant" }, parts: [{ type: "text", text: "hello " }, { type: "text", text: "world" }] },
-      ]
+    it("extracts from nested info.id", async () => {
+      const { getSessionID } = await import("../../src/lib/session-api.js")
+      expect(getSessionID({ info: { id: "s3" } })).toBe("s3")
+    })
 
-      expect(extractAssistantText(messages)).toBe("hello world")
+    it("extracts from nested info.sessionID", async () => {
+      const { getSessionID } = await import("../../src/lib/session-api.js")
+      expect(getSessionID({ info: { sessionID: "s4" } })).toBe("s4")
+    })
+
+    it("returns undefined for non-object input", async () => {
+      const { getSessionID } = await import("../../src/lib/session-api.js")
+      expect(getSessionID(null)).toBeUndefined()
+      expect(getSessionID(undefined)).toBeUndefined()
+      expect(getSessionID(42)).toBeUndefined()
+    })
+
+    it("prefers top-level id over nested info.id", async () => {
+      const { getSessionID } = await import("../../src/lib/session-api.js")
+      expect(getSessionID({ id: "top", info: { id: "nested" } })).toBe("top")
+    })
+  })
+
+  describe("getParentID", () => {
+    it("extracts parentID from plain object", async () => {
+      const { getParentID } = await import("../../src/lib/session-api.js")
+      expect(getParentID({ parentID: "p1" })).toBe("p1")
+    })
+
+    it("extracts parentId (camelCase) from plain object", async () => {
+      const { getParentID } = await import("../../src/lib/session-api.js")
+      expect(getParentID({ parentId: "p2" })).toBe("p2")
+    })
+
+    it("extracts from nested info.parentID", async () => {
+      const { getParentID } = await import("../../src/lib/session-api.js")
+      expect(getParentID({ info: { parentID: "p3" } })).toBe("p3")
+    })
+
+    it("returns undefined when no parent fields exist", async () => {
+      const { getParentID } = await import("../../src/lib/session-api.js")
+      expect(getParentID({ id: "s1" })).toBeUndefined()
     })
   })
 
@@ -188,47 +210,32 @@ describe("session-api helpers", () => {
       const event = { properties: { info: { id: "from-info" }, sessionID: "from-session" } }
       expect(getEventSessionID(event)).toBe("from-info")
     })
+
+    it("falls back to top-level event.sessionID", async () => {
+      const { getEventSessionID } = await import("../../src/lib/session-api.js")
+      const event = { sessionID: "top-level" }
+      expect(getEventSessionID(event)).toBe("top-level")
+    })
   })
 
-  describe("waitForAssistantText (tracker-based)", () => {
-    it("returns assistant text when tracker resolves idle", async () => {
-      const { SessionCompletionTracker } = await import("../../src/lib/session-completion-tracker.js")
-      const { waitForAssistantText } = await import("../../src/lib/session-api.js")
-
-      const tracker = new SessionCompletionTracker()
-      const client = mockClient()
-      client.session.messages.mockResolvedValue({
-        data: [{ info: { role: "assistant" }, parts: [{ type: "text", text: "result text" }] }],
-      })
-
-      const resultPromise = waitForAssistantText(client, tracker, "sess-1", 5000)
-
-      // Feed idle event to resolve the tracker
-      tracker.feed("session.idle", "sess-1")
-
-      const text = await resultPromise
-      expect(text).toBe("result text")
+  describe("getEventParentID", () => {
+    it("extracts parentID from properties.info", async () => {
+      const { getEventParentID } = await import("../../src/lib/session-api.js")
+      const event = { properties: { info: { parentID: "parent-1" } } }
+      expect(getEventParentID(event)).toBe("parent-1")
     })
 
-    it("throws on error signal", async () => {
-      const { SessionCompletionTracker } = await import("../../src/lib/session-completion-tracker.js")
-      const { waitForAssistantText } = await import("../../src/lib/session-api.js")
-
-      const tracker = new SessionCompletionTracker()
-      const client = mockClient()
-
-      const resultPromise = waitForAssistantText(client, tracker, "sess-err", 5000)
-
-      tracker.feed("session.error", "sess-err", "API rate limit")
-
-      await expect(resultPromise).rejects.toThrow(/\[Harness\].*API rate limit/)
+    it("returns undefined when no parent info exists", async () => {
+      const { getEventParentID } = await import("../../src/lib/session-api.js")
+      const event = { properties: { info: { id: "sess-1" } } }
+      expect(getEventParentID(event)).toBeUndefined()
     })
   })
 
   describe("walkParentChain", () => {
     it("walks up parent chain", async () => {
       const client = mockClient()
-      client.session.get.mockImplementation(({ path: { id } }) => {
+      client.session.get.mockImplementation(({ path: { id } }: any) => {
         if (id === "child") return Promise.resolve({ data: { id: "child", parentID: "parent" } })
         if (id === "parent") return Promise.resolve({ data: { id: "parent" } })
         return Promise.reject(new Error("not found"))
@@ -238,11 +245,24 @@ describe("session-api helpers", () => {
       const chain = await walkParentChain(client, "child")
 
       expect(chain).toHaveLength(2)
+      expect(chain[0]).toEqual({ id: "child", parentID: "parent" })
+      expect(chain[1]).toEqual({ id: "parent" })
+    })
+
+    it("returns single element for session without parent", async () => {
+      const client = mockClient()
+      client.session.get.mockResolvedValue({ data: { id: "root" } })
+
+      const { walkParentChain } = await import("../../src/lib/session-api.js")
+      const chain = await walkParentChain(client, "root")
+
+      expect(chain).toHaveLength(1)
+      expect(chain[0]).toEqual({ id: "root" })
     })
 
     it("detects cyclic chains", async () => {
       const client = mockClient()
-      client.session.get.mockImplementation(({ path: { id } }) => {
+      client.session.get.mockImplementation(({ path: { id } }: any) => {
         if (id === "a") return Promise.resolve({ data: { id: "a", parentID: "b" } })
         if (id === "b") return Promise.resolve({ data: { id: "b", parentID: "a" } })
         return Promise.reject(new Error("not found"))
