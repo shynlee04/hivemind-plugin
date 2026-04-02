@@ -212,3 +212,41 @@ use-authoring-skills/
 - Universal — not platform-specific
 - OpenCode is closest measurement
 - All agentic platforms must work (Claude Code, Codex, Cursor, etc.)
+
+---
+
+## Context Refresh: 2026-04-03 (Design Scope Refresh)
+
+### Current SKILL.md state
+- The body is no longer the original HiveMind-coupled version; it is partially rewritten as a routing hub.
+- However, it still conflicts with locked intent in several ways:
+  - It contains a full `When to Load` section in the body even though the repomix/ralph-loop guidance says trigger logic belongs primarily in `description`.
+  - It does not explicitly encode the required skill loads (`skill-creator`, `skill-development`, `writing-skills`, `skill-judge`, `skill-review`, `gcc`, `planning-with-files`).
+  - It does not yet encode long-run orchestration, restart recovery, or locked user-intent preservation strongly enough.
+  - It is missing the new reference files, templates, scripts, and examples required by the locked architecture.
+
+### Current SOT docs state
+- `realignment-2026-04-03.md` is truncated/corrupted and must be fully rewritten before it can function as a reliable gate document.
+- `task_plan.md` is noisy and internally inconsistent (`Current Phase` appears twice, stale statements remain).
+- `progress.md` is accurate for the recovery session but is too shallow to support long-run restart recovery.
+
+### planning-with-files XML takeaways to embed into the pack
+- `task_plan.md` must act as a goal-refresh mechanism: re-read before decisions to pull goals back into attention.
+- `findings.md` stores research and discovered facts only.
+- `progress.md` stores timestamped actions, decisions made, and recovery state.
+- Filesystem is persistent external memory; compression must preserve pointers, paths, and recovery handles.
+- Wrong turns should be preserved when they improve recovery and reduce repeated mistakes.
+
+### ralph-loop XML takeaways to embed into the pack
+- Skill packs should support real task loops: use on real tasks, observe struggles, update SKILL/resources, test again.
+- Reusable resources should be identified from concrete examples and bundled into `scripts/`, `references/`, and `assets/`/templates.
+- Packaging/validation should be part of the lifecycle, not an afterthought.
+- Iteration is a first-class phase, not cleanup.
+
+### Design implication
+- The next valid move is not ad-hoc editing. It is to present a restructuring design that makes `use-authoring-skills` itself capable of sustaining:
+  - iterative loops,
+  - orchestration waves,
+  - restart recovery,
+  - locked user constraints,
+  - and future sibling-pack preparation.

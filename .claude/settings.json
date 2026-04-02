@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "data@claude-plugins-official": true
+  }
+}

@@ -196,4 +196,31 @@
   - Activated contract coverage in `tests/lib/session-api.test.ts`
   - Added compatibility shims in `src/lib/lifecycle-manager.ts`
   - Fixed tracker race in `src/lib/session-completion-tracker.ts`
-  - Preserved Wave 4 `src/plugin.ts` work for the next commit slice
+   - Preserved Wave 4 `src/plugin.ts` work for the next commit slice
+
+### Phase 12: Harness Rebuild — Trash Everything the Platform Already Does
+- **Status:** complete
+- **Design doc:** `docs/designs/2026-04-02-harness-rebuild-design.md`
+- **Plan:** `task_plan.md` (Phase 12)
+- **Git trail:**
+  - `34a52c2c` feat(wave2): create task-status.ts with transition guards — TDD green (29 tests)
+  - `e8597ad5` feat(wave8): fix plugin.ts route resolution, update buildPromptText call, rename timeout
+  - `4078fe4f` fix: remove dead code, add barrel exports for new modules
+- **Verification:**
+  - `npx vitest run` => 138 passed (6 files)
+  - `npm run typecheck` => clean
+  - `npm run build` => success
+- **Changes:**
+  - DELETED: `routing.ts` (113 LOC) — agent .md files define temperature/model
+  - DELETED: `session-completion-tracker.ts` (81 LOC) — replaced by CompletionDetector
+  - DELETED: `agent-registry.ts` (308 LOC) — dead code, not imported
+  - CREATED: `task-status.ts` (~100 LOC) — TaskStatus 7-value type + transition guards
+  - CREATED: `completion-detector.ts` (~120 LOC) — two-signal detection with stability timer
+  - REWRITTEN: `helpers.ts` (141→107 LOC) — removed agent config maps, kept utilities + buildPromptText
+  - REWRITTEN: `session-api.ts` (212→109 LOC) — removed completion detection, kept typed SDK wrappers
+  - TRIMMED: `runtime.ts` (154→43 LOC) — kept event inference only
+  - REWRITTEN: `lifecycle-manager.ts` — CompletionDetector integration, simplified launch flow
+  - CLEANED: `plugin.ts` — agent defaults, tool profiles, route resolution
+  - UPDATED: `types.ts` — TaskStatus 7-value replacing old 4-value SessionContinuityMetadata.status
+  - UPDATED: `src/index.ts` — barrel exports for new modules
+  - UPDATED: `src/lib/AGENTS.md` — complete rewrite for new architecture

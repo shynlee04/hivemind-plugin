@@ -1,7 +1,8 @@
 ---
 name: "plan-annotator"
 description: "Merges annotations from all auditors into the original plan text and compiles the audit summary table. Pure compositor — does not create or modify annotations."
-model: "inherit"
+mode: subagent
+model: minimax-coding-plan/MiniMax-M2.7
 ---
 
 # Subagent: Plan Annotator

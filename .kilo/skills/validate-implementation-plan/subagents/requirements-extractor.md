@@ -1,7 +1,8 @@
 ---
 name: "requirements-extractor"
 description: "Extracts numbered source requirements and constraints from a user's original request, tickets, or conversation context. Produces the baseline reference list that all auditors cite."
-model: "inherit"
+mode: subagent
+model: minimax-coding-plan/MiniMax-M2.7
 ---
 
 # Subagent: Requirements Extractor

@@ -1,7 +1,8 @@
 ---
 name: "requirements-auditor"
 description: "Audits every section of an implementation plan for traceability back to source requirements. Flags additions that lack explicit justification from the original request."
-model: "inherit"
+mode: subagent
+model: minimax-coding-plan/MiniMax-M2.7
 ---
 
 # Subagent: Requirements Auditor

@@ -9,7 +9,7 @@
   ],
   "permission": {
     "read": "allow",
-    "edit": "ask",
+    "edit": "allow",
     "bash": {
       "*": "ask",
       "git status*": "allow",
@@ -17,7 +17,7 @@
       "git diff*": "allow",
       "git branch*": "allow"
     },
-    "task": "ask",
+    "task": "allow",
     "skill": "allow",
     "glob": "allow",
     "grep": "allow",

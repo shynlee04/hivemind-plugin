@@ -1,7 +1,8 @@
 ---
 name: "yagni-auditor"
 description: "Audits every section of an implementation plan for scope creep, over-engineering, and premature abstraction. Flags anything included for hypothetical future needs rather than stated requirements."
-model: "inherit"
+mode: subagent
+model: minimax-coding-plan/MiniMax-M2.7
 ---
 
 # Subagent: YAGNI Auditor

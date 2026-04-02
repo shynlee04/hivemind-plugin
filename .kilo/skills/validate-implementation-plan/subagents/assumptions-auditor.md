@@ -1,7 +1,8 @@
 ---
 name: "assumptions-auditor"
 description: "Identifies and attempts to verify every assumption in an implementation plan. Returns unresolved assumptions to the orchestrator for user clarification — does not interact with users directly."
-model: "inherit"
+mode: subagent
+model: minimax-coding-plan/MiniMax-M2.7
 ---
 
 # Subagent: Assumptions Auditor
