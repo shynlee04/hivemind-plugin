@@ -42,7 +42,7 @@ export function reserveDescendant(rootID: string, maxDescendantsPerRoot: number)
   const budget = ensureRootBudget(rootID)
   const total = budget.descendants.size + budget.reserved
   if (total >= maxDescendantsPerRoot) {
-    throw new Error(`Root session ${rootID} exceeded descendant budget (${maxDescendantsPerRoot})`)
+    throw new Error(`[Harness] Root session ${rootID} exceeded descendant budget (${maxDescendantsPerRoot})`)
   }
   budget.reserved += 1
   return total + 1
