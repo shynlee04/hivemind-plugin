@@ -1,0 +1,20 @@
+version: 2
+mode: git
+created: "2026-04-02T19:53:15Z"
+config:
+  proactive_commits: true
+  worktree_ttl: 24h
+  bridge_to_aiyoucli: auto
+
+current_branch: harness-experiment
+
+timeline:
+  - id: INIT
+    hash: 33996c3c
+    intent: "gcc initialized"
+    branch: harness-experiment
+    date: "2026-04-02T19:53:15Z"
+
+worktrees: []
+
+decisions: []
