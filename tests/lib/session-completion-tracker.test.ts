@@ -76,6 +76,22 @@ describe("SessionCompletionTracker", () => {
       })
     })
 
+    it("resolves watch immediately when session.deleted was fed before watch starts", async () => {
+      tracker.feed("session.deleted", "sess-race-deleted")
+
+      const result = tracker.watch("sess-race-deleted", 5000)
+
+      await expect(
+        Promise.race([
+          result,
+          Promise.resolve({ signal: "pending", sessionID: "sess-race-deleted" as const }),
+        ]),
+      ).resolves.toEqual({
+        signal: "deleted",
+        sessionID: "sess-race-deleted",
+      })
+    })
+
     it("resolves watch with timeout signal after timeoutMs", async () => {
       vi.useFakeTimers()
 
@@ -119,6 +135,23 @@ describe("SessionCompletionTracker", () => {
 
     it("does not resolve if cancel called on non-existent session", () => {
       expect(() => tracker.cancel("non-existent")).not.toThrow()
+    })
+
+    it("clears cached terminal result when cancel is called before watch starts", async () => {
+      tracker.feed("session.idle", "sess-cancel-cached")
+
+      tracker.cancel("sess-cancel-cached")
+
+      vi.useFakeTimers()
+      const result = tracker.watch("sess-cancel-cached", 100)
+      vi.advanceTimersByTime(150)
+
+      await expect(result).resolves.toEqual({
+        signal: "timeout",
+        sessionID: "sess-cancel-cached",
+      })
+
+      vi.useRealTimers()
     })
   })
 

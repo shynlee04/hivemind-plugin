@@ -180,3 +180,20 @@
 - Evidence:
   - `npx vitest run tests/lib/session-completion-tracker.test.ts` → 12 passed, exit 0
   - `npm run typecheck` → exit 0
+
+### Wave 1: session-api.ts rewrite
+- **Status:** complete
+- **RED commit:** `85f54d28`
+- **Race RED commit:** `9d559db1`
+- **Spec review:** approved
+- **Code review:** approved
+- **GREEN verification evidence:**
+  - `npx vitest run` => 35 passed
+  - `npm run typecheck` => clean
+  - `npm run build` => success
+- Summary:
+  - Rewritten `src/lib/session-api.ts`
+  - Activated contract coverage in `tests/lib/session-api.test.ts`
+  - Added compatibility shims in `src/lib/lifecycle-manager.ts`
+  - Fixed tracker race in `src/lib/session-completion-tracker.ts`
+  - Preserved Wave 4 `src/plugin.ts` work for the next commit slice

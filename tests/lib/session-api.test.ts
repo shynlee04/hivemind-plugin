@@ -191,7 +191,7 @@ describe("session-api helpers", () => {
   })
 
   describe("waitForAssistantText (tracker-based)", () => {
-    it.skip("returns assistant text when tracker resolves idle — TODO: activate after session-api rewrite", async () => {
+    it("returns assistant text when tracker resolves idle", async () => {
       const { SessionCompletionTracker } = await import("../../src/lib/session-completion-tracker.js")
       const { waitForAssistantText } = await import("../../src/lib/session-api.js")
 
@@ -210,7 +210,7 @@ describe("session-api helpers", () => {
       expect(text).toBe("result text")
     })
 
-    it.skip("throws on error signal — TODO: activate after session-api rewrite", async () => {
+    it("throws on error signal", async () => {
       const { SessionCompletionTracker } = await import("../../src/lib/session-completion-tracker.js")
       const { waitForAssistantText } = await import("../../src/lib/session-api.js")
 

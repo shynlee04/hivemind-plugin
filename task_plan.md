@@ -4,7 +4,7 @@
 Finish the standalone `opencode-harness` pack cleanup, then recover the stalled spec/debug loop so the repo is self-contained, buildable, and working from forward-looking, internally consistent planning artifacts aligned with the active loop tracked against `/Users/apple/hivemind-plugin/.worktrees/product-detox/.hivemind/activity/experiment-plugins-tools-2026-04-01.md`.
 
 ## Current Phase
-Phase 11 — session-api.ts Event-Driven Rewrite (Approach A)
+Phase 11 — Wave 4 pending after Wave 1-3 implementation slice
 
 ## Phases
 
@@ -78,9 +78,9 @@ Phase 11 — session-api.ts Event-Driven Rewrite (Approach A)
 
 ### Phase 11: session-api.ts Event-Driven Rewrite (Approach A)
 - [x] Wave 0: SessionCompletionTracker class — TDD RED+GREEN verified (12/12 tests, typecheck clean)
-- [ ] Wave 1: Rewrite `src/lib/session-api.ts` — delete all multi-path/fake SSE/polling, create 6 typed SDK wrappers
-- [ ] Wave 2: Rewrite `tests/lib/session-api.test.ts` — real contract tests, tracker unit tests
-- [ ] Wave 3: Migrate `src/lib/lifecycle-manager.ts` — use new typed imports, wire tracker
+- [x] Wave 1: Rewrite `src/lib/session-api.ts` — delete all multi-path/fake SSE/polling, create 6 typed SDK wrappers
+- [x] Wave 2: Rewrite `tests/lib/session-api.test.ts` — real contract tests, tracker unit tests
+- [x] Wave 3: Migrate `src/lib/lifecycle-manager.ts` — use new typed imports, wire tracker
 - [ ] Wave 4: Migrate `src/plugin.ts` — wire completionTracker to event hook, update imports
 - [ ] Wave 5: Verification gate — typecheck, 58+ tests passing, build clean, pack clean
 - [ ] Wave 6: Code review via critic agent, update AGENTS.md
@@ -114,6 +114,7 @@ Phase 11 — session-api.ts Event-Driven Rewrite (Approach A)
 | Delete all multi-path fallback code | SDK has ONE canonical call shape per method — fallback paths are dead code masking real bugs |
 | Delete all fake SSE functions | `client.event.subscribe()` doesn't exist. Plugins receive events via `event` hook, not SSE subscription |
 | Wire tracker through plugin's `event` hook | Plugins run inside the server — they don't need SSE, they get events directly via hook |
+| Cache tracker terminal results until `watch()` attaches | Prevents pre-watch idle/error/deleted events from being lost before lifecycle observation starts |
 
 ## Errors Encountered
 | Error | Attempt | Resolution |
@@ -121,6 +122,7 @@ Phase 11 — session-api.ts Event-Driven Rewrite (Approach A)
 | None in this planning step | 1 | Planning files created directly in the repo root |
 | lifecycle-manager.ts:229 passes `{ id }` to abort instead of `{ path: { id } }` | Found during Phase 11 research | Will fix in Wave 3 migration |
 | All session-api.ts tests test non-existent APIs (`client.event.subscribe`) | Found during Phase 11 research | Will rewrite entirely in Wave 2 |
+| SessionCompletionTracker had a pre-watch race when terminal output arrived before watch registration | Found in code review after Wave 1 | Fixed by caching terminal results inside `SessionCompletionTracker` |
 
 ## Notes
 - Root is expected to remain limited to standalone harness artifacts.
@@ -138,3 +140,5 @@ Phase 11 — session-api.ts Event-Driven Rewrite (Approach A)
 - **Phase 11 design doc:** `docs/designs/2026-04-02-session-api-rewrite.md` — contains all validated SDK facts and proposed architecture.
 - **Phase 11 audit doc:** `docs/project/codebase-audit/honest-audit-2026-04-02.md` — exposes current session-api as 0% salvageable.
 - **Key SDK facts (opencode-platform-reference >>>):** `client.session.create/get/abort/prompt/promptAsync/messages/children` all have single canonical call shapes. `client.event.subscribe()` is the real SSE API (returns `ServerSentEventsResult` with async iterable stream), but plugins should use the `event` hook instead. `Session` type has NO `status` field. Events: `session.idle` → `{ sessionID }`, `session.error` → `{ sessionID, error }`, `session.created/updated/deleted` → `{ info: Session }`.
+- Code review after Wave 1 found a tracker pre-watch race; `SessionCompletionTracker` now caches terminal results so `watch()` resolves correctly even when completion/error lands before registration.
+- This commit slice includes only the Wave 1 implementation-related files plus `task_plan.md` and `progress.md`; unrelated workspace changes stay unstaged.

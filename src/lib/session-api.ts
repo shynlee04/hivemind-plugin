@@ -1,11 +1,96 @@
-import { asString, getNestedValue, isObject, sleep, stableStringify, unwrapData } from "./helpers.js"
-import type { SessionStatus } from "./types.js"
+import type { createOpencodeClient } from "@opencode-ai/sdk"
 
-export type SessionCompletionObservation = {
-  assistantText?: string
-  completionSignal: "assistant-text" | "status-idle" | "session-idle"
-  statusType?: string
-  sessionStatusType?: string
+import { asString, getNestedValue, unwrapData } from "./helpers.js"
+import type { SessionCompletionTracker } from "./session-completion-tracker.js"
+
+export type OpenCodeClient = ReturnType<typeof createOpencodeClient>
+
+type SessionRecord = Record<string, unknown>
+type SessionCreateRequest = Parameters<OpenCodeClient["session"]["create"]>[0]
+type SessionPromptRequest = Parameters<OpenCodeClient["session"]["prompt"]>[0]
+type SessionMessagesRequest = Parameters<OpenCodeClient["session"]["messages"]>[0]
+
+type CreateSessionOptions = {
+  parentID?: string
+  title: string
+  directory?: string
+  permission?: unknown
+}
+
+type GetSessionMessagesOptions = {
+  limit?: number
+}
+
+export type PromptBody = {
+  parts: unknown[]
+  agent?: string
+  model?: unknown
+  temperature?: number
+  tools?: unknown
+  [key: string]: unknown
+}
+
+export async function createSession(client: OpenCodeClient, opts: CreateSessionOptions): Promise<SessionRecord> {
+  const { directory, ...body } = opts
+  const request: SessionCreateRequest = {
+    body,
+    ...(directory ? { query: { directory } } : {}),
+  }
+
+  return unwrapData(await client.session.create(request))
+}
+
+export async function getSession(client: OpenCodeClient, sessionID: string): Promise<SessionRecord> {
+  return unwrapData(await client.session.get({ path: { id: sessionID } }))
+}
+
+export async function abortSession(client: OpenCodeClient, sessionID: string): Promise<unknown> {
+  return unwrapData(await client.session.abort({ path: { id: sessionID } }))
+}
+
+export async function getSessionMessages(
+  client: OpenCodeClient,
+  sessionID: string,
+  opts?: GetSessionMessagesOptions
+): Promise<unknown[]> {
+  const request: SessionMessagesRequest = {
+    path: { id: sessionID },
+    ...(opts?.limit !== undefined ? { query: { limit: opts.limit } } : {}),
+  }
+
+  const response = unwrapData(await client.session.messages(request))
+
+  return Array.isArray(response) ? response : []
+}
+
+export async function sendPrompt(
+  client: OpenCodeClient,
+  sessionID: string,
+  body: PromptBody
+): Promise<unknown> {
+  const request: SessionPromptRequest = {
+    path: { id: sessionID },
+    body: body as SessionPromptRequest["body"],
+  }
+
+  return unwrapData(await client.session.prompt(request))
+}
+
+export async function sendPromptAsync(
+  client: OpenCodeClient,
+  sessionID: string,
+  body: PromptBody
+): Promise<unknown> {
+  if (typeof client.session.promptAsync === "function") {
+    return unwrapData(
+      await client.session.promptAsync({
+        path: { id: sessionID },
+        body: body as SessionPromptRequest["body"],
+      })
+    )
+  }
+
+  return sendPrompt(client, sessionID, body)
 }
 
 export function getSessionID(session: unknown): string | undefined {
@@ -42,231 +127,18 @@ export function getEventParentID(event: unknown): string | undefined {
   return getParentID(getEventSessionInfo(event))
 }
 
-function normalizeSessionStatus(entry: unknown): SessionStatus | undefined {
-  if (typeof entry === "string" && entry.length > 0) {
-    return { type: entry }
-  }
-
-  if (!isObject(entry)) {
-    return undefined
-  }
-
-  const type =
-    asString(getNestedValue(entry, ["type"])) ??
-    asString(getNestedValue(entry, ["status"])) ??
-    asString(getNestedValue(entry, ["state"]))
-
-  if (!type) {
-    return undefined
-  }
-
-  return {
-    ...(entry as Record<string, unknown>),
-    type,
-  }
-}
-
-function getSessionStatusCandidate(session: unknown): unknown {
-  const candidates = [
-    getNestedValue(session, ["status"]),
-    getNestedValue(session, ["info", "status"]),
-    getNestedValue(session, ["state"]),
-    getNestedValue(session, ["info", "state"]),
-  ]
-
-  for (const candidate of candidates) {
-    if (candidate !== undefined) {
-      return candidate
-    }
-  }
-
-  return undefined
-}
-
-async function getDirectSessionStatus(client: any, sessionID: string): Promise<SessionStatus | undefined> {
-  try {
-    const session = await getSessionByAnyPath(client, sessionID)
-    return normalizeSessionStatus(getSessionStatusCandidate(session))
-  } catch {
-    return undefined
-  }
-}
-
-export function formatSessionStatus(status: SessionStatus | undefined): string {
-  if (!status) {
-    return "unknown"
-  }
-
-  const details = Object.entries(status)
-    .filter(([key, value]) => key !== "type" && value !== undefined)
-    .map(([key, value]) => `${key}=${stableStringify(value)}`)
-
-  return details.length > 0 ? `${status.type} (${details.join(", ")})` : status.type
-}
-
-export async function getSessionByAnyPath(client: any, sessionID: string): Promise<any> {
-  const attempts = [
-    () => client.session.get({ path: { sessionID } }),
-    () => client.session.get({ path: { id: sessionID } }),
-    () => client.session.get({ sessionID }),
-    () => client.session.get({ id: sessionID }),
-  ]
-
-  let lastError: unknown
-  for (const attempt of attempts) {
-    try {
-      return unwrapData(await attempt())
-    } catch (error) {
-      lastError = error
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error(`Failed to fetch session ${sessionID}`)
-}
-
-export async function createSessionByAnyPath(
-  client: any,
-  payload: Record<string, unknown>
-): Promise<any> {
-  const attempts = [() => client.session.create({ body: payload }), () => client.session.create(payload)]
-
-  let lastError: unknown
-  for (const attempt of attempts) {
-    try {
-      return unwrapData(await attempt())
-    } catch (error) {
-      lastError = error
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error("Failed to create child session")
-}
-
-export async function promptSessionByAnyPath(
-  client: any,
-  sessionID: string,
-  body: Record<string, unknown>
-): Promise<any> {
-  const attempts = [
-    () => client.session.prompt({ path: { sessionID }, body }),
-    () => client.session.prompt({ path: { id: sessionID }, body }),
-    () => client.session.prompt({ sessionID, body }),
-  ]
-
-  let lastError: unknown
-  for (const attempt of attempts) {
-    try {
-      return unwrapData(await attempt())
-    } catch (error) {
-      lastError = error
-    }
-  }
-
-  throw lastError instanceof Error ? lastError : new Error(`Failed to prompt session ${sessionID}`)
-}
-
-export async function promptSessionAsyncByAnyPath(
-  client: any,
-  sessionID: string,
-  body: Record<string, unknown>
-): Promise<any> {
-  const promptAsync = client?.session?.promptAsync
-  const attempts =
-    typeof promptAsync === "function"
-      ? [
-          () => promptAsync({ path: { sessionID }, body }),
-          () => promptAsync({ path: { id: sessionID }, body }),
-          () => promptAsync({ sessionID, body }),
-        ]
-      : []
-
-  let lastError: unknown
-  for (const attempt of attempts) {
-    try {
-      return unwrapData(await attempt())
-    } catch (error) {
-      lastError = error
-    }
-  }
-
-  if (attempts.length === 0) {
-    return promptSessionByAnyPath(client, sessionID, body)
-  }
-
-  throw lastError instanceof Error
-    ? lastError
-    : new Error(`Failed to prompt session ${sessionID} asynchronously`)
-}
-
-export async function getMessagesByAnyPath(client: any, sessionID: string): Promise<any[]> {
-  const attempts = [
-    () => client.session.messages({ path: { sessionID } }),
-    () => client.session.messages({ path: { id: sessionID } }),
-    () => client.session.messages({ sessionID }),
-  ]
-
-  let lastError: unknown
-  for (const attempt of attempts) {
-    try {
-      const result = unwrapData(await attempt())
-      return Array.isArray(result) ? result : []
-    } catch (error) {
-      lastError = error
-    }
-  }
-
-  throw lastError instanceof Error
-    ? lastError
-    : new Error(`Failed to fetch messages for ${sessionID}`)
-}
-
-export async function getStatusMap(client: any): Promise<Map<string, SessionStatus>> {
-  const statusMap = new Map<string, SessionStatus>()
-  const getter = client?.session?.status
-
-  if (typeof getter !== "function") {
-    return statusMap
-  }
-
-  const result = unwrapData(await getter())
-
-  const writeStatus = (entry: unknown, fallbackID?: string) => {
-    const status = normalizeSessionStatus(entry)
-    const sessionID =
-      fallbackID ?? asString(getNestedValue(entry, ["sessionID"])) ?? asString(getNestedValue(entry, ["id"]))
-
-    if (sessionID && status) {
-      statusMap.set(sessionID, status)
-    }
-  }
-
-  if (Array.isArray(result)) {
-    for (const entry of result) {
-      writeStatus(entry)
-    }
-    return statusMap
-  }
-
-  if (isObject(result)) {
-    for (const [key, value] of Object.entries(result)) {
-      writeStatus(value, key)
-    }
-  }
-
-  return statusMap
-}
-
-export async function walkParentChain(client: any, sessionID: string): Promise<any[]> {
-  const chain: any[] = []
+export async function walkParentChain(client: OpenCodeClient, sessionID: string): Promise<SessionRecord[]> {
+  const chain: SessionRecord[] = []
   const visited = new Set<string>()
-  let currentID: string | undefined = sessionID
 
+  let currentID: string | undefined = sessionID
   while (currentID) {
     if (visited.has(currentID)) {
-      throw new Error(`Detected cyclic session parent chain at ${currentID}`)
+      throw new Error(`[Harness] Detected cyclic session parent chain at ${currentID}`)
     }
+
     visited.add(currentID)
-    const session = await getSessionByAnyPath(client, currentID)
+    const session = await getSession(client, currentID)
     chain.push(session)
     currentID = getParentID(session)
   }
@@ -274,7 +146,7 @@ export async function walkParentChain(client: any, sessionID: string): Promise<a
   return chain
 }
 
-export function extractAssistantText(messages: any[]): string {
+export function extractAssistantText(messages: unknown[]): string {
   for (let index = messages.length - 1; index >= 0; index -= 1) {
     const message = messages[index]
     const role = asString(getNestedValue(message, ["info", "role"])) ?? asString(getNestedValue(message, ["role"]))
@@ -283,17 +155,19 @@ export function extractAssistantText(messages: any[]): string {
       continue
     }
 
-    const parts = Array.isArray(getNestedValue(message, ["parts"]))
-      ? (getNestedValue(message, ["parts"]) as unknown[])
-      : []
+    const parts = getNestedValue(message, ["parts"])
+    if (!Array.isArray(parts)) {
+      continue
+    }
 
     const text = parts
       .map((part) => {
-        const partType = asString(getNestedValue(part, ["type"]))
-        if (partType === "text") {
-          return asString(getNestedValue(part, ["text"])) ?? ""
+        if (asString(getNestedValue(part, ["type"])) !== "text") {
+          return ""
         }
+
         return (
+          asString(getNestedValue(part, ["text"])) ??
           asString(getNestedValue(part, ["text", "value"])) ??
           asString(getNestedValue(part, ["content"])) ??
           ""
@@ -311,163 +185,28 @@ export function extractAssistantText(messages: any[]): string {
 }
 
 export async function waitForAssistantText(
-  client: any,
+  client: OpenCodeClient,
+  tracker: SessionCompletionTracker,
   sessionID: string,
-  pollIntervalMs: number,
   timeoutMs: number
-): Promise<SessionCompletionObservation & { assistantText: string }> {
-  const observation = await waitForSessionCompletion(client, sessionID, pollIntervalMs, timeoutMs)
+): Promise<string> {
+  const result = await tracker.watch(sessionID, timeoutMs)
 
-  if (observation.assistantText) {
-    return {
-      ...observation,
-      assistantText: observation.assistantText,
-    }
-  }
-
-  const fallbackMessages = await getMessagesByAnyPath(client, sessionID)
-  const fallbackText = extractAssistantText(fallbackMessages)
-  if (fallbackText) {
-    return {
-      ...observation,
-      assistantText: fallbackText,
-    }
-  }
-
-  throw new Error(
-    `Session ${sessionID} reached ${observation.completionSignal} without assistant output ` +
-      `(status=${observation.statusType ?? "unknown"}, session=${observation.sessionStatusType ?? "unknown"})`
-  )
-}
-
-function getNestedValueAsString(value: unknown, path: string[]): string | undefined {
-  const result = getNestedValue(value, path)
-  return typeof result === "string" && result.length > 0 ? result : undefined
-}
-
-export async function waitForSessionCompletionViaSSE(
-  client: any,
-  sessionID: string,
-  timeoutMs: number = 30000
-): Promise<{ completionSignal: string; statusType?: string }> {
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      subscription?.unsubscribe?.()
-      reject(new Error(
-        `[Harness] SSE completion detection timed out for session ${sessionID} after ${timeoutMs}ms`
-      ))
-    }, timeoutMs)
-
-    let subscription: { unsubscribe?: () => void } | undefined
-
-    try {
-      subscription = client?.event?.subscribe?.((event: any) => {
-        const eventType = getNestedValueAsString(event, ["type"])
-        const eventSessionID = getEventSessionID(event)
-
-        if (eventSessionID !== sessionID) {
-          return
-        }
-
-        if (eventType === "session.updated" || eventType === "session.created") {
-          const statusType = getNestedValueAsString(event, ["data", "session", "status", "type"])
-          if (statusType === "idle") {
-            clearTimeout(timer)
-            subscription?.unsubscribe?.()
-            resolve({
-              completionSignal: "sse:idle",
-              statusType,
-            })
-          }
-        }
-
-        if (eventType === "session.deleted") {
-          clearTimeout(timer)
-          subscription?.unsubscribe?.()
-          resolve({
-            completionSignal: "sse:deleted",
-          })
-        }
-      })
-
-      if (!subscription) {
-        clearTimeout(timer)
-        reject(new Error("[Harness] SSE subscription failed — client.event.subscribe unavailable"))
+  switch (result.signal) {
+    case "idle": {
+      const text = extractAssistantText(await getSessionMessages(client, sessionID))
+      if (text) {
+        return text
       }
-    } catch (error) {
-      clearTimeout(timer)
-      reject(error)
+      throw new Error(`[Harness] Session ${sessionID} completed without assistant output`)
     }
-  })
-}
-
-export async function waitForSessionCompletionWithFallback(
-  client: any,
-  sessionID: string,
-  pollIntervalMs: number = 750,
-  timeoutMs: number = 180000
-): Promise<{ completionSignal: string; statusType?: string; sessionStatusType?: string }> {
-  if (client?.event?.subscribe) {
-    try {
-      const result = await waitForSessionCompletionViaSSE(client, sessionID, timeoutMs)
-      return result
-    } catch {
-      // SSE failed — fall back to polling
-    }
+    case "error":
+      throw new Error(`[Harness] Session ${sessionID} failed: ${result.error ?? "Unknown error"}`)
+    case "deleted":
+      throw new Error(`[Harness] Session ${sessionID} was deleted before assistant output was available`)
+    case "timeout":
+      throw new Error(`[Harness] Timed out waiting for session ${sessionID} after ${timeoutMs}ms`)
+    case "cancelled":
+      throw new Error(`[Harness] Waiting for session ${sessionID} was cancelled`)
   }
-
-  return waitForSessionCompletion(client, sessionID, pollIntervalMs, timeoutMs)
-}
-
-export async function waitForSessionCompletion(
-  client: any,
-  sessionID: string,
-  pollIntervalMs: number,
-  timeoutMs: number
-): Promise<SessionCompletionObservation> {
-  const startedAt = Date.now()
-  let lastStatus: SessionStatus | undefined
-  let lastSessionStatus: SessionStatus | undefined
-
-  while (Date.now() - startedAt < timeoutMs) {
-    const messages = await getMessagesByAnyPath(client, sessionID)
-    const assistantText = extractAssistantText(messages)
-    if (assistantText) {
-      return {
-        assistantText,
-        completionSignal: "assistant-text",
-        statusType: lastStatus?.type,
-        sessionStatusType: lastSessionStatus?.type,
-      }
-    }
-
-    const statuses = await getStatusMap(client)
-    const status = statuses.get(sessionID)
-    lastStatus = status ?? lastStatus
-    const directSessionStatus = await getDirectSessionStatus(client, sessionID)
-    lastSessionStatus = directSessionStatus ?? lastSessionStatus
-
-    if (status?.type?.toLowerCase() === "idle") {
-      return {
-        completionSignal: "status-idle",
-        statusType: status.type,
-        sessionStatusType: directSessionStatus?.type ?? lastSessionStatus?.type,
-      }
-    }
-
-    if (directSessionStatus?.type?.toLowerCase() === "idle") {
-      return {
-        completionSignal: "session-idle",
-        statusType: status?.type ?? lastStatus?.type,
-        sessionStatusType: directSessionStatus.type,
-      }
-    }
-
-    await sleep(pollIntervalMs)
-  }
-
-  throw new Error(
-    `Timed out waiting for delegated session ${sessionID} to complete ` +
-      `(status=${formatSessionStatus(lastStatus)}, session=${formatSessionStatus(lastSessionStatus)})`
-  )
 }

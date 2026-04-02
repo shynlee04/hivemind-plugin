@@ -9,14 +9,15 @@ import {
 import { addWarning } from "./state.js"
 import { inferContinuityStatusFromEvent } from "./runtime.js"
 import {
-  createSessionByAnyPath,
+  createSession,
   getEventParentID,
   getSessionID,
-  promptSessionAsyncByAnyPath,
-  promptSessionByAnyPath,
+  type PromptBody,
+  sendPrompt,
+  sendPromptAsync,
   waitForAssistantText,
-  waitForSessionCompletion,
 } from "./session-api.js"
+import { SessionCompletionTracker } from "./session-completion-tracker.js"
 import {
   commitDescendant,
   forgetSession,
@@ -69,6 +70,41 @@ function now(): number {
   return Date.now()
 }
 
+function extractEventErrorMessage(event: unknown): string | undefined {
+  if (!event || typeof event !== "object") {
+    return undefined
+  }
+
+  const record = event as Record<string, unknown>
+
+  if (typeof record.error === "string") {
+    return record.error
+  }
+
+  if (record.error && typeof record.error === "object") {
+    const nestedError = record.error as Record<string, unknown>
+    if (typeof nestedError.message === "string") {
+      return nestedError.message
+    }
+  }
+
+  if (typeof record.message === "string") {
+    return record.message
+  }
+
+  if (record.properties && typeof record.properties === "object") {
+    const properties = record.properties as Record<string, unknown>
+    if (typeof properties.error === "string") {
+      return properties.error
+    }
+    if (typeof properties.message === "string") {
+      return properties.message
+    }
+  }
+
+  return undefined
+}
+
 function buildLifecycleState(args: {
   phase: SessionLifecyclePhase
   runMode: "sync" | "async"
@@ -114,6 +150,7 @@ function buildDelegationMeta(args: {
 export class HarnessLifecycleManager {
   private readonly concurrencyLimit: number
   private readonly queue: DelegationConcurrencyQueue
+  private readonly completionTracker = new SessionCompletionTracker()
 
   constructor(private readonly options: HarnessLifecycleManagerOptions) {
     this.concurrencyLimit = parseInt(
@@ -169,6 +206,18 @@ export class HarnessLifecycleManager {
 
   handleEvent(args: { event: unknown; eventType: string; sessionID: string }): void {
     const { event, eventType, sessionID } = args
+
+    if (eventType === "session.deleted") {
+      this.completionTracker.feed("session.deleted", sessionID)
+    } else if (eventType === "session.idle") {
+      this.completionTracker.feed("session.idle", sessionID)
+    } else if (eventType === "session.error") {
+      this.completionTracker.feed(
+        "session.error",
+        sessionID,
+        extractEventErrorMessage(event) ?? getSessionContinuity(sessionID)?.metadata.lastError
+      )
+    }
 
     if (eventType === "session.created" || eventType === "session.updated") {
       const parentID = getEventParentID(event)
@@ -226,7 +275,7 @@ export class HarnessLifecycleManager {
   async cancelDelegatedSession(sessionID: string): Promise<void> {
     try {
       if (this.options.client?.session?.abort) {
-        await this.options.client.session.abort({ id: sessionID })
+        await this.options.client.session.abort({ path: { id: sessionID } })
       }
     } catch {
       // Graceful handling — harness-internal state cleanup proceeds
@@ -242,6 +291,8 @@ export class HarnessLifecycleManager {
         detail: "session-cancelled",
       },
     })
+
+    this.completionTracker.cancel(sessionID)
   }
 
   async launchDelegatedSession(args: LaunchDelegatedSessionArgs): Promise<string> {
@@ -256,7 +307,7 @@ export class HarnessLifecycleManager {
     let childSessionID = ""
 
     try {
-      const childSession = await createSessionByAnyPath(this.options.client, {
+      const childSession = await createSession(this.options.client, {
         parentID: args.parentSessionID,
         title: `${args.agent}: ${args.description}`,
         permission: args.permissionRules,
@@ -411,10 +462,10 @@ export class HarnessLifecycleManager {
       }
 
       try {
-        const observation = await waitForAssistantText(
+        const assistantText = await waitForAssistantText(
           this.options.client,
+          this.completionTracker,
           childSessionID,
-          this.options.pollIntervalMs,
           this.options.pollTimeoutMs
         )
 
@@ -423,15 +474,13 @@ export class HarnessLifecycleManager {
           phase: "completed",
           completedAt: now(),
           observation: {
-            source: `observe:${observation.completionSignal}`,
+            source: "observe:tracker-idle",
             observedAt: now(),
             detail: "assistant-output-ready",
-            statusType: observation.statusType,
-            sessionStatusType: observation.sessionStatusType,
           },
         })
 
-        return observation.assistantText
+        return assistantText
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         this.patchLifecycle(childSessionID, {
@@ -566,16 +615,16 @@ export class HarnessLifecycleManager {
   }
 
   private async dispatchPrompt(
-    body: Record<string, unknown>,
+    body: PromptBody,
     sessionID: string,
     runInBackground: boolean
   ): Promise<void> {
     if (runInBackground) {
-      await promptSessionAsyncByAnyPath(this.options.client, sessionID, body)
+      await sendPromptAsync(this.options.client, sessionID, body)
       return
     }
 
-    await promptSessionByAnyPath(this.options.client, sessionID, body)
+    await sendPrompt(this.options.client, sessionID, body)
   }
 
   private async observeBackgroundCompletion(
@@ -583,23 +632,34 @@ export class HarnessLifecycleManager {
     releaseQueue: (reason: string) => void
   ): Promise<void> {
     try {
-      const observation = await waitForSessionCompletion(
-        this.options.client,
-        sessionID,
-        this.options.pollIntervalMs,
-        this.options.pollTimeoutMs
-      )
+      const result = await this.completionTracker.watch(sessionID, this.options.pollTimeoutMs)
+
+      if (result.signal === "error") {
+        throw new Error(`[Harness] ${result.error ?? "Unknown error"}`)
+      }
+
+      if (result.signal === "timeout") {
+        throw new Error(
+          `[Harness] Timed out waiting for delegated session ${sessionID} after ${this.options.pollTimeoutMs}ms`
+        )
+      }
+
+      if (result.signal === "cancelled") {
+        throw new Error(`[Harness] Delegated session ${sessionID} observation was cancelled`)
+      }
+
+      if (result.signal === "deleted") {
+        throw new Error(`[Harness] Delegated session ${sessionID} was deleted before completion`)
+      }
 
       this.patchLifecycle(sessionID, {
         status: "completed",
         phase: "completed",
         completedAt: now(),
         observation: {
-          source: `observe:${observation.completionSignal}`,
+          source: "observe:tracker-idle",
           observedAt: now(),
-          detail: observation.assistantText ? "background-assistant-output" : "background-idle-observed",
-          statusType: observation.statusType,
-          sessionStatusType: observation.sessionStatusType,
+          detail: "background-idle-observed",
         },
       })
     } catch (error) {
