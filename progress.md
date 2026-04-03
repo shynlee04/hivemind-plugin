@@ -5,6 +5,38 @@
 
 ---
 
+## Session: 2026-04-04 (Phase 2 — Architecture Proposal Mindset Document) ✅ COMPLETE
+
+### What Was Delivered
+- [x] Read audit scripts document (audit-scripts-in-skills-2026-04-04.md, 433 lines)
+- [x] Read architecture proposal draft (428 lines) — stale, needed rewrite
+- [x] Read meta-builder plans (the-meta-builder.md + skills-to-build-meta.md)
+- [x] Synthesized clean HIVEMIND architecture mindset document
+- [x] Wrote `docs/draft/architecture-proposal-hivemind-v3.md` (340+ lines)
+- [x] Committed: 7ae97e50
+
+### What the Architecture Proposal Captures
+1. **What HIVEMIND IS** — Two halves: Hard Harness (npm package) + Soft Meta-Concepts (user config)
+2. **The 6 Runtime Features** — Background agents, ralph-loop, delegation chains, task queuing, categories, session recovery
+3. **What Product-Detox Got Wrong** — Feature bloat, script poisoning, skill proliferation, agent triplication
+4. **What harness-experiment Got Right** — Clean module structure, CQRS, state machine, continuity store
+5. **The Script Rule** — Report facts, leave judgment to the agent
+6. **The Meta-Builder Team** — Orchestrator + 6 specialist roles
+7. **Clean Module Structure** — 8 modules, <500 LOC each, no circular deps
+8. **Migration Path** — 6 phases from mindset to release
+
+### Files Modified
+- docs/draft/architecture-proposal-hivemind-v3.md — Rewritten (mindset document, 340+ lines)
+- task_plan.md — Updated with Phase 2 planning structure
+- findings.md — Updated with rogue incident + research findings
+- progress.md — This file
+- .skills-lab/task_plan.md — Mirrors root
+
+### Commit
+- `7ae97e50` — phase-2: write architecture proposal mindset document
+
+---
+
 ## Session: 2026-04-04 (Phase 1 → Phase 2 transition)
 
 ### Actions Taken
