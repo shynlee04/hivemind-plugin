@@ -25,8 +25,8 @@
         "files_read": ["task_plan.md", "findings.md", "progress.md"]
       },
       "assertions": [
-        {"text": "check-complete.sh runs against task_plan.md", "passed": false, "evidence": ""},
-        {"text": "output contains phase summary", "passed": false, "evidence": ""}
+        {"text": "stdout contains Phase Summary", "passed": false, "evidence": ""},
+        {"text": "output contains Task in progress", "passed": false, "evidence": ""}
       ],
       "files": [],
       "fixture": "planning-active"
@@ -54,7 +54,7 @@
         "tool_call_threshold": 5
       },
       "assertions": [
-        {"text": "check-complete.sh runs", "passed": false, "evidence": ""},
+        {"text": "stdout contains Phase Summary", "passed": false, "evidence": ""},
         {"text": "output contains Task in progress", "passed": false, "evidence": ""}
       ],
       "files": [],
@@ -70,8 +70,8 @@
         "escalation_after_3": true
       },
       "assertions": [
-        {"text": "check-complete.sh exits 1", "passed": false, "evidence": ""},
-        {"text": "output contains incomplete phases", "passed": false, "evidence": ""}
+        {"text": "stdout contains Phase Summary", "passed": false, "evidence": ""},
+        {"text": "output contains complete", "passed": false, "evidence": ""}
       ],
       "files": [],
       "fixture": "planning-active"

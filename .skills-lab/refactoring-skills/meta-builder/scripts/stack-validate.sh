@@ -25,63 +25,19 @@ errors=0
 fail() { echo "FAIL: $1" >&2; errors=$((errors + 1)); }
 pass() { echo "PASS: $1"; }
 
-# --- Build search paths ---
-
-script_dir="$(cd "$(dirname "$0")" && pwd)"
-skill_search_paths=()
-
-skill_search_paths+=("$script_dir/..")
-
-if [[ -n "${PROJECT_ROOT:-}" ]]; then
-  skill_search_paths+=("$PROJECT_ROOT/.opencode/skills")
-  skill_search_paths+=("$PROJECT_ROOT/.agents/skills")
-  skill_search_paths+=("$PROJECT_ROOT/.claude/skills")
-else
-  git_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-  if [[ -n "$git_root" ]]; then
-    skill_search_paths+=("$git_root/.opencode/skills")
-    skill_search_paths+=("$git_root/.agents/skills")
-    skill_search_paths+=("$git_root/.claude/skills")
-  fi
-fi
-
-skill_search_paths+=("$HOME/.config/opencode/skills")
-skill_search_paths+=("$HOME/.agents/skills")
-skill_search_paths+=("$HOME/.claude/skills")
-
-skill_search_paths+=("$script_dir/../../.opencode/skills")
-skill_search_paths+=("$script_dir/../../.agents/skills")
-skill_search_paths+=("$script_dir/../../.claude/skills")
-
-# Deduplicate paths (bash 3.2 compatible — no associative arrays)
-unique_paths=()
-for p in "${skill_search_paths[@]}"; do
-  real_p="$(cd "$p" 2>/dev/null && pwd || true)"
-  if [[ -n "$real_p" ]]; then
-    already=false
-    for up in "${unique_paths[@]+"${unique_paths[@]}"}"; do
-      if [[ "$up" == "$real_p" ]]; then
-        already=true
-        break
-      fi
-    done
-    if [[ "$already" == false ]]; then
-      unique_paths+=("$real_p")
-    fi
-  fi
-done
+# --- Resolve skills root ---
+# NO hardcoded platform guesses. Caller sets SKILLS_ROOT or we use CWD.
+SKILLS_ROOT="${SKILLS_ROOT:-$PWD}"
 
 # --- Helper: find skill path ---
 # Sets FOUND_SKILL_PATH if found, empty if not
 find_skill_path() {
   local skill_name="$1"
   FOUND_SKILL_PATH=""
-  for dir in "${unique_paths[@]}"; do
-    if [[ -f "$dir/$skill_name/SKILL.md" ]]; then
-      FOUND_SKILL_PATH="$dir/$skill_name"
-      return 0
-    fi
-  done
+  if [[ -f "$SKILLS_ROOT/$skill_name/SKILL.md" ]]; then
+    FOUND_SKILL_PATH="$SKILLS_ROOT/$skill_name"
+    return 0
+  fi
   return 1
 }
 

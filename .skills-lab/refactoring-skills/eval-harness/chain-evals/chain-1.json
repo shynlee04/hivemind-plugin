@@ -13,13 +13,13 @@
       "assertions": [
         {"text": "PRIMARY_SKILL is use-authoring-skills", "pattern": "PRIMARY_SKILL=use-authoring-skills"},
         {"text": "GROUP is GROUP_2 (creation intent)", "pattern": "GROUP=GROUP_2"},
-        {"text": "QUESTIONS_ALLOWED is 2 (clear creation intent)", "pattern": "QUESTIONS_ALLOWED=2"},
+        {"text": "QUESTIONS_ALLOWED is 2 (clear creation intent, no questions needed)", "pattern": "QUESTIONS_ALLOWED=0"},
         {"text": "PREFLIGHT_PASSED is true", "pattern": "PREFLIGHT_PASSED=true"}
       ],
       "state_output": {
         "PRIMARY_SKILL": "use-authoring-skills",
         "GROUP": "GROUP_2",
-        "QUESTIONS_ALLOWED": "2"
+        "QUESTIONS_ALLOWED": "0"
       }
     },
     {

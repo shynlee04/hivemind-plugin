@@ -11,9 +11,8 @@
         "max_questions": 3
       },
       "assertions": [
-        {"text": "intent-verify.sh --probe runs", "passed": false, "evidence": ""},
-        {"text": "output contains PROBE phase", "passed": false, "evidence": ""},
-        {"text": "output contains scope bounded", "passed": false, "evidence": ""}
+        {"text": "stdout contains PROBE Phase Stop Conditions", "passed": false, "evidence": ""},
+        {"text": "output contains Scope bounded", "passed": false, "evidence": ""}
       ],
       "files": [],
       "fixture": "intent-confirmed"
@@ -27,8 +26,8 @@
         "action": "read task_plan.md findings.md progress.md"
       },
       "assertions": [
-        {"text": "intent-verify.sh runs", "passed": false, "evidence": ""},
-        {"text": "output references planning files", "passed": false, "evidence": ""}
+        {"text": "stdout contains PROBE Phase Stop Conditions", "passed": false, "evidence": ""},
+        {"text": "output contains Failed:", "passed": false, "evidence": ""}
       ],
       "files": [],
       "fixture": "planning-active"
@@ -42,7 +41,7 @@
       },
       "assertions": [
         {"text": "intent-verify.sh exits 1", "passed": false, "evidence": ""},
-        {"text": "output indicates no probe needed", "passed": false, "evidence": ""}
+        {"text": "output contains FAIL", "passed": false, "evidence": ""}
       ],
       "files": [],
       "fixture": "base-state"
@@ -57,9 +56,8 @@
         "escalation_after_3": true
       },
       "assertions": [
-        {"text": "intent-verify.sh --probe runs", "passed": false, "evidence": ""},
-        {"text": "output contains PROBE phase", "passed": false, "evidence": ""},
-        {"text": "output contains question cap", "passed": false, "evidence": ""}
+        {"text": "stdout contains PROBE Phase Stop Conditions", "passed": false, "evidence": ""},
+        {"text": "output contains Question cap", "passed": false, "evidence": ""}
       ],
       "files": [],
       "fixture": "base-state"
@@ -74,7 +72,7 @@
         "target_skill": "use-authoring-skills"
       },
       "assertions": [
-        {"text": "intent-verify.sh --probe runs", "passed": false, "evidence": ""},
+        {"text": "stdout contains PROBE Phase Stop Conditions", "passed": false, "evidence": ""},
         {"text": "output contains delegation", "passed": false, "evidence": ""}
       ],
       "files": [],

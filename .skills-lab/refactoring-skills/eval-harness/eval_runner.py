@@ -74,7 +74,7 @@ def run_eval(
     test_dir = setup_test_env(fixture_path)
 
     script_name = SKILL_SCRIPTS.get(skill_name, "")
-    script_path = os.path.join(skills_root, skill_name, script_name)
+    script_path = os.path.abspath(os.path.join(skills_root, skill_name, script_name))
 
     stdout_content = ""
     stderr_content = ""
@@ -500,7 +500,7 @@ def run_chain_layer(
     fixture_path = os.path.join(fixtures_dir, fixture)
     test_dir = setup_test_env(fixture_path)
 
-    script_path = os.path.join(skills_root, skill_name, script_rel)
+    script_path = os.path.abspath(os.path.join(skills_root, skill_name, script_rel))
 
     stdout_content = ""
     stderr_content = ""

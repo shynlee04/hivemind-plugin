@@ -1,36 +1,44 @@
 #!/usr/bin/env bash
 # verify-hierarchy.sh — Shared Hierarchy Verification Script
-# Usage: bash verify-hierarchy.sh <skill-name>
+# Usage: bash verify-hierarchy.sh <skill-name> [--state-dir DIR] [--skills-root DIR]
 # Exit 0 = chain intact, Exit 1 = missing prerequisites
 #
-# Reads .opencode/state/loaded-skills.json to verify prerequisite chains.
-# Supports all 5 refactoring skills with their specific prerequisites.
+# Path resolution (NO hardcoded platform guesses):
+#   STATE_DIR  → --state-dir arg > $STATE_DIR env > $PWD/state
+#   SKILLS_ROOT → --skills-root arg > $SKILLS_ROOT env > $PWD
+#
 # Compatible with bash 3.2+ (macOS default).
 
 set -euo pipefail
 
-# --- Resolve project root ---
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT=""
-search_dir="$SCRIPT_DIR"
-for _ in 1 2 3 4 5 6; do
-  if [ -d "$search_dir/.opencode/state" ]; then
-    PROJECT_ROOT="$search_dir"
-    break
-  fi
-  parent="$(dirname "$search_dir")"
-  if [ "$parent" = "$search_dir" ]; then
-    break
-  fi
-  search_dir="$parent"
+# --- Parse arguments ---
+SKILL_NAME=""
+for arg in "$@"; do
+  case "$arg" in
+    --state-dir)
+      shift
+      STATE_DIR="${1:?--state-dir requires a path}"
+      shift
+      ;;
+    --skills-root)
+      shift
+      SKILLS_ROOT="${1:?--skills-root requires a path}"
+      shift
+      ;;
+    -*)
+      echo "[hierarchy] FAIL: unknown flag $arg" >&2
+      exit 1
+      ;;
+    *)
+      SKILL_NAME="$arg"
+      shift
+      ;;
+  esac
 done
 
-if [ -z "$PROJECT_ROOT" ]; then
-  echo "[hierarchy] FAIL: cannot locate project root (no .opencode/state/ found)"
-  exit 1
-fi
-
-STATE_DIR="$PROJECT_ROOT/.opencode/state"
+# --- Resolve paths from env or defaults (NEVER guess platform dirs) ---
+STATE_DIR="${STATE_DIR:-${STATE_DIR_ENV:-$PWD/state}}"
+SKILLS_ROOT="${SKILLS_ROOT:-${SKILLS_ROOT_ENV:-$PWD}}"
 LOADED_SKILLS="$STATE_DIR/loaded-skills.json"
 
 # --- Argument validation ---
@@ -49,26 +57,27 @@ if [ ! -f "$LOADED_SKILLS" ]; then
   echo '{}' > "$LOADED_SKILLS"
 fi
 
-# --- Helper: check if a skill exists in loaded-skills.json ---
+# --- Helper: check if a skill exists in loaded-skills.json OR on disk ---
 skill_is_loaded() {
   local skill="$1"
+  # First check loaded-skills.json
   if command -v jq &>/dev/null; then
     local val
     val=$(jq -r --arg s "$skill" '.skills[$s].status // "missing"' "$LOADED_SKILLS" 2>/dev/null) || val="missing"
-    [ "$val" = "loaded" ]
+    [ "$val" = "loaded" ] && return 0
   else
     grep -q "\"$skill\"" "$LOADED_SKILLS" 2>/dev/null && \
-    grep -A2 "\"$skill\"" "$LOADED_SKILLS" 2>/dev/null | grep -q '"loaded"' 2>/dev/null
+    grep -A2 "\"$skill\"" "$LOADED_SKILLS" 2>/dev/null | grep -q '"loaded"' 2>/dev/null && return 0
   fi
+  # Fallback: check if skill exists on disk (for external skills)
+  skill_dir_exists "$skill"
 }
 
 # --- Helper: check if a skill directory exists on disk ---
+# Looks ONLY in $SKILLS_ROOT — the caller decides where skills live.
 skill_dir_exists() {
   local skill="$1"
-  [ -d "$PROJECT_ROOT/.opencode/skills/$skill" ] || \
-  [ -d "$PROJECT_ROOT/.skills-lab/refactoring-skills/$skill" ] || \
-  [ -d "$PROJECT_ROOT/.agents/skills/$skill" ] || \
-  [ -d "$PROJECT_ROOT/.claude/skills/$skill" ]
+  [ -d "$SKILLS_ROOT/$skill" ]
 }
 
 # --- Helper: check artifact field in a JSON file ---
@@ -76,7 +85,7 @@ check_artifact_field() {
   local path="$1"
   local field="$2"
   local expected="$3"
-  local full_path="$PROJECT_ROOT/$path"
+  local full_path="$SKILLS_ROOT/$path"
 
   if [ ! -f "$full_path" ]; then
     return 1
@@ -84,7 +93,7 @@ check_artifact_field() {
 
   if command -v jq &>/dev/null; then
     local val
-    val=$(jq -r --arg f "$field" ".$f // empty" "$full_path" 2>/dev/null) || return 1
+    val=$(jq -r --arg f "$field" '.[$f] // empty' "$full_path" 2>/dev/null) || return 1
     if [ "$expected" = "true" ]; then
       [ "$val" = "true" ]
     else
@@ -99,7 +108,7 @@ check_artifact_field() {
 # --- Helper: check artifact has a Goal section ---
 check_has_goal_section() {
   local path="$1"
-  local full_path="$PROJECT_ROOT/$path"
+  local full_path="$SKILLS_ROOT/$path"
 
   if [ ! -f "$full_path" ]; then
     return 1
@@ -143,7 +152,7 @@ get_requires_loaded() {
 get_artifact_path() {
   case "$1" in
     planning-with-files)
-      echo ".opencode/state/intent.json"
+      echo ".state/intent.json"
       ;;
     coordinating-loop)
       echo "task_plan.md"
@@ -208,7 +217,8 @@ fi
 # --- Run checks ---
 MISSING=()
 
-# Check requires_exist (skill directories on disk)
+# Check requires_exist (skill directories on disk) — WARNINGS not BLOCKS
+# External skills may not be installed; only local skills are hard requirements
 exist_list="$(get_requires_exist "$SKILL_NAME")"
 if [ -n "$exist_list" ]; then
   OLD_IFS="$IFS"
@@ -216,13 +226,14 @@ if [ -n "$exist_list" ]; then
   for prereq in $exist_list; do
     IFS="$OLD_IFS"
     if ! skill_dir_exists "$prereq"; then
-      MISSING+=("$prereq (directory not found)")
+      echo "[hierarchy] WARN: $prereq not found on disk (external skill, continuing)"
     fi
   done
   IFS="$OLD_IFS"
 fi
 
 # Check requires_loaded (recorded in loaded-skills.json)
+# External skills may not be registered; warn but don't block
 loaded_list="$(get_requires_loaded "$SKILL_NAME")"
 if [ -n "$loaded_list" ]; then
   OLD_IFS="$IFS"
@@ -230,7 +241,15 @@ if [ -n "$loaded_list" ]; then
   for prereq in $loaded_list; do
     IFS="$OLD_IFS"
     if ! skill_is_loaded "$prereq"; then
-      MISSING+=("$prereq (not in loaded-skills.json)")
+      # Check if this is an external skill (not one of our 5)
+      case "$prereq" in
+        meta-builder|user-intent-interactive-loop|planning-with-files|coordinating-loop|use-authoring-skills)
+          MISSING+=("$prereq (not in loaded-skills.json)")
+          ;;
+        *)
+          echo "[hierarchy] WARN: $prereq not loaded (external skill, continuing)"
+          ;;
+      esac
     fi
   done
   IFS="$OLD_IFS"

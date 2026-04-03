@@ -1,49 +1,36 @@
 #!/usr/bin/env bash
 # register-skill.sh — Records a skill load in loaded-skills.json
-# Usage: bash .opencode/state/register-skill.sh <skill-name>
+# Usage: bash register-skill.sh <skill-name> [--state-dir DIR]
 # Exit 0 on success, Exit 1 on failure
+#
+# Path resolution (NO hardcoded platform guesses):
+#   STATE_DIR → --state-dir arg > $STATE_DIR env > $PWD/state
 
 set -euo pipefail
 
-# --- Resolve project root ---
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT=""
-search_dir="$SCRIPT_DIR"
-for _ in 1 2 3 4 5 6 7 8; do
-  if [ -d "$search_dir/.opencode/state" ]; then
-    PROJECT_ROOT="$search_dir"
-    break
-  fi
-  # Also check for .kilo/ as a project marker
-  if [ -d "$search_dir/.kilo/skills" ] || [ -d "$search_dir/.skills-lab" ]; then
-    PROJECT_ROOT="$search_dir"
-    # Create .opencode/state if it doesn't exist
-    mkdir -p "$PROJECT_ROOT/.opencode/state"
-    break
-  fi
-  parent="$(dirname "$search_dir")"
-  if [ "$parent" = "$search_dir" ]; then
-    break
-  fi
-  search_dir="$parent"
+# --- Parse arguments ---
+SKILL_NAME=""
+for arg in "$@"; do
+  case "$arg" in
+    --state-dir)
+      shift
+      STATE_DIR="${1:?--state-dir requires a path}"
+      shift
+      ;;
+    -*)
+      echo "[register] FAIL: unknown flag $arg" >&2
+      exit 1
+      ;;
+    *)
+      SKILL_NAME="$arg"
+      shift
+      ;;
+  esac
 done
 
-if [ -z "$PROJECT_ROOT" ]; then
-  echo "[register] FAIL: cannot locate project root"
-  exit 1
-fi
-
-STATE_DIR="$PROJECT_ROOT/.opencode/state"
+# --- Resolve state dir from env or default ---
+STATE_DIR="${STATE_DIR:-${STATE_DIR_ENV:-$PWD/state}}"
 LOADED_SKILLS="$STATE_DIR/loaded-skills.json"
-
-# --- Argument validation ---
-if [ $# -lt 1 ]; then
-  echo "[register] FAIL: missing <skill-name> argument"
-  echo "Usage: bash register-skill.sh <skill-name>"
-  exit 1
-fi
-
-SKILL_NAME="$1"
 TIMESTAMP="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 # --- Ensure state directory and file exist ---

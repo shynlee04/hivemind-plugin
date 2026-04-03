@@ -19,21 +19,22 @@
 
 set -uo pipefail
 
-STATE_DIR=".opencode/state"
+# Path resolution (NO hardcoded platform guesses):
+#   STATE_DIR  → $STATE_DIR env > $PWD/state
+#   SKILLS_ROOT → $SKILLS_ROOT env > $PWD
+STATE_DIR="${STATE_DIR:-$PWD/state}"
+SKILLS_ROOT="${SKILLS_ROOT:-$PWD}"
 REQUIRED_SKILLS=("opencode-platform-reference" "repomix-exploration-guide" "opencode-non-interactive-shell")
 
 # ── Step 0: Run hierarchy verification ─────────────────────────────────────────
-# Determine the path to verify-hierarchy.sh — try local copy first, then workspace
 VERIFY_SCRIPT=""
 if [ -f "scripts/verify-hierarchy.sh" ]; then
     VERIFY_SCRIPT="scripts/verify-hierarchy.sh"
-elif [ -f ".skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh" ]; then
-    VERIFY_SCRIPT=".skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh"
 fi
 
 if [ -n "$VERIFY_SCRIPT" ]; then
     echo "[first-action] Running hierarchy verification..."
-    if ! bash "$VERIFY_SCRIPT" user-intent-interactive-loop; then
+    if ! bash "$VERIFY_SCRIPT" user-intent-interactive-loop --state-dir "$STATE_DIR" --skills-root "$SKILLS_ROOT"; then
         echo "BLOCKED: Hierarchy verification failed." >&2
         echo "Missing background skills. Load these FIRST:" >&2
         echo '  skill("opencode-platform-reference")' >&2
@@ -51,13 +52,11 @@ fi
 REGISTER_SCRIPT=""
 if [ -f "scripts/register-skill.sh" ]; then
     REGISTER_SCRIPT="scripts/register-skill.sh"
-elif [ -f ".opencode/state/register-skill.sh" ]; then
-    REGISTER_SCRIPT=".opencode/state/register-skill.sh"
 fi
 
 if [ -n "$REGISTER_SCRIPT" ]; then
     echo "[first-action] Registering skill as loaded..."
-    bash "$REGISTER_SCRIPT" user-intent-interactive-loop
+    bash "$REGISTER_SCRIPT" user-intent-interactive-loop --state-dir "$STATE_DIR"
 else
     echo "[first-action] WARNING: register-skill.sh not found, skipping registration." >&2
 fi
@@ -92,28 +91,19 @@ EOF
 fi
 
 # ── Step 4: Check platform skills are loaded ───────────────────────────────────
-# Skills are "loaded" if their SKILL.md exists in any known skill directory
-SKILL_DIRS=(
-    ".opencode/skills"
-    ".skills-lab/refactoring-skills"
-    "$HOME/.config/opencode/skills"
-    "$HOME/.agents/skills"
-    "$HOME/.claude/skills"
-)
+# Skills are "loaded" if their SKILL.md exists in $SKILLS_ROOT
+# The: caller decides where skills live. NO platform guesses.
 
 MISSING_SKILLS=()
 for skill in "${REQUIRED_SKILLS[@]}"; do
     found=false
-    for dir in "${SKILL_DIRS[@]}"; do
-        if [ -f "$dir/$skill/SKILL.md" ]; then
-            found=true
-            break
-        fi
-    done
+    if [ -f "$SKILLS_ROOT/$skill/SKILL.md" ]; then
+        found=true
+        break
+    fi
     if [ "$found" = false ]; then
         MISSING_SKILLS+=("$skill")
     fi
-done
 
 if [ ${#MISSING_SKILLS[@]} -gt 0 ]; then
     echo "BLOCKED: Missing required platform skills:" >&2

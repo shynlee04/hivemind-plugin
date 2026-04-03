@@ -20,10 +20,13 @@
 set -uo pipefail
 
 # ── Configuration ──────────────────────────────────────────────────────────────
+# Path resolution (NO hardcoded platform guesses):
+#   STATE_DIR → $STATE_DIR env > first arg > $PWD/state
 PROGRESS_FILE="progress.md"
 TASK_PLAN_FILE="task_plan.md"
-INTENT_FILE=".opencode/state/intent.json"
-QUESTION_LOG=".opencode/state/question-count.json"
+STATE_DIR="${STATE_DIR:-$PWD/state}"
+INTENT_FILE="$STATE_DIR/intent.json"
+QUESTION_LOG="$STATE_DIR/question-count.json"
 
 MODE="${1:---all}"
 

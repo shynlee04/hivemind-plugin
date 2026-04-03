@@ -76,7 +76,7 @@
       },
       "assertions": [
         {"text": "preflight.sh exits 1", "passed": false, "evidence": ""},
-        {"text": "reason contains No skill creation intent", "passed": false, "evidence": ""}
+        {"text": "output contains Request does not match", "passed": false, "evidence": ""}
       ],
       "files": []
     },

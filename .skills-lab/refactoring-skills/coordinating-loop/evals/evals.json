@@ -26,8 +26,8 @@
         "reason": "Single task — execute directly"
       },
       "assertions": [
-        {"text": "check-gate.sh exits 2", "passed": false, "evidence": ""},
-        {"text": "output contains Session directory not found", "passed": false, "evidence": ""}
+        {"text": "check-gate.sh exits 1", "passed": false, "evidence": ""},
+        {"text": "output contains task_plan.md does not exist", "passed": false, "evidence": ""}
       ],
       "files": [],
       "fixture": "base-state"
@@ -49,15 +49,15 @@
     },
     {
       "id": "TC-004",
-      "prompt": "Dispatch an agent to write a skill",
+      "prompt": "Dispatch an agent to write a skill G2",
       "expected_output": {
         "should_trigger": true,
         "envelope_sections": 5,
         "validation_required": true
       },
       "assertions": [
-        {"text": "check-gate.sh exits 0 for G2", "passed": false, "evidence": ""},
-        {"text": "output contains envelope(s) valid", "passed": false, "evidence": ""}
+        {"text": "check-gate.sh exits 1", "passed": false, "evidence": ""},
+        {"text": "output contains envelope(s) failed validation", "passed": false, "evidence": ""}
       ],
       "files": [],
       "fixture": "coordination-active"

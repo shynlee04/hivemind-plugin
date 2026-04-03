@@ -1,7 +1,7 @@
-# AGENTS.md — Meta-Builder Governance
+# AGENTS.md — HiveMind V3 Platform Harness Governance
 
-**Project:** hivemind-plugin — Skill Harness Framework
-**Scope:** ALL agents operating within `.skills-lab/` and this repository
+**Project:** HiveMind V3 Platform Harness
+**Scope:** Full runtime framework for building, composing, and executing AI agent meta-concepts on OpenCode. Encompasses: agents, commands, permissions, tools, hooks, plugins, configs, rules, MCP/LSP, Node.js CLI substrate, eval harness, and runtime composition engine. NOT just skill packs.
 **Authority:** This file overrides ALL default agent behavior. Non-negotiable.
 
 ---
@@ -9,6 +9,24 @@
 ## USER INTENT IS THE ENFORCEMENT OF EVERY ENTRY
 
 If you cannot trace an action to confirmed user intent → STOP.
+
+---
+
+## PROJECT IDENTITY
+
+This is the **HiveMind V3 Platform Harness** — a complete runtime framework superior to both GSD and oh-my-openagent. It is NOT a collection of static `.md` files.
+
+### What This Project IS
+- Runtime build-on-demand: agents call agents to compose prompts, parse commands, and build configurations dynamically
+- Centralized Node.js CLI (`bin/hivemind-tools.cjs`) with domain modules in `bin/lib/`
+- Full OpenCode concept coverage: agents, commands, permissions, tools, hooks, plugins, configs, rules, MCP/LSP
+- Dual packaging: `@hivemind/hivemind-plugin` (npm SDK) + `npx skills add owner/repo --skill name` (git-based)
+- Eval harness integrated into CLI (`hivemind-tools eval run`)
+
+### What This Project is NOT
+- Static `.md` files acting as agent definitions (templates/references only)
+- Bash scripts scattered across directories (replaced by CLI substrate)
+- Skill-pack-only project (skills are one component, not the whole)
 
 ---
 
@@ -29,6 +47,48 @@ If you cannot trace an action to confirmed user intent → STOP.
 ```
 
 **Violation of any step = immediate failure. No exceptions.**
+
+---
+
+## RUNTIME PRINCIPLES
+
+### Build-on-Demand (NOT Static .md)
+Static `.md` files are templates and references. The harness BUILDS agent configurations at runtime by:
+- Composing prompts from template fragments + context
+- Parsing commands dynamically via CLI router
+- Assembling meta-concepts (agents calling agents) at execution time
+- Loading only SKILL.md + dependency summaries + relevant code snippets per execution
+
+### Clean Context Windows
+Each skill/subagent execution occurs in a fresh, minimal context window. No context pollution from chat history or irrelevant project docs. Load exactly what is needed, nothing more.
+
+### Runtime Features (from oh-my-openagent)
+- **Background agents**: Run agents in background, continue working, retrieve results when ready
+- **Auto-loop / Ralph-loop**: Self-referential dev loop that runs until task completion
+- **Delegation chain with task persistence**: Tasks persist across sessions via planning triplet
+- **Task queuing (full autonomy)**: Agents queue tasks, manage their own execution order
+- **Category system**: Agent configuration presets optimized for specific domains (visual-engineering, deep, quick, ultrabrain, etc.)
+- **Session recovery**: Automatic recovery from tool failures, thinking block violations, empty messages, context overflow
+
+### CLI Architecture (from GSD research)
+Central Node.js CLI router with domain modules:
+
+| Module | Purpose |
+|--------|---------|
+| `bin/hivemind-tools.cjs` | Central router (modeled after gsd-tools.cjs) |
+| `bin/lib/core.cjs` | Core utilities, cross-cutting concerns |
+| `bin/lib/state.cjs` | State management, planning triplet I/O |
+| `bin/lib/skill.cjs` | Skill discovery, validation, loading |
+| `bin/lib/eval.cjs` | Eval harness, benchmarking, scoring |
+| `bin/lib/scaffold.cjs` | Project scaffolding, template generation |
+| `bin/lib/config.cjs` | Configuration management, platform detection |
+
+CLI flags: `--raw` (JSON output), `--cwd` (sandboxed execution), `--pick` (field extraction).
+
+### Dual Packaging
+- **Full SDK:** `@hivemind/hivemind-plugin` (npm) — CLI + SDK + all skills
+- **Individual skills:** `npx skills add owner/repo --skill name` (git-based)
+- **Skill contract:** SKILL.md with YAML frontmatter, portable across Claude Code, OpenCode, Codex, Cursor
 
 ---
 
@@ -111,10 +171,12 @@ If you cannot trace an action to confirmed user intent → STOP.
 
 ---
 
-## SKILL ECOSYSTEM — Enforced Loading Order
+## HARNESS ECOSYSTEM — Enforced Loading Order
 
-### Background Skills (Load FIRST — Before Any GROUP 1 Skill)
-These 3 skills MUST be loaded before any of the 5 core skills can function:
+The harness is NOT just skills — it is the full platform composition engine. The hierarchy below is built at RUNTIME by the harness, not loaded as static files.
+
+### Background Skills (Load FIRST — Before Any Core Skill)
+These 3 skills MUST be loaded before any core skill can function:
 
 | Skill | Purpose | Load Trigger |
 |-------|---------|-------------|
@@ -122,7 +184,7 @@ These 3 skills MUST be loaded before any of the 5 core skills can function:
 | `repomix-exploration-guide` | Codebase exploration patterns | Always first |
 | `opencode-non-interactive-shell` | Shell execution strategy | Always first |
 
-### Core Skills (Hierarchical Loading)
+### Core Skills (Hierarchical Loading — Runtime Composition)
 
 ```
 LAYER 0: meta-builder (Router)
@@ -136,11 +198,7 @@ LAYER 3: coordinating-loop (Coordination)
 LAYER 4: use-authoring-skills (Domain Execution)
 ```
 
-**Enforcement:** Each layer's SKILL.md contains a mandatory "FIRST ACTION" block that:
-1. Loads prerequisite skills via `skill` tool
-2. Runs a bash script that verifies prerequisites exist
-3. Blocks (exit 1) if prerequisites are missing
-4. Only proceeds when verification passes
+**Enforcement:** The harness builds each layer at runtime. Each layer verifies its prerequisites before executing. Missing prerequisites = immediate block.
 
 ---
 
@@ -172,6 +230,8 @@ Every skill pack has scripts that block progression. They are not suggestions.
 | **The Premature Executor** | Acting before intent confirmed | Run intent-verify.sh. Block until pass. |
 | **The File Creator** | Creating new planning files instead of updating | Edit existing files only. |
 | **The Silent Worker** | Many turns without user update | Update at every phase boundary. |
+| **The Static Thinker** | Building agents as static .md files | Use runtime build-on-demand. Templates are references only. |
+| **The Bash Scattered** | Adding bash scripts outside bin/ | All scripts go through CLI substrate (bin/hivemind-tools.cjs). |
 
 ---
 
@@ -194,6 +254,8 @@ Every skill pack has scripts that block progression. They are not suggestions.
 | Subagent | Child, assistant |
 | Gate | Suggestion, guideline |
 | Block | Fail, error |
+| Harness | Framework, system |
+| Runtime composition | Static definition |
 
 ---
 

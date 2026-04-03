@@ -28,76 +28,20 @@ case "$GROUP" in
     ;;
 esac
 
-# --- Gate 2: Skill Exists (searches global + local paths) ---
+# --- Gate 2: Skill Exists (uses SKILLS_ROOT, NO platform guesses) ---
 
-# Build search paths: local, project, and global skill directories
-skill_search_paths=()
-
-# Local: sibling directories to this script
-script_dir="$(cd "$(dirname "$0")" && pwd)"
-skill_search_paths+=("$script_dir/..")
-
-# Project-level skill directories
-if [[ -n "${PROJECT_ROOT:-}" ]]; then
-  skill_search_paths+=("$PROJECT_ROOT/.opencode/skills")
-  skill_search_paths+=("$PROJECT_ROOT/.agents/skills")
-  skill_search_paths+=("$PROJECT_ROOT/.claude/skills")
-else
-  # Try to detect project root from git
-  git_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
-  if [[ -n "$git_root" ]]; then
-    skill_search_paths+=("$git_root/.opencode/skills")
-    skill_search_paths+=("$git_root/.agents/skills")
-    skill_search_paths+=("$git_root/.claude/skills")
-  fi
-fi
-
-# Global skill directories
-skill_search_paths+=("$HOME/.config/opencode/skills")
-skill_search_paths+=("$HOME/.agents/skills")
-skill_search_paths+=("$HOME/.claude/skills")
-
-# Also check the skills-lab refactoring directory (development path)
-skill_search_paths+=("$script_dir/../../.opencode/skills")
-skill_search_paths+=("$script_dir/../../.agents/skills")
-skill_search_paths+=("$script_dir/../../.claude/skills")
-
-# Deduplicate paths (bash 3.2 compatible — no associative arrays)
-unique_paths=()
-for p in "${skill_search_paths[@]}"; do
-  real_p="$(cd "$p" 2>/dev/null && pwd || true)"
-  if [[ -n "$real_p" ]]; then
-    # Check if already in unique_paths
-    already=false
-    for up in "${unique_paths[@]+"${unique_paths[@]}"}"; do
-      if [[ "$up" == "$real_p" ]]; then
-        already=true
-        break
-      fi
-    done
-    if [[ "$already" == false ]]; then
-      unique_paths+=("$real_p")
-    fi
-  fi
-done
-
+SKILLS_ROOT="${SKILLS_ROOT:-$PWD}"
 found=false
 found_path=""
-for dir in "${unique_paths[@]}"; do
-  if [[ -d "$dir/$SKILL_NAME" ]] && [[ -f "$dir/$SKILL_NAME/SKILL.md" ]]; then
-    found=true
-    found_path="$dir/$SKILL_NAME"
-    pass "Skill '$SKILL_NAME' found at $found_path"
-    break
-  fi
-done
+
+if [[ -d "$SKILLS_ROOT/$SKILL_NAME" ]] && [[ -f "$SKILLS_ROOT/$SKILL_NAME/SKILL.md" ]]; then
+  found=true
+  found_path="$SKILLS_ROOT/$SKILL_NAME"
+  pass "Skill '$SKILL_NAME' found at $found_path"
+fi
 
 if [[ "$found" == false ]]; then
-  fail "Skill '$SKILL_NAME' not found in any searched path"
-  echo "Searched paths:" >&2
-  for dir in "${unique_paths[@]}"; do
-    echo "  $dir/$SKILL_NAME" >&2
-  done
+  fail "Skill '$SKILL_NAME' not found at $SKILLS_ROOT/$SKILL_NAME"
 fi
 
 # --- Gate 3: Group-Skill Compatibility ---
