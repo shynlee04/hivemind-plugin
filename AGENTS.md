@@ -1,138 +1,209 @@
-# PROJECT KNOWLEDGE BASE
+# AGENTS.md — Meta-Builder Governance
 
-**Generated:** 2026-04-02
-**Commit:** 446b20ca
-**Branch:** harness-experiment
+**Project:** hivemind-plugin — Skill Harness Framework
+**Scope:** ALL agents operating within `.skills-lab/` and this repository
+**Authority:** This file overrides ALL default agent behavior. Non-negotiable.
 
-## OVERVIEW
+---
 
-OpenCode plugin implementing a **hierarchical delegation control plane** — manages parent→child agent sessions with budgets, concurrency semaphores, durable file-based continuity, and runtime guardrails (circuit breaker, tool restrictions, permission profiles).
+## USER INTENT IS THE ENFORCEMENT OF EVERY ENTRY
 
-**Stack:** TypeScript 5.3+ (strict ESM), `@opencode-ai/plugin` SDK ≥1.1.0, Vitest, Node ≥20. Zero runtime deps.
+If you cannot trace an action to confirmed user intent → STOP.
 
-ALL AGENTS MUST USE SKILLS, VERY ITERATIVELY, EACH TURN, TDD, VALIDATION, GRANULAR TASKS INCREMENTAL CHECKS
+---
 
-## Mandate non-negotiable development workflow
+## THE LOOP — Mandatory Execution Order
 
-USING THESE SKILLS TO ACTIVATE
-
-1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.
-
-2. **using-git-worktrees** - Activates after design approval. Creates isolated workspace on new branch, runs project setup, verifies clean test baseline.
-
-3. **writing-plans** - Activates with approved design. Breaks work into bite-sized tasks (2-5 minutes each). Every task has exact file paths, complete code, verification steps.
-
-4. **subagent-driven-development** or **executing-plans** - Activates with plan. Dispatches fresh subagent per task with two-stage review (spec compliance, then code quality), or executes in batches with human checkpoints.
-
-5. **test-driven-development** - Activates during implementation. Enforces RED-GREEN-REFACTOR: write failing test, watch it fail, write minimal code, watch it pass, commit. Deletes code written before tests.
-
-6. **requesting-code-review** - Activates between tasks. Reviews against plan, reports issues by severity. Critical issues block progress.
-
-7. **finishing-a-development-branch** - Activates when tasks complete. Verifies tests, presents options (merge/PR/keep/discard), cleans up worktree.
-
-**The agent checks for relevant skills before any task.** Mandatory workflows, not suggestions.
-
-
-## STRUCTURE
+**NO agent may act without completing this full cycle. Every time.**
 
 ```
-src/
-├── plugin.ts          # Composition root — hook handlers + delegate-task tool (483 LOC)
-├── index.ts           # Barrel re-exports only (12 LOC)
-└── lib/
-    ├── continuity.ts      # Durable JSON file store + normalizers (635 LOC ⚠️)
-    ├── lifecycle-manager.ts # Session state machine: create→queue→dispatch→observe (628 LOC ⚠️)
-    ├── session-api.ts     # SDK adapter with multi-path fallback (473 LOC ⚠️)
-    ├── types.ts           # Shared types + constants — leaf node, no imports (155 LOC)
-    ├── runtime.ts         # Effective prompt state resolution (154 LOC)
-    ├── helpers.ts         # Utilities + tool restriction maps (141 LOC ⚠️ mixed)
-    ├── routing.ts         # Category→agent/model/temperature routing table (113 LOC)
-    ├── state.ts           # In-memory Maps: stats, budgets, delegation meta (106 LOC)
-    └── concurrency.ts     # Keyed semaphore — fully self-contained (98 LOC)
-
-tests/lib/                  # Vitest test files (mirrors src/lib/)
-.opencode/                  # Harness config: agents, commands, skills, rules, plugins
-docs/                       # Implementation plans, architecture notes
+1. USER INTENT → Extract what the user actually wants (one sentence)
+2. GATHER CONTEXT → Read planning files, skill hierarchy, current state
+3. INVESTIGATE/RESEARCH → Deep dive into the problem domain, NOT surface reading
+4. VALIDATE IN ISOLATED CONTEXT → Each finding verified independently
+5. PRESENT TO USER → Show findings, design, plan — in sections
+6. WAIT FOR APPROVAL → Do NOT proceed until user confirms
+7. DELEGATE → Dispatch subagents for implementation (NEVER execute directly)
+8. VALIDATE EVERYTHING → Run scripts, loop until pass
+9. REPORT → Update planning files, commit, inform user
 ```
 
-## WHERE TO LOOK
+**Violation of any step = immediate failure. No exceptions.**
 
-| Task | Location | Notes |
-|------|----------|-------|
-| Add a new hook handler | `src/plugin.ts:104` (HarnessControlPlane factory) | Add key to returned object |
-| Add a new specialist agent | `src/lib/types.ts:3` (VALID_AGENTS) + `src/lib/helpers.ts:88-98` (tools) + `src/plugin.ts:67-102` (permissions) + `src/lib/routing.ts:22-55` (category) | Must update 4 locations |
-| Add a delegation category | `src/lib/types.ts:4-9` (VALID_DELEGATION_CATEGORIES) + `src/lib/routing.ts:22-55` (CATEGORY_CONFIGS) | |
-| Change durability format | `src/lib/continuity.ts` | Single JSON file at `.opencode/state/opencode-harness/session-continuity.json` |
-| Change concurrency limits | `src/lib/concurrency.ts` | Semaphore per (model, agent, category) key |
-| Change circuit breaker | `src/plugin.ts:42` CIRCUIT_BREAKER_THRESHOLD | Loop detection on tool signature |
-| Change tool budgets | `src/plugin.ts:43` MAX_TOOL_CALLS_PER_SESSION | |
-| Change delegation depth | `src/plugin.ts:39` MAX_DEPTH | Max parent→child chain length |
-| Modify SDK call patterns | `src/lib/session-api.ts` | Multi-path fallback — must update all variants |
-| State hydration on restart | `src/lib/lifecycle-manager.ts` → `hydrateFromContinuity()` | Reads disk → populates in-memory maps |
+---
 
-## CONVENTIONS
+## MANDATORY SKILL ACTIVATION — Before ANY Task
 
-- **ESM only** — `"type": "module"`, all imports use `.js` extension (`./lib/types.js`)
-- **`[Harness]` prefix** on all thrown errors — flow control mechanism, not bugs
-- **Dual-layer state**: durable JSON file (`continuity.ts`) + in-memory Maps (`state.ts`), hydrated on startup
-- **Deep-clone-on-read** in continuity store to prevent mutation aliasing
-- **Warning accumulation** via `state.ts:addWarning()` — capped at 25 per session
-- **Multi-path SDK fallback** in `session-api.ts` — tries multiple call signatures, throws last error only
-- **No `any` type aliases** — `client` flows as `any` (known tech debt, SDK lacks types)
+**The agent checks for relevant skills before any task. Mandatory workflows, not suggestions.**
 
-## ANTI-PATTERNS (THIS PROJECT)
+### 1. **brainstorming** — Activates BEFORE writing code
+- Refines rough ideas through questions
+- Explores alternatives
+- Presents design in sections for validation
+- Saves design document
+- **Blocks:** No code written until design approved
 
-- **NEVER** put business logic in `src/index.ts` — re-exports only
-- **NEVER** import from `dist/` in source — use relative `src/` paths
-- **NEVER** catch and swallow errors silently without a `// intentional: <reason>` annotation
-- **NEVER** add runtime dependencies — this package is zero-dep by design
-- **NEVER** modify the continuity JSON file manually — always go through `continuity.ts` functions
-- **NEVER** use `isRecord()` (continuity.ts private) when `isObject()` (helpers.ts) exists — prefer the shared version
+### 2. **using-git-worktrees** — Activates AFTER design approval
+- Creates isolated workspace on new branch
+- Runs project setup
+- Verifies clean test baseline
+- **Blocks:** No work on main branch
 
-## CODE SMELL REGISTER
+### 3. **writing-plans** — Activates WITH approved design
+- Breaks work into bite-sized tasks (2-5 minutes each)
+- Every task has exact file paths, complete code, verification steps
+- **Blocks:** No implementation until plan written
 
-| File | LOC | Issue | Recommended Split |
-|------|-----|-------|-------------------|
-| `continuity.ts` | 635 | Mixed: normalization + clone + CRUD | → `continuity-normalizer.ts` + `continuity-clone.ts` + `continuity.ts` |
-| `lifecycle-manager.ts` | 628 | `launchDelegatedSession` alone ~210 LOC | → `session-launcher.ts` + `lifecycle-manager.ts` |
-| `session-api.ts` | 473 | Multi-path fallback copy-pasted 5x | → `session-waiter.ts` for polling/SSE functions |
-| `plugin.ts` | 483 | Compaction handler 112 LOC + permission factory | → `compaction-formatter.ts` + `permissions.ts` |
-| `helpers.ts` | 141 | Mixes generic utils + agent-specific business logic | → `tool-restrictions.ts` for agent config maps |
+### 4. **subagent-driven-development** or **executing-plans** — Activates WITH plan
+- Dispatches fresh subagent per task
+- Two-stage review (spec compliance, then code quality)
+- Or executes in batches with human checkpoints
+- **Blocks:** Coordinator NEVER executes directly
 
-## ARCHITECTURE: DEPENDENCY GRAPH
+### 5. **test-driven-development** — Activates DURING implementation
+- Enforces RED-GREEN-REFACTOR
+- Write failing test → watch it fail → write minimal code → watch it pass → commit
+- Deletes code written before tests
+- **Blocks:** No code without failing test first
+
+### 6. **requesting-code-review** — Activates BETWEEN tasks
+- Reviews against plan
+- Reports issues by severity
+- Critical issues block progress
+- **Blocks:** No proceeding past critical issues
+
+### 7. **finishing-a-development-branch** — Activates WHEN tasks complete
+- Verifies tests
+- Presents options (merge/PR/keep/discard)
+- Cleans up worktree
+- **Blocks:** No claiming done without verification
+
+---
+
+## COORDINATOR MANDATE — 100% Delegation
+
+### NEVER Execute — ALWAYS Delegate
+- **Your role:** PLAN + DELEGATE. NEVER write, edit, or delete skill files directly.
+- **100% of the time:** Dispatch subagents for implementation work.
+- **Your job:** Read intent → Route → Load skills → Delegate → Track → Verify → Report.
+- **Violation:** If you catch yourself editing `.skills-lab/refactoring-skills/*/SKILL.md` or any skill file → STOP immediately. Revert. Delegate.
+
+### NEVER Create New Planning Files — UPDATE Existing Ones
+- The planning triplet exists at:
+  - `.skills-lab/task_plan.md`
+  - `.skills-lab/progress.md`
+  - `.skills-lab/findings.md`
+- **Read them FIRST** on every session start.
+- **Edit them in place.** Never create `task_plan_v2.md` or `new-findings.md`.
+- If a file doesn't exist, run `scripts/init-session.sh` to create skeletons — then fill them.
+
+### NEVER Read Everything — Frame Skeleton First
+- **Step 1:** Read user's latest message. Extract intent in one sentence.
+- **Step 2:** Read the relevant SKILL.md (not all 5).
+- **Step 3:** Read planning files for current state.
+- **Step 4:** Delegate to subagent with focused scope (max 3 domains, max 5k LOC).
+- **Never** read all skill files, all references, all history at once.
+
+### NEVER Claim Done Without Verification
+- Run the relevant validation script before any completion claim.
+- If a script exits non-zero, the work is NOT done.
+- Evidence before assertions. Always.
+
+---
+
+## SKILL ECOSYSTEM — Enforced Loading Order
+
+### Background Skills (Load FIRST — Before Any GROUP 1 Skill)
+These 3 skills MUST be loaded before any of the 5 core skills can function:
+
+| Skill | Purpose | Load Trigger |
+|-------|---------|-------------|
+| `opencode-platform-reference` | SDK, agents, commands, tools, configs, permissions | Always first |
+| `repomix-exploration-guide` | Codebase exploration patterns | Always first |
+| `opencode-non-interactive-shell` | Shell execution strategy | Always first |
+
+### Core Skills (Hierarchical Loading)
 
 ```
-plugin.ts (composition root)
-├── lifecycle-manager.ts
-│   ├── concurrency.ts (leaf)
-│   ├── continuity.ts → types.ts (leaf)
-│   ├── state.ts → types.ts
-│   ├── runtime.ts → continuity + helpers + routing + state + types
-│   └── session-api.ts → helpers + types
-├── routing.ts → types.ts
-├── helpers.ts → types.ts
-└── state.ts → types.ts
+LAYER 0: meta-builder (Router)
+    ↓ routes intent to...
+LAYER 1: user-intent-interactive-loop (Front Agent)
+    ↓ confirms intent, then hands off to...
+LAYER 2: planning-with-files (Persistent Memory)
+    ↓ creates task_plan.md, feeds to...
+LAYER 3: coordinating-loop (Coordination)
+    ↓ dispatches subagents to...
+LAYER 4: use-authoring-skills (Domain Execution)
 ```
 
-**Max depth:** 4 levels. `types.ts` is the shared leaf (imported by 8/10 modules). `concurrency.ts` is fully self-contained.
+**Enforcement:** Each layer's SKILL.md contains a mandatory "FIRST ACTION" block that:
+1. Loads prerequisite skills via `skill` tool
+2. Runs a bash script that verifies prerequisites exist
+3. Blocks (exit 1) if prerequisites are missing
+4. Only proceeds when verification passes
 
-## COMMANDS
+---
 
-```bash
-npm run build          # clean + tsc
-npm run typecheck      # tsc --noEmit
-npm run test           # vitest run
-npm run test:coverage  # vitest run --coverage
-npm run test:watch     # vitest (interactive)
-```
+## GATE ENFORCEMENT
 
-## NOTES
+Every skill pack has scripts that block progression. They are not suggestions.
 
-- **No write-locking** on continuity JSON — concurrent processes could corrupt. Single-process assumption.
-- **Module-level singleton** `storeCache` in `continuity.ts:26` prevents isolated unit testing — requires monkey-patching.
-- **`asString` duplicated** in `helpers.ts:48` and `continuity.ts:110` (as `isRecord`/`asString` pair) — use shared version.
-- **Tool restriction tables overlap**: `RESTRICTED_TOOLS_PER_AGENT` in `helpers.ts` and `getPermissionRulesForAgent()` in `plugin.ts` encode overlapping restrictions. Consolidate.
-- **`client: any`** flows through the entire SDK boundary — a minimal `OpenCodeClient` interface would catch API misuse at compile time.
-- Tests use Vitest globals (no explicit imports needed). Test files mirror `src/lib/` structure in `tests/lib/`.
+| Skill | Gate Script | Blocks If |
+|-------|------------|-----------|
+| meta-builder | `bash scripts/preflight.sh "<request>"` | Empty request, skill not found, routing unclear |
+| user-intent-interactive-loop | `bash scripts/intent-verify.sh --probe` | Any of 6 stop conditions unmet |
+| planning-with-files | `bash scripts/check-complete.sh` | Phases incomplete, goal empty |
+| coordinating-loop | `bash scripts/check-gate.sh <session> G1-G5` | Tasks missing, envelopes invalid, conflicts unresolved |
+| use-authoring-skills | `bash scripts/validate-gate.sh <action> "<request>" <dir>` | Intent empty, validators missing, pattern not selected |
 
-ALL AGENTS MUST USE SKILLS, VERY ITERATIVELY, EACH TURN, TDD, VALIDATION, GRANULAR TASKS INCREMENTAL CHECKS
+**Usage:** Run the script. If it exits non-zero → fix the reported issue → re-run. Do NOT proceed past a failed gate.
+
+---
+
+## ANTI-PATTERNS — Immediate Block
+
+| Pattern | What It Looks Like | What To Do |
+|---------|-------------------|------------|
+| **The Executor** | Editing skill files directly | STOP. Revert. Delegate to subagent. |
+| **The Hoarder** | Loading 4+ skills simultaneously | Max 3. Unload least relevant. |
+| **The Interrogator** | Asking 4+ questions in one turn | Max 3. Use question tool. |
+| **The Amnesiac** | Not reading planning files before acting | Read all 3. Always. |
+| **The Fire-and-Forget** | Dispatching subagent with no monitoring | Write envelope. Verify output. |
+| **The Premature Executor** | Acting before intent confirmed | Run intent-verify.sh. Block until pass. |
+| **The File Creator** | Creating new planning files instead of updating | Edit existing files only. |
+| **The Silent Worker** | Many turns without user update | Update at every phase boundary. |
+
+---
+
+## COMMIT DISCIPLINE
+
+- **Every meaningful change MUST be committed.** If it's not in git, it doesn't exist.
+- **Commit message format:** `phase: what changed — why it matters`
+- **Commit after:** Each subagent returns, each phase completes, each gate passes.
+- **Never** accumulate changes across multiple phases without committing.
+
+---
+
+## TERMINOLOGY
+
+| Use | Never Use |
+|-----|-----------|
+| Agent | Claude, AI, model |
+| AGENTS.md | CLAUDE.md |
+| Skill | Prompt, instruction |
+| Subagent | Child, assistant |
+| Gate | Suggestion, guideline |
+| Block | Fail, error |
+
+---
+
+## PLATFORM ADAPTATION
+
+| Platform | Skill Tool | Skill Path | Config |
+|----------|-----------|------------|--------|
+| OpenCode | `skill` tool | `.opencode/skills/` | `opencode.json` |
+| Claude Code | `Skill` tool | `.claude/skills/` | `CLAUDE.md` |
+| Codex | `Skill` tool | `.agents/skills/` | `AGENTS.md` |
+| Cursor | `Skill` tool | `.cursor/skills/` | `.cursor/rules/` |
+
+**This AGENTS.md is the source of truth for this project regardless of platform.**
