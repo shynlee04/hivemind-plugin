@@ -8506,7 +8506,7 @@ Document created successfully
 
 ---
 
-## Assistant (Conductor · qwen3.6-plus-free)
+## Assistant (Conductor · qwen3.6-plus-free · 213.2s)
 
 _Thinking:_
 
@@ -8522,6 +8522,11 @@ The user is asking me to delegate this task to a builder to create the document.
   "run_in_background": false,
   "agent": "builder"
 }
+```
+
+**Error:**
+```
+Tool execution aborted
 ```
 
 ---

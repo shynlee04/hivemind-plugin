@@ -4,7 +4,6 @@
     "AGENTS.md"
   ],
   "plugin": [
-    "./.opencode/plugins/harness-control-plane.ts",
     "superpowers@git+https://github.com/obra/superpowers.git"
   ],
   "permission": {

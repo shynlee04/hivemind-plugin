@@ -323,6 +323,18 @@ When restarting a session after interruption:
 
 ---
 
+## GROUP 1 Dependencies
+
+This skill depends on the following GROUP 1 implementation skills during skill authoring workflows:
+
+| Skill | Purpose in Authoring |
+|-------|---------------------|
+| `user-intent-interactive-loop` | For iterative user engagement during skill authoring — clarifying requirements, probing intent, and confirming design decisions before writing skill content. |
+| `coordinating-loop` | For multi-agent skill creation workflows — dispatching subagents to audit, draft, and validate skill packs in parallel or sequential batches. |
+| `planning-with-files` | For long-running skill authoring sessions — persisting phase progress, decisions, and findings across compactions and session restarts. |
+
+---
+
 ## Cross-Package Integration
 
 This skill is the meta-builder foundation. It connects to sibling packages:
@@ -333,5 +345,6 @@ This skill is the meta-builder foundation. It connects to sibling packages:
 | Tool authoring | Shares frontmatter standards and eval framework |
 | Command authoring | Shares TDD methodology and quality scoring |
 | Workflow authoring | Shares pattern selection and iteration protocols |
+| Implementation skills | Uses `user-intent-interactive-loop` for engagement, `coordinating-loop` for orchestration, `planning-with-files` for persistence |
 
 All packages share: universal terminology, progressive disclosure, programmatic gates, and planning-with-files discipline.

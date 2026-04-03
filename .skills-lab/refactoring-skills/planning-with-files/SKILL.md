@@ -192,59 +192,6 @@ If the Agent can answer these, context management is solid:
 | What have I learned? | `findings.md` |
 | What have I done? | `progress.md` |
 
-## Error Discipline
-
-### Log Every Error
-
-```markdown
-## Errors Encountered
-| Error | Attempt | Resolution |
-|-------|---------|------------|
-| FileNotFoundError | 1 | Created default config |
-| API timeout | 2 | Added retry with exponential backoff |
-```
-
-### 3-Strike Protocol
-
-| Attempt | Action |
-|---------|--------|
-| 1 | Diagnose root cause, apply targeted fix |
-| 2 | Try different method/tool/library — NEVER repeat same action |
-| 3 | Question assumptions, search for solutions, consider updating the plan |
-| After 3 | Escalate to user with what was tried and the specific error |
-
-### Never Repeat Failures
-
-```
-if action_failed:
-    next_action != same_action
-```
-
-Track what you tried. Mutate the approach.
-
-## Read vs Write Decision Matrix
-
-| Situation | Action |
-|-----------|--------|
-| Just wrote a file | Don't re-read — content is still in context |
-| Viewed image/PDF | Write findings NOW — multimodal content doesn't persist |
-| Browser returned data | Write to `findings.md` — screenshots don't persist |
-| Starting new phase | Read `task_plan.md` + `findings.md` — re-orient |
-| Error occurred | Read relevant file — need current state to fix |
-| Resuming after gap | Read ALL planning files — recover full state |
-
-## The 5-Question Reboot Test
-
-If the Agent can answer these, context management is solid:
-
-| Question | Answer Source |
-|----------|---------------|
-| Where am I? | Current phase in `task_plan.md` |
-| Where am I going? | Remaining phases |
-| What's the goal? | Goal statement in `task_plan.md` |
-| What have I learned? | `findings.md` |
-| What have I done? | `progress.md` |
-
 ## Anti-Patterns
 
 | Anti-Pattern | Why It Causes Hallucination | Fix |

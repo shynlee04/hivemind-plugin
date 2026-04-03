@@ -1,16 +1,15 @@
-# Task Plan: Meta-Builder Milestone 1 — GROUP 1 Skills + use-authoring-skills Completion
+# Task Plan: Meta-Builder Long-Haul — Batch 2 (Fixes + Meta-Builder + Integration)
 
-**Goal:** Complete the first milestone of the meta-builder harness: stabilize `use-authoring-skills` (GROUP 2) and build the first 3 GROUP 1 specialist skills.
+**Goal:** Complete the meta-builder harness foundation: fix Milestone 1 defects, create the meta-builder parent orchestrator skill, and write the cross-package bridging spec.
 
-**Status:** ✅ MILESTONE 1 COMPLETE — All 4 skill packs built, validated, committed
+**Status:** IN-PROGRESS — Batch 2 launching
 
-## Milestone Scope
+## Milestone Scope (Batch 2)
 
-This milestone covers:
-1. **use-authoring-skills** (GROUP 2) — complete missing reference files, templates, scripts ✅
-2. **user-intent-interactive-loop** (GROUP 1) — new skill for iterative user engagement ✅
-3. **coordinating-loop** (GROUP 1) — new skill for parallel/sequential coordination patterns ✅
-4. **planning-with-files** (GROUP 1) — replace broken version with proper repo version ✅
+This batch covers:
+1. **Fix Milestone 1 defects** — planning-with-files duplicates, missing scripts, missing cross-refs
+2. **Meta-builder parent skill** — orchestrator routing between GROUP 1 and GROUP 2, consuming OpenCode concepts
+3. **Cross-package bridging spec** — how all skill packs connect, share state, and stack
 
 ## Phases
 
@@ -22,17 +21,22 @@ This milestone covers:
 - [x] 5. **user-intent-interactive-loop** — GROUP 1 skill #1 (builder-2)
 - [x] 6. **coordinating-loop** — GROUP 1 skill #2 (builder-3)
 - [x] 7. **planning-with-files replacement** — GROUP 1 skill #3 (builder-4)
-- [ ] 8. Validation gate — test all 4 skills against real scenarios
-- [ ] 9. Commit all, update architecture spec
+- [x] 8. Milestone 1 audit — identified 6 issues (1 critical, 3 medium, 2 low)
+- [ ] 9. **Fix planning-with-files duplicates** — Error Discipline, Read vs Write, 5-Question appear twice
+- [ ] 10. **Add scripts/ to user-intent-interactive-loop** — Essentials E3 portable toolkits
+- [ ] 11. **Add GROUP 1↔2 cross-refs to use-authoring-skills**
+- [ ] 12. **Create meta-builder parent skill** — orchestrator, OpenCode concepts, stacking rules
+- [ ] 13. **Cross-package bridging spec** — integration, shared state, HiveMind v3 alignment
+- [ ] 14. Validation gate — validate-skill.sh, check-overlaps.sh, real scenarios
+- [ ] 15. Commit all, update architecture spec
 
-## Active Builder Agents
+## Active Builder Agents (Batch 2)
 
 | Agent | Task | Status |
 |-------|------|--------|
-| builder-1 | Complete use-authoring-skills (ref 06, 09-12, templates, scripts) | PENDING |
-| builder-2 | Create user-intent-interactive-loop skill | PENDING |
-| builder-3 | Create coordinating-loop skill | PENDING |
-| builder-4 | Replace planning-with-files with proper version | PENDING |
+| fixer | Fix duplicates, add scripts, add cross-refs | PENDING |
+| meta-builder | Create parent orchestrator skill | PENDING |
+| integration-spec | Cross-package bridging spec | PENDING |
 
 ## Key Decisions (LOCKED — see findings.md for full quotes)
 
