@@ -22,8 +22,8 @@ set -uo pipefail
 # ── Configuration ──────────────────────────────────────────────────────────────
 PROGRESS_FILE="progress.md"
 TASK_PLAN_FILE="task_plan.md"
-INTENT_FILE=".opencode/state/intent-capture.json"
-QUESTION_LOG=".opencode/state/question-log.json"
+INTENT_FILE=".opencode/state/intent.json"
+QUESTION_LOG=".opencode/state/question-count.json"
 
 MODE="${1:---all}"
 
@@ -68,19 +68,19 @@ check_file() {
 check_probe_conditions() {
     echo "=== PROBE Phase Stop Conditions ==="
 
-    # Condition 1: Scope is bounded — intent-capture.json has "in_scope" and "out_of_scope"
+    # Condition 1: Scope is bounded — intent.json has "scope_in" and "scope_out"
     if check_file "$INTENT_FILE" "Intent capture" 2>/dev/null; then
-        if grep -q '"in_scope"' "$INTENT_FILE" 2>/dev/null && \
-           grep -q '"out_of_scope"' "$INTENT_FILE" 2>/dev/null; then
-            pass "Scope bounded: in_scope and out_of_scope defined"
+        if grep -q '"scope_in"' "$INTENT_FILE" 2>/dev/null && \
+           grep -q '"scope_out"' "$INTENT_FILE" 2>/dev/null; then
+            pass "Scope bounded: scope_in and scope_out defined"
         else
-            fail "Scope unbounded: intent-capture.json missing in_scope or out_of_scope"
+            fail "Scope unbounded: intent.json missing scope_in or scope_out"
         fi
     else
         fail "Scope unbounded: $INTENT_FILE not found (run PROBE first)"
     fi
 
-    # Condition 2: Success is defined — intent-capture.json has "success_criteria" with content
+    # Condition 2: Success is defined — intent.json has "success_criteria" with content
     if check_file "$INTENT_FILE" "Intent capture" 2>/dev/null; then
         SUCCESS_VAL="$(grep -o '"success_criteria"[[:space:]]*:[[:space:]]*"[^"]*"' "$INTENT_FILE" 2>/dev/null || true)"
         if [ -n "$SUCCESS_VAL" ] && [ "$SUCCESS_VAL" != '"success_criteria": ""' ]; then
@@ -92,7 +92,7 @@ check_probe_conditions() {
         fail "Success undefined: $INTENT_FILE not found"
     fi
 
-    # Condition 3: Constraints are known — intent-capture.json has "constraints" array with at least 1 entry
+    # Condition 3: Constraints are known — intent.json has "constraints" array with at least 1 entry
     if check_file "$INTENT_FILE" "Intent capture" 2>/dev/null; then
         if grep -q '"constraints"' "$INTENT_FILE" 2>/dev/null; then
             # Check it's not an empty array
@@ -102,13 +102,13 @@ check_probe_conditions() {
                 pass "Constraints known: constraints array has entries"
             fi
         else
-            fail "Constraints unknown: no constraints field in intent-capture.json"
+            fail "Constraints unknown: no constraints field in intent.json"
         fi
     else
         fail "Constraints unknown: $INTENT_FILE not found"
     fi
 
-    # Condition 4: Priority is set — intent-capture.json has "priority" with a value
+    # Condition 4: Priority is set — intent.json has "priority" with a value
     if check_file "$INTENT_FILE" "Intent capture" 2>/dev/null; then
         PRIORITY_VAL="$(grep -o '"priority"[[:space:]]*:[[:space:]]*"[^"]*"' "$INTENT_FILE" 2>/dev/null || true)"
         if [ -n "$PRIORITY_VAL" ] && [ "$PRIORITY_VAL" != '"priority": ""' ]; then
@@ -120,16 +120,16 @@ check_probe_conditions() {
         fail "Priority unset: $INTENT_FILE not found"
     fi
 
-    # Condition 5: Delegation level is set — intent-capture.json has "delegation_level" with valid value
+    # Condition 5: Delegation is set — intent.json has "delegation" with valid value
     if check_file "$INTENT_FILE" "Intent capture" 2>/dev/null; then
-        DELEG_VAL="$(grep -o '"delegation_level"[[:space:]]*:[[:space:]]*"[^"]*"' "$INTENT_FILE" 2>/dev/null || true)"
+        DELEG_VAL="$(grep -o '"delegation"[[:space:]]*:[[:space:]]*"[^"]*"' "$INTENT_FILE" 2>/dev/null || true)"
         if echo "$DELEG_VAL" | grep -q -E '"(execute|delegate|clarify)"'; then
-            pass "Delegation level set: $DELEG_VAL"
+            pass "Delegation set: $DELEG_VAL"
         else
-            fail "Delegation level invalid: must be execute, delegate, or clarify (got: $DELEG_VAL)"
+            fail "Delegation invalid: must be execute, delegate, or clarify (got: $DELEG_VAL)"
         fi
     else
-        fail "Delegation level unset: $INTENT_FILE not found"
+        fail "Delegation unset: $INTENT_FILE not found"
     fi
 
     # Condition 6: User has confirmed — progress.md contains "## User Confirmation" with content

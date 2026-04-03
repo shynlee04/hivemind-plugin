@@ -1,0 +1,51 @@
+{
+  "skill_name": "use-authoring-skills",
+  "evals": [
+    {
+      "id": "TC-001",
+      "prompt": "Convert this markdown file into a skill",
+      "expected_output": {
+        "should_trigger": true,
+        "path": "template",
+        "pattern": "P2",
+        "gate_0_passes": true
+      }
+    },
+    {
+      "id": "TC-002",
+      "prompt": "Review this skill and tell me what's wrong",
+      "expected_output": {
+        "should_trigger": true,
+        "path": "audit",
+        "reference": "references/05-skill-quality-matrix.md"
+      }
+    },
+    {
+      "id": "TC-003",
+      "prompt": "This skill never loads when I ask for it",
+      "expected_output": {
+        "should_trigger": true,
+        "path": "fix-triggers",
+        "reference": "references/11-description-optimization.md"
+      }
+    },
+    {
+      "id": "TC-004",
+      "prompt": "Create a skill from this template",
+      "expected_output": {
+        "should_trigger": true,
+        "validation_loop": true,
+        "max_iterations": 5
+      }
+    },
+    {
+      "id": "TC-005",
+      "prompt": "Create a skill with compatibility field",
+      "expected_output": {
+        "should_trigger": true,
+        "gate_2_fails": true,
+        "error": "Banned field: compatibility"
+      }
+    }
+  ]
+}

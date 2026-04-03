@@ -1,0 +1,52 @@
+{
+  "skill_name": "user-intent-interactive-loop",
+  "evals": [
+    {
+      "id": "TC-001",
+      "prompt": "I want to create something but I'm not sure what",
+      "expected_output": {
+        "should_trigger": true,
+        "phase": "PROBE",
+        "questions_asked": 1,
+        "max_questions": 3
+      }
+    },
+    {
+      "id": "TC-002",
+      "prompt": "wait, what were we working on again?",
+      "expected_output": {
+        "should_trigger": true,
+        "phase": "UNDERSTAND",
+        "action": "read task_plan.md findings.md progress.md"
+      }
+    },
+    {
+      "id": "TC-003",
+      "prompt": "delete the file at src/old-module.ts",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "Clear, scoped task — execute directly"
+      }
+    },
+    {
+      "id": "TC-004",
+      "prompt": "help me think through this architecture decision",
+      "expected_output": {
+        "should_trigger": true,
+        "phase": "PROBE",
+        "max_questions": 3,
+        "escalation_after_3": true
+      }
+    },
+    {
+      "id": "TC-005",
+      "prompt": "I need a new skill for API documentation",
+      "expected_output": {
+        "should_trigger": true,
+        "phase": "PROBE",
+        "delegation": "delegate",
+        "target_skill": "use-authoring-skills"
+      }
+    }
+  ]
+}

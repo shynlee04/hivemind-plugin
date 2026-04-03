@@ -1,0 +1,51 @@
+{
+  "skill_name": "coordinating-loop",
+  "evals": [
+    {
+      "id": "TC-001",
+      "prompt": "Create 3 reference files for the deep-research skill in parallel",
+      "expected_output": {
+        "should_trigger": true,
+        "mode": "parallel",
+        "task_count": 3,
+        "file_overlap": false
+      }
+    },
+    {
+      "id": "TC-002",
+      "prompt": "Fix the typo in SKILL.md line 42",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "Single task — execute directly"
+      }
+    },
+    {
+      "id": "TC-003",
+      "prompt": "Update the SKILL.md and then update its reference files to match",
+      "expected_output": {
+        "should_trigger": true,
+        "mode": "sequential",
+        "reason": "Tasks share mutable state"
+      }
+    },
+    {
+      "id": "TC-004",
+      "prompt": "Dispatch an agent to write a skill",
+      "expected_output": {
+        "should_trigger": true,
+        "envelope_sections": 5,
+        "validation_required": true
+      }
+    },
+    {
+      "id": "TC-005",
+      "prompt": "Fix the validation errors in the skill",
+      "expected_output": {
+        "should_trigger": true,
+        "ralph_loop": true,
+        "max_cycles": 3,
+        "escalation_on_3rd_failure": true
+      }
+    }
+  ]
+}

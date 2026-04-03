@@ -7,31 +7,7 @@ set -euo pipefail
 
 # --- Resolve project root ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT=""
-search_dir="$SCRIPT_DIR"
-for _ in 1 2 3 4 5 6 7 8; do
-  if [ -d "$search_dir/.opencode/state" ]; then
-    PROJECT_ROOT="$search_dir"
-    break
-  fi
-  # Also check for .kilo/ as a project marker
-  if [ -d "$search_dir/.kilo/skills" ] || [ -d "$search_dir/.skills-lab" ]; then
-    PROJECT_ROOT="$search_dir"
-    # Create .opencode/state if it doesn't exist
-    mkdir -p "$PROJECT_ROOT/.opencode/state"
-    break
-  fi
-  parent="$(dirname "$search_dir")"
-  if [ "$parent" = "$search_dir" ]; then
-    break
-  fi
-  search_dir="$parent"
-done
-
-if [ -z "$PROJECT_ROOT" ]; then
-  echo "[register] FAIL: cannot locate project root"
-  exit 1
-fi
+PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 STATE_DIR="$PROJECT_ROOT/.opencode/state"
 LOADED_SKILLS="$STATE_DIR/loaded-skills.json"

@@ -1,0 +1,50 @@
+{
+  "skill_name": "planning-with-files",
+  "evals": [
+    {
+      "id": "TC-001",
+      "prompt": "Plan out the implementation of a new auth system",
+      "expected_output": {
+        "should_trigger": true,
+        "action": "init-session",
+        "files_created": ["task_plan.md", "findings.md", "progress.md"]
+      }
+    },
+    {
+      "id": "TC-002",
+      "prompt": "continue where we left off",
+      "expected_output": {
+        "should_trigger": true,
+        "action": "resume",
+        "files_read": ["task_plan.md", "findings.md", "progress.md"]
+      }
+    },
+    {
+      "id": "TC-003",
+      "prompt": "add a console.log to index.ts",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "Single-file edit — no planning needed"
+      }
+    },
+    {
+      "id": "TC-004",
+      "prompt": "continue the implementation",
+      "expected_output": {
+        "should_trigger": true,
+        "goal_refresh": true,
+        "tool_call_threshold": 5
+      }
+    },
+    {
+      "id": "TC-005",
+      "prompt": "the test keeps failing with TypeError",
+      "expected_output": {
+        "should_trigger": true,
+        "strike": 1,
+        "max_strikes": 3,
+        "escalation_after_3": true
+      }
+    }
+  ]
+}

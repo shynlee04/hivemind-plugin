@@ -39,8 +39,9 @@ case "$GATE_UPPER" in
       exit 1
     fi
 
-    TASK_COUNT=$(grep -c "TASK-" "$SESSION_DIR/task_plan.md" 2>/dev/null || echo "0")
-    if [[ "$TASK_COUNT" -eq 0 ]]; then
+    TASK_COUNT=$(grep -c "TASK-" "$SESSION_DIR/task_plan.md" 2>/dev/null || true)
+    TASK_COUNT="${TASK_COUNT:-0}"
+    if [[ "$TASK_COUNT" -eq 0 ]] || [[ -z "$TASK_COUNT" ]]; then
       echo "[gate-G1] FAIL: No TASK- entries found in task_plan.md"
       echo "[gate-G1] → Add tasks: - [ ] TASK-N: <description> | files: <paths> | domain: <category>"
       exit 1

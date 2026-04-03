@@ -65,7 +65,6 @@ skill_is_loaded() {
 # --- Helper: check if a skill directory exists on disk ---
 skill_dir_exists() {
   local skill="$1"
-  [ -d "$PROJECT_ROOT/.kilo/skills/$skill" ] || \
   [ -d "$PROJECT_ROOT/.opencode/skills/$skill" ] || \
   [ -d "$PROJECT_ROOT/.skills-lab/refactoring-skills/$skill" ] || \
   [ -d "$PROJECT_ROOT/.agents/skills/$skill" ] || \

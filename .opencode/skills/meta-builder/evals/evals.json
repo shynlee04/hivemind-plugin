@@ -1,0 +1,53 @@
+{
+  "skill_name": "meta-builder",
+  "evals": [
+    {
+      "id": "TC-001",
+      "prompt": "create a skill like this @.kilo/command/deep-research.md",
+      "expected_output": {
+        "preflight_passes": true,
+        "primary_skill": "use-authoring-skills",
+        "stack_skills": ["skill-creator"],
+        "group": "GROUP_2",
+        "questions_allowed": 0
+      }
+    },
+    {
+      "id": "TC-002",
+      "prompt": "help me figure out what I want to build",
+      "expected_output": {
+        "preflight_passes": true,
+        "primary_skill": "user-intent-interactive-loop",
+        "stack_skills": [],
+        "group": "GROUP_1",
+        "questions_allowed": 3
+      }
+    },
+    {
+      "id": "TC-003",
+      "prompt": "",
+      "expected_output": {
+        "preflight_passes": false,
+        "error": "Empty request"
+      }
+    },
+    {
+      "id": "TC-004",
+      "prompt": "create a skill and coordinate agents to build it in parallel",
+      "expected_output": {
+        "preflight_passes": true,
+        "primary_skill": "use-authoring-skills",
+        "stack_skills": ["coordinating-loop"],
+        "group": "GROUP_2"
+      }
+    },
+    {
+      "id": "TC-005",
+      "prompt": "fix the bug in my auth module",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "No skill/command/tool creation intent detected"
+      }
+    }
+  ]
+}

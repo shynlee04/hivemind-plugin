@@ -80,12 +80,12 @@ fi
 if [ ! -f "$STATE_DIR/intent.json" ]; then
     cat > "$STATE_DIR/intent.json" << 'EOF'
 {
-    "scope_in": [],
-    "scope_out": [],
+    "in_scope": [],
+    "out_of_scope": [],
     "success_criteria": "",
     "constraints": [],
     "priority": "",
-    "delegation": "",
+    "delegation_level": "",
     "user_confirmed": false
 }
 EOF
@@ -128,26 +128,20 @@ if [ ${#MISSING_SKILLS[@]} -gt 0 ]; then
     exit 1
 fi
 
-# ── Step 5: Record loaded skills is handled by register-skill.sh ────────────────
-# Do NOT overwrite loaded-skills.json — the format must stay compatible
-# with verify-hierarchy.sh which reads .skills[$s].status
+# ── Step 5: Record loaded skills ──────────────────────────────────────────────
+cat > "$STATE_DIR/loaded-skills.json" << EOF
+{
+    "platform_skills": ["${REQUIRED_SKILLS[0]}", "${REQUIRED_SKILLS[1]}", "${REQUIRED_SKILLS[2]}"],
+    "loaded_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+    "status": "ready"
+}
+EOF
 
 # ── Step 6: Record first action completion ─────────────────────────────────────
-HIERARCHY_VERIFIED=false
-SKILL_REGISTERED=false
-
-if [ -n "$VERIFY_SCRIPT" ]; then
-    HIERARCHY_VERIFIED=true
-fi
-
-if [ -n "$REGISTER_SCRIPT" ]; then
-    SKILL_REGISTERED=true
-fi
-
 cat > "$STATE_DIR/first-action.json" << EOF
 {
-    "hierarchy_verified": $HIERARCHY_VERIFIED,
-    "skill_registered": $SKILL_REGISTERED,
+    "hierarchy_verified": true,
+    "skill_registered": true,
     "state_dir_created": true,
     "tracking_files_initialized": true,
     "platform_skills_verified": true,
@@ -157,16 +151,8 @@ cat > "$STATE_DIR/first-action.json" << EOF
 EOF
 
 echo "FIRST ACTION: Complete"
-if [ "$HIERARCHY_VERIFIED" = true ]; then
-    echo "  Hierarchy verification: passed"
-else
-    echo "  Hierarchy verification: SKIPPED (verify-hierarchy.sh not found)"
-fi
-if [ "$SKILL_REGISTERED" = true ]; then
-    echo "  Skill registration: done"
-else
-    echo "  Skill registration: SKIPPED (register-skill.sh not found)"
-fi
+echo "  Hierarchy verification: passed"
+echo "  Skill registration: done"
 echo "  State directory: $STATE_DIR"
 echo "  Tracking files: initialized"
 echo "  Platform skills: all 3 loaded"

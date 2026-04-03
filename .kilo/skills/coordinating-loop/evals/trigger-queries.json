@@ -1,0 +1,27 @@
+{
+  "skill": "coordinating-loop",
+  "should_trigger": [
+    "dispatch 3 agents in parallel",
+    "coordinate these tasks",
+    "should I run these sequentially or in parallel?",
+    "orchestrate a multi-agent workflow",
+    "set up a ralph loop for this",
+    "manage the handoff between agents",
+    "dispatch agents to work on different files",
+    "coordinate the skill creation workflow",
+    "loop until all tests pass",
+    "manage parent-child agent cycles"
+  ],
+  "should_not_trigger": [
+    "create a new skill",
+    "help me figure out what I want",
+    "plan this out",
+    "fix this bug",
+    "write a unit test",
+    "refactor this module",
+    "what does this function do?",
+    "add a console.log here",
+    "commit these changes",
+    "search for all usages of foo"
+  ]
+}
