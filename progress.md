@@ -1,78 +1,87 @@
-# Progress Log
+# Progress Log: HiveMind V3 — From Experiment to Platform Harness
 
-## Session: 2026-04-03 — Meta-Builder Batch 2
+**Last Updated:** 2026-04-04
+**Current Phase:** Phase 2 — Planning & Breakdown
 
-### Phase 1: Milestone 1 (4 skill packs)
-- **Status:** complete
-- **Commits:** `1c8b02ab` → `7d0f386a` (multiple builder agents)
-- **Delivered:** use-authoring-skills (24 files), user-intent-interactive-loop (5 files), coordinating-loop (7 files), planning-with-files (11 files)
-- **Total:** 47 files, ~9,000 lines
+---
 
-### Phase 2: Batch 2 (Fixes + Meta-Builder + Integration Spec)
-- **Status:** complete
-- **Started:** 2026-04-03
-- **Completed:** 2026-04-03
-- **Actions taken:**
-  - Spawned 3 parallel builder agents (fixer, meta-builder, integration-spec)
-  - Fixer: Fixed planning-with-files duplicates, added scripts to user-intent-interactive-loop, added GROUP 1 cross-refs to use-authoring-skills (commit `af46bc3d`)
-  - Meta-Builder: Created parent orchestrator skill with routing, OpenCode concepts, stacking rules, HiveMind v3 alignment (commit `ff845c65`)
-  - Integration Spec: Cross-package bridging spec with 13 sections, 988 lines (commit `7c726efe`)
-- **Files created/modified:**
-  - `.skills-lab/refactoring-skills/planning-with-files/SKILL.md` (fixed duplicates, 275→222 lines)
-  - `.skills-lab/refactoring-skills/user-intent-interactive-loop/scripts/session-checkpoint.sh` (created)
-  - `.skills-lab/refactoring-skills/user-intent-interactive-loop/scripts/intent-verify.sh` (created)
-  - `.skills-lab/refactoring-skills/use-authoring-skills/SKILL.md` (added GROUP 1 cross-refs)
-  - `.skills-lab/refactoring-skills/meta-builder/SKILL.md` (256 lines, created)
-  - `.skills-lab/refactoring-skills/meta-builder/references/` (4 files, 1,000 lines)
-  - `.skills-lab/refactoring-skills/meta-builder/scripts/` (2 scripts, 346 lines)
-  - `.skills-lab/refactoring-skills/workspace/cross-package-bridging-spec-2026-04-03.md` (988 lines)
-  - `task_plan.md` (updated for long-haul)
-  - `findings.md` (updated with current state)
-  - `progress.md` (updated)
-  - `.skills-lab/task_plan.md` (updated)
-  - `.skills-lab/progress.md` (updated)
-  - `.skills-lab/meta-builder-architecture-2026-04-03.md` (updated)
+## Session: 2026-04-04 (Phase 1 → Phase 2 transition)
 
-### Phase 3: Validation Gate
-- **Status:** complete
-- **Started:** 2026-04-03
-- **Completed:** 2026-04-03
-- **Actions taken:**
-  - Ran validate-skill.sh against all 5 packs — ALL passed 11/11 checks
-  - Ran check-overlaps.sh against all 5 packs — No HIGH/MEDIUM severity overlaps
-  - Ran coordination-check.sh — passed clean
-  - Updated task_plan.md, findings.md, progress.md with Phase 3 results
-  - Committed planning updates (d264a580)
-- **Validation results:**
-  - use-authoring-skills: 11/11 PASS, no overlaps
-  - user-intent-interactive-loop: 11/11 PASS, no overlaps
-  - coordinating-loop: 11/11 PASS, no overlaps
-  - planning-with-files: 11/11 PASS, no overlaps
-  - meta-builder: 11/11 PASS, no overlaps
+### Actions Taken
+- [x] Verified git status — rogue agent deleted .kilo/skills/ and .opencode/ files
+- [x] Located Phase 1 checkpoint commit: 54d2300b (in reflog)
+- [x] Created `rogue-agent-backup` branch (preserves rogue work)
+- [x] `git reset --hard 54d2300b` — clean restore to Phase 1 checkpoint
+- [x] Updated root-level planning triplet (task_plan.md, findings.md, progress.md)
+- [x] Documented rogue agent incident in all planning files
+- [ ] Load breakdown-feature-prd + breakdown-plan skills (Step 1)
+- [ ] Archive violated scripts to .archive/ (Step 2)
+- [ ] Extract valid practices from audit plan + PRD (Step 3)
+- [ ] Create phase-by-phase execution plan with PRDs and epics (Step 4)
 
-## Test Results
-| Test | Input | Expected | Actual | Status |
-|------|-------|----------|--------|--------|
-| validate-skill.sh (use-authoring-skills) | Fixed SKILL.md | Pass | Pass (11/11) | ✓ |
-| validate-skill.sh (user-intent-interactive-loop) | With scripts/ | Pass | Pass | ✓ |
-| validate-skill.sh (coordinating-loop) | Existing | Pass | Pass | ✓ |
-| validate-skill.sh (planning-with-files) | Fixed duplicates | Pass | Pass | ✓ |
-| validate-skill.sh (meta-builder) | New skill | Pass | Pass (11/11) | ✓ |
-| bash -n (session-checkpoint.sh) | Syntax check | Pass | Pass | ✓ |
-| bash -n (intent-verify.sh) | Syntax check | Pass | Pass | ✓ |
+### Files Modified (This Session)
+- task_plan.md — Rewritten (root level) — Phase 2 planning structure with exact user-specified order
+- findings.md — Rewritten (root level) — Research findings + rogue incident + technical decisions
+- progress.md — Rewritten (root level) — This file
+- .skills-lab/task_plan.md — Also updated (internal planning)
 
-## Error Log
-| Timestamp | Error | Attempt | Resolution |
-|-----------|-------|---------|------------|
-| 2026-04-03 | planning-with-files duplicate sections | 1 | Removed duplicate sections (commit af46bc3d) |
-| 2026-04-03 | user-intent-interactive-loop missing scripts/ | 1 | Created scripts/ with 2 scripts (commit af46bc3d) |
-| 2026-04-03 | use-authoring-skills missing GROUP 1 cross-refs | 1 | Added cross-refs section (commit af46bc3d) |
+### Key Learning (This Session)
+- The rogue agent misunderstood "NOT static .md" as filesystem deletion policy
+- SKILLS are .md by design (OpenCode contract) — they ARE the refactoring target
+- Planning triplet files exist at TWO locations: root AND .skills-lab/ — BOTH must be kept in sync
+- Phase 2 is PLANNING ONLY — no implementation until user approves
 
-## 5-Question Reboot Check
-| Question | Answer |
-|----------|--------|
-| Where am I? | Phase 2 complete — Batch 2 builders done, validation pending |
-| Where am I going? | Phase 3: Validation gate, then Phase 4: GROUP 2 remaining skills |
-| What's the goal? | Complete meta-builder harness with 5+ skill packs, cross-package bridging, HiveMind v3 alignment |
-| What have I learned? | All 5 skill packs validated. Meta-builder parent skill created with routing, OpenCode concepts, stacking rules. Integration spec written. |
-| What have I done? | 3 builders dispatched and completed. All fixes applied. All commits made. SOT docs updated. |
+### Error Log (This Session)
+| Timestamp | Error | Resolution |
+|-----------|-------|------------|
+| 2026-04-04 | Rogue agent nuked .kilo/skills/ and .opencode/ | git reset --hard 54d2300b |
+| 2026-04-04 | Coordinator prematurely edited task_plan.md to Phase 2 implementation | Reverted, restructured as planning-only |
+
+---
+
+## Session: 2026-04-04 (Phase 1 — Foundation Reset) ✅ COMPLETE
+
+### Actions Taken
+- [x] Deep research: GSD vs HiveMind vs OMO vs npm ecosystem (parallel-cli, pro-fast, 6m50s)
+- [x] Read oh-my-openagent features.md (11 agents, categories, background agents, ralph-loop, session recovery)
+- [x] Rewrote AGENTS.md (209→271 lines) — full platform harness governance
+- [x] Thinned PRD (600→278 lines) — expanded scope, added F17-F22
+- [x] Archived 4 stale plans to plans/.archive/ with date stamps
+- [x] Created migration strategy reference (160 lines)
+- [x] Saved research output (.skills-lab/research-output.md + .json)
+- [x] Updated planning triplet
+- [x] Committed: 54d2300b (37 files, +6891/-1160)
+
+### Files Modified
+- AGENTS.md — Rewritten (271 lines)
+- .skills-lab/task_plan.md — 6-phase master plan
+- .skills-lab/findings.md — Research findings
+- .skills-lab/progress.md — Session log
+- .skills-lab/research-output.md — Deep research report (272 lines)
+- .skills-lab/research-output.json — Research metadata
+- docs/02_PRD/PRD-01_meta-builder-ecosystem/PRD-01_meta-builder-ecosystem.md — Thinned (278 lines)
+- plans/.archive/ — 4 stale plans archived
+- docs/plans/refactor/migration-strategy-reference.md — New (160 lines)
+
+---
+
+## Session: 2026-04-03 (Prior — Preserved in commit 54d2300b)
+
+### Phase 3a-3c — Hierarchy Enforcement
+- All 5 skill packs have mandatory hierarchy enforcement with programmatic verification
+- All 39 .sh scripts classified, 18 hardcoded path assumptions fixed
+- 4 template patterns fixed across all skill packs
+- Eval runner path fix (os.path.abspath)
+
+### Milestone 1 — GROUP 1 Skills + use-authoring-skills
+- 47 files, ~9,000 lines across 4 parallel builder agents
+- All 5 packs pass validate-skill.sh (11/11)
+
+### Milestone 2 — GROUP 2 + Meta-Builder + Integration
+- 3 parallel builders (fixer, meta-builder, integration-spec)
+- Cross-package bridging spec (988 lines, 13 sections)
+
+### Known Issues (Carried Forward)
+- first-action.sh syntax error at line 165 (needs for/fi/done structure fix)
+- Eval harness assertion mismatches (20/40 passing, need >95%)
+- No integration test between skill packs yet

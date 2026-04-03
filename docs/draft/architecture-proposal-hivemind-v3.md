@@ -1,941 +1,356 @@
-# HiveMind Clean Architecture Design
-**Date**: 2026-04-03  
-**Status**: Blueprint for Refactoring  
-**Authority**: Architectural Design Document
+# HIVEMIND V3 — Architecture Proposal
 
-## Executive Summary
-
-This document defines a clean, modular architecture that consolidates the best patterns from harness-experiment (~2,300 LOC, clean but not deployed) with necessary features from product-detox (~15,000 LOC, messy but functional), informed by oh-my-openagent proven patterns.
-
-**Key Metrics:**
-- **Target LOC**: ~4,000-5,000 (down from 15,000)
-- **Core Modules**: 8-10 (down from 50+)
-- **Custom Tools**: 5 (down from 11)
-- **Max Module Size**: 500 LOC (enforced)
-- **Plugin Entry**: <100 LOC (assembly only)
+**Date**: 2026-04-04
+**Status**: Mindset Document — Defines what HIVEMIND IS before any code is written
+**Authority**: This document overrides all prior architecture docs. It is the source of truth for what HIVEMIND V3 should be.
 
 ---
 
-## 1. Core Principles
+## 0. What HIVEMIND Actually Is
 
-### 1.1 Code vs Configuration Boundary
-
-**MUST BE CODE:**
-- Plugin assembly and hook registration
-- Tool execution logic with SDK integration
-- State persistence and retrieval
-- Session lifecycle management
-- Delegation routing and packet creation
-- Runtime status inspection
-- Control plane primitives
-
-**CAN BE CONFIGURATION:**
-- Agent definitions (markdown in `agents/`)
-- Command bundles (markdown in `commands/`)
-- Workflow templates (markdown in `workflows/`)
-- Skill definitions (markdown in `skills/`)
-- Pressure contracts (YAML/JSON)
-- Routing rules (declarative)
-- Evidence requirements (JSON schema)
-
-### 1.2 Boundary Definitions
+HIVEMIND is **not a codebase**. It is a **runtime composition engine** for OpenCode that enables agents to build, modify, and orchestrate other agents through a clean loop of:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│ SHIPPED PRODUCT (npm package)                               │
-├─────────────────────────────────────────────────────────────┤
-│ dist/                  # Compiled TypeScript                 │
-│ ├── plugin/            # Plugin entry point                  │
-│ ├── tools/             # Custom tools (5)                    │
-│ ├── hooks/             # Event handlers                      │
-│ ├── cli/               # Command-line interface              │
-│ └── shared/            # Utilities                           │
-│                                                               │
-│ agents/                # Agent definitions (markdown)         │
-│ commands/              # Command bundles (markdown)           │
-│ workflows/             # Workflow templates (markdown)        │
-│ skills/                # Skill definitions (markdown)         │
-│ bin/                   # CLI entry scripts                    │
-├─────────────────────────────────────────────────────────────┤
-│ SOURCE CODE (development)                                    │
-├─────────────────────────────────────────────────────────────┤
-│ src/                   # TypeScript source                    │
-│ ├── plugin/            # Plugin assembly                     │
-│ ├── tools/             # Tool implementations                │
-│ ├── hooks/             # Hook implementations                │
-│ ├── lifecycle/         # Session management                  │
-│ ├── delegation/        # Delegation logic                    │
-│ ├── continuity/        # State persistence                   │
-│ ├── cli/               # CLI implementation                  │
-│ ├── control-plane/     # Control primitives                  │
-│ └── shared/            # Shared utilities                    │
-├─────────────────────────────────────────────────────────────┤
-│ RUNTIME OUTPUT (generated, not shipped)                      │
-├─────────────────────────────────────────────────────────────┤
-│ .hivemind/             # Runtime state (user's project)      │
-│ ├── state/             # Session state                       │
-│ ├── trajectory/        # Trajectory records                  │
-│ ├── workflow/          # Workflow state                      │
-│ ├── delegation/        # Delegation packets                  │
-│ └── sessions/          # Session archives                    │
-│                                                               │
-│ .opencode/             # OpenCode runtime (user's project)   │
-│ └── plugins/           # Plugin stub (generated)             │
-└─────────────────────────────────────────────────────────────┘
+User Intent → Runtime Build → Execution → Validation → Learn
 ```
 
-### 1.3 Single Source of Truth
+It has **two halves** that must never be confused:
 
-| Concern | Authority | Location |
-|---------|-----------|----------|
-| Plugin assembly | `src/plugin/opencode-plugin.ts` | Single file, <100 LOC |
-| Tool definitions | `src/tools/*/tools.ts` | One file per tool |
-| Hook implementations | `src/hooks/*/index.ts` | One file per hook |
-| Session lifecycle | `src/lifecycle/session-manager.ts` | Single manager |
-| Delegation logic | `src/delegation/delegation-router.ts` | Single router |
-| State persistence | `src/continuity/state-store.ts` | Single store |
-| Control primitives | `src/control-plane/primitives.ts` | Registry |
-| Path resolution | `src/shared/paths.ts` | Single utility |
-| Agent registry | `src/shared/opencode-agent-registry.ts` | Single registry |
+### Half 1: The Hard Harness (npm package — distributed via `@hivemind/hivemind-plugin`)
+- **Tools** (write-side, CQRS): 5 core tools with Zod schemas that mutate state
+- **Hooks** (read-side, CQRS): Event observers that inject context, never mutate
+- **Plugin** (assembly, <100 LOC): Wires tools + hooks into OpenCode, zero business logic
+- **Shared** (leaf module): Pure utilities, no dependencies on anything above
 
-### 1.4 CQRS Enforcement
+### Half 2: The Soft Meta-Concepts (user-configurable, `.opencode/` project space)
+- **Skills** (SKILL.md + scripts): Portable instructions, the refactoring target
+- **Agents**: OpenCode agent definitions with permission profiles
+- **Commands**: Reusable command bundles with YAML frontmatter
+- **Rules**: Behavioral constraints
+- **Permissions**: Tool/skill/command access control
+- **Custom Tools**: User-authored tools with Zod schemas
 
-**Tools (Write Side):**
-- Create/update/delete state
-- Execute commands
-- Trigger workflows
-- Persist delegation packets
-- Modify trajectory records
-
-**Hooks (Read Side):**
-- Inject context into messages
-- Observe tool execution
-- Track session events
-- Enrich system prompts
-- Monitor state changes
-
-**Plugin (Assembly):**
-- Register tools and hooks
-- Wire dependencies
-- Initialize SDK context
-- NO business logic
-- NO inline tool definitions
+**The meta-builder** (Half 2's orchestrator) teaches agents how to author, audit, evaluate, and doctor Half 2 concepts. It is the bridge between user intent and runtime construction.
 
 ---
 
-## 2. Module Structure
+## 1. The Target Endpoint — Runtime Features
 
-### 2.1 Proposed Hierarchy
+HIVEMIND V3 must deliver these runtime features (synthesized from oh-my-openagent, GSD, and original research):
+
+| Feature | What It Does | Why It Matters |
+|---------|-------------|----------------|
+| **Background agents** | Run agents in background, continue working, retrieve results when ready | Parallel execution > sequential blocking |
+| **Auto-loop / Ralph-loop** | Self-referential dev loop that runs until task completion | Agents persist through failures without user babysitting |
+| **Delegation chain with task persistence** | Tasks persist across sessions via planning triplet | Work survives session boundaries |
+| **Task queuing (full autonomy)** | Agents queue tasks, manage their own execution order | True autonomy, not just delegation |
+| **Category system** | Agent configuration presets optimized for domains (visual-engineering, deep, quick, ultrabrain, etc.) | Domain-optimized > single generalist |
+| **Session recovery** | Automatic recovery from tool failures, thinking block violations, empty messages, context overflow | Resilience in long-horizon work |
+
+**These are the endpoint.** Everything else exists to enable these 6 features.
+
+---
+
+## 2. What Product-Detox Got Wrong (The Poison)
+
+The product-detox branch (~15,000 LOC) is the anti-pattern. Here's what poisoned the context:
+
+### 2.1 Feature Bloat
+- `agent-work-contract/` — 30 files for one concept (should be 3)
+- `runtime-entry/` — 20 files for session initialization (should be 5)
+- `doc-intelligence/` — 10 files of redundant file reading (should be 0, use OpenCode native)
+- Context renderer decomposed into 6 files (should be 1)
+- 3 competing "runtime-status" modules (should be 1)
+
+### 2.2 Script Poisoning
+- **22 governance scripts** that block, judge, and dictate — instead of reporting facts
+- **12 hardcoded absolute paths** that break on different install locations
+- **3 state-mutation scripts** that create shadow state competing with OpenCode's runtime truth
+- `hm-verify.cjs` (1,014 LOC) — Full governance suite baked into a skill script
+- `context-harness-init.cjs` (514 LOC) — State management + rot scoring in a script
+
+### 2.3 Skill Proliferation
+- **235 SKILL.md files** across 7+ directories (target: ~20)
+- `.developing-skills/` — 19 exact script copies with divergent SKILL.md
+- `.codexdisabled/` — 44 disabled skills
+- Platform copies (qwen/roo/opencode) — 43 duplicates
+- **91% reduction needed**
+
+### 2.4 Agent Triplication
+- Root `agents/` (13 canonical) + `.opencode/agents0/` (14 copies) + `.opencode/agents-test-eval/` (14 copies) + `.opencode/agents-disabled/` (16 copies) = **57 agent files**
+- Target: 13 canonical (77% reduction)
+
+### 2.5 The Core Mistake
+**Product-detox treats skills as the product.** It's not. Skills are the **instruction surface** — the user-facing documentation that tells agents how to use the harness. The harness IS the npm package (tools + hooks + plugin). Skills teach; the harness executes.
+
+---
+
+## 3. What harness-experiment Got Right (The Clean Prototype)
+
+The harness-experiment branch (~2,547 LOC) is the clean architecture prototype:
+
+### 3.1 What's Clean
+- Single `plugin.ts` (447 LOC) as composition root — can be reduced to <100
+- Clear module boundaries, no circular dependencies
+- `tool.schema` (Zod) for all tool args
+- `ToolContext` (sessionID, agent, directory, worktree, abort)
+- 3 specialist agents with explicit permission profiles
+- State machine for task transitions (7 states, validated transitions)
+- Concurrency control via keyed semaphore
+- `continuity.ts` (638 LOC) — durable JSON persistence
+
+### 3.2 What Needs Work
+- Only 1 tool (`delegate-task`) — needs 5 total
+- Scripts embedded in skills need remediation (22 of 31 need conversion to report-only)
+- No CLI substrate yet (bin/hivemind-tools.cjs proposed)
+- No runtime composition engine yet (build-on-demand)
+- No category system or session recovery
+
+### 3.3 The Script Rule (From Deep Audit)
+
+**A script should REPORT FACTS and LEAVE JUDGMENT TO THE AGENT.**
+
+| ✅ OK (Pure Helpers) | ❌ BAN (Governance) |
+|---------------------|---------------------|
+| `init-session.sh` — creates skeleton files | `verify-hierarchy.sh` — exits 1 to block |
+| `loop-status.sh` — reports status (exit 0) | `check-gate.sh` — 5 blocking gates |
+| `session-checkpoint.sh` — saves snapshot | `preflight.sh` — GROUP scoring algorithm |
+| `score-confidence.sh` — pure computation | `intent-verify.sh` — 11 blocking conditions |
+| `hm-codescan.sh` — read-only scanning | `register-skill.sh` — state mutation |
+
+---
+
+## 4. The Meta-Builder — What It Actually Does
+
+The meta-builder (`.hivefiver-meta-builder/`) is the **orchestrator skill system** that enables users to:
+
+1. **Create** — Author new skills, agents, commands, tools, workflows
+2. **Audit** — Validate existing concepts against quality standards
+3. **Evaluate** — Test concepts against real scenarios
+4. **Doctor** — Fix, improve, and optimize broken concepts
+
+It operates through a **hierarchical relational graph** (MINDNETWORK) where:
+
+- **GROUP 1 skills** (implementation): `user-intent-interactive-loop`, `coordinating-loop`, `planning-with-files`, `tech-to-feature-synthesis`, `deep-investigation`, TDD
+- **GROUP 2 skills** (domain-exclusive): `use-authoring-skill` — bridges to all other packages
+- **Custom tools**: User-authored tools with Zod schemas, session context, multi-language support
+- **Hooks**: Event subscribers that observe and inject context
+
+The meta-builder's job is to **teach skills to teach skills** — enabling users to stack OpenCode soft concepts (agents + skills + commands + tools + permissions + rules) into custom workflows for their specific needs.
+
+**Constraints on meta-builder scripts:**
+- All scripts must be recoded per the audit (`docs/project/codebase-audit/audit-scripts-in-skills-2026-04-04.md`)
+- No governance scripts — only pure helpers (report facts, exit 0)
+- No hardcoded absolute paths — use env vars or relative paths
+- No state mutation — state belongs to tools (CQRS write-side)
+
+---
+
+## 5. The Architecture — Clean Module Structure
 
 ```
 src/
-├── plugin/              # Assembly only (<100 LOC)
-│   ├── opencode-plugin.ts          # Main entry
-│   ├── context-renderer.ts         # Context injection
-│   └── synthetic-parts.ts          # Message helpers
+├── plugin/              # Assembly (<100 LOC) — wires tools + hooks
+│   └── opencode-plugin.ts
 │
-├── tools/               # Custom tools (5 tools, ~300 LOC each)
-│   ├── runtime/         # Status + command execution
-│   ├── delegation/      # Delegation packet creation
-│   ├── trajectory/      # Trajectory management
-│   ├── task/            # Task tracking
-│   └── doc/             # Documentation access
+├── tools/               # 5 tools (~500 LOC total, write-side CQRS)
+│   ├── runtime/         # hivemind_runtime_status + hivemind_runtime_command
+│   ├── delegation/      # hivemind_delegation (create/export/handoff packets)
+│   ├── trajectory/      # hivemind_trajectory (manage trajectory records)
+│   ├── task/            # hivemind_task (track tasks within workflows)
+│   └── doc/             # hivemind_doc (documentation operations)
 │
-├── hooks/               # Event handlers (~200 LOC each)
-│   ├── event-handler.ts            # Main event router
-│   ├── start-work/                 # Session entry logic
-│   ├── soft-governance.ts          # Toast notifications
-│   └── sdk-context.ts              # SDK initialization
+├── hooks/               # Event handlers (~800 LOC, read-side CQRS)
+│   ├── event-handler.ts # Main event router
+│   ├── start-work/      # Session initialization hooks
+│   ├── soft-governance.ts # Context injection (read-only)
+│   └── sdk-context.ts   # SDK context enrichment
 │
 ├── lifecycle/           # Session management (~400 LOC)
-│   ├── session-manager.ts          # Session CRUD
-│   ├── session-state.ts            # State detection
-│   └── session-events.ts           # Event emission
+│   ├── session-manager.ts
+│   ├── session-state.ts
+│   └── session-events.ts
 │
 ├── delegation/          # Delegation logic (~400 LOC)
-│   ├── delegation-router.ts        # Category routing
-│   ├── delegation-packet.ts        # Packet creation
-│   └── delegation-store.ts         # Packet persistence
+│   ├── delegation-router.ts
+│   ├── delegation-packet.ts
+│   └── delegation-store.ts
 │
 ├── continuity/          # State persistence (~400 LOC)
-│   ├── state-store.ts              # File-based store
-│   ├── trajectory-store.ts         # Trajectory records
-│   └── workflow-store.ts           # Workflow state
+│   ├── state-store.ts
+│   ├── trajectory-store.ts
+│   └── workflow-store.ts
 │
-├── cli/                 # Command-line interface (~500 LOC)
-│   ├── cli.ts                      # Main entry
-│   ├── commands/                   # Command handlers
-│   └── prompts/                    # Interactive prompts
+├── cli/                 # CLI substrate (~500 LOC)
+│   ├── hivemind-tools.cjs  # Central router (modeled after gsd-tools.cjs)
+│   ├── lib/
+│   │   ├── core.cjs        # Core utilities
+│   │   ├── state.cjs       # State management
+│   │   ├── skill.cjs       # Skill discovery/validation
+│   │   ├── eval.cjs        # Eval harness
+│   │   ├── scaffold.cjs    # Project scaffolding
+│   │   └── config.cjs      # Configuration management
+│   └── commands/        # CLI commands
 │
 ├── control-plane/       # Control primitives (~400 LOC)
-│   ├── primitives.ts               # Primitive registry
-│   ├── intake.ts                   # User intake
-│   └── runtime.ts                  # Runtime dispatch
+│   ├── primitives.ts
+│   ├── intake.ts
+│   └── runtime.ts
 │
-└── shared/              # Utilities (~800 LOC)
-    ├── paths.ts                    # Path resolution
-    ├── tool-helpers.ts             # Tool utilities
-    ├── opencode-agent-registry.ts  # Agent registry
-    ├── opencode-skill-registry.ts  # Skill registry
-    ├── pressure-contract.ts        # Pressure signals
-    └── errors.ts                   # Error types
+└── shared/              # Utilities (~800 LOC, leaf module)
+    ├── paths.ts
+    ├── tool-helpers.ts
+    ├── opencode-agent-registry.ts
+    └── errors.ts
 ```
 
-### 2.2 Module Responsibilities
-
-#### Plugin (Assembly Only)
-- **LOC**: <100
-- **Responsibility**: Wire tools and hooks, initialize SDK context
-- **Dependencies**: tools/*, hooks/*, shared/paths
-- **Exports**: `HiveMindPlugin` (default export)
-- **Rules**: NO business logic, NO inline tools, NO event processing
-
-#### Tools (Write Side)
-- **LOC**: ~300 each (5 tools = 1,500 total)
-- **Responsibility**: Execute state mutations, command execution
-- **Dependencies**: lifecycle/*, delegation/*, continuity/*, shared/*
-- **Exports**: `create*Tool()` factory functions
-- **Rules**: Use `tool.schema` (Zod), return JSON strings, use `context.*`
-
-#### Hooks (Read Side)
-- **LOC**: ~200 each (4 hooks = 800 total)
-- **Responsibility**: Context injection, observation, enrichment
-- **Dependencies**: lifecycle/*, shared/*
-- **Exports**: Hook handler functions
-- **Rules**: NO state mutations, NO tool calls, read-only operations
-
-#### Lifecycle (Session Management)
-- **LOC**: ~400
-- **Responsibility**: Session CRUD, state detection, event emission
-- **Dependencies**: continuity/*, shared/*
-- **Exports**: `SessionManager` class
-- **Rules**: Single source of truth for session state
-
-#### Delegation (Routing & Packets)
-- **LOC**: ~400
-- **Responsibility**: Category routing, packet creation, persistence
-- **Dependencies**: continuity/*, shared/*
-- **Exports**: `DelegationRouter`, `createDelegationPacket()`
-- **Rules**: Stateless routing, immutable packets
-
-#### Continuity (State Persistence)
-- **LOC**: ~400
-- **Responsibility**: File-based state store, trajectory/workflow records
-- **Dependencies**: shared/paths
-- **Exports**: `StateStore`, `TrajectoryStore`, `WorkflowStore`
-- **Rules**: Atomic writes, lock files, JSON serialization
-
-#### CLI (Command Interface)
-- **LOC**: ~500
-- **Responsibility**: Command parsing, interactive prompts, execution
-- **Dependencies**: control-plane/*, shared/*
-- **Exports**: CLI entry point
-- **Rules**: Use `@clack/prompts`, delegate to control-plane
-
-#### Control Plane (Primitives)
-- **LOC**: ~400
-- **Responsibility**: Primitive registry, intake, runtime dispatch
-- **Dependencies**: lifecycle/*, delegation/*, continuity/*
-- **Exports**: `findControlPlanePrimitive()`, `executeIntake()`
-- **Rules**: Declarative primitives, no hardcoded logic
-
-#### Shared (Utilities)
-- **LOC**: ~800
-- **Responsibility**: Path resolution, tool helpers, registries, errors
-- **Dependencies**: None (leaf module)
-- **Exports**: Utility functions and types
-- **Rules**: Pure functions, no side effects, no state
-
-### 2.3 Dependency Graph
-
-```
-┌─────────────┐
-│   plugin    │ (assembly only)
-└──────┬──────┘
-       │
-       ├─────────────┬─────────────┬─────────────┐
-       │             │             │             │
-   ┌───▼───┐    ┌───▼───┐    ┌───▼───┐    ┌───▼───┐
-   │ tools │    │ hooks │    │  cli  │    │control│
-   └───┬───┘    └───┬───┘    └───┬───┘    └───┬───┘
-       │             │             │             │
-       ├─────────────┼─────────────┼─────────────┤
-       │             │             │             │
-   ┌───▼────────┐ ┌─▼──────────┐ ┌▼────────┐   │
-   │ lifecycle  │ │ delegation │ │continuity│   │
-   └───┬────────┘ └─┬──────────┘ └┬────────┘   │
-       │             │              │            │
-       └─────────────┴──────────────┴────────────┘
-                      │
-                  ┌───▼───┐
-                  │shared │ (leaf module)
-                  └───────┘
-```
-
-**Key Rules:**
-- No circular dependencies
-- Shared is a leaf module (no dependencies)
-- Plugin depends on everything (assembly)
-- Tools/hooks/cli depend on lifecycle/delegation/continuity
-- Lifecycle/delegation/continuity depend on shared
+### Dependency Rules (NON-NEGOTIABLE)
+- `shared/` is leaf — depends on nothing
+- `plugin/` depends on everything (assembly)
+- `tools/`, `hooks/`, `cli/`, `control-plane/` depend on `lifecycle/`, `delegation/`, `continuity/`, `shared/`
+- `lifecycle/`, `delegation/`, `continuity/` depend on `shared/` only
+- **No circular dependencies** — enforced by boundary check
+- **Max module size: 500 LOC** — enforced by lint:boundary
 
 ---
 
-## 3. Feature Consolidation Matrix
+## 6. The 6 Runtime Features — How They Map to Code
 
-### 3.1 Current Features Analysis
-
-| Feature | Files | LOC | Status | Action |
-|---------|-------|-----|--------|--------|
-| `agent-work-contract/` | 30+ | ~3,000 | Bloated | **SIMPLIFY** → delegation/ |
-| `runtime-entry/` | 20+ | ~2,000 | Bloated | **SIMPLIFY** → hooks/start-work/ |
-| `session-entry/` | 15+ | ~1,500 | Core | **KEEP** → lifecycle/ |
-| `runtime-observability/` | 10+ | ~1,000 | Core | **KEEP** → tools/runtime/ |
-| `trajectory/` | 8+ | ~800 | Core | **KEEP** → continuity/ |
-| `workflow/` | 8+ | ~800 | Core | **KEEP** → continuity/ |
-| `handoff/` | 5+ | ~500 | Core | **KEEP** → delegation/ |
-| `doc-intelligence/` | 10+ | ~1,000 | Optional | **ELIMINATE** (use tools/doc/) |
-
-### 3.2 Consolidation Decisions
-
-#### KEEP (Essential Runtime Capability)
-
-**1. Session Entry Logic** (`session-entry/` → `lifecycle/`)
-- **Why**: Core session lifecycle management
-- **What**: Session state detection, readiness gates, continuity alerts
-- **LOC**: ~400 (down from 1,500)
-- **Action**: Extract core logic, eliminate redundant classifiers
-
-**2. Runtime Observability** (`runtime-observability/` → `tools/runtime/`)
-- **Why**: Essential for status inspection and command execution
-- **What**: Runtime status tool, command execution tool
-- **LOC**: ~300 (down from 1,000)
-- **Action**: Keep tools, eliminate redundant status builders
-
-**3. Trajectory Management** (`trajectory/` → `continuity/trajectory-store.ts`)
-- **Why**: Core state persistence
-- **What**: Trajectory record CRUD, assessment logic
-- **LOC**: ~200 (down from 800)
-- **Action**: Consolidate into single store module
-
-**4. Workflow Management** (`workflow/` → `continuity/workflow-store.ts`)
-- **Why**: Core state persistence
-- **What**: Workflow state CRUD, authority inspection
-- **LOC**: ~200 (down from 800)
-- **Action**: Consolidate into single store module
-
-**5. Handoff Logic** (`handoff/` → `delegation/`)
-- **Why**: Core delegation capability
-- **What**: Handoff packet creation, persistence
-- **LOC**: ~200 (down from 500)
-- **Action**: Merge with delegation router
-
-#### SIMPLIFY (Reduce to Core Essence)
-
-**1. Agent Work Contract** (`agent-work-contract/` → `delegation/`)
-- **Current**: 30+ files, ~3,000 LOC
-- **Target**: 3 files, ~400 LOC
-- **Why**: Massive over-engineering for delegation packets
-- **Action**:
-  - **KEEP**: Contract schema, packet creation, export tool
-  - **ELIMINATE**: Intent classifier, response mode resolver, anchor recorder, chain executor, contract store (use delegation store)
-  - **MOVE**: Create/export tools to `tools/delegation/`
-
-**2. Runtime Entry** (`runtime-entry/` → `hooks/start-work/`)
-- **Current**: 20+ files, ~2,000 LOC
-- **Target**: 5 files, ~400 LOC
-- **Why**: Over-complicated session entry routing
-- **Action**:
-  - **KEEP**: Start-work router, purpose classifier, lineage router
-  - **ELIMINATE**: NL-first dispatch (move to hook), redundant classifiers
-  - **SIMPLIFY**: Consolidate routing logic into single router
-
-#### ELIMINATE (Redundant or Configurable)
-
-**1. Doc Intelligence** (`doc-intelligence/`)
-- **Why**: Redundant with `tools/doc/` and OpenCode's native file reading
-- **Action**: Remove entirely, use `tools/doc/` for documentation access
+| Feature | Implementation Location | How It Works |
+|---------|----------------------|--------------|
+| **Background agents** | `cli/lib/core.cjs` + `lifecycle/session-manager.ts` | Spawn subagent in background (tmux or async), track via `continuity/state-store.ts`, retrieve via `hivemind_runtime_status` tool |
+| **Auto-loop / Ralph-loop** | `cli/lib/core.cjs` + `delegation/delegation-router.ts` | Self-referential loop: dispatch → validate → if fail, retry with context → repeat until `<promise>DONE</promise>` or max iterations |
+| **Delegation chain with task persistence** | `delegation/delegation-store.ts` + `continuity/state-store.ts` | Every delegation writes to durable JSON store. Tasks persist across sessions. Planning triplet (task_plan.md, progress.md, findings.md) is the user-facing projection. |
+| **Task queuing (full autonomy)** | `delegation/delegation-router.ts` + `lib/concurrency.ts` | Keyed semaphore manages concurrency. Agents queue tasks, process in order, re-queue on failure. No user intervention needed. |
+| **Category system** | `cli/lib/config.cjs` + `shared/opencode-agent-registry.ts` | Agent profiles with model, temperature, prompt mindset presets. Categories: visual-engineering, deep, quick, ultrabrain, artistry, writing, unspecified-low, unspecified-high. |
+| **Session recovery** | `lifecycle/session-manager.ts` + `continuity/state-store.ts` | On session resume, reconstruct state from continuity store. Handle: missing tool results, thinking block violations, empty messages, context overflow, JSON parse errors. |
 
 ---
 
-## 4. Tool Rationalization
+## 7. What Scripts Should Exist (And What Shouldn't)
 
-### 4.1 Current Tools (11)
+### In Skills (Soft Meta-Concepts)
+Scripts in SKILL.md packs must be **pure helpers only**:
 
-| Tool | Status | Rationale |
-|------|--------|-----------|
-| `hivemind_runtime_status` | **KEEP** | Essential for runtime inspection |
-| `hivemind_runtime_command` | **KEEP** | Essential for command execution |
-| `hivemind_agent_work_create_contract` | **MERGE** | Merge into `hivemind_delegation` |
-| `hivemind_agent_work_export_contract` | **MERGE** | Merge into `hivemind_delegation` |
-| `hivemind_doc` | **KEEP** | Documentation access |
-| `hivemind_task` | **KEEP** | Task tracking |
-| `hivemind_trajectory` | **KEEP** | Trajectory management |
-| `hivemind_handoff` | **MERGE** | Merge into `hivemind_delegation` |
-| `declare_intent` | **ELIMINATE** | Use `hivemind_runtime_command` |
-| `map_context` | **ELIMINATE** | Use `hivemind_trajectory` |
-| `compact_session` | **ELIMINATE** | Use `hivemind_runtime_command` |
+| Function | Example | Why OK |
+|----------|---------|--------|
+| File creation | `init-session.sh` creates planning templates | No judgment, pure scaffolding |
+| Status reporting | `loop-status.sh` reports phase/gate status | Always exits 0, information only |
+| Validation reporting | `validate-skill.sh` reports frontmatter issues | Reports errors, doesn't block |
+| Scoring/analysis | `score-confidence.sh` computes from inputs | Pure computation, no I/O judgment |
+| Code scanning | `hm-codescan.sh` reads and reports structure | Read-only, outputs findings |
+| Checkpointing | `session-checkpoint.sh` saves state snapshot | Information gathering |
 
-### 4.2 Target Tools (5)
+### In CLI Substrate (Hard Harness)
+The CLI (`bin/hivemind-tools.cjs`) replaces scattered bash scripts:
 
-#### 1. `hivemind_runtime_status`
-- **Location**: `src/tools/runtime/tools.ts`
-- **Purpose**: Inspect active runtime attachment, trajectory, workflow, command availability
-- **Args**: None
-- **Returns**: Runtime status JSON
-- **LOC**: ~50
+| Command | Replaces | What It Does |
+|---------|----------|--------------|
+| `hivemind-tools eval run` | Python eval_runner.py | Run eval harness, report results |
+| `hivemind-tools scaffold init` | init-session.sh × N | Create project scaffolding |
+| `hivemind-tools skill validate` | validate-skill.sh | Validate SKILL.md against contract |
+| `hivemind-tools skill discover` | (new) | Discover installed skills |
+| `hivemind-tools state show` | (new) | Show current state (JSON) |
+| `hivemind-tools state reset` | (new) | Reset state to clean |
 
-#### 2. `hivemind_runtime_command`
-- **Location**: `src/tools/runtime/tools.ts`
-- **Purpose**: Execute hm-* command bundles (hm-init, hm-doctor, etc.)
-- **Args**: `command`, `arguments`, `userMessage`, profile fields, intake evidence
-- **Returns**: Command execution result JSON
-- **LOC**: ~100
+**All governance logic moves to:**
+- SKILL.md instructions (agent reads conditions, decides)
+- Tool implementations (CQRS write-side, with Zod validation)
+- Hook implementations (CQRS read-side, context injection)
 
-#### 3. `hivemind_delegation`
-- **Location**: `src/tools/delegation/tools.ts`
-- **Purpose**: Create, export, and manage delegation packets
-- **Args**: `action` (create|export|handoff), packet fields
-- **Returns**: Delegation packet JSON
-- **LOC**: ~150
-- **Consolidates**: `agent_work_create_contract`, `agent_work_export_contract`, `handoff`
-
-#### 4. `hivemind_trajectory`
-- **Location**: `src/tools/trajectory/tools.ts`
-- **Purpose**: Manage trajectory records (create, update, close, resume)
-- **Args**: `action`, `trajectoryId`, trajectory fields
-- **Returns**: Trajectory record JSON
-- **LOC**: ~100
-
-#### 5. `hivemind_task`
-- **Location**: `src/tools/task/tools.ts`
-- **Purpose**: Track tasks within workflows
-- **Args**: `action` (create|list|complete), `taskId`, task fields
-- **Returns**: Task record JSON
-- **LOC**: ~100
-
-**Total Tool LOC**: ~500 (down from ~2,000)
-
-### 4.3 Eliminated Tools (Redundant with OpenCode SDK)
-
-| Tool | Replacement |
-|------|-------------|
-| `declare_intent` | Use `hivemind_runtime_command` with `hm-init` |
-| `map_context` | Use `hivemind_trajectory` with `action: update` |
-| `compact_session` | Use `hivemind_runtime_command` with `hm-compact` |
-| `hivemind_doc` (if redundant) | Use OpenCode's native `read_file` tool |
+**Nothing stays in scripts.** Scripts are dumb helpers that report facts.
 
 ---
 
-## 5. Deployment Architecture
+## 8. Success Metrics
 
-### 5.1 Build Process
-
-```bash
-# 1. Clean previous build
-npm run clean
-
-# 2. Compile TypeScript
-tsc
-
-# 3. Make CLI executable
-chmod +x dist/cli.js
-
-# 4. Run boundary checks
-npm run lint:boundary
-
-# 5. Run tests
-npm test
-
-# 6. Publish to npm
-npm publish
-```
-
-### 5.2 Installation Flow
-
-```bash
-# User installs package
-npm install -g hivemind-context-governance
-
-# Package provides:
-# - dist/ (compiled code)
-# - agents/ (agent definitions)
-# - commands/ (command bundles)
-# - workflows/ (workflow templates)
-# - skills/ (skill definitions)
-# - bin/ (CLI entry scripts)
-```
-
-### 5.3 Runtime Initialization
-
-```bash
-# User runs initialization
-cd /path/to/project
-hm-init
-
-# Creates:
-# - .hivemind/ (runtime state)
-# - .opencode/plugins/hivemind-context-governance.ts (plugin stub)
-```
-
-### 5.4 Plugin Loading
-
-```typescript
-// .opencode/plugins/hivemind-context-governance.ts (generated)
-import HiveMindPlugin from 'hivemind-context-governance/plugin'
-export default HiveMindPlugin
-```
-
-**OpenCode loads plugin:**
-1. Reads `.opencode/plugins/hivemind-context-governance.ts`
-2. Imports `HiveMindPlugin` from npm package
-3. Calls plugin factory with `PluginInput`
-4. Registers tools and hooks
-
-### 5.5 Update Flow
-
-```bash
-# User updates package
-npm update -g hivemind-context-governance
-
-# Re-sync runtime
-hm-doctor --sync
-
-# Updates:
-# - dist/ (new compiled code)
-# - agents/ (new agent definitions)
-# - commands/ (new command bundles)
-# - .opencode/plugins/ (regenerated stub if needed)
-```
+| Metric | Product-Detox (Current) | HIVEMIND V3 (Target) | Reduction |
+|--------|----------------------|---------------------|-----------|
+| Total LOC | ~15,000 | ~4,000-5,000 | 67% |
+| Core Modules | 50+ directories | 8-10 modules | 80% |
+| Custom Tools | 11 | 5 | 55% |
+| Plugin LOC | 269 | <100 | 63% |
+| SKILL.md files | 235 | ~20 | 91% |
+| Agent files | 57 | 13 | 77% |
+| Governance scripts | 22 | 0 | 100% |
+| Max module LOC | Unlimited | 500 | Enforced |
 
 ---
 
-## 6. Migration Plan (4 Phases)
+## 9. Migration Path (What Happens Next)
 
-### Phase 1: Port Harness-Experiment Core (Week 1)
+### Phase 1: Mindset (DONE — this document)
+- [x] Define what HIVEMIND IS
+- [x] Document what product-detox got wrong
+- [x] Document what harness-experiment got right
+- [x] Establish script rules (report facts, leave judgment to agent)
+- [x] Map 6 runtime features to code locations
 
-**Goal**: Establish clean foundation with proven delegation patterns
+### Phase 2: Planning (Next)
+- [ ] Load breakdown-feature-prd + breakdown-plan skills
+- [ ] Archive violated scripts to `.archive/` with replacement references
+- [ ] Extract valid practices from audit plan + PRD
+- [ ] Create phase-by-phase execution plan with PRDs and epics
+- [ ] Reference archived materials, NOT bring them forward
 
-**Actions**:
-1. Create new module structure:
-   ```
-   src/
-   ├── plugin/opencode-plugin.ts (new, <100 LOC)
-   ├── delegation/
-   │   ├── delegation-router.ts (port from harness)
-   │   ├── delegation-packet.ts (port from harness)
-   │   └── delegation-store.ts (new)
-   ├── lifecycle/
-   │   ├── session-manager.ts (new)
-   │   └── session-state.ts (port from session-entry)
-   └── continuity/
-       ├── state-store.ts (new)
-       ├── trajectory-store.ts (port from trajectory)
-       └── workflow-store.ts (port from workflow)
-   ```
+### Phase 3: Runtime Harness Synthesis
+- [ ] PRD: On-demand runtime construction
+- [ ] PRD: Full autonomy features (OMO synthesis)
+- [ ] Epic: Deep synthesis & reflection on trash/failed attempts
+- [ ] Validate: Plugin layer <100 LOC, Tools (5 core), Hooks (read-only), Shared (leaf)
 
-2. Port delegation logic:
-   - Copy `harness-experiment/src/delegation/` → `src/delegation/`
-   - Extract category routing logic
-   - Implement delegation store with file-based persistence
+### Phase 4: Master Plan & Checkpoint
+- [ ] Comprehensive master plan with file tracking
+- [ ] Document synthesis learnings
+- [ ] Commit checkpoint with detailed report
+- [ ] Readiness assessment for product-detox migration
 
-3. Port session lifecycle:
-   - Extract session state detection from `features/session-entry/`
-   - Create `SessionManager` class
-   - Implement session CRUD operations
+### Phase 5: Implementation (BLOCKED until Phases 2-4 complete)
+- [ ] CLI substrate (bin/hivemind-tools.cjs + bin/lib/)
+- [ ] Runtime composition engine
+- [ ] Category system + session recovery
+- [ ] Eval harness + dual packaging
 
-4. Port continuity stores:
-   - Extract trajectory logic from `features/trajectory/`
-   - Extract workflow logic from `features/workflow/`
-   - Implement atomic file writes with lock files
-
-**Deliverables**:
-- [ ] Clean module structure created
-- [ ] Delegation router ported and tested
-- [ ] Session manager implemented
-- [ ] Continuity stores implemented
-- [ ] Unit tests passing (>80% coverage)
-
-**Success Criteria**:
-- All modules <500 LOC
-- No circular dependencies
-- TypeScript compiles without errors
-- Boundary checks pass
-
-**Rollback Plan**:
-- Keep `features/` intact during Phase 1
-- Use feature flags to toggle between old/new implementations
-- Revert commits if tests fail
+### Phase 6: Migration (BLOCKED until Phase 5 complete)
+- [ ] Port validated skills to new architecture
+- [ ] Eliminate product-detox bloat (67% reduction)
+- [ ] Final validation + release v3.0.0
 
 ---
 
-### Phase 2: Eliminate Product-Detox Bloat (Week 2)
+## 10. The Meta-Builder — Team Composition
 
-**Goal**: Remove redundant features and consolidate tools
+The meta-builder is not a single skill. It's a **team of orchestrators and subagents**:
 
-**Actions**:
-1. Consolidate agent-work-contract:
-   ```bash
-   # Delete redundant files
-   rm -rf src/features/agent-work-contract/engine/
-   rm -rf src/features/agent-work-contract/hooks/
-   
-   # Keep only schema and tools
-   mv src/features/agent-work-contract/schema/ src/delegation/schema/
-   mv src/features/agent-work-contract/tools/ src/tools/delegation/
-   ```
+| Role | Skill | Purpose |
+|------|-------|---------|
+| **Hivefiver** (Orchestrator) | `the-meta-builder.md` | Architect, synthesize, orchestrate multi-agent workflows |
+| **Intent Clarifier** | `user-intent-interactive-loop` | Elicit ideas, brainstorm, research, maintain control |
+| **Coordinator** | `coordinating-loop` | Hand-offs, parallel/sequential dispatch, ralph-loop |
+| **Planner** | `planning-with-files` | Template-rich planning, prevent hallucination |
+| **Researcher** | `tech-to-feature-synthesis` + `deep-investigation` | Domain research, long-memory, progressive planning |
+| **Author** | `use-authoring-skill` | Create → Audit → Evaluate → Doctor cycle |
+| **Custom Tools** | User-authored with Zod schemas | Extend beyond built-in capabilities |
+| **Hooks** | Event subscribers | Observe, inject context, never mutate |
 
-2. Simplify runtime-entry:
-   ```bash
-   # Keep only start-work router
-   mv src/features/runtime-entry/start-work-router.ts src/hooks/start-work/
-   
-   # Delete redundant classifiers
-   rm -rf src/features/runtime-entry/nl-first-dispatch.ts
-   rm -rf src/features/runtime-entry/purpose-classifier.ts
-   ```
-
-3. Eliminate doc-intelligence:
-   ```bash
-   # Remove entirely
-   rm -rf src/features/doc-intelligence/
-   
-   # Use tools/doc/ instead
-   ```
-
-4. Merge tools:
-   ```bash
-   # Merge agent-work tools into delegation
-   # Merge handoff into delegation
-   # Result: 5 tools instead of 11
-   ```
-
-**Deliverables**:
-- [ ] `features/agent-work-contract/` reduced to 3 files
-- [ ] `features/runtime-entry/` reduced to 5 files
-- [ ] `features/doc-intelligence/` deleted
-- [ ] Tools consolidated from 11 to 5
-- [ ] All tests updated and passing
-
-**Success Criteria**:
-- Total LOC reduced by 50%
-- No feature regressions
-- All boundary checks pass
-- Plugin still loads correctly
-
-**Rollback Plan**:
-- Git branch for Phase 2 changes
-- Keep deleted files in `.archive/` temporarily
-- Revert if any critical feature breaks
+**The constraint**: All scripts in these skill packs must follow the audit rules (pure helpers, no governance, no hardcoded paths, no state mutation).
 
 ---
 
-### Phase 3: Simplify Plugin Entry (Week 3)
+## 11. Evidence Trail
 
-**Goal**: Reduce plugin entry to <100 LOC assembly-only
-
-**Actions**:
-1. Extract inline logic from `opencode-plugin.ts`:
-   ```typescript
-   // BEFORE (269 LOC)
-   export const HiveMindPlugin: Plugin = async (input) => {
-     // 200+ lines of inline logic
-   }
-   
-   // AFTER (<100 LOC)
-   export const HiveMindPlugin: Plugin = async (input) => {
-     initSdkContext(input)
-     const eventHandler = createEventHandler(input.directory)
-     const turnSnapshot = createTurnSnapshotLoader(input.directory)
-     
-     return {
-       event: eventHandler,
-       tool: createTools(input.directory),
-       'chat.message': createChatMessageHook(turnSnapshot),
-       'permission.ask': createPermissionHook(),
-       'tool.execute.before': createToolBeforeHook(input.directory),
-       'tool.execute.after': createToolAfterHook(input.directory),
-       'shell.env': createShellEnvHook(turnSnapshot),
-       'command.execute.before': createCommandBeforeHook(turnSnapshot),
-       'experimental.chat.messages.transform': createMessagesTransformHook(turnSnapshot),
-       'experimental.session.compacting': createCompactionHook(turnSnapshot),
-     }
-   }
-   ```
-
-2. Move hook implementations to `src/hooks/`:
-   ```
-   src/hooks/
-   ├── chat-message-hook.ts
-   ├── permission-hook.ts
-   ├── tool-before-hook.ts
-   ├── tool-after-hook.ts
-   ├── shell-env-hook.ts
-   ├── command-before-hook.ts
-   ├── messages-transform-hook.ts
-   └── compaction-hook.ts
-   ```
-
-3. Create tool factory:
-   ```typescript
-   // src/tools/index.ts
-   export function createTools(directory: string) {
-     return {
-       hivemind_runtime_status: createRuntimeStatusTool(directory),
-       hivemind_runtime_command: createRuntimeCommandTool(directory),
-       hivemind_delegation: createDelegationTool(directory),
-       hivemind_trajectory: createTrajectoryTool(directory),
-       hivemind_task: createTaskTool(directory),
-     }
-   }
-   ```
-
-**Deliverables**:
-- [ ] Plugin entry reduced to <100 LOC
-- [ ] All hooks extracted to separate files
-- [ ] Tool factory created
-- [ ] No inline business logic in plugin
-- [ ] All tests passing
-
-**Success Criteria**:
-- `opencode-plugin.ts` <100 LOC
-- All hooks in separate files
-- No business logic in plugin
-- Plugin still loads and works correctly
-
-**Rollback Plan**:
-- Keep old plugin file as `opencode-plugin.old.ts`
-- Revert if plugin fails to load
+| Source | What It Contributed |
+|--------|-------------------|
+| `docs/project/codebase-audit/audit-scripts-in-skills-2026-04-04.md` | Script classification (22 governance, 15 helpers, 3 banned) |
+| `docs/draft/architecture-proposal-hivemind-v3.md` | Module structure, tool rationalization, migration plan |
+| `.hivefiver-meta-builder/plans/the-meta-builder.md` | Meta-builder role definition, GROUP 1/2 skills |
+| `.hivefiver-meta-builder/plans/skills-to-build-meta.md` | Meta-builder skill system architecture |
+| `AGENTS.md` (root) | THE LOOP, runtime principles, coordinator mandate |
+| Deep research (interaction_id: `trun_ce9a95e2e6c5494d911fa1b86fc53ae1`) | GSD CLI, OMO features, npm best practices |
+| OMO features.md | 6 runtime features (background agents, ralph-loop, categories, etc.) |
 
 ---
 
-### Phase 4: Establish Clean Boundaries (Week 4)
-
-**Goal**: Enforce architectural boundaries and complete migration
-
-**Actions**:
-1. Add boundary enforcement scripts:
-   ```bash
-   # scripts/check-module-size.sh
-   # Fail if any module >500 LOC
-   
-   # scripts/check-plugin-size.sh
-   # Fail if plugin >100 LOC
-   
-   # scripts/check-circular-deps.sh
-   # Fail if circular dependencies detected
-   
-   # scripts/check-tool-count.sh
-   # Fail if >5 tools
-   ```
-
-2. Update documentation:
-   ```
-   docs/
-   ├── architecture/
-   │   ├── module-structure.md
-   │   ├── dependency-graph.md
-   │   └── boundary-rules.md
-   ├── guides/
-   │   ├── adding-tools.md
-   │   ├── adding-hooks.md
-   │   └── adding-modules.md
-   └── migration/
-       └── v2-to-v3-migration.md
-   ```
-
-3. Delete old features:
-   ```bash
-   # Archive old features
-   mkdir -p .archive/features/
-   mv src/features/ .archive/features/
-   
-   # Update imports
-   # Update tests
-   # Update documentation
-   ```
-
-4. Final cleanup:
-   ```bash
-   # Remove dead code
-   # Remove unused dependencies
-   # Update package.json
-   # Update README.md
-   ```
-
-**Deliverables**:
-- [ ] All boundary scripts passing
-- [ ] Documentation updated
-- [ ] Old features archived
-- [ ] Dead code removed
-- [ ] Package published to npm
-
-**Success Criteria**:
-- Total LOC ~4,000-5,000
-- All modules <500 LOC
-- Plugin <100 LOC
-- 5 tools total
-- All tests passing
-- All boundary checks passing
-- Package successfully published
-
-**Rollback Plan**:
-- Keep `.archive/` for 1 month
-- Tag release as `v3.0.0-beta`
-- Revert to `v2.9.5` if critical issues found
-
----
-
-## 7. Success Metrics
-
-### 7.1 Quantitative Metrics
-
-| Metric | Current | Target | Status |
-|--------|---------|--------|--------|
-| Total LOC | ~15,000 | ~4,000-5,000 | 🔴 |
-| Core Modules | 50+ | 8-10 | 🔴 |
-| Custom Tools | 11 | 5 | 🔴 |
-| Plugin LOC | 269 | <100 | 🔴 |
-| Max Module LOC | Unlimited | 500 | 🔴 |
-| Test Coverage | ~60% | >80% | 🔴 |
-| Build Time | ~30s | <10s | 🔴 |
-| Package Size | ~5MB | <2MB | 🔴 |
-
-### 7.2 Qualitative Metrics
-
-- [ ] **Clarity**: Module responsibilities are clear and well-documented
-- [ ] **Maintainability**: Code is easy to understand and modify
-- [ ] **Testability**: All modules have unit tests with >80% coverage
-- [ ] **Deployability**: Package installs and works on first try
-- [ ] **Extensibility**: New tools/hooks can be added without modifying core
-- [ ] **Performance**: Plugin loads in <1s, tools execute in <100ms
-
-### 7.3 Boundary Compliance
-
-- [ ] No circular dependencies
-- [ ] Plugin is assembly-only (<100 LOC)
-- [ ] Tools use `tool.schema` (Zod)
-- [ ] Hooks are read-only (no state mutations)
-- [ ] Shared is a leaf module (no dependencies)
-- [ ] All modules <500 LOC
-- [ ] All tools return JSON strings
-- [ ] All paths resolved via `shared/paths.ts`
-
----
-
-## 8. Risk Assessment
-
-### 8.1 High Risk
-
-**Risk**: Breaking existing workflows during migration  
-**Mitigation**: Feature flags, parallel implementations, extensive testing  
-**Rollback**: Keep old features in `.archive/` for 1 month
-
-**Risk**: Plugin fails to load after refactoring  
-**Mitigation**: Test plugin loading in isolated environment before deployment  
-**Rollback**: Revert to previous version, publish hotfix
-
-### 8.2 Medium Risk
-
-**Risk**: Performance regression due to new architecture  
-**Mitigation**: Benchmark before/after, optimize hot paths  
-**Rollback**: Revert specific modules if performance degrades >20%
-
-**Risk**: Test coverage drops during consolidation  
-**Mitigation**: Write tests before deleting code, maintain >80% coverage  
-**Rollback**: Restore deleted tests from git history
-
-### 8.3 Low Risk
-
-**Risk**: Documentation becomes outdated  
-**Mitigation**: Update docs in same PR as code changes  
-**Rollback**: Restore old docs from git history
-
-**Risk**: Boundary checks become too strict  
-**Mitigation**: Make checks configurable, allow exceptions with justification  
-**Rollback**: Disable specific checks if they block legitimate changes
-
----
-
-## 9. Appendix
-
-### 9.1 Module Size Breakdown
-
-```
-src/plugin/          ~100 LOC  (assembly only)
-src/tools/           ~500 LOC  (5 tools × 100 LOC)
-src/hooks/           ~800 LOC  (4 hooks × 200 LOC)
-src/lifecycle/       ~400 LOC  (session management)
-src/delegation/      ~400 LOC  (routing & packets)
-src/continuity/      ~400 LOC  (state persistence)
-src/cli/             ~500 LOC  (command interface)
-src/control-plane/   ~400 LOC  (primitives)
-src/shared/          ~800 LOC  (utilities)
-─────────────────────────────
-Total:              ~4,300 LOC
-```
-
-### 9.2 Dependency Matrix
-
-| Module | Depends On |
-|--------|------------|
-| plugin | tools, hooks, shared |
-| tools | lifecycle, delegation, continuity, shared |
-| hooks | lifecycle, shared |
-| lifecycle | continuity, shared |
-| delegation | continuity, shared |
-| continuity | shared |
-| cli | control-plane, shared |
-| control-plane | lifecycle, delegation, continuity, shared |
-| shared | (none - leaf module) |
-
-### 9.3 Tool Comparison
-
-| Tool | Current LOC | Target LOC | Reduction |
-|------|-------------|------------|-----------|
-| runtime_status | 50 | 50 | 0% |
-| runtime_command | 100 | 100 | 0% |
-| agent_work_create | 200 | - | -100% (merged) |
-| agent_work_export | 150 | - | -100% (merged) |
-| delegation | - | 150 | +150 (new) |
-| doc | 100 | 100 | 0% |
-| task | 100 | 100 | 0% |
-| trajectory | 100 | 100 | 0% |
-| handoff | 100 | - | -100% (merged) |
-| declare_intent | 50 | - | -100% (eliminated) |
-| map_context | 50 | - | -100% (eliminated) |
-| compact_session | 50 | - | -100% (eliminated) |
-| **Total** | **1,050** | **500** | **-52%** |
-
-### 9.4 Feature Consolidation Summary
-
-| Feature | Current Files | Target Files | Reduction |
-|---------|---------------|--------------|-----------|
-| agent-work-contract | 30+ | 3 | -90% |
-| runtime-entry | 20+ | 5 | -75% |
-| session-entry | 15+ | 3 | -80% |
-| runtime-observability | 10+ | 2 | -80% |
-| trajectory | 8+ | 1 | -87% |
-| workflow | 8+ | 1 | -87% |
-| handoff | 5+ | 1 | -80% |
-| doc-intelligence | 10+ | 0 | -100% |
-| **Total** | **106+** | **16** | **-85%** |
-
----
-
-## 10. Next Steps
-
-1. **Review & Approve**: Stakeholders review this design document
-2. **Create Branch**: `git checkout -b refactor/clean-architecture`
-3. **Phase 1**: Port harness-experiment core (Week 1)
-4. **Phase 2**: Eliminate product-detox bloat (Week 2)
-5. **Phase 3**: Simplify plugin entry (Week 3)
-6. **Phase 4**: Establish clean boundaries (Week 4)
-7. **Release**: Publish `v3.0.0` to npm
-
----
-
-**Document Status**: ✅ Complete  
-**Next Review**: After Phase 1 completion  
-**Owner**: Architecture Team  
-**Last Updated**: 2026-04-03
+**Status**: ✅ Mindset Document Complete
+**Next**: Phase 2 — Planning (load breakdown skills, archive scripts, extract valid practices)
+**Owner**: HIVEMIND V3 Architecture Team
