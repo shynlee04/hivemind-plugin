@@ -1,0 +1,19 @@
+{
+  "loaded_skills": ["planning-with-files", "use-authoring-skills"],
+  "intent": "Continue where we left off on the deep-research skill",
+  "scope_in": "deep-research skill, session recovery, checkpoint restoration",
+  "scope_out": "new skill creation, unrelated skills",
+  "success_criteria": "Session restored from checkpoint, no data loss, goal-refresh triggered, resume from last valid phase",
+  "constraints": ["Must not lose any prior work", "Must resume from exact checkpoint"],
+  "priority": "high",
+  "delegation": "execute",
+  "user_confirmed": true,
+  "phase": "UNDERSTAND",
+  "timestamp": "2026-04-03T00:00:00Z",
+  "session_recovery": {
+    "last_checkpoint": "session-2026-04-02T18:30:00Z",
+    "last_phase": "Phase 3: Implement core skill",
+    "last_phase_status": "in_progress",
+    "goal_refresh_needed": true
+  }
+}

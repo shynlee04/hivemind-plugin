@@ -1,0 +1,13 @@
+{
+  "loaded_skills": ["meta-builder", "use-authoring-skills"],
+  "intent": "Turn this command file into a skill — it's a markdown file with CLI instructions for our devops team",
+  "scope_in": "command file parsing, skill frontmatter generation, reference file creation",
+  "scope_out": "implementation of the skill body, validation scripts",
+  "success_criteria": "Input command file parsed into a valid skill with SKILL.md, references/, and scripts/",
+  "constraints": ["Must follow agentskills.io schema", "Must preserve all CLI instructions from source"],
+  "priority": "high",
+  "delegation": "delegate",
+  "user_confirmed": true,
+  "phase": "PROBE",
+  "timestamp": "2026-04-03T00:00:00Z"
+}

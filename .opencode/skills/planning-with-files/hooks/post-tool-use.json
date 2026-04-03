@@ -1,0 +1,16 @@
+{
+  "name": "post-tool-use",
+  "description": "Remind Agent to update planning files after Write/Edit operations",
+  "trigger": "tool.execute.after",
+  "match": {
+    "tools": ["write", "edit"]
+  },
+  "action": {
+    "type": "context-inject",
+    "message": "[planning-with-files] Remember to update progress.md and task_plan.md if phase status changed.",
+    "fallback": "silent"
+  },
+  "enforcement": {
+    "progress_reminder": true
+  }
+}

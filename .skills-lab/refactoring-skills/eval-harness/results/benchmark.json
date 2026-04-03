@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-04-03T10:30:45Z",
+  "total_evals": 40,
+  "passed": 32,
+  "failed": 8,
+  "pass_rate": 0.80,
+  "total_duration_ms": 4270,
+  "per_skill": {
+    "meta-builder": {"total": 8, "passed": 7, "failed": 1, "pass_rate": 0.88},
+    "user-intent-interactive-loop": {"total": 8, "passed": 4, "failed": 4, "pass_rate": 0.50},
+    "planning-with-files": {"total": 8, "passed": 6, "failed": 2, "pass_rate": 0.75},
+    "coordinating-loop": {"total": 8, "passed": 7, "failed": 1, "pass_rate": 0.88},
+    "use-authoring-skills": {"total": 8, "passed": 8, "failed": 0, "pass_rate": 1.00}
+  }
+}

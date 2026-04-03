@@ -49,27 +49,37 @@ if [ ! -f "$LOADED_SKILLS" ]; then
   echo '{}' > "$LOADED_SKILLS"
 fi
 
-# --- Helper: check if a skill exists in loaded-skills.json ---
+# --- Helper: check if a skill exists in loaded-skills.json OR on disk ---
 skill_is_loaded() {
   local skill="$1"
+  # First check loaded-skills.json
   if command -v jq &>/dev/null; then
     local val
     val=$(jq -r --arg s "$skill" '.skills[$s].status // "missing"' "$LOADED_SKILLS" 2>/dev/null) || val="missing"
-    [ "$val" = "loaded" ]
+    [ "$val" = "loaded" ] && return 0
   else
     grep -q "\"$skill\"" "$LOADED_SKILLS" 2>/dev/null && \
-    grep -A2 "\"$skill\"" "$LOADED_SKILLS" 2>/dev/null | grep -q '"loaded"' 2>/dev/null
+    grep -A2 "\"$skill\"" "$LOADED_SKILLS" 2>/dev/null | grep -q '"loaded"' 2>/dev/null && return 0
   fi
+  # Fallback: check if skill exists on disk (for external skills)
+  skill_dir_exists "$skill"
 }
 
 # --- Helper: check if a skill directory exists on disk ---
 skill_dir_exists() {
   local skill="$1"
+  # Check project-relative paths
   [ -d "$PROJECT_ROOT/.kilo/skills/$skill" ] || \
   [ -d "$PROJECT_ROOT/.opencode/skills/$skill" ] || \
   [ -d "$PROJECT_ROOT/.skills-lab/refactoring-skills/$skill" ] || \
   [ -d "$PROJECT_ROOT/.agents/skills/$skill" ] || \
-  [ -d "$PROJECT_ROOT/.claude/skills/$skill" ]
+  [ -d "$PROJECT_ROOT/.claude/skills/$skill" ] || \
+  # Check home-directory paths (where external skills actually live)
+  [ -d "$HOME/.opencode/skills/$skill" ] || \
+  [ -d "$HOME/.config/opencode/skills/$skill" ] || \
+  [ -d "$HOME/.agents/skills/$skill" ] || \
+  [ -d "$HOME/.claude/skills/$skill" ] || \
+  [ -d "$HOME/.kilo/skills/$skill" ]
 }
 
 # --- Helper: check artifact field in a JSON file ---
@@ -85,7 +95,7 @@ check_artifact_field() {
 
   if command -v jq &>/dev/null; then
     local val
-    val=$(jq -r --arg f "$field" ".$f // empty" "$full_path" 2>/dev/null) || return 1
+    val=$(jq -r --arg f "$field" '.[$f] // empty' "$full_path" 2>/dev/null) || return 1
     if [ "$expected" = "true" ]; then
       [ "$val" = "true" ]
     else
@@ -209,7 +219,8 @@ fi
 # --- Run checks ---
 MISSING=()
 
-# Check requires_exist (skill directories on disk)
+# Check requires_exist (skill directories on disk) — WARNINGS not BLOCKS
+# External skills may not be installed; only local skills are hard requirements
 exist_list="$(get_requires_exist "$SKILL_NAME")"
 if [ -n "$exist_list" ]; then
   OLD_IFS="$IFS"
@@ -217,13 +228,14 @@ if [ -n "$exist_list" ]; then
   for prereq in $exist_list; do
     IFS="$OLD_IFS"
     if ! skill_dir_exists "$prereq"; then
-      MISSING+=("$prereq (directory not found)")
+      echo "[hierarchy] WARN: $prereq not found on disk (external skill, continuing)"
     fi
   done
   IFS="$OLD_IFS"
 fi
 
 # Check requires_loaded (recorded in loaded-skills.json)
+# External skills may not be registered; warn but don't block
 loaded_list="$(get_requires_loaded "$SKILL_NAME")"
 if [ -n "$loaded_list" ]; then
   OLD_IFS="$IFS"
@@ -231,7 +243,15 @@ if [ -n "$loaded_list" ]; then
   for prereq in $loaded_list; do
     IFS="$OLD_IFS"
     if ! skill_is_loaded "$prereq"; then
-      MISSING+=("$prereq (not in loaded-skills.json)")
+      # Check if this is an external skill (not one of our 5)
+      case "$prereq" in
+        meta-builder|user-intent-interactive-loop|planning-with-files|coordinating-loop|use-authoring-skills)
+          MISSING+=("$prereq (not in loaded-skills.json)")
+          ;;
+        *)
+          echo "[hierarchy] WARN: $prereq not loaded (external skill, continuing)"
+          ;;
+      esac
     fi
   done
   IFS="$OLD_IFS"

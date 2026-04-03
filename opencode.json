@@ -10,7 +10,7 @@
     "read": "allow",
     "edit": "allow",
     "bash": {
-      "*": "ask",
+      "*": "allow",
       "git status*": "allow",
       "git log*": "allow",
       "git diff*": "allow",

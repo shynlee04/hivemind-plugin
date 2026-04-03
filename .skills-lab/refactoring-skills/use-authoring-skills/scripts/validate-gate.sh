@@ -30,6 +30,9 @@ esac
 INTENT_SUMMARY=$(echo "$USER_REQUEST" | head -c 200)
 pass_gate "Intent: $INTENT_SUMMARY"
 
+# Initialize task_plan for all actions (Gate 4 references it)
+task_plan="$SKILL_DIR/task_plan.md"
+
 # ── Gate 2: Planning files exist (create/edit only) ──
 if [[ "$ACTION" == "create" || "$ACTION" == "edit" ]]; then
   task_plan="$SKILL_DIR/task_plan.md"

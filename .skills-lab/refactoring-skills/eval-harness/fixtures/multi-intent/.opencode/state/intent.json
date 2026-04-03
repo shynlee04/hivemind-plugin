@@ -1,0 +1,19 @@
+{
+  "loaded_skills": ["meta-builder", "use-authoring-skills", "skill-creator"],
+  "intent": "User has multiple skill creation requests across different domains",
+  "scope_in": "skill audit, skill creation, skill repair, format conversion",
+  "scope_out": "implementation of individual skills, code writing",
+  "success_criteria": "All 4 skill requests routed correctly with proper stacking",
+  "constraints": ["Must follow agentskills.io schema", "Must validate each skill independently", "Max 3 questions per sub-request"],
+  "priority": "high",
+  "delegation": "delegate",
+  "user_confirmed": true,
+  "phase": "PROBE",
+  "timestamp": "2026-04-03T00:00:00Z",
+  "multi_intent": {
+    "request_1": "audit the deep-research skill for quality issues",
+    "request_2": "create a new API documentation skill from scratch",
+    "request_3": "fix the trigger issues in the tdd-workflow skill",
+    "request_4": "convert the old command file into a proper skill pack"
+  }
+}

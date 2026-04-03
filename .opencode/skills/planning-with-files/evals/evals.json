@@ -8,7 +8,13 @@
         "should_trigger": true,
         "action": "init-session",
         "files_created": ["task_plan.md", "findings.md", "progress.md"]
-      }
+      },
+      "assertions": [
+        {"text": "check-complete.sh exits 2", "passed": false, "evidence": ""},
+        {"text": "output contains No task_plan.md found", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "base-state"
     },
     {
       "id": "TC-002",
@@ -17,7 +23,13 @@
         "should_trigger": true,
         "action": "resume",
         "files_read": ["task_plan.md", "findings.md", "progress.md"]
-      }
+      },
+      "assertions": [
+        {"text": "check-complete.sh runs against task_plan.md", "passed": false, "evidence": ""},
+        {"text": "output contains phase summary", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "planning-active"
     },
     {
       "id": "TC-003",
@@ -25,7 +37,13 @@
       "expected_output": {
         "should_trigger": false,
         "reason": "Single-file edit — no planning needed"
-      }
+      },
+      "assertions": [
+        {"text": "check-complete.sh exits 2", "passed": false, "evidence": ""},
+        {"text": "output contains no active planning session", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "base-state"
     },
     {
       "id": "TC-004",
@@ -34,7 +52,13 @@
         "should_trigger": true,
         "goal_refresh": true,
         "tool_call_threshold": 5
-      }
+      },
+      "assertions": [
+        {"text": "check-complete.sh runs", "passed": false, "evidence": ""},
+        {"text": "output contains Task in progress", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "planning-active"
     },
     {
       "id": "TC-005",
@@ -44,7 +68,70 @@
         "strike": 1,
         "max_strikes": 3,
         "escalation_after_3": true
-      }
+      },
+      "assertions": [
+        {"text": "check-complete.sh exits 1", "passed": false, "evidence": ""},
+        {"text": "output contains incomplete phases", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "planning-active"
+    },
+    {
+      "id": "TC-006",
+      "prompt": "Plan out a new API documentation skill with 8 reference files, 3 platform targets (OpenCode, Claude Code, Codex), and a validation pipeline that checks frontmatter, body structure, and eval coverage before we ship it.",
+      "expected_output": {
+        "should_trigger": true,
+        "action": "init-session",
+        "files_created": ["task_plan.md", "findings.md", "progress.md"],
+        "phases_count": 5,
+        "goal_present": true
+      },
+      "assertions": [
+        {"text": "check-complete.sh exits 1", "passed": false, "evidence": ""},
+        {"text": "output contains Phase Summary", "passed": false, "evidence": ""},
+        {"text": "output contains Total:", "passed": false, "evidence": ""},
+        {"text": "output contains ACTION:", "passed": false, "evidence": ""}
+      ],
+      "files": ["fixtures/planning-active/task_plan.md"],
+      "fixture": "planning-active"
+    },
+    {
+      "id": "TC-007",
+      "prompt": "Continue where we left off — last session we finished phase 2 but the test harness failed on the validation pipeline. The SKILL.md draft has a frontmatter issue. Can you resume and fix it?",
+      "expected_output": {
+        "should_trigger": true,
+        "action": "resume",
+        "goal_refresh": true,
+        "files_read": ["task_plan.md", "findings.md", "progress.md"],
+        "checkpoint_resume": true
+      },
+      "assertions": [
+        {"text": "check-complete.sh exits 1", "passed": false, "evidence": ""},
+        {"text": "output contains Phase Summary", "passed": false, "evidence": ""},
+        {"text": "output contains Task in progress", "passed": false, "evidence": ""},
+        {"text": "output contains Complete:", "passed": false, "evidence": ""}
+      ],
+      "files": ["fixtures/session-recovery/task_plan.md", "fixtures/session-recovery/progress.md"],
+      "fixture": "session-recovery"
+    },
+    {
+      "id": "TC-008",
+      "prompt": "The test harness keeps failing with a TypeError on line 42 of validate-skill.sh — I've tried two fixes already and both failed. This is the third attempt, what should I do?",
+      "expected_output": {
+        "should_trigger": true,
+        "strike": 3,
+        "max_strikes": 3,
+        "escalation_triggered": true,
+        "action": "escalate — root cause analysis required"
+      },
+      "assertions": [
+        {"text": "check-complete.sh exits 1", "passed": false, "evidence": ""},
+        {"text": "output contains Task in progress", "passed": false, "evidence": ""},
+        {"text": "output contains ACTION:", "passed": false, "evidence": ""},
+        {"text": "output contains Complete:", "passed": false, "evidence": ""}
+      ],
+      "files": ["fixtures/strike-tracking/task_plan.md", "fixtures/strike-tracking/progress.md"],
+      "fixture": "strike-tracking"
     }
   ]
 }
