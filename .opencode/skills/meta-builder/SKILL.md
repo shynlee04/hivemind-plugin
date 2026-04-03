@@ -1,10 +1,9 @@
 ---
 name: meta-builder
-description: Use when building, modifying, or combining agent skills, commands, tools, agents, or OpenCode configurations. Routes intent to the right authoring skill, stacks skills for multi-domain tasks, and provides concrete recipes. Triggers: "create a skill like this", "build a skill", "create an agent", "set up a command", "add a custom tool", "configure OpenCode", "stack these skills", "modify my workflow", "add MCP server", "write a rule".
+description: Use when building, modifying, or combining agent skills, commands, tools, or platform configurations. Routes user intent to the right specialist skill, stacks skills for multi-domain tasks, and provides concrete recipes.
 metadata:
-  audience: agent-operators
-  workflow: orchestration
-  spec: agentskills.io
+  layer: "0"
+  role: "router"
 allowed-tools: Bash skill
 ---
 
@@ -14,13 +13,13 @@ This skill is LAYER 0 in the loading chain. Before any action:
 
 1. **Verify background skills exist on disk:**
    ```bash
-   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh meta-builder
+   bash scripts/verify-hierarchy.sh meta-builder
    ```
    If this exits 1, the 3 background skills are not available. Do NOT proceed.
 
 2. **Register this skill as loaded:**
    ```bash
-   bash .opencode/state/register-skill.sh meta-builder
+   bash scripts/register-skill.sh meta-builder
    ```
 
 3. **Background skills required (must exist):**
@@ -47,7 +46,7 @@ bash "$(dirname "$0")/../scripts/preflight.sh" "$USER_REQUEST"
 In practice, run the preflight with the user's exact request text:
 
 ```bash
-bash .skills-lab/refactoring-skills/meta-builder/scripts/preflight.sh "<exact user text>"
+bash scripts/preflight.sh "<exact user text>"
 ```
 
 **The preflight script blocks on:**

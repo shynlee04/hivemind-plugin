@@ -1,10 +1,9 @@
 ---
 name: user-intent-interactive-loop
-description: Use when the Agent needs to iteratively probe user intent, maintain context across long sessions, facilitate brainstorming, manage parent/child task delegation, or act as a strategist updating users throughout extended work. Triggers on: "figure out what I want", "help me think through", "keep going with this", "what should we do next", "stay focused on", "don't lose track of", "delegate this", "keep me updated", "long session", "interactive loop", "I want to create", "help me build", "let's work on this together", "I need help figuring out", "turn this into a skill", "clone this pattern".
+description: Use when user intent is unclear, sessions span many turns, or you need to probe requirements before delegating work. Maintains context across long sessions and manages parent/child task delegation.
 metadata:
-  group: "1"
+  layer: "1"
   role: "front-agent"
-  phase: "probe"
 allowed-tools: skill question write edit read bash
 ---
 
@@ -44,7 +43,7 @@ Before ANY action in PROBE phase, the 3 background skills MUST be loaded. This i
 
 1. **Run hierarchy verification:**
    ```bash
-   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh user-intent-interactive-loop
+   bash scripts/verify-hierarchy.sh user-intent-interactive-loop
    ```
    This checks that all 3 background skills are loaded in `.opencode/state/loaded-skills.json`.
 
@@ -52,7 +51,7 @@ Before ANY action in PROBE phase, the 3 background skills MUST be loaded. This i
 
 2. **Register this skill as loaded:**
    ```bash
-   bash .opencode/state/register-skill.sh user-intent-interactive-loop
+   bash scripts/register-skill.sh user-intent-interactive-loop
    ```
 
 3. **Required background skills (must be loaded in this order):**
@@ -76,13 +75,13 @@ After intent appears confirmed:
 
 1. **Run hierarchy verification:**
    ```bash
-   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh user-intent-interactive-loop
+   bash scripts/verify-hierarchy.sh user-intent-interactive-loop
    ```
    If this exits 1, STOP. Load the 3 background skills first.
 
 2. **Register this skill as loaded:**
    ```bash
-   bash .opencode/state/register-skill.sh user-intent-interactive-loop
+   bash scripts/register-skill.sh user-intent-interactive-loop
    ```
 
 3. **Load 3 platform skills (Gate 3):**
@@ -335,74 +334,12 @@ Context is lost between turns by default. The only defense is write-to-disk.
 
 ---
 
-## Worked Example: End-to-End Skill Creation
+## Worked Examples
 
-```
-User: "I want to create a skill like this @.kilo/command/deep-research-synthesis-repomix.md"
-
-Agent: [Loads 3 platform skills first per Gate 3]
-Agent: [Initializes tracking files per FIRST ACTION]
-Agent: [PROBE Phase — Turn 1]
-  question("Should this skill cover just the deep-research synthesis pattern,
-            or also include auditing and eval capabilities?")
-  [Updates intent.json with scope_in/scope_out]
-
-User: "Just the synthesis pattern for now"
-
-Agent: [PROBE Phase — Turn 2]
-  question("What should trigger this skill? Something like 'synthesize this repo'
-            or 'deep research this codebase'?")
-  [Updates intent.json with success_criteria]
-
-User: "Both of those, plus 'analyze this repo deeply'"
-
-Agent: [PROBE Phase — Turn 3]
-  question("Should it follow the exact SKILL.md + references structure,
-            or do you want a simpler single-file version?")
-  [Updates intent.json with constraints]
-
-User: "Full structure with references"
-
-Agent: [Writes intent.json with all 6 fields]
-Agent: [Runs validation loop]
-  bash scripts/intent-verify.sh --probe
-  [Exit 0 — all conditions met]
-
-Agent: [UNDERSTAND Phase]
-  "So: a skill that triggers on 'synthesize this repo', 'deep research this codebase',
-   or 'analyze this repo deeply'. It should use the full SKILL.md + references structure,
-   focused on deep-research synthesis patterns. I'll plan the structure, then delegate
-   the file writing to a subagent. Correct?"
-
-User: "Yes"
-
-Agent: [Writes user confirmation to progress.md]
-Agent: [Runs validation loop again — exit 0]
-Agent: [PLAN Phase — writes task_plan.md]
-  Phase 1: Audit existing skill patterns
-  Phase 2: Draft SKILL.md
-  Phase 3: Write reference files
-  Phase 4: Write scripts
-  Phase 5: Validate and commit
-
-Agent: [DELEGATE Phase]
-  "Spinning up a writer subagent for Phase 1. Budget: 2000 tokens.
-   It will audit existing skill patterns and write findings to disk."
-
-[... subagent completes, reports back ...]
-
-Agent: [UPDATE Phase]
-  "Phase 1 complete. Found 3 relevant patterns. Moving to Phase 2 — drafting SKILL.md."
-
-[... phases 2-5 complete ...]
-
-Agent: [DELIVER Phase — all termination criteria met]
-  "All 5 phases complete. Delivered:
-   - SKILL.md (380 lines)
-   - 4 reference files
-   - 2 validation scripts
-   All committed. Want any adjustments?"
-```
+See `references/05-worked-examples.md` for complete end-to-end examples:
+- Example 1: Skill creation from template (PROBE → UNDERSTAND → PLAN → DELEGATE → DELIVER)
+- Example 2: Vague request — scope clarification
+- Example 3: Long session recovery protocol
 
 ---
 
@@ -439,3 +376,4 @@ Agent: [DELIVER Phase — all termination criteria met]
 | `references/02-context-preservation.md` | Maintaining awareness across sessions — concrete file paths, persistence, recovery, compaction |
 | `references/03-brainstorming-patterns.md` | Facilitating ideation — divergence/convergence, skill-creation examples, decision frameworks |
 | `references/04-long-session-management.md` | Persisting through extended sessions — budget management, explicit termination, checkpoint strategy |
+| `references/05-worked-examples.md` | End-to-end examples: skill creation, vague request handling, session recovery |

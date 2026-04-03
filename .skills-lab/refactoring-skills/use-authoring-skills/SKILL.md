@@ -1,11 +1,10 @@
 ---
 name: use-authoring-skills
-description: Create, audit, refactor, and doctor agent skills. Use when the user wants to create a skill, improve an existing skill, audit skill quality, convert a document to a skill, or fix skill triggers. Covers frontmatter (agentskills.io spec), pattern selection (P1/P2/P3), TDD and template-driven workflows, quality scoring, eval-driven development, and cross-platform compatibility.
+description: Create, audit, refactor, and doctor agent skills. Covers frontmatter, pattern selection, TDD workflows, quality scoring, and cross-platform compatibility.
 metadata:
-  author: hivemind-plugin
-  version: "3.0.0"
-  rebuild-date: "2026-04-03"
-  pattern: "P2-hybrid"
+  layer: "4"
+  role: "domain-execution"
+  pattern: P2-hybrid
 allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
@@ -15,13 +14,13 @@ This skill is LAYER 4 in the loading chain (domain execution). Before any action
 
 1. **Verify hierarchy chain:**
    ```bash
-   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh use-authoring-skills
+   bash scripts/verify-hierarchy.sh use-authoring-skills
    ```
    This checks that meta-builder exists and routed to this skill.
 
 2. **Register this skill as loaded:**
    ```bash
-   bash .opencode/state/register-skill.sh use-authoring-skills
+   bash scripts/register-skill.sh use-authoring-skills
    ```
 
 3. **Prerequisites:**

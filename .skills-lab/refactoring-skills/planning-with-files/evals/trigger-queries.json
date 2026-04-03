@@ -1,0 +1,27 @@
+{
+  "skill": "planning-with-files",
+  "should_trigger": [
+    "plan this out",
+    "break this down into steps",
+    "this is a complex multi-step task",
+    "continue where we left off",
+    "what's the current status?",
+    "I need to organize this work",
+    "session recovery after /clear",
+    "track progress on this feature",
+    "this will take more than 5 tool calls",
+    "create a task plan for the implementation"
+  ],
+  "should_not_trigger": [
+    "delete this file",
+    "add a console.log",
+    "run the tests",
+    "fix the typo on line 42",
+    "show me git status",
+    "what's in this directory?",
+    "create a skill like this @file",
+    "dispatch agents in parallel",
+    "help me figure out what I want",
+    "explain how this works"
+  ]
+}

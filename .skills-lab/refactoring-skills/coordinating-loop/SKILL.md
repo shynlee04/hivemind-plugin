@@ -1,12 +1,11 @@
 ---
 name: coordinating-loop
-description: Use when managing coordination between multiple agents or skills, dispatching parallel agents, deciding between sequential vs parallel execution, maintaining parent-child agent cycles, integrating ralph-loop patterns, or orchestrating multi-agent workflows. Triggers: "dispatch agents", "parallel agents", "coordinate agents", "agent handoff", "sequential vs parallel", "ralph loop", "agent lifecycle", "multi-agent workflow", "orchestrate", "loop until pass", "agent coordination".
+description: Use when dispatching multiple agents, deciding between sequential vs parallel execution, or orchestrating multi-agent workflows with validation gates.
 metadata:
-  audience: agent-coordinators
-  workflow: multi-agent
+  layer: "3"
+  role: "coordinator"
   min-tasks: 2
-  platforms: opencode,claude-ai,cowork,no-subagent
-allowed-tools: Bash,Read,Write,Edit,Glob,Grep,todowrite,skill
+allowed-tools: Bash Read Write Edit Glob Grep todowrite skill
 ---
 
 ## HIERARCHY ENFORCEMENT — Run This FIRST
@@ -15,13 +14,13 @@ This skill is LAYER 3 in the loading chain (coordination). Before any action:
 
 1. **Verify hierarchy chain:**
    ```bash
-   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh coordinating-loop
+   bash scripts/verify-hierarchy.sh coordinating-loop
    ```
    This checks that `planning-with-files` is loaded and `task_plan.md` exists with a Goal section.
 
 2. **Register this skill as loaded:**
    ```bash
-   bash .opencode/state/register-skill.sh coordinating-loop
+   bash scripts/register-skill.sh coordinating-loop
    ```
 
 3. **Prerequisites:**

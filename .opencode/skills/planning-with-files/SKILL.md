@@ -1,12 +1,11 @@
 ---
 name: planning-with-files
-description: Use filesystem as persistent memory for complex tasks. Creates task_plan.md, findings.md, progress.md in project root. Triggers on: "plan this", "break down", "multi-step", "complex task", "session recovery", "/clear", or any work requiring >5 tool calls. Prevents goal drift via goal-refresh pattern.
+description: Use filesystem as persistent memory for complex tasks. Creates task_plan.md, findings.md, and progress.md in project root. Prevents goal drift via goal-refresh pattern.
 metadata:
-  audience: agents
-  workflow: planning
-  min-tool-calls: "5"
-  enforcement: scripts + checklists
-allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
+  layer: "2"
+  role: "persistent-memory"
+  min-tool-calls: 5
+allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
 ## HIERARCHY ENFORCEMENT — Run This FIRST
@@ -15,13 +14,13 @@ This skill is LAYER 2 in the loading chain (persistent memory). Before any actio
 
 1. **Verify hierarchy chain:**
    ```bash
-   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh planning-with-files
+   bash scripts/verify-hierarchy.sh planning-with-files
    ```
    This checks that `user-intent-interactive-loop` is loaded and intent has been confirmed.
 
 2. **Register this skill as loaded:**
    ```bash
-   bash .opencode/state/register-skill.sh planning-with-files
+   bash scripts/register-skill.sh planning-with-files
    ```
 
 3. **Prerequisites:**
