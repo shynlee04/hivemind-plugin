@@ -1,10 +1,68 @@
-# Task Plan: Meta-Builder — Enforcement Fix
+# Task Plan: Meta-Builder — Skill Hierarchy Enforcement
 
-**Goal:** Fix 5 skill packs so they actually enforce behavior, not just describe it. All 5 pass validation scripts but fail in real tests.
+**Goal:** Make the 5 skill ecosystem work as a connected system with enforced loading order, background knowledge, and real gates. Phase 2 scripts exist but AI still ignores them in real tests (3rd failure).
 
-**Current Phase:** Phase 2 — Enforcement Fix
+**Current Phase:** Phase 3 — Hierarchy Enforcement + Real Test
 
-**Status:** ⚠️ PHASE 1 VALIDATED BUT FAILS IN REAL TESTS — All 5 packs pass validate-skill.sh (11/11) but AI ignores all gates in practice.
+**Status:** ⚠️ 3RD FAILURE — Scripts exist, AI ignores them. Need enforced loading chain.
+
+## Skill Hierarchy (Enforced Loading Order)
+
+```
+BACKGROUND SKILLS (load FIRST — before ANY of the 5)
+├── opencode-platform-reference     — SDK, agents, commands, tools, configs, permissions
+├── repomix-exploration-guide       — Codebase exploration patterns
+└── opencode-non-interactive-shell  — Shell execution strategy
+
+LAYER 0: ROUTER
+└── meta-builder
+    ├── Runs preflight.sh (deterministic scoring)
+    ├── Routes intent → GROUP 1 or GROUP 2 specialist
+    └── Depends on: ALL other skills exist on disk
+
+LAYER 1: FRONT AGENT (user relationship)
+└── user-intent-interactive-loop
+    ├── MUST load 3 background skills FIRST
+    ├── PROBE → UNDERSTAND → PLAN → DELEGATE
+    ├── Blocks until 6 stop conditions met (intent-verify.sh)
+    └── Hands off to: coordinating-loop
+
+LAYER 2: PERSISTENT MEMORY
+└── planning-with-files
+    ├── Loads AFTER user-intent confirms intent
+    ├── Creates task_plan.md, findings.md, progress.md
+    ├── Goal-refresh every 5 tool calls
+    └── Feeds: coordinating-loop (task inventory)
+
+LAYER 3: COORDINATION
+└── coordinating-loop
+    ├── Loads AFTER planning-with-files creates task_plan.md
+    ├── ASSESS → DISPATCH → MONITOR → INTEGRATE → VERIFY
+    ├── Gate scripts block each phase (G1-G5)
+    └── Ralph-loop: validate → fix → re-dispatch (max 3)
+```
+
+## Phases
+
+- [x] Phase 1: Build 5 skill packs, validate scripts pass (11/11 each)
+- [x] Phase 2: Add enforcement scripts to each pack
+- [ ] Phase 3: Enforce hierarchical loading chain
+  - [ ] 3a. Each SKILL.md has mandatory "load these first" block with script verification
+  - [ ] 3b. first-action.sh runs and blocks until background skills loaded
+  - [ ] 3c. Cross-skill state files (.opencode/state/) track loading order
+  - [ ] 3d. Test: Load meta-builder → verify it loads background → routes → loads specialist
+- [ ] Phase 4: Test against real failure scenario (fucking-stupid-ai-test3.md)
+- [ ] Phase 5: Iterate until test passes
+
+## Key Decisions (LOCKED — see findings.md)
+
+| Decision | Locked Answer |
+|----------|---------------|
+| Coordinator role | PLAN + DELEGATE, NEVER execute directly |
+| Planning files | UPDATE existing files, NEVER create new ones |
+| Background skills | 3 platform skills MUST load before any GROUP 1 skill |
+| Loading order | meta-builder → user-intent → planning → coordinating |
+| Enforcement | Scripts that exit non-zero block progression |
 
 ## Phase 2: Enforcement Fix
 

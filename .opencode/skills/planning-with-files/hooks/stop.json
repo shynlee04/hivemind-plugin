@@ -1,0 +1,19 @@
+{
+  "name": "stop",
+  "description": "Run check-complete.sh on session stop to verify phase completion",
+  "trigger": "session.idle",
+  "match": {
+    "always": true
+  },
+  "action": {
+    "type": "command",
+    "command": "bash scripts/check-complete.sh",
+    "working_directory": ".",
+    "capture_output": true,
+    "display": "always"
+  },
+  "enforcement": {
+    "completion_check": true,
+    "report_incomplete": true
+  }
+}
