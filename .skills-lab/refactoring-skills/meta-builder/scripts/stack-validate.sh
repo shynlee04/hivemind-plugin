@@ -2,9 +2,10 @@
 set -euo pipefail
 
 # stack-validate.sh — Checks if a proposed skill combination is valid
-# Usage: bash scripts/stack-validate.sh <skill1> [skill2] [skill3]
+# Usage: bash stack-validate.sh <skill1> [skill2] [skill3]
 # Validates: no trigger conflicts, no shared state mutation, no dependency cycles
 # Exit 0 = valid, Exit 1 = invalid
+# Compatible with bash 3.2 (macOS default)
 
 readonly SCRIPT_NAME="$(basename "$0")"
 
@@ -24,15 +25,84 @@ errors=0
 fail() { echo "FAIL: $1" >&2; errors=$((errors + 1)); }
 pass() { echo "PASS: $1"; }
 
+# --- Build search paths ---
+
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+skill_search_paths=()
+
+skill_search_paths+=("$script_dir/..")
+
+if [[ -n "${PROJECT_ROOT:-}" ]]; then
+  skill_search_paths+=("$PROJECT_ROOT/.opencode/skills")
+  skill_search_paths+=("$PROJECT_ROOT/.agents/skills")
+  skill_search_paths+=("$PROJECT_ROOT/.claude/skills")
+else
+  git_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -n "$git_root" ]]; then
+    skill_search_paths+=("$git_root/.opencode/skills")
+    skill_search_paths+=("$git_root/.agents/skills")
+    skill_search_paths+=("$git_root/.claude/skills")
+  fi
+fi
+
+skill_search_paths+=("$HOME/.config/opencode/skills")
+skill_search_paths+=("$HOME/.agents/skills")
+skill_search_paths+=("$HOME/.claude/skills")
+
+skill_search_paths+=("$script_dir/../../.opencode/skills")
+skill_search_paths+=("$script_dir/../../.agents/skills")
+skill_search_paths+=("$script_dir/../../.claude/skills")
+
+# Deduplicate paths (bash 3.2 compatible — no associative arrays)
+unique_paths=()
+for p in "${skill_search_paths[@]}"; do
+  real_p="$(cd "$p" 2>/dev/null && pwd || true)"
+  if [[ -n "$real_p" ]]; then
+    already=false
+    for up in "${unique_paths[@]+"${unique_paths[@]}"}"; do
+      if [[ "$up" == "$real_p" ]]; then
+        already=true
+        break
+      fi
+    done
+    if [[ "$already" == false ]]; then
+      unique_paths+=("$real_p")
+    fi
+  fi
+done
+
+# --- Helper: find skill path ---
+# Sets FOUND_SKILL_PATH if found, empty if not
+find_skill_path() {
+  local skill_name="$1"
+  FOUND_SKILL_PATH=""
+  for dir in "${unique_paths[@]}"; do
+    if [[ -f "$dir/$skill_name/SKILL.md" ]]; then
+      FOUND_SKILL_PATH="$dir/$skill_name"
+      return 0
+    fi
+  done
+  return 1
+}
+
 # --- Gate 1: All Skills Exist ---
 
-skill_base="$(dirname "$0")/.."
+# Store paths in parallel arrays (bash 3.2 compatible)
+skill_path_1=""
+skill_path_2=""
+skill_path_3=""
 
-for skill in "${skills[@]}"; do
-  if [[ -f "$skill_base/$skill/SKILL.md" ]]; then
-    pass "Skill '$skill' exists"
+for i in "${!skills[@]}"; do
+  skill="${skills[$i]}"
+  if find_skill_path "$skill"; then
+    pass "Skill '$skill' exists at $FOUND_SKILL_PATH"
+    case $i in
+      0) skill_path_1="$FOUND_SKILL_PATH" ;;
+      1) skill_path_2="$FOUND_SKILL_PATH" ;;
+      2) skill_path_3="$FOUND_SKILL_PATH" ;;
+    esac
   else
-    fail "Skill '$skill' not found at $skill_base/$skill/SKILL.md"
+    fail "Skill '$skill' not found in any searched path"
   fi
 done
 
@@ -41,33 +111,76 @@ if [[ $errors -gt 0 ]]; then
   exit 1
 fi
 
+# Helper to get skill path by index
+get_skill_path() {
+  case $1 in
+    0) echo "$skill_path_1" ;;
+    1) echo "$skill_path_2" ;;
+    2) echo "$skill_path_3" ;;
+  esac
+}
+
 # --- Gate 2: Trigger Overlap Check ---
 
-# Extract description (trigger surface) from each skill
-declare -A descriptions
-for skill in "${skills[@]}"; do
-  desc=$(awk '/^---$/{n++; next} n==1 && /^description:/{sub(/^description: */,""); print; exit}' "$skill_base/$skill/SKILL.md" 2>/dev/null || true)
-  descriptions["$skill"]="$desc"
+# Extract descriptions
+desc_1=""
+desc_2=""
+desc_3=""
+
+for i in "${!skills[@]}"; do
+  skill_md="$(get_skill_path $i)/SKILL.md"
+  desc=$(awk 'NR==1{next} /^---$/{exit} /^description:/{sub(/^description: */,""); print; exit}' "$skill_md" 2>/dev/null || true)
+  case $i in
+    0) desc_1="$desc" ;;
+    1) desc_2="$desc" ;;
+    2) desc_3="$desc" ;;
+  esac
 done
 
-# Check for overlapping trigger phrases between pairs
+get_desc() {
+  case $1 in
+    0) echo "$desc_1" ;;
+    1) echo "$desc_2" ;;
+    2) echo "$desc_3" ;;
+  esac
+}
+
 overlap_found=false
 for ((i=0; i<${#skills[@]}; i++)); do
   for ((j=i+1; j<${#skills[@]}; j++)); do
     skill_a="${skills[$i]}"
     skill_b="${skills[$j]}"
-    desc_a="${descriptions[$skill_a]}"
-    desc_b="${descriptions[$skill_b]}"
+    desc_a="$(get_desc $i)"
+    desc_b="$(get_desc $j)"
 
-    # Extract trigger keywords (phrases after "Triggers:", "Use when")
-    triggers_a=$(echo "$desc_a" | grep -oiE '(use when|triggers?)[^"]*' 2>/dev/null || true)
-    triggers_b=$(echo "$desc_b" | grep -oiE '(use when|triggers?)[^"]*' 2>/dev/null || true)
+    # Extract trigger keywords — only the actual trigger phrases after "Triggers:"
+    triggers_a=$(echo "$desc_a" | grep -oE 'Triggers:.*' 2>/dev/null | sed 's/^Triggers: *//' || true)
+    triggers_b=$(echo "$desc_b" | grep -oE 'Triggers:.*' 2>/dev/null | sed 's/^Triggers: *//' || true)
 
-    # Check for shared trigger words (3+ character words)
+    # If no explicit Triggers: field, extract key action phrases from description
+    if [[ -z "$triggers_a" ]]; then
+      triggers_a=$(echo "$desc_a" | grep -oiE '"[^"]*"' 2>/dev/null | tr -d '"' || true)
+    fi
+    if [[ -z "$triggers_b" ]]; then
+      triggers_b=$(echo "$desc_b" | grep -oiE '"[^"]*"' 2>/dev/null | tr -d '"' || true)
+    fi
+
     if [[ -n "$triggers_a" ]] && [[ -n "$triggers_b" ]]; then
-      shared=$(echo "$triggers_a $triggers_b" | tr ' ' '\n' | sort | uniq -d | grep -E '.{3,}' 2>/dev/null || true)
-      if [[ -n "$shared" ]]; then
-        fail "Trigger overlap between '$skill_a' and '$skill_b': shared triggers detected"
+      # Strip quotes, split on comma to get individual trigger phrases
+      # Check if any trigger phrase from A appears in B (or vice versa)
+      overlap_detected=false
+      while IFS= read -r phrase_a; do
+        phrase_a=$(echo "$phrase_a" | tr -d '"' | sed 's/^ *//;s/ *$//' | tr '[:upper:]' '[:lower:]')
+        [[ -z "$phrase_a" ]] && continue
+        # Check if this phrase appears in triggers_b
+        if echo "$triggers_b" | tr -d '"' | tr '[:upper:]' '[:lower:]' | grep -qiF "$phrase_a" 2>/dev/null; then
+          overlap_detected=true
+          break
+        fi
+      done <<< "$(echo "$triggers_a" | tr ',' '\n')"
+
+      if [[ "$overlap_detected" == true ]]; then
+        fail "Trigger overlap between '$skill_a' and '$skill_b': shared trigger phrases detected"
         overlap_found=true
       fi
     fi
@@ -80,27 +193,38 @@ fi
 
 # --- Gate 3: Shared State Check ---
 
-# Check if multiple skills write to the same files
-declare -A handoff_files
-for skill in "${skills[@]}"; do
-  # Extract file references from Handoff Paths section
-  files=$(awk '/^## Handoff Paths/{found=1; next} /^## /{found=0} found && /\|.*\|.*\|/{print}' "$skill_base/$skill/SKILL.md" 2>/dev/null || true)
-  if [[ -n "$files" ]]; then
-    handoff_files["$skill"]="$files"
-  fi
+# Extract handoff files
+handoff_1=""
+handoff_2=""
+handoff_3=""
+
+for i in "${!skills[@]}"; do
+  skill_md="$(get_skill_path $i)/SKILL.md"
+  files=$(awk '/^## Handoff Paths/{found=1; next} /^## /{found=0} found && /\|.*\|.*\|/{print}' "$skill_md" 2>/dev/null || true)
+  case $i in
+    0) handoff_1="$files" ;;
+    1) handoff_2="$files" ;;
+    2) handoff_3="$files" ;;
+  esac
 done
 
-# Check for overlapping file paths
+get_handoff() {
+  case $1 in
+    0) echo "$handoff_1" ;;
+    1) echo "$handoff_2" ;;
+    2) echo "$handoff_3" ;;
+  esac
+}
+
 state_conflict=false
 for ((i=0; i<${#skills[@]}; i++)); do
   for ((j=i+1; j<${#skills[@]}; j++)); do
     skill_a="${skills[$i]}"
     skill_b="${skills[$j]}"
-    files_a="${handoff_files[$skill_a]:-}"
-    files_b="${handoff_files[$skill_b]:-}"
+    files_a="$(get_handoff $i)"
+    files_b="$(get_handoff $j)"
 
     if [[ -n "$files_a" ]] && [[ -n "$files_b" ]]; then
-      # Check for common file patterns
       common=$(comm -12 <(echo "$files_a" | tr '|' '\n' | sed 's/^ *//;s/ *$//' | sort -u) <(echo "$files_b" | tr '|' '\n' | sed 's/^ *//;s/ *$//' | sort -u) 2>/dev/null || true)
       if [[ -n "$common" ]]; then
         fail "Shared state conflict: '$skill_a' and '$skill_b' may write to overlapping files"
@@ -116,29 +240,42 @@ fi
 
 # --- Gate 4: Dependency Cycle Check ---
 
-# Extract "Required Skill Loads" from each skill
-declare -A dependencies
-for skill in "${skills[@]}"; do
-  deps=$(awk '/^## Required Skill Loads/{found=1; next} /^## /{found=0} found && /\|.*\|.*\|/{print}' "$skill_base/$skill/SKILL.md" 2>/dev/null || true)
-  dependencies["$skill"]="$deps"
+# Extract dependencies
+deps_1=""
+deps_2=""
+deps_3=""
+
+for i in "${!skills[@]}"; do
+  skill_md="$(get_skill_path $i)/SKILL.md"
+  deps=$(awk '/^## Required Skill Loads/{found=1; next} /^## /{found=0} found && /\|.*\|.*\|/{print}' "$skill_md" 2>/dev/null || true)
+  case $i in
+    0) deps_1="$deps" ;;
+    1) deps_2="$deps" ;;
+    2) deps_3="$deps" ;;
+  esac
 done
 
-# Check for cycles: if A requires B and B requires A
+get_deps() {
+  case $1 in
+    0) echo "$deps_1" ;;
+    1) echo "$deps_2" ;;
+    2) echo "$deps_3" ;;
+  esac
+}
+
 cycle_found=false
 for ((i=0; i<${#skills[@]}; i++)); do
   for ((j=i+1; j<${#skills[@]}; j++)); do
     skill_a="${skills[$i]}"
     skill_b="${skills[$j]}"
-    deps_a="${dependencies[$skill_a]:-}"
-    deps_b="${dependencies[$skill_b]:-}"
+    deps_a="$(get_deps $i)"
+    deps_b="$(get_deps $j)"
 
-    # Check if A requires B
     a_requires_b=false
     if echo "$deps_a" | grep -qi "$skill_b" 2>/dev/null; then
       a_requires_b=true
     fi
 
-    # Check if B requires A
     b_requires_a=false
     if echo "$deps_b" | grep -qi "$skill_a" 2>/dev/null; then
       b_requires_a=true
@@ -157,13 +294,14 @@ fi
 
 # --- Gate 5: Reference File Integrity ---
 
-for skill in "${skills[@]}"; do
-  skill_md="$skill_base/$skill/SKILL.md"
+for i in "${!skills[@]}"; do
+  skill="${skills[$i]}"
+  skill_md="$(get_skill_path $i)/SKILL.md"
+  skill_dir="$(get_skill_path $i)"
 
-  # Extract referenced files
   while IFS= read -r ref; do
     [[ -z "$ref" ]] && continue
-    ref_path="$skill_base/$skill/$ref"
+    ref_path="$skill_dir/$ref"
 
     if [[ "$ref" == *"*"* ]]; then
       shopt -s nullglob

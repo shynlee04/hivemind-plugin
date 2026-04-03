@@ -1,53 +1,52 @@
-# OpenCode Concepts
+# OpenCode Concepts — Conditional Reference
 
-Overview of the 10 OpenCode meta concepts that power the harness framework. Each concept is summarized with its purpose, key configuration patterns, and how it maps to skill triggers.
+**Do NOT read this file unless the user's request involves OpenCode configuration.**
 
----
+Read this file only when the user mentions: agents, commands, tools, skills, permissions, custom tools, MCP servers, LSP servers, rules, or configs.
 
-## Concept Map
-
-```
-OpenCode Platform
-├── Agents          → Specialized AI assistants (primary + subagent)
-├── Commands        → Reusable prompt templates (/my-command)
-├── Tools           → Built-in capabilities (read, write, bash, etc.)
-├── Skills          → Reusable behavior definitions (SKILL.md)
-├── Permissions     → Access control (allow, ask, deny)
-├── Custom Tools    → User-defined functions (tool() helper)
-├── MCP Servers     → External tool integrations (Model Context Protocol)
-├── LSP Servers     → Code intelligence (Language Server Protocol)
-├── Rules           → Custom instructions (AGENTS.md)
-└── Configs         → Platform settings (opencode.json)
-```
+For skill creation, agent authoring, or workflow design — skip this file and route to the appropriate authoring skill.
 
 ---
 
-## 1. Agents
+## Quick Concept Index
 
-**Purpose:** Specialized AI assistants configured for specific tasks and workflows.
+| Concept | Read When User Says | Route To |
+|---------|-------------------|----------|
+| **Agents** | "create agent", "configure agent", "subagent", "agent permissions" | `opencode-platform-reference` |
+| **Commands** | "custom command", "/my-command", "command template", "$ARGUMENTS" | `opencode-platform-reference` |
+| **Tools** | "restrict tool", "enable tool", "disable tool", "tool permissions" | `opencode-platform-reference` |
+| **Skills** | "skill permissions", "skill discovery", "skill loading" | `use-authoring-skills` |
+| **Permissions** | "permission", "allow", "deny", "ask", "pattern matching" | `opencode-platform-reference` |
+| **Custom Tools** | "tool()", ".opencode/tools/", "custom function", "TypeScript tool" | `opencode-tool-architect` |
+| **MCP Servers** | "MCP", "Model Context Protocol", "external tool", "OAuth" | `opencode-platform-reference` |
+| **LSP Servers** | "LSP", "language server", "code intelligence" | `opencode-platform-reference` |
+| **Rules** | "AGENTS.md", "instructions", "custom rules", "project rules" | `opencode-platform-reference` |
+| **Configs** | "opencode.json", "config", "settings", "environment variables" | `opencode-platform-reference` |
 
-**Key Concepts:**
-- **Primary agents** — main assistants (Build, Plan). Full or restricted tool access.
+---
+
+## Agents
+
+**Definition:** Specialized AI assistants configured for specific tasks.
+
+**Types:**
+- **Primary agents** — main assistants (Build, Plan). Cycle with Tab key.
 - **Subagents** — specialized assistants invoked by primary agents or @ mention (General, Explore).
-- **Configuration** — JSON in `opencode.json` or markdown files in `.opencode/agents/`.
-- **Options** — model, temperature, steps, prompt, tools/permissions, mode, hidden, color, top_p.
 
-**Trigger Mapping:**
-| User Says | Route To |
-|-----------|----------|
-| "Create a code review agent" | `use-authoring-agents` (future) |
-| "Configure agent permissions" | This skill → permissions concept |
-| "Set up a subagent for docs" | `use-authoring-agents` (future) |
+**Configuration locations:**
+- JSON: `opencode.json` → `"agent": { "name": { ... } }`
+- Markdown: `.opencode/agents/<name>.md` or `~/.config/opencode/agents/<name>.md`
 
-**Key Config Pattern:**
+**Key options:** `description` (required), `mode` (primary|subagent|all), `model`, `temperature`, `steps`, `permission`, `hidden`, `color`, `top_p`.
+
+**Permission pattern:**
 ```json
 {
   "agent": {
-    "code-reviewer": {
-      "description": "Reviews code for quality",
+    "reviewer": {
+      "description": "Code review without edits",
       "mode": "subagent",
-      "model": "anthropic/claude-sonnet-4-20250514",
-      "permission": { "edit": "deny", "bash": "ask" }
+      "permission": { "edit": "deny", "bash": { "*": "ask", "git *": "allow" } }
     }
   }
 }
@@ -55,233 +54,137 @@ OpenCode Platform
 
 ---
 
-## 2. Commands
+## Commands
 
-**Purpose:** Custom commands for repetitive tasks, invoked with `/command-name`.
+**Definition:** Custom commands invoked with `/command-name` in the TUI.
 
-**Key Concepts:**
-- **Definition** — markdown files in `.opencode/commands/` or JSON in `opencode.json`.
-- **Placeholders** — `$ARGUMENTS`, `$1`, `$2`, `!command` (shell output), `@file` (file reference).
-- **Options** — template, description, agent, model, subtask.
+**Configuration locations:**
+- Markdown: `.opencode/commands/<name>.md` or `~/.config/opencode/commands/<name>.md`
+- JSON: `opencode.json` → `"command": { "name": { ... } }`
 
-**Trigger Mapping:**
-| User Says | Route To |
-|-----------|----------|
-| "Create a /test command" | `use-authoring-commands` (future) |
-| "Add shell output to command" | `use-authoring-commands` (future) |
-| "Override a built-in command" | This skill → commands concept |
+**Placeholders:**
+- `$ARGUMENTS` — all arguments as one string
+- `$1`, `$2`, `$3` — positional arguments
+- `` !`command` `` — inject shell output
+- `@file` — include file content
+
+**Example:**
+```markdown
+---
+description: Run tests with coverage
+agent: build
+---
+
+Run the full test suite: !`npm test`
+Focus on failing tests and suggest fixes.
+```
 
 ---
 
-## 3. Tools (Built-in)
+## Permissions
 
-**Purpose:** Core capabilities the Agent can use during execution.
+**Definition:** Control which actions require approval, are allowed, or are blocked.
 
-**Available Tools:**
-| Tool | Purpose | Permission Key |
-|------|---------|----------------|
-| `bash` | Execute shell commands | bash |
-| `edit` | Modify existing files | edit |
-| `write` | Create/overwrite files | edit |
-| `read` | Read file contents | read |
-| `grep` | Search file contents | grep |
-| `glob` | Find files by pattern | glob |
-| `list` | List directory contents | list |
-| `lsp` | Code intelligence queries | lsp |
-| `patch` | Apply patches | edit |
-| `skill` | Load skill definitions | skill |
-| `todowrite` | Manage task lists | todowrite |
-| `webfetch` | Fetch web content | webfetch |
-| `websearch` | Search the web | websearch |
-| `question` | Ask user questions | question |
+**Values:** `"allow"` (run without approval), `"ask"` (prompt), `"deny"` (block).
 
-**Trigger Mapping:**
-| User Says | Route To |
-|-----------|----------|
-| "Restrict tool access" | This skill → permissions concept |
-| "Enable web search" | This skill → tools concept |
-| "Disable a built-in tool" | This skill → permissions concept |
+**Rule order:** Last matching rule wins. Put catch-all `*` first, specific rules after.
+
+**Available keys:** `read`, `edit`, `glob`, `grep`, `list`, `bash`, `task`, `skill`, `lsp`, `question`, `webfetch`, `websearch`, `codesearch`, `external_directory`.
+
+**Skill permissions:**
+```json
+{
+  "permission": {
+    "skill": {
+      "*": "allow",
+      "internal-*": "deny",
+      "experimental-*": "ask"
+    }
+  }
+}
+```
 
 ---
 
-## 4. Skills
+## Custom Tools
 
-**Purpose:** Reusable behavior definitions loaded on-demand via the `skill` tool.
+**Definition:** User-defined functions the Agent can call alongside built-in tools.
 
-**Key Concepts:**
-- **Location** — `.opencode/skills/<name>/SKILL.md`, `.agents/skills/<name>/SKILL.md`, or global paths.
-- **Discovery** — OpenCode walks up from CWD to git worktree, loading all matching `skills/*/SKILL.md`.
-- **Frontmatter** — `name` (required, max 64 chars), `description` (required, max 1024 chars).
-- **Permissions** — Pattern-based: `"*": "allow"`, `"internal-*": "deny"`.
+**Location:** `.opencode/tools/<name>.ts` or `~/.config/opencode/tools/<name>.ts`
 
-**Trigger Mapping:**
-| User Says | Route To |
-|-----------|----------|
-| "Write a new skill" | `use-authoring-skills` |
-| "Configure skill permissions" | This skill → permissions concept |
-| "Why isn't my skill loading?" | This skill → skills troubleshooting |
+**Structure:**
+```typescript
+import { tool } from "@opencode-ai/plugin"
 
----
+export default tool({
+  description: "Tool description",
+  args: { param: tool.schema.string().describe("Parameter description") },
+  async execute(args, context) {
+    return `Result: ${args.param}`
+  },
+})
+```
 
-## 5. Permissions
-
-**Purpose:** Control which actions require approval, are allowed, or are blocked.
-
-**Key Concepts:**
-- **Actions** — `"allow"` (run without approval), `"ask"` (prompt), `"deny"` (block).
-- **Granular rules** — Object syntax with pattern matching: `"git *": "allow"`.
-- **Rule order** — Last matching rule wins. Put catch-all `*` first, specific rules after.
-- **Wildcards** — `*` matches zero or more characters, `?` matches exactly one.
-- **External directories** — `external_directory` for paths outside working directory.
-- **Agent overrides** — Per-agent permissions merge with and override global defaults.
-
-**Available Permission Keys:**
-`read`, `edit`, `glob`, `grep`, `list`, `bash`, `task`, `skill`, `lsp`, `question`, `webfetch`, `websearch`, `codesearch`, `external_directory`, `doom_loop`
-
-**Trigger Mapping:**
-| User Says | Route To |
-|-----------|----------|
-| "Set up permissions for my agent" | This skill → permissions concept |
-| "Allow only git commands" | This skill → permissions concept |
-| "Block file edits" | This skill → permissions concept |
+**Multiple exports:** `<filename>_<exportname>` naming.
 
 ---
 
-## 6. Custom Tools
+## MCP Servers
 
-**Purpose:** User-defined functions the Agent can call, alongside built-in tools.
+**Definition:** External tool integrations via Model Context Protocol.
 
-**Key Concepts:**
-- **Definition** — TypeScript/JavaScript files in `.opencode/tools/` or `~/.config/opencode/tools/`.
-- **Helper** — `tool()` from `@opencode-ai/plugin` provides type-safety and validation.
-- **Schema** — `tool.schema` (Zod) for argument types.
-- **Context** — Receives `agent`, `sessionID`, `messageID`, `directory`, `worktree`.
-- **Naming** — Filename becomes tool name. Multiple exports: `<filename>_<exportname>`.
-- **Override** — Custom tools with same name as built-in tools take precedence.
+**Types:** `local` (command-based) or `remote` (URL-based).
 
-**Trigger Mapping:**
-| User Says | Route To |
-|-----------|----------|
-| "Create a custom tool" | `use-authoring-tools` (future) |
-| "Write a tool in Python" | `use-authoring-tools` (future) |
-| "Override the bash tool" | This skill → custom tools concept |
+**Management CLI:** `opencode mcp list`, `opencode mcp auth <name>`, `opencode mcp debug <name>`.
 
 ---
 
-## 7. MCP Servers
+## LSP Servers
 
-**Purpose:** External tool integrations via Model Context Protocol.
+**Definition:** Language Server Protocol for code intelligence.
 
-**Key Concepts:**
-- **Types** — `local` (command-based) or `remote` (URL-based).
-- **Local config** — `command` array, `environment` variables, `timeout`.
-- **Remote config** — `url`, `headers`, `oauth` (automatic or pre-registered).
-- **Management** — `opencode mcp list`, `opencode mcp auth <name>`, `opencode mcp debug <name>`.
-- **Glob patterns** — `"my-mcp*": false` to disable all matching MCPs.
-- **Per-agent** — Disable globally, enable per-agent for selective access.
+**Built-in:** 40+ servers auto-detected by file extension.
 
-**Trigger Mapping:**
-| User Says | Route To |
-|-----------|----------|
-| "Add a GitHub MCP server" | This skill → MCP concept |
-| "Configure OAuth for MCP" | This skill → MCP concept |
-| "Disable MCP for specific agent" | This skill → MCP concept |
+**Operations:** goToDefinition, findReferences, hover, documentSymbol, workspaceSymbol.
 
 ---
 
-## 8. LSP Servers
+## Rules
 
-**Purpose:** Language Server Protocol integration for code intelligence.
+**Definition:** Custom instructions guiding Agent behavior.
 
-**Key Concepts:**
-- **Built-in** — 40+ servers for TypeScript, Python, Rust, Go, etc.
-- **Auto-detection** — Enabled when file extensions match and requirements are met.
-- **Operations** — goToDefinition, findReferences, hover, documentSymbol, workspaceSymbol, etc.
-- **Custom** — Add custom LSP servers with `command` and `extensions`.
-- **Disable** — `lsp: false` globally, or `disabled: true` per server.
+**Locations (precedence order):**
+1. Project `AGENTS.md` (walks up from CWD to git worktree)
+2. Global `~/.config/opencode/AGENTS.md`
+3. Claude Code compatible: `CLAUDE.md` fallback
 
-**Trigger Mapping:**
-| User Says | Route To |
-|-----------|----------|
-| "Enable LSP for my language" | This skill → LSP concept |
-| "Configure TypeScript LSP" | This skill → LSP concept |
-| "Disable all LSP servers" | This skill → LSP concept |
+**Custom instructions:** `instructions` array in `opencode.json` for additional files or remote URLs.
 
 ---
 
-## 9. Rules
+## Configs
 
-**Purpose:** Custom instructions that guide Agent behavior.
+**Definition:** Platform-wide settings in `opencode.json`.
 
-**Key Concepts:**
-- **Primary file** — `AGENTS.md` in project root.
-- **Locations** — Project (`AGENTS.md`), global (`~/.config/opencode/AGENTS.md`), Claude Code compatible (`CLAUDE.md` fallback).
-- **Precedence** — Local files by traversing up → global → Claude Code fallback. First matching file wins per category.
-- **Custom instructions** — `instructions` array in `opencode.json` for additional files or remote URLs.
-- **External file references** — Use `@file` pattern in AGENTS.md to teach Agent to load files on demand.
+**Precedence:** Remote → Global → Custom (env) → Project → `.opencode/` → Inline (env). Later overrides earlier for conflicts; non-conflicting keys merge.
 
-**Trigger Mapping:**
-| User Says | Route To |
-|-----------|----------|
-| "Write AGENTS.md for my project" | This skill → rules concept |
-| "Add custom instructions" | This skill → rules concept |
-| "Set up project rules" | This skill → rules concept |
-
----
-
-## 10. Configs
-
-**Purpose:** Platform-wide settings in `opencode.json`.
-
-**Key Concepts:**
-- **Precedence** — Remote → Global → Custom (env) → Project → `.opencode/` → Inline (env). Later overrides earlier for conflicts; non-conflicting keys merge.
-- **Format** — JSON or JSONC (with comments).
-- **Variable substitution** — `{env:VAR_NAME}` for environment variables, `{file:path}` for file contents.
-- **TUI config** — Separate `tui.json` for UI settings (theme, keybinds, scroll speed).
-- **Key sections** — model, provider, agent, command, mcp, lsp, permission, plugin, instructions, formatter, watcher, compaction, snapshot, autoupdate, share, server.
-
-**Trigger Mapping:**
-| User Says | Route To |
-|-----------|----------|
-| "Configure my OpenCode setup" | This skill → configs concept |
-| "Set up environment variables" | This skill → configs concept |
-| "Change the default model" | This skill → configs concept |
+**Variable substitution:** `{env:VAR_NAME}` for environment variables, `{file:path}` for file contents.
 
 ---
 
 ## Concept Interdependencies
 
-Concepts do not exist in isolation. They reference and depend on each other:
-
 ```
 Configs (opencode.json)
-  ├── defines → Agents, Commands, MCP, LSP, Permissions, Plugins
+  ├── defines → Agents, Commands, MCP, LSP, Permissions
   ├── references → Rules (instructions), Skills (permissions)
-  └── overrides → Global defaults, remote configs
+  └── overrides → Global defaults
 
 Agents
   ├── use → Tools, Skills, Permissions, Custom Tools
-  ├── invoke → Subagents, Commands
   └── configured in → Configs, Markdown files
 
 Permissions
-  ├── control → Tools, Skills, Tasks, External Directories
-  ├── override → Per-agent, per-command
+  ├── control → Tools, Skills, Tasks
   └── defined in → Configs, Agent markdown
-
-Skills
-  ├── loaded by → skill tool (controlled by permissions)
-  ├── discovered in → .opencode/skills/, .agents/skills/
-  └── reference → All other concepts (as knowledge)
 ```
-
----
-
-## Cross-References
-
-| Reference | Relationship |
-|-----------|-------------|
-| `references/01-routing-logic.md` | How these concepts map to routing decisions |
-| `references/03-stacking-rules.md` | How to combine concepts in advanced stacks |
-| `SKILL.md` (parent) | The concept integration table |
-| OpenCode docs | Source material: `.skills-lab/refactoring-skills/users-prompting-workspace-resources/opencode/` |

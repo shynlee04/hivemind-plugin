@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # route-check.sh — Validates a routing decision against available skills
-# Usage: bash scripts/route-check.sh <group> <skill-name>
+# Usage: bash route-check.sh <group> <skill-name>
 #   group: GROUP_1, GROUP_2, or GROUP_3
 #   skill-name: name of the target skill (e.g., use-authoring-skills)
 # Exit 0 = valid, Exit 1 = invalid
@@ -24,44 +24,90 @@ case "$GROUP" in
     ;;
   *)
     fail "Invalid group '$GROUP'. Must be GROUP_1, GROUP_2, or GROUP_3"
-    echo "Cannot continue without valid group" >&2
     exit 1
     ;;
 esac
 
-# --- Gate 2: Skill Exists ---
+# --- Gate 2: Skill Exists (searches global + local paths) ---
 
-# Search in known skill directories
-skill_dirs=(
-  "$(dirname "$0")/.."
-  "$(dirname "$0")/../../.agents/skills"
-  "$(dirname "$0")/../../.opencode/skills"
-  "$(dirname "$0")/../../.claude/skills"
-)
+# Build search paths: local, project, and global skill directories
+skill_search_paths=()
+
+# Local: sibling directories to this script
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+skill_search_paths+=("$script_dir/..")
+
+# Project-level skill directories
+if [[ -n "${PROJECT_ROOT:-}" ]]; then
+  skill_search_paths+=("$PROJECT_ROOT/.opencode/skills")
+  skill_search_paths+=("$PROJECT_ROOT/.agents/skills")
+  skill_search_paths+=("$PROJECT_ROOT/.claude/skills")
+else
+  # Try to detect project root from git
+  git_root="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+  if [[ -n "$git_root" ]]; then
+    skill_search_paths+=("$git_root/.opencode/skills")
+    skill_search_paths+=("$git_root/.agents/skills")
+    skill_search_paths+=("$git_root/.claude/skills")
+  fi
+fi
+
+# Global skill directories
+skill_search_paths+=("$HOME/.config/opencode/skills")
+skill_search_paths+=("$HOME/.agents/skills")
+skill_search_paths+=("$HOME/.claude/skills")
+
+# Also check the skills-lab refactoring directory (development path)
+skill_search_paths+=("$script_dir/../../.opencode/skills")
+skill_search_paths+=("$script_dir/../../.agents/skills")
+skill_search_paths+=("$script_dir/../../.claude/skills")
+
+# Deduplicate paths (bash 3.2 compatible — no associative arrays)
+unique_paths=()
+for p in "${skill_search_paths[@]}"; do
+  real_p="$(cd "$p" 2>/dev/null && pwd || true)"
+  if [[ -n "$real_p" ]]; then
+    # Check if already in unique_paths
+    already=false
+    for up in "${unique_paths[@]+"${unique_paths[@]}"}"; do
+      if [[ "$up" == "$real_p" ]]; then
+        already=true
+        break
+      fi
+    done
+    if [[ "$already" == false ]]; then
+      unique_paths+=("$real_p")
+    fi
+  fi
+done
 
 found=false
-for dir in "${skill_dirs[@]}"; do
+found_path=""
+for dir in "${unique_paths[@]}"; do
   if [[ -d "$dir/$SKILL_NAME" ]] && [[ -f "$dir/$SKILL_NAME/SKILL.md" ]]; then
     found=true
-    pass "Skill '$SKILL_NAME' found at $dir/$SKILL_NAME"
+    found_path="$dir/$SKILL_NAME"
+    pass "Skill '$SKILL_NAME' found at $found_path"
     break
   fi
 done
 
 if [[ "$found" == false ]]; then
-  fail "Skill '$SKILL_NAME' not found in any known skill directory"
+  fail "Skill '$SKILL_NAME' not found in any searched path"
+  echo "Searched paths:" >&2
+  for dir in "${unique_paths[@]}"; do
+    echo "  $dir/$SKILL_NAME" >&2
+  done
 fi
 
 # --- Gate 3: Group-Skill Compatibility ---
 
-# GROUP_1 skills (implementation)
 group_1_skills=(
   "user-intent-interactive-loop"
   "coordinating-loop"
   "planning-with-files"
 )
 
-# GROUP_2 skills (domain authoring)
 group_2_skills=(
   "use-authoring-skills"
   "use-authoring-agents"
@@ -70,35 +116,27 @@ group_2_skills=(
   "use-authoring-workflows"
 )
 
-# GROUP_3 is shared concepts — no specific skills, just reference material
-
 case "$GROUP" in
   GROUP_1)
     match=false
     for s in "${group_1_skills[@]}"; do
-      if [[ "$s" == "$SKILL_NAME" ]]; then
-        match=true
-        break
-      fi
+      [[ "$s" == "$SKILL_NAME" ]] && match=true && break
     done
     if [[ "$match" == true ]]; then
       pass "Skill '$SKILL_NAME' is valid for GROUP_1"
     else
-      fail "Skill '$SKILL_NAME' is not a GROUP_1 skill. Expected one of: ${group_1_skills[*]}"
+      fail "Skill '$SKILL_NAME' is not a GROUP_1 skill. Expected: ${group_1_skills[*]}"
     fi
     ;;
   GROUP_2)
     match=false
     for s in "${group_2_skills[@]}"; do
-      if [[ "$s" == "$SKILL_NAME" ]]; then
-        match=true
-        break
-      fi
+      [[ "$s" == "$SKILL_NAME" ]] && match=true && break
     done
     if [[ "$match" == true ]]; then
       pass "Skill '$SKILL_NAME' is valid for GROUP_2"
     else
-      fail "Skill '$SKILL_NAME' is not a GROUP_2 skill. Expected one of: ${group_2_skills[*]}"
+      fail "Skill '$SKILL_NAME' is not a GROUP_2 skill. Expected: ${group_2_skills[*]}"
     fi
     ;;
   GROUP_3)
@@ -108,35 +146,25 @@ esac
 
 # --- Gate 4: Frontmatter Compliance ---
 
-if [[ "$found" == true ]]; then
-  skill_md=""
-  for dir in "${skill_dirs[@]}"; do
-    if [[ -f "$dir/$SKILL_NAME/SKILL.md" ]]; then
-      skill_md="$dir/$SKILL_NAME/SKILL.md"
-      break
-    fi
-  done
+if [[ "$found" == true ]] && [[ -n "$found_path" ]]; then
+  skill_md="$found_path/SKILL.md"
 
-  if [[ -n "$skill_md" ]]; then
-    # Check for name field
-    if grep -q "^name: $SKILL_NAME" "$skill_md" 2>/dev/null; then
-      pass "Frontmatter name matches skill name"
-    else
-      # Try extracting name from frontmatter
-      fm_name=$(awk '/^---$/{n++; next} n==1{if(/^name:/){print $2; exit}}' "$skill_md" 2>/dev/null || true)
-      if [[ "$fm_name" == "$SKILL_NAME" ]]; then
-        pass "Frontmatter name matches skill name"
-      else
-        fail "Frontmatter name does not match skill name '$SKILL_NAME'"
-      fi
-    fi
+  # Extract name from frontmatter
+  fm_name=$(awk 'NR==1{next} /^---$/{exit} /^name:/{sub(/^name: */,""); gsub(/["'\'']/, ""); print; exit}' "$skill_md" 2>/dev/null || true)
 
-    # Check for description field
-    if grep -q "^description:" "$skill_md" 2>/dev/null; then
-      pass "Frontmatter description present"
-    else
-      fail "Frontmatter description missing"
-    fi
+  if [[ "$fm_name" == "$SKILL_NAME" ]]; then
+    pass "Frontmatter name matches skill name"
+  elif [[ -n "$fm_name" ]]; then
+    fail "Frontmatter name '$fm_name' does not match expected '$SKILL_NAME'"
+  else
+    fail "Could not extract name from frontmatter"
+  fi
+
+  # Check for description field
+  if grep -q '^description:' "$skill_md" 2>/dev/null; then
+    pass "Frontmatter description present"
+  else
+    fail "Frontmatter description missing"
   fi
 fi
 

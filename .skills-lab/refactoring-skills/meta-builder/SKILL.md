@@ -1,256 +1,173 @@
 ---
 name: meta-builder
-description: Use when creating, modifying, or stacking agent skills, commands, tools, agents, workflows, or OpenCode configurations. Routes user intent to implementation skills (GROUP 1) or domain authoring skills (GROUP 2). Triggers: "build a skill", "create an agent", "set up a command", "configure OpenCode", "stack these skills", "modify my workflow", "add a custom tool", "set permissions", "add MCP server", "configure LSP", "write a rule", "meta concept", "harness framework".
+description: Use when building, modifying, or combining agent skills, commands, tools, agents, or OpenCode configurations. Routes intent to the right authoring skill, stacks skills for multi-domain tasks, and provides concrete recipes. Triggers: "create a skill like this", "build a skill", "create an agent", "set up a command", "add a custom tool", "configure OpenCode", "stack these skills", "modify my workflow", "add MCP server", "write a rule".
+metadata:
+  audience: agent-operators
+  workflow: orchestration
+  spec: agentskills.io
+allowed-tools: Bash skill
 ---
 
 # meta-builder
 
-Parent orchestrator for the harness framework. Routes user intent to specialist skills, stacks concepts together, and integrates OpenCode meta concepts into coherent workflows. Deep material lives in `references/`; this body encodes routing logic, stacking rules, and concept integration.
+Thin routing orchestrator. Routes user intent to specialist authoring skills, stacks skills for multi-domain tasks, and provides concrete recipes.
 
 ---
 
-## Required Skill Loads
+## FIRST ACTION — Do This Immediately
 
-| Purpose | Skills |
-|---------|--------|
-| Creating/improving skills | `skill-creator`, `skill-development`, `writing-skills` |
-| Auditing/refactoring skills | `skill-judge`, `skill-review` |
-| Git-backed memory | `gcc` |
-| Long-running planning | `planning-with-files` |
-| Skill discovery | `find-skills` |
-| Parallel orchestration | `dispatching-parallel-agents` |
+When this skill loads, execute these steps in order. Do not skip.
 
----
-
-## When to Load
-
-| User Intent | Route |
-|-------------|-------|
-| "Create a new skill" / "write a skill" | → GROUP 2: `use-authoring-skills` |
-| "Help me figure out what I want" / "brainstorm" | → GROUP 1: `user-intent-interactive-loop` |
-| "Coordinate multiple agents" / "dispatch in parallel" | → GROUP 1: `coordinating-loop` |
-| "Plan this complex task" / "break it down" | → GROUP 1: `planning-with-files` |
-| "Set up an agent" / "configure agents" | → GROUP 2: `use-authoring-agents` (future) |
-| "Create a command" / "add /my-command" | → GROUP 2: `use-authoring-commands` (future) |
-| "Build a custom tool" / "add a tool" | → GROUP 2: `use-authoring-tools` (future) |
-| "Design a workflow" / "set up automation" | → GROUP 2: `use-authoring-workflows` (future) |
-| "Add MCP server" / "configure LSP" / "set permissions" | → This skill (OpenCode concepts) |
-| "Stack multiple skills together" | → This skill (stacking rules) |
+1. **Read the user's request.** Extract the core intent in one sentence.
+2. **Match against the Routing Table below.** Find the row whose "User Says" pattern matches.
+3. **Load the target skill** via the `skill` tool. Do NOT execute directly — delegate.
+4. **If the task spans multiple domains**, apply a Stacking Recipe (see below).
+5. **If intent is unclear**, ask at most 3 clarifying questions (use the `question` tool, max 3 at a time).
 
 ---
 
-## Core Pattern: The Routing Loop
+## Routing Table — User Says X → Do Y
+
+| User Says | Primary Skill | Stack With | Reference |
+|-----------|--------------|------------|-----------|
+| "create a skill like this @file" | `use-authoring-skills` | `skill-creator` | 01-routing-logic.md |
+| "write a skill" / "build a skill" | `use-authoring-skills` | `writing-skills` | 01-routing-logic.md |
+| "audit this skill" / "improve this skill" | `use-authoring-skills` | — | 01-routing-logic.md |
+| "create an agent" / "configure agent" | `opencode-platform-reference` | — | 02-opencode-concepts.md |
+| "set up a command" / "add /my-command" | `opencode-platform-reference` | — | 02-opencode-concepts.md |
+| "build a custom tool" / "add a tool" | `opencode-tool-architect` | — | 02-opencode-concepts.md |
+| "configure OpenCode" / "opencode.json" | `opencode-platform-reference` | — | 02-opencode-concepts.md |
+| "add MCP server" / "configure LSP" | `opencode-platform-reference` | — | 02-opencode-concepts.md |
+| "write a rule" / "AGENTS.md" | `opencode-platform-reference` | — | 02-opencode-concepts.md |
+| "stack skills" / "combine skills" | This skill | See recipes below | 03-stacking-rules.md |
+| "help me figure out what I want" | `user-intent-interactive-loop` | — | 01-routing-logic.md |
+| "coordinate agents" / "dispatch parallel" | `coordinating-loop` | `dispatching-parallel-agents` | 01-routing-logic.md |
+| "plan this" / "break it down" | `planning-with-files` | — | 01-routing-logic.md |
+
+---
+
+## Routing Decision Formula
+
+GROUP 1 (implementation methodology) and GROUP 2 (domain authoring) use **different** scoring:
 
 ```
-DETECT INTENT → CLASSIFY GROUP → LOAD SKILL → EXECUTE → INTEGRATE → REPEAT
+GROUP 1 score = (process_verbs × 3) + (coordination_nouns × 2) + (planning_modifiers × 1)
+GROUP 2 score = (creation_verbs × 3) + (entity_nouns × 2) + (new_modifiers × 1)
 ```
 
-### Step 1: Detect Intent
+**Process verbs** (GROUP 1): figure out, explore, brainstorm, coordinate, dispatch, plan, organize
+**Creation verbs** (GROUP 2): create, build, write, design, set up, add, configure
+**Coordination nouns** (GROUP 1): parallel, batch, handoff, orchestrate, multiple
+**Entity nouns** (GROUP 2): skill, agent, command, tool, workflow, MCP, LSP, rule
+**Planning modifiers** (GROUP 1): complex, multi-step, long-running, iterative
+**New modifiers** (GROUP 2): new, from scratch, first time, template
 
-Parse the user's natural language for signals:
-
-| Signal Type | Examples | Classification |
-|-------------|----------|----------------|
-| Creation verbs | "create", "build", "write", "design" | GROUP 2 (authoring) |
-| Exploration verbs | "figure out", "explore", "brainstorm", "what if" | GROUP 1 (implementation) |
-| Coordination verbs | "coordinate", "dispatch", "parallel", "orchestrate" | GROUP 1 (implementation) |
-| Planning verbs | "plan", "break down", "organize", "structure" | GROUP 1 (implementation) |
-| Configuration nouns | "agent", "command", "tool", "permission", "MCP", "LSP" | GROUP 2 or this skill |
-| Stacking verbs | "combine", "stack", "chain", "integrate" | This skill (stacking) |
-
-### Step 2: Classify Group
-
-| GROUP | Purpose | Skills |
-|-------|---------|--------|
-| **GROUP 1** | How-to-implement — execution methodology | `user-intent-interactive-loop`, `coordinating-loop`, `planning-with-files` |
-| **GROUP 2** | Domain authoring — creating OpenCode entities | `use-authoring-skills`, `use-authoring-agents`, `use-authoring-commands`, `use-authoring-tools`, `use-authoring-workflows` |
-| **GROUP 3** | Shared concepts — stackable knowledge | OpenCode meta concepts (agents, tools, commands, configs, skills, rules, permissions, custom-tools, MCP servers, LSP servers) |
-
-### Step 3: Load and Execute
-
-Load the target skill via the `skill` tool. Execute within that skill's methodology. The coordinator NEVER executes directly — it delegates.
-
-### Step 4: Integrate
-
-After execution, check if additional skills need stacking. If the task spans multiple domains, load complementary skills and re-route.
-
-### Step 5: Repeat
-
-Loop until the user's intent is fully satisfied. Write state to disk every turn.
-
-→ Full routing logic: `references/01-routing-logic.md`
+Route to the group with the higher score. If within 2 points, probe the user.
 
 ---
 
-## Routing Table
+## Stacking Recipes
 
+Concrete combinations for common multi-domain tasks. Max 3 skills per stack.
+
+### Recipe 1: Create Skill from Template
 ```
-User says: "I want to create a skill for code review"
-  → GROUP 2: use-authoring-skills
-  → Stack with: skill-creator, writing-skills
-
-User says: "Help me think through this architecture"
-  → GROUP 1: user-intent-interactive-loop
-  → Stack with: planning-with-files
-
-User says: "Run these 3 tasks in parallel"
-  → GROUP 1: coordinating-loop
-  → Stack with: dispatching-parallel-agents
-
-User says: "Set up a custom agent with restricted tools"
-  → GROUP 2: use-authoring-agents (future)
-  → Stack with: OpenCode concepts (agents + permissions)
-
-User says: "Add an MCP server and configure permissions"
-  → This skill (OpenCode concepts)
-  → Reference: references/02-opencode-concepts.md
-
-User says: "Combine skill authoring with parallel dispatch"
-  → This skill (stacking)
-  → Load: use-authoring-skills + coordinating-loop
-  → Reference: references/03-stacking-rules.md
+Primary:     use-authoring-skills
+Complement:  skill-creator
+Purpose:     Convert a file/template into a valid SKILL.md
+Steps:       1. Read template  2. Apply frontmatter  3. Write body  4. Validate
 ```
 
-→ Full routing logic: `references/01-routing-logic.md`
+### Recipe 2: Create Skill + Parallel Audit
+```
+Primary:     use-authoring-skills
+Complement:  coordinating-loop
+Purpose:     Author a skill while auditing existing ones in parallel
+Steps:       1. Draft skill  2. Dispatch audit subagent  3. Merge results
+```
+
+### Recipe 3: Full Meta Work (Routing + Authoring + Persistence)
+```
+Primary:     use-authoring-skills
+Complement:  planning-with-files, coordinating-loop
+Purpose:     Long-running skill authoring with persistent state
+Steps:       1. Init task_plan.md  2. Author skill  3. Track phases  4. Validate
+```
+
+### Recipe 4: OpenCode Configuration
+```
+Primary:     opencode-platform-reference
+Complement:  meta-builder (this skill)
+Purpose:     Configure agents, commands, tools, MCP, LSP, permissions
+Steps:       1. Identify concept  2. Read concept reference  3. Apply config
+```
 
 ---
 
-## Stacking Guide
+## Worked Example
 
-Skills stack when a task spans multiple domains. Rules:
+**User says:** "I want to create a skill like this @.kilo/command/deep-research-synthesis-repomix.md"
 
-1. **Load the primary skill first** — the one matching the user's main intent.
-2. **Load complementary skills second** — skills that support the primary workflow.
-3. **Never load conflicting skills** — check for scope overlap before stacking.
-4. **Maximum 3 skills active simultaneously** — beyond that, context dilutes.
-5. **Write stacking decisions to disk** — record which skills are loaded and why.
-
-### Valid Combinations
-
-| Primary | Complementary | Purpose |
-|---------|--------------|---------|
-| `use-authoring-skills` | `skill-creator` | Creating skills with TDD |
-| `user-intent-interactive-loop` | `planning-with-files` | Long sessions with persistent memory |
-| `coordinating-loop` | `dispatching-parallel-agents` | Multi-agent orchestration |
-| `meta-builder` | Any GROUP 1 + GROUP 2 | Full-stack meta work |
-
-### Invalid Combinations
-
-| Conflict | Reason |
-|----------|--------|
-| Two skills with same trigger | Scope overlap — pick one |
-| Depth skill + routing skill | Identity crisis — pick a lane |
-| Skills writing to same file | Shared state mutation |
-
-→ Full stacking rules: `references/03-stacking-rules.md`
+1. **Extract intent:** User wants to create a new skill from an existing file template.
+2. **Match routing table:** Row 1 — "create a skill like this @file" → `use-authoring-skills`
+3. **Apply stacking recipe:** Recipe 1 — Create Skill from Template
+4. **Load skills:** `skill({ name: "use-authoring-skills" })` then `skill({ name: "skill-creator" })`
+5. **Execute within those skills' workflows** — do NOT execute directly from meta-builder.
 
 ---
 
-## OpenCode Concept Integration
+## Progressive Disclosure — What to Read When
 
-The 10 OpenCode meta concepts map to skill triggers:
-
-| Concept | Maps To | Trigger Signal |
-|---------|---------|----------------|
-| **Agents** | `use-authoring-agents` (future) | "create agent", "configure agent", "subagent" |
-| **Commands** | `use-authoring-commands` (future) | "custom command", "/my-command", "command bundle" |
-| **Tools** | `use-authoring-tools` (future) | "custom tool", "built-in tool", "tool access" |
-| **Skills** | `use-authoring-skills` | "write a skill", "skill authoring", "SKILL.md" |
-| **Permissions** | This skill + `use-authoring-tools` | "permission", "allow", "deny", "ask" |
-| **Custom Tools** | `use-authoring-tools` (future) | "tool()", ".opencode/tools/", "custom function" |
-| **MCP Servers** | This skill | "MCP", "Model Context Protocol", "external tool" |
-| **LSP Servers** | This skill | "LSP", "language server", "code intelligence" |
-| **Rules** | This skill | "AGENTS.md", "instructions", "custom rules" |
-| **Configs** | This skill | "opencode.json", "config", "settings" |
-
-→ Full concept guide: `references/02-opencode-concepts.md`
+| Situation | Read This | Skip This |
+|-----------|-----------|-----------|
+| Creating a skill | Routing Table → Recipe 1 → load `use-authoring-skills` | 02-opencode-concepts.md, 04-hivemind-compatibility.md |
+| Configuring OpenCode | Routing Table → Recipe 4 → 02-opencode-concepts.md | 01-routing-logic.md, 03-stacking-rules.md |
+| Stacking skills | Routing Table → Stacking Recipes → 03-stacking-rules.md | 02-opencode-concepts.md, 04-hivemind-compatibility.md |
+| Intent unclear | Routing Table → probe user → load `user-intent-interactive-loop` | All references until intent is clear |
 
 ---
 
-## HiveMind v3 Alignment
+## Anti-Patterns — With Detection
 
-This skill aligns with the clean architecture:
-
-| HiveMind Principle | meta-builder Implementation |
-|--------------------|---------------------------|
-| Skills as config | Skills are markdown — declarative, not code |
-| Tools as write side | Custom tools mutate state; skills guide how |
-| Hooks as read side | Hooks observe; skills instruct what to observe |
-| Code vs config boundary | Business logic in TypeScript; workflows in markdown |
-| CQRS enforcement | Skills read (guide); tools write (execute) |
-| Zero runtime deps | Pure markdown + shell scripts |
-| Non-breaking changes | Progressive disclosure, additive only |
-
-→ Full compatibility: `references/04-hivemind-compatibility.md`
+| Anti-Pattern | What It Looks Like | How to Detect |
+|-------------|-------------------|---------------|
+| Executor | meta-builder edits files directly | Check: did this skill call write/edit? If yes, STOP. |
+| Hoarder | 4+ skills loaded simultaneously | Count active skills. If >3, unload the least relevant. |
+| Blind Router | Routing without reading user request | Check: did you extract intent before matching? |
+| Concept Dumper | Loading all 10 OpenCode concepts at once | Check: does the user's request mention MCP/LSP/agents? If not, skip 02-opencode-concepts.md. |
+| Silent Worker | Many turns without user update | Check: has the user been informed of the routing decision? |
 
 ---
 
-## Operating Discipline
+## Platform Adaptation
 
-1. **Coordinator NEVER executes directly** — PLAN + DELEGATE only.
-2. **Write-to-disk every turn** — coherence is lost by default.
-3. **Record and commit ALL changes** — if it's not in git, it doesn't exist.
-4. **Frame skeleton first** — map architecture before deep work.
-5. **Max 3 domains, max 5k LOC per subagent** — split when compare-and-contrast is needed.
-6. **Sequential preference** — favor sequential over parallel when possible.
-7. **Disk-based synthesis** — ALL subagent outputs written to disk.
-
----
-
-## Terminology Mandate
-
-| Refer to | Use | NOT |
-|----------|-----|-----|
-| The AI entity | "Agent" | Claude, GPT, Gemini |
-| The config file | "AGENTS.md" | CLAUDE.md |
-| Platform | Universal | OpenCode-specific only |
-
-OpenCode is the closest measurement, but ALL agentic platforms must work.
+| Platform | Skill Tool | Skill Path | Config |
+|----------|-----------|------------|--------|
+| OpenCode | `skill` tool | `.opencode/skills/`, `~/.config/opencode/skills/` | `opencode.json` |
+| Claude Code | `Skill` tool | `.claude/skills/`, `~/.claude/skills/` | `CLAUDE.md` |
+| Codex | `Skill` tool | `.agents/skills/`, `~/.agents/skills/` | `AGENTS.md` |
+| Cursor | `Skill` tool | `.agents/skills/`, `~/.agents/skills/` | `.cursor/rules/` |
 
 ---
 
-## Anti-Patterns
+## Future Skills — Fallback Behavior
 
-1. **The Coordinator Executor** — Coordinator edits files directly. Delegate.
-2. **The Skill Hoarder** — Loading 5+ skills at once. Max 3.
-3. **The Routing Blind Spot** — Missing natural language triggers. Detect intent, don't wait for explicit skill names.
-4. **The Stack Overflow** — Stacking conflicting skills. Check for overlap first.
-5. **The Concept Duplicator** — Repeating OpenCode docs in skill content. Reference, don't duplicate.
-6. **The Platform Loyalist** — Hardcoding platform-specific commands. Stay universal.
-7. **The Silent Worker** — Executing for many turns without updates. Update at phase boundaries.
-8. **The Context Amnesiac** — Losing state between turns. Write to disk every turn.
-9. **The Premature Router** — Routing before understanding intent. Probe first.
-10. **The Orphan Stack** — Loading skills without integration plan. Always define handoff paths.
+The following GROUP 2 skills do not yet exist. When routing to them, use the fallback:
+
+| Missing Skill | Fallback |
+|--------------|----------|
+| `use-authoring-agents` | `opencode-platform-reference` (agents concept) |
+| `use-authoring-commands` | `opencode-platform-reference` (commands concept) |
+| `use-authoring-tools` | `opencode-tool-architect` |
+| `use-authoring-workflows` | `opencode-platform-reference` + `coordinating-loop` |
 
 ---
 
 ## Reference Map
 
-| File | Purpose |
-|------|---------|
-| `references/01-routing-logic.md` | How to detect and classify user intent into GROUP 1 vs GROUP 2 |
-| `references/02-opencode-concepts.md` | All 10 OpenCode meta concepts — what they are, how they map to triggers |
-| `references/03-stacking-rules.md` | How to combine multiple skills without conflicts or cycles |
-| `references/04-hivemind-compatibility.md` | HiveMind v3 alignment — skills as config, tools as write, hooks as read |
-
----
-
-## Cross-References
-
-| Skill | Relationship |
-|-------|-------------|
-| `use-authoring-skills` | GROUP 2 — skill authoring domain. This skill routes to it. |
-| `user-intent-interactive-loop` | GROUP 1 — iterative user engagement. This skill routes to it. |
-| `coordinating-loop` | GROUP 1 — multi-agent orchestration. This skill routes to it. |
-| `planning-with-files` | GROUP 1 — persistent memory. This skill routes to it. |
-| `skill-creator` | Supporting — creates skills. Loaded alongside GROUP 2. |
-| `gcc` | Supporting — git-backed memory. Loaded for long sessions. |
-
----
-
-## Scripts
-
-| Script | Purpose | When to Run |
-|--------|---------|-------------|
-| `scripts/route-check.sh` | Validates routing decision against available skills | After classifying user intent |
-| `scripts/stack-validate.sh` | Checks if a skill combination is valid | Before loading multiple skills |
+| File | When to Read |
+|------|-------------|
+| `references/01-routing-logic.md` | Intent is ambiguous; need detailed classification |
+| `references/02-opencode-concepts.md` | User asks about OpenCode config (agents, commands, tools, MCP, LSP, permissions, rules) |
+| `references/03-stacking-rules.md` | Task spans 2+ domains; need validation checklist |
+| `references/04-hivemind-compatibility.md` | Only if working with HiveMind v3 TypeScript modules |
