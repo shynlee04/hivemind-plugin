@@ -15,6 +15,80 @@ timeline:
     branch: harness-experiment
     date: "2026-04-02T19:53:15Z"
 
+  - id: C001
+    hash: 1c8b02ab
+    intent: "batch-1: use-authoring-skills completion"
+    branch: harness-experiment
+    date: "2026-04-03T04:17:00Z"
+
+  - id: C002
+    hash: 76bca536
+    intent: "batch-1: user-intent-interactive-loop created"
+    branch: harness-experiment
+    date: "2026-04-03T05:46:00Z"
+
+  - id: C003
+    hash: 078f9796
+    intent: "batch-1: coordinating-loop created"
+    branch: harness-experiment
+    date: "2026-04-03T05:46:00Z"
+
+  - id: C004
+    hash: af46bc3d
+    intent: "batch-2: fixes (duplicates, scripts, cross-refs)"
+    branch: harness-experiment
+    date: "2026-04-03T06:00:00Z"
+
+  - id: C005
+    hash: ff845c65
+    intent: "batch-2: meta-builder parent orchestrator created"
+    branch: harness-experiment
+    date: "2026-04-03T06:00:00Z"
+    note: "7 files: SKILL.md (256), 4 refs (1000), 2 scripts (346). Routing, OpenCode concepts, stacking rules, HiveMind v3 alignment."
+
+  - id: C006
+    hash: 7c726efe
+    intent: "batch-2: cross-package bridging spec"
+    branch: harness-experiment
+    date: "2026-04-03T06:00:00Z"
+    note: "988 lines, 13 sections. Dependency graph, stacking rules, 6 integration test scenarios."
+
+  - id: C007
+    hash: d264a580
+    intent: "batch-2: SOT docs updated for long-haul"
+    branch: harness-experiment
+    date: "2026-04-03T06:00:00Z"
+
+  - id: C008
+    hash: fc3088cf
+    intent: "validation gate: all 5 packs pass 11/11"
+    branch: harness-experiment
+    date: "2026-04-03T06:30:00Z"
+
 worktrees: []
 
-decisions: []
+decisions:
+  - id: D001
+    date: "2026-04-03T06:30:00Z"
+    decision: "Coordinator NEVER executes directly — plan + delegate only"
+    rationale: "User mandate. Repeated violations caused frustration."
+
+  - id: D002
+    date: "2026-04-03T06:30:00Z"
+    decision: "All skills use 'Agent' not 'Claude', 'AGENTS.md' not 'CLAUDE.md'"
+    rationale: "Universal platform requirement — works across OpenCode, Claude Code, Codex, Cursor."
+
+  - id: D003
+    date: "2026-04-03T06:30:00Z"
+    decision: "No 'compatibility' field in frontmatter"
+    rationale: "User explicitly rejected as 'nonsense'."
+
+  - id: D004
+    date: "2026-04-03T06:30:00Z"
+    decision: "Coverage wins over concision"
+    rationale: "Agents must not struggle to find depth. Users of all backgrounds will use these skills."
+
+  - id: D005
+    date: "2026-04-03T06:30:00Z"
+    decision: "'Adaptive with constraints' not 'flexibility'"
+    rationale: "User's framework — templates, examples, expected cases, fallbacks."
