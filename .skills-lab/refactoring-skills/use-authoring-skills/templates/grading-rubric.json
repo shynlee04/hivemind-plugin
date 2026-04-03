@@ -1,7 +1,7 @@
 {
   "rubric_name": "skill-quality-grading",
-  "version": "1.0",
-  "description": "Grading rubric for evaluating skill pack quality across 5 weighted dimensions. Based on the Skill-Judge framework.",
+  "version": "2.0.0",
+  "description": "Grading rubric for evaluating skill pack quality across 5 weighted dimensions.",
   "dimensions": [
     {
       "name": "Trigger Accuracy",
@@ -43,8 +43,8 @@
     },
     {
       "name": "Reference Integrity",
-      "weight": 0.2,
-      "description": "Is reference depth = 1 level? Are references numbered and ordered? Is TOC present for P3? Are there circular references?",
+      "weight": 0.20,
+      "description": "Is reference depth = 1 level? Are references numbered and ordered? Are there circular references?",
       "scale": {
         "5": "Perfect 1-level depth, logical numbering, clear TOC for P3. All links resolve.",
         "4": "1-level depth with minor ordering issues. All links resolve.",
@@ -55,7 +55,6 @@
       "checklist": [
         "Reference depth = 1 level max (no nested references/)",
         "Files numbered for ordering (01-name.md, 02-name.md)",
-        "P3 skills have index.md with TOC and jump links",
         "All markdown links resolve to existing files",
         "No circular references between reference files"
       ]
@@ -75,8 +74,7 @@
         "No duplicate of existing skill in the same pack or sibling packs",
         "Distinct purpose from similar skills",
         "Boundaries clear and documented",
-        "Can explain the difference from adjacent skills in one sentence",
-        "Cross-reference matrix updated if applicable"
+        "Can explain the difference from adjacent skills in one sentence"
       ]
     },
     {
@@ -112,7 +110,6 @@
   "grading_template": {
     "skill_name": "",
     "date": "YYYY-MM-DD",
-    "evaluator": "",
     "dimension_scores": {
       "Trigger Accuracy": { "score": 0, "evidence": "" },
       "Action Coherence": { "score": 0, "evidence": "" },

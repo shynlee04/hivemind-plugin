@@ -106,9 +106,6 @@ fi
 
 # --- Gate 7: Terminology Compliance ---
 
-# Check for banned terminology used as recommended (not as examples of what to avoid).
-# A line is a violation if it contains the banned term AND does NOT contain
-# exclusion keywords that indicate it's documentation about what NOT to use.
 banned_terms_found=0
 
 check_banned_term() {
@@ -131,15 +128,11 @@ check_banned_term() {
   return 0
 }
 
-check_banned_term "CLAUDE\.md" "CLAUDE.md"
-check_banned_term "CLAUDE\.local\.md" "CLAUDE.local.md"
+check_banned_term "CLAUDE\.md" "CLAUDE.md" || banned_terms_found=1
+check_banned_term "CLAUDE\.local\.md" "CLAUDE.local.md" || banned_terms_found=1
+
 # "Claude" check — exclude "Claude Code" (platform name) references
 if grep -ri "Claude " "$SKILL_DIR" --include="*.md" 2>/dev/null | grep -v "Claude Code" | grep -vi "not " | grep -vi "no '" | grep -vi "avoid" | grep -vi "banned" | grep -vi "instead" | grep -vi "uses " | grep -vi "platform" | grep -vi "compat" | grep -vi "example" | grep -vi "wrong" | grep -vi "do not" | grep -vi "don't" | grep -vi "should not" | grep -vi "never use" | grep -vi "replace" | grep -v '"CLAUDE' | grep -v '"Claude' | grep -v '| CLAUDE' | grep -v '| Claude' | grep -q .; then
-  fail "Banned term 'Claude' used to refer to the Agent (use 'Agent' instead)"
-  banned_terms_found=1
-fi
-# Additional filter: remove "Claude Code" platform references
-if grep -ri "Claude " "$SKILL_DIR" --include="*.md" 2>/dev/null | grep -vi "Claude Code" | grep -vi "not " | grep -vi "no '" | grep -vi "avoid" | grep -vi "banned" | grep -vi "instead" | grep -vi "uses " | grep -vi "platform" | grep -vi "compat" | grep -vi "example" | grep -vi "wrong" | grep -vi "do not" | grep -vi "don't" | grep -vi "should not" | grep -vi "never use" | grep -vi "replace" | grep -v '"CLAUDE' | grep -v '"Claude' | grep -v '| CLAUDE' | grep -v '| Claude' | grep -q .; then
   fail "Banned term 'Claude' used to refer to the Agent (use 'Agent' instead)"
   banned_terms_found=1
 fi

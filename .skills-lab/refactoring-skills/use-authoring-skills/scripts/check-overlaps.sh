@@ -4,7 +4,6 @@ set -euo pipefail
 # check-overlaps.sh — Checks for content overlap/duplication across reference files
 # Usage: bash scripts/check-overlaps.sh <skill-directory>
 # Exit 0 = no significant overlaps, Exit 1 = overlaps detected (with report to stdout)
-# Portable: works on macOS (bash 3.2) and Linux (bash 4+)
 
 readonly SCRIPT_NAME="$(basename "$0")"
 readonly SKILL_DIR="${1:?Usage: $SCRIPT_NAME <skill-directory>}"
@@ -18,8 +17,6 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
-
-# --- Helper functions ---
 
 report_overlap() {
   local severity="$1"
@@ -54,12 +51,10 @@ if [[ ${#md_files[@]} -lt 2 ]]; then
   exit 0
 fi
 
-# Create temp directory for intermediate data
 tmp_dir=$(mktemp -d)
 
 # --- Gate 3: Check for Duplicate Headings ---
 
-# Extract all H2 headings with file source into a temp file
 heading_file="$tmp_dir/headings.txt"
 > "$heading_file"
 
@@ -71,7 +66,6 @@ for file in "${md_files[@]}"; do
   done >> "$heading_file" || true
 done
 
-# Find duplicate headings (same heading in different files)
 if [[ -s "$heading_file" ]]; then
   sort "$heading_file" | while IFS='|' read -r heading file; do
     echo "$heading"
@@ -79,7 +73,6 @@ if [[ -s "$heading_file" ]]; then
 
   while IFS= read -r dup_heading; do
     [[ -z "$dup_heading" ]] && continue
-    # Find which files have this heading
     files_with_heading=$(grep "^${dup_heading}|" "$heading_file" | cut -d'|' -f2 | sort -u)
     file_count=$(echo "$files_with_heading" | wc -l | tr -d ' ')
     if [[ "$file_count" -gt 1 ]]; then
@@ -91,7 +84,6 @@ fi
 
 # --- Gate 4: Check for Repeated Paragraphs (3+ lines) ---
 
-# Extract 3-line blocks with file source into a temp file
 blocks_file="$tmp_dir/blocks.txt"
 > "$blocks_file"
 
@@ -106,7 +98,6 @@ for file in "${md_files[@]}"; do
   i=1
   while [[ $i -le $((line_count - 2)) ]]; do
     block=$(sed -n "${i},$((i + 2))p" "$file" | tr '\n' ' ' | sed 's/  */ /g')
-    # Skip empty lines, frontmatter delimiters, and code fences
     if [[ -z "$block" ]] || [[ "$block" == "---"* ]] || [[ "$block" == '```'* ]]; then
       i=$((i + 1))
       continue
@@ -118,7 +109,6 @@ for file in "${md_files[@]}"; do
   done
 done
 
-# Find duplicate blocks across different files
 if [[ -s "$blocks_file" ]]; then
   cut -d'|' -f1 "$blocks_file" | sort | uniq -d > "$tmp_dir/dup_hashes.txt" || true
 
@@ -149,7 +139,6 @@ if [[ ${#ref_files[@]} -ge 2 ]]; then
       rel_a="${file_a#$SKILL_DIR/}"
       rel_b="${file_b#$SKILL_DIR/}"
 
-      # Extract unique words (5+ chars) from each file
       grep -oE '[a-zA-Z]{5,}' "$file_a" 2>/dev/null | tr '[:upper:]' '[:lower:]' | sort -u > "$tmp_dir/words_a.txt" || true
       grep -oE '[a-zA-Z]{5,}' "$file_b" 2>/dev/null | tr '[:upper:]' '[:lower:]' | sort -u > "$tmp_dir/words_b.txt" || true
 
@@ -157,7 +146,6 @@ if [[ ${#ref_files[@]} -ge 2 ]]; then
         continue
       fi
 
-      # Count shared words
       shared=$(comm -12 "$tmp_dir/words_a.txt" "$tmp_dir/words_b.txt" | wc -l | tr -d ' ')
       total_a=$(wc -l < "$tmp_dir/words_a.txt" | tr -d ' ')
       total_b=$(wc -l < "$tmp_dir/words_b.txt" | tr -d ' ')

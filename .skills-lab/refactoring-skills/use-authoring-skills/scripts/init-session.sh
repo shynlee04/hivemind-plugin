@@ -1,9 +1,9 @@
-#!/bin/bash
-# init-session.sh — Initialize planning files for a new skill authoring session
-# Usage: ./scripts/init-session.sh [project-name]
-# Creates task_plan.md, findings.md, progress.md if they don't exist
+#!/usr/bin/env bash
+set -euo pipefail
 
-set -e
+# init-session.sh — Initialize planning files for a new skill authoring session
+# Usage: bash scripts/init-session.sh [project-name]
+# Creates task_plan.md, findings.md, progress.md if they don't exist
 
 PROJECT_NAME="${1:-use-authoring-skills}"
 DATE=$(date +%Y-%m-%d)
@@ -13,7 +13,7 @@ echo "Initializing planning files for: $PROJECT_NAME"
 # Create task_plan.md if it doesn't exist
 if [ ! -f "task_plan.md" ]; then
     cat > task_plan.md << 'EOF'
-# Task Plan: [Project Name]
+# Task Plan: [Brief Description]
 
 ## Goal
 [One sentence describing the end state]

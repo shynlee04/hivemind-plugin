@@ -1,5 +1,5 @@
-#!/bin/bash
-# post-tool-use.sh — Remind agent to update progress.md after file modifications
+#!/usr/bin/env bash
+# post-tool-use.sh — Remind agent to update progress after file modifications
 # Hook: Runs after every tool use to enforce write-to-disk discipline
 
 if [ -f task_plan.md ]; then

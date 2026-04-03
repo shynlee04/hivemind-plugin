@@ -1,123 +1,83 @@
-# Skill Anatomy Template
+# Skill Anatomy
 
-## Purpose
+## Directory Structure
 
-Standard structure for all agent skills. Every skill must follow this anatomy.
-
----
-
-## Required Elements
-
-### SKILL.md (Entry Point)
-
-Every skill directory MUST have a `SKILL.md` at its root.
+Every skill is a directory containing at minimum a `SKILL.md` file:
 
 ```
 skill-name/
-└── SKILL.md                    # REQUIRED
+├── SKILL.md          # Required: metadata + instructions
+├── scripts/          # Optional: executable code
+├── references/       # Optional: documentation (load on demand)
+├── assets/           # Optional: templates, resources
+└── ...               # Any additional files or directories
 ```
-
-### Frontmatter
-
-Frontmatter rules and constraints are in **02-frontmatter-standard.md**. That file defines the six recognized fields (`name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`), validation rules, and anti-patterns.
-
-### Internal Metadata (in SKILL.md body)
-
-Place pattern, stacking, and dependency information in the SKILL.md body. Alternatively, use the `metadata` frontmatter field — see **02-frontmatter-standard.md** for allowed fields.
-
-```markdown
-## Pattern
-
-**Pattern:** P1 (High-level routing)
-**Stacking:** 1 (counts against stack limit)
-
-## Dependencies
-
-**Depends-on:** None (entry skill)
-**Enables:** delegation-scope, workflow-hierarchy
-```
-
-### Required Sections in SKILL.md
-
-1. **Purpose** — What the skill does (1-2 sentences)
-2. **When to Activate** — Specific trigger conditions
-3. **Core Behavior** — How it works
-4. **Anti-Patterns** — What NOT to do
-
----
-
-## Optional Elements
-
-### references/
-
-For P2 and P3 skills, create a `references/` directory:
-
-```
-skill-name/
-├── SKILL.md
-└── references/
-    ├── 01-topic-alpha.md
-    ├── 02-topic-beta.md
-    └── index.md          # TOC for P3
-```
-
-**Rules:**
-- Number files for ordering
-- One topic per file
-- 1-level depth MAX
-- P3 skills MUST have index.md with TOC + jump links
-
-### scripts/
-
-For skills requiring discovery tooling:
-
-```
-skill-name/
-├── SKILL.md
-└── scripts/
-    └── detect-pattern.sh    # Discovery only
-```
-
-**Rules:**
-- Read-only by default
-- No mutation scripts
-- Safe for multi-environment
-
-### templates/
-
-For reusable output formats:
-
-```
-skill-name/
-├── SKILL.md
-└── templates/
-    └── report-template.md
-```
-
----
-
-## Pattern-Specific Structure
-
-Pattern-specific structure templates are in **03-three-patterns.md**. That file defines P1 (routing), P2 (domain-specific), and P3 (expertise depth) with complete examples, stacking rules, and anti-patterns per pattern.
-
-The sections below describe the anatomy rules that apply across all patterns.
-
----
 
 ## Naming Rules
 
-| Element | Format | Example |
-|---------|--------|---------|
-| Skill directory | kebab-case | `context-intelligence` |
-| SKILL.md | literal | `SKILL.md` |
-| Reference files | nn-name.md | `01-context-rot.md` |
-| TOC index | literal | `index.md` |
-| Scripts | kebab-case | `detect-pattern.sh` |
-| Templates | kebab-case | `report-template.md` |
+| Rule | Valid | Invalid |
+|------|-------|---------|
+| Lowercase only | `deep-research` | `Deep-Research` |
+| Hyphens as separators | `use-authoring-skills` | `use_authoring_skills` |
+| No leading/trailing hyphens | `skill-name` | `-skill-name`, `skill-name-` |
+| No consecutive hyphens | `skill-name` | `skill--name` |
+| Max 64 characters | `a` × 64 | 65+ chars |
+| Must match directory name | `deep-research/SKILL.md` with `name: deep-research` | Mismatch |
 
----
+**Regex:** `^[a-z0-9]+(-[a-z0-9]+)*$`
+
+## File Size Guidelines
+
+| File | Max Lines | Purpose |
+|------|-----------|---------|
+| `SKILL.md` | <400 | Core instructions, decision tree, gates |
+| Each reference | 150-300 | Focused topic, one concern |
+| Each script | <200 | Single responsibility |
+| Total skill | <2000 | Progressive disclosure keeps most unloaded |
+
+## What Goes Where
+
+| Content | Location |
+|---------|----------|
+| Decision tree, first actions | `SKILL.md` body |
+| Frontmatter rules | `references/02-frontmatter-standard.md` |
+| Pattern selection (P1/P2/P3) | `references/03-three-patterns.md` |
+| TDD methodology | `references/04-tdd-workflow.md` |
+| Quality scoring rubric | `references/05-skill-quality-matrix.md` |
+| Platform compatibility | `references/06-cross-platform-activation.md` |
+| Iteration examples | `references/07-iterative-refinement.md` |
+| Conflict detection | `references/08-conflict-detection.md` |
+| Script writing guide | `references/09-script-authoring.md` |
+| Eval lifecycle | `references/10-eval-lifecycle.md` |
+| Description optimization | `references/11-description-optimization.md` |
+| Anti-deception patterns | `references/12-anti-deception.md` |
+
+## Progressive Disclosure
+
+Skills load in three tiers:
+
+1. **Tier 1 (always):** `name` + `description` from frontmatter — shown in skill list
+2. **Tier 2 (on activation):** Full `SKILL.md` body — loaded when skill is selected
+3. **Tier 3 (on demand):** `references/`, `scripts/`, `assets/` — loaded only when referenced
+
+Design for this: put critical routing logic in SKILL.md body. Put deep reference material in separate files.
+
+## Common Mistakes
+
+| Mistake | Symptom | Fix |
+|---------|---------|-----|
+| SKILL.md > 500 lines | Agent ignores most content | Split into references |
+| No decision tree | Agent loads wrong reference | Add "When to Load" section |
+| Deeply nested references | Agent can't find files | Keep references 1 level deep |
+| Missing `name` field | Skill not discovered | Add required frontmatter |
+| `name` doesn't match directory | Skill fails validation | Rename directory or frontmatter |
 
 ## Version Policy
+
+Skills do not have a built-in version field. Track versions via:
+1. Git commits — each meaningful change is a commit
+2. `metadata.version` in frontmatter (optional, string)
+3. Changelog in `references/CHANGELOG.md` (optional)
 
 | Change | Bump |
 |--------|------|
@@ -125,26 +85,3 @@ The sections below describe the anatomy rules that apply across all patterns.
 | Breaking trigger | MAJOR |
 | New reference | PATCH |
 | Bug fix | PATCH |
-
----
-
-## Status Values
-
-| Status | Meaning |
-|--------|---------|
-| `active` | Ready for use |
-| `draft` | In development |
-| `deprecated` | Will be removed |
-| `archived` | Historical only |
-
----
-
-## Integration Points
-
-Document these integration properties for every skill:
-
-1. **Parent Pack** — Identify the pack the skill belongs to. Example: `context-intelligence` belongs to the `context-intelligence` pack; `delegation-scope` belongs to `use-agent-skill-authoring`.
-2. **Entry Level** — State when the skill loads during a session. Example: P1 skills load at session start; P2 skills load on demand when their domain is active; P3 skills load only when escalation triggers fire.
-3. **Pattern** — Declare the pattern (P1/P2/P3). This determines the structure template — see **03-three-patterns.md** for pattern-specific requirements.
-4. **Stacking** — State how the skill affects the stack count. Every loaded skill counts as 1 against the stack limit. Example: `P1 (1) + P2 (1) = 2 skills stacked`.
-5. **Context Integration** — State whether the skill uses context-intelligence for session state, trust scoring, or rot detection. Example: `context-intelligence` integrates with all packs for entry state recognition and recovery awareness; `git-atomic-memory` reads trust thresholds before encoding decisions.

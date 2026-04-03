@@ -1,14 +1,22 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # stop.sh — Check if all phases are complete before stopping
-# Hook: Runs when agent tries to stop — auto-continues if phases incomplete
+# Hook: Runs when agent tries to stop — reports completion status
 # Always exits 0 — uses stdout for status
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PLAN_FILE="task_plan.md"
 
 if [ ! -f "$PLAN_FILE" ]; then
     exit 0
 fi
 
+# Run check-complete.sh if available
+if [ -f "$SCRIPT_DIR/../scripts/check-complete.sh" ]; then
+    bash "$SCRIPT_DIR/../scripts/check-complete.sh" "$PLAN_FILE"
+    exit 0
+fi
+
+# Fallback: inline check
 TOTAL=$(grep -c "### Phase" "$PLAN_FILE" || true)
 COMPLETE=$(grep -c "\[x\]" "$PLAN_FILE" || true)
 IN_PROGRESS=$(grep -c "\[~\]" "$PLAN_FILE" || true)

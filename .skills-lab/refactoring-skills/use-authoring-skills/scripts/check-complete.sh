@@ -1,9 +1,11 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
+
 # check-complete.sh — Verify all phases in task_plan.md are complete
-# Usage: ./scripts/check-complete.sh [path-to-task-plan]
+# Usage: bash scripts/check-complete.sh [path-to-task-plan]
 # Always exits 0 — uses stdout for status reporting
 
-PLAN_FILE="${1:-.skills-lab/task_plan.md}"
+PLAN_FILE="${1:-task_plan.md}"
 
 if [ ! -f "$PLAN_FILE" ]; then
     echo "[use-authoring-skills] No task_plan.md found — no active planning session."

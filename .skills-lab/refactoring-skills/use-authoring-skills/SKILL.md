@@ -1,350 +1,139 @@
 ---
 name: use-authoring-skills
-description: Use when creating a new agent skill, auditing an existing skill, improving skill quality, optimizing skill descriptions, writing evals for skills, packaging skills for distribution, or resolving conflicts between skills. Covers frontmatter compliance, skill pattern selection, TDD for skills, quality scoring via 5-dimension rubric, eval-driven development, description optimization, and cross-platform skill architecture. Triggers: "write a skill", "create a skill", "audit this skill", "improve this skill", "skill authoring", "skill frontmatter", "skill pattern", "skill quality", "skill description", "skill eval".
+description: Create, audit, refactor, and doctor agent skills. Use when the user wants to create a skill, improve an existing skill, audit skill quality, convert a document to a skill, or fix skill triggers. Covers frontmatter (agentskills.io spec), pattern selection (P1/P2/P3), TDD and template-driven workflows, quality scoring, eval-driven development, and cross-platform compatibility.
+metadata:
+  author: hivemind-plugin
+  version: "2.0.0"
+  rebuild-date: "2026-04-03"
+  pattern: "P2-hybrid"
+allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
-# use-authoring-skills
+# Use Authoring Skills
 
-Universal skill authoring meta-builder. Whether building, reviewing, or resolving conflicts between skills — start here. Deep material lives in `references/`; this body encodes the locked decisions, methodology, and routing.
+## When This Skill Loads — Do THIS First
 
----
+1. **Identify the task type** using the decision tree below (max 10 seconds).
+2. **Load the matching reference file** — only ONE, not all.
+3. **Create planning files** via `scripts/init-session.sh` if task > 3 steps.
+4. **Ask at most 3 questions** via the question tool if intent is unclear.
 
-## Required Skill Loads
+Do NOT load all reference files. Do NOT start writing SKILL.md content. Do NOT skip the decision tree.
 
-This skill expects the following to be loaded alongside it:
+## Decision Tree — Pick Your Path
 
-| Purpose | Skills |
-|---------|--------|
-| Creating/improving | `skill-creator`, `skill-development`, `writing-skills` |
-| Auditing/refactoring | `skill-judge`, `skill-review` |
-| Git-backed memory | `gcc` |
-| Long-running planning | `planning-with-files` |
-
----
-
-## When to Load
-
-| Situation | Route |
-|-----------|-------|
-| Creating a new skill from scratch | → `references/01-skill-anatomy.md` + `references/02-frontmatter-standard.md` + TDD workflow |
-| Reviewing or auditing an existing skill | → `references/05-skill-quality-matrix.md` (9-phase audit) |
-| Two skills may conflict | → `references/08-conflict-detection.md` |
-| Choosing a skill architecture pattern | → `references/03-three-patterns.md` (P1/P2/P3) |
-| Writing or fixing frontmatter | → `references/02-frontmatter-standard.md` |
-| Improving a skill that scored low | → `references/07-iterative-refinement.md` |
-| Testing skill descriptions for trigger accuracy | → `references/11-description-optimization.md` |
-| Writing evals for a skill | → `references/10-eval-lifecycle.md` |
-| Writing bundled scripts | → `references/09-script-authoring.md` |
-| Ensuring cross-platform compatibility | → `references/06-cross-platform-activation.md` |
-| Diagnosing a broken skill | → `references/05-skill-quality-matrix.md` + `references/08-conflict-detection.md` |
-
----
-
-## Operating Discipline (NON-NEGOTIABLE)
-
-These rules govern all skill authoring work. They are locked from user decisions and apply to every agent using this skill.
-
-### Methodology Constraints
-
-1. **Frame skeleton first** — Map the architecture, identify nodes, map branches, acknowledge hypotheses before any deep work. (MANDATORY)
-2. **Hierarchical thinking** — Every decision traces to reasoning. Distinguish critical from peripheral. Understand parent-child and dependency hierarchies. (MANDATORY)
-3. **Strategic traversal** — Sequenced exploration with conditional logic. Trace actors and context networks. Consider git history. (REQUIRED)
-4. **Cyclical judgment** — Never judge on first encounter. Return to entities multiple times. Validate against real use cases. Only conclude after repeated cycles. (MANDATORY)
-5. **Selective deep improvement** — No surface-level grep-and-shrink. Deep, selective, multi-cycle improvement. Not one-time completion. (MANDATORY)
-
-### Subagent Orchestration Rules
-
-6. **Batch planning** — Always plan subagent work in batches and cycles. Never single-round execution. (MANDATORY)
-7. **Max 3 domains, max 5k LOC/text** — Never launch a single subagent to read more than 3 domains or more than 5,000 lines. Split when compare-and-contrast is needed. (HARD LIMIT)
-8. **Sequential preference** — Favor sequential over parallel when possible. Each batch must chain from previous outputs. (REQUIRED)
-9. **Disk-based synthesis** — ALL subagent outputs written to disk with descriptive names. Structured for consumption by subsequent batches. (MANDATORY)
-10. **Complete workflow nodes** — Each wave/cycle must produce complete nodes and workflow cycles. Every delegation must output knowledge documents. (REQUIRED)
-
-### Discipline Corrections
-
-11. **NEVER delete working content** — Always archive to `.skills-lab/.archive/YYYY-MM-DD-<topic>/`. Only remove old content once new pack is fully functional. (HARD RULE)
-12. **NEVER edit skill files directly as coordinator** — Coordinator role is PLAN + DELEGATE, not execute. Must not pollute skill files. (HARD RULE)
-13. **Write-to-disk every turn** — Coherence is lost between turns by default. Only defense is persistent write-to-disk and hierarchical strategy. (CRITICAL)
-14. **Record and commit ALL changes** — If it's not in git, it doesn't exist. Commit after every meaningful action. (CRITICAL)
-15. **Verify actual state before planning** — Run `git status`, `git diff` before planning next steps. Never trust claimed completions without git evidence. (CRITICAL)
-
----
-
-## Terminology Mandate (UNIVERSAL)
-
-This skill is universal — not platform-specific. OpenCode is the closest measurement, but all agentic coding platforms must work.
-
-| Refer to | Use | NOT |
-|----------|-----|-----|
-| The AI entity | "Agent" | Claude, GPT, Gemini |
-| The config file | "AGENTS.md" | CLAUDE.md, CLAUDE.local.md |
-| Package manager | "your package manager" | npm, yarn, pnpm |
-| Test runner | "your test framework" | Jest, Vitest, Mocha |
-| Language | "your language" | TypeScript, Python |
-| Config file | "config file" | opencode.json, .claude/settings.json |
-| Agent | "Agent" | Claude |
-
----
-
-## Frontmatter Standard
-
-The Agent Skills specification recognizes six fields. Only `name` and `description` are required.
-
-| Field | Required | Constraints |
-|-------|----------|-------------|
-| `name` | **Yes** | Max 64 chars. Lowercase + hyphens. No leading/trailing/consecutive hyphens. Must match directory name. |
-| `description` | **Yes** | Max 1024 chars. Start with "Use when...". Include trigger keywords. |
-| `license` | No | Short name or file reference. |
-| `metadata` | No | Key-value pairs. Unique keys. |
-| `allowed-tools` | No | Space-delimited tool list. Experimental. |
-| ~~`compatibility`~~ | ~~No~~ | **BANNED.** Do not use. |
-
-**Critical rules:**
-- Frontmatter is `name` + `description` only in most cases.
-- `metadata` and `allowed-tools` are useful optionals for discovery/stacking and eval gating.
-- `description` is the activation surface — vague descriptions cause false positives.
-- No `compatibility` field. Period. User explicitly rejected it.
-
-→ Full rules: `references/02-frontmatter-standard.md`
-
----
-
-## Pattern Selection
-
-Three architecture patterns. Choose by purpose and depth:
-
-| Pattern | Purpose | Body Size | When to Use |
-|---------|---------|-----------|-------------|
-| **P1 — Routing** | Thin entry, delegates to sub-skills | <200 lines | Meta skills, domain routers |
-| **P2 — Domain** | Focused guidance for one domain | 200–500 lines | Step-by-step processes, templates |
-| **P3 — Expertise** | Deep reference-heavy content | 500+ or reference-heavy | Recovery protocols, complex scenarios |
-
-**Decision tree:**
 ```
-Is this an entry/routing skill? → P1
-  No → Is this a focused domain skill? → P2 (default)
-    No → Is the complexity genuinely beyond P2? → P3
+User says...                          → Load
+─────────────────────────────────────────────────────────
+"create a skill" / "make a skill"     → references/03-three-patterns.md
+"create a skill like this @file"      → references/03-three-patterns.md (template path)
+"audit this skill" / "review skill"   → references/05-skill-quality-matrix.md
+"fix triggers" / "skill not loading"  → references/11-description-optimization.md
+"improve this skill" / "refactor"     → references/07-iterative-refinement.md
+"skill overlaps with..."              → references/08-conflict-detection.md
+"write evals for skill"               → references/10-eval-lifecycle.md
+"write scripts for skill"             → references/09-script-authoring.md
+"make skill work on X platform"       → references/06-cross-platform-activation.md
+"doctor" / "what's wrong with..."     → references/12-anti-deception.md
 ```
 
-→ Full patterns: `references/03-three-patterns.md`
+## Hierarchical Loading Order (Enforced)
 
+This skill is **standalone sufficient** for creating, auditing, refactoring, and doctoring skills. No external skills required.
+
+**Load order** — each step blocks the next until complete:
+
+```
+Step 1 (always):   This SKILL.md body
+Step 2 (if >3 steps):  Run scripts/init-session.sh → creates task_plan.md
+Step 3 (decision):     Load ONE reference file from decision tree
+Step 4 (if creating):  Load references/01-skill-anatomy.md + 02-frontmatter-standard.md
+Step 5 (if auditing):  Load references/05-skill-quality-matrix.md
+Step 6 (optional):     Load additional reference only if current one is insufficient
+```
+
+**Enforcement:** Before loading Step 5, Step 3 MUST be complete. Before writing any skill file, Step 4 MUST be complete. The `scripts/gate-enforce.sh` script validates this.
+
+## Gate System — Programmatic Enforcement
+
+Each gate has measurable criteria AND an enforcement script. Gates are sequential — you cannot skip.
+
+| Gate | When | Criteria | Enforcement |
+|------|------|----------|-------------|
+| G1: Intent | Before any work | User intent captured in task_plan.md Goal field | `gate-enforce.sh G1` checks Goal is non-empty |
+| G2: Structure | Before writing files | SKILL.md frontmatter has name + description | `validate-skill.sh` checks frontmatter |
+| G3: Pattern | Before body content | Pattern (P1/P2/P3) selected and documented | `gate-enforce.sh G3` checks pattern field |
+| G4: Quality | Before declaring done | Quality score ≥ 3/5 on all 5 dimensions | `gate-enforce.sh G4` runs scoring |
+| G5: Validation | Final step | `validate-skill.sh` passes, `check-overlaps.sh` clean | Both scripts exit 0 |
+
+**Run enforcement:** `bash scripts/gate-enforce.sh <GATE>` — exits non-zero if gate not passed.
+
+## Interactive Protocol
+
+When intent is unclear, ask questions. Rules:
+- **Max 3 questions at a time** — never more.
+- **Use the question tool** — do not ask questions in plain text output.
+- **Wait for answers** before proceeding to implementation.
+
+Example questions for skill creation:
+1. "What is the single purpose this skill should serve?"
+2. "Do you have a source document to convert, or building from scratch?"
+3. "Which platforms should this skill target? (OpenCode, Claude Code, Codex, Cursor)"
+
+## Worked Example: Document → Skill Conversion
+
+**Input:** User provides `.kilo/command/deep-research-synthesis-repomix.md` (a 200-line markdown command file).
+
+**Step 1 — Identify pattern:** This is a focused how-to guide → **P2** (balanced depth).
+
+**Step 2 — Extract purpose:** "Synthesize deep research findings from Repomix-packed codebases into structured reports."
+
+**Step 3 — Write frontmatter:**
+```yaml
 ---
-
-## Phase Gate System (PROGRAMMATIC)
-
-Granular hierarchy with **incremental integration checkpoints**. All gates must pass before proceeding. Gates are **programmatic and measurable** (boolean or scoring). Compatible with ralph-loop patterns.
-
-### Gate Structure
-
-| Gate | Phase | Measure | Pass Criteria |
-|------|-------|---------|---------------|
-| G1 | Context Scouting | Quality scores for all files identified | All issues ranked by severity |
-| G2 | Deep Audit | Duplication quantified, spec gaps cataloged | Overlap matrix complete, gaps documented |
-| G3 | Architecture Design | Token budget, ownership model assigned | 12-file structure with progressive tiers |
-| G4 | Implementation | Cross-file duplication, contradictions | Duplication <5%, contradictions = 0 |
-| G5 | Validation | Real scenario test, trigger rate | Line counts verified, dead links = 0 |
-| G6 | Bridging | Cross-package linkage spec | Convention established for sibling packs |
-
-### Gate Enforcement
-
-- **All gates must pass** before proceeding to next phase.
-- **Failure in any gate** → loop back to that phase (ralph-loop compatible).
-- **Gates are boolean or scoring** — not subjective.
-- **Programmatic enforcement** — scripts validate gates automatically where possible.
-
-→ Gate methodology: `references/04-tdd-workflow.md`, `references/10-eval-lifecycle.md`
-
+name: deep-research-synthesis
+description: Synthesizes Repomix-packed codebase analysis into structured research reports with citations. Use when the user asks to analyze a codebase deeply, create research reports from Repomix output, or synthesize findings from multiple code sources.
 ---
+```
 
-## TDD for Skills
+**Step 4 — Write body:** Extract the command's workflow steps → convert to skill instructions. Keep under 300 lines. Move detailed examples to `references/`.
 
-Every skill validated against real failure scenarios before shipping:
+**Step 5 — Validate:** Run `bash scripts/validate-skill.sh` → passes. Run `bash scripts/check-overlaps.sh` → no conflicts.
 
-1. **RED** — Document a specific scenario that fails without the skill
-2. **GREEN** — Write minimum skill content that resolves that failure
-3. **REFACTOR** — Remove duplication, tighten triggers, validate structure
+**Output:** A complete skill at `.opencode/skills/deep-research-synthesis/SKILL.md` with `references/` directory.
 
-**Knowledge Delta Test** (before writing content):
-- **Expert** — "Does the agent genuinely NOT know this?" → Keep
-- **Activation** — "Knows but may not think of it?" → Keep brief
-- **Redundant** — "Definitely knows this?" → Delete. Wastes tokens.
+## Anti-Patterns — With Detection
 
-→ Full methodology: `references/04-tdd-workflow.md`
+| Anti-Pattern | Detection | Correction |
+|-------------|-----------|------------|
+| **Phantom dependencies** — referencing skills that don't exist | `grep -r "skill(" SKILL.md references/` → verify each exists | Remove or create the missing skill |
+| **Identity crisis** — P1 router with P3 depth content | Count lines: >300 in SKILL.md = likely P3 masquerading | Split into thin SKILL.md + reference files |
+| **Unenforceable gates** — claims "programmatic" with no scripts | `ls scripts/` → must have gate-enforce.sh | Create enforcement scripts or remove gate claims |
+| **Template TDD mismatch** — forcing RED phase on template conversion | Check task type: if "convert document" → skip RED | Use template-driven workflow (references/04-tdd-workflow.md) |
+| **Banned field usage** — `compatibility` in examples when banned | `grep "compatibility:" references/` | Remove or document as optional per agentskills.io spec |
 
----
+## Platform Adaptation
 
-## Quality Scoring
+| Platform | Skill Location | Hook Format | Notes |
+|----------|---------------|-------------|-------|
+| **OpenCode** | `.opencode/skills/<name>/SKILL.md` | `opencode.json` hooks | Use `skill` tool to load |
+| **Claude Code** | `.claude/skills/<name>/SKILL.md` | `.claude/hooks/` | Same frontmatter spec |
+| **Codex** | `.codex/skills/<name>/SKILL.md` | `.codex/hooks/` | May need `allowed-tools` field |
+| **Cursor** | `.cursor/skills/<name>/SKILL.md` | `.cursor/rules/` | Frontmatter may vary |
 
-5 dimensions, scored 1–5 each:
+Always write frontmatter per agentskills.io spec — it is the lowest common denominator.
 
-| Dimension | Weight | What It Measures |
-|-----------|--------|-----------------|
-| Trigger Accuracy | 25% | Description activates on specific conditions |
-| Action Coherence | 25% | One purpose, clear entry/exit, no mission creep |
-| Reference Integrity | 20% | 1-level depth, no circular refs |
-| Non-Redundancy | 15% | No overlap with existing skills |
-| Edge Case Coverage | 15% | Handles degraded, delegated, resumed states |
+## Three Operating Rules (Not 15)
 
-**Overall:** `(Trigger×0.25) + (Action×0.25) + (Reference×0.20) + (Redundancy×0.15) + (Edge×0.15)`
+1. **Read source before writing** — identify the skill's single purpose before touching any file.
+2. **Frontmatter first** — write `name` + `description`, validate, then write body.
+3. **Validate before done** — run `validate-skill.sh` and `check-overlaps.sh` before declaring complete.
 
-**Release thresholds:**
-| Grade | Score | Action |
-|-------|-------|--------|
-| EXCELLENT | 4.5+ | Ship it |
-| GOOD | 4.0+ | Minor polish |
-| ACCEPTABLE | 3.5+ | Address specific gaps |
-| NEEDS WORK | <3.5 | Do not release |
+## Load Order for Child Skills (Future Extensions)
 
-**Block rule:** Any single dimension scoring ≤2 blocks release regardless of overall score.
+When agent, tool, command, or workflow authoring skills exist as separate packs:
+1. Load THIS skill first (Phase 1 — skill anatomy + frontmatter)
+2. Load child domain skill second (Phase 2 — domain-specific patterns)
+3. Resolve conflicts via references/08-conflict-detection.md
 
-→ Full rubric: `references/05-skill-quality-matrix.md`
-
----
-
-## Iteration & Orchestration Protocol
-
-### Iteration Loop (ralph-loop compatible)
-
-When a skill scores below threshold:
-
-1. **Analyze** — Which dimension(s) failed? Extract specific criteria.
-2. **Classify the gap** — Missing trigger? Oversized scope? Broken refs? Authority overlap? Missing edge case?
-3. **Fix one thing** — One targeted change per iteration. Do not batch.
-4. **Re-score** — Run all 5 dimensions again. Compare to previous.
-5. **Decide** — Release (≥4.5), continue (improved), escalate (no change after 2 cycles), redesign (no change after 3 cycles).
-
-→ Worked examples: `references/07-iterative-refinement.md`
-
-### Planning-with-Files Integration
-
-For long-running multi-session work, maintain three files at project root:
-
-| File | Purpose | When Updated |
-|------|---------|--------------|
-| `task_plan.md` | Phase tracker, goals, locked decisions | Every phase change |
-| `findings.md` | Discovered facts, scores, analysis | Every 2 search/read actions |
-| `progress.md` | Timestamped actions, decisions, recovery | Every meaningful action |
-
-**Read-before-decide rule:** Re-read `task_plan.md` for goals and `findings.md` for facts before any major decision.
-
-### Knowledge Synthesis
-
-- ALL agents (main + subagents) must output synthesized knowledge to disk.
-- State must persist across sessions via `gcc` (git-backed memory).
-- Reasoning paths must be traceable.
-- Named exports with descriptive filenames.
-- Chain continuity across batches.
-
-### Dynamic Breadth-Depth Resolution
-
-Balance exploration (breadth) with exploitation (depth) based on task requirements and emerging patterns. Not rigid single-mode exploration.
-
----
-
-## Conflict Detection
-
-Five conflict types:
-
-| Type | What It Looks Like | Detection |
-|------|-------------------|-----------|
-| Scope overlap | Two skills claim same trigger | Grep trigger phrases across skills |
-| Contradictory instructions | One says "always X", another "never X" | Compare "When to Load" sections |
-| Shared state mutation | Both write to same file | Compare Handoff Paths |
-| Boundary violation | Depth skill has routing logic | Check for IF/THEN routing |
-| Dependency cycle | A requires B, B requires A | Trace dependency chains |
-
-→ Full protocol: `references/08-conflict-detection.md`
-
----
-
-## Recovery Protocol
-
-When restarting a session after interruption:
-
-1. Read `.skills-lab/findings.md` — locked decisions and current state
-2. Read `.skills-lab/realignment-2026-04-03.md` — hard constraints for all future sessions
-3. Read `.skills-lab/task_plan.md` — current phase and blockers
-4. Run `git log --oneline -5` — verify recent commits
-5. Run `git status` — verify actual file state (never trust compact context)
-6. Resume from current phase
-
-**5-Question Recovery** (when lost, write answers in `progress.md`):
-1. Where am I?
-2. Where am I going?
-3. What's the goal?
-4. What have I learned?
-5. What have I done?
-
----
-
-## Anti-Patterns
-
-1. **The Novel** — Skills exceeding 500 lines trying to do everything. Split them.
-2. **The Ghost Skill** — Exists but has no clear trigger. Dead weight.
-3. **The Identity Crisis** — Depth skill with routing logic. Pick a lane.
-4. **The Assumer** — Assumes specific tools. Declare requirements explicitly.
-5. **The Copy-Paste Factory** — Duplicates other skills. Reference them instead.
-6. **The Platform Loyalist** — Hardcodes platform-specific commands.
-7. **The Silent Conflict** — Same trigger, different advice. Detect before shipping.
-8. **The Orphan** — Created, never audited. Skills rot like code.
-9. **The Parameter Leaker** — Runtime placeholders like `{state_dir}` in static content.
-10. **The Hallucinator** — Claims work is "done" without git evidence. Commit and verify.
-11. **The Coordinator Executor** — Coordinator edits skill files directly. Delegate.
-
----
-
-## Handoff Paths
-
-| Artifact | Location |
-|----------|----------|
-| Skill under development | Working directory or staging area |
-| Review evidence | Alongside the skill or in project notes |
-| Conflict reports | Alongside the skill or in project notes |
-| Knowledge synthesis | Date-stamped files in project workspace |
-
----
-
-## Bundled Resources
-
-| File | Purpose |
-|------|---------|
-| `references/01-skill-anatomy.md` | Directory structure, naming rules, version policy |
-| `references/02-frontmatter-standard.md` | Field reference, validation rules, examples |
-| `references/03-three-patterns.md` | P1/P2/P3 patterns, stacking rules |
-| `references/04-tdd-workflow.md` | RED-GREEN-REFACTOR, test templates, pressure testing |
-| `references/05-skill-quality-matrix.md` | 5-dimension scoring, evaluation template |
-| `references/06-cross-platform-activation.md` | Platform compatibility patterns |
-| `references/07-iterative-refinement.md` | Iteration loop, worked examples |
-| `references/08-conflict-detection.md` | Overlap types, detection protocol |
-| `references/09-script-authoring.md` | Writing bundled scripts |
-| `references/10-eval-lifecycle.md` | Eval-driven skill development |
-| `references/11-description-optimization.md` | Trigger accuracy optimization |
-| `references/12-anti-deception.md` | Gatekeeping and refusal intelligence |
-
----
-
-## GROUP 1 Dependencies
-
-This skill depends on the following GROUP 1 implementation skills during skill authoring workflows:
-
-| Skill | Purpose in Authoring |
-|-------|---------------------|
-| `user-intent-interactive-loop` | For iterative user engagement during skill authoring — clarifying requirements, probing intent, and confirming design decisions before writing skill content. |
-| `coordinating-loop` | For multi-agent skill creation workflows — dispatching subagents to audit, draft, and validate skill packs in parallel or sequential batches. |
-| `planning-with-files` | For long-running skill authoring sessions — persisting phase progress, decisions, and findings across compactions and session restarts. |
-
----
-
-## Cross-Package Integration
-
-This skill is the meta-builder foundation. It connects to sibling packages:
-
-| Package | Relationship |
-|---------|-------------|
-| Agent authoring | Shares naming conventions and routing patterns |
-| Tool authoring | Shares frontmatter standards and eval framework |
-| Command authoring | Shares TDD methodology and quality scoring |
-| Workflow authoring | Shares pattern selection and iteration protocols |
-| Implementation skills | Uses `user-intent-interactive-loop` for engagement, `coordinating-loop` for orchestration, `planning-with-files` for persistence |
-
-All packages share: universal terminology, progressive disclosure, programmatic gates, and planning-with-files discipline.
+Until then, this skill is standalone sufficient.

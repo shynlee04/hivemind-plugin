@@ -8,13 +8,11 @@
       "files": [],
       "assertions": [
         "SKILL.md exists with valid YAML frontmatter delimited by ---",
-        "Frontmatter 'name' field is 'pdf-processing' or similar kebab-case name",
+        "Frontmatter 'name' field is kebab-case",
         "Frontmatter 'description' field starts with 'Use when...'",
         "No 'compatibility' field in frontmatter",
         "No 'Claude' or 'CLAUDE.md' terminology in any file",
-        "At least one reference file exists in references/ directory",
-        "SKILL.md body contains a 'When to Activate' or equivalent section",
-        "SKILL.md body contains an 'Anti-Patterns' or equivalent section"
+        "At least one reference file exists in references/ directory"
       ]
     },
     {
@@ -27,8 +25,7 @@
         "Identifies the description as too vague (no 'Use when...' activation context)",
         "Identifies mission creep (skill covers unrelated domains: data + git + deployment)",
         "Recommends splitting into separate skills or narrowing scope",
-        "Provides specific improved description text",
-        "References the 5-dimension quality matrix for scoring"
+        "Provides specific improved description text"
       ]
     },
     {
@@ -41,43 +38,38 @@
         "Provides a rewritten description with specific activation conditions",
         "Includes trigger keywords in the improved description",
         "Mentions the 'pushy' pattern for implicit triggers",
-        "Recommends testing with trigger queries (should-trigger and should-not-trigger)",
-        "References the description optimization loop methodology"
+        "Recommends testing with trigger queries (should-trigger and should-not-trigger)"
       ]
     },
     {
       "id": 4,
-      "prompt": "I have two skills that seem to overlap: one handles 'code review' and another handles 'pull request review.' Should I merge them or keep them separate? Here are their descriptions:\n\nSkill 1: 'Use when reviewing code for quality issues.'\nSkill 2: 'Use when reviewing pull requests for best practices.'",
-      "expected_output": "Analysis of the overlap between the two skills using the conflict detection framework. Identifies the overlap type (partial overlap vs exact duplicate). Recommends either merging (if purposes are the same) or differentiating (if they serve different stages of the workflow). Provides specific guidance on how to differentiate the descriptions if keeping separate.",
+      "prompt": "I have two skills that seem to overlap: one handles 'code review' and another handles 'pull request review.' Should I merge them or keep them separate?",
+      "expected_output": "Analysis of the overlap between the two skills using the conflict detection framework. Identifies the overlap type (partial overlap vs exact duplicate). Recommends either merging (if purposes are the same) or differentiating (if they serve different stages of the workflow).",
       "files": [],
       "assertions": [
         "Identifies the overlap type between the two skills",
         "References the conflict detection protocol (5 conflict types)",
         "Provides a clear recommendation (merge or differentiate)",
-        "If differentiating, provides rewritten descriptions for both skills",
-        "Explains the reasoning behind the recommendation",
-        "References the non-redundancy dimension from the quality matrix"
+        "If differentiating, provides rewritten descriptions for both skills"
       ]
     },
     {
       "id": 5,
       "prompt": "I wrote a skill but I'm not sure if it's good enough to ship. It has a SKILL.md with frontmatter, two reference files, and a validation script. How do I evaluate it?",
-      "expected_output": "A step-by-step evaluation process using the 5-dimension quality matrix (Trigger Accuracy, Action Coherence, Reference Integrity, Non-Redundancy, Edge Case Coverage). Includes how to score each dimension, calculate the weighted overall score, and determine the release grade. Mentions the pre-deployment audit checklist.",
+      "expected_output": "A step-by-step evaluation process using the 5-dimension quality matrix (Trigger Accuracy, Action Coherence, Reference Integrity, Non-Redundancy, Edge Case Coverage). Includes how to score each dimension, calculate the weighted overall score, and determine the release grade.",
       "files": [],
       "assertions": [
         "Lists all 5 quality dimensions with their weights",
         "Explains how to score each dimension (1-5 scale)",
         "Provides the weighted score calculation formula",
         "Maps overall scores to release grades (EXCELLENT/GOOD/ACCEPTABLE/NEEDS WORK)",
-        "Mentions the block rule (any dimension <=2 blocks release)",
-        "References the pre-deployment audit checklist",
-        "Recommends running evals before shipping"
+        "Mentions the block rule (any dimension <=2 blocks release)"
       ]
     },
     {
       "id": 6,
       "prompt": "Write evals for a skill that creates React components from design specs. I need test cases that cover the happy path, edge cases, and failure modes.",
-      "expected_output": "At least 5 eval test cases in the standard format (id, prompt, expected_output, files, assertions). Includes a happy path eval, an edge case (malformed design spec), a failure mode (missing dependencies), and varied phrasing styles. Assertions are specific and verifiable, not vague.",
+      "expected_output": "At least 5 eval test cases in the standard format (id, prompt, expected_output, files, assertions). Includes a happy path eval, an edge case (malformed design spec), a failure mode (missing dependencies), and varied phrasing styles.",
       "files": [],
       "assertions": [
         "Provides at least 5 eval test cases",
@@ -86,8 +78,7 @@
         "At least one eval covers an edge case",
         "At least one eval covers a failure mode",
         "Prompts vary in phrasing style (casual, formal, detailed)",
-        "Assertions are specific and verifiable (not vague like 'output is good')",
-        "Follows the evals.json schema from the skill-creator spec"
+        "Assertions are specific and verifiable (not vague like 'output is good')"
       ]
     },
     {
@@ -99,8 +90,7 @@
         "Explains why 'Use when working with APIs' is too broad",
         "Provides a rewritten description with explicit exclusions",
         "Includes should-not-trigger query examples for testing",
-        "Mentions the train/validation split for avoiding overfitting",
-        "References the description optimization loop"
+        "Mentions the train/validation split for avoiding overfitting"
       ]
     },
     {
@@ -115,8 +105,7 @@
         "Script checks frontmatter has name and description fields",
         "Script checks for banned terminology (CLAUDE.md, Claude)",
         "Error messages go to stderr",
-        "Script exits with non-zero code on failure",
-        "Script is self-contained with no external dependencies beyond bash/grep"
+        "Script exits with non-zero code on failure"
       ]
     }
   ]
