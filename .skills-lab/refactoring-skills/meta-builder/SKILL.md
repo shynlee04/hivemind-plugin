@@ -12,17 +12,52 @@ allowed-tools: Bash skill
 
 Thin routing orchestrator. Routes user intent to specialist authoring skills, stacks skills for multi-domain tasks, and provides concrete recipes.
 
+**This skill enforces. It does not execute.** If you catch yourself editing files, STOP and route.
+
 ---
 
-## FIRST ACTION — Do This Immediately
+## ENFORCEMENT: Run This Before Anything Else
 
-When this skill loads, execute these steps in order. Do not skip.
+```bash
+bash "$(dirname "$0")/../scripts/preflight.sh" "$USER_REQUEST"
+```
 
-1. **Read the user's request.** Extract the core intent in one sentence.
-2. **Match against the Routing Table below.** Find the row whose "User Says" pattern matches.
-3. **Load the target skill** via the `skill` tool. Do NOT execute directly — delegate.
-4. **If the task spans multiple domains**, apply a Stacking Recipe (see below).
-5. **If intent is unclear**, ask at most 3 clarifying questions (use the `question` tool, max 3 at a time).
+In practice, run the preflight with the user's exact request text:
+
+```bash
+bash .skills-lab/refactoring-skills/meta-builder/scripts/preflight.sh "<exact user text>"
+```
+
+**The preflight script blocks on:**
+1. Non-empty request (exit 1 if blank)
+2. Deterministic GROUP scoring (GROUP_1 vs GROUP_2 — see formula below)
+3. Primary skill existence on disk (searches local + global paths)
+4. Stack skill existence (if stacking recipe applies)
+
+**Parse the output.** It returns key=value lines:
+```
+INTENT=<extracted intent>
+GROUP=<GROUP_1|GROUP_2>
+PRIMARY_SKILL=<skill-name>
+STACK_SKILLS=<comma-separated or empty>
+QUESTIONS_ALLOWED=<0-3>
+PREFLIGHT_PASSED=true
+```
+
+If `PREFLIGHT_PASSED` is not `true`, do NOT proceed. Fix the issue first.
+
+---
+
+## Mandatory Execution Order
+
+After preflight passes, follow these steps **in order**. No skipping.
+
+1. **Read preflight output.** Note `PRIMARY_SKILL`, `STACK_SKILLS`, `QUESTIONS_ALLOWED`.
+2. **Load the primary skill** via the `skill` tool. Example: `skill({ name: "use-authoring-skills" })`
+3. **If STACK_SKILLS is non-empty**, load each stack skill too. Max 3 total.
+4. **Execute within the loaded skill's workflow.** Do NOT execute directly from meta-builder.
+5. **If QUESTIONS_ALLOWED > 0 and intent needs clarification**, ask questions using the `task` tool or direct text. **Max 3 questions total across the entire session.** Track count.
+6. **Create a todo plan** via `todowrite` before any file edits. Each task = one skill workflow step.
 
 ---
 
@@ -48,8 +83,6 @@ When this skill loads, execute these steps in order. Do not skip.
 
 ## Routing Decision Formula
 
-GROUP 1 (implementation methodology) and GROUP 2 (domain authoring) use **different** scoring:
-
 ```
 GROUP 1 score = (process_verbs × 3) + (coordination_nouns × 2) + (planning_modifiers × 1)
 GROUP 2 score = (creation_verbs × 3) + (entity_nouns × 2) + (new_modifiers × 1)
@@ -62,13 +95,13 @@ GROUP 2 score = (creation_verbs × 3) + (entity_nouns × 2) + (new_modifiers × 
 **Planning modifiers** (GROUP 1): complex, multi-step, long-running, iterative
 **New modifiers** (GROUP 2): new, from scratch, first time, template
 
-Route to the group with the higher score. If within 2 points, probe the user.
+Route to the higher score. If within 2 points, use `QUESTIONS_ALLOWED` to probe the user. Tie-breaker: file reference (`@file`) → GROUP_2.
 
 ---
 
 ## Stacking Recipes
 
-Concrete combinations for common multi-domain tasks. Max 3 skills per stack.
+Max 3 skills per stack.
 
 ### Recipe 1: Create Skill from Template
 ```
@@ -108,22 +141,19 @@ Steps:       1. Identify concept  2. Read concept reference  3. Apply config
 
 **User says:** "I want to create a skill like this @.kilo/command/deep-research-synthesis-repomix.md"
 
-1. **Extract intent:** User wants to create a new skill from an existing file template.
-2. **Match routing table:** Row 1 — "create a skill like this @file" → `use-authoring-skills`
-3. **Apply stacking recipe:** Recipe 1 — Create Skill from Template
-4. **Load skills:** `skill({ name: "use-authoring-skills" })` then `skill({ name: "skill-creator" })`
-5. **Execute within those skills' workflows** — do NOT execute directly from meta-builder.
+1. **Run preflight:** `bash scripts/preflight.sh "create a skill like this @.kilo/command/deep-research-synthesis-repomix.md"`
+2. **Parse output:** `PRIMARY_SKILL=use-authoring-skills`, `STACK_SKILLS=skill-creator`, `GROUP=GROUP_2`
+3. **Load skills:** `skill({ name: "use-authoring-skills" })` then `skill({ name: "skill-creator" })`
+4. **Execute within those skills' workflows** — do NOT execute directly from meta-builder.
 
 ---
 
-## Progressive Disclosure — What to Read When
+## Question Enforcement
 
-| Situation | Read This | Skip This |
-|-----------|-----------|-----------|
-| Creating a skill | Routing Table → Recipe 1 → load `use-authoring-skills` | 02-opencode-concepts.md, 04-hivemind-compatibility.md |
-| Configuring OpenCode | Routing Table → Recipe 4 → 02-opencode-concepts.md | 01-routing-logic.md, 03-stacking-rules.md |
-| Stacking skills | Routing Table → Stacking Recipes → 03-stacking-rules.md | 02-opencode-concepts.md, 04-hivemind-compatibility.md |
-| Intent unclear | Routing Table → probe user → load `user-intent-interactive-loop` | All references until intent is clear |
+- **Max 3 questions per session.** Track count in a variable.
+- **Questions must be specific.** Not "what do you want?" but "Should this skill trigger on 'create X' or 'build X'?"
+- **After 3 questions**, make a best-effort routing decision and proceed. Document the assumption.
+- **Never ask questions** when the preflight already determined a clear route (score difference > 4).
 
 ---
 
@@ -133,9 +163,21 @@ Steps:       1. Identify concept  2. Read concept reference  3. Apply config
 |-------------|-------------------|---------------|
 | Executor | meta-builder edits files directly | Check: did this skill call write/edit? If yes, STOP. |
 | Hoarder | 4+ skills loaded simultaneously | Count active skills. If >3, unload the least relevant. |
-| Blind Router | Routing without reading user request | Check: did you extract intent before matching? |
+| Blind Router | Routing without running preflight | Check: did you run preflight.sh first? If no, run it. |
 | Concept Dumper | Loading all 10 OpenCode concepts at once | Check: does the user's request mention MCP/LSP/agents? If not, skip 02-opencode-concepts.md. |
 | Silent Worker | Many turns without user update | Check: has the user been informed of the routing decision? |
+| Question Spammer | Asking >3 questions or vague questions | Count questions. If >3, STOP and route with assumption. |
+
+---
+
+## Progressive Disclosure
+
+| Situation | Read This | Skip This |
+|-----------|-----------|-----------|
+| Creating a skill | Routing Table → Recipe 1 → load `use-authoring-skills` | 02-opencode-concepts.md, 04-hivemind-compatibility.md |
+| Configuring OpenCode | Routing Table → Recipe 4 → 02-opencode-concepts.md | 01-routing-logic.md, 03-stacking-rules.md |
+| Stacking skills | Routing Table → Stacking Recipes → 03-stacking-rules.md | 02-opencode-concepts.md, 04-hivemind-compatibility.md |
+| Intent unclear | Run preflight → if GROUP_1, load `user-intent-interactive-loop` | All references until intent is clear |
 
 ---
 
@@ -151,8 +193,6 @@ Steps:       1. Identify concept  2. Read concept reference  3. Apply config
 ---
 
 ## Future Skills — Fallback Behavior
-
-The following GROUP 2 skills do not yet exist. When routing to them, use the fallback:
 
 | Missing Skill | Fallback |
 |--------------|----------|

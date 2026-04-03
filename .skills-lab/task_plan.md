@@ -1,8 +1,42 @@
-# Task Plan: Meta-Builder Phase 1 — Complete Rebuild of All 5 Skill Packs
+# Task Plan: Meta-Builder — Enforcement Fix
 
-**Goal:** Rebuild all 5 skill packs from scratch addressing ALL 56 flaws found in failure analysis + user's additional enforcement requirements.
+**Goal:** Fix 5 skill packs so they actually enforce behavior, not just describe it. All 5 pass validation scripts but fail in real tests.
 
-**Status:** ✅ PHASE 1 REBUILD COMPLETE — All 5 packs rebuilt, validated, committed
+**Current Phase:** Phase 2 — Enforcement Fix
+
+**Status:** ⚠️ PHASE 1 VALIDATED BUT FAILS IN REAL TESTS — All 5 packs pass validate-skill.sh (11/11) but AI ignores all gates in practice.
+
+## Phase 2: Enforcement Fix
+
+### Root Cause
+SKILL.md files describe enforcement but don't actually enforce. "Do this first" is text, not a mechanism. Gate scripts exist but never run. Question tool enforcement is description, not blocking.
+
+### Evidence
+- Test 1: `@file create this` → AI asks "How can I help?" with 4 options (intent was CRYSTAL CLEAR)
+- Test 2: `create skill` → AI asks A/B/C questions (7+ questions total, ignored all gates)
+- Files: `fucking-2nd-fail-test.md`, `skill-failure-test1.md`
+
+## Phases
+
+- [x] Phase 1: Build 5 skill packs, validate scripts pass (11/11 each)
+- [x] Phase 2: Fix enforcement gap — real mechanisms, not descriptions
+  - [x] 2a. meta-builder — deterministic intent parsing via preflight.sh, mandatory todo setup
+  - [x] 2b. use-authoring-skills — validate-gate.sh, validation loop, checklist workflow
+  - [x] 2c. user-intent-interactive-loop — intent-verify.sh, 6 stop conditions, question tool gate
+  - [x] 2d. coordinating-loop — ralph-loop.sh, validate-envelope.sh, check-gate.sh
+  - [x] 2e. planning-with-files — enhanced init-session.sh, check-complete.sh, session-catchup.py
+- [ ] Phase 3: Test against failure scenarios
+- [ ] Phase 4: Iterate until all tests pass
+
+## Key Decisions (LOCKED — see findings.md)
+
+| Decision | Locked Answer |
+|----------|---------------|
+| Coordinator role | PLAN + DELEGATE, NEVER execute directly |
+| Enforcement | Must be programmatic (bash scripts, commands, agent config), not text descriptions |
+| Question tool | Max 3, via OpenCode question tool only, NOT plain text |
+| Planning files | UPDATE existing files, NEVER create new ones |
+| Delegation | Fix ONE skill at a time, subagent implements, critic reviews, loop until pass |
 
 ## Phase 1 Scope: Complete Rebuild
 

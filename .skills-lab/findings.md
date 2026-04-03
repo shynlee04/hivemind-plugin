@@ -206,6 +206,39 @@ use-authoring-skills/
 
 ---
 
+## Enforcement Gap Analysis (2026-04-03)
+
+### Core Finding
+SKILL.md files describe enforcement but don't actually enforce. They're text, not mechanisms.
+
+### Evidence from Failure Tests
+| Test | User Input | AI Response | Expected |
+|------|-----------|-------------|----------|
+| 2nd fail | `@file create this` | Lists doc sections, asks "How can I help?" | Parse intent, load use-authoring-skills, start converting |
+| 1st fail | `create skill` | Asks A/B/C questions with table | Use template path, start conversion |
+
+### Root Causes (All 5 Skills)
+1. "Do this first" = text suggestion, not enforcement
+2. Gate scripts exist but are never RUN
+3. Question tool enforcement = description, not blocking
+4. Routing tables = tables, not parsers
+5. No subagent review loop to catch failures
+
+### What Actually Works (from OpenCode platform docs)
+1. **Commands** can auto-parse intent with `$ARGUMENTS` and `@file`
+2. **Agents** can have restricted permissions (deny edit/bash)
+3. **Bash scripts** can run and block if they fail
+4. **Subagent review** can loop until pass
+
+### Fix Strategy
+Each skill needs real enforcement via:
+- OpenCode commands that auto-parse intent
+- Bash scripts that run and block
+- Subagent review loops that catch failures
+- Agent configurations that restrict behavior
+
+---
+
 ## Terminology Mandate
 - "Claude" → "Agent" (AI entity)
 - "CLAUDE.md" → "AGENTS.md" (config file)

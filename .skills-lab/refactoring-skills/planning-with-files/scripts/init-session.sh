@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
-# init-session.sh — Create clean skeleton planning files
+# init-session.sh — Create clean skeleton planning files with validation
 # Usage: bash init-session.sh [project-name]
 # Creates task_plan.md, findings.md, progress.md in current directory
+# Exit codes: 0 = success, 1 = failed to create files, 2 = validation failed
 
 set -euo pipefail
 
 PROJECT_NAME="${1:-project}"
 DATE=$(date +%Y-%m-%d)
 TIMESTAMP=$(date +"%Y-%m-%d %H:%M")
+SKILL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CREATED=0
+EXISTING=0
 
-echo "Initializing planning files for: $PROJECT_NAME"
+echo "[planning-with-files] Initializing planning files for: $PROJECT_NAME"
 
 # Create task_plan.md if it doesn't exist
 if [ ! -f "task_plan.md" ]; then
@@ -40,9 +44,11 @@ Phase 1
 | Error | Attempt | Resolution |
 |-------|---------|------------|
 SKELETON
-    echo "Created task_plan.md"
+    echo "[planning-with-files] Created task_plan.md"
+    CREATED=$((CREATED + 1))
 else
-    echo "task_plan.md already exists, skipping"
+    echo "[planning-with-files] task_plan.md already exists, skipping"
+    EXISTING=$((EXISTING + 1))
 fi
 
 # Create findings.md if it doesn't exist
@@ -67,9 +73,11 @@ if [ ! -f "findings.md" ]; then
 ## Resources
 <URLs, file paths, API references>
 SKELETON
-    echo "Created findings.md"
+    echo "[planning-with-files] Created findings.md"
+    CREATED=$((CREATED + 1))
 else
-    echo "findings.md already exists, skipping"
+    echo "[planning-with-files] findings.md already exists, skipping"
+    EXISTING=$((EXISTING + 1))
 fi
 
 # Create progress.md if it doesn't exist
@@ -95,12 +103,50 @@ if [ ! -f "progress.md" ]; then
 | Timestamp | Error | Attempt | Resolution |
 |-----------|-------|---------|------------|
 EOF
-    echo "Created progress.md"
+    echo "[planning-with-files] Created progress.md"
+    CREATED=$((CREATED + 1))
 else
-    echo "progress.md already exists, skipping"
+    echo "[planning-with-files] progress.md already exists, skipping"
+    EXISTING=$((EXISTING + 1))
+fi
+
+# Validation — ensure files have required sections
+VALIDATION_ERRORS=0
+
+for file in task_plan.md findings.md progress.md; do
+    if [ ! -f "$file" ]; then
+        echo "[planning-with-files] ERROR: $file was not created"
+        VALIDATION_ERRORS=$((VALIDATION_ERRORS + 1))
+        continue
+    fi
+    
+    # Check minimum file size (skeleton should be > 100 bytes)
+    FILE_SIZE=$(wc -c < "$file")
+    if [ "$FILE_SIZE" -lt 100 ]; then
+        echo "[planning-with-files] WARNING: $file is suspiciously small ($FILE_SIZE bytes)"
+        VALIDATION_ERRORS=$((VALIDATION_ERRORS + 1))
+    fi
+done
+
+# Validate task_plan.md has required sections
+if [ -f "task_plan.md" ]; then
+    for section in "## Goal" "## Current Phase" "## Phases" "## Errors Encountered"; do
+        if ! grep -qF "$section" task_plan.md; then
+            echo "[planning-with-files] ERROR: task_plan.md missing required section: $section"
+            VALIDATION_ERRORS=$((VALIDATION_ERRORS + 1))
+        fi
+    done
 fi
 
 echo ""
-echo "Planning files initialized!"
-echo "Files: task_plan.md, findings.md, progress.md"
-echo "Next step: Fill in the Goal section of task_plan.md"
+if [ "$VALIDATION_ERRORS" -gt 0 ]; then
+    echo "[planning-with-files] Validation failed with $VALIDATION_ERRORS error(s)"
+    exit 2
+fi
+
+echo "[planning-with-files] Planning files initialized successfully!"
+echo "[planning-with-files] Created: $CREATED, Existing: $EXISTING"
+echo "[planning-with-files] Files: task_plan.md, findings.md, progress.md"
+echo "[planning-with-files] NEXT: Fill in the Goal section of task_plan.md before any Write/Edit/Bash calls"
+
+exit 0

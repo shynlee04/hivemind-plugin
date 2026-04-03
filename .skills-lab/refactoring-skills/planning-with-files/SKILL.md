@@ -5,7 +5,7 @@ metadata:
   audience: agents
   workflow: planning
   min-tool-calls: "5"
-  enforcement: hooks
+  enforcement: scripts + checklists
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 
@@ -84,34 +84,43 @@ INIT → PLAN → EXECUTE → UPDATE → VERIFY → COMPACT
 5. **VERIFY** — Run `scripts/check-complete.sh` or manually confirm all phases complete.
 6. **COMPACT** — If context grows stale, re-read `task_plan.md` to refresh goals. Trim verbose sections.
 
-## Goal Refresh — Enforced
+## Goal Refresh — Enforced by Checklist
 
-The goal-refresh mechanism is enforced by hooks, not willpower.
+Hooks are declarations. Checklists are procedures. **This skill enforces via checklist.**
 
-### Enforcement Mechanism
+### Pre-Tool-Use Checklist (Mandatory)
 
-1. **Hook enforcement:** The `hooks/pre-tool-use.json` hook injects the current plan state before every Write/Edit operation. The Agent sees the goal before modifying files.
-2. **Script enforcement:** `scripts/check-complete.sh` runs on session stop. If phases are incomplete, it reports the gap.
-3. **Manual rule:** Re-read `task_plan.md` before every Write, Edit, or Bash (non-read-only) tool call. This is non-negotiable for tasks >10 tool calls.
+Before EVERY Write, Edit, or Bash (non-read-only) tool call, complete this checklist:
+
+- [ ] **Read `task_plan.md` first 30 lines** — Confirm Goal and Current Phase are still correct
+- [ ] **Verify phase is `in_progress`** — If status is `pending`, update it first. If `complete`, move to next phase
+- [ ] **Check Errors Encountered table** — If this action failed before, do NOT repeat. Change approach (see 3-Strike Protocol)
+- [ ] **Confirm content destination** — Web/search results → `findings.md`. Plan changes → `task_plan.md`. Session log → `progress.md`
+- [ ] **Count tool calls since last plan read** — If ≥5, re-read `task_plan.md` (first 30 lines minimum) before proceeding
 
 ### Goal-Refresh Trigger Algorithm
 
-Before each Write/Edit/Bash tool call:
 ```
-1. Count tool calls since last Read of task_plan.md
-2. If count >= 5 OR phase status changed:
-   → Read task_plan.md (first 30 lines minimum)
-   → Reset counter
-3. Proceed with tool call
+1. Track: tool_calls_since_plan_read counter (starts at 0 after each Read of task_plan.md)
+2. Before Write/Edit/Bash:
+   a. If tool_calls_since_plan_read >= 5:
+      → Read task_plan.md (first 30 lines)
+      → Reset counter to 0
+   b. Increment counter
+   c. Run Pre-Tool-Use Checklist above
+   d. Proceed with tool call
+3. After phase status change:
+   → Read task_plan.md (full file)
+   → Reset counter to 0
 ```
+
+**Violation = goal drift.** If you catch yourself mid-action without having read the plan, stop and read it now.
 
 **See:** [references/03-goal-refresh.md](references/03-goal-refresh.md) for the full mechanism.
 
 ## File Schema
 
 ### task_plan.md — Phase Tracker
-
-The goal-refresh mechanism. Re-reading this file pulls the original goal back into the Agent's attention window.
 
 **Required sections:**
 - `## Goal` — One sentence. The north star.
@@ -124,8 +133,6 @@ The goal-refresh mechanism. Re-reading this file pulls the original goal back in
 
 ### findings.md — Knowledge Store
 
-Stores discoveries, research results, and technical decisions. Write here after every 2 view/search operations.
-
 **Required sections:**
 - `## Requirements` — Extracted from user request.
 - `## Research Findings` — Key discoveries from exploration.
@@ -136,8 +143,6 @@ Stores discoveries, research results, and technical decisions. Write here after 
 **Critical rule:** Web/search/browser results go here, NOT in `task_plan.md`.
 
 ### progress.md — Session Log
-
-Chronological record of actions, test results, and session state.
 
 **Required sections:**
 - `## Session: <date>` — Grouped by date.
@@ -152,32 +157,29 @@ Chronological record of actions, test results, and session state.
 After `/clear`, interruption, or new session:
 
 1. **Check for planning files** — If `task_plan.md` exists, read all three files immediately.
-2. **Run catchup script** — Execute `scripts/session-catchup.py` to detect unsynced context from previous sessions.
+2. **Run catchup script** — Execute `python3 scripts/session-catchup.py` to detect unsynced context. Parse its JSON output (`--json` flag) for automated reconciliation.
 3. **Cross-reference with git** — Run `git diff --stat` to see actual code changes since last plan update.
 4. **Reconcile** — Update planning files to match current state. Mark completed phases. Log any gaps.
 5. **Resume** — Continue from the current phase. Re-read `task_plan.md` before the next action.
 
+**If no planning files exist after `/clear`:** The session was lost. Ask the user what was being worked on, then run `scripts/init-session.sh` to start fresh.
+
 **See:** [references/02-session-lifecycle.md](references/02-session-lifecycle.md) for full lifecycle.
 
-## Cross-Platform Hooks
+## Scripts — Actual Enforcement
 
-This skill ships actual hook config files in the `hooks/` directory. They are deployable, not documentation.
+| Script | Purpose | When to Run | Exit Code |
+|--------|---------|-------------|-----------|
+| `scripts/init-session.sh` | Creates skeleton files + validates | Start of new task | 0=ok, 1=failed |
+| `scripts/check-complete.sh` | Content-level phase validation | End of session, before commit | 0=ok, 1=incomplete |
+| `scripts/session-catchup.py` | Recovers state from git + session logs | After `/clear` or new session | 0=synced, 1=drift detected |
 
-| Hook File | Trigger | Enforcement |
-|-----------|---------|-------------|
-| `hooks/pre-tool-use.json` | Before Write/Edit | Injects plan state into context |
-| `hooks/post-tool-use.json` | After Write/Edit | Reminds to update progress |
-| `hooks/stop.json` | Session stop | Runs check-complete.sh |
+### Script Behavior Guarantees
 
-**See:** [references/04-cross-platform-hooks.md](references/04-cross-platform-hooks.md) for deployment instructions.
-
-## Scripts
-
-| Script | Purpose | When to Run |
-|--------|---------|-------------|
-| `scripts/init-session.sh` | Creates clean skeleton planning files | Start of new task |
-| `scripts/check-complete.sh` | Verifies phase completion with content checks | End of session, before commit |
-| `scripts/session-catchup.py` | Recovers state from git history and session logs | After `/clear` or new session |
+- **No interactive prompts** — All scripts run headless
+- **Structured output** — `[planning-with-files]` prefixed messages for parsing
+- **Meaningful exit codes** — 0 = success, 1 = action needed
+- **Agentic use** — Scripts output actionable next steps, not just status
 
 ## Error Discipline
 
@@ -191,14 +193,16 @@ This skill ships actual hook config files in the `hooks/` directory. They are de
 | API timeout | 2 | Added retry with exponential backoff |
 ```
 
-### 3-Strike Protocol
+### 3-Strike Protocol — With Tracking
 
-| Attempt | Action |
-|---------|--------|
-| 1 | Diagnose root cause, apply targeted fix |
-| 2 | Try different method/tool/library — NEVER repeat same action |
-| 3 | Question assumptions, search for solutions, consider updating the plan |
-| After 3 | Escalate to user with what was tried and the specific error |
+| Strike | Action | Tracking |
+|--------|--------|----------|
+| **1** | Diagnose root cause, apply targeted fix. Log in Errors Encountered table. | `| <error> | 1 | <fix> |` |
+| **2** | Try DIFFERENT method/tool/library. NEVER repeat same action. Log the change. | `| <error> | 2 | <different approach> |` |
+| **3** | Question assumptions. Search for solutions. Consider updating the plan itself. | `| <error> | 3 | <rethink> |` |
+| **After 3** | ESCALATE to user. Summarize: what was tried, what failed, what you need. | Stop. Ask user. |
+
+**Tracking rule:** Every error MUST be logged in both `task_plan.md` (Errors Encountered table) AND `progress.md` (Error Log section) with timestamp. If the same error appears 2+ times in the table, you are on strike 2+.
 
 ### Decision Procedure — Before Each Tool Call
 
@@ -343,19 +347,15 @@ Copy templates to project root and fill in:
 ## Platform Adaptation
 
 ### OpenCode (Primary)
-- Hooks: Use `hooks/*.json` files directly. Place in `.opencode/` or reference from skill.
 - Scripts: All `.sh` and `.py` scripts work natively.
 - Skills: Place in `.opencode/skills/planning-with-files/`.
 
 ### Claude Code
-- Hooks: Place hook scripts in `.cursor/hooks/`. Use the shell scripts from `hooks/` as templates.
 - Skills: Place in `.claude/skills/planning-with-files/`.
 - Scripts: `.sh` files work. `.py` requires Python 3.
 
 ### Codex
-- Hooks: Use `.codex/skills/planning-with-files/` for skill placement.
 - Scripts: All scripts work. No native hook system — rely on script-based enforcement.
 
 ### Cursor
-- Hooks: Place in `.cursor/hooks/`. Same format as Claude Code.
 - Skills: Place in `.cursor/skills/planning-with-files/`.
