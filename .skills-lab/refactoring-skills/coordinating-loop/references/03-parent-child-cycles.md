@@ -42,28 +42,58 @@ The parent Agent creates a child with:
 4. **Expected output format** — What the child should return.
 5. **Verification step** — What gate the child must pass before returning.
 
-**Prompt template:**
+### Filled-In Prompt Template
+
+Here is a complete, filled-in prompt for a child Agent. Replace the bracketed sections with your specific values:
+
 ```markdown
-You are a specialized agent tasked with: <task description>
+You are a specialized Agent tasked with: Writing the SKILL.md file for a new "deep-research" skill
 
 ## Context
-<Only the information needed for this task>
+The skill lives at .opencode/skills/deep-research/SKILL.md. It must have YAML frontmatter
+with name, description, and metadata fields. The body should contain procedural guidance
+for conducting research. The skill should be 300+ lines.
+
+Existing skill patterns to follow:
+- .opencode/skills/use-authoring-skills/SKILL.md (structure reference)
+- .opencode/skills/skill-creator/SKILL.md (frontmatter reference)
 
 ## Scope
-- Work on: <specific files/functions>
-- Do NOT touch: <specific files/functions>
+- Work on: .opencode/skills/deep-research/SKILL.md only
+- Do NOT touch: Any other files in the repository
 
 ## Expected Output
-<Format and content the parent expects back>
+- A complete SKILL.md file with valid frontmatter and procedural body content
+- Summary of sections created and line count
 
 ## Verification
-<Concrete step to run before returning>
+- Run: head -5 .opencode/skills/deep-research/SKILL.md — confirm frontmatter opens with ---
+- Run: wc -l .opencode/skills/deep-research/SKILL.md — confirm >300 lines
 
 ## Constraints
 - Do NOT modify files outside scope
 - Do NOT introduce new dependencies
 - Return summary even if task cannot be completed
 ```
+
+### Context Filtering Guide
+
+When constructing a child Agent's context, apply these rules systematically:
+
+| Include | Exclude | Reason |
+|---------|---------|--------|
+| File paths the child will modify | Full session history | History dilutes focus |
+| Error messages or failure output | Unrelated test failures | Noise distracts from signal |
+| Relevant code snippets (max 50 lines) | Design debates or alternatives | Child needs facts, not opinions |
+| Expected output format | Internal coordination decisions | Child doesn't need parent's planning |
+| Verification commands | Speculative hypotheses | Child needs concrete checks |
+| Existing patterns to follow (1-2 examples) | Other skills' internal content | Irrelevant to child's task |
+
+**Context size rule:** If the context section of your Task Envelope exceeds 500 characters, you are including too much. Trim to the minimum information the child needs to start.
+
+**Rule of thumb:** If the child does not need a piece of information to complete its task, do not include it.
+
+---
 
 ### Phase 2: Monitoring
 
@@ -85,7 +115,7 @@ When a child returns:
 
 1. **Read the summary** — What did the child do?
 2. **Verify the gate** — Did the child pass its verification step?
-3. **Check scope** — Did the child stay within boundaries?
+3. **Check scope** — Did the child stay within boundaries? Run `git diff --name-only` and compare against the scope in the Task Envelope.
 4. **Review changes** — Spot-check critical modifications.
 5. **Record result** — Write to disk with timestamp and outcome.
 
@@ -107,7 +137,7 @@ After all children return:
 A failure is **retryable** if:
 
 - The child had insufficient context (missing file, unclear instructions).
-- The child encountered a transient error (timeout, resource unavailable).
+- The child encountered a transient errors (timeout, resource unavailable).
 - The child's approach was correct but implementation had a bug.
 
 **Retry protocol:**
@@ -166,7 +196,7 @@ The parent Agent must preserve its own context throughout the cycle:
 | Anti-Pattern | What It Looks Like | Consequence | Fix |
 |-------------|-------------------|-------------|-----|
 | The Helicopter Parent | Parent micromanages every child step | Wastes parent context, slows children | Define gates, check at gates only |
-| The Absentee Parent | Parent dispatches and forgets | Children go off-scope, no integration | Monitor at defined gates |
+| The Absentee Parent | Parent dispatchs and forgets | Children go off-scope, no integration | Monitor at defined gates |
 | The Context Dump | Parent sends full session to child | Child loses focus, hallucinates | Construct focused prompts |
 | The Inheritance | Child inherits parent's full history | Context pollution, scope creep | Isolate child context |
 | The Silent Death | Child fails but parent doesn't notice | Work is lost, gates fail downstream | Require confirmation and verification |

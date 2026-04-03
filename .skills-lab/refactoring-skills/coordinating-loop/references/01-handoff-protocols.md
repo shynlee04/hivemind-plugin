@@ -84,6 +84,103 @@ If the child cannot confirm all four, it must ask clarifying questions rather th
 
 ---
 
+## Filled-In Example: Complete Hand-off
+
+**Scenario:** Parent Agent dispatches a child to fix failing auth tests.
+
+### Parent writes this envelope:
+
+```markdown
+## Task
+Fix the 3 failing tests in tests/lib/session-api.ts caused by SDK API change.
+
+## Scope
+- **Include:** tests/lib/session-api.ts, src/lib/session-api.ts
+- **Exclude:** All other test files, all production code outside session-api.ts,
+  any files in src/lib/continuity.ts or src/lib/state.ts
+
+## Context
+Error output from last test run:
+```
+FAIL tests/lib/session-api.ts
+  ✕ waitForSession should retry on timeout (tests/lib/session-api.ts:45)
+    TypeError: client.waitForSession is not a function
+  ✕ createSession should handle multi-path fallback (tests/lib/session-api.ts:78)
+    Expected 200 but received 500
+  ✕ getSession should parse response correctly (tests/lib/session-api.ts:112)
+    Cannot read properties of undefined (reading 'id')
+```
+
+The SDK changed `waitForSession()` to `waitForSessionAsync()`. The multi-path
+fallback at src/lib/session-api.ts:142-168 uses the old signature.
+
+Reference the working pattern at src/lib/continuity.ts:200-215 which already
+handles the new SDK signature correctly.
+
+## Expected Output
+1. Summary of root cause (what changed in the SDK)
+2. List of changes made in file:line format
+3. Confirmation that all 3 tests pass with `npm test -- tests/lib/session-api.ts`
+
+## Verification
+Run: npm test -- tests/lib/session-api.ts
+All 3 tests must pass. If any fail, report which ones and why.
+
+## Constraints
+- Do NOT modify files outside tests/lib/session-api.ts and src/lib/session-api.ts
+- Do NOT change existing behavior except where the SDK signature changed
+- Do NOT introduce new dependencies or imports
+- Return summary even if task cannot be completed
+```
+
+### Child returns this confirmation:
+
+```markdown
+## Confirmation
+- Task understood: Fix 3 failing tests in session-api.ts by updating the SDK
+  call from waitForSession() to waitForSessionAsync() and fixing the multi-path
+  fallback at lines 142-168.
+- Scope boundaries: Only tests/lib/session-api.ts and src/lib/session-api.ts.
+  Nothing else.
+- Verification step: npm test -- tests/lib/session-api.ts must pass all 3 tests.
+- Any ambiguities: None — the reference at continuity.ts:200-215 shows the
+  correct pattern. Proceeding.
+```
+
+### Child returns this result:
+
+```markdown
+## Result: TASK COMPLETE
+
+### Root Cause
+The SDK renamed `waitForSession()` to `waitForSessionAsync()` and changed the
+return type from synchronous to Promise-based. The multi-path fallback at
+src/lib/session-api.ts:142-168 was calling the old method name.
+
+### Changes Made
+- src/lib/session-api.ts:145 — Renamed `waitForSession` to `waitForSessionAsync`, added `await`
+- src/lib/session-api.ts:152 — Updated response parsing to handle new Promise return type
+- src/lib/session-api.ts:160 — Fixed undefined access by adding null check before `.id`
+- tests/lib/session-api.ts:45-50 — Updated test to use async/await pattern
+- tests/lib/session-api.ts:78-85 — Updated mock to return Promise instead of sync value
+- tests/lib/session-api.ts:112-118 — Added null check in test assertion
+
+### Verification
+```
+$ npm test -- tests/lib/session-api.ts
+PASS tests/lib/session-api.ts (2.3s)
+  ✓ waitForSession should retry on timeout (45ms)
+  ✓ createSession should handle multi-path fallback (12ms)
+  ✓ getSession should parse response correctly (8ms)
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+```
+
+All 3 tests pass.
+```
+
+---
+
 ## What to Leave Behind
 
 **Never include in a hand-off:**

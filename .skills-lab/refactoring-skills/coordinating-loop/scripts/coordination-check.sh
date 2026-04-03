@@ -2,8 +2,11 @@
 # coordination-check.sh — Validates coordination state and gate passage
 # Usage: ./coordination-check.sh [session-name]
 #
+# Bootstrap mode: If no .coordination/ directory exists, prints guidance
+# on how to initialize a session instead of failing silently.
+#
 # Checks:
-#   1. Session directory exists
+#   1. Session directory exists (or bootstrap guidance if not)
 #   2. Required files present (task_plan.md, findings.md, progress.md)
 #   3. Current phase is valid
 #   4. All gates for completed phases passed
@@ -12,19 +15,30 @@
 # Exit codes:
 #   0 — All checks passed
 #   1 — One or more checks failed
+#   2 — No session exists (bootstrap guidance printed)
 
 set -euo pipefail
 
 COORD_DIR="${COORD_DIR:-.coordination}"
 SESSION="${1:-}"
 
-# Find session directory
+# --- Bootstrap Mode: No coordination directory exists ---
+if [[ ! -d "$COORD_DIR" ]]; then
+  echo "[coordination-check] No .coordination/ directory found."
+  echo "[coordination-check] Bootstrap required. Run one of:"
+  echo "  ./scripts/init-session.sh <session-name>"
+  echo "  COORD_DIR=/path/to/dir ./scripts/init-session.sh <session-name>"
+  exit 2
+fi
+
+# --- Find session directory ---
 if [[ -z "$SESSION" ]]; then
-  # Use most recent session
   SESSION=$(ls -1 "$COORD_DIR" 2>/dev/null | sort -r | head -1)
   if [[ -z "$SESSION" ]]; then
-    echo "[coordination-check] ERROR: No sessions found in $COORD_DIR"
-    exit 1
+    echo "[coordination-check] No sessions found in $COORD_DIR."
+    echo "[coordination-check] Bootstrap required. Run:"
+    echo "  ./scripts/init-session.sh <session-name>"
+    exit 2
   fi
   echo "[coordination-check] Using most recent session: $SESSION"
 fi
@@ -50,6 +64,7 @@ for file in task_plan.md findings.md progress.md; do
 done
 
 # Check 3: Current phase is valid
+CURRENT_PHASE=""
 if [[ -f "$SESSION_DIR/task_plan.md" ]]; then
   CURRENT_PHASE=$(grep "Current Phase:" "$SESSION_DIR/task_plan.md" | head -1 | sed 's/.*Current Phase: //' | tr -d '[:space:]')
   VALID_PHASES="ASSESS DISPATCH MONITOR INTEGRATE VERIFY"
@@ -62,7 +77,7 @@ if [[ -f "$SESSION_DIR/task_plan.md" ]]; then
 fi
 
 # Check 4: Gate consistency
-if [[ -f "$SESSION_DIR/task_plan.md" ]]; then
+if [[ -f "$SESSION_DIR/task_plan.md" && -n "$CURRENT_PHASE" ]]; then
   PHASE_ORDER=(ASSESS DISPATCH MONITOR INTEGRATE VERIFY)
   CURRENT_IDX=0
   for i in "${!PHASE_ORDER[@]}"; do

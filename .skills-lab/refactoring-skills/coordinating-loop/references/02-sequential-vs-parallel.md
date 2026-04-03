@@ -12,7 +12,11 @@ This framework makes the decision **programmatic and measurable** — not a gut 
 
 ---
 
-## Decision Tree
+## Fixed Decision Tree
+
+The previous version had a logical contradiction: it checked "independent (no shared state)" and then re-checked "touch same files" — which is the same criterion. This created a dead end where the "Yes" branch from independence could never reach the "touch same files" check.
+
+The corrected tree below eliminates the redundancy and adds a reassessment path.
 
 ```
                     ┌─────────────────────┐
@@ -24,23 +28,27 @@ This framework makes the decision **programmatic and measurable** — not a gut 
            1 task         2 tasks         3+ tasks
               │               │               │
               ▼               ▼               ▼
-        Execute         Check independence  Check independence
+        Execute         Check file overlap  Check file overlap
         directly        (see below)         (see below)
                               │               │
                      ┌────────┴────────┐      │
                      │                 │      │
-                Independent       Dependent   │
+                Overlap          No overlap   │
                      │                 │      │
                      ▼                 ▼      ▼
-               Sequential       Sequential  Check file overlap
-                                             (see below)
-                                                    │
-                                           ┌────────┴────────┐
-                                           │                 │
-                                      No overlap        Overlap
-                                           │                 │
-                                           ▼                 ▼
-                                     Parallel         Sequential
+               Sequential       Check: are    Check: are
+                                tasks         tasks
+                                exploratory?  exploratory?
+                                     │            │
+                                ┌────┴────┐  ┌────┴────┐
+                                │         │  │         │
+                              Yes       No  Yes       No
+                                │         │  │         │
+                                ▼         ▼  ▼         ▼
+                           Sequential  Seq  Sequential Parallel
+                                        (overhead
+                                         not worth
+                                          2 tasks)
 ```
 
 ---
@@ -54,8 +62,9 @@ Two tasks are **independent** if ALL of the following are true:
 | File overlap | Do tasks modify the same files? | No shared files |
 | State dependency | Does task B need task A's output? | No dependency |
 | Resource conflict | Do tasks use the same external resource? | No shared resource |
-| Root cause | Are failures from the same underlying issue? | Different root causes |
 | Validation | Can each task be verified independently? | Independent verification |
+
+**Note:** The previous version included "Root cause: Are failures from the same underlying issue?" as a criterion. This was removed because root cause cannot be determined before investigation. Instead, the "exploratory" branch handles this: if root cause is unknown, investigate sequentially first, then reassess.
 
 **If any criterion fails → tasks are dependent → use sequential.**
 
@@ -67,9 +76,8 @@ Two tasks are **independent** if ALL of the following are true:
 
 1. **3+ tasks** — Fewer than 3, the coordination overhead isn't worth it.
 2. **Independent domains** — Each task touches different files or subsystems.
-3. **Different root causes** — Fixing one won't affect the others.
-4. **No shared state** — No file, database, or resource conflicts.
-5. **Independent verification** — Each task can be validated on its own.
+3. **No shared state** — No file, database, or resource conflicts.
+4. **Independent verification** — Each task can be validated on its own.
 
 **Example — Parallel is correct:**
 ```
@@ -104,27 +112,39 @@ Same file, related features → sequential (fix one may affect others).
 
 ---
 
-## Adaptive Execution with Constraints
+## Reassessment Protocol
 
-The framework is **adaptive with constraints** — not rigid. Adjust based on evidence:
+The framework is **adaptive with constraints**. Adjust based on evidence gathered during execution.
 
 ### Start Sequential, Escalate to Parallel
 
 If you begin investigating sequentially and discover tasks are truly independent:
 
 1. **Stop** the current sequential investigation.
-2. **Document** what you've learned so far (write to disk).
+2. **Document** what you've learned so far (write to `.coordination/<session>/findings.md`).
 3. **Re-assess** using the independence criteria above.
-4. **Dispatch parallel** if criteria are met.
+4. **Dispatch parallel** if all criteria are met.
+5. **Record the reassessment** in `progress.md`:
+   ```
+   - HH:MM — REASSESSMENT: Switched from sequential to parallel.
+     Reason: Discovered tasks touch different files with no shared state.
+     Tasks: TASK-1 (files: X), TASK-2 (files: Y), TASK-3 (files: Z)
+   ```
 
 ### Start Parallel, Fall Back to Sequential
 
 If parallel agents discover their tasks are related:
 
-1. **Halt** remaining parallel agents.
+1. **Halt** remaining parallel agents immediately.
 2. **Collect** results from completed agents.
 3. **Re-assess** the remaining work as a single domain.
-4. **Continue sequentially** with full context.
+4. **Continue sequentially** with full context from all completed agents.
+5. **Record the reassessment** in `progress.md`:
+   ```
+   - HH:MM — REASSESSMENT: Switched from parallel to sequential.
+     Reason: TASK-1 and TASK-2 both modify src/lib/session-api.ts.
+     Completed: TASK-3 (passed). Remaining: TASK-1 + TASK-2 → sequential.
+   ```
 
 ---
 

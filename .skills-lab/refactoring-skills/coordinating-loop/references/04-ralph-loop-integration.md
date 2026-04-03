@@ -1,6 +1,6 @@
 # Ralph-Loop Integration
 
-Scripting patterns, hooks, and automation for iterative agent-driven development loops.
+Scripting patterns, hooks, and automation for iterative agent-driven development loops — mapped to skill-authoring workflows.
 
 ---
 
@@ -8,76 +8,54 @@ Scripting patterns, hooks, and automation for iterative agent-driven development
 
 The ralph-loop pattern is a **programmatic, measurable** approach to agent-driven development:
 
-1. **Define features as user stories** with testable acceptance criteria.
+1. **Define work as user stories** with testable acceptance criteria.
 2. **Run AI agents in a loop** until all stories pass.
 3. **Scripts verify phase completion** — not subjective judgment.
 4. **Hooks automate lifecycle events** — pre-dispatch, post-completion, on-failure.
 
-The pattern comes from the [fullstackrecipes ralph-loop](https://fullstackrecipes.com/recipes/ralph-setup) ecosystem and is adapted here for cross-platform coordination.
+The pattern comes from the [fullstackrecipes ralph-loop](https://fullstackrecipes.com/recipes/ralph-setup) ecosystem and is adapted here for skill-authoring workflows.
+
+---
+
+## Mapping Ralph-Loop to Skill Authoring
+
+The original ralph-loop uses `.stories/*.json` files for user stories. For skill authoring, the "user stories" are the deliverables of the skill pack itself.
+
+### Skill-Authoring User Stories
+
+Instead of JSON story files, define acceptance criteria as a checklist in `task_plan.md`:
+
+```markdown
+## Acceptance Criteria (Skill Pack)
+- [ ] SKILL.md exists with valid YAML frontmatter (name, description)
+- [ ] SKILL.md body contains procedural guidance (not just concepts)
+- [ ] SKILL.md contains at least one worked example
+- [ ] All referenced files in SKILL.md exist (references/, scripts/)
+- [ ] All scripts pass `bash -n` syntax check
+- [ ] All scripts are executable (chmod +x)
+- [ ] No banned terminology (CLAUDE.md, "Claude" as agent name)
+- [ ] Skill passes: bash the validation script against the skill directory
+```
+
+Each checkbox is a "user story." The loop runs until all checkboxes are marked.
+
+### Phase Mapping for Skill Authoring
+
+| Ralph-Loop Phase | Skill-Authoring Equivalent | Verification |
+|-----------------|--------------------------|--------------|
+| Define stories | Write acceptance criteria checklist | Checklist exists in task_plan.md |
+| Implement | Write SKILL.md, references, scripts | Files exist, non-empty |
+| Test | Run `bash -n`, `validate-skill.sh` | Scripts pass, validation passes |
+| Verify | Check all acceptance criteria | All checkboxes marked |
+| Loop if fail | Fix failures, re-run validation | Gates pass on re-check |
 
 ---
 
 ## Core Components
 
-### 1. User Stories (Input)
+### 1. Session Init Script (Shipped)
 
-Each feature is defined as a JSON file with acceptance criteria:
-
-```json
-{
-  "id": "US-001",
-  "title": "Agent can dispatch parallel tasks",
-  "acceptance": [
-    "Given 3 independent tasks, when dispatched, then all 3 run concurrently",
-    "Given related tasks, when dispatched, then they run sequentially",
-    "Given a task with shared files, when dispatched, then scope conflict is detected"
-  ],
-  "status": "pending"
-}
-```
-
-### 2. Phase Verification Script (Gate)
-
-`check-complete.sh` — validates whether the current phase is complete:
-
-```bash
-#!/usr/bin/env bash
-# check-complete.sh — Verify all acceptance criteria for current phase
-# Usage: ./check-complete.sh <phase-name>
-
-set -euo pipefail
-
-PHASE="${1:?Phase name required}"
-STORIES_DIR="${STORIES_DIR:-.stories}"
-
-echo "[ralph-loop] Checking phase: $PHASE"
-
-PASS=0
-FAIL=0
-
-for story in "$STORIES_DIR"/*.json; do
-  status=$(jq -r '.status' "$story")
-  if [[ "$status" == "passed" ]]; then
-    PASS=$((PASS + 1))
-  elif [[ "$status" == "pending" || "$status" == "failed" ]]; then
-    FAIL=$((FAIL + 1))
-    echo "  FAIL: $(jq -r '.title' "$story") — status: $status"
-  fi
-done
-
-echo "[ralph-loop] Phase $PHASE: $PASS passed, $FAIL remaining"
-
-if [[ $FAIL -gt 0 ]]; then
-  exit 1
-fi
-
-echo "[ralph-loop] Phase $PHASE complete ✓"
-exit 0
-```
-
-### 3. Session Init Script (Setup)
-
-`init-session.sh` — initializes planning files for a new coordination session:
+`scripts/init-session.sh` — initializes planning files for a new coordination session:
 
 ```bash
 #!/usr/bin/env bash
@@ -126,11 +104,19 @@ EOF
 echo "[ralph-loop] Session '$SESSION' initialized at .coordination/$SESSION/"
 ```
 
+### 2. Coordination Check Script (Shipped)
+
+`scripts/coordination-check.sh` — validates coordination state and gate passage. See the scripts directory for the full implementation.
+
+### 3. Loop Status Script (Shipped)
+
+`scripts/loop-status.sh` — reports current loop phase and progress. See the scripts directory for the full implementation.
+
 ---
 
 ## Hook Integration
 
-Hooks automate lifecycle events in the coordination loop:
+Hooks automate lifecycle events in the coordination loop. These are shipped as reference implementations — adapt them to your workflow.
 
 ### Pre-Dispatch Hook
 
@@ -180,13 +166,6 @@ echo "[hook:post-completion] Task $TASK_ID → $STATUS"
 # Append to progress log
 echo "- $(date '+%H:%M') — Task $TASK_ID completed: $STATUS (see $SUMMARY)" \
   >> ".coordination/$(basename "$(pwd)")/progress.md"
-
-# Update story status if applicable
-STORY_FILE=$(grep -l "$TASK_ID" .stories/*.json 2>/dev/null || true)
-if [[ -n "$STORY_FILE" ]]; then
-  jq --arg s "$STATUS" '.status = $s' "$STORY_FILE" > "$STORY_FILE.tmp" && \
-    mv "$STORY_FILE.tmp" "$STORY_FILE"
-fi
 
 exit 0
 ```
@@ -283,6 +262,22 @@ The ralph-loop pattern maps directly to the coordination gate system:
 | Acceptance criteria met | G5: Verify | `check-complete.sh verify` |
 
 **All gates must pass** before the loop exits. This is the programmatic, measurable guarantee that the ralph-loop pattern provides.
+
+---
+
+## Loop Termination Conditions
+
+The loop terminates when ANY of the following occur:
+
+1. **All gates pass** — G1 through G5 all report "passed." Exit with success.
+2. **Maximum cycles reached** — 3 full cycles through G1→G5 without all gates passing. Exit with failure, escalate to user.
+3. **User intervention** — User explicitly stops the loop or changes the task. Exit immediately, save state.
+4. **Unrecoverable error** — A gate fails and the failure cannot be retried (e.g., missing files, permission denied). Exit with failure, escalate to user.
+
+**On termination, always:**
+- Write final state to `.coordination/<session>/progress.md`
+- Run `scripts/loop-status.sh <session>` to produce a final status report
+- Summarize results to the user
 
 ---
 

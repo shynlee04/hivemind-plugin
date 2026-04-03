@@ -2,24 +2,38 @@
 # loop-status.sh — Reports current loop phase and progress
 # Usage: ./loop-status.sh [session-name]
 #
+# Bootstrap mode: If no .coordination/ directory exists, prints guidance
+# on how to initialize a session instead of failing silently.
+#
 # Output:
 #   Current phase, gate status, child agent status, and next action
 #
 # Exit codes:
 #   0 — Status reported successfully
-#   1 — No session found
+#   2 — No session found (bootstrap guidance printed)
 
 set -euo pipefail
 
 COORD_DIR="${COORD_DIR:-.coordination}"
 SESSION="${1:-}"
 
-# Find session directory
+# --- Bootstrap Mode: No coordination directory exists ---
+if [[ ! -d "$COORD_DIR" ]]; then
+  echo "[loop-status] No .coordination/ directory found."
+  echo "[loop-status] No active coordination session."
+  echo "[loop-status] Bootstrap required. Run:"
+  echo "  ./scripts/init-session.sh <session-name>"
+  exit 2
+fi
+
+# --- Find session directory ---
 if [[ -z "$SESSION" ]]; then
   SESSION=$(ls -1 "$COORD_DIR" 2>/dev/null | sort -r | head -1)
   if [[ -z "$SESSION" ]]; then
-    echo "[loop-status] ERROR: No sessions found in $COORD_DIR"
-    exit 1
+    echo "[loop-status] No sessions found in $COORD_DIR."
+    echo "[loop-status] Bootstrap required. Run:"
+    echo "  ./scripts/init-session.sh <session-name>"
+    exit 2
   fi
 fi
 
@@ -37,6 +51,7 @@ echo "========================================"
 echo ""
 
 # Current phase
+CURRENT_PHASE=""
 if [[ -f "$SESSION_DIR/task_plan.md" ]]; then
   CURRENT_PHASE=$(grep "Current Phase:" "$SESSION_DIR/task_plan.md" | head -1 | sed 's/.*Current Phase: //')
   echo "Phase: ${CURRENT_PHASE:-<not set>}"
@@ -48,7 +63,7 @@ if [[ -f "$SESSION_DIR/task_plan.md" ]]; then
   echo ""
 
   # Blockers
-  BLOCKERS=$(sed -n '/## Blockers:/,/## /p' "$SESSION_DIR/task_plan.md" | grep -v "## " | grep -v "^$")
+  BLOCKERS=$(sed -n '/## Blockers:/,/## /p' "$SESSION_DIR/task_plan.md" | grep -v "## " | grep -v "^$" || true)
   if [[ -n "$BLOCKERS" ]]; then
     echo "Blockers:"
     echo "$BLOCKERS" | sed 's/^/  /'
@@ -98,7 +113,7 @@ echo "Next Action:"
 case "$CURRENT_PHASE" in
   ASSESS)
     echo "  Identify all tasks and group by independence"
-    echo "  Run: ./coordination-check.sh $SESSION"
+    echo "  Run: ./scripts/coordination-check.sh $SESSION"
     ;;
   DISPATCH)
     echo "  Dispatch child agents with focused task envelopes"
@@ -106,7 +121,7 @@ case "$CURRENT_PHASE" in
     ;;
   MONITOR)
     echo "  Check child agent progress at defined gates"
-    echo "  Run: ./coordination-check.sh $SESSION"
+    echo "  Run: ./scripts/coordination-check.sh $SESSION"
     ;;
   INTEGRATE)
     echo "  Merge child results, check for conflicts"
@@ -118,8 +133,9 @@ case "$CURRENT_PHASE" in
     echo "  If any fail → loop back to originating phase"
     ;;
   *)
-    echo "  Initialize session with: ./init-session.sh <name>"
+    echo "  Initialize session with: ./scripts/init-session.sh <name>"
     ;;
 esac
 echo ""
 echo "========================================"
+exit 0
