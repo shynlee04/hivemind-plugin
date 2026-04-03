@@ -1,6 +1,6 @@
 # Brainstorming Patterns
 
-**Purpose:** Facilitating ideation with users — divergence, convergence, and decision frameworks.
+**Purpose:** Facilitating ideation with users — divergence, convergence, and decision frameworks. Includes skill-creation examples.
 
 ---
 
@@ -11,10 +11,11 @@
 3. [Convergence Phase](#convergence-phase)
 4. [Decision Frameworks](#decision-frameworks)
 5. [Agent's Role in Brainstorming](#agents-role-in-brainstorming)
-6. [Adaptive Patterns](#adaptive-patterns)
-7. [Anti-Patterns](#anti-patterns)
-8. [Worked Examples](#worked-examples)
-9. [Cross-References](#cross-references)
+6. [Skill-Creation Brainstorming](#skill-creation-brainstorming)
+7. [Adaptive Patterns](#adaptive-patterns)
+8. [Anti-Patterns](#anti-patterns)
+9. [Worked Examples](#worked-examples)
+10. [Cross-References](#cross-references)
 
 ---
 
@@ -137,7 +138,7 @@ Use when prioritizing among many tasks.
     Quick Win     |    Major Project
     (do first)    |    (plan carefully)
                   |
-------------------|------------------
+ ------------------|------------------
                   |
     Fill-in       |    Thankless Task
     (do when free)|    (avoid or delegate)
@@ -174,6 +175,75 @@ The Agent should offer a recommendation when:
 > 3. [Reason 3 — risk mitigation]
 >
 > The main trade-off is [drawback]. Want to go with this, or explore further?"
+
+---
+
+## Skill-Creation Brainstorming
+
+When brainstorming about skill creation, use these domain-specific patterns.
+
+### Pattern: Skill Architecture Options
+
+When the user wants to create a skill but hasn't decided on structure:
+
+```
+Option A: Single SKILL.md (<200 lines)
+  - Best for: Simple, focused skills with minimal references
+  - Pros: Easy to load, simple to maintain
+  - Cons: Gets long fast, hard to navigate
+
+Option B: SKILL.md + reference files (200-500 lines SKILL.md)
+  - Best for: Skills with deep domain knowledge
+  - Pros: Progressive disclosure, keeps entry point lean
+  - Cons: More files to manage, requires cross-references
+
+Option C: SKILL.md + references + scripts (full pack)
+  - Best for: Skills with enforcement, validation, or automation
+  - Pros: Complete, self-contained, programmatic gates
+  - Cons: Most complex, may over-engineer simple needs
+```
+
+### Pattern: Skill Trigger Design
+
+When deciding what should activate a skill:
+
+```
+Option A: Narrow triggers (exact phrases)
+  - "Use when: 'audit this skill', 'check skill quality'"
+  - Pros: Precise activation, no false positives
+  - Cons: May miss valid use cases
+
+Option B: Broad triggers (conceptual matching)
+  - "Use when: skill quality, audit, review, improve, fix"
+  - Pros: Catches more valid uses
+  - Cons: May activate on unrelated requests
+
+Option C: Hybrid (narrow + conceptual)
+  - "Use when: 'audit this skill', 'check quality', skill audit, review skill"
+  - Pros: Best of both worlds
+  - Cons: Requires careful description writing
+```
+
+### Pattern: Skill Scope Decisions
+
+When deciding how broad a skill should be:
+
+```
+Option A: Single-purpose skill
+  - "This skill audits skill descriptions only"
+  - Pros: Clear boundaries, easy to test
+  - Cons: May need companion skills for related tasks
+
+Option B: Multi-purpose skill
+  - "This skill handles creation, auditing, and improvement"
+  - Pros: One-stop shop, fewer skills to manage
+  - Cons: Gets long, harder to navigate, may violate single-purpose principle
+
+Option C: Hub skill with references
+  - "SKILL.md routes to reference files for each sub-task"
+  - Pros: Scalable, organized, progressive disclosure
+  - Cons: Requires careful cross-reference management
+```
 
 ---
 
@@ -224,7 +294,37 @@ Turn 5: "Ready to decide, or want to explore more?"
 
 ## Worked Examples
 
-### Example 1: Feature Prioritization
+### Example 1: Skill Architecture Decision
+
+```
+User: "Should the skill be one big file or split into references?"
+
+Agent: "Good question. Here are the options:
+
+  **Option A: Single SKILL.md**
+  - Pros: Simple, everything in one place, easy to load
+  - Cons: Gets long fast, hard to navigate, wastes tokens on unused sections
+  - Effort: Low
+
+  **Option B: SKILL.md + reference files**
+  - Pros: Progressive disclosure, keeps SKILL.md under 500 lines, deep content available on demand
+  - Cons: More files to manage, requires cross-references
+  - Effort: Medium
+
+  **Option C: SKILL.md + references + templates**
+  - Pros: Everything bundled, ready-to-use assets
+  - Cons: Most complex, may over-engineer
+  - Effort: High
+
+  Given your constraint of <500 lines for SKILL.md, Option B seems like the fit.
+  Want to go with that, or explore Option C?"
+
+User: "Option B is fine"
+
+Agent: "Confirmed. SKILL.md as routing hub, references for depth. Starting structure."
+```
+
+### Example 2: Feature Prioritization for Skill Pack
 
 ```
 User: "We need to add several features to the skill system"
@@ -254,34 +354,31 @@ Agent: "Got it. Phase 1: descriptions + cross-references. Phase 2: validation sc
         I'll write this to task_plan.md and start with descriptions."
 ```
 
-### Example 2: Architecture Decision
+### Example 3: Skill Trigger Brainstorming
 
 ```
-User: "Should the skill be one big file or split into references?"
+User: "I'm not sure what triggers should activate this skill"
 
-Agent: "Good question. Here are the options:
+Agent: "Let's think through this. The skill does code review. Here are trigger options:
 
-  **Option A: Single SKILL.md**
-  - Pros: Simple, everything in one place, easy to load
-  - Cons: Gets long fast, hard to navigate, wastes tokens on unused sections
-  - Effort: Low
+  **Option A: Exact phrases**
+  - 'review this code', 'code review', 'check this PR'
+  - Precise but may miss variations
 
-  **Option B: SKILL.md + reference files**
-  - Pros: Progressive disclosure, keeps SKILL.md under 500 lines, deep content available on demand
-  - Cons: More files to manage, requires cross-references
-  - Effort: Medium
+  **Option B: Conceptual keywords**
+  - 'review', 'audit', 'check', 'inspect', 'analyze'
+  - Broad but may activate on non-code-review requests
 
-  **Option C: SKILL.md + references + templates**
-  - Pros: Everything bundled, ready-to-use assets
-  - Cons: Most complex, may over-engineer
-  - Effort: High
+  **Option C: Hybrid (recommended)**
+  - 'review this code', 'code review', 'audit this PR', 'check for issues'
+  - Combines exact phrases with conceptual keywords
 
-  Given your constraint of <500 lines for SKILL.md, Option B seems like the fit.
-  Want to go with that, or explore Option C?"
+  I recommend Option C. It's precise enough to avoid false positives but
+  broad enough to catch natural language variations. Agree?"
 
-User: "Option B is fine"
+User: "Yes, Option C works"
 
-Agent: "Confirmed. SKILL.md as routing hub, references for depth. Starting structure."
+Agent: "Noted. I'll write the description with hybrid triggers."
 ```
 
 ---

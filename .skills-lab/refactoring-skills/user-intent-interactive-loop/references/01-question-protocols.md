@@ -1,6 +1,6 @@
 # Question Protocols
 
-**Purpose:** How the Agent probes user intent effectively without overwhelming.
+**Purpose:** How the Agent probes user intent effectively without overwhelming. Includes skill-creation-specific examples.
 
 ---
 
@@ -8,18 +8,19 @@
 
 1. [Core Principle](#core-principle)
 2. [Question Taxonomy](#question-taxonomy)
-3. [Sequencing Rules](#sequencing-rules)
-4. [Stop Conditions](#stop-conditions)
-5. [Adaptive Probing](#adaptive-probing)
-6. [Anti-Patterns](#anti-patterns)
-7. [Worked Examples](#worked-examples)
-8. [Cross-References](#cross-references)
+3. [Skill-Creation Question Selection](#skill-creation-question-selection)
+4. [Sequencing Rules](#sequencing-rules)
+5. [Stop Conditions](#stop-conditions)
+6. [Adaptive Probing](#adaptive-probing)
+7. [Anti-Patterns](#anti-patterns)
+8. [Worked Examples](#worked-examples)
+9. [Cross-References](#cross-references)
 
 ---
 
 ## Core Principle
 
-**One question per turn unless the user invites more.** The goal is convergence, not interrogation. Each question should eliminate at least one ambiguity or confirm one assumption.
+**One question per turn unless the user invites more. Maximum 3 questions per turn via OpenCode question tool.** The goal is convergence, not interrogation. Each question should eliminate at least one ambiguity or confirm one assumption.
 
 The Agent probes because:
 - Users rarely state their full intent in the first message
@@ -106,6 +107,52 @@ The Agent probes because:
 
 ---
 
+## Skill-Creation Question Selection
+
+When the user's request involves creating, cloning, or converting skills, use this domain-specific question selection instead of the generic sequence.
+
+### Scenario: "I want to create a skill"
+
+| Turn | Question Type | Example Question |
+|------|--------------|-----------------|
+| 1 | Scope boundary | "What should this skill do? What triggers it?" |
+| 2 | Success criteria | "What does a good version look like — line count, trigger accuracy, reference depth?" |
+| 3 | Constraint check | "Are there existing skills this should reference or avoid overlapping with?" |
+
+### Scenario: "Clone this pattern into a skill"
+
+| Turn | Question Type | Example Question |
+|------|--------------|-----------------|
+| 1 | Constraint check | "Should it follow the exact structure of the source, or adapt it for a different purpose?" |
+| 2 | Scope boundary | "What parts of the source pattern are essential vs optional?" |
+| 3 | Delegation appetite | "Should I clone it directly or analyze the pattern first and propose improvements?" |
+
+### Scenario: "Turn this document into a skill"
+
+| Turn | Question Type | Example Question |
+|------|--------------|-----------------|
+| 1 | Success criteria | "What's the core behavior? What should the Agent do when this skill activates?" |
+| 2 | Scope boundary | "Should this be a single SKILL.md or split into references for progressive disclosure?" |
+| 3 | Constraint check | "Any naming conventions, file structure rules, or platform requirements to follow?" |
+
+### Scenario: "Improve this skill"
+
+| Turn | Question Type | Example Question |
+|------|--------------|-----------------|
+| 1 | Scope boundary | "What aspect — description, references, scripts, or the whole pack?" |
+| 2 | Priority signal | "Is trigger accuracy, content quality, or structural cleanup the priority?" |
+| 3 | Constraint check | "Should I preserve the existing structure or is a rebuild acceptable?" |
+
+### Scenario: "I need help figuring out..."
+
+| Turn | Question Type | Example Question |
+|------|--------------|-----------------|
+| 1 | Scope boundary | "What domain are we in — code, skills, config, or something else?" |
+| 2 | Success criteria | "What would a useful answer look like?" |
+| 3 | Delegation appetite | "Should I investigate directly or spin up a research subagent?" |
+
+---
+
 ## Sequencing Rules
 
 Questions must follow a logical order. Wrong sequencing confuses users and wastes turns.
@@ -122,6 +169,8 @@ Turn 6:  Intent confirmation (did I understand correctly?)
 **Compression rule:** If the user's initial message already answers a question type, skip it. Don't ask what's already answered.
 
 **Expansion rule:** If a single answer opens new ambiguities, insert a follow-up question of the appropriate type before continuing the sequence.
+
+**Max 3 questions per turn:** If multiple question types are needed in one turn, combine them into at most 3 questions. Use the OpenCode `question` tool.
 
 ---
 
@@ -188,62 +237,103 @@ If the user pushes back on questions:
 
 | Pattern | What It Looks Like | Why It Fails | Fix |
 |---------|-------------------|--------------|-----|
-| The Interrogator | 5+ questions in one turn | Overwhelms user, causes shallow answers | One question per turn |
+| The Interrogator | 4+ questions in one turn | Overwhelms user, causes shallow answers | Max 3 questions per turn |
 | The Assumer | Acts without confirming | Builds the wrong thing | Always confirm before executing |
 | The Repeater | Asks what the user already said | Wastes turns, frustrates user | Read the message carefully before asking |
 | The Abstractor | Uses vague questions ("What do you want?") | User can't answer concretely | Use specific examples in questions |
 | The Premature Planner | Plans before understanding | Plans are wrong, must be redone | Probe first, plan second |
 | The Silent Guesser | Makes assumptions silently | User can't correct what they can't see | State assumptions explicitly |
+| The Generic Prober | Uses the same questions for skill creation as for debugging | Misses domain-specific concerns | Use skill-creation question selection table |
 
 ---
 
 ## Worked Examples
 
-### Example 1: Vague Request (Full Sequence)
+### Example 1: Skill Creation (Full Sequence)
 
 ```
-User: "I want to improve our testing"
+User: "I want to create a skill for code review"
 
-Agent: "What aspect — unit tests, integration tests, E2E, or the testing process itself?"
-  → Type 1: Scope boundary
+Agent: [PROBE — Turn 1, Scope boundary]
+  question("Should this skill cover just code review, or also include
+            security auditing and performance analysis?")
 
-User: "Unit tests. Our coverage is low."
+User: "Just code review for now"
 
-Agent: "What coverage target would make you confident? And should I focus on new code or existing gaps?"
-  → Type 2: Success criteria + Type 4: Priority
+Agent: [PROBE — Turn 2, Success criteria]
+  question("What does a good code review skill look like to you —
+            should it check for specific patterns, or give general guidance?")
 
-User: "80% overall. Focus on the core library first."
+User: "Specific patterns — security, performance, and style"
 
-Agent: "Got it. 80% coverage on the core library. Any frameworks I should use, or stick with what's already in place?"
-  → Type 3: Constraint check
+Agent: [PROBE — Turn 3, Constraint check]
+  question("Any existing review skills or configs this should reference
+            or avoid overlapping with?")
 
-User: "Same framework, Vitest."
+User: "No, this should be standalone"
 
-Agent: "Should I write tests and commit them directly, or create a plan first for your review?"
-  → Type 5: Delegation appetite
+Agent: [UNDERSTAND]
+  "So: a standalone code review skill covering security, performance, and style
+   patterns. I'll draft the SKILL.md with reference files for each pattern category.
+   Should I write it directly or dispatch a writer subagent?"
 
-User: "Plan first."
+User: "Write it directly"
 
-Agent: "Understood. I'll audit the core library, identify the biggest coverage gaps, and present a prioritized test plan. I'll write findings to disk so we can resume if needed. Starting now."
-  → Type 6: Intent confirmation + action statement
+Agent: [PLAN → EXECUTE]
+  "Starting with SKILL.md structure."
 ```
 
-### Example 2: Detailed Request (Compressed)
+### Example 2: Clone Pattern (Compressed)
 
 ```
-User: "Add a circuit breaker to the session API. It should trip after 5 consecutive failures,
-       reset after 30 seconds, and log each state change. Use the existing logger."
+User: "Clone the deep-research pattern into a new skill for API analysis"
 
-Agent: "So: circuit breaker on session API, 5-failure threshold, 30s reset, log state changes,
-        use existing logger. I'll implement directly and show you the diff. Correct?"
-  → Compressed: scope, success, constraints all answered. Only confirmation needed.
+Agent: [PROBE — Turn 1, Constraint check]
+  question("Should it follow the exact SKILL.md + references structure of the
+            deep-research skill, or adapt it for API-specific workflows?")
 
-User: "Yes."
+User: "Adapt it — API analysis needs different reference files"
 
-Agent: "Starting implementation."
+Agent: [UNDERSTAND]
+  "Got it — same structural pattern as deep-research, but with API-specific
+   references. I'll audit the source structure, then create the adapted version.
+   Correct?"
+
+User: "Yes"
+
+Agent: [PLAN → DELEGATE]
+  "Spinning up a writer subagent with the source pattern and API context."
 ```
 
-### Example 3: Direction Change
+### Example 3: Document to Skill
+
+```
+User: "Turn this architecture doc into a skill"
+
+Agent: [PROBE — Turn 1, Success criteria]
+  question("What should the Agent do when this skill activates — explain the
+            architecture, enforce it, or both?")
+
+User: "Enforce it — make sure new code follows the architecture"
+
+Agent: [PROBE — Turn 2, Scope boundary]
+  question("Should this be a single SKILL.md with rules, or split into
+            references for each architectural layer?"
+
+User: "Split it — we have 4 layers"
+
+Agent: [UNDERSTAND]
+  "So: an enforcement skill with SKILL.md as the entry point and 4 reference
+   files, one per architectural layer. I'll extract the rules from the doc
+   and structure them. Correct?"
+
+User: "Yes"
+
+Agent: [PLAN → EXECUTE]
+  "Extracting architectural rules from the document."
+```
+
+### Example 4: Direction Change
 
 ```
 User: "Build a dashboard for the metrics"

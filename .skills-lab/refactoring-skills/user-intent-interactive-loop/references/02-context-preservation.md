@@ -1,20 +1,21 @@
 # Context Preservation
 
-**Purpose:** Maintaining awareness across sessions, compactions, and interruptions.
+**Purpose:** Maintaining awareness across sessions, compactions, and interruptions. Specifies concrete file paths.
 
 ---
 
 ## Table of Contents
 
 1. [Core Principle](#core-principle)
-2. [What to Persist](#what-to-persist)
-3. [Persistence Protocol](#persistence-protocol)
-4. [Recovery Protocol](#recovery-protocol)
-5. [Compaction Handling](#compaction-handling)
-6. [State Reconstruction](#state-reconstruction)
-7. [Anti-Patterns](#anti-patterns)
-8. [Worked Examples](#worked-examples)
-9. [Cross-References](#cross-references)
+2. [Concrete File Paths](#concrete-file-paths)
+3. [What to Persist](#what-to-persist)
+4. [Persistence Protocol](#persistence-protocol)
+5. [Recovery Protocol](#recovery-protocol)
+6. [Compaction Handling](#compaction-handling)
+7. [State Reconstruction](#state-reconstruction)
+8. [Anti-Patterns](#anti-patterns)
+9. [Worked Examples](#worked-examples)
+10. [Cross-References](#cross-references)
 
 ---
 
@@ -26,32 +27,68 @@ The Agent must treat the filesystem as its external memory system. Every meaning
 
 ---
 
+## Concrete File Paths
+
+All persistence files live under the **project root** (the directory containing the git repository root or the current working directory if not in a repo).
+
+| File | Absolute Path Pattern | Purpose |
+|------|----------------------|---------|
+| Task plan | `<project-root>/task_plan.md` | Current phase, goals, locked decisions, blockers |
+| Findings | `<project-root>/findings.md` | Discovered facts, analysis results, scores |
+| Progress log | `<project-root>/progress.md` | Timestamped actions, decisions, recovery state |
+| Checkpoints | `<project-root>/.checkpoints/<YYYY-MM-DD_HHMMSS>-<name>.md` | Session state snapshots |
+| Delegation log | `<project-root>/progress.md` (section) | What was delegated, to whom, with what budget |
+| Session notes | `<project-root>/.session-notes/` | Optional: per-session detailed notes |
+
+**Path resolution rules:**
+1. If in a git worktree, use the worktree root as `<project-root>`.
+2. If not in git, use the current working directory.
+3. Never write persistence files outside the project root.
+4. Create directories (`.checkpoints/`, `.session-notes/`) on first use.
+
+**Example paths:**
+```
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/task_plan.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/findings.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/progress.md
+/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.checkpoints/2026-04-03_143022-phase1-complete.md
+```
+
+---
+
 ## What to Persist
 
-| Artifact | Content | Update Frequency |
-|----------|---------|------------------|
-| `task_plan.md` | Current phase, goals, locked decisions, blockers | Every phase change |
-| `findings.md` | Discovered facts, analysis results, scores | Every 2-3 discoveries |
-| `progress.md` | Timestamped actions, decisions, recovery state | Every meaningful action |
-| Session notes | User's stated intent, confirmed assumptions | Every confirmation |
-| Delegation log | What was delegated, to whom, with what budget | Every dispatch/return |
+| Artifact | Content | Update Frequency | File Path |
+|----------|---------|------------------|-----------|
+| `task_plan.md` | Current phase, goals, locked decisions, blockers | Every phase change | `<project-root>/task_plan.md` |
+| `findings.md` | Discovered facts, analysis results, scores | Every 2-3 discoveries | `<project-root>/findings.md` |
+| `progress.md` | Timestamped actions, decisions, recovery state | Every meaningful action | `<project-root>/progress.md` |
+| Session notes | User's stated intent, confirmed assumptions | Every confirmation | `<project-root>/progress.md` |
+| Delegation log | What was delegated, to whom, with what budget | Every dispatch/return | `<project-root>/progress.md` |
+| Checkpoints | Full state snapshot | On request or phase change | `<project-root>/.checkpoints/<timestamp>-<name>.md` |
 
-### File Responsibilities
+### File Templates
 
-**`task_plan.md`** — The goal-refresh mechanism. Re-read before any major decision to pull goals back into attention.
+**`task_plan.md`** — The goal-refresh mechanism. Re-read before any major decision.
 
 ```markdown
 # Task Plan
 
-## Current Phase: [Phase name]
-## Goals:
-- [ ] Goal 1
-- [ ] Goal 2
+## Goal
+[User's confirmed intent in 1-2 sentences]
 
-## Locked Decisions:
-- Decision 1 (reason)
+## Current Phase
+[Phase name and number, e.g., "Phase 2 of 5"]
 
-## Blockers:
+## Phases
+- [ ] Phase 1: [Name] — **Status:** pending
+- [ ] Phase 2: [Name] — **Status:** pending
+- [ ] Phase 3: [Name] — **Status:** pending
+
+## Locked Decisions
+- [Decision] ([reason], [timestamp])
+
+## Blockers
 - None / [description]
 ```
 
@@ -60,9 +97,9 @@ The Agent must treat the filesystem as its external memory system. Every meaning
 ```markdown
 # Findings
 
-## [Topic]
-- Fact 1 (source)
-- Fact 2 (source)
+## [Topic] — [YYYY-MM-DD]
+- [Fact] ([source])
+- [Fact] ([source])
 ```
 
 **`progress.md`** — Timestamped actions, decisions, and recovery state.
@@ -70,10 +107,11 @@ The Agent must treat the filesystem as its external memory system. Every meaning
 ```markdown
 # Progress Log
 
-## [Timestamp]
-- Action: What was done
-- Decision: What was decided and why
-- State: Current position in the workflow
+## Session: [YYYY-MM-DD HH:MM]
+- **Intent:** [User's stated intent]
+- **Action:** [What was done]
+- **Decision:** [What was decided and why]
+- **State:** [Current position in the workflow]
 ```
 
 ---
@@ -82,16 +120,16 @@ The Agent must treat the filesystem as its external memory system. Every meaning
 
 ### When to Write
 
-| Trigger | Action |
-|---------|--------|
-| User confirms intent | Write to `progress.md` |
-| Phase changes | Update `task_plan.md` |
-| New fact discovered | Append to `findings.md` |
-| Decision made | Write to `progress.md` with reasoning |
-| Subagent dispatched | Write delegation details to `progress.md` |
-| Subagent returns | Write results to `progress.md` |
-| Blocker found | Write to `task_plan.md` blockers section |
-| Every 5 turns | Quick state checkpoint in `progress.md` |
+| Trigger | Action | File |
+|---------|--------|------|
+| User confirms intent | Write to `progress.md` | `<project-root>/progress.md` |
+| Phase changes | Update `task_plan.md` | `<project-root>/task_plan.md` |
+| New fact discovered | Append to `findings.md` | `<project-root>/findings.md` |
+| Decision made | Write to `progress.md` with reasoning | `<project-root>/progress.md` |
+| Subagent dispatched | Write delegation details | `<project-root>/progress.md` |
+| Subagent returns | Write results | `<project-root>/progress.md` |
+| Blocker found | Write to `task_plan.md` blockers | `<project-root>/task_plan.md` |
+| Every 5 turns | Quick state checkpoint | `<project-root>/progress.md` |
 
 ### How to Write
 
@@ -118,9 +156,9 @@ Signs of context loss:
 ### Step 2: Read Recovery Files (In Order)
 
 ```
-1. task_plan.md  → What are we doing? What phase?
-2. findings.md   → What have we learned?
-3. progress.md   → What have we done? Where are we?
+1. <project-root>/task_plan.md  → What are we doing? What phase?
+2. <project-root>/findings.md   → What have we learned?
+3. <project-root>/progress.md   → What have we done? Where are we?
 ```
 
 ### Step 3: Reconstruct State
@@ -151,7 +189,7 @@ Context compaction (conversation summarization) is a special case of context los
 
 1. Write a **compaction checkpoint** to `progress.md`:
    ```markdown
-   ## Compaction Checkpoint [Timestamp]
+   ## Compaction Checkpoint [YYYY-MM-DD HH:MM]
    - User intent: [verbatim or close]
    - Current phase: [name]
    - Completed: [list]
@@ -208,6 +246,7 @@ When files exist but the Agent needs to rebuild its mental model:
 | The Stale Planner | task_plan.md never updated | Recovery reads wrong state | Update on every phase change |
 | The Silent Worker | No progress log for 20 turns | Can't reconstruct what happened | Log every meaningful action |
 | The Orphan Writer | Writes files no one reads | Wastes tokens, no value | Write structured, recoverable files |
+| The Path Wanderer | Writes persistence files to random directories | Recovery can't find them | Always use `<project-root>/` paths |
 
 ---
 
@@ -216,13 +255,13 @@ When files exist but the Agent needs to rebuild its mental model:
 ### Example 1: Normal Session Flow
 
 ```
-Turn 1:  User states intent → Agent writes to progress.md
-Turn 3:  Agent discovers key fact → Appends to findings.md
-Turn 5:  Agent completes phase 1 → Updates task_plan.md
-Turn 7:  Agent delegates task → Writes delegation log to progress.md
-Turn 10: Subagent returns → Writes results to progress.md
-Turn 12: Agent completes phase 2 → Updates task_plan.md
-Turn 15: Session checkpoint → Writes summary to progress.md
+Turn 1:  User states intent → Agent writes to <project-root>/progress.md
+Turn 3:  Agent discovers key fact → Appends to <project-root>/findings.md
+Turn 5:  Agent completes phase 1 → Updates <project-root>/task_plan.md
+Turn 7:  Agent delegates task → Writes delegation log to <project-root>/progress.md
+Turn 10: Subagent returns → Writes results to <project-root>/progress.md
+Turn 12: Agent completes phase 2 → Updates <project-root>/task_plan.md
+Turn 15: Session checkpoint → Writes to <project-root>/.checkpoints/2026-04-03_143022-turn15.md
 ```
 
 ### Example 2: Recovery After Interruption
@@ -231,9 +270,9 @@ Turn 15: Session checkpoint → Writes summary to progress.md
 [Session restarts]
 
 Agent: "Let me recover our state..."
-  → Reads task_plan.md: "Phase 2 of 4, building the quality matrix"
-  → Reads findings.md: "5 dimensions identified, weights assigned"
-  → Reads progress.md: "Last action: drafted scoring rubric, pending user review"
+  → Reads <project-root>/task_plan.md: "Phase 2 of 4, building the quality matrix"
+  → Reads <project-root>/findings.md: "5 dimensions identified, weights assigned"
+  → Reads <project-root>/progress.md: "Last action: drafted scoring rubric, pending user review"
 
 Agent: "We were building the quality matrix. I drafted the scoring rubric
         and was waiting for your review. The rubric covers 5 dimensions
@@ -246,8 +285,8 @@ Agent: "We were building the quality matrix. I drafted the scoring rubric
 Agent: "The conversation is getting long. Before we continue, let me save
         our state so nothing is lost."
 
-  → Writes compaction checkpoint to progress.md:
-    "Compaction Checkpoint 2026-04-03T14:30
+  → Writes compaction checkpoint to <project-root>/progress.md:
+    "Compaction Checkpoint 2026-04-03 14:30
      - User intent: Build GROUP 1 skills for meta-builder
      - Current phase: Creating user-intent-interactive-loop
      - Completed: SKILL.md, 3 of 4 reference files

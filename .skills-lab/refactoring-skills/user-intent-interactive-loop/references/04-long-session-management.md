@@ -1,6 +1,6 @@
 # Long Session Management
 
-**Purpose:** Persisting through extended sessions — budget management, checkpoint strategy, and fatigue detection.
+**Purpose:** Persisting through extended sessions — budget management, checkpoint strategy, fatigue detection, and explicit loop termination.
 
 ---
 
@@ -13,9 +13,10 @@
 5. [Compaction Preparation](#compaction-preparation)
 6. [Recovery After Interruption](#recovery-after-interruption)
 7. [Delegation During Long Sessions](#delegation-during-long-sessions)
-8. [Anti-Patterns](#anti-patterns)
-9. [Worked Examples](#worked-examples)
-10. [Cross-References](#cross-references)
+8. [Loop Termination](#loop-termination)
+9. [Anti-Patterns](#anti-patterns)
+10. [Worked Examples](#worked-examples)
+11. [Cross-References](#cross-references)
 
 ---
 
@@ -241,6 +242,58 @@ In `progress.md`:
 
 ---
 
+## Loop Termination
+
+The interactive loop **must terminate**. "Loop Until Done" is meaningless without a definition of "done."
+
+### Termination Criteria
+
+The loop terminates when **ALL** of the following are true:
+
+| # | Criterion | How to Check |
+|---|-----------|-------------|
+| 1 | User's confirmed intent is fully addressed | Can point to specific deliverables that match the confirmed intent |
+| 2 | All success criteria are met | User can verify "done" against the criteria defined in Phase 1 |
+| 3 | All planned phases are complete | `task_plan.md` shows all phases marked as complete |
+| 4 | No open blockers remain | Blockers section in `task_plan.md` is empty or all resolved |
+| 5 | User has acknowledged delivery | User said "looks good", "done", "ship it", or equivalent |
+
+### Termination Check (Run After Every Phase)
+
+```
+After each phase, evaluate:
+1. Is the user's intent still being served? → If no, return to PROBE
+2. Has anything changed (new constraints, new info)? → If yes, return to PROBE
+3. Are we closer to the success criteria? → If no, return to PLAN
+4. Are all 5 termination criteria met? → If yes, enter DELIVER phase
+5. If any answer is unclear → return to PROBE
+```
+
+### DELIVER Phase Actions
+
+When all termination criteria are met:
+
+1. **Summarize delivery** — List what was produced, with file paths
+2. **Point to outputs** — Reference specific files, commits, or artifacts
+3. **Offer final adjustments** — "Want any changes before we wrap?"
+4. **Write final checkpoint** — Record delivery in `progress.md`
+5. **Commit if using git** — `git add . && git commit -m "delivery: <summary>"`
+6. **Close the loop** — "Session complete. All criteria met."
+
+### Forced Termination
+
+If the session hits budget limits without meeting all criteria:
+
+1. Save all state to disk (checkpoint)
+2. Summarize what was completed vs what remains
+3. Offer options:
+   - Continue in a new session (state is persisted)
+   - Delegate remaining work to subagents
+   - Accept partial delivery
+4. Write a "partial delivery" note in `progress.md` with remaining items
+
+---
+
 ## Anti-Patterns
 
 | Pattern | What It Looks Like | Why It Fails | Fix |
@@ -251,8 +304,9 @@ In `progress.md`:
 | The Amnesiac | "What were we doing?" after compaction | No pre-compaction checkpoint | Always checkpoint before compaction |
 | The Fatigue Denier | Keeps going when quality drops | Produces bad work | Detect fatigue, offer pause |
 | The Context Hoarder | Keeps everything in memory | Memory gets compressed | Write to disk every turn |
-| The Premature Wrapper | Wraps up too early | Incomplete work | Check against success criteria |
+| The Premature Wrapper | Wraps up too early | Incomplete work | Check against all 5 termination criteria |
 | The Orphan Session | No recovery plan if interrupted | Can't resume after crash | Maintain recovery files |
+| The Infinite Looper | Loops without checking termination | Never delivers | Run termination check after every phase |
 
 ---
 
@@ -277,6 +331,10 @@ User: "Continue"
 
 Turn 51-60: Phase 3 complete, Phase 4 — Validation
   → Checkpoint: "All files written. Running validation."
+
+Turn 61-65: Phase 5 — Delivery
+  → Termination check: All 5 criteria met
+  → DELIVER: "All phases complete. Delivered SKILL.md + 4 reference files + 2 scripts."
 ```
 
 ### Example 2: Recovery After Crash
@@ -315,22 +373,29 @@ User: "Delegate the files"
 Agent: "Understood. Spinning up a subagent with full context and constraints.
         Budget: 3000 tokens. I'll report back with results."
 ```
-Turn 45: Agent notices user giving one-word responses
 
-Agent: "This has been a solid 45-turn session. We've completed 3 of 5 phases.
-        Remaining: 2 reference files (~20 turns), validation (~5), commit (~2).
+### Example 4: Forced Termination at Budget Limit
+
+```
+Turn 50: Budget warning triggered
+
+Agent: "We're at turn 50 — typical session limit. Here's our state:
+        - Completed: Phases 1-3 (SKILL.md + 2 reference files)
+        - Remaining: 2 reference files, validation scripts, commit
+        - Estimated remaining: ~15 turns
 
         Options:
-        - Continue now (~27 more turns)
-        - I delegate the reference files to a subagent and report back
-        - Pause here and resume later
+        - Continue now (will exceed typical session)
+        - Save state and resume in a new session
+        - Delegate remaining work to a subagent
 
         What works best?"
 
-User: "Delegate the files"
+User: "Save state, I'll continue later"
 
-Agent: "Understood. Spinning up a subagent with full context and constraints.
-        Budget: 3000 tokens. I'll report back with results."
+Agent: "Saving full checkpoint to progress.md and .checkpoints/.
+        All state is on disk. When you're ready, start a new session
+        and I'll recover from the checkpoint."
 ```
 
 ---

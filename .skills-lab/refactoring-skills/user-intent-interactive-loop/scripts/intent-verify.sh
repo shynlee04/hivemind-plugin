@@ -110,8 +110,15 @@ else
 fi
 
 # Check 6: Are there any completed phases? (Evidence of forward progress)
-COMPLETED_PHASES="$(grep -c -E '\*\*Status:\*\* complete' "$TASK_PLAN_FILE" 2>/dev/null || echo "0")"
-IN_PROGRESS_PHASES="$(grep -c -E '\*\*Status:\*\* in_progress' "$TASK_PLAN_FILE" 2>/dev/null || echo "0")"
+# FIX: Use `grep -c ... || true` to avoid multiline output from `|| echo "0"`.
+# When grep -c finds no matches it returns exit code 1 and outputs "0".
+# The `|| echo "0"` would then also fire, producing "0\n0" which breaks -eq.
+COMPLETED_PHASES="$(grep -c -E '\*\*Status:\*\* complete' "$TASK_PLAN_FILE" 2>/dev/null || true)"
+IN_PROGRESS_PHASES="$(grep -c -E '\*\*Status:\*\* in_progress' "$TASK_PLAN_FILE" 2>/dev/null || true)"
+
+# Ensure variables are valid integers (default to 0 if empty)
+COMPLETED_PHASES="${COMPLETED_PHASES:-0}"
+IN_PROGRESS_PHASES="${IN_PROGRESS_PHASES:-0}"
 
 if [ "$COMPLETED_PHASES" -eq 0 ] && [ "$IN_PROGRESS_PHASES" -eq 0 ]; then
     echo "WARN: No phases marked as complete or in_progress." >&2

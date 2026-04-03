@@ -1,6 +1,11 @@
 ---
 name: user-intent-interactive-loop
-description: Use when the Agent needs to iteratively probe user intent, maintain context across long sessions, facilitate brainstorming, manage parent/child task delegation, or act as a strategist updating users throughout extended work. Triggers on: "figure out what I want", "help me think through", "keep going with this", "what should we do next", "stay focused on", "don't lose track of", "delegate this", "keep me updated", "long session", "interactive loop".
+description: Use when the Agent needs to iteratively probe user intent, maintain context across long sessions, facilitate brainstorming, manage parent/child task delegation, or act as a strategist updating users throughout extended work. Triggers on: "figure out what I want", "help me think through", "keep going with this", "what should we do next", "stay focused on", "don't lose track of", "delegate this", "keep me updated", "long session", "interactive loop", "I want to create", "help me build", "let's work on this together", "I need help figuring out", "turn this into a skill", "clone this pattern".
+metadata:
+  group: "1"
+  role: "front-agent"
+  phase: "probe"
+allowed-tools: skill question write edit read bash
 ---
 
 # user-intent-interactive-loop
@@ -9,22 +14,43 @@ Front-agent skill for iterative user engagement. The Agent stays in control, pro
 
 ---
 
+## FIRST ACTION — When This Skill Loads
+
+**Do this before anything else:**
+
+1. **Complete the PROBE phase** before loading any other skill, writing any file, or dispatching any subagent.
+2. Ask at most **3 questions per turn** using the OpenCode `question` tool — never more.
+3. Load these 3 skills immediately for platform context:
+   - `skill({ name: "opencode-platform-reference" })` — SDK docs
+   - `skill({ name: "repomix-exploration-guide" })` — cheat-sheet
+   - `skill({ name: "opencode-non-interactive-shell" })` — shell strategy
+4. **GATE: Do not write, edit, or delete any file until PROBE phase is complete and user has confirmed intent.**
+
+If the user's request is already specific enough (all 6 stop conditions met), skip to Phase 2. Otherwise, begin probing.
+
+---
+
 ## Required Skill Loads
 
-| Purpose | Skills |
-|---------|--------|
-| Parallel dispatch | `dispatching-parallel-agents` |
-| File-based planning | `planning-with-files` |
-| Deep investigation | `deep-research` or `deep-investigation` |
-| Git-backed memory | `gcc` |
-| Skill creation | `skill-creator`, `writing-skills` |
+| Purpose | Skills | Load Order |
+|---------|--------|------------|
+| Platform reference | `opencode-platform-reference` | **First** — before any action |
+| Codebase exploration | `repomix-exploration-guide` | **First** — before any action |
+| Shell strategy | `opencode-non-interactive-shell` | **First** — before any action |
+| Parallel dispatch | `dispatching-parallel-agents` | After PROBE |
+| File-based planning | `planning-with-files` | After PROBE |
+| Deep investigation | `deep-research` or `deep-investigation` | After PROBE |
+| Git-backed memory | `gcc` | After PROBE |
+| Skill creation | `skill-creator`, `writing-skills` | After PROBE |
+
+**Load-order enforcement:** Complete PROBE before loading skills beyond the 3 platform skills above. Other skills are tools used *within* the loop, not replacements for it.
 
 ---
 
 ## When to Use
 
-| Symptom | Route |
-|---------|-------|
+| Situation | Route |
+|-----------|-------|
 | User's request is vague or underspecified | → `references/01-question-protocols.md` |
 | Session spans many turns, context drifting | → `references/02-context-preservation.md` |
 | User wants to explore ideas, not just execute | → `references/03-brainstorming-patterns.md` |
@@ -37,22 +63,40 @@ Front-agent skill for iterative user engagement. The Agent stays in control, pro
 ## Core Pattern: The Interactive Loop
 
 ```
-PROBE → UNDERSTAND → PLAN → DELEGATE → UPDATE → REPEAT
+PROBE → UNDERSTAND → PLAN → DELEGATE → UPDATE → DELIVER
 ```
 
 ### Phase 1: PROBE — Extract Intent
 
-Ask targeted questions. Never overwhelm. One question per turn unless the user invites more.
+Ask targeted questions using the OpenCode `question` tool. **Maximum 3 questions per turn.** Never overwhelm.
 
-| Question Type | Purpose | Example |
-|---------------|---------|---------|
-| Scope boundary | Define what's in/out | "Should this include X, or focus only on Y?" |
-| Success criteria | Define done | "What does 'working' look like for this?" |
-| Constraint check | Surface limits | "Any deadlines, tech constraints, or preferences?" |
-| Priority signal | Rank importance | "Is speed or correctness the priority here?" |
-| Delegation appetite | Gauge trust level | "Should I handle this directly or spin up a subagent?" |
+| Question Type | Purpose | Skill-Creation Example |
+|---------------|---------|----------------------|
+| Scope boundary | Define what's in/out | "Should this skill cover just creation, or also auditing and evals?" |
+| Success criteria | Define done | "What does a 'good' skill look like to you — line count, trigger accuracy, something else?" |
+| Constraint check | Surface limits | "Any existing skills this should reference or avoid overlapping with?" |
+| Priority signal | Rank importance | "Is trigger accuracy or content depth the priority?" |
+| Delegation appetite | Gauge trust level | "Should I draft the skill myself or dispatch a writer subagent?" |
 
-**Stop probing when:** The Agent can articulate the user's intent back and the user confirms.
+**Skill-creation question selection:**
+
+| User Says | Ask First |
+|-----------|-----------|
+| "I want to create a skill" | Scope boundary — "What should this skill do? What triggers it?" |
+| "Clone this pattern into a skill" | Constraint check — "Should it follow the exact structure of the source, or adapt it?" |
+| "Turn this document into a skill" | Success criteria — "What's the core behavior? What should the Agent do when this skill activates?" |
+| "Improve this skill" | Scope boundary — "What aspect — description, references, scripts, or the whole pack?" |
+| "I need help figuring out..." | Scope boundary — "What domain are we in — code, skills, config, or something else?" |
+
+**Stop probing when ALL 6 conditions are true:**
+1. Scope is bounded — can describe what's in and out
+2. Success is defined — can describe what "done" looks like
+3. Constraints are known — can list active constraints
+4. Priority is set — can rank competing concerns
+5. Delegation level is set — knows how much autonomy to use
+6. User has confirmed — user said "yes", "correct", or equivalent
+
+**If any condition is false → continue probing.**
 
 → Full protocols: `references/01-question-protocols.md`
 
@@ -87,6 +131,7 @@ Break into discrete, verifiable tasks. Use `planning-with-files` for multi-sessi
 | Task depends on previous output | Sequential dispatch |
 | Multiple independent tasks | Parallel dispatch (`dispatching-parallel-agents`) |
 | Task is ambiguous | Do NOT delegate — clarify first |
+| **Task is skill file creation/edit AND Agent is Coordinator** | **Delegate to writer subagent — Coordinator must NOT edit skill files directly** |
 
 **Delegation rules:**
 - Always pass the user's original intent verbatim
@@ -112,15 +157,26 @@ Break into discrete, verifiable tasks. Use `planning-with-files` for multi-sessi
 - Offer options when blocked, don't just report problems
 - Never update more than once per turn unless asked
 
-### Phase 6: REPEAT — Loop Until Done
+### Phase 6: DELIVER — Loop Termination
 
-After each phase, check:
-1. Is the user's intent still being served?
-2. Has anything changed (new constraints, new info)?
-3. Are we closer to the success criteria?
-4. Should we delegate, execute, or probe more?
+The loop terminates when ALL of the following are true:
 
-If any answer is unclear → return to PROBE.
+| Termination Criterion | Check |
+|-----------------------|-------|
+| User's confirmed intent is fully addressed | Can point to specific deliverables |
+| All success criteria are met | User can verify "done" |
+| All planned phases are complete | `task_plan.md` shows all phases done |
+| No open blockers remain | Blockers section is empty or resolved |
+| User has acknowledged delivery | User said "looks good", "done", or equivalent |
+
+**If any criterion is false → return to the appropriate phase (PROBE, PLAN, or DELEGATE).**
+
+**Delivery actions:**
+1. Summarize what was delivered
+2. Point to specific files or outputs
+3. Offer final adjustments
+4. Write final checkpoint to `progress.md`
+5. If using git, commit the work
 
 ---
 
@@ -142,13 +198,16 @@ The Agent must understand its position in the task hierarchy:
 
 Context is lost between turns by default. The only defense is write-to-disk.
 
-| What to Persist | Where | When |
-|-----------------|-------|------|
-| User's stated intent | `progress.md` or session notes | Every confirmation |
-| Current phase + step | `task_plan.md` | Every phase change |
-| Decisions made | `progress.md` | Every decision |
-| Discovered facts | `findings.md` | Every 2-3 discoveries |
-| Delegation state | `progress.md` | Every dispatch/return |
+**Concrete file paths** — write to the project workspace directory:
+
+| What to Persist | File Path | When |
+|-----------------|-----------|------|
+| User's stated intent | `<project-root>/progress.md` | Every confirmation |
+| Current phase + step | `<project-root>/task_plan.md` | Every phase change |
+| Decisions made | `<project-root>/progress.md` | Every decision |
+| Discovered facts | `<project-root>/findings.md` | Every 2-3 discoveries |
+| Delegation state | `<project-root>/progress.md` | Every dispatch/return |
+| Session checkpoints | `<project-root>/.checkpoints/<timestamp>-<name>.md` | On request or phase change |
 
 **Recovery rule:** On session restart, read `task_plan.md` first, then `findings.md`, then `progress.md`. Reconstruct state from disk, not from memory.
 
@@ -160,65 +219,89 @@ Context is lost between turns by default. The only defense is write-to-disk.
 
 | Situation | Probe? | Plan? | Delegate? | Update? |
 |-----------|--------|-------|-----------|---------|
-| Vague request | ✅ First | After | ❌ | After confirm |
-| Clear task, small scope | ❌ | Mental | ❌ | On complete |
-| Clear task, large scope | ❌ | ✅ Written | ✅ | On dispatch + complete |
-| Blocked | ✅ Root cause | ✅ Options | Maybe | Immediately |
-| User checks in | ❌ | ❌ | ❌ | ✅ Full report |
-| Session restart | ✅ Re-confirm | ✅ Re-read | After | On recovery |
+| Vague request | Yes — first | After | No | After confirm |
+| Clear task, small scope | No | Mental | No | On complete |
+| Clear task, large scope | No | Yes — written | Yes | On dispatch + complete |
+| Blocked | Yes — root cause | Yes — options | Maybe | Immediately |
+| User checks in | No | No | No | Yes — full report |
+| Session restart | Yes — re-confirm | Yes — re-read | After | On recovery |
+| Skill file creation | Yes — scope + constraints | Yes — structure | **Yes — delegate to writer** | On dispatch + complete |
 
 ---
 
 ## Anti-Patterns
 
-1. **The Interrogator** — Asking 5+ questions in one turn. One per turn unless invited.
-2. **The Yes-Agent** — Accepting vague requests without probing. Always clarify before acting.
-3. **The Abandoner** — Delegating and disappearing. Always report back with results.
-4. **The Amnesiac** — Losing context between turns. Write to disk every turn.
-5. **The Micromanager** — Refusing to delegate well-scoped tasks. Trust subagents with clear specs.
-6. **The Silent Worker** — Executing for 20 turns without updates. Update at phase boundaries.
-7. **The Scope Creep** — Adding features the user didn't ask for. Stay within confirmed intent.
-8. **The Orphan Dispatcher** — Sending subagents without context or success criteria.
-9. **The Context Hoarder** — Keeping everything in memory instead of writing to disk.
-10. **The Premature Executor** — Acting before understanding. Probe first, always.
+| # | Anti-Pattern | Detection | Enforcement Gate |
+|---|-------------|-----------|-----------------|
+| 1 | **The Premature Executor** — Acting before understanding. Writing files before PROBE is complete. | Check: has user confirmed intent? If no, STOP. | **GATE: Before any file write, verify PROBE phase is complete. If not, abort write and return to PROBE.** |
+| 2 | **The Interrogator** — Asking 4+ questions in one turn. | Count questions per turn. | **GATE: Max 3 questions per turn via OpenCode question tool.** |
+| 3 | **The Yes-Agent** — Accepting vague requests without probing. | Check: are all 6 stop conditions met? | **GATE: If any stop condition is false, must probe before acting.** |
+| 4 | **The Abandoner** — Delegating and disappearing. | Check: has subagent reported back? | **GATE: Must report subagent results before next action.** |
+| 5 | **The Amnesiac** — Losing context between turns. | Check: are persistence files updated? | **GATE: Write to disk every turn. On restart, read files before acting.** |
+| 6 | **The Silent Worker** — Executing for 20 turns without updates. | Count turns since last update. | **GATE: Update at every phase boundary, max 10 turns between updates.** |
+| 7 | **The Scope Creep** — Adding features the user didn't ask for. | Compare deliverables to confirmed intent. | **GATE: Every deliverable must trace to a confirmed user requirement.** |
+| 8 | **The Orphan Dispatcher** — Sending subagents without context or success criteria. | Check delegation message for required fields. | **GATE: Delegation must include intent, constraints, success criteria, and budget.** |
+| 9 | **The Skill Ignorer** — Loading a skill for its file list but bypassing its workflow. | Check: did you follow the loaded skill's gates? | **GATE: If you load a skill with gates or phases, you must follow them.** |
+| 10 | **The Coordinator Executor** — Coordinator edits skill files directly instead of delegating. | Check: is task skill file creation AND Agent is Coordinator? | **GATE: Skill file creation/edit by Coordinator → delegate to writer subagent.** |
 
 ---
 
-## Good vs Bad Usage
+## Worked Example: End-to-End Skill Creation
 
-### Good: Iterative Probing
 ```
-User: "I want to improve the skill system"
-Agent: "What aspect — creation, discovery, quality, or something else?"
-User: "Quality"
-Agent: "Got it. Should I audit existing skills for gaps, or build a quality framework from scratch?"
-```
+User: "I want to create a skill like this @.kilo/command/deep-research-synthesis-repomix.md"
 
-### Bad: The Interrogator
-```
-User: "I want to improve the skill system"
-Agent: "What aspect? What's the priority? Any deadlines? Which skills? What format?
-        Should I audit or build? Who's the audience? Any constraints?"
-```
+Agent: [Loads 3 platform skills first per FIRST ACTION block]
+Agent: [PROBE Phase — Turn 1]
+  question("Should this skill cover just the deep-research synthesis pattern,
+            or also include auditing and eval capabilities?")
 
-### Good: Delegation with Context
-```
-Agent: "I'll spin up a subagent to audit the 5 existing skills against the quality matrix.
-        It will write findings to disk and report back. Budget: 2000 tokens."
-```
+User: "Just the synthesis pattern for now"
 
-### Bad: The Abandoner
-```
-Agent: "Delegating to subagent."
-[10 turns of silence]
-```
+Agent: [PROBE Phase — Turn 2]
+  question("What should trigger this skill? Something like 'synthesize this repo'
+            or 'deep research this codebase'?")
 
-### Good: Strategic Positioning
-```
-Agent: "We've completed 3 of 5 phases. Current blocker: the quality matrix needs
-        a scoring rubric. Options: (1) I draft one now, (2) delegate to a subagent
-        with examples, (3) pause for your input. I recommend option 1 — it's quick
-        and you can review."
+User: "Both of those, plus 'analyze this repo deeply'"
+
+Agent: [PROBE Phase — Turn 3]
+  question("Should it follow the exact SKILL.md + references structure,
+            or do you want a simpler single-file version?")
+
+User: "Full structure with references"
+
+Agent: [UNDERSTAND Phase]
+  "So: a skill that triggers on 'synthesize this repo', 'deep research this codebase',
+   or 'analyze this repo deeply'. It should use the full SKILL.md + references structure,
+   focused on deep-research synthesis patterns. I'll plan the structure, then delegate
+   the file writing to a subagent. Correct?"
+
+User: "Yes"
+
+Agent: [PLAN Phase — writes task_plan.md]
+  Phase 1: Audit existing skill patterns
+  Phase 2: Draft SKILL.md
+  Phase 3: Write reference files
+  Phase 4: Write scripts
+  Phase 5: Validate and commit
+
+Agent: [DELEGATE Phase]
+  "Spinning up a writer subagent for Phase 1. Budget: 2000 tokens.
+   It will audit existing skill patterns and write findings to disk."
+
+[... subagent completes, reports back ...]
+
+Agent: [UPDATE Phase]
+  "Phase 1 complete. Found 3 relevant patterns. Moving to Phase 2 — drafting SKILL.md."
+
+[... phases 2-5 complete ...]
+
+Agent: [DELIVER Phase — all termination criteria met]
+  "All 5 phases complete. Delivered:
+   - SKILL.md (380 lines)
+   - 4 reference files
+   - 2 validation scripts
+   All committed. Want any adjustments?"
 ```
 
 ---
@@ -231,7 +314,20 @@ Agent: "We've completed 3 of 5 phases. Current blocker: the quality matrix needs
 | `dispatching-parallel-agents` | Use for parallel task execution. This skill decides WHAT to parallelize. |
 | `deep-research` / `deep-investigation` | Use for deep topic exploration. This skill decides WHEN depth is needed. |
 | `gcc` | Use for git-backed memory. This skill decides WHAT to persist. |
-| `coordinating-loop` | Sibling skill in GROUP 1. Handles orchestration patterns; this skill handles user engagement. |
+| `coordinating-loop` | Sibling skill in GROUP 1. **Handoff point:** When intent is confirmed and work is scoped, load `coordinating-loop` to plan execution. This skill owns the user relationship up to that point. |
+
+---
+
+## Platform Adaptation
+
+| Platform | Question Tool | Skill Loading | File Paths |
+|----------|--------------|---------------|------------|
+| **OpenCode** | `question` tool (native) | `skill({ name: "..." })` | Project root or `.opencode/` |
+| **Claude Code** | Text output (no native question tool) | `Skill` tool | Project root or `.claude/` |
+| **Codex** | Text output | Platform-specific skill loading | Project root |
+| **Cursor** | Chat interface | Platform-specific skill loading | Project root or `.cursor/` |
+
+**Max 3 questions per turn** applies on all platforms. On platforms without a native question tool, output questions as text and wait for user response before proceeding.
 
 ---
 
@@ -239,7 +335,7 @@ Agent: "We've completed 3 of 5 phases. Current blocker: the quality matrix needs
 
 | File | Purpose |
 |------|---------|
-| `references/01-question-protocols.md` | How to probe user intent effectively — question types, sequencing, stop conditions |
-| `references/02-context-preservation.md` | Maintaining awareness across sessions — persistence, recovery, compaction handling |
-| `references/03-brainstorming-patterns.md` | Facilitating ideation — divergence/convergence, option generation, decision frameworks |
-| `references/04-long-session-management.md` | Persisting through extended sessions — budget management, checkpoint strategy, fatigue detection |
+| `references/01-question-protocols.md` | How to probe user intent — question types, sequencing, skill-creation examples, stop conditions |
+| `references/02-context-preservation.md` | Maintaining awareness across sessions — concrete file paths, persistence, recovery, compaction |
+| `references/03-brainstorming-patterns.md` | Facilitating ideation — divergence/convergence, skill-creation examples, decision frameworks |
+| `references/04-long-session-management.md` | Persisting through extended sessions — budget management, explicit termination, checkpoint strategy |

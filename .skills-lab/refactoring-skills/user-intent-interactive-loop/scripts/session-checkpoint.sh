@@ -40,7 +40,7 @@ if date --iso-8601=seconds >/dev/null 2>&1; then
     TIMESTAMP="$(date --iso-8601=seconds)"
     FILE_DATE="$(date +%Y-%m-%d_%H%M%S)"
 else
-    # macOS BSD date fallback
+    # macOS BSD Date fallback
     TIMESTAMP="$(date +%Y-%m-%dT%H:%M:%S%z)"
     FILE_DATE="$(date +%Y-%m-%d_%H%M%S)"
 fi
@@ -55,21 +55,27 @@ CHECKPOINT_FILE="${CHECKPOINT_DIR}/${FILE_DATE}-${CHECKPOINT_NAME}.md"
 # Extract current phase from task_plan.md
 extract_current_phase() {
     if [ ! -f "$TASK_PLAN_FILE" ]; then
-        echo "  ⚠ task_plan.md not found — phase unknown."
+        echo "  [WARN] task_plan.md not found — phase unknown."
         return
     fi
 
     if [ ! -s "$TASK_PLAN_FILE" ]; then
-        echo "  ⚠ task_plan.md is empty — phase unknown."
+        echo "  [WARN] task_plan.md is empty — phase unknown."
         return
     fi
 
     # Look for "## Current Phase" section and grab the next non-empty line.
+    # Handles both "## Current Phase" as header and "## Current Phase: value" inline.
     local phase
-    phase="$(sed -n '/^## Current Phase/,/^##/{ /^## Current Phase/d; /^##/d; /^$/d; p; }' "$TASK_PLAN_FILE" | head -1)"
+    phase="$(sed -n '/^## Current Phase/{ s/^## Current Phase[[:space:]]*:[[:space:]]*//; /^$/d; p; }' "$TASK_PLAN_FILE" | head -1)"
 
     if [ -z "$phase" ]; then
-        echo "  ⚠ No '## Current Phase' section found in task_plan.md."
+        # Try the section-header format (content on next line)
+        phase="$(sed -n '/^## Current Phase$/{ n; /^$/d; /^##/d; p; }' "$TASK_PLAN_FILE" | head -1)"
+    fi
+
+    if [ -z "$phase" ]; then
+        echo "  [WARN] No '## Current Phase' section found in task_plan.md."
     else
         echo "  Phase: $phase"
     fi
@@ -78,12 +84,12 @@ extract_current_phase() {
 # Extract user intent from progress.md (first "Intent:" or "Goal:" mention)
 extract_user_intent() {
     if [ ! -f "$PROGRESS_FILE" ]; then
-        echo "  ⚠ progress.md not found — intent unknown."
+        echo "  [WARN] progress.md not found — intent unknown."
         return
     fi
 
     if [ ! -s "$PROGRESS_FILE" ]; then
-        echo "  ⚠ progress.md is empty — intent unknown."
+        echo "  [WARN] progress.md is empty — intent unknown."
         return
     fi
 
@@ -92,7 +98,7 @@ extract_user_intent() {
     intent="$(grep -i -m 3 -E '(intent|goal|objective):' "$PROGRESS_FILE" 2>/dev/null || true)"
 
     if [ -z "$intent" ]; then
-        echo "  ⚠ No explicit intent/goal found in progress.md."
+        echo "  [WARN] No explicit intent/goal found in progress.md."
         echo "  (Search for lines containing 'Intent:', 'Goal:', or 'Objective:')"
     else
         echo "$intent" | while IFS= read -r line; do
@@ -104,12 +110,12 @@ extract_user_intent() {
 # Extract delegation state from progress.md
 extract_delegation_state() {
     if [ ! -f "$PROGRESS_FILE" ]; then
-        echo "  ⚠ progress.md not found — delegation state unknown."
+        echo "  [WARN] progress.md not found — delegation state unknown."
         return
     fi
 
     if [ ! -s "$PROGRESS_FILE" ]; then
-        echo "  ⚠ progress.md is empty — delegation state unknown."
+        echo "  [WARN] progress.md is empty — delegation state unknown."
         return
     fi
 
