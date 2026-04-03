@@ -1,15 +1,48 @@
-# Task Plan: Meta-Builder Long-Haul — Batch 2 (Fixes + Meta-Builder + Integration)
+# Task Plan: Meta-Builder Phase 1 — Complete Rebuild of All 5 Skill Packs
 
-**Goal:** Complete the meta-builder harness foundation: fix Milestone 1 defects, create the meta-builder parent orchestrator skill, and write the cross-package bridging spec.
+**Goal:** Rebuild all 5 skill packs from scratch addressing ALL 56 flaws found in failure analysis + user's additional enforcement requirements.
 
-**Status:** IN-PROGRESS — Batch 2 launching
+**Status:** IN-PROGRESS — Phase 1 rebuild launching
 
-## Milestone Scope (Batch 2)
+## Phase 1 Scope: Complete Rebuild
 
-This batch covers:
-1. **Fix Milestone 1 defects** — planning-with-files duplicates, missing scripts, missing cross-refs
-2. **Meta-builder parent skill** — orchestrator routing between GROUP 1 and GROUP 2, consuming OpenCode concepts
-3. **Cross-package bridging spec** — how all skill packs connect, share state, and stack
+This is NOT a patch job. Every skill pack is being rebuilt to address:
+1. All 56 flaws identified by 5 parallel investigators
+2. User's additional enforcement requirements (see below)
+3. agentskills.io specification compliance
+
+## User's Additional Requirements (LOCKED)
+
+### A. use-authoring-skills Must Stand Alone
+- Must be sufficient for skill creation, doctoring, auditing, refactoring WITHOUT requiring external skills
+- Child domain skills (agent, tool, command, workflow authoring) are FUTURE extensions
+- When child skills are mentioned, parent loads Phase 1 first
+
+### B. Hierarchical Loading with Enforcement
+- Entry → coupled background set (hard requirements) → hierarchy order → prerequisites → coverage
+- ALL enforced deterministically by programs as hooks, force execution
+- Must be role model and universal — if existing variants, facilitate versions
+
+### C. Gate Keeping — Granular, Incremental, Programmatic
+- Measurable and clear sustained metrics
+- NOT anticipating "intelligence of AI agent" — must enforce mechanically:
+  - First number of first actions = not allow some actions
+  - Counting lines of content attachment
+  - Limiting steps — not more than N tools
+  - Questions must be asked (max 3 at a time)
+  - And so on
+
+### D. Interactive Loop with Users
+- Ask no more than 3 questions at a time
+- MUST use OpenCode question tool, NOT message output
+- Must load these 3 skills:
+  1. `skill({ name: "opencode-platform-reference" })` — SDK docs
+  2. `skill({ name: "repomix-exploration-guide" })` — cheat-sheet
+  3. `skill({ name: "opencode-non-interactive-shell" })` — shell strategy
+
+### E. agentskills.io Specification
+- Use `metadata` and `allowed-tools` fields per spec
+- Prepare for later programmatic chaining, enforcing, tool use
 
 ## Phases
 
@@ -22,21 +55,25 @@ This batch covers:
 - [x] 6. **coordinating-loop** — GROUP 1 skill #2 (builder-3)
 - [x] 7. **planning-with-files replacement** — GROUP 1 skill #3 (builder-4)
 - [x] 8. Milestone 1 audit — identified 6 issues (1 critical, 3 medium, 2 low)
-- [ ] 9. **Fix planning-with-files duplicates** — Error Discipline, Read vs Write, 5-Question appear twice
-- [ ] 10. **Add scripts/ to user-intent-interactive-loop** — Essentials E3 portable toolkits
-- [ ] 11. **Add GROUP 1↔2 cross-refs to use-authoring-skills**
-- [ ] 12. **Create meta-builder parent skill** — orchestrator, OpenCode concepts, stacking rules
-- [ ] 13. **Cross-package bridging spec** — integration, shared state, HiveMind v3 alignment
-- [ ] 14. Validation gate — validate-skill.sh, check-overlaps.sh, real scenarios
-- [ ] 15. Commit all, update architecture spec
+- [x] 9. **Fix planning-with-files duplicates** — Error Discipline, Read vs Write, 5-Question appear twice
+- [x] 10. **Add scripts/ to user-intent-interactive-loop** — Essentials E3 portable toolkits
+- [x] 11. **Add GROUP 1↔2 cross-refs to use-authoring-skills**
+- [x] 12. **Create meta-builder parent skill** — orchestrator, OpenCode concepts, stacking rules
+- [x] 13. **Cross-package bridging spec** — integration, shared state, HiveMind v3 alignment
+- [x] 14. Failure analysis — 56 flaws across 5 packs, master synthesis (commit d10f5752)
+- [ ] 15. **PHASE 1 REBUILD** — All 5 packs rebuilt addressing ALL 56 flaws + user requirements
+- [ ] 16. Validation gate — validate-skill.sh, check-overlaps.sh, script tests, real scenarios
+- [ ] 17. Commit all, update architecture spec
 
-## Active Builder Agents (Batch 2)
+## Active Builder Agents (Phase 1 Rebuild)
 
 | Agent | Task | Status |
 |-------|------|--------|
-| fixer | Fix duplicates, add scripts, add cross-refs | PENDING |
-| meta-builder | Create parent orchestrator skill | PENDING |
-| integration-spec | Cross-package bridging spec | PENDING |
+| builder-1 | Rebuild use-authoring-skills — standalone sufficiency, gate enforcement, hierarchical loading | PENDING |
+| builder-2 | Rebuild meta-builder — concrete workflows, fix routing, trim noise, first-action directives | PENDING |
+| builder-3 | Rebuild coordinating-loop — worked examples, fix flowchart, ship init script, platform adaptation | PENDING |
+| builder-4 | Rebuild planning-with-files — clean templates, fix scripts, ship hooks, integration protocol | PENDING |
+| builder-5 | Rebuild user-intent-interactive-loop — skill-specific probing, ≤3 questions via OpenCode tool, loop termination | PENDING |
 
 ## Key Decisions (LOCKED — see findings.md for full quotes)
 

@@ -1,0 +1,46 @@
+{
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "description": "Official library/framework documentation retrieval"
+    },
+    "deepwiki": {
+      "type": "remote",
+      "url": "https://mcp.deepwiki.com/mcp",
+      "description": "Repository synthesis and source navigation"
+    },
+    "repomix": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "repomix", "--mcp"],
+      "description": "Local/remote repository packing and analysis"
+    },
+    "tavily": {
+      "type": "remote",
+      "url": "https://mcp.tavily.com/mcp",
+      "description": "Web search with AI extraction"
+    },
+    "exa": {
+      "type": "remote",
+      "url": "https://mcp.exa.ai/mcp",
+      "description": "Code-focused web search enrichment"
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "description": "Multi-step reasoning chains"
+    },
+    "grep": {
+      "type": "remote",
+      "url": "https://mcp.grep.app/mcp",
+      "description": "GitHub code search with grep patterns"
+    },
+    "brave-search": {
+      "type": "remote",
+      "url": "https://mcp.brave.com/mcp",
+      "description": "General web search with news and video"
+    }
+  }
+}
