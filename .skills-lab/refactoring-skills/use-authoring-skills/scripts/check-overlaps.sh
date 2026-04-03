@@ -103,7 +103,7 @@ for file in "${md_files[@]}"; do
       continue
     fi
 
-    block_hash=$(echo "$block" | md5sum | cut -d' ' -f1)
+    block_hash=$(echo "$block" | shasum | cut -d' ' -f1)
     echo "${block_hash}|${rel_path}|${block:0:80}" >> "$blocks_file"
     i=$((i + 1))
   done

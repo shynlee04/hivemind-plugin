@@ -1,6 +1,6 @@
 ---
 name: use-authoring-skills
-description: Create, audit, refactor, and doctor agent skills. Covers frontmatter, pattern selection, TDD workflows, quality scoring, and cross-platform compatibility.
+description: Use when creating, auditing, refactoring, or doctoring agent skills. Covers frontmatter, pattern selection, TDD workflows, quality scoring, and cross-platform compatibility.
 metadata:
   layer: "4"
   role: "domain-execution"

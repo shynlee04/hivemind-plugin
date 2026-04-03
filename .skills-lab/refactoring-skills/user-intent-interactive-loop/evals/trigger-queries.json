@@ -1,27 +1,24 @@
 {
-  "skill": "user-intent-interactive-loop",
-  "should_trigger": [
-    "help me figure out what I want",
-    "I'm not sure how to approach this",
-    "what should we do next?",
-    "keep going with this",
-    "stay focused on the main goal",
-    "I need help thinking through this architecture",
-    "let's work on this together",
-    "what were we working on again?",
-    "I want to create something but need to clarify",
-    "don't lose track of what we're doing"
-  ],
-  "should_not_trigger": [
-    "delete the file at src/old.ts",
-    "add a console.log here",
-    "run npm test",
-    "fix the typo on line 42",
-    "commit these changes",
-    "show me the git log",
-    "what's in this directory?",
-    "create a skill like this @file",
-    "plan this out",
-    "dispatch 3 agents in parallel"
+  "queries": [
+    {"query": "help me figure out what I want", "should_trigger": true},
+    {"query": "I'm not sure how to approach this", "should_trigger": true},
+    {"query": "what should we do next?", "should_trigger": true},
+    {"query": "keep going with this", "should_trigger": true},
+    {"query": "stay focused on the main goal", "should_trigger": true},
+    {"query": "I need help thinking through this architecture", "should_trigger": true},
+    {"query": "let's work on this together", "should_trigger": true},
+    {"query": "what were we working on again?", "should_trigger": true},
+    {"query": "I want to create something but need to clarify", "should_trigger": true},
+    {"query": "don't lose track of what we're doing", "should_trigger": true},
+    {"query": "delete the file at src/old.ts", "should_trigger": false},
+    {"query": "add a console.log here", "should_trigger": false},
+    {"query": "run npm test", "should_trigger": false},
+    {"query": "fix the typo on line 42", "should_trigger": false},
+    {"query": "commit these changes", "should_trigger": false},
+    {"query": "show me the git log", "should_trigger": false},
+    {"query": "what's in this directory?", "should_trigger": false},
+    {"query": "create a skill like this @file", "should_trigger": false},
+    {"query": "plan this out", "should_trigger": false},
+    {"query": "dispatch 3 agents in parallel", "should_trigger": false}
   ]
 }

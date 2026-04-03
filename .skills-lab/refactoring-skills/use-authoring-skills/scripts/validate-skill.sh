@@ -99,9 +99,10 @@ fi
 # --- Gate 6: Banned Fields ---
 
 if echo "$frontmatter" | grep -q '^compatibility:'; then
-  fail "Banned field 'compatibility' found in frontmatter"
+  warn "Optional field 'compatibility' found — most skills do NOT need this"
+  pass "Banned field check: compatibility is optional, not banned"
 else
-  pass "No banned 'compatibility' field"
+  pass "No 'compatibility' field"
 fi
 
 # --- Gate 7: Terminology Compliance ---

@@ -25,7 +25,19 @@ permission:
     "git log*": allow
     "ls*": allow
   task: allow
-  skill: allow
+  skill: 
+    "*": deny
+    "meta-builder": allow
+    "planning-with-files": allow
+    "coordinating-loop": allow
+    "use-authoring-skills": allow
+    "user-intent-interactive-loop": allow
+    "opencode-platform-reference": allow
+    "repomix-exploration-guide": allow
+    "opencode-non-interactive-shel": allow
+    "repomix-explorer": allow
+  patch: allow
+  offset-read: deny
   glob: allow
   grep: allow
   webfetch: allow

@@ -1,6 +1,6 @@
 ---
 name: planning-with-files
-description: Use filesystem as persistent memory for complex tasks. Creates task_plan.md, findings.md, and progress.md in project root. Prevents goal drift via goal-refresh pattern.
+description: Use when the task requires more than 5 tool calls, needs session recovery after /clear, or spans multiple files. Creates task_plan.md, findings.md, and progress.md in project root. Prevents goal drift via goal-refresh pattern.
 metadata:
   layer: "2"
   role: "persistent-memory"

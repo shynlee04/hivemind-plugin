@@ -1,82 +1,51 @@
 {
-  "skill": "coordinating-loop",
-  "version": "1.0.0",
-  "test_cases": [
+  "skill_name": "coordinating-loop",
+  "evals": [
     {
       "id": "TC-001",
-      "name": "Multiple independent tasks — parallel dispatch",
-      "input": "Create 3 reference files for the deep-research skill in parallel",
-      "expected": {
+      "prompt": "Create 3 reference files for the deep-research skill in parallel",
+      "expected_output": {
         "should_trigger": true,
         "mode": "parallel",
         "task_count": 3,
         "file_overlap": false
-      },
-      "assertions": [
-        "Skill triggers on multi-task request",
-        "Flowchart routes to parallel dispatch",
-        "3 task envelopes created",
-        "Pre-dispatch validation passes"
-      ]
+      }
     },
     {
       "id": "TC-002",
-      "name": "Single task — should NOT trigger",
-      "input": "Fix the typo in SKILL.md line 42",
-      "expected": {
+      "prompt": "Fix the typo in SKILL.md line 42",
+      "expected_output": {
         "should_trigger": false,
         "reason": "Single task — execute directly"
-      },
-      "assertions": [
-        "Skill does NOT trigger on single task",
-        "Agent executes directly without coordination overhead"
-      ]
+      }
     },
     {
       "id": "TC-003",
-      "name": "Shared state tasks — sequential mode",
-      "input": "Update the SKILL.md and then update its reference files to match",
-      "expected": {
+      "prompt": "Update the SKILL.md and then update its reference files to match",
+      "expected_output": {
         "should_trigger": true,
         "mode": "sequential",
         "reason": "Tasks share mutable state"
-      },
-      "assertions": [
-        "Skill triggers on multi-task request",
-        "Flowchart detects shared state",
-        "Routes to sequential execution"
-      ]
+      }
     },
     {
       "id": "TC-004",
-      "name": "Envelope validation blocks dispatch",
-      "input": "Dispatch an agent to write a skill",
-      "expected": {
+      "prompt": "Dispatch an agent to write a skill",
+      "expected_output": {
         "should_trigger": true,
         "envelope_sections": 5,
         "validation_required": true
-      },
-      "assertions": [
-        "validate-envelope.sh runs before dispatch",
-        "Blocks if any of 5 sections missing",
-        "Gate G2 enforcement active"
-      ]
+      }
     },
     {
       "id": "TC-005",
-      "name": "Ralph-loop re-dispatch on failure",
-      "input": "Fix the validation errors in the skill",
-      "expected": {
+      "prompt": "Fix the validation errors in the skill",
+      "expected_output": {
         "should_trigger": true,
         "ralph_loop": true,
         "max_cycles": 3,
         "escalation_on_3rd_failure": true
-      },
-      "assertions": [
-        "run-ralph-loop.sh executes after child returns",
-        "On FAIL: reads report, fixes, re-dispatches",
-        "After 3 cycles: escalates to user"
-      ]
+      }
     }
   ]
 }

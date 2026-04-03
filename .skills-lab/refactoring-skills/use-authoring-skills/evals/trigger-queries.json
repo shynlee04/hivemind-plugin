@@ -1,27 +1,24 @@
 {
-  "skill": "use-authoring-skills",
-  "should_trigger": [
-    "create a skill",
-    "make a new skill for my project",
-    "audit this skill and tell me what's wrong",
-    "improve this skill's trigger phrases",
-    "convert this document into a skill",
-    "refactor this skill pack",
-    "write evals for this skill",
-    "check if this skill overlaps with others",
-    "fix the frontmatter on this skill",
-    "doctor this skill — it never loads"
-  ],
-  "should_not_trigger": [
-    "create an agent in opencode.json",
-    "set up a command",
-    "add a custom tool",
-    "help me figure out what I want",
-    "plan this out",
-    "dispatch agents in parallel",
-    "fix the bug in my auth module",
-    "run the tests",
-    "what does this function do?",
-    "commit these changes"
+  "queries": [
+    {"query": "create a skill", "should_trigger": true},
+    {"query": "make a new skill for my project", "should_trigger": true},
+    {"query": "audit this skill and tell me what's wrong", "should_trigger": true},
+    {"query": "improve this skill's trigger phrases", "should_trigger": true},
+    {"query": "convert this document into a skill", "should_trigger": true},
+    {"query": "refactor this skill pack", "should_trigger": true},
+    {"query": "write evals for this skill", "should_trigger": true},
+    {"query": "check if this skill overlaps with others", "should_trigger": true},
+    {"query": "fix the frontmatter on this skill", "should_trigger": true},
+    {"query": "doctor this skill — it never loads", "should_trigger": true},
+    {"query": "create an agent in opencode.json", "should_trigger": false},
+    {"query": "set up a command", "should_trigger": false},
+    {"query": "add a custom tool", "should_trigger": false},
+    {"query": "help me figure out what I want", "should_trigger": false},
+    {"query": "plan this out", "should_trigger": false},
+    {"query": "dispatch agents in parallel", "should_trigger": false},
+    {"query": "fix the bug in my auth module", "should_trigger": false},
+    {"query": "run the tests", "should_trigger": false},
+    {"query": "what does this function do?", "should_trigger": false},
+    {"query": "commit these changes", "should_trigger": false}
   ]
 }
