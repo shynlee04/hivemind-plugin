@@ -133,7 +133,7 @@ fi
 # --- Gate 4: Validate primary skill exists ---
 skill_found=false
 for search_dir in \
-  "$SCRIPT_DIR/.." \
+  "$SCRIPT_DIR/../.." \
   "$HOME/.config/opencode/skills" \
   "$HOME/.agents/skills" \
   "$HOME/.claude/skills"; do
@@ -152,7 +152,7 @@ done
 if [[ -n "$stack" ]]; then
   stack_found=false
   for search_dir in \
-    "$SCRIPT_DIR/.." \
+    "$SCRIPT_DIR/../.." \
     "$HOME/.config/opencode/skills" \
     "$HOME/.agents/skills" \
     "$HOME/.claude/skills"; do

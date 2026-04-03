@@ -22,6 +22,14 @@ All 5 skill packs fixed with REAL enforcement mechanisms (not just descriptions)
 - All 5 packs pass validate-skill.sh ✅
 - All scripts pass `bash -n` syntax check ✅
 - All SKILL.md files under 500 lines ✅
+- **Runtime tests passed:**
+  - meta-builder preflight.sh: Blocks empty/no-args, routes correctly for clear/vague intent ✅
+  - use-authoring-skills validate-gate.sh: Creates task_plan.md, checks validators, warns on missing pattern ✅
+  - coordinating-loop validate-envelope.sh: Requires args, structured output ✅
+  - planning-with-files check-complete.sh: Detects missing phases, structured output ✅
+
+### Bug Fixed
+- meta-builder preflight.sh: `$SCRIPT_DIR/..` → `$SCRIPT_DIR/../..` (was searching wrong directory for skills)
 
 ### agentskills.io Principles Applied
 - Procedures over declarations (teach HOW, not WHAT)
