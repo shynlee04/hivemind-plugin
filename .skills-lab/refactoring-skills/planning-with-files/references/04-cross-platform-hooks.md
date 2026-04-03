@@ -1,232 +1,139 @@
-# Cross-Platform Hooks
+# Cross-Platform Hooks — Deployment Guide
 
-How to sustain planning discipline across different agentic platforms.
+## Overview
 
----
+This skill ships actual hook config files in the `hooks/` directory. They are deployable JSON configs, not documentation examples.
 
-## Hook Architecture
+## Shipped Hook Files
 
-Hooks are platform-specific event handlers that inject planning behavior into the Agent's workflow. They ensure the Agent reads the plan, updates progress, and verifies completion — even if the Agent forgets.
+| File | Purpose | Platform |
+|------|---------|----------|
+| `hooks/pre-tool-use.json` | Injects plan state before Write/Edit | OpenCode |
+| `hooks/post-tool-use.json` | Reminds to update progress after writes | OpenCode |
+| `hooks/stop.json` | Runs check-complete.sh on session stop | OpenCode |
 
-### Hook Lifecycle
+## OpenCode Hook Deployment
 
-```
-UserPromptSubmit → PreToolUse → [Tool executes] → PostToolUse → Stop
-       ↓                ↓                              ↓           ↓
-  Inject plan      Re-read plan                Remind to     Verify
-  into context     before action               update        complete
-```
+OpenCode hooks are configured through the plugin system, not standalone JSON files. The shipped JSON files describe the hook behavior. To deploy:
 
----
+### Option 1: Plugin-Based Hooks (Recommended)
 
-## OpenCode
+Create `.opencode/plugins/planning-hooks.js`:
 
-OpenCode uses the `.opencode/` configuration directory with hooks defined in the plugin system.
-
-### UserPromptSubmit Hook
-Injects current plan state when the user submits a prompt.
-
-```yaml
-hooks:
-  UserPromptSubmit:
-    - type: command
-      command: |
-        if [ -f task_plan.md ]; then
-          echo '[planning-with-files] ACTIVE PLAN — current state:'
-          head -50 task_plan.md
-          echo ''
-          echo '=== recent progress ==='
-          tail -20 progress.md 2>/dev/null
-          echo ''
-          echo '[planning-with-files] Read findings.md for research context. Continue from the current phase.'
-        fi
-```
-
-### PreToolUse Hook
-Re-reads the plan before every tool call to keep goals in attention.
-
-```yaml
-hooks:
-  PreToolUse:
-    - matcher: "Write|Edit|Bash|Read|Glob|Grep"
-      hooks:
-        - type: command
-          command: "cat task_plan.md 2>/dev/null | head -30 || true"
+```javascript
+export const PlanningHooks = async ({ project, $, directory }) => {
+  return {
+    "tool.execute.before": async (input, output) => {
+      if (input.tool === "write" || input.tool === "edit") {
+        const planFile = `${directory}/task_plan.md`;
+        try {
+          const plan = await $`head -30 ${planFile}`.text();
+          if (plan) {
+            output.context = `[planning-with-files] Current plan:\n${plan}\n`;
+          }
+        } catch {
+          // No plan file — skip injection
+        }
+      }
+    },
+    "tool.execute.after": async (input, output) => {
+      if (input.tool === "write" || input.tool === "edit") {
+        output.context = "[planning-with-files] Remember to update progress.md and task_plan.md if phase status changed.";
+      }
+    },
+    "session.idle": async () => {
+      await $`bash ${directory}/.opencode/skills/planning-with-files/scripts/check-complete.sh`.text();
+    },
+  };
+};
 ```
 
-### PostToolUse Hook
-Reminds the Agent to update progress after file modifications.
+### Option 2: Manual Hook Scripts
 
-```yaml
-hooks:
-  PostToolUse:
-    - matcher: "Write|Edit"
-      hooks:
-        - type: command
-          command: "if [ -f task_plan.md ]; then echo '[planning-with-files] Update progress.md with what you just did. If a phase is now complete, update task_plan.md status.'; fi"
-```
+For platforms that support shell-based hooks (Claude Code, Cursor, Gemini CLI), use the scripts in `scripts/` directly:
+
+| Platform | Hook Location | Script to Use |
+|----------|--------------|---------------|
+| Claude Code | `.cursor/hooks/pre-tool-use.sh` | Custom script reading task_plan.md |
+| Claude Code | `.cursor/hooks/stop.sh` | `scripts/check-complete.sh` |
+| Gemini CLI | `.gemini/hooks/before-tool.sh` | Custom script reading task_plan.md |
+| Gemini CLI | `.gemini/hooks/session-end.sh` | `scripts/check-complete.sh` |
+| Cursor | `.cursor/hooks/pre-tool-use.sh` | Custom script reading task_plan.md |
+| Cursor | `.cursor/hooks/stop.sh` | `scripts/check-complete.sh` |
+
+## Hook Behavior Specifications
+
+### Pre-Tool-Use Hook
+
+**Trigger:** Before Write or Edit tool execution
+
+**Behavior:**
+1. Check if `task_plan.md` exists in project root
+2. If yes, read first 30 lines
+3. Inject into context with `[planning-with-files]` prefix
+4. If no, do nothing (no plan active)
+
+**Purpose:** Ensure the Agent sees the current goal before modifying any files.
+
+### Post-Tool-Use Hook
+
+**Trigger:** After Write or Edit tool execution
+
+**Behavior:**
+1. Output reminder message
+2. Message includes: "Remember to update progress.md and task_plan.md if phase status changed"
+
+**Purpose:** Prevent the Agent from forgetting to update planning files after making changes.
 
 ### Stop Hook
-Verifies completion when the session ends.
 
-```yaml
-hooks:
-  Stop:
-    - type: command
-      command: "sh \"$(dirname \"$0\")/scripts/check-complete.sh\" task_plan.md 2>/dev/null || true"
-```
+**Trigger:** When session ends (idle, user exits, or `/clear`)
 
----
+**Behavior:**
+1. Run `scripts/check-complete.sh`
+2. Output status to console
+3. If incomplete, remind Agent to update `progress.md`
 
-## Claude Code
+**Purpose:** Catch incomplete work at session boundaries.
 
-Claude Code uses `.cursor/hooks/` directory with JSON configuration.
+## Platform-Specific Notes
 
-### hooks.json
-```json
-{
-  "user-prompt-submit": ".cursor/hooks/user-prompt-submit.sh",
-  "pre-tool-use": ".cursor/hooks/pre-tool-use.sh",
-  "post-tool-use": ".cursor/hooks/post-tool-use.sh",
-  "stop": ".cursor/hooks/stop.sh"
-}
-```
+### OpenCode
 
-### user-prompt-submit.sh
-```bash
-#!/bin/bash
-if [ -f task_plan.md ]; then
-  echo '[planning-with-files] ACTIVE PLAN:'
-  head -50 task_plan.md
-  echo '=== recent progress ==='
-  tail -20 progress.md 2>/dev/null
-fi
-```
+- Uses plugin system for hooks
+- Plugin file: `.opencode/plugins/planning-hooks.js`
+- Events: `tool.execute.before`, `tool.execute.after`, `session.idle`
 
-### pre-tool-use.sh
-```bash
-#!/bin/bash
-cat task_plan.md 2>/dev/null | head -30 || true
-```
+### Claude Code
 
-### post-tool-use.sh
-```bash
-#!/bin/bash
-if [ -f task_plan.md ]; then
-  echo '[planning-with-files] Update progress.md with what you just did.'
-fi
-```
+- Uses `.cursor/hooks/` directory
+- Hook files are executable shell scripts
+- Available hooks: `pre-tool-use.sh`, `post-tool-use.sh`, `stop.sh`
 
-### stop.sh
-```bash
-#!/bin/bash
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-sh "$SCRIPT_DIR/../scripts/check-complete.sh" task_plan.md 2>/dev/null || true
-```
+### Gemini CLI
 
----
+- Uses `.gemini/hooks/` directory
+- Hook files are executable shell scripts
+- Available hooks: `before-tool.sh`, `after-tool.sh`, `session-end.sh`, `session-start.sh`
 
-## Gemini CLI
+### Cursor
 
-Gemini CLI uses `.gemini/hooks/` with shell scripts for each lifecycle event.
+- Uses `.cursor/hooks/` directory (same as Claude Code)
+- Hook files are executable shell scripts
+- Note: Claude Code and Cursor share the same hook path — do not install both simultaneously
 
-### session-start.sh
-```bash
-#!/bin/bash
-if [ -f task_plan.md ]; then
-  echo '[planning-with-files] Resuming session. Current plan:'
-  head -30 task_plan.md
-fi
-```
+### Codex
 
-### before-tool.sh
-```bash
-#!/bin/bash
-cat task_plan.md 2>/dev/null | head -20 || true
-```
+- No native hook system
+- Rely on script-based enforcement
+- Run `scripts/check-complete.sh` manually at session end
 
-### after-tool.sh
-```bash
-#!/bin/bash
-if [ -f task_plan.md ]; then
-  echo '[planning-with-files] Remember to update progress.md after file changes.'
-fi
-```
+## Hook Testing
 
-### session-end.sh
-```bash
-#!/bin/bash
-sh "$(dirname "$0")/../scripts/check-complete.sh" task_plan.md 2>/dev/null || true
-```
+To verify hooks are working:
 
----
-
-## Cursor
-
-Cursor uses `.cursor/hooks/` with the same structure as Claude Code but may use PowerShell on Windows.
-
-### hooks.windows.json
-```json
-{
-  "user-prompt-submit": ".cursor/hooks/user-prompt-submit.ps1",
-  "pre-tool-use": ".cursor/hooks/pre-tool-use.ps1",
-  "post-tool-use": ".cursor/hooks/post-tool-use.ps1",
-  "stop": ".cursor/hooks/stop.ps1"
-}
-```
-
-### stop.ps1
-```powershell
-$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$checkScript = Join-Path $scriptDir "..\scripts\check-complete.ps1"
-if (Test-Path $checkScript) {
-  & $checkScript "task_plan.md"
-}
-```
-
----
-
-## Hook Design Principles
-
-### 1. Always Exit 0
-Hooks should never fail the session. Use `|| true` or `exit 0` to ensure hooks report status without blocking.
-
-### 2. Guard Against Missing Files
-Always check if `task_plan.md` exists before trying to read it. Use `2>/dev/null` to suppress errors.
-
-### 3. Keep Output Concise
-Use `head -30` or `head -50` to limit injected content. The goal is to refresh goals, not flood context.
-
-### 4. Use Relative Paths
-Planning files live in the project root. Use relative paths (`task_plan.md`) not absolute paths.
-
-### 5. Separate Scripts from Hooks
-Hook commands should call scripts in `scripts/` directory, not inline complex logic. This makes scripts reusable across platforms.
-
----
-
-## Platform Compatibility Matrix
-
-| Hook Event | OpenCode | Claude Code | Gemini CLI | Cursor |
-|-----------|----------|-------------|------------|--------|
-| User prompt submit | ✅ | ✅ | ✅ (session-start) | ✅ |
-| Before tool use | ✅ | ✅ | ✅ | ✅ |
-| After tool use | ✅ | ✅ | ✅ | ✅ |
-| Session end | ✅ | ✅ | ✅ (session-end) | ✅ |
-| PowerShell support | ❌ | ✅ | ❌ | ✅ |
-
----
-
-## Session Catchup Integration
-
-The `session-catchup.py` script runs at session start to detect unsynced context from previous sessions. It should be invoked manually or via the platform's session-start hook:
-
-```bash
-python3 scripts/session-catchup.py "$(pwd)"
-```
-
-The script:
-1. Checks if planning files exist (indicates active task).
-2. Scans previous session history for unsynced tool calls.
-3. Reports what was done but not recorded in planning files.
-4. Outputs a catchup report for the Agent to reconcile.
+1. Create a `task_plan.md` with a test goal
+2. Trigger a Write operation
+3. Check that the plan content appears in context before the write
+4. After the write, check for the progress reminder
+5. End the session and verify `check-complete.sh` output

@@ -1,136 +1,109 @@
-# Goal Refresh: How task_plan.md Prevents Drift
+# Goal Refresh — Enforcement Mechanism
 
-Why re-reading the plan file is the single most important habit for long-running tasks.
+## The Problem
 
----
+After approximately 50 tool calls, the original goal drifts out of the Agent's attention window. This is the "lost in the middle" effect — content at the start of a long context gets less attention than recent content.
 
-## The Problem: Lost in the Middle
+## The Solution
 
-After approximately 50 tool calls, the original goal drifts out of the Agent's effective attention window. This is a known limitation of transformer architectures — the "lost in the middle" effect.
+Re-reading `task_plan.md` pulls the goal back into recent attention. But this must be **enforced**, not voluntary.
 
-**Symptoms of goal drift:**
-- Agent starts working on tangential tasks not in the plan.
-- Agent forgets constraints documented in early phases.
-- Agent repeats work already completed.
-- Agent loses track of which phase it's on.
-- Agent makes decisions that contradict earlier documented decisions.
+## Enforcement Layers
 
-**Root cause:** The original goal statement is at the top of the context. After many tool calls, it is far from the "recent attention" zone where the model focuses most.
+### Layer 1: Hook Enforcement (Automatic)
 
----
+The `hooks/pre-tool-use.json` hook runs before every Write/Edit tool call. It:
 
-## The Solution: Goal Refresh via Recitation
+1. Checks if `task_plan.md` exists
+2. If yes, reads the first 30 lines (Goal + Current Phase + active phase)
+3. Injects this into the Agent's context before the tool executes
 
-Re-reading `task_plan.md` brings the goal back into the recent attention window. This is attention manipulation through recitation.
+This means the Agent **sees the goal** before every file modification, regardless of whether it remembered to re-read.
 
-```
-Start of context: [Original goal — far away, forgotten]
-...many tool calls, file reads, edits, errors...
-End of context: [Just read task_plan.md — gets MAXIMUM attention!]
-                                                          ↑
-                                          This is where the model focuses
-```
+**Hook config:** See `hooks/pre-tool-use.json` in this skill pack.
 
-### The Mechanism
+### Layer 2: Script Enforcement (Session Boundary)
 
-1. **Agent reads `task_plan.md`** — The entire file is loaded into context.
-2. **Goal statement appears at the end** — Recent content gets highest attention weight.
-3. **Agent makes decision** — The decision is informed by the freshly-recited goal.
-4. **Agent acts** — Actions align with the goal because it's top-of-mind.
+The `hooks/stop.json` hook runs `scripts/check-complete.sh` when the session stops. This:
 
-### When to Refresh
+1. Counts total phases vs complete phases
+2. Reports status to stdout
+3. If incomplete, reminds the Agent to update `progress.md`
 
-| Situation | Action |
-|-----------|--------|
-| Before any major decision | Read `task_plan.md` |
-| After 10+ tool calls since last read | Read `task_plan.md` |
-| After an error that required rethinking | Read `task_plan.md` |
-| When starting a new phase | Read `task_plan.md` |
-| When context feels "stale" | Read `task_plan.md` |
-| After `/clear` or session recovery | Read `task_plan.md` first |
+This catches goal drift at session boundaries.
 
-### What Gets Refreshed
+### Layer 3: Algorithm Enforcement (Agent Discipline)
 
-Re-reading `task_plan.md` refreshes:
-- **Goal** — The one-sentence north star.
-- **Current phase** — Where the Agent should be working.
-- **Remaining phases** — What's still to come.
-- **Decisions made** — Why certain choices were made.
-- **Errors encountered** — What has already been tried.
-
----
-
-## Why This Works
-
-### Attention Weight Distribution
-
-Transformer models assign higher attention weight to content near the end of the context window. Content at the beginning gets the least attention after the window fills.
+Before each Write/Edit/Bash (non-read-only) tool call, the Agent runs this algorithm:
 
 ```
-Attention weight:
-  [Beginning] ████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ [End]
-               Low attention                              High attention
+1. Count tool calls since last Read of task_plan.md
+2. If count >= 5:
+   → Read task_plan.md (first 30 lines minimum)
+   → Reset counter to 0
+3. Proceed with tool call
 ```
 
-By re-reading `task_plan.md` before decisions, the goal and current phase appear in the high-attention zone.
+**Why 5?** This is the sweet spot:
+- Low enough to prevent drift (context window holds ~50 tool calls)
+- High enough to avoid burning tokens on every single call
+- 10 re-reads per 50-call session = goals stay fresh
 
-### KV-Cache Efficiency
+### Layer 4: Recovery Enforcement (Session Start)
 
-Re-reading the same file repeatedly improves KV-cache hit rates. The model has already processed this content, so re-reading is computationally cheaper than processing new content.
+At session start, if planning files exist:
 
----
+1. Read ALL three planning files immediately
+2. Run `scripts/session-catchup.py`
+3. Run `git diff --stat`
+4. Reconcile plan state with actual state
 
-## Anti-Drift Checklist
+This ensures the Agent starts with the goal in context, even after `/clear`.
 
-Before making any decision that affects the task direction:
+## Token Budget
 
-- [ ] Have I read `task_plan.md` in the last 10 tool calls?
-- [ ] Does my next action align with the `## Goal` statement?
-- [ ] Am I working on the phase marked `in_progress`?
-- [ ] Have I checked `## Decisions Made` to avoid contradicting earlier choices?
-- [ ] Have I checked `## Errors Encountered` to avoid repeating failures?
+Goal-refresh has a token cost. Here's the budget:
 
-If any answer is "no," read `task_plan.md` before proceeding.
+| Operation | Approximate Tokens | Frequency |
+|-----------|-------------------|-----------|
+| Read task_plan.md (first 30 lines) | ~500 | Every 5 tool calls |
+| Hook injection (pre-tool-use) | ~200 | Every Write/Edit |
+| Session start (all 3 files) | ~1500 | Once per session |
+| Stop hook (check-complete) | ~100 | Once per session |
 
----
+**Total per 50-call session:** ~5,000 tokens for goal-refresh. This is <5% of a typical context window.
 
-## The Read-Before-Decide Pattern
+## What Gets Re-Read
 
+Not the entire file. Only the goal-critical sections:
+
+```markdown
+# Task Plan: <title>        ← What are we doing?
+## Goal                      ← Why are we doing it?
+## Current Phase             ← Where are we?
+### Phase N: <title>         ← What's the current work?
+- **Status:** in_progress    ← Is it active?
 ```
-[Many tool calls have happened...]
-[Context is getting long...]
-[Original goal might be forgotten...]
 
-→ Read task_plan.md          # This brings goals back into attention!
-→ Now make the decision       # Goals are fresh in context
-```
+This is ~30 lines. Enough to re-orient, not enough to burn tokens.
 
-This is why Manus can handle ~50 tool calls without losing track. The plan file acts as a "goal refresh" mechanism, not just a static document.
+## When to Re-Read the Full File
 
----
+Re-read the ENTIRE `task_plan.md` (not just first 30 lines) when:
 
-## Common Drift Scenarios
+1. Starting a new phase (need to see all remaining phases)
+2. After an error (need to see Errors Encountered table)
+3. When the user asks "what's the plan?" (need full context)
+4. During VERIFYING state (need to check all phases)
 
-### Scenario 1: Feature Creep
+## Anti-Pattern: Over-Refreshing
 
-**What happens:** Agent starts adding features not in the original plan.
+Reading `task_plan.md` before EVERY tool call burns tokens unnecessarily. The hook handles the minimum injection. The Agent should only do a full Read when the algorithm triggers (every 5 calls) or when the conditions above apply.
 
-**Prevention:** Re-read `task_plan.md` → see the `## Goal` → recognize the scope boundary.
+## Verification
 
-### Scenario 2: Rabbit Hole Debugging
+To verify goal-refresh is working:
 
-**What happens:** Agent spends 20 tool calls debugging a minor issue while the main task stalls.
-
-**Prevention:** Re-read `task_plan.md` → see `## Current Phase` → recognize the phase is blocked → escalate or move on.
-
-### Scenario 3: Forgotten Constraints
-
-**What happens:** Agent implements a solution that violates a constraint documented in Phase 1.
-
-**Prevention:** Re-read `task_plan.md` → see `## Decisions Made` → remember the constraint.
-
-### Scenario 4: Repeated Failures
-
-**What happens:** Agent tries the same failing approach multiple times.
-
-**Prevention:** Re-read `task_plan.md` → see `## Errors Encountered` → recognize this was already tried.
+1. Check `progress.md` for Read entries of `task_plan.md`
+2. Count tool calls between Reads — should be ≤5
+3. If >5 calls between Reads, the Agent is drifting

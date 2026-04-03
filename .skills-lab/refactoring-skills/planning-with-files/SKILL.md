@@ -1,11 +1,26 @@
 ---
 name: planning-with-files
 description: Use filesystem as persistent memory for complex tasks. Creates task_plan.md, findings.md, progress.md in project root. Triggers on: "plan this", "break down", "multi-step", "complex task", "session recovery", "/clear", or any work requiring >5 tool calls. Prevents goal drift via goal-refresh pattern.
+metadata:
+  audience: agents
+  workflow: planning
+  min-tool-calls: "5"
+  enforcement: hooks
+allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 
 # Planning with Files
 
-Use persistent markdown files as external memory. Context window is volatile RAM; filesystem is persistent disk.
+Persistent markdown files as external memory. Context window is volatile RAM; filesystem is persistent disk.
+
+## First Action — Do This Immediately
+
+When this skill loads, execute these steps in order before any other action:
+
+1. **Check for existing planning files** — Run `ls task_plan.md findings.md progress.md 2>/dev/null`
+2. **If files exist** — Read all three. Run `scripts/check-complete.sh` to assess current state. Resume from the last `in_progress` phase.
+3. **If files do NOT exist** — Run `scripts/init-session.sh` to create clean skeletons. Then read `task_plan.md` and fill in the Goal section from the user's request.
+4. **Gate check** — Do NOT use Write, Edit, or Bash (beyond init/check scripts) until `task_plan.md` has a Goal and at least one phase defined.
 
 ## When to Use
 
@@ -21,6 +36,32 @@ Use persistent markdown files as external memory. Context window is volatile RAM
 - Single-file edits
 - Simple factual questions
 - One-command operations
+
+## Dynamic Phase Schema
+
+The file schema adapts to task type. Do NOT force a rigid 5-phase waterfall.
+
+### Phase Generation Rules
+
+Before creating `task_plan.md`, classify the task and generate appropriate phases:
+
+| Task Type | Phase Pattern | Example Phases |
+|-----------|--------------|----------------|
+| **Research** | Discover → Synthesize → Deliver | Gather sources, Extract findings, Write summary |
+| **Debugging** | Reproduce → Isolate → Fix → Verify | Reproduce bug, Find root cause, Apply fix, Test |
+| **Feature** | Design → Implement → Test → Polish | API design, Write code, Add tests, Refine |
+| **Refactoring** | Analyze → Restructure → Verify | Map dependencies, Extract modules, Run tests |
+| **Skill Authoring** | Audit → Draft → Validate → Iterate | Review existing skills, Write SKILL.md, Run validation, Fix issues |
+| **Generic** | Plan → Execute → Verify | Define approach, Do the work, Confirm results |
+
+### Schema Rules
+
+- **Minimum:** 2 phases (Plan → Execute)
+- **Maximum:** 7 phases (beyond 7, split into sub-tasks)
+- **Each phase must have:** checkboxes, `**Status:**` field (pending/in_progress/complete)
+- **Phase titles** must describe the work, not generic labels like "Phase 1"
+
+**See:** [references/01-file-structure.md](references/01-file-structure.md) for full schema details.
 
 ## The Core Pattern
 
@@ -43,6 +84,29 @@ INIT → PLAN → EXECUTE → UPDATE → VERIFY → COMPACT
 5. **VERIFY** — Run `scripts/check-complete.sh` or manually confirm all phases complete.
 6. **COMPACT** — If context grows stale, re-read `task_plan.md` to refresh goals. Trim verbose sections.
 
+## Goal Refresh — Enforced
+
+The goal-refresh mechanism is enforced by hooks, not willpower.
+
+### Enforcement Mechanism
+
+1. **Hook enforcement:** The `hooks/pre-tool-use.json` hook injects the current plan state before every Write/Edit operation. The Agent sees the goal before modifying files.
+2. **Script enforcement:** `scripts/check-complete.sh` runs on session stop. If phases are incomplete, it reports the gap.
+3. **Manual rule:** Re-read `task_plan.md` before every Write, Edit, or Bash (non-read-only) tool call. This is non-negotiable for tasks >10 tool calls.
+
+### Goal-Refresh Trigger Algorithm
+
+Before each Write/Edit/Bash tool call:
+```
+1. Count tool calls since last Read of task_plan.md
+2. If count >= 5 OR phase status changed:
+   → Read task_plan.md (first 30 lines minimum)
+   → Reset counter
+3. Proceed with tool call
+```
+
+**See:** [references/03-goal-refresh.md](references/03-goal-refresh.md) for the full mechanism.
+
 ## File Schema
 
 ### task_plan.md — Phase Tracker
@@ -52,13 +116,11 @@ The goal-refresh mechanism. Re-reading this file pulls the original goal back in
 **Required sections:**
 - `## Goal` — One sentence. The north star.
 - `## Current Phase` — Which phase is active (e.g., "Phase 2").
-- `## Phases` — 3-7 phases, each with checkboxes and `**Status:**` field.
+- `## Phases` — 2-7 phases, each with checkboxes and `**Status:**` field.
 - `## Decisions Made` — Table of choices with rationale.
 - `## Errors Encountered` — Table of errors, attempt count, resolution.
 
 **Status values:** `pending` → `in_progress` → `complete`
-
-**See:** [references/01-file-structure.md](references/01-file-structure.md) for full schema.
 
 ### findings.md — Knowledge Store
 
@@ -71,7 +133,7 @@ Stores discoveries, research results, and technical decisions. Write here after 
 - `## Issues Encountered` — Problems and resolutions.
 - `## Resources` — URLs, file paths, API references.
 
-**Critical rule:** Web/search/browser results go here, NOT in `task_plan.md`. `task_plan.md` is auto-read by hooks; untrusted content there amplifies on every tool call.
+**Critical rule:** Web/search/browser results go here, NOT in `task_plan.md`.
 
 ### progress.md — Session Log
 
@@ -97,47 +159,25 @@ After `/clear`, interruption, or new session:
 
 **See:** [references/02-session-lifecycle.md](references/02-session-lifecycle.md) for full lifecycle.
 
-## Goal Refresh Mechanism
-
-After ~50 tool calls, the original goal drifts out of the attention window ("lost in the middle" effect). The fix:
-
-```
-[Many tool calls have happened...]
-[Context is getting long...]
-→ Read task_plan.md          # Goal reappears in recent attention
-→ Now make the decision       # Goals are fresh
-```
-
-**Rule:** Re-read `task_plan.md` before every major decision. This is non-negotiable for tasks >10 tool calls.
-
-**See:** [references/03-goal-refresh.md](references/03-goal-refresh.md) for the full mechanism.
-
 ## Cross-Platform Hooks
 
-This skill sustains discipline across platforms via hooks. Each platform has its own hook format:
+This skill ships actual hook config files in the `hooks/` directory. They are deployable, not documentation.
 
-| Platform | Hook Config | Script Location |
-|----------|------------|-----------------|
-| OpenCode | `.opencode/` hooks | `scripts/` |
-| Claude Code | `.cursor/hooks/` | `scripts/` |
-| Gemini CLI | `.gemini/hooks/` | `scripts/` |
-| Cursor | `.cursor/hooks/` | `scripts/` |
+| Hook File | Trigger | Enforcement |
+|-----------|---------|-------------|
+| `hooks/pre-tool-use.json` | Before Write/Edit | Injects plan state into context |
+| `hooks/post-tool-use.json` | After Write/Edit | Reminds to update progress |
+| `hooks/stop.json` | Session stop | Runs check-complete.sh |
 
-**Hook lifecycle:**
-- **UserPromptSubmit** — Inject current plan state into context.
-- **PreToolUse** — Re-read `task_plan.md` before tool calls.
-- **PostToolUse** — Remind Agent to update progress after writes.
-- **Stop** — Run `check-complete.sh` to verify phase status.
-
-**See:** [references/04-cross-platform-hooks.md](references/04-cross-platform-hooks.md) for platform-specific configs.
+**See:** [references/04-cross-platform-hooks.md](references/04-cross-platform-hooks.md) for deployment instructions.
 
 ## Scripts
 
 | Script | Purpose | When to Run |
 |--------|---------|-------------|
-| `scripts/init-session.sh` | Creates all three planning files | Start of new task |
-| `scripts/check-complete.sh` | Verifies all phases complete | End of session |
-| `scripts/session-catchup.py` | Recovers state from git history | After `/clear` or new session |
+| `scripts/init-session.sh` | Creates clean skeleton planning files | Start of new task |
+| `scripts/check-complete.sh` | Verifies phase completion with content checks | End of session, before commit |
+| `scripts/session-catchup.py` | Recovers state from git history and session logs | After `/clear` or new session |
 
 ## Error Discipline
 
@@ -160,25 +200,27 @@ This skill sustains discipline across platforms via hooks. Each platform has its
 | 3 | Question assumptions, search for solutions, consider updating the plan |
 | After 3 | Escalate to user with what was tried and the specific error |
 
-### Never Repeat Failures
+### Decision Procedure — Before Each Tool Call
 
 ```
-if action_failed:
-    next_action != same_action
+1. Is task_plan.md in my last 5 tool calls? If no, Read it.
+2. Have I tried this exact action before? Check Errors Encountered table.
+3. Is my current phase still in_progress? If no, update status first.
+4. Am I writing external/web content? If yes, write to findings.md, not task_plan.md.
 ```
 
-Track what you tried. Mutate the approach.
+## Anti-Patterns — With Decision Procedures
 
-## Read vs Write Decision Matrix
-
-| Situation | Action |
-|-----------|--------|
-| Just wrote a file | Don't re-read — content is still in context |
-| Viewed image/PDF | Write findings NOW — multimodal content doesn't persist |
-| Browser returned data | Write to `findings.md` — screenshots don't persist |
-| Starting new phase | Read `task_plan.md` + `findings.md` — re-orient |
-| Error occurred | Read relevant file — need current state to fix |
-| Resuming after gap | Read ALL planning files — recover full state |
+| Anti-Pattern | Detection | Decision Procedure |
+|-------------|-----------|-------------------|
+| Using TodoWrite for persistence | Last 5 tool calls include todowrite but no Read of task_plan.md | Read task_plan.md. Copy todowrite items into Phases section. |
+| Stating goals once, never re-reading | task_plan.md not Read in last 10 tool calls | Read task_plan.md immediately. Log the Read in progress.md. |
+| Hiding errors, retrying silently | Same tool call repeated 2+ times with no error logged | Log error in Errors Encountered table. Change approach. |
+| Writing web content to task_plan.md | Write/Edit targets task_plan.md with URL or search result content | Write to findings.md instead. Add pointer in task_plan.md if needed. |
+| Starting execution without a plan | Write/Edit/Bash called before task_plan.md has Goal section | Stop. Create task_plan.md with Goal and at least 1 phase. |
+| Repeating failed actions | Errors Encountered table shows same error 2+ times | Change tool, library, or approach. Log the mutation. |
+| Creating files in skill directory | Write target is inside .opencode/skills/ or .agents/skills/ | Write to project root instead. |
+| Stuffing everything in context | Single tool call returns >5000 chars | Write full content to findings.md. Store only the pointer in context. |
 
 ## The 5-Question Reboot Test
 
@@ -192,31 +234,128 @@ If the Agent can answer these, context management is solid:
 | What have I learned? | `findings.md` |
 | What have I done? | `progress.md` |
 
-## Anti-Patterns
+## Integration Protocol — Coordinating Skills
 
-| Anti-Pattern | Why It Causes Hallucination | Fix |
-|-------------|---------------------------|-----|
-| Using TodoWrite for persistence | In-memory state vanishes on `/clear` | Use `task_plan.md` file |
-| Stating goals once, never re-reading | Goals drift out of attention window | Re-read `task_plan.md` before decisions |
-| Hiding errors, retrying silently | Agent repeats same failure loop | Log every error in `task_plan.md` |
-| Writing web content to `task_plan.md` | Untrusted content auto-injected by hooks | Write external content to `findings.md` only |
-| Starting execution without a plan | No goal anchor → drift → hallucination | Create `task_plan.md` FIRST |
-| Repeating failed actions | Same input → same output | Track attempts, mutate approach |
-| Creating files in skill directory | Templates ≠ working files | Create planning files in project root |
-| Stuffing everything in context | Context window fills → truncation → loss | Store large content in files, keep pointers |
+### Load Order
+
+1. **First:** `user-intent-interactive-loop` — Clarify requirements before planning
+2. **Second:** `planning-with-files` (this skill) — Create planning files
+3. **Third:** `coordinating-loop` — Dispatch subagents against the plan
+4. **Fourth:** `gcc` — Git-backup critical decisions
+5. **Fifth:** Domain skills (`skill-creator`, `writing-skills`, etc.) — Execute work
+
+### State Sharing
+
+| Source Skill | Output Destination | How |
+|-------------|-------------------|-----|
+| `user-intent-interactive-loop` | `findings.md` → `## Requirements` | Copy clarified requirements |
+| `planning-with-files` | `task_plan.md` | Phase definitions, goal |
+| `coordinating-loop` | `progress.md` → Actions Taken | Log subagent dispatches |
+| `gcc` | Git commit | Snapshot planning files at phase boundaries |
+
+### Conflict Resolution
+
+| Conflict | Resolution |
+|----------|-----------|
+| `coordinating-loop` says "dispatch parallel" vs this skill says "one phase at a time" | Parallel dispatch is allowed WITHIN a phase. Phases themselves remain sequential. |
+| `gcc` memory vs file-based memory | Files are source of truth. GCC is backup. If they disagree, trust files. |
+| `user-intent-interactive-loop` changes requirements mid-task | Update `findings.md` → `## Requirements`. Add a new phase to `task_plan.md` if scope changed significantly. |
+
+## Worked Example — Skill Creation Task
+
+**User says:** "Create a new skill for deep codebase research"
+
+### Step 1: First Action (this skill loads)
+```
+Agent runs: ls task_plan.md findings.md progress.md 2>/dev/null
+Result: No files found
+Agent runs: scripts/init-session.sh
+Result: Clean skeletons created
+Agent reads: task_plan.md
+```
+
+### Step 2: Classify Task and Generate Phases
+Task type: **Skill Authoring**
+Phases generated:
+1. Audit existing skills for overlap
+2. Draft SKILL.md with frontmatter
+3. Write reference documents
+4. Run validation script
+5. Iterate on failures
+
+### Step 3: Fill task_plan.md
+```markdown
+# Task Plan: Deep Codebase Research Skill
+
+## Goal
+Create a complete skill pack at .opencode/skills/deep-research/ with SKILL.md, references, and validation.
+
+## Current Phase
+Phase 1
+
+## Phases
+
+### Phase 1: Audit existing skills for overlap
+- [ ] Search for existing research-related skills
+- [ ] Document overlap analysis in findings.md
+- **Status:** in_progress
+
+### Phase 2: Draft SKILL.md with frontmatter
+- [ ] Write frontmatter with name, description, metadata
+- [ ] Write skill body with triggers and workflows
+- **Status:** pending
+
+### Phase 3: Write reference documents
+- [ ] Create references/ directory
+- [ ] Write methodology and examples
+- **Status:** pending
+
+### Phase 4: Run validation script
+- [ ] Execute validate-skill.sh
+- [ ] Fix any failures
+- **Status:** pending
+
+### Phase 5: Iterate on failures
+- [ ] Address validation errors
+- [ ] Re-run until clean
+- **Status:** pending
+```
+
+### Step 4: Execute Phase 1
+```
+Agent runs: Glob **/SKILL.md
+Agent reads: findings.md → writes overlap analysis
+Agent edits: task_plan.md → marks Phase 1 complete, Phase 2 in_progress
+Agent updates: progress.md → logs actions
+```
+
+### Step 5: Continue through phases
+Each phase follows the same pattern: Read plan → Do work → Update files → Verify.
 
 ## Templates
 
 Copy templates to project root and fill in:
 
-- [templates/task_plan.md](templates/task_plan.md) — Phase tracking template
-- [templates/findings.md](templates/findings.md) — Research storage template
-- [templates/progress.md](templates/progress.md) — Session logging template
+- [templates/task_plan.md](templates/task_plan.md) — Phase tracking skeleton
+- [templates/findings.md](templates/findings.md) — Research storage skeleton
+- [templates/progress.md](templates/progress.md) — Session logging skeleton
 
-## Coordinating Skills
+## Platform Adaptation
 
-Load these skills together for maximum effectiveness:
-- `coordinating-loop` — For dispatching subagents and managing iterative cycles
-- `user-intent-interactive-loop` — For clarifying requirements before planning
-- `gcc` — For git-backed memory across sessions
-- `skill-creator` / `writing-skills` — When creating or improving skills
+### OpenCode (Primary)
+- Hooks: Use `hooks/*.json` files directly. Place in `.opencode/` or reference from skill.
+- Scripts: All `.sh` and `.py` scripts work natively.
+- Skills: Place in `.opencode/skills/planning-with-files/`.
+
+### Claude Code
+- Hooks: Place hook scripts in `.cursor/hooks/`. Use the shell scripts from `hooks/` as templates.
+- Skills: Place in `.claude/skills/planning-with-files/`.
+- Scripts: `.sh` files work. `.py` requires Python 3.
+
+### Codex
+- Hooks: Use `.codex/skills/planning-with-files/` for skill placement.
+- Scripts: All scripts work. No native hook system — rely on script-based enforcement.
+
+### Cursor
+- Hooks: Place in `.cursor/hooks/`. Same format as Claude Code.
+- Skills: Place in `.cursor/skills/planning-with-files/`.

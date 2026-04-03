@@ -2,226 +2,197 @@
 """
 Session Catchup Script for planning-with-files
 
-Analyzes the previous session to find unsynced context after the last
-planning file update. Designed to run on SessionStart or after /clear.
+Analyzes git history and planning files to find unsynced context
+after the last planning file update.
 
 Usage: python3 session-catchup.py [project-path]
-
-Outputs a report of:
-- Git changes since last plan update
-- Unsynced planning file modifications
-- Recommended reconciliation actions
 """
 
 import os
 import subprocess
 import sys
-from datetime import datetime
 from pathlib import Path
+from datetime import datetime
 
 PLANNING_FILES = ["task_plan.md", "progress.md", "findings.md"]
 
 
-def get_project_dir(project_path: str) -> Path:
-    """Resolve project path to absolute Path."""
-    p = Path(project_path).resolve()
-    if not p.exists():
-        print(f"[planning-with-files] Error: Path '{project_path}' does not exist.", file=sys.stderr)
-        sys.exit(1)
-    return p
+def normalize_path(project_path: str) -> str:
+    """Normalize project path for cross-platform compatibility."""
+    p = project_path
+    # Git Bash / MSYS2: /c/Users/... -> C:/Users/...
+    if len(p) > 2 and p[0] == "/" and p[2] == "/":
+        p = p[1].upper() + ":" + p[2:]
+    return str(Path(p).resolve())
 
 
 def find_last_plan_update(project_dir: Path) -> str | None:
-    """Find the most recent modification time of any planning file."""
-    latest = None
-    for fname in PLANNING_FILES:
-        fpath = project_dir / fname
-        if fpath.exists():
-            mtime = fpath.stat().st_mtime
-            if latest is None or mtime > latest:
-                latest = mtime
-    if latest is not None:
-        return datetime.fromtimestamp(latest).isoformat()
+    """
+    Find the last commit that modified any planning file.
+    Returns the commit timestamp as ISO string, or None if no commits found.
+
+    FIX: Uses git log --format=%ci on planning files directly,
+    not git diff --which compares commit dates not file mtimes.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%ci", "--"] + PLANNING_FILES,
+            cwd=project_dir,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except (FileNotFoundError, OSError):
+        pass
     return None
 
 
-def get_git_changes_since(project_dir: Path, since: str | None) -> list[str]:
-    """Get git diff stat for changes since the given timestamp."""
+def get_uncommitted_changes(project_dir: Path) -> str:
+    """
+    Get uncommitted changes using git diff HEAD.
+    This captures ALL uncommitted changes regardless of timestamps.
+
+    FIX: Uses 'git diff HEAD' instead of 'git diff --since=<timestamp>'
+    which incorrectly filters by commit date rather than file mtime.
+    """
     try:
-        if since:
-            result = subprocess.run(
-                ["git", "diff", "--stat", f"--since={since}"],
-                cwd=project_dir,
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
-        else:
-            result = subprocess.run(
-                ["git", "diff", "--stat"],
-                cwd=project_dir,
-                capture_output=True,
-                text=True,
-                timeout=10,
-            )
+        result = subprocess.run(
+            ["git", "diff", "--stat", "HEAD"],
+            cwd=project_dir,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
         if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip().split("\n")
-    except (subprocess.TimeoutExpired, FileNotFoundError):
+            return result.stdout.strip()
+    except (FileNotFoundError, OSError):
         pass
-    return []
+    return ""
 
 
-def get_recent_commits(project_dir: Path, count: int = 5) -> list[str]:
-    """Get the most recent git commits."""
+def get_untracked_files(project_dir: Path) -> str:
+    """Get list of untracked files."""
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "--others", "--exclude-standard"],
+            cwd=project_dir,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            return result.stdout.strip()
+    except (FileNotFoundError, OSError):
+        pass
+    return ""
+
+
+def get_recent_commits(project_dir: Path, count: int = 5) -> str:
+    """Get recent commit log."""
     try:
         result = subprocess.run(
             ["git", "log", "--oneline", f"-{count}"],
             cwd=project_dir,
             capture_output=True,
             text=True,
-            timeout=10,
+            check=False,
         )
         if result.returncode == 0 and result.stdout.strip():
-            return result.stdout.strip().split("\n")
-    except (subprocess.TimeoutExpired, FileNotFoundError):
+            return result.stdout.strip()
+    except (FileNotFoundError, OSError):
         pass
-    return []
+    return ""
 
 
 def check_planning_files(project_dir: Path) -> dict:
-    """Check which planning files exist and their sizes."""
+    """Check which planning files exist and their last modified time."""
     status = {}
     for fname in PLANNING_FILES:
         fpath = project_dir / fname
         if fpath.exists():
+            mtime = datetime.fromtimestamp(fpath.stat().st_mtime)
             status[fname] = {
                 "exists": True,
+                "mtime": mtime.isoformat(),
                 "size": fpath.stat().st_size,
-                "modified": datetime.fromtimestamp(fpath.stat().st_mtime).isoformat(),
             }
         else:
             status[fname] = {"exists": False}
     return status
 
 
-def read_plan_status(project_dir: Path) -> dict:
-    """Extract current phase and status from task_plan.md."""
-    plan_path = project_dir / "task_plan.md"
-    if not plan_path.exists():
-        return {}
-
-    content = plan_path.read_text()
-    status = {}
-
-    # Extract goal
-    found_goal = False
-    for line in content.split("\n"):
-        if line.startswith("## Goal"):
-            found_goal = True
-            continue
-        if found_goal:
-            if line.strip() and not line.startswith("##"):
-                status["goal"] = line.strip()
-                break
-            elif line.startswith("##"):
-                break
-
-    # Extract current phase
-    found_phase = False
-    for line in content.split("\n"):
-        if line.startswith("## Current Phase"):
-            found_phase = True
-            continue
-        if found_phase:
-            if line.strip() and not line.startswith("##"):
-                status["current_phase"] = line.strip()
-                break
-            elif line.startswith("##"):
-                break
-
-    # Count phases by status
-    status["complete"] = content.count("**Status:** complete")
-    status["in_progress"] = content.count("**Status:** in_progress")
-    status["pending"] = content.count("**Status:** pending")
-
-    return status
-
-
-def main():
+def main() -> None:
     project_path = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
-    project_dir = get_project_dir(project_path)
+    project_dir = Path(normalize_path(project_path))
 
-    # Check planning files
+    if not project_dir.is_dir():
+        print(f"[planning-with-files] Error: '{project_dir}' is not a directory.")
+        sys.exit(1)
+
+    # Check if planning files exist
     file_status = check_planning_files(project_dir)
-    has_planning = any(f["exists"] for f in file_status.values())
+    has_planning_files = any(f["exists"] for f in file_status.values())
 
-    if not has_planning:
-        print("[planning-with-files] No planning files found — no active session to recover.")
-        return
+    if not has_planning_files:
+        print("[planning-with-files] No planning files found. No catchup needed.")
+        sys.exit(0)
 
-    # Get plan status
-    plan_status = read_plan_status(project_dir)
-
-    # Get last update time
+    # Find last planning file update from git
     last_update = find_last_plan_update(project_dir)
 
-    # Get git changes
-    git_changes = get_git_changes_since(project_dir, last_update)
-    recent_commits = get_recent_commits(project_dir)
+    # Get uncommitted changes (FIXED: uses git diff HEAD, not --since)
+    uncommitted = get_uncommitted_changes(project_dir)
+
+    # Get untracked files
+    untracked = get_untracked_files(project_dir)
+
+    # Get recent commits
+    recent = get_recent_commits(project_dir)
 
     # Output catchup report
     print("=" * 60)
     print("[planning-with-files] Session Catchup Report")
     print("=" * 60)
 
-    print(f"\nProject: {project_dir}")
-    print(f"Last plan update: {last_update or 'unknown'}")
-
-    print("\n--- Planning Files ---")
+    print("\n## Planning File Status")
     for fname, info in file_status.items():
         if info["exists"]:
-            print(f"  {fname}: {info['size']} bytes (modified: {info['modified']})")
+            print(f"  {fname}: exists ({info['size']} bytes, modified {info['mtime']})")
         else:
-            print(f"  {fname}: NOT FOUND")
+            print(f"  {fname}: not found")
 
-    if plan_status:
-        print("\n--- Plan Status ---")
-        if "goal" in plan_status:
-            print(f"  Goal: {plan_status['goal']}")
-        if "current_phase" in plan_status:
-            print(f"  Current Phase: {plan_status['current_phase']}")
-        print(f"  Complete: {plan_status.get('complete', 0)}")
-        print(f"  In Progress: {plan_status.get('in_progress', 0)}")
-        print(f"  Pending: {plan_status.get('pending', 0)}")
-
-    if git_changes:
-        print(f"\n--- Git Changes Since Last Plan Update ({len(git_changes)} files) ---")
-        for line in git_changes[:20]:
-            print(f"  {line}")
-        if len(git_changes) > 20:
-            print(f"  ... and {len(git_changes) - 20} more files")
+    if last_update:
+        print(f"\n## Last Planning File Commit: {last_update}")
     else:
-        print("\n--- Git Changes ---")
-        print("  No uncommitted changes detected.")
+        print("\n## Last Planning File Commit: never committed")
 
-    if recent_commits:
-        print(f"\n--- Recent Commits ---")
-        for line in recent_commits:
-            print(f"  {line}")
-
-    # Reconciliation recommendations
-    print("\n--- Recommended Actions ---")
-    if git_changes and not plan_status.get("complete", 0):
-        print("  1. Review git changes and update progress.md with what was done.")
-        print("  2. If phases were completed, update task_plan.md status fields.")
-        print("  3. Re-read task_plan.md before continuing work.")
-    elif not git_changes:
-        print("  1. No code changes detected since last plan update.")
-        print("  2. Re-read task_plan.md and continue from current phase.")
+    if uncommitted:
+        print(f"\n## Uncommitted Changes:\n{uncommitted}")
     else:
-        print("  1. All phases marked complete.")
-        print("  2. Run check-complete.sh to verify.")
-        print("  3. Ask user if additional work is needed.")
+        print("\n## Uncommitted Changes: none")
+
+    if untracked:
+        print(f"\n## Untracked Files:\n{untracked}")
+    else:
+        print("\n## Untracked Files: none")
+
+    if recent:
+        print(f"\n## Recent Commits:\n{recent}")
+
+    # Recommended actions
+    print("\n## Recommended Actions")
+    if uncommitted and not last_update:
+        print("  1. Planning files were never committed but code changes exist")
+        print("  2. Review uncommitted changes and update planning files to match")
+    elif uncommitted and last_update:
+        print("  1. Code changes exist since last planning file update")
+        print("  2. Check if these changes are reflected in task_plan.md phases")
+        print("  3. Update phase status if work is complete")
+    else:
+        print("  1. No uncommitted changes detected")
+        print("  2. Planning files appear to be in sync with git state")
 
     print("=" * 60)
 

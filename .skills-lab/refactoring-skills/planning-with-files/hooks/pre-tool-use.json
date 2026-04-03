@@ -1,0 +1,19 @@
+{
+  "name": "pre-tool-use",
+  "description": "Inject planning file state before Write/Edit operations to enforce goal-refresh",
+  "trigger": "tool.execute.before",
+  "match": {
+    "tools": ["write", "edit"]
+  },
+  "action": {
+    "type": "context-inject",
+    "script": "bash -c 'if [ -f task_plan.md ]; then head -30 task_plan.md; fi'",
+    "prefix": "[planning-with-files] Current plan state:",
+    "fallback": "silent"
+  },
+  "enforcement": {
+    "goal_refresh": true,
+    "min_lines": 10,
+    "max_lines": 30
+  }
+}
