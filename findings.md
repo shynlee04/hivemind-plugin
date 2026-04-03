@@ -1,45 +1,24 @@
 # Findings & Decisions
 
 ## Requirements
-- Create `task_plan.md`, `findings.md`, and `progress.md` in the repo root only.
-- Capture the standalone `opencode-harness` repo state.
-- Record known likely blockers from the latest audit.
-- Do not modify any other files in this step.
+- Build meta-builder harness: 5 skill packs with zero-dependencies
+- All skills must be directly callable AND detectable through natural language
+- Bridge seamlessly to sibling authoring packages (agent, tool, command, workflow)
+- Follow essentials.md: framework integrity, progressive disclosure, TDD, deterministic design
+- Align with HiveMind v3 architecture (skills as config, tools as write, hooks as read)
+- Consume 10 OpenCode soft meta concepts as background knowledge
+- Long-haul iterative run — multiple batches, each building on previous
 
 ## Research Findings
-- The repo root is currently narrowed to: `.git`, `.gitignore`, `.opencode/`, `LICENSE`, `opencode.json`, `package.json`, `README.md`, `src/`, `tsconfig.json`.
-- Root `src/` currently contains only `index.ts`, `lib/`, and `plugin.ts`.
-- The repository has already been reshaped into a standalone `opencode-harness` repository.
-- The active continuation point is `/Users/apple/hivemind-plugin/.worktrees/product-detox/.hivemind/activity/experiment-plugins-tools-2026-04-01.md`.
-- Current work is cleanup and hardening rather than another extraction pass.
-- Phase 4 build hardening is complete: `package.json` now targets built artifacts under `dist/`.
-- Phase 4 added runnable package-root validation/build scripts and expanded the publish surface to ship built output.
-- Validation commands completed successfully: `npm run typecheck`, `npm run build`, and `npm pack --dry-run`.
-- Root `opencode.json` points to `./.opencode/plugins/harness-control-plane.ts`.
-- `.opencode/plugins/harness-control-plane.ts` is currently a clean 2-line wrapper that only re-exports from `../../src/plugin`.
-- `.opencode/` now contains only `agents/`, `commands/`, `plugins/`, `rules/`, `skills/`, and `tools/`.
-- Phase 5 persistence hardening is complete: `.opencode/tools/context-checkpoint.ts` now uses durable JSON storage under `.opencode/state/opencode-harness/checkpoints.json`.
-- Phase 6 docs cleanup is complete for the identified stale references.
-- Phase 7 final verification is complete.
-- The final strict audit verdict is READY.
-- Final verification passed root layout integrity, build/publish readiness, root `opencode.json` to thin wrapper plugin resolution, durable checkpoint behavior, and 8-layer coverage.
-- Minor caveats are non-blocking: the wrapper plugin remains intentionally thin, and the durable checkpoint file remains a repo-local operational artifact that should stay in normal verification coverage.
-- Failed session review of `session-ses_2b52.md` and `session-ses_2b53.md` found repeated validation/audit output with effectively no corrective doc edits.
-- The two failed sessions duplicated scope instead of resuming prior work, which amplified churn and consumed budget without moving artifacts forward.
-- The failed sessions mixed forward-looking spec authoring with implementation-audit logic even after the user framed the docs as pre-implementation design artifacts.
-- Skill loading occurred, but the sessions did not apply the loaded skills to produce corrected outputs.
-- The sessions ended without an output gate that required modified docs or a routed recovery decision.
-- `docs/requirements-2026-04-02.md` and `docs/user-stories-2026-04-02.md` contain useful structure, but they are not yet safe as execution inputs.
-- The docs currently misrepresent the relationship between platform `doom_loop` behavior and harness-level circuit-breaker policy.
-- The docs currently describe custom tools like `delegate-task`, `context-checkpoint_save`, and `context-checkpoint_restore` more like declarations than implementable requirements.
-- The docs include invented or insufficiently grounded APIs such as `reserveConcurrencySlot()` and `getAvailableSpawnCapacity()`.
-- The docs blur harness-specific environment variables with platform-native OpenCode configuration.
-- The docs need clearer treatment of `permission.task` semantics and more grounded expectations for `/harness-doctor`.
-- The OMO role mapping is directionally useful, but the conductor/researcher/builder split is still too imprecise to use as an implementation contract.
-- The next safe sequence is: repair requirements -> align user stories -> audit code against corrected docs -> execute feature waves.
-- REQUIREMENTS REWRITE (v3.0) COMPLETED: 443 lines, 8 specific corrections applied (V3-1 through V3-8). doom_loop now correctly framed as permission action, custom tools marked as plugin-registered, invented APIs removed, env vars marked harness-specific, platform boundary table added as Section 14.
-- USER STORIES REWRITE (v3.0) COMPLETED: Category routing aligned to 4 categories (research, implementation, review, visual-engineering), 26 agent-instruction criteria tagged, 40 requirement trace references added, invented platform API references removed, doom_loop descriptions corrected, /harness-doctor reduced to 5 concrete checks.
-- KEY DISCREPANCIES FOUND BETWEEN CODE AND DOCS: MAX_DESCENDANTS_PER_ROOT=50 in code vs docs saying 10; concurrency default=1 per lane in code vs docs saying 3; no tests exist at all; wisdom system referenced in agent instructions but has no code implementation.
+- 4 skill packs completed in Milestone 1 (47 files, ~9,000 lines)
+- 3 defects found in Milestone 1: planning-with-files duplicates, missing scripts, missing cross-refs
+- Meta-builder parent skill was the critical missing piece — now created
+- Cross-package bridging spec written (988 lines, 13 sections)
+- All 5 skill packs now exist: use-authoring-skills, user-intent-interactive-loop, coordinating-loop, planning-with-files, meta-builder
+- Total: ~60+ files, ~12,000+ lines across all packs
+- HiveMind v3 alignment documented in meta-builder/references/04-hivemind-compatibility.md
+- OpenCode concepts mapped in meta-builder/references/02-opencode-concepts.md
+- Stacking rules defined in meta-builder/references/03-stacking-rules.md (max 3 skills per stack)
 
 ## Wave 1-3 Implementation Results
 

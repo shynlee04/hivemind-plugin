@@ -1,113 +1,40 @@
-# Phase 12: Harness Rebuild — TDD Execution Plan
+# Task Plan: Meta-Builder Long-Haul — Skill Harness
 
-**Goal:** Rebuild harness plugin with oh-my-openagent patterns (task lifecycle, stability detection, notification, task status types) + delete platform-duplicated code. Everything with tests.
+**Goal:** Build the complete meta-builder harness: 5 skill packs (use-authoring-skills, user-intent-interactive-loop, coordinating-loop, planning-with-files, meta-builder) with zero-dependencies, cross-package bridging, HiveMind v3 alignment, and OpenCode concept integration.
 
-**Architecture:** Factory + Composition + Handler patterns. Agent configs from .md files, not hardcoded TypeScript.
+**Current Phase:** Phase 2
 
-**Tech Stack:** TypeScript 5.3+ strict ESM, `@opencode-ai/plugin` SDK ≥1.1.0, Vitest, Node ≥20. Zero runtime deps.
+## Phases
 
----
+- [x] Phase 1: Milestone 1 — 4 skill packs built, validated, committed (47 files, ~9,000 lines)
+- [x] Phase 2: Batch 2 — Fixes + Meta-Builder + Integration Spec (3 builders dispatched)
+- [ ] Phase 3: Validation Gate — validate-skill.sh, check-overlaps.sh, real scenarios across all 5 packs
+- [ ] Phase 4: GROUP 2 Remaining — use-authoring-commands, use-authoring-agents, use-authoring-tools, use-authoring-workflows
+- [ ] Phase 5: GROUP 1 Remaining — tech-to-feature-synthesis, deep-investigation, TDD, Spec-driven
+- [ ] Phase 6: Meta-Builder Parent — routing, OpenCode concepts, stacking rules, HiveMind v3 alignment
+- [ ] Phase 7: Integration Testing — 6 real-world scenarios, conflict resolution, end-to-end workflows
+- [ ] Phase 8: Polish & Ship — description optimization, eval runs, packaging
 
-## Verified SDK Facts
+## Key Decisions (LOCKED)
 
-| Fact | Impact |
-|---|---|
-| `session.prompt()` blocks — returns AssistantMessage | Sync: just call sendPrompt, get result directly |
-| `session.promptAsync()` returns void (204) | Async: fire and forget |
-| `session.idle` event emitted on completion | CompletionDetector uses this as primary signal |
-| `noReply: true` still triggers AI | Cannot inject messages into parent safely |
-| Agent `.md` sets SELF permissions | `getPermissionRulesForAgent()` still needed for CHILD session permissions |
+| Decision | Rationale |
+|----------|-----------|
+| Coordinator NEVER executes directly | User mandate — plan + delegate only |
+| All skills use "Agent" not "Claude" | Universal platform requirement |
+| SKILL.md under 500 lines | Progressive disclosure — depth in references |
+| No `compatibility` field in frontmatter | User explicitly rejected |
+| Coverage wins over concision | Agents must not struggle to find depth |
+| "Adaptive with constraints" not "flexibility" | User's framework — templates, examples, fallbacks |
+| Programmatic measurable gates | Boolean/scoring, ralph-loop compatible |
+| Write-to-disk every turn | Coherence lost between turns by default |
+| Zero-dependency skills | Pure markdown + shell scripts only |
 
----
+## Errors Encountered
 
-## What We Keep
-
-| What | Why |
-|---|---|
-| `getPermissionRulesForAgent()` in plugin.ts | Agent .md defines SELF permissions; child sessions need explicit permission rules |
-| `buildPromptText()` in helpers.ts | Structured delegation prompt format (TASK/EXPECTED_OUTCOME/MUST_DO/MUST_NOT_DO/CONTEXT) |
-| `normalizeCategory()` | Input validation for category parameter |
-| `inferContinuityStatusFromEvent()` | Event→status mapping for handleEvent |
-| `concurrency.ts` | Keyed semaphore — genuine value |
-| `continuity.ts` | Durable JSON persistence — genuine value |
-| `state.ts` | In-memory budget tracking — genuine value |
-
-## What We Delete
-
-| File | Reason |
-|---|---|
-| `routing.ts` | Agent .md files define temperature/model — no need for CATEGORY_CONFIGS |
-| `session-completion-tracker.ts` | Replace with CompletionDetector (has stability) |
-| `session-completion-tracker.test.ts` | Module deleted |
-
-## What We Rewrite
-
-| File | Change |
-|---|---|
-| `session-api.ts` | Remove: sendPromptAsync, extractAssistantText, waitForAssistantText. Keep: 10 typed wrappers |
-| `helpers.ts` | Remove: RESTRICTED_TOOLS_PER_AGENT, AGENT_REQUIRED_TOOLS, AGENT_MUST_NOT, sleep(). Keep: pure utilities + buildPromptText + getPromptToolCompatibility |
-| `lifecycle-manager.ts` | Add: CompletionDetector integration. Simplify: launchDelegatedSession. Remove: tracker, lifecycle state machine bloat |
-| `plugin.ts` | Remove: routing imports, POLL_INTERVAL_MS. Keep: all hooks, delegate-task tool |
-| `runtime.ts` | Remove: getEffectivePromptState (platform handles). Keep: inferContinuityStatusFromEvent |
-| `types.ts` | Add: TaskStatus 7-value system replacing 4-value SessionContinuityMetadata.status |
-
-## What We Create
-
-| File | Purpose | LOC |
-|---|---|---|
-| `task-status.ts` | TaskStatus type + transition guards | ~100 |
-| `completion-detector.ts` | Two-signal completion detection with stability | ~120 |
-
-## Execution Order
-
-### Wave 1: Delete routing.ts, session-completion-tracker.ts, update imports
-- Delete routing.ts
-- Delete session-completion-tracker.ts + test
-- Remove all routing imports from plugin.ts, lifecycle-manager.ts
-- Verify typecheck
-
-### Wave 2: Create task-status.ts (TDD RED-GREEN)
-- Write tests for TaskStatus type and canTransition
-- Implement task-status.ts
-- Verify tests pass, commit
-
-### Wave 3: Rewrite helpers.ts (TDD)
-- Write tests for kept functions
-- Remove agent config maps + sleep()
-- Verify tests pass, commit
-
-### Wave 4: Rewrite session-api.ts (TDD)
-- Write tests for kept typed wrappers
-- Remove completion detection functions
-- Verify tests pass, commit
-
-### Wave 5: Create completion-detector.ts (TDD RED-GREEN)
-- Write tests for feed/watch/cancel + stability
-- Implement CompletionDetector
-- Verify tests pass, commit
-
-### Wave 6: Rewrite runtime.ts
-- Keep: inferContinuityStatusFromEvent
-- Delete: getEffectivePromptState
-- Verify typecheck, commit
-
-### Wave 7: Rewrite lifecycle-manager.ts
-- Use CompletionDetector instead of old tracker
-- Simplify launchDelegatedSession
-- Add completion notification to continuity store
-- Verify typecheck, commit
-
-### Wave 8: Rewrite plugin.ts
-- Remove routing imports, POLL_INTERVAL_MS
-- Keep: all hooks, delegate-task, getPermissionRulesForAgent
-- Verify typecheck, commit
-
-### Wave 9: Update types.ts
-- Change SessionContinuityMetadata.status to TaskStatus (7-value)
-- Verify typecheck, commit
-
-### Wave 10: Verification Gate
-- typecheck + all tests + build + pack
-- Code review via critic
-- Update AGENTS.md
-- Commit
+| Error | Attempt | Resolution |
+|-------|---------|------------|
+| planning-with-files SKILL.md duplicate sections | 0 | Fixed by fixer builder (commit af46bc3d) |
+| user-intent-interactive-loop missing scripts/ | 0 | Fixed by fixer builder (commit af46bc3d) |
+| use-authoring-skills missing GROUP 1 cross-refs | 0 | Fixed by fixer builder (commit af46bc3d) |
+| Meta-builder parent skill missing | 0 | Created by meta-builder agent (commit ff845c65) |
+| Cross-package bridging spec missing | 0 | Created by integration spec agent (commit 7c726efe) |
