@@ -9,6 +9,28 @@ metadata:
 allowed-tools: "Read, Write, Edit, Bash, Glob, Grep"
 ---
 
+## HIERARCHY ENFORCEMENT — Run This FIRST
+
+This skill is LAYER 2 in the loading chain (persistent memory). Before any action:
+
+1. **Verify hierarchy chain:**
+   ```bash
+   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh planning-with-files
+   ```
+   This checks that `user-intent-interactive-loop` is loaded and intent has been confirmed.
+
+2. **Register this skill as loaded:**
+   ```bash
+   bash .opencode/state/register-skill.sh planning-with-files
+   ```
+
+3. **Prerequisites:**
+   - `user-intent-interactive-loop` must be loaded (LAYER 1)
+   - `.opencode/state/intent.json` must exist with `user_confirmed: true`
+   - Background skills should already be loaded by upstream skills
+
+**If hierarchy check fails → STOP. Intent must be confirmed before planning begins.**
+
 # Planning with Files
 
 Persistent markdown files as external memory. Context window is volatile RAM; filesystem is persistent disk.

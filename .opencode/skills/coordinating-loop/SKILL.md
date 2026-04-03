@@ -9,6 +9,28 @@ metadata:
 allowed-tools: Bash,Read,Write,Edit,Glob,Grep,todowrite,skill
 ---
 
+## HIERARCHY ENFORCEMENT — Run This FIRST
+
+This skill is LAYER 3 in the loading chain (coordination). Before any action:
+
+1. **Verify hierarchy chain:**
+   ```bash
+   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh coordinating-loop
+   ```
+   This checks that `planning-with-files` is loaded and `task_plan.md` exists with a Goal section.
+
+2. **Register this skill as loaded:**
+   ```bash
+   bash .opencode/state/register-skill.sh coordinating-loop
+   ```
+
+3. **Prerequisites:**
+   - `planning-with-files` must be loaded (LAYER 2)
+   - `task_plan.md` must exist with Goal section defined
+   - Background skills should already be loaded by upstream skills
+
+**If hierarchy check fails → STOP. This skill requires planning context that is not available.**
+
 # coordinating-loop
 
 Central coordination hub for multi-agent workflows. Manages hand-offs, execution mode decisions, parent-child cycles, and ralph-loop integration. **Scripts enforce gates — not tables.**

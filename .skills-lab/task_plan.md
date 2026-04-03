@@ -46,10 +46,10 @@ LAYER 3: COORDINATION
 
 - [x] Phase 1: Build 5 skill packs, validate scripts pass (11/11 each)
 - [x] Phase 2: Add enforcement scripts to each pack
-- [ ] Phase 3: Enforce hierarchical loading chain
-  - [ ] 3a. Each SKILL.md has mandatory "load these first" block with script verification
-  - [ ] 3b. first-action.sh runs and blocks until background skills loaded
-  - [ ] 3c. Cross-skill state files (.opencode/state/) track loading order
+- [x] Phase 3: Enforce hierarchical loading chain
+  - [x] 3a. Each SKILL.md has mandatory "load these first" block with script verification
+  - [x] 3b. first-action.sh runs and blocks until background skills loaded
+  - [x] 3c. Cross-skill state files (.opencode/state/) track loading order
   - [ ] 3d. Test: Load meta-builder → verify it loads background → routes → loads specialist
 - [ ] Phase 4: Test against real failure scenario (fucking-stupid-ai-test3.md)
 - [ ] Phase 5: Iterate until test passes

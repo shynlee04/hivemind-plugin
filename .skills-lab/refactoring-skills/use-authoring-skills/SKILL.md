@@ -9,6 +9,27 @@ metadata:
 allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
+## HIERARCHY ENFORCEMENT — Run This FIRST
+
+This skill is LAYER 4 in the loading chain (domain execution). Before any action:
+
+1. **Verify hierarchy chain:**
+   ```bash
+   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh use-authoring-skills
+   ```
+   This checks that meta-builder exists and routed to this skill.
+
+2. **Register this skill as loaded:**
+   ```bash
+   bash .opencode/state/register-skill.sh use-authoring-skills
+   ```
+
+3. **Prerequisites:**
+   - `meta-builder` must exist (routing source)
+   - Background skills should already be loaded by upstream skills
+
+**If hierarchy check fails → STOP. This skill should only be loaded after meta-builder routing.**
+
 # Use Authoring Skills
 
 ## MANDATORY FIRST STEP — Run This Before Anything Else

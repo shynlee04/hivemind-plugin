@@ -4,10 +4,13 @@
 # Usage: bash scripts/first-action.sh
 #
 # This script:
-# 1. Creates .opencode/state/ directory
-# 2. Initializes tracking files (question-count.json, intent.json)
-# 3. Checks that 3 platform skills are loaded
-# 4. Blocks (exit 1) if any prerequisite is missing
+# 1. Runs hierarchy verification (verify-hierarchy.sh)
+# 2. If hierarchy check fails, outputs missing skills and exits 1
+# 3. Registers this skill as loaded (register-skill.sh)
+# 4. Creates .opencode/state/ directory
+# 5. Initializes tracking files (question-count.json, intent.json)
+# 6. Checks that 3 platform skills are loaded
+# 7. Blocks (exit 1) if any prerequisite is missing
 #
 # Exit codes:
 #   0 = All prerequisites met, may proceed to PROBE
@@ -19,13 +22,53 @@ set -uo pipefail
 STATE_DIR=".opencode/state"
 REQUIRED_SKILLS=("opencode-platform-reference" "repomix-exploration-guide" "opencode-non-interactive-shell")
 
-# ── Step 1: Create state directory ─────────────────────────────────────────────
+# ── Step 0: Run hierarchy verification ─────────────────────────────────────────
+# Determine the path to verify-hierarchy.sh — try local copy first, then workspace
+VERIFY_SCRIPT=""
+if [ -f "scripts/verify-hierarchy.sh" ]; then
+    VERIFY_SCRIPT="scripts/verify-hierarchy.sh"
+elif [ -f ".skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh" ]; then
+    VERIFY_SCRIPT=".skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh"
+fi
+
+if [ -n "$VERIFY_SCRIPT" ]; then
+    echo "[first-action] Running hierarchy verification..."
+    if ! bash "$VERIFY_SCRIPT" user-intent-interactive-loop; then
+        echo "BLOCKED: Hierarchy verification failed." >&2
+        echo "Missing background skills. Load these FIRST:" >&2
+        echo '  skill("opencode-platform-reference")' >&2
+        echo '  skill("repomix-exploration-guide")' >&2
+        echo '  skill("opencode-non-interactive-shell")' >&2
+        echo "Then re-run this script." >&2
+        exit 1
+    fi
+    echo "[first-action] Hierarchy verification passed."
+else
+    echo "[first-action] WARNING: verify-hierarchy.sh not found, skipping hierarchy check." >&2
+fi
+
+# ── Step 1: Register this skill as loaded ──────────────────────────────────────
+REGISTER_SCRIPT=""
+if [ -f "scripts/register-skill.sh" ]; then
+    REGISTER_SCRIPT="scripts/register-skill.sh"
+elif [ -f ".opencode/state/register-skill.sh" ]; then
+    REGISTER_SCRIPT=".opencode/state/register-skill.sh"
+fi
+
+if [ -n "$REGISTER_SCRIPT" ]; then
+    echo "[first-action] Registering skill as loaded..."
+    bash "$REGISTER_SCRIPT" user-intent-interactive-loop
+else
+    echo "[first-action] WARNING: register-skill.sh not found, skipping registration." >&2
+fi
+
+# ── Step 2: Create state directory ─────────────────────────────────────────────
 mkdir -p "$STATE_DIR" 2>/dev/null || {
     echo "FAIL: Cannot create $STATE_DIR" >&2
     exit 2
 }
 
-# ── Step 2: Initialize tracking files (idempotent) ─────────────────────────────
+# ── Step 3: Initialize tracking files (idempotent) ─────────────────────────────
 # Question counter — tracks all questions asked (tool + plain text)
 if [ ! -f "$STATE_DIR/question-count.json" ]; then
     cat > "$STATE_DIR/question-count.json" << 'EOF'
@@ -48,7 +91,7 @@ if [ ! -f "$STATE_DIR/intent.json" ]; then
 EOF
 fi
 
-# ── Step 3: Check platform skills are loaded ───────────────────────────────────
+# ── Step 4: Check platform skills are loaded ───────────────────────────────────
 # Skills are "loaded" if their SKILL.md exists in any known skill directory
 SKILL_DIRS=(
     ".opencode/skills"
@@ -85,7 +128,7 @@ if [ ${#MISSING_SKILLS[@]} -gt 0 ]; then
     exit 1
 fi
 
-# ── Step 4: Record loaded skills ──────────────────────────────────────────────
+# ── Step 5: Record loaded skills ──────────────────────────────────────────────
 cat > "$STATE_DIR/loaded-skills.json" << EOF
 {
     "platform_skills": ["${REQUIRED_SKILLS[0]}", "${REQUIRED_SKILLS[1]}", "${REQUIRED_SKILLS[2]}"],
@@ -94,9 +137,11 @@ cat > "$STATE_DIR/loaded-skills.json" << EOF
 }
 EOF
 
-# ── Step 5: Record first action completion ─────────────────────────────────────
+# ── Step 6: Record first action completion ─────────────────────────────────────
 cat > "$STATE_DIR/first-action.json" << EOF
 {
+    "hierarchy_verified": true,
+    "skill_registered": true,
     "state_dir_created": true,
     "tracking_files_initialized": true,
     "platform_skills_verified": true,
@@ -106,6 +151,8 @@ cat > "$STATE_DIR/first-action.json" << EOF
 EOF
 
 echo "FIRST ACTION: Complete"
+echo "  Hierarchy verification: passed"
+echo "  Skill registration: done"
 echo "  State directory: $STATE_DIR"
 echo "  Tracking files: initialized"
 echo "  Platform skills: all 3 loaded"

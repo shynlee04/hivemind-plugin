@@ -38,13 +38,27 @@ Each condition maps to a concrete, checkable artifact:
 
 **If ANY condition fails → PROBE continues. No exceptions.**
 
-### Gate 3: Ecosystem Loading Order
-Before ANY action in PROBE phase, load these 3 skills in this exact order:
-1. `opencode-platform-reference` — SDK and platform docs
-2. `repomix-exploration-guide` — Codebase exploration patterns
-3. `opencode-non-interactive-shell` — Shell execution strategy
+### Gate 3: Ecosystem Loading Order (HIERARCHY ENFORCED)
 
-**Enforcement:** Check `.opencode/state/loaded-skills.json` contains all 3 before proceeding.
+Before ANY action in PROBE phase, the 3 background skills MUST be loaded. This is enforced programmatically:
+
+1. **Run hierarchy verification:**
+   ```bash
+   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh user-intent-interactive-loop
+   ```
+   This checks that all 3 background skills are loaded in `.opencode/state/loaded-skills.json`.
+
+   **If exit 1 → BLOCKED.** Load the missing skills first, then re-run.
+
+2. **Register this skill as loaded:**
+   ```bash
+   bash .opencode/state/register-skill.sh user-intent-interactive-loop
+   ```
+
+3. **Required background skills (must be loaded in this order):**
+   1. `opencode-platform-reference`
+   2. `repomix-exploration-guide`
+   3. `opencode-non-interactive-shell`
 
 ### Gate 4: Validation Loop
 After intent appears confirmed:
@@ -60,19 +74,32 @@ After intent appears confirmed:
 
 **Do this before anything else, in this exact order:**
 
-1. Load 3 platform skills (Gate 3):
+1. **Run hierarchy verification:**
+   ```bash
+   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh user-intent-interactive-loop
+   ```
+   If this exits 1, STOP. Load the 3 background skills first.
+
+2. **Register this skill as loaded:**
+   ```bash
+   bash .opencode/state/register-skill.sh user-intent-interactive-loop
+   ```
+
+3. **Load 3 platform skills (Gate 3):**
    ```
    skill("opencode-platform-reference")
    skill("repomix-exploration-guide")
    skill("opencode-non-interactive-shell")
    ```
-2. Initialize tracking files:
+
+4. **Initialize tracking files:**
    ```bash
    mkdir -p .opencode/state
    echo '{"question_count": 0, "questions": []}' > .opencode/state/question-count.json
    echo '{"scope_in": [], "scope_out": [], "success_criteria": "", "constraints": [], "priority": "", "delegation": "", "user_confirmed": false}' > .opencode/state/intent.json
    ```
-3. **GATE: Do not write, edit, or delete any project file until PROBE phase passes Gate 4 (validation loop).**
+
+5. **GATE: Do not write, edit, or delete any project file until PROBE phase passes Gate 4 (validation loop).**
 
 ---
 

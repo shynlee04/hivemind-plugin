@@ -8,6 +8,28 @@ metadata:
 allowed-tools: Bash skill
 ---
 
+## HIERARCHY ENFORCEMENT — Run This FIRST
+
+This skill is LAYER 0 in the loading chain. Before any action:
+
+1. **Verify background skills exist on disk:**
+   ```bash
+   bash .skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh meta-builder
+   ```
+   If this exits 1, the 3 background skills are not available. Do NOT proceed.
+
+2. **Register this skill as loaded:**
+   ```bash
+   bash .opencode/state/register-skill.sh meta-builder
+   ```
+
+3. **Background skills required (must exist):**
+   - `opencode-platform-reference` — SDK, agents, commands, tools, configs
+   - `repomix-exploration-guide` — Codebase exploration patterns
+   - `opencode-non-interactive-shell` — Shell execution strategy
+
+**If hierarchy check fails → STOP. The routing chain is broken.**
+
 # meta-builder
 
 Thin routing orchestrator. Routes user intent to specialist authoring skills, stacks skills for multi-domain tasks, and provides concrete recipes.

@@ -5,7 +5,49 @@
 
 ---
 
-## [2026-04-03] Phase 2 — Enforcement Fix COMPLETE
+## [2026-04-03] Phase 3a-3c — Hierarchy Enforcement COMPLETE
+
+### What Was Done
+All 5 skill packs now have mandatory hierarchy enforcement blocks with programmatic verification:
+
+| Skill | Layer | Hierarchy Block | Scripts Added |
+|-------|-------|-----------------|---------------|
+| meta-builder | LAYER 0 | verify-hierarchy.sh + register-skill.sh | verify-hierarchy.sh, register-skill.sh |
+| user-intent-interactive-loop | LAYER 1 | Gate 3 enhanced + FIRST ACTION rewritten | first-action.sh enhanced, verify-hierarchy.sh, register-skill.sh |
+| planning-with-files | LAYER 2 | verify-hierarchy.sh + register-skill.sh | verify-hierarchy.sh, register-skill.sh |
+| coordinating-loop | LAYER 3 | verify-hierarchy.sh + register-skill.sh | verify-hierarchy.sh, register-skill.sh |
+| use-authoring-skills | LAYER 4 | verify-hierarchy.sh + register-skill.sh | verify-hierarchy.sh |
+
+### Infrastructure Created
+- `.opencode/state/loaded-skills.json` — tracks loading order with timestamps
+- `.opencode/state/hierarchy-config.json` — defines 5-layer chain with prerequisites
+- `.opencode/state/register-skill.sh` — records skill loads (jq + pure bash fallback)
+- `.skills-lab/refactoring-skills/workspace/scripts/verify-hierarchy.sh` — shared hierarchy verifier
+
+### Validation
+- All scripts pass `bash -n` syntax check ✅
+- verify-hierarchy.sh correctly blocks when prerequisites missing ✅
+- register-skill.sh correctly records skill loads ✅
+- All 5 SKILL.md files updated with hierarchy enforcement after frontmatter ✅
+- All 5 SKILL.md files deployed to `.opencode/skills/` ✅
+- All existing content preserved — only additions, no deletions ✅
+
+### Loading Chain (Now Enforced)
+```
+BACKGROUND (must exist): opencode-platform-reference, repomix-exploration-guide, opencode-non-interactive-shell
+  ↓
+LAYER 0: meta-builder — verifies background exists
+  ↓
+LAYER 1: user-intent-interactive-loop — verifies background loaded
+  ↓
+LAYER 2: planning-with-files — verifies intent confirmed
+  ↓
+LAYER 3: coordinating-loop — verifies task_plan.md exists
+  ↓
+LAYER 4: use-authoring-skills — verifies meta-builder routed to it
+```
+
+### Next: Phase 3d — Test the full loading chain end-to-end
 
 ### What Was Done
 All 5 skill packs fixed with REAL enforcement mechanisms (not just descriptions):
