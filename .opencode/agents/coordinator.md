@@ -16,7 +16,6 @@ permission:
     "*": deny
   patch: allow
   offset-read: deny
-steps: 8
 permission:
   bash:
     "*": ask
@@ -28,13 +27,14 @@ permission:
   skill: 
     "*": deny
     "meta-builder": allow
+    "hivefiver": allow
     "planning-with-files": allow
     "coordinating-loop": allow
     "use-authoring-skills": allow
     "user-intent-interactive-loop": allow
     "opencode-platform-reference": allow
     "repomix-exploration-guide": allow
-    "opencode-non-interactive-shel": allow
+    "opencode-non-interactive-shell": allow
     "repomix-explorer": allow
   patch: allow
   offset-read: deny

@@ -1,271 +1,168 @@
-# AGENTS.md — HiveMind V3 Platform Harness Governance
+# AGENTS.md
 
-**Project:** HiveMind V3 Platform Harness
-**Scope:** Full runtime framework for building, composing, and executing AI agent meta-concepts on OpenCode. Encompasses: agents, commands, permissions, tools, hooks, plugins, configs, rules, MCP/LSP, Node.js CLI substrate, eval harness, and runtime composition engine. NOT just skill packs.
-**Authority:** This file overrides ALL default agent behavior. Non-negotiable.
+## Project Overview
 
----
+HiveMind V3 is a **runtime composition engine** for OpenCode. It is an npm package (`opencode-harness`) that provides tools, hooks, and a plugin for delegated session orchestration, continuity persistence, concurrency control, and runtime guardrails.
 
-## USER INTENT IS THE ENFORCEMENT OF EVERY ENTRY
+**This is NOT a skill-pack project.** Skills are one component. The product is the harness: a TypeScript plugin that wires tools + hooks into OpenCode with zero business logic in the plugin layer.
 
-If you cannot trace an action to confirmed user intent → STOP.
+### Two Halves (never confuse them)
 
----
+| Half | What | Where |
+|------|------|-------|
+| **Hard Harness** (npm package) | Tools (write-side), Hooks (read-side), Plugin (assembly), Shared (leaf) | `src/` |
+| **Soft Meta-Concepts** (user-configurable) | Skills, Agents, Commands, Rules, Permissions | `.opencode/` |
 
-## PROJECT IDENTITY
+### Runtime features this project delivers
 
-This is the **HiveMind V3 Platform Harness** — a complete runtime framework superior to both GSD and oh-my-openagent. It is NOT a collection of static `.md` files.
-
-### What This Project IS
-- Runtime build-on-demand: agents call agents to compose prompts, parse commands, and build configurations dynamically
-- Centralized Node.js CLI (`bin/hivemind-tools.cjs`) with domain modules in `bin/lib/`
-- Full OpenCode concept coverage: agents, commands, permissions, tools, hooks, plugins, configs, rules, MCP/LSP
-- Dual packaging: `@hivemind/hivemind-plugin` (npm SDK) + `npx skills add owner/repo --skill name` (git-based)
-- Eval harness integrated into CLI (`hivemind-tools eval run`)
-
-### What This Project is NOT
-- Static `.md` files acting as agent definitions (templates/references only)
-- Bash scripts scattered across directories (replaced by CLI substrate)
-- Skill-pack-only project (skills are one component, not the whole)
+Background agents, auto-loop/ralph-loop, delegation chain with task persistence, task queuing, category system, session recovery. See `docs/draft/architecture-proposal-hivemind-v3.md` for feature-to-code mapping.
 
 ---
 
-## THE LOOP — Mandatory Execution Order
+## Setup Commands
 
-**NO agent may act without completing this full cycle. Every time.**
-
-```
-1. USER INTENT → Extract what the user actually wants (one sentence)
-2. GATHER CONTEXT → Read planning files, skill hierarchy, current state
-3. INVESTIGATE/RESEARCH → Deep dive into the problem domain, NOT surface reading
-4. VALIDATE IN ISOLATED CONTEXT → Each finding verified independently
-5. PRESENT TO USER → Show findings, design, plan — in sections
-6. WAIT FOR APPROVAL → Do NOT proceed until user confirms
-7. DELEGATE → Dispatch subagents for implementation (NEVER execute directly)
-8. VALIDATE EVERYTHING → Run scripts, loop until pass
-9. REPORT → Update planning files, commit, inform user
+```bash
+npm install                    # Install dependencies
+npm run build                  # Clean + compile TypeScript to dist/
+npm run typecheck              # Type-check without emitting
+npm run test                   # Run all tests (vitest)
+npm run test:watch             # Watch mode
+npm run test:coverage          # Coverage report (src/**/*.ts)
 ```
 
-**Violation of any step = immediate failure. No exceptions.**
+- Requires Node.js >= 20.0.0
+- Peer dependency: `@opencode-ai/plugin` >= 1.1.0
+- No environment variables required for build/test
+- Runtime state overrides: `OPENCODE_HARNESS_STATE_DIR`, `OPENCODE_HARNESS_CONTINUITY_FILE`
 
 ---
 
-## RUNTIME PRINCIPLES
-
-### Build-on-Demand (NOT Static .md)
-Static `.md` files are templates and references. The harness BUILDS agent configurations at runtime by:
-- Composing prompts from template fragments + context
-- Parsing commands dynamically via CLI router
-- Assembling meta-concepts (agents calling agents) at execution time
-- Loading only SKILL.md + dependency summaries + relevant code snippets per execution
-
-### Clean Context Windows
-Each skill/subagent execution occurs in a fresh, minimal context window. No context pollution from chat history or irrelevant project docs. Load exactly what is needed, nothing more.
-
-### Runtime Features (from oh-my-openagent)
-- **Background agents**: Run agents in background, continue working, retrieve results when ready
-- **Auto-loop / Ralph-loop**: Self-referential dev loop that runs until task completion
-- **Delegation chain with task persistence**: Tasks persist across sessions via planning triplet
-- **Task queuing (full autonomy)**: Agents queue tasks, manage their own execution order
-- **Category system**: Agent configuration presets optimized for specific domains (visual-engineering, deep, quick, ultrabrain, etc.)
-- **Session recovery**: Automatic recovery from tool failures, thinking block violations, empty messages, context overflow
-
-### CLI Architecture (from GSD research)
-Central Node.js CLI router with domain modules:
-
-| Module | Purpose |
-|--------|---------|
-| `bin/hivemind-tools.cjs` | Central router (modeled after gsd-tools.cjs) |
-| `bin/lib/core.cjs` | Core utilities, cross-cutting concerns |
-| `bin/lib/state.cjs` | State management, planning triplet I/O |
-| `bin/lib/skill.cjs` | Skill discovery, validation, loading |
-| `bin/lib/eval.cjs` | Eval harness, benchmarking, scoring |
-| `bin/lib/scaffold.cjs` | Project scaffolding, template generation |
-| `bin/lib/config.cjs` | Configuration management, platform detection |
-
-CLI flags: `--raw` (JSON output), `--cwd` (sandboxed execution), `--pick` (field extraction).
-
-### Dual Packaging
-- **Full SDK:** `@hivemind/hivemind-plugin` (npm) — CLI + SDK + all skills
-- **Individual skills:** `npx skills add owner/repo --skill name` (git-based)
-- **Skill contract:** SKILL.md with YAML frontmatter, portable across Claude Code, OpenCode, Codex, Cursor
-
----
-
-## MANDATORY SKILL ACTIVATION — Before ANY Task
-
-**The agent checks for relevant skills before any task. Mandatory workflows, not suggestions.**
-
-### 1. **brainstorming** — Activates BEFORE writing code
-- Refines rough ideas through questions
-- Explores alternatives
-- Presents design in sections for validation
-- Saves design document
-- **Blocks:** No code written until design approved
-
-### 2. **using-git-worktrees** — Activates AFTER design approval
-- Creates isolated workspace on new branch
-- Runs project setup
-- Verifies clean test baseline
-- **Blocks:** No work on main branch
-
-### 3. **writing-plans** — Activates WITH approved design
-- Breaks work into bite-sized tasks (2-5 minutes each)
-- Every task has exact file paths, complete code, verification steps
-- **Blocks:** No implementation until plan written
-
-### 4. **subagent-driven-development** or **executing-plans** — Activates WITH plan
-- Dispatches fresh subagent per task
-- Two-stage review (spec compliance, then code quality)
-- Or executes in batches with human checkpoints
-- **Blocks:** Coordinator NEVER executes directly
-
-### 5. **test-driven-development** — Activates DURING implementation
-- Enforces RED-GREEN-REFACTOR
-- Write failing test → watch it fail → write minimal code → watch it pass → commit
-- Deletes code written before tests
-- **Blocks:** No code without failing test first
-
-### 6. **requesting-code-review** — Activates BETWEEN tasks
-- Reviews against plan
-- Reports issues by severity
-- Critical issues block progress
-- **Blocks:** No proceeding past critical issues
-
-### 7. **finishing-a-development-branch** — Activates WHEN tasks complete
-- Verifies tests
-- Presents options (merge/PR/keep/discard)
-- Cleans up worktree
-- **Blocks:** No claiming done without verification
-
----
-
-## COORDINATOR MANDATE — 100% Delegation
-
-### NEVER Execute — ALWAYS Delegate
-- **Your role:** PLAN + DELEGATE. NEVER write, edit, or delete skill files directly.
-- **100% of the time:** Dispatch subagents for implementation work.
-- **Your job:** Read intent → Route → Load skills → Delegate → Track → Verify → Report.
-- **Violation:** If you catch yourself editing `.skills-lab/refactoring-skills/*/SKILL.md` or any skill file → STOP immediately. Revert. Delegate.
-
-### NEVER Create New Planning Files — UPDATE Existing Ones
-- The planning triplet exists at:
-  - `.skills-lab/task_plan.md`
-  - `.skills-lab/progress.md`
-  - `.skills-lab/findings.md`
-- **Read them FIRST** on every session start.
-- **Edit them in place.** Never create `task_plan_v2.md` or `new-findings.md`.
-- If a file doesn't exist, run `scripts/init-session.sh` to create skeletons — then fill them.
-
-### NEVER Read Everything — Frame Skeleton First
-- **Step 1:** Read user's latest message. Extract intent in one sentence.
-- **Step 2:** Read the relevant SKILL.md (not all 5).
-- **Step 3:** Read planning files for current state.
-- **Step 4:** Delegate to subagent with focused scope (max 3 domains, max 5k LOC).
-- **Never** read all skill files, all references, all history at once.
-
-### NEVER Claim Done Without Verification
-- Run the relevant validation script before any completion claim.
-- If a script exits non-zero, the work is NOT done.
-- Evidence before assertions. Always.
-
----
-
-## HARNESS ECOSYSTEM — Enforced Loading Order
-
-The harness is NOT just skills — it is the full platform composition engine. The hierarchy below is built at RUNTIME by the harness, not loaded as static files.
-
-### Background Skills (Load FIRST — Before Any Core Skill)
-These 3 skills MUST be loaded before any core skill can function:
-
-| Skill | Purpose | Load Trigger |
-|-------|---------|-------------|
-| `opencode-platform-reference` | SDK, agents, commands, tools, configs, permissions | Always first |
-| `repomix-exploration-guide` | Codebase exploration patterns | Always first |
-| `opencode-non-interactive-shell` | Shell execution strategy | Always first |
-
-### Core Skills (Hierarchical Loading — Runtime Composition)
+## Project Structure
 
 ```
-LAYER 0: meta-builder (Router)
-    ↓ routes intent to...
-LAYER 1: user-intent-interactive-loop (Front Agent)
-    ↓ confirms intent, then hands off to...
-LAYER 2: planning-with-files (Persistent Memory)
-    ↓ creates task_plan.md, feeds to...
-LAYER 3: coordinating-loop (Coordination)
-    ↓ dispatches subagents to...
-LAYER 4: use-authoring-skills (Domain Execution)
+src/
+├── plugin.ts              # Composition root (447 LOC, target <100)
+├── index.ts               # Public API re-exports
+└── lib/                   # Core library modules
+    ├── types.ts           # Shared types + constants (leaf — no imports)
+    ├── task-status.ts     # Task status transitions + guards
+    ├── state.ts           # In-memory Maps (sessionStats, rootBudgets)
+    ├── helpers.ts         # Pure utilities only
+    ├── concurrency.ts     # Keyed semaphore (FIFO queue)
+    ├── continuity.ts      # Durable JSON persistence (~635 LOC)
+    ├── session-api.ts     # Typed OpenCode SDK wrappers
+    ├── runtime.ts         # Event→status mapping
+    ├── completion-detector.ts  # Two-signal completion detection
+    ├── notification-handler.ts # Async completion notification
+    ├── lifecycle-manager.ts    # Session lifecycle state machine (~500 LOC)
+    └── agent-registry.ts      # Agent definitions
+
+tests/lib/                 # Unit tests (vitest, globals: true)
+.opencode/                 # Soft meta-concepts (skills, agents, commands)
 ```
 
-**Enforcement:** The harness builds each layer at runtime. Each layer verifies its prerequisites before executing. Missing prerequisites = immediate block.
+### Dependency rules (non-negotiable)
+
+- `types.ts` is leaf — depends on nothing
+- `helpers.ts`, `concurrency.ts`, `completion-detector.ts` — leaf or near-leaf
+- `lifecycle-manager.ts` depends on most modules (deepest chain: 2 levels)
+- No circular dependencies
+- Max module size: 500 LOC
+
+### Where to find things
+
+| Task | File |
+|------|------|
+| Change session persistence format | `src/lib/continuity.ts` |
+| Add a lifecycle phase | `src/lib/types.ts` + `src/lib/lifecycle-manager.ts` |
+| Change SDK call patterns | `src/lib/session-api.ts` |
+| Change concurrency model | `src/lib/concurrency.ts` |
+| Change completion detection | `src/lib/completion-detector.ts` |
+| Change task status transitions | `src/lib/task-status.ts` |
+| Change agent config (temperature, tools) | `src/plugin.ts` — `AGENT_DEFAULTS`, `AGENT_TOOLS` |
+| Change circuit breaker / tool budget | `src/plugin.ts` — `CIRCUIT_BREAKER_THRESHOLD`, `MAX_TOOL_CALLS_PER_SESSION` |
 
 ---
 
-## GATE ENFORCEMENT
+## Testing Instructions
 
-Every skill pack has scripts that block progression. They are not suggestions.
-
-| Skill | Gate Script | Blocks If |
-|-------|------------|-----------|
-| meta-builder | `bash scripts/preflight.sh "<request>"` | Empty request, skill not found, routing unclear |
-| user-intent-interactive-loop | `bash scripts/intent-verify.sh --probe` | Any of 6 stop conditions unmet |
-| planning-with-files | `bash scripts/check-complete.sh` | Phases incomplete, goal empty |
-| coordinating-loop | `bash scripts/check-gate.sh <session> G1-G5` | Tasks missing, envelopes invalid, conflicts unresolved |
-| use-authoring-skills | `bash scripts/validate-gate.sh <action> "<request>" <dir>` | Intent empty, validators missing, pattern not selected |
-
-**Usage:** Run the script. If it exits non-zero → fix the reported issue → re-run. Do NOT proceed past a failed gate.
+- Run all tests: `npm test`
+- Run single test file: `npx vitest run tests/lib/helpers.test.ts`
+- Run tests matching pattern: `npx vitest run -t "<test name>"`
+- Watch mode: `npm run test:watch`
+- Coverage: `npm run test:coverage` — covers `src/**/*.ts`, excludes `src/index.ts`
+- Test files live in `tests/lib/` — mirror `src/lib/` structure
+- Tests use vitest globals (no imports needed for `describe`, `it`, `expect`)
+- **Type-check before committing:** `npm run typecheck`
 
 ---
 
-## ANTI-PATTERNS — Immediate Block
+## Code Style
 
-| Pattern | What It Looks Like | What To Do |
-|---------|-------------------|------------|
-| **The Executor** | Editing skill files directly | STOP. Revert. Delegate to subagent. |
-| **The Hoarder** | Loading 4+ skills simultaneously | Max 3. Unload least relevant. |
-| **The Interrogator** | Asking 4+ questions in one turn | Max 3. Use question tool. |
-| **The Amnesiac** | Not reading planning files before acting | Read all 3. Always. |
-| **The Fire-and-Forget** | Dispatching subagent with no monitoring | Write envelope. Verify output. |
-| **The Premature Executor** | Acting before intent confirmed | Run intent-verify.sh. Block until pass. |
-| **The File Creator** | Creating new planning files instead of updating | Edit existing files only. |
-| **The Silent Worker** | Many turns without user update | Update at every phase boundary. |
-| **The Static Thinker** | Building agents as static .md files | Use runtime build-on-demand. Templates are references only. |
-| **The Bash Scattered** | Adding bash scripts outside bin/ | All scripts go through CLI substrate (bin/hivemind-tools.cjs). |
+- TypeScript strict mode (`strict: true`, `noUnusedLocals`, `noUnusedParameters`, `noImplicitReturns`)
+- ES2022 target, NodeNext module resolution
+- `verbatimModuleSyntax: true` — use `import type` for type-only imports
+- Deep-clone-on-read in continuity store
+- `[Harness]` prefix on all thrown errors
+- Dual-layer state: durable JSON file (`continuity.ts`) + in-memory Maps (`state.ts`)
+- No `any` types on new code
+- Max module size: 500 LOC
 
 ---
 
-## COMMIT DISCIPLINE
+## Build and Deployment
 
-- **Every meaningful change MUST be committed.** If it's not in git, it doesn't exist.
-- **Commit message format:** `phase: what changed — why it matters`
-- **Commit after:** Each subagent returns, each phase completes, each gate passes.
-- **Never** accumulate changes across multiple phases without committing.
+- Build: `npm run build` — compiles `src/` → `dist/` with declarations + source maps
+- Package entrypoints:
+  - `opencode-harness` → `./dist/index.js`
+  - `opencode-harness/plugin` → `./dist/plugin.js`
+- Prepack runs build automatically: `npm pack` / `npm publish`
+- Runtime state path: `.opencode/state/opencode-harness/` (outside package source)
 
 ---
 
-## TERMINOLOGY
+## OpenCode Integration
 
-| Use | Never Use |
-|-----|-----------|
-| Agent | Claude, AI, model |
-| AGENTS.md | CLAUDE.md |
-| Skill | Prompt, instruction |
-| Subagent | Child, assistant |
-| Gate | Suggestion, guideline |
-| Block | Fail, error |
+- Plugin loaded via `.opencode/plugins/harness-control-plane.ts` (thin wrapper re-exporting `dist/`)
+- Config: `opencode.json` at repo root — references `AGENTS.md` as instructions
+- 6 agents defined in `.opencode/agents/`: coordinator, conductor, researcher, builder, critic, explore
+- 5 skills in `.opencode/skills/`: meta-builder, user-intent-interactive-loop, coordinating-loop, planning-with-files, use-authoring-skills
+- 6 commands in `.opencode/commands/`: start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, ultrawork
+
+---
+
+## Architecture Rules (from architecture-proposal-hivemind-v3.md)
+
+### Script rule
+A script should **REPORT FACTS** and **LEAVE JUDGMENT TO THE AGENT**. Pure helpers only (exit 0, no governance). No hardcoded paths, no state mutation outside CQRS tools.
+
+### Anti-patterns to avoid
+- Static `.md` files acting as agent definitions (they are templates/references only)
+- Bash scripts outside `bin/` CLI substrate
+- Governance scripts that block progression (facts only)
+- Feature bloat: keep modules under 500 LOC, total codebase target ~4,000-5,000 LOC
+- Skill proliferation: target ~20 SKILL.md files, not hundreds
+
+### Target architecture (from proposal)
+5 tools (~500 LOC total), hooks (~800 LOC), lifecycle (~400 LOC), delegation (~400 LOC), continuity (~400 LOC), CLI substrate (~500 LOC), control-plane (~400 LOC), shared (~800 LOC).
+
+---
+
+## Git Commit Discipline
+
+- Commit message format: `phase: what changed — why it matters`
+- Commit after each meaningful change (subagent returns, phase completes, gate passes)
+- Never accumulate changes across multiple phases without committing
+- Agents may only manage commits for their own work — they do not constrain or override commits from other development activity
+
+---
+
+## Terminology
+
+| Use | Not |
+|-----|-----|
 | Harness | Framework, system |
+| Agent (specialist: researcher/builder/critic) | Claude, AI, model |
+| Skill | Prompt, instruction |
 | Runtime composition | Static definition |
-
----
-
-## PLATFORM ADAPTATION
-
-| Platform | Skill Tool | Skill Path | Config |
-|----------|-----------|------------|--------|
-| OpenCode | `skill` tool | `.opencode/skills/` | `opencode.json` |
-| Claude Code | `Skill` tool | `.claude/skills/` | `CLAUDE.md` |
-| Codex | `Skill` tool | `.agents/skills/` | `AGENTS.md` |
-| Cursor | `Skill` tool | `.cursor/skills/` | `.cursor/rules/` |
-
-**This AGENTS.md is the source of truth for this project regardless of platform.**
+| Delegation packet | Task assignment |

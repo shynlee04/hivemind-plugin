@@ -1,7 +1,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "instructions": [
-    "AGENTS.md"
+    "AGENTS.md",
+    ".opencode/instructions/execution-loop.md",
+    ".opencode/instructions/coordinator-rules.md",
+    ".opencode/instructions/skill-activation.md",
+    ".opencode/instructions/anti-patterns.md",
+    ".opencode/instructions/commit-governance.md"
   ],
   "plugin": [
     "superpowers@git+https://github.com/obra/superpowers.git"
