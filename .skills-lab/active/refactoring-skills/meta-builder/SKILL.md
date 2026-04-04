@@ -46,6 +46,7 @@ Max 3 skills per stack. If you can't explain why each skill is needed, don't loa
 | "build a custom tool" | `custom-tools-dev` |
 | "configure OpenCode" | `opencode-platform-reference` |
 | "stack skills" / "combine skills" | This skill + target skills (max 3) |
+| "synthesize skills" / "create skills from GitHub" | `skill-synthesis` |
 
 **Not for me:** If the request doesn't match any row above, do NOT activate this skill. Route to the appropriate specialist directly.
 
@@ -59,6 +60,7 @@ Max 3 skills per stack. If you can't explain why each skill is needed, don't loa
 | "Build an agent + custom tool" | agents-and-subagents-dev + custom-tools-dev | Agent def + tool implementation |
 | "Audit this skill" | use-authoring-skills | Domain skill for skill quality |
 | "Deep research on X" | opencode-platform-reference + coordinating-loop | SDK patterns + subagent dispatch |
+| "Synthesize a skill + validate it" | skill-synthesis + use-authoring-skills | Synthesis + validation gate |
 
 For loading order details, load `references/04-skills-chaining.md`.
 
