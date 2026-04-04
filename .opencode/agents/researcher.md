@@ -1,6 +1,7 @@
 ---
 description: "Terminal repository investigator for read-only codebase research, evidence collection, and synthesis. Never mutates files or delegates implementation work."
 mode: subagent
+instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
   edit: 
     "*": deny

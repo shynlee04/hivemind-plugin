@@ -2,7 +2,7 @@
 description: "Primary orchestrator. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly."
 mode: "primary"
 "temperature": 0.2
-instruction: [.opencode/instructions/coordinator-workflows.md]
+instruction: [.opencode/rules/*.md]
 permission:
   read:
     "*": deny

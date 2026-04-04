@@ -1,6 +1,7 @@
 ---
 description: "Code implementation agent. Writes precise, atomic code changes following existing patterns. Full edit/write/bash access but cannot spawn subtasks."
 mode: subagent
+instructions: [".opencode/rules/anti-patterns.md", "opencode/rules/execution-loop.md", ".opencode/rules/skill-activation.md"]
 temperature: 0.15
 steps: 80
 permission:

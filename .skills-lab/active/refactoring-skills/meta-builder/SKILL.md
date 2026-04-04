@@ -55,7 +55,7 @@ Max 3 skills per stack. If you can't explain why each skill is needed, don't loa
 
 | User Intent | Stack | Why |
 |-------------|-------|-----|
-| "Create a skill + command for it" | skill-authoring + command-dev | Skill creation + command wrapper |
+| "Create a skill + command for it" | use-authoring-skills + command-dev | Skill creation + command wrapper |
 | "Build an agent + custom tool" | agents-and-subagents-dev + custom-tools-dev | Agent def + tool implementation |
 | "Audit this skill" | use-authoring-skills | Domain skill for skill quality |
 | "Deep research on X" | opencode-platform-reference + coordinating-loop | SDK patterns + subagent dispatch |

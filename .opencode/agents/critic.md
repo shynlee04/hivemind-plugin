@@ -2,6 +2,7 @@
 description: "Quality verification agent. Ruthless code review, correctness validation, and compliance checking. Read-only with bash for test execution."
 mode: subagent
 temperature: 0.05
+instructions: [".opencode/rules/anti-patterns.md", "opencode/rules/execution-loop.md", ".opencode/rules/skill-activation.md"]
 steps: 40
 permission:
   edit: deny
