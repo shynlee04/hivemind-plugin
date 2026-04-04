@@ -17,6 +17,23 @@ Routes meta-concept requests to the right specialist skill. This skill routes �
 2. **Read planning files if they exist:** `task_plan.md`, `findings.md`, `progress.md`.
 3. For skill stacking (max 3 per stack), load `references/04-skills-chaining.md`.
 
+## The Iron Law
+
+```
+NO STACK WITHOUT A REASON
+```
+
+Max 3 skills per stack. If you can't explain why each skill is needed, don't load it. Context window is shared — every unnecessary skill dilutes the ones that matter.
+
+### What agents actually rationalize
+
+| What agents say | What they actually did | Reality |
+|-----------------|----------------------|---------|
+| "I'll load all the skills to be thorough" | Loaded 6+ skills, context blown, ignored all of them | Max 3. Load order matters. |
+| "The routing table says route to X, but I think Y is better" | Routed to wrong skill, task failed | Trust the table. If it's wrong, fix the table — don't improvise. |
+| "I can handle this myself, no need to delegate" | Edited files directly, broke patterns | meta-builder routes. It doesn't execute. |
+| "I'll just edit the skill file directly" | Created skill that doesn't trigger | Delegate to skill-authoring. Always. |
+
 ## Routing Table
 
 | User Says | Route To |
@@ -68,4 +85,4 @@ For loading order details, load `references/04-skills-chaining.md`.
 | `references/04-skills-chaining.md` | Multi-skill stacks, loading order, composition |
 | `references/05-hivefiver-agent.md` | Hivefiver orchestrator agent definition |
 
-**Removed:** 01-mindsnetwork-graph.md, 02-deterministic-control.md, 03-long-horizon-persistence.md — these reference the deleted graph structure. Delete them in the next step.
+**Removed:** 01-mindsnetwork-graph.md, 02-deterministic-control.md, 03-long-horizon-persistence.md — these referenced the deleted graph structure and have been deleted.
