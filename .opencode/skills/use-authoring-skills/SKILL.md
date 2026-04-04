@@ -221,22 +221,20 @@ Always write frontmatter per agentskills.io spec — it is the lowest common den
 
 ## Scripts
 
-Only keep scripts that actually validate something. Stubs that exit 0 always are lies — remove them.
+All 8 scripts passed audit — each has real validation logic, exits non-zero on failure, and contains no placeholder/TODO text. Unlike stub scripts (which exit 0 always), these enforce actual constraints.
 
-**Kept:** All 8 scripts passed audit — each has real validation logic, exits non-zero on failure, and contains no placeholder/TODO text.
+| Script | Purpose | Lines |
+|--------|---------|-------|
+| `validate-gate.sh` | Preflight: intent, pattern, planning files | 118 |
+| `validate-skill.sh` | Structure: frontmatter, sections, terminology | 187 |
+| `check-overlaps.sh` | Content duplication detection across reference files | 203 |
+| `gate-enforce.sh` | Gate G1-G5 enforcement with pass/fail | 109 |
+| `check-complete.sh` | Phase completion status reporter | 37 |
+| `init-session.sh` | Planning file initialization | 121 |
+| `register-skill.sh` | Skill load recording in loaded-skills.json | 122 |
+| `verify-hierarchy.sh` | Prerequisite chain verification | 295 |
 
-| Script | Purpose | Size |
-|--------|---------|------|
-| `validate-gate.sh` | Preflight: intent, pattern, planning files | 118 lines |
-| `validate-skill.sh` | Structure: frontmatter, sections, terminology | 187 lines |
-| `check-overlaps.sh` | Content duplication detection across reference files | 203 lines |
-| `gate-enforce.sh` | Gate G1-G5 enforcement with pass/fail | 109 lines |
-| `check-complete.sh` | Phase completion status reporter | 37 lines |
-| `init-session.sh` | Planning file initialization | 121 lines |
-| `register-skill.sh` | Skill load recording in loaded-skills.json | 122 lines |
-| `verify-hierarchy.sh` | Prerequisite chain verification | 295 lines |
-
-Enforcement lives in SKILL.md text (Iron Law + Validation Gate) AND in bash scripts.
+Enforcement lives primarily in SKILL.md text (Iron Law + Validation Gate). Scripts supplement for mechanical checks (structure validation, gate enforcement). If a script ever becomes a stub (exits 0 without checking), delete it — the text enforcement is the source of truth.
 
 ## Validation Gate
 
