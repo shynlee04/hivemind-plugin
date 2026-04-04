@@ -8,6 +8,27 @@ metadata:
 allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
+## The Iron Law
+
+```
+NO SKILL WITHOUT TRIGGER PHRASES IN THE DESCRIPTION
+```
+
+The description is the ONLY thing the agent sees before deciding to load a skill. If it doesn't contain specific phrases a user would say, the skill is invisible. Dead on arrival.
+
+**Not "the description should be good."** The description IS the skill. Without it, nothing else matters.
+
+### What agents actually rationalize
+
+| What agents say | Reality |
+|-----------------|---------|
+| "The description is clear enough" | It says "provides guidance for skill development." Agent will never load it. |
+| "I'll add trigger phrases later" | Later never comes. The skill sits dead until someone audits it. |
+| "The references are too long, I'll summarize" | References ARE the value. SKILL.md points to them. Summarizing = losing knowledge. |
+| "This skill needs another skill to work" | Standalone contract. Push to load, don't require. If it can't work alone, it's not a skill — it's a chapter. |
+| "The script stub exits 0 so validation passes" | A stub that always passes is a lie. Remove it or make it real. |
+| "I'll keep the dead reference, it might be useful later" | Dead references are debt. The agent will try to load them, fail, and move on. |
+
 ## HIERARCHY ENFORCEMENT — Run This FIRST
 
 This skill is LAYER 4 in the loading chain (domain execution). Before any action:
@@ -197,6 +218,37 @@ Run `bash scripts/validate-skill.sh .` → passes.
 | **Cursor** | `.cursor/skills/<name>/SKILL.md` | `.cursor/rules/` | Frontmatter may vary |
 
 Always write frontmatter per agentskills.io spec — it is the lowest common denominator.
+
+## Scripts
+
+Only keep scripts that actually validate something. Stubs that exit 0 always are lies — remove them.
+
+**Kept:** All 8 scripts passed audit — each has real validation logic, exits non-zero on failure, and contains no placeholder/TODO text.
+
+| Script | Purpose | Size |
+|--------|---------|------|
+| `validate-gate.sh` | Preflight: intent, pattern, planning files | 118 lines |
+| `validate-skill.sh` | Structure: frontmatter, sections, terminology | 187 lines |
+| `check-overlaps.sh` | Content duplication detection across reference files | 203 lines |
+| `gate-enforce.sh` | Gate G1-G5 enforcement with pass/fail | 109 lines |
+| `check-complete.sh` | Phase completion status reporter | 37 lines |
+| `init-session.sh` | Planning file initialization | 121 lines |
+| `register-skill.sh` | Skill load recording in loaded-skills.json | 122 lines |
+| `verify-hierarchy.sh` | Prerequisite chain verification | 295 lines |
+
+Enforcement lives in SKILL.md text (Iron Law + Validation Gate) AND in bash scripts.
+
+## Validation Gate
+
+Before a skill is done:
+- [ ] Description has trigger phrases (specific things users would say)
+- [ ] Description uses third person
+- [ ] SKILL.md body uses imperative form
+- [ ] SKILL.md is lean (1,500-2,000 words, <5k max)
+- [ ] All referenced files exist and have real content (not stubs)
+- [ ] No script stubs that exit 0 always
+- [ ] No dead references to files/scripts that don't exist
+- [ ] Works standalone — doesn't require other HiveMind skills
 
 ## Three Operating Rules
 
