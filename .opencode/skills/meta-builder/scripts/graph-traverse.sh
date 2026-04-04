@@ -21,7 +21,7 @@ case "${ACTION}" in
     ;;
   next)
     if [ -f "${CHECKPOINT}" ]; then
-      COMPLETED=$(grep -o '"completed_nodes": *\[[^]]*\]' "${CHECKPOINT}" | sed 's/"completed_nodes": *\[//;s/\]//' | tr ',' '\n' | tr -d '"' | tr -d ' ')
+      COMPLETED=$(grep -o '"completed_nodes": *\[[^]]*\]' "${CHECKPOINT}" | sed 's/"completed_nodes": *\[//;s/\]//' | tr ',' '\n' | tr -d '"' | tr -d ' ' || echo "")
       echo "Completed nodes: ${COMPLETED}"
       echo "Next: check graph.json edges for nodes with depends_on satisfied"
     else
