@@ -15,17 +15,17 @@ permission:
   write:
     "*": deny
   patch: allow
-  offset-read: deny
+  offset-read: allow
 permission:
   bash:
-    "*": ask
+    "*": allow
     "git status*": allow
     "git diff*": allow
     "git log*": allow
     "ls*": allow
   task: allow
   skill: 
-    "*": deny
+    "*": ask
     "meta-builder": allow
     "hivefiver": allow
     "planning-with-files": allow
@@ -36,6 +36,12 @@ permission:
     "repomix-exploration-guide": allow
     "opencode-non-interactive-shell": allow
     "repomix-explorer": allow
+    "repomix-exploration-guide": allow
+    "opencode-platform-reference": allow
+    "skill-synthesis": allow
+    "agents-and-subagents-dev": allow
+    "command-dev": allow
+    "custom-tools-dev": allow
   patch: allow
   offset-read: deny
   glob: allow

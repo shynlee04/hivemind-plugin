@@ -4,15 +4,16 @@ mode: "primary"
 temperature: 0.2
 permission:
   bash:
-    "*": ask
+    "*": allow
     "git status*": allow
     "git diff*": allow
     "git log*": allow
     "bash scripts/*": allow
   task: allow
   skill: 
-    "*": deny
+    "*": ask
     "meta-builder": allow
+    "hivefiver": allow
     "planning-with-files": allow
     "coordinating-loop": allow
     "use-authoring-skills": allow
@@ -21,6 +22,12 @@ permission:
     "repomix-exploration-guide": allow
     "opencode-non-interactive-shell": allow
     "repomix-explorer": allow
+    "repomix-exploration-guide": allow
+    "opencode-platform-reference": allow
+    "skill-synthesis": allow
+    "agents-and-subagents-dev": allow
+    "command-dev": allow
+    "custom-tools-dev": allow
   patch: allow
   offset-read: deny
   glob: allow

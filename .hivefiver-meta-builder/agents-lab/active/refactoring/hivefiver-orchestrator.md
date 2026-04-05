@@ -9,7 +9,7 @@ permission:
   edit: allow
   write: allow
   bash:
-    "*": ask
+    "*": allow
     "git status*": allow
     "git diff*": allow
     "git log*": allow
@@ -21,7 +21,7 @@ permission:
     "mkdir*": allow
   task: allow
   skill:
-    "*": deny
+    "*": ask
     "meta-builder": allow
     "use-authoring-skills": allow
     "agents-and-subagents-dev": allow
