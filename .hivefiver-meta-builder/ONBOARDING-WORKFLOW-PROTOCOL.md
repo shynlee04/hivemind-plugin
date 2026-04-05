@@ -6,7 +6,29 @@ This document defines the onboarding protocol for any agent (human or AI) joinin
 
 ---
 
-## Phase 1: Context Loading (First 60 Seconds)
+## Phase 0: Memory Load (First 30 Seconds)
+
+**Before loading any context, check the memory layers:**
+
+```bash
+# L1: Git history — the primary memory system
+git log --oneline -10  # recent narrative
+git branch -a  # available work contexts
+git log --grep="skill\|agent\|command" --oneline  # topic search
+
+# L2: Lab files — session state
+cat .hivefiver-meta-builder/skills-lab/progress.md 2>/dev/null | tail -30
+cat .hivefiver-meta-builder/skills-lab/findings.md 2>/dev/null | tail -30
+
+# L3: Episodic memory — conversation history (if needed)
+# Dispatch search-conversations agent for historical context
+```
+
+**See:** `references-lab/active/refactoring/git-workflow/GIT-WORKFLOW-AND-MEMORY-PROTOCOL.md` for the complete three-layer memory model.
+
+---
+
+## Phase 1: Context Loading (Next 60 Seconds)
 
 ### Step 1: Read AGENTS.md
 ```
@@ -14,7 +36,13 @@ Read: .hivefiver-meta-builder/AGENTS.md
 Purpose: Understand the three entities (OpenCode, HiveMind, Hivefiver), lab structure, agent team, delegation protocol, iron laws.
 ```
 
-### Step 2: Check Lab State
+### Step 2: Read Git Workflow Protocol
+```
+Read: .hivefiver-meta-builder/references-lab/active/refactoring/git-workflow/GIT-WORKFLOW-AND-MEMORY-PROTOCOL.md
+Purpose: Worktree network, atomic commits, branch lifecycle, multi-team coordination, conflict resolution.
+```
+
+### Step 3: Check Lab State
 ```bash
 # Verify lab directories exist
 ls .hivefiver-meta-builder/agents-lab/active/refactoring/
