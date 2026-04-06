@@ -2,7 +2,7 @@
 
 **Date:** 2026-04-07
 **Status:** Draft — Pending Review
-**Architecture:** Layered Kernel + Runtime Plugin
+**Architecture:** Layered Kernel (Approach A, revised)
 
 ---
 
@@ -29,7 +29,7 @@ Three packages in a monorepo, each with clear boundaries:
 ```
 packages/
 ├── kernel/         Pure state engine (zero OpenCode dependency)
-├── plugin/         OpenCode adapter (runtime gating + state injection)
+├── plugin/         OpenCode adapter (thin, <250 LOC total)
 └── cli/            Build-time validation + runtime management
 ```
 
@@ -38,7 +38,7 @@ Plus an `assets/` directory containing `.opencode/` templates validated at build
 ### 2.2 Dependency Graph
 
 ```
-kernel  ←  plugin  (reads GateResult, applies permission.ask gating)
+kernel  ←  plugin  (reads GateResult, applies permissions)
 kernel  ←  cli     (validates schemas, manages state files)
 plugin  ←  assets  (agents/skills/commands loaded by OpenCode at runtime)
 ```
@@ -222,87 +222,22 @@ Called by the plugin's `prompt-inject.ts` hook to rebuild orchestrator context a
 
 ## 4. Plugin Package (`packages/plugin/`)
 
-**The plugin is REQUIRED.** It provides runtime gating, state injection, and compaction resilience. Without it, the harness is just static config files with no dynamic behavior.
-
 ### 4.1 Files
 
 | File | LOC Target | Purpose |
 |------|-----------|---------|
 | `index.ts` | ~40 | Plugin entry — composes hooks, registers tools |
-| `hooks/permission-gate.ts` | ~80 | `permission.ask` — dynamic tool gating based on phase state |
 | `hooks/prompt-inject.ts` | ~80 | `experimental.chat.system.transform` — inject phase context |
-| `hooks/tool-descriptor.ts` | ~40 | `tool.definition` — augment tool descriptions with lock warnings |
-| `hooks/compaction-monitor.ts` | ~30 | `experimental.session.compacting` — preserve state during compaction |
+| `hooks/gate-watcher.ts` | ~60 | `tool.execute.after` — detect reviews → evaluate gate → setPermission |
+| `hooks/tool-descriptor.ts` | ~40 | `tool.definition` — augment skill tool description |
+| `hooks/compaction-monitor.ts` | ~30 | `event` — monitor session.compacted events for logging |
 | `tools/gate-check.ts` | ~80 | Custom tool: validate a phase/task checkpoint |
 
 ### 4.2 Plugin Entry (`index.ts`)
 
 Registers 4 hooks and 1 custom tool. Uses kernel for all state reads. No business logic in this file — only composition.
 
-### 4.3 Permission Gate (`hooks/permission-gate.ts`)
-
-**Hook:** `permission.ask`
-
-This is the **core runtime gating mechanism**. It intercepts every permission request and decides whether to allow or deny based on the current gate state.
-
-```typescript
-import type { Plugin } from '@opencode-ai/plugin'
-import { evaluateGate, loadGateState, isToolAllowedForPhase } from 'opencode-harness-kernel'
-
-export function createPermissionGate(directory: string) {
-  return async (permission: any, output: any) => {
-    const state = await loadGateState(directory)
-    
-    // Check if this permission is allowed for the current phase
-    if (isToolAllowedForPhase(permission, state)) {
-      output.status = 'allow'
-    } else {
-      output.status = 'deny'
-      output.message = 
-        `[Harness] Permission denied. Current phase: ${state.currentPhase}, ` +
-        `task: ${state.currentTask}. This tool unlocks after gate validation passes. ` +
-        `Blocked by: ${state.blockers?.join(', ') ?? 'phase gate not yet passed'}`
-    }
-  }
-}
-```
-
-**How it replaces `Session.setPermission()`:** Instead of proactively changing permissions, the plugin intercepts permission requests reactively. The agent tries to use a tool → the hook checks gate state → allows or denies with a clear message. The agent learns which tools are available through feedback, not through configuration changes.
-
-**Permission gating logic:**
-
-```typescript
-// kernel/permission-gate.ts
-export function isToolAllowedForPhase(permission: any, state: GateResult): boolean {
-  const { currentPhase, unlocked } = state
-  
-  // Phase 0 (discovery): only read, question, skill, glob, grep
-  if (currentPhase === 'phase-0') {
-    return ['read', 'question', 'skill', 'glob', 'grep', 'list'].includes(permission.type)
-  }
-  
-  // Phase 1+: edit allowed only in phase-scoped paths
-  if (permission.type === 'edit') {
-    const allowedPaths = getPhaseEditPaths(currentPhase)  // e.g., ["src/types/**"]
-    return allowedPaths.some(pattern => matchesGlob(permission.pattern, pattern))
-  }
-  
-  // Bash: always ask unless it's a test command
-  if (permission.type === 'bash') {
-    return permission.pattern?.match(/^(bun test|npm test|vitest)/)
-  }
-  
-  // Task: only allow phase-worker and code-critic
-  if (permission.type === 'task') {
-    return ['phase-worker', 'code-critic', 'explore', 'researcher'].includes(permission.pattern)
-  }
-  
-  // Default: allow read operations
-  return ['read', 'glob', 'grep', 'list', 'skill'].includes(permission.type)
-}
-```
-
-### 4.4 Prompt Injection (`hooks/prompt-inject.ts`)
+### 4.3 Prompt Injection (`hooks/prompt-inject.ts`)
 
 **Hook:** `experimental.chat.system.transform`
 
@@ -334,42 +269,45 @@ Behavior:
 
 This fires before every LLM call, ensuring the orchestrator always has current state even after compaction.
 
+### 4.4 Gate Watcher (`hooks/gate-watcher.ts`)
+
+**Hook:** `tool.execute.after`
+
+Behavior:
+1. Check if the completed tool call was a `task` dispatch to `code-critic`
+2. If yes, read all review files from `.hivemind/reviews/`
+3. Call `evaluateGate()` from kernel
+4. If `gateResult.gateStatus === "unlocked"`:
+   - Call `Session.setPermission()` to enable next phase tools
+   - `PermissionNext.disabled()` filters out denied tools from the LLM's tool list on the next call
+   - The permission ruleset uses last-match-wins semantics: broad deny rules first, specific allow rules last
+   - The next LLM call will pick up updated permissions + injected prompt
+5. If `gateResult.gateStatus === "blocked"`:
+   - Inject blocker information via the prompt injection hook (next call)
+
+**Race condition prevention:** The hook runs synchronously within the tool execution pipeline. No concurrent state mutation is possible — OpenCode processes hooks sequentially per session.
+
 ### 4.5 Tool Descriptor (`hooks/tool-descriptor.ts`)
 
 **Hook:** `tool.definition`
 
 Behavior:
-1. Read current gate state from `.hivemind/`
-2. For each tool, check if it's locked for the current phase
-3. If locked, append a warning to the tool's description:
-   ```
-   ⚠️ LOCKED: This tool is not available until phase phase-2 passes gate validation.
-   Current phase: phase-1. Complete all tasks and pass code-critic review to unlock.
-   ```
-4. For the `skill` tool, append current phase context:
-   ```
-   Current harness phase: phase-2. Load the http-handlers skill for instructions.
-   ```
+1. If `toolID === "skill"`, append current phase context to the tool's description
+2. Example: `"Current harness phase: phase-2. Load the http-handlers skill for instructions."`
+3. This tells the agent which skill to load without bloating the base context
 
-This provides **visual tool gating** — the LLM sees which tools are locked directly in the tool description, reducing wasted tool call attempts.
+**PRUNE_PROTECTED_TOOLS:** The OpenCode platform protects the `skill` tool from pruning by default (`PRUNE_PROTECTED_TOOLS = ["skill"]`). This means loaded SKILL.md content survives `SessionCompaction.prune()`. The harness relies on this platform guarantee. Additionally, the orchestrator agent's self-setup protocol (§6.2) instructs the agent to reload its skill as the first action on every turn, providing a belt-and-suspenders recovery path.
 
 ### 4.6 Compaction Monitor (`hooks/compaction-monitor.ts`)
 
-**Hook:** `experimental.session.compacting`
+**Hook:** `event`
 
 Behavior:
-1. Read current gate state from `.hivemind/`
-2. Inject preservation context into the compaction prompt:
-   ```
-   HARNESS STATE: Phase phase-1, Task phase-1-1.
-   Unlocked checkpoints: phase-0-1, phase-1-1.
-   Gate retries: {"phase-1-2": 1}.
-   After compaction: 1) Read .hivemind/session-agents-trackpad/ for your pad.
-   2) Read .hivemind/requirements.lock.json. 3) Reload skill tool.
-   4) Continue from current checkpoint.
-   ```
+1. Listen for `session.compacted` events
+2. Log the compaction event to `.hivemind/session-agents-trackpad/pad-NNN.json` (update `updatedAt`)
+3. The `prompt-inject.ts` hook will automatically inject reconstructed state on the next LLM call
 
-This ensures the orchestrator can reconstruct its state after compaction prunes message history.
+This hook is informational only — it does not block or modify any flow. Its purpose is to leave an audit trail of compaction events for debugging.
 
 ### 4.7 Gate Check Tool (`tools/gate-check.ts`)
 
@@ -419,28 +357,6 @@ Creates:
 ├── plans/
 │   └── pipeline.md             # Empty pipeline template
 └── requirements.lock.json      # Not created until Phase 0 completes
-```
-
-Also generates `.opencode/` assets:
-```
-.opencode/
-├── agents/
-│   ├── orchestrator.md         # Primary coordinator with self-setup protocol
-│   ├── phase-worker.md         # Subagent: executes tasks
-│   ├── code-critic.md          # Subagent: read-only reviewer
-│   ├── explore.md              # Subagent: fast codebase investigation
-│   └── researcher.md           # Subagent: web/API cross-validation
-├── commands/
-│   ├── harness-execute.md      # Execute current phase task
-│   ├── harness-review.md       # Review completed work
-│   ├── harness-doctor.md       # Diagnose harness state issues
-│   └── harness-status.md       # Show current state
-└── skills/
-    ├── gate-review/            # code-critic review protocol
-    ├── onboarding/             # Tool usage + harness conventions
-    ├── api-types/              # Example: type definitions
-    ├── http-handlers/          # Example: handler implementation
-    └── testing/                # Example: test patterns
 ```
 
 ### 5.3 `harness validate`
@@ -537,31 +453,9 @@ When creating phase-worker sessions, include these permission rules:
 | Command | Purpose |
 |---------|---------|
 | `harness-doctor` | Diagnose harness state issues (delegates to CLI `harness validate`) |
-| `harness-execute` | Execute current phase task (routes to phase-worker with `$ARGUMENTS` for phase/task) |
-| `harness-review` | Review completed work (routes to code-critic with `subtask: true`) |
-| `harness-status` | Show current state (reads pad + lock + reviews, outputs summary) |
-
-**Command example with $ARGUMENTS and !bash:**
-
-```markdown
-<!-- .opencode/commands/harness-execute.md -->
----
-description: Execute a harness phase task
-agent: phase-worker
-subtask: true
----
-
-Execute the current harness checkpoint.
-
-Current state:
-!`harness status`
-
-Phase: $1
-Task: $2
-
-Load the appropriate skill via the skill tool first, then execute the task.
-Work only within the scope defined by the current phase's permission profile.
-```
+| `start-work` | Initialize a new pipeline run (delegates to CLI `harness init` + creates pad) |
+| `plan` | Create/modify pipeline plan (edits `.hivemind/plans/pipeline.md`) |
+| `ultrawork` | Autonomous execution mode — runs all remaining phases without human intervention |
 
 ### 6.5 Skills (5)
 
@@ -609,7 +503,7 @@ orchestrator → todowrite(checkpoint: pending)
     → resetRetry(padId, checkpointId)
     → gate-watcher hook fires
     → evaluateGate() → gateResult.unlocked updated
-    → permission.ask hook now allows next phase tools
+    → Session.setPermission() enables next phase tools
     → prompt-inject adds next phase template to next LLM call
     
   if rejected (retries tracked in pad.gateRetries):
@@ -626,10 +520,9 @@ orchestrator → todowrite(checkpoint: pending)
 When `SessionCompaction.prune()` fires:
 1. In-context message history is lost
 2. But durable state survives: pad JSON, lock file, review files, pipeline.md
-3. Plugin's `compaction-monitor` hook injects state preservation context
-4. On next turn, orchestrator's self-setup protocol reads these files
-5. Plugin's `prompt-inject.ts` injects reconstructed `<harness_context>` into system prompt
-6. Orchestrator continues from where it left off
+3. On next turn, orchestrator's self-setup protocol reads these files
+4. Plugin's `prompt-inject.ts` injects reconstructed `<harness_context>` into system prompt
+5. Orchestrator continues from where it left off
 
 ---
 
