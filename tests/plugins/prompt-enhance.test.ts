@@ -4,6 +4,9 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { PromptEnhancePlugin } from "../../.opencode/plugins/prompt-enhance";
 
+type CompactingInput = Record<string, unknown>;
+type CompactingOutput = { context: string[] };
+
 describe("prompt-enhance plugin", () => {
   const testDir = join(tmpdir(), "prompt-enhance-test");
   const stateFile = join(testDir, ".hivemind/state/session-context-prompt.md");
@@ -25,21 +28,21 @@ describe("prompt-enhance plugin", () => {
 
   it("creates state file on init", async () => {
     const plugin = await PromptEnhancePlugin();
-    await plugin.event?.({} as any);
+    await plugin.event?.({});
 
     expect(existsSync(stateFile)).toBe(true);
   });
 
   it("creates patches directory on init", async () => {
     const plugin = await PromptEnhancePlugin();
-    await plugin.event?.({} as any);
+    await plugin.event?.({});
 
     expect(existsSync(patchesDir)).toBe(true);
   });
 
   it("initializes with correct frontmatter and sections", async () => {
     const plugin = await PromptEnhancePlugin();
-    await plugin.event?.({} as any);
+    await plugin.event?.({});
 
     const content = readFileSync(stateFile, "utf-8");
 
@@ -57,13 +60,13 @@ describe("prompt-enhance plugin", () => {
 
   it("is idempotent - does not overwrite existing file", async () => {
     const plugin = await PromptEnhancePlugin();
-    await plugin.event?.({} as any);
+    await plugin.event?.({});
 
     const originalContent = readFileSync(stateFile, "utf-8");
     const modifiedContent = originalContent.replace("Session initialized.", "Custom content");
     writeFileSync(stateFile, modifiedContent);
 
-    await plugin.event?.({} as any);
+    await plugin.event?.({});
 
     const afterContent = readFileSync(stateFile, "utf-8");
     expect(afterContent).toBe(modifiedContent);
@@ -73,10 +76,10 @@ describe("prompt-enhance plugin", () => {
 
   it("compaction increments count and reduces budget", async () => {
     const plugin = await PromptEnhancePlugin();
-    await plugin.event?.({} as any);
+    await plugin.event?.({});
 
-    const output: any = { context: [] };
-    await plugin["experimental.session.compacting"]?.({} as any, output);
+    const output: CompactingOutput = { context: [] };
+    await plugin["experimental.session.compacting"]?.({} as CompactingInput, output);
 
     const content = readFileSync(stateFile, "utf-8");
     expect(content).toContain("compaction_count: 1");
@@ -85,10 +88,10 @@ describe("prompt-enhance plugin", () => {
 
   it("compaction injects session snapshot into output context", async () => {
     const plugin = await PromptEnhancePlugin();
-    await plugin.event?.({} as any);
+    await plugin.event?.({});
 
-    const output: any = { context: [] };
-    await plugin["experimental.session.compacting"]?.({} as any, output);
+    const output: CompactingOutput = { context: [] };
+    await plugin["experimental.session.compacting"]?.({} as CompactingInput, output);
 
     expect(Array.isArray(output.context)).toBe(true);
     expect(output.context.length).toBeGreaterThan(0);
@@ -99,15 +102,15 @@ describe("prompt-enhance plugin", () => {
 
   it("compaction budget floors at 0", async () => {
     const plugin = await PromptEnhancePlugin();
-    await plugin.event?.({} as any);
+    await plugin.event?.({});
 
     // Set budget low to test floor
     const content = readFileSync(stateFile, "utf-8");
     const modified = content.replace("context_budget_pct: 100", "context_budget_pct: 10");
     writeFileSync(stateFile, modified);
 
-    const output: any = { context: [] };
-    await plugin["experimental.session.compacting"]?.({} as any, output);
+    const output: CompactingOutput = { context: [] };
+    await plugin["experimental.session.compacting"]?.({} as CompactingInput, output);
 
     const afterContent = readFileSync(stateFile, "utf-8");
     expect(afterContent).toContain("context_budget_pct: 0");
@@ -115,13 +118,13 @@ describe("prompt-enhance plugin", () => {
 
   it("compaction handles multiple compactions correctly", async () => {
     const plugin = await PromptEnhancePlugin();
-    await plugin.event?.({} as any);
+    await plugin.event?.({});
 
-    const output1: any = { context: [] };
-    await plugin["experimental.session.compacting"]?.({} as any, output1);
+    const output1: CompactingOutput = { context: [] };
+    await plugin["experimental.session.compacting"]?.({} as CompactingInput, output1);
 
-    const output2: any = { context: [] };
-    await plugin["experimental.session.compacting"]?.({} as any, output2);
+    const output2: CompactingOutput = { context: [] };
+    await plugin["experimental.session.compacting"]?.({} as CompactingInput, output2);
 
     const content = readFileSync(stateFile, "utf-8");
     expect(content).toContain("compaction_count: 2");
