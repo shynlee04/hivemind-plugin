@@ -1,20 +1,17 @@
 ---
-name: "prompt-skimmer"
 description: "Phase 0 skim agent for prompt enhancement. Use when you need a fast scan before deeper analysis."
 mode: subagent
 temperature: 0.1
-instruction: [.opencode/rules/*.md]
+instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
-  read: allow
-  glob: allow
-  grep: allow
-  bash:
-    "git ls-files*": allow
-  task: deny
   edit:
     "*": deny
   write:
     "*": deny
+  bash: allow
+  glob: allow
+  grep: allow
+  task: deny
 ---
 
 # Prompt Skimmer

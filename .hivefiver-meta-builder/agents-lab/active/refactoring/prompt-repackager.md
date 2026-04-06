@@ -1,18 +1,16 @@
 ---
-name: "prompt-repackager"
 description: "Final assembly lane for prompt enhancement. Returns the enhanced prompt payload with YAML frontmatter and XML-tagged sections."
 mode: subagent
 temperature: 0.2
-instruction: [.opencode/rules/*.md]
+instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
-  read: allow
-  task: deny
   edit:
     "*": deny
   write:
     "*": deny
   glob: allow
   grep: allow
+  task: deny
 ---
 
 # Prompt Repackager

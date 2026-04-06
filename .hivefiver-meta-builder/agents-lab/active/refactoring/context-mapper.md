@@ -1,21 +1,17 @@
 ---
-name: "context-mapper"
 description: "Ground prompt references against the current repository and report dead or stale references."
 mode: subagent
 temperature: 0.1
-instruction: [.opencode/rules/*.md]
+instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
-  read: allow
-  glob: allow
-  grep: allow
-  bash:
-    "git ls-files*": allow
-    "git log*": allow
-  task: deny
   edit:
     "*": deny
   write:
     "*": deny
+  bash: allow
+  glob: allow
+  grep: allow
+  task: deny
 ---
 
 # Context Mapper

@@ -1,18 +1,16 @@
 ---
-name: "prompt-analyzer"
 description: "Deep prompt-analysis lane for contradictions, vagueness, missing scope, and clarity issues."
 mode: subagent
 temperature: 0.1
-instruction: [.opencode/rules/*.md]
+instructions: [".opencode/rules/anti-patterns.md", ".opencode/rules/skill-activation.md"]
 permission:
-  read: allow
-  grep: allow
-  task: deny
   edit:
     "*": deny
   write:
     "*": deny
+  grep: allow
   glob: allow
+  task: deny
 ---
 
 # Prompt Analyzer
