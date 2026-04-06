@@ -59,17 +59,16 @@ describe("context-budget tool", () => {
       mockCtx,
     )
     const result = parseResult(raw) as Record<string, unknown>
-    // 100 - 2*15 = 70
-    expect(result.data.budget_pct).toBe(70)
+    expect(result.data.budget_pct).toBe(50)
     expect(result.data.compaction_count).toBe(2)
-    expect(result.data.status).toBe("ok")
+    expect(result.data.status).toBe("warning")
   })
 
   it("returns warning status for moderate compaction", async () => {
     const fs = await import("node:fs")
     vi.spyOn(fs, "existsSync").mockReturnValue(true)
     vi.spyOn(fs, "readFileSync").mockReturnValue(
-      "---\ncompaction_count: 4\n---\n\nSession content",
+      "---\ncompaction_count: 1\n---\n\nSession content",
     )
 
     const raw = await tool.execute(
@@ -77,8 +76,7 @@ describe("context-budget tool", () => {
       mockCtx,
     )
     const result = parseResult(raw) as Record<string, unknown>
-    // 100 - 4*15 = 40
-    expect(result.data.budget_pct).toBe(40)
+    expect(result.data.budget_pct).toBe(50)
     expect(result.data.status).toBe("warning")
   })
 
@@ -86,7 +84,7 @@ describe("context-budget tool", () => {
     const fs = await import("node:fs")
     vi.spyOn(fs, "existsSync").mockReturnValue(true)
     vi.spyOn(fs, "readFileSync").mockReturnValue(
-      "---\ncompaction_count: 5\n---\n\nSession content",
+      "---\ncompaction_count: 10\n---\n\nSession content",
     )
 
     const raw = await tool.execute(
@@ -94,7 +92,6 @@ describe("context-budget tool", () => {
       mockCtx,
     )
     const result = parseResult(raw) as Record<string, unknown>
-    // 100 - 5*15 = 25
     expect(result.data.budget_pct).toBe(25)
     expect(result.data.status).toBe("critical")
   })

@@ -29,7 +29,7 @@ describe("prompt-enhance compaction tracking", () => {
 
     const content = readFileSync(stateFile, "utf-8")
     expect(content).toContain("compaction_count: 1")
-    expect(content).toContain("context_budget_pct: 85")
+    expect(content).toContain("context_budget_pct: 50")
   })
 
   it("event hook does NOT increment compaction for session.compacted events", async () => {
@@ -57,6 +57,6 @@ describe("prompt-enhance compaction tracking", () => {
 
     const content = readFileSync(stateFile, "utf-8")
     expect(content).toContain("compaction_count: 1")
-    expect(content).toContain("context_budget_pct: 85")
+    expect(content).toContain("context_budget_pct: 50")
   })
 })

@@ -201,7 +201,7 @@ describe("session compaction tracked by single hook", () => {
 
     const content = readFileSync(stateFile, "utf-8")
     expect(content).toContain("compaction_count: 1")
-    expect(content).toContain("context_budget_pct: 85")
+    expect(content).toContain("context_budget_pct: 50")
   })
 
   it("event hook does NOT increment compaction for session.compacted events", async () => {
@@ -218,7 +218,7 @@ describe("session compaction tracked by single hook", () => {
     const plugin = await PromptEnhancePlugin()
     await plugin.event?.({})
 
-    // Run 7 compactions: 100 - 7*15 = -5 -> floors at 0
+    // Run 7 compactions: status-based model → count > 2 = critical, budget 25%
     for (let i = 0; i < 7; i++) {
       const output = { context: [] }
       await plugin["experimental.session.compacting"]?.({}, output)
@@ -226,7 +226,7 @@ describe("session compaction tracked by single hook", () => {
 
     const content = readFileSync(stateFile, "utf-8")
     expect(content).toContain("compaction_count: 7")
-    expect(content).toContain("context_budget_pct: 0")
+    expect(content).toContain("context_budget_pct: 25")
   })
 })
 
@@ -242,7 +242,7 @@ describe("full pipeline E2E", () => {
     mkdirSync(testDir, { recursive: true })
     writeFileSync(
       sessionFile,
-      "---\npatch_count: 0\ncompaction_count: 2\ncontext_budget_pct: 70\nstatus: idle\n---\n\n## Identified Risks\nNone yet.\n",
+      "---\npatch_count: 0\ncompaction_count: 2\ncontext_budget_pct: 50\nstatus: idle\n---\n\n## Identified Risks\nNone yet.\n",
     )
   })
 
@@ -283,8 +283,8 @@ describe("full pipeline E2E", () => {
     const budgetParsed = JSON.parse(budgetRaw)
     const budgetResult = ContextBudgetRecordSchema.parse(budgetParsed.data)
     expect(budgetResult.compaction_count).toBe(2)
-    expect(budgetResult.budget_pct).toBe(70)
-    expect(budgetResult.status).toBe("ok") // >= 70 is "ok"
+    expect(budgetResult.budget_pct).toBe(50)
+    expect(budgetResult.status).toBe("warning")
 
     // Phase 4: Session patch
     const patchTool = createSessionPatchTool(process.cwd())

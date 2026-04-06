@@ -7,7 +7,6 @@ import { existsSync, readFileSync } from "node:fs"
 import { renderToolResult } from "../../shared/tool-helpers.js"
 import { success } from "../../shared/tool-response.js"
 import { ContextBudgetRecordSchema } from "../../schema-kernel/prompt-enhance.schema.js"
-import { BUDGET_DECREMENT_PER_COMPACTION } from "../../lib/types.js"
 import type { ContextBudgetRecord } from "./types.js"
 
 /**
@@ -46,9 +45,9 @@ export function createContextBudgetTool(
       const match = content.match(/^compaction_count:\s*(\d+)/m)
       const compactionCount = match ? parseInt(match[1], 10) : 0
 
-      const budgetPct = Math.max(0, 100 - compactionCount * BUDGET_DECREMENT_PER_COMPACTION)
       const status: "ok" | "warning" | "critical" =
-        budgetPct >= 70 ? "ok" : budgetPct >= 40 ? "warning" : "critical"
+        compactionCount === 0 ? "ok" : compactionCount <= 2 ? "warning" : "critical"
+      const budgetPct = compactionCount === 0 ? 100 : compactionCount <= 2 ? 50 : 25
 
       const record: ContextBudgetRecord = {
         budget_pct: budgetPct,

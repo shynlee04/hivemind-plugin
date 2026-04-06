@@ -1,7 +1,6 @@
 import type { Plugin } from "@opencode-ai/plugin";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { BUDGET_DECREMENT_PER_COMPACTION } from "../lib/types.js";
 
 const STATE_FILE = ".hivemind/state/session-context-prompt.md";
 
@@ -54,18 +53,16 @@ function ensurePromptEnhanceState(workspaceRoot: string) {
 }
 
 /**
- * Increment compaction_count and decrement context_budget_pct in the state file.
- * Budget decreases by 15% per compaction, minimum 0.
+ * Increment compaction_count and update context_budget_pct in the state file.
+ * Uses status-based thresholds: 0→100%, 1-2→50%, >2→25%.
  */
 function recordCompaction(sessionFilePath: string) {
   const current = readFileSync(sessionFilePath, "utf-8");
 
   const countMatch = current.match(/^compaction_count:\s*(\d+)/m);
-  const budgetMatch = current.match(/^context_budget_pct:\s*(\d+)/m);
   const currentCount = countMatch ? parseInt(countMatch[1], 10) : 0;
-  const currentBudget = budgetMatch ? parseInt(budgetMatch[1], 10) : 100;
   const nextCount = currentCount + 1;
-  const nextBudget = Math.max(0, currentBudget - BUDGET_DECREMENT_PER_COMPACTION);
+  const nextBudget = nextCount === 0 ? 100 : nextCount <= 2 ? 50 : 25;
 
   const updated = current
     .replace(/^compaction_count:\s*\d+/m, `compaction_count: ${nextCount}`)
