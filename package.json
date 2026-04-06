@@ -1,54 +1,42 @@
 {
   "name": "opencode-harness",
   "version": "0.1.0",
-  "description": "Standalone OpenCode harness control plane package for delegated sessions, continuity, and runtime guardrails.",
+  "description": "Multi-agent checkpoint orchestration framework for OpenCode",
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./plugin": {
-      "import": "./dist/plugin.js",
-      "types": "./dist/plugin.d.ts"
-    },
-    "./package.json": "./package.json"
+      "import": "./dist/harness/index.js",
+      "types": "./dist/harness/index.d.ts"
+    }
   },
-  "files": [
-    "dist",
-    ".opencode",
-    "opencode.json",
-    "README.md",
-    "LICENSE"
-  ],
+  "bin": {
+    "harness": "./dist/cli/index.js"
+  },
   "scripts": {
-    "clean": "node --eval \"import { rmSync } from 'node:fs'; rmSync('dist', { recursive: true, force: true });\"",
-    "build": "npm run clean && tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "build": "tsc && node ./dist/cli/index.js validate",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "prepack": "npm run build"
   },
-  "keywords": [
-    "opencode",
-    "opencode-plugin",
-    "harness",
-    "delegation",
-    "continuity"
-  ],
-  "license": "MIT",
-  "engines": {
-    "node": ">=20.0.0"
+  "dependencies": {
+    "zod": "^4.0.0"
   },
   "peerDependencies": {
     "@opencode-ai/plugin": ">=1.1.0"
   },
   "devDependencies": {
-    "@types/node": "^20.10.0",
-    "typescript": "^5.3.0",
-    "vitest": "^4.1.2"
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }
