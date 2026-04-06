@@ -1,8 +1,8 @@
 # HiveMind Checkpoint Harness — Design Specification
 
 **Date:** 2026-04-07
-**Status:** Draft — Pending Review
-**Architecture:** Layered Kernel (Approach A, revised)
+**Status:** Approved — Audit Complete, Ready for Implementation Planning
+**Architecture:** Single Package with Internal Module Boundaries
 
 ---
 
@@ -16,7 +16,7 @@ A multi-agent orchestration framework built on OpenCode primitives that provides
 4. **Soft-harness discovery** — Phase 0 negotiates requirements with the user before execution
 5. **Cross-dependency validation** — critic subagents review work against locked requirements
 
-The framework is distributed as an npm package with a CLI, an OpenCode plugin, and a set of `.opencode/` assets (agents, commands, skills). Users install it, run `harness init`, and get a checkpoint-gated pipeline.
+The framework is distributed as a single npm package (`opencode-harness`) with internal module boundaries, a CLI, an OpenCode plugin, and a set of `.opencode/` assets (agents, commands, skills). Users install it, run `harness init`, and get a checkpoint-gated pipeline.
 
 ---
 
@@ -24,21 +24,23 @@ The framework is distributed as an npm package with a CLI, an OpenCode plugin, a
 
 ### 2.1 Package Structure
 
-Three packages in a monorepo, each with clear boundaries:
+Single npm package with three internal directories enforcing clear boundaries:
 
 ```
-packages/
+src/
 ├── kernel/         Pure state engine (zero OpenCode dependency)
-├── plugin/         OpenCode adapter (thin, <250 LOC total)
+├── plugin/         OpenCode adapter (runtime gating + state injection)
 └── cli/            Build-time validation + runtime management
 ```
 
 Plus an `assets/` directory containing `.opencode/` templates validated at build time and loaded at runtime.
 
+Single `package.json` publishes as `opencode-harness`. Internal module boundaries enforced via import rules (kernel imports nothing from plugin/cli).
+
 ### 2.2 Dependency Graph
 
 ```
-kernel  ←  plugin  (reads GateResult, applies permissions)
+kernel  ←  plugin  (reads GateResult, applies permission.ask gating)
 kernel  ←  cli     (validates schemas, manages state files)
 plugin  ←  assets  (agents/skills/commands loaded by OpenCode at runtime)
 ```
@@ -47,17 +49,14 @@ No circular dependencies. Kernel depends on nothing external except Zod v4.
 
 ### 2.3 Cross-Layer Interface
 
-The kernel exports one primary type consumed by both plugin and CLI:
+The kernel exports types derived exclusively from Zod schemas (§3.2). The primary cross-layer type is `GateResult`, inferred from `GateResultSchema`:
 
 ```typescript
-type GateResult = {
-  currentPhase: string         // e.g., "phase-1"
-  currentTask: string          // e.g., "phase-1-1"
-  unlocked: string[]           // e.g., ["phase-1-1", "phase-1-2"]
-  gateStatus: "locked" | "unlocked" | "blocked"
-  blockers?: string[]          // reason strings if blocked
-}
+// In schemas.ts — single source of truth
+export type GateResult = z.infer<typeof GateResultSchema>
 ```
+
+No standalone type definitions exist outside Zod schemas. All kernel types (`SessionPad`, `RequirementsLock`, `ReviewVerdict`, `GateResult`) are `z.infer` derivatives, eliminating schema-type drift.
 
 ---
 
@@ -84,6 +83,7 @@ const SessionPadSchema = z.object({
   id: z.string(),                              // "pad-001", "pad-002", "pad-003"
   sessionId: z.string().nullable(),            // null = pad slot available
   status: z.enum(["active", "released"]),      // pad availability
+  version: z.number().default(0),              // optimistic concurrency — incremented on every write
   createdAt: z.string().datetime(),
   updatedAt: z.string().datetime(),
   pipelinePath: z.string(),                    // path to pipeline.md
@@ -110,6 +110,11 @@ const TaskSchema = z.object({
   skill: z.string(),
   gate: z.string(),        // Human-readable gate condition e.g., "zero-lsp-errors", "tests-pass"
   dependsOn: z.array(z.string()).default([]),
+  editScope: z.array(z.string()).default([]),  
+  // ^ Glob patterns for file paths this task is allowed to edit.
+  // e.g., ["src/types/**", "src/schemas/**"] — used by permission-gate.ts to scope edit access.
+  // Empty array = no edit allowed (read-only task).
+  // Populated during Phase 0 negotiation from project structure analysis.
 })
 
 const PhaseSchema = z.object({
@@ -164,7 +169,40 @@ const GateResultSchema = z.object({
   gateStatus: z.enum(["locked", "unlocked", "blocked"]),
   blockers: z.array(z.string()).optional(),
 })
+
+export type GateResult = z.infer<typeof GateResultSchema>
 ```
+
+**PermissionRequest** — Adapts OpenCode's real `Permission` type for kernel use:
+
+```typescript
+// OpenCode's actual Permission type from @opencode-ai/plugin:
+// { id, type, pattern?: string | string[], sessionID, messageID, callID?, title, metadata, time }
+// We extract phase/toolName from metadata or title fields in the plugin layer.
+
+const PermissionRequestSchema = z.object({
+  type: z.string(),                    // OpenCode's Permission.type (not constrained to enum)
+  pattern: z.union([z.string(), z.array(z.string())]).optional(),
+  sessionID: z.string(),
+  metadata: z.record(z.unknown()).optional(),
+  title: z.string().optional(),
+})
+
+export type PermissionRequest = z.infer<typeof PermissionRequestSchema>
+```
+
+**PermissionOutput** — Matches OpenCode's actual hook output type:
+
+```typescript
+// OpenCode's real output: { status: "ask" | "deny" | "allow" }
+// Note: no 'message' field exists in the real API. Denial messages must be
+// communicated via prompt-inject.ts system prompt injection instead.
+interface PermissionOutput {
+  status: 'allow' | 'deny' | 'ask'
+}
+```
+
+These types are exported from `schemas.ts` — no `any` types in the permission gating path. The plugin layer adapts OpenCode's real `Permission` type into `PermissionRequest` by extracting phase/toolName context from `metadata` or `title` fields.
 
 ### 3.3 Gate Evaluation (`gate.ts`)
 
@@ -173,38 +211,76 @@ function evaluateGate(
   reviews: Map<string, ReviewVerdict>,
   requirements: RequirementsLock,
 ): GateResult
+
+// Returns GateResult with gateStatus:
+//   "locked"   — no reviews exist, or current phase has no approved reviews
+//   "unlocked" — all phases completed, or all tasks up to current are approved
+//   "blocked"  — dependsOn references invalid, or cycles detected
+// Never throws. All error conditions are returned as blocked GateResult with blockers[].
 ```
 
-Logic:
-1. Iterate phases in order
-2. For each phase, check all task review files
-3. If all tasks in a phase are `approved`, that phase is unlocked
-4. Return the first phase with unapproved tasks as `currentPhase/currentTask`
-5. If dependencies (`dependsOn`) are not approved, mark as `blocked` with blocker reasons
+**Pre-evaluation validation (runs before gate logic):**
+
+1. **Phase ordering**: Sort `requirements.phases` lexicographically by `phase.id` before iteration. This ensures deterministic evaluation regardless of lock file insertion order.
+2. **Task ID integrity**: Build a global `Set<string>` of all task IDs across all phases. If any `dependsOn` reference is not in this set, return immediately:
+   ```typescript
+   { gateStatus: "blocked", currentPhase: phases[0].id, currentTask: phases[0].tasks[0].id,
+     unlocked: [], blockers: ["dependsOn references non-existent task: <id>"] }
+   ```
+3. **Cycle detection**: Validated once at lock-write-time in `writeLock()` (not per-gate). If a cycle is detected during Phase 0 negotiation, the lock file is rejected entirely. At gate evaluation time, cycles are assumed absent (validated at write time). If somehow a cycle exists in the lock file, return:
+   ```typescript
+   { gateStatus: "blocked", currentPhase: phases[0].id, currentTask: phases[0].tasks[0].id,
+     unlocked: [], blockers: ["circular dependsOn detected: <cycle path>"] }
+   ```
+
+**Gate evaluation logic:**
+
+1. Iterate phases in lexicographic order of `phase.id`
+2. **Empty reviews case**: If `reviews` is an empty `Map` (no reviews exist yet), return:
+   ```typescript
+   { gateStatus: "locked", currentPhase: phases[0].id, currentTask: phases[0].tasks[0].id,
+     unlocked: [], blockers: ["no reviews submitted yet"] }
+   ```
+3. For each phase, check all task review files:
+   - If a task has `dependsOn` references, verify each dependency task has an `approved` review
+   - If any dependency is missing or `rejected`, mark as `blocked` with specific blocker: `"<depTaskId>: dependency not approved"`
+4. If all tasks in a phase are `approved`, that phase is unlocked — add all its task IDs to `unlocked`
+5. Return the first phase with unapproved tasks as `currentPhase/currentTask`
+6. Collect all completed task IDs into `unlocked` array
 
 ### 3.4 Pad Store (`pad-store.ts`)
 
 Manages `.hivemind/session-agents-trackpad/` with a maximum of 3 pads (3 parallel sessions).
 
 Operations:
-- `readPad(id: string): SessionPad` — reads and validates with Zod
-- `writePad(pad: SessionPad): void` — validates before write, deep-clone-on-read
-- `listPads(): SessionPad[]` — returns all existing pads
-- `acquirePad(sessionId: string): SessionPad` — finds first pad with `status: "released"` and claims it (sets sessionId, status: "active"). Error if all 3 pads are active.
-- `releasePad(id: string): void` — sets `status: "released"`, `sessionId: null`
-- `incrementRetry(padId: string, checkpointId: string): void` — increments `gateRetries[checkpointId]`
-- `resetRetry(padId: string, checkpointId: string): void` — sets `gateRetries[checkpointId]` to 0
+- `readPad(id: string): SessionPad` — reads and validates with Zod. Throws `[Harness] Pad not found: <id>` if file does not exist. Throws `[Harness] Pad validation failed: <id>` with Zod error details if JSON is invalid.
+- `writePad(pad: SessionPad): void` — **Atomic write with optimistic concurrency:**
+  1. Read current pad from disk, get its `version`
+  2. If `pad.version !== currentVersion`, throw `[Harness] Pad version conflict: <id> (expected <current>, got <pad.version>)` — caller must re-read and retry
+  3. Increment `pad.version++`
+  4. Write to `<id>.tmp`, then `fs.renameSync(<id>.tmp, <id>.json)` (atomic on POSIX)
+  5. Update `updatedAt` to current ISO datetime
+- `listPads(): SessionPad[]` — returns all existing pads (deep-cloned)
+- `acquirePad(sessionId: string): SessionPad` — finds first pad with `status: "released"` and claims it. Uses `writePad` (version check prevents double-acquire). Throws `[Harness] All pads active` if none available.
+- `releasePad(id: string): void` — sets `status: "released"`, `sessionId: null`. Uses `writePad`.
+- `incrementRetry(padId: string, checkpointId: string): void` — full read → modify `gateRetries[checkpointId]++` → `writePad`
+- `resetRetry(padId: string, checkpointId: string): void` — full read → set `gateRetries[checkpointId] = 0` → `writePad`
 
-Constraint: **Any pad edit requires full read before write** (optimistic concurrency).
+**Error behavior:** All operations throw with `[Harness]` prefix. File-not-found is a thrown error (not silent). Corrupted JSON (partial write) is caught by Zod validation and thrown as `[Harness] Pad validation failed`.
 
 ### 3.5 Lock Store (`lock-store.ts`)
 
 Manages `.hivemind/requirements.lock.json`:
 
-- `readLock(): RequirementsLock` — reads and validates with Zod
-- `writeLock(lock: RequirementsLock): void` — only during Phase 0, fails if lock already exists
-- `lockField(phaseId: string, requirementId: string): void` — marks a requirement as `locked: true`
-- `isLocked(phaseId: string, requirementId: string): boolean`
+- `readLock(): RequirementsLock` — reads and validates with Zod. Throws `[Harness] Requirements lock not found` if file doesn't exist. Throws `[Harness] Requirements lock validation failed` with Zod error details on invalid JSON.
+- `writeLock(lock: RequirementsLock): void` — only during Phase 0, fails with `[Harness] Requirements lock already exists` if lock file already present. **Before writing, validates:**
+  1. All task IDs are globally unique
+  2. All `dependsOn` references point to existing task IDs
+  3. No circular dependencies (topological sort on task graph)
+  If any validation fails, throws `[Harness] Lock validation failed: <reason>`.
+  Validates with Zod before write. Uses atomic write (tmp + rename).
+- `lockField(phaseId: string, requirementId: string): void` — marks a requirement as `locked: true`. Full read → modify → write cycle. Throws `[Harness] Requirement not found: <phaseId>/<requirementId>` if IDs don't match.
+- `isLocked(phaseId: string, requirementId: string): boolean` — returns `false` if lock file doesn't exist (not an error — pre-negotiation state).
 
 ### 3.6 State Recovery (`state-recovery.ts`)
 
@@ -213,103 +289,304 @@ function reconstructState(
   padPath: string,
   planPath: string,
   lockPath: string,
+  reviewDir: string,
 ): { pad: SessionPad, plan: string, requirements: RequirementsLock, gateResult: GateResult }
 ```
 
-Called by the plugin's `prompt-inject.ts` hook to rebuild orchestrator context after compaction. Reads all three state files and computes the current gate result.
+Called by the plugin's `prompt-inject.ts` hook to rebuild orchestrator context after compaction. Reads all state files and computes the current gate result.
+
+**Error handling (explicit for each input):**
+
+| Input | File Not Found | Invalid JSON / Zod Failure | Empty File |
+|-------|---------------|---------------------------|------------|
+| `padPath` | Throw `[Harness] Pad file not found: <padPath>` | Throw `[Harness] Pad validation failed: <padPath>` with Zod error details | Throw `[Harness] Pad file empty: <padPath>` |
+| `lockPath` | Throw `[Harness] Requirements lock not found: <lockPath>` | Throw `[Harness] Requirements lock validation failed: <lockPath>` | Throw `[Harness] Requirements lock empty: <lockPath>` |
+| `planPath` | Return `plan: ""` (empty plan is valid — may not exist yet) | Throw `[Harness] Plan file unreadable: <planPath>` | Return `plan: ""` |
+| `reviewDir` | Return empty `Map` (no reviews yet — valid initial state) | Skip individual invalid review files, log warning to stderr: `[Harness] Skipping invalid review: <filename>` | N/A (directory exists but empty) |
+
+All thrown errors use `[Harness]` prefix. The function never returns `null` or `undefined` — it either returns a valid reconstruction or throws. Callers should catch and handle gracefully (e.g., inject error context into compaction prompt).
+
+**Review loading:** Reads all `*.json` files from `reviewDir`, validates each against `ReviewVerdictSchema`, skips invalid ones (with warning), and builds the `Map<string, ReviewVerdict>` needed by `evaluateGate()`.
 
 ---
 
 ## 4. Plugin Package (`packages/plugin/`)
+
+**The plugin is REQUIRED.** It provides runtime gating, state injection, and compaction resilience. Without it, the harness is just static config files with no dynamic behavior.
 
 ### 4.1 Files
 
 | File | LOC Target | Purpose |
 |------|-----------|---------|
 | `index.ts` | ~40 | Plugin entry — composes hooks, registers tools |
-| `hooks/prompt-inject.ts` | ~80 | `experimental.chat.system.transform` — inject phase context |
-| `hooks/gate-watcher.ts` | ~60 | `tool.execute.after` — detect reviews → evaluate gate → setPermission |
-| `hooks/tool-descriptor.ts` | ~40 | `tool.definition` — augment skill tool description |
-| `hooks/compaction-monitor.ts` | ~30 | `event` — monitor session.compacted events for logging |
+| `hooks/permission-gate.ts` | ~100 | `permission.ask` — dynamic tool gating based on phase state |
+| `hooks/prompt-inject.ts` | ~80 | `experimental.chat.system.transform` — inject phase context + compaction recovery |
+| `hooks/tool-descriptor.ts` | ~40 | `tool.definition` — augment tool descriptions with lock warnings |
 | `tools/gate-check.ts` | ~80 | Custom tool: validate a phase/task checkpoint |
 
 ### 4.2 Plugin Entry (`index.ts`)
 
-Registers 4 hooks and 1 custom tool. Uses kernel for all state reads. No business logic in this file — only composition.
+Registers 3 hooks and 1 custom tool. Uses kernel for all state reads. No business logic in this file — only composition.
 
-### 4.3 Prompt Injection (`hooks/prompt-inject.ts`)
+### 4.3 Permission Gate (`hooks/permission-gate.ts`)
+
+**Hook:** `permission.ask`
+
+This is the **core runtime gating mechanism**. It intercepts every permission request and decides whether to allow or deny based on the current gate state.
+
+```typescript
+import type { Plugin } from '@opencode-ai/plugin'
+import { evaluateGate, reconstructState, isToolAllowedForPhase } from '../kernel/index.js'
+import type { PermissionRequest, PermissionOutput } from '../kernel/schemas.js'
+
+// Adapt OpenCode's real Permission type → our PermissionRequest
+function adaptPermission(nativePermission: any): PermissionRequest {
+  return {
+    type: nativePermission.type,
+    pattern: nativePermission.pattern,
+    sessionID: nativePermission.sessionID,
+    metadata: nativePermission.metadata,
+    title: nativePermission.title,
+  }
+}
+
+// Extract phase context from permission metadata or title
+function extractPhase(request: PermissionRequest): string | null {
+  if (request.metadata?.phase) return String(request.metadata.phase)
+  if (request.title?.includes('phase-')) {
+    const match = request.title.match(/(phase-\d+)/)
+    return match ? match[1] : null
+  }
+  return null
+}
+
+export function createPermissionGate(directory: string) {
+  return async (nativePermission: any, output: PermissionOutput) => {
+    try {
+      const request = adaptPermission(nativePermission)
+      const phase = extractPhase(request)
+      
+      const { gateResult, requirements } = await reconstructState(
+        `${directory}/session-agents-trackpad/`, 
+        `${directory}/plans/pipeline.md`,
+        `${directory}/requirements.lock.json`,
+        `${directory}/reviews/`,
+      )
+      
+      // Override gate result phase if extractable from permission
+      const effectivePhase = phase ?? gateResult.currentPhase
+      
+      if (isToolAllowedForPhase(request, effectivePhase, gateResult, requirements)) {
+        output.status = 'allow'
+      } else {
+        output.status = 'deny'
+        // Note: no message field in real OpenCode API — denial context is
+        // communicated via prompt-inject.ts system prompt injection
+      }
+    } catch {
+      // State files missing or corrupted — deny
+      output.status = 'deny'
+    }
+  }
+}
+```
+
+**`PermissionRequest` type** (defined in `schemas.ts`, not `any`):
+
+```typescript
+const PermissionRequestSchema = z.object({
+  type: z.enum([
+    'read', 'edit', 'bash', 'glob', 'grep', 'list', 
+    'skill', 'question', 'task', 'webfetch', 'write',
+    'mcp', 'fetch', 'notebook',
+  ]),
+  pattern: z.string().optional(),       // file glob, bash command, agent name, etc.
+  toolName: z.string().optional(),      // specific tool being invoked
+  phase: z.string().optional(),         // override phase if provided
+})
+export type PermissionRequest = z.infer<typeof PermissionRequestSchema>
+```
+
+**Permission gating logic:**
+
+```typescript
+// kernel/permission-gate.ts
+
+// Phase-scoped edit path mapping — derived from RequirementsLock
+function getPhaseEditPaths(
+  currentPhase: string, 
+  requirements: RequirementsLock,
+): string[] {
+  const phase = requirements.phases.find(p => p.id === currentPhase)
+  if (!phase) return []
+  return [...new Set(phase.tasks.flatMap(t => t.editScope ?? []))]
+}
+
+// Extract allowed test commands from the current phase's tasks
+function getAllowedTestCommands(
+  currentPhase: string,
+  requirements: RequirementsLock,
+): string[] {
+  const phase = requirements.phases.find(p => p.id === currentPhase)
+  if (!phase) return []
+  // Collect unique gate conditions that reference test commands
+  const commands = phase.tasks.map(t => t.gate).filter(Boolean)
+  return [...new Set(commands)]
+}
+
+// Simple glob matching without external dependency
+// Supports: *, **, ?, {a,b} patterns
+function matchesGlob(filePath: string, pattern: string): boolean {
+  // Minimal implementation — use micromatch for production
+  const regex = new RegExp(
+    '^' + pattern
+      .replace(/\*\*/g, '__DOUBLESTAR__')
+      .replace(/\*/g, '[^/]*')
+      .replace(/__DOUBLESTAR__/g, '.*')
+      .replace(/\?/g, '.') + '$'
+  )
+  return regex.test(filePath)
+}
+
+export function isToolAllowedForPhase(
+  permission: PermissionRequest, 
+  currentPhase: string,
+  state: GateResult,
+  requirements: RequirementsLock,
+): boolean {
+  const { unlocked } = state
+  
+  // Phase 0 (discovery): only read, question, glob, grep, list
+  if (currentPhase === 'phase-0') {
+    return ['read', 'question', 'glob', 'grep', 'list'].includes(permission.type)
+  }
+  
+  // Skill: allowed only for the current phase's designated skill
+  if (permission.type === 'skill') {
+    const phase = requirements.phases.find(p => p.id === currentPhase)
+    if (!phase) return false
+    const allowedSkills = phase.tasks.map(t => t.skill).filter(Boolean)
+    return allowedSkills.includes(permission.pattern as string ?? '')
+  }
+  
+  // Edit: allowed only in phase-scoped paths
+  if (permission.type === 'edit') {
+    const allowedPaths = getPhaseEditPaths(currentPhase, requirements)
+    const pattern = Array.isArray(permission.pattern) 
+      ? permission.pattern[0] 
+      : (permission.pattern ?? '')
+    return allowedPaths.some(p => matchesGlob(pattern, p))
+  }
+  
+  // Bash: data-driven from lock file gate conditions
+  if (permission.type === 'bash') {
+    const allowedCommands = getAllowedTestCommands(currentPhase, requirements)
+    const cmd = (Array.isArray(permission.pattern) 
+      ? permission.pattern[0] 
+      : (permission.pattern ?? '')).trim()
+    
+    // Check if command matches any allowed test command pattern
+    return allowedCommands.some(allowed => {
+      // Convert gate condition to regex (e.g., "bun test" → /^bun test/)
+      const escaped = allowed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      const regex = new RegExp(`^${escaped}(\\s+\\S+)*$`)
+      return regex.test(cmd) && !cmd.includes('&&') && !cmd.includes('|') && !cmd.includes(';')
+    })
+  }
+  
+  // Task: only allow phase-worker and code-critic
+  if (permission.type === 'task') {
+    return ['phase-worker', 'code-critic', 'explore', 'researcher'].includes(
+      Array.isArray(permission.pattern) ? permission.pattern[0] : (permission.pattern ?? '')
+    )
+  }
+  
+  // Read operations: always allowed
+  if (['read', 'glob', 'grep', 'list'].includes(permission.type)) {
+    return true
+  }
+  
+  // Everything else: denied by default
+  return false
+}
+```
+
+**Key design decisions:**
+1. **Skill is phase-gated** — not always allowed. Each phase's tasks declare which skills they use.
+2. **Bash is data-driven from lock file** — test commands are declared in task `gate` conditions, not hardcoded. Works with any test runner (jest, pytest, cargo test, etc.).
+3. **Unknown permission types are denied** — no silent allow-through for new permission types.
+4. **`getPhaseEditPaths()` derives from `RequirementsLock`** — the mapping is data-driven, not hardcoded.
+5. **All agents get broad static permissions** — the `permission.ask` hook does the real gating based on phase state. No dynamic agent file generation needed.
+6. **No external glob dependency in kernel** — `matchesGlob` is a minimal implementation. Plugin can pass `micromatch` if needed.
+
+### 4.4 Prompt Injection (`hooks/prompt-inject.ts`)
 
 **Hook:** `experimental.chat.system.transform`
 
+**Phase-to-template mapping** (defined once, data-driven):
+
+```typescript
+// The template file for a phase is: .hivemind/templates/{phase.id}.txt
+// This is a naming convention enforced by `harness validate`.
+// Phase IDs with hyphens map directly: "phase-1" → "phase-1.txt"
+// Custom phase IDs work: "design-phase" → "design-phase.txt"
+function resolveTemplatePath(phaseId: string, templatesDir: string): string {
+  return path.join(templatesDir, `${phaseId}.txt`)
+}
+```
+
+If the template file does not exist for the current phase, the `<phase_instructions>` section is omitted entirely (not an error — some phases may not have templates). A warning is logged to stderr: `[Harness] No template found for phase: <phaseId>`.
+
 Behavior:
 1. Read the session's pad from `.hivemind/session-agents-trackpad/`
-2. Call `reconstructState()` from kernel
-3. Read `.hivemind/templates/phase-N.txt` for the current phase's prompt template
-4. Append to `output.system`:
+2. Call `reconstructState()` from kernel (passes `reviewDir` for gate evaluation)
+3. Resolve template path: `.hivemind/templates/{currentPhase}.txt` — read if exists, skip if not
+4. Append to `output.system` (which is `string[]` — use `.push()`, not string concatenation):
+   ```typescript
+   output.system.push(`
+<harness_context>
+Session: pad-00N
+Current phase: phase-1, Task: phase-1-1
+Unlocked checkpoints: phase-0-1, phase-1-1, ...
+Gate retries: phase-1-2=1 (of max 3)
+
+<phase_instructions>
+[contents of {currentPhase}.txt — omitted if file does not exist]
+</phase_instructions>
+
+<prerequisites_reminder>
+Before proceeding, ensure: [list locked requirements for current phase]
+</prerequisites_reminder>
+
+<stop_conditions>
+Stop if: gate fails 3x on same checkpoint, user sends "pause"/"stop", all checkpoints complete
+</stop_conditions>
+</harness_context>
+`)
    ```
-   <harness_context>
-   Session: pad-00N
-   Current phase: phase-1, Task: phase-1-1
-   Unlocked checkpoints: phase-0-1, phase-1-1, ...
-   Gate retries: phase-1-2=1 (of max 3)
-   
-   <phase_instructions>
-   [contents of phase-N.txt]
-   </phase_instructions>
-   
-   <prerequisites_reminder>
-   Before proceeding, ensure: [list locked requirements for current phase]
-   </prerequisites_reminder>
-   
-   <stop_conditions>
-   Stop if: gate fails 3x on same checkpoint, user sends "pause"/"stop", all checkpoints complete
-   </stop_conditions>
-   </harness_context>
-   ```
 
-This fires before every LLM call, ensuring the orchestrator always has current state even after compaction.
-
-### 4.4 Gate Watcher (`hooks/gate-watcher.ts`)
-
-**Hook:** `tool.execute.after`
-
-Behavior:
-1. Check if the completed tool call was a `task` dispatch to `code-critic`
-2. If yes, read all review files from `.hivemind/reviews/`
-3. Call `evaluateGate()` from kernel
-4. If `gateResult.gateStatus === "unlocked"`:
-   - Call `Session.setPermission()` to enable next phase tools
-   - `PermissionNext.disabled()` filters out denied tools from the LLM's tool list on the next call
-   - The permission ruleset uses last-match-wins semantics: broad deny rules first, specific allow rules last
-   - The next LLM call will pick up updated permissions + injected prompt
-5. If `gateResult.gateStatus === "blocked"`:
-   - Inject blocker information via the prompt injection hook (next call)
-
-**Race condition prevention:** The hook runs synchronously within the tool execution pipeline. No concurrent state mutation is possible — OpenCode processes hooks sequentially per session.
+This fires before every LLM call, ensuring the orchestrator always has current state even after compaction. This is the **primary and only** compaction recovery mechanism — no separate compaction-monitor hook or orchestrator self-setup file reads are needed.
 
 ### 4.5 Tool Descriptor (`hooks/tool-descriptor.ts`)
 
 **Hook:** `tool.definition`
 
 Behavior:
-1. If `toolID === "skill"`, append current phase context to the tool's description
-2. Example: `"Current harness phase: phase-2. Load the http-handlers skill for instructions."`
-3. This tells the agent which skill to load without bloating the base context
+1. Read current gate state from `.hivemind/`
+2. For each tool, check if it's locked for the current phase
+3. If locked, append a warning to the tool's description:
+   ```
+   ⚠️ LOCKED: This tool is not available until phase phase-2 passes gate validation.
+   Current phase: phase-1. Complete all tasks and pass code-critic review to unlock.
+   ```
+4. For the `skill` tool, append current phase context:
+   ```
+   Current harness phase: phase-2. Load the http-handlers skill for instructions.
+   ```
 
-**PRUNE_PROTECTED_TOOLS:** The OpenCode platform protects the `skill` tool from pruning by default (`PRUNE_PROTECTED_TOOLS = ["skill"]`). This means loaded SKILL.md content survives `SessionCompaction.prune()`. The harness relies on this platform guarantee. Additionally, the orchestrator agent's self-setup protocol (§6.2) instructs the agent to reload its skill as the first action on every turn, providing a belt-and-suspenders recovery path.
+This provides **visual tool gating** — the LLM sees which tools are locked directly in the tool description, reducing wasted tool call attempts.
 
-### 4.6 Compaction Monitor (`hooks/compaction-monitor.ts`)
-
-**Hook:** `event`
-
-Behavior:
-1. Listen for `session.compacted` events
-2. Log the compaction event to `.hivemind/session-agents-trackpad/pad-NNN.json` (update `updatedAt`)
-3. The `prompt-inject.ts` hook will automatically inject reconstructed state on the next LLM call
-
-This hook is informational only — it does not block or modify any flow. Its purpose is to leave an audit trail of compaction events for debugging.
-
-### 4.7 Gate Check Tool (`tools/gate-check.ts`)
+### 4.6 Gate Check Tool (`tools/gate-check.ts`)
 
 Custom tool registered via `tool()` API. The `code-critic` subagent uses this.
 
@@ -319,9 +596,22 @@ Custom tool registered via `tool()` API. The `code-critic` subagent uses this.
 
 **Behavior:**
 1. Read `.hivemind/requirements.lock.json` and validate requirements integrity
-2. Run test command (configurable, default: `bun test`) — capture exit code
+2. Run test command (configurable via `gateCheck.testCommand` in `.hivemind/config.json`, default: `bun test`) — capture exit code
+   - **Timeout:** configurable via `gateCheck.timeoutMs` (default: `120_000` = 2 minutes). If the subprocess exceeds the timeout, kill it and return:
+     ```
+     Gate check for phase-1/phase-1-1: BLOCKED
+     
+     FAIL tests: Timed out after 120s (command: bun test)
+     ```
+   - Use `child_process.spawn()` with a `setTimeout` kill wrapper — never `exec()` which buffers indefinitely
 3. Check for existing review files for dependencies listed in `dependsOn`
-4. Return structured result:
+4. If the lock file is missing or invalid JSON, return immediately:
+   ```
+   Gate check for phase-1/phase-1-1: BLOCKED
+   
+   FAIL requirements: requirements.lock.json not found or invalid
+   ```
+5. Return structured result:
    ```
    Gate check for phase-1/phase-1-1: ALL PASSED (or BLOCKED)
    
@@ -357,6 +647,28 @@ Creates:
 ├── plans/
 │   └── pipeline.md             # Empty pipeline template
 └── requirements.lock.json      # Not created until Phase 0 completes
+```
+
+Also generates `.opencode/` assets:
+```
+.opencode/
+├── agents/
+│   ├── orchestrator.md         # Primary coordinator with self-setup protocol
+│   ├── phase-worker.md         # Subagent: executes tasks
+│   ├── code-critic.md          # Subagent: read-only reviewer
+│   ├── explore.md              # Subagent: fast codebase investigation
+│   └── researcher.md           # Subagent: web/API cross-validation
+├── commands/
+│   ├── harness-execute.md      # Execute current phase task
+│   ├── harness-review.md       # Review completed work
+│   ├── harness-doctor.md       # Diagnose harness state issues
+│   └── harness-status.md       # Show current state
+└── skills/
+    ├── gate-review/            # code-critic review protocol
+    ├── onboarding/             # Tool usage + harness conventions
+    ├── api-types/              # Example: type definitions
+    ├── http-handlers/          # Example: handler implementation
+    └── testing/                # Example: test patterns
 ```
 
 ### 5.3 `harness validate`
@@ -416,11 +728,14 @@ For each pending checkpoint:
 3. Gate pass → update todowrite, advance
 4. Gate fail → resume phase-worker (pass task_id) with fix instructions
 
-## Subagent Permission Templates
-When creating phase-worker sessions, include these permission rules:
-- Phase 1: edit allow src/types/*, bash allow 'bun test *'
-- Phase 2: edit allow src/handlers/*, bash allow 'bun test *'
-- (adjust per project structure)
+## Permission Model
+All agents receive broad static permissions in their agent definitions.
+The `permission.ask` hook performs the real runtime gating based on:
+- Current phase state (from SessionPad)
+- Phase-scoped edit paths (from RequirementsLock task.editScope)
+- Data-driven bash allowlists (from RequirementsLock task.gate conditions)
+
+No dynamic permission injection or agent file generation is needed.
 
 ## Stop Conditions
 - All checkpoints completed
@@ -453,9 +768,31 @@ When creating phase-worker sessions, include these permission rules:
 | Command | Purpose |
 |---------|---------|
 | `harness-doctor` | Diagnose harness state issues (delegates to CLI `harness validate`) |
-| `start-work` | Initialize a new pipeline run (delegates to CLI `harness init` + creates pad) |
-| `plan` | Create/modify pipeline plan (edits `.hivemind/plans/pipeline.md`) |
-| `ultrawork` | Autonomous execution mode — runs all remaining phases without human intervention |
+| `harness-execute` | Execute current phase task (routes to phase-worker with `$ARGUMENTS` for phase/task) |
+| `harness-review` | Review completed work (routes to code-critic with `subtask: true`) |
+| `harness-status` | Show current state (reads pad + lock + reviews, outputs summary) |
+
+**Command example with $ARGUMENTS and !bash:**
+
+```markdown
+<!-- .opencode/commands/harness-execute.md -->
+---
+description: Execute a harness phase task
+agent: phase-worker
+subtask: true
+---
+
+Execute the current harness checkpoint.
+
+Current state:
+!`harness status`
+
+Phase: $1
+Task: $2
+
+Load the appropriate skill via the skill tool first, then execute the task.
+Work only within the scope defined by the current phase's permission profile.
+```
 
 ### 6.5 Skills (5)
 
@@ -503,7 +840,7 @@ orchestrator → todowrite(checkpoint: pending)
     → resetRetry(padId, checkpointId)
     → gate-watcher hook fires
     → evaluateGate() → gateResult.unlocked updated
-    → Session.setPermission() enables next phase tools
+    → permission.ask hook now allows next phase tools
     → prompt-inject adds next phase template to next LLM call
     
   if rejected (retries tracked in pad.gateRetries):
@@ -520,9 +857,12 @@ orchestrator → todowrite(checkpoint: pending)
 When `SessionCompaction.prune()` fires:
 1. In-context message history is lost
 2. But durable state survives: pad JSON, lock file, review files, pipeline.md
-3. On next turn, orchestrator's self-setup protocol reads these files
-4. Plugin's `prompt-inject.ts` injects reconstructed `<harness_context>` into system prompt
-5. Orchestrator continues from where it left off
+3. On next LLM call, `prompt-inject.ts` hook fires (`experimental.chat.system.transform`)
+4. Hook calls `reconstructState()` and injects full `<harness_context>` into `output.system` (via `.push()`)
+5. Orchestrator receives reconstructed state in system prompt — no file reads needed
+6. Orchestrator continues from where it left off
+
+**Design note:** This is the sole compaction recovery mechanism. The `prompt-inject` hook is the most reliable because it doesn't depend on agent behavior compliance (self-setup protocol) or internal compaction APIs (`experimental.session.compacting` whose output survival is unverified).
 
 ---
 
@@ -537,7 +877,7 @@ All paths relative to project root:
 │   ├── pad-002.json              # Max 3 pads for 3 parallel sessions
 │   └── pad-003.json
 ├── reviews/
-│   ├── phase-1-1.json            # ReviewVerdict (Zod validated)
+│   ├── phase-1-1.json            # ReviewVerdict (Zod validated) — latest review only
 │   ├── phase-1-2.json
 │   └── ...
 ├── templates/
@@ -548,6 +888,14 @@ All paths relative to project root:
 │   └── pipeline.md               # Human-readable pipeline state
 └── requirements.lock.json        # RequirementsLock (Zod validated)
 ```
+
+**Review file naming convention:**
+
+- File name: `{taskId}.json` (e.g., `phase-1-1.json`)
+- **Latest review is the canonical verdict** — the gate evaluation reads this file for the current decision.
+- **Previous reviews are archived** — on retry, the existing file is renamed to `{taskId}.v{N}.json` before writing the new verdict. This preserves diagnostic history for human escalation.
+- Retry history is tracked in `SessionPad.gateRetries[taskId]` (counter).
+- Archive files are skipped by `state-recovery.ts` (only `*.json` files matching `{taskId}.json` pattern are loaded as canonical verdicts).
 
 ---
 
@@ -583,7 +931,7 @@ End-to-end test: `harness init` → write requirements → simulate gate pass �
 | Constraint | Value |
 |-----------|-------|
 | Max LOC per file | 300 |
-| Kernel dependencies | Zod v4 only |
+| Kernel dependencies | Zod v4 only (no glob library — minimal matchesGlob inline) |
 | Plugin dependencies | @opencode-ai/plugin, kernel |
 | State persistence | File-based JSON (Zod validated) |
 | Max parallel sessions | 3 (3 pads) |
@@ -592,6 +940,11 @@ End-to-end test: `harness init` → write requirements → simulate gate pass �
 | Deep-clone-on-read | Yes (pad-store, lock-store) |
 | Error prefix | `[Harness]` on all thrown errors |
 | TypeScript | strict: true, noUnusedLocals, noUnusedParameters |
+| Package structure | Single package with internal module boundaries |
+| Compaction recovery | `prompt-inject` hook only (single mechanism) |
+| Bash gating | Data-driven from lock file gate conditions |
+| Permission gating | Hook-based (all agents get broad static permissions) |
+| Permission types | Adapted from OpenCode's real Permission type |
 
 ---
 

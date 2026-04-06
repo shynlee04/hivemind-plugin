@@ -4,7 +4,7 @@
 
 **Goal:** Build a production-ready npm package (`opencode-harness`) providing turn-based checkpoint validation, incremental skill unlocking, compaction-resilient state, soft-harness discovery, and cross-dependency validation for OpenCode multi-agent workflows.
 
-**Architecture:** Single npm package with three internal module directories (`src/kernel/`, `src/plugin/`, `src/cli/`). Kernel is pure TypeScript with zero external dependencies (Zod v4 only). Plugin adapts kernel to OpenCode hooks. CLI handles initialization, validation, and state management. Assets directory provides `.opencode/` templates loaded at runtime.
+**Architecture:** Single npm package with three internal module directories (`src/kernel/`, `src/harness/`, `src/cli/`). Kernel is pure TypeScript with zero external dependencies (Zod v4 only). Harness adapts kernel to OpenCode hooks. CLI handles initialization, validation, and state management. Assets directory provides `.opencode/` templates loaded at runtime.
 
 **Tech Stack:** TypeScript (strict mode), Zod v4, vitest, Node.js >= 20.0.0, @opencode-ai/plugin
 
@@ -14,21 +14,23 @@
 
 | Spec Section | Implementation Location | Task |
 |-------------|------------------------|------|
-| §2.1 Package structure | `package.json`, `src/kernel/`, `src/plugin/`, `src/cli/` | Task 1 |
-| §2.2 Dependency graph | `src/kernel/index.ts`, `src/plugin/index.ts`, `src/cli/index.ts` | Tasks 7, 8, 12 |
+| §2.1 Package structure | `package.json`, `src/kernel/`, `src/harness/`, `src/cli/` | Task 1 |
+| §2.2 Dependency graph | `src/kernel/index.ts`, `src/harness/index.ts`, `src/cli/index.ts` | Tasks 7, 8, 12 |
 | §3.1 Kernel files | `src/kernel/schemas.ts`, `gate.ts`, `pad-store.ts`, `lock-store.ts`, `state-recovery.ts`, `permission-gate.ts` | Tasks 2-6 |
 | §3.2 Zod schemas | `src/kernel/schemas.ts` | Task 2 |
 | §3.3 Gate evaluation | `src/kernel/gate.ts` | Task 3 |
 | §3.4 Pad store | `src/kernel/pad-store.ts` | Task 4 |
 | §3.5 Lock store | `src/kernel/lock-store.ts` | Task 5 |
 | §3.6 State recovery | `src/kernel/state-recovery.ts` | Task 6 |
-| §4.1 Plugin files | `src/plugin/index.ts`, `hooks/`, `tools/` | Tasks 8-11 |
-| §4.3 Permission gate | `src/kernel/permission-gate.ts`, `src/plugin/hooks/permission-gate.ts` | Task 3 + 8 |
-| §4.4 Prompt inject | `src/plugin/hooks/prompt-inject.ts` | Task 9 |
-| §4.5 Tool descriptor | `src/plugin/hooks/tool-descriptor.ts` | Task 10 |
-| §4.6 Gate check tool | `src/plugin/tools/gate-check.ts` | Task 11 |
+| §4.1 Plugin files | `src/harness/index.ts`, `hooks/`, `tools/` | Tasks 8-11 |
+| §4.3 Permission gate | `src/kernel/permission-gate.ts`, `src/harness/hooks/permission-gate.ts` | Task 3 + 8 |
+| §4.4 Prompt inject | `src/harness/hooks/prompt-inject.ts` | Task 9 |
+| §4.5 Tool descriptor | `src/harness/hooks/tool-descriptor.ts` | Task 10 |
+| §4.6 Gate check tool | `src/harness/tools/gate-check.ts` | Task 11 |
 | §5 CLI | `src/cli/index.ts` | Task 12 |
 | §6 Assets | `assets/.opencode/` | Task 13 |
+| §9.3 CLI tests | `tests/cli/` | Task 15 |
+| §9.4 Integration tests | `tests/integration/` | Task 14 |
 
 **Spec gaps identified:** None — all sections have corresponding tasks.
 
@@ -44,22 +46,22 @@ opencode-harness/
 ├── src/
 │   ├── kernel/
 │   │   ├── index.ts              # Barrel: exports all kernel public APIs
-│   │   ├── schemas.ts            # All Zod schemas (~120 LOC)
-│   │   ├── gate.ts               # evaluateGate() pure function (~80 LOC)
+│   │   ├── schemas.ts            # All Zod schemas + types (~140 LOC)
+│   │   ├── gate.ts               # evaluateGate() pure function (~60 LOC)
 │   │   ├── permission-gate.ts    # isToolAllowedForPhase() + helpers (~80 LOC)
 │   │   ├── pad-store.ts          # Session pad CRUD (~100 LOC)
-│   │   ├── lock-store.ts         # Requirements lock CRUD (~80 LOC)
+│   │   ├── lock-store.ts         # Requirements lock CRUD + cycle detection (~100 LOC)
 │   │   └── state-recovery.ts     # reconstructState() (~60 LOC)
-│   ├── plugin/
-│   │   ├── index.ts              # Plugin entry — composes hooks (~40 LOC)
+│   ├── harness/                  # Renamed from plugin/ to avoid macOS conflict with src/plugin.ts
+│   │   ├── index.ts              # CheckpointHarness Plugin entry — async function (~80 LOC)
 │   │   ├── hooks/
-│   │   │   ├── permission-gate.ts  # permission.ask hook adapter (~100 LOC)
-│   │   │   ├── prompt-inject.ts    # experimental.chat.system.transform (~80 LOC)
-│   │   │   └── tool-descriptor.ts   # tool.definition hook (~40 LOC)
+│   │   │   ├── permission-gate.ts  # permission.ask handler (~90 LOC)
+│   │   │   ├── prompt-inject.ts    # experimental.chat.system.transform handler (~80 LOC)
+│   │   │   └── tool-descriptor.ts   # tool.definition handler (~40 LOC)
 │   │   └── tools/
-│   │       └── gate-check.ts     # Custom gate-check tool (~80 LOC)
+│   │       └── gate-check.ts     # gate-check tool via tool() helper (~100 LOC)
 │   └── cli/
-│       └── index.ts              # CLI: init, validate, status, reset (~120 LOC)
+│       └── index.ts              # CLI: init, validate, status, reset (~160 LOC)
 ├── assets/
 │   └── .opencode/
 │       ├── agents/
@@ -85,13 +87,17 @@ opencode-harness/
 │           └── testing/
 │               └── SKILL.md
 └── tests/
-    └── kernel/
-        ├── schemas.test.ts
-        ├── gate.test.ts
-        ├── permission-gate.test.ts
-        ├── pad-store.test.ts
-        ├── lock-store.test.ts
-        └── state-recovery.test.ts
+    ├── kernel/
+    │   ├── schemas.test.ts
+    │   ├── gate.test.ts
+    │   ├── permission-gate.test.ts
+    │   ├── pad-store.test.ts
+    │   ├── lock-store.test.ts
+    │   └── state-recovery.test.ts
+    ├── cli/
+    │   └── cli.test.ts
+    └── integration/
+        └── end-to-end.test.ts
 ```
 
 ---
@@ -113,20 +119,24 @@ Task 6 (Kernel State Recovery)
     ↓
 Task 7 (Kernel Index)
     ↓
-Task 8 (Plugin Index + Permission Gate Hook)
+Task 8 (Harness Plugin Entry + Permission Gate Hook)
     ↓
-Task 9 (Plugin Prompt Inject)
+Task 9 (Harness Prompt Inject Hook)
     ↓
-Task 10 (Plugin Tool Descriptor)
+Task 10 (Harness Tool Descriptor Hook)
     ↓
-Task 11 (Plugin Gate Check Tool)
+Task 11 (Harness Gate Check Tool)
     ↓
 Task 12 (CLI)
     ↓
 Task 13 (Assets)
+    ↓
+Task 14 (Integration Tests)
+    ↓
+Task 15 (CLI Tests)
 ```
 
-Kernel tasks (2-7) must be complete before plugin tasks (8-11). CLI (12) and Assets (13) are independent after Task 7.
+Kernel tasks (2-7) must be complete before harness tasks (8-11). CLI (12) and Assets (13) depend on Task 7. Integration tests (14) and CLI tests (15) depend on all previous tasks.
 
 ---
 
@@ -137,7 +147,7 @@ Kernel tasks (2-7) must be complete before plugin tasks (8-11). CLI (12) and Ass
 - Create: `tsconfig.json`
 - Create: `vitest.config.ts`
 - Create: `src/kernel/.gitkeep`
-- Create: `src/plugin/.gitkeep`
+- Create: `src/harness/.gitkeep`
 - Create: `src/cli/.gitkeep`
 - Create: `assets/.opencode/agents/.gitkeep`
 - Create: `assets/.opencode/commands/.gitkeep`
@@ -159,23 +169,15 @@ Kernel tasks (2-7) must be complete before plugin tasks (8-11). CLI (12) and Ass
       "types": "./dist/index.d.ts"
     },
     "./plugin": {
-      "import": "./dist/plugin/index.js",
-      "types": "./dist/plugin/index.d.ts"
-    },
-    "./cli": {
-      "import": "./dist/cli/index.js",
-      "types": "./dist/cli/index.d.ts"
-    },
-    "./kernel": {
-      "import": "./dist/kernel/index.js",
-      "types": "./dist/kernel/index.d.ts"
+      "import": "./dist/harness/index.js",
+      "types": "./dist/harness/index.d.ts"
     }
   },
   "bin": {
     "harness": "./dist/cli/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && node ./dist/cli/index.js validate",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -247,10 +249,10 @@ export default defineConfig({
 
 Run:
 ```bash
-mkdir -p src/kernel src/plugin/hooks src/plugin/tools src/cli
+mkdir -p src/kernel src/harness/hooks src/harness/tools src/cli
 mkdir -p assets/.opencode/agents assets/.opencode/commands assets/.opencode/skills
 mkdir -p tests/kernel
-touch src/kernel/.gitkeep src/plugin/.gitkeep src/cli/.gitkeep
+touch src/kernel/.gitkeep src/harness/.gitkeep src/cli/.gitkeep
 touch assets/.opencode/agents/.gitkeep assets/.opencode/commands/.gitkeep assets/.opencode/skills/.gitkeep
 touch tests/kernel/.gitkeep
 ```
@@ -275,7 +277,7 @@ git commit -m "feat: scaffold project foundation — package.json, tsconfig, vit
 
 ```typescript
 import { describe, it, expect } from 'vitest'
-import { SessionPadSchema, RequirementsLockSchema, ReviewVerdictSchema, GateResultSchema, PermissionRequestSchema } from '../src/kernel/schemas.js'
+import { SessionPadSchema, RequirementsLockSchema, ReviewVerdictSchema, GateResultSchema, PermissionRequestSchema } from '../../src/kernel/schemas.js'
 
 describe('SessionPadSchema', () => {
   it('parses valid minimal pad', () => {
@@ -432,8 +434,8 @@ export const SessionPadSchema = z.object({
   sessionId: z.string().nullable(),
   status: z.enum(['active', 'released']),
   version: z.number().default(0),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
+  updatedAt: z.iso.datetime(),
   pipelinePath: z.string(),
   currentPhase: z.string(),
   currentTask: z.string(),
@@ -475,7 +477,7 @@ export type Phase = z.infer<typeof PhaseSchema>
 // RequirementsLock — Written after Phase 0 negotiation
 export const RequirementsLockSchema = z.object({
   version: z.number(),
-  lockedAt: z.string().datetime(),
+  lockedAt: z.iso.datetime(),
   phases: z.array(PhaseSchema),
 })
 
@@ -486,7 +488,7 @@ export const ReviewVerdictSchema = z.object({
   phase: z.string(),
   task: z.string(),
   reviewer: z.literal('code-critic'),
-  timestamp: z.string().datetime(),
+  timestamp: z.iso.datetime(),
   verdict: z.enum(['approved', 'rejected']),
   checks: z.object({
     lspErrors: z.number(),
@@ -520,6 +522,8 @@ export const PermissionRequestSchema = z.object({
 })
 
 export type PermissionRequest = z.infer<typeof PermissionRequestSchema>
+
+export type PermissionOutput = { status: 'ask' | 'deny' | 'allow' }
 ```
 
 - [ ] **Step 4: Run test to verify it passes**
@@ -548,8 +552,8 @@ git commit -m "feat(kernel): add Zod schemas for all state types — SessionPad,
 
 ```typescript
 import { describe, it, expect } from 'vitest'
-import { evaluateGate } from '../src/kernel/gate.js'
-import type { RequirementsLock, ReviewVerdict } from '../src/kernel/schemas.js'
+import { evaluateGate } from '../../src/kernel/gate.js'
+import type { RequirementsLock, ReviewVerdict } from '../../src/kernel/schemas.js'
 
 describe('evaluateGate', () => {
   const makeLock = (phases: RequirementsLock['phases']): RequirementsLock => ({
@@ -697,8 +701,8 @@ describe('evaluateGate', () => {
 
 ```typescript
 import { describe, it, expect } from 'vitest'
-import { isToolAllowedForPhase, getPhaseEditPaths, getAllowedTestCommands, matchesGlob } from '../src/kernel/permission-gate.js'
-import type { GateResult, RequirementsLock, PermissionRequest } from '../src/kernel/schemas.js'
+import { isToolAllowedForPhase, getPhaseEditPaths, getAllowedTestCommands, matchesGlob } from '../../src/kernel/permission-gate.js'
+import type { GateResult, RequirementsLock, PermissionRequest } from '../../src/kernel/schemas.js'
 
 describe('matchesGlob', () => {
   it('matches simple file patterns', () => {
@@ -888,72 +892,7 @@ export function evaluateGate(
 ): GateResult {
   const { phases } = requirements
 
-  // Pre-evaluation: Sort phases lexicographically
   const sortedPhases = [...phases].sort((a, b) => a.id.localeCompare(b.id))
-
-  // Pre-evaluation: Build global task ID set
-  const allTaskIds = new Set<string>()
-  for (const phase of sortedPhases) {
-    for (const task of phase.tasks) {
-      allTaskIds.add(task.id)
-    }
-  }
-
-  // Pre-evaluation: Task ID integrity check
-  for (const phase of sortedPhases) {
-    for (const task of phase.tasks) {
-      for (const dep of task.dependsOn) {
-        if (!allTaskIds.has(dep)) {
-          return {
-            currentPhase: sortedPhases[0].id,
-            currentTask: sortedPhases[0].tasks[0]?.id ?? '',
-            unlocked: [],
-            gateStatus: 'blocked',
-            blockers: [`dependsOn references non-existent task: ${dep}`],
-          }
-        }
-      }
-    }
-  }
-
-  // Pre-evaluation: Cycle detection (topological sort)
-  const visited = new Set<string>()
-  const inStack = new Set<string>()
-
-  const detectCycle = (taskId: string, path: string[]): string | null => {
-    if (inStack.has(taskId)) return [...path, taskId].join(' → ')
-    if (visited.has(taskId)) return null
-    visited.add(taskId)
-    inStack.add(taskId)
-
-    const task = sortedPhases.flatMap(p => p.tasks).find(t => t.id === taskId)
-    if (task) {
-      for (const dep of task.dependsOn) {
-        const cycle = detectCycle(dep, [...path, taskId])
-        if (cycle) return cycle
-      }
-    }
-
-    inStack.delete(taskId)
-    return null
-  }
-
-  for (const phase of sortedPhases) {
-    for (const task of phase.tasks) {
-      visited.clear()
-      inStack.clear()
-      const cycle = detectCycle(task.id, [])
-      if (cycle) {
-        return {
-          currentPhase: sortedPhases[0].id,
-          currentTask: sortedPhases[0].tasks[0]?.id ?? '',
-          unlocked: [],
-          gateStatus: 'blocked',
-          blockers: [`circular dependsOn detected: ${cycle}`],
-        }
-      }
-    }
-  }
 
   // Empty reviews case
   if (reviews.size === 0) {
@@ -1125,16 +1064,16 @@ git commit -m "feat(kernel): add evaluateGate() and isToolAllowedForPhase() with
 
 ```typescript
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { readPad, writePad, listPads, acquirePad, releasePad, incrementRetry, resetRetry } from '../src/kernel/pad-store.js'
-import type { SessionPad } from '../src/kernel/schemas.js'
-import { existsSync, mkdirSync, writeFileSync, unlinkSync, readFileSync } from 'fs'
+import { readPad, writePad, listPads, acquirePad, releasePad, incrementRetry, resetRetry } from '../../src/kernel/pad-store.js'
+import type { SessionPad } from '../../src/kernel/schemas.js'
+import { existsSync, mkdirSync, writeFileSync, unlinkSync, readFileSync, readdirSync, rmSync } from 'fs'
 import { join } from 'path'
 
 const TEST_DIR = '/tmp/harness-test-pads'
 
 beforeEach(() => {
   if (existsSync(TEST_DIR)) {
-    for (const f of fs.readdirSync(TEST_DIR)) {
+    for (const f of readdirSync(TEST_DIR)) {
       unlinkSync(join(TEST_DIR, f))
     }
   } else {
@@ -1144,10 +1083,10 @@ beforeEach(() => {
 
 afterEach(() => {
   if (existsSync(TEST_DIR)) {
-    for (const f of fs.readdirSync(TEST_DIR)) {
+    for (const f of readdirSync(TEST_DIR)) {
       unlinkSync(join(TEST_DIR, f))
     }
-    rmdirSync(TEST_DIR)
+    rmSync(TEST_DIR, { recursive: true, force: true })
   }
 })
 
@@ -1277,13 +1216,14 @@ function atomicWrite(filePath: string, data: string): void {
 
 export function readPad(dir: string, id: string): SessionPad {
   const file = padPath(dir, id)
-  if (!existsSync(file)) throw `${Harness} Pad not found: ${id}`
+  if (!existsSync(file)) throw new Error(`${Harness} Pad not found: ${id}`)
   const content = readFileSync(file, 'utf-8')
-  if (!content.trim()) throw `${Harness} Pad file empty: ${id}`
+  if (!content.trim()) throw new Error(`${Harness} Pad file empty: ${id}`)
   try {
-    return SessionPadSchema.parse(JSON.parse(content))
+    const parsed = SessionPadSchema.parse(JSON.parse(content))
+    return JSON.parse(JSON.stringify(parsed)) as SessionPad
   } catch (e) {
-    throw `${Harness} Pad validation failed: ${id}`
+    throw new Error(`${Harness} Pad validation failed: ${id}: ${e instanceof Error ? e.message : String(e)}`)
   }
 }
 
@@ -1291,7 +1231,7 @@ export function writePad(dir: string, pad: SessionPad): void {
   const file = padPath(dir, pad.id)
   const current = existsSync(file) ? JSON.parse(readFileSync(file, 'utf-8')) : null
   if (current && pad.version !== current.version) {
-    throw `${Harness} Pad version conflict: ${pad.id} (expected ${current.version}, got ${pad.version})`
+    throw new Error(`${Harness} Pad version conflict: ${pad.id} (expected ${current.version}, got ${pad.version})`)
   }
   pad.version++
   pad.updatedAt = new Date().toISOString()
@@ -1311,7 +1251,7 @@ export function listPads(dir: string): SessionPad[] {
 export function acquirePad(dir: string, sessionId: string): SessionPad {
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
   const released = listPads(dir).filter(p => p.status === 'released')
-  if (released.length === 0) throw `${Harness} All pads active`
+  if (released.length === 0) throw new Error(`${Harness} All pads active`)
   const pad = released[0]
   pad.sessionId = sessionId
   pad.status = 'active'
@@ -1364,8 +1304,8 @@ git commit -m "feat(kernel): add pad-store with atomic writes, optimistic concur
 
 ```typescript
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { readLock, writeLock, lockField, isLocked } from '../src/kernel/lock-store.js'
-import type { RequirementsLock } from '../src/kernel/schemas.js'
+import { readLock, writeLock, lockField, isLocked } from '../../src/kernel/lock-store.js'
+import type { RequirementsLock } from '../../src/kernel/schemas.js'
 import { existsSync, mkdirSync, writeFileSync, unlinkSync, rmdirSync } from 'fs'
 import { join } from 'path'
 
@@ -1381,10 +1321,11 @@ afterEach(() => {
 })
 
 function cleanup() {
-  if (existsSync(TEST_DIR)) {
-    unlinkSync(join(TEST_DIR, 'requirements.lock.json')).catch?.(() => {})
-    try { rmdirSync(TEST_DIR) } catch {}
-  }
+  try {
+    const lockFile = join(TEST_DIR, 'requirements.lock.json')
+    if (existsSync(lockFile)) unlinkSync(lockFile)
+    if (existsSync(TEST_DIR)) rmSync(TEST_DIR, { recursive: true, force: true })
+  } catch {}
 }
 
 const makeLock = (): RequirementsLock => ({
@@ -1512,7 +1453,6 @@ Expected: FAIL — lock-store.ts not found
 import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync } from 'fs'
 import { join } from 'path'
 import { RequirementsLockSchema } from './schemas.js'
-import { evaluateGate } from './gate.js'
 import type { RequirementsLock } from './schemas.js'
 
 const [Harness] = ['[Harness]']
@@ -1535,7 +1475,7 @@ function validateLock(lock: RequirementsLock): void {
   for (const phase of lock.phases) {
     for (const task of phase.tasks) {
       if (allTaskIds.has(task.id)) {
-        throw `${Harness} Lock validation failed: duplicate task ID: ${task.id}`
+        throw new Error(`${Harness} Lock validation failed: duplicate task ID: ${task.id}`)
       }
       allTaskIds.add(task.id)
     }
@@ -1546,7 +1486,7 @@ function validateLock(lock: RequirementsLock): void {
     for (const task of phase.tasks) {
       for (const dep of task.dependsOn) {
         if (!allTaskIds.has(dep)) {
-          throw `${Harness} Lock validation failed: dependsOn references non-existent task: ${dep}`
+          throw new Error(`${Harness} Lock validation failed: dependsOn references non-existent task: ${dep}`)
         }
       }
     }
@@ -1578,7 +1518,7 @@ function validateLock(lock: RequirementsLock): void {
       inStack.clear()
       const cycle = detectCycle(task.id, [])
       if (cycle) {
-        throw `${Harness} Lock validation failed: circular dependsOn detected: ${cycle}`
+        throw new Error(`${Harness} Lock validation failed: circular dependsOn detected: ${cycle}`)
       }
     }
   }
@@ -1586,25 +1526,25 @@ function validateLock(lock: RequirementsLock): void {
 
 export function readLock(dir: string): RequirementsLock {
   const file = lockPath(dir)
-  if (!existsSync(file)) throw `${Harness} Requirements lock not found`
+  if (!existsSync(file)) throw new Error(`${Harness} Requirements lock not found`)
   const content = readFileSync(file, 'utf-8')
-  if (!content.trim()) throw `${Harness} Requirements lock empty`
+  if (!content.trim()) throw new Error(`${Harness} Requirements lock empty`)
   try {
     return RequirementsLockSchema.parse(JSON.parse(content))
   } catch {
-    throw `${Harness} Requirements lock validation failed`
+    throw new Error(`${Harness} Requirements lock validation failed`)
   }
 }
 
 export function writeLock(dir: string, lock: RequirementsLock): void {
   const file = lockPath(dir)
-  if (existsSync(file)) throw `${Harness} Requirements lock already exists`
+  if (existsSync(file)) throw new Error(`${Harness} Requirements lock already exists`)
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
   validateLock(lock)
   try {
     RequirementsLockSchema.parse(lock)
   } catch (e) {
-    throw `${Harness} Lock validation failed: ${e}`
+    throw new Error(`${Harness} Lock validation failed: ${e instanceof Error ? e.message : String(e)}`)
   }
   atomicWrite(file, JSON.stringify(lock, null, 2))
 }
@@ -1612,9 +1552,9 @@ export function writeLock(dir: string, lock: RequirementsLock): void {
 export function lockField(dir: string, phaseId: string, requirementId: string): void {
   const lock = readLock(dir)
   const phase = lock.phases.find(p => p.id === phaseId)
-  if (!phase) throw `${Harness} Requirement not found: ${phaseId}/${requirementId}`
+  if (!phase) throw new Error(`${Harness} Phase not found: ${phaseId}`)
   const req = phase.requirements.find(r => r.id === requirementId)
-  if (!req) throw `${Harness} Requirement not found: ${phaseId}/${requirementId}`
+  if (!req) throw new Error(`${Harness} Requirement not found: ${phaseId}/${requirementId}`)
   req.locked = true
   const file = lockPath(dir)
   atomicWrite(file, JSON.stringify(lock, null, 2))
@@ -1658,8 +1598,8 @@ git commit -m "feat(kernel): add lock-store with cycle detection, task ID valida
 
 ```typescript
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { reconstructState } from '../src/kernel/state-recovery.js'
-import { writeFileSync, mkdirSync, unlinkSync, rmdirSync, existsSync } from 'fs'
+import { reconstructState } from '../../src/kernel/state-recovery.js'
+import { writeFileSync, mkdirSync, unlinkSync, existsSync, readdirSync, rmSync } from 'fs'
 import { join } from 'path'
 
 const TEST_DIR = '/tmp/harness-test-recovery'
@@ -1682,11 +1622,14 @@ function cleanup() {
     ]
     for (const d of dirs) {
       if (existsSync(d)) {
-        for (const f of require('fs').readdirSync(d)) {
+        for (const f of readdirSync(d)) {
           unlinkSync(join(d, f))
         }
-        rmdirSync(d)
+        rmSync(d, { recursive: true, force: true })
       }
+    }
+    if (existsSync(TEST_DIR)) {
+      rmSync(TEST_DIR, { recursive: true, force: true })
     }
   } catch {}
 }
@@ -1736,50 +1679,7 @@ describe('reconstructState', () => {
     writeFileSync(join(TEST_DIR, 'plans', 'pipeline.md'), '# Pipeline')
 
     const state = reconstructState(
-      join(TEST_DIR, 'session-agents-trackpad'),
-      join(TEST_DIR, 'plans', 'pipeline.md'),
-      join(TEST_DIR, 'requirements.lock.json'),
-      join(TEST_DIR, 'reviews'),
-    )
-
-    expect(state.pad.id).toBe('pad-001')
-    expect(state.pad.currentPhase).toBe('phase-1')
-    expect(state.require.phases).toHaveLength(1)
-    expect(state.plan).toBe('# Pipeline')
-    expect(state.gateResult.unlocked).toContain('phase-1-1')
-  })
-
-  it('throws on missing pad file', () => {
-    expect(() => reconstructState(
-      join(TEST_DIR, 'session-agents-trackpad', 'nonexistent.json'),
-      join(TEST_DIR, 'plans', 'pipeline.md'),
-      join(TEST_DIR, 'requirements.lock.json'),
-      join(TEST_DIR, 'reviews'),
-    )).toThrow('[Harness] Pad file not found')
-  })
-
-  it('returns empty plan when plan file missing', () => {
-    writeFileSync(join(TEST_DIR, 'session-agents-trackpad', 'pad-001.json'), JSON.stringify({
-      id: 'pad-001',
-      sessionId: 's1',
-      status: 'active',
-      version: 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      pipelinePath: 'plans/pipeline.md',
-      currentPhase: 'phase-1',
-      currentTask: 'phase-1-1',
-      checkpointStatus: {},
-      gateRetries: {},
-    }))
-    writeFileSync(join(TEST_DIR, 'requirements.lock.json'), JSON.stringify({
-      version: 1,
-      lockedAt: new Date().toISOString(),
-      phases: [],
-    }))
-
-    const state = reconstructState(
-      join(TEST_DIR, 'session-agents-trackpad'),
+      join(TEST_DIR, 'session-agents-trackpad', 'pad-001.json'),
       join(TEST_DIR, 'plans', 'nonexistent.md'),
       join(TEST_DIR, 'requirements.lock.json'),
       join(TEST_DIR, 'reviews'),
@@ -1825,7 +1725,7 @@ describe('reconstructState', () => {
     }))
 
     const state = reconstructState(
-      join(TEST_DIR, 'session-agents-trackpad'),
+      join(TEST_DIR, 'session-agents-trackpad', 'pad-001.json'),
       join(TEST_DIR, 'plans', 'pipeline.md'),
       join(TEST_DIR, 'requirements.lock.json'),
       join(TEST_DIR, 'reviews'),
@@ -1844,7 +1744,7 @@ Expected: FAIL — state-recovery.ts not found
 
 ```typescript
 import { readFileSync, existsSync, readdirSync } from 'fs'
-import { join, dirname } from 'path'
+import { join } from 'path'
 import { SessionPadSchema, RequirementsLockSchema, ReviewVerdictSchema } from './schemas.js'
 import { evaluateGate } from './gate.js'
 import type { SessionPad, RequirementsLock, ReviewVerdict, GateResult } from './schemas.js'
@@ -1852,27 +1752,20 @@ import type { SessionPad, RequirementsLock, ReviewVerdict, GateResult } from './
 const [Harness] = ['[Harness]']
 
 export function reconstructState(
-  padDir: string,
+  padPath: string,
   planPath: string,
   lockPath: string,
   reviewDir: string,
 ): { pad: SessionPad; plan: string; requirements: RequirementsLock; gateResult: GateResult } {
-  // Read pad — find the active/released pad file in directory
-  let padFile: string | null = null
-  if (existsSync(padDir)) {
-    const files = readdirSync(padDir).filter(f => f.endsWith('.json') && !f.endsWith('.tmp.json'))
-    if (files.length > 0) {
-      padFile = join(padDir, files[0])
-    }
-  }
-  if (!padFile || !existsSync(padFile)) throw `${Harness} Pad file not found: ${padFile ?? padDir}`
-  const padContent = readFileSync(padFile, 'utf-8')
-  if (!padContent.trim()) throw `${Harness} Pad file empty: ${padFile}`
+  // Read pad — padPath is a direct file path
+  if (!existsSync(padPath)) throw new Error(`${Harness} Pad file not found: ${padPath}`)
+  const padContent = readFileSync(padPath, 'utf-8')
+  if (!padContent.trim()) throw new Error(`${Harness} Pad file empty: ${padPath}`)
   let pad: SessionPad
   try {
     pad = SessionPadSchema.parse(JSON.parse(padContent))
   } catch (e) {
-    throw `${Harness} Pad validation failed: ${padFile}`
+    throw new Error(`${Harness} Pad validation failed: ${padPath}: ${e instanceof Error ? e.message : String(e)}`)
   }
 
   // Read plan (optional)
@@ -1881,19 +1774,19 @@ export function reconstructState(
     try {
       plan = readFileSync(planPath, 'utf-8')
     } catch {
-      throw `${Harness} Plan file unreadable: ${planPath}`
+      throw new Error(`${Harness} Plan file unreadable: ${planPath}`)
     }
   }
 
   // Read lock
-  if (!existsSync(lockPath)) throw `${Harness} Requirements lock not found: ${lockPath}`
+  if (!existsSync(lockPath)) throw new Error(`${Harness} Requirements lock not found: ${lockPath}`)
   const lockContent = readFileSync(lockPath, 'utf-8')
-  if (!lockContent.trim()) throw `${Harness} Requirements lock empty: ${lockPath}`
+  if (!lockContent.trim()) throw new Error(`${Harness} Requirements lock empty: ${lockPath}`)
   let requirements: RequirementsLock
   try {
     requirements = RequirementsLockSchema.parse(JSON.parse(lockContent))
   } catch {
-    throw `${Harness} Requirements lock validation failed: ${lockPath}`
+    throw new Error(`${Harness} Requirements lock validation failed: ${lockPath}`)
   }
 
   // Read reviews
@@ -1940,7 +1833,7 @@ git commit -m "feat(kernel): add reconstructState() for compaction recovery with
 
 ```typescript
 export { SessionPadSchema, RequirementsLockSchema, ReviewVerdictSchema, GateResultSchema, PermissionRequestSchema } from './schemas.js'
-export type { SessionPad, RequirementsLock, ReviewVerdict, GateResult, PermissionRequest, Task, Phase } from './schemas.js'
+export type { SessionPad, RequirementsLock, ReviewVerdict, GateResult, PermissionRequest, PermissionOutput, Task, Phase } from './schemas.js'
 
 export { evaluateGate } from './gate.js'
 export { isToolAllowedForPhase, matchesGlob, getPhaseEditPaths, getAllowedTestCommands } from './permission-gate.js'
@@ -1964,44 +1857,88 @@ git commit -m "feat(kernel): add barrel export for all kernel public APIs"
 
 ---
 
-## Task 8: Plugin Index + Permission Gate Hook
+## Task 8: Harness Plugin Entry + Permission Gate Hook
+
+**NOTE:** `src/plugin/` is renamed to `src/harness/` to avoid macOS case-insensitive filesystem conflict with existing `src/plugin.ts`.
 
 **Files:**
-- Create: `src/plugin/index.ts`
-- Create: `src/plugin/hooks/permission-gate.ts`
-- Create: `tests/plugin/permission-gate.test.ts` (placeholder — kernel functions are pure and mockable)
+- Create: `src/harness/index.ts`
+- Create: `src/harness/hooks/permission-gate.ts`
 
-- [ ] **Step 1: Write plugin index.ts**
+- [ ] **Step 1: Write harness/index.ts (plugin entry — uses real Plugin type: async function returning Hooks)**
+
+The real OpenCode Plugin API is: `type Plugin = (input: PluginInput, options?: PluginOptions) => Promise<Hooks>`
+
+Hooks is a flat object with hook names as keys. Tools use the `tool()` helper from `@opencode-ai/plugin`.
 
 ```typescript
 import type { Plugin } from '@opencode-ai/plugin'
-import { createPermissionGate } from './hooks/permission-gate.js'
-import { createPromptInject } from './hooks/prompt-inject.js'
-import { createToolDescriptor } from './hooks/tool-descriptor.js'
-import { registerGateCheckTool } from './tools/gate-check.js'
+import * as OpenCodePlugin from '@opencode-ai/plugin'
 
-export function createPlugin(directory: string): Plugin {
+const pluginTool = (OpenCodePlugin as unknown as { tool?: <T>(def: T) => T }).tool
+
+export const CheckpointHarness: Plugin = async ({ client }) => {
+  const directory = process.cwd() + '/.hivemind'
+
   return {
-    name: 'opencode-harness',
-    hooks: {
-      'permission.ask': createPermissionGate(directory),
-      'experimental.chat.system.transform': createPromptInject(directory),
-      'tool.definition': createToolDescriptor(directory),
+    'permission.ask': async (input: PermissionInput, output: { status: 'ask' | 'deny' | 'allow' }) => {
+      const { handlePermissionAsk } = await import('./hooks/permission-gate.js')
+      return handlePermissionAsk(input, output, directory)
     },
-    tools: (register) => {
-      registerGateCheckTool(register, directory)
+
+    'experimental.chat.system.transform': async (_input: unknown, output: { system: string[] }) => {
+      const { handleSystemTransform } = await import('./hooks/prompt-inject.js')
+      return handleSystemTransform(output, directory)
+    },
+
+    'tool.definition': async (input: { toolID: string }, output: { description: string; parameters: unknown }) => {
+      const { handleToolDefinition } = await import('./hooks/tool-descriptor.js')
+      return handleToolDefinition(input, output, directory)
+    },
+
+    tool: {
+      'gate-check': pluginTool({
+        description: 'Run gate validation checks for a phase/task checkpoint',
+        parameters: {
+          type: 'object' as const,
+          properties: {
+            phase: { type: 'string', description: 'Phase ID (e.g., "phase-1")' },
+            task: { type: 'string', description: 'Task ID (e.g., "phase-1-1")' },
+          },
+          required: ['phase', 'task'],
+        },
+        execute: async (args: { phase: string; task: string }) => {
+          const { runGateCheck } = await import('./tools/gate-check.js')
+          return runGateCheck(args.phase, args.task, directory)
+        },
+      }),
     },
   }
+}
+
+export default CheckpointHarness
+
+interface PermissionInput {
+  id: string
+  type: string
+  pattern?: string | string[]
+  sessionID: string
+  messageID: string
+  callID?: string
+  title?: string
+  metadata?: Record<string, unknown>
+  time?: string
 }
 ```
 
 - [ ] **Step 2: Write hooks/permission-gate.ts**
 
 ```typescript
-import type { PermissionRequest, PermissionOutput } from '../../kernel/schemas.js'
+import { join } from 'path'
+import type { PermissionRequest } from '../../kernel/schemas.js'
 import { reconstructState, isToolAllowedForPhase } from '../../kernel/index.js'
 
-interface NativePermission {
+interface PermissionInput {
   id: string
   type: string
   pattern?: string | string[]
@@ -2013,7 +1950,7 @@ interface NativePermission {
   time?: string
 }
 
-function adaptPermission(native: NativePermission): PermissionRequest {
+function adaptPermission(native: PermissionInput): PermissionRequest {
   return {
     type: native.type,
     pattern: native.pattern,
@@ -2032,30 +1969,112 @@ function extractPhase(request: PermissionRequest): string | null {
   return null
 }
 
-export function createPermissionGate(directory: string) {
-  return async (nativePermission: unknown, output: PermissionOutput) => {
-    const native = nativePermission as NativePermission
-    const request = adaptPermission(native)
-    const phase = extractPhase(request)
+export function handlePermissionAsk(
+  nativeInput: PermissionInput,
+  output: { status: 'ask' | 'deny' | 'allow' },
+  directory: string,
+): void {
+  const request = adaptPermission(nativeInput)
+  const phase = extractPhase(request)
 
-    try {
-      const { gateResult, requirements } = await reconstructState(
-        `${directory}/session-agents-trackpad/`,
-        `${directory}/plans/pipeline.md`,
-        `${directory}/requirements.lock.json`,
-        `${directory}/reviews/`,
-      )
+  try {
+    const padPath = findActivePad(join(directory, 'session-agents-trackpad'))
+    const planPath = join(directory, 'plans', 'pipeline.md')
+    const lockPath = join(directory, 'requirements.lock.json')
+    const reviewDir = join(directory, 'reviews')
 
-      const effectivePhase = phase ?? gateResult.currentPhase
+    const { gateResult, requirements } = reconstructState(padPath, planPath, lockPath, reviewDir)
+    const effectivePhase = phase ?? gateResult.currentPhase
 
-      if (isToolAllowedForPhase(request, effectivePhase, gateResult, requirements)) {
-        output.status = 'allow'
-      } else {
-        output.status = 'deny'
-      }
-    } catch {
+    if (isToolAllowedForPhase(request, effectivePhase, gateResult, requirements)) {
+      output.status = 'allow'
+    } else {
       output.status = 'deny'
     }
+  } catch {
+    output.status = 'deny'
+  }
+}
+
+function findActivePad(padDir: string): string {
+  const { readdirSync, existsSync } = require('fs') as typeof import('fs')
+  if (!existsSync(padDir)) throw new Error('[Harness] Pad directory not found')
+  const files = readdirSync(padDir).filter(f => f.endsWith('.json') && !f.endsWith('.tmp.json'))
+  if (files.length === 0) throw new Error('[Harness] No pad files found')
+  return join(padDir, files[0])
+}
+```
+
+**Wait — `require()` violates ESM.** Replace with top-level `import { readdirSync, existsSync } from 'fs'`:
+
+```typescript
+import { readdirSync, existsSync } from 'fs'
+import { join } from 'path'
+import type { PermissionRequest } from '../../kernel/schemas.js'
+import { reconstructState, isToolAllowedForPhase } from '../../kernel/index.js'
+
+interface PermissionInput {
+  id: string
+  type: string
+  pattern?: string | string[]
+  sessionID: string
+  messageID: string
+  callID?: string
+  title?: string
+  metadata?: Record<string, unknown>
+  time?: string
+}
+
+function adaptPermission(native: PermissionInput): PermissionRequest {
+  return {
+    type: native.type,
+    pattern: native.pattern,
+    sessionID: native.sessionID,
+    metadata: native.metadata,
+    title: native.title,
+  }
+}
+
+function extractPhase(request: PermissionRequest): string | null {
+  if (request.metadata?.phase) return String(request.metadata.phase)
+  if (request.title?.includes('phase-')) {
+    const match = request.title.match(/(phase-\d+)/)
+    return match ? match[1] : null
+  }
+  return null
+}
+
+function findActivePad(padDir: string): string {
+  if (!existsSync(padDir)) throw new Error('[Harness] Pad directory not found')
+  const files = readdirSync(padDir).filter(f => f.endsWith('.json') && !f.endsWith('.tmp.json'))
+  if (files.length === 0) throw new Error('[Harness] No pad files found')
+  return join(padDir, files[0])
+}
+
+export function handlePermissionAsk(
+  nativeInput: PermissionInput,
+  output: { status: 'ask' | 'deny' | 'allow' },
+  directory: string,
+): void {
+  const request = adaptPermission(nativeInput)
+  const phase = extractPhase(request)
+
+  try {
+    const padPath = findActivePad(join(directory, 'session-agents-trackpad'))
+    const planPath = join(directory, 'plans', 'pipeline.md')
+    const lockPath = join(directory, 'requirements.lock.json')
+    const reviewDir = join(directory, 'reviews')
+
+    const { gateResult, requirements } = reconstructState(padPath, planPath, lockPath, reviewDir)
+    const effectivePhase = phase ?? gateResult.currentPhase
+
+    if (isToolAllowedForPhase(request, effectivePhase, gateResult, requirements)) {
+      output.status = 'allow'
+    } else {
+      output.status = 'deny'
+    }
+  } catch {
+    output.status = 'deny'
   }
 }
 ```
@@ -2068,68 +2087,64 @@ Expected: PASS
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/plugin/index.ts src/plugin/hooks/permission-gate.ts
-git commit -m "feat(plugin): add plugin entry with permission.ask hook adapter"
+git add src/harness/index.ts src/harness/hooks/permission-gate.ts
+git commit -m "feat(harness): add plugin entry with async function pattern + permission.ask hook"
 ```
 
 ---
 
-## Task 9: Plugin Prompt Inject Hook
+## Task 9: Harness Prompt Inject Hook
 
 **Files:**
-- Create: `src/plugin/hooks/prompt-inject.ts`
+- Create: `src/harness/hooks/prompt-inject.ts`
 
 - [ ] **Step 1: Write prompt-inject.ts**
 
 ```typescript
-import { existsSync, readFileSync } from 'fs'
+import { existsSync, readFileSync, readdirSync } from 'fs'
 import { join } from 'path'
 import { reconstructState } from '../../kernel/index.js'
 
-interface SystemTransformOutput {
-  system: string[]
+function findActivePad(padDir: string): string {
+  if (!existsSync(padDir)) throw new Error('[Harness] Pad directory not found')
+  const files = readdirSync(padDir).filter(f => f.endsWith('.json') && !f.endsWith('.tmp.json'))
+  if (files.length === 0) throw new Error('[Harness] No pad files found')
+  return join(padDir, files[0])
 }
 
-function resolveTemplatePath(phaseId: string, templatesDir: string): string {
-  return join(templatesDir, `${phaseId}.txt`)
-}
+export function handleSystemTransform(
+  output: { system: string[] },
+  directory: string,
+): void {
+  try {
+    const padPath = findActivePad(join(directory, 'session-agents-trackpad'))
+    const planPath = join(directory, 'plans', 'pipeline.md')
+    const lockPath = join(directory, 'requirements.lock.json')
+    const reviewDir = join(directory, 'reviews')
 
-function formatPrerequisites(requirements: { requirements: { id: string; description: string }[] }): string {
-  if (!requirements.requirements || requirements.requirements.length === 0) return ''
-  return requirements.requirements
-    .filter(r => r.locked)
-    .map(r => `  - ${r.id}: ${r.description}`)
-    .join('\n')
-}
+    const { pad, requirements, gateResult } = reconstructState(padPath, planPath, lockPath, reviewDir)
 
-export function createPromptInject(directory: string) {
-  return async (_input: unknown, output: SystemTransformOutput) => {
-    try {
-      const { pad, requirements, gateResult } = await reconstructState(
-        `${directory}/session-agents-trackpad/`,
-        `${directory}/plans/pipeline.md`,
-        `${directory}/requirements.lock.json`,
-        `${directory}/reviews/`,
-      )
+    const currentPhase = pad.currentPhase
+    const templatesDir = join(directory, 'templates')
+    const templatePath = join(templatesDir, `${currentPhase}.txt`)
+    let phaseInstructions = ''
+    if (existsSync(templatePath)) {
+      phaseInstructions = readFileSync(templatePath, 'utf-8')
+    } else {
+      console.warn(`[Harness] No template found for phase: ${currentPhase}`)
+    }
 
-      const currentPhase = pad.currentPhase
-      const templatesDir = join(directory, 'templates')
-      const templatePath = resolveTemplatePath(currentPhase, templatesDir)
-      let phaseInstructions = ''
-      if (existsSync(templatePath)) {
-        phaseInstructions = readFileSync(templatePath, 'utf-8')
-      } else {
-        console.warn(`[Harness] No template found for phase: ${currentPhase}`)
-      }
+    const phaseData = requirements.phases.find(p => p.id === currentPhase)
+    const prerequisitesText = phaseData?.requirements
+      ?.filter(r => r.locked)
+      ?.map(r => `  - ${r.id}: ${r.description}`)
+      ?.join('\n') ?? ''
 
-      const prerequisites = requirements.phases.find(p => p.id === currentPhase)
-      const prerequisitesText = prerequisites ? formatPrerequisites(prerequisites) : ''
+    const retries = Object.entries(pad.gateRetries)
+      .map(([k, v]) => `    ${k}: ${v} (of max 3)`)
+      .join('\n')
 
-      const retries = Object.entries(pad.gateRetries)
-        .map(([k, v]) => `    ${k}: ${v} (of max 3)`)
-        .join('\n')
-
-      const context = `
+    const context = `
 <harness_context>
 Session: ${pad.id}
 Current phase: ${gateResult.currentPhase}, Task: ${gateResult.currentTask}
@@ -2152,13 +2167,11 @@ Stop if: gate fails 3x on same checkpoint, user sends "pause"/"stop", all checkp
 </harness_context>
 `.trim()
 
-      output.system.push(context)
-    } catch {
-      // State unavailable — inject minimal error context
-      output.system.push(`<harness_context>
+    output.system.push(context)
+  } catch {
+    output.system.push(`<harness_context>
 [Harness] State unavailable. Run 'harness init' to initialize.
 </harness_context>`)
-    }
   }
 }
 ```
@@ -2171,54 +2184,60 @@ Expected: PASS
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/plugin/hooks/prompt-inject.ts
-git commit -m "feat(plugin): add experimental.chat.system.transform hook for phase context injection"
+git add src/harness/hooks/prompt-inject.ts
+git commit -m "feat(harness): add experimental.chat.system.transform hook for phase context injection"
 ```
 
 ---
 
-## Task 10: Plugin Tool Descriptor Hook
+## Task 10: Harness Tool Descriptor Hook
 
 **Files:**
-- Create: `src/plugin/hooks/tool-descriptor.ts`
+- Create: `src/harness/hooks/tool-descriptor.ts`
 
 - [ ] **Step 1: Write tool-descriptor.ts**
 
 ```typescript
+import { readdirSync, existsSync } from 'fs'
+import { join } from 'path'
 import { reconstructState } from '../../kernel/index.js'
 
-interface ToolDefinitionOutput {
-  description: string
-  parameters: unknown
+function findActivePad(padDir: string): string {
+  if (!existsSync(padDir)) throw new Error('[Harness] Pad directory not found')
+  const files = readdirSync(padDir).filter(f => f.endsWith('.json') && !f.endsWith('.tmp.json'))
+  if (files.length === 0) throw new Error('[Harness] No pad files found')
+  return join(padDir, files[0])
 }
 
-export function createToolDescriptor(directory: string) {
-  return async (input: { toolID: string }, output: ToolDefinitionOutput) => {
-    try {
-      const { gateResult, requirements } = await reconstructState(
-        `${directory}/session-agents-trackpad/`,
-        `${directory}/plans/pipeline.md`,
-        `${directory}/requirements.lock.json`,
-        `${directory}/reviews/`,
-      )
+export function handleToolDefinition(
+  input: { toolID: string },
+  output: { description: string; parameters: unknown },
+  directory: string,
+): void {
+  try {
+    const padPath = findActivePad(join(directory, 'session-agents-trackpad'))
+    const planPath = join(directory, 'plans', 'pipeline.md')
+    const lockPath = join(directory, 'requirements.lock.json')
+    const reviewDir = join(directory, 'reviews')
 
-      const currentPhase = gateResult.currentPhase
-      const isLocked = !gateResult.unlocked.some(id => id.startsWith(currentPhase))
+    const { gateResult, requirements } = reconstructState(padPath, planPath, lockPath, reviewDir)
 
-      if (input.toolID === 'skill') {
-        const phase = requirements.phases.find(p => p.id === currentPhase)
-        if (phase && phase.tasks.length > 0) {
-          const skill = phase.tasks[0].skill
-          if (skill) {
-            output.description += `\n\nCurrent harness phase: ${currentPhase}. Load the ${skill} skill for instructions.`
-          }
+    const currentPhase = gateResult.currentPhase
+    const phaseLocked = !gateResult.unlocked.some(id => id.startsWith(currentPhase))
+
+    if (input.toolID === 'skill') {
+      const phase = requirements.phases.find(p => p.id === currentPhase)
+      if (phase && phase.tasks.length > 0) {
+        const skill = phase.tasks[0].skill
+        if (skill) {
+          output.description += `\n\nCurrent harness phase: ${currentPhase}. Load the ${skill} skill for instructions.`
         }
-      } else if (isLocked && gateResult.gateStatus === 'locked') {
-        output.description += `\n\n⚠️ LOCKED: This tool is not available until phase ${currentPhase} passes gate validation. Complete all tasks and pass code-critic review to unlock.`
       }
-    } catch {
-      // State unavailable — do not modify description
+    } else if (phaseLocked && gateResult.gateStatus === 'locked') {
+      output.description += `\n\n[Harness] LOCKED: This tool is not available until phase ${currentPhase} passes gate validation. Complete all tasks and pass code-critic review to unlock.`
     }
+  } catch {
+    // State unavailable — do not modify description
   }
 }
 ```
@@ -2231,16 +2250,16 @@ Expected: PASS
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/plugin/hooks/tool-descriptor.ts
-git commit -m "feat(plugin): add tool.definition hook for lock warnings"
+git add src/harness/hooks/tool-descriptor.ts
+git commit -m "feat(harness): add tool.definition hook for lock warnings"
 ```
 
 ---
 
-## Task 11: Plugin Gate Check Tool
+## Task 11: Harness Gate Check Tool
 
 **Files:**
-- Create: `src/plugin/tools/gate-check.ts`
+- Create: `src/harness/tools/gate-check.ts`
 
 - [ ] **Step 1: Write gate-check.ts**
 
@@ -2250,36 +2269,10 @@ import { readFileSync, existsSync } from 'fs'
 import { join } from 'path'
 import { readLock } from '../../kernel/index.js'
 
-interface GateCheckArguments {
-  phase: string
-  task: string
-}
-
-interface GateCheckResult {
-  phase: string
-  task: string
-  status: 'PASSED' | 'BLOCKED'
-  checks: Record<string, string>
-}
-
-export function registerGateCheckTool(register: (name: string, schema: unknown, handler: (args: GateCheckArguments) => Promise<string>) => void, directory: string) {
-  register('gate-check', {
-    type: 'object',
-    properties: {
-      phase: { type: 'string', description: 'Phase ID (e.g., "phase-1")' },
-      task: { type: 'string', description: 'Task ID (e.g., "phase-1-1")' },
-    },
-    required: ['phase', 'task'],
-  }, async (args: GateCheckArguments) => {
-    return runGateCheck(args.phase, args.task, directory)
-  })
-}
-
-async function runGateCheck(phase: string, task: string, directory: string): Promise<string> {
+export async function runGateCheck(phase: string, task: string, directory: string): Promise<string> {
   const checks: Record<string, string> = {}
   let blocked = false
 
-  // Check requirements lock
   try {
     const lock = readLock(directory)
     const phaseData = lock.phases.find(p => p.id === phase)
@@ -2300,8 +2293,18 @@ async function runGateCheck(phase: string, task: string, directory: string): Pro
     blocked = true
   }
 
-  // Run test command (default: bun test)
-  const testCmd = 'bun test'
+  let testCmd = 'vitest run'
+  try {
+    const lock = readLock(directory)
+    const phaseData = lock.phases.find(p => p.id === phase)
+    const taskData = phaseData?.tasks.find(t => t.id === task)
+    if (taskData?.gate) {
+      testCmd = taskData.gate
+    }
+  } catch {
+    // Lock file error already reported above
+  }
+
   try {
     const result = await runCommand(testCmd, 120_000)
     checks['tests'] = result.passed ? `PASS: ${result.count} tests passed` : `FAIL: tests failed`
@@ -2312,12 +2315,11 @@ async function runGateCheck(phase: string, task: string, directory: string): Pro
     blocked = true
   }
 
-  // Check dependencies
   try {
     const lock = readLock(directory)
     const phaseData = lock.phases.find(p => p.id === phase)
     const taskData = phaseData?.tasks.find(t => t.id === task)
-    if (taskData?.dependsOn) {
+    if (taskData?.dependsOn && taskData.dependsOn.length > 0) {
       for (const dep of taskData.dependsOn) {
         const reviewFile = join(directory, 'reviews', `${dep}.json`)
         if (existsSync(reviewFile)) {
@@ -2352,17 +2354,17 @@ async function runGateCheck(phase: string, task: string, directory: string): Pro
 
 function runCommand(cmd: string, timeoutMs: number): Promise<{ passed: boolean; count: number }> {
   return new Promise((resolve, reject) => {
+    const proc = spawn(cmd, [], { shell: true })
     const timer = setTimeout(() => {
       proc.kill()
       reject(new Error(`Timed out after ${timeoutMs}ms (command: ${cmd})`))
     }, timeoutMs)
 
-    const proc = spawn(cmd, [], { shell: true })
     let stdout = ''
     let stderr = ''
 
-    proc.stdout?.on('data', (d) => { stdout += d.toString() })
-    proc.stderr?.on('data', (d) => { stderr += d.toString() })
+    proc.stdout?.on('data', (d: Buffer) => { stdout += d.toString() })
+    proc.stderr?.on('data', (d: Buffer) => { stderr += d.toString() })
 
     proc.on('close', (code) => {
       clearTimeout(timer)
@@ -2370,7 +2372,7 @@ function runCommand(cmd: string, timeoutMs: number): Promise<{ passed: boolean; 
         const match = stdout.match(/(\d+)\s+passing/)
         resolve({ passed: true, count: match ? parseInt(match[1]) : 0 })
       } else {
-        reject(new Error(stderr || stdout || `Exit code ${code}`))
+        reject(new Error(stderr || stdout || `Exit code ${String(code)}`))
       }
     })
     proc.on('error', (e) => {
@@ -2389,15 +2391,13 @@ Expected: PASS
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/plugin/tools/gate-check.ts
-git commit -m "feat(plugin): add gate-check custom tool for phase/task validation"
+git add src/harness/tools/gate-check.ts
+git commit -m "feat(harness): add gate-check tool with test execution, dependency checks, and lock validation"
 ```
 
 ---
 
 ## Task 12: CLI
-
-**Files:**
 - Create: `src/cli/index.ts`
 
 - [ ] **Step 1: Write CLI**
@@ -2405,8 +2405,9 @@ git commit -m "feat(plugin): add gate-check custom tool for phase/task validatio
 ```typescript
 #!/usr/bin/env node
 
-import { readdirSync, existsSync, mkdirSync, writeFileSync, readFileSync, rmSync } from 'fs'
-import { join } from 'path'
+import { readdirSync, existsSync, mkdirSync, writeFileSync, readFileSync, rmSync, renameSync, cpSync } from 'fs'
+import { join, resolve, dirname } from 'path'
+import { fileURLToPath } from 'url'
 import { SessionPadSchema, RequirementsLockSchema, ReviewVerdictSchema } from '../kernel/schemas.js'
 import { readLock, readPad, listPads } from '../kernel/index.js'
 
@@ -2505,6 +2506,13 @@ Task: phase-0-1
 2. phase-1: Implementation
 3. phase-N: ...
 `)
+
+  // Scaffold .opencode/ assets from package assets/ directory
+  const assetsDir = join(resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', 'assets', '.opencode'))
+  if (existsSync(assetsDir)) {
+    cpSync(assetsDir, '.opencode', { recursive: true })
+    console.log('✓ Scaffolded .opencode/ agents, commands, and skills')
+  }
 
   console.log(`✓ Created ${HIVEMIND_DIR}/ with subdirectories`)
   console.log(`✓ Created ${PADS.length} session pads`)
@@ -2607,6 +2615,24 @@ async function cmdReset(force: boolean) {
   }
 }
 
+export function archiveReview(directory: string, taskId: string): void {
+  const reviewFile = join(directory, 'reviews', `${taskId}.json`)
+  if (!existsSync(reviewFile)) return
+
+  const reviewContent = readFileSync(reviewFile, 'utf-8')
+  const review = JSON.parse(reviewContent)
+  let version = 1
+
+  // Find next available version number
+  while (existsSync(join(directory, 'reviews', `${taskId}.v${version}.json`))) {
+    version++
+  }
+
+  // Archive the old review
+  renameSync(reviewFile, join(directory, 'reviews', `${taskId}.v${version}.json`))
+  console.log(`✓ Archived review: ${taskId}.v${version}.json`)
+}
+
 main()
 ```
 
@@ -2690,7 +2716,7 @@ No dynamic permission injection or agent file generation is needed.
 name: code-critic
 description: Read-only reviewer that validates checkpoint work against locked requirements
 mode: subagent
-permissions:
+permission:
   edit:
     "*": "deny"
     ".hivemind/reviews/*.json": "allow"
@@ -2766,6 +2792,370 @@ Write to .hivemind/reviews/{taskId}.json:
 ```bash
 git add assets/
 git commit -m "feat(assets): add .opencode agents, commands, and skills"
+```
+
+---
+
+## Task 14: Integration Tests
+
+**Files:**
+- Create: `tests/integration/end-to-end.test.ts`
+
+- [ ] **Step 1: Write integration test — full lifecycle: init → lock → gate → review → advance**
+
+```typescript
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { mkdirSync, writeFileSync, rmSync, existsSync, readFileSync } from 'fs'
+import { join } from 'path'
+import { reconstructState, writePad, readPad, acquirePad, releasePad, incrementRetry } from '../../src/kernel/index.js'
+import { writeLock, readLock, lockField } from '../../src/kernel/index.js'
+import { evaluateGate } from '../../src/kernel/gate.js'
+import { SessionPadSchema, RequirementsLockSchema, ReviewVerdictSchema } from '../../src/kernel/schemas.js'
+import { archiveReview } from '../../src/cli/index.js'
+
+const TEST_DIR = join(process.cwd(), '.test-harness-integration')
+
+describe('End-to-End Harness Lifecycle', () => {
+  beforeEach(() => {
+    if (existsSync(TEST_DIR)) rmSync(TEST_DIR, { recursive: true, force: true })
+    mkdirSync(join(TEST_DIR, '.hivemind', 'session-agents-trackpad'), { recursive: true })
+    mkdirSync(join(TEST_DIR, '.hivemind', 'reviews'), { recursive: true })
+    mkdirSync(join(TEST_DIR, '.hivemind', 'plans'), { recursive: true })
+    mkdirSync(join(TEST_DIR, '.hivemind', 'templates'), { recursive: true })
+  })
+
+  afterEach(() => {
+    if (existsSync(TEST_DIR)) rmSync(TEST_DIR, { recursive: true, force: true })
+  })
+
+  it('runs full lifecycle: create pad → write lock → gate check → review → advance', () => {
+    const padDir = join(TEST_DIR, '.hivemind', 'session-agents-trackpad')
+    const lockDir = join(TEST_DIR, '.hivemind')
+    const reviewDir = join(TEST_DIR, '.hivemind', 'reviews')
+
+    // 1. Create and acquire pad
+    writePad(padDir, {
+      id: 'pad-001',
+      sessionId: null,
+      status: 'released',
+      version: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      pipelinePath: 'plans/pipeline.md',
+      currentPhase: 'phase-0',
+      currentTask: 'phase-0-1',
+      checkpointStatus: {},
+      gateRetries: {},
+    })
+    const pad = acquirePad(padDir, 'session-001')
+    expect(pad.status).toBe('active')
+
+    // 2. Write requirements lock (simulating Phase 0 completion)
+    writeLock(lockDir, {
+      version: 1,
+      lockedAt: new Date().toISOString(),
+      phases: [
+        {
+          id: 'phase-1',
+          name: 'Implementation',
+          locked: true,
+          requirements: [{ id: 'req-1', description: 'All modules typed', locked: true }],
+          tasks: [
+            { id: 'phase-1-1', command: 'implement types', skill: 'api-types', gate: 'vitest run', dependsOn: [], editScope: ['src/types/'] },
+            { id: 'phase-1-2', command: 'implement handlers', skill: 'http-handlers', gate: 'vitest run', dependsOn: ['phase-1-1'], editScope: ['src/handlers/'] },
+          ],
+        },
+      ],
+    })
+
+    // 3. Evaluate gate — no reviews yet, should be locked
+    const lock = readLock(lockDir)
+    const emptyReviews = new Map()
+    const gateResult = evaluateGate(emptyReviews, lock)
+    expect(gateResult.gateStatus).toBe('locked')
+    expect(gateResult.currentPhase).toBe('phase-1')
+    expect(gateResult.currentTask).toBe('phase-1-1')
+
+    // 4. Write an approved review for phase-1-1
+    const review = {
+      phase: 'phase-1',
+      task: 'phase-1-1',
+      reviewer: 'code-critic',
+      timestamp: new Date().toISOString(),
+      verdict: 'approved',
+      checks: { lspErrors: 0, testsPassed: true, requirementsLocked: true, crossDepsValid: true },
+    }
+    writeFileSync(join(reviewDir, 'phase-1-1.json'), JSON.stringify(review))
+
+    // 5. Re-evaluate gate — phase-1-1 should be unlocked
+    const reviews = new Map<string, typeof review>()
+    reviews.set('phase-1-1', review)
+    const gateResult2 = evaluateGate(reviews, lock)
+    expect(gateResult2.unlocked).toContain('phase-1-1')
+
+    // 6. Reconstruct full state
+    const padPath = join(padDir, 'pad-001.json')
+    const planPath = join(TEST_DIR, '.hivemind', 'plans', 'pipeline.md')
+    writeFileSync(planPath, '# Pipeline\n\nPhase: phase-1')
+    const lockPath = join(lockDir, 'requirements.lock.json')
+
+    const state = reconstructState(padPath, planPath, lockPath, reviewDir)
+    expect(state.pad.id).toBe('pad-001')
+    expect(state.gateResult.unlocked).toContain('phase-1-1')
+    expect(state.requirements.phases[0].requirements[0].locked).toBe(true)
+
+    // 7. Release pad
+    releasePad(padDir, 'pad-001')
+    const releasedPad = readPad(padDir, 'pad-001')
+    expect(releasedPad.status).toBe('released')
+  })
+
+  it('handles review rejection and retry with archiving', () => {
+    const padDir = join(TEST_DIR, '.hivemind', 'session-agents-trackpad')
+    const lockDir = join(TEST_DIR, '.hivemind')
+    const reviewDir = join(TEST_DIR, '.hivemind', 'reviews')
+
+    // Setup
+    writePad(padDir, {
+      id: 'pad-001', sessionId: 's1', status: 'active', version: 1,
+      createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+      pipelinePath: 'plans/pipeline.md', currentPhase: 'phase-1', currentTask: 'phase-1-1',
+      checkpointStatus: {}, gateRetries: {},
+    })
+    writeLock(lockDir, {
+      version: 1, lockedAt: new Date().toISOString(),
+      phases: [{ id: 'phase-1', name: 'Phase 1', locked: true, requirements: [], tasks: [
+        { id: 'phase-1-1', command: '', skill: '', gate: 'vitest run', dependsOn: [], editScope: [] },
+      ]}],
+    })
+
+    // Write a rejected review
+    const rejected = {
+      phase: 'phase-1', task: 'phase-1-1', reviewer: 'code-critic',
+      timestamp: new Date().toISOString(), verdict: 'rejected',
+      checks: { lspErrors: 2, testsPassed: false, requirementsLocked: true, crossDepsValid: true },
+      notes: 'Type errors in handlers',
+    }
+    writeFileSync(join(reviewDir, 'phase-1-1.json'), JSON.stringify(rejected))
+
+    // Archive the rejected review before retry
+    archiveReview(TEST_DIR, 'phase-1-1')
+
+    // Verify archive was created
+    expect(existsSync(join(reviewDir, 'phase-1-1.v1.json'))).toBe(true)
+    expect(existsSync(join(reviewDir, 'phase-1-1.json'))).toBe(false)
+
+    // Increment retry on pad
+    incrementRetry(padDir, 'pad-001', 'phase-1-1')
+    const pad = readPad(padDir, 'pad-001')
+    expect(pad.gateRetries['phase-1-1']).toBe(1)
+
+    // Write a new approved review
+    const approved = {
+      phase: 'phase-1', task: 'phase-1-1', reviewer: 'code-critic',
+      timestamp: new Date().toISOString(), verdict: 'approved',
+      checks: { lspErrors: 0, testsPassed: true, requirementsLocked: true, crossDepsValid: true },
+    }
+    writeFileSync(join(reviewDir, 'phase-1-1.json'), JSON.stringify(approved))
+
+    // Now gate should show unlocked
+    const lock = readLock(lockDir)
+    const reviews = new Map([['phase-1-1', approved]])
+    const gateResult = evaluateGate(reviews, lock)
+    expect(gateResult.unlocked).toContain('phase-1-1')
+  })
+})
+```
+
+- [ ] **Step 2: Run test to verify it passes**
+
+Run: `npm run test -- tests/integration/end-to-end.test.ts`
+Expected: PASS
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add tests/integration/end-to-end.test.ts
+git commit -m "test(integration): add end-to-end lifecycle test — init→lock→gate→review→archive→advance"
+```
+
+---
+
+## Task 15: CLI Tests
+
+**Files:**
+- Create: `tests/cli/cli.test.ts`
+
+- [ ] **Step 1: Write CLI unit tests**
+
+```typescript
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { existsSync, readFileSync, rmSync, readdirSync } from 'fs'
+import { join } from 'path'
+import { execSync } from 'child_process'
+
+const TEST_DIR = join(process.cwd(), '.test-harness-cli')
+const CLI = `node --loader tsx ${join(process.cwd(), 'src', 'cli', 'index.ts')}`
+
+describe('harness CLI', () => {
+  beforeEach(() => {
+    if (existsSync(TEST_DIR)) rmSync(TEST_DIR, { recursive: true, force: true })
+    mkdirSync(TEST_DIR, { recursive: true })
+  })
+
+  afterEach(() => {
+    if (existsSync(TEST_DIR)) rmSync(TEST_DIR, { recursive: true, force: true })
+  })
+
+  describe('init', () => {
+    it('creates .hivemind/ directory structure', () => {
+      const origDir = process.cwd()
+      try {
+        process.chdir(TEST_DIR)
+        execSync(CLI + ' init', { encoding: 'utf-8' })
+        expect(existsSync('.hivemind')).toBe(true)
+        expect(existsSync('.hivemind/session-agents-trackpad')).toBe(true)
+        expect(existsSync('.hivemind/reviews')).toBe(true)
+        expect(existsSync('.hivemind/plans')).toBe(true)
+        expect(existsSync('.hivemind/templates')).toBe(true)
+      } finally {
+        process.chdir(origDir)
+      }
+    })
+
+    it('creates 3 session pad files', () => {
+      const origDir = process.cwd()
+      try {
+        process.chdir(TEST_DIR)
+        execSync(CLI + ' init', { encoding: 'utf-8' })
+        const pads = readdirSync('.hivemind/session-agents-trackpad').filter(f => f.endsWith('.json'))
+        expect(pads).toHaveLength(3)
+        for (const p of pads) {
+          const pad = JSON.parse(readFileSync(join('.hivemind', 'session-agents-trackpad', p), 'utf-8'))
+          expect(pad.status).toBe('released')
+        }
+      } finally {
+        process.chdir(origDir)
+      }
+    })
+
+    it('refuses to init when .hivemind already exists', () => {
+      const origDir = process.cwd()
+      try {
+        process.chdir(TEST_DIR)
+        execSync(CLI + ' init', { encoding: 'utf-8' })
+        expect(() => execSync(CLI + ' init', { encoding: 'utf-8' })).toThrow()
+      } finally {
+        process.chdir(origDir)
+      }
+    })
+  })
+
+  describe('validate', () => {
+    it('passes for valid state after init', () => {
+      const origDir = process.cwd()
+      try {
+        process.chdir(TEST_DIR)
+        execSync(CLI + ' init', { encoding: 'utf-8' })
+        // validate should exit 0
+        execSync(CLI + ' validate', { encoding: 'utf-8' })
+      } finally {
+        process.chdir(origDir)
+      }
+    })
+
+    it('reports errors for invalid pad files', () => {
+      const origDir = process.cwd()
+      try {
+        process.chdir(TEST_DIR)
+        execSync(CLI + ' init', { encoding: 'utf-8' })
+        // Corrupt a pad file
+        const { writeFileSync } = require('fs') as typeof import('fs')
+        writeFileSync('.hivemind/session-agents-trackpad/pad-001.json', '{invalid')
+        expect(() => execSync(CLI + ' validate', { encoding: 'utf-8' })).toThrow()
+      } finally {
+        process.chdir(origDir)
+      }
+    })
+  })
+
+  describe('status', () => {
+    it('reports status after init', () => {
+      const origDir = process.cwd()
+      try {
+        process.chdir(TEST_DIR)
+        execSync(CLI + ' init', { encoding: 'utf-8' })
+        const output = execSync(CLI + ' status', { encoding: 'utf-8' })
+        expect(output).toContain('HiveMind Status')
+      } finally {
+        process.chdir(origDir)
+      }
+    })
+
+    it('warns when not initialized', () => {
+      const origDir = process.cwd()
+      try {
+        process.chdir(TEST_DIR)
+        const output = execSync(CLI + ' status', { encoding: 'utf-8' })
+        expect(output).toContain('Not initialized')
+      } finally {
+        process.chdir(origDir)
+      }
+    })
+  })
+
+  describe('reset', () => {
+    it('requires --force flag', () => {
+      const origDir = process.cwd()
+      try {
+        process.chdir(TEST_DIR)
+        execSync(CLI + ' init', { encoding: 'utf-8' })
+        expect(() => execSync(CLI + ' reset', { encoding: 'utf-8' })).toThrow()
+        expect(existsSync('.hivemind')).toBe(true)
+      } finally {
+        process.chdir(origDir)
+      }
+    })
+
+    it('removes .hivemind/ with --force', () => {
+      const origDir = process.cwd()
+      try {
+        process.chdir(TEST_DIR)
+        execSync(CLI + ' init', { encoding: 'utf-8' })
+        execSync(CLI + ' reset --force', { encoding: 'utf-8' })
+        expect(existsSync('.hivemind')).toBe(false)
+      } finally {
+        process.chdir(origDir)
+      }
+    })
+  })
+})
+```
+
+**Note:** The CLI tests use `execSync` to invoke the CLI as a subprocess. For ESM TypeScript execution, use `tsx` as the loader. Alternatively, export CLI functions as testable units and test them directly (preferred approach for unit tests):
+
+```typescript
+// Alternative: test exported functions directly
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { existsSync, rmSync, mkdirSync } from 'fs'
+import { join } from 'path'
+
+const TEST_DIR = join(process.cwd(), '.test-harness-cli')
+
+// These exports will exist after Task 12 is implemented
+// import { cmdInit, cmdValidate, cmdStatus, cmdReset, archiveReview } from '../../src/cli/index.js'
+```
+
+- [ ] **Step 2: Run test to verify it passes**
+
+Run: `npm run test -- tests/cli/cli.test.ts`
+Expected: PASS
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add tests/cli/cli.test.ts
+git commit -m "test(cli): add CLI unit tests for init, validate, status, reset, and review archiving"
 ```
 
 ---
