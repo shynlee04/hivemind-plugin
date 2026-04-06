@@ -160,7 +160,7 @@ Summary of what was created, where it lives, how to test it.
 When the user requests prompt enhancement ("enhance this prompt", "audit this prompt", "repack this prompt"), you MUST execute each phase via the **Task tool**. Never write `**Tool: X**`, `**Input:**`, or `**Output:**` blocks. Always use the actual Task tool with real agent names.
 
 ### Phase 0: Skim
-1. Call Task tool → `agent: prompt-skimmer`, `prompt: "Skim this prompt and return quantitative metrics.\n\nPrompt: $USER_PROMPT\n\nReturn: word_count, line_count, token_estimate, url_count, urls[], absolute_claim_count, complexity_score (1-10), flooding_risk, verdict (simple|complex|unclear), recommended_lanes."`
+1. Call Task tool → `agent: researcher`, `prompt: "Skim this prompt and return quantitative metrics.\n\nPrompt: $USER_PROMPT\n\nReturn: word_count, line_count, token_estimate, url_count, urls[], absolute_claim_count, complexity_score (1-10), flooding_risk, verdict (simple|complex|unclear), recommended_lanes."`
 2. Parse the result. If `complexity_score <= 3` → skip Investigation Lanes, go to Bridge.
 
 ### Bridge Decision
@@ -168,16 +168,16 @@ When the user requests prompt enhancement ("enhance this prompt", "audit this pr
 2. If `verdict === "complex"` or `verdict === "unclear"` → proceed to Investigation Lanes.
 
 ### Investigation Lanes (parallel — spawn all Task calls)
-1. Task → `agent: prompt-analyzer`, `prompt: "Analyze this prompt for contradictions, vagueness, missing scope, and absolute claims.\n\nPrompt: $USER_PROMPT\n\nReturn: findings[], by_severity breakdown, clarity_score."`
-2. Task → `agent: context-mapper`, `prompt: "Map this prompt's context against the repository structure.\n\nPrompt: $USER_PROMPT\n\nIdentify referenced files, components, and workflows. Verify paths exist."`
-3. Task → `agent: risk-assessor`, `prompt: "Assess safety and risk of executing this prompt.\n\nPrompt: $USER_PROMPT\n\nIdentify: destructive operations, permission requirements, scope creep risks."`
+1. Task → `agent: critic`, `prompt: "Analyze this prompt for contradictions, vagueness, missing scope, and absolute claims.\n\nPrompt: $USER_PROMPT\n\nReturn: findings[], by_severity breakdown, clarity_score."`
+2. Task → `agent: researcher`, `prompt: "Map this prompt's context against the repository structure.\n\nPrompt: $USER_PROMPT\n\nIdentify referenced files, components, and workflows. Verify paths exist."`
+3. Task → `agent: critic`, `prompt: "Assess safety and risk of executing this prompt.\n\nPrompt: $USER_PROMPT\n\nIdentify: destructive operations, permission requirements, scope creep risks."`
 
 ### Clarification Gate
 1. Review all lane results. If ambiguities remain → ask user clarifying questions (max 3).
 2. If clear → continue to Repackage.
 
 ### Phase: Repackage
-1. Task → `agent: prompt-repackager`, `prompt: "Repackage this prompt with findings from analysis.\n\nOriginal: $USER_PROMPT\nAnalysis: $LANE_RESULTS\n\nProduce enhanced prompt with YAML frontmatter (version, complexity_before, complexity_after, confidence, phases_completed) and XML body sections."`
+1. Task → `agent: builder`, `prompt: "Repackage this prompt with findings from analysis.\n\nOriginal: $USER_PROMPT\nAnalysis: $LANE_RESULTS\n\nProduce enhanced prompt with YAML frontmatter (version, complexity_before, complexity_after, confidence, phases_completed) and XML body sections."`
 2. Write enhanced output to `.hivemind/state/session-context-prompt.md` using the `write` tool.
 
 ### Report
