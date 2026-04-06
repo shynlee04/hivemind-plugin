@@ -54,7 +54,7 @@ export function createSessionPatchTool(
         "\\$&",
       )
       const headingRegex = new RegExp(
-        `(${escapedSection})[\\s\\S]*?(?=\\n## |$)`,
+        `(?:^|\\n)(${escapedSection})[\\s\\S]*?(?=\\n## |$)`,
       )
       const match = original.match(headingRegex)
 
@@ -82,7 +82,7 @@ export function createSessionPatchTool(
 
       const record: SessionPatchRecord = {
         section: args.section,
-        old_value: match[0].replace(args.section, "").trim(),
+        old_value: match[1].replace(args.section, "").trim(),
         new_value: args.newContent,
         backup_path: backupPath,
         timestamp: new Date().toISOString(),
