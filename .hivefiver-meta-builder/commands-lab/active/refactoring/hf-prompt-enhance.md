@@ -1,10 +1,10 @@
 ---
 description: "Enhance, audit, or repack a prompt through skim, investigation lanes, clarification gating, and structured final assembly. Triggers: 'enhance this prompt', 'audit this prompt', 'repack this prompt'."
 agent: hivefiver-orchestrator
-subtask: true
+subtask: false
 ---
 
-Execute the prompt-enhance workflow using `delegate-task` for all tool invocations.
+Execute the prompt-enhance workflow using `task` tool for invoking subagents pipelines for investigations.
 
 Variable mapping: `$ARGUMENTS` (from the command) becomes `$USER_PROMPT` throughout the workflow.
 

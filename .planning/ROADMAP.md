@@ -1,98 +1,87 @@
-# Roadmap: Harness Cleanup
+# Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
+**Updated:** 2026-04-06 (re-baselined — 7/18 items verified complete)
 **Granularity:** Fine
-**Coverage:** 18/18 requirements mapped ✓
 
-## Phases
+## Phases Overview
 
-- [ ] **Phase 1: Consolidate** - Delete dead code, consolidate duplicates, establish clean baseline
-- [ ] **Phase 2: Critical Fixes** - Fix HIGH severity bugs (double-compaction, heading corruption, phantom agents)
-- [ ] **Phase 3: Functional Fixes** - Fix MEDIUM severity bugs (system-transform gating, cross-line contradiction detection)
-- [ ] **Phase 4: Rebuild & Polish** - Rebuild context-budget model, remove remaining LOW issues
-- [ ] **Phase 5: Verification** - Full test suite, quality gates, zero-regression confirmation
+- [x] **Phase 1: Baseline Cleanup** — 7/10 done, 3 pending
+- [ ] **Phase 2: V3 Runtime Architecture** — 0/8 (new)
+- [ ] **Phase 3: Schema Definition** — 0/4
+- [ ] **Phase 4: Migration Gate** — 0/4
+- [ ] **Phase 5: Integration Verification** — 0/5
 
-## Phase Details
+## Phase 1: Baseline Cleanup
 
-### Phase 1: Consolidate
-**Goal**: Establish a clean codebase by removing dead code and consolidating duplicates
-**Depends on**: Nothing (first phase)
-**Requirements**: DEAD-01, DEAD-02, DEAD-03, TEST-01
-**Success Criteria** (what must be TRUE):
-  1. `.opencode/tools/` directory no longer exists — all 5 files deleted
-  2. No duplicate test files remain in `tests/tools/` — old `*.test.ts` files deleted
-  3. `tests/plugins/prompt-enhance.test.ts` deleted (no longer masks double-count bug)
-  4. All remaining test files in `tests/tools/` follow `*.test.ts` naming convention (no `-tool.test.ts` suffix)
-**Plans**: TBD
+### Already Done ✅ (verified against source)
 
-### Phase 2: Critical Fixes
-**Goal**: Fix all HIGH severity bugs that break agent workflows
-**Depends on**: Phase 1
-**Requirements**: HIGH-01, HIGH-02, HIGH-03
-**Success Criteria** (what must be TRUE):
-  1. One compaction event increments count by 1 (not 2) — budget correctly decrements
-  2. session-patch regex only matches exact heading level — `## Section` does not match `### Section`
-  3. Orchestrator references only existing agents (researcher, builder, critic) OR execution loop removed entirely
-**Plans**: TBD
+1. ✅ Double-compaction avoided — `src/plugins/prompt-enhance.ts` records compaction in event hook, single increment
+2. ✅ Heading regex anchored — `src/tools/session-patch/tools.ts` uses `match[1]` exact match
+3. ✅ Cross-line contradiction detection — `src/tools/prompt-analyze/tools.ts` nested loop comparison
+4. ✅ System-transform gating — `src/hooks/system-transform.ts` checks delegation metadata
+5. ✅ `recommended_lanes` removed — `src/tools/prompt-skim/tools.ts` output has no such field
+6. ✅ `.opencode/tools/*.ts` deleted — only `.gitkeep` remains
+7. ✅ Test files canonical form — `tests/tools/*.test.ts` all import from `src/tools/`
 
-### Phase 3: Functional Fixes
-**Goal**: Fix MEDIUM severity bugs that degrade agent workflow quality
-**Depends on**: Phase 2
-**Requirements**: MED-01, MED-02
-**Success Criteria** (what must be TRUE):
-  1. system-transform hook injects zero text into sessions without prompt-enhance delegation metadata
-  2. prompt-analyze detects contradictions that span multiple lines (not just within single lines)
-**Plans**: TBD
+### Still Pending 🔄
 
-### Phase 4: Rebuild & Polish
-**Goal**: Rebuild fake models and remove remaining LOW severity issues
-**Depends on**: Phase 3
-**Requirements**: LOW-01, LOW-02, LOW-03, LOW-04
-**Success Criteria** (what must be TRUE):
-  1. context-budget uses real OpenCode compaction data (not hardcoded 15% per compaction)
-  2. prompt-skim output contains no `recommended_lanes` field
-  3. plugin.ts has no system-transform hook wiring
-  4. plugin.ts has no PromptEnhancePlugin event forwarding for compaction
-**Plans**: TBD
+8. 🔄 Remove `system.transform` wiring from `src/plugin.ts` (lines 38-39 import, lines 315-320 wiring)
+9. 🔄 Fix `hivefiver-orchestrator.md` expecting `recommended_lanes` (lines 102, 163)
+10. 🔄 Replace heuristic context-budget with real OpenCode compaction data
 
-### Phase 5: Verification
-**Goal**: Confirm zero regressions, all quality gates pass, no dead text injection
-**Depends on**: Phase 4
-**Requirements**: QUAL-01, QUAL-02, QUAL-03, QUAL-04, QUAL-05
-**Success Criteria** (what must be TRUE):
-  1. Zero dead text injected into sessions that are not prompt-enhance sessions
-  2. Test suite includes explicit test verifying double-compaction does NOT occur
-  3. `npm run typecheck` exits with code 0
-  4. `npm test` exits with code 0 (all tests pass, no false positives)
-  5. `npm run build` exits with code 0
-**Plans**: TBD
+## Phase 2: V3 Runtime Architecture
+
+8 sub-phases (priority-ordered):
+- 2a. Background Agents — spawn in new panes, auto-cleanup
+- 2b. Delegation Chain — task persistence, parent-child tracking
+- 2c. Concurrency Control — keyed semaphore, FIFO queue (partial: `src/lib/concurrency.ts` exists)
+- 2d. Session Recovery — context integrity across session boundaries
+- 2e. Context Governance — cross-session rule enforcement
+- 2f. Injection Engine — conditional runtime injection of rules, commands, skills, tools
+- 2g. Specialist Classification — configurable agent presets, category routing
+- 2h. Circuit Breaker — per-session tool call limits (partial: `CIRCUIT_BREAKER_THRESHOLD=16` exists)
+
+## Phase 3: Schema Definition
+
+- 3a. YAML schema for Agent frontmatter
+- 3b. YAML schema for Command frontmatter
+- 3c. YAML schema for Skill frontmatter
+- 3d. TypeScript types + event emitters from schemas
+
+## Phase 4: Migration Gate
+
+- 4a. Inventory product-detox (excluding .env, tool config pollution)
+- 4b. Match against proven harness-experiment baseline
+- 4c. Selective migration list with user approval
+- 4d. Item-by-item migration with validation
+
+## Phase 5: Integration Verification
+
+- 5a. Full test suite green
+- 5b. Plugin loads and wires all tools + hooks
+- 5c. Background agents spawn, report, clean up
+- 5d. Delegation chains persist across sessions
+- 5e. Injection engine applies rules conditionally
+- 5f. Specialist routing correct
+- 5g. Schema validation catches malformed definitions
 
 ## Progress Table
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Consolidate | 0/4 | Not started | - |
-| 2. Critical Fixes | 0/3 | Not started | - |
-| 3. Functional Fixes | 0/2 | Not started | - |
-| 4. Rebuild & Polish | 0/4 | Not started | - |
-| 5. Verification | 0/5 | Not started | - |
+| Phase | Items Complete | Status |
+|-------|---------------|--------|
+| 1. Baseline Cleanup | 7/10 | In progress (3 pending) |
+| 2. V3 Runtime Architecture | 0/8 | Not started |
+| 3. Schema Definition | 0/4 | Not started |
+| 4. Migration Gate | 0/4 | Not started |
+| 5. Integration Verification | 0/5 | Not started |
 
 ## Dependencies
 
 ```
-Phase 1: Consolidate
-  └─→ Phase 2: Critical Fixes
-       └─→ Phase 3: Functional Fixes
-            └─→ Phase 4: Rebuild & Polish
-                 └─→ Phase 5: Verification
+Phase 1 (7 done, 3 pending)
+  └─→ Phase 2: V3 Runtime (8 sub-phases, priority-ordered)
+       └─→ Phase 3: Schema Definition
+            └─→ Phase 4: Migration Gate
+                 └─→ Phase 5: Integration Verification
 ```
-
-**Rationale for ordering:**
-- Phase 1 first: Remove dead code before fixing bugs in it (waste not)
-- Phase 2 before 3: HIGH bugs before MEDIUM (severity ordering)
-- Phase 3 before 4: Functional fixes before model rebuild (fix what exists, then rebuild)
-- Phase 5 last: Verification requires all fixes in place
-
----
-*Roadmap created: 2026-04-06*
-*Last updated: 2026-04-06 after initial creation*
