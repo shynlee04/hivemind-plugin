@@ -377,4 +377,38 @@ describe("buildPromptText with session context", () => {
     const contextIndex = result.indexOf("CONTEXT:")
     expect(sessionIndex).toBeGreaterThan(contextIndex)
   })
+
+  it("passes session content through constraints", () => {
+    const result = buildPromptText({
+      description: "Patch session",
+      prompt: "Update the file",
+      constraints: [
+        "session context: ## What Happened\nSession initialized.\n## Risks\nNone yet.",
+      ],
+    })
+
+    expect(result).toContain("MUST DO:")
+    expect(result).toContain("session context:")
+    expect(result).toContain("## What Happened")
+    expect(result).toContain("Session initialized.")
+  })
+
+  it("combines sessionContext param with other constraints", () => {
+    const result = buildPromptText({
+      description: "Lane analysis",
+      prompt: "Analyze the prompt",
+      constraints: ["Read-only analysis", "No file writes"],
+      sessionContext: "## What Happened\nSkim complete.",
+    })
+
+    expect(result).toContain("Read-only analysis")
+    expect(result).toContain("No file writes")
+    expect(result).toContain("## Session Context")
+    expect(result).toContain("Skim complete.")
+
+    // Verify ordering: constraints in MUST DO, session context at end
+    const mustDoIndex = result.indexOf("MUST DO:")
+    const sessionIndex = result.indexOf("## Session Context")
+    expect(sessionIndex).toBeGreaterThan(mustDoIndex)
+  })
 })
