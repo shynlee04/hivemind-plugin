@@ -32,6 +32,10 @@ import {
   VALID_DELEGATION_CATEGORIES,
 } from "./lib/types.js"
 import { PromptEnhancePlugin } from "./plugins/prompt-enhance.js"
+import { createPromptSkimTool } from "./tools/prompt-skim/index.js"
+import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
+import { createContextBudgetTool } from "./tools/context-budget/index.js"
+import { createSessionPatchTool } from "./tools/session-patch/index.js"
 
 const MAX_DEPTH = 3
 const WATCH_TIMEOUT_MS = 180000
@@ -454,6 +458,10 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
           })
         },
       }),
+      "prompt-skim": createPromptSkimTool(process.cwd()),
+      "prompt-analyze": createPromptAnalyzeTool(process.cwd()),
+      "context-budget": createContextBudgetTool(process.cwd()),
+      "session-patch": createSessionPatchTool(process.cwd()),
     },
   }
 }
