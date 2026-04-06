@@ -31,7 +31,6 @@ import {
   VALID_AGENTS,
   VALID_DELEGATION_CATEGORIES,
 } from "./lib/types.js"
-import { PromptEnhancePlugin } from "./plugins/prompt-enhance.js"
 import { createPromptSkimTool } from "./tools/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
 import { createContextBudgetTool } from "./tools/context-budget/index.js"
@@ -120,9 +119,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
     pollTimeoutMs: WATCH_TIMEOUT_MS,
   })
   lifecycleManager.hydrateFromContinuity()
-
-  // Compose prompt-enhance plugin for session state initialization
-  const promptEnhancePlugin = await PromptEnhancePlugin({} as any)
 
   return {
     "tool.execute.before": async (input, output) => {
@@ -216,11 +212,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
       }
 
       lifecycleManager.handleEvent({ event, eventType, sessionID })
-
-      // Forward to prompt-enhance plugin for session state initialization
-      if (promptEnhancePlugin.event) {
-        await promptEnhancePlugin.event({ event })
-      }
     },
 
     "experimental.session.compacting": async (input, output) => {
@@ -308,11 +299,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
             ),
           ].join("\n")
         )
-      }
-
-      // Forward to prompt-enhance plugin for compaction metadata
-      if (promptEnhancePlugin["experimental.session.compacting"]) {
-        await promptEnhancePlugin["experimental.session.compacting"](input, output)
       }
     },
 
