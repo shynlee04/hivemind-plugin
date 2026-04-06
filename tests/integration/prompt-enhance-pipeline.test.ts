@@ -7,32 +7,19 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest"
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join, dirname } from "node:path"
+import { join } from "node:path"
 
 import {
   PromptSkimResultSchema,
   PromptAnalysisResultSchema,
-  ContextBudgetRecordSchema,
   SessionPatchRecordSchema,
 } from "../../src/schema-kernel/prompt-enhance.schema.js"
 import { createPromptSkimTool } from "../../src/tools/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "../../src/tools/prompt-analyze/index.js"
-import { createContextBudgetTool } from "../../src/tools/context-budget/index.js"
 import { createSessionPatchTool } from "../../src/tools/session-patch/index.js"
-import { transformSystemPrompt } from "../../src/hooks/system-transform.js"
 import { transformMessages } from "../../src/hooks/messages-transform.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
 import { PromptEnhancePlugin } from "../../src/plugins/prompt-enhance.js"
-import { setDelegationMeta } from "../../src/lib/state.js"
-import type { DelegationMeta } from "../../src/lib/types.js"
-
-const TEST_DELEGATION: DelegationMeta = {
-  rootID: "ses_root",
-  depth: 1,
-  budgetUsed: 0,
-  agent: "researcher",
-  queueKey: "test",
-}
 
 const mockCtx = {
   sessionID: "test_ses_001",
@@ -71,15 +58,6 @@ describe("schema contracts match tool outputs", () => {
     expect(result.success).toBe(true)
   })
 
-  it("context-budget output validates against ContextBudgetRecordSchema", async () => {
-    const tool = createContextBudgetTool(process.cwd())
-    const raw = await tool.execute({ sessionFilePath: "/nonexistent/session.md" }, mockCtx)
-    const parsed = JSON.parse(raw)
-    const result = ContextBudgetRecordSchema.safeParse(parsed.data)
-    expect(result.success).toBe(true)
-    expect(parsed.data.budget_pct).toBe(100)
-  })
-
   it("session-patch output validates against SessionPatchRecordSchema", async () => {
     const testDir = join(tmpdir(), `sp-test-${Date.now()}`)
     mkdirSync(testDir, { recursive: true })
@@ -97,40 +75,6 @@ describe("schema contracts match tool outputs", () => {
     expect(existsSync(parsed.data.backup_path)).toBe(true)
 
     rmSync(testDir, { recursive: true, force: true })
-  })
-})
-
-// ---------------------------------------------------------------------------
-// Test 2: system.transform injects contracts
-// ---------------------------------------------------------------------------
-
-describe("system.transform injects output contract", () => {
-  it("appends contract block to system prompt", () => {
-    setDelegationMeta("ses_delegated", TEST_DELEGATION)
-    const result = transformSystemPrompt("You are a helpful assistant.", "ses_delegated")
-    expect(result).toContain("You are a helpful assistant.")
-    expect(result).toContain("## Prompt-Enhance Output Contract")
-  })
-
-  it("contains YAML frontmatter template", () => {
-    setDelegationMeta("ses_delegated", TEST_DELEGATION)
-    const result = transformSystemPrompt("base", "ses_delegated")
-    expect(result).toContain("version:")
-    expect(result).toContain("enhanced_at:")
-    expect(result).toContain("complexity_before:")
-  })
-
-  it("contains validation rules", () => {
-    setDelegationMeta("ses_delegated", TEST_DELEGATION)
-    const result = transformSystemPrompt("base", "ses_delegated")
-    expect(result).toContain("Validation rules")
-    expect(result).toContain("version")
-    expect(result).toContain("complexity_before")
-  })
-
-  it("system-transform injects zero text for non-delegated sessions", () => {
-    const result = transformSystemPrompt("You are a helper.", undefined)
-    expect(result).toBe("You are a helper.")
   })
 })
 
@@ -277,16 +221,7 @@ describe("full pipeline E2E", () => {
     expect(analyzeResult.clarity_score).toBeGreaterThanOrEqual(0)
     expect(analyzeResult.clarity_score).toBeLessThanOrEqual(100)
 
-    // Phase 3: Context budget
-    const budgetTool = createContextBudgetTool(process.cwd())
-    const budgetRaw = await budgetTool.execute({ sessionFilePath: sessionFile }, mockCtx)
-    const budgetParsed = JSON.parse(budgetRaw)
-    const budgetResult = ContextBudgetRecordSchema.parse(budgetParsed.data)
-    expect(budgetResult.compaction_count).toBe(2)
-    expect(budgetResult.budget_pct).toBe(50)
-    expect(budgetResult.status).toBe("warning")
-
-    // Phase 4: Session patch
+    // Phase 3: Session patch
     const patchTool = createSessionPatchTool(process.cwd())
     const patchRaw = await patchTool.execute(
       { sessionFilePath: sessionFile, section: "## Identified Risks", newContent: "Risk: scope creep detected" },
@@ -297,11 +232,7 @@ describe("full pipeline E2E", () => {
     expect(patchParsed.data.section).toBe("## Identified Risks")
     expect(patchParsed.metadata.patch_count).toBe(1)
 
-    // Phase 5: Verify hooks work with pipeline output
-    setDelegationMeta("ses_pipeline_test", TEST_DELEGATION)
-    const systemPrompt = transformSystemPrompt("You are a helper.", "ses_pipeline_test")
-    expect(systemPrompt).toContain("Prompt-Enhance Output Contract")
-
+    // Phase 4: Verify messages.transform hook works with pipeline output
     const messages = [{ role: "user", content: samplePrompt }]
     const transformed = transformMessages(messages, "ses_pipeline_test")
     expect(transformed.length).toBe(2)
@@ -316,19 +247,17 @@ describe("full pipeline E2E", () => {
 // ---------------------------------------------------------------------------
 
 describe("plugin tools are registered and callable", () => {
-  it("HarnessControlPlane returns all 4 prompt-enhance tools", async () => {
+  it("HarnessControlPlane returns all prompt-enhance tools", async () => {
     const plugin = await HarnessControlPlane({} as any)
     const tools = plugin.tool as Record<string, { execute: Function }>
 
     expect(tools).toBeDefined()
     expect(typeof tools["prompt-skim"]).toBe("object")
     expect(typeof tools["prompt-analyze"]).toBe("object")
-    expect(typeof tools["context-budget"]).toBe("object")
     expect(typeof tools["session-patch"]).toBe("object")
 
     expect(typeof tools["prompt-skim"].execute).toBe("function")
     expect(typeof tools["prompt-analyze"].execute).toBe("function")
-    expect(typeof tools["context-budget"].execute).toBe("function")
     expect(typeof tools["session-patch"].execute).toBe("function")
   })
 
@@ -347,12 +276,6 @@ describe("plugin tools are registered and callable", () => {
       mockCtx,
     )
     expect(analyzeResult).toContain("Analysis complete")
-
-    const budgetResult = await tools["context-budget"].execute(
-      { sessionFilePath: "/nonexistent.md" },
-      mockCtx,
-    )
-    expect(budgetResult).toContain("Budget calculated")
   })
 })
 

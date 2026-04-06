@@ -33,9 +33,7 @@ import {
 } from "./lib/types.js"
 import { createPromptSkimTool } from "./tools/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
-import { createContextBudgetTool } from "./tools/context-budget/index.js"
 import { createSessionPatchTool } from "./tools/session-patch/index.js"
-import { transformSystemPrompt } from "./hooks/system-transform.js"
 import { transformMessages } from "./hooks/messages-transform.js"
 
 const MAX_DEPTH = 3
@@ -312,13 +310,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
       }
     },
 
-    "system.transform": async (
-      input: { sessionID?: string },
-      output: { systemPrompt: string },
-    ) => {
-      output.systemPrompt = transformSystemPrompt(output.systemPrompt, input.sessionID)
-    },
-
     "messages.transform": async (
       input: { sessionID?: string; messages?: Array<{ role: string; content: string }> },
       output: { messages: Array<{ role: string; content: string }> },
@@ -468,7 +459,6 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
       }),
       "prompt-skim": createPromptSkimTool(process.cwd()),
       "prompt-analyze": createPromptAnalyzeTool(process.cwd()),
-      "context-budget": createContextBudgetTool(process.cwd()),
       "session-patch": createSessionPatchTool(process.cwd()),
     },
   }

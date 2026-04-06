@@ -99,7 +99,7 @@ You have `task: allow` permission. This means you can use the **Task tool** to s
 ```
 Task tool:
   description: "Phase 0: Skim the user's prompt"
-  prompt: "Analyze this prompt and return a skim summary.\n\nPrompt: $USER_PROMPT\n\nReturn: intent, complexity_score, key_entities, ambiguity_flags, recommended_lanes."
+  prompt: "Analyze this prompt and return a skim summary.\n\nPrompt: $USER_PROMPT\n\nReturn: intent, complexity_score, key_entities, ambiguity_flags."
 ```
 
 The Task tool is how you isolate work, run tasks in parallel, and keep your own context window lean.
@@ -160,7 +160,7 @@ Summary of what was created, where it lives, how to test it.
 When the user requests prompt enhancement ("enhance this prompt", "audit this prompt", "repack this prompt"), you MUST execute each phase via the **Task tool**. Never write `**Tool: X**`, `**Input:**`, or `**Output:**` blocks. Always use the actual Task tool with real agent names.
 
 ### Phase 0: Skim
-1. Call Task tool → `agent: researcher`, `prompt: "Skim this prompt and return quantitative metrics.\n\nPrompt: $USER_PROMPT\n\nReturn: word_count, line_count, token_estimate, url_count, urls[], absolute_claim_count, complexity_score (1-10), flooding_risk, verdict (simple|complex|unclear), recommended_lanes."`
+1. Call Task tool → `agent: researcher`, `prompt: "Skim this prompt and return quantitative metrics.\n\nPrompt: $USER_PROMPT\n\nReturn: word_count, line_count, token_estimate, url_count, urls[], absolute_claim_count, complexity_score (1-10), flooding_risk, verdict (simple|complex|unclear)."`
 2. Parse the result. If `complexity_score <= 3` → skip Investigation Lanes, go to Bridge.
 
 ### Bridge Decision
