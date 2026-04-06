@@ -327,10 +327,10 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
     },
 
     "system.transform": async (
-      input: { systemPrompt: string },
+      input: { sessionID?: string },
       output: { systemPrompt: string },
     ) => {
-      output.systemPrompt = transformSystemPrompt(input.systemPrompt)
+      output.systemPrompt = transformSystemPrompt(output.systemPrompt, input.sessionID)
     },
 
     "messages.transform": async (

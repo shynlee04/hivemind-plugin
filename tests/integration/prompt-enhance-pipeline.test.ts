@@ -23,6 +23,16 @@ import { transformSystemPrompt } from "../../src/hooks/system-transform.js"
 import { transformMessages } from "../../src/hooks/messages-transform.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
 import { PromptEnhancePlugin } from "../../src/plugins/prompt-enhance.js"
+import { setDelegationMeta } from "../../src/lib/state.js"
+import type { DelegationMeta } from "../../src/lib/types.js"
+
+const TEST_DELEGATION: DelegationMeta = {
+  rootID: "ses_root",
+  depth: 1,
+  budgetUsed: 0,
+  agent: "researcher",
+  queueKey: "test",
+}
 
 const mockCtx = {
   sessionID: "test_ses_001",
@@ -96,23 +106,31 @@ describe("schema contracts match tool outputs", () => {
 
 describe("system.transform injects output contract", () => {
   it("appends contract block to system prompt", () => {
-    const result = transformSystemPrompt("You are a helpful assistant.")
+    setDelegationMeta("ses_delegated", TEST_DELEGATION)
+    const result = transformSystemPrompt("You are a helpful assistant.", "ses_delegated")
     expect(result).toContain("You are a helpful assistant.")
     expect(result).toContain("## Prompt-Enhance Output Contract")
   })
 
   it("contains YAML frontmatter template", () => {
-    const result = transformSystemPrompt("base")
+    setDelegationMeta("ses_delegated", TEST_DELEGATION)
+    const result = transformSystemPrompt("base", "ses_delegated")
     expect(result).toContain("version:")
     expect(result).toContain("enhanced_at:")
     expect(result).toContain("complexity_before:")
   })
 
   it("contains validation rules", () => {
-    const result = transformSystemPrompt("base")
+    setDelegationMeta("ses_delegated", TEST_DELEGATION)
+    const result = transformSystemPrompt("base", "ses_delegated")
     expect(result).toContain("Validation rules")
     expect(result).toContain("version")
     expect(result).toContain("complexity_before")
+  })
+
+  it("system-transform injects zero text for non-delegated sessions", () => {
+    const result = transformSystemPrompt("You are a helper.", undefined)
+    expect(result).toBe("You are a helper.")
   })
 })
 
@@ -280,7 +298,8 @@ describe("full pipeline E2E", () => {
     expect(patchParsed.metadata.patch_count).toBe(1)
 
     // Phase 5: Verify hooks work with pipeline output
-    const systemPrompt = transformSystemPrompt("You are a helper.")
+    setDelegationMeta("ses_pipeline_test", TEST_DELEGATION)
+    const systemPrompt = transformSystemPrompt("You are a helper.", "ses_pipeline_test")
     expect(systemPrompt).toContain("Prompt-Enhance Output Contract")
 
     const messages = [{ role: "user", content: samplePrompt }]

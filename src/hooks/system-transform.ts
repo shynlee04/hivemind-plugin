@@ -2,9 +2,11 @@
  * System prompt transform hook.
  *
  * Injects the prompt-enhance output contract (YAML frontmatter + XML body
- * structure) into every session's system prompt so agents receive structured
- * output requirements at the system level.
+ * structure) into sessions that have delegation metadata. Normal sessions
+ * receive their system prompt unchanged.
  */
+
+import { getDelegationMeta } from "../lib/state.js"
 
 const CONTRACT_TEMPLATE = [
   "## Prompt-Enhance Output Contract",
@@ -38,9 +40,27 @@ const CONTRACT_TEMPLATE = [
 /**
  * Transforms the system prompt by injecting the prompt-enhance output contract.
  *
+ * Only injects the contract for sessions that have delegation metadata.
+ * Normal sessions (no delegation) receive their system prompt unchanged.
+ *
  * @param systemPrompt - The current system prompt text
- * @returns The transformed system prompt with contract injection
+ * @param sessionID - Optional session ID for delegation lookup
+ * @returns The transformed system prompt (with contract injection if delegated)
  */
-export function transformSystemPrompt(systemPrompt: string): string {
+export function transformSystemPrompt(systemPrompt: string, sessionID?: string): string {
+  if (!sessionID) {
+    return systemPrompt
+  }
+
+  try {
+    const delegation = getDelegationMeta(sessionID)
+    if (!delegation || !delegation.agent) {
+      return systemPrompt
+    }
+  } catch {
+    // Continuity not initialized yet — skip injection
+    return systemPrompt
+  }
+
   return `${systemPrompt}\n\n${CONTRACT_TEMPLATE}`
 }
