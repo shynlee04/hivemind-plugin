@@ -1,3 +1,17 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: executing
+last_updated: "2026-04-06T22:50:00.000Z"
+progress:
+  total_phases: 5
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
+  percent: 20
+---
+
 # STATE: Harness Cleanup
 
 ## Project Reference
@@ -5,72 +19,91 @@
 See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 1: Consolidate
+**Current focus:** Phase 02 — Critical Fixes (ready for planning)
 
 ## Current Position
 
-**Phase:** 1 — Consolidate
-**Plan:** None yet (awaiting `/gsd:plan-phase 1`)
-**Status:** Not started
-**Progress:** [░░░░░░░░░░] 0%
+**Phase:** 02 (critical-fixes) — READY
+**Plan:** None yet (awaiting `/gsd-plan-phase 02`)
+**Status:** Phase 01 complete, Phase 02 next
+**Progress:** [██░░░░░░░░] 20%
 
 ```
-Phase 1: Consolidate .............. Not started
-Phase 2: Critical Fixes ........... Pending
+Phase 1: Baseline Cleanup ......... ✅ COMPLETE (10/10 items)
+Phase 2: Critical Fixes ........... Ready for planning
 Phase 3: Functional Fixes ......... Pending
 Phase 4: Rebuild & Polish ......... Pending
 Phase 5: Verification ............. Pending
 ```
 
+## Phase 1 Results (Completed 2026-04-06)
+
+| Item | Description | Status |
+|------|-------------|--------|
+| 1-7 | Pre-verified fixes (compaction, heading regex, contradictions, gating, recommended_lanes, .opencode/tools deleted, test canonical form) | ✅ |
+| 8 | Remove system.transform wiring + delete orphan hook | ✅ |
+| 9 | Fix phantom recommended_lanes in orchestrator | ✅ |
+| 10 | Remove context-budget tool (keep schema contract) | ✅ |
+
+**Quality Gates:** typecheck ✅ | tests 247/247 ✅ | build ✅
+**Commit:** `42babee6`
+
 ## Performance Metrics
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| v1 Requirements | 18 | 0 complete |
-| HIGH bugs fixed | 3 | 0 |
-| MEDIUM bugs fixed | 2 | 0 |
-| LOW issues resolved | 4 | 0 |
-| Tests passing | 100% | TBD |
-| Typecheck | Pass | TBD |
-| Build | Pass | TBD |
+| v1 Requirements | 18 | 10 complete |
+| HIGH bugs fixed | 3 | 3 (items 1-3) |
+| MEDIUM bugs fixed | 2 | 2 (items 4-5) |
+| LOW issues resolved | 4 | 4 (items 6-10) |
+| Tests passing | 100% | 247/247 ✅ |
+| Typecheck | Pass | ✅ |
+| Build | Pass | ✅ |
 
 ## Accumulated Context
 
 ### Decisions
+
 - **2026-04-06**: Delete `.opencode/tools/` entirely — src/tools/ is superior in every dimension (type safety, schema validation, factory pattern, response envelopes, test coverage, plugin wiring)
 - **2026-04-06**: Keep all `src/tools/` components — all contribute to AI agent workflows after bug fixes
 - **2026-04-06**: Keep EnhancedPromptOutputSchema and PipelineStateSchema — they are contracts, not dead code
 - **2026-04-06**: Keep tool-helpers.ts — 5 LOC convention anchor
 - **2026-04-06**: Fine granularity — 5 phases derived from bug severity and natural delivery boundaries
+- **2026-04-06**: ContextBudgetRecordSchema preserved as future contract placeholder — tool implementation removed (OpenCode exposes no real compaction data to plugins)
+- **2026-04-06**: system.transform hook removed — prompt-enhance output contract was gated correctly, wiring became dead code
 
 ### Todos
-- [ ] Run `/gsd:plan-phase 1` to begin Phase 1: Consolidate
-- [ ] Execute deletion of `.opencode/tools/` (5 files)
-- [ ] Execute deletion of duplicate test files
-- [ ] Rename remaining test files to standard naming
+
+- [ ] Plan Phase 02: Critical Fixes (ROADMAP items 2a-2h: V3 Runtime Architecture)
+- [ ] Execute Phase 02: Background agents, delegation chain, concurrency control, session recovery
+- [ ] Plan Phase 03: Schema Definition (YAML schemas for Agent/Command/Skill frontmatter)
 
 ### Blockers
+
 - None
 
 ### Known Issues
-- 8 confirmed bugs identified in audit (see REQUIREMENTS.md HIGH/MED/LOW categories)
-- ~279 tests exist — some mask bugs (prompt-enhance.test.ts masks double-count)
-- Duplicate tool implementations in `.opencode/tools/` and `src/tools/`
+
+- Pre-existing LSP errors in integration test (ToolContext.messageID missing, PromptEnhancePlugin argument shape, Event type shape) — do not affect typecheck or test results
+- ~247 tests exist — some may mask bugs (prompt-enhance.test.ts historically masked double-count)
 
 ## Session Continuity
 
 **Worktree:** `/Users/apple/hivemind-plugin/.worktrees/harness-experiment`
 **Main project:** `/Users/apple/hivemind-plugin`
 **Branch:** harness-experiment (worktree)
-**Commits on branch:** 12
+**Commits on branch:** 15
 
 **Key files:**
+
 - Audit findings: `findings.md`
 - Design spec: `docs/superpowers/specs/2026-04-06-harness-clean-design.md`
-- Plugin entry: `src/plugin.ts`
-- Tools: `src/tools/` (keep), `.opencode/tools/` (delete)
-- Tests: `tests/` (consolidate)
+- Plugin entry: `src/plugin.ts` (cleaned — no dead wiring)
+- Tools: `src/tools/` (prompt-analyze, prompt-skim, session-patch)
+- Tests: `tests/` (247 tests, 12 files)
+- Phase 1 plan: `.planning/phases/01-baseline-cleanup/01-01-PLAN.md`
+- Phase 1 summary: `.planning/phases/01-baseline-cleanup/01-01-SUMMARY.md`
 
 ---
 *State initialized: 2026-04-06*
-*Last updated: 2026-04-06 after project initialization*
+*Last updated: 2026-04-06 after Phase 1 completion verification*
