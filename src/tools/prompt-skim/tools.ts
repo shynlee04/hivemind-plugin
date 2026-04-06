@@ -63,18 +63,6 @@ export function createPromptSkimTool(_projectRoot: string): ReturnType<typeof to
       const floodingRisk =
         complexity >= 7 ? "high" : complexity >= 4 ? "medium" : "low"
       const verdict = complexity <= 3 ? "simple" : complexity <= 6 ? "complex" : "unclear"
-      const recommendedLanes =
-        complexity <= 3
-          ? ["analyzer", "repackager"]
-          : complexity <= 6
-            ? ["analyzer", "context-mapper", "repackager"]
-            : [
-                "analyzer",
-                "context-mapper",
-                "risk-assessor",
-                "context-purifier",
-                "repackager",
-              ]
 
       const result: PromptSkimResult = {
         word_count: wordCount,
@@ -87,7 +75,6 @@ export function createPromptSkimTool(_projectRoot: string): ReturnType<typeof to
         absolute_claim_count: absoluteWords.length,
         complexity_score: complexity,
         flooding_risk: floodingRisk,
-        recommended_lanes: recommendedLanes,
         verdict,
       }
 

@@ -34,7 +34,6 @@ function validSkim(): PromptSkimResult {
     absolute_claim_count: 3,
     complexity_score: 6,
     flooding_risk: "medium",
-    recommended_lanes: ["investigation", "clarification"],
     verdict: "complex",
   }
 }

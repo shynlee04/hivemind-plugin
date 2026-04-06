@@ -91,17 +91,6 @@ describe("prompt-skim tool", () => {
     expect(result.data.complexity_score).toBeGreaterThanOrEqual(3)
   })
 
-  it("recommends lanes based on complexity", async () => {
-    const raw = await tool.execute(
-      { content: "Simple prompt", workspaceRoot: process.cwd() },
-      mockCtx,
-    )
-    const result = parseResult(raw) as Record<string, unknown>
-    const lanes = result.data.recommended_lanes as string[]
-    expect(lanes).toContain("analyzer")
-    expect(lanes).toContain("repackager")
-  })
-
   it("returns result matching schema-kernel Zod contract", async () => {
     const raw = await tool.execute(
       { content: "Test content with https://example.com url", workspaceRoot: process.cwd() },
