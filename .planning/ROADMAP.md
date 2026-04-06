@@ -1,12 +1,12 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-06 (re-baselined — 7/18 items verified complete)
+**Updated:** 2026-04-06 (re-baselined — 7/18 items verified complete; Phase 1 plan created)
 **Granularity:** Fine
 
 ## Phases Overview
 
-- [x] **Phase 1: Baseline Cleanup** — 7/10 done, 3 pending
+- [x] **Phase 1: Baseline Cleanup** — 7/10 done, 3 pending (planned)
 - [ ] **Phase 2: V3 Runtime Architecture** — 0/8 (new)
 - [ ] **Phase 3: Schema Definition** — 0/4
 - [ ] **Phase 4: Migration Gate** — 0/4
@@ -29,6 +29,12 @@
 8. 🔄 Remove `system.transform` wiring from `src/plugin.ts` (lines 38-39 import, lines 315-320 wiring)
 9. 🔄 Fix `hivefiver-orchestrator.md` expecting `recommended_lanes` (lines 102, 163)
 10. 🔄 Replace heuristic context-budget with real OpenCode compaction data
+
+### Plans
+**Plans:** 1 plan
+
+Plans:
+- [x] 01-01-PLAN.md — Execute 3 remaining cleanup items (remove system.transform wiring, fix orchestrator phantoms, remove context-budget tool)
 
 ## Phase 2: V3 Runtime Architecture
 
@@ -70,7 +76,7 @@
 
 | Phase | Items Complete | Status |
 |-------|---------------|--------|
-| 1. Baseline Cleanup | 7/10 | In progress (3 pending) |
+| 1. Baseline Cleanup | 7/10 | Plan created (1 plan, Wave 1) |
 | 2. V3 Runtime Architecture | 0/8 | Not started |
 | 3. Schema Definition | 0/4 | Not started |
 | 4. Migration Gate | 0/4 | Not started |
@@ -79,7 +85,7 @@
 ## Dependencies
 
 ```
-Phase 1 (7 done, 3 pending)
+Phase 1 (7 done, 3 pending — planned)
   └─→ Phase 2: V3 Runtime (8 sub-phases, priority-ordered)
        └─→ Phase 3: Schema Definition
             └─→ Phase 4: Migration Gate
