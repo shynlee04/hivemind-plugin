@@ -77,14 +77,8 @@ function recordCompaction(sessionFilePath: string) {
 
 export const PromptEnhancePlugin: Plugin = async () => {
   return {
-    event: async (input: unknown) => {
+    event: async () => {
       ensurePromptEnhanceState(process.cwd());
-
-      const evt = (input as { event?: Record<string, unknown> })?.event;
-      if (evt?.["type"] === "session.compacted") {
-        const { sessionFilePath } = ensurePromptEnhanceState(process.cwd());
-        recordCompaction(sessionFilePath);
-      }
     },
 
     "experimental.session.compacting": async (_input, output) => {

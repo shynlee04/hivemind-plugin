@@ -156,10 +156,10 @@ describe("messages.transform detects triggers and injects context", () => {
 })
 
 // ---------------------------------------------------------------------------
-// Test 4: Session compaction tracked by both hooks
+// Test 4: Session compaction tracked by single hook (event hook is no-op)
 // ---------------------------------------------------------------------------
 
-describe("session compaction tracked by both hooks", () => {
+describe("session compaction tracked by single hook", () => {
   const testDir = join(tmpdir(), `compaction-test-${Date.now()}`)
   const stateFile = join(testDir, ".hivemind/state/session-context-prompt.md")
 
@@ -173,8 +173,9 @@ describe("session compaction tracked by both hooks", () => {
     try { rmSync(testDir, { recursive: true, force: true }) } catch { /* ignore */ }
   })
 
-  it("event hook increments compaction_count on session.compacted", async () => {
+  it("session.compacting hook increments compaction_count, event hook does not", async () => {
     const plugin = await PromptEnhancePlugin()
+    // Event hook is a no-op for compaction — only ensures state file exists
     await plugin.event?.({})
 
     const output = { context: [] }
@@ -185,14 +186,14 @@ describe("session compaction tracked by both hooks", () => {
     expect(content).toContain("context_budget_pct: 85")
   })
 
-  it("event hook fires compaction via session.compacted event type", async () => {
+  it("event hook does NOT increment compaction for session.compacted events", async () => {
     const plugin = await PromptEnhancePlugin()
     await plugin.event?.({})
     await plugin.event?.({ event: { type: "session.compacted" } })
 
     const content = readFileSync(stateFile, "utf-8")
-    expect(content).toContain("compaction_count: 1")
-    expect(content).toContain("context_budget_pct: 85")
+    expect(content).toContain("compaction_count: 0")
+    expect(content).toContain("context_budget_pct: 100")
   })
 
   it("budget floors at 0 after multiple compactions", async () => {
