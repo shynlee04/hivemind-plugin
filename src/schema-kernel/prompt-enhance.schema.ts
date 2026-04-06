@@ -27,6 +27,7 @@ export const PromptSkimResultSchema = z
     complexity_score: z.number().int().min(1).max(10),
     flooding_risk: z.enum(["low", "medium", "high"]),
     recommended_lanes: z.array(z.string()),
+    verdict: z.enum(["simple", "complex", "unclear"]),
   })
   .strict()
 
@@ -44,6 +45,7 @@ export const PromptAnalysisFindingSchema = z
   .object({
     line: z.number().int().positive(),
     text: z.string().min(1),
+    description: z.string().min(1),
     type: z.enum(["absolute_claim", "vagueness", "missing_scope", "contradiction"]),
     severity: z.enum(["critical", "important", "minor"]),
     suggestion: z.string().min(1),

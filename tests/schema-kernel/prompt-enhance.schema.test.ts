@@ -35,6 +35,7 @@ function validSkim(): PromptSkimResult {
     complexity_score: 6,
     flooding_risk: "medium",
     recommended_lanes: ["investigation", "clarification"],
+    verdict: "complex",
   }
 }
 
@@ -42,6 +43,7 @@ function validFinding(): PromptAnalysisFinding {
   return {
     line: 12,
     text: "The system guarantees 99.99% uptime",
+    description: "Absolute uptime claim without error budget context",
     type: "absolute_claim",
     severity: "critical",
     suggestion: "Add error budget context or qualify the claim",
@@ -160,6 +162,17 @@ describe("PromptSkimResultSchema", () => {
     })
     expect(result.success).toBe(false)
   })
+
+  it("rejects missing verdict", () => {
+    const { verdict, ...rest } = validSkim()
+    const result = PromptSkimResultSchema.safeParse(rest)
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects invalid verdict value", () => {
+    const result = PromptSkimResultSchema.safeParse({ ...validSkim(), verdict: "ambiguous" })
+    expect(result.success).toBe(false)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -192,6 +205,20 @@ describe("PromptAnalysisFindingSchema", () => {
 
   it("rejects empty suggestion", () => {
     const result = PromptAnalysisFindingSchema.safeParse({ ...validFinding(), suggestion: "" })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects missing description", () => {
+    const { description, ...rest } = validFinding()
+    const result = PromptAnalysisFindingSchema.safeParse(rest)
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects extra fields (strict)", () => {
+    const result = PromptAnalysisFindingSchema.safeParse({
+      ...validFinding(),
+      extra_field: "should not exist",
+    })
     expect(result.success).toBe(false)
   })
 })
@@ -271,6 +298,14 @@ describe("ContextBudgetRecordSchema", () => {
     })
     expect(result.success).toBe(false)
   })
+
+  it("rejects extra fields (strict)", () => {
+    const result = ContextBudgetRecordSchema.safeParse({
+      ...validBudget(),
+      extra_field: "should not exist",
+    })
+    expect(result.success).toBe(false)
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -306,6 +341,14 @@ describe("SessionPatchRecordSchema", () => {
     const result = SessionPatchRecordSchema.safeParse({
       ...validPatch(),
       timestamp: "not-a-date",
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects extra fields (strict)", () => {
+    const result = SessionPatchRecordSchema.safeParse({
+      ...validPatch(),
+      extra_field: "should not exist",
     })
     expect(result.success).toBe(false)
   })
@@ -359,8 +402,9 @@ describe("EnhancedPromptOutputSchema", () => {
   it("rejects extra fields on root (strict)", () => {
     const result = EnhancedPromptOutputSchema.safeParse({
       ...validOutput(),
+      extra_field: "should not exist",
     })
-    expect(result.success).toBe(true)
+    expect(result.success).toBe(false)
   })
 })
 
@@ -401,6 +445,14 @@ describe("PipelineStateSchema", () => {
   it("rejects missing session_id", () => {
     const { session_id, ...rest } = validPipeline()
     const result = PipelineStateSchema.safeParse(rest)
+    expect(result.success).toBe(false)
+  })
+
+  it("rejects extra fields (strict)", () => {
+    const result = PipelineStateSchema.safeParse({
+      ...validPipeline(),
+      extra_field: "should not exist",
+    })
     expect(result.success).toBe(false)
   })
 })
