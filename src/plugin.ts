@@ -36,6 +36,7 @@ import { createPromptSkimTool } from "./tools/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
 import { createContextBudgetTool } from "./tools/context-budget/index.js"
 import { createSessionPatchTool } from "./tools/session-patch/index.js"
+import { transformSystemPrompt } from "./hooks/system-transform.js"
 
 const MAX_DEPTH = 3
 const WATCH_TIMEOUT_MS = 180000
@@ -322,6 +323,13 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
         NO_COLOR: "1",
         TERM: "dumb",
       }
+    },
+
+    "system.transform": async (
+      input: { systemPrompt: string },
+      output: { systemPrompt: string },
+    ) => {
+      output.systemPrompt = transformSystemPrompt(input.systemPrompt)
     },
 
     tool: {
