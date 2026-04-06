@@ -82,7 +82,7 @@ export function createSessionPatchTool(
 
       const record: SessionPatchRecord = {
         section: args.section,
-        old_value: original,
+        old_value: match[0].replace(args.section, "").trim(),
         new_value: args.newContent,
         backup_path: backupPath,
         timestamp: new Date().toISOString(),
@@ -91,8 +91,7 @@ export function createSessionPatchTool(
 
       SessionPatchRecordSchema.parse(record)
       return renderToolResult(
-        success("Section patched", {
-          status: "ok",
+        success("Section patched", record, {
           backup_path: backupPath,
           old_length: original.length,
           new_length: withUpdatedCount.length,

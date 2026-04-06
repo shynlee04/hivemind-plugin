@@ -55,7 +55,7 @@ describe("session-patch tool", () => {
     )
     const result = parseResult(raw) as Record<string, unknown>
     expect(result.data.status).toBe("ok")
-    expect(result.data.patch_count).toBe(1)
+    expect(result.metadata.patch_count).toBe(1)
 
     const updated = readFileSync(sessionFile, "utf-8")
     expect(updated).toContain("new risk content")
@@ -125,7 +125,12 @@ describe("session-patch tool", () => {
       mockCtx,
     )
     const result = parseResult(raw) as Record<string, unknown>
-    expect(result.data.patch_count).toBe(2)
+    // patch_count is in metadata, not data (data is SessionPatchRecord)
+    expect(result.metadata.patch_count).toBe(2)
+
+    // Verify the file also has the correct count
+    const content = readFileSync(sessionFile, "utf-8")
+    expect(content).toMatch(/^patch_count:\s*2$/m)
   })
 
   it("preserves other sections when patching", async () => {
@@ -145,7 +150,7 @@ describe("session-patch tool", () => {
     expect(updated).toContain("other content")
   })
 
-  it("returns result matching schema-kernel Zod contract", async () => {
+  it("returns result matching SessionPatchRecord schema contract", async () => {
     const raw = await tool.execute(
       {
         sessionFilePath: sessionFile,
@@ -155,13 +160,34 @@ describe("session-patch tool", () => {
       mockCtx,
     )
     const result = parseResult(raw) as Record<string, unknown>
-    // The data envelope contains status, backup_path, lengths, patch_count
-    // but the schema-kernel record is: section, old_value, new_value, backup_path, timestamp, status
-    // The tool returns a different shape in the data field. Validate what's returned.
-    expect(result.data.status).toBe("ok")
-    expect(typeof result.data.backup_path).toBe("string")
-    expect(typeof result.data.old_length).toBe("number")
-    expect(typeof result.data.new_length).toBe("number")
-    expect(typeof result.data.patch_count).toBe("number")
+    // Tool now returns the validated SessionPatchRecord in data
+    const data = result.data as Record<string, unknown>
+    expect(data.section).toBe("## Identified Risks")
+    expect(data.new_value).toBe("test content")
+    expect(typeof data.backup_path).toBe("string")
+    expect(typeof data.timestamp).toBe("string")
+    expect(data.status).toBe("ok")
+  })
+
+  it("handles section names with regex-special characters", async () => {
+    writeFileSync(
+      sessionFile,
+      `---\npatch_count: 0\n---\n\n## [Section: Special] Content here\n\n## Other\nother\n`,
+    )
+    const raw = await tool.execute(
+      {
+        sessionFilePath: sessionFile,
+        section: "## [Section: Special]",
+        newContent: "replaced",
+      },
+      mockCtx,
+    )
+    const result = parseResult(raw) as Record<string, unknown>
+    expect(result.kind).toBe("success")
+    const updated = readFileSync(sessionFile, "utf-8")
+    expect(updated).toContain("replaced")
+    expect(updated).not.toContain("Content here")
+    expect(updated).toContain("## Other")
+    expect(updated).toContain("other")
   })
 })

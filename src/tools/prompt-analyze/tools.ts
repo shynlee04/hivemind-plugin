@@ -9,8 +9,8 @@ import { success } from "../../shared/tool-response.js"
 import { PromptAnalysisResultSchema } from "../../schema-kernel/prompt-enhance.schema.js"
 import type { PromptAnalysisFinding, PromptAnalysisResult } from "./types.js"
 
-const ABSOLUTE_RE = /\b(MUST|NEVER|ALWAYS|REQUIRED|FORBIDDEN|DO NOT)\b/gi
-const VAGUE_RE = /\b(some|various|etc\.?|somehow|maybe|perhaps|things|stuff)\b/gi
+const ABSOLUTE_RE = /\b(MUST|NEVER|ALWAYS|REQUIRED|FORBIDDEN|DO NOT)\b/i
+const VAGUE_RE = /\b(some|various|etc\.?|somehow|maybe|perhaps|things|stuff)\b/i
 const MISSING_SCOPE_RE =
   /\b(build|create|fix|update|change|improve)\s+(this|that|it|everything|all)\b/i
 
@@ -58,7 +58,6 @@ export function createPromptAnalyzeTool(
               "Keep hard requirements only where they are truly non-negotiable.",
           })
         }
-        ABSOLUTE_RE.lastIndex = 0
 
         if (VAGUE_RE.test(trimmed)) {
           findings.push({
@@ -71,7 +70,6 @@ export function createPromptAnalyzeTool(
               "Replace vague wording with explicit files, outcomes, or constraints.",
           })
         }
-        VAGUE_RE.lastIndex = 0
 
         if (MISSING_SCOPE_RE.test(trimmed)) {
           findings.push({

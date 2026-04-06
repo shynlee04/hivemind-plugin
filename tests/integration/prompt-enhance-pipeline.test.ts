@@ -275,7 +275,8 @@ describe("full pipeline E2E", () => {
     )
     const patchParsed = JSON.parse(patchRaw)
     expect(patchParsed.data.status).toBe("ok")
-    expect(patchParsed.data.patch_count).toBe(1)
+    expect(patchParsed.data.section).toBe("## Identified Risks")
+    expect(patchParsed.metadata.patch_count).toBe(1)
 
     // Phase 5: Verify hooks work with pipeline output
     const systemPrompt = transformSystemPrompt("You are a helper.")
@@ -332,5 +333,53 @@ describe("plugin tools are registered and callable", () => {
       mockCtx,
     )
     expect(budgetResult).toContain("Budget calculated")
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Test 7: Missing edge cases from review
+// ---------------------------------------------------------------------------
+
+describe("additional edge cases", () => {
+  it("PromptEnhancePlugin.event handler ignores non-compacted events", async () => {
+    const plugin = await PromptEnhancePlugin()
+    // The plugin writes to .hivemind/state/session-context-prompt.md at process.cwd()
+    // Read the current state first
+    const stateFile = join(process.cwd(), ".hivemind/state/session-context-prompt.md")
+    const originalContent = existsSync(stateFile) ? readFileSync(stateFile, "utf-8") : null
+
+    // Reset to known state
+    if (originalContent) {
+      writeFileSync(stateFile, originalContent.replace(/compaction_count:\s*\d+/m, "compaction_count: 0").replace(/context_budget_pct:\s*\d+/m, "context_budget_pct: 100"))
+    }
+
+    // Send a non-compacted event — should be a no-op for compaction
+    await (plugin as any).event({ event: { type: "session.started" } })
+
+    const content = readFileSync(stateFile, "utf-8")
+    expect(content).toContain("compaction_count: 0")
+    expect(content).toContain("context_budget_pct: 100")
+  })
+
+  it("messages.transform ignores trigger in assistant messages", () => {
+    const messages = [
+      { role: "system", content: "You are helpful" },
+      { role: "assistant", content: "Let me enhance this prompt for you" },
+      { role: "user", content: "Build the feature" },
+    ]
+    const result = transformMessages(messages, "ses_test")
+    // Should NOT inject context packet — trigger is in assistant, not user message
+    expect(result).toHaveLength(3)
+    expect(result).toEqual(messages)
+  })
+
+  it("messages.transform detects multiple trigger phrases in user messages", () => {
+    const messages = [
+      { role: "user", content: "Please enhance this prompt and audit it too" },
+    ]
+    const result = transformMessages(messages, "ses_test")
+    expect(result).toHaveLength(2)
+    expect(result[0].role).toBe("system")
+    expect(result[0].content).toContain("Context")
   })
 })

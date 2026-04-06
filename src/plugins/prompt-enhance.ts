@@ -1,6 +1,7 @@
 import type { Plugin } from "@opencode-ai/plugin";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { BUDGET_DECREMENT_PER_COMPACTION } from "../lib/types.js";
 
 const STATE_FILE = ".hivemind/state/session-context-prompt.md";
 
@@ -64,7 +65,7 @@ function recordCompaction(sessionFilePath: string) {
   const currentCount = countMatch ? parseInt(countMatch[1], 10) : 0;
   const currentBudget = budgetMatch ? parseInt(budgetMatch[1], 10) : 100;
   const nextCount = currentCount + 1;
-  const nextBudget = Math.max(0, currentBudget - 15);
+  const nextBudget = Math.max(0, currentBudget - BUDGET_DECREMENT_PER_COMPACTION);
 
   const updated = current
     .replace(/^compaction_count:\s*\d+/m, `compaction_count: ${nextCount}`)
