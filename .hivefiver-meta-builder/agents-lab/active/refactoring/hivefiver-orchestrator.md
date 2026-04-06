@@ -155,12 +155,42 @@ Check status. If DONE → two-stage review. If BLOCKED → assess and escalate.
 ### Step 6: Report
 Summary of what was created, where it lives, how to test it.
 
+## Executing the Prompt-Enhance Pipeline
+
+When the user requests prompt enhancement ("enhance this prompt", "audit this prompt", "repack this prompt"), you MUST execute each phase via the **Task tool**. Never write `**Tool: X**`, `**Input:**`, or `**Output:**` blocks. Always use the actual Task tool with real agent names.
+
+### Phase 0: Skim
+1. Call Task tool → `agent: prompt-skimmer`, `prompt: "Skim this prompt and return quantitative metrics.\n\nPrompt: $USER_PROMPT\n\nReturn: word_count, line_count, token_estimate, url_count, urls[], absolute_claim_count, complexity_score (1-10), flooding_risk, verdict (simple|complex|unclear), recommended_lanes."`
+2. Parse the result. If `complexity_score <= 3` → skip Investigation Lanes, go to Bridge.
+
+### Bridge Decision
+1. Review skim results. If `verdict === "simple"` → skip Investigation, go to Repackage.
+2. If `verdict === "complex"` or `verdict === "unclear"` → proceed to Investigation Lanes.
+
+### Investigation Lanes (parallel — spawn all Task calls)
+1. Task → `agent: prompt-analyzer`, `prompt: "Analyze this prompt for contradictions, vagueness, missing scope, and absolute claims.\n\nPrompt: $USER_PROMPT\n\nReturn: findings[], by_severity breakdown, clarity_score."`
+2. Task → `agent: context-mapper`, `prompt: "Map this prompt's context against the repository structure.\n\nPrompt: $USER_PROMPT\n\nIdentify referenced files, components, and workflows. Verify paths exist."`
+3. Task → `agent: risk-assessor`, `prompt: "Assess safety and risk of executing this prompt.\n\nPrompt: $USER_PROMPT\n\nIdentify: destructive operations, permission requirements, scope creep risks."`
+
+### Clarification Gate
+1. Review all lane results. If ambiguities remain → ask user clarifying questions (max 3).
+2. If clear → continue to Repackage.
+
+### Phase: Repackage
+1. Task → `agent: prompt-repackager`, `prompt: "Repackage this prompt with findings from analysis.\n\nOriginal: $USER_PROMPT\nAnalysis: $LANE_RESULTS\n\nProduce enhanced prompt with YAML frontmatter (version, complexity_before, complexity_after, confidence, phases_completed) and XML body sections."`
+2. Write enhanced output to `.hivemind/state/session-context-prompt.md` using the `write` tool.
+
+### Report
+1. Summarize: what was done, what changed, confidence level.
+2. Output the HIVEFIVER COMPLETE contract.
+
 ## Anti-Patterns
 
 | Anti-Pattern | Detection | Correction |
 |-------------|-----------|------------|
 | **The Executor** — creating skills/agents/commands directly | Did you write/edit a SKILL.md or agent file yourself? | STOP. Delegate via Task tool. |
 | **The Simulator** — writing fake `**Tool: delegate-task**` markdown | Are you writing `**Input:**` / `**Output:**` blocks as text? | STOP. Use the ACTUAL Task tool. |
+| **The Non-Executor** — reading the workflow file but not following it | Do you know the phases but skip calling Task? | Follow the "Executing the Prompt-Enhance Pipeline" section step by step. The workflow markdown is reference only. |
 | **The Hoarder** — loading 4+ skills "to be safe" | Context blown, skills ignored | Max 3. If you can't explain why each is needed, don't load it. |
 | **The Improviser** — "routing table says X but I'll do Y" | Routed to wrong skill, task failed | Trust the table. If it's wrong, fix the table. |
 | **The Context Polluter** — passing session history to subagents | Subagent prompt includes "earlier in the conversation" | Construct fresh context: task text + scene-setting + scope |
