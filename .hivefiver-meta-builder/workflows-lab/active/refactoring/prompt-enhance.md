@@ -14,6 +14,38 @@ Enhance a prompt through a layered pipeline. All tool calls go through `delegate
 
 ### Step 1: Read Session State
 ```bash
+# Pre-flight: create session file if missing
+if [ ! -f .hivemind/state/session-context-prompt.md ]; then
+  mkdir -p .hivemind/state/.patches
+  cat > .hivemind/state/session-context-prompt.md << 'EOF'
+---
+patch_count: 0
+compaction_count: 0
+context_budget_pct: 100
+status: idle
+---
+
+## What Happened So Far
+Session initialized.
+
+## Identified Risks
+None yet.
+
+## Task List
+None yet.
+
+## Deferred Items
+None yet.
+
+## Clarification Log
+None yet.
+
+## Final Output
+Pending.
+EOF
+fi
+
+# Read current session state
 cat .hivemind/state/session-context-prompt.md
 ```
 Store the output as `SESSION_CONTEXT`.
