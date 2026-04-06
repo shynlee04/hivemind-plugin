@@ -99,6 +99,35 @@ export function createPromptAnalyzeTool(
         }
       })
 
+      // Cross-line contradictions: compare all non-empty line pairs
+      const trimmedLines = lines.map((l) => l.trim()).filter(Boolean)
+      for (let i = 0; i < trimmedLines.length; i++) {
+        for (let j = i + 1; j < trimmedLines.length; j++) {
+          const hasCrossContradiction = CONTRADICTION_PAIRS.some(
+            ([left, right]) =>
+              left.test(trimmedLines[i]) && right.test(trimmedLines[j]),
+          )
+          if (hasCrossContradiction) {
+            const alreadyFlagged = findings.some(
+              (f) =>
+                f.type === "contradiction" &&
+                (f.line === i + 1 || f.line === j + 1),
+            )
+            if (!alreadyFlagged) {
+              findings.push({
+                line: i + 1,
+                text: trimmedLines[i],
+                description: `Contradicts line ${j + 1}: "${trimmedLines[j].slice(0, 60)}"`,
+                type: "contradiction",
+                severity: "important",
+                suggestion:
+                  "Split conflicting requirements or choose one instruction path before execution.",
+              })
+            }
+          }
+        }
+      }
+
       const nonEmptyLines = lines.filter((l) => l.trim().length > 0).length
       const uniqueIssueLines = new Set(findings.map((f) => f.line)).size
       const clarityScore = Math.max(

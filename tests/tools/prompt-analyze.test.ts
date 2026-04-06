@@ -110,4 +110,20 @@ describe("prompt-analyze tool", () => {
     // No findings expected for these lines
     expect(result.data.finding_count).toBe(0)
   })
+
+  it("detects contradictions that span multiple lines", async () => {
+    const raw = await tool.execute(
+      {
+        content:
+          "Use TypeScript for the plugin.\nDo not use TypeScript for the plugin.",
+      },
+      mockCtx,
+    )
+    const result = parseResult(raw) as Record<string, unknown>
+    expect(
+      (result.data.findings as Array<{ type: string }>).some(
+        (f) => f.type === "contradiction",
+      ),
+    ).toBe(true)
+  })
 })
