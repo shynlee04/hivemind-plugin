@@ -1,20 +1,21 @@
 # Prompt-Enhance Workflow
 
 ## Objective
-Enhance a prompt through a layered pipeline. All tool calls go through `delegate-task`. Session context is read and passed to every subagent.
+Enhance a prompt through a layered pipeline using the Task tool to isolate each phase in separate subagent sessions. Keep your own context lean.
 
 ## Session State Contract
 
-- Session file: `.hivemind/state/session-context-prompt.md` (resolve as absolute path from workspace root)
+- Session file: `.hivemind/state/session-context-prompt.md`
 - Patch directory: `.hivemind/state/.patches/`
-- Session context injection: Read the session file at the start of each phase and pass its content as a constraint to every `delegate-task` call
-- Sole writer: orchestrator via `delegate-task` to a builder agent that runs `session-patch`
+- Read the session file at the start of each phase via bash (`cat`)
+- Pass session content as context to subagents that need it
+- Use builder subagents via Task tool for session-patch calls
 
 ## Phase 0: Skim
 
 ### Step 1: Read Session State
 ```bash
-# Pre-flight: create session file if missing
+# Pre-flight: create if missing
 if [ ! -f .hivemind/state/session-context-prompt.md ]; then
   mkdir -p .hivemind/state/.patches
   cat > .hivemind/state/session-context-prompt.md << 'EOF'
@@ -45,74 +46,39 @@ Pending.
 EOF
 fi
 
-# Read current session state
+# Read current state
 cat .hivemind/state/session-context-prompt.md
 ```
-Store the output as `SESSION_CONTEXT`.
+Store the output as SESSION_CONTEXT.
 
-### Step 2: Run Skim Analysis
+### Step 2: Run Skim Analysis via Task tool
 ```
-Task tool (researcher):
+Task tool:
   description: "Phase 0: Skim the user's prompt"
-  prompt: |
-    Run the prompt-skim tool on the following user prompt.
-    Return the tool output verbatim.
-
-    User prompt: $USER_PROMPT
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-    - "Run prompt-skim tool and return its output"
-  run_in_background: false
+  prompt: "Analyze the following user prompt and return a skim summary.\n\nUser prompt: $USER_PROMPT\n\nReturn as JSON-like structure:\n- intent: One sentence\n- complexity_score: 1-10\n- key_entities: List of files, components, commands, workflows mentioned\n- ambiguity_flags: List of unclear areas\n- recommended_lanes: Suggested lanes based on complexity"
 ```
 
-### Step 3: Run Context Budget
+Store the result as SKIM_RESULT.
+
+### Step 3: Run Context Budget via Task tool
 ```
-Task tool (researcher):
+Task tool:
   description: "Phase 0: Check context budget"
-  prompt: |
-    Run the context-budget tool with sessionFilePath set to the absolute path of .hivemind/state/session-context-prompt.md.
-    Return the tool output verbatim.
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-    - "Run context-budget tool and return its output"
-  run_in_background: false
+  prompt: "Read the context-budget tool output for the session file at .hivemind/state/session-context-prompt.md. Return the budget percentage."
 ```
 
-### Step 4: Dispatch Skimmer Agent
-```
-Task tool (researcher):
-  description: "Phase 0: Skim summary"
-  prompt: |
-    You are the prompt-skimmer agent. Analyze the prompt and return a skim summary only.
+Store the result as BUDGET_RESULT.
 
-    Original prompt: $USER_PROMPT
-    Skim tool result: $SKIM_RESULT
-    Context budget: $BUDGET_RESULT
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-    - "Return only: intent, complexity_score, key_entities, ambiguity_flags, recommended_lanes"
-  run_in_background: false
+### Step 4: Patch Skim Summary via Task tool (builder)
 ```
-
-### Step 5: Patch Skim Summary to Session File
-```
-Task tool (builder):
+Task tool:
   description: "Patch skim summary to session file"
-  prompt: |
-    Run the session-patch tool with:
-    - sessionFilePath: <absolute path to .hivemind/state/session-context-prompt.md>
-    - section: "## What Happened So Far"
-    - newContent: <skim summary from Step 4>
-    Return the tool result.
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-    - "Use session-patch tool, do not write files directly"
-  run_in_background: false
+  prompt: "Run the session-patch tool to update the session file.\n- sessionFilePath: absolute path to .hivemind/state/session-context-prompt.md\n- section: '## What Happened So Far'\n- newContent: $SKIM_RESULT\nReturn the tool output."
 ```
 
 ## Bridge
 
-Read the skim result's `complexity_score`. Choose lanes:
+Read SKIM_RESULT's complexity_score. Choose lanes:
 
 | complexity_score | Lanes |
 |---|---|
@@ -120,172 +86,106 @@ Read the skim result's `complexity_score`. Choose lanes:
 | 4-6 | prompt-analyzer, context-mapper, prompt-repackager |
 | >= 7 | prompt-analyzer, context-mapper, risk-assessor, context-purifier, prompt-repackager |
 
-If `budget_pct < 50` from context-budget result, skip optional deepening.
+If BUDGET_RESULT's budget_pct < 50, skip optional deepening.
 
 ## Investigation Lanes
 
 ### prompt-analyzer Lane
 ```
-Task tool (researcher):
+Task tool:
   description: "Lane: Deep prompt analysis"
-  prompt: |
-    You are the prompt-analyzer agent. Analyze the prompt for contradictions, vagueness, missing scope, and clarity issues.
-
-    Original prompt: $USER_PROMPT
-    Skim result: $SKIM_RESULT
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-    - "Return findings with line references, severity, and suggestions"
-  run_in_background: false
+  prompt: "Analyze this prompt for contradictions, vagueness, missing scope, and clarity issues.\n\nOriginal prompt: $USER_PROMPT\nSkim result: $SKIM_RESULT\n\nReturn findings with line references, severity, and suggestions."
 ```
 
-Also run `prompt-analyze` tool directly:
+Also run prompt-analyze tool:
 ```
-Task tool (researcher):
+Task tool:
   description: "Lane: Run prompt-analyze tool"
-  prompt: |
-    Run the prompt-analyze tool on the user prompt. Return the tool output verbatim.
-
-    User prompt: $USER_PROMPT
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-    - "Run prompt-analyze tool and return its output"
-  run_in_background: false
+  prompt: "Run the prompt-analyze tool on the user prompt and return the tool output verbatim.\n\nUser prompt: $USER_PROMPT"
 ```
+
+Store results as ANALYSIS_RESULT.
 
 ### context-mapper Lane
 ```
-Task tool (researcher):
+Task tool:
   description: "Lane: Context mapping"
-  prompt: |
-    You are the context-mapper agent. Verify all file, component, and symbol references in the prompt against the current repository.
-
-    Original prompt: $USER_PROMPT
-    Skim result: $SKIM_RESULT
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-    - "Return verified references, dead references, stale assumptions"
-  run_in_background: false
+  prompt: "Verify all file, component, and symbol references in this prompt against the current repository.\n\nOriginal prompt: $USER_PROMPT\nSkim result: $SKIM_RESULT\n\nReturn verified references, dead references, stale assumptions."
 ```
+
+Store results as MAP_RESULT.
 
 ### risk-assessor Lane
 ```
-Task tool (researcher):
+Task tool:
   description: "Lane: Risk assessment"
-  prompt: |
-    You are the risk-assessor agent. Identify destructive, security, and scope-creep risks in the prompt.
-
-    Original prompt: $USER_PROMPT
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-    - "Return risks with severity and mitigation"
-  run_in_background: false
+  prompt: "Identify destructive, security, and scope-creep risks in this prompt.\n\nOriginal prompt: $USER_PROMPT\n\nReturn risks with severity and mitigation."
 ```
+
+Store results as RISK_RESULT.
 
 ### context-purifier Lane (complexity >= 7 only)
 ```
-Task tool (researcher):
+Task tool:
   description: "Lane: Context purification"
-  prompt: |
-    You are the context-purifier agent. Distill the prompt to its essential elements without changing intent.
-
-    Original prompt: $USER_PROMPT
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-    - "Return reduced prompt candidate plus preserved constraints"
-  run_in_background: false
+  prompt: "Distill this prompt to its essential elements without changing intent.\n\nOriginal prompt: $USER_PROMPT\n\nReturn reduced prompt candidate plus preserved constraints."
 ```
+
+Store results as PURIFIER_RESULT.
 
 ## Clarification Gate
 
 Build the clarification list from:
-- `prompt-analyze` tool findings
+- ANALYSIS_RESULT findings
 - Lane agent findings
 
 **Interactive mode:**
 - Ask only unresolved, execution-blocking questions
-- After each answer, patch `## Clarification Log` via:
-
+- After each answer, patch via Task tool:
 ```
-Task tool (builder):
+Task tool:
   description: "Patch clarification log"
-  prompt: |
-    Run the session-patch tool with:
-    - sessionFilePath: <absolute path>
-    - section: "## Clarification Log"
-    - newContent: <question + answer>
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-  run_in_background: false
+  prompt: "Run the session-patch tool.\n- sessionFilePath: absolute path\n- section: '## Clarification Log'\n- newContent: [question + answer]"
 ```
 
 **CI-safe fallback:**
-- If `CI=true` or no interactive flow available, skip questions
+- If `CI=true` or no interactive flow, skip questions
 - Patch `## Deferred Items` with `unverified — review recommended`
 
 ## Final Assembly
 
-### Step 1: Dispatch Repackager
+### Step 1: Repackage via Task tool (builder)
 ```
-Task tool (builder):
+Task tool:
   description: "Final assembly: Repackage enhanced prompt"
-  prompt: |
-    Synthesize all inputs into the enhanced prompt payload.
-
-    Original prompt: $USER_PROMPT
-    Skim output: $SKIM_RESULT
-    Analysis findings: $ANALYSIS_RESULT
-    Lane results: $LANE_RESULTS
-    Clarification decisions: $CLARIFICATIONS
-
-    Required output format:
-    ---
-    enhanced_prompt_version: 1
-    source_mode: auto|enhance|repack|audit
-    lanes_executed: []
-    clarifications_resolved: 0
-    confidence_score: 0.0
-    context_budget_at_start: 100
-    context_budget_at_end: 100
-    ---
-
-    <enhanced_prompt>
-    Rewrite with clearer scope, verified references, and preserved intent.
-    </enhanced_prompt>
-
-    <what_happened_so_far>
-    Phase 0 skim ran, bridge selected lanes, clarification decisions applied.
-    </what_happened_so_far>
-
-    <identified_risks>
-    List confirmed risks and mitigations, or state none found.
-    </identified_risks>
-
-    <task_list>
-    Active tasks in execution order.
-    </task_list>
-
-    <deferred_items>
-    Unresolved clarifications or intentionally deferred items.
-    </deferred_items>
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-    - "Return the complete YAML frontmatter + XML sections payload"
-  run_in_background: false
+  prompt: "Synthesize all inputs into the enhanced prompt payload.\n\nOriginal: $USER_PROMPT\nSkim: $SKIM_RESULT\nAnalysis: $ANALYSIS_RESULT\nLanes: $LANE_RESULTS\nClarifications: $CLARIFICATIONS\n\nRequired output format:\n---\nenhanced_prompt_version: 1\nsource_mode: auto|enhance|repack|audit\nlanes_executed: []\nclarifications_resolved: 0\nconfidence_score: 0.0\ncontext_budget_at_start: 100\ncontext_budget_at_end: 100\n---\n\n<enhanced_prompt>Rewrite with clearer scope, verified references, preserved intent.</enhanced_prompt>\n\n<what_happened_so_far>Summary of phases ran.</what_happened_so_far>\n\n<identified_risks>Confirmed risks and mitigations.</identified_risks>\n\n<task_list>Active tasks in execution order.</task_list>\n\n<deferred_items>Unresolved or deferred items.</deferred_items>"
 ```
 
-### Step 2: Patch Final Sections
+Store results as REPACKAGE_RESULT.
+
+### Step 2: Patch Final Sections via Task tool (builder)
+
 For each section (`## Final Output`, `## Identified Risks`, `## Task List`, `## Deferred Items`):
 
 ```
-Task tool (builder):
-  description: "Patch final section: <section name>"
-  prompt: |
-    Run the session-patch tool with:
-    - sessionFilePath: <absolute path to .hivemind/state/session-context-prompt.md>
-    - section: "<section heading>"
-    - newContent: <content from repackager>
-  constraints:
-    - "Session context: $SESSION_CONTEXT"
-  run_in_background: false
+Task tool:
+  description: "Patch final section: [section name]"
+  prompt: "Run the session-patch tool.\n- sessionFilePath: absolute path to .hivemind/state/session-context-prompt.md\n- section: '[section heading]'\n- newContent: [content from repackager]"
+```
+
+## Report
+
+Return to user:
+```markdown
+## HIVEFIVER COMPLETE
+
+**Request:** prompt-enhance
+**Status:** DONE
+**Session file:** .hivemind/state/session-context-prompt.md
+
+### Enhanced Prompt
+[content from REPACKAGE_RESULT]
+
+### Next Steps
+[how to use the enhanced prompt]
 ```
