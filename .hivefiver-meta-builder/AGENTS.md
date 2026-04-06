@@ -89,6 +89,17 @@ TS runtime builder (opencode-harness npm package)  ← Final shipping format
 |-------|------|------|
 | **explore** | `agents-lab/active/refactoring/explore.md` | Fast codebase scan. Lightweight, high-throughput. |
 
+### Tier 4: Prompt-Enhance Lane Agents
+
+| Agent | File | Role |
+|-------|------|------|
+| **prompt-skimmer** | `agents-lab/active/refactoring/prompt-skimmer.md` | Phase 0 skim for prompt-enhancement routing. |
+| **prompt-analyzer** | `agents-lab/active/refactoring/prompt-analyzer.md` | Deep text-quality lane for prompts. |
+| **context-mapper** | `agents-lab/active/refactoring/context-mapper.md` | Grounds prompt references in repo reality. |
+| **risk-assessor** | `agents-lab/active/refactoring/risk-assessor.md` | Flags destructive, security, and scope risks. |
+| **context-purifier** | `agents-lab/active/refactoring/context-purifier.md` | Distills noisy prompts without changing intent. |
+| **prompt-repackager** | `agents-lab/active/refactoring/prompt-repackager.md` | Produces the final YAML+XML enhanced prompt payload. |
+
 ---
 
 ## Command Set
@@ -100,6 +111,7 @@ TS runtime builder (opencode-harness npm package)  ← Final shipping format
 | `/hf-create` | hivefiver-orchestrator | Create skill/agent/command/tool via specialist routing |
 | `/hf-audit` | hivefiver-orchestrator | Audit meta-concepts for quality, overlaps, dead refs |
 | `/hf-stack` | hivefiver-orchestrator | Stack 2-3 skills with loading order validation |
+| `/hf-prompt-enhance` | hivefiver-orchestrator | Enhance, audit, or repack prompts via skim → bridge → lanes → assembly |
 
 ### Existing Commands (updated)
 

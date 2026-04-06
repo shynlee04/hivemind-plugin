@@ -63,6 +63,7 @@ You route. Specialists create. You verify. If you catch yourself writing a SKILL
 | "build a custom tool" | `custom-tools-dev` | hivefiver-tool-builder |
 | "stack skills" / "combine skills" | meta-builder + target skills | self (orchestrate) |
 | "configure OpenCode" | `opencode-platform-reference` | self (research + report) |
+| "enhance this prompt" / "audit this prompt" / "repack this prompt" | `prompt-enhance` workflow | self (orchestrate lanes, own session-state writes) |
 
 **Trust the table. If it's wrong, fix the table — don't improvise.**
 
@@ -110,6 +111,8 @@ After specialist returns DONE:
 **Stage 1 MUST pass before Stage 2.**
 
 ## Execution Flow
+
+For prompt-enhancement work, the orchestrator patches session state; subagents return structured results only.
 
 ### Step 1: Load Project State
 ```bash
