@@ -37,6 +37,7 @@ import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
 import { createContextBudgetTool } from "./tools/context-budget/index.js"
 import { createSessionPatchTool } from "./tools/session-patch/index.js"
 import { transformSystemPrompt } from "./hooks/system-transform.js"
+import { transformMessages } from "./hooks/messages-transform.js"
 
 const MAX_DEPTH = 3
 const WATCH_TIMEOUT_MS = 180000
@@ -330,6 +331,19 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
       output: { systemPrompt: string },
     ) => {
       output.systemPrompt = transformSystemPrompt(input.systemPrompt)
+    },
+
+    "messages.transform": async (
+      input: { sessionID?: string; messages?: Array<{ role: string; content: string }> },
+      output: { messages: Array<{ role: string; content: string }> },
+    ) => {
+      const sessionID = input.sessionID
+      if (!sessionID) {
+        return
+      }
+      const messages = input.messages ?? []
+      const transformed = transformMessages(messages, sessionID)
+      output.messages = transformed
     },
 
     tool: {
