@@ -4,14 +4,18 @@ agent: hivefiver-orchestrator
 subtask: true
 ---
 
-Read the prompt-enhance workflow and execute it end-to-end with the user's prompt text.
+Execute the prompt-enhance workflow using `delegate-task` for all tool invocations.
 
-Keep the command thin — delegate all computation to tools and lane agents. The workflow specifies the full orchestration flow.
+The orchestrator must:
+1. Read `.hivemind/state/session-context-prompt.md` at the start of each phase
+2. Pass session content as a constraint to every `delegate-task` call
+3. Use `delegate-task` (not direct tool calls) for prompt-skim, session-patch, prompt-analyze, and context-budget
+4. Use builder agents for session-patch calls, researcher agents for analysis calls
 
 Control rules:
-- Avoid conditional template syntax (use workflow logic, not command-level conditionals)
-- Initialize `.hivemind/state/session-context-prompt.md` and `.hivemind/state/.patches/` if missing (the prompt-enhance plugin handles this)
-- Route all session-state writes through `session-patch` tool with absolute path
+- All tool calls go through `delegate-task`
+- Session context flows to every subagent via constraints
+- Use absolute path: `.hivemind/state/session-context-prompt.md` (not relative)
 
 User prompt:
 $ARGUMENTS
