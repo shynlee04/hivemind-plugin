@@ -38,15 +38,27 @@ Plans:
 
 ## Phase 2: V3 Runtime Architecture
 
-8 sub-phases (priority-ordered):
-- 2a. Background Agents — spawn in new panes, auto-cleanup
-- 2b. Delegation Chain — task persistence, parent-child tracking
-- 2c. Concurrency Control — keyed semaphore, FIFO queue (partial: `src/lib/concurrency.ts` exists)
-- 2d. Session Recovery — context integrity across session boundaries
-- 2e. Context Governance — cross-session rule enforcement
-- 2f. Injection Engine — conditional runtime injection of rules, commands, skills, tools
-- 2g. Specialist Classification — configurable agent presets, category routing
-- 2h. Circuit Breaker — per-session tool call limits (partial: `CIRCUIT_BREAKER_THRESHOLD=16` exists)
+8 sub-phases (dependency-ordered: 2c→2h→2a→2b→2d→2e→2f→2g):
+- 2c. Concurrency Control — keyed semaphore, FIFO queue, timeout, per-key config (partial: `src/lib/concurrency.ts` exists)
+- 2h. Circuit Breaker — configurable per-session budgets, reset on compact (partial: `CIRCUIT_BREAKER_THRESHOLD=16` exists)
+- 2a. Background Agents — spawn in new panes (builtin-subsession), auto-cleanup
+- 2b. Delegation Chain — task persistence, parent-child tracking, manifest.json
+- 2d. Session Recovery — staleness check, risk assessment, checkpoint restoration
+- 2e. Context Governance — soft policy rules, runtime add/remove, violation logging
+- 2f. Injection Engine — conditional injection of rules/commands/skills/tools
+- 2g. Specialist Classification — agent presets, category routing, generalist fallback
+
+**Plans:** 8 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Concurrency Control (2c): timeout + per-key limits + config loader (Wave 1)
+- [ ] 02-02-PLAN.md — Circuit Breaker (2h): configurable budgets + reset on compact (Wave 1)
+- [ ] 02-03-PLAN.md — Background Agents (2a): BackgroundAgentRunner + delegate-task integration (Wave 2)
+- [ ] 02-04-PLAN.md — Delegation Chain (2b): packet CRUD + manifest + continuity wiring (Wave 2)
+- [ ] 02-05-PLAN.md — Session Recovery (2d): staleness check + risk assessment + recovery (Wave 3)
+- [ ] 02-06-PLAN.md — Specialist Classification (2g): agent presets + specialist router (Wave 3)
+- [ ] 02-07-PLAN.md — Context Governance (2e): rule engine + runtime management + violations (Wave 4)
+- [ ] 02-08-PLAN.md — Injection Engine (2f): conditional injection + governance filtering (Wave 5)
 
 ## Phase 3: Schema Definition
 
