@@ -9743,7 +9743,7 @@ Untracked files:
 	.opencode/agents/explore.md
 	.opencode/commands/deep-research-synthesis-repomix.md
 	.opencode/deny-prompts/
-	.opencode/instructions/
+	.opencode/rules/
 	.skills-lab/
 	commands-lab/
 	docs/.archive/

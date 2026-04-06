@@ -3526,7 +3526,7 @@ There's already a `meta-builder` skill and several other skills in place. Let me
 2: description: "Primary orchestrator. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly."
 3: mode: "primary"
 4: "temperature": 0.2
-5: instruction: [.opencode/instructions/coordinator-workflows.md]
+5: instruction: [.opencode/rules/coordinator-workflows.md]
 6: permission:
 7:   read:
 8:     "*": deny
@@ -6874,7 +6874,7 @@ Wrote file successfully.
 2: description: "Primary orchestrator. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly."
 3: mode: "primary"
 4: "temperature": 0.2
-5: instruction: [.opencode/instructions/coordinator-workflows.md]
+5: instruction: [.opencode/rules/coordinator-workflows.md]
 6: permission:
 7:   read:
 8:     "*": deny
