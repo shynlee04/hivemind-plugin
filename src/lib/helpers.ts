@@ -80,6 +80,7 @@ export function buildPromptText(args: {
   agent?: string
   requiredTools?: string[]
   mustNotDo?: string[]
+  sessionContext?: string
 }): string {
   const agent = args.agent ?? "builder"
   const requiredTools = args.requiredTools ?? []
@@ -112,5 +113,9 @@ export function buildPromptText(args: {
       ? `CONTEXT: ${contextParts.join(", ")}`
       : "CONTEXT: No additional context"
 
-  return [task, expectedOutcome, requiredToolsSection, mustDo, mustNotDo, context].join("\n---\n")
+  const sessionSection = args.sessionContext?.trim()
+    ? `\n---\n## Session Context\n${args.sessionContext.trim()}`
+    : ""
+
+  return [task, expectedOutcome, requiredToolsSection, mustDo, mustNotDo, context].join("\n---\n") + sessionSection
 }

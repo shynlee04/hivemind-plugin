@@ -342,3 +342,39 @@ describe("buildPromptText", () => {
     expect(parts.length).toBe(6)
   })
 })
+
+describe("buildPromptText with session context", () => {
+  it("appends session context section when provided", () => {
+    const result = buildPromptText({
+      description: "Test task",
+      prompt: "Do the thing",
+      sessionContext: "## What Happened\nSession started.",
+    })
+
+    expect(result).toContain("## Session Context")
+    expect(result).toContain("## What Happened")
+    expect(result).toContain("Session started.")
+  })
+
+  it("omits session context section when not provided", () => {
+    const result = buildPromptText({
+      description: "Test task",
+      prompt: "Do the thing",
+    })
+
+    expect(result).not.toContain("## Session Context")
+  })
+
+  it("places session context after all other sections", () => {
+    const result = buildPromptText({
+      description: "Task",
+      prompt: "Do it",
+      scope: "src/",
+      sessionContext: "## Session State\nActive",
+    })
+
+    const sessionIndex = result.indexOf("## Session Context")
+    const contextIndex = result.indexOf("CONTEXT:")
+    expect(sessionIndex).toBeGreaterThan(contextIndex)
+  })
+})
