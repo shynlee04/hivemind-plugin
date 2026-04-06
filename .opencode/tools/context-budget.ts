@@ -1,13 +1,13 @@
 // @ts-nocheck — plugin types expect Zod v3 shapes; we have Zod v4 installed
-import { tool } from "@opencode-ai/plugin";
 import { z } from "zod";
 import { existsSync, readFileSync } from "fs";
+import { safeTool } from "./safe-tool.ts";
 
-export const contextBudget = tool({
+export const contextBudget = safeTool({
   description: "Calculate context budget percentage from session file metadata (compaction_count)",
-  parameters: z.object({
+  args: {
     sessionFilePath: z.string().describe("Absolute path to session-context-prompt.md"),
-  }),
+  },
   execute: async ({ sessionFilePath }) => {
     if (!existsSync(sessionFilePath)) {
       return {

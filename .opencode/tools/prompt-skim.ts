@@ -1,16 +1,15 @@
 // @ts-nocheck — plugin types expect Zod v3 shapes; we have Zod v4 installed
-// Runtime: tool() is identity function (return input), so this works correctly
-import { tool } from "@opencode-ai/plugin";
 import { z } from "zod";
 import { existsSync } from "fs";
 import { join } from "path";
+import { safeTool } from "./safe-tool.ts";
 
-export const promptSkim = tool({
+export const promptSkim = safeTool({
   description: "Fast scan of prompt content: count words/lines/tokens, extract URLs, verify file paths, calculate complexity score",
-  args: z.object({
+  args: {
     content: z.string().describe("The prompt content to skim"),
     workspaceRoot: z.string().describe("Absolute path to workspace root for path verification"),
-  }),
+  },
   execute: async ({ content, workspaceRoot }) => {
     const lines = content.split("\n");
     const wordCount = content.split(/\s+/).filter(Boolean).length;
