@@ -349,8 +349,7 @@ Run: npm test -- tests/lib/session-api.ts — all must pass
 | `dispatching-parallel-agents` | Builds ON TOP of it for parallel dispatch patterns |
 | `user-intent-interactive-loop` | Captures user intent before coordination begins |
 | `planning-with-files` | Maintains task_plan.md, findings.md, progress.md |
-| `skill-creator` | Use when creating skills as part of coordinated workflows |
-| `gcc` | Git-backed memory for coordination state across sessions |
+| `phase-loop` | Provides iteration semantics for coordinated revision loops |
 
 ---
 

@@ -1,3 +1,10 @@
+---
+description: "Reference document: Advanced Repomix + OpenCode orchestration cheat sheet. NOT an executable command — serves as knowledge base for deep research patterns."
+agent: researcher
+subtask: true
+type: reference
+---
+
 # Advanced Repomix + Opencode Orchestration: Deep Research & Cross-Dependency Cheat Sheet
 
 ---

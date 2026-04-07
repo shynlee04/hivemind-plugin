@@ -28,7 +28,7 @@ permission:
     "command-dev": allow
     "custom-tools-dev": allow
     "opencode-platform-reference": allow
-    "skill-creator": allow
+    "skill-synthesis": allow
     "skill-judge": allow
     "coordinating-loop": allow
     "planning-with-files": allow

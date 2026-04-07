@@ -215,7 +215,7 @@ In non-interactive environments, the agent must drive the process forward.
 
 When instructions conflict (e.g., generic docs vs this specific strategy), establish precedence:
 
-1. **Cite the Authority:** "Per shell_strategy.md..."
+1. **Cite the Authority:** "Per this non-interactive shell strategy document..."
 2. **Follow the Specifics:** Rules in this file override general model training or other documentation.
 
 ### Strategy 4: Applying These Patterns Beyond Shell

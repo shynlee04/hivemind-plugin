@@ -1,0 +1,192 @@
+{
+  "version": "1.0.0",
+  "name": "meta-builder-mindsnetwork",
+  "description": "Hierarchical relational graph for meta-builder orchestration",
+  "nodes": [
+    {
+      "id": "root",
+      "type": "orchestrator",
+      "label": "meta-builder",
+      "skill": "meta-builder",
+      "execute_conditions": ["user_intent_received"],
+      "validates": ["intent_parsed", "graph_initialized"],
+      "depends_on": [],
+      "metadata": {
+        "layer": "0",
+        "role": "orchestrator",
+        "max_depth": 5
+      }
+    },
+    {
+      "id": "intent-clarifier",
+      "type": "skill-node",
+      "label": "user-intent-interactive-loop",
+      "skill": "user-intent-interactive-loop",
+      "execute_conditions": ["intent_ambiguous"],
+      "validates": ["intent_confirmed", "scope_bounded", "success_defined"],
+      "depends_on": ["root"],
+      "metadata": {
+        "layer": "1",
+        "role": "front-agent",
+        "max_questions": 3
+      }
+    },
+    {
+      "id": "researcher",
+      "type": "skill-node",
+      "label": "deep-investigation",
+      "skill": "deep-investigation",
+      "execute_conditions": ["needs_domain_research", "needs_cross_stack_patterns"],
+      "validates": ["findings_documented", "patterns_identified"],
+      "depends_on": ["root", "intent-clarifier"],
+      "metadata": {
+        "role": "researcher",
+        "parallel": true
+      }
+    },
+    {
+      "id": "planner",
+      "type": "skill-node",
+      "label": "planning-with-files",
+      "skill": "planning-with-files",
+      "execute_conditions": ["multi_step_task", "needs_persistent_memory"],
+      "validates": ["task_plan_exists", "goal_defined", "phases_structured"],
+      "depends_on": ["root", "intent-clarifier"],
+      "metadata": {
+        "layer": "2",
+        "role": "persistent-memory",
+        "files": ["task_plan.md", "findings.md", "progress.md"]
+      }
+    },
+    {
+      "id": "coordinator",
+      "type": "skill-node",
+      "label": "coordinating-loop",
+      "skill": "coordinating-loop",
+      "execute_conditions": ["multiple_tasks", "needs_dispatch"],
+      "validates": ["envelopes_valid", "gates_passed"],
+      "depends_on": ["planner"],
+      "metadata": {
+        "layer": "3",
+        "role": "coordinator",
+        "ralph_loop": true
+      }
+    },
+    {
+      "id": "author",
+      "type": "skill-node",
+      "label": "use-authoring-skills",
+      "skill": "use-authoring-skills",
+      "execute_conditions": ["creating_skill", "auditing_skill", "doctoring_skill"],
+      "validates": ["skill_valid", "no_overlaps", "critic_approved"],
+      "depends_on": ["planner"],
+      "metadata": {
+        "layer": "4",
+        "role": "domain-execution",
+        "lifecycle": ["create", "audit", "evaluate", "doctor"]
+      }
+    },
+    {
+      "id": "validator",
+      "type": "validation-node",
+      "label": "graph-validation",
+      "execute_conditions": ["phase_complete"],
+      "validates": ["all_dependent_nodes_complete", "no_orphaned_nodes"],
+      "depends_on": ["coordinator", "author"],
+      "metadata": {
+        "role": "validator",
+        "max_retries": 3
+      }
+    },
+    {
+      "id": "terminal",
+      "type": "terminal-node",
+      "label": "delivery",
+      "execute_conditions": ["all_nodes_complete"],
+      "validates": ["user_confirmed_delivery"],
+      "depends_on": ["validator"],
+      "metadata": {
+        "role": "terminal",
+        "final": true
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "root",
+      "to": "intent-clarifier",
+      "type": "PARENT_OF",
+      "condition": "intent_ambiguous"
+    },
+    {
+      "from": "root",
+      "to": "researcher",
+      "type": "PARALLEL_TO",
+      "condition": "needs_domain_research"
+    },
+    {
+      "from": "root",
+      "to": "planner",
+      "type": "SEQUENCES_WITH",
+      "condition": "multi_step_task"
+    },
+    {
+      "from": "intent-clarifier",
+      "to": "researcher",
+      "type": "DEPENDS_ON",
+      "condition": "research_needed_after_probe"
+    },
+    {
+      "from": "intent-clarifier",
+      "to": "planner",
+      "type": "SEQUENCES_WITH",
+      "condition": "intent_confirmed"
+    },
+    {
+      "from": "planner",
+      "to": "coordinator",
+      "type": "SEQUENCES_WITH",
+      "condition": "tasks_need_dispatch"
+    },
+    {
+      "from": "planner",
+      "to": "author",
+      "type": "SEQUENCES_WITH",
+      "condition": "skill_creation_task"
+    },
+    {
+      "from": "coordinator",
+      "to": "author",
+      "type": "PARALLEL_TO",
+      "condition": "parallel_authoring"
+    },
+    {
+      "from": "coordinator",
+      "to": "validator",
+      "type": "SEQUENCES_WITH",
+      "condition": "dispatch_complete"
+    },
+    {
+      "from": "author",
+      "to": "validator",
+      "type": "SEQUENCES_WITH",
+      "condition": "authoring_complete"
+    },
+    {
+      "from": "validator",
+      "to": "terminal",
+      "type": "SEQUENCES_WITH",
+      "condition": "validation_passed"
+    }
+  ],
+  "state": {
+    "active_node": null,
+    "completed_nodes": [],
+    "failed_nodes": [],
+    "traversal_path": [],
+    "last_checkpoint": null,
+    "session_id": null,
+    "created_at": null,
+    "updated_at": null
+  }
+}

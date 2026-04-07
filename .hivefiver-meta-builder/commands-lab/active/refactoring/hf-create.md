@@ -11,7 +11,7 @@ Acts as the entry point for all meta-concept creation. Never does the work itsel
 </objective>
 
 <execution_context>
-@/Users/apple/hivemind-plugin/.worktrees/hivefiver-v2/.opencode/hivefiver/workflows/create.md
+@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.hivefiver-meta-builder/workflows-lab/active/refactoring/create.md
 </execution_context>
 
 <context>
@@ -19,6 +19,6 @@ $ARGUMENTS
 </context>
 
 <process>
-Execute the create workflow from @/Users/apple/hivemind-plugin/.worktrees/hivefiver-v2/.opencode/hivefiver/workflows/create.md end-to-end.
+Execute the create workflow from @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.hivefiver-meta-builder/workflows-lab/active/refactoring/create.md end-to-end.
 Preserve all workflow gates (intent classification, routing, verification).
 </process>

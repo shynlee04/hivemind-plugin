@@ -1,0 +1,322 @@
+{
+  "skill_name": "meta-builder",
+  "version": "3.0.0",
+  "description": "Evals for meta-builder routing behaviour. Tests trigger detection, routing table accuracy, negative triggers, and coverage gaps.",
+  "evals": [
+    {
+      "id": "TC-001",
+      "prompt": "create a skill like this @.kilo/command/deep-research.md",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "use-authoring-skills",
+        "stack_skills": ["skill-creator"],
+        "group": "GROUP_2",
+        "questions_allowed": 0
+      },
+      "assertions": [
+        {"text": "Routes to use-authoring-skills as primary", "passed": false, "evidence": ""},
+        {"text": "Includes skill-creator in stack for file-referenced creation", "passed": false, "evidence": ""},
+        {"text": "Stack size <= 3 (max skills rule)", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-002",
+      "prompt": "help me figure out what I want to build",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "user-intent-interactive-loop",
+        "stack_skills": [],
+        "group": "GROUP_1",
+        "questions_allowed": 3
+      },
+      "assertions": [
+        {"text": "Routes to user-intent-interactive-loop for ambiguous intent", "passed": false, "evidence": ""},
+        {"text": "Allows 3 questions (question discipline)", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-003",
+      "prompt": "",
+      "expected_output": {
+        "should_trigger": false,
+        "error": "Empty request"
+      },
+      "assertions": [
+        {"text": "Rejects empty request", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-004",
+      "prompt": "create a skill and coordinate agents to build it in parallel",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "use-authoring-skills",
+        "stack_skills": ["coordinating-loop"],
+        "group": "GROUP_2",
+        "questions_allowed": 0
+      },
+      "assertions": [
+        {"text": "Routes to use-authoring-skills for skill creation", "passed": false, "evidence": ""},
+        {"text": "Includes coordinating-loop for parallel agent dispatch", "passed": false, "evidence": ""},
+        {"text": "Stack size <= 3", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-005",
+      "prompt": "fix the bug in my auth module",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "No meta-concept intent detected — this is a debugging request, not skill/command/tool creation",
+        "route_to": "systematic-debugging"
+      },
+      "assertions": [
+        {"text": "Does NOT trigger meta-builder (no creation intent)", "passed": false, "evidence": ""},
+        {"text": "Identifies as debugging request", "passed": false, "evidence": ""},
+        {"text": "Suggests routing to systematic-debugging or equivalent", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-006",
+      "prompt": "Turn this 200-line command file into a skill for my team @.kilo/commands/deep-research.md — we need it to work across OpenCode and Claude Code, with proper frontmatter, evals, and the full reference structure. The current file has all the logic but it's not in skill format.",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "use-authoring-skills",
+        "stack_skills": [],
+        "group": "GROUP_2",
+        "questions_allowed": 3
+      },
+      "assertions": [
+        {"text": "Routes to use-authoring-skills for command-to-skill conversion", "passed": false, "evidence": ""},
+        {"text": "Recognizes intent-confirmed context (detailed request)", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "intent-confirmed"
+    },
+    {
+      "id": "TC-007",
+      "prompt": "I have 4 different skill creation requests — audit the deep-research skill for quality issues, create a new API documentation skill from scratch, fix the trigger problems in tdd-workflow, and convert our old command file into a proper skill pack. Can you handle all of these?",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "use-authoring-skills",
+        "stack_skills": ["skill-creator", "coordinating-loop"],
+        "group": "GROUP_2",
+        "questions_allowed": 0
+      },
+      "assertions": [
+        {"text": "Routes to use-authoring-skills as primary for multi-skill request", "passed": false, "evidence": ""},
+        {"text": "Stack contains at most 2 complement skills + meta-builder = 3 total (max 3 rule)", "passed": false, "evidence": ""},
+        {"text": "Does NOT include meta-builder in stack_skills (it is the router, not a stack member)", "passed": false, "evidence": ""},
+        {"text": "Includes coordinating-loop for multi-request orchestration", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "multi-intent"
+    },
+    {
+      "id": "TC-008",
+      "prompt": "Is this a skill creation task? @src/auth/login.ts — the JWT validation is wrong, it's not checking the expiry properly and the token refresh logic is broken. Can you look at the code and tell me what's going on?",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "Debugging request disguised as a question — no meta-concept creation intent",
+        "route_to": "systematic-debugging"
+      },
+      "assertions": [
+        {"text": "Does NOT trigger meta-builder (debugging, not creation)", "passed": false, "evidence": ""},
+        {"text": "Recognizes the 'Is this a skill creation task?' framing as a false lead", "passed": false, "evidence": ""},
+        {"text": "Routes to systematic-debugging for code investigation", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "base-state"
+    },
+    {
+      "id": "TC-009",
+      "prompt": "explain this code",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "Code explanation request — no meta-concept intent"
+      },
+      "assertions": [
+        {"text": "Does NOT trigger meta-builder", "passed": false, "evidence": ""},
+        {"text": "Identifies as code explanation, not creation", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-010",
+      "prompt": "what does this function do",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "Code comprehension request — no meta-concept intent"
+      },
+      "assertions": [
+        {"text": "Does NOT trigger meta-builder", "passed": false, "evidence": ""},
+        {"text": "Identifies as comprehension query", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-011",
+      "prompt": "refactor the auth module",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "Refactoring request — no meta-concept intent"
+      },
+      "assertions": [
+        {"text": "Does NOT trigger meta-builder", "passed": false, "evidence": ""},
+        {"text": "Identifies as refactoring, not skill/agent/tool creation", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-012",
+      "prompt": "write tests for this",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "Test writing request — no meta-concept intent"
+      },
+      "assertions": [
+        {"text": "Does NOT trigger meta-builder", "passed": false, "evidence": ""},
+        {"text": "Identifies as test writing, not meta-concept creation", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-013",
+      "prompt": "deploy to staging",
+      "expected_output": {
+        "should_trigger": false,
+        "reason": "Deployment request — no meta-concept intent"
+      },
+      "assertions": [
+        {"text": "Does NOT trigger meta-builder", "passed": false, "evidence": ""},
+        {"text": "Identifies as deployment, not meta-concept creation", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-014",
+      "prompt": "create a skill for API docs and also set up a custom tool for linting",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "use-authoring-skills",
+        "stack_skills": ["opencode-tool-architect"],
+        "group": "GROUP_2",
+        "questions_allowed": 0
+      },
+      "assertions": [
+        {"text": "Triggers meta-builder for multi-intent request", "passed": false, "evidence": ""},
+        {"text": "Routes skill creation to use-authoring-skills", "passed": false, "evidence": ""},
+        {"text": "Routes tool creation to opencode-tool-architect", "passed": false, "evidence": ""},
+        {"text": "Stack size <= 3", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "multi-intent"
+    },
+    {
+      "id": "TC-015",
+      "prompt": "build something for my project",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "user-intent-interactive-loop",
+        "stack_skills": [],
+        "group": "GROUP_1",
+        "questions_allowed": 3
+      },
+      "assertions": [
+        {"text": "Triggers meta-builder for ambiguous request", "passed": false, "evidence": ""},
+        {"text": "Routes to user-intent-interactive-loop for clarification", "passed": false, "evidence": ""},
+        {"text": "Allows 3 questions to resolve ambiguity", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "ambiguous"
+    },
+    {
+      "id": "TC-016",
+      "prompt": "create a skill",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "use-authoring-skills",
+        "stack_skills": [],
+        "group": "GROUP_2",
+        "questions_allowed": 3
+      },
+      "assertions": [
+        {"text": "Triggers meta-builder for bare 'create a skill'", "passed": false, "evidence": ""},
+        {"text": "Routes to use-authoring-skills as primary", "passed": false, "evidence": ""},
+        {"text": "Stack is empty (no complement skills needed for bare request)", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-017",
+      "prompt": "create an agent for code review",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "opencode-platform-reference",
+        "stack_skills": [],
+        "group": "GROUP_2",
+        "questions_allowed": 0
+      },
+      "assertions": [
+        {"text": "Triggers meta-builder for agent creation", "passed": false, "evidence": ""},
+        {"text": "Routes to opencode-platform-reference per routing table", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-018",
+      "prompt": "build a custom tool for my workflow",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "opencode-tool-architect",
+        "stack_skills": [],
+        "group": "GROUP_2",
+        "questions_allowed": 0
+      },
+      "assertions": [
+        {"text": "Triggers meta-builder for tool creation", "passed": false, "evidence": ""},
+        {"text": "Routes to opencode-tool-architect per routing table", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-019",
+      "prompt": "configure OpenCode for my team",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "opencode-platform-reference",
+        "stack_skills": [],
+        "group": "GROUP_2",
+        "questions_allowed": 0
+      },
+      "assertions": [
+        {"text": "Triggers meta-builder for configuration request", "passed": false, "evidence": ""},
+        {"text": "Routes to opencode-platform-reference per routing table", "passed": false, "evidence": ""}
+      ],
+      "files": []
+    },
+    {
+      "id": "TC-020",
+      "prompt": "combine skill-creator with use-authoring-skills into a single workflow",
+      "expected_output": {
+        "should_trigger": true,
+        "primary_skill": "meta-builder",
+        "stack_skills": ["skill-creator", "use-authoring-skills"],
+        "group": "GROUP_2",
+        "questions_allowed": 0
+      },
+      "assertions": [
+        {"text": "Triggers meta-builder for skill stacking request", "passed": false, "evidence": ""},
+        {"text": "Primary is meta-builder itself (this skill handles stacking)", "passed": false, "evidence": ""},
+        {"text": "Stack contains exactly the two named skills", "passed": false, "evidence": ""},
+        {"text": "Stack size = 3 total (meta-builder + 2 complement skills)", "passed": false, "evidence": ""}
+      ],
+      "files": [],
+      "fixture": "skill-stacking"
+    }
+  ]
+}

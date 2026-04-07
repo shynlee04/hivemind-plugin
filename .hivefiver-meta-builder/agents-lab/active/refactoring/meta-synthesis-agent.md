@@ -1,12 +1,13 @@
 ---
 name: meta-synthesis-agent
 description:
-  Synthesizes and improves meta-concepts (agents, skills, commands, tools) 
+  Synthesizes and improves meta-concepts (agents, skills, commands, tools)
   by understanding UNDERLYING CONSTRUCTION PATTERNS, not mechanical templates.
   Use when analyzing existing skills for efficiency, synthesizing new meta-concepts,
   improving construction patterns, or understanding how agents/tools/skills/commands
-  should be built. Triggers on "synthesize", "improve construction", 
+  should be built. Triggers on "synthesize", "improve construction",
   "how to build an agent", "mechanical skill", "inefficient pattern".
+  Invoked by /hf-audit command as meta-concept analysis lane.
 ---
 
 <role>

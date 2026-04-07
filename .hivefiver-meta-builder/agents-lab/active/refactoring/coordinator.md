@@ -1,7 +1,7 @@
 ---
 description: "Primary orchestrator. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly."
-mode: "primary"
-"temperature": 0.2
+mode: primary
+temperature: 0.2
 instruction: [.opencode/rules/*.md]
 permission:
   read:
@@ -14,9 +14,6 @@ permission:
     "*.md": allow
   write:
     "*": deny
-  patch: allow
-  offset-read: allow
-permission:
   bash:
     "*": allow
     "git status*": allow
@@ -24,7 +21,7 @@ permission:
     "git log*": allow
     "ls*": allow
   task: allow
-  skill: 
+  skill:
     "*": ask
     "meta-builder": allow
     "hivefiver": allow
@@ -36,19 +33,15 @@ permission:
     "repomix-exploration-guide": allow
     "opencode-non-interactive-shell": allow
     "repomix-explorer": allow
-    "repomix-exploration-guide": allow
-    "opencode-platform-reference": allow
     "skill-synthesis": allow
     "agents-and-subagents-dev": allow
     "command-dev": allow
     "custom-tools-dev": allow
   patch: allow
-  offset-read: deny
   glob: allow
   grep: allow
   webfetch: allow
   websearch: allow
-  doom_loop: ask
 ---
 
 

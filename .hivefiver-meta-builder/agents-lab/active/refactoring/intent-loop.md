@@ -1,5 +1,5 @@
 ---
-description: "Specialist for Phase 0 intent clarification and draft spec creation. Uses question tool iteratively until fully understanding user intent. Describes granular features from user journey perspective. Designed for non-technical users. Triggers on clarify intent, draft specification, intent loop."
+description: "Specialist for Phase 0 intent clarification and draft spec creation. Uses question tool iteratively until fully understanding user intent. Describes granular features from user journey perspective. Designed for non-technical users. Triggers on clarify intent, draft specification, intent loop. Invoked by /plan command as pre-planning clarification step."
 mode: subagent
 temperature: 0.2
 steps: 50

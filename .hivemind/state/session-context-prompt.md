@@ -1,552 +1,442 @@
 ---
-version: 2.0
-complexity_before: 9
-complexity_after: 5
-confidence: 7
-phases_completed: [skim, investigation-lanes, clarification-gate, repackage]
-original_word_count: 352
-enhanced_word_count: 2840
-findings_count: 27
-risk_level: CRITICAL
-generated: 2026-04-06
+version: 3.0
 pipeline: prompt-enhance-repackage
+generated: 2026-04-07
+complexity_before: 8
+complexity_after: 5
+confidence: high
+phases_completed: [skim, bridge, investigation, clarification]
+parent_session: ses_29a6
+prompt_lineage: v1(original) → v2(2026-04-06) → v3(this)
+
+# Execution model
+exit_criteria: skill_judge_score_100_percent
+execution_order: skills_then_agents_then_commands_then_workflows
+loop_pattern: sequential_per_artifact
+progressive_disclosure: required
+
+# On-disk counts (verified 2026-04-07)
+skills_count: 20
+agents_count: 22
+commands_count: 11
+workflows_count: 4
+
+# Risk flags
+uncommitted_files: 70
+eval_harness_symlink: broken
+oh_my_openagent_xml: 11MB context_bomb_at_skills_references
 ---
 
-# Enhanced Session Context Prompt
+# Enhanced Session Context Prompt v3
 
-This document is the restructured output of a 4-phase prompt-enhance pipeline.
-The original user prompt was decomposed from a single 352-word monolithic request
-into 7 sequential phases with measurable acceptance criteria.
+Audited-then-clarified plan for the 2nd-iteration improvement of the Hivefiver
+ecosystem in harness-experiment. This prompt replaces the v2 plan entirely — all
+phases are re-scoped around the user's clarified priorities.
 
 ---
 
 <intent>
 
-Audit the harness-experiment workspace to establish a proven baseline of runtime
-architecture capabilities (background agents, delegation, concurrency, session
-recovery, context governance, injection engine, specialist classification), then
-use that baseline as the migration gate for selectively bringing validated content
-from .worktrees/product-detox into this workspace.
+Perform a 2nd-iteration quality improvement of every skill, agent, command, and
+workflow in the .opencode/ directory so the entire ecosystem functions as a
+unified, cross-referencing system. Each artifact must be audited against the
+skill-judge framework, refactored until it scores 100%, then move to the next
+artifact. No placeholder content. No "nothingness" skills. Professional quality
+only — each skill must know what it is meant to do and do it completely.
 
 </intent>
 
 ---
 
-<context_workspace>
+<scope>
 
-## Workspace: harness-experiment
+## Priority Order (non-negotiable)
 
-- Path: /Users/apple/hivemind-plugin/.worktrees/harness-experiment
-- Type: npm package (opencode-harness) — TypeScript plugin for OpenCode
-- Source: 33 TypeScript files in src/, 13 test files in tests/
-- Build status: typecheck PASSING (tsc --noEmit clean)
-- Entry points: opencode-harness → dist/index.js, opencode-harness/plugin → dist/plugin.js
-- Dependencies: @opencode-ai/plugin >= 1.1.0 (peer), Node >= 20.0.0
+1. **Skills** (20 on disk) — audit → refactor → re-audit → next
+2. **Agents** (22 on disk) — only after all skills reach 100%
+3. **Commands** (11 on disk) — only after all agents are validated
+4. **Workflows** (4 on disk) — only after all commands are validated
 
-## .hivefiver-meta-builder/ (lab structure)
+Each priority tier gates the next. No parallel work across tiers.
 
-Six subdirectories with content in active/ and some in refactoring/:
+## Boundaries
 
-| Lab | Path | Active Content |
-|-----|------|---------------|
-| agents-lab | agents-lab/active/ | refactoring/ (1 subdirectory) |
-| commands-lab | commands-lab/active/ | refactoring/ (1 subdirectory) |
-| skills-lab | skills-lab/active/ | 2 spec files + refactoring/ |
-| workflows-lab | workflows-lab/active/ | refactoring/ (1 subdirectory) |
-| references-lab | references-lab/active/ | refactoring/ (1 subdirectory) |
-| plans | (empty active/) | — |
+- **In scope**: All .opencode/ artifacts (skills/, agents/, commands/, workflows/)
+- **In scope**: All .hivefiver-meta-builder/ lab source files that feed into .opencode/
+- **In scope**: Progressive disclosure enforcement in all skill content
+- **Out of scope**: src/ TypeScript source code (hard harness — separate concern)
+- **Out of scope**: New feature development (this is quality improvement, not greenfield)
+- **Out of scope**: Deletion of functional connected artifacts (stale refs can be updated)
 
-Root files: AGENTS.md, ONBOARDING-WORKFLOW-PROTOCOL.md
-
-## .opencode/ (runtime primitives)
-
-| Category | Count | Notable Entries |
-|----------|-------|----------------|
-| agents/ | 18 .md files | coordinator, builder, researcher, critic, explore, conductor, hivefiver-*, prompt-* |
-| skills/ | 16 directories | meta-builder, oh-my-openagent-reference, coordinating-loop, use-authoring-skills, planning-with-files, user-intent-interactive-loop, command-dev, custom-tools-dev, skill-synthesis, repomix-explorer, opencode-platform-reference, opencode-non-interactive-shell, repomix-exploration-guide, harness-audit, agents-and-subagents-dev |
-| commands/ | 12 .md files | start-work, plan, deep-init, deep-research-synthesis-repomix, harness-doctor, ultrawork, hf-audit, hf-create, hf-prompt-enhance, hf-stack |
-| rules/ | (exists) | execution-loop.md, coordinator-rules.md, skill-activation.md, anti-patterns.md, commit-governance.md |
-| plugins/ | (exists) | harness-control-plane.ts |
-| tools/ | (exists) | — |
-
-## Key Reference Documents
-
-| Document | Path |
-|----------|------|
-| distinguish-hivefiver-meta-builder | docs/meta-builder/distinguish-hivefiver-meta-builder.md |
-| updating-for-hivefiver-onboarding | docs/meta-builder/updating-for-hivefiver-onboarding.md |
-| spec-briefing | docs/meta-builder/spec-briefing.md |
-| prompt-enhancer-deepwiki-instruction | docs/meta-builder/prompt-enhancer-deepwiki-instruction.md |
-| Architecture proposal | docs/draft/architecture-proposal-hivemind-v3.md |
-
-## Planning Triplet (STALE — last updated Apr 4)
-
-| File | Path | Status |
-|------|------|--------|
-| task_plan.md | (root) | Stale |
-| findings.md | (root) | Stale |
-| progress.md | (root) | Stale |
-
-## oh-my-openagents Reference
-
-- NOT present at .sdk-lib/ in this workspace
-- Available as SKILL: oh-my-openagent-reference (in .opencode/skills/)
-- Original source: /Users/apple/hivemind-plugin/.worktrees/product-detox/.sdk-lib/oh-my-openagents/
-- GitHub: Search for "oh-my-openagent" repository for docs and guides
-
-## Hygiene Items in Workspace Root
-
-Multiple stale session files from previous debugging (session-ses_*.md, fucking-*.md,
-hallucinated-*.md, skill-failure-test-*.md) — not referenced by current work, should
-be cleaned up.
-
-</context_workspace>
+</scope>
 
 ---
 
-<context_product_detox>
+<constraints>
 
-## Workspace: product-detox
+## Iron Rules
 
-- Path: /Users/apple/hivemind-plugin/.worktrees/product-detox
-- Size: 697MB
-- Contains: .sdk-lib/oh-my-openagents/ (primary knowledge source for injection engine patterns)
+1. **Sequential execution**: One artifact at a time. Complete its audit-refactor cycle
+   before touching the next.
 
-## Tool Config Pollution (11 tool-specific directories)
+2. **Exit criteria per artifact**: The skill-judge framework (8 dimensions, 120 points)
+   must return 100% before advancing. If 100% is unreachable for a valid reason
+   (e.g., platform limitation), document the exception and get user sign-off.
 
-.claude, .cursor, .roo, .windsurf, .trae, .qwen, .crush, .qoder, .iflow,
-.sisyphus, .codexdisabled, .gemini, .kilo, .agent, .agents, .beads, .factory,
-.developing-skills, .experimental-planning
+3. **Progressive disclosure**: Every skill must follow progressive disclosure —
+   frontmatter metadata, then concise description, then detailed content layers.
+   No wall-of-text SKILL.md files.
 
-## Validated Content Present
+4. **No placeholder content**: Every skill must contain real implementation value.
+   If a skill exists only to route to another skill, it must justify its existence
+   with unique value (trigger patterns, context enrichment, platform adaptation).
 
-- .sdk-lib/oh-my-openagents/ — agent definitions, plugin system, hooks, circuit breaker,
-  concurrency manager, session continuity, skill loader, dynamic prompt builder
-- .opencode/ — product-detox's own OpenCode configuration
-- .hivemind/ — product-detox's harness state
+5. **Cross-reference integrity**: All internal references (agent mentions, skill
+   triggers, command chains, workflow steps) must resolve to artifacts that exist
+   on disk. No dead links, no aspirational references.
 
-## .env File Present
+6. **Pre-flight checkpoint**: Before starting any modification, verify git status.
+   If >20 uncommitted files exist, commit a checkpoint first.
 
-An .env file (802 bytes) exists in product-detox root. This MUST be excluded from
-any migration — it likely contains secrets or environment-specific configuration.
+7. **No concurrent writes**: Only one agent modifies files at a time. Sequential
+   wave execution enforced.
 
-</context_product_detox>
+8. **Context bomb avoidance**: The file at `.opencode/skills/oh-my-openagent-reference/
+   references/oh-my-openagent-full.xml` is 11MB (276K lines). NEVER read it fully.
+   Use grep, regex, or chunked offset reads only.
 
----
+9. **Symlink awareness**: .opencode/ files are REAL COPIES, not symlinks to labs.
+   Changes in .opencode/ must be manually synced to .hivefiver-meta-builder/ labs
+   if the lab is the canonical source.
 
-<requirements_decomposed>
+10. **Planning triplet**: Update findings.md, progress.md, and task_plan.md at
+    every phase boundary.
 
-The original prompt contains 10 interleaved workstreams. They are decomposed into
-7 sequential phases, each with a clear entry condition and output.
-
-## Phase 1: Baseline Audit (READ-ONLY)
-
-Prove what actually works in harness-experiment right now.
-
-- Run typecheck (PASSING — confirmed)
-- Run test suite (npm test) — document pass/fail/skip counts
-- Map all 33 source files to their purpose and LOC count
-- Verify plugin loads without errors (import check)
-- Document which AGENTS.md promises are implemented vs aspirational
-
-Entry: None (start immediately)
-Output: baseline-audit-YYYY-MM-DD.md in .hivefiver-meta-builder/plans/
-
-## Phase 2: Reference Knowledge Synthesis
-
-Learn from oh-my-openagents the patterns needed for runtime architecture.
-
-- Study oh-my-openagent-reference skill (already loaded in .opencode/skills/)
-- Extract: plugin system patterns, hook lifecycle, agent dispatch, session continuity
-- Extract: circuit breaker, concurrency manager, category routing, tool restrictions
-- Study docs/meta-builder/distinguish-hivefiver-meta-builder.md for meta-builder concepts
-- Study docs/meta-builder/updating-for-hivefiver-onboarding.md for onboarding protocol
-- Search online for oh-my-openagents GitHub repo documentation
-
-Entry: Phase 1 complete
-Output: knowledge-synthesis-YYYY-MM-DD.md in references-lab/active/
-
-## Phase 3: Runtime Architecture Proving
-
-Build and prove the core runtime features one at a time.
-
-Sub-phases (each must pass its own acceptance test before the next starts):
-
-3a. Background Agents — agents run in background, spawn in new panes, auto-cleanup
-3b. Delegation Chain — task persistence, parent-child session tracking
-3c. Concurrency Control — keyed semaphore, FIFO queue (already partially in concurrency.ts)
-3d. Session Recovery — context integrity across session boundaries
-3e. Context Governance — rules that persist and enforce across long sessions
-3f. Injection Engine — runtime injection of rules, commands, skills, tools with conditions
-3g. Specialist Classification — configurable agent presets for domains, category routing
-3h. Tool Budget/Circuit Breaker — per-session tool call limits, threshold-based shutdown
-
-Entry: Phase 2 complete
-Output: Each sub-phase produces a test file proving the feature works
-
-## Phase 4: Lab Validation (.hivefiver-meta-builder/)
-
-Test all primitive concepts as .md files in labs, with symlinks to .opencode/.
-
-- agents-lab/active/ — test each agent definition loads and triggers correctly
-- commands-lab/active/ — test each command parses frontmatter and executes
-- skills-lab/active/ — test each skill activates on correct trigger
-- workflows-lab/active/ — test workflow orchestration chains execute
-- references-lab/active/ — verify reference documents are current
-
-Entry: Phase 3 complete
-Output: lab-validation-report-YYYY-MM-DD.md
-
-## Phase 5: Schema Definition
-
-Convert proven runtime primitives into event-triggered, function-call-triggered code.
-
-- Define YAML schema for agent frontmatter (triggers, conditions, tools, temperature)
-- Define YAML schema for command frontmatter (arguments, bash injection, agent binding)
-- Define YAML schema for skill frontmatter (trigger patterns, prerequisites, layers)
-- Generate TypeScript types from schemas
-- Generate event emitters and trigger evaluators from schemas
-- Wire schema-validated definitions into the plugin's tool/hook system
-
-Entry: Phase 4 complete
-Output: src/lib/schemas/ directory with generated code + tests
-
-## Phase 6: Migration Gate
-
-Determine what to bring from product-detox based on proven baseline.
-
-- Inventory product-detox content (excluding pollution directories and .env)
-- Match product-detox capabilities against proven harness-experiment baseline
-- Create selective migration list (what to bring, what to rebuild, what to discard)
-- Execute migration item by item with validation after each
-
-Entry: Phase 5 complete + user approval of migration list
-Output: migration-manifest-YYYY-MM-DD.md
-
-## Phase 7: Integration Verification
-
-Prove all systems work together as a cohesive runtime.
-
-- Full test suite passes
-- Plugin loads and wires all tools + hooks
-- Background agents spawn, report, and clean up
-- Delegation chains persist across session boundaries
-- Injection engine applies rules conditionally
-- Specialist routing dispatches to correct agents
-- Schema validation catches malformed definitions
-
-Entry: Phase 6 complete
-Output: integration-report-YYYY-MM-DD.md + git tag
-
-</requirements_decomposed>
+</constraints>
 
 ---
 
-<guardrails>
+<artifacts>
 
-## Mandatory Safety Constraints
+## Skills (20 on disk, priority tier 1)
 
-1. **User Space Freeze**: No changes to files in user's home directory or outside
-   the two worktrees without explicit per-file approval.
+| # | Directory | Notes |
+|---|-----------|-------|
+| 1 | agent-authorization | Authorization framework for agent creation |
+| 2 | agents-and-subagents-dev | Agent architecture and subagent dispatch |
+| 3 | command-dev | Slash command development |
+| 4 | command-parser | $ARGUMENT propositional command parsing |
+| 5 | coordinating-loop | Multi-agent orchestration with validation gates |
+| 6 | custom-tools-dev | OpenCode plugin SDK and custom tool architecture |
+| 7 | harness-audit | Full OpenCode project audit |
+| 8 | harness-delegation-inspection | Subagent patterns and delegation protocols |
+| 9 | meta-builder | Meta-skill for creating/editing skills |
+| 10 | oh-my-openagent-reference | ⚠️ Contains 11MB XML — grep only |
+| 11 | opencode-non-interactive-shell | Shell command safety for agents |
+| 12 | opencode-platform-reference | OpenCode platform capabilities reference |
+| 13 | phase-loop | Iterative phase execution loop semantics |
+| 14 | planning-with-files | 3-file external memory for multi-step tasks |
+| 15 | repomix-exploration-guide | Deep codebase investigation with Repomix |
+| 16 | repomix-explorer | Codebase analysis via Repomix CLI |
+| 17 | session-context-manager | Session context persistence across phases |
+| 18 | skill-synthesis | Skill creation from GitHub repos |
+| 19 | use-authoring-skills | Authoring skills frontmatter and patterns |
+| 20 | user-intent-interactive-loop | Long session and requirement probing |
 
-2. **Symlink Integrity**: Before any operation touching .opencode/ or
-   .hivefiver-meta-builder/, verify all symlinks resolve. Log broken links immediately.
+## Agents (22 on disk, priority tier 2)
 
-3. **No Merge Rule**: Never merge product-detox into harness-experiment. Content
-   is selectively copied, not merged. No git merge, no git cherry-pick without
-   explicit user instruction.
+Located at .opencode/agents/*.md — audited after all skills reach 100%.
 
-4. **Exclusion List**: The following from product-detox are NEVER migrated:
-   - .env (secrets)
-   - All 11+ tool config directories (.claude, .cursor, .roo, etc.)
-   - node_modules/
-   - .git/ internals
-   - Any file containing API keys, tokens, or credentials
+## Commands (11 on disk, priority tier 3)
 
-5. **Pre-flight Check**: Before any agent touches .opencode/ contents, run a
-   pre-flight check: list all files to be modified, verify symlinks, confirm
-   no broken references. Halt on any failure.
+Located at .opencode/commands/*.md — audited after all agents are validated.
 
-6. **Atomic Verification**: After each phase completes, run typecheck + tests
-   before proceeding. If either fails, halt and report.
+## Workflows (4 on disk, priority tier 4)
 
-7. **Planning Triplet**: task_plan.md, findings.md, progress.md must be updated
-   at every phase boundary. Never create new planning files — edit in place.
+Located at .hivefiver-meta-builder/workflows-lab/ — audited last.
 
-8. **No Orphaned Code**: Every line written must be reachable. No TODO comments,
-   no stubs, no placeholder implementations.
+## Known Broken Items
 
-9. **Module Size Limit**: Max 500 LOC per module. If a module exceeds this,
-   decompose before proceeding.
+- `.opencode/skills/eval-harness` — symlink points to `../../.agents/skills/eval-harness`
+  which resolves to `/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.agents/skills/eval-harness`
+  — target does not exist on disk. This symlink must be removed or fixed before
+  the skills tier begins.
 
-10. **Context Budget**: Monitor context usage. If compaction_count > 0, pause
-    and create a context handoff before continuing.
-
-</guardrails>
-
----
-
-<acceptance_criteria>
-
-## Per-Phase Success Criteria
-
-| Phase | Criterion | Measurement |
-|-------|-----------|-------------|
-| 1. Baseline Audit | All source files mapped | 33 files documented with purpose + LOC |
-| 1. Baseline Audit | Tests documented | Pass/fail/skip counts recorded |
-| 1. Baseline Audit | Implementation gap identified | AGENTS.md promises vs reality table |
-| 2. Knowledge Synthesis | oh-my-openagents patterns extracted | Document with 8+ pattern categories |
-| 2. Knowledge Synthesis | Both meta-builder docs analyzed | Key concepts summarized |
-| 3. Runtime Architecture | Each sub-phase 3a-3h has passing test | 8 test files, all green |
-| 3. Runtime Architecture | Background agents spawn + cleanup | Observable in test output |
-| 3. Runtime Architecture | Injection engine applies rules | Conditional rule test passes |
-| 4. Lab Validation | All lab items load without error | Validation report shows 0 failures |
-| 4. Lab Validation | Symlinks verified | All resolve to valid targets |
-| 5. Schema Definition | YAML schemas defined for 3 primitive types | Agent, Command, Skill schemas |
-| 5. Schema Definition | TypeScript types generated | src/lib/schemas/ compiles clean |
-| 5. Schema Definition | Event triggers functional | Trigger evaluator tests pass |
-| 6. Migration Gate | Migration list approved by user | User sign-off recorded |
-| 6. Migration Gate | Each item validated post-copy | typecheck + tests pass after each |
-| 7. Integration | Full test suite green | npm test exits 0 |
-| 7. Integration | Plugin loads | Import check passes |
-| 7. Integration | All systems synchronous | Integration test proves coordination |
-
-## Global Success Criteria
-
-- npm run typecheck exits 0
-- npm test exits 0
-- No orphaned files in workspace root
-- Planning triplet current (updated within last session)
-- All lab symlinks healthy
-- No .env or secrets in workspace
-
-</acceptance_criteria>
+</artifacts>
 
 ---
 
-<knowledge_sources>
+<references>
 
-## Where to Find Each Referenced Resource
+## Knowledge Sources
 
-| Resource | Correct Location | Access Method |
-|----------|-----------------|---------------|
-| oh-my-openagents source | .opencode/skills/oh-my-openagent-reference/ | Load skill via skill tool |
-| oh-my-openagents raw files | product-detox/.sdk-lib/oh-my-openagents/ | Read tool (cross-worktree) |
-| oh-my-openagents GitHub | Search GitHub for "oh-my-openagent" | Web search + GitHub tools |
-| distinguish-hivefiver-meta-builder.md | docs/meta-builder/distinguish-hivefiver-meta-builder.md | Read tool |
-| updating-for-hivefiver-onboarding.md | docs/meta-builder/updating-for-hivefiver-onboarding.md | Read tool |
-| spec-briefing.md | docs/meta-builder/spec-briefing.md | Read tool |
-| Architecture proposal | docs/draft/architecture-proposal-hivemind-v3.md | Read tool |
-| OpenCode platform reference | .opencode/skills/opencode-platform-reference/ | Load skill via skill tool |
-| OpenCode non-interactive shell | .opencode/skills/opencode-non-interactive-shell/ | Load skill via skill tool |
-| Repomix exploration guide | .opencode/skills/repomix-exploration-guide/ | Load skill via skill tool |
-| Agents (18 definitions) | .opencode/agents/*.md | Read tool |
-| Skills (16 definitions) | .opencode/skills/*/SKILL.md | Read tool |
-| Commands (12 definitions) | .opencode/commands/*.md | Read tool |
-| Rules (5 governance) | .opencode/rules/*.md | Read tool |
-| Plugin entry | .opencode/plugins/harness-control-plane.ts | Read tool |
+| Source | Location | Access Method |
+|--------|----------|---------------|
+| skill-judge framework | Installed at ~/.agents/skills/skill-judge/ | `skill` tool — load "skill-judge" |
+| oh-my-openagent patterns | .opencode/skills/oh-my-openagent-reference/ | `skill` tool OR grep on SKILL.md only |
+| oh-my-openagent-full.xml | .opencode/skills/oh-my-openagent-reference/references/ | ⚠️ grep/chunked reads ONLY — 11MB |
+| OpenCode platform reference | .opencode/skills/opencode-platform-reference/ | `skill` tool |
+| Meta-builder concept | docs/meta-builder/distinguish-hivefiver-meta-builder.md | `read` tool |
+| Onboarding protocol | docs/meta-builder/updating-for-hivefiver-onboarding.md | `read` tool |
+| Architecture proposal | docs/draft/architecture-proposal-hivemind-v3.md | `read` tool |
+| GSD reference (if needed) | /tmp/gsd-full/ (may need re-clone) | `bash` + `read` tool |
+| Previous audit report | docs/audit/command-workflow-audit.md | `read` tool |
+| Dependency graph | docs/audit/dependency-graph.md | `read` tool |
+| Previous implementation plan | .hivefiver-meta-builder/plans/prompt-enhance-implementation-plan-2026-04-07.md | `read` tool |
+| Lab source files | .hivefiver-meta-builder/{skills,agents,commands,workflows}-lab/ | `read` tool |
 
-</knowledge_sources>
+## skill-judge Dimensions (8, 120 points max)
 
----
+1. Trigger Accuracy (15 pts) — Does the description trigger correctly?
+2. Progressive Disclosure (15 pts) — Layered content structure?
+3. Cross-Platform Compatibility (15 pts) — Works across Claude Code, Copilot, Gemini?
+4. Content Quality (20 pts) — Real implementation value, not filler?
+5. Error Handling (15 pts) — Graceful failure modes documented?
+6. Integration (15 pts) — References resolve, dependencies clear?
+7. Maintainability (15 pts) — Versioned, documented, updateable?
+8. Self-Description (10 pts) — Knows what it is and what it does?
 
-<exclusion_list>
-
-## What NOT to Bring from product-detox
-
-### Absolute Exclusions (never migrate)
-
-- .env (802 bytes — secrets/environment config)
-- .claude/ (tool-specific config)
-- .cursor/ (tool-specific config)
-- .roo/ (tool-specific config)
-- .windsurf/ (tool-specific config)
-- .trae/ (tool-specific config)
-- .qwen/ (tool-specific config)
-- .crush/ (tool-specific config)
-- .qoder/ (tool-specific config)
-- .iflow/ (tool-specific config)
-- .sisyphus/ (tool-specific config)
-- .codexdisabled/ (tool-specific config)
-- .gemini/ (tool-specific config)
-- .kilo/ (tool-specific config)
-- .agent/ (tool-specific config)
-- .agents/ (tool-specific config)
-- .beads/ (tool-specific config)
-- .factory/ (tool-specific config)
-- .developing-skills/ (tool-specific config)
-- .experimental-planning/ (tool-specific config)
-- node_modules/ (regenerated)
-- .git/ internals (separate repo history)
-- .vscode/ (IDE config)
-
-### Conditional Exclusions (evaluate before migrating)
-
-- .sdk-lib/oh-my-openagents/ — extract patterns, do not copy wholesale
-- .opencode/ — compare with harness-experiment's .opencode/, merge selectively
-- .hivemind/ — compare state files, may be product-detox specific
-- .archive/ — old content, evaluate relevance
-- Any file matching *.secret*, *.key*, *.token*, *credential*
-
-</exclusion_list>
+</references>
 
 ---
 
 <execution_plan>
 
-## Phase-by-Phase Execution
+## Pre-Flight (gate 0)
 
-### Phase 1: Baseline Audit
-- **Input**: workspace as-is
-- **Agent**: researcher (read-only investigation)
-- **Steps**:
-  1. Run `npm run typecheck` — confirm passing
-  2. Run `npm test` — record results
-  3. Catalog all 33 src/ files with LOC and purpose
-  4. Map AGENTS.md promises to implemented features
-  5. Document test coverage gaps
-  6. Write baseline-audit-YYYY-MM-DD.md to .hivefiver-meta-builder/plans/
-- **Output**: Complete workspace baseline document
-- **Gate**: Document reviewed by user before Phase 2
+1. Run `git status --short` — if >20 uncommitted files, commit a checkpoint
+   with message: `checkpoint: pre-2nd-iteration-audit — 70 uncommitted files`
+2. Remove or fix broken eval-harness symlink at `.opencode/skills/eval-harness`
+3. Verify all 20 skill directories contain SKILL.md files
+4. Update progress.md with pre-flight completion
 
-### Phase 2: Knowledge Synthesis
-- **Input**: baseline audit, oh-my-openagent-reference skill, meta-builder docs
-- **Agent**: researcher (knowledge extraction) + deep-research (online validation)
-- **Steps**:
-  1. Load oh-my-openagent-reference skill
-  2. Extract 8 pattern categories: plugin system, hooks, agent dispatch, session continuity,
-     circuit breaker, concurrency, category routing, tool restrictions
-  3. Read docs/meta-builder/distinguish-hivefiver-meta-builder.md
-  4. Read docs/meta-builder/updating-for-hivefiver-onboarding.md
-  5. Search online for oh-my-openagents GitHub documentation
-  6. Cross-reference patterns with harness-experiment's existing implementation
-  7. Write knowledge-synthesis-YYYY-MM-DD.md to references-lab/active/
-- **Output**: Pattern catalog with implementation mapping
-- **Gate**: Synthesis reviewed by user before Phase 3
+## Tier 1: Skills (20 artifacts, sequential)
 
-### Phase 3: Runtime Architecture (8 sub-phases)
-- **Input**: knowledge synthesis, existing source code
-- **Agent**: builder (implementation) + critic (review) per sub-phase
-- **Steps per sub-phase**:
-  1. Write test for the feature (TDD)
-  2. Implement minimum code to pass test
-  3. Run typecheck + tests
-  4. If fails, debug and fix
-  5. If passes, commit with format "phase-3{letter}: {feature} — proven via test"
-  6. Update progress.md
-- **Sub-phase order**: 3a→3b→3c→3d→3e→3f→3g→3h
-- **Output**: 8 passing test files + implementation code
-- **Gate**: All 8 sub-phases green before Phase 4
+For each skill in the priority order below:
 
-### Phase 4: Lab Validation
-- **Input**: proven runtime features, lab .md files
-- **Agent**: critic (validation) + builder (fixes)
-- **Steps**:
-  1. Inventory all files in agents-lab/active/, commands-lab/active/, skills-lab/active/,
-     workflows-lab/active/, references-lab/active/
-  2. For each lab item, verify it loads/triggers correctly via symlink to .opencode/
-  3. Verify all symlinks resolve (ls -la check)
-  4. Document any broken references
-  5. Fix or remove broken items
-  6. Write lab-validation-report-YYYY-MM-DD.md
-- **Output**: Validation report with 0 failures
-- **Gate**: All labs validated before Phase 5
+### Per-Skill Cycle
 
-### Phase 5: Schema Definition
-- **Input**: validated lab primitives, proven runtime features
-- **Agent**: builder (schema design + code generation)
-- **Steps**:
-  1. Define YAML schema for Agent frontmatter
-  2. Define YAML schema for Command frontmatter
-  3. Define YAML schema for Skill frontmatter
-  4. Generate TypeScript types from schemas in src/lib/schemas/
-  5. Build event emitter system for triggers
-  6. Build trigger evaluator for conditional activation
-  7. Wire schemas into plugin's tool/hook system
-  8. Write tests for schema validation
-  9. Run typecheck + tests
-- **Output**: src/lib/schemas/ directory with generated code + tests
-- **Gate**: All schema tests pass before Phase 6
+```
+AUDIT → load skill-judge skill → score the skill → document score
+  ↓ (if < 100%)
+REFACTOR → identify gaps from judge feedback → make minimum changes → save
+  ↓
+RE-AUDIT → load skill-judge skill → score again → document score
+  ↓ (if < 100%, repeat up to 3 times)
+ESCALATE → if still < 100% after 3 cycles → document exception → ask user
+  ↓ (if 100%)
+ADVANCE → commit with message: `skill: {name} — 100% on skill-judge` → next
+```
 
-### Phase 6: Migration Gate
-- **Input**: proven baseline, product-detox inventory
-- **Agent**: researcher (inventory) + coordinator (approval routing)
-- **Steps**:
-  1. Inventory product-detox excluding .env and pollution directories
-  2. Match each item against harness-experiment's proven capabilities
-  3. Categorize: BRING (copy), REBUILD (implement fresh), DISCARD (not needed)
-  4. Present migration manifest to user for approval
-  5. Execute approved migrations one item at a time
-  6. After each item: run typecheck + tests
-  7. Write migration-manifest-YYYY-MM-DD.md
-- **Output**: Migration manifest with user sign-off
-- **Gate**: User approves migration list. Each item validated post-copy.
+### Skill Priority Order
 
-### Phase 7: Integration Verification
-- **Input**: all previous phase outputs
-- **Agent**: critic (final validation)
-- **Steps**:
-  1. Run full test suite (npm test)
-  2. Run typecheck (npm run typecheck)
-  3. Verify plugin loads (import check)
-  4. Verify background agents spawn + cleanup
-  5. Verify delegation chains persist
-  6. Verify injection engine applies rules conditionally
-  7. Verify specialist routing dispatches correctly
-  8. Verify schema validation catches malformed definitions
-  9. Clean up workspace root (remove stale session files)
-  10. Update planning triplet to current state
-  11. Write integration-report-YYYY-MM-DD.md
-  12. Git tag: v0.1.0-baseline-proven
-- **Output**: Integration report + git tag
-- **Gate**: All verification steps pass
+1. **meta-builder** — Foundation skill that creates/edits other skills; must be
+   perfect before auditing skills it helps create
+2. **use-authoring-skills** — Authoring patterns; feeds into all other skill quality
+3. **skill-synthesis** — Creates skills from repos; quality gate for generated content
+4. **coordinating-loop** — Multi-agent orchestration; referenced by workflows
+5. **planning-with-files** — Multi-step task tracking; referenced by commands
+6. **user-intent-interactive-loop** — Long session management; referenced by agents
+7. **command-dev** — Command development patterns; referenced by commands
+8. **command-parser** — Command string parsing; feeds command-dev
+9. **agents-and-subagents-dev** — Agent architecture; referenced by agents
+10. **agent-authorization** — Agent creation gates; referenced by agents-and-subagents
+11. **custom-tools-dev** — Plugin SDK patterns; referenced by tools
+12. **opencode-platform-reference** — Platform capabilities; reference skill
+13. **opencode-non-interactive-shell** — Shell safety; referenced by commands/agents
+14. **harness-audit** — Project audit capability
+15. **harness-delegation-inspection** — Delegation patterns
+16. **session-context-manager** — Session persistence
+17. **phase-loop** — Iterative execution semantics
+18. **repomix-explorer** — Codebase analysis
+19. **repomix-exploration-guide** — Deep investigation guide
+20. **oh-my-openagent-reference** — Reference only; audit for quality but do NOT
+    read the full XML (11MB). Grep SKILL.md and metadata only.
+
+### Exit Criteria for Tier 1
+
+- All 20 skills score 100% on skill-judge (or have documented exceptions)
+- All cross-references between skills resolve to existing artifacts
+- Progressive disclosure enforced in all skill content
+- No placeholder or "nothingness" content in any skill
+- Git commits for each completed skill audit
+
+## Tier 2: Agents (22 artifacts, sequential)
+
+Begins only after Tier 1 exits successfully.
+
+### Per-Agent Cycle
+
+Same audit → refactor → re-audit pattern as skills, but using agent-specific
+quality criteria:
+
+1. **Description accuracy** — Does the agent's description match its actual role?
+2. **Tool assignments** — Are referenced tools available and correctly specified?
+3. **Permission model** — Are permissions minimal and justified?
+4. **Cross-references** — Does the agent reference existing skills/commands?
+5. **Temperature/model config** — Is configuration appropriate for the agent's task?
+6. **Trigger conditions** — When does this agent activate? Is it clear?
+
+### Agent Priority Order
+
+1. coordinator.md — Central routing agent
+2. conductor.md — Execution orchestrator
+3. builder.md — Implementation specialist
+4. researcher.md — Investigation specialist
+5. critic.md — Review specialist
+6. explore.md — Codebase exploration
+7. hivefiver-orchestrator.md — Meta-concept orchestration
+8. intent-loop.md — Pre-planning clarification
+9. meta-synthesis-agent.md — Meta-concept analysis
+10. phase-guardian.md — Loop enforcement
+11. spec-verifier.md — Post-implementation verification
+12. All remaining agents (11 more) — alphabetical
+
+### Exit Criteria for Tier 2
+
+- All 22 agents pass quality criteria
+- All agent-to-skill references resolve (skills already at 100%)
+- All agent-to-command references resolve (commands audited next)
+- No orphan agents without connections
+
+## Tier 3: Commands (11 artifacts, sequential)
+
+Begins only after Tier 2 exits successfully.
+
+### Per-Command Cycle
+
+1. **Frontmatter validity** — YAML parses, all fields are valid
+2. **Argument schema** — Arguments defined and validated
+3. **Agent binding** — Referenced agents exist and are configured
+4. **Execution path** — Command chain is traceable end-to-end
+5. **Error handling** — Failure modes documented
+6. **Help text** — Usage instructions are clear and accurate
+
+### Exit Criteria for Tier 3
+
+- All 11 commands pass quality criteria
+- All command chains execute without dead references
+- All agent bindings resolve to existing, audited agents
+
+## Tier 4: Workflows (4 artifacts, sequential)
+
+Begins only after Tier 3 exits successfully.
+
+### Per-Workflow Cycle
+
+1. **Step sequencing** — Each step references existing artifacts
+2. **Error recovery** — What happens when a step fails?
+3. **State management** — How is workflow state persisted?
+4. **Exit conditions** — When is the workflow complete?
+
+### Exit Criteria for Tier 4
+
+- All 4 workflows pass quality criteria
+- End-to-end execution traceable through audited artifacts
+- Integration report produced
+
+## Post-Completion
+
+1. Run full integration verification
+2. Write `integration-report-2026-04-07.md`
+3. Update progress.md with final status
+4. Git tag: `v0.2.0-ecosystem-audited`
 
 </execution_plan>
 
 ---
 
-<open_questions>
+<risks_mitigated>
 
-## Items Needing User Clarification
+## Risk 1: Context Bomb (oh-my-openagent-full.xml)
+- **Risk**: 11MB XML file (276K lines) will blow context window if read fully
+- **Mitigation**: NEVER read the full file. Use `grep` with targeted patterns,
+  or read SKILL.md (1.7KB) which summarizes the reference. If deep patterns are
+  needed, use chunked offset reads of max 200 lines at a time.
+- **Status**: Mitigated by constraint #8
 
-### Q1: "Healer and Builder" Definition
-The original prompt mentions "the healer and builder to introduce the foundationally
-working baseline." Is this:
-  (a) Two specific agents (healer = diagnostic/repair, builder = implementation)?
-  (b) A metaphor for the overall process?
-  (c) Something else?
-**Impact**: Affects agent-lab definitions and Phase 3 agent assignments.
+## Risk 2: 70 Uncommitted Files
+- **Risk**: Working on top of uncommitted changes means no rollback point
+- **Mitigation**: Commit a checkpoint before starting (pre-flight step)
+- **Status**: Mitigated by pre-flight gate
 
-### Q2: Acceptance Criteria for "Proven"
-The prompt says features must be "proven and proven." What constitutes proof?
-  (a) Unit tests passing?
-  (b) Integration tests + manual verification?
-  (c) A live demo scenario?
-**Default if unanswered**: Passing automated tests + typecheck (strictest automated gate).
+## Risk 3: Concurrent Writes
+- **Risk**: Multiple agents modifying files simultaneously → merge conflicts
+- **Mitigation**: Sequential execution enforced. One artifact at a time.
+- **Status**: Mitigated by constraint #7
 
-### Q3: Priority Order for Runtime Features
-Phase 3 lists 8 sub-phases. If context budget is limited, which are the MUST-HAVE
-features that block migration? Suggested priority order:
-  1. Background Agents (3a) — core capability
-  2. Delegation Chain (3b) — task persistence
-  3. Concurrency Control (3c) — safety
-  4. Session Recovery (3d) — continuity
-  5. Injection Engine (3f) — runtime steering
-  6. Context Governance (3e) — cross-session rules
-  7. Specialist Classification (3g) — domain routing
-  8. Circuit Breaker (3h) — safety net
-**Default if unanswered**: Use suggested order above.
+## Risk 4: Broken eval-harness Symlink
+- **Risk**: Symlink at `.opencode/skills/eval-harness` points to non-existent target
+- **Mitigation**: Remove or fix the symlink in pre-flight before skills audit begins
+- **Status**: Identified, fix required in pre-flight
 
-### Q4: Scope of Schema-Generated Code
-Phase 5 converts YAML frontmatter into event-triggered code. Should this be:
-  (a) A code generator that outputs .ts files (build-time)?
-  (b) A runtime interpreter that reads .md files at plugin load?
-  (c) A hybrid (generate types at build, interpret triggers at runtime)?
-**Impact**: Fundamental architecture decision for Phase 5.
+## Risk 5: Unbounded Loop Cycles
+- **Risk**: A skill might never reach 100% on skill-judge, causing infinite loops
+- **Mitigation**: Hard cap of 3 audit-refactor cycles per artifact. After 3 failures,
+  escalate to user with documented exception.
+- **Status**: Mitigated by per-skill cycle definition
 
-### Q5: Stale Session Files Cleanup
-The workspace root contains ~15 stale session/debug files (session-ses_*.md,
-fucking-*.md, etc.). Can these be deleted as part of Phase 1 cleanup?
-**Default if unanswered**: Archive to .archive/ rather than delete.
+## Risk 6: Cross-Reference Drift
+- **Risk**: Fixing one artifact breaks references in another
+- **Mitigation**: Skills are audited first (foundation tier). Agent refs to skills
+  are validated after skills are locked. Commands after agents. Workflows last.
+  This ensures downstream references always point to already-validated upstream artifacts.
+- **Status**: Mitigated by tier ordering
 
-</open_questions>
+## Risk 7: .opencode/ is Real Copies (not symlinks)
+- **Risk**: Changes to .opencode/ won't propagate to labs automatically
+- **Mitigation**: Document which is canonical source for each artifact. If labs are
+  canonical, sync changes back after .opencode/ is updated.
+- **Status**: Mitigated by constraint #9
+
+## Risk 8: Progressive Disclosure Not Enforced
+- **Risk**: Skills may pass audit on content quality but fail on structure
+- **Mitigation**: Progressive disclosure is a specific dimension in skill-judge
+  (15 points). Skills cannot score 100% without proper layering.
+- **Status**: Mitigated by skill-judge dimension 2
+
+</risks_mitigated>
+
+---
+
+<quality_gates>
+
+## Pre-Flight Gate
+
+| Check | Pass Condition |
+|-------|---------------|
+| Uncommitted files checkpointed | `git status --short` shows clean or <20 |
+| eval-harness symlink fixed | File removed or target exists |
+| All 20 skills have SKILL.md | `ls .opencode/skills/*/SKILL.md` returns 20 |
+| progress.md updated | Contains pre-flight completion note |
+
+## Per-Artifact Gate (applies to every skill, agent, command, workflow)
+
+| Check | Pass Condition |
+|-------|---------------|
+| Audit scored | skill-judge returns numeric score |
+| Score = 100% | Or documented exception with user approval |
+| Cross-references valid | All mentions of other artifacts resolve on disk |
+| Progressive disclosure (skills) | Content is layered, not wall-of-text |
+| No placeholder content | Every section has real, actionable value |
+| Committed | `git log` shows commit for this artifact |
+
+## Tier Transition Gates
+
+| Transition | Condition |
+|------------|-----------|
+| Skills → Agents | All 20 skills at 100% + committed |
+| Agents → Commands | All 22 agents pass criteria + committed |
+| Commands → Workflows | All 11 commands pass criteria + committed |
+| Workflows → Done | All 4 workflows pass criteria + committed |
+
+## Final Gate
+
+| Check | Pass Condition |
+|-------|---------------|
+| Integration report written | docs/audit/integration-report-2026-04-07.md exists |
+| No orphan references | grep for dead links returns 0 |
+| progress.md final | Shows all tiers complete |
+| Git tag applied | v0.2.0-ecosystem-audited exists |
+
+</quality_gates>

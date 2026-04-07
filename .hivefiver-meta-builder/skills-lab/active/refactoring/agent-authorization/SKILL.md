@@ -1,10 +1,11 @@
 ---
 name: agent-authorization
 description: Authorization framework for agent creation with checkpoint gates. Use when authorizing agent creation, creating agent guardrails, defining specialist agent profiles, or setting up authorization checkpoints before agent dispatch. Triggers: "authorize agent creation", "create agent guardrails", "specialist agent profile", "checkpoint gate", "authorization gate for agents"
+version: 1.0.0
 metadata:
-  version: "1.0.0"
-  pattern: "P2"
   layer: "domain-execution"
+  role: "domain-execution"
+  pattern: "P2"
 allowed-tools:
   - Read
   - Write
@@ -31,7 +32,7 @@ When a user requests agent authorization, immediately load `references/gates.md`
 Complete each gate before proceeding to the next:
 
 - [ ] **Gate 1:** Sufficient skills loaded for the task domain (typically 2-4)
-- [ ] **Gate 2:** At least 1 specialist subagent available for the task domain (typically 2+)
+- [ ] **Gate 2:** At least 2 specialist subagents available for the task domain
 - [ ] **Gate 3:** Task matches specialist capabilities
 - [ ] **Gate 4:** File paths and scope defined
 - [ ] **Checkpoint:** Human verification (for blocking gates)
@@ -59,13 +60,13 @@ Action: Load additional skills before proceeding
 **Purpose:** Verify specialist subagents are available for the task domain.
 
 **Criteria:**
-- At least 1 specialist profile defined for the task domain (typically 2+)
+- At least 2 specialist profiles defined for the task domain
 - Specialists match task requirements
 
 **If Gate 2 fails:**
 ```
 ⚠️ GATE 2 BLOCKED: Insufficient specialists available
-Required: At least 1 specialist for task domain (typically 2+)
+Required: At least 2 specialists for task domain
 Available: {count}
 Action: Define additional specialist profiles
 ```
