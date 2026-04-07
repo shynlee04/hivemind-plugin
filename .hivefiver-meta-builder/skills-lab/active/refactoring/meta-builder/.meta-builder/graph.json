@@ -34,8 +34,8 @@
     {
       "id": "researcher",
       "type": "skill-node",
-      "label": "deep-investigation",
-      "skill": "deep-investigation",
+      "label": "repomix-explorer",
+      "skill": "repomix-explorer",
       "execute_conditions": ["needs_domain_research", "needs_cross_stack_patterns"],
       "validates": ["findings_documented", "patterns_identified"],
       "depends_on": ["root", "intent-clarifier"],

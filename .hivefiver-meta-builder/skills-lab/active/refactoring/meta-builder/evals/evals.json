@@ -1,6 +1,6 @@
 {
   "skill_name": "meta-builder",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Evals for meta-builder routing behaviour. Tests trigger detection, routing table accuracy, negative triggers, and coverage gaps.",
   "evals": [
     {
@@ -203,14 +203,14 @@
       "expected_output": {
         "should_trigger": true,
         "primary_skill": "use-authoring-skills",
-        "stack_skills": ["opencode-tool-architect"],
+        "stack_skills": ["custom-tools-dev"],
         "group": "GROUP_2",
         "questions_allowed": 0
       },
       "assertions": [
         {"text": "Triggers meta-builder for multi-intent request", "passed": false, "evidence": ""},
         {"text": "Routes skill creation to use-authoring-skills", "passed": false, "evidence": ""},
-        {"text": "Routes tool creation to opencode-tool-architect", "passed": false, "evidence": ""},
+        {"text": "Routes tool creation to custom-tools-dev", "passed": false, "evidence": ""},
         {"text": "Stack size <= 3", "passed": false, "evidence": ""}
       ],
       "files": [],
@@ -256,14 +256,14 @@
       "prompt": "create an agent for code review",
       "expected_output": {
         "should_trigger": true,
-        "primary_skill": "opencode-platform-reference",
+        "primary_skill": "agents-and-subagents-dev",
         "stack_skills": [],
         "group": "GROUP_2",
         "questions_allowed": 0
       },
       "assertions": [
         {"text": "Triggers meta-builder for agent creation", "passed": false, "evidence": ""},
-        {"text": "Routes to opencode-platform-reference per routing table", "passed": false, "evidence": ""}
+        {"text": "Routes to agents-and-subagents-dev per routing table", "passed": false, "evidence": ""}
       ],
       "files": []
     },
@@ -272,14 +272,14 @@
       "prompt": "build a custom tool for my workflow",
       "expected_output": {
         "should_trigger": true,
-        "primary_skill": "opencode-tool-architect",
+        "primary_skill": "custom-tools-dev",
         "stack_skills": [],
         "group": "GROUP_2",
         "questions_allowed": 0
       },
       "assertions": [
         {"text": "Triggers meta-builder for tool creation", "passed": false, "evidence": ""},
-        {"text": "Routes to opencode-tool-architect per routing table", "passed": false, "evidence": ""}
+        {"text": "Routes to custom-tools-dev per routing table", "passed": false, "evidence": ""}
       ],
       "files": []
     },
