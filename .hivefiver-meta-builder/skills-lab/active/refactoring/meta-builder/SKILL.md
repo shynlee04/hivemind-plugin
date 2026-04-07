@@ -1,6 +1,6 @@
 ---
 name: meta-builder
-description: "Use when creating, auditing, stacking, or configuring OpenCode meta-concepts — skills, agents, commands, tools. Routes intent to specialists through iterative few-step loops. Triggers on: 'create a skill', 'audit this skill', 'build an agent', 'set up a command', 'stack skills', 'configure OpenCode', 'fix skill trigger', '/hf-create', '/hf-audit', '/hf-stack'."
+description: "Routes requests about OpenCode meta-concepts (skills, agents, commands, tools) to specialist authors. Classifies intent, navigates step-by-step, reports back. Use when creating, auditing, stacking, or configuring any OpenCode meta-concept. Triggers on: 'create a skill', 'audit this skill', 'build an agent', 'set up a command', 'stack skills', 'configure OpenCode', 'fix skill trigger', '/hf-create', '/hf-audit', '/hf-stack'."
 metadata:
   layer: "0"
   role: "router"
