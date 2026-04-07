@@ -1,11 +1,26 @@
 ---
 name: user-intent-interactive-loop
-description: Use when user intent is unclear, sessions span many turns, or you need to probe requirements before delegating work. Triggers on: "unclear intent", "probe requirements", "long session management", "parent child delegation", "context preservation", "iterative engagement", "clarify before delegating". Maintains context across long sessions and manages parent/child task delegation.
+description: >
+  Use when the user needs help figuring out what they want, has a vague or
+  underspecified request, or drops a wall of text with multiple meta-concept
+  problems. Triggers on: "build me a skill like this @file", "fix my skills,
+  agents, and commands", "my skill doesn't load", "i'm not sure what i need,
+  help me figure it out", "customize my meta concepts", "i have skills that
+  conflict", "improve this skill", "what should i do first", "help me plan
+  my skill system", "diagnose my agents", "audit my commands", "unclear intent",
+  "probe requirements", "long session management", "parent child delegation",
+  "context preservation", "iterative engagement", "clarify before delegating".
+  Maintains context across long sessions, probes intent through targeted
+  questions, diagnoses what needs improvement across skills/agents/commands,
+  and prepares routing to specialist skills only after intent is confirmed.
 metadata:
   layer: "1"
   role: "front-agent"
   pattern: P3
-  version: "1.0.0"
+  version: "1.1.0"
+  lineage: "meta-builder"
+  hierarchy: "coordinator"
+  orientation: "how-to-process"
 allowed-tools:
   - Read
   - Write
@@ -47,27 +62,31 @@ Each condition maps to a concrete, checkable artifact:
 
 **If ANY condition fails → PROBE continues. No exceptions.**
 
-### Gate 3: Ecosystem Loading Order (HIERARCHY ENFORCED)
+### Gate 3: Ecosystem Loading Order (RECOMMENDED, NOT BLOCKING)
 
-Before ANY action in PROBE phase, the 3 background skills MUST be loaded. This is enforced programmatically:
+Before any action in PROBE phase, attempt to load 3 background skills. These enhance capability but are NOT required — the skill functions standalone without them.
 
-1. **Run hierarchy verification:**
+1. **Run hierarchy verification (informational):**
    ```bash
    bash scripts/verify-hierarchy.sh user-intent-interactive-loop
    ```
-   This checks that all 3 background skills are loaded in `.opencode/state/loaded-skills.json`.
+   This checks which background skills are loaded in `.opencode/state/loaded-skills.json`.
 
-   **If exit 1 → BLOCKED.** Load the missing skills first, then re-run.
+   **If exit 1 → PROCEED WITH DEGRADED CAPABILITY.** Log which skills are missing. The core function (probing intent via questions) does not require codebase exploration or shell strategy.
 
 2. **Register this skill as loaded:**
    ```bash
    bash scripts/register-skill.sh user-intent-interactive-loop
    ```
 
-3. **Required background skills (must be loaded in this order):**
-   1. `opencode-platform-reference`
-   2. `repomix-exploration-guide`
-   3. `opencode-non-interactive-shell`
+3. **Load background skills if available (not blocking):**
+   ```
+   skill("opencode-platform-reference")  — enhances platform-aware probing
+   skill("repomix-exploration-guide")    — enables codebase-aware questions
+   skill("opencode-non-interactive-shell") — enables shell-safety awareness
+   ```
+
+   **If any skill is not found → continue without it.** Do not block. Do not error. The PROBE phase works with questions alone.
 
 ### Gate 4: Validation Loop
 After intent appears confirmed:
@@ -83,23 +102,24 @@ After intent appears confirmed:
 
 **Do this before anything else, in this exact order:**
 
-1. **Run hierarchy verification:**
+1. **Run hierarchy verification (informational):**
    ```bash
    bash scripts/verify-hierarchy.sh user-intent-interactive-loop
    ```
-   If this exits 1, STOP. Load the 3 background skills first.
+   If this exits 1, log which skills are missing and continue. Do NOT stop.
 
 2. **Register this skill as loaded:**
    ```bash
    bash scripts/register-skill.sh user-intent-interactive-loop
    ```
 
-3. **Load 3 platform skills (Gate 3):**
+3. **Load 3 platform skills if available (not blocking):**
    ```
    skill("opencode-platform-reference")
    skill("repomix-exploration-guide")
    skill("opencode-non-interactive-shell")
    ```
+   If any skill is not found, continue without it.
 
 4. **Initialize tracking files:**
    ```bash
@@ -137,6 +157,20 @@ After intent appears confirmed:
 | Session exceeds 50+ turns or hits compaction | → `references/04-long-session-management.md` |
 | Need to decide: execute vs delegate vs clarify | → Core Pattern below |
 | User says "keep going" or "stay on track" | → This skill, full loop |
+
+---
+
+## Chaos Handling — Wall of Text, Folder Dumps, Absurd Requests
+
+When the user's input is unstructured, oversized, or chaotic:
+
+1. **SKIM FIRST** — Count files referenced, estimate LOC, identify structure. Do NOT read everything.
+2. **EXTRACT KEY ENTITIES** — What meta-concepts are mentioned? (skills, agents, commands, tools)
+3. **CONFIRM UNDERSTANDING** — Restate what you see: "You've dropped X files about Y. You want Z. Is that right?"
+4. **IF INPUT EXCEEDS 50 FILES OR 10K LOC** — Delegate to `explore` agent for triage before PROBE.
+5. **PROCEED WITH NORMAL PROBE** — Once structure is understood, ask targeted questions.
+
+**Never:** Read every file the user references. Skim frontmatter, first headings, and file names only.
 
 ---
 

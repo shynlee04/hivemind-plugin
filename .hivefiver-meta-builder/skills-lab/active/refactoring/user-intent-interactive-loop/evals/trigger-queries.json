@@ -17,7 +17,7 @@
     {"query": "commit these changes", "should_trigger": false},
     {"query": "show me the git log", "should_trigger": false},
     {"query": "what's in this directory?", "should_trigger": false},
-    {"query": "create a skill like this @file", "should_trigger": false},
+    {"query": "create a skill like this @file", "should_trigger": true},
     {"query": "plan this out", "should_trigger": false},
     {"query": "dispatch 3 agents in parallel", "should_trigger": false}
   ]
