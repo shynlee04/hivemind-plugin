@@ -1,12 +1,6 @@
 ---
 name: skill-synthesis
-description: >
-  Synthesizes skills by crawling GitHub repositories, extracting skill patterns,
-  classifying them into routing/efficiency/testing categories, and generating
-  eval-driven skill scaffolds. Use when the user asks to "create skills from
-  GitHub repos", "find skill patterns", "build a skill template library",
-  "classify skills by pattern type", "generate eval frameworks for skills",
-  or "synthesize a skill from a codebase".
+description: "Use when synthesizing skills from GitHub repos, classifying skill patterns, building template libraries, generating eval frameworks, or creating eval-driven skill scaffolds. Triggers on: 'create skills from GitHub', 'find skill patterns', 'classify skills', 'generate evals', 'synthesize a skill from a codebase'."
 metadata:
   layer: "3"
   role: "synthesis"

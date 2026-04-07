@@ -5,7 +5,10 @@ metadata:
   layer: "3"
   role: "reference"
   pattern: P3
-  version: "1.0.0"
+  version: "1.1.0"
+  lineage: "repomix"
+  hierarchy: "reference"
+  orientation: "what-to-know"
 allowed-tools:
   - Read
   - Write
@@ -27,13 +30,13 @@ Repomix operates in two complementary modes your agents can leverage:
 | Mode | How to invoke | Best for |
 |---|---|---|
 | **CLI** (bash) | `repomix [dirs...] [options]` | Scripted pipelines, pre-generating packed outputs, splitting large repos |
-| **MCP Server** | Via `repomixMCP` tools in agent context | Interactive agent-driven exploration, pack-then-grep workflows | [0-cite-0](#0-cite-0) [0-cite-1](#0-cite-1) 
+| **MCP Server** | Via `repomixMCP` tools in agent context | Interactive agent-driven exploration, pack-then-grep workflows | 
 
 ---
 
 ## 2. MCP Tools Reference (8 tools)
 
-Registered in `src/mcp/mcpServer.ts`: [0-cite-2](#0-cite-2) 
+Registered in `src/mcp/mcpServer.ts`: 
 
 ### 2.1 `pack_codebase` — Pack a local directory
 
@@ -47,7 +50,7 @@ Registered in `src/mcp/mcpServer.ts`: [0-cite-2](#0-cite-2)
   "style": "xml"              // xml | markdown | json | plain
 }
 ```
-Returns: `outputId`, `totalFiles`, `totalTokens`, `directoryStructure`. [0-cite-3](#0-cite-3) 
+Returns: `outputId`, `totalFiles`, `totalTokens`, `directoryStructure`. 
 
 ### 2.2 `pack_remote_repository` — Pack a GitHub repo
 
@@ -58,7 +61,7 @@ Returns: `outputId`, `totalFiles`, `totalTokens`, `directoryStructure`. [0-cite-
   "includePatterns": "packages/opencode/src/**",
   "ignorePatterns": "**/*.test.*"
 }
-``` [0-cite-4](#0-cite-4) 
+``` 
 
 ### 2.3 `grep_repomix_output` — Regex search inside packed output
 
@@ -72,7 +75,7 @@ Returns: `outputId`, `totalFiles`, `totalTokens`, `directoryStructure`. [0-cite-
   "ignoreCase": true
 }
 ```
-Returns: `matches[]` with `lineNumber`, `line`, `matchedText`, plus `formattedOutput[]`. [0-cite-5](#0-cite-5) 
+Returns: `matches[]` with `lineNumber`, `line`, `matchedText`, plus `formattedOutput[]`. 
 
 ### 2.4 `read_repomix_output` — Read packed output (partial)
 
@@ -82,7 +85,7 @@ Returns: `matches[]` with `lineNumber`, `line`, `matchedText`, plus `formattedOu
   "startLine": 500,
   "endLine": 800
 }
-``` [0-cite-6](#0-cite-6) 
+``` 
 
 ### 2.5 `generate_skill` — Create Claude Agent Skills
 
@@ -94,7 +97,7 @@ Returns: `matches[]` with `lineNumber`, `line`, `matchedText`, plus `formattedOu
   "includePatterns": "src/**/*.ts"
 }
 ```
-Produces `.claude/skills/<name>/` with `SKILL.md`, `references/summary.md`, `project-structure.md`, `files.md`, `tech-stacks.md`. [0-cite-7](#0-cite-7) 
+Produces `.claude/skills/<name>/` with `SKILL.md`, `references/summary.md`, `project-structure.md`, `files.md`, `tech-stacks.md`. 
 
 ### 2.6 `attach_packed_output` — Re-use existing packed XML
 
@@ -112,7 +115,7 @@ Produces `.claude/skills/<name>/` with `SKILL.md`, `references/summary.md`, `pro
 
 ```jsonc
 { "path": "/abs/path/to/hivemind-plugin/src" }
-``` [0-cite-8](#0-cite-8) 
+``` 
 
 ---
 
@@ -147,7 +150,7 @@ repomix --split-output 20mb
 
 # Pipe to stdout for chaining
 repomix --stdout | llm "Analyze this codebase"
-``` [0-cite-9](#0-cite-9) 
+``` 
 
 ### 3.2 Git-Aware Features
 
@@ -160,7 +163,7 @@ repomix --include-logs --include-logs-count 100
 
 # Sort files by change frequency (default: on)
 repomix --no-git-sort-by-changes   # disable
-``` [0-cite-10](#0-cite-10) 
+``` 
 
 ### 3.3 Analysis-Only (No File Content)
 
@@ -170,7 +173,7 @@ repomix --no-files
 
 # Token count tree — identify heavy files
 repomix --token-count-tree 100   # show files with ≥100 tokens
-``` [0-cite-11](#0-cite-11) 
+``` 
 
 ### 3.4 Remote Repos
 
@@ -181,7 +184,7 @@ repomix --remote https://github.com/shynlee04/oh-my-openagent/tree/dev
 
 # With specific branch
 repomix --remote shynlee04/hivemind-plugin --remote-branch v2.9.5-detox-dev
-``` [0-cite-12](#0-cite-12) 
+``` 
 
 ### 3.5 Skill Generation (CLI)
 
@@ -194,7 +197,7 @@ repomix --skill-generate "hivemind-core-reference"
 
 # Custom output dir + force overwrite
 repomix --skill-generate "openagent-mcp" --skill-output ./skills/ -f
-``` [0-cite-13](#0-cite-13) 
+``` 
 
 ---
 
@@ -248,7 +251,7 @@ Place in project root. CLI flags override config values.
     "encoding": "o200k_base"         // o200k_base | cl100k_base | etc.
   }
 }
-``` [0-cite-14](#0-cite-14) [0-cite-15](#0-cite-15) 
+``` 
 
 ---
 
@@ -262,10 +265,6 @@ Place in project root. CLI flags override config values.
 | `oh-my-openagent` | `src/{agents,mcp,plugin,tools,hooks,features,config,...}` | TS |
 | `opencode` | `packages/{opencode,sdk,plugin,app,ui,console,...}` | TS |
 | `repomix` | `src/{cli,config,core,mcp,shared}` | TS |
-
-
-
-
 
 ### 5.1 Strategy: Layered Packing for Cross-Repo Analysis
 
@@ -358,7 +357,7 @@ flowchart TD
   "compress": false }
 ```
 
-Skills land in `.claude/skills/<name>/` with `SKILL.md` + `references/` containing `summary.md`, `project-structure.md`, `files.md`, and `tech-stacks.md`. [0-cite-16](#0-cite-16) 
+Skills land in `.claude/skills/<name>/` with `SKILL.md` + `references/` containing `summary.md`, `project-structure.md`, `files.md`, and `tech-stacks.md`. 
 
 ---
 
@@ -402,7 +401,7 @@ The key insight: **use repomix for holistic snapshots, use local tools for surgi
 | `--remove-empty-lines` | 5-15% reduction | Maximize content density |
 | `--split-output 2mb` | Splits into chunks | Repos exceeding context window |
 | `grep_repomix_output` | Read only matches | Incremental exploration (preferred) |
-| `read_repomix_output` with line range | Read only slice | Targeted deep-dive | [0-cite-17](#0-cite-17) 
+| `read_repomix_output` with line range | Read only slice | Targeted deep-dive | 
 
 ---
 
@@ -447,7 +446,7 @@ From highest to lowest:
 2. `.repomixignore` > `.ignore` > `.gitignore` (deeper dirs win)
 3. Default patterns (node_modules, .git, dist, build, etc.)
 
-Use `.repomixignore` in each project root for repo-specific exclusions that persist across runs. [0-cite-18](#0-cite-18) 
+Use `.repomixignore` in each project root for repo-specific exclusions that persist across runs. 
 
 ---
 
