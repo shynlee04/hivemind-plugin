@@ -1,9 +1,9 @@
 ---
 name: "hivefiver-orchestrator"
-description: "Meta-builder orchestrator for HiveMind. Routes meta-concept requests (skills, agents, commands, tools) to specialist subagents via the Task tool, manages delegation cycles, and maintains quality gates. Spawned by /hf-create, /hf-audit, /hf-stack, /hf-prompt-enhance commands."
+description: "Meta-builder orchestrator for HiveMind. Routes meta-concept requests (skills, agents, commands, tools) to specialist subagents via the Task tool, manages delegation cycles, and maintains quality gates. Root meta-agent is `hivefiver`. Spawned by /hf-create, /hf-audit, /hf-stack, /hf-prompt-enhance commands."
 mode: primary
 temperature: 0.2
-instruction: [.opencode/rules/*.md]
+instructions: [.opencode/rules/*.md]
 permission:
   read: allow
   edit: allow

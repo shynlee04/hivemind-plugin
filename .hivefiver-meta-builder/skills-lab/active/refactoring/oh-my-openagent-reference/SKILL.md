@@ -1,6 +1,15 @@
 ---
 name: oh-my-openagent-reference
-description: Complete oh-my-openagent repo packed for harness architecture reference. Contains plugin system, agent definitions, hook system, background task manager, circuit breaker, concurrency manager, category routing, tool restrictions, session continuity, skill loader, and dynamic prompt builder.
+description: Use when referencing oh-my-openagent architecture for harness design patterns. Triggers on: "oh-my-openagent reference", "OMO architecture", "plugin system design", "hook system patterns", "circuit breaker design", "session continuity patterns", "skill loader architecture", "compare harness to OMO". Provides complete oh-my-openagent repo as packed reference.
+metadata:
+  layer: "3"
+  role: "reference"
+  pattern: P2
+  version: "1.0.0"
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
 ---
 
 # Oh My Openagent Reference

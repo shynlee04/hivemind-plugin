@@ -1,6 +1,17 @@
 ---
 name: repomix-exploration-guide
-description: Repomix deep investigation and cross-dependency research cheat sheet. CLI commands, MCP tools, skill generation, token budget management, cross-repo analysis workflows.
+description: Use when performing deep codebase investigation with Repomix. Triggers on: "repomix deep dive", "cross-dependency research", "token budget management", "cross-repo analysis", "repomix MCP usage", "compressed codebase exploration", "investigate multiple repos". CLI commands, MCP tools, skill generation, and token budget management for Repomix-based exploration.
+metadata:
+  layer: "3"
+  role: "reference"
+  pattern: P3
+  version: "1.0.0"
+allowed-tools:
+  - Read
+  - Write
+  - Bash
+  - Glob
+  - Grep
 ---
 
 # Repomix Deep Investigation & Cross-Dependency Research Cheat Sheet

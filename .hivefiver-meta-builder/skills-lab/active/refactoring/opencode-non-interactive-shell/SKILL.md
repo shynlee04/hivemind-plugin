@@ -1,6 +1,14 @@
 ---
 name: opencode-non-interactive-shell
-description: Shell non-interactive strategy for OpenCode. Banned commands, non-interactive flags, environment variables, cognitive optimization patterns for headless agent execution.
+description: Use when writing shell commands for OpenCode agents. Triggers on: "non-interactive shell", "CI=true safety", "banned shell commands", "shell environment variables", "headless agent execution", "shell command safety", "avoid interactive prompts". Covers banned commands, non-interactive flags, environment variables, and cognitive optimization patterns.
+metadata:
+  layer: "3"
+  role: "reference"
+  pattern: P3
+  version: "1.0.0"
+allowed-tools:
+  - Read
+  - Bash
 ---
 
 # Shell Non-Interactive Strategy (Global)

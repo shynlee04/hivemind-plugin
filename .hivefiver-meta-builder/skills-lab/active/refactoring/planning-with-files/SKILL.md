@@ -12,6 +12,15 @@ description: >
 metadata:
   layer: "2"
   role: "persistent-memory"
+  pattern: P3
+  version: "1.0.0"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
 ---
 
 # Planning with Files

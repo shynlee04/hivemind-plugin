@@ -4,7 +4,16 @@ description: Use when creating, editing, auditing, or combining agent skills, co
 metadata:
   layer: "0"
   role: "router"
+  pattern: P1
   version: "3.0.0"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
+  - Task
 ---
 
 # meta-builder
@@ -35,6 +44,17 @@ Max 3 skills per stack. If you can't explain why each skill is needed, don't loa
 | "I'll just edit the skill file directly" | Created skill that doesn't trigger | Delegate to skill-authoring. Always. |
 
 ## Routing Table
+
+| User Intent | Route To | Specialist Agent |
+|-------------|----------|-----------------|
+| "create a skill" | `use-authoring-skills` | `hivefiver-skill-author` |
+| "audit this skill" | `use-authoring-skills` | `hivefiver-skill-author` |
+| "create an agent" | `agents-and-subagents-dev` | `hivefiver-agent-builder` |
+| "set up a command" | `command-dev` | `hivefiver-command-builder` |
+| "build a custom tool" | `custom-tools-dev` | `hivefiver-tool-builder` |
+| "synthesize meta-concepts" | `meta-builder` + references | `meta-synthesis-agent` |
+| "stack skills" | `meta-builder` + target skills | self (orchestrate) |
+| "configure OpenCode" | `opencode-platform-reference` | self (research + report) |
 
 | User Says | Route To |
 |-----------|----------|
@@ -84,7 +104,8 @@ For loading order details, load `references/04-skills-chaining.md`.
 
 | File | When to Read |
 |------|-------------|
+| `references/01-mindsnetwork-graph.md` | MindsNetwork graph structure and node relationships |
+| `references/02-deterministic-control.md` | Deterministic control flow patterns |
+| `references/03-long-horizon-persistence.md` | Long-horizon state persistence strategies |
 | `references/04-skills-chaining.md` | Multi-skill stacks, loading order, composition |
 | `references/05-hivefiver-agent.md` | Hivefiver orchestrator agent definition |
-
-**Removed:** 01-mindsnetwork-graph.md, 02-deterministic-control.md, 03-long-horizon-persistence.md — these referenced the deleted graph structure and have been deleted.

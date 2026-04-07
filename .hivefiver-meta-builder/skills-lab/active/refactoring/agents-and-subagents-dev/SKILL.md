@@ -1,6 +1,18 @@
 ---
 name: agents-and-subagents-dev
 description: This skill should be used when the user asks to "create an agent", "add an agent", "define agent permissions", "set up subagent delegation", "configure agent temperature", "create agent definition", mentions agent: in command context, subtask: flag, delegation patterns, worktree isolation, fork sessions, parallel tasks, or needs guidance on OpenCode agent architecture and subagent dispatch protocols.
+metadata:
+  layer: "2"
+  role: "domain-execution"
+  pattern: P2
+  version: "1.0.0"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
 ---
 
 # agents-and-subagents-dev

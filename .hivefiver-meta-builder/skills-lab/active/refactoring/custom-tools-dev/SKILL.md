@@ -1,6 +1,18 @@
 ---
 name: custom-tools-dev
 description: This skill should be used when the user asks to "create a custom tool", "build an OpenCode plugin", "write a tool with Zod schema", "add a plugin hook", "create CLI script", "build a tool for agent", mentions tool() helper, Zod validation, plugin lifecycle, hooks (PreToolUse, PostToolUse), bin/ scripts, or needs guidance on OpenCode plugin SDK and custom tool architecture.
+metadata:
+  layer: "2"
+  role: "domain-execution"
+  pattern: P2
+  version: "1.0.0"
+allowed-tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Glob
+  - Grep
 ---
 
 # custom-tools-dev

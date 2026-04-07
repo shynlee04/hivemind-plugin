@@ -1,6 +1,15 @@
 ---
 name: opencode-platform-reference
-description: Complete OpenCode platform documentation and source code. Covers agents, plugins, custom tools, SDK, permissions, skills, commands, configs, MCP servers, rules, models, and full source code. Essential for building OpenCode harness architecture.
+description: Use when needing OpenCode platform capabilities — agents, plugins, tools, SDK, permissions, skills, commands, configs, MCP servers, rules, or models. Triggers on: "OpenCode agents", "OpenCode SDK", "plugin hooks", "tool definitions", "permission model", "MCP server config", "OpenCode architecture". Essential reference for building harness systems.
+metadata:
+  layer: "3"
+  role: "reference"
+  pattern: P2
+  version: "1.0.0"
+allowed-tools:
+  - Read
+  - Grep
+  - Glob
 ---
 
 # OpenCode Platform Reference
