@@ -76,6 +76,86 @@ From session evidence, agents fail when they can't control isolation:
 
 For worktree commands and patterns, load `references/worktree-control.md`.
 
+## OpenCode Agent Configuration
+
+Every agent definition is a `.md` file with YAML frontmatter. The frontmatter controls how OpenCode routes, displays, and executes the agent.
+
+### Required Frontmatter Fields
+
+```yaml
+---
+name: kebab-case-agent-name          # REQUIRED — matches filename
+description: "One-line role description with trigger context"  # REQUIRED
+mode: "all"                          # REQUIRED — "all" = can be main AND subagent
+tools: Read, Write, Edit, Bash, Grep, Glob, Task  # REQUIRED — comma-separated
+color: "#hex or name"                # REQUIRED — visual identifier in UI
+---
+```
+
+### Optional Frontmatter Fields
+
+```yaml
+hidden: true                         # Hides agent from user Tab-key selection surface
+temperature: 0.2                     # 0.0-1.0. Lower = deterministic, higher = creative
+```
+
+### Mode: "all" — Dual-Role Agents
+
+Setting `mode: "all"` means the agent can operate as BOTH:
+- **Main agent** — user selects it directly via Tab key
+- **Subagent** — dispatched by another agent via `Task` tool
+
+Agents with `mode: "all"` can also delegate further downstream. A researcher agent can spawn a builder subagent, which can spawn a critic subagent.
+
+**When to use `mode: "all"`:** Specialist agents that serve multiple roles (researcher, builder, critic, explore). These are the workhorses of delegation chains.
+
+**When NOT to use `mode: "all"`:** Narrow-scope agents that should only run as subagents (e.g., a validator that only runs after build tasks).
+
+### Hidden: true — Removing From User Selection
+
+Setting `hidden: true` removes the agent from the user's Tab-key selection surface. The agent still exists and can be dispatched by other agents — users just can't select it directly.
+
+**When to use `hidden: true`:**
+- Internal utility agents (validators, formatters, checkers)
+- Agents that only make sense as part of a delegation chain
+- Agents that would confuse users if exposed directly
+
+**When NOT to use `hidden: true`:**
+- Primary agents users interact with (orchestrator, coordinator, conductor)
+- Agents that solve common user requests directly
+
+### Subtask: True/False — Command-Level Delegation
+
+Commands control agent dispatch via the `subtask:` field in command frontmatter:
+
+```yaml
+agent: gsd-executor     # Which agent handles this command
+subtask: true           # Spawn as subagent (isolated session)
+```
+
+| Value | Behavior |
+|-------|----------|
+| `subtask: true` | Spawns the agent as a subagent in an isolated session. Returns results when done. |
+| `subtask: false` | Switches the main session to the targeted agent. Agent takes over the conversation. |
+| (omitted) | Command runs inline without agent switching. |
+
+**Use `subtask: true`** for discrete tasks with clear completion (research, code generation, audits).
+
+**Use `subtask: false`** when the user needs to continue working with the agent interactively (orchestration, planning, debugging).
+
+### Session ID Tracking (ses_idxxxxx)
+
+When agents delegate and the delegation fails, they sometimes create new sessions instead of resuming. To track and resume delegated sessions:
+
+1. Search for `ses_` patterns in the session state directory:
+   ```bash
+   grep -r "ses_" .opencode/state/ 2>/dev/null
+   ```
+2. Session IDs follow the pattern `ses_xxxxxxxx` (8 hex characters).
+3. Use the session ID to resume the delegated session and continue work.
+
+**Why this matters:** Long delegation chains can lose context if intermediate sessions fail. Session ID tracking lets you pick up where the delegation left off instead of starting over.
+
 ## Validation Gate
 
 Before an agent definition or delegation pattern is done:
