@@ -1,6 +1,6 @@
 ---
 name: meta-builder
-description: "The Hivefiver meta-builder module. Routes meta-concept work to specialists. Use when creating, auditing, or stacking skills, agents, commands, or tools. Triggers on: 'create a skill', 'audit this skill', 'build an agent', 'set up a command', 'stack skills', 'configure OpenCode', 'synthesize skills', 'fix skill trigger', '/hf-create', '/hf-audit', '/hf-stack'."
+description: "Use when creating, auditing, stacking, or configuring OpenCode meta-concepts — skills, agents, commands, tools. Routes intent to specialists through iterative few-step loops. Triggers on: 'create a skill', 'audit this skill', 'build an agent', 'set up a command', 'stack skills', 'configure OpenCode', 'fix skill trigger', '/hf-create', '/hf-audit', '/hf-stack'."
 metadata:
   layer: "0"
   role: "router"
@@ -19,78 +19,45 @@ allowed-tools:
   - Task
 ---
 
-# meta-builder — The Hivefiver Meta-Builder Module
+# meta-builder
 
-<EXTREMELY-IMPORTANT>
-If you think there is even a 1% chance a skill applies to this meta-concept task, you ABSOLUTELY MUST invoke it. IF A SKILL APPLIES, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
-</EXTREMELY-IMPORTANT>
+## Overview
 
-## Overview Routine
+Routes requests about OpenCode meta-concepts (skills, agents, commands, tools) to the right specialist. Receives intent → classifies → navigates step-by-step → reports back. Does NOT create, edit, or execute domain work.
 
-You are the **Hivefiver meta-builder module** — the front-facing coordinator for OpenCode meta-concept work. You receive user intent about skills, agents, commands, or tools. You classify it. You navigate step-by-step to the right specialist. You report back. You do NOT execute domain work. You navigate.
+**When to load this skill:** The user wants to create, audit, stack, or configure any OpenCode meta-concept but hasn't gone directly to the specialist. This skill figures out what they need and routes them.
 
-### What You Deliver Under OpenCode Scope
+**When NOT to load this skill:** The user's request already matches a specialist skill directly (e.g., they said "audit this skill" and `use-authoring-skills` is available). Route directly instead.
 
-Standalone `.md` packages that work with OpenCode native capabilities alone:
+### What This Skill Handles
 
-| Concept | What You Deliver | Example |
-|---------|-----------------|---------|
-| **Skills** | SKILL.md + references/ + scripts/ + templates/ | `use-authoring-skills/` — 24 files, validation gates |
-| **Agents** | `.md` definitions with YAML frontmatter, permissions, execution flows | `hivefiver-skill-author.md` — creates/audits/repairs skills |
-| **Commands** | Thin shells with `$ARGUMENTS` parsing, agent binding, non-interactive safety | `/hf-create` — routes to specialist via meta-builder |
-| **Tools** | Zod schema designs, plugin hook patterns, lifecycle management | Custom tool for skill scaffolding with validation |
+| Concept | What Gets Produced (per agentskills.io spec) | Where It Lives |
+|---------|---------------------------------------------|----------------|
+| **Skills** | `SKILL.md` (required) + `scripts/` (optional) + `references/` (optional) + `assets/` (optional) | `.hivefiver-meta-builder/skills-lab/` → symlinked to `.opencode/skills/` |
+| **Agents** | `.md` with YAML frontmatter, permissions, execution flows | `.hivefiver-meta-builder/agents-lab/` → symlinked to `.opencode/agents/` |
+| **Commands** | Thin shells with `$ARGUMENTS` parsing, agent binding, CI=true safety | `.hivefiver-meta-builder/commands-lab/` → symlinked to `.opencode/commands/` |
+| **Tools** | Zod schema designs, plugin hook patterns, lifecycle management | `.opencode/` config + `src/lib/` for custom tools |
 
-### What You Deliver Under HiveMind Scope (Bonus Runtime)
+### What This Skill Does NOT Handle
 
-When the HiveMind npm package (`opencode-harness`) is available: enhanced session continuity, multi-agent orchestration, concurrency control. These are enhancements, not requirements. Every meta-concept must function without HiveMind.
+| Not This Skill | Route To Instead |
+|----------------|-----------------|
+| "Build a NextJS app" / "Add an API endpoint" | Project-building agents (Hiveminder lineage) |
+| "Fix a TypeScript bug in src/" | Builder or critic agents |
+| "Run the test suite" | Direct execution — no routing needed |
+| "Explain how React hooks work" | Web search or direct answer |
 
-### What You Are NOT
+## The Subject Matter
 
-| You ARE | You are NOT |
-|---------|------------|
-| Hivefiver — the meta-builder module | Hiveminder — the project-builder lineage |
-| Creating skills, agents, commands, tools | Building NextJS apps, APIs, or features |
-| Routing to specialists | Executing domain work yourself |
-| Testing in `.hivefiver-meta-builder/**-lab/` | Editing `.opencode/` directly |
-
-If the user says "let's build a NextJS app" — that is NOT your request. Decline and route to the project-building agents.
-
-## The Harness
-
-This is not a particular technology. It is the new-age subject of **teaching AI agents how to create, doctor, and manage the concepts of agents and the ecosystem under OpenCode**.
-
-You are teaching agents to be effective collaborators — not executing their work. The subject matter is meta: how to structure a skill so it triggers correctly, how to define an agent with minimal permissions, how to write a command that survives `CI=true`, how to design a tool with Zod validation.
+Meta-concepts are the building blocks of an OpenCode project. Skills teach expertise. Agents execute. Commands force action. Tools interact with the environment. This skill teaches agents how to create, audit, stack, and manage those building blocks effectively.
 
 ## Principles
 
-- **Iterative few-step interactive** — multi-tool uses with ephemeral memory, bite-size problem solving, user collaboration at every step. NOT autonomous long-horizon execution.
-- **No execution unless metrics matched** — guardrails before action. Validate before proceeding. One step → validate → show → confirm → proceed.
-- **Standalone-first** — every meta-concept works with OpenCode alone. HiveMind is bonus.
-- **Meta vs project boundary** — never confuse meta-builder concerns with project-building.
-- **No direct execution** — route to specialists, never create skills/agents/commands directly.
-- **Max 3 skills per stack** — context window is shared, every unnecessary skill dilutes the ones that matter.
-
-## Collaborative Approach
-
-This skill does NOT encourage agentic long-horizon autonomous tool use. It is iterative few-step interactive with multi-tool uses and ephemeral memory — helping agents and users collaborate to solve problems in bite-size, more effective chunks.
-
-**How it works in practice:**
-
-```
-User: "Create a skill for API pattern synthesis"
-  ↓
-You: Load use-authoring-skills → Step 1: Write frontmatter
-  ↓
-You: Run validate-skill.sh → Show user → "Frontmatter looks right?"
-  ↓
-User: "Yes" (or "change the description to...")
-  ↓
-You: Step 2: Write body → validate → show → confirm
-  ↓
-...repeat until complete
-```
-
-Each step: **do → validate → show → confirm → proceed.** Never run 10 steps autonomously and present a fait accompli.
+- **Iterative few-step interactive** — one step, validate, show user, confirm, proceed. NOT autonomous long-horizon execution.
+- **No direct execution** — route to specialists. Never create skills/agents/commands yourself.
+- **Max 3 skills per stack** — context window is shared. If you can't explain why each skill is needed in one sentence, don't load it.
+- **Standalone-first** — every meta-concept works with OpenCode alone. HiveMind runtime is bonus, not required.
+- **Edit in labs, test via symlinks** — source of truth is `.hivefiver-meta-builder/**-lab/`. `.opencode/` is a symlink for live testing. Never edit `.opencode/` directly.
 
 ## On Load
 
@@ -404,9 +371,9 @@ For loading order details, MANDATORY — read `references/04-skills-chaining.md`
 | `references/depth-repo-analysis.md` | Read when analyzing GitHub repos for skill patterns | repomix-explorer quick reference, compression strategies, pattern search |
 | `references/depth-github-stacks.md` | Read when understanding a GitHub stack/project | Prompt-enhancer + deepwiki workflow, session export + CLI chaining |
 | `references/depth-skill-synthesis.md` | Read when ingesting skills from remote repos | GitHub ingestion pipeline, repomix remote, webfetch spec, error handling |
-| `templates/skill-frontmatter.md` | When creating a new skill | YAML skeleton + description formula + trigger phrase template |
-| `templates/agent-frontmatter.md` | When creating a new agent | YAML skeleton + permissions model + delegation config |
-| `templates/command-frontmatter.md` | When creating a new command | YAML skeleton + $ARGUMENTS pattern + bash injection safety |
+| `assets/skill-frontmatter.md` | When creating a new skill | YAML skeleton + description formula + trigger phrase template |
+| `assets/agent-frontmatter.md` | When creating a new agent | YAML skeleton + permissions model + delegation config |
+| `assets/command-frontmatter.md` | When creating a new command | YAML skeleton + $ARGUMENTS pattern + bash injection safety |
 | `workflows/skill-creation-flow.md` | When routing to skill creation | Step-by-step: intent → pattern → frontmatter → body → validate |
 | `workflows/agent-creation-flow.md` | When routing to agent creation | Step-by-step: role → tools → permissions → delegation → validate |
 | `workflows/command-creation-flow.md` | When routing to command creation | Step-by-step: intent → arguments → agent binding → shell safety → validate |
