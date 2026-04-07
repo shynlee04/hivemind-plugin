@@ -1,22 +1,11 @@
 ---
 name: meta-builder
-description: >
-  Use when creating, editing, auditing, or combining agent skills, commands,
-  tools, or platform configurations. Routes user intent to specialist skills
-  through step-by-step navigation. Triggers on "create a skill", "build an
-  agent", "build me a skill like this @file", "configure OpenCode", "stack
-  skills", "synthesize skills", "create skills from GitHub repos", "audit
-  skill", "fix skill trigger", "my skill doesn't load", "help me figure out",
-  "I'm not sure what I need", "convert this to a skill", "migrate this command",
-  "customize my meta concepts", "fix my agents, commands, and skills".
+description: Use when creating, editing, auditing, or combining agent skills, commands, tools, or platform configurations. Routes user intent to specialist skills. Triggers on "create a skill", "build an agent", "configure OpenCode", "stack skills", "synthesize skills", "create skills from GitHub repos", "audit skill", "fix skill trigger".
 metadata:
   layer: "0"
   role: "router"
   pattern: Navigation
-  version: "3.2.0"
-  lineage: "meta-builder"
-  hierarchy: "coordinator"
-  orientation: "how-to-process"
+  version: "3.1.0"
 allowed-tools:
   - Read
   - Write
@@ -29,54 +18,13 @@ allowed-tools:
 
 # meta-builder
 
-Routes meta-concept requests to the right specialist skill through step-by-step navigation. This skill navigates — it does not execute domain work. If you catch yourself editing skill files directly, STOP and delegate to `use-authoring-skills`.
+Routes meta-concept requests to the right specialist skill. This skill routes — it does not execute domain work. If you catch yourself editing skill files directly, STOP and delegate to `use-authoring-skills`.
 
 ## On Load
 
-1. **If user provided @file:** READ it first. Extract patterns, structure, intent. THEN classify.
-2. **Load background skill** relevant to the routing decision (e.g. `opencode-platform-reference` for agent/command/tool questions).
-3. **Read planning files if they exist:** `task_plan.md`, `findings.md`, `progress.md`.
-4. For skill stacking (max 3 per stack), MANDATORY — READ `references/04-skills-chaining.md` for loading order and composition rules.
-
-## Navigation Protocol — Multi-Step, Not One-Hop
-
-```
-INGEST → CLASSIFY → ROUTE → MONITOR → REPORT
-```
-
-### Step 1: INGEST — Read What the User Provided
-
-- If @file referenced: READ it. Extract: what meta-concept type, what patterns, what's missing.
-- If wall of text: SKIM. Count entities, identify structure. Do NOT read everything.
-- If folder dump: LIST files. Identify types (SKILL.md, agent .md, command .md).
-- If no file: Ask what they're working with.
-
-### Step 2: CLASSIFY — Match to Routing Table
-
-Classify the request. If ambiguous, the routing is to `user-intent-interactive-loop` for clarification.
-
-### Step 3: ROUTE — Dispatch to Specialist
-
-Build full context packet: user intent + file content (if any) + constraints.
-Delegate to specialist with complete context. Never pass "read the file yourself."
-
-### Step 4: MONITOR — Track Progress
-
-After delegation: check status (DONE/DONE_WITH_CONCERNS/NEEDS_CONTEXT/BLOCKED).
-If specialist fails: read the error, identify what went wrong, either fix and retry or take over.
-
-### Step 5: REPORT — What Was Done, What's Next
-
-Summarize: what was accomplished, what's next, any blockers.
-Commit atomically: each completed step gets its own git commit.
-
-### Standalone Fallback — When Specialist Skills Don't Exist
-
-If the target specialist skill is not available:
-1. Read the specialist's reference files directly from the lab directory
-2. Follow the procedures in those references
-3. Report findings to the user
-4. Do NOT block. Do NOT error. Navigate with what you have.
+1. **Load background skill** relevant to the routing decision (e.g. `opencode-platform-reference` for agent/command/tool questions).
+2. **Read planning files if they exist:** `task_plan.md`, `findings.md`, `progress.md`.
+3. For skill stacking (max 3 per stack), MANDATORY — READ `references/04-skills-chaining.md` for loading order and composition rules.
 
 ## The Iron Law
 
