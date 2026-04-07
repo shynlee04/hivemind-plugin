@@ -55,9 +55,9 @@ These files, directories, and concepts are FROZEN. No refactoring, no modificati
 
 | # | Skill | Location | Status | Current Phase | Last Commit | Notes |
 |---|-------|----------|--------|---------------|-------------|-------|
-| 1 | `agents-and-subagents-dev` | `skills-lab/active/refactoring/agents-and-subagents-dev/` | IN_PROGRESS | Phase 1: Inventory | — | 97 LOC. 2 reference dirs (delegation-protocol.md, worktree-control.md — NOT YET VERIFIED EXIST). Frontmatter: metadata layer/role/pattern/version + allowed-tools. Has Iron Law, rationalization table, delegation protocol, status protocol, worktree control, validation gate, anti-patterns. MISSING: OpenCode-specific agent config (mode: "all", hidden: true, subtask:), session ID tracking (ses_idxxxxx), agent frontmatter spec, temperature/model guidance |
-| 2 | `use-authoring-skills` | `skills-lab/active/refactoring/use-authoring-skills/` | NOT_STARTED | — | — | 266 LOC. Full package: references/ (14 files), scripts/ (8 scripts), evals/, hooks/, templates/. Frontmatter: metadata layer/role/pattern/version + allowed-tools. Has Iron Law, hierarchy enforcement, decision tree, agentskills.io principles, validation loop, gate system, worked example, anti-patterns, platform adaptation, scripts table, validation gate. STRONGEST of the 3. May need: trigger phrase density check, eval lifecycle completeness |
-| 3 | `command-dev` | `skills-lab/active/refactoring/command-dev/` | NOT_STARTED | — | — | 80 LOC. 2 reference dirs (non-interactive-shell.md, command-anatomy.md — NOT YET VERIFIED EXIST). Frontmatter: metadata layer/role/pattern/version + allowed-tools. Has Iron Law, rationalization table, on-load instructions, command anatomy, non-interactive shell mandates, anti-patterns. MISSING: GSD-style command patterns (phase parsing, flag precedence, @reference includes), $ARGUMENTS parsing patterns, deterministic execution flow, delegation to workflows |
+| 1 | `agents-and-subagents-dev` | `skills-lab/active/refactoring/agents-and-subagents-dev/` | AUDITED | Ready for Phase 4: Refactor | `0aea1711` | 2 HIGH fixes (ses_id triggers, model guidance), 2 MEDIUM (description triggers, worktree reference thin), 2 LOW. 4/6 RED tests pass, 2 weak, 1 NO trigger |
+| 2 | `use-authoring-skills` | `skills-lab/active/refactoring/use-authoring-skills/` | AUDITED | Ready for Phase 4: Refactor | `0aea1711` | 6/6 RED tests PASS. CRITICAL: hierarchy dependency violates standalone-first. 2 HIGH (TDD unreachable, extreme case testing missing). 2 MEDIUM (orientations missing, thin references) |
+| 3 | `command-dev` | `skills-lab/active/refactoring/command-dev/` | AUDITED | Ready for Phase 4: Refactor | `0aea1711` | 6/6 RED tests trigger but body is DECLARATIVE not PROCEDURAL. 3 HIGH (no workflow, no subtask decision, no GSD patterns). 2 MEDIUM (CI checklist, $ARGUMENTS guidance) |
 
 **Active Pipeline:** `agents-and-subagents-dev` (Phase 1: Inventory)
 **Completed Pipelines:** 0
@@ -116,38 +116,141 @@ Phase 6: Commit + Mark Complete
 
 ---
 
-### 3.1 agents-and-subagents-dev — RED Test Cases (Phase 2 Complete)
+### 3.1 agents-and-subagents-dev — AUDIT COMPLETE (hivefiver-skill-author)
 
-#### 6 Prompts That SHOULD Invoke This Skill
+**Status:** DONE_WITH_CONCERNS
 
-| # | Prompt | Expected Behavior | Current Skill Handles? |
-|---|--------|-------------------|----------------------|
-| 1 | "Create an agent for code review" | Load skill, show agent frontmatter spec, delegation pattern | PARTIAL — knows delegation, missing frontmatter spec |
-| 2 | "Set up subagent delegation for parallel research" | Load skill, show dispatch envelope, worktree isolation | YES — delegation protocol covered |
-| 3 | "Configure agent temperature and model settings" | Load skill, show temperature/model guidance | NO — not mentioned anywhere |
-| 4 | "How does mode: all work for agents?" | Load skill, explain mode: "all" for main+subagent | NO — OpenCode-specific config missing |
-| 5 | "Hide this agent from user selection" | Load skill, explain hidden: true flag | NO — OpenCode-specific config missing |
-| 6 | "Track delegated sessions with ses_id" | Load skill, explain session ID tracking pattern | NO — ses_idxxxxx pattern not covered |
+#### RED Test Results (6 Invoke)
+| # | Prompt | Triggers? | Body Handles? | Failure Mode |
+|---|--------|-----------|---------------|--------------|
+| 1 | "Create an agent for code review" | YES | YES | None — clean pass |
+| 2 | "Set up subagent delegation for parallel research" | YES | YES | None — clean pass |
+| 3 | "Configure agent temperature and model settings" | PARTIAL | PARTIAL | Temperature covered, model guidance MISSING |
+| 4 | "How does mode: all work for agents?" | WEAK | YES | Body has section, description lacks trigger phrase |
+| 5 | "Hide this agent from user selection" | WEAK | YES | Body has section, description lacks trigger phrase |
+| 6 | "Track delegated sessions with ses_id" | NO | YES | PHANTOM — body teaches it, description never advertises it |
 
-#### 4 Prompts That Should NOT Invoke This Skill
+#### Non-Invoke Results (4 Should Not Trigger)
+All 4 correctly ignored. No false positives.
 
-| # | Prompt | Why Not | Current Skill Would Misfire? |
-|---|--------|---------|---------------------------|
-| 1 | "Create a skill for TDD workflows" | This is skill authoring, not agent creation | NO — description is specific enough |
-| 2 | "Write a command that parses arguments" | This is command development, not agent definition | NO — description is specific enough |
-| 3 | "Build a NextJS app" | This is project building, not meta-concept | NO — clearly out of scope |
-| 4 | "Fix this TypeScript bug" | This is implementation, not agent architecture | NO — clearly out of scope |
+#### Reference File Check
+- `delegation-protocol.md`: EXISTS + REAL CONTENT (115 lines) ✅
+- `worktree-control.md`: EXISTS + THIN (71 lines, below 100-line minimum) ⚠️
 
-#### Gap Analysis (Phase 3)
+#### GENERAL-KNOWLEDGE.md Compliance
+| Requirement | Status | Gap |
+|-------------|--------|-----|
+| mode: "all" | ✅ YES | Dedicated section |
+| hidden: true | ✅ YES | Dedicated section |
+| subtask: true/false | ✅ YES | Table with behavior |
+| ses_idxxxxx tracking | ⚠️ PARTIAL | Body has it, description lacks trigger. Missing glob/resume workflow |
+| temperature/model | ⚠️ PARTIAL | Temperature only. Model guidance completely absent |
+| agent frontmatter spec | ✅ YES | Required + optional fields |
 
-| Gap | Priority | Fix Required |
-|-----|----------|-------------|
-| No OpenCode agent frontmatter spec (mode, hidden, subtask, color, tools) | HIGH | Add section with OpenCode-specific agent config |
-| No session ID tracking (ses_idxxxxx pattern) | HIGH | Add section on session resume for delegated agents |
-| No temperature/model guidance | MEDIUM | Add section on model selection per agent tier |
-| No taxonomy classification (2×2×2) | LOW | Add where this skill sits in the matrix |
-| Reference files exist but not verified for OpenCode compatibility | MEDIUM | Verify delegation-protocol.md and worktree-control.md reference OpenCode patterns, not Claude Code |
-| No agent profile structure examples | MEDIUM | Add worked example of a complete agent definition |
+#### Priority Fixes
+1. **[HIGH]** Add ses_id/session tracking trigger phrases to description
+2. **[HIGH]** Add model guidance section (which models for which agent types)
+3. **[MEDIUM]** Strengthen description: "mode: all", "hide agent", "hidden"
+4. **[MEDIUM]** Enrich worktree-control.md (71→100+ lines)
+5. **[LOW]** Add subtask to description triggers
+
+---
+
+### 3.2 use-authoring-skills — AUDIT COMPLETE (hivefiver-skill-author)
+
+**Status:** DONE_WITH_CONCERNS
+
+#### RED Test Results (6 Invoke)
+| # | Prompt | Triggers? | Body Handles? | Failure Mode |
+|---|--------|-----------|---------------|--------------|
+| 1 | "Write a skill" | YES | YES | None |
+| 2 | "Audit this skill for quality" | YES | YES | None |
+| 3 | "My skill description is too vague, optimize it" | YES | YES | None |
+| 4 | "Convert this markdown doc into a skill" | YES | YES | None |
+| 5 | "Check if my skill overlaps with another" | YES | YES | None |
+| 6 | "Write evals for my skill before shipping" | YES | YES | None |
+
+All 6 RED tests PASS. All 4 non-invoke tests PASS.
+
+#### Reference File Check
+| File | Lines | Status |
+|------|-------|--------|
+| 01-skill-anatomy.md | 87 | ⚠️ BELOW 100-line threshold |
+| 02-frontmatter-standard.md | 121 | ✅ |
+| 03-three-patterns.md | 126 | ✅ |
+| 04-tdd-workflow.md | 149 | ✅ but UNREACHABLE from decision tree |
+| 05-skill-quality-matrix.md | 164 | ✅ |
+| 06-cross-platform-activation.md | 115 | ✅ |
+| 07-iterative-refinement.md | 141 | ✅ |
+| 08-conflict-detection.md | 73 | ⚠️ BELOW 100-line threshold |
+| 09-script-authoring.md | 102 | ✅ |
+| 10-eval-lifecycle.md | 147 | ✅ |
+| 11-description-optimization.md | 133 | ✅ |
+| 12-anti-deception.md | 118 | ✅ |
+
+#### Script Check
+All 8 scripts exist with real validation logic. No stubs.
+
+#### GENERAL-KNOWLEDGE.md Compliance
+| Requirement | Status | Gap |
+|-------------|--------|-----|
+| 2 lineages | ⚠️ PARTIAL | Mentioned as dependency, not taught as classification |
+| 2 hierarchies | ⚠️ PARTIAL | References critic subagent but doesn't teach hierarchy |
+| 2 orientations | ❌ MISSING | Not addressed anywhere |
+| agentskills.io principles | ✅ YES | All 6 principles listed |
+| TDD workflow | ⚠️ PARTIAL | Reference exists but UNREACHABLE from decision tree |
+| Extreme case testing | ❌ MISSING | Zero coverage |
+
+#### CRITICAL: Standalone-First Violation
+Lines 43-62 enforce `meta-builder` must exist and route here first. `verify-hierarchy.sh` blocks if meta-builder not loaded. This violates Iron Law #6.
+
+#### Priority Fixes
+1. **[CRITICAL]** Remove hierarchy dependency on meta-builder (violates standalone-first)
+2. **[HIGH]** Add TDD workflow to decision tree (04-tdd-workflow.md unreachable)
+3. **[HIGH]** Add extreme case testing methodology
+4. **[MEDIUM]** Add 2 orientations to decision tree
+5. **[MEDIUM]** Expand thin reference files (01: 87 lines, 08: 73 lines)
+6. **[LOW]** Add lineage classification guidance
+
+---
+
+### 3.3 command-dev — AUDIT COMPLETE (hivefiver-skill-author)
+
+**Status:** DONE_WITH_CONCERNS
+
+#### RED Test Results (6 Invoke)
+| # | Prompt | Triggers? | Body Handles? | Failure Mode |
+|---|--------|-----------|---------------|--------------|
+| 1 | "Create a command" | YES | PARTIAL | DECLARER — says "MUST have" but no procedural steps |
+| 2 | "Add a command with arguments" | YES | PARTIAL | POINTER — defers all substance to reference file |
+| 3 | "Write a custom command with bash injection" | YES | PARTIAL | BULLET-POINTER — lists !bash but doesn't teach how |
+| 4 | "Set up a command with $ARGUMENTS parsing" | YES | PARTIAL | POINTER — no procedural glue for argument design |
+| 5 | "Configure command agent with subtask flag" | YES | PARTIAL | DEFINITION — defines subtask but no decision framework |
+| 6 | "Make this command survive CI=true" | YES | YES | Strongest section. Minor: no post-write validation checklist |
+
+All 4 non-invoke tests PASS.
+
+#### Reference File Check
+- `command-anatomy.md`: EXISTS + REAL CONTENT (119 lines) ✅
+- `non-interactive-shell.md`: EXISTS + REAL CONTENT (224 lines) ✅
+
+#### GENERAL-KNOWLEDGE.md Compliance
+| Requirement | Status | Gap |
+|-------------|--------|-----|
+| GSD command patterns | ❌ MISSING | Zero mention of phase parsing, flag precedence |
+| $ARGUMENTS injection | ⚠️ PARTIAL | Reference has examples, SKILL.md body only bullet point |
+| Deterministic execution | ❌ MISSING | No step-by-step creation workflow |
+| subtask: true/false | ⚠️ PARTIAL | Definition but no decision framework |
+| @reference includes | ⚠️ PARTIAL | In reference file, not in SKILL.md body |
+| CI=true mandates | ✅ YES | Well covered |
+
+#### Priority Fixes
+1. **[HIGH]** Add procedural creation workflow (replace declarative with step-by-step)
+2. **[HIGH]** Add subtask decision framework (when true vs false)
+3. **[HIGH]** Add GSD command patterns (phase parsing, flag precedence)
+4. **[MEDIUM]** Add CI=true validation checklist
+5. **[MEDIUM]** Strengthen $ARGUMENTS procedural guidance
+6. **[LOW]** Add @reference usage guidance to SKILL.md body
 
 ---
 
@@ -190,8 +293,10 @@ Phase D5: Integration Validation
 | Date | Skill | Phase | Action | Commit | Status |
 |------|-------|-------|--------|--------|--------|
 | 2026-04-07 | — | — | Master tracker created | — | DONE |
-| 2026-04-07 | agents-and-subagents-dev | Phase 1: Inventory | Full inventory complete. 97 LOC. 2 reference files exist (delegation-protocol.md 4.1K, worktree-control.md 1.9K). Frontmatter: name, description, metadata (layer/role/pattern/version), allowed-tools. Body: Iron Law, rationalization table, On Load, Delegation Protocol, Status Protocol, Worktree Control, Validation Gate, Anti-Patterns. Gaps identified: no OpenCode agent config (mode/hidden/subtask), no session ID tracking, no agent frontmatter spec, no temperature/model guidance, no taxonomy classification | — | DONE |
-| 2026-04-07 | agents-and-subagents-dev | Phase 2: RED Tests | 6 invoke + 4 non-invoke test cases defined (see Section 3.1) | — | DONE |
+| 2026-04-07 | agents-and-subagents-dev | Phase 1-3 | Inventory, RED tests, gap analysis complete | `f8275cfe` | DONE |
+| 2026-04-07 | agents-and-subagents-dev | Phase 4 (partial) | Added OpenCode agent config section (mode, hidden, subtask, ses_id) | `f8275cfe` | DONE |
+| 2026-04-07 | all 3 skills | Full audit | 3 parallel hivefiver-skill-author audits completed. All 3 DONE_WITH_CONCERNS. 6-4 RED tests run per skill. GENERAL-KNOWLEDGE.md compliance checked. Reference files verified. Scripts verified. | `0aea1711` | DONE |
+| 2026-04-07 | — | — | Spec written: meta-builder 5-skill chain design | `0aea1711` | DONE |
 | | | | | | |
 
 *Append new entries as work progresses. Most recent first.*
