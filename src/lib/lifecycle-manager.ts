@@ -11,9 +11,11 @@ import { commitDescendant, forgetSession, hydrateDelegationState, inheritRootFro
 import { acquireLifecycleQueue, enqueueWaitingLifecycle, type QueueSnapshot } from "./lifecycle-queue.js"
 import { observeBackgroundCompletion } from "./lifecycle-background-observer.js"
 import { buildDelegationMeta, buildLifecycleState, extractTextFromResponse, isValidLifecycleTransition, mapPhaseToDelegationPacketStatus, mapStatusToLifecyclePhase } from "./lifecycle-state.js"
+import { resolveConcurrencyForKey } from "./runtime-policy.js"
 import type {
   DelegationRouteResolution,
   PermissionRule,
+  RuntimePolicy,
   SessionContinuityMetadata,
   SessionLifecycleObservation,
   SessionLifecyclePhase,
@@ -42,6 +44,8 @@ type LaunchDelegatedSessionArgs = {
 type HarnessLifecycleManagerOptions = {
   client: OpenCodeClient
   pollTimeoutMs: number
+  /** Workspace-level runtime policy injected from plugin composition root. */
+  runtimePolicy?: RuntimePolicy
 }
 
 function now(): number { return Date.now() }
@@ -54,8 +58,10 @@ export class HarnessLifecycleManager {
   private readonly concurrencyLimit: number
   private readonly queue: DelegationConcurrencyQueue
   private readonly completionDetector = new CompletionDetector()
+  private readonly runtimePolicy: RuntimePolicy | undefined
 
   constructor(private readonly options: HarnessLifecycleManagerOptions) {
+    this.runtimePolicy = options.runtimePolicy
     this.concurrencyLimit = parseInt(process.env.OPENCODE_HARNESS_CONCURRENCY_LIMIT ?? "3", 10)
     if (Number.isNaN(this.concurrencyLimit) || this.concurrencyLimit < 1) {
       this.concurrencyLimit = 3

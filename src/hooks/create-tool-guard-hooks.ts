@@ -17,7 +17,7 @@ import {
 } from "../lib/continuity.js"
 import { evaluateGovernance, type GovernanceEvaluationResult } from "../lib/governance-engine.js"
 import { asString, getNestedValue, isObject, makeToolSignature } from "../lib/helpers.js"
-import { DEFAULT_RUNTIME_POLICY } from "../lib/runtime-policy.js"
+import { DEFAULT_RUNTIME_POLICY, getRuntimePolicyForSession } from "../lib/runtime-policy.js"
 import type { RuntimePolicy } from "../lib/types.js"
 import type { HarnessLifecycleManager } from "../lib/lifecycle-manager.js"
 import type { TaskStateManager } from "../lib/state.js"
@@ -59,10 +59,20 @@ export interface ToolGuardHooks {
  */
 export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHooks {
   const { stateManager, lifecycleManager } = deps
-  const policy = deps.runtimePolicy ?? DEFAULT_RUNTIME_POLICY
-  const maxToolCalls = policy.budget.maxToolCallsPerSession
-  const circuitBreakerThreshold = policy.budget.repeatedSignatureThreshold
+  const workspacePolicy = deps.runtimePolicy ?? DEFAULT_RUNTIME_POLICY
   const recentGovernance = new Map<string, GovernanceEvaluationResult>()
+
+  /**
+   * Resolve the effective runtime policy for a given session.
+   *
+   * Per-session overrides come from trusted continuity/delegation metadata
+   * only (not arbitrary tool args). This prevents silent limit escalation
+   * from untrusted sources (threat T-02-21).
+   */
+  function resolvePolicy(sessionID: string): RuntimePolicy {
+    const delegation = getDelegationMeta(sessionID)
+    return getRuntimePolicyForSession(workspacePolicy, delegation?.runtimePolicyOverride)
+  }
 
   return {
     "tool.execute.before": async (input: BeforeInput, output: BeforeOutput): Promise<void> => {
@@ -93,6 +103,11 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
       if (governance.blocks.length > 0) {
         throw new Error(`[Harness] ${governance.blocks[0]?.message ?? "Tool execution blocked by governance."}`)
       }
+
+      // Resolve per-session policy from trusted delegation metadata
+      const policy = resolvePolicy(sessionID)
+      const maxToolCalls = policy.budget.maxToolCallsPerSession
+      const circuitBreakerThreshold = policy.budget.repeatedSignatureThreshold
 
       const stats = stateManager.ensureStats(sessionID)
       stats.total += 1

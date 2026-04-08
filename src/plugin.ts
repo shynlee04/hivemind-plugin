@@ -17,14 +17,21 @@ import { createPromptSkimTool } from "./tools/prompt-skim/index.js"
 import { createPromptAnalyzeTool } from "./tools/prompt-analyze/index.js"
 import { createSessionPatchTool } from "./tools/session-patch/index.js"
 import { createDelegateTaskTool } from "./tools/delegate-task.js"
+import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 
 const WATCH_TIMEOUT_MS = 180000
 
 export const HarnessControlPlane: Plugin = async ({ client }) => {
+  // Load workspace-level runtime policy once at startup.
+  // Per-session overrides are resolved from trusted delegation metadata
+  // at enforcement time in hooks and lifecycle.
+  const runtimePolicy = loadRuntimePolicy()
+
   const backgroundManager = new BackgroundManager()
   const lifecycleManager = createHarnessLifecycleManager({
     client,
     pollTimeoutMs: WATCH_TIMEOUT_MS,
+    runtimePolicy,
   })
   lifecycleManager.hydrateFromContinuity()
 
@@ -35,7 +42,7 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
   return {
     ...createCoreHooks({ ...deps, eventObservers: [sessionEventObserver] }),
     ...sessionReadHooks,
-    ...createToolGuardHooks({ stateManager: taskState, lifecycleManager }),
+    ...createToolGuardHooks({ stateManager: taskState, lifecycleManager, runtimePolicy }),
     tool: {
       background: createBackgroundTool(backgroundManager, process.cwd()),
       "delegate-task": createDelegateTaskTool(lifecycleManager, client),
