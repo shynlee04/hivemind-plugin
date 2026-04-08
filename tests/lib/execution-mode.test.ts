@@ -103,19 +103,19 @@ describe("resolveBuiltInMode", () => {
   it("resolves to builtin-subsession for interactive tasks", () => {
     const result = resolveBuiltInMode(makeChars({ isInteractive: true }))
     expect(result.submode).toBe("builtin-subsession")
-    expect(result.rationale).toContain("interactive")
+    expect(result.rationale.toLowerCase()).toContain("interactive")
   })
 
   it("resolves to builtin-process for research tasks", () => {
     const result = resolveBuiltInMode(makeChars({ isResearch: true }))
     expect(result.submode).toBe("builtin-process")
-    expect(result.rationale).toContain("research")
+    expect(result.rationale.toLowerCase()).toContain("research")
   })
 
   it("resolves to builtin-process for headless tasks", () => {
     const result = resolveBuiltInMode(makeChars({ isHeadless: true }))
     expect(result.submode).toBe("builtin-process")
-    expect(result.rationale).toContain("headless")
+    expect(result.rationale.toLowerCase()).toContain("headless")
   })
 
   it("defaults to builtin-subsession when no special flags are set", () => {
