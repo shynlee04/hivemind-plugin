@@ -3,13 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-04-08T14:37:12.300Z"
+stopped_at: Completed 02-04-PLAN.md
+last_updated: "2026-04-08T15:28:25.984Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 7
-  completed_plans: 4
-  percent: 57
+  completed_plans: 5
+  percent: 71
 ---
 
 # STATE: Harness Cleanup
@@ -24,15 +25,15 @@ See: `.planning/PROJECT.md` (updated 2026-04-06)
 ## Current Position
 
 Phase: 02 (v3-runtime-architecture) — EXECUTING
-Plan: 4 of 6
+Plan: 5 of 6
 **Phase:** 02 (v3-runtime-architecture) — IN PROGRESS
-**Plan:** 02-04 next (02-03 complete)
-**Status:** Executing Phase 02 recovery plans on `feature/harness-implementation`
-**Progress:** [██████░░░░] 57%
+**Plan:** 02-05 next (02-04 complete)
+**Status:** Executing Phase 02
+**Progress:** [███████░░░] 71%
 
 ```
 Phase 1: Baseline Cleanup ......... ✅ COMPLETE (10/10 items)
-Phase 2: V3 Runtime Architecture .. In progress (3/6 plans complete)
+Phase 2: V3 Runtime Architecture .. In progress (4/6 plans complete)
 Phase 3: Functional Fixes ......... Pending
 Phase 4: Rebuild & Polish ......... Pending
 Phase 5: Verification ............. Pending
@@ -62,6 +63,7 @@ Phase 5: Verification ............. Pending
 | Typecheck | Pass | ✅ |
 | Build | Pass | ✅ |
 | Phase 02-v3-runtime-architecture P03 | 10 min | 2 tasks | 10 files |
+| Phase 02 P04 | 8 min | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -76,6 +78,9 @@ Phase 5: Verification ............. Pending
 - **2026-04-06**: system.transform hook removed — prompt-enhance output contract was gated correctly, wiring became dead code
 - [Phase 02-v3-runtime-architecture]: Keep continuity as the canonical store and emit delegation artifacts only as a derived, policy-controlled export.
 - [Phase 02-v3-runtime-architecture]: Record preset key, fallback usage, and routing rationale so specialist selection stays auditable across continuity and exports.
+- [Phase 02]: Recovery state is assessed from persisted continuity records instead of implicitly restoring live counters during hydration.
+- [Phase 02]: createCoreHooks owns the single active event hook and fans out session observers explicitly.
+- [Phase 02]: Compaction persistence and auto-loop retry dispatch execute through lifecycle methods, not directly inside read-side hooks.
 
 ### Todos
 
@@ -99,7 +104,7 @@ Phase 5: Verification ............. Pending
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19
 
-**Stopped At:** Completed 02-v3-runtime-architecture-03-PLAN.md
+**Stopped At:** Completed 02-04-PLAN.md
 
 **Key files:**
 
@@ -113,4 +118,4 @@ Phase 5: Verification ............. Pending
 
 ---
 *State initialized: 2026-04-06*
-*Last updated: 2026-04-06 after Phase 1 completion verification*
+*Last updated: 2026-04-08 after Phase 02 Plan 04 completion verification*

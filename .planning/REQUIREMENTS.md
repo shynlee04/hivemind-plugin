@@ -116,7 +116,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3a |
 | **Category** | Runtime Architecture |
 | **Priority** | P0 — Foundation for all subsequent runtime features |
-| **Status** | Pending |
+| **Status** | Complete |
 | **Dependencies** | None (Phase 2 kickoff) |
 | **Description** | Agents run in background processes, spawn in new terminal panes, and auto-cleanup on completion. Background agents enable parallel work streams without blocking the primary session. |
 | **Acceptance Criteria** | 1. Background agent spawns in a new pane (tmux or equivalent) without blocking the calling session.<br>2. Agent completes its task and exits cleanly with status code and result captured.<br>3. Auto-cup removes temporary agent state files on completion (success or failure).<br>4. Failed agents write error context to `.hivemind/delegation/` before cleanup.<br>5. Parent session can query background agent status at any time.<br>6. Test: `npm test` includes at least one background agent spawn/complete/cleanup test. |
@@ -200,7 +200,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3h |
 | **Category** | Runtime Architecture |
 | **Priority** | P1 — Prevents resource exhaustion |
-| **Status** | Partially complete — `CIRCUIT_BREAKER_THRESHOLD=16` and `MAX_TOOL_CALLS_PER_SESSION=400` exist in `src/plugin.ts` |
+| **Status** | Complete |
 | **Dependencies** | RUN-3c (concurrency control) |
 | **Description** | Per-session tool call limits with threshold-based shutdown. Circuit breaker triggers at configurable threshold; hard limit shuts down tool access entirely. Prevents runaway sessions from consuming unlimited resources. |
 | **Acceptance Criteria** | 1. `CIRCUIT_BREAKER_THRESHOLD` configurable per session (default: 16).<br>2. `MAX_TOOL_CALLS_PER_SESSION` configurable per session (default: 400).<br>3. Threshold breach triggers warning to parent session with call count and remaining budget.<br>4. Hard limit breach blocks all further tool calls with error message.<br>5. Budget resets on session compact/restart.<br>6. Test: session exceeds threshold → warning emitted; session exceeds max → tool calls blocked. |
