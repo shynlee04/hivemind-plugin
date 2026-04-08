@@ -13,11 +13,12 @@ async function loadHookModules(filePath: string) {
   process.env.OPENCODE_HARNESS_CONTINUITY_FILE = filePath
   vi.resetModules()
 
-  const [{ createCoreHooks }, { createSessionHooks }, continuityModule, { TaskStateManager }] =
+  const [{ createCoreHooks }, { createSessionHooks }, continuityModule, governanceModule, { TaskStateManager }] =
     await Promise.all([
       import("../../src/hooks/create-core-hooks.js"),
       import("../../src/hooks/create-session-hooks.js"),
       import("../../src/lib/continuity.js"),
+      import("../../src/lib/governance-engine.js"),
       import("../../src/lib/state.js"),
     ])
 
@@ -27,6 +28,7 @@ async function loadHookModules(filePath: string) {
     recordSessionContinuity: continuityModule.recordSessionContinuity,
     recordGovernancePersistenceState: continuityModule.recordGovernancePersistenceState,
     getGovernancePersistenceState: continuityModule.getGovernancePersistenceState,
+    mutateGovernanceRule: governanceModule.mutateGovernanceRule,
     TaskStateManager,
   }
 }
@@ -276,6 +278,78 @@ describe("createCoreHooks", () => {
     expect(compactionOutput.context).not.toEqual(
       expect.arrayContaining([expect.stringContaining("builder-specialist-lane")]),
     )
+  })
+
+  it("does not suppress session-start injections when only historical block violations exist", async () => {
+    const {
+      createCoreHooks,
+      recordSessionContinuity,
+      recordGovernancePersistenceState,
+      getGovernancePersistenceState,
+      TaskStateManager,
+    } = await loadHookModules(continuityFile)
+    recordSessionContinuity(buildContinuityRecord("sess-historical-only"))
+
+    const governance = getGovernancePersistenceState()
+    recordGovernancePersistenceState({
+      ...governance,
+      violations: [
+        ...governance.violations,
+        {
+          id: "old-block-1",
+          ruleID: "old-rule",
+          scope: "tool.execute.before",
+          sessionID: "sess-historical-only",
+          actionType: "block",
+          message: "An old block should remain audit data only.",
+          createdAt: 1,
+        },
+      ],
+    })
+
+    const hooks = createCoreHooks({
+      lifecycleManager: { handleEvent: vi.fn() } as never,
+      client: {} as never,
+      stateManager: new TaskStateManager(),
+    })
+    const systemOutput: { system?: unknown } = {}
+
+    await hooks["system.transform"]({ sessionID: "sess-historical-only" }, systemOutput)
+
+    expect(systemOutput.system).toEqual(
+      expect.arrayContaining([expect.stringContaining("builder-specialist-lane")]),
+    )
+  })
+
+  it("suppresses session-start injections when an active block rule matches the current session", async () => {
+    const {
+      createCoreHooks,
+      recordSessionContinuity,
+      mutateGovernanceRule,
+      TaskStateManager,
+    } = await loadHookModules(continuityFile)
+    recordSessionContinuity(buildContinuityRecord("sess-active-block"))
+    mutateGovernanceRule({
+      type: "upsert",
+      source: "test-suite",
+      rule: {
+        id: "block-current-session",
+        scope: "tool.execute.before",
+        condition: { sessionIDs: ["sess-active-block"] },
+        action: { type: "block", message: "Active governance blocks runtime injection." },
+      },
+    })
+
+    const hooks = createCoreHooks({
+      lifecycleManager: { handleEvent: vi.fn() } as never,
+      client: {} as never,
+      stateManager: new TaskStateManager(),
+    })
+    const systemOutput: { system?: unknown } = {}
+
+    await hooks["system.transform"]({ sessionID: "sess-active-block" }, systemOutput)
+
+    expect(systemOutput.system).toBeUndefined()
   })
 
   it("returns no prompt additions for non-matching sessions in either phase", async () => {

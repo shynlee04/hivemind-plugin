@@ -2,6 +2,7 @@ import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import type { DelegationRouteResolution } from "../../src/lib/types.js"
 
 function makeTempContinuityFile(): string {
   const tempDir = mkdtempSync(join(tmpdir(), "hivemind-session-hooks-test-"))
@@ -12,13 +13,43 @@ async function loadSessionHookModules(filePath: string) {
   process.env.OPENCODE_HARNESS_CONTINUITY_FILE = filePath
   vi.resetModules()
 
-  const [{ createSessionHooks }, { recordSessionContinuity, getSessionContinuity }, { TaskStateManager }] = await Promise.all([
+  const [
+    { createSessionHooks },
+    { recordSessionContinuity, getSessionContinuity, recordGovernancePersistenceState, getGovernancePersistenceState },
+    { mutateGovernanceRule },
+    { TaskStateManager },
+  ] = await Promise.all([
     import("../../src/hooks/create-session-hooks.js"),
     import("../../src/lib/continuity.js"),
+    import("../../src/lib/governance-engine.js"),
     import("../../src/lib/state.js"),
   ])
 
-  return { createSessionHooks, recordSessionContinuity, getSessionContinuity, TaskStateManager }
+  return {
+    createSessionHooks,
+    recordSessionContinuity,
+    getSessionContinuity,
+    recordGovernancePersistenceState,
+    getGovernancePersistenceState,
+    mutateGovernanceRule,
+    TaskStateManager,
+  }
+}
+
+function buildRoute(overrides: Partial<DelegationRouteResolution> = {}): DelegationRouteResolution {
+  return {
+    effectiveAgent: "builder",
+    presetKey: "builder",
+    temperature: 0.15,
+    fallbackUsed: false,
+    rationale: "matched builder route",
+    guidanceText: "Implement directly and keep the patch focused.",
+    modelSource: "category",
+    agentSource: "category",
+    temperatureSource: "category",
+    warnings: [],
+    ...overrides,
+  }
 }
 
 function buildContinuityRecord(sessionID: string) {
@@ -51,6 +82,7 @@ function buildContinuityRecord(sessionID: string) {
       title: "builder: continue feature",
       description: "continue feature",
       category: "implementation" as const,
+      route: buildRoute(),
       constraints: ["keep tests green"],
       runInBackground: false,
       status: "running" as const,
@@ -161,6 +193,94 @@ describe("createSessionHooks", () => {
         }),
         tools: ["read", "write"],
       }),
+    )
+  })
+
+  it("keeps compaction injections active when only historical block violations exist", async () => {
+    const {
+      createSessionHooks,
+      recordSessionContinuity,
+      recordGovernancePersistenceState,
+      getGovernancePersistenceState,
+      TaskStateManager,
+    } = await loadSessionHookModules(continuityFile)
+    recordSessionContinuity(buildContinuityRecord("sess-compaction-history"))
+
+    const governance = getGovernancePersistenceState()
+    recordGovernancePersistenceState({
+      ...governance,
+      violations: [
+        ...governance.violations,
+        {
+          id: "old-compaction-block",
+          ruleID: "old-block",
+          scope: "tool.execute.before",
+          sessionID: "sess-compaction-history",
+          actionType: "block",
+          message: "Historical block remains audit only.",
+          createdAt: 1,
+        },
+      ],
+    })
+
+    const hooks = createSessionHooks({
+      lifecycleManager: {
+        getLifecycleSnapshot: vi.fn(),
+        handleEvent: vi.fn(),
+        recordCompactionCheckpoint: vi.fn(),
+      } as any,
+      stateManager: new TaskStateManager(),
+      client: { session: { messages: vi.fn(), prompt: vi.fn() } } as any,
+    })
+    const output: { context?: unknown } = {}
+
+    await hooks["experimental.session.compacting"](
+      { sessionID: "sess-compaction-history" },
+      output,
+    )
+
+    expect(output.context).toEqual(
+      expect.arrayContaining([expect.stringContaining("builder-specialist-lane")]),
+    )
+  })
+
+  it("suppresses compaction injections when an active block rule matches the current session", async () => {
+    const {
+      createSessionHooks,
+      recordSessionContinuity,
+      mutateGovernanceRule,
+      TaskStateManager,
+    } = await loadSessionHookModules(continuityFile)
+    recordSessionContinuity(buildContinuityRecord("sess-compaction-active-block"))
+    mutateGovernanceRule({
+      type: "upsert",
+      source: "test-suite",
+      rule: {
+        id: "block-compaction-session",
+        scope: "tool.execute.before",
+        condition: { sessionIDs: ["sess-compaction-active-block"] },
+        action: { type: "block", message: "Active governance blocks compaction injection." },
+      },
+    })
+
+    const hooks = createSessionHooks({
+      lifecycleManager: {
+        getLifecycleSnapshot: vi.fn(),
+        handleEvent: vi.fn(),
+        recordCompactionCheckpoint: vi.fn(),
+      } as any,
+      stateManager: new TaskStateManager(),
+      client: { session: { messages: vi.fn(), prompt: vi.fn() } } as any,
+    })
+    const output: { context?: unknown } = {}
+
+    await hooks["experimental.session.compacting"](
+      { sessionID: "sess-compaction-active-block" },
+      output,
+    )
+
+    expect(output.context).not.toEqual(
+      expect.arrayContaining([expect.stringContaining("builder-specialist-lane")]),
     )
   })
 
