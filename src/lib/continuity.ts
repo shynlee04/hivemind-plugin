@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { exportDelegationArtifacts, type DelegationExportPolicy } from "./delegation-export.js"
+import { buildRecoveryResumeState, type RecoveryAssessmentOptions, type RecoveryResumeState } from "./session-recovery.js"
 import type {
   ContinuityStoreFile,
   DelegationPacket,
@@ -144,6 +145,14 @@ export function getSessionPromptParams(sessionID: string): SessionPromptParams |
 
 export function getSessionContinuityMetadata(sessionID: string): SessionContinuityMetadata | undefined {
   return getSessionContinuity(sessionID)?.metadata
+}
+
+export function getSessionRecoveryState(
+  sessionID: string,
+  options: RecoveryAssessmentOptions = {},
+): RecoveryResumeState | undefined {
+  const record = getSessionContinuity(sessionID)
+  return record ? buildRecoveryResumeState(record, options) : undefined
 }
 
 export function recordSessionContinuity(record: SessionContinuityRecord): SessionContinuityRecord {
