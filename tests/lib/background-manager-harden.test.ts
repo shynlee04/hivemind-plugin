@@ -9,7 +9,13 @@
  *  3. Disallowed commands or out-of-root cwd requests are rejected before spawn.
  */
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+import { mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { BackgroundManager } from "../../src/lib/background-manager.js"
+import { createHarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
+import { buildDelegationArtifactPacket } from "../../src/lib/delegation-packet.js"
+import { getSessionContinuity } from "../../src/lib/continuity.js"
 
 // ---------------------------------------------------------------------------
 // Test 3: Disallowed commands or out-of-root cwd requests are rejected
@@ -176,6 +182,46 @@ import type { HarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js
 import type { OpenCodeClient } from "../../src/lib/session-api.js"
 import { createDelegateTaskTool } from "../../src/tools/delegate-task.js"
 
+const continuityDir = mkdtempSync(join(tmpdir(), "hivemind-background-harden-"))
+process.env.OPENCODE_HARNESS_CONTINUITY_FILE = join(continuityDir, "session-continuity.json")
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
+
+afterEach(() => {
+  taskState.clear()
+})
+
+afterEach(() => {
+  rmSync(process.env.OPENCODE_HARNESS_CONTINUITY_FILE!, { force: true })
+})
+
+afterEach(() => {
+  process.env.OPENCODE_HARNESS_CONTINUITY_FILE = join(continuityDir, "session-continuity.json")
+})
+
+afterEach(() => {
+  delete process.env.OPENCODE_HARNESS_CONTINUITY_FILE
+  process.env.OPENCODE_HARNESS_CONTINUITY_FILE = join(continuityDir, "session-continuity.json")
+})
+
+afterEach(() => {
+  delete process.env.OPENCODE_HARNESS_BUILTIN_PROCESS_FAIL
+})
+
+afterEach(() => {
+  vi.clearAllMocks()
+})
+
+afterEach(() => {
+  process.env.OPENCODE_HARNESS_CONTINUITY_FILE = join(continuityDir, "session-continuity.json")
+})
+
+afterEach(() => {
+  // no-op barrier so the next test sees a clean continuity file path
+})
+
 const mockCtx = {
   messageID: "message-1",
   sessionID: "parent-session",
@@ -263,5 +309,191 @@ describe("delegate-task — hybrid execution routing", () => {
     expect(launchArgs.runInBackground).toBe(true)
     // Should include execution mode classification in the route metadata
     expect(launchArgs.route).toBeDefined()
+  })
+})
+
+describe("HarnessLifecycleManager — builtin-process execution", () => {
+  it("routes builtin-process work through BackgroundManager instead of child-session prompt flow", async () => {
+    const client = {
+      session: {
+        create: vi.fn(async () => ({ id: "child-process" })),
+        prompt: vi.fn(async () => ({ parts: [{ type: "text", text: "unexpected" }] })),
+      },
+    } as never
+
+    const backgroundManager = {
+      spawn: vi.fn(() => ({
+        id: "bg-1",
+        status: "running",
+        pid: 123,
+        startedAt: Date.now(),
+        parentSessionID: "child-process",
+        stdout: "",
+        stderr: "",
+        exitCode: null,
+        error: null,
+      })),
+      onComplete: vi.fn(async () => ({
+        status: "completed",
+        stdout: "research-result",
+        stderr: "",
+        exitCode: 0,
+      })),
+      getTask: vi.fn(),
+    } as unknown as BackgroundManager
+
+    const manager = createHarnessLifecycleManager({
+      client,
+      pollTimeoutMs: 50,
+      backgroundManager,
+    })
+
+    const result = await manager.launchDelegatedSession({
+      parentSessionID: "parent-process",
+      rootID: "root-process",
+      childDepth: 1,
+      description: "research runtime",
+      runInBackground: false,
+      agent: "researcher",
+      route: {
+        category: "research",
+        effectiveAgent: "researcher",
+        effectiveModel: "gpt-5.4",
+        temperature: 0.1,
+        fallbackUsed: false,
+        rationale: "research path",
+        presetKey: "researcher",
+        modelSource: "category",
+        agentSource: "category",
+        temperatureSource: "category",
+        warnings: [],
+      },
+      permissionRules: [],
+      compatibleTools: ["read", "glob", "grep"],
+      promptText: "Investigate runtime wiring.",
+      execution: {
+        family: "built-in",
+        submode: "builtin-process",
+        rationale: "Research task: owned-process stdio is sufficient.",
+        characteristics: {
+          isParallel: false,
+          isInteractive: false,
+          isResearch: true,
+          isHeadless: true,
+          runInBackground: false,
+        },
+        capabilityEvidence: {
+          hasTmux: false,
+          projectRoot: process.cwd(),
+        },
+      },
+    })
+
+    expect(result).toBe("research-result")
+    expect(backgroundManager.spawn).toHaveBeenCalledTimes(1)
+    expect(client.session.prompt).not.toHaveBeenCalled()
+
+    const continuity = getSessionContinuity("child-process")
+    expect(continuity?.metadata.execution?.submode).toBe("builtin-process")
+    expect(buildDelegationArtifactPacket(continuity!).execution).toMatchObject({
+      family: "built-in",
+      submode: "builtin-process",
+    })
+  })
+
+  it("persists failure context for builtin-process work before cleanup", async () => {
+    const completion = Promise.resolve({
+      status: "failed",
+      stdout: "",
+      stderr: "process boom",
+      exitCode: 1,
+    })
+
+    const client = {
+      session: {
+        create: vi.fn(async () => ({ id: "child-process-fail" })),
+        prompt: vi.fn(),
+      },
+    } as never
+
+    const backgroundManager = {
+      spawn: vi.fn(() => ({
+        id: "bg-fail",
+        status: "running",
+        pid: 456,
+        startedAt: Date.now(),
+        parentSessionID: "child-process-fail",
+        stdout: "",
+        stderr: "",
+        exitCode: null,
+        error: null,
+      })),
+      onComplete: vi.fn(() => completion),
+      getTask: vi.fn(() => ({
+        id: "bg-fail",
+        status: "failed",
+        pid: 456,
+        startedAt: Date.now(),
+        parentSessionID: "child-process-fail",
+        stdout: "",
+        stderr: "process boom",
+        exitCode: 1,
+        error: "[Harness] Process exited with code 1",
+      })),
+    } as unknown as BackgroundManager
+
+    const manager = createHarnessLifecycleManager({
+      client,
+      pollTimeoutMs: 50,
+      backgroundManager,
+    })
+
+    await expect(
+      manager.launchDelegatedSession({
+        parentSessionID: "parent-process-fail",
+        rootID: "root-process-fail",
+        childDepth: 1,
+        description: "research failure",
+        runInBackground: false,
+        agent: "researcher",
+        route: {
+          category: "research",
+          effectiveAgent: "researcher",
+          effectiveModel: "gpt-5.4",
+          temperature: 0.1,
+          fallbackUsed: false,
+          rationale: "research path",
+          presetKey: "researcher",
+          modelSource: "category",
+          agentSource: "category",
+          temperatureSource: "category",
+          warnings: [],
+        },
+        permissionRules: [],
+        compatibleTools: ["read", "glob", "grep"],
+        promptText: "Investigate runtime wiring failure.",
+        execution: {
+          family: "built-in",
+          submode: "builtin-process",
+          rationale: "Research task: owned-process stdio is sufficient.",
+          characteristics: {
+            isParallel: false,
+            isInteractive: false,
+            isResearch: true,
+            isHeadless: true,
+            runInBackground: false,
+          },
+          capabilityEvidence: {
+            hasTmux: false,
+            projectRoot: process.cwd(),
+          },
+        },
+      }),
+    ).rejects.toThrow(/process boom|code 1/)
+
+    const continuity = getSessionContinuity("child-process-fail")
+    expect(continuity?.metadata.status).toBe("error")
+    expect(continuity?.metadata.lastError).toContain("process boom")
+    expect(continuity?.metadata.execution?.submode).toBe("builtin-process")
   })
 })
