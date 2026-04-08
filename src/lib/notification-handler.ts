@@ -6,7 +6,7 @@ export type TaskNotification = {
   sessionID: string
   description: string
   agent: string
-  status: "completed" | "failed" | "cancelled"
+  status: "started" | "completed" | "failed" | "cancelled"
   error?: string
   resultPreview?: string
   duration?: number
@@ -15,13 +15,27 @@ export type TaskNotification = {
 const MAX_PREVIEW_LENGTH = 100
 
 export function buildNotificationMessage(task: TaskNotification): string {
+  const statusLabel =
+    task.status === "started"
+      ? "started"
+      : task.status === "completed"
+        ? "completed"
+        : task.status === "failed"
+          ? "failed"
+          : "cancelled"
+
   const lines = [
     `<system_reminder>`,
-    `Delegated task completed:`,
+    task.status === "started"
+      ? `Delegated task started:`
+      : `Delegated task ${statusLabel}:`,
     `- Task: ${task.description}`,
     `- Agent: ${task.agent}`,
-    `- Status: ${task.status}`,
   ]
+
+  if (task.status !== "started") {
+    lines.push(`- Status: ${task.status}`)
+  }
 
   if (task.error) {
     lines.push(`- Error: ${task.error}`)
@@ -46,7 +60,13 @@ export function buildNotificationMessage(task: TaskNotification): string {
 
 export function formatToastMessage(task: TaskNotification): string {
   const icon =
-    task.status === "completed" ? "✓" : task.status === "failed" ? "✗" : "⊘"
+    task.status === "started"
+      ? "▶"
+      : task.status === "completed"
+        ? "✓"
+        : task.status === "failed"
+          ? "✗"
+          : "⊘"
   return `${icon} ${task.description} ${task.status} (${task.agent})`
 }
 

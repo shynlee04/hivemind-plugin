@@ -19,7 +19,7 @@ import { createSessionPatchTool } from "./tools/session-patch/index.js"
 import { createDelegateTaskTool } from "./tools/delegate-task.js"
 import { loadRuntimePolicy } from "./lib/runtime-policy.js"
 
-const WATCH_TIMEOUT_MS = 180000
+const WATCH_TIMEOUT_MS = 1800000 // 30 minutes — research/analysis tasks routinely exceed 5 min
 
 export const HarnessControlPlane: Plugin = async ({ client }) => {
   // Load workspace-level runtime policy once at startup.
@@ -32,6 +32,7 @@ export const HarnessControlPlane: Plugin = async ({ client }) => {
     client,
     pollTimeoutMs: WATCH_TIMEOUT_MS,
     runtimePolicy,
+    backgroundManager,
   })
   lifecycleManager.hydrateFromContinuity()
 

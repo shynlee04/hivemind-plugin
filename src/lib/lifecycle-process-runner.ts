@@ -3,6 +3,7 @@ import type { CompletionDetector } from "./completion-detector.js"
 import type { ExecutionModeResult } from "./execution-mode.js"
 import { observeBackgroundCompletion } from "./lifecycle-background-observer.js"
 import { extractTextFromResponse } from "./lifecycle-state.js"
+import { notifyParentSession, type TaskNotification } from "./notification-handler.js"
 import { sendPrompt, type OpenCodeClient } from "./session-api.js"
 import type { SessionContinuityRecord } from "./types.js"
 import type { SessionContinuityMetadata, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleState } from "./types.js"
@@ -146,7 +147,7 @@ export async function runLifecycleProcessTask(args: RunLifecycleProcessArgs): Pr
     args: command.args,
     cwd: args.execution.capabilityEvidence.projectRoot,
     env: command.env,
-    parentSessionID: args.sessionID,
+    parentSessionID: args.parentSessionID,
   })
 
   if (args.runInBackground) {
@@ -231,20 +232,53 @@ type RunLifecycleSubsessionArgs = {
 
 export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArgs): Promise<string> {
   if (args.runInBackground) {
-    sendPrompt(args.client, args.sessionID, args.body).catch((error: unknown) => {
-      const message = error instanceof Error ? error.message : String(error)
-      args.patchLifecycle({
-        sessionID: args.sessionID,
-        status: "error",
-        phase: "failed",
-        error: message,
-        observation: {
-          source: "dispatch",
-          observedAt: args.now(),
-          detail: "prompt-dispatch-failed",
-        },
+    sendPrompt(args.client, args.sessionID, args.body)
+      .then(() => {
+        // Prompt dispatched successfully — notify parent that work has started.
+        const continuity = args.getSessionContinuity(args.sessionID)
+        if (continuity?.metadata.parentSessionID) {
+          void notifyParentSession(
+            args.client,
+            continuity.metadata.parentSessionID,
+            {
+              sessionID: args.sessionID,
+              description: args.description,
+              agent: args.agent,
+              status: "started",
+            } satisfies TaskNotification,
+          )
+        }
       })
-    })
+      .catch((error: unknown) => {
+        const message = error instanceof Error ? error.message : String(error)
+        args.patchLifecycle({
+          sessionID: args.sessionID,
+          status: "error",
+          phase: "failed",
+          error: message,
+          observation: {
+            source: "dispatch",
+            observedAt: args.now(),
+            detail: "prompt-dispatch-failed",
+          },
+        })
+
+        // Notify parent of dispatch failure so they don't wait blindly.
+        const continuity = args.getSessionContinuity(args.sessionID)
+        if (continuity?.metadata.parentSessionID) {
+          void notifyParentSession(
+            args.client,
+            continuity.metadata.parentSessionID,
+            {
+              sessionID: args.sessionID,
+              description: args.description,
+              agent: args.agent,
+              status: "failed",
+              error: message,
+            } satisfies TaskNotification,
+          )
+        }
+      })
 
     void observeBackgroundCompletion({
       sessionID: args.sessionID,
