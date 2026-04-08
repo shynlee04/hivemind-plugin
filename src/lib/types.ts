@@ -7,6 +7,8 @@ export const VALID_DELEGATION_CATEGORIES = [
   "implementation",
   "review",
   "visual-engineering",
+  "deep",
+  "quick",
 ] as const
 
 export type SpecialistAgent = (typeof VALID_AGENTS)[number]
@@ -53,14 +55,48 @@ export type DelegationMeta = {
   queueKey: string
 }
 
+export type CompactionCheckpointData = {
+  agent: string | null
+  model: string | null
+  tools: string[]
+  delegationMeta: DelegationMeta | null
+  warnings: string[]
+  sessionStats: {
+    total: number
+    byTool: Record<string, number>
+    loop: {
+      signature: string
+      count: number
+    }
+  }
+  capturedAt: number
+}
+
+export type DelegationPacketStatus = "pending" | "running" | "completed" | "failed"
+
+export type DelegationPacket = {
+  id: string
+  spec: string
+  plan: string | null
+  artifacts: string[]
+  commits: string[]
+  parentChain: readonly string[]
+  status: DelegationPacketStatus
+  createdAt: number
+  updatedAt: number
+}
+
 export type DelegationRouteResolution = {
   requestedCategory?: DelegationCategory
   category?: DelegationCategory
   requestedAgent?: SpecialistAgent
   effectiveAgent: SpecialistAgent
+  presetKey: string
   requestedModel?: string
   effectiveModel?: string
   temperature: number
+  fallbackUsed: boolean
+  rationale: string
   guidanceText?: string
   modelSource: "explicit" | "category" | "none"
   agentSource: "explicit" | "category"
@@ -127,6 +163,8 @@ export type SessionContinuityMetadata = {
   parentSessionID: string
   rootSessionID: string
   delegation: DelegationMeta
+  compactionCheckpoint?: CompactionCheckpointData
+  delegationPacket?: DelegationPacket
   title: string
   description: string
   category?: DelegationCategory
@@ -154,3 +192,48 @@ export type ContinuityStoreFile = {
   updatedAt: number
   sessions: Record<string, SessionContinuityRecord>
 }
+
+// ---------------------------------------------------------------------------
+// Runtime policy types (RESEARCH D-16: supplements OpenCode built-ins only)
+// ---------------------------------------------------------------------------
+
+export type PerKeyConcurrencyPolicy = {
+  limit: number
+  acquireTimeoutMs?: number
+}
+
+export type ConcurrencyPolicy = {
+  globalLimit: number
+  perKey?: Record<string, PerKeyConcurrencyPolicy>
+}
+
+export type BudgetPolicy = {
+  maxToolCallsPerSession: number
+  repeatedSignatureThreshold: number
+  warningCap: number
+  resetOnCompact: boolean
+}
+
+export type RuntimePolicy = {
+  concurrency: ConcurrencyPolicy
+  budget: BudgetPolicy
+}
+
+export type SessionBudgetOverride = Partial<BudgetPolicy>
+
+export type SessionConcurrencyOverride = {
+  globalLimit?: number
+  perKey?: Record<string, PerKeyConcurrencyPolicy>
+}
+
+export type SessionPolicyOverride = {
+  concurrency?: SessionConcurrencyOverride
+  budget?: SessionBudgetOverride
+}
+
+export type ResolvedConcurrencyPolicy = {
+  limit: number
+  acquireTimeoutMs?: number
+}
+
+export type ResolvedBudgetPolicy = BudgetPolicy
