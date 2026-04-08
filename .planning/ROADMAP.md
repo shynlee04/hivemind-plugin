@@ -1,13 +1,13 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-06 (re-baselined — 7/18 items verified complete; Phase 1 plan created)
+**Updated:** 2026-04-08 (Phase 2 runtime architecture complete through 02-06)
 **Granularity:** Fine
 
 ## Phases Overview
 
 - [x] **Phase 1: Baseline Cleanup** — 7/10 done, 3 pending (planned)
-- [ ] **Phase 2: V3 Runtime Architecture** — 4/6 plans complete
+- [x] **Phase 2: V3 Runtime Architecture** — 6/6 plans complete
 - [ ] **Phase 3: Schema Definition** — 0/4
 - [ ] **Phase 4: Migration Gate** — 0/4
 - [ ] **Phase 5: Integration Verification** — 0/5
@@ -56,7 +56,7 @@ Plans:
 - [x] 02-03-PLAN.md — Delegation lineage and specialist routing: continuity-first persistence with optional packet/manifest exports (Wave 3)
 - [x] 02-04-PLAN.md — Session recovery and hook repair: staleness/risk framing, CQRS-safe compaction, compact/reset restoration (Wave 4)
 - [x] 02-05-PLAN.md — Context governance: durable soft-policy rules, runtime mutation, violation logging (Wave 5)
-- [ ] 02-06-PLAN.md — Injection engine: conditional session-start and compaction-time injection with governance filtering (Wave 6)
+- [x] 02-06-PLAN.md — Injection engine: conditional session-start and compaction-time injection with governance filtering (Wave 6)
 
 ## Phase 3: Schema Definition
 
@@ -87,7 +87,7 @@ Plans:
 | Phase | Items Complete | Status |
 |-------|---------------|--------|
 | 1. Baseline Cleanup | 7/10 | Plan created (1 plan, Wave 1) |
-| 2. V3 Runtime Architecture | 5/6 plans | In progress |
+| 2. V3 Runtime Architecture | 6/6 plans | Complete |
 | 3. Schema Definition | 0/4 | Not started |
 | 4. Migration Gate | 0/4 | Not started |
 | 5. Integration Verification | 0/5 | Not started |

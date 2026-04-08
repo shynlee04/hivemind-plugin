@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 02-05-PLAN.md
-last_updated: "2026-04-08T15:40:11.293Z"
+status: planning
+stopped_at: Completed 02-06-PLAN.md
+last_updated: "2026-04-08T16:16:46.548Z"
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 7
-  completed_plans: 6
-  percent: 86
+  completed_plans: 7
+  percent: 100
 ---
 
 # STATE: Harness Cleanup
@@ -20,20 +20,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 02 — v3-runtime-architecture
+**Current focus:** Phase 03 — Schema Definition
 
 ## Current Position
 
-Phase: 02 (v3-runtime-architecture) — EXECUTING
+Phase: 02 (v3-runtime-architecture) — COMPLETE
 Plan: 6 of 6
-**Phase:** 02 (v3-runtime-architecture) — IN PROGRESS
-**Plan:** 02-06 next (02-05 complete)
-**Status:** Executing Phase 02
-**Progress:** [█████████░] 86%
+**Phase:** 02 (v3-runtime-architecture) — COMPLETE
+**Plan:** 02-06 complete
+**Status:** Ready to plan Phase 03
+**Progress:** [██████████] 100%
 
 ```
 Phase 1: Baseline Cleanup ......... ✅ COMPLETE (10/10 items)
-Phase 2: V3 Runtime Architecture .. In progress (5/6 plans complete)
+Phase 2: V3 Runtime Architecture .. ✅ COMPLETE (6/6 plans complete)
 Phase 3: Functional Fixes ......... Pending
 Phase 4: Rebuild & Polish ......... Pending
 Phase 5: Verification ............. Pending
@@ -65,6 +65,7 @@ Phase 5: Verification ............. Pending
 | Phase 02-v3-runtime-architecture P03 | 10 min | 2 tasks | 10 files |
 | Phase 02 P04 | 8 min | 2 tasks | 11 files |
 | Phase 02 P05 | 5 min | 2 tasks | 6 files |
+| Phase 02 P06 | 9 min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,8 @@ Phase 5: Verification ............. Pending
 - [Phase 02]: Compaction persistence and auto-loop retry dispatch execute through lifecycle methods, not directly inside read-side hooks.
 - [Phase 02]: Persist governance rules and violation history inside the canonical continuity store rather than a second runtime file.
 - [Phase 02]: Run governance before existing budget enforcement so soft-policy warnings and escalations remain the default enforcement posture.
+- [Phase 02]: Keep injection policy narrow — RUN-3f stays scoped to specialist guidance, delegation lineage, and recovery review so it does not become a second governance framework.
+- [Phase 02]: Share one evaluator across session-start and compaction — Both hooks now derive injections from the same context-aware evaluator, and governance blocks suppress prompt injection without adding write-side side effects.
 
 ### Todos
 
@@ -107,7 +110,7 @@ Phase 5: Verification ............. Pending
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19
 
-**Stopped At:** Completed 02-05-PLAN.md
+**Stopped At:** Completed 02-06-PLAN.md
 
 **Key files:**
 
@@ -121,4 +124,4 @@ Phase 5: Verification ............. Pending
 
 ---
 *State initialized: 2026-04-06*
-*Last updated: 2026-04-08 after Phase 02 Plan 05 completion verification*
+*Last updated: 2026-04-08 after Phase 02 Plan 06 completion verification*

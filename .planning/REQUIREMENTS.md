@@ -152,7 +152,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3d |
 | **Category** | Runtime Architecture |
 | **Priority** | P1 — Required for long-haul reliability |
-| **Status** | Pending |
+| **Status** | Complete |
 | **Dependencies** | RUN-3b (delegation chain), RUN-3c (concurrency) |
 | **Description** | Context integrity and governance persist across session boundaries. When a session crashes or disconnects, recovery restores trajectory state, active delegations, pending tasks, and governance rules. |
 | **Acceptance Criteria** | 1. Session state checkpointed to `.hivemind/state/brain.json` at configurable intervals.<br>2. On restart, last checkpoint loaded and active tasks resumed from last known state.<br>3. Governance rules (from RUN-3e) re-applied on recovery.<br>4. Recovery log written to `.hivemind/sessions/` with timestamp and restored state summary.<br>5. Test: simulate crash mid-task, restart, verify task resumes from checkpoint. |
@@ -453,7 +453,7 @@ Complete mapping of all requirements to phases.
 | RUN-3c: Concurrency control | P0 | Partial | None |
 | RUN-3d: Session recovery | P1 | Pending | RUN-3b, RUN-3c |
 | RUN-3e: Context governance | P1 | Complete | RUN-3d |
-| RUN-3f: Injection engine | P1 | Pending | RUN-3e |
+| RUN-3f: Injection engine | P1 | Complete | RUN-3e |
 | RUN-3g: Specialist classification | P2 | Complete | RUN-3a, RUN-3f |
 | RUN-3h: Tool budget/circuit breaker | P1 | Partial | RUN-3c |
 
