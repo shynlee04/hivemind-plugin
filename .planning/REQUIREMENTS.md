@@ -116,7 +116,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3a |
 | **Category** | Runtime Architecture |
 | **Priority** | P0 — Foundation for all subsequent runtime features |
-| **Status** | Complete |
+| **Status** | Pending |
 | **Dependencies** | None (Phase 2 kickoff) |
 | **Description** | Agents run in background processes, spawn in new terminal panes, and auto-cleanup on completion. Background agents enable parallel work streams without blocking the primary session. |
 | **Acceptance Criteria** | 1. Background agent spawns in a new pane (tmux or equivalent) without blocking the calling session.<br>2. Agent completes its task and exits cleanly with status code and result captured.<br>3. Auto-cup removes temporary agent state files on completion (success or failure).<br>4. Failed agents write error context to `.hivemind/delegation/` before cleanup.<br>5. Parent session can query background agent status at any time.<br>6. Test: `npm test` includes at least one background agent spawn/complete/cleanup test. |
@@ -152,7 +152,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3d |
 | **Category** | Runtime Architecture |
 | **Priority** | P1 — Required for long-haul reliability |
-| **Status** | Complete |
+| **Status** | Pending |
 | **Dependencies** | RUN-3b (delegation chain), RUN-3c (concurrency) |
 | **Description** | Context integrity and governance persist across session boundaries. When a session crashes or disconnects, recovery restores trajectory state, active delegations, pending tasks, and governance rules. |
 | **Acceptance Criteria** | 1. Session state checkpointed to `.hivemind/state/brain.json` at configurable intervals.<br>2. On restart, last checkpoint loaded and active tasks resumed from last known state.<br>3. Governance rules (from RUN-3e) re-applied on recovery.<br>4. Recovery log written to `.hivemind/sessions/` with timestamp and restored state summary.<br>5. Test: simulate crash mid-task, restart, verify task resumes from checkpoint. |
@@ -164,7 +164,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3e |
 | **Category** | Runtime Architecture |
 | **Priority** | P1 — Required for long-haul sessions |
-| **Status** | Pending |
+| **Status** | Complete |
 | **Dependencies** | RUN-3d (session recovery) |
 | **Description** | Rules that persist and enforce across long-haul sessions. Governance rules define what agents can/cannot do, budget limits, escalation paths, and violation handling. |
 | **Acceptance Criteria** | 1. Governance rules defined as JSON in `.hivemind/state/` with rule ID, condition, action, and scope.<br>2. Rules evaluated before each tool execution via hook.<br>3. Violation logged and reported to parent session if delegated.<br>4. Rules can be added, removed, or modified at runtime without restart.<br>5. Test: rule violation triggers expected action (block, warn, escalate). |
@@ -188,7 +188,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3g |
 | **Category** | Runtime Architecture |
 | **Priority** | P2 — Improves agent routing quality |
-| **Status** | Pending |
+| **Status** | Complete |
 | **Dependencies** | RUN-3a (background agents), RUN-3b (delegation lineage/export context) |
 | **Description** | Configurable agent presets for domains with category-based routing. Agents classified by specialty (researcher, builder, critic, conductor, coordinator, etc.) and dispatched based on task category. |
 | **Acceptance Criteria** | 1. Agent presets defined with domain, triggers, tools, temperature, and max tool calls.<br>2. Task classification routes to best-matching specialist based on task description and category.<br>3. Fallback to generalist agent if no specialist matches.<br>4. Specialist assignment recorded in delegation packet (RUN-3b).<br>5. Test: task routed to correct specialist; mismatched task falls back to generalist. |
