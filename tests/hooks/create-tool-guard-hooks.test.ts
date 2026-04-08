@@ -4,15 +4,16 @@
  * Tests the circuit breaker, tool budget, stats tracking, and warning
  * metadata injection behaviors in isolation from the rest of the plugin.
  */
-import { describe, it, expect, beforeEach } from "vitest"
-import { mkdtempSync, rmSync } from "node:fs"
+import { describe, it, expect, beforeEach, afterEach } from "vitest"
+import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { createToolGuardHooks } from "../../src/hooks/create-tool-guard-hooks.js"
-import { TaskStateManager } from "../../src/lib/state.js"
-import { DEFAULT_RUNTIME_POLICY } from "../../src/lib/runtime-policy.js"
+import { TaskStateManager, taskState } from "../../src/lib/state.js"
+import { DEFAULT_RUNTIME_POLICY, getRuntimePolicyForSession } from "../../src/lib/runtime-policy.js"
 import type { RuntimePolicy, SessionPolicyOverride } from "../../src/lib/types.js"
 import { mutateGovernanceRule } from "../../src/lib/governance-engine.js"
+import { setDelegationMeta } from "../../src/lib/state.js"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -477,6 +478,162 @@ describe("createToolGuardHooks", () => {
       expect(governance["warnings"]).toEqual([
         { ruleID: "warn-grep", message: "Recovered governance warning." },
       ])
+    })
+  })
+
+  // -------------------------------------------------------------------------
+  // Per-session policy resolution (02-07 Task 1 — production wiring)
+  // -------------------------------------------------------------------------
+
+  describe("per-session runtime-policy resolution", () => {
+    let tempDir: string
+    let continuityFile: string
+
+    beforeEach(() => {
+      tempDir = mkdtempSync(join(tmpdir(), "hivemind-session-policy-"))
+      continuityFile = join(tempDir, "session-continuity.json")
+      process.env.OPENCODE_HARNESS_CONTINUITY_FILE = continuityFile
+    })
+
+    afterEach(() => {
+      delete process.env.OPENCODE_HARNESS_CONTINUITY_FILE
+      try { rmSync(tempDir, { recursive: true, force: true }) } catch { /* ignore */ }
+    })
+
+    it("resolves per-session budget via getRuntimePolicyForSession using delegation metadata", async () => {
+      // Workspace policy has a budget of 400, but session override lowers it to 3
+      const workspacePolicy: RuntimePolicy = {
+        concurrency: { globalLimit: 3 },
+        budget: {
+          maxToolCallsPerSession: 400,
+          repeatedSignatureThreshold: 16,
+          warningCap: 25,
+          resetOnCompact: true,
+        },
+      }
+      const sessionOverride: SessionPolicyOverride = {
+        budget: {
+          maxToolCallsPerSession: 3,
+        },
+      }
+
+      const hooks = createToolGuardHooks({
+        stateManager,
+        runtimePolicy: workspacePolicy,
+      })
+
+      const sid = "sid-session-budget-resolve"
+      // Set delegation metadata to simulate a delegated session with a budget override
+      setDelegationMeta(sid, {
+        rootID: "root-1",
+        depth: 1,
+        budgetUsed: 1,
+        agent: "builder",
+        category: "implementation",
+        queueKey: "default",
+        runtimePolicyOverride: sessionOverride,
+      })
+
+      const input = makeInput(sid, "read")
+      const output = makeOutput({ path: "/test" })
+
+      // 2 calls under the session override limit of 3 — succeed
+      await hooks["tool.execute.before"](input, output)
+      await hooks["tool.execute.before"](input, output)
+
+      // 3rd call pushes total to 3 — still ok (throw when total > 3)
+      await hooks["tool.execute.before"](input, output)
+
+      // 4th call should throw because the session override lowers max to 3
+      await expect(hooks["tool.execute.before"](input, output)).rejects.toThrow(
+        /\[Harness\]/,
+      )
+    })
+
+    it("session-specific repeatedSignatureThreshold override changes circuit breaker without source edits", async () => {
+      const workspacePolicy: RuntimePolicy = {
+        concurrency: { globalLimit: 3 },
+        budget: {
+          maxToolCallsPerSession: 400,
+          repeatedSignatureThreshold: 16,
+          warningCap: 25,
+          resetOnCompact: true,
+        },
+      }
+      const sessionOverride: SessionPolicyOverride = {
+        budget: {
+          repeatedSignatureThreshold: 3,
+        },
+      }
+
+      const hooks = createToolGuardHooks({
+        stateManager,
+        runtimePolicy: workspacePolicy,
+      })
+
+      const sid = "sid-session-cb-override"
+      setDelegationMeta(sid, {
+        rootID: "root-2",
+        depth: 1,
+        budgetUsed: 1,
+        agent: "researcher",
+        category: "research",
+        queueKey: "default",
+        runtimePolicyOverride: sessionOverride,
+      })
+
+      const input = makeInput(sid, "read")
+      const output = makeOutput({ path: "/same" })
+
+      // 2 calls — under the session override threshold of 3
+      await hooks["tool.execute.before"](input, output)
+      await hooks["tool.execute.before"](input, output)
+
+      // 3rd call trips circuit breaker at session threshold=3 (not workspace 16)
+      await expect(hooks["tool.execute.before"](input, output)).rejects.toThrow(
+        /\[Harness\] Circuit breaker/,
+      )
+    })
+
+    it("falls back to workspace policy when delegation metadata has no runtimePolicyOverride", async () => {
+      const workspacePolicy: RuntimePolicy = {
+        concurrency: { globalLimit: 3 },
+        budget: {
+          maxToolCallsPerSession: 400,
+          repeatedSignatureThreshold: 16,
+          warningCap: 25,
+          resetOnCompact: true,
+        },
+      }
+
+      const hooks = createToolGuardHooks({
+        stateManager,
+        runtimePolicy: workspacePolicy,
+      })
+
+      const sid = "sid-no-session-override"
+      // Delegation metadata without runtimePolicyOverride
+      setDelegationMeta(sid, {
+        rootID: "root-3",
+        depth: 1,
+        budgetUsed: 1,
+        agent: "builder",
+        category: "implementation",
+        queueKey: "default",
+      })
+
+      const input = makeInput(sid, "read")
+      const output = makeOutput({ path: "/same" })
+
+      // 15 calls — under workspace threshold of 16
+      for (let i = 0; i < 15; i++) {
+        await hooks["tool.execute.before"](input, output)
+      }
+
+      // 16th should trip at workspace threshold
+      await expect(hooks["tool.execute.before"](input, output)).rejects.toThrow(
+        /\[Harness\] Circuit breaker/,
+      )
     })
   })
 })

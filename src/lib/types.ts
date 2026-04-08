@@ -53,6 +53,8 @@ export type DelegationMeta = {
   category?: DelegationCategory
   model?: string
   queueKey: string
+  /** Per-session runtime-policy override from trusted continuity/delegation metadata. */
+  runtimePolicyOverride?: SessionPolicyOverride
 }
 
 export type CompactionCheckpointData = {
