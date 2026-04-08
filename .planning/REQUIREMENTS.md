@@ -116,7 +116,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3a |
 | **Category** | Runtime Architecture |
 | **Priority** | P0 — Foundation for all subsequent runtime features |
-| **Status** | Pending |
+| **Status** | Complete |
 | **Dependencies** | None (Phase 2 kickoff) |
 | **Description** | Agents run in background processes, spawn in new terminal panes, and auto-cleanup on completion. Background agents enable parallel work streams without blocking the primary session. |
 | **Acceptance Criteria** | 1. Background agent spawns in a new pane (tmux or equivalent) without blocking the calling session.<br>2. Agent completes its task and exits cleanly with status code and result captured.<br>3. Auto-cup removes temporary agent state files on completion (success or failure).<br>4. Failed agents write error context to `.hivemind/delegation/` before cleanup.<br>5. Parent session can query background agent status at any time.<br>6. Test: `npm test` includes at least one background agent spawn/complete/cleanup test. |
@@ -128,7 +128,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3b |
 | **Category** | Runtime Architecture |
 | **Priority** | P0 — Required for cross-session task continuity |
-| **Status** | Pending |
+| **Status** | Complete |
 | **Dependencies** | RUN-3a (background agents) |
 | **Description** | Task persistence across sessions with parent-child session tracking. Delegation packets carry task objective, scope boundaries, known facts, excluded assumptions, evidence gathered, required deliverable shape, validation rules, and stopping conditions. |
 | **Acceptance Criteria** | 1. Delegation packet written to `.hivemind/delegation/` as JSON with all 8 required fields.<br>2. Parent-child session linkage tracked via `ses_id` and `subses_id` in `.hivemind/hierarchy/`.<br>3. Child session resumes delegation context from JSON on start.<br>4. Completed delegation marked with result and timestamp.<br>5. Test: delegation packet round-trips through parent→child→completion with all fields intact. |
@@ -189,7 +189,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **Category** | Runtime Architecture |
 | **Priority** | P2 — Improves agent routing quality |
 | **Status** | Pending |
-| **Dependencies** | RUN-3a (background agents), RUN-3f (injection engine) |
+| **Dependencies** | RUN-3a (background agents), RUN-3b (delegation lineage/export context) |
 | **Description** | Configurable agent presets for domains with category-based routing. Agents classified by specialty (researcher, builder, critic, conductor, coordinator, etc.) and dispatched based on task category. |
 | **Acceptance Criteria** | 1. Agent presets defined with domain, triggers, tools, temperature, and max tool calls.<br>2. Task classification routes to best-matching specialist based on task description and category.<br>3. Fallback to generalist agent if no specialist matches.<br>4. Specialist assignment recorded in delegation packet (RUN-3b).<br>5. Test: task routed to correct specialist; mismatched task falls back to generalist. |
 
@@ -449,12 +449,12 @@ Complete mapping of all requirements to phases.
 | Requirement | Priority | Status | Dependencies |
 |-------------|----------|--------|--------------|
 | RUN-3a: Background agents | P0 | Pending | None |
-| RUN-3b: Delegation chain | P0 | Pending | RUN-3a |
+| RUN-3b: Delegation chain | P0 | Complete | RUN-3a |
 | RUN-3c: Concurrency control | P0 | Partial | None |
 | RUN-3d: Session recovery | P1 | Pending | RUN-3b, RUN-3c |
 | RUN-3e: Context governance | P1 | Pending | RUN-3d |
 | RUN-3f: Injection engine | P1 | Pending | RUN-3e |
-| RUN-3g: Specialist classification | P2 | Pending | RUN-3a, RUN-3f |
+| RUN-3g: Specialist classification | P2 | Complete | RUN-3a, RUN-3f |
 | RUN-3h: Tool budget/circuit breaker | P1 | Partial | RUN-3c |
 
 ### Phase 3: Schema Definition

@@ -7,7 +7,7 @@
 ## Phases Overview
 
 - [x] **Phase 1: Baseline Cleanup** — 7/10 done, 3 pending (planned)
-- [ ] **Phase 2: V3 Runtime Architecture** — 0/8 (new)
+- [ ] **Phase 2: V3 Runtime Architecture** — 3/6 plans complete
 - [ ] **Phase 3: Schema Definition** — 0/4
 - [ ] **Phase 4: Migration Gate** — 0/4
 - [ ] **Phase 5: Integration Verification** — 0/5
@@ -38,27 +38,25 @@ Plans:
 
 ## Phase 2: V3 Runtime Architecture
 
-8 sub-phases (dependency-ordered: 2c→2h→2a→2b→2d→2e→2f→2g):
-- 2c. Concurrency Control — keyed semaphore, FIFO queue, timeout, per-key config (partial: `src/lib/concurrency.ts` exists)
-- 2h. Circuit Breaker — configurable per-session budgets, reset on compact (partial: `CIRCUIT_BREAKER_THRESHOLD=16` exists)
-- 2a. Background Agents — spawn in new panes (builtin-subsession), auto-cleanup
-- 2b. Delegation Chain — task persistence, parent-child tracking, manifest.json
-- 2d. Session Recovery — staleness check, risk assessment, checkpoint restoration
-- 2e. Context Governance — soft policy rules, runtime add/remove, violation logging
-- 2f. Injection Engine — conditional injection of rules/commands/skills/tools
-- 2g. Specialist Classification — agent presets, category routing, generalist fallback
+Executable recovery plan set replacing the stale reference-only Phase 02 plans. These plans are grounded in current V3 runtime code reality and preserve the still-locked Phase 02 decisions.
 
-**Plans:** 8 plans
+Recovery plan structure:
+- 2c/2h. Runtime policy foundation — configurable concurrency + budgets that supplement OpenCode built-ins
+- 2a. Hybrid background execution — full D-12/D-13 auto-detect across execution family and built-in submodes
+- 2b/2g. Delegation lineage + advisory specialist routing — continuity canonical, exports optional
+- 2d. Session recovery — staleness check, risk framing, CQRS-safe checkpoint/resume
+- 2e. Context governance — soft-policy rules with runtime mutation and violation logging
+- 2f. Injection engine — conditional session-start and compaction-time injection with governance filtering
+
+**Plans:** 6 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Concurrency Control (2c): timeout + per-key limits + config loader (Wave 1)
-- [ ] 02-02-PLAN.md — Circuit Breaker (2h): configurable budgets + reset on compact (Wave 1)
-- [ ] 02-03-PLAN.md — Background Agents (2a): BackgroundAgentRunner + delegate-task integration (Wave 2)
-- [ ] 02-04-PLAN.md — Delegation Chain (2b): packet CRUD + manifest + continuity wiring (Wave 2)
-- [ ] 02-05-PLAN.md — Session Recovery (2d): staleness check + risk assessment + recovery (Wave 3)
-- [ ] 02-06-PLAN.md — Specialist Classification (2g): agent presets + specialist router (Wave 3)
-- [ ] 02-07-PLAN.md — Context Governance (2e): rule engine + runtime management + violations (Wave 4)
-- [ ] 02-08-PLAN.md — Injection Engine (2f): conditional injection + governance filtering (Wave 5)
+- [x] 02-01-PLAN.md — Runtime policy foundation: configurable concurrency and budgets that explicitly supplement OpenCode built-ins (Wave 1)
+- [x] 02-02-PLAN.md — Hybrid background execution: D-12/D-13 auto-detect plus hardened owned-process fallback (Wave 2)
+- [x] 02-03-PLAN.md — Delegation lineage and specialist routing: continuity-first persistence with optional packet/manifest exports (Wave 3)
+- [ ] 02-04-PLAN.md — Session recovery and hook repair: staleness/risk framing, CQRS-safe compaction, compact/reset restoration (Wave 4)
+- [ ] 02-05-PLAN.md — Context governance: durable soft-policy rules, runtime mutation, violation logging (Wave 5)
+- [ ] 02-06-PLAN.md — Injection engine: conditional session-start and compaction-time injection with governance filtering (Wave 6)
 
 ## Phase 3: Schema Definition
 
@@ -89,7 +87,7 @@ Plans:
 | Phase | Items Complete | Status |
 |-------|---------------|--------|
 | 1. Baseline Cleanup | 7/10 | Plan created (1 plan, Wave 1) |
-| 2. V3 Runtime Architecture | 0/8 | Not started |
+| 2. V3 Runtime Architecture | 3/6 plans | In progress |
 | 3. Schema Definition | 0/4 | Not started |
 | 4. Migration Gate | 0/4 | Not started |
 | 5. Integration Verification | 0/5 | Not started |
