@@ -27,8 +27,8 @@ function makeOutput(args: unknown = {}) {
   return { args }
 }
 
-function makeAfterInput(sessionID: string) {
-  return { sessionID }
+function makeAfterInput(sessionID: string, args: unknown = {}) {
+  return { sessionID, args }
 }
 
 function makeAfterOutput(): { metadata?: unknown } {
@@ -478,6 +478,95 @@ describe("createToolGuardHooks", () => {
       expect(governance["warnings"]).toEqual([
         { ruleID: "warn-grep", message: "Recovered governance warning." },
       ])
+    })
+
+    it("keeps overlapping tool calls correlated to their own invocation metadata", async () => {
+      process.env.OPENCODE_HARNESS_CONTINUITY_FILE = makeTempContinuityFile()
+      mutateGovernanceRule({
+        type: "upsert",
+        source: "test-suite",
+        rule: {
+          id: "warn-read-overlap",
+          scope: "tool.execute.before",
+          condition: { toolNames: ["read"] },
+          action: { type: "warn", message: "Read overlap warning." },
+        },
+      })
+      mutateGovernanceRule({
+        type: "upsert",
+        source: "test-suite",
+        rule: {
+          id: "escalate-bash-overlap",
+          scope: "tool.execute.before",
+          condition: { toolNames: ["bash"] },
+          action: {
+            type: "escalate",
+            message: "Bash overlap escalation.",
+            escalation: { channel: "parent", severity: "high" },
+          },
+        },
+      })
+
+      const hooks = buildHooks(stateManager)
+      const firstBeforeOutput = makeOutput({ path: "/a" })
+      const secondBeforeOutput = makeOutput({ command: "pwd" })
+
+      await hooks["tool.execute.before"](makeInput("sid-governance-overlap", "read"), firstBeforeOutput)
+      await hooks["tool.execute.before"](makeInput("sid-governance-overlap", "bash"), secondBeforeOutput)
+
+      const firstArgs = firstBeforeOutput.args as Record<string, unknown>
+      const secondArgs = secondBeforeOutput.args as Record<string, unknown>
+      expect(firstArgs["_harnessInvocationKey"]).toEqual(expect.any(String))
+      expect(secondArgs["_harnessInvocationKey"]).toEqual(expect.any(String))
+      expect(firstArgs["_harnessInvocationKey"]).not.toBe(secondArgs["_harnessInvocationKey"])
+
+      const firstAfterOutput = makeAfterOutput()
+      await hooks["tool.execute.after"](
+        makeAfterInput("sid-governance-overlap", firstArgs),
+        firstAfterOutput,
+      )
+
+      const firstGovernance = ((firstAfterOutput.metadata as Record<string, unknown>)["_harness"] as Record<
+        string,
+        unknown
+      >)["governance"] as Record<string, unknown>
+      expect(firstGovernance["warnings"]).toEqual([
+        { ruleID: "warn-read-overlap", message: "Read overlap warning." },
+      ])
+      expect(firstGovernance["escalations"]).toEqual([])
+
+      const secondAfterOutput = makeAfterOutput()
+      await hooks["tool.execute.after"](
+        makeAfterInput("sid-governance-overlap", secondArgs),
+        secondAfterOutput,
+      )
+
+      const secondGovernance = ((secondAfterOutput.metadata as Record<string, unknown>)["_harness"] as Record<
+        string,
+        unknown
+      >)["governance"] as Record<string, unknown>
+      expect(secondGovernance["warnings"]).toEqual([])
+      expect(secondGovernance["escalations"]).toEqual([
+        {
+          ruleID: "escalate-bash-overlap",
+          message: "Bash overlap escalation.",
+          escalation: { channel: "parent", severity: "high" },
+        },
+      ])
+
+      const staleAfterOutput = makeAfterOutput()
+      await hooks["tool.execute.after"](
+        makeAfterInput("sid-governance-overlap", firstArgs),
+        staleAfterOutput,
+      )
+
+      const staleGovernance = ((staleAfterOutput.metadata as Record<string, unknown>)["_harness"] as Record<
+        string,
+        unknown
+      >)["governance"] as Record<string, unknown>
+      expect(staleGovernance["warnings"]).toEqual([])
+      expect(staleGovernance["escalations"]).toEqual([])
+      expect(staleGovernance["blocks"]).toEqual([])
     })
   })
 
