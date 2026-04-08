@@ -5,10 +5,14 @@
  * metadata injection behaviors in isolation from the rest of the plugin.
  */
 import { describe, it, expect, beforeEach } from "vitest"
+import { mkdtempSync, rmSync } from "node:fs"
+import { tmpdir } from "node:os"
+import { dirname, join } from "node:path"
 import { createToolGuardHooks } from "../../src/hooks/create-tool-guard-hooks.js"
 import { TaskStateManager } from "../../src/lib/state.js"
 import { DEFAULT_RUNTIME_POLICY } from "../../src/lib/runtime-policy.js"
 import type { RuntimePolicy, SessionPolicyOverride } from "../../src/lib/types.js"
+import { mutateGovernanceRule } from "../../src/lib/governance-engine.js"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -30,6 +34,11 @@ function makeAfterOutput(): { metadata?: unknown } {
   return {}
 }
 
+function makeTempContinuityFile(): string {
+  const tempDir = mkdtempSync(join(tmpdir(), "hivemind-tool-guard-governance-test-"))
+  return join(tempDir, "session-continuity.json")
+}
+
 // ---------------------------------------------------------------------------
 // Factory
 // ---------------------------------------------------------------------------
@@ -47,6 +56,7 @@ describe("createToolGuardHooks", () => {
 
   beforeEach(() => {
     stateManager = new TaskStateManager()
+    delete process.env.OPENCODE_HARNESS_CONTINUITY_FILE
   })
 
   // -------------------------------------------------------------------------
@@ -351,6 +361,122 @@ describe("createToolGuardHooks", () => {
       const meta = output.metadata as Record<string, unknown>
       expect(meta["custom"]).toBe("kept")
       expect(meta["_harness"]).toBeDefined()
+    })
+  })
+
+  describe("tool governance", () => {
+    it("surfaces warning rules without blocking execution", async () => {
+      process.env.OPENCODE_HARNESS_CONTINUITY_FILE = makeTempContinuityFile()
+      mutateGovernanceRule({
+        type: "upsert",
+        source: "test-suite",
+        rule: {
+          id: "warn-read",
+          scope: "tool.execute.before",
+          condition: { toolNames: ["read"] },
+          action: { type: "warn", message: "Read calls are watched." },
+        },
+      })
+
+      const hooks = buildHooks(stateManager)
+      const output = makeAfterOutput()
+
+      await expect(
+        hooks["tool.execute.before"](makeInput("sid-governance-warn", "read"), makeOutput({ path: "/a" })),
+      ).resolves.toBeUndefined()
+
+      await hooks["tool.execute.after"](makeAfterInput("sid-governance-warn"), output)
+
+      const meta = (output.metadata as Record<string, unknown>)["_harness"] as Record<string, unknown>
+      const governance = meta["governance"] as Record<string, unknown>
+      expect(governance["warnings"]).toEqual([{ ruleID: "warn-read", message: "Read calls are watched." }])
+      expect(governance["blocks"]).toEqual([])
+    })
+
+    it("emits escalation metadata for matching escalation rules", async () => {
+      process.env.OPENCODE_HARNESS_CONTINUITY_FILE = makeTempContinuityFile()
+      mutateGovernanceRule({
+        type: "upsert",
+        source: "test-suite",
+        rule: {
+          id: "escalate-bash",
+          scope: "tool.execute.before",
+          condition: { toolNames: ["bash"] },
+          action: {
+            type: "escalate",
+            message: "Escalate bash usage.",
+            escalation: { channel: "parent", severity: "high" },
+          },
+        },
+      })
+
+      const hooks = buildHooks(stateManager)
+      const output = makeAfterOutput()
+
+      await hooks["tool.execute.before"](
+        makeInput("sid-governance-escalate", "bash"),
+        makeOutput({ command: "pwd" }),
+      )
+      await hooks["tool.execute.after"](makeAfterInput("sid-governance-escalate"), output)
+
+      const meta = (output.metadata as Record<string, unknown>)["_harness"] as Record<string, unknown>
+      const governance = meta["governance"] as Record<string, unknown>
+      expect(governance["escalations"]).toEqual([
+        {
+          ruleID: "escalate-bash",
+          message: "Escalate bash usage.",
+          escalation: { channel: "parent", severity: "high" },
+        },
+      ])
+    })
+
+    it("blocks execution deterministically for explicit block rules", async () => {
+      process.env.OPENCODE_HARNESS_CONTINUITY_FILE = makeTempContinuityFile()
+      mutateGovernanceRule({
+        type: "upsert",
+        source: "test-suite",
+        rule: {
+          id: "block-write",
+          scope: "tool.execute.before",
+          condition: { toolNames: ["write"] },
+          action: { type: "block", message: "Write is blocked." },
+        },
+      })
+
+      const hooks = buildHooks(stateManager)
+
+      await expect(
+        hooks["tool.execute.before"](makeInput("sid-governance-block", "write"), makeOutput({ path: "/tmp/x" })),
+      ).rejects.toThrow(/Write is blocked\./)
+    })
+
+    it("re-applies persisted governance rules after hook/state recovery", async () => {
+      process.env.OPENCODE_HARNESS_CONTINUITY_FILE = makeTempContinuityFile()
+      mutateGovernanceRule({
+        type: "upsert",
+        source: "test-suite",
+        rule: {
+          id: "warn-grep",
+          scope: "tool.execute.before",
+          condition: { toolNames: ["grep"] },
+          action: { type: "warn", message: "Recovered governance warning." },
+        },
+      })
+
+      const recoveredHooks = buildHooks(new TaskStateManager())
+      const output = makeAfterOutput()
+
+      await recoveredHooks["tool.execute.before"](
+        makeInput("sid-governance-recovered", "grep"),
+        makeOutput({ pattern: "foo" }),
+      )
+      await recoveredHooks["tool.execute.after"](makeAfterInput("sid-governance-recovered"), output)
+
+      const meta = (output.metadata as Record<string, unknown>)["_harness"] as Record<string, unknown>
+      const governance = meta["governance"] as Record<string, unknown>
+      expect(governance["warnings"]).toEqual([
+        { ruleID: "warn-grep", message: "Recovered governance warning." },
+      ])
     })
   })
 })
