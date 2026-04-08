@@ -13,7 +13,9 @@
 import {
   getSessionContinuity,
   getContinuityStoragePath,
+  getSessionRecoveryState,
 } from "../lib/continuity.js"
+import { evaluateGovernance, type GovernanceEvaluationResult } from "../lib/governance-engine.js"
 import { asString, getNestedValue, isObject, makeToolSignature } from "../lib/helpers.js"
 import { DEFAULT_RUNTIME_POLICY } from "../lib/runtime-policy.js"
 import type { RuntimePolicy } from "../lib/types.js"
@@ -60,6 +62,7 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
   const policy = deps.runtimePolicy ?? DEFAULT_RUNTIME_POLICY
   const maxToolCalls = policy.budget.maxToolCallsPerSession
   const circuitBreakerThreshold = policy.budget.repeatedSignatureThreshold
+  const recentGovernance = new Map<string, GovernanceEvaluationResult>()
 
   return {
     "tool.execute.before": async (input: BeforeInput, output: BeforeOutput): Promise<void> => {
@@ -69,6 +72,26 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
 
       if (!sessionID || !toolName) {
         return
+      }
+
+      const governance = evaluateGovernance({
+        scope: "tool.execute.before",
+        sessionID,
+        toolName,
+        args,
+      })
+      recentGovernance.set(sessionID, governance)
+
+      for (const warning of governance.warnings) {
+        stateManager.addWarning(sessionID, warning.message)
+      }
+
+      for (const escalation of governance.escalations) {
+        stateManager.addWarning(sessionID, `Governance escalation: ${escalation.message}`)
+      }
+
+      if (governance.blocks.length > 0) {
+        throw new Error(`[Harness] ${governance.blocks[0]?.message ?? "Tool execution blocked by governance."}`)
       }
 
       const stats = stateManager.ensureStats(sessionID)
@@ -114,7 +137,10 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
       const stats = stateManager.getStats(sessionID)
       const delegation = getDelegationMeta(sessionID)
       const continuity = getSessionContinuity(sessionID)
+      const recovery = getSessionRecoveryState(sessionID)
       const lifecycle = lifecycleManager?.getLifecycleSnapshot(sessionID)
+      const governance = recentGovernance.get(sessionID)
+      recentGovernance.delete(sessionID)
 
       output.metadata = {
         ...(isObject(output.metadata) ? output.metadata : {}),
@@ -131,7 +157,9 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
           concurrencyKey: delegation?.queueKey,
           continuityStatus: continuity?.metadata.status,
           lifecycle,
+          recovery,
           routing: continuity?.metadata.route,
+          governance: governance ?? { warnings: [], escalations: [], blocks: [] },
           continuityStorage: getContinuityStoragePath(),
           continuity: continuity
             ? {
