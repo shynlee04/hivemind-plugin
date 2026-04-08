@@ -2,6 +2,18 @@ import { describe, expect, it } from "vitest"
 import { evaluateInjections } from "../../src/lib/injection-engine.js"
 import type { DelegationRouteResolution } from "../../src/lib/types.js"
 
+function buildDelegation() {
+  return {
+    rootID: "root-1",
+    depth: 2,
+    budgetUsed: 1,
+    agent: "builder" as const,
+    category: "implementation" as const,
+    model: "gpt-5.4",
+    queueKey: "gpt-5.4:builder:implementation",
+  }
+}
+
 function buildRoute(overrides: Partial<DelegationRouteResolution> = {}): DelegationRouteResolution {
   return {
     effectiveAgent: "builder",
@@ -65,6 +77,49 @@ describe("evaluateInjections", () => {
     expect(result.injections.tools).toEqual(["task", "read"])
     expect(result.auditLog.filter((entry) => entry.decision === "applied")).toHaveLength(3)
   })
+
+  it.each([
+    {
+      effectiveAgent: "researcher" as const,
+      expectedRule: "Honor the routed researcher specialist guidance for this session.",
+      expectedSkill: "researcher-specialist-lane",
+    },
+    {
+      effectiveAgent: "critic" as const,
+      expectedRule: "Honor the routed critic specialist guidance for this session.",
+      expectedSkill: "critic-specialist-lane",
+    },
+  ])(
+    "renders specialist-route guidance from the resolved $effectiveAgent route",
+    ({ effectiveAgent, expectedRule, expectedSkill }) => {
+      const result = evaluateInjections({
+        sessionID: `sess-${effectiveAgent}`,
+        phase: "session-start",
+        agent: effectiveAgent,
+        category: effectiveAgent === "researcher" ? "research" : "review",
+        delegation: buildDelegation(),
+        route: buildRoute({
+          effectiveAgent,
+          presetKey: effectiveAgent,
+          rationale: `matched ${effectiveAgent} route`,
+        }),
+      })
+
+      expect(result.injections.rules).toContain(expectedRule)
+      expect(result.injections.rules).not.toContain(
+        "Honor the routed builder specialist guidance for this session.",
+      )
+      expect(result.injections.skills).toContain(expectedSkill)
+      expect(result.injections.skills).not.toContain("builder-specialist-lane")
+      expect(result.auditLog).toContainEqual(
+        expect.objectContaining({
+          injectionID: "specialist-route-guidance",
+          decision: "applied",
+          reason: `Route matched the ${effectiveAgent} specialist lane.`,
+        }),
+      )
+    },
+  )
 
   it("returns no injections when the runtime context does not match any policy", () => {
     const result = evaluateInjections({
