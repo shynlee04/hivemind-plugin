@@ -50,7 +50,7 @@ type CandidateEvaluation = {
 type InjectionCandidate = {
   id: string
   evaluate: (context: InjectionEvaluationContext) => CandidateEvaluation
-  payload: InjectionPayload
+  payload: InjectionPayload | ((context: InjectionEvaluationContext) => InjectionPayload)
 }
 
 const EMPTY_PAYLOAD: InjectionPayload = {
@@ -108,11 +108,18 @@ const INJECTION_CANDIDATES: readonly InjectionCandidate[] = [
         ],
       }
     },
-    payload: {
-      rules: ["Honor the routed builder specialist guidance for this session."],
-      commands: [],
-      skills: ["builder-specialist-lane"],
-      tools: [],
+    payload: (context) => {
+      const specialist = context.route?.effectiveAgent ?? context.agent
+      if (!specialist) {
+        return emptyInjectionPayload()
+      }
+
+      return {
+        rules: [`Honor the routed ${specialist} specialist guidance for this session.`],
+        commands: [],
+        skills: [`${specialist}-specialist-lane`],
+        tools: [],
+      }
     },
   },
   {
@@ -218,7 +225,8 @@ export function evaluateInjections(context: InjectionEvaluationContext): Injecti
       })
     }
 
-    appendPayload(applied, candidate.payload)
+    const payload = typeof candidate.payload === "function" ? candidate.payload(context) : candidate.payload
+    appendPayload(applied, payload)
     return recordInjectionDecision({
       injectionID: candidate.id,
       phase: context.phase,
