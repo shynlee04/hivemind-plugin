@@ -44,6 +44,107 @@ NO AGENT WITHOUT EXPLICIT PERMISSIONS
 
 Every permission must be explicitly declared. No implicit access. If a permission isn't listed, it's denied. Default to least privilege.
 
+## OpenCode Agent Frontmatter Schema (MANDATORY — MEMORIZE THIS)
+
+**You MUST produce frontmatter that matches this exact schema. Any deviation WILL cause OpenCode configuration validation errors.**
+
+### Valid Fields
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `description` | string | ✅ | Third-person description with trigger phrases. This is what agents see when selecting subagents. |
+| `mode` | enum | ✅ | `"primary"` or `"subagent"`. Primary agents are user-facing. Subagents are dispatched by other agents. |
+| `temperature` | number | ❌ | 0.0–1.0. Low (0.1–0.3) for deterministic, medium (0.3–0.5) for balanced, high (0.5+) for creative. |
+| `steps` | number | ❌ | 30–80. Max tool calls per session. |
+| `instruction` | array | ❌ | Array of rule file paths (e.g., `[.opencode/rules/*.md]`). |
+| `permission` | RECORD | ✅ | **THE ONLY WAY TO CONTROL TOOL ACCESS.** See below. |
+
+### INVALID Fields (NEVER USE — WILL CAUSE ERRORS)
+
+| Field | Why Invalid | What To Use Instead |
+|-------|-------------|-------------------|
+| `tools` | **Does not exist.** OpenCode will throw: "expected record, received array tools" | `permission` with tool-name keys |
+| `name` | Unnecessary. Filename IS the agent name. | Just name the `.md` file correctly |
+| `permissions` | Wrong field name (plural) | `permission` (singular) |
+| `trigger_phrases` | Not a frontmatter field | Embed in `description` string |
+| `category` | Not a frontmatter field | Embed in `description` string |
+
+### `permission` Record Schema
+
+`permission` is a **RECORD** (object/map), NOT an array. Keys are OpenCode built-in tool names. Values control access.
+
+```yaml
+permission:
+  read: allow                          # simple allow/deny/ask
+  edit:                                # pattern-matched access
+    "*": deny                          # default: deny all
+    "*.md": allow                      # allow markdown files
+    "*.json": allow                    # allow json files
+  write:                               # same pattern-matching
+    "*": deny
+    "*.md": allow
+  bash:                                # command-pattern matching
+    "*": ask                           # default: ask for all commands
+    "git status*": allow               # allow specific patterns
+    "ls*": allow
+    "mkdir*": allow
+  task: allow                          # allow spawning subagents
+  skill:                               # skill-name matching
+    "*": deny                          # default: deny all
+    "meta-builder": allow              # allow specific skills
+    "command-dev": allow
+  glob: allow
+  grep: allow
+  webfetch: allow
+  todoread: allow
+  todowrite: allow
+  patch: allow
+```
+
+**Valid permission keys:** `read`, `edit`, `write`, `bash`, `task`, `skill`, `glob`, `grep`, `webfetch`, `webbrowse`, `todoread`, `todowrite`, `patch`, `question`
+
+**Valid permission values:** `allow`, `deny`, `ask`, or a pattern-matched sub-record.
+
+### Frontmatter Template (CORRECT)
+
+```yaml
+---
+description: "<third-person description>. Use when <trigger phrases>."
+mode: subagent
+temperature: 0.2
+permission:
+  read: allow
+  edit: allow
+  write: allow
+  bash: allow
+  task: allow
+  skill:
+    "*": deny
+    "skill-name-1": allow
+    "skill-name-2": allow
+  glob: allow
+  grep: allow
+  webfetch: allow
+---
+```
+
+### Frontmatter Template (WRONG — NEVER PRODUCE THIS)
+
+```yaml
+---
+# ❌ BROKEN — will cause validation errors
+name: "my-agent"           # ❌ INVALID — filename IS the name
+tools:                      # ❌ INVALID — "expected record, received array tools"
+  - read
+  - write
+  - bash
+permissions:                # ❌ INVALID — should be "permission" (singular)
+  read: true
+trigger_phrases:            # ❌ INVALID — not a frontmatter field
+  - "do something"
+---
+```
+
 ## Mandatory First Step
 
 **Every time you are spawned, run this FIRST:**
@@ -92,9 +193,8 @@ Extract from your prompt:
 #### Frontmatter Template
 ```yaml
 ---
-name: "<agent-name>"
-description: "<third-person description with trigger phrases>"
-mode: <primary|subagent|all>
+description: "<third-person description with trigger phrases>. Use when <trigger phrases>."
+mode: <primary|subagent>
 temperature: <0.0-0.5>
 steps: <30-80>
 instruction: [.opencode/rules/*.md]
@@ -114,6 +214,8 @@ permission:
   webfetch: <allow|deny|ask>
 ---
 ```
+
+**CRITICAL:** The `name` field is NOT needed — the filename IS the agent name. The `tools` field does NOT exist — use `permission` record instead. See "OpenCode Agent Frontmatter Schema" section above.
 
 #### Permission Rules
 | Permission | What it controls | Pattern matching |
@@ -194,9 +296,12 @@ After completing your task, return:
 
 ### Step 5: Validate
 Check against this list:
-- [ ] Name matches file name (kebab-case)
-- [ ] Description has trigger phrases (third person)
-- [ ] Mode is explicit (primary, subagent, or all)
+- [ ] **NO `tools` field** (INVALID — use `permission` record)
+- [ ] **NO `name` field** (unnecessary — filename IS the name)
+- [ ] **NO `permissions` field** (wrong — it's `permission` singular)
+- [ ] **`permission` is a RECORD** (not array, not string)
+- [ ] Description has trigger phrases (third person, includes "Use when...")
+- [ ] Mode is explicit (`primary` or `subagent`)
 - [ ] Temperature is specified (0.0-0.5)
 - [ ] Steps is specified (30-80)
 - [ ] All permissions explicitly declared
