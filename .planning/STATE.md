@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-08-PLAN.md
-last_updated: "2026-04-08T18:15:36.987Z"
+stopped_at: Completed 02-09-PLAN.md
+last_updated: "2026-04-08T18:29:38.228Z"
 progress:
   total_phases: 5
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 10
-  completed_plans: 9
-  percent: 90
+  completed_plans: 10
+  percent: 100
 ---
 
 # STATE: Harness Cleanup
@@ -24,16 +24,16 @@ See: `.planning/PROJECT.md` (updated 2026-04-06)
 
 ## Current Position
 
-Phase: 02 (v3-runtime-architecture) — EXECUTING
-Plan: 8 of 9
-**Phase:** 02 (v3-runtime-architecture) — IN PROGRESS
-**Plan:** 02-08 complete
-**Status:** Executing Phase 02, ready for 02-09
-**Progress:** [█████████░] 90%
+Phase: 02 (v3-runtime-architecture) — COMPLETE
+Plan: 9 of 9
+**Phase:** 02 (v3-runtime-architecture) — COMPLETE
+**Plan:** 02-09 complete
+**Status:** Phase 02 complete, ready for Phase 03 planning
+**Progress:** [██████████] 100%
 
 ```
 Phase 1: Baseline Cleanup ......... ✅ COMPLETE (10/10 items)
-Phase 2: V3 Runtime Architecture .. 🔄 IN PROGRESS (8/9 plans complete)
+Phase 2: V3 Runtime Architecture .. ✅ COMPLETE (9/9 plans complete)
 Phase 3: Functional Fixes ......... Pending
 Phase 4: Rebuild & Polish ......... Pending
 Phase 5: Verification ............. Pending
@@ -67,6 +67,7 @@ Phase 5: Verification ............. Pending
 | Phase 02 P05 | 5 min | 2 tasks | 6 files |
 | Phase 02 P06 | 9 min | 2 tasks | 5 files |
 | Phase 02-v3-runtime-architecture P08 | 14 min | 2 tasks | 9 files |
+| Phase 02 P09 | 8 min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -91,6 +92,9 @@ Phase 5: Verification ............. Pending
 - [Phase 02-v3-runtime-architecture]: Execution-family choice is canonical continuity metadata and delegation exports derive from it
 - [Phase 02-v3-runtime-architecture]: Builtin-process delegation keeps continuity/session lineage but executes work through BackgroundManager instead of child-session prompt dispatch
 - [Phase 02-v3-runtime-architecture]: Lifecycle queue cleanup preserves existing lastError unless a new error value is supplied
+- [Phase 02]: Keep specialist guidance narrow and derive payloads from the resolved effective agent only.
+- [Phase 02]: Use active matching block rules for injection suppression and keep historical violations as audit data only.
+- [Phase 02]: Use per-invocation governance correlation keys with _harnessInvocationKey as the fallback carrier seam.
 
 ### Todos
 
@@ -114,7 +118,7 @@ Phase 5: Verification ............. Pending
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19
 
-**Stopped At:** Completed 02-08-PLAN.md
+**Stopped At:** Completed 02-09-PLAN.md
 
 **Key files:**
 
@@ -128,4 +132,4 @@ Phase 5: Verification ............. Pending
 
 ---
 *State initialized: 2026-04-06*
-*Last updated: 2026-04-08 after Phase 02 Plan 08 completion verification*
+*Last updated: 2026-04-08 after Phase 02 Plan 09 completion verification*

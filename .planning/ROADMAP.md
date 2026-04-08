@@ -1,13 +1,13 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-08 (Phase 2 runtime architecture complete through 02-06)
+**Updated:** 2026-04-08 (Phase 2 runtime architecture complete through 02-09)
 **Granularity:** Fine
 
 ## Phases Overview
 
 - [x] **Phase 1: Baseline Cleanup** — 7/10 done, 3 pending (planned)
-- [x] **Phase 2: V3 Runtime Architecture** — 6/6 plans complete
+- [x] **Phase 2: V3 Runtime Architecture** — 9/9 plans complete
 - [ ] **Phase 3: Schema Definition** — 0/4
 - [ ] **Phase 4: Migration Gate** — 0/4
 - [ ] **Phase 5: Integration Verification** — 0/5
@@ -48,7 +48,7 @@ Recovery plan structure:
 - 2e. Context governance — soft-policy rules with runtime mutation and violation logging
 - 2f. Injection engine — conditional session-start and compaction-time injection with governance filtering
 
-**Plans:** 6 plans
+**Plans:** 9 plans
 
 Plans:
 - [x] 02-01-PLAN.md — Runtime policy foundation: configurable concurrency and budgets that explicitly supplement OpenCode built-ins (Wave 1)
@@ -57,6 +57,9 @@ Plans:
 - [x] 02-04-PLAN.md — Session recovery and hook repair: staleness/risk framing, CQRS-safe compaction, compact/reset restoration (Wave 4)
 - [x] 02-05-PLAN.md — Context governance: durable soft-policy rules, runtime mutation, violation logging (Wave 5)
 - [x] 02-06-PLAN.md — Injection engine: conditional session-start and compaction-time injection with governance filtering (Wave 6)
+- [x] 02-07-PLAN.md — Runtime-policy production wiring: live queue and hook budget resolution from trusted policy state (Wave 7)
+- [x] 02-08-PLAN.md — Execution-mode wiring: classifier-driven live delegation runtime with owned-process background execution (Wave 8)
+- [x] 02-09-PLAN.md — Injection and governance correctness: route-aware payloads, active-rule suppression, and overlapping metadata correlation (Wave 8)
 
 ## Phase 3: Schema Definition
 
@@ -87,7 +90,7 @@ Plans:
 | Phase | Items Complete | Status |
 |-------|---------------|--------|
 | 1. Baseline Cleanup | 7/10 | Plan created (1 plan, Wave 1) |
-| 2. V3 Runtime Architecture | 6/6 plans | Complete |
+| 2. V3 Runtime Architecture | 9/9 plans | Complete |
 | 3. Schema Definition | 0/4 | Not started |
 | 4. Migration Gate | 0/4 | Not started |
 | 5. Integration Verification | 0/5 | Not started |
