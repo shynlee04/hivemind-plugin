@@ -452,7 +452,7 @@ Complete mapping of all requirements to phases.
 | RUN-3b: Delegation chain | P0 | Complete | RUN-3a |
 | RUN-3c: Concurrency control | P0 | Partial | None |
 | RUN-3d: Session recovery | P1 | Pending | RUN-3b, RUN-3c |
-| RUN-3e: Context governance | P1 | Pending | RUN-3d |
+| RUN-3e: Context governance | P1 | Complete | RUN-3d |
 | RUN-3f: Injection engine | P1 | Pending | RUN-3e |
 | RUN-3g: Specialist classification | P2 | Complete | RUN-3a, RUN-3f |
 | RUN-3h: Tool budget/circuit breaker | P1 | Partial | RUN-3c |

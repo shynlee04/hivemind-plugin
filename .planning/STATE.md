@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 02-04-PLAN.md
-last_updated: "2026-04-08T15:28:25.984Z"
+stopped_at: Completed 02-05-PLAN.md
+last_updated: "2026-04-08T15:40:11.293Z"
 progress:
   total_phases: 5
   completed_phases: 1
   total_plans: 7
-  completed_plans: 5
-  percent: 71
+  completed_plans: 6
+  percent: 86
 ---
 
 # STATE: Harness Cleanup
@@ -25,15 +25,15 @@ See: `.planning/PROJECT.md` (updated 2026-04-06)
 ## Current Position
 
 Phase: 02 (v3-runtime-architecture) — EXECUTING
-Plan: 5 of 6
+Plan: 6 of 6
 **Phase:** 02 (v3-runtime-architecture) — IN PROGRESS
-**Plan:** 02-05 next (02-04 complete)
+**Plan:** 02-06 next (02-05 complete)
 **Status:** Executing Phase 02
-**Progress:** [███████░░░] 71%
+**Progress:** [█████████░] 86%
 
 ```
 Phase 1: Baseline Cleanup ......... ✅ COMPLETE (10/10 items)
-Phase 2: V3 Runtime Architecture .. In progress (4/6 plans complete)
+Phase 2: V3 Runtime Architecture .. In progress (5/6 plans complete)
 Phase 3: Functional Fixes ......... Pending
 Phase 4: Rebuild & Polish ......... Pending
 Phase 5: Verification ............. Pending
@@ -64,6 +64,7 @@ Phase 5: Verification ............. Pending
 | Build | Pass | ✅ |
 | Phase 02-v3-runtime-architecture P03 | 10 min | 2 tasks | 10 files |
 | Phase 02 P04 | 8 min | 2 tasks | 11 files |
+| Phase 02 P05 | 5 min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -81,6 +82,8 @@ Phase 5: Verification ............. Pending
 - [Phase 02]: Recovery state is assessed from persisted continuity records instead of implicitly restoring live counters during hydration.
 - [Phase 02]: createCoreHooks owns the single active event hook and fans out session observers explicitly.
 - [Phase 02]: Compaction persistence and auto-loop retry dispatch execute through lifecycle methods, not directly inside read-side hooks.
+- [Phase 02]: Persist governance rules and violation history inside the canonical continuity store rather than a second runtime file.
+- [Phase 02]: Run governance before existing budget enforcement so soft-policy warnings and escalations remain the default enforcement posture.
 
 ### Todos
 
@@ -104,7 +107,7 @@ Phase 5: Verification ............. Pending
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19
 
-**Stopped At:** Completed 02-04-PLAN.md
+**Stopped At:** Completed 02-05-PLAN.md
 
 **Key files:**
 
@@ -118,4 +121,4 @@ Phase 5: Verification ............. Pending
 
 ---
 *State initialized: 2026-04-06*
-*Last updated: 2026-04-08 after Phase 02 Plan 04 completion verification*
+*Last updated: 2026-04-08 after Phase 02 Plan 05 completion verification*
