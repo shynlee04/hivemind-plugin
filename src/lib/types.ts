@@ -76,6 +76,27 @@ export type CompactionCheckpointData = {
 
 export type DelegationPacketStatus = "pending" | "running" | "completed" | "failed"
 
+export type DelegationExecutionCharacteristics = {
+  isParallel: boolean
+  isInteractive: boolean
+  isResearch: boolean
+  isHeadless: boolean
+  runInBackground: boolean
+}
+
+export type DelegationExecutionCapabilityEvidence = {
+  hasTmux: boolean
+  projectRoot: string
+}
+
+export type DelegationExecutionMetadata = {
+  family: "visible-worker" | "built-in"
+  submode: "tmux-pane" | "builtin-subsession" | "builtin-process"
+  rationale: string
+  characteristics: DelegationExecutionCharacteristics
+  capabilityEvidence: DelegationExecutionCapabilityEvidence
+}
+
 export type DelegationPacket = {
   id: string
   spec: string
@@ -167,6 +188,7 @@ export type SessionContinuityMetadata = {
   delegation: DelegationMeta
   compactionCheckpoint?: CompactionCheckpointData
   delegationPacket?: DelegationPacket
+  execution?: DelegationExecutionMetadata
   title: string
   description: string
   category?: DelegationCategory

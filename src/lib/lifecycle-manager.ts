@@ -1,16 +1,18 @@
 import { buildDelegationQueueKey, DelegationConcurrencyQueue, reserveSubagentSpawn } from "./concurrency.js"
 import type { SpawnReservation } from "./concurrency.js"
+import { BackgroundManager } from "./background-manager.js"
 import { CompletionDetector } from "./completion-detector.js"
 import type { CheckpointData } from "./compaction-checkpoint.js"
 import { buildDelegationPacketParentChain, createDelegationPacket } from "./delegation-packet.js"
+import type { ExecutionModeResult } from "./execution-mode.js"
 import { deleteSessionContinuity, getSessionContinuity, getSessionRecoveryState, listSessionContinuity, patchSessionDelegationPacket, patchSessionContinuity, recordSessionContinuity } from "./continuity.js"
+import { runLifecycleProcessTask, runLifecycleSubsessionTask } from "./lifecycle-process-runner.js"
 import { addWarning } from "./state.js"
 import { inferContinuityStatusFromEvent } from "./runtime.js"
 import { createSession, getEventParentID, getSessionID, type OpenCodeClient, sendPrompt } from "./session-api.js"
 import { commitDescendant, forgetSession, hydrateDelegationState, inheritRootFromParent, setDelegationMeta, taskState } from "./state.js"
 import { acquireLifecycleQueue, enqueueWaitingLifecycle, type QueueSnapshot } from "./lifecycle-queue.js"
-import { observeBackgroundCompletion } from "./lifecycle-background-observer.js"
-import { buildDelegationMeta, buildLifecycleState, extractTextFromResponse, isValidLifecycleTransition, mapPhaseToDelegationPacketStatus, mapStatusToLifecyclePhase } from "./lifecycle-state.js"
+import { buildDelegationMeta, buildLifecycleState, isValidLifecycleTransition, mapPhaseToDelegationPacketStatus, mapStatusToLifecyclePhase } from "./lifecycle-state.js"
 import { resolveLifecycleConcurrency } from "./lifecycle-runtime-policy.js"
 import type {
   DelegationRouteResolution,
@@ -38,6 +40,7 @@ type LaunchDelegatedSessionArgs = {
   compatibleTools: string[]
   toolCompatibility?: Record<string, boolean>
   promptText: string
+  execution: ExecutionModeResult
   spawnReservation?: SpawnReservation
 }
 
@@ -46,6 +49,7 @@ type HarnessLifecycleManagerOptions = {
   pollTimeoutMs: number
   /** Workspace-level runtime policy injected from plugin composition root. */
   runtimePolicy?: RuntimePolicy
+  backgroundManager?: BackgroundManager
 }
 
 function now(): number { return Date.now() }
@@ -59,9 +63,11 @@ export class HarnessLifecycleManager {
   private readonly queue: DelegationConcurrencyQueue
   private readonly completionDetector = new CompletionDetector()
   private readonly runtimePolicy: RuntimePolicy | undefined
+  private readonly backgroundManager: BackgroundManager
 
   constructor(private readonly options: HarnessLifecycleManagerOptions) {
     this.runtimePolicy = options.runtimePolicy
+    this.backgroundManager = options.backgroundManager ?? new BackgroundManager()
     this.concurrencyLimit = parseInt(process.env.OPENCODE_HARNESS_CONCURRENCY_LIMIT ?? "3", 10)
     if (Number.isNaN(this.concurrencyLimit) || this.concurrencyLimit < 1) {
       this.concurrencyLimit = 3
@@ -259,6 +265,13 @@ export class HarnessLifecycleManager {
               sessionID: childSessionID,
             }),
           ),
+          execution: {
+            family: args.execution.family,
+            submode: args.execution.submode,
+            rationale: args.execution.rationale,
+            characteristics: { ...args.execution.characteristics },
+            capabilityEvidence: { ...args.execution.capabilityEvidence },
+          },
           title: `${args.agent}: ${args.description}`,
           description: args.description,
           category: args.route.category,
@@ -327,92 +340,50 @@ export class HarnessLifecycleManager {
         },
       })
 
-      if (args.runInBackground) {
-        sendPrompt(this.options.client, childSessionID, body).catch((error: unknown) => {
-          const message = error instanceof Error ? error.message : String(error)
-          this.patchLifecycle({
-            sessionID: childSessionID,
-            status: "error",
-            phase: "failed",
-            error: message,
-            observation: {
-              source: "dispatch",
-              observedAt: now(),
-              detail: "prompt-dispatch-failed",
-            },
-          })
-        })
-
-        void observeBackgroundCompletion({
+      if (args.execution.submode === "builtin-process") {
+        return await runLifecycleProcessTask({
           sessionID: childSessionID,
-          client: this.options.client,
-          completionDetector: this.completionDetector,
-          pollTimeoutMs: this.options.pollTimeoutMs,
-          now,
-          getSessionContinuity,
+          parentSessionID: args.parentSessionID,
+          rootID: args.rootID,
+          childDepth: args.childDepth,
+          agent: args.agent,
+          category: args.route.category,
+          model: args.route.effectiveModel,
+          description: args.description,
+          promptText: args.promptText,
+          runInBackground: args.runInBackground,
+          execution: args.execution,
+          backgroundManager: this.backgroundManager,
           patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+          getLifecycleSnapshot: (sessionID) => this.getLifecycleSnapshot(sessionID),
           releaseQueue,
+          now,
         })
-
-        return JSON.stringify(
-          {
-            ok: true,
-            mode: "async",
-            session_id: childSessionID,
-            parent_session_id: args.parentSessionID,
-            root_session_id: args.rootID,
-            agent: args.agent,
-            category: args.route.category,
-            model: args.route.effectiveModel,
-            depth: args.childDepth,
-            budget_used: budgetUsed,
-            concurrency_key: queueKey,
-            concurrency_active: this.queue.snapshot(queueKey).active,
-            concurrency_pending: this.queue.snapshot(queueKey).pending,
-            concurrency_limit: this.queue.snapshot(queueKey).limit,
-            route: args.route,
-            description: args.description,
-            lifecycle: this.getLifecycleSnapshot(childSessionID),
-          },
-          null,
-          2,
-        )
       }
 
-      try {
-        const response = await sendPrompt(this.options.client, childSessionID, body)
-        const assistantText = extractTextFromResponse(response)
-
-        this.patchLifecycle({
-          sessionID: childSessionID,
-          status: "completed",
-          phase: "completed",
-          completedAt: now(),
-          observation: {
-            source: "observe:sync",
-            observedAt: now(),
-            detail: "assistant-output-ready",
-          },
-        })
-
-        return assistantText
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error)
-        this.patchLifecycle({
-          sessionID: childSessionID,
-          status: "error",
-          phase: "failed",
-          error: message,
-          observation: {
-            source: "observe:sync",
-            observedAt: now(),
-            detail: "assistant-output-failed",
-          },
-        })
-        throw error
-      } finally {
-        releaseQueue("sync-complete")
-      }
+      return await runLifecycleSubsessionTask({
+        sessionID: childSessionID,
+        parentSessionID: args.parentSessionID,
+        rootID: args.rootID,
+        childDepth: args.childDepth,
+        agent: args.agent,
+        category: args.route.category,
+        model: args.route.effectiveModel,
+        description: args.description,
+        route: args.route,
+        body,
+        runInBackground: args.runInBackground,
+        client: this.options.client,
+        completionDetector: this.completionDetector,
+        pollTimeoutMs: this.options.pollTimeoutMs,
+        getSessionContinuity,
+        patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+        getLifecycleSnapshot: (sessionID) => this.getLifecycleSnapshot(sessionID),
+        releaseQueue,
+        queueSnapshot: this.queue.snapshot(queueKey),
+        budgetUsed,
+        now,
+      })
     } catch (error) {
       spawnReservation.rollback()
       throw error
@@ -478,7 +449,7 @@ export class HarnessLifecycleManager {
     patchSessionContinuity(args.sessionID, {
       status: args.status,
       lastObservedAt: timestamp,
-      lastError: args.error,
+      lastError: args.error === undefined ? record.metadata.lastError : args.error,
       lifecycle,
     })
     this.syncDelegationPacketStatus(args.sessionID, args.phase)

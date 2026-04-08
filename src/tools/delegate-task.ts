@@ -8,6 +8,7 @@
  */
 import { tool } from "@opencode-ai/plugin/tool"
 import { reserveSubagentSpawn } from "../lib/concurrency.js"
+import { classifyExecutionMode, type TaskCharacteristics } from "../lib/execution-mode.js"
 import { resolveSpecialistRoute } from "../lib/specialist-router.js"
 import {
   buildPromptText,
@@ -84,6 +85,29 @@ function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[
     default:
       throw new Error(`[Harness] Unsupported agent for permission profile: ${String(agentName)}`)
   }
+}
+
+function buildTaskCharacteristics(args: DelegateTaskArgs, agent: SpecialistAgent): TaskCharacteristics {
+  const description = args.description.toLowerCase()
+  const prompt = args.prompt.toLowerCase()
+  const category = args.category?.toLowerCase() ?? ""
+  const isResearch = agent === "researcher" || category === "research" || category === "deep"
+  const isReview = agent === "critic" || category === "review"
+  const isHeadless = isResearch || (!isReview && args.run_in_background)
+  const isInteractive = !isResearch
+  const isParallel = args.run_in_background || /parallel|concurrent|independent|background/.test(`${description} ${prompt}`)
+
+  return {
+    isParallel,
+    isInteractive,
+    isResearch,
+    isHeadless,
+    runInBackground: args.run_in_background,
+  }
+}
+
+function detectTmuxAvailability(): boolean {
+  return Boolean(process.env.TMUX || process.env.TMUX_PANE || process.env.TERM_PROGRAM === "tmux")
 }
 
 // ---------------------------------------------------------------------------
@@ -201,6 +225,10 @@ export function createDelegateTaskTool(
       const permission = getPermissionRulesForAgent(agent)
       const toolCompatibility = getPromptToolCompatibility(permission)
       const compatibleTools = toolCompatibility ? Object.keys(toolCompatibility).sort() : []
+      const execution = classifyExecutionMode(buildTaskCharacteristics(args, agent), {
+        hasTmux: detectTmuxAvailability(),
+        projectRoot: process.cwd(),
+      })
 
       return await lifecycleManager.launchDelegatedSession({
         parentSessionID,
@@ -226,6 +254,7 @@ export function createDelegateTaskTool(
           requiredTools: agentTools.required,
           mustNotDo: agentTools.mustNot,
         }),
+        execution,
         spawnReservation,
       })
     },

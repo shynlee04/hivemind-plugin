@@ -27,6 +27,11 @@ export type DelegationArtifactPacket = DelegationPacket & {
   }
   execution: {
     runInBackground: boolean
+    family?: NonNullable<SessionContinuityMetadata["execution"]>["family"]
+    submode?: NonNullable<SessionContinuityMetadata["execution"]>["submode"]
+    rationale?: NonNullable<SessionContinuityMetadata["execution"]>["rationale"]
+    characteristics?: NonNullable<SessionContinuityMetadata["execution"]>["characteristics"]
+    capabilityEvidence?: NonNullable<SessionContinuityMetadata["execution"]>["capabilityEvidence"]
     continuityStatus: SessionContinuityMetadata["status"]
     lifecyclePhase?: NonNullable<SessionContinuityMetadata["lifecycle"]>["phase"]
     updatedAt: number
@@ -235,6 +240,11 @@ export function buildDelegationArtifactPacket(
     },
     execution: {
       runInBackground: record.metadata.runInBackground,
+      family: record.metadata.execution?.family,
+      submode: record.metadata.execution?.submode,
+      rationale: record.metadata.execution?.rationale,
+      characteristics: record.metadata.execution?.characteristics,
+      capabilityEvidence: record.metadata.execution?.capabilityEvidence,
       continuityStatus: record.metadata.status,
       lifecyclePhase: record.metadata.lifecycle?.phase,
       updatedAt: record.metadata.updatedAt,

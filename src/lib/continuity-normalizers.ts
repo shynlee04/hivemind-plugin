@@ -1,4 +1,4 @@
-import type { CompactionCheckpointData, DelegationCategory, DelegationMeta, DelegationPacket, DelegationPacketStatus, DelegationRouteResolution, PermissionAction, PermissionRule, SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleCleanup, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleQueueState, SessionLifecycleState, SessionPromptParams, SessionToolProfile, SpecialistAgent } from "./types.js"
+import type { CompactionCheckpointData, DelegationCategory, DelegationExecutionMetadata, DelegationMeta, DelegationPacket, DelegationPacketStatus, DelegationRouteResolution, PermissionAction, PermissionRule, SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleCleanup, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleQueueState, SessionLifecycleState, SessionPromptParams, SessionToolProfile, SpecialistAgent } from "./types.js"
 import { VALID_DELEGATION_CATEGORIES } from "./types.js"
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value) }
@@ -224,6 +224,64 @@ function normalizeDelegationPacketStatus(value: unknown): DelegationPacketStatus
   }
 }
 
+function normalizeExecutionMetadata(value: unknown): DelegationExecutionMetadata | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const family = value.family === "visible-worker" || value.family === "built-in" ? value.family : undefined
+  const submode =
+    value.submode === "tmux-pane" ||
+    value.submode === "builtin-subsession" ||
+    value.submode === "builtin-process"
+      ? value.submode
+      : undefined
+  const rationale = asString(value.rationale)
+  const characteristics = isRecord(value.characteristics) ? value.characteristics : undefined
+  const capabilityEvidence = isRecord(value.capabilityEvidence) ? value.capabilityEvidence : undefined
+
+  if (!family || !submode || !rationale || !characteristics || !capabilityEvidence) {
+    return undefined
+  }
+
+  const isParallel = asBoolean(characteristics.isParallel)
+  const isInteractive = asBoolean(characteristics.isInteractive)
+  const isResearch = asBoolean(characteristics.isResearch)
+  const isHeadless = asBoolean(characteristics.isHeadless)
+  const runInBackground = asBoolean(characteristics.runInBackground)
+  const hasTmux = asBoolean(capabilityEvidence.hasTmux)
+  const projectRoot = asString(capabilityEvidence.projectRoot)
+
+  if (
+    isParallel === undefined ||
+    isInteractive === undefined ||
+    isResearch === undefined ||
+    isHeadless === undefined ||
+    runInBackground === undefined ||
+    hasTmux === undefined ||
+    !projectRoot
+  ) {
+    return undefined
+  }
+
+  return {
+    family,
+    submode,
+    rationale,
+    characteristics: {
+      isParallel,
+      isInteractive,
+      isResearch,
+      isHeadless,
+      runInBackground,
+    },
+    capabilityEvidence: {
+      hasTmux,
+      projectRoot,
+    },
+  }
+}
+
 function normalizeDelegationPacket(value: unknown): DelegationPacket | undefined {
   if (!isRecord(value)) {
     return undefined
@@ -419,6 +477,7 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
   const delegation = normalizeDelegationMeta(value.delegation)
   const compactionCheckpoint = normalizeCompactionCheckpoint(value.compactionCheckpoint)
   const delegationPacket = normalizeDelegationPacket(value.delegationPacket)
+  const execution = normalizeExecutionMetadata(value.execution)
   const title = asString(value.title)
   const description = asString(value.description)
   const category = normalizeDelegationCategory(value.category)
@@ -455,6 +514,7 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
     delegation,
     compactionCheckpoint,
     delegationPacket,
+    execution,
     title,
     description,
     category,
