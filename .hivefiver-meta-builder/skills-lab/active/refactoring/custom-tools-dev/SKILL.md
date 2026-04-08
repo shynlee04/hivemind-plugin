@@ -75,6 +75,41 @@ Before a tool or plugin is done:
 - [ ] CLI scripts report facts only (exit 0, no governance)
 - [ ] No hardcoded paths in scripts
 
+## Worked Example: Complete Tool with Zod Schema
+
+**Scenario:** Create a tool that validates file paths before deletion
+
+```typescript
+import { tool } from '@opencode-ai/plugin'
+const s = tool.schema
+
+export default tool({
+  description: 'Safely delete files with validation',
+  args: {
+    paths: s.array(s.string()).min(1).describe('Files to delete'),
+    dryRun: s.boolean().default(false).describe('Preview without deleting'),
+  },
+  async execute(args, context) {
+    const results = []
+    for (const path of args.paths) {
+      if (args.dryRun) {
+        results.push({ path, status: 'would_delete' })
+      } else {
+        // context.ask() for permission
+        const confirmed = await context.ask({ message: `Delete ${path}?` })
+        if (!confirmed) {
+          results.push({ path, status: 'skipped' })
+          continue
+        }
+        // ... delete logic
+        results.push({ path, status: 'deleted' })
+      }
+    }
+    return JSON.stringify({ results })
+  }
+})
+```
+
 ## Anti-Patterns
 
 | Anti-Pattern | Detection | Correction |

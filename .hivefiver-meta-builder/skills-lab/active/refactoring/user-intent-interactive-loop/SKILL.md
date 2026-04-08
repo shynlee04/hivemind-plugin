@@ -1,6 +1,6 @@
 ---
 name: user-intent-interactive-loop
-description: Use when user intent is unclear, sessions span many turns, or you need to probe requirements before delegating work. Triggers on: "unclear intent", "probe requirements", "long session management", "parent child delegation", "context preservation", "iterative engagement", "clarify before delegating". Maintains context across long sessions and manages parent/child task delegation.
+description: This skill should be used when user intent is unclear, sessions span many turns, or requirements need probing before delegating work. Triggers on: "unclear intent", "probe requirements", "long session management", "parent child delegation", "context preservation", "iterative engagement", "clarify before delegating". Maintains context across long sessions and manages parent/child task delegation.
 metadata:
   layer: "1"
   role: "front-agent"

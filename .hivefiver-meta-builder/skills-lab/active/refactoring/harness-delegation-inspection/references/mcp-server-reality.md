@@ -58,7 +58,7 @@ LLMs are trained on static data. MCP servers provide **live, current information
 
 **Flow:**
 1. `context7_resolve-library-id` — find the library ID
-2. `context7_query-docs` — query the documentation
+2. `context7_query-docs` — queeeeeeeeeeeery the documentation
 
 **Example:**
 ```

@@ -167,6 +167,31 @@ Before an agent definition or delegation pattern is done:
 - [ ] Status protocol is embedded (not referenced externally)
 - [ ] Worktree control is addressed
 
+## Worked Example: Full Delegation Cycle
+
+**Scenario:** User asks "research the best auth library for our Next.js app"
+
+```
+Step 1: Construct context (NOT session history)
+  Task: "Research auth libraries for Next.js. Compare: NextAuth, Lucia, Auth.js. 
+  Criteria: SSR support, middleware patterns, TypeScript types, community adoption.
+  Deliverable: Recommendation table with rationale."
+  
+Step 2: Dispatch envelope
+  Task tool → researcher agent
+  Context: "You are a researcher. Read-only access. Output markdown table."
+  Scope: "Do NOT write code. Only compare libraries."
+  
+Step 3: After return → status = DONE_WITH_CONCERNS
+  Concern: "Auth.js v5 has breaking changes not covered"
+  Action: Note concern, proceed to review
+  
+Step 4: Two-stage review
+  Stage 1 (Spec): Did it compare 3 libraries? Yes. Criteria covered? Yes.
+  Stage 2 (Quality): Is the table readable? Yes. Citations present? Yes.
+  Result: PASS
+```
+
 ## Anti-Patterns
 
 | Anti-Pattern | Detection | Correction |

@@ -1,6 +1,6 @@
 ---
 name: oh-my-openagent-reference
-description: Use when referencing oh-my-openagent architecture for harness design patterns. Triggers on: "oh-my-openagent reference", "OMO architecture", "plugin system design", "hook system patterns", "circuit breaker design", "session continuity patterns", "skill loader architecture", "compare harness to OMO". Provides complete oh-my-openagent repo as packed reference.
+description: This skill should be used when referencing oh-my-openagent architecture for harness design patterns. Triggers on: "oh-my-openagent reference", "OMO architecture", "plugin system design", "hook system patterns", "circuit breaker design", "session continuity patterns", "skill loader architecture", "compare harness to OMO". Provides complete oh-my-openagent repo as packed reference.
 metadata:
   layer: "3"
   role: "reference"
@@ -49,6 +49,15 @@ function calculateTotal
 ### 4. Use the raw XML
 
 The complete packed repo is in `references/oh-my-openagent-full.xml` (original repomix XML format). Use `attach_packed_output` or `grep_repomix_output` tools to explore it.
+
+## Anti-Patterns
+
+| Anti-Pattern | Detection | Correction |
+|-------------|-----------|------------|
+| **The Memorizer** | Treats packed XML as current truth | Repomix packs are historical reference only. Verify against live code. |
+| **The Full-Loader** | Reads entire XML without compression | Use `compress: true` for structure-first exploration. Grep before reading. |
+| **The Pattern Copier** | Copies OMO patterns directly into harness | OMO is architectural inspiration, not implementation spec. Adapt, don't copy. |
+| **The Stale Citer** | Cites packed code as current behavior | Packed code may be outdated. Use only for structural patterns, not runtime claims. |
 
 ---
 

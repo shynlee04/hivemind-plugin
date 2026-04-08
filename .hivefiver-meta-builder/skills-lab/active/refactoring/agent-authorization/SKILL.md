@@ -1,6 +1,6 @@
 ---
 name: agent-authorization
-description: Authorization framework for agent creation with checkpoint gates. Use when authorizing agent creation, creating agent guardrails, defining specialist agent profiles, or setting up authorization checkpoints before agent dispatch. Triggers: "authorize agent creation", "create agent guardrails", "specialist agent profile", "checkpoint gate", "authorization gate for agents"
+description: This skill should be used when the user asks to "authorize agent creation", "create agent guardrails", "define specialist agent profile", "set up authorization checkpoints", "checkpoint gate for agents", "authorization gate before dispatch", "agent capability matrix", or "agent permission model".
 version: 1.0.0
 metadata:
   layer: "domain-execution"

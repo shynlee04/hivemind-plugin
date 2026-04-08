@@ -1,6 +1,6 @@
 ---
 name: coordinating-loop
-description: Use when dispatching multiple agents, deciding between sequential vs parallel execution, or orchestrating multi-agent workflows with validation gates.
+description: This skill should be used when the user asks to "dispatch multiple agents", "decide between sequential vs parallel execution", "orchestrate multi-agent workflow", "coordinate parallel tasks", "set up validation gates for delegation", "ralph loop", "wave-based execution", "manage agent dependencies", "plan agent coordination", or "hand off between agents".
 metadata:
   layer: "3"
   role: "coordinator"
@@ -350,6 +350,15 @@ Run: npm test -- tests/lib/session-api.ts — all must pass
 | `user-intent-interactive-loop` | Captures user intent before coordination begins |
 | `planning-with-files` | Maintains task_plan.md, findings.md, progress.md |
 | `phase-loop` | Provides iteration semantics for coordinated revision loops |
+
+## Cross-References (Boundary Clarification)
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `agents-and-subagents-dev` | agents-and-subagents-dev owns agent definitions and delegation protocol. This skill owns dispatch mechanics and coordination between multiple agents. |
+| `harness-delegation-inspection` | harness-delegation-inspection owns GSD-specific execution patterns (checkpoint resume, session ID tracking). This skill owns general multi-agent orchestration. |
+| `user-intent-interactive-loop` | user-intent-interactive-loop owns intent clarification before work begins. This skill owns execution coordination after intent is clear. |
+| `planning-with-files` | planning-with-files owns task-level persistent memory. This skill reads/writes those files as part of coordination but doesn't own them. |
 
 ---
 

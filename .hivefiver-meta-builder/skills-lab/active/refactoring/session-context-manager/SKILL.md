@@ -1,6 +1,6 @@
 ---
 name: session-context-manager
-description: Manages session context persistence across phases. Use when the user asks to manage session context, track phase progress, persist context across loops, load session state, read session context, or maintain context between phases.
+description: This skill should be used when the user asks to "manage session context", "track phase progress", "persist context across loops", "load session state", "read session context", "maintain context between phases", "save checkpoint", "resume session context", or "context schema".
 version: 1.0.0
 metadata:
   layer: "2"
@@ -153,3 +153,11 @@ Append this block to every subagent prompt before dispatching work. This is the 
 ## Reference Files
 
 - `references/session-context-protocol.md` — Detailed checkpoint types and state machine
+
+## Cross-References (Boundary Clarification)
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `planning-with-files` | planning-with-files owns task-level planning files (task_plan.md, findings.md, progress.md). This skill owns session-level context (phase tracking, checkpoint schema, context propagation). |
+| `phase-loop` | phase-loop owns iterative loop semantics. This skill owns the context schema that loop iterations read/write. |
+| `coordinating-loop` | coordinating-loop dispatches agents across phases. This skill provides the context persistence those agents use. |

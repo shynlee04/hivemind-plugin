@@ -1,6 +1,6 @@
 ---
 name: command-parser
-description: Parses $ARGUMENT propositional commands from OpenCode command strings. Use when parsing command strings with named arguments, extracting flags and values from slash commands, handling multi-word arguments with quoted strings, or expanding propositional expressions (entity=value, entity:action). Triggers: "parse $ARGUMENT", "command parsing framework", "propositional commands", "extract flags from command"
+description: This skill should be used when parsing $ARGUMENT propositional commands from OpenCode command strings. Handles named arguments, flag extraction, multi-word quoted values, and propositional expressions (entity=value, entity:action). Triggers: "parse $ARGUMENT", "command parsing framework", "propositional commands", "extract flags from command".
 metadata:
   layer: "3"
   role: "domain-execution"
@@ -73,6 +73,37 @@ Example: `deploy production --force` → `{verb: "deploy", positional: ["product
 | Unmatched quote | Opening `"` with no closing `"` | Rest of input becomes the value |
 | Double delimiter | `key==value` or `key::action` | Split on first delimiter only |
 | Orphan positional | Bare word between `--flag` tokens | Classify as positional |
+
+## Worked Example: Complex Command String
+
+**Input:** `/plan skill=create-auth-skill scope="oauth2 + openid" --priority high --dry-run`
+
+```
+Step 1: Identify verb → "plan"
+Step 2: Classify tokens:
+  "skill=create-auth-skill"  → key=value  → { skill: "create-auth-skill" }
+  'scope="oauth2 + openid"'  → quoted kv   → { scope: "oauth2 + openid" }
+  "--priority high"           → --flag val  → { priority: "high" }
+  "--dry-run"                 → --flag bool → { dryRun: true }
+Step 3: Build flags map → { skill, scope, priority, dryRun }
+Step 4: No positionals → []
+Step 5: Expand propositions → { entity: "skill", value: "create-auth-skill" }
+```
+
+**Result:**
+```json
+{
+  "verb": "plan",
+  "flags": {
+    "skill": "create-auth-skill",
+    "scope": "oauth2 + openid",
+    "priority": "high",
+    "dryRun": true
+  },
+  "positional": [],
+  "proposition": { "entity": "skill", "value": "create-auth-skill" }
+}
+```
 
 ## Non-Interactive Shell Compliance
 

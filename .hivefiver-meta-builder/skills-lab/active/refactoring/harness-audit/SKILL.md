@@ -1,6 +1,6 @@
 ---
 name: harness-audit
-description: Use when auditing an entire OpenCode project: skills, commands, tools (built-in and custom), permissions, agents, and subagents. Triggers on "audit harness", "check boundaries", "verify architecture", "audit skills", "check governance", "context poisoning", "cross-platform audit", "audit my opencode project", "full harness audit", "validate opencode setup".
+description: This skill should be used when the user asks to "audit my OpenCode project", "check boundaries", "verify architecture", "audit skills", "check governance", "context poisoning", "cross-platform audit", "full harness audit", "validate opencode setup". Audits skills, commands, tools (built-in and custom), permissions, agents, and subagents.
 metadata:
   layer: "1"
   role: "auditor"
@@ -50,7 +50,7 @@ harness-audit/
 
 1. Run `bash scripts/compile-bundle.sh` — compiles all 7 subagent profiles
 2. Run `bash scripts/validate-skill.sh` — validates structure before dispatch
-3. Read project context: `opencode.json`, `AGENTS.md`, `CLAUDE.md`
+3. Read project context: `opencode.json`, `AGENTS.md`
 
 ## Execution Flow
 

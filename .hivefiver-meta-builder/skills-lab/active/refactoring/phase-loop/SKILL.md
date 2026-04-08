@@ -1,10 +1,6 @@
 ---
 name: phase-loop
-description: |
-  Use when defining loop semantics for iterative phase execution. Triggers: 
-  "define loop semantics", "what does loop mean", "iterate on document", 
-  "phase loop architecture", "revision loop pattern", "check-revise-escalate",
-  "how many iterations", "loop exit criteria"
+description: This skill should be used when the user asks to "define loop semantics", "explain phase loop", "iterate on document", "phase loop architecture", "revision loop pattern", "check-revise-escalate", "how many iterations", "loop exit criteria", "stall detection", or "iterative phase execution".
 version: 1.0.0
 metadata:
   layer: "2"

@@ -1,6 +1,6 @@
 ---
 name: harness-delegation-inspection
-description: Use when delegating tasks to subagents, inspecting OpenCode project state, or understanding how GSD execution patterns work. Triggers on "how to delegate", "subagent patterns", "GSD execution model", "context continuity", "MCP server usage", "inspect opencode project", "how does gsd work", "fail resume with ID", "session continuity", "ecosystem structure".
+description: This skill should be used when the user asks to "understand GSD execution patterns", "inspect OpenCode project state", "how does GSD work", "fail resume with ID", "session continuity", "MCP server usage for inspection", "ecosystem structure", "context continuity mechanisms", "checkpoint return format", or "wave-based parallel execution".
 metadata:
   layer: "1"
   role: "domain-execution"
@@ -18,12 +18,12 @@ allowed-tools:
 
 # harness-delegation-inspection
 
-This skill documents what LLMs **do not know by default**: GSD execution patterns, MCP server realities, ecosystem structure, context continuity mechanisms, and OpenCode platform internals. It is NOT a template — it is a reference for real delegation and inspection.
+This skill documents what Agent systems **do not know by default**: GSD execution patterns, MCP server realities, ecosystem structure, context continuity mechanisms, and OpenCode platform internals. It is NOT a template — it is a reference for real delegation and inspection.
 
 ## The Iron Law
 
 ```
-LLMs DO NOT KNOW THESE PATTERNS. ALWAYS LOAD THIS SKILL BEFORE DELEGATING OR INSPECTING.
+Agent systems DO NOT KNOW THESE PATTERNS. ALWAYS LOAD THIS SKILL BEFORE DELEGATING OR INSPECTING.
 ```
 
 ## On Load
@@ -192,3 +192,11 @@ For repo access:
 | `references/ecosystem-structure.md` | When navigating the Hivefiver ecosystem |
 | `references/context-continuity.md` | When maintaining state across sessions |
 | `references/opencode-platform-reality.md` | When inspecting OpenCode project state |
+
+## Cross-References (Boundary Clarification)
+
+| Related Skill | Boundary |
+|---------------|----------|
+| `agents-and-subagents-dev` | agents-and-subagents-dev owns agent definitions and delegation envelope. This skill owns GSD-specific execution patterns (bash→parse→connect→launch→fail-resume). |
+| `coordinating-loop` | coordinating-loop owns general multi-agent dispatch. This skill owns the GSD-specific checkpoint resume and session ID tracking mechanisms. |
+| `planning-with-files` | planning-with-files owns task_plan.md/findings.md/progress.md. This skill inspects those files as part of project state inspection. |
