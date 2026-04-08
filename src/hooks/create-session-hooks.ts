@@ -12,8 +12,15 @@ import {
 import {
   getContinuityStoragePath,
   getSessionContinuity,
+  getSessionRecoveryState,
 } from "../lib/continuity.js"
 import { asString, getNestedValue } from "../lib/helpers.js"
+import {
+  evaluateInjections,
+  hasAnyInjection,
+  INJECTION_CANDIDATE_IDS,
+} from "../lib/injection-engine.js"
+import { listGovernanceViolations } from "../lib/governance-engine.js"
 import {
   getEventSessionID,
   getSessionMessages,
@@ -36,6 +43,61 @@ const DEFAULT_AUTO_LOOP_CONFIG = {
   completionSignal: "<promise>DONE</promise>",
   backoffMs: 1000,
 } as const
+
+function buildInjectionGovernance(sessionID: string) {
+  const blockingViolation = listGovernanceViolations().find(
+    (violation) => violation.sessionID === sessionID && violation.actionType === "block",
+  )
+
+  if (!blockingViolation) {
+    return undefined
+  }
+
+  return {
+    blockedInjections: [...INJECTION_CANDIDATE_IDS],
+    reasonByInjectionID: Object.fromEntries(
+      INJECTION_CANDIDATE_IDS.map((id) => [id, blockingViolation.message]),
+    ),
+  }
+}
+
+function formatRuntimeInjectionBlock(args: {
+  phase: "session-start" | "compaction"
+  rules: string[]
+  commands: string[]
+  skills: string[]
+  tools: string[]
+}): string {
+  const lines = [`<harness_runtime_injection phase="${args.phase}">`]
+
+  if (args.rules.length > 0) {
+    lines.push("Rules:")
+    for (const rule of args.rules) {
+      lines.push(`- ${rule}`)
+    }
+  }
+  if (args.commands.length > 0) {
+    lines.push("Commands:")
+    for (const command of args.commands) {
+      lines.push(`- ${command}`)
+    }
+  }
+  if (args.skills.length > 0) {
+    lines.push("Skills:")
+    for (const skill of args.skills) {
+      lines.push(`- ${skill}`)
+    }
+  }
+  if (args.tools.length > 0) {
+    lines.push("Tools:")
+    for (const tool of args.tools) {
+      lines.push(`- ${tool}`)
+    }
+  }
+
+  lines.push("</harness_runtime_injection>")
+  return lines.join("\n")
+}
 
 export interface SessionHooks {
   event: (input: EventInput) => Promise<void>
@@ -269,6 +331,26 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
       }
 
       if (continuity) {
+        const injectionEvaluation = evaluateInjections({
+          sessionID,
+          phase: "compaction",
+          agent: continuity.promptParams.agent,
+          category: continuity.promptParams.category,
+          delegation: continuity.metadata.delegation,
+          route: continuity.metadata.route,
+          recovery: getSessionRecoveryState(sessionID),
+          governance: buildInjectionGovernance(sessionID),
+        })
+
+        if (hasAnyInjection(injectionEvaluation.injections)) {
+          ;(output.context as string[]).push(
+            formatRuntimeInjectionBlock({
+              phase: "compaction",
+              ...injectionEvaluation.injections,
+            }),
+          )
+        }
+
         ;(output.context as string[]).push(
           [
             "Harness continuity snapshot:",

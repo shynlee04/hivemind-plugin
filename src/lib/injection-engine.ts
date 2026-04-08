@@ -183,6 +183,8 @@ const INJECTION_CANDIDATES: readonly InjectionCandidate[] = [
   },
 ] as const
 
+export const INJECTION_CANDIDATE_IDS = INJECTION_CANDIDATES.map((candidate) => candidate.id)
+
 export function evaluateInjections(context: InjectionEvaluationContext): InjectionEvaluationResult {
   const applied: InjectionPayload = {
     rules: [],
