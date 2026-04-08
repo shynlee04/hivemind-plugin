@@ -30,6 +30,11 @@ export type GovernanceEvaluationResult = {
   blocks: GovernanceMatch[]
 }
 
+export type InjectionGovernanceBlockState = {
+  blockedInjections: string[]
+  reasonByInjectionID: Record<string, string>
+}
+
 export type GovernanceMutation =
   | {
       type: "upsert"
@@ -231,4 +236,40 @@ export function evaluateGovernance(context: GovernanceEvaluationContext): Govern
   }
 
   return result
+}
+
+export function buildInjectionGovernanceState(args: {
+  sessionID: string
+  injectionIDs: readonly string[]
+}): InjectionGovernanceBlockState | undefined {
+  const blocks: GovernanceMatch[] = []
+
+  for (const rule of loadGovernanceRules()) {
+    if (rule.scope !== "tool.execute.before") {
+      continue
+    }
+
+    if (!matchesCondition(rule.condition, {
+      scope: "tool.execute.before",
+      sessionID: args.sessionID,
+    })) {
+      continue
+    }
+
+    if (rule.action.type !== "block") {
+      continue
+    }
+
+    blocks.push({ ruleID: rule.id, message: rule.action.message })
+  }
+
+  if (blocks.length === 0) {
+    return undefined
+  }
+
+  const reason = blocks.map((block) => block.message).join(" ")
+  return {
+    blockedInjections: [...args.injectionIDs],
+    reasonByInjectionID: Object.fromEntries(args.injectionIDs.map((id) => [id, reason])),
+  }
 }

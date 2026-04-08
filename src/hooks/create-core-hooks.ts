@@ -12,7 +12,7 @@ import {
   INJECTION_CANDIDATE_IDS,
 } from "../lib/injection-engine.js"
 import { getSessionContinuity, getSessionRecoveryState } from "../lib/continuity.js"
-import { listGovernanceViolations } from "../lib/governance-engine.js"
+import { buildInjectionGovernanceState } from "../lib/governance-engine.js"
 import { getEventSessionID } from "../lib/session-api.js"
 import { transformMessages } from "./messages-transform.js"
 import type { HookDependencies } from "./types.js"
@@ -27,23 +27,6 @@ type MessagesOutput = { messages: Array<{ role: string; content: string }> }
 type SystemInput = { sessionID?: string }
 type SystemOutput = { system?: unknown }
 type ShellEnvOutput = { env?: unknown }
-
-function buildInjectionGovernance(sessionID: string) {
-  const blockingViolation = listGovernanceViolations().find(
-    (violation) => violation.sessionID === sessionID && violation.actionType === "block",
-  )
-
-  if (!blockingViolation) {
-    return undefined
-  }
-
-  return {
-    blockedInjections: [...INJECTION_CANDIDATE_IDS],
-    reasonByInjectionID: Object.fromEntries(
-      INJECTION_CANDIDATE_IDS.map((id) => [id, blockingViolation.message]),
-    ),
-  }
-}
 
 function formatRuntimeInjectionBlock(args: {
   phase: "session-start" | "compaction"
@@ -130,7 +113,7 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
       delegation: continuity.metadata.delegation,
       route: continuity.metadata.route,
       recovery: getSessionRecoveryState(sessionID),
-      governance: buildInjectionGovernance(sessionID),
+      governance: buildInjectionGovernanceState({ sessionID, injectionIDs: INJECTION_CANDIDATE_IDS }),
     })
 
     if (!hasAnyInjection(evaluation.injections)) {

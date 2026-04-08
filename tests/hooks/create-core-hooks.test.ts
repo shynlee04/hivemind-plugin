@@ -221,32 +221,25 @@ describe("createCoreHooks", () => {
     )
   })
 
-  it("keeps governance-blocked injections out of both session-start and compaction output", async () => {
+  it("keeps actively governance-blocked injections out of both session-start and compaction output", async () => {
     const {
       createCoreHooks,
       createSessionHooks,
       recordSessionContinuity,
-      recordGovernancePersistenceState,
-      getGovernancePersistenceState,
+      mutateGovernanceRule,
       TaskStateManager,
     } = await loadHookModules(continuityFile)
     const stateManager = new TaskStateManager()
     recordSessionContinuity(buildContinuityRecord("sess-blocked"))
-    const governance = getGovernancePersistenceState()
-    recordGovernancePersistenceState({
-      ...governance,
-      violations: [
-        ...governance.violations,
-        {
-          id: "gov-block-1",
-          ruleID: "rule-1",
-          scope: "tool.execute.before",
-          sessionID: "sess-blocked",
-          actionType: "block",
-          message: "Governance blocked runtime injection for this session.",
-          createdAt: 1,
-        },
-      ],
+    mutateGovernanceRule({
+      type: "upsert",
+      source: "test-suite",
+      rule: {
+        id: "rule-1",
+        scope: "tool.execute.before",
+        condition: { sessionIDs: ["sess-blocked"] },
+        action: { type: "block", message: "Governance blocked runtime injection for this session." },
+      },
     })
 
     const lifecycleManager = {
