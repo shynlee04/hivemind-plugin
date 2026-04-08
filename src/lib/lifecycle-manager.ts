@@ -1,34 +1,17 @@
-import { buildDelegationQueueKey, DelegationConcurrencyQueue } from "./concurrency.js"
+import { buildDelegationQueueKey, DelegationConcurrencyQueue, reserveSubagentSpawn } from "./concurrency.js"
+import type { SpawnReservation } from "./concurrency.js"
 import { CompletionDetector } from "./completion-detector.js"
-import {
-  deleteSessionContinuity,
-  getSessionContinuity,
-  listSessionContinuity,
-  patchSessionContinuity,
-  recordSessionContinuity,
-} from "./continuity.js"
-import { asString, getNestedValue, isObject } from "./helpers.js"
-import { notifyParentSession, type TaskNotification } from "./notification-handler.js"
+import type { CheckpointData } from "./compaction-checkpoint.js"
+import { buildDelegationPacketParentChain, createDelegationPacket } from "./delegation-packet.js"
+import { deleteSessionContinuity, getSessionContinuity, getSessionRecoveryState, listSessionContinuity, patchSessionDelegationPacket, patchSessionContinuity, recordSessionContinuity } from "./continuity.js"
 import { addWarning } from "./state.js"
 import { inferContinuityStatusFromEvent } from "./runtime.js"
-import {
-  createSession,
-  getEventParentID,
-  getSessionID,
-  type OpenCodeClient,
-  sendPrompt,
-} from "./session-api.js"
-
-import {
-  commitDescendant,
-  forgetSession,
-  hydrateDelegationState,
-  inheritRootFromParent,
-  rollbackReservation,
-  setDelegationMeta,
-} from "./state.js"
+import { createSession, getEventParentID, getSessionID, type OpenCodeClient, sendPrompt } from "./session-api.js"
+import { commitDescendant, forgetSession, hydrateDelegationState, inheritRootFromParent, setDelegationMeta, taskState } from "./state.js"
+import { acquireLifecycleQueue, enqueueWaitingLifecycle, type QueueSnapshot } from "./lifecycle-queue.js"
+import { observeBackgroundCompletion } from "./lifecycle-background-observer.js"
+import { buildDelegationMeta, buildLifecycleState, extractTextFromResponse, isValidLifecycleTransition, mapPhaseToDelegationPacketStatus, mapStatusToLifecyclePhase } from "./lifecycle-state.js"
 import type {
-  DelegationMeta,
   DelegationRouteResolution,
   PermissionRule,
   SessionContinuityMetadata,
@@ -38,12 +21,6 @@ import type {
   SessionLifecycleState,
   SpecialistAgent,
 } from "./types.js"
-
-type QueueSnapshot = {
-  active: number
-  pending: number
-  limit: number
-}
 
 type LaunchDelegatedSessionArgs = {
   parentSessionID: string
@@ -59,6 +36,7 @@ type LaunchDelegatedSessionArgs = {
   compatibleTools: string[]
   toolCompatibility?: Record<string, boolean>
   promptText: string
+  spawnReservation?: SpawnReservation
 }
 
 type HarnessLifecycleManagerOptions = {
@@ -66,61 +44,10 @@ type HarnessLifecycleManagerOptions = {
   pollTimeoutMs: number
 }
 
-function now(): number {
-  return Date.now()
-}
+function now(): number { return Date.now() }
 
-function extractTextFromResponse(response: unknown): string {
-  if (!isObject(response)) return ""
-  const parts = getNestedValue(response, ["parts"])
-  if (!Array.isArray(parts)) return ""
-  return parts
-    .filter((p) => getNestedValue(p, ["type"]) === "text")
-    .map((p) => asString(getNestedValue(p, ["text"])) ?? "")
-    .join("")
-    .trim()
-}
-
-function buildLifecycleState(args: {
-  phase: SessionLifecyclePhase
-  runMode: "sync" | "async"
-  queueKey: string
-  previous?: SessionLifecycleState
-  queue?: SessionLifecycleQueueState
-  observation?: SessionLifecycleObservation
-  cleanup?: SessionLifecycleState["cleanup"]
-  launchedAt?: number
-  completedAt?: number
-}): SessionLifecycleState {
-  return {
-    phase: args.phase,
-    runMode: args.runMode,
-    queueKey: args.queueKey,
-    launchedAt: args.launchedAt ?? args.previous?.launchedAt,
-    completedAt: args.completedAt ?? args.previous?.completedAt,
-    queue: args.queue ?? args.previous?.queue,
-    observation: args.observation ?? args.previous?.observation,
-    cleanup: args.cleanup ?? args.previous?.cleanup,
-  }
-}
-
-function buildDelegationMeta(args: {
-  rootID: string
-  childDepth: number
-  budgetUsed: number
-  agent: SpecialistAgent
-  route: DelegationRouteResolution
-  queueKey: string
-}): DelegationMeta {
-  return {
-    rootID: args.rootID,
-    depth: args.childDepth,
-    budgetUsed: args.budgetUsed,
-    agent: args.agent,
-    category: args.route.category,
-    model: args.route.effectiveModel,
-    queueKey: args.queueKey,
-  }
+export function isValidTransition(from: SessionLifecyclePhase, to: SessionLifecyclePhase): boolean {
+  return isValidLifecycleTransition(from, to)
 }
 
 export class HarnessLifecycleManager {
@@ -129,11 +56,8 @@ export class HarnessLifecycleManager {
   private readonly completionDetector = new CompletionDetector()
 
   constructor(private readonly options: HarnessLifecycleManagerOptions) {
-    this.concurrencyLimit = parseInt(
-      process.env.OPENCODE_HARNESS_CONCURRENCY_LIMIT ?? "3",
-      10
-    )
-    if (isNaN(this.concurrencyLimit) || this.concurrencyLimit < 1) {
+    this.concurrencyLimit = parseInt(process.env.OPENCODE_HARNESS_CONCURRENCY_LIMIT ?? "3", 10)
+    if (Number.isNaN(this.concurrencyLimit) || this.concurrencyLimit < 1) {
       this.concurrencyLimit = 3
     }
     this.queue = new DelegationConcurrencyQueue(this.concurrencyLimit)
@@ -147,6 +71,10 @@ export class HarnessLifecycleManager {
     for (const record of listSessionContinuity()) {
       hydrateDelegationState(record.sessionID, record.metadata.delegation)
     }
+  }
+
+  getRecoveryState(sessionID: string): ReturnType<typeof getSessionRecoveryState> {
+    return getSessionRecoveryState(sessionID)
   }
 
   getLifecycleSnapshot(sessionID: string): SessionLifecycleState | undefined {
@@ -178,12 +106,11 @@ export class HarnessLifecycleManager {
       lastError: record.metadata.status === "error" ? record.metadata.lastError : undefined,
       lifecycle,
     })
+    this.syncDelegationPacketStatus(sessionID, lifecycle.phase)
   }
 
   handleEvent(args: { event: unknown; eventType: string; sessionID: string }): void {
     const { event, eventType, sessionID } = args
-
-    // Feed terminal events to CompletionDetector
     this.completionDetector.feed(eventType, sessionID)
 
     if (eventType === "session.created" || eventType === "session.updated") {
@@ -216,7 +143,7 @@ export class HarnessLifecycleManager {
 
     const timestamp = now()
     const lifecycle = buildLifecycleState({
-      phase: this.mapStatusToPhase(nextStatus ?? continuity.metadata.status, continuity.metadata.lifecycle?.phase),
+      phase: mapStatusToLifecyclePhase(nextStatus ?? continuity.metadata.status, continuity.metadata.lifecycle?.phase),
       runMode: continuity.metadata.runInBackground ? "async" : "sync",
       queueKey: continuity.metadata.lifecycle?.queueKey ?? continuity.metadata.delegation.queueKey,
       previous: continuity.metadata.lifecycle,
@@ -225,10 +152,7 @@ export class HarnessLifecycleManager {
         observedAt: timestamp,
         detail: nextStatus ? `status:${nextStatus}` : undefined,
       },
-      completedAt:
-        nextStatus === "completed"
-          ? timestamp
-          : continuity.metadata.lifecycle?.completedAt,
+      completedAt: nextStatus === "completed" ? timestamp : continuity.metadata.lifecycle?.completedAt,
     })
 
     patchSessionContinuity(sessionID, {
@@ -237,6 +161,7 @@ export class HarnessLifecycleManager {
       lastError: nextStatus === "error" ? continuity.metadata.lastError : undefined,
       lifecycle,
     })
+    this.syncDelegationPacketStatus(sessionID, lifecycle.phase)
   }
 
   async cancelDelegatedSession(sessionID: string): Promise<void> {
@@ -245,21 +170,21 @@ export class HarnessLifecycleManager {
         await this.options.client.session.abort({ path: { id: sessionID } })
       }
     } catch {
-      // Graceful handling — harness-internal state cleanup proceeds
+      return this.cancelLifecycle(sessionID)
     }
 
-    this.completionDetector.cancel(sessionID)
+    this.cancelLifecycle(sessionID)
+  }
 
-    this.patchLifecycle(sessionID, {
-      status: "error",
-      phase: "failed",
-      error: "Session cancelled by user",
-      observation: {
-        source: "cancel",
-        observedAt: now(),
-        detail: "session-cancelled",
-      },
+  async requestAutoLoopRetry(args: { sessionID: string; promptText: string }): Promise<void> {
+    await sendPrompt(this.options.client, args.sessionID, {
+      parts: [{ type: "text", text: args.promptText }],
     })
+  }
+
+  recordCompactionCheckpoint(sessionID: string, checkpoint: CheckpointData): void {
+    patchSessionContinuity(sessionID, { compactionCheckpoint: checkpoint })
+    taskState.resetStats(sessionID)
   }
 
   async launchDelegatedSession(args: LaunchDelegatedSessionArgs): Promise<string> {
@@ -270,8 +195,8 @@ export class HarnessLifecycleManager {
       agent: args.agent,
       category: args.route.category,
     })
-
-    let childSessionID = ""
+    const spawnReservation =
+      args.spawnReservation ?? reserveSubagentSpawn(args.parentSessionID, args.rootID, taskState)
 
     try {
       const childSession = await createSession(this.options.client, {
@@ -280,18 +205,18 @@ export class HarnessLifecycleManager {
         permission: args.permissionRules,
       })
 
-      childSessionID = getSessionID(childSession) ?? ""
+      const childSessionID = getSessionID(childSession) ?? ""
       if (!childSessionID) {
         throw new Error("[Harness] Child session creation did not return a session ID.")
       }
 
-      if (args.route.warnings.length > 0) {
-        for (const warning of args.route.warnings) {
-          addWarning(childSessionID, warning)
-        }
+      for (const warning of args.route.warnings) {
+        addWarning(childSessionID, warning)
       }
 
       const budgetUsed = commitDescendant(args.rootID, childSessionID)
+      spawnReservation.release()
+
       const delegation = buildDelegationMeta({
         rootID: args.rootID,
         childDepth: args.childDepth,
@@ -320,6 +245,14 @@ export class HarnessLifecycleManager {
           parentSessionID: args.parentSessionID,
           rootSessionID: args.rootID,
           delegation,
+          delegationPacket: createDelegationPacket(
+            args.description,
+            buildDelegationPacketParentChain({
+              rootSessionID: args.rootID,
+              parentSessionID: args.parentSessionID,
+              sessionID: childSessionID,
+            }),
+          ),
           title: `${args.agent}: ${args.description}`,
           description: args.description,
           category: args.route.category,
@@ -346,32 +279,30 @@ export class HarnessLifecycleManager {
       const body = {
         agent: args.agent,
         tools: args.toolCompatibility,
-        parts: [
-          {
-            type: "text",
-            text: args.promptText,
-          },
-        ],
+        parts: [{ type: "text", text: args.promptText }],
         ...(args.route.effectiveModel ? { model: args.route.effectiveModel } : {}),
       }
 
-      const waitingQueueState = this.queue.snapshot(queueKey)
-      if (waitingQueueState.active >= waitingQueueState.limit) {
-        this.patchLifecycle(childSessionID, {
-          status: "running",
-          phase: "queued",
-          observation: {
-            source: "queue",
-            observedAt: now(),
-            detail: "waiting-for-lane",
-          },
-          queue: waitingQueueState,
-        })
-      }
+      enqueueWaitingLifecycle({
+        queue: this.queue,
+        sessionID: childSessionID,
+        queueKey,
+        runMode,
+        now,
+        patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+      })
+      const releaseQueue = await acquireLifecycleQueue({
+        queue: this.queue,
+        sessionID: childSessionID,
+        queueKey,
+        runMode,
+        now,
+        getSessionContinuity,
+        patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+      })
 
-      const releaseQueue = await this.acquireQueue(childSessionID, queueKey, runMode)
-
-      this.patchLifecycle(childSessionID, {
+      this.patchLifecycle({
+        sessionID: childSessionID,
         status: "running",
         phase: "running",
         launchedAt: now(),
@@ -383,10 +314,10 @@ export class HarnessLifecycleManager {
       })
 
       if (args.runInBackground) {
-        // Fire sendPrompt in background — it blocks server-side until assistant completes
         sendPrompt(this.options.client, childSessionID, body).catch((error: unknown) => {
           const message = error instanceof Error ? error.message : String(error)
-          this.patchLifecycle(childSessionID, {
+          this.patchLifecycle({
+            sessionID: childSessionID,
             status: "error",
             phase: "failed",
             error: message,
@@ -398,7 +329,16 @@ export class HarnessLifecycleManager {
           })
         })
 
-        void this.observeBackgroundCompletion(childSessionID, releaseQueue)
+        void observeBackgroundCompletion({
+          sessionID: childSessionID,
+          client: this.options.client,
+          completionDetector: this.completionDetector,
+          pollTimeoutMs: this.options.pollTimeoutMs,
+          now,
+          getSessionContinuity,
+          patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+          releaseQueue,
+        })
 
         return JSON.stringify(
           {
@@ -421,16 +361,16 @@ export class HarnessLifecycleManager {
             lifecycle: this.getLifecycleSnapshot(childSessionID),
           },
           null,
-          2
+          2,
         )
       }
 
-      // Sync mode: sendPrompt blocks until assistant completes
       try {
         const response = await sendPrompt(this.options.client, childSessionID, body)
         const assistantText = extractTextFromResponse(response)
 
-        this.patchLifecycle(childSessionID, {
+        this.patchLifecycle({
+          sessionID: childSessionID,
           status: "completed",
           phase: "completed",
           completedAt: now(),
@@ -444,7 +384,8 @@ export class HarnessLifecycleManager {
         return assistantText
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        this.patchLifecycle(childSessionID, {
+        this.patchLifecycle({
+          sessionID: childSessionID,
           status: "error",
           phase: "failed",
           error: message,
@@ -459,247 +400,91 @@ export class HarnessLifecycleManager {
         releaseQueue("sync-complete")
       }
     } catch (error) {
-      if (!childSessionID) {
-        rollbackReservation(args.rootID)
-      }
+      spawnReservation.rollback()
       throw error
     }
   }
 
-  private mapStatusToPhase(
-    status: SessionContinuityMetadata["status"],
-    previousPhase?: SessionLifecyclePhase
-  ): SessionLifecyclePhase {
-    switch (status) {
-      case "pending":
-        return previousPhase ?? "created"
-      case "queued":
-        return "queued"
-      case "running":
-        return previousPhase === "queued" || previousPhase === "dispatching" ? previousPhase : "running"
-      case "completed":
-        return "completed"
-      case "error":
-        return "failed"
-      case "cancelled":
-        return "failed"
-      case "interrupt":
-        return previousPhase === "queued" || previousPhase === "dispatching" ? previousPhase : "running"
-    }
+  private cancelLifecycle(sessionID: string): void {
+    this.completionDetector.cancel(sessionID)
+    this.patchLifecycle({
+      sessionID,
+      status: "error",
+      phase: "failed",
+      error: "Session cancelled by user",
+      observation: {
+        source: "cancel",
+        observedAt: now(),
+        detail: "session-cancelled",
+      },
+    })
   }
 
-  private patchLifecycle(
-    sessionID: string,
-    args: {
-      status: SessionContinuityMetadata["status"]
-      phase: SessionLifecyclePhase
-      observation?: SessionLifecycleObservation
-      queue?: QueueSnapshot | SessionLifecycleQueueState
-      cleanup?: SessionLifecycleState["cleanup"]
-      launchedAt?: number
-      completedAt?: number
-      error?: string
-    }
-  ): void {
-    const record = getSessionContinuity(sessionID)
+  private patchLifecycle(args: {
+    sessionID: string
+    status: SessionContinuityMetadata["status"]
+    phase: SessionLifecyclePhase
+    observation?: SessionLifecycleObservation
+    queue?: QueueSnapshot | SessionLifecycleQueueState
+    cleanup?: SessionLifecycleState["cleanup"]
+    launchedAt?: number
+    completedAt?: number
+    error?: string
+  }): void {
+    const record = getSessionContinuity(args.sessionID)
     if (!record) {
       return
     }
 
+    const previousPhase = record.metadata.lifecycle?.phase
+    if (
+      previousPhase !== undefined &&
+      previousPhase !== args.phase &&
+      !isValidTransition(previousPhase, args.phase)
+    ) {
+      console.warn(
+        `[Harness] Invalid lifecycle transition rejected: ${previousPhase} → ${args.phase} for session ${args.sessionID}`,
+      )
+      return
+    }
+
     const timestamp = now()
-    const queue = args.queue
-      ? {
-          ...args.queue,
-        }
-      : record.metadata.lifecycle?.queue
     const lifecycle = buildLifecycleState({
       phase: args.phase,
       runMode: record.metadata.runInBackground ? "async" : "sync",
       queueKey: record.metadata.lifecycle?.queueKey ?? record.metadata.delegation.queueKey,
       previous: record.metadata.lifecycle,
-      queue,
+      queue: args.queue ? { ...args.queue } : record.metadata.lifecycle?.queue,
       observation: args.observation,
       cleanup: args.cleanup,
       launchedAt: args.launchedAt,
       completedAt: args.completedAt,
     })
 
-    patchSessionContinuity(sessionID, {
+    patchSessionContinuity(args.sessionID, {
       status: args.status,
       lastObservedAt: timestamp,
       lastError: args.error,
       lifecycle,
     })
+    this.syncDelegationPacketStatus(args.sessionID, args.phase)
   }
 
-  private async acquireQueue(
-    sessionID: string,
-    queueKey: string,
-    runMode: "sync" | "async"
-  ): Promise<(reason: string) => void> {
-    const release = await this.queue.acquire(queueKey)
-    const acquiredAt = now()
-    this.patchLifecycle(sessionID, {
-      status: "running",
-      phase: "dispatching",
-      queue: {
-        ...this.queue.snapshot(queueKey),
-        acquiredAt,
-      },
-      observation: {
-        source: "queue",
-        observedAt: acquiredAt,
-        detail: `lane-acquired:${runMode}`,
-      },
-    })
+  private syncDelegationPacketStatus(sessionID: string, phase: SessionLifecyclePhase): void {
+    const record = getSessionContinuity(sessionID)
+    const currentStatus = record?.metadata.delegationPacket?.status
+    const nextStatus = mapPhaseToDelegationPacketStatus(phase)
 
-    return (reason: string) => {
-      const timestamp = now()
-      const existing = getSessionContinuity(sessionID)
-      const previousQueue = existing?.metadata.lifecycle?.queue
-      release()
-      const queueAfterRelease = this.queue.snapshot(queueKey)
-      this.patchLifecycle(sessionID, {
-        status: existing?.metadata.status ?? "running",
-        phase: existing?.metadata.lifecycle?.phase ?? "running",
-        queue: {
-          ...queueAfterRelease,
-          acquiredAt: previousQueue?.acquiredAt,
-          releasedAt: timestamp,
-        },
-        cleanup: {
-          scheduledAt: existing?.metadata.lifecycle?.cleanup?.scheduledAt ?? timestamp,
-          completedAt: timestamp,
-          reason,
-        },
-        observation: {
-          source: "queue",
-          observedAt: timestamp,
-          detail: `lane-released:${reason}`,
-        },
-      })
+    if (!record?.metadata.delegationPacket || currentStatus === nextStatus) {
+      return
     }
-  }
 
-  private async observeBackgroundCompletion(
-    sessionID: string,
-    releaseQueue: (reason: string) => void
-  ): Promise<void> {
-    try {
-      const result = await this.completionDetector.watch(sessionID, this.options.pollTimeoutMs)
-
-      switch (result.signal) {
-        case "idle":
-          this.patchLifecycle(sessionID, {
-            status: "completed",
-            phase: "completed",
-            completedAt: now(),
-            observation: {
-              source: "observe:detector-idle",
-              observedAt: now(),
-              detail: "background-completion-idle",
-            },
-          })
-          {
-            const continuity = getSessionContinuity(sessionID)
-            if (continuity && continuity.metadata.parentSessionID) {
-              const notification: TaskNotification = {
-                sessionID,
-                description: continuity.metadata.description ?? "Delegated task",
-                agent: continuity.metadata.delegation?.agent ?? "unknown",
-                status: "completed",
-              }
-              void notifyParentSession(this.options.client, continuity.metadata.parentSessionID, notification)
-            }
-          }
-          break
-        case "error":
-          this.patchLifecycle(sessionID, {
-            status: "error",
-            phase: "failed",
-            error: result.error ?? "Session error detected",
-            observation: {
-              source: "observe:detector-error",
-              observedAt: now(),
-              detail: "background-completion-error",
-            },
-          })
-          {
-            const continuity = getSessionContinuity(sessionID)
-            if (continuity && continuity.metadata.parentSessionID) {
-              const notification: TaskNotification = {
-                sessionID,
-                description: continuity.metadata.description ?? "Delegated task",
-                agent: continuity.metadata.delegation?.agent ?? "unknown",
-                status: "failed",
-                error: result.error ?? "Session error detected",
-              }
-              void notifyParentSession(this.options.client, continuity.metadata.parentSessionID, notification)
-            }
-          }
-          break
-        case "deleted":
-          this.patchLifecycle(sessionID, {
-            status: "error",
-            phase: "failed",
-            error: "Session deleted during background execution",
-            observation: {
-              source: "observe:detector-deleted",
-              observedAt: now(),
-              detail: "background-completion-deleted",
-            },
-          })
-          {
-            const continuity = getSessionContinuity(sessionID)
-            if (continuity && continuity.metadata.parentSessionID) {
-              const notification: TaskNotification = {
-                sessionID,
-                description: continuity.metadata.description ?? "Delegated task",
-                agent: continuity.metadata.delegation?.agent ?? "unknown",
-                status: "failed",
-                error: "Session deleted during background execution",
-              }
-              void notifyParentSession(this.options.client, continuity.metadata.parentSessionID, notification)
-            }
-          }
-          break
-        case "timeout":
-          this.patchLifecycle(sessionID, {
-            status: "error",
-            phase: "failed",
-            error: "Background completion timed out",
-            observation: {
-              source: "observe:detector-timeout",
-              observedAt: now(),
-              detail: "background-completion-timeout",
-            },
-          })
-          {
-            const continuity = getSessionContinuity(sessionID)
-            if (continuity && continuity.metadata.parentSessionID) {
-              const notification: TaskNotification = {
-                sessionID,
-                description: continuity.metadata.description ?? "Delegated task",
-                agent: continuity.metadata.delegation?.agent ?? "unknown",
-                status: "failed",
-                error: "Background completion timed out",
-              }
-              void notifyParentSession(this.options.client, continuity.metadata.parentSessionID, notification)
-            }
-          }
-          break
-        case "cancelled":
-          // Already handled by cancelDelegatedSession
-          break
-      }
-    } finally {
-      releaseQueue("background-complete")
-    }
+    patchSessionDelegationPacket(sessionID, { status: nextStatus })
   }
 }
 
 export function createHarnessLifecycleManager(
-  options: HarnessLifecycleManagerOptions
+  options: HarnessLifecycleManagerOptions,
 ): HarnessLifecycleManager {
   return new HarnessLifecycleManager(options)
 }
