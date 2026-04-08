@@ -1,234 +1,334 @@
 ---
 name: hm-deep-research
-description: "Multi-stage deep research for technology, market, and codebase investigation. Use when the user asks to research, investigate, analyze, compare, explore, evaluate, or deep-dive into any topic — from market analysis and technology comparison to codebase archaeology and API investigation. Covers the full research lifecycle: framing \u2192 domain research \u2192 cross-tech synthesis \u2192 validation. Triggers on: research, investigate, analyze, compare, explore, evaluate, deep dive, look into, find out, what's the state of, how does X work, compare X vs Y, can we build X, is X viable, audit, analyze codebase, map architecture."
+description: "Multi-stage deep research for technology, market, and codebase investigation. Tutorial-style playbook with real case comparisons, edge case handling, and decision frameworks. Teaches agents to brainstorm, shape features, resolve requirements-vs-spec tradeoffs, and produce validated findings. References hm-detective for reading modes and hm-synthesis for artifact export. Triggers on: research, investigate, analyze, compare, explore, evaluate, deep dive, look into, find out, what's the state of, how does X work, compare X vs Y, can we build X, is X viable, audit, analyze codebase, map architecture."
+metadata:
+  layer: "2"
+  role: "research"
+  pattern: P1
+allowed-tools: Read Write Edit Bash Glob Grep
 ---
 
 # HM Deep Research
 
-The ONE skill for any research task. Stages advance from framing to validated synthesis.
+This skill teaches through cases, not rules. Each case is a real research scenario you will encounter. Read the case, understand the decision, apply the pattern.
 
 ## Quick Jump
 
-| Research Need | Stage | Jump |
-|---------------|-------|------|
-| "What's the state of X?" | Framing | [Stage 1: Framing](#stage-1-framing) |
-| "How does X work?" | Domain | [Stage 2: Domain Research](#stage-2-domain-research) |
-| "Compare X vs Y vs Z" | Domain (comparative) | [Stage 2: Domain Research](#stage-2-domain-research) |
-| "Investigate across repos/stacks" | Cross-Tech | [Stage 3: Cross-Tech Research](#stage-3-cross-tech-research) |
-| "Validate findings / cite sources" | Validation | [Stage 4: Validation](#stage-4-validation--synthesis) |
-| "Which tool do I use?" | Tool Selection | [Tool Selection Matrix](#tool-selection-matrix) |
-| "Quick lookup for tool params" | Cheat Sheet | [references/cheat-sheets.md](references/cheat-sheets.md) |
-| "What can go wrong?" | Anti-Patterns | [Anti-Patterns](#anti-patterns--stop-when-you-detect-these) |
+| Research Need | Start Here |
+|---------------|------------|
+| "This case vs. that case" | [Case Comparison](references/case-comparison.md) |
+| "Something went wrong" | [Edge Cases](references/edge-cases.md) |
+| "When do I stop researching?" | [Requirements vs. Spec](references/requirements-vs-spec.md) |
+| "Where do I draw the line?" | [Interface Tradeoffs](references/interface-tradeoffs.md) |
+| "Turn findings into features" | [Brainstorming & Shaping](references/brainstorming-shaping.md) |
+| "What kind of research am I doing?" | [Research Patterns](references/research-patterns.md) |
 
-## Stage Gate Model
+<execution_context>
+For reading modes during investigation: load skill "hm-detective"
+Reading modes: SKIM for orientation, SCAN for targeted extraction, DEEP for interface analysis
 
-Each stage has an entry gate and exit gate. Do NOT skip stages.
+For artifact export and compression: load skill "hm-synthesis"
+Export tier: Standard (findings + decisions) for most research
+Compression: Snapshot for full analysis, Focused for targeted investigation
+</execution_context>
+
+---
+
+## The Six Concepts
+
+Every research task touches at least two of these. Complex tasks touch all six.
+
+### 1. Case Comparison — "This Case vs. That Case"
+
+Research is comparative by nature. You are always deciding between approaches, tools, patterns, or solutions. The case comparison framework gives you a structure for side-by-side analysis.
+
+**When to use it**: Every time you evaluate two or more options.
+
+| Dimension | Case A | Case B |
+|-----------|--------|--------|
+| Approach | [what A does] | [what B does] |
+| Depth needed | [shallow/medium/deep] | [shallow/medium/deep] |
+| Risk of wrong answer | [low/medium/high] | [low/medium/high] |
+| Time to validate | [hours/days] | [hours/days] |
+| Reversibility | [easy/hard] | [easy/hard] |
+
+**Example**: "Should we use Prisma or Drizzle for our ORM?"
+
+| | Prisma | Drizzle |
+|---|--------|---------|
+| Approach | Schema-first, generated client | SQL-like, type-inferred |
+| Depth needed | Medium (docs are thorough) | Deep (patterns are emergent) |
+| Risk of wrong answer | Medium (lock-in) | Low (closer to SQL) |
+| Time to validate | 2 days (migration tooling) | 1 day (simpler setup) |
+| Reversibility | Hard (schema migration) | Easy (raw SQL fallback) |
+
+Load [references/case-comparison.md](references/case-comparison.md) for 5 complete case pairs with decision frameworks.
+
+---
+
+### 2. Edge Cases — When Research Goes Wrong
+
+Research fails in predictable ways. The top 6 failure modes:
+
+| Failure | Signal | First Response |
+|---------|--------|----------------|
+| Contradictory sources | Two authoritative sources disagree | Check dates. Newer wins, but verify changelogs. |
+| Outdated information | Last update > 12 months, API version mismatch | Search with freshness filter. Check GitHub releases. |
+| Too new for patterns | < 6 months old, < 100 GitHub stars | Read source code directly. Build a prototype. |
+| Vendor docs are wrong | Code doesn't match documented behavior | Create a minimal repro. File an issue. Use the code, not the docs. |
+| No clear winner | 3+ valid approaches, zero differentiation | Define your constraints first. Pick the simplest that fits. |
+| Scope creep | Research question keeps expanding | Write a one-sentence scope. Anything outside = separate investigation. |
+
+Load [references/edge-cases.md](references/edge-cases.md) for each failure's full resolution workflow.
+
+---
+
+### 3. Requirements vs. Spec — When to Stop Researching
+
+Research has a natural endpoint. Cross it and you are writing a specification, not doing research. The boundary looks like this:
+
+| Phase | Mindset | Output | Duration |
+|-------|---------|--------|----------|
+| **Research** | "What's possible?" | Findings, options, tradeoffs | Open-ended |
+| **Requirements** | "What do we need?" | Measurable needs, constraints, priorities | Convergent |
+| **Specification** | "How do we build it?" | Interfaces, data models, test cases | Precise |
+
+**Signals you've crossed the boundary**:
+
+- You start defining function signatures → you are in spec territory
+- You list acceptance criteria → you are in requirements territory
+- You say "we should" instead of "they offer" → you left research territory
+
+**How to handle premature specification**: Stop. Write down what triggered it. Ask: "Do I have enough evidence for this decision?" If no, go back to research. If yes, acknowledge the transition and switch to requirements framing.
+
+Load [references/requirements-vs-spec.md](references/requirements-vs-spec.md) for the full transition template.
+
+---
+
+### 4. Interface Tradeoffs — Where to Draw Lines
+
+During research, you investigate interfaces — APIs, type boundaries, module contracts. The question is always: how deep do I go?
+
+**Decision framework**:
 
 ```
-STAGE 1: FRAMING          -> Output: research-plan.md
-  | (gate: plan has scope, hypotheses, tool budget)
-STAGE 2: DOMAIN RESEARCH  -> Output: findings-stage2.md  
-  | (gate: all hypotheses addressed OR explicitly deferred)
-STAGE 3: CROSS-TECH       -> Output: findings-stage3.md (only if needed)
-  | (gate: contradictions resolved, gaps identified)
-STAGE 4: VALIDATION       -> Output: synthesis-report.md
-  | (gate: every claim has source, every gap documented)
-DONE
+1. SCOPE: What surface area does this research cover?
+   - Single function → SCAN mode, 15 min max
+   - Module boundary → DEEP mode on public exports only
+   - Cross-module → DEEP mode on interfaces, SKIM on implementations
+
+2. DEPTH: How much do I need to understand?
+   - "What does it do?" → SKIM + examples
+   - "How does it work?" → SCAN + error paths
+   - "Can I change it?" → DEEP + dependents + tests
+
+3. CONFIDENCE: How sure do I need to be?
+   - High confidence (production decision) → 3+ sources, working prototype
+   - Medium confidence (architecture planning) → 2 sources, interface extraction
+   - Low confidence (exploration) → 1 source, document as hypothesis
+
+4. STOP CONDITION: When do I stop investigating this interface?
+   - When confidence matches the decision's reversibility
+   - Easy to reverse → low confidence is fine → stop early
+   - Hard to reverse → high confidence needed → keep digging
 ```
 
-## Stage 1: Framing
+Load [references/interface-tradeoffs.md](references/interface-tradeoffs.md) for worked examples from real codebases.
 
-MANDATORY: Load references/stage-1-framing.md before proceeding. Agents that skip this WILL miss critical framing procedures and anti-patterns.
+---
 
-### Identify Research Type
+### 5. Brainstorming & Shaping — From Findings to Features
 
-| Question Type | Research Type | Tool Bundle | Time Budget |
-|---------------|---------------|-------------|-------------|
-| "Does X exist?" | Discovery | tavily-search (basic) -> Context7 -> code search | 15 min |
-| "How does X work?" | Technical | Context7 -> tavily-extract -> DeepWiki | 30 min |
-| "Compare X vs Y" | Comparative | Parallel: Context7 per lib + tavily-search for benchmarks | 45 min |
-| "Why is X broken?" | Diagnostic | grep -> LSP -> git log -> repomix | 30-60 min |
-| "Can we build X?" | Feasibility | Context7 + repomix + tavily-search | 60 min |
-| "Map architecture of X" | Audit | repomix pack -> grep -> read -> LSP | 60-120 min |
+Research produces findings. Findings become features through this pipeline:
 
-### Framing Checklist
+```
+RESEARCH → SYNTHESIZE → BRAINSTORM → SHAPE → VALIDATE
+  findings    patterns     ideas      proposals    evidence
+```
 
-- [ ] Write the research question in ONE sentence
-- [ ] Identify research type from table above
-- [ ] List 3-5 hypotheses or unknowns to investigate
-- [ ] Estimate context budget (tokens available / 4 = approx chars budget)
-- [ ] Select tool bundle from table
-- [ ] Write research-plan.md (use references/research-plan-template.md)
-- [ ] **Gate check**: plan has scope, hypotheses, and tool budget -> proceed to Stage 2
+**The critical rule**: Brainstorm from evidence, not imagination. Every feature idea must trace back to at least one research finding.
 
-## Stage 2: Domain Research
+**Shaping a feature proposal**:
 
-MANDATORY: Load references/stage-2-domain-research.md before proceeding. Agents that skip this WILL miss tool-specific pitfalls and query refinement procedures.
+| Element | Question | Source |
+|---------|----------|--------|
+| Problem | What user pain exists? | Research finding |
+| Approach | What solution does the evidence support? | Best-evaluated option |
+| Scope | What's the minimum viable version? | Constraint analysis |
+| Risks | What could go wrong? | Edge case findings |
+| Validation | How do we know it worked? | Measurable criteria |
 
-### Tool Selection Matrix
+**Anti-patterns to avoid**:
 
-| Task | Primary Tool | Fallback | When to Use |
-|------|-------------|----------|-------------|
-| Broad discovery | tavily-search (basic) | brave-search | First pass, unknown territory |
-| Targeted retrieval | tavily-extract | fetcher | Known URLs, need content |
-| Library docs | Context7 (resolve -> query) | DeepWiki | Framework/library specifics |
-| Repo understanding | DeepWiki | repomix pack | Architecture, design decisions |
-| Code search | codesearch (Exa) | grep | API patterns, code examples |
-| News/recent | brave-news | tavily-search (time_range: week) | Current events, releases |
-| Site download | tavily-crawl | manual extract loop | Documentation sites |
-| Full analysis | tavily-research (pro) | multi-search + manual synthesize | Complex multi-source questions |
+- Feature creep: adding capabilities beyond what research supports
+- Analysis paralysis: requiring 100% confidence before proposing anything
+- Premature optimization: designing for scale the research doesn't justify
+- Solution shopping: researching until you find confirmation of a pre-chosen answer
 
-_For per-tool parameter details, see [Tool Operations](references/tool-operations.md) or [Cheat Sheets](references/cheat-sheets.md)._
+Load [references/brainstorming-shaping.md](references/brainstorming-shaping.md) for the full brainstorming-to-proposal workflow.
 
-### Research Loop
+---
+
+### 6. Research Patterns — Five Archetypes
+
+Every research task falls into one of five archetypes. Identify yours, then follow the matching workflow.
+
+| Archetype | Question | Depth | Breadth |
+|-----------|----------|-------|---------|
+| **Technology Scan** | "What's out there?" | Shallow | Broad |
+| **Market Analysis** | "What's the landscape?" | Medium | Broad |
+| **Codebase Archaeology** | "What's in here?" | Deep | Narrow |
+| **API Investigation** | "How does this work?" | Deep | Narrow |
+| **Competitive Audit** | "How do others do it?" | Medium | Medium |
+
+### Quick Pattern Selection
+
+```
+What are you researching?
+|
++-- A technology, library, or tool
+|   +-- "What options exist?" → Technology Scan
+|   +-- "How does this specific one work?" → API Investigation
+|
++-- A market, product area, or business question
+|   +-- "What's the competitive landscape?" → Market Analysis
+|   +-- "How do competitors solve this?" → Competitive Audit
+|
++-- An existing codebase or system
+|   +-- "What does this code do?" → Codebase Archaeology
+|   +-- "How does this API work?" → API Investigation
+|
++-- Not sure yet
+    → Start with Technology Scan (broadest, cheapest)
+      Then narrow to the specific archetype that matches
+```
+
+Load [references/research-patterns.md](references/research-patterns.md) for complete workflows per archetype (5-7 steps, tools, output format, validation gate).
+
+---
+
+## Research Workflow (All Patterns)
+
+Regardless of archetype, every research task follows this skeleton:
+
+### Step 1: Frame the Question
+
+Write one sentence. If you cannot, the question is too broad.
+
+```
+Good: "What ORM options exist for TypeScript serverless projects in 2026?"
+Bad: "What's the best database setup?"
+```
+
+### Step 2: Identify the Archetype
+
+Use the pattern selection tree above. Load the matching workflow from [references/research-patterns.md](references/research-patterns.md).
+
+### Step 3: Set the Context Budget
+
+Estimate tokens available. Divide by 4 for character budget. Never spend > 70% on fetching — reserve 30% for synthesis.
+
+### Step 4: Execute the Research Loop
 
 ```
 LOOP:
-  1. Pick next hypothesis from research-plan.md
-  2. Select tool from matrix above
+  1. Pick next hypothesis or question
+  2. Select tool (see Tool Quick Reference below)
   3. Execute search/extraction
-  4. Write finding IMMEDIATELY to findings-stage2.md (format: references/findings-format-template.md)
-  5. Check: did this answer the hypothesis? If NO -> refine query, try again (max 3x)
-  6. Check: does finding contradict prior finding? If YES -> flag for Stage 4
+  4. Write finding immediately — never batch
+  5. Check: answered? If no, refine query (max 3 attempts)
+  6. Check: contradicts prior finding? If yes, flag for resolution
   7. Next hypothesis
-UNTIL all hypotheses addressed OR budget exhausted
+UNTIL all questions addressed OR budget exhausted
 ```
 
-### Context Budget Rules
+### Step 5: Synthesize
 
-- Estimate before fetching: ~4 chars/token. If target > 50KB, use grep/offset NOT full read.
-- Repomix: always use compress (70% reduction). Always set includePatterns. Always grep before read.
-- Tavily: start with basic depth (1 credit). Escalate to advanced (2 credits) only when basic is insufficient.
-- Context7: resolve-library-id ONCE, then max 3 query-docs calls. No retries on same query.
-- When context > 70% consumed: stop fetching, synthesize what you have, document gaps.
+Merge findings into a coherent answer. Structure depends on archetype:
 
-### Gate Check
+| Archetype | Synthesis Output |
+|-----------|-----------------|
+| Technology Scan | Comparison table + recommendation |
+| Market Analysis | Landscape map + positioning |
+| Codebase Archaeology | Architecture diagram + dependency map |
+| API Investigation | Interface contract + usage patterns |
+| Competitive Audit | Feature matrix + gap analysis |
 
-- [ ] All hypotheses addressed OR explicitly deferred with reason
-- [ ] Every finding has a source (URL, file path, or tool output)
-- [ ] No finding contradicts another without being flagged
-- [ ] Context budget not exceeded
-- [ ] If cross-stack/cross-repo needed -> **PREREQUISITE: load coordinating-loop skill** -> proceed to Stage 3
+### Step 6: Validate
 
-## Stage 3: Cross-Tech Research
-
-MANDATORY: Load references/stage-3-cross-tech-research.md before proceeding. Agents that skip this WILL miss delegation patterns and subagent prompt envelope requirements.
-
-**PREREQUISITE: This stage requires delegation. Load `coordinating-loop` skill before proceeding.**
-
-### When Cross-Tech Is Needed
-
-| Scenario | Pattern | Agents |
-|----------|---------|--------|
-| Compare 3+ libraries | Parallel: 1 agent per lib | researcher x N |
-| Investigate bug across stack | Parallel: competing hypotheses | explore x N + critic x 1 |
-| Feasibility check | Sequential: stack -> code -> validate | researcher -> explore -> critic |
-| Architecture audit | 4-batch: survey -> deep -> cross-ref -> persist | researcher x 2 -> explore x 2 -> critic x 1 |
-
-### Subagent Prompt Envelope (5 Required Sections)
-
-Every research subagent MUST receive:
-1. **Task**: One sentence (e.g., "Investigate Prisma's multi-tenant schema support")
-2. **Scope**: Include/exclude files, domains, or topics
-3. **Context**: Max 50 lines of relevant background
-4. **Expected Output**: Concrete deliverable (e.g., "findings-prisma.md with 3 sections: features, limitations, code examples")
-5. **Verification**: Command to check output (e.g., "grep -c '##' findings-prisma.md -> expects >= 3")
-
-### Wave Structure
+Every claim needs a source. Key claims need direct evidence (source code, official docs) or 2+ corroborating sources.
 
 ```
-Wave 1: Broad     -> 2-3 parallel researcher agents -> findings-wave1-agent-N.md
-Wave 2: Deep      -> 1-2 explore agents (deep-dive on Wave 1 leads) -> findings-wave2-deep-N.md  
-Wave 3: Validate  -> 1 critic agent (cross-reference, flag contradictions) -> findings-wave3-validation.md
-Wave 4: Synthesize -> Coordinator merges all -> synthesis-report.md
+Evidence levels:
+  DIRECT       → Code/docs prove it
+  CORROBORATED → 2+ independent sources agree
+  TESTIMONIAL  → One source says so (mark "unverified")
+  ABSENCE      → No evidence found (not the same as disproved)
 ```
 
-### Gate Check
+### Step 7: Deliver
 
-- [ ] All parallel streams completed OR documented why incomplete
-- [ ] Partial failures integrated (never discard successful results)
-- [ ] Contradictions between streams identified and flagged
-- [ ] Cross-references validated against source code or official docs
-- [ ] Proceed to Stage 4
+Produce the artifact. Minimum structure:
 
-## Stage 4: Validation & Synthesis
+1. **Executive summary** — 3-5 sentences, the answer
+2. **Key findings** — numbered, each with evidence level and source
+3. **Tradeoffs** — what you gave up, what you gained
+4. **Gaps** — what you couldn't answer, and why
+5. **Source index** — every URL, file path, or tool output consulted
 
-MANDATORY: Load references/stage-4-validation-synthesis.md before proceeding. Agents that skip this WILL miss evidence scoring procedures and citation tracking requirements.
+---
 
-### Evidence Scoring
+## Tool Quick Reference
 
-| Level | Definition | Example |
-|-------|-----------|---------|
-| **Direct** | Code/docs prove it | Source code shows the API, official docs confirm |
-| **Correlational** | Timing/patterns suggest it | Version release coincides with feature announcement |
-| **Testimonial** | Someone said it works | Blog post, StackOverflow answer, "works on my machine" |
-| **Absence** | No evidence found != disproved | Searched 3 sources, none mention the feature |
+| Task | Primary Tool | Fallback |
+|------|-------------|----------|
+| Broad discovery | tavily-search (basic) | brave-search |
+| Targeted extraction | tavily-extract | fetcher |
+| Library documentation | Context7 (resolve → query) | DeepWiki |
+| Repo understanding | DeepWiki | repomix pack |
+| Code search | exa web search | grep |
+| Recent news/releases | brave-news | tavily-search (time_range) |
+| Site documentation | tavily-crawl | manual extract loop |
+| Complex multi-source | tavily-research (pro) | multi-search + manual synthesize |
 
-**Rule**: Key claims require Direct evidence or 2+ Correlational sources. Testimonial-only claims must be marked "unverified."
+### Budget Rules
 
-### Citation Format
+- Context7: resolve-library-id ONCE, then max 3 query-docs calls per library
+- Tavily: start with basic depth. Escalate to advanced only when basic is insufficient
+- Repomix: always use compress=true (70% reduction). Always set includePatterns
+- Context > 70% consumed: stop fetching, synthesize what you have, document gaps
 
-Every claim in the synthesis report MUST include:
-```
-**Claim**: [statement]
-**Evidence**: [Direct|Correlational|Testimonial|Absence]
-**Source**: [URL or file path]
-**Confidence**: [High|Medium|Low]
-```
+---
 
-### Synthesis Report Structure
-
-Use references/synthesis-report-template.md. Minimum sections:
-1. Executive Summary (3-5 sentences)
-2. Key Findings (numbered, each with evidence)
-3. Contradictions & Resolutions
-4. Gaps (what we couldn't answer)
-5. Recommendations (actionable next steps)
-6. Source Index (all URLs/files consulted)
-
-### Gate Check (FINAL)
-
-- [ ] Every claim has a source
-- [ ] Key claims have Direct evidence or 2+ Correlational
-- [ ] All contradictions resolved or documented
-- [ ] All gaps documented with reason (budget, tool limit, time)
-- [ ] Report is actionable: every finding has an implication
-- [ ] **DONE -> deliver synthesis-report.md to user**
-
-_Quick tool reference: [Cheat Sheets](references/cheat-sheets.md) | [Tool Operations](references/tool-operations.md)_
-
-## Anti-Patterns — STOP When You Detect These
+## Anti-Patterns — Stop When You Detect These
 
 | Anti-Pattern | Detection | Fix |
 |-------------|-----------|-----|
-| Single-Source Synthesis | Only 1 source for key claim | Find >=1 more source before asserting |
+| Single-Source Synthesis | Only 1 source for a key claim | Find a second source before asserting |
 | Full-Page Fetch | Reading > 50KB when you need 3 lines | Use grep + offset reading |
-| Infinite Research Loop | 3rd search with no new findings | STOP. Synthesize what you have. |
-| Rate Burn | Used all Context7 calls in first minute | Budget: resolve ONCE, query max 3x. Fallback: Context7 miss → DeepWiki → tavily-search with include_domains: ["github.com"] |
-| Stale Cite | Source > 6 months old for current tech | Use freshness filters. Re-validate. |
-| Hallucinated API | Describing API without source | If you can't cite it, mark "unverified" |
-| Context Graveyard | 30 min investigation with nothing on disk | Write findings EVERY batch. |
-| Broadcast Delegation | Same prompt to 5 agents | Each agent gets unique scope/hypothesis |
-| Fire-and-Forget | Dispatched agents, never read results | Collect and integrate after every wave |
+| Infinite Research Loop | 3rd search returns no new findings | Stop. Synthesize what you have. |
+| Premature Specification | Defining function signatures during research | Write the spec idea down, return to research |
+| Feature Creep in Research | Question expands beyond original scope | Write scope boundary, defer expansions |
+| Solution Shopping | Only researching one option | Require 2+ alternatives before recommending |
+| Context Graveyard | 30 min investigation with nothing on disk | Write findings every batch |
+| Stale Cite | Source > 6 months old for current tech | Use freshness filters, re-validate |
 
 ## References (Progressive Disclosure)
 
-- **[Stage 1: Framing](references/stage-1-framing.md)** — Research types, hypothesis formation, budget estimation
-- **[Stage 2: Domain Research](references/stage-2-domain-research.md)** — Tool bundles, query refinement, findings protocol
-- **[Stage 3: Cross-Tech](references/stage-3-cross-tech-research.md)** — Delegation triggers, wave structure, prompt envelopes
-- **[Stage 4: Validation](references/stage-4-validation-synthesis.md)** — Evidence scoring, citation tracking, report writing
-- **[Tool Operations](references/tool-operations.md)** — Per-tool operational knowledge (rate limits, params, pitfalls)
-- **[Cheat Sheets](references/cheat-sheets.md)** — Quick reference cards for every tool
-- **[Research Plan Template](references/research-plan-template.md)** — Stage 1 output template
-- **[Findings Format Template](references/findings-format-template.md)** — Stage 2-3 findings template
-- **[Synthesis Report Template](references/synthesis-report-template.md)** — Stage 4 output template
+Load references ONLY when the SKILL.md is insufficient for your task.
+
+- **[Case Comparison](references/case-comparison.md)** — Side-by-side research scenarios with decision frameworks
+- **[Edge Cases](references/edge-cases.md)** — Real-life edge cases with resolution workflows
+- **[Requirements vs. Spec](references/requirements-vs-spec.md)** — Boundary detection and transition templates
+- **[Interface Tradeoffs](references/interface-tradeoffs.md)** — Depth decisions with worked examples
+- **[Brainstorming & Shaping](references/brainstorming-shaping.md)** — Findings-to-features pipeline
+- **[Research Patterns](references/research-patterns.md)** — 5 archetypes with full workflows
 
 ## When NOT to Load References
 
 | Condition | Do NOT Load | Reason |
 |-----------|-------------|--------|
-| Simple lookup (< 3 searches) | All stage references | SKILL.md has enough for discovery searches |
-| Only need tool params | stage-1 through stage-4 | Load only tool-operations.md or cheat-sheets.md |
-| Single-domain research | stage-3-cross-tech-research.md | No delegation needed |
-| Already have findings | stage-1-framing.md, stage-2-domain-research.md | Jump to stage-4 for validation |
+| Simple lookup (< 3 searches) | All references | SKILL.md has enough |
+| Only need tool parameters | All references | Tool Quick Reference above is sufficient |
+| Single-option evaluation | case-comparison.md, competitive patterns | No comparison needed |
 | Context > 50% consumed | ALL references | Synthesize what you have, document gaps |
