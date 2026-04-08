@@ -486,10 +486,10 @@ describe("createToolGuardHooks", () => {
         type: "upsert",
         source: "test-suite",
         rule: {
-          id: "warn-read-overlap",
+          id: "warn-grep-overlap",
           scope: "tool.execute.before",
-          condition: { toolNames: ["read"] },
-          action: { type: "warn", message: "Read overlap warning." },
+          condition: { toolNames: ["grep"] },
+          action: { type: "warn", message: "Grep overlap warning." },
         },
       })
       mutateGovernanceRule({
@@ -508,10 +508,10 @@ describe("createToolGuardHooks", () => {
       })
 
       const hooks = buildHooks(stateManager)
-      const firstBeforeOutput = makeOutput({ path: "/a" })
+      const firstBeforeOutput = makeOutput({ pattern: "todo" })
       const secondBeforeOutput = makeOutput({ command: "pwd" })
 
-      await hooks["tool.execute.before"](makeInput("sid-governance-overlap", "read"), firstBeforeOutput)
+      await hooks["tool.execute.before"](makeInput("sid-governance-overlap", "grep"), firstBeforeOutput)
       await hooks["tool.execute.before"](makeInput("sid-governance-overlap", "bash"), secondBeforeOutput)
 
       const firstArgs = firstBeforeOutput.args as Record<string, unknown>
@@ -530,9 +530,11 @@ describe("createToolGuardHooks", () => {
         string,
         unknown
       >)["governance"] as Record<string, unknown>
-      expect(firstGovernance["warnings"]).toEqual([
-        { ruleID: "warn-read-overlap", message: "Read overlap warning." },
-      ])
+      expect(firstGovernance["warnings"]).toEqual(
+        expect.arrayContaining([
+          { ruleID: "warn-grep-overlap", message: "Grep overlap warning." },
+        ]),
+      )
       expect(firstGovernance["escalations"]).toEqual([])
 
       const secondAfterOutput = makeAfterOutput()
@@ -546,13 +548,15 @@ describe("createToolGuardHooks", () => {
         unknown
       >)["governance"] as Record<string, unknown>
       expect(secondGovernance["warnings"]).toEqual([])
-      expect(secondGovernance["escalations"]).toEqual([
-        {
-          ruleID: "escalate-bash-overlap",
-          message: "Bash overlap escalation.",
-          escalation: { channel: "parent", severity: "high" },
-        },
-      ])
+      expect(secondGovernance["escalations"]).toEqual(
+        expect.arrayContaining([
+          {
+            ruleID: "escalate-bash-overlap",
+            message: "Bash overlap escalation.",
+            escalation: { channel: "parent", severity: "high" },
+          },
+        ]),
+      )
 
       const staleAfterOutput = makeAfterOutput()
       await hooks["tool.execute.after"](

@@ -61,6 +61,63 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
   const { stateManager, lifecycleManager } = deps
   const workspacePolicy = deps.runtimePolicy ?? DEFAULT_RUNTIME_POLICY
   const recentGovernance = new Map<string, GovernanceEvaluationResult>()
+  const pendingInvocationKeys = new Map<string, string[]>()
+  let invocationCounter = 0
+
+  function readNativeInvocationKey(value: unknown): string | undefined {
+    return (
+      asString(getNestedValue(value, ["requestID"])) ??
+      asString(getNestedValue(value, ["requestId"])) ??
+      asString(getNestedValue(value, ["invocationID"])) ??
+      asString(getNestedValue(value, ["invocationId"])) ??
+      asString(getNestedValue(value, ["toolCallID"])) ??
+      asString(getNestedValue(value, ["toolCallId"]))
+    )
+  }
+
+  function nextInvocationKey(sessionID: string, toolName: string): string {
+    invocationCounter += 1
+    return `harness:${sessionID}:${toolName}:${invocationCounter}`
+  }
+
+  function stripHarnessInvocationKey(args: unknown): unknown {
+    if (!isObject(args)) {
+      return args
+    }
+
+    const { _harnessInvocationKey: _ignored, ...rest } = args
+    return rest
+  }
+
+  function registerPendingInvocation(sessionID: string, invocationKey: string): void {
+    const queue = pendingInvocationKeys.get(sessionID) ?? []
+    queue.push(invocationKey)
+    pendingInvocationKeys.set(sessionID, queue)
+  }
+
+  function consumePendingInvocation(sessionID: string, invocationKey?: string): string | undefined {
+    const queue = pendingInvocationKeys.get(sessionID)
+    if (!queue || queue.length === 0) {
+      return invocationKey
+    }
+
+    if (invocationKey) {
+      const nextQueue = queue.filter((key) => key !== invocationKey)
+      if (nextQueue.length === 0) {
+        pendingInvocationKeys.delete(sessionID)
+      } else {
+        pendingInvocationKeys.set(sessionID, nextQueue)
+      }
+      return invocationKey
+    }
+
+    if (queue.length !== 1) {
+      return undefined
+    }
+
+    pendingInvocationKeys.delete(sessionID)
+    return queue[0]
+  }
 
   /**
    * Resolve the effective runtime policy for a given session.
@@ -78,7 +135,8 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
     "tool.execute.before": async (input: BeforeInput, output: BeforeOutput): Promise<void> => {
       const sessionID = asString(getNestedValue(input, ["sessionID"]))
       const toolName = asString(getNestedValue(input, ["tool"]))
-      const args = getNestedValue(output, ["args"])
+      const rawArgs = getNestedValue(output, ["args"])
+      const args = stripHarnessInvocationKey(rawArgs)
 
       if (!sessionID || !toolName) {
         return
@@ -90,7 +148,17 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
         toolName,
         args,
       })
-      recentGovernance.set(sessionID, governance)
+      const nativeInvocationKey = readNativeInvocationKey(input) ?? readNativeInvocationKey(args)
+      const invocationKey = nativeInvocationKey ?? nextInvocationKey(sessionID, toolName)
+      recentGovernance.set(invocationKey, governance)
+      registerPendingInvocation(sessionID, invocationKey)
+
+      if (!nativeInvocationKey) {
+        output.args = {
+          ...(isObject(args) ? args : {}),
+          _harnessInvocationKey: invocationKey,
+        }
+      }
 
       for (const warning of governance.warnings) {
         stateManager.addWarning(sessionID, warning.message)
@@ -154,8 +222,16 @@ export function createToolGuardHooks(deps: ToolGuardDependencies): ToolGuardHook
       const continuity = getSessionContinuity(sessionID)
       const recovery = getSessionRecoveryState(sessionID)
       const lifecycle = lifecycleManager?.getLifecycleSnapshot(sessionID)
-      const governance = recentGovernance.get(sessionID)
-      recentGovernance.delete(sessionID)
+      const afterArgs = getNestedValue(input, ["args"])
+      const requestedInvocationKey =
+        readNativeInvocationKey(input) ??
+        readNativeInvocationKey(afterArgs) ??
+        asString(getNestedValue(afterArgs, ["_harnessInvocationKey"]))
+      const invocationKey = consumePendingInvocation(sessionID, requestedInvocationKey)
+      const governance = invocationKey ? recentGovernance.get(invocationKey) : undefined
+      if (invocationKey) {
+        recentGovernance.delete(invocationKey)
+      }
 
       output.metadata = {
         ...(isObject(output.metadata) ? output.metadata : {}),
