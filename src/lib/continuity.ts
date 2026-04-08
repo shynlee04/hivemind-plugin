@@ -5,6 +5,7 @@ import { buildRecoveryResumeState, type RecoveryAssessmentOptions, type Recovery
 import type {
   ContinuityStoreFile,
   DelegationPacket,
+  GovernancePersistenceState,
   SessionContinuityMetadata,
   SessionContinuityRecord,
   SessionPromptParams,
@@ -58,6 +59,11 @@ function emptyStore(): ContinuityStoreFile {
     version: CONTINUITY_VERSION,
     updatedAt: Date.now(),
     sessions: {},
+    governance: {
+      rules: [],
+      violations: [],
+      updatedAt: Date.now(),
+    },
   }
 }
 
@@ -108,9 +114,45 @@ function loadStoreFromDisk(): ContinuityStoreFile {
       version: CONTINUITY_VERSION,
       updatedAt: typeof parsed.updatedAt === "number" && Number.isFinite(parsed.updatedAt) ? parsed.updatedAt : Date.now(),
       sessions: normalizedSessions,
+      governance: isGovernanceState(parsed.governance)
+        ? cloneGovernanceState(parsed.governance)
+        : emptyStore().governance,
     }
   } catch {
     return emptyStore()
+  }
+}
+
+function isGovernanceState(value: unknown): value is GovernancePersistenceState {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return false
+  }
+
+  const rules = (value as { rules?: unknown }).rules
+  const violations = (value as { violations?: unknown }).violations
+  const updatedAt = (value as { updatedAt?: unknown }).updatedAt
+
+  return Array.isArray(rules) && Array.isArray(violations) && typeof updatedAt === "number" && Number.isFinite(updatedAt)
+}
+
+function cloneGovernanceState(state: GovernancePersistenceState): GovernancePersistenceState {
+  return {
+    rules: state.rules.map((rule) => ({
+      ...rule,
+      condition: {
+        toolNames: rule.condition.toolNames ? [...rule.condition.toolNames] : undefined,
+        sessionIDs: rule.condition.sessionIDs ? [...rule.condition.sessionIDs] : undefined,
+      },
+      action: {
+        ...rule.action,
+        escalation: rule.action.escalation ? { ...rule.action.escalation } : undefined,
+      },
+    })),
+    violations: state.violations.map((violation) => ({
+      ...violation,
+      escalation: violation.escalation ? { ...violation.escalation } : undefined,
+    })),
+    updatedAt: state.updatedAt,
   }
 }
 
@@ -242,4 +284,20 @@ export function getContinuityStoragePath(): string {
 
 export function getDelegationExportPolicy(): DelegationExportPolicy {
   return resolveDelegationExportPolicy()
+}
+
+export function getGovernancePersistenceState(): GovernancePersistenceState {
+  return cloneGovernanceState(ensureStoreLoaded().governance ?? emptyStore().governance!)
+}
+
+export function recordGovernancePersistenceState(state: GovernancePersistenceState): GovernancePersistenceState {
+  const next = cloneGovernanceState({
+    ...state,
+    updatedAt: Date.now(),
+  })
+
+  const store = ensureStoreLoaded()
+  store.governance = next
+  persistStore()
+  return cloneGovernanceState(next)
 }

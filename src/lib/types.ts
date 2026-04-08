@@ -191,6 +191,55 @@ export type ContinuityStoreFile = {
   version: 1
   updatedAt: number
   sessions: Record<string, SessionContinuityRecord>
+  governance?: GovernancePersistenceState
+}
+
+export type GovernanceScope = "tool.execute.before"
+
+export type GovernanceCondition = {
+  toolNames?: string[]
+  sessionIDs?: string[]
+}
+
+export type GovernanceEscalation = {
+  channel: "parent" | "session"
+  severity: "low" | "medium" | "high"
+}
+
+export type GovernanceActionType = "warn" | "escalate" | "block"
+
+export type GovernanceAction = {
+  type: GovernanceActionType
+  message: string
+  escalation?: GovernanceEscalation
+}
+
+export type GovernanceRule = {
+  id: string
+  scope: GovernanceScope
+  condition: GovernanceCondition
+  action: GovernanceAction
+  createdAt: number
+  updatedAt: number
+  source: string
+}
+
+export type GovernanceViolation = {
+  id: string
+  ruleID: string
+  scope: GovernanceScope
+  sessionID: string
+  toolName?: string
+  actionType: GovernanceActionType
+  message: string
+  escalation?: GovernanceEscalation
+  createdAt: number
+}
+
+export type GovernancePersistenceState = {
+  rules: GovernanceRule[]
+  violations: GovernanceViolation[]
+  updatedAt: number
 }
 
 // ---------------------------------------------------------------------------
