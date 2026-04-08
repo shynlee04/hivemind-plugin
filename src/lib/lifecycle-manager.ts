@@ -11,7 +11,7 @@ import { commitDescendant, forgetSession, hydrateDelegationState, inheritRootFro
 import { acquireLifecycleQueue, enqueueWaitingLifecycle, type QueueSnapshot } from "./lifecycle-queue.js"
 import { observeBackgroundCompletion } from "./lifecycle-background-observer.js"
 import { buildDelegationMeta, buildLifecycleState, extractTextFromResponse, isValidLifecycleTransition, mapPhaseToDelegationPacketStatus, mapStatusToLifecyclePhase } from "./lifecycle-state.js"
-import { resolveConcurrencyForKey } from "./runtime-policy.js"
+import { resolveLifecycleConcurrency } from "./lifecycle-runtime-policy.js"
 import type {
   DelegationRouteResolution,
   PermissionRule,
@@ -297,6 +297,12 @@ export class HarnessLifecycleManager {
         now,
         patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
       })
+
+      // Resolve per-key concurrency policy from runtime policy
+      const resolvedConcurrency = this.runtimePolicy
+        ? resolveLifecycleConcurrency(this.runtimePolicy, queueKey)
+        : undefined
+
       const releaseQueue = await acquireLifecycleQueue({
         queue: this.queue,
         sessionID: childSessionID,
@@ -305,6 +311,8 @@ export class HarnessLifecycleManager {
         now,
         getSessionContinuity,
         patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+        concurrencyLimit: resolvedConcurrency?.limit,
+        concurrencyTimeoutMs: resolvedConcurrency?.acquireTimeoutMs,
       })
 
       this.patchLifecycle({
