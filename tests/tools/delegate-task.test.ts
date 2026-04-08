@@ -226,6 +226,89 @@ describe("delegate-task tool category routing", () => {
     expect(typeof launchArgs.spawnReservation?.release).toBe("function")
     expect(typeof launchArgs.spawnReservation?.rollback).toBe("function")
   })
+
+  it("classifies interactive work before launching the delegated session", async () => {
+    const client = createClient({
+      "parent-session": { id: "parent-session" },
+    })
+    const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+    const tool = createDelegateTaskTool(lifecycleManager, client)
+
+    await tool.execute(
+      {
+        description: "Implement routing",
+        prompt: "Edit the runtime wiring to complete the task.",
+        category: "implementation",
+        run_in_background: false,
+      },
+      mockCtx,
+    )
+
+    const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+      execution: {
+        family: string
+        submode: string
+        rationale: string
+        capabilityEvidence: { projectRoot: string }
+      }
+    }
+
+    expect(launchArgs.execution).toMatchObject({
+      family: "built-in",
+      submode: "builtin-subsession",
+      capabilityEvidence: { projectRoot: process.cwd() },
+    })
+    expect(launchArgs.execution.rationale).toContain("Interactive task")
+  })
+
+  it("classifies research work as builtin-process and preserves execution audit metadata", async () => {
+    const client = createClient({
+      "parent-session": { id: "parent-session" },
+    })
+    const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+    const tool = createDelegateTaskTool(lifecycleManager, client)
+
+    await tool.execute(
+      {
+        description: "Research runtime gaps",
+        prompt: "Investigate the runtime gap and produce a read-only report.",
+        category: "research",
+        run_in_background: true,
+      },
+      mockCtx,
+    )
+
+    const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+      route: { effectiveAgent: string }
+      execution: {
+        family: string
+        submode: string
+        rationale: string
+        characteristics: {
+          isResearch: boolean
+          isHeadless: boolean
+          runInBackground: boolean
+        }
+        capabilityEvidence: { hasTmux: boolean; projectRoot: string }
+      }
+    }
+
+    expect(launchArgs.route.effectiveAgent).toBe("researcher")
+    expect(launchArgs.execution).toMatchObject({
+      family: "built-in",
+      submode: "builtin-process",
+      characteristics: {
+        isResearch: true,
+        isHeadless: true,
+        runInBackground: true,
+      },
+      capabilityEvidence: {
+        hasTmux: expect.any(Boolean),
+        projectRoot: process.cwd(),
+      },
+    })
+    expect(launchArgs.execution.rationale).toContain("builtin-process")
+  })
 })
 
 // ---------------------------------------------------------------------------
