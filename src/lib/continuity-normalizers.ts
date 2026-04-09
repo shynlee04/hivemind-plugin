@@ -63,6 +63,9 @@ function normalizeSpecialistAgent(value: unknown): SpecialistAgent | undefined {
     case "builder":
     case "critic":
     case "general":
+    case "build":
+    case "plan":
+    case "explore":
       return value
     default:
       return undefined
