@@ -119,6 +119,7 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 - [ ] Runtime threshold config for MAX_DESCENDANTS, MAX_DEPTH, concurrency
 - [ ] Tool description sync with discovered agents and categories
 - [ ] Full Phase 3 planning for runtime configurability architecture
+- [ ] Fix delegation execution — sync JSON parser crash + async silent failure
 
 ### Blockers
 
