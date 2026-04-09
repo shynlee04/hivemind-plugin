@@ -1,7 +1,7 @@
 import type { TaskStatus } from "./task-status.js"
 
 export const MAX_DESCENDANTS_PER_ROOT = 10
-export const VALID_AGENTS = ["researcher", "builder", "critic"] as const
+export const VALID_AGENTS = ["researcher", "builder", "critic", "general"] as const
 export const VALID_DELEGATION_CATEGORIES = [
   "research",
   "implementation",

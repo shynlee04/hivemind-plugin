@@ -41,6 +41,13 @@ const SPECIALIST_PRESETS: Readonly<Record<string, SpecialistPreset>> = {
     guidanceText: "Review for regressions, correctness, and unmet requirements before approving.",
     keywords: ["review", "critic", "audit", "verify", "regression", "compliance", "quality"],
   },
+  general: {
+    key: "general",
+    agent: "general",
+    temperature: 0.2,
+    guidanceText: "Handle general-purpose tasks that don't fit specialist categories. Read, analyze, and report findings.",
+    keywords: ["general", "task", "process", "handle", "cycle", "mapping", "analysis"],
+  },
   "generalist-builder": {
     key: "generalist-builder",
     agent: "builder",

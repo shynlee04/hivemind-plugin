@@ -40,6 +40,7 @@ const AGENT_TOOLS: Record<string, { required: string[]; mustNot: string[] }> = {
   },
   builder: { required: ["read", "glob", "grep", "edit", "write", "bash"], mustNot: ["task"] },
   critic: { required: ["read", "glob", "grep", "bash"], mustNot: ["edit", "write", "task"] },
+  general: { required: ["read", "glob", "grep"], mustNot: ["task"] },
 }
 
 // ---------------------------------------------------------------------------
@@ -79,6 +80,17 @@ function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[
         { permission: "glob", pattern: "*", action: "allow" },
         { permission: "edit", pattern: "*", action: "deny" },
         { permission: "write", pattern: "*", action: "deny" },
+        { permission: "task", pattern: "*", action: "deny" },
+        commonDelegateDeny,
+      ]
+    case "general":
+      return [
+        { permission: "read", pattern: "*", action: "allow" },
+        { permission: "glob", pattern: "*", action: "allow" },
+        { permission: "grep", pattern: "*", action: "allow" },
+        { permission: "edit", pattern: "*", action: "deny" },
+        { permission: "write", pattern: "*", action: "deny" },
+        { permission: "bash", pattern: "*", action: "deny" },
         { permission: "task", pattern: "*", action: "deny" },
         commonDelegateDeny,
       ]
@@ -140,7 +152,7 @@ export function createDelegateTaskTool(
 ): ReturnType<typeof tool> {
   return tool({
     description:
-      "Create a restricted child session for researcher, builder, or critic work and optionally wait for the final assistant response.",
+      "Create a restricted child session for researcher, builder, critic, or general work. When run_in_background=true, returns immediately with task metadata — continue with other productive work. You will receive a system_reminder notification when the background task completes.",
     args: {
       description: s.string().describe("Short task description"),
       prompt: s.string().describe("Full task prompt for the delegated agent"),
@@ -148,7 +160,7 @@ export function createDelegateTaskTool(
         .string()
         .optional()
         .describe(
-          "Optional explicit specialist agent; overrides the category default when both are provided",
+          "Optional explicit specialist agent (researcher, builder, critic, general); overrides the category default when both are provided",
         ),
       category: s
         .string()
@@ -158,7 +170,7 @@ export function createDelegateTaskTool(
         ),
       run_in_background: s
         .boolean()
-        .describe("Run asynchronously and return task metadata immediately"),
+        .describe("When true, returns immediately — continue with other work. You'll be notified via system_reminder when complete."),
       session_id: s.string().optional().describe("Optional parent session override"),
       scope: s.string().optional().describe("Optional explicit task scope"),
       constraints: s
