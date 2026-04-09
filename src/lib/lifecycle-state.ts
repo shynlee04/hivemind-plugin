@@ -8,6 +8,7 @@ import type {
   SessionLifecyclePhase,
   SessionLifecycleQueueState,
   SessionLifecycleState,
+  SessionPolicyOverride,
   SpecialistAgent,
 } from "./types.js"
 
@@ -72,6 +73,7 @@ export function buildDelegationMeta(args: {
   agent: SpecialistAgent
   route: DelegationRouteResolution
   queueKey: string
+  runtimePolicyOverride?: SessionPolicyOverride
 }): DelegationMeta {
   return {
     rootID: args.rootID,
@@ -81,6 +83,7 @@ export function buildDelegationMeta(args: {
     category: args.route.category,
     model: args.route.effectiveModel,
     queueKey: args.queueKey,
+    runtimePolicyOverride: args.runtimePolicyOverride,
   }
 }
 

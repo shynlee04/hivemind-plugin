@@ -4,6 +4,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 
 import { CATEGORY_DEFAULTS } from "../../src/lib/categories.js"
+import { setDelegationMeta } from "../../src/lib/state.js"
 import { taskState } from "../../src/lib/state.js"
 import type { HarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
 import type { OpenCodeClient } from "../../src/lib/session-api.js"
@@ -308,6 +309,47 @@ describe("delegate-task tool category routing", () => {
       },
     })
     expect(launchArgs.execution.rationale).toContain("builtin-process")
+  })
+
+  it("threads a trusted parent runtime policy override into child delegation metadata", async () => {
+    const client = createClient({
+      "parent-session": { id: "parent-session" },
+    })
+    const { lifecycleManager, launchDelegatedSession } = createLifecycleManagerMock()
+    const tool = createDelegateTaskTool(lifecycleManager, client)
+
+    setDelegationMeta("parent-session", {
+      rootID: "parent-session",
+      depth: 0,
+      budgetUsed: 0,
+      agent: "builder",
+      category: "implementation",
+      queueKey: "parent",
+      runtimePolicyOverride: {
+        budget: {
+          maxToolCallsPerSession: 3,
+        },
+      },
+    })
+
+    await tool.execute(
+      {
+        description: "Inherit runtime policy override",
+        prompt: "Launch a delegated child using the trusted parent override.",
+        run_in_background: false,
+      },
+      mockCtx,
+    )
+
+    const launchArgs = launchDelegatedSession.mock.calls[0][0] as {
+      runtimePolicyOverride?: {
+        budget?: {
+          maxToolCallsPerSession?: number
+        }
+      }
+    }
+
+    expect(launchArgs.runtimePolicyOverride?.budget?.maxToolCallsPerSession).toBe(3)
   })
 })
 

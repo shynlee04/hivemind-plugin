@@ -19,6 +19,7 @@ import type {
   PermissionRule,
   RuntimePolicy,
   SessionContinuityMetadata,
+  SessionPolicyOverride,
   SessionLifecycleObservation,
   SessionLifecyclePhase,
   SessionLifecycleQueueState,
@@ -41,6 +42,7 @@ type LaunchDelegatedSessionArgs = {
   toolCompatibility?: Record<string, boolean>
   promptText: string
   execution: ExecutionModeResult
+  runtimePolicyOverride?: SessionPolicyOverride
   spawnReservation?: SpawnReservation
 }
 
@@ -252,6 +254,7 @@ export class HarnessLifecycleManager {
         agent: args.agent,
         route: args.route,
         queueKey,
+        runtimePolicyOverride: args.runtimePolicyOverride,
       })
       setDelegationMeta(childSessionID, delegation)
 

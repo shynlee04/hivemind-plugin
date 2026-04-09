@@ -7,6 +7,7 @@
  * Extracted from plugin.ts composition root to keep that file under 100 LOC.
  */
 import { tool } from "@opencode-ai/plugin/tool"
+import { getSessionContinuity } from "../lib/continuity.js"
 import { reserveSubagentSpawn } from "../lib/concurrency.js"
 import { classifyExecutionMode, type TaskCharacteristics } from "../lib/execution-mode.js"
 import { resolveSpecialistRoute } from "../lib/specialist-router.js"
@@ -17,9 +18,10 @@ import {
 import type { HarnessLifecycleManager } from "../lib/lifecycle-manager.js"
 import type { OpenCodeClient } from "../lib/session-api.js"
 import { getSessionID, walkParentChain } from "../lib/session-api.js"
-import { addWarning, taskState } from "../lib/state.js"
+import { addWarning, getDelegationMeta, taskState } from "../lib/state.js"
 import type {
   PermissionRule,
+  SessionPolicyOverride,
   SpecialistAgent,
 } from "../lib/types.js"
 import {
@@ -120,6 +122,40 @@ function buildTaskCharacteristics(args: DelegateTaskArgs, agent: SpecialistAgent
 
 function detectTmuxAvailability(): boolean {
   return Boolean(process.env.TMUX || process.env.TMUX_PANE || process.env.TERM_PROGRAM === "tmux")
+}
+
+function cloneRuntimePolicyOverride(
+  override: SessionPolicyOverride | undefined,
+): SessionPolicyOverride | undefined {
+  if (!override) {
+    return undefined
+  }
+
+  return {
+    concurrency: override.concurrency
+      ? {
+          globalLimit: override.concurrency.globalLimit,
+          perKey: override.concurrency.perKey
+            ? Object.fromEntries(
+                Object.entries(override.concurrency.perKey).map(([key, value]) => [key, { ...value }]),
+              )
+            : undefined,
+        }
+      : undefined,
+    budget: override.budget ? { ...override.budget } : undefined,
+  }
+}
+
+function resolveTrustedParentRuntimePolicyOverride(
+  parentSessionID: string,
+): SessionPolicyOverride | undefined {
+  const inMemoryOverride = getDelegationMeta(parentSessionID)?.runtimePolicyOverride
+  if (inMemoryOverride) {
+    return cloneRuntimePolicyOverride(inMemoryOverride)
+  }
+
+  const continuityOverride = getSessionContinuity(parentSessionID)?.metadata.delegation.runtimePolicyOverride
+  return cloneRuntimePolicyOverride(continuityOverride)
 }
 
 // ---------------------------------------------------------------------------
@@ -241,6 +277,7 @@ export function createDelegateTaskTool(
         hasTmux: detectTmuxAvailability(),
         projectRoot: process.cwd(),
       })
+      const runtimePolicyOverride = resolveTrustedParentRuntimePolicyOverride(parentSessionID)
 
       return await lifecycleManager.launchDelegatedSession({
         parentSessionID,
@@ -267,6 +304,7 @@ export function createDelegateTaskTool(
           mustNotDo: agentTools.mustNot,
         }),
         execution,
+        runtimePolicyOverride,
         spawnReservation,
       })
     },
