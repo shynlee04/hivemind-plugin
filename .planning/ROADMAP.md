@@ -148,8 +148,8 @@ Phase 1 (7 done, 3 pending — planned)
 **Plans:** 3 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — restore the live runtimePolicyOverride writer/persistence seam
-- [ ] 08-02-PLAN.md — reconcile durable parent-visible started/completed/failed truth
-- [ ] 08-03-PLAN.md — re-run Phase 02 verification and correct roadmap/state sequencing
+- [x] 08-01-PLAN.md — restore the live runtimePolicyOverride writer/persistence seam
+- [x] 08-02-PLAN.md — reconcile durable parent-visible started/completed/failed truth
+- [x] 08-03-PLAN.md — re-run Phase 02 verification and correct roadmap/state sequencing
 
 **Execution status:** In progress during Phase 08 execution. Phase 02 re-verification is already green; finalize Phase 08 summaries/state before treating the corrective phase itself as closed.

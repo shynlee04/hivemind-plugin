@@ -2,15 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Phase 8 corrective closure in progress
-last_updated: "2026-04-10T01:17:30.000Z"
+current_plan: 08-03 verification/docs reconciliation
+status: verifying
+stopped_at: Completed 08-03-PLAN.md
+last_updated: "2026-04-09T18:23:49.208Z"
 progress:
   total_phases: 8
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 13
-  completed_plans: 10
-  percent: 77
+  completed_plans: 13
+  percent: 100
 ---
 
 # STATE: Harness Cleanup
@@ -28,8 +29,8 @@ Phase: 08 (repair-durable-parent-observability-for-delegated-sessions) — EXECU
 Plan: 3 of 3 executing
 **Phase 02:** fully re-verified at 18/18 after Phase 08 corrective closure
 **Current plan:** 08-03 verification/docs reconciliation
-**Status:** Finalizing corrective phase summaries + state updates
-**Progress:** [██████████] 100% implementation, awaiting final docs commit
+**Status:** Phase complete — ready for verification
+**Progress:** [██████████] 100%
 
 ```
 Phase 1: Baseline Cleanup ......... ✅ COMPLETE (10/10 items)
@@ -69,6 +70,7 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 | Phase 02 P06 | 9 min | 2 tasks | 5 files |
 | Phase 02-v3-runtime-architecture P08 | 14 min | 2 tasks | 9 files |
 | Phase 02 P09 | 8 min | 3 tasks | 9 files |
+| Phase 08-repair-durable-parent-observability-for-delegated-sessions P03 | 89min | 6 tasks | 22 files |
 
 ## Accumulated Context
 
@@ -98,6 +100,9 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 - [Phase 02]: Use per-invocation governance correlation keys with _harnessInvocationKey as the fallback carrier seam.
 - **2026-04-09**: Add Phase 06 `runtime-domain-separation` to split `src/lib` into runtime, continuity, lifecycle, delegation, governance, and integration seams.
 - **2026-04-09**: Add Phase 07 `runtime-domain-restructuring-planning` as a roadmap-only, path-first, behavior-neutral planning phase for splitting `src/lib/` into lifecycle, continuity, governance, execution, routing, and state domains after Phase 02 reaches 18/18 verification.
+- [Phase 08-repair-durable-parent-observability-for-delegated-sessions]: Trusted runtimePolicyOverride values inherit only from harness-owned parent runtime metadata.
+- [Phase 08-repair-durable-parent-observability-for-delegated-sessions]: Parent-visible async delegated-session status is derived from continuity-backed lifecycle truth, not notification success.
+- [Phase 08-repair-durable-parent-observability-for-delegated-sessions]: Phase 08 is the corrective closure step between the Phase 02 baseline and downstream planning work.
 
 ### Roadmap Evolution
 
@@ -126,7 +131,7 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19
 
-**Stopped At:** Phase 8 corrective closure in progress
+**Stopped At:** Completed 08-03-PLAN.md
 
 **Key files:**
 

@@ -202,7 +202,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3h |
 | **Category** | Runtime Architecture |
 | **Priority** | P1 — Prevents resource exhaustion |
-| **Status** | Partially verified — workspace/runtime-policy wiring is live, but the session-specific `runtimePolicyOverride` writer + persistence path is still missing |
+| **Status** | Verified — trusted session-level `runtimePolicyOverride` values now write through live delegation metadata, survive continuity reload, and drive real tool-budget enforcement |
 | **Dependencies** | RUN-3c (concurrency control) |
 | **Description** | Per-session tool call limits with threshold-based shutdown. Circuit breaker triggers at configurable threshold; hard limit shuts down tool access entirely. Prevents runaway sessions from consuming unlimited resources. |
 | **Acceptance Criteria** | 1. `CIRCUIT_BREAKER_THRESHOLD` configurable per session (default: 16).<br>2. `MAX_TOOL_CALLS_PER_SESSION` configurable per session (default: 400).<br>3. Threshold breach triggers warning to parent session with call count and remaining budget.<br>4. Hard limit breach blocks all further tool calls with error message.<br>5. Budget resets on session compact/restart.<br>6. Test: session exceeds threshold → warning emitted; session exceeds max → tool calls blocked. |
