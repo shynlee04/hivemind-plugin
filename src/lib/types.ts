@@ -4,7 +4,11 @@ import type { PendingNotification as PendingNotificationType } from "./pending-n
 export type PendingNotification = PendingNotificationType
 
 export const MAX_DESCENDANTS_PER_ROOT = 10
-export const VALID_AGENTS = ["researcher", "builder", "critic", "general"] as const
+export const VALID_AGENTS = [
+  "researcher", "builder", "critic", "general",
+  // OpenCode built-in agents
+  "build", "plan", "explore",
+] as const
 export const VALID_DELEGATION_CATEGORIES = [
   "research",
   "implementation",
