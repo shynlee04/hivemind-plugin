@@ -107,15 +107,15 @@ export function buildTaskNotificationFromContinuity(
       : status === "cancelled"
         ? "Task was cancelled."
         : category === "research" || category === "deep"
-          ? `${agent.charAt(0).toUpperCase() + agent.slice(1)} completed research on "${continuity.metadata.description}". Review the session for findings.`
+          ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed research on "${continuity.metadata.description}". Review the session for findings.`
           : category === "review"
-            ? `${agent.charAt(0).toUpperCase() + agent.slice(1)} completed review of "${continuity.metadata.description}". Check for identified issues.`
-            : `${agent.charAt(0).toUpperCase() + agent.slice(1)} completed work on "${continuity.metadata.description}". Check session output for details.`
+            ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed review of "${continuity.metadata.description}". Check for identified issues.`
+            : `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed work on "${continuity.metadata.description}". Check session output for details.`
 
   return {
     sessionID: continuity.sessionID,
     description: continuity.metadata.description ?? "Delegated task",
-    agent,
+    agent: String(agent),
     status,
     error,
     briefSummary,

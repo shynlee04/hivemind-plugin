@@ -99,18 +99,16 @@ describe("buildTaskNotificationFromContinuity: malformed data resilience", () =>
     expect(notification.agent).toBe("unknown")
   })
 
-  it("handles delegation.agent as number (wrong type) — ESCALATED: impl bug, agent.charAt throws on non-string", () => {
+  it("handles delegation.agent as number (wrong type) — coerced to string", () => {
     const continuity = createValidContinuity()
     const delegation = continuity.metadata.delegation as Record<string, unknown>
     delegation.agent = 42 as unknown as "researcher"
 
-    // ESCALATION: Implementation bug at notification-handler.ts:113
-    // `agent.charAt(0)` throws TypeError when agent is a number.
-    // The ?? "unknown" fallback only covers null/undefined, not wrong types.
-    // This test documents the bug — when fixed, replace with graceful expectation.
-    expect(() => buildTaskNotificationFromContinuity(continuity, "completed")).toThrow(
-      TypeError,
-    )
+    // Previously: agent.charAt(0) threw TypeError when agent was non-string.
+    // Fixed: String(agent) coercion at notification-handler.ts:110-113.
+    const notification = buildTaskNotificationFromContinuity(continuity, "completed")
+    expect(notification.agent).toBe("42")
+    expect(notification.briefSummary).toContain("42 completed work on")
   })
 
   it("handles missing description gracefully", () => {
