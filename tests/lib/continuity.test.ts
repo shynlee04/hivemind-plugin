@@ -63,6 +63,12 @@ function buildRecord(): SessionContinuityRecord {
         category: "implementation",
         model: "gpt-5.4",
         queueKey: "gpt-5.4:builder:implementation",
+        runtimePolicyOverride: {
+          budget: {
+            maxToolCallsPerSession: 3,
+            repeatedSignatureThreshold: 2,
+          },
+        },
       },
       delegationPacket: packet,
       title: "builder: Persist delegation packet through continuity",
@@ -179,5 +185,20 @@ describe("continuity delegation packet persistence", () => {
       },
       capturedAt: 123,
     })
+  })
+
+  it("roundtrips runtimePolicyOverride through continuity reload", async () => {
+    const continuityFile = makeTempContinuityFile()
+    const continuity = await loadContinuityModule(continuityFile)
+    const record = buildRecord()
+
+    continuity.recordSessionContinuity(record)
+
+    const reloaded = await loadContinuityModule(continuityFile)
+    const restored = reloaded.getSessionContinuity("child-session")
+
+    expect(restored?.metadata.delegation.runtimePolicyOverride).toEqual(
+      record.metadata.delegation.runtimePolicyOverride,
+    )
   })
 })

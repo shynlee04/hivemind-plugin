@@ -1,9 +1,11 @@
 import type {
   CompactionCheckpointData,
+  DelegationMeta,
   DelegationExecutionMetadata,
   DelegationPacket,
   PendingNotification,
   PermissionRule,
+  SessionPolicyOverride,
   SessionContinuityRecord,
   SessionLifecycleCleanup,
   SessionLifecycleObservation,
@@ -46,6 +48,37 @@ function cloneExecutionMetadata(
         characteristics: { ...execution.characteristics },
         capabilityEvidence: { ...execution.capabilityEvidence },
       }
+      : undefined
+}
+
+function cloneRuntimePolicyOverride(
+  override: SessionPolicyOverride | undefined,
+): SessionPolicyOverride | undefined {
+  return override
+    ? {
+        concurrency: override.concurrency
+          ? {
+              globalLimit: override.concurrency.globalLimit,
+              perKey: override.concurrency.perKey
+                ? Object.fromEntries(
+                    Object.entries(override.concurrency.perKey).map(([key, value]) => [key, { ...value }]),
+                  )
+                : undefined,
+            }
+          : undefined,
+        budget: override.budget ? { ...override.budget } : undefined,
+      }
+    : undefined
+}
+
+export function cloneDelegationMeta(
+  delegation: DelegationMeta | undefined,
+): DelegationMeta | undefined {
+  return delegation
+    ? {
+        ...delegation,
+        runtimePolicyOverride: cloneRuntimePolicyOverride(delegation.runtimePolicyOverride),
+      }
     : undefined
 }
 
@@ -83,7 +116,7 @@ export function cloneCompactionCheckpoint(
         agent: checkpoint.agent,
         model: checkpoint.model,
         tools: cloneStringList(checkpoint.tools),
-        delegationMeta: checkpoint.delegationMeta ? { ...checkpoint.delegationMeta } : null,
+        delegationMeta: cloneDelegationMeta(checkpoint.delegationMeta ?? undefined) ?? null,
         warnings: cloneStringList(checkpoint.warnings),
         sessionStats: {
           total: checkpoint.sessionStats.total,
@@ -112,7 +145,7 @@ export function cloneContinuityRecord(record: SessionContinuityRecord): SessionC
     },
     metadata: {
       ...record.metadata,
-      delegation: { ...record.metadata.delegation },
+      delegation: cloneDelegationMeta(record.metadata.delegation)!,
       compactionCheckpoint: cloneCompactionCheckpoint(record.metadata.compactionCheckpoint),
       delegationPacket: cloneDelegationPacket(record.metadata.delegationPacket),
       execution: cloneExecutionMetadata(record.metadata.execution),

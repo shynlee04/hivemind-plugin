@@ -1,4 +1,4 @@
-import type { CompactionCheckpointData, DelegationCategory, DelegationExecutionMetadata, DelegationMeta, DelegationPacket, DelegationPacketStatus, DelegationRouteResolution, PendingNotification, PermissionAction, PermissionRule, SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleCleanup, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleQueueState, SessionLifecycleState, SessionPromptParams, SessionToolProfile, SpecialistAgent } from "./types.js"
+import type { CompactionCheckpointData, DelegationCategory, DelegationExecutionMetadata, DelegationMeta, DelegationPacket, DelegationPacketStatus, DelegationRouteResolution, PendingNotification, PermissionAction, PermissionRule, PerKeyConcurrencyPolicy, SessionConcurrencyOverride, SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleCleanup, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleQueueState, SessionLifecycleState, SessionPolicyOverride, SessionPromptParams, SessionToolProfile, SpecialistAgent } from "./types.js"
 import { VALID_DELEGATION_CATEGORIES } from "./types.js"
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value) }
@@ -73,6 +73,84 @@ function normalizeDelegationCategory(value: unknown): DelegationCategory | undef
   return VALID_DELEGATION_CATEGORIES.includes(value as DelegationCategory) ? (value as DelegationCategory) : undefined
 }
 
+function normalizePerKeyConcurrencyPolicyRecord(
+  value: unknown,
+): Record<string, PerKeyConcurrencyPolicy> | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const entries = Object.entries(value)
+    .map(([key, entry]) => {
+      if (!isRecord(entry)) {
+        return undefined
+      }
+
+      const limit = asNumber(entry.limit)
+      const acquireTimeoutMs = asNumber(entry.acquireTimeoutMs)
+      if (limit === undefined) {
+        return undefined
+      }
+
+      return [key, { limit, acquireTimeoutMs }] as const
+    })
+    .filter((entry): entry is readonly [string, PerKeyConcurrencyPolicy] => entry !== undefined)
+
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined
+}
+
+function normalizeSessionConcurrencyOverride(
+  value: unknown,
+): SessionConcurrencyOverride | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const globalLimit = asNumber(value.globalLimit)
+  const perKey = normalizePerKeyConcurrencyPolicyRecord(value.perKey)
+  if (globalLimit === undefined && !perKey) {
+    return undefined
+  }
+
+  return {
+    globalLimit,
+    perKey,
+  }
+}
+
+function normalizeSessionPolicyOverride(
+  value: unknown,
+): SessionPolicyOverride | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const concurrency = normalizeSessionConcurrencyOverride(value.concurrency)
+  const budget = isRecord(value.budget)
+    ? {
+        maxToolCallsPerSession: asNumber(value.budget.maxToolCallsPerSession),
+        repeatedSignatureThreshold: asNumber(value.budget.repeatedSignatureThreshold),
+        warningCap: asNumber(value.budget.warningCap),
+        resetOnCompact: asBoolean(value.budget.resetOnCompact),
+      }
+    : undefined
+
+  const normalizedBudget = budget
+    ? Object.fromEntries(
+        Object.entries(budget).filter(([, entry]) => entry !== undefined),
+      )
+    : undefined
+
+  if (!concurrency && (!normalizedBudget || Object.keys(normalizedBudget).length === 0)) {
+    return undefined
+  }
+
+  return {
+    concurrency,
+    budget: normalizedBudget,
+  }
+}
+
 function normalizeRouteResolution(value: unknown): DelegationRouteResolution | undefined {
   if (!isRecord(value)) {
     return undefined
@@ -140,6 +218,7 @@ function normalizeDelegationMeta(value: unknown): DelegationMeta | undefined {
   const category = normalizeDelegationCategory(value.category)
   const model = asString(value.model)
   const queueKey = asString(value.queueKey)
+  const runtimePolicyOverride = normalizeSessionPolicyOverride(value.runtimePolicyOverride)
 
   if (!rootID || depth === undefined || budgetUsed === undefined || !agent || !queueKey) {
     return undefined
@@ -153,6 +232,7 @@ function normalizeDelegationMeta(value: unknown): DelegationMeta | undefined {
     category,
     model,
     queueKey,
+    runtimePolicyOverride,
   }
 }
 

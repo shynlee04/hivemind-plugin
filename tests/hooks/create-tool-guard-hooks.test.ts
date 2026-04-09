@@ -9,6 +9,8 @@ import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { createToolGuardHooks } from "../../src/hooks/create-tool-guard-hooks.js"
+import { recordSessionContinuity } from "../../src/lib/continuity.js"
+import { createHarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
 import { TaskStateManager, taskState } from "../../src/lib/state.js"
 import { DEFAULT_RUNTIME_POLICY, getRuntimePolicyForSession } from "../../src/lib/runtime-policy.js"
 import type { RuntimePolicy, SessionPolicyOverride } from "../../src/lib/types.js"
@@ -586,9 +588,11 @@ describe("createToolGuardHooks", () => {
       tempDir = mkdtempSync(join(tmpdir(), "hivemind-session-policy-"))
       continuityFile = join(tempDir, "session-continuity.json")
       process.env.OPENCODE_HARNESS_CONTINUITY_FILE = continuityFile
+      taskState.clear()
     })
 
     afterEach(() => {
+      taskState.clear()
       delete process.env.OPENCODE_HARNESS_CONTINUITY_FILE
       try { rmSync(tempDir, { recursive: true, force: true }) } catch { /* ignore */ }
     })
@@ -727,6 +731,77 @@ describe("createToolGuardHooks", () => {
       await expect(hooks["tool.execute.before"](input, output)).rejects.toThrow(
         /\[Harness\] Circuit breaker/,
       )
+    })
+
+    it("enforces runtimePolicyOverride after continuity reload hydrates delegation metadata", async () => {
+      const workspacePolicy: RuntimePolicy = {
+        concurrency: { globalLimit: 3 },
+        budget: {
+          maxToolCallsPerSession: 400,
+          repeatedSignatureThreshold: 16,
+          warningCap: 25,
+          resetOnCompact: true,
+        },
+      }
+
+      recordSessionContinuity({
+        sessionID: "sid-reloaded-override",
+        toolProfile: {
+          permissionRules: [],
+          compatibleTools: ["read"],
+        },
+        promptParams: {
+          agent: "builder",
+          category: "implementation",
+          tools: ["read"],
+        },
+        metadata: {
+          parentSessionID: "parent-session",
+          rootSessionID: "root-session",
+          delegation: {
+            rootID: "root-session",
+            depth: 1,
+            budgetUsed: 1,
+            agent: "builder",
+            category: "implementation",
+            queueKey: "default",
+            runtimePolicyOverride: {
+              budget: {
+                maxToolCallsPerSession: 3,
+              },
+            },
+          },
+          title: "builder: reloaded override",
+          description: "builder: reloaded override",
+          category: "implementation",
+          constraints: [],
+          runInBackground: false,
+          status: "running",
+          createdAt: 1,
+          updatedAt: 1,
+        },
+      })
+
+      taskState.clear()
+      const lifecycleManager = createHarnessLifecycleManager({
+        client: {} as never,
+        pollTimeoutMs: 50,
+      })
+      lifecycleManager.hydrateFromContinuity()
+
+      const hooks = createToolGuardHooks({
+        stateManager,
+        runtimePolicy: workspacePolicy,
+      })
+
+      const input = makeInput("sid-reloaded-override", "read")
+      const output = makeOutput({ path: "/persisted" })
+
+      await hooks["tool.execute.before"](input, output)
+      await hooks["tool.execute.before"](input, output)
+      await hooks["tool.execute.before"](input, output)
+
+      await expect(hooks["tool.execute.before"](input, output)).rejects.toThrow(/\[Harness\]/)
     })
   })
 })

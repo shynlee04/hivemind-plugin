@@ -14,6 +14,7 @@ import type {
 import {
   cloneCompactionCheckpoint,
   cloneContinuityRecord,
+  cloneDelegationMeta,
   cloneDelegationPacket,
   cloneLifecycleState,
   clonePendingNotifications,
@@ -227,7 +228,9 @@ export function patchSessionContinuity(
     metadata: {
       ...current.metadata,
       ...patch,
-      delegation: patch.delegation ? { ...patch.delegation } : { ...current.metadata.delegation },
+      delegation: patch.delegation
+        ? cloneDelegationMeta(patch.delegation)!
+        : cloneDelegationMeta(current.metadata.delegation)!,
       compactionCheckpoint: patch.compactionCheckpoint
         ? cloneCompactionCheckpoint(patch.compactionCheckpoint)
         : cloneCompactionCheckpoint(current.metadata.compactionCheckpoint),
