@@ -133,6 +133,7 @@ export async function notifyParentSession(
   toastFn?: ToastFn
 ): Promise<boolean> {
   const message = buildNotificationMessage(task)
+  let delivered = true
 
   const body = {
     noReply: true,
@@ -145,7 +146,7 @@ export async function notifyParentSession(
       body: body as SessionPromptRequest["body"],
     })
   } catch {
-    return false
+    delivered = false
   }
 
   if (toastFn) {
@@ -156,5 +157,5 @@ export async function notifyParentSession(
     }
   }
 
-  return true
+  return delivered
 }

@@ -182,7 +182,7 @@ describe("notifyParentSession", () => {
       status: "completed",
     }
 
-    await expect(notifyParentSession(client, "parent-2", task)).resolves.toBeUndefined()
+    await expect(notifyParentSession(client, "parent-2", task)).resolves.toBe(false)
   })
 
   it("should call toastFn if provided", async () => {
@@ -215,7 +215,7 @@ describe("notifyParentSession", () => {
       status: "completed",
     }
 
-    await expect(notifyParentSession(client, "parent-4", task, mockToast)).resolves.toBeUndefined()
+    await expect(notifyParentSession(client, "parent-4", task, mockToast)).resolves.toBe(true)
   })
 
   it("should still call toastFn even if prompt fails", async () => {
