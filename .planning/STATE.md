@@ -111,10 +111,9 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 
 ### Todos
 
-- [ ] Plan Phase 03: Schema Definition (YAML schemas for Agent/Command/Skill frontmatter)
+- [ ] Plan Phase 03: Schema Definition & Runtime Configurability (expanded from YAML schemas — now includes full runtime config architecture: agent discovery, category routing, threshold config, tool description sync)
 - [ ] Plan Phase 06: Runtime Domain Separation (`src/lib` split across runtime, continuity, lifecycle, delegation, governance, and integration seams)
 - [ ] Plan Phase 07: Runtime Domain Restructuring Planning (roadmap/planning only; Phase 02 re-verification gate is now satisfied, but Phase 08 corrective closure docs must finish first)
-- [ ] Phase 3 architecture discussion - live steering protocols (organize features vs lifecycle, runtime facilitating user-friendly configs, smart routing and tool use as center)
 
 ### Blockers
 
