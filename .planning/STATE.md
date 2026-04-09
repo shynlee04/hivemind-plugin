@@ -114,6 +114,11 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 - [ ] Plan Phase 03: Schema Definition & Runtime Configurability (expanded from YAML schemas — now includes full runtime config architecture: agent discovery, category routing, threshold config, tool description sync)
 - [ ] Plan Phase 06: Runtime Domain Separation (`src/lib` split across runtime, continuity, lifecycle, delegation, governance, and integration seams)
 - [ ] Plan Phase 07: Runtime Domain Restructuring Planning (roadmap/planning only; Phase 02 re-verification gate is now satisfied, but Phase 08 corrective closure docs must finish first)
+- [ ] Dynamic agent discovery from opencode.json and agents/*.md
+- [ ] Configurable category routing with user-defined categories
+- [ ] Runtime threshold config for MAX_DESCENDANTS, MAX_DEPTH, concurrency
+- [ ] Tool description sync with discovered agents and categories
+- [ ] Full Phase 3 planning for runtime configurability architecture
 
 ### Blockers
 
