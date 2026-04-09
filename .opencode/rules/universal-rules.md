@@ -1,8 +1,24 @@
 # Universal Anti-Patterns
 
-Rules that apply to ALL workflows and agents. Individual workflows may add specific anti-patterns beyond these.
 
----
+
+<EXTREMELY-IMPORTANT>
+If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+
+IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+
+This is not negotiable. This is not optional. You cannot rationalize your way out of this.
+</EXTREMELY-IMPORTANT>
+
+## Instruction Priority
+
+This override default system prompt behavior, but **user instructions always take precedence**:
+
+1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
+2. **Superpowers skills** — override default system behavior where they conflict
+3. **Default system prompt** — lowest priority
+
+If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
 
 # Context Budget Rules
 
@@ -49,7 +65,13 @@ You are the front-facing coordinator. You assign tasks by directing specialists 
 - You MUST ensure handoffs are validated with sources and interfaces, conducting them into real-world use cases for 2026.
 - If anything is not translatable to a clarified end-to-end feature or is weirdly absurd, it is a failed built spec — generate a quality testing playbook.
 
-**What You May Show vs. Never Show**
+**What You May Show vs. Never Show*## IMPORTANT UPDATE TO ALL AGENTS
+
+- ALL AGENTS MUST ANNOUNCE THIS EVERY TURN DEPENDING ON MAIN-HUMAN-FACING ORCHESTRATOR OR SUBAGENT BEING DELEGATED
+
+- IF you are a front-facing -> you will mostly delegate **Everytime Delegation** in the prompt YOU MUST LET the subagent know that IT IS THE SUBAGENT BY ANNOUNCING: *You are the subagent Name:XXX role...., you must do as this prompt instructed and knowing that you are being delegated
+
+- As subagent you must anounce your roles so the skills must also match. Say: I am **subagent, I can't delegate further, and I must fulfill my work. If need verification, I will return the verification needed in the report handoff*
 
 When delegating, you MAY show: which commands to run, which prompts and workflows to use, and which protocols to follow.
 

@@ -2,41 +2,43 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 02-09-PLAN.md
-last_updated: "2026-04-08T18:29:38.228Z"
+status: verifying
+stopped_at: Reconciled Phase 02 verification state
+last_updated: "2026-04-09T02:50:00.000Z"
 progress:
-  total_phases: 5
-  completed_phases: 2
+  total_phases: 7
+  completed_phases: 1
   total_plans: 10
   completed_plans: 10
-  percent: 100
+  percent: 94
 ---
 
 # STATE: Harness Cleanup
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-06)
+See: `.planning/PROJECT.md` (updated 2026-04-09)
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
 **Current focus:** Phase 02 — v3-runtime-architecture
 
 ## Current Position
 
-Phase: 02 (v3-runtime-architecture) — COMPLETE
-Plan: 9 of 9
-**Phase:** 02 (v3-runtime-architecture) — COMPLETE
-**Plan:** 02-09 complete
-**Status:** Phase 02 complete, ready for Phase 03 planning
-**Progress:** [██████████] 100%
+Phase: 02 (v3-runtime-architecture) — IMPLEMENTED, NOT YET FULLY VERIFIED
+Plan: 9 of 9 executed
+**Phase:** 02 (v3-runtime-architecture) — 17/18 verified
+**Plan:** 02-09 complete; verification gap remains
+**Status:** Hold Phase 03 planning until the remaining runtime-policy override seam is closed and re-verified
+**Progress:** [█████████░] 94%
 
 ```
 Phase 1: Baseline Cleanup ......... ✅ COMPLETE (10/10 items)
-Phase 2: V3 Runtime Architecture .. ✅ COMPLETE (9/9 plans complete)
+Phase 2: V3 Runtime Architecture .. ⚠️ IMPLEMENTED (9/9 plans, 17/18 verified)
 Phase 3: Functional Fixes ......... Pending
 Phase 4: Rebuild & Polish ......... Pending
 Phase 5: Verification ............. Pending
+Phase 6: Runtime Domain Separation  Pending
+Phase 7: Runtime Domain Restructuring Planning Pending
 ```
 
 ## Phase 1 Results (Completed 2026-04-06)
@@ -55,11 +57,10 @@ Phase 5: Verification ............. Pending
 
 | Metric | Target | Current |
 |--------|--------|---------|
-| v1 Requirements | 18 | 10 complete |
-| HIGH bugs fixed | 3 | 3 (items 1-3) |
-| MEDIUM bugs fixed | 2 | 2 (items 4-5) |
-| LOW issues resolved | 4 | 4 (items 6-10) |
-| Tests passing | 100% | 247/247 ✅ |
+| Phase 02 plans executed | 9 | 9 complete |
+| Phase 02 verification truths | 18 | 17 verified |
+| Remaining blockers | 0 | 1 runtime-policy override seam |
+| Full test suite | Pass | 533 passed, 2 skipped ✅ |
 | Typecheck | Pass | ✅ |
 | Build | Pass | ✅ |
 | Phase 02-v3-runtime-architecture P03 | 10 min | 2 tasks | 10 files |
@@ -95,21 +96,25 @@ Phase 5: Verification ............. Pending
 - [Phase 02]: Keep specialist guidance narrow and derive payloads from the resolved effective agent only.
 - [Phase 02]: Use active matching block rules for injection suppression and keep historical violations as audit data only.
 - [Phase 02]: Use per-invocation governance correlation keys with _harnessInvocationKey as the fallback carrier seam.
+- **2026-04-09**: Add Phase 06 `runtime-domain-separation` to split `src/lib` into runtime, continuity, lifecycle, delegation, governance, and integration seams.
+- **2026-04-09**: Add Phase 07 `runtime-domain-restructuring-planning` as a roadmap-only, path-first, behavior-neutral planning phase for splitting `src/lib/` into lifecycle, continuity, governance, execution, routing, and state domains after Phase 02 reaches 18/18 verification.
 
 ### Todos
 
-- [ ] Plan Phase 02: Critical Fixes (ROADMAP items 2a-2h: V3 Runtime Architecture)
-- [ ] Execute Phase 02: Background agents, delegation chain, concurrency control, session recovery
+- [ ] Close the remaining Phase 02 runtime-policy override seam (`runtimePolicyOverride` must be written by live delegation metadata and preserved through continuity reload)
+- [ ] Re-run Phase 02 verification after the override seam is implemented and persisted end-to-end
 - [ ] Plan Phase 03: Schema Definition (YAML schemas for Agent/Command/Skill frontmatter)
+- [ ] Plan Phase 06: Runtime Domain Separation (`src/lib` split across runtime, continuity, lifecycle, delegation, governance, and integration seams)
+- [ ] Plan Phase 07: Runtime Domain Restructuring Planning (roadmap/planning only; gate on Phase 02 reaching 18/18 verified before any behavior-neutral path moves are scheduled)
 
 ### Blockers
 
-- None
+- Phase 02 remains blocked on one verified gap: session-specific `runtimePolicyOverride` is consumed by the tool guard but is not produced by the live delegation metadata path and is dropped during continuity normalization.
 
 ### Known Issues
 
-- Pre-existing LSP errors in integration test (ToolContext.messageID missing, PromptEnhancePlugin argument shape, Event type shape) — do not affect typecheck or test results
-- ~247 tests exist — some may mask bugs (prompt-enhance.test.ts historically masked double-count)
+- Phase 02 is implemented but not fully closed: `02-VERIFICATION.md` records 17/18 verified truths with one remaining `RUN-3h` gap.
+- The remaining gap is specifically the missing end-to-end producer/persistence path for `delegation.runtimePolicyOverride`.
 
 ## Session Continuity
 
@@ -118,7 +123,7 @@ Phase 5: Verification ............. Pending
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19
 
-**Stopped At:** Completed 02-09-PLAN.md
+**Stopped At:** Reconciled Phase 02 verification state (17/18 verified)
 
 **Key files:**
 
@@ -126,10 +131,10 @@ Phase 5: Verification ............. Pending
 - Design spec: `docs/superpowers/specs/2026-04-06-harness-clean-design.md`
 - Plugin entry: `src/plugin.ts` (cleaned — no dead wiring)
 - Tools: `src/tools/` (prompt-analyze, prompt-skim, session-patch)
-- Tests: `tests/` (247 tests, 12 files)
+- Tests: `tests/` (latest Phase 02 verification run: 533 passed, 2 skipped)
 - Phase 1 plan: `.planning/phases/01-baseline-cleanup/01-01-PLAN.md`
 - Phase 1 summary: `.planning/phases/01-baseline-cleanup/01-01-SUMMARY.md`
 
 ---
 *State initialized: 2026-04-06*
-*Last updated: 2026-04-08 after Phase 02 Plan 09 completion verification*
+*Last updated: 2026-04-09 after Phase 02 verification reconciliation*

@@ -1,8 +1,8 @@
-# Harness Cleanup
+# Harness Runtime Composition Engine
 
 ## What This Is
 
-A cleanup and consolidation of the prompt-enhance executable pipeline (12 commits, ~279 tests) in the harness-experiment worktree before merging into the main hivemind-plugin project. The audit found 8 confirmed bugs and identified duplicate tool/test files that need consolidation.
+HiveMind V3 in this worktree is a runtime composition engine for OpenCode. The repository currently contains completed Phase 01 cleanup work and implemented Phase 02 runtime architecture work, with Phase 02 standing at **17/18 verified truths** and one remaining runtime-policy override gap before full closure.
 
 ## Core Value
 
@@ -12,81 +12,75 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] **RUN-3a**: Background execution mode is classified in the live delegation entrypoint and owned-process work runs through the hardened background manager.
+- [x] **RUN-3b**: Delegation lineage and execution metadata persist canonically in continuity and can be exported for audit/recovery.
+- [x] **RUN-3c**: Queue acquisition resolves live per-key concurrency policy before acquire.
+- [x] **RUN-3d**: Recovery and compaction checkpoint behavior remain verified after Phase 02 re-verification.
+- [x] **RUN-3e**: Governance persistence, active blocking, and invocation-scoped metadata are live.
+- [x] **RUN-3f**: Session-start and compaction injections are route-aware, conditional, and auditable.
+- [x] **RUN-3g**: Specialist routing remains advisory and records rationale with safe fallback behavior.
 
 ### Active
 
-- [ ] **BUG-01**: Fix double-compaction counting (budget drops to 0% after 4 compactions instead of 7)
-- [ ] **BUG-02**: Fix session-patch heading corruption (regex matches inside wrong heading level)
-- [ ] **BUG-03**: Fix orchestrator references to 5 non-existent agents
-- [ ] **BUG-04**: Gate system-transform to prevent 804 chars injected into every session
-- [ ] **BUG-05**: Fix prompt-analyze to detect cross-line contradictions
-- [ ] **BUG-06**: Rebuild context-budget with real OpenCode compaction data (replace fake 15% model)
-- [ ] **BUG-07**: Consolidate duplicate tools (DELETE .opencode/tools/, keep src/tools/)
-- [ ] **BUG-08**: Consolidate duplicate test files (delete old, rename *-tool.test.ts → *.test.ts)
-- [ ] **DEBT-01**: Delete .opencode/tools/ entirely (5 files — src/tools/ is superior)
-- [ ] **DEBT-02**: Delete old test files (tests/tools/*.test.ts, tests/plugins/prompt-enhance.test.ts)
-- [ ] **DEBT-03**: Rename tests/tools/*-tool.test.ts → tests/tools/*.test.ts
-- [ ] **QUAL-01**: Zero dead text injected into non-prompt-enhance sessions
-- [ ] **QUAL-02**: All 8 bugs fixed with explicit test coverage
-- [ ] **QUAL-03**: npm run typecheck, npm test, npm run build all pass
+- [ ] **RUN-3h gap**: Populate `runtimePolicyOverride` in live delegation metadata when trusted session override inputs exist.
+- [ ] **RUN-3h gap**: Preserve `runtimePolicyOverride` through continuity normalization and hydration.
+- [ ] **RUN-3h gap**: Add an end-to-end regression covering write → persist → reload → tool-guard enforcement for session overrides.
+- [ ] **Phase 02 closure**: Re-run verification after the runtime-policy override seam is made real end-to-end.
 
 ### Out of Scope
 
-- Removing any src/tools/ components — all kept and fixed
-- Removing EnhancedPromptOutputSchema or PipelineStateSchema — kept as-is
-- Adding new features — this is cleanup only
-- Restructuring plugin.ts beyond bug fixes
+- `src/**` and `tests/**` implementation changes — this reconciliation pass is documentation-only.
+- Zombie cleanup and runtime-domain restructure work — excluded from this reconciliation.
+- New feature expansion beyond the verified Phase 02 gap closure.
 
 ## Context
 
 **Worktree**: `/Users/apple/hivemind-plugin/.worktrees/harness-experiment`
 **Main project**: hivemind-plugin (harness-experiment is a worktree for experimentation)
 
-**Audit findings**: 8 confirmed bugs found across priority levels (HIGH/MEDIUM/LOW). Feature-debt analysis completed with re-evaluated decisions on what to keep vs delete.
+**Authoritative verification artifact**: `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md`
 
-**Key decisions from analysis**:
-- 0 components unconditionally removed
-- 4 kept + fixed: system-transform (gate by delegation), context-budget (rebuild model), .opencode/tools/ (DELETE), tool-helpers (keep as convention anchor)
-- 2 kept as-is: EnhancedPromptOutputSchema, PipelineStateSchema
-- After deep comparison: DELETE all .opencode/tools/ — src/tools/ is superior in every dimension
-- Design doc at `docs/superpowers/specs/2026-04-06-harness-clean-design.md` specifies all success criteria
+**Current verified state**:
+- Phase 01 is complete.
+- Phase 02 implementation is complete across 9/9 plans.
+- Phase 02 verification is **17/18** with one remaining `RUN-3h` runtime-policy override gap.
+- Fresh bounded tests, full suite, typecheck, and build all passed during the latest Phase 02 verification run.
 
-**Current state**: 12 commits, ~279 tests, 8 confirmed bugs, duplicate tool/test files identified for consolidation.
+**Current state**: hold next-phase planning until the runtime-policy override seam is written, persisted, and re-verified.
 
 ## Constraints
 
-- **Compatibility**: Must maintain plugin interface compatibility with main hivemind-plugin project
-- **Testing**: All tests must pass before merge — no tolerance for skipped tests
-- **Code quality**: Corporate-level standards — <300 LOC per module, no god components/functions, no dead code
-- **TDD**: Tests must be conducted formally with spec-driven tests, schema validation, contract cross-dependencies
+- **Compatibility**: Keep continuity as the canonical store; delegation exports remain derived artifacts.
+- **Verification boundary**: Reconcile planning docs only; do not treat excluded zombie cleanup or restructure work as part of current Phase 02 status.
+- **Closure rule**: Do not mark Phase 02 complete until the `runtimePolicyOverride` producer/persistence seam is verified end-to-end.
+- **Evidence standard**: Current status must match `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md` rather than older audit or validation artifacts.
 
 ## Key Decisions
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| DELETE .opencode/tools/ entirely | src/tools/ superior in type safety, schema validation, factory pattern, response envelopes, test coverage, plugin wiring | — Pending |
-| Keep all src/tools/ components | All contribute to AI agent workflows after bug fixes | — Pending |
-| Fix double-compaction by removing event hook's session.compacted handling | Root cause identified in prompt-enhance plugin | — Pending |
-| Gate system-transform by delegation metadata | Prevents 804-char injection into non-prompt-enhance sessions | — Pending |
-| Rebuild context-budget with real OpenCode data | Fake 15% linear model is inaccurate | — Pending |
+| Keep continuity as canonical state | Delegation packets/manifests must derive from continuity rather than become a second source of truth | Active and verified |
+| Runtime policy supplements built-ins | Custom queue/budget controls fill gaps without replacing OpenCode-native session behavior | Verified except for session-specific override seam |
+| Background execution uses classified runtime modes | Execution family/submode must be chosen from task characteristics and environment capabilities | Verified |
+| Injection remains narrow and route-aware | Specialist guidance should derive from the effective route and active governance state only | Verified |
+| Phase 02 closure requires end-to-end runtime-policy override persistence | Manual in-memory test injection is insufficient; live producer + reload path must exist | Open |
 
 ## Evolution
 
 This document evolves at phase transitions and milestone boundaries.
 
-**After each phase transition** (via `/gsd:transition`):
+**After each phase transition:**
 1. Requirements invalidated? → Move to Out of Scope with reason
 2. Requirements validated? → Move to Validated with phase reference
 3. New requirements emerged? → Add to Active
 4. Decisions to log? → Add to Key Decisions
 5. "What This Is" still accurate? → Update if drifted
 
-**After each milestone** (via `/gsd:complete-milestone`):
+**After each milestone:**
 1. Full review of all sections
 2. Core Value check — still the right priority?
 3. Audit Out of Scope — reasons still valid?
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-06 after initialization*
+*Last updated: 2026-04-09 after Phase 02 verification reconciliation*

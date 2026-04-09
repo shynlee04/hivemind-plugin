@@ -1,73 +1,63 @@
 # Phase 02: V3 Runtime Architecture - Context
 
-**Gathered:** 2026-04-06 (updated)
-**Status:** Ready for planning
+**Gathered:** 2026-04-08
+**Status:** Ready for re-research and replanning
 
 <domain>
 ## Phase Boundary
 
-Build the V3 runtime architecture for the harness: background agent execution, delegation chain persistence, concurrency integration, session recovery, context governance, runtime injection, specialist routing, and configurable circuit-breaker budgets. This phase defines and implements runtime behavior inside the harness itself; schema-definition work and later migration/integration validation remain separate phases.
+Phase 02 remains the runtime architecture phase for the harness. Its job is to deliver the runtime core and the config-ready seams that later user-facing setup flows will rely on.
+
+This phase does **not** become the guided setup phase itself. It should produce the runtime behavior, state model, durability model, and config/validation touchpoints needed so that a later phase can build the guided in-chat setup and generated config UX on top of it.
+
+This phase must now be treated as a **hybrid recovery phase**: original Phase 02 plans are no longer the executable plan of record because implementation already diverged, but the still-valid Phase 02 decisions remain important and must guide new recovery plans.
 
 </domain>
 
 <decisions>
 ## Implementation Decisions
 
-### Background agent execution model
-- **D-01:** Background agents should use visible worker sessions when the environment supports pane/session spawning.
-- **D-02:** If pane/session support is unavailable, the runtime must fall back to headless background execution rather than failing the delegation flow.
-- **D-03:** Delegation must preserve strict parent/child lineage and resume metadata so background and headless workers share one durable execution model.
-- **D-12:** Hybrid background execution — tmux mode for parallel-independent high-performance work, built-in mode for iterative/linear tasks. Auto-detect based on task characteristics (parallel+independent → tmux, sequential+dependent → built-in). User confirms via a configuration agent menu; settings applied after restart.
-- **D-13:** Built-in mode auto-detects between OpenCode sub-session (user-interactive tasks) and subprocess stdio (research-based tasks with background search/crawling, OMO-style orchestrator).
+### Phase 02 planning posture
+- **D-01:** Phase 02 is re-baselined as a **hybrid recovery phase**. The original eight Phase 02 plans are reference material, not executable truth.
+- **D-02:** Downstream agents must research and plan from **current code reality plus still-valid Phase 02 decisions**, not from the old plan files alone.
+- **D-03:** Validation against the original Phase 02 plan artifacts is premature. The correct order is: update context -> research -> create recovery plans -> execute -> then validate.
 
-### Recovery, governance, injection, and routing policy
-- **D-04:** Phase 2 should use a **soft policy runtime**: governance should prefer warning/escalation behavior over hard blocking in most cases.
-- **D-05:** Session recovery should restore task continuity and relevant runtime state, but policy enforcement should stay lighter-weight than a strict hard-stop governance system.
-- **D-06:** Runtime injection should be conditional, but scoped to a smaller and more controlled ruleset rather than a fully expansive policy engine in this phase.
-- **D-07:** Specialist routing should be advisory/configurable, with broad fallback to a generalist when no strong specialist match exists.
+### Runtime versus product boundary
+- **D-04:** Phase 02 stays scoped to **runtime core architecture**, not the full user-facing setup experience.
+- **D-05:** Phase 02 must include **config-ready seams** for later guided setup: runtime config schema targets, sane defaults, validation hooks, and activation wiring points.
+- **D-06:** Guided in-chat setup, config generation UX, and explanation-first onboarding belong to a later product-facing phase, not this one.
 
-### Session recovery
-- **D-17:** Session recovery restores task continuity (active delegations, trajectory state, pending tasks, governance rules) as primary mechanism. Full context restoration is available via the auto time-machine parser/writer already in the refactored codebase — recovered agents use specially-built inspect tools to examine high-level and hierarchical context, then decide which detailed context to load on demand.
-- **D-18:** Recovery triggers automatically on session restart with staleness check (configurable threshold). Agent state is presented to users with a staleness risk assessment — they confirm whether to proceed with recovered state or start fresh.
+### Durability and execution record model
+- **D-07:** The continuity/state store remains the **canonical runtime source of truth** for delegation and recovery.
+- **D-08:** Rich delegation packet and manifest style artifacts should still exist, but as **exports derived from canonical continuity state**, not as the only source of truth.
+- **D-09:** Packet/manifest exports are **optional and policy-controlled**, intended for auditability, debugging, and future user-facing history rather than mandatory on every runtime path.
 
-### Concurrency and configuration
-- **D-15:** Concurrency configuration is hybrid:
-  - Internal interfaces (tool→agent→runtime mapping within Hivemind) → JSON config file
-  - External OpenCode SDK interactions (create session, append message) → OpenCode-style YAML/JSON
-  - Runtime-dynamic changes (instantaneous adjustments, SDK/library dependencies) → Programmatic API
-- **D-16:** Tool budgets, loop detection, and retry resolution use built-in OpenCode mechanisms where available — custom concurrency only supplements what OpenCode doesn't provide natively.
+### Existing runtime policy decisions that remain locked
+- **D-10:** Phase 02 should use a **soft policy runtime**: governance should prefer warning/escalation behavior over hard blocking in most cases.
+- **D-11:** Session recovery should restore task continuity and relevant runtime state, but policy enforcement stays lighter-weight than a strict hard-stop governance system.
+- **D-12:** Specialist routing should be advisory/configurable, with broad fallback to a generalist when no strong specialist match exists.
+- **D-13:** Circuit-breaker and tool-budget thresholds must be configurable per session/runtime context rather than fixed global constants only.
+- **D-14:** Default limits can remain close to current code behavior, but overrides must be possible without source edits.
+- **D-15:** Budget/reset behavior should continue to reset on compact/restart, with warning state preserved in continuity records when useful for recovery and observability.
+- **D-16:** Session recovery should include staleness check and user-visible risk framing, even if the exact UX is implemented later.
 
-### Delegation packet format
-- **D-14:** Delegation packets stored as separate JSON files in `.hivemind/delegation/` with full hierarchy: plan reference, task details, purpose, agents/tools, handoff artifacts, code changes, git commits, results. A `manifest.json` indexes active packets for fast lookup without directory scanning.
-
-### Circuit breaker and tool budget behavior
-- **D-08:** Keep the existing warning-then-hard-stop budget structure rather than replacing it with a new model.
-- **D-09:** Circuit-breaker and tool-budget thresholds must be configurable per session/runtime context rather than fixed global constants only.
-- **D-10:** Default limits can remain close to current code behavior, but overrides should be possible without changing source constants for every scenario.
-- **D-11:** Budget/reset behavior should continue to reset on compact/restart, with warning state preserved in continuity records when useful for recovery and observability.
-
-### Claude's Discretion
-- Exact JSON field names and internal TypeScript shape for delegation/recovery records, as long as they preserve lineage, resume context, validation signals, and result status.
-- Exact pane/session adapter mechanism (tmux-specific wrapper vs adapter abstraction), as long as pane-capable environments get visible workers and unsupported environments get clean headless fallback.
-- Exact matching heuristics for specialist routing, as long as routing remains configurable and falls back safely to a generalist.
-- Exact warning/escalation thresholds and logging format, as long as they implement configurable per-session budgets consistent with D-08 through D-11.
-- Configuration agent menu design and UX flow (the mechanism for users to confirm settings before restart).
-- Staleness threshold default value and risk assessment presentation format.
+### the agent's Discretion
+- Exact internal TypeScript shapes for continuity-backed runtime records, as long as canonical continuity remains primary and optional exports remain derivable.
+- Exact runtime config section names and field nesting, as long as Phase 02 clearly exposes schema targets, sane defaults, validation hooks, and activation seams.
+- Exact implementation mechanics for exportable packet/manifest generation, as long as they are policy-controlled and do not replace canonical continuity.
+- Exact internal structure for recovery plans, as long as they treat old Phase 02 plans as reference-only and preserve the locked decisions above.
 
 </decisions>
 
 <specifics>
 ## Specific Ideas
 
-- The user explicitly chose a **visible worker** model over a purely hidden async runtime.
-- The user explicitly chose a **soft policy** runtime over strict hard-block governance for this phase.
-- The user explicitly chose **configurable thresholds** over fixed one-size-fits-all circuit-breaker settings.
-- **Hybrid background execution**: tmux for high-performance parallel-independent work, built-in for iterative/linear breakdown. Auto-detect with user confirmation via config agent menu.
-- **Built-in mode auto-detect**: OpenCode sub-session for interactive tasks, subprocess stdio for research-based background work (OMO-style orchestrator).
-- **Delegation packets are rich hierarchical records**: plan reference, task details, purpose, agents/tools, handoff artifacts, code changes, git commits, results — traceable back to what happened.
-- **Concurrency is about configuration mapping**: tools→agents→runtime types, agents→workflows→retry resolution, using OpenCode built-in mechanisms where available.
-- **Session recovery**: task continuity primary + full context via time-machine parser/writer with inspect tools for on-demand loading.
-- **Recovery staleness**: auto-check with configurable threshold, agent state shown to user with risk assessment for confirmation.
+- The repo should stop pretending the old eight Phase 02 plans are still executable as written.
+- The repo should also stop pretending the current partially implemented V3 runtime is automatically correct just because code exists.
+- The right posture is: **recover Phase 02 from current code reality** while preserving still-valid runtime decisions.
+- The later product direction is a **guided in-chat setup** that writes a full config file, but Phase 02 only needs to make that possible, not implement it fully.
+- The runtime should be durable by default through continuity, while packet/manifest-style records exist as optional audit/debug outputs and as a future bridge to user-facing history.
+- Config-readiness in Phase 02 means: schema targets, defaults, validation hooks, and activation seams are present and intentional.
 
 </specifics>
 
@@ -76,31 +66,22 @@ Build the V3 runtime architecture for the harness: background agent execution, d
 
 **Downstream agents MUST read these before planning or implementing.**
 
-### Phase scope and acceptance criteria
-- `.planning/ROADMAP.md` — Phase 2 scope, sub-phase ordering (2a-2h), and current roadmap boundary
-- `.planning/REQUIREMENTS.md` — RUN-3a through RUN-3h descriptions and acceptance criteria (§Phase 2: Runtime Architecture)
-- `.planning/STATE.md` — current project position, locked cleanup decisions, and continuity constraints
+### Phase scope and status
+- `.planning/ROADMAP.md` — official Phase 02 roadmap boundary and old sub-phase ordering that is now reference-only
+- `.planning/REQUIREMENTS.md` — RUN-3a through RUN-3h acceptance criteria that still define the runtime capability space
+- `.planning/STATE.md` — project state is stale relative to current V3 work; read it as historical context, not current execution truth
 
-### Runtime architecture intent
-- `AGENTS.md` — project governance, harness vs meta-concepts split, module boundaries, testing gates
-- `docs/draft/architecture-proposal-hivemind-v3.md` — target V3 runtime capabilities and architectural direction
+### Current runtime baseline and gap analysis
+- `docs/superpowers/specs/2026-04-08-v3-implementation-spec.md` — current implemented V3 runtime baseline and what was actually built
+- `.planning/reports/2026-04-08-architecture-audit.md` — audited flaws, architecture risks, and domain-organization concerns in the current runtime
+- `.planning/phases/02-v3-runtime-architecture/PLAN-VERIFICATION.md` — why the original eight Phase 02 plans were not sound as originally written
 
-### Existing code assets
-- `src/lib/concurrency.ts` — keyed semaphore/FIFO (98 LOC, needs integration)
-- `src/lib/continuity.ts` — durable JSON persistence (638 LOC)
-- `src/lib/lifecycle-manager.ts` — session lifecycle transitions (705 LOC, needs reduction to <500)
-- `src/lib/session-api.ts` — parent-chain traversal, session creation helpers
-- `src/lib/state.ts` — in-memory fast-path state maps
-- `src/lib/completion-detector.ts` — two-signal async completion detection
-- `src/lib/notification-handler.ts` — async completion notification
-- `src/lib/runtime.ts` — event→status mapping
-- `src/lib/agent-registry.ts` — agent definitions
-- `src/lib/task-status.ts` — task status transitions + guards
-- `src/plugin.ts` — composition root (thin assembly, zero business logic)
+### Product-facing follow-on direction
+- `docs/superpowers/specs/2026-04-08-user-facing-runtime-config-design.md` — later product direction that Phase 02 must prepare for without absorbing the whole setup UX
+- `docs/superpowers/specs/2026-04-08-runtime-config-schema-draft.md` — concrete config target that informs what Phase 02 config-ready seams need to support
 
-### Delegation and recovery
-- `AGENTS.md` §Delegation Continuity Rules — 8 required fields per delegation packet
-- `AGENTS.md` §Session/Subsession Resume Behavior — ses_id, subses_id, continuity tracking
+### Project governance and constraints
+- `AGENTS.md` — plugin/runtime architecture rules, module-size targets, testing gates, and harness terminology
 
 </canonical_refs>
 
@@ -108,40 +89,40 @@ Build the V3 runtime architecture for the harness: background agent execution, d
 ## Existing Code Insights
 
 ### Reusable Assets
-- `src/lib/concurrency.ts`: keyed semaphore/FIFO (98 LOC) — integrate for RUN-3c, don't replace
-- `src/lib/continuity.ts`: durable JSON persistence (638 LOC) — foundation for delegation records, recovery state, warning/budget continuity
-- `src/lib/state.ts`: in-memory fast-path state maps for session/root/delegation tracking
-- `src/lib/lifecycle-manager.ts`: session lifecycle transitions and hydration logic (705 LOC — exceeds 500 LOC limit, needs reduction)
-- `src/lib/session-api.ts`: parent-chain traversal and session creation helpers for delegation lineage
-- `src/lib/completion-detector.ts`: two-signal completion detection for background agent lifecycle
-- `src/lib/notification-handler.ts`: async completion notification for background agents
-- `src/plugin.ts`: delegate-task entry point, circuit-breaker thresholds, composition-root wiring
+- `src/plugin.ts` — thin composition root already exists; preserve assembly-only direction
+- `src/lib/continuity.ts` — canonical durable continuity model already exists and should remain primary
+- `src/lib/lifecycle-manager.ts` — central runtime coordinator and hydration point for continuity-backed state
+- `src/lib/categories.ts` — current routing/category defaults are a strong base for future config-driven behavior
+- `src/lib/compaction-checkpoint.ts` — recovery/checkpoint seam already exists and should remain part of the runtime core
+- `src/lib/background-manager.ts` and `src/tools/background/index.ts` — current background runtime exists, but needs safety hardening before public-facing control surfaces depend on it
+- `src/hooks/create-tool-guard-hooks.ts` — current budget/circuit-breaker implementation exists, but is still hardcoded and needs config-ready seams
+- `src/hooks/create-session-hooks.ts` — current auto-loop and compaction runtime behavior exists, but includes hook-side side effects that planners should treat as active debt
 
 ### Established Patterns
-- Keep `src/plugin.ts` as thin composition root; new runtime behavior lives under `src/lib/` or extracted tool modules
-- Preserve dual-layer state: in-memory operational state + durable JSON continuity
-- TypeScript strictness, ESM imports with `.js` extensions, `[Harness]`-prefixed thrown errors
-- Extend existing queue/continuity/lifecycle flows over introducing parallel shadow implementations
-- Max module size: 500 LOC (lifecycle-manager at 705 LOC needs attention)
+- Keep the plugin thin and push durable/runtime logic into library and tool modules
+- Preserve the tools-write / hooks-read split as the intended architecture, even where the current implementation violates it
+- Treat continuity plus in-memory state as the dual-layer runtime model
+- Extend the existing schema-kernel pattern rather than inventing a second validation approach for runtime config
 
 ### Integration Points
-- Delegate-task flow in `src/plugin.ts` — natural integration point for background mode, lineage metadata, specialist selection, per-session budget config
-- Continuity hydration in `src/lib/lifecycle-manager.ts` and `src/lib/continuity.ts` — session recovery, persisted warnings/budgets
-- Existing concurrency lane acquisition — visible-vs-headless worker execution decisions, resource protection
-- Auto time-machine parser/writer (from refactored codebase) — full context restoration on recovery
+- `src/plugin.ts` is the activation seam where validated runtime config will eventually be consumed
+- `src/schema-kernel/` is the right place for runtime config contracts and validation entry points
+- `tests/hooks/` and `tests/tools/` already provide natural places for config-driven runtime behavior tests
+- `src/lib/continuity.ts` and `src/lib/lifecycle-manager.ts` are the main durability and recovery seams for optional packet/manifest export generation
 
 </code_context>
 
 <deferred>
 ## Deferred Ideas
 
-- **Configuration agent UI/UX**: Menu design, flow, and presentation for user confirmation of background agent settings (deferred to implementation phase — decision captured that it exists and when settings apply)
-- **Staleness threshold default value**: Exact numeric threshold for recovery staleness (deferred to implementation — decision captured that it's configurable with user risk assessment)
-- **Schema Definition (Phase 3)**: YAML schemas for Agent/Command/Skill frontmatter — mentioned during concurrency discussion as related to agent-tool mapping but belongs in Phase 3
+- Full guided in-chat setup UX and config-writing flow — later product-facing phase
+- Product-level profiles such as `safe`, `balanced`, and `autonomous` as user-facing setup presets — later phase, though Phase 02 should leave the schema and default seams ready
+- Rich packet/manifest browsing UX for users — later phase
+- Any attempt to validate Phase 02 as if the old eight plan artifacts were faithfully executed — deferred until new recovery plans exist and are executed
 
 </deferred>
 
 ---
 
 *Phase: 02-v3-runtime-architecture*
-*Context gathered: 2026-04-06 (updated)*
+*Context gathered: 2026-04-08*

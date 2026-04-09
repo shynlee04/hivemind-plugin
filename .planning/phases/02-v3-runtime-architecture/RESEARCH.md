@@ -577,27 +577,27 @@ async function evaluateGovernanceRules(
 | A6 | `.hivemind/` directory structure matches AGENTS.md (delegation/, state/, sessions/, hierarchy/) | 2b delegation chain | LOW — directory structure is a convention, can be adjusted |
 | A7 | OpenCode SDK `client.session.children()` returns sessions with same shape as `client.session.get()` | 2b SDK surfaces | LOW — both return Session type per SDK docs |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **What is the exact event shape from `client.event.subscribe()`?**
-   - What we know: SDK docs show `event.type` and `event.properties` — [VERIFIED: SDK docs]
-   - What's unclear: Whether `session.idle`, `session.error`, `session.deleted` events include sessionID in `properties` or need to be inferred from subscription context
-   - Recommendation: Test with live OpenCode instance; for now, use existing `event` hook pattern in plugin.ts which already processes events
+1. **Resolved: what event shape should Phase 02 plan against?**
+   - Resolution: Phase 02 should plan against the plugin `event` hook and `experimental.session.compacting`, not `client.event.subscribe()` as the primary runtime surface for plugin-side monitoring.
+   - Evidence: `docs/designs/2026-04-02-session-api-rewrite.md` corrects the earlier assumption and states that plugin runtimes should use the `event` hook; it also records that lifecycle/status events carry `event.properties.sessionID` while lifecycle info events can carry `event.properties.info`.
+   - Planning consequence: background execution and recovery plans should treat hook-delivered events as the authoritative path and only use degraded polling when hook-driven completion signals are insufficient.
 
-2. **Does the "time-machine parser/writer" (D-17) exist in the codebase?**
-   - What we know: CONTEXT.md references "auto time-machine parser/writer already in the refactored codebase"
-   - What's unclear: No file in `src/` or `lib/` is named "time-machine" — may be in a different branch or not yet implemented
-   - Recommendation: Flag as `[ASSUMED]` in research; planner should verify existence before depending on it
+2. **Resolved: does the "time-machine parser/writer" currently exist in this codebase?**
+   - Resolution: no current `src/` or `.planning/` artifact proves that a reusable time-machine parser/writer module exists in this branch.
+   - Evidence: repository search found only planning/reference mentions, not an implementation module.
+   - Planning consequence: Phase 02 recovery plans must not depend on a pre-existing time-machine module. Recovery should be implemented from continuity + message inspection seams that actually exist today.
 
-3. **What's the maximum practical number of concurrent OpenCode sub-sessions?**
-   - What we know: SDK creates sessions via HTTP API — no documented limit
-   - What's unclear: Server resource constraints, model API rate limits, memory usage per session
-   - Recommendation: Start conservative (3-5 concurrent sessions); add observability to track resource usage
+3. **Resolved: what concurrency assumption is safe without a documented OpenCode hard limit?**
+   - Resolution: treat concurrent sub-session count as an operational/config concern, not a hardcoded platform fact. Use conservative defaults and make limits configurable/observable.
+   - Evidence: no authoritative platform limit was found in current repo evidence; REQUIREMENTS and CONTEXT both emphasize configurable concurrency and runtime policy over fixed constants.
+   - Planning consequence: Phase 02 plans should create config-driven limits and timeout/observability seams, not claim a verified maximum platform session count.
 
-4. **How does OpenCode handle permission profiles for programmatically created sessions?**
-   - What we know: `client.session.create()` accepts `body.permission` — [ASSUMED from SDK docs pattern]
-   - What's unclear: Whether permission format matches agent permission config or has different shape
-   - Recommendation: Test with live OpenCode instance; use `permission.ask` hook as fallback
+4. **Resolved: should Phase 02 depend on `session.create()` permission-shape assumptions?**
+   - Resolution: no. Phase 02 should rely on agent/static permissions plus hook-enforced runtime restrictions, not on unverified `session.create()` tool-restriction semantics.
+   - Evidence: `docs/requirements-2026-04-02.md` records the corrected finding that `session.create()` does not accept tool restrictions in the way earlier assumptions implied; current tests in `tests/lib/session-api.test.ts` also only verify `body` + `query` create shape, not a permission payload.
+   - Planning consequence: planner/executor work should keep permission enforcement in agent configuration and plugin/tool-guard layers unless future live SDK verification proves a stronger create-time permission contract.
 
 ## Security Domain
 

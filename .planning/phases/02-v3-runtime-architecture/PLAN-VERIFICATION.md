@@ -1,5 +1,7 @@
 # Phase 02: V3 Runtime Architecture — Plan Verification Report
 
+> Historical pre-execution plan audit. Use `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md` for the current post-execution status. Phase 02 implementation is complete across all 9 plans, but final closure remains blocked by one verified `runtimePolicyOverride` gap.
+
 **Verified:** 2026-04-06
 **Plans checked:** 8
 **Overall status:** ❌ ISSUES FOUND — 3 blockers, 5 warnings, 2 info

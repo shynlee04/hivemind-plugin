@@ -211,6 +211,50 @@ describe("CompletionDetector", () => {
     })
   })
 
+  // --- feedMessageCount input guards (Bug F3) ---
+  describe("feedMessageCount input guards", () => {
+    it("is a no-op when count is NaN", () => {
+      detector.feedMessageCount("ses_1", NaN)
+      // messageCounts should not have been updated — no stability timer started
+      // Verify: advancing past stability window produces no idle signal in cache
+      vi.advanceTimersByTime(200)
+      // No watcher, no cached result — session is unaffected
+      const resultPromise = detector.watch("ses_1", 10)
+      vi.advanceTimersByTime(15)
+      return expect(resultPromise).resolves.toEqual({ signal: "timeout", sessionID: "ses_1" })
+    })
+
+    it("is a no-op when count is undefined (cast as number)", () => {
+      detector.feedMessageCount("ses_1", undefined as unknown as number)
+      vi.advanceTimersByTime(200)
+      const resultPromise = detector.watch("ses_1", 10)
+      vi.advanceTimersByTime(15)
+      return expect(resultPromise).resolves.toEqual({ signal: "timeout", sessionID: "ses_1" })
+    })
+
+    it("is a no-op when count is negative", () => {
+      detector.feedMessageCount("ses_1", -1)
+      vi.advanceTimersByTime(200)
+      const resultPromise = detector.watch("ses_1", 10)
+      vi.advanceTimersByTime(15)
+      return expect(resultPromise).resolves.toEqual({ signal: "timeout", sessionID: "ses_1" })
+    })
+
+    it("accepts count of 0 as valid and starts stability timer", async () => {
+      const resultPromise = detector.watch("ses_1", 5000)
+      detector.feedMessageCount("ses_1", 0)
+      vi.advanceTimersByTime(100)
+      await expect(resultPromise).resolves.toEqual({ signal: "idle", sessionID: "ses_1" })
+    })
+
+    it("accepts positive integer count and starts stability timer normally", async () => {
+      const resultPromise = detector.watch("ses_1", 5000)
+      detector.feedMessageCount("ses_1", 5)
+      vi.advanceTimersByTime(100)
+      await expect(resultPromise).resolves.toEqual({ signal: "idle", sessionID: "ses_1" })
+    })
+  })
+
   // --- edge cases ---
   describe("edge cases", () => {
     it("ignores feed with undefined sessionID", () => {

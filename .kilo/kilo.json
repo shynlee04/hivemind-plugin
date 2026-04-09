@@ -1,0 +1,11 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "permission": {
+    "read": {
+      "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.kilo/get-shit-done/*": "allow"
+    },
+    "external_directory": {
+      "/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.kilo/get-shit-done/*": "allow"
+    }
+  }
+}

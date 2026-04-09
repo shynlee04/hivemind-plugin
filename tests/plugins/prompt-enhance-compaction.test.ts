@@ -1,62 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest"
-import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from "node:fs"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
-import { PromptEnhancePlugin } from "../../src/plugins/prompt-enhance.js"
+import { describe, it } from "vitest"
 
-describe("prompt-enhance compaction tracking", () => {
-  const testDir = join(tmpdir(), "prompt-enhance-compaction-test")
-  const originalCwd = process.cwd()
+// Original 3 tests removed: all depended on src/plugins/prompt-enhance.ts (zombie module, gutted in Phase 2).
+// Compaction tracking will be re-implemented in Phase 3 via hook factory pattern in src/plugin.ts.
+// This file will be repopulated with new compaction tests at that time.
+// For now, this placeholder prevents Vitest from failing on "no test suite found".
 
-  beforeEach(() => {
-    mkdirSync(testDir, { recursive: true })
-    process.chdir(testDir)
-  })
-
-  afterEach(() => {
-    process.chdir(originalCwd)
-    try { rmSync(testDir, { recursive: true, force: true }) } catch { /* ignore */ }
-  })
-
-  it("session.compacting hook increments compaction_count by 1", async () => {
-    const plugin = await PromptEnhancePlugin()
-    const stateFile = join(testDir, ".hivemind/state/session-context-prompt.md")
-    mkdirSync(join(testDir, ".hivemind/state"), { recursive: true })
-    writeFileSync(stateFile, "---\ncompaction_count: 0\ncontext_budget_pct: 100\n---\n")
-
-    const mockOutput = { context: [] as string[] }
-    await (plugin as Record<string, unknown>)["experimental.session.compacting"]({}, mockOutput)
-
-    const content = readFileSync(stateFile, "utf-8")
-    expect(content).toContain("compaction_count: 1")
-    expect(content).toContain("context_budget_pct: 50")
-  })
-
-  it("event hook does NOT increment compaction for session.compacted events", async () => {
-    const plugin = await PromptEnhancePlugin()
-    const stateFile = join(testDir, ".hivemind/state/session-context-prompt.md")
-    mkdirSync(join(testDir, ".hivemind/state"), { recursive: true })
-    writeFileSync(stateFile, "---\ncompaction_count: 0\ncontext_budget_pct: 100\n---\n")
-
-    await (plugin as Record<string, unknown>).event({ event: { type: "session.compacted" } })
-
-    const content = readFileSync(stateFile, "utf-8")
-    expect(content).toContain("compaction_count: 0")
-    expect(content).toContain("context_budget_pct: 100")
-  })
-
-  it("both hooks together do NOT double-count", async () => {
-    const plugin = await PromptEnhancePlugin()
-    const stateFile = join(testDir, ".hivemind/state/session-context-prompt.md")
-    mkdirSync(join(testDir, ".hivemind/state"), { recursive: true })
-    writeFileSync(stateFile, "---\ncompaction_count: 0\ncontext_budget_pct: 100\n---\n")
-
-    await (plugin as Record<string, unknown>).event({ event: { type: "session.compacted" } })
-    const mockOutput = { context: [] as string[] }
-    await (plugin as Record<string, unknown>)["experimental.session.compacting"]({}, mockOutput)
-
-    const content = readFileSync(stateFile, "utf-8")
-    expect(content).toContain("compaction_count: 1")
-    expect(content).toContain("context_budget_pct: 50")
-  })
+describe("prompt-enhance compaction tracking (Phase 2: placeholder)", () => {
+  it.todo("compaction tracking tests pending Phase 3 hook factory refactor")
 })

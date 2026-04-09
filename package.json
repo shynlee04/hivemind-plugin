@@ -4,21 +4,21 @@
   "description": "Multi-agent checkpoint orchestration framework for OpenCode",
   "type": "module",
   "main": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
     "./plugin": {
-      "import": "./dist/harness/index.js",
-      "types": "./dist/harness/index.d.ts"
+      "import": "./dist/plugin.js",
+      "types": "./dist/plugin.d.ts"
     }
   },
-  "bin": {
-    "harness": "./dist/cli/index.js"
-  },
   "scripts": {
-    "build": "tsc && node ./dist/cli/index.js validate",
+    "build": "tsc",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",

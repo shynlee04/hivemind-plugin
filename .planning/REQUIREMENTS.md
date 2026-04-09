@@ -1,7 +1,7 @@
 # Requirements: Harness Cleanup + V3 Runtime
 
 **Defined:** 2026-04-06
-**Last Updated:** 2026-04-06 — V3 runtime features added as Phase 2+
+**Last Updated:** 2026-04-09 — reconciled to current Phase 02 verification state
 **Core Value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references. V3 extends the harness into a runtime composition engine with background agents, delegation chains, concurrency control, and schema-driven injection.
 
 ---
@@ -109,6 +109,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 Priority-ordered sub-phases building the V3 runtime composition engine.
 
+**Current verification summary (2026-04-09):** `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md` is the authoritative Phase 02 verification record. Phase 02 currently stands at **17/18 verified truths**. The only remaining open gap is the session-specific `runtimePolicyOverride` seam for `RUN-3h`: the tool-guard path consumes it, but live delegation metadata does not produce it and continuity normalization drops it on reload.
+
 ### RUN-3a: Background Agents
 
 | Field | Value |
@@ -116,7 +118,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3a |
 | **Category** | Runtime Architecture |
 | **Priority** | P0 — Foundation for all subsequent runtime features |
-| **Status** | Complete |
+| **Status** | Verified |
 | **Dependencies** | None (Phase 2 kickoff) |
 | **Description** | Agents run in background processes, spawn in new terminal panes, and auto-cleanup on completion. Background agents enable parallel work streams without blocking the primary session. |
 | **Acceptance Criteria** | 1. Background agent spawns in a new pane (tmux or equivalent) without blocking the calling session.<br>2. Agent completes its task and exits cleanly with status code and result captured.<br>3. Auto-cup removes temporary agent state files on completion (success or failure).<br>4. Failed agents write error context to `.hivemind/delegation/` before cleanup.<br>5. Parent session can query background agent status at any time.<br>6. Test: `npm test` includes at least one background agent spawn/complete/cleanup test. |
@@ -128,7 +130,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3b |
 | **Category** | Runtime Architecture |
 | **Priority** | P0 — Required for cross-session task continuity |
-| **Status** | Complete |
+| **Status** | Verified |
 | **Dependencies** | RUN-3a (background agents) |
 | **Description** | Task persistence across sessions with parent-child session tracking. Delegation packets carry task objective, scope boundaries, known facts, excluded assumptions, evidence gathered, required deliverable shape, validation rules, and stopping conditions. |
 | **Acceptance Criteria** | 1. Delegation packet written to `.hivemind/delegation/` as JSON with all 8 required fields.<br>2. Parent-child session linkage tracked via `ses_id` and `subses_id` in `.hivemind/hierarchy/`.<br>3. Child session resumes delegation context from JSON on start.<br>4. Completed delegation marked with result and timestamp.<br>5. Test: delegation packet round-trips through parent→child→completion with all fields intact. |
@@ -140,7 +142,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3c |
 | **Category** | Runtime Architecture |
 | **Priority** | P0 — Required before multi-agent parallelism |
-| **Status** | Partially complete — `src/lib/concurrency.ts` exists with keyed semaphore |
+| **Status** | Verified |
 | **Dependencies** | None (existing code, needs integration) |
 | **Description** | Keyed semaphore with FIFO queue for resource-constrained operations. Prevents resource exhaustion when multiple agents compete for the same tool, file, or API. |
 | **Acceptance Criteria** | 1. `concurrency.ts` keyed semaphore supports named keys (e.g., file path, tool name).<br>2. FIFO ordering guaranteed per key — first requester gets access first.<br>3. Configurable max concurrency per key (default: 1 for exclusive, N for pooled).<br>4. Timeout on acquire with rejection and error message.<br>5. Test: concurrent acquire on same key serializes correctly; different keys run in parallel. |
@@ -152,7 +154,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3d |
 | **Category** | Runtime Architecture |
 | **Priority** | P1 — Required for long-haul reliability |
-| **Status** | Complete |
+| **Status** | Verified |
 | **Dependencies** | RUN-3b (delegation chain), RUN-3c (concurrency) |
 | **Description** | Context integrity and governance persist across session boundaries. When a session crashes or disconnects, recovery restores trajectory state, active delegations, pending tasks, and governance rules. |
 | **Acceptance Criteria** | 1. Session state checkpointed to `.hivemind/state/brain.json` at configurable intervals.<br>2. On restart, last checkpoint loaded and active tasks resumed from last known state.<br>3. Governance rules (from RUN-3e) re-applied on recovery.<br>4. Recovery log written to `.hivemind/sessions/` with timestamp and restored state summary.<br>5. Test: simulate crash mid-task, restart, verify task resumes from checkpoint. |
@@ -164,7 +166,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3e |
 | **Category** | Runtime Architecture |
 | **Priority** | P1 — Required for long-haul sessions |
-| **Status** | Complete |
+| **Status** | Verified |
 | **Dependencies** | RUN-3d (session recovery) |
 | **Description** | Rules that persist and enforce across long-haul sessions. Governance rules define what agents can/cannot do, budget limits, escalation paths, and violation handling. |
 | **Acceptance Criteria** | 1. Governance rules defined as JSON in `.hivemind/state/` with rule ID, condition, action, and scope.<br>2. Rules evaluated before each tool execution via hook.<br>3. Violation logged and reported to parent session if delegated.<br>4. Rules can be added, removed, or modified at runtime without restart.<br>5. Test: rule violation triggers expected action (block, warn, escalate). |
@@ -176,7 +178,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3f |
 | **Category** | Runtime Architecture |
 | **Priority** | P1 — Enables dynamic runtime behavior |
-| **Status** | Pending |
+| **Status** | Verified |
 | **Dependencies** | RUN-3e (context governance) |
 | **Description** | Runtime conditional injection of rules, commands, skills, and tools based on session context, agent role, task type, and governance state. Replaces static `.md` file agent definitions with dynamic evaluation. |
 | **Acceptance Criteria** | 1. Injection rules evaluated per-session with access to current context (agent, task type, trajectory, delegation state).<br>2. Rules inject rules, commands, skills, or tools conditionally — no static file dependency.<br>3. Injection respects governance rules (RUN-3e) — blocked rules never inject.<br>4. Injection log written per session for audit trail.<br>5. Test: session with matching conditions receives injection; session without matching conditions does not. |
@@ -188,7 +190,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3g |
 | **Category** | Runtime Architecture |
 | **Priority** | P2 — Improves agent routing quality |
-| **Status** | Complete |
+| **Status** | Verified |
 | **Dependencies** | RUN-3a (background agents), RUN-3b (delegation lineage/export context) |
 | **Description** | Configurable agent presets for domains with category-based routing. Agents classified by specialty (researcher, builder, critic, conductor, coordinator, etc.) and dispatched based on task category. |
 | **Acceptance Criteria** | 1. Agent presets defined with domain, triggers, tools, temperature, and max tool calls.<br>2. Task classification routes to best-matching specialist based on task description and category.<br>3. Fallback to generalist agent if no specialist matches.<br>4. Specialist assignment recorded in delegation packet (RUN-3b).<br>5. Test: task routed to correct specialist; mismatched task falls back to generalist. |
@@ -200,7 +202,7 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 | **ID** | RUN-3h |
 | **Category** | Runtime Architecture |
 | **Priority** | P1 — Prevents resource exhaustion |
-| **Status** | Complete |
+| **Status** | Partially verified — workspace/runtime-policy wiring is live, but the session-specific `runtimePolicyOverride` writer + persistence path is still missing |
 | **Dependencies** | RUN-3c (concurrency control) |
 | **Description** | Per-session tool call limits with threshold-based shutdown. Circuit breaker triggers at configurable threshold; hard limit shuts down tool access entirely. Prevents runaway sessions from consuming unlimited resources. |
 | **Acceptance Criteria** | 1. `CIRCUIT_BREAKER_THRESHOLD` configurable per session (default: 16).<br>2. `MAX_TOOL_CALLS_PER_SESSION` configurable per session (default: 400).<br>3. Threshold breach triggers warning to parent session with call count and remaining budget.<br>4. Hard limit breach blocks all further tool calls with error message.<br>5. Budget resets on session compact/restart.<br>6. Test: session exceeds threshold → warning emitted; session exceeds max → tool calls blocked. |

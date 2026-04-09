@@ -1,16 +1,18 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-08 (Phase 2 runtime architecture complete through 02-09)
+**Updated:** 2026-04-09 (added gated runtime domain restructuring planning phase)
 **Granularity:** Fine
 
 ## Phases Overview
 
 - [x] **Phase 1: Baseline Cleanup** — 7/10 done, 3 pending (planned)
-- [x] **Phase 2: V3 Runtime Architecture** — 9/9 plans complete
+- [ ] **Phase 2: V3 Runtime Architecture** — 9/9 plans complete, 17/18 verified, 1 runtime-policy override gap remains
 - [ ] **Phase 3: Schema Definition** — 0/4
 - [ ] **Phase 4: Migration Gate** — 0/4
 - [ ] **Phase 5: Integration Verification** — 0/5
+- [ ] **Phase 6: Runtime Domain Separation** — 0/6
+- [ ] **Phase 7: Runtime Domain Restructuring Planning** — 0/5
 
 ## Phase 1: Baseline Cleanup
 
@@ -39,6 +41,10 @@ Plans:
 ## Phase 2: V3 Runtime Architecture
 
 Executable recovery plan set replacing the stale reference-only Phase 02 plans. These plans are grounded in current V3 runtime code reality and preserve the still-locked Phase 02 decisions.
+
+**Authoritative current status (2026-04-09):** implementation is complete across all 9 Phase 02 plans, but phase closure remains blocked by one verified gap. The current verification record is `17/18` truths verified in `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md`.
+
+**Remaining blocker:** session-specific `runtimePolicyOverride` is consumed by the tool-guard runtime-policy path but is not written by live delegation metadata and is dropped during continuity normalization/reload.
 
 Recovery plan structure:
 - 2c/2h. Runtime policy foundation — configurable concurrency + budgets that supplement OpenCode built-ins
@@ -85,15 +91,40 @@ Plans:
 - 5f. Specialist routing correct
 - 5g. Schema validation catches malformed definitions
 
+## Phase 6: Runtime Domain Separation
+
+- 6a. Define stable `src/lib` domain boundaries for runtime, continuity, lifecycle, delegation, governance, and integration seams
+- 6b. Split runtime execution concerns behind a dedicated runtime domain surface
+- 6c. Split continuity and recovery concerns behind continuity-specific modules and interfaces
+- 6d. Split lifecycle and delegation orchestration into dedicated domain modules with explicit contracts
+- 6e. Split governance and policy evaluation into dedicated modules with narrow dependencies
+- 6f. Establish integration seams so plugin/composition code depends on domain contracts instead of cross-domain internals
+
+## Phase 7: Runtime Domain Restructuring Planning
+
+**Gate:** Do not start until Phase 02 verification reaches **18/18** and the runtime-policy override seam is closed end-to-end.
+
+**Scope:** Roadmap/planning artifacts only. No `src/**` or `tests/**` changes in this phase.
+
+**Execution posture:** Path-first and behavior-neutral. This phase plans how `src/lib/` will be restructured before any logic redesign is considered.
+
+- 7a. Define the target `src/lib/` runtime domains: lifecycle, continuity, governance, execution, routing, and state
+- 7b. Produce a path-first move map that assigns current modules to the target domains without changing runtime behavior
+- 7c. Define import and dependency boundary rules for each target domain plus allowed integration seams
+- 7d. Sequence the restructuring work into behavior-neutral follow-on plans with explicit verification gates for each move set
+- 7e. Record exclusions and invariants: no logic redesign, no feature expansion, and no execution until Phase 02 is fully verified at 18/18
+
 ## Progress Table
 
 | Phase | Items Complete | Status |
 |-------|---------------|--------|
 | 1. Baseline Cleanup | 7/10 | Plan created (1 plan, Wave 1) |
-| 2. V3 Runtime Architecture | 9/9 plans | Complete |
+| 2. V3 Runtime Architecture | 9/9 plans, 17/18 truths | Verification blocked by one runtime-policy override gap |
 | 3. Schema Definition | 0/4 | Not started |
 | 4. Migration Gate | 0/4 | Not started |
 | 5. Integration Verification | 0/5 | Not started |
+| 6. Runtime Domain Separation | 0/6 | Not started |
+| 7. Runtime Domain Restructuring Planning | 0/5 | Future planning phase; gated on Phase 02 reaching 18/18 verified |
 
 ## Dependencies
 
@@ -103,4 +134,6 @@ Phase 1 (7 done, 3 pending — planned)
        └─→ Phase 3: Schema Definition
             └─→ Phase 4: Migration Gate
                  └─→ Phase 5: Integration Verification
+                      └─→ Phase 6: Runtime Domain Separation
+                           └─→ Phase 7: Runtime Domain Restructuring Planning (requires Phase 02 verification 18/18)
 ```

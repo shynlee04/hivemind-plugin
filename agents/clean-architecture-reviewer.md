@@ -1,0 +1,1 @@
+/tmp/arxitect/agents/clean-architecture-reviewer.md

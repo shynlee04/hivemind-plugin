@@ -25,6 +25,49 @@ workflows_count: 4
 uncommitted_files: 70
 eval_harness_symlink: broken
 oh_my_openagent_xml: 11MB context_bomb_at_skills_references
+
+# Absorb fields (added 2026-04-09)
+dates_active: [2026-04-07, 2026-04-09]
+last_updated: "2026-04-09T18:00:00Z"
+sessions_count: 2
+complexity: 9
+actors:
+  - name: "Debugger Agent (commit 9df4cd75)"
+    first_seen: "2026-04-09"
+  - name: "MiniMax M2.7 (Trial 1)"
+    first_seen: "2026-04-09"
+  - name: "GLM-5.1 (Trial 2)"
+    first_seen: "2026-04-09"
+  - name: "GLM-5 Thinking (Bundle Scan)"
+    first_seen: "2026-04-09"
+  - name: "Qwen-Coder"
+    first_seen: "2026-04-08"
+  - name: "vercel-labs/json-render"
+    first_seen: "2026-04-09"
+  - name: "HiveMind Framework"
+    first_seen: "2026-04-09"
+  - name: "GSD (Get Shit Done)"
+    first_seen: "2026-04-09"
+  - name: "BMAD"
+    first_seen: "2026-04-09"
+  - name: "OMO / Oh-my-opencode"
+    first_seen: "2026-04-09"
+  - name: "HiveFiver Meta-Builder"
+    first_seen: "2026-04-09"
+  - name: "product-detox branch"
+    first_seen: "2026-04-09"
+  - name: "The Human Developer"
+    first_seen: "2026-04-09"
+domains: [runtime-harness, delegation-chain, background-tasks, forensic-analysis, context-governance, codebase-refactoring, builtin-process, generative-ui, json-render, sse-streaming, zod-schema-validation, hivemind-philosophy, hierarchical-superiority, collaborative-domains, strategic-measurement, iterative-granularity, mems-brain, skill-gap-analysis, cqrs-pattern, detox-refactor]
+absorb_history:
+  - date: 2026-04-09
+    wave_count: 4
+    sources_added: 8
+    sections_added: 6
+  - date: 2026-04-09
+    wave_count: 4
+    sources_added: 22
+    sections_added: 6
 ---
 
 # Enhanced Session Context Prompt v3
@@ -440,3 +483,272 @@ Begins only after Tier 3 exits successfully.
 | Git tag applied | v0.2.0-ecosystem-audited exists |
 
 </quality_gates>
+
+<absorb-session date="2026-04-09" wave_count="4">
+  <sources>
+    <source type="url" path="https://github.com/vercel-labs/json-render/tree/main/skills" extracted="true" />
+    <source type="file" path="/Users/apple/hivemind-plugin/src/" extracted="true" depth="SKIM" />
+    <source type="file" path=".hivemind/research/skills-audit/forensic-delegation-failures-2026-04-09.md" extracted="true" depth="SCAN" />
+    <source type="file" path="attmp-fix-trial-2-fail.md" extracted="true" depth="SKIM" />
+    <source type="file" path="qwen-code-export-2026-04-08T23-59-59-762Z.jsonl" extracted="true" depth="SKIM" />
+    <source type="file" path=".hivemind/state/SESSION-STATE.md" extracted="true" depth="DEEP" />
+    <source type="file" path=".hivemind/state/findings.md" extracted="true" depth="DEEP" />
+    <source type="file" path=".hivemind/state/progress.md" extracted="true" depth="DEEP" />
+    <source type="file" path=".hivemind/state/task_plan.md" extracted="true" depth="DEEP" />
+    <source type="text" path="inline:harness-vision-narrative" extracted="true" />
+    <source type="text" path="inline:debugging-saga-narrative" extracted="true" />
+    <source type="text" path="inline:codebase-listing" extracted="true" />
+    <source type="text" path="inline:tools-utilities-structure" extracted="true" />
+    <source type="text" path="inline:ux-ui-dashboard-vision" extracted="true" />
+  </sources>
+
+  <narrative>
+    <main_story>Over 2026-04-08 to 2026-04-09, two AI agent teams attempted to fix a systemic delegation failure in the HiveMind harness (0% task completion rate) and run a skills audit, but discovered the root cause is a design gap in the builtin-process submode that predates all fix attempts.</main_story>
+
+    <subplot name="harness-vision">
+      The HiveMind project aims to build a runtime composition engine for OpenCode with context governance, multi-agent workflows, and meta-builder modules. The main branch at /Users/apple/hivemind-plugin/ has grown to 30+ src/ subdirectories including control-plane, core/trajectory, delegation, features (8 sub-modules), hooks (4 sub-modules), plugin, recovery, and sdk-supervisor. The codebase is described as "flooded with code files, unorganized features, tools, runtime management, and no engineering mind for reusability."
+    </subplot>
+
+    <subplot name="delegation-chain-failure">
+      The forensic report documents 10 delegation attempts across 2 sessions with 0% success. Root cause: delegate-task and background tools have disconnected registries. Tasks get concurrency queue slots but builtin-process never spawns a child process. Error F-02 (FALSE-SUCCESS) is critical — delegate-task returns ok:true but no actual work happens. The debugger's fix (commit 9df4cd75) added observability (started signals, .then()/.catch() chains, 30min timeout) but did NOT address the "no process spawned" core gap.
+    </subplot>
+
+    <subplot name="bundle-scan-failure">
+      The second fix attempt (GLM-5 Thinking) loaded the coordinating-loop skill, ran Cycle 1 successfully (6 inventory files, 1,707 lines cataloging all 20 skills), then failed in Cycle 2 when parallel task dispatch hit Zod schema validation errors on resume (missing prompt and description fields). The session ended mid-execution.
+    </subplot>
+
+    <subplot name="json-render-for-dashboard">
+      The user plans to use vercel-labs/json-render (Generative UI Framework) for the HiveMind dashboard. json-render constrains AI output to pre-defined component catalogs, streams specs via SpecStream, and integrates with MCP. This solves the "agent generates JSON → dashboard renders it" pattern with Ink for terminal rendering and React for web.
+    </subplot>
+  </narrative>
+
+  <entities>
+    <actor name="Debugger Agent (commit 9df4cd75)" first_seen="2026-04-09" type="system" />
+    <actor name="MiniMax M2.7 (Trial 1)" first_seen="2026-04-09" type="system" />
+    <actor name="GLM-5.1 (Trial 2)" first_seen="2026-04-09" type="system" />
+    <actor name="GLM-5 Thinking (Bundle Scan)" first_seen="2026-04-09" type="system" />
+    <actor name="Qwen-Coder" first_seen="2026-04-08" type="system" />
+    <actor name="vercel-labs/json-render" first_seen="2026-04-09" type="external-service" />
+    <domain name="runtime-harness" />
+    <domain name="delegation-chain" />
+    <domain name="background-tasks" />
+    <domain name="forensic-analysis" />
+    <domain name="context-governance" />
+    <domain name="codebase-refactoring" />
+    <domain name="builtin-process" />
+    <domain name="generative-ui" />
+    <domain name="json-render" />
+    <domain name="sse-streaming" />
+    <domain name="zod-schema-validation" />
+  </entities>
+
+  <timeline>
+    <event date="2026-04-07" description="SESSION-STATE.md created; 8-phase ecosystem audit begun; Phase 1 (skills audit) started" confidence="confirmed" />
+    <event date="2026-04-08" description="Session state goes stale; Qwen-Coder session runs GSD debug workflow" confidence="confirmed" />
+    <event date="2026-04-08T23:18" description="Rapid development begins: 19 commits for phases 02-06 through 02-09 (injection governance, execution wiring, runtime policy)" confidence="confirmed" />
+    <event date="2026-04-09T01:31" description="Injection governance correctness plan completed (commit c5e8adde)" confidence="confirmed" />
+    <event date="2026-04-09T06:50" description="Debugger fix: delegation chain observability added, timeout increased to 30min (commit 9df4cd75) — 0% success rate acknowledged" confidence="confirmed" />
+    <event date="2026-04-09T06:51" description="Debug knowledge base updated (commit 35b0cdf4)" confidence="confirmed" />
+    <event date="2026-04-09" description="Trial 1 (MiniMax M2.7): 3 delegate-task calls, 1 rejected, 2 false-success timeouts, zero output" confidence="confirmed" />
+    <event date="2026-04-09" description="Trial 2 (GLM-5.1): 6 delegate-task calls, 2 rejected, 4 false-success, background list empty, task tool fallback aborted, zero output" confidence="confirmed" />
+    <event date="2026-04-09" description="Bundle Scan Cycle 1 completes: 6 inventory files, 1,707 lines, all 20 skills cataloged" confidence="confirmed" />
+    <event date="2026-04-09" description="Bundle Scan Cycle 2 fails: parallel task dispatch truncated, Zod schema errors on resume, session ends mid-execution" confidence="confirmed" />
+    <event date="2026-04-09" description="Forensic delegation failures report written (413 lines, 6 error types classified)" confidence="confirmed" />
+  </timeline>
+
+  <insights>
+    <finding source="cross-ref" confidence="high">
+      CORE FORENSIC ANSWER: Neither the debugger nor the trial teams are to blame. The tools had a pre-existing design flaw — the builtin-process submode never spawns a child process when tmux is unavailable. The debugger's fix was necessary but insufficient (added observability, not execution). Trial teams used tools correctly; the tools simply don't work in the current execution environment.
+      Evidence: forensic-delegation-failures-2026-04-09.md identifies F-02 FALSE-SUCCESS as root cause; commit 9df4cd75 message acknowledges 0% rate but only wraps sendPrompt in .then()/.catch().
+    </finding>
+
+    <finding source="file-scan" confidence="high">
+      The main branch codebase at /Users/apple/hivemind-plugin/src/ has 30+ subdirectories with significant module sprawl: control-plane, core/trajectory, delegation, 8 feature sub-modules, 4 hook sub-modules, plugin, recovery, schema-kernel, sdk-supervisor, shared, tui. This confirms the "flooded with code files" diagnosis. Key structural concern: features/runtime-entry alone has 20+ files.
+      Evidence: User-provided file listing; Wave 1A parsed 28 file paths.
+    </finding>
+
+    <finding source="url-extraction" confidence="high">
+      vercel-labs/json-render is a direct-fit solution for the HiveMind dashboard. It constrains AI-generated UI to pre-defined component catalogs, supports streaming via SpecStream, has MCP integration for Claude/OpenCode, and includes an Ink renderer for terminal-based dashboards. The 22 skill folders (react, ink, mcp, shadcn, etc.) provide ready-made integration patterns.
+      Evidence: GitHub README and skills directory extracted successfully.
+    </finding>
+
+    <finding source="cross-ref" confidence="high">
+      Two parallel attempts at skills audit exist: (1) SESSION-STATE.md Phase 1, initiated 2026-04-07, stale for 2 days; (2) Bundle Scan Cycle 1, which completed equivalent work in a single session producing 6 inventory files. These are independent attempts at the same goal, suggesting coordination gaps between sessions.
+      Evidence: SESSION-STATE.md shows Phase 1 in_progress; attmp-fix-trial-2-fail.md documents Cycle 1 completion.
+    </finding>
+
+    <finding source="narrative-synthesis" confidence="medium">
+      The Zod schema validation failure in trial-2 (missing prompt/description on resume) suggests the OpenCode task tool schema requires these fields even when resuming via task_id. This is a tool schema design issue separate from the builtin-process gap.
+      Evidence: attmp-fix-trial-2-fail.md line 1214-1276 documents Zod errors.
+    </finding>
+
+    <finding source="narrative-synthesis" confidence="medium">
+      SESSION-STATE.md is 2 days stale (last updated 2026-04-07T04:06:00Z). The .hivemind/state/ planning files (task_plan, progress, findings) are also from that era. Meanwhile, forensic investigation and bundle scan work has been happening in separate sessions without updating the canonical state files. There is a state drift problem.
+      Evidence: SESSION-STATE.md timestamp; forensic report date 2026-04-09.
+    </finding>
+  </insights>
+
+  <questions_open>
+    <question id="q1" source="forensic-delegation-failures-2026-04-09.md" asked_user="false">
+      Is the builtin-process submode fixable without tmux? The forensic report says it "never spawns a child process" — is this a stub that was never implemented, or does it require tmux?
+    </question>
+    <question id="q2" source="attmp-fix-trial-2-fail.md" asked_user="false">
+      Why did Trial-2's native task tool produce partial results before truncation? One subagent started working ("Now I have all the data needed") but output was cut off. Is there a context window limit being hit?
+    </question>
+    <question id="q3" source="git-log" asked_user="false">
+      What happened between 2026-04-07 and 2026-04-08? The SESSION-STATE went stale for 2 days. Were there other sessions whose evidence is not in the provided files?
+    </question>
+    <question id="q4" source="git-log" asked_user="false">
+      Are the 19 commits (phases 02-06 through 02-09) related to the delegation fix? They cover injection governance, execution wiring, runtime policy — but the delegation fix came separately at 06:50 on 04-09.
+    </question>
+    <question id="q5" source="attmp-fix-trial-2-fail.md" asked_user="false">
+      What is the relationship between delegate-task (harness tool) and task (native OpenCode tool)? Trial-1 used delegate-task exclusively; Trial-2 started with delegate-task then switched to task. Are they supposed to be alternatives or complements?
+    </question>
+    <question id="q6" source="tools-utilities-listing" asked_user="false">
+      The tools/utilities structure (doc, handoff, runtime, task, trajectory) appears to be from the harness-experiment worktree's current src/tools/ directory. Is this the target architecture for the refactored main branch, or a parallel experiment?
+    </question>
+    <question id="q7" source="user-narrative" asked_user="false">
+      The user mentions "drop or adopt and bring over from this GitHub" — suggesting the harness-experiment worktree results will be merged into or replace the main branch. What is the merge strategy?
+    </question>
+  </questions_open>
+</absorb-session>
+
+<absorb-session date="2026-04-09" wave_count="4">
+  <sources>
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/OVERVIEW-Unmodified.md" extracted="true" depth="SCAN" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/draft/architecture-proposal-hivemind-v3.md" extracted="true" depth="SCAN" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/draft/hivemind-current-state.md" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/use-hivemind-detox-refactor-design.md" extracted="true" depth="SCAN" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.planning/PROJECT.md" extracted="true" depth="SCAN" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.planning/ROADMAP.md" extracted="true" depth="SCAN" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.planning/STATE.md" extracted="true" depth="SCAN" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.planning/REQUIREMENTS.md" extracted="true" depth="SCAN" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/plugin-diagnostic.md" extracted="true" depth="SCAN" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/attempt-fix-1.md" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/attmp-fix-trial-2-fail.md" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/tools_hooks_export_flaw.md" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/opencode.json" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/package.json" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/mcp.json" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/findings.md" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/progress.md" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/task_plan.md" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/draft/migration-strategy-2026-04-03.md" extracted="true" depth="SKIM" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/requirements-2026-04-02.md" extracted="true" depth="SCAN" />
+    <source type="file" path="/Users/apple/hivemind-plugin/.worktrees/harness-experiment/docs/implementation-plan-2026-04-02.md" extracted="true" depth="SCAN" />
+    <source type="text" path="inline:hivemind-philosophy-5-pillars" extracted="true" />
+  </sources>
+
+  <narrative>
+    <main_story>
+      HiveMind V3 is a runtime composition engine for OpenCode that evolved from a bloated 15,000-LOC anti-pattern (product-detox) into a disciplined ~8,100-LOC clean harness implementing a two-halves architecture: a "Hard Harness" npm package (tools, hooks, plugin assembly) and "Soft Meta-Concepts" (skills, agents, commands in .opencode/). The project's philosophy — "Agent Intelligence = HIVE + MIND" — means agents gain intelligence through hierarchical collaboration within the HIVE while sharing one MIND with their human operator. It is currently at 17/18 verified truths on Phase 2, blocked by a single runtime-policy override persistence gap.
+    </main_story>
+
+    <subplot name="5-pillars-philosophy">
+      The HiveMind philosophy rests on 5 pillars: (1) Hierarchical Superiority — systematic file trees with safe dependency ordering; (2) Collaborative Domains — agents bounded by domain, delegation controlled within boundaries, reports flowing up and down; (3) Strategically Measurable — 2-end-extreme metrics requiring both quantitative AND qualitative proof, incremental guardrails; (4) Iteratively Granular — break down small (max 300 LOC per file), loop until perfect; (5) Growing MEMS-BRAIN — long-term intelligence collected by HIVE, shared toward MIND (content TBD — user wants crawled from worktrees).
+    </subplot>
+
+    <subplot name="framework-differentiation">
+      HiveMind explicitly differentiates from GSD/BMAD (corporate-spec-driven frameworks requiring procedural compliance) and OMO/Oh-my-opencode (all-in-SOTA-harness for full autonomous coding). Position: "ready to be either if users configure it" — a runtime composition engine that can adopt other frameworks' patterns through its Tier 3 skills layer without committing to any single paradigm.
+    </subplot>
+
+    <subplot name="detox-arc">
+      The product-detox branch poisoned the codebase with 235 SKILL.md files (target: ~20), 22 governance scripts that dictated instead of reporting, 57 agent file copies, and a 1,121-line god-tool. The architecture proposal (2026-04-04) defined this as the anti-pattern and established the clean two-halves target of ~2,547 LOC. Seven worktrees now contain different evolution stages.
+    </subplot>
+
+    <subplot name="7-phase-roadmap">
+      Phase 1 (Baseline Cleanup) achieved 7/10 items. Phase 2 (V3 Runtime Architecture) completed all 9 plans across 9 waves but 1 of 18 verification truths remains open (runtimePolicyOverride gap). Phases 3-7 (Schema Definition through Runtime Domain Restructuring) are planned but gated on Phase 2 reaching 18/18.
+    </subplot>
+
+    <subplot name="cqrs-enforcement">
+      Tools are write-side (5 core tools with Zod schemas that mutate state), hooks are read-side (event observers that inject context, never mutate), and the plugin assembly is 57 LOC with zero business logic. Dependency rules enforce types.ts as leaf, max module 500 LOC, no circular dependencies.
+    </subplot>
+
+    <subplot name="skill-assessment-next-cycles">
+      User identified skill gaps: TDD, spec-driven, planning skills still lacking. Next cycles require: assessing skill bundles for conflicts/overlaps/inefficiencies, mapping skill-agent-workflow pairings (pair-of-3, pair-of-2), forming red fail cases, and using skill-creator/skill-judge/skill-development tools.
+    </subplot>
+  </narrative>
+
+  <entities>
+    <actor name="HiveMind Framework" first_seen="2026-04-09" type="concept" />
+    <actor name="GSD (Get Shit Done)" first_seen="2026-04-09" type="external-service" />
+    <actor name="BMAD" first_seen="2026-04-09" type="concept" />
+    <actor name="OMO / Oh-my-opencode" first_seen="2026-04-09" type="external-service" />
+    <actor name="HiveFiver Meta-Builder" first_seen="2026-04-09" type="internal-module" />
+    <actor name="product-detox branch" first_seen="2026-04-09" type="concept" />
+    <actor name="The Human Developer" first_seen="2026-04-09" type="person" />
+    <domain name="hivemind-philosophy" />
+    <domain name="hierarchical-superiority" />
+    <domain name="collaborative-domains" />
+    <domain name="strategic-measurement" />
+    <domain name="iterative-granularity" />
+    <domain name="mems-brain" />
+    <domain name="skill-gap-analysis" />
+    <domain name="cqrs-pattern" />
+    <domain name="detox-refactor" />
+  </entities>
+
+  <timeline>
+    <event date="2026-04-01" description="Architecture investigation: 11 reports, 267 files analyzed, layer trust collapse identified" confidence="confirmed" />
+    <event date="2026-04-04" description="Architecture proposal (architecture-proposal-hivemind-v3.md) finalized as Mindset Document defining two-halves architecture and CQRS separation" confidence="confirmed" />
+    <event date="2026-04-05" description="Skill-authoring ecosystem built: 5 core skills created, .hivefiver-meta-builder/ restructured with symlinks" confidence="confirmed" />
+    <event date="2026-04-06" description="7-phase roadmap created in ROADMAP.md, Phase 1 at 7/10 items, Phase 2 defined with 9 wave-ordered plans" confidence="confirmed" />
+    <event date="2026-04-08" description="V3 synthesis report produced, architecture audit completed, Phase 2 plans being implemented" confidence="confirmed" />
+    <event date="2026-04-09" description="Phase 2 implementation reaches 17/18 verified truths; single runtimePolicyOverride gap remains" confidence="confirmed" />
+    <event date="2026-04-09" description="Hivemind philosophy articulated: 5 Pillars (Hierarchical Superiority, Collaborative Domains, Strategically Measurable, Iteratively Granularity, Growing MEMS-BRAIN)" confidence="confirmed" />
+    <event date="2026-04-09" description="Full worktree ecosystem scanned: 7 worktrees, ~8,100 LOC in harness-experiment src/, 31 lib modules, 5 hooks, 4 tools" confidence="confirmed" />
+  </timeline>
+
+  <insights>
+    <finding source="cross-ref" confidence="high">
+      ARCHITECTURE TIER CONFLICT: architecture-proposal defines 2 halves (Hard Harness + Soft Meta-Concepts) while hivemind-current-state.md defines 3 Tiers (Hard Harness, Opencode-Dependable, SKILLS). Resolution: different documents for different purposes — proposal=technical architecture, current-state=adoption tiers. Both valid in context, must not be conflated.
+      Evidence: architecture-proposal-hivemind-v3.md:17-25 vs hivemind-current-state.md:20-30.
+    </finding>
+
+    <finding source="file-scan" confidence="high">
+      LOC BUDGET EXCEEDED: AGENTS.md targets ~4,000-5,000 LOC total but harness-experiment src/ measures ~8,100 LOC across 52 TypeScript files (6,339 in src/lib/ alone). Either the target needs revision or significant cleanup is needed. Additionally, 3 orphan modules exist on disk (governance-engine.ts, specialist-router.ts, injection-engine.ts) that are absent from the architecture proposal.
+      Evidence: AGENTS.md "total codebase target ~4,000-5,000 LOC" vs Wave 1C file count.
+    </finding>
+
+    <finding source="cross-ref" confidence="high">
+      5 PILLARS PHILOSOPHICAL GAP: The 5 Pillars (Hierarchical Superiority, Collaborative Domains, Strategically Measurable, Iteratively Granularity, Growing MEMS-BRAIN) are completely absent from the existing session-context-prompt.md. This is the philosophical foundation that was missing — the first absorb covered technical events and failure analysis, but the philosophical/strategic layer is new.
+      Evidence: grep for "pillar" or "philosophy" in original 596 lines returned 0 results.
+    </finding>
+
+    <finding source="cross-ref" confidence="high">
+      CQRS PATTERN NOT IN SESSION STATE: The architecture proposal defines a clear CQRS separation (tools=write-side, hooks=read-side, plugin=zero-logic assembly) but this pattern is not documented in the existing session state. The plugin.ts at 57 LOC meets the &lt;100 LOC target. The dependency chain is: plugin.ts imports hooks + tools + lib modules as composition root.
+      Evidence: architecture-proposal-hivemind-v3.md:20-21, plugin-diagnostic.md confirms 57 LOC.
+    </finding>
+
+    <finding source="file-scan" confidence="medium">
+      WORKTREE CONSOLIDATION NEEDED: 7 worktrees contain different evolution stages — hivefiver-packs and hivefiver-v2 appear to be duplicates, product-detox is the anti-pattern reference, session-journal-minimal has a built version with dist/. The migration strategy (docs/draft/migration-strategy-2026-04-03.md) references "selective migration from product-detox" but the merge/consolidation plan is unclear.
+      Evidence: Wave 1C directory listings of all 7 worktrees.
+    </finding>
+
+    <finding source="narrative-synthesis" confidence="medium">
+      SKILL ECOSYSTEM GAP ANALYSIS: User identified missing skills (TDD, spec-driven, planning) and wants a comprehensive assessment of existing skill bundles for conflicts, overlaps, and inefficiencies. The meta-builder chain (meta-builder → hivefiver-skill-author → SKILL.md) exists but has not been used for gap analysis. The skill-judge framework (8 dimensions, 120 points) provides the assessment tooling.
+      Evidence: User narrative instructions, .opencode/skills/ has 23 skill dirs, agents/ has ~47 agent files.
+    </finding>
+  </insights>
+
+  <questions_open>
+    <question id="q1" source="user-narrative" asked_user="false">
+      What specific content should populate the 5th pillar (Growing MEMS-BRAIN) and how should it be crawled from the 7 worktrees? User said "I have not come up with the 5th yet but you can crawl them out intensively across branches."
+    </question>
+    <question id="q2" source=".planning/PROJECT.md" asked_user="false">
+      How will the runtimePolicyOverride gap be closed? The producer needs to write session-specific overrides in live delegation metadata, persist through continuity normalization, and enforce in tool-guard runtime-policy path.
+    </question>
+    <question id="q3" source="architecture-documents" asked_user="false">
+      What is the relationship between OVERVIEW-Unmodified.md "Ideal Architecture Design" (7-layer) and architecture-proposal "two-halves" model? They appear to describe different target states.
+    </question>
+    <question id="q4" source="AGENTS.md" asked_user="false">
+      Is the ~4,000-5,000 LOC target still valid given src/ is already ~8,100 LOC? Has scope expanded beyond the original clean prototype?
+    </question>
+    <question id="q5" source="user-narrative" asked_user="false">
+      How does HiveMind's "ready to be either" (GSD/BMAD or OMO) configuration work in practice? No implementation evidence exists for framework-switching.
+    </question>
+    <question id="q6" source="worktree-ecosystem" asked_user="false">
+      What is the intended merge/consolidation strategy across the 7 worktrees? ROADMAP.md Phase 4 mentions "Migration Gate — selective migration from product-detox" but the broader consolidation plan is unclear.
+    </question>
+  </questions_open>
+</absorb-session>

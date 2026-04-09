@@ -1,0 +1,41 @@
+---
+name: gsd-list-workspaces
+description: "List active GSD workspaces and their status"
+---
+
+<cursor_skill_adapter>
+## A. Skill Invocation
+- This skill is invoked when the user mentions `gsd-list-workspaces` or describes a task matching this skill.
+- Treat all user text after the skill mention as `{{GSD_ARGS}}`.
+- If no arguments are present, treat `{{GSD_ARGS}}` as empty.
+
+## B. User Prompting
+When the workflow needs user input, prompt the user conversationally:
+- Present options as a numbered list in your response text
+- Ask the user to reply with their choice
+- For multi-select, ask for comma-separated numbers
+
+## C. Tool Usage
+Use these Cursor tools when executing GSD workflows:
+- `Shell` for running commands (terminal operations)
+- `StrReplace` for editing existing files
+- `Read`, `Write`, `Glob`, `Grep`, `Task`, `WebSearch`, `WebFetch`, `TodoWrite` as needed
+
+## D. Subagent Spawning
+When the workflow needs to spawn a subagent:
+- Use `Task(subagent_type="generalPurpose", ...)`
+- The `model` parameter maps to Cursor's model options (e.g., "fast")
+</cursor_skill_adapter>
+
+<objective>
+Scan `~/gsd-workspaces/` for workspace directories containing `WORKSPACE.md` manifests. Display a summary table with name, path, repo count, strategy, and GSD project status.
+</objective>
+
+<execution_context>
+@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.cursor/get-shit-done/workflows/list-workspaces.md
+@/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.cursor/get-shit-done/references/ui-brand.md
+</execution_context>
+
+<process>
+Execute the list-workspaces workflow from @/Users/apple/hivemind-plugin/.worktrees/harness-experiment/.cursor/get-shit-done/workflows/list-workspaces.md end-to-end.
+</process>

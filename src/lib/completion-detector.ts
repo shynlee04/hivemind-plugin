@@ -83,6 +83,7 @@ export class CompletionDetector {
   }
 
   feedMessageCount(sessionID: string, count: number): void {
+    if (count == null || !Number.isFinite(count) || count < 0) return  // Bug F3: graceful no-op
     const prev = this.messageCounts.get(sessionID)
     this.messageCounts.set(sessionID, count)
 

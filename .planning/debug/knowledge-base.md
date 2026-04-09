@@ -11,3 +11,11 @@ Resolved debug sessions. Used by `gsd-debugger` to surface known-pattern hypothe
 - **Fix:** Added "started" to TaskNotification type; wrapped sendPrompt in .then()/.catch() with parent notifications; increased WATCH_TIMEOUT_MS to 1800000 (30 min)
 - **Files changed:** src/lib/notification-handler.ts, src/lib/lifecycle-process-runner.ts, src/plugin.ts
 ---
+
+## delegation-chain-root-cause-fix — background delegation completion never detected due to event propagation failure
+- **Date:** 2026-04-09
+- **Error patterns:** background timeout, 0% success rate, stream cutoff, session ends before child completes, completion never detected, lifecycle state not updated
+- **Root cause:** CompletionDetector.watch() in observeBackgroundCompletion() blocked on terminal events (session.idle, session.error, session.deleted) that were never propagated from child sessions to parent's completion detector. Parent session terminated after dispatching child, leaving background observer waiting for events that never arrive.
+- **Fix:** Replaced event-based CompletionDetector.watch() with direct SDK polling using client.session.status(). Observer polls status map every 15s, checks child session status directly, updates lifecycle state when idle/busy/retry/deleted detected. Added getSessionStatusMap() helper to session-api.ts.
+- **Files changed:** src/lib/lifecycle-background-observer.ts, src/lib/session-api.ts, tests/lib/lifecycle-background-observer.test.ts
+---

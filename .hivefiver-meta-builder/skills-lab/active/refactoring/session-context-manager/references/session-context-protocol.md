@@ -11,10 +11,6 @@ The Session Context Protocol defines how session state persists across phase bou
 ```
 
 **Discovery pattern:** The file lives at a project-relative path under the workspace root. The conventional location is `.hivemind/state/session-context-prompt.md`, but agents should discover it relative to the workspace root rather than assuming a fixed absolute path.
-<workspace-root>/.hivemind/state/session-context-prompt.md
-```
-
-**Discovery pattern:** The file lives at a project-relative path under the workspace root. The conventional location is `.hivemind/state/session-context-prompt.md`, but agents should discover it relative to the workspace root rather than assuming a fixed absolute path.
 
 ## YAML Frontmatter Schema
 
@@ -168,8 +164,6 @@ Current Task: <current_task>
 Pending Items:
   - <pending item 1>
 ```
-
-Append this block to every subagent prompt before dispatching work. Do not use `--constraint` flags — OpenCode has no such flag. Context flows through prompt text only.
 
 Append this block to every subagent prompt before dispatching work. Do not use `--constraint` flags — OpenCode has no such flag. Context flows through prompt text only.
 

@@ -19,7 +19,6 @@ import { createPromptAnalyzeTool } from "../../src/tools/prompt-analyze/index.js
 import { createSessionPatchTool } from "../../src/tools/session-patch/index.js"
 import { transformMessages } from "../../src/hooks/messages-transform.js"
 import { HarnessControlPlane } from "../../src/plugin.js"
-import { PromptEnhancePlugin } from "../../src/plugins/prompt-enhance.js"
 
 const mockCtx = {
   sessionID: "test_ses_001",
@@ -114,63 +113,6 @@ describe("messages.transform detects triggers and injects context", () => {
     ]
     const result = transformMessages(messages, "ses_test")
     expect(result).toEqual(messages)
-  })
-})
-
-// ---------------------------------------------------------------------------
-// Test 4: Session compaction tracked by single hook (event hook is no-op)
-// ---------------------------------------------------------------------------
-
-describe("session compaction tracked by single hook", () => {
-  const testDir = join(tmpdir(), `compaction-test-${Date.now()}`)
-  const stateFile = join(testDir, ".hivemind/state/session-context-prompt.md")
-
-  beforeEach(() => {
-    mkdirSync(testDir, { recursive: true })
-    process.chdir(testDir)
-  })
-
-  afterEach(() => {
-    process.chdir(__dirname)
-    try { rmSync(testDir, { recursive: true, force: true }) } catch { /* ignore */ }
-  })
-
-  it("session.compacting hook increments compaction_count, event hook does not", async () => {
-    const plugin = await PromptEnhancePlugin()
-    // Event hook is a no-op for compaction — only ensures state file exists
-    await plugin.event?.({})
-
-    const output = { context: [] }
-    await plugin["experimental.session.compacting"]?.({}, output)
-
-    const content = readFileSync(stateFile, "utf-8")
-    expect(content).toContain("compaction_count: 1")
-    expect(content).toContain("context_budget_pct: 50")
-  })
-
-  it("event hook does NOT increment compaction for session.compacted events", async () => {
-    const plugin = await PromptEnhancePlugin()
-    await plugin.event?.({})
-    await plugin.event?.({ event: { type: "session.compacted" } })
-
-    const content = readFileSync(stateFile, "utf-8")
-    expect(content).toContain("compaction_count: 0")
-    expect(content).toContain("context_budget_pct: 100")
-  })
-
-  it("budget floors at 0 after multiple compactions", async () => {
-    const plugin = await PromptEnhancePlugin()
-    await plugin.event?.({})
-
-    // Run 7 compactions: status-based model → count > 2 = critical, budget 25%
-    for (let i = 0; i < 7; i++) {
-      const output = { context: [] }
-      await plugin["experimental.session.compacting"]?.({}, output)
-    }
-
-    const content = readFileSync(stateFile, "utf-8")
-    expect(content).toContain("compaction_count: 7")
-    expect(content).toContain("context_budget_pct: 25")
   })
 })
 
@@ -284,26 +226,6 @@ describe("plugin tools are registered and callable", () => {
 // ---------------------------------------------------------------------------
 
 describe("additional edge cases", () => {
-  it("PromptEnhancePlugin.event handler ignores non-compacted events", async () => {
-    const plugin = await PromptEnhancePlugin()
-    // The plugin writes to .hivemind/state/session-context-prompt.md at process.cwd()
-    // Read the current state first
-    const stateFile = join(process.cwd(), ".hivemind/state/session-context-prompt.md")
-    const originalContent = existsSync(stateFile) ? readFileSync(stateFile, "utf-8") : null
-
-    // Reset to known state
-    if (originalContent) {
-      writeFileSync(stateFile, originalContent.replace(/compaction_count:\s*\d+/m, "compaction_count: 0").replace(/context_budget_pct:\s*\d+/m, "context_budget_pct: 100"))
-    }
-
-    // Send a non-compacted event — should be a no-op for compaction
-    await (plugin as any).event({ event: { type: "session.started" } })
-
-    const content = readFileSync(stateFile, "utf-8")
-    expect(content).toContain("compaction_count: 0")
-    expect(content).toContain("context_budget_pct: 100")
-  })
-
   it("messages.transform ignores trigger in assistant messages", () => {
     const messages = [
       { role: "system", content: "You are helpful" },

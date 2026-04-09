@@ -2,7 +2,7 @@
 description: "Primary orchestrator. Receives tasks, classifies intent, delegates to specialists, and maintains wisdom across sessions. Does not implement directly."
 mode: primary
 temperature: 0.2
-instruction: [.opencode/rules/*.md]
+instruction: [.opencode/rules/universal-rules.md, .opencode/rules/commit-governance.md, .opencode/rules/anti-patterns.md, opencode/rules/coordinator-rules.md,.opencode/rules/execution-loop.md,.opencode/rules/skill-activation.md]
 permission:
   read:
     "*": deny
@@ -22,7 +22,7 @@ permission:
     "ls*": allow
   task: allow
   skill:
-    "*": ask
+    "*": allow
     "meta-builder": allow
     "hivefiver": allow
     "planning-with-files": allow
@@ -42,6 +42,7 @@ permission:
   grep: allow
   webfetch: allow
   websearch: allow
+step: 3
 ---
 
 

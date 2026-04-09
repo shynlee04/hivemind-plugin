@@ -14,6 +14,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { BackgroundManager } from "../../src/lib/background-manager.js"
 import { createHarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
+import { runLifecycleProcessTask } from "../../src/lib/lifecycle-process-runner.js"
 import { buildDelegationArtifactPacket } from "../../src/lib/delegation-packet.js"
 import { getSessionContinuity } from "../../src/lib/continuity.js"
 
@@ -312,12 +313,12 @@ describe("delegate-task — hybrid execution routing", () => {
   })
 })
 
-describe("HarnessLifecycleManager — builtin-process execution", () => {
-  it("routes builtin-process work through BackgroundManager instead of child-session prompt flow", async () => {
+describe("HarnessLifecycleManager — builtin-process fallback", () => {
+  it("routes builtin-process work through child-session prompt flow until a real process runner exists", async () => {
     const client = {
       session: {
         create: vi.fn(async () => ({ id: "child-process" })),
-        prompt: vi.fn(async () => ({ parts: [{ type: "text", text: "unexpected" }] })),
+        prompt: vi.fn(async () => ({ parts: [{ type: "text", text: "research-result" }] })),
       },
     } as never
 
@@ -345,7 +346,6 @@ describe("HarnessLifecycleManager — builtin-process execution", () => {
     const manager = createHarnessLifecycleManager({
       client,
       pollTimeoutMs: 50,
-      backgroundManager,
     })
 
     const result = await manager.launchDelegatedSession({
@@ -390,29 +390,25 @@ describe("HarnessLifecycleManager — builtin-process execution", () => {
     })
 
     expect(result).toBe("research-result")
-    expect(backgroundManager.spawn).toHaveBeenCalledTimes(1)
-    expect(client.session.prompt).not.toHaveBeenCalled()
+    expect(backgroundManager.spawn).not.toHaveBeenCalled()
+    expect(client.session.prompt).toHaveBeenCalledTimes(1)
 
     const continuity = getSessionContinuity("child-process")
-    expect(continuity?.metadata.execution?.submode).toBe("builtin-process")
+    expect(continuity?.metadata.execution?.submode).toBe("builtin-subsession")
+    expect(continuity?.metadata.execution?.rationale).toContain("builtin-process fallback")
     expect(buildDelegationArtifactPacket(continuity!).execution).toMatchObject({
       family: "built-in",
-      submode: "builtin-process",
+      submode: "builtin-subsession",
     })
   })
 
-  it("persists failure context for builtin-process work before cleanup", async () => {
-    const completion = Promise.resolve({
-      status: "failed",
-      stdout: "",
-      stderr: "process boom",
-      exitCode: 1,
-    })
-
+  it("persists failure context when builtin-process requests fall back to builtin-subsession", async () => {
     const client = {
       session: {
         create: vi.fn(async () => ({ id: "child-process-fail" })),
-        prompt: vi.fn(),
+        prompt: vi.fn(async () => {
+          throw new Error("process boom")
+        }),
       },
     } as never
 
@@ -428,7 +424,6 @@ describe("HarnessLifecycleManager — builtin-process execution", () => {
         exitCode: null,
         error: null,
       })),
-      onComplete: vi.fn(() => completion),
       getTask: vi.fn(() => ({
         id: "bg-fail",
         status: "failed",
@@ -445,7 +440,6 @@ describe("HarnessLifecycleManager — builtin-process execution", () => {
     const manager = createHarnessLifecycleManager({
       client,
       pollTimeoutMs: 50,
-      backgroundManager,
     })
 
     await expect(
@@ -494,6 +488,71 @@ describe("HarnessLifecycleManager — builtin-process execution", () => {
     const continuity = getSessionContinuity("child-process-fail")
     expect(continuity?.metadata.status).toBe("error")
     expect(continuity?.metadata.lastError).toContain("process boom")
-    expect(continuity?.metadata.execution?.submode).toBe("builtin-process")
+    expect(continuity?.metadata.execution?.submode).toBe("builtin-subsession")
+    expect(backgroundManager.spawn).not.toHaveBeenCalled()
+  })
+})
+
+describe("runLifecycleProcessTask — parent ownership", () => {
+  it("registers background work against the parent session ID", async () => {
+    const backgroundManager = {
+      spawn: vi.fn(() => ({
+        id: "bg-parent-owned",
+        status: "running",
+        pid: 999,
+        startedAt: Date.now(),
+        parentSessionID: "parent-session",
+        stdout: "",
+        stderr: "",
+        exitCode: null,
+        error: null,
+      })),
+      onComplete: vi.fn(async () => ({
+        status: "completed",
+        stdout: "done",
+        stderr: "",
+        exitCode: 0,
+      })),
+    } as unknown as BackgroundManager
+
+    await runLifecycleProcessTask({
+      sessionID: "child-session",
+      parentSessionID: "parent-session",
+      rootID: "root-session",
+      childDepth: 1,
+      agent: "researcher",
+      category: "research",
+      model: "gpt-5.4",
+      description: "background ownership",
+      promptText: "Investigate ownership.",
+      runInBackground: true,
+      execution: {
+        family: "built-in",
+        submode: "builtin-process",
+        rationale: "Direct process-runner regression test.",
+        characteristics: {
+          isParallel: false,
+          isInteractive: false,
+          isResearch: true,
+          isHeadless: true,
+          runInBackground: true,
+        },
+        capabilityEvidence: {
+          hasTmux: false,
+          projectRoot: process.cwd(),
+        },
+      },
+      backgroundManager,
+      patchLifecycle: vi.fn(),
+      getLifecycleSnapshot: vi.fn(() => undefined),
+      releaseQueue: vi.fn(),
+      now: () => Date.now(),
+    })
+
+    expect(backgroundManager.spawn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        parentSessionID: "parent-session",
+      }),
+    )
   })
 })
