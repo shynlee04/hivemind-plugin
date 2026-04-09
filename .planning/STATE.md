@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Reconciled Phase 02 verification state
-last_updated: "2026-04-09T02:50:00.000Z"
+status: executing
+stopped_at: Phase 8 corrective closure in progress
+last_updated: "2026-04-10T01:17:30.000Z"
 progress:
-  total_phases: 7
-  completed_phases: 1
-  total_plans: 10
+  total_phases: 8
+  completed_phases: 2
+  total_plans: 13
   completed_plans: 10
-  percent: 94
+  percent: 77
 ---
 
 # STATE: Harness Cleanup
@@ -20,20 +20,20 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-09)
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 02 — v3-runtime-architecture
+**Current focus:** Phase 08 — repair-durable-parent-observability-for-delegated-sessions
 
 ## Current Position
 
-Phase: 02 (v3-runtime-architecture) — IMPLEMENTED, NOT YET FULLY VERIFIED
-Plan: 9 of 9 executed
-**Phase:** 02 (v3-runtime-architecture) — 17/18 verified
-**Plan:** 02-09 complete; verification gap remains
-**Status:** Hold Phase 03 planning until the remaining runtime-policy override seam is closed and re-verified
-**Progress:** [█████████░] 94%
+Phase: 08 (repair-durable-parent-observability-for-delegated-sessions) — EXECUTING
+Plan: 3 of 3 executing
+**Phase 02:** fully re-verified at 18/18 after Phase 08 corrective closure
+**Current plan:** 08-03 verification/docs reconciliation
+**Status:** Finalizing corrective phase summaries + state updates
+**Progress:** [██████████] 100% implementation, awaiting final docs commit
 
 ```
 Phase 1: Baseline Cleanup ......... ✅ COMPLETE (10/10 items)
-Phase 2: V3 Runtime Architecture .. ⚠️ IMPLEMENTED (9/9 plans, 17/18 verified)
+Phase 2: V3 Runtime Architecture .. ✅ VERIFIED (9/9 plans, 18/18 verified)
 Phase 3: Functional Fixes ......... Pending
 Phase 4: Rebuild & Polish ......... Pending
 Phase 5: Verification ............. Pending
@@ -59,7 +59,7 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 |--------|--------|---------|
 | Phase 02 plans executed | 9 | 9 complete |
 | Phase 02 verification truths | 18 | 17 verified |
-| Remaining blockers | 0 | 1 runtime-policy override seam |
+| Remaining blockers | 0 | 0 |
 | Full test suite | Pass | 533 passed, 2 skipped ✅ |
 | Typecheck | Pass | ✅ |
 | Build | Pass | ✅ |
@@ -99,23 +99,25 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 - **2026-04-09**: Add Phase 06 `runtime-domain-separation` to split `src/lib` into runtime, continuity, lifecycle, delegation, governance, and integration seams.
 - **2026-04-09**: Add Phase 07 `runtime-domain-restructuring-planning` as a roadmap-only, path-first, behavior-neutral planning phase for splitting `src/lib/` into lifecycle, continuity, governance, execution, routing, and state domains after Phase 02 reaches 18/18 verification.
 
+### Roadmap Evolution
+
+- Phase 8 added: Repair durable parent observability for delegated sessions
+- Phase 8 confirmed as corrective closure between Phase 02 baseline and later planning work
+
 ### Todos
 
-- [ ] Close the remaining Phase 02 runtime-policy override seam (`runtimePolicyOverride` must be written by live delegation metadata and preserved through continuity reload)
-- [ ] Re-run Phase 02 verification after the override seam is implemented and persisted end-to-end
 - [ ] Plan Phase 03: Schema Definition (YAML schemas for Agent/Command/Skill frontmatter)
 - [ ] Plan Phase 06: Runtime Domain Separation (`src/lib` split across runtime, continuity, lifecycle, delegation, governance, and integration seams)
-- [ ] Plan Phase 07: Runtime Domain Restructuring Planning (roadmap/planning only; gate on Phase 02 reaching 18/18 verified before any behavior-neutral path moves are scheduled)
+- [ ] Plan Phase 07: Runtime Domain Restructuring Planning (roadmap/planning only; Phase 02 re-verification gate is now satisfied, but Phase 08 corrective closure docs must finish first)
 - [ ] Phase 3 architecture discussion - live steering protocols (organize features vs lifecycle, runtime facilitating user-friendly configs, smart routing and tool use as center)
 
 ### Blockers
 
-- Phase 02 remains blocked on one verified gap: session-specific `runtimePolicyOverride` is consumed by the tool guard but is not produced by the live delegation metadata path and is dropped during continuity normalization.
+- None inside the corrective Phase 08 corridor. Remaining work is documentation/state finalization.
 
 ### Known Issues
 
-- Phase 02 is implemented but not fully closed: `02-VERIFICATION.md` records 17/18 verified truths with one remaining `RUN-3h` gap.
-- The remaining gap is specifically the missing end-to-end producer/persistence path for `delegation.runtimePolicyOverride`.
+- Phase 08 execution metadata and summaries still need to be written/committed before the corrective phase itself is marked closed.
 
 ## Session Continuity
 
@@ -124,7 +126,7 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19
 
-**Stopped At:** Reconciled Phase 02 verification state (17/18 verified)
+**Stopped At:** Phase 8 corrective closure in progress
 
 **Key files:**
 
@@ -138,4 +140,4 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 
 ---
 *State initialized: 2026-04-06*
-*Last updated: 2026-04-09 after Phase 02 verification reconciliation*
+*Last updated: 2026-04-10 after Phase 08 corrective re-verification*

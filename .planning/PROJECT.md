@@ -2,7 +2,7 @@
 
 ## What This Is
 
-HiveMind V3 in this worktree is a runtime composition engine for OpenCode. The repository currently contains completed Phase 01 cleanup work and implemented Phase 02 runtime architecture work, with Phase 02 standing at **17/18 verified truths** and one remaining runtime-policy override gap before full closure.
+HiveMind V3 in this worktree is a runtime composition engine for OpenCode. The repository currently contains completed Phase 01 cleanup work and fully re-verified Phase 02 runtime architecture work, with Phase 08 serving as the corrective closure phase that repaired delegated-session durability and unblocked the final verification pass.
 
 ## Core Value
 
@@ -19,17 +19,16 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 - [x] **RUN-3e**: Governance persistence, active blocking, and invocation-scoped metadata are live.
 - [x] **RUN-3f**: Session-start and compaction injections are route-aware, conditional, and auditable.
 - [x] **RUN-3g**: Specialist routing remains advisory and records rationale with safe fallback behavior.
+- [x] **RUN-3h**: Trusted session-level runtime policy overrides now write through live delegation metadata, survive continuity reload, and drive tool-budget enforcement.
+- [x] **Phase 02 closure**: Authoritative re-verification completed after Phase 08 corrective closure.
 
 ### Active
 
-- [ ] **RUN-3h gap**: Populate `runtimePolicyOverride` in live delegation metadata when trusted session override inputs exist.
-- [ ] **RUN-3h gap**: Preserve `runtimePolicyOverride` through continuity normalization and hydration.
-- [ ] **RUN-3h gap**: Add an end-to-end regression covering write → persist → reload → tool-guard enforcement for session overrides.
-- [ ] **Phase 02 closure**: Re-run verification after the runtime-policy override seam is made real end-to-end.
+- [ ] **Phase 08 closure**: Finalize Phase 08 execution summaries/state updates after the corrected verification evidence is recorded.
 
 ### Out of Scope
 
-- `src/**` and `tests/**` implementation changes — this reconciliation pass is documentation-only.
+- Broad redesign of delegation behavior beyond the corrective Phase 08 corridor.
 - Zombie cleanup and runtime-domain restructure work — excluded from this reconciliation.
 - New feature expansion beyond the verified Phase 02 gap closure.
 
@@ -43,16 +42,17 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 **Current verified state**:
 - Phase 01 is complete.
 - Phase 02 implementation is complete across 9/9 plans.
-- Phase 02 verification is **17/18** with one remaining `RUN-3h` runtime-policy override gap.
-- Fresh bounded tests, full suite, typecheck, and build all passed during the latest Phase 02 verification run.
+- Phase 08 repaired the live runtime-policy override seam and durable parent-visible delegated-session status corridor.
+- Phase 02 verification is now **18/18** verified in `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md`.
+- Fresh bounded tests, full suite, and typecheck all passed during the latest corrective closure run.
 
-**Current state**: hold next-phase planning until the runtime-policy override seam is written, persisted, and re-verified.
+**Current state**: Phase 02 is re-verified; later planning work can proceed from the corrected dependency chain once Phase 08 execution metadata is finalized.
 
 ## Constraints
 
 - **Compatibility**: Keep continuity as the canonical store; delegation exports remain derived artifacts.
-- **Verification boundary**: Reconcile planning docs only; do not treat excluded zombie cleanup or restructure work as part of current Phase 02 status.
-- **Closure rule**: Do not mark Phase 02 complete until the `runtimePolicyOverride` producer/persistence seam is verified end-to-end.
+- **Verification boundary**: Treat Phase 08 as a bounded corrective closure phase, not a general delegation redesign.
+- **Closure rule**: Later planning work depends on the corrected sequence `Phase 02 baseline → Phase 08 corrective closure → Phase 02 re-verification`.
 - **Evidence standard**: Current status must match `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md` rather than older audit or validation artifacts.
 
 ## Key Decisions
@@ -60,10 +60,10 @@ Every remaining component helps an AI agent complete its workflow — no dead co
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
 | Keep continuity as canonical state | Delegation packets/manifests must derive from continuity rather than become a second source of truth | Active and verified |
-| Runtime policy supplements built-ins | Custom queue/budget controls fill gaps without replacing OpenCode-native session behavior | Verified except for session-specific override seam |
+| Runtime policy supplements built-ins | Custom queue/budget controls fill gaps without replacing OpenCode-native session behavior | Verified |
 | Background execution uses classified runtime modes | Execution family/submode must be chosen from task characteristics and environment capabilities | Verified |
 | Injection remains narrow and route-aware | Specialist guidance should derive from the effective route and active governance state only | Verified |
-| Phase 02 closure requires end-to-end runtime-policy override persistence | Manual in-memory test injection is insufficient; live producer + reload path must exist | Open |
+| Phase 02 closure requires end-to-end runtime-policy override persistence | Manual in-memory test injection is insufficient; live producer + reload path must exist | Satisfied by Phase 08 corrective closure |
 
 ## Evolution
 
@@ -83,4 +83,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-09 after Phase 02 verification reconciliation*
+*Last updated: 2026-04-10 after Phase 08 corrective re-verification*

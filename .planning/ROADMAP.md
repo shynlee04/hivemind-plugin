@@ -1,13 +1,13 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-09 (added gated runtime domain restructuring planning phase)
+**Updated:** 2026-04-10 (added durable parent observability repair phase)
 **Granularity:** Fine
 
 ## Phases Overview
 
 - [x] **Phase 1: Baseline Cleanup** — 7/10 done, 3 pending (planned)
-- [ ] **Phase 2: V3 Runtime Architecture** — 9/9 plans complete, 17/18 verified, 1 runtime-policy override gap remains
+- [x] **Phase 2: V3 Runtime Architecture** — 9/9 plans complete, 18/18 verified
 - [ ] **Phase 3: Schema Definition** — 0/4
 - [ ] **Phase 4: Migration Gate** — 0/4
 - [ ] **Phase 5: Integration Verification** — 0/5
@@ -42,9 +42,9 @@ Plans:
 
 Executable recovery plan set replacing the stale reference-only Phase 02 plans. These plans are grounded in current V3 runtime code reality and preserve the still-locked Phase 02 decisions.
 
-**Authoritative current status (2026-04-09):** implementation is complete across all 9 Phase 02 plans, but phase closure remains blocked by one verified gap. The current verification record is `17/18` truths verified in `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md`.
+**Authoritative current status (2026-04-10):** implementation is complete across all 9 Phase 02 plans and authoritative re-verification now records `18/18` truths verified in `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md`.
 
-**Remaining blocker:** session-specific `runtimePolicyOverride` is consumed by the tool-guard runtime-policy path but is not written by live delegation metadata and is dropped during continuity normalization/reload.
+**Corrective closure:** Phase 08 repaired the live `runtimePolicyOverride` writer/persistence seam and hardened durable parent-visible delegated-session truth across async boundaries.
 
 Recovery plan structure:
 - 2c/2h. Runtime policy foundation — configurable concurrency + budgets that supplement OpenCode built-ins
@@ -119,7 +119,7 @@ Plans:
 | Phase | Items Complete | Status |
 |-------|---------------|--------|
 | 1. Baseline Cleanup | 7/10 | Plan created (1 plan, Wave 1) |
-| 2. V3 Runtime Architecture | 9/9 plans, 17/18 truths | Verification blocked by one runtime-policy override gap |
+| 2. V3 Runtime Architecture | 9/9 plans, 18/18 truths | Verified after Phase 08 corrective closure |
 | 3. Schema Definition | 0/4 | Not started |
 | 4. Migration Gate | 0/4 | Not started |
 | 5. Integration Verification | 0/5 | Not started |
@@ -130,10 +130,26 @@ Plans:
 
 ```
 Phase 1 (7 done, 3 pending — planned)
-  └─→ Phase 2: V3 Runtime (8 sub-phases, priority-ordered)
-       └─→ Phase 3: Schema Definition
-            └─→ Phase 4: Migration Gate
-                 └─→ Phase 5: Integration Verification
-                      └─→ Phase 6: Runtime Domain Separation
-                           └─→ Phase 7: Runtime Domain Restructuring Planning (requires Phase 02 verification 18/18)
+  └─→ Phase 2: V3 Runtime baseline
+       └─→ Phase 8: Corrective closure for delegated-session durability
+            └─→ Phase 2: Authoritative re-verification (18/18)
+                 └─→ Phase 3: Schema Definition
+                      └─→ Phase 4: Migration Gate
+                           └─→ Phase 5: Integration Verification
+                                └─→ Phase 6: Runtime Domain Separation
+                                     └─→ Phase 7: Runtime Domain Restructuring Planning
 ```
+
+### Phase 8: Repair durable parent observability for delegated sessions
+
+**Goal:** Restore durable parent-visible delegated-session truth and close the live runtimePolicyOverride seam so Phase 02 can be re-verified.
+**Requirements**: RUN-3h
+**Depends on:** Phase 02 corrective closure baseline (not Phase 07)
+**Plans:** 3 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — restore the live runtimePolicyOverride writer/persistence seam
+- [ ] 08-02-PLAN.md — reconcile durable parent-visible started/completed/failed truth
+- [ ] 08-03-PLAN.md — re-run Phase 02 verification and correct roadmap/state sequencing
+
+**Execution status:** In progress during Phase 08 execution. Phase 02 re-verification is already green; finalize Phase 08 summaries/state before treating the corrective phase itself as closed.
