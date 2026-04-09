@@ -34,6 +34,18 @@ export async function getSession(client: OpenCodeClient, sessionID: string): Pro
   return unwrapData(await client.session.get({ path: { id: sessionID } }))
 }
 
+/**
+ * Get the status map for all sessions.
+ * Returns a map of sessionID -> { type: "idle" | "busy" | "retry" }
+ */
+export async function getSessionStatusMap(client: OpenCodeClient): Promise<Record<string, { type: string }>> {
+  const response = await client.session.status()
+  const data = unwrapData(response)
+  // The response is { data: { [sessionID: string]: SessionStatus } }
+  // SessionStatus has shape { type: "idle" | "busy" | "retry" }
+  return (data as Record<string, unknown>) as Record<string, { type: string }>
+}
+
 export async function abortSession(client: OpenCodeClient, sessionID: string): Promise<unknown> {
   return unwrapData(await client.session.abort({ path: { id: sessionID } }))
 }
