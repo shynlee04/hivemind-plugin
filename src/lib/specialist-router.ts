@@ -67,9 +67,8 @@ function normalizeCategory(value: string | undefined): DelegationCategory | unde
     return undefined
   }
   if (!VALID_DELEGATION_CATEGORIES.includes(normalized as DelegationCategory)) {
-    throw new Error(
-      `[Harness] Invalid category "${value}". Allowed categories: ${VALID_DELEGATION_CATEGORIES.join(", ")}.`,
-    )
+    // Unknown category — fall through to signal-based routing instead of throwing
+    return undefined
   }
   return normalized as DelegationCategory
 }
@@ -79,12 +78,21 @@ function normalizeAgent(value: string | undefined): SpecialistAgent | undefined 
   if (!normalized) {
     return undefined
   }
-  if (!isValidAgent(normalized)) {
+
+  // Alias mapping for common variants
+  const aliases: Record<string, SpecialistAgent> = {
+    "build": "builder",
+    "plan": "general",  // plan is read-only analysis → general lane
+    "explore": "general", // explore is general-purpose investigation
+  }
+
+  const mapped = aliases[normalized] ?? normalized
+  if (!isValidAgent(mapped)) {
     throw new Error(
-      `[Harness] Invalid target agent "${value}". Allowed agents: ${VALID_AGENTS.join(", ")}.`,
+      `[Harness] Invalid target agent "${value}". Allowed agents: ${VALID_AGENTS.join(", ")}. Aliases: build→builder, plan→general, explore→general.`,
     )
   }
-  return normalized
+  return mapped
 }
 
 function scorePreset(signal: string, preset: SpecialistPreset): number {
