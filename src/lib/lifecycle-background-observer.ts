@@ -1,4 +1,4 @@
-import { getSessionStatusMap } from "./session-api.js"
+import { getSession, getSessionStatusMap, type OpenCodeClient } from "./session-api.js"
 import { notifyParentSession, type TaskNotification } from "./notification-handler.js"
 import type {
   SessionContinuityMetadata,
@@ -8,7 +8,6 @@ import type {
   SessionLifecycleQueueState,
   SessionLifecycleState,
 } from "./types.js"
-import type { OpenCodeClient } from "./session-api.js"
 import type { QueueSnapshot } from "./lifecycle-queue.js"
 
 type PatchLifecycleArgs = {
@@ -25,6 +24,36 @@ type PatchLifecycleArgs = {
 
 /** Default poll interval in milliseconds — balances responsiveness with API load. */
 const DEFAULT_POLL_INTERVAL_MS = 15000
+
+/**
+ * Check if a session exists by direct lookup.
+ *
+ * Uses client.session.get(sessionID) instead of the status map because
+ * the status map may not include all sessions (e.g., child sessions in
+ * different scopes, or sessions not yet registered in the map).
+ *
+ * Returns the session's status type if found, undefined if deleted.
+ */
+async function checkSessionExists(
+  sessionID: string,
+  client: OpenCodeClient,
+): Promise<{ type: string } | undefined> {
+  try {
+    const session = await getSession(client, sessionID)
+    // Session exists — extract status from the response
+    const raw = session as Record<string, unknown>
+    const status = raw.status ?? raw.info
+    if (status && typeof status === "object") {
+      const statusObj = status as Record<string, unknown>
+      return { type: (statusObj.type as string) ?? "busy" }
+    }
+    // If no status field, assume it's still alive (busy)
+    return { type: "busy" }
+  } catch {
+    // Session.get() threw — session doesn't exist
+    return undefined
+  }
+}
 
 /**
  * Poll-based background completion observer.
@@ -56,10 +85,21 @@ export async function observeBackgroundCompletion(args: {
   try {
     while (args.now() < deadline) {
       try {
-        const statusMap = await getSessionStatusMap(args.client)
-        const sessionStatus = statusMap[args.sessionID]
+        // Primary check: direct session lookup via client.session.get()
+        // This is more reliable than the status map because:
+        // 1. Status map may not include all sessions (scope/directory filtering)
+        // 2. Child sessions may not appear in parent's status map view
+        // 3. Direct lookup confirms the session actually exists
+        let sessionStatus = await checkSessionExists(args.sessionID, args.client)
 
-        // Session not in map means it was deleted or never existed
+        // Fallback: if direct lookup returned undefined, try status map
+        // to confirm the session is truly deleted vs. just not findable
+        if (!sessionStatus) {
+          const statusMap = await getSessionStatusMap(args.client)
+          sessionStatus = statusMap[args.sessionID]
+        }
+
+        // Session not found by either method — it was deleted or never existed
         if (!sessionStatus) {
           const error = "Session deleted during background execution"
           args.patchLifecycle({

@@ -4,7 +4,7 @@ import type { ExecutionModeResult } from "./execution-mode.js"
 import { observeBackgroundCompletion } from "./lifecycle-background-observer.js"
 import { extractTextFromResponse } from "./lifecycle-state.js"
 import { notifyParentSession, type TaskNotification } from "./notification-handler.js"
-import { sendPrompt, type OpenCodeClient } from "./session-api.js"
+import { sendPrompt, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
 import type { SessionContinuityRecord } from "./types.js"
 import type { SessionContinuityMetadata, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleState } from "./types.js"
 
@@ -232,7 +232,9 @@ type RunLifecycleSubsessionArgs = {
 
 export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArgs): Promise<string> {
   if (args.runInBackground) {
-    sendPrompt(args.client, args.sessionID, args.body)
+    // Use promptAsync so the platform keeps the child session alive
+    // independently of the parent's turn lifecycle.
+    sendPromptAsync(args.client, args.sessionID, args.body)
       .then(() => {
         // Prompt dispatched successfully — notify parent that work has started.
         const continuity = args.getSessionContinuity(args.sessionID)

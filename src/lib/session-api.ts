@@ -65,6 +65,8 @@ export async function getSessionMessages(
   return Array.isArray(response) ? response : []
 }
 
+type SessionPromptAsyncRequest = Parameters<OpenCodeClient["session"]["promptAsync"]>[0]
+
 export async function sendPrompt(
   client: OpenCodeClient,
   sessionID: string,
@@ -76,6 +78,26 @@ export async function sendPrompt(
   }
 
   return unwrapData(await client.session.prompt(request))
+}
+
+/**
+ * Prompt a session asynchronously — returns 204 immediately.
+ *
+ * Use this for background/background delegation tasks where the caller
+ * should not wait for the assistant's response. The OpenCode platform
+ * keeps the child session alive independently of the parent's lifecycle.
+ */
+export async function sendPromptAsync(
+  client: OpenCodeClient,
+  sessionID: string,
+  body: unknown
+): Promise<void> {
+  const request: SessionPromptAsyncRequest = {
+    path: { id: sessionID },
+    body: body as SessionPromptAsyncRequest["body"],
+  }
+
+  await client.session.promptAsync(request)
 }
 
 export function getSessionID(session: unknown): string | undefined {
