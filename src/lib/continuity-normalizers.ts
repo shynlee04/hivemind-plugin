@@ -1,4 +1,4 @@
-import type { CompactionCheckpointData, DelegationCategory, DelegationExecutionMetadata, DelegationMeta, DelegationPacket, DelegationPacketStatus, DelegationRouteResolution, PermissionAction, PermissionRule, SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleCleanup, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleQueueState, SessionLifecycleState, SessionPromptParams, SessionToolProfile, SpecialistAgent } from "./types.js"
+import type { CompactionCheckpointData, DelegationCategory, DelegationExecutionMetadata, DelegationMeta, DelegationPacket, DelegationPacketStatus, DelegationRouteResolution, PendingNotification, PermissionAction, PermissionRule, SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleCleanup, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleQueueState, SessionLifecycleState, SessionPromptParams, SessionToolProfile, SpecialistAgent } from "./types.js"
 import { VALID_DELEGATION_CATEGORIES } from "./types.js"
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value) }
@@ -62,6 +62,7 @@ function normalizeSpecialistAgent(value: unknown): SpecialistAgent | undefined {
     case "researcher":
     case "builder":
     case "critic":
+    case "general":
       return value
     default:
       return undefined
@@ -467,6 +468,61 @@ function normalizeLifecycleState(value: unknown): SessionLifecycleState | undefi
   }
 }
 
+function normalizePendingNotification(value: unknown): PendingNotification | undefined {
+  if (!isRecord(value)) {
+    return undefined
+  }
+
+  const sessionID = asString(value.sessionID)
+  const description = asString(value.description)
+  const agent = asString(value.agent)
+  const status = value.status
+  const error = value.error === undefined ? undefined : asString(value.error)
+  const resultPreview = value.resultPreview === undefined ? undefined : asString(value.resultPreview)
+  const briefSummary = value.briefSummary === undefined ? undefined : asString(value.briefSummary)
+  const outputLink = value.outputLink === undefined ? undefined : asString(value.outputLink)
+  const duration = asNumber(value.duration)
+  const createdAt = asNumber(value.createdAt)
+  const delivered = asBoolean(value.delivered)
+
+  if (
+    !sessionID ||
+    !description ||
+    !agent ||
+    (status !== "started" && status !== "completed" && status !== "failed" && status !== "cancelled") ||
+    createdAt === undefined ||
+    delivered === undefined
+  ) {
+    return undefined
+  }
+
+  return {
+    sessionID,
+    description,
+    agent,
+    status,
+    error,
+    resultPreview,
+    briefSummary,
+    outputLink,
+    duration,
+    createdAt,
+    delivered,
+  }
+}
+
+function normalizePendingNotifications(value: unknown): PendingNotification[] | undefined {
+  if (!Array.isArray(value)) {
+    return undefined
+  }
+
+  const notifications = value
+    .map((entry) => normalizePendingNotification(entry))
+    .filter((entry): entry is PendingNotification => Boolean(entry))
+
+  return notifications.length > 0 ? notifications : undefined
+}
+
 function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefined {
   if (!isRecord(value)) {
     return undefined
@@ -493,6 +549,7 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
   const lastObservedAt = asNumber(value.lastObservedAt)
   const lastError = asString(value.lastError)
   const lifecycle = normalizeLifecycleState(value.lifecycle)
+  const pendingNotifications = normalizePendingNotifications(value.pendingNotifications)
 
   if (
     !parentSessionID ||
@@ -528,6 +585,7 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
     lastObservedAt,
     lastError,
     lifecycle,
+    pendingNotifications,
   }
 }
 

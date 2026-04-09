@@ -104,7 +104,7 @@ describe("buildNotificationMessage", () => {
 
     const result = buildNotificationMessage(task)
 
-    expect(result).toContain("Duration: 5432ms")
+    expect(result).toContain("Duration: 5.4s")
   })
 })
 

@@ -2,6 +2,7 @@ import type {
   CompactionCheckpointData,
   DelegationExecutionMetadata,
   DelegationPacket,
+  PendingNotification,
   PermissionRule,
   SessionContinuityRecord,
   SessionLifecycleCleanup,
@@ -123,6 +124,14 @@ export function cloneContinuityRecord(record: SessionContinuityRecord): SessionC
         : undefined,
       constraints: cloneStringList(record.metadata.constraints),
       lifecycle: cloneLifecycleState(record.metadata.lifecycle),
+      pendingNotifications: clonePendingNotifications(record.metadata.pendingNotifications),
     },
   }
+}
+
+export function clonePendingNotifications(
+  notifications: PendingNotification[] | undefined,
+): PendingNotification[] | undefined {
+  if (!notifications) return undefined
+  return notifications.map((n) => ({ ...n }))
 }

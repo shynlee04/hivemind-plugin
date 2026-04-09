@@ -228,6 +228,7 @@ type RunLifecycleSubsessionArgs = {
   releaseQueue: (reason: string) => void
   queueSnapshot: { active: number; pending: number; limit: number }
   budgetUsed: number
+  launchedAt: number
   now: () => number
 }
 
@@ -313,6 +314,8 @@ export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArg
         route: args.route,
         description: args.description,
         lifecycle: args.getLifecycleSnapshot(args.sessionID),
+        launched_at: args.launchedAt,
+        output_link: `session://${args.sessionID}`,
         instruction: "Task dispatched. Continue with other work — you'll be notified when complete.",
       },
       null,

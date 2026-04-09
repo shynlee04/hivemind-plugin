@@ -1,0 +1,61 @@
+/**
+ * Pending notification store for offline delivery.
+ *
+ * When a background task completes but the parent session is offline/idle,
+ * the notification is persisted here. On the next session resume, pending
+ * notifications are surfaced to the user.
+ *
+ * Stored in continuity store under `metadata.pendingNotifications`.
+ */
+
+import type { TaskNotification } from "./notification-handler.js"
+
+export type PendingNotification = TaskNotification & {
+  /** Timestamp when the notification was created. */
+  createdAt: number
+  /** Whether the notification has been delivered to the user. */
+  delivered: boolean
+}
+
+/**
+ * Build a pending notification from a completed task.
+ */
+export function buildPendingNotification(task: TaskNotification): PendingNotification {
+  return {
+    ...task,
+    createdAt: Date.now(),
+    delivered: false,
+  }
+}
+
+/**
+ * Format a pending notification for display on session resume.
+ */
+export function formatPendingNotification(pending: PendingNotification): string {
+  const icon =
+    pending.status === "completed"
+      ? "✓"
+      : pending.status === "failed"
+        ? "✗"
+        : "⊘"
+  const link = pending.outputLink ? `\n  View: ${pending.outputLink}` : ""
+  const summary = pending.briefSummary ? `\n  ${pending.briefSummary}` : ""
+  return `[${icon} Background task: ${pending.description} (${pending.agent}) — ${pending.status}${summary}${link}]`
+}
+
+/**
+ * Format all pending notifications for a session as a single block.
+ */
+export function formatPendingNotificationsForSession(
+  pending: PendingNotification[],
+): string {
+  if (pending.length === 0) return ""
+  const lines = ["\n<system_reminder>", "Pending background task notifications:"]
+  for (const p of pending) {
+    lines.push(formatPendingNotification(p))
+  }
+  lines.push("End of pending notifications.</system_reminder>")
+  return lines.join("\n")
+}
+
+export type { TaskNotification }

@@ -9,10 +9,19 @@ export type TaskNotification = {
   status: "started" | "completed" | "failed" | "cancelled"
   error?: string
   resultPreview?: string
+  briefSummary?: string
+  outputLink?: string
   duration?: number
 }
 
 const MAX_PREVIEW_LENGTH = 100
+
+function formatDuration(ms: number): string {
+  if (ms < 1000) return `${ms}ms`
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`
+  if (ms < 3600000) return `${Math.floor(ms / 60000)}m ${Math.floor((ms % 60000) / 1000)}s`
+  return `${Math.floor(ms / 3600000)}h ${Math.floor((ms % 3600000) / 60000)}m`
+}
 
 export function buildNotificationMessage(task: TaskNotification): string {
   const statusLabel =
@@ -49,8 +58,17 @@ export function buildNotificationMessage(task: TaskNotification): string {
     lines.push(`- Result: ${preview}`)
   }
 
+  if (task.briefSummary) {
+    lines.push(`- Summary: ${task.briefSummary}`)
+  }
+
+  if (task.outputLink) {
+    lines.push(`- View results: ${task.outputLink}`)
+  }
+
   if (task.duration !== undefined) {
-    lines.push(`- Duration: ${task.duration}ms`)
+    const formatted = formatDuration(task.duration)
+    lines.push(`- Duration: ${formatted}`)
   }
 
   lines.push(`</system_reminder>`)
@@ -67,7 +85,8 @@ export function formatToastMessage(task: TaskNotification): string {
         : task.status === "failed"
           ? "✗"
           : "⊘"
-  return `${icon} ${task.description} ${task.status} (${task.agent})`
+  const duration = task.duration !== undefined ? ` [${formatDuration(task.duration)}]` : ""
+  return `${icon} ${task.description} ${task.status} (${task.agent})${duration}`
 }
 
 export type ToastFn = (message: string) => void

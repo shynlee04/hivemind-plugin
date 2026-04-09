@@ -1,4 +1,7 @@
 import type { TaskStatus } from "./task-status.js"
+import type { PendingNotification as PendingNotificationType } from "./pending-notifications.js"
+
+export type PendingNotification = PendingNotificationType
 
 export const MAX_DESCENDANTS_PER_ROOT = 10
 export const VALID_AGENTS = ["researcher", "builder", "critic", "general"] as const
@@ -202,6 +205,7 @@ export type SessionContinuityMetadata = {
   lastObservedAt?: number
   lastError?: string
   lifecycle?: SessionLifecycleState
+  pendingNotifications?: PendingNotification[]
 }
 
 export type SessionContinuityRecord = {

@@ -1,5 +1,7 @@
 import { getSession, getSessionStatusMap, type OpenCodeClient } from "./session-api.js"
 import { notifyParentSession, type TaskNotification } from "./notification-handler.js"
+import { buildPendingNotification } from "./pending-notifications.js"
+import { patchSessionContinuity, getSessionContinuity } from "./continuity.js"
 import type {
   SessionContinuityMetadata,
   SessionContinuityRecord,
@@ -115,7 +117,7 @@ export async function observeBackgroundCompletion(args: {
           })
           const continuity = args.getSessionContinuity(args.sessionID)
           if (continuity?.metadata.parentSessionID) {
-            void notifyParentSession(
+            void notifyParentWithFallback(
               args.client,
               continuity.metadata.parentSessionID,
               buildNotificationFromContinuity(continuity, "failed", error),
@@ -141,7 +143,7 @@ export async function observeBackgroundCompletion(args: {
           })
           const continuity = args.getSessionContinuity(args.sessionID)
           if (continuity?.metadata.parentSessionID) {
-            void notifyParentSession(
+            void notifyParentWithFallback(
               args.client,
               continuity.metadata.parentSessionID,
               buildNotificationFromContinuity(continuity, "completed"),
@@ -167,7 +169,7 @@ export async function observeBackgroundCompletion(args: {
           })
           const continuity = args.getSessionContinuity(args.sessionID)
           if (continuity?.metadata.parentSessionID) {
-            void notifyParentSession(
+            void notifyParentWithFallback(
               args.client,
               continuity.metadata.parentSessionID,
               buildNotificationFromContinuity(continuity, "failed", error),
@@ -194,7 +196,7 @@ export async function observeBackgroundCompletion(args: {
         })
         const continuity = args.getSessionContinuity(args.sessionID)
         if (continuity?.metadata.parentSessionID) {
-          void notifyParentSession(
+          void notifyParentWithFallback(
             args.client,
             continuity.metadata.parentSessionID,
             buildNotificationFromContinuity(continuity, "failed", error),
@@ -219,7 +221,7 @@ export async function observeBackgroundCompletion(args: {
     })
     const continuity = args.getSessionContinuity(args.sessionID)
     if (continuity?.metadata.parentSessionID) {
-      void notifyParentSession(
+      void notifyParentWithFallback(
         args.client,
         continuity.metadata.parentSessionID,
         buildNotificationFromContinuity(continuity, "failed", error),
@@ -236,11 +238,82 @@ function buildNotificationFromContinuity(
   status: TaskNotification["status"],
   error?: string,
 ): TaskNotification {
+  const launchedAt = continuity.metadata.lifecycle?.launchedAt
+  const completedAt = continuity.metadata.lifecycle?.completedAt ?? Date.now()
+  const duration = launchedAt ? completedAt - launchedAt : undefined
+
+  // Build output link
+  const outputLink = `session://${continuity.sessionID}`
+
+  // Build brief summary from metadata
+  const agent = continuity.metadata.delegation?.agent ?? "unknown"
+  const category = continuity.metadata.category
+  const briefSummary = buildBriefSummary(continuity.metadata.description, agent, category, status, error)
+
   return {
     sessionID: continuity.sessionID,
     description: continuity.metadata.description ?? "Delegated task",
-    agent: continuity.metadata.delegation?.agent ?? "unknown",
+    agent,
     status,
     error,
+    briefSummary,
+    outputLink,
+    duration,
   }
+}
+
+/** Send notification to parent, persisting for offline delivery if parent is unavailable. */
+async function notifyParentWithFallback(
+  client: OpenCodeClient,
+  parentSessionID: string,
+  task: TaskNotification,
+): Promise<void> {
+  // Try real-time notification first
+  const toastFn = (msg: string) => {
+    try {
+      if (client.tui?.showToast) {
+        const variant = task.status === "completed" ? "success" : task.status === "failed" ? "error" : "info"
+        void client.tui.showToast({ body: { message: msg, variant } })
+      }
+    } catch {
+      // Best-effort
+    }
+  }
+
+  try {
+    await notifyParentSession(client, parentSessionID, task, toastFn)
+  } catch {
+    // Fallback: persist for offline delivery
+    const pending = buildPendingNotification(task)
+    const current = getSessionContinuity(parentSessionID)
+    const existing = current?.metadata.pendingNotifications ?? []
+    patchSessionContinuity(parentSessionID, {
+      pendingNotifications: [...existing, pending],
+    })
+  }
+}
+
+/** Build a 1-2 sentence summary of what was produced. */
+function buildBriefSummary(
+  description: string | undefined,
+  agent: string,
+  category: string | undefined,
+  status: TaskNotification["status"],
+  error?: string,
+): string {
+  if (status === "failed") {
+    return `Task failed: ${error ?? "unknown error"}.`
+  }
+  if (status === "cancelled") {
+    return `Task was cancelled.`
+  }
+  const agentLabel = agent.charAt(0).toUpperCase() + agent.slice(1)
+  const topic = description ?? "the delegated task"
+  if (category === "research" || category === "deep") {
+    return `${agentLabel} completed research on "${topic}". Review the session for findings.`
+  }
+  if (category === "review") {
+    return `${agentLabel} completed review of "${topic}". Check for identified issues.`
+  }
+  return `${agentLabel} completed work on "${topic}". Check session output for details.`
 }

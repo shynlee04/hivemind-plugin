@@ -1,12 +1,12 @@
 import { buildDelegationQueueKey, DelegationConcurrencyQueue, reserveSubagentSpawn } from "./concurrency.js"
 import type { SpawnReservation } from "./concurrency.js"
-import { BackgroundManager } from "./background-manager.js"
+import type { BackgroundManager } from "./background-manager.js"
 import { CompletionDetector } from "./completion-detector.js"
-import type { CheckpointData } from "./compaction-checkpoint.js"
+import { restoreCheckpoint, type CheckpointData } from "./compaction-checkpoint.js"
 import { buildDelegationPacketParentChain, createDelegationPacket } from "./delegation-packet.js"
 import type { ExecutionModeResult } from "./execution-mode.js"
 import { deleteSessionContinuity, getSessionContinuity, getSessionRecoveryState, listSessionContinuity, patchSessionDelegationPacket, patchSessionContinuity, recordSessionContinuity } from "./continuity.js"
-import { runLifecycleProcessTask, runLifecycleSubsessionTask } from "./lifecycle-process-runner.js"
+import { runLifecycleSubsessionTask } from "./lifecycle-process-runner.js"
 import { addWarning } from "./state.js"
 import { inferContinuityStatusFromEvent } from "./runtime.js"
 import { createSession, getEventParentID, getSessionID, type OpenCodeClient, sendPrompt } from "./session-api.js"
@@ -54,6 +54,20 @@ type HarnessLifecycleManagerOptions = {
 
 function now(): number { return Date.now() }
 
+function resolveEffectiveExecutionMode(execution: ExecutionModeResult): ExecutionModeResult {
+  if (execution.submode !== "builtin-process") {
+    return execution
+  }
+
+  // builtin-process never grew beyond a stub, so route through the real
+  // child-session execution path until an SDK-backed process runner exists.
+  return {
+    ...execution,
+    submode: "builtin-subsession",
+    rationale: `${execution.rationale} [Harness] builtin-process fallback: routed through builtin-subsession for real execution.`,
+  }
+}
+
 export function isValidTransition(from: SessionLifecyclePhase, to: SessionLifecyclePhase): boolean {
   return isValidLifecycleTransition(from, to)
 }
@@ -63,11 +77,9 @@ export class HarnessLifecycleManager {
   private readonly queue: DelegationConcurrencyQueue
   private readonly completionDetector = new CompletionDetector()
   private readonly runtimePolicy: RuntimePolicy | undefined
-  private readonly backgroundManager: BackgroundManager
 
   constructor(private readonly options: HarnessLifecycleManagerOptions) {
     this.runtimePolicy = options.runtimePolicy
-    this.backgroundManager = options.backgroundManager ?? new BackgroundManager()
     this.concurrencyLimit = parseInt(process.env.OPENCODE_HARNESS_CONCURRENCY_LIMIT ?? "3", 10)
     if (Number.isNaN(this.concurrencyLimit) || this.concurrencyLimit < 1) {
       this.concurrencyLimit = 3
@@ -82,6 +94,9 @@ export class HarnessLifecycleManager {
   hydrateFromContinuity(): void {
     for (const record of listSessionContinuity()) {
       hydrateDelegationState(record.sessionID, record.metadata.delegation)
+      if (record.metadata.compactionCheckpoint) {
+        restoreCheckpoint(record.sessionID, record.metadata.compactionCheckpoint, taskState)
+      }
     }
   }
 
@@ -202,6 +217,7 @@ export class HarnessLifecycleManager {
   async launchDelegatedSession(args: LaunchDelegatedSessionArgs): Promise<string> {
     const runMode = args.runInBackground ? "async" : "sync"
     const timestamp = now()
+    const effectiveExecution = resolveEffectiveExecutionMode(args.execution)
     const queueKey = buildDelegationQueueKey({
       model: args.route.effectiveModel,
       agent: args.agent,
@@ -266,11 +282,11 @@ export class HarnessLifecycleManager {
             }),
           ),
           execution: {
-            family: args.execution.family,
-            submode: args.execution.submode,
-            rationale: args.execution.rationale,
-            characteristics: { ...args.execution.characteristics },
-            capabilityEvidence: { ...args.execution.capabilityEvidence },
+            family: effectiveExecution.family,
+            submode: effectiveExecution.submode,
+            rationale: effectiveExecution.rationale,
+            characteristics: { ...effectiveExecution.characteristics },
+            capabilityEvidence: { ...effectiveExecution.capabilityEvidence },
           },
           title: `${args.agent}: ${args.description}`,
           description: args.description,
@@ -328,38 +344,18 @@ export class HarnessLifecycleManager {
         concurrencyTimeoutMs: resolvedConcurrency?.acquireTimeoutMs,
       })
 
+      const launchedAt = now()
       this.patchLifecycle({
         sessionID: childSessionID,
         status: "running",
         phase: "running",
-        launchedAt: now(),
+        launchedAt,
         observation: {
           source: "dispatch",
-          observedAt: now(),
+          observedAt: launchedAt,
           detail: args.runInBackground ? "prompt-dispatched-async" : "prompt-dispatched-sync",
         },
       })
-
-      if (args.execution.submode === "builtin-process") {
-        return await runLifecycleProcessTask({
-          sessionID: childSessionID,
-          parentSessionID: args.parentSessionID,
-          rootID: args.rootID,
-          childDepth: args.childDepth,
-          agent: args.agent,
-          category: args.route.category,
-          model: args.route.effectiveModel,
-          description: args.description,
-          promptText: args.promptText,
-          runInBackground: args.runInBackground,
-          execution: args.execution,
-          backgroundManager: this.backgroundManager,
-          patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
-          getLifecycleSnapshot: (sessionID) => this.getLifecycleSnapshot(sessionID),
-          releaseQueue,
-          now,
-        })
-      }
 
       return await runLifecycleSubsessionTask({
         sessionID: childSessionID,
@@ -382,6 +378,7 @@ export class HarnessLifecycleManager {
         releaseQueue,
         queueSnapshot: this.queue.snapshot(queueKey),
         budgetUsed,
+        launchedAt,
         now,
       })
     } catch (error) {

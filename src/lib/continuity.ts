@@ -16,6 +16,7 @@ import {
   cloneContinuityRecord,
   cloneDelegationPacket,
   cloneLifecycleState,
+  clonePendingNotifications,
 } from "./continuity-clone.js"
 import { normalizeContinuityRecord } from "./continuity-normalizers.js"
 
@@ -237,6 +238,9 @@ export function patchSessionContinuity(
       lifecycle: patch.lifecycle
         ? cloneLifecycleState(patch.lifecycle)
         : cloneLifecycleState(current.metadata.lifecycle),
+      pendingNotifications: patch.pendingNotifications
+        ? clonePendingNotifications(patch.pendingNotifications)
+        : clonePendingNotifications(current.metadata.pendingNotifications),
       updatedAt: Date.now(),
     },
   }

@@ -5,17 +5,27 @@ import type { SessionContinuityRecord } from "../../src/lib/types.js"
 // Mock dependencies
 vi.mock("../../src/lib/session-api.js", () => ({
   getSessionStatusMap: vi.fn(),
+  getSession: vi.fn(),
 }))
 
 vi.mock("../../src/lib/notification-handler.js", () => ({
   notifyParentSession: vi.fn(),
 }))
 
-import { getSessionStatusMap } from "../../src/lib/session-api.js"
+vi.mock("../../src/lib/continuity.js", () => ({
+  patchSessionContinuity: vi.fn(),
+  getSessionContinuity: vi.fn(),
+}))
+
+import { getSessionStatusMap, getSession } from "../../src/lib/session-api.js"
 import { notifyParentSession } from "../../src/lib/notification-handler.js"
+import { patchSessionContinuity, getSessionContinuity } from "../../src/lib/continuity.js"
 
 const mockGetSessionStatusMap = vi.mocked(getSessionStatusMap)
 const mockNotifyParentSession = vi.mocked(notifyParentSession)
+const mockPatchSessionContinuity = vi.mocked(patchSessionContinuity)
+const mockGetSessionContinuity = vi.mocked(getSessionContinuity)
+const mockGetSession = vi.mocked(getSession)
 
 describe("observeBackgroundCompletion", () => {
   const mockNow = vi.fn()
@@ -120,12 +130,13 @@ describe("observeBackgroundCompletion", () => {
     )
 
     expect(mockNotifyParentSession).toHaveBeenCalledWith(
-      expect.anything(),
+      expect.any(Object),
       "parent-456",
       expect.objectContaining({
         sessionID: "child-123",
         status: "completed",
       }),
+      expect.any(Function),
     )
 
     expect(mockReleaseQueue).toHaveBeenCalledWith("background-complete")
@@ -157,12 +168,13 @@ describe("observeBackgroundCompletion", () => {
     )
 
     expect(mockNotifyParentSession).toHaveBeenCalledWith(
-      expect.anything(),
+      expect.any(Object),
       "parent-456",
       expect.objectContaining({
         sessionID: "child-123",
         status: "failed",
       }),
+      expect.any(Function),
     )
   })
 
