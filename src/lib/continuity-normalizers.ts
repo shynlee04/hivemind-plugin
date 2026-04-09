@@ -80,21 +80,20 @@ function normalizePerKeyConcurrencyPolicyRecord(
     return undefined
   }
 
-  const entries = Object.entries(value)
-    .map(([key, entry]) => {
-      if (!isRecord(entry)) {
-        return undefined
-      }
+  const entries: Array<[string, PerKeyConcurrencyPolicy]> = []
+  for (const [key, entry] of Object.entries(value)) {
+    if (!isRecord(entry)) {
+      continue
+    }
 
-      const limit = asNumber(entry.limit)
-      const acquireTimeoutMs = asNumber(entry.acquireTimeoutMs)
-      if (limit === undefined) {
-        return undefined
-      }
+    const limit = asNumber(entry.limit)
+    const acquireTimeoutMs = asNumber(entry.acquireTimeoutMs)
+    if (limit === undefined) {
+      continue
+    }
 
-      return [key, { limit, acquireTimeoutMs }] as const
-    })
-    .filter((entry): entry is readonly [string, PerKeyConcurrencyPolicy] => entry !== undefined)
+    entries.push([key, { limit, acquireTimeoutMs }])
+  }
 
   return entries.length > 0 ? Object.fromEntries(entries) : undefined
 }
