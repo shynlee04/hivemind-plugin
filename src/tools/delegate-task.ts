@@ -43,6 +43,10 @@ const AGENT_TOOLS: Record<string, { required: string[]; mustNot: string[] }> = {
   builder: { required: ["read", "glob", "grep", "edit", "write", "bash"], mustNot: ["task"] },
   critic: { required: ["read", "glob", "grep", "bash"], mustNot: ["edit", "write", "task"] },
   general: { required: ["read", "glob", "grep"], mustNot: ["task"] },
+  // OpenCode built-in agent aliases — map to same profiles as their targets
+  build: { required: ["read", "glob", "grep", "edit", "write", "bash"], mustNot: ["task"] },  // same as builder
+  plan: { required: ["read", "glob", "grep"], mustNot: ["edit", "write", "bash", "task"] },  // read-only analysis
+  explore: { required: ["read", "glob", "grep"], mustNot: ["edit", "write", "task"] },  // read-only exploration
 }
 
 // ---------------------------------------------------------------------------
@@ -93,6 +97,26 @@ function getPermissionRulesForAgent(agentName: SpecialistAgent): PermissionRule[
         { permission: "edit", pattern: "*", action: "deny" },
         { permission: "write", pattern: "*", action: "deny" },
         { permission: "bash", pattern: "*", action: "deny" },
+        { permission: "task", pattern: "*", action: "deny" },
+        commonDelegateDeny,
+      ]
+    case "build":
+      return [
+        { permission: "task", pattern: "*", action: "deny" },
+        commonDelegateDeny,
+      ]
+    case "plan":
+      return [
+        { permission: "edit", pattern: "*", action: "deny" },
+        { permission: "write", pattern: "*", action: "deny" },
+        { permission: "bash", pattern: "*", action: "deny" },
+        { permission: "task", pattern: "*", action: "deny" },
+        commonDelegateDeny,
+      ]
+    case "explore":
+      return [
+        { permission: "edit", pattern: "*", action: "deny" },
+        { permission: "write", pattern: "*", action: "deny" },
         { permission: "task", pattern: "*", action: "deny" },
         commonDelegateDeny,
       ]
@@ -188,7 +212,7 @@ export function createDelegateTaskTool(
 ): ReturnType<typeof tool> {
   return tool({
     description:
-      "Create a restricted child session for researcher, builder, critic, or general work. When run_in_background=true, returns immediately with task metadata — continue with other productive work. You will receive a system_reminder notification when the background task completes.",
+      "Create a restricted child session for researcher, builder, critic, general, or OpenCode built-in agents (build, plan, explore). When run_in_background=true, returns immediately with task metadata — continue with other productive work. You will receive a system_reminder notification when the background task completes.",
     args: {
       description: s.string().describe("Short task description"),
       prompt: s.string().describe("Full task prompt for the delegated agent"),
@@ -196,7 +220,7 @@ export function createDelegateTaskTool(
         .string()
         .optional()
         .describe(
-          "Optional explicit specialist agent (researcher, builder, critic, general); overrides the category default when both are provided",
+          "Optional explicit specialist agent (researcher, builder, critic, general, build, plan, explore). Aliases: build→builder, plan→general, explore→general.",
         ),
       category: s
         .string()
