@@ -1,4 +1,5 @@
 import type { OpenCodeClient } from "./session-api.js"
+import type { SessionContinuityRecord } from "./types.js"
 
 type SessionPromptRequest = Parameters<OpenCodeClient["session"]["prompt"]>[0]
 
@@ -89,6 +90,40 @@ export function formatToastMessage(task: TaskNotification): string {
   return `${icon} ${task.description} ${task.status} (${task.agent})${duration}`
 }
 
+export function buildTaskNotificationFromContinuity(
+  continuity: SessionContinuityRecord,
+  status: TaskNotification["status"],
+  error?: string,
+): TaskNotification {
+  const launchedAt = continuity.metadata.lifecycle?.launchedAt
+  const completedAt = continuity.metadata.lifecycle?.completedAt ?? Date.now()
+  const duration = launchedAt ? completedAt - launchedAt : undefined
+  const outputLink = `session://${continuity.sessionID}`
+  const agent = continuity.metadata.delegation?.agent ?? "unknown"
+  const category = continuity.metadata.category
+  const briefSummary =
+    status === "failed"
+      ? `Task failed: ${error ?? "unknown error"}.`
+      : status === "cancelled"
+        ? "Task was cancelled."
+        : category === "research" || category === "deep"
+          ? `${agent.charAt(0).toUpperCase() + agent.slice(1)} completed research on "${continuity.metadata.description}". Review the session for findings.`
+          : category === "review"
+            ? `${agent.charAt(0).toUpperCase() + agent.slice(1)} completed review of "${continuity.metadata.description}". Check for identified issues.`
+            : `${agent.charAt(0).toUpperCase() + agent.slice(1)} completed work on "${continuity.metadata.description}". Check session output for details.`
+
+  return {
+    sessionID: continuity.sessionID,
+    description: continuity.metadata.description ?? "Delegated task",
+    agent,
+    status,
+    error,
+    briefSummary,
+    outputLink,
+    duration,
+  }
+}
+
 export type ToastFn = (message: string) => void
 
 export async function notifyParentSession(
@@ -96,7 +131,7 @@ export async function notifyParentSession(
   parentSessionID: string,
   task: TaskNotification,
   toastFn?: ToastFn
-): Promise<void> {
+): Promise<boolean> {
   const message = buildNotificationMessage(task)
 
   const body = {
@@ -110,8 +145,7 @@ export async function notifyParentSession(
       body: body as SessionPromptRequest["body"],
     })
   } catch {
-    // Best-effort: notification failure should not propagate
-    // The parent session can still observe completion via events
+    return false
   }
 
   if (toastFn) {
@@ -121,4 +155,6 @@ export async function notifyParentSession(
       // Best-effort: toast failure is not critical
     }
   }
+
+  return true
 }

@@ -17,6 +17,7 @@ import { createHarnessLifecycleManager } from "../../src/lib/lifecycle-manager.j
 import { runLifecycleProcessTask } from "../../src/lib/lifecycle-process-runner.js"
 import { buildDelegationArtifactPacket } from "../../src/lib/delegation-packet.js"
 import { getSessionContinuity } from "../../src/lib/continuity.js"
+import * as notificationHandler from "../../src/lib/notification-handler.js"
 
 // ---------------------------------------------------------------------------
 // Test 3: Disallowed commands or out-of-root cwd requests are rejected
@@ -515,6 +516,17 @@ describe("runLifecycleProcessTask — parent ownership", () => {
       })),
     } as unknown as BackgroundManager
 
+    const continuity = {
+      sessionID: "child-session",
+      metadata: {
+        parentSessionID: "parent-session",
+        description: "background ownership",
+        category: "research",
+        delegation: { agent: "researcher" },
+        lifecycle: { launchedAt: Date.now(), completedAt: Date.now() },
+      },
+    } as any
+
     await runLifecycleProcessTask({
       sessionID: "child-session",
       parentSessionID: "parent-session",
@@ -542,7 +554,9 @@ describe("runLifecycleProcessTask — parent ownership", () => {
           projectRoot: process.cwd(),
         },
       },
+      client: undefined as never,
       backgroundManager,
+      getSessionContinuity: vi.fn(() => continuity),
       patchLifecycle: vi.fn(),
       getLifecycleSnapshot: vi.fn(() => undefined),
       releaseQueue: vi.fn(),
@@ -553,6 +567,183 @@ describe("runLifecycleProcessTask — parent ownership", () => {
       expect.objectContaining({
         parentSessionID: "parent-session",
       }),
+    )
+  })
+
+  it("emits started and completed notifications for background builtin-process tasks", async () => {
+    const notifySpy = vi
+      .spyOn(notificationHandler, "notifyParentSession")
+      .mockResolvedValue(true)
+    const patchLifecycle = vi.fn(() => true)
+    const releaseQueue = vi.fn()
+    const backgroundManager = {
+      spawn: vi.fn(() => ({
+        id: "bg-process-complete",
+        status: "running",
+        pid: 999,
+        startedAt: Date.now(),
+        parentSessionID: "parent-session",
+        stdout: "",
+        stderr: "",
+        exitCode: null,
+        error: null,
+      })),
+      onComplete: vi.fn(async () => ({
+        status: "completed",
+        stdout: "done",
+        stderr: "",
+        exitCode: 0,
+      })),
+    } as unknown as BackgroundManager
+
+    const continuity = {
+      sessionID: "child-session",
+      metadata: {
+        parentSessionID: "parent-session",
+        description: "background ownership",
+        category: "research",
+        delegation: { agent: "researcher" },
+        lifecycle: { launchedAt: Date.now(), completedAt: Date.now() },
+      },
+    } as any
+
+    await runLifecycleProcessTask({
+      sessionID: "child-session",
+      parentSessionID: "parent-session",
+      rootID: "root-session",
+      childDepth: 1,
+      agent: "researcher",
+      category: "research",
+      model: "gpt-5.4",
+      description: "background ownership",
+      promptText: "Investigate ownership.",
+      runInBackground: true,
+      execution: {
+        family: "built-in",
+        submode: "builtin-process",
+        rationale: "Direct process-runner regression test.",
+        characteristics: {
+          isParallel: false,
+          isInteractive: false,
+          isResearch: true,
+          isHeadless: true,
+          runInBackground: true,
+        },
+        capabilityEvidence: {
+          hasTmux: false,
+          projectRoot: process.cwd(),
+        },
+      },
+      client: undefined as never,
+      backgroundManager,
+      getSessionContinuity: vi.fn(() => continuity),
+      patchLifecycle,
+      getLifecycleSnapshot: vi.fn(() => undefined),
+      releaseQueue,
+      now: () => Date.now(),
+    })
+
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(notifySpy).toHaveBeenCalledWith(
+      undefined,
+      "parent-session",
+      expect.objectContaining({ status: "started", sessionID: "child-session" }),
+    )
+    expect(notifySpy).toHaveBeenCalledWith(
+      undefined,
+      "parent-session",
+      expect.objectContaining({ status: "completed", sessionID: "child-session" }),
+    )
+    expect(patchLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionID: "child-session", status: "completed", phase: "completed" }),
+    )
+  })
+
+  it("emits started and failed notifications for background builtin-process failures", async () => {
+    const notifySpy = vi
+      .spyOn(notificationHandler, "notifyParentSession")
+      .mockResolvedValue(true)
+    const backgroundManager = {
+      spawn: vi.fn(() => ({
+        id: "bg-process-fail",
+        status: "running",
+        pid: 1000,
+        startedAt: Date.now(),
+        parentSessionID: "parent-session",
+        stdout: "",
+        stderr: "",
+        exitCode: null,
+        error: null,
+      })),
+      onComplete: vi.fn(async () => ({
+        status: "failed",
+        stdout: "",
+        stderr: "process boom",
+        exitCode: 1,
+      })),
+    } as unknown as BackgroundManager
+
+    const continuity = {
+      sessionID: "child-session",
+      metadata: {
+        parentSessionID: "parent-session",
+        description: "background ownership",
+        category: "research",
+        delegation: { agent: "researcher" },
+        lifecycle: { launchedAt: Date.now(), completedAt: Date.now() },
+      },
+    } as any
+
+    await runLifecycleProcessTask({
+      sessionID: "child-session",
+      parentSessionID: "parent-session",
+      rootID: "root-session",
+      childDepth: 1,
+      agent: "researcher",
+      category: "research",
+      model: "gpt-5.4",
+      description: "background ownership",
+      promptText: "Investigate ownership.",
+      runInBackground: true,
+      execution: {
+        family: "built-in",
+        submode: "builtin-process",
+        rationale: "Direct process-runner regression test.",
+        characteristics: {
+          isParallel: false,
+          isInteractive: false,
+          isResearch: true,
+          isHeadless: true,
+          runInBackground: true,
+        },
+        capabilityEvidence: {
+          hasTmux: false,
+          projectRoot: process.cwd(),
+        },
+      },
+      client: undefined as never,
+      backgroundManager,
+      getSessionContinuity: vi.fn(() => continuity),
+      patchLifecycle: vi.fn(() => true),
+      getLifecycleSnapshot: vi.fn(() => undefined),
+      releaseQueue: vi.fn(),
+      now: () => Date.now(),
+    })
+
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(notifySpy).toHaveBeenCalledWith(
+      undefined,
+      "parent-session",
+      expect.objectContaining({ status: "started", sessionID: "child-session" }),
+    )
+    expect(notifySpy).toHaveBeenCalledWith(
+      undefined,
+      "parent-session",
+      expect.objectContaining({ status: "failed", sessionID: "child-session" }),
     )
   })
 })

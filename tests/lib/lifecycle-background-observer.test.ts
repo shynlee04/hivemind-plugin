@@ -10,6 +10,14 @@ vi.mock("../../src/lib/session-api.js", () => ({
 
 vi.mock("../../src/lib/notification-handler.js", () => ({
   notifyParentSession: vi.fn(),
+  buildTaskNotificationFromContinuity: vi.fn((continuity, status, error) => ({
+    sessionID: continuity.sessionID,
+    description: continuity.metadata.description,
+    agent: continuity.metadata.delegation.agent,
+    status,
+    error,
+    outputLink: `session://${continuity.sessionID}`,
+  })),
 }))
 
 vi.mock("../../src/lib/continuity.js", () => ({
@@ -31,7 +39,7 @@ describe("observeBackgroundCompletion", () => {
   const mockNow = vi.fn()
   const mockPatchLifecycle = vi.fn()
   const mockReleaseQueue = vi.fn()
-  const mockGetSessionContinuity = vi.fn()
+  const mockGetContinuityForObserver = vi.fn()
   const instantSleep = vi.fn().mockResolvedValue(undefined)
 
   const mockContinuity: SessionContinuityRecord = {
@@ -86,8 +94,11 @@ describe("observeBackgroundCompletion", () => {
     mockNow.mockReturnValue(Date.now())
     mockPatchLifecycle.mockReset()
     mockReleaseQueue.mockReset()
+    mockGetContinuityForObserver.mockReset()
+    mockGetContinuityForObserver.mockReturnValue(mockContinuity)
     mockGetSessionContinuity.mockReset()
     mockGetSessionContinuity.mockReturnValue(mockContinuity)
+    mockPatchSessionContinuity.mockReset()
     mockNotifyParentSession.mockReset()
     mockGetSessionStatusMap.mockReset()
     instantSleep.mockClear()
@@ -108,7 +119,7 @@ describe("observeBackgroundCompletion", () => {
       client: {} as any,
       pollTimeoutMs: 60000,
       now: mockNow,
-      getSessionContinuity: mockGetSessionContinuity,
+      getSessionContinuity: mockGetContinuityForObserver,
       patchLifecycle: mockPatchLifecycle,
       releaseQueue: mockReleaseQueue,
       sleepFn: instantSleep,
@@ -150,7 +161,7 @@ describe("observeBackgroundCompletion", () => {
       client: {} as any,
       pollTimeoutMs: 60000,
       now: mockNow,
-      getSessionContinuity: mockGetSessionContinuity,
+      getSessionContinuity: mockGetContinuityForObserver,
       patchLifecycle: mockPatchLifecycle,
       releaseQueue: mockReleaseQueue,
       sleepFn: instantSleep,
@@ -186,7 +197,7 @@ describe("observeBackgroundCompletion", () => {
       client: {} as any,
       pollTimeoutMs: 60000,
       now: mockNow,
-      getSessionContinuity: mockGetSessionContinuity,
+      getSessionContinuity: mockGetContinuityForObserver,
       patchLifecycle: mockPatchLifecycle,
       releaseQueue: mockReleaseQueue,
       sleepFn: instantSleep,
@@ -213,7 +224,7 @@ describe("observeBackgroundCompletion", () => {
       client: {} as any,
       pollTimeoutMs: 60000,
       now: mockNow,
-      getSessionContinuity: mockGetSessionContinuity,
+      getSessionContinuity: mockGetContinuityForObserver,
       patchLifecycle: mockPatchLifecycle,
       releaseQueue: mockReleaseQueue,
       sleepFn: instantSleep,
@@ -253,7 +264,7 @@ describe("observeBackgroundCompletion", () => {
       client: {} as any,
       pollTimeoutMs: 30000,
       now: mockNow,
-      getSessionContinuity: mockGetSessionContinuity,
+      getSessionContinuity: mockGetContinuityForObserver,
       patchLifecycle: mockPatchLifecycle,
       releaseQueue: mockReleaseQueue,
       sleepFn: instantSleep,
@@ -285,7 +296,7 @@ describe("observeBackgroundCompletion", () => {
       client: {} as any,
       pollTimeoutMs: 120000,
       now: mockNow,
-      getSessionContinuity: mockGetSessionContinuity,
+      getSessionContinuity: mockGetContinuityForObserver,
       patchLifecycle: mockPatchLifecycle,
       releaseQueue: mockReleaseQueue,
       sleepFn: instantSleep,
@@ -311,7 +322,7 @@ describe("observeBackgroundCompletion", () => {
         parentSessionID: undefined,
       },
     }
-    mockGetSessionContinuity.mockReturnValue(continuityWithoutParent)
+    mockGetContinuityForObserver.mockReturnValue(continuityWithoutParent)
 
     mockGetSessionStatusMap.mockResolvedValueOnce({ "child-123": { type: "idle" } })
 
@@ -320,12 +331,70 @@ describe("observeBackgroundCompletion", () => {
       client: {} as any,
       pollTimeoutMs: 60000,
       now: mockNow,
-      getSessionContinuity: mockGetSessionContinuity,
+      getSessionContinuity: mockGetContinuityForObserver,
       patchLifecycle: mockPatchLifecycle,
       releaseQueue: mockReleaseQueue,
       sleepFn: instantSleep,
     })
 
     expect(mockNotifyParentSession).not.toHaveBeenCalled()
+  })
+
+  it("persists a pending notification when parent delivery fails", async () => {
+    mockGetSession.mockResolvedValueOnce({ status: { type: "idle" } } as never)
+    mockNotifyParentSession.mockResolvedValueOnce(false)
+
+    await observeBackgroundCompletion({
+      sessionID: "child-123",
+      client: {} as any,
+      pollTimeoutMs: 60000,
+      now: mockNow,
+      getSessionContinuity: mockGetContinuityForObserver,
+      patchLifecycle: mockPatchLifecycle,
+      releaseQueue: mockReleaseQueue,
+      sleepFn: instantSleep,
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(mockNotifyParentSession).toHaveBeenCalledWith(
+      expect.anything(),
+      "parent-456",
+      expect.objectContaining({ sessionID: "child-123", status: "completed" }),
+      expect.any(Function),
+    )
+
+    expect(mockPatchSessionContinuity).toHaveBeenCalledWith(
+      "parent-456",
+      expect.objectContaining({
+        pendingNotifications: expect.arrayContaining([
+          expect.objectContaining({
+            sessionID: "child-123",
+            status: "completed",
+            delivered: false,
+            outputLink: "session://child-123",
+          }),
+        ]),
+      }),
+    )
+  })
+
+  it("ignores stale terminal notifications when lifecycle reconciliation rejects the transition", async () => {
+    mockGetSession.mockResolvedValueOnce({ status: { type: "idle" } } as never)
+    mockPatchLifecycle.mockReturnValueOnce(false)
+
+    await observeBackgroundCompletion({
+      sessionID: "child-123",
+      client: {} as any,
+      pollTimeoutMs: 60000,
+      now: mockNow,
+      getSessionContinuity: mockGetContinuityForObserver,
+      patchLifecycle: mockPatchLifecycle,
+      releaseQueue: mockReleaseQueue,
+      sleepFn: instantSleep,
+    })
+
+    expect(mockNotifyParentSession).not.toHaveBeenCalled()
+    expect(mockPatchSessionContinuity).not.toHaveBeenCalled()
   })
 })

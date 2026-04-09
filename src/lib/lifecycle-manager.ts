@@ -415,10 +415,10 @@ export class HarnessLifecycleManager {
     launchedAt?: number
     completedAt?: number
     error?: string
-  }): void {
+  }): boolean {
     const record = getSessionContinuity(args.sessionID)
     if (!record) {
-      return
+      return false
     }
 
     const previousPhase = record.metadata.lifecycle?.phase
@@ -430,7 +430,7 @@ export class HarnessLifecycleManager {
       console.warn(
         `[Harness] Invalid lifecycle transition rejected: ${previousPhase} → ${args.phase} for session ${args.sessionID}`,
       )
-      return
+      return false
     }
 
     const timestamp = now()
@@ -453,6 +453,7 @@ export class HarnessLifecycleManager {
       lifecycle,
     })
     this.syncDelegationPacketStatus(args.sessionID, args.phase)
+    return true
   }
 
   private syncDelegationPacketStatus(sessionID: string, phase: SessionLifecyclePhase): void {

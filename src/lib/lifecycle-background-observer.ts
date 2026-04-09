@@ -1,7 +1,10 @@
 import { getSession, getSessionStatusMap, type OpenCodeClient } from "./session-api.js"
-import { notifyParentSession, type TaskNotification } from "./notification-handler.js"
-import { buildPendingNotification } from "./pending-notifications.js"
-import { patchSessionContinuity, getSessionContinuity } from "./continuity.js"
+import {
+  buildTaskNotificationFromContinuity,
+  notifyParentSession,
+  type TaskNotification,
+} from "./notification-handler.js"
+import { persistPendingNotification } from "./pending-notifications.js"
 import type {
   SessionContinuityMetadata,
   SessionContinuityRecord,
@@ -75,7 +78,7 @@ export async function observeBackgroundCompletion(args: {
   pollTimeoutMs: number
   now: () => number
   getSessionContinuity: (sessionID: string) => SessionContinuityRecord | undefined
-  patchLifecycle: (args: PatchLifecycleArgs) => void
+  patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
   releaseQueue: (reason: string) => void
   /** @internal Injected sleep function for testing. Defaults to real setTimeout. */
   sleepFn?: (ms: number) => Promise<void>
@@ -104,23 +107,24 @@ export async function observeBackgroundCompletion(args: {
         // Session not found by either method — it was deleted or never existed
         if (!sessionStatus) {
           const error = "Session deleted during background execution"
-          args.patchLifecycle({
-            sessionID: args.sessionID,
-            status: "error",
-            phase: "failed",
+          const advanced =
+            args.patchLifecycle({
+              sessionID: args.sessionID,
+              status: "error",
+              phase: "failed",
             error,
             observation: {
               source: "observe:poll-deleted",
               observedAt: args.now(),
-              detail: "background-completion-poll-deleted",
-            },
-          })
+                detail: "background-completion-poll-deleted",
+              },
+            }) !== false
           const continuity = args.getSessionContinuity(args.sessionID)
-          if (continuity?.metadata.parentSessionID) {
+          if (advanced && continuity?.metadata.parentSessionID) {
             void notifyParentWithFallback(
               args.client,
               continuity.metadata.parentSessionID,
-              buildNotificationFromContinuity(continuity, "failed", error),
+              buildTaskNotificationFromContinuity(continuity, "failed", error),
             )
           }
           return
@@ -130,23 +134,24 @@ export async function observeBackgroundCompletion(args: {
 
         // "idle" means the session has completed its work
         if (statusType === "idle") {
-          args.patchLifecycle({
-            sessionID: args.sessionID,
-            status: "completed",
-            phase: "completed",
+          const advanced =
+            args.patchLifecycle({
+              sessionID: args.sessionID,
+              status: "completed",
+              phase: "completed",
             completedAt: args.now(),
             observation: {
               source: "observe:poll-idle",
               observedAt: args.now(),
-              detail: "background-completion-poll-idle",
-            },
-          })
+                detail: "background-completion-poll-idle",
+              },
+            }) !== false
           const continuity = args.getSessionContinuity(args.sessionID)
-          if (continuity?.metadata.parentSessionID) {
+          if (advanced && continuity?.metadata.parentSessionID) {
             void notifyParentWithFallback(
               args.client,
               continuity.metadata.parentSessionID,
-              buildNotificationFromContinuity(continuity, "completed"),
+              buildTaskNotificationFromContinuity(continuity, "completed"),
             )
           }
           return
@@ -156,23 +161,24 @@ export async function observeBackgroundCompletion(args: {
         // Treat as error if we see retry status
         if (statusType === "retry") {
           const error = "Child session entered retry state"
-          args.patchLifecycle({
-            sessionID: args.sessionID,
-            status: "error",
-            phase: "failed",
+          const advanced =
+            args.patchLifecycle({
+              sessionID: args.sessionID,
+              status: "error",
+              phase: "failed",
             error,
             observation: {
               source: "observe:poll-retry",
               observedAt: args.now(),
-              detail: "background-completion-poll-retry",
-            },
-          })
+                detail: "background-completion-poll-retry",
+              },
+            }) !== false
           const continuity = args.getSessionContinuity(args.sessionID)
-          if (continuity?.metadata.parentSessionID) {
+          if (advanced && continuity?.metadata.parentSessionID) {
             void notifyParentWithFallback(
               args.client,
               continuity.metadata.parentSessionID,
-              buildNotificationFromContinuity(continuity, "failed", error),
+              buildTaskNotificationFromContinuity(continuity, "failed", error),
             )
           }
           return
@@ -183,23 +189,24 @@ export async function observeBackgroundCompletion(args: {
       } catch {
         // SDK call failed — treat as terminal
         const error = "Failed to poll child session status"
-        args.patchLifecycle({
-          sessionID: args.sessionID,
-          status: "error",
-          phase: "failed",
+        const advanced =
+          args.patchLifecycle({
+            sessionID: args.sessionID,
+            status: "error",
+            phase: "failed",
           error,
           observation: {
             source: "observe:poll-failed",
             observedAt: args.now(),
-            detail: "background-completion-poll-sdk-error",
-          },
-        })
+              detail: "background-completion-poll-sdk-error",
+            },
+          }) !== false
         const continuity = args.getSessionContinuity(args.sessionID)
-        if (continuity?.metadata.parentSessionID) {
+        if (advanced && continuity?.metadata.parentSessionID) {
           void notifyParentWithFallback(
             args.client,
             continuity.metadata.parentSessionID,
-            buildNotificationFromContinuity(continuity, "failed", error),
+            buildTaskNotificationFromContinuity(continuity, "failed", error),
           )
         }
         return
@@ -208,57 +215,28 @@ export async function observeBackgroundCompletion(args: {
 
     // Timeout reached
     const error = "Background polling timed out"
-    args.patchLifecycle({
-      sessionID: args.sessionID,
-      status: "error",
-      phase: "failed",
+    const advanced =
+      args.patchLifecycle({
+        sessionID: args.sessionID,
+        status: "error",
+        phase: "failed",
       error,
       observation: {
         source: "observe:poll-timeout",
         observedAt: args.now(),
-        detail: "background-completion-poll-timeout",
-      },
-    })
+          detail: "background-completion-poll-timeout",
+        },
+      }) !== false
     const continuity = args.getSessionContinuity(args.sessionID)
-    if (continuity?.metadata.parentSessionID) {
+    if (advanced && continuity?.metadata.parentSessionID) {
       void notifyParentWithFallback(
         args.client,
         continuity.metadata.parentSessionID,
-        buildNotificationFromContinuity(continuity, "failed", error),
+        buildTaskNotificationFromContinuity(continuity, "failed", error),
       )
     }
   } finally {
     args.releaseQueue("background-complete")
-  }
-}
-
-/** Build a TaskNotification from a continuity record. */
-function buildNotificationFromContinuity(
-  continuity: SessionContinuityRecord,
-  status: TaskNotification["status"],
-  error?: string,
-): TaskNotification {
-  const launchedAt = continuity.metadata.lifecycle?.launchedAt
-  const completedAt = continuity.metadata.lifecycle?.completedAt ?? Date.now()
-  const duration = launchedAt ? completedAt - launchedAt : undefined
-
-  // Build output link
-  const outputLink = `session://${continuity.sessionID}`
-
-  // Build brief summary from metadata
-  const agent = continuity.metadata.delegation?.agent ?? "unknown"
-  const category = continuity.metadata.category
-  const briefSummary = buildBriefSummary(continuity.metadata.description, agent, category, status, error)
-
-  return {
-    sessionID: continuity.sessionID,
-    description: continuity.metadata.description ?? "Delegated task",
-    agent,
-    status,
-    error,
-    briefSummary,
-    outputLink,
-    duration,
   }
 }
 
@@ -280,40 +258,8 @@ async function notifyParentWithFallback(
     }
   }
 
-  try {
-    await notifyParentSession(client, parentSessionID, task, toastFn)
-  } catch {
-    // Fallback: persist for offline delivery
-    const pending = buildPendingNotification(task)
-    const current = getSessionContinuity(parentSessionID)
-    const existing = current?.metadata.pendingNotifications ?? []
-    patchSessionContinuity(parentSessionID, {
-      pendingNotifications: [...existing, pending],
-    })
+  const delivered = await notifyParentSession(client, parentSessionID, task, toastFn)
+  if (!delivered) {
+    persistPendingNotification(parentSessionID, task)
   }
-}
-
-/** Build a 1-2 sentence summary of what was produced. */
-function buildBriefSummary(
-  description: string | undefined,
-  agent: string,
-  category: string | undefined,
-  status: TaskNotification["status"],
-  error?: string,
-): string {
-  if (status === "failed") {
-    return `Task failed: ${error ?? "unknown error"}.`
-  }
-  if (status === "cancelled") {
-    return `Task was cancelled.`
-  }
-  const agentLabel = agent.charAt(0).toUpperCase() + agent.slice(1)
-  const topic = description ?? "the delegated task"
-  if (category === "research" || category === "deep") {
-    return `${agentLabel} completed research on "${topic}". Review the session for findings.`
-  }
-  if (category === "review") {
-    return `${agentLabel} completed review of "${topic}". Check for identified issues.`
-  }
-  return `${agentLabel} completed work on "${topic}". Check session output for details.`
 }

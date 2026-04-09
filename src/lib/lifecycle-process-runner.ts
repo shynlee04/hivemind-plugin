@@ -3,7 +3,8 @@ import type { CompletionDetector } from "./completion-detector.js"
 import type { ExecutionModeResult } from "./execution-mode.js"
 import { observeBackgroundCompletion } from "./lifecycle-background-observer.js"
 import { extractTextFromResponse } from "./lifecycle-state.js"
-import { notifyParentSession, type TaskNotification } from "./notification-handler.js"
+import { buildTaskNotificationFromContinuity, notifyParentSession } from "./notification-handler.js"
+import { persistPendingNotification } from "./pending-notifications.js"
 import { sendPrompt, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
 import type { SessionContinuityRecord } from "./types.js"
 import type { SessionContinuityMetadata, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleState } from "./types.js"
@@ -29,8 +30,10 @@ type RunLifecycleProcessArgs = {
   promptText: string
   runInBackground: boolean
   execution: ExecutionModeResult
+  client: OpenCodeClient
   backgroundManager: BackgroundManager
-  patchLifecycle: (args: PatchLifecycleArgs) => void
+  getSessionContinuity: (sessionID: string) => SessionContinuityRecord | undefined
+  patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
   getLifecycleSnapshot: (sessionID: string) => SessionLifecycleState | undefined
   releaseQueue: (reason: string) => void
   now: () => number
@@ -70,40 +73,42 @@ function buildFailureMessage(result: BackgroundResult): string {
 function finalizeProcessResult(args: {
   result: BackgroundResult
   sessionID: string
-  patchLifecycle: (args: PatchLifecycleArgs) => void
+  patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
   now: () => number
-}): string {
+}): { output?: string; error?: string; status: "completed" | "failed"; advanced: boolean } {
   const { result, sessionID, patchLifecycle, now } = args
   const completedAt = now()
 
   if (result.status === "completed") {
-    patchLifecycle({
-      sessionID,
-      status: "completed",
-      phase: "completed",
+    const advanced =
+      patchLifecycle({
+        sessionID,
+        status: "completed",
+        phase: "completed",
       completedAt,
       observation: {
         source: "observe:process",
-        observedAt: completedAt,
-        detail: "owned-process-output-ready",
-      },
-    })
-    return result.stdout
+          observedAt: completedAt,
+          detail: "owned-process-output-ready",
+        },
+      }) !== false
+    return { output: result.stdout, status: "completed", advanced }
   }
 
   const error = buildFailureMessage(result)
-  patchLifecycle({
-    sessionID,
-    status: "error",
-    phase: "failed",
+  const advanced =
+    patchLifecycle({
+      sessionID,
+      status: "error",
+      phase: "failed",
     error,
     observation: {
       source: "observe:process",
-      observedAt: completedAt,
-      detail: "owned-process-failed",
-    },
-  })
-  throw new Error(error)
+        observedAt: completedAt,
+        detail: "owned-process-failed",
+      },
+    }) !== false
+  return { error, status: "failed", advanced }
 }
 
 function buildAsyncProcessResponse(args: {
@@ -152,28 +157,81 @@ export async function runLifecycleProcessTask(args: RunLifecycleProcessArgs): Pr
   })
 
   if (args.runInBackground) {
+    const startedContinuity = args.getSessionContinuity(args.sessionID)
+    if (startedContinuity?.metadata.parentSessionID) {
+      const startedNotification = buildTaskNotificationFromContinuity(startedContinuity, "started")
+      void notifyParentSession(
+        args.client,
+        startedContinuity.metadata.parentSessionID,
+        startedNotification,
+      ).then((delivered) => {
+        if (!delivered) {
+          persistPendingNotification(startedContinuity.metadata.parentSessionID, startedNotification)
+        }
+      })
+    }
+
     void args.backgroundManager
       .onComplete(task.id)
       .then((result) => {
-        finalizeProcessResult({
+        const finalized = finalizeProcessResult({
           result,
           sessionID: args.sessionID,
           patchLifecycle: args.patchLifecycle,
           now: args.now,
         })
+        const continuity = args.getSessionContinuity(args.sessionID)
+
+        if (finalized.advanced && continuity?.metadata.parentSessionID) {
+          const notification = buildTaskNotificationFromContinuity(
+            continuity,
+            finalized.status,
+            finalized.error,
+          )
+          void notifyParentSession(
+            args.client,
+            continuity.metadata.parentSessionID,
+            notification,
+          ).then((delivered) => {
+            if (!delivered) {
+              persistPendingNotification(continuity.metadata.parentSessionID, notification)
+            }
+          })
+        }
+
+        if (finalized.status === "failed") {
+          throw new Error(finalized.error)
+        }
+
+        return finalized.output
       })
       .catch((error: unknown) => {
-        args.patchLifecycle({
+        const message = error instanceof Error ? error.message : String(error)
+        const advanced =
+          args.patchLifecycle({
           sessionID: args.sessionID,
           status: "error",
           phase: "failed",
-          error: error instanceof Error ? error.message : String(error),
+          error: message,
           observation: {
             source: "observe:process",
             observedAt: args.now(),
             detail: "owned-process-handler-failed",
           },
-        })
+          }) !== false
+        const continuity = args.getSessionContinuity(args.sessionID)
+        if (advanced && continuity?.metadata.parentSessionID) {
+          const failedNotification = buildTaskNotificationFromContinuity(continuity, "failed", message)
+          void notifyParentSession(
+            args.client,
+            continuity.metadata.parentSessionID,
+            failedNotification,
+          ).then((delivered) => {
+            if (!delivered) {
+              persistPendingNotification(continuity.metadata.parentSessionID, failedNotification)
+            }
+          })
+        }
       })
       .finally(() => {
         args.releaseQueue("builtin-process-complete")
@@ -196,12 +254,16 @@ export async function runLifecycleProcessTask(args: RunLifecycleProcessArgs): Pr
 
   try {
     const result = await args.backgroundManager.onComplete(task.id)
-    return finalizeProcessResult({
+    const finalized = finalizeProcessResult({
       result,
       sessionID: args.sessionID,
       patchLifecycle: args.patchLifecycle,
       now: args.now,
     })
+    if (finalized.status === "failed") {
+      throw new Error(finalized.error)
+    }
+    return finalized.output ?? ""
   } finally {
     args.releaseQueue("builtin-process-complete")
   }
@@ -223,7 +285,7 @@ type RunLifecycleSubsessionArgs = {
   completionDetector: CompletionDetector
   pollTimeoutMs: number
   getSessionContinuity: (sessionID: string) => SessionContinuityRecord | undefined
-  patchLifecycle: (args: PatchLifecycleArgs) => void
+  patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
   getLifecycleSnapshot: (sessionID: string) => SessionLifecycleState | undefined
   releaseQueue: (reason: string) => void
   queueSnapshot: { active: number; pending: number; limit: number }
@@ -241,16 +303,16 @@ export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArg
         // Prompt dispatched successfully — notify parent that work has started.
         const continuity = args.getSessionContinuity(args.sessionID)
         if (continuity?.metadata.parentSessionID) {
+          const startedNotification = buildTaskNotificationFromContinuity(continuity, "started")
           void notifyParentSession(
             args.client,
             continuity.metadata.parentSessionID,
-            {
-              sessionID: args.sessionID,
-              description: args.description,
-              agent: args.agent,
-              status: "started",
-            } satisfies TaskNotification,
-          )
+            startedNotification,
+          ).then((delivered) => {
+            if (!delivered) {
+              persistPendingNotification(continuity.metadata.parentSessionID, startedNotification)
+            }
+          })
         }
       })
       .catch((error: unknown) => {
@@ -270,17 +332,16 @@ export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArg
         // Notify parent of dispatch failure so they don't wait blindly.
         const continuity = args.getSessionContinuity(args.sessionID)
         if (continuity?.metadata.parentSessionID) {
+          const failedNotification = buildTaskNotificationFromContinuity(continuity, "failed", message)
           void notifyParentSession(
             args.client,
             continuity.metadata.parentSessionID,
-            {
-              sessionID: args.sessionID,
-              description: args.description,
-              agent: args.agent,
-              status: "failed",
-              error: message,
-            } satisfies TaskNotification,
-          )
+            failedNotification,
+          ).then((delivered) => {
+            if (!delivered) {
+              persistPendingNotification(continuity.metadata.parentSessionID, failedNotification)
+            }
+          })
         }
       })
 

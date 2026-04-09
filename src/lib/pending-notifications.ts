@@ -8,6 +8,7 @@
  * Stored in continuity store under `metadata.pendingNotifications`.
  */
 
+import { getSessionContinuity, patchSessionContinuity } from "./continuity.js"
 import type { TaskNotification } from "./notification-handler.js"
 
 export type PendingNotification = TaskNotification & {
@@ -26,6 +27,23 @@ export function buildPendingNotification(task: TaskNotification): PendingNotific
     createdAt: Date.now(),
     delivered: false,
   }
+}
+
+export function persistPendingNotification(
+  parentSessionID: string,
+  task: TaskNotification,
+): PendingNotification | undefined {
+  const current = getSessionContinuity(parentSessionID)
+  if (!current) {
+    return undefined
+  }
+
+  const pending = buildPendingNotification(task)
+  const existing = current.metadata.pendingNotifications ?? []
+  patchSessionContinuity(parentSessionID, {
+    pendingNotifications: [...existing, pending],
+  })
+  return pending
 }
 
 /**
