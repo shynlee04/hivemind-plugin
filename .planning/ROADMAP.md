@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-10 (Phase 11: Clean Architecture restructuring — replaces Phase 6+7, consolidates Phase 10+12)
+**Updated:** 2026-04-10 (Phase 09 UAT failed forensic audit — re-plan required)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -14,7 +14,7 @@
 - [ ] **Phase 6: Runtime Domain Separation** — SUPERSEDED by Phase 11
 - [ ] **Phase 7: Runtime Domain Restructuring Planning** — SUPERSEDED by Phase 11
 - [x] **Phase 8: Repair Durable Parent Observability** — ✅ COMPLETE (corrective closure)
-- [ ] **Phase 9: Sticky Delegation Corrective** — 5/5 plans executed, P0 gap fixed 2026-04-10
+- [ ] **Phase 9: Sticky Delegation Corrective** — ❌ UAT FAILED (forensic audit 2026-04-10: 5 runtime bugs, mock-heavy tests, code exists but non-functional. Re-plan required: 10 new plans)
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
