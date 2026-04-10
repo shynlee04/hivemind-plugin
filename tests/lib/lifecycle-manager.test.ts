@@ -321,13 +321,135 @@ describe("HarnessLifecycleManager queue integration", () => {
       ],
     })
 
-    await expect(firstLaunch).resolves.toBe("done:child-1")
-    await expect(secondLaunch).resolves.toBe("done:child-2")
+    await expect(firstLaunch).resolves.toSatisfy((raw: string) => {
+      const parsed = JSON.parse(raw)
+      expect(parsed.ok).toBe(true)
+      expect(parsed.mode).toBe("sync")
+      expect(Buffer.from(parsed.output, "base64").toString("utf8")).toBe("done:child-1")
+      return true
+    })
+    await expect(secondLaunch).resolves.toSatisfy((raw: string) => {
+      const parsed = JSON.parse(raw)
+      expect(parsed.ok).toBe(true)
+      expect(parsed.mode).toBe("sync")
+      expect(Buffer.from(parsed.output, "base64").toString("utf8")).toBe("done:child-2")
+      return true
+    })
 
     expect(internalQueue.queueSize(queueKey)).toBe(0)
     expect(internalQueue.peek(queueKey)).toBeUndefined()
     expect(getSessionContinuity("child-2")?.metadata.lifecycle?.phase).toBe("completed")
     expect(getSessionContinuity("child-2")?.metadata.delegationPacket?.status).toBe("completed")
+  })
+
+  it("returns immediately for async launches even when the task is still queued", async () => {
+    process.env.OPENCODE_HARNESS_CONCURRENCY_LIMIT = "1"
+
+    const firstPrompt = createDeferred<{ parts: Array<{ type: string; text: string }> }>()
+    let createCount = 0
+
+    const client = {
+      session: {
+        create: async () => {
+          createCount += 1
+          return { id: `child-async-${createCount}` }
+        },
+        promptAsync: vi.fn(async () => undefined),
+        get: vi.fn(async ({ path }: { path: { id: string } }) => ({ status: { type: path.id === "child-async-1" ? "busy" : "idle" } })),
+        status: vi.fn(async () => ({ data: {} })),
+        prompt: async ({ path }: { path: { id: string } }) => {
+          if (path.id === "child-async-1") {
+            return firstPrompt.promise
+          }
+
+          return {
+            parts: [
+              {
+                type: "text",
+                text: `done:${path.id}`,
+              },
+            ],
+          }
+        },
+      },
+    } as never
+
+    const manager = createHarnessLifecycleManager({
+      client,
+      pollTimeoutMs: 50,
+    })
+
+    const route = {
+      category: "implementation" as const,
+      effectiveAgent: "builder" as const,
+      presetKey: "builder",
+      effectiveModel: "gpt-5.4",
+      temperature: 0,
+      fallbackUsed: false,
+      rationale: "matched builder route",
+      modelSource: "explicit" as const,
+      agentSource: "explicit" as const,
+      temperatureSource: "agent" as const,
+      warnings: [],
+    }
+
+    const firstLaunch = manager.launchDelegatedSession({
+      parentSessionID: "parent-async",
+      rootID: "root-async",
+      childDepth: 1,
+      description: "first async",
+      runInBackground: false,
+      agent: "builder",
+      route,
+      permissionRules: [],
+      compatibleTools: [],
+      promptText: "first prompt",
+      execution: buildExecution(),
+    })
+
+    await flushAsyncWork()
+
+    let secondSettled = false
+    const secondLaunch = manager.launchDelegatedSession({
+      parentSessionID: "parent-async",
+      rootID: "root-async",
+      childDepth: 1,
+      description: "second async",
+      runInBackground: true,
+      agent: "builder",
+      route,
+      permissionRules: [],
+      compatibleTools: [],
+      promptText: "second prompt",
+      execution: buildExecution({
+        characteristics: {
+          isParallel: false,
+          isInteractive: true,
+          isResearch: false,
+          isHeadless: false,
+          runInBackground: true,
+        },
+      }),
+    }).then(() => {
+      secondSettled = true
+    })
+
+    await flushAsyncWork()
+
+    expect(secondSettled).toBe(true)
+    expect(getSessionContinuity("child-async-2")?.metadata.lifecycle?.phase).toBe("queued")
+
+    firstPrompt.resolve({
+      parts: [
+        {
+          type: "text",
+          text: "done:child-async-1",
+        },
+      ],
+    })
+
+    await firstLaunch
+    await secondLaunch
   })
 
   it("commits a provided spawn reservation on successful launch", async () => {
@@ -382,7 +504,13 @@ describe("HarnessLifecycleManager queue integration", () => {
         execution: buildExecution(),
         spawnReservation: reservation,
       }),
-    ).resolves.toBe("done:child-success")
+    ).resolves.toSatisfy((raw: string) => {
+      const parsed = JSON.parse(raw)
+      expect(parsed.ok).toBe(true)
+      expect(parsed.mode).toBe("sync")
+      expect(Buffer.from(parsed.output, "base64").toString("utf8")).toBe("done:child-success")
+      return true
+    })
 
     expect(taskState.getRootBudget("root-success")?.reserved ?? 0).toBe(0)
     expect(taskState.getRootBudget("root-success")?.descendants.has("child-success")).toBe(true)
@@ -438,5 +566,59 @@ describe("HarnessLifecycleManager queue integration", () => {
 
     expect(taskState.getRootBudget("root-failure")?.reserved ?? 0).toBe(0)
     expect(taskState.getRootBudget("root-failure")?.descendants.size ?? 0).toBe(0)
+  })
+
+  it("records a parent continuity shell before launching a child session", async () => {
+    const client = {
+      session: {
+        create: async () => ({ id: "child-parent-shell" }),
+        prompt: async () => ({
+          parts: [
+            {
+              type: "text",
+              text: "done:child-parent-shell",
+            },
+          ],
+        }),
+      },
+    } as never
+
+    const manager = createHarnessLifecycleManager({
+      client,
+      pollTimeoutMs: 50,
+    })
+
+    await manager.launchDelegatedSession({
+      parentSessionID: "root-parent-shell",
+      rootID: "root-parent-shell",
+      childDepth: 1,
+      description: "seed parent continuity",
+      runInBackground: false,
+      agent: "builder",
+      route: {
+        category: "implementation",
+        effectiveAgent: "builder",
+        presetKey: "builder",
+        effectiveModel: "gpt-5.4",
+        temperature: 0,
+        fallbackUsed: false,
+        rationale: "matched builder route",
+        modelSource: "explicit",
+        agentSource: "explicit",
+        temperatureSource: "agent",
+        warnings: [],
+      },
+      permissionRules: [],
+      compatibleTools: [],
+      promptText: "seed continuity",
+      execution: buildExecution(),
+    })
+
+    expect(getSessionContinuity("root-parent-shell")).toMatchObject({
+      sessionID: "root-parent-shell",
+      metadata: expect.objectContaining({
+        rootSessionID: "root-parent-shell",
+      }),
+    })
   })
 })

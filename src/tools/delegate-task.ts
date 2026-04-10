@@ -200,7 +200,7 @@ type DelegateTaskArgs = {
   model?: string
   defaultDispatchMode?: "async" | "sync"
   tmuxAvailability?: "auto" | "enabled" | "disabled"
-  pollIntervalMs?: 3000 | 5000 | 15000
+  pollIntervalMs?: number
 }
 
 /**
@@ -243,7 +243,7 @@ export function createDelegateTaskTool(
         .optional()
         .describe("Optional tmux availability override for this task. Defaults to auto-detection."),
       pollIntervalMs: s
-        .enum([3000, 5000, 15000])
+        .number()
         .optional()
         .describe("Optional poll interval for completion detection in ms. Defaults to 3000."),
       session_id: s.string().optional().describe("Optional parent session override"),

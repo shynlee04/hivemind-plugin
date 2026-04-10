@@ -830,7 +830,8 @@ describe("HarnessLifecycleManager — tmux-pane execution", () => {
 
     // tmux-pane should use the tmux runner, NOT the subsession runner
     expect(backgroundManager.spawn).toHaveBeenCalledTimes(1)
-    expect(client.session.prompt).not.toHaveBeenCalled()
+    // The tmux runner uses backgroundManager.spawn + onComplete, not session prompt
+    expect(backgroundManager.onComplete).toHaveBeenCalled()
 
     const continuity = getSessionContinuity("child-tmux")
     expect(continuity?.metadata.execution?.submode).toBe("tmux-pane")

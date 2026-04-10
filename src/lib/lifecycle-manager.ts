@@ -7,6 +7,7 @@ import { buildDelegationPacketParentChain, createDelegationPacket } from "./dele
 import type { ExecutionModeResult } from "./execution-mode.js"
 import { deleteSessionContinuity, getSessionContinuity, getSessionRecoveryState, listSessionContinuity, patchSessionDelegationPacket, patchSessionContinuity, recordSessionContinuity } from "./continuity.js"
 import { runLifecycleProcessTask, runLifecycleSubsessionTask } from "./lifecycle-process-runner.js"
+import { runLifecycleTmuxTask } from "./lifecycle-tmux-runner.js"
 import { addWarning } from "./state.js"
 import { inferContinuityStatusFromEvent } from "./runtime.js"
 import { createSession, getEventParentID, getSessionID, type OpenCodeClient, sendPrompt } from "./session-api.js"
@@ -46,7 +47,7 @@ type LaunchDelegatedSessionArgs = {
   spawnReservation?: SpawnReservation
   defaultDispatchMode?: "async" | "sync"
   tmuxAvailability?: "auto" | "enabled" | "disabled"
-  pollIntervalMs?: 3000 | 5000 | 15000
+  pollIntervalMs?: number
 }
 
 type HarnessLifecycleManagerOptions = {
@@ -403,6 +404,39 @@ export class HarnessLifecycleManager {
               },
             })
 
+            // 09-05: explicit tmux-pane branch — no silent fallback
+            if (execution.submode === "tmux-pane") {
+              const backgroundManager = this.options.backgroundManager
+              if (args.tmuxAvailability === "enabled" && !execution.capabilityEvidence.hasTmux) {
+                throw new Error("[Harness] tmux-pane execution requested without available tmux runner.")
+              }
+              if (!backgroundManager) {
+                throw new Error("[Harness] tmux-pane execution requires a BackgroundManager.")
+              }
+
+              await runLifecycleTmuxTask({
+                sessionID: childSessionID,
+                parentSessionID: args.parentSessionID,
+                rootID: args.rootID,
+                childDepth: args.childDepth,
+                agent: args.agent,
+                category: args.route.category,
+                model: args.route.effectiveModel,
+                description: args.description,
+                promptText: args.promptText,
+                runInBackground: true,
+                execution,
+                client: this.options.client,
+                backgroundManager,
+                getSessionContinuity,
+                patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+                getLifecycleSnapshot: (sessionID) => this.getLifecycleSnapshot(sessionID),
+                releaseQueue,
+                now,
+              })
+              return
+            }
+
             if (execution.submode === "builtin-process") {
               const backgroundManager = this.options.backgroundManager
               if (!backgroundManager) {
@@ -523,6 +557,38 @@ export class HarnessLifecycleManager {
           detail: args.runInBackground ? "prompt-dispatched-async" : "prompt-dispatched-sync",
         },
       })
+
+      // 09-05: explicit tmux-pane branch — no silent fallback
+      if (execution.submode === "tmux-pane") {
+        const backgroundManager = this.options.backgroundManager
+        if (args.tmuxAvailability === "enabled" && !execution.capabilityEvidence.hasTmux) {
+          throw new Error("[Harness] tmux-pane execution requested without available tmux runner.")
+        }
+        if (!backgroundManager) {
+          throw new Error("[Harness] tmux-pane execution requires a BackgroundManager.")
+        }
+
+        return await runLifecycleTmuxTask({
+          sessionID: childSessionID,
+          parentSessionID: args.parentSessionID,
+          rootID: args.rootID,
+          childDepth: args.childDepth,
+          agent: args.agent,
+          category: args.route.category,
+          model: args.route.effectiveModel,
+          description: args.description,
+          promptText: args.promptText,
+          runInBackground: args.runInBackground,
+          execution,
+          client: this.options.client,
+          backgroundManager,
+          getSessionContinuity,
+          patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+          getLifecycleSnapshot: (sessionID) => this.getLifecycleSnapshot(sessionID),
+          releaseQueue,
+          now,
+        })
+      }
 
       if (execution.submode === "builtin-process") {
         const backgroundManager = this.options.backgroundManager
