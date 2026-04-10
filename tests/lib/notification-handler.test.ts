@@ -1,10 +1,12 @@
 import { describe, it, expect, vi } from "vitest"
 import {
   buildNotificationMessage,
+  buildTaskNotificationFromContinuity,
   formatToastMessage,
   notifyParentSession,
 } from "../../src/lib/notification-handler.js"
 import type { TaskNotification } from "../../src/lib/notification-handler.js"
+import type { SessionContinuityRecord } from "../../src/lib/types.js"
 
 describe("buildNotificationMessage", () => {
   it("should build system_reminder for completed task", () => {
@@ -234,5 +236,27 @@ describe("notifyParentSession", () => {
 
     expect(mockToast).toHaveBeenCalledTimes(1)
     expect(mockToast).toHaveBeenCalledWith("✗ Build failed (builder)")
+  })
+})
+
+describe("Bug 1 regression: started status notification (D-15)", () => {
+  it('uses "started work on" summary text for started status', () => {
+    const continuity: SessionContinuityRecord = {
+      sessionID: "ses_123",
+      metadata: {
+        description: "research task",
+        delegation: {
+          agent: "researcher",
+        } as SessionContinuityRecord["metadata"]["delegation"],
+        lifecycle: {
+          launchedAt: 1000,
+        },
+      } as SessionContinuityRecord["metadata"],
+    } as SessionContinuityRecord
+
+    const result = buildTaskNotificationFromContinuity(continuity, "started")
+
+    expect(result.briefSummary).toContain("started work on")
+    expect(result.briefSummary).not.toContain("completed")
   })
 })

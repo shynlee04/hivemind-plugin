@@ -573,4 +573,97 @@ describe("observeBackgroundCompletion", () => {
     expect(mockNotifyParentSession).not.toHaveBeenCalled()
     expect(mockPatchSessionContinuity).not.toHaveBeenCalled()
   })
+
+  describe("Bug 2+3 regression: checkSessionExists and evidence counting (D-16, D-17)", () => {
+    it("treats sessions with empty status objects as unknown instead of immediately busy", async () => {
+      const startTime = Date.now()
+      let currentTime = startTime
+
+      mockNow.mockImplementation(() => currentTime)
+      mockGetSession
+        .mockResolvedValueOnce({ status: {} } as never)
+        .mockResolvedValueOnce({ status: { type: "idle" } } as never)
+
+      mockGetSessionMessages.mockResolvedValueOnce([
+        {
+          role: "assistant",
+          parts: [{ type: "text", text: "working" }],
+        },
+      ] as never)
+
+      instantSleep.mockImplementation(async (ms: number) => {
+        currentTime += ms
+      })
+
+      await observeBackgroundCompletion({
+        sessionID: "child-123",
+        client: {} as any,
+        completionDetector,
+        pollTimeoutMs: 5000,
+        now: mockNow,
+        getSessionContinuity: mockGetContinuityForObserver,
+        patchLifecycle: mockPatchLifecycle,
+        releaseQueue: mockReleaseQueue,
+        sleepFn: instantSleep,
+      })
+
+      expect(mockPatchLifecycle).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          sessionID: "child-123",
+          status: "error",
+          phase: "failed",
+          observation: expect.objectContaining({
+            source: "observe:poll-timeout",
+          }),
+        }),
+      )
+      expect(mockGetSessionMessages).toHaveBeenCalledTimes(1)
+    })
+
+    it("does not treat user-only prompts as completion evidence", async () => {
+      const startTime = Date.now()
+      let currentTime = startTime
+      const zeroStabilityDetector = new CompletionDetector(0)
+
+      mockNow.mockImplementation(() => currentTime)
+      mockGetSession
+        .mockResolvedValueOnce({ status: { type: "busy" } } as never)
+        .mockResolvedValueOnce({ status: { type: "idle" } } as never)
+
+      mockGetSessionMessages.mockResolvedValueOnce([
+        {
+          role: "user",
+          parts: [{ type: "text", text: "Do task" }],
+        },
+      ] as never)
+
+      instantSleep.mockImplementation(async (ms: number) => {
+        currentTime += ms
+      })
+
+      await observeBackgroundCompletion({
+        sessionID: "child-123",
+        client: {} as any,
+        completionDetector: zeroStabilityDetector,
+        pollTimeoutMs: 5000,
+        now: mockNow,
+        getSessionContinuity: mockGetContinuityForObserver,
+        patchLifecycle: mockPatchLifecycle,
+        releaseQueue: mockReleaseQueue,
+        sleepFn: instantSleep,
+      })
+
+      expect(mockPatchLifecycle).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          sessionID: "child-123",
+          status: "error",
+          phase: "failed",
+          observation: expect.objectContaining({
+            source: "observe:poll-timeout",
+          }),
+        }),
+      )
+      expect(mockGetSessionMessages).toHaveBeenCalledTimes(1)
+    })
+  })
 })

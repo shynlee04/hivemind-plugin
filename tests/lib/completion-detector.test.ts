@@ -50,12 +50,14 @@ describe("CompletionDetector", () => {
 
   // --- cache before watch ---
   describe("cache before watch", () => {
-    it("returns cached result when feed arrives before watch", async () => {
+    it("does not cache external idle events before a watcher exists", async () => {
       detector.feed("session.idle", "ses_1")
 
-      const result = await detector.watch("ses_1", 5000)
-      expect(result).toEqual({
-        signal: "idle",
+      const resultPromise = detector.watch("ses_1", 50)
+      vi.advanceTimersByTime(60)
+
+      await expect(resultPromise).resolves.toEqual({
+        signal: "timeout",
         sessionID: "ses_1",
       })
     })
@@ -68,6 +70,17 @@ describe("CompletionDetector", () => {
         signal: "error",
         sessionID: "ses_1",
         error: "crash",
+      })
+    })
+
+    it("still caches idle results produced by the internal stability timer", async () => {
+      detector.feedMessageCount("ses_2", 5)
+      vi.advanceTimersByTime(100)
+
+      const result = await detector.watch("ses_2", 5000)
+      expect(result).toEqual({
+        signal: "idle",
+        sessionID: "ses_2",
       })
     })
   })
