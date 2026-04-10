@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 08-03 verification/docs reconciliation
-status: verifying
-stopped_at: Completed 08-03-PLAN.md
-last_updated: "2026-04-09T18:23:49.208Z"
+current_plan: None — Phase 09 needs planning
+status: phase-complete
+stopped_at: Phase 09 context gathered
+last_updated: "2026-04-10T10:25:35.971Z"
 progress:
-  total_phases: 8
+  total_phases: 9
   completed_phases: 3
   total_plans: 13
   completed_plans: 13
@@ -21,25 +21,27 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-09)
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 08 — repair-durable-parent-observability-for-delegated-sessions
+**Current focus:** Phase 09 — sticky-delegation-corrective (new)
 
 ## Current Position
 
-Phase: 08 (repair-durable-parent-observability-for-delegated-sessions) — EXECUTING
-Plan: 3 of 3 executing
+Phase: 09 (sticky-delegation-corrective) — READY FOR PLANNING
+Phase 08: ✅ COMPLETE — corrective closure closed 2026-04-10
 **Phase 02:** fully re-verified at 18/18 after Phase 08 corrective closure
-**Current plan:** 08-03 verification/docs reconciliation
-**Status:** Phase complete — ready for verification
-**Progress:** [██████████] 100%
+**Phase 08:** closed with delegation root-cause findings as canonical reference
+**Current plan:** None — Phase 09 needs planning
+**Progress:** Phase 08 [██████████] 100% | Phase 09 [░░░░░░░░░░] 0%
 
 ```
 Phase 1: Baseline Cleanup ......... ✅ COMPLETE (10/10 items)
 Phase 2: V3 Runtime Architecture .. ✅ VERIFIED (9/9 plans, 18/18 verified)
-Phase 3: Functional Fixes ......... Pending
-Phase 4: Rebuild & Polish ......... Pending
-Phase 5: Verification ............. Pending
+Phase 3: Schema Definition ........ Pending
+Phase 4: Migration Gate ........... Pending
+Phase 5: Integration Verification . Pending
 Phase 6: Runtime Domain Separation  Pending
 Phase 7: Runtime Domain Restructuring Planning Pending
+Phase 8: Repair Durable Parent Obs ✅ COMPLETE (corrective closure, 2026-04-10)
+Phase 9: Sticky Delegation Corrective 🔄 READY FOR PLANNING
 ```
 
 ## Phase 1 Results (Completed 2026-04-06)
@@ -103,17 +105,23 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 - [Phase 08-repair-durable-parent-observability-for-delegated-sessions]: Trusted runtimePolicyOverride values inherit only from harness-owned parent runtime metadata.
 - [Phase 08-repair-durable-parent-observability-for-delegated-sessions]: Parent-visible async delegated-session status is derived from continuity-backed lifecycle truth, not notification success.
 - [Phase 08-repair-durable-parent-observability-for-delegated-sessions]: Phase 08 is the corrective closure step between the Phase 02 baseline and downstream planning work.
+- [2026-04-10]: Phase 08 closed — runtime policy override seam restored, parent-visible truth hardened, Phase 02 re-verification green at 18/18.
+- [2026-04-10]: Phase 09 added — sticky delegation corrective based on root-cause analysis in `.planning/debug/delegation-root-cause-with-reference-2026-04-10.md`.
+- [2026-04-10]: Phase 08 closure docs reference the delegation root-cause analysis as canonical evidence for Phase 09 planning.
 
 ### Roadmap Evolution
 
 - Phase 8 added: Repair durable parent observability for delegated sessions
-- Phase 8 confirmed as corrective closure between Phase 02 baseline and later planning work
+- Phase 8 closed: 2026-04-10 — corrective closure complete
+- Phase 9 added: Sticky delegation corrective (based on root-cause analysis)
+- Phase 2 re-verification: 18/18 green after Phase 08 closure
 
 ### Todos
 
+- [ ] Plan Phase 09: Sticky Delegation Corrective (message-count stability, notification replay, sync mode fix, naming cleanup)
 - [ ] Plan Phase 03: Schema Definition & Runtime Configurability (expanded from YAML schemas — now includes full runtime config architecture: agent discovery, category routing, threshold config, tool description sync)
 - [ ] Plan Phase 06: Runtime Domain Separation (`src/lib` split across runtime, continuity, lifecycle, delegation, governance, and integration seams)
-- [ ] Plan Phase 07: Runtime Domain Restructuring Planning (roadmap/planning only; Phase 02 re-verification gate is now satisfied, but Phase 08 corrective closure docs must finish first)
+- [ ] Plan Phase 07: Runtime Domain Restructuring Planning (roadmap/planning only; Phase 02 re-verification gate is now satisfied, Phase 08 corrective closure docs complete)
 - [ ] Dynamic agent discovery from opencode.json and agents/*.md
 - [ ] Configurable category routing with user-defined categories
 - [ ] Runtime threshold config for MAX_DESCENDANTS, MAX_DEPTH, concurrency
@@ -123,11 +131,12 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 
 ### Blockers
 
-- None inside the corrective Phase 08 corridor. Remaining work is documentation/state finalization.
+- None. Phase 08 closed. Phase 09 ready for planning.
 
 ### Known Issues
 
-- Phase 08 execution metadata and summaries still need to be written/committed before the corrective phase itself is marked closed.
+- Phase 08 closure summaries need to be written (VERIFICATION.md, SUMMARY.md) before archival.
+- Phase 09 has 5 planned items from root-cause analysis but no detailed plans yet.
 
 ## Session Continuity
 
@@ -136,17 +145,20 @@ Phase 7: Runtime Domain Restructuring Planning Pending
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19
 
-**Stopped At:** Completed 08-03-PLAN.md
+**Stopped At:** Phase 09 context gathered
 
 **Key files:**
 
 - Audit findings: `findings.md`
+- Delegation root cause: `.planning/debug/delegation-root-cause-with-reference-2026-04-10.md` (canonical reference for Phase 09)
 - Design spec: `docs/superpowers/specs/2026-04-06-harness-clean-design.md`
 - Plugin entry: `src/plugin.ts` (cleaned — no dead wiring)
 - Tools: `src/tools/` (prompt-analyze, prompt-skim, session-patch)
 - Tests: `tests/` (latest Phase 02 verification run: 533 passed, 2 skipped)
 - Phase 1 plan: `.planning/phases/01-baseline-cleanup/01-01-PLAN.md`
 - Phase 1 summary: `.planning/phases/01-baseline-cleanup/01-01-SUMMARY.md`
+- Phase 8 context: `.planning/phases/08-repair-durable-parent-observability-for-delegated-sessions/08-CONTEXT.md`
+- Phase 8 discussion: `.planning/phases/08-repair-durable-parent-observability-for-delegated-sessions/08-DISCUSSION-LOG.md`
 
 ---
 *State initialized: 2026-04-06*
