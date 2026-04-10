@@ -173,7 +173,7 @@ Plans:
 
 Plans:
 - [x] 09-01-PLAN.md — Harden builtin-subsession completion with stable message/tool evidence and a 3-second poll loop
-- [ ] 09-02-PLAN.md — Replay durable pending notifications through `createCoreHooks` on parent create/resume
+- [x] 09-02-PLAN.md — Replay durable pending notifications through `createCoreHooks` on parent create/resume
 - [ ] 09-03-PLAN.md — Preserve sync dispatch with a structured base64 output envelope instead of raw assistant text
 - [ ] 09-04-PLAN.md — Rename `run_in_background` to `async_dispatch` and add launch-time dispatch/tmux/poll config wiring
 - [ ] 09-05-PLAN.md — Implement the tmux visible-worker runner and re-verify delegated execution paths end-to-end
