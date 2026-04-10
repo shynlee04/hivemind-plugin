@@ -6,7 +6,7 @@ import { restoreCheckpoint, type CheckpointData } from "./compaction-checkpoint.
 import { buildDelegationPacketParentChain, createDelegationPacket } from "./delegation-packet.js"
 import type { ExecutionModeResult } from "./execution-mode.js"
 import { deleteSessionContinuity, getSessionContinuity, getSessionRecoveryState, listSessionContinuity, patchSessionDelegationPacket, patchSessionContinuity, recordSessionContinuity } from "./continuity.js"
-import { runLifecycleSubsessionTask } from "./lifecycle-process-runner.js"
+import { runLifecycleProcessTask, runLifecycleSubsessionTask } from "./lifecycle-process-runner.js"
 import { addWarning } from "./state.js"
 import { inferContinuityStatusFromEvent } from "./runtime.js"
 import { createSession, getEventParentID, getSessionID, type OpenCodeClient, sendPrompt } from "./session-api.js"
@@ -44,6 +44,9 @@ type LaunchDelegatedSessionArgs = {
   execution: ExecutionModeResult
   runtimePolicyOverride?: SessionPolicyOverride
   spawnReservation?: SpawnReservation
+  defaultDispatchMode?: "async" | "sync"
+  tmuxAvailability?: "auto" | "enabled" | "disabled"
+  pollIntervalMs?: 3000 | 5000 | 15000
 }
 
 type HarnessLifecycleManagerOptions = {
@@ -56,18 +59,45 @@ type HarnessLifecycleManagerOptions = {
 
 function now(): number { return Date.now() }
 
-function resolveEffectiveExecutionMode(execution: ExecutionModeResult): ExecutionModeResult {
-  if (execution.submode !== "builtin-process") {
-    return execution
+function ensureParentContinuityRecord(args: {
+  parentSessionID: string
+  rootID: string
+  queueKey: string
+  timestamp: number
+}): void {
+  if (getSessionContinuity(args.parentSessionID)) {
+    return
   }
 
-  // builtin-process never grew beyond a stub, so route through the real
-  // child-session execution path until an SDK-backed process runner exists.
-  return {
-    ...execution,
-    submode: "builtin-subsession",
-    rationale: `${execution.rationale} [Harness] builtin-process fallback: routed through builtin-subsession for real execution.`,
-  }
+  recordSessionContinuity({
+    sessionID: args.parentSessionID,
+    toolProfile: {
+      permissionRules: [],
+      compatibleTools: [],
+    },
+    promptParams: {
+      agent: "general",
+      tools: [],
+    },
+    metadata: {
+      parentSessionID: args.parentSessionID,
+      rootSessionID: args.rootID,
+      delegation: {
+        rootID: args.rootID,
+        depth: 0,
+        budgetUsed: 0,
+        agent: "general",
+        queueKey: args.queueKey,
+      },
+      title: `session: ${args.parentSessionID}`,
+      description: "Harness parent session record",
+      constraints: [],
+      runInBackground: false,
+      status: "running",
+      createdAt: args.timestamp,
+      updatedAt: args.timestamp,
+    },
+  })
 }
 
 export function isValidTransition(from: SessionLifecyclePhase, to: SessionLifecyclePhase): boolean {
@@ -219,7 +249,7 @@ export class HarnessLifecycleManager {
   async launchDelegatedSession(args: LaunchDelegatedSessionArgs): Promise<string> {
     const runMode = args.runInBackground ? "async" : "sync"
     const timestamp = now()
-    const effectiveExecution = resolveEffectiveExecutionMode(args.execution)
+    const execution = args.execution
     const queueKey = buildDelegationQueueKey({
       model: args.route.effectiveModel,
       agent: args.agent,
@@ -227,6 +257,13 @@ export class HarnessLifecycleManager {
     })
     const spawnReservation =
       args.spawnReservation ?? reserveSubagentSpawn(args.parentSessionID, args.rootID, taskState)
+
+    ensureParentContinuityRecord({
+      parentSessionID: args.parentSessionID,
+      rootID: args.rootID,
+      queueKey,
+      timestamp,
+    })
 
     try {
       const childSession = await createSession(this.options.client, {
@@ -274,9 +311,9 @@ export class HarnessLifecycleManager {
         },
         metadata: {
           parentSessionID: args.parentSessionID,
-          rootSessionID: args.rootID,
-          delegation,
-          delegationPacket: createDelegationPacket(
+              rootSessionID: args.rootID,
+              delegation,
+              delegationPacket: createDelegationPacket(
             args.description,
             buildDelegationPacketParentChain({
               rootSessionID: args.rootID,
@@ -285,11 +322,11 @@ export class HarnessLifecycleManager {
             }),
           ),
           execution: {
-            family: effectiveExecution.family,
-            submode: effectiveExecution.submode,
-            rationale: effectiveExecution.rationale,
-            characteristics: { ...effectiveExecution.characteristics },
-            capabilityEvidence: { ...effectiveExecution.capabilityEvidence },
+            family: execution.family,
+            submode: execution.submode,
+            rationale: execution.rationale,
+            characteristics: { ...execution.characteristics },
+            capabilityEvidence: { ...execution.capabilityEvidence },
           },
           title: `${args.agent}: ${args.description}`,
           description: args.description,
@@ -301,6 +338,9 @@ export class HarnessLifecycleManager {
           status: "pending",
           createdAt: timestamp,
           updatedAt: timestamp,
+          defaultDispatchMode: args.defaultDispatchMode,
+          tmuxAvailability: args.tmuxAvailability,
+          pollIntervalMs: args.pollIntervalMs,
           lifecycle: buildLifecycleState({
             phase: "created",
             runMode,
@@ -335,6 +375,130 @@ export class HarnessLifecycleManager {
         ? resolveLifecycleConcurrency(this.runtimePolicy, queueKey)
         : undefined
 
+      if (args.runInBackground) {
+        void (async () => {
+          try {
+            const releaseQueue = await acquireLifecycleQueue({
+              queue: this.queue,
+              sessionID: childSessionID,
+              queueKey,
+              runMode,
+              now,
+              getSessionContinuity,
+              patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+              concurrencyLimit: resolvedConcurrency?.limit,
+              concurrencyTimeoutMs: resolvedConcurrency?.acquireTimeoutMs,
+            })
+
+            const launchedAt = now()
+            this.patchLifecycle({
+              sessionID: childSessionID,
+              status: "running",
+              phase: "running",
+              launchedAt,
+              observation: {
+                source: "dispatch",
+                observedAt: launchedAt,
+                detail: "prompt-dispatched-async",
+              },
+            })
+
+            if (execution.submode === "builtin-process") {
+              const backgroundManager = this.options.backgroundManager
+              if (!backgroundManager) {
+                throw new Error("[Harness] builtin-process execution requires a BackgroundManager.")
+              }
+
+              await runLifecycleProcessTask({
+                sessionID: childSessionID,
+                parentSessionID: args.parentSessionID,
+                rootID: args.rootID,
+                childDepth: args.childDepth,
+                agent: args.agent,
+                category: args.route.category,
+                model: args.route.effectiveModel,
+                description: args.description,
+                promptText: args.promptText,
+                runInBackground: true,
+                execution,
+                client: this.options.client,
+                backgroundManager,
+                getSessionContinuity,
+                patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+                getLifecycleSnapshot: (sessionID) => this.getLifecycleSnapshot(sessionID),
+                releaseQueue,
+                now,
+              })
+              return
+            }
+
+            await runLifecycleSubsessionTask({
+              sessionID: childSessionID,
+              parentSessionID: args.parentSessionID,
+              rootID: args.rootID,
+              childDepth: args.childDepth,
+              agent: args.agent,
+              category: args.route.category,
+              model: args.route.effectiveModel,
+              description: args.description,
+              route: args.route,
+              body,
+              runInBackground: true,
+              client: this.options.client,
+              completionDetector: this.completionDetector,
+              pollTimeoutMs: this.options.pollTimeoutMs,
+              getSessionContinuity,
+              patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+              getLifecycleSnapshot: (sessionID) => this.getLifecycleSnapshot(sessionID),
+              releaseQueue,
+              queueSnapshot: this.queue.snapshot(queueKey),
+              budgetUsed,
+              launchedAt,
+              now,
+            })
+          } catch (error) {
+            const message = error instanceof Error ? error.message : String(error)
+            this.patchLifecycle({
+              sessionID: childSessionID,
+              status: "error",
+              phase: "failed",
+              error: message,
+              observation: {
+                source: "dispatch",
+                observedAt: now(),
+                detail: "async-queue-dispatch-failed",
+              },
+            })
+          }
+        })()
+
+        return JSON.stringify(
+          {
+            ok: true,
+            mode: "async",
+            session_id: childSessionID,
+            parent_session_id: args.parentSessionID,
+            root_session_id: args.rootID,
+            agent: args.agent,
+            category: args.route.category,
+            model: args.route.effectiveModel,
+            depth: args.childDepth,
+            budget_used: budgetUsed,
+            concurrency_key: this.getLifecycleSnapshot(childSessionID)?.queueKey,
+            concurrency_active: this.queue.snapshot(queueKey).active,
+            concurrency_pending: this.queue.snapshot(queueKey).pending,
+            concurrency_limit: this.queue.snapshot(queueKey).limit,
+            route: args.route,
+            description: args.description,
+            lifecycle: this.getLifecycleSnapshot(childSessionID),
+            output_link: `session://${childSessionID}`,
+            instruction: "Task dispatched. Continue with other work — you'll be notified when complete.",
+          },
+          null,
+          2,
+        )
+      }
+
       const releaseQueue = await acquireLifecycleQueue({
         queue: this.queue,
         sessionID: childSessionID,
@@ -359,6 +523,34 @@ export class HarnessLifecycleManager {
           detail: args.runInBackground ? "prompt-dispatched-async" : "prompt-dispatched-sync",
         },
       })
+
+      if (execution.submode === "builtin-process") {
+        const backgroundManager = this.options.backgroundManager
+        if (!backgroundManager) {
+          throw new Error("[Harness] builtin-process execution requires a BackgroundManager.")
+        }
+
+        return await runLifecycleProcessTask({
+          sessionID: childSessionID,
+          parentSessionID: args.parentSessionID,
+          rootID: args.rootID,
+          childDepth: args.childDepth,
+          agent: args.agent,
+          category: args.route.category,
+          model: args.route.effectiveModel,
+          description: args.description,
+          promptText: args.promptText,
+          runInBackground: args.runInBackground,
+          execution,
+          client: this.options.client,
+          backgroundManager,
+          getSessionContinuity,
+          patchLifecycle: (patchArgs) => this.patchLifecycle(patchArgs),
+          getLifecycleSnapshot: (sessionID) => this.getLifecycleSnapshot(sessionID),
+          releaseQueue,
+          now,
+        })
+      }
 
       return await runLifecycleSubsessionTask({
         sessionID: childSessionID,

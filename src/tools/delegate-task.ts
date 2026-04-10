@@ -131,16 +131,16 @@ function buildTaskCharacteristics(args: DelegateTaskArgs, agent: SpecialistAgent
   const category = args.category?.toLowerCase() ?? ""
   const isResearch = agent === "researcher" || category === "research" || category === "deep"
   const isReview = agent === "critic" || category === "review"
-  const isHeadless = isResearch || (!isReview && args.run_in_background)
+  const isHeadless = isResearch || (!isReview && args.async_dispatch)
   const isInteractive = !isResearch
-  const isParallel = args.run_in_background || /parallel|concurrent|independent|background/.test(`${description} ${prompt}`)
+  const isParallel = args.async_dispatch || /parallel|concurrent|independent|background/.test(`${description} ${prompt}`)
 
   return {
     isParallel,
     isInteractive,
     isResearch,
     isHeadless,
-    runInBackground: args.run_in_background,
+    runInBackground: args.async_dispatch,
   }
 }
 
@@ -193,11 +193,14 @@ type DelegateTaskArgs = {
   prompt: string
   agent?: string
   category?: string
-  run_in_background: boolean
+  async_dispatch: boolean
   session_id?: string
   scope?: string
   constraints?: string[]
   model?: string
+  defaultDispatchMode?: "async" | "sync"
+  tmuxAvailability?: "auto" | "enabled" | "disabled"
+  pollIntervalMs?: 3000 | 5000 | 15000
 }
 
 /**
@@ -212,7 +215,7 @@ export function createDelegateTaskTool(
 ): ReturnType<typeof tool> {
   return tool({
     description:
-      "Create a restricted child session for researcher, builder, critic, general, or OpenCode built-in agents (build, plan, explore). When run_in_background=true, returns immediately with task metadata — continue with other productive work. You will receive a system_reminder notification when the background task completes.",
+      "Create a restricted async child session for researcher, builder, critic, general, or OpenCode built-in agents (build, plan, explore). When async_dispatch=true, returns immediately with task metadata for delegated session work — continue with other productive work. You will receive a system_reminder notification when the child session completes. This is separate from the background tool for OS child processes.",
     args: {
       description: s.string().describe("Short task description"),
       prompt: s.string().describe("Full task prompt for the delegated agent"),
@@ -228,9 +231,21 @@ export function createDelegateTaskTool(
         .describe(
           "Optional routing category that can resolve agent, model, temperature, and guidance",
         ),
-      run_in_background: s
+      async_dispatch: s
         .boolean()
-        .describe("When true, returns immediately — continue with other work. You'll be notified via system_reminder when complete."),
+        .describe("When true, launch async delegated child-session work and return immediately. You'll be notified via system_reminder when that child session completes."),
+      defaultDispatchMode: s
+        .enum(["async", "sync"])
+        .optional()
+        .describe("Optional explicit dispatch mode override (async or sync). Defaults to behavior derived from async_dispatch."),
+      tmuxAvailability: s
+        .enum(["auto", "enabled", "disabled"])
+        .optional()
+        .describe("Optional tmux availability override for this task. Defaults to auto-detection."),
+      pollIntervalMs: s
+        .enum([3000, 5000, 15000])
+        .optional()
+        .describe("Optional poll interval for completion detection in ms. Defaults to 3000."),
       session_id: s.string().optional().describe("Optional parent session override"),
       scope: s.string().optional().describe("Optional explicit task scope"),
       constraints: s
@@ -303,6 +318,11 @@ export function createDelegateTaskTool(
       })
       const runtimePolicyOverride = resolveTrustedParentRuntimePolicyOverride(parentSessionID)
 
+      const tmuxAvailable = detectTmuxAvailability()
+      const effectiveDefaultDispatchMode = args.defaultDispatchMode ?? (args.async_dispatch ? "async" : "sync")
+      const effectiveTmuxAvailability = args.tmuxAvailability ?? (tmuxAvailable ? "auto" : "disabled")
+      const effectivePollIntervalMs = args.pollIntervalMs ?? 3000
+
       return await lifecycleManager.launchDelegatedSession({
         parentSessionID,
         rootID,
@@ -310,7 +330,7 @@ export function createDelegateTaskTool(
         description: args.description,
         scope: args.scope,
         constraints: args.constraints,
-        runInBackground: args.run_in_background,
+        runInBackground: args.async_dispatch,
         agent,
         route,
         permissionRules: permission,
@@ -330,6 +350,9 @@ export function createDelegateTaskTool(
         execution,
         runtimePolicyOverride,
         spawnReservation,
+        defaultDispatchMode: effectiveDefaultDispatchMode,
+        tmuxAvailability: effectiveTmuxAvailability,
+        pollIntervalMs: effectivePollIntervalMs,
       })
     },
   })

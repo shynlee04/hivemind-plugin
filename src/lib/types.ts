@@ -210,6 +210,10 @@ export type SessionContinuityMetadata = {
   lastError?: string
   lifecycle?: SessionLifecycleState
   pendingNotifications?: PendingNotification[]
+  /** Launch-time dispatch config (09-04: explicit async contract) */
+  defaultDispatchMode?: "async" | "sync"
+  tmuxAvailability?: "auto" | "enabled" | "disabled"
+  pollIntervalMs?: number
 }
 
 export type SessionContinuityRecord = {
