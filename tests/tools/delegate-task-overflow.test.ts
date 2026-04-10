@@ -23,6 +23,7 @@ import { taskState } from "../../src/lib/state.js"
 import type { HarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
 import type { OpenCodeClient } from "../../src/lib/session-api.js"
 import { createDelegateTaskTool } from "../../src/tools/delegate-task.js"
+import { createHarnessLifecycleManager } from "../../src/lib/lifecycle-manager.js"
 
 // ---------------------------------------------------------------------------
 // Helpers (mirroring delegate-task.test.ts patterns)
@@ -237,5 +238,45 @@ describe("delegate-task overflow: oversized prompt handling", () => {
 
     // buildPromptText with empty prompt still produces sections
     expect(launchArgs.promptText).toContain("TASK: Empty prompt test")
+  })
+
+  it("parses a large sync result as a JSON envelope and decodes the original content", async () => {
+    const assistantText = generateLargeString(180 * 1024)
+    const client = {
+      session: {
+        get: vi.fn(async ({ path }: { path: { id: string } }) => ({
+          data: { id: path.id },
+        })),
+        create: vi.fn(async () => ({ data: { id: "child-overflow-sync" } })),
+        prompt: vi.fn(async () => ({
+          data: {
+            parts: [{ type: "text", text: assistantText }],
+          },
+        })),
+        messages: vi.fn(async () => ({ data: [] })),
+      },
+    }
+
+    const lifecycleManager = createHarnessLifecycleManager({
+      client: client as never,
+      pollTimeoutMs: 50,
+    })
+    const tool = createDelegateTaskTool(lifecycleManager, client as never)
+
+    const raw = await tool.execute(
+      {
+        description: "Large sync envelope overflow test",
+        prompt: "Return the full large result synchronously.",
+        run_in_background: false,
+      },
+      mockCtx,
+    )
+
+    const parsed = JSON.parse(raw) as { output?: string; mode?: string; ok?: boolean }
+
+    expect(parsed.ok).toBe(true)
+    expect(parsed.mode).toBe("sync")
+    expect(parsed.output).toBeTruthy()
+    expect(Buffer.from(parsed.output ?? "", "base64").toString("utf8")).toBe(assistantText)
   })
 })

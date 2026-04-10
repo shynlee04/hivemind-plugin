@@ -3,6 +3,18 @@ import { tmpdir } from "node:os"
 import { dirname, join } from "node:path"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+type SyncEnvelope = {
+  ok: true
+  mode: "sync"
+  session_id: string
+  parent_session_id: string
+  root_session_id: string
+  agent: string
+  category?: string
+  model?: string
+  output: string
+}
+
 function makeTempContinuityFile(): string {
   const tempDir = mkdtempSync(join(tmpdir(), "hivemind-v3-e2e-"))
   return join(tempDir, "session-continuity.json")
@@ -89,6 +101,14 @@ function parseResult<T>(raw: string): T {
   return JSON.parse(raw) as T
 }
 
+function decodeSyncEnvelope(raw: string): SyncEnvelope & { decodedOutput: string } {
+  const parsed = JSON.parse(raw) as SyncEnvelope
+  return {
+    ...parsed,
+    decodedOutput: Buffer.from(parsed.output, "base64").toString("utf8"),
+  }
+}
+
 function buildContinuityRecord(sessionID: string) {
   return {
     sessionID,
@@ -128,6 +148,17 @@ function buildContinuityRecord(sessionID: string) {
         phase: "running" as const,
         runMode: "sync" as const,
         queueKey: "model:claude-sonnet-4-6",
+      },
+      delegationPacket: {
+        id: `packet-${sessionID}`,
+        spec: "Delegation packet",
+        plan: null,
+        artifacts: [],
+        commits: [],
+        parentChain: ["root-session", "parent-session", sessionID],
+        status: "running" as const,
+        createdAt: 1,
+        updatedAt: 1,
       },
     },
   }
@@ -552,7 +583,18 @@ describe("HiveMind V3 integration coverage", () => {
           ask: async () => undefined,
         },
       ),
-    ).resolves.toBe("done:child-delegate")
+    ).resolves.toSatisfy((raw) => {
+      const envelope = decodeSyncEnvelope(raw)
+      expect(envelope.ok).toBe(true)
+      expect(envelope.mode).toBe("sync")
+      expect(envelope.session_id).toBe("child-delegate")
+      expect(envelope.parent_session_id).toBe("parent-session")
+      expect(envelope.root_session_id).toBe("parent-session")
+      expect(envelope.agent).toBe("builder")
+      expect(envelope.output).toBeTruthy()
+      expect(envelope.decodedOutput).toBe("done:child-delegate")
+      return true
+    })
 
     expect(taskState.getRootBudget("parent-session")?.reserved ?? 0).toBe(0)
     expect(taskState.getRootBudget("parent-session")?.descendants.has("child-delegate")).toBe(true)
