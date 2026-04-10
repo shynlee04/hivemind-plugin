@@ -13,6 +13,8 @@
 - [ ] **Phase 5: Integration Verification** — 0/5
 - [ ] **Phase 6: Runtime Domain Separation** — 0/6
 - [ ] **Phase 7: Runtime Domain Restructuring Planning** — 0/5
+- [ ] **Phase 8: Repair Durable Parent Observability** — ✅ COMPLETE (corrective closure)
+- [ ] **Phase 9: Sticky Delegation Corrective** — 0/5
 
 ## Phase 1: Baseline Cleanup
 
@@ -124,20 +126,23 @@ Plans:
 | 4. Migration Gate | 0/4 | Not started |
 | 5. Integration Verification | 0/5 | Not started |
 | 6. Runtime Domain Separation | 0/6 | Not started |
-| 7. Runtime Domain Restructuring Planning | 0/5 | Future planning phase; gated on Phase 02 reaching 18/18 verified |
+| 7. Runtime Domain Restructuring Planning | 0/5 | Future planning phase; gated on Phase 02 reaching 18/18 verified ✅ |
+| 8. Repair Durable Parent Observability | 3/3 plans | ✅ COMPLETE — corrective closure, 2026-04-10 |
+| 9. Sticky Delegation Corrective | 0/5 | New corrective phase — based on delegation root-cause analysis |
 
 ## Dependencies
 
 ```
 Phase 1 (7 done, 3 pending — planned)
   └─→ Phase 2: V3 Runtime baseline
-       └─→ Phase 8: Corrective closure for delegated-session durability
-            └─→ Phase 2: Authoritative re-verification (18/18)
-                 └─→ Phase 3: Schema Definition
-                      └─→ Phase 4: Migration Gate
-                           └─→ Phase 5: Integration Verification
-                                └─→ Phase 6: Runtime Domain Separation
-                                     └─→ Phase 7: Runtime Domain Restructuring Planning
+       └─→ Phase 8: Corrective closure for delegated-session durability ✅
+            └─→ Phase 2: Authoritative re-verification (18/18) ✅
+                 └─→ Phase 9: Sticky Delegation Corrective (new)
+                      └─→ Phase 3: Schema Definition
+                           └─→ Phase 4: Migration Gate
+                                └─→ Phase 5: Integration Verification
+                                     └─→ Phase 6: Runtime Domain Separation
+                                          └─→ Phase 7: Runtime Domain Restructuring Planning
 ```
 
 ### Phase 8: Repair durable parent observability for delegated sessions
@@ -152,4 +157,43 @@ Plans:
 - [x] 08-02-PLAN.md — reconcile durable parent-visible started/completed/failed truth
 - [x] 08-03-PLAN.md — re-run Phase 02 verification and correct roadmap/state sequencing
 
-**Execution status:** In progress during Phase 08 execution. Phase 02 re-verification is already green; finalize Phase 08 summaries/state before treating the corrective phase itself as closed.
+**Execution status:** ✅ COMPLETE. Phase 08 closed 2026-04-10. Runtime policy override seam restored, parent-visible truth hardened, Phase 02 re-verification green at 18/18. Roadmap and STATE.md reconciled.
+
+**Closure reference:** `.planning/debug/delegation-root-cause-with-reference-2026-04-10.md` — canonical root-cause analysis that informed Phase 09 corrective planning.
+
+### Phase 9: Sticky Delegation Corrective
+
+**Goal:** Fix the multi-layered architectural mismatches identified in the Phase 08 root-cause analysis — message-count stability detection, parent notification durability, sync mode reliability, and execution-mode clarity.
+
+**Root cause:** The harness's completion detection lacks a second independent signal (message-count stability) that oh-my-openagent uses, causing false-positive completions on slow-starting child sessions.
+
+**Depends on:** Phase 08 closure + delegation root-cause findings (`.planning/debug/delegation-root-cause-with-reference-2026-04-10.md`)
+
+**Plans:** 5 plans (derived from root-cause priorities and locked Phase 09 decisions)
+
+Plans:
+- [ ] 09-01-PLAN.md — Harden builtin-subsession completion with stable message/tool evidence and a 3-second poll loop
+- [ ] 09-02-PLAN.md — Replay durable pending notifications through `createCoreHooks` on parent create/resume
+- [ ] 09-03-PLAN.md — Preserve sync dispatch with a structured base64 output envelope instead of raw assistant text
+- [ ] 09-04-PLAN.md — Rename `run_in_background` to `async_dispatch` and add launch-time dispatch/tmux/poll config wiring
+- [ ] 09-05-PLAN.md — Implement the tmux visible-worker runner and re-verify delegated execution paths end-to-end
+
+**Root causes addressed:**
+
+| # | Root Cause | Phase 9 Plan |
+|---|-----------|--------------|
+| 1 | OpenCode status model insufficient for completion detection | 09-01 (message-count stability) |
+| 2 | `builtin-process` vs `builtin-subsession` diagnostic trap | Documented — no code change needed (classifier works correctly) |
+| 3 | Parent notification delivery not durable | 09-02 (wire replay on resume) |
+| 4 | Sync mode crashes JSON parser | 09-03 (remove or wrap in structured format) |
+| 5 | `background` naming collision | 09-04 (rename parameter) |
+| 6 | No message-count stability gate | 09-01 (3+ consecutive polls, parity with oh-my-openagent) |
+| 7 | Poll interval too long (15s vs 3s) | 09-01 (reduce to ~3s, match oh-my-openagent) |
+| 8 | No tmux integration | Deferred — strategic decision, not a bug |
+
+**oh-my-openagent parity gaps to close:**
+- ✅ Task lifecycle state machine — already has explicit `pending/running/completed/error` in lifecycle-manager
+- ❌ Message-count stability detection — **missing** (Priority 1)
+- ❌ Poll interval (15s → 3s) — **needs reduction** (Priority 1)
+- ❌ Parent notification durability — **persistence wired but replay missing** (Priority 2)
+- ❌ Sync mode output format — **crashes on large responses** (Priority 3)
