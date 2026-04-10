@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-10 (Phase 09 UAT failed forensic audit — re-plan required)
+**Updated:** 2026-04-10 (Phase 09 UAT failed → split into 9.1/9.2/9.3 sub-phases)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -14,7 +14,10 @@
 - [ ] **Phase 6: Runtime Domain Separation** — SUPERSEDED by Phase 11
 - [ ] **Phase 7: Runtime Domain Restructuring Planning** — SUPERSEDED by Phase 11
 - [x] **Phase 8: Repair Durable Parent Observability** — ✅ COMPLETE (corrective closure)
-- [ ] **Phase 9: Sticky Delegation Corrective** — ❌ UAT FAILED (forensic audit 2026-04-10: 5 runtime bugs, mock-heavy tests, code exists but non-functional. Re-plan required: 10 new plans)
+- [ ] **Phase 9: Sticky Delegation Corrective** — ❌ UAT FAILED → SPLIT into sub-phases
+- [ ] **Phase 9.1: Critical Bug Fixes + Test Rewrites** — D-15→D-19, D-20→D-24 (10 decisions)
+- [ ] **Phase 9.2: Completion Detection Architecture** — D-09→D-14, D-25→D-27 (9 decisions)
+- [ ] **Phase 9.3: Module Restructuring + Config** — D-01→D-08, D-28→D-30 (11 decisions)
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
@@ -118,37 +121,104 @@ Plans:
 
 **Closure reference:** `.planning/debug/delegation-root-cause-with-reference-2026-04-10.md` — canonical root-cause analysis that informed Phase 09 corrective planning.
 
-## Phase 9: Sticky Delegation Corrective
+## Phase 9: Sticky Delegation Corrective — SPLIT INTO SUB-PHASES
 
-**Goal:** Fix the multi-layered architectural mismatches identified in the Phase 08 root-cause analysis — message-count stability detection, parent notification durability, sync mode reliability, and execution-mode clarity.
+**Original goal:** Fix multi-layered architectural mismatches from Phase 08 root-cause analysis.
+**Original result:** ❌ UAT FAILED — forensic audit found 5 runtime bugs, mock-heavy tests, code exists but non-functional.
+**Decision:** Split 30 locked decisions across 7 clusters into 3 focused sub-phases.
 
-**Root cause:** The harness's completion detection lacks a second independent signal (message-count stability) that oh-my-openagent uses, causing false-positive completions on slow-starting child sessions.
+**Parent context:** `.planning/phases/09-sticky-delegation-corrective/09-CONTEXT.md` (all 30 decisions D-01→D-30)
 
-**Depends on:** Phase 08 closure + delegation root-cause findings (`.planning/debug/delegation-root-cause-with-reference-2026-04-10.md`)
+---
 
-**Plans:** 5 plans (derived from root-cause priorities and locked Phase 09 decisions)
+### Phase 9.1: Critical Bug Fixes + Test Rewrites
+
+**Goal:** Fix the 5 runtime bugs that make delegation non-functional, then rewrite the mock-heavy tests to validate real behavior. This is the unblock-everything phase.
+
+**Decisions:** D-15→D-19 (bug fixes), D-20→D-24 (test strategy) — 10 decisions
+**Depends on:** Phase 08 closure
+**Context:** `.planning/phases/09.1-critical-bug-fixes-test-rewrites/09.1-CONTEXT.md`
+
+**Bug fixes (from UAT forensic evidence):**
+- D-15: Add `status === "started"` branch in notification-handler.ts
+- D-16: Return `{ type: "unknown" }` instead of defaulting to `"busy"` in checkSessionExists()
+- D-17: Only count ASSISTANT messages as evidence, not user prompt
+- D-18: Don't cache external `session.idle` events; only cache internal stability timer results
+- D-19: Architectural — fire-and-forget stays, but observer must work correctly (D-15→D-18 fix it)
+
+**Test rewrites:**
+- D-20: In-memory adapters for SDK boundary (Clean Architecture testing pattern)
+- D-21: Mock only SDK transport + time; NEVER mock internal business logic
+- D-22: LOC > 300 not tolerable; dead code forbidden
+- D-23: Every test must surface rationales (WHY, WHAT, HOW)
+- D-24: Rewrite mock-heavy files: lifecycle-background-observer.test.ts, delegate-task.test.ts, delegate-task-overflow.test.ts, lifecycle-process-runner.test.ts
+
+**Plans:** 3 plans
 
 Plans:
-- [x] 09-01-PLAN.md — Harden builtin-subsession completion with stable message/tool evidence and a 3-second poll loop
-- [x] 09-02-PLAN.md — Replay durable pending notifications through `createCoreHooks` on parent create/resume
-- [x] 09-03-PLAN.md — Preserve sync dispatch with a structured base64 output envelope instead of raw assistant text
-- [x] 09-04-PLAN.md — Rename `run_in_background` to `async_dispatch` and add launch-time dispatch/tmux/poll config wiring
-- [x] 09-05-PLAN.md — Implement the tmux visible-worker runner and re-verify delegated execution paths end-to-end
+- [ ] 09.1-01-PLAN.md — Fix all 5 runtime bugs with TDD regression tests (D-15→D-19) [Wave 1]
+- [ ] 09.1-02-PLAN.md — Create in-memory SDK adapter + rewrite lifecycle-background-observer tests (D-20, D-21, D-22, D-23, D-24) [Wave 2]
+- [ ] 09.1-03-PLAN.md — Create delegate-task tests + rewrite process-runner tests with in-memory adapter (D-21, D-24) [Wave 3]
 
-**P0 gap fixed (2026-04-10):** `normalizeMetadata()` in `continuity-normalizers.ts` was silently dropping `defaultDispatchMode`, `tmuxAvailability`, `pollIntervalMs` on process restart. Fixed — typecheck + 604 tests green.
+---
 
-**Root causes addressed:**
+### Phase 9.2: Completion Detection Architecture
 
-| # | Root Cause | Phase 9 Plan |
-|---|-----------|--------------|
-| 1 | OpenCode status model insufficient for completion detection | 09-01 (message-count stability) |
-| 2 | `builtin-process` vs `builtin-subsession` diagnostic trap | Documented — no code change needed |
-| 3 | Parent notification delivery not durable | 09-02 (wire replay on resume) |
-| 4 | Sync mode crashes JSON parser | 09-03 (remove or wrap in structured format) |
-| 5 | `background` naming collision | 09-04 (rename parameter) |
-| 6 | No message-count stability gate | 09-01 (3+ consecutive polls, parity with oh-my-openagent) |
-| 7 | Poll interval too long (15s vs 3s) | 09-01 (reduce to ~3s, match oh-my-openagent) |
-| 8 | No tmux integration | Deferred — strategic decision, not a bug |
+**Goal:** Implement the user-specified completion detection logic — start gate, backoff polling, true completion, failure handling, parent coordination. This makes delegation actually work end-to-end.
+
+**Decisions:** D-09→D-14 (completion detection), D-25→D-27 (oh-my-openagent patterns) — 9 decisions
+**Depends on:** Phase 9.1 (bugs must be fixed first)
+**Context:** `.planning/phases/09.2-completion-detection-architecture/09.2-CONTEXT.md`
+
+**Completion detection sub-module:**
+- D-09: Completion detection as sub-module `src/lib/tasking/completion/`
+- D-10: START GATE — delegation only "started" when ≥1 thinking block + ≥2 tool calls verified
+- D-11: POLLING — 15s initial, +5s backoff, 60s cap
+- D-12: TRUE COMPLETION — last message is assistant + idle + 2 consecutive polls + start gate evidence
+- D-13: FAILURE HANDLING — 180s idle timeout, up to 2 retries, resume-first with same session ID
+- D-14: PARENT COORDINATION — main session closes only when ALL delegations + ALL user tasks complete
+
+**Reference architecture:**
+- D-25: Adapt oh-my-openagent BackgroundManager pattern
+- D-26: Adapt TmuxSessionManager pattern
+- D-27: Evaluate oh-my-openagent's direct message injection for notifications
+
+Plans:
+- [ ] 09.2-01-PLAN.md — Implement completion detection sub-module (start-gate, poll-strategy, completion-verifier)
+- [ ] 09.2-02-PLAN.md — Implement failure handling + parent coordination (failure-handler, parent-coordinator)
+- [ ] 09.2-03-PLAN.md — Wire completion detection into lifecycle-manager, end-to-end verification
+
+---
+
+### Phase 9.3: Module Restructuring + Config
+
+**Goal:** Split lifecycle-manager into tasking modules, add Zod config schema for tasking, fix type cycles, enforce LOC discipline. (Note: significant overlap with Phase 11 — consider merging if 9.3 scope is too similar.)
+
+**Decisions:** D-01→D-04 (module boundaries), D-05→D-08 (config surface), D-28→D-30 (code quality) — 11 decisions
+**Depends on:** Phase 9.2 (completion detection must be implemented)
+**Context:** `.planning/phases/09.3-module-restructuring-config/09.3-CONTEXT.md`
+
+**Module boundaries:**
+- D-01: Feature module pattern — `src/lib/tasking/` as coordination-tasking domain
+- D-02: 3-way split of lifecycle-manager.ts into tasking-coordinator, tasking-observer, tasking-dispatcher
+- D-03: Shared runner interface with TaskRunner contract
+- D-04: Config mindset — absence = freedom, presence = constraint
+
+**Config surface:**
+- D-05: Single harness.json at project root
+- D-06: Phase 9.3 implements config SCHEMA (Zod) + tasking wiring only
+- D-07: Configurable tasking aspects: agent→skill injection, category→model routing, concurrency, completion params
+- D-08: All internal hooks/plugins features user-configurable via JSON
+
+**Code quality:**
+- D-28: Extract duplicated PatchLifecycleArgs into shared runners/types.ts
+- D-29: Fix near-cycle types.ts → pending-notifications.ts → continuity.ts → types.ts
+- D-30: Split continuity-normalizers.ts (706 LOC) into domain-specific files
+
+Plans:
+- [ ] 09.3-01-PLAN.md — 3-way split of lifecycle-manager.ts into tasking modules
+- [ ] 09.3-02-PLAN.md — Zod config schema + tasking wiring
+- [ ] 09.3-03-PLAN.md — Type cycle fixes + continuity-normalizers split
 
 ## Phase 11: Clean Architecture Restructuring
 
@@ -253,7 +323,10 @@ Plans:
 | 6. Runtime Domain Separation | — | SUPERSEDED by Phase 11 |
 | 7. Runtime Domain Restructuring Planning | — | SUPERSEDED by Phase 11 |
 | 8. Repair Durable Parent Observability | 3/3 plans | ✅ COMPLETE — corrective closure, 2026-04-10 |
-| 9. Sticky Delegation Corrective | 5/5 + P0 fix | ✅ COMPLETE — 2026-04-10 |
+| 9. Sticky Delegation Corrective | — | ❌ FAILED → SPLIT into 9.1/9.2/9.3 |
+| 9.1 Critical Bug Fixes + Tests | 0/3 plans | Ready for planning |
+| 9.2 Completion Detection Architecture | 0/3 plans | Blocked by 9.1 |
+| 9.3 Module Restructuring + Config | 0/3 plans | Blocked by 9.2 |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 
 ## Dependencies
@@ -263,9 +336,11 @@ Phase 1 (7 done, 3 pending — planned)
   └─→ Phase 2: V3 Runtime baseline
        └─→ Phase 8: Corrective closure for delegated-session durability ✅
             └─→ Phase 2: Authoritative re-verification (18/18) ✅
-                 └─→ Phase 9: Sticky Delegation Corrective ✅
-                      └─→ Phase 11: Clean Architecture Restructuring (CURRENT)
-                           └─→ Phase 3: Schema Definition
-                                └─→ Phase 4: Migration Gate
-                                     └─→ Phase 5: Integration Verification
+                 └─→ Phase 9.1: Critical Bug Fixes + Test Rewrites (CURRENT)
+                      └─→ Phase 9.2: Completion Detection Architecture
+                           └─→ Phase 9.3: Module Restructuring + Config
+                                └─→ Phase 11: Clean Architecture Restructuring
+                                     └─→ Phase 3: Schema Definition
+                                          └─→ Phase 4: Migration Gate
+                                               └─→ Phase 5: Integration Verification
 ```
