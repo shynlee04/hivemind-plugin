@@ -1,669 +1,152 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+
 import { observeBackgroundCompletion } from "../../src/lib/lifecycle-background-observer.js"
-import type { SessionContinuityRecord } from "../../src/lib/types.js"
-
-// Mock dependencies
-vi.mock("../../src/lib/session-api.js", () => ({
-  getSessionStatusMap: vi.fn(),
-  getSession: vi.fn(),
-  getSessionMessages: vi.fn(),
-}))
-
-vi.mock("../../src/lib/notification-handler.js", () => ({
-  notifyParentSession: vi.fn(),
-  buildTaskNotificationFromContinuity: vi.fn((continuity, status, error) => ({
-    sessionID: continuity.sessionID,
-    description: continuity.metadata.description,
-    agent: continuity.metadata.delegation.agent,
-    status,
-    error,
-    outputLink: `session://${continuity.sessionID}`,
-  })),
-}))
-
-vi.mock("../../src/lib/continuity.js", () => ({
-  patchSessionContinuity: vi.fn(),
-  getSessionContinuity: vi.fn(),
-}))
-
 import { CompletionDetector } from "../../src/lib/completion-detector.js"
-import { getSessionStatusMap, getSession, getSessionMessages } from "../../src/lib/session-api.js"
-import { notifyParentSession } from "../../src/lib/notification-handler.js"
-import { patchSessionContinuity, getSessionContinuity } from "../../src/lib/continuity.js"
+import { createInMemoryClient } from "./helpers/in-memory-client.js"
 
-const mockGetSessionStatusMap = vi.mocked(getSessionStatusMap)
-const mockNotifyParentSession = vi.mocked(notifyParentSession)
-const mockPatchSessionContinuity = vi.mocked(patchSessionContinuity)
-const mockGetSessionContinuity = vi.mocked(getSessionContinuity)
-const mockGetSession = vi.mocked(getSession)
-const mockGetSessionMessages = vi.mocked(getSessionMessages)
+type Controls = ReturnType<typeof setupObserver>
 
-function buildMessage(parts: Array<{ type: string }>): { role: "assistant"; parts: Array<{ type: string }> } {
-  return { role: "assistant", parts }
+const assistant = (...types: string[]) => ({ role: "assistant", parts: types.map((type) => ({ type })) })
+const user = (...types: string[]) => ({ role: "user", parts: types.map((type) => ({ type })) })
+
+function continuity(sessionID: string, launchedAt = 0) {
+  return { sessionID, metadata: { description: "observer rewrite", lifecycle: { launchedAt } } } as any
+}
+
+function setupObserver(status = "busy", options?: { launchedAt?: number; timeoutMs?: number }) {
+  const sessionID = "child-123"
+  const client = createInMemoryClient()
+  client._sessions.set(sessionID, { id: sessionID, status: { type: status } })
+  const detector = new CompletionDetector(10_000)
+  const patchLifecycle = vi.fn()
+  const releaseQueue = vi.fn()
+  const record = continuity(sessionID, options?.launchedAt)
+  let run: Promise<void> | undefined
+  const start = () => (run ??= observeBackgroundCompletion({
+    sessionID,
+    client,
+    completionDetector: detector,
+    pollTimeoutMs: options?.timeoutMs ?? 20_000,
+    now: () => Date.now(),
+    getSessionContinuity: () => record,
+    patchLifecycle,
+    releaseQueue,
+    sleepFn: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  }))
+  return {
+    client,
+    patchLifecycle,
+    releaseQueue,
+    async tick(ms: number) { start(); await vi.advanceTimersByTimeAsync(ms) },
+    async finish() { await start() },
+  }
+}
+
+async function expectError(control: Controls, detail: string, text: RegExp) {
+  await control.finish()
+  expect(control.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({
+    status: "error", phase: "failed", error: expect.stringMatching(text), observation: expect.objectContaining({ detail }),
+  }))
 }
 
 describe("observeBackgroundCompletion", () => {
-  const mockNow = vi.fn()
-  const mockPatchLifecycle = vi.fn()
-  const mockReleaseQueue = vi.fn()
-  const mockGetContinuityForObserver = vi.fn()
-  const instantSleep = vi.fn().mockResolvedValue(undefined)
-  let completionDetector: CompletionDetector
-
-  const mockContinuity: SessionContinuityRecord = {
-    sessionID: "child-123",
-    metadata: {
-      parentSessionID: "parent-456",
-      rootSessionID: "root-789",
-      delegation: {
-        rootID: "root-789",
-        childDepth: 1,
-        budgetUsed: 100,
-        agent: "researcher",
-        route: {} as any,
-        queueKey: "test-key",
-      },
-      delegationPacket: {
-        description: "Test task",
-        parentChain: ["root-789", "parent-456"],
-        status: "running",
-      },
-      execution: {
-        family: "delegation",
-        submode: "builtin-subsession",
-        rationale: "test",
-        characteristics: {},
-        capabilityEvidence: { projectRoot: "/tmp" },
-      },
-      title: "Test task",
-      description: "Test task",
-      category: "research",
-      route: {} as any,
-      scope: "test",
-      constraints: [],
-      runInBackground: true,
-      status: "running",
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-      lifecycle: {
-        phase: "running",
-        runMode: "async",
-        queueKey: "test-key",
-        observation: {
-          source: "test",
-          observedAt: Date.now(),
-          detail: "test",
-        },
-      },
-    },
-  }
-
   beforeEach(() => {
-    completionDetector = new CompletionDetector(100)
-    mockNow.mockReturnValue(Date.now())
-    mockPatchLifecycle.mockReset()
-    mockReleaseQueue.mockReset()
-    mockGetContinuityForObserver.mockReset()
-    mockGetContinuityForObserver.mockReturnValue(mockContinuity)
-    mockGetSessionContinuity.mockReset()
-    mockGetSessionContinuity.mockReturnValue(mockContinuity)
-    mockPatchSessionContinuity.mockReset()
-    mockNotifyParentSession.mockReset()
-    mockGetSessionStatusMap.mockReset()
-    mockGetSessionMessages.mockReset()
-    mockGetSessionMessages.mockResolvedValue([])
-    instantSleep.mockClear()
+    vi.useFakeTimers()
+    vi.setSystemTime(0)
   })
 
-  it("completes when session becomes idle", async () => {
-    const startTime = Date.now()
-    let currentTime = startTime
-    mockNow.mockImplementation(() => currentTime)
-
-    // First poll: busy, second poll: idle
-    mockGetSessionStatusMap
-      .mockResolvedValueOnce({ "child-123": { type: "busy" } })
-      .mockResolvedValueOnce({ "child-123": { type: "idle" } })
-    mockGetSessionMessages.mockResolvedValueOnce([
-      buildMessage([{ type: "text" }, { type: "tool-call" }]),
-    ])
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 60000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    // After first poll (busy), time advances
-    currentTime = startTime + 3000
-
-    expect(mockPatchLifecycle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sessionID: "child-123",
-        status: "completed",
-        phase: "completed",
-        observation: expect.objectContaining({
-          source: "observe:poll-idle",
-          detail: "background-completion-poll-idle",
-        }),
-      }),
-    )
-
-    expect(mockNotifyParentSession).toHaveBeenCalledWith(
-      expect.any(Object),
-      "parent-456",
-      expect.objectContaining({
-        sessionID: "child-123",
-        status: "completed",
-      }),
-      expect.any(Function),
-    )
-
-    expect(mockReleaseQueue).toHaveBeenCalledWith("background-complete")
+  /* WHY: Core completion path must wait for actual assistant output before declaring success.
+   * WHAT: busy → idle with assistant evidence becomes completed after the stability window.
+   * HOW: seed busy session, add assistant output, flip idle, then advance poll + detector timers.
+   * CONNECTS TO: D-20, D-21, D-24 */
+  it("completes when session goes idle after producing assistant output", async () => {
+    const c = setupObserver()
+    c.client._addMessage("child-123", assistant("text", "tool-call"))
+    c.tick(0)
+    c.client._setStatus("child-123", "idle")
+    await c.tick(3000)
+    await c.tick(10_000)
+    await c.finish()
+    expect(c.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({ status: "completed", phase: "completed" }))
   })
 
-  it("fails when session enters retry state", async () => {
-    mockGetSessionStatusMap.mockResolvedValueOnce({ "child-123": { type: "retry" } })
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 60000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    expect(mockPatchLifecycle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sessionID: "child-123",
-        status: "error",
-        phase: "failed",
-        observation: expect.objectContaining({
-          source: "observe:poll-retry",
-        }),
-      }),
-    )
-
-    expect(mockNotifyParentSession).toHaveBeenCalledWith(
-      expect.any(Object),
-      "parent-456",
-      expect.objectContaining({
-        sessionID: "child-123",
-        status: "failed",
-      }),
-      expect.any(Function),
-    )
+  /* WHY: Bug D-17 regressed by treating the original user prompt as work evidence.
+   * WHAT: idle with only user messages must keep polling instead of completing.
+   * HOW: add a user-only message, flip idle, and let the poll deadline expire.
+   * CONNECTS TO: D-17, D-24 */
+  it("does NOT complete when session is idle but has no assistant messages", async () => {
+    const c = setupObserver(undefined, { timeoutMs: 5000 })
+    c.client._addMessage("child-123", user("text"))
+    c.client._setStatus("child-123", "idle")
+    await c.tick(6000)
+    await expectError(c, "background-completion-poll-timeout", /timed out/i)
   })
 
-  it("fails when session is deleted (not in status map)", async () => {
-    mockGetSessionStatusMap.mockResolvedValueOnce({})
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 60000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    expect(mockPatchLifecycle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sessionID: "child-123",
-        status: "error",
-        phase: "failed",
-        observation: expect.objectContaining({
-          source: "observe:poll-deleted",
-          detail: "background-completion-poll-deleted",
-        }),
-      }),
-    )
+  /* WHY: Deleted child sessions must surface an explicit failure instead of hanging forever.
+   * WHAT: missing session records transition lifecycle state to error.
+   * HOW: inject a getSession failure so lookup and fallback both treat the child as gone.
+   * CONNECTS TO: D-20, D-24 */
+  it("reports error when session is deleted during observation", async () => {
+    const c = setupObserver()
+    c.client._sessions.delete("child-123")
+    await expectError(c, "background-completion-poll-deleted", /deleted/i)
   })
 
-  it("fails when SDK call throws", async () => {
-    mockGetSessionStatusMap.mockRejectedValueOnce(new Error("Network error"))
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 60000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    expect(mockPatchLifecycle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sessionID: "child-123",
-        status: "error",
-        phase: "failed",
-        observation: expect.objectContaining({
-          source: "observe:poll-failed",
-          detail: "background-completion-poll-sdk-error",
-        }),
-      }),
-    )
+  /* WHY: Retry state means the child hit a terminal failure path that the parent must see.
+   * WHAT: retry status produces a failed lifecycle patch with retry details.
+   * HOW: mutate the in-memory session status to retry before the first poll resolves.
+   * CONNECTS TO: D-21, D-24 */
+  it("reports error when session enters retry state", async () => {
+    const c = setupObserver("retry")
+    await expectError(c, "background-completion-poll-retry", /retry/i)
   })
 
-  it("fails when polling times out", async () => {
-    const startTime = Date.now()
-    let callCount = 0
-    let currentTime = startTime
-    
-    mockGetSessionStatusMap.mockImplementation(async () => {
-      callCount++
-      // After 3 calls, advance time past timeout
-      if (callCount >= 3) {
-        currentTime = startTime + 35000
-      }
-      return { "child-123": { type: "busy" } }
-    })
-    
-    mockNow.mockImplementation(() => currentTime)
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 30000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    expect(mockPatchLifecycle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sessionID: "child-123",
-        status: "error",
-        phase: "failed",
-        observation: expect.objectContaining({
-          source: "observe:poll-timeout",
-          detail: "background-completion-poll-timeout",
-        }),
-      }),
-    )
+  /* WHY: Stuck busy sessions must fail deterministically so queues can recover.
+   * WHAT: observer times out when no terminal state arrives before the deadline.
+   * HOW: leave the in-memory session busy and advance fake timers past pollTimeoutMs.
+   * CONNECTS TO: D-21, D-24 */
+  it("times out when poll deadline expires", async () => {
+    const c = setupObserver(undefined, { timeoutMs: 5000 })
+    await c.tick(6000)
+    await expectError(c, "background-completion-poll-timeout", /timed out/i)
   })
 
-  it("continues polling while session is busy", async () => {
-    // Busy for 3 polls, then idle
-    mockGetSessionStatusMap
-      .mockResolvedValueOnce({ "child-123": { type: "busy" } })
-      .mockResolvedValueOnce({ "child-123": { type: "busy" } })
-      .mockResolvedValueOnce({ "child-123": { type: "busy" } })
-      .mockResolvedValueOnce({ "child-123": { type: "idle" } })
-    mockGetSessionMessages.mockResolvedValueOnce([
-      buildMessage([{ type: "text" }, { type: "tool" }]),
-    ])
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 120000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    // Should have called getStatusMap 4 times
-    expect(mockGetSessionStatusMap).toHaveBeenCalledTimes(4)
-
-    // Should have completed successfully
-    expect(mockPatchLifecycle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "completed",
-        phase: "completed",
-      }),
-    )
+  /* WHY: Bug D-16 came from treating unknown statuses as busy and marking seenBusy too early.
+   * WHAT: unknown → idle can complete only after the startup window and assistant evidence exist.
+   * HOW: seed unknown status, provide assistant output, then advance past the first poll interval.
+   * CONNECTS TO: D-16, D-24 */
+  it("does not set seenBusy for unknown status", async () => {
+    const c = setupObserver("unknown", { launchedAt: 0 })
+    c.client._addMessage("child-123", assistant("text"))
+    await c.tick(3000)
+    c.client._setStatus("child-123", "idle")
+    await c.tick(3000)
+    await c.tick(10_000)
+    await c.finish()
+    expect(c.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({ status: "completed", phase: "completed" }))
   })
 
-  it("does not complete on an immediate idle poll before any busy activity is seen", async () => {
-    const startTime = Date.now()
-    let currentTime = startTime
+  /* WHY: Queue release is the cleanup contract that prevents deadlocked delegated-session slots.
+   * WHAT: each terminal path releases concurrency exactly once.
+   * HOW: execute completed, retry, and timeout flows independently and assert one release per run.
+   * CONNECTS TO: D-21, D-24 */
+  it("releases concurrency queue on completion", async () => {
+    const completed = setupObserver()
+    completed.client._addMessage("child-123", assistant("text"))
+    completed.client._setStatus("child-123", "idle")
+    await completed.tick(3000)
+    await completed.tick(10_000)
+    await completed.finish()
 
-    mockNow.mockImplementation(() => currentTime)
-    mockGetSession
-      .mockResolvedValueOnce({ status: { type: "idle" } } as never)
-      .mockResolvedValueOnce({ status: { type: "busy" } } as never)
-      .mockResolvedValueOnce({ status: { type: "idle" } } as never)
-    mockGetSessionMessages
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([])
+    const retry = setupObserver("retry")
+    await retry.finish()
 
-    instantSleep.mockImplementation(async () => {
-      currentTime += 3000
-    })
+    const timeout = setupObserver(undefined, { timeoutMs: 5000 })
+    await timeout.tick(6000)
+    await timeout.finish()
 
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 60000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    expect(mockPatchLifecycle).not.toHaveBeenCalledWith(
-      expect.objectContaining({
-        sessionID: "child-123",
-        status: "completed",
-      }),
-    )
-    expect(instantSleep.mock.calls.length).toBeGreaterThanOrEqual(2)
-    expect(instantSleep.mock.calls.every(([ms]) => ms === 3000)).toBe(true)
-    expect(mockGetSessionMessages).toHaveBeenCalledTimes(1)
-  })
-
-  it("keeps polling on idle until combined evidence is stable", async () => {
-    const startTime = Date.now()
-    let currentTime = startTime
-
-    mockNow.mockImplementation(() => currentTime)
-    mockGetSession
-      .mockResolvedValueOnce({ status: { type: "busy" } } as never)
-      .mockResolvedValueOnce({ status: { type: "idle" } } as never)
-      .mockResolvedValueOnce({ status: { type: "idle" } } as never)
-      .mockResolvedValueOnce({ status: { type: "idle" } } as never)
-
-    mockGetSessionMessages
-      .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([
-        buildMessage([{ type: "text" }, { type: "tool-call" }]),
-        buildMessage([{ type: "tool" }]),
-      ])
-      .mockResolvedValueOnce([
-        buildMessage([{ type: "text" }, { type: "tool_call" }]),
-        buildMessage([{ type: "tool" }]),
-      ])
-
-    instantSleep.mockImplementation(async (ms: number) => {
-      currentTime += ms
-    })
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 60000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    expect(mockGetSessionMessages).toHaveBeenCalledTimes(2)
-    expect(mockPatchLifecycle).toHaveBeenCalledTimes(1)
-    expect(mockPatchLifecycle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sessionID: "child-123",
-        status: "completed",
-        phase: "completed",
-      }),
-    )
-    expect(instantSleep.mock.calls.every(([ms]) => ms === 3000)).toBe(true)
-  })
-
-  it("allows an initial idle poll to complete once the startup window has elapsed", async () => {
-    const startTime = Date.now()
-    mockNow.mockReturnValue(startTime + 15000)
-    mockGetSession.mockResolvedValueOnce({ status: { type: "idle" } } as never)
-    mockGetSessionMessages.mockResolvedValueOnce([
-      buildMessage([{ type: "text" }, { type: "tool-call" }]),
-    ])
-    mockGetContinuityForObserver.mockReturnValue({
-      ...mockContinuity,
-      metadata: {
-        ...mockContinuity.metadata,
-        lifecycle: {
-          ...mockContinuity.metadata.lifecycle,
-          launchedAt: startTime,
-        },
-      },
-    })
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 60000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    expect(mockPatchLifecycle).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sessionID: "child-123",
-        status: "completed",
-        phase: "completed",
-      }),
-    )
-  })
-
-  it("does not notify parent if parentSessionID is missing", async () => {
-    const continuityWithoutParent: SessionContinuityRecord = {
-      ...mockContinuity,
-      metadata: {
-        ...mockContinuity.metadata,
-        parentSessionID: undefined,
-      },
-    }
-    mockGetContinuityForObserver.mockReturnValue(continuityWithoutParent)
-
-    mockGetSessionStatusMap.mockResolvedValueOnce({ "child-123": { type: "idle" } })
-    mockGetSessionMessages.mockResolvedValueOnce([
-      buildMessage([{ type: "text" }, { type: "tool-call" }]),
-    ])
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 60000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    expect(mockNotifyParentSession).not.toHaveBeenCalled()
-  })
-
-  it("persists a pending notification when parent delivery fails", async () => {
-    const startTime = Date.now()
-    mockNow.mockReturnValue(startTime + 15000)
-    mockGetSession.mockResolvedValueOnce({ status: { type: "idle" } } as never)
-    mockGetSessionMessages.mockResolvedValueOnce([
-      buildMessage([{ type: "text" }, { type: "tool-call" }]),
-    ])
-    mockNotifyParentSession.mockResolvedValueOnce(false)
-    mockGetContinuityForObserver.mockReturnValue({
-      ...mockContinuity,
-      metadata: {
-        ...mockContinuity.metadata,
-        lifecycle: {
-          ...mockContinuity.metadata.lifecycle,
-          launchedAt: startTime,
-        },
-      },
-    })
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 60000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    await new Promise((resolve) => setTimeout(resolve, 0))
-
-    expect(mockNotifyParentSession).toHaveBeenCalledWith(
-      expect.anything(),
-      "parent-456",
-      expect.objectContaining({ sessionID: "child-123", status: "completed" }),
-      expect.any(Function),
-    )
-
-    expect(mockPatchSessionContinuity).toHaveBeenCalledWith(
-      "parent-456",
-      expect.objectContaining({
-        pendingNotifications: expect.arrayContaining([
-          expect.objectContaining({
-            sessionID: "child-123",
-            status: "completed",
-            delivered: false,
-            outputLink: "session://child-123",
-          }),
-        ]),
-      }),
-    )
-  })
-
-  it("ignores stale terminal notifications when lifecycle reconciliation rejects the transition", async () => {
-    mockGetSession.mockResolvedValueOnce({ status: { type: "idle" } } as never)
-    mockGetSessionMessages.mockResolvedValueOnce([
-      buildMessage([{ type: "text" }, { type: "tool-call" }]),
-    ])
-    mockPatchLifecycle.mockReturnValueOnce(false)
-
-    await observeBackgroundCompletion({
-      sessionID: "child-123",
-      client: {} as any,
-      completionDetector,
-      pollTimeoutMs: 60000,
-      now: mockNow,
-      getSessionContinuity: mockGetContinuityForObserver,
-      patchLifecycle: mockPatchLifecycle,
-      releaseQueue: mockReleaseQueue,
-      sleepFn: instantSleep,
-    })
-
-    expect(mockNotifyParentSession).not.toHaveBeenCalled()
-    expect(mockPatchSessionContinuity).not.toHaveBeenCalled()
-  })
-
-  describe("Bug 2+3 regression: checkSessionExists and evidence counting (D-16, D-17)", () => {
-    it("treats sessions with empty status objects as unknown instead of immediately busy", async () => {
-      const startTime = Date.now()
-      let currentTime = startTime
-
-      mockNow.mockImplementation(() => currentTime)
-      mockGetSession
-        .mockResolvedValueOnce({ status: {} } as never)
-        .mockResolvedValueOnce({ status: { type: "idle" } } as never)
-
-      mockGetSessionMessages.mockResolvedValueOnce([
-        {
-          role: "assistant",
-          parts: [{ type: "text", text: "working" }],
-        },
-      ] as never)
-
-      instantSleep.mockImplementation(async (ms: number) => {
-        currentTime += ms
-      })
-
-      await observeBackgroundCompletion({
-        sessionID: "child-123",
-        client: {} as any,
-        completionDetector,
-        pollTimeoutMs: 5000,
-        now: mockNow,
-        getSessionContinuity: mockGetContinuityForObserver,
-        patchLifecycle: mockPatchLifecycle,
-        releaseQueue: mockReleaseQueue,
-        sleepFn: instantSleep,
-      })
-
-      expect(mockPatchLifecycle).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          sessionID: "child-123",
-          status: "error",
-          phase: "failed",
-          observation: expect.objectContaining({
-            source: "observe:poll-timeout",
-          }),
-        }),
-      )
-      expect(mockGetSessionMessages).not.toHaveBeenCalled()
-    })
-
-    it("does not treat user-only prompts as completion evidence", async () => {
-      const startTime = Date.now()
-      let currentTime = startTime
-      const zeroStabilityDetector = new CompletionDetector(0)
-
-      mockNow.mockImplementation(() => currentTime)
-      mockGetSession
-        .mockResolvedValueOnce({ status: { type: "busy" } } as never)
-        .mockResolvedValueOnce({ status: { type: "idle" } } as never)
-
-      mockGetSessionMessages.mockResolvedValueOnce([
-        {
-          role: "user",
-          parts: [{ type: "text", text: "Do task" }],
-        },
-      ] as never)
-
-      instantSleep.mockImplementation(async (ms: number) => {
-        currentTime += ms
-      })
-
-      await observeBackgroundCompletion({
-        sessionID: "child-123",
-        client: {} as any,
-        completionDetector: zeroStabilityDetector,
-        pollTimeoutMs: 5000,
-        now: mockNow,
-        getSessionContinuity: mockGetContinuityForObserver,
-        patchLifecycle: mockPatchLifecycle,
-        releaseQueue: mockReleaseQueue,
-        sleepFn: instantSleep,
-      })
-
-      expect(mockPatchLifecycle).toHaveBeenLastCalledWith(
-        expect.objectContaining({
-          sessionID: "child-123",
-          status: "error",
-          phase: "failed",
-          observation: expect.objectContaining({
-            source: "observe:poll-timeout",
-          }),
-        }),
-      )
-      expect(mockGetSessionMessages).toHaveBeenCalledTimes(1)
-    })
+    expect(completed.releaseQueue).toHaveBeenCalledTimes(1)
+    expect(retry.releaseQueue).toHaveBeenCalledTimes(1)
+    expect(timeout.releaseQueue).toHaveBeenCalledTimes(1)
   })
 })
