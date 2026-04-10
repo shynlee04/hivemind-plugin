@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: None — Phase 09 needs planning
-status: phase-complete
-stopped_at: Phase 09 context gathered
-last_updated: "2026-04-10T10:25:35.971Z"
+current_plan: 1
+status: Ready to execute
+stopped_at: Completed 09-1-PLAN.md
+last_updated: "2026-04-10T12:00:09.787Z"
 progress:
   total_phases: 9
   completed_phases: 3
-  total_plans: 13
-  completed_plans: 13
-  percent: 100
+  total_plans: 18
+  completed_plans: 14
+  percent: 78
 ---
 
 # STATE: Harness Cleanup
@@ -21,16 +21,17 @@ progress:
 See: `.planning/PROJECT.md` (updated 2026-04-09)
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
-**Current focus:** Phase 09 — sticky-delegation-corrective (new)
+**Current focus:** Phase 09 — sticky-delegation-corrective
 
 ## Current Position
 
-Phase: 09 (sticky-delegation-corrective) — READY FOR PLANNING
+Phase: 09 (sticky-delegation-corrective) — EXECUTING
+Plan: 2 of 5
 Phase 08: ✅ COMPLETE — corrective closure closed 2026-04-10
 **Phase 02:** fully re-verified at 18/18 after Phase 08 corrective closure
 **Phase 08:** closed with delegation root-cause findings as canonical reference
-**Current plan:** None — Phase 09 needs planning
-**Progress:** Phase 08 [██████████] 100% | Phase 09 [░░░░░░░░░░] 0%
+**Current plan:** 1
+**Progress:** [████████░░] 78%
 
 ```
 Phase 1: Baseline Cleanup ......... ✅ COMPLETE (10/10 items)
@@ -73,6 +74,7 @@ Phase 9: Sticky Delegation Corrective 🔄 READY FOR PLANNING
 | Phase 02-v3-runtime-architecture P08 | 14 min | 2 tasks | 9 files |
 | Phase 02 P09 | 8 min | 3 tasks | 9 files |
 | Phase 08-repair-durable-parent-observability-for-delegated-sessions P03 | 89min | 6 tasks | 22 files |
+| Phase 09 P1 | 4 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -108,6 +110,8 @@ Phase 9: Sticky Delegation Corrective 🔄 READY FOR PLANNING
 - [2026-04-10]: Phase 08 closed — runtime policy override seam restored, parent-visible truth hardened, Phase 02 re-verification green at 18/18.
 - [2026-04-10]: Phase 09 added — sticky delegation corrective based on root-cause analysis in `.planning/debug/delegation-root-cause-with-reference-2026-04-10.md`.
 - [2026-04-10]: Phase 08 closure docs reference the delegation root-cause analysis as canonical evidence for Phase 09 planning.
+- [Phase 09]: Count combined evidence as messages plus tool-call parts before accepting idle completion.
+- [Phase 09]: Reuse CompletionDetector as the stable-idle gate and keep builtin-subsession polling at 3000ms.
 
 ### Roadmap Evolution
 
@@ -145,7 +149,7 @@ Phase 9: Sticky Delegation Corrective 🔄 READY FOR PLANNING
 **Branch:** feature/harness-implementation
 **Commits on branch:** 19
 
-**Stopped At:** Phase 09 context gathered
+**Stopped At:** Completed 09-1-PLAN.md
 
 **Key files:**
 

@@ -172,7 +172,7 @@ Plans:
 **Plans:** 5 plans (derived from root-cause priorities and locked Phase 09 decisions)
 
 Plans:
-- [ ] 09-01-PLAN.md — Harden builtin-subsession completion with stable message/tool evidence and a 3-second poll loop
+- [x] 09-01-PLAN.md — Harden builtin-subsession completion with stable message/tool evidence and a 3-second poll loop
 - [ ] 09-02-PLAN.md — Replay durable pending notifications through `createCoreHooks` on parent create/resume
 - [ ] 09-03-PLAN.md — Preserve sync dispatch with a structured base64 output envelope instead of raw assistant text
 - [ ] 09-04-PLAN.md — Rename `run_in_background` to `async_dispatch` and add launch-time dispatch/tmux/poll config wiring
