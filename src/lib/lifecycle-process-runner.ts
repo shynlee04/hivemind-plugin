@@ -294,6 +294,32 @@ type RunLifecycleSubsessionArgs = {
   now: () => number
 }
 
+function buildSyncSubsessionEnvelope(args: {
+  sessionID: string
+  parentSessionID: string
+  rootID: string
+  agent: string
+  category?: string
+  model?: string
+  output: string
+}): string {
+  return JSON.stringify(
+    {
+      ok: true,
+      mode: "sync",
+      session_id: args.sessionID,
+      parent_session_id: args.parentSessionID,
+      root_session_id: args.rootID,
+      agent: args.agent,
+      category: args.category,
+      model: args.model,
+      output: Buffer.from(args.output, "utf8").toString("base64"),
+    },
+    null,
+    2,
+  )
+}
+
 export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArgs): Promise<string> {
   if (args.runInBackground) {
     // Use promptAsync so the platform keeps the child session alive
@@ -387,20 +413,29 @@ export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArg
   try {
     const response = await sendPrompt(args.client, args.sessionID, args.body)
     const assistantText = extractTextFromResponse(response)
+    const completedAt = args.now()
 
     args.patchLifecycle({
       sessionID: args.sessionID,
       status: "completed",
       phase: "completed",
-      completedAt: args.now(),
+      completedAt,
       observation: {
         source: "observe:sync",
-        observedAt: args.now(),
+        observedAt: completedAt,
         detail: "assistant-output-ready",
       },
     })
 
-    return assistantText
+    return buildSyncSubsessionEnvelope({
+      sessionID: args.sessionID,
+      parentSessionID: args.parentSessionID,
+      rootID: args.rootID,
+      agent: args.agent,
+      category: args.category,
+      model: args.model,
+      output: assistantText,
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     args.patchLifecycle({

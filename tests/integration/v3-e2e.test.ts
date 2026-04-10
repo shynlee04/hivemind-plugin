@@ -316,8 +316,14 @@ describe("HiveMind V3 integration coverage", () => {
       parts: [{ type: "text", text: "done:child-1" }],
     })
 
-    await expect(firstLaunch).resolves.toBe("done:child-1")
-    await expect(secondLaunch).resolves.toBe("done:child-2")
+    await expect(firstLaunch).resolves.toSatisfy((raw) => {
+      expect(decodeSyncEnvelope(raw).decodedOutput).toBe("done:child-1")
+      return true
+    })
+    await expect(secondLaunch).resolves.toSatisfy((raw) => {
+      expect(decodeSyncEnvelope(raw).decodedOutput).toBe("done:child-2")
+      return true
+    })
 
     const completed = getSessionContinuity("child-2")
     expect(completed?.metadata.lifecycle?.phase).toBe("completed")
