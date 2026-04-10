@@ -25,6 +25,7 @@ async function loadHookModules(filePath: string) {
   return {
     createCoreHooks,
     createSessionHooks,
+    getSessionContinuity: continuityModule.getSessionContinuity,
     recordSessionContinuity: continuityModule.recordSessionContinuity,
     recordGovernancePersistenceState: continuityModule.recordGovernancePersistenceState,
     getGovernancePersistenceState: continuityModule.getGovernancePersistenceState,
@@ -407,6 +408,111 @@ describe("createCoreHooks", () => {
     expect(systemOutput.system).toBeUndefined()
     expect(compactionOutput.context).not.toEqual(
       expect.arrayContaining([expect.stringContaining("builder-specialist-lane")]),
+    )
+  })
+
+  it("replays pending background notifications when the parent session is created", async () => {
+    const {
+      createCoreHooks,
+      getSessionContinuity,
+      recordSessionContinuity,
+      TaskStateManager,
+    } = await loadHookModules(continuityFile)
+    const showToast = vi.fn()
+    recordSessionContinuity(buildContinuityRecord("sess-pending", {
+      metadata: {
+        ...buildContinuityRecord("sess-pending").metadata,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        lastObservedAt: Date.now(),
+        pendingNotifications: [
+          {
+            sessionID: "child-pending",
+            description: "compile report",
+            agent: "researcher",
+            status: "completed",
+            briefSummary: "Researcher finished the background report.",
+            outputLink: "session://child-pending",
+            createdAt: 1,
+            delivered: false,
+          },
+        ],
+      },
+    }))
+
+    const hooks = createCoreHooks({
+      lifecycleManager: { handleEvent: vi.fn() } as never,
+      client: { tui: { showToast } } as never,
+      stateManager: new TaskStateManager(),
+    })
+    const systemOutput: { system?: unknown } = {}
+
+    await hooks.event({ event: makeEvent("sess-pending", "session.created") })
+    await hooks["system.transform"]({ sessionID: "sess-pending" }, systemOutput)
+
+    expect(showToast).toHaveBeenCalledWith({
+      body: {
+        message: expect.stringContaining("Pending background task notifications:"),
+        variant: "info",
+      },
+    })
+    expect(getSessionContinuity("sess-pending")?.metadata.pendingNotifications).toEqual([])
+    expect(systemOutput.system).not.toEqual(
+      expect.arrayContaining([expect.stringContaining("Pending background task notifications:")]),
+    )
+  })
+
+  it("replays pending background notifications once on session updates after recovery", async () => {
+    const {
+      createCoreHooks,
+      getSessionContinuity,
+      recordSessionContinuity,
+      TaskStateManager,
+    } = await loadHookModules(continuityFile)
+    const showToast = vi.fn()
+    const now = Date.now()
+
+    recordSessionContinuity(buildContinuityRecord("sess-resume", {
+      metadata: {
+        ...buildContinuityRecord("sess-resume").metadata,
+        createdAt: now,
+        updatedAt: now,
+        lastObservedAt: now,
+        status: "running",
+        pendingNotifications: [
+          {
+            sessionID: "child-resume",
+            description: "resume work",
+            agent: "builder",
+            status: "completed",
+            briefSummary: "Recovered child session finished while parent was away.",
+            outputLink: "session://child-resume",
+            createdAt: now,
+            delivered: false,
+          },
+        ],
+      },
+    }))
+
+    const hooks = createCoreHooks({
+      lifecycleManager: { handleEvent: vi.fn() } as never,
+      client: { tui: { showToast } } as never,
+      stateManager: new TaskStateManager(),
+    })
+    const systemOutput: { system?: unknown } = {}
+
+    await hooks.event({ event: makeEvent("sess-resume", "session.updated") })
+    await hooks["system.transform"]({ sessionID: "sess-resume" }, systemOutput)
+
+    expect(showToast).toHaveBeenCalledWith({
+      body: {
+        message: expect.stringContaining("Recovered child session finished while parent was away."),
+        variant: "info",
+      },
+    })
+    expect(getSessionContinuity("sess-resume")?.metadata.pendingNotifications).toEqual([])
+    expect(systemOutput.system).not.toEqual(
+      expect.arrayContaining([expect.stringContaining("Pending background task notifications:")]),
     )
   })
 })
