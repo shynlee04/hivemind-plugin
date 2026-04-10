@@ -97,7 +97,7 @@ describe("delegate-task overflow: oversized prompt handling", () => {
         {
           description: "Large prompt overflow test",
           prompt: oversizedPrompt,
-          run_in_background: true,
+          async_dispatch: true,
         },
         mockCtx,
       )
@@ -132,7 +132,7 @@ describe("delegate-task overflow: oversized prompt handling", () => {
       {
         description: "Large prompt passthrough",
         prompt: oversizedPrompt,
-        run_in_background: true,
+        async_dispatch: true,
       },
       mockCtx,
     )
@@ -198,7 +198,7 @@ describe("delegate-task overflow: oversized prompt handling", () => {
         description: "Large prompt + many constraints",
         prompt: oversizedPrompt,
         constraints: manyConstraints,
-        run_in_background: true,
+        async_dispatch: true,
       },
       mockCtx,
     )
@@ -224,7 +224,7 @@ describe("delegate-task overflow: oversized prompt handling", () => {
       {
         description: "Empty prompt test",
         prompt: "",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )
@@ -267,7 +267,7 @@ describe("delegate-task overflow: oversized prompt handling", () => {
       {
         description: "Large sync envelope overflow test",
         prompt: "Return the full large result synchronously.",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )

@@ -48,6 +48,18 @@ describe("delegate-task tool category routing", () => {
     taskState.clear()
   })
 
+  it("describes async_dispatch as async child-session delegation", () => {
+    const client = createClient({
+      "parent-session": { id: "parent-session" },
+    })
+    const { lifecycleManager } = createLifecycleManagerMock()
+    const tool = createDelegateTaskTool(lifecycleManager, client)
+
+    expect(tool.description).toContain("async child session")
+    expect(tool.description).not.toContain("background processes")
+    expect(tool.description).not.toContain("run_in_background")
+  })
+
   it("uses category defaults to resolve effective agent, model, and temperature", async () => {
     const client = createClient({
       "parent-session": { id: "parent-session" },
@@ -60,7 +72,7 @@ describe("delegate-task tool category routing", () => {
         description: "Investigate routing",
         prompt: "Trace the category routing path.",
         category: "research",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )
@@ -74,6 +86,9 @@ describe("delegate-task tool category routing", () => {
         agentSource: string
         modelSource: string
       }
+      defaultDispatchMode: string
+      tmuxAvailability: string
+      pollIntervalMs: number
     }
 
     expect(launchArgs.agent).toBe("researcher")
@@ -82,6 +97,9 @@ describe("delegate-task tool category routing", () => {
     expect(launchArgs.route.temperature).toBe(CATEGORY_DEFAULTS.research.temperature)
     expect(launchArgs.route.agentSource).toBe("category")
     expect(launchArgs.route.modelSource).toBe("category")
+    expect(launchArgs.defaultDispatchMode).toBe("sync")
+    expect(launchArgs.tmuxAvailability).toMatch(/^(auto|enabled|disabled)$/)
+    expect([3000, 5000, 15000]).toContain(launchArgs.pollIntervalMs)
   })
 
   it("lets an explicit agent override the category tool profile and temperature source", async () => {
@@ -97,7 +115,7 @@ describe("delegate-task tool category routing", () => {
         prompt: "Review the route resolution.",
         category: "research",
         agent: "critic",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )
@@ -134,7 +152,7 @@ describe("delegate-task tool category routing", () => {
         prompt: "Implement the routing fix.",
         category: "implementation",
         model: "gpt-5.4",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )
@@ -162,7 +180,7 @@ describe("delegate-task tool category routing", () => {
         description: "Deep investigation",
         prompt: "Investigate thoroughly.",
         category: "deep",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )
@@ -172,7 +190,7 @@ describe("delegate-task tool category routing", () => {
         description: "Quick implementation",
         prompt: "Handle the quick path.",
         category: "quick",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )
@@ -203,7 +221,7 @@ describe("delegate-task tool category routing", () => {
       {
         description: "Reserve before launch",
         prompt: "Launch through the reservation flow.",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )
@@ -240,7 +258,7 @@ describe("delegate-task tool category routing", () => {
         description: "Implement routing",
         prompt: "Edit the runtime wiring to complete the task.",
         category: "implementation",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )
@@ -274,7 +292,7 @@ describe("delegate-task tool category routing", () => {
         description: "Research runtime gaps",
         prompt: "Investigate the runtime gap and produce a read-only report.",
         category: "research",
-        run_in_background: true,
+        async_dispatch: true,
       },
       mockCtx,
     )
@@ -336,7 +354,7 @@ describe("delegate-task tool category routing", () => {
       {
         description: "Inherit runtime policy override",
         prompt: "Launch a delegated child using the trusted parent override.",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )
