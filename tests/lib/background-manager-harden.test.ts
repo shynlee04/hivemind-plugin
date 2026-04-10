@@ -270,7 +270,7 @@ describe("delegate-task — hybrid execution routing", () => {
       {
         description: "Build feature",
         prompt: "Implement the authentication module.",
-        run_in_background: false,
+        async_dispatch: false,
       },
       mockCtx,
     )
@@ -297,7 +297,7 @@ describe("delegate-task — hybrid execution routing", () => {
       {
         description: "Research deps",
         prompt: "Investigate dependency tree for vulnerabilities.",
-        run_in_background: true,
+        async_dispatch: true,
       },
       mockCtx,
     )
@@ -314,8 +314,8 @@ describe("delegate-task — hybrid execution routing", () => {
   })
 })
 
-describe("HarnessLifecycleManager — builtin-process fallback", () => {
-  it("routes builtin-process work through child-session prompt flow until a real process runner exists", async () => {
+describe("HarnessLifecycleManager — builtin-process execution", () => {
+  it("routes builtin-process work through the process runner", async () => {
     const client = {
       session: {
         create: vi.fn(async () => ({ id: "child-process" })),
@@ -347,6 +347,7 @@ describe("HarnessLifecycleManager — builtin-process fallback", () => {
     const manager = createHarnessLifecycleManager({
       client,
       pollTimeoutMs: 50,
+      backgroundManager,
     })
 
     const result = await manager.launchDelegatedSession({
@@ -391,19 +392,18 @@ describe("HarnessLifecycleManager — builtin-process fallback", () => {
     })
 
     expect(result).toBe("research-result")
-    expect(backgroundManager.spawn).not.toHaveBeenCalled()
-    expect(client.session.prompt).toHaveBeenCalledTimes(1)
+    expect(backgroundManager.spawn).toHaveBeenCalledTimes(1)
+    expect(client.session.prompt).not.toHaveBeenCalled()
 
     const continuity = getSessionContinuity("child-process")
-    expect(continuity?.metadata.execution?.submode).toBe("builtin-subsession")
-    expect(continuity?.metadata.execution?.rationale).toContain("builtin-process fallback")
+    expect(continuity?.metadata.execution?.submode).toBe("builtin-process")
     expect(buildDelegationArtifactPacket(continuity!).execution).toMatchObject({
       family: "built-in",
-      submode: "builtin-subsession",
+      submode: "builtin-process",
     })
   })
 
-  it("persists failure context when builtin-process requests fall back to builtin-subsession", async () => {
+  it("persists failure context when builtin-process execution fails", async () => {
     const client = {
       session: {
         create: vi.fn(async () => ({ id: "child-process-fail" })),
@@ -425,22 +425,18 @@ describe("HarnessLifecycleManager — builtin-process fallback", () => {
         exitCode: null,
         error: null,
       })),
-      getTask: vi.fn(() => ({
-        id: "bg-fail",
+      onComplete: vi.fn(async () => ({
         status: "failed",
-        pid: 456,
-        startedAt: Date.now(),
-        parentSessionID: "child-process-fail",
         stdout: "",
         stderr: "process boom",
         exitCode: 1,
-        error: "[Harness] Process exited with code 1",
       })),
     } as unknown as BackgroundManager
 
     const manager = createHarnessLifecycleManager({
       client,
       pollTimeoutMs: 50,
+      backgroundManager,
     })
 
     await expect(
@@ -489,8 +485,8 @@ describe("HarnessLifecycleManager — builtin-process fallback", () => {
     const continuity = getSessionContinuity("child-process-fail")
     expect(continuity?.metadata.status).toBe("error")
     expect(continuity?.metadata.lastError).toContain("process boom")
-    expect(continuity?.metadata.execution?.submode).toBe("builtin-subsession")
-    expect(backgroundManager.spawn).not.toHaveBeenCalled()
+    expect(continuity?.metadata.execution?.submode).toBe("builtin-process")
+    expect(backgroundManager.spawn).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -745,5 +741,157 @@ describe("runLifecycleProcessTask — parent ownership", () => {
       "parent-session",
       expect.objectContaining({ status: "failed", sessionID: "child-session" }),
     )
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Tmux execution path tests (09-05)
+// ---------------------------------------------------------------------------
+
+describe("HarnessLifecycleManager — tmux-pane execution", () => {
+  it("routes tmux-pane work through the tmux runner, not subsession", async () => {
+    const client = {
+      session: {
+        create: vi.fn(async () => ({ id: "child-tmux" })),
+        prompt: vi.fn(async () => ({ parts: [{ type: "text", text: "tmux-result" }] })),
+      },
+    } as never
+
+    const backgroundManager = {
+      spawn: vi.fn(() => ({
+        id: "tmux-bg-1",
+        status: "running",
+        pid: 789,
+        startedAt: Date.now(),
+        parentSessionID: "child-tmux",
+        stdout: "",
+        stderr: "",
+        exitCode: null,
+        error: null,
+      })),
+      onComplete: vi.fn(async () => ({
+        status: "completed",
+        stdout: "",
+        stderr: "",
+        exitCode: 0,
+      })),
+      getTask: vi.fn(),
+    } as unknown as BackgroundManager
+
+    const manager = createHarnessLifecycleManager({
+      client,
+      pollTimeoutMs: 50,
+      backgroundManager,
+    })
+
+    const result = await manager.launchDelegatedSession({
+      parentSessionID: "parent-tmux",
+      rootID: "root-tmux",
+      childDepth: 1,
+      description: "tmux visible worker",
+      runInBackground: false,
+      agent: "builder",
+      route: {
+        category: "implementation",
+        effectiveAgent: "builder",
+        effectiveModel: "gpt-5.4",
+        temperature: 0.1,
+        fallbackUsed: false,
+        rationale: "tmux path",
+        presetKey: "builder",
+        modelSource: "category",
+        agentSource: "category",
+        temperatureSource: "category",
+        warnings: [],
+      },
+      permissionRules: [],
+      compatibleTools: ["read", "write", "edit"],
+      promptText: "Build in a visible tmux pane.",
+      execution: {
+        family: "visible-worker",
+        submode: "tmux-pane",
+        rationale: "Parallel task with tmux available.",
+        characteristics: {
+          isParallel: true,
+          isInteractive: false,
+          isResearch: false,
+          isHeadless: false,
+          runInBackground: true,
+        },
+        capabilityEvidence: {
+          hasTmux: true,
+          projectRoot: process.cwd(),
+        },
+      },
+      defaultDispatchMode: "async",
+      tmuxAvailability: "enabled",
+      pollIntervalMs: 3000,
+    })
+
+    // tmux-pane should use the tmux runner, NOT the subsession runner
+    expect(backgroundManager.spawn).toHaveBeenCalledTimes(1)
+    expect(client.session.prompt).not.toHaveBeenCalled()
+
+    const continuity = getSessionContinuity("child-tmux")
+    expect(continuity?.metadata.execution?.submode).toBe("tmux-pane")
+  })
+
+  it("throws explicit error when tmux-pane requested but tmux unavailable (enabled)", async () => {
+    const client = {
+      session: {
+        create: vi.fn(async () => ({ id: "child-tmux-fail" })),
+      },
+    } as never
+
+    const manager = createHarnessLifecycleManager({
+      client,
+      pollTimeoutMs: 50,
+    })
+
+    await expect(
+      manager.launchDelegatedSession({
+        parentSessionID: "parent-tmux-fail",
+        rootID: "root-tmux-fail",
+        childDepth: 1,
+        description: "tmux without tmux available",
+        runInBackground: false,
+        agent: "builder",
+        route: {
+          category: "implementation",
+          effectiveAgent: "builder",
+          effectiveModel: "gpt-5.4",
+          temperature: 0.1,
+          fallbackUsed: false,
+          rationale: "should fail",
+          presetKey: "builder",
+          modelSource: "category",
+          agentSource: "category",
+          temperatureSource: "category",
+          warnings: [],
+        },
+        permissionRules: [],
+        compatibleTools: ["read", "write"],
+        promptText: "This should fail explicitly.",
+        execution: {
+          family: "visible-worker",
+          submode: "tmux-pane",
+          rationale: "tmux requested but unavailable.",
+          characteristics: {
+            isParallel: true,
+            isInteractive: false,
+            isResearch: false,
+            isHeadless: false,
+            runInBackground: true,
+          },
+          capabilityEvidence: {
+            hasTmux: false,
+            projectRoot: process.cwd(),
+          },
+        },
+        defaultDispatchMode: "async",
+        tmuxAvailability: "enabled",
+        pollIntervalMs: 3000,
+      }),
+    ).rejects.toThrow(/\[Harness\].*tmux.*execution.*without.*tmux/i)
   })
 })

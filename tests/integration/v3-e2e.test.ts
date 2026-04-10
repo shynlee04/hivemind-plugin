@@ -576,7 +576,7 @@ describe("HiveMind V3 integration coverage", () => {
         {
           description: "delegate task success",
           prompt: "Complete the delegated task.",
-          run_in_background: false,
+          async_dispatch: false,
         },
         {
           messageID: "message-1",
@@ -637,7 +637,7 @@ describe("HiveMind V3 integration coverage", () => {
         {
           description: "delegate task failure",
           prompt: "Complete the delegated task.",
-          run_in_background: false,
+          async_dispatch: false,
         },
         {
           messageID: "message-1",

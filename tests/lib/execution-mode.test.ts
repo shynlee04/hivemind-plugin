@@ -67,6 +67,20 @@ describe("classifyExecutionMode — visible-worker family", () => {
     )
     expect(result.capabilityEvidence.hasTmux).toBe(true)
   })
+
+  it("tmux-pane submode is distinct from builtin-subsession", () => {
+    const tmuxResult = classifyExecutionMode(
+      makeChars({ isParallel: true, runInBackground: true }),
+      makeCapabilities({ hasTmux: true }),
+    )
+    const subsessionResult = classifyExecutionMode(
+      makeChars({ isInteractive: true }),
+      makeCapabilities({ hasTmux: true }),
+    )
+    expect(tmuxResult.submode).toBe("tmux-pane")
+    expect(subsessionResult.submode).toBe("builtin-subsession")
+    expect(tmuxResult.submode).not.toBe(subsessionResult.submode)
+  })
 })
 
 // ---------------------------------------------------------------------------
