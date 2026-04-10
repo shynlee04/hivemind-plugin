@@ -209,6 +209,26 @@ Priority-ordered sub-phases building the V3 runtime composition engine.
 
 ---
 
+## Phase 9: Sticky Delegation Corrective
+
+Corrective requirements for delegation reliability work derived from the Phase 08 root-cause analysis.
+
+- [x] **PH09-03**: Sync delegation remains available for dependent tasks and returns a parser-safe JSON envelope whose `output` field base64-decodes back to the original assistant text.
+
+### PH09-03: Sync output safety
+
+| Field | Value |
+|-------|-------|
+| **ID** | PH09-03 |
+| **Category** | Sticky Delegation Corrective |
+| **Priority** | P1 — Required to keep dependent sync delegation parser-safe |
+| **Status** | Pending |
+| **Dependencies** | Phase 08 corrective closure, 09-01 completion hardening |
+| **Description** | Sync delegation remains available for dependent tasks but returns a structured JSON envelope whose `output` field base64-decodes back to the original assistant text. |
+| **Acceptance Criteria** | 1. Sync delegation is still callable for dependent-task workflows.<br>2. Sync results parse as valid JSON and expose an `output` field.<br>3. `Buffer.from(output, "base64").toString("utf8")` reproduces the original assistant text exactly.<br>4. Large sync responses remain valid under the same envelope contract without `Unexpected EOF`. |
+
+---
+
 ## Phase 3: Schema Definition
 
 Frontmatter schemas for agents, commands, and skills with TypeScript type generation and runtime evaluation.
@@ -459,6 +479,12 @@ Complete mapping of all requirements to phases.
 | RUN-3g: Specialist classification | P2 | Complete | RUN-3a, RUN-3f |
 | RUN-3h: Tool budget/circuit breaker | P1 | Partial | RUN-3c |
 
+### Phase 9: Sticky Delegation Corrective
+
+| Requirement | Priority | Status | Dependencies |
+|-------------|----------|--------|--------------|
+| PH09-03: Sync output safety | P1 | Pending | Phase 08 corrective closure, 09-01 completion hardening |
+
 ### Phase 3: Schema Definition
 
 | Requirement | Priority | Status | Dependencies |
@@ -495,10 +521,11 @@ Complete mapping of all requirements to phases.
 **Coverage Summary:**
 - v1 requirements: 18 total — 18 mapped ✓
 - Phase 2 (Runtime): 8 requirements — 8 mapped ✓
+- Phase 9 (Sticky Delegation Corrective): 1 requirement — 1 mapped ✓
 - Phase 3 (Schema): 5 requirements — 5 mapped ✓
 - Phase 4 (Migration): 4 requirements — 4 mapped ✓
 - Phase 5 (Integration): 7 requirements — 7 mapped ✓
-- **Grand total: 42 requirements — 42 mapped ✓**
+- **Grand total: 43 requirements — 43 mapped ✓**
 
 ---
 *Requirements defined: 2026-04-06*
