@@ -156,9 +156,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 09.1-01-PLAN.md — Fix all 5 runtime bugs with TDD regression tests (D-15→D-19) [Wave 1]
-- [ ] 09.1-02-PLAN.md — Create in-memory SDK adapter + rewrite lifecycle-background-observer tests (D-20, D-21, D-22, D-23, D-24) [Wave 2]
-- [ ] 09.1-03-PLAN.md — Create delegate-task tests + rewrite process-runner tests with in-memory adapter (D-21, D-24) [Wave 3]
+- [x] 09.1-01-PLAN.md — Fix all 5 runtime bugs with TDD regression tests (D-15→D-19) [Wave 1]
+- [x] 09.1-02-PLAN.md — Create in-memory SDK adapter + rewrite lifecycle-background-observer tests (D-20, D-21, D-22, D-23, D-24) [Wave 2]
+- [x] 09.1-03-PLAN.md — Create delegate-task tests + rewrite process-runner tests with in-memory adapter (D-21, D-24) [Wave 3]
 
 ---
 
