@@ -53,8 +53,15 @@ function countToolCallParts(message: unknown): number {
 
 async function getCombinedEvidenceCount(client: OpenCodeClient, sessionID: string): Promise<number> {
   const messages = await getSessionMessages(client, sessionID)
-  const toolCallCount = messages.reduce<number>((count, message) => count + countToolCallParts(message), 0)
-  return messages.length + toolCallCount
+  const assistantMessages = messages.filter((msg) => {
+    if (!msg || typeof msg !== "object") return false
+    return (msg as { role?: string }).role === "assistant"
+  })
+  const toolCallCount = assistantMessages.reduce<number>(
+    (count, message) => count + countToolCallParts(message),
+    0,
+  )
+  return assistantMessages.length + toolCallCount
 }
 
 function getCompletionDetector(detector: unknown): CompletionDetector {
@@ -81,10 +88,9 @@ async function checkSessionExists(
     const status = raw.status ?? raw.info
     if (status && typeof status === "object") {
       const statusObj = status as Record<string, unknown>
-      return { type: (statusObj.type as string) ?? "busy" }
+      return { type: (statusObj.type as string) ?? "unknown" }
     }
-    // If no status field, assume it's still alive (busy)
-    return { type: "busy" }
+    return { type: "unknown" }
   } catch {
     // Session.get() threw — session doesn't exist
     return undefined

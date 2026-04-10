@@ -38,8 +38,8 @@ const mockGetSessionContinuity = vi.mocked(getSessionContinuity)
 const mockGetSession = vi.mocked(getSession)
 const mockGetSessionMessages = vi.mocked(getSessionMessages)
 
-function buildMessage(parts: Array<{ type: string }>): { parts: Array<{ type: string }> } {
-  return { parts }
+function buildMessage(parts: Array<{ type: string }>): { role: "assistant"; parts: Array<{ type: string }> } {
+  return { role: "assistant", parts }
 }
 
 describe("observeBackgroundCompletion", () => {
@@ -617,7 +617,7 @@ describe("observeBackgroundCompletion", () => {
           }),
         }),
       )
-      expect(mockGetSessionMessages).toHaveBeenCalledTimes(1)
+      expect(mockGetSessionMessages).not.toHaveBeenCalled()
     })
 
     it("does not treat user-only prompts as completion evidence", async () => {

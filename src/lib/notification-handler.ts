@@ -102,15 +102,17 @@ export function buildTaskNotificationFromContinuity(
   const agent = continuity.metadata.delegation?.agent ?? "unknown"
   const category = continuity.metadata.category
   const briefSummary =
-    status === "failed"
-      ? `Task failed: ${error ?? "unknown error"}.`
-      : status === "cancelled"
-        ? "Task was cancelled."
-        : category === "research" || category === "deep"
-          ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed research on "${continuity.metadata.description}". Review the session for findings.`
-          : category === "review"
-            ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed review of "${continuity.metadata.description}". Check for identified issues.`
-            : `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed work on "${continuity.metadata.description}". Check session output for details.`
+    status === "started"
+      ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} started work on "${continuity.metadata.description}". Session is running.`
+      : status === "failed"
+        ? `Task failed: ${error ?? "unknown error"}.`
+        : status === "cancelled"
+          ? "Task was cancelled."
+          : category === "research" || category === "deep"
+            ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed research on "${continuity.metadata.description}". Review the session for findings.`
+            : category === "review"
+              ? `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed review of "${continuity.metadata.description}". Check for identified issues.`
+              : `${String(agent).charAt(0).toUpperCase()}${String(agent).slice(1)} completed work on "${continuity.metadata.description}". Check session output for details.`
 
   return {
     sessionID: continuity.sessionID,

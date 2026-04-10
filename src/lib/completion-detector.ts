@@ -48,7 +48,9 @@ export class CompletionDetector {
       this.watchers.delete(sessionID)
       watcher.resolve(result)
     } else {
-      this.cachedResults.set(sessionID, result)
+      if (signal !== "idle") {
+        this.cachedResults.set(sessionID, result)
+      }
     }
   }
 
