@@ -2,15 +2,15 @@
 status: investigating
 trigger: "Investigate issue: live-steering-silent-timeout-delegation-2026-04-09"
 created: 2026-04-09T00:00:00.000Z
-updated: 2026-04-09T00:49:00.000Z
+updated: 2026-04-09T01:12:00.000Z
 ---
 
 ## Current Focus
 
-hypothesis: the dominant current failure is a combined polling/notification design gap: dispatch succeeds, but parent observability depends on a long blind busy-loop and notification fallback that cannot persist to parents not present in continuity, making the main agent appear hung until timeout
-test: validate the observer timeout behavior, parent continuity presence, and notification persistence path against the exact child sessions from the failing run
-expecting: evidence that timeout + missing parent fallback explains the main agent hang better than queue starvation, routing error, or dispatch failure
-next_action: finalize diagnosis and rank the contributing factors for the orchestrator handoff
+hypothesis: the failure is primarily a parent-observability durability bug with structural continuity assumptions: async children are launched and routed correctly, but parent completion/failure visibility is non-durable because start notifications bypass fallback, completion fallback requires a parent continuity record that usually does not exist, and late event remapping can overwrite clearer observer truth
+test: verify whether the current codebase structurally records parent sessions, whether fallback can persist without that record, and whether routing/queue evidence contradicts the observability diagnosis
+expecting: evidence that routing and queue acquisition succeed while notification durability and lifecycle reconciliation remain the dominant breakpoints
+next_action: finalize diagnose-only handoff with refined root cause, eliminated hypotheses, and fix strategies
 
 ## Symptoms
 
@@ -21,6 +21,18 @@ reproduction: use the supplied docs and current source; trace the exact end-to-e
 started: prior diagnosis on 2026-04-09 identified manager split, ownership mismatch, and builtin-process no-op; later post-fix trial still reported 0% success with new timeout / observability / stream-cutoff failure modes; latest failure artifact is fail-silently-timout-session.md.
 
 ## Eliminated
+
+- hypothesis: queue starvation or pending-lane backlog is the main cause of the timeout
+  evidence: latest failure payloads and continuity records show `concurrency_pending: 0`, queue lanes acquired immediately, and three children launched with active counts 1/2/3 before the parent lost visibility
+  timestamp: 2026-04-09T01:10:30.000Z
+
+- hypothesis: specialist routing / agent selection sent work to the wrong agent and caused silent failure
+  evidence: the run rejected invalid `explore`, then explicitly rerouted to `researcher`; failure artifacts and persisted route metadata show `effectiveAgent: researcher` and `fallbackUsed: false` for the launched children
+  timestamp: 2026-04-09T01:10:45.000Z
+
+- hypothesis: async dispatch itself usually never launches child work
+  evidence: current code uses `sendPromptAsync()`, the failing run emitted three started reminders, and continuity shows two launched child sessions later reached `status: completed`
+  timestamp: 2026-04-09T01:11:00.000Z
 
 ## Evidence
 
@@ -89,9 +101,24 @@ started: prior diagnosis on 2026-04-09 identified manager split, ownership misma
   found: reporter has tried twice and suspects the background child may have failed very early while the failure was only reported much later
   implication: this further supports the diagnosis that early child outcome and late parent-visible reporting are decoupled, which is exactly the failure shape produced by optimistic dispatch plus delayed/coarse observer feedback
 
+- timestamp: 2026-04-09T01:08:00.000Z
+  checked: lifecycle-process-runner.ts, lifecycle-background-observer.ts, continuity.ts, lifecycle-manager.ts
+  found: started notifications in `runLifecycleSubsessionTask()` call `notifyParentSession()` directly with no offline fallback; completion/failure notifications use `notifyParentWithFallback()`, but that fallback persists via `patchSessionContinuity(parentSessionID, ...)`, which is a no-op when the parent record is absent; `recordSessionContinuity()` is only called for delegated child sessions in `launchDelegatedSession()`
+  implication: parent notification durability is structurally unreliable, not just best-effort by accident — the code assumes a persisted parent continuity record that it does not generally create
+
+- timestamp: 2026-04-09T01:10:00.000Z
+  checked: fail-silently-timout-session.md, specialist-router.ts, latest continuity entries
+  found: the failing run explicitly rerouted the invalid `explore` request to explicit `researcher` sessions with `fallbackUsed: false`, queue lanes were acquired with active counts 1/2/3 and pending 0, and two child sessions later reached `status: completed` in continuity
+  implication: agent misrouting and queue starvation do not explain the captured failure; the system launched routed children, but the parent still lost durable outcome visibility
+
+- timestamp: 2026-04-09T01:11:00.000Z
+  checked: runtime.ts, lifecycle-manager.ts, continuity record for `ses_28db359feffekvIoDj36pAmy6s`
+  found: after observer timeout marks a child failed, later `session.idle` events are folded through `inferContinuityStatusFromEvent()` so status stays `error` while lifecycle observation source becomes `event:session.idle`; lifecycle updates therefore preserve terminal failure status but can overwrite the clearer timeout observation with a later non-terminal-looking signal
+  implication: lifecycle truth is not cleanly reconciled, which obscures diagnosis and makes the parent-facing story noisier, but this is secondary to the notification durability gap
+
 ## Resolution
 
-root_cause: the current dominant problem is a combination led by polling/notification design, not queue starvation or initial dispatch failure. Async delegation is often launched successfully via `sendPromptAsync()`, but parent visibility relies on (1) a coarse observer that treats child sessions as simply busy until they become idle/retry/deleted or the 30-minute timeout expires, and (2) best-effort parent notifications whose offline fallback only works if the parent session itself exists in continuity. In the latest failing run, two child sessions actually completed and one ran until the observer timeout window, yet the parent transcript stopped after `Delegated task started` reminders because the parent session was not present in continuity, so completion/failure fallback could not be persisted. Secondary contributors are optimistic `ok:true/running` responses before outcome is known and lifecycle truth drift from later event remapping/observation updates.
+root_cause: the dominant current fault is not queueing or routing; it is broken parent observability durability across the async delegation lifecycle. The harness returns optimistic `ok:true`/`running` immediately after queue acquisition and before outcome truth is known. Child sessions are launched correctly via `promptAsync()` and at least some complete, but parent start/completion/failure visibility is non-durable: started notifications bypass offline fallback entirely, completion/failure fallback depends on `patchSessionContinuity(parentSessionID, ...)`, and the codebase only records delegated child sessions in continuity. In the latest run the parent session was absent from continuity, so fallback persistence could not occur and parent-visible updates stopped at `Delegated task started`. The long hang is then amplified by the coarse 30-minute poller, while later event/status remapping can overwrite clearer observer evidence and make the state story look contradictory.
 fix:
 verification:
 files_changed: []

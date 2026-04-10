@@ -31,6 +31,14 @@ This phase does **not** redesign all delegation behavior, build the broader live
 - **D-07:** Phase 08 must be treated as a **corrective closure phase that sits between Phase 02 implementation and Phase 02 re-verification**, not as a normal downstream phase after Phase 07.
 - **D-08:** Planning artifacts should make the dependency correction explicit now so downstream planning does not keep the old incorrect sequencing.
 
+### Baseline authority
+- **D-09:** Phase 02 remains the **locked verified runtime baseline**. Later diagnostic findings do not retroactively invalidate or archive it unless fresh verification evidence disproves the current `18/18` record.
+- **D-10:** The delegation root-cause analysis should be treated as **forward-looking corrective evidence** for future work, not as proof that the verified Phase 02 architecture must be reopened or replaced with a Phase 2B restart.
+
+### Archive and follow-on posture
+- **D-11:** Audit/archive sequencing should apply to **Phase 08 only after its closure docs and state are reconciled**; do not jointly archive Phase 02 and Phase 08.
+- **D-12:** Sticky delegation-model findings outside the bounded Phase 08 corridor should be captured in a **separate corrective follow-on phase**, not by rewriting Phase 02 or collapsing Phase 08 into a restart lane.
+
 ### the agent's Discretion
 - Exact naming of the corrective sub-lanes inside Phase 08, as long as they preserve the bundled closure strategy above.
 - Exact verification command split between bounded tests and full re-verification, as long as the corrective corridor and Phase 02 re-verification gate are both explicit.
@@ -51,6 +59,7 @@ This phase does **not** redesign all delegation behavior, build the broader live
 - `.planning/phases/02-v3-runtime-architecture/02-CONTEXT.md` — locked Phase 02 runtime decisions that Phase 8 must preserve, especially continuity-first state and policy override expectations.
 - `.planning/phases/02-v3-runtime-architecture/02-VERIFICATION.md` — authoritative evidence for the remaining `runtimePolicyOverride` gap and the exact closure requirements still blocking Phase 02.
 - `.planning/phases/02-v3-runtime-architecture/PLAN-VERIFICATION.md` — historical plan-audit context showing why corrective closure must stay bounded and evidence-driven.
+- `.planning/debug/delegation-root-cause-with-reference-2026-04-10.md` — root-cause analysis of the broader sticky delegation failures; use as evidence for follow-on corrective planning, not to invalidate the verified Phase 02 baseline.
 
 ### Project state and requirements
 - `.planning/PROJECT.md` — current project framing, closure rule, and documentation-only reconciliation constraints already established around the open Phase 02 gap.
@@ -95,6 +104,8 @@ This phase does **not** redesign all delegation behavior, build the broader live
 - Parent truth should remain **continuity-backed** even when observer events and async child outcomes arrive out of order.
 - Phase 8 should prove the exact defect corridor, then hand off to **Phase 02 re-verification** rather than expanding into generalized delegation redesign.
 - The roadmap dependency correction should be made explicit during planning so later phases stop treating Phase 8 as gated on Phase 7.
+- The new sticky delegation analysis should drive a **new corrective phase**, not a retroactive Phase 02 invalidation or a joint Phase 02/08 archive-and-restart move.
+- If archival is needed, it should happen **after Phase 08 closure bookkeeping is complete**, while leaving Phase 02 intact as the verified baseline.
 
 </specifics>
 
@@ -105,6 +116,8 @@ This phase does **not** redesign all delegation behavior, build the broader live
 - General live-steering platform expansion beyond the inherited defect corridor — belongs to later architecture/product work.
 - Runtime-domain restructuring and other behavior-neutral path moves — belongs to Phase 07 and later phases after Phase 02 is fully re-verified.
 - Broader delegation hardening beyond the corrective corridor — future phase or backlog item once Phase 02 closure is complete.
+- Any attempt to replace the verified Phase 02 baseline with a Phase 2B restart based only on the new root-cause document.
+- Any joint Phase 02 + Phase 08 archive/reset action before Phase 08 closure docs and state are reconciled.
 
 </deferred>
 

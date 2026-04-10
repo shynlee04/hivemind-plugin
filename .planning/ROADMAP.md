@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-10 (added durable parent observability repair phase)
+**Updated:** 2026-04-10 (Phase 11: Clean Architecture restructuring — replaces Phase 6+7, consolidates Phase 10+12)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -11,10 +11,11 @@
 - [ ] **Phase 3: Schema Definition** — 0/4
 - [ ] **Phase 4: Migration Gate** — 0/4
 - [ ] **Phase 5: Integration Verification** — 0/5
-- [ ] **Phase 6: Runtime Domain Separation** — 0/6
-- [ ] **Phase 7: Runtime Domain Restructuring Planning** — 0/5
-- [ ] **Phase 8: Repair Durable Parent Observability** — ✅ COMPLETE (corrective closure)
-- [ ] **Phase 9: Sticky Delegation Corrective** — 3/5
+- [ ] **Phase 6: Runtime Domain Separation** — SUPERSEDED by Phase 11
+- [ ] **Phase 7: Runtime Domain Restructuring Planning** — SUPERSEDED by Phase 11
+- [x] **Phase 8: Repair Durable Parent Observability** — ✅ COMPLETE (corrective closure)
+- [ ] **Phase 9: Sticky Delegation Corrective** — 5/5 plans executed, P0 gap fixed 2026-04-10
+- [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
 ## Phase 1: Baseline Cleanup
 
@@ -93,59 +94,15 @@ Plans:
 - 5f. Specialist routing correct
 - 5g. Schema validation catches malformed definitions
 
-## Phase 6: Runtime Domain Separation
+## Phase 6: Runtime Domain Separation — SUPERSEDED BY PHASE 11
 
-- 6a. Define stable `src/lib` domain boundaries for runtime, continuity, lifecycle, delegation, governance, and integration seams
-- 6b. Split runtime execution concerns behind a dedicated runtime domain surface
-- 6c. Split continuity and recovery concerns behind continuity-specific modules and interfaces
-- 6d. Split lifecycle and delegation orchestration into dedicated domain modules with explicit contracts
-- 6e. Split governance and policy evaluation into dedicated modules with narrow dependencies
-- 6f. Establish integration seams so plugin/composition code depends on domain contracts instead of cross-domain internals
+**Superseded by:** Phase 11 (Clean Architecture Restructuring), which absorbs Phase 6 scope with actual execution authority. The 2026-04-10 architecture audit produced the domain boundary analysis Phase 6 was supposed to deliver.
 
-## Phase 7: Runtime Domain Restructuring Planning
+## Phase 7: Runtime Domain Restructuring Planning — SUPERSEDED BY PHASE 11
 
-**Gate:** Do not start until Phase 02 verification reaches **18/18** and the runtime-policy override seam is closed end-to-end.
+**Superseded by:** Phase 11. The architecture audit and research conducted on 2026-04-10 produced the move maps, dependency rules, and domain definitions Phase 7 was supposed to create. Phase 11 executes the restructuring directly.
 
-**Scope:** Roadmap/planning artifacts only. No `src/**` or `tests/**` changes in this phase.
-
-**Execution posture:** Path-first and behavior-neutral. This phase plans how `src/lib/` will be restructured before any logic redesign is considered.
-
-- 7a. Define the target `src/lib/` runtime domains: lifecycle, continuity, governance, execution, routing, and state
-- 7b. Produce a path-first move map that assigns current modules to the target domains without changing runtime behavior
-- 7c. Define import and dependency boundary rules for each target domain plus allowed integration seams
-- 7d. Sequence the restructuring work into behavior-neutral follow-on plans with explicit verification gates for each move set
-- 7e. Record exclusions and invariants: no logic redesign, no feature expansion, and no execution until Phase 02 is fully verified at 18/18
-
-## Progress Table
-
-| Phase | Items Complete | Status |
-|-------|---------------|--------|
-| 1. Baseline Cleanup | 7/10 | Plan created (1 plan, Wave 1) |
-| 2. V3 Runtime Architecture | 9/9 plans, 18/18 truths | Verified after Phase 08 corrective closure |
-| 3. Schema Definition | 0/4 | Not started |
-| 4. Migration Gate | 0/4 | Not started |
-| 5. Integration Verification | 0/5 | Not started |
-| 6. Runtime Domain Separation | 0/6 | Not started |
-| 7. Runtime Domain Restructuring Planning | 0/5 | Future planning phase; gated on Phase 02 reaching 18/18 verified ✅ |
-| 8. Repair Durable Parent Observability | 3/3 plans | ✅ COMPLETE — corrective closure, 2026-04-10 |
-| 9. Sticky Delegation Corrective | 3/5 | In Progress — sync envelope plan completed |
-
-## Dependencies
-
-```
-Phase 1 (7 done, 3 pending — planned)
-  └─→ Phase 2: V3 Runtime baseline
-       └─→ Phase 8: Corrective closure for delegated-session durability ✅
-            └─→ Phase 2: Authoritative re-verification (18/18) ✅
-                 └─→ Phase 9: Sticky Delegation Corrective (new)
-                      └─→ Phase 3: Schema Definition
-                           └─→ Phase 4: Migration Gate
-                                └─→ Phase 5: Integration Verification
-                                     └─→ Phase 6: Runtime Domain Separation
-                                          └─→ Phase 7: Runtime Domain Restructuring Planning
-```
-
-### Phase 8: Repair durable parent observability for delegated sessions
+## Phase 8: Repair durable parent observability for delegated sessions
 
 **Goal:** Restore durable parent-visible delegated-session truth and close the live runtimePolicyOverride seam so Phase 02 can be re-verified.
 **Requirements**: RUN-3h
@@ -161,7 +118,7 @@ Plans:
 
 **Closure reference:** `.planning/debug/delegation-root-cause-with-reference-2026-04-10.md` — canonical root-cause analysis that informed Phase 09 corrective planning.
 
-### Phase 9: Sticky Delegation Corrective
+## Phase 9: Sticky Delegation Corrective
 
 **Goal:** Fix the multi-layered architectural mismatches identified in the Phase 08 root-cause analysis — message-count stability detection, parent notification durability, sync mode reliability, and execution-mode clarity.
 
@@ -175,15 +132,17 @@ Plans:
 - [x] 09-01-PLAN.md — Harden builtin-subsession completion with stable message/tool evidence and a 3-second poll loop
 - [x] 09-02-PLAN.md — Replay durable pending notifications through `createCoreHooks` on parent create/resume
 - [x] 09-03-PLAN.md — Preserve sync dispatch with a structured base64 output envelope instead of raw assistant text
-- [ ] 09-04-PLAN.md — Rename `run_in_background` to `async_dispatch` and add launch-time dispatch/tmux/poll config wiring
-- [ ] 09-05-PLAN.md — Implement the tmux visible-worker runner and re-verify delegated execution paths end-to-end
+- [x] 09-04-PLAN.md — Rename `run_in_background` to `async_dispatch` and add launch-time dispatch/tmux/poll config wiring
+- [x] 09-05-PLAN.md — Implement the tmux visible-worker runner and re-verify delegated execution paths end-to-end
+
+**P0 gap fixed (2026-04-10):** `normalizeMetadata()` in `continuity-normalizers.ts` was silently dropping `defaultDispatchMode`, `tmuxAvailability`, `pollIntervalMs` on process restart. Fixed — typecheck + 604 tests green.
 
 **Root causes addressed:**
 
 | # | Root Cause | Phase 9 Plan |
 |---|-----------|--------------|
 | 1 | OpenCode status model insufficient for completion detection | 09-01 (message-count stability) |
-| 2 | `builtin-process` vs `builtin-subsession` diagnostic trap | Documented — no code change needed (classifier works correctly) |
+| 2 | `builtin-process` vs `builtin-subsession` diagnostic trap | Documented — no code change needed |
 | 3 | Parent notification delivery not durable | 09-02 (wire replay on resume) |
 | 4 | Sync mode crashes JSON parser | 09-03 (remove or wrap in structured format) |
 | 5 | `background` naming collision | 09-04 (rename parameter) |
@@ -191,9 +150,122 @@ Plans:
 | 7 | Poll interval too long (15s vs 3s) | 09-01 (reduce to ~3s, match oh-my-openagent) |
 | 8 | No tmux integration | Deferred — strategic decision, not a bug |
 
-**oh-my-openagent parity gaps to close:**
-- ✅ Task lifecycle state machine — already has explicit `pending/running/completed/error` in lifecycle-manager
-- ❌ Message-count stability detection — **missing** (Priority 1)
-- ❌ Poll interval (15s → 3s) — **needs reduction** (Priority 1)
-- ❌ Parent notification durability — **persistence wired but replay missing** (Priority 2)
-- ❌ Sync mode output format — **crashes on large responses** (Priority 3)
+## Phase 11: Clean Architecture Restructuring
+
+**Goal:** Restructure and refactor `src/` into a maintainable, extensible, pattern-driven architecture with Clean Architecture patterns, CQRS separation, modular decomposition into 8-10 focused modules (<350 LOC each), and explicit design patterns (Factory, Handler Composition, Strategy).
+
+**Audit evidence (2026-04-10):**
+- Architecture audit: 9 anti-patterns found (2 HIGH, 5 MEDIUM, 2 LOW)
+- LOC analysis: src/ = 9,385 LOC across 56 files; src/lib/ = 37 flat files
+- God object: `lifecycle-manager.ts` at 734 LOC with 14 imports
+- Research: AI SDK v6 middleware chain, OpenAI Agents handoff pattern, DDD bounded contexts
+
+**Depends on:** Phase 9 (complete with P0 fix)
+**Plans:** 6 plans (phased execution)
+
+**Scope — IN:**
+- `src/lib/` — 31 files, flat namespace, mixed concerns
+- `src/hooks/` — 5 files, functional grouping (CQRS read-side alignment)
+- `src/tools/` — 11 files, best-organized (4 sub-dirs)
+- `src/plugin.ts` — 57 LOC, composition root
+
+**Scope — OUT:**
+- `.opencode/` — client-side concern
+- `tests/` — separate from source restructuring
+- `dist/` — build artifact
+- `docs/` — documentation
+
+**Scope — AS-IS (preserve):**
+- `src/cli/` — install/user runtime scaffolding
+
+**Scope — UNCERTAIN (analyze before deciding):**
+- `src/shared/`, `src/schema-kernel/`, `src/kernel/`, `src/harness/`
+
+**Target Module Structure:**
+```
+src/
+├── plugin/              # Assembly root (<100 LOC)
+├── tools/               # 5 tools (~500 LOC, write-side CQRS)
+├── hooks/               # Event handlers (~800 LOC, read-side CQRS)
+├── lifecycle/           # Session state machine (~400 LOC)
+├── delegation/          # Delegation chain logic (~400 LOC)
+├── continuity/          # State persistence, JSON durability (~400 LOC)
+├── cli/                 # CLI substrate (~500 LOC, AS-IS)
+├── control-plane/       # Control primitives (~400 LOC)
+└── shared/              # Utilities (~800 LOC, leaf module)
+```
+
+**Dependency Rules (non-negotiable):**
+- `shared/` is leaf — depends on nothing
+- `plugin/` depends on everything (assembly root)
+- `tools/`, `hooks/`, `cli/`, `control-plane/` depend on `lifecycle/`, `delegation/`, `continuity/`, `shared/`
+- `lifecycle/`, `delegation/`, `continuity/` depend on `shared/` only
+- No circular dependencies
+
+**File Size Rule:** No file exceeds 350 LOC
+
+**Design Patterns:**
+
+| Pattern | Application |
+|---------|-------------|
+| Factory | `createTool()`, `createHook()`, `createHandler()` factories for extensible construction |
+| Handler Composition | Chain `before/after` hooks via composition, not inheritance |
+| Strategy | Pluggable continuity store, notification handlers |
+| Command/Query Separation | tools/ = write-side, hooks/ = read-side |
+
+**Execution Plan:**
+
+Plans:
+- [ ] 11-01-PLAN.md — Analyze and Map: Audit current src/lib/ 31 files, classify by concern, document cross-dependencies, produce REFACTOR-MAP.md
+- [ ] 11-02-PLAN.md — Shared Leaf First: Extract utilities to src/shared/, ensure zero dependencies
+- [ ] 11-03-PLAN.md — Core Domain Modules: Create lifecycle/, delegation/, continuity/ with clean internal APIs
+- [ ] 11-04-PLAN.md — CQRS Separation: Move tools to src/tools/, hooks to src/hooks/, wire via plugin
+- [ ] 11-05-PLAN.md — Plugin Assembly: Compose all modules in src/plugin/ as root (<100 LOC)
+- [ ] 11-06-PLAN.md — Validation: npm run typecheck, npm test, verify <350 LOC per file, dependency rules
+
+**Verification Gate:**
+- [ ] `npm run build` — compiles without errors
+- [ ] `npm test` — all tests pass
+- [ ] `npm run typecheck` — zero type errors
+- [ ] `src/plugin/` composition root <100 LOC
+- [ ] No file in `src/` exceeds 350 LOC
+- [ ] `src/shared/` has zero imports from other `src/` modules (leaf verification)
+
+**Identified Risks:**
+
+| Risk | Severity | Mitigation |
+|------|----------|------------|
+| Flat-folder consolidation causes import breakage | CRITICAL | Dry-run output before executing file moves; phased commits per plan |
+| No rollback plan | CRITICAL | Phase commits after each of 6 plans; git history enables revert |
+| Vague patterns ("apply architecture patterns") | HIGH | Explicit pattern list: Factory, Handler Composition, Strategy, CQRS |
+| Scope creep into uncertain directories | HIGH | AS-IS flag on src/cli/; UNCERTAIN set deferred to Plan 11-01 analysis |
+| No validation gate | HIGH | Explicit gate: npm run typecheck && npm test must pass |
+
+## Progress Table
+
+| Phase | Items Complete | Status |
+|-------|---------------|--------|
+| 1. Baseline Cleanup | 7/10 | Plan created (1 plan, Wave 1) |
+| 2. V3 Runtime Architecture | 9/9 plans, 18/18 truths | Verified after Phase 08 corrective closure |
+| 3. Schema Definition | 0/4 | Not started |
+| 4. Migration Gate | 0/4 | Not started |
+| 5. Integration Verification | 0/5 | Not started |
+| 6. Runtime Domain Separation | — | SUPERSEDED by Phase 11 |
+| 7. Runtime Domain Restructuring Planning | — | SUPERSEDED by Phase 11 |
+| 8. Repair Durable Parent Observability | 3/3 plans | ✅ COMPLETE — corrective closure, 2026-04-10 |
+| 9. Sticky Delegation Corrective | 5/5 + P0 fix | ✅ COMPLETE — 2026-04-10 |
+| 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
+
+## Dependencies
+
+```
+Phase 1 (7 done, 3 pending — planned)
+  └─→ Phase 2: V3 Runtime baseline
+       └─→ Phase 8: Corrective closure for delegated-session durability ✅
+            └─→ Phase 2: Authoritative re-verification (18/18) ✅
+                 └─→ Phase 9: Sticky Delegation Corrective ✅
+                      └─→ Phase 11: Clean Architecture Restructuring (CURRENT)
+                           └─→ Phase 3: Schema Definition
+                                └─→ Phase 4: Migration Gate
+                                     └─→ Phase 5: Integration Verification
+```

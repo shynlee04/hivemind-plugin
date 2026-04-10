@@ -5,7 +5,7 @@
 
 **Date:** 2026-04-10
 **Phase:** 08-repair-durable-parent-observability-for-delegated-sessions
-**Areas discussed:** Repair route, Parent-visible truth model, Verification breadth, Roadmap realignment
+**Areas discussed:** Repair route, Parent-visible truth model, Verification breadth, Roadmap realignment, Baseline authority, Phase 08 disposition, Archive strategy, Follow-on phase for sticky delegation bugs
 
 ---
 
@@ -61,6 +61,58 @@
 
 ---
 
+## Baseline authority
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Keep Phase 02 locked | Treat Phase 02 as the verified baseline and use new root-cause findings for follow-on corrective work only. | ✓ |
+| Reopen Phase 02 for audit | Re-audit the verified Phase 02 baseline before trusting later work. | |
+| Invalidate Phase 02 baseline | Treat the new findings as enough to replace the verified baseline with a Phase 2B-style restart. | |
+
+**User's choice:** Keep Phase 02 locked
+**Notes:** The user chose to preserve the `18/18` verified Phase 02 baseline and not let the newer delegation root-cause note retroactively rewrite that architecture record.
+
+---
+
+## Phase 08 disposition
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Bounded closure | Keep Phase 08 as the corrective closure lane and finish its docs/state cleanly. | ✓ |
+| Reopen Phase 08 | Extend Phase 08 to absorb the broader sticky delegation bug family. | |
+| Convert to restart lane | Use Phase 08 as the handoff into a broader reset/restart path. | |
+
+**User's choice:** Bounded closure
+**Notes:** The user kept Phase 08 aligned with the project and roadmap framing: a narrow corrective corridor, not a new umbrella redesign phase.
+
+---
+
+## Archive strategy
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Archive Phase 08 only after closure | Finalize Phase 08 summaries/state first, then audit/archive Phase 08 while leaving Phase 02 untouched. | ✓ |
+| Audit both Phase 02 and Phase 08 now | Perform a joint audit before deciding whether either phase should be archived. | |
+| Archive neither yet | Keep both phases open until a new corrective plan exists. | |
+
+**User's choice:** Archive Phase 08 only after closure
+**Notes:** The user explicitly rejected a both-phase archive/reset move and instead chose to finish Phase 08 bookkeeping before any archival step.
+
+---
+
+## Follow-on phase for sticky delegation bugs
+
+| Option | Description | Selected |
+|--------|-------------|----------|
+| Create new corrective phase | Treat the root-cause findings as evidence for a separate corrective phase. | ✓ |
+| Fold into later planning | Carry the findings forward without creating a dedicated corrective phase. | |
+| Use as Phase 2B restart | Turn the findings into a restart path that replaces the current verified/corrective sequence. | |
+
+**User's choice:** Create new corrective phase
+**Notes:** The user wants the broader sticky delegation-model gaps handled explicitly, but as new corrective work rather than as a rewrite of Phase 02 or Phase 08 history.
+
+---
+
 ## the agent's Discretion
 
 - Exact planning structure and naming of sub-lanes within the bundled corrective closure.
@@ -73,3 +125,5 @@
 - General live-steering platform expansion beyond the inherited defect corridor.
 - Runtime-domain restructuring work that belongs to Phase 07 and later phases.
 - Broader delegation hardening beyond the specific Phase 02 closure lane.
+- Any attempt to invalidate Phase 02 from the new root-cause note alone.
+- Any joint Phase 02 + Phase 08 archive/restart move before Phase 08 closure reconciliation is complete.
