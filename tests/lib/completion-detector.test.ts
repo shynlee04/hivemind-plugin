@@ -148,6 +148,30 @@ describe("CompletionDetector", () => {
       })
     })
 
+    it("stays pending until the latest count is stable for the full window", async () => {
+      const resultPromise = detector.watch("ses_1", 5000)
+
+      detector.feedMessageCount("ses_1", 2)
+      vi.advanceTimersByTime(60)
+      detector.feedMessageCount("ses_1", 4)
+      vi.advanceTimersByTime(60)
+      detector.feedMessageCount("ses_1", 5)
+      vi.advanceTimersByTime(90)
+
+      const sentinel = detector.watch("ses_guard", 10)
+      vi.advanceTimersByTime(15)
+      await expect(sentinel).resolves.toEqual({
+        signal: "timeout",
+        sessionID: "ses_guard",
+      })
+
+      vi.advanceTimersByTime(10)
+      await expect(resultPromise).resolves.toEqual({
+        signal: "idle",
+        sessionID: "ses_1",
+      })
+    })
+
     it("resolves with idle after stable count (short timeout)", async () => {
       const fastDetector = new CompletionDetector(50)
       const resultPromise = fastDetector.watch("ses_1", 5000)

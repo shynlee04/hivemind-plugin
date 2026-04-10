@@ -6,6 +6,7 @@ import type { SessionContinuityRecord } from "../../src/lib/types.js"
 vi.mock("../../src/lib/session-api.js", () => ({
   getSessionStatusMap: vi.fn(),
   getSession: vi.fn(),
+  getSessionMessages: vi.fn(),
 }))
 
 vi.mock("../../src/lib/notification-handler.js", () => ({
@@ -25,7 +26,8 @@ vi.mock("../../src/lib/continuity.js", () => ({
   getSessionContinuity: vi.fn(),
 }))
 
-import { getSessionStatusMap, getSession } from "../../src/lib/session-api.js"
+import { CompletionDetector } from "../../src/lib/completion-detector.js"
+import { getSessionStatusMap, getSession, getSessionMessages } from "../../src/lib/session-api.js"
 import { notifyParentSession } from "../../src/lib/notification-handler.js"
 import { patchSessionContinuity, getSessionContinuity } from "../../src/lib/continuity.js"
 
@@ -34,6 +36,11 @@ const mockNotifyParentSession = vi.mocked(notifyParentSession)
 const mockPatchSessionContinuity = vi.mocked(patchSessionContinuity)
 const mockGetSessionContinuity = vi.mocked(getSessionContinuity)
 const mockGetSession = vi.mocked(getSession)
+const mockGetSessionMessages = vi.mocked(getSessionMessages)
+
+function buildMessage(parts: Array<{ type: string }>): { parts: Array<{ type: string }> } {
+  return { parts }
+}
 
 describe("observeBackgroundCompletion", () => {
   const mockNow = vi.fn()
@@ -41,6 +48,7 @@ describe("observeBackgroundCompletion", () => {
   const mockReleaseQueue = vi.fn()
   const mockGetContinuityForObserver = vi.fn()
   const instantSleep = vi.fn().mockResolvedValue(undefined)
+  let completionDetector: CompletionDetector
 
   const mockContinuity: SessionContinuityRecord = {
     sessionID: "child-123",
@@ -91,6 +99,7 @@ describe("observeBackgroundCompletion", () => {
   }
 
   beforeEach(() => {
+    completionDetector = new CompletionDetector(100)
     mockNow.mockReturnValue(Date.now())
     mockPatchLifecycle.mockReset()
     mockReleaseQueue.mockReset()
@@ -101,6 +110,8 @@ describe("observeBackgroundCompletion", () => {
     mockPatchSessionContinuity.mockReset()
     mockNotifyParentSession.mockReset()
     mockGetSessionStatusMap.mockReset()
+    mockGetSessionMessages.mockReset()
+    mockGetSessionMessages.mockResolvedValue([])
     instantSleep.mockClear()
   })
 
@@ -113,10 +124,14 @@ describe("observeBackgroundCompletion", () => {
     mockGetSessionStatusMap
       .mockResolvedValueOnce({ "child-123": { type: "busy" } })
       .mockResolvedValueOnce({ "child-123": { type: "idle" } })
+    mockGetSessionMessages.mockResolvedValueOnce([
+      buildMessage([{ type: "text" }, { type: "tool-call" }]),
+    ])
 
     await observeBackgroundCompletion({
       sessionID: "child-123",
       client: {} as any,
+      completionDetector,
       pollTimeoutMs: 60000,
       now: mockNow,
       getSessionContinuity: mockGetContinuityForObserver,
@@ -126,7 +141,7 @@ describe("observeBackgroundCompletion", () => {
     })
 
     // After first poll (busy), time advances
-    currentTime = startTime + 15000
+    currentTime = startTime + 3000
 
     expect(mockPatchLifecycle).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -159,6 +174,7 @@ describe("observeBackgroundCompletion", () => {
     await observeBackgroundCompletion({
       sessionID: "child-123",
       client: {} as any,
+      completionDetector,
       pollTimeoutMs: 60000,
       now: mockNow,
       getSessionContinuity: mockGetContinuityForObserver,
@@ -195,6 +211,7 @@ describe("observeBackgroundCompletion", () => {
     await observeBackgroundCompletion({
       sessionID: "child-123",
       client: {} as any,
+      completionDetector,
       pollTimeoutMs: 60000,
       now: mockNow,
       getSessionContinuity: mockGetContinuityForObserver,
@@ -222,6 +239,7 @@ describe("observeBackgroundCompletion", () => {
     await observeBackgroundCompletion({
       sessionID: "child-123",
       client: {} as any,
+      completionDetector,
       pollTimeoutMs: 60000,
       now: mockNow,
       getSessionContinuity: mockGetContinuityForObserver,
@@ -262,6 +280,7 @@ describe("observeBackgroundCompletion", () => {
     await observeBackgroundCompletion({
       sessionID: "child-123",
       client: {} as any,
+      completionDetector,
       pollTimeoutMs: 30000,
       now: mockNow,
       getSessionContinuity: mockGetContinuityForObserver,
@@ -290,10 +309,14 @@ describe("observeBackgroundCompletion", () => {
       .mockResolvedValueOnce({ "child-123": { type: "busy" } })
       .mockResolvedValueOnce({ "child-123": { type: "busy" } })
       .mockResolvedValueOnce({ "child-123": { type: "idle" } })
+    mockGetSessionMessages.mockResolvedValueOnce([
+      buildMessage([{ type: "text" }, { type: "tool" }]),
+    ])
 
     await observeBackgroundCompletion({
       sessionID: "child-123",
       client: {} as any,
+      completionDetector,
       pollTimeoutMs: 120000,
       now: mockNow,
       getSessionContinuity: mockGetContinuityForObserver,
@@ -314,6 +337,138 @@ describe("observeBackgroundCompletion", () => {
     )
   })
 
+  it("does not complete on an immediate idle poll before any busy activity is seen", async () => {
+    const startTime = Date.now()
+    let currentTime = startTime
+
+    mockNow.mockImplementation(() => currentTime)
+    mockGetSession
+      .mockResolvedValueOnce({ status: { type: "idle" } } as never)
+      .mockResolvedValueOnce({ status: { type: "busy" } } as never)
+      .mockResolvedValueOnce({ status: { type: "idle" } } as never)
+    mockGetSessionMessages
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+
+    instantSleep.mockImplementation(async () => {
+      currentTime += 3000
+    })
+
+    await observeBackgroundCompletion({
+      sessionID: "child-123",
+      client: {} as any,
+      completionDetector,
+      pollTimeoutMs: 60000,
+      now: mockNow,
+      getSessionContinuity: mockGetContinuityForObserver,
+      patchLifecycle: mockPatchLifecycle,
+      releaseQueue: mockReleaseQueue,
+      sleepFn: instantSleep,
+    })
+
+    expect(mockPatchLifecycle).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionID: "child-123",
+        status: "completed",
+      }),
+    )
+    expect(instantSleep).toHaveBeenCalledTimes(2)
+    expect(instantSleep).toHaveBeenNthCalledWith(1, 3000)
+    expect(instantSleep).toHaveBeenNthCalledWith(2, 3000)
+    expect(mockGetSessionMessages).toHaveBeenCalledTimes(2)
+  })
+
+  it("keeps polling on idle until combined evidence is stable", async () => {
+    const startTime = Date.now()
+    let currentTime = startTime
+
+    mockNow.mockImplementation(() => currentTime)
+    mockGetSession
+      .mockResolvedValueOnce({ status: { type: "busy" } } as never)
+      .mockResolvedValueOnce({ status: { type: "idle" } } as never)
+      .mockResolvedValueOnce({ status: { type: "idle" } } as never)
+      .mockResolvedValueOnce({ status: { type: "idle" } } as never)
+
+    mockGetSessionMessages
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        buildMessage([{ type: "text" }, { type: "tool-call" }]),
+        buildMessage([{ type: "tool" }]),
+      ])
+      .mockResolvedValueOnce([
+        buildMessage([{ type: "text" }, { type: "tool_call" }]),
+        buildMessage([{ type: "tool" }]),
+      ])
+
+    instantSleep.mockImplementation(async (ms: number) => {
+      currentTime += ms
+    })
+
+    await observeBackgroundCompletion({
+      sessionID: "child-123",
+      client: {} as any,
+      completionDetector,
+      pollTimeoutMs: 60000,
+      now: mockNow,
+      getSessionContinuity: mockGetContinuityForObserver,
+      patchLifecycle: mockPatchLifecycle,
+      releaseQueue: mockReleaseQueue,
+      sleepFn: instantSleep,
+    })
+
+    expect(mockGetSessionMessages).toHaveBeenCalledTimes(3)
+    expect(mockPatchLifecycle).toHaveBeenCalledTimes(1)
+    expect(mockPatchLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionID: "child-123",
+        status: "completed",
+        phase: "completed",
+      }),
+    )
+    expect(instantSleep).toHaveBeenNthCalledWith(1, 3000)
+    expect(instantSleep).toHaveBeenNthCalledWith(2, 3000)
+    expect(instantSleep).toHaveBeenNthCalledWith(3, 3000)
+  })
+
+  it("allows an initial idle poll to complete once the startup window has elapsed", async () => {
+    const startTime = Date.now()
+    mockNow.mockReturnValue(startTime + 15000)
+    mockGetSession.mockResolvedValueOnce({ status: { type: "idle" } } as never)
+    mockGetSessionMessages.mockResolvedValueOnce([
+      buildMessage([{ type: "text" }, { type: "tool-call" }]),
+    ])
+    mockGetContinuityForObserver.mockReturnValue({
+      ...mockContinuity,
+      metadata: {
+        ...mockContinuity.metadata,
+        lifecycle: {
+          ...mockContinuity.metadata.lifecycle,
+          launchedAt: startTime,
+        },
+      },
+    })
+
+    await observeBackgroundCompletion({
+      sessionID: "child-123",
+      client: {} as any,
+      completionDetector,
+      pollTimeoutMs: 60000,
+      now: mockNow,
+      getSessionContinuity: mockGetContinuityForObserver,
+      patchLifecycle: mockPatchLifecycle,
+      releaseQueue: mockReleaseQueue,
+      sleepFn: instantSleep,
+    })
+
+    expect(mockPatchLifecycle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        sessionID: "child-123",
+        status: "completed",
+        phase: "completed",
+      }),
+    )
+  })
+
   it("does not notify parent if parentSessionID is missing", async () => {
     const continuityWithoutParent: SessionContinuityRecord = {
       ...mockContinuity,
@@ -325,10 +480,14 @@ describe("observeBackgroundCompletion", () => {
     mockGetContinuityForObserver.mockReturnValue(continuityWithoutParent)
 
     mockGetSessionStatusMap.mockResolvedValueOnce({ "child-123": { type: "idle" } })
+    mockGetSessionMessages.mockResolvedValueOnce([
+      buildMessage([{ type: "text" }, { type: "tool-call" }]),
+    ])
 
     await observeBackgroundCompletion({
       sessionID: "child-123",
       client: {} as any,
+      completionDetector,
       pollTimeoutMs: 60000,
       now: mockNow,
       getSessionContinuity: mockGetContinuityForObserver,
@@ -341,12 +500,28 @@ describe("observeBackgroundCompletion", () => {
   })
 
   it("persists a pending notification when parent delivery fails", async () => {
+    const startTime = Date.now()
+    mockNow.mockReturnValue(startTime + 15000)
     mockGetSession.mockResolvedValueOnce({ status: { type: "idle" } } as never)
+    mockGetSessionMessages.mockResolvedValueOnce([
+      buildMessage([{ type: "text" }, { type: "tool-call" }]),
+    ])
     mockNotifyParentSession.mockResolvedValueOnce(false)
+    mockGetContinuityForObserver.mockReturnValue({
+      ...mockContinuity,
+      metadata: {
+        ...mockContinuity.metadata,
+        lifecycle: {
+          ...mockContinuity.metadata.lifecycle,
+          launchedAt: startTime,
+        },
+      },
+    })
 
     await observeBackgroundCompletion({
       sessionID: "child-123",
       client: {} as any,
+      completionDetector,
       pollTimeoutMs: 60000,
       now: mockNow,
       getSessionContinuity: mockGetContinuityForObserver,
@@ -381,11 +556,15 @@ describe("observeBackgroundCompletion", () => {
 
   it("ignores stale terminal notifications when lifecycle reconciliation rejects the transition", async () => {
     mockGetSession.mockResolvedValueOnce({ status: { type: "idle" } } as never)
+    mockGetSessionMessages.mockResolvedValueOnce([
+      buildMessage([{ type: "text" }, { type: "tool-call" }]),
+    ])
     mockPatchLifecycle.mockReturnValueOnce(false)
 
     await observeBackgroundCompletion({
       sessionID: "child-123",
       client: {} as any,
+      completionDetector,
       pollTimeoutMs: 60000,
       now: mockNow,
       getSessionContinuity: mockGetContinuityForObserver,
