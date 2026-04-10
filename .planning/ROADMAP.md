@@ -14,7 +14,7 @@
 - [ ] **Phase 6: Runtime Domain Separation** — 0/6
 - [ ] **Phase 7: Runtime Domain Restructuring Planning** — 0/5
 - [ ] **Phase 8: Repair Durable Parent Observability** — ✅ COMPLETE (corrective closure)
-- [ ] **Phase 9: Sticky Delegation Corrective** — 0/5
+- [ ] **Phase 9: Sticky Delegation Corrective** — 3/5
 
 ## Phase 1: Baseline Cleanup
 
@@ -128,7 +128,7 @@ Plans:
 | 6. Runtime Domain Separation | 0/6 | Not started |
 | 7. Runtime Domain Restructuring Planning | 0/5 | Future planning phase; gated on Phase 02 reaching 18/18 verified ✅ |
 | 8. Repair Durable Parent Observability | 3/3 plans | ✅ COMPLETE — corrective closure, 2026-04-10 |
-| 9. Sticky Delegation Corrective | 0/5 | New corrective phase — based on delegation root-cause analysis |
+| 9. Sticky Delegation Corrective | 3/5 | In Progress — sync envelope plan completed |
 
 ## Dependencies
 

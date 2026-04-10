@@ -67,12 +67,12 @@ Each task was committed atomically:
 
 ### Auto-fixed Issues
 
-**1. [Rule 3 - Blocking] Added missing `PH09-03` requirement entry so execution metadata could close cleanly**
+**1. [Rule 3 - Blocking] Corrected missing and stale planning metadata so execution bookkeeping could close cleanly**
 - **Found during:** Post-task state updates
-- **Issue:** `requirements mark-complete PH09-03` failed because `REQUIREMENTS.md` did not yet contain the plan's requirement ID.
-- **Fix:** Added the missing Phase 09 requirement entry and traceability row, then re-ran the requirements update successfully.
-- **Files modified:** `.planning/REQUIREMENTS.md`
-- **Verification:** `gsd-tools requirements mark-complete PH09-03` returned `updated: true`.
+- **Issue:** `requirements mark-complete PH09-03` failed because `REQUIREMENTS.md` did not yet contain the plan's requirement ID, and the helper updates left stale top-level Phase 09 progress values in `STATE.md` and `ROADMAP.md`.
+- **Fix:** Added the missing Phase 09 requirement entry and traceability row, re-ran the requirements update successfully, and manually reconciled stale current-plan/progress fields in `STATE.md` and `ROADMAP.md`.
+- **Files modified:** `.planning/REQUIREMENTS.md`, `.planning/STATE.md`, `.planning/ROADMAP.md`
+- **Verification:** `gsd-tools requirements mark-complete PH09-03` returned `updated: true`, and the planning artifacts now show Phase 09 at plan 4 of 5 / 3 of 5 completed.
 - **Committed in:** Pending (metadata commit)
 
 ---
@@ -83,7 +83,7 @@ Each task was committed atomically:
 ## Issues Encountered
 
 - Existing integration assertions still expected raw sync text after the envelope change; updated them during Task 2 so the suite matched the new contract.
-- The requirements tracker initially lacked `PH09-03`, so the metadata update step needed a corrective documentation entry before completion could be recorded.
+- The requirements tracker initially lacked `PH09-03`, and helper-driven updates left stale top-level progress text in `STATE.md`/`ROADMAP.md`, so the metadata step needed a corrective documentation pass before completion could be recorded.
 
 ## User Setup Required
 
