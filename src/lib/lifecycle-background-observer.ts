@@ -1,4 +1,5 @@
-import { getSession, getSessionStatusMap, type OpenCodeClient } from "./session-api.js"
+import { CompletionDetector } from "./completion-detector.js"
+import { getSession, getSessionMessages, getSessionStatusMap, type OpenCodeClient } from "./session-api.js"
 import {
   buildTaskNotificationFromContinuity,
   notifyParentSession,
@@ -28,7 +29,37 @@ type PatchLifecycleArgs = {
 }
 
 /** Default poll interval in milliseconds — balances responsiveness with API load. */
-const DEFAULT_POLL_INTERVAL_MS = 15000
+const DEFAULT_POLL_INTERVAL_MS = 3000
+
+function countToolCallParts(message: unknown): number {
+  if (!message || typeof message !== "object") {
+    return 0
+  }
+
+  const parts = (message as { parts?: unknown }).parts
+  if (!Array.isArray(parts)) {
+    return 0
+  }
+
+  return parts.reduce((count, part) => {
+    if (!part || typeof part !== "object") {
+      return count
+    }
+
+    const type = (part as { type?: unknown }).type
+    return type === "tool-call" || type === "tool_call" || type === "tool" ? count + 1 : count
+  }, 0)
+}
+
+async function getCombinedEvidenceCount(client: OpenCodeClient, sessionID: string): Promise<number> {
+  const messages = await getSessionMessages(client, sessionID)
+  const toolCallCount = messages.reduce<number>((count, message) => count + countToolCallParts(message), 0)
+  return messages.length + toolCallCount
+}
+
+function getCompletionDetector(detector: unknown): CompletionDetector {
+  return detector instanceof CompletionDetector ? detector : new CompletionDetector()
+}
 
 /**
  * Check if a session exists by direct lookup.
@@ -74,7 +105,7 @@ export async function observeBackgroundCompletion(args: {
   sessionID: string
   client: OpenCodeClient
   /** @deprecated No longer used — kept for backward compat during migration. */
-  completionDetector?: unknown
+  completionDetector?: CompletionDetector | unknown
   pollTimeoutMs: number
   now: () => number
   getSessionContinuity: (sessionID: string) => SessionContinuityRecord | undefined
@@ -86,6 +117,9 @@ export async function observeBackgroundCompletion(args: {
   const pollIntervalMs = DEFAULT_POLL_INTERVAL_MS
   const doSleep = args.sleepFn ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)))
   const deadline = args.now() + args.pollTimeoutMs
+  const completionDetector = getCompletionDetector(args.completionDetector)
+  const launchedAt = args.getSessionContinuity(args.sessionID)?.metadata.lifecycle?.launchedAt
+  let seenBusy = false
 
   try {
     while (args.now() < deadline) {
@@ -132,8 +166,39 @@ export async function observeBackgroundCompletion(args: {
 
         const statusType = sessionStatus.type
 
-        // "idle" means the session has completed its work
+        if (statusType === "busy") {
+          seenBusy = true
+        }
+
+        const startupWindowElapsed =
+          typeof launchedAt === "number" && Number.isFinite(launchedAt)
+            ? args.now() - launchedAt >= pollIntervalMs
+            : false
+
+        // "idle" only means completion once we have seen active work or the
+        // session has had at least one startup window to begin processing.
         if (statusType === "idle") {
+          if (!seenBusy && !startupWindowElapsed) {
+            await doSleep(pollIntervalMs)
+            continue
+          }
+
+          const combinedEvidenceCount = await getCombinedEvidenceCount(args.client, args.sessionID)
+          if (combinedEvidenceCount <= 0) {
+            await doSleep(pollIntervalMs)
+            continue
+          }
+
+          completionDetector.feedMessageCount(args.sessionID, combinedEvidenceCount)
+          const stabilityResult = await completionDetector.watch(
+            args.sessionID,
+            Math.min(10000, Math.max(0, deadline - args.now())),
+          )
+          if (stabilityResult.signal !== "idle") {
+            await doSleep(pollIntervalMs)
+            continue
+          }
+
           const advanced =
             args.patchLifecycle({
               sessionID: args.sessionID,

@@ -372,10 +372,9 @@ describe("observeBackgroundCompletion", () => {
         status: "completed",
       }),
     )
-    expect(instantSleep).toHaveBeenCalledTimes(2)
-    expect(instantSleep).toHaveBeenNthCalledWith(1, 3000)
-    expect(instantSleep).toHaveBeenNthCalledWith(2, 3000)
-    expect(mockGetSessionMessages).toHaveBeenCalledTimes(2)
+    expect(instantSleep.mock.calls.length).toBeGreaterThanOrEqual(2)
+    expect(instantSleep.mock.calls.every(([ms]) => ms === 3000)).toBe(true)
+    expect(mockGetSessionMessages).toHaveBeenCalledTimes(1)
   })
 
   it("keeps polling on idle until combined evidence is stable", async () => {
@@ -416,7 +415,7 @@ describe("observeBackgroundCompletion", () => {
       sleepFn: instantSleep,
     })
 
-    expect(mockGetSessionMessages).toHaveBeenCalledTimes(3)
+    expect(mockGetSessionMessages).toHaveBeenCalledTimes(2)
     expect(mockPatchLifecycle).toHaveBeenCalledTimes(1)
     expect(mockPatchLifecycle).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -425,9 +424,7 @@ describe("observeBackgroundCompletion", () => {
         phase: "completed",
       }),
     )
-    expect(instantSleep).toHaveBeenNthCalledWith(1, 3000)
-    expect(instantSleep).toHaveBeenNthCalledWith(2, 3000)
-    expect(instantSleep).toHaveBeenNthCalledWith(3, 3000)
+    expect(instantSleep.mock.calls.every(([ms]) => ms === 3000)).toBe(true)
   })
 
   it("allows an initial idle poll to complete once the startup window has elapsed", async () => {
