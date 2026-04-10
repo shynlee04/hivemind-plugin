@@ -11,8 +11,9 @@ import {
   hasAnyInjection,
   INJECTION_CANDIDATE_IDS,
 } from "../lib/injection-engine.js"
-import { getSessionContinuity, getSessionRecoveryState } from "../lib/continuity.js"
+import { getSessionContinuity, getSessionRecoveryState, patchSessionContinuity } from "../lib/continuity.js"
 import { buildInjectionGovernanceState } from "../lib/governance-engine.js"
+import { formatPendingNotificationsForSession } from "../lib/pending-notifications.js"
 import { getEventSessionID } from "../lib/session-api.js"
 import { transformMessages } from "./messages-transform.js"
 import type { HookDependencies } from "./types.js"
@@ -91,6 +92,43 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
   const { lifecycleManager } = deps
   const eventObservers = deps.eventObservers ?? []
 
+  const replayPendingNotificationsForEvent = async (
+    sessionID: string,
+    eventType: string,
+  ): Promise<void> => {
+    const continuity = getSessionContinuity(sessionID)
+    const pendingNotifications = continuity?.metadata.pendingNotifications ?? []
+    if (pendingNotifications.length === 0) {
+      return
+    }
+
+    const recovery = getSessionRecoveryState(sessionID)
+    const shouldReplay =
+      (eventType === "session.created" && continuity?.metadata.lifecycle?.phase === "created") ||
+      (eventType === "session.updated" && recovery?.assessment.recommendedAction === "resume")
+
+    if (!shouldReplay) {
+      return
+    }
+
+    const message = formatPendingNotificationsForSession(pendingNotifications)
+    if (!message || !deps.client.tui?.showToast) {
+      return
+    }
+
+    try {
+      await deps.client.tui.showToast({
+        body: {
+          message,
+          variant: "info",
+        },
+      })
+      patchSessionContinuity(sessionID, { pendingNotifications: [] })
+    } catch {
+      // Best-effort replay: keep continuity-backed notifications intact if toast injection fails.
+    }
+  }
+
   const handleSystemTransform = async (
     input: SystemInput,
     output: SystemOutput,
@@ -103,6 +141,14 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
     const continuity = getSessionContinuity(sessionID)
     if (!continuity) {
       return
+    }
+
+    if ((continuity.metadata.pendingNotifications?.length ?? 0) > 0) {
+      output.system = Array.isArray(output.system) ? output.system : []
+      ;(output.system as string[]).push(
+        formatPendingNotificationsForSession(continuity.metadata.pendingNotifications ?? []),
+      )
+      patchSessionContinuity(sessionID, { pendingNotifications: [] })
     }
 
     const evaluation = evaluateInjections({
@@ -139,6 +185,7 @@ export function createCoreHooks(deps: HookDependencies): CoreHooks {
       }
 
       lifecycleManager.handleEvent({ event, eventType, sessionID })
+      await replayPendingNotificationsForEvent(sessionID, eventType)
 
       for (const observer of eventObservers) {
         await observer({ event })

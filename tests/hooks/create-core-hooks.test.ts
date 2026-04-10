@@ -425,6 +425,11 @@ describe("createCoreHooks", () => {
         createdAt: Date.now(),
         updatedAt: Date.now(),
         lastObservedAt: Date.now(),
+        lifecycle: {
+          phase: "created",
+          runMode: "async",
+          queueKey: "gpt-5.4:builder:implementation",
+        },
         pendingNotifications: [
           {
             sessionID: "child-pending",
@@ -479,6 +484,16 @@ describe("createCoreHooks", () => {
         updatedAt: now,
         lastObservedAt: now,
         status: "running",
+        compactionCheckpoint: {
+          ...buildContinuityRecord("sess-resume").metadata.compactionCheckpoint!,
+          warnings: [],
+          capturedAt: now,
+        },
+        delegationPacket: {
+          ...buildContinuityRecord("sess-resume").metadata.delegationPacket!,
+          status: "completed",
+          updatedAt: now,
+        },
         pendingNotifications: [
           {
             sessionID: "child-resume",
