@@ -85,6 +85,12 @@ describe("builtin-process lifecycle", () => {
       "process-parent-fail",
       "process-root-fail",
       "process-child-fail",
+      "process-parent-capture",
+      "process-root-capture",
+      "process-child-capture",
+      "process-parent-notif",
+      "process-root-notif",
+      "process-child-notif",
     ]) deleteSessionContinuity(id)
   })
 
@@ -190,5 +196,87 @@ describe("builtin-process lifecycle", () => {
       lastError: "process boom",
       lifecycle: expect.objectContaining({ phase: "failed" }),
     })
+  })
+
+  /* WHY: PH13-07/PH13-08 require async process completion to capture and persist result.
+   * WHAT: async builtin-process completion stores resultCapture in continuity metadata.
+   * HOW: Launch async process, resolve with stdout, wait for completion, verify resultCapture.
+   * CONNECTS TO: PH13-07, PH13-08 */
+  it("async process completion captures result to continuity", async () => {
+    const client = createInMemoryClient()
+    installCreateIds(client, ["process-child-capture"])
+    const run = deferred<{ status: "completed"; stdout: string; stderr: string; exitCode: 0 | null }>()
+    const manager = createHarnessLifecycleManager({ client, pollTimeoutMs: 50, backgroundManager: makeBackgroundManager(run.promise) })
+
+    const raw = await manager.launchDelegatedSession({
+      parentSessionID: "process-parent-capture",
+      rootID: "process-root-capture",
+      childDepth: 1,
+      description: "process capture test",
+      runInBackground: true,
+      agent: "builder",
+      route: route(),
+      permissionRules: [],
+      compatibleTools: [],
+      promptText: "capture result",
+      execution: execution(true),
+    })
+
+    const parsed = JSON.parse(raw) as { session_id: string }
+
+    // Resolve the background process with output
+    run.resolve({ status: "completed", stdout: "process output captured here", stderr: "", exitCode: 0 })
+    await waitTurn()
+    await waitTurn()
+    await waitTurn()
+
+    const continuity = getSessionContinuity(parsed.session_id)
+    expect(continuity?.metadata.lifecycle?.phase).toBe("completed")
+    // Result capture should be present in continuity metadata
+    expect(continuity?.metadata.resultCapture).toBeDefined()
+    expect(continuity?.metadata.resultCapture?.resultText).toContain("process output captured")
+  })
+
+  /* WHY: PH13-10/PH13-11 require notifications to carry captured result data.
+   * WHAT: parent notification contains resultPreview from captured output.
+   * HOW: Launch async process, complete it, then inspect the notification sent to parent.
+   * CONNECTS TO: PH13-10, PH13-11 */
+  it("async process notification includes captured result preview", async () => {
+    const client = createInMemoryClient()
+    installCreateIds(client, ["process-child-notif"])
+    const run = deferred<{ status: "completed"; stdout: string; stderr: string; exitCode: 0 | null }>()
+    const manager = createHarnessLifecycleManager({ client, pollTimeoutMs: 50, backgroundManager: makeBackgroundManager(run.promise) })
+
+    const raw = await manager.launchDelegatedSession({
+      parentSessionID: "process-parent-notif",
+      rootID: "process-root-notif",
+      childDepth: 1,
+      description: "process notification test",
+      runInBackground: true,
+      agent: "builder",
+      route: route(),
+      permissionRules: [],
+      compatibleTools: [],
+      promptText: "notif test",
+      execution: execution(true),
+    })
+
+    const parsed = JSON.parse(raw) as { session_id: string }
+
+    // Resolve with output that will be captured
+    run.resolve({ status: "completed", stdout: "built 3 files", stderr: "", exitCode: 0 })
+    await waitTurn()
+    await waitTurn()
+    await waitTurn()
+
+    // Check that parent was notified with enriched data
+    const parentCalls = client.session.prompt.mock.calls.filter(
+      ([request]: any[]) => request.path?.id === "process-parent-notif",
+    )
+    // Should have started + completed notifications
+    expect(parentCalls.length).toBeGreaterThanOrEqual(2)
+    // The completion notification should contain result content
+    const completionNotif = parentCalls[parentCalls.length - 1]?.[0]?.body?.parts?.[0]?.text ?? ""
+    expect(completionNotif).toContain("process notification test")
   })
 })

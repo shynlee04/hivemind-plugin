@@ -56,7 +56,7 @@ describe("buildNotificationMessage", () => {
   })
 
   it("should truncate long result previews", () => {
-    const longPreview = "a".repeat(200)
+    const longPreview = "a".repeat(600)
     const task: TaskNotification = {
       sessionID: "sess-4",
       description: "Build feature",
@@ -69,11 +69,11 @@ describe("buildNotificationMessage", () => {
 
     expect(result).toContain("...")
     expect(result).not.toContain(longPreview)
-    // Truncated preview should be ~103 chars (100 + "...")
+    // Truncated preview should be ~503 chars (500 + "...")
     const resultLine = result.split("\n").find((l) => l.includes("Result:"))
     expect(resultLine).toBeDefined()
     const previewPart = resultLine!.slice(resultLine!.indexOf("Result: ") + "Result: ".length)
-    expect(previewPart.length).toBeLessThanOrEqual(103)
+    expect(previewPart.length).toBeLessThanOrEqual(503)
   })
 
   it("should handle missing optional fields gracefully", () => {

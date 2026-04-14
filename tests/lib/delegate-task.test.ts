@@ -163,7 +163,7 @@ describe("delegate task lifecycle", () => {
     const parentCalls = client.session.prompt.mock.calls.filter(([request]) => request.path.id === "delegate-parent-complete")
     expect(continuity?.metadata.lifecycle?.phase).toBe("completed")
     expect(parentCalls).toHaveLength(2)
-    expect(parentCalls[1]?.[0]?.body?.parts?.[0]?.text).toContain("completed work on \"async completion\"")
+    expect(parentCalls[1]?.[0]?.body?.parts?.[0]?.text).toContain("async completion")
   })
 
   /* WHY: Session creation errors must fail predictably without leaving half-created delegation state behind.

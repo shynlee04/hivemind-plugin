@@ -396,20 +396,20 @@ describe("buildNotificationMessage: edge cases with malformed fields", () => {
     expect(result).not.toContain("...")
   })
 
-  it("handles resultPreview at 101 chars (just over boundary)", () => {
+  it("handles resultPreview at 501 chars (just over boundary)", () => {
     const task: TaskNotification = {
       sessionID: "sess-over",
       description: "Over boundary test",
       agent: "builder",
       status: "completed",
-      resultPreview: "a".repeat(101),
+      resultPreview: "a".repeat(501),
     }
 
     const result = buildNotificationMessage(task)
     expect(result).toContain("...")
-    // Should have truncated to 100 + "..."
+    // Should have truncated to 500 + "..."
     const resultLine = result.split("\n").find((l) => l.includes("Result:"))!
     const previewPart = resultLine.slice(resultLine.indexOf("Result: ") + "Result: ".length)
-    expect(previewPart.length).toBe(103) // 100 + "..."
+    expect(previewPart.length).toBe(503) // 500 + "..."
   })
 })
