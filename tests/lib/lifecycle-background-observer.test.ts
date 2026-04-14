@@ -61,11 +61,10 @@ describe("observeBackgroundCompletion", () => {
    * CONNECTS TO: D-20, D-21, D-24 */
   it("completes when session goes idle after producing assistant output", async () => {
     const c = setupObserver()
-    c.client._addMessage("child-123", assistant("text", "tool-call"))
+    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
     c.tick(0)
     c.client._setStatus("child-123", "idle")
-    await c.tick(3000)
-    await c.tick(10_000)
+    await c.tick(55_000)
     await c.finish()
     expect(c.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({ status: "completed", phase: "completed" }))
   })
@@ -78,7 +77,7 @@ describe("observeBackgroundCompletion", () => {
     const c = setupObserver(undefined, { timeoutMs: 5000 })
     c.client._addMessage("child-123", user("text"))
     c.client._setStatus("child-123", "idle")
-    await c.tick(6000)
+    await c.tick(20_000)
     await expectError(c, "background-completion-poll-timeout", /timed out/i)
   })
 
@@ -107,7 +106,7 @@ describe("observeBackgroundCompletion", () => {
    * CONNECTS TO: D-21, D-24 */
   it("times out when poll deadline expires", async () => {
     const c = setupObserver(undefined, { timeoutMs: 5000 })
-    await c.tick(6000)
+    await c.tick(20_000)
     await expectError(c, "background-completion-poll-timeout", /timed out/i)
   })
 
@@ -116,13 +115,11 @@ describe("observeBackgroundCompletion", () => {
    * HOW: seed unknown status, provide assistant output, then advance past the first poll interval.
    * CONNECTS TO: D-16, D-24 */
   it("does not set seenBusy for unknown status", async () => {
-    const c = setupObserver("unknown", { launchedAt: 0 })
-    c.client._addMessage("child-123", assistant("text"))
-    await c.tick(3000)
+    const c = setupObserver("unknown", { launchedAt: 0, timeoutMs: 90_000 })
+    c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
+    await c.tick(15_000)
     c.client._setStatus("child-123", "idle")
-    await c.tick(3000)
-    await c.tick(10_000)
-    await c.finish()
+    await c.tick(75_000)
     expect(c.patchLifecycle).toHaveBeenCalledWith(expect.objectContaining({ status: "completed", phase: "completed" }))
   })
 
@@ -132,17 +129,16 @@ describe("observeBackgroundCompletion", () => {
    * CONNECTS TO: D-21, D-24 */
   it("releases concurrency queue on completion", async () => {
     const completed = setupObserver()
-    completed.client._addMessage("child-123", assistant("text"))
+    completed.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
     completed.client._setStatus("child-123", "idle")
-    await completed.tick(3000)
-    await completed.tick(10_000)
+    await completed.tick(35_000)
     await completed.finish()
 
     const retry = setupObserver("retry")
     await retry.finish()
 
     const timeout = setupObserver(undefined, { timeoutMs: 5000 })
-    await timeout.tick(6000)
+    await timeout.tick(20_000)
     await timeout.finish()
 
     expect(completed.releaseQueue).toHaveBeenCalledTimes(1)
@@ -160,13 +156,13 @@ describe("observeBackgroundCompletion", () => {
     c.tick(0)
     c.client._setStatus("child-123", "idle")
 
-    await c.tick(15_000)
+    await c.tick(14_999)
 
     expect(c.patchLifecycle).not.toHaveBeenCalledWith(
       expect.objectContaining({ status: "completed", phase: "completed" }),
     )
 
-    await c.tick(20_000)
+    await c.tick(20_001)
     await c.finish()
 
     expect(c.patchLifecycle).toHaveBeenCalledWith(
@@ -203,7 +199,7 @@ describe("observeBackgroundCompletion", () => {
     const c = setupObserver("busy", { timeoutMs: 700_000 })
     c.client._addMessage("child-123", assistant("reasoning", "tool-call", "tool-call"))
 
-    await c.tick(650_000)
+    await c.tick(900_000)
     await c.finish()
 
     expect(c.client.session.promptAsync).toHaveBeenCalledTimes(2)

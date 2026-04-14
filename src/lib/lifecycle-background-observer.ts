@@ -1,11 +1,21 @@
 import { CompletionDetector } from "./completion-detector.js"
-import { getSession, getSessionMessages, getSessionStatusMap, type OpenCodeClient } from "./session-api.js"
+import { getSession, getSessionMessages, getSessionStatusMap, sendPromptAsync, type OpenCodeClient } from "./session-api.js"
 import {
   buildTaskNotificationFromContinuity,
   notifyParentSession,
   type TaskNotification,
 } from "./notification-handler.js"
 import { persistPendingNotification } from "./pending-notifications.js"
+import { CompletionVerifier } from "./tasking/completion/completion-verifier.js"
+import {
+  checkIdleTimeout,
+  createFailureState,
+  incrementRetry,
+  markActivity,
+  markIdleStart,
+  shouldRetry,
+} from "./tasking/completion/failure-handler.js"
+import { PollStrategy } from "./tasking/completion/poll-strategy.js"
 import type {
   SessionContinuityMetadata,
   SessionContinuityRecord,
@@ -27,9 +37,6 @@ type PatchLifecycleArgs = {
   completedAt?: number
   error?: string
 }
-
-/** Default poll interval in milliseconds — balances responsiveness with API load. */
-const DEFAULT_POLL_INTERVAL_MS = 3000
 
 function countToolCallParts(message: unknown): number {
   if (!message || typeof message !== "object") {
@@ -120,12 +127,13 @@ export async function observeBackgroundCompletion(args: {
   /** @internal Injected sleep function for testing. Defaults to real setTimeout. */
   sleepFn?: (ms: number) => Promise<void>
 }): Promise<void> {
-  const pollIntervalMs = DEFAULT_POLL_INTERVAL_MS
   const doSleep = args.sleepFn ?? ((ms: number) => new Promise((resolve) => setTimeout(resolve, ms)))
   const deadline = args.now() + args.pollTimeoutMs
   const completionDetector = getCompletionDetector(args.completionDetector)
-  const launchedAt = args.getSessionContinuity(args.sessionID)?.metadata.lifecycle?.launchedAt
-  let seenBusy = false
+  const completionVerifier = new CompletionVerifier()
+  const pollStrategy = new PollStrategy()
+  let failureState = createFailureState(args.sessionID)
+  let lastEvidenceCount = -1
 
   try {
     while (args.now() < deadline) {
@@ -171,40 +179,68 @@ export async function observeBackgroundCompletion(args: {
         }
 
         const statusType = sessionStatus.type
-
-        if (statusType === "busy") {
-          seenBusy = true
+        const combinedEvidenceCount = await getCombinedEvidenceCount(args.client, args.sessionID)
+        if (combinedEvidenceCount !== lastEvidenceCount) {
+          lastEvidenceCount = combinedEvidenceCount
+          failureState = markActivity(failureState)
+          pollStrategy.reset()
+          completionDetector.feedMessageCount(args.sessionID, combinedEvidenceCount)
         }
 
-        const startupWindowElapsed =
-          typeof launchedAt === "number" && Number.isFinite(launchedAt)
-            ? args.now() - launchedAt >= pollIntervalMs
-            : false
+        const completionCheck = await completionVerifier.check(
+          args.client,
+          args.sessionID,
+          statusType === "idle",
+        )
 
-        // "idle" only means completion once we have seen active work or the
-        // session has had at least one startup window to begin processing.
-        if (statusType === "idle") {
-          if (!seenBusy && !startupWindowElapsed) {
-            await doSleep(pollIntervalMs)
-            continue
+        if (completionCheck.evidence.passed) {
+          failureState =
+            failureState.idleSinceMs === null ? markIdleStart(failureState, args.now()) : failureState
+
+          const timeout = checkIdleTimeout(failureState, args.now())
+          if (timeout.timedOut) {
+            if (shouldRetry(failureState)) {
+              failureState = markActivity(incrementRetry(failureState))
+              completionVerifier.reset()
+              pollStrategy.reset()
+              await sendPromptAsync(args.client, args.sessionID, {
+                parts: [
+                  {
+                    type: "text",
+                    text: "Resume the current delegated task from where you left off. Continue and finish the task.",
+                  },
+                ],
+              })
+              await doSleep(pollStrategy.nextInterval())
+              continue
+            }
+
+            const error = "Child session retry budget exhausted after resume-first attempts"
+            const advanced =
+              args.patchLifecycle({
+                sessionID: args.sessionID,
+                status: "error",
+                phase: "failed",
+                error,
+                observation: {
+                  source: "observe:poll-retry-exhausted",
+                  observedAt: args.now(),
+                  detail: "background-completion-retry-exhausted",
+                },
+              }) !== false
+            const continuity = args.getSessionContinuity(args.sessionID)
+            if (advanced && continuity?.metadata.parentSessionID) {
+              void notifyParentWithFallback(
+                args.client,
+                continuity.metadata.parentSessionID,
+                buildTaskNotificationFromContinuity(continuity, "failed", error),
+              )
+            }
+            return
           }
+        }
 
-          const combinedEvidenceCount = await getCombinedEvidenceCount(args.client, args.sessionID)
-          if (combinedEvidenceCount <= 0) {
-            await doSleep(pollIntervalMs)
-            continue
-          }
-
-          completionDetector.feedMessageCount(args.sessionID, combinedEvidenceCount)
-          const stabilityResult = await completionDetector.watch(
-            args.sessionID,
-            Math.min(10000, Math.max(0, deadline - args.now())),
-          )
-          if (stabilityResult.signal !== "idle") {
-            await doSleep(pollIntervalMs)
-            continue
-          }
-
+        if (statusType === "idle" && completionCheck.status === "completed") {
           const advanced =
             args.patchLifecycle({
               sessionID: args.sessionID,
@@ -255,8 +291,7 @@ export async function observeBackgroundCompletion(args: {
           return
         }
 
-        // "busy" means still working — wait before next poll
-        await doSleep(pollIntervalMs)
+        await doSleep(pollStrategy.nextInterval())
       } catch {
         // SDK call failed — treat as terminal
         const error = "Failed to poll child session status"
