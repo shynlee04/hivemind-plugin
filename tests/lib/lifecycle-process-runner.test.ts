@@ -144,6 +144,14 @@ describe("builtin-process lifecycle", () => {
     })
 
     const parsed = JSON.parse(raw) as { session_id: string }
+    expect(getSessionContinuity(parsed.session_id)?.metadata).toMatchObject({
+      status: "running",
+      lifecycle: expect.objectContaining({
+        phase: "running",
+        observation: expect.objectContaining({ detail: "owned-process-spawned" }),
+      }),
+    })
+
     await manager.cancelDelegatedSession(parsed.session_id)
     expect(client.session.abort).toHaveBeenCalledWith({ path: { id: parsed.session_id } })
     expect(getSessionContinuity(parsed.session_id)?.metadata).toMatchObject({

@@ -193,6 +193,34 @@ export async function observeBackgroundCompletion(args: {
           statusType === "idle",
         )
 
+        const continuity = args.getSessionContinuity(args.sessionID)
+        const startGatePassed = completionCheck.evidence.passed
+        const alreadyRunning = continuity?.metadata.status === "running"
+
+        if (startGatePassed && !alreadyRunning) {
+          const promotedAt = args.now()
+          const advanced =
+            args.patchLifecycle({
+              sessionID: args.sessionID,
+              status: "running",
+              phase: "running",
+              observation: {
+                source: "observe:start-gate",
+                observedAt: promotedAt,
+                detail: "background-start-gate-passed",
+              },
+            }) !== false
+
+          const promotedContinuity = args.getSessionContinuity(args.sessionID)
+          if (advanced && promotedContinuity?.metadata.parentSessionID) {
+            void notifyParentWithFallback(
+              args.client,
+              promotedContinuity.metadata.parentSessionID,
+              buildTaskNotificationFromContinuity(promotedContinuity, "started"),
+            )
+          }
+        }
+
         if (completionCheck.evidence.passed) {
           failureState =
             failureState.idleSinceMs === null ? markIdleStart(failureState, args.now()) : failureState
@@ -253,12 +281,12 @@ export async function observeBackgroundCompletion(args: {
                 detail: "background-completion-poll-idle",
               },
             }) !== false
-          const continuity = args.getSessionContinuity(args.sessionID)
-          if (advanced && continuity?.metadata.parentSessionID) {
+          const completedContinuity = args.getSessionContinuity(args.sessionID)
+          if (advanced && completedContinuity?.metadata.parentSessionID) {
             void notifyParentWithFallback(
               args.client,
-              continuity.metadata.parentSessionID,
-              buildTaskNotificationFromContinuity(continuity, "completed"),
+              completedContinuity.metadata.parentSessionID,
+              buildTaskNotificationFromContinuity(completedContinuity, "completed"),
             )
           }
           return

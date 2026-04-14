@@ -10,42 +10,17 @@
  *  - T-09-10: reuses BackgroundManager allowlist/cwd constraints
  */
 
-import type { BackgroundManager, BackgroundResult, BackgroundTask } from "./background-manager.js"
-import type { ExecutionModeResult } from "./execution-mode.js"
+import type { BackgroundResult } from "./background-manager.js"
 import { buildTaskNotificationFromContinuity, notifyParentSession } from "./notification-handler.js"
 import { persistPendingNotification } from "./pending-notifications.js"
-import type { OpenCodeClient } from "./session-api.js"
-import type { SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleState } from "./types.js"
+import {
+  buildAsyncRunnerResponse,
+  type CommonRunnerArgs,
+  type FinalizedResult,
+  type PatchLifecycleArgs,
+} from "./lifecycle-runner-shared.js"
 
-type PatchLifecycleArgs = {
-  sessionID: string
-  status: SessionContinuityMetadata["status"]
-  phase: SessionLifecyclePhase
-  observation?: SessionLifecycleObservation
-  completedAt?: number
-  error?: string
-}
-
-type RunLifecycleTmuxArgs = {
-  sessionID: string
-  parentSessionID: string
-  rootID: string
-  childDepth: number
-  agent: string
-  category?: string
-  model?: string
-  description: string
-  promptText: string
-  runInBackground: boolean
-  execution: ExecutionModeResult
-  client: OpenCodeClient
-  backgroundManager: BackgroundManager
-  getSessionContinuity: (sessionID: string) => SessionContinuityRecord | undefined
-  patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
-  getLifecycleSnapshot: (sessionID: string) => SessionLifecycleState | undefined
-  releaseQueue: (reason: string) => void
-  now: () => number
-}
+type RunLifecycleTmuxArgs = CommonRunnerArgs
 
 /**
  * Build the tmux command that opens a visible pane running OpenCode.
@@ -74,7 +49,7 @@ function finalizeTmuxResult(args: {
   sessionID: string
   patchLifecycle: (args: PatchLifecycleArgs) => boolean | void
   now: () => number
-}): { error?: string; status: "completed" | "failed"; advanced: boolean } {
+}): FinalizedResult {
   const { result, sessionID, patchLifecycle, now } = args
   const completedAt = now()
 
@@ -114,41 +89,6 @@ function finalizeTmuxResult(args: {
   return { error, status: "failed", advanced }
 }
 
-function buildAsyncTmuxResponse(args: {
-  task: BackgroundTask
-  sessionID: string
-  parentSessionID: string
-  rootID: string
-  childDepth: number
-  agent: string
-  category?: string
-  model?: string
-  description: string
-  execution: ExecutionModeResult
-  getLifecycleSnapshot: (sessionID: string) => SessionLifecycleState | undefined
-}): string {
-  return JSON.stringify(
-    {
-      ok: true,
-      mode: "async",
-      session_id: args.sessionID,
-      parent_session_id: args.parentSessionID,
-      root_session_id: args.rootID,
-      agent: args.agent,
-      category: args.category,
-      model: args.model,
-      depth: args.childDepth,
-      background_task_id: args.task.id,
-      execution: args.execution,
-      description: args.description,
-      lifecycle: args.getLifecycleSnapshot(args.sessionID),
-      instruction: "Task dispatched to visible tmux pane. You can observe progress. You'll be notified when complete.",
-    },
-    null,
-    2,
-  )
-}
-
 /**
  * Run a delegated session inside a visible tmux pane.
  *
@@ -164,9 +104,23 @@ export async function runLifecycleTmuxTask(args: RunLifecycleTmuxArgs): Promise<
     parentSessionID: args.parentSessionID,
   })
 
+  const startedAt = args.now()
+  const startedAdvanced =
+    args.patchLifecycle({
+      sessionID: args.sessionID,
+      status: "running",
+      phase: "running",
+      launchedAt: startedAt,
+      observation: {
+        source: "dispatch",
+        observedAt: startedAt,
+        detail: "tmux-pane-spawned",
+      },
+    }) !== false
+
   // Notify parent that work has started
   const startedContinuity = args.getSessionContinuity(args.sessionID)
-  if (startedContinuity?.metadata.parentSessionID) {
+  if (startedAdvanced && startedContinuity?.metadata.parentSessionID) {
     const startedNotification = buildTaskNotificationFromContinuity(startedContinuity, "started")
     void notifyParentSession(
       args.client,
@@ -230,7 +184,7 @@ export async function runLifecycleTmuxTask(args: RunLifecycleTmuxArgs): Promise<
         args.releaseQueue("tmux-pane-complete")
       })
 
-    return buildAsyncTmuxResponse({
+    return buildAsyncRunnerResponse({
       task,
       sessionID: args.sessionID,
       parentSessionID: args.parentSessionID,
@@ -242,6 +196,7 @@ export async function runLifecycleTmuxTask(args: RunLifecycleTmuxArgs): Promise<
       description: args.description,
       execution: args.execution,
       getLifecycleSnapshot: args.getLifecycleSnapshot,
+      instruction: "Task dispatched to visible tmux pane. You can observe progress. You'll be notified when complete.",
     })
   }
 

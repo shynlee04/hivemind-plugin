@@ -15,8 +15,8 @@ import { LIFECYCLE_PHASE_TO_PACKET_STATUS } from "./types.js"
 
 export const VALID_LIFECYCLE_TRANSITIONS: Record<SessionLifecyclePhase, SessionLifecyclePhase[]> = {
   created: ["queued", "dispatching"],
-  queued: ["dispatching"],
-  dispatching: ["running"],
+  queued: ["dispatching", "failed"],
+  dispatching: ["running", "failed"],
   running: ["completed", "failed"],
   completed: [],
   failed: [],

@@ -247,8 +247,8 @@ export async function launchDelegatedSession(
           const launchedAt = now()
           ctx.patchLifecycleFn({
             sessionID: childSessionID,
-            status: "running",
-            phase: "running",
+            status: "queued",
+            phase: "dispatching",
             launchedAt,
             observation: {
               source: "dispatch",

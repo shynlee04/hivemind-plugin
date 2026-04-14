@@ -132,9 +132,23 @@ export async function runLifecycleProcessTask(args: RunLifecycleProcessArgs): Pr
     parentSessionID: args.parentSessionID,
   })
 
+  const startedAt = args.now()
+  const startedAdvanced =
+    args.patchLifecycle({
+      sessionID: args.sessionID,
+      status: "running",
+      phase: "running",
+      launchedAt: startedAt,
+      observation: {
+        source: "dispatch",
+        observedAt: startedAt,
+        detail: "owned-process-spawned",
+      },
+    }) !== false
+
   if (args.runInBackground) {
     const startedContinuity = args.getSessionContinuity(args.sessionID)
-    if (startedContinuity?.metadata.parentSessionID) {
+    if (startedAdvanced && startedContinuity?.metadata.parentSessionID) {
       const startedNotification = buildTaskNotificationFromContinuity(startedContinuity, "started")
       void notifyParentSession(
         args.client,
@@ -302,20 +316,9 @@ export async function runLifecycleSubsessionTask(args: RunLifecycleSubsessionArg
     // independently of the parent's turn lifecycle.
     sendPromptAsync(args.client, args.sessionID, args.body)
       .then(() => {
-        // Prompt dispatched successfully — notify parent that work has started.
-        const continuity = args.getSessionContinuity(args.sessionID)
-        if (continuity?.metadata.parentSessionID) {
-          const startedNotification = buildTaskNotificationFromContinuity(continuity, "started")
-          void notifyParentSession(
-            args.client,
-            continuity.metadata.parentSessionID,
-            startedNotification,
-          ).then((delivered) => {
-            if (!delivered) {
-              persistPendingNotification(continuity.metadata.parentSessionID, startedNotification)
-            }
-          })
-        }
+        // Prompt dispatch only proves transport acceptance, not child execution.
+        // The observer will promote to `running` and notify the parent only after
+        // start-gate evidence is visible in child session messages.
       })
       .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error)
