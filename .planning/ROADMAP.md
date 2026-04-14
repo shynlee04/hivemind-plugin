@@ -188,6 +188,23 @@ Plans:
 - [ ] 09.2-02-PLAN.md — Implement failure handling + parent coordination (failure-handler, parent-coordinator) 🔴 PENDING — integration wiring
 - [ ] 09.2-03-PLAN.md — Wire completion detection into lifecycle-manager, end-to-end verification 🔴 PENDING — critical integration step
 
+### Phase 12: Correct background session start semantics, reconcile Phase 09/09.1/09.2, and archive obsolete architectural noise
+
+**Goal:** Make background delegation report truthful start state, then reconcile the Phase 09-family artifacts and planning metadata to that corrected runtime reality.
+**Requirements**: [PH12-01, PH12-02, PH12-03, PH12-04]
+**Depends on:** Phase 08 corrective sequencing baseline plus the existing Phase 09/09.1/09.2 runtime corridor (not Phase 11)
+**Plans:** 2 plans
+
+**Requirement details:**
+- **PH12-01:** Async builtin-subsession children stay non-started until observer-confirmed D-10 start-gate evidence exists.
+- **PH12-02:** Parent-visible `started` reminders and lifecycle status stay honest across background execution families.
+- **PH12-03:** Phase 09/09.1/09.2 artifacts are reconciled so quarantined claims cannot be mistaken for authoritative runtime truth.
+- **PH12-04:** Roadmap/state/project metadata and stale architectural notes are archived or rewritten to the corrected dependency chain.
+
+Plans:
+- [ ] 12-01-PLAN.md — Lock truthful async start semantics and regression coverage
+- [ ] 12-02-PLAN.md — Reconcile Phase 09-family artifacts and archive stale planning noise
+
 ---
 
 ### Phase 9.3: Module Restructuring + Config
