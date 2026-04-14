@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_plan: Select next authoritative runtime step
-status: Phase 12 complete — project still in progress
+status: Ready to execute
 stopped_at: Completed 12-02-PLAN.md
-last_updated: "2026-04-14T13:25:00.000Z"
+last_updated: "2026-04-14T16:42:16.605Z"
 progress:
-  total_phases: 14
+  total_phases: 15
   completed_phases: 7
-  total_plans: 30
-  completed_plans: 19
-  percent: 63
+  total_plans: 28
+  completed_plans: 26
+  percent: 93
 ---
 
 # STATE: Harness Cleanup
@@ -125,6 +125,10 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 - [ ] Live verification: spawn real child sessions and confirm end-to-end delegation works from the Phase 12 baseline
 - [ ] Plan Phase 11: Clean Architecture Restructuring
 - [ ] Plan Phase 03: Schema Definition & Runtime Configurability
+
+### Roadmap Evolution
+
+- Phase 13 added: fix async delegated result capture and persist child session outputs, transcripts, and evidence so completion is backed by recoverable work product
 
 ### Blockers
 
