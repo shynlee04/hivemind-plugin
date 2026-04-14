@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_plan: 2
-status: Phase 12 complete
+current_plan: Complete
+status: Phase complete — ready for verification
 stopped_at: Completed 12-02-PLAN.md
-last_updated: "2026-04-14T13:10:00.000Z"
+last_updated: "2026-04-14T12:59:36.789Z"
 progress:
   total_phases: 14
-  completed_phases: 6
+  completed_phases: 7
   total_plans: 26
-  completed_plans: 24
-  percent: 92
+  completed_plans: 26
+  percent: 100
 ---
 
 # STATE: Harness Cleanup
@@ -25,11 +25,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-09)
 
 ## Forensic Truth (2026-04-14 Reset)
 
-> Previous STATE.md claimed 92% (22/24 plans). Forensic investigation found this was inflated:
-> Phase 09 UAT was quarantined as "substantively false". 14/15 passing claims were code-existence
-> checks, not runtime verification. This reset restores honest tracking.
->
-> **Reference:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`
+Previous STATE.md overstated completion. The authoritative reset remains `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`.
 
 ## Current Position
 
@@ -37,7 +33,7 @@ Phase: 12 (correct-background-session-start-semantics-reconcile-phase-0) — COM
 Plan: 2 of 2 complete
 Phase 08: COMPLETE — verified corrective closure (2026-04-10)
 **Current plan:** Complete
-**Progress:** [██████░░░░] 62%
+**Progress:** [██████████] 100%
 
 ```
 Phase 1: Baseline Cleanup ......... COMPLETE (10/10 items)
@@ -97,6 +93,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 | Build | Pass | Pass |
 | Runtime-verified delegation | Working | PARTIALLY CORRECTED — false-start semantics fixed, broader runtime verification still pending |
 | Completion detection live | Working | PARTIAL — implementation exists, authority limited by quarantined 09.2 summaries |
+| Phase 12 P02 | 9 min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -119,19 +116,8 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 - [Phase 09]: Base64-encode sync assistant output inside a JSON envelope
 - **2026-04-14**: Forensic truth reset — STATE.md rewritten to reflect actual project state, not inflated claims
 - **2026-04-14**: Phase 12 reconciled 09-family artifacts; 09.2-02/03 summaries are historical evidence only, not authoritative runtime closure
-
-### Roadmap Evolution
-
-- Phase 8 added: Repair durable parent observability for delegated sessions
-- Phase 8 closed: 2026-04-10 — corrective closure complete
-- Phase 9 added: Sticky delegation corrective (based on root-cause analysis)
-- Phase 2 re-verification: 18/18 green after Phase 08 closure
-- Phase 6+7 SUPERSEDED: Replaced by Phase 11 (Clean Architecture Restructuring) on 2026-04-10
-- Phase 9.1 complete: Bug fixes + test rewrites done (mock-verified only)
-- Phase 9.2 partial: Plan 01 (pure modules) done, Plans 02-03 (integration wiring) pending
-- **2026-04-14**: Forensic truth reset — STATE.md progress corrected from inflated 92% to honest 54%
-- Phase 12 added: Correct background session start semantics, reconcile Phase 09/09.1/09.2, and archive obsolete architectural noise
-- Phase 12 complete: false-start corridor fixed, planning truth reconciled, roadmap/project/state updated to corrected dependency chain
+- [Phase 12]: Quarantine contaminated 09.2 summaries instead of deleting them so forensic history remains auditable.
+- [Phase 12]: Use the Phase 12 reconciliation note as the authoritative bridge between forensic findings and future planning metadata.
 
 ### Todos
 
@@ -153,15 +139,7 @@ Phase 12: Start Semantics + Recon .. COMPLETE (truthful start repair + planning 
 
 **Stopped At:** Completed 12-02-PLAN.md
 
-**Key files:**
-
-- Forensic findings: `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`
-- Delegation root cause: `.planning/debug/delegation-root-cause-with-reference-2026-04-10.md`
-- Delegation completion root cause: `.planning/debug/delegation-completion-root-cause-2026-04-10.md`
-- Design spec: `docs/superpowers/specs/2026-04-06-harness-clean-design.md`
-- Plugin entry: `src/plugin.ts`
-- Tools: `src/tools/`
-- Tests: `tests/` (668 tests, mock-heavy)
+**Key files:** `.planning/debug/phase-09-forensic-false-signals-2026-04-14.md`, `.planning/phases/12-correct-background-session-start-semantics-reconcile-phase-0/12-reconciliation-note-2026-04-14.md`, `src/plugin.ts`
 
 ---
 *State initialized: 2026-04-06*
