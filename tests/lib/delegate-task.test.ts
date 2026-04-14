@@ -146,10 +146,17 @@ describe("delegate task lifecycle", () => {
     const parsed = JSON.parse(raw) as { session_id: string }
     client._setStatus(parsed.session_id, "busy")
     await flush()
-    client._addMessage(parsed.session_id, { role: "assistant", parts: [{ type: "text", text: "done" }] })
+    client._addMessage(parsed.session_id, {
+      role: "assistant",
+      parts: [
+        { type: "reasoning", text: "finish async completion" },
+        { type: "tool-call", name: "read" },
+        { type: "tool-call", name: "write" },
+        { type: "text", text: "done" },
+      ],
+    })
     client._setStatus(parsed.session_id, "idle")
-    await vi.advanceTimersByTimeAsync(3000)
-    await vi.advanceTimersByTimeAsync(10_000)
+    await vi.advanceTimersByTimeAsync(35_000)
     await flush()
 
     const continuity = getSessionContinuity(parsed.session_id)
@@ -266,10 +273,17 @@ describe("delegate task lifecycle", () => {
     const parsed = JSON.parse(raw) as { session_id: string }
     client._setStatus(parsed.session_id, "busy")
     await flush()
-    client._addMessage(parsed.session_id, { role: "assistant", parts: [{ type: "text", text: "done" }] })
+    client._addMessage(parsed.session_id, {
+      role: "assistant",
+      parts: [
+        { type: "reasoning", text: "notify parent completion" },
+        { type: "tool-call", name: "read" },
+        { type: "tool-call", name: "write" },
+        { type: "text", text: "done" },
+      ],
+    })
     client._setStatus(parsed.session_id, "idle")
-    await vi.advanceTimersByTimeAsync(3000)
-    await vi.advanceTimersByTimeAsync(10_000)
+    await vi.advanceTimersByTimeAsync(35_000)
     await flush()
 
     const parentPayloads = client.session.prompt.mock.calls

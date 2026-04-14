@@ -226,21 +226,38 @@ function formatDelegationIDs(ids: Set<string>): string {
   return ids.size > 0 ? Array.from(ids).sort().join(", ") : "none"
 }
 
+function getNewlyTerminalDelegations(args: {
+  current: DelegationCompletionSnapshot
+  previous: DelegationCompletionSnapshot | null
+}): Set<string> {
+  const previousTerminal = new Set<string>([
+    ...(args.previous?.completedDelegations ?? []),
+    ...(args.previous?.failedDelegations ?? []),
+  ])
+  const currentTerminal = new Set<string>([
+    ...args.current.completedDelegations,
+    ...args.current.failedDelegations,
+  ])
+
+  return new Set(
+    Array.from(currentTerminal).filter((sessionID) => !previousTerminal.has(sessionID)),
+  )
+}
+
 function buildParentAutoLoopPrompt(args: {
   snapshot: DelegationCompletionSnapshot
   state: ParentAutoLoopState
 }): string {
   const { snapshot, state } = args
+  const newlyTerminalDelegations = getNewlyTerminalDelegations({
+    current: snapshot,
+    previous: state.lastSnapshot,
+  })
   return [
     `<system_reminder>Parent auto-loop poll ${state.iterations}/${state.maxIterations}</system_reminder>`,
     `Delegation status: ${snapshot.activeDelegations.size} active, ${snapshot.completedDelegations.size} completed, ${snapshot.failedDelegations.size} failed.`,
     `Active delegations: ${formatDelegationIDs(snapshot.activeDelegations)}`,
-    `Newly terminal delegations: ${formatDelegationIDs(
-      new Set([
-        ...snapshot.completedDelegations,
-        ...snapshot.failedDelegations,
-      ]),
-    )}`,
+    `Newly terminal delegations: ${formatDelegationIDs(newlyTerminalDelegations)}`,
     "Continue waiting for background delegations to complete.",
     "When all are done, synthesize results and emit <promise>DONE</promise>.",
   ].join("\n")
@@ -374,7 +391,6 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
 
       const snapshot = coordinator.snapshotDelegationStatus()
       parentState.pendingDelegations = new Set(snapshot.activeDelegations)
-      parentState.lastSnapshot = snapshot
 
       if (snapshot.allComplete) {
         parentAutoLoopStates.delete(sessionID)
@@ -406,6 +422,7 @@ export function createSessionHooks(deps: HookDependencies): SessionHooks {
           sessionID,
           promptText: buildParentAutoLoopPrompt({ snapshot, state: parentState }),
         })
+        parentState.lastSnapshot = snapshot
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
         stateManager.addWarning(sessionID, `[Harness] Parent auto-loop retry failed: ${message}`)
