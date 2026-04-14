@@ -1,5 +1,5 @@
 ---
-status: complete
+status: quarantined
 phase: 09-sticky-delegation-corrective
 source:
   - 09-01-SUMMARY.md
@@ -8,7 +8,8 @@ source:
   - 09-04-SUMMARY.md
   - 09-05-SUMMARY.md
 started: 2026-04-10T20:00:00Z
-updated: 2026-04-10T20:30:00Z
+updated: 2026-04-14T18:04:00Z
+forensic_note: "Forensic investigation (2026-04-14) confirmed UAT was inflated — 14/15 passing claims were code-existence checks, not runtime verification. See .planning/debug/phase-09-forensic-false-signals-2026-04-14.md"
 ---
 
 ## Current Test

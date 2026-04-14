@@ -2,7 +2,8 @@
 
 **Date:** 2026-04-10  
 **Reference:** oh-my-openagent (code-yeongyu/oh-my-openagent)  
-**Analyst:** GSD Debug Agent (diagnose_only mode)  
+**Analyst:** GSD Debug Agent (diagnose_only mode)
+**Status:** Closed — canonical reference that informed Phase 09 design (forensic reset 2026-04-14)  
 
 ---
 

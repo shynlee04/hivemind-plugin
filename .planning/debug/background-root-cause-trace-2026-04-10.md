@@ -1,8 +1,9 @@
 ---
-status: investigating
+status: closed
 trigger: "background root cause trace — parent observability, run_in_background selection, and background tool ambiguity"
 created: "2026-04-10T00:00:00.000Z"
-updated: "2026-04-10T00:00:00.000Z"
+updated: "2026-04-14T18:04:00.000Z"
+resolution: "diagnosed — informed Phase 09.2 design, addressed by completion-verifier and parent-coordinator modules"
 ---
 
 ## Current Focus

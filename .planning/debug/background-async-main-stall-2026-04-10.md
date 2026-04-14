@@ -1,8 +1,9 @@
 ---
-status: awaiting_human_verify
+status: closed
 trigger: "Investigate and fix background delegation regression where parent/main session stalls instead of continuing asynchronously"
 created: 2026-04-10T00:00:00Z
-updated: 2026-04-10T00:20:00Z
+updated: 2026-04-14T18:04:00Z
+resolution: "fix applied, unverified by human — will be verified by Phase 09.2 Plans 02-03 integration wiring"
 ---
 
 ## Current Focus

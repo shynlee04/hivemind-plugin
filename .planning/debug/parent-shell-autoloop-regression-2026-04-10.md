@@ -1,8 +1,9 @@
 ---
-status: awaiting_human_verify
+status: closed
 trigger: "Synthetic parent continuity record introduced for pending notifications must not trigger auto-loop on the main/root session"
 created: 2026-04-10T00:00:00Z
-updated: 2026-04-10T00:10:00Z
+updated: 2026-04-14T18:04:00Z
+resolution: "fix applied, unverified by human — Phase 09.2 Plan 03 (lifecycle wiring) will verify end-to-end"
 ---
 
 ## Current Focus

@@ -1,7 +1,7 @@
 # Roadmap: Harness Cleanup → V3 Runtime
 
 **Created:** 2026-04-06
-**Updated:** 2026-04-10 (Phase 09 UAT failed → split into 9.1/9.2/9.3 sub-phases)
+**Updated:** 2026-04-14 (Forensic truth reset — Phase 09/09.1 mock-verified only, 09.2 integration wiring pending)
 **Granularity:** Fine
 
 ## Phases Overview
@@ -14,9 +14,9 @@
 - [ ] **Phase 6: Runtime Domain Separation** — SUPERSEDED by Phase 11
 - [ ] **Phase 7: Runtime Domain Restructuring Planning** — SUPERSEDED by Phase 11
 - [x] **Phase 8: Repair Durable Parent Observability** — ✅ COMPLETE (corrective closure)
-- [ ] **Phase 9: Sticky Delegation Corrective** — ❌ UAT FAILED → SPLIT into sub-phases
-- [ ] **Phase 9.1: Critical Bug Fixes + Test Rewrites** — D-15→D-19, D-20→D-24 (10 decisions)
-- [ ] **Phase 9.2: Completion Detection Architecture** — D-09→D-14, D-25→D-27 (9 decisions)
+- [~] **Phase 9: Sticky Delegation Corrective** — ⚠️ MOCK-VERIFIED ONLY, runtime verification pending (forensic reset 2026-04-14)
+- [~] **Phase 9.1: Critical Bug Fixes + Test Rewrites** — ⚠️ COMPLETE WITH CAVEATS — 668 tests pass but mock-heavy (forensic reset 2026-04-14)
+- [ ] **Phase 9.2: Completion Detection Architecture** — PARTIAL: Plan 01 done, Plans 02-03 pending (integration wiring)
 - [ ] **Phase 9.3: Module Restructuring + Config** — D-01→D-08, D-28→D-30 (11 decisions)
 - [ ] **Phase 11: Clean Architecture Restructuring** — 0 plans (replaces Phase 6+7)
 
@@ -124,7 +124,7 @@ Plans:
 ## Phase 9: Sticky Delegation Corrective — SPLIT INTO SUB-PHASES
 
 **Original goal:** Fix multi-layered architectural mismatches from Phase 08 root-cause analysis.
-**Original result:** ❌ UAT FAILED — forensic audit found 5 runtime bugs, mock-heavy tests, code exists but non-functional.
+**Original result:** ⚠️ MOCK-VERIFIED ONLY — forensic investigation (2026-04-14) confirmed UAT was inflated. Code exists but integration wiring incomplete. Runtime verification pending Phase 09.2 Plans 02-03.
 **Decision:** Split 30 locked decisions across 7 clusters into 3 focused sub-phases.
 
 **Parent context:** `.planning/phases/09-sticky-delegation-corrective/09-CONTEXT.md` (all 30 decisions D-01→D-30)
@@ -156,9 +156,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [x] 09.1-01-PLAN.md — Fix all 5 runtime bugs with TDD regression tests (D-15→D-19) [Wave 1]
-- [x] 09.1-02-PLAN.md — Create in-memory SDK adapter + rewrite lifecycle-background-observer tests (D-20, D-21, D-22, D-23, D-24) [Wave 2]
-- [x] 09.1-03-PLAN.md — Create delegate-task tests + rewrite process-runner tests with in-memory adapter (D-21, D-24) [Wave 3]
+- [x] 09.1-01-PLAN.md — Fix all 5 runtime bugs with TDD regression tests (D-15→D-19) [Wave 1] ⚠️ mock-verified only
+- [x] 09.1-02-PLAN.md — Create in-memory SDK adapter + rewrite lifecycle-background-observer tests (D-20, D-21, D-22, D-23, D-24) [Wave 2] ⚠️ mock-verified only
+- [x] 09.1-03-PLAN.md — Create delegate-task tests + rewrite process-runner tests with in-memory adapter (D-21, D-24) [Wave 3] ⚠️ mock-verified only
 
 ---
 
@@ -184,9 +184,9 @@ Plans:
 - D-27: Evaluate oh-my-openagent's direct message injection for notifications
 
 Plans:
-- [ ] 09.2-01-PLAN.md — Implement completion detection sub-module (start-gate, poll-strategy, completion-verifier)
-- [ ] 09.2-02-PLAN.md — Implement failure handling + parent coordination (failure-handler, parent-coordinator)
-- [ ] 09.2-03-PLAN.md — Wire completion detection into lifecycle-manager, end-to-end verification
+- [x] 09.2-01-PLAN.md — Implement completion detection sub-module (start-gate, poll-strategy, completion-verifier) ✅ pure modules shipped
+- [ ] 09.2-02-PLAN.md — Implement failure handling + parent coordination (failure-handler, parent-coordinator) 🔴 PENDING — integration wiring
+- [ ] 09.2-03-PLAN.md — Wire completion detection into lifecycle-manager, end-to-end verification 🔴 PENDING — critical integration step
 
 ---
 
@@ -323,9 +323,9 @@ Plans:
 | 6. Runtime Domain Separation | — | SUPERSEDED by Phase 11 |
 | 7. Runtime Domain Restructuring Planning | — | SUPERSEDED by Phase 11 |
 | 8. Repair Durable Parent Observability | 3/3 plans | ✅ COMPLETE — corrective closure, 2026-04-10 |
-| 9. Sticky Delegation Corrective | — | ❌ FAILED → SPLIT into 9.1/9.2/9.3 |
-| 9.1 Critical Bug Fixes + Tests | 0/3 plans | Ready for planning |
-| 9.2 Completion Detection Architecture | 0/3 plans | Blocked by 9.1 |
+| 9. Sticky Delegation Corrective | 3/3 plans | ⚠️ MOCK-VERIFIED ONLY — forensic reset 2026-04-14 |
+| 9.1 Critical Bug Fixes + Tests | 3/3 plans | ⚠️ COMPLETE WITH CAVEATS — mock-heavy, live verification pending |
+| 9.2 Completion Detection Architecture | 1/3 plans | 🔴 PARTIAL — Plan 01 done, Plans 02-03 pending (integration wiring) |
 | 9.3 Module Restructuring + Config | 0/3 plans | Blocked by 9.2 |
 | 11. Clean Architecture Restructuring | 0/6 | Ready for planning |
 

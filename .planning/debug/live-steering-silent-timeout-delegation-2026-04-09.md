@@ -1,8 +1,9 @@
 ---
-status: investigating
+status: closed
 trigger: "Investigate issue: live-steering-silent-timeout-delegation-2026-04-09"
-created: 2026-04-09T00:00:00.000Z
-updated: 2026-04-09T01:12:00.000Z
+created: 2026-04-09T00:00:00Z
+updated: 2026-04-14T18:04:00Z
+resolution: "diagnosed — parent-observability durability gap informed Phase 08 and Phase 09 design"
 ---
 
 ## Current Focus

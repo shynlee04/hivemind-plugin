@@ -2,6 +2,7 @@
 
 **Date:** 2026-04-10
 **Issue:** `[Harness]` errors when using `delegate-task` tool with custom agent names and categories
+**Status:** Closed — agent/category validation fixed in Phase 09.1 (forensic reset 2026-04-14)
 
 ## Symptoms
 

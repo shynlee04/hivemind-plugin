@@ -1,11 +1,13 @@
 ---
 phase: 09
 slug: sticky-delegation-corrective
-status: validated
-nyquist_compliant: true
-wave_0_complete: true
+status: quarantined
+nyquist_compliant: false
+wave_0_complete: false
 created: 2026-04-10
 validated: 2026-04-10
+updated: 2026-04-14
+forensic_note: "Forensic investigation (2026-04-14) confirmed validation was mock-only — never spawn real child sessions. See .planning/debug/phase-09-forensic-false-signals-2026-04-14.md"
 ---
 
 # Phase 09 — Validation Strategy
