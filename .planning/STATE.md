@@ -18,7 +18,7 @@ progress:
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-04-09)
+See: `.planning/PROJECT.md`
 
 **Core value:** Every remaining component helps an AI agent complete its workflow — no dead code, no false positives, no phantom references.
 **Current focus:** Post-Phase-12 runtime planning from corrected delegation truth
