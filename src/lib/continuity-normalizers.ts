@@ -1,4 +1,4 @@
-import type { CompactionCheckpointData, DelegationCategory, DelegationExecutionMetadata, DelegationMeta, DelegationPacket, DelegationPacketStatus, DelegationRouteResolution, PendingNotification, PermissionAction, PermissionRule, PerKeyConcurrencyPolicy, SessionConcurrencyOverride, SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleCleanup, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleQueueState, SessionLifecycleState, SessionPolicyOverride, SessionPromptParams, SessionToolProfile, SpecialistAgent } from "./types.js"
+import type { CapturedResult, CompactionCheckpointData, DelegationCategory, DelegationExecutionMetadata, DelegationMeta, DelegationPacket, DelegationPacketStatus, DelegationRouteResolution, PendingNotification, PermissionAction, PermissionRule, PerKeyConcurrencyPolicy, SessionConcurrencyOverride, SessionContinuityMetadata, SessionContinuityRecord, SessionLifecycleCleanup, SessionLifecycleObservation, SessionLifecyclePhase, SessionLifecycleQueueState, SessionLifecycleState, SessionPolicyOverride, SessionPromptParams, SessionToolProfile, SpecialistAgent, ToolCallSummary } from "./types.js"
 import { VALID_DELEGATION_CATEGORIES } from "./types.js"
 
 function isRecord(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value) }
@@ -605,6 +605,40 @@ function normalizePendingNotifications(value: unknown): PendingNotification[] | 
   return notifications.length > 0 ? notifications : undefined
 }
 
+function normalizeToolCallSummary(value: unknown): ToolCallSummary | undefined {
+  if (!isRecord(value)) return undefined
+  const tool = asString(value.tool)
+  if (!tool) return undefined
+  return { tool, args: asString(value.args) }
+}
+
+function normalizeCapturedResult(value: unknown): CapturedResult | undefined {
+  if (!isRecord(value)) return undefined
+  const resultText = asString(value.resultText)
+  if (resultText === undefined) return undefined
+  const artifactPaths = Array.isArray(value.artifactPaths)
+    ? value.artifactPaths.map((e: unknown) => asString(e)).filter((e: string | undefined): e is string => Boolean(e))
+    : []
+  const gitCommits = Array.isArray(value.gitCommits)
+    ? value.gitCommits.map((e: unknown) => asString(e)).filter((e: string | undefined): e is string => Boolean(e))
+    : []
+  const toolCallSummary = Array.isArray(value.toolCallSummary)
+    ? value.toolCallSummary.map(normalizeToolCallSummary).filter((e: ToolCallSummary | undefined): e is ToolCallSummary => Boolean(e))
+    : []
+  const messageCount = asNumber(value.messageCount)
+  const capturedAt = asNumber(value.capturedAt)
+  if (messageCount === undefined || capturedAt === undefined) return undefined
+  return {
+    resultText,
+    artifactPaths,
+    gitCommits,
+    toolCallSummary,
+    messageCount,
+    capturedAt,
+    partial: asBoolean(value.partial),
+  }
+}
+
 function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefined {
   if (!isRecord(value)) {
     return undefined
@@ -639,6 +673,7 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
     ? value.tmuxAvailability
     : undefined
   const pollIntervalMs = asNumber(value.pollIntervalMs)
+  const resultCapture = normalizeCapturedResult(value.resultCapture)
 
   if (
     !parentSessionID ||
@@ -678,6 +713,7 @@ function normalizeMetadata(value: unknown): SessionContinuityMetadata | undefine
     defaultDispatchMode,
     tmuxAvailability,
     pollIntervalMs,
+    resultCapture,
   }
 }
 
